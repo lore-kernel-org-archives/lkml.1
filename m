@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756431AbYDYTAn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763574AbYDYTBb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756431AbYDYTAn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Apr 2008 15:00:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764064AbYDYSlT
+	id S1763574AbYDYTBb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Apr 2008 15:01:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760502AbYDYSlV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Apr 2008 14:41:19 -0400
-Received: from g5t0007.atlanta.hp.com ([15.192.0.44]:19252 "EHLO
-	g5t0007.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754386AbYDYSkf (ORCPT
+	Fri, 25 Apr 2008 14:41:21 -0400
+Received: from g4t0016.houston.hp.com ([15.201.24.19]:32371 "EHLO
+	g4t0016.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764236AbYDYSkf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 25 Apr 2008 14:40:35 -0400
-Message-Id: <20080425183933.523675648@ldl.fc.hp.com>
+Message-Id: <20080425183933.738662275@ldl.fc.hp.com>
 References: <20080425183807.366134771@ldl.fc.hp.com>
 User-Agent: quilt/0.46-1
-Date: Fri, 25 Apr 2008 12:38:53 -0600
+Date: Fri, 25 Apr 2008 12:38:54 -0600
 From: Bjorn Helgaas <bjorn.helgaas@hp.com>
 To: Len Brown <lenb@kernel.org>
 Cc: linux-acpi@vger.kernel.org
@@ -26,232 +26,225 @@ Cc: Thomas Renninger <trenn@suse.de>
 Cc: Rene Herman <rene.herman@keyaccess.nl>
 Cc: Jaroslav Kysela <perex@perex.cz>
 Cc: Andrew Morton <akpm@linux-foundation.org>
-Subject: [patch 46/54] PNP: make generic pnp_add_dma_resource()
-Content-Disposition: inline; filename=pnp-common-add-dma-resource
+Subject: [patch 47/54] PNP: make generic pnp_add_io_resource()
+Content-Disposition: inline; filename=pnp-common-add-io-resource
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add a pnp_add_dma_resource() that can be used by all the PNP
+Add a pnp_add_io_resource() that can be used by all the PNP
 backends.  This consolidates a little more pnp_resource_table
 knowledge into one place.
 
 Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
 
 ---
- drivers/pnp/base.h             |    2 +
- drivers/pnp/interface.c        |   13 +++---------
- drivers/pnp/isapnp/core.c      |    8 ++-----
- drivers/pnp/pnpacpi/rsparser.c |   42 +++++++----------------------------------
- drivers/pnp/pnpbios/rsparser.c |   26 +++----------------------
- drivers/pnp/resource.c         |   26 +++++++++++++++++++++++++
- 6 files changed, 47 insertions(+), 70 deletions(-)
+ drivers/pnp/base.h             |    3 +++
+ drivers/pnp/interface.c        |   19 ++++++++-----------
+ drivers/pnp/isapnp/core.c      |    8 +++-----
+ drivers/pnp/pnpacpi/rsparser.c |   35 ++++++++++-------------------------
+ drivers/pnp/pnpbios/rsparser.c |   23 ++++++-----------------
+ drivers/pnp/resource.c         |   29 +++++++++++++++++++++++++++++
+ 6 files changed, 59 insertions(+), 58 deletions(-)
 
 Index: work10/drivers/pnp/base.h
 ===================================================================
---- work10.orig/drivers/pnp/base.h	2008-04-25 11:15:11.000000000 -0600
+--- work10.orig/drivers/pnp/base.h	2008-04-25 11:15:12.000000000 -0600
 +++ work10/drivers/pnp/base.h	2008-04-25 11:15:12.000000000 -0600
-@@ -40,3 +40,5 @@
- 
- struct pnp_resource *pnp_add_irq_resource(struct pnp_dev *dev, int irq,
+@@ -42,3 +42,6 @@
  					  int flags);
-+struct pnp_resource *pnp_add_dma_resource(struct pnp_dev *dev, int dma,
-+					  int flags);
+ struct pnp_resource *pnp_add_dma_resource(struct pnp_dev *dev, int dma,
+ 					  int flags);
++struct pnp_resource *pnp_add_io_resource(struct pnp_dev *dev,
++					 resource_size_t start,
++					 resource_size_t end, int flags);
+Index: work10/drivers/pnp/interface.c
+===================================================================
+--- work10.orig/drivers/pnp/interface.c	2008-04-25 11:15:12.000000000 -0600
++++ work10/drivers/pnp/interface.c	2008-04-25 11:15:12.000000000 -0600
+@@ -326,7 +326,7 @@
+ 	struct resource *res;
+ 	char *buf = (void *)ubuf;
+ 	int retval = 0;
+-	resource_size_t start;
++	resource_size_t start, end;
+ 
+ 	if (dev->status & PNP_ATTACHED) {
+ 		retval = -EBUSY;
+@@ -384,23 +384,20 @@
+ 				buf += 2;
+ 				while (isspace(*buf))
+ 					++buf;
+-				pnp_res = &dev->res->port[nport];
+-				pnp_res->index = nport;
+-				res = &pnp_res->res;
+-				res->start = simple_strtoul(buf, &buf, 0);
++				start = simple_strtoul(buf, &buf, 0);
+ 				while (isspace(*buf))
+ 					++buf;
+ 				if (*buf == '-') {
+ 					buf += 1;
+ 					while (isspace(*buf))
+ 						++buf;
+-					res->end = simple_strtoul(buf, &buf, 0);
++					end = simple_strtoul(buf, &buf, 0);
+ 				} else
+-					res->end = res->start;
+-				res->flags = IORESOURCE_IO;
+-				nport++;
+-				if (nport >= PNP_MAX_PORT)
+-					break;
++					end = start;
++				pnp_res = pnp_add_io_resource(dev, start, end,
++							      0);
++				if (pnp_res)
++					pnp_res->index = nport++;
+ 				continue;
+ 			}
+ 			if (!strnicmp(buf, "mem", 3)) {
+Index: work10/drivers/pnp/isapnp/core.c
+===================================================================
+--- work10.orig/drivers/pnp/isapnp/core.c	2008-04-25 11:15:12.000000000 -0600
++++ work10/drivers/pnp/isapnp/core.c	2008-04-25 11:15:12.000000000 -0600
+@@ -941,11 +941,9 @@
+ 			ret = isapnp_read_word(ISAPNP_CFG_PORT + (tmp << 1));
+ 			if (!ret)
+ 				continue;
+-			pnp_res = &dev->res->port[tmp];
+-			pnp_res->index = tmp;
+-			res = &pnp_res->res;
+-			res->start = ret;
+-			res->flags = IORESOURCE_IO;
++			pnp_res = pnp_add_io_resource(dev, ret, ret, 0);
++			if (pnp_res)
++				pnp_res->index = tmp;
+ 		}
+ 		for (tmp = 0; tmp < ISAPNP_MAX_MEM; tmp++) {
+ 			ret =
+Index: work10/drivers/pnp/pnpacpi/rsparser.c
+===================================================================
+--- work10.orig/drivers/pnp/pnpacpi/rsparser.c	2008-04-25 11:15:12.000000000 -0600
++++ work10/drivers/pnp/pnpacpi/rsparser.c	2008-04-25 11:15:12.000000000 -0600
+@@ -158,33 +158,18 @@
+ 	return flags;
+ }
+ 
+-static void pnpacpi_parse_allocated_ioresource(struct pnp_dev *dev,
+-					       u64 io, u64 len, int io_decode)
++static void pnpacpi_parse_allocated_ioresource(struct pnp_dev *dev, u64 start,
++					       u64 len, int io_decode)
+ {
+-	struct resource *res;
+-	int i;
+-	static unsigned char warned;
++	int flags = 0;
++	u64 end = start + len - 1;
+ 
+-	for (i = 0; i < PNP_MAX_PORT; i++) {
+-		res = &dev->res->port[i].res;
+-		if (res->flags & IORESOURCE_UNSET)
+-			break;
+-	}
+-	if (i < PNP_MAX_PORT) {
+-		res->flags = IORESOURCE_IO;	// Also clears _UNSET flag
+-		if (io_decode == ACPI_DECODE_16)
+-			res->flags |= PNP_PORT_FLAG_16BITADDR;
+-		if (len <= 0 || (io + len - 1) >= 0x10003) {
+-			res->flags |= IORESOURCE_DISABLED;
+-			return;
+-		}
+-		res->start = io;
+-		res->end = io + len - 1;
+-	} else if (!warned) {
+-		printk(KERN_WARNING "pnpacpi: exceeded the max number of IO "
+-				"resources: %d \n", PNP_MAX_PORT);
+-		warned = 1;
+-	}
++	if (io_decode == ACPI_DECODE_16)
++		flags |= PNP_PORT_FLAG_16BITADDR;
++	if (len == 0 || end >= 0x10003)
++		flags |= IORESOURCE_DISABLED;
++
++	pnp_add_io_resource(dev, start, end, flags);
+ }
+ 
+ static void pnpacpi_parse_allocated_memresource(struct pnp_dev *dev,
+Index: work10/drivers/pnp/pnpbios/rsparser.c
+===================================================================
+--- work10.orig/drivers/pnp/pnpbios/rsparser.c	2008-04-25 11:15:12.000000000 -0600
++++ work10/drivers/pnp/pnpbios/rsparser.c	2008-04-25 11:15:12.000000000 -0600
+@@ -55,26 +55,15 @@
+  */
+ 
+ static void pnpbios_parse_allocated_ioresource(struct pnp_dev *dev,
+-					       int io, int len)
++					       int start, int len)
+ {
+-	struct resource *res;
+-	int i;
++	int flags = 0;
++	int end = start + len - 1;
+ 
+-	for (i = 0; i < PNP_MAX_PORT; i++) {
+-		res = &dev->res->port[i].res;
+-		if (res->flags & IORESOURCE_UNSET)
+-			break;
+-	}
++	if (len <= 0 || end >= 0x10003)
++		flags |= IORESOURCE_DISABLED;
+ 
+-	if (i < PNP_MAX_PORT) {
+-		res->flags = IORESOURCE_IO;	// Also clears _UNSET flag
+-		if (len <= 0 || (io + len - 1) >= 0x10003) {
+-			res->flags |= IORESOURCE_DISABLED;
+-			return;
+-		}
+-		res->start = (unsigned long)io;
+-		res->end = (unsigned long)(io + len - 1);
+-	}
++	pnp_add_io_resource(dev, start, end, flags);
+ }
+ 
+ static void pnpbios_parse_allocated_memresource(struct pnp_dev *dev,
 Index: work10/drivers/pnp/resource.c
 ===================================================================
---- work10.orig/drivers/pnp/resource.c	2008-04-25 11:15:11.000000000 -0600
+--- work10.orig/drivers/pnp/resource.c	2008-04-25 11:15:12.000000000 -0600
 +++ work10/drivers/pnp/resource.c	2008-04-25 11:15:12.000000000 -0600
-@@ -595,6 +595,32 @@
+@@ -621,6 +621,35 @@
  	return pnp_res;
  }
  
-+struct pnp_resource *pnp_add_dma_resource(struct pnp_dev *dev, int dma,
-+					  int flags)
++struct pnp_resource *pnp_add_io_resource(struct pnp_dev *dev,
++					 resource_size_t start,
++					 resource_size_t end, int flags)
 +{
 +	struct pnp_resource *pnp_res;
 +	struct resource *res;
 +	static unsigned char warned;
 +
-+	pnp_res = pnp_new_resource(dev, IORESOURCE_DMA);
++	pnp_res = pnp_new_resource(dev, IORESOURCE_IO);
 +	if (!pnp_res) {
 +		if (!warned) {
-+			dev_err(&dev->dev, "can't add resource for DMA %d\n",
-+				dma);
++			dev_err(&dev->dev, "can't add resource for IO "
++				"0x%llx-0x%llx\n",(unsigned long long) start,
++				(unsigned long long) end);
 +			warned = 1;
 +		}
 +		return NULL;
 +	}
 +
 +	res = &pnp_res->res;
-+	res->flags = IORESOURCE_DMA | flags;
-+	res->start = dma;
-+	res->end = dma;
++	res->flags = IORESOURCE_IO | flags;
++	res->start = start;
++	res->end = end;
 +
-+	dev_dbg(&dev->dev, "  add dma %d flags 0x%x\n", dma, flags);
++	dev_dbg(&dev->dev, "  add io  0x%llx-0x%llx flags 0x%x\n",
++		(unsigned long long) start, (unsigned long long) end, flags);
 +	return pnp_res;
 +}
 +
  /* format is: pnp_reserve_irq=irq1[,irq2] .... */
  static int __init pnp_setup_reserve_irq(char *str)
  {
-Index: work10/drivers/pnp/interface.c
-===================================================================
---- work10.orig/drivers/pnp/interface.c	2008-04-25 11:15:11.000000000 -0600
-+++ work10/drivers/pnp/interface.c	2008-04-25 11:15:12.000000000 -0600
-@@ -440,15 +440,10 @@
- 				buf += 3;
- 				while (isspace(*buf))
- 					++buf;
--				pnp_res = &dev->res->dma[ndma];
--				pnp_res->index = ndma;
--				res = &pnp_res->res;
--				res->start = res->end =
--				    simple_strtoul(buf, &buf, 0);
--				res->flags = IORESOURCE_DMA;
--				ndma++;
--				if (ndma >= PNP_MAX_DMA)
--					break;
-+				start = simple_strtoul(buf, &buf, 0);
-+				pnp_res = pnp_add_dma_resource(dev, start, 0);
-+				if (pnp_res)
-+					pnp_res->index = ndma++;
- 				continue;
- 			}
- 			break;
-Index: work10/drivers/pnp/isapnp/core.c
-===================================================================
---- work10.orig/drivers/pnp/isapnp/core.c	2008-04-25 11:15:11.000000000 -0600
-+++ work10/drivers/pnp/isapnp/core.c	2008-04-25 11:15:12.000000000 -0600
-@@ -972,11 +972,9 @@
- 			ret = isapnp_read_byte(ISAPNP_CFG_DMA + tmp);
- 			if (ret == 4)
- 				continue;
--			pnp_res = &dev->res->dma[tmp];
--			pnp_res->index = tmp;
--			res = &pnp_res->res;
--			res->start = res->end = ret;
--			res->flags = IORESOURCE_DMA;
-+			pnp_res = pnp_add_dma_resource(dev, ret, 0);
-+			if  (pnp_res)
-+				pnp_res->index = tmp;
- 		}
- 	}
- 	return 0;
-Index: work10/drivers/pnp/pnpacpi/rsparser.c
-===================================================================
---- work10.orig/drivers/pnp/pnpacpi/rsparser.c	2008-04-25 11:15:11.000000000 -0600
-+++ work10/drivers/pnp/pnpacpi/rsparser.c	2008-04-25 11:15:12.000000000 -0600
-@@ -158,34 +158,6 @@
- 	return flags;
- }
- 
--static void pnpacpi_parse_allocated_dmaresource(struct pnp_dev *dev,
--						u32 dma, int flags)
--{
--	struct resource *res;
--	int i;
--	static unsigned char warned;
--
--	for (i = 0; i < PNP_MAX_DMA; i++) {
--		res = &dev->res->dma[i].res;
--		if (res->flags & IORESOURCE_UNSET)
--			break;
--	}
--	if (i < PNP_MAX_DMA) {
--		res->flags = IORESOURCE_DMA;	// Also clears _UNSET flag
--		res->flags |= flags;
--		if (dma == -1) {
--			res->flags |= IORESOURCE_DISABLED;
--			return;
--		}
--		res->start = dma;
--		res->end = dma;
--	} else if (!warned) {
--		printk(KERN_WARNING "pnpacpi: exceeded the max number of DMA "
--				"resources: %d \n", PNP_MAX_DMA);
--		warned = 1;
--	}
--}
--
- static void pnpacpi_parse_allocated_ioresource(struct pnp_dev *dev,
- 					       u64 io, u64 len, int io_decode)
- {
-@@ -285,7 +257,7 @@
- 	struct acpi_resource_memory32 *memory32;
- 	struct acpi_resource_fixed_memory32 *fixed_memory32;
- 	struct acpi_resource_extended_irq *extended_irq;
--	int i;
-+	int i, flags;
- 
- 	switch (res->type) {
- 	case ACPI_RESOURCE_TYPE_IRQ:
-@@ -305,11 +277,13 @@
- 
- 	case ACPI_RESOURCE_TYPE_DMA:
- 		dma = &res->data.dma;
--		if (dma->channel_count > 0)
--			pnpacpi_parse_allocated_dmaresource(dev,
--				dma->channels[0],
--				dma_flags(dma->type, dma->bus_master,
--					  dma->transfer));
-+		if (dma->channel_count > 0) {
-+			flags = dma_flags(dma->type, dma->bus_master,
-+					  dma->transfer);
-+			if (dma->channels[0] == (u8) -1)
-+				flags |= IORESOURCE_DISABLED;
-+			pnp_add_dma_resource(dev, dma->channels[0], flags);
-+		}
- 		break;
- 
- 	case ACPI_RESOURCE_TYPE_IO:
-Index: work10/drivers/pnp/pnpbios/rsparser.c
-===================================================================
---- work10.orig/drivers/pnp/pnpbios/rsparser.c	2008-04-25 11:15:11.000000000 -0600
-+++ work10/drivers/pnp/pnpbios/rsparser.c	2008-04-25 11:15:12.000000000 -0600
-@@ -54,27 +54,6 @@
-  * Allocated Resources
-  */
- 
--static void pnpbios_parse_allocated_dmaresource(struct pnp_dev *dev, int dma)
--{
--	struct resource *res;
--	int i;
--
--	for (i = 0; i < PNP_MAX_DMA; i++) {
--		res = &dev->res->dma[i].res;
--		if (res->flags & IORESOURCE_UNSET)
--			break;
--	}
--
--	if (i < PNP_MAX_DMA) {
--		res->flags = IORESOURCE_DMA;	// Also clears _UNSET flag
--		if (dma == -1) {
--			res->flags |= IORESOURCE_DISABLED;
--			return;
--		}
--		res->start = res->end = (unsigned long)dma;
--	}
--}
--
- static void pnpbios_parse_allocated_ioresource(struct pnp_dev *dev,
- 					       int io, int len)
- {
-@@ -199,12 +178,15 @@
- 		case SMALL_TAG_DMA:
- 			if (len != 2)
- 				goto len_err;
-+			flags = 0;
- 			io = -1;
- 			mask = p[1];
- 			for (i = 0; i < 8; i++, mask = mask >> 1)
- 				if (mask & 0x01)
- 					io = i;
--			pnpbios_parse_allocated_dmaresource(dev, io);
-+			if (io == -1)
-+				flags = IORESOURCE_DISABLED;
-+			pnp_add_dma_resource(dev, io, flags);
- 			break;
- 
- 		case SMALL_TAG_PORT:
 
 -- 
