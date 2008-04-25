@@ -1,75 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755576AbYDYEfq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755472AbYDYEoe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755576AbYDYEfq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Apr 2008 00:35:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751483AbYDYEfj
+	id S1755472AbYDYEoe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Apr 2008 00:44:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751466AbYDYEoY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Apr 2008 00:35:39 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:35421 "EHLO mail.dvmed.net"
+	Fri, 25 Apr 2008 00:44:24 -0400
+Received: from mga01.intel.com ([192.55.52.88]:55100 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751466AbYDYEfi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Apr 2008 00:35:38 -0400
-Message-ID: <48115F90.1030100@garzik.org>
-Date: Fri, 25 Apr 2008 00:35:28 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	id S1751387AbYDYEoX convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Apr 2008 00:44:23 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,706,1199692800"; 
+   d="scan'208";a="556904236"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-To: Roland Dreier <rdreier@cisco.com>
-CC: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Rene Herman <rene.herman@keyaccess.nl>, Adrian Bunk <bunk@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, rmk@arm.linux.org.uk,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>
-Subject: Re: MSI, fun for the whole family
-References: <20080422221733.GA16260@havoc.gtf.org>	<alpine.LFD.1.10.0804221518520.2779@woody.linux-foundation.org>	<480E6DE5.6010103@garzik.org>	<alpine.LFD.1.10.0804221616280.2779@woody.linux-foundation.org>	<480E796E.4070001@garzik.org>	<alpine.LFD.1.10.0804221651400.2779@woody.linux-foundation.org>	<20080423000529.GG28933@cs181133002.pp.htv.fi>	<alpine.LFD.1.10.0804221714380.2779@woody.linux-foundation.org>	<480F3ECC.1090809@keyaccess.nl> <480FEC1B.6040102@garzik.org>	<alpine.LFD.1.10.0804231914270.2779@woody.linux-foundation.org>	<m1od7zkd2s.fsf@frodo.ebiederm.org> <481066C1.1030805@garzik.org>	<alpine.LFD.1.10.0804240806500.2779@woody.linux-foundation.org>	<4810A9E6.1080201@garzik.org>	<alpine.LFD.1.10.0804240847230.2779@woody.linux-foundation.org>	<m1r6cvgpw2.fsf@frodo.ebiederm.org> <4810C3B5.3020605@garzik.org>	<m11w4u8x1c.fsf@frodo.ebiederm.org> <481150EE.3040103@garzik.org> <adaiqy67fib.fsf@cisco.com>
-In-Reply-To: <adaiqy67fib.fsf@cisco.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Subject: RE: [PATCH 24/24] Use U64_C() instead of casts in kernel/time.c
+Date: Thu, 24 Apr 2008 21:44:17 -0700
+Message-ID: <1FE6DD409037234FAB833C420AA843EC012FA04B@orsmsx424.amr.corp.intel.com>
+In-Reply-To: <200804250410.m3P4A67w019427@tazenda.hos.anvin.org>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH 24/24] Use U64_C() instead of casts in kernel/time.c
+Thread-Index: AcimikDAt8BjvhaKQy+gHi+weYTr3wABEo0w
+References: <1209078352-7593-1-git-send-email-hpa@zytor.com><1209078352-7593-2-git-send-email-hpa@zytor.com><1209078352-7593-3-git-send-email-hpa@zytor.com><1209078352-7593-4-git-send-email-hpa@zytor.com><1209078352-7593-5-git-send-email-hpa@zytor.com><1209078352-7593-6-git-send-email-hpa@zytor.com><1209078352-7593-7-git-send-email-hpa@zytor.com><1209078352-7593-8-git-send-email-hpa@zytor.com><1209078352-7593-9-git-send-email-hpa@zytor.com><1209078352-7593-10-git-send-email-hpa@zytor.com><1209078352-7593-11-git-send-email-hpa@zytor.com><1209078352-7593-12-git-send-email-hpa@zytor.com><1209078352-7593-13-git-send-email-hpa@zytor.com><1209078352-7593-14-git-send-email-hpa@zytor.com><1209078352-7593-15-git-send-email-hpa@zytor.com><1209078352-7593-16-git-send-email-hpa@zytor.com><1209078352-7593-17-git-send-email-hpa@zytor.com><1209078352-7593-18-git-send-email-hpa@zytor.com><1FE6DD409037234FAB833C420AA843EC012F9FDA@orsmsx424.amr.corp.intel.com> <200804250410.m3P4A67w019427@tazenda.hos.
+	anvin.org>
+From: "Luck, Tony" <tony.luck@intel.com>
+To: "H. Peter Anvin" <hpa@zytor.com>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Linux Arch Mailing List" <linux-arch@vger.kernel.org>
+X-OriginalArrivalTime: 25 Apr 2008 04:44:21.0937 (UTC) FILETIME=[07ACFA10:01C8A68F]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Roland Dreier wrote:
-> I think you've fundamentally misunderstood what the PCI spec for MSI
-> multi message means.  It is true that if the whole system agrees, then
+> Note that since pasting has priority over macro resolution, the header
+> file generation is modified to have suffixed versions of all the
+> generated values.
 
-You seem to be ignoring a key usage...
+Much better.  Builds and boots on ia64 now.  I only ran some trivial
+tests, but it still seems to be counting time correctly.
 
-
-> an MSI-capable device that supports multiple messages might be allocated
-> a range of vectors (MSI is kind of stupid because it only allows
-> multiple messages to be generated by varying the low order bits -- MSI-X
-> fixes this limitation).  However, the way that these different messages
-> are handled is that they are all independent interrupt vectors.
-> 
-> Now, it is true that the kernel could do something crazy and collapse
-> all these interrupt vectors into a single "IRQ" and then tell the
-> interrupt handler which vector it was by passing some "metadata" in, but
-> why not just give each MSI message it's own IRQ?
-
-The answer is:  the driver might prefer to see the message as it 
-arrived, rather than dividing it up into independent vectors.  The 
-message itself is a unit of data consistency, and there is value in 
-letting the driver see the bounds of that unit.
-
-As it stands now, we only a spray of $N function calls for each message, 
-with no notion of "we started processing this set of messages" and "we 
-ended processing[...]"
-
-Additionally the bitmask-friendly multi-port architecture of these SATA 
-controllers matches nicely with an activity (event) status mask we 
-already obtain in almost every driver.
-
-Don't assume that the way Linux supports this stuff today is the best, 
-or the only way to do things.  It's not "collapsing all these interrupt 
-vectors" -- remember that an expansion occurred, and /avoiding 
-expansion/ into multiple vectors for multiple messages may be an optimal 
-path for a specific driver application.
-
-	Jeff
-
-
+Acked-by: Tony Luck <tony.luck@intel.com>
