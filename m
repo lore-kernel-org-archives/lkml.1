@@ -1,93 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763019AbYDYQQz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763321AbYDYQSo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763019AbYDYQQz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Apr 2008 12:16:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758884AbYDYQQq
+	id S1763321AbYDYQSo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Apr 2008 12:18:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758618AbYDYQSh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Apr 2008 12:16:46 -0400
-Received: from tomts40.bellnexxia.net ([209.226.175.97]:35277 "EHLO
-	tomts40-srv.bellnexxia.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1755683AbYDYQQo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Apr 2008 12:16:44 -0400
-X-Greylist: delayed 1319 seconds by postgrey-1.27 at vger.kernel.org; Fri, 25 Apr 2008 12:16:44 EDT
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Aq8EAD+gEUhMROPA/2dsb2JhbACBUqps
-Date: Fri, 25 Apr 2008 12:11:36 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Jiri Slaby <jirislaby@gmail.com>, David Miller <davem@davemloft.net>,
-       zdenek.kabelac@gmail.com, rjw@sisk.pl, paulmck@linux.vnet.ibm.com,
-       akpm@linux-foundation.org, linux-ext4@vger.kernel.org,
-       herbert@gondor.apana.org.au, penberg@cs.helsinki.fi, clameter@sgi.com,
-       linux-kernel@vger.kernel.org, Andi Kleen <andi@firstfloor.org>,
-       pageexec@freemail.hu, "H. Peter Anvin" <hpa@zytor.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: [PATCH 1/1] x86: fix text_poke
-Message-ID: <20080425161136.GD9503@Krystal>
-References: <20080425.021301.193689806.davem@davemloft.net> <1209343883-7991-1-git-send-email-jirislaby@gmail.com> <alpine.LFD.1.10.0804250759260.2779@woody.linux-foundation.org> <20080425151931.GA25510@elte.hu> <20080425152650.GA894@elte.hu> <alpine.LFD.1.10.0804250830200.2779@woody.linux-foundation.org> <20080425155444.GB9503@Krystal> <20080425155953.GA11243@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Fri, 25 Apr 2008 12:18:37 -0400
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:41249 "EHLO smtp5.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757909AbYDYQSg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Apr 2008 12:18:36 -0400
+Date: Fri, 25 Apr 2008 19:17:45 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Alexey Starikovskiy <astarikovskiy@suse.de>,
+       tglx@linutronix.de, hpa@zytor.com, linux-kernel@vger.kernel.org
+Subject: Re: Voyager phys_cpu_present_map compile error
+Message-ID: <20080425161745.GA21168@cs181133002.pp.htv.fi>
+References: <20080421000238.GD26897@cs181133002.pp.htv.fi> <20080421085314.GI26897@cs181133002.pp.htv.fi> <20080421120054.GA6788@elte.hu> <20080421132705.GG6011@cs181133002.pp.htv.fi> <20080421201434.GN8770@elte.hu> <1209135044.3087.3.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20080425155953.GA11243@elte.hu>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 12:04:40 up 56 days, 12:15,  8 users,  load average: 0.40, 0.42,
-	0.36
-User-Agent: Mutt/1.5.16 (2007-06-11)
+In-Reply-To: <1209135044.3087.3.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Ingo Molnar (mingo@elte.hu) wrote:
-> 
-> * Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
-> 
-> > Woooow, just a sec here. I removed the atomicity test _because_ there 
-> > happen to be a case where it's safe to do non-atomic instruction 
-> > modification. If we do :
+On Fri, Apr 25, 2008 at 09:50:43AM -0500, James Bottomley wrote:
+> On Mon, 2008-04-21 at 22:14 +0200, Ingo Molnar wrote:
+> > * Adrian Bunk <bunk@kernel.org> wrote:
 > > 
-> > 1) replace the instruction first byte by a breakpoint, execute an
-> >   instruction bypass (see the immediate values patches for detail)
-> > 2) modify the instruction non-atomically
-> > 3) put back the original instruction first byte.
+> > > > +#ifndef CONFIG_X86_VOYAGER
+> > > >  /* Bitmask of physically existing CPUs */
+> > > >  physid_mask_t phys_cpu_present_map;
+> > > > +#endif
+> > > >...
+> > > 
+> > > Alexey noted that phys_cpu_present_map for Voyager and !Voyager also 
+> > > have different types and suggested to make the Voyager one static 
+> > > instead (additional renaming of the Voyager one also makes sense).
 > > 
-> > That's why I removed the BUG_ONs at the beginning of the function. 
-> > That's also why it's required to deal with page crossing.
+> > yep, done by the patch below.
 > 
-> but the code as-is is nonsensical. It checks for:
+> Actually, this isn't the right patch.  The point is not to avoid the
+> symbol clash, it's to let voyager identify correctly that you have a
+> leaking symbol.  In this case phys_cpu_present_map is exposed outside of
+> SMP.  The correct fix (and one which sweeps op other storage for
+> unnecessary symbols is this):
 > 
->         BUG_ON(len > sizeof(long));
+> James
 > 
-> but then deals with page crossing...
+> ---
 > 
+> diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
+> index c0c68c1..d68aa53 100644
+> --- a/arch/x86/kernel/setup.c
+> +++ b/arch/x86/kernel/setup.c
+> @@ -12,6 +12,7 @@
+>  #include <asm/mpspec.h>
+>  #include <asm/apicdef.h>
+>  
+> +#ifdef CONIFG_X86_SMP
+>...
 
-That was in the initial version, before my patch, yes. I dealt with page
-crossing at first, then added a more restrictive test to "play safe" (I
-should have removed the page-crossing code at that point), but later on
-noticed that there was a single case where it's valid to do non-atomic
-updates, and it's when the execution flow is bypassed by a breakpoint
-(as the immediate values are doing), so the last patch you have removes
-the restrictive test and lets the page-crossing code in place.
+tpyo  ;)
 
-> it should also rename text_poke_early() to text_poke_core(), and call 
-> _that_ from text_poke() if core_kernel_text(). From that alone the whole 
-> poke_text() function would look a whole lot cleaner.
-> 
-
-hrm, I am not convinced it's safe to call vmap() very early at boot
-time. In the immediate values implementation, I do call text_poke very
-very early at boot to populate the initial values. Or maybe are you
-proposing something different from what I currently understand ?
-
-Mathieu
-
-> 	Ingo
+cu
+Adrian
 
 -- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
