@@ -1,92 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756731AbYDYAyb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757025AbYDYBBY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756731AbYDYAyb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Apr 2008 20:54:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753864AbYDYAyW
+	id S1757025AbYDYBBY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Apr 2008 21:01:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753864AbYDYBBO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Apr 2008 20:54:22 -0400
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:37280 "EHLO smtp4.pp.htv.fi"
+	Thu, 24 Apr 2008 21:01:14 -0400
+Received: from mga11.intel.com ([192.55.52.93]:24935 "EHLO mga11.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753353AbYDYAyV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Apr 2008 20:54:21 -0400
-Date: Fri, 25 Apr 2008 03:53:34 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Mauro Carvalho Chehab <mchehab@infradead.org>
-Cc: v4l-dvb-maintainer@linuxtv.org, linux-kernel@vger.kernel.org
-Subject: [2.6 patch] xc3028_{agc,bw}_config namespace fix
-Message-ID: <20080425005334.GF18854@cs181133002.pp.htv.fi>
+	id S1753353AbYDYBBM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Apr 2008 21:01:12 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,706,1199692800"; 
+   d="scan'208";a="321090920"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: text/plain;
+	charset="utf-8"
+Subject: RE: [2.6 patch] ia64: let NUMA select SMP
+Date: Thu, 24 Apr 2008 18:01:10 -0700
+Message-ID: <1FE6DD409037234FAB833C420AA843EC012F9FAD@orsmsx424.amr.corp.intel.com>
+In-Reply-To: <20080425004139.GE18854@cs181133002.pp.htv.fi>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [2.6 patch] ia64: let NUMA select SMP
+Thread-Index: AcimbT+j2bK8f3QeSKOpVwApoWrRYgAARTag
+References: <1FE6DD409037234FAB833C420AA843EC012F9EF0@orsmsx424.amr.corp.intel.com> <20080425001652.GD18854@cs181133002.pp.htv.fi> <1FE6DD409037234FAB833C420AA843EC012F9F55@orsmsx424.amr.corp.intel.com> <20080425004139.GE18854@cs181133002.pp.htv.fi>
+From: "Luck, Tony" <tony.luck@intel.com>
+To: "Adrian Bunk" <bunk@kernel.org>
+Cc: <torvalds@linux-foundation.org>, <linux-kernel@vger.kernel.org>,
+       <linux-ia64@vger.kernel.org>, "Mike Travis" <travis@sgi.com>,
+       "Russ Anderson" <rja@sgi.com>
+X-OriginalArrivalTime: 25 Apr 2008 01:01:11.0873 (UTC) FILETIME=[DA935B10:01C8A66F]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id m3P11hEB023347
 
-This patch fixes the following build error:
+> CONFIG_NUMA=y, CONFIG_SMP=n isn't a useful combination, so let NUMA 
+> select SMP.
 
-<--  snip  -->
+Yup.  That looks good.  Means that my allnoconfig will now
+have SMP=y though :-(  Root of that is selecting GENERIC,
+and I'm not sure there is a better choice.
 
-...
-  LD      drivers/media/built-in.o
-drivers/media/dvb/built-in.o:(.data+0x1be6c): multiple definition of `xc3028_agc_config'
-drivers/media/video/built-in.o:(.data+0x36500): first defined here
-drivers/media/dvb/built-in.o:(.data+0x1be9c): multiple definition of `xc3028_bw_config'
-drivers/media/video/built-in.o:(.data+0x36530): first defined here
-make[3]: *** [drivers/media/built-in.o] Error 1
+Doesn't change the need for the patch to delete the #if NUMA
+clause inside the SMP=n path though (your patch would make my
+build work by forcing SMP=y ... so the build error would go
+away ... but that doesn't make it OK to have #if NUMA code
+inside the SMP=n clause).
 
-<--  snip  -->
+This does make we wonder how much dead code is hidden inside
+impossibly nested #ifdefs elsewhere in the kernel.
 
-Signed-off-by: Adrian Bunk <bunk@kernel.org>
-
----
-
- drivers/media/dvb/dvb-usb/dib0700_devices.c |    4 ++--
- drivers/media/video/cx23885/cx23885-dvb.c   |    4 ++--
- 2 files changed, 4 insertions(+), 4 deletions(-)
-
-7c8ba386f39d5e17821e37999ce9d484878af751 diff --git a/drivers/media/dvb/dvb-usb/dib0700_devices.c b/drivers/media/dvb/dvb-usb/dib0700_devices.c
-index 6477fc6..3462238 100644
---- a/drivers/media/dvb/dvb-usb/dib0700_devices.c
-+++ b/drivers/media/dvb/dvb-usb/dib0700_devices.c
-@@ -299,7 +299,7 @@ static int stk7700d_tuner_attach(struct dvb_usb_adapter *adap)
- }
- 
- /* STK7700-PH: Digital/Analog Hybrid Tuner, e.h. Cinergy HT USB HE */
--struct dibx000_agc_config xc3028_agc_config = {
-+static struct dibx000_agc_config xc3028_agc_config = {
- 	BAND_VHF | BAND_UHF,       /* band_caps */
- 
- 	/* P_agc_use_sd_mod1=0, P_agc_use_sd_mod2=0, P_agc_freq_pwm_div=0,
-@@ -342,7 +342,7 @@ struct dibx000_agc_config xc3028_agc_config = {
- };
- 
- /* PLL Configuration for COFDM BW_MHz = 8.00 with external clock = 30.00 */
--struct dibx000_bandwidth_config xc3028_bw_config = {
-+static struct dibx000_bandwidth_config xc3028_bw_config = {
- 	60000, 30000, /* internal, sampling */
- 	1, 8, 3, 1, 0, /* pll_cfg: prediv, ratio, range, reset, bypass */
- 	0, 0, 1, 1, 0, /* misc: refdiv, bypclk_div, IO_CLK_en_core, ADClkSrc,
-diff --git a/drivers/media/video/cx23885/cx23885-dvb.c b/drivers/media/video/cx23885/cx23885-dvb.c
-index 870d6e1..f056497 100644
---- a/drivers/media/video/cx23885/cx23885-dvb.c
-+++ b/drivers/media/video/cx23885/cx23885-dvb.c
-@@ -191,7 +191,7 @@ static struct tda18271_config hauppauge_hvr1200_tuner_config = {
- 	.gate    = TDA18271_GATE_ANALOG,
- };
- 
--struct dibx000_agc_config xc3028_agc_config = {
-+static struct dibx000_agc_config xc3028_agc_config = {
- 	BAND_VHF | BAND_UHF,	/* band_caps */
- 
- 	/* P_agc_use_sd_mod1=0, P_agc_use_sd_mod2=0, P_agc_freq_pwm_div=0,
-@@ -237,7 +237,7 @@ struct dibx000_agc_config xc3028_agc_config = {
- 
- /* PLL Configuration for COFDM BW_MHz = 8.000000
-  * With external clock = 30.000000 */
--struct dibx000_bandwidth_config xc3028_bw_config = {
-+static struct dibx000_bandwidth_config xc3028_bw_config = {
- 	60000,	/* internal */
- 	30000,	/* sampling */
- 	1,	/* pll_cfg: prediv */
-
+-Tony
+ˇÙË∫{.n«+â∑üÆâ≠Ü+%äÀˇ±È›∂•äwˇ∫{.n«+â∑•ä{±˛G´ùÈˇä{ay∫ á⁄ôÎ,j≠¢f£¢∑höèÔÅÍˇëÍÁz_ËÆ(≠Èöéä›¢j"ù˙∂mßˇˇæ´˛G´ùÈˇ¢∏?ô®Ë≠⁄&£¯ß~è·∂iOïÊ¨z∑övÿ^∂mßˇˇ√ˇ∂Ïˇ¢∏?ñI•
