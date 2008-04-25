@@ -1,79 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764943AbYDYS03@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765222AbYDYS2F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764943AbYDYS03 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Apr 2008 14:26:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757831AbYDYS0U
+	id S1765222AbYDYS2F (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Apr 2008 14:28:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757260AbYDYS1z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Apr 2008 14:26:20 -0400
-Received: from ug-out-1314.google.com ([66.249.92.172]:3928 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758761AbYDYS0T (ORCPT
+	Fri, 25 Apr 2008 14:27:55 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:46912 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757939AbYDYS1y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Apr 2008 14:26:19 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=YlBt+a93ujbbDfFi3ahWsOGjGGWyE+DVtIajNG3aVaX69Niqm/D1DlcT70IAn14rhtYsA06dWLqnU4nb9XSXpjRukbTJ3vnY5bEqNUOuUAh/QcdHcHkPX69sxSTXAhojkq2/ZoHixlwN3ULJIjyVJD3UAB6JAPjlQnqtpAeGiZA=
-Date: Fri, 25 Apr 2008 14:26:13 -0400
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Yan Seiner <yan@seiner.com>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: uinput question
-Message-ID: <20080425142224.ZZRA012@mailhub.coreip.homeip.net>
-References: <480BD294.9040504@seiner.com>
+	Fri, 25 Apr 2008 14:27:54 -0400
+Date: Fri, 25 Apr 2008 20:27:53 +0200 (CEST)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: "H. Peter Anvin" <hpa@zytor.com>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Arch Mailing List <linux-arch@vger.kernel.org>
+Subject: Re: [PATCH 01/24] types: create <asm-generic/int-*.h>
+In-Reply-To: <1209078352-7593-3-git-send-email-hpa@zytor.com>
+Message-ID: <alpine.LNX.1.10.0804252026040.20150@fbirervta.pbzchgretzou.qr>
+References: <1209078352-7593-1-git-send-email-hpa@zytor.com> <1209078352-7593-2-git-send-email-hpa@zytor.com> <1209078352-7593-3-git-send-email-hpa@zytor.com>
+User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <480BD294.9040504@seiner.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Yan,
 
-On Sun, Apr 20, 2008 at 04:32:36PM -0700, Yan Seiner wrote:
-> I'm trying to set up a system with multiple IR remotes acting as keyboards 
-> for specific X sessions.
->
-> lirc <http://www.lirc.org> is a way to send infrared remote keystrokes to 
-> applications.  Some time ago I wrote a small patch to kbdd 
-> <http://handhelds.org/moin/moin.cgi/kbdd> that lets me inject button pushes 
-> on an IR remote into the /dev/input/uinput system as keyboard events.
->
-> Now I'd like to send those keyboard events to only one X session, not all 
-> of them.
->
-> In the kbdd code, there is the following snippet when the /dev/input/uinput 
-> device is opened:
->
->        memset(&dev, 0, sizeof(dev));
->        strncpy(dev.name, "SerKBD", UINPUT_MAX_NAME_SIZE);
->        dev.idbus = BUS_RS232;
->        dev.idvendor = 0x00;
->        dev.idproduct = 0x00;
->        dev.idversion = 0x00;
->
-> So this would indicate to me that I can emulate different devices by 
-> changing the names, IDs, and events.  Then I want to select only those 
-> events that pertain to my app... 
-> So...
-> -   Create a 'virtual' eventNN device based on the data fed to kbdd
-> -   Send various keyboard events to the kernel via the uinput device from 
-> several physical devices
-> -   Select only those events destined for my virtual device
-> -   Have those events pop out of my eventNN device so I can handle them 
-> back in userspace
->
+On Friday 2008-04-25 01:05, H. Peter Anvin wrote:
 
-You would need to set up uinput instance for every set of remotes you
-want to send events to a particular X instance and then make X use
-evdev driver to listen to the input events coming from 'their'
-/dev/input/eventXX. You may need to teach X not to release event
-device when switching vts so events from the uinput-connected devices
-never reach the standard consolde driver.
+>This creates two generic files with common integer definitions; one
+>where 64 bits is "long" (most 64-bit architectures) and one where 64
+>bits is "long long" (all 32-bit architectures and x86-64.)
 
-Hope this helps.
+long long is 64 bits on both 32 and 64, is not it?
+If so, the split between 32 and 64 should not be necessary.
 
--- 
-Dmitry
