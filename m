@@ -1,95 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759948AbYDYINZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760218AbYDYIP7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759948AbYDYINZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Apr 2008 04:13:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753247AbYDYINL
+	id S1760218AbYDYIP7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Apr 2008 04:15:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752152AbYDYIPl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Apr 2008 04:13:11 -0400
-Received: from viefep32-int.chello.at ([62.179.121.50]:48065 "EHLO
-	viefep32-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752744AbYDYINJ (ORCPT
+	Fri, 25 Apr 2008 04:15:41 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:43021 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751640AbYDYIPi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Apr 2008 04:13:09 -0400
-Subject: Re: [git pull] scheduler/misc fixes
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: David Miller <davem@davemloft.net>
-Cc: mingo@elte.hu, torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, viro@zeniv.linux.org.uk,
-       alan@lxorguk.ukuu.org.uk, tglx@linutronix.de
-In-Reply-To: <20080425.005738.114887644.davem@davemloft.net>
-References: <20080424225530.GA8717@elte.hu>
-	 <20080424.204620.88617191.davem@davemloft.net>
-	 <1209109710.7115.400.camel@twins>
-	 <20080425.005738.114887644.davem@davemloft.net>
-Content-Type: text/plain
-Date: Fri, 25 Apr 2008 10:13:03 +0200
-Message-Id: <1209111183.7115.402.camel@twins>
+	Fri, 25 Apr 2008 04:15:38 -0400
+Date: Fri, 25 Apr 2008 11:15:36 +0300 (EEST)
+From: Pekka J Enberg <penberg@cs.helsinki.fi>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+cc: Alan Stern <stern@rowland.harvard.edu>, linux-kernel@vger.kernel.org,
+       dsd@gentoo.org, mdharm-usb@one-eyed-alien.net,
+       linux-usb@vger.kernel.org, vegardno@ifi.uio.no,
+       James.Bottomley@HansenPartnership.com, linux-scsi@vger.kernel.org,
+       Greg KH <greg@kroah.com>, Matthew Wilcox <matthew@wil.cx>
+Subject: Re: [RFC/PATCH] usb-storage: wait for device scanning before mounting
+ root
+In-Reply-To: <48118DDD.8010507@s5r6.in-berlin.de>
+Message-ID: <Pine.LNX.4.64.0804251110400.758@sbz-30.cs.Helsinki.FI>
+References: <Pine.LNX.4.44L0.0804241704220.14840-100000@iolanthe.rowland.org>
+ <Pine.LNX.4.64.0804250022160.1209@sbz-30.cs.Helsinki.FI>
+ <48118DDD.8010507@s5r6.in-berlin.de>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.0 
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-04-25 at 00:57 -0700, David Miller wrote:
-> From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> Date: Fri, 25 Apr 2008 09:48:30 +0200
-> 
-> >  c) there are 'IPI' handlers on SPARC64 that look like they can wake
-> >     the CPU from idle sleep but do not appear to call irq_enter() which
-> >     has the above patch's touch_softlock_watchdog() in its callchain.
-> > 
-> > tl0_irq1:       TRAP_IRQ(smp_call_function_client, 1)
-> > tl0_irq2:       TRAP_IRQ(smp_receive_signal_client, 2)
-> > tl0_irq3:       TRAP_IRQ(smp_penguin_jailcell, 3)
-> > tl0_irq4:       TRAP_IRQ(smp_new_mmu_context_version_client, 4)
-> > 
-> > 
-> > 
-> > So the current working thesis is that the bug in a) hides a real problem
-> > not quite fixed by b) and exploited by c).
-> 
-> The equivalent to smp_receive_signal_client() on x86
-> (smp_reschedule_interrupt) doesn't do an irq_enter() either.
-> 
-> However x86 does do an irq_enter() for smp_call_function() interrupt
-> handling.
-> 
-> What is the rule in these cases?
-> 
-> Anyways, does the following patch fix the problem?
+Hi Stefan,
 
-Sadly, no :-(
+On Fri, 25 Apr 2008, Stefan Richter wrote:
+> > Index: linux-2.6/drivers/scsi/scsi_scan.c
+> > ===================================================================
+> > --- linux-2.6.orig/drivers/scsi/scsi_scan.c
+> > +++ linux-2.6/drivers/scsi/scsi_scan.c
+> > @@ -1802,6 +1802,7 @@ static int do_scan_async(void *_data)
+> >   struct async_scan_data *data = _data;
+> >   do_scsi_scan_host(data->shost);
+> >   scsi_finish_async_scan(data);
+> > +	complete_root_scan();
+> >  	return 0;
+> >  }
+> >  
+> > @@ -1823,6 +1824,7 @@ void scsi_scan_host(struct Scsi_Host *sh
+> >   	return;
+> >   }
+> > 
+> > +	begin_root_scan();
+> >   p = kthread_run(do_scan_async, data, "scsi_scan_%d", shost->host_no);
+> >   if (unlikely(IS_ERR(p)))
+> >    do_scan_async(data);
+> 
+> Looks like you want complete_root_scan() after IS_ERR(p).  Are there any other
+> thread exit paths which don't call complete_root_scan() yet?
 
-> diff --git a/arch/sparc64/kernel/smp.c b/arch/sparc64/kernel/smp.c
-> index 524b889..bf4ef84 100644
-> --- a/arch/sparc64/kernel/smp.c
-> +++ b/arch/sparc64/kernel/smp.c
-> @@ -866,14 +866,21 @@ void smp_call_function_client(int irq, struct pt_regs *regs)
->  	void *info = call_data->info;
->  
->  	clear_softint(1 << irq);
-> +
-> +	irq_enter();
-> +
-> +	if (!call_data->wait) {
-> +		/* let initiator proceed after getting data */
-> +		atomic_inc(&call_data->finished);
-> +	}
-> +
-> +	func(info);
-> +
-> +	irq_exit();
-> +
->  	if (call_data->wait) {
->  		/* let initiator proceed only after completion */
-> -		func(info);
-> -		atomic_inc(&call_data->finished);
-> -	} else {
-> -		/* let initiator proceed after getting data */
->  		atomic_inc(&call_data->finished);
-> -		func(info);
->  	}
->  }
+No, we call complete_root_scan() in do_scan_sync() which is either called 
+asynchronously from the kernel thread or synchronously on IS_ERR(p).
 
+On Fri, 25 Apr 2008, Stefan Richter wrote:
+> Besides, can't you use the generic async scan facility of the SCSI stack for
+> your purpose?  If not, can it be extended to make it usable?
 
+So you mean drivers/scsi/scsi_scan.c, right? We probably can and 
+should so I'll take a look.
+
+		Pekka
