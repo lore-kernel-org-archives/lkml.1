@@ -1,51 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760196AbYDYHt4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760434AbYDYHuT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760196AbYDYHt4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Apr 2008 03:49:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757581AbYDYHtp
+	id S1760434AbYDYHuT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Apr 2008 03:50:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758825AbYDYHtt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Apr 2008 03:49:45 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:49003
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1754264AbYDYHto (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Apr 2008 03:49:44 -0400
-Date: Fri, 25 Apr 2008 00:49:43 -0700 (PDT)
-Message-Id: <20080425.004943.148536408.davem@davemloft.net>
-To: jirislaby@gmail.com
-Cc: torvalds@linux-foundation.org, zdenek.kabelac@gmail.com, mingo@elte.hu,
-       rjw@sisk.pl, paulmck@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, linux-ext4@vger.kernel.org,
-       herbert@gondor.apana.org.au, penberg@cs.helsinki.fi, clameter@sgi.com
-Subject: Re: 2.6.25-git2: BUG: unable to handle kernel paging request at
- ffffffffffffffff
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <48118B73.6000700@gmail.com>
-References: <4811090A.9030809@gmail.com>
-	<20080424.183558.96469288.davem@davemloft.net>
-	<48118B73.6000700@gmail.com>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Fri, 25 Apr 2008 03:49:49 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:51617 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758597AbYDYHtr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Apr 2008 03:49:47 -0400
+From: Andreas Schwab <schwab@suse.de>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: "H. Peter Anvin" <hpa@zytor.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Arch Mailing List <linux-arch@vger.kernel.org>
+Subject: Re: [PATCH 00/24] Unify integer type definitions, and add fixed type constructor macros
+References: <1209078352-7593-1-git-send-email-hpa@zytor.com>
+	<Pine.LNX.4.64.0804250915030.21224@anakin>
+X-Yow: Yow!  I threw up on my window!
+Date: Fri, 25 Apr 2008 09:49:45 +0200
+In-Reply-To: <Pine.LNX.4.64.0804250915030.21224@anakin> (Geert Uytterhoeven's
+	message of "Fri, 25 Apr 2008 09:17:32 +0200 (CEST)")
+Message-ID: <jebq3yjrvq.fsf@sykes.suse.de>
+User-Agent: Gnus/5.110008 (No Gnus v0.8) Emacs/22.1 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jiri Slaby <jirislaby@gmail.com>
-Date: Fri, 25 Apr 2008 09:42:43 +0200
+Geert Uytterhoeven <geert@linux-m68k.org> writes:
 
-> On 04/25/2008 03:35 AM, David Miller wrote:
-> > From: Jiri Slaby <jirislaby@gmail.com>
-> > Date: Fri, 25 Apr 2008 00:26:18 +0200
-> > 
-> >> ff00aa00deadcc22 ff00aa00deadcc22 ff00aa00deadcc22 ff00aa00deadccf0 
-> > 
-> > 0xf0...  Is this a 4-cpu machine?
-> 
-> It's a 2 cores machine.
+> On Thu, 24 Apr 2008, H. Peter Anvin wrote:
+>> This patchset unifies the integer definitions across all the
+>> <asm-*/types.h> files, replacing them with two asm-generic files, one
+>> for the LL64 model (all 32-bit architectures plus x86-64) and one for
+>> the L64 model (all other 64-bit architectures.)
+>
+> Just a minor nitpick, what about calling them LP32 and LP64, like
+> everybody else does?
 
-Two hyperthreads per-core?
+LP32 wouldn't fit x86-64 (the header has nothing to say about pointer
+types, it's all about integer types).
 
-If so that could match up to the pattern.  It is just one theory
-though.  The wireless possibility holds just as much weight.
+Andreas.
+
+-- 
+Andreas Schwab, SuSE Labs, schwab@suse.de
+SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
+PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
