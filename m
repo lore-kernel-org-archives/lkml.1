@@ -1,55 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764372AbYDYRPs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763968AbYDYRTU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764372AbYDYRPs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Apr 2008 13:15:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759006AbYDYRPk
+	id S1763968AbYDYRTU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Apr 2008 13:19:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759046AbYDYRTM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Apr 2008 13:15:40 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:52049 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758823AbYDYRPj (ORCPT
+	Fri, 25 Apr 2008 13:19:12 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:51938 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754264AbYDYRTM convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Apr 2008 13:15:39 -0400
-Date: Fri, 25 Apr 2008 10:13:29 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Ingo Molnar <mingo@elte.hu>
-cc: Andi Kleen <andi@firstfloor.org>, Jiri Slaby <jirislaby@gmail.com>,
-       David Miller <davem@davemloft.net>, zdenek.kabelac@gmail.com,
-       rjw@sisk.pl, paulmck@linux.vnet.ibm.com, akpm@linux-foundation.org,
-       linux-ext4@vger.kernel.org, herbert@gondor.apana.org.au,
-       penberg@cs.helsinki.fi, clameter@sgi.com, linux-kernel@vger.kernel.org,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>, pageexec@freemail.hu,
-       "H. Peter Anvin" <hpa@zytor.com>, Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: [PATCH 1/1] x86: fix text_poke
-In-Reply-To: <20080425170237.GA24472@elte.hu>
-Message-ID: <alpine.LFD.1.10.0804251009340.2779@woody.linux-foundation.org>
-References: <alpine.LFD.1.10.0804250759260.2779@woody.linux-foundation.org> <20080425151931.GA25510@elte.hu> <20080425152650.GA894@elte.hu> <alpine.LFD.1.10.0804250830200.2779@woody.linux-foundation.org> <20080425154854.GC3265@one.firstfloor.org>
- <alpine.LFD.1.10.0804250904560.2779@woody.linux-foundation.org> <20080425162215.GA16273@elte.hu> <alpine.LFD.1.10.0804250925341.2779@woody.linux-foundation.org> <20080425164509.GB19962@elte.hu> <alpine.LFD.1.10.0804250950360.2779@woody.linux-foundation.org>
- <20080425170237.GA24472@elte.hu>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 25 Apr 2008 13:19:12 -0400
+Date: Fri, 25 Apr 2008 18:12:19 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: "Kathy Frazier" <kfrazier@daetwyler-rd.com>
+Cc: "'Kathy Frazier'" <kfrazier@daetwyler-rd.com>,
+       <linux-kernel@vger.kernel.org>
+Subject: Re: Talking to parallel port in 2.6 kernel without using parport
+Message-ID: <20080425181219.61e29b1f@core>
+In-Reply-To: <006f01c8a4a7$82e37ea0$88aa7be0$@com>
+References: <009501c89e28$3d7530f0$b85f92d0$@com>
+	<20080414133937.7080d30d@core>
+	<006f01c8a4a7$82e37ea0$88aa7be0$@com>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> One of our engineers downloaded source code a while back from
+> linux-2.6.18-rc7, but I am not sure how close that is to what is installed
+> on my system (uname -r returns 2.6.18-1.2798.fc6.  When I set my printk to 8
+> (echo 8 > /proc/sys/kernel/printk), there are no messages shown on the
+> failure.  According to the source code I have, the only silent failure in
+> parport_register_device is:
 
+Nothing immediately strikes me.
 
-On Fri, 25 Apr 2008, Ingo Molnar wrote:
-> 
-> performance i dont think we should be too worried about at this moment - 
-> this code is so rarely used that it should be driven by robustness i 
-> think.
+> When I change the flags from PARPORT_FLAG_EXCL to 0 in the call to
+> parport_register_device, the call returns a non-zero to indicate success.
 
-That really isn't true. This isn't done just once. It's done many 
-thousands of times.
+Do you have the printer driver loaded already ? (and does it behave if
+you do rmmod lp first)
 
-I agree that it has to be robust, but if we want to make suspend/resume 
-be instantaneous (and we do), performance does actually matter. Yes, this 
-is probably much less of a problem than waiting for devices, and no, I 
-haven't timed it, but if I counted right, we'll literally be going almost 
-ten thousand of these calls over a suspend/resume cycle.
+> Can you tell me what I am missing?  Where can I get the actual source code
+> that goes with this version to further unravel this?
 
-That's not "rarely used".
+>From the .fc6 it would be an old Fedora kernel so very close to standard
+2.6.18 from kernel.org, but the Fedora Core kernels are available from
+the Fedora download pages - the .srpm package for each kernel is the one
+matching the same binary - so google for "2.6.18-1.2798.fc6.src.rpm"
 
-		Linus
+http://www.mjmwired.net/resources/mjm-fedora-fc6.html has a few notes on
+it. 
+
+To be honest this area of the kernel hasn't changed much over recent
+times. Let me know if you can't figure out what is going on.
