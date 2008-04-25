@@ -1,52 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764716AbYDYTZq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762699AbYDYT1p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764716AbYDYTZq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Apr 2008 15:25:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753788AbYDYTZg
+	id S1762699AbYDYT1p (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Apr 2008 15:27:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755543AbYDYT1e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Apr 2008 15:25:36 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:42484 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753333AbYDYTZf (ORCPT
+	Fri, 25 Apr 2008 15:27:34 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:46137 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754096AbYDYT1c (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Apr 2008 15:25:35 -0400
-Date: Fri, 25 Apr 2008 14:25:32 -0500
-From: Robin Holt <holt@sgi.com>
-To: Andrea Arcangeli <andrea@qumranet.com>
-Cc: Rusty Russell <rusty@rustcorp.com.au>,
-       Christoph Lameter <clameter@sgi.com>, akpm@linux-foundation.org,
-       Nick Piggin <npiggin@suse.de>, Steve Wise <swise@opengridcomputing.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-mm@kvack.org,
-       Kanoj Sarcar <kanojsarcar@yahoo.com>, Roland Dreier <rdreier@cisco.com>,
-       Jack Steiner <steiner@sgi.com>, linux-kernel@vger.kernel.org,
-       Avi Kivity <avi@qumranet.com>, kvm-devel@lists.sourceforge.net,
-       Robin Holt <holt@sgi.com>, general@lists.openfabrics.org,
-       Hugh Dickins <hugh@veritas.com>
-Subject: Re: [PATCH 1 of 9] Lock the entire mm to prevent any mmu related
-	operation to happen
-Message-ID: <20080425192532.GA19717@sgi.com>
-References: <ec6d8f91b299cf26cce5.1207669444@duo.random> <200804221506.26226.rusty@rustcorp.com.au> <20080425165639.GA23300@duo.random>
+	Fri, 25 Apr 2008 15:27:32 -0400
+Message-ID: <48122ECF.405@zytor.com>
+Date: Fri, 25 Apr 2008 12:19:43 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080425165639.GA23300@duo.random>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: Andi Kleen <andi@firstfloor.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Jiri Slaby <jirislaby@gmail.com>,
+       David Miller <davem@davemloft.net>, zdenek.kabelac@gmail.com,
+       rjw@sisk.pl, paulmck@linux.vnet.ibm.com, akpm@linux-foundation.org,
+       linux-ext4@vger.kernel.org, herbert@gondor.apana.org.au,
+       penberg@cs.helsinki.fi, clameter@sgi.com, linux-kernel@vger.kernel.org,
+       pageexec@freemail.hu, Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: [PATCH 1/1] x86: fix text_poke
+References: <alpine.LFD.1.10.0804250759260.2779@woody.linux-foundation.org> <20080425151931.GA25510@elte.hu> <20080425152650.GA894@elte.hu> <alpine.LFD.1.10.0804250830200.2779@woody.linux-foundation.org> <20080425154854.GC3265@one.firstfloor.org> <alpine.LFD.1.10.0804250904560.2779@woody.linux-foundation.org> <20080425161916.GD3265@one.firstfloor.org> <20080425163035.GE9503@Krystal> <481209F2.4050908@zytor.com> <20080425170929.GA16180@Krystal> <20080425183748.GB16180@Krystal>
+In-Reply-To: <20080425183748.GB16180@Krystal>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 25, 2008 at 06:56:40PM +0200, Andrea Arcangeli wrote:
-> Fortunately I figured out we don't really need mm_lock in unregister
-> because it's ok to unregister in the middle of the range_begin/end
-> critical section (that's definitely not ok for register that's why
-> register needs mm_lock). And it's perfectly ok to fail in register().
+Mathieu Desnoyers wrote:
+> 
+>>> b) there might be a jump into the middle of this instruction sequence?
+>>>
+>> If we change that, as discussed above, so the liveliness of ZF and of
+>> the %al register is still insured by leaving the mov and test
+>> instructions in place, we end up only modifying a single instruction and
+>> the problem fades away. We would end up changing a jne for a jmp.
+> 
+> So, if we do is I propose here, we have to take into account this
+> question too. Any jump that jumps in the middle of this instruction
+> sequence would have to insure correct liveliness of %al and ZF. However,
+> since we just limited the scope of their liveliness, there are no other
+> code paths which can jump in the middle of our instruction sequence and
+> insure correct ZF and %al liveliness.
+> 
 
-I think you still need mm_lock (unless I miss something).  What happens
-when one callout is scanning mmu_notifier_invalidate_range_start() and
-you unlink.  That list next pointer with LIST_POISON1 which is a really
-bad address for the processor to track.
+I wanted to point out that this, in particular, is utter nonsense. 
+Consider a sequence that looks something like this:
 
-Maybe I misunderstood your description.
+if (foo ? bar : imv_cond(var)) {
+	blah();
+}
 
-Thanks,
-Robin
+An entirely sane transformation of this (as far as gcc is concerned), is 
+something like:
+
+	cmpl $0,foo
+	je 1f
+	cmpl $0,bar
+	jmp 2f
+1:
+#APP
+	movb var,%al	/* This is your imv */
+#NO_APP
+	testb %al,%al
+2:
+	je 3f
+	call blah
+3:
+
+Your code would take the movb-testb-je sequence and combine them, then 
+we jump into the middle of the new instruction when jumping at 2!
+
+There are only two ways to deal with this - extensive analysis of the 
+entire flow of control, or telling the compiler exactly what is 
+*actually* going on.  The latter is the preferred way, obviously.
+
+	-hpa
+
