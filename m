@@ -1,76 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756051AbYDYLHu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757983AbYDYLK2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756051AbYDYLHu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Apr 2008 07:07:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751454AbYDYLHm
+	id S1757983AbYDYLK2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Apr 2008 07:10:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751855AbYDYLKP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Apr 2008 07:07:42 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:59321 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750901AbYDYLHl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Apr 2008 07:07:41 -0400
-Date: Fri, 25 Apr 2008 13:08:22 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Mark Lord <lkml@rtr.ca>
-Cc: Jens Axboe <jens.axboe@oracle.com>, linux-arch@vger.kernel.org,
-       linux-kernel@vger.kernel.org, npiggin@suse.de,
-       torvalds@linux-foundation.org, "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 1/11] Add generic helpers for arch IPI function calls
-Message-ID: <20080425110822.GH14903@elf.ucw.cz>
-References: <1208851058-8500-1-git-send-email-jens.axboe@oracle.com> <1208851058-8500-2-git-send-email-jens.axboe@oracle.com> <480E70ED.3030701@rtr.ca> <20080423072432.GX12774@kernel.dk> <480F3CBC.60305@rtr.ca> <20080423135110.GO12774@kernel.dk> <480F4BD9.8090003@rtr.ca> <20080424105908.GW12774@kernel.dk> <481080A0.9050804@rtr.ca>
+	Fri, 25 Apr 2008 07:10:15 -0400
+Received: from khc.piap.pl ([195.187.100.11]:33508 "EHLO khc.piap.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751454AbYDYLKO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Apr 2008 07:10:14 -0400
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: David Miller <davem@davemloft.net>, jeff@garzik.org, paulkf@microgate.com,
+       jchapman@katalix.com, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [PATCH v2] Re: WAN: new PPP code for generic HDLC
+References: <m3r6cv75xq.fsf@maximus.localdomain>
+	<20080424.063006.153647297.davem@davemloft.net>
+	<m3mynj74nw.fsf@maximus.localdomain>
+	<20080424.065555.30390704.davem@davemloft.net>
+	<m3ve27nfpx.fsf@maximus.localdomain>
+	<20080424214457.1d5a1655@the-village.bc.nu>
+From: Krzysztof Halasa <khc@pm.waw.pl>
+Date: Fri, 25 Apr 2008 13:10:11 +0200
+In-Reply-To: <20080424214457.1d5a1655@the-village.bc.nu> (Alan Cox's message of "Thu\, 24 Apr 2008 21\:44\:57 +0100")
+Message-ID: <m3prse2nsc.fsf@maximus.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <481080A0.9050804@rtr.ca>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+Alan Cox <alan@lxorguk.ukuu.org.uk> writes:
 
->> Something like this will close the window to right up until the point
->> where the other CPUs have 'almost' called halt().
->>
->> diff --git a/arch/x86/kernel/smp.c b/arch/x86/kernel/smp.c
->> index 5398385..94ec9bf 100644
->> --- a/arch/x86/kernel/smp.c
->> +++ b/arch/x86/kernel/smp.c
->> @@ -155,8 +155,9 @@ static void stop_this_cpu(void *dummy)
->>  	/*
->>  	 * Remove this CPU:
->>  	 */
->> -	cpu_clear(smp_processor_id(), cpu_online_map);
->>  	disable_local_APIC();
->> +	cpu_clear(smp_processor_id(), cpu_online_map);
->> +	smp_wmb();
->>  	if (hlt_works(smp_processor_id()))
->>  		for (;;) halt();
->>  	for (;;);
->> @@ -175,6 +176,12 @@ static void native_smp_send_stop(void)
->>   	local_irq_save(flags);
->>  	smp_call_function(stop_this_cpu, NULL, 0, 0);
->> +
->> +	while (cpus_weight(cpu_online_map) > 1) {
->> +		cpu_relax();
->> +		smp_rmb();
->> +	}
->> +
->>  	disable_local_APIC();
->>  	local_irq_restore(flags);
->>  }
-> ..
->
-> Yup, that looks like it oughta work consistently.
-> Now we just need to hear from some of the folks who
-> have danced around this code in the past.
->
-> (added Pavel & Rafael to Cc:).
+> I would agree with this. There isn't a sane way to sort out the old
+> kernel side syncppp (which is useless for todays networks as it doesn't
+> do compression, IPv6 or auth protocols) except by going to user space.
 
-I can't  see anything wrong with this one, but I'm not smp expert...
-									Pavel
+Well, I never used compression or auth on fixed line, and that would
+require generic PPP. Perhaps we should use it, I don't know.
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Krzysztof Halasa
