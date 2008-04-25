@@ -1,119 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759862AbYDYHkE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760001AbYDYHl2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759862AbYDYHkE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Apr 2008 03:40:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756412AbYDYHju
+	id S1760001AbYDYHl2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Apr 2008 03:41:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756144AbYDYHlT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Apr 2008 03:39:50 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:45826
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1755696AbYDYHjt (ORCPT
+	Fri, 25 Apr 2008 03:41:19 -0400
+Received: from fg-out-1718.google.com ([72.14.220.153]:25133 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752272AbYDYHlT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Apr 2008 03:39:49 -0400
-Date: Fri, 25 Apr 2008 00:39:47 -0700 (PDT)
-Message-Id: <20080425.003947.72853787.davem@davemloft.net>
-To: mingo@elte.hu
-Cc: linville@tuxdriver.com, tomas.winkler@intel.com,
-       linux-kernel@vger.kernel.org, kaber@trash.net,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       netdev@vger.kernel.org, netfilter-devel@vger.kernel.org,
-       mabbas@linux.intel.com, ischram@telenet.be, rjw@sisk.pl,
-       ivdoorn@gmail.com
-Subject: Re: [build bug] drivers/built-in.o: In function
- `rt2x00leds_resume': : undefined reference to `led_classdev_resume'
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20080425073504.GA12549@elte.hu>
-References: <20080420081302.GA11954@elte.hu>
-	<20080420.020557.231970202.davem@davemloft.net>
-	<20080425073504.GA12549@elte.hu>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Fri, 25 Apr 2008 03:41:19 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=LLeoIA4xzlHdi0oUn3DcadD/8atvjZx+iLhiF1n1yLI2rAgfhILRKIuvgN4HSPm6Se//voPwOPlgh04JtJ8DZhbFe7MvxVGMLpfOcDTO5MCC/HoTXcPm9xu6JpoLLoMfZK8nn3WS85C2STkcSIk6Mlk+HJ9afWICM+Ssm/TRle4=
+Message-ID: <48118B18.5020008@gmail.com>
+Date: Fri, 25 Apr 2008 09:41:12 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+MIME-Version: 1.0
+To: David Miller <davem@davemloft.net>
+CC: torvalds@linux-foundation.org, zdenek.kabelac@gmail.com, mingo@elte.hu,
+       rjw@sisk.pl, paulmck@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, linux-ext4@vger.kernel.org,
+       herbert@gondor.apana.org.au, penberg@cs.helsinki.fi, clameter@sgi.com,
+       Johannes Berg <johannes@sipsolutions.net>,
+       Michael Wu <flamingice@sourmilk.net>, Jiri Benc <jbenc@suse.cz>
+Subject: Re: 2.6.25-git2: BUG: unable to handle kernel paging request at ffffffffffffffff
+References: <4811090A.9030809@gmail.com>	<20080424.183558.96469288.davem@davemloft.net>	<alpine.LFD.1.10.0804241841280.2779@woody.linux-foundation.org> <20080424.185757.254044977.davem@davemloft.net>
+In-Reply-To: <20080424.185757.254044977.davem@davemloft.net>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Ingo Molnar <mingo@elte.hu>
-Date: Fri, 25 Apr 2008 09:35:04 +0200
+Added 3 80211 experts.
 
-> hm, it seems there's still some small hole left in its Kconfig 
-> structure, overnight testing triggered this randconfig combination:
+On 04/25/2008 03:57 AM, David Miller wrote:
+> From: Linus Torvalds <torvalds@linux-foundation.org>
+> Date: Thu, 24 Apr 2008 18:48:32 -0700 (PDT)
 > 
-> |  drivers/built-in.o: In function `rt2x00leds_resume':
-> |  : undefined reference to `led_classdev_resume'
-> |  drivers/built-in.o: In function `rt2x00leds_resume':
-> |  : undefined reference to `led_classdev_resume'
-> |
-> |  http://redhat.com/~mingo/misc/config-Fri_Apr_25_08_50_47_CEST_2008.bad
+>> But that 0xf0 definitely has shown up before. It's not the *only* 
+>> corruption, but it's definitely a very interesting pattern. And the other 
+>> ones that didn't show the 0xf0 pattern could obviously be due to pointers 
+>> that were corrupted by 0xf0 in low bytes, so it _may_ be the source of the 
+>> other corruptions too that didn't have an obvious 0xf0 directly in them.
+> 
+> Ok.
+> 
+> Do we know of any pattern of the wireless device type in use?
+> If there is a pattern to that, it would be a huge clue.
+> 
+> And if it is predominantly one particular wireless device type, we
+> should be able to come up with a patch to test.
 
-This was reported elsewhere as well.
+Johannes, Michael, Jiri? Someone writes to freed memory patterns 0xf0 (not 
+aligned to anything, addressed per byte), one of suspects is mac80211, don't you 
+know that pattern from anywhere?
 
-I was sure that the patch below fixed it.
-
-I don't understand how it can still fail, unless the problem is that
-selecting "FOO" does not take care to enable any dependencies of
-"FOO".
-
-commit 201410ce85d80b7b893cdc72e944a1341dd393f1
-Author: David S. Miller <davem@davemloft.net>
-Date:   Wed Apr 23 03:34:50 2008 -0700
-
-    rt2x00: Select LEDS_CLASS.
-    
-    Signed-off-by: David S. Miller <davem@davemloft.net>
-
-diff --git a/drivers/net/wireless/rt2x00/Kconfig b/drivers/net/wireless/rt2x00/Kconfig
-index a1e3938..ab1029e 100644
---- a/drivers/net/wireless/rt2x00/Kconfig
-+++ b/drivers/net/wireless/rt2x00/Kconfig
-@@ -60,7 +60,8 @@ config RT2400PCI_RFKILL
- 
- config RT2400PCI_LEDS
- 	bool "RT2400 leds support"
--	depends on RT2400PCI && LEDS_CLASS
-+	depends on RT2400PCI
-+	select LEDS_CLASS
- 	select RT2X00_LIB_LEDS
- 	---help---
- 	  This adds support for led triggers provided my mac80211.
-@@ -86,7 +87,8 @@ config RT2500PCI_RFKILL
- 
- config RT2500PCI_LEDS
- 	bool "RT2500 leds support"
--	depends on RT2500PCI && LEDS_CLASS
-+	depends on RT2500PCI
-+	select LEDS_CLASS
- 	select RT2X00_LIB_LEDS
- 	---help---
- 	  This adds support for led triggers provided my mac80211.
-@@ -114,7 +116,8 @@ config RT61PCI_RFKILL
- 
- config RT61PCI_LEDS
- 	bool "RT61 leds support"
--	depends on RT61PCI && LEDS_CLASS
-+	depends on RT61PCI
-+	select LEDS_CLASS
- 	select RT2X00_LIB_LEDS
- 	---help---
- 	  This adds support for led triggers provided my mac80211.
-@@ -130,7 +133,8 @@ config RT2500USB
- 
- config RT2500USB_LEDS
- 	bool "RT2500 leds support"
--	depends on RT2500USB && LEDS_CLASS
-+	depends on RT2500USB
-+	select LEDS_CLASS
- 	select RT2X00_LIB_LEDS
- 	---help---
- 	  This adds support for led triggers provided my mac80211.
-@@ -148,7 +152,8 @@ config RT73USB
- 
- config RT73USB_LEDS
- 	bool "RT73 leds support"
--	depends on RT73USB && LEDS_CLASS
-+	depends on RT73USB
-+	select LEDS_CLASS
- 	select RT2X00_LIB_LEDS
- 	---help---
- 	  This adds support for led triggers provided my mac80211.
+Thanks, Jiri.
