@@ -1,54 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933703AbYDYTNP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933844AbYDYTNg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933703AbYDYTNP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Apr 2008 15:13:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933855AbYDYTLW
+	id S933844AbYDYTNg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Apr 2008 15:13:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934029AbYDYTMu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Apr 2008 15:11:22 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:39461 "EHLO
+	Fri, 25 Apr 2008 15:12:50 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:39518 "EHLO
 	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765218AbYDYTLV (ORCPT
+	with ESMTP id S933593AbYDYTMt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Apr 2008 15:11:21 -0400
-Message-ID: <48122CB0.7020003@zytor.com>
-Date: Fri, 25 Apr 2008 12:10:40 -0700
+	Fri, 25 Apr 2008 15:12:49 -0400
+Message-ID: <4812274E.9000001@zytor.com>
+Date: Fri, 25 Apr 2008 11:47:42 -0700
 From: "H. Peter Anvin" <hpa@zytor.com>
 User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-To: Matthew Wilcox <matthew@wil.cx>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Jan Engelhardt <jengelh@computergmbh.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Arch Mailing List <linux-arch@vger.kernel.org>
-Subject: Re: [PATCH 01/24] types: create <asm-generic/int-*.h>
-References: <1209078352-7593-1-git-send-email-hpa@zytor.com> <1209078352-7593-2-git-send-email-hpa@zytor.com> <1209078352-7593-3-git-send-email-hpa@zytor.com> <alpine.LNX.1.10.0804252026040.20150@fbirervta.pbzchgretzou.qr> <alpine.LFD.1.10.0804251133100.2779@woody.linux-foundation.org> <20080425185251.GL14990@parisc-linux.org>
-In-Reply-To: <20080425185251.GL14990@parisc-linux.org>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: Andi Kleen <andi@firstfloor.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Jiri Slaby <jirislaby@gmail.com>,
+       David Miller <davem@davemloft.net>, zdenek.kabelac@gmail.com,
+       rjw@sisk.pl, paulmck@linux.vnet.ibm.com, akpm@linux-foundation.org,
+       linux-ext4@vger.kernel.org, herbert@gondor.apana.org.au,
+       penberg@cs.helsinki.fi, clameter@sgi.com, linux-kernel@vger.kernel.org,
+       pageexec@freemail.hu, Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: [PATCH 1/1] x86: fix text_poke
+References: <alpine.LFD.1.10.0804250759260.2779@woody.linux-foundation.org> <20080425151931.GA25510@elte.hu> <20080425152650.GA894@elte.hu> <alpine.LFD.1.10.0804250830200.2779@woody.linux-foundation.org> <20080425154854.GC3265@one.firstfloor.org> <alpine.LFD.1.10.0804250904560.2779@woody.linux-foundation.org> <20080425161916.GD3265@one.firstfloor.org> <20080425163035.GE9503@Krystal> <481209F2.4050908@zytor.com> <20080425170929.GA16180@Krystal> <20080425183748.GB16180@Krystal>
+In-Reply-To: <20080425183748.GB16180@Krystal>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matthew Wilcox wrote:
+Mathieu Desnoyers wrote:
 > 
-> So ... given all this, why do we define s64 to be 'long' on some
-> architectures and 'long long' on others?  It seems to actively _hinder_
-> passing it to printf(), so there must be some other good reason that
-> I'm missing to not make it 'long long' everywhere.
+> Thinking about it, there could be a way to insure limited ZF and %al
+> liveliness: adding an epilogue to the expected instruction sequence
+> formed by an asm statement which clobbers the flags (flags are clobbered
+> in any asm statement on x86) and clobbers %al.
+> 
+> From that point, we just have to find a specific signature that gcc
+> could not imitate to put in this asm statement, so we can detect if
+> other instructions have been placed in the middle of our sequence by
+> gcc. Actually, I think the best thing to do with this asm statement is
+> to put the instruction pointer in a special section, so we know that
+> this code location marks the end of ZF and %al liveliness. There would
+> be therefore no added code, just asm constraints.
+> 
+> This epilogue should then be used on both branches of the condition,
+> like this :
+> 
+> if (unlikely(imv_cond(var))) {
+>   imv_cond_end();
+>   ...
+> } else {
+>   imv_cond_end();
+>    ...
+> }
 > 
 
-Well, compatibility with userspace is probably one aspect of that. 
-x86-64 is the odd man out there, it defines __s64 as "long long" even 
-for userspace, even though int64_t from <stdint.h> is "long".  This, 
-IMO, is the Wrong Thing, but it's a separate set of changes.
+[...]
 
-The right thing to do is probably to always use "long long" in the 
-kernel, while defining __s64 et al as "long" on 64-bit platforms when 
-not under __KERNEL__.
+> 
+> Does it make sense ?
+> 
 
-Again, this is a separate set of changes from this patchset, which is 
-just a code transformation.
+I don't think so.  You're making way too many assumptions about the code 
+generated by gcc.
+
+This kind of stuff absolutely can be done, *BUT* it requires the 
+cooperation of the compiler.  The right way to do this is to negotiate a 
+set of appropriate builtins with the gcc people, and use them.  This 
+means this optimization will only work when compiled with the new gcc, 
+so there is a substantial lag, but it's the only sane way to do this 
+kind of stuff.
 
 	-hpa
-
