@@ -1,66 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758962AbYDZB4h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760751AbYDZCCc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758962AbYDZB4h (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Apr 2008 21:56:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754662AbYDZB42
+	id S1760751AbYDZCCc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Apr 2008 22:02:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755962AbYDZCCX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Apr 2008 21:56:28 -0400
-Received: from queueout03-winn.ispmail.ntl.com ([81.103.221.33]:31678 "EHLO
-	queueout03-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754461AbYDZB41 (ORCPT
+	Fri, 25 Apr 2008 22:02:23 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:44709 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755944AbYDZCCW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Apr 2008 21:56:27 -0400
-Date: Sat, 26 Apr 2008 02:44:45 +0100
-From: Samuel Thibault <samuel.thibault@ens-lyon.org>
-To: Michael Kerrisk <mtk.manpages@gmail.com>
-Cc: Michael Kerrisk <mtk.manpages@googlemail.com>,
-       Andi Kleen <andi@firstfloor.org>, David Miller <davem@davemloft.net>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH,TRIVIAL] AF_UNIX, accept() and addrlen
-Message-ID: <20080426014445.GD4792@implementation>
-Mail-Followup-To: Samuel Thibault <samuel.thibault@ens-lyon.org>,
-	Michael Kerrisk <mtk.manpages@gmail.com>,
-	Michael Kerrisk <mtk.manpages@googlemail.com>,
-	Andi Kleen <andi@firstfloor.org>,
-	David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org
-References: <20080308022321.GC5853@implementation> <20080323.215641.192753003.davem@davemloft.net> <20080324104330.GF4434@implementation.uk.xensource.com> <87abko734d.fsf@basil.nowhere.org> <20080324121719.GJ4434@implementation.uk.xensource.com> <20080324122700.GK4434@implementation.uk.xensource.com> <517f3f820803302100sdd50d71m4a990993f45e746c@mail.gmail.com> <4808D1C5.8050304@gmail.com> <20080424001656.GM4825@implementation> <517f3f820804240131v3466713bi70d0eb0fb1f5cd8d@mail.gmail.com>
+	Fri, 25 Apr 2008 22:02:22 -0400
+Date: Sat, 26 Apr 2008 03:02:21 +0100
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: [git pull] VFS patches
+Message-ID: <20080426020221.GF5882@ZenIV.linux.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <517f3f820804240131v3466713bi70d0eb0fb1f5cd8d@mail.gmail.com>
-User-Agent: Mutt/1.5.12-2006-07-14
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michael Kerrisk, le Thu 24 Apr 2008 10:31:15 +0200, a écrit :
-> >  > and I see that in net/unix/af_unix.c::unix_getname() there is:
-> >  >
-> >
-> > >                 *uaddr_len = sizeof(short);
-> >
-> >  I'd say that code should be fixed into using sa_family_t.
-> 
-> Is there a patch for this?
+	Tonight's pile: getting ->umount_begin() back to sanity, race fixes
+around execve(), general cleanups.  Please, pull from
 
-Here it is
+git://git.kernel.org/pub/scm/linux/kernel/git/viro/vfs-2.6.git/ for-linus
 
+Shortlog:
 
+Al Viro (5):
+      restore sane ->umount_begin() API
+      close race in unshare_files()
+      sanitize handling of shared descriptor tables in failing execve()
+      sanitize unshare_files/reset_files_struct
+      sanitize locate_fd()
 
-AF_UNIX: make unix_getname use sizeof(sunaddr->sun_family) instead of
-sizeof(short).
+Igor Mammedov (1):
+      cifs: timeout dfs automounts +little fix.
 
-Signed-off-by: Samuel Thibault <samuel.thibault@ens-lyon.org>
+Diffstat:
 
---- linux/net/unix/af_unix.c.orig	2008-04-26 02:41:45.000000000 +0100
-+++ linux/net/unix/af_unix.c	2008-04-26 02:42:07.000000000 +0100
-@@ -1256,7 +1256,7 @@ static int unix_getname(struct socket *s
- 	if (!u->addr) {
- 		sunaddr->sun_family = AF_UNIX;
- 		sunaddr->sun_path[0] = 0;
--		*uaddr_len = sizeof(short);
-+		*uaddr_len = sizeof(sunaddr->sun_family);
- 	} else {
- 		struct unix_address *addr = u->addr;
- 
+ fs/9p/vfs_super.c      |    7 ++---
+ fs/binfmt_elf.c        |   23 +------------------
+ fs/binfmt_misc.c       |   18 +--------------
+ fs/binfmt_som.c        |   10 --------
+ fs/cifs/cifs_dfs_ref.c |   29 +++++++++++++++++------
+ fs/cifs/cifsfs.c       |   10 ++-----
+ fs/cifs/cifsproto.h    |    8 +-----
+ fs/exec.c              |   28 ++++++++++-------------
+ fs/fcntl.c             |   40 +++++++++++---------------------
+ fs/fuse/inode.c        |    5 +--
+ fs/namespace.c         |    9 ++++---
+ fs/nfs/super.c         |    8 ++----
+ include/linux/file.h   |    3 +-
+ include/linux/fs.h     |    5 +---
+ kernel/exit.c          |    6 +---
+ kernel/fork.c          |   58 +++++++++++++++++++----------------------------
+ 16 files changed, 95 insertions(+), 172 deletions(-)
+
