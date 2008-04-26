@@ -1,91 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759728AbYDZQRz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758704AbYDZQVO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759728AbYDZQRz (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Apr 2008 12:17:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755523AbYDZQRe
+	id S1758704AbYDZQVO (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Apr 2008 12:21:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753936AbYDZQU7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Apr 2008 12:17:34 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:33335 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755017AbYDZQRc (ORCPT
+	Sat, 26 Apr 2008 12:20:59 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:52019 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753410AbYDZQU6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Apr 2008 12:17:32 -0400
-Date: Sat, 26 Apr 2008 09:16:52 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Matt LaPlante <kernel1@cyberdogtech.com>
-Cc: linux-kernel@vger.kernel.org, trivial@kernel.org
-Subject: Re: [PATCH] 2.6.25-git7 - Kconfig Cleanup
-Message-Id: <20080426091652.19503700.randy.dunlap@oracle.com>
-In-Reply-To: <20080426011733.04dedb05.kernel1@cyberdogtech.com>
-References: <20080425232848.b4200d21.kernel1@cyberdogtech.com>
-	<20080425215037.0b7cead1.randy.dunlap@oracle.com>
-	<20080426011733.04dedb05.kernel1@cyberdogtech.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+	Sat, 26 Apr 2008 12:20:58 -0400
+Date: Sat, 26 Apr 2008 09:19:30 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Matt Helsley <matthltc@us.ibm.com>
+Cc: linux-mm <linux-mm@kvack.org>, LKML <linux-kernel@vger.kernel.org>,
+       Oleg Nesterov <oleg@tv-sign.ru>, David Howells <dhowells@redhat.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Christoph Hellwig <chellwig@de.ibm.com>,
+       Al Viro <viro@zeniv.linux.org.uk>, Hugh Dickins <hugh@veritas.com>
+Subject: Re: [PATCH] procfs task exe symlink
+Message-Id: <20080426091930.ffe4e6a8.akpm@linux-foundation.org>
+In-Reply-To: <1202348669.9062.271.camel@localhost.localdomain>
+References: <1202348669.9062.271.camel@localhost.localdomain>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 26 Apr 2008 01:17:33 -0500 Matt LaPlante wrote:
+On Wed, 06 Feb 2008 17:44:29 -0800 Matt Helsley <matthltc@us.ibm.com> wrote:
 
-> On Fri, 25 Apr 2008 21:50:37 -0700
-> Randy Dunlap <randy.dunlap@oracle.com> wrote:
+> The kernel implements readlink of /proc/pid/exe by getting the file from the
+> first executable VMA. Then the path to the file is reconstructed and reported as
+> the result. 
 > 
-> > On Fri, 25 Apr 2008 23:28:48 -0500 Matt LaPlante wrote:
-> > 
-> > > Fix misc small typos/grammar in Kconfigs for 2.6.25-git7.
-> > > 
-> > > Signed-off-by: Matt LaPlante <kernel1@cyberdogtech.com>
-> > > --
-> > > 
-> > > diff -ru a/arch/cris/arch-v32/Kconfig b/arch/cris/arch-v32/Kconfig
-> > > --- a/arch/cris/arch-v32/Kconfig	2008-04-16 21:49:44.000000000 -0500
-> > > +++ b/arch/cris/arch-v32/Kconfig	2008-04-25 22:13:14.000000000 -0500
-> > > @@ -27,8 +27,8 @@
-> > >  	bool "Use one LED group"
-> > >  	help
-> > >  	  Select this if you want one Ethernet LED group. This LED group
-> > > -	  can be used for one or more Ethernet interfaces. However, it is
-> > > -	  recomended that each Ethernet interface use a dedicated LED group.
-> > > +	  can be used for one or more Ethernet interfaces, however it is
-> > 
-> > That comma creates a run-on sentence.  Period was better.
+> Because of the VMA walk the code is slightly different on nommu systems. This
+> patch avoids separate /proc/pid/exe code on nommu systems. Instead of walking
+> the VMAs to find the first executable file-backed VMA we store a reference to
+> the exec'd file in the mm_struct.
 > 
-> My problem is the second sentence starting with "however."  Although it's not technically breaking any rules, writing style guides generally advise against beginning sentences with it... and on a more basic level, I really dislike the way it reads in this case.
-
-I didn't have a problem with that.
-
-> May I suggest one of:
+> That reference would prevent the filesystem holding the executable file from
+> being unmounted even after unmapping the VMAs. So we track the number of 
+> VM_EXECUTABLE VMAs and drop the new reference when the last one is unmapped.
+> This avoids pinning the mounted filesystem.
 > 
-> - This LED group can be used for one or more Ethernet interfaces, however it is recommended that each interface use a dedicated LED group. 
+> Andrew, these are the updates I promised. Please consider this patch for
+> inclusion in -mm.
+> 
 
-Bad sentence grammar.
-
-> - This LED group can be used for one or more Ethernet interfaces.  It is still recommended that each interface use a dedicated LED group, however.
-
-Inverting the order to put the "however" at the end doesn't help IMO.
-
-> - This LED group can be used for one or more Ethernet interfaces. (But it is recommended that each interface use a dedicated LED group.)
-
-- This LED group can be used for one or more Ethernet interfaces, but it is recommended that each interface use a dedicated LED group.
-
-?
-
-> > 
-> > Other than that, looks good.  Thanks.
-> > 
-> > > +	  recommended that each Ethernet interface use a dedicated LED group.
-> > >  
-> > >  config	ETRAX_NBR_LED_GRP_TWO
-> > >  	bool "Use two LED groups"
+A hitherto-unsuspected patch has been instasnuck into mainline:
 
 
----
-~Randy
+commit 3b1253880b7a9e6db54b943b2d40bcf2202f58ab
+Author: Al Viro <viro@zeniv.linux.org.uk>
+Date:   Tue Apr 22 05:31:30 2008 -0400
+
+    [PATCH] sanitize unshare_files/reset_files_struct
+    
+
+
+which presented me with this:
+
+***************
+*** 963,968 ****
+  	retval = unshare_files();
+  	if (retval)
+  		goto out;
+  	/*
+  	 * Release all of the old mmap stuff
+  	 */
+--- 963,971 ----
+  	retval = unshare_files();
+  	if (retval)
+  		goto out;
++ 
++ 	set_mm_exe_file(bprm->mm, bprm->file);
++ 
+  	/*
+  	 * Release all of the old mmap stuff
+  	 */
+
+
+Which I fixed by simply doing:
+
+--- a/fs/exec.c~procfs-task-exe-symlink
++++ a/fs/exec.c
+@@ -954,6 +954,8 @@ int flush_old_exec(struct linux_binprm *
+ 	if (retval)
+ 		goto out;
+ 
++	set_mm_exe_file(bprm->mm, bprm->file);
++
+ 	/*
+ 	 * Release all of the old mmap stuff
+ 	 */
+
+However I'd ask that you conform that this is OK.  If set_mm_exe_file() is
+independent of unshare_files() then we're OK.  If however there is some
+ordering dependency then we'll need to confirm that the present ordering of the
+unshare_files() and set_mm_exe_file() is correct.
+
+Thanks.
+
+
