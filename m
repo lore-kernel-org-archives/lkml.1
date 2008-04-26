@@ -1,47 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758473AbYDZPoM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758774AbYDZPpX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758473AbYDZPoM (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Apr 2008 11:44:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754109AbYDZPn4
+	id S1758774AbYDZPpX (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Apr 2008 11:45:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753467AbYDZPpL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Apr 2008 11:43:56 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:55021 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752914AbYDZPnz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Apr 2008 11:43:55 -0400
-Date: Sat, 26 Apr 2008 17:43:39 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: Al Viro <viro@ZenIV.linux.org.uk>,
+	Sat, 26 Apr 2008 11:45:11 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:42879 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753773AbYDZPpK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 Apr 2008 11:45:10 -0400
+Date: Sat, 26 Apr 2008 08:44:20 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Harvey Harrison <harvey.harrison@gmail.com>,
+       Mauro Carvalho Chehab <mchehab@infradead.org>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [git pull] VFS patches
-Message-ID: <20080426154339.GA8268@elte.hu>
-References: <20080426020221.GF5882@ZenIV.linux.org.uk> <20080426110139.GA23867@elte.hu> <20080426133512.GP14990@parisc-linux.org> <20080426134443.GA28860@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080426134443.GA28860@elte.hu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: If you want me to quit I will quit
+Message-Id: <20080426084420.8e61c379.akpm@linux-foundation.org>
+In-Reply-To: <20080426152341.GI2252@cs181133002.pp.htv.fi>
+References: <1209190455.14173.13.camel@brick>
+	<20080426110044.GB2252@cs181133002.pp.htv.fi>
+	<20080426075132.b0fdbe13.akpm@linux-foundation.org>
+	<20080426152341.GI2252@cs181133002.pp.htv.fi>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, 26 Apr 2008 18:23:41 +0300 Adrian Bunk <bunk@kernel.org> wrote:
 
-* Ingo Molnar <mingo@elte.hu> wrote:
-
-> > Did you have http://lkml.org/lkml/2008/4/26/1 applied?
+> On Sat, Apr 26, 2008 at 07:51:32AM -0700, Andrew Morton wrote:
+> > On Sat, 26 Apr 2008 14:00:44 +0300 Adrian Bunk <bunk@kernel.org> wrote:
+> > 
+> > > Why do other people get over 100 checkpatch fixes into the tree at once 
+> > > or Linus applies patches directly bypassing the maintainers (like the 
+> > > one you sent just before [3], which I've also already sent before [4]) 
+> > > but my patches bitrot forever?
+> > 
+> > If I am not cc'ed on a patch and have to resort to plucking it off the
+> > mailing list it ends up being significantly more work and more error-prone
+> > for me to process it.
+> > 
+> > I used to merge your patches but then you chose to stop ccing me on them so
+> > I stopped applying them.  The increased hassle just isn't worth it for some
+> > random make-foo-static patch.  I do try to keep an eye out for more
+> > significant changes but hey, stuff happens.
+> > 
+> > You chose to disrupt the workflow and now you're here complaining and blaming
+> > others for the consequences of your own action.
 > 
-> not yet - will try that. (but i suspect it will fix it)
+> 
+> Why didn't you tell me an explicit Cc is important for you?
 
-yep, that did the trick - thanks.
+Don't know, really.  Something in me resiles from going and doing things
+which increase the patch volume, perhaps.
 
-	Ingo
+> I'll resend my pending batch with a Cc to you.
+
+OK.
+
+Many of your make-static-foo-etc patches are in fact fixes against
+recently-merged changes, I think.  It's better to get those fixes folded
+into the errant patch before things go into mainline: we get one correct
+commit in the permanent record rather than one dodgy commit followed by a
+later oh-let's-fix-that-up commit.
+
+So I'd encourage you to try to catch these things in -mm or linux-next and,
+if poss (and I know it's a bit of work), identify the offending commit.
+
+git-tree owners might need, umm, some encouragement here.  It's much easier
+for them to slap the oh-let's-fix-that-up commit at the tail of their
+queue, which leaves us with the straggly commit record.
