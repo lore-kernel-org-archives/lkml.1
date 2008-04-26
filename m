@@ -1,71 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759146AbYDZRfp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760795AbYDZRg3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759146AbYDZRfp (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Apr 2008 13:35:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751122AbYDZRfh
+	id S1760795AbYDZRg3 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Apr 2008 13:36:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751658AbYDZRgW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Apr 2008 13:35:37 -0400
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:60888 "EHLO smtp6.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751501AbYDZRfh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Apr 2008 13:35:37 -0400
-Date: Sat, 26 Apr 2008 20:35:13 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Sam Ravnborg <sam@ravnborg.org>,
+	Sat, 26 Apr 2008 13:36:22 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:41714 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751122AbYDZRgV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 Apr 2008 13:36:21 -0400
+Date: Sat, 26 Apr 2008 10:35:59 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Adrian Bunk <bunk@kernel.org>
+cc: Andrew Morton <akpm@linux-foundation.org>,
        Harvey Harrison <harvey.harrison@gmail.com>,
        Mauro Carvalho Chehab <mchehab@infradead.org>,
        LKML <linux-kernel@vger.kernel.org>
 Subject: Re: If you want me to quit I will quit
-Message-ID: <20080426173513.GQ2252@cs181133002.pp.htv.fi>
-References: <1209190455.14173.13.camel@brick> <20080426110044.GB2252@cs181133002.pp.htv.fi> <20080426112717.GA23248@uranus.ravnborg.org> <20080426144404.GG2252@cs181133002.pp.htv.fi> <alpine.LFD.1.10.0804260951190.2813@woody.linux-foundation.org> <20080426170950.GL2252@cs181133002.pp.htv.fi> <alpine.LFD.1.10.0804261016050.2813@woody.linux-foundation.org>
+In-Reply-To: <20080426172748.GP2252@cs181133002.pp.htv.fi>
+Message-ID: <alpine.LFD.1.10.0804261032150.2813@woody.linux-foundation.org>
+References: <1209190455.14173.13.camel@brick> <20080426110044.GB2252@cs181133002.pp.htv.fi> <20080426075132.b0fdbe13.akpm@linux-foundation.org> <20080426152341.GI2252@cs181133002.pp.htv.fi> <20080426084420.8e61c379.akpm@linux-foundation.org>
+ <20080426171604.GN2252@cs181133002.pp.htv.fi> <20080426102024.4c65624d.akpm@linux-foundation.org> <20080426172748.GP2252@cs181133002.pp.htv.fi>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.10.0804261016050.2813@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Apr 26, 2008 at 10:21:33AM -0700, Linus Torvalds wrote:
-> 
-> 
-> On Sat, 26 Apr 2008, Adrian Bunk wrote:
+
+
+On Sat, 26 Apr 2008, Adrian Bunk wrote:
+
+> On Sat, Apr 26, 2008 at 10:20:24AM -0700, Andrew Morton wrote:
 > > 
-> > The patch for the x86 userspace header breakage last weekend was Cc'ed 
-> > to you.
+> > I expect that means "don't alter stuff after you've sent the pull request".
+> > That'd be fairly dumb.
+> > 
+> > But during the two-month -rcX timeframe the patches in the git and quilt
+> > trees get altered, dropped, reordered regularly.  Some of the git trees
+> > don't really exist, I believe - their owners assemble them from a
+> > quilt-based master tree for external sharing only.
 > 
-> Yes, and I couldn't care less - it wasn't critical in any way (nobody 
-> should be using kernel headers directly in user space anyway, so the only 
-> people who could _possibly_ care were the people who build glibc releases 
-> etc).
-> 
-> IOW, it wasn't a critical bug-fix that needed to be pushed out 
-> aggressively.
-> 
-> Which means that I totally ignore a patch when I see that there are people 
-> who actually maintain that area (especially if I know they are responsible 
-> maintainers) that are also cc'd and that even reply to it.
->...
+> As far as I understand it, changes in Daves tree would cause problems 
+> for people like Jeff Garzik and John Linville who themselves base their 
+> work on Daves tree during the two-month -rcX timeframe.
 
-I'm not yet getting your definition of a critical bug-fix.
+Yes. It really depends on how people use those trees.
 
-The patch of Harvey you already applied was a build fix in a well 
-maintained area (Mauro would have sent you my patch today).
+For trees that are *only* used for basically throw-away single-use testing 
+(ie -mm and -next, both of which will always re-build the whole tree each 
+time), changing a published tree doesn't matter at all, or matters very 
+little.
 
-Do you consider all patches that fix build errors as critical?
-If yes, only for x86 or for all architectures?
+But once you get real people, rather than automation, that actually want 
+to do development on top of a git tree, then rebuilding that tree is 
+really really annoying for those users. 
 
-> 			Linus
+So the networking tree, where you have other maintainers that are also git 
+users, really shouldn't be rebuilt, because that messes with developers. 
 
-cu
-Adrian
+Many other git trees are really more of a "private development trees that 
+are exposed to -mm and -next to get some wider testing".
 
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+				Linus
