@@ -1,126 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754202AbYDZJ6U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755309AbYDZJ7i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754202AbYDZJ6U (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Apr 2008 05:58:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751282AbYDZJ6M
+	id S1755309AbYDZJ7i (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Apr 2008 05:59:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751499AbYDZJ7b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Apr 2008 05:58:12 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:47417 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750977AbYDZJ6L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Apr 2008 05:58:11 -0400
-Date: Sat, 26 Apr 2008 11:57:57 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [git pull] x86 PAT changes
-Message-ID: <20080426095757.GA15474@elte.hu>
-References: <20080424225625.GB8717@elte.hu> <alpine.LFD.1.10.0804251351511.2779@woody.linux-foundation.org>
+	Sat, 26 Apr 2008 05:59:31 -0400
+Received: from nf-out-0910.google.com ([64.233.182.191]:62841 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751501AbYDZJ7a (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 Apr 2008 05:59:30 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:to:cc:subject:message-id:reply-to:mime-version:content-type:content-disposition:user-agent:from;
+        b=mQSsHIoddR6zxE0ehgFR/8yVChfRTYoOUpEuixm/Kc6JnYKkJtyMDoiSxNYi+jxr9d8UUO+5OsVhJQBXxJhaq5pwz+xF6iGV9dCnr3FBeIq3yc2Aq249bZu97CCxWndZ+q1kVu0h+DhA+Lj/ZVNnnI8tk/r+VcpkSMsXT/OpF4I=
+Date: Sat, 26 Apr 2008 11:59:24 +0200
+To: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       penberg@cs.helsinki.fi, tglx@linutronix.de, hpa@zytor.com
+Subject: Re: [git pull] kmemcheck
+Message-ID: <20080426095924.GA25510@damson.getinternet.no>
+Reply-To: 20080425230934.c54a07a0.akpm@linux-foundation.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.10.0804251351511.2779@woody.linux-foundation.org>
 User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+From: Vegard Nossum <vegard.nossum@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 4/26/08, Andrew Morton <akpm@linux-foundation.org> wrote:
+> Can we have a MAINTAINERS update please?
+>
 
-* Linus Torvalds <torvalds@linux-foundation.org> wrote:
+I guess I should volunteer for that position.
 
-> Also, it causes this message for me on one of my machines:
-> 
-> 	EXT3-fs: mounted filesystem with ordered data mode.
-> 	Overlap at 0xe0300000-0xe0400000
-> 	Overlap at 0xe0300000-0xe0400000
-> 	Overlap at 0xe0300000-0xe0400000
-> 	Overlap at 0xe0300000-0xe0400000
-> 	Overlap at 0xe0300000-0xe0400000
-> 	Overlap at 0xe0300000-0xe0400000
-> 	mtrr: no more MTRRs available
-> 	Overlap at 0xd0000000-0xe0000000
-> 	Overlap at 0xe0300000-0xe0400000
-> 	Overlap at 0xe0300000-0xe0380000
-> 	EXT3 FS on dm-0, internal journal
-> 	...
-> 	eth0: no IPv6 routers present
-> 	Overlap at 0xd0000000-0xe0000000
-> 	Overlap at 0xe0300000-0xe0400000
-> 	Overlap at 0xe0300000-0xe0380000
-> 	Overlap at 0xd0000000-0xe0000000
-> 	Overlap at 0xe0300000-0xe0400000
-> 	Overlap at 0xe0300000-0xe0380000
-> 	Overlap at 0xd0000000-0xe0000000
-> 	Overlap at 0xe0300000-0xe0400000
-> 	Overlap at 0xe0300000-0xe0380000
-> 	Overlap at 0xd0000000-0xe0000000
-> 	Overlap at 0xe0300000-0xe0400000
-> 	Overlap at 0xe0300000-0xe0380000
-> 	Overlap at 0xd0000000-0xe0000000
-> 	Overlap at 0xe0300000-0xe0400000
-> 	Overlap at 0xe0300000-0xe0380000
-> 	Overlap at 0xe0300000-0xe0400000
-> 	Overlap at 0xe0300000-0xe0400000
-> 	Overlap at 0xe0300000-0xe0400000
-> 	Overlap at 0xe0300000-0xe0400000
-> 	Overlap at 0xe0300000-0xe0400000
-> 	Overlap at 0xe0300000-0xe0400000
-> 	Overlap at 0xd0000000-0xd0020000
-> 	mtrr: no more MTRRs available
-> 	Overlap at 0xd0000000-0xe0000000
-> 	Overlap at 0xe0300000-0xe0400000
-> 	Overlap at 0xe0300000-0xe0380000
-> 
-> which is a bit annoying. Forgotten debug printk, perhaps?
+Like this?
 
-yeah - i already toned it down to KERN_INFO once in commit 28eb559b5 - 
-but it should be pr_debug() instead. The idea in pat.c is to only print 
-out if it's a material condition that the user should know about. I've 
-queued up the patch below.
 
-	Ingo
+>From ab5fe5ca22a9b3243fd711482ad6e19f8c09c223 Mon Sep 17 00:00:00 2001
+From: Vegard Nossum <vegard.nossum@gmail.com>
+Date: Sat, 26 Apr 2008 11:47:07 +0200
+Subject: [PATCH] MAINTAINERS: add entry for kmemcheck
 
--------->
-Subject: x86 PAT: tone down debugging messages
-From: Ingo Molnar <mingo@elte.hu>
-Date: Sat Apr 26 11:40:31 CEST 2008
-
-Linus reported these excessive debug printouts:
-
->       Overlap at 0xe0300000-0xe0400000
->       Overlap at 0xe0300000-0xe0380000
->       Overlap at 0xe0300000-0xe0400000
->       Overlap at 0xe0300000-0xe0400000
->       Overlap at 0xe0300000-0xe0400000
->       Overlap at 0xe0300000-0xe0400000
->       Overlap at 0xe0300000-0xe0400000
-
-turn that into a pr_debug().
-
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Vegard Nossum <vegard.nossum@gmail.com>
 ---
- arch/x86/mm/pat.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ MAINTAINERS |    5 +++++
+ 1 files changed, 5 insertions(+), 0 deletions(-)
 
-Index: linux-x86.q/arch/x86/mm/pat.c
-===================================================================
---- linux-x86.q.orig/arch/x86/mm/pat.c
-+++ linux-x86.q/arch/x86/mm/pat.c
-@@ -334,7 +334,7 @@ int reserve_memtype(u64 start, u64 end, 
- 				break;
- 			}
+diff --git a/MAINTAINERS b/MAINTAINERS
+index e467758..6fbed2c 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -2319,6 +2319,11 @@ L:	linux-kernel@vger.kernel.org
+ L:	kexec@lists.infradead.org
+ S:	Maintained
  
--			printk("Overlap at 0x%Lx-0x%Lx\n",
-+			pr_debug("Overlap at 0x%Lx-0x%Lx\n",
- 			       saved_ptr->start, saved_ptr->end);
- 			/* No conflict. Go ahead and add this new entry */
- 			list_add(&new_entry->nd, saved_ptr->nd.prev);
++KMEMCHECK
++P:	Vegard Nossum
++M:	vegardno@ifi.uio.no
++S:	Maintained
++
+ KPROBES
+ P:	Ananth N Mavinakayanahalli
+ M:	ananth@in.ibm.com
+-- 
+1.5.4.1
+
