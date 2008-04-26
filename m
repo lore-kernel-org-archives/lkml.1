@@ -1,80 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756204AbYDZLbS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756042AbYDZLi6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756204AbYDZLbS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Apr 2008 07:31:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752149AbYDZLbF
+	id S1756042AbYDZLi6 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Apr 2008 07:38:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752758AbYDZLir
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Apr 2008 07:31:05 -0400
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:47580 "EHLO smtp6.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751553AbYDZLbE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Apr 2008 07:31:04 -0400
-Date: Sat, 26 Apr 2008 14:30:40 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Cc: kernel list <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org,
-       Ingo Molnar <mingo@elte.hu>, apw@shadowen.org,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Al Viro <viro@zeniv.linux.org.uk>
-Subject: Re: [BUG] 2.6.25-git8 Kernel Bug while bootup on ppc and x86
-Message-ID: <20080426113040.GC2252@cs181133002.pp.htv.fi>
-References: <48131052.2080102@linux.vnet.ibm.com>
+	Sat, 26 Apr 2008 07:38:47 -0400
+Received: from fg-out-1718.google.com ([72.14.220.159]:33179 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752742AbYDZLir (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 Apr 2008 07:38:47 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:organization:user-agent:mime-version:to:cc:subject:content-type:content-transfer-encoding;
+        b=SLQ5qtHq0YCr475MlAhsEADgUek2hHiXzTe+Au+rIcmhor2tdd95F6pdbw9SG00wla3KyT2f9NrcijQjpLjDdJMkFsZnUbrrCu4Zz/oVIsLF4ozZoxxZ2hZtWaxWrVQJLiezUGkRqRSBgIGC3yw45Yw7Y6jmjT8SOL0XiqJAuuo=
+Message-ID: <48131440.8090609@gmail.com>
+Date: Sat, 26 Apr 2008 15:38:40 +0400
+From: Dmitri Vorobiev <dmitri.vorobiev@gmail.com>
+Organization: DmVo Home
+User-Agent: Thunderbird 1.5.0.14ubu (X11/20080306)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <48131052.2080102@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: Linux-kernel <linux-kernel@vger.kernel.org>
+CC: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>, thomas@winischhofer.net
+Subject: [REGRESSEION] x86: allyesconfig fails with 'debug' symbol
+Content-Type: text/plain; charset=KOI8-R
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Apr 26, 2008 at 04:51:54PM +0530, Kamalesh Babulal wrote:
-> While booting the 2.6.25-git8 kernel on the ppc and x86_64 machine, kernel
-> bug is hit. This was reported in the next-20080423 kernel 
-> http://lkml.org/lkml/2008/4/23/206.
-> 
-> Call trace of x86_64 machine
-> 
-> BUG: unable to handle kernel paging request at 00000000ffffffff
-> IP: [<ffffffff802359e5>] put_files_struct+0x25/0x110
-> PGD 0 
-> Oops: 0002 [333] SMP 
-> CPU 3 
-> Modules linked in:
-> Pid: 1391, comm: khelper Tainted: G      D  2.6.25-git8-autotest #1
-> RIP: 0010:[<ffffffff802359e5>]  [<ffffffff802359e5>] put_files_struct+0x25/0x110
-> RSP: 0000:ffff81090d06bdb0  EFLAGS: 00010282
-> RAX: 0000000000000101 RBX: fffffffffffffffe RCX: ffff8100010260e0
-> RDX: 0000000000000007 RSI: 0000000000000001 RDI: 00000000ffffffff
-> RBP: 00000000fffffffe R08: 2222222222222267 R09: 2222222222222222
-> R10: 0000000000000010 R11: 2222222222222222 R12: 00000000ffffffff
-> R13: ffff81032d2e9000 R14: ffff81090e74b000 R15: ffff81061e4cbce0
-> FS:  0000000000000000(0000) GS:ffff81032e4ae940(0000) knlGS:0000000000000000
-> CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
-> CR2: 00000000ffffffff CR3: 0000000000201000 CR4: 00000000000006e0
-> DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-> DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-> Process khelper (pid: 1391, threadinfo ffff81090d06a000, task ffff81090d8113a0)
-> Stack:  ffff81090d8113a0 fffffffffffffffe 00000000fffffffe ffff81032e556e00
->  ffff81032d2e9000 ffff81090e74b000 ffff81061e4cbce0 ffffffff80294278
->  ffff81090d06be70 ffffffff80636bc0 ffff81090d3646c0 ffff81032d2e9000
-> Call Trace:
->  [<ffffffff80294278>] do_execve+0x108/0x230
->...
+Hi,
 
-Most likely fixed by
-  http://lkml.org/lkml/2008/4/26/1
+The last commit as of writing this regression report is
+b1721d0da266b4af8cb4419473b4ca36206ab200, and I'm using Linus tree.
 
-> Thanks & Regards,
-> Kamalesh Babulal,
+The allyesconfig build fails with the following error:
 
-cu
-Adrian
+[dmitri.vorobiev@amber linux-2.6]$ make ARCH=i386 CROSS_COMPILE=i386-linux-gnu- 
 
--- 
+[ ... skipped ... ]
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+  LD      vmlinux.o
+drivers/built-in.o: In function `SiS_EnableBridge':
+/home/dmitri.vorobiev/Projects/misc/zoo/src/linux-2.6/drivers/video/sis/init301.c:4352: multiple definition of `debug'
+arch/x86/kernel/built-in.o:/home/dmitri.vorobiev/Projects/misc/zoo/src/linux-2.6/arch/x86/kernel/entry_32.S:766: first defined here
+i386-linux-gnu-ld: Warning: size of symbol `debug' changed from 76 in arch/x86/kernel/built-in.o to 4 in drivers/built-in.o
+make: *** [vmlinux.o] Error 1
+[dmitri.vorobiev@amber linux-2.6]$
 
+Although it is obvious what causes this problem, just now I have no time
+to try to resolve this, so I decided to just report the failure.
+
+Thanks,
+Dmitri
