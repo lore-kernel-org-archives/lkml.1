@@ -1,53 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760864AbYDZSD0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760782AbYDZSGU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760864AbYDZSD0 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Apr 2008 14:03:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758288AbYDZSDR
+	id S1760782AbYDZSGU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Apr 2008 14:06:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757921AbYDZSGM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Apr 2008 14:03:17 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:41641 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755824AbYDZSDP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Apr 2008 14:03:15 -0400
-Date: Sat, 26 Apr 2008 20:03:14 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Nick Andrew <nick@nick-andrew.net>
-cc: Vegard Nossum <vegard.nossum@gmail.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Sam Ravnborg <sam@ravnborg.org>,
-       Adrian Bunk <bunk@kernel.org>, linux-kbuild@vger.kernel.org,
-       kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] headerdep: a tool for detecting inclusion cycles in
- header file
-In-Reply-To: <20080426142235.GB7051@tull.net>
-Message-ID: <alpine.LNX.1.10.0804262001400.20150@fbirervta.pbzchgretzou.qr>
-References: <20080426134554.GA20727@damson.getinternet.no> <48133537.7040800@cs.helsinki.fi> <19f34abd0804260717le1773aapec49cdb6f68e296f@mail.gmail.com> <20080426142235.GB7051@tull.net>
-User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
+	Sat, 26 Apr 2008 14:06:12 -0400
+Received: from virgo.iok.hu ([193.202.89.103]:44720 "EHLO virgo.iok.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755221AbYDZSGL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 Apr 2008 14:06:11 -0400
+X-Greylist: delayed 869 seconds by postgrey-1.27 at vger.kernel.org; Sat, 26 Apr 2008 14:06:11 EDT
+Date: Sat, 26 Apr 2008 19:51:38 +0200
+From: Miklos Vajna <vmiklos@frugalware.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Alexander van Heukelum <heukelum@mailshack.com>, jdike@addtoit.com
+Subject: Re: [git pull] generic bitops, take 2
+Message-ID: <20080426175138.GL4012@genesis.frugalware.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="/Kwy1es1GwkEJhNg"
+Content-Disposition: inline
+In-Reply-To: <20080426172222.GD17345@elte.hu>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Saturday 2008-04-26 16:22, Nick Andrew wrote:
->On Sat, Apr 26, 2008 at 04:17:15PM +0200, Vegard Nossum wrote:
->> I didn't want to get into the lands of parsing options since we would
->> need to handle gcc options and skip arguments to those, etc.
->
->?
->
->use Getopt::Std qw(getopts);
->use vars qw($opt_g);
->getopts('g');
->[...]
->if ($opt_g) {
->	graph();
->}
+--/Kwy1es1GwkEJhNg
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-Try this, at least it is known to handle pass_through, which
-is _just what we want_ for handling unknown options:
+> then it fails with:
+>
+>  mm/filemap.c: In function '__generic_file_aio_write_nolock':
+>  mm/filemap.c:1831: sorry, unimplemented: inlining failed in call to 'generic_write_checks': function body not available
+>
+> i used:
+>
+>    make ARCH=um SUBARCH=x86_64 -j64 linux
+>
+> on x86-64, gcc-4.3.0-0.13. Config is:
+>
+>    http://redhat.com/~mingo/misc/.config.um
 
-	use Getopt::Long;
-	&Getopt::Long::Configure(qw(bundling pass_through));
-	&GetOptions("g" => \$opt_g, "I" => \@include_paths);
+I just hit this bug as well:
+
+        make linux ARCH=um
+
+on i686, gcc 4.3.0, config at
+http://uml.nagafix.co.uk/kernels/kernel32-2.6.25.config
+
+Thanks.
+
+--/Kwy1es1GwkEJhNg
+Content-Type: application/pgp-signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.8 (GNU/Linux)
+
+iEYEARECAAYFAkgTa6kACgkQe81tAgORUJZTcQCeIsS34r5UHgOtZ3dvdO+NDhnu
+fH8An3G0ELWYyDObvmCLySqkUEGf5VE6
+=B5F/
+-----END PGP SIGNATURE-----
+
+--/Kwy1es1GwkEJhNg--
