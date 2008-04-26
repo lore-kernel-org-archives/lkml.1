@@ -1,51 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756161AbYDZObP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755249AbYDZOml@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756161AbYDZObP (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Apr 2008 10:31:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751474AbYDZObB
+	id S1755249AbYDZOml (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Apr 2008 10:42:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751908AbYDZOmc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Apr 2008 10:31:01 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:58278 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751308AbYDZObA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Apr 2008 10:31:00 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <48133C9B.9060204@s5r6.in-berlin.de>
-Date: Sat, 26 Apr 2008 16:30:51 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.13) Gecko/20080419 SeaMonkey/1.1.9
+	Sat, 26 Apr 2008 10:42:32 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:45372 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751845AbYDZOmb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 Apr 2008 10:42:31 -0400
+Date: Sat, 26 Apr 2008 16:42:03 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Gabriel C <nix.or.die@googlemail.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       Arjan van de Ven <arjan@infradead.org>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       Avi Kivity <avi@qumranet.com>
+Subject: Re: [git pull] x86 PAT changes
+Message-ID: <20080426144203.GA19635@elte.hu>
+References: <20080424225625.GB8717@elte.hu> <481330C6.7040109@googlemail.com>
 MIME-Version: 1.0
-To: Jan Engelhardt <jengelh@computergmbh.de>
-CC: Jason Wessel <jason.wessel@windriver.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: kgdb over ethernet?
-References: <alpine.LNX.1.10.0804251837410.20150@fbirervta.pbzchgretzou.qr> <481215B7.9020503@windriver.com>
-In-Reply-To: <481215B7.9020503@windriver.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <481330C6.7040109@googlemail.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Jan Engelhardt wrote:
->> the DocBook files for the recently-merged kgdb mention kgdboe, as does 
->> the doc on kgdb.sf.net, but I do not see kgdboe anywhere in the source. 
->> Is oe actually merged? I'm kinda short on rs232...
 
-Not what you asked for, but... perhaps you have a spare FireWire port?
->From Documentation/debugging-via-ohci1394.txt:
+* Gabriel C <nix.or.die@googlemail.com> wrote:
 
-| There is also a gdb proxy for firewire which allows to use gdb to
-| access data which can be referenced from symbols found by gdb in
-| vmlinux:
-| - ftp://ftp.suse.de/private/bk/firewire/tools/fireproxy-0.33.tar.bz2
-|
-| The latest version of this gdb proxy (fireproxy-0.34) can communicate
-| (not yet stable) with kgdb over an memory-based communication module
-| (kgdbom).
--- 
-Stefan Richter
--=====-==--- -=-- ==-=-
-http://arcgraph.de/sr/
+> Hi Ingo,
+> 
+> When using an 64bit ( didn't got time to test 32bit now ) kernel[1] 
+> with PAT enabled , kvm-intel does not work anymore.
+> 
+> When modprobing kvm-intel , kvm is saying VT extension is disable by 
+> BIOS which isn't true. When disabling PAT again ( no changes to BIOS ) 
+> kvm-intel works again here.
+> 
+> Is that an known problem ?
+
+no, that side-effect was not known. Cc:-ed more folks.
+
+> If you need more infos just let me know.
+> 
+> Gabriel
+> 
+> [1]  2.6.25-05096-gb1721d0-dirty
+>      with following patches :
+>      http://lkml.org/lkml/2008/4/26/37
+>      http://lkml.org/lkml/2008/4/26/24
+>      http://lkml.org/lkml/2008/4/25/107
+
+thanks - that should be enough for now. We'll try to reproduce these 
+problems.
+
+A blind guess: maybe it's the CONFIG_NONPROMISC_DEVMEM somehow breaks 
+Qemu. With the patch below you'd be able to disable NONPROMISC_DEVMEM 
+without disabling PAT.
+
+	Ingo
+
+diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+index 4d350b5..4aa4180 100644
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -1049,9 +1049,9 @@ config MTRR
+ 	  See <file:Documentation/mtrr.txt> for more information.
+ 
+ config X86_PAT
+-	def_bool y
++	bool
+ 	prompt "x86 PAT support"
+-	depends on MTRR && NONPROMISC_DEVMEM
++	depends on MTRR
+ 	help
+ 	  Use PAT attributes to setup page level cache control.
+ 
