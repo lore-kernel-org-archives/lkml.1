@@ -1,74 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760589AbYDZSCa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760864AbYDZSD0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760589AbYDZSCa (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Apr 2008 14:02:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757643AbYDZSCW
+	id S1760864AbYDZSD0 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Apr 2008 14:03:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758288AbYDZSDR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Apr 2008 14:02:22 -0400
-Received: from smtp118.sbc.mail.sp1.yahoo.com ([69.147.64.91]:25021 "HELO
-	smtp118.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752742AbYDZSCW (ORCPT
+	Sat, 26 Apr 2008 14:03:17 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:41641 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755824AbYDZSDP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Apr 2008 14:02:22 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=qasOmHnGErSNClLED7dN91O+F8E3YEqCOsqBSpd3R2Z3YdjnPJAWEcOfQlsVGEN0XZw9Dn6EdL7rDFmFX9u46pgqchDWsYi47SUWXq0Q1VY6HOcnUO56xSPbNYP4XGHkHuk1X37N69vG1yxEa0XQjMa796vWj/aRDlb9AfvOAB8=  ;
-X-YMail-OSG: VjoDqmEVM1n_XqA4vco4FdFJ.6DmoGX9lteqoz9DXmtfmBBY5a1aeDRzNipffwoHn193m4SCv74XXI9uw3yhUbwP7L_Lg7V6RqvfDXs__C2RVyQTE2SoIDsUNmUner7MQBs-
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Dmitry <dbaryshkov@gmail.com>
-Subject: Re: [PATCH 0/5] Clocklib: generic clocks framework
-Date: Sat, 26 Apr 2008 11:02:15 -0700
-User-Agent: KMail/1.9.6
-Cc: "Paul Walmsley" <paul@pwsan.com>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org,
-       "Haavard Skinnemoen" <haavard.skinnemoen@atmel.com>,
-       "Russell King" <rmk+lkml@arm.linux.org.uk>,
-       "Paul Mundt" <lethal@linux-sh.org>,
-       "pHilipp Zabel" <philipp.zabel@gmail.com>,
-       "Pavel Machek" <pavel@ucw.cz>, tony@atomide.com, hiroshi.DOYU@nokia.com
-References: <20080420082925.GA32739@doriath.ww600.siemens.net> <alpine.DEB.1.00.0804250221040.14755@utopia.booyaka.com> <bc64b4640804260147o70253917me32b0e35a1ce6ad8@mail.gmail.com>
-In-Reply-To: <bc64b4640804260147o70253917me32b0e35a1ce6ad8@mail.gmail.com>
+	Sat, 26 Apr 2008 14:03:15 -0400
+Date: Sat, 26 Apr 2008 20:03:14 +0200 (CEST)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Nick Andrew <nick@nick-andrew.net>
+cc: Vegard Nossum <vegard.nossum@gmail.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Sam Ravnborg <sam@ravnborg.org>,
+       Adrian Bunk <bunk@kernel.org>, linux-kbuild@vger.kernel.org,
+       kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] headerdep: a tool for detecting inclusion cycles in
+ header file
+In-Reply-To: <20080426142235.GB7051@tull.net>
+Message-ID: <alpine.LNX.1.10.0804262001400.20150@fbirervta.pbzchgretzou.qr>
+References: <20080426134554.GA20727@damson.getinternet.no> <48133537.7040800@cs.helsinki.fi> <19f34abd0804260717le1773aapec49cdb6f68e296f@mail.gmail.com> <20080426142235.GB7051@tull.net>
+User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
-Content-Disposition: inline
-Message-Id: <200804261102.16011.david-b@pacbell.net>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 26 April 2008, Dmitry wrote:
-> > I wouldn't pretend to have a comprehensive list at this point.  But from a
-> > brief look, your clk_round_rate() and clk_set_rate() implementations will
-> > not work for the present OMAP clock tree.  In OMAP, many parent clocks do
-> > not have the same rate as their children.
-> 
-> You can easily override any calculations in your clk->set_rate/clk->round_rate/
-> clk->get_rate functions.
 
-Speaking of which:  those clk_*() interfaces need to be better
-specified.  Right now they're too vague to support fully portable
-callers.
+On Saturday 2008-04-26 16:22, Nick Andrew wrote:
+>On Sat, Apr 26, 2008 at 04:17:15PM +0200, Vegard Nossum wrote:
+>> I didn't want to get into the lands of parsing options since we would
+>> need to handle gcc options and skip arguments to those, etc.
+>
+>?
+>
+>use Getopt::Std qw(getopts);
+>use vars qw($opt_g);
+>getopts('g');
+>[...]
+>if ($opt_g) {
+>	graph();
+>}
 
- - What kind of "rounding" is provided?  Using a 10 MHz target
-   rate as an example, with a 48 MHz base and a binary divider:
-     * "not-lower-than" would give 12 MHz (divide-by-4)
-     * "not-higher-than" would give 6 MHz (divide-by-8)
-     * "closest" would give 12 MHz, only 2 MHz off
-   The differences can matter, depending on what the clock drives.
+Try this, at least it is known to handle pass_through, which
+is _just what we want_ for handling unknown options:
 
-   Similarly, for DPLL based clocks (out = (in/DIV)*MUL) there
-   can be "lowest power" goals, like "use biggest DIV that
-   produces an output within <this> error bound". 
-
- - Does clk_set_rate() round, or does it fail when it can't set
-   that exact rate?  (Would an 0.05% difference matter?)
-
-This issue is orthogonal to whether clocklib merges or not (and
-if so, when) ... except that if it does merge, then the answers
-from clocklib will become the de facto answer to those questions.
-
-- Dave
+	use Getopt::Long;
+	&Getopt::Long::Configure(qw(bundling pass_through));
+	&GetOptions("g" => \$opt_g, "I" => \@include_paths);
