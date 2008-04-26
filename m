@@ -1,116 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759656AbYDZR3S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754061AbYDZRcG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759656AbYDZR3S (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Apr 2008 13:29:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753490AbYDZR3A
+	id S1754061AbYDZRcG (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Apr 2008 13:32:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751246AbYDZRb4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Apr 2008 13:29:00 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:37436 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754175AbYDZR27 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Apr 2008 13:28:59 -0400
-Date: Sat, 26 Apr 2008 19:28:43 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Alexander van Heukelum <heukelum@mailshack.com>, jdike@addtoit.com
-Subject: Re: [git pull] generic bitops, take 2
-Message-ID: <20080426172843.GA20534@elte.hu>
-References: <20080424215739.GA32378@elte.hu> <alpine.LFD.1.10.0804241510420.2779@woody.linux-foundation.org> <20080426151516.GA27894@elte.hu> <alpine.LFD.1.10.0804260955300.2813@woody.linux-foundation.org> <20080426172222.GD17345@elte.hu>
+	Sat, 26 Apr 2008 13:31:56 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:60935 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751005AbYDZRbz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 Apr 2008 13:31:55 -0400
+Date: Sat, 26 Apr 2008 10:31:36 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Adrian Bunk <bunk@kernel.org>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Harvey Harrison <harvey.harrison@gmail.com>,
+       Mauro Carvalho Chehab <mchehab@infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: If you want me to quit I will quit
+In-Reply-To: <20080426171604.GN2252@cs181133002.pp.htv.fi>
+Message-ID: <alpine.LFD.1.10.0804261024580.2813@woody.linux-foundation.org>
+References: <1209190455.14173.13.camel@brick> <20080426110044.GB2252@cs181133002.pp.htv.fi> <20080426075132.b0fdbe13.akpm@linux-foundation.org> <20080426152341.GI2252@cs181133002.pp.htv.fi> <20080426084420.8e61c379.akpm@linux-foundation.org>
+ <20080426171604.GN2252@cs181133002.pp.htv.fi>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080426172222.GD17345@elte.hu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Ingo Molnar <mingo@elte.hu> wrote:
 
-> perhaps the combination of distcc and crosscompilers doesnt work well 
-> on UML? (it works fine with other architectures)
+On Sat, 26 Apr 2008, Adrian Bunk wrote:
+> On Sat, Apr 26, 2008 at 08:44:20AM -0700, Andrew Morton wrote:
+> >...
+> > git-tree owners might need, umm, some encouragement here.  It's much easier
+> > for them to slap the oh-let's-fix-that-up commit at the tail of their
+> > queue, which leaves us with the straggly commit record.
+> 
+> As far as I understand Linus on these matters people David Miller 
+> mustn't edit older commits in their trees once their tree got pushed 
+> out.
 
-so i tried a third build method, gcc 3.4, and that built it fine but UML 
-crashed during bootup:
+I wouldn't say "mustn't", because the _one_ thing I hate is totally rigid 
+rules. 
 
- dione:~/linux/linux-x86.q> ./linux
- Core dump limits :
-         soft - 0
-         hard - NONE
- Checking that ptrace can change system call numbers...OK
- Checking syscall emulation patch for ptrace...OK
- Checking advanced syscall emulation patch for ptrace...OK
- Checking for tmpfs mount on /dev/shm...OK
- Checking PROT_EXEC mmap in /dev/shm/...OK
- Checking for the skas3 patch in the host:
-   - /proc/mm...not found: No such file or directory
-   - PTRACE_FAULTINFO...not found
-   - PTRACE_LDT...not found
- UML running in SKAS0 mode
- Segmentation fault
+What I do try to encourage is for people to think publicising their git 
+trees as "version announcements". They're obviously _development_ 
+versions, but they're still real versions, and before you publicize them 
+you should try to make sure that they make sense and are something you can 
+stand behind.
 
-(gdb) bt
-#0  0x000000006020fd92 in txInit ()
-#1  0x000000006000a4c1 in init_jfs_fs ()
-#2  0x0000000060001794 in do_initcalls ()
-#3  0x000000006000196d in do_basic_setup ()
-#4  0x0000000060001a14 in kernel_init ()
-#5  0x0000000060028427 in run_kernel_thread ()
-#6  0x000000006001d020 in new_thread_handler ()
-#7  0x0000000000000000 in ?? ()
+And once you've publicized them, you don't know who has that tree, so just 
+from a sanity and debugging standpoint, you should try to avoid mucking 
+with already-public versions. If you made a mistake, add a patch on top to 
+fix it (and announce the new state), but generally try to not "hide" the 
+fact that the state has changed.
 
-rip            0x6020fd92       0x6020fd92 <txInit+306>
+But it's not a hard rule. Sometimes simple cleanliness means that you can 
+decide to go "oops, that was *really* wrong, let's just throw that away 
+and do a whole new set of patches". But it should be something rare - not 
+normal coding practice.
 
-txInit is in JFS.
+Because if it becomes normal coding practice, now people cannot work with 
+you sanely any more (ie some random person pulls your tree for testing, 
+and then I pull it at some other time, and the tester reports a problem, 
+but now the commits he is talking about don't actually even exist in my 
+tree any more, and it's all really messy!).
 
-but at least i could build UML. (this is all with pristine -git)
+The x86 tree still does this. I absolutely detest it. Ingo claims that his 
+model is better, and I'm pretty damn sure he's wrong. But until it starts 
+causing bigger problems, I'll give him the benefit of the doubt.
 
-So i checked the patch below. And it built fine, and boo^H^Hcrashed just 
-like it did before:
-
-   - PTRACE_FAULTINFO...not found
-   - PTRACE_LDT...not found
- UML running in SKAS0 mode
- Segmentation fault
-
-so i guess this is the way to go?
-
-	Ingo
-
----------------------->
-Subject: uml: kconfig cleanup
-From: Ingo Molnar <mingo@elte.hu>
-Date: Sat Apr 26 19:10:17 CEST 2008
-
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- arch/um/Kconfig.x86_64 |    7 +++++++
- 1 file changed, 7 insertions(+)
-
-Index: linux-x86.q/arch/um/Kconfig.x86_64
-===================================================================
---- linux-x86.q.orig/arch/um/Kconfig.x86_64
-+++ linux-x86.q/arch/um/Kconfig.x86_64
-@@ -1,3 +1,10 @@
-+
-+menu "Host processor type and features"
-+
-+source "arch/x86/Kconfig.cpu"
-+
-+endmenu
-+
- config UML_X86
- 	bool
- 	default y
+				Linus
