@@ -1,199 +1,319 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765891AbYDZAHe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764430AbYDZAQJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765891AbYDZAHe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Apr 2008 20:07:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754875AbYDZAHZ
+	id S1764430AbYDZAQJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Apr 2008 20:16:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758345AbYDZAPv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Apr 2008 20:07:25 -0400
-Received: from mga09.intel.com ([134.134.136.24]:64218 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754056AbYDZAHX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Apr 2008 20:07:23 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,709,1199692800"; 
-   d="scan'208";a="274879574"
-Date: Fri, 25 Apr 2008 17:07:22 -0700
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-To: Alexey Fisher <bug-track@fisher-privat.net>
-Cc: Arjan van de Ven <arjan@linux.intel.com>,
-       Suresh Siddha <suresh.b.siddha@intel.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, bugme-daemon@bugzilla.kernel.org,
-       linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       venkatesh.pallipadi@intel.com, jbarnes@virtuousgeek.org,
-       keithp@keithp.com, airlied@gmail.com
-Subject: Re: [Bug 10328] New: [regression] performance drop for glx
-Message-ID: <20080426000722.GJ14062@linux-os.sc.intel.com>
-References: <bug-10328-27@http.bugzilla.kernel.org/> <20080325152809.e2b07251.akpm@linux-foundation.org> <20080326003912.GB3313@linux-os.sc.intel.com> <47E9D42F.5080506@linux.intel.com> <1209101723.21553.1.camel@zwerg>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1209101723.21553.1.camel@zwerg>
-User-Agent: Mutt/1.4.1i
+	Fri, 25 Apr 2008 20:15:51 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:50628 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754875AbYDZAPu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Apr 2008 20:15:50 -0400
+Message-Id: <20080426001549.627084000@polaris-admin.engr.sgi.com>
+References: <20080426001548.829332000@polaris-admin.engr.sgi.com>
+User-Agent: quilt/0.46-1
+Date: Fri, 25 Apr 2008 17:15:52 -0700
+From: Mike Travis <travis@sgi.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH 04/11] x86: remove the static 256k node_to_cpumask_map
+Content-Disposition: inline; filename=node_to_cpumask
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 25, 2008 at 07:35:23AM +0200, Alexey Fisher wrote:
-> > >> On Tue, 25 Mar 2008 15:11:15 -0700 (PDT)
-> > >> bugme-daemon@bugzilla.kernel.org wrote:
-> > >>
-> > >>> http://bugzilla.kernel.org/show_bug.cgi?id=10328
-> > >>>
-> > >>>            Summary: [regression] performance drop for glx
-> > > 
-> > > Alexey, Can you please try the appended patch?
-> > > 
-> > > Andrew, can you please push the appended patch for 2.6.25? Thanks.
-> > > ---
-> > > 
-> 
-> 
-> This issue come again with commit:
-> 
-> commit 2e5d9c857d4e6c9e7b7d8c8c86a68a7842d213d6
-> Author: venkatesh.pallipadi@intel.com <venkatesh.pallipadi@intel.com>
-> Date:   Tue Mar 18 17:00:14 2008 -0700
-> 
->     x86: PAT infrastructure patch
-> 
->     Sets up pat_init() infrastructure.
-> 
+  * Consolidate node_to_cpumask operations and remove the 256k
+    byte node_to_cpumask_map.  This is done by allocating the
+    node_to_cpumask_map array after the number of possible nodes
+    (nr_node_ids) is known.
 
-Alexey, Sorry. I missed posting a fix in the post PAT series for this issue. Can you
-please try the appended patch and Ack?
+  * Debug printouts when CONFIG_DEBUG_PER_CPU_MAPS is active have
+    been increased.  It now shows faults when calling node_to_cpumask()
+    and node_to_cpumask_ptr().
 
-copying X folks get their attention and their Ack on the patch and next steps outlined.
+For inclusion into sched-devel/latest tree.
 
-Thanks.
+Based on:
+	git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
+    +   sched-devel/latest  .../mingo/linux-2.6-sched-devel.git
+
+Signed-off-by: Mike Travis <travis@sgi.com>
 ---
+ arch/x86/kernel/setup.c    |  132 +++++++++++++++++++++++++++++++++++++++++++--
+ arch/x86/mm/numa_64.c      |    6 --
+ include/asm-x86/topology.h |   25 +++++---
+ 3 files changed, 144 insertions(+), 19 deletions(-)
 
-[patch] use UC minus for ioremap(), ioremap_nocache() and pci_mmap_page_range()
-
-Use UC_MINUS for ioremap(), ioremap_nocache() instead of strong UC.
-Once all the X drivers move to ioremap_wc(), we can go back to strong
-UC semantics for ioremap() and ioremap_nocache().
-
-To avoid attribute aliasing issues, pci_mmap_page_range() will also
-use UC_MINUS for default non write-combining mapping request.
-
-Next steps:
-	a) change all the video drivers using ioremap() or ioremap_nocache()
-	   and adding WC MTTR using mttr_add() to ioremap_wc()
-
-	b) for strict usage, we can go back to strong uc semantics
-	   for ioremap() and ioremap_nocache() after some grace period for
-	   completing step-a.
-
-	c) user level X server needs to use the appropriate method for setting
-	   up WC mapping (like using resourceX_wc sysfs file instead of
-	   adding MTRR for WC and using /dev/mem or resourceX under /sys)
-
-Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
-Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
----
-
-diff --git a/arch/x86/mm/ioremap.c b/arch/x86/mm/ioremap.c
-index 3a4baf9..c053977 100644
---- a/arch/x86/mm/ioremap.c
-+++ b/arch/x86/mm/ioremap.c
-@@ -176,11 +176,11 @@ static void __iomem *__ioremap(resource_size_t phys_addr, unsigned long size,
- 		/*
- 		 * Do not fallback to certain memory types with certain
- 		 * requested type:
--		 * - request is uncached, return cannot be write-back
--		 * - request is uncached, return cannot be write-combine
-+		 * - request is uc-, return cannot be write-back
-+		 * - request is uc-, return cannot be write-combine
- 		 * - request is write-combine, return cannot be write-back
- 		 */
--		if ((prot_val == _PAGE_CACHE_UC &&
-+		if ((prot_val == _PAGE_CACHE_UC_MINUS &&
- 		     (new_prot_val == _PAGE_CACHE_WB ||
- 		      new_prot_val == _PAGE_CACHE_WC)) ||
- 		    (prot_val == _PAGE_CACHE_WC &&
-@@ -201,6 +201,9 @@ static void __iomem *__ioremap(resource_size_t phys_addr, unsigned long size,
- 	default:
- 		prot = PAGE_KERNEL_NOCACHE;
- 		break;
-+	case _PAGE_CACHE_UC_MINUS:
-+		prot = PAGE_KERNEL_UC_MINUS;
-+		break;
- 	case _PAGE_CACHE_WC:
- 		prot = PAGE_KERNEL_WC;
- 		break;
-@@ -255,7 +258,16 @@ static void __iomem *__ioremap(resource_size_t phys_addr, unsigned long size,
-  */
- void __iomem *ioremap_nocache(resource_size_t phys_addr, unsigned long size)
- {
--	return __ioremap(phys_addr, size, _PAGE_CACHE_UC);
-+	/*
-+	 * Ideally, this should be:
-+	 * 	pat_wc_enabled ? _PAGE_CACHE_UC : _PAGE_CACHE_UC_MINUS;
-+	 *
-+	 * Till we fix all X drivers to use ioremap_wc(), we will use
-+	 * UC MINUS.
-+	 */
-+	unsigned long val = _PAGE_CACHE_UC_MINUS;
+--- linux-2.6.sched.orig/arch/x86/kernel/setup.c
++++ linux-2.6.sched/arch/x86/kernel/setup.c
+@@ -34,6 +34,16 @@ EXPORT_EARLY_PER_CPU_SYMBOL(x86_bios_cpu
+ /* map cpu index to node index */
+ DEFINE_EARLY_PER_CPU(int, x86_cpu_to_node_map, NUMA_NO_NODE);
+ EXPORT_EARLY_PER_CPU_SYMBOL(x86_cpu_to_node_map);
 +
-+	return __ioremap(phys_addr, size, val);
++/* which logical CPUs are on which nodes */
++cpumask_t *node_to_cpumask_map;
++EXPORT_SYMBOL(node_to_cpumask_map);
++
++/* setup node_to_cpumask_map */
++static void __init setup_node_to_cpumask_map(void);
++
++#else
++static inline void setup_node_to_cpumask_map(void) { }
+ #endif
+ 
+ #ifdef CONFIG_HAVE_SETUP_PER_CPU_AREA
+@@ -139,11 +149,15 @@ void __init setup_per_cpu_areas(void)
+ 	}
+ 
+ 	nr_cpu_ids = highest_cpu + 1;
+-	printk(KERN_DEBUG "NR_CPUS: %d, nr_cpu_ids: %d\n", NR_CPUS, nr_cpu_ids);
++	printk(KERN_DEBUG "NR_CPUS: %d, nr_cpu_ids: %d, nr_node_ids %d\n",
++		NR_CPUS, nr_cpu_ids, nr_node_ids);
+ 
+ 	/* Setup percpu data maps */
+ 	setup_per_cpu_maps();
+ 
++	/* Setup node to cpumask map */
++	setup_node_to_cpumask_map();
++
+ 	/* Setup cpumask_of_cpu map */
+ 	setup_cpumask_of_cpu();
  }
- EXPORT_SYMBOL(ioremap_nocache);
+@@ -151,6 +165,35 @@ void __init setup_per_cpu_areas(void)
+ #endif
  
-diff --git a/arch/x86/mm/pageattr.c b/arch/x86/mm/pageattr.c
-index c29ebd0..ad3202c 100644
---- a/arch/x86/mm/pageattr.c
-+++ b/arch/x86/mm/pageattr.c
-@@ -779,14 +779,20 @@ static inline int change_page_attr_clear(unsigned long addr, int numpages,
- 
- int _set_memory_uc(unsigned long addr, int numpages)
+ #ifdef X86_64_NUMA
++
++/*
++ * Allocate node_to_cpumask_map based on number of available nodes
++ * Requires node_possible_map to be valid.
++ *
++ * Note: node_to_cpumask() is not valid until after this is done.
++ */
++static void __init setup_node_to_cpumask_map(void)
++{
++	unsigned int node, num = 0;
++	cpumask_t *map;
++
++	/* setup nr_node_ids if not done yet */
++	if (nr_node_ids == MAX_NUMNODES) {
++		for_each_node_mask(node, node_possible_map)
++			num = node;
++		nr_node_ids = num + 1;
++	}
++
++	/* allocate the map */
++	map = alloc_bootmem_low(nr_node_ids * sizeof(cpumask_t));
++
++	Dprintk(KERN_DEBUG "Node to cpumask map at %p for %d nodes\n",
++		map, nr_node_ids);
++
++	/* node_to_cpumask() will now work */
++	node_to_cpumask_map = map;
++}
++
+ void __cpuinit numa_set_node(int cpu, int node)
  {
-+	/*
-+	 * for now UC MINUS. see comments in ioremap_nocache()
-+	 */
- 	return change_page_attr_set(addr, numpages,
--				    __pgprot(_PAGE_CACHE_UC));
-+				    __pgprot(_PAGE_CACHE_UC_MINUS));
+ 	int *cpu_to_node_map = early_per_cpu_ptr(x86_cpu_to_node_map);
+@@ -173,6 +216,8 @@ void __cpuinit numa_clear_node(int cpu)
+ 	numa_set_node(cpu, NUMA_NO_NODE);
  }
  
- int set_memory_uc(unsigned long addr, int numpages)
++#ifndef CONFIG_DEBUG_PER_CPU_MAPS
++
+ void __cpuinit numa_add_cpu(int cpu)
  {
-+	/*
-+	 * for now UC MINUS. see comments in ioremap_nocache()
-+	 */
- 	if (reserve_memtype(addr, addr + numpages * PAGE_SIZE,
--	                    _PAGE_CACHE_UC, NULL))
-+	                    _PAGE_CACHE_UC_MINUS, NULL))
- 		return -EINVAL;
+ 	cpu_set(cpu, node_to_cpumask_map[early_cpu_to_node(cpu)]);
+@@ -182,9 +227,44 @@ void __cpuinit numa_remove_cpu(int cpu)
+ {
+ 	cpu_clear(cpu, node_to_cpumask_map[cpu_to_node(cpu)]);
+ }
+-#endif /* CONFIG_NUMA */
  
- 	return _set_memory_uc(addr, numpages);
-diff --git a/arch/x86/pci/i386.c b/arch/x86/pci/i386.c
-index 94f6c73..8af0f0b 100644
---- a/arch/x86/pci/i386.c
-+++ b/arch/x86/pci/i386.c
-@@ -301,6 +301,13 @@ int pci_mmap_page_range(struct pci_dev *dev, struct vm_area_struct *vma,
- 	prot = pgprot_val(vma->vm_page_prot);
- 	if (pat_wc_enabled && write_combine)
- 		prot |= _PAGE_CACHE_WC;
-+	else if (pat_wc_enabled)
-+		/*
-+		 * ioremap() and ioremap_nocache() defaults to UC MINUS for now.
-+		 * To avoid attribute conflicts, request UC MINUS here
-+		 * aswell.
-+		 */
-+		prot |= _PAGE_CACHE_UC_MINUS;
- 	else if (boot_cpu_data.x86 > 3)
- 		prot |= _PAGE_CACHE_UC;
+-#if defined(CONFIG_DEBUG_PER_CPU_MAPS) && defined(CONFIG_X86_64)
++#else /* CONFIG_DEBUG_PER_CPU_MAPS */
++
++/*
++ * --------- debug versions of the numa functions ---------
++ */
++static void __cpuinit numa_set_cpumask(int cpu, int enable)
++{
++	int node = cpu_to_node(cpu);
++	cpumask_t *mask;
++	char buf[64];
++
++	if (node_to_cpumask_map == NULL) {
++		printk(KERN_ERR "node_to_cpumask_map NULL\n");
++		dump_stack();
++		return;
++	}
++
++	mask = &node_to_cpumask_map[node];
++	if (enable)
++		cpu_set(cpu, *mask);
++	else
++		cpu_clear(cpu, *mask);
++
++	cpulist_scnprintf(buf, sizeof(buf), *mask);
++	printk(KERN_DEBUG "%s cpu %d node %d: mask now %s\n",
++		enable? "numa_add_cpu":"numa_remove_cpu", cpu, node, buf);
++ }
++
++void __cpuinit numa_add_cpu(int cpu)
++{
++	numa_set_cpumask(cpu, 1);
++}
++
++void __cpuinit numa_remove_cpu(int cpu)
++{
++	numa_set_cpumask(cpu, 0);
++}
  
-@@ -319,9 +326,8 @@ int pci_mmap_page_range(struct pci_dev *dev, struct vm_area_struct *vma,
- 		 * - request is uncached, return cannot be write-combine
- 		 * - request is write-combine, return cannot be write-back
- 		 */
--		if ((flags == _PAGE_CACHE_UC &&
--		     (new_flags == _PAGE_CACHE_WB ||
--		      new_flags == _PAGE_CACHE_WC)) ||
-+		if ((flags == _PAGE_CACHE_UC_MINUS &&
-+		     (new_flags == _PAGE_CACHE_WB)) ||
- 		    (flags == _PAGE_CACHE_WC &&
- 		     new_flags == _PAGE_CACHE_WB)) {
- 			free_memtype(addr, addr+len);
+ int cpu_to_node(int cpu)
+ {
+@@ -198,6 +278,10 @@ int cpu_to_node(int cpu)
+ }
+ EXPORT_SYMBOL(cpu_to_node);
+ 
++/*
++ * Same function as cpu_to_node() but used if called before the
++ * per_cpu areas are setup.
++ */
+ int early_cpu_to_node(int cpu)
+ {
+ 	if (early_per_cpu_ptr(x86_cpu_to_node_map))
+@@ -206,9 +290,47 @@ int early_cpu_to_node(int cpu)
+ 	if (!per_cpu_offset(cpu)) {
+ 		printk(KERN_WARNING
+ 			"early_cpu_to_node(%d): no per_cpu area!\n", cpu);
+-			dump_stack();
++		dump_stack();
+ 		return NUMA_NO_NODE;
+ 	}
+ 	return per_cpu(x86_cpu_to_node_map, cpu);
+ }
+-#endif
++
++/*
++ * Returns a pointer to the bitmask of CPUs on Node 'node'.
++ */
++cpumask_t *_node_to_cpumask_ptr(int node)
++{
++	if (node_to_cpumask_map == NULL) {
++		printk(KERN_WARNING
++			"_node_to_cpumask_ptr(%d): no node_to_cpumask_map!\n",
++			node);
++		dump_stack();
++		return &cpu_online_map;
++	}
++	return &node_to_cpumask_map[node];
++}
++EXPORT_SYMBOL(_node_to_cpumask_ptr);
++
++/*
++ * Returns a bitmask of CPUs on Node 'node'.
++ */
++cpumask_t node_to_cpumask(int node)
++{
++	if (node_to_cpumask_map == NULL) {
++		printk(KERN_WARNING
++			"node_to_cpumask(%d): no node_to_cpumask_map!\n", node);
++		dump_stack();
++		return cpu_online_map;
++	}
++	return node_to_cpumask_map[node];
++}
++EXPORT_SYMBOL(node_to_cpumask);
++
++/*
++ * --------- end of debug versions of the numa functions ---------
++ */
++
++#endif /* CONFIG_DEBUG_PER_CPU_MAPS */
++
++#endif /* X86_64_NUMA */
+--- linux-2.6.sched.orig/arch/x86/mm/numa_64.c
++++ linux-2.6.sched/arch/x86/mm/numa_64.c
+@@ -35,9 +35,6 @@ s16 apicid_to_node[MAX_LOCAL_APIC] __cpu
+ 	[0 ... MAX_LOCAL_APIC-1] = NUMA_NO_NODE
+ };
+ 
+-cpumask_t node_to_cpumask_map[MAX_NUMNODES] __read_mostly;
+-EXPORT_SYMBOL(node_to_cpumask_map);
+-
+ int numa_off __initdata;
+ unsigned long __initdata nodemap_addr;
+ unsigned long __initdata nodemap_size;
+@@ -561,9 +558,6 @@ void __init numa_initmem_init(unsigned l
+ 	node_set(0, node_possible_map);
+ 	for (i = 0; i < NR_CPUS; i++)
+ 		numa_set_node(i, 0);
+-	/* cpumask_of_cpu() may not be available during early startup */
+-	memset(&node_to_cpumask_map[0], 0, sizeof(node_to_cpumask_map[0]));
+-	cpu_set(0, node_to_cpumask_map[0]);
+ 	e820_register_active_regions(0, start_pfn, end_pfn);
+ 	setup_node_bootmem(0, start_pfn << PAGE_SHIFT, end_pfn << PAGE_SHIFT);
+ }
+--- linux-2.6.sched.orig/include/asm-x86/topology.h
++++ linux-2.6.sched/include/asm-x86/topology.h
+@@ -47,10 +47,16 @@ static inline int cpu_to_node(int cpu)
+ }
+ #define early_cpu_to_node(cpu)	cpu_to_node(cpu)
+ 
++/* Returns a bitmask of CPUs on Node 'node'. */
++static inline cpumask_t node_to_cpumask(int node)
++{
++	return node_to_cpumask_map[node];
++}
++
+ #else /* CONFIG_X86_64 */
+ 
+ /* Mappings between node number and cpus on that node. */
+-extern cpumask_t node_to_cpumask_map[];
++extern cpumask_t *node_to_cpumask_map;
+ 
+ /* Mappings between logical cpu number and node number */
+ DECLARE_EARLY_PER_CPU(int, x86_cpu_to_node_map);
+@@ -94,7 +100,6 @@ static inline cpumask_t node_to_cpumask(
+ }
+ 
+ #endif /* !CONFIG_DEBUG_PER_CPU_MAPS */
+-#endif /* CONFIG_X86_64 */
+ 
+ /* Replace default node_to_cpumask_ptr with optimized version */
+ #define node_to_cpumask_ptr(v, node)		\
+@@ -103,12 +108,7 @@ static inline cpumask_t node_to_cpumask(
+ #define node_to_cpumask_ptr_next(v, node)	\
+ 			   v = _node_to_cpumask_ptr(node)
+ 
+-/* Returns the number of the first CPU on Node 'node'. */
+-static inline int node_to_first_cpu(int node)
+-{
+-	node_to_cpumask_ptr(mask, node);
+-	return first_cpu(*mask);
+-}
++#endif /* CONFIG_X86_64 */
+ 
+ /*
+  * Returns the number of the node containing Node 'node'. This
+@@ -195,6 +195,15 @@ static inline int node_to_first_cpu(int 
+ 
+ #include <asm-generic/topology.h>
+ 
++#ifdef CONFIG_NUMA
++/* Returns the number of the first CPU on Node 'node'. */
++static inline int node_to_first_cpu(int node)
++{
++	node_to_cpumask_ptr(mask, node);
++	return first_cpu(*mask);
++}
++#endif
++
+ extern cpumask_t cpu_coregroup_map(int cpu);
+ 
+ #ifdef ENABLE_TOPO_DEFINES
+
+-- 
