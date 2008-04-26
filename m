@@ -1,55 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759721AbYDZJAS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756764AbYDZJSH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759721AbYDZJAS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Apr 2008 05:00:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753694AbYDZJAF
+	id S1756764AbYDZJSH (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Apr 2008 05:18:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752853AbYDZJRy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Apr 2008 05:00:05 -0400
-Received: from gw.goop.org ([64.81.55.164]:35915 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753287AbYDZJAB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Apr 2008 05:00:01 -0400
-Message-ID: <4812EF0B.4060109@goop.org>
-Date: Sat, 26 Apr 2008 01:59:55 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080418)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Jens Axboe <jens.axboe@oracle.com>, linux-arch@vger.kernel.org,
-       linux-kernel@vger.kernel.org, npiggin@suse.de,
-       torvalds@linux-foundation.org, Ingo Molnar <mingo@redhat.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [PATCH 2/11] x86: convert to generic helpers for IPI function
- calls
-References: <1208851058-8500-1-git-send-email-jens.axboe@oracle.com> <1208851058-8500-3-git-send-email-jens.axboe@oracle.com> <20080422084738.GB2388@elte.hu>
-In-Reply-To: <20080422084738.GB2388@elte.hu>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Sat, 26 Apr 2008 05:17:54 -0400
+Received: from zone0.gcu-squad.org ([212.85.147.21]:1139 "EHLO
+	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752627AbYDZJRx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 Apr 2008 05:17:53 -0400
+Date: Sat, 26 Apr 2008 11:17:33 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: alek.du@intel.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/3] i2c: Add Intel SCH I2C SMBus support
+Message-ID: <20080426111733.135e3f0a@hyperion.delvare>
+In-Reply-To: <20080425231001.97cabebc.akpm@linux-foundation.org>
+References: <20080422100420.3ee5f150@dxy.sh.intel.com>
+	<20080423143212.36dba2ea@hyperion.delvare>
+	<20080425231001.97cabebc.akpm@linux-foundation.org>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Jens Axboe <jens.axboe@oracle.com> wrote:
->
->   
->> This converts x86 and x86-64 to use the new helpers for 
->> smp_call_function() and friends, and adds support for 
->> smp_call_function_single().
->>     
->
-> nice stuff. The x86 and generic bits:
->
->  Acked-by: Ingo Molnar <mingo@elte.hu>
->
-> this has been brewing for months, what is the testing/confidence status 
-> of it? Could we still merge it into v2.6.26? (i think we should)
->   
+On Fri, 25 Apr 2008 23:10:01 -0700, Andrew Morton wrote:
+> I worry about the inclusion of apm_bios.h.  The driver is configured to be
+> available on all architectures but apm_bios.h is surely x86-specific (and
+> maybe mips).
+> 
+> But afaict the inclusion is not needed?
 
-I commented on an earlier version of this patch, but it looks like it 
-will break Xen.  If you enable CONFIG_XEN, it will try to define both 
-native and Xen versions of arch_send_call_function[_single]_ipi().  It 
-needs to vector them via smp_ops.
+Indeed not. It was copied from i2c-piix4, which includes it since the
+beginning of times for no good reason. I just posted a patch fixing
+i2c-piix4:
+http://lists.lm-sensors.org/pipermail/i2c/2008-April/003414.html
 
-    J
+-- 
+Jean Delvare
