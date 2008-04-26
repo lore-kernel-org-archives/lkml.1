@@ -1,56 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761601AbYDZBkR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758962AbYDZB4h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761601AbYDZBkR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Apr 2008 21:40:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753332AbYDZBkA
+	id S1758962AbYDZB4h (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Apr 2008 21:56:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754662AbYDZB42
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Apr 2008 21:40:00 -0400
-Received: from wa-out-1112.google.com ([209.85.146.177]:53612 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753303AbYDZBj7 (ORCPT
+	Fri, 25 Apr 2008 21:56:28 -0400
+Received: from queueout03-winn.ispmail.ntl.com ([81.103.221.33]:31678 "EHLO
+	queueout03-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754461AbYDZB41 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Apr 2008 21:39:59 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=pj3/KrirqONB640G9Udl0aT+20j0wSrhIOFf+sHK5FpWckvz2RUc4slyvX2o6B9/ywe8zCxtfklbvVuw0S66mpdG4FOeuJ9+65ROCNwyQBJZDo3JzOxIfF4aik7+eq88vgiTpm3s/El+FNWwFLSd82lEPHci2G3X9WLCWYLbf10=
-Subject: [BUILDFIX PATCH] mac-hid: fix build after lockdep annotation
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Fri, 25 Apr 2008 18:40:01 -0700
-Message-Id: <1209174001.14173.8.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 25 Apr 2008 21:56:27 -0400
+Date: Sat, 26 Apr 2008 02:44:45 +0100
+From: Samuel Thibault <samuel.thibault@ens-lyon.org>
+To: Michael Kerrisk <mtk.manpages@gmail.com>
+Cc: Michael Kerrisk <mtk.manpages@googlemail.com>,
+       Andi Kleen <andi@firstfloor.org>, David Miller <davem@davemloft.net>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH,TRIVIAL] AF_UNIX, accept() and addrlen
+Message-ID: <20080426014445.GD4792@implementation>
+Mail-Followup-To: Samuel Thibault <samuel.thibault@ens-lyon.org>,
+	Michael Kerrisk <mtk.manpages@gmail.com>,
+	Michael Kerrisk <mtk.manpages@googlemail.com>,
+	Andi Kleen <andi@firstfloor.org>,
+	David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org
+References: <20080308022321.GC5853@implementation> <20080323.215641.192753003.davem@davemloft.net> <20080324104330.GF4434@implementation.uk.xensource.com> <87abko734d.fsf@basil.nowhere.org> <20080324121719.GJ4434@implementation.uk.xensource.com> <20080324122700.GK4434@implementation.uk.xensource.com> <517f3f820803302100sdd50d71m4a990993f45e746c@mail.gmail.com> <4808D1C5.8050304@gmail.com> <20080424001656.GM4825@implementation> <517f3f820804240131v3466713bi70d0eb0fb1f5cd8d@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <517f3f820804240131v3466713bi70d0eb0fb1f5cd8d@mail.gmail.com>
+User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
----
- drivers/macintosh/mac_hid.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+Michael Kerrisk, le Thu 24 Apr 2008 10:31:15 +0200, a écrit :
+> >  > and I see that in net/unix/af_unix.c::unix_getname() there is:
+> >  >
+> >
+> > >                 *uaddr_len = sizeof(short);
+> >
+> >  I'd say that code should be fixed into using sa_family_t.
+> 
+> Is there a patch for this?
 
-diff --git a/drivers/macintosh/mac_hid.c b/drivers/macintosh/mac_hid.c
-index f972ff3..cc9f275 100644
---- a/drivers/macintosh/mac_hid.c
-+++ b/drivers/macintosh/mac_hid.c
-@@ -114,8 +114,8 @@ static int emumousebtn_input_register(void)
- 	if (!emumousebtn)
- 		return -ENOMEM;
+Here it is
+
+
+
+AF_UNIX: make unix_getname use sizeof(sunaddr->sun_family) instead of
+sizeof(short).
+
+Signed-off-by: Samuel Thibault <samuel.thibault@ens-lyon.org>
+
+--- linux/net/unix/af_unix.c.orig	2008-04-26 02:41:45.000000000 +0100
++++ linux/net/unix/af_unix.c	2008-04-26 02:42:07.000000000 +0100
+@@ -1256,7 +1256,7 @@ static int unix_getname(struct socket *s
+ 	if (!u->addr) {
+ 		sunaddr->sun_family = AF_UNIX;
+ 		sunaddr->sun_path[0] = 0;
+-		*uaddr_len = sizeof(short);
++		*uaddr_len = sizeof(sunaddr->sun_family);
+ 	} else {
+ 		struct unix_address *addr = u->addr;
  
--	lockdep_set_class(emumousebtn->event_lock, &emumousebtn_event_class);
--	lockdep_set_class(emumousebtn->mutex, &emumousebtn_mutex_class);
-+	lockdep_set_class(&emumousebtn->event_lock, &emumousebtn_event_class);
-+	lockdep_set_class(&emumousebtn->mutex, &emumousebtn_mutex_class);
- 
- 	emumousebtn->name = "Macintosh mouse button emulation";
- 	emumousebtn->id.bustype = BUS_ADB;
--- 
-1.5.5.1.270.g89765
-
-
-
