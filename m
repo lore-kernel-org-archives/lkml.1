@@ -1,50 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755868AbYDZNZA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755796AbYDZNa2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755868AbYDZNZA (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Apr 2008 09:25:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752926AbYDZNYu
+	id S1755796AbYDZNa2 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Apr 2008 09:30:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752926AbYDZNaU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Apr 2008 09:24:50 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:56604 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751779AbYDZNYt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Apr 2008 09:24:49 -0400
-Date: Sat, 26 Apr 2008 15:24:34 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: linux-kernel@vger.kernel.org, jkosina@suse.cz, akpm@linux-foundation.org
-Subject: [build bug] Re: [PATCH 00/37] Input queue for 2.6.26 merge window
-Message-ID: <20080426132434.GA21423@elte.hu>
-References: <cover.1208783694.git.dmitry.torokhov@gmail.com>
+	Sat, 26 Apr 2008 09:30:20 -0400
+Received: from ug-out-1314.google.com ([66.249.92.168]:58474 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752360AbYDZNaT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 Apr 2008 09:30:19 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:organization:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=SnGii0K18NBiYIeQYsgy+luOZ2zK78BYemCkf6ZH+Is9salEMUkP2kSvuUGeRkSXHnp2Bul2mqO0Tk2zEa6adH+gjUpUn2k9t/Pdsb3WunGrI845XNZYZuDKHWLCsOgOnLO4U0t6S9i5GODjufAU84wiccg1TCuP/rpU7egUeDU=
+Message-ID: <48132E65.4020607@gmail.com>
+Date: Sat, 26 Apr 2008 17:30:13 +0400
+From: Dmitri Vorobiev <dmitri.vorobiev@gmail.com>
+Organization: DmVo Home
+User-Agent: Thunderbird 1.5.0.14ubu (X11/20080306)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <cover.1208783694.git.dmitry.torokhov@gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Adrian Bunk <bunk@kernel.org>
+CC: Linux-kernel <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       thomas@winischhofer.net
+Subject: Re: [REGRESSEION] x86: allyesconfig fails with 'debug' symbol
+References: <48131440.8090609@gmail.com> <20080426114302.GD2252@cs181133002.pp.htv.fi>
+In-Reply-To: <20080426114302.GD2252@cs181133002.pp.htv.fi>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Adrian Bunk пишет:
+> On Sat, Apr 26, 2008 at 03:38:40PM +0400, Dmitri Vorobiev wrote:
+>> Hi,
+>>
+>> The last commit as of writing this regression report is
+>> b1721d0da266b4af8cb4419473b4ca36206ab200, and I'm using Linus tree.
+>>
+>> The allyesconfig build fails with the following error:
+>>
+>> [dmitri.vorobiev@amber linux-2.6]$ make ARCH=i386 CROSS_COMPILE=i386-linux-gnu- 
+>>
+>> [ ... skipped ... ]
+>>
+>>   LD      vmlinux.o
+>> drivers/built-in.o: In function `SiS_EnableBridge':
+>> /home/dmitri.vorobiev/Projects/misc/zoo/src/linux-2.6/drivers/video/sis/init301.c:4352: multiple definition of `debug'
+>> arch/x86/kernel/built-in.o:/home/dmitri.vorobiev/Projects/misc/zoo/src/linux-2.6/arch/x86/kernel/entry_32.S:766: first defined here
+>> i386-linux-gnu-ld: Warning: size of symbol `debug' changed from 76 in arch/x86/kernel/built-in.o to 4 in drivers/built-in.o
+>> make: *** [vmlinux.o] Error 1
+>> [dmitri.vorobiev@amber linux-2.6]$
+>>
+>> Although it is obvious what causes this problem, just now I have no time
+>> to try to resolve this, so I decided to just report the failure.
+> 
+> Fix:
+>   http://lkml.org/lkml/2008/4/25/376
 
->   Input: xpad - add support for wireless xbox360 controllers
+Tested successfully. Thank you, Adrian.
 
-via the commit above (99de0912) a build bug sneaked in:
+Dmitri
 
-drivers/input/joystick/xpad.c: In function 'xpad_probe':
-drivers/input/joystick/xpad.c:865: error: 'xpad_bulk_out' undeclared (first usein this function)
-drivers/input/joystick/xpad.c:865: error: (Each undeclared identifier is reported only once
-drivers/input/joystick/xpad.c:865: error: for each function it appears in.)
+> 
+>> Thanks,
+>> Dmitri
+> 
+> cu
+> Adrian
+> 
 
-as found by randconfig testing:
-
-  http://redhat.com/~mingo/misc/config-Sat_Apr_26_13_24_31_CEST_2008.bad
-
-	Ingo
