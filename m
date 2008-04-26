@@ -1,74 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759147AbYDZQPZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753909AbYDZQRk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759147AbYDZQPZ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Apr 2008 12:15:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754712AbYDZQPO
+	id S1753909AbYDZQRk (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Apr 2008 12:17:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754662AbYDZQRb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Apr 2008 12:15:14 -0400
-Received: from mtl.rackplans.net ([69.90.0.18]:39659 "EHLO mtl.rackplans.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754150AbYDZQPN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Apr 2008 12:15:13 -0400
-Date: Sat, 26 Apr 2008 12:15:11 -0400 (EDT)
-From: Gerhard Mack <gmack@innerfire.net>
-X-X-Sender: gmack@mtl.rackplans.net
-To: Jiri Kosina <jkosina@suse.cz>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: [2.6.25] compat VDSO option not disabling
-In-Reply-To: <Pine.LNX.4.64.0804251632490.19002@twin.jikos.cz>
-Message-ID: <alpine.DEB.1.10.0804261213200.28624@mtl.rackplans.net>
-References: <alpine.DEB.1.10.0804241244360.28216@mtl.rackplans.net> <Pine.LNX.4.64.0804251632490.19002@twin.jikos.cz>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Sat, 26 Apr 2008 12:17:31 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:55899 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754111AbYDZQRa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 Apr 2008 12:17:30 -0400
+Date: Sat, 26 Apr 2008 10:17:14 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Vegard Nossum <vegard.nossum@gmail.com>
+Cc: Sam Ravnborg <sam@ravnborg.org>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       Adrian Bunk <bunk@kernel.org>, linux-kbuild@vger.kernel.org,
+       kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] headerdep: a tool for detecting inclusion cycles in header file
+Message-ID: <20080426161714.GR14990@parisc-linux.org>
+References: <20080426134554.GA20727@damson.getinternet.no>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080426134554.GA20727@damson.getinternet.no>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I havn't enabled compat VDSO at the kernel command line or otherwise.  
-Something broke with this option. 
+On Sat, Apr 26, 2008 at 03:45:54PM +0200, Vegard Nossum wrote:
+> Maybe something like this could be useful for cleaning up headers (and
+> maintaining that cleanliness once it has been achieved). What do you think?
+> 
+> Subject: [PATCH] headerdep: a tool for detecting inclusion cycles in header files
 
-	Gerhard
+Do we actually have inclusion cycles in header files?  I remember gcc
+warning about them when we were working on the parisc port (because we
+needed includes that differed from x86).  Has the new build system got
+rid of these warnings?
 
+I think a more useful tool would be one which mapped something like
+'use of down()' to 'needs to include <linux/semaphore.h>'.  It needs
+to be at least somewhat done by hand because there are rules such
+as 'include linux/spinlock.h to get spinlock_t' (which is actually
+defined in linux/spinlock_types.h), but you want people to include
+<linux/completion.h> directly rather than rely on it being pulled in
+through linux/sched.h, for example.
 
-On Fri, 25 Apr 2008, Jiri Kosina wrote:
+It's further complicated by multi-file drivers, such as qla2xxx.  Each
+file includes qla_def.h which includes a lot of the necessary header
+files for them ... but then each file will include a few more header
+files that it needs.
 
-> Date: Fri, 25 Apr 2008 16:33:48 +0200 (CEST)
-> From: Jiri Kosina <jkosina@suse.cz>
-> To: Gerhard Mack <gmack@innerfire.net>
-> Cc: linux-kernel@vger.kernel.org
-> Subject: Re: [2.6.25] compat VDSO option not disabling
-> 
-> On Thu, 24 Apr 2008, Gerhard Mack wrote:
-> 
-> > On my laptop I disabled the compat vdso option but it is till being 
-> > mapped.. Any ideas?
-> 
-> The changelog of the commit below explains that.
-> 
-> commit 1dbf527c51c6c20c19869c8125cb5b87c3d09506
-> Author: Jeremy Fitzhardinge <jeremy@goop.org>
-> Date:   Wed May 2 19:27:12 2007 +0200
-> 
->     [PATCH] i386: Make COMPAT_VDSO runtime selectable.
-> 
->     Now that relocation of the VDSO for COMPAT_VDSO users is done at
->     runtime rather than compile time, it is possible to enable/disable
->     compat mode at runtime.
-> 
->     This patch allows you to enable COMPAT_VDSO mode with "vdso=2" on the
->     kernel command line, or via sysctl.  (Switching on a running system
->     shouldn't be done lightly; any process which was relying on the compat
->     VDSO will be upset if it goes away.)
-> 
->     The COMPAT_VDSO config option still exists, but if enabled it just
->     makes vdso_enabled default to VDSO_COMPAT.
-> 
-> 
+So some implicit includes are _good_ and other implicit includes are
+_bad_ (as they hurt when trying to rationalise the header files).
+Anyone who likes complexity and fuzzy logic like this want to take a
+stab at writing such a tool?
 
---
-Gerhard Mack
-
-gmack@innerfire.net
-
-<>< As a computer I find your faith in technology amusing.
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
