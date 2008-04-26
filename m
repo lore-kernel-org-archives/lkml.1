@@ -1,28 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759601AbYDZQac@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759234AbYDZQeh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759601AbYDZQac (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Apr 2008 12:30:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754817AbYDZQaS
+	id S1759234AbYDZQeh (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Apr 2008 12:34:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754504AbYDZQe3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Apr 2008 12:30:18 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:43981 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759109AbYDZQaR (ORCPT
+	Sat, 26 Apr 2008 12:34:29 -0400
+Received: from zone0.gcu-squad.org ([212.85.147.21]:18484 "EHLO
+	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753936AbYDZQe2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Apr 2008 12:30:17 -0400
-Date: Sat, 26 Apr 2008 09:28:47 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Greg KH <greg@kroah.com>, Randy Dunlap <randy.dunlap@oracle.com>,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [patch 4/5] debugobjects: add timer specific object debugging
- code
-Message-Id: <20080426092847.318a4fe0.akpm@linux-foundation.org>
-In-Reply-To: <20080321200321.731058197@linutronix.de>
-References: <20080321200300.310393657@linutronix.de>
-	<20080321200321.731058197@linutronix.de>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+	Sat, 26 Apr 2008 12:34:28 -0400
+Date: Sat, 26 Apr 2008 18:34:14 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: Al Viro <viro@ZenIV.linux.org.uk>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [fix] [git pull] VFS patches
+Message-ID: <20080426183414.1acf7ed2@hyperion.delvare>
+In-Reply-To: <20080426042459.GG5882@ZenIV.linux.org.uk>
+References: <20080426020221.GF5882@ZenIV.linux.org.uk>
+	<20080426042459.GG5882@ZenIV.linux.org.uk>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -30,20 +28,33 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 21 Mar 2008 20:26:28 -0000 Thomas Gleixner <tglx@linutronix.de> wrote:
-
-> Add calls to the generic object debugging infrastructure and provide
-> fixup functions which allow to keep the system alive when recoverable
-> problems have been detected by the object debugging core code.
+On Sat, 26 Apr 2008 05:25:00 +0100, Al Viro wrote:
+> 	Arrgghhh...
 > 
+> Sorry about that, I'd been sure I'd folded that one, but it actually got
+> lost.  Please apply - that breaks execve().
+> 
+> Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
+> ---
+> 
+> diff --git a/kernel/fork.c b/kernel/fork.c
+> index 4df3949..a647542 100644
+> --- a/kernel/fork.c
+> +++ b/kernel/fork.c
+> @@ -1788,7 +1788,7 @@ bad_unshare_out:
+>  int unshare_files(struct files_struct **displaced)
+>  {
+>  	struct task_struct *task = current;
+> -	struct files_struct *copy;
+> +	struct files_struct *copy = NULL;
+>  	int error;
+>  
+>  	error = unshare_fd(CLONE_FILES, &copy);
 
-This has run afoul of the new
+This apparently prevents the general protection faults I was hitting
+with 2.6.25-git8. Linus, please apply Al's fixup patch quickly, as it
+will probably hit pretty much everyone trying it.
 
-http://ozlabs.org/~rusty/kernel/rr-latest/misc:timer-typesafe.patch
-
-I don't know if Rusty intends that for 2.6.26.  Probably not, given its
-infancy.  So I'll locally revert that change from Rusty's tree to clear the
-way for a clean merge of
-debugobjects-add-timer-specific-object-debugging-code.patch.
-
-
+Thanks,
+-- 
+Jean Delvare
