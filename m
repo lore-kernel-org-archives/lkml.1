@@ -1,75 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764412AbYDZA5l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764443AbYDZA6O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764412AbYDZA5l (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Apr 2008 20:57:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759535AbYDZA5a
+	id S1764443AbYDZA6O (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Apr 2008 20:58:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765065AbYDZA5u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Apr 2008 20:57:30 -0400
-Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:60919
-	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759909AbYDZA53 (ORCPT
+	Fri, 25 Apr 2008 20:57:50 -0400
+Received: from fmailhost03.isp.att.net ([207.115.11.53]:38693 "EHLO
+	fmailhost01.isp.att.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1759535AbYDZA5s (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Apr 2008 20:57:29 -0400
-Date: Sat, 26 Apr 2008 02:57:26 +0200
-From: Andrea Arcangeli <andrea@qumranet.com>
-To: Robin Holt <holt@sgi.com>
-Cc: Rusty Russell <rusty@rustcorp.com.au>,
-       Christoph Lameter <clameter@sgi.com>, akpm@linux-foundation.org,
-       Nick Piggin <npiggin@suse.de>, Steve Wise <swise@opengridcomputing.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-mm@kvack.org,
-       Kanoj Sarcar <kanojsarcar@yahoo.com>, Roland Dreier <rdreier@cisco.com>,
-       Jack Steiner <steiner@sgi.com>, linux-kernel@vger.kernel.org,
-       Avi Kivity <avi@qumranet.com>, kvm-devel@lists.sourceforge.net,
-       general@lists.openfabrics.org, Hugh Dickins <hugh@veritas.com>
-Subject: Re: [PATCH 1 of 9] Lock the entire mm to prevent any mmu related
-	operation to happen
-Message-ID: <20080426005726.GA9514@duo.random>
-References: <ec6d8f91b299cf26cce5.1207669444@duo.random> <200804221506.26226.rusty@rustcorp.com.au> <20080425165639.GA23300@duo.random> <20080425192532.GA19717@sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080425192532.GA19717@sgi.com>
+	Fri, 25 Apr 2008 20:57:48 -0400
+X-Originating-IP: [65.12.36.143]
+Date: Fri, 25 Apr 2008 19:57:43 -0500
+From: Jay Cliburn <jacliburn@bellsouth.net>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: Jay Cliburn <jacliburn@bellsouth.net>,
+       Luca Tettamanti <kronos.it@gmail.com>, Chris Snook <csnook@redhat.com>,
+       Jeff Garzik <jeff@garzik.org>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, Christoph Lameter <clameter@sgi.com>,
+       torvalds@osdl.org
+Subject: Re: atl1 64-bit => 32-bit DMA borkage (reproducible, bisected)
+Message-ID: <20080425195743.2bfe66ee@osprey.hogchain.net>
+In-Reply-To: <20080421210821.28053a92@osprey.hogchain.net>
+References: <20080414183221.GA5234@martell.zuzino.mipt.ru>
+	<20080414195613.GA4772@martell.zuzino.mipt.ru>
+	<Pine.LNX.4.64.0804141301580.7803@schroedinger.engr.sgi.com>
+	<20080419111719.GA6724@martell.zuzino.mipt.ru>
+	<20080419144535.GA4814@martell.zuzino.mipt.ru>
+	<20080419215444.2d4623f5@osprey.hogchain.net>
+	<20080420111453.GA4902@martell.zuzino.mipt.ru>
+	<20080420060607.2b1be48b@osprey.hogchain.net>
+	<20080420122631.GA4761@martell.zuzino.mipt.ru>
+	<20080420133704.63f5cc10@osprey.hogchain.net>
+	<20080420205500.GA4762@martell.zuzino.mipt.ru>
+	<20080421210821.28053a92@osprey.hogchain.net>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 25, 2008 at 02:25:32PM -0500, Robin Holt wrote:
-> I think you still need mm_lock (unless I miss something).  What happens
-> when one callout is scanning mmu_notifier_invalidate_range_start() and
-> you unlink.  That list next pointer with LIST_POISON1 which is a really
-> bad address for the processor to track.
+On Mon, 21 Apr 2008 21:08:21 -0500
+Jay Cliburn <jacliburn@bellsouth.net> wrote:
 
-Ok, _release list_del_init qcan't race with that because it happens in
-exit_mmap when no other mmu notifier can trigger anymore.
+> 
+> Alexey, can you please try this (very minimally tested) patch?
 
-_unregister can run concurrently but it does list_del_rcu, that only
-overwrites the pprev pointer with LIST_POISON2. The
-mmu_notifier_invalidate_range_start won't crash on LIST_POISON1 thanks
-to srcu.
+Alexey, have you found time to try this patch yet?
 
-Actually I did more changes than necessary, for example I noticed the
-mmu_notifier_register can return a list_add_head instead of
-list_add_head_rcu. _register can't race against _release thanks to the
-mm_users temporary or implicit pin. _register can't race against
-_unregister thanks to the mmu_notifier_mm->lock. And register can't
-race against all other mmu notifiers thanks to the mm_lock.
+Thanks.
 
-At this time I've no other pending patches on top of v14-pre3 other
-than the below micro-optimizing cleanup. It'd be great to have
-confirmation that v14-pre3 passes GRU/XPMEM regressions tests as well
-as my KVM testing already passed successfully on it. I'll forward
-v14-pre3 mmu-notifier-core plus the below to Andrew tomorrow, I'm
-trying to be optimistic here! ;)
-
-diff --git a/mm/mmu_notifier.c b/mm/mmu_notifier.c
---- a/mm/mmu_notifier.c
-+++ b/mm/mmu_notifier.c
-@@ -187,7 +187,7 @@ int mmu_notifier_register(struct mmu_not
- 	 * current->mm or explicitly with get_task_mm() or similar).
- 	 */
- 	spin_lock(&mm->mmu_notifier_mm->lock);
--	hlist_add_head_rcu(&mn->hlist, &mm->mmu_notifier_mm->list);
-+	hlist_add_head(&mn->hlist, &mm->mmu_notifier_mm->list);
- 	spin_unlock(&mm->mmu_notifier_mm->lock);
- out_unlock:
- 	mm_unlock(mm, &data);
+> 
+> diff --git a/drivers/net/atlx/atl1.c b/drivers/net/atlx/atl1.c
+> index 5586fc6..07fe5c0 100644
+> --- a/drivers/net/atlx/atl1.c
+> +++ b/drivers/net/atlx/atl1.c
+> @@ -1115,9 +1115,6 @@ static void atl1_free_ring_resources(struct
+> atl1_adapter *adapter) struct atl1_rrd_ring *rrd_ring =
+> &adapter->rrd_ring; struct atl1_ring_header *ring_header =
+> &adapter->ring_header; 
+> -	atl1_clean_tx_ring(adapter);
+> -	atl1_clean_rx_ring(adapter);
+> -
+>  	kfree(tpd_ring->buffer_info);
+>  	pci_free_consistent(pdev, ring_header->size,
+> ring_header->desc, ring_header->dma);
+> @@ -3423,6 +3420,8 @@ static int atl1_set_ringparam(struct net_device
+> *netdev, adapter->rrd_ring = rrd_old;
+>  		adapter->tpd_ring = tpd_old;
+>  		adapter->ring_header = rhdr_old;
+> +		atl1_clean_tx_ring(adapter);
+> +		atl1_clean_rx_ring(adapter);
+>  		atl1_free_ring_resources(adapter);
+>  		adapter->rfd_ring = rfd_new;
+>  		adapter->rrd_ring = rrd_new;
