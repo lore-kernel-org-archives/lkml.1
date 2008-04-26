@@ -1,85 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753452AbYDZFIz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753602AbYDZGKX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753452AbYDZFIz (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Apr 2008 01:08:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751632AbYDZFIp
+	id S1753602AbYDZGKX (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Apr 2008 02:10:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751515AbYDZGKH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Apr 2008 01:08:45 -0400
-Received: from ruslug.rutgers.edu ([165.230.139.146]:40796 "EHLO
-	ruslug.rutgers.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751553AbYDZFIf (ORCPT
+	Sat, 26 Apr 2008 02:10:07 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:54389 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751497AbYDZGKF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Apr 2008 01:08:35 -0400
-X-Greylist: delayed 1747 seconds by postgrey-1.27 at vger.kernel.org; Sat, 26 Apr 2008 01:08:34 EDT
-Date: Sat, 26 Apr 2008 00:39:27 -0400
-From: "Luis R. Rodriguez" <mcgrof@gmail.com>
-To: Roel Kluin <12o3l@tiscali.nl>
-Cc: Dan Williams <dcbw@redhat.com>, linux-wireless@vger.kernel.org,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH v2] prism54: prism54_get_encode() test below 0 on unsigned index
-Message-ID: <20080426043927.GE4810@ruslug.rutgers.edu>
-References: <480F9481.2040303@tiscali.nl> <1209056973.5224.0.camel@localhost.localdomain> <4811299A.7060407@tiscali.nl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4811299A.7060407@tiscali.nl>
-User-Agent: Mutt/1.5.11
+	Sat, 26 Apr 2008 02:10:05 -0400
+Date: Fri, 25 Apr 2008 23:09:34 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       vegard.nossum@gmail.com, penberg@cs.helsinki.fi, tglx@linutronix.de,
+       hpa@zytor.com
+Subject: Re: [git pull] kmemcheck
+Message-Id: <20080425230934.c54a07a0.akpm@linux-foundation.org>
+In-Reply-To: <20080424210605.GA26672@elte.hu>
+References: <20080424210605.GA26672@elte.hu>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 25, 2008 at 02:45:14AM +0200, Roel Kluin wrote:
-> Dan Williams wrote:
-> > On Wed, 2008-04-23 at 21:56 +0200, Roel Kluin wrote:
-> 
-> >> u32 index = (dwrq->flags & IW_ENCODE_INDEX) - 1;
-> > 
-> > Probably should just change that to an 'int' instead of a u32.
-> > 
-> > Dan
-> > 
-> 
-> Thanks, in that case use the patch below
-> ---
-> when left unsigned, the test 'if (index < 0)' will not work.
-> 
-> Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
-> ---
-> diff --git a/drivers/net/wireless/prism54/isl_ioctl.c b/drivers/net/wireless/prism54/isl_ioctl.c
-> index e5b3c28..8076ead 100644
-> --- a/drivers/net/wireless/prism54/isl_ioctl.c
-> +++ b/drivers/net/wireless/prism54/isl_ioctl.c
-> @@ -1158,7 +1158,8 @@ prism54_get_encode(struct net_device *ndev, struct iw_request_info *info,
->  {
->  	islpci_private *priv = netdev_priv(ndev);
->  	struct obj_key *key;
-> -	u32 devindex, index = (dwrq->flags & IW_ENCODE_INDEX) - 1;
-> +	u32 devindex;
-> +	int index = (dwrq->flags & IW_ENCODE_INDEX) - 1;
+> On Thu, 24 Apr 2008 23:06:05 +0200 Ingo Molnar <mingo@elte.hu> wrote:
+>  Documentation/kmemcheck.txt    |  101 +++++
+>  arch/x86/Kconfig.debug         |   64 +++
+>  arch/x86/kernel/Makefile       |    2 +
+>  arch/x86/kernel/cpu/common.c   |    7 +
+>  arch/x86/kernel/entry_32.S     |    8 +-
+>  arch/x86/kernel/entry_64.S     |    4 +-
+>  arch/x86/kernel/kmemcheck.c    |  924 ++++++++++++++++++++++++++++++++++++++++
+>  arch/x86/kernel/process.c      |    2 +-
+>  arch/x86/kernel/process_32.c   |    4 +-
+>  arch/x86/kernel/process_64.c   |   12 +-
+>  arch/x86/kernel/traps_32.c     |   18 +-
+>  arch/x86/kernel/traps_64.c     |   21 +-
+>  arch/x86/mm/fault.c            |   25 +-
+>  arch/x86/mm/init_32.c          |    2 -
+>  include/asm-x86/kdebug.h       |    3 +-
+>  include/asm-x86/kmemcheck.h    |   30 ++
+>  include/asm-x86/pgtable.h      |    4 +-
+>  include/asm-x86/pgtable_32.h   |    6 +
+>  include/asm-x86/string_32.h    |    8 +
+>  include/asm-x86/string_64.h    |    1 +
+>  include/linux/gfp.h            |    3 +-
+>  include/linux/kmemcheck.h      |   29 ++
+>  include/linux/slab.h           |    7 +
+>  include/linux/slub_kmemcheck.h |   21 +
+>  init/main.c                    |    2 +
+>  kernel/fork.c                  |   15 +-
+>  kernel/sysctl.c                |   12 +
+>  mm/Makefile                    |    3 +
+>  mm/slub.c                      |   25 +-
+>  mm/slub_kmemcheck.c            |  100 +++++
 
-The check for -1 seems silly lets just remove its use.
-
-Signed-off-by: Luis R. Rodriguez <lrodriguez@atheros.com>
-
-diff --git a/drivers/net/wireless/prism54/isl_ioctl.c b/drivers/net/wireless/prism54/isl_ioctl.c
-index 5b375b2..7e2d3b6 100644
---- a/drivers/net/wireless/prism54/isl_ioctl.c
-+++ b/drivers/net/wireless/prism54/isl_ioctl.c
-@@ -1158,7 +1158,7 @@ prism54_get_encode(struct net_device *ndev, struct iw_request_info *info,
- {
- 	islpci_private *priv = netdev_priv(ndev);
- 	struct obj_key *key;
--	u32 devindex, index = (dwrq->flags & IW_ENCODE_INDEX) - 1;
-+	u32 devindex, index = (dwrq->flags & IW_ENCODE_INDEX);
- 	u32 authen = 0, invoke = 0, exunencrypt = 0;
- 	int rvalue;
- 	union oid_res_t r;
-@@ -1186,7 +1186,7 @@ prism54_get_encode(struct net_device *ndev, struct iw_request_info *info,
- 	rvalue |= mgt_get_request(priv, DOT11_OID_DEFKEYID, 0, NULL, &r);
- 	devindex = r.u;
- 	/* Now get the key, return it */
--	if (index == -1 || index > 3)
-+	if (!index || index > 3)
- 		/* no index provided, use the current one */
- 		index = devindex;
- 	rvalue |= mgt_get_request(priv, DOT11_OID_DEFKEYX, index, NULL, &r);
+Can we have a MAINTAINERS update please?
