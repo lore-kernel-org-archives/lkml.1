@@ -1,66 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758988AbYDZIrS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759966AbYDZIrx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758988AbYDZIrS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Apr 2008 04:47:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753171AbYDZIrJ
+	id S1759966AbYDZIrx (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Apr 2008 04:47:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753171AbYDZIrn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Apr 2008 04:47:09 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:59928 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752742AbYDZIrI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Apr 2008 04:47:08 -0400
-Date: Sat, 26 Apr 2008 09:47:06 +0100 (IST)
-From: Dave Airlie <airlied@linux.ie>
-X-X-Sender: airlied@skynet.skynet.ie
-To: torvalds@linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>
-cc: linux-kernel@vger.kernel.org
-Subject: [git tree] agp patches for 2.6.26-rc1
-Message-ID: <alpine.DEB.0.82.0804260946300.12688@skynet.skynet.ie>
+	Sat, 26 Apr 2008 04:47:43 -0400
+Received: from rv-out-0708.google.com ([209.85.198.246]:9399 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753412AbYDZIrk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 Apr 2008 04:47:40 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=K3C58v49l+hx9CxbtEQ5nEdnJUdR5ZV4/bKgILQ0Gn4AHuNZhxIrrex0f3551JMP9fQELlaUL2Cned5NuOGBm1HMMsCQ0ozJh3I0tBJndTifDTNxuwEs9ANuRPc+dSisPoc80XPTLGOa3d0UEMCI+5Yb8UzUi4+0PKHZh7oSz60=
+Message-ID: <bc64b4640804260147o70253917me32b0e35a1ce6ad8@mail.gmail.com>
+Date: Sat, 26 Apr 2008 12:47:40 +0400
+From: Dmitry <dbaryshkov@gmail.com>
+To: "Paul Walmsley" <paul@pwsan.com>
+Subject: Re: [PATCH 0/5] Clocklib: generic clocks framework
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       "Haavard Skinnemoen" <haavard.skinnemoen@atmel.com>,
+       "Russell King" <rmk+lkml@arm.linux.org.uk>,
+       "Paul Mundt" <lethal@linux-sh.org>,
+       "pHilipp Zabel" <philipp.zabel@gmail.com>,
+       "Pavel Machek" <pavel@ucw.cz>, tony@atomide.com,
+       "David Brownell" <david-b@pacbell.net>, hiroshi.DOYU@nokia.com
+In-Reply-To: <alpine.DEB.1.00.0804250221040.14755@utopia.booyaka.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080420082925.GA32739@doriath.ww600.siemens.net>
+	 <alpine.DEB.1.00.0804210057000.17857@utopia.booyaka.com>
+	 <bc64b4640804210148p2d1c2fe0qe469152fa1a9697e@mail.gmail.com>
+	 <alpine.DEB.1.00.0804250221040.14755@utopia.booyaka.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
-Hi Linus,
+2008/4/25, Paul Walmsley <paul@pwsan.com>:
+> Hello Dmitry,
+>
+>
+>  On Mon, 21 Apr 2008, Dmitry wrote:
+>
+>  > 2008/4/21, Paul Walmsley <paul@pwsan.com>:
+>  > >
+>
+> > >   If the latter, your patchset will presumably
+>  > >   need a higher standard of review, since once it is integrated, any
+>  > >   changes will affect several architectures, rather than simply one.
+>
+> > [...]
+>
+> > I've reviewed the code for most linux/clk.h implementations in the
+>  > kernel. The OMAP code was... a bit scary for me. I don't have any deep
+>  > knowledge of this platform, and there were lots of structures, lots of
+>  > structs embedding struct clk, etc.
+>  > Tell me please, what do you need, that can't be done with this framework?
+>
+>
+> I wouldn't pretend to have a comprehensive list at this point.  But from a
+>  brief look, your clk_round_rate() and clk_set_rate() implementations will
+>  not work for the present OMAP clock tree.  In OMAP, many parent clocks do
+>  not have the same rate as their children.
 
-Please pull the 'agp-patches' branch from
-git://master.kernel.org/pub/scm/linux/kernel/git/airlied/agp-2.6.git agp-patches
+You can easily override any calculations in your clk->set_rate/clk->round_rate/
+clk->get_rate functions.
 
-Dave.
+>
+>  But that is not really the main issue.  Ultimately, as long as your
+>  implementation remains completely optional, and any public interfaces
+>  (like debugfs/sysfs interfaces) are coordinated with other clock interface
+>  implementors, I personally have no issues with your code going into the
+>  tree somewhere.  With the possible exception of the clk_functions code,
+>  clocklib looks pretty clean to me, and a good exemplar of a clock
+>  interface implementation.
 
- drivers/char/agp/amd-k7-agp.c |    3 ++-
- drivers/char/agp/frontend.c   |    4 ++--
- 2 files changed, 4 insertions(+), 3 deletions(-)
+My first goals are:
+1) to have an infrastructure to plug in my clocks in a platform-independant way
+2) to drop lots of copies of nearly the same code.
 
-commit 09aa356b5584090aab6810ec8002936d710cd4ac
-Author: Mathieu Segaud <mathieu.segaud@regala.cx>
-Date:   Fri Apr 18 13:29:38 2008 -0700
+I certainly do not plan to force all platforms to use this framework. However,
+I think that would be good if most of them can be converted to clklib.
 
-    agp: convert drivers/char/agp/frontend.c to use unlocked_ioctl
-    
-    As of now, agp_compat_ioctl already runs without the BKL.  Mutual exclusion
-    is enforced by agp_fe.agp_mutex in agp_ioctl() and agp_compat_ioctl().
-    Apply the same locking rationale to the two functions allowing BKL cleanup.
-    
-    Signed-off-by: Mathieu Segaud <mathieu.segaud@regala.cx>
-    Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-    Signed-off-by: Dave Airlie <airlied@linux.ie>
+>  However: if the ultimate goal is to make your implementation normative,
+>  then I concur with Russell, and I would recommend against merging.
+>  Assumptions that you make in clocklib may not work well for future chips.
+>  Changing clocklib will affect many architectures.  For example, perhaps
+>  someone may wish to implement clocks as an actual in-memory tree rather
+>  than a list.  Or perhaps someone may need to handle clock usecounting
+>  differently, for situations when multiple clocks might share the same
+>  enable/disable code, but with different parents.
 
-commit 4ab92bcf773e7b9e1367897047d5fa4d151d9e90
-Author: Harvey Harrison <harvey.harrison@gmail.com>
-Date:   Sat Apr 26 18:38:04 2008 +1000
+Sorry, but WTF? Do you prefer to keep a lot of code and disallow
+merging a generification just because of some-that-may-even-not-exist
+cases? That sounds
+pretty... strange.
+And your examples are really strange.
 
-    agp: fix shadowed variable warning in amd-k7-agp.c
-    
-    Introduced between 2.6.25-rc2 and -rc3
-    drivers/char/agp/amd-k7-agp.c:439:6: warning: symbol 'cap_ptr' shadows an
-    earlier one
-    drivers/char/agp/amd-k7-agp.c:414:5: originally declared here
-    
-    cap_ptr is never used again in this function, don't bother redeclaring.
-    
-    Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
-    Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-    Signed-off-by: Dave Airlie <airlied@linux.ie>
+>
+>  I am concerned that having any implementation as an implicit standard in
+>  the tree would increase the risk that, over time, internal implementation
+>  assumptions will be considered normative.  This could easily cause more
+>  pain in the future for maintainers than it would be worth.
+>
+>
+>  > This was already discussed. It was suggested to use struct embedding and
+>  > container_of, instead of pointers. If you do really need a pointer, you
+>  > can writes
+>  > struct my_clk {
+>  >       void *data;
+>  >       struct clk clk;
+>  > };
+>
+>
+> OK.
+>
+>
+>  > >  - I don't think that I understand the clk_functions part of your code.
+>  > >   Is this a shorthand to construct aliases to other struct clks?
+>  >
+>  > Yes, that's one of usages for it. E.g. current AT91 code has same
+>  > functionality named at91_clock_associate.  Also onece we get to multiple
+>  > chips providers/users, we'll see, that the clock simply can't have just
+>  > one record in the clocks tree. It's provided by some pin (provider_name)
+>  > and then consumed by several devices (several consumer_name +
+>  > consumer_device pairs). That is it.
+>
+>
+> Perhaps you might consider renaming these functions, perhaps "dynamic"
+>  clocks or "alias" clocks or something similar?  The word "function" has
+>  some other strong associations which I found confusing when I read the
+>  code.
+
+I'll think about this.
+
+-- 
+With best wishes
+Dmitry
