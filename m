@@ -1,285 +1,388 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755894AbYDZV0a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757174AbYDZV2T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755894AbYDZV0a (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Apr 2008 17:26:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751857AbYDZV0S
+	id S1757174AbYDZV2T (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Apr 2008 17:28:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752122AbYDZV16
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Apr 2008 17:26:18 -0400
-Received: from smtpq1.tilbu1.nb.home.nl ([213.51.146.200]:52392 "EHLO
-	smtpq1.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751633AbYDZV0Q (ORCPT
+	Sat, 26 Apr 2008 17:27:58 -0400
+Received: from mail.deathmatch.net ([70.167.247.36]:47979 "EHLO
+	mail.deathmatch.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751633AbYDZV14 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Apr 2008 17:26:16 -0400
-Message-ID: <48139DFC.500@keyaccess.nl>
-Date: Sat, 26 Apr 2008 23:26:20 +0200
-From: Rene Herman <rene.herman@keyaccess.nl>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
-MIME-Version: 1.0
-To: Bjorn Helgaas <bjorn.helgaas@hp.com>
-CC: Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Adam Belay <ambx1@neo.rr.com>,
-       Adam M Belay <abelay@mit.edu>, Li Shaohua <shaohua.li@intel.com>,
-       Matthieu Castet <castet.matthieu@free.fr>,
-       Thomas Renninger <trenn@suse.de>, Jaroslav Kysela <perex@perex.cz>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [patch 21/54] PNP: add debug when assigning PNP resources
-References: <20080425183807.366134771@ldl.fc.hp.com> <20080425183928.375529075@ldl.fc.hp.com>
-In-Reply-To: <20080425183928.375529075@ldl.fc.hp.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -1.0 (-)
+	Sat, 26 Apr 2008 17:27:56 -0400
+From: Bob Copeland <me@bobcopeland.com>
+To: akpm@linux-foundation.org
+Cc: hch@infradead.org, alan@lxorguk.ukuu.org.uk, miklos@szeredi.hu,
+       marcin.slusarz@gmail.com, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, Bob Copeland <me@bobcopeland.com>
+Subject: [PATCH 5/8] omfs: add file routines
+Date: Sat, 26 Apr 2008 17:26:42 -0400
+Message-Id: <1209245205-10096-6-git-send-email-me@bobcopeland.com>
+X-Mailer: git-send-email 1.5.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 25-04-08 20:38, Bjorn Helgaas wrote:
+    omfs: add file routines
+    
+    Add functions for reading and manipulating the storage of file data in
+    the extent-based OMFS.
+    
+    Signed-off-by: Bob Copeland <me@bobcopeland.com>
 
-Comments inline:
+---
+ fs/omfs/file.c |  346 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 346 insertions(+)
 
-> This patch adds code to dump PNP resources before and after
-> assigning resources and before writing them to the device.
-> 
-> This is enabled by CONFIG_PNP_DEBUG=y.
-> 
-> Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
-> 
-> Index: work10/drivers/pnp/base.h
-> ===================================================================
-> --- work10.orig/drivers/pnp/base.h	2008-04-25 11:14:51.000000000 -0600
-> +++ work10/drivers/pnp/base.h	2008-04-25 11:14:57.000000000 -0600
-> @@ -16,3 +16,5 @@
->  int pnp_check_mem(struct pnp_dev * dev, int idx);
->  int pnp_check_irq(struct pnp_dev * dev, int idx);
->  int pnp_check_dma(struct pnp_dev * dev, int idx);
-> +
-> +void dbg_pnp_show_resources(struct pnp_dev *dev, char *desc);
-> Index: work10/drivers/pnp/support.c
-> ===================================================================
-> --- work10.orig/drivers/pnp/support.c	2008-04-25 11:14:48.000000000 -0600
-> +++ work10/drivers/pnp/support.c	2008-04-25 11:14:57.000000000 -0600
-> @@ -51,3 +51,44 @@
->  	str[6] = hex_asc((id >>  0) & 0xf);
->  	str[7] = '\0';
->  }
-> +
-> +#ifdef DEBUG
-> +void dbg_pnp_show_resources(struct pnp_dev *dev, char *desc)
-> +{
-> +	struct resource *res;
-> +	int i;
-> +
-> +	dev_dbg(&dev->dev, "current resources: %s\n", desc);
-> +
-> +	for (i = 0; i < PNP_MAX_IRQ; i++) {
-> +		res = &dev->res.irq_resource[i];
-> +		if (!(res->flags & IORESOURCE_UNSET))
-> +			dev_dbg(&dev->dev, "  irq %lld flags 0x%lx\n",
-> +				(unsigned long long) res->start, res->flags);
-> +	}
-> +	for (i = 0; i < PNP_MAX_DMA; i++) {
-> +		res = &dev->res.dma_resource[i];
-> +		if (!(res->flags & IORESOURCE_UNSET))
-> +			dev_dbg(&dev->dev, "  dma %lld flags 0x%lx\n",
-> +				(unsigned long long) res->start, res->flags);
-> +	}
-> +	for (i = 0; i < PNP_MAX_PORT; i++) {
-> +		res = &dev->res.port_resource[i];
-> +		if (!(res->flags & IORESOURCE_UNSET))
-> +			dev_dbg(&dev->dev, "  io  0x%llx-0x%llx flags 0x%lx\n",
-> +				(unsigned long long) res->start,
-> +				(unsigned long long) res->end, res->flags);
-> +	}
-> +	for (i = 0; i < PNP_MAX_MEM; i++) {
-> +		res = &dev->res.mem_resource[i];
-> +		if (!(res->flags & IORESOURCE_UNSET))
-> +			dev_dbg(&dev->dev, "  mem 0x%llx-0x%llx flags 0x%lx\n",
-> +				(unsigned long long) res->start,
-> +				(unsigned long long) res->end, res->flags);
-> +	}
-> +}
-> +#else
-> +void dbg_pnp_show_resources(struct pnp_dev *dev, char *desc)
-> +{
-> +}
-> +#endif
+Index: linux-2.6/fs/omfs/file.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6/fs/omfs/file.c	2008-04-26 15:34:08.000000000 -0400
+@@ -0,0 +1,346 @@
++/*
++ * OMFS (as used by RIO Karma) file operations.
++ * Copyright (C) 2005 Bob Copeland <me@bobcopeland.com>
++ * Released under GPL v2.
++ */
++
++#include <linux/version.h>
++#include <linux/module.h>
++#include <linux/fs.h>
++#include <linux/buffer_head.h>
++#include <linux/mpage.h>
++#include "omfs.h"
++
++static int omfs_sync_file(struct file *file, struct dentry *dentry,
++		int datasync)
++{
++	struct inode *inode = dentry->d_inode;
++	int err;
++
++	err = sync_mapping_buffers(inode->i_mapping);
++	if (!(inode->i_state & I_DIRTY))
++		return err;
++	if (datasync && !(inode->i_state & I_DIRTY_DATASYNC))
++		return err;
++	err |= omfs_sync_inode(inode);
++	return err ? -EIO : 0;
++}
++
++void omfs_make_empty_table(struct buffer_head *bh, int offset)
++{
++	struct omfs_extent *oe = (struct omfs_extent *) &bh->b_data[offset];
++
++	oe->e_next = ~0ULL;
++	oe->e_extent_count = cpu_to_be32(1),
++	oe->e_fill = cpu_to_be32(0x22),
++	oe->e_entry.e_cluster = ~0ULL;
++	oe->e_entry.e_blocks = ~0ULL;
++}
++
++int omfs_shrink_inode(struct inode *inode)
++{
++	struct omfs_sb_info *sbi = OMFS_SB(inode->i_sb);
++	struct omfs_extent *oe;
++	struct omfs_extent_entry *entry;
++	struct buffer_head *bh;
++	u64 next, last;
++	u32 extent_count;
++	int ret;
++
++	/* traverse extent table, freeing each entry that is greater
++	 * than inode->i_size;
++	 */
++	next = inode->i_ino;
++
++	/* only support truncate -> 0 for now */
++	ret = -EIO;
++	if (inode->i_size != 0)
++		goto out;
++
++	bh = sb_bread(inode->i_sb, clus_to_blk(sbi, next));
++	if (!bh)
++		goto out;
++
++	oe = (struct omfs_extent *)(&bh->b_data[OMFS_EXTENT_START]);
++
++	for (;;) {
++
++		if (omfs_is_bad(sbi, (struct omfs_header *) bh->b_data, next)) {
++			brelse(bh);
++			goto out;
++		}
++
++		extent_count = be32_to_cpu(oe->e_extent_count);
++		last = next;
++		next = be64_to_cpu(oe->e_next);
++		entry = &oe->e_entry;
++
++		/* ignore last entry as it is the terminator */
++		for (; extent_count > 1; extent_count--) {
++			u64 start, count;
++			start = be64_to_cpu(entry->e_cluster);
++			count = be64_to_cpu(entry->e_blocks);
++
++			omfs_clear_range(inode->i_sb, start, (int) count);
++			entry++;
++		}
++		omfs_make_empty_table(bh, (char *) oe - bh->b_data);
++		mark_buffer_dirty(bh);
++		brelse(bh);
++
++		if (last != inode->i_ino)
++			omfs_clear_range(inode->i_sb, last, sbi->s_mirrors);
++
++		if (next == ~0)
++			break;
++
++		bh = sb_bread(inode->i_sb, clus_to_blk(sbi, next));
++		if (!bh)
++			goto out;
++		oe = (struct omfs_extent *) (&bh->b_data[OMFS_EXTENT_CONT]);
++	}
++	ret = 0;
++out:
++	return ret;
++}
++
++static void omfs_truncate(struct inode *inode)
++{
++	omfs_shrink_inode(inode);
++	mark_inode_dirty(inode);
++}
++
++/*
++ * Add new blocks to the current extent, or create new entries/continuations
++ * as necessary.
++ */
++static int omfs_grow_extent(struct inode *inode, struct omfs_extent *oe,
++			u64 *ret_block)
++{
++	struct omfs_extent_entry *terminator;
++	struct omfs_extent_entry *entry = &oe->e_entry;
++	struct omfs_sb_info *sbi = OMFS_SB(inode->i_sb);
++	u32 extent_count = be32_to_cpu(oe->e_extent_count);
++	u64 new_block = 0;
++	u32 max_count;
++	int new_count;
++	int ret = 0;
++
++	/* reached the end of the extent table with no blocks mapped.
++	 * there are three possibilities for adding: grow last extent,
++	 * add a new extent to the current extent table, and add a
++	 * continuation inode.  in last two cases need an allocator for
++	 * sbi->s_cluster_size
++	 */
++
++	/* TODO: handle holes */
++
++	/* should always have a terminator */
++	if (extent_count < 1)
++		return -EIO;
++
++	/* trivially grow current extent, if next block is not taken */
++	terminator = entry + extent_count - 1;
++	if (extent_count > 1) {
++		entry = terminator-1;
++		new_block = be64_to_cpu(entry->e_cluster) +
++			be64_to_cpu(entry->e_blocks);
++
++		if (omfs_allocate_block(inode->i_sb, new_block)) {
++			entry->e_blocks =
++				cpu_to_be64(be64_to_cpu(entry->e_blocks) + 1);
++			terminator->e_blocks = ~(cpu_to_be64(
++				be64_to_cpu(~terminator->e_blocks) + 1));
++			goto out;
++		}
++	}
++	max_count = (sbi->s_sys_blocksize - OMFS_EXTENT_START -
++		sizeof(struct omfs_extent)) /
++		sizeof(struct omfs_extent_entry) + 1;
++
++	/* TODO: add a continuation block here */
++	if (be32_to_cpu(oe->e_extent_count) > max_count-1)
++		return -EIO;
++
++	/* try to allocate a new cluster */
++	ret = omfs_allocate_range(inode->i_sb, 1, sbi->s_clustersize,
++		&new_block, &new_count);
++	if (ret)
++		goto out_fail;
++
++	/* copy terminator down an entry */
++	entry = terminator;
++	terminator++;
++	memcpy(terminator, entry, sizeof(struct omfs_extent_entry));
++
++	entry->e_cluster = cpu_to_be64(new_block);
++	entry->e_blocks = cpu_to_be64((u64) new_count);
++
++	terminator->e_blocks = ~(cpu_to_be64(
++		be64_to_cpu(~terminator->e_blocks) + (u64) new_count));
++
++	/* write in new entry */
++	oe->e_extent_count = cpu_to_be32(1 + be32_to_cpu(oe->e_extent_count));
++
++out:
++	*ret_block = new_block;
++out_fail:
++	return ret;
++}
++
++/*
++ * Scans across the directory table for a given file block number.
++ * If block not found, return 0.
++ */
++static sector_t find_block(struct inode *inode, struct omfs_extent_entry *ent,
++			sector_t block, int count, int *left)
++{
++	/* count > 1 because of terminator */
++	sector_t searched = 0;
++	for (; count > 1; count--) {
++		int numblocks = clus_to_blk(OMFS_SB(inode->i_sb),
++			be64_to_cpu(ent->e_blocks));
++
++		if (block >= searched  &&
++		    block < searched + numblocks) {
++			/*
++			 * found it at cluster + (block - searched)
++			 * numblocks - (block - searched) is remainder
++			 */
++			*left = numblocks - (block - searched);
++			return clus_to_blk(OMFS_SB(inode->i_sb),
++				be64_to_cpu(ent->e_cluster)) +
++				block - searched;
++		}
++		searched += numblocks;
++		ent++;
++	}
++	return 0;
++}
++
++static int omfs_get_block(struct inode *inode, sector_t block,
++			  struct buffer_head *bh_result, int create)
++{
++	struct buffer_head *bh;
++	sector_t next, offset;
++	int ret;
++	u64 new_block;
++	int extent_count;
++	struct omfs_extent *oe;
++	struct omfs_extent_entry *entry;
++	struct omfs_sb_info *sbi = OMFS_SB(inode->i_sb);
++	int max_blocks = bh_result->b_size >> inode->i_blkbits;
++	int remain;
++
++	ret = -EIO;
++	bh = sb_bread(inode->i_sb, clus_to_blk(sbi, inode->i_ino));
++	if (!bh)
++		goto out;
++
++	oe = (struct omfs_extent *)(&bh->b_data[OMFS_EXTENT_START]);
++	next = inode->i_ino;
++
++	for (;;) {
++
++		if (omfs_is_bad(sbi, (struct omfs_header *) bh->b_data, next))
++			goto out_brelse;
++
++		extent_count = be32_to_cpu(oe->e_extent_count);
++		next = be64_to_cpu(oe->e_next);
++		entry = &oe->e_entry;
++
++		offset = find_block(inode, entry, block, extent_count, &remain);
++		if (offset > 0) {
++			ret = 0;
++			map_bh(bh_result, inode->i_sb, offset);
++			if (remain > max_blocks)
++				remain = max_blocks;
++			bh_result->b_size = (remain << inode->i_blkbits);
++			goto out_brelse;
++		}
++		if (next == ~0)
++			break;
++
++		brelse(bh);
++		bh = sb_bread(inode->i_sb, clus_to_blk(sbi, next));
++		if (!bh)
++			goto out;
++		oe = (struct omfs_extent *) (&bh->b_data[OMFS_EXTENT_CONT]);
++	}
++	if (create) {
++		ret = omfs_grow_extent(inode, oe, &new_block);
++		if (ret == 0) {
++			mark_buffer_dirty(bh);
++			mark_inode_dirty(inode);
++			map_bh(bh_result, inode->i_sb,
++					clus_to_blk(sbi, new_block));
++		}
++	}
++out_brelse:
++	brelse(bh);
++out:
++	return ret;
++}
++
++static int omfs_readpage(struct file *file, struct page *page)
++{
++	return block_read_full_page(page, omfs_get_block);
++}
++
++static int omfs_readpages(struct file *file, struct address_space *mapping,
++		struct list_head *pages, unsigned nr_pages)
++{
++	return mpage_readpages(mapping, pages, nr_pages, omfs_get_block);
++}
++
++static int omfs_writepage(struct page *page, struct writeback_control *wbc)
++{
++	return block_write_full_page(page, omfs_get_block, wbc);
++}
++
++static int
++omfs_writepages(struct address_space *mapping, struct writeback_control *wbc)
++{
++	return mpage_writepages(mapping, wbc, omfs_get_block);
++}
++
++static int omfs_write_begin(struct file *file, struct address_space *mapping,
++			loff_t pos, unsigned len, unsigned flags,
++			struct page **pagep, void **fsdata)
++{
++	*pagep = NULL;
++	return block_write_begin(file, mapping, pos, len, flags,
++				pagep, fsdata, omfs_get_block);
++}
++
++static sector_t omfs_bmap(struct address_space *mapping, sector_t block)
++{
++	return generic_block_bmap(mapping, block, omfs_get_block);
++}
++
++struct file_operations omfs_file_operations = {
++	.llseek = generic_file_llseek,
++	.read = do_sync_read,
++	.write = do_sync_write,
++	.aio_read = generic_file_aio_read,
++	.aio_write = generic_file_aio_write,
++	.mmap = generic_file_mmap,
++	.fsync = omfs_sync_file,
++	.splice_read = generic_file_splice_read,
++};
++
++struct inode_operations omfs_file_inops = {
++	.truncate = omfs_truncate
++};
++
++struct address_space_operations omfs_aops = {
++	.readpage = omfs_readpage,
++	.readpages = omfs_readpages,
++	.writepage = omfs_writepage,
++	.writepages = omfs_writepages,
++	.sync_page = block_sync_page,
++	.write_begin = omfs_write_begin,
++	.write_end = generic_write_end,
++	.bmap = omfs_bmap,
++};
++
 
-Not too important, but #ifdef could be inside body.
-
-> Index: work10/drivers/pnp/manager.c
-> ===================================================================
-> --- work10.orig/drivers/pnp/manager.c	2008-04-25 11:14:55.000000000 -0600
-> +++ work10/drivers/pnp/manager.c	2008-04-25 11:14:57.000000000 -0600
-> @@ -28,20 +28,25 @@
->  		return 1;
->  	}
->  
-> -	/* check if this resource has been manually set, if so skip */
-> -	if (!(dev->res.port_resource[idx].flags & IORESOURCE_AUTO))
-> -		return 1;
-> -
->  	start = &dev->res.port_resource[idx].start;
->  	end = &dev->res.port_resource[idx].end;
->  	flags = &dev->res.port_resource[idx].flags;
->  
-> +	/* check if this resource has been manually set, if so skip */
-> +	if (!(dev->res.port_resource[idx].flags & IORESOURCE_AUTO)) {
-> +		dev_dbg(&dev->dev, "  io %d already set to 0x%llx-0x%llx "
-> +			"flags 0x%x\n", idx, (unsigned long long) *start,
-> +			(unsigned long long) *end, (int) *flags);
-
-I wanted to ask/comment why you're casting the flags to int though. It's an 
-unsigned long, both in the resource and by type here. Ie, 0x%lx and no 
-casting? (I btw also like %#lx better then the explicit 0x, but that doesn't 
-really matter).
-
-> +		return 1;
-> +	}
-> +
->  	/* set the initial values */
->  	*flags |= rule->flags | IORESOURCE_IO;
->  	*flags &= ~IORESOURCE_UNSET;
->  
->  	if (!rule->size) {
->  		*flags |= IORESOURCE_DISABLED;
-> +		dev_dbg(&dev->dev, "  io %d disabled\n", idx);
->  		return 1;	/* skip disabled resource requests */
->  	}
->  
-> @@ -52,9 +57,13 @@
->  	while (!pnp_check_port(dev, idx)) {
->  		*start += rule->align;
->  		*end = *start + rule->size - 1;
-> -		if (*start > rule->max || !rule->align)
-> +		if (*start > rule->max || !rule->align) {
-> +			dev_dbg(&dev->dev, "  couldn't assign io %d\n", idx);
->  			return 0;
-> +		}
->  	}
-> +	dev_dbg(&dev->dev, "  assign io  %d 0x%llx-0x%llx\n", idx,
-> +		(unsigned long long) *start, (unsigned long long) *end);
->  	return 1;
->  }
->  
-> @@ -69,14 +78,18 @@
->  		return 1;
->  	}
->  
-> -	/* check if this resource has been manually set, if so skip */
-> -	if (!(dev->res.mem_resource[idx].flags & IORESOURCE_AUTO))
-> -		return 1;
-> -
->  	start = &dev->res.mem_resource[idx].start;
->  	end = &dev->res.mem_resource[idx].end;
->  	flags = &dev->res.mem_resource[idx].flags;
->  
-> +	/* check if this resource has been manually set, if so skip */
-> +	if (!(dev->res.mem_resource[idx].flags & IORESOURCE_AUTO)) {
-> +		dev_dbg(&dev->dev, "  mem %d already set to 0x%llx-0x%llx "
-> +			"flags 0x%x\n", idx, (unsigned long long) *start,
-> +			(unsigned long long) *end, (int) *flags);
-
-Ditto.
-
-> +		return 1;
-> +	}
-> +
->  	/* set the initial values */
->  	*flags |= rule->flags | IORESOURCE_MEM;
->  	*flags &= ~IORESOURCE_UNSET;
-> @@ -93,6 +106,7 @@
->  
->  	if (!rule->size) {
->  		*flags |= IORESOURCE_DISABLED;
-> +		dev_dbg(&dev->dev, "  mem %d disabled\n", idx);
->  		return 1;	/* skip disabled resource requests */
->  	}
->  
-> @@ -103,9 +117,13 @@
->  	while (!pnp_check_mem(dev, idx)) {
->  		*start += rule->align;
->  		*end = *start + rule->size - 1;
-> -		if (*start > rule->max || !rule->align)
-> +		if (*start > rule->max || !rule->align) {
-> +			dev_dbg(&dev->dev, "  couldn't assign mem %d\n", idx);
->  			return 0;
-> +		}
->  	}
-> +	dev_dbg(&dev->dev, "  assign mem %d 0x%llx-0x%llx\n", idx,
-> +		(unsigned long long) *start, (unsigned long long) *end);
->  	return 1;
->  }
->  
-> @@ -126,20 +144,24 @@
->  		return 1;
->  	}
->  
-> -	/* check if this resource has been manually set, if so skip */
-> -	if (!(dev->res.irq_resource[idx].flags & IORESOURCE_AUTO))
-> -		return 1;
-> -
->  	start = &dev->res.irq_resource[idx].start;
->  	end = &dev->res.irq_resource[idx].end;
->  	flags = &dev->res.irq_resource[idx].flags;
->  
-> +	/* check if this resource has been manually set, if so skip */
-> +	if (!(dev->res.irq_resource[idx].flags & IORESOURCE_AUTO)) {
-> +		dev_dbg(&dev->dev, "  irq %d already set to %d flags 0x%x\n",
-> +			idx, (int) *start, (int) *flags);
-
-Ditto.
-
-> +		return 1;
-> +	}
-> +
->  	/* set the initial values */
->  	*flags |= rule->flags | IORESOURCE_IRQ;
->  	*flags &= ~IORESOURCE_UNSET;
->  
->  	if (bitmap_empty(rule->map, PNP_IRQ_NR)) {
->  		*flags |= IORESOURCE_DISABLED;
-> +		dev_dbg(&dev->dev, "  irq %d disabled\n", idx);
->  		return 1;	/* skip disabled resource requests */
->  	}
->  
-> @@ -147,15 +169,20 @@
->  	*start = find_next_bit(rule->map, PNP_IRQ_NR, 16);
->  	if (*start < PNP_IRQ_NR) {
->  		*end = *start;
-> +		dev_dbg(&dev->dev, "  assign irq %d %d\n", idx, (int) *start);
->  		return 1;
->  	}
->  	for (i = 0; i < 16; i++) {
->  		if (test_bit(xtab[i], rule->map)) {
->  			*start = *end = xtab[i];
-> -			if (pnp_check_irq(dev, idx))
-> +			if (pnp_check_irq(dev, idx)) {
-> +				dev_dbg(&dev->dev, "  assign irq %d %d\n", idx,
-> +					(int) *start);
->  				return 1;
-> +			}
->  		}
->  	}
-> +	dev_dbg(&dev->dev, "  couldn't assign irq %d\n", idx);
->  	return 0;
->  }
->  
-> @@ -175,14 +202,17 @@
->  		return;
->  	}
->  
-> -	/* check if this resource has been manually set, if so skip */
-> -	if (!(dev->res.dma_resource[idx].flags & IORESOURCE_AUTO))
-> -		return;
-> -
->  	start = &dev->res.dma_resource[idx].start;
->  	end = &dev->res.dma_resource[idx].end;
->  	flags = &dev->res.dma_resource[idx].flags;
->  
-> +	/* check if this resource has been manually set, if so skip */
-> +	if (!(dev->res.dma_resource[idx].flags & IORESOURCE_AUTO)) {
-> +		dev_dbg(&dev->dev, "  dma %d already set to %d flags 0x%x\n",
-> +			idx, (int) *start, (int) *flags);
-
-... and ditto.
-
-Rene
