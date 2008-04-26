@@ -1,140 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754694AbYDZM41@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755439AbYDZNCR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754694AbYDZM41 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Apr 2008 08:56:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751358AbYDZM4R
+	id S1755439AbYDZNCR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Apr 2008 09:02:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751656AbYDZNCD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Apr 2008 08:56:17 -0400
-Received: from fg-out-1718.google.com ([72.14.220.157]:9835 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751075AbYDZM4Q (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Apr 2008 08:56:16 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=FOexPnM9/719ZlRFgVN5lBc3bdx3nUK4FObJj0U8Yk1w+D3aEdPs9tYzO6numHTswQ8idBMoM66W328NN1jZfPLG5Lh00TJQK771qedEexSU8kF5MQ4ZJIBhFw7CG3VdHmL6xsKrUFAvxWAzglpFqnu13ciOpIizo6Z4h0Tvoyg=
-Message-ID: <48132665.8050202@googlemail.com>
-Date: Sat, 26 Apr 2008 14:56:05 +0200
-From: Gabriel C <nix.or.die@googlemail.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
+	Sat, 26 Apr 2008 09:02:03 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:42233 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751075AbYDZNCB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 Apr 2008 09:02:01 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Cedric Le Goater <clg@fr.ibm.com>
+Subject: Re: [RFC][PATCH 2/5] Container Freezer: Make refrigerator always available
+Date: Sat, 26 Apr 2008 15:02:36 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Pavel Machek <pavel@ucw.cz>, Matt Helsley <matthltc@us.ibm.com>,
+       Linux-Kernel <linux-kernel@vger.kernel.org>,
+       Paul Menage <menage@google.com>, Oren Laadan <orenl@cs.columbia.edu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-pm@lists.linux-foundation.org,
+       Linux Containers <containers@lists.linux-foundation.org>
+References: <20080424064756.643890130@us.ibm.com> <20080425110456.GF14903@elf.ucw.cz> <4811C978.6010508@fr.ibm.com>
+In-Reply-To: <4811C978.6010508@fr.ibm.com>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Yinghai Lu <Yinghai.Lu@Sun.COM>, Ingo Molnar <mingo@elte.hu>,
-       Andi Kleen <ak@suse.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Jesse Barnes <jesse.barnes@intel.com>,
-       Mika Fischer <mika.fischer@zoopnet.de>, balajirrao@gmail.com
-Subject: Re: [PATCH] x86_32: trim memory by updating e820 v3
-References: <200801192045.17291.yinghai.lu@sun.com>	<200801202256.48365.yinghai.lu@sun.com>	<20080122165125.GA17992@elte.hu>	<200801221623.20861.yinghai.lu@sun.com> <20080426035614.a30afb17.akpm@linux-foundation.org>
-In-Reply-To: <20080426035614.a30afb17.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200804261502.37413.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Tue, 22 Jan 2008 16:23:20 -0800 Yinghai Lu <Yinghai.Lu@Sun.COM> wrote:
+On Friday, 25 of April 2008, Cedric Le Goater wrote:
+> Pavel Machek wrote:
+> > Hi!
+> > 
+> >> Now that the TIF_FREEZE flag is available in all architectures,
+> >> extract the refrigerator() and freeze_task() from kernel/power/process.c
+> >> and make it available to all.
+> >>
+> >> The refrigerator() can now be used in a control group subsystem 
+> >> implementing a control group freezer.
+> >>
+> >> Signed-off-by: Cedric Le Goater <clg@fr.ibm.com>
+> >> Signed-off-by: Matt Helsley <matthltc@us.ibm.com>
+> >> Tested-by: Matt Helsley <matthltc@us.ibm.com>
+> > 
+> > There's no problem with doing this... but you should get some debate
+> > (with Linus?) whether using freezer for cgroups is sane. 
 > 
->> [PATCH] x86_32: trim memory by updating e820 v3
->>
->> when mtrr is not covering all e820 table, need to trim the ram, need to update e820
->>
->> reuse some code for x86_64
->>
->> here need to add early_get_cap and use it in early_cpu_detect, and move mtrr_bp_init early
->>
->> need Justine to test with his special system with bug bios.
->>
->> Signed-off-by: Yinghai Lu <yinghai.lu@sun.com>
-> 
-> Speaking of mtrr and e820....
-> 
-> Could someone please take a peek at
-> http://bugzilla.kernel.org/show_bug.cgi?id=10508 ?
-> 
-> For some reason we seem to have turned this:
-> 
-> [    0.000000]  BIOS-e820: 0000000000000000 - 000000000009f800 (usable)
-> [    0.000000]  BIOS-e820: 000000000009f800 - 00000000000a0000 (reserved)
-> [    0.000000]  BIOS-e820: 00000000000dc000 - 0000000000100000 (reserved)
-> [    0.000000]  BIOS-e820: 0000000000100000 - 00000000bf6d0000 (usable)
-> [    0.000000]  BIOS-e820: 00000000bf6d0000 - 00000000bf6e3000 (ACPI NVS)
-> [    0.000000]  BIOS-e820: 00000000bf6e3000 - 00000000c0000000 (reserved)
-> [    0.000000]  BIOS-e820: 00000000e0000000 - 00000000f0000000 (reserved)
-> [    0.000000]  BIOS-e820: 00000000fec00000 - 00000000fec10000 (reserved)
-> [    0.000000]  BIOS-e820: 00000000fed00000 - 00000000fed00400 (reserved)
-> [    0.000000]  BIOS-e820: 00000000fed14000 - 00000000fed1a000 (reserved)
-> [    0.000000]  BIOS-e820: 00000000fed1c000 - 00000000fed90000 (reserved)
-> [    0.000000]  BIOS-e820: 00000000fee00000 - 00000000fee01000 (reserved)
-> [    0.000000]  BIOS-e820: 00000000ff000000 - 0000000100000000 (reserved)
-> [    0.000000]  BIOS-e820: 0000000100000000 - 0000000140000000 (usable)
-> 
-> into this:
-> 
-> reg00: base=0xc0000000 (3072MB), size=1024MB: uncachable, count=1
-> reg01: base=0x00000000 ( 0MB), size=4096MB: write-back, count=1
-> reg02: base=0x100000000 (4096MB), size=1024MB: write-back, count=1
-> reg03: base=0xbf700000 (3063MB), size= 1MB: uncachable, count=1
-> reg04: base=0xbf800000 (3064MB), size= 8MB: uncachable, count=1
-> 
-> which screws up the X server's attempt to map the video memory at
-> 0xd0000000.
+> Yes that's what we are trying to know, is the fake signal mechanism 
+> used by the freezer something we can build upon ? 
 
-I see that on my box with ASUS P5E-VM DO and 4G RAM.
-It has an Q35 intel chipset and the intel card is set to use 256MB in BIOS.
+Well, currently, the freezer doesn't send fake signals to kernel threads which
+turns out to be problematic, becase some kernel threads behave very much like
+user space processes (basically, the threads related to NFS and CIFS).
 
-I tested 2.6.{24*,25,25-next,25-latest-git} 32/64 bit.
+I have an idea how to fix this issue, but I'm not sure if it's acceptable
+overall.  I'll try to prepare a patch later today or tomorrow.
 
-Also I get the mtrr type mismatch message on 32 and 64 bit kernels.
-
-...
-
-[    0.000000] BIOS-provided physical RAM map:
-[    0.000000]  BIOS-e820: 0000000000000000 - 000000000009ec00 (usable)
-[    0.000000]  BIOS-e820: 000000000009ec00 - 00000000000a0000 (reserved)
-[    0.000000]  BIOS-e820: 00000000000e4000 - 0000000000100000 (reserved)
-[    0.000000]  BIOS-e820: 0000000000100000 - 00000000cf550000 (usable)
-[    0.000000]  BIOS-e820: 00000000cf550000 - 00000000cf55e000 (ACPI data)
-[    0.000000]  BIOS-e820: 00000000cf55e000 - 00000000cf5e0000 (ACPI NVS)
-[    0.000000]  BIOS-e820: 00000000cf5e0000 - 00000000cf600000 (reserved)
-[    0.000000]  BIOS-e820: 00000000fee00000 - 00000000fee01000 (reserved)
-[    0.000000]  BIOS-e820: 00000000ffc00000 - 0000000100000000 (reserved)
-[    0.000000]  BIOS-e820: 0000000100000000 - 000000012c000000 (usable)
-...
-
-cat /proc/mtrr :
-
-reg00: base=0xd0000000 (3328MB), size= 256MB: uncachable, count=1
-reg01: base=0xe0000000 (3584MB), size= 512MB: uncachable, count=1
-reg02: base=0x00000000 (   0MB), size=4096MB: write-back, count=1
-reg03: base=0x100000000 (4096MB), size= 512MB: write-back, count=1
-reg04: base=0x120000000 (4608MB), size= 128MB: write-back, count=1
-reg05: base=0x128000000 (4736MB), size=  64MB: write-back, count=1
-reg06: base=0xcf600000 (3318MB), size=   2MB: uncachable, count=1
-
-
-dmesg is saying :
-
-..
-
-[   24.012694] [drm] Initialized i915 1.6.0 20060119 on minor 0
-[   24.175500] mtrr: type mismatch for d0000000,10000000 old: write-back new: write-combining
-[   24.423740] set status page addr 0x00033000
-
-..
-
-from Xorg log :
-
-...
-
-(WW) intel(0): Failed to set up write-combining range (0xd0000000,0x10000000)
-(II) intel(0): vgaHWGetIOBase: hwp->IOBase is 0x03d0, hwp->PIOOffset is 0x0000
-
-...
-
-
-Regards,
-
-Gabriel
+Thanks,
+Rafael
