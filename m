@@ -1,107 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760198AbYDZS0g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760773AbYDZS1R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760198AbYDZS0g (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Apr 2008 14:26:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755034AbYDZS0Y
+	id S1760773AbYDZS1R (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Apr 2008 14:27:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754933AbYDZS1B
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Apr 2008 14:26:24 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:45780 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753030AbYDZS0Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Apr 2008 14:26:16 -0400
-Date: Sat, 26 Apr 2008 20:26:48 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Vegard Nossum <vegard.nossum@gmail.com>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>, Adrian Bunk <bunk@kernel.org>,
-       linux-kbuild@vger.kernel.org, kernel-janitors@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] headerdep: a tool for detecting inclusion cycles in header file
-Message-ID: <20080426182648.GA18578@uranus.ravnborg.org>
-References: <20080426134554.GA20727@damson.getinternet.no>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080426134554.GA20727@damson.getinternet.no>
-User-Agent: Mutt/1.4.2.1i
+	Sat, 26 Apr 2008 14:27:01 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:48113 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755034AbYDZS1A (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 Apr 2008 14:27:00 -0400
+Date: Sat, 26 Apr 2008 11:26:07 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Sam Ravnborg <sam@ravnborg.org>
+cc: Adrian Bunk <bunk@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
+       Harvey Harrison <harvey.harrison@gmail.com>,
+       Mauro Carvalho Chehab <mchehab@infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: If you want me to quit I will quit
+In-Reply-To: <20080426174208.GC29451@uranus.ravnborg.org>
+Message-ID: <alpine.LFD.1.10.0804261120070.2813@woody.linux-foundation.org>
+References: <1209190455.14173.13.camel@brick> <20080426110044.GB2252@cs181133002.pp.htv.fi> <20080426075132.b0fdbe13.akpm@linux-foundation.org> <20080426152341.GI2252@cs181133002.pp.htv.fi> <20080426084420.8e61c379.akpm@linux-foundation.org>
+ <20080426171604.GN2252@cs181133002.pp.htv.fi> <alpine.LFD.1.10.0804261024580.2813@woody.linux-foundation.org> <20080426174208.GC29451@uranus.ravnborg.org>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Apr 26, 2008 at 03:45:54PM +0200, Vegard Nossum wrote:
-> Hi Sam,
+
+
+On Sat, 26 Apr 2008, Sam Ravnborg wrote:
 > 
-> Maybe something like this could be useful for cleaning up headers (and
-> maintaining that cleanliness once it has been achieved). What do you think?
-Hi Vegard.
+> It also depends on whare you are located in the dependency tree.
 
-I really like the idea to use some automated checks to increase the
-quality of our headers.
-And that raises the question about what is the most important
-issue we have with our headers and how do we detect them in the
-best possible way?
+Absolutely.
 
-To detect inclusion cycles in a configured kernel I really think
-sparse is the better place to detect it. We have sparse as an
-advenced sanity check tool and adding the possibility to detect
-inclusion cycles should be easier than it was to cook up this
-perl script.
+> Being kbuidl maintainer I have very few people that actually pull me git 
+> tree (except from -mm and -next). So I rebase at will and have so far 
+> not got a single complaint from anyone pulling my tree.
 
-But we have much more important issues.
-In general we have far to many dependencies in the current headers
-and too much code rely on headers being implicitly pulled.
+I agree. Some trees are so specific (and/or simply don't have enough 
+patches in them) that it simply doesn't matter if two different people 
+pull the same tree. Even if it might end up causing some duplication of 
+commits (because the pulled tree might end up being then pulled further), 
+it's not a big deal if it's rare.
 
-We have headers that uses types we actually do not want to use
-in the kernel.
+In fact, we have always had duplicated commits even when they are passed 
+around as email - just because perhaps two different trees simply needed 
+the same fix, and rather than wait for it, they both integrated it (and 
+then when they get merged, the same patch exists twice in the history, 
+just with different committer info etc).
 
-We have headers that export stuff to userspace they shouldnt.
+So yeah, rebasing ends up being really convenient if you really don't 
+expect to have any other "real" end users than eventually being pulled 
+into my tree (or, even more commonly, and when rebasing is *really* 
+convenient: when it's just you keeping track of your own private patches 
+in your own private tree and don't know if they will *ever* go upstream at 
+all).
 
-We have heders defining prototypes for non existing functions.
+> But people like Davem and Ingo sits much higher in the dependency chain
+> and thus they have a very different set of users and thus a different
+> set of problems to take into account.
 
-We have headers defining extern variables that no longer exists.
+Yes. David has changed his workflow to accomodate others, while Ingo still 
+does the rebasing (and it works out because nobody else works on his trees 
+using git).
 
-You could continue the list.
-And some of the above topics are really newbies material to fix.
-
-If you then decide to automate it then I would need a good
-explanation why we did not use sparse before considering
-including the tool in the kernel.
-
-So I do not plan to apply this patch because this should be
-done in sparse and not in a random perl script.
-
-> 
-> (One thing which might or might not be good is that 'make headerdep' will
->  also compile using CC if they're not already compiled. If this should be
->  fixed, I think you'd know how to do it.)
-
-Not a big deal - we neither support this for sparse.
-
-
-> +# Output dependency graph in GraphViz language.
-> +sub graph {
-> +	printf "digraph {\n";
-> +
-> +	printf "\t/* vertices */\n";
-> +	for my $header (keys %deps) {
-> +		printf "\t%s [label=\"%s\"];\n",
-> +			mangle($header), escape($header);
-> +	}
-> +
-> +	printf "\n";
-> +
-> +	printf "\t/* edges */\n";
-> +	for my $header (keys %deps) {
-> +		for my $dep (@{$deps{$header}}) {
-> +			printf "\t%s -> %s;\n",
-> +				mangle($header), mangle($dep);
-> +		}
-> +	}
-> +
-> +	printf "}\n";
-> +}
-
-I like this part. I would be nice to see a full dependency graph
-for any file that kbuild builds.
-But again maybe we should do this as a sparse backend?
-
-	Sam
+			Linus
