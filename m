@@ -1,70 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758644AbYDZCSv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758880AbYDZCcS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758644AbYDZCSv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Apr 2008 22:18:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754420AbYDZCSk
+	id S1758880AbYDZCcS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Apr 2008 22:32:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755587AbYDZCcH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Apr 2008 22:18:40 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:44603 "EHLO mx1.redhat.com"
+	Fri, 25 Apr 2008 22:32:07 -0400
+Received: from mail.queued.net ([207.210.101.209]:2969 "EHLO mail.queued.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754507AbYDZCSj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Apr 2008 22:18:39 -0400
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       "H. Peter Anvin" <hpa@zytor.com>, Andi Kleen <andi@firstfloor.org>,
-       Ingo Molnar <mingo@elte.hu>, Jiri Slaby <jirislaby@gmail.com>,
-       David Miller <davem@davemloft.net>, zdenek.kabelac@gmail.com,
-       rjw@sisk.pl, paulmck@linux.vnet.ibm.com, akpm@linux-foundation.org,
-       linux-ext4@vger.kernel.org, herbert@gondor.apana.org.au,
-       penberg@cs.helsinki.fi, clameter@sgi.com, linux-kernel@vger.kernel.org,
-       pageexec@freemail.hu, Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: [PATCH 1/1] x86: fix text_poke
-References: <alpine.LFD.1.10.0804250904560.2779@woody.linux-foundation.org>
-	<20080425161916.GD3265@one.firstfloor.org>
-	<20080425163035.GE9503@Krystal> <481209F2.4050908@zytor.com>
-	<20080425170929.GA16180@Krystal> <20080425183748.GB16180@Krystal>
-	<48123C9B.9020306@zytor.com> <20080425203717.GB25950@Krystal>
-	<481241DC.3070601@zytor.com>
-	<alpine.LFD.1.10.0804251349510.2779@woody.linux-foundation.org>
-	<20080425211205.GC25950@Krystal>
-	<alpine.LFD.1.10.0804251456410.2779@woody.linux-foundation.org>
-From: fche@redhat.com (Frank Ch. Eigler)
-Date: Fri, 25 Apr 2008 22:12:33 -0400
-In-Reply-To: <alpine.LFD.1.10.0804251456410.2779@woody.linux-foundation.org> (Linus Torvalds's message of "Fri, 25 Apr 2008 15:04:51 -0700 (PDT)")
-Message-ID: <y0my771fjou.fsf@ton.toronto.redhat.com>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1754824AbYDZCcG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Apr 2008 22:32:06 -0400
+Date: Fri, 25 Apr 2008 22:34:58 -0400
+From: Andres Salomon <dilinger@queued.net>
+To: sam@ravnborg.org
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-kbuild@vger.kernel.org, tglx@linutronix.de, mingo@redhat.com,
+       hpa@zytor.com
+Subject: [PATCH 1/4] build: fix missing x86-specific help output
+Message-ID: <20080425223458.4eb88ba6@ephemeral>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.12.0; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds <torvalds@linux-foundation.org> writes:
 
-> [...]
->> The point is to provide a way to dynamically enable code at runtime
->> without noticeable performance impact on the system.
->
-> Quite frankly, maybe I'm a bit dense, but why don't you just recompile the 
-> whole original function (at run-time), load that new version of a function 
-> as a mini-module, and then insert a marker at the top of the old function 
-> that just does a "jmp replacementfunction". [...]
+Normally 'make help' spits out architecture-specific targets (including
+things like foo_defconfig).  However, it looks like ARCH was never changed
+to SRCARCH during the x86 transition; the makefile still looks in
+arch/i386/configs for arch-specific config files (if ARCH is i386, that is).
 
-You mentioned possible solutions to some of the problems this
-ambitious an approach would cause.  Here are a few more complications:
+This changes it to use SRCARCH, which makes it properly display things
+like i386_defconfig and x86_64_defconfig.
 
-- instrumenting inlined functions
+Signed-off-by: Andres Salomon <dilinger@debian.org>
+---
+ Makefile |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
 
-- proper sharing of static function data amongst multiple live
-  copies of same function
+diff --git a/Makefile b/Makefile
+index 3dbc826..e77149e 100644
+--- a/Makefile
++++ b/Makefile
+@@ -1170,7 +1170,7 @@ rpm: include/config/kernel.release FORCE
+ # Brief documentation of the typical targets used
+ # ---------------------------------------------------------------------------
+ 
+-boards := $(wildcard $(srctree)/arch/$(ARCH)/configs/*_defconfig)
++boards := $(wildcard $(srctree)/arch/$(SRCARCH)/configs/*_defconfig)
+ boards := $(notdir $(boards))
+ 
+ help:
+@@ -1217,9 +1217,9 @@ help:
+ 	@echo  'Documentation targets:'
+ 	@$(MAKE) -f $(srctree)/Documentation/DocBook/Makefile dochelp
+ 	@echo  ''
+-	@echo  'Architecture specific targets ($(ARCH)):'
++	@echo  'Architecture specific targets ($(SRCARCH)):'
+ 	@$(if $(archhelp),$(archhelp),\
+-		echo '  No architecture specific help defined for $(ARCH)')
++		echo '  No architecture specific help defined for $(SRCARCH)')
+ 	@echo  ''
+ 	@$(if $(boards), \
+ 		$(foreach b, $(boards), \
+-- 
+1.5.5
 
-- unknown implications of violating long-standing assumptions about
-  functions not changing addresses
-
-- interaction with other code modification machinery (kprobes, ...)
-
-- necessity to carry kernel sources & compilers on machines; slow
-  marker activation
-
-
-- FChE
