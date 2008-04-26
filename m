@@ -1,36 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765065AbYDZAQw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933230AbYDZARY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765065AbYDZAQw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Apr 2008 20:16:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759200AbYDZAPw
+	id S933230AbYDZARY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Apr 2008 20:17:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759535AbYDZAPx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Apr 2008 20:15:52 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:55379 "EHLO
+	Fri, 25 Apr 2008 20:15:53 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:55380 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757323AbYDZAPu (ORCPT
+	with ESMTP id S1757374AbYDZAPu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 25 Apr 2008 20:15:50 -0400
-Message-Id: <20080426001549.014201000@polaris-admin.engr.sgi.com>
+Message-Id: <20080426001549.458477000@polaris-admin.engr.sgi.com>
 References: <20080426001548.829332000@polaris-admin.engr.sgi.com>
 User-Agent: quilt/0.46-1
-Date: Fri, 25 Apr 2008 17:15:49 -0700
+Date: Fri, 25 Apr 2008 17:15:51 -0700
 From: Mike Travis <travis@sgi.com>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: Andrew Morton <akpm@linux-foundation.org>,
        Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
        linux-kernel@vger.kernel.org
-Subject: [PATCH 01/11] x86: Modify Kconfig to allow up to 4096 cpus
-Content-Disposition: inline; filename=MAXSMP-Kconfig
+Subject: [PATCH 03/11] x86: restore pda nodenumber field
+Content-Disposition: inline; filename=restore-nodenumber
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  * Increase the limit of NR_CPUS to 4096 and introduce a boolean
-    called "MAXSMP" which when set (e.g. "allyesconfig"), will set
-    NR_CPUS = 4096 and NODES_SHIFT = 9 (512).
-    
-  * Changed max setting for NODES_SHIFT from 15 to 9 to accurately
-    reflect the real limit.
+  * Restore the nodenumber field in the x86_64 pda.  This field is slightly
+    different than the x86_cpu_to_node_map mainly because it's a static
+    indication of which node the cpu is on while the cpu to node map is a
+    dyanamic mapping that may get reset if the cpu goes offline.  This also
+    simplifies the numa_node_id() macro.
 
 For inclusion into sched-devel/latest tree.
 
@@ -40,77 +39,51 @@ Based on:
 
 Signed-off-by: Mike Travis <travis@sgi.com>
 ---
- arch/x86/Kconfig |   37 ++++++++++++++++++++++++++++++++-----
- 1 file changed, 32 insertions(+), 5 deletions(-)
+ arch/x86/kernel/setup.c    |    4 ++++
+ include/asm-x86/pda.h      |    1 +
+ include/asm-x86/topology.h |    2 +-
+ 3 files changed, 6 insertions(+), 1 deletion(-)
 
---- linux-2.6.sched.orig/arch/x86/Kconfig
-+++ linux-2.6.sched/arch/x86/Kconfig
-@@ -513,20 +513,35 @@ config SWIOTLB
- 	  access 32-bits of memory can be used on systems with more than
- 	  3 GB of memory. If unsure, say Y.
+--- linux-2.6.sched.orig/arch/x86/kernel/setup.c
++++ linux-2.6.sched/arch/x86/kernel/setup.c
+@@ -31,6 +31,7 @@ EXPORT_EARLY_PER_CPU_SYMBOL(x86_bios_cpu
+ #if defined(CONFIG_NUMA) && defined(CONFIG_X86_64)
+ #define	X86_64_NUMA	1
  
-+config MAXSMP
-+	bool "Configure Maximum number of SMP Processors and NUMA Nodes"
-+	depends on X86_64 && SMP
-+	default n
-+	help
-+	  Configure maximum number of CPUS and NUMA Nodes for this architecture.
-+	  If unsure, say N.
++/* map cpu index to node index */
+ DEFINE_EARLY_PER_CPU(int, x86_cpu_to_node_map, NUMA_NO_NODE);
+ EXPORT_EARLY_PER_CPU_SYMBOL(x86_cpu_to_node_map);
+ #endif
+@@ -154,6 +155,9 @@ void __cpuinit numa_set_node(int cpu, in
+ {
+ 	int *cpu_to_node_map = early_per_cpu_ptr(x86_cpu_to_node_map);
+ 
++	if (node != NUMA_NO_NODE)
++		cpu_pda(cpu)->nodenumber = node;
 +
-+if MAXSMP
-+config NR_CPUS
-+	int
-+	default "4096"
-+endif
+ 	if (cpu_to_node_map)
+ 		cpu_to_node_map[cpu] = node;
  
-+if !MAXSMP
- config NR_CPUS
--	int "Maximum number of CPUs (2-255)"
--	range 2 255
-+	int "Maximum number of CPUs (2-4096)"
-+	range 2 4096
- 	depends on SMP
- 	default "32" if X86_NUMAQ || X86_SUMMIT || X86_BIGSMP || X86_ES7000
- 	default "8"
- 	help
- 	  This allows you to specify the maximum number of CPUs which this
--	  kernel will support.  The maximum supported value is 255 and the
-+	  kernel will support.  The maximum supported value is 4096 and the
- 	  minimum value which makes sense is 2.
+--- linux-2.6.sched.orig/include/asm-x86/pda.h
++++ linux-2.6.sched/include/asm-x86/pda.h
+@@ -20,6 +20,7 @@ struct x8664_pda {
+ 					/* gcc-ABI: this canary MUST be at
+ 					   offset 40!!! */
+ 	char *irqstackptr;
++	int nodenumber;			/* number of current node */
+ 	unsigned int __softirq_pending;
+ 	unsigned int __nmi_count;	/* number of NMI on this CPUs */
+ 	short mmu_state;
+--- linux-2.6.sched.orig/include/asm-x86/topology.h
++++ linux-2.6.sched/include/asm-x86/topology.h
+@@ -56,7 +56,7 @@ extern cpumask_t node_to_cpumask_map[];
+ DECLARE_EARLY_PER_CPU(int, x86_cpu_to_node_map);
  
- 	  This is purely to save memory - each supported CPU adds
- 	  approximately eight kilobytes to the kernel image.
-+endif
+ /* Returns the number of the current Node. */
+-#define numa_node_id()	(per_cpu(x86_cpu_to_node_map, raw_smp_processor_id()))
++#define numa_node_id()		read_pda(nodenumber)
  
- config SCHED_SMT
- 	bool "SMT (Hyperthreading) scheduler support"
-@@ -917,13 +932,25 @@ config NUMA_EMU
- 	  into virtual nodes when booted with "numa=fake=N", where N is the
- 	  number of nodes. This is only useful for debugging.
- 
-+if MAXSMP
-+
- config NODES_SHIFT
--	int "Max num nodes shift(1-15)"
--	range 1 15  if X86_64
-+	int
-+	default "9"
-+endif
-+
-+if !MAXSMP
-+config NODES_SHIFT
-+	int "Maximum NUMA Nodes (as a power of 2)"
-+	range 1 9   if X86_64
- 	default "6" if X86_64
- 	default "4" if X86_NUMAQ
- 	default "3"
- 	depends on NEED_MULTIPLE_NODES
-+	help
-+	  Specify the maximum number of NUMA Nodes available on the target
-+	  system.  Increases memory reserved to accomodate various tables.
-+endif
- 
- config HAVE_ARCH_BOOTMEM_NODE
- 	def_bool y
+ #ifdef CONFIG_DEBUG_PER_CPU_MAPS
+ extern int cpu_to_node(int cpu);
 
 -- 
