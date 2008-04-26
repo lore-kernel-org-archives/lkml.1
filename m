@@ -1,39 +1,328 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761634AbYDZUCa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762399AbYDZUDD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761634AbYDZUCa (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Apr 2008 16:02:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757810AbYDZUCU
+	id S1762399AbYDZUDD (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Apr 2008 16:03:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759196AbYDZUCv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Apr 2008 16:02:20 -0400
-Received: from smtp-out04.alice-dsl.net ([88.44.63.6]:65281 "EHLO
-	smtp-out04.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750770AbYDZUCT (ORCPT
+	Sat, 26 Apr 2008 16:02:51 -0400
+Received: from fg-out-1718.google.com ([72.14.220.154]:37940 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760380AbYDZUCu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Apr 2008 16:02:19 -0400
-To: Denys Vlasenko <vda.linux@googlemail.com>
-Cc: David Chinner <dgc@sgi.com>, xfs@oss.sgi.com,
-       Eric Sandeen <sandeen@sandeen.net>, Adrian Bunk <bunk@kernel.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] xfs: reduce stack usage in xfs_bmap_btalloc()
-From: Andi Kleen <andi@firstfloor.org>
-References: <200804261651.02078.vda.linux__2040.04651536724$1209223026$gmane$org@googlemail.com>
-Date: Sat, 26 Apr 2008 22:02:17 +0200
-In-Reply-To: <200804261651.02078.vda.linux__2040.04651536724$1209223026$gmane$org@googlemail.com> (Denys Vlasenko's message of "Sat, 26 Apr 2008 16:51:02 +0200")
-Message-ID: <87iqy4wfjq.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
+	Sat, 26 Apr 2008 16:02:50 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=MZmCGoS31ypkkNVCZZIAG0bbwj8EjX/+vhSZ/4Qzw/V1Voo1b7APQDFyvlToalXCgEqG2R9PaDI4JF8IfJwRYsNNu46/q6rTOJ4E2SUL8KwVYJAPB/ppN7LSkbhSYGXYi3ZRoarodZL7wOMYds+FESUfC4Dvia+DdoE5t6CThu8=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: linux-ide@vger.kernel.org
+Subject: [PATCH] ide: manage resources for PCI devices in ide_pci_enable() (take 3)
+Date: Sat, 26 Apr 2008 22:18:16 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 26 Apr 2008 19:55:25.0844 (UTC) FILETIME=[7850FD40:01C8A7D7]
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200804262218.16533.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Denys Vlasenko <vda.linux@googlemail.com> writes:
->
-> Compile tested only.
+* Reserve PCI BARs 0-3 (0-1 for single port controllers) in
+  ide_pci_enable() and remove ide_hwif_request_regions() call
+  from ide_device_add_all() (also cleanup resource management
+  in scc_pata host driver).
 
-You should mark the helper noinline just to prevent gcc from possibly
-inlining it. Even if it doesn't with your current compiler inline heuristics
-vary widely between compiler versions.
+* Fix handling of PCI BAR 4 in ide_pci_enable(), then cleanup
+  ide_iomio_dma() (+ init_hwif_trm290() in trm290 host driver)
+  and remove ide_release[_iomio]_dma().
 
--Andi
+v2:
+* Fixup trm290 host driver.
+
+v3:
+* Because of scc_pata host driver changes we need to call
+  pci_request_selected_regions() also in setup_mmio_scc().
+
+Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+---
+replacement patch
+
+ drivers/ide/ide-dma.c      |   43 +++----------------------------------------
+ drivers/ide/ide-probe.c    |    6 ------
+ drivers/ide/ide.c          |    2 +-
+ drivers/ide/pci/scc_pata.c |   31 +++++++++----------------------
+ drivers/ide/pci/trm290.c   |    6 ------
+ drivers/ide/setup-pci.c    |   22 +++++++++++++++-------
+ include/linux/ide.h        |    4 ++--
+ 7 files changed, 30 insertions(+), 84 deletions(-)
+
+Index: b/drivers/ide/ide-dma.c
+===================================================================
+--- a/drivers/ide/ide-dma.c
++++ b/drivers/ide/ide-dma.c
+@@ -810,7 +810,7 @@ void ide_dma_timeout (ide_drive_t *drive
+ 
+ EXPORT_SYMBOL(ide_dma_timeout);
+ 
+-static void ide_release_dma_engine(ide_hwif_t *hwif)
++void ide_release_dma_engine(ide_hwif_t *hwif)
+ {
+ 	if (hwif->dmatable_cpu) {
+ 		struct pci_dev *pdev = to_pci_dev(hwif->dev);
+@@ -821,27 +821,6 @@ static void ide_release_dma_engine(ide_h
+ 	}
+ }
+ 
+-static int ide_release_iomio_dma(ide_hwif_t *hwif)
+-{
+-	release_region(hwif->dma_base, 8);
+-	if (hwif->extra_ports)
+-		release_region(hwif->extra_base, hwif->extra_ports);
+-	return 1;
+-}
+-
+-/*
+- * Needed for allowing full modular support of ide-driver
+- */
+-int ide_release_dma(ide_hwif_t *hwif)
+-{
+-	ide_release_dma_engine(hwif);
+-
+-	if (hwif->mmio)
+-		return 1;
+-	else
+-		return ide_release_iomio_dma(hwif);
+-}
+-
+ static int ide_allocate_dma_engine(ide_hwif_t *hwif)
+ {
+ 	struct pci_dev *pdev = to_pci_dev(hwif->dev);
+@@ -871,25 +850,9 @@ static int ide_iomio_dma(ide_hwif_t *hwi
+ 	printk(KERN_INFO "    %s: BM-DMA at 0x%04lx-0x%04lx",
+ 	       hwif->name, base, base + 7);
+ 
+-	if (!request_region(base, 8, hwif->name)) {
+-		printk(" -- Error, ports in use.\n");
+-		return 1;
+-	}
+-
+-	if (hwif->cds->extra) {
++	if (hwif->cds->extra)
+ 		hwif->extra_base = base + (hwif->channel ? 8 : 16);
+ 
+-		if (!hwif->mate || !hwif->mate->extra_ports) {
+-			if (!request_region(hwif->extra_base,
+-					    hwif->cds->extra, hwif->cds->name)) {
+-				printk(" -- Error, extra ports in use.\n");
+-				release_region(base, 8);
+-				return 1;
+-			}
+-			hwif->extra_ports = hwif->cds->extra;
+-		}
+-	}
+-
+ 	return 0;
+ }
+ 
+@@ -909,7 +872,7 @@ void ide_setup_dma(ide_hwif_t *hwif, uns
+ 		return;
+ 
+ 	if (ide_allocate_dma_engine(hwif)) {
+-		ide_release_dma(hwif);
++		ide_release_dma_engine(hwif);
+ 		return;
+ 	}
+ 
+Index: b/drivers/ide/ide-probe.c
+===================================================================
+--- a/drivers/ide/ide-probe.c
++++ b/drivers/ide/ide-probe.c
+@@ -1530,12 +1530,6 @@ int ide_device_add_all(u8 *idx, const st
+ 
+ 		hwif = &ide_hwifs[idx[i]];
+ 
+-		if (ide_hwif_request_regions(hwif)) {
+-			printk(KERN_ERR "%s: ports already in use, "
+-					"skipping probe\n", hwif->name);
+-			continue;
+-		}
+-
+ 		if (ide_probe_port(hwif) == 0)
+ 			hwif->present = 1;
+ 
+Index: b/drivers/ide/ide.c
+===================================================================
+--- a/drivers/ide/ide.c
++++ b/drivers/ide/ide.c
+@@ -413,7 +413,7 @@ void ide_unregister(unsigned int index)
+ 	spin_lock_irq(&ide_lock);
+ 
+ 	if (hwif->dma_base)
+-		(void)ide_release_dma(hwif);
++		ide_release_dma_engine(hwif);
+ 
+ 	/* restore hwif data to pristine status */
+ 	ide_init_port_data(hwif, index);
+Index: b/drivers/ide/pci/scc_pata.c
+===================================================================
+--- a/drivers/ide/pci/scc_pata.c
++++ b/drivers/ide/pci/scc_pata.c
+@@ -483,7 +483,7 @@ static int setup_mmio_scc (struct pci_de
+ 	unsigned long dma_size = pci_resource_len(dev, 1);
+ 	void __iomem *ctl_addr;
+ 	void __iomem *dma_addr;
+-	int i;
++	int i, ret;
+ 
+ 	for (i = 0; i < MAX_HWIFS; i++) {
+ 		if (scc_ports[i].ctl == 0)
+@@ -492,21 +492,17 @@ static int setup_mmio_scc (struct pci_de
+ 	if (i >= MAX_HWIFS)
+ 		return -ENOMEM;
+ 
+-	if (!request_mem_region(ctl_base, ctl_size, name)) {
+-		printk(KERN_WARNING "%s: IDE controller MMIO ports not available.\n", SCC_PATA_NAME);
+-		goto fail_0;
+-	}
+-
+-	if (!request_mem_region(dma_base, dma_size, name)) {
+-		printk(KERN_WARNING "%s: IDE controller MMIO ports not available.\n", SCC_PATA_NAME);
+-		goto fail_1;
++	ret = pci_request_selected_regions(dev, (1 << 2) - 1, name);
++	if (ret < 0) {
++		printk(KERN_ERR "%s: can't reserve resources\n", name);
++		return ret;
+ 	}
+ 
+ 	if ((ctl_addr = ioremap(ctl_base, ctl_size)) == NULL)
+-		goto fail_2;
++		goto fail_0;
+ 
+ 	if ((dma_addr = ioremap(dma_base, dma_size)) == NULL)
+-		goto fail_3;
++		goto fail_1;
+ 
+ 	pci_set_master(dev);
+ 	scc_ports[i].ctl = (unsigned long)ctl_addr;
+@@ -515,12 +511,8 @@ static int setup_mmio_scc (struct pci_de
+ 
+ 	return 1;
+ 
+- fail_3:
+-	iounmap(ctl_addr);
+- fail_2:
+-	release_mem_region(dma_base, dma_size);
+  fail_1:
+-	release_mem_region(ctl_base, ctl_size);
++	iounmap(ctl_addr);
+  fail_0:
+ 	return -ENOMEM;
+ }
+@@ -757,10 +749,6 @@ static void __devexit scc_remove(struct 
+ {
+ 	struct scc_ports *ports = pci_get_drvdata(dev);
+ 	ide_hwif_t *hwif = ports->hwif;
+-	unsigned long ctl_base = pci_resource_start(dev, 0);
+-	unsigned long dma_base = pci_resource_start(dev, 1);
+-	unsigned long ctl_size = pci_resource_len(dev, 0);
+-	unsigned long dma_size = pci_resource_len(dev, 1);
+ 
+ 	if (hwif->dmatable_cpu) {
+ 		pci_free_consistent(dev, PRD_ENTRIES * PRD_BYTES,
+@@ -773,8 +761,7 @@ static void __devexit scc_remove(struct 
+ 	hwif->chipset = ide_unknown;
+ 	iounmap((void*)ports->dma);
+ 	iounmap((void*)ports->ctl);
+-	release_mem_region(dma_base, dma_size);
+-	release_mem_region(ctl_base, ctl_size);
++	pci_release_selected_regions(dev, (1 << 2) - 1);
+ 	memset(ports, 0, sizeof(*ports));
+ }
+ 
+Index: b/drivers/ide/pci/trm290.c
+===================================================================
+--- a/drivers/ide/pci/trm290.c
++++ b/drivers/ide/pci/trm290.c
+@@ -257,16 +257,10 @@ static void __devinit init_hwif_trm290(i
+ 	printk(KERN_INFO "    %s: BM-DMA at 0x%04lx-0x%04lx",
+ 	       hwif->name, hwif->dma_base, hwif->dma_base + 3);
+ 
+-	if (!request_region(hwif->dma_base, 4, hwif->name)) {
+-		printk(KERN_CONT " -- Error, ports in use.\n");
+-		return;
+-	}
+-
+ 	hwif->dmatable_cpu = pci_alloc_consistent(dev, PRD_ENTRIES * PRD_BYTES,
+ 						  &hwif->dmatable_dma);
+ 	if (!hwif->dmatable_cpu) {
+ 		printk(KERN_CONT " -- Error, unable to allocate DMA table.\n");
+-		release_region(hwif->dma_base, 4);
+ 		return;
+ 	}
+ 	printk(KERN_CONT "\n");
+Index: b/drivers/ide/setup-pci.c
+===================================================================
+--- a/drivers/ide/setup-pci.c
++++ b/drivers/ide/setup-pci.c
+@@ -158,7 +158,7 @@ EXPORT_SYMBOL_GPL(ide_setup_pci_noise);
+ 
+ static int ide_pci_enable(struct pci_dev *dev, const struct ide_port_info *d)
+ {
+-	int ret;
++	int ret, bars;
+ 
+ 	if (pci_enable_device(dev)) {
+ 		ret = pci_enable_device_io(dev);
+@@ -181,13 +181,21 @@ static int ide_pci_enable(struct pci_dev
+ 		goto out;
+ 	}
+ 
+-	/* FIXME: Temporary - until we put in the hotplug interface logic
+-	   Check that the bits we want are not in use by someone else. */
+-	ret = pci_request_region(dev, 4, "ide_tmp");
+-	if (ret < 0)
+-		goto out;
++	if (d->host_flags & IDE_HFLAG_SINGLE)
++		bars = (1 << 2) - 1;
++	else
++		bars = (1 << 4) - 1;
++
++	if ((d->host_flags & IDE_HFLAG_NO_DMA) == 0) {
++		if (d->host_flags & IDE_HFLAG_CS5520)
++			bars |= (1 << 2);
++		else
++			bars |= (1 << 4);
++	}
+ 
+-	pci_release_region(dev, 4);
++	ret = pci_request_selected_regions(dev, bars, d->name);
++	if (ret < 0)
++		printk(KERN_ERR "%s: can't reserve resources\n", d->name);
+ out:
+ 	return ret;
+ }
+Index: b/include/linux/ide.h
+===================================================================
+--- a/include/linux/ide.h
++++ b/include/linux/ide.h
+@@ -1158,7 +1158,7 @@ void ide_destroy_dmatable(ide_drive_t *)
+ 
+ #ifdef CONFIG_BLK_DEV_IDEDMA_SFF
+ extern int ide_build_dmatable(ide_drive_t *, struct request *);
+-extern int ide_release_dma(ide_hwif_t *);
++extern void ide_release_dma_engine(ide_hwif_t *);
+ extern void ide_setup_dma(ide_hwif_t *, unsigned long);
+ 
+ void ide_dma_host_set(ide_drive_t *, int);
+@@ -1182,7 +1182,7 @@ static inline void ide_check_dma_crc(ide
+ #endif /* CONFIG_BLK_DEV_IDEDMA */
+ 
+ #ifndef CONFIG_BLK_DEV_IDEDMA_SFF
+-static inline void ide_release_dma(ide_hwif_t *drive) {;}
++static inline void ide_release_dma_engine(ide_hwif_t *hwif) { ; }
+ #endif
+ 
+ #ifdef CONFIG_BLK_DEV_IDEACPI
