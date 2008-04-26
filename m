@@ -1,76 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933270AbYDZAVr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932722AbYDZA3V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933270AbYDZAVr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Apr 2008 20:21:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764966AbYDZAUY
+	id S932722AbYDZA3V (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Apr 2008 20:29:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760117AbYDZA3I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Apr 2008 20:20:24 -0400
-Received: from mx1.suse.de ([195.135.220.2]:40174 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763271AbYDZAUV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Apr 2008 20:20:21 -0400
-Date: Fri, 25 Apr 2008 17:20:04 -0700
-From: Greg KH <gregkh@suse.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Alan Stern <stern@rowland.harvard.edu>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-usb-devel@lists.sourceforge.net
-Subject: Re: [GIT PATCH] USB patches for 2.6.25-git
-Message-ID: <20080426002004.GA23817@suse.de>
-References: <20080425045303.GA4906@suse.de> <alpine.LFD.1.10.0804251645190.2813@woody.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.10.0804251645190.2813@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Fri, 25 Apr 2008 20:29:08 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:26568 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758834AbYDZA3I (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Apr 2008 20:29:08 -0400
+Date: Fri, 25 Apr 2008 17:20:23 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: Eric Dumazet <dada1@cosmosbay.com>, David Chinner <dgc@sgi.com>,
+       xfs-masters@oss.sgi.com, Alexander van Heukelum <heukelum@fastmail.fm>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] xfs: remove xfs_log_ticket_zone on rmmod
+Message-Id: <20080425172023.cbf34a68.randy.dunlap@oracle.com>
+In-Reply-To: <20080425191830.GA4898@martell.zuzino.mipt.ru>
+References: <20080425090901.ca642c4d.randy.dunlap@oracle.com>
+	<48121331.1030204@cosmosbay.com>
+	<1209145675.2005.1249890339@webmail.messagingengine.com>
+	<48121A37.5020504@cosmosbay.com>
+	<20080425191830.GA4898@martell.zuzino.mipt.ru>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 25, 2008 at 04:51:51PM -0700, Linus Torvalds wrote:
-> 
-> 
-> On Thu, 24 Apr 2008, Greg KH wrote:
-> >
-> > Here is a set of USB patches against your current git tree.
-> 
-> Hmm. This seesm to have brought with it some new errors.
-> 
-> >From my dmesg:
-> 
-> 	ACPI: PCI Interrupt 0000:00:1a.1[B] -> GSI 21 (level, low) -> IRQ 21
-> 	PCI: Setting latency timer of device 0000:00:1a.1 to 64
-> 	uhci_hcd 0000:00:1a.1: UHCI Host Controller
-> 	uhci_hcd 0000:00:1a.1: new USB bus registered, assigned bus number 4
-> 	uhci_hcd 0000:00:1a.1: irq 21, io base 0x00002080
-> 	usb usb4: configuration #1 chosen from 1 choice
-> 	hub 4-0:1.0: USB hub found
-> 	hub 4-0:1.0: 2 ports detected
-> **	hub 1-0:1.0: unable to enumerate USB device on port 4
-> 	usb usb4: New USB device found, idVendor=1d6b, idProduct=0001
-> 	usb usb4: New USB device strings: Mfr=3, Product=2, SerialNumber=1
-> 	usb usb4: Product: UHCI Host Controller
-> 	usb usb4: Manufacturer: Linux 2.6.25-05086-g3dd7b71 uhci_hcd
-> 	usb usb4: SerialNumber: 0000:00:1a.1
-> 
-> there's a few of them there, and they seem to be new (ie they don't show 
-> up in my previous message logs). dmesg | grep shows a total of four:
-> 
-> 	hub 1-0:1.0: unable to enumerate USB device on port 4
-> 	hub 2-0:1.0: unable to enumerate USB device on port 2
-> 	hub 2-0:1.0: unable to enumerate USB device on port 3
-> 	hub 2-0:1.0: unable to enumerate USB device on port 4
-> 
-> but things seem to work. Whether that is because I don't have anything 
-> *connected* at those ports or not, I don't know ;)
+On Fri, 25 Apr 2008 23:18:30 +0400 Alexey Dobriyan wrote:
 
-This was always happening before, but now we are actually logging the
-error.  Commit 6427f7995338387ddded92f98adec19ddbf0ae5e was the one, and
-Alan Stern added it to the tree to help try to determine some reports
-that people had been having at times.
+> [PATCH] xfs: remove xfs_log_ticket_zone on rmmod
+> 
+> Bug introduces in commit eb01c9cd87c7a9998c2edf209721ea069e3e3652
+> aka "[XFS] Remove the xlog_ticket allocator"
+> 
+> Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
 
-It should be harmless, right Alan?
+Acked-by: Randy Dunlap <randy.dunlap@oracle.com> // and tested-by
 
-thanks,
+> ---
+> 
+>  fs/xfs/xfs_vfsops.c |    1 +
+>  1 file changed, 1 insertion(+)
+> 
+> --- a/fs/xfs/xfs_vfsops.c
+> +++ b/fs/xfs/xfs_vfsops.c
+> @@ -186,6 +186,7 @@ xfs_cleanup(void)
+>  	kmem_zone_destroy(xfs_efi_zone);
+>  	kmem_zone_destroy(xfs_ifork_zone);
+>  	kmem_zone_destroy(xfs_ili_zone);
+> +	kmem_zone_destroy(xfs_log_ticket_zone);
+>  }
+>  
+>  /*
 
-greg k-h
+---
+~Randy
