@@ -1,25 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753891AbYDZKmL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754109AbYDZK4s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753891AbYDZKmL (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Apr 2008 06:42:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751499AbYDZKl7
+	id S1754109AbYDZK4s (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Apr 2008 06:56:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751501AbYDZK4i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Apr 2008 06:41:59 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:50245 "EHLO
+	Sat, 26 Apr 2008 06:56:38 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:50539 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751449AbYDZKl6 (ORCPT
+	by vger.kernel.org with ESMTP id S1751253AbYDZK4h (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Apr 2008 06:41:58 -0400
-Date: Sat, 26 Apr 2008 03:41:39 -0700
+	Sat, 26 Apr 2008 06:56:37 -0400
+Date: Sat, 26 Apr 2008 03:56:14 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
-To: cmm@us.ibm.com
-Cc: pbadari@us.ibm.com, Jan Kara <jack@suse.cz>, linux-ext4@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: Possible race between direct IO and JBD?
-Message-Id: <20080426034139.0dafc76e.akpm@linux-foundation.org>
-In-Reply-To: <1209166706.6040.20.camel@localhost.localdomain>
-References: <20080306174209.GA14193@duck.suse.cz>
-	<1209166706.6040.20.camel@localhost.localdomain>
+To: Yinghai Lu <Yinghai.Lu@Sun.COM>
+Cc: Ingo Molnar <mingo@elte.hu>, Andi Kleen <ak@suse.de>,
+       "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>,
+       Jesse Barnes <jesse.barnes@intel.com>,
+       Mika Fischer <mika.fischer@zoopnet.de>, balajirrao@gmail.com
+Subject: Re: [PATCH] x86_32: trim memory by updating e820 v3
+Message-Id: <20080426035614.a30afb17.akpm@linux-foundation.org>
+In-Reply-To: <200801221623.20861.yinghai.lu@sun.com>
+References: <200801192045.17291.yinghai.lu@sun.com>
+	<200801202256.48365.yinghai.lu@sun.com>
+	<20080122165125.GA17992@elte.hu>
+	<200801221623.20861.yinghai.lu@sun.com>
 X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -28,34 +32,51 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 25 Apr 2008 16:38:23 -0700 Mingming Cao <cmm@us.ibm.com> wrote:
+On Tue, 22 Jan 2008 16:23:20 -0800 Yinghai Lu <Yinghai.Lu@Sun.COM> wrote:
 
-> Hi,
+> [PATCH] x86_32: trim memory by updating e820 v3
 > 
-> While looking at a bug related to direct IO returns to EIO, after
-> looking at the code, I found there is a window that
-> try_to_free_buffers() from direct IO could race with JBD, which holds
-> the reference to the data buffers before journal_commit_transaction()
-> ensures the data buffers has reached to the disk.
+> when mtrr is not covering all e820 table, need to trim the ram, need to update e820
 > 
-> A little more detail: to prepare for direct IO, generic_file_direct_IO()
-> calls invalidate_inode_pages2_range() to invalidate the pages in the
-> cache before performaning direct IO.  invalidate_inode_pages2_range()
-> tries to free the buffers via try_to free_buffers(), but sometimes it
-> can't, due to the buffers is possible still on some transaction's
-> t_sync_datalist or t_locked_list waiting for
-> journal_commit_transaction() to process it. 
+> reuse some code for x86_64
 > 
-> Currently Direct IO simply returns EIO if try_to_free_buffers() finds
-> the buffer is busy, as it has no clue that JBD is referencing it.
+> here need to add early_get_cap and use it in early_cpu_detect, and move mtrr_bp_init early
 > 
-> Is this a known issue and expected behavior? Any thoughts?
+> need Justine to test with his special system with bug bios.
+> 
+> Signed-off-by: Yinghai Lu <yinghai.lu@sun.com>
 
-Something like that might be possible, although people used to test
-buffered-vs-direct fairly heavily.
+Speaking of mtrr and e820....
 
-generic_file_direct_IO() will run
-filemap_write_and_wait()->filemap_fdatawrite() under i_mutex, and this
-should run commits, write back dirty pages, etc.
+Could someone please take a peek at
+http://bugzilla.kernel.org/show_bug.cgi?id=10508 ?
 
-There might remain races though, perhaps with page faults.
+For some reason we seem to have turned this:
+
+[    0.000000]  BIOS-e820: 0000000000000000 - 000000000009f800 (usable)
+[    0.000000]  BIOS-e820: 000000000009f800 - 00000000000a0000 (reserved)
+[    0.000000]  BIOS-e820: 00000000000dc000 - 0000000000100000 (reserved)
+[    0.000000]  BIOS-e820: 0000000000100000 - 00000000bf6d0000 (usable)
+[    0.000000]  BIOS-e820: 00000000bf6d0000 - 00000000bf6e3000 (ACPI NVS)
+[    0.000000]  BIOS-e820: 00000000bf6e3000 - 00000000c0000000 (reserved)
+[    0.000000]  BIOS-e820: 00000000e0000000 - 00000000f0000000 (reserved)
+[    0.000000]  BIOS-e820: 00000000fec00000 - 00000000fec10000 (reserved)
+[    0.000000]  BIOS-e820: 00000000fed00000 - 00000000fed00400 (reserved)
+[    0.000000]  BIOS-e820: 00000000fed14000 - 00000000fed1a000 (reserved)
+[    0.000000]  BIOS-e820: 00000000fed1c000 - 00000000fed90000 (reserved)
+[    0.000000]  BIOS-e820: 00000000fee00000 - 00000000fee01000 (reserved)
+[    0.000000]  BIOS-e820: 00000000ff000000 - 0000000100000000 (reserved)
+[    0.000000]  BIOS-e820: 0000000100000000 - 0000000140000000 (usable)
+
+into this:
+
+reg00: base=0xc0000000 (3072MB), size=1024MB: uncachable, count=1
+reg01: base=0x00000000 ( 0MB), size=4096MB: write-back, count=1
+reg02: base=0x100000000 (4096MB), size=1024MB: write-back, count=1
+reg03: base=0xbf700000 (3063MB), size= 1MB: uncachable, count=1
+reg04: base=0xbf800000 (3064MB), size= 8MB: uncachable, count=1
+
+which screws up the X server's attempt to map the video memory at
+0xd0000000.
+
+Thanks.
