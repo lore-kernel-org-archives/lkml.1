@@ -1,328 +1,342 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762399AbYDZUDD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762456AbYDZUEE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762399AbYDZUDD (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Apr 2008 16:03:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759196AbYDZUCv
+	id S1762456AbYDZUEE (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Apr 2008 16:04:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760247AbYDZUDz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Apr 2008 16:02:51 -0400
-Received: from fg-out-1718.google.com ([72.14.220.154]:37940 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760380AbYDZUCu (ORCPT
+	Sat, 26 Apr 2008 16:03:55 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:51446 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757997AbYDZUDy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Apr 2008 16:02:50 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=MZmCGoS31ypkkNVCZZIAG0bbwj8EjX/+vhSZ/4Qzw/V1Voo1b7APQDFyvlToalXCgEqG2R9PaDI4JF8IfJwRYsNNu46/q6rTOJ4E2SUL8KwVYJAPB/ppN7LSkbhSYGXYi3ZRoarodZL7wOMYds+FESUfC4Dvia+DdoE5t6CThu8=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: linux-ide@vger.kernel.org
-Subject: [PATCH] ide: manage resources for PCI devices in ide_pci_enable() (take 3)
-Date: Sat, 26 Apr 2008 22:18:16 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org
+	Sat, 26 Apr 2008 16:03:54 -0400
+Date: Sat, 26 Apr 2008 16:03:47 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Denys Vlasenko <vda.linux@googlemail.com>
+Cc: David Chinner <dgc@sgi.com>, xfs@oss.sgi.com,
+       Eric Sandeen <sandeen@sandeen.net>, Adrian Bunk <bunk@kernel.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] xfs: reduce stack usage in xfs_bmap_btalloc()
+Message-ID: <20080426200347.GA21021@infradead.org>
+References: <200804261651.02078.vda.linux@googlemail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200804262218.16533.bzolnier@gmail.com>
+In-Reply-To: <200804261651.02078.vda.linux@googlemail.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Reserve PCI BARs 0-3 (0-1 for single port controllers) in
-  ide_pci_enable() and remove ide_hwif_request_regions() call
-  from ide_device_add_all() (also cleanup resource management
-  in scc_pata host driver).
+On Sat, Apr 26, 2008 at 04:51:02PM +0200, Denys Vlasenko wrote:
+> Hi David,
+> 
+> This patch reduces xfs_bmap_btalloc() stack usage by 50 bytes
+> by moving part of its body into a helper function.
+> 
+> This results in some variables not taking stack space in
+> xfs_bmap_btalloc() anymore.
+> 
+> The helper itself does not call anything stack-deep.
+> Stack-deep call to xfs_alloc_vextent() happen
+> in xfs_bmap_btalloc(), as before.
+> 
+> Compile tested only.
 
-* Fix handling of PCI BAR 4 in ide_pci_enable(), then cleanup
-  ide_iomio_dma() (+ init_hwif_trm290() in trm290 host driver)
-  and remove ide_release[_iomio]_dma().
+I think this is a good idea, although I'd rather split the function at
+a local boundary.  The patch below (which passes xfsqa) does that
+by splitting out the handling of the most complicated nullfb case
+out.  It probably won't help reducing stack useage as much as yours,
+but it helps beeing able to read the code a little better.
 
-v2:
-* Fixup trm290 host driver.
-
-v3:
-* Because of scc_pata host driver changes we need to call
-  pci_request_selected_regions() also in setup_mmio_scc().
-
-Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
----
-replacement patch
-
- drivers/ide/ide-dma.c      |   43 +++----------------------------------------
- drivers/ide/ide-probe.c    |    6 ------
- drivers/ide/ide.c          |    2 +-
- drivers/ide/pci/scc_pata.c |   31 +++++++++----------------------
- drivers/ide/pci/trm290.c   |    6 ------
- drivers/ide/setup-pci.c    |   22 +++++++++++++++-------
- include/linux/ide.h        |    4 ++--
- 7 files changed, 30 insertions(+), 84 deletions(-)
-
-Index: b/drivers/ide/ide-dma.c
+Index: linux-2.6-xfs/fs/xfs/xfs_bmap.c
 ===================================================================
---- a/drivers/ide/ide-dma.c
-+++ b/drivers/ide/ide-dma.c
-@@ -810,7 +810,7 @@ void ide_dma_timeout (ide_drive_t *drive
- 
- EXPORT_SYMBOL(ide_dma_timeout);
- 
--static void ide_release_dma_engine(ide_hwif_t *hwif)
-+void ide_release_dma_engine(ide_hwif_t *hwif)
- {
- 	if (hwif->dmatable_cpu) {
- 		struct pci_dev *pdev = to_pci_dev(hwif->dev);
-@@ -821,27 +821,6 @@ static void ide_release_dma_engine(ide_h
- 	}
- }
- 
--static int ide_release_iomio_dma(ide_hwif_t *hwif)
--{
--	release_region(hwif->dma_base, 8);
--	if (hwif->extra_ports)
--		release_region(hwif->extra_base, hwif->extra_ports);
--	return 1;
--}
--
--/*
-- * Needed for allowing full modular support of ide-driver
-- */
--int ide_release_dma(ide_hwif_t *hwif)
--{
--	ide_release_dma_engine(hwif);
--
--	if (hwif->mmio)
--		return 1;
--	else
--		return ide_release_iomio_dma(hwif);
--}
--
- static int ide_allocate_dma_engine(ide_hwif_t *hwif)
- {
- 	struct pci_dev *pdev = to_pci_dev(hwif->dev);
-@@ -871,25 +850,9 @@ static int ide_iomio_dma(ide_hwif_t *hwi
- 	printk(KERN_INFO "    %s: BM-DMA at 0x%04lx-0x%04lx",
- 	       hwif->name, base, base + 7);
- 
--	if (!request_region(base, 8, hwif->name)) {
--		printk(" -- Error, ports in use.\n");
--		return 1;
--	}
--
--	if (hwif->cds->extra) {
-+	if (hwif->cds->extra)
- 		hwif->extra_base = base + (hwif->channel ? 8 : 16);
- 
--		if (!hwif->mate || !hwif->mate->extra_ports) {
--			if (!request_region(hwif->extra_base,
--					    hwif->cds->extra, hwif->cds->name)) {
--				printk(" -- Error, extra ports in use.\n");
--				release_region(base, 8);
--				return 1;
--			}
--			hwif->extra_ports = hwif->cds->extra;
--		}
--	}
--
+--- linux-2.6-xfs.orig/fs/xfs/xfs_bmap.c	2008-04-26 17:43:50.000000000 +0200
++++ linux-2.6-xfs/fs/xfs/xfs_bmap.c	2008-04-26 18:03:08.000000000 +0200
+@@ -2646,6 +2646,144 @@ xfs_bmap_rtalloc(
  	return 0;
  }
  
-@@ -909,7 +872,7 @@ void ide_setup_dma(ide_hwif_t *hwif, uns
- 		return;
- 
- 	if (ide_allocate_dma_engine(hwif)) {
--		ide_release_dma(hwif);
-+		ide_release_dma_engine(hwif);
- 		return;
- 	}
- 
-Index: b/drivers/ide/ide-probe.c
-===================================================================
---- a/drivers/ide/ide-probe.c
-+++ b/drivers/ide/ide-probe.c
-@@ -1530,12 +1530,6 @@ int ide_device_add_all(u8 *idx, const st
- 
- 		hwif = &ide_hwifs[idx[i]];
- 
--		if (ide_hwif_request_regions(hwif)) {
--			printk(KERN_ERR "%s: ports already in use, "
--					"skipping probe\n", hwif->name);
--			continue;
--		}
--
- 		if (ide_probe_port(hwif) == 0)
- 			hwif->present = 1;
- 
-Index: b/drivers/ide/ide.c
-===================================================================
---- a/drivers/ide/ide.c
-+++ b/drivers/ide/ide.c
-@@ -413,7 +413,7 @@ void ide_unregister(unsigned int index)
- 	spin_lock_irq(&ide_lock);
- 
- 	if (hwif->dma_base)
--		(void)ide_release_dma(hwif);
-+		ide_release_dma_engine(hwif);
- 
- 	/* restore hwif data to pristine status */
- 	ide_init_port_data(hwif, index);
-Index: b/drivers/ide/pci/scc_pata.c
-===================================================================
---- a/drivers/ide/pci/scc_pata.c
-+++ b/drivers/ide/pci/scc_pata.c
-@@ -483,7 +483,7 @@ static int setup_mmio_scc (struct pci_de
- 	unsigned long dma_size = pci_resource_len(dev, 1);
- 	void __iomem *ctl_addr;
- 	void __iomem *dma_addr;
--	int i;
-+	int i, ret;
- 
- 	for (i = 0; i < MAX_HWIFS; i++) {
- 		if (scc_ports[i].ctl == 0)
-@@ -492,21 +492,17 @@ static int setup_mmio_scc (struct pci_de
- 	if (i >= MAX_HWIFS)
- 		return -ENOMEM;
- 
--	if (!request_mem_region(ctl_base, ctl_size, name)) {
--		printk(KERN_WARNING "%s: IDE controller MMIO ports not available.\n", SCC_PATA_NAME);
--		goto fail_0;
--	}
--
--	if (!request_mem_region(dma_base, dma_size, name)) {
--		printk(KERN_WARNING "%s: IDE controller MMIO ports not available.\n", SCC_PATA_NAME);
--		goto fail_1;
-+	ret = pci_request_selected_regions(dev, (1 << 2) - 1, name);
-+	if (ret < 0) {
-+		printk(KERN_ERR "%s: can't reserve resources\n", name);
-+		return ret;
- 	}
- 
- 	if ((ctl_addr = ioremap(ctl_base, ctl_size)) == NULL)
--		goto fail_2;
-+		goto fail_0;
- 
- 	if ((dma_addr = ioremap(dma_base, dma_size)) == NULL)
--		goto fail_3;
-+		goto fail_1;
- 
- 	pci_set_master(dev);
- 	scc_ports[i].ctl = (unsigned long)ctl_addr;
-@@ -515,12 +511,8 @@ static int setup_mmio_scc (struct pci_de
- 
- 	return 1;
- 
-- fail_3:
--	iounmap(ctl_addr);
-- fail_2:
--	release_mem_region(dma_base, dma_size);
-  fail_1:
--	release_mem_region(ctl_base, ctl_size);
-+	iounmap(ctl_addr);
-  fail_0:
- 	return -ENOMEM;
- }
-@@ -757,10 +749,6 @@ static void __devexit scc_remove(struct 
- {
- 	struct scc_ports *ports = pci_get_drvdata(dev);
- 	ide_hwif_t *hwif = ports->hwif;
--	unsigned long ctl_base = pci_resource_start(dev, 0);
--	unsigned long dma_base = pci_resource_start(dev, 1);
--	unsigned long ctl_size = pci_resource_len(dev, 0);
--	unsigned long dma_size = pci_resource_len(dev, 1);
- 
- 	if (hwif->dmatable_cpu) {
- 		pci_free_consistent(dev, PRD_ENTRIES * PRD_BYTES,
-@@ -773,8 +761,7 @@ static void __devexit scc_remove(struct 
- 	hwif->chipset = ide_unknown;
- 	iounmap((void*)ports->dma);
- 	iounmap((void*)ports->ctl);
--	release_mem_region(dma_base, dma_size);
--	release_mem_region(ctl_base, ctl_size);
-+	pci_release_selected_regions(dev, (1 << 2) - 1);
- 	memset(ports, 0, sizeof(*ports));
- }
- 
-Index: b/drivers/ide/pci/trm290.c
-===================================================================
---- a/drivers/ide/pci/trm290.c
-+++ b/drivers/ide/pci/trm290.c
-@@ -257,16 +257,10 @@ static void __devinit init_hwif_trm290(i
- 	printk(KERN_INFO "    %s: BM-DMA at 0x%04lx-0x%04lx",
- 	       hwif->name, hwif->dma_base, hwif->dma_base + 3);
- 
--	if (!request_region(hwif->dma_base, 4, hwif->name)) {
--		printk(KERN_CONT " -- Error, ports in use.\n");
--		return;
--	}
--
- 	hwif->dmatable_cpu = pci_alloc_consistent(dev, PRD_ENTRIES * PRD_BYTES,
- 						  &hwif->dmatable_dma);
- 	if (!hwif->dmatable_cpu) {
- 		printk(KERN_CONT " -- Error, unable to allocate DMA table.\n");
--		release_region(hwif->dma_base, 4);
- 		return;
- 	}
- 	printk(KERN_CONT "\n");
-Index: b/drivers/ide/setup-pci.c
-===================================================================
---- a/drivers/ide/setup-pci.c
-+++ b/drivers/ide/setup-pci.c
-@@ -158,7 +158,7 @@ EXPORT_SYMBOL_GPL(ide_setup_pci_noise);
- 
- static int ide_pci_enable(struct pci_dev *dev, const struct ide_port_info *d)
- {
--	int ret;
-+	int ret, bars;
- 
- 	if (pci_enable_device(dev)) {
- 		ret = pci_enable_device_io(dev);
-@@ -181,13 +181,21 @@ static int ide_pci_enable(struct pci_dev
- 		goto out;
- 	}
- 
--	/* FIXME: Temporary - until we put in the hotplug interface logic
--	   Check that the bits we want are not in use by someone else. */
--	ret = pci_request_region(dev, 4, "ide_tmp");
--	if (ret < 0)
--		goto out;
-+	if (d->host_flags & IDE_HFLAG_SINGLE)
-+		bars = (1 << 2) - 1;
-+	else
-+		bars = (1 << 4) - 1;
++STATIC void
++xfs_bmap_btalloc_fix_blen(
++	xfs_mount_t		*mp,
++	xfs_perag_t		*pag,
++	xfs_extlen_t		*blen)
++{
++	xfs_extlen_t		need, delta, longest;
 +
-+	if ((d->host_flags & IDE_HFLAG_NO_DMA) == 0) {
-+		if (d->host_flags & IDE_HFLAG_CS5520)
-+			bars |= (1 << 2);
++	need = XFS_MIN_FREELIST_PAG(pag, mp);
++	if (need > pag->pagf_flcount)
++		delta = need - pag->pagf_flcount;
++	else
++		delta = 0;
++
++	if (pag->pagf_longest > delta)
++		longest = pag->pagf_longest - delta;
++	else
++		longest = (pag->pagf_flcount > 0 ||
++			   pag->pagf_longest > 0);
++
++	if (*blen < longest)
++		*blen = longest;
++}
++
++STATIC int
++xfs_bmap_btalloc_nullfb(
++	xfs_bmalloca_t		*ap,
++	xfs_alloc_arg_t		*args,
++	xfs_extlen_t		*blen)
++{
++	xfs_mount_t		*mp = ap->ip->i_mount;
++	xfs_agnumber_t		ag, startag;
++	int			notinit = 0, error;
++
++	if (ap->userdata && xfs_inode_is_filestream(ap->ip))
++		args->type = XFS_ALLOCTYPE_NEAR_BNO;
++	else
++		args->type = XFS_ALLOCTYPE_START_BNO;
++	args->total = ap->total;
++
++	/*
++	 * Search for an allocation group with a single extent
++	 * large enough for the request.
++	 *
++	 * If one isn't found, then adjust the minimum allocation
++	 * size to the largest space found.
++	 */
++	startag = XFS_FSB_TO_AGNO(mp, args->fsbno);
++	if (startag == NULLAGNUMBER)
++		startag = 0;
++
++	ag = startag;
++	down_read(&mp->m_peraglock);
++	while (*blen < ap->alen) {
++		xfs_perag_t	*pag = &mp->m_perag[ag];
++
++		if (!pag->pagf_init) {
++			error = xfs_alloc_pagf_init(mp, args->tp, ag,
++			    			    XFS_ALLOC_FLAG_TRYLOCK);
++			if (error)
++				goto out_unlock;
++		}
++
++		/*
++		 * See xfs_alloc_fix_freelist...
++		 */
++		if (pag->pagf_init)
++			xfs_bmap_btalloc_fix_blen(mp, pag, blen);
 +		else
-+			bars |= (1 << 4);
++			notinit = 1;
++
++		if (xfs_inode_is_filestream(ap->ip)) {
++			if (*blen >= ap->alen)
++				break;
++
++			if (ap->userdata) {
++				/*
++				 * If startag is an invalid AG, we've come
++				 * here once before and xfs_filestream_new_ag
++				 * picked the best currently available.
++				 *
++				 * Don't continue looping, since we could
++				 * loop forever.
++				 */
++				if (startag == NULLAGNUMBER)
++					break;
++
++				error = xfs_filestream_new_ag(ap, &ag);
++				if (error)
++					goto out_unlock;
++
++				/* loop again to set 'blen'*/
++				startag = NULLAGNUMBER;
++				continue;
++			}
++		}
++		if (++ag == mp->m_sb.sb_agcount)
++			ag = 0;
++		if (ag == startag)
++			break;
 +	}
++	up_read(&mp->m_peraglock);
++
++	/*
++	 * Since the above loop did a BUF_TRYLOCK, it is
++	 * possible that there is space for this request.
++	 */
++	if (notinit || *blen < ap->minlen)
++		args->minlen = ap->minlen;
++
++	/*
++	 * If the best seen length is less than the request
++	 * length, use the best as the minimum.
++	 */
++	else if (*blen < ap->alen)
++		args->minlen = *blen;
++
++	/*
++	 * Otherwise we've seen an extent as big as alen,
++	 * use that as the minimum.
++	 */
++	else
++		args->minlen = ap->alen;
++
++	/*
++	 * Set the failure fallback case to look in the selected AG as
++	 * the stream may have moved.
++	 */
++	if (xfs_inode_is_filestream(ap->ip))
++		ap->rval = args->fsbno = XFS_AGB_TO_FSB(mp, ag, 0);
++
++	return 0;
++
++ out_unlock:
++	up_read(&mp->m_peraglock);
++	return error;
++}
++
+ STATIC int
+ xfs_bmap_btalloc(
+ 	xfs_bmalloca_t	*ap)		/* bmap alloc argument struct */
+@@ -2653,19 +2791,12 @@ xfs_bmap_btalloc(
+ 	xfs_mount_t	*mp;		/* mount point structure */
+ 	xfs_alloctype_t	atype = 0;	/* type for allocation routines */
+ 	xfs_extlen_t	align;		/* minimum allocation alignment */
+-	xfs_agnumber_t	ag;
+ 	xfs_agnumber_t	fb_agno;	/* ag number of ap->firstblock */
+-	xfs_agnumber_t	startag;
+ 	xfs_alloc_arg_t	args;
+ 	xfs_extlen_t	blen;
+-	xfs_extlen_t	delta;
+-	xfs_extlen_t	longest;
+-	xfs_extlen_t	need;
+ 	xfs_extlen_t	nextminlen = 0;
+-	xfs_perag_t	*pag;
+ 	int		nullfb;		/* true if ap->firstblock isn't set */
+ 	int		isaligned;
+-	int		notinit;
+ 	int		tryagain;
+ 	int		error;
  
--	pci_release_region(dev, 4);
-+	ret = pci_request_selected_regions(dev, bars, d->name);
-+	if (ret < 0)
-+		printk(KERN_ERR "%s: can't reserve resources\n", d->name);
- out:
- 	return ret;
- }
-Index: b/include/linux/ide.h
-===================================================================
---- a/include/linux/ide.h
-+++ b/include/linux/ide.h
-@@ -1158,7 +1158,7 @@ void ide_destroy_dmatable(ide_drive_t *)
- 
- #ifdef CONFIG_BLK_DEV_IDEDMA_SFF
- extern int ide_build_dmatable(ide_drive_t *, struct request *);
--extern int ide_release_dma(ide_hwif_t *);
-+extern void ide_release_dma_engine(ide_hwif_t *);
- extern void ide_setup_dma(ide_hwif_t *, unsigned long);
- 
- void ide_dma_host_set(ide_drive_t *, int);
-@@ -1182,7 +1182,7 @@ static inline void ide_check_dma_crc(ide
- #endif /* CONFIG_BLK_DEV_IDEDMA */
- 
- #ifndef CONFIG_BLK_DEV_IDEDMA_SFF
--static inline void ide_release_dma(ide_hwif_t *drive) {;}
-+static inline void ide_release_dma_engine(ide_hwif_t *hwif) { ; }
- #endif
- 
- #ifdef CONFIG_BLK_DEV_IDEACPI
+@@ -2682,6 +2813,8 @@ xfs_bmap_btalloc(
+ 	fb_agno = nullfb ? NULLAGNUMBER : XFS_FSB_TO_AGNO(mp, ap->firstblock);
+ 	if (nullfb) {
+ 		if (ap->userdata && xfs_inode_is_filestream(ap->ip)) {
++			xfs_agnumber_t	ag;
++
+ 			ag = xfs_filestream_lookup_ag(ap->ip);
+ 			ag = (ag != NULLAGNUMBER) ? ag : 0;
+ 			ap->rval = XFS_AGB_TO_FSB(mp, ag, 0);
+@@ -2712,107 +2845,9 @@ xfs_bmap_btalloc(
+ 	args.firstblock = ap->firstblock;
+ 	blen = 0;
+ 	if (nullfb) {
+-		if (ap->userdata && xfs_inode_is_filestream(ap->ip))
+-			args.type = XFS_ALLOCTYPE_NEAR_BNO;
+-		else
+-			args.type = XFS_ALLOCTYPE_START_BNO;
+-		args.total = ap->total;
+-
+-		/*
+-		 * Search for an allocation group with a single extent
+-		 * large enough for the request.
+-		 *
+-		 * If one isn't found, then adjust the minimum allocation
+-		 * size to the largest space found.
+-		 */
+-		startag = ag = XFS_FSB_TO_AGNO(mp, args.fsbno);
+-		if (startag == NULLAGNUMBER)
+-			startag = ag = 0;
+-		notinit = 0;
+-		down_read(&mp->m_peraglock);
+-		while (blen < ap->alen) {
+-			pag = &mp->m_perag[ag];
+-			if (!pag->pagf_init &&
+-			    (error = xfs_alloc_pagf_init(mp, args.tp,
+-				    ag, XFS_ALLOC_FLAG_TRYLOCK))) {
+-				up_read(&mp->m_peraglock);
+-				return error;
+-			}
+-			/*
+-			 * See xfs_alloc_fix_freelist...
+-			 */
+-			if (pag->pagf_init) {
+-				need = XFS_MIN_FREELIST_PAG(pag, mp);
+-				delta = need > pag->pagf_flcount ?
+-					need - pag->pagf_flcount : 0;
+-				longest = (pag->pagf_longest > delta) ?
+-					(pag->pagf_longest - delta) :
+-					(pag->pagf_flcount > 0 ||
+-					 pag->pagf_longest > 0);
+-				if (blen < longest)
+-					blen = longest;
+-			} else
+-				notinit = 1;
+-
+-			if (xfs_inode_is_filestream(ap->ip)) {
+-				if (blen >= ap->alen)
+-					break;
+-
+-				if (ap->userdata) {
+-					/*
+-					 * If startag is an invalid AG, we've
+-					 * come here once before and
+-					 * xfs_filestream_new_ag picked the
+-					 * best currently available.
+-					 *
+-					 * Don't continue looping, since we
+-					 * could loop forever.
+-					 */
+-					if (startag == NULLAGNUMBER)
+-						break;
+-
+-					error = xfs_filestream_new_ag(ap, &ag);
+-					if (error) {
+-						up_read(&mp->m_peraglock);
+-						return error;
+-					}
+-
+-					/* loop again to set 'blen'*/
+-					startag = NULLAGNUMBER;
+-					continue;
+-				}
+-			}
+-			if (++ag == mp->m_sb.sb_agcount)
+-				ag = 0;
+-			if (ag == startag)
+-				break;
+-		}
+-		up_read(&mp->m_peraglock);
+-		/*
+-		 * Since the above loop did a BUF_TRYLOCK, it is
+-		 * possible that there is space for this request.
+-		 */
+-		if (notinit || blen < ap->minlen)
+-			args.minlen = ap->minlen;
+-		/*
+-		 * If the best seen length is less than the request
+-		 * length, use the best as the minimum.
+-		 */
+-		else if (blen < ap->alen)
+-			args.minlen = blen;
+-		/*
+-		 * Otherwise we've seen an extent as big as alen,
+-		 * use that as the minimum.
+-		 */
+-		else
+-			args.minlen = ap->alen;
+-
+-		/*
+-		 * set the failure fallback case to look in the selected
+-		 * AG as the stream may have moved.
+-		 */
+-		if (xfs_inode_is_filestream(ap->ip))
+-			ap->rval = args.fsbno = XFS_AGB_TO_FSB(mp, ag, 0);
++		error = xfs_bmap_btalloc_nullfb(ap, &args, &blen);
++		if (error)
++			return error;
+ 	} else if (ap->low) {
+ 		if (xfs_inode_is_filestream(ap->ip))
+ 			args.type = XFS_ALLOCTYPE_FIRST_AG;
