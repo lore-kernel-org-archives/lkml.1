@@ -1,50 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758453AbYDZOwd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758581AbYDZOxR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758453AbYDZOwd (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Apr 2008 10:52:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753369AbYDZOwW
+	id S1758581AbYDZOxR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Apr 2008 10:53:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753459AbYDZOxB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Apr 2008 10:52:22 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:39557 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757869AbYDZOwW (ORCPT
+	Sat, 26 Apr 2008 10:53:01 -0400
+Received: from smtp-out04.alice-dsl.net ([88.44.63.6]:43095 "EHLO
+	smtp-out04.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752914AbYDZOxA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Apr 2008 10:52:22 -0400
-Date: Sat, 26 Apr 2008 07:51:32 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Harvey Harrison <harvey.harrison@gmail.com>,
-       Mauro Carvalho Chehab <mchehab@infradead.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: If you want me to quit I will quit
-Message-Id: <20080426075132.b0fdbe13.akpm@linux-foundation.org>
-In-Reply-To: <20080426110044.GB2252@cs181133002.pp.htv.fi>
-References: <1209190455.14173.13.camel@brick>
-	<20080426110044.GB2252@cs181133002.pp.htv.fi>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 26 Apr 2008 10:53:00 -0400
+Date: Sat, 26 Apr 2008 16:51:57 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: mingo@elte.hu, tglx@linutronix.de, torvalds@osdl.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: mainline boot failures I: qemu II
+Message-ID: <20080426145157.GA19781@basil.nowhere.org>
+References: <20080426140210.GA13365@basil.nowhere.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080426140210.GA13365@basil.nowhere.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-OriginalArrivalTime: 26 Apr 2008 14:45:07.0108 (UTC) FILETIME=[1EAF5640:01C8A7AC]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 26 Apr 2008 14:00:44 +0300 Adrian Bunk <bunk@kernel.org> wrote:
+> ACPI: APIC 1FFF0938, 0040 (r0 QEMU   QEMUAPIC        1 QEMU        1)
+> No NUMA configuration found
+> Faking a node at 0000000000000000-000000001fff0000
+> Bootmem setup node 0 0000000000000000-000000001fff0000
+>   NODE_DATA [000000000000b000 - 0000000000011fff]
+>   bootmap [0000000000012000 -  0000000000015fff] pages 4
+> early res: 0 [0-fff] BIOS data page
+> PANIC: early exception 06 rip 10:ffffffff8083b23e error 0 cr2 0
 
-> Why do other people get over 100 checkpatch fixes into the tree at once 
-> or Linus applies patches directly bypassing the maintainers (like the 
-> one you sent just before [3], which I've also already sent before [4]) 
-> but my patches bitrot forever?
+Never mind. That one was caused by a mistake here (local patch) that
+I didn't notice. When I fix that I just get the set_entity scheduler
+oops in qemu the other systems are seeing.
 
-If I am not cc'ed on a patch and have to resort to plucking it off the
-mailing list it ends up being significantly more work and more error-prone
-for me to process it.
-
-I used to merge your patches but then you chose to stop ccing me on them so
-I stopped applying them.  The increased hassle just isn't worth it for some
-random make-foo-static patch.  I do try to keep an eye out for more
-significant changes but hey, stuff happens.
-
-You chose to disrupt the workflow and now you're here complaining and blaming
-others for the consequences of your own action.
+-Andi
