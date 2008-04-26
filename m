@@ -1,52 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760602AbYDZXHg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759161AbYDZXOd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760602AbYDZXHg (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Apr 2008 19:07:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752903AbYDZXHT
+	id S1759161AbYDZXOd (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Apr 2008 19:14:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752850AbYDZXOY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Apr 2008 19:07:19 -0400
-Received: from smtpq2.tilbu1.nb.home.nl ([213.51.146.201]:59377 "EHLO
-	smtpq2.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752209AbYDZXHS (ORCPT
+	Sat, 26 Apr 2008 19:14:24 -0400
+Received: from twinlark.arctic.org ([208.69.40.136]:44279 "EHLO
+	twinlark.arctic.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752521AbYDZXOX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Apr 2008 19:07:18 -0400
-Message-ID: <4813B5AB.4060308@keyaccess.nl>
-Date: Sun, 27 Apr 2008 01:07:23 +0200
-From: Rene Herman <rene.herman@keyaccess.nl>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+	Sat, 26 Apr 2008 19:14:23 -0400
+Date: Sat, 26 Apr 2008 16:14:22 -0700 (PDT)
+From: dean gaudet <dean@arctic.org>
+To: "H. Peter Anvin" <hpa@zytor.com>
+cc: Erik Bosman <ejbosman@cs.vu.nl>, Michael Kerrisk <mtk.manpages@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       Andrea Arcangeli <andrea@cpushare.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [PATCH 2/3] x86: Implement prctl PR_GET_TSC and PR_SET_TSC
+In-Reply-To: <4813B1EF.5090806@zytor.com>
+Message-ID: <alpine.DEB.1.10.0804261612430.6108@twinlark.arctic.org>
+References: <Pine.GSO.4.56.0804111855070.16669@keg.few.vu.nl> <517f3f820804140357k62b3bff4p555ba6a5b9438c35@mail.gmail.com> <Pine.GSO.4.56.0804141349060.17644@keg.few.vu.nl> <alpine.DEB.1.10.0804261546140.6108@twinlark.arctic.org>
+ <4813B1EF.5090806@zytor.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-To: Bjorn Helgaas <bjorn.helgaas@hp.com>
-CC: Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Adam Belay <ambx1@neo.rr.com>,
-       Adam M Belay <abelay@mit.edu>, Li Shaohua <shaohua.li@intel.com>,
-       Matthieu Castet <castet.matthieu@free.fr>,
-       Thomas Renninger <trenn@suse.de>, Jaroslav Kysela <perex@perex.cz>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [patch 50/54] ISAPNP: fold isapnp_read_resources() back into
- isapnp_get_resources()
-References: <20080425183807.366134771@ldl.fc.hp.com> <20080425183934.516655076@ldl.fc.hp.com>
-In-Reply-To: <20080425183934.516655076@ldl.fc.hp.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -1.0 (-)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 25-04-08 20:38, Bjorn Helgaas wrote:
+On Sat, 26 Apr 2008, H. Peter Anvin wrote:
 
-> +	for (i = 0; i < ISAPNP_MAX_MEM; i++) {
-> +		ret = isapnp_read_word(ISAPNP_CFG_MEM + (i << 3)) << 8;
-> +		if (!ret)
-> +			continue;
-> +		pnp_res = pnp_add_mem_resource(dev, ret, ret, 0);
-> +		if (pnp_res)
-> +			pnp_res->index = i;
-> +	}
-> +	for (i = 0; i < ISAPNP_MAX_IRQ; i++) {
-> +		ret = (isapnp_read_word(ISAPNP_CFG_IRQ + (i << 1)) >>
-> +		     8);
+> dean gaudet wrote:
+> > 
+> > i might be too late... but shouldn't these #defines be PR_SET_RDTSC and
+> > PR_GET_RDTSC or something like that?
+> > 
+> > to me calling them PR_SET_TSC/PR_GET_TSC just seem like alternative ways to
+> > change/get the TSC (and could even reduce to portable TSC implementations...
+> > since such registers do exist on other architectures).
+> > 
+> 
+> I would argue no, the flag is "is the TSC available".  RDTSC is an
+> x86-specific name and would map poorly onto other architectures.
 
-Truly trivial, but if you kill the useless outer (), it fits on one line...
+yeah but "SET TSC" to me reads as "set the TSC".... i read nothing about 
+making some instruction available or not.
 
-Rene
+although clock_gettime/clock_settime could more natural APIs for such 
+things.
+
+-dean
