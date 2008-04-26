@@ -1,233 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762396AbYDZVaz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761344AbYDZVbX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762396AbYDZVaz (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Apr 2008 17:30:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757893AbYDZV2c
+	id S1761344AbYDZVbX (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Apr 2008 17:31:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760525AbYDZV3T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Apr 2008 17:28:32 -0400
-Received: from mail.deathmatch.net ([70.167.247.36]:48005 "EHLO
-	mail.deathmatch.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757707AbYDZV2a (ORCPT
+	Sat, 26 Apr 2008 17:29:19 -0400
+Received: from qmta08.westchester.pa.mail.comcast.net ([76.96.62.80]:47814
+	"EHLO QMTA08.westchester.pa.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1760351AbYDZV3S (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Apr 2008 17:28:30 -0400
-From: Bob Copeland <me@bobcopeland.com>
-To: akpm@linux-foundation.org
-Cc: hch@infradead.org, alan@lxorguk.ukuu.org.uk, miklos@szeredi.hu,
-       marcin.slusarz@gmail.com, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, Bob Copeland <me@bobcopeland.com>
-Subject: [PATCH 6/8] omfs: add bitmap routines
-Date: Sat, 26 Apr 2008 17:26:43 -0400
-Message-Id: <1209245205-10096-7-git-send-email-me@bobcopeland.com>
-X-Mailer: git-send-email 1.5.4.1
+	Sat, 26 Apr 2008 17:29:18 -0400
+X-Authority-Analysis: v=1.0 c=1 a=I8yP-RxiAAAA:8 a=vIVrlyNEpbZUReziowwA:9
+ a=uJ8pflNI5a2hi2o6xtW4W_HJ1MIA:4 a=AcZQ66N1Z8sA:10
+Date: Sat, 26 Apr 2008 17:23:27 -0400 (EDT)
+From: "Brian S. Julin" <bri@abrij.org>
+To: linux-kernel@vger.kernel.org
+Subject: OQO o2 extras driver, testers needed
+Message-ID: <Pine.LNX.4.64.0804261711140.32339@sheavy.abrij.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-    omfs: add bitmap routines
-    
-    Add block allocation and block bitmap management routines for OMFS.
-    
-    Signed-off-by: Bob Copeland <me@bobcopeland.com>
 
----
- fs/omfs/bitmap.c |  192 +++++++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 192 insertions(+)
+Code and writeup at:
 
-Index: linux-2.6/fs/omfs/bitmap.c
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6/fs/omfs/bitmap.c	2008-04-26 15:34:08.000000000 -0400
-@@ -0,0 +1,192 @@
-+#include <linux/kernel.h>
-+#include <linux/fs.h>
-+#include <linux/buffer_head.h>
-+#include <asm/div64.h>
-+#include "omfs.h"
-+
-+unsigned long omfs_count_free(struct super_block *sb)
-+{
-+	unsigned int i;
-+	unsigned long sum = 0;
-+	struct omfs_sb_info *sbi = OMFS_SB(sb);
-+	int nbits = sb->s_blocksize * 8;
-+
-+	for (i = 0; i < sbi->s_imap_size; i++)
-+		sum += nbits - bitmap_weight(sbi->s_imap[i], nbits);
-+
-+	return sum;
-+}
-+
-+/*
-+ *  Counts the run of zero bits starting at bit up to max.
-+ *  It handles the case where a run might spill over a buffer.
-+ *  Called with bitmap lock.
-+ */
-+static int count_run(unsigned long **addr, int nbits,
-+		int addrlen, int bit, int max)
-+{
-+	int count = 0;
-+	int x;
-+
-+	for (; addrlen > 0; addrlen--, addr++) {
-+		x = find_next_bit(*addr, nbits, bit);
-+		count += x - bit;
-+
-+		if (x < nbits || count > max)
-+			return min(count, max);
-+
-+		bit = 0;
-+	}
-+	return min(count, max);
-+}
-+
-+/*
-+ * Sets or clears the run of count bits starting with bit.
-+ * Called with bitmap lock.
-+ */
-+static int set_run(struct super_block *sb, int map,
-+		int nbits, int bit, int count, int set)
-+{
-+	int i;
-+	int err;
-+	struct buffer_head *bh;
-+	struct omfs_sb_info *sbi = OMFS_SB(sb);
-+
-+ 	err = -ENOMEM;
-+	bh = sb_bread(sb, clus_to_blk(sbi, sbi->s_bitmap_ino) + map);
-+	if (!bh)
-+		goto out;
-+
-+	for (i = 0; i < count; i++, bit++) {
-+		if (bit >= nbits) {
-+			bit = 0;
-+			map++;
-+
-+			mark_buffer_dirty(bh);
-+			brelse(bh);
-+			bh = sb_bread(sb,
-+				clus_to_blk(sbi, sbi->s_bitmap_ino) + map);
-+			if (!bh)
-+				goto out;
-+		}
-+		if (set) {
-+			set_bit(bit, sbi->s_imap[map]);
-+			set_bit(bit, (long *) bh->b_data);
-+		} else {
-+			clear_bit(bit, sbi->s_imap[map]);
-+			clear_bit(bit, (long *) bh->b_data);
-+		}
-+	}
-+	mark_buffer_dirty(bh);
-+	brelse(bh);
-+	err = 0;
-+out:
-+	return err;
-+}
-+
-+/*
-+ * Tries to allocate exactly one block.  Returns true if sucessful.
-+ */
-+int omfs_allocate_block(struct super_block *sb, u64 block)
-+{
-+	struct buffer_head *bh;
-+	struct omfs_sb_info *sbi = OMFS_SB(sb);
-+	int bits_per_entry = 8 * sb->s_blocksize;
-+	int map, bit;
-+	int ret = 0;
-+	u64 tmp;
-+
-+	tmp = block;
-+	bit = do_div(tmp, bits_per_entry);
-+	map = tmp;
-+
-+	mutex_lock(&sbi->s_bitmap_lock);
-+	if (map >= sbi->s_imap_size || test_and_set_bit(bit, sbi->s_imap[map]))
-+		goto out;
-+
-+	if (sbi->s_bitmap_ino > 0) {
-+		bh = sb_bread(sb, clus_to_blk(sbi, sbi->s_bitmap_ino) + map);
-+		if (!bh)
-+			goto out;
-+
-+		set_bit(bit, (long *) bh->b_data);
-+		mark_buffer_dirty(bh);
-+		brelse(bh);
-+	}
-+	ret = 1;
-+out:
-+	mutex_unlock(&sbi->s_bitmap_lock);
-+	return ret;
-+}
-+
-+
-+/*
-+ *  Tries to allocate a set of blocks.	The request size depends on the
-+ *  type: for inodes, we must allocate sbi->s_mirrors blocks, and for file
-+ *  blocks, we try to allocate sbi->s_clustersize, but can always get away
-+ *  with just one block.
-+ */
-+int omfs_allocate_range(struct super_block *sb,
-+			int min_request,
-+			int max_request,
-+			u64 *return_block,
-+			int *return_size)
-+{
-+	struct omfs_sb_info *sbi = OMFS_SB(sb);
-+	int bits_per_entry = 8 * sb->s_blocksize;
-+	int ret = 0;
-+	int i, run, bit;
-+
-+	mutex_lock(&sbi->s_bitmap_lock);
-+	for (i = 0; i < sbi->s_imap_size; i++) {
-+		bit = 0;
-+		while (bit < bits_per_entry) {
-+			bit = find_next_zero_bit(sbi->s_imap[i], bits_per_entry,
-+				bit);
-+
-+			if (bit == bits_per_entry)
-+				break;
-+
-+			run = count_run(&sbi->s_imap[i], bits_per_entry,
-+				sbi->s_imap_size-i, bit, max_request);
-+
-+			if (run >= min_request)
-+				goto found;
-+			bit += run;
-+		}
-+	}
-+	ret = -ENOSPC;
-+	goto out;
-+
-+found:
-+	*return_block = i * bits_per_entry + bit;
-+	*return_size = run;
-+	ret = set_run(sb, i, bits_per_entry, bit, run, 1);
-+
-+out:
-+	mutex_unlock(&sbi->s_bitmap_lock);
-+	return ret;
-+}
-+
-+/*
-+ * Clears count bits starting at a given block.
-+ */
-+int omfs_clear_range(struct super_block *sb, u64 block, int count)
-+{
-+	struct omfs_sb_info *sbi = OMFS_SB(sb);
-+	int bits_per_entry = 8 * sb->s_blocksize;
-+	u64 tmp;
-+	int map, bit, ret;
-+
-+	tmp = block;
-+	bit = do_div(tmp, bits_per_entry);
-+	map = tmp;
-+
-+	if (map >= sbi->s_imap_size)
-+		return 0;
-+
-+	mutex_lock(&sbi->s_bitmap_lock);
-+	ret = set_run(sb, map, bits_per_entry, bit, count, 0);
-+	mutex_unlock(&sbi->s_bitmap_lock);
-+	return ret;
-+}
+http://www.abrij.org/~bri/hw/oqowmi.html
 
+Anyone with a modicum of kernel skill and an OQO o2 is welcome/entreated 
+to give this a spin.  Once I have verification that a couple people other 
+than me have actually managed to use it, I'll work it up into patch form.
+Probably also works on the e2, but I'm not sure of that.
+
+Please CC me, I'm not a LKML subscriber.
+
+P.S. any HOWTOs with a checklist on adding a simple driver to the build 
+system?
+
+--
+Brian
