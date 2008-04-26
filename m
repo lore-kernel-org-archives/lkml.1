@@ -1,74 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758774AbYDZPbB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757742AbYDZPiD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758774AbYDZPbB (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Apr 2008 11:31:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753623AbYDZPat
+	id S1757742AbYDZPiD (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Apr 2008 11:38:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753921AbYDZPhv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Apr 2008 11:30:49 -0400
-Received: from wx-out-0506.google.com ([66.249.82.237]:50420 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757860AbYDZPas (ORCPT
+	Sat, 26 Apr 2008 11:37:51 -0400
+Received: from fg-out-1718.google.com ([72.14.220.158]:42592 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753913AbYDZPhu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Apr 2008 11:30:48 -0400
+	Sat, 26 Apr 2008 11:37:50 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Oi8gws0rHiupr3oS95WZdofmMGu5Ikzuy0Pp2QR6ODKlnfyULEXo7loOvFmmM0vui6EGlY7i5MiTnfmNlw+H37fLtnnz55Drnvbh1ZEj2EZ+jVFle8/bV8R8Bk+0L6J0CZsn3syJSm9ixJ7wxN2hPgjlnUnJdHFo3tCrvbcs9rg=
-Message-ID: <19f34abd0804260830w1b8654c2yaa9e7432b36b3597@mail.gmail.com>
-Date: Sat, 26 Apr 2008 17:30:46 +0200
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: "Julia Lawall" <julia@diku.dk>
-Subject: Re: [PATCH] headerdep: a tool for detecting inclusion cycles in header file
-Cc: "Adrian Bunk" <bunk@kernel.org>, "Sam Ravnborg" <sam@ravnborg.org>,
-       "Pekka Enberg" <penberg@cs.helsinki.fi>, linux-kbuild@vger.kernel.org,
-       kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <Pine.LNX.4.64.0804261720060.2756@ask.diku.dk>
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=VP6ybDk3LFrGXcvsswr3S+w7+bq3TBlCP/LfUJLBqxiX9BC6Y+yFg1kpapSV9tSD/uGxHhy/61amGdT2FHyqYCrehhtoIBgDHsdzwCPAF6cCKW1NLRK8J4Y3r2w0Wz4Clu8VOEZyUn/wGymphHkvhviGCq3oG/P3DHZgWm2yvz4=
+Message-ID: <48134C45.806@googlemail.com>
+Date: Sat, 26 Apr 2008 17:37:41 +0200
+From: Gabriel C <nix.or.die@googlemail.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+To: Ingo Molnar <mingo@elte.hu>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       Arjan van de Ven <arjan@infradead.org>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       Avi Kivity <avi@qumranet.com>
+Subject: Re: [git pull] x86 PAT changes
+References: <20080424225625.GB8717@elte.hu> <481330C6.7040109@googlemail.com> <20080426144203.GA19635@elte.hu>
+In-Reply-To: <20080426144203.GA19635@elte.hu>
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080426134554.GA20727@damson.getinternet.no>
-	 <20080426150030.GH2252@cs181133002.pp.htv.fi>
-	 <Pine.LNX.4.64.0804261720060.2756@ask.diku.dk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 4/26/08, Julia Lawall <julia@diku.dk> wrote:
-> On Sat, 26 Apr 2008, Adrian Bunk wrote:
->
->  > On Sat, Apr 26, 2008 at 03:45:54PM +0200, Vegard Nossum wrote:
->  > > Hi Sam,
->  > >
->  > > Maybe something like this could be useful for cleaning up headers (and
->  > > maintaining that cleanliness once it has been achieved). What do you think?
->  > >
->  > > (One thing which might or might not be good is that 'make headerdep' will
->  > >  also compile using CC if they're not already compiled. If this should be
->  > >  fixed, I think you'd know how to do it.)
->  >
->  > This way you only catch problems in the current kernel configuration.
->  >
->  > The only problems are under include/, and you should be able to do this
->  > by parsing all headers and without hooking into the build system.
->
->
-> I guess one would still have to consider all of the possible permutations
->  of values of configuration variables, to interpret the #ifdefs that have
->  an impact on what is included?  A quick grep suggests that they are mostly
->  related to  __KERNEL__, so perhaps it would not be too expensive to do.
+Ingo Molnar wrote:
+> * Gabriel C <nix.or.die@googlemail.com> wrote:
+> 
+>> Hi Ingo,
+>>
+>> When using an 64bit ( didn't got time to test 32bit now ) kernel[1] 
+>> with PAT enabled , kvm-intel does not work anymore.
+>>
+>> When modprobing kvm-intel , kvm is saying VT extension is disable by 
+>> BIOS which isn't true. When disabling PAT again ( no changes to BIOS ) 
+>> kvm-intel works again here.
+>>
+>> Is that an known problem ?
+> 
+> no, that side-effect was not known. Cc:-ed more folks.
 
-We don't interpret #defines or #ifdefs or #ifs at all. If we did this,
-then the program would detect no cycles (because of the header
-guards).
+It seems like the update triggers some compiler bug.
 
-The rationale is that any cycle at all, regardless of any guards that
-might exist, is wrong. In my opinion anwyay :-)
+Setting CC_OPTIMIZE_FOR_SIZE=n fixed that btw. 
 
-Vegard
+I don't have the time right now but later on today I will compile 
+gcc43_svn_branch and test again with CC_OPTIMIZE_FOR_SIZE=y and see what I get.
 
--- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
+Ingo sorry for the noise.
+
+Gabriel
