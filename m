@@ -1,90 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756387AbYDZNDQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755318AbYDZNRv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756387AbYDZNDQ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Apr 2008 09:03:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752958AbYDZNDA
+	id S1755318AbYDZNRv (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Apr 2008 09:17:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753030AbYDZNRk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Apr 2008 09:03:00 -0400
-Received: from e36.co.us.ibm.com ([32.97.110.154]:43395 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751656AbYDZNC7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Apr 2008 09:02:59 -0400
-Date: Sat, 26 Apr 2008 08:02:43 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: "Serge E. Hallyn" <serue@us.ibm.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Containers <containers@lists.osdl.org>, clg@fr.ibm.com,
-       linux-kernel@vger.kernel.org, Pavel Emelyanov <xemul@openvz.org>,
-       Benjamin Thery <benjamin.thery@bull.net>
-Subject: Re: [RFC][PATCH 0/7] Clone PTS namespace
-Message-ID: <20080426130243.GA8591@sergelap.austin.ibm.com>
-References: <1207779313.16926.12.camel@x61.ebiederm.org> <20080410015955.GA18227@sergelap.austin.rr.com> <1207812980.7509.25.camel@x61.ebiederm.org> <20080422142539.GA12623@sergelap.austin.ibm.com> <m1hcdtsovg.fsf@frodo.ebiederm.org> <20080423143610.GA13718@sergelap.austin.ibm.com> <20080423175749.GA17618@sergelap.austin.ibm.com> <m1tzhsmmo5.fsf@frodo.ebiederm.org> <20080425192102.GA17896@sergelap.austin.ibm.com> <m1lk314sz4.fsf@frodo.ebiederm.org>
+	Sat, 26 Apr 2008 09:17:40 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:58501 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752360AbYDZNRj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 Apr 2008 09:17:39 -0400
+Date: Sat, 26 Apr 2008 08:17:34 -0500
+From: Robin Holt <holt@sgi.com>
+To: Andrea Arcangeli <andrea@qumranet.com>
+Cc: Robin Holt <holt@sgi.com>, Jack Steiner <steiner@sgi.com>,
+       Christoph Lameter <clameter@sgi.com>, Nick Piggin <npiggin@suse.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       kvm-devel@lists.sourceforge.net, Kanoj Sarcar <kanojsarcar@yahoo.com>,
+       Roland Dreier <rdreier@cisco.com>,
+       Steve Wise <swise@opengridcomputing.com>, linux-kernel@vger.kernel.org,
+       Avi Kivity <avi@qumranet.com>, linux-mm@kvack.org,
+       general@lists.openfabrics.org, Hugh Dickins <hugh@veritas.com>,
+       akpm@linux-foundation.org, Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [PATCH 01 of 12] Core of mmu notifiers
+Message-ID: <20080426131734.GB19717@sgi.com>
+References: <Pine.LNX.4.64.0804221315160.3640@schroedinger.engr.sgi.com> <20080422223545.GP24536@duo.random> <20080422230727.GR30298@sgi.com> <20080423002848.GA32618@sgi.com> <20080423163713.GC24536@duo.random> <20080423221928.GV24536@duo.random> <20080424064753.GH24536@duo.random> <20080424095112.GC30298@sgi.com> <20080424153943.GJ24536@duo.random> <20080424174145.GM24536@duo.random>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <m1lk314sz4.fsf@frodo.ebiederm.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <20080424174145.GM24536@duo.random>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Eric W. Biederman (ebiederm@xmission.com):
-> "Serge E. Hallyn" <serue@us.ibm.com> writes:
+On Thu, Apr 24, 2008 at 07:41:45PM +0200, Andrea Arcangeli wrote:
+> A full new update will some become visible here:
 > 
-> 
-> > Heh, well I tried several approaches - adding tag_ops to kset, to ktype,
-> > etc.  Finally ended up just calling sysfs_enable_tagging on
-> > /sys/kernel/uids when that is created.  It's now working perfectly.
-> 
-> Sounds good.
-> 
-> >> I suspect since you are working on this and I seem to be stuck
-> >> in molasses at the moment it makes sense to figure out what it
-> >> will take to handle the uid namespace before pushing these
-> >> patches again.
-> >
-> > I had ported your patches to 2.6.25, but Benjamin in the meantime ported
-> > them to 2.6.25-mm1.  Since that's closer to the -net tree it's a more
-> > useful port, so I'll let him post his patchset.  Then I'll send the
-> > userns patch on top of that.  While I'm not actually able to send
-> > network traffic over a veth dev (I probably am still not setting it up
-> > right), I am able to pass veth devices into network namespaces, and the
-> > user namespaces are properly handled.
-> >
-> > I believe Benjamin did notice a problem with some symlinks not existing,
-> > and I think we want one more patch on top of yours removing the
-> > hold_net() from sysfs_mount, which I don't think was what you really
-> > wanted to do.  By simply removing that, if all tasks in a netns go away,
-> > the netns actually goes away and a lookup under a bind-mounted copy of
-> > its /sys/class/net is empty.
-> 
-> I will have to look, I need to refresh myself on where all of this code is.
-> I think hold_net was what I wanted.  A record that there is a user
-> but not something that will keep the network namespace from going away.
-> 
-> Essentially hold_net should be a debugging check rather then a
-> real limitation.
+> 	http://www.kernel.org/pub/linux/kernel/people/andrea/patches/v2.6/2.6.25/mmu-notifier-v14-pre3/
 
-Ah, I see, I assumed it actually pinned it.  Sorry, never mind then  :)
+I grabbed these and built them.  Only change needed was another include.
+After that, everything built fine and xpmem regression tests ran through
+the first four sets.  The fifth is the oversubscription test which trips
+my xpmem bug.  This is as good as the v12 runs from before.
 
--serge
+Since this include and the one for mm_types.h both are build breakages
+for ia64, I think you need to apply your ia64_cpumask and the following
+(possibly as a single patch) first or in your patch 1.  Without that,
+ia64 doing a git-bisect could hit a build failure.
 
-> > Anyway the patches should be hitting the list next week.
-> 
-> Cool.  We can figure out what we need to do to merge them from
-> there.
-> 
-> >> Taking a quick look and having a clue what we will need to
-> >> do for a theoretical device namespace is also a possibility.
-> >
-> > I'm not sure I'm familiar enough with the kobject/class/sysfs/device
-> > relationships yet to comment on that.  It doesn't look like it should
-> > really be a problem, though simply adding tags to every directory
-> > under /sys/class (/sys/class/tty, /sys/class/usb_device, etc) doesn't
-> > seem like necessarily the nicest way to go...
-> 
-> True.  And the goal is something maintainable.  There are still a lot
-> of implications of a device namespace left unexamined so we shall see.
-> 
-> Eric
+
+Index: mmu_v14_pre3_xpmem_v003_v1/include/linux/srcu.h
+===================================================================
+--- mmu_v14_pre3_xpmem_v003_v1.orig/include/linux/srcu.h	2008-04-26 06:41:54.000000000 -0500
++++ mmu_v14_pre3_xpmem_v003_v1/include/linux/srcu.h	2008-04-26 07:01:17.292071827 -0500
+@@ -27,6 +27,8 @@
+ #ifndef _LINUX_SRCU_H
+ #define _LINUX_SRCU_H
+ 
++#include <linux/mutex.h>
++
+ struct srcu_struct_array {
+ 	int c[2];
+ };
