@@ -1,64 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753909AbYDZQRk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759728AbYDZQRz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753909AbYDZQRk (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Apr 2008 12:17:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754662AbYDZQRb
+	id S1759728AbYDZQRz (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Apr 2008 12:17:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755523AbYDZQRe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Apr 2008 12:17:31 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:55899 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754111AbYDZQRa (ORCPT
+	Sat, 26 Apr 2008 12:17:34 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:33335 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755017AbYDZQRc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Apr 2008 12:17:30 -0400
-Date: Sat, 26 Apr 2008 10:17:14 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Vegard Nossum <vegard.nossum@gmail.com>
-Cc: Sam Ravnborg <sam@ravnborg.org>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       Adrian Bunk <bunk@kernel.org>, linux-kbuild@vger.kernel.org,
-       kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] headerdep: a tool for detecting inclusion cycles in header file
-Message-ID: <20080426161714.GR14990@parisc-linux.org>
-References: <20080426134554.GA20727@damson.getinternet.no>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080426134554.GA20727@damson.getinternet.no>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Sat, 26 Apr 2008 12:17:32 -0400
+Date: Sat, 26 Apr 2008 09:16:52 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Matt LaPlante <kernel1@cyberdogtech.com>
+Cc: linux-kernel@vger.kernel.org, trivial@kernel.org
+Subject: Re: [PATCH] 2.6.25-git7 - Kconfig Cleanup
+Message-Id: <20080426091652.19503700.randy.dunlap@oracle.com>
+In-Reply-To: <20080426011733.04dedb05.kernel1@cyberdogtech.com>
+References: <20080425232848.b4200d21.kernel1@cyberdogtech.com>
+	<20080425215037.0b7cead1.randy.dunlap@oracle.com>
+	<20080426011733.04dedb05.kernel1@cyberdogtech.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Apr 26, 2008 at 03:45:54PM +0200, Vegard Nossum wrote:
-> Maybe something like this could be useful for cleaning up headers (and
-> maintaining that cleanliness once it has been achieved). What do you think?
+On Sat, 26 Apr 2008 01:17:33 -0500 Matt LaPlante wrote:
+
+> On Fri, 25 Apr 2008 21:50:37 -0700
+> Randy Dunlap <randy.dunlap@oracle.com> wrote:
 > 
-> Subject: [PATCH] headerdep: a tool for detecting inclusion cycles in header files
+> > On Fri, 25 Apr 2008 23:28:48 -0500 Matt LaPlante wrote:
+> > 
+> > > Fix misc small typos/grammar in Kconfigs for 2.6.25-git7.
+> > > 
+> > > Signed-off-by: Matt LaPlante <kernel1@cyberdogtech.com>
+> > > --
+> > > 
+> > > diff -ru a/arch/cris/arch-v32/Kconfig b/arch/cris/arch-v32/Kconfig
+> > > --- a/arch/cris/arch-v32/Kconfig	2008-04-16 21:49:44.000000000 -0500
+> > > +++ b/arch/cris/arch-v32/Kconfig	2008-04-25 22:13:14.000000000 -0500
+> > > @@ -27,8 +27,8 @@
+> > >  	bool "Use one LED group"
+> > >  	help
+> > >  	  Select this if you want one Ethernet LED group. This LED group
+> > > -	  can be used for one or more Ethernet interfaces. However, it is
+> > > -	  recomended that each Ethernet interface use a dedicated LED group.
+> > > +	  can be used for one or more Ethernet interfaces, however it is
+> > 
+> > That comma creates a run-on sentence.  Period was better.
+> 
+> My problem is the second sentence starting with "however."  Although it's not technically breaking any rules, writing style guides generally advise against beginning sentences with it... and on a more basic level, I really dislike the way it reads in this case.
 
-Do we actually have inclusion cycles in header files?  I remember gcc
-warning about them when we were working on the parisc port (because we
-needed includes that differed from x86).  Has the new build system got
-rid of these warnings?
+I didn't have a problem with that.
 
-I think a more useful tool would be one which mapped something like
-'use of down()' to 'needs to include <linux/semaphore.h>'.  It needs
-to be at least somewhat done by hand because there are rules such
-as 'include linux/spinlock.h to get spinlock_t' (which is actually
-defined in linux/spinlock_types.h), but you want people to include
-<linux/completion.h> directly rather than rely on it being pulled in
-through linux/sched.h, for example.
+> May I suggest one of:
+> 
+> - This LED group can be used for one or more Ethernet interfaces, however it is recommended that each interface use a dedicated LED group. 
 
-It's further complicated by multi-file drivers, such as qla2xxx.  Each
-file includes qla_def.h which includes a lot of the necessary header
-files for them ... but then each file will include a few more header
-files that it needs.
+Bad sentence grammar.
 
-So some implicit includes are _good_ and other implicit includes are
-_bad_ (as they hurt when trying to rationalise the header files).
-Anyone who likes complexity and fuzzy logic like this want to take a
-stab at writing such a tool?
+> - This LED group can be used for one or more Ethernet interfaces.  It is still recommended that each interface use a dedicated LED group, however.
 
--- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+Inverting the order to put the "however" at the end doesn't help IMO.
+
+> - This LED group can be used for one or more Ethernet interfaces. (But it is recommended that each interface use a dedicated LED group.)
+
+- This LED group can be used for one or more Ethernet interfaces, but it is recommended that each interface use a dedicated LED group.
+
+?
+
+> > 
+> > Other than that, looks good.  Thanks.
+> > 
+> > > +	  recommended that each Ethernet interface use a dedicated LED group.
+> > >  
+> > >  config	ETRAX_NBR_LED_GRP_TWO
+> > >  	bool "Use two LED groups"
+
+
+---
+~Randy
