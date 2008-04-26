@@ -1,41 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756106AbYDZL2T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756204AbYDZLbS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756106AbYDZL2T (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Apr 2008 07:28:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751555AbYDZL2J
+	id S1756204AbYDZLbS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Apr 2008 07:31:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752149AbYDZLbF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Apr 2008 07:28:09 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:58681 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751445AbYDZL2I (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Apr 2008 07:28:08 -0400
-Date: Sat, 26 Apr 2008 13:34:05 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: Andi Kleen <andi@firstfloor.org>, Christoph Lameter <clameter@sgi.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, zdenek.kabelac@gmail.com,
-       rjw@sisk.pl, paulmck@linux.vnet.ibm.com, akpm@linux-foundation.org,
-       linux-ext4@vger.kernel.org, herbert@gondor.apana.org.au,
-       penberg@cs.helsinki.fi, linux-kernel@vger.kernel.org,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>, pageexec@freemail.hu,
-       "H. Peter Anvin" <hpa@zytor.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH 1/1] x86: fix text_poke
-Message-ID: <20080426113405.GC17905@one.firstfloor.org>
-References: <20080425.021301.193689806.davem@davemloft.net> <1209343883-7991-1-git-send-email-jirislaby@gmail.com> <alpine.LFD.1.10.0804250759260.2779@woody.linux-foundation.org> <20080425151747.GA3265@one.firstfloor.org> <Pine.LNX.4.64.0804251235550.6337@schroedinger.engr.sgi.com> <20080426095938.GB17905@one.firstfloor.org> <48130F00.5010408@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sat, 26 Apr 2008 07:31:05 -0400
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:47580 "EHLO smtp6.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751553AbYDZLbE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 Apr 2008 07:31:04 -0400
+Date: Sat, 26 Apr 2008 14:30:40 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Cc: kernel list <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org,
+       Ingo Molnar <mingo@elte.hu>, apw@shadowen.org,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Al Viro <viro@zeniv.linux.org.uk>
+Subject: Re: [BUG] 2.6.25-git8 Kernel Bug while bootup on ppc and x86
+Message-ID: <20080426113040.GC2252@cs181133002.pp.htv.fi>
+References: <48131052.2080102@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <48130F00.5010408@gmail.com>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <48131052.2080102@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Is anybody working on that? I would volunteer to do it.
+On Sat, Apr 26, 2008 at 04:51:54PM +0530, Kamalesh Babulal wrote:
+> While booting the 2.6.25-git8 kernel on the ppc and x86_64 machine, kernel
+> bug is hit. This was reported in the next-20080423 kernel 
+> http://lkml.org/lkml/2008/4/23/206.
+> 
+> Call trace of x86_64 machine
+> 
+> BUG: unable to handle kernel paging request at 00000000ffffffff
+> IP: [<ffffffff802359e5>] put_files_struct+0x25/0x110
+> PGD 0 
+> Oops: 0002 [333] SMP 
+> CPU 3 
+> Modules linked in:
+> Pid: 1391, comm: khelper Tainted: G      D  2.6.25-git8-autotest #1
+> RIP: 0010:[<ffffffff802359e5>]  [<ffffffff802359e5>] put_files_struct+0x25/0x110
+> RSP: 0000:ffff81090d06bdb0  EFLAGS: 00010282
+> RAX: 0000000000000101 RBX: fffffffffffffffe RCX: ffff8100010260e0
+> RDX: 0000000000000007 RSI: 0000000000000001 RDI: 00000000ffffffff
+> RBP: 00000000fffffffe R08: 2222222222222267 R09: 2222222222222222
+> R10: 0000000000000010 R11: 2222222222222222 R12: 00000000ffffffff
+> R13: ffff81032d2e9000 R14: ffff81090e74b000 R15: ffff81061e4cbce0
+> FS:  0000000000000000(0000) GS:ffff81032e4ae940(0000) knlGS:0000000000000000
+> CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
+> CR2: 00000000ffffffff CR3: 0000000000201000 CR4: 00000000000006e0
+> DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+> DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+> Process khelper (pid: 1391, threadinfo ffff81090d06a000, task ffff81090d8113a0)
+> Stack:  ffff81090d8113a0 fffffffffffffffe 00000000fffffffe ffff81032e556e00
+>  ffff81032d2e9000 ffff81090e74b000 ffff81061e4cbce0 ffffffff80294278
+>  ffff81090d06be70 ffffffff80636bc0 ffff81090d3646c0 ffff81032d2e9000
+> Call Trace:
+>  [<ffffffff80294278>] do_execve+0x108/0x230
+>...
 
-Feel free to take it.
+Most likely fixed by
+  http://lkml.org/lkml/2008/4/26/1
 
--Andi
+> Thanks & Regards,
+> Kamalesh Babulal,
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
