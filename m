@@ -1,80 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759675AbYDZQ5V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759696AbYDZREj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759675AbYDZQ5V (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Apr 2008 12:57:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758571AbYDZQ5M
+	id S1759696AbYDZREj (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Apr 2008 13:04:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758504AbYDZREa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Apr 2008 12:57:12 -0400
-Received: from wf-out-1314.google.com ([209.85.200.172]:18042 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755743AbYDZQ5K (ORCPT
+	Sat, 26 Apr 2008 13:04:30 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:38106 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758379AbYDZRE3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Apr 2008 12:57:10 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=J906SZj2A/5Ers0pkTHoSayxbKF79cvkLxYUArsUO5yPDXh8wmTz5rxW0HpKuZIOnJJktGAoxXlhidLVgp34bF7dmVrOTaoYYi5GB5H7+moQ4eh18L3hM0N+2LFj6t7GMs4fGRsEjsBK04oQA4OgAr+sntQNWkIKOPlIkQVRkDk=
-Message-ID: <19f34abd0804260957i62db6929s2a4227a517f3c9a1@mail.gmail.com>
-Date: Sat, 26 Apr 2008 18:57:09 +0200
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: "Adrian Bunk" <bunk@kernel.org>
-Subject: Re: [PATCH] headerdep: a tool for detecting inclusion cycles in header file
-Cc: "Sam Ravnborg" <sam@ravnborg.org>, "Pekka Enberg" <penberg@cs.helsinki.fi>,
-       linux-kbuild@vger.kernel.org, kernel-janitors@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20080426164450.GK2252@cs181133002.pp.htv.fi>
+	Sat, 26 Apr 2008 13:04:29 -0400
+Date: Sat, 26 Apr 2008 10:03:31 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Alexander van Heukelum <heukelum@mailshack.com>
+Subject: Re: [git pull] generic bitops, take 2
+In-Reply-To: <20080426151516.GA27894@elte.hu>
+Message-ID: <alpine.LFD.1.10.0804260955300.2813@woody.linux-foundation.org>
+References: <20080424215739.GA32378@elte.hu> <alpine.LFD.1.10.0804241510420.2779@woody.linux-foundation.org> <20080426151516.GA27894@elte.hu>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080426134554.GA20727@damson.getinternet.no>
-	 <20080426164450.GK2252@cs181133002.pp.htv.fi>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 4/26/08, Adrian Bunk <bunk@kernel.org> wrote:
-> On Sat, Apr 26, 2008 at 03:45:54PM +0200, Vegard Nossum wrote:
->
-> > Hi Sam,
->  >
->  > Maybe something like this could be useful for cleaning up headers (and
->  > maintaining that cleanliness once it has been achieved). What do you think?
->
-> >...
->
->  And another note (after looking at the Cc list):
->
->  Header cleanup is *not* something suitable as a first task for a janitor.
 
-Hehe, yes, I could not agree more!
 
-I have been trying to resolve some of these errors myself, but it's
-incredibly hard to get right.
+On Sat, 26 Apr 2008, Ingo Molnar wrote:
+> 
+> i've added Alexander's patch that does the cleanup suggested by you
 
-The reason I CCed kernel-janitors is that this IS a janitorial
-project. But I am not implying that janitor means "newbie" or trivial.
-At least the way I see it, janitor work is cleaning up, but not
-necessarily easy work. But I agree, definitely not a first task job.
+Well.. Not really:
 
->  The interesting cases are non-trivial.
->
->  And you need cross compilers for all architectures since fiddling with
->  #include's under include/ breaks code left and right that only compiled
->  due to some implicit #include (and if it still works due to another
->  implicit #include on x86 the latter might not be present on all
->  architectures).
+> diff --git a/arch/um/Kconfig.x86_64 b/arch/um/Kconfig.x86_64
+> index 3fbe69e..7a75043 100644
+> --- a/arch/um/Kconfig.x86_64
+> +++ b/arch/um/Kconfig.x86_64
+> @@ -27,6 +27,14 @@ config SMP_BROKEN
+>  	bool
+>  	default y
+>  
+> +config GENERIC_FIND_FIRST_BIT
+> +	bool
+> +	default y
+> +
+> +config GENERIC_FIND_NEXT_BIT
+> +	bool
+> +	default y
+> +
 
-Yep. I have been compiling cross-compilers myself. As a btw, I had
-already started some project to distribute binary cross-compilers
-http://folk.uio.no/vegardno/crosstool/ for the purpose of making
-cross-compiling easier to get started with. (It would be cool to have
-a complete suite of working cross-compilers in a single download.)
+It still declares this GENERIC_FIND_*_BIT thing separately for UM.
 
-Vegard
+Yes, that may _work_, but it's wrong to define it in two different places. 
 
--- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
+It also makes me wonder why Kconfig.i386 can just include 
+arch/x86/Kconfig.cpu, but x86_64 cannot?
+
+		Linus
