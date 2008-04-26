@@ -1,51 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759338AbYDZQMu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759147AbYDZQPZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759338AbYDZQMu (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Apr 2008 12:12:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754111AbYDZQMn
+	id S1759147AbYDZQPZ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Apr 2008 12:15:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754712AbYDZQPO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Apr 2008 12:12:43 -0400
-Received: from smtp120.sbc.mail.sp1.yahoo.com ([69.147.64.93]:36111 "HELO
-	smtp120.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754057AbYDZQMm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Apr 2008 12:12:42 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=fV2zIfw1J/h0jtJ9jQMD4k0ocxbQ/yD6rdp7x8lsvnmFYFAqWz51/nLXYpPSfmFm31EopR0WCOMZWJDf/zrKwapfKZhdf1z9C6+u8AUK5lII3Y2J8majDynXju0Bf33BEGcUArEbEI8p31OD9sYKaIQpx5YTh8KF13h78pIoZC8=  ;
-X-YMail-OSG: WHcZBIEVM1lvtU.F76sdD_ePkMzwYPEOHSOucbR7I48NtEZZ2yy59rHxWpuQg9jxssoQ.w1PuGfi15CUjqkNUM5zknNuNjr.o3SpoATyBMD3SzaPR2fro5Itb5kPo9H9ZhE-
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Ben Nizette <bn@niasdigital.com>
-Subject: Re: [PATCH] Give gpiolib an implementation of gpio_is_valid()
-Date: Sat, 26 Apr 2008 09:12:39 -0700
-User-Agent: KMail/1.9.6
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
-References: <1209207781.3756.120.camel@moss.renham>
-In-Reply-To: <1209207781.3756.120.camel@moss.renham>
+	Sat, 26 Apr 2008 12:15:14 -0400
+Received: from mtl.rackplans.net ([69.90.0.18]:39659 "EHLO mtl.rackplans.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754150AbYDZQPN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 Apr 2008 12:15:13 -0400
+Date: Sat, 26 Apr 2008 12:15:11 -0400 (EDT)
+From: Gerhard Mack <gmack@innerfire.net>
+X-X-Sender: gmack@mtl.rackplans.net
+To: Jiri Kosina <jkosina@suse.cz>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: [2.6.25] compat VDSO option not disabling
+In-Reply-To: <Pine.LNX.4.64.0804251632490.19002@twin.jikos.cz>
+Message-ID: <alpine.DEB.1.10.0804261213200.28624@mtl.rackplans.net>
+References: <alpine.DEB.1.10.0804241244360.28216@mtl.rackplans.net> <Pine.LNX.4.64.0804251632490.19002@twin.jikos.cz>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
-Content-Disposition: inline
-Message-Id: <200804260912.39970.david-b@pacbell.net>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 26 April 2008, Ben Nizette wrote:
-> Platforms which use generic (NOP) gpio routines get an implementation of
-> gpio_is_valid() (in linux/gpio.h) but the people who actually use gpio
-> don't get one.  Roll an implementation for gpiolib based on
-> gpio_request(); this ought to do for most people.
+I havn't enabled compat VDSO at the kernel command line or otherwise.  
+Something broke with this option. 
 
-There's already a gpio_is_valid() patch in the MM merge queue;
-it comes with the documentation, and covers implementations which
-include the <asm-generic/gpio.h> header (for cansleep stubs) but
-don't use gpiolib.
+	Gerhard
 
-So, please wait till RC1, by which time I expect Andrew's queue
-will be relatively depleted.  :)
 
-- Dave
+On Fri, 25 Apr 2008, Jiri Kosina wrote:
+
+> Date: Fri, 25 Apr 2008 16:33:48 +0200 (CEST)
+> From: Jiri Kosina <jkosina@suse.cz>
+> To: Gerhard Mack <gmack@innerfire.net>
+> Cc: linux-kernel@vger.kernel.org
+> Subject: Re: [2.6.25] compat VDSO option not disabling
+> 
+> On Thu, 24 Apr 2008, Gerhard Mack wrote:
+> 
+> > On my laptop I disabled the compat vdso option but it is till being 
+> > mapped.. Any ideas?
+> 
+> The changelog of the commit below explains that.
+> 
+> commit 1dbf527c51c6c20c19869c8125cb5b87c3d09506
+> Author: Jeremy Fitzhardinge <jeremy@goop.org>
+> Date:   Wed May 2 19:27:12 2007 +0200
+> 
+>     [PATCH] i386: Make COMPAT_VDSO runtime selectable.
+> 
+>     Now that relocation of the VDSO for COMPAT_VDSO users is done at
+>     runtime rather than compile time, it is possible to enable/disable
+>     compat mode at runtime.
+> 
+>     This patch allows you to enable COMPAT_VDSO mode with "vdso=2" on the
+>     kernel command line, or via sysctl.  (Switching on a running system
+>     shouldn't be done lightly; any process which was relying on the compat
+>     VDSO will be upset if it goes away.)
+> 
+>     The COMPAT_VDSO config option still exists, but if enabled it just
+>     makes vdso_enabled default to VDSO_COMPAT.
+> 
+> 
+
+--
+Gerhard Mack
+
+gmack@innerfire.net
+
+<>< As a computer I find your faith in technology amusing.
