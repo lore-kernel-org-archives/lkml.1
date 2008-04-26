@@ -1,57 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762008AbYDZTVW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761938AbYDZTWU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762008AbYDZTVW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Apr 2008 15:21:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761903AbYDZTVE
+	id S1761938AbYDZTWU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Apr 2008 15:22:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759589AbYDZTWG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Apr 2008 15:21:04 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:40745 "EHLO smtp5.pp.htv.fi"
+	Sat, 26 Apr 2008 15:22:06 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:59997 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761866AbYDZTVB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Apr 2008 15:21:01 -0400
-Date: Sat, 26 Apr 2008 22:20:37 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Sam Ravnborg <sam@ravnborg.org>
+	id S1759189AbYDZTWE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 Apr 2008 15:22:04 -0400
+Date: Sat, 26 Apr 2008 21:21:45 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
 Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       linux-kbuild <linux-kbuild@vger.kernel.org>
-Subject: Re: [GIT PULL] kbuild fixes
-Message-ID: <20080426192037.GR2252@cs181133002.pp.htv.fi>
-References: <20080426191256.GA784@uranus.ravnborg.org>
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Yinghai Lu <yinghai.lu@sun.com>, Yinghai Lu <yhlu.kernel@gmail.com>,
+       jbarnes@virtuousgeek.org
+Subject: Re: [RFC git pull] "big box" x86 changes
+Message-ID: <20080426192145.GA6853@elte.hu>
+References: <20080426185516.GA32364@elte.hu> <48137CF0.7090608@s5r6.in-berlin.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080426191256.GA784@uranus.ravnborg.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <48137CF0.7090608@s5r6.in-berlin.de>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Apr 26, 2008 at 09:12:56PM +0200, Sam Ravnborg wrote:
-> Hi Linus.
-> 
-> Please apply the following two fixes by pulling from:
-> 
->    master.kernel.org/pub/scm/linux/kernel/git/sam/kbuild.git
-> 
-> 
-> The MODULE_LICENSE fix is neded to get an allmodconfig
-> build fixed.
 
-Which one is this?
+* Stefan Richter <stefanr@s5r6.in-berlin.de> wrote:
 
-http://lkml.org/lkml/2008/3/31/50 ?
-(my allmod build is not yet finished)
+> Ingo Molnar wrote:
+>>       x86: fix k8-bus_64.c build
+>
+> Is it not necessary to fold this into a previous patch, to keep the tree 
+> bisectable?
 
-> 	Sam
+as i mentioned it i kept the tree as-is, to maintain its impression 
+about its historic behavior. That way people can see how it behaved, 
+what kind of breakages were observed, what time span the changes came 
+in, etc. Those non-bisectable fixlets will be backmerged for a real pull 
+request.
 
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+	Ingo
