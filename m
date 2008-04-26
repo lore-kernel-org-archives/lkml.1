@@ -1,113 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756887AbYDZGOW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756318AbYDZGRq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756887AbYDZGOW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Apr 2008 02:14:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751844AbYDZGOO
+	id S1756318AbYDZGRq (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Apr 2008 02:17:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751515AbYDZGRi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Apr 2008 02:14:14 -0400
-Received: from wa-out-1112.google.com ([209.85.146.176]:34595 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751363AbYDZGON (ORCPT
+	Sat, 26 Apr 2008 02:17:38 -0400
+Received: from mail.cyberdogtech.com ([64.22.125.39]:59078 "EHLO
+	mail.cyberdogtech.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751497AbYDZGRh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Apr 2008 02:14:13 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=C4S0ODim7gp1oK++4FcGzH8gFijhSwgSoJitMBDjNWttnlNsR7UK1v/fWsfrLDQlzJarQQehYF3aLHe2Qe18HVfsGki1HLi8WDLRdoiloV0amCHUXOLwyeZwewHU4HOYAb5RwpgJDRZa4HTXDJSnmtgJ14GB6S3KBwQ5t7Imy9s=
-Subject: [BUILDFIX PATCH] au0828: debug is a poor global identifier
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Mauro Carvalho Chehab <mchehab@infradead.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Fri, 25 Apr 2008 23:14:15 -0700
-Message-Id: <1209190455.14173.13.camel@brick>
+	Sat, 26 Apr 2008 02:17:37 -0400
+Date: Sat, 26 Apr 2008 01:17:33 -0500
+From: Matt LaPlante <kernel1@cyberdogtech.com>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: linux-kernel@vger.kernel.org, trivial@kernel.org
+Subject: Re: [PATCH] 2.6.25-git7 - Kconfig Cleanup
+Message-Id: <20080426011733.04dedb05.kernel1@cyberdogtech.com>
+In-Reply-To: <20080425215037.0b7cead1.randy.dunlap@oracle.com>
+References: <20080425232848.b4200d21.kernel1@cyberdogtech.com>
+	<20080425215037.0b7cead1.randy.dunlap@oracle.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.10.14; i686-pc-mingw32)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Avoid link-time warnings with debug declared in x86/kernel/entry_32.S
+On Fri, 25 Apr 2008 21:50:37 -0700
+Randy Dunlap <randy.dunlap@oracle.com> wrote:
 
-Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
----
-Otherwise you'll see link time warnings about multiple defintions of
-debug. (size 4 here, size 76 in entry_32.S)
+> On Fri, 25 Apr 2008 23:28:48 -0500 Matt LaPlante wrote:
+> 
+> > Fix misc small typos/grammar in Kconfigs for 2.6.25-git7.
+> > 
+> > Signed-off-by: Matt LaPlante <kernel1@cyberdogtech.com>
+> > --
+> > 
+> > diff -ru a/arch/cris/arch-v32/Kconfig b/arch/cris/arch-v32/Kconfig
+> > --- a/arch/cris/arch-v32/Kconfig	2008-04-16 21:49:44.000000000 -0500
+> > +++ b/arch/cris/arch-v32/Kconfig	2008-04-25 22:13:14.000000000 -0500
+> > @@ -27,8 +27,8 @@
+> >  	bool "Use one LED group"
+> >  	help
+> >  	  Select this if you want one Ethernet LED group. This LED group
+> > -	  can be used for one or more Ethernet interfaces. However, it is
+> > -	  recomended that each Ethernet interface use a dedicated LED group.
+> > +	  can be used for one or more Ethernet interfaces, however it is
+> 
+> That comma creates a run-on sentence.  Period was better.
 
- drivers/media/video/au0828/au0828-core.c |   14 +++++++-------
- drivers/media/video/au0828/au0828.h      |    4 ++--
- 2 files changed, 9 insertions(+), 9 deletions(-)
+My problem is the second sentence starting with "however."  Although it's not technically breaking any rules, writing style guides generally advise against beginning sentences with it... and on a more basic level, I really dislike the way it reads in this case.
 
-diff --git a/drivers/media/video/au0828/au0828-core.c b/drivers/media/video/au0828/au0828-core.c
-index e65d564..9b7a4d7 100644
---- a/drivers/media/video/au0828/au0828-core.c
-+++ b/drivers/media/video/au0828/au0828-core.c
-@@ -32,9 +32,9 @@
-  * 4 = I2C related
-  * 8 = Bridge related
-  */
--unsigned int debug;
--module_param(debug, int, 0644);
--MODULE_PARM_DESC(debug, "enable debug messages");
-+unsigned int au0828_debug;
-+module_param(au0828_debug, int, 0644);
-+MODULE_PARM_DESC(au0828_debug, "enable debug messages");
- 
- unsigned int usb_debug;
- module_param(usb_debug, int, 0644);
-@@ -229,23 +229,23 @@ static int __init au0828_init(void)
- {
- 	int ret;
- 
--	if (debug)
-+	if (au0828_debug)
- 		printk(KERN_INFO "%s() Debugging is enabled\n", __func__);
- 
- 	if (usb_debug) {
- 		printk(KERN_INFO "%s() USB Debugging is enabled\n", __func__);
--		debug |= 2;
-+		au0828_debug |= 2;
- 	}
- 
- 	if (i2c_debug) {
- 		printk(KERN_INFO "%s() I2C Debugging is enabled\n", __func__);
--		debug |= 4;
-+		au0828_debug |= 4;
- 	}
- 
- 	if (bridge_debug) {
- 		printk(KERN_INFO "%s() Bridge Debugging is enabled\n",
- 		       __func__);
--		debug |= 8;
-+		au0828_debug |= 8;
- 	}
- 
- 	printk(KERN_INFO "au0828 driver loaded\n");
-diff --git a/drivers/media/video/au0828/au0828.h b/drivers/media/video/au0828/au0828.h
-index 0200b9f..8344c45 100644
---- a/drivers/media/video/au0828/au0828.h
-+++ b/drivers/media/video/au0828/au0828.h
-@@ -96,7 +96,7 @@ struct au0828_buff {
- /* au0828-core.c */
- extern u32 au0828_read(struct au0828_dev *dev, u16 reg);
- extern u32 au0828_write(struct au0828_dev *dev, u16 reg, u32 val);
--extern unsigned int debug;
-+extern unsigned int au0828_debug;
- extern unsigned int usb_debug;
- extern unsigned int bridge_debug;
- 
-@@ -123,6 +123,6 @@ extern int au0828_dvb_register(struct au0828_dev *dev);
- extern void au0828_dvb_unregister(struct au0828_dev *dev);
- 
- #define dprintk(level, fmt, arg...)\
--	do { if (debug & level)\
-+	do { if (au0828_debug & level)\
- 		printk(KERN_DEBUG DRIVER_NAME "/0: " fmt, ## arg);\
- 	} while (0)
+May I suggest one of:
+
+- This LED group can be used for one or more Ethernet interfaces, however it is recommended that each interface use a dedicated LED group. 
+
+- This LED group can be used for one or more Ethernet interfaces.  It is still recommended that each interface use a dedicated LED group, however.
+
+- This LED group can be used for one or more Ethernet interfaces. (But it is recommended that each interface use a dedicated LED group.)
+
+
+> 
+> Other than that, looks good.  Thanks.
+> 
+> > +	  recommended that each Ethernet interface use a dedicated LED group.
+> >  
+> >  config	ETRAX_NBR_LED_GRP_TWO
+> >  	bool "Use two LED groups"
+> 
+> ---
+> ~Randy
+
+
 -- 
-1.5.5.1.270.g89765
-
-
-
+Matt LaPlante
+CCNP, CCDP, A+, Linux+, CQS
+kernel1@cyberdogtech.com
