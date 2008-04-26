@@ -1,31 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756267AbYDZGu1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756706AbYDZHeW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756267AbYDZGu1 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Apr 2008 02:50:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752053AbYDZGuO
+	id S1756706AbYDZHeW (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Apr 2008 03:34:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751407AbYDZHeF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Apr 2008 02:50:14 -0400
-Received: from gw.goop.org ([64.81.55.164]:46999 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751990AbYDZGuN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Apr 2008 02:50:13 -0400
-Message-ID: <4812D09D.6010901@goop.org>
-Date: Fri, 25 Apr 2008 23:50:05 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080418)
+	Sat, 26 Apr 2008 03:34:05 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:53377 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751393AbYDZHeD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 Apr 2008 03:34:03 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <4812DA93.6020707@s5r6.in-berlin.de>
+Date: Sat, 26 Apr 2008 09:32:35 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.13) Gecko/20080419 SeaMonkey/1.1.9
 MIME-Version: 1.0
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Andi Kleen <andi@firstfloor.org>,
-       Ingo Molnar <mingo@elte.hu>, Jiri Slaby <jirislaby@gmail.com>,
-       David Miller <davem@davemloft.net>, zdenek.kabelac@gmail.com,
-       rjw@sisk.pl, paulmck@linux.vnet.ibm.com, akpm@linux-foundation.org,
-       linux-ext4@vger.kernel.org, herbert@gondor.apana.org.au,
-       penberg@cs.helsinki.fi, clameter@sgi.com, linux-kernel@vger.kernel.org,
-       pageexec@freemail.hu
-Subject: Re: [PATCH 1/1] x86: fix text_poke
-References: <alpine.LFD.1.10.0804250904560.2779@woody.linux-foundation.org> <20080425161916.GD3265@one.firstfloor.org> <20080425163035.GE9503@Krystal> <481209F2.4050908@zytor.com> <20080425170929.GA16180@Krystal> <20080425183748.GB16180@Krystal> <48123C9B.9020306@zytor.com> <20080425203717.GB25950@Krystal> <481241DC.3070601@zytor.com> <alpine.LFD.1.10.0804251349510.2779@woody.linux-foundation.org> <20080425211205.GC25950@Krystal>
-In-Reply-To: <20080425211205.GC25950@Krystal>
+To: Erez Zadok <ezk@cs.sunysb.edu>
+CC: hch@infradead.org, viro@ftp.linux.org.uk, akpm@linux-foundation.org,
+       krh@redhat.com, airlied@linux.ie, rolandd@cisco.com,
+       James.Bottomley@HansenPartnership.com, hjk@linutronix.de,
+       vandrove@vc.cvut.cz, mfasheh@suse.com, hugh@veritas.com, perex@perex.cz,
+       avi@qumranet.com, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH] VM: vm_ops->fault takes explicit struct file
+References: <200804252320.m3PNK0Bw014449@agora.fsl.cs.sunysb.edu>
+In-Reply-To: <200804252320.m3PNK0Bw014449@agora.fsl.cs.sunysb.edu>
 X-Enigmail-Version: 0.95.6
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
@@ -33,36 +33,35 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mathieu Desnoyers wrote:
-> * Linus Torvalds (torvalds@linux-foundation.org) wrote:
->   
->> On Fri, 25 Apr 2008, H. Peter Anvin wrote:
->>     
->>> Yes, that should work.  It's still ugly, and I have to say I find the
->>> complexity rather distasteful.  I am willing to be convinced it's worth it,
->>> but I would really like to see hard numbers.
->>>       
->> I really cannot imagine that this kind of pain is *ever* worth it. 
->>
->> Please give an example of something so important that we'd want to do 
->> complex code rewriting on the fly. What _is_ the point of imv_cond()?
->>
->> 		Linus
->>     
->
-> The point is to provide a way to dynamically enable code at runtime
-> without noticeable performance impact on the system. It's principally
-> useful to control the markers in the kernel, which can be placed in very
-> frequently executed code paths. The original markers add a memory read,
-> test and conditional branch at each marker site. By using the immediate
-> values patchset, it goes down to a load immediate value, test and branch.
->
-> However, Ingo was still unhappy with the conditional branch, so I cooked
-> this jump patching optimization on top of the immediate values. 
+Erez Zadok wrote:
+> For convenience of review and bisectability, I present the changes as one
+> patch here.  If desired, I can split it for each subsystem.
 
-I think all this demonstrates that the conditional branch is a bearable 
-cost compared to the alternative.  A conditional branch which almost 
-always branches the same way is very predictable, and really shouldn't 
-cost very much.
+Hmm, a split patch won't be useful; it won't compile.
 
-    J
+Besides, this change doesn't look too intrusive to me.  For example, 
+changes like this...
+
+[...]
+> --- a/drivers/ieee1394/dma.c
+> +++ b/drivers/ieee1394/dma.c
+> @@ -232,7 +232,7 @@ void dma_region_sync_for_device(struct dma_region *dma, unsigned long offset,
+>  #ifdef CONFIG_MMU
+>  
+>  static int dma_region_pagefault(struct vm_area_struct *vma,
+> -				struct vm_fault *vmf)
+> +				struct vm_fault *vmf, struct file *file)
+>  {
+>  	struct dma_region *dma = (struct dma_region *)vma->vm_private_data;
+>  
+
+...are unlikely to cause objections or merge rejects.  ACK from me for 
+the ieee1394 part, FWIW.
+
+PS:  It's an obscure and unimportant fact, but you are not required to 
+Cc krh on changes in drivers/ieee1394; he is interested in 
+drivers/firewire which is separate code.
+-- 
+Stefan Richter
+-=====-==--- -=-- ==-=-
+http://arcgraph.de/sr/
