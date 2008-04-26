@@ -1,65 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760326AbYDZRdh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760657AbYDZRe1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760326AbYDZRdh (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Apr 2008 13:33:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751501AbYDZRda
+	id S1760657AbYDZRe1 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Apr 2008 13:34:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751501AbYDZReS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Apr 2008 13:33:30 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:39176 "EHLO smtps.tip.net.au"
+	Sat, 26 Apr 2008 13:34:18 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:60961 "EHLO pasmtpB.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751369AbYDZRda (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Apr 2008 13:33:30 -0400
-Date: Sun, 27 Apr 2008 03:33:21 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: LKML <linux-kernel@vger.kernel.org>,
+	id S1751493AbYDZReS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 Apr 2008 13:34:18 -0400
+Date: Sat, 26 Apr 2008 19:34:50 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Linus <torvalds@linux-foundation.org>
-Subject: Re: optimized inlining
-Message-Id: <20080427033321.0e973d12.sfr@canb.auug.org.au>
-In-Reply-To: <20080424095932.70c87714.sfr@canb.auug.org.au>
-References: <20080424095932.70c87714.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.5.0beta2 (GTK+ 2.12.9; i486-pc-linux-gnu)
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Alexander van Heukelum <heukelum@mailshack.com>
+Subject: Re: [git pull] generic bitops, take 2
+Message-ID: <20080426173450.GB29451@uranus.ravnborg.org>
+References: <20080424215739.GA32378@elte.hu> <alpine.LFD.1.10.0804241510420.2779@woody.linux-foundation.org> <20080426151516.GA27894@elte.hu> <alpine.LFD.1.10.0804260955300.2813@woody.linux-foundation.org>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Sun__27_Apr_2008_03_33_21_+1000__sgfp+PY5zUZJfU."
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.1.10.0804260955300.2813@woody.linux-foundation.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Sun__27_Apr_2008_03_33_21_+1000__sgfp+PY5zUZJfU.
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Sat, Apr 26, 2008 at 10:03:31AM -0700, Linus Torvalds wrote:
+> 
+> 
+> On Sat, 26 Apr 2008, Ingo Molnar wrote:
+> > 
+> > i've added Alexander's patch that does the cleanup suggested by you
+> 
+> Well.. Not really:
+> 
+> > diff --git a/arch/um/Kconfig.x86_64 b/arch/um/Kconfig.x86_64
+> > index 3fbe69e..7a75043 100644
+> > --- a/arch/um/Kconfig.x86_64
+> > +++ b/arch/um/Kconfig.x86_64
+> > @@ -27,6 +27,14 @@ config SMP_BROKEN
+> >  	bool
+> >  	default y
+> >  
+> > +config GENERIC_FIND_FIRST_BIT
+> > +	bool
+> > +	default y
+> > +
+> > +config GENERIC_FIND_NEXT_BIT
+> > +	bool
+> > +	default y
+> > +
+> 
+> It still declares this GENERIC_FIND_*_BIT thing separately for UM.
 
-Hi Ingo,
+It would be nice if this could follow the sample outlined
+in Documentation/kbuild/kconfig-language.txt.
 
-On Thu, 24 Apr 2008 09:59:32 +1000 Stephen Rothwell <sfr@canb.auug.org.au> =
-wrote:
->
-> Could you please merge your two patches "x86: add optimized inlining" and
-> "generic: optimized inlining, fix" before you send them to Linus.  This
-> way we won't have another bad spot to land while bisecting on powerpc.
->=20
-> Thanks.
+See the section about HAVE_
 
-I take it as a "no".
+Basically we should only define the config symbol once in all
+the Kconfig files and where we then want to use this function
+we should select the config symbol.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Sun__27_Apr_2008_03_33_21_+1000__sgfp+PY5zUZJfU.
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFIE2dmTgG2atn1QN8RAvZBAJ9o9sI31RhgjttaQgqzL5SjLRKpnQCgiHUz
-i/JAHN7dF1eDmP4ZcjOqqWk=
-=ZAOz
------END PGP SIGNATURE-----
-
---Signature=_Sun__27_Apr_2008_03_33_21_+1000__sgfp+PY5zUZJfU.--
+	Sam
