@@ -1,63 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762258AbYDZTsm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761832AbYDZTxK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762258AbYDZTsm (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Apr 2008 15:48:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759586AbYDZTsd
+	id S1761832AbYDZTxK (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Apr 2008 15:53:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759572AbYDZTw5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Apr 2008 15:48:33 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:40313 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759196AbYDZTsc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Apr 2008 15:48:32 -0400
-Date: Sat, 26 Apr 2008 21:49:04 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       linux-kbuild <linux-kbuild@vger.kernel.org>
-Subject: Re: [GIT PULL] kbuild fixes
-Message-ID: <20080426194904.GB9131@uranus.ravnborg.org>
-References: <20080426191256.GA784@uranus.ravnborg.org> <20080426192037.GR2252@cs181133002.pp.htv.fi> <20080426193701.GA9131@uranus.ravnborg.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080426193701.GA9131@uranus.ravnborg.org>
-User-Agent: Mutt/1.4.2.1i
+	Sat, 26 Apr 2008 15:52:57 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:44682 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756846AbYDZTw4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 Apr 2008 15:52:56 -0400
+Date: Sat, 26 Apr 2008 12:52:33 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Yinghai Lu <yinghai.lu@sun.com>, Yinghai Lu <yhlu.kernel@gmail.com>,
+       jbarnes@virtuousgeek.org
+Subject: Re: [git pull] "big box" x86 changes, bootmem/sparsemem
+In-Reply-To: <20080426194143.GA8366@elte.hu>
+Message-ID: <alpine.LFD.1.10.0804261247020.2813@woody.linux-foundation.org>
+References: <20080426185516.GA32364@elte.hu> <alpine.LFD.1.10.0804261205490.2813@woody.linux-foundation.org> <20080426194143.GA8366@elte.hu>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Apr 26, 2008 at 09:37:01PM +0200, Sam Ravnborg wrote:
-> On Sat, Apr 26, 2008 at 10:20:37PM +0300, Adrian Bunk wrote:
-> > On Sat, Apr 26, 2008 at 09:12:56PM +0200, Sam Ravnborg wrote:
-> > > Hi Linus.
-> > > 
-> > > Please apply the following two fixes by pulling from:
-> > > 
-> > >    master.kernel.org/pub/scm/linux/kernel/git/sam/kbuild.git
-> > > 
-> > > 
-> > > The MODULE_LICENSE fix is neded to get an allmodconfig
-> > > build fixed.
-> > 
-> > Which one is this?
-> > 
-> > http://lkml.org/lkml/2008/3/31/50 ?
-> > (my allmod build is not yet finished)
-> 
-> The changelog was actually bad for this one.
-> I saw two classes of problems:
-> 
-> 1) I got report about broken builds - fbdev was the culprint.
-> 2) a "make CONFIG_DEBUG_SECTION_MISMATCH=y" build broke
->    immediately.
-> 
-> I made it non-fatal because we had at least one module that
-> was not yet fixed.
-And by the way - had this been in -mm/-next as it ought to
-be we wuld know the eventual breakage it would have caused.
-But I have been a lousy maintainer the last months so that
-did not happen as it should and the MODULE_LICENSE
-thing went straight to -linus.
 
-	Sam
+
+On Sat, 26 Apr 2008, Ingo Molnar wrote:
+>  #ifdef CONFIG_NUMA
+> +	nid = phys_to_nid(phys);
+> +	next_nid = phys_to_nid(phys + len - 1);
+> +	if (nid == next_nid)
+>  	reserve_bootmem_node(NODE_DATA(nid), phys, len, BOOTMEM_DEFAULT);
+> -#else
+> -	reserve_bootmem(phys, len, BOOTMEM_DEFAULT);
+> +	else
+>  #endif
+> +	reserve_bootmem(phys, len, BOOTMEM_DEFAULT);
+> +
+
+Noticed this when just trying to read the code to see if it looks sensible 
+(without looking at any real details).
+
+Code like this is *not* acceptable.
+
+We do proper indentations. Improperly indented code is buggy. It doesn't 
+matter if the compiler might generate the same code with or without 
+indentation, it's still totally unacceptable.
+
+Having preprocessor conditionals that mix things up is not an excuse, and 
+it might be an argument for not doing the conditional that way (ie maybe 
+just make sure that when NUMA is not on, nid/next_nid will always be 
+different, and in a way that the compiler can perhaps see statically that 
+they are different - so that you can have the conditional there even with 
+NUMA off, but the compiler will just fold it away?).
+
+		Linus
