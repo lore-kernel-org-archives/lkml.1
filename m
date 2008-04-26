@@ -1,28 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755128AbYDZLKE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755676AbYDZLN3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755128AbYDZLKE (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Apr 2008 07:10:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752291AbYDZLJx
+	id S1755676AbYDZLN3 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Apr 2008 07:13:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752556AbYDZLNW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Apr 2008 07:09:53 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:38778 "EHLO mx2.mail.elte.hu"
+	Sat, 26 Apr 2008 07:13:22 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:35320 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752149AbYDZLJx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Apr 2008 07:09:53 -0400
-Date: Sat, 26 Apr 2008 13:09:02 +0200
+	id S1752291AbYDZLNV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 Apr 2008 07:13:21 -0400
+Date: Sat, 26 Apr 2008 13:13:07 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       Jason Baron <jbaron@redhat.com>, Rusty Russell <rusty@rustcorp.com.au>,
-       Adrian Bunk <bunk@stusta.de>, Andi Kleen <andi@firstfloor.org>,
-       Christoph Hellwig <hch@infradead.org>, akpm@osdl.org
-Subject: Re: [patch 13/37] Immediate Values - Architecture Independent Code
-Message-ID: <20080426110901.GA31497@elte.hu>
-References: <20080424150324.802695381@polymtl.ca> <20080424151357.576697846@polymtl.ca> <20080425145552.GA20351@elte.hu> <20080426093641.GA10060@elte.hu>
+To: Pekka Paalanen <pq@iki.fi>
+Cc: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Subject: Re: [PATCH v2] x86 mmiotrace: dynamically disable non-boot CPUs
+Message-ID: <20080426111307.GA401@elte.hu>
+References: <20080413224207.4430a09c@daedalus.pq.iki.fi> <20080413230552.33ca587a@daedalus.pq.iki.fi> <20080424223947.55c053f6@daedalus.pq.iki.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080426093641.GA10060@elte.hu>
+In-Reply-To: <20080424223947.55c053f6@daedalus.pq.iki.fi>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -37,59 +35,24 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+* Pekka Paalanen <pq@iki.fi> wrote:
 
-> > randconfig testing in sched-devel caught a build bug - fixed by the 
-> > patch below.
+> From 8979ee55cb6a429c4edd72ebec2244b849f6a79a Mon Sep 17 00:00:00 2001
+> From: Pekka Paalanen <pq@iki.fi>
+> Date: Sat, 12 Apr 2008 00:18:57 +0300
+> Subject: [PATCH] x86 mmiotrace: dynamically disable non-boot CPUs
 > 
-> found another build failure - the better fix is the one below.
+> Mmiotrace is not reliable with multiple CPUs and may miss events. Drop 
+> to single CPU when mmiotrace is activated.
+> 
+> Signed-off-by: Pekka Paalanen <pq@iki.fi>
+> ---
+> 
+> I've tested this patch on my Core 2 Duo laptop, and with "[PATCH v2] 
+> Check for breakpoint in text_poke to eliminate bug_on" cpu hotplug 
+> seems to work fine on a sched-devel/latest SMP kernel both with and 
+> without CONFIG_HOTPLUG_CPU.
 
-or rather the one below ...
+thanks Pekka, applied.
 
------------->
-Subject: markers: fix2
-From: Ingo Molnar <mingo@elte.hu>
-Date: Sat Apr 26 11:19:00 CEST 2008
-
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- include/linux/module.h |   13 +++++++------
- 1 file changed, 7 insertions(+), 6 deletions(-)
-
-Index: linux/include/linux/module.h
-===================================================================
---- linux.orig/include/linux/module.h
-+++ linux/include/linux/module.h
-@@ -472,9 +472,6 @@ extern void print_modules(void);
- 
- extern void module_update_markers(void);
- 
--extern void _module_imv_update(void);
--extern void module_imv_update(void);
--
- #else /* !CONFIG_MODULES... */
- #define EXPORT_SYMBOL(sym)
- #define EXPORT_SYMBOL_GPL(sym)
-@@ -579,15 +576,19 @@ static inline void module_update_markers
- {
- }
- 
-+#endif /* CONFIG_MODULES */
-+
-+#if defined(CONFIG_MODULES) && defined(CONFIG_IMMEDIATE)
-+extern void _module_imv_update(void);
-+extern void module_imv_update(void);
-+#else
- static inline void _module_imv_update(void)
- {
- }
--
- static inline void module_imv_update(void)
- {
- }
--
--#endif /* CONFIG_MODULES */
-+#endif
- 
- struct device_driver;
- #ifdef CONFIG_SYSFS
+	Ingo
