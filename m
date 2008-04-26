@@ -1,74 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760935AbYDZSwT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761210AbYDZSyT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760935AbYDZSwT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Apr 2008 14:52:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755558AbYDZSwL
+	id S1761210AbYDZSyT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Apr 2008 14:54:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756096AbYDZSyI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Apr 2008 14:52:11 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:33130 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753030AbYDZSwL (ORCPT
+	Sat, 26 Apr 2008 14:54:08 -0400
+Received: from tomts20.bellnexxia.net ([209.226.175.74]:33862 "EHLO
+	tomts20-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755558AbYDZSyH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Apr 2008 14:52:11 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <481379BB.5050208@s5r6.in-berlin.de>
-Date: Sat, 26 Apr 2008 20:51:39 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.13) Gecko/20080419 SeaMonkey/1.1.9
-MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Adrian Bunk <bunk@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
-       Harvey Harrison <harvey.harrison@gmail.com>,
-       Mauro Carvalho Chehab <mchehab@infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: If you want me to quit I will quit
-References: <1209190455.14173.13.camel@brick> <20080426110044.GB2252@cs181133002.pp.htv.fi> <20080426075132.b0fdbe13.akpm@linux-foundation.org> <20080426152341.GI2252@cs181133002.pp.htv.fi> <20080426084420.8e61c379.akpm@linux-foundation.org> <20080426171604.GN2252@cs181133002.pp.htv.fi> <alpine.LFD.1.10.0804261024580.2813@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.1.10.0804261024580.2813@woody.linux-foundation.org>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Sat, 26 Apr 2008 14:54:07 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AhoFAOwWE0hMROPA/2dsb2JhbACBU6hj
+Date: Sat, 26 Apr 2008 14:54:03 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Greg Kroah-Hartman <gregkh@suse.de>, Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org
+Subject: ftrace and debugfs weird interaction
+Message-ID: <20080426185403.GA22522@Krystal>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 14:48:12 up 57 days, 14:59,  5 users,  load average: 0.21, 0.44,
+	0.44
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
-> But it's not a hard rule. Sometimes simple cleanliness means that you can 
-> decide to go "oops, that was *really* wrong, let's just throw that away 
-> and do a whole new set of patches". But it should be something rare - not 
-> normal coding practice.
+Hi,
 
-Well, the need to amend single patches --- and folding the amendment in 
-before mainline submission to correct important problems of the first 
-shot --- is something which happens all the time.
+When trying to figure out what was going on with the sched tracer
+"tracing_enabled" file (sched-devel.git tree), I fell on this strange
+behavior :
 
-(People will have different opinions about what is important enough to 
-redo a patch instead of keeping the amendment separate.)
+echo 1>tracing_enabled seems _not_ to send 1 to the tracing_ctrl_write
+callback. However, sending garbage, e.g. echo s> tracing_enabled,
+correctly sends the 's' character down the chain. echo 0>tracing_enabled
+sometimes results in the callback not even being called.
 
-> Because if it becomes normal coding practice, now people cannot work with 
-> you sanely any more (ie some random person pulls your tree for testing, 
-> and then I pull it at some other time, and the tester reports a problem, 
-> but now the commits he is talking about don't actually even exist in my 
-> tree any more, and it's all really messy!).
+The debugfs file has been created with
 
-In my experience, the submission branch cannot practically be the same 
-as the development branch (I mean, a true ancestor of the of the 
-development branch).  That's simply because the order of submission is 
-different.
+        entry = debugfs_create_file("tracing_enabled", 0644, d_tracer,
+                                    &global_trace, &tracing_ctrl_fops);
+        if (!entry)
+                pr_warning("Could not create debugfs 'tracing_enabled' entry\n");
 
-The only way to keep commits from the development branch identical in 
-the submission branch would be to work with a huge number of topic 
-branches, with the number of branches approaching the number of commits. 
-But then testers and developers would still work with merge commits 
-which will not appear in the mainline submission.  And there would be 
-weird histories because of the need to merge from other trees, notably 
-from torvalds/linux-2.6.git when necessary to avoid conflicts.
+I wonder what kind of weird debugfs interaction we might have here ?
 
-(I for one rebuild the development branch of linux1394-2.6.git from 
-scratch after 2.6.x-rc1 came out, then keep its history until 2.6.x. 
-During that time I occasionally 'pollute' it with reverts and with 
-merges from torvalds/linux-2.6.git.  These will not be carried over into 
-the submission branch.)
+Mathieu
+
 -- 
-Stefan Richter
--=====-==--- -=-- ==-=-
-http://arcgraph.de/sr/
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
