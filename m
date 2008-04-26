@@ -1,82 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754109AbYDZK4s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754650AbYDZLBS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754109AbYDZK4s (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Apr 2008 06:56:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751501AbYDZK4i
+	id S1754650AbYDZLBS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Apr 2008 07:01:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751501AbYDZLBI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Apr 2008 06:56:38 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:50539 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751253AbYDZK4h (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Apr 2008 06:56:37 -0400
-Date: Sat, 26 Apr 2008 03:56:14 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Yinghai Lu <Yinghai.Lu@Sun.COM>
-Cc: Ingo Molnar <mingo@elte.hu>, Andi Kleen <ak@suse.de>,
-       "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>,
-       Jesse Barnes <jesse.barnes@intel.com>,
-       Mika Fischer <mika.fischer@zoopnet.de>, balajirrao@gmail.com
-Subject: Re: [PATCH] x86_32: trim memory by updating e820 v3
-Message-Id: <20080426035614.a30afb17.akpm@linux-foundation.org>
-In-Reply-To: <200801221623.20861.yinghai.lu@sun.com>
-References: <200801192045.17291.yinghai.lu@sun.com>
-	<200801202256.48365.yinghai.lu@sun.com>
-	<20080122165125.GA17992@elte.hu>
-	<200801221623.20861.yinghai.lu@sun.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 26 Apr 2008 07:01:08 -0400
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:46453 "EHLO smtp6.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751253AbYDZLBH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 Apr 2008 07:01:07 -0400
+Date: Sat, 26 Apr 2008 14:00:44 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Harvey Harrison <harvey.harrison@gmail.com>
+Cc: Mauro Carvalho Chehab <mchehab@infradead.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: If you want me to quit I will quit
+Message-ID: <20080426110044.GB2252@cs181133002.pp.htv.fi>
+References: <1209190455.14173.13.camel@brick>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <1209190455.14173.13.camel@brick>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 22 Jan 2008 16:23:20 -0800 Yinghai Lu <Yinghai.Lu@Sun.COM> wrote:
+> [BUILDFIX PATCH] au0828: debug is a poor global identifier
 
-> [PATCH] x86_32: trim memory by updating e820 v3
-> 
-> when mtrr is not covering all e820 table, need to trim the ram, need to update e820
-> 
-> reuse some code for x86_64
-> 
-> here need to add early_get_cap and use it in early_cpu_detect, and move mtrr_bp_init early
-> 
-> need Justine to test with his special system with bug bios.
-> 
-> Signed-off-by: Yinghai Lu <yinghai.lu@sun.com>
+Another issue for which I already sent a (slightly different) patch.
 
-Speaking of mtrr and e820....
+Why not check the mailing list before duplicating work? [1]
 
-Could someone please take a peek at
-http://bugzilla.kernel.org/show_bug.cgi?id=10508 ?
+And if you e.g. discover next that our x86 userspace headers in
+2.6.25 (sic) are fucked up guess who already sent a patch last 
+weekend... [2]
 
-For some reason we seem to have turned this:
+Why do other people get over 100 checkpatch fixes into the tree at once 
+or Linus applies patches directly bypassing the maintainers (like the 
+one you sent just before [3], which I've also already sent before [4]) 
+but my patches bitrot forever?
 
-[    0.000000]  BIOS-e820: 0000000000000000 - 000000000009f800 (usable)
-[    0.000000]  BIOS-e820: 000000000009f800 - 00000000000a0000 (reserved)
-[    0.000000]  BIOS-e820: 00000000000dc000 - 0000000000100000 (reserved)
-[    0.000000]  BIOS-e820: 0000000000100000 - 00000000bf6d0000 (usable)
-[    0.000000]  BIOS-e820: 00000000bf6d0000 - 00000000bf6e3000 (ACPI NVS)
-[    0.000000]  BIOS-e820: 00000000bf6e3000 - 00000000c0000000 (reserved)
-[    0.000000]  BIOS-e820: 00000000e0000000 - 00000000f0000000 (reserved)
-[    0.000000]  BIOS-e820: 00000000fec00000 - 00000000fec10000 (reserved)
-[    0.000000]  BIOS-e820: 00000000fed00000 - 00000000fed00400 (reserved)
-[    0.000000]  BIOS-e820: 00000000fed14000 - 00000000fed1a000 (reserved)
-[    0.000000]  BIOS-e820: 00000000fed1c000 - 00000000fed90000 (reserved)
-[    0.000000]  BIOS-e820: 00000000fee00000 - 00000000fee01000 (reserved)
-[    0.000000]  BIOS-e820: 00000000ff000000 - 0000000100000000 (reserved)
-[    0.000000]  BIOS-e820: 0000000100000000 - 0000000140000000 (usable)
+And Linus didn't even bother to answer what the correct path for my 
+patches is. [5]
 
-into this:
+My current record is sending a patch 7 times (and still counting) 
+without it getting applied anywhere. [6]
 
-reg00: base=0xc0000000 (3072MB), size=1024MB: uncachable, count=1
-reg01: base=0x00000000 ( 0MB), size=4096MB: write-back, count=1
-reg02: base=0x100000000 (4096MB), size=1024MB: write-back, count=1
-reg03: base=0xbf700000 (3063MB), size= 1MB: uncachable, count=1
-reg04: base=0xbf800000 (3064MB), size= 8MB: uncachable, count=1
+And if anyone has doubts in the quality of my patches try to find
+commits of me in Linus' tree that introduced any bugs - you most 
+likely won't find 3 buggy commits among my last 500 commits.
 
-which screws up the X server's attempt to map the video memory at
-0xd0000000.
+Guys, this is neither a kindergarten nor the right place for corporate 
+mobbing games. If you want to get rid of me simply say so and I'll 
+immediately unsubscribe and stop bothering you with patches.
 
-Thanks.
+Really annoyed
+Adrian
+
+[1] http://lkml.org/lkml/2008/4/25/376
+[2] http://lkml.org/lkml/2008/4/20/181
+[3] http://lkml.org/lkml/2008/4/25/511
+[4] http://lkml.org/lkml/2008/4/24/523
+[5] http://lkml.org/lkml/2008/4/2/369
+[6] http://lkml.org/lkml/2008/4/21/523
+    http://lkml.org/lkml/2008/4/21/577
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
