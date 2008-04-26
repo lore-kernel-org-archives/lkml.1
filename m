@@ -1,53 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757983AbYDZOXA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757412AbYDZO0o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757983AbYDZOXA (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Apr 2008 10:23:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752781AbYDZOWv
+	id S1757412AbYDZO0o (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Apr 2008 10:26:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752167AbYDZO0h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Apr 2008 10:22:51 -0400
-Received: from yoi5.greathalifaxhome.com ([66.180.172.116]:36217 "HELO
-	vps1.tull.net" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with SMTP
-	id S1751602AbYDZOWu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Apr 2008 10:22:50 -0400
-X-Spam-Check-By: mail.local.tull.net
-Date: Sun, 27 Apr 2008 00:22:35 +1000
-From: Nick Andrew <nick@nick-andrew.net>
-To: Vegard Nossum <vegard.nossum@gmail.com>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>, Sam Ravnborg <sam@ravnborg.org>,
-       Adrian Bunk <bunk@kernel.org>, linux-kbuild@vger.kernel.org,
-       kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] headerdep: a tool for detecting inclusion cycles in	header file
-Message-ID: <20080426142235.GB7051@tull.net>
-References: <20080426134554.GA20727@damson.getinternet.no> <48133537.7040800@cs.helsinki.fi> <19f34abd0804260717le1773aapec49cdb6f68e296f@mail.gmail.com>
+	Sat, 26 Apr 2008 10:26:37 -0400
+Received: from smtp-out04.alice-dsl.net ([88.44.63.6]:41154 "EHLO
+	smtp-out04.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751602AbYDZO0h (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 Apr 2008 10:26:37 -0400
+Date: Sat, 26 Apr 2008 16:26:34 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: mingo@elte.hu, torvalds@osdl.org, linux-kernel@vger.kernel.org
+Subject: mainline boot failures III: scheduler NULL pointer reference
+Message-ID: <20080426142634.GA28930@basil.nowhere.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <19f34abd0804260717le1773aapec49cdb6f68e296f@mail.gmail.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-SMTPD: qpsmtpd/0.26, http://develooper.com/code/qpsmtpd/
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-OriginalArrivalTime: 26 Apr 2008 14:19:43.0506 (UTC) FILETIME=[928C1F20:01C8A7A8]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Apr 26, 2008 at 04:17:15PM +0200, Vegard Nossum wrote:
-> I didn't want to get into the lands of parsing options since we would
-> need to handle gcc options and skip arguments to those, etc.
 
-?
+FYI
 
-use Getopt::Std qw(getopts);
+I see lots of boot failures on various setups with current mainline
+(git8, b1721d0da266b4af8cb4419473b4ca36206ab200). Unfortunately
+they are all different.
 
-use vars qw($opt_g);
+All with a defconfig kernel. Haven't investigated closely yet:
 
-getopts('g');
+This one is a recursive oops with most of the data scrolling away
+and unfortunately also no serial console handy, but it's 
+a NULL pointer reference in set_next_entity somewhere in the scheduler.
 
-[...]
+-Andi
 
-if ($opt_g) {
-	graph();
-}
 
-Nick.
--- 
-PGP Key ID = 0x418487E7                      http://www.nick-andrew.net/
-PGP Key fingerprint = B3ED 6894 8E49 1770 C24A  67E3 6266 6EB9 4184 87E7
