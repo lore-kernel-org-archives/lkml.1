@@ -1,47 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755246AbYDZJgN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756758AbYDZJgg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755246AbYDZJgN (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Apr 2008 05:36:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752291AbYDZJf6
+	id S1756758AbYDZJgg (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Apr 2008 05:36:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752742AbYDZJgZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Apr 2008 05:35:58 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:50787 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752149AbYDZJf6 (ORCPT
+	Sat, 26 Apr 2008 05:36:25 -0400
+Received: from wa-out-1112.google.com ([209.85.146.183]:30878 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752364AbYDZJgY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Apr 2008 05:35:58 -0400
-Date: Sat, 26 Apr 2008 05:35:53 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Artem Bityutskiy <dedekind@yandex.ru>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
-       Artem Bityutskiy <Artem.Bityutskiy@nokia.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Adrian Hunter <ext-adrian.hunter@nokia.com>
-Subject: Re: [RFC PATCH 26/26] UBIFS: include FS to compilation
-Message-ID: <20080426093553.GA17730@infradead.org>
-References: <1206629746-4298-1-git-send-email-Artem.Bityutskiy@nokia.com> <1206629746-4298-27-git-send-email-Artem.Bityutskiy@nokia.com> <84144f020804010039n47133bd3l63f02258a2670e72@mail.gmail.com> <47F1F7A6.5020105@yandex.ru>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47F1F7A6.5020105@yandex.ru>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+	Sat, 26 Apr 2008 05:36:24 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:message-id:to:cc:subject:from:in-reply-to:references:x-mailer:mime-version:content-type:content-transfer-encoding;
+        b=OaNTD/ZeInSqutZHJBqQXe5ztZDS+vjIbTTb54J32cHNm4VkyDdvYLUCJl16LU3LSCD9l7vRj1hjPefTxmzpT1IWlsUKUgddFOrWDMYcfwgdeVza0YihiOQeNZrYHhBFOjdY7zkRZbRLlXko7h200t8idE9VcAgI+xFm76CgD1A=
+Date: Sat, 26 Apr 2008 17:35:38 +0800 (CST)
+Message-Id: <20080426.173538.195417245.xiyou.wangcong@gmail.com>
+To: jdike@addtoit.com
+Cc: akpm@osdl.org, linux-kernel@vger.kernel.org,
+       user-mode-linux-devel@lists.sourceforge.net
+Subject: Re: [PATCH 9/19] UML - Tidy ptrace interface
+From: WANG Cong <xiyou.wangcong@gmail.com>
+In-Reply-To: <20080425175610.GA11188@c2.user-mode-linux.org>
+References: <20080425175610.GA11188@c2.user-mode-linux.org>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 01, 2008 at 11:51:50AM +0300, Artem Bityutskiy wrote:
->> But these don't make much sense to me. Why would you want to be able
->> to compile out printks at this granularity? Why not enable all of them
->> when CONFIG_UBIFS_FS_DEBUG is enabled?
->
-> Well, its just more convenient for us. If I know the bug is somewhere in
-> the journal, I enable the journal messages - less flooding. We may
-> lessen the amount, but it is still handy to have some classes of
-> prints separate.
+From: Jeff Dike <jdike@addtoit.com>
+Date: Fri, 25 Apr 2008 13:56:10 -0400
+> Tidy the ptrace interface code.  Removed a bunch of unused macros.
+> Started converting register sets from arrays of longs to structures.
 
-It's everything but convenient :)  Please make it one config option to
-compile in all debug code and then have a module option to select the
-verbosity level at runtime.
+Could you please explain a bit why do this? I think long arrary is OK.
 
+Thanks.
+
+Cong
