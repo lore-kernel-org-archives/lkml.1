@@ -1,102 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762297AbYDZUeT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762725AbYDZUfx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762297AbYDZUeT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Apr 2008 16:34:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759685AbYDZUeI
+	id S1762725AbYDZUfx (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Apr 2008 16:35:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759524AbYDZUfq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Apr 2008 16:34:08 -0400
-Received: from fg-out-1718.google.com ([72.14.220.153]:43139 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757329AbYDZUeF (ORCPT
+	Sat, 26 Apr 2008 16:35:46 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:54016 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758518AbYDZUfp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Apr 2008 16:34:05 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
-        b=BcvSGQ/n3V9vrEgxHp74ChuTEMpHHv+waWEODNs+SWqJs9Gdk7HNHb9vNc3WgIyAqSFV8whziTZjuIxKcU1uzmWLOaKv3ER4jyjMcNYW74mDVXLauO0AXoRRabaY3+rOwNNmjHF7RP8kePkWehv/J/o/ATDZ8O4e+Af6RG53Z0M=
-Date: Sat, 26 Apr 2008 22:34:08 +0200
-From: Luca Tettamanti <kronos.it@gmail.com>
-To: linux-kernel@vger.kernel.org
-Cc: linux-wireless@vger.kernel.org, "David S. Miller" <davem@davemloft.net>
-Subject: [PATCH] Fix compile error with wifi & leds
-Message-ID: <20080426203408.GA12074@dreamland.darkstar.lan>
+	Sat, 26 Apr 2008 16:35:45 -0400
+Date: Sat, 26 Apr 2008 13:35:11 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Stefan Richter <stefanr@s5r6.in-berlin.de>, Adrian Bunk <bunk@kernel.org>,
+       Harvey Harrison <harvey.harrison@gmail.com>,
+       Mauro Carvalho Chehab <mchehab@infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: If you want me to quit I will quit
+In-Reply-To: <20080426133049.187e255c.akpm@linux-foundation.org>
+Message-ID: <alpine.LFD.1.10.0804261333200.2813@woody.linux-foundation.org>
+References: <1209190455.14173.13.camel@brick> <20080426110044.GB2252@cs181133002.pp.htv.fi> <20080426075132.b0fdbe13.akpm@linux-foundation.org> <20080426152341.GI2252@cs181133002.pp.htv.fi> <20080426084420.8e61c379.akpm@linux-foundation.org>
+ <20080426171604.GN2252@cs181133002.pp.htv.fi> <alpine.LFD.1.10.0804261024580.2813@woody.linux-foundation.org> <481379BB.5050208@s5r6.in-berlin.de> <alpine.LFD.1.10.0804261153390.2813@woody.linux-foundation.org> <alpine.LFD.1.10.0804261213320.2813@woody.linux-foundation.org>
+ <20080426133049.187e255c.akpm@linux-foundation.org>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-I encountered a build error with current git tree:
-
-  CC [M]  net/mac80211/led.o
-/home/kronos/src/linux-2.6.git/net/mac80211/led.c: In function 'ieee80211_led_init':
-/home/kronos/src/linux-2.6.git/net/mac80211/led.c:58: error: invalid application of 'sizeof' to incomplete type 'struct led_trigger'
-/home/kronos/src/linux-2.6.git/net/mac80211/led.c:62: error: dereferencing pointer to incomplete type
-/home/kronos/src/linux-2.6.git/net/mac80211/led.c:63: error: implicit declaration of function 'led_trigger_register'
-/home/kronos/src/linux-2.6.git/net/mac80211/led.c:69: error: invalid application of 'sizeof' to incomplete type 'struct led_trigger'
-/home/kronos/src/linux-2.6.git/net/mac80211/led.c:73: error: dereferencing pointer to incomplete type
-/home/kronos/src/linux-2.6.git/net/mac80211/led.c:80: error: invalid application of 'sizeof' to incomplete type 'struct led_trigger'
-/home/kronos/src/linux-2.6.git/net/mac80211/led.c:84: error: dereferencing pointer to incomplete type
-/home/kronos/src/linux-2.6.git/net/mac80211/led.c:91: error: invalid application of 'sizeof' to incomplete type 'struct led_trigger'
-/home/kronos/src/linux-2.6.git/net/mac80211/led.c:95: error: dereferencing pointer to incomplete type
-/home/kronos/src/linux-2.6.git/net/mac80211/led.c: In function 'ieee80211_led_exit':
-/home/kronos/src/linux-2.6.git/net/mac80211/led.c:106: error: implicit declaration of function 'led_trigger_unregister'
-make[3]: *** [net/mac80211/led.o] Error 1
-make[2]: *** [net/mac80211] Error 2
-make[1]: *** [net] Error 2
-make: *** [sub-make] Error 2
-
-This has been caused by commit e82404ad612ebabc65d15c3d59b971cb35c3ff36
-from David Miller:
-
- config IWL4965_LEDS
-        bool "Enable LEDS features in iwl4965 driver"
--       depends on IWL4965 && MAC80211_LEDS && LEDS_CLASS
-+       depends on IWL4965
-+       select MAC80211_LEDS
-+       select LEDS_CLASS
 
 
-the problem is that MAC80211_LEDS *depends* on LEDS_TRIGGER but does not
-_select_ it. IOW enabling IWL4965_LEDS enables MAC80211_LEDS which in
-turn does not compile if LEDS_TRIGGER is not enabled.
+On Sat, 26 Apr 2008, Andrew Morton wrote:
 
-LEDS_TRIGGER is not enough though, NEW_LEDS (which is a menuconfig
-guarding the aforementioned symbol) must also be selected.
+> On Sat, 26 Apr 2008 12:18:34 -0700 (PDT) Linus Torvalds <torvalds@linux-foundation.org> wrote:
+> 
+> > So it's an important part of the process to try to do a good job, and not 
+> > publicizing crap - but it's *equally* important to realize that crap 
+> > happens, and that it's easily *more* distracting to try to clean it up 
+> > after-the-fact than it is to just admit that it happened.
+> 
+> Fact is, this is the way in which developers want to work.  That is their
+> workflow, and their tools should follow their workflow.  If a tool's
+> behaviour prevents them from implementing their desired workflow, it isn't
+> the workflow which should be changed ;)
 
----
+But that was exactly my point. Bugs *will* happen. Follow-up patches 
+*will* happen. Don't fight it. Do the best you can do - there's no way 
+people will ever avoid all bugs to begin with. 
 
-Since MAC80211_LEDS is selected by wireless drivers it must select its
-own dependencies otherwise a build error may occur (kbuild will select
-the symbol regardless of "depends" constraints).
+And trying to white-wash things later is just pointless and actively 
+*bad*, when others have already seen and merged the original patches.
 
-Signed-Off-By: Luca Tettamanti <kronos.it@gmail.com>
-
----
-
- net/mac80211/Kconfig |    4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
-
-diff --git a/net/mac80211/Kconfig b/net/mac80211/Kconfig
-index 520a518..a24b459 100644
---- a/net/mac80211/Kconfig
-+++ b/net/mac80211/Kconfig
-@@ -73,7 +73,9 @@ config MAC80211_MESH
-
- config MAC80211_LEDS
- 	bool "Enable LED triggers"
--	depends on MAC80211 && LEDS_TRIGGERS
-+	depends on MAC80211
-+	select NEW_LEDS
-+	select LEDS_TRIGGERS
- 	---help---
- 	  This option enables a few LED triggers for different
- 	  packet receive/transmit events.
-
-
-Luca
--- 
-Io sono un uomo che non deve chiedere mai. Di solito imploro.
+			Linus
