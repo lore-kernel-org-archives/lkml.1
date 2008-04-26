@@ -1,92 +1,249 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755249AbYDZOml@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757285AbYDZOnj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755249AbYDZOml (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Apr 2008 10:42:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751908AbYDZOmc
+	id S1757285AbYDZOnj (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Apr 2008 10:43:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751640AbYDZOnc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Apr 2008 10:42:32 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:45372 "EHLO mx3.mail.elte.hu"
+	Sat, 26 Apr 2008 10:43:32 -0400
+Received: from x346.tv-sign.ru ([89.108.83.215]:49607 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751845AbYDZOmb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Apr 2008 10:42:31 -0400
-Date: Sat, 26 Apr 2008 16:42:03 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Gabriel C <nix.or.die@googlemail.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       Arjan van de Ven <arjan@infradead.org>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       Avi Kivity <avi@qumranet.com>
-Subject: Re: [git pull] x86 PAT changes
-Message-ID: <20080426144203.GA19635@elte.hu>
-References: <20080424225625.GB8717@elte.hu> <481330C6.7040109@googlemail.com>
-MIME-Version: 1.0
+	id S1751308AbYDZOnb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 Apr 2008 10:43:31 -0400
+Date: Sat, 26 Apr 2008 18:43:30 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Heiko Carstens <heiko.carstens@de.ibm.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, Gautham R Shenoy <ego@in.ibm.com>,
+       Johannes Berg <johannes@sipsolutions.net>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Srivatsa Vaddagiri <vatsa@in.ibm.com>, linux-kernel@vger.kernel.org
+Subject: get_online_cpus() && workqueues
+Message-ID: <20080426144330.GA6150@tv-sign.ru>
+References: <1208176947.7427.68.camel@twins> <20080422123304.GA777@osiris.boeblingen.de.ibm.com> <1208868236.7115.249.camel@twins> <20080423035802.GA8895@in.ibm.com> <20080424150714.GA8273@osiris.boeblingen.de.ibm.com> <1209052984.7115.369.camel@twins> <20080424155946.GA11160@tv-sign.ru> <20080424194810.GA4821@osiris.boeblingen.de.ibm.com> <20080424192706.GA165@tv-sign.ru> <20080425064044.GA10817@osiris.boeblingen.de.ibm.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <481330C6.7040109@googlemail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20080425064044.GA10817@osiris.boeblingen.de.ibm.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Gautham, Srivatsa, seriously, can't we uglify cpu.c a little bit to solve
+the problem. Please see the illustration patch below. It looks complicated,
+but in fact it is quite trivial.
 
-* Gabriel C <nix.or.die@googlemail.com> wrote:
+In short: work_struct can't use get_online_cpus() due to deadlock with the
+CPU_DEAD phase.
 
-> Hi Ingo,
-> 
-> When using an 64bit ( didn't got time to test 32bit now ) kernel[1] 
-> with PAT enabled , kvm-intel does not work anymore.
-> 
-> When modprobing kvm-intel , kvm is saying VT extension is disable by 
-> BIOS which isn't true. When disabling PAT again ( no changes to BIOS ) 
-> kvm-intel works again here.
-> 
-> Is that an known problem ?
+Can't we add another nested lock which is dropped right after __cpu_die()?
+(in fact I think it could be dropped after __stop_machine_run).
 
-no, that side-effect was not known. Cc:-ed more folks.
+The new read-lock is get_online_map() (just a random name for now). The only
+difference wrt get_online_cpus() is that it doesn't protect against CPU_DEAD,
+but most users of get_online_cpus() doesn't need this, they only need a
+stable cpu_online_map and sometimes they need to be sure that some per-cpu
+object (say, cpu_workqueue_struct->thread) can't be destroyed under this
+lock.
 
-> If you need more infos just let me know.
-> 
-> Gabriel
-> 
-> [1]  2.6.25-05096-gb1721d0-dirty
->      with following patches :
->      http://lkml.org/lkml/2008/4/26/37
->      http://lkml.org/lkml/2008/4/26/24
->      http://lkml.org/lkml/2008/4/25/107
+get_online_map() seem to fit for this, and can be used from work->func().
+(actually, I think most users of use get_online_cpus() could use the new
+helper instead, but this doen't matter).
 
-thanks - that should be enough for now. We'll try to reproduce these 
-problems.
+Heiko, what do you think? Is it suitable for arch_reinit_sched_domains()?
 
-A blind guess: maybe it's the CONFIG_NONPROMISC_DEVMEM somehow breaks 
-Qemu. With the patch below you'd be able to disable NONPROMISC_DEVMEM 
-without disabling PAT.
+Oleg.
 
-	Ingo
-
-diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index 4d350b5..4aa4180 100644
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -1049,9 +1049,9 @@ config MTRR
- 	  See <file:Documentation/mtrr.txt> for more information.
+--- 25/kernel/cpu.c~HP_LOCK	2008-02-16 18:36:37.000000000 +0300
++++ 25/kernel/cpu.c	2008-04-26 18:14:25.000000000 +0400
+@@ -25,7 +25,7 @@ static __cpuinitdata RAW_NOTIFIER_HEAD(c
+  */
+ static int cpu_hotplug_disabled;
  
- config X86_PAT
--	def_bool y
-+	bool
- 	prompt "x86 PAT support"
--	depends on MTRR && NONPROMISC_DEVMEM
-+	depends on MTRR
- 	help
- 	  Use PAT attributes to setup page level cache control.
+-static struct {
++static struct cpu_lock {
+ 	struct task_struct *active_writer;
+ 	struct mutex lock; /* Synchronizes accesses to refcount, */
+ 	/*
+@@ -33,41 +33,65 @@ static struct {
+ 	 * an ongoing cpu hotplug operation.
+ 	 */
+ 	int refcount;
+-} cpu_hotplug;
++} cpu_hotplug, online_map;
++
++static inline void __cpu_hotplug_init(struct cpu_lock *cpu_lock)
++{
++	cpu_lock->active_writer = NULL;
++	mutex_init(&cpu_lock->lock);
++	cpu_lock->refcount = 0;
++}
  
+ void __init cpu_hotplug_init(void)
+ {
+-	cpu_hotplug.active_writer = NULL;
+-	mutex_init(&cpu_hotplug.lock);
+-	cpu_hotplug.refcount = 0;
++	__cpu_hotplug_init(&cpu_hotplug);
++	__cpu_hotplug_init(&online_map);
+ }
+ 
+ #ifdef CONFIG_HOTPLUG_CPU
+ 
+-void get_online_cpus(void)
++void cpu_read_lock(struct cpu_lock *cpu_lock)
+ {
+ 	might_sleep();
+-	if (cpu_hotplug.active_writer == current)
++	if (cpu_lock->active_writer == current)
+ 		return;
+-	mutex_lock(&cpu_hotplug.lock);
+-	cpu_hotplug.refcount++;
+-	mutex_unlock(&cpu_hotplug.lock);
++	mutex_lock(&cpu_lock->lock);
++	cpu_lock->refcount++;
++	mutex_unlock(&cpu_lock->lock);
++}
+ 
++void get_online_cpus(void)
++{
++	cpu_read_lock(&cpu_hotplug);
+ }
+ EXPORT_SYMBOL_GPL(get_online_cpus);
+ 
+-void put_online_cpus(void)
++void get_online_map(void)
+ {
+-	if (cpu_hotplug.active_writer == current)
++	cpu_read_lock(&online_map);
++}
++
++void cpu_read_unlock(struct cpu_lock *cpu_lock)
++{
++	if (cpu_lock->active_writer == current)
+ 		return;
+-	mutex_lock(&cpu_hotplug.lock);
+-	if (!--cpu_hotplug.refcount && unlikely(cpu_hotplug.active_writer))
+-		wake_up_process(cpu_hotplug.active_writer);
+-	mutex_unlock(&cpu_hotplug.lock);
++	mutex_lock(&cpu_lock->lock);
++	if (!--cpu_lock->refcount && unlikely(cpu_lock->active_writer))
++		wake_up_process(cpu_lock->active_writer);
++	mutex_unlock(&cpu_lock->lock);
++}
+ 
++void put_online_cpus(void)
++{
++	cpu_read_unlock(&cpu_hotplug);
+ }
+ EXPORT_SYMBOL_GPL(put_online_cpus);
+ 
++void put_online_map(void)
++{
++	cpu_read_unlock(&online_map);
++}
++
+ #endif	/* CONFIG_HOTPLUG_CPU */
+ 
+ /*
+@@ -91,7 +115,7 @@ void cpu_maps_update_done(void)
+  * Note that during a cpu-hotplug operation, the new readers, if any,
+  * will be blocked by the cpu_hotplug.lock
+  *
+- * Since cpu_hotplug_begin() is always called after invoking
++ * Since cpu_write_lock() is always called after invoking
+  * cpu_maps_update_begin(), we can be sure that only one writer is active.
+  *
+  * Note that theoretically, there is a possibility of a livelock:
+@@ -106,25 +130,26 @@ void cpu_maps_update_done(void)
+  * get_online_cpus() not an api which is called all that often.
+  *
+  */
+-static void cpu_hotplug_begin(void)
++static void cpu_write_lock(struct cpu_lock *cpu_lock)
+ {
+-	cpu_hotplug.active_writer = current;
++	cpu_lock->active_writer = current;
+ 
+ 	for (;;) {
+-		mutex_lock(&cpu_hotplug.lock);
+-		if (likely(!cpu_hotplug.refcount))
++		mutex_lock(&cpu_lock->lock);
++		if (likely(!cpu_lock->refcount))
+ 			break;
+ 		__set_current_state(TASK_UNINTERRUPTIBLE);
+-		mutex_unlock(&cpu_hotplug.lock);
++		mutex_unlock(&cpu_lock->lock);
+ 		schedule();
+ 	}
+ }
+ 
+-static void cpu_hotplug_done(void)
++static void cpu_write_unlock(struct cpu_lock *cpu_lock)
+ {
+-	cpu_hotplug.active_writer = NULL;
+-	mutex_unlock(&cpu_hotplug.lock);
++	cpu_lock->active_writer = NULL;
++	mutex_unlock(&cpu_lock->lock);
+ }
++
+ /* Need to know about CPUs going up/down? */
+ int __cpuinit register_cpu_notifier(struct notifier_block *nb)
+ {
+@@ -207,7 +232,8 @@ static int _cpu_down(unsigned int cpu, i
+ 	if (!cpu_online(cpu))
+ 		return -EINVAL;
+ 
+-	cpu_hotplug_begin();
++	cpu_write_lock(&cpu_hotplug);
++	cpu_write_lock(&online_map);
+ 	err = __raw_notifier_call_chain(&cpu_chain, CPU_DOWN_PREPARE | mod,
+ 					hcpu, -1, &nr_calls);
+ 	if (err == NOTIFY_BAD) {
+@@ -238,6 +264,7 @@ static int _cpu_down(unsigned int cpu, i
+ 			err = PTR_ERR(p);
+ 			goto out_allowed;
+ 		}
++		err = -EAGAIN;
+ 		goto out_thread;
+ 	}
+ 
+@@ -247,6 +274,7 @@ static int _cpu_down(unsigned int cpu, i
+ 
+ 	/* This actually kills the CPU. */
+ 	__cpu_die(cpu);
++	cpu_write_unlock(&online_map);
+ 
+ 	/* CPU is completely dead: tell everyone.  Too late to complain. */
+ 	if (raw_notifier_call_chain(&cpu_chain, CPU_DEAD | mod,
+@@ -260,7 +288,9 @@ out_thread:
+ out_allowed:
+ 	set_cpus_allowed(current, old_allowed);
+ out_release:
+-	cpu_hotplug_done();
++	if (err)
++		cpu_write_unlock(&online_map);
++	cpu_write_unlock(&cpu_hotplug);
+ 	return err;
+ }
+ 
+@@ -289,7 +319,8 @@ static int __cpuinit _cpu_up(unsigned in
+ 	if (cpu_online(cpu) || !cpu_present(cpu))
+ 		return -EINVAL;
+ 
+-	cpu_hotplug_begin();
++	cpu_write_lock(&cpu_hotplug);
++	cpu_write_lock(&online_map);
+ 	ret = __raw_notifier_call_chain(&cpu_chain, CPU_UP_PREPARE | mod, hcpu,
+ 							-1, &nr_calls);
+ 	if (ret == NOTIFY_BAD) {
+@@ -313,7 +344,8 @@ out_notify:
+ 	if (ret != 0)
+ 		__raw_notifier_call_chain(&cpu_chain,
+ 				CPU_UP_CANCELED | mod, hcpu, nr_calls, NULL);
+-	cpu_hotplug_done();
++	cpu_write_unlock(&online_map);
++	cpu_write_unlock(&cpu_hotplug);
+ 
+ 	return ret;
+ }
+
