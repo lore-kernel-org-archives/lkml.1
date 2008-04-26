@@ -1,58 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755676AbYDZLN3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756119AbYDZLQi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755676AbYDZLN3 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Apr 2008 07:13:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752556AbYDZLNW
+	id S1756119AbYDZLQi (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Apr 2008 07:16:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752668AbYDZLQ3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Apr 2008 07:13:22 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:35320 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752291AbYDZLNV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Apr 2008 07:13:21 -0400
-Date: Sat, 26 Apr 2008 13:13:07 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Pekka Paalanen <pq@iki.fi>
-Cc: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Subject: Re: [PATCH v2] x86 mmiotrace: dynamically disable non-boot CPUs
-Message-ID: <20080426111307.GA401@elte.hu>
-References: <20080413224207.4430a09c@daedalus.pq.iki.fi> <20080413230552.33ca587a@daedalus.pq.iki.fi> <20080424223947.55c053f6@daedalus.pq.iki.fi>
+	Sat, 26 Apr 2008 07:16:29 -0400
+Received: from fg-out-1718.google.com ([72.14.220.153]:46258 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752149AbYDZLQ1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 Apr 2008 07:16:27 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=V7GwhK08Zm64kpzaIs8tgEiMA7huHE7LRyYJKTh6FLA9M7CLOAwDtuQAxyVRKGUUZg6tqx1G4RAgtTqRPTEh5ygas0OF+hN5H01DFOhcULcZr1aExOhhpM7JjdbnvJpssYcQc1lHqqS1oNS3bKgArvccDtSUe15OOaw5muKXymI=
+Message-ID: <48130F00.5010408@gmail.com>
+Date: Sat, 26 Apr 2008 13:16:16 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080424223947.55c053f6@daedalus.pq.iki.fi>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Andi Kleen <andi@firstfloor.org>
+CC: Christoph Lameter <clameter@sgi.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, zdenek.kabelac@gmail.com,
+       rjw@sisk.pl, paulmck@linux.vnet.ibm.com, akpm@linux-foundation.org,
+       linux-ext4@vger.kernel.org, herbert@gondor.apana.org.au,
+       penberg@cs.helsinki.fi, linux-kernel@vger.kernel.org,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>, pageexec@freemail.hu,
+       "H. Peter Anvin" <hpa@zytor.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH 1/1] x86: fix text_poke
+References: <20080425.021301.193689806.davem@davemloft.net> <1209343883-7991-1-git-send-email-jirislaby@gmail.com> <alpine.LFD.1.10.0804250759260.2779@woody.linux-foundation.org> <20080425151747.GA3265@one.firstfloor.org> <Pine.LNX.4.64.0804251235550.6337@schroedinger.engr.sgi.com> <20080426095938.GB17905@one.firstfloor.org>
+In-Reply-To: <20080426095938.GB17905@one.firstfloor.org>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Pekka Paalanen <pq@iki.fi> wrote:
-
-> From 8979ee55cb6a429c4edd72ebec2244b849f6a79a Mon Sep 17 00:00:00 2001
-> From: Pekka Paalanen <pq@iki.fi>
-> Date: Sat, 12 Apr 2008 00:18:57 +0300
-> Subject: [PATCH] x86 mmiotrace: dynamically disable non-boot CPUs
+On 04/26/2008 11:59 AM, Andi Kleen wrote:
+> On Fri, Apr 25, 2008 at 12:36:33PM -0700, Christoph Lameter wrote:
+>> On Fri, 25 Apr 2008, Andi Kleen wrote:
+>>
+>>>> And we should really add a lot more sanity checking there.
+>>> A debug mode for virt_to_page(),__pa,__va et.al. would probably make sense
+>>> and would have caught it.
+>>>
+>>> I used to have that partly in the x86-64 port with VIRTUAL_BUG_ON.
+>> Good idea! Do you have a patch?
 > 
-> Mmiotrace is not reliable with multiple CPUs and may miss events. Drop 
-> to single CPU when mmiotrace is activated.
-> 
-> Signed-off-by: Pekka Paalanen <pq@iki.fi>
-> ---
-> 
-> I've tested this patch on my Core 2 Duo laptop, and with "[PATCH v2] 
-> Check for breakpoint in text_poke to eliminate bug_on" cpu hotplug 
-> seems to work fine on a sched-devel/latest SMP kernel both with and 
-> without CONFIG_HOTPLUG_CPU.
+> Yes. Appended. But it just enables the old NUMA VIRTUAL_BUG_ON()s, more 
+> work could be done e.g. by instrumenting pa/va and the non NUMA and i386 
+> case too.
 
-thanks Pekka, applied.
+Is anybody working on that? I would volunteer to do it.
 
-	Ingo
+> --- linux.orig/include/asm-x86/mmzone_64.h
+> +++ linux/include/asm-x86/mmzone_64.h
+> @@ -7,7 +7,11 @@
+>  
+>  #ifdef CONFIG_NUMA
+>  
+> +#ifdef CONFIG_DEBUG_VIRTUAL
+> +#define VIRTUAL_BUG_ON(x) BUG_ON(x)
+> +#else
+>  #define VIRTUAL_BUG_ON(x)
+> +#endif
+>  
+>  #include <asm/smp.h>
