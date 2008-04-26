@@ -1,286 +1,701 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758768AbYDZWWA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759347AbYDZWZL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758768AbYDZWWA (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Apr 2008 18:22:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756107AbYDZWVx
+	id S1759347AbYDZWZL (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Apr 2008 18:25:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755466AbYDZWY7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Apr 2008 18:21:53 -0400
-Received: from mail.cyberdogtech.com ([64.22.125.39]:41487 "EHLO
-	mail.cyberdogtech.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755683AbYDZWVw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Apr 2008 18:21:52 -0400
-Date: Sat, 26 Apr 2008 17:21:47 -0500
-From: Matt LaPlante <kernel1@cyberdogtech.com>
-To: linux-kernel@vger.kernel.org
-Cc: trivial@kernel.org, Randy Dunlap <randy.dunlap@oracle.com>
-Subject: Re: [PATCH] 2.6.25-git7 - Kconfig Cleanup
-Message-Id: <20080426172147.a73657aa.kernel1@cyberdogtech.com>
-In-Reply-To: <20080425232848.b4200d21.kernel1@cyberdogtech.com>
-References: <20080425232848.b4200d21.kernel1@cyberdogtech.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 26 Apr 2008 18:24:59 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:34701 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756422AbYDZWY4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 Apr 2008 18:24:56 -0400
+Date: Sat, 26 Apr 2008 18:24:25 -0400
+From: Ulrich Drepper <drepper@redhat.com>
+Message-Id: <200804262224.m3QMOP3a006296@devserv.devel.redhat.com>
+To: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: [PATCH] paccept, socket, socketpair w/flags
+Cc: akpm@linux-foundation.org, torvalds@linux-foundation.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-One change below, per request.
+This version of the patch hopefully integrates all of the requested
+changes:
 
-On Fri, 25 Apr 2008 23:28:48 -0500
-Matt LaPlante <kernel1@cyberdogtech.com> wrote:
+- the sock_map_fd interface is changed and all in-tree users changed.
+  No additional function anymore
 
-> Fix misc small typos/grammar in Kconfigs for 2.6.25-git7.
-> 
-> Signed-off-by: Matt LaPlante <kernel1@cyberdogtech.com>
-> --
-> 
+- there is a helper function to convert the new socket flags into
+  file flags.  Shared by all three functions
 
-diff -ru a/arch/blackfin/Kconfig b/arch/blackfin/Kconfig
---- a/arch/blackfin/Kconfig	2008-04-25 21:26:24.000000000 -0500
-+++ b/arch/blackfin/Kconfig	2008-04-25 22:22:45.000000000 -0500
-@@ -772,7 +772,7 @@
- 	  memory they do not own.  This comes at a performance penalty
- 	  and is recommended only for debugging.
+- the new accept interface is now paccept() which adds the flag
+  parameter as well as a signal mask.
+
+- not changed from the last version: the paccet() function takes
+  a flags parameter with the same value as the ORed flags for
+  socket() and socketpair().  Seems cleaner.
+
+
+I tried to write the paccept() code as similar as possible to the
+pselect() code.  It seems to work.  Somebody might want to look over
+it, though.
+
+Unless somebody has more interface requests I'd hope this version is
+ready for integration.
+
+As usual, a test program is included.  Adjust for archs != x86/x86-64.
+
+
+#include <fcntl.h>
+#include <pthread.h>
+#include <signal.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <netinet/in.h>
+#include <sys/socket.h>
+#include <sys/syscall.h>
+
+#define SOCK_CLOEXEC 0x40000000
+
+#ifdef __x86_64__
+#define __NR_paccept 288
+#elif __i386__
+#define SYS_PACCEPT     18
+#define USE_SOCKETCALL 1
+#else
+#error "define syscall numbers for this architecture"
+#endif
+
+#define PORT 57392
+
+static pthread_barrier_t b;
+static int status;
+
+static void *
+tf (void *arg)
+{
+  pthread_barrier_wait (&b);
+  int s = socket (AF_INET, SOCK_STREAM, 0);
+  struct sockaddr_in sin;
+  sin.sin_family = AF_INET;
+  sin.sin_addr.s_addr = htonl (INADDR_LOOPBACK);
+  sin.sin_port = htons (PORT);
+  connect (s, (const struct sockaddr *) &sin, sizeof (sin));
+  close (s);
+  pthread_barrier_wait (&b);
+
+  pthread_barrier_wait (&b);
+  s = socket (AF_INET, SOCK_STREAM, 0);
+  sin.sin_family = AF_INET;
+  sin.sin_addr.s_addr = htonl (INADDR_LOOPBACK);
+  sin.sin_port = htons (PORT + 1);
+  connect (s, (const struct sockaddr *) &sin, sizeof (sin));
+  close (s);
+  return NULL;
+}
+
+static void
+h(int sig)
+{
+  _exit(status);
+}
+
+int
+main (void)
+{
+  int s;
+  int s2;
+  int sp[2];
+
+  s = socket (PF_UNIX, SOCK_STREAM, 0);
+
+  if (s < 0)
+    {
+      puts ("socket failed");
+      status = 1;
+    }
+  else
+    {
+      int fl = fcntl (s, F_GETFD);
+      if ((fl & FD_CLOEXEC) != 0)
+	{
+	  puts ("socket did set CLOEXEC");
+	  status = 1;
+	}
+
+      close (s);
+    }
+
+  s = socket (PF_UNIX, SOCK_STREAM|SOCK_CLOEXEC, 0);
+
+  if (s < 0)
+    {
+      puts ("socket(SOCK_CLOEXEC) failed");
+      status = 1;
+    }
+  else
+    {
+      int fl = fcntl (s, F_GETFD);
+      if ((fl & FD_CLOEXEC) == 0)
+	{
+	  puts ("socket(SOCK_CLOEXEC) did not set CLOEXEC");
+	  status = 1;
+	}
+
+      close (s);
+    }
+
+  if (socketpair (PF_UNIX, SOCK_STREAM, 0, sp) < 0)
+    {
+      puts ("socketpair failed");
+      status = 1;
+    }
+  else
+    {
+      int fl1 = fcntl (sp[0], F_GETFD);
+      int fl2 = fcntl (sp[1], F_GETFD);
+      if ((fl1 & FD_CLOEXEC) != 0 || (fl2 & FD_CLOEXEC) != 0)
+	{
+	  puts ("socketpair did set CLOEXEC");
+	  status = 1;
+	}
+
+      close (sp[0]);
+      close (sp[1]);
+    }
+
+  if (socketpair (PF_UNIX, SOCK_STREAM|SOCK_CLOEXEC, 0, sp) < 0)
+    {
+      puts ("socketpair(SOCK_CLOEXEC) failed");
+      status = 1;
+    }
+  else
+    {
+      int fl1 = fcntl (sp[0], F_GETFD);
+      int fl2 = fcntl (sp[1], F_GETFD);
+      if ((fl1 & FD_CLOEXEC) == 0 || (fl2 & FD_CLOEXEC) == 0)
+	{
+	  puts ("socketpair(SOCK_CLOEXEC) did not set CLOEXEC");
+	  status = 1;
+	}
+
+      close (sp[0]);
+      close (sp[1]);
+    }
+
+  pthread_barrier_init (&b, NULL, 2);
+  
+  struct sockaddr_in sin;
+  pthread_t th;
+  if (pthread_create (&th, NULL, tf, NULL) != 0)
+    {
+      puts ("pthread_create failed");
+      status = 1;
+    }
+  else
+    {
+      int s = socket (AF_INET, SOCK_STREAM, 0);
+      sin.sin_family = AF_INET;
+      sin.sin_addr.s_addr = htonl (INADDR_LOOPBACK);
+      sin.sin_port = htons (PORT);
+      bind (s, (struct sockaddr *) &sin, sizeof (sin));
+      listen (s, SOMAXCONN);
+
+      pthread_barrier_wait (&b);
+
+      s2 = accept (s, NULL, 0);
+      if (s2 < 0)
+	{
+	  puts ("accept failed");
+	  status = 1;
+	}
+      else
+	{
+	  int fl = fcntl (s2, F_GETFD);
+	  if ((fl & FD_CLOEXEC) != 0)
+	    {
+	      puts ("accept did set CLOEXEC");
+	      status = 1;
+	    }
+
+	  close (s2);
+        }
+
+      close (s);
+
+      pthread_barrier_wait (&b);
+
+      sin.sin_family = AF_INET;
+      sin.sin_addr.s_addr = htonl (INADDR_LOOPBACK);
+      sin.sin_port = htons (PORT + 1);
+      s = socket (AF_INET, SOCK_STREAM, 0);
+      bind (s, (struct sockaddr *) &sin, sizeof (sin));
+      listen (s, SOMAXCONN);
+
+      pthread_barrier_wait (&b);
+
+#if USE_SOCKETCALL
+      s2 = syscall (__NR_socketcall, SYS_PACCEPT, s, NULL, 0, NULL, 0, SOCK_CLOEXEC);
+#else
+      s2 = syscall (__NR_paccept, s, NULL, 0, NULL, 0, SOCK_CLOEXEC);
+#endif
+      if (s2 < 0)
+	{
+	  puts ("paccept failed");
+	  status = 1;
+	}
+      else
+	{
+	  int fl = fcntl (s2, F_GETFD);
+	  if ((fl & FD_CLOEXEC) == 0)
+	    {
+	      puts ("paccept did not set CLOEXEC");
+	      status = 1;
+	    }
+
+	  close (s2);
+        }
+
+      close (s);
+    }
+
+  sigblock(sigmask(SIGALRM));
+
+  struct sigaction sa;
+  sa.sa_handler = h;
+  sigemptyset(&sa.sa_mask);
+  sa.sa_flags = 0;
+  sigaction(SIGALRM, &sa, NULL);
+
+  sigset_t ss;
+  sigprocmask(SIG_SETMASK, NULL, &ss);
+  sigdelset(&ss, SIGALRM);
+  alarm(2);
+
+  sin.sin_family = AF_INET;
+  sin.sin_addr.s_addr = htonl (INADDR_LOOPBACK);
+  sin.sin_port = htons (PORT + 2);
+  s = socket (AF_INET, SOCK_STREAM, 0);
+  bind (s, (struct sockaddr *) &sin, sizeof (sin));
+  listen (s, SOMAXCONN);
+
+#if USE_SOCKETCALL
+  s2 = syscall (__NR_socketcall, SYS_PACCEPT, s, NULL, 0, &ss, 8, 0);
+#else
+  s2 = syscall (__NR_paccept, s, NULL, 0, &ss, 8, 0);
+#endif
+
+  // Should not be reached.
+  printf ("paccept returned with %d\n", s2);
+  return 1;
+}
+
+
+
+ include/asm-x86/unistd_64.h |    2 
+ include/linux/net.h         |    8 +++
+ include/linux/syscalls.h    |    2 
+ net/9p/trans_fd.c           |    2 
+ net/compat.c                |   52 ++++++++++++++++++++--
+ net/sctp/socket.c           |    2 
+ net/socket.c                |  102 +++++++++++++++++++++++++++++++++++++-------
+ 7 files changed, 148 insertions(+), 22 deletions(-)
+
+
+Signed-off-by: Ulrich Drepper <drepper@redhat.com>
+
+diff --git a/include/asm-x86/unistd_64.h b/include/asm-x86/unistd_64.h
+index fe26e36..d751135 100644
+--- a/include/asm-x86/unistd_64.h
++++ b/include/asm-x86/unistd_64.h
+@@ -639,6 +639,8 @@ __SYSCALL(__NR_fallocate, sys_fallocate)
+ __SYSCALL(__NR_timerfd_settime, sys_timerfd_settime)
+ #define __NR_timerfd_gettime			287
+ __SYSCALL(__NR_timerfd_gettime, sys_timerfd_gettime)
++#define __NR_paccept				288
++__SYSCALL(__NR_paccept, sys_paccept)
  
--comment "Asynchonous Memory Configuration"
-+comment "Asynchronous Memory Configuration"
  
- menu "EBIU_AMGCTL Global Control"
- config C_AMCKEN
-@@ -804,7 +804,7 @@
- 	default n
+ #ifndef __NO_STUBS
+diff --git a/include/linux/net.h b/include/linux/net.h
+index 71f7dd5..5110e1b 100644
+--- a/include/linux/net.h
++++ b/include/linux/net.h
+@@ -46,6 +46,7 @@ struct net;
+ #define SYS_GETSOCKOPT	15		/* sys_getsockopt(2)		*/
+ #define SYS_SENDMSG	16		/* sys_sendmsg(2)		*/
+ #define SYS_RECVMSG	17		/* sys_recvmsg(2)		*/
++#define SYS_PACCEPT	18		/* sys_paccept(2)		*/
  
- choice
--	prompt"Enable Asynchonous Memory Banks"
-+	prompt"Enable Asynchronous Memory Banks"
- 	default C_AMBEN_ALL
+ typedef enum {
+ 	SS_FREE = 0,			/* not allocated		*/
+@@ -91,6 +92,9 @@ enum sock_type {
+ 	SOCK_SEQPACKET	= 5,
+ 	SOCK_DCCP	= 6,
+ 	SOCK_PACKET	= 10,
++
++	/* Flag values, ORed to the types above.  */
++	SOCK_CLOEXEC	= 0x40000000
+ };
  
- config C_AMBEN
-diff -ru a/arch/cris/arch-v32/Kconfig b/arch/cris/arch-v32/Kconfig
---- a/arch/cris/arch-v32/Kconfig	2008-04-26 17:12:34.000000000 -0500
-+++ b/arch/cris/arch-v32/Kconfig	2008-04-26 17:12:46.000000000 -0500
-@@ -28,7 +28,7 @@
- 	help
- 	  Select this if you want one Ethernet LED group. This LED group
- 	  can be used for one or more Ethernet interfaces. However, it is
--	  recomended that each Ethernet interface use a dedicated LED group.
-+	  recommended that each Ethernet interface use a dedicated LED group.
+ #define SOCK_MAX (SOCK_PACKET + 1)
+@@ -208,10 +212,12 @@ extern int   	     sock_sendmsg(struct socket *sock, struct msghdr *msg,
+ 				  size_t len);
+ extern int	     sock_recvmsg(struct socket *sock, struct msghdr *msg,
+ 				  size_t size, int flags);
+-extern int 	     sock_map_fd(struct socket *sock);
++extern int 	     sock_map_fd(struct socket *sock, int flags);
+ extern struct socket *sockfd_lookup(int fd, int *err);
+ #define		     sockfd_put(sock) fput(sock->file)
+ extern int	     net_ratelimit(void);
++extern long	     do_accept(int fd, struct sockaddr __user *upeer_sockaddr,
++			       int __user *upeer_addrlen, int flags);
  
- config	ETRAX_NBR_LED_GRP_TWO
- 	bool "Use two LED groups"
-diff -ru a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
---- a/arch/powerpc/Kconfig	2008-04-25 21:26:25.000000000 -0500
-+++ b/arch/powerpc/Kconfig	2008-04-25 22:45:04.000000000 -0500
-@@ -323,7 +323,7 @@
- 	help
- 	  Hypervisor-assisted dump is meant to be a kdump replacement
- 	  offering robustness and speed not possible without system
--	  hypervisor assistence.
-+	  hypervisor assistance.
+ #define net_random()		random32()
+ #define net_srandom(seed)	srandom32((__force u32)seed)
+diff --git a/include/linux/syscalls.h b/include/linux/syscalls.h
+index 8df6d13..14ba94c 100644
+--- a/include/linux/syscalls.h
++++ b/include/linux/syscalls.h
+@@ -407,6 +407,8 @@ asmlinkage long sys_getsockopt(int fd, int level, int optname,
+ asmlinkage long sys_bind(int, struct sockaddr __user *, int);
+ asmlinkage long sys_connect(int, struct sockaddr __user *, int);
+ asmlinkage long sys_accept(int, struct sockaddr __user *, int __user *);
++asmlinkage long sys_paccept(int, struct sockaddr __user *, int __user *,
++			    const sigset_t *, size_t, int);
+ asmlinkage long sys_getsockname(int, struct sockaddr __user *, int __user *);
+ asmlinkage long sys_getpeername(int, struct sockaddr __user *, int __user *);
+ asmlinkage long sys_send(int, void __user *, size_t, unsigned);
+diff --git a/net/9p/trans_fd.c b/net/9p/trans_fd.c
+index f624dff..25931c0 100644
+--- a/net/9p/trans_fd.c
++++ b/net/9p/trans_fd.c
+@@ -1173,7 +1173,7 @@ static int p9_socket_open(struct p9_trans *trans, struct socket *csocket)
+ 	int fd, ret;
  
- 	  If unsure, say "N"
+ 	csocket->sk->sk_allocation = GFP_NOIO;
+-	fd = sock_map_fd(csocket);
++	fd = sock_map_fd(csocket, 0);
+ 	if (fd < 0) {
+ 		P9_EPRINTK(KERN_ERR, "p9_socket_open: failed to map fd\n");
+ 		return fd;
+diff --git a/net/compat.c b/net/compat.c
+index 80013fb..f82bbc2 100644
+--- a/net/compat.c
++++ b/net/compat.c
+@@ -523,9 +523,10 @@ asmlinkage long compat_sys_getsockopt(int fd, int level, int optname,
+ }
+ /* Argument list sizes for compat_sys_socketcall */
+ #define AL(x) ((x) * sizeof(u32))
+-static unsigned char nas[18]={AL(0),AL(3),AL(3),AL(3),AL(2),AL(3),
++static unsigned char nas[19]={AL(0),AL(3),AL(3),AL(3),AL(2),AL(3),
+ 				AL(3),AL(3),AL(4),AL(4),AL(4),AL(6),
+-				AL(6),AL(2),AL(5),AL(5),AL(3),AL(3)};
++				AL(6),AL(2),AL(5),AL(5),AL(3),AL(3),
++				AL(6)};
+ #undef AL
  
-diff -ru a/arch/powerpc/platforms/Kconfig b/arch/powerpc/platforms/Kconfig
---- a/arch/powerpc/platforms/Kconfig	2008-04-25 21:26:27.000000000 -0500
-+++ b/arch/powerpc/platforms/Kconfig	2008-04-25 21:54:50.000000000 -0500
-@@ -317,7 +317,7 @@
- config OF_RTC
- 	bool
- 	help
--	  Uses information from the OF or flattened device tree to instatiate
-+	  Uses information from the OF or flattened device tree to instantiate
- 	  platform devices for direct mapped RTC chips like the DS1742 or DS1743.
+ asmlinkage long compat_sys_sendmsg(int fd, struct compat_msghdr __user *msg, unsigned flags)
+@@ -538,13 +539,52 @@ asmlinkage long compat_sys_recvmsg(int fd, struct compat_msghdr __user *msg, uns
+ 	return sys_recvmsg(fd, (struct msghdr __user *)msg, flags | MSG_CMSG_COMPAT);
+ }
  
- source "arch/powerpc/sysdev/bestcomm/Kconfig"
-diff -ru a/arch/powerpc/sysdev/bestcomm/Kconfig b/arch/powerpc/sysdev/bestcomm/Kconfig
---- a/arch/powerpc/sysdev/bestcomm/Kconfig	2008-04-16 21:49:44.000000000 -0500
-+++ b/arch/powerpc/sysdev/bestcomm/Kconfig	2008-04-25 22:07:48.000000000 -0500
-@@ -9,8 +9,8 @@
- 	select PPC_LIB_RHEAP
- 	help
- 	  BestComm is the name of the communication coprocessor found
--	  on the Freescale MPC5200 family of processor. It's usage is
--	  optionnal for some drivers (like ATA), but required for
-+	  on the Freescale MPC5200 family of processor.  Its usage is
-+	  optional for some drivers (like ATA), but required for
- 	  others (like FEC).
++asmlinkage long compat_sys_paccept(int fd, struct sockaddr __user *upeer_sockaddr,
++				   int __user *upeer_addrlen,
++				   const compat_sigset_t __user *sigmask,
++				   compat_size_t sigsetsize, int flags)
++{
++	compat_sigset_t ss32;
++	sigset_t ksigmask, sigsaved;
++	int ret;
++
++	if (sigmask) {
++		if (sigsetsize != sizeof(compat_sigset_t))
++			return -EINVAL;
++		if (copy_from_user(&ss32, sigmask, sizeof(ss32)))
++			return -EFAULT;
++		sigset_from_compat(&ksigmask, &ss32);
++
++		sigdelsetmask(&ksigmask, sigmask(SIGKILL)|sigmask(SIGSTOP));
++		sigprocmask(SIG_SETMASK, &ksigmask, &sigsaved);
++	}
++
++	ret = do_accept(fd, upeer_sockaddr, upeer_addrlen, flags);
++
++	if (ret == -ERESTARTNOHAND) {
++		/*
++		 * Don't restore the signal mask yet. Let do_signal() deliver
++		 * the signal on the way back to userspace, before the signal
++		 * mask is restored.
++		 */
++		if (sigmask) {
++			memcpy(&current->saved_sigmask, &sigsaved,
++			       sizeof(sigsaved));
++			set_thread_flag(TIF_RESTORE_SIGMASK);
++		}
++	} else if (sigmask)
++		sigprocmask(SIG_SETMASK, &sigsaved, NULL);
++
++	return ret;
++}
++
+ asmlinkage long compat_sys_socketcall(int call, u32 __user *args)
+ {
+ 	int ret;
+ 	u32 a[6];
+ 	u32 a0, a1;
  
- 	  If you want to use drivers that require DMA operations,
-diff -ru a/arch/ppc/platforms/4xx/Kconfig b/arch/ppc/platforms/4xx/Kconfig
---- a/arch/ppc/platforms/4xx/Kconfig	2008-04-16 21:49:44.000000000 -0500
-+++ b/arch/ppc/platforms/4xx/Kconfig	2008-04-25 21:52:33.000000000 -0500
-@@ -117,7 +117,7 @@
+-	if (call < SYS_SOCKET || call > SYS_RECVMSG)
++	if (call < SYS_SOCKET || call > SYS_PACCEPT)
+ 		return -EINVAL;
+ 	if (copy_from_user(a, args, nas[call]))
+ 		return -EFAULT;
+@@ -565,7 +605,7 @@ asmlinkage long compat_sys_socketcall(int call, u32 __user *args)
+ 		ret = sys_listen(a0, a1);
+ 		break;
+ 	case SYS_ACCEPT:
+-		ret = sys_accept(a0, compat_ptr(a1), compat_ptr(a[2]));
++		ret = do_accept(a0, compat_ptr(a1), compat_ptr(a[2]), 0);
+ 		break;
+ 	case SYS_GETSOCKNAME:
+ 		ret = sys_getsockname(a0, compat_ptr(a1), compat_ptr(a[2]));
+@@ -605,6 +645,10 @@ asmlinkage long compat_sys_socketcall(int call, u32 __user *args)
+ 	case SYS_RECVMSG:
+ 		ret = compat_sys_recvmsg(a0, compat_ptr(a1), a[2]);
+ 		break;
++	case SYS_PACCEPT:
++		ret = compat_sys_paccept(a0, compat_ptr(a1), compat_ptr(a[2]),
++					 compat_ptr(a[3]), a[4], a[5]);
++		break;
+ 	default:
+ 		ret = -EINVAL;
+ 		break;
+diff --git a/net/sctp/socket.c b/net/sctp/socket.c
+index e7e3baf..5034b1d 100644
+--- a/net/sctp/socket.c
++++ b/net/sctp/socket.c
+@@ -3812,7 +3812,7 @@ static int sctp_getsockopt_peeloff(struct sock *sk, int len, char __user *optval
+ 		goto out;
  
+ 	/* Map the socket to an unused fd that can be returned to the user.  */
+-	retval = sock_map_fd(newsock);
++	retval = sock_map_fd(newsock, 0);
+ 	if (retval < 0) {
+ 		sock_release(newsock);
+ 		goto out;
+diff --git a/net/socket.c b/net/socket.c
+index 66c4a8c..c593c60 100644
+--- a/net/socket.c
++++ b/net/socket.c
+@@ -348,11 +348,11 @@ static struct dentry_operations sockfs_dentry_operations = {
+  *	but we take care of internal coherence yet.
+  */
  
- # It's often necessary to know the specific 4xx processor type.
--# Fortunately, it is impled (so far) from the board type, so we
-+# Fortunately, it is implied (so far) from the board type, so we
- # don't need to ask more redundant questions.
- config NP405H
- 	bool
-diff -ru a/arch/sh/Kconfig b/arch/sh/Kconfig
---- a/arch/sh/Kconfig	2008-04-25 21:26:27.000000000 -0500
-+++ b/arch/sh/Kconfig	2008-04-25 22:52:11.000000000 -0500
-@@ -752,10 +752,10 @@
- 	depends on GUSA && CPU_SH3 || (CPU_SH4 && !CPU_SH4A)
- 	help
- 	  Enabling this option will allow the kernel to implement some
--	  atomic operations using a software implemention of load-locked/
-+	  atomic operations using a software implementation of load-locked/
- 	  store-conditional (LLSC). On machines which do not have hardware
- 	  LLSC, this should be more efficient than the other alternative of
--	  disabling insterrupts around the atomic sequence.
-+	  disabling interrupts around the atomic sequence.
+-static int sock_alloc_fd(struct file **filep)
++static int sock_alloc_fd(struct file **filep, int flags)
+ {
+ 	int fd;
  
- endmenu
+-	fd = get_unused_fd();
++	fd = get_unused_fd_flags(flags);
+ 	if (likely(fd >= 0)) {
+ 		struct file *file = get_empty_filp();
  
-diff -ru a/drivers/ata/Kconfig b/drivers/ata/Kconfig
---- a/drivers/ata/Kconfig	2008-04-25 21:26:27.000000000 -0500
-+++ b/drivers/ata/Kconfig	2008-04-25 22:19:27.000000000 -0500
-@@ -87,7 +87,7 @@
+@@ -395,10 +395,10 @@ static int sock_attach_fd(struct socket *sock, struct file *file)
+ 	return 0;
+ }
  
- 	  For users with exclusively modern controllers like AHCI,
- 	  Silicon Image 3124, or Marvell 6440, you may choose to
--	  disable this uneeded SFF support.
-+	  disable this unneeded SFF support.
+-int sock_map_fd(struct socket *sock)
++int sock_map_fd(struct socket *sock, int flags)
+ {
+ 	struct file *newfile;
+-	int fd = sock_alloc_fd(&newfile);
++	int fd = sock_alloc_fd(&newfile, flags);
  
- 	  If unsure, say Y.
+ 	if (likely(fd >= 0)) {
+ 		int err = sock_attach_fd(sock, newfile);
+@@ -1213,16 +1213,30 @@ int sock_create_kern(int family, int type, int protocol, struct socket **res)
+ 	return __sock_create(&init_net, family, type, protocol, res, 1);
+ }
  
-diff -ru a/drivers/gpio/Kconfig b/drivers/gpio/Kconfig
---- a/drivers/gpio/Kconfig	2008-04-16 21:49:44.000000000 -0500
-+++ b/drivers/gpio/Kconfig	2008-04-25 21:38:33.000000000 -0500
-@@ -17,9 +17,9 @@
- 	depends on DEBUG_KERNEL
- 	help
- 	  Say Y here to add some extra checks and diagnostics to GPIO calls.
--	  The checks help ensure that GPIOs have been properly initialized
--	  before they are used and that sleeping calls aren not made from
--	  nonsleeping contexts.  They can make bitbanged serial protocols
-+	  These checks help ensure that GPIOs have been properly initialized
-+	  before they are used, and that sleeping calls are not made from
-+	  non-sleeping contexts.  They can make bitbanged serial protocols
- 	  slower.  The diagnostics help catch the type of setup errors
- 	  that are most common when setting up new platforms or boards.
++static int sock_to_file_flags(int *sflags)
++{
++	int fflags = 0;
++
++	/* Extract the close-on-exec flag.  */
++	if ((*sflags & SOCK_CLOEXEC) != 0) {
++		fflags |= O_CLOEXEC;
++		*sflags &= ~SOCK_CLOEXEC;
++	}
++
++	return fflags;
++}
++
+ asmlinkage long sys_socket(int family, int type, int protocol)
+ {
+ 	int retval;
+ 	struct socket *sock;
++	int fflags = sock_to_file_flags(&type);
  
-diff -ru a/drivers/hwmon/Kconfig b/drivers/hwmon/Kconfig
---- a/drivers/hwmon/Kconfig	2008-04-16 21:49:44.000000000 -0500
-+++ b/drivers/hwmon/Kconfig	2008-04-25 22:15:07.000000000 -0500
-@@ -295,7 +295,7 @@
- 	  Computers sensor chips.
+ 	retval = sock_create(family, type, protocol, &sock);
+ 	if (retval < 0)
+ 		goto out;
  
- 	  This is a new merged driver for FSC sensor chips which is intended
--	  as a replacment for the fscpos, fscscy and fscher drivers and adds
-+	  as a replacement for the fscpos, fscscy, and fscher drivers, and adds
- 	  support for several other FCS sensor chips.
+-	retval = sock_map_fd(sock);
++	retval = sock_map_fd(sock, fflags);
+ 	if (retval < 0)
+ 		goto out_release;
  
- 	  This driver can also be built as a module.  If so, the module
-diff -ru a/drivers/input/Kconfig b/drivers/input/Kconfig
---- a/drivers/input/Kconfig	2008-04-16 21:49:44.000000000 -0500
-+++ b/drivers/input/Kconfig	2008-04-25 21:45:54.000000000 -0500
-@@ -143,7 +143,7 @@
- 	---help---
- 	  Say Y here if you want suspend key events to trigger a user
- 	  requested suspend through APM. This is useful on embedded
--	  systems where such behviour is desired without userspace
-+	  systems where such behaviour is desired without userspace
- 	  interaction. If unsure, say N.
+@@ -1245,6 +1259,7 @@ asmlinkage long sys_socketpair(int family, int type, int protocol,
+ 	struct socket *sock1, *sock2;
+ 	int fd1, fd2, err;
+ 	struct file *newfile1, *newfile2;
++	int fflags = sock_to_file_flags(&type);
  
- 	  To compile this driver as a module, choose M here: the
-diff -ru a/drivers/media/dvb/frontends/Kconfig b/drivers/media/dvb/frontends/Kconfig
---- a/drivers/media/dvb/frontends/Kconfig	2008-04-25 21:26:29.000000000 -0500
-+++ b/drivers/media/dvb/frontends/Kconfig	2008-04-25 22:34:37.000000000 -0500
-@@ -373,7 +373,7 @@
- 	default m if DVB_FE_CUSTOMISE
- 	help
- 	  A driver for the silicon baseband tuner DiB0070 from DiBcom.
--	  This device is only used inside a SiP called togther with a
-+	  This device is only used inside a SiP called together with a
- 	  demodulator for now.
+ 	/*
+ 	 * Obtain the first socket and check if the underlying protocol
+@@ -1263,13 +1278,13 @@ asmlinkage long sys_socketpair(int family, int type, int protocol,
+ 	if (err < 0)
+ 		goto out_release_both;
  
- config DVB_TUNER_XC5000
-@@ -382,7 +382,7 @@
- 	default m if DVB_FE_CUSTOMISE
- 	help
- 	  A driver for the silicon tuner XC5000 from Xceive.
--	  This device is only used inside a SiP called togther with a
-+	  This device is only used inside a SiP called together with a
- 	  demodulator for now.
+-	fd1 = sock_alloc_fd(&newfile1);
++	fd1 = sock_alloc_fd(&newfile1, fflags);
+ 	if (unlikely(fd1 < 0)) {
+ 		err = fd1;
+ 		goto out_release_both;
+ 	}
  
- config DVB_TUNER_ITD1000
-diff -ru a/drivers/misc/Kconfig b/drivers/misc/Kconfig
---- a/drivers/misc/Kconfig	2008-04-25 21:26:30.000000000 -0500
-+++ b/drivers/misc/Kconfig	2008-04-25 23:25:10.000000000 -0500
-@@ -18,8 +18,8 @@
- 	depends on AVR32 || ARCH_AT91
- 	help
- 	  This option enables device driver support for the PWM channels
--	  on certain Atmel prcoessors.  Pulse Width Modulation is used for
--	  purposes including software controlled power-efficent backlights
-+	  on certain Atmel processors.  Pulse Width Modulation is used for
-+	  purposes including software controlled power-efficient backlights
- 	  on LCD displays, motor control, and waveform generation.
+-	fd2 = sock_alloc_fd(&newfile2);
++	fd2 = sock_alloc_fd(&newfile2, fflags);
+ 	if (unlikely(fd2 < 0)) {
+ 		err = fd2;
+ 		put_filp(newfile1);
+@@ -1400,13 +1415,18 @@ asmlinkage long sys_listen(int fd, int backlog)
+  *	clean when we restucture accept also.
+  */
  
- config ATMEL_TCLIB
-@@ -310,11 +310,11 @@
- 	  If you are not sure, say Y here.
+-asmlinkage long sys_accept(int fd, struct sockaddr __user *upeer_sockaddr,
+-			   int __user *upeer_addrlen)
++long do_accept(int fd, struct sockaddr __user *upeer_sockaddr,
++	       int __user *upeer_addrlen, int flags)
+ {
+ 	struct socket *sock, *newsock;
+ 	struct file *newfile;
+ 	int err, len, newfd, fput_needed;
+ 	char address[MAX_SOCK_ADDR];
++	int fflags = sock_to_file_flags(&flags);
++
++	/* So far no additional flags are recognized.  */
++	if (unlikely(flags != 0))
++		return -EINVAL;
  
- config THINKPAD_ACPI_HOTKEY_POLL
--	bool "Suport NVRAM polling for hot keys"
-+	bool "Support NVRAM polling for hot keys"
- 	depends on THINKPAD_ACPI
- 	default y
- 	---help---
--	  Some thinkpad models benefit from NVRAM polling to detect a few of
-+	  Some ThinkPad models benefit from NVRAM polling to detect a few of
- 	  the hot key press events.  If you know your ThinkPad model does not
- 	  need to do NVRAM polling to support any of the hot keys you use,
- 	  unselecting this option will save about 1kB of memory.
-@@ -333,7 +333,7 @@
- 	tristate "Device driver for Atmel SSC peripheral"
- 	depends on AVR32 || ARCH_AT91
- 	---help---
--	  This option enables device driver support for Atmel Syncronized
-+	  This option enables device driver support for Atmel Synchronized
- 	  Serial Communication peripheral (SSC).
+ 	sock = sockfd_lookup_light(fd, &err, &fput_needed);
+ 	if (!sock)
+@@ -1425,7 +1445,7 @@ asmlinkage long sys_accept(int fd, struct sockaddr __user *upeer_sockaddr,
+ 	 */
+ 	__module_get(newsock->ops->owner);
  
- 	  The SSC peripheral supports a wide variety of serial frame based
-diff -ru a/drivers/mmc/host/Kconfig b/drivers/mmc/host/Kconfig
---- a/drivers/mmc/host/Kconfig	2008-04-16 21:49:44.000000000 -0500
-+++ b/drivers/mmc/host/Kconfig	2008-04-25 21:35:27.000000000 -0500
-@@ -123,7 +123,7 @@
- 	select CRC7
- 	select CRC_ITU_T
- 	help
--	  Some systems accss MMC/SD cards using a SPI controller instead of
-+	  Some systems access MMC/SD cards using a SPI controller instead of
- 	  using a "native" MMC/SD controller.  This has a disadvantage of
- 	  being relatively high overhead, but a compensating advantage of
- 	  working on many systems without dedicated MMC/SD controllers.
-diff -ru a/fs/Kconfig b/fs/Kconfig
---- a/fs/Kconfig	2008-04-25 21:26:32.000000000 -0500
-+++ b/fs/Kconfig	2008-04-25 22:04:07.000000000 -0500
-@@ -1850,7 +1850,7 @@
- 	select CRYPTO_CBC
- 	help
- 	  Choose Y here to enable Secure RPC using the SPKM3 public key
--	  GSS-API mechansim (RFC 2025).
-+	  GSS-API mechanism (RFC 2025).
+-	newfd = sock_alloc_fd(&newfile);
++	newfd = sock_alloc_fd(&newfile, fflags);
+ 	if (unlikely(newfd < 0)) {
+ 		err = newfd;
+ 		sock_release(newsock);
+@@ -1478,6 +1498,50 @@ out_fd:
+ 	goto out_put;
+ }
  
- 	  Secure RPC calls with SPKM3 require an auxiliary userspace
- 	  daemon which may be found in the Linux nfs-utils package
-diff -ru a/init/Kconfig b/init/Kconfig
---- a/init/Kconfig	2008-04-25 21:27:03.000000000 -0500
-+++ b/init/Kconfig	2008-04-25 22:30:10.000000000 -0500
-@@ -466,8 +466,8 @@
- 	default n
- 	depends on NAMESPACES && EXPERIMENTAL
- 	help
--	  Suport process id namespaces.  This allows having multiple
--	  process with the same pid as long as they are in different
-+	  Support process id namespaces.  This allows having multiple
-+	  processes with the same pid as long as they are in different
- 	  pid namespaces.  This is a building block of containers.
++asmlinkage long sys_paccept(int fd, struct sockaddr __user *upeer_sockaddr,
++			    int __user *upeer_addrlen,
++			    const sigset_t __user *sigmask,
++			    size_t sigsetsize, int flags)
++{
++	sigset_t ksigmask, sigsaved;
++	int ret;
++
++	if (sigmask) {
++		/* XXX: Don't preclude handling different sized sigset_t's.  */
++		if (sigsetsize != sizeof(sigset_t))
++			return -EINVAL;
++		if (copy_from_user(&ksigmask, sigmask, sizeof(ksigmask)))
++			return -EFAULT;
++
++		sigdelsetmask(&ksigmask, sigmask(SIGKILL)|sigmask(SIGSTOP));
++		sigprocmask(SIG_SETMASK, &ksigmask, &sigsaved);
++        }
++
++	ret = do_accept(fd, upeer_sockaddr, upeer_addrlen, flags);
++
++	if (ret < 0 && signal_pending(current)) {
++		/*
++		 * Don't restore the signal mask yet. Let do_signal() deliver
++		 * the signal on the way back to userspace, before the signal
++		 * mask is restored.
++		 */
++		if (sigmask) {
++			memcpy(&current->saved_sigmask, &sigsaved,
++			       sizeof(sigsaved));
++			set_thread_flag(TIF_RESTORE_SIGMASK);
++		}
++	} else if (sigmask)
++		sigprocmask(SIG_SETMASK, &sigsaved, NULL);
++
++	return ret;
++}
++
++asmlinkage long sys_accept(int fd, struct sockaddr __user *upeer_sockaddr,
++			   int __user *upeer_addrlen)
++{
++	return do_accept(fd, upeer_sockaddr, upeer_addrlen, 0);
++}
++
+ /*
+  *	Attempt to connect to a socket with the server address.  The address
+  *	is in user space so we verify it is OK and move it to kernel space.
+@@ -1988,10 +2052,11 @@ out:
  
- 	  Unless you want to work with an experimental feature
+ /* Argument list sizes for sys_socketcall */
+ #define AL(x) ((x) * sizeof(unsigned long))
+-static const unsigned char nargs[18]={
++static const unsigned char nargs[19]={
+ 	AL(0),AL(3),AL(3),AL(3),AL(2),AL(3),
+ 	AL(3),AL(3),AL(4),AL(4),AL(4),AL(6),
+-	AL(6),AL(2),AL(5),AL(5),AL(3),AL(3)
++	AL(6),AL(2),AL(5),AL(5),AL(3),AL(3),
++	AL(6)
+ };
+ 
+ #undef AL
+@@ -2010,7 +2075,7 @@ asmlinkage long sys_socketcall(int call, unsigned long __user *args)
+ 	unsigned long a0, a1;
+ 	int err;
+ 
+-	if (call < 1 || call > SYS_RECVMSG)
++	if (call < 1 || call > SYS_PACCEPT)
+ 		return -EINVAL;
+ 
+ 	/* copy_from_user should be SMP safe. */
+@@ -2039,8 +2104,8 @@ asmlinkage long sys_socketcall(int call, unsigned long __user *args)
+ 		break;
+ 	case SYS_ACCEPT:
+ 		err =
+-		    sys_accept(a0, (struct sockaddr __user *)a1,
+-			       (int __user *)a[2]);
++		    do_accept(a0, (struct sockaddr __user *)a1,
++			      (int __user *)a[2], 0);
+ 		break;
+ 	case SYS_GETSOCKNAME:
+ 		err =
+@@ -2087,6 +2152,13 @@ asmlinkage long sys_socketcall(int call, unsigned long __user *args)
+ 	case SYS_RECVMSG:
+ 		err = sys_recvmsg(a0, (struct msghdr __user *)a1, a[2]);
+ 		break;
++	case SYS_PACCEPT:
++		err =
++		    sys_paccept(a0, (struct sockaddr __user *)a1,
++			        (int __user *)a[2],
++				(const sigset_t __user *) a[3],
++				a[4], a[5]);
++		break;
+ 	default:
+ 		err = -EINVAL;
+ 		break;
