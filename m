@@ -1,107 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756816AbYDZLoS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753819AbYDZLoj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756816AbYDZLoS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Apr 2008 07:44:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751563AbYDZLoF
+	id S1753819AbYDZLoj (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Apr 2008 07:44:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753383AbYDZLo2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Apr 2008 07:44:05 -0400
-Received: from mail.gmx.net ([213.165.64.20]:59130 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751553AbYDZLoC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Apr 2008 07:44:02 -0400
-X-Authenticated: #23875046
-X-Provags-ID: V01U2FsdGVkX19O83t+qp5Onzq3SDfReegWPIrCDNOV1g2q5yBCJk
-	EyTJ12tBoexxfP
-Subject: Re: [Bug 10328] New: [regression] performance drop for glx
-From: Alexey Fisher <bug-track@fisher-privat.net>
-To: Suresh Siddha <suresh.b.siddha@intel.com>
-Cc: Arjan van de Ven <arjan@linux.intel.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, bugme-daemon@bugzilla.kernel.org,
-       linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       venkatesh.pallipadi@intel.com, jbarnes@virtuousgeek.org,
-       keithp@keithp.com, airlied@gmail.com
-In-Reply-To: <20080426000722.GJ14062@linux-os.sc.intel.com>
-References: <bug-10328-27@http.bugzilla.kernel.org/>
-	 <20080325152809.e2b07251.akpm@linux-foundation.org>
-	 <20080326003912.GB3313@linux-os.sc.intel.com>
-	 <47E9D42F.5080506@linux.intel.com> <1209101723.21553.1.camel@zwerg>
-	 <20080426000722.GJ14062@linux-os.sc.intel.com>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-y7svv5w1sR+zcKq4PH1K"
-Date: Sat, 26 Apr 2008 13:43:57 +0200
-Message-Id: <1209210237.4583.4.camel@zwerg>
+	Sat, 26 Apr 2008 07:44:28 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:41936 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752668AbYDZLo1 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 Apr 2008 07:44:27 -0400
+Date: Sat, 26 Apr 2008 08:43:04 -0300
+From: Mauro Carvalho Chehab <mchehab@infradead.org>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Harvey Harrison <harvey.harrison@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [BUILDFIX PATCH] v4l/dvb: add statics to avoid multiple
+ definitions
+Message-ID: <20080426084304.65688c60@gaivota>
+In-Reply-To: <20080426100130.GA2252@cs181133002.pp.htv.fi>
+References: <1209175388.14173.10.camel@brick>
+	<20080426100130.GA2252@cs181133002.pp.htv.fi>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.9; x86_64-mandriva-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 
-X-Y-GMX-Trusted: 0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
+X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, 26 Apr 2008 13:01:30 +0300
+Adrian Bunk <bunk@kernel.org> wrote:
 
---=-y7svv5w1sR+zcKq4PH1K
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+> I'm wondering what I am doing wrong since I already sent the same patch 
+> and it went not into Linus' tree.
 
-Am Freitag, den 25.04.2008, 17:07 -0700 schrieb Suresh Siddha:
-> On Fri, Apr 25, 2008 at 07:35:23AM +0200, Alexey Fisher wrote:
-> > > >> On Tue, 25 Mar 2008 15:11:15 -0700 (PDT)
-> > > >> bugme-daemon@bugzilla.kernel.org wrote:
-> > > >>
-> > > >>> http://bugzilla.kernel.org/show_bug.cgi?id=3D10328
-> > > >>>
-> > > >>>            Summary: [regression] performance drop for glx
-> > > >=20
-> > > > Alexey, Can you please try the appended patch?
-> > > >=20
-> > > > Andrew, can you please push the appended patch for 2.6.25? Thanks.
-> > > > ---
-> > > >=20
-> >=20
-> >=20
-> > This issue come again with commit:
-> >=20
-> > commit 2e5d9c857d4e6c9e7b7d8c8c86a68a7842d213d6
-> > Author: venkatesh.pallipadi@intel.com <venkatesh.pallipadi@intel.com>
-> > Date:   Tue Mar 18 17:00:14 2008 -0700
-> >=20
-> >     x86: PAT infrastructure patch
-> >=20
-> >     Sets up pat_init() infrastructure.
-> >=20
->=20
-> Alexey, Sorry. I missed posting a fix in the post PAT series for this iss=
-ue. Can you
-> please try the appended patch and Ack?
->=20
-> copying X folks get their attention and their Ack on the patch and next s=
-teps outlined.
->=20
-> Thanks.
-> ---
->=20
-> [patch] use UC minus for ioremap(), ioremap_nocache() and pci_mmap_page_r=
-ange()
->=20
-> Use UC_MINUS for ioremap(), ioremap_nocache() instead of strong UC.
-> Once all the X drivers move to ioremap_wc(), we can go back to strong
-> UC semantics for ioremap() and ioremap_nocache().
->=20
+>From my side I needed to re-generate my local -git copy, since I have two hunks
+from one patch moved to another patch (sigh!). 
 
-Thank you. This patch working.
+Although all tests I did here pointed to a broken tree, likely caused by stgit,
+I felt the need of reviewing my environment, before sending more patches to
+mainstream, to avoid further issues. I've scheduled your patches with top
+priority, but I didn't forwarded any patches yet.
 
-Ack ?
+I was intending to do this on this Sat, since I would have more time for the
+checks I want to do.
 
---=-y7svv5w1sR+zcKq4PH1K
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: Dies ist ein digital signierter Nachrichtenteil
+Sorry for the inconvenience.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBIExV9VVCoNUmKuAcRAtbZAKCjo97tjchJn/ntsK3WWqyR2VMRSwCeMjOD
-pKOjS7F7DP88DMDhXCXOfg4=
-=O3fr
------END PGP SIGNATURE-----
-
---=-y7svv5w1sR+zcKq4PH1K--
-
+Cheers,
+Mauro
