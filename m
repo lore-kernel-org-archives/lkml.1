@@ -1,44 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759210AbYDZIma@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758988AbYDZIrS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759210AbYDZIma (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Apr 2008 04:42:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752742AbYDZImX
+	id S1758988AbYDZIrS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Apr 2008 04:47:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753171AbYDZIrJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Apr 2008 04:42:23 -0400
-Received: from gw.goop.org ([64.81.55.164]:50100 "EHLO mail.goop.org"
+	Sat, 26 Apr 2008 04:47:09 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:59928 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752648AbYDZImW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Apr 2008 04:42:22 -0400
-Message-ID: <4812EAE8.5000006@goop.org>
-Date: Sat, 26 Apr 2008 01:42:16 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080418)
+	id S1752742AbYDZIrI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 Apr 2008 04:47:08 -0400
+Date: Sat, 26 Apr 2008 09:47:06 +0100 (IST)
+From: Dave Airlie <airlied@linux.ie>
+X-X-Sender: airlied@skynet.skynet.ie
+To: torvalds@linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>
+cc: linux-kernel@vger.kernel.org
+Subject: [git tree] agp patches for 2.6.26-rc1
+Message-ID: <alpine.DEB.0.82.0804260946300.12688@skynet.skynet.ie>
 MIME-Version: 1.0
-To: Isaku Yamahata <yamahata@valinux.co.jp>
-CC: linux-kernel@vger.kernel.org, virtualization@lists.linux-foundation.org,
-       xen-ia64-devel@lists.xensource.com, eddie.dong@intel.com
-Subject: Re: [PATCH 0/3] xen: more portability patches
-References: <12088476062604-git-send-email-yamahata@valinux.co.jp>
-In-Reply-To: <12088476062604-git-send-email-yamahata@valinux.co.jp>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Isaku Yamahata wrote:
-> Hi Jeremy.
-> Here are the 3 patches for ia64/xen support.
-> The first one is just to move manage.c under drivers/xen.
-> This is trivial.
->
-> The second and third ones are for compilation fix on ia64.
-> You may want to postpone those 2 patches to make your merge task
-> easy as you said before.
->   
 
-I've put these into my queue.  I'll submit them to Ingo when the merge 
-window settles down.
+Hi Linus,
 
-    J
+Please pull the 'agp-patches' branch from
+git://master.kernel.org/pub/scm/linux/kernel/git/airlied/agp-2.6.git agp-patches
+
+Dave.
+
+ drivers/char/agp/amd-k7-agp.c |    3 ++-
+ drivers/char/agp/frontend.c   |    4 ++--
+ 2 files changed, 4 insertions(+), 3 deletions(-)
+
+commit 09aa356b5584090aab6810ec8002936d710cd4ac
+Author: Mathieu Segaud <mathieu.segaud@regala.cx>
+Date:   Fri Apr 18 13:29:38 2008 -0700
+
+    agp: convert drivers/char/agp/frontend.c to use unlocked_ioctl
+    
+    As of now, agp_compat_ioctl already runs without the BKL.  Mutual exclusion
+    is enforced by agp_fe.agp_mutex in agp_ioctl() and agp_compat_ioctl().
+    Apply the same locking rationale to the two functions allowing BKL cleanup.
+    
+    Signed-off-by: Mathieu Segaud <mathieu.segaud@regala.cx>
+    Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+    Signed-off-by: Dave Airlie <airlied@linux.ie>
+
+commit 4ab92bcf773e7b9e1367897047d5fa4d151d9e90
+Author: Harvey Harrison <harvey.harrison@gmail.com>
+Date:   Sat Apr 26 18:38:04 2008 +1000
+
+    agp: fix shadowed variable warning in amd-k7-agp.c
+    
+    Introduced between 2.6.25-rc2 and -rc3
+    drivers/char/agp/amd-k7-agp.c:439:6: warning: symbol 'cap_ptr' shadows an
+    earlier one
+    drivers/char/agp/amd-k7-agp.c:414:5: originally declared here
+    
+    cap_ptr is never used again in this function, don't bother redeclaring.
+    
+    Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+    Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+    Signed-off-by: Dave Airlie <airlied@linux.ie>
