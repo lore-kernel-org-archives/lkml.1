@@ -1,342 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762456AbYDZUEE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762508AbYDZUFf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762456AbYDZUEE (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Apr 2008 16:04:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760247AbYDZUDz
+	id S1762508AbYDZUFf (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Apr 2008 16:05:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760570AbYDZUF1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Apr 2008 16:03:55 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:51446 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757997AbYDZUDy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Apr 2008 16:03:54 -0400
-Date: Sat, 26 Apr 2008 16:03:47 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Denys Vlasenko <vda.linux@googlemail.com>
-Cc: David Chinner <dgc@sgi.com>, xfs@oss.sgi.com,
-       Eric Sandeen <sandeen@sandeen.net>, Adrian Bunk <bunk@kernel.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] xfs: reduce stack usage in xfs_bmap_btalloc()
-Message-ID: <20080426200347.GA21021@infradead.org>
-References: <200804261651.02078.vda.linux@googlemail.com>
+	Sat, 26 Apr 2008 16:05:27 -0400
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:42313 "EHLO smtp5.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757810AbYDZUF0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 Apr 2008 16:05:26 -0400
+Date: Sat, 26 Apr 2008 23:05:02 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       linux-kbuild <linux-kbuild@vger.kernel.org>
+Subject: Re: [GIT PULL] kbuild fixes
+Message-ID: <20080426200502.GU2252@cs181133002.pp.htv.fi>
+References: <20080426191256.GA784@uranus.ravnborg.org> <20080426192037.GR2252@cs181133002.pp.htv.fi> <20080426193701.GA9131@uranus.ravnborg.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <200804261651.02078.vda.linux@googlemail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+In-Reply-To: <20080426193701.GA9131@uranus.ravnborg.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Apr 26, 2008 at 04:51:02PM +0200, Denys Vlasenko wrote:
-> Hi David,
+On Sat, Apr 26, 2008 at 09:37:01PM +0200, Sam Ravnborg wrote:
+> On Sat, Apr 26, 2008 at 10:20:37PM +0300, Adrian Bunk wrote:
+> > On Sat, Apr 26, 2008 at 09:12:56PM +0200, Sam Ravnborg wrote:
+> > > Hi Linus.
+> > > 
+> > > Please apply the following two fixes by pulling from:
+> > > 
+> > >    master.kernel.org/pub/scm/linux/kernel/git/sam/kbuild.git
+> > > 
+> > > 
+> > > The MODULE_LICENSE fix is neded to get an allmodconfig
+> > > build fixed.
+> > 
+> > Which one is this?
+> > 
+> > http://lkml.org/lkml/2008/3/31/50 ?
+> > (my allmod build is not yet finished)
 > 
-> This patch reduces xfs_bmap_btalloc() stack usage by 50 bytes
-> by moving part of its body into a helper function.
-> 
-> This results in some variables not taking stack space in
-> xfs_bmap_btalloc() anymore.
-> 
-> The helper itself does not call anything stack-deep.
-> Stack-deep call to xfs_alloc_vextent() happen
-> in xfs_bmap_btalloc(), as before.
-> 
-> Compile tested only.
+> The changelog was actually bad for this one.
 
-I think this is a good idea, although I'd rather split the function at
-a local boundary.  The patch below (which passes xfsqa) does that
-by splitting out the handling of the most complicated nullfb case
-out.  It probably won't help reducing stack useage as much as yours,
-but it helps beeing able to read the code a little better.
+It was not a build error when I sent it one month ago, and that was the 
+changelog in all such patches I sent.
 
-Index: linux-2.6-xfs/fs/xfs/xfs_bmap.c
-===================================================================
---- linux-2.6-xfs.orig/fs/xfs/xfs_bmap.c	2008-04-26 17:43:50.000000000 +0200
-+++ linux-2.6-xfs/fs/xfs/xfs_bmap.c	2008-04-26 18:03:08.000000000 +0200
-@@ -2646,6 +2646,144 @@ xfs_bmap_rtalloc(
- 	return 0;
- }
- 
-+STATIC void
-+xfs_bmap_btalloc_fix_blen(
-+	xfs_mount_t		*mp,
-+	xfs_perag_t		*pag,
-+	xfs_extlen_t		*blen)
-+{
-+	xfs_extlen_t		need, delta, longest;
-+
-+	need = XFS_MIN_FREELIST_PAG(pag, mp);
-+	if (need > pag->pagf_flcount)
-+		delta = need - pag->pagf_flcount;
-+	else
-+		delta = 0;
-+
-+	if (pag->pagf_longest > delta)
-+		longest = pag->pagf_longest - delta;
-+	else
-+		longest = (pag->pagf_flcount > 0 ||
-+			   pag->pagf_longest > 0);
-+
-+	if (*blen < longest)
-+		*blen = longest;
-+}
-+
-+STATIC int
-+xfs_bmap_btalloc_nullfb(
-+	xfs_bmalloca_t		*ap,
-+	xfs_alloc_arg_t		*args,
-+	xfs_extlen_t		*blen)
-+{
-+	xfs_mount_t		*mp = ap->ip->i_mount;
-+	xfs_agnumber_t		ag, startag;
-+	int			notinit = 0, error;
-+
-+	if (ap->userdata && xfs_inode_is_filestream(ap->ip))
-+		args->type = XFS_ALLOCTYPE_NEAR_BNO;
-+	else
-+		args->type = XFS_ALLOCTYPE_START_BNO;
-+	args->total = ap->total;
-+
-+	/*
-+	 * Search for an allocation group with a single extent
-+	 * large enough for the request.
-+	 *
-+	 * If one isn't found, then adjust the minimum allocation
-+	 * size to the largest space found.
-+	 */
-+	startag = XFS_FSB_TO_AGNO(mp, args->fsbno);
-+	if (startag == NULLAGNUMBER)
-+		startag = 0;
-+
-+	ag = startag;
-+	down_read(&mp->m_peraglock);
-+	while (*blen < ap->alen) {
-+		xfs_perag_t	*pag = &mp->m_perag[ag];
-+
-+		if (!pag->pagf_init) {
-+			error = xfs_alloc_pagf_init(mp, args->tp, ag,
-+			    			    XFS_ALLOC_FLAG_TRYLOCK);
-+			if (error)
-+				goto out_unlock;
-+		}
-+
-+		/*
-+		 * See xfs_alloc_fix_freelist...
-+		 */
-+		if (pag->pagf_init)
-+			xfs_bmap_btalloc_fix_blen(mp, pag, blen);
-+		else
-+			notinit = 1;
-+
-+		if (xfs_inode_is_filestream(ap->ip)) {
-+			if (*blen >= ap->alen)
-+				break;
-+
-+			if (ap->userdata) {
-+				/*
-+				 * If startag is an invalid AG, we've come
-+				 * here once before and xfs_filestream_new_ag
-+				 * picked the best currently available.
-+				 *
-+				 * Don't continue looping, since we could
-+				 * loop forever.
-+				 */
-+				if (startag == NULLAGNUMBER)
-+					break;
-+
-+				error = xfs_filestream_new_ag(ap, &ag);
-+				if (error)
-+					goto out_unlock;
-+
-+				/* loop again to set 'blen'*/
-+				startag = NULLAGNUMBER;
-+				continue;
-+			}
-+		}
-+		if (++ag == mp->m_sb.sb_agcount)
-+			ag = 0;
-+		if (ag == startag)
-+			break;
-+	}
-+	up_read(&mp->m_peraglock);
-+
-+	/*
-+	 * Since the above loop did a BUF_TRYLOCK, it is
-+	 * possible that there is space for this request.
-+	 */
-+	if (notinit || *blen < ap->minlen)
-+		args->minlen = ap->minlen;
-+
-+	/*
-+	 * If the best seen length is less than the request
-+	 * length, use the best as the minimum.
-+	 */
-+	else if (*blen < ap->alen)
-+		args->minlen = *blen;
-+
-+	/*
-+	 * Otherwise we've seen an extent as big as alen,
-+	 * use that as the minimum.
-+	 */
-+	else
-+		args->minlen = ap->alen;
-+
-+	/*
-+	 * Set the failure fallback case to look in the selected AG as
-+	 * the stream may have moved.
-+	 */
-+	if (xfs_inode_is_filestream(ap->ip))
-+		ap->rval = args->fsbno = XFS_AGB_TO_FSB(mp, ag, 0);
-+
-+	return 0;
-+
-+ out_unlock:
-+	up_read(&mp->m_peraglock);
-+	return error;
-+}
-+
- STATIC int
- xfs_bmap_btalloc(
- 	xfs_bmalloca_t	*ap)		/* bmap alloc argument struct */
-@@ -2653,19 +2791,12 @@ xfs_bmap_btalloc(
- 	xfs_mount_t	*mp;		/* mount point structure */
- 	xfs_alloctype_t	atype = 0;	/* type for allocation routines */
- 	xfs_extlen_t	align;		/* minimum allocation alignment */
--	xfs_agnumber_t	ag;
- 	xfs_agnumber_t	fb_agno;	/* ag number of ap->firstblock */
--	xfs_agnumber_t	startag;
- 	xfs_alloc_arg_t	args;
- 	xfs_extlen_t	blen;
--	xfs_extlen_t	delta;
--	xfs_extlen_t	longest;
--	xfs_extlen_t	need;
- 	xfs_extlen_t	nextminlen = 0;
--	xfs_perag_t	*pag;
- 	int		nullfb;		/* true if ap->firstblock isn't set */
- 	int		isaligned;
--	int		notinit;
- 	int		tryagain;
- 	int		error;
- 
-@@ -2682,6 +2813,8 @@ xfs_bmap_btalloc(
- 	fb_agno = nullfb ? NULLAGNUMBER : XFS_FSB_TO_AGNO(mp, ap->firstblock);
- 	if (nullfb) {
- 		if (ap->userdata && xfs_inode_is_filestream(ap->ip)) {
-+			xfs_agnumber_t	ag;
-+
- 			ag = xfs_filestream_lookup_ag(ap->ip);
- 			ag = (ag != NULLAGNUMBER) ? ag : 0;
- 			ap->rval = XFS_AGB_TO_FSB(mp, ag, 0);
-@@ -2712,107 +2845,9 @@ xfs_bmap_btalloc(
- 	args.firstblock = ap->firstblock;
- 	blen = 0;
- 	if (nullfb) {
--		if (ap->userdata && xfs_inode_is_filestream(ap->ip))
--			args.type = XFS_ALLOCTYPE_NEAR_BNO;
--		else
--			args.type = XFS_ALLOCTYPE_START_BNO;
--		args.total = ap->total;
--
--		/*
--		 * Search for an allocation group with a single extent
--		 * large enough for the request.
--		 *
--		 * If one isn't found, then adjust the minimum allocation
--		 * size to the largest space found.
--		 */
--		startag = ag = XFS_FSB_TO_AGNO(mp, args.fsbno);
--		if (startag == NULLAGNUMBER)
--			startag = ag = 0;
--		notinit = 0;
--		down_read(&mp->m_peraglock);
--		while (blen < ap->alen) {
--			pag = &mp->m_perag[ag];
--			if (!pag->pagf_init &&
--			    (error = xfs_alloc_pagf_init(mp, args.tp,
--				    ag, XFS_ALLOC_FLAG_TRYLOCK))) {
--				up_read(&mp->m_peraglock);
--				return error;
--			}
--			/*
--			 * See xfs_alloc_fix_freelist...
--			 */
--			if (pag->pagf_init) {
--				need = XFS_MIN_FREELIST_PAG(pag, mp);
--				delta = need > pag->pagf_flcount ?
--					need - pag->pagf_flcount : 0;
--				longest = (pag->pagf_longest > delta) ?
--					(pag->pagf_longest - delta) :
--					(pag->pagf_flcount > 0 ||
--					 pag->pagf_longest > 0);
--				if (blen < longest)
--					blen = longest;
--			} else
--				notinit = 1;
--
--			if (xfs_inode_is_filestream(ap->ip)) {
--				if (blen >= ap->alen)
--					break;
--
--				if (ap->userdata) {
--					/*
--					 * If startag is an invalid AG, we've
--					 * come here once before and
--					 * xfs_filestream_new_ag picked the
--					 * best currently available.
--					 *
--					 * Don't continue looping, since we
--					 * could loop forever.
--					 */
--					if (startag == NULLAGNUMBER)
--						break;
--
--					error = xfs_filestream_new_ag(ap, &ag);
--					if (error) {
--						up_read(&mp->m_peraglock);
--						return error;
--					}
--
--					/* loop again to set 'blen'*/
--					startag = NULLAGNUMBER;
--					continue;
--				}
--			}
--			if (++ag == mp->m_sb.sb_agcount)
--				ag = 0;
--			if (ag == startag)
--				break;
--		}
--		up_read(&mp->m_peraglock);
--		/*
--		 * Since the above loop did a BUF_TRYLOCK, it is
--		 * possible that there is space for this request.
--		 */
--		if (notinit || blen < ap->minlen)
--			args.minlen = ap->minlen;
--		/*
--		 * If the best seen length is less than the request
--		 * length, use the best as the minimum.
--		 */
--		else if (blen < ap->alen)
--			args.minlen = blen;
--		/*
--		 * Otherwise we've seen an extent as big as alen,
--		 * use that as the minimum.
--		 */
--		else
--			args.minlen = ap->alen;
--
--		/*
--		 * set the failure fallback case to look in the selected
--		 * AG as the stream may have moved.
--		 */
--		if (xfs_inode_is_filestream(ap->ip))
--			ap->rval = args.fsbno = XFS_AGB_TO_FSB(mp, ag, 0);
-+		error = xfs_bmap_btalloc_nullfb(ap, &args, &blen);
-+		if (error)
-+			return error;
- 	} else if (ap->low) {
- 		if (xfs_inode_is_filestream(ap->ip))
- 			args.type = XFS_ALLOCTYPE_FIRST_AG;
+> I saw two classes of problems:
+> 
+> 1) I got report about broken builds - fbdev was the culprint.
+> 2) a "make CONFIG_DEBUG_SECTION_MISMATCH=y" build broke
+>    immediately.
+
+OK, I never tried 2).
+
+As long as this problem exists even a warning shouldn't be issued.
+
+> I made it non-fatal because we had at least one module that
+> was not yet fixed.
+
+I had this patch in my test compiles for some time.
+
+Considering that I had a new such bug to fix during this merge window
+"at least one unfixed module" is a bad prerequisite for making it an 
+error since new bugs always get added.  ;-)
+
+> 	Sam
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
