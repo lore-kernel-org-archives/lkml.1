@@ -1,37 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933712AbYDZAS6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933784AbYDZAT2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933712AbYDZAS6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Apr 2008 20:18:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761462AbYDZAP5
+	id S933784AbYDZAT2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Apr 2008 20:19:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761595AbYDZAP6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Apr 2008 20:15:57 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:59171 "EHLO relay.sgi.com"
+	Fri, 25 Apr 2008 20:15:58 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:59180 "EHLO relay.sgi.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1758120AbYDZAPu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1758131AbYDZAPu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 25 Apr 2008 20:15:50 -0400
-Message-Id: <20080426001550.087142000@polaris-admin.engr.sgi.com>
+Message-Id: <20080426001550.263378000@polaris-admin.engr.sgi.com>
 References: <20080426001548.829332000@polaris-admin.engr.sgi.com>
 User-Agent: quilt/0.46-1
-Date: Fri, 25 Apr 2008 17:15:55 -0700
+Date: Fri, 25 Apr 2008 17:15:56 -0700
 From: Mike Travis <travis@sgi.com>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: Andrew Morton <akpm@linux-foundation.org>,
        Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH 07/11] x86: remove static boot_cpu_pda array
-Content-Disposition: inline; filename=rm-boot_pdas
+       linux-kernel@vger.kernel.org, Paul Jackson <pj@sgi.com>,
+       Christoph Lameter <clameter@sgi.com>
+Subject: [PATCH 08/11] x86: Add performance variants of cpumask operators
+Content-Disposition: inline; filename=add-nr_cpu_ids
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  * Remove the boot_cpu_pda array and pointer table from the data section.
-    Allocate the pointer table during init.  If CONFIG_HOTPLUG_CPU is set
-    then also allocate the cpu_pda array during init.  In either case,
-    allocate the cpu_pda from node local memory when the cpu is started
-    in do_boot_cpu().
+  * Increase performance for systems with large count NR_CPUS by limiting
+    the range of the cpumask operators that loop over the bits in a cpumask_t
+    variable.  This removes a large amount of wasted cpu cycles.
 
-    This removes 512k + 32k bytes from the data section.
+  * Add performance variants of the cpumask operators:
 
+    int cpus_weight_nr(mask)	     Same using nr_cpu_ids instead of NR_CPUS
+    int first_cpu_nr(mask)	     Number lowest set bit, or nr_cpu_ids
+    int next_cpu_nr(cpu, mask)	     Next cpu past 'cpu', or nr_cpu_ids
+    for_each_cpu_mask_nr(cpu, mask)  for-loop cpu over mask using nr_cpu_ids
+
+  * Modify following to use performance variants:
+
+    #define num_online_cpus()	cpus_weight_nr(cpu_online_map)
+    #define num_possible_cpus()	cpus_weight_nr(cpu_possible_map)
+    #define num_present_cpus()	cpus_weight_nr(cpu_present_map)
+
+    #define for_each_possible_cpu(cpu) for_each_cpu_mask_nr((cpu), ...)
+    #define for_each_online_cpu(cpu)   for_each_cpu_mask_nr((cpu), ...)
+    #define for_each_present_cpu(cpu)  for_each_cpu_mask_nr((cpu), ...)
+
+  * Comment added to include/linux/cpumask.h:
+
+    Note: The alternate operations with the suffix "_nr" are used
+	  to limit the range of the loop to nr_cpu_ids instead of
+	  NR_CPUS when NR_CPUS > 64 for performance reasons.
+	  If NR_CPUS is <= 64 then most assembler bitmask
+	  operators execute faster with a constant range, so
+	  the operator will continue to use NR_CPUS.
+
+	  Another consideration is that nr_cpu_ids is initialized
+	  to NR_CPUS and isn't lowered until the possible cpus are
+	  discovered (including any disabled cpus).  So early uses
+	  will span the entire range of NR_CPUS.
+
+    (The net effect is that for systems with 64 or less CPU's there are no
+     functional changes.)
 
 For inclusion into sched-devel/latest tree.
 
@@ -40,327 +70,185 @@ Based on:
     +   sched-devel/latest  .../mingo/linux-2.6-sched-devel.git
 
 
+Cc: Paul Jackson <pj@sgi.com>
+Cc: Christoph Lameter <clameter@sgi.com>
+Reviewed-by: Paul Jackson <pj@sgi.com>
+Reviewed-by: Christoph Lameter <clameter@sgi.com>
 Signed-off-by: Mike Travis <travis@sgi.com>
 ---
- arch/x86/kernel/head64.c  |   26 ++++++++++++--
- arch/x86/kernel/setup.c   |   83 +++++++++++++++++++++++++++++++++++++---------
- arch/x86/kernel/setup64.c |    8 ++--
- arch/x86/kernel/smpboot.c |   54 ++++++++++++++++++++++-------
- include/asm-x86/pda.h     |    6 +--
- 5 files changed, 139 insertions(+), 38 deletions(-)
+ include/linux/cpumask.h |   92 ++++++++++++++++++++++++++++++++----------------
+ lib/cpumask.c           |    9 ++++
+ 2 files changed, 71 insertions(+), 30 deletions(-)
 
---- linux-2.6.sched.orig/arch/x86/kernel/head64.c
-+++ linux-2.6.sched/arch/x86/kernel/head64.c
-@@ -25,6 +25,24 @@
- #include <asm/e820.h>
- #include <asm/bios_ebda.h>
- 
-+/* boot cpu pda */
-+static struct x8664_pda _boot_cpu_pda __read_mostly;
-+
-+#ifdef CONFIG_SMP
-+#ifdef CONFIG_DEBUG_PER_CPU_MAPS
-+/*
-+ * We install an empty cpu_pda pointer table to trap references before
-+ * the actual cpu_pda pointer table is created in setup_cpu_pda_map().
-+ */
-+static struct x8664_pda *__cpu_pda[NR_CPUS] __initdata;
-+#else
-+static struct x8664_pda *__cpu_pda[1] __read_mostly;
-+#endif
-+
-+#else /* !CONFIG_SMP (NR_CPUS will be 1) */
-+static struct x8664_pda *__cpu_pda[NR_CPUS] __read_mostly;
-+#endif
-+
- static void __init zap_identity_mappings(void)
- {
- 	pgd_t *pgd = pgd_offset_k(0UL);
-@@ -156,10 +174,12 @@ void __init x86_64_start_kernel(char * r
- 
- 	early_printk("Kernel alive\n");
- 
-- 	for (i = 0; i < NR_CPUS; i++)
-- 		cpu_pda(i) = &boot_cpu_pda[i];
--
-+	_cpu_pda = __cpu_pda;
-+	cpu_pda(0) = &_boot_cpu_pda;
- 	pda_init(0);
-+
-+	early_printk("Kernel really alive\n");
-+
- 	copy_bootdata(__va(real_mode_data));
- 
- 	reserve_early(__pa_symbol(&_text), __pa_symbol(&_end), "TEXT DATA BSS");
---- linux-2.6.sched.orig/arch/x86/kernel/setup.c
-+++ linux-2.6.sched/arch/x86/kernel/setup.c
-@@ -100,6 +100,60 @@ static inline void setup_cpumask_of_cpu(
-  */
- unsigned long __per_cpu_offset[NR_CPUS] __read_mostly;
- EXPORT_SYMBOL(__per_cpu_offset);
-+static inline void setup_cpu_pda_map(void) { }
-+
-+#elif !defined(CONFIG_SMP)
-+static inline void setup_cpu_pda_map(void) { }
-+
-+#else /* CONFIG_SMP && CONFIG_X86_64 */
-+
-+/*
-+ * Allocate cpu_pda pointer table via alloc_bootmem
-+ * and if CONFIG_HOTPLUG_CPU also allocate a static cpu_pda array.
+--- linux-2.6.sched.orig/include/linux/cpumask.h
++++ linux-2.6.sched/include/linux/cpumask.h
+@@ -15,6 +15,20 @@
+  * For details of cpu_remap(), see bitmap_bitremap in lib/bitmap.c
+  * For details of cpus_remap(), see bitmap_remap in lib/bitmap.c.
+  *
++ * . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
++ * Note: The alternate operations with the suffix "_nr" are used
++ *       to limit the range of the loop to nr_cpu_ids instead of
++ *       NR_CPUS when NR_CPUS > 64 for performance reasons.
++ *       If NR_CPUS is <= 64 then most assembler bitmask
++ *       operators execute faster with a constant range, so
++ *       the operator will continue to use NR_CPUS.
 + *
-+ * Note that the boot cpu's pda is left in place.
-+ * Note also that cpu_pda(0) may be the only valid reference.
-+ */
-+static void __init setup_cpu_pda_map(void)
-+{
-+	char *pda;
-+	struct x8664_pda **new_cpu_pda;
-+	unsigned long size;
-+	int cpu;
-+
-+#ifdef CONFIG_HOTPLUG_CPU
-+	size = roundup(sizeof(struct x8664_pda), cache_line_size());
-+#else
-+	/* no need to preallocate the cpu_pda array */
-+	size = 0;
-+#endif
-+
-+	/* allocate cpu_pda array and pointer table */
-+	{
-+		unsigned long asize = size * (nr_cpu_ids - 1);
-+		unsigned long tsize = nr_cpu_ids * sizeof(void *);
-+
-+		pda = alloc_bootmem(asize + tsize);
-+		new_cpu_pda = (struct x8664_pda **)(pda + asize);
-+	}
-+
-+#ifdef CONFIG_HOTPLUG_CPU
-+	/* initialize pointer table to static pda's */
-+	for_each_possible_cpu(cpu) {
-+		if (cpu == 0) {
-+			/* leave boot cpu pda in place */
-+			new_cpu_pda[0] = cpu_pda(0);
-+			continue;
-+		}
-+		new_cpu_pda[cpu] = (struct x8664_pda *)pda;
-+		new_cpu_pda[cpu]->in_bootmem = 1;
-+		pda += size;
-+	}
-+#endif
-+
-+	/* point to new pointer table */
-+	_cpu_pda = new_cpu_pda;
-+}
- #endif
++ *       Another consideration is that nr_cpu_ids is initialized
++ *       to NR_CPUS and isn't lowered until the possible cpus are
++ *       discovered (including any disabled cpus).  So early uses
++ *       will span the entire range of NR_CPUS.
++ * . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
++ *
+  * The available cpumask operations are:
+  *
+  * void cpu_set(cpu, mask)		turn on bit 'cpu' in mask
+@@ -36,12 +50,14 @@
+  * int cpus_empty(mask)			Is mask empty (no bits sets)?
+  * int cpus_full(mask)			Is mask full (all bits sets)?
+  * int cpus_weight(mask)		Hamming weigh - number of set bits
++ * int cpus_weight_nr(mask)		Same using nr_cpu_ids instead of NR_CPUS
+  *
+  * void cpus_shift_right(dst, src, n)	Shift right
+  * void cpus_shift_left(dst, src, n)	Shift left
+  *
+  * int first_cpu(mask)			Number lowest set bit, or NR_CPUS
+  * int next_cpu(cpu, mask)		Next cpu past 'cpu', or NR_CPUS
++ * int next_cpu_nr(cpu, mask)		Next cpu past 'cpu', or nr_cpu_ids
+  *
+  * cpumask_t cpumask_of_cpu(cpu)	Return cpumask with bit 'cpu' set
+  * CPU_MASK_ALL				Initializer - all bits set
+@@ -55,7 +71,8 @@
+  * int cpu_remap(oldbit, old, new)	newbit = map(old, new)(oldbit)
+  * int cpus_remap(dst, src, old, new)	*dst = map(old, new)(src)
+  *
+- * for_each_cpu_mask(cpu, mask)		for-loop cpu over mask
++ * for_each_cpu_mask(cpu, mask)		for-loop cpu over mask using NR_CPUS
++ * for_each_cpu_mask_nr(cpu, mask)	for-loop cpu over mask using nr_cpu_ids
+  *
+  * int num_online_cpus()		Number of online CPUs
+  * int num_possible_cpus()		Number of all possible CPUs
+@@ -212,15 +229,6 @@ static inline void __cpus_shift_left(cpu
+ 	bitmap_shift_left(dstp->bits, srcp->bits, n, nbits);
+ }
  
- /*
-@@ -109,46 +163,43 @@ EXPORT_SYMBOL(__per_cpu_offset);
-  */
- void __init setup_per_cpu_areas(void)
- {
--	int i, highest_cpu = 0;
--	unsigned long size;
-+	ssize_t size = PERCPU_ENOUGH_ROOM;
-+	char *ptr;
-+	int cpu;
- 
- #ifdef CONFIG_HOTPLUG_CPU
- 	prefill_possible_map();
-+#else
-+	nr_cpu_ids = num_processors;
- #endif
- 
-+	/* Setup cpu_pda map */
-+	setup_cpu_pda_map();
-+
- 	/* Copy section for each CPU (we discard the original) */
- 	size = PERCPU_ENOUGH_ROOM;
- 	printk(KERN_INFO "PERCPU: Allocating %lu bytes of per cpu data\n",
- 			  size);
- 
--	for_each_possible_cpu(i) {
--		char *ptr;
-+	for_each_possible_cpu(cpu) {
- #ifndef CONFIG_NEED_MULTIPLE_NODES
- 		ptr = alloc_bootmem_pages(size);
- #else
--		int node = early_cpu_to_node(i);
-+		int node = early_cpu_to_node(cpu);
- 		if (!node_online(node) || !NODE_DATA(node)) {
- 			ptr = alloc_bootmem_pages(size);
- 			printk(KERN_INFO
- 			       "cpu %d has no node %d or node-local memory\n",
--				i, node);
-+				cpu, node);
- 		}
- 		else
- 			ptr = alloc_bootmem_pages_node(NODE_DATA(node), size);
- #endif
--		if (!ptr)
--			panic("Cannot allocate cpu data for CPU %d\n", i);
--#ifdef CONFIG_X86_64
--		cpu_pda(i)->data_offset = ptr - __per_cpu_start;
+-#ifdef CONFIG_SMP
+-int __first_cpu(const cpumask_t *srcp);
+-#define first_cpu(src) __first_cpu(&(src))
+-int __next_cpu(int n, const cpumask_t *srcp);
+-#define next_cpu(n, src) __next_cpu((n), &(src))
 -#else
--		__per_cpu_offset[i] = ptr - __per_cpu_start;
+-#define first_cpu(src)		({ (void)(src); 0; })
+-#define next_cpu(n, src)	({ (void)(src); 1; })
 -#endif
-+		per_cpu_offset(cpu) = ptr - __per_cpu_start;
- 		memcpy(ptr, __per_cpu_start, __per_cpu_end - __per_cpu_start);
  
--		highest_cpu = i;
- 	}
- 
--	nr_cpu_ids = highest_cpu + 1;
- 	printk(KERN_DEBUG "NR_CPUS: %d, nr_cpu_ids: %d, nr_node_ids %d\n",
- 		NR_CPUS, nr_cpu_ids, nr_node_ids);
- 
-@@ -198,7 +249,7 @@ void __cpuinit numa_set_node(int cpu, in
- {
- 	int *cpu_to_node_map = early_per_cpu_ptr(x86_cpu_to_node_map);
- 
--	if (node != NUMA_NO_NODE)
-+	if (cpu_pda(cpu) && node != NUMA_NO_NODE)
- 		cpu_pda(cpu)->nodenumber = node;
- 
- 	if (cpu_to_node_map)
---- linux-2.6.sched.orig/arch/x86/kernel/setup64.c
-+++ linux-2.6.sched/arch/x86/kernel/setup64.c
-@@ -12,6 +12,7 @@
- #include <linux/bitops.h>
- #include <linux/module.h>
- #include <linux/kgdb.h>
-+#include <linux/topology.h>
- #include <asm/pda.h>
- #include <asm/pgtable.h>
- #include <asm/processor.h>
-@@ -34,9 +35,8 @@ struct boot_params boot_params;
- 
- cpumask_t cpu_initialized __cpuinitdata = CPU_MASK_NONE;
- 
--struct x8664_pda *_cpu_pda[NR_CPUS] __read_mostly;
-+struct x8664_pda **_cpu_pda __read_mostly;
- EXPORT_SYMBOL(_cpu_pda);
--struct x8664_pda boot_cpu_pda[NR_CPUS] __cacheline_aligned;
- 
- struct desc_ptr idt_descr = { 256 * 16 - 1, (unsigned long) idt_table };
- 
-@@ -114,8 +114,10 @@ void pda_init(int cpu)
- 			__get_free_pages(GFP_ATOMIC, IRQSTACK_ORDER);
- 		if (!pda->irqstackptr)
- 			panic("cannot allocate irqstack for cpu %d", cpu); 
--	}
- 
-+		if (pda->nodenumber == 0 && cpu_to_node(cpu) != NUMA_NO_NODE)
-+			pda->nodenumber = cpu_to_node(cpu);
-+	}
- 
- 	pda->irqstackptr += IRQSTACKSIZE-64;
- } 
---- linux-2.6.sched.orig/arch/x86/kernel/smpboot.c
-+++ linux-2.6.sched/arch/x86/kernel/smpboot.c
-@@ -809,6 +809,39 @@ static void __cpuinit do_fork_idle(struc
- 	complete(&c_idle->done);
+ #ifdef CONFIG_HAVE_CPUMASK_OF_CPU_MAP
+ extern cpumask_t *cpumask_of_cpu_map;
+@@ -330,15 +338,48 @@ static inline void __cpus_remap(cpumask_
+ 	bitmap_remap(dstp->bits, srcp->bits, oldp->bits, newp->bits, nbits);
  }
  
-+/*
-+ * Allocate node local memory for the AP pda.
-+ *
-+ * Must be called after the _cpu_pda pointer table is initialized.
-+ */
-+static int __cpuinit get_local_pda(int cpu)
-+{
-+	struct x8664_pda *newpda;
-+	unsigned long size = sizeof(struct x8664_pda);
-+	int node = cpu_to_node(cpu);
+-#if NR_CPUS > 1
++#if NR_CPUS == 1
 +
-+	if (cpu_pda(cpu) && !cpu_pda(cpu)->in_bootmem)
-+		return 0;
++#define nr_cpu_ids		1
++#define first_cpu(src)		({ (void)(src); 0; })
++#define next_cpu(n, src)	({ (void)(src); 1; })
++#define any_online_cpu(mask)	0
++#define for_each_cpu_mask(cpu, mask)	\
++	for ((cpu) = 0; (cpu) < 1; (cpu)++, (void)mask)
 +
-+	newpda = kmalloc_node(size, GFP_ATOMIC, node);
-+	if (!newpda) {
-+		printk(KERN_ERR "Could not allocate node local PDA "
-+			"for CPU %d on node %d\n", cpu, node);
++#else /* NR_CPUS > 1 */
 +
-+		if (cpu_pda(cpu))
-+			return 0;	/* have a usable pda */
-+		else
-+			return -1;
-+	}
++extern int nr_cpu_ids;
++int __first_cpu(const cpumask_t *srcp);
++int __next_cpu(int n, const cpumask_t *srcp);
++int __any_online_cpu(const cpumask_t *mask);
 +
-+	if (cpu_pda(cpu))
-+		memcpy(newpda, cpu_pda(cpu), size);
++#define first_cpu(src)		__first_cpu(&(src))
++#define next_cpu(n, src)	__next_cpu((n), &(src))
++#define any_online_cpu(mask) __any_online_cpu(&(mask))
+ #define for_each_cpu_mask(cpu, mask)		\
+ 	for ((cpu) = first_cpu(mask);		\
+ 		(cpu) < NR_CPUS;		\
+ 		(cpu) = next_cpu((cpu), (mask)))
+-#else /* NR_CPUS == 1 */
+-#define for_each_cpu_mask(cpu, mask)		\
+-	for ((cpu) = 0; (cpu) < 1; (cpu)++, (void)mask)
+-#endif /* NR_CPUS */
++#endif
 +
-+	cpu_pda(cpu) = newpda;
-+	cpu_pda(cpu)->in_bootmem = 0;
-+	return 0;
-+}
++#if NR_CPUS <= 64
 +
- static int __cpuinit do_boot_cpu(int apicid, int cpu)
++#define next_cpu_nr(n, src)		next_cpu(n, src)
++#define cpus_weight_nr(cpumask)		cpus_weight(cpumask)
++#define for_each_cpu_mask_nr(cpu, mask)	for_each_cpu_mask(cpu, mask)
++
++#else /* NR_CPUS > 64 */
++
++int __next_cpu_nr(int n, const cpumask_t *srcp);
++#define next_cpu_nr(n, src)	__next_cpu_nr((n), &(src))
++#define cpus_weight_nr(cpumask)	__cpus_weight(&(cpumask), nr_cpu_ids)
++#define for_each_cpu_mask_nr(cpu, mask)		\
++	for ((cpu) = first_cpu(mask);		\
++		(cpu) < nr_cpu_ids;		\
++		(cpu) = next_cpu_nr((cpu), (mask)))
++
++#endif /* NR_CPUS > 64 */
+ 
  /*
-  * NOTE - on most systems this is a PHYSICAL apic ID, but on multiquad
-@@ -834,19 +867,10 @@ static int __cpuinit do_boot_cpu(int api
- 	}
+  * The following particular system cpumasks and operations manage
+@@ -402,9 +443,9 @@ extern cpumask_t cpu_present_map;
+ extern cpumask_t cpu_system_map;
  
- 	/* Allocate node local memory for AP pdas */
--	if (cpu_pda(cpu) == &boot_cpu_pda[cpu]) {
--		struct x8664_pda *newpda, *pda;
--		int node = cpu_to_node(cpu);
--		pda = cpu_pda(cpu);
--		newpda = kmalloc_node(sizeof(struct x8664_pda), GFP_ATOMIC,
--				      node);
--		if (newpda) {
--			memcpy(newpda, pda, sizeof(struct x8664_pda));
--			cpu_pda(cpu) = newpda;
--		} else
--			printk(KERN_ERR
--		"Could not allocate node local PDA for CPU %d on node %d\n",
--				cpu, node);
-+	if (cpu > 0 ) {
-+		boot_error = get_local_pda(cpu);
-+		if (boot_error)
-+			goto restore_state; /* can't get memory, can't start cpu */
- 	}
- #endif
+ #if NR_CPUS > 1
+-#define num_online_cpus()	cpus_weight(cpu_online_map)
+-#define num_possible_cpus()	cpus_weight(cpu_possible_map)
+-#define num_present_cpus()	cpus_weight(cpu_present_map)
++#define num_online_cpus()	cpus_weight_nr(cpu_online_map)
++#define num_possible_cpus()	cpus_weight_nr(cpu_possible_map)
++#define num_present_cpus()	cpus_weight_nr(cpu_present_map)
+ #define cpu_online(cpu)		cpu_isset((cpu), cpu_online_map)
+ #define cpu_possible(cpu)	cpu_isset((cpu), cpu_possible_map)
+ #define cpu_present(cpu)	cpu_isset((cpu), cpu_present_map)
+@@ -423,17 +464,8 @@ extern int cpus_match_system(cpumask_t m
  
-@@ -965,6 +989,8 @@ do_rest:
- 		}
- 	}
+ #define cpu_is_offline(cpu)	unlikely(!cpu_online(cpu))
  
-+restore_state:
-+
- 	if (boot_error) {
- 		/* Try to put things back the way they were before ... */
- 		unmap_cpu_to_logical_apicid(cpu);
-@@ -1338,6 +1364,8 @@ __init void prefill_possible_map(void)
+-#ifdef CONFIG_SMP
+-extern int nr_cpu_ids;
+-#define any_online_cpu(mask) __any_online_cpu(&(mask))
+-int __any_online_cpu(const cpumask_t *mask);
+-#else
+-#define nr_cpu_ids			1
+-#define any_online_cpu(mask)		0
+-#endif
+-
+-#define for_each_possible_cpu(cpu)  for_each_cpu_mask((cpu), cpu_possible_map)
+-#define for_each_online_cpu(cpu)  for_each_cpu_mask((cpu), cpu_online_map)
+-#define for_each_present_cpu(cpu) for_each_cpu_mask((cpu), cpu_present_map)
++#define for_each_possible_cpu(cpu) for_each_cpu_mask_nr((cpu), cpu_possible_map)
++#define for_each_online_cpu(cpu)   for_each_cpu_mask_nr((cpu), cpu_online_map)
++#define for_each_present_cpu(cpu)  for_each_cpu_mask_nr((cpu), cpu_present_map)
  
- 	for (i = 0; i < possible; i++)
- 		cpu_set(i, cpu_possible_map);
-+
-+	nr_cpu_ids = possible;
+ #endif /* __LINUX_CPUMASK_H */
+--- linux-2.6.sched.orig/lib/cpumask.c
++++ linux-2.6.sched/lib/cpumask.c
+@@ -15,6 +15,15 @@ int __next_cpu(int n, const cpumask_t *s
  }
+ EXPORT_SYMBOL(__next_cpu);
  
- static void __ref remove_cpu_from_maps(int cpu)
---- linux-2.6.sched.orig/include/asm-x86/pda.h
-+++ linux-2.6.sched/include/asm-x86/pda.h
-@@ -20,7 +20,8 @@ struct x8664_pda {
- 					/* gcc-ABI: this canary MUST be at
- 					   offset 40!!! */
- 	char *irqstackptr;
--	int nodenumber;			/* number of current node */
-+	short nodenumber;		/* number of current node (32k max) */
-+	short in_bootmem;		/* pda lives in bootmem */
- 	unsigned int __softirq_pending;
- 	unsigned int __nmi_count;	/* number of NMI on this CPUs */
- 	short mmu_state;
-@@ -36,8 +37,7 @@ struct x8664_pda {
- 	unsigned irq_spurious_count;
- } ____cacheline_aligned_in_smp;
- 
--extern struct x8664_pda *_cpu_pda[];
--extern struct x8664_pda boot_cpu_pda[];
-+extern struct x8664_pda **_cpu_pda;
- extern void pda_init(int);
- 
- #define cpu_pda(i) (_cpu_pda[i])
++#if NR_CPUS > 64
++int __next_cpu_nr(int n, const cpumask_t *srcp)
++{
++	return min_t(int, nr_cpu_ids,
++				find_next_bit(srcp->bits, nr_cpu_ids, n+1));
++}
++EXPORT_SYMBOL(__next_cpu_nr);
++#endif
++
+ int __any_online_cpu(const cpumask_t *mask)
+ {
+ 	int cpu;
 
 -- 
