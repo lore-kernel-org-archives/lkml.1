@@ -1,158 +1,176 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757759AbYDZI1d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758206AbYDZIc2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757759AbYDZI1d (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Apr 2008 04:27:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752233AbYDZI1R
+	id S1758206AbYDZIc2 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Apr 2008 04:32:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752398AbYDZIcU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Apr 2008 04:27:17 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:45064 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752460AbYDZI1J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Apr 2008 04:27:09 -0400
-Date: Sat, 26 Apr 2008 09:25:35 +0100 (IST)
-From: Dave Airlie <airlied@linux.ie>
-X-X-Sender: airlied@skynet.skynet.ie
-To: torvalds@linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>
-cc: linux-kernel@vger.kernel.org
-Subject: [git pull] drm patches for 2.6.26-rc1
-Message-ID: <alpine.DEB.0.82.0804260924050.12688@skynet.skynet.ie>
-MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="29444707-300141906-1209198335=:12688"
+	Sat, 26 Apr 2008 04:32:20 -0400
+Received: from wa-out-1112.google.com ([209.85.146.176]:60140 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751841AbYDZIcS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 Apr 2008 04:32:18 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:message-id:to:cc:subject:from:in-reply-to:references:x-mailer:mime-version:content-type:content-transfer-encoding;
+        b=hep61FUAbtNwjfif1i6I5SI8e2CIuTi4FPCPK3mCjg8+u9bQcvyFPLn0LE0E+pFizcQcOQ53kr81vBNZTbZW7jQ0TPe4NfCT5WsPzrobevKG9BZVPg2TcvFn8p1aMnF/HVP/Pd8Adgmk4Ud74vo9EXZ6udsilR94qgQZB63AE+w=
+Date: Sat, 26 Apr 2008 16:31:32 +0800 (CST)
+Message-Id: <20080426.163132.194697674.xiyou.wangcong@gmail.com>
+To: jdike@addtoit.com
+Cc: akpm@osdl.org, linux-kernel@vger.kernel.org,
+       user-mode-linux-devel@lists.sourceforge.net
+Subject: Re: [PATCH 6/19] UML - hppfs fixes
+From: WANG Cong <xiyou.wangcong@gmail.com>
+In-Reply-To: <20080425175608.GA11182@c2.user-mode-linux.org>
+References: <20080425175608.GA11182@c2.user-mode-linux.org>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+From: Jeff Dike <jdike@addtoit.com>
+Date: Fri, 25 Apr 2008 13:56:09 -0400
+> hppfs tidying and fixes noticed during hch's get_inode work -
+>       style fixes
+>       a copy_to_user got its return value checked
+>       hppfs_write no longer fiddles file->f_pos because it gets and
+> returns pos in its arguments
+>       hppfs_delete_inode dputs the underlyng procfs dentry stored in
+> its private data and mntputs the vfsmnt stashed in s_fs_info
+>       hppfs_put_super no longer needs to mntput the s_fs_info, so it
+> no longer needs to exist
+>       hppfs_readlink and hppfs_follow_link were doing a bunch of stuff
+> with a struct file which they didn't use
+>       there is now a ->permission which calls generic_permission
+>       get_inode was always returning 0 for some reason - it now
+> returns an inode if nothing bad happened
+> 
+> Signed-off-by: Jeff Dike <jdike@linux.intel.com>
+> ---
+>  fs/hppfs/hppfs_kern.c |   82 ++++++++++++++++++--------------------------------
+>  1 file changed, 30 insertions(+), 52 deletions(-)
+> 
+> Index: linux-2.6.22/fs/hppfs/hppfs_kern.c
+> ===================================================================
+> --- linux-2.6.22.orig/fs/hppfs/hppfs_kern.c	2008-04-24 13:35:54.000000000 -0400
+> +++ linux-2.6.22/fs/hppfs/hppfs_kern.c	2008-04-24 15:31:59.000000000 -0400
+> @@ -33,7 +33,7 @@ struct hppfs_private {
+>  };
+>  
+>  struct hppfs_inode_info {
+> -        struct dentry *proc_dentry;
+> +	struct dentry *proc_dentry;
+>  	struct inode vfs_inode;
+>  };
+>  
+> @@ -52,7 +52,7 @@ static int is_pid(struct dentry *dentry)
+>  	int i;
+>  
+>  	sb = dentry->d_sb;
+> -	if ((sb->s_op != &hppfs_sbops) || (dentry->d_parent != sb->s_root))
+> +	if (dentry->d_parent != sb->s_root)
+>  		return 0;
+>  
+>  	for (i = 0; i < dentry->d_name.len; i++) {
+> @@ -136,7 +136,7 @@ static int file_removed(struct dentry *d
+>  }
+>  
+>  static struct dentry *hppfs_lookup(struct inode *ino, struct dentry *dentry,
+> -                                  struct nameidata *nd)
+> +				   struct nameidata *nd)
+>  {
+>  	struct dentry *proc_dentry, *new, *parent;
+>  	struct inode *inode;
+> @@ -254,6 +254,8 @@ static ssize_t hppfs_read(struct file *f
+>  	int err;
+>  
+>  	if (hppfs->contents != NULL) {
+> +		int rem;
+> +
+>  		if (*ppos >= hppfs->len)
+>  			return 0;
+>  
+> @@ -267,8 +269,10 @@ static ssize_t hppfs_read(struct file *f
+>  
+>  		if (off + count > hppfs->len)
+>  			count = hppfs->len - off;
+> -		copy_to_user(buf, &data->contents[off], count);
+> -		*ppos += count;
+> +		rem = copy_to_user(buf, &data->contents[off], count);
+> +		*ppos += count - rem;
+> +		if (rem > 0)
+> +			return -EFAULT;
 
---29444707-300141906-1209198335=:12688
-Content-Type: TEXT/PLAIN; charset=iso-8859-15
-Content-Transfer-Encoding: 8BIT
+
+Could you please explain why check 'rem' after using it here?
 
 
-Hi Linus,
+>  	} else if (hppfs->host_fd != -1) {
+>  		err = os_seek_file(hppfs->host_fd, *ppos);
+>  		if (err) {
+> @@ -285,21 +289,15 @@ static ssize_t hppfs_read(struct file *f
+>  	return count;
+>  }
+>  
+> -static ssize_t hppfs_write(struct file *file, const char __user *buf, size_t len,
+> -			   loff_t *ppos)
+> +static ssize_t hppfs_write(struct file *file, const char __user *buf,
+> +			   size_t len, loff_t *ppos)
+>  {
+>  	struct hppfs_private *data = file->private_data;
+>  	struct file *proc_file = data->proc_file;
+>  	ssize_t (*write)(struct file *, const char __user *, size_t, loff_t *);
+> -	int err;
+>  
+>  	write = proc_file->f_path.dentry->d_inode->i_fop->write;
+> -
+> -	proc_file->f_pos = file->f_pos;
+> -	err = (*write)(proc_file, buf, len, &proc_file->f_pos);
+> -	file->f_pos = proc_file->f_pos;
+> -
+> -	return err;
+> +	return (*write)(proc_file, buf, len, ppos);
+>  }
+>  
+>  static int open_host_sock(char *host_file, int *filter_out)
+> @@ -357,7 +355,7 @@ static struct hppfs_data *hppfs_get_data
+>  
+>  	if (filter) {
+>  		while ((n = read_proc(proc_file, data->contents,
+> -				     sizeof(data->contents), NULL, 0)) > 0)
+> +				      sizeof(data->contents), NULL, 0)) > 0)
+>  			os_write_file(fd, data->contents, n);
+>  		err = os_shutdown_socket(fd, 0, 1);
+>  		if (err) {
+> @@ -429,8 +427,8 @@ static int file_mode(int fmode)
+>  static int hppfs_open(struct inode *inode, struct file *file)
+>  {
+>  	struct hppfs_private *data;
+> -	struct dentry *proc_dentry;
+>  	struct vfsmount *proc_mnt;
+> +	struct dentry *proc_dentry;
 
-Please pull the 'drm-patches' branch from
-ssh://master.kernel.org/pub/scm/linux/kernel/git/airlied/drm-2.6.git drm-patches
+And what does this kind of change mean?
 
-Nothing major in this, the TTM and modesetting stuff is still on hold, so 
-this is just other things that were in the queue, some bug fixes and code 
-re-org.
+>  	char *host_file;
+>  	int err, fd, type, filter;
+>  
+> @@ -492,8 +490,8 @@ static int hppfs_open(struct inode *inod
+>  static int hppfs_dir_open(struct inode *inode, struct file *file)
+>  {
+>  	struct hppfs_private *data;
+> -	struct dentry *proc_dentry;
+>  	struct vfsmount *proc_mnt;
+> +	struct dentry *proc_dentry;
 
-Dave.
+ditto
 
- drivers/char/drm/ati_pcigart.c    |    7 -
- drivers/char/drm/drm.h            |   17 +
- drivers/char/drm/drmP.h           |  133 ++++++---
- drivers/char/drm/drm_agpsupport.c |    2 +-
- drivers/char/drm/drm_drv.c        |   60 ++--
- drivers/char/drm/drm_fops.c       |   41 ++--
- drivers/char/drm/drm_irq.c        |  381 ++++++++++++++++++++----
- drivers/char/drm/drm_proc.c       |   61 +++--
- drivers/char/drm/drm_stub.c       |  138 ++++++---
- drivers/char/drm/drm_sysfs.c      |   46 ++--
- drivers/char/drm/drm_vm.c         |   22 +-
- drivers/char/drm/i810_dma.c       |    4 +-
- drivers/char/drm/i830_dma.c       |    4 +-
- drivers/char/drm/i915_dma.c       |  160 ++++++++---
- drivers/char/drm/i915_drm.h       |   45 +++-
- drivers/char/drm/i915_drv.c       |    8 +-
- drivers/char/drm/i915_drv.h       |  103 ++++++-
- drivers/char/drm/i915_irq.c       |  605 ++++++++++++++++++++++++++++---------
- drivers/char/drm/mga_drv.c        |    7 +-
- drivers/char/drm/mga_drv.h        |    6 +-
- drivers/char/drm/mga_irq.c        |   69 +++--
- drivers/char/drm/r128_drv.c       |    7 +-
- drivers/char/drm/r128_drv.h       |    9 +-
- drivers/char/drm/r128_irq.c       |   55 +++--
- drivers/char/drm/radeon_drv.c     |    8 +-
- drivers/char/drm/radeon_drv.h     |   19 +-
- drivers/char/drm/radeon_irq.c     |  171 +++++------
- drivers/char/drm/via_drv.c        |    6 +-
- drivers/char/drm/via_drv.h        |    7 +-
- drivers/char/drm/via_irq.c        |   81 +++--
- 30 files changed, 1621 insertions(+), 661 deletions(-)
+<snip>
 
-commit b74e2082f8e7b8f37af3fc39e8ee0dd0d218c589
-Author: Dave Airlie <airlied@linux.ie>
-Date:   Sat Apr 26 18:21:28 2008 +1000
+Thanks!
 
-    drm: _end is shadowing real _end, just rename it.
-    
-    Signed-off-by: Dave Airlie <airlied@linux.ie>
 
-commit ac741ab71bb39e6977694ac0cc26678d8673cda4
-Author: Jesse Barnes <jbarnes@virtuousgeek.org>
-Date:   Tue Apr 22 16:03:07 2008 +1000
-
-    drm/vbl rework: rework how the drm deals with vblank.
-    
-    Other Authors: Michel Dänzer <michel@tungstengraphics.com>
-    mga: Ian Romanick <idr@us.ibm.com>
-    via: Thomas Hellstrom <thomas-at-tungstengraphics-dot-com>
-    
-    This re-works the DRM internals to provide a better interface for drivers
-    to expose vblank on multiple crtcs.
-    
-    It also includes work done by Michel on making i915 triple buffering and pageflipping work properly.
-    
-    Signed-off-by: Dave Airlie <airlied@redhat.com>
-
-commit 2c14f28be2a3f2a2e9861b156d64fbe2bc7000c3
-Author: Dave Airlie <airlied@redhat.com>
-Date:   Mon Apr 21 16:47:32 2008 +1000
-
-    drm: reorganise minor number handling using backported modesetting code.
-    
-    rips out the head crap and replaces it with an idr and drm_minor structure
-    
-    Signed-off-by: Dave Airlie <airlied@redhat.com>
-
-commit 7b832b56bd971348329c3f4c753ca0abfdf3a3d1
-Author: Keith Packard <keithp@keithp.com>
-Date:   Mon Apr 21 16:31:10 2008 +1000
-
-    drm/i915: Handle tiled buffers in vblank tasklet
-    
-    The vblank tasklet update code must build 2D blt commands with the appropriate
-    tiled flags
-    
-    Signed-off-by: Dave Airlie <airlied@redhat.com>
-
-commit a36b7dcc05bc4c4580f11cf78e95edfefa86b8a6
-Author: Keith Packard <keithp@keithp.com>
-Date:   Mon Apr 21 16:27:24 2008 +1000
-
-    drm/i965: On I965, use correct 3DSTATE_DRAWING_RECTANGLE command in vblank
-    
-    The batchbuffer submission paths were fixed to use the 965-specific command,
-    but the vblank tasklet was not. When the older version is sent, the 965 will
-    lock up.
-    
-    Signed-off-by: Dave Airlie <airlied@redhat.com>
-
-commit f1c3e67eb73a4a1db31e235883156ac098e29ff6
-Author: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date:   Sun Apr 20 10:26:31 2008 +1000
-
-    drm: Remove unneeded dma sync in ATI pcigart alloc
-    
-    Now that the ATI pcigart code uses dma_alloc_coherent, we don't need
-    the dma_sync_single_for_device() that we used to have here.
-    
-    Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-    Signed-off-by: Dave Airlie <airlied@redhat.com>
-
-commit 5ff64611333fd282793ff8997e02138aa2f6aab9
-Author: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date:   Sun Apr 20 10:26:25 2008 +1000
-
-    drm: Fix mismerge of non-coherent DMA patch
-    
-    The patch for supporting non coherent PCI DMA in the DRM was mismerged
-    causing the page protection to be updated for the wrong type of
-    mapping.
-    
-    Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-    Signed-off-by: Dave Airlie <airlied@redhat.com>
---29444707-300141906-1209198335=:12688--
+Cong
