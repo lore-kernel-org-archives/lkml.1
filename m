@@ -1,94 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754990AbYDZMhA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754694AbYDZM41@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754990AbYDZMhA (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Apr 2008 08:37:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752845AbYDZMgu
+	id S1754694AbYDZM41 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Apr 2008 08:56:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751358AbYDZM4R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Apr 2008 08:36:50 -0400
-Received: from astoria.ccjclearline.com ([64.235.106.9]:39799 "EHLO
-	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752830AbYDZMgt (ORCPT
+	Sat, 26 Apr 2008 08:56:17 -0400
+Received: from fg-out-1718.google.com ([72.14.220.157]:9835 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751075AbYDZM4Q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Apr 2008 08:36:49 -0400
-Date: Sat, 26 Apr 2008 08:36:44 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@crashcourse.ca>
-X-X-Sender: rpjday@localhost.localdomain
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-cc: Andrew Morton <akpm@osdl.org>
-Subject: [PATCH] INIT: Delete hard-coded setting and testing of
- BUILD_CRAMDISK.
-Message-ID: <alpine.LFD.1.10.0804260834460.14092@localhost.localdomain>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Sat, 26 Apr 2008 08:56:16 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=FOexPnM9/719ZlRFgVN5lBc3bdx3nUK4FObJj0U8Yk1w+D3aEdPs9tYzO6numHTswQ8idBMoM66W328NN1jZfPLG5Lh00TJQK771qedEexSU8kF5MQ4ZJIBhFw7CG3VdHmL6xsKrUFAvxWAzglpFqnu13ciOpIizo6Z4h0Tvoyg=
+Message-ID: <48132665.8050202@googlemail.com>
+Date: Sat, 26 Apr 2008 14:56:05 +0200
+From: Gabriel C <nix.or.die@googlemail.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - crashcourse.ca
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Yinghai Lu <Yinghai.Lu@Sun.COM>, Ingo Molnar <mingo@elte.hu>,
+       Andi Kleen <ak@suse.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Jesse Barnes <jesse.barnes@intel.com>,
+       Mika Fischer <mika.fischer@zoopnet.de>, balajirrao@gmail.com
+Subject: Re: [PATCH] x86_32: trim memory by updating e820 v3
+References: <200801192045.17291.yinghai.lu@sun.com>	<200801202256.48365.yinghai.lu@sun.com>	<20080122165125.GA17992@elte.hu>	<200801221623.20861.yinghai.lu@sun.com> <20080426035614.a30afb17.akpm@linux-foundation.org>
+In-Reply-To: <20080426035614.a30afb17.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Andrew Morton wrote:
+> On Tue, 22 Jan 2008 16:23:20 -0800 Yinghai Lu <Yinghai.Lu@Sun.COM> wrote:
+> 
+>> [PATCH] x86_32: trim memory by updating e820 v3
+>>
+>> when mtrr is not covering all e820 table, need to trim the ram, need to update e820
+>>
+>> reuse some code for x86_64
+>>
+>> here need to add early_get_cap and use it in early_cpu_detect, and move mtrr_bp_init early
+>>
+>> need Justine to test with his special system with bug bios.
+>>
+>> Signed-off-by: Yinghai Lu <yinghai.lu@sun.com>
+> 
+> Speaking of mtrr and e820....
+> 
+> Could someone please take a peek at
+> http://bugzilla.kernel.org/show_bug.cgi?id=10508 ?
+> 
+> For some reason we seem to have turned this:
+> 
+> [    0.000000]  BIOS-e820: 0000000000000000 - 000000000009f800 (usable)
+> [    0.000000]  BIOS-e820: 000000000009f800 - 00000000000a0000 (reserved)
+> [    0.000000]  BIOS-e820: 00000000000dc000 - 0000000000100000 (reserved)
+> [    0.000000]  BIOS-e820: 0000000000100000 - 00000000bf6d0000 (usable)
+> [    0.000000]  BIOS-e820: 00000000bf6d0000 - 00000000bf6e3000 (ACPI NVS)
+> [    0.000000]  BIOS-e820: 00000000bf6e3000 - 00000000c0000000 (reserved)
+> [    0.000000]  BIOS-e820: 00000000e0000000 - 00000000f0000000 (reserved)
+> [    0.000000]  BIOS-e820: 00000000fec00000 - 00000000fec10000 (reserved)
+> [    0.000000]  BIOS-e820: 00000000fed00000 - 00000000fed00400 (reserved)
+> [    0.000000]  BIOS-e820: 00000000fed14000 - 00000000fed1a000 (reserved)
+> [    0.000000]  BIOS-e820: 00000000fed1c000 - 00000000fed90000 (reserved)
+> [    0.000000]  BIOS-e820: 00000000fee00000 - 00000000fee01000 (reserved)
+> [    0.000000]  BIOS-e820: 00000000ff000000 - 0000000100000000 (reserved)
+> [    0.000000]  BIOS-e820: 0000000100000000 - 0000000140000000 (usable)
+> 
+> into this:
+> 
+> reg00: base=0xc0000000 (3072MB), size=1024MB: uncachable, count=1
+> reg01: base=0x00000000 ( 0MB), size=4096MB: write-back, count=1
+> reg02: base=0x100000000 (4096MB), size=1024MB: write-back, count=1
+> reg03: base=0xbf700000 (3063MB), size= 1MB: uncachable, count=1
+> reg04: base=0xbf800000 (3064MB), size= 8MB: uncachable, count=1
+> 
+> which screws up the X server's attempt to map the video memory at
+> 0xd0000000.
 
-There seems to be little point in explicitly setting, then testing the
-macro BUILD_CRAMDISK within the context of a single source file.
+I see that on my box with ASUS P5E-VM DO and 4G RAM.
+It has an Q35 intel chipset and the intel card is set to use 256MB in BIOS.
 
-Signed-off-by: Robert P. J. Day <rpjday@crashcourse.ca>
+I tested 2.6.{24*,25,25-next,25-latest-git} 32/64 bit.
 
----
+Also I get the mtrr type mismatch message on 32 and 64 bit kernels.
 
-diff --git a/init/do_mounts_rd.c b/init/do_mounts_rd.c
-index ed652f4..54156e9 100644
---- a/init/do_mounts_rd.c
-+++ b/init/do_mounts_rd.c
-@@ -10,8 +10,6 @@
+...
 
- #include "do_mounts.h"
+[    0.000000] BIOS-provided physical RAM map:
+[    0.000000]  BIOS-e820: 0000000000000000 - 000000000009ec00 (usable)
+[    0.000000]  BIOS-e820: 000000000009ec00 - 00000000000a0000 (reserved)
+[    0.000000]  BIOS-e820: 00000000000e4000 - 0000000000100000 (reserved)
+[    0.000000]  BIOS-e820: 0000000000100000 - 00000000cf550000 (usable)
+[    0.000000]  BIOS-e820: 00000000cf550000 - 00000000cf55e000 (ACPI data)
+[    0.000000]  BIOS-e820: 00000000cf55e000 - 00000000cf5e0000 (ACPI NVS)
+[    0.000000]  BIOS-e820: 00000000cf5e0000 - 00000000cf600000 (reserved)
+[    0.000000]  BIOS-e820: 00000000fee00000 - 00000000fee01000 (reserved)
+[    0.000000]  BIOS-e820: 00000000ffc00000 - 0000000100000000 (reserved)
+[    0.000000]  BIOS-e820: 0000000100000000 - 000000012c000000 (usable)
+...
 
--#define BUILD_CRAMDISK
--
- int __initdata rd_prompt = 1;/* 1 = prompt for RAM disk, 0 = don't prompt */
+cat /proc/mtrr :
 
- static int __init prompt_ramdisk(char *str)
-@@ -162,14 +160,8 @@ int __init rd_load_image(char *from)
- 		goto done;
+reg00: base=0xd0000000 (3328MB), size= 256MB: uncachable, count=1
+reg01: base=0xe0000000 (3584MB), size= 512MB: uncachable, count=1
+reg02: base=0x00000000 (   0MB), size=4096MB: write-back, count=1
+reg03: base=0x100000000 (4096MB), size= 512MB: write-back, count=1
+reg04: base=0x120000000 (4608MB), size= 128MB: write-back, count=1
+reg05: base=0x128000000 (4736MB), size=  64MB: write-back, count=1
+reg06: base=0xcf600000 (3318MB), size=   2MB: uncachable, count=1
 
- 	if (nblocks == 0) {
--#ifdef BUILD_CRAMDISK
- 		if (crd_load(in_fd, out_fd) == 0)
- 			goto successful_load;
--#else
--		printk(KERN_NOTICE
--		       "RAMDISK: Kernel does not support compressed "
--		       "RAM disk images\n");
--#endif
- 		goto done;
- 	}
 
-@@ -267,8 +259,6 @@ int __init rd_load_disk(int n)
- 	return rd_load_image("/dev/root");
- }
+dmesg is saying :
 
--#ifdef BUILD_CRAMDISK
--
- /*
-  * gzip declarations
-  */
-@@ -425,5 +415,3 @@ static int __init crd_load(int in_fd, int out_fd)
- 	kfree(window);
- 	return result;
- }
--
--#endif  /* BUILD_CRAMDISK */
+..
 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry:
-    Have classroom, will lecture.
+[   24.012694] [drm] Initialized i915 1.6.0 20060119 on minor 0
+[   24.175500] mtrr: type mismatch for d0000000,10000000 old: write-back new: write-combining
+[   24.423740] set status page addr 0x00033000
 
-http://crashcourse.ca                          Waterloo, Ontario, CANADA
-========================================================================
+..
+
+from Xorg log :
+
+...
+
+(WW) intel(0): Failed to set up write-combining range (0xd0000000,0x10000000)
+(II) intel(0): vgaHWGetIOBase: hwp->IOBase is 0x03d0, hwp->PIOOffset is 0x0000
+
+...
+
+
+Regards,
+
+Gabriel
