@@ -1,107 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754205AbYDZMLZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754929AbYDZMbD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754205AbYDZMLZ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Apr 2008 08:11:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751445AbYDZMLJ
+	id S1754929AbYDZMbD (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Apr 2008 08:31:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752850AbYDZMax
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Apr 2008 08:11:09 -0400
-Received: from astoria.ccjclearline.com ([64.235.106.9]:39043 "EHLO
-	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751427AbYDZMLE (ORCPT
+	Sat, 26 Apr 2008 08:30:53 -0400
+Received: from E23SMTP05.au.ibm.com ([202.81.18.174]:56542 "EHLO
+	e23smtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752830AbYDZMaw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Apr 2008 08:11:04 -0400
-Date: Sat, 26 Apr 2008 08:10:55 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@crashcourse.ca>
-X-X-Sender: rpjday@localhost.localdomain
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-cc: Andrew Morton <akpm@osdl.org>
-Subject: [PATCH] LIB: Allow memparse() to accept a NULL and ignorable second
- parm.
-Message-ID: <alpine.LFD.1.10.0804260806480.13845@localhost.localdomain>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Sat, 26 Apr 2008 08:30:52 -0400
+Message-ID: <48132072.9060308@linux.vnet.ibm.com>
+Date: Sat, 26 Apr 2008 18:00:42 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+User-Agent: Thunderbird 1.5.0.14ubu (X11/20080306)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - crashcourse.ca
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+To: Adrian Bunk <bunk@kernel.org>
+CC: kernel list <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org,
+       Ingo Molnar <mingo@elte.hu>, apw@shadowen.org,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Al Viro <viro@zeniv.linux.org.uk>
+Subject: Re: [BUG] 2.6.25-git8 Kernel Bug while bootup on ppc and x86
+References: <48131052.2080102@linux.vnet.ibm.com> <20080426113040.GC2252@cs181133002.pp.htv.fi>
+In-Reply-To: <20080426113040.GC2252@cs181133002.pp.htv.fi>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Adrian Bunk wrote:
+> On Sat, Apr 26, 2008 at 04:51:54PM +0530, Kamalesh Babulal wrote:
+>> While booting the 2.6.25-git8 kernel on the ppc and x86_64 machine, kernel
+>> bug is hit. This was reported in the next-20080423 kernel 
+>> http://lkml.org/lkml/2008/4/23/206.
+>>
+>> Call trace of x86_64 machine
+>>
+>> BUG: unable to handle kernel paging request at 00000000ffffffff
+>> IP: [<ffffffff802359e5>] put_files_struct+0x25/0x110
+>> PGD 0 
+>> Oops: 0002 [333] SMP 
+>> CPU 3 
+>> Modules linked in:
+>> Pid: 1391, comm: khelper Tainted: G      D  2.6.25-git8-autotest #1
+>> RIP: 0010:[<ffffffff802359e5>]  [<ffffffff802359e5>] put_files_struct+0x25/0x110
+>> RSP: 0000:ffff81090d06bdb0  EFLAGS: 00010282
+>> RAX: 0000000000000101 RBX: fffffffffffffffe RCX: ffff8100010260e0
+>> RDX: 0000000000000007 RSI: 0000000000000001 RDI: 00000000ffffffff
+>> RBP: 00000000fffffffe R08: 2222222222222267 R09: 2222222222222222
+>> R10: 0000000000000010 R11: 2222222222222222 R12: 00000000ffffffff
+>> R13: ffff81032d2e9000 R14: ffff81090e74b000 R15: ffff81061e4cbce0
+>> FS:  0000000000000000(0000) GS:ffff81032e4ae940(0000) knlGS:0000000000000000
+>> CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
+>> CR2: 00000000ffffffff CR3: 0000000000201000 CR4: 00000000000006e0
+>> DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+>> DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+>> Process khelper (pid: 1391, threadinfo ffff81090d06a000, task ffff81090d8113a0)
+>> Stack:  ffff81090d8113a0 fffffffffffffffe 00000000fffffffe ffff81032e556e00
+>>  ffff81032d2e9000 ffff81090e74b000 ffff81061e4cbce0 ffffffff80294278
+>>  ffff81090d06be70 ffffffff80636bc0 ffff81090d3646c0 ffff81032d2e9000
+>> Call Trace:
+>>  [<ffffffff80294278>] do_execve+0x108/0x230
+>> ...
+> 
+> Most likely fixed by
+>   http://lkml.org/lkml/2008/4/26/1
 
-Extend memparse() to allow the caller to use a NULL second parameter,
-which would represent no interest in returning the address of the end
-of the parsed string.
+Hi Adrian,
 
-Signed-off-by: Robert P. J. Day <rpjday@crashcourse.ca>
+Thanks, the patch fixes the boot up bug.
 
----
-
-  in numerous cases, callers invoke memparse() to parse a
-possibly-suffixed string (such as "64K" or "2G" or whatever) and
-define a character pointer to accept the end pointer being returned by
-memparse() even though they have no interest in it and promptly throw
-it away.
-
-  this (backward-compatible) enhancement allows callers to use NULL in
-the cases where they just don't care about getting back that end
-pointer.
-
-  compile-tested on x86.
-
-diff --git a/lib/cmdline.c b/lib/cmdline.c
-index f596c08..34129cf 100644
---- a/lib/cmdline.c
-+++ b/lib/cmdline.c
-@@ -116,7 +116,7 @@ char *get_options(const char *str, int nints, int *ints)
- /**
-  *	memparse - parse a string with mem suffixes into a number
-  *	@ptr: Where parse begins
-- *	@retptr: (output) Pointer to next char after parse completes
-+ *	@retptr: (output) Optional pointer to next char after parse completes
-  *
-  *	Parses a string into a number.  The number stored at @ptr is
-  *	potentially suffixed with %K (for kilobytes, or 1024 bytes),
-@@ -128,9 +128,11 @@ char *get_options(const char *str, int nints, int *ints)
-
- unsigned long long memparse (char *ptr, char **retptr)
- {
--	unsigned long long ret = simple_strtoull (ptr, retptr, 0);
-+	char *endptr;	/* local pointer to end of parsed string */
-
--	switch (**retptr) {
-+	unsigned long long ret = simple_strtoull(ptr, &endptr, 0);
-+
-+	switch (*endptr) {
- 	case 'G':
- 	case 'g':
- 		ret <<= 10;
-@@ -140,10 +142,15 @@ unsigned long long memparse (char *ptr, char **retptr)
- 	case 'K':
- 	case 'k':
- 		ret <<= 10;
--		(*retptr)++;
-+		endptr++;
- 	default:
- 		break;
- 	}
-+
-+	if (retptr) {
-+		*retptr = endptr;
-+	}
-+
- 	return ret;
- }
-
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry:
-    Have classroom, will lecture.
-
-http://crashcourse.ca                          Waterloo, Ontario, CANADA
-========================================================================
+-- 
+Thanks & Regards,
+Kamalesh Babulal,
+Linux Technology Center,
+IBM, ISTL.
