@@ -1,138 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758677AbYDZW2U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758626AbYDZWgE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758677AbYDZW2U (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Apr 2008 18:28:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756352AbYDZW2K
+	id S1758626AbYDZWgE (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Apr 2008 18:36:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756107AbYDZWfx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Apr 2008 18:28:10 -0400
-Received: from smtpq1.tilbu1.nb.home.nl ([213.51.146.200]:49553 "EHLO
-	smtpq1.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755683AbYDZW2J (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Apr 2008 18:28:09 -0400
-Message-ID: <4813AC7D.9000006@keyaccess.nl>
-Date: Sun, 27 Apr 2008 00:28:13 +0200
-From: Rene Herman <rene.herman@keyaccess.nl>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+	Sat, 26 Apr 2008 18:35:53 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:56007 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755439AbYDZWfx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 Apr 2008 18:35:53 -0400
+Date: Sat, 26 Apr 2008 23:24:33 +0100 (IST)
+From: Dave Airlie <airlied@linux.ie>
+X-X-Sender: airlied@skynet.skynet.ie
+To: Ingo Molnar <mingo@elte.hu>
+cc: Dave Airlie <airlied@redhat.com>, linux-kernel@vger.kernel.org,
+       mingo@redhat.com, arjan@linux.intel.com
+Subject: Re: [PATCH] x86: create array based interface to chagne page
+ attribute
+In-Reply-To: <20080426141718.GA10936@elte.hu>
+Message-ID: <alpine.DEB.0.82.0804262323520.26860@skynet.skynet.ie>
+References: <1209202037-6513-1-git-send-email-airlied@redhat.com>
+ <20080426095115.GA15212@elte.hu> <20080426141718.GA10936@elte.hu>
 MIME-Version: 1.0
-To: Bjorn Helgaas <bjorn.helgaas@hp.com>
-CC: Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Adam Belay <ambx1@neo.rr.com>,
-       Adam M Belay <abelay@mit.edu>, Li Shaohua <shaohua.li@intel.com>,
-       Matthieu Castet <castet.matthieu@free.fr>,
-       Thomas Renninger <trenn@suse.de>, Jaroslav Kysela <perex@perex.cz>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [patch 41/54] PNP: remove pnp_resource_table references from
- resource decoders
-References: <20080425183807.366134771@ldl.fc.hp.com> <20080425183932.457629051@ldl.fc.hp.com>
-In-Reply-To: <20080425183932.457629051@ldl.fc.hp.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -1.0 (-)
+Content-Type: MULTIPART/MIXED; BOUNDARY="29444707-34269702-1209248673=:26860"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 25-04-08 20:38, Bjorn Helgaas wrote:
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-> Index: work10/drivers/pnp/pnpacpi/rsparser.c
-> ===================================================================
-> --- work10.orig/drivers/pnp/pnpacpi/rsparser.c	2008-04-25 11:15:08.000000000 -0600
-> +++ work10/drivers/pnp/pnpacpi/rsparser.c	2008-04-25 11:15:09.000000000 -0600
-> @@ -82,8 +82,8 @@
->  						u32 gsi, int triggering,
->  						int polarity, int shareable)
->  {
-> -	struct pnp_resource_table *res = dev->res;
-> -	int i = 0;
-> +	struct resource *res;
-> +	int i;
->  	int irq;
->  	int p, t;
->  	static unsigned char warned;
-> @@ -91,9 +91,11 @@
->  	if (!valid_IRQ(gsi))
->  		return;
->  
-> -	while (!(res->irq_resource[i].flags & IORESOURCE_UNSET) &&
-> -	       i < PNP_MAX_IRQ)
-> -		i++;
-> +	for (i = 0; i < PNP_MAX_IRQ; i++) {
-> +		res = &dev->res->irq_resource[i];
-> +		if (res->flags & IORESOURCE_UNSET)
-> +			break;
-> +	}
+--29444707-34269702-1209248673=:26860
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 
-Another possible user of pnp_resource_valid.
 
-> +	for (i = 0; i < PNP_MAX_DMA; i++) {
-> +		res = &dev->res->dma_resource[i];
-> +		if (res->flags & IORESOURCE_UNSET)
-> +			break;
-> +	}
+> 
+> [    0.120007] CPU: Processor Core ID: 0
+> [    0.124007] ACPI: Core revision 20070126
+> [    0.128008] BUG: unable to handle kernel paging request at fffffffb80d6fe30
+> [    0.128008] IP: [<ffffffff802200a3>] __change_page_attr_set_clr+0x6c/0xaf7
+> [    0.128008] PGD 203067 PUD 0
+> [    0.128008] Thread overran stack or stack corrupted
+> 
+>   http://redhat.com/~mingo/misc/log-Sat_Apr_26_15_47_59_CEST_2008.bad
+>   http://redhat.com/~mingo/misc/config-Sat_Apr_26_15_47_59_CEST_2008.bad
+> 
+> 	Ingo
 
-.
+Doh.... BPB time...
 
-> +	for (i = 0; i < PNP_MAX_PORT; i++) {
-> +		res = &dev->res->port_resource[i];
-> +		if (res->flags & IORESOURCE_UNSET)
-> +			break;
-> +	}
+one-liner attached.
 
-.
+Dave.
+--29444707-34269702-1209248673=:26860
+Content-Type: TEXT/x-diff; charset=US-ASCII; name=x.diff
+Content-Transfer-Encoding: BASE64
+Content-ID: <alpine.DEB.0.82.0804262324330.26860@skynet.skynet.ie>
+Content-Description: 
+Content-Disposition: attachment; filename=x.diff
 
-> +	for (i = 0; i < PNP_MAX_MEM; i++) {
-> +		res = &dev->res->mem_resource[i];
-> +		if (res->flags & IORESOURCE_UNSET)
-> +			break;
-> +	}
+ZGlmZiAtLWdpdCBhL2FyY2gveDg2L21tL3BhZ2VhdHRyLmMgYi9hcmNoL3g4
+Ni9tbS9wYWdlYXR0ci5jDQppbmRleCBlZTE2YjFiLi5jN2ZlODc2IDEwMDY0
+NA0KLS0tIGEvYXJjaC94ODYvbW0vcGFnZWF0dHIuYw0KKysrIGIvYXJjaC94
+ODYvbW0vcGFnZWF0dHIuYw0KQEAgLTczMCw3ICs3MzAsNyBAQCBzdGF0aWMg
+aW50IF9fY2hhbmdlX3BhZ2VfYXR0cl9zZXRfY2xyKHN0cnVjdCBjcGFfZGF0
+YSAqY3BhLCBpbnQgY2hlY2thbGlhcykNCiAJCWlmIChjcGEtPmFycmF5KQ0K
+IAkJCWNwYS0+Y3VyYWRkcisrOw0KIAkJZWxzZQ0KLQkJCWNwYS0+dmFkZHIg
+Kz0gY3BhLT5udW1wYWdlcyAqIFBBR0VfU0laRTsNCisJCQkqY3BhLT52YWRk
+ciArPSBjcGEtPm51bXBhZ2VzICogUEFHRV9TSVpFOw0KIAl9DQogCXJldHVy
+biAwOw0KIH0NCg==
 
-.
-
-> Index: work10/drivers/pnp/pnpbios/rsparser.c
-> ===================================================================
-> --- work10.orig/drivers/pnp/pnpbios/rsparser.c	2008-04-25 11:15:08.000000000 -0600
-> +++ work10/drivers/pnp/pnpbios/rsparser.c	2008-04-25 11:15:09.000000000 -0600
-> @@ -56,80 +56,90 @@
->  
->  static void pnpbios_parse_allocated_irqresource(struct pnp_dev *dev, int irq)
->  {
-> -	struct pnp_resource_table *res = dev->res;
-> -	int i = 0;
-> +	struct resource *res;
-> +	int i;
-> +
-> +	for (i = 0; i < PNP_MAX_IRQ; i++) {
-> +		res = &dev->res->irq_resource[i];
-> +		if (res->flags & IORESOURCE_UNSET)
-> +			break;
-> +	}
-
-.
-
-> +	for (i = 0; i < PNP_MAX_DMA; i++) {
-> +		res = &dev->res->dma_resource[i];
-> +		if (res->flags & IORESOURCE_UNSET)
-> +			break;
-> +	}
-
-.
-
-> +	for (i = 0; i < PNP_MAX_PORT; i++) {
-> +		res = &dev->res->port_resource[i];
-> +		if (res->flags & IORESOURCE_UNSET)
-> +			break;
-> +	}
-
-.
-
-> +	for (i = 0; i < PNP_MAX_MEM; i++) {
-> +		res = &dev->res->mem_resource[i];
-> +		if (res->flags & IORESOURCE_UNSET)
-> +			break;
-> +	}
-
-.
-
-Rene
-
+--29444707-34269702-1209248673=:26860--
