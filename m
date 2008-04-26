@@ -1,54 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764666AbYDYX7P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763514AbYDZAGw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764666AbYDYX7P (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Apr 2008 19:59:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756246AbYDYX7D
+	id S1763514AbYDZAGw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Apr 2008 20:06:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756908AbYDZAGm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Apr 2008 19:59:03 -0400
-Received: from kirk.serum.com.pl ([213.77.9.205]:64062 "EHLO serum.com.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756011AbYDYX7B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Apr 2008 19:59:01 -0400
-Date: Sat, 26 Apr 2008 00:58:49 +0100 (BST)
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
-To: Michael Beasley <youvegotmoxie@gmail.com>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] fix typo in net/ipv6/Kconfig
-In-Reply-To: <20080424103950.GA6723@snafu.setup>
-Message-ID: <Pine.LNX.4.55.0804260053290.13902@cliff.in.clinika.pl>
-References: <20080424103950.GA6723@snafu.setup>
+	Fri, 25 Apr 2008 20:06:42 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:51702 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756011AbYDZAGm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Apr 2008 20:06:42 -0400
+Message-ID: <481271F4.7060401@zytor.com>
+Date: Fri, 25 Apr 2008 17:06:12 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [git pull] x86 PAT changes
+References: <20080424225625.GB8717@elte.hu> <alpine.LFD.1.10.0804251351511.2779@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.1.10.0804251351511.2779@woody.linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 24 Apr 2008, Michael Beasley wrote:
-
-> diff --git a/net/ipv6/Kconfig b/net/ipv6/Kconfig
-> index eb0b808..56b4d86 100644
-> --- a/net/ipv6/Kconfig
-> +++ b/net/ipv6/Kconfig
-> @@ -172,7 +172,7 @@ config IPV6_SIT
->           Tunneling means encapsulating data of one protocol type within
->           another protocol and sending it over a channel that understands the
->           encapsulating protocol. This driver implements encapsulation of IPv6
-> -         into IPv4 packets. This is useful if you want to connect two IPv6
-> +         into IPv4 packets. This is useful if you want to connect to IPv6
->           networks over an IPv4-only path.
+Linus Torvalds wrote:
 > 
->           Saying M here will produce a module called sit.ko. If unsure, say Y.
+> So why is PAT dependent on NONPROMISC_DEVMEM here?
 > 
-> Two is used in the wrong context here, as you are connecting to an IPv6 network
-> over IPv4; not connecting two IPv6 networks to an IPv4 one.
+> It seems pointless and wrong. Somebody might want to have both the full 
+> /dev/mem and PAT.
+> 
 
- NAK.  The text correctly describes the scenario.  You have two IPv6
-networks, between which you set up a SIT tunnel which transmits data
-between the two networks encapsulated in IPv4 packets.  If you find the
-text not self-explanatory, then perhaps the sentence could be rewritten as
-follows:
+The problem is that that can create cached/uncached aliases, which can 
+cause some processors to lock up (especially AMD is known to have a lot 
+of errata in this area.)
 
-"This is useful if you want to connect two IPv6 networks to each other
-over an IPv4-only path."
-
-  Maciej
+	-hpa
