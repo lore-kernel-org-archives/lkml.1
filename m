@@ -1,249 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757285AbYDZOnj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757849AbYDZOog@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757285AbYDZOnj (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Apr 2008 10:43:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751640AbYDZOnc
+	id S1757849AbYDZOog (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Apr 2008 10:44:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751640AbYDZOo2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Apr 2008 10:43:32 -0400
-Received: from x346.tv-sign.ru ([89.108.83.215]:49607 "EHLO mail.screens.ru"
+	Sat, 26 Apr 2008 10:44:28 -0400
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:58686 "EHLO smtp5.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751308AbYDZOnb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Apr 2008 10:43:31 -0400
-Date: Sat, 26 Apr 2008 18:43:30 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Heiko Carstens <heiko.carstens@de.ibm.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, Gautham R Shenoy <ego@in.ibm.com>,
-       Johannes Berg <johannes@sipsolutions.net>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Srivatsa Vaddagiri <vatsa@in.ibm.com>, linux-kernel@vger.kernel.org
-Subject: get_online_cpus() && workqueues
-Message-ID: <20080426144330.GA6150@tv-sign.ru>
-References: <1208176947.7427.68.camel@twins> <20080422123304.GA777@osiris.boeblingen.de.ibm.com> <1208868236.7115.249.camel@twins> <20080423035802.GA8895@in.ibm.com> <20080424150714.GA8273@osiris.boeblingen.de.ibm.com> <1209052984.7115.369.camel@twins> <20080424155946.GA11160@tv-sign.ru> <20080424194810.GA4821@osiris.boeblingen.de.ibm.com> <20080424192706.GA165@tv-sign.ru> <20080425064044.GA10817@osiris.boeblingen.de.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1751308AbYDZOo2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 Apr 2008 10:44:28 -0400
+Date: Sat, 26 Apr 2008 17:44:04 +0300
+From: Adrian Bunk <bunk@stusta.de>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Harvey Harrison <harvey.harrison@gmail.com>,
+       Mauro Carvalho Chehab <mchehab@infradead.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: If you want me to quit I will quit
+Message-ID: <20080426144404.GG2252@cs181133002.pp.htv.fi>
+References: <1209190455.14173.13.camel@brick> <20080426110044.GB2252@cs181133002.pp.htv.fi> <20080426112717.GA23248@uranus.ravnborg.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20080425064044.GA10817@osiris.boeblingen.de.ibm.com>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <20080426112717.GA23248@uranus.ravnborg.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gautham, Srivatsa, seriously, can't we uglify cpu.c a little bit to solve
-the problem. Please see the illustration patch below. It looks complicated,
-but in fact it is quite trivial.
+On Sat, Apr 26, 2008 at 01:27:17PM +0200, Sam Ravnborg wrote:
+> Hi Adrian.
 
-In short: work_struct can't use get_online_cpus() due to deadlock with the
-CPU_DEAD phase.
+Hi Sam,
 
-Can't we add another nested lock which is dropped right after __cpu_die()?
-(in fact I think it could be dropped after __stop_machine_run).
+> > Why do other people get over 100 checkpatch fixes into the tree at once 
+> > or Linus applies patches directly bypassing the maintainers (like the 
+> > one you sent just before [3], which I've also already sent before [4]) 
+> > but my patches bitrot forever?
+> 
+> The patches you submit touches all parts of the kernel tree.
+> And you do a good job in finding the relevant receivers.
+> 
+> To me you are partly in the saem situation as Andrew in that
+> you handle a great deal of patches touching a lot of different
+> subsystems.
+>...
 
-The new read-lock is get_online_map() (just a random name for now). The only
-difference wrt get_online_cpus() is that it doesn't protect against CPU_DEAD,
-but most users of get_online_cpus() doesn't need this, they only need a
-stable cpu_online_map and sometimes they need to be sure that some per-cpu
-object (say, cpu_workqueue_struct->thread) can't be destroyed under this
-lock.
+Linus takes patches from people like Andrew, Al and Harvey directly,
+but he doesn't take the same patches directly from me.
 
-get_online_map() seem to fit for this, and can be used from work->func().
-(actually, I think most users of use get_online_cpus() could use the new
-helper instead, but this doen't matter).
+Whatever applies to these people doesn't help me.
 
-Heiko, what do you think? Is it suitable for arch_reinit_sched_domains()?
+> So in your position I would keep all patches in
+> a place so they can be sucked into -next and regular spam
+> the relevant amintainers with their patches.
+> When the merge window opens then submit the rest to Linus
+> with a noe that they have been sent to Maintainers without
+> any feedback previously.
+> 
+> This is not far away from what you do now and should not create
+> that big frustrations (I hope).
 
-Oleg.
+You missed the "And Linus didn't even bother to answer what the correct 
+path for my patches is."
 
---- 25/kernel/cpu.c~HP_LOCK	2008-02-16 18:36:37.000000000 +0300
-+++ 25/kernel/cpu.c	2008-04-26 18:14:25.000000000 +0400
-@@ -25,7 +25,7 @@ static __cpuinitdata RAW_NOTIFIER_HEAD(c
-  */
- static int cpu_hotplug_disabled;
- 
--static struct {
-+static struct cpu_lock {
- 	struct task_struct *active_writer;
- 	struct mutex lock; /* Synchronizes accesses to refcount, */
- 	/*
-@@ -33,41 +33,65 @@ static struct {
- 	 * an ongoing cpu hotplug operation.
- 	 */
- 	int refcount;
--} cpu_hotplug;
-+} cpu_hotplug, online_map;
-+
-+static inline void __cpu_hotplug_init(struct cpu_lock *cpu_lock)
-+{
-+	cpu_lock->active_writer = NULL;
-+	mutex_init(&cpu_lock->lock);
-+	cpu_lock->refcount = 0;
-+}
- 
- void __init cpu_hotplug_init(void)
- {
--	cpu_hotplug.active_writer = NULL;
--	mutex_init(&cpu_hotplug.lock);
--	cpu_hotplug.refcount = 0;
-+	__cpu_hotplug_init(&cpu_hotplug);
-+	__cpu_hotplug_init(&online_map);
- }
- 
- #ifdef CONFIG_HOTPLUG_CPU
- 
--void get_online_cpus(void)
-+void cpu_read_lock(struct cpu_lock *cpu_lock)
- {
- 	might_sleep();
--	if (cpu_hotplug.active_writer == current)
-+	if (cpu_lock->active_writer == current)
- 		return;
--	mutex_lock(&cpu_hotplug.lock);
--	cpu_hotplug.refcount++;
--	mutex_unlock(&cpu_hotplug.lock);
-+	mutex_lock(&cpu_lock->lock);
-+	cpu_lock->refcount++;
-+	mutex_unlock(&cpu_lock->lock);
-+}
- 
-+void get_online_cpus(void)
-+{
-+	cpu_read_lock(&cpu_hotplug);
- }
- EXPORT_SYMBOL_GPL(get_online_cpus);
- 
--void put_online_cpus(void)
-+void get_online_map(void)
- {
--	if (cpu_hotplug.active_writer == current)
-+	cpu_read_lock(&online_map);
-+}
-+
-+void cpu_read_unlock(struct cpu_lock *cpu_lock)
-+{
-+	if (cpu_lock->active_writer == current)
- 		return;
--	mutex_lock(&cpu_hotplug.lock);
--	if (!--cpu_hotplug.refcount && unlikely(cpu_hotplug.active_writer))
--		wake_up_process(cpu_hotplug.active_writer);
--	mutex_unlock(&cpu_hotplug.lock);
-+	mutex_lock(&cpu_lock->lock);
-+	if (!--cpu_lock->refcount && unlikely(cpu_lock->active_writer))
-+		wake_up_process(cpu_lock->active_writer);
-+	mutex_unlock(&cpu_lock->lock);
-+}
- 
-+void put_online_cpus(void)
-+{
-+	cpu_read_unlock(&cpu_hotplug);
- }
- EXPORT_SYMBOL_GPL(put_online_cpus);
- 
-+void put_online_map(void)
-+{
-+	cpu_read_unlock(&online_map);
-+}
-+
- #endif	/* CONFIG_HOTPLUG_CPU */
- 
- /*
-@@ -91,7 +115,7 @@ void cpu_maps_update_done(void)
-  * Note that during a cpu-hotplug operation, the new readers, if any,
-  * will be blocked by the cpu_hotplug.lock
-  *
-- * Since cpu_hotplug_begin() is always called after invoking
-+ * Since cpu_write_lock() is always called after invoking
-  * cpu_maps_update_begin(), we can be sure that only one writer is active.
-  *
-  * Note that theoretically, there is a possibility of a livelock:
-@@ -106,25 +130,26 @@ void cpu_maps_update_done(void)
-  * get_online_cpus() not an api which is called all that often.
-  *
-  */
--static void cpu_hotplug_begin(void)
-+static void cpu_write_lock(struct cpu_lock *cpu_lock)
- {
--	cpu_hotplug.active_writer = current;
-+	cpu_lock->active_writer = current;
- 
- 	for (;;) {
--		mutex_lock(&cpu_hotplug.lock);
--		if (likely(!cpu_hotplug.refcount))
-+		mutex_lock(&cpu_lock->lock);
-+		if (likely(!cpu_lock->refcount))
- 			break;
- 		__set_current_state(TASK_UNINTERRUPTIBLE);
--		mutex_unlock(&cpu_hotplug.lock);
-+		mutex_unlock(&cpu_lock->lock);
- 		schedule();
- 	}
- }
- 
--static void cpu_hotplug_done(void)
-+static void cpu_write_unlock(struct cpu_lock *cpu_lock)
- {
--	cpu_hotplug.active_writer = NULL;
--	mutex_unlock(&cpu_hotplug.lock);
-+	cpu_lock->active_writer = NULL;
-+	mutex_unlock(&cpu_lock->lock);
- }
-+
- /* Need to know about CPUs going up/down? */
- int __cpuinit register_cpu_notifier(struct notifier_block *nb)
- {
-@@ -207,7 +232,8 @@ static int _cpu_down(unsigned int cpu, i
- 	if (!cpu_online(cpu))
- 		return -EINVAL;
- 
--	cpu_hotplug_begin();
-+	cpu_write_lock(&cpu_hotplug);
-+	cpu_write_lock(&online_map);
- 	err = __raw_notifier_call_chain(&cpu_chain, CPU_DOWN_PREPARE | mod,
- 					hcpu, -1, &nr_calls);
- 	if (err == NOTIFY_BAD) {
-@@ -238,6 +264,7 @@ static int _cpu_down(unsigned int cpu, i
- 			err = PTR_ERR(p);
- 			goto out_allowed;
- 		}
-+		err = -EAGAIN;
- 		goto out_thread;
- 	}
- 
-@@ -247,6 +274,7 @@ static int _cpu_down(unsigned int cpu, i
- 
- 	/* This actually kills the CPU. */
- 	__cpu_die(cpu);
-+	cpu_write_unlock(&online_map);
- 
- 	/* CPU is completely dead: tell everyone.  Too late to complain. */
- 	if (raw_notifier_call_chain(&cpu_chain, CPU_DEAD | mod,
-@@ -260,7 +288,9 @@ out_thread:
- out_allowed:
- 	set_cpus_allowed(current, old_allowed);
- out_release:
--	cpu_hotplug_done();
-+	if (err)
-+		cpu_write_unlock(&online_map);
-+	cpu_write_unlock(&cpu_hotplug);
- 	return err;
- }
- 
-@@ -289,7 +319,8 @@ static int __cpuinit _cpu_up(unsigned in
- 	if (cpu_online(cpu) || !cpu_present(cpu))
- 		return -EINVAL;
- 
--	cpu_hotplug_begin();
-+	cpu_write_lock(&cpu_hotplug);
-+	cpu_write_lock(&online_map);
- 	ret = __raw_notifier_call_chain(&cpu_chain, CPU_UP_PREPARE | mod, hcpu,
- 							-1, &nr_calls);
- 	if (ret == NOTIFY_BAD) {
-@@ -313,7 +344,8 @@ out_notify:
- 	if (ret != 0)
- 		__raw_notifier_call_chain(&cpu_chain,
- 				CPU_UP_CANCELED | mod, hcpu, nr_calls, NULL);
--	cpu_hotplug_done();
-+	cpu_write_unlock(&online_map);
-+	cpu_write_unlock(&cpu_hotplug);
- 
- 	return ret;
- }
+I'd have no problem creating a git tree for such stuff.
+
+But if Linus doesn't bother to tell me how he wants to get patches from 
+me he most likely also won't bother to pull from my tree.
+
+
+And it wouldn't be usable for bugfixes that should get into 2.6.26.
+
+It might e.g. make sense to let maintainers handle fixes and let them 
+decide whether they want a patch this way, but if my patch goes through 
+the maintainer and later Linus applies the same patch by someone else 
+directly it simply makes no sense that I spend my spare time on fixing 
+bugs in the kernel.
+
+
+> 	Sam
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
