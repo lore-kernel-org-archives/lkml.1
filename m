@@ -1,105 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763639AbYD0X5N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764435AbYD0X6T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763639AbYD0X5N (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Apr 2008 19:57:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752761AbYD0X44
+	id S1764435AbYD0X6T (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Apr 2008 19:58:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754661AbYD0X6L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Apr 2008 19:56:56 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:53573
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1750885AbYD0X4z (ORCPT
+	Sun, 27 Apr 2008 19:58:11 -0400
+Received: from fg-out-1718.google.com ([72.14.220.159]:44252 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752937AbYD0X6K (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Apr 2008 19:56:55 -0400
-Date: Sun, 27 Apr 2008 16:56:55 -0700 (PDT)
-Message-Id: <20080427.165655.96444093.davem@davemloft.net>
-To: torvalds@linux-foundation.org
-CC: akpm@linux-foundation.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [GIT]: Networking fixes
-From: David Miller <davem@davemloft.net>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Sun, 27 Apr 2008 19:58:10 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=C+7Xz7vBKxyPuU7WEMe9vHbr9lwp1/At0RE4Ysl0pU0vLEIUbPW2h9+vZTj34quhZ536hUl6g1+H/Idu22oQ58o603RAT0UQ4K2Oo4OqBVRQW52S8hT9EqmNgMHqyvkESRViXszR0v+hgeSKTB/hvr2DcXFYMxJwiRljHcf/2G4=
+From: Denys Vlasenko <vda.linux@googlemail.com>
+To: David Chinner <dgc@sgi.com>
+Subject: Re: [PATCH] xfs: reduce stack usage in xfs_bmap_btalloc()
+Date: Mon, 28 Apr 2008 01:57:12 +0200
+User-Agent: KMail/1.8.2
+Cc: xfs@oss.sgi.com, Eric Sandeen <sandeen@sandeen.net>,
+       Adrian Bunk <bunk@kernel.org>, linux-kernel@vger.kernel.org
+References: <200804261651.02078.vda.linux@googlemail.com> <20080427234056.GA108924158@sgi.com>
+In-Reply-To: <20080427234056.GA108924158@sgi.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200804280157.12736.vda.linux@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Monday 28 April 2008 01:40, David Chinner wrote:
+> On Sat, Apr 26, 2008 at 04:51:02PM +0200, Denys Vlasenko wrote:
+> > Hi David,
+> > 
+> > This patch reduces xfs_bmap_btalloc() stack usage by 50 bytes
+> > by moving part of its body into a helper function.
+> 
+> Can you please attach your patches inline, Denys (see
+> Documentation/SubmittingPatches)?
 
-1) TIPC and ipv6 endianness cures from Al Viro.
+I can, but Kmail is notorious for mangling them :(
 
-2) Fix copy_from_user() results being used as error returns,
-   from Sam Ravnborg, based upon a patch from Pavel E.
+Is it ok if I will paste them inline AND attach them too,
+so that you get guaranteed-nonmangled one in attachment?
 
-3) When asking for null authentication algorithm in ESP, we get a null
-   hmac, instead of just a plain null digest.  Fix from Herbert Xu.
+> I have a set of patches that introduces new functionality into the
+> allocator (dynamic allocation policies) that reduces
+> xfs_bmap_btalloc() function by 36 bytes (just by chance, I didn't
+> design it for this purpose). It breaks it down on functional
+> boundaries like Christoph's patch. I'm going to revist that patch
+> w.r.t both these patches and see what falls out the bottom...
 
-4) Missing SunRPC kernel-doc annotation from Randy Dunlap.
+Nice to know that.
 
-5) IPSEC auditing prints out the flowlabel incorrectly.  Fix from
-   Yoshifuji HIDEAKI.
-
-6) Compat 32-bit support for multicast socket options was missing,
-   fix from David L. Stevens.
-
-7) Hopefully, the final build fixes necessary for the iwlwifi driver.
-   A lot of this stems from some areas of Kconfig that could be
-   improved and I'll start a thread about that.
-
-Please pull, thanks a lot!
-
-The following changes since commit 653252c2302cdf2dfbca66a7e177f7db783f9efa:
-  Pavel Emelyanov (1):
-        net: Fix wrong interpretation of some copy_to_user() results.
-
-are available in the git repository at:
-
-  master.kernel.org:/pub/scm/linux/kernel/git/davem/net-2.6.git master
-
-Al Viro (2):
-      ipv6: result of csum_fold() is already 16bit, no need to cast
-      tipc: endianness annotations
-
-David L Stevens (1):
-      ipv4/ipv6 compat: Fix SSM applications on 64bit kernels.
-
-David S. Miller (1):
-      Revert "ipv6: Fix typo in net/ipv6/Kconfig"
-
-Evgeniy Polyakov (1):
-      tcp: Fix slab corruption with ipv6 and tcp6fuzz
-
-Herbert Xu (1):
-      [IPSEC]: Use digest_null directly for auth
-
-Jason Riedy (1):
-      iwlwifi: Allow building iwl3945 without iwl4965.
-
-Luca Tettamanti (1):
-      wireless: Fix compile error with wifi & leds
-
-Randy Dunlap (1):
-      sunrpc: fix missing kernel-doc
-
-Sam Ravnborg (1):
-      can: Fix copy_from_user() results interpretation
-
-YOSHIFUJI Hideaki (1):
-      [XFRM] AUDIT: Fix flowlabel text format ambibuity.
-
- drivers/net/wireless/Makefile        |    2 +-
- drivers/net/wireless/iwlwifi/Kconfig |    6 ++
- include/net/compat.h                 |    3 +
- net/can/raw.c                        |   21 +++---
- net/compat.c                         |  117 ++++++++++++++++++++++++++++++++++
- net/ipv4/ip_sockglue.c               |    5 ++
- net/ipv4/tcp_input.c                 |    3 +-
- net/ipv6/Kconfig                     |    2 +-
- net/ipv6/ip6mr.c                     |    2 +-
- net/ipv6/ipv6_sockglue.c             |    5 ++
- net/mac80211/Kconfig                 |    4 +-
- net/sunrpc/xprt.c                    |    2 +-
- net/tipc/msg.h                       |    7 +-
- net/xfrm/xfrm_algo.c                 |    3 +-
- net/xfrm/xfrm_state.c                |    2 +-
- 15 files changed, 159 insertions(+), 25 deletions(-)
+Can you point me to svn/CVS/git/whatever which holds latest xfs
+devel tree?
+--
+vda
