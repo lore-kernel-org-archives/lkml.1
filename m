@@ -1,47 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759832AbYD0XQu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764966AbYD0XRP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759832AbYD0XQu (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Apr 2008 19:16:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763195AbYD0XQG
+	id S1764966AbYD0XRP (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Apr 2008 19:17:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763933AbYD0XQx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Apr 2008 19:16:06 -0400
-Received: from smtp04.mtu.ru ([62.5.255.51]:62976 "EHLO smtp04.mtu.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759864AbYD0XQD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Apr 2008 19:16:03 -0400
-From: Dmitri Vorobiev <dmitri.vorobiev@gmail.com>
-To: mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com,
-       linux-kernel@vger.kernel.org
-Subject: x86: fix a couple of sparse warnings
-Date: Mon, 28 Apr 2008 03:15:57 +0400
-Message-Id: <1209338159-30095-1-git-send-email-dmitri.vorobiev@gmail.com>
-X-Mailer: git-send-email 1.5.3.6
-X-DCC-STREAM-Metrics: smtp04.mtu.ru 10001; Body=0 Fuz1=0 Fuz2=0
+	Sun, 27 Apr 2008 19:16:53 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:35801 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1765310AbYD0XQw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Apr 2008 19:16:52 -0400
+Date: Sun, 27 Apr 2008 16:11:05 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Breakage caused by unreviewed patch in x86 tree
+Message-ID: <20080427161105.0b452fe4@laptopd505.fenrus.org>
+In-Reply-To: <1209337439.3801.84.camel@localhost.localdomain>
+References: <1209329485.3801.46.camel@localhost.localdomain>
+	<20080427155803.73f0efcf@laptopd505.fenrus.org>
+	<1209337439.3801.84.camel@localhost.localdomain>
+Organization: Intel
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ingo, Peter, Thomas,
+On Sun, 27 Apr 2008 19:03:59 -0400
+James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
 
-Here is a couple of patches that fix sparse warnings
-produced while compiling defconfig for i386:
+> On Sun, 2008-04-27 at 15:58 -0700, Arjan van de Ven wrote:
+> > On Sun, 27 Apr 2008 16:51:25 -0400
+> > James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
+> > When you're mapping device memory, uncached is the safe default. 
+> 
+> Well, for certain device mailboxes, uncached does mean less
+> performant. The voyager breakage was exceptional ... I expect other
+> problems just to result in a loss of performance that caching gave by
+> improving the bursting.  If we're lucky, the PCI bridge cache might
+> hide a lot of this.
 
-<<<<<
+on a PC, NONE of the ioremap()s of PCI stuff were cached before, with the
+exception of prefetchable ranges, that some bioses set up a write-combining MTRR for.
+(and write-combining is effectively "uncached but with write buffering")
 
-arch/x86/kernel/reboot.c:32:5: warning: symbol 'reboot_force' was not declared. Should it be static?
+If you look at at what kind of devices have prefetchable ranges, you get two answers:
+1) video cards
+2) some IB adapters
 
-arch/x86/kernel/pci-dma.c:17:5: warning: symbol 'iommu_sac_force' was not declared. Should it be static?
 
-<<<<<
+So your argument that this might change PCI stuff is just false.
 
-These patches were compile-tested using defconfig for both
-i386 and x86_64. Also, a runtime test was successfully
-performed by booting i386 and x86_64 boxes up to the shell
-prompt.
+Your argument that this "99.9%->100% uncached" should have been announced/discussed
+in public, sure. But to make this big a deal out of it?
 
-Patches apply cleanly to current x86.git.
-
-Please consider.
-
-Thanks,
-Dmitri Vorobiev
+-- 
+If you want to reach me at my work email, use arjan@linux.intel.com
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
