@@ -1,86 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764069AbYD0ThJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764213AbYD0Thf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764069AbYD0ThJ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Apr 2008 15:37:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763294AbYD0Tg5
+	id S1764213AbYD0Thf (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Apr 2008 15:37:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763294AbYD0ThR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Apr 2008 15:36:57 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:40510 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762810AbYD0Tg4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Apr 2008 15:36:56 -0400
-Date: Sun, 27 Apr 2008 21:36:27 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Christoph Hellwig <hch@infradead.org>, Sam Ravnborg <sam@ravnborg.org>,
-       Adrian Bunk <bunk@kernel.org>, linux arch <linux-arch@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>, David Miller <davem@davemloft.net>
-Subject: Re: [PATCH] prepare kconfig inline optimization for all
-	architectures
-Message-ID: <20080427193627.GA32654@elte.hu>
-References: <20080427105100.GA14795@uranus.ravnborg.org> <20080427113158.GY2252@cs181133002.pp.htv.fi> <alpine.LFD.1.10.0804271002360.2896@woody.linux-foundation.org> <20080427172235.GA2252@cs181133002.pp.htv.fi> <alpine.LFD.1.10.0804271029130.2896@woody.linux-foundation.org> <20080427174714.GB2252@cs181133002.pp.htv.fi> <20080427180007.GB28483@infradead.org> <20080427180957.GA25964@uranus.ravnborg.org> <20080427181411.GA31667@infradead.org> <alpine.LFD.1.10.0804271118500.2896@woody.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.10.0804271118500.2896@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Sun, 27 Apr 2008 15:37:17 -0400
+Received: from fg-out-1718.google.com ([72.14.220.155]:53723 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764095AbYD0ThO convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Apr 2008 15:37:14 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer:mime-version:content-type:content-transfer-encoding:sender;
+        b=eSaROuFNCAg2FehzsiZ5riGr7djryxlEUrA3OU0eQTbWqkbpa3ARCDyO6J1d6DW1O2/7WYn7vXEEa/kTq4QeHO19IqMaFLLSV82ycaxp4jiijgf7gQDif7AXkB4qiVKU0FuRDamFAvZWjMinLYU9r0NB8agWxp5z7YocvpUuThM=
+Date: Sun, 27 Apr 2008 22:37:08 +0300
+From: Pekka Paalanen <pq@iki.fi>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Pekka Paalanen <pq@iki.fi>, Steven Rostedt <rostedt@goodmis.org>,
+       linux-kernel@vger.kernel.org, akpm@osdl.org,
+       Peter Zijlstra <peterz@infradead.org>,
+       Soeren Sandmann Pedersen <sandmann@redhat.com>,
+       Steven Rostedt <srostedt@redhat.com>, Pavel Roskin <proski@gnu.org>
+Subject: [PATCH 3/5] mmiotrace: print overrun counts
+Message-ID: <20080427223708.2137ba95@daedalus.pq.iki.fi>
+In-Reply-To: <20080427222925.02b2b27b@daedalus.pq.iki.fi>
+References: <20080427222925.02b2b27b@daedalus.pq.iki.fi>
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.8; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+>From d5c3a38d48e223bcf192f48a8b202fdffa616390 Mon Sep 17 00:00:00 2001
+From: Pekka Paalanen <pq@iki.fi>
+Date: Sun, 27 Apr 2008 00:00:33 +0300
+Subject: [PATCH] mmiotrace: print overrun counts
 
-* Linus Torvalds <torvalds@linux-foundation.org> wrote:
+Signed-off-by: Pekka Paalanen <pq@iki.fi>
+---
+ kernel/trace/trace_mmiotrace.c |   25 +++++++++++++++++++++++++
+ 1 files changed, 25 insertions(+), 0 deletions(-)
 
-> I do obviously think that we're right to move into the direction that 
-> "inline" should be a hint. In fact, the biggest issue I have with the 
-> new kconfig option is that I think it should probably be 
-> unconditional, but I suspect that compiler issues and architecture 
-> issues make that not be a good idea.
-> 
-> It will take time before we've sorted out all the fall-out, because I 
-> bet there is still code out there that _should_ use __always_inline, 
-> but doesn't.
+diff --git a/kernel/trace/trace_mmiotrace.c b/kernel/trace/trace_mmiotrace.c
+index 6d2edbd..d0f649a 100644
+--- a/kernel/trace/trace_mmiotrace.c
++++ b/kernel/trace/trace_mmiotrace.c
+@@ -17,11 +17,13 @@ struct header_iter {
+ };
+ 
+ static struct trace_array *mmio_trace_array;
++static bool overrun_detected;
+ 
+ static void mmio_reset_data(struct trace_array *tr)
+ {
+ 	int cpu;
+ 
++	overrun_detected = false;
+ 	tr->time_start = ftrace_now(tr->cpu);
+ 
+ 	for_each_online_cpu(cpu)
+@@ -124,12 +126,34 @@ static void mmio_close(struct trace_iterator *iter)
+ 	iter->private = NULL;
+ }
+ 
++static unsigned long count_overruns(struct trace_iterator *iter)
++{
++	int cpu;
++	unsigned long cnt = 0;
++	for_each_online_cpu(cpu) {
++		cnt += iter->overrun[cpu];
++		iter->overrun[cpu] = 0;
++	}
++	return cnt;
++}
++
+ static ssize_t mmio_read(struct trace_iterator *iter, struct file *filp,
+ 				char __user *ubuf, size_t cnt, loff_t *ppos)
+ {
+ 	ssize_t ret;
+ 	struct header_iter *hiter = iter->private;
+ 	struct trace_seq *s = &iter->seq;
++	unsigned long n;
++
++	n = count_overruns(iter);
++	if (n) {
++		/* XXX: This is later than where events were lost. */
++		trace_seq_printf(s, "MARK 0.000000 Lost %lu events.\n", n);
++		if (!overrun_detected)
++			pr_warning("mmiotrace has lost events.\n");
++		overrun_detected = true;
++		goto print_out;
++	}
+ 
+ 	if (!hiter)
+ 		return 0;
+@@ -142,6 +166,7 @@ static ssize_t mmio_read(struct trace_iterator *iter, struct file *filp,
+ 		iter->private = NULL;
+ 	}
+ 
++print_out:
+ 	ret = trace_seq_to_user(s, ubuf, cnt);
+ 	return (ret == -EBUSY) ? 0 : ret;
+ }
+-- 
+1.5.3.7
 
-yeah, we i think had one such issue in x86 (merged upstream prior and 
-independently of this feature iirc). We also know that something on 
-powerpc doesnt work right out of box with inline being a hint. And 
-that's OK and expected - for years we had "inline == always_inline" and 
-there was just no force that moved against that. It was in fact 
-surprising how well it all worked out on x86 when we reintroduced this 
-feature.
-
-btw., another new aspect of this whole area is that a number of major 
-distributions now do CONFIG_CC_OPTIMIZE_FOR_SIZE=y in their kernels, and 
-that seems to have brought new life into -Os development and with every 
-new gcc generation we get denser and denser code generated. It is an 
-interesting fact that generating good _small_ code needs a very good 
-compiler that understands the code flow very accurately and is able to 
-find the smallest possible representation for that.
-
-A side-effect of that is if we do -Os _and_ turn inline into a hint via 
-CONFIG_CC_OPTIMIZE_INLINING=y, gcc tends to do a better job than before. 
-It cannot just go and inline stuff agressively in stark contrast to the 
--Os goal that was given to it. It still does not do a perfect job though 
-- but now at least it has a _chance_ to improve. With always_inline we 
-gave gcc no leeway at all.
-
-a second aspect is that there's always the chance that some other 
-compiler comes along that does things better than gcc. Again, with 
-inline being a necessity we make it impossible for even sane compilers 
-to do the right thing.
-
-and a third aspect is that in the current -git kernel we have exactly 
-11801 inlines in non-include files. Fighting the constant influx of them 
-was a futile act 3 years ago when Arjan and me created this feature for 
-the first time and it is futile today. It is a compiler domain problem 
-and we should not waste any manpower "fighting" them. Life is too short :)
-
-	Ingo
