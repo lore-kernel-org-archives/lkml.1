@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752980AbYD0EzY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753262AbYD0FHi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752980AbYD0EzY (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Apr 2008 00:55:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751511AbYD0EzO
+	id S1753262AbYD0FHi (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Apr 2008 01:07:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751708AbYD0FH1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Apr 2008 00:55:14 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:58512
+	Sun, 27 Apr 2008 01:07:27 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:33001
 	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751502AbYD0EzN (ORCPT
+	by vger.kernel.org with ESMTP id S1751594AbYD0FH0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Apr 2008 00:55:13 -0400
-Date: Sat, 26 Apr 2008 21:55:13 -0700 (PDT)
-Message-Id: <20080426.215513.141243565.davem@davemloft.net>
+	Sun, 27 Apr 2008 01:07:26 -0400
+Date: Sat, 26 Apr 2008 22:07:26 -0700 (PDT)
+Message-Id: <20080426.220726.13692428.davem@davemloft.net>
 To: linux-kernel@vger.kernel.org
 CC: mingo@elte.hu, torvalds@linux-foundation.org, akpm@linux-foundation.org,
        viro@ZenIV.linux.org.uk
-Subject: CONFIG_OPTIMIZE_INLINING
+Subject: find_new_bit bloat from x86 tree...
 From: David Miller <davem@davemloft.net>
 X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
@@ -26,19 +26,56 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Ingo, why the heck is this hiding under arch/x86/ and not in
-lib/Kconfig.debug where it belongs?
+Ingo, what the heck is this?
 
-    x86: add optimized inlining
+commit 64970b68d2b3ed32b964b0b30b1b98518fde388e
+Author: Alexander van Heukelum <heukelum@mailshack.com>
+Date:   Tue Mar 11 16:17:19 2008 +0100
 
-If there are platforms that can't handle it, we can add a conditional
-to lib/Kconfig.debug, but by default it should be made available
-generically.
+    x86, generic: optimize find_next_(zero_)bit for small constant-size bitmaps
 
-Where did this original patch get posted for review and discussion?
+Thanks for bloating up the inline expansion of this thing on every
+architecture that doesn't do __ffs() in a simple sequence of a few
+instructions like x86 does.
 
-Tell me where!?!?!
+Now every call that matches your tests gets this turd inline:
 
-The only references I see is where Stephen Rothwell complained that it
-broke the powerpc build, and then on the git commit list when Linus
-sucked this crud in.
+static inline unsigned long __ffs(unsigned long word)
+{
+	int num = 0;
+
+#if BITS_PER_LONG == 64
+	if ((word & 0xffffffff) == 0) {
+		num += 32;
+		word >>= 32;
+	}
+#endif
+	if ((word & 0xffff) == 0) {
+		num += 16;
+		word >>= 16;
+	}
+	if ((word & 0xff) == 0) {
+		num += 8;
+		word >>= 8;
+	}
+	if ((word & 0xf) == 0) {
+		num += 4;
+		word >>= 4;
+	}
+	if ((word & 0x3) == 0) {
+		num += 2;
+		word >>= 2;
+	}
+	if ((word & 0x1) == 0)
+		num += 1;
+	return num;
+}
+
+as well as all of that address formation, bit shifting, and masking.
+
+Please revert or make this conditional on something architectures can
+opt-in for.
+
+The version actually applied was posted only on linux-kernel, instead
+of also CC:'ing linux-arch as previous versions had been.  Nobody
+commented on this version other than you Ingo.
