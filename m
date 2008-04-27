@@ -1,75 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764399AbYD0X0q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765186AbYD0X1v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764399AbYD0X0q (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Apr 2008 19:26:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758412AbYD0X0h
+	id S1765186AbYD0X1v (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Apr 2008 19:27:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752942AbYD0X1o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Apr 2008 19:26:37 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:51375 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753754AbYD0X0g (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Apr 2008 19:26:36 -0400
-Date: Sun, 27 Apr 2008 16:26:06 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Christoph Hellwig <hch@infradead.org>, Sam Ravnborg <sam@ravnborg.org>,
-       Adrian Bunk <bunk@kernel.org>, linux arch <linux-arch@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       David Miller <davem@davemloft.net>
-Subject: Re: [PATCH] prepare kconfig inline optimization for all
- architectures
-Message-ID: <20080427162606.3dd82c0c@laptopd505.fenrus.org>
-In-Reply-To: <alpine.LFD.1.10.0804271118500.2896@woody.linux-foundation.org>
-References: <20080427105100.GA14795@uranus.ravnborg.org>
-	<20080427113158.GY2252@cs181133002.pp.htv.fi>
-	<alpine.LFD.1.10.0804271002360.2896@woody.linux-foundation.org>
-	<20080427172235.GA2252@cs181133002.pp.htv.fi>
-	<alpine.LFD.1.10.0804271029130.2896@woody.linux-foundation.org>
-	<20080427174714.GB2252@cs181133002.pp.htv.fi>
-	<20080427180007.GB28483@infradead.org>
-	<20080427180957.GA25964@uranus.ravnborg.org>
-	<20080427181411.GA31667@infradead.org>
-	<alpine.LFD.1.10.0804271118500.2896@woody.linux-foundation.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Sun, 27 Apr 2008 19:27:44 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:45416 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752034AbYD0X1n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Apr 2008 19:27:43 -0400
+Message-ID: <48150BDA.5070903@redhat.com>
+Date: Sun, 27 Apr 2008 16:27:22 -0700
+From: Ulrich Drepper <drepper@redhat.com>
+Organization: Red Hat, Inc.
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+MIME-Version: 1.0
+To: Davide Libenzi <davidel@xmailserver.org>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH] eventfd, signalfd, timerfd, epoll_create w/flags
+References: <200804272217.m3RMHZ0S021481@devserv.devel.redhat.com> <Pine.LNX.4.64.0804271614240.18184@alien.or.mcafeemobile.com>
+In-Reply-To: <Pine.LNX.4.64.0804271614240.18184@alien.or.mcafeemobile.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 27 Apr 2008 11:24:28 -0700 (PDT)
-Linus Torvalds <torvalds@linux-foundation.org> wrote:
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-> 
-> 
-> On Sun, 27 Apr 2008, Christoph Hellwig wrote:
-> > 
-> > As Linus mentioned the hint doesn't make any sense because gcc will
-> > get it wrong anyway.  In fact when you look at kernel code it tends
-> > to inline the everything and the kitchensink as long as there's just
-> > one caller and this bloat the stack but doesn't inline where it
-> > needs to.  Better don't try to mess with that and do it explicit.
-> 
-> The thing is, the "inline" vs "always_inline" thing _could_ make
-> sense, but sadly doesn't much.
-> 
-> Part of it is that gcc imnsho inlines too aggressively anyway in the 
-> absense of "inline",
+Davide Libenzi wrote:
 
+> Ok, I asked this myself for about ten minutes, than I gave up. But why 
+> sys_epoll_createp() instead of sys_epoll_create2()? There MUST be a reason 
+> to deviate from the standard of all the other ones...
 
-yup.. but this patch doesn't change that... the "no inline keyword" case
-is totally unaffected...
+I used the number at the end for syscalls which aren't visible at
+userlevel.  There they are useful indicating the number of arguments.
+At userlevel I personally find it less than optimal but I'd have no
+problem changing it to epoll_create2.
 
+- --
+➧ Ulrich Drepper ➧ Red Hat, Inc. ➧ 444 Castro St ➧ Mountain View, CA ❖
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
 
-(actually, other than some obscure commandline options, the only sane way to
-avoid gcc doing this too agressive is using -Os)
-
--- 
-If you want to reach me at my work email, use arjan@linux.intel.com
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+iD8DBQFIFQva2ijCOnn/RHQRApYwAKCL4Ff6tZv+VyeuIMN6NHV1cCBhIACgvQRJ
+YoZSN1dRdmarRhU0DzG0dbY=
+=0nln
+-----END PGP SIGNATURE-----
