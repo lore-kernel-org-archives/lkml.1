@@ -1,67 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762972AbYD0RvB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761980AbYD0R6O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762972AbYD0RvB (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Apr 2008 13:51:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757754AbYD0Ruw
+	id S1761980AbYD0R6O (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Apr 2008 13:58:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756585AbYD0R6F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Apr 2008 13:50:52 -0400
-Received: from www.tglx.de ([62.245.132.106]:57634 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756585AbYD0Ruv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Apr 2008 13:50:51 -0400
-Date: Sun, 27 Apr 2008 19:50:12 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
+	Sun, 27 Apr 2008 13:58:05 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:43528 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755743AbYD0R6E (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Apr 2008 13:58:04 -0400
+Date: Sun, 27 Apr 2008 13:57:54 -0400
+From: Christoph Hellwig <hch@infradead.org>
 To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [GIT pull] hrtimer fixes
-Message-ID: <alpine.LFD.1.10.0804271947000.3261@apollo.tec.linutronix.de>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+Cc: Adrian Bunk <bunk@kernel.org>, Sam Ravnborg <sam@ravnborg.org>,
+       linux arch <linux-arch@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       David Miller <davem@davemloft.net>
+Subject: Re: [PATCH] prepare kconfig inline optimization for all
+	architectures
+Message-ID: <20080427175754.GA28483@infradead.org>
+References: <20080427105100.GA14795@uranus.ravnborg.org> <20080427113158.GY2252@cs181133002.pp.htv.fi> <alpine.LFD.1.10.0804271002360.2896@woody.linux-foundation.org> <20080427172235.GA2252@cs181133002.pp.htv.fi> <alpine.LFD.1.10.0804271029130.2896@woody.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.1.10.0804271029130.2896@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
+On Sun, Apr 27, 2008 at 10:32:28AM -0700, Linus Torvalds wrote:
+> Modern versions of gcc may do the right thing. Note the two very important 
+> code-words: "modern" and "may".
 
-please pull hrtimer fixes from:
+It's even worse than that, that may not even get it right.  That's why
+we need always_inline to force it when we know we need it.  Now for the
+cases where we don't know know that we either need or really really
+strongly want it we should just not mark it inline at all.
 
-  ssh://master.kernel.org/pub/scm/linux/kernel/git/tglx/linux-2.6-hrt.git master
-
-This fixes a long standing hrtimer reprogramming bug.
-
-Thanks,
-	tglx
----
-Bodo Stroesser (1):
-      hrtimer: timeout too long when using HRTIMER_CB_SOFTIRQ
-
- kernel/hrtimer.c |   15 +++++++++++++--
- 1 files changed, 13 insertions(+), 2 deletions(-)
-diff --git a/kernel/hrtimer.c b/kernel/hrtimer.c
-index f78777a..e379ef0 100644
---- a/kernel/hrtimer.c
-+++ b/kernel/hrtimer.c
-@@ -1080,8 +1080,19 @@ static void run_hrtimer_pending(struct hrtimer_cpu_base *cpu_base)
- 			 * If the timer was rearmed on another CPU, reprogram
- 			 * the event device.
- 			 */
--			if (timer->base->first == &timer->node)
--				hrtimer_reprogram(timer, timer->base);
-+			struct hrtimer_clock_base *base = timer->base;
-+
-+			if (base->first == &timer->node &&
-+			    hrtimer_reprogram(timer, base)) {
-+				/*
-+				 * Timer is expired. Thus move it from tree to
-+				 * pending list again.
-+				 */
-+				__remove_hrtimer(timer, base,
-+						 HRTIMER_STATE_PENDING, 0);
-+				list_add_tail(&timer->cb_entry,
-+					      &base->cpu_base->cb_pending);
-+			}
- 		}
- 	}
- 	spin_unlock_irq(&cpu_base->lock);
