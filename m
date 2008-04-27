@@ -1,168 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753476AbYD0JkD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758064AbYD0J65@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753476AbYD0JkD (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Apr 2008 05:40:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757210AbYD0Jjv
+	id S1758064AbYD0J65 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Apr 2008 05:58:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753753AbYD0J6q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Apr 2008 05:39:51 -0400
-Received: from wa-out-1112.google.com ([209.85.146.178]:58942 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755152AbYD0Jju (ORCPT
+	Sun, 27 Apr 2008 05:58:46 -0400
+Received: from gateway.crfreenet.org ([81.92.146.254]:36000 "EHLO
+	mail.crfreenet.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753523AbYD0J6q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Apr 2008 05:39:50 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=eicYoTlHEU+ZA2WNJftomjTUAdb1D9N7/2XQapsNiS/J5c94jpfv4Cybluh7MNCxAjXGNRQhPqeCCMnsqw2Zcvg+NTaHxMPP+clt2vwq4b+XLgLTBLpVC/AqhCp6mV029ToabEG13ADOLYK9IKFzTwNDTR6No9NAFjrNqU4FmbE=
-Subject: [PATCH 2/2] audit: fix sparse shadowed variable warnings
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Al Viro <viro@ZenIV.linux.org.uk>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Sun, 27 Apr 2008 02:39:56 -0700
-Message-Id: <1209289196.14173.54.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+	Sun, 27 Apr 2008 05:58:46 -0400
+Date: Sun, 27 Apr 2008 11:58:44 +0200
+From: Ondrej Zajicek <santiago@crfreenet.org>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, rl@hellgate.ch
+Subject: Re: [PATCH] via-rhine: suspend/resume bugfix
+Message-ID: <20080427095843.GA28784@localhost.localdomain>
+References: <20080427071351.GA20561@localhost.localdomain> <4814406B.8000907@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4814406B.8000907@gmail.com>
+X-Operating-System: Debian GNU/Linux 4.0 (Etch)
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use msglen as the identifier.
-kernel/audit.c:724:10: warning: symbol 'len' shadows an earlier one
-kernel/audit.c:575:8: originally declared here
+On Sun, Apr 27, 2008 at 10:59:23AM +0200, Jiri Slaby wrote:
+> >+	/* Disable interrupts by clearing the interrupt mask. */
+> >+	iowrite16(0x0000, ioaddr + IntrEnable);
+> >+
+> >+	/* Stop the chip's Tx and Rx processes. */
+> >+	iowrite16(CmdStop, ioaddr + ChipCmd);
 
-Don't use ino_f to check the inode field at the end of the functions.
-kernel/auditfilter.c:429:22: warning: symbol 'f' shadows an earlier one
-kernel/auditfilter.c:420:21: originally declared here
-kernel/auditfilter.c:542:22: warning: symbol 'f' shadows an earlier one
-kernel/auditfilter.c:529:21: originally declared here
+> What about PCI posting?
 
-i always used as a counter for a for loop and initialized to zero before
-use.  Eliminate the inner i variables.
-kernel/auditsc.c:1295:8: warning: symbol 'i' shadows an earlier one
-kernel/auditsc.c:1152:6: originally declared here
-kernel/auditsc.c:1320:7: warning: symbol 'i' shadows an earlier one
-kernel/auditsc.c:1152:6: originally declared here
+Hmm, i will fix it. And i found that the patch might break
+wakeup-on-LAN. So please discard it.
 
-Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
----
-Sent originally on April 1, 2008
-
- kernel/audit.c       |   10 +++++-----
- kernel/auditfilter.c |   18 +++++++++---------
- kernel/auditsc.c     |    2 --
- 3 files changed, 14 insertions(+), 16 deletions(-)
-
-diff --git a/kernel/audit.c b/kernel/audit.c
-index b782b04..a4c36ed 100644
---- a/kernel/audit.c
-+++ b/kernel/audit.c
-@@ -721,21 +721,21 @@ static int audit_receive_msg(struct sk_buff *skb, struct nlmsghdr *nlh)
- 	case AUDIT_MAKE_EQUIV: {
- 		void *bufp = data;
- 		u32 sizes[2];
--		size_t len = nlmsg_len(nlh);
-+		size_t msglen = nlmsg_len(nlh);
- 		char *old, *new;
- 
- 		err = -EINVAL;
--		if (len < 2 * sizeof(u32))
-+		if (msglen < 2 * sizeof(u32))
- 			break;
- 		memcpy(sizes, bufp, 2 * sizeof(u32));
- 		bufp += 2 * sizeof(u32);
--		len -= 2 * sizeof(u32);
--		old = audit_unpack_string(&bufp, &len, sizes[0]);
-+		msglen -= 2 * sizeof(u32);
-+		old = audit_unpack_string(&bufp, &msglen, sizes[0]);
- 		if (IS_ERR(old)) {
- 			err = PTR_ERR(old);
- 			break;
- 		}
--		new = audit_unpack_string(&bufp, &len, sizes[1]);
-+		new = audit_unpack_string(&bufp, &msglen, sizes[1]);
- 		if (IS_ERR(new)) {
- 			err = PTR_ERR(new);
- 			kfree(old);
-diff --git a/kernel/auditfilter.c b/kernel/auditfilter.c
-index 0c63577..587c893 100644
---- a/kernel/auditfilter.c
-+++ b/kernel/auditfilter.c
-@@ -417,7 +417,7 @@ exit_err:
- static struct audit_entry *audit_rule_to_entry(struct audit_rule *rule)
- {
- 	struct audit_entry *entry;
--	struct audit_field *f;
-+	struct audit_field *ino_f;
- 	int err = 0;
- 	int i;
- 
-@@ -499,9 +499,9 @@ static struct audit_entry *audit_rule_to_entry(struct audit_rule *rule)
- 		}
- 	}
- 
--	f = entry->rule.inode_f;
--	if (f) {
--		switch(f->op) {
-+	ino_f = entry->rule.inode_f;
-+	if (ino_f) {
-+		switch(ino_f->op) {
- 		case AUDIT_NOT_EQUAL:
- 			entry->rule.inode_f = NULL;
- 		case AUDIT_EQUAL:
-@@ -526,7 +526,7 @@ static struct audit_entry *audit_data_to_entry(struct audit_rule_data *data,
- {
- 	int err = 0;
- 	struct audit_entry *entry;
--	struct audit_field *f;
-+	struct audit_field *ino_f;
- 	void *bufp;
- 	size_t remain = datasz - sizeof(struct audit_rule_data);
- 	int i;
-@@ -539,7 +539,7 @@ static struct audit_entry *audit_data_to_entry(struct audit_rule_data *data,
- 	bufp = data->buf;
- 	entry->rule.vers_ops = 2;
- 	for (i = 0; i < data->field_count; i++) {
--		struct audit_field *f = &entry->rule.fields[i];
-+		audit_field *f = &entry->rule.fields[i];
- 
- 		err = -EINVAL;
- 		if (!(data->fieldflags[i] & AUDIT_OPERATORS) ||
-@@ -654,9 +654,9 @@ static struct audit_entry *audit_data_to_entry(struct audit_rule_data *data,
- 		}
- 	}
- 
--	f = entry->rule.inode_f;
--	if (f) {
--		switch(f->op) {
-+	ino_f = entry->rule.inode_f;
-+	if (ino_f) {
-+		switch(ino_f->op) {
- 		case AUDIT_NOT_EQUAL:
- 			entry->rule.inode_f = NULL;
- 		case AUDIT_EQUAL:
-diff --git a/kernel/auditsc.c b/kernel/auditsc.c
-index 12e7183..16c3abd 100644
---- a/kernel/auditsc.c
-+++ b/kernel/auditsc.c
-@@ -1292,7 +1292,6 @@ static void audit_log_exit(struct audit_context *context, struct task_struct *ts
- 			break; }
- 
- 		case AUDIT_SOCKETCALL: {
--			int i;
- 			struct audit_aux_data_socketcall *axs = (void *)aux;
- 			audit_log_format(ab, "nargs=%d", axs->nargs);
- 			for (i=0; i<axs->nargs; i++)
-@@ -1317,7 +1316,6 @@ static void audit_log_exit(struct audit_context *context, struct task_struct *ts
- 
- 	for (aux = context->aux_pids; aux; aux = aux->next) {
- 		struct audit_aux_data_pids *axs = (void *)aux;
--		int i;
- 
- 		for (i = 0; i < axs->pid_count; i++)
- 			if (audit_log_pid_context(context, axs->target_pid[i],
 -- 
-1.5.5.rc1.135.g8527
+Elen sila lumenn' omentielvo
 
+Ondrej 'SanTiago' Zajicek (email: santiago@crfreenet.org)
+OpenPGP encrypted e-mails preferred (KeyID 0x11DEADC3, wwwkeys.pgp.net)
+"To err is human -- to blame it on a computer is even more so."
