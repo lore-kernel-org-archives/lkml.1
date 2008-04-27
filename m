@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762941AbYD0QBd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762257AbYD0QBI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762941AbYD0QBd (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Apr 2008 12:01:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761317AbYD0QAV
+	id S1762257AbYD0QBI (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Apr 2008 12:01:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758116AbYD0QAQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Apr 2008 12:00:21 -0400
-Received: from smtp.opengridcomputing.com ([209.198.142.2]:50121 "EHLO
+	Sun, 27 Apr 2008 12:00:16 -0400
+Received: from smtp.opengridcomputing.com ([209.198.142.2]:50110 "EHLO
 	smtp.opengridcomputing.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755963AbYD0QAL (ORCPT
+	by vger.kernel.org with ESMTP id S1756088AbYD0QAI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Apr 2008 12:00:11 -0400
+	Sun, 27 Apr 2008 12:00:08 -0400
 From: Steve Wise <swise@opengridcomputing.com>
-Subject: [PATCH 2.6.26 3/3] RDMA/cxgb3: Support peer-2-peer connection setup.
-Date: Sun, 27 Apr 2008 11:00:10 -0500
+Subject: [PATCH 2.6.26 1/3] RDMA/cxgb3: Correctly serialize peer abort path.
+Date: Sun, 27 Apr 2008 11:00:06 -0500
 To: rdreier@cisco.com
 Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
        general@lists.openfabrics.org, divy@chelsio.com, felix@chelsio.com
-Message-Id: <20080427160010.31018.67436.stgit@dell3.ogc.int>
+Message-Id: <20080427160006.31018.66715.stgit@dell3.ogc.int>
 In-Reply-To: <20080427155456.31018.22282.stgit@dell3.ogc.int>
 References: <20080427155456.31018.22282.stgit@dell3.ogc.int>
 Content-Type: text/plain; charset=utf-8; format=fixed
@@ -27,435 +27,280 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Open MPI, Intel MPI and other applications don't support the iWARP
-requirement that the client side send the first RDMA message.  This class
-of application connection setup is called peer-2-peer.  Typically once
-the connection is setup, _both_ sides want to send data.
+OpenMPI and other stress testing exposed a few bad bugs in handling
+aborts in the middle of a normal close.
 
-This patch enables supporting peer-2-peer over the chelsio rnic by
-enforcing this iWARP requirement in the driver itself as part of RDMA
-connection setup.
+- serialize abort reply and peer abort processing with
+disconnect processing
 
-Connection setup is extended, when peer2peer is 1, such that the MPA
-initiator will send a 0B Read (the RTR) just after connection setup.
-The MPA responder will suspend SQ processing until the RTR message is
-received and reply-to.
+- warn (and ignore) if ep timer is stopped when it wasn't running
 
-Design:
+- cleaned up disconnect path to correctly deal with aborting and dead
+endpoints
 
-- Add a module option, peer2peer, to enable this mode.
-
-- New firmware support for peer-2-peer mode:
-
-	- a new bits in the rdma_init WR to tell it to do peer-2-peer
-	and what form of RTR message to send or expect.
-
-	- process _all_ preposted recvs before moving the connection
-	into rdma mode.
-
-	- passive side: defer completing the rdma_init WR until all
-	pre-posted recvs are processed.  Suspend SQ processing until
-	the RTR is received.
-
-	- active side: expect and process the 0B read WR on offload tx
-	queue.	Defer completing the rdma_init WR until all pre-posted
-	recvs are processed.  Suspend SQ processing until the 0B read
-	WR is processed from the offload tx queue.
-
-- If peer2peer is set, driver posts 0B read request on offload tx queue just
-after posting the rdma_init wr to the offload tx queue.
-
-- Add cq poll logic to ignore unsolicitied read responses.
+- in iwch_modify_qp(), add a ref to the ep before releasing the qp lock if
+iwch_ep_disconnect() will be called.  The dref after calling disconnect.
 
 Signed-off-by: Steve Wise <swise@opengridcomputing.com>
 ---
 
- drivers/infiniband/hw/cxgb3/cxio_hal.c      |   18 ++++++-
- drivers/infiniband/hw/cxgb3/cxio_wr.h       |   21 +++++++-
- drivers/infiniband/hw/cxgb3/iwch_cm.c       |   68 +++++++++++++++++++--------
- drivers/infiniband/hw/cxgb3/iwch_cm.h       |    1 
- drivers/infiniband/hw/cxgb3/iwch_provider.h |    3 +
- drivers/infiniband/hw/cxgb3/iwch_qp.c       |   54 ++++++++++++++++++++-
- drivers/net/cxgb3/version.h                 |    2 -
- 7 files changed, 137 insertions(+), 30 deletions(-)
+ drivers/infiniband/hw/cxgb3/iwch_cm.c |   98 ++++++++++++++++++++++-----------
+ drivers/infiniband/hw/cxgb3/iwch_cm.h |    1 
+ drivers/infiniband/hw/cxgb3/iwch_qp.c |    6 ++
+ 3 files changed, 71 insertions(+), 34 deletions(-)
 
-diff --git a/drivers/infiniband/hw/cxgb3/cxio_hal.c b/drivers/infiniband/hw/cxgb3/cxio_hal.c
-index 03c5ff6..3de0fbf 100644
---- a/drivers/infiniband/hw/cxgb3/cxio_hal.c
-+++ b/drivers/infiniband/hw/cxgb3/cxio_hal.c
-@@ -456,7 +456,8 @@ void cxio_count_scqes(struct t3_cq *cq, struct t3_wq *wq, int *count)
- 	ptr = cq->sw_rptr;
- 	while (!Q_EMPTY(ptr, cq->sw_wptr)) {
- 		cqe = cq->sw_queue + (Q_PTR2IDX(ptr, cq->size_log2));
--		if ((SQ_TYPE(*cqe) || (CQE_OPCODE(*cqe) == T3_READ_RESP)) &&
-+		if ((SQ_TYPE(*cqe) ||
-+		     ((CQE_OPCODE(*cqe) == T3_READ_RESP) && wq->oldest_read)) &&
- 		    (CQE_QPID(*cqe) == wq->qpid))
- 			(*count)++;
- 		ptr++;
-@@ -829,7 +830,8 @@ int cxio_rdma_init(struct cxio_rdev *rdev_p, struct t3_rdma_init_attr *attr)
- 	wqe->mpaattrs = attr->mpaattrs;
- 	wqe->qpcaps = attr->qpcaps;
- 	wqe->ulpdu_size = cpu_to_be16(attr->tcp_emss);
--	wqe->flags = cpu_to_be32(attr->flags);
-+	wqe->rqe_count = cpu_to_be16(attr->rqe_count);
-+	wqe->flags_rtr_type = cpu_to_be16(attr->flags|V_RTR_TYPE(attr->rtr_type));
- 	wqe->ord = cpu_to_be32(attr->ord);
- 	wqe->ird = cpu_to_be32(attr->ird);
- 	wqe->qp_dma_addr = cpu_to_be64(attr->qp_dma_addr);
-@@ -1135,6 +1137,18 @@ int cxio_poll_cq(struct t3_wq *wq, struct t3_cq *cq, struct t3_cqe *cqe,
- 	if (RQ_TYPE(*hw_cqe) && (CQE_OPCODE(*hw_cqe) == T3_READ_RESP)) {
- 
- 		/*
-+		 * If this is an unsolicited read response, then the read
-+		 * was generated by the kernel driver as part of peer-2-peer
-+		 * connection setup.  So ignore the completion.
-+		 */
-+		if (!wq->oldest_read) {
-+			if (CQE_STATUS(*hw_cqe))
-+				wq->error = 1;
-+			ret = -1;
-+			goto skip_cqe;
-+		}
-+
-+		/*
- 		 * Don't write to the HWCQ, so create a new read req CQE
- 		 * in local memory.
- 		 */
-diff --git a/drivers/infiniband/hw/cxgb3/cxio_wr.h b/drivers/infiniband/hw/cxgb3/cxio_wr.h
-index 969d4d9..f1a25a8 100644
---- a/drivers/infiniband/hw/cxgb3/cxio_wr.h
-+++ b/drivers/infiniband/hw/cxgb3/cxio_wr.h
-@@ -278,6 +278,17 @@ enum t3_qp_caps {
- 	uP_RI_QP_STAG0_ENABLE = 0x10
- } __attribute__ ((packed));
- 
-+enum rdma_init_rtr_types {
-+	RTR_READ = 1,
-+	RTR_WRITE = 2,
-+	RTR_SEND = 3,
-+};
-+
-+#define S_RTR_TYPE	2
-+#define M_RTR_TYPE	0x3
-+#define V_RTR_TYPE(x)	((x) << S_RTR_TYPE)
-+#define G_RTR_TYPE(x)	((((x) >> S_RTR_TYPE)) & M_RTR_TYPE)
-+
- struct t3_rdma_init_attr {
- 	u32 tid;
- 	u32 qpid;
-@@ -293,7 +304,9 @@ struct t3_rdma_init_attr {
- 	u32 ird;
- 	u64 qp_dma_addr;
- 	u32 qp_dma_size;
--	u32 flags;
-+	enum rdma_init_rtr_types rtr_type;
-+	u16 flags;
-+	u16 rqe_count;
- 	u32 irs;
- };
- 
-@@ -309,8 +322,8 @@ struct t3_rdma_init_wr {
- 	u8 mpaattrs;		/* 5 */
- 	u8 qpcaps;
- 	__be16 ulpdu_size;
--	__be32 flags;		/* bits 31-1 - reservered */
--				/* bit     0 - set if RECV posted */
-+	__be16 flags_rtr_type;
-+	__be16 rqe_count;
- 	__be32 ord;		/* 6 */
- 	__be32 ird;
- 	__be64 qp_dma_addr;	/* 7 */
-@@ -324,7 +337,7 @@ struct t3_genbit {
- };
- 
- enum rdma_init_wr_flags {
--	RECVS_POSTED = (1<<0),
-+	MPA_INITIATOR = (1<<0),
- 	PRIV_QP = (1<<1),
- };
- 
 diff --git a/drivers/infiniband/hw/cxgb3/iwch_cm.c b/drivers/infiniband/hw/cxgb3/iwch_cm.c
-index 1627bff..f4f3c9e 100644
+index 99f2f2a..1627bff 100644
 --- a/drivers/infiniband/hw/cxgb3/iwch_cm.c
 +++ b/drivers/infiniband/hw/cxgb3/iwch_cm.c
-@@ -63,6 +63,10 @@ static char *states[] = {
- 	NULL,
- };
- 
-+int peer2peer = 0;
-+module_param(peer2peer, int, 0644);
-+MODULE_PARM_DESC(peer2peer, "Support peer2peer ULPs (default=0)");
-+
- static int ep_timeout_secs = 10;
- module_param(ep_timeout_secs, int, 0644);
- MODULE_PARM_DESC(ep_timeout_secs, "CM Endpoint operation timeout "
-@@ -514,7 +518,7 @@ static void send_mpa_req(struct iwch_ep *ep, struct sk_buff *skb)
- 	skb_reset_transport_header(skb);
- 	len = skb->len;
- 	req = (struct tx_data_wr *) skb_push(skb, sizeof(*req));
--	req->wr_hi = htonl(V_WR_OP(FW_WROPCODE_OFLD_TX_DATA));
-+	req->wr_hi = htonl(V_WR_OP(FW_WROPCODE_OFLD_TX_DATA)|F_WR_COMPL);
- 	req->wr_lo = htonl(V_WR_TID(ep->hwtid));
- 	req->len = htonl(len);
- 	req->param = htonl(V_TX_PORT(ep->l2t->smt_idx) |
-@@ -565,7 +569,7 @@ static int send_mpa_reject(struct iwch_ep *ep, const void *pdata, u8 plen)
- 	set_arp_failure_handler(skb, arp_failure_discard);
- 	skb_reset_transport_header(skb);
- 	req = (struct tx_data_wr *) skb_push(skb, sizeof(*req));
--	req->wr_hi = htonl(V_WR_OP(FW_WROPCODE_OFLD_TX_DATA));
-+	req->wr_hi = htonl(V_WR_OP(FW_WROPCODE_OFLD_TX_DATA)|F_WR_COMPL);
- 	req->wr_lo = htonl(V_WR_TID(ep->hwtid));
- 	req->len = htonl(mpalen);
- 	req->param = htonl(V_TX_PORT(ep->l2t->smt_idx) |
-@@ -617,7 +621,7 @@ static int send_mpa_reply(struct iwch_ep *ep, const void *pdata, u8 plen)
- 	skb_reset_transport_header(skb);
- 	len = skb->len;
- 	req = (struct tx_data_wr *) skb_push(skb, sizeof(*req));
--	req->wr_hi = htonl(V_WR_OP(FW_WROPCODE_OFLD_TX_DATA));
-+	req->wr_hi = htonl(V_WR_OP(FW_WROPCODE_OFLD_TX_DATA)|F_WR_COMPL);
- 	req->wr_lo = htonl(V_WR_TID(ep->hwtid));
- 	req->len = htonl(len);
- 	req->param = htonl(V_TX_PORT(ep->l2t->smt_idx) |
-@@ -885,6 +889,7 @@ static void process_mpa_reply(struct iwch_ep *ep, struct sk_buff *skb)
- 	 * the MPA header is valid.
- 	 */
- 	state_set(&ep->com, FPDU_MODE);
-+	ep->mpa_attr.initiator = 1;
- 	ep->mpa_attr.crc_enabled = (mpa->flags & MPA_CRC) | crc_enabled ? 1 : 0;
- 	ep->mpa_attr.recv_marker_enabled = markers_enabled;
- 	ep->mpa_attr.xmit_marker_enabled = mpa->flags & MPA_MARKERS ? 1 : 0;
-@@ -907,8 +912,14 @@ static void process_mpa_reply(struct iwch_ep *ep, struct sk_buff *skb)
- 	/* bind QP and TID with INIT_WR */
- 	err = iwch_modify_qp(ep->com.qp->rhp,
- 			     ep->com.qp, mask, &attrs, 1);
--	if (!err)
--		goto out;
-+	if (err)
-+		goto err;
-+
-+	if (peer2peer && iwch_rqes_posted(ep->com.qp) == 0) {
-+		iwch_post_zb_read(ep->com.qp);
+@@ -125,6 +125,12 @@ static void start_ep_timer(struct iwch_ep *ep)
+ static void stop_ep_timer(struct iwch_ep *ep)
+ {
+ 	PDBG("%s ep %p\n", __FUNCTION__, ep);
++	if (!timer_pending(&ep->timer)) {
++		printk(KERN_ERR "%s timer stopped when its not running!  ep %p state %u\n",
++			__FUNCTION__, ep, ep->com.state);
++		WARN_ON(1);
++		return;
 +	}
-+
-+	goto out;
- err:
- 	abort_connection(ep, skb, GFP_KERNEL);
- out:
-@@ -1001,6 +1012,7 @@ static void process_mpa_request(struct iwch_ep *ep, struct sk_buff *skb)
- 	 * If we get here we have accumulated the entire mpa
- 	 * start reply message including private data.
- 	 */
-+	ep->mpa_attr.initiator = 0;
- 	ep->mpa_attr.crc_enabled = (mpa->flags & MPA_CRC) | crc_enabled ? 1 : 0;
- 	ep->mpa_attr.recv_marker_enabled = markers_enabled;
- 	ep->mpa_attr.xmit_marker_enabled = mpa->flags & MPA_MARKERS ? 1 : 0;
-@@ -1071,17 +1083,33 @@ static int tx_ack(struct t3cdev *tdev, struct sk_buff *skb, void *ctx)
+ 	del_timer_sync(&ep->timer);
+ 	put_ep(&ep->com);
+ }
+@@ -1083,8 +1089,11 @@ static int tx_ack(struct t3cdev *tdev, struct sk_buff *skb, void *ctx)
+ static int abort_rpl(struct t3cdev *tdev, struct sk_buff *skb, void *ctx)
+ {
+ 	struct iwch_ep *ep = ctx;
++	unsigned long flags;
++	int release = 0;
  
- 	PDBG("%s ep %p credits %u\n", __FUNCTION__, ep, credits);
+ 	PDBG("%s ep %p\n", __FUNCTION__, ep);
++	BUG_ON(!ep);
  
--	if (credits == 0)
-+	if (credits == 0) {
-+		PDBG(KERN_ERR "%s 0 credit ack  ep %p state %u\n",
-+			__FUNCTION__, ep, state_read(&ep->com));
+ 	/*
+ 	 * We get 2 abort replies from the HW.  The first one must
+@@ -1095,9 +1104,22 @@ static int abort_rpl(struct t3cdev *tdev, struct sk_buff *skb, void *ctx)
  		return CPL_RET_BUF_DONE;
-+	}
-+
- 	BUG_ON(credits != 1);
--	BUG_ON(ep->mpa_skb == NULL);
--	kfree_skb(ep->mpa_skb);
--	ep->mpa_skb = NULL;
- 	dst_confirm(ep->dst);
--	if (state_read(&ep->com) == MPA_REP_SENT) {
--		ep->com.rpl_done = 1;
--		PDBG("waking up ep %p\n", ep);
--		wake_up(&ep->com.waitq);
-+	if (!ep->mpa_skb) {
-+		PDBG("%s rdma_init wr_ack ep %p state %u\n",
-+			__FUNCTION__, ep, state_read(&ep->com));
-+		if (ep->mpa_attr.initiator) {
-+			PDBG("%s initiator ep %p state %u\n",
-+				__FUNCTION__, ep, state_read(&ep->com));
-+			if (peer2peer)
-+				iwch_post_zb_read(ep->com.qp);
-+		} else {
-+			PDBG("%s responder ep %p state %u\n",
-+				__FUNCTION__, ep, state_read(&ep->com));
-+			ep->com.rpl_done = 1;
-+			wake_up(&ep->com.waitq);
-+		}
-+	} else {
-+		PDBG("%s lsm ack ep %p state %u freeing skb\n",
-+			__FUNCTION__, ep, state_read(&ep->com));
-+		kfree_skb(ep->mpa_skb);
-+		ep->mpa_skb = NULL;
  	}
+ 
+-	close_complete_upcall(ep);
+-	state_set(&ep->com, DEAD);
+-	release_ep_resources(ep);
++	spin_lock_irqsave(&ep->com.lock, flags);
++	switch (ep->com.state) {
++	case ABORTING:
++		close_complete_upcall(ep);
++		__state_set(&ep->com, DEAD);
++		release = 1;
++		break;
++	default:
++		printk(KERN_ERR "%s ep %p state %d\n",
++		     __FUNCTION__, ep, ep->com.state);
++		break;
++	}
++	spin_unlock_irqrestore(&ep->com.lock, flags);
++
++	if (release)
++		release_ep_resources(ep);
  	return CPL_RET_BUF_DONE;
  }
-@@ -1795,16 +1823,19 @@ int iwch_accept_cr(struct iw_cm_id *cm_id, struct iw_cm_conn_param *conn_param)
- 	if (err)
- 		goto err;
  
-+	/* if needed, wait for wr_ack */
-+	if (iwch_rqes_posted(qp)) {
-+		wait_event(ep->com.waitq, ep->com.rpl_done);
-+		err = ep->com.rpl_err;
-+		if (err)
-+			goto err;
-+	}
-+
- 	err = send_mpa_reply(ep, conn_param->private_data,
- 			     conn_param->private_data_len);
- 	if (err)
- 		goto err;
+@@ -1470,7 +1492,8 @@ static int peer_abort(struct t3cdev *tdev, struct sk_buff *skb, void *ctx)
+ 	struct sk_buff *rpl_skb;
+ 	struct iwch_qp_attributes attrs;
+ 	int ret;
+-	int state;
++	int release = 0;
++	unsigned long flags;
  
--	/* wait for wr_ack */
--	wait_event(ep->com.waitq, ep->com.rpl_done);
--	err = ep->com.rpl_err;
--	if (err)
--		goto err;
+ 	if (is_neg_adv_abort(req->status)) {
+ 		PDBG("%s neg_adv_abort ep %p tid %d\n", __FUNCTION__, ep,
+@@ -1488,9 +1511,9 @@ static int peer_abort(struct t3cdev *tdev, struct sk_buff *skb, void *ctx)
+ 		return CPL_RET_BUF_DONE;
+ 	}
  
- 	state_set(&ep->com, FPDU_MODE);
- 	established_upcall(ep);
-@@ -2033,7 +2064,6 @@ int iwch_ep_disconnect(struct iwch_ep *ep, int abrupt, gfp_t gfp)
- 		BUG();
+-	state = state_read(&ep->com);
+-	PDBG("%s ep %p state %u\n", __FUNCTION__, ep, state);
+-	switch (state) {
++	spin_lock_irqsave(&ep->com.lock, flags);
++	PDBG("%s ep %p state %u\n", __FUNCTION__, ep, ep->com.state);
++	switch (ep->com.state) {
+ 	case CONNECTING:
+ 		break;
+ 	case MPA_REQ_WAIT:
+@@ -1536,21 +1559,25 @@ static int peer_abort(struct t3cdev *tdev, struct sk_buff *skb, void *ctx)
+ 		break;
+ 	case DEAD:
+ 		PDBG("%s PEER_ABORT IN DEAD STATE!!!!\n", __FUNCTION__);
++		spin_unlock_irqrestore(&ep->com.lock, flags);
+ 		return CPL_RET_BUF_DONE;
+ 	default:
+ 		BUG_ON(1);
  		break;
  	}
--out:
+ 	dst_confirm(ep->dst);
++	if (ep->com.state != ABORTING) {
++		__state_set(&ep->com, DEAD);
++		release = 1;
++	}
++	spin_unlock_irqrestore(&ep->com.lock, flags);
+ 
+ 	rpl_skb = get_skb(skb, sizeof(*rpl), GFP_KERNEL);
+ 	if (!rpl_skb) {
+ 		printk(KERN_ERR MOD "%s - cannot allocate skb!\n",
+ 		       __FUNCTION__);
+-		dst_release(ep->dst);
+-		l2t_release(L2DATA(ep->com.tdev), ep->l2t);
+-		put_ep(&ep->com);
+-		return CPL_RET_BUF_DONE;
++		release = 1;
++		goto out;
+ 	}
+ 	rpl_skb->priority = CPL_PRIORITY_DATA;
+ 	rpl = (struct cpl_abort_rpl *) skb_put(rpl_skb, sizeof(*rpl));
+@@ -1559,10 +1586,9 @@ static int peer_abort(struct t3cdev *tdev, struct sk_buff *skb, void *ctx)
+ 	OPCODE_TID(rpl) = htonl(MK_OPCODE_TID(CPL_ABORT_RPL, ep->hwtid));
+ 	rpl->cmd = CPL_ABORT_NO_RST;
+ 	cxgb3_ofld_send(ep->com.tdev, rpl_skb);
+-	if (state != ABORTING) {
+-		state_set(&ep->com, DEAD);
++out:
++	if (release)
+ 		release_ep_resources(ep);
+-	}
+ 	return CPL_RET_BUF_DONE;
+ }
+ 
+@@ -1661,15 +1687,18 @@ static void ep_timeout(unsigned long arg)
+ 	struct iwch_ep *ep = (struct iwch_ep *)arg;
+ 	struct iwch_qp_attributes attrs;
+ 	unsigned long flags;
++	int abort=1;
+ 
+ 	spin_lock_irqsave(&ep->com.lock, flags);
+ 	PDBG("%s ep %p tid %u state %d\n", __FUNCTION__, ep, ep->hwtid,
+ 	     ep->com.state);
+ 	switch (ep->com.state) {
+ 	case MPA_REQ_SENT:
++		__state_set(&ep->com, ABORTING);
+ 		connect_reply_upcall(ep, -ETIMEDOUT);
+ 		break;
+ 	case MPA_REQ_WAIT:
++		__state_set(&ep->com, ABORTING);
+ 		break;
+ 	case CLOSING:
+ 	case MORIBUND:
+@@ -1679,13 +1708,17 @@ static void ep_timeout(unsigned long arg)
+ 				     ep->com.qp, IWCH_QP_ATTR_NEXT_STATE,
+ 				     &attrs, 1);
+ 		}
++		__state_set(&ep->com, ABORTING);
+ 		break;
+ 	default:
+-		BUG();
++		printk(KERN_ERR "%s unexpected state ep %p state %u\n",
++			__FUNCTION__, ep, ep->com.state);
++		WARN_ON(1);
++		abort=0;
+ 	}
+-	__state_set(&ep->com, CLOSING);
  	spin_unlock_irqrestore(&ep->com.lock, flags);
- 	if (close) {
- 		if (abrupt)
+-	abort_connection(ep, NULL, GFP_ATOMIC);
++	if (abort)
++		abort_connection(ep, NULL, GFP_ATOMIC);
+ 	put_ep(&ep->com);
+ }
+ 
+@@ -1968,34 +2001,33 @@ int iwch_ep_disconnect(struct iwch_ep *ep, int abrupt, gfp_t gfp)
+ 	PDBG("%s ep %p state %s, abrupt %d\n", __FUNCTION__, ep,
+ 	     states[ep->com.state], abrupt);
+ 
+-	if (ep->com.state == DEAD) {
+-		PDBG("%s already dead ep %p\n", __FUNCTION__, ep);
+-		goto out;
+-	}
+-
+-	if (abrupt) {
+-		if (ep->com.state != ABORTING) {
+-			ep->com.state = ABORTING;
+-			close = 1;
+-		}
+-		goto out;
+-	}
+-
+ 	switch (ep->com.state) {
+ 	case MPA_REQ_WAIT:
+ 	case MPA_REQ_SENT:
+ 	case MPA_REQ_RCVD:
+ 	case MPA_REP_SENT:
+ 	case FPDU_MODE:
+-		start_ep_timer(ep);
+-		ep->com.state = CLOSING;
+ 		close = 1;
++		if (abrupt)
++			ep->com.state = ABORTING;
++		else {
++			ep->com.state = CLOSING;
++			start_ep_timer(ep);
++		}
+ 		break;
+ 	case CLOSING:
+-		ep->com.state = MORIBUND;
+ 		close = 1;
++		if (abrupt) {
++			stop_ep_timer(ep);
++			ep->com.state = ABORTING;
++		} else
++			ep->com.state = MORIBUND;
+ 		break;
+ 	case MORIBUND:
++	case ABORTING:
++	case DEAD:
++		PDBG("%s ignoring disconnect ep %p state %u\n",
++		     __FUNCTION__, ep, ep->com.state);
+ 		break;
+ 	default:
+ 		BUG();
 diff --git a/drivers/infiniband/hw/cxgb3/iwch_cm.h b/drivers/infiniband/hw/cxgb3/iwch_cm.h
-index a3fb959..c0978a8 100644
+index 6107e7c..a3fb959 100644
 --- a/drivers/infiniband/hw/cxgb3/iwch_cm.h
 +++ b/drivers/infiniband/hw/cxgb3/iwch_cm.h
-@@ -226,5 +226,6 @@ int iwch_ep_redirect(void *ctx, struct dst_entry *old, struct dst_entry *new, st
+@@ -56,6 +56,7 @@
+ #define put_ep(ep) { \
+ 	PDBG("put_ep (via %s:%u) ep %p refcnt %d\n", __FUNCTION__, __LINE__,  \
+ 	     ep, atomic_read(&((ep)->kref.refcount))); \
++	WARN_ON(atomic_read(&((ep)->kref.refcount)) < 1); \
+ 	kref_put(&((ep)->kref), __free_ep); \
+ }
  
- int __init iwch_cm_init(void);
- void __exit iwch_cm_term(void);
-+extern int peer2peer;
- 
- #endif				/* _IWCH_CM_H_ */
-diff --git a/drivers/infiniband/hw/cxgb3/iwch_provider.h b/drivers/infiniband/hw/cxgb3/iwch_provider.h
-index 48833f3..ad77f05 100644
---- a/drivers/infiniband/hw/cxgb3/iwch_provider.h
-+++ b/drivers/infiniband/hw/cxgb3/iwch_provider.h
-@@ -118,6 +118,7 @@ enum IWCH_QP_FLAGS {
- };
- 
- struct iwch_mpa_attributes {
-+	u8 initiator;
- 	u8 recv_marker_enabled;
- 	u8 xmit_marker_enabled;	/* iWARP: enable inbound Read Resp. */
- 	u8 crc_enabled;
-@@ -322,6 +323,7 @@ enum iwch_qp_query_flags {
- 	IWCH_QP_QUERY_TEST_USERWRITE = 0x32	/* Test special */
- };
- 
-+u16 iwch_rqes_posted(struct iwch_qp *qhp);
- int iwch_post_send(struct ib_qp *ibqp, struct ib_send_wr *wr,
- 		      struct ib_send_wr **bad_wr);
- int iwch_post_receive(struct ib_qp *ibqp, struct ib_recv_wr *wr,
-@@ -331,6 +333,7 @@ int iwch_bind_mw(struct ib_qp *qp,
- 			     struct ib_mw_bind *mw_bind);
- int iwch_poll_cq(struct ib_cq *ibcq, int num_entries, struct ib_wc *wc);
- int iwch_post_terminate(struct iwch_qp *qhp, struct respQ_msg_t *rsp_msg);
-+int iwch_post_zb_read(struct iwch_qp *qhp);
- int iwch_register_device(struct iwch_dev *dev);
- void iwch_unregister_device(struct iwch_dev *dev);
- int iwch_quiesce_qps(struct iwch_cq *chp);
 diff --git a/drivers/infiniband/hw/cxgb3/iwch_qp.c b/drivers/infiniband/hw/cxgb3/iwch_qp.c
-index c02bb94..b0e5aea 100644
+index ea2cdd7..c02bb94 100644
 --- a/drivers/infiniband/hw/cxgb3/iwch_qp.c
 +++ b/drivers/infiniband/hw/cxgb3/iwch_qp.c
-@@ -586,6 +586,36 @@ static inline void build_term_codes(struct respQ_msg_t *rsp_msg,
- 	}
- }
- 
-+int iwch_post_zb_read(struct iwch_qp *qhp)
-+{
-+	union t3_wr *wqe;
-+	struct sk_buff *skb;
-+	u8 flit_cnt = sizeof(struct t3_rdma_read_wr) >> 3;
-+
-+	PDBG("%s enter\n", __FUNCTION__);
-+	skb = alloc_skb(40, GFP_KERNEL);
-+	if (!skb) {
-+		printk(KERN_ERR "%s cannot send zb_read!!\n", __FUNCTION__);
-+		return -ENOMEM;
+@@ -832,6 +832,7 @@ int iwch_modify_qp(struct iwch_dev *rhp, struct iwch_qp *qhp,
+ 				abort=0;
+ 				disconnect = 1;
+ 				ep = qhp->ep;
++				get_ep(&ep->com);
+ 			}
+ 			flush_qp(qhp, &flag);
+ 			break;
+@@ -848,6 +849,7 @@ int iwch_modify_qp(struct iwch_dev *rhp, struct iwch_qp *qhp,
+ 				abort=1;
+ 				disconnect = 1;
+ 				ep = qhp->ep;
++				get_ep(&ep->com);
+ 			}
+ 			goto err;
+ 			break;
+@@ -929,8 +931,10 @@ out:
+ 	 * on the EP.  This can be a normal close (RTS->CLOSING) or
+ 	 * an abnormal close (RTS/CLOSING->ERROR).
+ 	 */
+-	if (disconnect)
++	if (disconnect) {
+ 		iwch_ep_disconnect(ep, abort, GFP_KERNEL);
++		put_ep(&ep->com);
 +	}
-+	wqe = (union t3_wr *)skb_put(skb, sizeof(struct t3_rdma_read_wr));
-+	memset(wqe, 0, sizeof(struct t3_rdma_read_wr));
-+	wqe->read.rdmaop = T3_READ_REQ;
-+	wqe->read.reserved[0] = 0;
-+	wqe->read.reserved[1] = 0;
-+	wqe->read.reserved[2] = 0;
-+	wqe->read.rem_stag = cpu_to_be32(1);
-+	wqe->read.rem_to = cpu_to_be64(1);
-+	wqe->read.local_stag = cpu_to_be32(1);
-+	wqe->read.local_len = cpu_to_be32(0);
-+	wqe->read.local_to = cpu_to_be64(1);
-+	wqe->send.wrh.op_seop_flags = cpu_to_be32(V_FW_RIWR_OP(T3_WR_READ));
-+	wqe->send.wrh.gen_tid_len = cpu_to_be32(V_FW_RIWR_TID(qhp->ep->hwtid)|
-+						V_FW_RIWR_LEN(flit_cnt));
-+	skb->priority = CPL_PRIORITY_DATA;
-+	return cxgb3_ofld_send(qhp->rhp->rdev.t3cdev_p, skb);
-+}
-+
- /*
-  * This posts a TERMINATE with layer=RDMA, type=catastrophic.
-  */
-@@ -671,11 +701,18 @@ static void flush_qp(struct iwch_qp *qhp, unsigned long *flag)
  
- 
- /*
-- * Return non zero if at least one RECV was pre-posted.
-+ * Return count of RECV WRs posted
-  */
--static int rqes_posted(struct iwch_qp *qhp)
-+u16 iwch_rqes_posted(struct iwch_qp *qhp)
- {
--	return fw_riwrh_opcode((struct fw_riwrh *)qhp->wq.queue) == T3_WR_RCV;
-+	union t3_wr *wqe = qhp->wq.queue;
-+	u16 count = 0;
-+	while ((count+1) != 0 && fw_riwrh_opcode((struct fw_riwrh *)wqe) == T3_WR_RCV) {
-+		count++;
-+		wqe++;
-+	}
-+	PDBG("%s qhp %p count %u\n", __FUNCTION__, qhp, count);
-+	return count;
- }
- 
- static int rdma_init(struct iwch_dev *rhp, struct iwch_qp *qhp,
-@@ -716,8 +753,17 @@ static int rdma_init(struct iwch_dev *rhp, struct iwch_qp *qhp,
- 	init_attr.ird = qhp->attr.max_ird;
- 	init_attr.qp_dma_addr = qhp->wq.dma_addr;
- 	init_attr.qp_dma_size = (1UL << qhp->wq.size_log2);
--	init_attr.flags = rqes_posted(qhp) ? RECVS_POSTED : 0;
-+	init_attr.rqe_count = iwch_rqes_posted(qhp);
-+	init_attr.flags = qhp->attr.mpa_attr.initiator ? MPA_INITIATOR : 0;
- 	init_attr.flags |= capable(CAP_NET_BIND_SERVICE) ? PRIV_QP : 0;
-+	if (peer2peer) {
-+		init_attr.rtr_type = RTR_READ;
-+		if (init_attr.ord == 0 && qhp->attr.mpa_attr.initiator)
-+			init_attr.ord = 1;
-+		if (init_attr.ird == 0 && !qhp->attr.mpa_attr.initiator)
-+			init_attr.ird = 1;
-+	} else
-+		init_attr.rtr_type = 0;
- 	init_attr.irs = qhp->ep->rcv_seq;
- 	PDBG("%s init_attr.rq_addr 0x%x init_attr.rq_size = %d "
- 	     "flags 0x%x qpcaps 0x%x\n", __FUNCTION__,
-diff --git a/drivers/net/cxgb3/version.h b/drivers/net/cxgb3/version.h
-index 229303f..a0177fc 100644
---- a/drivers/net/cxgb3/version.h
-+++ b/drivers/net/cxgb3/version.h
-@@ -38,7 +38,7 @@
- #define DRV_VERSION "1.0-ko"
- 
- /* Firmware version */
--#define FW_VERSION_MAJOR 5
-+#define FW_VERSION_MAJOR 6
- #define FW_VERSION_MINOR 0
- #define FW_VERSION_MICRO 0
- #endif				/* __CHELSIO_VERSION_H */
+ 	/*
+ 	 * If free is 1, then we've disassociated the EP from the QP
