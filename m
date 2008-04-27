@@ -1,44 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757502AbYD0JVi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758199AbYD0JZW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757502AbYD0JVi (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Apr 2008 05:21:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752300AbYD0JVb
+	id S1758199AbYD0JZW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Apr 2008 05:25:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752998AbYD0JZJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Apr 2008 05:21:31 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:36852
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751756AbYD0JVa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Apr 2008 05:21:30 -0400
-Date: Sun, 27 Apr 2008 02:21:30 -0700 (PDT)
-Message-Id: <20080427.022130.193697611.davem@davemloft.net>
-To: airlied@gmail.com
-Cc: steve@xemacs.org, mingo@elte.hu, linux-kernel@vger.kernel.org,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       viro@zeniv.linux.org.uk
-Subject: Re: CONFIG_OPTIMIZE_INLINING
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <21d7e9970804270216rcaf2462v4ee6f34cf9f9aa45@mail.gmail.com>
-References: <20080426.230807.144232984.davem@davemloft.net>
-	<ed10ee420804270210y219ac4dbne858906233ab9691@mail.gmail.com>
-	<21d7e9970804270216rcaf2462v4ee6f34cf9f9aa45@mail.gmail.com>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Sun, 27 Apr 2008 05:25:09 -0400
+Received: from ns.store20.com ([212.7.7.16]:41886 "EHLO store20.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752300AbYD0JZI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Apr 2008 05:25:08 -0400
+Subject: [REGRESSION] Trouble seeing some wireless networks in latest git
+From: Priit Laes <plaes@plaes.org>
+To: linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-wireless <linux-wireless@vger.kernel.org>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
+Date: Sun, 27 Apr 2008 12:24:58 +0300
+Message-Id: <1209288298.3851.12.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: "Dave Airlie" <airlied@gmail.com>
-Date: Sun, 27 Apr 2008 19:16:31 +1000
+Hey,
 
-> just because something lands in the core kernel tree doesn't mean it
-> is actually perfect, far from it..
+There seems to be some kind of regression in wireless drivers that makes
+it not possible to see some wireless networks.
 
-This is entirely missing the point.
+This can be seen with both b43 and iwl3945 drivers.
 
-We get patches reviewed before they hit the tree, not afterwards.
+Using Kismet wireless scanner these networks were visible under latest
+git.
+All the networks rendered invisible seem to be from channels: 1 (one
+network visible), 3, 8, 12 and 13. Visible networks are in channels 1,
+4, 6, 9 and 11.
 
-Ingo is making that impossible.
+Any hints how to debug this further?
 
+--
+Priit
