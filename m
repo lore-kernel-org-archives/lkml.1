@@ -1,71 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762276AbYD0RDR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761882AbYD0RH1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762276AbYD0RDR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Apr 2008 13:03:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755038AbYD0RDL
+	id S1761882AbYD0RH1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Apr 2008 13:07:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754740AbYD0RHV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Apr 2008 13:03:11 -0400
-Received: from smtp7-g19.free.fr ([212.27.42.64]:39543 "EHLO smtp7-g19.free.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754609AbYD0RDK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Apr 2008 13:03:10 -0400
-Message-ID: <464d01c8a888$3a1bfaf0$f9b5a8c0@pii350>
-From: "Gilles Espinasse" <g.esp@free.fr>
-To: "Pavel Machek" <pavel@ucw.cz>, "Tomasz Chmielewski" <mangoo@wpkg.org>
-Cc: "LKML" <linux-kernel@vger.kernel.org>, <jbarnold@MIT.EDU>,
-       <francois.cami@free.fr>, "Andi Kleen" <andi@firstfloor.org>,
-       <mail@earthworm.de>
-References: <481098A4.50107@wpkg.org> <20080427101659.GD3891@ucw.cz>
-Subject: Re: A system for rebootless kernel security updates
-Date: Sun, 27 Apr 2008 19:00:41 +0200
+	Sun, 27 Apr 2008 13:07:21 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:51917 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753825AbYD0RHU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Apr 2008 13:07:20 -0400
+Date: Sun, 27 Apr 2008 10:06:41 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Adrian Bunk <bunk@kernel.org>
+cc: Sam Ravnborg <sam@ravnborg.org>, linux arch <linux-arch@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       David Miller <davem@davemloft.net>
+Subject: Re: [PATCH] prepare kconfig inline optimization for all
+ architectures
+In-Reply-To: <20080427113158.GY2252@cs181133002.pp.htv.fi>
+Message-ID: <alpine.LFD.1.10.0804271002360.2896@woody.linux-foundation.org>
+References: <20080427105100.GA14795@uranus.ravnborg.org> <20080427113158.GY2252@cs181133002.pp.htv.fi>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-X-Priority: 3
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook Express 6.00.2800.1914
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2800.1914
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
------ Original Message ----- 
-From: "Pavel Machek" <pavel@ucw.cz>
-To: "Tomasz Chmielewski" <mangoo@wpkg.org>
-Cc: "LKML" <linux-kernel@vger.kernel.org>; <jbarnold@MIT.EDU>;
-<francois.cami@free.fr>; "Andi Kleen" <andi@firstfloor.org>;
-<mail@earthworm.de>
-Sent: Sunday, April 27, 2008 12:17 PM
-Subject: Re: A system for rebootless kernel security updates
 
+On Sun, 27 Apr 2008, Adrian Bunk wrote:
+> 
+> My opinion on this is still:
+> "OPTIMIZE" means "work around bugs in the kernel".
 
-> On Thu 2008-04-24 16:26:44, Tomasz Chmielewski wrote:
-> > Jeff Arnold wrote:
-> >
-> > >I've put together an automatic system for applying
-> > >kernel security patches to the Linux kernel without
-> > >rebooting it, and I wanted to share this system with
-> > >the community in case others find it useful or
-> > >interesting.
-> >
-> > Hmm, the idea seem to be patented by Microsoft, i.e.
-> > this patent from December 2002:
-> >
-> > http://www.google.com/patents?id=cVyWAAAAEBAJ&dq=hotpatching
-> >
-> > (and other patents by Microsoft if you search for
-> > "hotpatching").
->
-> ...so US will not be able to fix security holes without reboot, good.
-> Perhaps they fix their stupid laws after next worm outbreak...
->
-I have hot-patched on PDP-11 without reboot over the phone line many years
-before Microsoft patent.
-In the time of MS patent, the machines I care were no more running.
+No.
 
-Just another stupid patent.
+It means that
 
-Gilles
+ - gcc used to (long ago) always honor "inline", and we had kernel code 
+   that depended on that in various ways (ie required that there was no 
+   return etc).
+
+   We've been mostly replacing the ones we know about with 
+   "__always_inline", but there may be some that remain. We'll find out, I 
+   guess.
+
+ - gcc was a total and utter piece of horrible crap in the inlining 
+   department, doign insane things and changing their documentation to 
+   match the new behaviour (and some people then claimed that it was 
+   always documented that way).
+
+   It would not inline big functions even when they statically collapsed 
+   to nothing, etc.
+
+As a result, we really couldn't afford to let gcc make any inlining 
+decisions, because the compiler was simply *broken*.
+
+			Linus
 
