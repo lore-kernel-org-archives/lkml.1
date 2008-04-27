@@ -1,46 +1,198 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764181AbYD0UPK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764493AbYD0UPi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764181AbYD0UPK (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Apr 2008 16:15:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761900AbYD0UO4
+	id S1764493AbYD0UPi (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Apr 2008 16:15:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764098AbYD0UPF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Apr 2008 16:14:56 -0400
-Received: from rv-out-0708.google.com ([209.85.198.247]:34848 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1761527AbYD0UOz (ORCPT
+	Sun, 27 Apr 2008 16:15:05 -0400
+Received: from nf-out-0910.google.com ([64.233.182.189]:41758 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763537AbYD0UPD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Apr 2008 16:14:55 -0400
+	Sun, 27 Apr 2008 16:15:03 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=f/Bf4QgXnC+1erwtE3LOgm9uRk+qtUHSpkXR32878UDi/3rGi+LiBVt4cgp+P1/ZkhtSdH98nPpAbbWpLlRZNG2zotfXIB4Z6/Gs1liPxTGfdNEHegs62vkIRUYkPN3OMWQeo1bzOl53mXA779xI4d333BZXEDsBG2gkOHbFNts=
-Message-ID: <b4198de60804271314m6040df8j6082bc3d8583c5b3@mail.gmail.com>
-Date: Sun, 27 Apr 2008 16:14:54 -0400
-From: "Matt Turner" <mattst88@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Radeon PCI ROM unavailable on Alpha
-Cc: rth@twiddle.net, ink@jurassic.park.msu.ru
+        h=date:to:cc:subject:message-id:user-agent:mime-version:content-type:from;
+        b=LUr4zq+N9r2S/j8daLDMIV1zzEyCXNJPDjkgUypif4s8qAMxJ1cACPCP55fXfeHMYwVdHzuLFyuNwNMQ4XsuEHh7G/MV4sLQbvBVHx6FzibILc+GS4QoZG8lqEY3ORQ3xAyXt9rgNS/gkCTTRnGZB0MUeeyYVBDLX9VuhjwVenA=
+Date: Sun, 27 Apr 2008 22:15:06 +0200 (CEST)
+To: James Bottomley <James.Bottomley@hansenpartnership.com>
+cc: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Eric Youngdale <eric@andante.org>, David Miller <davem@davemloft.net>,
+       Mike Anderson <andmike@us.ibm.com>, Russell King <rmk@arm.linux.org.uk>,
+       Jesper Juhl <jesper.juhl@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH][Resend] fewer pointer derefs in scsi_error
+Message-ID: <alpine.LNX.1.00.0804272211080.2352@dragon.funnycrock.com>
+User-Agent: Alpine 1.00 (LNX 882 2007-12-20)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+From: Jesper Juhl <jesper.juhl@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Access to the VGA BIOS ROM on my Alphaserver DS20L with a Radeon X1550
-PCI does not work. The ROM located at /sys/bus/pci/devices/<pciid>/rom
-is blank.
+From: Jesper Juhl <jesper.juhl@gmail.com>
 
-Before starting X, I issue the following commands from the said directory.
+[This patch previously submitted on  24 April 2008 00:18]
 
-echo 1 > enable
-echo 1 > rom
 
-rom is empty at this point, which causes X to fail to load when
-started. See FreeDesktop bug 15699 for X logs using radeon and
-radeonhd drivers.
+This patch reduces the number of sequential pointer derefs in scsi_error 
+( drivers/scsi/scsi_error.c ).
 
-Any clues about fixing this?
+The bennefits are:
+	- makes the code easier to read. Lots of sequential derefs of the 
+	  same pointers are not easy on the eye.
+	- makes the size of the source file 55 bytes smaller.
+	- makes the size of the object file 48 bytes smaller.
+	- theoretically at least, just dereferencing the pointers once can 
+	  allow the compiler to generally slightly faster code, so in 
+	  theory this could also be a micro speed optimization.
 
-Matt Turner
+Please consider applying.
+
+
+Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
+---
+
+ scsi_error.c |   58 ++++++++++++++++++++++++++++++++--------------------------
+ 1 file changed, 32 insertions(+), 26 deletions(-)
+
+diff --git a/drivers/scsi/scsi_error.c b/drivers/scsi/scsi_error.c
+index 221f31e..94395a7 100644
+--- a/drivers/scsi/scsi_error.c
++++ b/drivers/scsi/scsi_error.c
+@@ -185,13 +185,14 @@ int scsi_delete_timer(struct scsi_cmnd *scmd)
+ void scsi_times_out(struct scsi_cmnd *scmd)
+ {
+ 	enum scsi_eh_timer_return (* eh_timed_out)(struct scsi_cmnd *);
++	struct Scsi_Host *host = scmd->device->host; 
+ 
+ 	scsi_log_completion(scmd, TIMEOUT_ERROR);
+ 
+-	if (scmd->device->host->transportt->eh_timed_out)
+-		eh_timed_out = scmd->device->host->transportt->eh_timed_out;
+-	else if (scmd->device->host->hostt->eh_timed_out)
+-		eh_timed_out = scmd->device->host->hostt->eh_timed_out;
++	if (host->transportt->eh_timed_out)
++		eh_timed_out = host->transportt->eh_timed_out;
++	else if (host->hostt->eh_timed_out)
++		eh_timed_out = host->hostt->eh_timed_out;
+ 	else
+ 		eh_timed_out = NULL;
+ 
+@@ -474,22 +475,22 @@ static int scsi_try_host_reset(struct scsi_cmnd *scmd)
+ {
+ 	unsigned long flags;
+ 	int rtn;
++	struct Scsi_Host *host = scmd->device->host;
+ 
+ 	SCSI_LOG_ERROR_RECOVERY(3, printk("%s: Snd Host RST\n",
+ 					  __FUNCTION__));
+ 
+-	if (!scmd->device->host->hostt->eh_host_reset_handler)
++	if (!host->hostt->eh_host_reset_handler)
+ 		return FAILED;
+ 
+-	rtn = scmd->device->host->hostt->eh_host_reset_handler(scmd);
++	rtn = host->hostt->eh_host_reset_handler(scmd);
+ 
+ 	if (rtn == SUCCESS) {
+-		if (!scmd->device->host->hostt->skip_settle_delay)
++		if (!host->hostt->skip_settle_delay)
+ 			ssleep(HOST_RESET_SETTLE_TIME);
+-		spin_lock_irqsave(scmd->device->host->host_lock, flags);
+-		scsi_report_bus_reset(scmd->device->host,
+-				      scmd_channel(scmd));
+-		spin_unlock_irqrestore(scmd->device->host->host_lock, flags);
++		spin_lock_irqsave(host->host_lock, flags);
++		scsi_report_bus_reset(host, scmd_channel(scmd));
++		spin_unlock_irqrestore(host->host_lock, flags);
+ 	}
+ 
+ 	return rtn;
+@@ -503,22 +504,22 @@ static int scsi_try_bus_reset(struct scsi_cmnd *scmd)
+ {
+ 	unsigned long flags;
+ 	int rtn;
++	struct Scsi_Host *host = scmd->device->host;
+ 
+ 	SCSI_LOG_ERROR_RECOVERY(3, printk("%s: Snd Bus RST\n",
+ 					  __FUNCTION__));
+ 
+-	if (!scmd->device->host->hostt->eh_bus_reset_handler)
++	if (!host->hostt->eh_bus_reset_handler)
+ 		return FAILED;
+ 
+-	rtn = scmd->device->host->hostt->eh_bus_reset_handler(scmd);
++	rtn = host->hostt->eh_bus_reset_handler(scmd);
+ 
+ 	if (rtn == SUCCESS) {
+-		if (!scmd->device->host->hostt->skip_settle_delay)
++		if (!host->hostt->skip_settle_delay)
+ 			ssleep(BUS_RESET_SETTLE_TIME);
+-		spin_lock_irqsave(scmd->device->host->host_lock, flags);
+-		scsi_report_bus_reset(scmd->device->host,
+-				      scmd_channel(scmd));
+-		spin_unlock_irqrestore(scmd->device->host->host_lock, flags);
++		spin_lock_irqsave(host->host_lock, flags);
++		scsi_report_bus_reset(host, scmd_channel(scmd));
++		spin_unlock_irqrestore(host->host_lock, flags);
+ 	}
+ 
+ 	return rtn;
+@@ -544,16 +545,17 @@ static int scsi_try_target_reset(struct scsi_cmnd *scmd)
+ {
+ 	unsigned long flags;
+ 	int rtn;
++	struct Scsi_Host *host = scmd->device->host;
+ 
+-	if (!scmd->device->host->hostt->eh_target_reset_handler)
++	if (!host->hostt->eh_target_reset_handler)
+ 		return FAILED;
+ 
+-	rtn = scmd->device->host->hostt->eh_target_reset_handler(scmd);
++	rtn = host->hostt->eh_target_reset_handler(scmd);
+ 	if (rtn == SUCCESS) {
+-		spin_lock_irqsave(scmd->device->host->host_lock, flags);
++		spin_lock_irqsave(host->host_lock, flags);
+ 		__starget_for_each_device(scsi_target(scmd->device), NULL,
+ 					  __scsi_report_device_reset);
+-		spin_unlock_irqrestore(scmd->device->host->host_lock, flags);
++		spin_unlock_irqrestore(host->host_lock, flags);
+ 	}
+ 
+ 	return rtn;
+@@ -572,11 +574,12 @@ static int scsi_try_target_reset(struct scsi_cmnd *scmd)
+ static int scsi_try_bus_device_reset(struct scsi_cmnd *scmd)
+ {
+ 	int rtn;
++	struct Scsi_Host *host = scmd->device->host;
+ 
+-	if (!scmd->device->host->hostt->eh_device_reset_handler)
++	if (!host->hostt->eh_device_reset_handler)
+ 		return FAILED;
+ 
+-	rtn = scmd->device->host->hostt->eh_device_reset_handler(scmd);
++	rtn = host->hostt->eh_device_reset_handler(scmd);
+ 	if (rtn == SUCCESS)
+ 		__scsi_report_device_reset(scmd->device, NULL);
+ 	return rtn;
+@@ -584,10 +587,13 @@ static int scsi_try_bus_device_reset(struct scsi_cmnd *scmd)
+ 
+ static int __scsi_try_to_abort_cmd(struct scsi_cmnd *scmd)
+ {
+-	if (!scmd->device->host->hostt->eh_abort_handler)
++	int (* eh_abort_handler)(struct scsi_cmnd *)
++		= scmd->device->host->hostt->eh_abort_handler;
++
++	if (!eh_abort_handler)
+ 		return FAILED;
+ 
+-	return scmd->device->host->hostt->eh_abort_handler(scmd);
++	return eh_abort_handler(scmd);
+ }
+ 
+ /**
+
+
+
