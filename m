@@ -1,117 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758251AbYD0BXA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757630AbYD0Bqx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758251AbYD0BXA (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Apr 2008 21:23:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752734AbYD0BWw
+	id S1757630AbYD0Bqx (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Apr 2008 21:46:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752305AbYD0Bqn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Apr 2008 21:22:52 -0400
-Received: from rv-out-0708.google.com ([209.85.198.247]:3662 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751669AbYD0BWw (ORCPT
+	Sat, 26 Apr 2008 21:46:43 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:51058 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751669AbYD0Bqn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Apr 2008 21:22:52 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=d/ujpSaC9EsTIvK6JCa4VuVG/6e1QqRzev/MjZ0/VrhUpHqCBVM6iC8hidQWHpDel2oGqoY6ZO5hMah7W8QfQXGIZVNXBoHsz3aGYdiBwsPh7ywgSWOb02gPAjvT+qAk9WpMTDHNUCbXKrBib5o0/R7Ogh/SNSE9uWdMx5WZ1yQ=
-Message-ID: <86802c440804261822p4df226det4c4323fdee91781c@mail.gmail.com>
-Date: Sat, 26 Apr 2008 18:22:51 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: [PATCH] x86_32: trim memory by updating e820 v3
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Andi Kleen" <ak@suse.de>,
-       "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>,
-       "Jesse Barnes" <jesse.barnes@intel.com>,
-       "Mika Fischer" <mika.fischer@zoopnet.de>, balajirrao@gmail.com
-In-Reply-To: <20080426035614.a30afb17.akpm@linux-foundation.org>
+	Sat, 26 Apr 2008 21:46:43 -0400
+Message-ID: <4813DAD5.50509@zytor.com>
+Date: Sat, 26 Apr 2008 18:45:57 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Adrian Bunk <bunk@kernel.org>
+CC: Pavel Machek <pavel@ucw.cz>, Ingo Molnar <mingo@elte.hu>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Alexey Starikovskiy <astarikovskiy@suse.de>, tglx@linutronix.de,
+       linux-kernel@vger.kernel.org
+Subject: Re: Voyager phys_cpu_present_map compile error
+References: <1208793533.3640.24.camel@localhost.localdomain> <20080421195148.GG8770@elte.hu> <20080421200949.GB2633@cs181133002.pp.htv.fi> <20080421201352.GM8770@elte.hu> <20080421202605.GC2633@cs181133002.pp.htv.fi> <20080421202919.GA28069@elte.hu> <20080421210232.GD2633@cs181133002.pp.htv.fi> <20080421223142.GA18140@elte.hu> <20080426074300.GA3891@ucw.cz> <4813CC6A.6030307@zytor.com> <20080427010614.GX2252@cs181133002.pp.htv.fi>
+In-Reply-To: <20080427010614.GX2252@cs181133002.pp.htv.fi>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200801192045.17291.yinghai.lu@sun.com>
-	 <200801202256.48365.yinghai.lu@sun.com>
-	 <20080122165125.GA17992@elte.hu>
-	 <200801221623.20861.yinghai.lu@sun.com>
-	 <20080426035614.a30afb17.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Apr 26, 2008 at 3:56 AM, Andrew Morton
-<akpm@linux-foundation.org> wrote:
-> On Tue, 22 Jan 2008 16:23:20 -0800 Yinghai Lu <Yinghai.Lu@Sun.COM> wrote:
->
->  > [PATCH] x86_32: trim memory by updating e820 v3
->  >
->  > when mtrr is not covering all e820 table, need to trim the ram, need to update e820
->  >
->  > reuse some code for x86_64
->  >
->  > here need to add early_get_cap and use it in early_cpu_detect, and move mtrr_bp_init early
->  >
->  > need Justine to test with his special system with bug bios.
->  >
->  > Signed-off-by: Yinghai Lu <yinghai.lu@sun.com>
->
->  Speaking of mtrr and e820....
->
->  Could someone please take a peek at
->  http://bugzilla.kernel.org/show_bug.cgi?id=10508 ?
->
->  For some reason we seem to have turned this:
->
->  [    0.000000]  BIOS-e820: 0000000000000000 - 000000000009f800 (usable)
->  [    0.000000]  BIOS-e820: 000000000009f800 - 00000000000a0000 (reserved)
->  [    0.000000]  BIOS-e820: 00000000000dc000 - 0000000000100000 (reserved)
->  [    0.000000]  BIOS-e820: 0000000000100000 - 00000000bf6d0000 (usable)
->  [    0.000000]  BIOS-e820: 00000000bf6d0000 - 00000000bf6e3000 (ACPI NVS)
->  [    0.000000]  BIOS-e820: 00000000bf6e3000 - 00000000c0000000 (reserved)
->  [    0.000000]  BIOS-e820: 00000000e0000000 - 00000000f0000000 (reserved)
->  [    0.000000]  BIOS-e820: 00000000fec00000 - 00000000fec10000 (reserved)
->  [    0.000000]  BIOS-e820: 00000000fed00000 - 00000000fed00400 (reserved)
->  [    0.000000]  BIOS-e820: 00000000fed14000 - 00000000fed1a000 (reserved)
->  [    0.000000]  BIOS-e820: 00000000fed1c000 - 00000000fed90000 (reserved)
->  [    0.000000]  BIOS-e820: 00000000fee00000 - 00000000fee01000 (reserved)
->  [    0.000000]  BIOS-e820: 00000000ff000000 - 0000000100000000 (reserved)
->  [    0.000000]  BIOS-e820: 0000000100000000 - 0000000140000000 (usable)
->
->  into this:
->
->  reg00: base=0xc0000000 (3072MB), size=1024MB: uncachable, count=1
->  reg01: base=0x00000000 ( 0MB), size=4096MB: write-back, count=1
->  reg02: base=0x100000000 (4096MB), size=1024MB: write-back, count=1
->  reg03: base=0xbf700000 (3063MB), size= 1MB: uncachable, count=1
->  reg04: base=0xbf800000 (3064MB), size= 8MB: uncachable, count=1
->
->  which screws up the X server's attempt to map the video memory at
->  0xd0000000.
->
+Adrian Bunk wrote:
+> 
+> I'm not claiming it was the end of the world if someone accidentally 
+> breaks Voyager.
+> 
+> But Ingo wanted me to stop to sometimes compile test Voyager.
+> 
 
-the BIOS should have set memhole to 2048MB or 2560M instead of 1033MB
+It would be good if "make randconfig" didn't go down this or other 
+"secondary" paths.
 
-good mtrr should
+>> James has offered to fix up Voyager breakage a posteori, and that is the  
+>> appropriate action for a niche architecture like this.
+> 
+> I'm still not getting the point why we should ever wait for James for 
+> doing things like
+> -       select HAVE_ARCH_KGDB
+> +       select HAVE_ARCH_KGDB if !X86_VOYAGER
+> 
+> And the other compile breakages we had recently weren't much worse.
+> 
+> I fully agree that it makes sense that Voyager problems should not be 
+> showstoppers and that James is the one capable and responsible of fixing 
+> non-trivial issues.
 
->  reg00: base=0x00000000 (0MB), size=2048MB: write-back, count=1
->  reg01: base=0x100000000 (4096MB), size=2048MB: write-back, count=1
+That's fine, IMHO, just don't require *other* people to worry about it.
 
-or
-
->  reg00: base=0x00000000 (0MB), size=2048MB: write-back, count=1
->  reg01: base=0x80000000 (2048MB), size=512MB: write-back, count=1
->  reg02: base=0x100000000 (4096MB), size=1024MB: write-back, count=1
->  reg03: base=0x140000000 (4096MB), size=512MB: write-back, count=1
-
-so please talk to your HW esp CPU vendor to fix the BIOS problem.
-
-AMD Rev F and Quadcore should get
-
->  reg00: base=0x00000000 (0MB), size=2048MB: write-back, count=1
-
-or
-
->  reg00: base=0x00000000 (0MB), size=2048MB: write-back, count=1
->  reg01: base=0x80000000 (2048MB), size=512MB: write-back, count=1
-
-because [4G, TOM2) is WB by default.
-
-YH
+	-hpa
