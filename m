@@ -1,98 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764035AbYD0XaH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763576AbYD0XbT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764035AbYD0XaH (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Apr 2008 19:30:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753754AbYD0X35
+	id S1763576AbYD0XbT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Apr 2008 19:31:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753999AbYD0XbJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Apr 2008 19:29:57 -0400
-Received: from nfitmail.nfit.au.dk ([130.225.31.129]:1398 "EHLO
-	smtp.nfit.au.dk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752942AbYD0X34 (ORCPT
+	Sun, 27 Apr 2008 19:31:09 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:35795
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1753342AbYD0XbI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Apr 2008 19:29:56 -0400
-To: Theodore Tso <tytso@mit.edu>
-Cc: linux-kernel@vger.kernel.org, alexl@redhat.com
-Subject: Re: stat benchmark
-References: <ye8wsmnezq9.fsf@camel05.daimi.au.dk>
-	<20080425194845.GE21193@mit.edu>
-From: Soeren Sandmann <sandmann@daimi.au.dk>
-Date: 28 Apr 2008 01:29:52 +0200
-In-Reply-To: <20080425194845.GE21193@mit.edu>
-Message-ID: <ye8iqy23mhb.fsf@camel27.daimi.au.dk>
-User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.4
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sun, 27 Apr 2008 19:31:08 -0400
+Date: Sun, 27 Apr 2008 16:31:06 -0700 (PDT)
+Message-Id: <20080427.163106.181887129.davem@davemloft.net>
+To: mingo@elte.hu
+Cc: James.Bottomley@HansenPartnership.com, tglx@linutronix.de,
+       linux-kernel@vger.kernel.org, hpa@zytor.com
+Subject: Re: [patch] x86, voyager: fix ioremap_nocache()
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20080427231809.GA13848@elte.hu>
+References: <20080427214837.GA11631@elte.hu>
+	<1209333959.3801.67.camel@localhost.localdomain>
+	<20080427231809.GA13848@elte.hu>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Theodore Tso <tytso@mit.edu> writes:
+From: Ingo Molnar <mingo@elte.hu>
+Date: Mon, 28 Apr 2008 01:18:09 +0200
 
-> On Thu, Apr 24, 2008 at 10:59:10PM +0200, Soeren Sandmann wrote:
-> > 
-> > Under the theory that disk seeks are killing us, one idea is to add a
-> > 'multistat' system call that would allow statting of many files at a
-> > time, which would give the disk scheduler more to work with. 
-> 
-> Why don't you try this version of your stat-benchmark first?  If you
-> give it the -s option, it will sort the files by inode number first.
-> I think you will find this should make a significant difference.
+> But, we'd not mind at all posting 1000 x86.git patches to lkml (or 
+> another list) every 3 months (or more frequently), if people request 
+> that.
 
-Yeah, Carl suggested this as well. 
+Keep defending yourself Ingo.
 
-Sorting by inode is a major improvement. The numbers are less stable,
-but consistently much lower:
+You can post whatever patches you like a million times to lkml.
+That's not the problem.
 
-    Time to readdir(): 0.238737 s
-    Time to stat 2366 files: 1.338904 s
+It's that the patches don't get reviewed, posting them more or to a
+different place doesn't help that.
 
-compared to
+And you add patches before they are properly reviewed.
 
-    Time to readdir(): 0.227599 s
-    Time to stat 2366 files: 7.981752 s
+Look at all of the postings people have made this merge window about
+x86 merge fallout(s).  This is exactly the chief gripe of everyone,
+that you merge patches with little or no review into your tree.
 
-Of course, 1.3 seconds is still far from instant, but it may be the
-best we can get given the realities of ext3 disk layout.
+People paying attention can see what your goal is.  You've expressed
+in the past that you think we're not merging patches in fast enough,
+which is quite a laugh, and now that you can do x86 maintainence
+you're going to ramp things up and show everyone "how it's done."
 
-One thing that surprised me is that lstat is slightly slower than
-stat. With lstat() instead of stat(), I get:
-
-    Time to stat 2366 files: 1.472115 s
-    Time to readdir(): 1.735542 s
-
-I naively thought that stat() was a superset of lstat(), but
-apparently not.
-
-> If it works, something that would be really great if someone were to
-> make a generic library which could be used instead of readdir().  I
-> have something which works as an LD_PRELOAD, but apparently it's been
-> blowing up on 64-bit systems, and I haven't had time to debug it.
-> It's probably better to do it as a library which userspace
-> applications linked against, anyway.  Would you or someone you know be
-> interesed in maybe taking this idea and running with it?
-
-After I read Carl's mail I looked at what glib - which is used by both
-Nautilus and the gtk+ file open dialog - does, and in fact the latest
-version does actually read chunks of 1000 dirents and sorts them by
-inode. The version I had installed when I wrote the benchmark just
-stat'ed in readdir() order.
-
-For a directory of ~2360 files, chunks of a 1000 files is actually
-surprisingly worse than statting all of the files at once:
-
-    Time to stat 1000 files: 1.008735 s
-    Time to stat 1000 files: 0.738936 s
-    Time to stat 366 files: 0.217002 s
-
-I guess this just shows that seeks really is pretty much all that
-matters. Glib should maybe use a larger chunk size.
-
-I don't know if a general library outside glib would be useful. It
-seems that just telling people to "sort by inode before statting"
-would be just as effective as telling them "use this optimized
-library".
-
-
-
-Thanks,
-Soren
+And at what a great expense this experiment is being performed.  Just
+ask anyone who has tried to get any work done this past week or so.
