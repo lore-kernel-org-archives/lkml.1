@@ -1,68 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763734AbYD0Wxx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763133AbYD0W5E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763734AbYD0Wxx (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Apr 2008 18:53:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752857AbYD0Wxq
+	id S1763133AbYD0W5E (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Apr 2008 18:57:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752034AbYD0W4y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Apr 2008 18:53:46 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:39058 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752038AbYD0Wxp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Apr 2008 18:53:45 -0400
-Message-ID: <481503ED.8060107@garzik.org>
-Date: Sun, 27 Apr 2008 18:53:33 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Sun, 27 Apr 2008 18:56:54 -0400
+Received: from yw-out-2324.google.com ([74.125.46.30]:50512 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750885AbYD0W4x (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Apr 2008 18:56:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=cdnDk4fyaEqOoMH6fNVMV1PRODmnXAb8bO+40e9tsTPcepUbpaFjOQ2c6ZVvsWOfxUEJbVU7MhNwUecN0937DWBUsn2qYxuSY/WZjFRGvCpVnNsPAvazivSe/+9SSYdhSWXdywy/QaXRH0V/vWtMng35B+5avPIyZVGp1ZcqPKk=
+Message-ID: <9a8748490804271556n3f004a5ds7d4951f3fbc0fdf6@mail.gmail.com>
+Date: Mon, 28 Apr 2008 00:56:50 +0200
+From: "Jesper Juhl" <jesper.juhl@gmail.com>
+To: "Patrick J. Volkerding" <volkerdi@slackware.com>
+Subject: Re: ld: <...> internal error, aborting at arange-set.c line 202 in arange_set_new
+Cc: "Nick Clifton" <nickc@specifixinc.com>,
+       "Richard Henderson" <rth@redhat.com>, "Ian Taylor" <ian@airs.com>,
+       "Jeff Law" <law@redhat.com>, "Jim Wilson" <wilson@redhat.com>,
+       "DJ Delorie" <dj@delorie.com>, "Alan Modra" <amodra@bigpond.net.au>,
+       "Michael Meissner" <meissner@redhat.com>,
+       "Daniel Jacobowitz" <dan@debian.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <48150178.4050900@slackware.com>
 MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: James.Bottomley@HansenPartnership.com, mingo@elte.hu, tglx@linutronix.de,
-       linux-kernel@vger.kernel.org, hpa@zytor.com,
-       torvalds@linux-foundation.org
-Subject: Re: [patch] x86, voyager: fix ioremap_nocache()
-References: <20080427214837.GA11631@elte.hu>	<1209335660.3801.79.camel@localhost.localdomain>	<4815009C.2010809@garzik.org> <20080427.154620.177583216.davem@davemloft.net>
-In-Reply-To: <20080427.154620.177583216.davem@davemloft.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Disposition: inline
+References: <alpine.LNX.1.00.0804272326320.14738@dragon.funnycrock.com>
+	 <48150178.4050900@slackware.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller wrote:
-> From: Jeff Garzik <jeff@garzik.org>
-> Date: Sun, 27 Apr 2008 18:39:24 -0400
-> 
->> I disagree with this semantics change.  A number of code places _and 
->> drivers_ GET IT RIGHT, and these are all broken now?
-> 
-> [ Note, James's patch that you quoted is about mapping DMA
->   memory, in dma_declare_coherent_memory(), rather than devices.
->   But I know what you are trying to talk about Jeff. :-) ]
-> 
-> Wrt. ioremap() semanics, it is important to realize that if
-> the implementation of this on x86 has been giving non-cached
-> I/O mappings out up until recently, you can expect that there
-> are hundreds of drivers that might now be broken.
-> 
-> That's the sad fact of the ubiquity of x86, and it doesn't matter how
-> we defined the API is some document.
-> 
-> Anyways, my point is that this angle should be strongly considered in
-> any discussion about ioremap() behavior.
+2008/4/28 Patrick J. Volkerding <volkerdi@slackware.com>:
+> Jesper Juhl wrote:
+>
+> > Hi,
+> >
+> > For your information;
+> > I just test build Linus' tip of the kernel tree (HEAD at
+> 064922a805ec7aadfafdd27aa6b4908d737c3c1d) on a up-to-date Slackware-current
+> distro and hit this problem:
+> >
+> > ...
+> >  GEN     .version
+> >  CHK     include/linux/compile.h
+> >  UPD     include/linux/compile.h
+> >  CC      init/version.o
+> >  LD      init/built-in.o
+> >  LD      .tmp_vmlinux1
+> > ld: size of bfd_vma > size of splay_tree types
+> > ld: BFD (Linux/GNU Binutils) 2.18.50.0.4.20080208 internal error, aborting
+> at arange-set.c line 202 in arange_set_new
+> >
+> > ld: Please report this bug.
+> >
+>
+>  Hello all,
+>
+>  Slackware-current does not use binutils 2.18.50.0.4.20080208, but rather
+> binutils-2.17.50.0.17.  We've run into a few unusual issues with newer
+> binutils versions, so we tend to be rather cautious about having that
+> package on the bleeding edge.
+>
+>  I'd be curious if using the binutils-2.17.50.0.17 package from
+> slackware-current would avoid this problem, but also wanted to let people
+> know that the system in question had a critical part of the toolchain
+> replaced with something that didn't come from our set of packages.
+>
 
-Understood.
+Fron the slackware-current changelog :
+Sat Feb 23 01:30:50 CST 2008
+...
+d/binutils-2.18.50.0.4-i486-1.tgz: Upgraded to binutils-2.18.50.0.4.
 
-I guess I am more annoyed that this stealth semantics change appears to 
-have broken everything that depends on pci_iomap(), including 90%+ of 
-all libata drivers, unless I am missing something.
+$ which ld
+/usr/bin/ld
+juhl@dragon:~/kernel/linux-2.6$ grep usr/bin/ld /var/log/packages/*
+...
+/var/log/packages/binutils-2.18.50.0.4-i486-1:usr/bin/ld
+...
 
-That one piece of code (pci_iomap) was correct under the old semantics, 
-on x86 and elsewhere.  It's tested and working nicely, and depended upon 
-by many drivers.
+That's the package I have and it was indeed part of Slackware current
+when I fetched it.
 
-	Jeff
+I see now, on closer inspection that the changelog also says ;
+
+Fri Feb 29 14:00:57 CST 2008
+...
+d/binutils-2.17.50.0.17-i486-1.tgz: Reverted to binutils-2.17.50.0.17 due to
+       many reports of ld bugs...
+...
+
+My scripts missed that, but I'll grab that package now and downgrade
+and try to reproduce the problem.
 
 
-
+-- 
+Jesper Juhl <jesper.juhl@gmail.com>
+Don't top-post http://www.catb.org/~esr/jargon/html/T/top-post.html
+Plain text mails only, please http://www.expita.com/nomime.html
