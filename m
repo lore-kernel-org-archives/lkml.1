@@ -1,198 +1,340 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759472AbYD0BMy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757284AbYD0BSS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759472AbYD0BMy (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Apr 2008 21:12:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753143AbYD0BMq
+	id S1757284AbYD0BSS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Apr 2008 21:18:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751664AbYD0BSF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Apr 2008 21:12:46 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:54452 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752031AbYD0BMp (ORCPT
+	Sat, 26 Apr 2008 21:18:05 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:44865 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751554AbYD0BSE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Apr 2008 21:12:45 -0400
-Date: Sun, 27 Apr 2008 03:12:44 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: adaplas@gmail.com
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, hpa@zytor.com
-Subject: [PATCH] vt: fix background color on line feed
-Message-ID: <alpine.LNX.1.10.0804270257270.20150@fbirervta.pbzchgretzou.qr>
-User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sat, 26 Apr 2008 21:18:04 -0400
+To: linux-ia64@vger.kernel.org
+Subject: [PATCH] fix file and descriptor handling in perfmon
+Cc: linux-kernel@vger.kernel.org
+Message-Id: <E1JpvWk-0003lk-FT@ZenIV.linux.org.uk>
+From: Al Viro <viro@ftp.linux.org.uk>
+Date: Sun, 27 Apr 2008 02:18:02 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-commit c5180a555ced08a7e3011c16ef796e47569ae907
-Author: Jan Engelhardt <jengelh@computergmbh.de>
-Date:   Thu Apr 24 22:40:24 2008 +0200
 
-vt: fix background color on line feed
-    
-A command that causes a line feed while a background color is active,
-such as
-    
-	perl -e 'print "x" x 60, "\e[44m", "x" x 40, "\e[0m\n"'
-and
-	perl -e 'print "x" x 40, "\e[44m\n", "x" x 40, "\e[0m\n"'
-    
-causes the line that was started as a result of the line feed to be
-completely filled with the currently active background color instead
-of the default color.
-    
-Signed-off-by: Jan Engelhardt <jengelh@computergmbh.de>
+Please, review; if there's no objections, to Linus it goes, along with
+the rest of arch/* files_struct sanitizing.
+
+Races galore...  General rule: as soon as it's in descriptor table,
+it's over; another thread might have started IO on it/dup2() it
+elsewhere/dup2() something *over* it/etc.  fd_install() is the very
+last step one should take - it's a point of no return.
+
+Besides, the damn thing leaked on failure exits...
+
+Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
 ---
- drivers/char/vt.c              |    7 ++++---
- drivers/video/console/fbcon.c  |    8 ++++----
- drivers/video/console/mdacon.c |    2 +-
- drivers/video/console/sticon.c |    4 ++--
- drivers/video/console/vgacon.c |    4 ++--
- include/linux/console_struct.h |    1 +
- 6 files changed, 14 insertions(+), 12 deletions(-)
+ arch/ia64/kernel/perfmon.c |  198 +++++++++++++++++++-------------------------
+ 1 files changed, 86 insertions(+), 112 deletions(-)
 
-diff --git a/drivers/char/vt.c b/drivers/char/vt.c
-index 9b58b89..159c9e2 100644
---- a/drivers/char/vt.c
-+++ b/drivers/char/vt.c
-@@ -301,7 +301,7 @@ static void scrup(struct vc_data *vc, unsigned int t, unsigned int b, int nr)
- 	d = (unsigned short *)(vc->vc_origin + vc->vc_size_row * t);
- 	s = (unsigned short *)(vc->vc_origin + vc->vc_size_row * (t + nr));
- 	scr_memmovew(d, s, (b - t - nr) * vc->vc_size_row);
--	scr_memsetw(d + (b - t - nr) * vc->vc_cols, vc->vc_video_erase_char,
-+	scr_memsetw(d + (b - t - nr) * vc->vc_cols, vc->vc_scrl_erase_char,
- 		    vc->vc_size_row * nr);
+diff --git a/arch/ia64/kernel/perfmon.c b/arch/ia64/kernel/perfmon.c
+index c8e4037..520749b 100644
+--- a/arch/ia64/kernel/perfmon.c
++++ b/arch/ia64/kernel/perfmon.c
+@@ -867,7 +867,7 @@ pfm_rvfree(void *mem, unsigned long size)
  }
  
-@@ -319,7 +319,7 @@ static void scrdown(struct vc_data *vc, unsigned int t, unsigned int b, int nr)
- 	s = (unsigned short *)(vc->vc_origin + vc->vc_size_row * t);
- 	step = vc->vc_cols * nr;
- 	scr_memmovew(s + step, s, (b - t - nr) * vc->vc_size_row);
--	scr_memsetw(s, vc->vc_video_erase_char, 2 * step);
-+	scr_memsetw(s, vc->vc_scrl_erase_char, 2 * step);
- }
- 
- static void do_update_region(struct vc_data *vc, unsigned long start, int count)
-@@ -400,7 +400,7 @@ static u8 build_attr(struct vc_data *vc, u8 _color, u8 _intensity, u8 _blink,
-  *  Bit 7   : blink
-  */
- 	{
--	u8 a = vc->vc_color;
-+	u8 a = _color;
- 	if (!vc->vc_can_do_color)
- 		return _intensity |
- 		       (_italic ? 2 : 0) |
-@@ -434,6 +434,7 @@ static void update_attr(struct vc_data *vc)
- 	              vc->vc_blink, vc->vc_underline,
- 	              vc->vc_reverse ^ vc->vc_decscnm, vc->vc_italic);
- 	vc->vc_video_erase_char = (build_attr(vc, vc->vc_color, 1, vc->vc_blink, 0, vc->vc_decscnm, 0) << 8) | ' ';
-+	vc->vc_scrl_erase_char = (build_attr(vc, vc->vc_def_color, 1, false, false, false, false) << 8) | ' ';
- }
- 
- /* Note: inverting the screen twice should revert to the original state */
-diff --git a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
-index 0222824..ca2a543 100644
---- a/drivers/video/console/fbcon.c
-+++ b/drivers/video/console/fbcon.c
-@@ -1882,7 +1882,7 @@ static int fbcon_scroll(struct vc_data *vc, int t, int b, int dir,
- 			scr_memsetw((unsigned short *) (vc->vc_origin +
- 							vc->vc_size_row *
- 							(b - count)),
--				    vc->vc_video_erase_char,
-+				    vc->vc_scrl_erase_char,
- 				    vc->vc_size_row * count);
- 			return 1;
- 			break;
-@@ -1954,7 +1954,7 @@ static int fbcon_scroll(struct vc_data *vc, int t, int b, int dir,
- 			scr_memsetw((unsigned short *) (vc->vc_origin +
- 							vc->vc_size_row *
- 							(b - count)),
--				    vc->vc_video_erase_char,
-+				    vc->vc_scrl_erase_char,
- 				    vc->vc_size_row * count);
- 			return 1;
- 		}
-@@ -1973,7 +1973,7 @@ static int fbcon_scroll(struct vc_data *vc, int t, int b, int dir,
- 			scr_memsetw((unsigned short *) (vc->vc_origin +
- 							vc->vc_size_row *
- 							t),
--				    vc->vc_video_erase_char,
-+				    vc->vc_scrl_erase_char,
- 				    vc->vc_size_row * count);
- 			return 1;
- 			break;
-@@ -2043,7 +2043,7 @@ static int fbcon_scroll(struct vc_data *vc, int t, int b, int dir,
- 			scr_memsetw((unsigned short *) (vc->vc_origin +
- 							vc->vc_size_row *
- 							t),
--				    vc->vc_video_erase_char,
-+				    vc->vc_scrl_erase_char,
- 				    vc->vc_size_row * count);
- 			return 1;
- 		}
-diff --git a/drivers/video/console/mdacon.c b/drivers/video/console/mdacon.c
-index bd8d995..38a296b 100644
---- a/drivers/video/console/mdacon.c
-+++ b/drivers/video/console/mdacon.c
-@@ -531,7 +531,7 @@ static void mdacon_cursor(struct vc_data *c, int mode)
- 
- static int mdacon_scroll(struct vc_data *c, int t, int b, int dir, int lines)
+ static pfm_context_t *
+-pfm_context_alloc(void)
++pfm_context_alloc(int ctx_flags)
  {
--	u16 eattr = mda_convert_attr(c->vc_video_erase_char);
-+	u16 eattr = mda_convert_attr(c->vc_scrl_erase_char);
+ 	pfm_context_t *ctx;
  
- 	if (!lines)
- 		return 0;
-diff --git a/drivers/video/console/sticon.c b/drivers/video/console/sticon.c
-index 67a682d..a11cc2f 100644
---- a/drivers/video/console/sticon.c
-+++ b/drivers/video/console/sticon.c
-@@ -170,12 +170,12 @@ static int sticon_scroll(struct vc_data *conp, int t, int b, int dir, int count)
-     switch (dir) {
-     case SM_UP:
- 	sti_bmove(sti, t + count, 0, t, 0, b - t - count, conp->vc_cols);
--	sti_clear(sti, b - count, 0, count, conp->vc_cols, conp->vc_video_erase_char);
-+	sti_clear(sti, b - count, 0, count, conp->vc_cols, conp->vc_scrl_erase_char);
- 	break;
- 
-     case SM_DOWN:
- 	sti_bmove(sti, t, 0, t + count, 0, b - t - count, conp->vc_cols);
--	sti_clear(sti, t, 0, count, conp->vc_cols, conp->vc_video_erase_char);
-+	sti_clear(sti, t, 0, count, conp->vc_cols, conp->vc_scrl_erase_char);
- 	break;
-     }
- 
-diff --git a/drivers/video/console/vgacon.c b/drivers/video/console/vgacon.c
-index 6df29a6..bd1f57b 100644
---- a/drivers/video/console/vgacon.c
-+++ b/drivers/video/console/vgacon.c
-@@ -1350,7 +1350,7 @@ static int vgacon_scroll(struct vc_data *c, int t, int b, int dir,
- 		} else
- 			c->vc_origin += delta;
- 		scr_memsetw((u16 *) (c->vc_origin + c->vc_screenbuf_size -
--				     delta), c->vc_video_erase_char,
-+				     delta), c->vc_scrl_erase_char,
- 			    delta);
- 	} else {
- 		if (oldo - delta < vga_vram_base) {
-@@ -1363,7 +1363,7 @@ static int vgacon_scroll(struct vc_data *c, int t, int b, int dir,
- 		} else
- 			c->vc_origin -= delta;
- 		c->vc_scr_end = c->vc_origin + c->vc_screenbuf_size;
--		scr_memsetw((u16 *) (c->vc_origin), c->vc_video_erase_char,
-+		scr_memsetw((u16 *) (c->vc_origin), c->vc_scrl_erase_char,
- 			    delta);
+@@ -878,6 +878,46 @@ pfm_context_alloc(void)
+ 	ctx = kzalloc(sizeof(pfm_context_t), GFP_KERNEL);
+ 	if (ctx) {
+ 		DPRINT(("alloc ctx @%p\n", ctx));
++
++		/*
++		 * init context protection lock
++		 */
++		spin_lock_init(&ctx->ctx_lock);
++
++		/*
++		 * context is unloaded
++		 */
++		ctx->ctx_state = PFM_CTX_UNLOADED;
++
++		/*
++		 * initialization of context's flags
++		 */
++		ctx->ctx_fl_block       = (ctx_flags & PFM_FL_NOTIFY_BLOCK) ? 1 : 0;
++		ctx->ctx_fl_system      = (ctx_flags & PFM_FL_SYSTEM_WIDE) ? 1: 0;
++		ctx->ctx_fl_no_msg      = (ctx_flags & PFM_FL_OVFL_NO_MSG) ? 1: 0;
++		/*
++		 * will move to set properties
++		 * ctx->ctx_fl_excl_idle   = (ctx_flags & PFM_FL_EXCL_IDLE) ? 1: 0;
++		 */
++
++		/*
++		 * init restart semaphore to locked
++		 */
++		init_completion(&ctx->ctx_restart_done);
++
++		/*
++		 * activation is used in SMP only
++		 */
++		ctx->ctx_last_activation = PFM_INVALID_ACTIVATION;
++		SET_LAST_CPU(ctx, -1);
++
++		/*
++		 * initialize notification message queue
++		 */
++		ctx->ctx_msgq_head = ctx->ctx_msgq_tail = 0;
++		init_waitqueue_head(&ctx->ctx_msgq_wait);
++		init_waitqueue_head(&ctx->ctx_zombieq);
++
  	}
- 	c->vc_scr_end = c->vc_origin + c->vc_screenbuf_size;
-diff --git a/include/linux/console_struct.h b/include/linux/console_struct.h
-index d71f7c0..b03f80a 100644
---- a/include/linux/console_struct.h
-+++ b/include/linux/console_struct.h
-@@ -53,6 +53,7 @@ struct vc_data {
- 	unsigned short	vc_hi_font_mask;	/* [#] Attribute set for upper 256 chars of font or 0 if not supported */
- 	struct console_font vc_font;		/* Current VC font set */
- 	unsigned short	vc_video_erase_char;	/* Background erase character */
-+	unsigned short	vc_scrl_erase_char;	/* Erase character for scroll */
- 	/* VT terminal data */
- 	unsigned int	vc_state;		/* Escape sequence parser state */
- 	unsigned int	vc_npar,vc_par[NPAR];	/* Parameters of current escape sequence */
+ 	return ctx;
+ }
+@@ -2165,28 +2205,20 @@ static struct dentry_operations pfmfs_dentry_operations = {
+ };
+ 
+ 
+-static int
+-pfm_alloc_fd(struct file **cfile)
++static struct file *pfm_alloc_file(pfm_context_t *ctx)
+ {
+-	int fd, ret = 0;
+-	struct file *file = NULL;
+-	struct inode * inode;
++	struct file *file;
++	struct inode *inode;
++	struct dentry *dentry;
+ 	char name[32];
+ 	struct qstr this;
+ 
+-	fd = get_unused_fd();
+-	if (fd < 0) return -ENFILE;
+-
+-	ret = -ENFILE;
+-
+-	file = get_empty_filp();
+-	if (!file) goto out;
+-
+ 	/*
+ 	 * allocate a new inode
+ 	 */
+ 	inode = new_inode(pfmfs_mnt->mnt_sb);
+-	if (!inode) goto out;
++	if (!inode)
++		return ERR_PTR(-ENOMEM);
+ 
+ 	DPRINT(("new inode ino=%ld @%p\n", inode->i_ino, inode));
+ 
+@@ -2199,59 +2231,28 @@ pfm_alloc_fd(struct file **cfile)
+ 	this.len  = strlen(name);
+ 	this.hash = inode->i_ino;
+ 
+-	ret = -ENOMEM;
+-
+ 	/*
+ 	 * allocate a new dcache entry
+ 	 */
+-	file->f_path.dentry = d_alloc(pfmfs_mnt->mnt_sb->s_root, &this);
+-	if (!file->f_path.dentry) goto out;
++	dentry = d_alloc(pfmfs_mnt->mnt_sb->s_root, &this);
++	if (!dentry) {
++		iput(inode);
++		return ERR_PTR(-ENOMEM);
++	}
+ 
+-	file->f_path.dentry->d_op = &pfmfs_dentry_operations;
++	dentry->d_op = &pfmfs_dentry_operations;
++	d_add(dentry, inode);
+ 
+-	d_add(file->f_path.dentry, inode);
+-	file->f_path.mnt = mntget(pfmfs_mnt);
+-	file->f_mapping = inode->i_mapping;
++	file = alloc_file(pfmfs_mnt, dentry, FMODE_READ, &pfm_file_ops);
++	if (!file) {
++		dput(dentry);
++		return ERR_PTR(-ENFILE);
++	}
+ 
+-	file->f_op    = &pfm_file_ops;
+-	file->f_mode  = FMODE_READ;
+ 	file->f_flags = O_RDONLY;
+-	file->f_pos   = 0;
+-
+-	/*
+-	 * may have to delay until context is attached?
+-	 */
+-	fd_install(fd, file);
+-
+-	/*
+-	 * the file structure we will use
+-	 */
+-	*cfile = file;
+-
+-	return fd;
+-out:
+-	if (file) put_filp(file);
+-	put_unused_fd(fd);
+-	return ret;
+-}
+-
+-static void
+-pfm_free_fd(int fd, struct file *file)
+-{
+-	struct files_struct *files = current->files;
+-	struct fdtable *fdt;
++	file->private_data = ctx;
+ 
+-	/* 
+-	 * there ie no fd_uninstall(), so we do it here
+-	 */
+-	spin_lock(&files->file_lock);
+-	fdt = files_fdtable(files);
+-	rcu_assign_pointer(fdt->fd[fd], NULL);
+-	spin_unlock(&files->file_lock);
+-
+-	if (file)
+-		put_filp(file);
+-	put_unused_fd(fd);
++	return file;
+ }
+ 
+ static int
+@@ -2475,6 +2476,7 @@ pfm_setup_buffer_fmt(struct task_struct *task, struct file *filp, pfm_context_t
+ 
+ 	/* link buffer format and context */
+ 	ctx->ctx_buf_fmt = fmt;
++	ctx->ctx_fl_is_sampling = 1; /* assume record() is defined */
+ 
+ 	/*
+ 	 * check if buffer format wants to use perfmon buffer allocation/mapping service
+@@ -2669,78 +2671,45 @@ pfm_context_create(pfm_context_t *ctx, void *arg, int count, struct pt_regs *reg
+ {
+ 	pfarg_context_t *req = (pfarg_context_t *)arg;
+ 	struct file *filp;
++	struct path path;
+ 	int ctx_flags;
++	int fd;
+ 	int ret;
+ 
+ 	/* let's check the arguments first */
+ 	ret = pfarg_is_sane(current, req);
+-	if (ret < 0) return ret;
++	if (ret < 0)
++		return ret;
+ 
+ 	ctx_flags = req->ctx_flags;
+ 
+ 	ret = -ENOMEM;
+ 
+-	ctx = pfm_context_alloc();
+-	if (!ctx) goto error;
++	fd = get_unused_fd();
++	if (fd < 0)
++		return fd;
+ 
+-	ret = pfm_alloc_fd(&filp);
+-	if (ret < 0) goto error_file;
++	ctx = pfm_context_alloc(ctx_flags);
++	if (!ctx)
++		goto error;
+ 
+-	req->ctx_fd = ctx->ctx_fd = ret;
++	filp = pfm_alloc_file(ctx);
++	if (IS_ERR(filp)) {
++		ret = PTR_ERR(filp);
++		goto error_file;
++	}
+ 
+-	/*
+-	 * attach context to file
+-	 */
+-	filp->private_data = ctx;
++	req->ctx_fd = ctx->ctx_fd = fd;
+ 
+ 	/*
+ 	 * does the user want to sample?
+ 	 */
+ 	if (pfm_uuid_cmp(req->ctx_smpl_buf_id, pfm_null_uuid)) {
+ 		ret = pfm_setup_buffer_fmt(current, filp, ctx, ctx_flags, 0, req);
+-		if (ret) goto buffer_error;
++		if (ret)
++			goto buffer_error;
+ 	}
+ 
+-	/*
+-	 * init context protection lock
+-	 */
+-	spin_lock_init(&ctx->ctx_lock);
+-
+-	/*
+-	 * context is unloaded
+-	 */
+-	ctx->ctx_state = PFM_CTX_UNLOADED;
+-
+-	/*
+-	 * initialization of context's flags
+-	 */
+-	ctx->ctx_fl_block       = (ctx_flags & PFM_FL_NOTIFY_BLOCK) ? 1 : 0;
+-	ctx->ctx_fl_system      = (ctx_flags & PFM_FL_SYSTEM_WIDE) ? 1: 0;
+-	ctx->ctx_fl_is_sampling = ctx->ctx_buf_fmt ? 1 : 0; /* assume record() is defined */
+-	ctx->ctx_fl_no_msg      = (ctx_flags & PFM_FL_OVFL_NO_MSG) ? 1: 0;
+-	/*
+-	 * will move to set properties
+-	 * ctx->ctx_fl_excl_idle   = (ctx_flags & PFM_FL_EXCL_IDLE) ? 1: 0;
+-	 */
+-
+-	/*
+-	 * init restart semaphore to locked
+-	 */
+-	init_completion(&ctx->ctx_restart_done);
+-
+-	/*
+-	 * activation is used in SMP only
+-	 */
+-	ctx->ctx_last_activation = PFM_INVALID_ACTIVATION;
+-	SET_LAST_CPU(ctx, -1);
+-
+-	/*
+-	 * initialize notification message queue
+-	 */
+-	ctx->ctx_msgq_head = ctx->ctx_msgq_tail = 0;
+-	init_waitqueue_head(&ctx->ctx_msgq_wait);
+-	init_waitqueue_head(&ctx->ctx_zombieq);
+-
+ 	DPRINT(("ctx=%p flags=0x%x system=%d notify_block=%d excl_idle=%d no_msg=%d ctx_fd=%d \n",
+ 		ctx,
+ 		ctx_flags,
+@@ -2755,10 +2724,14 @@ pfm_context_create(pfm_context_t *ctx, void *arg, int count, struct pt_regs *reg
+ 	 */
+ 	pfm_reset_pmu_state(ctx);
+ 
++	fd_install(fd, filp);
++
+ 	return 0;
+ 
+ buffer_error:
+-	pfm_free_fd(ctx->ctx_fd, filp);
++	path = filp->f_path;
++	put_filp(filp);
++	path_put(&path);
+ 
+ 	if (ctx->ctx_buf_fmt) {
+ 		pfm_buf_fmt_exit(ctx->ctx_buf_fmt, current, NULL, regs);
+@@ -2767,6 +2740,7 @@ error_file:
+ 	pfm_context_free(ctx);
+ 
+ error:
++	put_unused_fd(fd);
+ 	return ret;
+ }
+ 
+-- 
+1.5.5.1
+
 
