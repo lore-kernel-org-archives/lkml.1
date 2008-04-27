@@ -1,101 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764134AbYD0Tkl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763638AbYD0Tsq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764134AbYD0Tkl (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Apr 2008 15:40:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761192AbYD0Tkd
+	id S1763638AbYD0Tsq (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Apr 2008 15:48:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762198AbYD0Tsh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Apr 2008 15:40:33 -0400
-Received: from fg-out-1718.google.com ([72.14.220.159]:60846 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752900AbYD0Tkd convert rfc822-to-8bit (ORCPT
+	Sun, 27 Apr 2008 15:48:37 -0400
+Received: from an-out-0708.google.com ([209.85.132.249]:12619 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752896AbYD0Tsg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Apr 2008 15:40:33 -0400
+	Sun, 27 Apr 2008 15:48:36 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer:mime-version:content-type:content-transfer-encoding:sender;
-        b=NHFGTNj8ap2bxHmEih+Ay72xcYshfZV0KdfbV3hJurzFGM34Orx0yEKvF7yqNUrgjTzhsf27hevSRNdX+omD2LRBlSJLzDoJznIA9T6cW7t/ckQSOyQOSsjO6fqyeJkaxb8zaM4b9VyuymZODKjBF5XS/FD6/5DxBGx2zfRK+vQ=
-Date: Sun, 27 Apr 2008 22:40:27 +0300
-From: Pekka Paalanen <pq@iki.fi>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Pekka Paalanen <pq@iki.fi>, Steven Rostedt <rostedt@goodmis.org>,
-       linux-kernel@vger.kernel.org, akpm@osdl.org,
-       Peter Zijlstra <peterz@infradead.org>,
-       Soeren Sandmann Pedersen <sandmann@redhat.com>,
-       Steven Rostedt <srostedt@redhat.com>, Pavel Roskin <proski@gnu.org>
-Subject: [PATCH 5/5] doc: update mmiotrace doc to current status
-Message-ID: <20080427224027.1593edda@daedalus.pq.iki.fi>
-In-Reply-To: <20080427222925.02b2b27b@daedalus.pq.iki.fi>
-References: <20080427222925.02b2b27b@daedalus.pq.iki.fi>
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.8; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=UB9A8XCAg2s/x2A35yDoK1Og4o33l0TlKNDvs+Io5onFS5t8GIKzcgVuNL8UsV0QXajoXOAzAOoCNUPDjoNwzMZ2PLQQG5YnaFG9jnKdnUAj3bonizHI0bUr2+F9KyCOkHHjvm3MRONU+YE7ySXEDZhORtrmID3jophjfz2ZT+8=
+Message-ID: <43e72e890804271248i1fbeb16ev7b05149a8d9adaf1@mail.gmail.com>
+Date: Sun, 27 Apr 2008 12:48:34 -0700
+From: "Luis R. Rodriguez" <mcgrof@gmail.com>
+To: "Roger While" <simrw@sim-basis.de>
+Subject: Re: [PATCH v2] prism54: prism54_get_encode() test below 0 on unsigned index
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <6.1.1.1.2.20080427141058.045c43f0@192.168.6.12>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <6.1.1.1.2.20080427141058.045c43f0@192.168.6.12>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From bfcf6727d3cf8f5411f1927cf7d490428656ec13 Mon Sep 17 00:00:00 2001
-From: Pekka Paalanen <pq@iki.fi>
-Date: Sun, 27 Apr 2008 21:15:37 +0300
-Subject: [PATCH] doc: update mmiotrace doc to current status
+On Sun, Apr 27, 2008 at 5:25 AM, Roger While <simrw@sim-basis.de> wrote:
+> Luis Rodriguez wrote :
+>
+>
+>
+> > The check for -1 seems silly lets just remove its use.
+> >
+> > Signed-off-by: Luis R. Rodriguez <lrodriguez@atheros.com>
+> >
+> > diff --git a/drivers/net/wireless/prism54/isl_ioctl.c
+> b/drivers/net/wireless/prism54/isl_ioctl.c
+> > index 5b375b2..7e2d3b6 100644
+> > --- a/drivers/net/wireless/prism54/isl_ioctl.c
+> > +++ b/drivers/net/wireless/prism54/isl_ioctl.c
+> > @@ -1158,7 +1158,7 @@ prism54_get_encode(struct net_device *ndev, struct
+> iw_request_info *info,
+> >  {
+> >        islpci_private *priv = netdev_priv(ndev);
+> >        struct obj_key *key;
+> > -       u32 devindex, index = (dwrq->flags & IW_ENCODE_INDEX) - 1;
+> > +       u32 devindex, index = (dwrq->flags & IW_ENCODE_INDEX);
+> >        u32 authen = 0, invoke = 0, exunencrypt = 0;
+> >        int rvalue;
+> >        union oid_res_t r;
+> > @@ -1186,7 +1186,7 @@ prism54_get_encode(struct net_device *ndev, struct
+> iw_request_info *info,
+> >        rvalue |= mgt_get_request(priv, DOT11_OID_DEFKEYID, 0, NULL, &r);
+> >        devindex = r.u;
+> >        /* Now get the key, return it */
+> > -       if (index == -1 || index > 3)
+> > +       if (!index || index > 3)
+> >                /* no index provided, use the current one */
+> >                index = devindex;
+> >        rvalue |= mgt_get_request(priv, DOT11_OID_DEFKEYX, index, NULL,
+> &r);
+> >
+>
+>  This does not look right to me. Should this not be -
+>   if (!index || index > 4)
+>    ....
+>   else
+>   index -= 1;
+>  (Or alternatively pass index -1 to mgt_get_request)
+>
+>  Also 5 lines further on we have -
+>         /* return the used key index */
+>         dwrq->flags |= devindex + 1;
+>  which looks suspect.
 
-Signed-off-by: Pekka Paalanen <pq@iki.fi>
----
- Documentation/tracers/mmiotrace.txt |   27 +++++++++++++++++++--------
- 1 files changed, 19 insertions(+), 8 deletions(-)
+Yeah and you're patch already went in. Its OK, was just not likin the -1 stuff.
 
-diff --git a/Documentation/tracers/mmiotrace.txt b/Documentation/tracers/mmiotrace.txt
-index 84246f7..a4afb56 100644
---- a/Documentation/tracers/mmiotrace.txt
-+++ b/Documentation/tracers/mmiotrace.txt
-@@ -25,7 +25,8 @@ Mmiotrace feature is compiled in by the CONFIG_MMIOTRACE option. Tracing is
- disabled by default, so it is safe to have this set to yes. SMP systems are
- supported, but tracing is unreliable and may miss events if more than one CPU
- is on-line, therefore mmiotrace takes all but one CPU off-line during run-time
--activation [not implemented].
-+activation. You can re-enable CPUs by hand, but you have been warned, there
-+is no way to automatically detect if you are losing events due to CPUs racing.
- 
- 
- Usage Quick Reference
-@@ -37,7 +38,7 @@ $ cat /debug/tracing/trace_pipe > mydump.txt &
- Start X or whatever.
- $ echo "X is up" > /debug/tracing/marker
- $ echo none > /debug/tracing/current_tracer
--Check kernel log.
-+Check for lost events.
- 
- 
- Usage
-@@ -67,12 +68,22 @@ do.
- 
- Shut down mmiotrace (requires root privileges):
- $ echo none > /debug/tracing/current_tracer
--The 'cat' process exits. If it does not, kill it by 'fg' and pressing ctrl+c.
--
--[This feature is not implemented yet!]
--Check your kernel log. If there are messages about mmiotrace losing events,
--this is due to buffer overrun, and the trace is incomplete. You should enlarge
--the buffers and try again. [How?]
-+The 'cat' process exits. If it does not, kill it by issuing 'fg' command and
-+pressing ctrl+c.
-+
-+Check that mmiotrace did not lose events due to a buffer filling up. Either
-+$ grep -i lost mydump.txt
-+which tells you exactly how many events were lost, or use
-+$ dmesg
-+to view your kernel log and look for "mmiotrace has lost events" warning. If
-+events were lost, the trace is incomplete. You should enlarge the buffers and
-+try again. Buffers are enlarged by first seeing how large the current buffers
-+are:
-+$ cat /debug/tracing/trace_entries
-+gives you a number. Approximately double this number and write it back, for
-+instance:
-+$ echo 128000 > /debug/tracing/trace_entries
-+Then start again from the top.
- 
- If you are doing a trace for a driver project, e.g. Nouveau, you should also
- do the following before sending your results:
--- 
-1.5.3.7
-
+  Luis
