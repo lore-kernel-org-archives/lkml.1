@@ -1,66 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763088AbYD0SAl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762929AbYD0SEA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763088AbYD0SAl (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Apr 2008 14:00:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758958AbYD0SAR
+	id S1762929AbYD0SEA (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Apr 2008 14:04:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757754AbYD0SDw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Apr 2008 14:00:17 -0400
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:38297 "EHLO smtp4.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757754AbYD0SAP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Apr 2008 14:00:15 -0400
-Date: Sun, 27 Apr 2008 20:59:47 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Sam Ravnborg <sam@ravnborg.org>,
-       linux arch <linux-arch@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       David Miller <davem@davemloft.net>
-Subject: Re: [PATCH] prepare kconfig inline optimization for all
-	architectures
-Message-ID: <20080427175947.GC2252@cs181133002.pp.htv.fi>
-References: <20080427105100.GA14795@uranus.ravnborg.org> <20080427113158.GY2252@cs181133002.pp.htv.fi> <alpine.LFD.1.10.0804271002360.2896@woody.linux-foundation.org> <20080427172235.GA2252@cs181133002.pp.htv.fi> <20080427174055.GS14990@parisc-linux.org>
+	Sun, 27 Apr 2008 14:03:52 -0400
+Received: from moutng.kundenserver.de ([212.227.126.183]:52383 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757532AbYD0SDv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Apr 2008 14:03:51 -0400
+Date: Sun, 27 Apr 2008 20:03:46 +0200 (CEST)
+From: Christian Kujau <lists@nerdbynature.de>
+X-X-Sender: evil@sheep.housecafe.de
+To: linuxppc-dev@ozlabs.org
+cc: LKML <linux-kernel@vger.kernel.org>
+Subject: 2.6.25: pmac_newworld undefined
+Message-ID: <alpine.DEB.1.10.0804271951190.11017@sheep.housecafe.de>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20080427174055.GS14990@parisc-linux.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
+X-Provags-ID: V01U2FsdGVkX1+qiTEeHWxRmAntvIKkstypjKkgGI7Wogz+x5Z
+ YFPh4wC3pTNGG2bkmgCHidIEmLlymf9jnA2i/dZRrU1at6jqSQ
+ ZKFyfpTUWHfaRA5/2yH/Q==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Apr 27, 2008 at 11:40:56AM -0600, Matthew Wilcox wrote:
-> On Sun, Apr 27, 2008 at 08:22:35PM +0300, Adrian Bunk wrote:
-> > I'm looking at it from a different angle, all code in the kernel should 
-> > follow the following rules [1]:
-> > - no functions in .c files should be marked inline
-> > - all functions in headers should be static inline
-> > - all functions in headers should either be very small or collapse
-> >   to become very small after inlining
-> > 
-> > I can simply not see any usecase for a non-forced inline in the kernel,
-> > and fixing the kernel should give a superset of the space savings of 
-> > this "inline optimization".
-> 
-> Here's a good counterexample: kernel/mutex.c.
-> 
-> __mutex_lock_common wants to be inlined into __mutex_lock_*_slowpath.
+Hi,
 
-If we really want to force gcc to emit 6 copies of this not so small 
-function then Ingo's commit in Linus' tree has already broken it on x86.
+the build failure reported[0] by Kamalesh back in 01/2008 is still 
+present in today's 2.6.25-git with CONFIG_NVRAM=m (instead of =y):
 
-> and *_slowpath *shouldn't* be inlined into mutex_lock_*.
+   Building modules, stage 2.
+   MODPOST 72 modules
+ERROR: "pmac_newworld" [arch/powerpc/platforms/powermac/nvram.ko] undefined!
+ERROR: "__alloc_bootmem" [arch/powerpc/platforms/powermac/nvram.ko] undefined!
+make[1]: *** [__modpost] Error 1
 
-"noinline" is nothing anyone wants to change.
+Full .config and make.log: http://nerdbynature.de/bits/2.6.25/nvram/
 
-cu
-Adrian
+I could not find an #ifdef or sth. around pmac_newworld....
 
+Thanks,
+Christian.
+
+[0] http://lkml.org/lkml/2008/1/17/55
 -- 
+BOFH excuse #187:
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+Reformatting Page. Wait...
