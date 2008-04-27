@@ -1,54 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761393AbYD0DO7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761261AbYD0DYO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761393AbYD0DO7 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Apr 2008 23:14:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755466AbYD0DOw
+	id S1761261AbYD0DYO (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Apr 2008 23:24:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755794AbYD0DYA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Apr 2008 23:14:52 -0400
-Received: from rv-out-0708.google.com ([209.85.198.245]:50447 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754954AbYD0DOv (ORCPT
+	Sat, 26 Apr 2008 23:24:00 -0400
+Received: from fg-out-1718.google.com ([72.14.220.155]:27462 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753909AbYD0DX7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Apr 2008 23:14:51 -0400
+	Sat, 26 Apr 2008 23:23:59 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=NmEGXoZ4xF2eAPw0Gq3HMQqTq7vXU7AFPx+xcv5HdKKBH6x5FoAidGKQlpS5+kb262d1OMDlS+kfqUE1iuiTzWnvBmk8hw/Pb303WfsAaDVLEgkWW2+P5mSH/XAdwOHBaFqoFcEJsmu2XYeQdElxWDlEjIbOse4Cz0l2D/YUgY0=
-Message-ID: <86802c440804262014p36c77fe1x54b64e8e44be6b8@mail.gmail.com>
-Date: Sat, 26 Apr 2008 20:14:51 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Andi Kleen" <andi@firstfloor.org>
-Subject: Re: [RFC git pull] "big box" x86 changes
-Cc: "Ingo Molnar" <mingo@elte.hu>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>, jbarnes@virtuousgeek.org
-In-Reply-To: <87bq3ww9ab.fsf@basil.nowhere.org>
+        b=siRI5lhIzBAFjgvj/Fd+GHVSH5cuY2rteAFGhvwKIBFaf+HfDnDzNyMmilNO0Q+WCGSfmVu4VMIuRcdBker7wtCBvZy6tHnwnpjgIgzS2RGXEYADYIVUWN0Ih7JqGOg3vWbHJrPGCT75OmaEey6H1EoEpKx2Q21UUOEmUQMfk4A=
+Message-ID: <29495f1d0804262023m34dd1769tef6a8ca0cee0290d@mail.gmail.com>
+Date: Sat, 26 Apr 2008 20:23:57 -0700
+From: "Nish Aravamudan" <nish.aravamudan@gmail.com>
+To: "Jeff Garzik" <jeff@garzik.org>
+Subject: Re: 2.6.25-mm1 (no disks with sata_nv)
+Cc: "Andrew Morton" <akpm@linux-foundation.org>, jgarzik@pobox.com,
+       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <29495f1d0804262003p6e24ef5cpfe21d7f9f1e4f75b@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20080426185516.GA32364@elte.hu> <87bq3ww9ab.fsf@basil.nowhere.org>
+References: <29495f1d0804261912k584cb68p36f4b9e5401afbb8@mail.gmail.com>
+	 <20080427025547.GC24710@havoc.gtf.org>
+	 <29495f1d0804262003p6e24ef5cpfe21d7f9f1e4f75b@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Apr 26, 2008 at 3:17 PM, Andi Kleen <andi@firstfloor.org> wrote:
-> Ingo Molnar <mingo@elte.hu> writes:
+On 4/26/08, Nish Aravamudan <nish.aravamudan@gmail.com> wrote:
+> On 4/26/08, Jeff Garzik <jeff@garzik.org> wrote:
+>  > On Sat, Apr 26, 2008 at 07:12:58PM -0700, Nish Aravamudan wrote:
+>  >  >
+>  >  > While trying to test the hugepage changes pending for -mm, I found
+>  >  > that none of my 4 disks attached to
+>  >  >
+>  >  > nVidia Corporation CK804 Serial ATA Controller (rev f3)
+>  >  >
+>  >  > come up (and thus I am dropped to an initramfs shell). The driver is
+>  >  > loading and indicates a link up on all 4 ports that are involved, but
+>  >  > I see no sd/sdX messages like I do with 2.6.25 (which I'm using right
+>  >  > now). I've started the bisection, but if Jeff or anyone has any ideas,
+>  >  > I'd appreciate it. I don't have a serial console on this box, and no
+>  >  > oops is produced. .configs from 2.6.25 and 2.6.25-mm1 attached.
 >  >
->  > Most of the work has been done by Yinghai Lu who has gone through a
->  > heroic effort to fix all the big-box bugs that he encountered on the
->  > vanilla Linux kernel on his various up to 256 GB RAM test-systems. Also
->  > work is included from Ying Huang for those insane SGI UV boxes.
+>  >
+>  > Should be fixed in upstream, so I presume it will appear when Andrew
+>  >  next updates his kernel to the latest upstream.
 >
->  Just to make things clear for the list readers, x86-64 worked fine for years
->  on 256GB systems.
+>
+> Ah great -- do you have a single patch I can apply that will fix it so
+>  I can test? (FWIW, reverting the git-libata-all patch from -mm got me
+>  booting). Should I assume it's a sata_nv only commit I can cherry-pick
+>  over?
 
-Are you sure? I don't know who had 256g ram with x86-64 that earlier.
-Horus from newisys?
+I'm guessing it's: a0b9f4bc1ec2ea25e47e7958e544fef0d122e012 ?
 
-that mean 8 sockets * 8 dimms * 4G.
-
-YH
+Thanks,
+Nish
