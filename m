@@ -1,70 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765131AbYD0Xr1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758592AbYD0Xt3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765131AbYD0Xr1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Apr 2008 19:47:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760010AbYD0XrK
+	id S1758592AbYD0Xt3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Apr 2008 19:49:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759223AbYD0XtV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Apr 2008 19:47:10 -0400
-Received: from slackware.com ([64.57.102.34]:46440 "EHLO bob.slackware.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764765AbYD0XrJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Apr 2008 19:47:09 -0400
-X-Greylist: delayed 3813 seconds by postgrey-1.27 at vger.kernel.org; Sun, 27 Apr 2008 19:47:08 EDT
-Message-ID: <48150178.4050900@slackware.com>
-Date: Sun, 27 Apr 2008 17:43:04 -0500
-From: "Patrick J. Volkerding" <volkerdi@slackware.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+	Sun, 27 Apr 2008 19:49:21 -0400
+Received: from fg-out-1718.google.com ([72.14.220.154]:23456 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755581AbYD0XtU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Apr 2008 19:49:20 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-disposition:message-id:content-type:content-transfer-encoding;
+        b=YaiEU4vew7TYc6JDLZvYggYqRtG6WX5G9hMUMoZuYsfjrmn9p1drnWTRXmLoOxVZ+EKRX/LtsovVYmASHKBUMSR9HV84rmR9tSt6Z3XWAE5wdxYjKOz3+ELK4d2+LSjA47JV3qAREpv8KWe4JvLP3Nf/OV6nRoYj3Btc14lOeNM=
+From: Denys Vlasenko <vda.linux@googlemail.com>
+To: David Chinner <dgc@sgi.com>
+Subject: Re: [PATCH] xfs: reduce stack usage in xfs_page_state_convert()
+Date: Mon, 28 Apr 2008 01:48:22 +0200
+User-Agent: KMail/1.8.2
+Cc: xfs@oss.sgi.com, Eric Sandeen <sandeen@sandeen.net>,
+       Adrian Bunk <bunk@kernel.org>, linux-kernel@vger.kernel.org
+References: <200804270246.58828.vda.linux@googlemail.com> <20080427232317.GB103491721@sgi.com>
+In-Reply-To: <20080427232317.GB103491721@sgi.com>
 MIME-Version: 1.0
-To: Jesper Juhl <jesper.juhl@gmail.com>
-CC: Nick Clifton <nickc@specifixinc.com>, Richard Henderson <rth@redhat.com>,
-       Ian Taylor <ian@airs.com>, Jeff Law <law@redhat.com>,
-       Jim Wilson <wilson@redhat.com>, DJ Delorie <dj@delorie.com>,
-       Alan Modra <amodra@bigpond.net.au>,
-       Michael Meissner <meissner@redhat.com>,
-       Daniel Jacobowitz <dan@debian.org>, linux-kernel@vger.kernel.org
-Subject: Re: ld: <...> internal error, aborting at arange-set.c line 202 in
- arange_set_new
-References: <alpine.LNX.1.00.0804272326320.14738@dragon.funnycrock.com>
-In-Reply-To: <alpine.LNX.1.00.0804272326320.14738@dragon.funnycrock.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Disposition: inline
+Message-Id: <200804280148.22358.vda.linux@googlemail.com>
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jesper Juhl wrote:
-> Hi,
+On Monday 28 April 2008 01:23, David Chinner wrote:
+> > This patch reduces xfs_page_state_convert() stack usage by 16 bytes
+> > by eliminating some local variables, and reducing the size
+> > of scope for other locals.
+> > 
+> > Compile tested only.
 > 
-> For your information;
-> I just test build Linus' tip of the kernel tree (HEAD at 
-> 064922a805ec7aadfafdd27aa6b4908d737c3c1d) on a up-to-date 
-> Slackware-current distro and hit this problem:
-> 
-> ...
->   GEN     .version
->   CHK     include/linux/compile.h
->   UPD     include/linux/compile.h
->   CC      init/version.o
->   LD      init/built-in.o
->   LD      .tmp_vmlinux1
-> ld: size of bfd_vma > size of splay_tree types
-> ld: BFD (Linux/GNU Binutils) 2.18.50.0.4.20080208 internal error, aborting 
-> at arange-set.c line 202 in arange_set_new
-> 
-> ld: Please report this bug.
+> Can you start testing your patches? if you are touching the writeback
+> or allocator path, there's a pretty high barrier to having patches
+> excepted, and testing them before is one of them. Go and download the
 
-Hello all,
+Its you who asked for patches. It's not like I decided
+to nag you because I have nothing better to do. Actually,
+my plate is pretty full with other things already.
 
-Slackware-current does not use binutils 2.18.50.0.4.20080208, but rather 
-binutils-2.17.50.0.17.  We've run into a few unusual issues with newer 
-binutils versions, so we tend to be rather cautious about having that 
-package on the bleeding edge.
+> XFSQA suite from the xfs-cmds CVS tree on oss.sgi.com, and run your
+> patches through it....
 
-I'd be curious if using the binutils-2.17.50.0.17 package from 
-slackware-current would avoid this problem, but also wanted to let 
-people know that the system in question had a critical part of the 
-toolchain replaced with something that didn't come from our set of packages.
 
-Best regards,
+On Tuesday 22 April 2008 03:28, David Chinner wrote:
+> Patches are welcome - I'd be over the moon if any of the known 4k
+> stack advocates sent a stack reduction patch for XFS, but it seems
+> that actually trying to fix the problems is much harder than
+> resending a one line patch every few months....
 
-Pat
+So I went ahead and actually spend a good chunk of the week
+trying to help you.
+
+I believe that my patches were sufficiently well thought-out,
+carefully implemented and reasonably tested (for a guy who
+never used xfs, have no xfs partitions, and not exactly
+planning to use xfs in the future).
+
+> pretty high barrier to having patches accepted
+
+I was honestly trying to help you. I am still willing
+to do it, but at some point you have to carry some part
+of a burden (maybe review and run testing?).
+
+If you are not going to accept patches, why you are
+accusing people of not sending them to you?
+--
+vda
