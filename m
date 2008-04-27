@@ -1,68 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753799AbYD0E0s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752980AbYD0EzY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753799AbYD0E0s (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Apr 2008 00:26:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751183AbYD0E0l
+	id S1752980AbYD0EzY (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Apr 2008 00:55:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751511AbYD0EzO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Apr 2008 00:26:41 -0400
-Received: from wa-out-1112.google.com ([209.85.146.183]:62042 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750767AbYD0E0k (ORCPT
+	Sun, 27 Apr 2008 00:55:14 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:58512
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751502AbYD0EzN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Apr 2008 00:26:40 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=ZuaFoo1z0B8fnGJnKoG0dhzpo4hi/qRUtlKTgUg1oHKA6vkFvrnlJQXVwS5yRIQf8KNVRxVpNHW9aXLowZHqFiBmXfqS+1KMOxvGGZ8ISUVctaO7vBmgvgrQcKD2DC77KS93XMZU+DHgIcqiNYgvpld4ZhznAgoTQRV+/Uc3+YI=
-Date: Sun, 27 Apr 2008 00:26:36 -0400
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [git pull] Input updates for 2.6.26-rc0
-Message-ID: <20080427042636.GC29127@anvil.corenet.prv>
-References: <20080425034751.GA12910@anvil.corenet.prv>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080425034751.GA12910@anvil.corenet.prv>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Sun, 27 Apr 2008 00:55:13 -0400
+Date: Sat, 26 Apr 2008 21:55:13 -0700 (PDT)
+Message-Id: <20080426.215513.141243565.davem@davemloft.net>
+To: linux-kernel@vger.kernel.org
+CC: mingo@elte.hu, torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       viro@ZenIV.linux.org.uk
+Subject: CONFIG_OPTIMIZE_INLINING
+From: David Miller <davem@davemloft.net>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
 
-On Thu, Apr 24, 2008 at 11:47:51PM -0400, Dmitry Torokhov wrote:
-> Hi Linus,
-> 
-> Please pull from:
-> 
-> 	git://git.kernel.org/pub/scm/linux/kernel/git/dtor/input.git for-linus
-> or
-> 	master.kernel.org:/pub/scm/linux/kernel/git/dtor/input.git for-linus
-> 
-> to receive updates for the input subsystem.
+Ingo, why the heck is this hiding under arch/x86/ and not in
+lib/Kconfig.debug where it belongs?
 
-Please do another pull from:
+    x86: add optimized inlining
 
-	git://git.kernel.org/pub/scm/linux/kernel/git/dtor/input.git for-linus
-or
-	master.kernel.org:/pub/scm/linux/kernel/git/dtor/input.git for-linus
+If there are platforms that can't handle it, we can add a conditional
+to lib/Kconfig.debug, but by default it should be made available
+generically.
 
-to get the fix for build failure reported by Ingo.
+Where did this original patch get posted for review and discussion?
 
-Changelog:
----------
+Tell me where!?!?!
 
-Dmitry Torokhov (1):
-      Input: xpad - fix build failure
-
-
-Diffstat:
---------
-
- drivers/input/joystick/xpad.c |   34 +++++++++++++++++-----------------
- 1 files changed, 17 insertions(+), 17 deletions(-)
-
--- 
-Dmitry
+The only references I see is where Stephen Rothwell complained that it
+broke the powerpc build, and then on the git commit list when Linus
+sucked this crud in.
