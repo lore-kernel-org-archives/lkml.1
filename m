@@ -1,42 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758199AbYD0JZW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756677AbYD0JjW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758199AbYD0JZW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Apr 2008 05:25:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752998AbYD0JZJ
+	id S1756677AbYD0JjW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Apr 2008 05:39:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752620AbYD0JjM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Apr 2008 05:25:09 -0400
-Received: from ns.store20.com ([212.7.7.16]:41886 "EHLO store20.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752300AbYD0JZI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Apr 2008 05:25:08 -0400
-Subject: [REGRESSION] Trouble seeing some wireless networks in latest git
-From: Priit Laes <plaes@plaes.org>
-To: linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-wireless <linux-wireless@vger.kernel.org>
+	Sun, 27 Apr 2008 05:39:12 -0400
+Received: from wa-out-1112.google.com ([209.85.146.180]:57212 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752609AbYD0JjL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Apr 2008 05:39:11 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=APnsg4RqjowR5Ew8TAsK6o0vWy9tADlxVXjZ3/eo0W08n9nMKb8ILfiRxZCIA8DBJXEB3fxRgmuhiti9mGj97d+CUqNue45uX67A9Y7FXcj916+moHvMk4/VXhIRzRw+xP3JWVLgxXOCIL8B024+/P1WGdcvr+CMsieVUmitRN4=
+Subject: [PATCH 1/2] audit: move extern declarations to audit.h
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Al Viro <viro@ZenIV.linux.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>
 Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Sun, 27 Apr 2008 12:24:58 +0300
-Message-Id: <1209288298.3851.12.camel@localhost>
+Date: Sun, 27 Apr 2008 02:39:17 -0700
+Message-Id: <1209289157.14173.52.camel@brick>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hey,
+Leave audit_sig_{uid|pid|sid} protected by #ifdef CONFIG_AUDITSYSCALL.
 
-There seems to be some kind of regression in wireless drivers that makes
-it not possible to see some wireless networks.
+Noticed by sparse:
+kernel/audit.c:73:6: warning: symbol 'audit_ever_enabled' was not declared. Should it be static?
+kernel/audit.c:100:8: warning: symbol 'audit_sig_uid' was not declared. Should it be static?
+kernel/audit.c:101:8: warning: symbol 'audit_sig_pid' was not declared. Should it be static?
+kernel/audit.c:102:6: warning: symbol 'audit_sig_sid' was not declared. Should it be static?
+kernel/audit.c:117:23: warning: symbol 'audit_ih' was not declared. Should it be static?
+kernel/auditfilter.c:78:18: warning: symbol 'audit_filter_list' was not declared. Should it be static?
 
-This can be seen with both b43 and iwl3945 drivers.
+Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+---
+Sent originally on April 1, 2008
 
-Using Kismet wireless scanner these networks were visible under latest
-git.
-All the networks rendered invisible seem to be from channels: 1 (one
-network visible), 3, 8, 12 and 13. Visible networks are in channels 1,
-4, 6, 9 and 11.
+ kernel/audit.h       |   11 +++++++++++
+ kernel/auditfilter.c |    5 -----
+ kernel/auditsc.c     |    6 ------
+ 3 files changed, 11 insertions(+), 11 deletions(-)
 
-Any hints how to debug this further?
+diff --git a/kernel/audit.h b/kernel/audit.h
+index 2554bd5..bbed72f 100644
+--- a/kernel/audit.h
++++ b/kernel/audit.h
+@@ -99,6 +99,9 @@ struct audit_entry {
+ 	struct audit_krule	rule;
+ };
+ 
++extern int audit_enabled;
++extern int audit_ever_enabled;
++
+ extern int audit_pid;
+ 
+ #define AUDIT_INODE_BUCKETS	32
+@@ -129,6 +132,9 @@ struct audit_netlink_list {
+ int audit_send_list(void *);
+ 
+ struct inotify_watch;
++/* Inotify handle */
++extern struct inotify_handle *audit_ih;
++
+ extern void audit_free_parent(struct inotify_watch *);
+ extern void audit_handle_ievent(struct inotify_watch *, u32, u32, u32,
+ 				const char *, struct inode *);
+@@ -136,6 +142,7 @@ extern int selinux_audit_rule_update(void);
+ 
+ extern struct mutex audit_filter_mutex;
+ extern void audit_free_rule_rcu(struct rcu_head *);
++extern struct list_head audit_filter_list[];
+ 
+ #ifdef CONFIG_AUDIT_TREE
+ extern struct audit_chunk *audit_tree_lookup(const struct inode *);
+@@ -162,6 +169,10 @@ extern void audit_put_tree(struct audit_tree *);
+ 
+ extern char *audit_unpack_string(void **, size_t *, size_t);
+ 
++extern pid_t audit_sig_pid;
++extern uid_t audit_sig_uid;
++extern u32 audit_sig_sid;
++
+ #ifdef CONFIG_AUDITSYSCALL
+ extern int __audit_signal_info(int sig, struct task_struct *t);
+ static inline int audit_signal_info(int sig, struct task_struct *t)
+diff --git a/kernel/auditfilter.c b/kernel/auditfilter.c
+index 2f2914b..0c63577 100644
+--- a/kernel/auditfilter.c
++++ b/kernel/auditfilter.c
+@@ -89,14 +89,9 @@ struct list_head audit_filter_list[AUDIT_NR_FILTERS] = {
+ 
+ DEFINE_MUTEX(audit_filter_mutex);
+ 
+-/* Inotify handle */
+-extern struct inotify_handle *audit_ih;
+-
+ /* Inotify events we care about. */
+ #define AUDIT_IN_WATCH IN_MOVE|IN_CREATE|IN_DELETE|IN_DELETE_SELF|IN_MOVE_SELF
+ 
+-extern int audit_enabled;
+-
+ void audit_free_parent(struct inotify_watch *i_watch)
+ {
+ 	struct audit_parent *parent;
+diff --git a/kernel/auditsc.c b/kernel/auditsc.c
+index 782262e..12e7183 100644
+--- a/kernel/auditsc.c
++++ b/kernel/auditsc.c
+@@ -69,9 +69,6 @@
+ 
+ #include "audit.h"
+ 
+-extern struct list_head audit_filter_list[];
+-extern int audit_ever_enabled;
+-
+ /* AUDIT_NAMES is the number of slots we reserve in the audit_context
+  * for saving names from getname(). */
+ #define AUDIT_NAMES    20
+@@ -2360,9 +2357,6 @@ int __audit_signal_info(int sig, struct task_struct *t)
+ 	struct audit_aux_data_pids *axp;
+ 	struct task_struct *tsk = current;
+ 	struct audit_context *ctx = tsk->audit_context;
+-	extern pid_t audit_sig_pid;
+-	extern uid_t audit_sig_uid;
+-	extern u32 audit_sig_sid;
+ 
+ 	if (audit_pid && t->tgid == audit_pid) {
+ 		if (sig == SIGTERM || sig == SIGHUP || sig == SIGUSR1) {
+-- 
+1.5.5.rc1.135.g8527
 
---
-Priit
+
