@@ -1,81 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764035AbYD0Tee@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764124AbYD0Tew@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764035AbYD0Tee (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Apr 2008 15:34:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763306AbYD0TeJ
+	id S1764124AbYD0Tew (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Apr 2008 15:34:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763337AbYD0TeL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Apr 2008 15:34:09 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:57792 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762239AbYD0TeH (ORCPT
+	Sun, 27 Apr 2008 15:34:11 -0400
+Received: from e28smtp03.in.ibm.com ([59.145.155.3]:40108 "EHLO
+	e28smtp03.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763283AbYD0TeJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Apr 2008 15:34:07 -0400
-Message-ID: <4814D420.6060007@zytor.com>
-Date: Sun, 27 Apr 2008 12:29:36 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
+	Sun, 27 Apr 2008 15:34:09 -0400
+Message-ID: <4814D459.1020602@linux.vnet.ibm.com>
+Date: Mon, 28 Apr 2008 01:00:33 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
 User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-To: Ian Campbell <ijc@hellion.org.uk>
-CC: Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Yinghai Lu <yinghai.lu@sun.com>,
-       Yinghai Lu <yhlu.kernel@gmail.com>, jbarnes@virtuousgeek.org,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [git pull] "big box" x86 changes, boot protocol
-References: <20080426185516.GA32364@elte.hu>	 <alpine.LFD.1.10.0804261205490.2813@woody.linux-foundation.org>	 <20080426195407.GA13729@elte.hu> <1209295271.2063.94.camel@localhost.localdomain>
-In-Reply-To: <1209295271.2063.94.camel@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Hugh Dickins <hugh@veritas.com>, Mel Gorman <mel@csn.ul.ie>,
+       Shi Weihua <shiwh@cn.fujitsu.com>, xemul@openvz.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [BUGFIX][PATCH] Fix usemap initialization v3
+References: <20080418161522.GB9147@csn.ul.ie> <48080706.50305@cn.fujitsu.com> <48080930.5090905@cn.fujitsu.com> <48080B86.7040200@cn.fujitsu.com> <20080418211214.299f91cd.kamezawa.hiroyu@jp.fujitsu.com> <21878461.1208539556838.kamezawa.hiroyu@jp.fujitsu.com> <20080421112048.78f0ec76.kamezawa.hiroyu@jp.fujitsu.com> <Pine.LNX.4.64.0804211250000.16476@blonde.site> <20080422104043.215c7dc4.kamezawa.hiroyu@jp.fujitsu.com> <20080423134621.6020dd83.kamezawa.hiroyu@jp.fujitsu.com> <20080427121817.03b432ca.akpm@linux-foundation.org>
+In-Reply-To: <20080427121817.03b432ca.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ian Campbell wrote:
+Andrew Morton wrote:
 > 
-> How about this. I can redo against current Linus but that will need
-> fixups here.
-> 
-> From cfed8d4043fc03ed948518076db602919b111a16 Mon Sep 17 00:00:00 2001
-> From: Ian Campbell <ijc@hellion.org.uk>
-> Date: Sun, 27 Apr 2008 12:19:11 +0100
-> Subject: [PATCH] Backfill x86 boot protocol documentation.
-> 
-> Signed-off-by: Ian Campbell <ijc@hellion.org.uk>
-> Cc: Ingo Molnar <mingo@elte.hu>
-> Cc: Rusty Russell <rusty@rustcorp.com.au>
-> Cc: Jeremy Fitzhardinge <jeremy@goop.org>
-> ---
->  Documentation/i386/boot.txt |   12 ++++++++++--
->  1 files changed, 10 insertions(+), 2 deletions(-)
-> 
-> diff --git a/Documentation/i386/boot.txt b/Documentation/i386/boot.txt
-> index 0fac346..86fbbd0 100644
-> --- a/Documentation/i386/boot.txt
-> +++ b/Documentation/i386/boot.txt
-> @@ -40,9 +40,17 @@ Protocol 2.05:	(Kernel 2.6.20) Make protected mode kernel relocatable.
->  		Introduce relocatable_kernel and kernel_alignment fields.
->  
->  Protocol 2.06:	(Kernel 2.6.22) Added a field that contains the size of
-> -		the boot command line
-> +		the boot command line.
->  
-> -Protocol 2.09:	(kernel 2.6.26) Added a field of 64-bit physical
-> +Protocol 2.07:	(Kernel 2.6.24) Added paravirtualised boot protocol.
-> +		Introduced hardware_subarch and hardware_subarch_data
-> +		and KEEP_SEGMENTS flag in load_flags.
-> +
-> +Protocol 2.08:	(Kernel 2.6.26) Added crc32 checksum and ELF format
-> +		payload. Introduced payload_offset and payload length
-> +		fields to aid in locating the payload.
-> +
-> +Protocol 2.09:	(Kernel 2.6.26) Added a field of 64-bit physical
->  		pointer to single linked list of struct	setup_data.
->  
+> Do we think this is needed in 2.6.25.x?
 
-Acked-by: H. Peter Anvin <hpa@zytor.com>
+My answer would be yes. Shi reproduced this problem with 2.6.25
 
-Since this is a documentation fix, it can wait until post-window.
-
-	-hpa
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
