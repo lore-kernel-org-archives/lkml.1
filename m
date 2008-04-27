@@ -1,71 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762663AbYD0RBG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762276AbYD0RDR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762663AbYD0RBG (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Apr 2008 13:01:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761586AbYD0RAw
+	id S1762276AbYD0RDR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Apr 2008 13:03:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755038AbYD0RDL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Apr 2008 13:00:52 -0400
-Received: from ns.store20.com ([212.7.7.16]:36765 "EHLO store20.com"
+	Sun, 27 Apr 2008 13:03:11 -0400
+Received: from smtp7-g19.free.fr ([212.27.42.64]:39543 "EHLO smtp7-g19.free.fr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756799AbYD0RAb convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Apr 2008 13:00:31 -0400
-Subject: Re: [REGRESSION] Trouble seeing some wireless networks in latest
-	git
-From: Priit Laes <plaes@plaes.org>
-To: Michael Buesch <mb@bu3sch.de>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-wireless <linux-wireless@vger.kernel.org>
-In-Reply-To: <200804271748.49377.mb@bu3sch.de>
-References: <1209288298.3851.12.camel@localhost>
-	 <48149F2B.4000503@lwfinger.net>  <200804271748.49377.mb@bu3sch.de>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-Date: Sun, 27 Apr 2008 20:00:25 +0300
-Message-Id: <1209315625.4095.4.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 
+	id S1754609AbYD0RDK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Apr 2008 13:03:10 -0400
+Message-ID: <464d01c8a888$3a1bfaf0$f9b5a8c0@pii350>
+From: "Gilles Espinasse" <g.esp@free.fr>
+To: "Pavel Machek" <pavel@ucw.cz>, "Tomasz Chmielewski" <mangoo@wpkg.org>
+Cc: "LKML" <linux-kernel@vger.kernel.org>, <jbarnold@MIT.EDU>,
+       <francois.cami@free.fr>, "Andi Kleen" <andi@firstfloor.org>,
+       <mail@earthworm.de>
+References: <481098A4.50107@wpkg.org> <20080427101659.GD3891@ucw.cz>
+Subject: Re: A system for rebootless kernel security updates
+Date: Sun, 27 Apr 2008 19:00:41 +0200
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+X-Priority: 3
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook Express 6.00.2800.1914
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2800.1914
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ühel kenal päeval, P, 2008-04-27 kell 17:48, kirjutas Michael Buesch:
-> > > Any hints how to debug this further?
-> Nah, it's a regulatory setting issue.
-> The default regdomain is US, which only allows chans 1-11.
-> There's some module parameter to switch the regdomain.
-> This is not a regression, but a feature.
-> 
-Regdomain setting seems to be OK (and missing for b43):
-﻿iwl3945: Tunable channels: 13 802.11bg, 23 802.11a channels
 
-Where can I set the regdomain? I couldn't find any information under
-Documentation and with modinfo?
+----- Original Message ----- 
+From: "Pavel Machek" <pavel@ucw.cz>
+To: "Tomasz Chmielewski" <mangoo@wpkg.org>
+Cc: "LKML" <linux-kernel@vger.kernel.org>; <jbarnold@MIT.EDU>;
+<francois.cami@free.fr>; "Andi Kleen" <andi@firstfloor.org>;
+<mail@earthworm.de>
+Sent: Sunday, April 27, 2008 12:17 PM
+Subject: Re: A system for rebootless kernel security updates
 
-Dmesg output for iwl3945 is:
-...
-iwl3945: Intel(R) PRO/Wireless 3945ABG/BG Network Connection driver for
-Linux, 1.2.26ks
-iwl3945: Copyright(c) 2003-2008 Intel Corporation
-ACPI: PCI Interrupt 0000:03:00.0[A] -> GSI 17 (level, low) -> IRQ 17
-PCI: Setting latency timer of device 0000:03:00.0 to 64
-iwl3945: Detected Intel Wireless WiFi Link 3945ABG
-iwl3945: Tunable channels: 13 802.11bg, 23 802.11a channels
-phy0: Selected rate control algorithm 'iwl-3945-rs'
-...
 
-And b43:
-...
-b43-pci-bridge 0000:16:00.0: enabling device (0000 -> 0002)
-ACPI: PCI Interrupt 0000:16:00.0[A] -> GSI 16 (level, low) -> IRQ 16
-PCI: Setting latency timer of device 0000:16:00.0 to 64
-ssb: Sonics Silicon Backplane found on PCI device 0000:16:00.0
-b43-phy1: Broadcom 4306 WLAN found
-phy1: Selected rate control algorithm 'pid'
-Broadcom 43xx driver loaded [ Features: PMLR, Firmware-ID: FW13 ]
-input: b43-phy1 as /devices/virtual/input/input9
-b43-phy1: Loading firmware version 410.2160 (2007-05-26 15:32:10)
-Registered led device: b43-phy1::tx
-Registered led device: b43-phy1::rx
-Registered led device: b43-phy1::radio
-...
+> On Thu 2008-04-24 16:26:44, Tomasz Chmielewski wrote:
+> > Jeff Arnold wrote:
+> >
+> > >I've put together an automatic system for applying
+> > >kernel security patches to the Linux kernel without
+> > >rebooting it, and I wanted to share this system with
+> > >the community in case others find it useful or
+> > >interesting.
+> >
+> > Hmm, the idea seem to be patented by Microsoft, i.e.
+> > this patent from December 2002:
+> >
+> > http://www.google.com/patents?id=cVyWAAAAEBAJ&dq=hotpatching
+> >
+> > (and other patents by Microsoft if you search for
+> > "hotpatching").
+>
+> ...so US will not be able to fix security holes without reboot, good.
+> Perhaps they fix their stupid laws after next worm outbreak...
+>
+I have hot-patched on PDP-11 without reboot over the phone line many years
+before Microsoft patent.
+In the time of MS patent, the machines I care were no more running.
+
+Just another stupid patent.
+
+Gilles
+
