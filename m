@@ -1,45 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754153AbYD0FPy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754702AbYD0FTS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754153AbYD0FPy (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Apr 2008 01:15:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751290AbYD0FPr
+	id S1754702AbYD0FTS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Apr 2008 01:19:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751785AbYD0FTK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Apr 2008 01:15:47 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:55233 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751010AbYD0FPq (ORCPT
+	Sun, 27 Apr 2008 01:19:10 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:42525
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751594AbYD0FTJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Apr 2008 01:15:46 -0400
-Date: Sun, 27 Apr 2008 06:15:42 +0100
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       Jeff Garzik <jgarzik@pobox.com>
-Subject: [PATCH] e1000e triggers sparc32 gcc bug
-Message-ID: <20080427051541.GN5882@ZenIV.linux.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Sun, 27 Apr 2008 01:19:09 -0400
+Date: Sat, 26 Apr 2008 22:19:08 -0700 (PDT)
+Message-Id: <20080426.221908.193700782.davem@davemloft.net>
+To: viro@ZenIV.linux.org.uk
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       jgarzik@pobox.com
+Subject: Re: [PATCH] e1000e triggers sparc32 gcc bug
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20080427051541.GN5882@ZenIV.linux.org.uk>
+References: <20080427051541.GN5882@ZenIV.linux.org.uk>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-	... and isn't possible on sparc32 boxen anyway, unless somebody
-had done JavaStation with PCIE lately.
+From: Al Viro <viro@ZenIV.linux.org.uk>
+Date: Sun, 27 Apr 2008 06:15:42 +0100
 
-Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
----
-diff --git a/drivers/net/Kconfig b/drivers/net/Kconfig
-index b6ebcb9..733db3d 100644
---- a/drivers/net/Kconfig
-+++ b/drivers/net/Kconfig
-@@ -2011,7 +2011,7 @@ config E1000_DISABLE_PACKET_SPLIT
- 
- config E1000E
- 	tristate "Intel(R) PRO/1000 PCI-Express Gigabit Ethernet support"
--	depends on PCI
-+	depends on PCI && (!SPARC32 || BROKEN)
- 	---help---
- 	  This driver supports the PCI-Express Intel(R) PRO/1000 gigabit
- 	  ethernet family of adapters. For PCI or PCI-X e1000 adapters,
+> 	... and isn't possible on sparc32 boxen anyway, unless somebody
+> had done JavaStation with PCIE lately.
+> 
+> Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
+
+Acked-by: David S. Miller <davem@davemloft.net>
+
+Unfortunately this is necessary, every gcc I've tried triggers
+a reload bug on 32-bit sparc.
+
+Meanwhile I'll try and get the gcc bug fixed.
+
+Thanks Al.
+
