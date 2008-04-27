@@ -1,61 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764778AbYD0XC2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760125AbYD0XCm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764778AbYD0XC2 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Apr 2008 19:02:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753754AbYD0XCT
+	id S1760125AbYD0XCm (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Apr 2008 19:02:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764750AbYD0XC0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Apr 2008 19:02:19 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:47863 "EHLO mail.dvmed.net"
+	Sun, 27 Apr 2008 19:02:26 -0400
+Received: from www.tglx.de ([62.245.132.106]:48931 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752108AbYD0XCS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Apr 2008 19:02:18 -0400
-Message-ID: <481505ED.4050008@garzik.org>
-Date: Sun, 27 Apr 2008 19:02:05 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
-MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: David Miller <davem@davemloft.net>, James.Bottomley@HansenPartnership.com,
-       mingo@elte.hu, tglx@linutronix.de, linux-kernel@vger.kernel.org,
-       torvalds@linux-foundation.org
+	id S1764728AbYD0XCZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Apr 2008 19:02:25 -0400
+Date: Mon, 28 Apr 2008 01:01:50 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Jeff Garzik <jeff@garzik.org>
+cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Ingo Molnar <mingo@elte.hu>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>
 Subject: Re: [patch] x86, voyager: fix ioremap_nocache()
-References: <20080427214837.GA11631@elte.hu>	<1209335660.3801.79.camel@localhost.localdomain>	<4815009C.2010809@garzik.org> <20080427.154620.177583216.davem@davemloft.net> <481503ED.8060107@garzik.org> <481504BA.4090402@zytor.com>
-In-Reply-To: <481504BA.4090402@zytor.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+In-Reply-To: <4815009C.2010809@garzik.org>
+Message-ID: <alpine.LFD.1.10.0804280046100.3261@apollo.tec.linutronix.de>
+References: <1209329485.3801.46.camel@localhost.localdomain>  <20080427214837.GA11631@elte.hu> <1209335660.3801.79.camel@localhost.localdomain> <4815009C.2010809@garzik.org>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin wrote:
-> Jeff Garzik wrote:
->>
->> Understood.
->>
->> I guess I am more annoyed that this stealth semantics change appears 
->> to have broken everything that depends on pci_iomap(), including 90%+ 
->> of all libata drivers, unless I am missing something.
->>
->> That one piece of code (pci_iomap) was correct under the old 
->> semantics, on x86 and elsewhere.  It's tested and working nicely, and 
->> depended upon by many drivers.
->>
+On Sun, 27 Apr 2008, Jeff Garzik wrote:
 > 
-> That one piece of code has had no effective change.  Under both the old 
-> and the new code, both branches functionally because ioremap_nocache(), 
-> in one case because of MTRR and in one case because of PAT.
+> Isn't there Yet More Breakage in lib/iomap.c, given these new semantics?
+> 
+>         if (flags & IORESOURCE_MEM) {
+>                 if (flags & IORESOURCE_CACHEABLE)
+>                         return ioremap(start, len);
+>                 return ioremap_nocache(start, len);
+>         }
 
-OK good...  libata uses it for controller registers exclusively, so that 
-should be fine from an operational standpoint.
+That's broken anyway as we are inconsistent across
+architectures. ioremap defaults to uncached at least on:
 
-The lack of discussion is still a bit irksome...  at the very least I 
-could have pointed out that lib/iomap.c wanted an update, and the 2.5 yo 
-discussion could have resurfaced.
+POWERPC, ARM, MIPS, SH, FRV, PARISC, H8300, M68K, BLACKFIN, M68KNOMMU
 
-	Jeff
+So changing the above to ioremap_cache() would provide the desired
+results across architectures.
 
+Thanks,
 
-
+	tglx
