@@ -1,47 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760581AbYD0Cz5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760890AbYD0C6Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760581AbYD0Cz5 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Apr 2008 22:55:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753694AbYD0Czt
+	id S1760890AbYD0C6Q (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Apr 2008 22:58:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753694AbYD0C6D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Apr 2008 22:55:49 -0400
-Received: from havoc.gtf.org ([69.61.125.42]:43718 "EHLO havoc.gtf.org"
+	Sat, 26 Apr 2008 22:58:03 -0400
+Received: from havoc.gtf.org ([69.61.125.42]:49363 "EHLO havoc.gtf.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753165AbYD0Czs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Apr 2008 22:55:48 -0400
-Date: Sat, 26 Apr 2008 22:55:47 -0400
+	id S1753620AbYD0C6C (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 Apr 2008 22:58:02 -0400
+Date: Sat, 26 Apr 2008 22:58:00 -0400
 From: Jeff Garzik <jeff@garzik.org>
-To: Nish Aravamudan <nish.aravamudan@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, jgarzik@pobox.com,
-       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.25-mm1 (no disks with sata_nv)
-Message-ID: <20080427025547.GC24710@havoc.gtf.org>
-References: <29495f1d0804261912k584cb68p36f4b9e5401afbb8@mail.gmail.com>
+To: David Miller <davem@davemloft.net>
+Cc: torvalds@linux-foundation.org, bunk@kernel.org, akpm@linux-foundation.org,
+       harvey.harrison@gmail.com, mchehab@infradead.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: If you want me to quit I will quit
+Message-ID: <20080427025800.GD24710@havoc.gtf.org>
+References: <20080426084420.8e61c379.akpm@linux-foundation.org> <20080426171604.GN2252@cs181133002.pp.htv.fi> <alpine.LFD.1.10.0804261024580.2813@woody.linux-foundation.org> <20080426.173129.232382024.davem@davemloft.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <29495f1d0804261912k584cb68p36f4b9e5401afbb8@mail.gmail.com>
+In-Reply-To: <20080426.173129.232382024.davem@davemloft.net>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Apr 26, 2008 at 07:12:58PM -0700, Nish Aravamudan wrote:
+On Sat, Apr 26, 2008 at 05:31:29PM -0700, David Miller wrote:
+> From: Linus Torvalds <torvalds@linux-foundation.org>
+> Date: Sat, 26 Apr 2008 10:31:36 -0700 (PDT)
 > 
-> While trying to test the hugepage changes pending for -mm, I found
-> that none of my 4 disks attached to
+> > And once you've publicized them, you don't know who has that tree, so just 
+> > from a sanity and debugging standpoint, you should try to avoid mucking 
+> > with already-public versions. If you made a mistake, add a patch on top to 
+> > fix it (and announce the new state), but generally try to not "hide" the 
+> > fact that the state has changed.
 > 
-> nVidia Corporation CK804 Serial ATA Controller (rev f3)
-> 
-> come up (and thus I am dropped to an initramfs shell). The driver is
-> loading and indicates a link up on all 4 ports that are involved, but
-> I see no sd/sdX messages like I do with 2.6.25 (which I'm using right
-> now). I've started the bisection, but if Jeff or anyone has any ideas,
-> I'd appreciate it. I don't have a serial console on this box, and no
-> oops is produced. .configs from 2.6.25 and 2.6.25-mm1 attached.
+> I didn't rebase at all this past cycle for networking, and it
+> helped the people downstream from me _A LOT_.
 
-Should be fixed in upstream, so I presume it will appear when Andrew
-next updates his kernel to the latest upstream.
+The Downstream Collective thanks you!  ;-)
 
 	Jeff
 
