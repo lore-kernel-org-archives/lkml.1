@@ -1,29 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764973AbYD0XmR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763619AbYD0XrA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764973AbYD0XmR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Apr 2008 19:42:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760148AbYD0XmA
+	id S1763619AbYD0XrA (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Apr 2008 19:47:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755205AbYD0Xqv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Apr 2008 19:42:00 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:60698 "EHLO mx2.mail.elte.hu"
+	Sun, 27 Apr 2008 19:46:51 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:35004 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758107AbYD0Xl7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Apr 2008 19:41:59 -0400
-Date: Mon, 28 Apr 2008 01:41:10 +0200
+	id S1753982AbYD0Xqu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Apr 2008 19:46:50 -0400
+Date: Mon, 28 Apr 2008 01:46:30 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Arjan van de Ven <arjan@infradead.org>,
-       Christoph Hellwig <hch@infradead.org>, Sam Ravnborg <sam@ravnborg.org>,
-       Adrian Bunk <bunk@kernel.org>, linux arch <linux-arch@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>, David Miller <davem@davemloft.net>
-Subject: Re: [PATCH] prepare kconfig inline optimization for all
-	architectures
-Message-ID: <20080427234110.GA14679@elte.hu>
-References: <alpine.LFD.1.10.0804271002360.2896@woody.linux-foundation.org> <20080427172235.GA2252@cs181133002.pp.htv.fi> <alpine.LFD.1.10.0804271029130.2896@woody.linux-foundation.org> <20080427174714.GB2252@cs181133002.pp.htv.fi> <20080427180007.GB28483@infradead.org> <20080427180957.GA25964@uranus.ravnborg.org> <20080427181411.GA31667@infradead.org> <alpine.LFD.1.10.0804271118500.2896@woody.linux-foundation.org> <20080427162606.3dd82c0c@laptopd505.fenrus.org> <alpine.LFD.1.10.0804271634490.3119@woody.linux-foundation.org>
+To: Johannes Weiner <hannes@saeurebad.de>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Yinghai Lu <yinghai.lu@sun.com>, Yinghai Lu <yhlu.kernel@gmail.com>,
+       jbarnes@virtuousgeek.org
+Subject: Re: [git pull] "big box" x86 changes, bootmem/sparsemem
+Message-ID: <20080427234630.GC14338@elte.hu>
+References: <20080426185516.GA32364@elte.hu> <alpine.LFD.1.10.0804261205490.2813@woody.linux-foundation.org> <20080426194143.GA8366@elte.hu> <87hcdmnccu.fsf@saeurebad.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.10.0804271634490.3119@woody.linux-foundation.org>
+In-Reply-To: <87hcdmnccu.fsf@saeurebad.de>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -38,58 +38,29 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Linus Torvalds <torvalds@linux-foundation.org> wrote:
+* Johannes Weiner <hannes@saeurebad.de> wrote:
 
-> On Sun, 27 Apr 2008, Arjan van de Ven wrote:
-> > 
-> > (actually, other than some obscure commandline options, the only 
-> > sane way to avoid gcc doing this too agressive is using -Os)
+> >       mm: allow reserve_bootmem() cross nodes
 > 
-> Well, CC_OPTIMIZE_FOR_SIZE has been defaulting to 'y' for a *loong* 
-> time, but it's hidden behind a EXPERIMENTAL (unless you were on some 
-> embedded architectures), so many people won't see it.
+> I find it sad that this goes in now.  I wrote a clean version of 
+> reserve_bootmem() [1] and it was rejected with arguments that I did 
+> not understand [2] and that were not further explained even though I 
+> asked for it [3].
 > 
-> Perhaps it is time to remove the EXPERIMENTAL? I think the gcc 
-> warnings were mostly bogus - it's not as if there haven't been 
-> compiler bugs without -Os too..
+> http://lkml.org/lkml/2008/4/16/76
+> http://lkml.org/lkml/2008/4/16/234
+> http://lkml.org/lkml/2008/4/16/250
 
-i was wondering about that when doing the OPTIMIZE_INLINING change - 
-lets do something like the patch below?
+oh, i had your patches applied then undid them due to this:
+
+   http://www.ussg.iu.edu/hypermail/linux/kernel/0804.2/0253.html
+
+havent seen a followup to that mail so it was 'issue pending'.
+
+so i very much agree that your changes are cleaner, i just wanted to 
+have one that has all the fixes included.
+
+Would you like to post a patch against current -git or should i extract 
+the cleaner reserve_bootmem() from your previous patch?
 
 	Ingo
-
--------------->
-Subject: make CC_OPTIMIZE_FOR_SIZE non-experimental
-From: Ingo Molnar <mingo@elte.hu>
-Date: Mon Apr 28 01:39:43 CEST 2008
-
-this option has been the default on a wide range of distributions
-for a long time - time to make it non-experimental.
-
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- init/Kconfig |    6 +-----
- 1 file changed, 1 insertion(+), 5 deletions(-)
-
-Index: linux-x86.q/init/Kconfig
-===================================================================
---- linux-x86.q.orig/init/Kconfig
-+++ linux-x86.q/init/Kconfig
-@@ -496,16 +496,12 @@ source "usr/Kconfig"
- endif
- 
- config CC_OPTIMIZE_FOR_SIZE
--	bool "Optimize for size (Look out for broken compilers!)"
-+	bool "Optimize for size"
- 	default y
--	depends on ARM || H8300 || SUPERH || EXPERIMENTAL
- 	help
- 	  Enabling this option will pass "-Os" instead of "-O2" to gcc
- 	  resulting in a smaller kernel.
- 
--	  WARNING: some versions of gcc may generate incorrect code with this
--	  option.  If problems are observed, a gcc upgrade may be needed.
--
- 	  If unsure, say N.
- 
- config SYSCTL
