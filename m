@@ -1,759 +1,173 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757796AbYD0OOd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760998AbYD0OZd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757796AbYD0OOd (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Apr 2008 10:14:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762241AbYD0OOH
+	id S1760998AbYD0OZd (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Apr 2008 10:25:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754984AbYD0OZX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Apr 2008 10:14:07 -0400
-Received: from mout3.freenet.de ([195.4.92.93]:38717 "EHLO mout3.freenet.de"
+	Sun, 27 Apr 2008 10:25:23 -0400
+Received: from x346.tv-sign.ru ([89.108.83.215]:51221 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761673AbYD0ON7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Apr 2008 10:13:59 -0400
-From: Sascha Sommer <saschasommer@freenet.de>
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] MMC/SD host driver for Ricoh Bay1Controllers
-Date: Sun, 27 Apr 2008 16:17:53 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: sdricohcs-devel@lists.sourceforge.net
-MIME-Version: 1.0
-Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_RsIFIzWJTYfCqZ3"
-Message-Id: <200804271617.53438.saschasommer@freenet.de>
+	id S1754904AbYD0OZW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Apr 2008 10:25:22 -0400
+Date: Sun, 27 Apr 2008 18:25:29 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Heiko Carstens <heiko.carstens@de.ibm.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, Gautham R Shenoy <ego@in.ibm.com>,
+       Johannes Berg <johannes@sipsolutions.net>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Srivatsa Vaddagiri <vatsa@in.ibm.com>, linux-kernel@vger.kernel.org
+Subject: Re: get_online_cpus() && workqueues
+Message-ID: <20080427142529.GA15005@tv-sign.ru>
+References: <1208868236.7115.249.camel@twins> <20080423035802.GA8895@in.ibm.com> <20080424150714.GA8273@osiris.boeblingen.de.ibm.com> <1209052984.7115.369.camel@twins> <20080424155946.GA11160@tv-sign.ru> <20080424194810.GA4821@osiris.boeblingen.de.ibm.com> <20080424192706.GA165@tv-sign.ru> <20080425064044.GA10817@osiris.boeblingen.de.ibm.com> <20080426144330.GA6150@tv-sign.ru> <20080427122209.GB6754@osiris.boeblingen.de.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080427122209.GB6754@osiris.boeblingen.de.ibm.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Boundary-00=_RsIFIzWJTYfCqZ3
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+On 04/27, Heiko Carstens wrote:
+>
+> On Sat, Apr 26, 2008 at 06:43:30PM +0400, Oleg Nesterov wrote:
+> > 
+> > In short: work_struct can't use get_online_cpus() due to deadlock with the
+> > CPU_DEAD phase.
+> > 
+> > Can't we add another nested lock which is dropped right after __cpu_die()?
+> > (in fact I think it could be dropped after __stop_machine_run).
+> > 
+> > The new read-lock is get_online_map() (just a random name for now). The only
+> > difference wrt get_online_cpus() is that it doesn't protect against CPU_DEAD,
+> > but most users of get_online_cpus() doesn't need this, they only need a
+> > stable cpu_online_map and sometimes they need to be sure that some per-cpu
+> > object (say, cpu_workqueue_struct->thread) can't be destroyed under this
+> > lock.
+> > 
+> > get_online_map() seem to fit for this, and can be used from work->func().
+> > (actually, I think most users of use get_online_cpus() could use the new
+> > helper instead, but this doen't matter).
+> > 
+> > Heiko, what do you think? Is it suitable for arch_reinit_sched_domains()?
+> 
+> Uhm, no. For arch_reinit_sched_domains that would allow for concurrent
+> callers for arch_init_sched_domains since sched.c calls that function in
+> quite a lot of the CPU_* phases (including CPU_DEAD)
 
-Hi,
+OK, thanks,
 
-attached you can find a driver for MMC/SD card controllers that have been 
-integrated into some Notebooks with Ricoh Co Ltd RL5c476 II Cardbus bridges. 
-This includes the Samsung P35 notebook, the Dell X300 and some notebooks from 
-the Asus M6N series.
-Whenever a MMC or SD card is insterted in the cardslot of one of these 
-notebooks the cardbus bridge will announce a 
-virtual Ricoh Bay1Controller PCMCIA card.
-
-Since I submitted the first version of this driver to lkml last year many 
-changes have been made. The driver can now read and write to MMC and SD cards 
-and the reading speed for SD cards should be close to the windows driver now.
-Many thanks to all the people that tested the driver and helped me to fix some 
-of the remaining bugs. I think it is now time to find out what needs to be 
-fixed before the driver can go into kernel.
-
-While the driver is working fine for me there are still some not so nice parts 
-in it. 
-- the registers are on the cardbus bridge that is already claimed by yenta 
-socket therefore the driver has to use pci_get_device
-- there is a lot of register polling because the reader does not support irqs
-- some mmc commands require extra hacks. One of those commands is the
-  SD_APP_SEND_SCR command (a user reported that it is required for his SDHC
-  card). Like the read and write commands this command
-  requires a block read to read the scr but this does not seem to work.
-  I do not have any documentation for this device and the windows driver does
-  not support such commands so I cannot find the
-  needed info in its logfiles.
+> But on the other hand there can be already concurrent callers via
+> sched_power_savings_store().
+> 
+> And with s390 calling arch_reinit_sched_domais() from outside there can be
+> yet another concurrent caller. Looks like the locking is broken anyway.
+> Sigh.
+> 
+> Looks like we need a new lock in arch_reinit_sched_domains() to prevent
+> concurrent callers to arch_init_sched_domains().
 ...
+> So conclusion is: the new get_online_map() wouldn't solve the deadlock
+> here,
 
-I'm thankfull for any kind of feedback.
+Well, if we add a new lock to arch_reinit_sched_domains(), perhaps we can
+solve the deadlock, but this means we should also change update_sched_domains()
+to take this lock too. Not pleasant, and
 
-Signed-off-by: Sascha Sommer <saschasommer@freenet.de>
+> For the "don't call get_online_cpus() from within a work_struct" I have
+> the patch below.
 
-
-Regards
-
-Sascha
-
-P.S. Please CC me as I'm not subscribed.
+yes, I think it is much better.
 
 
 
---Boundary-00=_RsIFIzWJTYfCqZ3
-Content-Type: text/x-diff;
-  charset="us-ascii";
-  name="sdricoh_cs.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
-	filename="sdricoh_cs.patch"
+Still. It would be nice to find the general (and simple!) solution.
+Especially because it can happen that some work->func() will use
+get_online_cpus() indirectly.
 
---- /dev/null	2007-09-21 23:50:58.000000000 +0200
-+++ drivers/mmc/host/sdricoh_cs.c	2008-04-27 14:38:42.000000000 +0200
-@@ -0,0 +1,647 @@
-+/*
-+ *  sdricoh_cs.c - driver for Ricoh Secure Digital Card Readers that can be
-+ *     found on some Ricoh RL5c476 II cardbus bridge
-+ *
-+ *  Copyright (C) 2006 - 2008 Sascha Sommer <saschasommer@freenet.de>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-+ *
-+ */
-+
-+#include <linux/delay.h>
-+#include <linux/highmem.h>
-+#include <linux/pci.h>
-+#include <linux/ioport.h>
-+#include <linux/version.h>
-+
-+#include <pcmcia/cs_types.h>
-+#include <pcmcia/cs.h>
-+#include <pcmcia/cistpl.h>
-+#include <pcmcia/ds.h>
-+#include <asm/io.h>
-+
-+#include <linux/mmc/host.h>
-+#include <linux/mmc/mmc.h>
-+#include <linux/mmc/sd.h>
-+#include <linux/mmc/sdio.h>
-+
-+#define DRIVER_NAME "sdricoh_cs"
-+#define DRIVER_VERSION "0.1.4"
-+
-+static unsigned int debug = 0;
-+static unsigned int switchlocked = 0;
-+
-+/* #define DEBUG */
-+
-+/* debug macros */
-+
-+#ifdef DEBUG
-+#define REGDBG(fmt, arg...) do {\
-+        if (debug > 1) \
-+                printk(KERN_INFO "sdricoh_cs: "fmt, \
-+                         ##arg); } while (0)
-+#else
-+#define REGDBG(fmt, arg...)
-+#endif
-+
-+#define DBG(fmt, arg...) do {\
-+        if (debug > 0) \
-+                printk(KERN_INFO DRIVER_NAME ": "fmt, \
-+                         ##arg); } while (0)
-+
-+#define ERR(fmt, arg...) do {\
-+                printk(KERN_INFO DRIVER_NAME ": "fmt, \
-+                         ##arg); } while (0)
-+
-+#define INFO(fmt, arg...) do {\
-+                printk(KERN_INFO DRIVER_NAME ": "fmt, \
-+                         ##arg); } while (0)
-+/* i/o region */
-+#define SDRICOH_PCI_REGION 0
-+#define SDRICOH_PCI_REGION_SIZE 0x1000
-+
-+/* registers */
-+#define R104_VERSION     0x104
-+#define R200_CMD         0x200
-+#define R204_CMD_ARG     0x204
-+#define R208_DATAIO      0x208
-+#define R20C_RESP        0x20c
-+#define R21C_STATUS      0x21c
-+#define R2E0_INIT        0x2e0
-+#define R2E4_STATUS_RESP 0x2e4
-+#define R2F0_RESET       0x2f0
-+#define R224_MODE        0x224
-+#define R228_POWER       0x228
-+#define R230_DATA        0x230
-+
-+/* flags for the R21C_STATUS register */
-+#define STATUS_CMD_FINISHED      0x00000001
-+#define STATUS_TRANSFER_FINISHED 0x00000004
-+#define STATUS_CARD_INSERTED     0x00000020
-+#define STATUS_CARD_LOCKED       0x00000080
-+#define STATUS_CMD_TIMEOUT       0x00400000
-+#define STATUS_READY_TO_READ     0x01000000
-+#define STATUS_READY_TO_WRITE    0x02000000
-+#define STATUS_BUSY              0x40000000
-+
-+/* timeouts */
-+#define INIT_TIMEOUT      100
-+#define CMD_TIMEOUT       100000
-+#define TRANSFER_TIMEOUT  100000
-+#define BUSY_TIMEOUT      32767
-+
-+#define MODE_MMC 0
-+#define MODE_SD 1
-+#define MODE_SDHC 2
-+
-+/* list of supported pcmcia devices */
-+static struct pcmcia_device_id pcmcia_ids[] = {
-+	/* vendor and device strings followed by their crc32 hashes */
-+	PCMCIA_DEVICE_PROD_ID12("RICOH", "Bay1Controller", 0xd9f522ed,
-+				0xc3901202),
-+	PCMCIA_DEVICE_NULL,
-+};
-+
-+MODULE_DEVICE_TABLE(pcmcia, pcmcia_ids);
-+
-+/* mmc privdata */
-+struct sdricoh_host {
-+	struct mmc_host *mmc;	/* MMC structure */
-+	unsigned char __iomem *iobase;
-+	struct pci_dev *pci_dev;
-+	int mode;
-+};
-+
-+/***************** register i/o helper functions *****************************/
-+
-+static inline unsigned int sdricoh_readl(struct sdricoh_host *host,
-+					 unsigned int reg)
-+{
-+	unsigned int value = readl(host->iobase + reg);
-+	REGDBG("rl %x 0x%x\n", reg, value);
-+	return value;
-+}
-+
-+static inline void sdricoh_writel(struct sdricoh_host *host, unsigned int reg,
-+				  unsigned int value)
-+{
-+	writel(value, host->iobase + reg);
-+	REGDBG("wl %x 0x%x\n", reg, value);
-+
-+}
-+
-+static inline unsigned int sdricoh_readw(struct sdricoh_host *host,
-+					 unsigned int reg)
-+{
-+	unsigned int value = readw(host->iobase + reg);
-+	REGDBG("rb %x 0x%x\n", reg, value);
-+	return value;
-+}
-+
-+static inline unsigned int sdricoh_readb(struct sdricoh_host *host,
-+					 unsigned int reg)
-+{
-+	unsigned int value = readb(host->iobase + reg);
-+	REGDBG("rb %x 0x%x\n", reg, value);
-+	return value;
-+}
-+
-+
-+static int sdricoh_query_status(struct sdricoh_host *host,unsigned int wanted,
-+				unsigned int timeout){
-+	unsigned int loop;
-+	unsigned int status = 0;
-+	for (loop = 0; loop < timeout; loop++) {
-+		status = sdricoh_readl(host, R21C_STATUS);
-+		sdricoh_writel(host, R2E4_STATUS_RESP, status);
-+		if (status & wanted)
-+			break;
-+	}
-+
-+        if (loop == timeout) {
-+                ERR("query_status: timeout waiting for data\n");
-+                return -ETIMEDOUT;
-+        }
-+
-+	/* do not do this check in the loop as some commands fail otherwise */
-+	if(status & 0x7F0000){
-+		ERR("waiting for status bit %x failed\n",wanted);
-+		return -EINVAL;
-+	}
-+	return 0;
-+
-+}
-+
-+
-+
-+
-+
-+static int sdricoh_mmc_cmd(struct sdricoh_host *host, unsigned char opcode,
-+			   unsigned int arg)
-+{
-+	unsigned int status;
-+	int result = 0;
-+	unsigned int loop = 0;
-+	/* reset status reg? */
-+	sdricoh_writel(host, R21C_STATUS, 0x18);
-+	/* fill parameters */
-+	sdricoh_writel(host, R204_CMD_ARG, arg);
-+	sdricoh_writel(host, R200_CMD, (0x10000 << 8) | opcode);
-+	/* wait for command completion */
-+	if (opcode) {
-+		for (loop = 0; loop < CMD_TIMEOUT; loop++) {
-+			status = sdricoh_readl(host, R21C_STATUS);
-+			sdricoh_writel(host, R2E4_STATUS_RESP, status);
-+			if (status  & STATUS_CMD_FINISHED)
-+				break;
-+		}
-+		if (loop == CMD_TIMEOUT || status & STATUS_CMD_TIMEOUT)
-+			result = -ETIMEDOUT;
-+
-+	}
-+	DBG("mmc_cmd opcode=%i arg=0x%x => %i (queries=%i)\n",
-+	    opcode, arg, result, loop);
-+
-+	if(result == 0){
-+		/* EXT_CSD are filtered so this should be save */
-+                if(opcode == SD_SEND_IF_COND){
-+                        if(host->mode != MODE_SDHC){
-+                                INFO("switching to SDHC mode\n");
-+                                host->mode = MODE_SDHC;
-+                        }
-+                }
-+
-+		/* switch to SD mode if APP_CMDs are supported */
-+		if(opcode == MMC_APP_CMD){
-+			if(host->mode == MODE_MMC){
-+				INFO("switching to SD mode\n");
-+				host->mode = MODE_SD;
-+			}
-+		}
-+	}
-+
-+	return result;
-+
-+}
-+
-+static int sdricoh_reset(struct sdricoh_host *host)
-+{
-+	DBG("reset\n");
-+	sdricoh_writel(host, R2F0_RESET, 0x10001);
-+	sdricoh_writel(host, R2E0_INIT, 0x10000);
-+	if (sdricoh_readl(host, R2E0_INIT) != 0x10000)
-+		return -EIO;
-+	sdricoh_writel(host, R2E0_INIT, 0x10007);
-+
-+	sdricoh_writel(host, R224_MODE, 0x2000000);
-+	sdricoh_writel(host, R228_POWER, 0xe0);
-+
-+
-+	/* status register ? */
-+	sdricoh_writel(host, R21C_STATUS, 0x18);
-+
-+	return 0;
-+}
-+
-+static int sdricoh_blockio(struct sdricoh_host *host, int read,
-+				unsigned int* buf)
-+{
-+	int i;
-+	/* wait until the data is available */
-+	if(read){
-+		if(sdricoh_query_status(host,STATUS_READY_TO_READ,
-+						TRANSFER_TIMEOUT))
-+			return 0;
-+		sdricoh_writel(host, R21C_STATUS, 0x18);
-+		/* read data */
-+		for (i = 0; i < 512 / 4; i++) {
-+			buf[i] = sdricoh_readl(host, R230_DATA);
-+		}
-+	}else{
-+		if(sdricoh_query_status(host,STATUS_READY_TO_WRITE,
-+						TRANSFER_TIMEOUT))
-+			return 0;
-+		sdricoh_writel(host, R21C_STATUS, 0x18);
-+		/* write data */
-+		for (i = 0; i < 512 / 4; i++) {
-+			sdricoh_writel(host, R230_DATA, buf[i]);
-+		}
-+	}
-+
-+	return 512;
-+}
-+
-+static int sdricoh_busy(struct sdricoh_host* host){
-+	unsigned int status;
-+	int i;
-+	/* wait until the tranfer is finished */
-+	for (i = 0; i < BUSY_TIMEOUT; i++) {
-+		status = sdricoh_readl(host, R21C_STATUS);
-+		sdricoh_writel(host, R2E4_STATUS_RESP, status);
-+		if (!(status & STATUS_BUSY))
-+		break;
-+	}
-+	if(status & 0x7F0000)
-+		return -EINVAL;
-+	if(i == BUSY_TIMEOUT)
-+		return -ETIMEDOUT;
-+	return 0;
-+}
-+
-+
-+static void sdricoh_request(struct mmc_host *mmc, struct mmc_request *mrq)
-+{
-+	struct sdricoh_host *host = mmc_priv(mmc);
-+	struct mmc_command *cmd = mrq->cmd;
-+	struct mmc_data *data = cmd->data;
-+	int i;
-+
-+	DBG("=============================\n");
-+	DBG("sdricoh_request opcode=%i\n", cmd->opcode);
-+
-+	sdricoh_writel(host, R21C_STATUS, 0x18);
-+
-+	/* we cannot handle all commands that require a block transfer
-+	   therefore do some ugly special handling here
-+	*/
-+	if(cmd->data){
-+		switch(cmd->opcode){
-+			/* working commands */
-+			case MMC_READ_SINGLE_BLOCK:
-+			case MMC_READ_MULTIPLE_BLOCK:
-+			case MMC_WRITE_BLOCK:
-+				break;
-+	               	case SD_APP_SEND_SCR: /* required for SDHC */
-+				cmd->error = sdricoh_mmc_cmd(host,
-+						       cmd->opcode,cmd->arg);
-+                       		mmc_request_done(mmc, mrq);
-+                       		return;
-+			default:
-+				DBG("unsupported command %i\n",cmd->opcode);
-+				cmd->error = -EINVAL;
-+				mmc_request_done(mmc, mrq);
-+				return;
-+		}
-+	}
-+
-+
-+	/* read/write commands seem to require this */
-+	if (data) {
-+		if((cmd->error = sdricoh_busy(host)))
-+			ERR("sdricoh_request: unable to prepare transfer %x\n",
-+				cmd->error);
-+		sdricoh_writel(host, R208_DATAIO, 0);
-+	}
-+
-+
-+	cmd->error = sdricoh_mmc_cmd(host, cmd->opcode, cmd->arg);
-+
-+	/* read response buffer */
-+	if (cmd->flags & MMC_RSP_PRESENT) {
-+		if (cmd->flags & MMC_RSP_136) {
-+			/* CRC is stripped so we need to do some shifting. */
-+			for (i = 0; i < 4; i++) {
-+				cmd->resp[i] =
-+				    sdricoh_readl(host,
-+						  R20C_RESP + (3 - i) * 4) << 8;
-+				if (i != 3)
-+					cmd->resp[i] |=
-+					    sdricoh_readb(host, R20C_RESP +
-+							  (3 - i) *4 - 1);
-+			}
-+			DBG("resp[0]=0x%x\n", cmd->resp[0]);
-+			DBG("resp[1]=0x%x\n", cmd->resp[1]);
-+			DBG("resp[2]=0x%x\n", cmd->resp[2]);
-+			DBG("resp[2]=0x%x\n", cmd->resp[3]);
-+		} else {
-+			cmd->resp[0] = sdricoh_readl(host, R20C_RESP);
-+			DBG("resp[0]=0x%x\n", cmd->resp[0]);
-+		}
-+	}
-+
-+	/* yet another workaround */
-+	/* without the extra command SD cards do not work at all */
-+	if (cmd->opcode == MMC_SELECT_CARD) {
-+		if(host->mode != MODE_MMC){
-+			sdricoh_mmc_cmd(host, MMC_APP_CMD, cmd->arg);
-+			sdricoh_mmc_cmd(host, 0x46, 0x02);
-+		}else{
-+			sdricoh_writel(host, R228_POWER, 0xc0e0);
-+			sdricoh_writel(host, R224_MODE, 0x2000301);
-+		}
-+	}
-+
-+	/* transfer data */
-+	if (data && cmd->error == 0) {
-+		DBG("transfer: blksz %i blocks %i sg_len %i sg length %i\n",
-+                    data->blksz, data->blocks, data->sg_len, data->sg->length);
-+
-+		/* enter data reading mode */
-+		sdricoh_writel(host, R21C_STATUS, 0x837f031e);
-+		for (i = 0; i < data->blocks; i++) {
-+			unsigned int *buf;
-+			struct page* page;
-+			size_t xfered;
-+			page = sg_page(data->sg);
-+
-+        		buf = kmap(page) + data->sg->offset + (512 * i);
-+			xfered =
-+			  sdricoh_blockio(host,data->flags & MMC_DATA_READ,buf);
-+			kunmap(page);
-+			if(!xfered){
-+				ERR("sdricoh_request: block transfer failed\n");
-+				cmd->error = -EINVAL;
-+				break;
-+			}else
-+				data->bytes_xfered += xfered;
-+		}
-+
-+		sdricoh_writel(host, R208_DATAIO, 1);
-+
-+		if(sdricoh_query_status(host,STATUS_TRANSFER_FINISHED,
-+					TRANSFER_TIMEOUT)){
-+			ERR("sdricoh_request: transfer end error\n");
-+			cmd->error = -EINVAL;
-+		}
-+
-+		if(!cmd->error && (cmd->error = sdricoh_busy(host)))
-+			ERR("sdricoh_request: transfer not finished %x\n",
-+				cmd->error);
-+
-+	}
-+
-+	mmc_request_done(mmc, mrq);
-+	DBG("=============================\n");
-+}
-+
-+static void sdricoh_set_ios(struct mmc_host *mmc, struct mmc_ios *ios)
-+{
-+	struct sdricoh_host *host = mmc_priv(mmc);
-+	DBG("set_ios\n");
-+
-+	if (ios->power_mode == MMC_POWER_ON) {
-+		sdricoh_writel(host, R228_POWER, 0xc0e0);
-+
-+		if(host->mode != MODE_MMC){
-+			sdricoh_writel(host, R224_MODE, 0x2000300);
-+			sdricoh_writel(host, R228_POWER, 0x40e0);
-+		}else{
-+			sdricoh_writel(host, R224_MODE, 0x2000340);
-+		}
-+	}else if(ios->power_mode == MMC_POWER_UP) {
-+		sdricoh_writel(host, R224_MODE, 0x2000320);
-+		sdricoh_writel(host, R228_POWER, 0xe0);
-+	}
-+}
-+
-+static int sdricoh_get_ro(struct mmc_host *mmc)
-+{
-+	struct sdricoh_host *host = mmc_priv(mmc);
-+	unsigned int status;
-+
-+	status = sdricoh_readl(host, R21C_STATUS);
-+	sdricoh_writel(host, R2E4_STATUS_RESP, status);
-+
-+	/* some notebooks seem to have the locked flag switched */
-+	if(switchlocked)
-+		return !(status & STATUS_CARD_LOCKED);
-+
-+	return (status & STATUS_CARD_LOCKED);
-+}
-+
-+static struct mmc_host_ops sdricoh_ops = {
-+	.request = sdricoh_request,
-+	.set_ios = sdricoh_set_ios,
-+	.get_ro = sdricoh_get_ro,
-+};
-+
-+/* initialize the control and register it to the mmc framework */
-+static int sdricoh_init_mmc(struct pci_dev *pci_dev,
-+			    struct pcmcia_device *pcmcia_dev)
-+{
-+	int result = 0;
-+	void __iomem *iobase = NULL;
-+	struct mmc_host *mmc = NULL;
-+	struct sdricoh_host *host = NULL;
-+	/* map iomem */
-+	if (pci_resource_len(pci_dev, SDRICOH_PCI_REGION) !=
-+	    SDRICOH_PCI_REGION_SIZE) {
-+		DBG("unexpected pci resource len\n");
-+		return -ENODEV;
-+	}
-+	iobase =
-+	    pci_iomap(pci_dev, SDRICOH_PCI_REGION, SDRICOH_PCI_REGION_SIZE);
-+	if (!iobase) {
-+		ERR("unable to map iobase\n");
-+		return -ENODEV;
-+	}
-+	/* check version? */
-+	if (readl(iobase + R104_VERSION) != 0x4000) {
-+		DBG("no supported mmc controller found\n");
-+		result = -ENODEV;
-+		goto err;
-+	}
-+	/* allocate privdata */
-+	mmc = pcmcia_dev->priv =
-+	    mmc_alloc_host(sizeof(struct sdricoh_host), &pcmcia_dev->dev);
-+	if (!mmc) {
-+		ERR("mmc_alloc_host failed\n");
-+		result = -ENOMEM;
-+		goto err;
-+	}
-+	host = mmc_priv(mmc);
-+
-+	host->iobase = iobase;
-+
-+	mmc->ops = &sdricoh_ops;
-+
-+	/* FIXME: frequency and voltage handling is done by the controller
-+	 */
-+	mmc->f_min = 450000;
-+	mmc->f_max = 24000000;
-+	mmc->ocr_avail = MMC_VDD_32_33 | MMC_VDD_33_34;
-+
-+	mmc->max_seg_size = 1024 * 512;
-+
-+	/* reset the controler */
-+	if (sdricoh_reset(host)) {
-+		DBG("could not reset\n");
-+		result = -EIO;
-+		goto err;
-+
-+	}
-+
-+	result = mmc_add_host(mmc);
-+
-+	if (!result) {
-+		DBG("mmc host registered\n");
-+		return 0;
-+	}
-+
-+      err:
-+	if (iobase)
-+		iounmap(iobase);
-+	if (mmc)
-+		mmc_free_host(mmc);
-+
-+	return result;
-+}
-+
-+/* search for supported mmc controllers */
-+static int sdricoh_pcmcia_probe(struct pcmcia_device *pcmcia_dev)
-+{
-+	struct pci_dev *pci_dev = NULL;
-+
-+	INFO("Searching MMC controller for pcmcia device %s %s ...\n",
-+		pcmcia_dev->prod_id[0],pcmcia_dev->prod_id[1] );
-+
-+	/* search pci cardbus bridge that contains the mmc controler */
-+	/* the io region is already claimed by yenta_socket... */
-+	while ((pci_dev =
-+		pci_get_device(PCI_VENDOR_ID_RICOH, PCI_DEVICE_ID_RICOH_RL5C476,
-+			       pci_dev))) {
-+		/* try to init the device */
-+		if (!sdricoh_init_mmc(pci_dev, pcmcia_dev)){
-+			INFO("MMC controller found\n");
-+			return 0;
-+		}
-+
-+	}
-+	ERR("No MMC controller was found.\n");
-+	return -ENODEV;
-+}
-+
-+static void sdricoh_pcmcia_detach(struct pcmcia_device *link)
-+{
-+	struct mmc_host *mmc = link->priv;
-+
-+	DBG("detach\n");
-+
-+	flush_scheduled_work();
-+
-+	/* remove mmc host */
-+	if (mmc) {
-+		struct sdricoh_host *host = mmc_priv(mmc);
-+		mmc_remove_host(mmc);
-+		pci_iounmap(host->pci_dev, host->iobase);
-+		pci_dev_put(host->pci_dev);
-+		mmc_free_host(mmc);
-+	}
-+	pcmcia_disable_device(link);
-+
-+}
-+
-+static int sdricoh_pcmcia_suspend(struct pcmcia_device *link)
-+{
-+        struct mmc_host *mmc = link->priv;
-+	DBG("suspend\n");
-+	mmc_suspend_host(mmc, PMSG_SUSPEND);
-+	return 0;
-+}
-+
-+static int sdricoh_pcmcia_resume(struct pcmcia_device *link)
-+{
-+        struct mmc_host *mmc = link->priv;
-+	DBG("resume\n");
-+	sdricoh_reset(mmc_priv(mmc));
-+	mmc_resume_host(mmc);
-+	return 0;
-+}
-+
-+static struct pcmcia_driver sdricoh_driver = {
-+	.drv = {
-+		.name = DRIVER_NAME,
-+		},
-+	.probe = sdricoh_pcmcia_probe,
-+	.remove = sdricoh_pcmcia_detach,
-+	.id_table = pcmcia_ids,
-+	.suspend = sdricoh_pcmcia_suspend,
-+	.resume = sdricoh_pcmcia_resume,
-+};
-+
-+/*****************************************************************************\
-+ *                                                                           *
-+ * Driver init/exit                                                          *
-+ *                                                                           *
-+\*****************************************************************************/
-+
-+static int __init sdricoh_drv_init(void)
-+{
-+	DBG("Ricoh PCMCIA Secure Digital Interface driver\n");
-+	DBG("Copyright(c) 2006 - 2008 Sascha Sommer\n");
-+	return pcmcia_register_driver(&sdricoh_driver);
-+}
-+
-+static void __exit sdricoh_drv_exit(void)
-+{
-+	DBG("exiting\n");
-+	pcmcia_unregister_driver(&sdricoh_driver);
-+
-+}
-+
-+module_init(sdricoh_drv_init);
-+module_exit(sdricoh_drv_exit);
-+
-+module_param(debug, uint, 0444);
-+module_param(switchlocked, uint, 0444);
-+
-+MODULE_AUTHOR("Sascha Sommer <saschasommer@freenet.de>");
-+MODULE_DESCRIPTION("Ricoh PCMCIA Secure Digital Interface driver");
-+MODULE_VERSION(DRIVER_VERSION);
-+MODULE_LICENSE("GPL");
-+
-+MODULE_PARM_DESC(debug, "Enable debugging (default 0)");
-+MODULE_PARM_DESC(switchlocked, "Switch the cards locked status."
-+		"Use this when unlocked cards are shown readonly (default 0)");
---- drivers/mmc/host.org/Kconfig	2008-04-27 14:35:31.000000000 +0200
-+++ drivers/mmc/host/Kconfig	2008-04-27 15:15:29.000000000 +0200
-@@ -130,3 +130,13 @@
+Currently I am thinking about something like the patch below, but it
+is so ugly...
+
+Oleg.
+
+--- a/include/linux/notifier.h
++++ b/include/linux/notifier.h
+@@ -210,6 +210,8 @@ static inline int notifier_to_errno(int 
+ #define CPU_DYING		0x0008 /* CPU (unsigned)v not running any task,
+ 				        * not handling interrupts, soon dead */
  
- 	  If unsure, or if your system has no SPI master driver, say N.
- 
-+config MMC_SDRICOH_CS
-+	tristate "MMC/SD driver for Ricoh Bay1Controllers (EXPERIMENTAL)"
-+	depends on EXPERIMENTAL && MMC && PCI && PCMCIA && YENTA
-+	help
-+	  Say Y here if your Notebook reports a Ricoh Bay1Controller PCMCIA
-+	  card whenever you insert a MMC or SD card into the card slot.
++#define CPU_DEAD_XXX		0x0002 /* HACK!!! for workqueus */
 +
-+	  To compile this driver as a module, choose M here: the
-+	  module will be called sdricoh_cs.
+ /* Used for CPU hotplug events occuring while tasks are frozen due to a suspend
+  * operation in progress
+  */
+--- a/kernel/cpu.c
++++ b/kernel/cpu.c
+@@ -271,6 +271,11 @@ static int _cpu_down(unsigned int cpu,
+ 	set_cpus_allowed(current, old_allowed);
+ out_release:
+ 	cpu_hotplug_done();
 +
---- drivers/mmc/host.org/Makefile	2008-04-27 14:35:31.000000000 +0200
-+++ drivers/mmc/host/Makefile	2008-04-27 14:37:13.000000000 +0200
-@@ -17,4 +17,5 @@
- obj-$(CONFIG_MMC_AT91)		+= at91_mci.o
- obj-$(CONFIG_MMC_TIFM_SD)	+= tifm_sd.o
- obj-$(CONFIG_MMC_SPI)		+= mmc_spi.o
-+obj-$(CONFIG_MMC_SDRICOH_CS)	+= sdricoh_cs.o
++	if (!err)
++		// HAAAAAACK !!!!!!!!!!!
++		raw_notifier_call_chain(&cpu_chain, CPU_DEAD_XXX, hcpu);
++
+ 	return err;
+ }
  
+--- a/kernel/workqueue.c
++++ b/kernel/workqueue.c
+@@ -780,7 +780,7 @@ struct workqueue_struct *__create_workqu
+ 		err = create_workqueue_thread(cwq, singlethread_cpu);
+ 		start_workqueue_thread(cwq, -1);
+ 	} else {
+-		get_online_cpus();
++		cpu_maps_update_begin();
+ 		spin_lock(&workqueue_lock);
+ 		list_add(&wq->list, &workqueues);
+ 		spin_unlock(&workqueue_lock);
+@@ -792,7 +792,7 @@ struct workqueue_struct *__create_workqu
+ 			err = create_workqueue_thread(cwq, cpu);
+ 			start_workqueue_thread(cwq, cpu);
+ 		}
+-		put_online_cpus();
++		cpu_maps_update_done();
+ 	}
+ 
+ 	if (err) {
+@@ -807,7 +807,7 @@ static void cleanup_workqueue_thread(str
+ {
+ 	/*
+ 	 * Our caller is either destroy_workqueue() or CPU_DEAD,
+-	 * get_online_cpus() protects cwq->thread.
++	 * cpu_add_remove_lock protects cwq->thread.
+ 	 */
+ 	if (cwq->thread == NULL)
+ 		return;
+@@ -841,14 +841,14 @@ void destroy_workqueue(struct workqueue_
+ 	const cpumask_t *cpu_map = wq_cpu_map(wq);
+ 	int cpu;
+ 
+-	get_online_cpus();
++	cpu_maps_update_begin();
+ 	spin_lock(&workqueue_lock);
+ 	list_del(&wq->list);
+ 	spin_unlock(&workqueue_lock);
+ 
+ 	for_each_cpu_mask(cpu, *cpu_map)
+ 		cleanup_workqueue_thread(per_cpu_ptr(wq->cpu_wq, cpu));
+-	put_online_cpus();
++	cpu_maps_update_done();
+ 
+ 	free_percpu(wq->cpu_wq);
+ 	kfree(wq);
+@@ -887,7 +887,7 @@ static int __devinit workqueue_cpu_callb
+ 
+ 		case CPU_UP_CANCELED:
+ 			start_workqueue_thread(cwq, -1);
+-		case CPU_DEAD:
++		case CPU_DEAD_XXX:
+ 			cleanup_workqueue_thread(cwq);
+ 			break;
+ 		}
 
---Boundary-00=_RsIFIzWJTYfCqZ3--
