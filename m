@@ -1,306 +1,142 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762257AbYD0QBI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761576AbYD0QKB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762257AbYD0QBI (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Apr 2008 12:01:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758116AbYD0QAQ
+	id S1761576AbYD0QKB (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Apr 2008 12:10:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752530AbYD0QJv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Apr 2008 12:00:16 -0400
-Received: from smtp.opengridcomputing.com ([209.198.142.2]:50110 "EHLO
-	smtp.opengridcomputing.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756088AbYD0QAI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Apr 2008 12:00:08 -0400
-From: Steve Wise <swise@opengridcomputing.com>
-Subject: [PATCH 2.6.26 1/3] RDMA/cxgb3: Correctly serialize peer abort path.
-Date: Sun, 27 Apr 2008 11:00:06 -0500
-To: rdreier@cisco.com
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       general@lists.openfabrics.org, divy@chelsio.com, felix@chelsio.com
-Message-Id: <20080427160006.31018.66715.stgit@dell3.ogc.int>
-In-Reply-To: <20080427155456.31018.22282.stgit@dell3.ogc.int>
-References: <20080427155456.31018.22282.stgit@dell3.ogc.int>
-Content-Type: text/plain; charset=utf-8; format=fixed
-Content-Transfer-Encoding: 8bit
-User-Agent: StGIT/0.10
+	Sun, 27 Apr 2008 12:09:51 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:57562 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751980AbYD0QJu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Apr 2008 12:09:50 -0400
+Date: Sun, 27 Apr 2008 18:09:21 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Adrian Bunk <bunk@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
+       Harvey Harrison <harvey.harrison@gmail.com>,
+       Mauro Carvalho Chehab <mchehab@infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: If you want me to quit I will quit
+Message-ID: <20080427160921.GA18920@elte.hu>
+References: <1209190455.14173.13.camel@brick> <20080426110044.GB2252@cs181133002.pp.htv.fi> <20080426075132.b0fdbe13.akpm@linux-foundation.org> <20080426152341.GI2252@cs181133002.pp.htv.fi> <20080426084420.8e61c379.akpm@linux-foundation.org> <20080426171604.GN2252@cs181133002.pp.htv.fi> <alpine.LFD.1.10.0804261024580.2813@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.1.10.0804261024580.2813@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-OpenMPI and other stress testing exposed a few bad bugs in handling
-aborts in the middle of a normal close.
+* Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-- serialize abort reply and peer abort processing with
-disconnect processing
+> Because if it becomes normal coding practice, now people cannot work 
+> with you sanely any more (ie some random person pulls your tree for 
+> testing, and then I pull it at some other time, and the tester reports 
+> a problem, but now the commits he is talking about don't actually even 
+> exist in my tree any more, and it's all really messy!).
 
-- warn (and ignore) if ep timer is stopped when it wasn't running
+this is a real problem in practice, so i have a 'merge' repository of 
+all published x86.git trees of the past. About a 150 tree rebases later 
+it's still only 500 MB - so we know about the precise identity of every 
+published commit ID, even long after the fact.
 
-- cleaned up disconnect path to correctly deal with aborting and dead
-endpoints
+> The x86 tree still does this. I absolutely detest it. Ingo claims that 
+> his model is better, and I'm pretty damn sure he's wrong. But until it 
+> starts causing bigger problems, I'll give him the benefit of the 
+> doubt.
 
-- in iwch_modify_qp(), add a ref to the ep before releasing the qp lock if
-iwch_ep_disconnect() will be called.  The dref after calling disconnect.
+if people basing stuff on x86.git becomes common and the rebasing 
+becomes an annoyance to them then we'll change this - we already changed 
+many other practices we had, according to feedback from developers.
 
-Signed-off-by: Steve Wise <swise@opengridcomputing.com>
----
+Firstly, an architecture tree is kind of special, in that it's very, 
+very easy to introduce a regression that makes systems not boot up at 
+all. And that's a showstopper for developers. It's quite different from 
+a core kernel tree where we can often limp along with regressions. So by 
+far the most important thing that people value about our tree is 
+stability (or at least so we think).
 
- drivers/infiniband/hw/cxgb3/iwch_cm.c |   98 ++++++++++++++++++++++-----------
- drivers/infiniband/hw/cxgb3/iwch_cm.h |    1 
- drivers/infiniband/hw/cxgb3/iwch_qp.c |    6 ++
- 3 files changed, 71 insertions(+), 34 deletions(-)
+So we do have a couple of fundamental things about our workflow that we 
+think developers value, and i'm not sure how to do that within Git.
 
-diff --git a/drivers/infiniband/hw/cxgb3/iwch_cm.c b/drivers/infiniband/hw/cxgb3/iwch_cm.c
-index 99f2f2a..1627bff 100644
---- a/drivers/infiniband/hw/cxgb3/iwch_cm.c
-+++ b/drivers/infiniband/hw/cxgb3/iwch_cm.c
-@@ -125,6 +125,12 @@ static void start_ep_timer(struct iwch_ep *ep)
- static void stop_ep_timer(struct iwch_ep *ep)
- {
- 	PDBG("%s ep %p\n", __FUNCTION__, ep);
-+	if (!timer_pending(&ep->timer)) {
-+		printk(KERN_ERR "%s timer stopped when its not running!  ep %p state %u\n",
-+			__FUNCTION__, ep, ep->com.state);
-+		WARN_ON(1);
-+		return;
-+	}
- 	del_timer_sync(&ep->timer);
- 	put_ep(&ep->com);
- }
-@@ -1083,8 +1089,11 @@ static int tx_ack(struct t3cdev *tdev, struct sk_buff *skb, void *ctx)
- static int abort_rpl(struct t3cdev *tdev, struct sk_buff *skb, void *ctx)
- {
- 	struct iwch_ep *ep = ctx;
-+	unsigned long flags;
-+	int release = 0;
- 
- 	PDBG("%s ep %p\n", __FUNCTION__, ep);
-+	BUG_ON(!ep);
- 
- 	/*
- 	 * We get 2 abort replies from the HW.  The first one must
-@@ -1095,9 +1104,22 @@ static int abort_rpl(struct t3cdev *tdev, struct sk_buff *skb, void *ctx)
- 		return CPL_RET_BUF_DONE;
- 	}
- 
--	close_complete_upcall(ep);
--	state_set(&ep->com, DEAD);
--	release_ep_resources(ep);
-+	spin_lock_irqsave(&ep->com.lock, flags);
-+	switch (ep->com.state) {
-+	case ABORTING:
-+		close_complete_upcall(ep);
-+		__state_set(&ep->com, DEAD);
-+		release = 1;
-+		break;
-+	default:
-+		printk(KERN_ERR "%s ep %p state %d\n",
-+		     __FUNCTION__, ep, ep->com.state);
-+		break;
-+	}
-+	spin_unlock_irqrestore(&ep->com.lock, flags);
-+
-+	if (release)
-+		release_ep_resources(ep);
- 	return CPL_RET_BUF_DONE;
- }
- 
-@@ -1470,7 +1492,8 @@ static int peer_abort(struct t3cdev *tdev, struct sk_buff *skb, void *ctx)
- 	struct sk_buff *rpl_skb;
- 	struct iwch_qp_attributes attrs;
- 	int ret;
--	int state;
-+	int release = 0;
-+	unsigned long flags;
- 
- 	if (is_neg_adv_abort(req->status)) {
- 		PDBG("%s neg_adv_abort ep %p tid %d\n", __FUNCTION__, ep,
-@@ -1488,9 +1511,9 @@ static int peer_abort(struct t3cdev *tdev, struct sk_buff *skb, void *ctx)
- 		return CPL_RET_BUF_DONE;
- 	}
- 
--	state = state_read(&ep->com);
--	PDBG("%s ep %p state %u\n", __FUNCTION__, ep, state);
--	switch (state) {
-+	spin_lock_irqsave(&ep->com.lock, flags);
-+	PDBG("%s ep %p state %u\n", __FUNCTION__, ep, ep->com.state);
-+	switch (ep->com.state) {
- 	case CONNECTING:
- 		break;
- 	case MPA_REQ_WAIT:
-@@ -1536,21 +1559,25 @@ static int peer_abort(struct t3cdev *tdev, struct sk_buff *skb, void *ctx)
- 		break;
- 	case DEAD:
- 		PDBG("%s PEER_ABORT IN DEAD STATE!!!!\n", __FUNCTION__);
-+		spin_unlock_irqrestore(&ep->com.lock, flags);
- 		return CPL_RET_BUF_DONE;
- 	default:
- 		BUG_ON(1);
- 		break;
- 	}
- 	dst_confirm(ep->dst);
-+	if (ep->com.state != ABORTING) {
-+		__state_set(&ep->com, DEAD);
-+		release = 1;
-+	}
-+	spin_unlock_irqrestore(&ep->com.lock, flags);
- 
- 	rpl_skb = get_skb(skb, sizeof(*rpl), GFP_KERNEL);
- 	if (!rpl_skb) {
- 		printk(KERN_ERR MOD "%s - cannot allocate skb!\n",
- 		       __FUNCTION__);
--		dst_release(ep->dst);
--		l2t_release(L2DATA(ep->com.tdev), ep->l2t);
--		put_ep(&ep->com);
--		return CPL_RET_BUF_DONE;
-+		release = 1;
-+		goto out;
- 	}
- 	rpl_skb->priority = CPL_PRIORITY_DATA;
- 	rpl = (struct cpl_abort_rpl *) skb_put(rpl_skb, sizeof(*rpl));
-@@ -1559,10 +1586,9 @@ static int peer_abort(struct t3cdev *tdev, struct sk_buff *skb, void *ctx)
- 	OPCODE_TID(rpl) = htonl(MK_OPCODE_TID(CPL_ABORT_RPL, ep->hwtid));
- 	rpl->cmd = CPL_ABORT_NO_RST;
- 	cxgb3_ofld_send(ep->com.tdev, rpl_skb);
--	if (state != ABORTING) {
--		state_set(&ep->com, DEAD);
-+out:
-+	if (release)
- 		release_ep_resources(ep);
--	}
- 	return CPL_RET_BUF_DONE;
- }
- 
-@@ -1661,15 +1687,18 @@ static void ep_timeout(unsigned long arg)
- 	struct iwch_ep *ep = (struct iwch_ep *)arg;
- 	struct iwch_qp_attributes attrs;
- 	unsigned long flags;
-+	int abort=1;
- 
- 	spin_lock_irqsave(&ep->com.lock, flags);
- 	PDBG("%s ep %p tid %u state %d\n", __FUNCTION__, ep, ep->hwtid,
- 	     ep->com.state);
- 	switch (ep->com.state) {
- 	case MPA_REQ_SENT:
-+		__state_set(&ep->com, ABORTING);
- 		connect_reply_upcall(ep, -ETIMEDOUT);
- 		break;
- 	case MPA_REQ_WAIT:
-+		__state_set(&ep->com, ABORTING);
- 		break;
- 	case CLOSING:
- 	case MORIBUND:
-@@ -1679,13 +1708,17 @@ static void ep_timeout(unsigned long arg)
- 				     ep->com.qp, IWCH_QP_ATTR_NEXT_STATE,
- 				     &attrs, 1);
- 		}
-+		__state_set(&ep->com, ABORTING);
- 		break;
- 	default:
--		BUG();
-+		printk(KERN_ERR "%s unexpected state ep %p state %u\n",
-+			__FUNCTION__, ep, ep->com.state);
-+		WARN_ON(1);
-+		abort=0;
- 	}
--	__state_set(&ep->com, CLOSING);
- 	spin_unlock_irqrestore(&ep->com.lock, flags);
--	abort_connection(ep, NULL, GFP_ATOMIC);
-+	if (abort)
-+		abort_connection(ep, NULL, GFP_ATOMIC);
- 	put_ep(&ep->com);
- }
- 
-@@ -1968,34 +2001,33 @@ int iwch_ep_disconnect(struct iwch_ep *ep, int abrupt, gfp_t gfp)
- 	PDBG("%s ep %p state %s, abrupt %d\n", __FUNCTION__, ep,
- 	     states[ep->com.state], abrupt);
- 
--	if (ep->com.state == DEAD) {
--		PDBG("%s already dead ep %p\n", __FUNCTION__, ep);
--		goto out;
--	}
--
--	if (abrupt) {
--		if (ep->com.state != ABORTING) {
--			ep->com.state = ABORTING;
--			close = 1;
--		}
--		goto out;
--	}
--
- 	switch (ep->com.state) {
- 	case MPA_REQ_WAIT:
- 	case MPA_REQ_SENT:
- 	case MPA_REQ_RCVD:
- 	case MPA_REP_SENT:
- 	case FPDU_MODE:
--		start_ep_timer(ep);
--		ep->com.state = CLOSING;
- 		close = 1;
-+		if (abrupt)
-+			ep->com.state = ABORTING;
-+		else {
-+			ep->com.state = CLOSING;
-+			start_ep_timer(ep);
-+		}
- 		break;
- 	case CLOSING:
--		ep->com.state = MORIBUND;
- 		close = 1;
-+		if (abrupt) {
-+			stop_ep_timer(ep);
-+			ep->com.state = ABORTING;
-+		} else
-+			ep->com.state = MORIBUND;
- 		break;
- 	case MORIBUND:
-+	case ABORTING:
-+	case DEAD:
-+		PDBG("%s ignoring disconnect ep %p state %u\n",
-+		     __FUNCTION__, ep, ep->com.state);
- 		break;
- 	default:
- 		BUG();
-diff --git a/drivers/infiniband/hw/cxgb3/iwch_cm.h b/drivers/infiniband/hw/cxgb3/iwch_cm.h
-index 6107e7c..a3fb959 100644
---- a/drivers/infiniband/hw/cxgb3/iwch_cm.h
-+++ b/drivers/infiniband/hw/cxgb3/iwch_cm.h
-@@ -56,6 +56,7 @@
- #define put_ep(ep) { \
- 	PDBG("put_ep (via %s:%u) ep %p refcnt %d\n", __FUNCTION__, __LINE__,  \
- 	     ep, atomic_read(&((ep)->kref.refcount))); \
-+	WARN_ON(atomic_read(&((ep)->kref.refcount)) < 1); \
- 	kref_put(&((ep)->kref), __free_ep); \
- }
- 
-diff --git a/drivers/infiniband/hw/cxgb3/iwch_qp.c b/drivers/infiniband/hw/cxgb3/iwch_qp.c
-index ea2cdd7..c02bb94 100644
---- a/drivers/infiniband/hw/cxgb3/iwch_qp.c
-+++ b/drivers/infiniband/hw/cxgb3/iwch_qp.c
-@@ -832,6 +832,7 @@ int iwch_modify_qp(struct iwch_dev *rhp, struct iwch_qp *qhp,
- 				abort=0;
- 				disconnect = 1;
- 				ep = qhp->ep;
-+				get_ep(&ep->com);
- 			}
- 			flush_qp(qhp, &flag);
- 			break;
-@@ -848,6 +849,7 @@ int iwch_modify_qp(struct iwch_dev *rhp, struct iwch_qp *qhp,
- 				abort=1;
- 				disconnect = 1;
- 				ep = qhp->ep;
-+				get_ep(&ep->com);
- 			}
- 			goto err;
- 			break;
-@@ -929,8 +931,10 @@ out:
- 	 * on the EP.  This can be a normal close (RTS->CLOSING) or
- 	 * an abnormal close (RTS/CLOSING->ERROR).
- 	 */
--	if (disconnect)
-+	if (disconnect) {
- 		iwch_ep_disconnect(ep, abort, GFP_KERNEL);
-+		put_ep(&ep->com);
-+	}
- 
- 	/*
- 	 * If free is 1, then we've disassociated the EP from the QP
+For example the act of 'staging' various fixes, and in essence 
+bubble-sorting topics by the amount of fixes/problems they get. The 
+lifetime of topics within x86.git is like this, and this roots back to 
+the -rt queue which for years we maintained in a similar fashion:
+
+- a new, nontrivial topic comes - say kmemcheck. First it's completely 
+  experimental and we dont publish it at all - we keep it observed for a 
+  week or so to get a feel of how much we want that topic and how stable 
+  it is.
+
+- the topic is in it's first stage, the most experimental 'testing' 
+  phase. It's in x86.git/testing branch, right at the tail of every 
+  other patch. It is merged after every existing topic and disturbs
+  nothing. If it breaks then it's easy to take it out - no harm done to
+  any other topic. New topics often bounce out and back 2-3 times before 
+  they get past this initial stage of integration.
+
+- the topic is in it's second stage - no high flux development anymore,
+  it can get into x86/for-akpm. That means it will go ahead of a lot of 
+  other topics and that might mean merging work. It goes through another 
+  level of review - Andrew is picky ;-)
+
+- the topic is in its third stage - x86.git/for-linus - preparation for 
+  push. It's merged ahead of all other topics, merge conflicts resolved.
+  Another, final review as well. We make sure Acks are collected for out
+  of tree stuff, etc.
+
+if there's some problem with a topic at any stage, it usually bubbles 
+back up a level or two. Sometimes the problem is unknown and unfixed so 
+the topic gets removed completely from the tree (temporarily), until the 
+problem if found. Since we provide good bisection data, developers can 
+find problems fast. Sometimes there's fatal review feedback (say Andrew 
+reviews it too and finds it lacking ;) that moves a topic back to the 
+'experimental' section completely.
+
+But it gets even more complex: often we append fixes/updates not to the 
+topic, but to the tail of the queue. We wait a test cycle (24 hours or 
+overnight test) and when the changes look OK for public release we push 
+it out. Then when it's OK and enough updates batched up and we trust the 
+result we move those changes back to their specific topics - and resolve 
+any conflicts if needed. This basically mixes 'clean topic separation 
+and ordering' with a short-term 'append only' practice.
+
+but all this inner-queue lifetime is almost invisible to developers - 
+all the reshuffling is done in an invariant way and we enforce that the 
+end result does not change when we flip around topics. They might see 
+topics disappearing occasionally, but given that x86.git carries up to a 
+dozen topics at a time or more, it's never a true disruption.
+
+But we dont keep the queue public with a known breakage in it. I.e. we 
+merge easily, but we also find bugs agressively and revert easily. And 
+an important rule is that the moment we know about a breakage we fix it 
+immediately either by resolving the bug or by removing the topic, and 
+release a new version right then.
+
+Another benefit to developers is that we do all inter-topic merges 
+ourselves. If we picked up two overlapping topics it's our task to 
+resolve the inevitable conflicts - we dont push that back to the 
+developers.
+
+And the topic sorting of the queue becomes important in the merge window 
+as well: that's when the final decision is done whether to merge a topic 
+or not. This means that topics will again change order - and if there's 
+some dependency between them (which is very common), that dependency is 
+resolved.
+
+Quilt gives this sort of workflow flexibility to us - but i never really 
+found a good Git workflow that matches this type of maintenance model. 
+But we are no Git wizards so suggestions would be welcome.
+
+	Ingo
