@@ -1,58 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760968AbYD0LcR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756859AbYD0Lch@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760968AbYD0LcR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Apr 2008 07:32:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754926AbYD0LcH
+	id S1756859AbYD0Lch (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Apr 2008 07:32:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761076AbYD0Lc0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Apr 2008 07:32:07 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:46545 "EHLO ogre.sisk.pl"
+	Sun, 27 Apr 2008 07:32:26 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:44165 "EHLO smtp4.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754904AbYD0LcG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Apr 2008 07:32:06 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Pavel Machek <pavel@ucw.cz>
-Subject: Re: x86: cleanup - rename VM_MASK to X86_VM_MASK
-Date: Sun, 27 Apr 2008 13:31:17 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Cyrill Gorcunov <gorcunov@gmail.com>,
-       David Woodhouse <dwmw2@infradead.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Matthew Garrett <mjg59@srcf.ucam.org>
-References: <200804181856.m3IIuKd4007403@hera.kernel.org> <480F7C11.8040302@zytor.com> <20080427100901.GC3891@ucw.cz>
-In-Reply-To: <20080427100901.GC3891@ucw.cz>
+	id S1754599AbYD0LcZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Apr 2008 07:32:25 -0400
+Date: Sun, 27 Apr 2008 14:31:58 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: linux arch <linux-arch@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       David Miller <davem@davemloft.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH] prepare kconfig inline optimization for all
+	architectures
+Message-ID: <20080427113158.GY2252@cs181133002.pp.htv.fi>
+References: <20080427105100.GA14795@uranus.ravnborg.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Message-Id: <200804271331.18940.rjw@sisk.pl>
+In-Reply-To: <20080427105100.GA14795@uranus.ravnborg.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday, 27 of April 2008, Pavel Machek wrote:
-> On Wed 2008-04-23 11:12:33, H. Peter Anvin wrote:
-> > Cyrill Gorcunov wrote:
-> > >
-> > >Hi David,
-> > >
-> > >actually, this CONFIG_VM86 was there even before the 
-> > >renaming was done.
-> > >The main questions (imo) - is there any user space 
-> > >application who uses
-> > >these flags? If they are - then even the idea of this 
-> > >patch was a bit bogus,
-> > >and I should *not* remove all these VM86 specific flags 
-> > >but better define them
-> > >as aliases on flags from processor-flags.h.
-> > >
-> > 
-> > Hard to know.  VM86 is only used by a handful of 
-> > applications (DOSEMU, X.org, others?) but it's hard to 
-> > know what exactly they are.
-> 
-> I believe vbetool and thus s2ram uses vm86, too.
+On Sun, Apr 27, 2008 at 12:51:00PM +0200, Sam Ravnborg wrote:
+> Fix the OPTIMIZE inline functionality such that it can be used
+> by all architectures.
+> To use it the arch maintainers shall add a
+> "select HAVE_OPTIMIZE_INLINING" in their arch specific
+> Kconfig file.
+>...
 
-Well, I think so too. Matthew?
+My opinion on this is still:
+"OPTIMIZE" means "work around bugs in the kernel".
 
-Rafael
+Bugs of the following kinds:
+- usage of "inline" in .c files (it should virtually never be used there)
+- too big functions in header files
+
+And this "inline optimization" reverts only the effects of some of these 
+bugs.
+
+And if the wrong code gets not inlined we can even get size increases at 
+some places.
+
+Denys and Ilpo have already done some work in fixing such bugs.
+
+After the dust of this merge window has settled I'll try to get us a 
+similar result without this "optimization".
+
+> 	Sam
+>...
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
