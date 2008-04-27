@@ -1,78 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758592AbYD0Xt3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762992AbYD0X4R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758592AbYD0Xt3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Apr 2008 19:49:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759223AbYD0XtV
+	id S1762992AbYD0X4R (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Apr 2008 19:56:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752038AbYD0Xz7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Apr 2008 19:49:21 -0400
-Received: from fg-out-1718.google.com ([72.14.220.154]:23456 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755581AbYD0XtU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Apr 2008 19:49:20 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-disposition:message-id:content-type:content-transfer-encoding;
-        b=YaiEU4vew7TYc6JDLZvYggYqRtG6WX5G9hMUMoZuYsfjrmn9p1drnWTRXmLoOxVZ+EKRX/LtsovVYmASHKBUMSR9HV84rmR9tSt6Z3XWAE5wdxYjKOz3+ELK4d2+LSjA47JV3qAREpv8KWe4JvLP3Nf/OV6nRoYj3Btc14lOeNM=
-From: Denys Vlasenko <vda.linux@googlemail.com>
-To: David Chinner <dgc@sgi.com>
-Subject: Re: [PATCH] xfs: reduce stack usage in xfs_page_state_convert()
-Date: Mon, 28 Apr 2008 01:48:22 +0200
-User-Agent: KMail/1.8.2
-Cc: xfs@oss.sgi.com, Eric Sandeen <sandeen@sandeen.net>,
-       Adrian Bunk <bunk@kernel.org>, linux-kernel@vger.kernel.org
-References: <200804270246.58828.vda.linux@googlemail.com> <20080427232317.GB103491721@sgi.com>
-In-Reply-To: <20080427232317.GB103491721@sgi.com>
+	Sun, 27 Apr 2008 19:55:59 -0400
+Received: from mtaout02-winn.ispmail.ntl.com ([81.103.221.48]:27869 "EHLO
+	mtaout02-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752602AbYD0Xz6 convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Apr 2008 19:55:58 -0400
+Date: Mon, 28 Apr 2008 00:55:54 +0100
+From: Ken Moffat <zarniwhoop@ntlworld.com>
+To: Bart Van Assche <bart.vanassche@gmail.com>
+Cc: Sergio Luis <sergio@larces.uece.br>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.25 slow boot/reboot
+Message-ID: <20080427235554.GA28344@deepthought>
+References: <48141111.7010605@larces.uece.br> <e2e108260804270823t45611ec2t35da085833d82dfa@mail.gmail.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-Message-Id: <200804280148.22358.vda.linux@googlemail.com>
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <e2e108260804270823t45611ec2t35da085833d82dfa@mail.gmail.com>
+User-Agent: Mutt/1.5.12-2006-07-14
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 28 April 2008 01:23, David Chinner wrote:
-> > This patch reduces xfs_page_state_convert() stack usage by 16 bytes
-> > by eliminating some local variables, and reducing the size
-> > of scope for other locals.
-> > 
-> > Compile tested only.
+On Sun, Apr 27, 2008 at 05:23:57PM +0200, Bart Van Assche wrote:
+> On Sun, Apr 27, 2008 at 7:37 AM, Sergio Luis <sergio@larces.uece.br> wrote:
+> >  This weekend I got some time and decided to try out 2.6.25, but its booting process was _really_ slow in my laptop[1]. With 'old' 2.6.24.5 my machine would take about 48 secs until it gave me the login prompt. And it would take about 22 seconds to reboot.
 > 
-> Can you start testing your patches? if you are touching the writeback
-> or allocator path, there's a pretty high barrier to having patches
-> excepted, and testing them before is one of them. Go and download the
+> Do you use LILO or GRUB for booting ? 2.6.25 works OK on the systems I
+> tested, but LILO really needs a lot of time to load the 2.6.25 kernel.
+> GRUB loads the 2.6.25 kernel at normal speed.
+> 
+> Bart.
+ ISTR that an _old_ version of lilo was mentioned earlier in this
+thread.  As a datapoint, on my one desktop box which uses lilo (an
+athlon64 uniprocessor) both 32 and 64-bit 2.6.25 kernels boot fine.
+Both of those systems are with lilo-22.8, and gcc-4.2.2.
 
-Its you who asked for patches. It's not like I decided
-to nag you because I have nothing better to do. Actually,
-my plate is pretty full with other things already.
+ But, I think you (Bart) haven't said which version of lilo you are
+using ?  If it isn't recent, perhaps upgrading it might help ?
 
-> XFSQA suite from the xfs-cmds CVS tree on oss.sgi.com, and run your
-> patches through it....
+ For Sergio, you have my sympathy.  I totally failed to bisect my own
+problem with 2.6.25-rc (and 2.6.24.1), although I did find the problem
+by other means, and got a work-around, so I'm not competent to
+diagnose what is wrong, but maybe I can help to tease out what is
+different about your box.  As a start, you could try diffing your
+config's for 2.6.24.5 and 2.6.25 in case something odd has changed.
 
+ Or, perhaps this is a problem specific to a certain processor ?  So
+far, I think all the list knows is that you have a problem, and an
+old version of lilo.  More data might eventually help to identify
+what is causing this.  If you have a fairly old version of lilo,
+maybe you also have an old version of gcc ?
 
-On Tuesday 22 April 2008 03:28, David Chinner wrote:
-> Patches are welcome - I'd be over the moon if any of the known 4k
-> stack advocates sent a stack reduction patch for XFS, but it seems
-> that actually trying to fix the problems is much harder than
-> resending a one line patch every few months....
+ For Bart too, which version(s) of gcc are you using on the systems
+where lilo is slow to load, and which cpu(s) do you have there ?
 
-So I went ahead and actually spend a good chunk of the week
-trying to help you.
-
-I believe that my patches were sufficiently well thought-out,
-carefully implemented and reasonably tested (for a guy who
-never used xfs, have no xfs partitions, and not exactly
-planning to use xfs in the future).
-
-> pretty high barrier to having patches accepted
-
-I was honestly trying to help you. I am still willing
-to do it, but at some point you have to carry some part
-of a burden (maybe review and run testing?).
-
-If you are not going to accept patches, why you are
-accusing people of not sending them to you?
---
-vda
+Ken, who relies on lilo for his server, and gets worried by reports
+of trouble with it.
+-- 
+das eine Mal als Tragödie, das andere Mal als Farce
