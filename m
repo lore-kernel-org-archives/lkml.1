@@ -1,57 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754735AbYD0HmV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757560AbYD0Hmi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754735AbYD0HmV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Apr 2008 03:42:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752092AbYD0HmI
+	id S1757560AbYD0Hmi (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Apr 2008 03:42:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755429AbYD0HmZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Apr 2008 03:42:08 -0400
-Received: from gateway.crfreenet.org ([81.92.146.254]:35788 "EHLO
-	mail.crfreenet.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752048AbYD0HmH (ORCPT
+	Sun, 27 Apr 2008 03:42:25 -0400
+Received: from fg-out-1718.google.com ([72.14.220.155]:38978 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754921AbYD0HmW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Apr 2008 03:42:07 -0400
-X-Greylist: delayed 1692 seconds by postgrey-1.27 at vger.kernel.org; Sun, 27 Apr 2008 03:42:07 EDT
-Date: Sun, 27 Apr 2008 09:13:51 +0200
-From: Ondrej Zajicek <santiago@crfreenet.org>
-To: akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org, rl@hellgate.ch
-Subject: [PATCH] via-rhine: suspend/resume bugfix
-Message-ID: <20080427071351.GA20561@localhost.localdomain>
+	Sun, 27 Apr 2008 03:42:22 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=Sn4ZTSFPcwbzw1+WfcPS2yd/lbVGBiyO3Qbpo5vQTVv7fJmZYLPnkdmhvq4AEJS3+DEqS6r8oG92jtQKLXS6bQ1g3AkfCISM6L5Mj+T4gerJIgBNWOWPxChe0CikPiI84GIC0Me11e4jPIxFzys4/Ep5M96TIxdWBp2UJx2TorY=
+Message-ID: <48142E5B.3000109@gmail.com>
+Date: Sun, 27 Apr 2008 09:42:19 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-X-Operating-System: Debian GNU/Linux 4.0 (Etch)
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Chris Peterson <cpeterso@cpeterso.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] fix warning: remove unused static function in drivers/char/ip2/i2ellis.c
+References: <a24804730804270009x3398a190wf68e52280015fc7f@mail.gmail.com>
+In-Reply-To: <a24804730804270009x3398a190wf68e52280015fc7f@mail.gmail.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There is a bug in via-rhine driver - the driver don't disable
-interrupts during suspend, which sometimes leads to globally
-disabled interrupt line.
+On 04/27/2008 09:09 AM, Chris Peterson wrote:
+> This patch against linux-2.6.25-git7.
+> 
+> chris
+> 
+> 
+> Signed-off-by: Chris Peterson <cpeterso@cpeterso.com>
+> ---
+> diff -Naur linux-2.6.25-git7/drivers/char/ip2/i2ellis.c
+> linux-2.6.25-git7+patch/drivers/char/ip2/i2ellis.c
+> --- linux-2.6.25-git7/drivers/char/ip2/i2ellis.c	2008-04-25
+> 22:47:01.000000000 -0700
+> +++ linux-2.6.25-git7+patch/drivers/char/ip2/i2ellis.c	2008-04-25
+> 23:19:57.000000000 -0700
+> @@ -86,22 +86,6 @@
+>  }
+> 
+>  //******************************************************************************
+> -// Function:   iiEllisCleanup()
+> -// Parameters: None
+> -//
+> -// Returns:    Nothing
+> -//
+> -// Description:
+> -//
+> -// This routine performs any required cleanup of the iiEllis subsystem.
+> -//
+> -//******************************************************************************
+> -static void
+> -iiEllisCleanup(void)
+> -{
+> -}
 
-This patch disables interrupts (and Rx/Tx) during suspend.
+Well, have you tried to even build it? The .c file is *included* into i2main.c 
+where this function is used.
 
-Signed-off-by: Ondrej Zajicek <santiago@crfreenet.org>
-
----
-
-diff -uprN -X linux-2.6.25/Documentation/dontdiff linux-2.6.25/drivers/net/via-rhine.c linux-2.6.25-feanor/drivers/net/via-rhine.c
---- linux-2.6.25/drivers/net/via-rhine.c	2008-04-17 04:49:44.000000000 +0200
-+++ linux-2.6.25-feanor/drivers/net/via-rhine.c	2008-04-26 14:08:44.000000000 +0200
-@@ -1886,6 +1886,15 @@ static void rhine_shutdown (struct pci_d
- 	struct rhine_private *rp = netdev_priv(dev);
- 	void __iomem *ioaddr = rp->base;
- 
-+	/* Switch to loopback mode to avoid hardware races. */
-+	iowrite8(rp->tx_thresh | 0x02, ioaddr + TxConfig);
-+
-+	/* Disable interrupts by clearing the interrupt mask. */
-+	iowrite16(0x0000, ioaddr + IntrEnable);
-+
-+	/* Stop the chip's Tx and Rx processes. */
-+	iowrite16(CmdStop, ioaddr + ChipCmd);
-+
- 	if (!(rp->quirks & rqWOL))
- 		return; /* Nothing to do for non-WOL adapters */
- 
+NAK
