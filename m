@@ -1,45 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756660AbYD0GIS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758832AbYD0GJX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756660AbYD0GIS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Apr 2008 02:08:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751010AbYD0GIJ
+	id S1758832AbYD0GJX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Apr 2008 02:09:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751290AbYD0GJM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Apr 2008 02:08:09 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:57028
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1750812AbYD0GII (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Apr 2008 02:08:08 -0400
-Date: Sat, 26 Apr 2008 23:08:07 -0700 (PDT)
-Message-Id: <20080426.230807.144232984.davem@davemloft.net>
-To: mingo@elte.hu
-Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, viro@ZenIV.linux.org.uk
-Subject: Re: CONFIG_OPTIMIZE_INLINING
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20080427055943.GA16290@elte.hu>
-References: <20080426.215513.141243565.davem@davemloft.net>
-	<20080427055943.GA16290@elte.hu>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Sun, 27 Apr 2008 02:09:12 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:48641 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751246AbYD0GJL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Apr 2008 02:09:11 -0400
+Date: Sun, 27 Apr 2008 08:09:44 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Al Viro <viro@ZenIV.linux.org.uk>
+Cc: David Miller <davem@davemloft.net>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH] asm/unaligned.h doesn't work well as the very first include
+Message-ID: <20080427060944.GB9199@uranus.ravnborg.org>
+References: <20080427051918.GO5882@ZenIV.linux.org.uk>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080427051918.GO5882@ZenIV.linux.org.uk>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Ingo Molnar <mingo@elte.hu>
-Date: Sun, 27 Apr 2008 07:59:43 +0200
+On Sun, Apr 27, 2008 at 06:19:18AM +0100, Al Viro wrote:
+> Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
+> ---
+>  net/mac80211/mesh.h      |    1 +
+>  net/mac80211/mesh_hwmp.c |    1 -
+>  2 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/net/mac80211/mesh.h b/net/mac80211/mesh.h
+> index 742003d..9ee3aff 100644
+> --- a/net/mac80211/mesh.h
+> +++ b/net/mac80211/mesh.h
+> @@ -13,6 +13,7 @@
+>  
+>  #include <linux/types.h>
+>  #include <linux/jhash.h>
+> +#include <asm/unaligned.h>
+>  #include "ieee80211_i.h"
+>  
+>  
+> diff --git a/net/mac80211/mesh_hwmp.c b/net/mac80211/mesh_hwmp.c
+> index 02de8f1..3df8092 100644
+> --- a/net/mac80211/mesh_hwmp.c
+> +++ b/net/mac80211/mesh_hwmp.c
+> @@ -7,7 +7,6 @@
+>   * published by the Free Software Foundation.
+>   */
+>  
+> -#include <asm/unaligned.h>
+>  #include "mesh.h"
 
-> ... as i saw no reason why this feature, which i found rather useful, 
-> should be delayed another year or so. I'd be more than happy to promote 
-> this feature back to lib/Kconfig.debug, sparc64 interest would make that 
-> a strong argument.
+It has been discussed that any .h file should pull
+in what it needs so the other of includes does not matter.
+Some do them alphabetically.
 
-So you caved in to FUD in order to pad your commit and signoff count?
+Why not fix asm-*/unaligned.h so all users now and future
+are fixed in one shot?
 
-Because anyone who is paying attention can see clearly that you're
-trying to push as much stuff as quickly as possible into Linus's tree
-with your singoffs and authorship on it this merge window.
-
-Gee, I wonder why...
+	Sam
