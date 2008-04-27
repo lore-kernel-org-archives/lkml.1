@@ -1,58 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760172AbYD0K7x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760000AbYD0LGR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760172AbYD0K7x (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Apr 2008 06:59:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754383AbYD0K7q
+	id S1760000AbYD0LGR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Apr 2008 07:06:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752863AbYD0LGG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Apr 2008 06:59:46 -0400
-Received: from wa-out-1112.google.com ([209.85.146.181]:4479 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754320AbYD0K7p convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Apr 2008 06:59:45 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=Gl0CT4t5hU3dViCEZXqYAFwWMOrx2xaspySmM0/mNfNMUB5OiuASi9cvUc+EV/Tj9UYo7i7oOOU8Ewrgwn4swxAcL1xLGyn3Gf40aGVxpNJu/Lqtj+ICmS7Mj9iH8/jNKFbMMS/vOcnZYHhEEmGC3UWWJlZY9r8jHbZxcvsNegU=
-Message-ID: <c878e2290804270359w4fe4392flc41a5fb074152572@mail.gmail.com>
-Date: Sun, 27 Apr 2008 12:59:44 +0200
-From: "Kim Hansen" <kimhanse@gmail.com>
-To: "Alex Dubov" <oakad@yahoo.com>, linux-kernel@vger.kernel.org
-Subject: tifm_7xx1: SD card is ignored
+	Sun, 27 Apr 2008 07:06:06 -0400
+Received: from mail0.scram.de ([78.47.204.202]:51580 "EHLO mail.scram.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752742AbYD0LGF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Apr 2008 07:06:05 -0400
+X-Spam-Score: -4.079
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+ * -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
+ *      [score: 0.0000]
+ *  0.3 AWL AWL: From: address is in the auto white-list
+Message-ID: <48145E7B.6040805@scram.de>
+Date: Sun, 27 Apr 2008 13:07:39 +0200
+From: Jochen Friedrich <jochen@scram.de>
+User-Agent: Mozilla-Thunderbird 2.0.0.12 (X11/20080420)
 MIME-Version: 1.0
+To: Jean Delvare <khali@linux-fr.org>
+CC: Kumar Gala <galak@kernel.crashing.org>,
+       Scott Wood <scottwood@freescale.com>,
+       "Kernel, Linux" <linux-kernel@vger.kernel.org>,
+       linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+       Linux I2C <i2c@lm-sensors.org>, Jon Smirl <jonsmirl@gmail.com>,
+       Laurent Pinchart <laurentp@cse-semaphore.com>
+Subject: Re: [PATCH1/7] i2c: Add support for device alias names
+References: <47FF70A7.5070002@scram.de> <20080426223815.16e38a85@hyperion.delvare>
+In-Reply-To: <20080426223815.16e38a85@hyperion.delvare>
+X-Enigmail-Version: 0.95.0
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I have the problem that the SD card slot does not work on my Toshiba
-Protege M400 with my current kernel (2.6.24), it worked for me with
-2.6.18 but has been broken at least since 2.6.22.
+Hi Jean,
 
-The problem is that nothing happens, dmesg is silent and I guess the
-cause is that the driver does not see the hardware.
+>> -	if ((err = f75375_probe(client)) < 0)
+>> +	err = f75375_probe(client, NULL);
+>> +	if (err < 0)
+>>  		goto exit_detach;
+>>  
+>>  	return 0;
+> 
+> These coding style cleanups don't belong to this patch (if they belong
+> anywhere - I don't much see the point)
 
-How should I start debugging this?
+I just wanted to make sure, scripts/checkpatch.pl doesn't complain.
+But you're right. The coding style cleanup should have been another patch.
 
-raph:~# lspci
-[...]
-03:0b.2 Mass storage controller: Texas Instruments 5-in-1 Multimedia
-Card Reader (SD/MMC/MS/MS PRO/xD)
-03:0b.3 SD Host controller: Texas Instruments PCIxx12 SDA Standard
-Compliant SD Host Controller
-raph:~# lsmod | grep tifm
-tifm_sd                10888  0
-tifm_7xx1               7360  0
-mmc_core               47300  2 tifm_sd,sdhci
-tifm_core               9956  2 tifm_sd,tifm_7xx1
-raph:~# dmesg | grep -i tifm
-raph:~#
+Thanks a lot for your efforts of getting the alias stuff in!
 
-PS: I am not subscribed to lkml, please cc me on replies.
--- 
-Kim Hansen
-Vadgårdsvej 3, 2.tv
-2860 Søborg
-Fastnet: 3956 2437 -- Mobil: 3091 2437
+Jochen
