@@ -1,66 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763619AbYD0XrA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765131AbYD0Xr1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763619AbYD0XrA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Apr 2008 19:47:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755205AbYD0Xqv
+	id S1765131AbYD0Xr1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Apr 2008 19:47:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760010AbYD0XrK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Apr 2008 19:46:51 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:35004 "EHLO mx3.mail.elte.hu"
+	Sun, 27 Apr 2008 19:47:10 -0400
+Received: from slackware.com ([64.57.102.34]:46440 "EHLO bob.slackware.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753982AbYD0Xqu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Apr 2008 19:46:50 -0400
-Date: Mon, 28 Apr 2008 01:46:30 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Johannes Weiner <hannes@saeurebad.de>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Yinghai Lu <yinghai.lu@sun.com>, Yinghai Lu <yhlu.kernel@gmail.com>,
-       jbarnes@virtuousgeek.org
-Subject: Re: [git pull] "big box" x86 changes, bootmem/sparsemem
-Message-ID: <20080427234630.GC14338@elte.hu>
-References: <20080426185516.GA32364@elte.hu> <alpine.LFD.1.10.0804261205490.2813@woody.linux-foundation.org> <20080426194143.GA8366@elte.hu> <87hcdmnccu.fsf@saeurebad.de>
+	id S1764765AbYD0XrJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Apr 2008 19:47:09 -0400
+X-Greylist: delayed 3813 seconds by postgrey-1.27 at vger.kernel.org; Sun, 27 Apr 2008 19:47:08 EDT
+Message-ID: <48150178.4050900@slackware.com>
+Date: Sun, 27 Apr 2008 17:43:04 -0500
+From: "Patrick J. Volkerding" <volkerdi@slackware.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <87hcdmnccu.fsf@saeurebad.de>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Jesper Juhl <jesper.juhl@gmail.com>
+CC: Nick Clifton <nickc@specifixinc.com>, Richard Henderson <rth@redhat.com>,
+       Ian Taylor <ian@airs.com>, Jeff Law <law@redhat.com>,
+       Jim Wilson <wilson@redhat.com>, DJ Delorie <dj@delorie.com>,
+       Alan Modra <amodra@bigpond.net.au>,
+       Michael Meissner <meissner@redhat.com>,
+       Daniel Jacobowitz <dan@debian.org>, linux-kernel@vger.kernel.org
+Subject: Re: ld: <...> internal error, aborting at arange-set.c line 202 in
+ arange_set_new
+References: <alpine.LNX.1.00.0804272326320.14738@dragon.funnycrock.com>
+In-Reply-To: <alpine.LNX.1.00.0804272326320.14738@dragon.funnycrock.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Johannes Weiner <hannes@saeurebad.de> wrote:
-
-> >       mm: allow reserve_bootmem() cross nodes
+Jesper Juhl wrote:
+> Hi,
 > 
-> I find it sad that this goes in now.  I wrote a clean version of 
-> reserve_bootmem() [1] and it was rejected with arguments that I did 
-> not understand [2] and that were not further explained even though I 
-> asked for it [3].
+> For your information;
+> I just test build Linus' tip of the kernel tree (HEAD at 
+> 064922a805ec7aadfafdd27aa6b4908d737c3c1d) on a up-to-date 
+> Slackware-current distro and hit this problem:
 > 
-> http://lkml.org/lkml/2008/4/16/76
-> http://lkml.org/lkml/2008/4/16/234
-> http://lkml.org/lkml/2008/4/16/250
+> ...
+>   GEN     .version
+>   CHK     include/linux/compile.h
+>   UPD     include/linux/compile.h
+>   CC      init/version.o
+>   LD      init/built-in.o
+>   LD      .tmp_vmlinux1
+> ld: size of bfd_vma > size of splay_tree types
+> ld: BFD (Linux/GNU Binutils) 2.18.50.0.4.20080208 internal error, aborting 
+> at arange-set.c line 202 in arange_set_new
+> 
+> ld: Please report this bug.
 
-oh, i had your patches applied then undid them due to this:
+Hello all,
 
-   http://www.ussg.iu.edu/hypermail/linux/kernel/0804.2/0253.html
+Slackware-current does not use binutils 2.18.50.0.4.20080208, but rather 
+binutils-2.17.50.0.17.  We've run into a few unusual issues with newer 
+binutils versions, so we tend to be rather cautious about having that 
+package on the bleeding edge.
 
-havent seen a followup to that mail so it was 'issue pending'.
+I'd be curious if using the binutils-2.17.50.0.17 package from 
+slackware-current would avoid this problem, but also wanted to let 
+people know that the system in question had a critical part of the 
+toolchain replaced with something that didn't come from our set of packages.
 
-so i very much agree that your changes are cleaner, i just wanted to 
-have one that has all the fixes included.
+Best regards,
 
-Would you like to post a patch against current -git or should i extract 
-the cleaner reserve_bootmem() from your previous patch?
-
-	Ingo
+Pat
