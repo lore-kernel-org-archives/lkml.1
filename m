@@ -1,54 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759636AbYD0PrI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760582AbYD0PsN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759636AbYD0PrI (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Apr 2008 11:47:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753559AbYD0Pqy
+	id S1760582AbYD0PsN (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Apr 2008 11:48:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755152AbYD0Pr6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Apr 2008 11:46:54 -0400
-Received: from fg-out-1718.google.com ([72.14.220.152]:7116 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753155AbYD0Pqx (ORCPT
+	Sun, 27 Apr 2008 11:47:58 -0400
+Received: from web36701.mail.mud.yahoo.com ([209.191.85.35]:32249 "HELO
+	web36701.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753559AbYD0Pr5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Apr 2008 11:46:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=TrI5ccbQSxmahFPSxNsQOlOCL1SV+c0IUWv1z98dOeep+/k/2VVe3ZpQdLkBpvmRoMNSi/d8vt794DDF6GAd5Ur6gt4E5IO/lZBJIGm4Wu5xKTg957uVbV0G5YP8j9mWEnsBLGk8VdBsPIganfuDFhJxx/bA8FpjooKCIPjIIiA=
-Date: Sun, 27 Apr 2008 19:46:03 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Pavel Machek <pavel@ucw.cz>,
-       "H. Peter Anvin" <hpa@zytor.com>, David Woodhouse <dwmw2@infradead.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: x86: cleanup - rename VM_MASK to X86_VM_MASK
-Message-ID: <20080427154603.GA6895@cvg>
-References: <200804181856.m3IIuKd4007403@hera.kernel.org> <480F7C11.8040302@zytor.com> <20080427100901.GC3891@ucw.cz> <200804271331.18940.rjw@sisk.pl> <20080427115536.GA20043@srcf.ucam.org>
+	Sun, 27 Apr 2008 11:47:57 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=Lub++7Z2SPco9Dq2DJvliYCPq2tlEcopeMmspL5QuxyMdvm/sikF6M9utAhAy+AyQeZ+PCrhWTBJNqH+H15758LGtpH4IHRVCNl6Pq7VUifW6+eeEmKuyJhyArWpmvLjX0mq6n4O3LjfRLWUHvSmuF7pjjoDeJcVPJhVKge/71U=;
+X-YMail-OSG: mn4Y6YMVM1nsbJ.vFTHFaGWgRbWZCh8.gdyiwRLQQF9St6meovLXTvQL3wxZUVeJD7ByqIQYQUYrZgcwYyj4xCv9V0aUlXkT87QCV9uCRjABgYnhDsUEwoTmTg--
+Date: Sun, 27 Apr 2008 08:47:56 -0700 (PDT)
+From: Alex Dubov <oakad@yahoo.com>
+Subject: Re: tifm_7xx1: SD card is ignored
+To: Kim Hansen <kimhanse@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <c878e2290804270359w4fe4392flc41a5fb074152572@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080427115536.GA20043@srcf.ucam.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <622387.91709.qm@web36701.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Matthew Garrett - Sun, Apr 27, 2008 at 12:55:37PM +0100]
-| On Sun, Apr 27, 2008 at 01:31:17PM +0200, Rafael J. Wysocki wrote:
-| > On Sunday, 27 of April 2008, Pavel Machek wrote:
-| > > I believe vbetool and thus s2ram uses vm86, too.
-| > 
-| > Well, I think so too. Matthew?
-| 
-| Yes, though I don't think any of them use these internal flags.
-| 
-| -- 
-| Matthew Garrett | mjg59@srcf.ucam.org
-| 
 
-Originally this flag was bounded by CONFIG_VM86 which is
-kernel internal feature and if userland program relies on
-this it's a bit buggy assumption meguess. Anyway, i've posted
-second version of the patch (don't remember lkml.org link for
-that).
-		- Cyrill -
+--- Kim Hansen <kimhanse@gmail.com> wrote:
+
+> I have the problem that the SD card slot does not work on my Toshiba
+> Protege M400 with my current kernel (2.6.24), it worked for me with
+> 2.6.18 but has been broken at least since 2.6.22.
+> 
+> The problem is that nothing happens, dmesg is silent and I guess the
+> cause is that the driver does not see the hardware.
+> 
+> How should I start debugging this?
+> 
+
+First, there's an option in the kernel config enabling debugging print-outs
+(called "MMC Debugging" under MMC). Enable it, recompile the modules and you'll
+get plenty of dmesg noise.
+
+Second, the fact modules are loaded means that driver sees the hardware all
+right. There can be some sort of interplay between sdhci and tifm_sd as they
+use the same chip. I think you should blacklist one of them. Which one -
+depends on the settings in you flashmedia chip's eeprom (some vendors disable
+sdhci interface and some flashmedia one).
+
+You need an mmc_block module loaded too.
+
+In the worst case, you can always blame the TI. Some TI guy notified me that my
+driver contains errors affecting 803b series controllers (I myself have a
+8033). He, however, had not told me what they are. Very nice, indeed.
+
+
+
+      ____________________________________________________________________________________
+Be a better friend, newshound, and 
+know-it-all with Yahoo! Mobile.  Try it now.  http://mobile.yahoo.com/;_ylt=Ahu06i62sR8HDtDypao8Wcj9tAcJ
