@@ -1,83 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762306AbYD0Wjp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763081AbYD0Wkh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762306AbYD0Wjp (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Apr 2008 18:39:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751999AbYD0Wjh
+	id S1763081AbYD0Wkh (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Apr 2008 18:40:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752775AbYD0Wk3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Apr 2008 18:39:37 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:52847 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751936AbYD0Wjh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Apr 2008 18:39:37 -0400
-Message-ID: <4815009C.2010809@garzik.org>
-Date: Sun, 27 Apr 2008 18:39:24 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Sun, 27 Apr 2008 18:40:29 -0400
+Received: from wa-out-1112.google.com ([209.85.146.180]:37163 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752549AbYD0Wk2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Apr 2008 18:40:28 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=jsfVa1yY7afnOP7TREQuJu4KXs2LQa5ecUEaKptqXCkZN7SDlVus45TON99FGTbYZW7OvSHYl0PLoe0MuPUxtNmOVNvOKgbn6SXzx8RiCSNMh1nID3xsKyeeVfjV6EzP6Es24fo3CS8ZbKEoeT2YI0ddSNgMSEQiqn9LDKURJv8=
+Message-ID: <ed038eb20804271540q7df7ebe0p8e5c6b15c85813e0@mail.gmail.com>
+Date: Mon, 28 Apr 2008 00:40:28 +0200
+From: "Carl Henrik Lunde" <chlunde@ping.uio.no>
+To: "Soeren Sandmann" <sandmann@daimi.au.dk>
+Subject: Re: stat benchmark
+Cc: linux-kernel@vger.kernel.org, "Zach Brown" <zach.brown@oracle.com>
+In-Reply-To: <ye8wsmnezq9.fsf@camel05.daimi.au.dk>
 MIME-Version: 1.0
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "David S. Miller" <davem@davemloft.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [patch] x86, voyager: fix ioremap_nocache()
-References: <1209329485.3801.46.camel@localhost.localdomain>	 <20080427214837.GA11631@elte.hu> <1209335660.3801.79.camel@localhost.localdomain>
-In-Reply-To: <1209335660.3801.79.camel@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Disposition: inline
+References: <ye8wsmnezq9.fsf@camel05.daimi.au.dk>
+X-Google-Sender-Auth: 16475ccdcdcab853
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-James Bottomley wrote:
-> Here's another piece of the x86 API that's designed to be cached.  The
-> dma_declare_coherent_memory() usually represents behind bridge memory
-> that's fully participatory in the coherence model.
-> 
-> Making it uncached damages the utility of this memory because doing
-> cacheline sized burst cycles when needed to it is far faster than
-> individual byte/word/quad writes.
-> 
-> Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
-> 
-> ---
-> 
-> diff --git a/arch/x86/kernel/pci-dma.c b/arch/x86/kernel/pci-dma.c
-> index 388b113..df83ffd 100644
-> --- a/arch/x86/kernel/pci-dma.c
-> +++ b/arch/x86/kernel/pci-dma.c
-> @@ -214,7 +214,7 @@ int dma_declare_coherent_memory(struct device *dev, dma_addr_t bus_addr,
->  
->  	/* FIXME: this routine just ignores DMA_MEMORY_INCLUDES_CHILDREN */
->  
-> -	mem_base = ioremap(bus_addr, size);
-> +	mem_base = ioremap_cache(bus_addr, size);
->  	if (!mem_base)
->  		goto out;
+On Thu, Apr 24, 2008 at 10:59 PM, Soeren Sandmann <sandmann@daimi.au.dk> wrote:
+[...]
+>  Under the theory that disk seeks are killing us, one idea is to add a
+>  'multistat' system call that would allow statting of many files at a
+>  time, which would give the disk scheduler more to work with.
 
-Surely the change in semantics will find other places to creep out like 
-this?
+Instead of a specific system call for "multistat" it would be interesting
+to look at syslets.  I'm not sure what the current state of that work is,
+the last reference I find is http://lkml.org/lkml/2007/12/6/336 and more
+interestingly http://lkml.org/lkml/2008/1/9/327
 
-I would rather change drivers to use ioremap_nocache(), and leave the 
-API as-is.
+I guess it would be difficult to get close to the optimal disk schedule by
+using syslets; if a directory contains 1000 files that would require 1000
+syslets and a good I/O scheduler - that's unlikely to be feasible.
 
-Isn't there Yet More Breakage in lib/iomap.c, given these new semantics?
+I've added Zach Brown to Cc because he authored the last syslet patchset.
 
-         if (flags & IORESOURCE_MEM) {
-                 if (flags & IORESOURCE_CACHEABLE)
-                         return ioremap(start, len);
-                 return ioremap_nocache(start, len);
-         }
-
-Any driver using pci_iomap() (libata, and others) is affected.
-
-I disagree with this semantics change.  A number of code places _and 
-drivers_ GET IT RIGHT, and these are all broken now?
-
-	Jeff
-
-
-
+-- 
+Carl Henrik
