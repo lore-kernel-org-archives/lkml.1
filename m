@@ -1,154 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762067AbYD0AsT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758654AbYD0A53@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762067AbYD0AsT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Apr 2008 20:48:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756800AbYD0AsH
+	id S1758654AbYD0A53 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Apr 2008 20:57:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751214AbYD0A5T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Apr 2008 20:48:07 -0400
-Received: from fg-out-1718.google.com ([72.14.220.154]:11187 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755543AbYD0AsE (ORCPT
+	Sat, 26 Apr 2008 20:57:19 -0400
+Received: from rv-out-0708.google.com ([209.85.198.241]:57329 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751189AbYD0A5S (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Apr 2008 20:48:04 -0400
+	Sat, 26 Apr 2008 20:57:18 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:mime-version:content-type:message-id;
-        b=FlG5HVShux3qXUaNlol0k21xKxQQQFtbNDNLwnKSRYkC6HhnYdiL0f/q07+ZkEMavXrBIL1Wxsyx6yaeY4rNh77QcA5aaubRmjycIBEuzHRo0ZLBa+s95okn4LsQrMZ/Pc/MJc9U06SkMAvOkrcEqXIhZJg4h1y0DG2KZgAEnNc=
-From: Denys Vlasenko <vda.linux@googlemail.com>
-To: David Chinner <dgc@sgi.com>
-Subject: [PATCH] xfs: reduce stack usage in xfs_page_state_convert()
-Date: Sun, 27 Apr 2008 02:46:58 +0200
-User-Agent: KMail/1.8.2
-Cc: xfs@oss.sgi.com, Eric Sandeen <sandeen@sandeen.net>,
-       Adrian Bunk <bunk@kernel.org>, linux-kernel@vger.kernel.org
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=QvOfELec2gS64vgwVdygHHIz7ap8XvBI48OPsv8RQI3oenBCha3xTVliXTR6EwQ4a7bUTQ5/qH4Zw991VI3f8BwOBnov7OSjMGH9YAACnQwByaFPga32Hh/ehthbVYPDj6ErdVUNAVxYOKqETEeU5UqxhDI6NPE03Ie3re+ujbI=
+Message-ID: <86802c440804261757h305e5abbs9d61f2fd4f40cc4f@mail.gmail.com>
+Date: Sat, 26 Apr 2008 17:57:16 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: [PATCH] x86_32: trim memory by updating e820 v3
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Andi Kleen" <ak@suse.de>,
+       "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>,
+       "Jesse Barnes" <jesse.barnes@intel.com>,
+       "Mika Fischer" <mika.fischer@zoopnet.de>, balajirrao@gmail.com
+In-Reply-To: <20080426035614.a30afb17.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_C08EI5Sq2GBn7oU"
-Message-Id: <200804270246.58828.vda.linux@googlemail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200801192045.17291.yinghai.lu@sun.com>
+	 <200801202256.48365.yinghai.lu@sun.com>
+	 <20080122165125.GA17992@elte.hu>
+	 <200801221623.20861.yinghai.lu@sun.com>
+	 <20080426035614.a30afb17.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Boundary-00=_C08EI5Sq2GBn7oU
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+On Sat, Apr 26, 2008 at 3:56 AM, Andrew Morton
+<akpm@linux-foundation.org> wrote:
+> On Tue, 22 Jan 2008 16:23:20 -0800 Yinghai Lu <Yinghai.Lu@Sun.COM> wrote:
+>
+>  > [PATCH] x86_32: trim memory by updating e820 v3
+>  >
+>  > when mtrr is not covering all e820 table, need to trim the ram, need to update e820
+>  >
+>  > reuse some code for x86_64
+>  >
+>  > here need to add early_get_cap and use it in early_cpu_detect, and move mtrr_bp_init early
+>  >
+>  > need Justine to test with his special system with bug bios.
+>  >
+>  > Signed-off-by: Yinghai Lu <yinghai.lu@sun.com>
+>
+>  Speaking of mtrr and e820....
+>
+>  Could someone please take a peek at
+>  http://bugzilla.kernel.org/show_bug.cgi?id=10508 ?
+>
+>  For some reason we seem to have turned this:
+>
+>  [    0.000000]  BIOS-e820: 0000000000000000 - 000000000009f800 (usable)
+>  [    0.000000]  BIOS-e820: 000000000009f800 - 00000000000a0000 (reserved)
+>  [    0.000000]  BIOS-e820: 00000000000dc000 - 0000000000100000 (reserved)
+>  [    0.000000]  BIOS-e820: 0000000000100000 - 00000000bf6d0000 (usable)
+>  [    0.000000]  BIOS-e820: 00000000bf6d0000 - 00000000bf6e3000 (ACPI NVS)
+>  [    0.000000]  BIOS-e820: 00000000bf6e3000 - 00000000c0000000 (reserved)
+>  [    0.000000]  BIOS-e820: 00000000e0000000 - 00000000f0000000 (reserved)
+>  [    0.000000]  BIOS-e820: 00000000fec00000 - 00000000fec10000 (reserved)
+>  [    0.000000]  BIOS-e820: 00000000fed00000 - 00000000fed00400 (reserved)
+>  [    0.000000]  BIOS-e820: 00000000fed14000 - 00000000fed1a000 (reserved)
+>  [    0.000000]  BIOS-e820: 00000000fed1c000 - 00000000fed90000 (reserved)
+>  [    0.000000]  BIOS-e820: 00000000fee00000 - 00000000fee01000 (reserved)
+>  [    0.000000]  BIOS-e820: 00000000ff000000 - 0000000100000000 (reserved)
+>  [    0.000000]  BIOS-e820: 0000000100000000 - 0000000140000000 (usable)
+>
+>  into this:
+>
+>  reg00: base=0xc0000000 (3072MB), size=1024MB: uncachable, count=1
+>  reg01: base=0x00000000 ( 0MB), size=4096MB: write-back, count=1
+>  reg02: base=0x100000000 (4096MB), size=1024MB: write-back, count=1
+>  reg03: base=0xbf700000 (3063MB), size= 1MB: uncachable, count=1
+>  reg04: base=0xbf800000 (3064MB), size= 8MB: uncachable, count=1
+>
+>  which screws up the X server's attempt to map the video memory at
+>  0xd0000000.
 
-Hi David,
+can you check if you can set up MTRR mapping in BIOS from Continuous
+to Discrete?
 
-This patch reduces xfs_page_state_convert() stack usage by 16 bytes
-by eliminating some local variables, and reducing the size
-of scope for other locals.
-
-Compile tested only.
-
-Signed-off-by: Denys Vlasenko <vda.linux@googlemail.com>
-
-P.S.
-
-xfs_page_state_convert() carries the following comment:
- * Calling this without startio set means we are being asked to make a dirty
- * page ready for freeing it's buffers.  When called with startio set then
- * we are coming from writepage.
-which leads to the following proposal: reimplement it as two
-functions, one which work as if startio parameter == 0
-and the other as if startio == 1.
-This will result in a bit of code duplication, but reduces
-stack usage on writepage path and allows for these two functions
-to have more descriptive names. (Presently the meaning of this
-function needs to be explained in that comment -> function
-name is not descriptive enough, because it does different things
-depending on startio value).
-
-Do you like this idea?
---
-vda
-
---Boundary-00=_C08EI5Sq2GBn7oU
-Content-Type: text/x-diff;
-  charset="us-ascii";
-  name="stk2.diff"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
-	filename="stk2.diff"
-
-diff -urpN linux-2.6-xfs1/fs/xfs/linux-2.6/xfs_aops.c linux-2.6-xfs1.stk2/fs/xfs/linux-2.6/xfs_aops.c
---- linux-2.6-xfs1/fs/xfs/linux-2.6/xfs_aops.c	2008-04-22 04:06:46.000000000 +0200
-+++ linux-2.6-xfs1.stk2/fs/xfs/linux-2.6/xfs_aops.c	2008-04-27 02:38:51.000000000 +0200
-@@ -935,17 +935,11 @@ xfs_page_state_convert(
- 	unsigned long           p_offset = 0;
- 	unsigned int		type;
- 	__uint64_t              end_offset;
--	pgoff_t                 end_index, last_index, tlast;
--	ssize_t			size, len;
-+	pgoff_t                 end_index, last_index;
- 	int			flags, err, iomap_valid = 0, uptodate = 1;
- 	int			page_dirty, count = 0;
--	int			trylock = 0;
- 	int			all_bh = unmapped;
--
--	if (startio) {
--		if (wbc->sync_mode == WB_SYNC_NONE && wbc->nonblocking)
--			trylock |= BMAPI_TRYLOCK;
--	}
-+#define len (1 << inode->i_blkbits)
- 
- 	/* Is this page beyond the end of the file? */
- 	offset = i_size_read(inode);
-@@ -975,7 +969,6 @@ xfs_page_state_convert(
-  	 */
- 	end_offset = min_t(unsigned long long,
- 			(xfs_off_t)(page->index + 1) << PAGE_CACHE_SHIFT, offset);
--	len = 1 << inode->i_blkbits;
- 	p_offset = min_t(unsigned long, end_offset & (PAGE_CACHE_SIZE - 1),
- 					PAGE_CACHE_SIZE);
- 	p_offset = p_offset ? roundup(p_offset, len) : PAGE_CACHE_SIZE;
-@@ -1031,13 +1024,18 @@ xfs_page_state_convert(
- 				flags = BMAPI_WRITE | BMAPI_IGNSTATE;
- 			} else if (buffer_delay(bh)) {
- 				type = IOMAP_DELAY;
--				flags = BMAPI_ALLOCATE | trylock;
-+				flags = BMAPI_ALLOCATE;
-+				if (startio && wbc->sync_mode == WB_SYNC_NONE && wbc->nonblocking) {
-+					flags = BMAPI_ALLOCATE | BMAPI_TRYLOCK;
-+				}
- 			} else {
- 				type = IOMAP_NEW;
- 				flags = BMAPI_WRITE | BMAPI_MMAP;
- 			}
- 
- 			if (!iomap_valid) {
-+				ssize_t size;
-+
- 				/*
- 				 * if we didn't have a valid mapping then we
- 				 * need to ensure that we put the new mapping
-@@ -1082,6 +1080,8 @@ xfs_page_state_convert(
- 			 * underneath it. Map the extent by reading it.
- 			 */
- 			if (!iomap_valid || flags != BMAPI_READ) {
-+				ssize_t size;
-+
- 				flags = BMAPI_READ;
- 				size = xfs_probe_cluster(inode, page, bh,
- 								head, 1);
-@@ -1129,6 +1129,8 @@ xfs_page_state_convert(
- 		xfs_start_page_writeback(page, wbc, 1, count);
- 
- 	if (ioend && iomap_valid) {
-+		pgoff_t tlast;
-+
- 		offset = (iomap.iomap_offset + iomap.iomap_bsize - 1) >>
- 					PAGE_CACHE_SHIFT;
- 		tlast = min_t(pgoff_t, offset, last_index);
-@@ -1156,6 +1158,7 @@ error:
- 		ClearPageUptodate(page);
- 	}
- 	return err;
-+#undef len
- }
- 
- /*
-
---Boundary-00=_C08EI5Sq2GBn7oU--
+YH
