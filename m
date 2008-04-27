@@ -1,133 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758940AbYD0KA5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759487AbYD0KBU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758940AbYD0KA5 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Apr 2008 06:00:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754732AbYD0KAj
+	id S1759487AbYD0KBU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Apr 2008 06:01:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754383AbYD0KBE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Apr 2008 06:00:39 -0400
-Received: from nf-out-0910.google.com ([64.233.182.191]:65477 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754108AbYD0KAi (ORCPT
+	Sun, 27 Apr 2008 06:01:04 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:33269 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754606AbYD0KBB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Apr 2008 06:00:38 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer:mime-version:content-type:content-transfer-encoding:sender;
-        b=LBsmrGettG+7aPV8NZWcaywcR4iwpI+87xhDUOLRMFZSPbnHEXfhspN2XIpGhVOVv9zLrV6IFCW27060EN9H5vJNDoPrcFTXZQKH0NnjDo8z6cXEJrYFo+o7Upvcfzp8FIGkXUIkEzmNQqe6qJMHL786wpP8PSDUyLfk9ALr+oE=
-Date: Sat, 26 Apr 2008 23:47:13 +0300
-From: Pekka Paalanen <pq@iki.fi>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Steven Rostedt <rostedt@goodmis.org>, akpm@osdl.org,
-       Peter Zijlstra <peterz@infradead.org>,
-       Soeren Sandmann Pedersen <sandmann@redhat.com>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [PATCH 1/3] ftrace: add logic to record overruns
-Message-ID: <20080426234713.4a49373d@daedalus.pq.iki.fi>
-In-Reply-To: <20080421212128.201844090@goodmis.org>
-References: <20080421210935.460817943@goodmis.org>
-	<20080421212128.201844090@goodmis.org>
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.8; x86_64-pc-linux-gnu)
+	Sun, 27 Apr 2008 06:01:01 -0400
+Subject: Re: [patch 00/37] Linux Kernel Markers instrumentation for
+	sched-devel.git
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20080426201114.GA24798@Krystal>
+References: <20080424150324.802695381@polymtl.ca>
+	 <1209238735.6441.4.camel@lappy>  <20080426201114.GA24798@Krystal>
+Content-Type: text/plain
+Date: Sun, 27 Apr 2008 12:00:13 +0200
+Message-Id: <1209290413.6503.8.camel@lappy>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.22.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 21 Apr 2008 17:09:36 -0400
-Steven Rostedt <rostedt@goodmis.org> wrote:
-
-> This patch sets up the infrastructure to record overruns of the tracing
-> buffer.
+On Sat, 2008-04-26 at 16:11 -0400, Mathieu Desnoyers wrote:
+> * Peter Zijlstra (a.p.zijlstra@chello.nl) wrote:
+> > On Thu, 2008-04-24 at 11:03 -0400, Mathieu Desnoyers wrote:
+> > > Hi Ingo,
+> > > 
+> > > Here is a rather large patchset applying kernel instrumentation to
+> > > sched-devel.git. It includes, mainly :
+> > 
+> > I saw this land in sched-devel, how about this:
+> > 
 > 
-> Signed-off-by: Steven Rostedt <srostedt@redhat.com>
-> ---
->  kernel/trace/trace.c |   16 +++++++++++-----
->  kernel/trace/trace.h |    6 +++++-
->  2 files changed, 16 insertions(+), 6 deletions(-)
+> I think the main reason why those markers are ugly is they have
+> information meant for use by a general purpose tracer (it will only take
+> the parameters before the ## signs).
 > 
-> Index: linux-sched-devel.git/kernel/trace/trace.c
-> ===================================================================
-> --- linux-sched-devel.git.orig/kernel/trace/trace.c	2008-04-21 13:47:30.000000000 -0400
-> +++ linux-sched-devel.git/kernel/trace/trace.c	2008-04-21 14:39:43.000000000 -0400
-> @@ -612,6 +612,7 @@ void unregister_tracer(struct tracer *ty
->  void tracing_reset(struct trace_array_cpu *data)
->  {
->  	data->trace_idx = 0;
-> +	data->overrun = 0;
->  	data->trace_head = data->trace_tail = head_page(data);
->  	data->trace_head_idx = 0;
->  	data->trace_tail_idx = 0;
-> @@ -753,6 +754,7 @@ tracing_get_trace_entry(struct trace_arr
->  	if (data->trace_head == data->trace_tail &&
->  	    idx_next == data->trace_tail_idx) {
->  		/* overrun */
-> +		data->overrun++;
->  		data->trace_tail_idx++;
->  		if (data->trace_tail_idx >= ENTRIES_PER_PAGE) {
->  			data->trace_tail =
-...
-> @@ -2510,6 +2511,11 @@ tracing_read_pipe(struct file *filp, cha
->  	for_each_cpu_mask(cpu, mask) {
->  		data = iter->tr->data[cpu];
->  		__raw_spin_lock(&data->lock);
-> +
-> +		if (data->overrun > iter->last_overrun[cpu])
-> +			iter->overrun[cpu] +=
-> +				data->overrun - iter->last_overrun[cpu];
-> +		iter->last_overrun[cpu] = data->overrun;
+> The other way around is to start specializing the general purpose tracer
+> to extract the information it needs from the task and rq pointers and
+> put that in the traces. Actually, that's the approach I use currently
+> use in LTTng, but Ingo seemed interested to have the union of parameters
+> needed by specialized and GP tracers, so this is what I did.
+> 
+> The only thing I dislike with the approach of putting everything in a
+> separatered header is that it adds a layer of indirection when one try
+> to to quickly grep for trace_mark() in the kernel tree to see where the
+> conceptual tracing points are. Therefore, it might be interesting to
+> simply remove the parameters meant for the general purpose tracer and
+> let this GP tracer create specialized probes for these instrumentation
+> sites. It would therefore remove the ugliness without creating a
+> supplementary indirection layer.
 
-Option 1: move this code earlier.
-(Could also remove the `if' and make it unconditional.)
+In part its the extra parameters, but to a large part its that darn
+string. I'm still not getting why we can't just live with trace marks
+like 'regular' functions much like the ones I used to wrap trace_mark().
 
->  	}
->  
->  	while (find_next_entry_inc(iter) != NULL) {
-> Index: linux-sched-devel.git/kernel/trace/trace.h
-> ===================================================================
-> --- linux-sched-devel.git.orig/kernel/trace/trace.h	2008-04-21 13:47:30.000000000 -0400
-> +++ linux-sched-devel.git/kernel/trace/trace.h	2008-04-21 14:38:09.000000000 -0400
-> @@ -102,6 +102,7 @@ struct trace_array_cpu {
->  	void			*trace_head; /* producer */
->  	void			*trace_tail; /* consumer */
->  	unsigned long		trace_idx;
-> +	unsigned long		overrun;
+> > Index: linux-2.6-2/kernel/sched_trace.h
+> > ===================================================================
+> > --- /dev/null
+> > +++ linux-2.6-2/kernel/sched_trace.h
+> > @@ -0,0 +1,41 @@
+> > +#include <linux/marker.h>
+> > +
+> > +static inline void trace_kernel_sched_wait(struct task_struct *p)
+> > +{
+> > +	trace_mark(kernel_sched_wait_task, "pid %d state %ld",
+> > +			p->pid, p->state);
+> > +}
+> > +
+> > +static inline
+> > +void trace_kernel_sched_wakeup(struct rq *rq, struct task_struct *p)
+> > +{
+> > +	trace_mark(kernel_sched_wakeup,
+> > +			"pid %d state %ld ## rq %p task %p rq->curr %p",
+> > +			p->pid, p->state, rq, p, rq->curr);
+> > +}
+> > +
+> > +static inline
+> > +void trace_kernel_sched_wakeup_new(struct rq *rq, struct task_struct *p)
+> > +{
+> > +	trace_mark(kernel_sched_wakeup_new,
+> > +			"pid %d state %ld ## rq %p task %p rq->curr %p",
+> > +			p->pid, p->state, rq, p, rq->curr);
+> > +}
+> > +
+> > +static inline void trace_kernel_sched_switch(struct rq *rq,
+> > +		struct task_struct *prev, struct task_struct *next)
+> > +{
+> > +	trace_mark(kernel_sched_schedule,
+> > +			"prev_pid %d next_pid %d prev_state %ld "
+> > +			"## rq %p prev %p next %p",
+> > +			prev->pid, next->pid, prev->state,
+> > +			rq, prev, next);
+> > +}
+> > +
+> > +static inline void
+> > +trace_kernel_sched_migrate_task(struct task_struct *p, int src, int dst)
+> > +{
+> > +	trace_mark(kernel_sched_migrate_task,
+> > +			"pid %d state %ld dest_cpu %d",
+> > +			p->pid, p->state, dst);
+> > +}
 
-Option 2: Change this into atomic_t.
+One advantage of having these things close together would be that it
+stimulates consistency between the various trace points. Something that
+would be sorely needed with such a  free form mechanism.
 
->  	unsigned long		saved_latency;
->  	unsigned long		critical_start;
->  	unsigned long		critical_end;
-> @@ -162,10 +163,13 @@ struct trace_seq {
->   * results to users and which routines might sleep, etc:
->   */
->  struct trace_iterator {
-> -	struct trace_seq	seq;
->  	struct trace_array	*tr;
->  	struct tracer		*trace;
-> +	long			last_overrun[NR_CPUS];
-> +	long			overrun[NR_CPUS];
+Peter
 
-The problem with these fields is that they are updated only after the read
-hook has been called in tracing_read_pipe(), which means all "N events
-lost!" entries will be one read call behind. This can be any number of
-events.
-
-If trace_array_cpu::overrun was atomic_t, I could process that in
-the read callback. But, trace_iterator::overrun would be good, because
-I could just reset it to zero every time I encounter a non-zero value.
-
-I can think of two options, the ones noted above: moving the update
-earlier, or using atomic_t. Or maybe do both, so that we don't have to
-lock the trace_array_cpu structs early and also avoid duplicating the
-overrun/last_overrun logic in a tracer.
-
-What shall we do?
-
-
-Thanks.
-
--- 
-Pekka Paalanen
-http://www.iki.fi/pq/
