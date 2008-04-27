@@ -1,77 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764876AbYD0XES@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765014AbYD0XEp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764876AbYD0XES (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Apr 2008 19:04:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758592AbYD0XEI
+	id S1765014AbYD0XEp (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Apr 2008 19:04:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760148AbYD0XEf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Apr 2008 19:04:08 -0400
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:34349 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755581AbYD0XEF (ORCPT
+	Sun, 27 Apr 2008 19:04:35 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:33076 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757585AbYD0XEe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Apr 2008 19:04:05 -0400
-Subject: Re: Breakage caused by unreviewed patch in x86 tree
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080427155803.73f0efcf@laptopd505.fenrus.org>
-References: <1209329485.3801.46.camel@localhost.localdomain>
-	 <20080427155803.73f0efcf@laptopd505.fenrus.org>
-Content-Type: text/plain
-Date: Sun, 27 Apr 2008 19:03:59 -0400
-Message-Id: <1209337439.3801.84.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-4.fc8) 
+	Sun, 27 Apr 2008 19:04:34 -0400
+Message-ID: <48150667.90806@zytor.com>
+Date: Sun, 27 Apr 2008 16:04:07 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+MIME-Version: 1.0
+To: David Miller <davem@davemloft.net>
+CC: jeff@garzik.org, James.Bottomley@HansenPartnership.com, mingo@elte.hu,
+       tglx@linutronix.de, linux-kernel@vger.kernel.org,
+       torvalds@linux-foundation.org
+Subject: Re: [patch] x86, voyager: fix ioremap_nocache()
+References: <4815009C.2010809@garzik.org>	<20080427.154620.177583216.davem@davemloft.net>	<48150392.6040508@zytor.com> <20080427.155834.189904598.davem@davemloft.net>
+In-Reply-To: <20080427.155834.189904598.davem@davemloft.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2008-04-27 at 15:58 -0700, Arjan van de Ven wrote:
-> On Sun, 27 Apr 2008 16:51:25 -0400
-> James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
+David Miller wrote:
+> I think this is a reasonable course of action.
 > 
-> > This patch:
-> > 
-> > commit 6371b495991debfd1417b17c2bc4f7d7bae05739
-> > Author: Ingo Molnar <mingo@elte.hu>
-> > Date:   Wed Jan 30 13:33:40 2008 +0100
-> > 
-> >     x86: change ioremap() to default to uncached
-> > 
-> > As far as I can tell went blindly into the x86 tree without being
-> > shared on any mailing list at all.  How can something that completely
-> > alters the semantics of ioremap on x86 platforms go in without any
-> > review.
+> That leaves one of Jeff's concerns, what to do with pci_iomap().  That
+> was designed to give mappings with caching enabled, and as a result we
+> probably should make it behave that way.
 
-> it changed from "whatever coinflip you got" to "predictable outcome". 
-> What you got before was uncached (most of the time), or if the bios was
-> creative, write combining. Or if the bios was broken in how it set up MTRR's, you could suddenly
-> get "cached".
+Yes, it should.  Just be clear that *that* is a semantic change over 
+what the code currently does; it would appear that that is what the code 
+is *trying* to do.
 
-My major complaint is the lack of review and notice, not the actual
-patch.
+I believe on x86 it will still get clamped by the MTRRs, at least 
+initially (I don't think we have flipped the default MTRR type to WB 
+yet) but that would immediately change the behaviour on non-x86 
+architectures.
 
-> When you're mapping device memory, uncached is the safe default. 
-
-Well, for certain device mailboxes, uncached does mean less performant.
-The voyager breakage was exceptional ... I expect other problems just to
-result in a loss of performance that caching gave by improving the
-bursting.  If we're lucky, the PCI bridge cache might hide a lot of
-this.
-
-> With the switch to PAT (and phasing out of MTRR), the kernel needs to pick one of the three
-> (cached, writecombining, uncached) since you can no longer really depend on MTRRs saving
-> your bacon there. 
-> Drivers in general, with VERY few exceptions, want uncached. Any other choice would have been deadly...
-> 
-> I'd like to ask you which one you would pick... you maintain a whole bunch of drivers as scsi maintainer, what would
-> you have picked?
-> The answer "whatever the MTRR set up" no longer holds ;(
-
-I wouldn't have picked ... I'd have asked for input.
-
-James
-
-
+	-hpa
