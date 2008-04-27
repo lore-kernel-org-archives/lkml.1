@@ -1,56 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760000AbYD0LGR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759348AbYD0LOi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760000AbYD0LGR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Apr 2008 07:06:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752863AbYD0LGG
+	id S1759348AbYD0LOi (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Apr 2008 07:14:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753978AbYD0LO1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Apr 2008 07:06:06 -0400
-Received: from mail0.scram.de ([78.47.204.202]:51580 "EHLO mail.scram.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752742AbYD0LGF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Apr 2008 07:06:05 -0400
-X-Spam-Score: -4.079
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
- * -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
- *      [score: 0.0000]
- *  0.3 AWL AWL: From: address is in the auto white-list
-Message-ID: <48145E7B.6040805@scram.de>
-Date: Sun, 27 Apr 2008 13:07:39 +0200
-From: Jochen Friedrich <jochen@scram.de>
-User-Agent: Mozilla-Thunderbird 2.0.0.12 (X11/20080420)
+	Sun, 27 Apr 2008 07:14:27 -0400
+Received: from wa-out-1112.google.com ([209.85.146.182]:42097 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753733AbYD0LO0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Apr 2008 07:14:26 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=HchGpc+uLVeIKK3GldycVRE6lMyX8ebz22rJ0YqTF1PsG8usCqhCFZIMRtHlK1EGLCB5Idfazu3Ga3Uu/vz95ql+5GDJYUF5wQChjLuHl0NxqwqPNeGI/z6OftN5Q2MuckgRGDxTSMJSA8acn+APplkSIWYCO6hVAz8b5YVAufE=
+Message-ID: <2f11576a0804270414t3ef16998me2ff2afd21eedbe7@mail.gmail.com>
+Date: Sun, 27 Apr 2008 20:14:26 +0900
+From: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: [patch] ftrace, v15
+Cc: linux-kernel@vger.kernel.org, "Steven Rostedt" <rostedt@goodmis.org>,
+       "Mathieu Desnoyers" <mathieu.desnoyers@polymtl.ca>
+In-Reply-To: <20080427063019.GA23295@elte.hu>
 MIME-Version: 1.0
-To: Jean Delvare <khali@linux-fr.org>
-CC: Kumar Gala <galak@kernel.crashing.org>,
-       Scott Wood <scottwood@freescale.com>,
-       "Kernel, Linux" <linux-kernel@vger.kernel.org>,
-       linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-       Linux I2C <i2c@lm-sensors.org>, Jon Smirl <jonsmirl@gmail.com>,
-       Laurent Pinchart <laurentp@cse-semaphore.com>
-Subject: Re: [PATCH1/7] i2c: Add support for device alias names
-References: <47FF70A7.5070002@scram.de> <20080426223815.16e38a85@hyperion.delvare>
-In-Reply-To: <20080426223815.16e38a85@hyperion.delvare>
-X-Enigmail-Version: 0.95.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080427063019.GA23295@elte.hu>
+X-Google-Sender-Auth: cc4c1c9a50ee8dd0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jean,
+Hi Ingo,
 
->> -	if ((err = f75375_probe(client)) < 0)
->> +	err = f75375_probe(client, NULL);
->> +	if (err < 0)
->>  		goto exit_detach;
->>  
->>  	return 0;
-> 
-> These coding style cleanups don't belong to this patch (if they belong
-> anywhere - I don't much see the point)
+>  the current/latest ftrace tree can be pulled from:
+>
+>    git://git.kernel.org/pub/scm/linux/kernel/git/mingo/linux-2.6-sched-devel.git
+>
+>  the full diffs are too large to be included here, but the shortlog and
+>  the diffstat is below. Not much changed in the fundamentals since the
+>  last lkml posting - but many small details were refined.
 
-I just wanted to make sure, scripts/checkpatch.pl doesn't complain.
-But you're right. The coding style cleanup should have been another patch.
+I hope ftrace people discussio LTTng people more.
+AFAIK nobody explain pros. and cons. ftrace against marker approach.
+(of cource, LTTng people doen't explain it too)
 
-Thanks a lot for your efforts of getting the alias stuff in!
+I believe tracing feature is very important.
+too few discussion is sad ;-)
 
-Jochen
+Why nobody try to integrate ftrace and LTTng?
+and, Why don't you separate sched-devel tree and ftrace-devel tree?
