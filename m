@@ -1,65 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760582AbYD0PsN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761730AbYD0PtB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760582AbYD0PsN (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Apr 2008 11:48:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755152AbYD0Pr6
+	id S1761730AbYD0PtB (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Apr 2008 11:49:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755339AbYD0Psx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Apr 2008 11:47:58 -0400
-Received: from web36701.mail.mud.yahoo.com ([209.191.85.35]:32249 "HELO
-	web36701.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753559AbYD0Pr5 (ORCPT
+	Sun, 27 Apr 2008 11:48:53 -0400
+Received: from mtiwmhc11.worldnet.att.net ([204.127.131.115]:45510 "EHLO
+	mtiwmhc11.worldnet.att.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755152AbYD0Psw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Apr 2008 11:47:57 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=Lub++7Z2SPco9Dq2DJvliYCPq2tlEcopeMmspL5QuxyMdvm/sikF6M9utAhAy+AyQeZ+PCrhWTBJNqH+H15758LGtpH4IHRVCNl6Pq7VUifW6+eeEmKuyJhyArWpmvLjX0mq6n4O3LjfRLWUHvSmuF7pjjoDeJcVPJhVKge/71U=;
-X-YMail-OSG: mn4Y6YMVM1nsbJ.vFTHFaGWgRbWZCh8.gdyiwRLQQF9St6meovLXTvQL3wxZUVeJD7ByqIQYQUYrZgcwYyj4xCv9V0aUlXkT87QCV9uCRjABgYnhDsUEwoTmTg--
-Date: Sun, 27 Apr 2008 08:47:56 -0700 (PDT)
-From: Alex Dubov <oakad@yahoo.com>
-Subject: Re: tifm_7xx1: SD card is ignored
-To: Kim Hansen <kimhanse@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <c878e2290804270359w4fe4392flc41a5fb074152572@mail.gmail.com>
+	Sun, 27 Apr 2008 11:48:52 -0400
+X-Greylist: delayed 302 seconds by postgrey-1.27 at vger.kernel.org; Sun, 27 Apr 2008 11:48:52 EDT
+Message-ID: <48149F2B.4000503@lwfinger.net>
+Date: Sun, 27 Apr 2008 10:43:39 -0500
+From: Larry Finger <Larry.Finger@lwfinger.net>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <622387.91709.qm@web36701.mail.mud.yahoo.com>
+To: Priit Laes <plaes@plaes.org>
+CC: linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-wireless <linux-wireless@vger.kernel.org>
+Subject: Re: [REGRESSION] Trouble seeing some wireless networks in latest
+ git
+References: <1209288298.3851.12.camel@localhost>
+In-Reply-To: <1209288298.3851.12.camel@localhost>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
---- Kim Hansen <kimhanse@gmail.com> wrote:
-
-> I have the problem that the SD card slot does not work on my Toshiba
-> Protege M400 with my current kernel (2.6.24), it worked for me with
-> 2.6.18 but has been broken at least since 2.6.22.
+Priit Laes wrote:
+> Hey,
 > 
-> The problem is that nothing happens, dmesg is silent and I guess the
-> cause is that the driver does not see the hardware.
+> There seems to be some kind of regression in wireless drivers that makes
+> it not possible to see some wireless networks.
 > 
-> How should I start debugging this?
+> This can be seen with both b43 and iwl3945 drivers.
 > 
+> Using Kismet wireless scanner these networks were visible under latest
+> git.
+> All the networks rendered invisible seem to be from channels: 1 (one
+> network visible), 3, 8, 12 and 13. Visible networks are in channels 1,
+> 4, 6, 9 and 11.
+> 
+> Any hints how to debug this further?
 
-First, there's an option in the kernel config enabling debugging print-outs
-(called "MMC Debugging" under MMC). Enable it, recompile the modules and you'll
-get plenty of dmesg noise.
+This regression sounds like a perfect place to use git bisection. As it affects 
+b43 and iwl3945, I would suspect some change in mac80211.
 
-Second, the fact modules are loaded means that driver sees the hardware all
-right. There can be some sort of interplay between sdhci and tifm_sd as they
-use the same chip. I think you should blacklist one of them. Which one -
-depends on the settings in you flashmedia chip's eeprom (some vendors disable
-sdhci interface and some flashmedia one).
-
-You need an mmc_block module loaded too.
-
-In the worst case, you can always blame the TI. Some TI guy notified me that my
-driver contains errors affecting 803b series controllers (I myself have a
-8033). He, however, had not told me what they are. Very nice, indeed.
-
-
-
-      ____________________________________________________________________________________
-Be a better friend, newshound, and 
-know-it-all with Yahoo! Mobile.  Try it now.  http://mobile.yahoo.com/;_ylt=Ahu06i62sR8HDtDypao8Wcj9tAcJ
+Larry
