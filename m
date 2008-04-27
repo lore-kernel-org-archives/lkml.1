@@ -1,77 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758738AbYD0BGr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760815AbYD0BIW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758738AbYD0BGr (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Apr 2008 21:06:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751554AbYD0BGk
+	id S1760815AbYD0BIW (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Apr 2008 21:08:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753138AbYD0BIN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Apr 2008 21:06:40 -0400
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:51421 "EHLO smtp4.pp.htv.fi"
+	Sat, 26 Apr 2008 21:08:13 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:52864 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751637AbYD0BGj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Apr 2008 21:06:39 -0400
-Date: Sun, 27 Apr 2008 04:06:14 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Pavel Machek <pavel@ucw.cz>, Ingo Molnar <mingo@elte.hu>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Alexey Starikovskiy <astarikovskiy@suse.de>, tglx@linutronix.de,
-       linux-kernel@vger.kernel.org
-Subject: Re: Voyager phys_cpu_present_map compile error
-Message-ID: <20080427010614.GX2252@cs181133002.pp.htv.fi>
-References: <1208793533.3640.24.camel@localhost.localdomain> <20080421195148.GG8770@elte.hu> <20080421200949.GB2633@cs181133002.pp.htv.fi> <20080421201352.GM8770@elte.hu> <20080421202605.GC2633@cs181133002.pp.htv.fi> <20080421202919.GA28069@elte.hu> <20080421210232.GD2633@cs181133002.pp.htv.fi> <20080421223142.GA18140@elte.hu> <20080426074300.GA3891@ucw.cz> <4813CC6A.6030307@zytor.com>
+	id S1752183AbYD0BIL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 Apr 2008 21:08:11 -0400
+Date: Sat, 26 Apr 2008 22:00:39 -0300
+From: Arnaldo Carvalho de Melo <acme@redhat.com>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Andi Kleen <andi@firstfloor.org>,
+       Ingo Molnar <mingo@elte.hu>, Jiri Slaby <jirislaby@gmail.com>,
+       David Miller <davem@davemloft.net>, zdenek.kabelac@gmail.com,
+       rjw@sisk.pl, paulmck@linux.vnet.ibm.com, akpm@linux-foundation.org,
+       linux-ext4@vger.kernel.org, herbert@gondor.apana.org.au,
+       penberg@cs.helsinki.fi, clameter@sgi.com, linux-kernel@vger.kernel.org,
+       pageexec@freemail.hu, "Frank Ch. Eigler" <fche@redhat.com>,
+       systemtap@sources.redhat.com
+Subject: Re: [PATCH 1/1] x86: fix text_poke
+Message-ID: <20080427010039.GB12370@ghostprotocols.net>
+Mail-Followup-To: Arnaldo Carvalho de Melo <acme@redhat.com>,
+	Jeremy Fitzhardinge <jeremy@goop.org>,
+	Masami Hiramatsu <mhiramat@redhat.com>,
+	Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	"H. Peter Anvin" <hpa@zytor.com>, Andi Kleen <andi@firstfloor.org>,
+	Ingo Molnar <mingo@elte.hu>, Jiri Slaby <jirislaby@gmail.com>,
+	David Miller <davem@davemloft.net>, zdenek.kabelac@gmail.com,
+	rjw@sisk.pl, paulmck@linux.vnet.ibm.com, akpm@linux-foundation.org,
+	linux-ext4@vger.kernel.org, herbert@gondor.apana.org.au,
+	penberg@cs.helsinki.fi, clameter@sgi.com,
+	linux-kernel@vger.kernel.org, pageexec@freemail.hu,
+	"Frank Ch. Eigler" <fche@redhat.com>, systemtap@sources.redhat.com
+References: <481241DC.3070601@zytor.com> <alpine.LFD.1.10.0804251349510.2779@woody.linux-foundation.org> <20080425211205.GC25950@Krystal> <alpine.LFD.1.10.0804251456410.2779@woody.linux-foundation.org> <20080425230028.GC31226@Krystal> <481265B7.9040505@goop.org> <48126A80.4000203@redhat.com> <4812CA02.8040705@goop.org> <20080426115634.GH16635@ghostprotocols.net> <4813BCF8.3090907@goop.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4813CC6A.6030307@zytor.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <4813BCF8.3090907@goop.org>
+X-Url: http://oops.ghostprotocols.net:81/blog
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Apr 26, 2008 at 05:44:26PM -0700, H. Peter Anvin wrote:
-> Pavel Machek wrote:
+Em Sat, Apr 26, 2008 at 04:38:32PM -0700, Jeremy Fitzhardinge escreveu:
+> Arnaldo Carvalho de Melo wrote:
+>> You do, when you decide to stop tracing. He is not talking about the old
+>> function, that one, indeed will always be there, but what about the new
+>> one? When tracing stops we want to remove it and revert to using the old
+>> one...
 >>
->> I guess Adrian is trying to say:
->>
->> 'That code is in tree, so it should compile and run. He can't verify
->> it runs, but he's trying to make sure it at least compiles.'
->>
->> For 'normal' users it is not a problem.
->> 							Pavel
+>> But perhaps you are suggesting that the new one, once loaded, stays
+>> there forever, that would work, but after several tracing sessions one
+>> would have to eventually reboot the machine due to many modules left
+>> loaded.
 >
-> This is fine, except it is an unreasonable request when there are fewer  
-> existing machines than people contributing to this tree.  For a lot of  
-> people, compile bandwidth is what is limiting their ability to 
-> contribute.
+> As I said, it doesn't seem like a very satisfactory way to solve the 
+> problem.
 
-I'm not claiming it was the end of the world if someone accidentally 
-breaks Voyager.
+Indeed :-)
 
-But Ingo wanted me to stop to sometimes compile test Voyager.
-
-> James has offered to fix up Voyager breakage a posteori, and that is the  
-> appropriate action for a niche architecture like this.
-
-I'm still not getting the point why we should ever wait for James for 
-doing things like
--       select HAVE_ARCH_KGDB
-+       select HAVE_ARCH_KGDB if !X86_VOYAGER
-
-And the other compile breakages we had recently weren't much worse.
-
-I fully agree that it makes sense that Voyager problems should not be 
-showstoppers and that James is the one capable and responsible of fixing 
-non-trivial issues.
-
-> 	-hpa
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+- Arnaldo
