@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756972AbYD0QAr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762941AbYD0QBd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756972AbYD0QAr (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Apr 2008 12:00:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757502AbYD0QAM
+	id S1762941AbYD0QBd (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Apr 2008 12:01:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761317AbYD0QAV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Apr 2008 12:00:12 -0400
-Received: from smtp.opengridcomputing.com ([209.198.142.2]:50115 "EHLO
+	Sun, 27 Apr 2008 12:00:21 -0400
+Received: from smtp.opengridcomputing.com ([209.198.142.2]:50121 "EHLO
 	smtp.opengridcomputing.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755896AbYD0QAI (ORCPT
+	by vger.kernel.org with ESMTP id S1755963AbYD0QAL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Apr 2008 12:00:08 -0400
+	Sun, 27 Apr 2008 12:00:11 -0400
 From: Steve Wise <swise@opengridcomputing.com>
-Subject: [PATCH 2.6.26 2/3] RDMA/cxgb3: Correctly set the max_mr_size device attribute.
-Date: Sun, 27 Apr 2008 11:00:08 -0500
+Subject: [PATCH 2.6.26 3/3] RDMA/cxgb3: Support peer-2-peer connection setup.
+Date: Sun, 27 Apr 2008 11:00:10 -0500
 To: rdreier@cisco.com
 Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
        general@lists.openfabrics.org, divy@chelsio.com, felix@chelsio.com
-Message-Id: <20080427160008.31018.15516.stgit@dell3.ogc.int>
+Message-Id: <20080427160010.31018.67436.stgit@dell3.ogc.int>
 In-Reply-To: <20080427155456.31018.22282.stgit@dell3.ogc.int>
 References: <20080427155456.31018.22282.stgit@dell3.ogc.int>
 Content-Type: text/plain; charset=utf-8; format=fixed
@@ -27,64 +27,435 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-cxgb3 only supports 4GB memory regions.  The lustre RDMA code uses this
-attribute and currently has to code around our bad setting.
+Open MPI, Intel MPI and other applications don't support the iWARP
+requirement that the client side send the first RDMA message.  This class
+of application connection setup is called peer-2-peer.  Typically once
+the connection is setup, _both_ sides want to send data.
+
+This patch enables supporting peer-2-peer over the chelsio rnic by
+enforcing this iWARP requirement in the driver itself as part of RDMA
+connection setup.
+
+Connection setup is extended, when peer2peer is 1, such that the MPA
+initiator will send a 0B Read (the RTR) just after connection setup.
+The MPA responder will suspend SQ processing until the RTR message is
+received and reply-to.
+
+Design:
+
+- Add a module option, peer2peer, to enable this mode.
+
+- New firmware support for peer-2-peer mode:
+
+	- a new bits in the rdma_init WR to tell it to do peer-2-peer
+	and what form of RTR message to send or expect.
+
+	- process _all_ preposted recvs before moving the connection
+	into rdma mode.
+
+	- passive side: defer completing the rdma_init WR until all
+	pre-posted recvs are processed.  Suspend SQ processing until
+	the RTR is received.
+
+	- active side: expect and process the 0B read WR on offload tx
+	queue.	Defer completing the rdma_init WR until all pre-posted
+	recvs are processed.  Suspend SQ processing until the 0B read
+	WR is processed from the offload tx queue.
+
+- If peer2peer is set, driver posts 0B read request on offload tx queue just
+after posting the rdma_init wr to the offload tx queue.
+
+- Add cq poll logic to ignore unsolicitied read responses.
 
 Signed-off-by: Steve Wise <swise@opengridcomputing.com>
 ---
 
- drivers/infiniband/hw/cxgb3/cxio_hal.h      |    1 +
- drivers/infiniband/hw/cxgb3/iwch.c          |    1 +
- drivers/infiniband/hw/cxgb3/iwch.h          |    1 +
- drivers/infiniband/hw/cxgb3/iwch_provider.c |    2 +-
- 4 files changed, 4 insertions(+), 1 deletions(-)
+ drivers/infiniband/hw/cxgb3/cxio_hal.c      |   18 ++++++-
+ drivers/infiniband/hw/cxgb3/cxio_wr.h       |   21 +++++++-
+ drivers/infiniband/hw/cxgb3/iwch_cm.c       |   68 +++++++++++++++++++--------
+ drivers/infiniband/hw/cxgb3/iwch_cm.h       |    1 
+ drivers/infiniband/hw/cxgb3/iwch_provider.h |    3 +
+ drivers/infiniband/hw/cxgb3/iwch_qp.c       |   54 ++++++++++++++++++++-
+ drivers/net/cxgb3/version.h                 |    2 -
+ 7 files changed, 137 insertions(+), 30 deletions(-)
 
-diff --git a/drivers/infiniband/hw/cxgb3/cxio_hal.h b/drivers/infiniband/hw/cxgb3/cxio_hal.h
-index 99543d6..2bcff7f 100644
---- a/drivers/infiniband/hw/cxgb3/cxio_hal.h
-+++ b/drivers/infiniband/hw/cxgb3/cxio_hal.h
-@@ -53,6 +53,7 @@
- #define T3_MAX_PBL_SIZE 256
- #define T3_MAX_RQ_SIZE 1024
- #define T3_MAX_NUM_STAG (1<<15)
-+#define T3_MAX_MR_SIZE 0x100000000ULL
+diff --git a/drivers/infiniband/hw/cxgb3/cxio_hal.c b/drivers/infiniband/hw/cxgb3/cxio_hal.c
+index 03c5ff6..3de0fbf 100644
+--- a/drivers/infiniband/hw/cxgb3/cxio_hal.c
++++ b/drivers/infiniband/hw/cxgb3/cxio_hal.c
+@@ -456,7 +456,8 @@ void cxio_count_scqes(struct t3_cq *cq, struct t3_wq *wq, int *count)
+ 	ptr = cq->sw_rptr;
+ 	while (!Q_EMPTY(ptr, cq->sw_wptr)) {
+ 		cqe = cq->sw_queue + (Q_PTR2IDX(ptr, cq->size_log2));
+-		if ((SQ_TYPE(*cqe) || (CQE_OPCODE(*cqe) == T3_READ_RESP)) &&
++		if ((SQ_TYPE(*cqe) ||
++		     ((CQE_OPCODE(*cqe) == T3_READ_RESP) && wq->oldest_read)) &&
+ 		    (CQE_QPID(*cqe) == wq->qpid))
+ 			(*count)++;
+ 		ptr++;
+@@ -829,7 +830,8 @@ int cxio_rdma_init(struct cxio_rdev *rdev_p, struct t3_rdma_init_attr *attr)
+ 	wqe->mpaattrs = attr->mpaattrs;
+ 	wqe->qpcaps = attr->qpcaps;
+ 	wqe->ulpdu_size = cpu_to_be16(attr->tcp_emss);
+-	wqe->flags = cpu_to_be32(attr->flags);
++	wqe->rqe_count = cpu_to_be16(attr->rqe_count);
++	wqe->flags_rtr_type = cpu_to_be16(attr->flags|V_RTR_TYPE(attr->rtr_type));
+ 	wqe->ord = cpu_to_be32(attr->ord);
+ 	wqe->ird = cpu_to_be32(attr->ird);
+ 	wqe->qp_dma_addr = cpu_to_be64(attr->qp_dma_addr);
+@@ -1135,6 +1137,18 @@ int cxio_poll_cq(struct t3_wq *wq, struct t3_cq *cq, struct t3_cqe *cqe,
+ 	if (RQ_TYPE(*hw_cqe) && (CQE_OPCODE(*hw_cqe) == T3_READ_RESP)) {
  
- #define T3_STAG_UNSET 0xffffffff
+ 		/*
++		 * If this is an unsolicited read response, then the read
++		 * was generated by the kernel driver as part of peer-2-peer
++		 * connection setup.  So ignore the completion.
++		 */
++		if (!wq->oldest_read) {
++			if (CQE_STATUS(*hw_cqe))
++				wq->error = 1;
++			ret = -1;
++			goto skip_cqe;
++		}
++
++		/*
+ 		 * Don't write to the HWCQ, so create a new read req CQE
+ 		 * in local memory.
+ 		 */
+diff --git a/drivers/infiniband/hw/cxgb3/cxio_wr.h b/drivers/infiniband/hw/cxgb3/cxio_wr.h
+index 969d4d9..f1a25a8 100644
+--- a/drivers/infiniband/hw/cxgb3/cxio_wr.h
++++ b/drivers/infiniband/hw/cxgb3/cxio_wr.h
+@@ -278,6 +278,17 @@ enum t3_qp_caps {
+ 	uP_RI_QP_STAG0_ENABLE = 0x10
+ } __attribute__ ((packed));
  
-diff --git a/drivers/infiniband/hw/cxgb3/iwch.c b/drivers/infiniband/hw/cxgb3/iwch.c
-index 0315c9d..98a768f 100644
---- a/drivers/infiniband/hw/cxgb3/iwch.c
-+++ b/drivers/infiniband/hw/cxgb3/iwch.c
-@@ -83,6 +83,7 @@ static void rnic_init(struct iwch_dev *rnicp)
- 	rnicp->attr.max_phys_buf_entries = T3_MAX_PBL_SIZE;
- 	rnicp->attr.max_pds = T3_MAX_NUM_PD - 1;
- 	rnicp->attr.mem_pgsizes_bitmask = 0x7FFF;	/* 4KB-128MB */
-+	rnicp->attr.max_mr_size = T3_MAX_MR_SIZE;
- 	rnicp->attr.can_resize_wq = 0;
- 	rnicp->attr.max_rdma_reads_per_qp = 8;
- 	rnicp->attr.max_rdma_read_resources =
-diff --git a/drivers/infiniband/hw/cxgb3/iwch.h b/drivers/infiniband/hw/cxgb3/iwch.h
-index caf4e60..238c103 100644
---- a/drivers/infiniband/hw/cxgb3/iwch.h
-+++ b/drivers/infiniband/hw/cxgb3/iwch.h
-@@ -66,6 +66,7 @@ struct iwch_rnic_attributes {
- 	 * size (4k)^i.  Phys block list mode unsupported.
++enum rdma_init_rtr_types {
++	RTR_READ = 1,
++	RTR_WRITE = 2,
++	RTR_SEND = 3,
++};
++
++#define S_RTR_TYPE	2
++#define M_RTR_TYPE	0x3
++#define V_RTR_TYPE(x)	((x) << S_RTR_TYPE)
++#define G_RTR_TYPE(x)	((((x) >> S_RTR_TYPE)) & M_RTR_TYPE)
++
+ struct t3_rdma_init_attr {
+ 	u32 tid;
+ 	u32 qpid;
+@@ -293,7 +304,9 @@ struct t3_rdma_init_attr {
+ 	u32 ird;
+ 	u64 qp_dma_addr;
+ 	u32 qp_dma_size;
+-	u32 flags;
++	enum rdma_init_rtr_types rtr_type;
++	u16 flags;
++	u16 rqe_count;
+ 	u32 irs;
+ };
+ 
+@@ -309,8 +322,8 @@ struct t3_rdma_init_wr {
+ 	u8 mpaattrs;		/* 5 */
+ 	u8 qpcaps;
+ 	__be16 ulpdu_size;
+-	__be32 flags;		/* bits 31-1 - reservered */
+-				/* bit     0 - set if RECV posted */
++	__be16 flags_rtr_type;
++	__be16 rqe_count;
+ 	__be32 ord;		/* 6 */
+ 	__be32 ird;
+ 	__be64 qp_dma_addr;	/* 7 */
+@@ -324,7 +337,7 @@ struct t3_genbit {
+ };
+ 
+ enum rdma_init_wr_flags {
+-	RECVS_POSTED = (1<<0),
++	MPA_INITIATOR = (1<<0),
+ 	PRIV_QP = (1<<1),
+ };
+ 
+diff --git a/drivers/infiniband/hw/cxgb3/iwch_cm.c b/drivers/infiniband/hw/cxgb3/iwch_cm.c
+index 1627bff..f4f3c9e 100644
+--- a/drivers/infiniband/hw/cxgb3/iwch_cm.c
++++ b/drivers/infiniband/hw/cxgb3/iwch_cm.c
+@@ -63,6 +63,10 @@ static char *states[] = {
+ 	NULL,
+ };
+ 
++int peer2peer = 0;
++module_param(peer2peer, int, 0644);
++MODULE_PARM_DESC(peer2peer, "Support peer2peer ULPs (default=0)");
++
+ static int ep_timeout_secs = 10;
+ module_param(ep_timeout_secs, int, 0644);
+ MODULE_PARM_DESC(ep_timeout_secs, "CM Endpoint operation timeout "
+@@ -514,7 +518,7 @@ static void send_mpa_req(struct iwch_ep *ep, struct sk_buff *skb)
+ 	skb_reset_transport_header(skb);
+ 	len = skb->len;
+ 	req = (struct tx_data_wr *) skb_push(skb, sizeof(*req));
+-	req->wr_hi = htonl(V_WR_OP(FW_WROPCODE_OFLD_TX_DATA));
++	req->wr_hi = htonl(V_WR_OP(FW_WROPCODE_OFLD_TX_DATA)|F_WR_COMPL);
+ 	req->wr_lo = htonl(V_WR_TID(ep->hwtid));
+ 	req->len = htonl(len);
+ 	req->param = htonl(V_TX_PORT(ep->l2t->smt_idx) |
+@@ -565,7 +569,7 @@ static int send_mpa_reject(struct iwch_ep *ep, const void *pdata, u8 plen)
+ 	set_arp_failure_handler(skb, arp_failure_discard);
+ 	skb_reset_transport_header(skb);
+ 	req = (struct tx_data_wr *) skb_push(skb, sizeof(*req));
+-	req->wr_hi = htonl(V_WR_OP(FW_WROPCODE_OFLD_TX_DATA));
++	req->wr_hi = htonl(V_WR_OP(FW_WROPCODE_OFLD_TX_DATA)|F_WR_COMPL);
+ 	req->wr_lo = htonl(V_WR_TID(ep->hwtid));
+ 	req->len = htonl(mpalen);
+ 	req->param = htonl(V_TX_PORT(ep->l2t->smt_idx) |
+@@ -617,7 +621,7 @@ static int send_mpa_reply(struct iwch_ep *ep, const void *pdata, u8 plen)
+ 	skb_reset_transport_header(skb);
+ 	len = skb->len;
+ 	req = (struct tx_data_wr *) skb_push(skb, sizeof(*req));
+-	req->wr_hi = htonl(V_WR_OP(FW_WROPCODE_OFLD_TX_DATA));
++	req->wr_hi = htonl(V_WR_OP(FW_WROPCODE_OFLD_TX_DATA)|F_WR_COMPL);
+ 	req->wr_lo = htonl(V_WR_TID(ep->hwtid));
+ 	req->len = htonl(len);
+ 	req->param = htonl(V_TX_PORT(ep->l2t->smt_idx) |
+@@ -885,6 +889,7 @@ static void process_mpa_reply(struct iwch_ep *ep, struct sk_buff *skb)
+ 	 * the MPA header is valid.
  	 */
- 	u32 mem_pgsizes_bitmask;
-+	u64 max_mr_size;
- 	u8 can_resize_wq;
+ 	state_set(&ep->com, FPDU_MODE);
++	ep->mpa_attr.initiator = 1;
+ 	ep->mpa_attr.crc_enabled = (mpa->flags & MPA_CRC) | crc_enabled ? 1 : 0;
+ 	ep->mpa_attr.recv_marker_enabled = markers_enabled;
+ 	ep->mpa_attr.xmit_marker_enabled = mpa->flags & MPA_MARKERS ? 1 : 0;
+@@ -907,8 +912,14 @@ static void process_mpa_reply(struct iwch_ep *ep, struct sk_buff *skb)
+ 	/* bind QP and TID with INIT_WR */
+ 	err = iwch_modify_qp(ep->com.qp->rhp,
+ 			     ep->com.qp, mask, &attrs, 1);
+-	if (!err)
+-		goto out;
++	if (err)
++		goto err;
++
++	if (peer2peer && iwch_rqes_posted(ep->com.qp) == 0) {
++		iwch_post_zb_read(ep->com.qp);
++	}
++
++	goto out;
+ err:
+ 	abort_connection(ep, skb, GFP_KERNEL);
+ out:
+@@ -1001,6 +1012,7 @@ static void process_mpa_request(struct iwch_ep *ep, struct sk_buff *skb)
+ 	 * If we get here we have accumulated the entire mpa
+ 	 * start reply message including private data.
+ 	 */
++	ep->mpa_attr.initiator = 0;
+ 	ep->mpa_attr.crc_enabled = (mpa->flags & MPA_CRC) | crc_enabled ? 1 : 0;
+ 	ep->mpa_attr.recv_marker_enabled = markers_enabled;
+ 	ep->mpa_attr.xmit_marker_enabled = mpa->flags & MPA_MARKERS ? 1 : 0;
+@@ -1071,17 +1083,33 @@ static int tx_ack(struct t3cdev *tdev, struct sk_buff *skb, void *ctx)
  
- 	/*
-diff --git a/drivers/infiniband/hw/cxgb3/iwch_provider.c b/drivers/infiniband/hw/cxgb3/iwch_provider.c
-index b2ea921..f7df213 100644
---- a/drivers/infiniband/hw/cxgb3/iwch_provider.c
-+++ b/drivers/infiniband/hw/cxgb3/iwch_provider.c
-@@ -998,7 +998,7 @@ static int iwch_query_device(struct ib_device *ibdev,
- 	props->device_cap_flags = dev->device_cap_flags;
- 	props->vendor_id = (u32)dev->rdev.rnic_info.pdev->vendor;
- 	props->vendor_part_id = (u32)dev->rdev.rnic_info.pdev->device;
--	props->max_mr_size = ~0ull;
-+	props->max_mr_size = dev->attr.max_mr_size;
- 	props->max_qp = dev->attr.max_qps;
- 	props->max_qp_wr = dev->attr.max_wrs;
- 	props->max_sge = dev->attr.max_sge_per_wr;
+ 	PDBG("%s ep %p credits %u\n", __FUNCTION__, ep, credits);
+ 
+-	if (credits == 0)
++	if (credits == 0) {
++		PDBG(KERN_ERR "%s 0 credit ack  ep %p state %u\n",
++			__FUNCTION__, ep, state_read(&ep->com));
+ 		return CPL_RET_BUF_DONE;
++	}
++
+ 	BUG_ON(credits != 1);
+-	BUG_ON(ep->mpa_skb == NULL);
+-	kfree_skb(ep->mpa_skb);
+-	ep->mpa_skb = NULL;
+ 	dst_confirm(ep->dst);
+-	if (state_read(&ep->com) == MPA_REP_SENT) {
+-		ep->com.rpl_done = 1;
+-		PDBG("waking up ep %p\n", ep);
+-		wake_up(&ep->com.waitq);
++	if (!ep->mpa_skb) {
++		PDBG("%s rdma_init wr_ack ep %p state %u\n",
++			__FUNCTION__, ep, state_read(&ep->com));
++		if (ep->mpa_attr.initiator) {
++			PDBG("%s initiator ep %p state %u\n",
++				__FUNCTION__, ep, state_read(&ep->com));
++			if (peer2peer)
++				iwch_post_zb_read(ep->com.qp);
++		} else {
++			PDBG("%s responder ep %p state %u\n",
++				__FUNCTION__, ep, state_read(&ep->com));
++			ep->com.rpl_done = 1;
++			wake_up(&ep->com.waitq);
++		}
++	} else {
++		PDBG("%s lsm ack ep %p state %u freeing skb\n",
++			__FUNCTION__, ep, state_read(&ep->com));
++		kfree_skb(ep->mpa_skb);
++		ep->mpa_skb = NULL;
+ 	}
+ 	return CPL_RET_BUF_DONE;
+ }
+@@ -1795,16 +1823,19 @@ int iwch_accept_cr(struct iw_cm_id *cm_id, struct iw_cm_conn_param *conn_param)
+ 	if (err)
+ 		goto err;
+ 
++	/* if needed, wait for wr_ack */
++	if (iwch_rqes_posted(qp)) {
++		wait_event(ep->com.waitq, ep->com.rpl_done);
++		err = ep->com.rpl_err;
++		if (err)
++			goto err;
++	}
++
+ 	err = send_mpa_reply(ep, conn_param->private_data,
+ 			     conn_param->private_data_len);
+ 	if (err)
+ 		goto err;
+ 
+-	/* wait for wr_ack */
+-	wait_event(ep->com.waitq, ep->com.rpl_done);
+-	err = ep->com.rpl_err;
+-	if (err)
+-		goto err;
+ 
+ 	state_set(&ep->com, FPDU_MODE);
+ 	established_upcall(ep);
+@@ -2033,7 +2064,6 @@ int iwch_ep_disconnect(struct iwch_ep *ep, int abrupt, gfp_t gfp)
+ 		BUG();
+ 		break;
+ 	}
+-out:
+ 	spin_unlock_irqrestore(&ep->com.lock, flags);
+ 	if (close) {
+ 		if (abrupt)
+diff --git a/drivers/infiniband/hw/cxgb3/iwch_cm.h b/drivers/infiniband/hw/cxgb3/iwch_cm.h
+index a3fb959..c0978a8 100644
+--- a/drivers/infiniband/hw/cxgb3/iwch_cm.h
++++ b/drivers/infiniband/hw/cxgb3/iwch_cm.h
+@@ -226,5 +226,6 @@ int iwch_ep_redirect(void *ctx, struct dst_entry *old, struct dst_entry *new, st
+ 
+ int __init iwch_cm_init(void);
+ void __exit iwch_cm_term(void);
++extern int peer2peer;
+ 
+ #endif				/* _IWCH_CM_H_ */
+diff --git a/drivers/infiniband/hw/cxgb3/iwch_provider.h b/drivers/infiniband/hw/cxgb3/iwch_provider.h
+index 48833f3..ad77f05 100644
+--- a/drivers/infiniband/hw/cxgb3/iwch_provider.h
++++ b/drivers/infiniband/hw/cxgb3/iwch_provider.h
+@@ -118,6 +118,7 @@ enum IWCH_QP_FLAGS {
+ };
+ 
+ struct iwch_mpa_attributes {
++	u8 initiator;
+ 	u8 recv_marker_enabled;
+ 	u8 xmit_marker_enabled;	/* iWARP: enable inbound Read Resp. */
+ 	u8 crc_enabled;
+@@ -322,6 +323,7 @@ enum iwch_qp_query_flags {
+ 	IWCH_QP_QUERY_TEST_USERWRITE = 0x32	/* Test special */
+ };
+ 
++u16 iwch_rqes_posted(struct iwch_qp *qhp);
+ int iwch_post_send(struct ib_qp *ibqp, struct ib_send_wr *wr,
+ 		      struct ib_send_wr **bad_wr);
+ int iwch_post_receive(struct ib_qp *ibqp, struct ib_recv_wr *wr,
+@@ -331,6 +333,7 @@ int iwch_bind_mw(struct ib_qp *qp,
+ 			     struct ib_mw_bind *mw_bind);
+ int iwch_poll_cq(struct ib_cq *ibcq, int num_entries, struct ib_wc *wc);
+ int iwch_post_terminate(struct iwch_qp *qhp, struct respQ_msg_t *rsp_msg);
++int iwch_post_zb_read(struct iwch_qp *qhp);
+ int iwch_register_device(struct iwch_dev *dev);
+ void iwch_unregister_device(struct iwch_dev *dev);
+ int iwch_quiesce_qps(struct iwch_cq *chp);
+diff --git a/drivers/infiniband/hw/cxgb3/iwch_qp.c b/drivers/infiniband/hw/cxgb3/iwch_qp.c
+index c02bb94..b0e5aea 100644
+--- a/drivers/infiniband/hw/cxgb3/iwch_qp.c
++++ b/drivers/infiniband/hw/cxgb3/iwch_qp.c
+@@ -586,6 +586,36 @@ static inline void build_term_codes(struct respQ_msg_t *rsp_msg,
+ 	}
+ }
+ 
++int iwch_post_zb_read(struct iwch_qp *qhp)
++{
++	union t3_wr *wqe;
++	struct sk_buff *skb;
++	u8 flit_cnt = sizeof(struct t3_rdma_read_wr) >> 3;
++
++	PDBG("%s enter\n", __FUNCTION__);
++	skb = alloc_skb(40, GFP_KERNEL);
++	if (!skb) {
++		printk(KERN_ERR "%s cannot send zb_read!!\n", __FUNCTION__);
++		return -ENOMEM;
++	}
++	wqe = (union t3_wr *)skb_put(skb, sizeof(struct t3_rdma_read_wr));
++	memset(wqe, 0, sizeof(struct t3_rdma_read_wr));
++	wqe->read.rdmaop = T3_READ_REQ;
++	wqe->read.reserved[0] = 0;
++	wqe->read.reserved[1] = 0;
++	wqe->read.reserved[2] = 0;
++	wqe->read.rem_stag = cpu_to_be32(1);
++	wqe->read.rem_to = cpu_to_be64(1);
++	wqe->read.local_stag = cpu_to_be32(1);
++	wqe->read.local_len = cpu_to_be32(0);
++	wqe->read.local_to = cpu_to_be64(1);
++	wqe->send.wrh.op_seop_flags = cpu_to_be32(V_FW_RIWR_OP(T3_WR_READ));
++	wqe->send.wrh.gen_tid_len = cpu_to_be32(V_FW_RIWR_TID(qhp->ep->hwtid)|
++						V_FW_RIWR_LEN(flit_cnt));
++	skb->priority = CPL_PRIORITY_DATA;
++	return cxgb3_ofld_send(qhp->rhp->rdev.t3cdev_p, skb);
++}
++
+ /*
+  * This posts a TERMINATE with layer=RDMA, type=catastrophic.
+  */
+@@ -671,11 +701,18 @@ static void flush_qp(struct iwch_qp *qhp, unsigned long *flag)
+ 
+ 
+ /*
+- * Return non zero if at least one RECV was pre-posted.
++ * Return count of RECV WRs posted
+  */
+-static int rqes_posted(struct iwch_qp *qhp)
++u16 iwch_rqes_posted(struct iwch_qp *qhp)
+ {
+-	return fw_riwrh_opcode((struct fw_riwrh *)qhp->wq.queue) == T3_WR_RCV;
++	union t3_wr *wqe = qhp->wq.queue;
++	u16 count = 0;
++	while ((count+1) != 0 && fw_riwrh_opcode((struct fw_riwrh *)wqe) == T3_WR_RCV) {
++		count++;
++		wqe++;
++	}
++	PDBG("%s qhp %p count %u\n", __FUNCTION__, qhp, count);
++	return count;
+ }
+ 
+ static int rdma_init(struct iwch_dev *rhp, struct iwch_qp *qhp,
+@@ -716,8 +753,17 @@ static int rdma_init(struct iwch_dev *rhp, struct iwch_qp *qhp,
+ 	init_attr.ird = qhp->attr.max_ird;
+ 	init_attr.qp_dma_addr = qhp->wq.dma_addr;
+ 	init_attr.qp_dma_size = (1UL << qhp->wq.size_log2);
+-	init_attr.flags = rqes_posted(qhp) ? RECVS_POSTED : 0;
++	init_attr.rqe_count = iwch_rqes_posted(qhp);
++	init_attr.flags = qhp->attr.mpa_attr.initiator ? MPA_INITIATOR : 0;
+ 	init_attr.flags |= capable(CAP_NET_BIND_SERVICE) ? PRIV_QP : 0;
++	if (peer2peer) {
++		init_attr.rtr_type = RTR_READ;
++		if (init_attr.ord == 0 && qhp->attr.mpa_attr.initiator)
++			init_attr.ord = 1;
++		if (init_attr.ird == 0 && !qhp->attr.mpa_attr.initiator)
++			init_attr.ird = 1;
++	} else
++		init_attr.rtr_type = 0;
+ 	init_attr.irs = qhp->ep->rcv_seq;
+ 	PDBG("%s init_attr.rq_addr 0x%x init_attr.rq_size = %d "
+ 	     "flags 0x%x qpcaps 0x%x\n", __FUNCTION__,
+diff --git a/drivers/net/cxgb3/version.h b/drivers/net/cxgb3/version.h
+index 229303f..a0177fc 100644
+--- a/drivers/net/cxgb3/version.h
++++ b/drivers/net/cxgb3/version.h
+@@ -38,7 +38,7 @@
+ #define DRV_VERSION "1.0-ko"
+ 
+ /* Firmware version */
+-#define FW_VERSION_MAJOR 5
++#define FW_VERSION_MAJOR 6
+ #define FW_VERSION_MINOR 0
+ #define FW_VERSION_MICRO 0
+ #endif				/* __CHELSIO_VERSION_H */
