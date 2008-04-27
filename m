@@ -1,46 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754650AbYD0Fym@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755737AbYD0GAY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754650AbYD0Fym (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Apr 2008 01:54:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751290AbYD0Fyd
+	id S1755737AbYD0GAY (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Apr 2008 02:00:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751776AbYD0GAN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Apr 2008 01:54:33 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:59006
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751246AbYD0Fyd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Apr 2008 01:54:33 -0400
-Date: Sat, 26 Apr 2008 22:54:32 -0700 (PDT)
-Message-Id: <20080426.225432.128575953.davem@davemloft.net>
-To: samuel.thibault@ens-lyon.org
-Cc: mtk.manpages@gmail.com, mtk.manpages@googlemail.com, andi@firstfloor.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH,TRIVIAL] AF_UNIX, accept() and addrlen
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20080426014445.GD4792@implementation>
-References: <20080424001656.GM4825@implementation>
-	<517f3f820804240131v3466713bi70d0eb0fb1f5cd8d@mail.gmail.com>
-	<20080426014445.GD4792@implementation>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Sun, 27 Apr 2008 02:00:13 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:39472 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751877AbYD0GAM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Apr 2008 02:00:12 -0400
+Date: Sun, 27 Apr 2008 07:59:43 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: David Miller <davem@davemloft.net>
+Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, viro@ZenIV.linux.org.uk
+Subject: Re: CONFIG_OPTIMIZE_INLINING
+Message-ID: <20080427055943.GA16290@elte.hu>
+References: <20080426.215513.141243565.davem@davemloft.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080426.215513.141243565.davem@davemloft.net>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Samuel Thibault <samuel.thibault@ens-lyon.org>
-Date: Sat, 26 Apr 2008 02:44:45 +0100
 
-> AF_UNIX: make unix_getname use sizeof(sunaddr->sun_family) instead of
-> sizeof(short).
+* David Miller <davem@davemloft.net> wrote:
+
+> Ingo, why the heck is this hiding under arch/x86/ and not in 
+> lib/Kconfig.debug where it belongs?
 > 
-> Signed-off-by: Samuel Thibault <samuel.thibault@ens-lyon.org>
+>     x86: add optimized inlining
+> 
+> If there are platforms that can't handle it, we can add a conditional 
+> to lib/Kconfig.debug, but by default it should be made available 
+> generically.
+>
+> Where did this original patch get posted for review and discussion?
+> 
+> Tell me where!?!?!
 
-This is just syntactic masterbation, sa_family_t is typedef'd
-"unsigned short".
+here, two months ago:
 
-No system on planet earth providing the BSD sockets API uses
-anything other than uint16_t or unsigned short for this.
+  http://lkml.org/lkml/2008/3/3/122
 
-Sorry, I'm not applying this.
+i made it x86-only due to this FUD that went against it:
+
+  "messing with a global #define in a way that the results on 24 
+   architectures with 7 different releases of gcc would be 
+   unpredictable."
+
+... as i saw no reason why this feature, which i found rather useful, 
+should be delayed another year or so. I'd be more than happy to promote 
+this feature back to lib/Kconfig.debug, sparc64 interest would make that 
+a strong argument.
+
+and here is the pull request that i posted to lkml, with the full patch 
+included as well:
+
+  http://www.gossamer-threads.com/lists/linux/kernel/911104?page=last
+
+> The only references I see is where Stephen Rothwell complained that it 
+> broke the powerpc build, and then on the git commit list when Linus 
+> sucked this crud in.
+
+i think there must something wrong about your lkml feed.
+
+	Ingo
