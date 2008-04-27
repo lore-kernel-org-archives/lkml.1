@@ -1,55 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762845AbYD0Rpp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762508AbYD0Rrw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762845AbYD0Rpp (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Apr 2008 13:45:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756799AbYD0Rph
+	id S1762508AbYD0Rrw (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Apr 2008 13:47:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756919AbYD0Rrn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Apr 2008 13:45:37 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:40219 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756602AbYD0Rpg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Apr 2008 13:45:36 -0400
-Message-ID: <4814BB95.8090808@zytor.com>
-Date: Sun, 27 Apr 2008 10:44:53 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Sun, 27 Apr 2008 13:47:43 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:37636 "EHLO smtp4.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755056AbYD0Rrm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Apr 2008 13:47:42 -0400
+Date: Sun, 27 Apr 2008 20:47:14 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Sam Ravnborg <sam@ravnborg.org>, linux arch <linux-arch@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       David Miller <davem@davemloft.net>
+Subject: Re: [PATCH] prepare kconfig inline optimization for all
+	architectures
+Message-ID: <20080427174714.GB2252@cs181133002.pp.htv.fi>
+References: <20080427105100.GA14795@uranus.ravnborg.org> <20080427113158.GY2252@cs181133002.pp.htv.fi> <alpine.LFD.1.10.0804271002360.2896@woody.linux-foundation.org> <20080427172235.GA2252@cs181133002.pp.htv.fi> <alpine.LFD.1.10.0804271029130.2896@woody.linux-foundation.org>
 MIME-Version: 1.0
-To: Arnd Bergmann <arnd@arndb.de>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Arch Mailing List <linux-arch@vger.kernel.org>
-Subject: Re: [PATCH 00/24] Unify integer type definitions, and add fixed type
- constructor macros
-References: <1209078352-7593-1-git-send-email-hpa@zytor.com> <200804251015.32157.arnd@arndb.de>
-In-Reply-To: <200804251015.32157.arnd@arndb.de>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.1.10.0804271029130.2896@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arnd Bergmann wrote:
-> On Friday 25 April 2008, H. Peter Anvin wrote:
->> This patchset unifies the integer definitions across all the
->> <asm-*/types.h> files, replacing them with two asm-generic files, one
->> for the LL64 model (all 32-bit architectures plus x86-64) and one for
->> the L64 model (all other 64-bit architectures.)
+On Sun, Apr 27, 2008 at 10:32:28AM -0700, Linus Torvalds wrote:
 > 
-> I started hacking on a similar patch just yesterday, but with a slightly
-> different goal. My intention was to move the headers in a direction
-> where a new architecture (microblaze being the next one) would no longer
-> have to care about ABI defining headers at all, but just use the defaults
-> from a single #include line.
 > 
-> I could deal with x86 by leaving the current asm-x86/types.h in place,
-> and change all the others so they can use the common one. The only
-> difference here would be umode_t and dma_addr_t, which are irregularly
-> defined on a few architectures, but we can assume reasonable defaults, as in
+> On Sun, 27 Apr 2008, Adrian Bunk wrote:
+> > 
+> > I'm looking at it from a different angle, all code in the kernel should 
+> > follow the following rules [1]:
+> > - no functions in .c files should be marked inline
+> > - all functions in headers should be static inline
+> > - all functions in headers should either be very small or collapse
+> >   to become very small after inlining
+> > 
+> > I can simply not see any usecase for a non-forced inline in the kernel,
+> > and fixing the kernel should give a superset of the space savings of 
+> > this "inline optimization".
 > 
+> Your whole argument is premised on the assumption that the compiler does 
+> the right thing.
+>...
 
-It seems reasonable to implement what you are proposing on top of my 
-changes, IMO.
+No, you seem to be misunderstanding what I am saying.
 
-	-hpa
+Status Quo as of 2.6.25:
+- we force the compiler to always inline with "inline"
+- we have inline's in .c files and too big functions in headers, and
+  both of them are wrong
+
+"inline optimization":
+- we leave the compiler the choice whether or not to inline with "inline"
+- we still have inline's in .c files and too big functions in headers, 
+  and both of them are wrong, but this "inline optimization" works 
+  around these in some of the cases
+
+What I want instead:
+- we continue to force the compiler to always inline with "inline"
+- we remove the inline's in .c files and make too big functions in 
+  headers out-of-line
+
+> 			Linus
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
