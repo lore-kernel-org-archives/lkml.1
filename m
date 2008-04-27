@@ -1,35 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764447AbYD0Uxr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764101AbYD0UzD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764447AbYD0Uxr (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Apr 2008 16:53:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751763AbYD0Uxj
+	id S1764101AbYD0UzD (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Apr 2008 16:55:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751109AbYD0Uyy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Apr 2008 16:53:39 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:52339
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751042AbYD0Uxj (ORCPT
+	Sun, 27 Apr 2008 16:54:54 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:35117 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751058AbYD0Uyx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Apr 2008 16:53:39 -0400
-Date: Sun, 27 Apr 2008 13:53:39 -0700 (PDT)
-Message-Id: <20080427.135339.170965047.davem@davemloft.net>
-To: James.Bottomley@HansenPartnership.com
-Cc: mingo@elte.hu, tglx@linutronix.de, linux-kernel@vger.kernel.org
-Subject: Re: Breakage caused by unreviewed patch in x86 tree
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1209329485.3801.46.camel@localhost.localdomain>
-References: <1209329485.3801.46.camel@localhost.localdomain>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Sun, 27 Apr 2008 16:54:53 -0400
+Subject: Re: + mutex-debug-check-mutex-magic-before-owner.patch added to
+	-mm tree
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: akpm@linux-foundation.org
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, jk@ozlabs.org, mingo@elte.hu
+In-Reply-To: <200804272047.m3RKlMgY024122@imap1.linux-foundation.org>
+References: <200804272047.m3RKlMgY024122@imap1.linux-foundation.org>
+Content-Type: text/plain
+Date: Sun, 27 Apr 2008 22:54:37 +0200
+Message-Id: <1209329677.6429.0.camel@lappy>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+X-Mailer: Evolution 2.22.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-Date: Sun, 27 Apr 2008 16:51:25 -0400
+On Sun, 2008-04-27 at 13:47 -0700, akpm@linux-foundation.org wrote:
+> The patch titled
+>      mutex-debug: check mutex magic before owner
+> has been added to the -mm tree.  Its filename is
+>      mutex-debug-check-mutex-magic-before-owner.patch
+> 
+> Before you just go and hit "reply", please:
+>    a) Consider who else should be cc'ed
+>    b) Prefer to cc a suitable mailing list as well
+>    c) Ideally: find the original patch on the mailing list and do a
+>       reply-to-all to that, adding suitable additional cc's
+> 
+> *** Remember to use Documentation/SubmitChecklist when testing your code ***
+> 
+> See http://www.zip.com.au/~akpm/linux/patches/stuff/added-to-mm.txt to find
+> out what to do about this
+> 
+> The current -mm tree may be found at http://userweb.kernel.org/~akpm/mmotm/
+> 
+> ------------------------------------------------------
+> Subject: mutex-debug: check mutex magic before owner
+> From: Jeremy Kerr <jk@ozlabs.org>
+> 
+> Currently, the mutex debug code checks the lock->owner before lock->magic, so
+> a corrupt mutex will most likely result in failing the owner check, rather
+> than the magic check.
+> 
+> This change to debug_mutex_unlock does the magic check first, so
+> we have a better idea of what breaks.
+> 
+> Signed-off-by: Jeremy Kerr <jk@ozlabs.org>
+> Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
 
-> I'm pissed off because it broke a class of voyager machines: those which
+Acked-by; Peter Zijlstra <a.p.zijlstra@chello.nl>
 
-Join the very large and constantly growing club, Ingo is upsetting a
-lot of people lately.
+> Cc: Ingo Molnar <mingo@elte.hu>
+> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+> ---
+> 
+>  kernel/mutex-debug.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff -puN kernel/mutex-debug.c~mutex-debug-check-mutex-magic-before-owner kernel/mutex-debug.c
+> --- a/kernel/mutex-debug.c~mutex-debug-check-mutex-magic-before-owner
+> +++ a/kernel/mutex-debug.c
+> @@ -79,8 +79,8 @@ void debug_mutex_unlock(struct mutex *lo
+>  	if (unlikely(!debug_locks))
+>  		return;
+>  
+> -	DEBUG_LOCKS_WARN_ON(lock->owner != current_thread_info());
+>  	DEBUG_LOCKS_WARN_ON(lock->magic != lock);
+> +	DEBUG_LOCKS_WARN_ON(lock->owner != current_thread_info());
+>  	DEBUG_LOCKS_WARN_ON(!lock->wait_list.prev && !lock->wait_list.next);
+>  	DEBUG_LOCKS_WARN_ON(lock->owner != current_thread_info());
+>  }
+> _
+> 
+> Patches currently in -mm which might be from jk@ozlabs.org are
+> 
+> origin.patch
+> mutex-debug-check-mutex-magic-before-owner.patch
+> 
+
