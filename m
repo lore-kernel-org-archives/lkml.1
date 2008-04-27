@@ -1,76 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764847AbYD0XXl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764399AbYD0X0q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764847AbYD0XXl (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Apr 2008 19:23:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752942AbYD0XXd
+	id S1764399AbYD0X0q (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Apr 2008 19:26:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758412AbYD0X0h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Apr 2008 19:23:33 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:41412 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752937AbYD0XXc (ORCPT
-	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
-	Sun, 27 Apr 2008 19:23:32 -0400
-Date: Mon, 28 Apr 2008 09:23:17 +1000
-From: David Chinner <dgc@sgi.com>
-To: Denys Vlasenko <vda.linux@googlemail.com>
-Cc: David Chinner <dgc@sgi.com>, xfs@oss.sgi.com,
-       Eric Sandeen <sandeen@sandeen.net>, Adrian Bunk <bunk@kernel.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] xfs: reduce stack usage in xfs_page_state_convert()
-Message-ID: <20080427232317.GB103491721@sgi.com>
-References: <200804270246.58828.vda.linux@googlemail.com>
+	Sun, 27 Apr 2008 19:26:37 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:51375 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753754AbYD0X0g (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Apr 2008 19:26:36 -0400
+Date: Sun, 27 Apr 2008 16:26:06 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Christoph Hellwig <hch@infradead.org>, Sam Ravnborg <sam@ravnborg.org>,
+       Adrian Bunk <bunk@kernel.org>, linux arch <linux-arch@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       David Miller <davem@davemloft.net>
+Subject: Re: [PATCH] prepare kconfig inline optimization for all
+ architectures
+Message-ID: <20080427162606.3dd82c0c@laptopd505.fenrus.org>
+In-Reply-To: <alpine.LFD.1.10.0804271118500.2896@woody.linux-foundation.org>
+References: <20080427105100.GA14795@uranus.ravnborg.org>
+	<20080427113158.GY2252@cs181133002.pp.htv.fi>
+	<alpine.LFD.1.10.0804271002360.2896@woody.linux-foundation.org>
+	<20080427172235.GA2252@cs181133002.pp.htv.fi>
+	<alpine.LFD.1.10.0804271029130.2896@woody.linux-foundation.org>
+	<20080427174714.GB2252@cs181133002.pp.htv.fi>
+	<20080427180007.GB28483@infradead.org>
+	<20080427180957.GA25964@uranus.ravnborg.org>
+	<20080427181411.GA31667@infradead.org>
+	<alpine.LFD.1.10.0804271118500.2896@woody.linux-foundation.org>
+Organization: Intel
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200804270246.58828.vda.linux@googlemail.com>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Apr 27, 2008 at 02:46:58AM +0200, Denys Vlasenko wrote:
-> Hi David,
-> 
-> This patch reduces xfs_page_state_convert() stack usage by 16 bytes
-> by eliminating some local variables, and reducing the size
-> of scope for other locals.
-> 
-> Compile tested only.
+On Sun, 27 Apr 2008 11:24:28 -0700 (PDT)
+Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-Can you start testing your patches? if you are touching the writeback
-or allocator path, there's a pretty high barrier to having patches
-excepted, and testing them before is one of them. Go and download the
-XFSQA suite from the xfs-cmds CVS tree on oss.sgi.com, and run your
-patches through it....
-
-> Signed-off-by: Denys Vlasenko <vda.linux@googlemail.com>
 > 
-> P.S.
 > 
-> xfs_page_state_convert() carries the following comment:
->  * Calling this without startio set means we are being asked to make a dirty
->  * page ready for freeing it's buffers.  When called with startio set then
->  * we are coming from writepage.
-> which leads to the following proposal: reimplement it as two
-> functions, one which work as if startio parameter == 0
-> and the other as if startio == 1.
-> This will result in a bit of code duplication, but reduces
-> stack usage on writepage path and allows for these two functions
-> to have more descriptive names. (Presently the meaning of this
-> function needs to be explained in that comment -> function
-> name is not descriptive enough, because it does different things
-> depending on startio value).
+> On Sun, 27 Apr 2008, Christoph Hellwig wrote:
+> > 
+> > As Linus mentioned the hint doesn't make any sense because gcc will
+> > get it wrong anyway.  In fact when you look at kernel code it tends
+> > to inline the everything and the kitchensink as long as there's just
+> > one caller and this bloat the stack but doesn't inline where it
+> > needs to.  Better don't try to mess with that and do it explicit.
 > 
-> Do you like this idea?
+> The thing is, the "inline" vs "always_inline" thing _could_ make
+> sense, but sadly doesn't much.
+> 
+> Part of it is that gcc imnsho inlines too aggressively anyway in the 
+> absense of "inline",
 
-No. That code is complex enough with only one copy of it around. I don't
-want two copies that differ subtly and hence have two different sets
-of nasty, rarely hit corner cases in them.
 
-Cheers,
+yup.. but this patch doesn't change that... the "no inline keyword" case
+is totally unaffected...
 
-Dave.
+
+(actually, other than some obscure commandline options, the only sane way to
+avoid gcc doing this too agressive is using -Os)
+
 -- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
+If you want to reach me at my work email, use arjan@linux.intel.com
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
