@@ -1,52 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759667AbYD0BTY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758251AbYD0BXA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759667AbYD0BTY (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Apr 2008 21:19:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752585AbYD0BTM
+	id S1758251AbYD0BXA (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Apr 2008 21:23:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752734AbYD0BWw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Apr 2008 21:19:12 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:33899 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752564AbYD0BTM (ORCPT
+	Sat, 26 Apr 2008 21:22:52 -0400
+Received: from rv-out-0708.google.com ([209.85.198.247]:3662 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751669AbYD0BWw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Apr 2008 21:19:12 -0400
-Date: Sun, 27 Apr 2008 09:19:06 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: WANG Cong <xiyou.wangcong@gmail.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       David Miller <davem@davemloft.net>, Andrew Morton <akpm@osdl.org>,
-       netdev@vger.kernel.org
-Subject: Re: [Patch]net/xfrm/xfrm_state.c: replace timer with delayed_work
-Message-ID: <20080427011906.GB662@gondor.apana.org.au>
-References: <20080217.000049.88383747.xiyou.wangcong@gmail.com>
+	Sat, 26 Apr 2008 21:22:52 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=d/ujpSaC9EsTIvK6JCa4VuVG/6e1QqRzev/MjZ0/VrhUpHqCBVM6iC8hidQWHpDel2oGqoY6ZO5hMah7W8QfQXGIZVNXBoHsz3aGYdiBwsPh7ywgSWOb02gPAjvT+qAk9WpMTDHNUCbXKrBib5o0/R7Ogh/SNSE9uWdMx5WZ1yQ=
+Message-ID: <86802c440804261822p4df226det4c4323fdee91781c@mail.gmail.com>
+Date: Sat, 26 Apr 2008 18:22:51 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: [PATCH] x86_32: trim memory by updating e820 v3
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Andi Kleen" <ak@suse.de>,
+       "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>,
+       "Jesse Barnes" <jesse.barnes@intel.com>,
+       "Mika Fischer" <mika.fischer@zoopnet.de>, balajirrao@gmail.com
+In-Reply-To: <20080426035614.a30afb17.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080217.000049.88383747.xiyou.wangcong@gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+References: <200801192045.17291.yinghai.lu@sun.com>
+	 <200801202256.48365.yinghai.lu@sun.com>
+	 <20080122165125.GA17992@elte.hu>
+	 <200801221623.20861.yinghai.lu@sun.com>
+	 <20080426035614.a30afb17.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Feb 17, 2008 at 12:00:49AM +0800, WANG Cong wrote:
-> 
-> Also suggested by Herbert Xu, using workqueue is better than timer
-> for net/xfrm/xfrm_state.c, so replace them with delayed_work.
-> 
-> Note that, this patch is not fully tested, just compile and
-> run as a whole on an Intel Core Duo matchine. So should be
-> in -mm first.
-> 
-> Signed-off-by: WANG Cong <xiyou.wangcong@gmail.com>
-> Cc: Herbert Xu <herbert@gondor.apana.org.au>
-> Cc: David Miller <davem@davemloft.net>
+On Sat, Apr 26, 2008 at 3:56 AM, Andrew Morton
+<akpm@linux-foundation.org> wrote:
+> On Tue, 22 Jan 2008 16:23:20 -0800 Yinghai Lu <Yinghai.Lu@Sun.COM> wrote:
+>
+>  > [PATCH] x86_32: trim memory by updating e820 v3
+>  >
+>  > when mtrr is not covering all e820 table, need to trim the ram, need to update e820
+>  >
+>  > reuse some code for x86_64
+>  >
+>  > here need to add early_get_cap and use it in early_cpu_detect, and move mtrr_bp_init early
+>  >
+>  > need Justine to test with his special system with bug bios.
+>  >
+>  > Signed-off-by: Yinghai Lu <yinghai.lu@sun.com>
+>
+>  Speaking of mtrr and e820....
+>
+>  Could someone please take a peek at
+>  http://bugzilla.kernel.org/show_bug.cgi?id=10508 ?
+>
+>  For some reason we seem to have turned this:
+>
+>  [    0.000000]  BIOS-e820: 0000000000000000 - 000000000009f800 (usable)
+>  [    0.000000]  BIOS-e820: 000000000009f800 - 00000000000a0000 (reserved)
+>  [    0.000000]  BIOS-e820: 00000000000dc000 - 0000000000100000 (reserved)
+>  [    0.000000]  BIOS-e820: 0000000000100000 - 00000000bf6d0000 (usable)
+>  [    0.000000]  BIOS-e820: 00000000bf6d0000 - 00000000bf6e3000 (ACPI NVS)
+>  [    0.000000]  BIOS-e820: 00000000bf6e3000 - 00000000c0000000 (reserved)
+>  [    0.000000]  BIOS-e820: 00000000e0000000 - 00000000f0000000 (reserved)
+>  [    0.000000]  BIOS-e820: 00000000fec00000 - 00000000fec10000 (reserved)
+>  [    0.000000]  BIOS-e820: 00000000fed00000 - 00000000fed00400 (reserved)
+>  [    0.000000]  BIOS-e820: 00000000fed14000 - 00000000fed1a000 (reserved)
+>  [    0.000000]  BIOS-e820: 00000000fed1c000 - 00000000fed90000 (reserved)
+>  [    0.000000]  BIOS-e820: 00000000fee00000 - 00000000fee01000 (reserved)
+>  [    0.000000]  BIOS-e820: 00000000ff000000 - 0000000100000000 (reserved)
+>  [    0.000000]  BIOS-e820: 0000000100000000 - 0000000140000000 (usable)
+>
+>  into this:
+>
+>  reg00: base=0xc0000000 (3072MB), size=1024MB: uncachable, count=1
+>  reg01: base=0x00000000 ( 0MB), size=4096MB: write-back, count=1
+>  reg02: base=0x100000000 (4096MB), size=1024MB: write-back, count=1
+>  reg03: base=0xbf700000 (3063MB), size= 1MB: uncachable, count=1
+>  reg04: base=0xbf800000 (3064MB), size= 8MB: uncachable, count=1
+>
+>  which screws up the X server's attempt to map the video memory at
+>  0xd0000000.
+>
 
-As with the xfrm policy patch, the spin lock here needs to disable
-BH.
+the BIOS should have set memhole to 2048MB or 2560M instead of 1033MB
 
-Cheers,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+good mtrr should
+
+>  reg00: base=0x00000000 (0MB), size=2048MB: write-back, count=1
+>  reg01: base=0x100000000 (4096MB), size=2048MB: write-back, count=1
+
+or
+
+>  reg00: base=0x00000000 (0MB), size=2048MB: write-back, count=1
+>  reg01: base=0x80000000 (2048MB), size=512MB: write-back, count=1
+>  reg02: base=0x100000000 (4096MB), size=1024MB: write-back, count=1
+>  reg03: base=0x140000000 (4096MB), size=512MB: write-back, count=1
+
+so please talk to your HW esp CPU vendor to fix the BIOS problem.
+
+AMD Rev F and Quadcore should get
+
+>  reg00: base=0x00000000 (0MB), size=2048MB: write-back, count=1
+
+or
+
+>  reg00: base=0x00000000 (0MB), size=2048MB: write-back, count=1
+>  reg01: base=0x80000000 (2048MB), size=512MB: write-back, count=1
+
+because [4G, TOM2) is WB by default.
+
+YH
