@@ -1,38 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763349AbYD0VB3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764071AbYD0VCs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763349AbYD0VB3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Apr 2008 17:01:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750832AbYD0VBT
+	id S1764071AbYD0VCs (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Apr 2008 17:02:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751058AbYD0VCk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Apr 2008 17:01:19 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:45244 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750824AbYD0VBT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Apr 2008 17:01:19 -0400
-Date: Sun, 27 Apr 2008 16:01:18 -0500
-From: Paul Jackson <pj@sgi.com>
-To: Bert Wesarg <bert.wesarg@googlemail.com>
-Cc: mingo@elte.hu, linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, bert.wesarg@googlemail.com, travis@sgi.com
-Subject: Re: [PATCH] Fix calculus of bitmap_scnprintf_len()
-Message-Id: <20080427160118.ad4cadf0.pj@sgi.com>
-In-Reply-To: <1209329003-22036-1-git-send-email-bert.wesarg@googlemail.com>
-References: <1209329003-22036-1-git-send-email-bert.wesarg@googlemail.com>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 27 Apr 2008 17:02:40 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:60126 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751042AbYD0VCk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Apr 2008 17:02:40 -0400
+Date: Sun, 27 Apr 2008 22:02:35 +0100
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Harvey Harrison <harvey.harrison@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] bitops: simplify generic bit finding functions
+Message-ID: <20080427210235.GX5882@ZenIV.linux.org.uk>
+References: <1209327591.14173.74.camel@brick> <alpine.LFD.1.10.0804271325350.3119@woody.linux-foundation.org> <1209328161.14173.77.camel@brick> <alpine.LFD.1.10.0804271335330.3119@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.1.10.0804271335330.3119@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bert wrote:
-> The function bitmap_scnprintf_len() is currently not used
+On Sun, Apr 27, 2008 at 01:38:34PM -0700, Linus Torvalds wrote:
 
-How about we just remove that function?
+> It happens because the warning is done as part of constant expression 
+> evaluation, but then the expression isn't actually *used*, so when we 
+> optimize it away - at a later date - it's too late to undo the warning.
+> 
+> I don't rightly know how to fix it. We do want to do the constant 
+> evaluation early (since all the optimizations that may then make it a 
+> non-issue depends on constants being constants!), but in order to not 
+> output the warning we'd have to turn the constant into a "constant with 
+> warning 'xyz' if used".
+> 
+> Which we have no support for in sparse yet.
 
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.940.382.4214
+It's not even a constant, really...  What we need is
+	* don't fold further if that sucker would be evaluated (i.e. 0 && <...>
+is folded, 0 & <...> is not)
+	* don't consider an integer constant expression with value 0 for
+purposes of null pointer constant handling
+	* emit corresponding insn in linearize_expression() when we run into
+such sucker.
+	* somewhere around the call of vrfy_flow() walk through insns in
+remaining bb (we'd done dead code elimination already) and spew postponed
+warning on each such insn.  Probably.  Assuming that I'm not entirely
+confused about what's going on in that area - which is quite possible.
+
+Folks, could somebody familiar with the backend comment on the last part?
