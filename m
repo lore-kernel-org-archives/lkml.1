@@ -1,65 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761261AbYD0DYO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752419AbYD0EA1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761261AbYD0DYO (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Apr 2008 23:24:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755794AbYD0DYA
+	id S1752419AbYD0EA1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Apr 2008 00:00:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750767AbYD0EAO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Apr 2008 23:24:00 -0400
-Received: from fg-out-1718.google.com ([72.14.220.155]:27462 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753909AbYD0DX7 (ORCPT
+	Sun, 27 Apr 2008 00:00:14 -0400
+Received: from wa-out-1112.google.com ([209.85.146.181]:61081 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750759AbYD0EAN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Apr 2008 23:23:59 -0400
+	Sun, 27 Apr 2008 00:00:13 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=siRI5lhIzBAFjgvj/Fd+GHVSH5cuY2rteAFGhvwKIBFaf+HfDnDzNyMmilNO0Q+WCGSfmVu4VMIuRcdBker7wtCBvZy6tHnwnpjgIgzS2RGXEYADYIVUWN0Ih7JqGOg3vWbHJrPGCT75OmaEey6H1EoEpKx2Q21UUOEmUQMfk4A=
-Message-ID: <29495f1d0804262023m34dd1769tef6a8ca0cee0290d@mail.gmail.com>
-Date: Sat, 26 Apr 2008 20:23:57 -0700
-From: "Nish Aravamudan" <nish.aravamudan@gmail.com>
-To: "Jeff Garzik" <jeff@garzik.org>
-Subject: Re: 2.6.25-mm1 (no disks with sata_nv)
-Cc: "Andrew Morton" <akpm@linux-foundation.org>, jgarzik@pobox.com,
-       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <29495f1d0804262003p6e24ef5cpfe21d7f9f1e4f75b@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=s9zaB8LCZc8LIkgvEpWNOssYSgnCyBB5781KEUebrSfWHtU8eIMJzJXH2bNFpUZtVdcEbrGG69FIuRVJ59rxshVD0Wmw2wK+XF7gY4M/GbIn7g9u/CD/oBt+dc9FKXhhIAagE4bo7J5q9ZRiGGBy5f1u4zGnle0CMcmEEXFSJd0=
+Subject: [PATCH] x86: !x & y typo in mtrr code
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Sat, 26 Apr 2008 21:00:17 -0700
+Message-Id: <1209268817.14173.43.camel@brick>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <29495f1d0804261912k584cb68p36f4b9e5401afbb8@mail.gmail.com>
-	 <20080427025547.GC24710@havoc.gtf.org>
-	 <29495f1d0804262003p6e24ef5cpfe21d7f9f1e4f75b@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 4/26/08, Nish Aravamudan <nish.aravamudan@gmail.com> wrote:
-> On 4/26/08, Jeff Garzik <jeff@garzik.org> wrote:
->  > On Sat, Apr 26, 2008 at 07:12:58PM -0700, Nish Aravamudan wrote:
->  >  >
->  >  > While trying to test the hugepage changes pending for -mm, I found
->  >  > that none of my 4 disks attached to
->  >  >
->  >  > nVidia Corporation CK804 Serial ATA Controller (rev f3)
->  >  >
->  >  > come up (and thus I am dropped to an initramfs shell). The driver is
->  >  > loading and indicates a link up on all 4 ports that are involved, but
->  >  > I see no sd/sdX messages like I do with 2.6.25 (which I'm using right
->  >  > now). I've started the bisection, but if Jeff or anyone has any ideas,
->  >  > I'd appreciate it. I don't have a serial console on this box, and no
->  >  > oops is produced. .configs from 2.6.25 and 2.6.25-mm1 attached.
->  >
->  >
->  > Should be fixed in upstream, so I presume it will appear when Andrew
->  >  next updates his kernel to the latest upstream.
->
->
-> Ah great -- do you have a single patch I can apply that will fix it so
->  I can test? (FWIW, reverting the git-libata-all patch from -mm got me
->  booting). Should I assume it's a sata_nv only commit I can cherry-pick
->  over?
+As written, this can never be true.
 
-I'm guessing it's: a0b9f4bc1ec2ea25e47e7958e544fef0d122e012 ?
+Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+---
+ arch/x86/kernel/cpu/mtrr/generic.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Thanks,
-Nish
+diff --git a/arch/x86/kernel/cpu/mtrr/generic.c b/arch/x86/kernel/cpu/mtrr/generic.c
+index 353efe4..5d241ce 100644
+--- a/arch/x86/kernel/cpu/mtrr/generic.c
++++ b/arch/x86/kernel/cpu/mtrr/generic.c
+@@ -90,7 +90,7 @@ u8 mtrr_type_lookup(u64 start, u64 end)
+ 	 * Look of multiple ranges matching this address and pick type
+ 	 * as per MTRR precedence
+ 	 */
+-	if (!mtrr_state.enabled & 2) {
++	if (!(mtrr_state.enabled & 2)) {
+ 		return mtrr_state.def_type;
+ 	}
+ 
+-- 
+1.5.5.1.270.g89765
+
+
+
