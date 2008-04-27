@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757230AbYD0FnG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759874AbYD0Fn0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757230AbYD0FnG (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Apr 2008 01:43:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751522AbYD0Fmu
+	id S1759874AbYD0Fn0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Apr 2008 01:43:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753938AbYD0Fm6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Apr 2008 01:42:50 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:49136
+	Sun, 27 Apr 2008 01:42:58 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:49140
 	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1750926AbYD0Fmu (ORCPT
+	by vger.kernel.org with ESMTP id S1753648AbYD0Fm6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Apr 2008 01:42:50 -0400
-Date: Sat, 26 Apr 2008 22:42:49 -0700 (PDT)
-Message-Id: <20080426.224249.119289896.davem@davemloft.net>
+	Sun, 27 Apr 2008 01:42:58 -0400
+Date: Sat, 26 Apr 2008 22:42:28 -0700 (PDT)
+Message-Id: <20080426.224228.182336231.davem@davemloft.net>
 To: viro@ZenIV.linux.org.uk
 Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
 Subject: Re: [PATCH] tipc endianness annotations
@@ -33,4 +33,3 @@ Date: Sun, 27 Apr 2008 06:40:21 +0100
 > Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
 
 Applied, thanks Al.
- 
