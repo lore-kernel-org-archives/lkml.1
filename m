@@ -1,43 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763459AbYD0ScR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763303AbYD0SdS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763459AbYD0ScR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Apr 2008 14:32:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760764AbYD0Sb7
+	id S1763303AbYD0SdS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Apr 2008 14:33:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759270AbYD0SdH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Apr 2008 14:31:59 -0400
-Received: from www.tglx.de ([62.245.132.106]:40413 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760380AbYD0Sb7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Apr 2008 14:31:59 -0400
-Date: Sun, 27 Apr 2008 20:31:34 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Rusty Russell <rusty@rustcorp.com.au>
-cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] Removal of FUTEX_FD (and related code)
-In-Reply-To: <200804190207.14598.rusty@rustcorp.com.au>
-Message-ID: <alpine.LFD.1.10.0804272030380.3261@apollo.tec.linutronix.de>
-References: <200804190207.14598.rusty@rustcorp.com.au>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Sun, 27 Apr 2008 14:33:07 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:39041 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757767AbYD0SdE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Apr 2008 14:33:04 -0400
+Date: Sun, 27 Apr 2008 14:32:52 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Christoph Hellwig <hch@infradead.org>, Sam Ravnborg <sam@ravnborg.org>,
+       Adrian Bunk <bunk@kernel.org>, linux arch <linux-arch@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       David Miller <davem@davemloft.net>
+Subject: Re: [PATCH] prepare kconfig inline optimization for all
+	architectures
+Message-ID: <20080427183252.GB23828@infradead.org>
+References: <20080427105100.GA14795@uranus.ravnborg.org> <20080427113158.GY2252@cs181133002.pp.htv.fi> <alpine.LFD.1.10.0804271002360.2896@woody.linux-foundation.org> <20080427172235.GA2252@cs181133002.pp.htv.fi> <alpine.LFD.1.10.0804271029130.2896@woody.linux-foundation.org> <20080427174714.GB2252@cs181133002.pp.htv.fi> <20080427180007.GB28483@infradead.org> <20080427180957.GA25964@uranus.ravnborg.org> <20080427181411.GA31667@infradead.org> <alpine.LFD.1.10.0804271118500.2896@woody.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.1.10.0804271118500.2896@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 19 Apr 2008, Rusty Russell wrote:
-> From: Eric Sesterhenn <snakebyte@gmx.de>
-> Date: Fri, 25 Jan 2008 10:40:46 +0100
+On Sun, Apr 27, 2008 at 11:24:28AM -0700, Linus Torvalds wrote:
+> The thing is, the "inline" vs "always_inline" thing _could_ make sense, 
+> but sadly doesn't much.
 > 
-> hi,
-> 
-> since FUTEX_FD was scheduled for removal in June 2007 lets remove it.
-> Google Code search found no users for it and NGPT was abandoned in 2003
-> according to IBM. futex.h is left untouched to make sure the id does
-> not get reassigned. Since queue_me() has no users left it is commented
-> out to avoid a warning, i didnt remove it completely since it is part
-> of the internal api (matching unqueue_me())
-> 
-> Signed-off-by: Eric Sesterhenn <snakebyte@gmx.de>
-> Signed-off-by: Rusty Russell <rusty@rustcorp.com.au> (removed rest)
+> Part of it is that gcc imnsho inlines too aggressively anyway in the 
+> absense of "inline", so there's no way "inline" can mean "you might 
+> inline" this, because gcc will do that anyway even without it. As a 
+> result, in _practice_ "inline" and "always_inline" end up being very close 
+> to each other - perhaps more so than they should.
 
-Acked-by: Thomas Gleixner <tglx@linutronix.de>
+Yes, absolutely.   In recent gcc versions it's in fact so bad that xfs
+had to add a hack to mark every function not explicitly marker inline
+noinline because otherwise gcc would inline gazillions of big functions
+which combines with it's horrible liveness analysis led to enormous
+stack useage.  (I think the liveness part is getting better these days
+to be fair)
+
+> It will take time before we've sorted out all the fall-out, because I bet 
+> there is still code out there that _should_ use __always_inline, but 
+> doesn't.
+
+Given that __always_inline only shows up in non-x86 arch code in
+homeopathic quantity it's a fair bet that there's a lot of breakage
+waiting there.  Which was one of the initial complains about the way
+it's done..
