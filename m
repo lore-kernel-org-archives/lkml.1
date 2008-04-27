@@ -1,45 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763697AbYD0UZU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764119AbYD0U05@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763697AbYD0UZU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Apr 2008 16:25:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750924AbYD0UZH
+	id S1764119AbYD0U05 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Apr 2008 16:26:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750832AbYD0U0t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Apr 2008 16:25:07 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:42421 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750905AbYD0UZG (ORCPT
+	Sun, 27 Apr 2008 16:26:49 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:53982 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750738AbYD0U0s (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Apr 2008 16:25:06 -0400
-Date: Sun, 27 Apr 2008 21:17:40 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Jesper Juhl <jesper.juhl@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Sam Ravnborg <sam@ravnborg.org>, Jesper Juhl <jesper.juhl@gmail.com>,
-       trivial@kernel.org
-Subject: Re: [PATCH][Resend] Let SYSVIPC default to 'y'
-Message-ID: <20080427211740.76bea46d@core>
-In-Reply-To: <alpine.LNX.1.00.0804272208250.2352@dragon.funnycrock.com>
-References: <alpine.LNX.1.00.0804272208250.2352@dragon.funnycrock.com>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 27 Apr 2008 16:26:48 -0400
+Date: Sun, 27 Apr 2008 13:26:34 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Harvey Harrison <harvey.harrison@gmail.com>
+cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] bitops: simplify generic bit finding functions
+In-Reply-To: <1209327591.14173.74.camel@brick>
+Message-ID: <alpine.LFD.1.10.0804271325350.3119@woody.linux-foundation.org>
+References: <1209327591.14173.74.camel@brick>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 27 Apr 2008 22:11:03 +0200 (CEST)
-Jesper Juhl <jesper.juhl@gmail.com> wrote:
 
-> From: Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
-> 
-> [This patch was previously submitted on  24 April 2008 01:01]
 
-And people responded pointed out that entire distributions were running
-with SYS5 IPC off and no ill effects so why is it stil being resubmitted ?
+On Sun, 27 Apr 2008, Harvey Harrison wrote:
+>
+> No need for a sentinal if we explicitly catch the no bits/all bits set
+> cases, make it clear they are special cases returning size/BITS_PER_LONG.
 
-Alan
+These things need to be re-done anyway. David already complained that the 
+thing inlines to something much much too big.
+
+Let's just make it not be an inline at all.
+
+		Linus
