@@ -1,53 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759348AbYD0LOi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760366AbYD0LQe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759348AbYD0LOi (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Apr 2008 07:14:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753978AbYD0LO1
+	id S1760366AbYD0LQe (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Apr 2008 07:16:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752742AbYD0LQ0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Apr 2008 07:14:27 -0400
-Received: from wa-out-1112.google.com ([209.85.146.182]:42097 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753733AbYD0LO0 (ORCPT
+	Sun, 27 Apr 2008 07:16:26 -0400
+Received: from mtagate6.de.ibm.com ([195.212.29.155]:1225 "EHLO
+	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753244AbYD0LQ0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Apr 2008 07:14:26 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=HchGpc+uLVeIKK3GldycVRE6lMyX8ebz22rJ0YqTF1PsG8usCqhCFZIMRtHlK1EGLCB5Idfazu3Ga3Uu/vz95ql+5GDJYUF5wQChjLuHl0NxqwqPNeGI/z6OftN5Q2MuckgRGDxTSMJSA8acn+APplkSIWYCO6hVAz8b5YVAufE=
-Message-ID: <2f11576a0804270414t3ef16998me2ff2afd21eedbe7@mail.gmail.com>
-Date: Sun, 27 Apr 2008 20:14:26 +0900
-From: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [patch] ftrace, v15
-Cc: linux-kernel@vger.kernel.org, "Steven Rostedt" <rostedt@goodmis.org>,
-       "Mathieu Desnoyers" <mathieu.desnoyers@polymtl.ca>
-In-Reply-To: <20080427063019.GA23295@elte.hu>
+	Sun, 27 Apr 2008 07:16:26 -0400
+Date: Sun, 27 Apr 2008 13:16:23 +0200
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: David Miller <davem@davemloft.net>
+Cc: viro@ZenIV.linux.org.uk, cooloney@kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] blackfin checksum annotations
+Message-ID: <20080427111623.GA6754@osiris.boeblingen.de.ibm.com>
+References: <20080427052226.GP5882@ZenIV.linux.org.uk> <20080426.222644.74393287.davem@davemloft.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20080427063019.GA23295@elte.hu>
-X-Google-Sender-Auth: cc4c1c9a50ee8dd0
+In-Reply-To: <20080426.222644.74393287.davem@davemloft.net>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ingo,
+On Sat, Apr 26, 2008 at 10:26:44PM -0700, David Miller wrote:
+> From: Al Viro <viro@ZenIV.linux.org.uk>
+> Date: Sun, 27 Apr 2008 06:22:26 +0100
+> 
+> > 
+> > Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
+> 
+> Since these are networking knobs and Al tends to test his
+> changes, I'll apply this to the net-2.6 tree.
 
->  the current/latest ftrace tree can be pulled from:
->
->    git://git.kernel.org/pub/scm/linux/kernel/git/mingo/linux-2.6-sched-devel.git
->
->  the full diffs are too large to be included here, but the shortlog and
->  the diffstat is below. Not much changed in the fundamentals since the
->  last lkml posting - but many small details were refined.
+I don't think such arch specific patches should go in via net-2.6.
+You did that for a very similar patch for s390 and it was subtly broken:
 
-I hope ftrace people discussio LTTng people more.
-AFAIK nobody explain pros. and cons. ftrace against marker approach.
-(of cource, LTTng people doen't explain it too)
+See:
+f994aae1bd8e4813d59a2ed64d17585fe42d03fc
+("[NET]: S390 checksum annotations and cleanups.")
 
-I believe tracing feature is very important.
-too few discussion is sad ;-)
+and
 
-Why nobody try to integrate ftrace and LTTng?
-and, Why don't you separate sched-devel tree and ftrace-devel tree?
+afbc1e994ddcf3b6fe2dc928ee8dc31a5d0c3118
+("[S390] Fix TCP/UDP pseudo header checksum computation.")
