@@ -1,29 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756306AbYD0Www@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763734AbYD0Wxx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756306AbYD0Www (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Apr 2008 18:52:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752602AbYD0Ww3
+	id S1763734AbYD0Wxx (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Apr 2008 18:53:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752857AbYD0Wxq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Apr 2008 18:52:29 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:54400 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754174AbYD0Ww2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Apr 2008 18:52:28 -0400
-Message-ID: <48150392.6040508@zytor.com>
-Date: Sun, 27 Apr 2008 15:52:02 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
+	Sun, 27 Apr 2008 18:53:46 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:39058 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752038AbYD0Wxp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Apr 2008 18:53:45 -0400
+Message-ID: <481503ED.8060107@garzik.org>
+Date: Sun, 27 Apr 2008 18:53:33 -0400
+From: Jeff Garzik <jeff@garzik.org>
 User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
 To: David Miller <davem@davemloft.net>
-CC: jeff@garzik.org, James.Bottomley@HansenPartnership.com, mingo@elte.hu,
-       tglx@linutronix.de, linux-kernel@vger.kernel.org,
+CC: James.Bottomley@HansenPartnership.com, mingo@elte.hu, tglx@linutronix.de,
+       linux-kernel@vger.kernel.org, hpa@zytor.com,
        torvalds@linux-foundation.org
 Subject: Re: [patch] x86, voyager: fix ioremap_nocache()
 References: <20080427214837.GA11631@elte.hu>	<1209335660.3801.79.camel@localhost.localdomain>	<4815009C.2010809@garzik.org> <20080427.154620.177583216.davem@davemloft.net>
 In-Reply-To: <20080427.154620.177583216.davem@davemloft.net>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -49,21 +51,18 @@ David Miller wrote:
 > 
 > Anyways, my point is that this angle should be strongly considered in
 > any discussion about ioremap() behavior.
-> 
 
-There are pretty much three reasons to default to uncached, as far as I 
-understand:
+Understood.
 
-1. De facto historical practice (follow the MTRRs);
-2. Conservatism (failure mode less drastic);
-3. Compatibility with other architectures.
+I guess I am more annoyed that this stealth semantics change appears to 
+have broken everything that depends on pci_iomap(), including 90%+ of 
+all libata drivers, unless I am missing something.
 
-Arguably, the right thing is to not even have ioremap() anymore, just 
-ioremap_{cache,nocache,wc} and consider any unconverted ioremap() as a 
-flag to audit that particular piece of code.
+That one piece of code (pci_iomap) was correct under the old semantics, 
+on x86 and elsewhere.  It's tested and working nicely, and depended upon 
+by many drivers.
 
-I don't think that can be done "instantly", though, so defaulting 
-ioremap() to uncached (as it apparently has been on other arches 
-already?) is the conservative option in the meantime.
+	Jeff
 
-	-hpa
+
+
