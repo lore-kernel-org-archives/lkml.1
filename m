@@ -1,70 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756859AbYD0Lch@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761358AbYD0LfT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756859AbYD0Lch (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Apr 2008 07:32:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761076AbYD0Lc0
+	id S1761358AbYD0LfT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Apr 2008 07:35:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753733AbYD0LfD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Apr 2008 07:32:26 -0400
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:44165 "EHLO smtp4.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754599AbYD0LcZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Apr 2008 07:32:25 -0400
-Date: Sun, 27 Apr 2008 14:31:58 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: linux arch <linux-arch@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       David Miller <davem@davemloft.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH] prepare kconfig inline optimization for all
-	architectures
-Message-ID: <20080427113158.GY2252@cs181133002.pp.htv.fi>
-References: <20080427105100.GA14795@uranus.ravnborg.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+	Sun, 27 Apr 2008 07:35:03 -0400
+Received: from 82-69-137-158.dsl.in-addr.zen.co.uk ([82.69.137.158]:58122 "EHLO
+	uklogin.uk.level5networks.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752742AbYD0LfB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Apr 2008 07:35:01 -0400
+Date: Sun, 27 Apr 2008 12:34:51 +0100
+From: Ben Hutchings <bhutchings@solarflare.com>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: David Miller <davem@davemloft.net>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [git patches] net driver updates
+Message-ID: <20080427113449.GW21637@solarflare.com>
+References: <20080425072621.GA21299@havoc.gtf.org> <20080426220725.GV21637@solarflare.com> <20080426.174319.04173925.davem@davemloft.net> <20080427025341.GB24710@havoc.gtf.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080427105100.GA14795@uranus.ravnborg.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <20080427025341.GB24710@havoc.gtf.org>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Apr 27, 2008 at 12:51:00PM +0200, Sam Ravnborg wrote:
-> Fix the OPTIMIZE inline functionality such that it can be used
-> by all architectures.
-> To use it the arch maintainers shall add a
-> "select HAVE_OPTIMIZE_INLINING" in their arch specific
-> Kconfig file.
->...
+Jeff Garzik wrote:
+> On Sat, Apr 26, 2008 at 05:43:19PM -0700, David Miller wrote:
+> > From: Ben Hutchings <bhutchings@solarflare.com>
+> > Date: Sat, 26 Apr 2008 23:07:26 +0100
+> > 
+> > > Still no sfc driver?  I thought you accepted it a couple of weeks ago.
+> > 
+> > Jeff, what happened here?
+> > 
+> > If Ben sent the full driver patch as Jeff asked for it, Jeff
+> > should have added it by now. :-/
+> 
+> I have repeatedly requested the full patch, without receiving it.
 
-My opinion on this is still:
-"OPTIMIZE" means "work around bugs in the kernel".
+You requested it once, and I sent it immediately.  I will re-send
+it in a moment; please acknowledge receipt.
 
-Bugs of the following kinds:
-- usage of "inline" in .c files (it should virtually never be used there)
-- too big functions in header files
-
-And this "inline optimization" reverts only the effects of some of these 
-bugs.
-
-And if the wrong code gets not inlined we can even get size increases at 
-some places.
-
-Denys and Ilpo have already done some work in fixing such bugs.
-
-After the dust of this merge window has settled I'll try to get us a 
-similar result without this "optimization".
-
-> 	Sam
->...
-
-cu
-Adrian
+Ben.
 
 -- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+Ben Hutchings, Senior Software Engineer, Solarflare Communications
+Not speaking for my employer; that's the marketing department's job.
