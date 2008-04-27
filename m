@@ -1,71 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764221AbYD0T6r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763949AbYD0UCS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764221AbYD0T6r (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Apr 2008 15:58:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755581AbYD0T6j
+	id S1763949AbYD0UCS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Apr 2008 16:02:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757585AbYD0UCG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Apr 2008 15:58:39 -0400
-Received: from yw-out-2324.google.com ([74.125.46.30]:37789 "EHLO
+	Sun, 27 Apr 2008 16:02:06 -0400
+Received: from yw-out-2324.google.com ([74.125.46.31]:42875 "EHLO
 	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752899AbYD0T6i (ORCPT
+	with ESMTP id S1755581AbYD0UCE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Apr 2008 15:58:38 -0400
+	Sun, 27 Apr 2008 16:02:04 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=oCHWD2vva3y/BpOXZqKQBMd/k4Ts27RPrbPNHrSrUAzpxgWegXtFXYB07+j8bPFYdwIRx/ddnG6D2XhTjsFNRWQIJPz9GFgSkPZ/ss1M7oK9mhSX2uhftbbv0CK677OLjVyGyU9ClE9ODjrwfqWBkB/EBrfiSRimjTPevQTKkTg=
-Message-ID: <9a8748490804271258p21d47ce8g8d720107f767faac@mail.gmail.com>
-Date: Sun, 27 Apr 2008 21:58:20 +0200
+        b=KPC2KGg8WFgTmG7/nHVejkCrdE8t/6X49f8JFW+nxwI94+4BFYDN+fAeOOrn113nZ96dJBAuL5NNRSjY9NGdKHWGcTMQXAgzR+I7TaJGY1DvQENGmzIG+Ed/tKCeUKi5Bog5Qa6kmZMUmgJLdiFLNmrFqJL3j0QEYeuSqxcvJn4=
+Message-ID: <9a8748490804271301j5d7c0147x995c5353f9926598@mail.gmail.com>
+Date: Sun, 27 Apr 2008 22:01:45 +0200
 From: "Jesper Juhl" <jesper.juhl@gmail.com>
-To: "Willy Tarreau" <w@1wt.eu>
-Subject: Re: A system for rebootless kernel security updates
-Cc: "Pavel Machek" <pavel@ucw.cz>, "Tomasz Chmielewski" <mangoo@wpkg.org>,
-       LKML <linux-kernel@vger.kernel.org>, jbarnold@mit.edu,
-       francois.cami@free.fr, "Andi Kleen" <andi@firstfloor.org>,
-       mail@earthworm.de
-In-Reply-To: <20080427174947.GI8474@1wt.eu>
+To: "Andi Kleen" <andi@firstfloor.org>
+Subject: Re: [PATCH] PCI Express ASPM support should default to 'No'
+Cc: "Shaohua Li" <shaohua.li@intel.com>,
+       "Jesse Barnes" <jbarnes@virtuousgeek.org>, linux-kernel@vger.kernel.org,
+       "Ingo Molnar" <mingo@redhat.com>
+In-Reply-To: <87abjjzo84.fsf@basil.nowhere.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <481098A4.50107@wpkg.org> <20080427101659.GD3891@ucw.cz>
-	 <20080427174947.GI8474@1wt.eu>
+References: <alpine.LNX.1.00.0804230024210.14359@dragon.funnycrock.com>
+	 <200804221712.45972.jbarnes@virtuousgeek.org>
+	 <1208912721.31625.3.camel@sli10-desk.sh.intel.com>
+	 <87abjjzo84.fsf@basil.nowhere.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/4/27 Willy Tarreau <w@1wt.eu>:
-> On Sun, Apr 27, 2008 at 12:17:00PM +0200, Pavel Machek wrote:
->  > On Thu 2008-04-24 16:26:44, Tomasz Chmielewski wrote:
->  > > Jeff Arnold wrote:
->  > >
->  > > >I've put together an automatic system for applying
->  > > >kernel security patches to the Linux kernel without
->  > > >rebooting it, and I wanted to share this system with
->  > > >the community in case others find it useful or
->  > > >interesting.
->  > >
->  > > Hmm, the idea seem to be patented by Microsoft, i.e.
->  > > this patent from December 2002:
->  > >
->  > > http://www.google.com/patents?id=cVyWAAAAEBAJ&dq=hotpatching
->  > >
->  > > (and other patents by Microsoft if you search for
->  > > "hotpatching").
->  >
->  > ...so US will not be able to fix security holes without reboot, good.
->  > Perhaps they fix their stupid laws after next worm outbreak...
+2008/4/24 Andi Kleen <andi@firstfloor.org>:
 >
->  Sounds like a bullshit patent. I remember having loaded a lot of NLM
->  patches under netware 4.0 in 96-97 without ever rebooting. I think
->  that the patches only redefined the faulty symbol(s) they wanted to
->  patch. That was pretty convenient because when in doubt, you could
->  simply unload the modules and get back to previous situation.
+> Shaohua Li <shaohua.li@intel.com> writes:
 >
-
-And then there's 'alternatives' that patch running code, there's kexec
-and I guess you could even say that various root kits that patch the
-running kernel get prior art on that patent ;)
+>  > On Tue, 2008-04-22 at 17:12 -0700, Jesse Barnes wrote:
+>  >> On Tuesday, April 22, 2008 3:28 pm Jesper Juhl wrote:
+>  >> > Running 'make oldconfig' I just noticed that PCIEASPM defaults to
+>  >> > 'y' in Kconfig even though the feature is both experimental and the
+>  >> > help text recommends that if you are unsure you say 'n'.
+>  >> > It seems to me that this really should default to 'n', not 'y' at the
+>  >> > moment.
+>  >> > The following patch makes that change. Please consider applying.
+>  >>
+>  >> Seem reasonable, Shaohua?  Please cc linux-pci on PCI patches
+>  >> though...
+>  > Ok, I'm fine with the patch. Though by default, the policy is to use
+>  > BIOS setting, that is if BIOS disables ASPM, we don't enable it too.
+>
+>  Once the feature is considered stable it would be nice to make it default y
+>  again. I think any power saving should be on by default (unless serious
+>  issues are known), not off.
+>
+I agree, but as long as it's marked EXPERIMENTAL and there's even a
+warning in the help text telling users to select 'n' if they are
+unsure I think it makes sense to make 'n' the default.
+Once it's been tested some more, is no longer experimental, then we
+can change it back to 'y' easily.
 
 -- 
 Jesper Juhl <jesper.juhl@gmail.com>
