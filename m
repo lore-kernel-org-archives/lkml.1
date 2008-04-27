@@ -1,21 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754058AbYD0FMi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754153AbYD0FPy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754058AbYD0FMi (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Apr 2008 01:12:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750877AbYD0FMb
+	id S1754153AbYD0FPy (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Apr 2008 01:15:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751290AbYD0FPr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Apr 2008 01:12:31 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:55211 "EHLO
+	Sun, 27 Apr 2008 01:15:47 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:55233 "EHLO
 	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750812AbYD0FMa (ORCPT
+	with ESMTP id S1751010AbYD0FPq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Apr 2008 01:12:30 -0400
-Date: Sun, 27 Apr 2008 06:12:27 +0100
+	Sun, 27 Apr 2008 01:15:46 -0400
+Date: Sun, 27 Apr 2008 06:15:42 +0100
 From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Russell King <rmk@arm.linux.org.uk>
-Cc: bzolnier@gmail.com, linux-kernel@vger.kernel.org
-Subject: [PATCH] fix icside breakage
-Message-ID: <20080427051227.GM5882@ZenIV.linux.org.uk>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
+       Jeff Garzik <jgarzik@pobox.com>
+Subject: [PATCH] e1000e triggers sparc32 gcc bug
+Message-ID: <20080427051541.GN5882@ZenIV.linux.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -24,27 +25,21 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-	Fallout from commit ac95beedf8bc97b24f9540d4da9952f07221c023
+	... and isn't possible on sparc32 boxen anyway, unless somebody
+had done JavaStation with PCIE lately.
 
 Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
 ---
-diff --git a/drivers/ide/arm/icside.c b/drivers/ide/arm/icside.c
-index 7d642f4..c0cf7fc 100644
---- a/drivers/ide/arm/icside.c
-+++ b/drivers/ide/arm/icside.c
-@@ -547,14 +547,13 @@ icside_register_v6(struct icside_state *state, struct expansion_card *ec)
- 	hwif->config_data = (unsigned long)ioc_base;
- 	hwif->select_data = sel;
+diff --git a/drivers/net/Kconfig b/drivers/net/Kconfig
+index b6ebcb9..733db3d 100644
+--- a/drivers/net/Kconfig
++++ b/drivers/net/Kconfig
+@@ -2011,7 +2011,7 @@ config E1000_DISABLE_PACKET_SPLIT
  
--	mate->maskproc    = icside_maskproc;
- 	mate->hwif_data   = state;
- 	mate->config_data = (unsigned long)ioc_base;
- 	mate->select_data = sel | 1;
- 
- 	if (ec->dma != NO_DMA && !request_dma(ec->dma, hwif->name)) {
- 		d.init_dma = icside_dma_init;
--		d.port_ops = &icside_v6_dma_port_ops;
-+		d.port_ops = &icside_v6_port_ops;
- 		d.dma_ops = NULL;
- 	}
- 
+ config E1000E
+ 	tristate "Intel(R) PRO/1000 PCI-Express Gigabit Ethernet support"
+-	depends on PCI
++	depends on PCI && (!SPARC32 || BROKEN)
+ 	---help---
+ 	  This driver supports the PCI-Express Intel(R) PRO/1000 gigabit
+ 	  ethernet family of adapters. For PCI or PCI-X e1000 adapters,
