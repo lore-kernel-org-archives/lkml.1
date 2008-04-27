@@ -1,69 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765989AbYD1GfV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765924AbYD1Ghd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765989AbYD1GfV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 02:35:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754754AbYD1GfI
+	id S1765924AbYD1Ghd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 02:37:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756014AbYD1GhZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 02:35:08 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:37383
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753079AbYD1GfH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 02:35:07 -0400
-Date: Sun, 27 Apr 2008 23:35:07 -0700 (PDT)
-Message-Id: <20080427.233507.261574307.davem@davemloft.net>
-To: crmafra2@gmail.com
-Cc: linux-kernel@vger.kernel.org, reinette.chatre@intel.com,
-       linville@tuxdriver.com, torvalds@linux-foundation.org
-Subject: Re: [PATCH] iwlwifi: Fix build error in v2.6.25-5561-g064922a
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20080428054700.GA16177@Pilar.virtua.com.br>
-References: <20080428054700.GA16177@Pilar.virtua.com.br>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Mon, 28 Apr 2008 02:37:25 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:4308 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755149AbYD1GhZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Apr 2008 02:37:25 -0400
+Date: Sun, 27 Apr 2008 19:25:43 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: David Miller <davem@davemloft.net>
+Cc: mingo@elte.hu, linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, viro@ZenIV.linux.org.uk
+Subject: Re: CONFIG_OPTIMIZE_INLINING
+Message-ID: <20080427172542.GA5485@ucw.cz>
+References: <20080426.215513.141243565.davem@davemloft.net> <20080427055943.GA16290@elte.hu> <20080426.230807.144232984.davem@davemloft.net>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080426.230807.144232984.davem@davemloft.net>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: "Carlos R. Mafra" <crmafra2@gmail.com>
-Date: Mon, 28 Apr 2008 02:47:01 -0300
+Hi!
 
-> I've just tried to compile v2.6.25-5561-g064922a and it failed with
-> these messages:
+> > ... as i saw no reason why this feature, which i found rather useful, 
+> > should be delayed another year or so. I'd be more than happy to promote 
+> > this feature back to lib/Kconfig.debug, sparc64 interest would make that 
+> > a strong argument.
+> 
+> So you caved in to FUD in order to pad your commit and signoff count?
+> 
+> Because anyone who is paying attention can see clearly that you're
+> trying to push as much stuff as quickly as possible into Linus's tree
+> with your singoffs and authorship on it this merge window.
+> 
+> Gee, I wonder why...
 
-Already fixed in net-2.6 by:
+What is going on here?
 
-commit bd8fd21dfddf51299d782f598cb776b15b7d64cc
-Author: Luca Tettamanti <kronos.it@gmail.com>
-Date:   Sun Apr 27 15:34:55 2008 -0700
+Yes, Ingo wants to merge a lots of stuff so that he does not have to
+maintain it for two more months. That's the result of 14-days merge
+window decission. ... 
 
-    wireless: Fix compile error with wifi & leds
-    
-    Fix build error caused by commit
-    e82404ad612ebabc65d15c3d59b971cb35c3ff36 ("iwlwifi: Select
-    LEDS_CLASS.") from David Miller:
-    
-    Since MAC80211_LEDS is selected by wireless drivers it must select its
-    own dependencies otherwise a build error may occur (kbuild will select
-    the symbol regardless of "depends" constraints).
-    
-    Signed-off-By: Luca Tettamanti <kronos.it@gmail.com>
-    Signed-off-by: David S. Miller <davem@davemloft.net>
+No, I don't like that, either, but I don't think you can blame Ingo
+for the merge window.
+							Pavel
 
-diff --git a/net/mac80211/Kconfig b/net/mac80211/Kconfig
-index 520a518..a24b459 100644
---- a/net/mac80211/Kconfig
-+++ b/net/mac80211/Kconfig
-@@ -73,7 +73,9 @@ config MAC80211_MESH
- 
- config MAC80211_LEDS
- 	bool "Enable LED triggers"
--	depends on MAC80211 && LEDS_TRIGGERS
-+	depends on MAC80211
-+	select NEW_LEDS
-+	select LEDS_TRIGGERS
- 	---help---
- 	  This option enables a few LED triggers for different
- 	  packet receive/transmit events.
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
