@@ -1,86 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763297AbYD0XOy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762811AbYD0XPt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763297AbYD0XOy (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Apr 2008 19:14:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753553AbYD0XOq
+	id S1762811AbYD0XPt (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Apr 2008 19:15:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757394AbYD0XPm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Apr 2008 19:14:46 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:35782 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750885AbYD0XOp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Apr 2008 19:14:45 -0400
-Date: Sun, 27 Apr 2008 16:14:15 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, David Miller <davem@davemloft.net>,
-       James.Bottomley@HansenPartnership.com, mingo@elte.hu,
-       tglx@linutronix.de, linux-kernel@vger.kernel.org,
-       torvalds@linux-foundation.org
-Subject: Re: [patch] x86, voyager: fix ioremap_nocache()
-Message-ID: <20080427161415.5507a78b@laptopd505.fenrus.org>
-In-Reply-To: <481505ED.4050008@garzik.org>
-References: <20080427214837.GA11631@elte.hu>
-	<1209335660.3801.79.camel@localhost.localdomain>
-	<4815009C.2010809@garzik.org>
-	<20080427.154620.177583216.davem@davemloft.net>
-	<481503ED.8060107@garzik.org>
-	<481504BA.4090402@zytor.com>
-	<481505ED.4050008@garzik.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; i386-redhat-linux-gnu)
+	Sun, 27 Apr 2008 19:15:42 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:41199 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753553AbYD0XPl (ORCPT
+	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
+	Sun, 27 Apr 2008 19:15:41 -0400
+Date: Mon, 28 Apr 2008 09:15:20 +1000
+From: David Chinner <dgc@sgi.com>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: Eric Dumazet <dada1@cosmosbay.com>, David Chinner <dgc@sgi.com>,
+       xfs-masters@oss.sgi.com, Alexander van Heukelum <heukelum@fastmail.fm>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] xfs: remove xfs_log_ticket_zone on rmmod
+Message-ID: <20080427231520.GA103491721@sgi.com>
+References: <20080425090901.ca642c4d.randy.dunlap@oracle.com> <48121331.1030204@cosmosbay.com> <1209145675.2005.1249890339@webmail.messagingengine.com> <48121A37.5020504@cosmosbay.com> <20080425191830.GA4898@martell.zuzino.mipt.ru>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080425191830.GA4898@martell.zuzino.mipt.ru>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 27 Apr 2008 19:02:05 -0400
-Jeff Garzik <jeff@garzik.org> wrote:
-
-> H. Peter Anvin wrote:
-> > Jeff Garzik wrote:
-> >>
-> >> Understood.
-> >>
-> >> I guess I am more annoyed that this stealth semantics change
-> >> appears to have broken everything that depends on pci_iomap(),
-> >> including 90%+ of all libata drivers, unless I am missing
-> >> something.
-> >>
-> >> That one piece of code (pci_iomap) was correct under the old 
-> >> semantics, on x86 and elsewhere.  It's tested and working nicely,
-> >> and depended upon by many drivers.
-> >>
-> > 
-> > That one piece of code has had no effective change.  Under both the
-> > old and the new code, both branches functionally because
-> > ioremap_nocache(), in one case because of MTRR and in one case
-> > because of PAT.
+On Fri, Apr 25, 2008 at 11:18:30PM +0400, Alexey Dobriyan wrote:
 > 
-> OK good...  libata uses it for controller registers exclusively, so
-> that should be fine from an operational standpoint.
+> [PATCH] xfs: remove xfs_log_ticket_zone on rmmod
 > 
-> at the very least I 
-> could have pointed out that lib/iomap.c wanted an update, and the 2.5
-> yo discussion could have resurfaced.
-> 
+> Bug introduces in commit eb01c9cd87c7a9998c2edf209721ea069e3e3652
+> aka "[XFS] Remove the xlog_ticket allocator"
 
-btw as a technical point: ioremap_cached() isn't guaranteed to give you cached memory.
-In fact, on a PC, if you use ioremap_cached() on PCI bars, you will STILL get uncached
-access, just because right now, it's not possible to give a cached mapping out!
+Oops, My bad.
 
-We might want to try to change that in the future (by rewriting the MTRRs), but 
-that would need a LOT of auditing of ioremap (ab)users to make sure they actually
-mean "cached" when they ask for cached (pci_iomap... I'm not convinced it's users 
-really can deal with cached) and it also will take a LOT of testing.
+Thanks for catching this. I've queued it for checkin.
 
+Cheers,
 
-
+Dave.
 -- 
-If you want to reach me at my work email, use arjan@linux.intel.com
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+Dave Chinner
+Principal Engineer
+SGI Australian Software Group
