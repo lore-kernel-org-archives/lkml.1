@@ -1,66 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762992AbYD0X4R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763639AbYD0X5N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762992AbYD0X4R (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Apr 2008 19:56:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752038AbYD0Xz7
+	id S1763639AbYD0X5N (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Apr 2008 19:57:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752761AbYD0X44
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Apr 2008 19:55:59 -0400
-Received: from mtaout02-winn.ispmail.ntl.com ([81.103.221.48]:27869 "EHLO
-	mtaout02-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752602AbYD0Xz6 convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Apr 2008 19:55:58 -0400
-Date: Mon, 28 Apr 2008 00:55:54 +0100
-From: Ken Moffat <zarniwhoop@ntlworld.com>
-To: Bart Van Assche <bart.vanassche@gmail.com>
-Cc: Sergio Luis <sergio@larces.uece.br>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.25 slow boot/reboot
-Message-ID: <20080427235554.GA28344@deepthought>
-References: <48141111.7010605@larces.uece.br> <e2e108260804270823t45611ec2t35da085833d82dfa@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <e2e108260804270823t45611ec2t35da085833d82dfa@mail.gmail.com>
-User-Agent: Mutt/1.5.12-2006-07-14
-Content-Transfer-Encoding: 8BIT
+	Sun, 27 Apr 2008 19:56:56 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:53573
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1750885AbYD0X4z (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Apr 2008 19:56:55 -0400
+Date: Sun, 27 Apr 2008 16:56:55 -0700 (PDT)
+Message-Id: <20080427.165655.96444093.davem@davemloft.net>
+To: torvalds@linux-foundation.org
+CC: akpm@linux-foundation.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [GIT]: Networking fixes
+From: David Miller <davem@davemloft.net>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Apr 27, 2008 at 05:23:57PM +0200, Bart Van Assche wrote:
-> On Sun, Apr 27, 2008 at 7:37 AM, Sergio Luis <sergio@larces.uece.br> wrote:
-> >  This weekend I got some time and decided to try out 2.6.25, but its booting process was _really_ slow in my laptop[1]. With 'old' 2.6.24.5 my machine would take about 48 secs until it gave me the login prompt. And it would take about 22 seconds to reboot.
-> 
-> Do you use LILO or GRUB for booting ? 2.6.25 works OK on the systems I
-> tested, but LILO really needs a lot of time to load the 2.6.25 kernel.
-> GRUB loads the 2.6.25 kernel at normal speed.
-> 
-> Bart.
- ISTR that an _old_ version of lilo was mentioned earlier in this
-thread.  As a datapoint, on my one desktop box which uses lilo (an
-athlon64 uniprocessor) both 32 and 64-bit 2.6.25 kernels boot fine.
-Both of those systems are with lilo-22.8, and gcc-4.2.2.
 
- But, I think you (Bart) haven't said which version of lilo you are
-using ?  If it isn't recent, perhaps upgrading it might help ?
+1) TIPC and ipv6 endianness cures from Al Viro.
 
- For Sergio, you have my sympathy.  I totally failed to bisect my own
-problem with 2.6.25-rc (and 2.6.24.1), although I did find the problem
-by other means, and got a work-around, so I'm not competent to
-diagnose what is wrong, but maybe I can help to tease out what is
-different about your box.  As a start, you could try diffing your
-config's for 2.6.24.5 and 2.6.25 in case something odd has changed.
+2) Fix copy_from_user() results being used as error returns,
+   from Sam Ravnborg, based upon a patch from Pavel E.
 
- Or, perhaps this is a problem specific to a certain processor ?  So
-far, I think all the list knows is that you have a problem, and an
-old version of lilo.  More data might eventually help to identify
-what is causing this.  If you have a fairly old version of lilo,
-maybe you also have an old version of gcc ?
+3) When asking for null authentication algorithm in ESP, we get a null
+   hmac, instead of just a plain null digest.  Fix from Herbert Xu.
 
- For Bart too, which version(s) of gcc are you using on the systems
-where lilo is slow to load, and which cpu(s) do you have there ?
+4) Missing SunRPC kernel-doc annotation from Randy Dunlap.
 
-Ken, who relies on lilo for his server, and gets worried by reports
-of trouble with it.
--- 
-das eine Mal als Tragödie, das andere Mal als Farce
+5) IPSEC auditing prints out the flowlabel incorrectly.  Fix from
+   Yoshifuji HIDEAKI.
+
+6) Compat 32-bit support for multicast socket options was missing,
+   fix from David L. Stevens.
+
+7) Hopefully, the final build fixes necessary for the iwlwifi driver.
+   A lot of this stems from some areas of Kconfig that could be
+   improved and I'll start a thread about that.
+
+Please pull, thanks a lot!
+
+The following changes since commit 653252c2302cdf2dfbca66a7e177f7db783f9efa:
+  Pavel Emelyanov (1):
+        net: Fix wrong interpretation of some copy_to_user() results.
+
+are available in the git repository at:
+
+  master.kernel.org:/pub/scm/linux/kernel/git/davem/net-2.6.git master
+
+Al Viro (2):
+      ipv6: result of csum_fold() is already 16bit, no need to cast
+      tipc: endianness annotations
+
+David L Stevens (1):
+      ipv4/ipv6 compat: Fix SSM applications on 64bit kernels.
+
+David S. Miller (1):
+      Revert "ipv6: Fix typo in net/ipv6/Kconfig"
+
+Evgeniy Polyakov (1):
+      tcp: Fix slab corruption with ipv6 and tcp6fuzz
+
+Herbert Xu (1):
+      [IPSEC]: Use digest_null directly for auth
+
+Jason Riedy (1):
+      iwlwifi: Allow building iwl3945 without iwl4965.
+
+Luca Tettamanti (1):
+      wireless: Fix compile error with wifi & leds
+
+Randy Dunlap (1):
+      sunrpc: fix missing kernel-doc
+
+Sam Ravnborg (1):
+      can: Fix copy_from_user() results interpretation
+
+YOSHIFUJI Hideaki (1):
+      [XFRM] AUDIT: Fix flowlabel text format ambibuity.
+
+ drivers/net/wireless/Makefile        |    2 +-
+ drivers/net/wireless/iwlwifi/Kconfig |    6 ++
+ include/net/compat.h                 |    3 +
+ net/can/raw.c                        |   21 +++---
+ net/compat.c                         |  117 ++++++++++++++++++++++++++++++++++
+ net/ipv4/ip_sockglue.c               |    5 ++
+ net/ipv4/tcp_input.c                 |    3 +-
+ net/ipv6/Kconfig                     |    2 +-
+ net/ipv6/ip6mr.c                     |    2 +-
+ net/ipv6/ipv6_sockglue.c             |    5 ++
+ net/mac80211/Kconfig                 |    4 +-
+ net/sunrpc/xprt.c                    |    2 +-
+ net/tipc/msg.h                       |    7 +-
+ net/xfrm/xfrm_algo.c                 |    3 +-
+ net/xfrm/xfrm_state.c                |    2 +-
+ 15 files changed, 159 insertions(+), 25 deletions(-)
