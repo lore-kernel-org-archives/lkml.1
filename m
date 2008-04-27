@@ -1,55 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760057AbYD0Gbf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760864AbYD0Gcs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760057AbYD0Gbf (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Apr 2008 02:31:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752980AbYD0GbZ
+	id S1760864AbYD0Gcs (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Apr 2008 02:32:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753009AbYD0Gcm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Apr 2008 02:31:25 -0400
-Received: from wa-out-1112.google.com ([209.85.146.180]:42598 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752837AbYD0GbY (ORCPT
+	Sun, 27 Apr 2008 02:32:42 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:54048
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752946AbYD0Gcl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Apr 2008 02:31:24 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=AnN3557xM9bZCbCqh+Ve5I4So0XGKriArrpOM6fqv978809++dyQ069nj/U+0UJVMZ1iZtLuCNThgviv/eAAmSKtG2cu+Ah63bzDJwNJvdNl4qsc22OG4RKfyPbQGwDTPLxRY4Q4KnrpnwoDJX9kHccQqkiOdDMYFvgF6GWsVac=
-Subject: Re: [PATCH] asm/unaligned.h doesn't work well as the very first
-	include
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Al Viro <viro@ZenIV.linux.org.uk>
-Cc: Sam Ravnborg <sam@ravnborg.org>, David Miller <davem@davemloft.net>,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>
-In-Reply-To: <20080427061210.GT5882@ZenIV.linux.org.uk>
-References: <20080427051918.GO5882@ZenIV.linux.org.uk>
-	 <20080427060944.GB9199@uranus.ravnborg.org>
-	 <20080427061210.GT5882@ZenIV.linux.org.uk>
-Content-Type: text/plain
-Date: Sat, 26 Apr 2008 23:31:28 -0700
-Message-Id: <1209277888.14173.45.camel@brick>
+	Sun, 27 Apr 2008 02:32:41 -0400
+Date: Sat, 26 Apr 2008 23:32:40 -0700 (PDT)
+Message-Id: <20080426.233240.252075490.davem@davemloft.net>
+To: mingo@elte.hu
+Cc: linux-kernel@vger.kernel.org, rostedt@goodmis.org
+Subject: Re: [patch] ftrace, v15
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20080427063019.GA23295@elte.hu>
+References: <20080427063019.GA23295@elte.hu>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2008-04-27 at 07:12 +0100, Al Viro wrote:
-> On Sun, Apr 27, 2008 at 08:09:44AM +0200, Sam Ravnborg wrote:
-> 
-> > It has been discussed that any .h file should pull
-> > in what it needs so the other of includes does not matter.
-> > Some do them alphabetically.
-> 
-> It has been discussed or it has been agreed?  IMO it's a bullshit - especially
-> for low-level stuff like that.
-> 
-> As for the way some do includes...  It's not exactly a family-friendly list,
-> but still I'd rather not comment in details on the existing practices...
+From: Ingo Molnar <mingo@elte.hu>
+Date: Sun, 27 Apr 2008 08:30:19 +0200
 
-I'm redoing the unaligned handling in -mm at the moment, and it avoids
-this problem.
+>       sched: fix rq->clock overflows detection with CONFIG_NO_HZ
+>       sched: make sure jiffies is up to date before calling __update_rq_clock()
 
-Harvey
+You're getting sloppier and sloppier each and every bogus pull request
+you send out this week Ingo.
+
+What is all of this non-ftrace crap in the shortlog?
 
