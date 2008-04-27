@@ -1,84 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763638AbYD0Tsq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763802AbYD0TuZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763638AbYD0Tsq (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Apr 2008 15:48:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762198AbYD0Tsh
+	id S1763802AbYD0TuZ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Apr 2008 15:50:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762747AbYD0TuK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Apr 2008 15:48:37 -0400
-Received: from an-out-0708.google.com ([209.85.132.249]:12619 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752896AbYD0Tsg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Apr 2008 15:48:36 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=UB9A8XCAg2s/x2A35yDoK1Og4o33l0TlKNDvs+Io5onFS5t8GIKzcgVuNL8UsV0QXajoXOAzAOoCNUPDjoNwzMZ2PLQQG5YnaFG9jnKdnUAj3bonizHI0bUr2+F9KyCOkHHjvm3MRONU+YE7ySXEDZhORtrmID3jophjfz2ZT+8=
-Message-ID: <43e72e890804271248i1fbeb16ev7b05149a8d9adaf1@mail.gmail.com>
-Date: Sun, 27 Apr 2008 12:48:34 -0700
-From: "Luis R. Rodriguez" <mcgrof@gmail.com>
-To: "Roger While" <simrw@sim-basis.de>
-Subject: Re: [PATCH v2] prism54: prism54_get_encode() test below 0 on unsigned index
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <6.1.1.1.2.20080427141058.045c43f0@192.168.6.12>
+	Sun, 27 Apr 2008 15:50:10 -0400
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:60753 "EHLO smtp5.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752900AbYD0TuJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Apr 2008 15:50:09 -0400
+Date: Sun, 27 Apr 2008 22:49:39 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Christoph Hellwig <hch@infradead.org>, Sam Ravnborg <sam@ravnborg.org>,
+       linux arch <linux-arch@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>, David Miller <davem@davemloft.net>
+Subject: Re: [PATCH] prepare kconfig inline optimization for all
+	architectures
+Message-ID: <20080427194939.GE2252@cs181133002.pp.htv.fi>
+References: <20080427113158.GY2252@cs181133002.pp.htv.fi> <alpine.LFD.1.10.0804271002360.2896@woody.linux-foundation.org> <20080427172235.GA2252@cs181133002.pp.htv.fi> <alpine.LFD.1.10.0804271029130.2896@woody.linux-foundation.org> <20080427174714.GB2252@cs181133002.pp.htv.fi> <20080427180007.GB28483@infradead.org> <20080427180957.GA25964@uranus.ravnborg.org> <20080427181411.GA31667@infradead.org> <alpine.LFD.1.10.0804271118500.2896@woody.linux-foundation.org> <20080427193627.GA32654@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-References: <6.1.1.1.2.20080427141058.045c43f0@192.168.6.12>
+In-Reply-To: <20080427193627.GA32654@elte.hu>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Apr 27, 2008 at 5:25 AM, Roger While <simrw@sim-basis.de> wrote:
-> Luis Rodriguez wrote :
->
->
->
-> > The check for -1 seems silly lets just remove its use.
-> >
-> > Signed-off-by: Luis R. Rodriguez <lrodriguez@atheros.com>
-> >
-> > diff --git a/drivers/net/wireless/prism54/isl_ioctl.c
-> b/drivers/net/wireless/prism54/isl_ioctl.c
-> > index 5b375b2..7e2d3b6 100644
-> > --- a/drivers/net/wireless/prism54/isl_ioctl.c
-> > +++ b/drivers/net/wireless/prism54/isl_ioctl.c
-> > @@ -1158,7 +1158,7 @@ prism54_get_encode(struct net_device *ndev, struct
-> iw_request_info *info,
-> >  {
-> >        islpci_private *priv = netdev_priv(ndev);
-> >        struct obj_key *key;
-> > -       u32 devindex, index = (dwrq->flags & IW_ENCODE_INDEX) - 1;
-> > +       u32 devindex, index = (dwrq->flags & IW_ENCODE_INDEX);
-> >        u32 authen = 0, invoke = 0, exunencrypt = 0;
-> >        int rvalue;
-> >        union oid_res_t r;
-> > @@ -1186,7 +1186,7 @@ prism54_get_encode(struct net_device *ndev, struct
-> iw_request_info *info,
-> >        rvalue |= mgt_get_request(priv, DOT11_OID_DEFKEYID, 0, NULL, &r);
-> >        devindex = r.u;
-> >        /* Now get the key, return it */
-> > -       if (index == -1 || index > 3)
-> > +       if (!index || index > 3)
-> >                /* no index provided, use the current one */
-> >                index = devindex;
-> >        rvalue |= mgt_get_request(priv, DOT11_OID_DEFKEYX, index, NULL,
-> &r);
-> >
->
->  This does not look right to me. Should this not be -
->   if (!index || index > 4)
->    ....
->   else
->   index -= 1;
->  (Or alternatively pass index -1 to mgt_get_request)
->
->  Also 5 lines further on we have -
->         /* return the used key index */
->         dwrq->flags |= devindex + 1;
->  which looks suspect.
+On Sun, Apr 27, 2008 at 09:36:27PM +0200, Ingo Molnar wrote:
+>...
+> and a third aspect is that in the current -git kernel we have exactly 
+> 11801 inlines in non-include files. Fighting the constant influx of them 
+> was a futile act 3 years ago when Arjan and me created this feature for 
+> the first time and it is futile today. It is a compiler domain problem 
+> and we should not waste any manpower "fighting" them. Life is too short :)
 
-Yeah and you're patch already went in. Its OK, was just not likin the -1 stuff.
+It is a kernel bug that we have inline's at the wrong places.
 
-  Luis
+I will "waste" my manpower on fixing these bugs.
+
+It is a well-known fact that much code that gets added to the kernel is 
+crap, but that shouldn't be an excuse for not fixing bugs in the kernel.
+
+> 	Ingo
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
