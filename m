@@ -1,198 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764493AbYD0UPi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764728AbYD0UQA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764493AbYD0UPi (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Apr 2008 16:15:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764098AbYD0UPF
+	id S1764728AbYD0UQA (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Apr 2008 16:16:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763445AbYD0UPq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Apr 2008 16:15:05 -0400
-Received: from nf-out-0910.google.com ([64.233.182.189]:41758 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763537AbYD0UPD (ORCPT
+	Sun, 27 Apr 2008 16:15:46 -0400
+Received: from moutng.kundenserver.de ([212.227.126.183]:57755 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763404AbYD0UPo convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Apr 2008 16:15:03 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:to:cc:subject:message-id:user-agent:mime-version:content-type:from;
-        b=LUr4zq+N9r2S/j8daLDMIV1zzEyCXNJPDjkgUypif4s8qAMxJ1cACPCP55fXfeHMYwVdHzuLFyuNwNMQ4XsuEHh7G/MV4sLQbvBVHx6FzibILc+GS4QoZG8lqEY3ORQ3xAyXt9rgNS/gkCTTRnGZB0MUeeyYVBDLX9VuhjwVenA=
-Date: Sun, 27 Apr 2008 22:15:06 +0200 (CEST)
-To: James Bottomley <James.Bottomley@hansenpartnership.com>
-cc: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Eric Youngdale <eric@andante.org>, David Miller <davem@davemloft.net>,
-       Mike Anderson <andmike@us.ibm.com>, Russell King <rmk@arm.linux.org.uk>,
-       Jesper Juhl <jesper.juhl@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH][Resend] fewer pointer derefs in scsi_error
-Message-ID: <alpine.LNX.1.00.0804272211080.2352@dragon.funnycrock.com>
-User-Agent: Alpine 1.00 (LNX 882 2007-12-20)
+	Sun, 27 Apr 2008 16:15:44 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: monstr@seznam.cz
+Subject: Re: microblaze syscall list
+Date: Sun, 27 Apr 2008 22:15:31 +0200
+User-Agent: KMail/1.9.9
+Cc: microblaze-uclinux@itee.uq.edu.au, Matthew Wilcox <matthew@wil.cx>,
+       Will Newton <will.newton@gmail.com>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       linux-arch@vger.kernel.org, git@xilinx.com,
+       John Williams <john.williams@petalogix.com>,
+       Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>,
+       John Linn <John.Linn@xilinx.com>
+References: <87a5b0800804220513t75690ceao938a288596b5ad0c@mail.gmail.com> <4813DF3E.6080800@itee.uq.edu.au> <4814A153.3040600@seznam.cz>
+In-Reply-To: <4814A153.3040600@seznam.cz>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-From: Jesper Juhl <jesper.juhl@gmail.com>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200804272215.32862.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1+ynDQCZnyaao2DvnhEeoVgTfaw4mOMA1PHCSw
+ 4XwVe2h++HS+wcCwZbqFRjOEfhCc26OkTgt/TF0pk/1CvE5n1T
+ LmSpDooi6LHP48mgDKPjg==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jesper Juhl <jesper.juhl@gmail.com>
+On Sunday 27 April 2008, Michal Simek wrote:
+> Arnd commented current syscall table and send me long email about(Thanks again).
+> On the base on this email I did converted table for future use - for porting old
+> application to new version. Below is my table with syscalls and there is a short
+> description. (or http://www.monstr.eu/wiki/doku.php?id=kernel:syscall)
+> 
+> I counted how big impact will be syscall change to programs which are in John W
+> distribution
+> all programs
+> mknod - 174
+> rmdir - 488
+> mkdir - 1128
+> symlink - 404
+> rename - 1536
+> access - 1664
+> chmod -  1122
+> open - 22583 (crazy)
+> ipc - 26
+> 
+> Only busybox
+> open - 667
+> chmod 44
+> access 52
+> rename 32
+> symlink 8
+> mkdir 19
+> rmdir 9
+> mknod 16
+> 
+> I thing you understand that we can't change all application per night. This is
+> not possible. But we have to start with change this.
 
-[This patch previously submitted on  24 April 2008 00:18]
+Note that the only thing you should need to change is the libc implementation
+(any version of it: glibc, uclibc, klibc, ...), but not any application source
+code, as the applications just call the functions that are defined in the libc.
+If you have binaries that are statically linked with their libc, you'd have
+to recompile or at least relink them. If you redefine data structures or
+types that are used in application code, like struct stat or off_t, you
+also need to recompile all user code.
 
+Of course, as Alan and others have mentioned, even without changing any
+application source code, the amount of work for that is significantly more 
+than just changing the kernel.
 
-This patch reduces the number of sequential pointer derefs in scsi_error 
-( drivers/scsi/scsi_error.c ).
+I think you have three options here:
 
-The bennefits are:
-	- makes the code easier to read. Lots of sequential derefs of the 
-	  same pointers are not easy on the eye.
-	- makes the size of the source file 55 bytes smaller.
-	- makes the size of the object file 48 bytes smaller.
-	- theoretically at least, just dereferencing the pointers once can 
-	  allow the compiler to generally slightly faster code, so in 
-	  theory this could also be a micro speed optimization.
+1. Keep the old syscall interface and just add new syscalls for the stuff
+that you are currently missing. Don't change userspace at all, but live
+with somewhat bloated kernels and libc forever and maintain a larger
+code base in the kernel.
 
-Please consider applying.
+2. Change the syscall interface in the kernel in the way we have discussed,
+and adapt the libc code along with it. Break all backwards compatibility
+and start out with a new leaner ABI. Old applications can still use
+your old out-of-tree kernels, or forks of that.
 
+3. Merge only the ABI as in 2. into the mainline kernel, but use new
+syscall numbers for that. Maintain an out-of-tree patch that adds the
+old ABI for backwards compatibility so you can run old and new code
+on one kernel if you build with that patch, but eventually phase
+out the old ABI.
 
-Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
----
+I won't try to force you to go either route, it's your own decision,
+but you should understand the tradeoffs. I don't think there is any
+value in trying to deprecate just part of the ABI and break some
+binaries but not others, this will only cause hard to find bugs. Make
+sure that if you decide to break backwards compatibility, you break it
+in an obvious way and get the most benefit out of it.
 
- scsi_error.c |   58 ++++++++++++++++++++++++++++++++--------------------------
- 1 file changed, 32 insertions(+), 26 deletions(-)
-
-diff --git a/drivers/scsi/scsi_error.c b/drivers/scsi/scsi_error.c
-index 221f31e..94395a7 100644
---- a/drivers/scsi/scsi_error.c
-+++ b/drivers/scsi/scsi_error.c
-@@ -185,13 +185,14 @@ int scsi_delete_timer(struct scsi_cmnd *scmd)
- void scsi_times_out(struct scsi_cmnd *scmd)
- {
- 	enum scsi_eh_timer_return (* eh_timed_out)(struct scsi_cmnd *);
-+	struct Scsi_Host *host = scmd->device->host; 
- 
- 	scsi_log_completion(scmd, TIMEOUT_ERROR);
- 
--	if (scmd->device->host->transportt->eh_timed_out)
--		eh_timed_out = scmd->device->host->transportt->eh_timed_out;
--	else if (scmd->device->host->hostt->eh_timed_out)
--		eh_timed_out = scmd->device->host->hostt->eh_timed_out;
-+	if (host->transportt->eh_timed_out)
-+		eh_timed_out = host->transportt->eh_timed_out;
-+	else if (host->hostt->eh_timed_out)
-+		eh_timed_out = host->hostt->eh_timed_out;
- 	else
- 		eh_timed_out = NULL;
- 
-@@ -474,22 +475,22 @@ static int scsi_try_host_reset(struct scsi_cmnd *scmd)
- {
- 	unsigned long flags;
- 	int rtn;
-+	struct Scsi_Host *host = scmd->device->host;
- 
- 	SCSI_LOG_ERROR_RECOVERY(3, printk("%s: Snd Host RST\n",
- 					  __FUNCTION__));
- 
--	if (!scmd->device->host->hostt->eh_host_reset_handler)
-+	if (!host->hostt->eh_host_reset_handler)
- 		return FAILED;
- 
--	rtn = scmd->device->host->hostt->eh_host_reset_handler(scmd);
-+	rtn = host->hostt->eh_host_reset_handler(scmd);
- 
- 	if (rtn == SUCCESS) {
--		if (!scmd->device->host->hostt->skip_settle_delay)
-+		if (!host->hostt->skip_settle_delay)
- 			ssleep(HOST_RESET_SETTLE_TIME);
--		spin_lock_irqsave(scmd->device->host->host_lock, flags);
--		scsi_report_bus_reset(scmd->device->host,
--				      scmd_channel(scmd));
--		spin_unlock_irqrestore(scmd->device->host->host_lock, flags);
-+		spin_lock_irqsave(host->host_lock, flags);
-+		scsi_report_bus_reset(host, scmd_channel(scmd));
-+		spin_unlock_irqrestore(host->host_lock, flags);
- 	}
- 
- 	return rtn;
-@@ -503,22 +504,22 @@ static int scsi_try_bus_reset(struct scsi_cmnd *scmd)
- {
- 	unsigned long flags;
- 	int rtn;
-+	struct Scsi_Host *host = scmd->device->host;
- 
- 	SCSI_LOG_ERROR_RECOVERY(3, printk("%s: Snd Bus RST\n",
- 					  __FUNCTION__));
- 
--	if (!scmd->device->host->hostt->eh_bus_reset_handler)
-+	if (!host->hostt->eh_bus_reset_handler)
- 		return FAILED;
- 
--	rtn = scmd->device->host->hostt->eh_bus_reset_handler(scmd);
-+	rtn = host->hostt->eh_bus_reset_handler(scmd);
- 
- 	if (rtn == SUCCESS) {
--		if (!scmd->device->host->hostt->skip_settle_delay)
-+		if (!host->hostt->skip_settle_delay)
- 			ssleep(BUS_RESET_SETTLE_TIME);
--		spin_lock_irqsave(scmd->device->host->host_lock, flags);
--		scsi_report_bus_reset(scmd->device->host,
--				      scmd_channel(scmd));
--		spin_unlock_irqrestore(scmd->device->host->host_lock, flags);
-+		spin_lock_irqsave(host->host_lock, flags);
-+		scsi_report_bus_reset(host, scmd_channel(scmd));
-+		spin_unlock_irqrestore(host->host_lock, flags);
- 	}
- 
- 	return rtn;
-@@ -544,16 +545,17 @@ static int scsi_try_target_reset(struct scsi_cmnd *scmd)
- {
- 	unsigned long flags;
- 	int rtn;
-+	struct Scsi_Host *host = scmd->device->host;
- 
--	if (!scmd->device->host->hostt->eh_target_reset_handler)
-+	if (!host->hostt->eh_target_reset_handler)
- 		return FAILED;
- 
--	rtn = scmd->device->host->hostt->eh_target_reset_handler(scmd);
-+	rtn = host->hostt->eh_target_reset_handler(scmd);
- 	if (rtn == SUCCESS) {
--		spin_lock_irqsave(scmd->device->host->host_lock, flags);
-+		spin_lock_irqsave(host->host_lock, flags);
- 		__starget_for_each_device(scsi_target(scmd->device), NULL,
- 					  __scsi_report_device_reset);
--		spin_unlock_irqrestore(scmd->device->host->host_lock, flags);
-+		spin_unlock_irqrestore(host->host_lock, flags);
- 	}
- 
- 	return rtn;
-@@ -572,11 +574,12 @@ static int scsi_try_target_reset(struct scsi_cmnd *scmd)
- static int scsi_try_bus_device_reset(struct scsi_cmnd *scmd)
- {
- 	int rtn;
-+	struct Scsi_Host *host = scmd->device->host;
- 
--	if (!scmd->device->host->hostt->eh_device_reset_handler)
-+	if (!host->hostt->eh_device_reset_handler)
- 		return FAILED;
- 
--	rtn = scmd->device->host->hostt->eh_device_reset_handler(scmd);
-+	rtn = host->hostt->eh_device_reset_handler(scmd);
- 	if (rtn == SUCCESS)
- 		__scsi_report_device_reset(scmd->device, NULL);
- 	return rtn;
-@@ -584,10 +587,13 @@ static int scsi_try_bus_device_reset(struct scsi_cmnd *scmd)
- 
- static int __scsi_try_to_abort_cmd(struct scsi_cmnd *scmd)
- {
--	if (!scmd->device->host->hostt->eh_abort_handler)
-+	int (* eh_abort_handler)(struct scsi_cmnd *)
-+		= scmd->device->host->hostt->eh_abort_handler;
-+
-+	if (!eh_abort_handler)
- 		return FAILED;
- 
--	return scmd->device->host->hostt->eh_abort_handler(scmd);
-+	return eh_abort_handler(scmd);
- }
- 
- /**
-
-
-
+	Arnd <><
