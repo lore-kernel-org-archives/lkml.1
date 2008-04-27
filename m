@@ -1,69 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761046AbYD0Qhd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761173AbYD0QpK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761046AbYD0Qhd (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Apr 2008 12:37:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753825AbYD0QhZ
+	id S1761173AbYD0QpK (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Apr 2008 12:45:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753648AbYD0Qo7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Apr 2008 12:37:25 -0400
-Received: from outbound-mail-128.bluehost.com ([67.222.38.28]:57893 "HELO
-	outbound-mail-128.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752946AbYD0QhZ (ORCPT
+	Sun, 27 Apr 2008 12:44:59 -0400
+Received: from smtp.opengridcomputing.com ([209.198.142.2]:48006 "EHLO
+	smtp.opengridcomputing.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752530AbYD0Qo6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Apr 2008 12:37:25 -0400
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [git pull] "big box" x86 changes, PCI
-Date: Sun, 27 Apr 2008 09:30:55 -0700
-User-Agent: KMail/1.9.9
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Yinghai Lu <yinghai.lu@sun.com>, Yinghai Lu <yhlu.kernel@gmail.com>
-References: <20080426185516.GA32364@elte.hu> <alpine.LFD.1.10.0804261205490.2813@woody.linux-foundation.org> <20080426215540.GA3545@elte.hu>
-In-Reply-To: <20080426215540.GA3545@elte.hu>
+	Sun, 27 Apr 2008 12:44:58 -0400
+Message-ID: <4814AD7B.2060006@opengridcomputing.com>
+Date: Sun, 27 Apr 2008 11:44:43 -0500
+From: Steve Wise <swise@opengridcomputing.com>
+User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Roland Dreier <rdreier@cisco.com>
+CC: netdev@vger.kernel.org, divy@chelsio.com, linux-kernel@vger.kernel.org,
+       general@lists.openfabrics.org
+Subject: Re: [ofa-general] [PATCH 2.6.26 3/3] RDMA/cxgb3: Support peer-2-peer
+ connection setup.
+References: <20080427155456.31018.22282.stgit@dell3.ogc.int>	<20080427160010.31018.67436.stgit@dell3.ogc.int> <adatzhn2r5z.fsf@cisco.com>
+In-Reply-To: <adatzhn2r5z.fsf@cisco.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200804270930.55647.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday, April 26, 2008 2:55 pm Ingo Molnar wrote:
-> ok, this is the final chunk of the "big box" topic - the PCI changes.
->
-> These are the largest, and while i tried to reduce their number it's
-> still 19 commits - but it's all around the same topic. The bulk of the
-> new code is in a single file. The tree can be pulled from:
->
->   
-> git://git.kernel.org/pub/scm/linux/kernel/git/x86/linux-2.6-x86-bigbox-pci.
->git for-linus
->
-> this depends on the bootmem changes which are now upstream. These
-> changes too have been in linux-next for some time and the cross-arch
-> (build) success rate is high, as in:
->
->    http://www.tglx.de/autoqa-cgi/index?run=89&tree=1
->
-> all but the last few patches have been in x86.git for a longer time and
-> more than 95% of the changes are for arch/x86. (see the dates of the
-> patches. The "15 Feb 2008" ones are older than their timestamp - that's
-> when we imported those changes into a date-aware repository.)
->
-> i booted up this tree 5 times on x86, mixed 64-bit/32-bit.
 
-Only did a quick scan, but the changes look nice so far.  I'll take a closer 
-look and give it a try locally tomorrow.
 
-On an unrelated note, can you take a look at the "PCI MSI breaks when booting 
-with nosmp" thread?  I posted a patch there that unconditionally enables the 
-local apic with nosmp/maxcpus=0 so that MSI will work correctly.  The other 
-option of course is to disable MSI when nosmp/maxcpus=0 and local apic enable 
-code alone.
+Roland Dreier wrote:
+> What are the interoperability implications of this?
+> 
+> Looking closer I see that iw_nes has the send_first module parameter.
+> How does this interact with that?
+> 
 
-Thanks,
-Jesse
+It doesn't...yet.  But we wanted to enable these applications for 
+chelsio now and get the low level fw and driver changes done first and 
+tested.
+
+> I guess it's fine to apply this, but do we have a plan for how we want
+> to handle this issue in the long-term?
+> 
+
+Yes!  If you'll recall, we had a thread on the ofa general list 
+discussing how to enhance the MPA negotiation so peers can indicate 
+whether they want/need the RTR and what type of RTR (0B read, 0B write, 
+or 0B send) should be sent.  This will be done by standardizing a few 
+bits of the private data in order to negotiate all this.  The rdma-cma 
+API will be extended so applications will have to request this 
+peer-2-peer model since it adds overhead to the connection setup.
+
+I plan to do this work for 2.6.27/ofed-1.4.  I think it was listed in 
+Felix's talk at Sonoma.  This work (design, API, and code changes 
+affecting core and placing requirements on iwarp providers) will be 
+posted as RFC changes to get everyones feedback as soon as I get 
+something going.
+
+Does that sound ok?
+
+
+Steve.
