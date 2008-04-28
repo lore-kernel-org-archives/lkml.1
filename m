@@ -1,48 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765255AbYD1Bfp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764187AbYD1BkJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765255AbYD1Bfp (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Apr 2008 21:35:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764737AbYD1BfT
+	id S1764187AbYD1BkJ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Apr 2008 21:40:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755127AbYD1Bj5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Apr 2008 21:35:19 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:59431 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764559AbYD1BfR (ORCPT
+	Sun, 27 Apr 2008 21:39:57 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:60133 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753767AbYD1Bj5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Apr 2008 21:35:17 -0400
-Message-ID: <481529B6.6030802@freescale.com>
-Date: Sun, 27 Apr 2008 20:34:46 -0500
-From: timur@freescale.com
-User-Agent: Mozilla/5.0 (Macintosh; U; Intel Mac OS X; en-US; rv:1.8.1.13) Gecko/20080313 SeaMonkey/1.1.9
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: cross-compiling on OS X, make menuconfig fails
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 8bit
+	Sun, 27 Apr 2008 21:39:57 -0400
+Date: Sun, 27 Apr 2008 18:39:26 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Heiko Carstens <heiko.carstens@de.ibm.com>
+Cc: Gautham R Shenoy <ego@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       Paul Jackson <pj@sgi.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] sched: missing locking in sched_domains code
+Message-Id: <20080427183926.acb66fff.akpm@linux-foundation.org>
+In-Reply-To: <20080427211224.GA21830@osiris.boeblingen.de.ibm.com>
+References: <20080427211224.GA21830@osiris.boeblingen.de.ibm.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'm trying to cross-compile a PowerPC kernel from an Intel OS X system. 
-  I've almost got it working, except "make menuconfig" dies.  It says 
-I'm missing ncurses:
+On Sun, 27 Apr 2008 23:12:24 +0200 Heiko Carstens <heiko.carstens@de.ibm.com> wrote:
 
-  *** Unable to find the ncurses libraries or the
-  *** required header files.
-  *** 'make menuconfig' requires the ncurses libraries.
+> From: Heiko Carstens <heiko.carstens@de.ibm.com>
+> 
+> Concurrent calls to detach_destroy_domains and arch_init_sched_domains
+> were prevented by the old scheduler subsystem cpu hotplug mutex. When
+> this got converted to get_online_cpus() the locking got broken.
+> Unlike before now several processes can concurrently enter the critical
+> sections that were protected by the old lock.
+> 
+> So add a new sched_domains_mutex which protects these sections again.
+> 
+> Cc: Gautham R Shenoy <ego@in.ibm.com>
+> Cc: Ingo Molnar <mingo@elte.hu>
+> Cc: Paul Jackson <pj@sgi.com>
+> Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
+> ---
+>  include/linux/sched.h |    2 ++
+>  kernel/cpuset.c       |    2 ++
+>  kernel/sched.c        |   11 +++++++++++
+>  3 files changed, 15 insertions(+)
+> 
+> Index: linux-2.6/kernel/sched.c
+> ===================================================================
+> --- linux-2.6.orig/kernel/sched.c
+> +++ linux-2.6/kernel/sched.c
+> @@ -7807,14 +7807,23 @@ match2:
+>  	unlock_doms_cur();
+>  }
+>  
+> +/*
+> + * Protects against concurrent calls to detach_destroy_domains
+> + * and arch_init_sched_domains.
+> + */
+> +DEFINE_MUTEX(sched_domains_mutex);
+> +
+>  #if defined(CONFIG_SCHED_MC) || defined(CONFIG_SCHED_SMT)
+>  int arch_reinit_sched_domains(void)
+>  {
+> +	static DEFINE_MUTEX(arch_reinit_sched_domains_mutex);
 
-However, I do not think that ncurses is the real problem, since I do 
-have ncurses installed.  I think the real problem is that the 
-check-lxdialog.sh is trying to execute this code:
+leftover hunk.
 
-echo -e ' #include CURSES_LOC \n main() {}' | gcc 
-'-DCURSES_LOC=<ncurses.h>' -DLOCALE -DKBUILD_NO_NLS -lncurses -xc - -o 
-.lxdialog.tmp
+>  	int err;
+>  
+>  	get_online_cpus();
+> +	mutex_lock(&sched_domains_mutex);
+>  	detach_destroy_domains(&cpu_online_map);
+>  	err = arch_init_sched_domains(&cpu_online_map);
+> +	mutex_unlock(&sched_domains_mutex);
+>  	put_online_cpus();
+>  
+>  	return err;
+> @@ -7932,10 +7941,12 @@ void __init sched_init_smp(void)
+>  	BUG_ON(sched_group_nodes_bycpu == NULL);
+>  #endif
+>  	get_online_cpus();
+> +	mutex_lock(&sched_domains_mutex);
+>  	arch_init_sched_domains(&cpu_online_map);
+>  	cpus_andnot(non_isolated_cpus, cpu_possible_map, cpu_isolated_map);
+>  	if (cpus_empty(non_isolated_cpus))
+>  		cpu_set(smp_processor_id(), non_isolated_cpus);
+> +	mutex_unlock(&sched_domains_mutex);
+>  	put_online_cpus();
+>  	/* XXX: Theoretical race here - CPU may be hotplugged now */
+>  	hotcpu_notifier(update_sched_domains, 0);
+> Index: linux-2.6/include/linux/sched.h
+> ===================================================================
+> --- linux-2.6.orig/include/linux/sched.h
+> +++ linux-2.6/include/linux/sched.h
+> @@ -809,6 +809,8 @@ struct sched_domain {
+>  #endif
+>  };
+>  
+> +extern struct mutex sched_domains_mutex;
+> +
+>  extern void partition_sched_domains(int ndoms_new, cpumask_t *doms_new,
+>  				    struct sched_domain_attr *dattr_new);
+>  extern int arch_reinit_sched_domains(void);
+> Index: linux-2.6/kernel/cpuset.c
+> ===================================================================
+> --- linux-2.6.orig/kernel/cpuset.c
+> +++ linux-2.6/kernel/cpuset.c
+> @@ -684,7 +684,9 @@ restart:
+>  rebuild:
+>  	/* Have scheduler rebuild sched domains */
+>  	get_online_cpus();
+> +	mutex_lock(&sched_domains_mutex);
+>  	partition_sched_domains(ndoms, doms, dattr);
+> +	mutex_unlock(&sched_domains_mutex);
+>  	put_online_cpus();
+>  
 
-And the compiler is failing with this output:
+It seems a bit fragile to take this lock in the caller without even adding
+a comment at the callee site which documents the new locking rule.
 
-<stdin>:1: error: syntax error before ‘-’ token
-<stdin>:1: error: stray ‘#’ in program
+It would be more robust to take the lock within partition_sched_domains().
 
-So something strange is going on.  Has anyone been able to cross-compile 
-from an Intel Mac running OS X?
+partition_sched_domains() already covers itself with lock_doms_cur().  Can
+we take that in arch_reinit_sched_domains() rather than adding the new lock?
+
