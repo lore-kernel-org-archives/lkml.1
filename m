@@ -1,109 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938108AbYD1VKu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937556AbYD1VNT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938108AbYD1VKu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 17:10:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935609AbYD1VKh
+	id S937556AbYD1VNT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 17:13:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934830AbYD1VNG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 17:10:37 -0400
-Received: from mga14.intel.com ([143.182.124.37]:58562 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935281AbYD1VKg convert rfc822-to-8bit (ORCPT
+	Mon, 28 Apr 2008 17:13:06 -0400
+Received: from wa-out-1112.google.com ([209.85.146.182]:42327 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S935239AbYD1VNE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 17:10:36 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,718,1199692800"; 
-   d="scan'208";a="239089104"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [2.6.25-stable PATCH] regression: powertop says 120K wakeups/sec
-Date: Mon, 28 Apr 2008 14:13:05 -0700
-Message-ID: <924EFEDD5F540B4284297C4DC59F3DEEF31967@orsmsx423.amr.corp.intel.com>
-In-Reply-To: <200804282001.06680.danielklaffenbach@gmail.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [2.6.25-stable PATCH] regression: powertop says 120K wakeups/sec
-Thread-Index: AcipWdp9su56CRZ2TG2Yu0fEnTjuEAAGkuJg
-References: <200804242015.19462.lenb@kernel.org> <200804281209.47927.danielklaffenbach@gmail.com> <924EFEDD5F540B4284297C4DC59F3DEEF31621@orsmsx423.amr.corp.intel.com> <200804282001.06680.danielklaffenbach@gmail.com>
-From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-To: "Daniel Klaffenbach" <danielklaffenbach@gmail.com>
-Cc: "Len Brown" <lenb@kernel.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 28 Apr 2008 21:10:35.0044 (UTC) FILETIME=[4CD5CE40:01C8A974]
+	Mon, 28 Apr 2008 17:13:04 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=fD1GEyq5s4HXNWXZBuIhxIWEvEkelm2oov/F4+BvwVNlPdq2PoyZqtTb2dVL0DgeTi8Zu/I9SCJs71/ZPnHYT3LWxiYdMHvgT9nRZ47SM1AIyi5odOyflsID45iiCkDraOBB+ZrP6+ojafttYExbuu4WeB/z1swukQ4zaOYi9tk=
+Subject: [PATCH 1/4] init: fix integer as NULL pointer warnings
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Al Viro <viro@ZenIV.linux.org.uk>, LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Mon, 28 Apr 2008 14:13:14 -0700
+Message-Id: <1209417194.14173.98.camel@brick>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+init/do_mounts_rd.c:215:13: warning: Using plain integer as NULL pointer
+init/do_mounts_md.c:136:45: warning: Using plain integer as NULL pointer
+
+Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+---
+Linus, should I break them up this finely?  I've done a sweep of most of
+the mainline tree.
+
+ init/do_mounts_md.c |    2 +-
+ init/do_mounts_rd.c |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/init/do_mounts_md.c b/init/do_mounts_md.c
+index 753dc54..7473b0c 100644
+--- a/init/do_mounts_md.c
++++ b/init/do_mounts_md.c
+@@ -133,7 +133,7 @@ static void __init md_setup_drive(void)
+ 		else
+ 			dev = MKDEV(MD_MAJOR, minor);
+ 		create_dev(name, dev);
+-		for (i = 0; i < MD_SB_DISKS && devname != 0; i++) {
++		for (i = 0; i < MD_SB_DISKS && devname != NULL; i++) {
+ 			char *p;
+ 			char comp_name[64];
+ 			u32 rdev;
+diff --git a/init/do_mounts_rd.c b/init/do_mounts_rd.c
+index 3ac5904..46dfd64 100644
+--- a/init/do_mounts_rd.c
++++ b/init/do_mounts_rd.c
+@@ -212,7 +212,7 @@ int __init rd_load_image(char *from)
+ 	}
  
+ 	buf = kmalloc(BLOCK_SIZE, GFP_KERNEL);
+-	if (buf == 0) {
++	if (!buf) {
+ 		printk(KERN_ERR "RAMDISK: could not allocate buffer\n");
+ 		goto done;
+ 	}
+-- 
+1.5.5.1.270.g89765
 
->-----Original Message-----
->From: Daniel Klaffenbach [mailto:danielklaffenbach@gmail.com] 
->Sent: Monday, April 28, 2008 11:01 AM
->To: Pallipadi, Venkatesh
->Cc: Len Brown; Linux Kernel Mailing List
->Subject: Re: [2.6.25-stable PATCH] regression: powertop says 
->120K wakeups/sec
->
->Pallipadi, Venkatesh wrote:
->> Did C1, C2 work fine with 2.6.24?
->> Can you send me the full dmesg when it is failing to enter 
->C1, C2 with
->> latest git + patch.
->> Output of
->> #grep . /sys/devices/system/cpu/cpu*/cpuidle/*/*
->> And also attach the acpidump output (pmtools package here
->> http://www.lesswatts.org/projects/acpi/utilities.php)
->No, C1/C2 did not seem to work with 2.6.24 - at least powertop 
->reported 99,9% 
->C0 usage. It was the same behavior as after applying the wakeup patch. 
->However in 2.6.25 and 2.6.25-git11 C1/C2 worked correctly and 
->C2 showed up in 
->pt. But after applying your patch to 2.6.25-git11 they did not:
->
->git11:
->PowerTOP version 1.9       (C) 2007 Intel Corporation
->Cn                Avg residency       P-states (frequencies)
->C0 (cpu running)        ( 9,4%)         1,80 Ghz   100,0%
->C1                0,0ms ( 0,0%)         1,60 Ghz     0,0%
->C2                0,4ms (90,6%)          800 Mhz     0,0%
->Wakeups-from-idle per second : 9051,0   interval: 5,0s
->
->git11 with wakeup-patch:
->PowerTOP version 1.9       (C) 2007 Intel Corporation
->Cn                Avg residency       P-states (frequencies)
->C0 (cpu running)        (99,9%)         1,80 Ghz   100,0%
->C1                0,0ms ( 0,0%)         1,60 Ghz     0,0%
->C2                0,2ms ( 0,1%)          800 Mhz     0,0%
->Wakeups-from-idle per second : 59,8     interval: 10,0s
->
->In both cases the system was idle. I've uploaded the files you wanted:
->http://www-user.tu-chemnitz.de/~klada/misc/kernel/cpuidle_git11.txt
->http://www-user.tu-chemnitz.de/~klada/misc/kernel/cpuidle_git11
->_wakeuppatch.txt
->http://www-user.tu-chemnitz.de/~klada/misc/kernel/dmesg_git11.txt
->http://www-user.tu-chemnitz.de/~klada/misc/kernel/dmesg_git11_w
-akeuppatch.txt
->http://www-user.tu-chemnitz.de/~klada/misc/kernel/nx6125_acpidump.out
->
->If there is anything else I can do for debugging this issue 
->please let me 
->know.
->
 
-With git11+wakeup patch, things seems to be working fine as per
->http://www-user.tu-chemnitz.de/~klada/misc/kernel/cpuidle_git11_wakeupp
-atch.txt
-
-CPU is spending most of the time in C3 state. Looks like there is some
-problem with
-powertop reporting here. I know there were some changes to this area in
-powertop.
-Can you try the latest powertop version from svn
-(http://www.lesswatts.org/projects/powertop/download.php) and see
-whether the issue is fixed.
-
-Thanks,
-Venki
