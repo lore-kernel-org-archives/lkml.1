@@ -1,77 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936028AbYD1UhJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966403AbYD1Uhr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936028AbYD1UhJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 16:37:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937405AbYD1UgX
+	id S966403AbYD1Uhr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 16:37:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934753AbYD1Uhb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 16:36:23 -0400
-Received: from g4t0017.houston.hp.com ([15.201.24.20]:17913 "EHLO
-	g4t0017.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S937386AbYD1UgW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 16:36:22 -0400
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: Rene Herman <rene.herman@keyaccess.nl>
-Subject: Re: [patch 41/54] PNP: remove pnp_resource_table references from resource decoders
-Date: Mon, 28 Apr 2008 14:36:20 -0600
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Adam Belay <ambx1@neo.rr.com>,
-       Adam M Belay <abelay@mit.edu>, Li Shaohua <shaohua.li@intel.com>,
-       Matthieu Castet <castet.matthieu@free.fr>,
-       Thomas Renninger <trenn@suse.de>, Jaroslav Kysela <perex@perex.cz>,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <20080425183807.366134771@ldl.fc.hp.com> <20080425183932.457629051@ldl.fc.hp.com> <4813AC7D.9000006@keyaccess.nl>
-In-Reply-To: <4813AC7D.9000006@keyaccess.nl>
+	Mon, 28 Apr 2008 16:37:31 -0400
+Received: from www.tglx.de ([62.245.132.106]:33096 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934590AbYD1Uh3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Apr 2008 16:37:29 -0400
+Date: Mon, 28 Apr 2008 22:36:54 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: [GTI pull] hrtimer fixes
+Message-ID: <alpine.LFD.1.10.0804282234040.3261@apollo.tec.linutronix.de>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200804281436.21061.bjorn.helgaas@hp.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 26 April 2008 04:28:13 pm Rene Herman wrote:
-> On 25-04-08 20:38, Bjorn Helgaas wrote:
-> 
-> > Index: work10/drivers/pnp/pnpacpi/rsparser.c
-> > ===================================================================
-> > --- work10.orig/drivers/pnp/pnpacpi/rsparser.c	2008-04-25 11:15:08.000000000 -0600
-> > +++ work10/drivers/pnp/pnpacpi/rsparser.c	2008-04-25 11:15:09.000000000 -0600
-> > @@ -82,8 +82,8 @@
-> >  						u32 gsi, int triggering,
-> >  						int polarity, int shareable)
-> >  {
-> > -	struct pnp_resource_table *res = dev->res;
-> > -	int i = 0;
-> > +	struct resource *res;
-> > +	int i;
-> >  	int irq;
-> >  	int p, t;
-> >  	static unsigned char warned;
-> > @@ -91,9 +91,11 @@
-> >  	if (!valid_IRQ(gsi))
-> >  		return;
-> >  
-> > -	while (!(res->irq_resource[i].flags & IORESOURCE_UNSET) &&
-> > -	       i < PNP_MAX_IRQ)
-> > -		i++;
-> > +	for (i = 0; i < PNP_MAX_IRQ; i++) {
-> > +		res = &dev->res->irq_resource[i];
-> > +		if (res->flags & IORESOURCE_UNSET)
-> > +			break;
-> > +	}
-> 
-> Another possible user of pnp_resource_valid.
+Linus,
 
-I changed this, and also changed the array lookups to use
-pnp_get_resource().  And I made similar changes in ISAPNP.
+please pull hrtimer fixes from:
 
-And I replaced many of these &dev->res->irq_resource[] things
-with pnp_get_resource().  This change rippled through several
-subsequent patches, but it's just more mechanical changes.
+  ssh://master.kernel.org/pub/scm/linux/kernel/git/tglx/linux-2.6-hrt.git master
 
-Bjorn
+Fix for a potential deadlock which was introduced with the scheduler
+hrtimer changes in .25.
 
+Thanks,
+	tglx
+
+---
+Thomas Gleixner (1):
+      hrtimer: raise softirq unlocked to avoid circular lock dependency
+
+ kernel/hrtimer.c |   19 +++++++++++++++++--
+ 1 files changed, 17 insertions(+), 2 deletions(-)
+diff --git a/kernel/hrtimer.c b/kernel/hrtimer.c
+index e379ef0..dea4c91 100644
+--- a/kernel/hrtimer.c
++++ b/kernel/hrtimer.c
+@@ -590,7 +590,6 @@ static inline int hrtimer_enqueue_reprogram(struct hrtimer *timer,
+ 			list_add_tail(&timer->cb_entry,
+ 				      &base->cpu_base->cb_pending);
+ 			timer->state = HRTIMER_STATE_PENDING;
+-			raise_softirq(HRTIMER_SOFTIRQ);
+ 			return 1;
+ 		default:
+ 			BUG();
+@@ -633,6 +632,11 @@ static int hrtimer_switch_to_hres(void)
+ 	return 1;
+ }
+ 
++static inline void hrtimer_raise_softirq(void)
++{
++	raise_softirq(HRTIMER_SOFTIRQ);
++}
++
+ #else
+ 
+ static inline int hrtimer_hres_active(void) { return 0; }
+@@ -651,6 +655,7 @@ static inline int hrtimer_reprogram(struct hrtimer *timer,
+ {
+ 	return 0;
+ }
++static inline void hrtimer_raise_softirq(void) { }
+ 
+ #endif /* CONFIG_HIGH_RES_TIMERS */
+ 
+@@ -850,7 +855,7 @@ hrtimer_start(struct hrtimer *timer, ktime_t tim, const enum hrtimer_mode mode)
+ {
+ 	struct hrtimer_clock_base *base, *new_base;
+ 	unsigned long flags;
+-	int ret;
++	int ret, raise;
+ 
+ 	base = lock_hrtimer_base(timer, &flags);
+ 
+@@ -884,8 +889,18 @@ hrtimer_start(struct hrtimer *timer, ktime_t tim, const enum hrtimer_mode mode)
+ 	enqueue_hrtimer(timer, new_base,
+ 			new_base->cpu_base == &__get_cpu_var(hrtimer_bases));
+ 
++	/*
++	 * The timer may be expired and moved to the cb_pending
++	 * list. We can not raise the softirq with base lock held due
++	 * to a possible deadlock with runqueue lock.
++	 */
++	raise = timer->state == HRTIMER_STATE_PENDING;
++
+ 	unlock_hrtimer_base(timer, &flags);
+ 
++	if (raise)
++		hrtimer_raise_softirq();
++
+ 	return ret;
+ }
+ EXPORT_SYMBOL_GPL(hrtimer_start);
