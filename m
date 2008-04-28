@@ -1,46 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933309AbYD1KH1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765961AbYD1KQR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933309AbYD1KH1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 06:07:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756826AbYD1KHT
+	id S1765961AbYD1KQR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 06:16:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753977AbYD1KP6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 06:07:19 -0400
-Received: from trillian.zoopnet.de ([85.214.111.199]:51220 "EHLO
-	trillian.zoopnet.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751107AbYD1KHS (ORCPT
+	Mon, 28 Apr 2008 06:15:58 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:34320 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753918AbYD1KP5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 06:07:18 -0400
-Message-ID: <4815A1D4.8000204@zoopnet.de>
-Date: Mon, 28 Apr 2008 12:07:16 +0200
-From: Mika Fischer <mika.fischer@zoopnet.de>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
-MIME-Version: 1.0
-To: Gabriel C <nix.or.die@googlemail.com>
-CC: Yinghai Lu <yhlu.kernel@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>,
-       Jesse Barnes <jesse.barnes@intel.com>, balajirrao@gmail.com,
-       Andi Kleen <andi@firstfloor.org>
-Subject: Re: [PATCH] x86_32: trim memory by updating e820 v3
-References: <200801192045.17291.yinghai.lu@sun.com>	 <200801202256.48365.yinghai.lu@sun.com>	 <20080122165125.GA17992@elte.hu>	 <200801221623.20861.yinghai.lu@sun.com>	 <20080426035614.a30afb17.akpm@linux-foundation.org>	 <48132665.8050202@googlemail.com>	 <86802c440804272344yac6a9f0n40809169424247e6@mail.gmail.com>	 <48159668.5010808@googlemail.com> <86802c440804280234y5b38b4bds330fc1a6987202c5@mail.gmail.com> <48159ECF.9020004@googlemail.com> <4815A0D7.9030403@googlemail.com>
-In-Reply-To: <4815A0D7.9030403@googlemail.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Mon, 28 Apr 2008 06:15:57 -0400
+To: miklos@szeredi.hu
+CC: viro@ZenIV.linux.org.uk, miklos@szeredi.hu, akpm@linux-foundation.org,
+       torvalds@linux-foundation.org, dave@linux.vnet.ibm.com,
+       ezk@cs.sunysb.edu, mhalcrow@us.ibm.com, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-reply-to: <E1Jp47x-0004MY-1W@pomaz-ex.szeredi.hu> (message from Miklos
+	Szeredi on Thu, 24 Apr 2008 18:16:53 +0200)
+Subject: Re: [patch 00/13] vfs: add helpers to check r/o bind mounts
+References: <E1Jp18b-0003iB-FK@pomaz-ex.szeredi.hu> <20080424134826.GD15214@ZenIV.linux.org.uk> <20080424140000.GE15214@ZenIV.linux.org.uk> <E1Jp2Fo-0003sr-BX@pomaz-ex.szeredi.hu> <20080424143537.GG15214@ZenIV.linux.org.uk> <E1Jp2ey-0003zd-TL@pomaz-ex.szeredi.hu> <20080424144815.GI15214@ZenIV.linux.org.uk> <E1Jp2tc-00044i-6k@pomaz-ex.szeredi.hu> <20080424152129.GK15214@ZenIV.linux.org.uk> <E1Jp3Vz-0004FH-Ih@pomaz-ex.szeredi.hu> <20080424155954.GM15214@ZenIV.linux.org.uk> <E1Jp47x-0004MY-1W@pomaz-ex.szeredi.hu>
+Message-Id: <E1JqQOT-0004IY-7E@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Mon, 28 Apr 2008 12:15:33 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gabriel C schrieb:
-> BTW I just saw , there is this warning now :
+> > > > let alone removing the interface that doesn't require checks to be
+> > > > vfsmount-based for all users.
+> > > 
+> > > What users?  There are paractically _no_ other users.  The ones that
+> > > there are (like reiserfs) should not be using them, and there are
+> > > already some patches cleaning that mess up.
+> > 
+> > OK, explain me, in small words, WTF should something that wants to do
+> > operations on filesystem tree have a vfsmount.  Slowly.  And "r/o
+> > bind loses value if it can be bypassed" is a hogwash - fs methods are
+> > still there, so it *can* be bypassed just fine, thank you very much.
 > 
-> [    0.305539] mtrr: your CPUs had inconsistent variable MTRR settings
-> [    0.305546] mtrr: probably your BIOS does not setup all CPUs.
-> [    0.305553] mtrr: corrected configuration.
-> 
-> but everything seems to work fine.
+> And we know what to do with such users.
 
-Just, FYI, I got this warning too. I didn't get it before applying the patch.
+Which begs the question: why is ecryptfs doing that with the xattr
+methods?  Does it need to bypass the permission checks?  Seems very
+fishy to me.
 
-Regards,
- Mika
+Mike?
+
+Miklos
