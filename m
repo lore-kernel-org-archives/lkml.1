@@ -1,101 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935054AbYD1O0W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934682AbYD1O3X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935054AbYD1O0W (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 10:26:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933743AbYD1O0M
+	id S934682AbYD1O3X (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 10:29:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933212AbYD1O3P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 10:26:12 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:33585 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933118AbYD1O0L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 10:26:11 -0400
-Message-ID: <4815DCEF.3000602@redhat.com>
-Date: Mon, 28 Apr 2008 11:19:27 -0300
-From: Glauber Costa <gcosta@redhat.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Sergio Luis <sergio@larces.uece.br>
-CC: Ken Moffat <zarniwhoop@ntlworld.com>,
-       Bart Van Assche <bart.vanassche@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: 2.6.25 slow boot/reboot
-References: <48141111.7010605@larces.uece.br> <e2e108260804270823t45611ec2t35da085833d82dfa@mail.gmail.com> <20080427235554.GA28344@deepthought> <48152747.4030107@larces.uece.br>
-In-Reply-To: <48152747.4030107@larces.uece.br>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 28 Apr 2008 10:29:15 -0400
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:38857 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932830AbYD1O3O (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Apr 2008 10:29:14 -0400
+Subject: Re: [patch] x86, voyager: fix ioremap_nocache()
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Jeff Garzik <jeff@garzik.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+In-Reply-To: <20080428071006.5ce27533@laptopd505.fenrus.org>
+References: <1209329485.3801.46.camel@localhost.localdomain>
+	 <20080427214837.GA11631@elte.hu>
+	 <1209335660.3801.79.camel@localhost.localdomain>
+	 <4815009C.2010809@garzik.org>
+	 <20080428071006.5ce27533@laptopd505.fenrus.org>
+Content-Type: text/plain
+Date: Mon, 28 Apr 2008 10:29:08 -0400
+Message-Id: <1209392948.3367.13.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-4.fc8) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sergio Luis wrote:
-> Ken Moffat wrote:
->> On Sun, Apr 27, 2008 at 05:23:57PM +0200, Bart Van Assche wrote:
->>> On Sun, Apr 27, 2008 at 7:37 AM, Sergio Luis <sergio@larces.uece.br> wrote:
->>>>  This weekend I got some time and decided to try out 2.6.25, but its booting process was _really_ slow in my laptop[1]. With 'old' 2.6.24.5 my machine would take about 48 secs until it gave me the login prompt. And it would take about 22 seconds to reboot.
->>> Do you use LILO or GRUB for booting ? 2.6.25 works OK on the systems I
->>> tested, but LILO really needs a lot of time to load the 2.6.25 kernel.
->>> GRUB loads the 2.6.25 kernel at normal speed.
->>>
->>> Bart.
->>  ISTR that an _old_ version of lilo was mentioned earlier in this
->> thread.  As a datapoint, on my one desktop box which uses lilo (an
->> athlon64 uniprocessor) both 32 and 64-bit 2.6.25 kernels boot fine.
->> Both of those systems are with lilo-22.8, and gcc-4.2.2.
->>
->>  But, I think you (Bart) haven't said which version of lilo you are
->> using ?  If it isn't recent, perhaps upgrading it might help ?
->>
->>  For Sergio, you have my sympathy.  I totally failed to bisect my own
->> problem with 2.6.25-rc (and 2.6.24.1), although I did find the problem
->> by other means, and got a work-around, so I'm not competent to
->> diagnose what is wrong, but maybe I can help to tease out what is
->> different about your box.  As a start, you could try diffing your
->> config's for 2.6.24.5 and 2.6.25 in case something odd has changed.
->>
+On Mon, 2008-04-28 at 07:10 -0700, Arjan van de Ven wrote:
+> On Sun, 27 Apr 2008 18:39:24 -0400
+> Jeff Garzik <jeff@garzik.org> wrote:
 > 
-> I tried bisecting and after some hours I got 
-> 9713277607f9eac7d655c6854dd92bc2ce1b6f02 as first bad commit
+> > James Bottomley wrote:
+> > > Here's another piece of the x86 API that's designed to be cached.
+> > > The dma_declare_coherent_memory() usually represents behind bridge
+> > > memory that's fully participatory in the coherence model.
+> > > 
+> > > Making it uncached damages the utility of this memory because doing
+> > > cacheline sized burst cycles when needed to it is far faster than
+> > > individual byte/word/quad writes.
+> > > 
+> > > Signed-off-by: James Bottomley
+> > > <James.Bottomley@HansenPartnership.com>
+> > > 
+> > > ---
+> > > 
+> > > diff --git a/arch/x86/kernel/pci-dma.c b/arch/x86/kernel/pci-dma.c
+> > > index 388b113..df83ffd 100644
+> > > --- a/arch/x86/kernel/pci-dma.c
+> > > +++ b/arch/x86/kernel/pci-dma.c
+> > > @@ -214,7 +214,7 @@ int dma_declare_coherent_memory(struct device
+> > > *dev, dma_addr_t bus_addr, 
+> > >  	/* FIXME: this routine just ignores
+> > > DMA_MEMORY_INCLUDES_CHILDREN */ 
+> > > -	mem_base = ioremap(bus_addr, size);
+> > > +	mem_base = ioremap_cache(bus_addr, size);
+> > >  	if (!mem_base)
+> > >  		goto out;
 > 
-> commit 9713277607f9eac7d655c6854dd92bc2ce1b6f02
-> Author: Glauber de Oliveira Costa <gcosta@redhat.com>
-> Date:   Wed Mar 19 14:25:43 2008 -0300
-> 
->     x86: boot cpus from cpu_up, instead of prepare_cpus
-> 
->     After all the infrastructure work, we're now prepared
->     to boot the cpus from cpu_up, and not from prepare_cpus.
->     So the difference between cold boot and hotplug is effectively
->     over, and the functions are used to the purposes they're meant to.
-> 
->     Signed-off-by: Glauber Costa <gcosta@redhat.com>
->     Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> 
-> (cc'ing Glauber and Ingo, maybe they can help)
-> 
->>  Or, perhaps this is a problem specific to a certain processor ?  So
->> far, I think all the list knows is that you have a problem, and an
->> old version of lilo.  More data might eventually help to identify
->> what is causing this.  If you have a fairly old version of lilo,
->> maybe you also have an old version of gcc ?
-> 
-> lilo version is 22.8
-> gcc version is 4.1.2
-> the processor is an amd turion 64x2 2.0 ghz (tl-60) and I am building a 32bit kernel.
-> please, let me know if more info is needed.
-> 
->>  For Bart too, which version(s) of gcc are you using on the systems
->> where lilo is slow to load, and which cpu(s) do you have there ?
->>
->> Ken, who relies on lilo for his server, and gets worried by reports
->> of trouble with it.
-> 
-> note lilo is indeed much slower than grub to start booting the kernel here, but I am 
-> talking about this 2.6.25 kernel taking almost 5 min to finish the boot process (once it is
-> actually started by the bootloader) when it would take less than 1 minute with 2.6.24.5 in
-> this same machine.
-> 
-> thanks,
-Can you give me more information on that?
-your .config and cpuinfo would be a great start.
+> this patch patch is likely broken on x86; or rather, anyone who uses it is...
+> thinking you can find cache coherent memory on a PCI or similar bus that is actually
+> cachable... keep dreaming. (for now; there's talk about extending PCI)
 
-I'm specially interested in things involving APIC.
+No ... it works for me, and caching is a performance advantage for me
+too.  The only current consumer of this API is the NCR_Q720 SCSI card
+which keeps a bunch of cacheable memory remote across the MCA bus.
+
+If you think about it logically, most busses are second citizens in the
+caching hierarchy: they really only get to force a flush and invalidate
+of the CPU cache line rather than being fully participatory in the
+coherence protocol.  However, even being second class is enough of a
+speed up on slow busses because it allows bursting of the cache line for
+the bus transfers.
+
+The other consumers are SoC embedded ... so yes, perhaps I should ask
+about this on linux-arch.
+
+James
+
+
