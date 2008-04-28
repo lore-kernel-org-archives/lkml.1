@@ -1,51 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965059AbYD1QAF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935766AbYD1QAz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965059AbYD1QAF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 12:00:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934142AbYD1P7x
+	id S935766AbYD1QAz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 12:00:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934142AbYD1QAq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 11:59:53 -0400
-Received: from www.tglx.de ([62.245.132.106]:35662 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933622AbYD1P7w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 11:59:52 -0400
-Date: Mon, 28 Apr 2008 17:58:44 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Alexander van Heukelum <heukelum@fastmail.fm>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Harvey Harrison <harvey.harrison@gmail.com>,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, David Miller <davem@davemloft.net>
-Subject: Re: [PATCH] bitops: simplify generic bit finding functions
-In-Reply-To: <1209395443.25700.1250273669@webmail.messagingengine.com>
-Message-ID: <alpine.LFD.1.10.0804281757340.3261@apollo.tec.linutronix.de>
-References: <1209327591.14173.74.camel@brick>   <alpine.LFD.1.10.0804271325350.3119@woody.linux-foundation.org>   <alpine.LFD.1.10.0804281534530.3261@apollo.tec.linutronix.de> <1209395443.25700.1250273669@webmail.messagingengine.com>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Mon, 28 Apr 2008 12:00:46 -0400
+Received: from wr-out-0506.google.com ([64.233.184.230]:36630 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934136AbYD1QAp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Apr 2008 12:00:45 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:organization:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=etBxdGeFMvkj1wx9dPJjoA8rx+pQ77JlJ6p70163gEErZFqlrCTL1Q+/1JUdN4+E5NtJ86SN6z8pIIDZgE2mJJzWgP76cTY5p6BRkXeoCS4iPrj2gyUA65zZ4SfvRKJGVDzJjxUsAmHij4Voa+uEEhc+dgvcoluYZm6gUJywR1o=
+From: Balaji Rao <balajirrao@gmail.com>
+Organization: National Institute of Technology Karnataka
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [RFC][-mm] [2/2] Simple stats for memory resource controller
+Date: Mon, 28 Apr 2008 21:30:29 +0530
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, containers@lists.osdl.org, menage@google.com,
+       balbir@in.ibm.com, dhaval@linux.vnet.ibm.com
+References: <200804052340.02386.balajirrao@gmail.com> <48036CB4.5050700@linux.vnet.ibm.com>
+In-Reply-To: <48036CB4.5050700@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200804282130.30188.balajirrao@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 28 Apr 2008, Alexander van Heukelum wrote:
-> > See patch below. It gives back the 1400 bytes on SPARC64 and other
-> > platforms that have no instruction for find bit.
+On Monday 14 April 2008 08:09:48 pm Balbir Singh wrote:
+> Balaji Rao wrote:
+> > This patch implements trivial statistics for the memory resource controller.
+> > 
+> > Signed-off-by: Balaji Rao <balajirrao@gmail.com>
+> > CC: Balbir Singh <balbir@linux.vnet.ibm.com>
+> > CC: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+> > 
+> > diff --git a/mm/memcontrol.c b/mm/memcontrol.c
+> > index a860765..ca98b21 100644
+> > --- a/mm/memcontrol.c
+> > +++ b/mm/memcontrol.c
+> > @@ -47,6 +47,8 @@ enum mem_cgroup_stat_index {
+> >  	 */
+> >  	MEM_CGROUP_STAT_CACHE, 	   /* # of pages charged as cache */
+> >  	MEM_CGROUP_STAT_RSS,	   /* # of pages charged as rss */
+> > +	MEM_CGROUP_STAT_PGPGIN_COUNT,	/* # of pages paged in */
+> > +	MEM_CGROUP_STAT_PGPGOUT_COUNT,	/* # of pages paged out */
+> > 
+> >  	MEM_CGROUP_STAT_NSTATS,
+> >  };
+> > @@ -198,6 +200,13 @@ static void mem_cgroup_charge_statistics(struct mem_cgroup *mem, int flags,
+> >  		__mem_cgroup_stat_add_safe(stat, MEM_CGROUP_STAT_CACHE, val);
+> >  	else
+> >  		__mem_cgroup_stat_add_safe(stat, MEM_CGROUP_STAT_RSS, val);
+> > +
+> > +	if (charge)
+> > +		__mem_cgroup_stat_add_safe(stat,
+> > +				MEM_CGROUP_STAT_PGPGIN_COUNT, 1);
+> > +	else
+> > +		__mem_cgroup_stat_add_safe(stat,
+> > +				MEM_CGROUP_STAT_PGPGOUT_COUNT, 1);
+> >  }
+> > 
+> >  static struct mem_cgroup_per_zone *
+> > @@ -897,6 +906,8 @@ static const struct mem_cgroup_stat_desc {
+> >  } mem_cgroup_stat_desc[] = {
+> >  	[MEM_CGROUP_STAT_CACHE] = { "cache", PAGE_SIZE, },
+> >  	[MEM_CGROUP_STAT_RSS] = { "rss", PAGE_SIZE, },
+> > +	[MEM_CGROUP_STAT_PGPGIN_COUNT] = {"pgpgin", 1, },
+> > +	[MEM_CGROUP_STAT_PGPGOUT_COUNT] = {"pgpgout", 1, },
+> >  };
+> > 
+> >  static int mem_control_stat_show(struct cgroup *cont, struct cftype *cft,
+> > 
 > 
-> Hi,
+> Acked-by: Balbir Singh <balbir@linux.vnet.ibm.com>
 > 
-> I, personally, see this patch as a stopgap measure. The real problem
-> is that the generic __ffs is inlined and ends up generating a lot
-> of instructions.
+> Hi, Andrew,
 > 
-> Until the generic implementation of __ffs is fixed not to be an
-> enormous inline function, this seems to be a reasonable thing
-> to do, though it's a shame that the optimization is now default-
-> off for architectures with a good implementation of __ffs.
+> Could you please include these statistics in -mm.
+> 
+> Balbir
+> 
+> 
+Hi Andrew,
 
-Yup, it hasn't been there before and we explicitely enable it on
-x86. If there are other archs which have a good one it's a nobrainer
-to enable it.
+Now that Balbir Singh has ACKed it, could you please include it in -mm ?
 
-Thanks,
-	tglx
+-- 
+Warm Regards,
 
+Balaji Rao
+Dept. of Mechanical Engineering
+NITK
