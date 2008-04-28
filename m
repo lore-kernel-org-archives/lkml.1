@@ -1,46 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764112AbYD1B7v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764246AbYD1CHr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764112AbYD1B7v (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Apr 2008 21:59:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755205AbYD1B7n
+	id S1764246AbYD1CHr (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Apr 2008 22:07:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753547AbYD1CHh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Apr 2008 21:59:43 -0400
-Received: from nschwqsrv02p.mx.bigpond.com ([61.9.189.234]:26582 "EHLO
-	nschwqsrv02p.mx.bigpond.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753767AbYD1B7m (ORCPT
+	Sun, 27 Apr 2008 22:07:37 -0400
+Received: from nf-out-0910.google.com ([64.233.182.191]:30301 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752130AbYD1CHg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Apr 2008 21:59:42 -0400
-Date: Mon, 28 Apr 2008 08:25:17 +0930
-From: Alan Modra <amodra@bigpond.net.au>
-To: Jesper Juhl <jesper.juhl@gmail.com>
-Cc: binutils@sourceware.org, linux-kernel@vger.kernel.org,
-       "Patrick J. Volkerding" <volkerdi@slackware.com>
-Subject: Re: ld: <...> internal error, aborting at arange-set.c line 202 in arange_set_new
-Message-ID: <20080427225517.GA10190@bubble.grove.modra.org>
-Mail-Followup-To: Jesper Juhl <jesper.juhl@gmail.com>,
-	binutils@sourceware.org, linux-kernel@vger.kernel.org,
-	"Patrick J. Volkerding" <volkerdi@slackware.com>
-References: <alpine.LNX.1.00.0804272326320.14738@dragon.funnycrock.com>
-Mime-Version: 1.0
+	Sun, 27 Apr 2008 22:07:36 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
+        b=rLjjpBvNbT/lc5BZw9X+XaYGo2b3wZqrCce1VYzHQ8stTV3vjFC8jbetZknlinwKupNMqx08HjngPJnvVxK767NGqPDctN6L2T2vvuMFaplWXh9ElS8zN2QFVeigNxaLlbYUHPxgBP3/p6mGSvLl84mWSR5/VMps47IddTkZ0I4=
+Date: Mon, 28 Apr 2008 10:08:18 +0800
+From: Dave Young <hidave.darkstar@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: jens.axboe@oracle.com
+Subject: [PATCH 1/2] loop : change lo_refcnt from int to atomic_t
+Message-ID: <20080428020818.GA2698@darkstar.te-china.tietoenator.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LNX.1.00.0804272326320.14738@dragon.funnycrock.com>
-User-Agent: Mutt/1.5.9i
-X-RPD-ScanID: Class unknown; VirusThreatLevel unknown, RefID str=0001.0A150204.48150456.005D,ss=1,fgs=0
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Apr 27, 2008 at 11:35:23PM +0200, Jesper Juhl wrote:
-> ld: size of bfd_vma > size of splay_tree types
-> ld: BFD (Linux/GNU Binutils) 2.18.50.0.4.20080208 internal error, aborting 
-> at arange-set.c line 202 in arange_set_new
+It's not necessary to use lo_ctl_mutex to lock lo_refcnt. 
 
-This was fixed in current CVS by
-http://sourceware.org/ml/binutils-cvs/2008-02/msg00052.html
+So here use atomic_t instead of int for lo_refcnt and leave lo_ctl_mutex just
+for ioctl use.
 
-One workaround is to build binutils on a 64-bit host.
+Signed-off-by: Dave Young <hidave.darkstar@gmail.com>
 
--- 
-Alan Modra
-Australia Development Lab, IBM
+---
+drivers/block/loop.c |   12 +++++-------
+include/linux/loop.h |    2 +-
+2 files changed, 6 insertions(+), 8 deletions(-)
+
+diff -upr linux/drivers/block/loop.c linux.new/drivers/block/loop.c
+--- linux/drivers/block/loop.c	2008-04-25 10:10:25.000000000 +0800
++++ linux.new/drivers/block/loop.c	2008-04-25 10:30:54.000000000 +0800
+@@ -891,7 +891,7 @@ static int loop_clr_fd(struct loop_devic
+ 	if (lo->lo_state != Lo_bound)
+ 		return -ENXIO;
+ 
+-	if (lo->lo_refcnt > 1)	/* we needed one fd for the ioctl */
++	if (atomic_read(&lo->lo_refcnt) > 1)/* we needed one fd for the ioctl */
+ 		return -EBUSY;
+ 
+ 	if (filp == NULL)
+@@ -1331,9 +1331,7 @@ static int lo_open(struct inode *inode, 
+ {
+ 	struct loop_device *lo = inode->i_bdev->bd_disk->private_data;
+ 
+-	mutex_lock(&lo->lo_ctl_mutex);
+-	lo->lo_refcnt++;
+-	mutex_unlock(&lo->lo_ctl_mutex);
++	atomic_inc(&lo->lo_refcnt);
+ 
+ 	return 0;
+ }
+@@ -1342,10 +1340,10 @@ static int lo_release(struct inode *inod
+ {
+ 	struct loop_device *lo = inode->i_bdev->bd_disk->private_data;
+ 
+-	mutex_lock(&lo->lo_ctl_mutex);
+-	--lo->lo_refcnt;
++	atomic_dec(&lo->lo_refcnt);
+ 
+-	if ((lo->lo_flags & LO_FLAGS_AUTOCLEAR) && !lo->lo_refcnt)
++	mutex_lock(&lo->lo_ctl_mutex);
++	if ((lo->lo_flags & LO_FLAGS_AUTOCLEAR) && !atomic_read(&lo->lo_refcnt))
+ 		loop_clr_fd(lo, inode->i_bdev);
+ 
+ 	mutex_unlock(&lo->lo_ctl_mutex);
+diff -upr linux/include/linux/loop.h linux.new/include/linux/loop.h
+--- linux/include/linux/loop.h	2008-04-25 10:31:23.000000000 +0800
++++ linux.new/include/linux/loop.h	2008-04-25 10:31:34.000000000 +0800
+@@ -30,7 +30,7 @@ struct loop_func_table;
+ 
+ struct loop_device {
+ 	int		lo_number;
+-	int		lo_refcnt;
++	atomic_t	lo_refcnt;
+ 	loff_t		lo_offset;
+ 	loff_t		lo_sizelimit;
+ 	int		lo_flags;
