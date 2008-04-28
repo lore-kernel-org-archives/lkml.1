@@ -1,77 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935448AbYD1PNP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935502AbYD1POG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935448AbYD1PNP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 11:13:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933608AbYD1PM6
+	id S935502AbYD1POG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 11:14:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934178AbYD1PNu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 11:12:58 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:49925 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933684AbYD1PM5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 11:12:57 -0400
-To: jblunck@suse.de
-CC: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-In-reply-to: <fv425u$n77$1@ger.gmane.org> (message from Jan Blunck on Mon, 28
-	Apr 2008 08:34:06 +0000 (UTC))
-Subject: Re: [patch 3/5] fuse: fix race in llseek
-References: <20080425175520.735386844@szeredi.hu>
-	<20080425175657.912755144@szeredi.hu> <fv425u$n77$1@ger.gmane.org>
-Message-Id: <E1JqV2D-0004vS-Ny@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Mon, 28 Apr 2008 17:12:53 +0200
+	Mon, 28 Apr 2008 11:13:50 -0400
+Received: from rtr.ca ([76.10.145.34]:4996 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932198AbYD1PNt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Apr 2008 11:13:49 -0400
+Message-ID: <4815E9AD.50601@rtr.ca>
+Date: Mon, 28 Apr 2008 11:13:49 -0400
+From: Mark Lord <lkml@rtr.ca>
+Organization: Real-Time Remedies Inc.
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+MIME-Version: 1.0
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Jens Axboe <jens.axboe@oracle.com>, linux-arch@vger.kernel.org,
+       linux-kernel@vger.kernel.org, npiggin@suse.de,
+       torvalds@linux-foundation.org
+Subject: Re: [PATCH 1/11] Add generic helpers for arch IPI function calls
+References: <1208851058-8500-1-git-send-email-jens.axboe@oracle.com> <1208851058-8500-2-git-send-email-jens.axboe@oracle.com> <480E70ED.3030701@rtr.ca> <20080423072432.GX12774@kernel.dk> <480F3CBC.60305@rtr.ca> <20080423135110.GO12774@kernel.dk> <480F4BD9.8090003@rtr.ca> <20080424105908.GW12774@kernel.dk> <20080426080415.GB3891@ucw.cz>
+In-Reply-To: <20080426080415.GB3891@ucw.cz>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > From: Miklos Szeredi <mszeredi@suse.cz>
-> > 
-> > Fuse doesn't use i_mutex to protect setting i_size, and so
-> > generic_file_llseek() can be racy: it doesn't use i_size_read().
-> > 
-> > So do a fuse specific llseek method, which does use i_size_read().
-> > 
+Pavel Machek wrote:
+> Hi!
 > 
-> Is there any specific reason why we don't use i_size_read() in 
-> generic_file_llseek()?
+>>>>> The second bug, is that for the halt case at least,
+>>>>> nobody waits for the other CPU to actually halt
+>>>>> before continuing.. so we sometimes enter the shutdown
+>>>>> code while other CPUs are still active.
+>>>>>
+>>>>> This causes some machines to hang at shutdown,
+>>>>> unless CPU_HOTPLUG is configured and takes them offline
+>>>>> before we get here.
+>>>> I'm guessing there's a reason it doesn't pass '1' as the last argument,
+>>>> because that would fix that issue?
+>>> Undoubtedly -- perhaps the called CPU halts, and therefore cannot reply.  :)
+>> Uhm yes, I guess stop_this_cpu() does exactly what the name implies :-)
+>>
+>>> But some kind of pre-halt ack, perhaps plus a short delay by the caller
+>>> after receipt of the ack, would probably suffice to kill that bug.
+>>>
+>>> But I really haven't studied this code enough to know,
+>>> other than that it historically has been a sticky area
+>>> to poke around in.
+>> Something like this will close the window to right up until the point
+>> where the other CPUs have 'almost' called halt().
+> 
+> Now I took a look at context... why not simply use same trick swsusp
+> uses, and do a hot unplug of all cpus at the end of shutdown?
+..
 
-Just to save some cycles on 32bit archs.  Considering that
-lseek(SEEK_END) isn't a very performance sensitive operation...
+That's the current existing workaround for this bug,
+but not everybody has cpu hotplug in their config,
+and this bug should still get fixed.
 
-> If no, why don't you fix it instead?
-
-...we could do that.  Does anybody object?
-
-Miklos
-----
-
-
-Some filesystems (e.g. fuse) don't use i_mutex to protect setting
-i_size, and so generic_file_llseek() can be racy.
-
-Since lseek(SEEK_END) isn't a very performance sensitive operation, do
-this in generic_file_llseek(), instead of requiring such filesystems
-to duplicate this function.
-
-Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
----
- fs/read_write.c |    6 +++++-
- 1 file changed, 5 insertions(+), 1 deletion(-)
-
-Index: linux/fs/read_write.c
-===================================================================
---- linux.orig/fs/read_write.c	2008-04-17 04:49:44.000000000 +0200
-+++ linux/fs/read_write.c	2008-04-28 17:08:25.000000000 +0200
-@@ -39,7 +39,11 @@ loff_t generic_file_llseek(struct file *
- 	mutex_lock(&inode->i_mutex);
- 	switch (origin) {
- 		case SEEK_END:
--			offset += inode->i_size;
-+			/*
-+			 * Some filesystems use a different lock as i_mutex
-+			 * to protect writing i_size
-+			 */
-+			offset += i_size_read(inode);
- 			break;
- 		case SEEK_CUR:
- 			offset += file->f_pos;
+Cheers
