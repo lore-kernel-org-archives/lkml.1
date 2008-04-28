@@ -1,63 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936189AbYD1Q7z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965463AbYD1RAa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936189AbYD1Q7z (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 12:59:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933408AbYD1Q7r
+	id S965463AbYD1RAa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 13:00:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935959AbYD1RAH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 12:59:47 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:60076 "EHLO
+	Mon, 28 Apr 2008 13:00:07 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:58525 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S934185AbYD1Q7q (ORCPT
+	by vger.kernel.org with ESMTP id S933408AbYD1RAD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 12:59:46 -0400
-Date: Mon, 28 Apr 2008 09:58:29 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Adrian Bunk <bunk@kernel.org>
-cc: Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Alexander van Heukelum <heukelum@mailshack.com>, jdike@addtoit.com
-Subject: Re: [2.6 patch] fs/buffer.c:init_buffer() mustn't be inline
-In-Reply-To: <20080428164807.GW2813@cs181133002.pp.htv.fi>
-Message-ID: <alpine.LFD.1.10.0804280955120.3119@woody.linux-foundation.org>
-References: <20080424215739.GA32378@elte.hu> <alpine.LFD.1.10.0804241510420.2779@woody.linux-foundation.org> <20080426151516.GA27894@elte.hu> <alpine.LFD.1.10.0804260955300.2813@woody.linux-foundation.org> <20080426172222.GD17345@elte.hu>
- <20080428153829.GB2813@cs181133002.pp.htv.fi> <alpine.LFD.1.10.0804280901130.3119@woody.linux-foundation.org> <20080428164807.GW2813@cs181133002.pp.htv.fi>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 28 Apr 2008 13:00:03 -0400
+Date: Mon, 28 Apr 2008 09:59:24 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, bzolnier@gmail.com
+Subject: Re: 2.6.25-mm1: Failing to probe IDE interface
+Message-Id: <20080428095924.3b7dfb96.akpm@linux-foundation.org>
+In-Reply-To: <20080428164235.GA29229@csn.ul.ie>
+References: <20080417160331.b4729f0c.akpm@linux-foundation.org>
+	<20080428164235.GA29229@csn.ul.ie>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 28 Apr 2008 17:42:36 +0100 Mel Gorman <mel@csn.ul.ie> wrote:
 
-
-On Mon, 28 Apr 2008, Adrian Bunk wrote:
-> > 
-> > Can somebody tell why this is not a gcc bug?
+> An old T21 is failing to boot and the relevant message appears to be
 > 
-> It is a gcc bug.
+> [    1.929536] Probing IDE interface ide0...
+> [   36.939317] ide0: Wait for ready failed before probe !
+> [   37.502676] ide0: DISABLED, NO IRQ
+> [   37.506356] ide0: failed to initialize IDE interface
 > 
-> But having a global function marked as extern was already questionable, 
-> and all assumptions an "inline" would always inline the code are anyway 
-> now broken in your tree.
-> 
-> So let's work around a gcc bug by fixing the kernel...
+> The owner of ide-mm-ide-add-struct-ide_io_ports-take-2.patch with the
+> "DISABLED, NO IRQ" message is cc'd. I've attached the config, full boot log
+> and lspci -v for the machine in question. I'll start reverting some of the
+> these patches to see if ide-mm-ide-add-struct-ide_io_ports-take-2.patch
+> is really the culprit.
 
-But when doing this, MARK IT LOUDLY AS A GCC BUG!
+ide-mm-ide-add-struct-ide_io_ports-take-2.patch is now in mainline so a
+quicky confirmation would be to test Linus's tree.
 
-The thing is, reading that log message, it was not at all clear why that 
-change was made. Please make it clear why, rather than quoting a totally 
-useless error message that doesn't actually tell what is going on.
-
-I agree that having work-arounds for compiler bugs is worth it (assuming 
-the version is common enough to worry about), but I also don't want to 
-have unexplained commits doing something that on the face of it is just 
-odd
-
-Put another way: looking at the actual diff and looking at the commit 
-message, the only sane reaction from somebody who knows the code is: 
-"Whaa? WTF?". Saying "This is a gcc bug" would have turned that "WTF?" 
-into a "Oh, ok then".
-
-			Linus
