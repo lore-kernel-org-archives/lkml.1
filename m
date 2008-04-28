@@ -1,72 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932260AbYD1KVZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932410AbYD1K37@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932260AbYD1KVZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 06:21:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752963AbYD1KVN
+	id S932410AbYD1K37 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 06:29:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755202AbYD1K3q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 06:21:13 -0400
-Received: from bay0-omc2-s7.bay0.hotmail.com ([65.54.246.143]:8784 "EHLO
-	bay0-omc2-s7.bay0.hotmail.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752618AbYD1KVM (ORCPT
+	Mon, 28 Apr 2008 06:29:46 -0400
+Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:37711 "EHLO
+	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753977AbYD1K3p (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 06:21:12 -0400
-Message-ID: <BAY103-DAV16C270BEEB34A42A676B1B2DE0@phx.gbl>
-X-Originating-IP: [80.204.235.254]
-X-Originating-Email: [pupilla@hotmail.com]
-From: "Marco Berizzi" <pupilla@hotmail.com>
-To: "David Miller" <davem@davemloft.net>
-Cc: <linux-kernel@vger.kernel.org>, <netdev@vger.kernel.org>,
-       "Marco Berizzi" <pupilla@hotmail.com>
-References: <BAY103-DAV11F874912A45144805FC26B2DE0@phx.gbl> <20080428.024208.153440332.davem@davemloft.net>
-Subject: Re: 2.6.25 crash: EIP: [<c02e2f14>] xfrm_output_resume+0x64/0x100 ss:esp 0068:c03a1e5c
-Date: Mon, 28 Apr 2008 12:18:59 +0200
-X-Priority: 3
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook Express 6.00.2800.1123
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2800.1123
-X-OriginalArrivalTime: 28 Apr 2008 10:21:11.0918 (UTC) FILETIME=[950098E0:01C8A919]
+	Mon, 28 Apr 2008 06:29:45 -0400
+To: "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>,
+       "xfs@oss.sgi.com" <xfs@oss.sgi.com>,
+       "dm-devel@redhat.com" <dm-devel@redhat.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: [RFC PATCH 0/3] freeze feature ver 1.2
+Message-Id: <20080428192920t-sato@mail.jp.nec.com>
+Mime-Version: 1.0
+X-Mailer: WeMail32[2.51] ID:1K0086
+From: Takashi Sato <t-sato@yk.jp.nec.com>
+Date: Mon, 28 Apr 2008 19:29:20 +0900
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller wrote:
+Hi,
 
-> Netdev added to CC:, please include in all bug reports as
-> that's where the networking developers sit.
+I have re-based my freeze patches from linux-2.6.25-rc7 to
+linux-2.6.25.
+There is no functional change from the previous version.
+The patch-set consists of the following three patches.
 
-ok.
-Two different systems have crashed since
-2.6.25 upgrade (I upgraded a total of 8
-systems).
+[PATCH 1/3] Implement generic freeze feature
+  The ioctls for the generic freeze feature are below.
+  o Freeze the filesystem
+    int ioctl(int fd, int FIFREEZE, arg)
+      fd: The file descriptor of the mountpoint
+      FIFREEZE: request code for the freeze
+      arg: Ignored
+      Return value: 0 if the operation succeeds. Otherwise, -1
 
-For now, the only two boxes that crashed
-have these modules loaded (where the other
-systems doesn't have these modules loaded):
+  o Unfreeze the filesystem
+    int ioctl(int fd, int FITHAW, arg)
+      fd: The file descriptor of the mountpoint
+      FITHAW: request code for unfreeze
+      arg: Ignored
+      Return value: 0 if the operation succeeds. Otherwise, -1
 
-sch_sfq 6088 3
-sch_htb 15208 1
-cls_fw 3848 1
+[PATCH 2/3] Remove XFS specific ioctl interfaces for freeze feature
+  It removes XFS specific ioctl interfaces and request codes
+  for freeze feature.
+  This patch has been supplied by David Chinner.
 
-Here is the script for setup htb (which classify
-traffic inside the ipsec tunnels):
+[PATCH 3/3] Add timeout feature
+  The timeout feature is added to freeze ioctl.  And new ioctl
+  to reset the timeout period is added.
+  o Freeze the filesystem
+    int ioctl(int fd, int FIFREEZE, long *timeval)
+    fd: The file descriptor of the mountpoint
+    FIFREEZE: request code for the freeze
+    timeval: the timeout period in seconds
+             If it's 0 or 1, the timeout isn't set.
+             This special case of "1" is implemented to keep
+             the compatibility with XFS applications.
+    Return value: 0 if the operation succeeds. Otherwise, -1
 
-tc qdisc add dev eth0 root handle 1:0 htb default 11
+  o Reset the timeout period
+    This is useful for the application to set the timeval more accurately.
+    For example, the freezer resets the timeval to 10 seconds every 5
+    seconds.  In this approach, even if the freezer causes a deadlock
+    by accessing the frozen filesystem, it will be solved by the timeout
+    in 10 seconds and the freezer can recognize that at the next reset
+    of timeval.
+    int ioctl(int fd, int FIFREEZE_RESET_TIMEOUT, long *timeval)
+      fd:file descriptor of mountpoint
+      FIFREEZE_RESET_TIMEOUT: request code for reset of timeout period
+      timeval: new timeout period in seconds
+      Return value: 0 if the operation succeeds. Otherwise, -1
+      Error number: If the filesystem has already been unfrozen,
+                    errno is set to EINVAL.
 
-tc class add dev eth0 parent 1:0 classid 1:1 htb rate 1700kbit ceil
-1700kbit burst 15k
-tc class add dev eth0 parent 1:1 classid 1:10 htb rate 200kbit ceil
-400kbit burst 5k
-tc class add dev eth0 parent 1:1 classid 1:11 htb rate 600kbit ceil
-1600kbit burst 5k
-tc class add dev eth0 parent 1:1 classid 1:12 htb rate 800kbit ceil
-1700kbit burst 15k
-tc qdisc add dev eth0 parent 1:10 handle 10:0 sfq perturb 10
-tc qdisc add dev eth0 parent 1:11 handle 20:0 sfq perturb 5
-tc qdisc add dev eth0 parent 1:12 handle 30:0 sfq perturb 10
+Any comments are very welcome.
 
-FW="tc filter add dev eth0 protocol ip parent 1:0 prio 1"
-$FW handle 110 fw flowid 1:10
-$FW handle 111 fw flowid 1:11
-$FW handle 112 fw flowid 1:12
-
-
+Cheers, Takashi
