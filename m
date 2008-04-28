@@ -1,63 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764435AbYD0X6T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763661AbYD1AB1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764435AbYD0X6T (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Apr 2008 19:58:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754661AbYD0X6L
+	id S1763661AbYD1AB1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Apr 2008 20:01:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753553AbYD1ABT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Apr 2008 19:58:11 -0400
-Received: from fg-out-1718.google.com ([72.14.220.159]:44252 "EHLO
+	Sun, 27 Apr 2008 20:01:19 -0400
+Received: from fg-out-1718.google.com ([72.14.220.157]:50196 "EHLO
 	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752937AbYD0X6K (ORCPT
+	with ESMTP id S1752942AbYD1ABT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Apr 2008 19:58:10 -0400
+	Sun, 27 Apr 2008 20:01:19 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=googlemail.com; s=gamma;
         h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=C+7Xz7vBKxyPuU7WEMe9vHbr9lwp1/At0RE4Ysl0pU0vLEIUbPW2h9+vZTj34quhZ536hUl6g1+H/Idu22oQ58o603RAT0UQ4K2Oo4OqBVRQW52S8hT9EqmNgMHqyvkESRViXszR0v+hgeSKTB/hvr2DcXFYMxJwiRljHcf/2G4=
+        b=YEchaS8BXaaiuMSKU+UR2LP/wpXUS3AoNaFlNG33pKRuURftkV7f9wPHx5VydSwJ087LH+4ERj+6wNVAqiMrPn8SXD0UUWuAl6mqYsKwCKO2waX8u3LhAQ/e7OZF9A3ivJ7oTYNx2W3L4SlgaI+qiOZFBkQo8wsbULj1O2n/8Us=
 From: Denys Vlasenko <vda.linux@googlemail.com>
-To: David Chinner <dgc@sgi.com>
-Subject: Re: [PATCH] xfs: reduce stack usage in xfs_bmap_btalloc()
-Date: Mon, 28 Apr 2008 01:57:12 +0200
+To: Eric Sandeen <sandeen@sandeen.net>
+Subject: Re: x86: 4kstacks default
+Date: Mon, 28 Apr 2008 02:00:20 +0200
 User-Agent: KMail/1.8.2
-Cc: xfs@oss.sgi.com, Eric Sandeen <sandeen@sandeen.net>,
-       Adrian Bunk <bunk@kernel.org>, linux-kernel@vger.kernel.org
-References: <200804261651.02078.vda.linux@googlemail.com> <20080427234056.GA108924158@sgi.com>
-In-Reply-To: <20080427234056.GA108924158@sgi.com>
+Cc: =?utf-8?q?J=C3=B6rn_Engel?= <joern@logfs.org>, David Chinner <dgc@sgi.com>,
+       Adrian Bunk <bunk@kernel.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Shawn Bohrer <shawn.bohrer@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+References: <20080419142329.GA5339@elte.hu> <200804280102.01964.vda.linux@googlemail.com> <48150776.4080409@sandeen.net>
+In-Reply-To: <48150776.4080409@sandeen.net>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200804280157.12736.vda.linux@googlemail.com>
+Message-Id: <200804280200.20818.vda.linux@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 28 April 2008 01:40, David Chinner wrote:
-> On Sat, Apr 26, 2008 at 04:51:02PM +0200, Denys Vlasenko wrote:
-> > Hi David,
+On Monday 28 April 2008 01:08, Eric Sandeen wrote:
+> >>>> Why xfs code is said to be 5 times bigger than e.g. reiserfs?
+> >>>> Does it have to be that big?
+> >>> If we cut the bulkstat code out, the handle interface, the
+> >>> preallocation, the journalled quota, the delayed allocation, all the
+> >>> runtime validation, the shutdown code, the debug code, the tracing
+> >>> code, etc, then we might get down to the same size reiser....
+> >> Just noticed this bit of FUD. Last time I did some static analysis on
+> >> stack usage, reiserfs alone would blow away 3k, while xfs was somewhere
+> >> below.
 > > 
-> > This patch reduces xfs_bmap_btalloc() stack usage by 50 bytes
-> > by moving part of its body into a helper function.
+> > I'm sorry, but it's not what I said.
+> > I didn't say reiserfs eats less stack. I don't know.
+> > I said it is smaller.
+> > 
+> > reiserfs/*  821474 bytes
+> > xfs/*      3019689 bytes
 > 
-> Can you please attach your patches inline, Denys (see
-> Documentation/SubmittingPatches)?
+> FWIW, the reason for that is in large part all the features Dave listed
+> above, and probably more.
+> 
+> And, while certainly not yet tiny, the recent trend actually is that xfs
+> is getting a bit smaller:
+> 
+> http://oss.sgi.com/~sandeen/xfs-linedata.png
 
-I can, but Kmail is notorious for mangling them :(
-
-Is it ok if I will paste them inline AND attach them too,
-so that you get guaranteed-nonmangled one in attachment?
-
-> I have a set of patches that introduces new functionality into the
-> allocator (dynamic allocation policies) that reduces
-> xfs_bmap_btalloc() function by 36 bytes (just by chance, I didn't
-> design it for this purpose). It breaks it down on functional
-> boundaries like Christoph's patch. I'm going to revist that patch
-> w.r.t both these patches and see what falls out the bottom...
-
-Nice to know that.
-
-Can you point me to svn/CVS/git/whatever which holds latest xfs
-devel tree?
+~30% line count reduction? Impressive, especially in this age
+of creeping bloat. Thanks.
 --
 vda
