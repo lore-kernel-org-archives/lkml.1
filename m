@@ -1,103 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932666AbYD1ILo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932705AbYD1IOF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932666AbYD1ILo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 04:11:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765673AbYD1ILd
+	id S932705AbYD1IOF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 04:14:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765668AbYD1INv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 04:11:33 -0400
-Received: from mtagate1.de.ibm.com ([195.212.29.150]:24719 "EHLO
-	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765216AbYD1ILc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 04:11:32 -0400
-Date: Mon, 28 Apr 2008 10:11:29 +0200
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Gautham R Shenoy <ego@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Paul Jackson <pj@sgi.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] sched: missing locking in sched_domains code
-Message-ID: <20080428081129.GC4507@osiris.boeblingen.de.ibm.com>
-References: <20080427211224.GA21830@osiris.boeblingen.de.ibm.com> <20080427183926.acb66fff.akpm@linux-foundation.org> <20080428070946.GA4507@osiris.boeblingen.de.ibm.com> <20080428002853.1693e7fd.akpm@linux-foundation.org> <20080428075253.GB4507@osiris.boeblingen.de.ibm.com>
+	Mon, 28 Apr 2008 04:13:51 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:46708 "EHLO smtp4.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750898AbYD1INu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Apr 2008 04:13:50 -0400
+Date: Mon, 28 Apr 2008 11:13:19 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: David Miller <davem@davemloft.net>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Kconfig 'depend' vs. 'select'
+Message-ID: <20080428081319.GC16379@cs181133002.pp.htv.fi>
+References: <20080427.174536.62560212.davem@davemloft.net> <20080428063953.GA2088@cs181133002.pp.htv.fi> <20080427.234221.40346351.davem@davemloft.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20080428075253.GB4507@osiris.boeblingen.de.ibm.com>
+In-Reply-To: <20080427.234221.40346351.davem@davemloft.net>
 User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Subject: [PATCH] sched: fix locking in arch_reinit_sched_domains
+On Sun, Apr 27, 2008 at 11:42:21PM -0700, David Miller wrote:
+> From: Adrian Bunk <bunk@kernel.org>
+> Date: Mon, 28 Apr 2008 09:39:54 +0300
+> 
+> > On Sun, Apr 27, 2008 at 05:45:36PM -0700, David Miller wrote:
+> > > 
+> > > I'm trying to stir up interest in solving a problem that seems to pop
+> > > up frequently. :)
+> > > 
+> > > The short story is:
+> > > 
+> > > 1) If you say your driver "depend"s on a subsystem providing a set of
+> > >    interfaces you need, this doesn't work properly if your driver is
+> > >    marked built-in and that subsystem you need is modular for some
+> > >    reason.
+> > >...
+> > 
+> > This should work.
+> 
+> It doesn't.
+> 
+> > Can you give an example of the problem you are thinking of?
+> 
+> We've hit this specifically with the intel iwlwifi wireless drivers
+> over the past week.
 
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
+If you refer to Luca's patch, that's the select problem, not a problem 
+with depends.
 
-Concurrent calls to detach_destroy_domains and arch_init_sched_domains
-were prevented by the old scheduler subsystem cpu hotplug mutex. When
-this got converted to get_online_cpus() the locking got broken.
-Unlike before now several processes can concurrently enter the critical
-sections that were protected by the old lock.
+The only small pitfall with depends I'm aware of is if a bool driver 
+depends on a tristate subsystem (same problem as what I describe below).
 
-So use the already present doms_cur_mutex to protect these sections again.
+> > What about "select"?
+> > 
+> > That's exactly what it's doing.
+> 
+> Select doesn't enable downstream dependencies, it just blindly turns
+> it on, non-modular.  That's not what we want at all.
 
-Cc: Gautham R Shenoy <ego@in.ibm.com>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Paul Jackson <pj@sgi.com>
-Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
----
- kernel/sched.c |   24 ++++++++++++------------
- 1 file changed, 12 insertions(+), 12 deletions(-)
+The non-modular is only true for "bool selects tristate".
 
-Index: linux-2.6/kernel/sched.c
-===================================================================
---- linux-2.6.orig/kernel/sched.c
-+++ linux-2.6/kernel/sched.c
-@@ -311,6 +311,16 @@ static DEFINE_SPINLOCK(task_group_lock);
- /* doms_cur_mutex serializes access to doms_cur[] array */
- static DEFINE_MUTEX(doms_cur_mutex);
- 
-+static inline void lock_doms_cur(void)
-+{
-+	mutex_lock(&doms_cur_mutex);
-+}
-+
-+static inline void unlock_doms_cur(void)
-+{
-+	mutex_unlock(&doms_cur_mutex);
-+}
-+
- #ifdef CONFIG_FAIR_GROUP_SCHED
- #ifdef CONFIG_USER_SCHED
- # define INIT_TASK_GROUP_LOAD	(2*NICE_0_LOAD)
-@@ -358,21 +368,9 @@ static inline void set_task_rq(struct ta
- #endif
- }
- 
--static inline void lock_doms_cur(void)
--{
--	mutex_lock(&doms_cur_mutex);
--}
--
--static inline void unlock_doms_cur(void)
--{
--	mutex_unlock(&doms_cur_mutex);
--}
--
- #else
- 
- static inline void set_task_rq(struct task_struct *p, unsigned int cpu) { }
--static inline void lock_doms_cur(void) { }
--static inline void unlock_doms_cur(void) { }
- 
- #endif	/* CONFIG_GROUP_SCHED */
- 
-@@ -7813,8 +7811,10 @@ int arch_reinit_sched_domains(void)
- 	int err;
- 
- 	get_online_cpus();
-+	lock_doms_cur();
- 	detach_destroy_domains(&cpu_online_map);
- 	err = arch_init_sched_domains(&cpu_online_map);
-+	unlock_doms_cur();
- 	put_online_cpus();
- 
- 	return err;
+You are talking about things like:
+
+config IWL4965_LEDS
+        bool "Enable LEDS features in iwl4965 driver"
+        select LEDS_CLASS
+
+The problem here is that from a kconfig perspective IWL4965_LEDS could 
+as well be an own driver you want for some reason non-modular.
+
+The solution is to do the following instead:
+
+config IWL4965
+        tristate "Intel Wireless WiFi 4965AGN"
+	select LEDS_CLASS if IWL4965_LEDS
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
