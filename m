@@ -1,97 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965538AbYD1SJv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965679AbYD1SLV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965538AbYD1SJv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 14:09:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934217AbYD1SJf
+	id S965679AbYD1SLV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 14:11:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965364AbYD1SKu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 14:09:35 -0400
-Received: from styx.suse.cz ([82.119.242.94]:57382 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S932212AbYD1SJe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 14:09:34 -0400
-Date: Mon, 28 Apr 2008 20:09:32 +0200
-From: Jan Kara <jack@suse.cz>
-To: Badari Pulavarty <pbadari@us.ibm.com>
-Cc: Mingming Cao <cmm@us.ibm.com>, akpm@linux-foundation.org,
-       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: Possible race between direct IO and JBD?
-Message-ID: <20080428180932.GI17054@duck.suse.cz>
-References: <20080306174209.GA14193@duck.suse.cz> <1209166706.6040.20.camel@localhost.localdomain> <20080428122626.GC17054@duck.suse.cz> <1209402694.23575.5.camel@badari-desktop>
+	Mon, 28 Apr 2008 14:10:50 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:64205 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965308AbYD1SKr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Apr 2008 14:10:47 -0400
+Message-ID: <48161325.1080508@ct.jp.nec.com>
+Date: Mon, 28 Apr 2008 11:10:45 -0700
+From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1209402694.23575.5.camel@badari-desktop>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Cc: linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org
+Subject: [PATCH -rt 0/4] nmi_watchdog fixes for -rt
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon 28-04-08 10:11:34, Badari Pulavarty wrote:
-> 
-> On Mon, 2008-04-28 at 14:26 +0200, Jan Kara wrote:
-> > Hi,
-> > 
-> > On Fri 25-04-08 16:38:23, Mingming Cao wrote:
-> > > While looking at a bug related to direct IO returns to EIO, after
-> > > looking at the code, I found there is a window that
-> > > try_to_free_buffers() from direct IO could race with JBD, which holds
-> > > the reference to the data buffers before journal_commit_transaction()
-> > > ensures the data buffers has reached to the disk.
-> > > 
-> > > A little more detail: to prepare for direct IO, generic_file_direct_IO()
-> > > calls invalidate_inode_pages2_range() to invalidate the pages in the
-> > > cache before performaning direct IO.  invalidate_inode_pages2_range()
-> > > tries to free the buffers via try_to free_buffers(), but sometimes it
-> > > can't, due to the buffers is possible still on some transaction's
-> > > t_sync_datalist or t_locked_list waiting for
-> > > journal_commit_transaction() to process it. 
-> > > 
-> > > Currently Direct IO simply returns EIO if try_to_free_buffers() finds
-> > > the buffer is busy, as it has no clue that JBD is referencing it.
-> > > 
-> > > Is this a known issue and expected behavior? Any thoughts?
-> >   Are you seeing this in data=ordered mode? As Andrew pointed out we do
-> > filemap_write_and_wait() so all the relevant data buffers of the inode
-> > should be already on disk. In __journal_try_to_free_buffer() we check
-> > whether the buffer is already-written-out data buffer and unfile and free
-> > it in that case. It shouldn't happen that a data buffer has
-> > b_next_transaction set so really the only idea why try_to_free_buffers()
-> > could fail is that somebody manages to write to a page via mmap before
-> > invalidate_inode_pages2_range() gets to it. Under which kind of load do you
-> > observe the problem? Do you know exactly because of which condition does
-> > journal_try_to_free_buffers() fail?
-> > 
-> 
-> Thank you for your reply.
-> 
-> What we are noticing is invalidate_inode_pages2_range() fails with -EIO
-> (from try_to_free_buffers() since b_count > 0).
-> 
-> I don't think the file is being updated through mmap(). Previous
-> writepage() added these buffers to t_sync_data list (data=ordered).
-> filemap_write_and_wait() waits for pagewrite back to be cleared.
-> So, buffers are no longer dirty, but still on the t_sync_data and
-> kjournald didn't get chance to process them yet :(
-> 
-> Since we have elevated b_count on these buffers, try_to_free_buffers()
-> fails. How can we make filemap_write_and_wait() to wait for kjournald
-> to unfile these buffers ?
-  Hmm, I don't get one thing:
-  The call chain is invalidate_inode_pages2_range() ->
-invalidate_complete_page2() -> try_to_release_page() -> ext3_releasepage()
--> journal_try_to_free_buffers() -> __journal_try_to_free_buffer() and this
-function should remove the buffer from the committing transaction. So who's
-holding the reference to those buffers? Or is it that
-__journal_try_to_free_buffer() fails to remove the buffer from the
-committing transaction? Why?
-  Hmm, maybe I have one idea - in theory we could call
-__journal_try_to_free_buffer() exactly at the moment commit code inspects
-the buffer. Then we'd release the buffer from the transaction but
-try_to_free_buffers() would fail because of elevated b_count exactly as you
-described. Could you maybe verify this? Not that I'd know how to easily fix
-this ;)...
+Hi,
 
-									Honza
--- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+Here is a patchset of nmi_watchdog fixes for -rt kernel.
+These patches are against 2.6.24.4-rt4.
+Could you please review?
+
+thanks,
+Hiroshi Shimamoto
