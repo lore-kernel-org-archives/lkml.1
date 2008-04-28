@@ -1,49 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765961AbYD1KQR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932260AbYD1KVZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765961AbYD1KQR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 06:16:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753977AbYD1KP6
+	id S932260AbYD1KVZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 06:21:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752963AbYD1KVN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 06:15:58 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:34320 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753918AbYD1KP5 (ORCPT
+	Mon, 28 Apr 2008 06:21:13 -0400
+Received: from bay0-omc2-s7.bay0.hotmail.com ([65.54.246.143]:8784 "EHLO
+	bay0-omc2-s7.bay0.hotmail.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752618AbYD1KVM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 06:15:57 -0400
-To: miklos@szeredi.hu
-CC: viro@ZenIV.linux.org.uk, miklos@szeredi.hu, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org, dave@linux.vnet.ibm.com,
-       ezk@cs.sunysb.edu, mhalcrow@us.ibm.com, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-reply-to: <E1Jp47x-0004MY-1W@pomaz-ex.szeredi.hu> (message from Miklos
-	Szeredi on Thu, 24 Apr 2008 18:16:53 +0200)
-Subject: Re: [patch 00/13] vfs: add helpers to check r/o bind mounts
-References: <E1Jp18b-0003iB-FK@pomaz-ex.szeredi.hu> <20080424134826.GD15214@ZenIV.linux.org.uk> <20080424140000.GE15214@ZenIV.linux.org.uk> <E1Jp2Fo-0003sr-BX@pomaz-ex.szeredi.hu> <20080424143537.GG15214@ZenIV.linux.org.uk> <E1Jp2ey-0003zd-TL@pomaz-ex.szeredi.hu> <20080424144815.GI15214@ZenIV.linux.org.uk> <E1Jp2tc-00044i-6k@pomaz-ex.szeredi.hu> <20080424152129.GK15214@ZenIV.linux.org.uk> <E1Jp3Vz-0004FH-Ih@pomaz-ex.szeredi.hu> <20080424155954.GM15214@ZenIV.linux.org.uk> <E1Jp47x-0004MY-1W@pomaz-ex.szeredi.hu>
-Message-Id: <E1JqQOT-0004IY-7E@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Mon, 28 Apr 2008 12:15:33 +0200
+	Mon, 28 Apr 2008 06:21:12 -0400
+Message-ID: <BAY103-DAV16C270BEEB34A42A676B1B2DE0@phx.gbl>
+X-Originating-IP: [80.204.235.254]
+X-Originating-Email: [pupilla@hotmail.com]
+From: "Marco Berizzi" <pupilla@hotmail.com>
+To: "David Miller" <davem@davemloft.net>
+Cc: <linux-kernel@vger.kernel.org>, <netdev@vger.kernel.org>,
+       "Marco Berizzi" <pupilla@hotmail.com>
+References: <BAY103-DAV11F874912A45144805FC26B2DE0@phx.gbl> <20080428.024208.153440332.davem@davemloft.net>
+Subject: Re: 2.6.25 crash: EIP: [<c02e2f14>] xfrm_output_resume+0x64/0x100 ss:esp 0068:c03a1e5c
+Date: Mon, 28 Apr 2008 12:18:59 +0200
+X-Priority: 3
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook Express 6.00.2800.1123
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2800.1123
+X-OriginalArrivalTime: 28 Apr 2008 10:21:11.0918 (UTC) FILETIME=[950098E0:01C8A919]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > > > let alone removing the interface that doesn't require checks to be
-> > > > vfsmount-based for all users.
-> > > 
-> > > What users?  There are paractically _no_ other users.  The ones that
-> > > there are (like reiserfs) should not be using them, and there are
-> > > already some patches cleaning that mess up.
-> > 
-> > OK, explain me, in small words, WTF should something that wants to do
-> > operations on filesystem tree have a vfsmount.  Slowly.  And "r/o
-> > bind loses value if it can be bypassed" is a hogwash - fs methods are
-> > still there, so it *can* be bypassed just fine, thank you very much.
-> 
-> And we know what to do with such users.
+David Miller wrote:
 
-Which begs the question: why is ecryptfs doing that with the xattr
-methods?  Does it need to bypass the permission checks?  Seems very
-fishy to me.
+> Netdev added to CC:, please include in all bug reports as
+> that's where the networking developers sit.
 
-Mike?
+ok.
+Two different systems have crashed since
+2.6.25 upgrade (I upgraded a total of 8
+systems).
 
-Miklos
+For now, the only two boxes that crashed
+have these modules loaded (where the other
+systems doesn't have these modules loaded):
+
+sch_sfq 6088 3
+sch_htb 15208 1
+cls_fw 3848 1
+
+Here is the script for setup htb (which classify
+traffic inside the ipsec tunnels):
+
+tc qdisc add dev eth0 root handle 1:0 htb default 11
+
+tc class add dev eth0 parent 1:0 classid 1:1 htb rate 1700kbit ceil
+1700kbit burst 15k
+tc class add dev eth0 parent 1:1 classid 1:10 htb rate 200kbit ceil
+400kbit burst 5k
+tc class add dev eth0 parent 1:1 classid 1:11 htb rate 600kbit ceil
+1600kbit burst 5k
+tc class add dev eth0 parent 1:1 classid 1:12 htb rate 800kbit ceil
+1700kbit burst 15k
+tc qdisc add dev eth0 parent 1:10 handle 10:0 sfq perturb 10
+tc qdisc add dev eth0 parent 1:11 handle 20:0 sfq perturb 5
+tc qdisc add dev eth0 parent 1:12 handle 30:0 sfq perturb 10
+
+FW="tc filter add dev eth0 protocol ip parent 1:0 prio 1"
+$FW handle 110 fw flowid 1:10
+$FW handle 111 fw flowid 1:11
+$FW handle 112 fw flowid 1:12
+
+
