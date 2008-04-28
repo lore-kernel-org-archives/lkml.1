@@ -1,43 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934242AbYD1NE0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934259AbYD1NFd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934242AbYD1NE0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 09:04:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934190AbYD1NEB
+	id S934259AbYD1NFd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 09:05:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932113AbYD1NFY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 09:04:01 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:47654 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934182AbYD1ND7 (ORCPT
+	Mon, 28 Apr 2008 09:05:24 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:54375 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1765480AbYD1NFX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 09:03:59 -0400
-Date: Mon, 28 Apr 2008 09:03:58 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Takashi Sato <t-sato@yk.jp.nec.com>
-Cc: Christoph Hellwig <hch@infradead.org>, linux-ext4@vger.kernel.org,
-       xfs@oss.sgi.com, dm-devel@redhat.com, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC PATCH 1/3] Implement generic freeze feature
-Message-ID: <20080428130358.GB2798@infradead.org>
-References: <20080428193123t-sato@mail.jp.nec.com> <20080428103719.GA16030@infradead.org> <2E042A67F72447F6AAA0CC0605DBFA84@nsl.ad.nec.co.jp>
+	Mon, 28 Apr 2008 09:05:23 -0400
+Date: Mon, 28 Apr 2008 09:05:20 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Pekka Paalanen <pq@iki.fi>
+cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>, akpm@osdl.org,
+       Peter Zijlstra <peterz@infradead.org>,
+       Soeren Sandmann Pedersen <sandmann@redhat.com>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [PATCH 2/3] ftrace: add trace pipe header pluggin
+In-Reply-To: <20080426203306.2e41fb55@daedalus.pq.iki.fi>
+Message-ID: <Pine.LNX.4.58.0804280903210.813@gandalf.stny.rr.com>
+References: <20080421210935.460817943@goodmis.org> <20080421212128.360075568@goodmis.org>
+ <20080426203306.2e41fb55@daedalus.pq.iki.fi>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <2E042A67F72447F6AAA0CC0605DBFA84@nsl.ad.nec.co.jp>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 28, 2008 at 09:59:55PM +0900, Takashi Sato wrote:
->> I think the protection against double freezes would be better done by
->> using a trylock on bd_mount_sem.
->
-> bd_mount_sem can protect against only freezes and cannot protect against
-> unfreezes.  If multiple unfreezes run in parallel,  the multiple up() for
-> bd_mount_sem might occur incorrectly.
 
-Indeed.  The bit flag would fix that because unfreeze could then check
-for the bit beeing set first.  So that's probably the easiest way to go.
+On Sat, 26 Apr 2008, Pekka Paalanen wrote:
+
+> On Mon, 21 Apr 2008 17:09:37 -0400
+> Steven Rostedt <rostedt@goodmis.org> wrote:
+>
+> > This patch adds a method for open_pipe and open_read to the pluggins
+> > so that they can add a header to the trace pipe call.
+> >
+> > Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+>
+> In addition to this, I think I need tracer::close method called on
+> tracing_release_pipe(). Use case: the reader closes the pipe before
+> I have printed all of my header, i.e. walked through all PCI devices,
+> so I need to properly destroy trace_iterator::private.
+
+Good idea, I'll add that.
+
+>
+> I also intend to use trace_iterator::seq for printing my header, so I
+> am looking if I can reuse code from tracing_read_pipe(). Looks like I'll
+> extract the "return any leftover data" part into a separate function.
+>
+> To check trace_iterator::overrun, I'd like to be able to use
+> for_each_tracing_cpu(), but that is local to trace.c.
+
+I'll look into that.
+
+>
+> What happens when the tracing cpu mask changes? Mmiotrace does not take
+> that into account and will continue to record with all CPUs, will this
+> lead to problems, when mmiotrace starts to support SMP properly?
+
+Good question. The tracing_cpu_mask isn't mine. So I'll need to know that
+answer too.
+
+>
+> Now that I think of it, I probably want to use for_each_online_cpu()
+> in checking for overruns... but that's not good either, if someone
+> enables/disables a cpu during tracing. I guess you will have to / had to
+> deal with this case in tracing core, too.
+
+Good point.
+
+
+-- Steve
 
