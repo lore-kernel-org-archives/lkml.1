@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937587AbYD1TGk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966257AbYD1TIV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937587AbYD1TGk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 15:06:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765235AbYD1TGa
+	id S966257AbYD1TIV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 15:08:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934379AbYD1TIN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 15:06:30 -0400
-Received: from wr-out-0506.google.com ([64.233.184.236]:50256 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933808AbYD1TG3 (ORCPT
+	Mon, 28 Apr 2008 15:08:13 -0400
+Received: from qb-out-0506.google.com ([72.14.204.230]:22478 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933938AbYD1TIK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 15:06:29 -0400
+	Mon, 28 Apr 2008 15:08:10 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=U0QWRXPIYWSNOijRAlxlGgZkfnNL1cz96kVkiEi5sYStHHH8GSmaocz999uAEp5LUa63itDDwZAx+Riy1BX/CPdoeI/fJwBLIuSuylyYhIHplQ4Ebph89Zu3h75lyRFHuWwK0ggKM+Qfc0fOUEwbiLSpFm2amOhzGZfQuMDdMT4=
-Message-ID: <86802c440804281206u6b5086a3h42192b7d36b08325@mail.gmail.com>
-Date: Mon, 28 Apr 2008 12:06:26 -0700
+        b=PYfLlMRueo5kwF4USIzV127uflgr8GsC1vW1FNTbiwIDyAuKFjuibqtgj4vXEM0Fq/JwscxaqDV4g0Uwrwsdd/D0psC4nnstpwrEo+FEtS4N4uRngKcZUtuQkS5n1+fGUwTzdasfqrio0VWnFukmIGP3bbp6KrmLKLqIlmD4lYU=
+Message-ID: <86802c440804281208n7cb7a03cj1a06b49ea15afb7b@mail.gmail.com>
+Date: Mon, 28 Apr 2008 12:08:09 -0700
 From: "Yinghai Lu" <yhlu.kernel@gmail.com>
 To: "Gabriel C" <nix.or.die@googlemail.com>
 Subject: Re: [PATCH] x86_32: trim memory by updating e820 v3
@@ -61,23 +61,13 @@ On Mon, Apr 28, 2008 at 7:24 AM, Gabriel C <nix.or.die@googlemail.com> wrote:
 >  Well you are lucky then :)
 >
 >  Yeah X 'worked' but it worked as slow as with vesa video driver here.
-
-[    0.000000] rangeX: 0000000000000000 - 00000000d0000000
-[    0.000000] Setting variable MTRR 0, base: 0MB, range: 2048MB, type WB
-[    0.000000] Setting variable MTRR 1, base: 2048MB, range: 1024MB, type WB
-[    0.000000] Setting variable MTRR 2, base: 3072MB, range: 256MB, type WB
-[    0.000000] range0: 00000000cf800000 - 00000000cf800000
-[    0.000000] range: 00000000cf800000 - 00000000d0000000
-[    0.000000] Setting variable MTRR 3, base: 3320MB, range: 8MB, type WB
-[    0.000000] range0: 0000000100000000 - 0000000120000000
-[    0.000000] Setting variable MTRR 4, base: 4096MB, range: 512MB, type WB
-[    0.000000] range: 0000000120000000 - 0000000130000000
-[    0.000000] Setting variable MTRR 5, base: 4608MB, range: 256MB, type WB
-[    0.000000] hole: 000000012c000000 - 0000000130000000
-[    0.000000] Setting variable MTRR 6, base: 4800MB, range: 64MB, type UC
-
-so your X server need two entries for WB?
-
-can you send out /proc/mtrr with booting with disable_mtrr_cleanup?
+>
+>  Also starting something like supertuxkart made it crash or I got a black screen :(
+>
+>  The only game I managed to start ( without X to crash ) without that patch was supertux but is was slow as hell.
+>  However I'm not a gamer but I need X to work right.
+>
+or can you change graphics card memory in BIOS to some big like 256M
+instead of 64M?
 
 YH
