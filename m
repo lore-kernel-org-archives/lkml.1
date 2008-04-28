@@ -1,66 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763459AbYD1Cd1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764840AbYD1Cgc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763459AbYD1Cd1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Apr 2008 22:33:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761192AbYD1CdQ
+	id S1764840AbYD1Cgc (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Apr 2008 22:36:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761347AbYD1CgZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Apr 2008 22:33:16 -0400
-Received: from yw-out-2324.google.com ([74.125.46.31]:37835 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758873AbYD1CdP (ORCPT
+	Sun, 27 Apr 2008 22:36:25 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:45654 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753767AbYD1CgY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Apr 2008 22:33:15 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=qHu+NkipgRM1Q+iCivD1n+Oj09XQduOV96zEX/Sfv7RODX490bKdkOrOVjKKGY4cyKsdspIZrQ4WMlYUJ86ODyxyLdhhvQWc8boMjaob3XldyV6YE5mXpeidR4NvNEW3jTVQDrctYxJXWJ3H3NaRZk+y6/rjVCliAMGbqQGqUE4=
-Message-ID: <a8e1da0804271933i528d7c98m526195b361119dcf@mail.gmail.com>
-Date: Mon, 28 Apr 2008 10:33:14 +0800
-From: "Dave Young" <hidave.darkstar@gmail.com>
-To: "Al Viro" <viro@zeniv.linux.org.uk>
-Subject: Re: [PATCH 2/2] loop : Don't hold the lo_ctl_mutex while fput in loop_clr_fd
-Cc: linux-kernel@vger.kernel.org, jens.axboe@oracle.com
-In-Reply-To: <20080428021531.GA5882@ZenIV.linux.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Sun, 27 Apr 2008 22:36:24 -0400
+Date: Sun, 27 Apr 2008 19:36:16 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jan Engelhardt <jengelh@computergmbh.de>
+Cc: adaplas@gmail.com,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, hpa@zytor.com
+Subject: Re: [PATCH] vt: fix background color on line feed
+Message-Id: <20080427193616.9a9cdf85.akpm@linux-foundation.org>
+In-Reply-To: <alpine.LNX.1.10.0804270257270.20150@fbirervta.pbzchgretzou.qr>
+References: <alpine.LNX.1.10.0804270257270.20150@fbirervta.pbzchgretzou.qr>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080428021022.GB2698@darkstar.te-china.tietoenator.com>
-	 <20080428021309.GZ5882@ZenIV.linux.org.uk>
-	 <20080428021531.GA5882@ZenIV.linux.org.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 28, 2008 at 10:15 AM, Al Viro <viro@zeniv.linux.org.uk> wrote:
->
-> On Mon, Apr 28, 2008 at 03:13:09AM +0100, Al Viro wrote:
->  > On Mon, Apr 28, 2008 at 10:10:22AM +0800, Dave Young wrote:
->  > > [Fixing bug 10504]
->  > >
->  > > If the bakingfile is a block device file, losetuo -d will trigger lockdep
->  > > warning of "circular locking dependency".
->  > >
->  > > open/release lock order : bdev->bd_mutex ---> lo->lo_ctl_mutex
->  > > loop_clr_fd lock order  : lo->lo_ctl_mutex ---> bdev->bd_mutex (fput)
->  > >
->  > > Don't hold the lo_ctl_mutex while fput in loop_clr_fd to fix it. It's safe
->  > > because all loop device state will be consistent here.
->  >
->  > Explain.
+On Sun, 27 Apr 2008 03:12:44 +0200 (CEST) Jan Engelhardt <jengelh@computergmbh.de> wrote:
 
-Hi, Maybe I have some mis-understood, thanks for pointing out in advance.
+> commit c5180a555ced08a7e3011c16ef796e47569ae907
+> Author: Jan Engelhardt <jengelh@computergmbh.de>
+> Date:   Thu Apr 24 22:40:24 2008 +0200
+> 
+> vt: fix background color on line feed
+>     
+> A command that causes a line feed while a background color is active,
+> such as
+>     
+> 	perl -e 'print "x" x 60, "\e[44m", "x" x 40, "\e[0m\n"'
+> and
+> 	perl -e 'print "x" x 40, "\e[44m\n", "x" x 40, "\e[0m\n"'
+>     
+> causes the line that was started as a result of the line feed to be
+> completely filled with the currently active background color instead
+> of the default color.
 
-IMO the lo_ctl_mutex is for the lo->* state locking,  they are all set
-to proper values before fput(filp), so I think it's safe to do that.
+Thanks.
 
->
->  BTW, explain also why open() at that spot will not do interesting things
->  wrt BLKRRPART done a bit below, please.
->
+It would be better if the the changelog were to also describe the cause of
+the bug, and how the patch fixes it.
 
-open with a loop device unbound? Sorry, I don't understand.  Could you
-explain a bit? Thanks
-
-Regards
-dave
