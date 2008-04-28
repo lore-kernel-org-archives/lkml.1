@@ -1,63 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934208AbYD1NIv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934123AbYD1NNh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934208AbYD1NIv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 09:08:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932304AbYD1NIn
+	id S934123AbYD1NNh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 09:13:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932454AbYD1NN3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 09:08:43 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:46932 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765277AbYD1NIm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 09:08:42 -0400
-Date: Mon, 28 Apr 2008 15:08:26 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: yhlu.kernel@gmail.com
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [PATCH] x86: mtrr cleanup for converting continuous to
-	discrete layout v2
-Message-ID: <20080428130826.GH27997@elte.hu>
-References: <200804272337.40130.yhlu.kernel@gmail.com> <200804280206.52641.yhlu.kernel@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200804280206.52641.yhlu.kernel@gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Mon, 28 Apr 2008 09:13:29 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:34613 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S932440AbYD1NN3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Apr 2008 09:13:29 -0400
+Date: Mon, 28 Apr 2008 08:13:26 -0500
+From: Paul Jackson <pj@sgi.com>
+To: WANG Cong <xiyou.wangcong@gmail.com>
+Cc: bert.wesarg@googlemail.com, mingo@elte.hu, linux-kernel@vger.kernel.org,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       travis@sgi.com
+Subject: Re: [PATCH] Fix calculus of bitmap_scnprintf_len()
+Message-Id: <20080428081326.fc62f1ce.pj@sgi.com>
+In-Reply-To: <alpine.LFD.1.00.0804281414020.2870@localhost.localdomain>
+References: <1209329003-22036-1-git-send-email-bert.wesarg@googlemail.com>
+	<20080427160118.ad4cadf0.pj@sgi.com>
+	<alpine.LFD.1.00.0804281414020.2870@localhost.localdomain>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Bert wrote:
+> The function bitmap_scnprintf_len() is currently not used
 
-* Yinghai Lu <yhlu.kernel.send@gmail.com> wrote:
+Paul Jackson wrote:
+> How about we just remove that function?
 
-> some BIOS like to use continus MTRR layout, and X driver can not add 
-> WB entries for graphical cards when 4g or more RAM installed.
+WANG Cong wrote:
+> I am afraid no. See:
 > 
-> the patch will change MTRR to discrete.
-> 
-> mtrr_chunk_size= could be used to have smaller continuous block to 
-> hold holes. default is 256m, could be set according to size of 
-> graphics card memory.
+> include/linux/cpumask.h:292:    return bitmap_scnprintf_len(len);
 
-hm.
+Good point.
 
-> +static int disable_mtrr_cleanup;
 
-i think this should be default-disabled. Touching MTRRs on a live system 
-could interact with SMM and MCE handlers.
+Then how about we also remove from cpumask.h:
 
-how relevant is this feature with modern Xorg? I thought modern Xorg 
-would get its mappings via /sys, hence it would not have to touch MTRRs 
-at all.
+#define cpumask_scnprintf_len(len) \
+                        __cpumask_scnprintf_len((len))
+static inline int __cpumask_scnprintf_len(int len)
+{
+        return bitmap_scnprintf_len(len);
+}
 
-	Ingo
+-- 
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.940.382.4214
