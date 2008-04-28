@@ -1,146 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965308AbYD1SHZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965464AbYD1SIb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965308AbYD1SHZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 14:07:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964913AbYD1SG5
+	id S965464AbYD1SIb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 14:08:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765875AbYD1SIW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 14:06:57 -0400
-Received: from e28smtp03.in.ibm.com ([59.145.155.3]:47462 "EHLO
-	e28smtp03.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964875AbYD1SGy (ORCPT
+	Mon, 28 Apr 2008 14:08:22 -0400
+Received: from out02.mta.xmission.com ([166.70.13.232]:45817 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764945AbYD1SIU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 14:06:54 -0400
-Message-ID: <48161159.6010802@linux.vnet.ibm.com>
-Date: Mon, 28 Apr 2008 23:33:05 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Mon, 28 Apr 2008 14:08:20 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: "Yinghai Lu" <yhlu.kernel@gmail.com>
+Cc: "Gabriel C" <nix.or.die@googlemail.com>,
+       "Andi Kleen" <andi@firstfloor.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Ingo Molnar" <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Jesse Barnes" <jesse.barnes@intel.com>,
+       "Mika Fischer" <mika.fischer@zoopnet.de>, balajirrao@gmail.com
+References: <200801192045.17291.yinghai.lu@sun.com>
+	<200801202256.48365.yinghai.lu@sun.com>
+	<20080122165125.GA17992@elte.hu>
+	<200801221623.20861.yinghai.lu@sun.com>
+	<20080426035614.a30afb17.akpm@linux-foundation.org>
+	<48132665.8050202@googlemail.com>
+	<86802c440804261805rc739f9as519213fecdc0cdff@mail.gmail.com>
+Date: Mon, 28 Apr 2008 11:07:59 -0700
+In-Reply-To: <86802c440804261805rc739f9as519213fecdc0cdff@mail.gmail.com>
+	(Yinghai Lu's message of "Sat, 26 Apr 2008 18:05:39 -0700")
+Message-ID: <m17ieh4zuo.fsf@frodo.ebiederm.org>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Balaji Rao <balajirrao@gmail.com>, linux-kernel@vger.kernel.org,
-       containers@lists.osdl.org, menage@google.com, balbir@in.ibm.com,
-       dhaval@linux.vnet.ibm.com
-Subject: Re: [RFC][-mm] [2/2] Simple stats for memory resource controller
-References: <200804052340.02386.balajirrao@gmail.com> <48036CB4.5050700@linux.vnet.ibm.com> <200804282130.30188.balajirrao@gmail.com> <20080428094026.bc78ccc7.akpm@linux-foundation.org>
-In-Reply-To: <20080428094026.bc78ccc7.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+X-SA-Exim-Connect-IP: 24.130.11.59
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa03 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
+	*      [score: 0.0000]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa03 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+Subject: Re: [PATCH] x86_32: trim memory by updating e820 v3
+X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
+X-SA-Exim-Scanned: Yes (on mgr1.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Mon, 28 Apr 2008 21:30:29 +0530 Balaji Rao <balajirrao@gmail.com> wrote:
-> 
->> On Monday 14 April 2008 08:09:48 pm Balbir Singh wrote:
->>> Balaji Rao wrote:
->>>> This patch implements trivial statistics for the memory resource controller.
->>>>
->>>> Signed-off-by: Balaji Rao <balajirrao@gmail.com>
->>>> CC: Balbir Singh <balbir@linux.vnet.ibm.com>
->>>> CC: Dhaval Giani <dhaval@linux.vnet.ibm.com>
->>>>
->>>> diff --git a/mm/memcontrol.c b/mm/memcontrol.c
->>>> index a860765..ca98b21 100644
->>>> --- a/mm/memcontrol.c
->>>> +++ b/mm/memcontrol.c
->>>> @@ -47,6 +47,8 @@ enum mem_cgroup_stat_index {
->>>>  	 */
->>>>  	MEM_CGROUP_STAT_CACHE, 	   /* # of pages charged as cache */
->>>>  	MEM_CGROUP_STAT_RSS,	   /* # of pages charged as rss */
->>>> +	MEM_CGROUP_STAT_PGPGIN_COUNT,	/* # of pages paged in */
->>>> +	MEM_CGROUP_STAT_PGPGOUT_COUNT,	/* # of pages paged out */
->>>>
->>>>  	MEM_CGROUP_STAT_NSTATS,
->>>>  };
->>>> @@ -198,6 +200,13 @@ static void mem_cgroup_charge_statistics(struct mem_cgroup *mem, int flags,
->>>>  		__mem_cgroup_stat_add_safe(stat, MEM_CGROUP_STAT_CACHE, val);
->>>>  	else
->>>>  		__mem_cgroup_stat_add_safe(stat, MEM_CGROUP_STAT_RSS, val);
->>>> +
->>>> +	if (charge)
->>>> +		__mem_cgroup_stat_add_safe(stat,
->>>> +				MEM_CGROUP_STAT_PGPGIN_COUNT, 1);
->>>> +	else
->>>> +		__mem_cgroup_stat_add_safe(stat,
->>>> +				MEM_CGROUP_STAT_PGPGOUT_COUNT, 1);
->>>>  }
->>>>
->>>>  static struct mem_cgroup_per_zone *
->>>> @@ -897,6 +906,8 @@ static const struct mem_cgroup_stat_desc {
->>>>  } mem_cgroup_stat_desc[] = {
->>>>  	[MEM_CGROUP_STAT_CACHE] = { "cache", PAGE_SIZE, },
->>>>  	[MEM_CGROUP_STAT_RSS] = { "rss", PAGE_SIZE, },
->>>> +	[MEM_CGROUP_STAT_PGPGIN_COUNT] = {"pgpgin", 1, },
->>>> +	[MEM_CGROUP_STAT_PGPGOUT_COUNT] = {"pgpgout", 1, },
->>>>  };
->>>>
->>>>  static int mem_control_stat_show(struct cgroup *cont, struct cftype *cft,
->>>>
->>> Acked-by: Balbir Singh <balbir@linux.vnet.ibm.com>
->>>
->>> Hi, Andrew,
->>>
->>> Could you please include these statistics in -mm.
->>>
->>> Balbir
->>>
->>>
->> Hi Andrew,
->>
->> Now that Balbir Singh has ACKed it, could you please include it in -mm ?
-> 
-> <looks>
-> 
-> I guess we can add this one, sure.  But [patch 1/2] needs work.
-> 
-> - The local_irq_save()-around-for_each_possible_cpu() locking doesn't
->   make sense.
-> 
+"Yinghai Lu" <yhlu.kernel@gmail.com> writes:
 
-Yes, that needs re-work. Peter Zijlstra had detailed review comments for the patch
+> On Sat, Apr 26, 2008 at 5:56 AM, Gabriel C <nix.or.die@googlemail.com> wrote:
 
-> - indenting is busted in account_user_time() and account_system_time()
-> 
-> - The use of for_each_possible_cpu() can be grossly inefficient.  It
->   would be preferred to use for_each_possible_cpu() and add a cpu-hotplug
->   notifier.
-> 
-> - The proposed newly-added userspace interfaces are undocumented
-> 
+> another continuous MTRR mapping.
+>
+> several months ago, we were talking about modifying MTRR. but Eric
+> said that is not safe because acpi and smi...
 
-Yes, we need more documentation
+I think it was Andi who spotted that originally, and yes I do think it
+is a pretty horrific failure mode.  Reprogramming the MTRRs requires
+full knowledge of the hardware and what is going on that we don't
+always have.  PAT support has just been merged, and using that only
+requires knowledge about the region whose attributes we intend to change.
 
-> - The changelogs don't explain why we might want this feature in Linux.
-> 
+So lets concentrate on PAT to solve contiguous MTRR region problems.
 
-We need more accurate utime/stime per cgroup. Summing them in user space is
-insufficient, since tasks can move across groups and what we have is accumulated
-time per task.
+We can upgrade UC to WC with pat.  As well as demote WB to UC or WC.
+So for those regions we know about we should be in good shape.
 
-> - Generally: there are a heck of a lot of different ways of accounting
->   for things in core kernel and it's really sad to see yet another one
->   being added.
-> 
+In a slightly related vein.  Trimming the memory we consider usable by
+looking at MTRRs and if a region is not WB not considering it RAM
+sounds like a very reasonable work around for one class of BIOS bugs.
 
-We thought of summing up stuff in user space, we've look harder. The plan is to
-finally send all the data using cgroupstats.
-
-> 
-> Actually, [patch 2/2] adds new kerenl->user interfaces and doesn't document
-> them.  But afaict the existing memcgroup stats are secret too.
-> 
-
-The statistics was added as a part of git commit
-d52aa412d43827033a8e2ce4415ef6e8f8d53635. I'll go ahead and try to document
-them. These patches piggy back on the statistics patches and add pagein/pageout
-counts, which is a useful statistic for the memory controller.
-
-
-
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+Eric
