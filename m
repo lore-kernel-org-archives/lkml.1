@@ -1,35 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936672AbYD1UA3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937456AbYD1UAu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936672AbYD1UA3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 16:00:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765616AbYD1UAN
+	id S937456AbYD1UAu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 16:00:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935355AbYD1UAW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 16:00:13 -0400
-Received: from wa-out-1112.google.com ([209.85.146.180]:31395 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765474AbYD1UAM (ORCPT
+	Mon, 28 Apr 2008 16:00:22 -0400
+Received: from an-out-0708.google.com ([209.85.132.246]:2251 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S935249AbYD1UAU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 16:00:12 -0400
+	Mon, 28 Apr 2008 16:00:20 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=jTy2/5dascUiFJZNzsRVNbHF8E2lOIDW1xR+B4BuHQ34JyGZ81K3u0lUo1+SXwoy9thXj+Y8Wpht1zoMDkUJTujr5DsocOFQRUkQuJ4BOsUQZ3OcF1QNE1bI0R9kH4ijKJUGK6edt0WQ0t+rBq/UljiQosrYOetshDbUtOfTBHg=
-Message-ID: <aa79d98a0804281300r49097a51l7093375bcd47004a@mail.gmail.com>
-Date: Tue, 29 Apr 2008 00:00:09 +0400
-From: "Cyrill Gorcunov" <gorcunov@gmail.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH] x86: DS cleanup - dont treat 0 as NULL
-Cc: "Ingo Molnar" <mingo@elte.hu>,
-       "Markus Metzger" <markus.t.metzger@intel.com>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <4816299B.5040002@zytor.com>
+        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=fY55vJ+qUGk+hYcmwJUjydCIjkTjRkKzS3pbGkXJTw4BU5OxypvCVl+wK9sC7I+0JuEvMDH8UgdNUVnYny7UkRbnSaOigJszyykc4kPNXtxjrMLj5L6r2ldkHWqxY3imldL0C59iqlBNCOb2sGSoGPxLsX2+iv++3AUnjZpAD/I=
+Message-ID: <dd18b0c30804281300y23fb939eyf8a3aaf17d11e0cd@mail.gmail.com>
+Date: Mon, 28 Apr 2008 20:00:18 +0000
+From: "Justin Mattock" <justinmattock@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: videodev2.h
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20080428191504.GA6842@cvg> <4816299B.5040002@zytor.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oh, my fault, i had to be more concrete :(
+With compiling uvcvidoe for the macbook pro, I encounted some errors,
+about the definition already defined, to resolve this issue:
+I ended up taking out in = include/linux/videodev2.h:
+
+/*#define V4L2_CTRL_CLASS_CAMERA 0x009a0000 */	/* Camera class controls */
+
+/*#define V4L2_CID_POWER_LINE_FREQUENCY	(V4L2_CID_BASE+24)
+*enum v4l2_power_line_frequency {
+*	V4L2_CID_POWER_LINE_FREQUENCY_DISABLED	= 0,
+*	V4L2_CID_POWER_LINE_FREQUENCY_50HZ	= 1,
+*	V4L2_CID_POWER_LINE_FREQUENCY_60HZ	= 2,
+};*/
+
+/*#define V4L2_CID_EXPOSURE_AUTO			(V4L2_CID_CAMERA_CLASS_BASE+1)
+*enum  v4l2_exposure_auto_type {
+*	V4L2_EXPOSURE_AUTO = 0,
+*	V4L2_EXPOSURE_MANUAL = 1,
+*	V4L2_EXPOSURE_SHUTTER_PRIORITY = 2,
+*	V4L2_EXPOSURE_APERTURE_PRIORITY = 3
+};*/
+
+For the module to install properly. "I think uvcvideo gets confused
+with having two videodev.h, and videodev2.h files, but could be wrong"
+located in:
+include/linux/*
+usr/include/linux/*
+regards;
+-- 
+Justin P. Mattock
