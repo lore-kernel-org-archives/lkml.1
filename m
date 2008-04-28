@@ -1,56 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937587AbYD1U4X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965542AbYD1U5S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937587AbYD1U4X (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 16:56:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934704AbYD1U4F
+	id S965542AbYD1U5S (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 16:57:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936210AbYD1U5I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 16:56:05 -0400
-Received: from gw.goop.org ([64.81.55.164]:60306 "EHLO mail.goop.org"
+	Mon, 28 Apr 2008 16:57:08 -0400
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:53265 "EHLO smtp5.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935588AbYD1U4E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 16:56:04 -0400
-Message-ID: <481639D2.7040306@goop.org>
-Date: Mon, 28 Apr 2008 13:55:46 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080418)
+	id S934704AbYD1U5H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Apr 2008 16:57:07 -0400
+Date: Mon, 28 Apr 2008 23:56:31 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Willy Tarreau <wtarreau@hera.kernel.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Linux 2.4 usage statistics
+Message-ID: <20080428205631.GA2813@cs181133002.pp.htv.fi>
+References: <20080428202433.GA13417@hera.kernel.org>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       "H. Peter Anvin" <hpa@zytor.com>, Andi Kleen <andi@firstfloor.org>,
-       Jiri Slaby <jirislaby@gmail.com>, David Miller <davem@davemloft.net>,
-       zdenek.kabelac@gmail.com, rjw@sisk.pl, paulmck@linux.vnet.ibm.com,
-       akpm@linux-foundation.org, linux-ext4@vger.kernel.org,
-       herbert@gondor.apana.org.au, penberg@cs.helsinki.fi, clameter@sgi.com,
-       linux-kernel@vger.kernel.org, pageexec@freemail.hu
-Subject: Re: [PATCH 1/1] x86: fix text_poke
-References: <48123C9B.9020306@zytor.com> <20080425203717.GB25950@Krystal> <481241DC.3070601@zytor.com> <alpine.LFD.1.10.0804251349510.2779@woody.linux-foundation.org> <20080425211205.GC25950@Krystal> <481249FB.8070204@zytor.com> <20080425214704.GD25950@Krystal> <48125635.3060303@zytor.com> <20080425223015.GB31226@Krystal> <alpine.LFD.1.10.0804251534420.2779@woody.linux-foundation.org> <20080428202130.GF15840@elte.hu>
-In-Reply-To: <20080428202130.GF15840@elte.hu>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20080428202433.GA13417@hera.kernel.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> And once we accept the static 
-> markers, we might as well make them as cheap as possible.
+Just a note that some "how many" and "which version exactly" data is 
+available from [1] which is generated from data users send through a 
+cron job with data from nearly 5000 machines reported during the last 
+60 days.
 
-Sure, so long as you take "as cheap as possible" to mean cheap in both 
-implementation complexity as well as runtime cost.
+When clicking on a version (e.g. "2.4.27") you can also see which of 
+them are distribution kernels.
 
-I don't have any specific objections to any of the stuff that Mathieu is 
-working on, but it does worry me that each time a problem is addressed 
-it ends up being an even more subtle piece of code.  I just haven't seen 
-enough concrete justification to make me feel comfortable with it all.
+Kinda shocking that 14% of these machines are not running kernel 2.6 ...
 
-It seems to me that a relatively simple implementation which allows the 
-desired tracing/marking functionality is the first step.  If that proves 
-to cause a significant performance deficit then enabled then we can work 
-out how to address it in due course.  But doing it all at once before 
-merging anything seems like overkill, particularly when we're talking 
-about specifics of gcc's codegen patterns, disassembling code fragments, 
-etc.
+Considering how this data is generated it obviously shows only part of 
+the picture, and your survey will hopefully bring data what we could do 
+for making kernel 2.6 more attractive (not meant against your work, but 
+we should aim at bringing users to 2.6).
 
-    J
+cu
+Adrian
+
+[1] http://counter.li.org/reports/systemstats.php
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
