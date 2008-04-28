@@ -1,77 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933359AbYD1Ljr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933541AbYD1Llw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933359AbYD1Ljr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 07:39:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763309AbYD1Ljj
+	id S933541AbYD1Llw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 07:41:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763424AbYD1Lln
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 07:39:39 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:54867 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763163AbYD1Lji (ORCPT
+	Mon, 28 Apr 2008 07:41:43 -0400
+Received: from theia.rz.uni-saarland.de ([134.96.7.31]:15906 "EHLO
+	theia.rz.uni-saarland.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763309AbYD1Llm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 07:39:38 -0400
-Date: Mon, 28 Apr 2008 07:39:32 -0400
-From: ext ext Christoph Hellwig <hch@infradead.org>
-To: Adrian Hunter <ext-adrian.hunter@nokia.com>
-Cc: ext ext Christoph Hellwig <hch@infradead.org>,
-       Artem Bityutskiy <dedekind@yandex.ru>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Artem Bityutskiy <Artem.Bityutskiy@nokia.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC PATCH 26/26] UBIFS: include FS to compilation
-Message-ID: <20080428113932.GA27250@infradead.org>
-References: <1206629746-4298-1-git-send-email-Artem.Bityutskiy@nokia.com> <1206629746-4298-27-git-send-email-Artem.Bityutskiy@nokia.com> <84144f020804010039n47133bd3l63f02258a2670e72@mail.gmail.com> <47F1F7A6.5020105@yandex.ru> <20080426093553.GA17730@infradead.org> <48157812.5090909@nokia.com> <20080428090032.GA14100@infradead.org> <4815B3AE.5010500@nokia.com>
-MIME-Version: 1.0
+	Mon, 28 Apr 2008 07:41:42 -0400
+Date: Mon, 28 Apr 2008 13:41:05 +0200
+From: Alexander van Heukelum <heukelum@mailshack.com>
+To: David Miller <davem@davemloft.net>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, viro@ZenIV.linux.org.uk,
+       heukelum@fastmail.fm
+Subject: Re: find_new_bit bloat from x86 tree...
+Message-ID: <20080428114104.GA28348@mailshack.com>
+References: <20080426.220726.13692428.davem@davemloft.net>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4815B3AE.5010500@nokia.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+In-Reply-To: <20080426.220726.13692428.davem@davemloft.net>
+User-Agent: Mutt/1.5.9i
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (theia.rz.uni-saarland.de [134.96.7.31]); Mon, 28 Apr 2008 13:41:21 +0200 (CEST)
+X-AntiVirus: checked by AntiVir MailGate (version: 2.1.2-14; AVE: 7.8.0.10; VDF: 7.0.3.220; host: AntiVir1)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 28, 2008 at 02:23:26PM +0300, Adrian Hunter wrote:
->>>> But these don't make much sense to me. Why would you want to be able
->>>> to compile out printks at this granularity? Why not enable all of them
->>>> when CONFIG_UBIFS_FS_DEBUG is enabled? 
->>>
->>> Well, its just more convenient for us. If I know the bug is somewhere in
->>> the journal, I enable the journal messages - less flooding. We may
->>> lessen the amount, but it is still handy to have some classes of
->>> prints separate.
->>>
->>> We will think how to lessen the amount and granularity of this. 
+On Sat, Apr 26, 2008 at 10:07:26PM -0700, David Miller wrote:
+> Ingo, what the heck is this?
+> 
+> commit 64970b68d2b3ed32b964b0b30b1b98518fde388e
+> Author: Alexander van Heukelum <heukelum@mailshack.com>
+> Date:   Tue Mar 11 16:17:19 2008 +0100
+> 
+>     x86, generic: optimize find_next_(zero_)bit for small constant-size bitmaps
+> 
+> Thanks for bloating up the inline expansion of this thing on every
+> architecture that doesn't do __ffs() in a simple sequence of a few
+> instructions like x86 does.
+> 
+> Now every call that matches your tests gets this turd inline:
+> 
+> static inline unsigned long __ffs(unsigned long word)
+> {
+> 	int num = 0;
+> 
+> #if BITS_PER_LONG == 64
+> 	if ((word & 0xffffffff) == 0) {
+> 		num += 32;
+> 		word >>= 32;
+> 	}
+> #endif
+> 	if ((word & 0xffff) == 0) {
+> 		num += 16;
+> 		word >>= 16;
+> 	}
+> 	if ((word & 0xff) == 0) {
+> 		num += 8;
+> 		word >>= 8;
+> 	}
+> 	if ((word & 0xf) == 0) {
+> 		num += 4;
+> 		word >>= 4;
+> 	}
+> 	if ((word & 0x3) == 0) {
+> 		num += 2;
+> 		word >>= 2;
+> 	}
+> 	if ((word & 0x1) == 0)
+> 		num += 1;
+> 	return num;
+> }
+> 
+> as well as all of that address formation, bit shifting, and masking.
+> 
+> Please revert or make this conditional on something architectures can
+> opt-in for.
 
-note that this last line was _not_ quoted in my mail.
+Alternatively, implement __ffs out of line? Like:
 
->>> Christoph Hellwig wrote:
->>>> It's everything but convenient :)  Please make it one config option to
->>>> compile in all debug code and then have a module option to select the
->>>> verbosity level at runtime.
->>> Surely that judgement should be made by people who actually debug UBIFS.
+static inline unsigned long __ffs(unsigned long word)
+{
+	return generic___ffs(word);
+}
 
-> You have gone off on a tangent.  The original context was discussing the
-> need for granulated debug messages.  I have restored the context above.
+And a generic___ffs implemented in lib/ffs.c?
 
-I think you haven't read my statement at all.  Please look at the quoted
-bit above.  There is nothing against having different
-vebosity/granularity levels, quite to the contrary.  I just told you
-that a run-time selection of them is everything but convenient and they
-should rather be at runtime. 
+If __ffs is too big to be inlined it should not be inlined. That
+is a generic problem and has nothing to do with this patch, IMHO.
 
-> You seem to have mistakenly inferred I was impugning your judgement.  That
-> was not the point.
+Greetings,
+	Alexander
 
-No, the point was that you didn't read my message and/or assumes just
-because I'm not 100% on your line of reasoning I'm against you.
-
-> Coming back to your issue of a mount-time option for debug messages.  I am
-> not sure any other file systems do that.  In general I would say having to
-> switch on the debug config option and also change either the kernel command
-> line or init scripts, seems in fact much less convenient.
-
-It means you can be debug different bits without recompiling which is a
-very good thing.  Especially if you're debugging moves from one area to
-another.
+> The version actually applied was posted only on linux-kernel, instead
+> of also CC:'ing linux-arch as previous versions had been.  Nobody
+> commented on this version other than you Ingo.
