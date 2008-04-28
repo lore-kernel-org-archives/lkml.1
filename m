@@ -1,60 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964845AbYD1RlS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936103AbYD1RmA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964845AbYD1RlS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 13:41:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935739AbYD1Rkn
+	id S936103AbYD1RmA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 13:42:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933501AbYD1Rlu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 13:40:43 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:42201 "EHLO smtp5.pp.htv.fi"
+	Mon, 28 Apr 2008 13:41:50 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:60147 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935709AbYD1Rkm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 13:40:42 -0400
-Date: Mon, 28 Apr 2008 20:40:08 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Yasunori Goto <y-goto@jp.fujitsu.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: [2.6 patch] mm/memory_hotplug.c must #include "internal.h"
-Message-ID: <20080428174008.GX2813@cs181133002.pp.htv.fi>
+	id S933142AbYD1Rlt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Apr 2008 13:41:49 -0400
+Date: Mon, 28 Apr 2008 19:41:33 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Priit Laes <plaes@plaes.org>, linux-kernel <linux-kernel@vger.kernel.org>,
+       Jack Steiner <steiner@sgi.com>
+Subject: Re: [REGRESSION] x86: support for new UV apic
+Message-ID: <20080428174133.GA27584@elte.hu>
+References: <1209098600.3707.13.camel@localhost> <20080425064405.GA23043@elte.hu> <87abjixo7d.fsf@basil.nowhere.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <87abjixo7d.fsf@basil.nowhere.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -0.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-0.5 required=5.9 tests=BAYES_20 autolearn=no SpamAssassin version=3.2.3
+	-0.5 BAYES_20               BODY: Bayesian spam probability is 5 to 20%
+	[score: 0.0621]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch fixes the following compile error caused by
-commit 04753278769f3b6c3b79a080edb52f21d83bf6e2
-(memory hotplug: register section/node id to free):
 
-<--  snip  -->
+* Andi Kleen <andi@firstfloor.org> wrote:
 
-...
-  CC      mm/memory_hotplug.o
-/home/bunk/linux/kernel-2.6/git/linux-2.6/mm/memory_hotplug.c: In function ‘put_page_bootmem’:
-/home/bunk/linux/kernel-2.6/git/linux-2.6/mm/memory_hotplug.c:82: error: implicit declaration of function ‘__free_pages_bootmem’
-/home/bunk/linux/kernel-2.6/git/linux-2.6/mm/memory_hotplug.c: At top level:
-/home/bunk/linux/kernel-2.6/git/linux-2.6/mm/memory_hotplug.c:87: warning: no previous prototype for ‘register_page_bootmem_info_section’
-make[2]: *** [mm/memory_hotplug.o] Error 1
+> Alternative patch appended.
 
-<--  snip  -->
+> Don't warn in read_apic_id() when preemptible but only one CPU online.
 
-Signed-off-by: Adrian Bunk <bunk@kernel.org>
+applied, thanks Andi.
 
----
-17f56d2d66ee41f504fcf0394687953c41afb8a4 diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
-index c4ba85c..b17dca7 100644
---- a/mm/memory_hotplug.c
-+++ b/mm/memory_hotplug.c
-@@ -29,6 +29,8 @@
- 
- #include <asm/tlbflush.h>
- 
-+#include "internal.h"
-+
- /* add this memory to iomem resource */
- static struct resource *register_memory_resource(u64 start, u64 size)
- {
-
+	Ingo
