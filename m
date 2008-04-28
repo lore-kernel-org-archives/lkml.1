@@ -1,62 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765336AbYD1BwM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764840AbYD1B5O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765336AbYD1BwM (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Apr 2008 21:52:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753301AbYD1Bvy
+	id S1764840AbYD1B5O (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Apr 2008 21:57:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753767AbYD1B47
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Apr 2008 21:51:54 -0400
-Received: from pythia.bakeyournoodle.com ([203.82.209.197]:48040 "EHLO
-	pythia.bakeyournoodle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754174AbYD1Bvx (ORCPT
+	Sun, 27 Apr 2008 21:56:59 -0400
+Received: from out4.smtp.messagingengine.com ([66.111.4.28]:56521 "EHLO
+	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753684AbYD1B46 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Apr 2008 21:51:53 -0400
-Date: Mon, 28 Apr 2008 11:51:51 +1000
-To: timur@freescale.com
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: cross-compiling on OS X, make menuconfig fails
-Message-ID: <20080428015151.GW20457@bakeyournoodle.com>
-References: <481529B6.6030802@freescale.com>
+	Sun, 27 Apr 2008 21:56:58 -0400
+X-Sasl-enc: 4pe3FEphDjlaRNA3WYgLHzAiNiXHALfSTZOcLdtI7+g1 1209347816
+Message-ID: <48152EE0.6020507@fastmail.com.au>
+Date: Mon, 28 Apr 2008 11:56:48 +1000
+From: Allan Duncan <amd2345@fastmail.com.au>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080228)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <481529B6.6030802@freescale.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: tony@bakeyournoodle.com (Tony Breeds)
+To: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.25 slow boot/reboot
+References: <anfqC-7SO-15@gated-at.bofh.it> <anfqC-7SO-13@gated-at.bofh.it>
+In-Reply-To: <anfqC-7SO-13@gated-at.bofh.it>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Apr 27, 2008 at 08:34:46PM -0500, timur@freescale.com wrote:
-> I'm trying to cross-compile a PowerPC kernel from an Intel OS X system. 
-
-<snip>
- 
-> However, I do not think that ncurses is the real problem, since I do 
-> have ncurses installed.  I think the real problem is that the 
-> check-lxdialog.sh is trying to execute this code:
+Allan Duncan wrote:
+> Sergio Luis wrote:
+>> Hello,
+>> This weekend I got some time and decided to try out 2.6.25, but its 
+>> booting process was _really_ slow in my laptop[1]. With 'old' 2.6.24.5 
+>> my machine would take about 48 secs until it gave me the login prompt. 
+>> And it would take about 22 seconds to reboot.
+>>
+>> With 2.6.25 I got from Linus git tree, my system takes about 4 min and 
+>> 40 secs to boot. Sometimes looks like the system just freezes for a 
+>> while, and then it continues the boot process. Rebooting also seems 
+>> problematic here. After almost 3 minutes I had asked the system to 
+>> reboot, it was still there. I typed reboot again and it then rebooted 
+>> right away, weirdly.
 > 
-> echo -e ' #include CURSES_LOC \n main() {}' | gcc 
-> '-DCURSES_LOC=<ncurses.h>' -DLOCALE -DKBUILD_NO_NLS -lncurses -xc - -o 
-> .lxdialog.tmp
+> I wonder if this relates to my 2.6.25 booting problem:
+> I use lilo, v22.5.9, and with 2.6.25 the boot process stalls part way 
+> through,
+> then retries, etc for up to six attempts before succeeding.  When I can get
+> the latest lilo to compile I'll try that, but I'm not holding my breath.
 > 
-> And the compiler is failing with this output:
-> 
-> <stdin>:1: error: syntax error before ‘-’ token
-> <stdin>:1: error: stray ‘#’ in program
+> I get a display like "LILO............." and then the hang.  It is about 
+> 14 dots,
+> normally about twice that many before I get a new line and a message about
+> BIOS check succeeding.
 
-On most linux systems echo supports c-syle escapes with "-e".  I'm
-guessing which ever echo you're getting dosesn't do that.
+Now that I have rebooted I can be more accurate - the line says:
+"Loading 2.6.25.............."
 
-I think the best fix is to ensure you're getting bash as your shell.
-
-A nasty hack would be to make check-lxdialog.sh do something like:
-(echo ' #include CURSES_LOC';echo 'main() {}') | gcc '-DCURSES_LOC=<ncurses.h>' -DLOCALE -DKBUILD_NO_NLS -lncurses -xc - -o .lxdialog.tmp
-
-But you'll likley find other palces it breaks.
-
-Yours Tony
-
-  linux.conf.au    http://www.marchsouth.org/
-  Jan 19 - 24 2009 The Australian Linux Technical Conference!
-
+_and_ the problem is temperature dependant.  Once the box is warmed up it
+momentarily pauses at the halting point above, when cold (below 10C) it
+fails to get past this sticking point at all.  2.6.24.2 Just Works.
