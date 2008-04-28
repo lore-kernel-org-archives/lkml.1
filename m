@@ -1,105 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935705AbYD1PP1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935813AbYD1PQT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935705AbYD1PP1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 11:15:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935541AbYD1POT
+	id S935813AbYD1PQT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 11:16:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934783AbYD1PPd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 11:14:19 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:57795 "EHLO mx1.redhat.com"
+	Mon, 28 Apr 2008 11:15:33 -0400
+Received: from mail.queued.net ([207.210.101.209]:1233 "EHLO mail.queued.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935532AbYD1POR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 11:14:17 -0400
-Message-ID: <4815E99B.2010903@redhat.com>
-Date: Mon, 28 Apr 2008 08:13:31 -0700
-From: Ulrich Drepper <drepper@redhat.com>
-Organization: Red Hat, Inc.
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
-MIME-Version: 1.0
-To: Michael Kerrisk <mtk.manpages@googlemail.com>
-CC: Michael Kerrisk <mtk.manpages@gmail.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org
-Subject: Re: [PATCH] paccept, socket, socketpair w/flags
-References: <200804262224.m3QMOP3a006296@devserv.devel.redhat.com>	 <517f3f820804280252h753c8cacv7fe9580f96dcf1ce@mail.gmail.com>	 <4815DB8B.7060606@redhat.com> <cfd18e0f0804280751x21833b51y4b1f6f7ce3201d0d@mail.gmail.com>
-In-Reply-To: <cfd18e0f0804280751x21833b51y4b1f6f7ce3201d0d@mail.gmail.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+	id S935712AbYD1PPb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Apr 2008 11:15:31 -0400
+Date: Mon, 28 Apr 2008 11:18:39 -0400
+From: Andres Salomon <dilinger@queued.net>
+To: Andres Salomon <dilinger@queued.net>
+Cc: sam@ravnborg.org, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, linux-kbuild@vger.kernel.org,
+       tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com
+Subject: Re: [PATCH 1/4] build: fix missing x86-specific help output
+Message-ID: <20080428111839.5f8d5669@ephemeral>
+In-Reply-To: <20080425223458.4eb88ba6@ephemeral>
+References: <20080425223458.4eb88ba6@ephemeral>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.12.0; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+Note that this one is a general x86 fix, I probably should've separated it
+out from the other three.
 
-Michael Kerrisk wrote:
-> You have said it would be cleaner to have new syscalls for socket()
-> and socketpair().  I understand your reasoning for that to be that
-> doing so is cleaner than overloading the type argument of the existing
-> versions of these syscalls.  I agree.  So, since you are adding new
-> syscalls for all of the other interfaces, why not do it for these two
-> syscalls also?
+On Fri, 25 Apr 2008 22:34:58 -0400
+Andres Salomon <dilinger@queued.net> wrote:
 
-If the range of the existing parameter can indeed be restricted as
-needed for the flags it is the better approach for programmers since all
-that is needed for a programmer to do is to write
-
-
-   fd = socket(PF_INET, SOCK_STREAM|SOCK_CLOEXEC, 0);
-   if (fd == -1 && errno == EINVAL)
-     {
-       fd = socket(PF_INET, SOCK_STREAM, 0);
-       if (fd != -1)
-         fcntl(fd, F_SETFD, FD_CLOEXEC);
-     }
-
-No autoconf code needed to detect the presence of a new function.  You
-can even imagine that convenience libraries will do the above
-automatically (not libc, though, where you want to recognize this
-situation).
-
-
-> Okay -- I see your point (and I didn't read your patches closely
-> enough).  However, the rationale for the implementations proposed to
-> date isn't very clear.  So far we have the following new flags:
 > 
-> timerfd_create() -- TFD_CLOEXEC
-> signalfd4() -- SFD_CLOEXEC
-> eventfd2() -- EFD_CLOEXEC
-> epoll_create2() -- EPOLL_CLOEXEC
-> open() (and openat()), dup3() -- all use O_CLOEXEC
-> socketpair(), socket(), paccept -- all use SOCK_CLOEXEC
-> pipe2() -- to be determined
-
-Use O_CLOEXEC, normal filesystem operation.
-
-> inotify_init2() -- to be determined
-
-New flag.
-
-
-> It would help if you laid out your reasoning for creating distinct
-> flags for some syscalls but not others.  For example, is the
-> assumption here that socketpair(), socket(), and paccept() will always
-> use the same set of flags?
-
-Yes, they are all related interfaces.  Using the same name indicates
-similarity.
-
-
-And just to complicate things even more:
-
-if we'd go with sys_indirect we can have single way to specify
-close-on-exec for all syscalls.  That would be at the syscall level.  At
-the API level we'd still need separate names and possibly values.
-
-- --
-➧ Ulrich Drepper ➧ Red Hat, Inc. ➧ 444 Castro St ➧ Mountain View, CA ❖
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-
-iD8DBQFIFemb2ijCOnn/RHQRAjNCAJ0QCvEJoynwbPveUZQqsyVnEAHtmgCZAe0R
-jNlcvQFI06n2ckFhEqUcEbE=
-=sJhN
------END PGP SIGNATURE-----
+> Normally 'make help' spits out architecture-specific targets (including
+> things like foo_defconfig).  However, it looks like ARCH was never changed
+> to SRCARCH during the x86 transition; the makefile still looks in
+> arch/i386/configs for arch-specific config files (if ARCH is i386, that is).
+> 
+> This changes it to use SRCARCH, which makes it properly display things
+> like i386_defconfig and x86_64_defconfig.
+> 
+> Signed-off-by: Andres Salomon <dilinger@debian.org>
+> ---
+>  Makefile |    6 +++---
+>  1 files changed, 3 insertions(+), 3 deletions(-)
+> 
+> diff --git a/Makefile b/Makefile
+> index 3dbc826..e77149e 100644
+> --- a/Makefile
+> +++ b/Makefile
+> @@ -1170,7 +1170,7 @@ rpm: include/config/kernel.release FORCE
+>  # Brief documentation of the typical targets used
+>  # ---------------------------------------------------------------------------
+>  
+> -boards := $(wildcard $(srctree)/arch/$(ARCH)/configs/*_defconfig)
+> +boards := $(wildcard $(srctree)/arch/$(SRCARCH)/configs/*_defconfig)
+>  boards := $(notdir $(boards))
+>  
+>  help:
+> @@ -1217,9 +1217,9 @@ help:
+>  	@echo  'Documentation targets:'
+>  	@$(MAKE) -f $(srctree)/Documentation/DocBook/Makefile dochelp
+>  	@echo  ''
+> -	@echo  'Architecture specific targets ($(ARCH)):'
+> +	@echo  'Architecture specific targets ($(SRCARCH)):'
+>  	@$(if $(archhelp),$(archhelp),\
+> -		echo '  No architecture specific help defined for $(ARCH)')
+> +		echo '  No architecture specific help defined for $(SRCARCH)')
+>  	@echo  ''
+>  	@$(if $(boards), \
+>  		$(foreach b, $(boards), \
