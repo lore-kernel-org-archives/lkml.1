@@ -1,61 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932504AbYD1Hid@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932511AbYD1HmM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932504AbYD1Hid (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 03:38:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763172AbYD1HiY
+	id S932511AbYD1HmM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 03:42:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764994AbYD1Hl5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 03:38:24 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:53075 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750820AbYD1HiX (ORCPT
+	Mon, 28 Apr 2008 03:41:57 -0400
+Received: from nf-out-0910.google.com ([64.233.182.184]:52923 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763414AbYD1Hl4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 03:38:23 -0400
-Message-ID: <48157EE9.1040907@sgi.com>
-Date: Mon, 28 Apr 2008 09:38:17 +0200
-From: Jes Sorensen <jes@sgi.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Mon, 28 Apr 2008 03:41:56 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=aWiTDWlKfyl5a+NlOvyRLsZIfJvsRXzVzm2hsPkg4LV+xhk6FJdDroqaS+rPFgonG+nocbcf6ah2Or/0qavza0a8c59hSL9+5NWcacZnAsPen/VOrfoaHfxN6tnSehiYkYushtPxp7/mXMgO3up3zKoRjKDkr84q8isHrxb3u5Q=
+Message-ID: <48157FBE.30008@gmail.com>
+Date: Mon, 28 Apr 2008 09:41:50 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
 MIME-Version: 1.0
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: Jens Axboe <jens.axboe@oracle.com>, linux-arch@vger.kernel.org,
-       linux-kernel@vger.kernel.org, npiggin@suse.de,
-       torvalds@linux-foundation.org, peterz@infradead.org, sam@ravnborg.org
-Subject: Re: [PATCH 1/11] Add generic helpers for arch IPI function calls
-References: <1208890227-24808-1-git-send-email-jens.axboe@oracle.com> <1208890227-24808-2-git-send-email-jens.axboe@oracle.com> <20080424220157.GA26179@flint.arm.linux.org.uk> <20080425071823.GF12774@kernel.dk> <4812CB99.1070600@goop.org>
-In-Reply-To: <4812CB99.1070600@goop.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Chris Peterson <cpeterso@cpeterso.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] fix warning: remove unused static function in drivers/char/ip2/i2ellis.c
+References: <a24804730804270009x3398a190wf68e52280015fc7f@mail.gmail.com>	 <48142E5B.3000109@gmail.com> <a24804730804271851j61ded9c2tf1c15b6da845050c@mail.gmail.com>
+In-Reply-To: <a24804730804271851j61ded9c2tf1c15b6da845050c@mail.gmail.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge wrote:
-> Jens Axboe wrote:
->> On Thu, Apr 24 2008, Russell King wrote:
->>> On Tue, Apr 22, 2008 at 08:50:17PM +0200, Jens Axboe wrote:
->>>> +        data->csd.func(data->csd.info);
->>>> +
->>>> +        spin_lock(&data->lock);
->>>> +        cpu_clear(cpu, data->cpumask);
->>>> +        WARN_ON(data->refs == 0);
->>>> +        data->refs--;
->>>> +        refs = data->refs;
->>>>       
->>> Probably a silly question, but what does data->refs do that
->>> cpus_empty(data->cpumask) wouldn't do?  (as indeed ARM presently does.)
->>
->> I guess it can be marginally slower for NR_CPUS > BITS_PER_LONG,
->> otherwise there's absolutely no reason to have a seperate ref counter.
-> 
-> Jes was concerned about scanning bitmasks on a 4096 CPU Altix.  I'm not 
-> sure its all that important, but a refcount check would definitely be 
-> quicker.
+On 04/28/2008 03:51 AM, Chris Peterson wrote:
+> Yes, I did compile it, but I now realize I had compiled the computone
+> driver to be linked statically, but iiEllisCleanup() is only called
+> when the driver is built as a module. What is the appropriate cleanup
+> code path for non-modular drivers?
 
-I just felt it was silly to do a bigger test if it wasn't necessary.
-Even on a 4096 CPU box it's probably barely noticeable, but if it adds
-cost then I'd be in favor of keeping the slightly faster version. Maybe
-it would be worth doing a branched version, one for
-NR_CPUS <= BITS_PER_LONG and one for the other case?
-
-Cheers,
-Jes
-
+Remove the function and all its references.
