@@ -1,112 +1,160 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765067AbYD1G1e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765537AbYD1G2z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765067AbYD1G1e (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 02:27:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753858AbYD1G1Y
+	id S1765537AbYD1G2z (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 02:28:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753527AbYD1G2r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 02:27:24 -0400
-Received: from out4.smtp.messagingengine.com ([66.111.4.28]:34574 "EHLO
-	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752418AbYD1G1X (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 02:27:23 -0400
-X-Sasl-enc: U7k+sZOEulxMB9ymVuShrROt+EK80SxGzGoLY0zliQk5 1209364041
-Date: Mon, 28 Apr 2008 14:26:34 +0800 (WST)
-From: Ian Kent <raven@themaw.net>
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       autofs mailing list <autofs@linux.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>
-Subject: [PATCH 1/2] autofs4 - fix execution order race in mount request code
-Message-ID: <Pine.LNX.4.64.0804281422060.10684@raven.themaw.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 28 Apr 2008 02:28:47 -0400
+Received: from gate.crashing.org ([63.228.1.57]:51571 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752737AbYD1G2r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Apr 2008 02:28:47 -0400
+Cc: "linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>,
+       Wim Van Sebroeck <wim@iguana.be>,
+       lkml Mailing List <linux-kernel@vger.kernel.org>
+Message-Id: <050B2709-5AD6-4228-B963-6A60D254B15C@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Chen Gong <g.chen@freescale.com>
+In-Reply-To: <1209363637-22739-1-git-send-email-g.chen@freescale.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Content-Transfer-Encoding: 7bit
+Mime-Version: 1.0 (Apple Message framework v919.2)
+Subject: Re: [PATHC V3] Watchdog on MPC85xx SMP system
+Date: Mon, 28 Apr 2008 01:28:32 -0500
+References: <1209363637-22739-1-git-send-email-g.chen@freescale.com>
+X-Mailer: Apple Mail (2.919.2)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Hi Andrew,
+On Apr 28, 2008, at 1:20 AM, Chen Gong wrote:
+> On Book-E SMP systems each core has its own private watchdog.
+> If only one watchdog is enabled, when the core that doesn't
+> enable the watchdog is hung, system can't reset because no
+> watchdog is running on it. That's bad. It means we must enable
+> watchdogs on both cores.
+>
+> We can use smp_call_function() to send appropriate messages to all  
+> the other
+> cores to enable and update the watchdog.
+>
+> Signed-off-by: Chen Gong <g.chen@freescale.com>
 
-Jeff Moyer has identified a race in due to an execution order dependency
-in the autofs4 function root.c:try_to_fill_dentry().
+In the future Wim should be copied as maintainer of WATCHDOG drivers  
+in the kernel.
 
-Jeffs description of this race is:
+- k
 
-"P1 does a lookup of /mount/submount/foo.  Since the VFS can't find
-an entry for "foo" under /mount/submount, it calls into the autofs4
-kernel module to allocate a new dentry, D1. The kernel creates a new
-waitq for this lookup and calls the daemon to perform the mount.
+>
+> ---
+> Tested on MPC8572DS platform.
+>
+> drivers/char/watchdog/booke_wdt.c |   34 ++++++++++++++++++++++++++ 
+> +-------
+> 1 files changed, 27 insertions(+), 7 deletions(-)
+>
+> diff --git a/drivers/char/watchdog/booke_wdt.c b/drivers/char/ 
+> watchdog/booke_wdt.c
+> index d362f5b..b3a37d0 100644
+> --- a/drivers/char/watchdog/booke_wdt.c
+> +++ b/drivers/char/watchdog/booke_wdt.c
+> @@ -6,7 +6,12 @@
+>  * Author: Matthew McClintock
+>  * Maintainer: Kumar Gala <galak@kernel.crashing.org>
+>  *
+> - * Copyright 2005 Freescale Semiconductor Inc.
+> + * Copyright 2005, 2008 Freescale Semiconductor Inc.
+> + *
+> + * Changelog:
+> + * 	2008-04-28 Chen Gong <g.chen@freescale.com>
+> + * 	Add SMP support for MPC85xx system. Tested on
+> + * 	MPC8572DS platform
+>  *
+>  * This program is free software; you can redistribute  it and/or  
+> modify it
+>  * under  the terms of  the GNU General  Public License as published  
+> by the
+> @@ -16,6 +21,7 @@
+>
+> #include <linux/module.h>
+> #include <linux/fs.h>
+> +#include <linux/smp.h>
+> #include <linux/miscdevice.h>
+> #include <linux/notifier.h>
+> #include <linux/watchdog.h>
+> @@ -47,23 +53,31 @@ u32 booke_wdt_period = WDT_PERIOD_DEFAULT;
+> #define WDTP(x)		(TCR_WP(x))
+> #endif
+>
+> +static DEFINE_SPINLOCK(booke_wdt_lock);
+> +
+> +static void __booke_wdt_ping(void *data)
+> +{
+> +	mtspr(SPRN_TSR, TSR_ENW|TSR_WIS);
+> +}
+> +
+> /*
+>  * booke_wdt_ping:
+>  */
+> static __inline__ void booke_wdt_ping(void)
+> {
+> -	mtspr(SPRN_TSR, TSR_ENW|TSR_WIS);
+> +	smp_call_function(__booke_wdt_ping, NULL, 0, 0);
+> +	__booke_wdt_ping(NULL);
+> }
+>
+> /*
+> - * booke_wdt_enable:
+> + * __booke_wdt_enable:
+>  */
+> -static __inline__ void booke_wdt_enable(void)
+> +static __inline__ void __booke_wdt_enable(void *data)
+> {
+> 	u32 val;
+>
+> 	/* clear status before enabling watchdog */
+> -	booke_wdt_ping();
+> +	__booke_wdt_ping(NULL);
+> 	val = mfspr(SPRN_TCR);
+> 	val |= (TCR_WIE|TCR_WRC(WRC_CHIP)|WDTP(booke_wdt_period));
+>
+> @@ -137,12 +151,15 @@ static int booke_wdt_ioctl (struct inode  
+> *inode, struct file *file,
+>  */
+> static int booke_wdt_open (struct inode *inode, struct file *file)
+> {
+> +	spin_lock(&booke_wdt_lock);
+> 	if (booke_wdt_enabled == 0) {
+> 		booke_wdt_enabled = 1;
+> -		booke_wdt_enable();
+> +		__booke_wdt_enable(NULL);
+> +		smp_call_function(__booke_wdt_enable, NULL, 0, 0);
+> 		printk (KERN_INFO "PowerPC Book-E Watchdog Timer Enabled  
+> (wdt_period=%d)\n",
+> 				booke_wdt_period);
+> 	}
+> +	spin_unlock(&booke_wdt_lock);
+>
+> 	return nonseekable_open(inode, file);
+> }
+> @@ -183,11 +200,14 @@ static int __init booke_wdt_init(void)
+> 		return ret;
+> 	}
+>
+> +	spin_lock(&booke_wdt_lock);
+> 	if (booke_wdt_enabled == 1) {
+> 		printk (KERN_INFO "PowerPC Book-E Watchdog Timer Enabled  
+> (wdt_period=%d)\n",
+> 				booke_wdt_period);
+> -		booke_wdt_enable();
+> +		__booke_wdt_enable(NULL);
+> +		smp_call_function(__booke_wdt_enable, NULL, 0, 0);
+> 	}
+> +	spin_unlock(&booke_wdt_lock);
+>
+> 	return ret;
+> }
+> -- 
+> 1.5.4
 
-The daemon performs a mkdir of the "foo" directory under /mount/submount,
-which ends up creating a *new* dentry, D2.
-
-Then, P2 does a lookup of /mount/submount/foo.  The VFS path walking
-logic finds a dentry in the dcache, D2, and calls the revalidate
-function with this.  In the autofs4 revalidate code, we then trigger
-a mount, since the dentry is an empty directory that isn't a mountpoint,
-and so set DCACHE_AUTOFS_PENDING and call into the wait code to trigger
-the mount.
-
-The wait code finds our existing waitq entry (since it is keyed off
-of the directory name) and adds itself to the list of waiters.
-
-After the daemon finishes the mount, it calls back into the kernel
-to release the waiters. When this happens, P1 is woken up and goes
-about clearing the DCACHE_AUTOFS_PENDING flag, but it does this in
-D1!  So, given that P1 in our case is a program that will immediately
-try to access a file under /mount/submount/foo, we end up finding the
-dentry D2 which still has the pending flag set, and we set out to
-wait for a mount *again*!
-
-So, one way to address this is to re-do the lookup at the end
-of try_to_fill_dentry, and to clear the pending flag on the hashed
-dentry.  This seems a sane approach to me."
-
-And Jeffs patch does this.
-
-Signed-off-by: Jeff Moyer <jmoyer@redhat.com>
-Acked-by: Ian Kent <raven@themaw.net>
-
-Ian
-
----
-diff -up linux-2.6.25-mm1/fs/autofs4/root.c.redo-lookup-in-ttfd linux-2.6.25-mm1/fs/autofs4/root.c
---- linux-2.6.25-mm1/fs/autofs4/root.c.redo-lookup-in-ttfd	2008-04-28 11:43:30.000000000 +0800
-+++ linux-2.6.25-mm1/fs/autofs4/root.c	2008-04-28 11:45:29.000000000 +0800
-@@ -244,6 +244,7 @@ static int try_to_fill_dentry(struct den
- {
- 	struct autofs_sb_info *sbi = autofs4_sbi(dentry->d_sb);
- 	struct autofs_info *ino = autofs4_dentry_ino(dentry);
-+	struct dentry *new;
- 	int status = 0;
- 
- 	/* Block on any pending expiry here; invalidate the dentry
-@@ -320,6 +321,27 @@ static int try_to_fill_dentry(struct den
- 	spin_lock(&dentry->d_lock);
- 	dentry->d_flags &= ~DCACHE_AUTOFS_PENDING;
- 	spin_unlock(&dentry->d_lock);
-+
-+	/*
-+	 * The dentry that is passed in from lookup may not be the one
-+	 * we end up using, as mkdir can create a new one.  If this
-+	 * happens, and another process tries the lookup at the same time,
-+	 * it will set the PENDING flag on this new dentry, but add itself
-+	 * to our waitq.  Then, if after the lookup succeeds, the first
-+	 * process that requested the mount performs another lookup of the
-+	 * same directory, it will show up as still pending!  So, we need
-+	 * to redo the lookup here and clear pending on that dentry.
-+	 */
-+	if (d_unhashed(dentry)) {
-+		new = d_lookup(dentry->d_parent, &dentry->d_name);
-+		if (new) {
-+			spin_lock(&new->d_lock);
-+			new->d_flags &= ~DCACHE_AUTOFS_PENDING;
-+			spin_unlock(&new->d_lock);
-+			dput(new);
-+		}
-+	}
-+
- 	return status;
- }
- 
