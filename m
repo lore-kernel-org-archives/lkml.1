@@ -1,79 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937654AbYD1Umx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965382AbYD1Unf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937654AbYD1Umx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 16:42:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936529AbYD1Umj
+	id S965382AbYD1Unf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 16:43:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934761AbYD1UnX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 16:42:39 -0400
-Received: from mga11.intel.com ([192.55.52.93]:44123 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933008AbYD1Umi convert rfc822-to-8bit (ORCPT
+	Mon, 28 Apr 2008 16:43:23 -0400
+Received: from wa-out-1112.google.com ([209.85.146.182]:25138 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934745AbYD1UnW convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 16:42:38 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,718,1199692800"; 
-   d="scan'208";a="322291194"
-x-mimeole: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Mon, 28 Apr 2008 16:43:22 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=rHnuFqp03jWcvuuOXRCREhOKr2J21rY4ItMQh/LXSbfRfhbVqpk9F0SdIFAiZ1L15aWPbMZzezR53ZuWphBzZwXmYANzsogc9uimZuH7gaYu6BoDHAIvkyD0El90kIQiyw7QNMv74lSSljlQnnMUw+csSYQlD/87HHMghIxAVJA=
+Message-ID: <c878e2290804281343x21b7d4aau479bea16c0f7a2c6@mail.gmail.com>
+Date: Mon, 28 Apr 2008 22:43:21 +0200
+From: "Kim Hansen" <kimhanse@gmail.com>
+To: "Alex Dubov" <oakad@yahoo.com>
+Subject: Re: tifm_7xx1: SD card is ignored
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <622387.91709.qm@web36701.mail.mud.yahoo.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH] ARCH: Fix 32-bit x86 MSI-X allocation leakage
-Date: Mon, 28 Apr 2008 13:42:40 -0700
-Message-ID: <D5C1322C3E673F459512FB59E0DDC32904F9EC8C@orsmsx414.amr.corp.intel.com>
-In-Reply-To: <alpine.LFD.1.10.0804282216570.3261@apollo.tec.linutronix.de>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] ARCH: Fix 32-bit x86 MSI-X allocation leakage
-Thread-Index: AcipbrTiXKNe5aE5QuS00730ftqEaQAACccw
-References: <20080426005850.7098.77479.stgit@scrappy.jf.intel.com> <alpine.LFD.1.10.0804282216570.3261@apollo.tec.linutronix.de>
-From: "Waskiewicz Jr, Peter P" <peter.p.waskiewicz.jr@intel.com>
-To: "Thomas Gleixner" <tglx@linutronix.de>
-Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "LKML" <linux-kernel@vger.kernel.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>, <netdev@vger.kernel.org>
-X-OriginalArrivalTime: 28 Apr 2008 20:42:37.0418 (UTC) FILETIME=[64E464A0:01C8A970]
+Content-Disposition: inline
+References: <c878e2290804270359w4fe4392flc41a5fb074152572@mail.gmail.com>
+	 <622387.91709.qm@web36701.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Fri, 25 Apr 2008, PJ Waskiewicz wrote:
-> > This bug was introduced in the 2.6.24 i386/x86_64 tree merge, where
-> 
-> Can you please explain what exactly caused the bug. 
-> Definitely not the move from arch/i386 to arch/x86 as the 
-> code there was not changed at all and has not be changed since then.
-> 
-> CC'ed Eric as well.
+On Sun, Apr 27, 2008 at 5:47 PM, Alex Dubov <oakad@yahoo.com> wrote:
+>
+>  --- Kim Hansen <kimhanse@gmail.com> wrote:
+>
+>  > I have the problem that the SD card slot does not work on my Toshiba
+>  > Protege M400 with my current kernel (2.6.24), it worked for me with
+>  > 2.6.18 but has been broken at least since 2.6.22.
+>  >
+>  > The problem is that nothing happens, dmesg is silent and I guess the
+>  > cause is that the driver does not see the hardware.
+>  >
+>  > How should I start debugging this?
+>  >
+>
+>  First, there's an option in the kernel config enabling debugging print-outs
+>  (called "MMC Debugging" under MMC). Enable it, recompile the modules and you'll
+>  get plenty of dmesg noise.
 
-Eric replied with the actual commit during the 2.6.24 merge window that
-introduced this bug.  The io_apic.c code from the i386 tree did not stay
-completely static when it was merged into the x86 io_apic_32.c code.
-Here is the commit that Eric identified that introduced the defect:
+I just downloaded 2.6.25 and compiled, and now it works. The 2.6.24
+kernel was from Debian, but I know that I also had the problem with
+2.6.22 which I compiled myself. When 2.6.25 comes in Debian I will see
+if the problem is still there.
 
-In particular commit dbeb2be21d678c49a8d8bbf774903df15dd55474
-Author: Rusty Russell <rusty@rustcorp.com.au>
-Date:   Fri Oct 19 20:35:03 2007 +0200
+>  Second, the fact modules are loaded means that driver sees the hardware all
+>  right. There can be some sort of interplay between sdhci and tifm_sd as they
+>  use the same chip. I think you should blacklist one of them. Which one -
+>  depends on the settings in you flashmedia chip's eeprom (some vendors disable
+>  sdhci interface and some flashmedia one).
 
-    i386: introduce "used_vectors" bitmap which can be used to reserve
-vectors.
-    
-    This simplifies the io_apic.c __assign_irq_vector() logic and
-removes
-    the explicit SYSCALL_VECTOR check, and also allows for vectors to be
-    reserved by other mechanisms (ie. lguest).
-    
-    [ tglx: arch/x86 adaptation ]
-    
-    Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
-    Signed-off-by: Andi Kleen <ak@suse.de>
-    Signed-off-by: Ingo Molnar <mingo@elte.hu>
-    Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Is there a way to find out which one to use ?
 
-Basically the code introduced the test_and_set_bit() on the used_vectors
-bitmap, but it didn't have a corresponding clear_bit() on IRQ
-destruction.
+>  In the worst case, you can always blame the TI. Some TI guy notified me that my
+>  driver contains errors affecting 803b series controllers (I myself have a
+>  8033). He, however, had not told me what they are. Very nice, indeed.
 
-Cheers,
--PJ Waskiewicz
+Is there some tests I could run to see if I can find the errors?
+
+Regards,
+-- 
+Kim Hansen
+Vadgårdsvej 3, 2.tv
+2860 Søborg
+Fastnet: 3956 2437 -- Mobil: 3091 2437
