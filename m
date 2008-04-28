@@ -1,46 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937123AbYD1VDt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966081AbYD1VEZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937123AbYD1VDt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 17:03:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934620AbYD1VDk
+	id S966081AbYD1VEZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 17:04:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965028AbYD1VEQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 17:03:40 -0400
-Received: from vigor.karmaclothing.net ([217.169.26.28]:42980 "EHLO
-	dl5rb.ham-radio-op.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S934532AbYD1VDk (ORCPT
+	Mon, 28 Apr 2008 17:04:16 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:59460 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965013AbYD1VEO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 17:03:40 -0400
-X-Greylist: delayed 610 seconds by postgrey-1.27 at vger.kernel.org; Mon, 28 Apr 2008 17:03:39 EDT
-Date: Mon, 28 Apr 2008 21:53:14 +0100
-From: Ralf Baechle <ralf@linux-mips.org>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 12/15] [MIPS] pmc-sierra/msp71xx/msp_hwbutton.c: minor
-	irq handler cleanups
-Message-ID: <20080428205314.GA12221@linux-mips.org>
-References: <d7afbccda111e535bb14ad8082b208c7a2cd9833.1208559659.git.jgarzik@redhat.com> <1fe60a9e2aaf5ddc410e5eefd7aa1163821c59b5.1208559659.git.jgarzik@redhat.com>
+	Mon, 28 Apr 2008 17:04:14 -0400
+Message-ID: <48163B84.90605@zytor.com>
+Date: Mon, 28 Apr 2008 14:03:00 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1fe60a9e2aaf5ddc410e5eefd7aa1163821c59b5.1208559659.git.jgarzik@redhat.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: Ingo Molnar <mingo@elte.hu>
+CC: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [patch 0/2] Immediate Values - jump patching update
+References: <20080428033415.303000651@polymtl.ca> <481607AF.80803@zytor.com> <20080428202552.GG15840@elte.hu>
+In-Reply-To: <20080428202552.GG15840@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 18, 2008 at 07:23:01PM -0400, Jeff Garzik wrote:
-
-> - remove always-true test
+Ingo Molnar wrote:
+> * H. Peter Anvin <hpa@zytor.com> wrote:
 > 
-> - neaten request_irq() indentation
+>> Mathieu Desnoyers wrote:
+>>> Thanks to Peter for the review.
+>> Just in case someone gets the wrong idea...
+>>
+>> I still think this is the completely wrong approach.
 > 
-> This change's main purpose is to prepare for the patchset in
-> jgarzik/misc-2.6.git#irq-remove, that explores removal of the
-> never-used 'irq' argument in each interrupt handler.
+> hm, can it result in a broken kernel? If yes, how? Or are your 
+> objections more higher level?
 > 
-> Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
 
-Applied, thanks Jeff.
+My objections are higher level, I believe the current code is (a) 
+painfully complex, and I'd rather not see it in the kernel, and (b) the 
+wrong thing anyway.
 
-  Ralf
+Put a 5-byte nop in as the marker, and patch it with a call instruction, 
+out of line, to a collector function.
+
+	-hpa
