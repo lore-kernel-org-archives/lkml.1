@@ -1,67 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932893AbYD1HxP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932930AbYD1Hyj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932893AbYD1HxP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 03:53:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764112AbYD1Hw5
+	id S932930AbYD1Hyj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 03:54:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764112AbYD1Hy3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 03:52:57 -0400
-Received: from mtagate8.uk.ibm.com ([195.212.29.141]:2976 "EHLO
-	mtagate8.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765632AbYD1Hw4 (ORCPT
+	Mon, 28 Apr 2008 03:54:29 -0400
+Received: from out4.smtp.messagingengine.com ([66.111.4.28]:34060 "EHLO
+	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750898AbYD1Hy3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 03:52:56 -0400
-Date: Mon, 28 Apr 2008 09:52:53 +0200
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Gautham R Shenoy <ego@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Paul Jackson <pj@sgi.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] sched: missing locking in sched_domains code
-Message-ID: <20080428075253.GB4507@osiris.boeblingen.de.ibm.com>
-References: <20080427211224.GA21830@osiris.boeblingen.de.ibm.com> <20080427183926.acb66fff.akpm@linux-foundation.org> <20080428070946.GA4507@osiris.boeblingen.de.ibm.com> <20080428002853.1693e7fd.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080428002853.1693e7fd.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Mon, 28 Apr 2008 03:54:29 -0400
+X-Sasl-enc: c/36ZwRKuE1YFE6K8aTtwCxtchuR0csx1NktuLs4nKcl 1209369267
+Subject: Re: [PATCH] autofs4 - use lookup access intent to support
+	recursive bind mounts
+From: Ian Kent <raven@themaw.net>
+To: Al Viro <viro@ZenIV.linux.org.uk>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       autofs mailing list <autofs@linux.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>
+In-Reply-To: <1209367536.3243.16.camel@raven.themaw.net>
+References: <Pine.LNX.4.64.0804281410160.10684@raven.themaw.net>
+	 <20080428062213.GB5882@ZenIV.linux.org.uk>
+	 <1209364705.3243.1.camel@raven.themaw.net>
+	 <20080428070514.GC5882@ZenIV.linux.org.uk>
+	 <1209367536.3243.16.camel@raven.themaw.net>
+Content-Type: text/plain
+Date: Mon, 28 Apr 2008 15:53:40 +0800
+Message-Id: <1209369220.3243.18.camel@raven.themaw.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-4.fc8) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 28, 2008 at 12:28:53AM -0700, Andrew Morton wrote:
-> On Mon, 28 Apr 2008 09:09:46 +0200 Heiko Carstens <heiko.carstens@de.ibm.com> wrote:
-> 
-> > On Sun, Apr 27, 2008 at 06:39:26PM -0700, Andrew Morton wrote:
-> > > On Sun, 27 Apr 2008 23:12:24 +0200 Heiko Carstens <heiko.carstens@de.ibm.com> wrote:
-> > > > Index: linux-2.6/kernel/cpuset.c
-> > > > ===================================================================
-> > > > --- linux-2.6.orig/kernel/cpuset.c
-> > > > +++ linux-2.6/kernel/cpuset.c
-> > > > @@ -684,7 +684,9 @@ restart:
-> > > >  rebuild:
-> > > >  	/* Have scheduler rebuild sched domains */
-> > > >  	get_online_cpus();
-> > > > +	mutex_lock(&sched_domains_mutex);
-> > > >  	partition_sched_domains(ndoms, doms, dattr);
-> > > > +	mutex_unlock(&sched_domains_mutex);
-> > > >  	put_online_cpus();
-> > > >  
-> > > 
-> > > It seems a bit fragile to take this lock in the caller without even adding
-> > > a comment at the callee site which documents the new locking rule.
-> > > 
-> > > It would be more robust to take the lock within partition_sched_domains().
-> > > 
-> > > partition_sched_domains() already covers itself with lock_doms_cur().  Can
-> > > we take that in arch_reinit_sched_domains() rather than adding the new lock?
-> > 
-> > I think you meant taking it in partition_sched_domains?
-> 
-> What I meant was: rather than adding the new sched_domains_mutex, can we
-> instead call lock_doms_cur() from arch_reinit_sched_domains() and
-> sched_init_smp()?  Borrow the existing lock?
-> 
-> Whether that makes sense depends upon what lock_doms_cur() semantically
-> *means*.  As that appears to be somewhat of a secret, we get to decide ;)
 
-Oh, I didn't realize that lock_doms_cur() was only used in one function.
-So that should work. Will try.
+On Mon, 2008-04-28 at 15:25 +0800, Ian Kent wrote:
+> > ->lookup() and friends are going to stop getting struct nameidata *.
+> > ->follow_link() obviously will keep it; ->d_revalidate() should
+> > lose the sucker, but we might have to split it in two methods (which
+> > is probably what'll be needed in your case).
+> 
+> Right.
+
+Would it be sensible to use dentry->d_flags for this purpose?
+Ian
+
+
