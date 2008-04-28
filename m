@@ -1,42 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765428AbYD1GMT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764603AbYD1GQy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765428AbYD1GMT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 02:12:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751607AbYD1GMG
+	id S1764603AbYD1GQy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 02:16:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750993AbYD1GQn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 02:12:06 -0400
-Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:40114 "EHLO
-	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751177AbYD1GMF (ORCPT
+	Mon, 28 Apr 2008 02:16:43 -0400
+Received: from wa-out-1112.google.com ([209.85.146.179]:62892 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751177AbYD1GQm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 02:12:05 -0400
-Date: Mon, 28 Apr 2008 02:11:59 -0400 (EDT)
-From: Jeff Arnold <jbarnold@MIT.EDU>
-To: linux-kernel@vger.kernel.org
-Subject: Re: A system for rebootless kernel security updates
-In-Reply-To: <200804242116.54019.mail@earthworm.de>
-Message-ID: <alpine.DEB.1.10.0804272022560.15570@vinegar-pot.mit.edu>
-References: <alpine.DEB.1.00.0802221606520.21343@vinegar-pot.mit.edu> <200804241543.06874.mail@earthworm.de> <alpine.DEB.1.00.0804241306260.21001@vinegar-pot.mit.edu> <200804242116.54019.mail@earthworm.de>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Mon, 28 Apr 2008 02:16:42 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:x-x-sender:to:cc:subject:in-reply-to:message-id:references:user-agent:mime-version:content-type:from;
+        b=Jskxk0u8LFI3mV3/b9dcK7sI/GflJY950Q/UQ+XnsnPbnnAvJNYnvlMM1+OkhcfB6tRA/1/m75z0lKOjEa9syUgEOflier68tE0445hL4U9hUSAKTksrK2RVpnHqsjrre/FTv31C2qdDLNFiN4fEWEt5Uient9VD3qH0lEU2zNc=
+Date: Mon, 28 Apr 2008 14:14:45 +0800 (CST)
+X-X-Sender: wangcong@localhost.localdomain
+To: Paul Jackson <pj@sgi.com>
+cc: Bert Wesarg <bert.wesarg@googlemail.com>, mingo@elte.hu,
+       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, travis@sgi.com
+Subject: Re: [PATCH] Fix calculus of bitmap_scnprintf_len()
+In-Reply-To: <20080427160118.ad4cadf0.pj@sgi.com>
+Message-ID: <alpine.LFD.1.00.0804281414020.2870@localhost.localdomain>
+References: <1209329003-22036-1-git-send-email-bert.wesarg@googlemail.com> <20080427160118.ad4cadf0.pj@sgi.com>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
-X-Spam-Flag: NO
-X-Spam-Score: 0.00
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+From: WANG Cong <xiyou.wangcong@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Thu, 24 Apr 2008, Christian Hesse wrote:
-> This time I get the following in syslog:
+On Sun, 27 Apr 2008, Paul Jackson wrote:
 
-This problem has now been resolved (a broken wireless card apparently left 
-a kernel thread in an unusual state, which led to Ksplice aborting the 
-upgrade).  Christian now has Ksplice working on his system.
+> Bert wrote:
+>> The function bitmap_scnprintf_len() is currently not used
+>
+> How about we just remove that function?
 
-If anyone else tries the software and encounters trouble, please let me 
-know.
+I am afraid no. See:
 
-Thanks,
+include/linux/cpumask.h:292:    return bitmap_scnprintf_len(len);
 
-Jeff Arnold
-jbarnold@mit.edu
