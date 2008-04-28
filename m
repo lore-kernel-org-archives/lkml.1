@@ -1,89 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934915AbYD1Rq3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935668AbYD1Rqx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934915AbYD1Rq3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 13:46:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933244AbYD1RqV
+	id S935668AbYD1Rqx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 13:46:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934202AbYD1Rqj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 13:46:21 -0400
-Received: from mail.gmx.net ([213.165.64.20]:49677 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S932607AbYD1RqU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 13:46:20 -0400
-X-Authenticated: #20450766
-X-Provags-ID: V01U2FsdGVkX183NWg30Xs3XR0eGazwYteSG8WnfkPQrEp/sBQNNW
-	vwsNZOuaHUZYWG
-Date: Mon, 28 Apr 2008 19:46:37 +0200 (CEST)
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-To: Ingo Molnar <mingo@elte.hu>
-cc: Mauro Carvalho Chehab <mchehab@infradead.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch] video: fix SOC_CAMERA_MT9M001 build bug
-In-Reply-To: <20080428120032.GA23847@elte.hu>
-Message-ID: <Pine.LNX.4.64.0804281944100.10718@axis700.grange>
-References: <20080428120032.GA23847@elte.hu>
+	Mon, 28 Apr 2008 13:46:39 -0400
+Received: from tetsuo.zabbo.net ([207.173.201.20]:45212 "EHLO tetsuo.zabbo.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933244AbYD1Rqi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Apr 2008 13:46:38 -0400
+Message-ID: <48160D7D.1030607@oracle.com>
+Date: Mon, 28 Apr 2008 10:46:37 -0700
+From: Zach Brown <zach.brown@oracle.com>
+User-Agent: Thunderbird 2.0.0.12 (Macintosh/20080213)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Y-GMX-Trusted: 0
+To: Carl Henrik Lunde <chlunde@ping.uio.no>
+CC: Soeren Sandmann <sandmann@daimi.au.dk>, linux-kernel@vger.kernel.org
+Subject: Re: stat benchmark
+References: <ye8wsmnezq9.fsf@camel05.daimi.au.dk> <ed038eb20804271540q7df7ebe0p8e5c6b15c85813e0@mail.gmail.com>
+In-Reply-To: <ed038eb20804271540q7df7ebe0p8e5c6b15c85813e0@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 28 Apr 2008, Ingo Molnar wrote:
 
-> 
-> on latest -git, with this config:
-> 
->   http://redhat.com/~mingo/misc/config-Mon_Apr_28_13_25_34_CEST_2008.bad
-> 
->   CONFIG_SOC_CAMERA_MT9M001=y
->   CONFIG_SOC_CAMERA_MT9V022=y
->   # CONFIG_I2C is not set
-> 
-> the build fails:
-> 
-> drivers/built-in.o: In function `reg_read':
-> mt9m001.c:(.text+0x140a87): undefined reference to `i2c_smbus_read_word_data'
-> drivers/built-in.o: In function `reg_write':
-> mt9m001.c:(.text+0x140b6e): undefined reference to `i2c_smbus_write_word_data'
-> drivers/built-in.o: In function `reg_read':
-> mt9v022.c:(.text+0x1413a7): undefined reference to `i2c_smbus_read_word_data'
-> drivers/built-in.o: In function `reg_write':
-> mt9v022.c:(.text+0x1414ce): undefined reference to `i2c_smbus_write_word_data'
-> drivers/built-in.o: In function `mt9m001_mod_init':
-> mt9m001.c:(.init.text+0x158a8): undefined reference to `i2c_register_driver'
-> drivers/built-in.o: In function `mt9v022_mod_init':
-> mt9v022.c:(.init.text+0x158b8): undefined reference to `i2c_register_driver'
-> drivers/built-in.o: In function `mt9m001_mod_exit':
-> mt9m001.c:(.exit.text+0x1656): undefined reference to `i2c_del_driver'
-> drivers/built-in.o: In function `mt9v022_mod_exit':
-> mt9v022.c:(.exit.text+0x1666): undefined reference to `i2c_del_driver'
-> 
-> adding the missing I2C dependency fixes it.
-> 
-> Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> I guess it would be difficult to get close to the optimal disk schedule by
+> using syslets; if a directory contains 1000 files that would require 1000
+> syslets and a good I/O scheduler - that's unlikely to be feasible.
 
-NAK. SOC-CAMERA doesn't depend on I2C. It is also suitable for cameras, 
-not using i2c. mt9m001 and mt9v022 do both depend on i2c.
+It wouldn't even get to the I/O scheduler.   The VFS stat path (see
+real_lookup()) is synchronous and serialized.  Each stat will hold the
+i_mutex of the parent directory while it waits for the file system's
+lookup method to populate the inode from disk.
 
-> ---
->  drivers/media/video/Kconfig |    1 +
->  1 file changed, 1 insertion(+)
-> 
-> Index: linux/drivers/media/video/Kconfig
-> ===================================================================
-> --- linux.orig/drivers/media/video/Kconfig
-> +++ linux/drivers/media/video/Kconfig
-> @@ -850,6 +850,7 @@ endif # V4L_USB_DRIVERS
->  config SOC_CAMERA
->  	tristate "SoC camera support"
->  	depends on VIDEO_V4L2
-> +	depends on I2C
->  	select VIDEOBUF_DMA_SG
->  	help
->  	  SoC Camera is a common API to several cameras, not connecting
-> 
-
-Thanks
-Guennadi
----
-Guennadi Liakhovetski
+- z
