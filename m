@@ -1,98 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934671AbYD1OLk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933907AbYD1OLz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934671AbYD1OLk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 10:11:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765642AbYD1OLb
+	id S933907AbYD1OLz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 10:11:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934654AbYD1OLj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 10:11:31 -0400
-Received: from mail164.messagelabs.com ([216.82.253.131]:20859 "EHLO
-	mail164.messagelabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763151AbYD1OLa (ORCPT
+	Mon, 28 Apr 2008 10:11:39 -0400
+Received: from trillian.zoopnet.de ([85.214.111.199]:51904 "EHLO
+	trillian.zoopnet.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934643AbYD1OLi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 10:11:30 -0400
-X-VirusChecked: Checked
-X-Env-Sender: Uwe.Kleine-Koenig@digi.com
-X-Msg-Ref: server-6.tower-164.messagelabs.com!1209391885!6539425!1
-X-StarScan-Version: 5.5.12.14.2; banners=-,-,-
-X-Originating-IP: [66.77.174.14]
-Date: Mon, 28 Apr 2008 16:11:16 +0200
-From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <Uwe.Kleine-Koenig@digi.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-CC: <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] let setup_irq reenable a shared irq
-Message-ID: <20080428141116.GB9048@digi.com>
-References: <1209381171-5520-1-git-send-email-Uwe.Kleine-Koenig@digi.com> <alpine.LFD.1.10.0804281443090.3261@apollo.tec.linutronix.de>
+	Mon, 28 Apr 2008 10:11:38 -0400
+Message-ID: <4815DB15.4070908@zoopnet.de>
+Date: Mon, 28 Apr 2008 16:11:33 +0200
+From: Mika Fischer <mika.fischer@zoopnet.de>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <alpine.LFD.1.10.0804281443090.3261@apollo.tec.linutronix.de>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-OriginalArrivalTime: 28 Apr 2008 14:11:17.0104 (UTC) FILETIME=[B988CF00:01C8A939]
-X-TM-AS-Product-Ver: SMEX-8.0.0.1181-5.500.1026-15876.007
-X-TM-AS-Result: No--14.837000-8.000000-31
-X-TM-AS-User-Approved-Sender: No
-X-TM-AS-User-Blocked-Sender: No
+To: Ingo Molnar <mingo@elte.hu>
+CC: Gabriel C <nix.or.die@googlemail.com>, Yinghai Lu <yhlu.kernel@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>,
+       Jesse Barnes <jesse.barnes@intel.com>, balajirrao@gmail.com,
+       Andi Kleen <andi@firstfloor.org>, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH] x86_32: trim memory by updating e820 v3
+References: <200801192045.17291.yinghai.lu@sun.com> <200801202256.48365.yinghai.lu@sun.com> <20080122165125.GA17992@elte.hu> <200801221623.20861.yinghai.lu@sun.com> <20080426035614.a30afb17.akpm@linux-foundation.org> <48132665.8050202@googlemail.com> <86802c440804272344yac6a9f0n40809169424247e6@mail.gmail.com> <48159668.5010808@googlemail.com> <86802c440804280234y5b38b4bds330fc1a6987202c5@mail.gmail.com> <48159ECF.9020004@googlemail.com> <20080428135351.GF3973@elte.hu>
+In-Reply-To: <20080428135351.GF3973@elte.hu>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+Hi Ingo,
 
-Thomas Gleixner wrote:
-> On Mon, 28 Apr 2008, Uwe Kleine-König wrote:
-> > Consider two devices A and B sharing an irq and B already asserts the irq on
-> > a booting machine.
-> > If the driver for A is loaded first the irq starts triggering and gets
-> > disabled after some time by note_interrupt().  Later when the driver for B
-> > is loaded the interrupt should be reenabled---other wise both A and B don't
-> > work properly.
-> 
-> Oh no. There is lots of code in drivers, which does:
-> 
->    disable_irq();
->    do_some_protected_stuff();
->    enable_irq();
-> 
-> So when the second driver is loaded on another CPU it would see the
-> IRQ_DISABLED bit set and unconditionally reenable the interrupt. 
-> 
-> This unprotects the protected operation and definitely triggers the
-> WARN_ON() in enable_irq() where we check for desc->depth == 0.
-mmpf.
+I'm having the same problem.
 
-It's not nice to use disable_irq()/enable_irq() in a driver, is it?
- 
-> I can see the rationale for your patch, as we have no way to silence
-> stupid hardware or hardware which was left in that state by the BIOS
-> other than disabling the interrupt line completely.
-> 
-> Waht kind of scenario/devices do you have which trigger this ?
-It's a ns9215 SoC.  The rtc component has a clock flag that I need to
-set before accessing the address space.  After enabling the clock flag
-I get an irq if the rtc is up.  The rtc itself uses the same irq.  As I
-want to handle the clk enabling in platform code and the actual rtc in a
-driver I need a shared irq.
-Now the problem is that the rtc remembers its alarm flags over
-reboots[1] and starts asserting the irq when the platform code has
-requested the irq.
+Ingo Molnar schrieb:
+> excellent. So just to make sure: this box never had proper graphics 
+> under Linux (under no previous kernel), due to the way the BIOS has set 
+> up the MTRR's, right?
 
-I currently see two ways to handle that:
- 1) find an alternative patch similar to the one I sent that don't break
-    driver code; or
- 2) let the platform code disable the rtc's irqs.
+Well, not quite. X still works fine, but since the video memory is
+overlapped by two of the existing MTRRs, X cannot add a write-combining
+range for the video memory. That makes X rather slow especially if you
+use DRI for Compiz etc.
 
-for 1) you need to remember the reason for disabling the irq (or fix all
-drivers not to use disable_irq()).  And 2) is ugly because I have to
-ioremap then.
+And this always happens with 4GB RAM, but not with 2GB RAM.
 
-Best regards
-Uwe
+So yes, with this patch for the first time X works at normal speed with
+4GB of RAM out of the box.
 
-[1] not entirely sure, but I had the rtc in a state in which the rtc
-component asserted an irq directly after a reset.
+> so fixing up the MTRRs during bootup, no matter how dangerous in theory, 
+> is pretty much the best option to get your system to work fine under 
+> Linux, with that specific Xorg version?
 
--- 
-Uwe Kleine-König, Software Engineer
-Digi International GmbH Branch Breisach, Küferstrasse 8, 79206 Breisach, Germany
-Tax: 315/5781/0242 / VAT: DE153662976 / Reg. Amtsgericht Dortmund HRB 13962
+Yes. That's what I'm doing at the moment with a shell script. :)
+
+> i think we should still try to make this a non-default option because 
+> modern Xorg should not have any need to touch MTRRs. Perhaps a .config 
+> dependent on CONFIG_DANGEROUS ;-)
+
+AFAICT X always tries to set up a write-combining range for the video
+memory. And this will always fail if there are erroneous write-back or
+even uncachable ranges overlapping the video memory...
+
+But I don't know if this has changed in newer versions of Xorg (I'm
+using 7.3).
+
+In any case if I have a range in /proc/mtrr that is declared uncachable
+and overlaps my video memory (which is the case without this patch),
+is there even anything Xorg can do to make the video-memory use
+write-combining?
+
+Regards,
+ Mika
