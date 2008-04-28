@@ -1,78 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763492AbYD1Bp5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765116AbYD1BqS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763492AbYD1Bp5 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Apr 2008 21:45:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753354AbYD1Bpq
+	id S1765116AbYD1BqS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Apr 2008 21:46:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762991AbYD1Bpx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Apr 2008 21:45:46 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:49646 "EHLO mx1.redhat.com"
+	Sun, 27 Apr 2008 21:45:53 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:36350 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753301AbYD1Bpp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Apr 2008 21:45:45 -0400
-From: Roland McGrath <roland@redhat.com>
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
+	id S1761852AbYD1Bpv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Apr 2008 21:45:51 -0400
+Date: Mon, 28 Apr 2008 03:45:40 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
 Cc: Andrew Morton <akpm@linux-foundation.org>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] x86_64 vDSO: use initdata
-X-Fcc: ~/Mail/linus
-X-Shopping-List: (1) Tremulous vagrants
-   (2) Atomic Garden Weasels
-   (3) Instant Ritz Cracker Crumbs
-Message-Id: <20080428014538.DC68926F8F0@magilla.localdomain>
-Date: Sun, 27 Apr 2008 18:45:38 -0700 (PDT)
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [GIT PATCH] another tranche of SCSI updates for 2.6.26
+Message-ID: <20080428014540.GB10660@elte.hu>
+References: <1209320076.3801.26.camel@localhost.localdomain> <20080428013400.GA6245@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080428013400.GA6245@elte.hu>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0001]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The 64-bit vDSO image is in a special ".vdso" section for no reason
-I can determine.  Furthermore, the location of the vdso_end symbol
-includes some wrongly-calculated padding space in the image, which
-is then (correctly) rounded to page size, resulting in an extra page
-of zeros in the image mapped in to user processes.
 
-This changes it to put the vdso.so image into normal initdata as we
-have always done for the 32-bit vDSO images.  The extra padding is
-gone, so the user VMA is one page instead of two.  The image that
-was already copied around at boot time is now in initdata, so we
-recover that wasted space after boot.
+* Ingo Molnar <mingo@elte.hu> wrote:
 
-Signed-off-by: Roland McGrath <roland@redhat.com>
+> see:
+> 
+>  http://redhat.com/~mingo/misc/config-Mon_Apr_28_03_01_00_CEST_2008.bad
+>  http://redhat.com/~mingo/misc/log-Mon_Apr_28_03_01_00_CEST_2008.bad
+> 
+> the commits i pulled are below. The tree before that survived 100+ 
+> randconfig bootups - this failed after 7 iterations.
+
+did some more digging, regression is not too serious - excluding the ISA 
+drivers below did the trick and it now boots up fine. Time to sleep now 
+:-/
+
+	Ingo
+
+----------------->
+Subject: qa: no scsi aha
+From: Ingo Molnar <mingo@elte.hu>
+Date: Mon Apr 28 03:34:16 CEST 2008
+
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- arch/x86/kernel/vmlinux_64.lds.S |    6 ------
- arch/x86/vdso/vdso.S             |   10 +++++++++-
- 2 files changed, 9 insertions(+), 7 deletions(-)
+ drivers/scsi/Kconfig |    3 +++
+ 1 file changed, 3 insertions(+)
 
-diff --git a/arch/x86/kernel/vmlinux_64.lds.S b/arch/x86/kernel/vmlinux_64.lds.S
-index b7ab3c3..fad3674 100644
---- a/arch/x86/kernel/vmlinux_64.lds.S
-+++ b/arch/x86/kernel/vmlinux_64.lds.S
-@@ -209,12 +209,6 @@ SECTIONS
- 	EXIT_DATA
-   }
- 
--/* vdso blob that is mapped into user space */
--  vdso_start = . ;
--  .vdso  : AT(ADDR(.vdso) - LOAD_OFFSET) { *(.vdso) }
--  . = ALIGN(PAGE_SIZE);
--  vdso_end = .;
--
- #ifdef CONFIG_BLK_DEV_INITRD
-   . = ALIGN(PAGE_SIZE);
-   __initramfs_start = .;
-diff --git a/arch/x86/vdso/vdso.S b/arch/x86/vdso/vdso.S
-index 4b1620a..1d3aa6b 100644
---- a/arch/x86/vdso/vdso.S
-+++ b/arch/x86/vdso/vdso.S
-@@ -1,2 +1,10 @@
--	.section ".vdso","a"
-+#include <linux/init.h>
-+
-+__INITDATA
-+
-+	.globl vdso_start, vdso_end
-+vdso_start:
- 	.incbin "arch/x86/vdso/vdso.so"
-+vdso_end:
-+
-+__FINIT
+Index: linux/drivers/scsi/Kconfig
+===================================================================
+--- linux.orig/drivers/scsi/Kconfig
++++ linux/drivers/scsi/Kconfig
+@@ -406,6 +406,7 @@ config SCSI_ACARD
+ config SCSI_AHA152X
+ 	tristate "Adaptec AHA152X/2825 support"
+ 	depends on ISA && SCSI && !64BIT
++	depends on 0
+ 	select SCSI_SPI_ATTRS
+ 	select CHECK_SIGNATURE
+ 	---help---
+@@ -423,6 +424,7 @@ config SCSI_AHA152X
+ config SCSI_AHA1542
+ 	tristate "Adaptec AHA1542 support"
+ 	depends on ISA && SCSI && ISA_DMA_API
++	depends on 0
+ 	---help---
+ 	  This is support for a SCSI host adapter.  It is explained in section
+ 	  3.4 of the SCSI-HOWTO, available from
+@@ -437,6 +439,7 @@ config SCSI_AHA1542
+ config SCSI_AHA1740
+ 	tristate "Adaptec AHA1740 support"
+ 	depends on EISA && SCSI
++	depends on 0
+ 	---help---
+ 	  This is support for a SCSI host adapter.  It is explained in section
+ 	  3.5 of the SCSI-HOWTO, available from
