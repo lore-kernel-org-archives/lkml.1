@@ -1,144 +1,161 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966293AbYD1TJ3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936093AbYD1TJv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966293AbYD1TJ3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 15:09:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934100AbYD1TJS
+	id S936093AbYD1TJv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 15:09:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966305AbYD1TJ3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 15:09:18 -0400
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:52076 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S934017AbYD1TJR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 15:09:17 -0400
-Subject: Re: Voyager phys_cpu_present_map compile error
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Adrian Bunk <bunk@kernel.org>, Alexey Starikovskiy <astarikovskiy@suse.de>,
-       tglx@linutronix.de, hpa@zytor.com, linux-kernel@vger.kernel.org
-In-Reply-To: <20080428175913.GA31911@elte.hu>
-References: <20080421000238.GD26897@cs181133002.pp.htv.fi>
-	 <20080421085314.GI26897@cs181133002.pp.htv.fi>
-	 <20080421120054.GA6788@elte.hu>
-	 <20080421132705.GG6011@cs181133002.pp.htv.fi>
-	 <20080421201434.GN8770@elte.hu>
-	 <1209135044.3087.3.camel@localhost.localdomain>
-	 <20080425161745.GA21168@cs181133002.pp.htv.fi>
-	 <1209141233.3087.14.camel@localhost.localdomain>
-	 <20080428175913.GA31911@elte.hu>
+	Mon, 28 Apr 2008 15:09:29 -0400
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:42740 "EHLO e1.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S937163AbYD1TJ1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Apr 2008 15:09:27 -0400
+Subject: Re: Possible race between direct IO and JBD?
+From: Mingming Cao <cmm@us.ibm.com>
+Reply-To: cmm@us.ibm.com
+To: Jan Kara <jack@suse.cz>
+Cc: Badari Pulavarty <pbadari@us.ibm.com>, akpm@linux-foundation.org,
+       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20080428180932.GI17054@duck.suse.cz>
+References: <20080306174209.GA14193@duck.suse.cz>
+	 <1209166706.6040.20.camel@localhost.localdomain>
+	 <20080428122626.GC17054@duck.suse.cz>
+	 <1209402694.23575.5.camel@badari-desktop>
+	 <20080428180932.GI17054@duck.suse.cz>
 Content-Type: text/plain
-Date: Mon, 28 Apr 2008 15:09:10 -0400
-Message-Id: <1209409750.3367.41.camel@localhost.localdomain>
+Organization: IBM Linux Technology Center
+Date: Mon, 28 Apr 2008 12:09:23 -0700
+Message-Id: <1209409764.11872.6.camel@localhost.localdomain>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-4.fc8) 
+X-Mailer: Evolution 2.8.0 (2.8.0-33.el5) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Mon, 2008-04-28 at 19:59 +0200, Ingo Molnar wrote:
-> * James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
-> 
-> > Oh ... oops ... unfortunately one I wouldn't spot in a voyager build.
+On Mon, 2008-04-28 at 20:09 +0200, Jan Kara wrote: 
+> On Mon 28-04-08 10:11:34, Badari Pulavarty wrote:
 > > 
-> > This should be the corrected patch; thanks.
+> > On Mon, 2008-04-28 at 14:26 +0200, Jan Kara wrote:
+> > > Hi,
+> > > 
+> > > On Fri 25-04-08 16:38:23, Mingming Cao wrote:
+> > > > While looking at a bug related to direct IO returns to EIO, after
+> > > > looking at the code, I found there is a window that
+> > > > try_to_free_buffers() from direct IO could race with JBD, which holds
+> > > > the reference to the data buffers before journal_commit_transaction()
+> > > > ensures the data buffers has reached to the disk.
+> > > > 
+> > > > A little more detail: to prepare for direct IO, generic_file_direct_IO()
+> > > > calls invalidate_inode_pages2_range() to invalidate the pages in the
+> > > > cache before performaning direct IO.  invalidate_inode_pages2_range()
+> > > > tries to free the buffers via try_to free_buffers(), but sometimes it
+> > > > can't, due to the buffers is possible still on some transaction's
+> > > > t_sync_datalist or t_locked_list waiting for
+> > > > journal_commit_transaction() to process it. 
+> > > > 
+> > > > Currently Direct IO simply returns EIO if try_to_free_buffers() finds
+> > > > the buffer is busy, as it has no clue that JBD is referencing it.
+> > > > 
+> > > > Is this a known issue and expected behavior? Any thoughts?
+> > >   Are you seeing this in data=ordered mode? As Andrew pointed out we do
+> > > filemap_write_and_wait() so all the relevant data buffers of the inode
+> > > should be already on disk. In __journal_try_to_free_buffer() we check
+> > > whether the buffer is already-written-out data buffer and unfile and free
+> > > it in that case. It shouldn't happen that a data buffer has
+> > > b_next_transaction set so really the only idea why try_to_free_buffers()
+> > > could fail is that somebody manages to write to a page via mmap before
+> > > invalidate_inode_pages2_range() gets to it. Under which kind of load do you
+> > > observe the problem? Do you know exactly because of which condition does
+> > > journal_try_to_free_buffers() fail?
+> > > 
+> > 
+> > Thank you for your reply.
+> > 
+> > What we are noticing is invalidate_inode_pages2_range() fails with -EIO
+> > (from try_to_free_buffers() since b_count > 0).
+> > 
+> > I don't think the file is being updated through mmap(). Previous
+> > writepage() added these buffers to t_sync_data list (data=ordered).
+> > filemap_write_and_wait() waits for pagewrite back to be cleared.
+> > So, buffers are no longer dirty, but still on the t_sync_data and
+> > kjournald didn't get chance to process them yet :(
+> > 
+> > Since we have elevated b_count on these buffers, try_to_free_buffers()
+> > fails. How can we make filemap_write_and_wait() to wait for kjournald
+> > to unfile these buffers ?
+>   Hmm, I don't get one thing:
+>   The call chain is invalidate_inode_pages2_range() ->
+> invalidate_complete_page2() -> try_to_release_page() -> ext3_releasepage()
+> -> journal_try_to_free_buffers() -> __journal_try_to_free_buffer() and this
+> function should remove the buffer from the committing transaction. 
+
+Thanks, yes I noticed that after you pointing this out.
+
+But __journal_try_to_free_buffer() only unfile the buffer from
+t_sync_datalist or t_locked list, the journal head is not removed in
+journal_remove_journal_head() there, at that time,
+journal_remove_journal_head() just check if counter b_jcount is 0. But
+before calling __journal_try_to_free_buffer(), since
+journal_try_to_free_buffers() already increase the b_jcount in
+journal_grab_journal_head(), so the journal head is not removed in
+__journal_try_to_free_buffer-> journal_remove_journal_head()
+
+> So who's
+> holding the reference to those buffers? 
+
+Looking at the code, it seems the it's the journal_put_journal_head(jh)
+who remove the journal head and decrease the bh
+
+journal_try_to_free_buffers() 
+{
+...
+
+jh = journal_grab_journal_head(bh);
+                if (!jh)
+                        continue;
+
+                jbd_lock_bh_state(bh);
+                __journal_try_to_free_buffer(journal, bh);
+                journal_put_journal_head(jh);
+                jbd_unlock_bh_state(bh);
+
+...
+
+}
+ so when journal_put_journal_head()-> __journal_remove_journal_head(),
+now the b_jcount is zero, but is  
+jh->b_transaction is NULL? So it seems possible that bh ref count is non
+zero when exit from journal_put_journal_head() if jh_b_transaction is
+not cleared.
+
+I miss where jh->b_transaction is clear to NULL? 
+
+void journal_put_journal_head(struct journal_head *jh)
+{
+        struct buffer_head *bh = jh2bh(jh);
+
+        jbd_lock_bh_journal_head(bh);
+        J_ASSERT_JH(jh, jh->b_jcount > 0);
+        --jh->b_jcount;
+        if (!jh->b_jcount && !jh->b_transaction) {
+                __journal_remove_journal_head(bh);
+                __brelse(bh);
+        }
+        jbd_unlock_bh_journal_head(bh);
+}
+
+
+Mingming
+
+> Or is it that
+> __journal_try_to_free_buffer() fails to remove the buffer from the
+> committing transaction? Why?
+>   Hmm, maybe I have one idea - in theory we could call
+> __journal_try_to_free_buffer() exactly at the moment commit code inspects
+> the buffer. Then we'd release the buffer from the transaction but
+> try_to_free_buffers() would fail because of elevated b_count exactly as you
+> described. Could you maybe verify this? Not that I'd know how to easily fix
+> this ;)...
 > 
-> randconfig testing on x86.git found the build breakage below, i bisected 
-> it down to your patch. The config is:
-> 
->   http://redhat.com/~mingo/misc/config-Mon_Apr_28_19_39_30_CEST_2008.bad
-> 
-> reverted the patch for now.
-> 
-> 	Ingo
-> 
-> ------------>
-> arch/x86/kernel/built-in.o: In function `physflat_cpu_mask_to_apicid':
-> genapic_flat_64.c:(.text+0x14373): undefined reference to `per_cpu__x86_cpu_to_apicid'
-> arch/x86/kernel/built-in.o: In function `physflat_send_IPI_mask':
-> genapic_flat_64.c:(.text+0x1447f): undefined reference to `per_cpu__x86_cpu_to_apicid'
-> arch/x86/kernel/built-in.o: In function `flat_apic_id_registered':
-> genapic_flat_64.c:(.text+0x14558): undefined reference to `phys_cpu_present_map'
-> genapic_flat_64.c:(.text+0x1455f): undefined reference to `phys_cpu_present_map'
-> arch/x86/kernel/built-in.o: In function `uv_cpu_mask_to_apicid':
-> genx2apic_uv_x.c:(.text+0x14627): undefined reference to `per_cpu__x86_cpu_to_apicid'
-> arch/x86/kernel/built-in.o: In function `uv_send_IPI_mask':
-> genx2apic_uv_x.c:(.text+0x14658): undefined reference to `per_cpu__x86_cpu_to_apicid'
-> arch/x86/kernel/built-in.o: In function `acpi_register_lapic_address':
-> boot.c:(.init.text+0x3b1b): undefined reference to `boot_cpu_physical_apicid'
-> boot.c:(.init.text+0x3b2c): undefined reference to `boot_cpu_physical_apicid'
-> arch/x86/kernel/built-in.o: In function `__get_smp_config':
-> mpparse.c:(.init.text+0x53ad): undefined reference to `num_processors'
-> mpparse.c:(.init.text+0x53c4): undefined reference to `num_processors'
-> mpparse.c:(.init.text+0x543c): undefined reference to `num_processors'
-> arch/x86/kernel/built-in.o: In function `init_apic_mappings':
-> : undefined reference to `boot_cpu_physical_apicid'
-> arch/x86/kernel/built-in.o: In function `init_apic_mappings':
-> : undefined reference to `boot_cpu_physical_apicid'
-> arch/x86/kernel/built-in.o: In function `APIC_init_uniprocessor':
-> : undefined reference to `boot_cpu_physical_apicid'
-> arch/x86/kernel/built-in.o: In function `APIC_init_uniprocessor':
-> : undefined reference to `phys_cpu_present_map'
-> arch/x86/kernel/built-in.o: In function `APIC_init_uniprocessor':
-> : undefined reference to `boot_cpu_physical_apicid'
-> arch/x86/kernel/built-in.o: In function `early_init_lapic_mapping':
-> : undefined reference to `boot_cpu_physical_apicid'
-> arch/x86/kernel/built-in.o: In function `acpi_register_lapic':
-> boot.c:(.cpuinit.text+0x177a): undefined reference to `disabled_cpus'
-> arch/x86/kernel/built-in.o: In function `MP_processor_info':
-> mpparse.c:(.cpuinit.text+0x179d): undefined reference to `disabled_cpus'
-> mpparse.c:(.cpuinit.text+0x17b4): undefined reference to `boot_cpu_physical_apicid'
-> arch/x86/kernel/built-in.o: In function `setup_secondary_APIC_clock':
-> : undefined reference to `boot_cpu_physical_apicid'
-> arch/x86/kernel/built-in.o: In function `generic_processor_info':
-> : undefined reference to `num_processors'
-> arch/x86/kernel/built-in.o: In function `generic_processor_info':
-> : undefined reference to `num_processors'
-> arch/x86/kernel/built-in.o: In function `generic_processor_info':
-> : undefined reference to `phys_cpu_present_map'
-> arch/x86/kernel/built-in.o: In function `generic_processor_info':
-> : undefined reference to `per_cpu__x86_cpu_to_apicid'
-> arch/x86/kernel/built-in.o: In function `uv_cpu_init':
-> : undefined reference to `per_cpu__x86_cpu_to_apicid'
-> arch/x86/kernel/built-in.o: In function `uv_cpu_init':
-> : undefined reference to `per_cpu__x86_cpu_to_apicid'
-> arch/x86/kernel/built-in.o: In function `uv_cpu_init':
-> : undefined reference to `per_cpu__x86_cpu_to_apicid'
-
-
-Hmm, that's nasty.  What it's showing is that the non-SMP local APIC
-configuration pulls in large numbers of SMP variables.  This was all
-working right a while ago ... as in you need mpparse and the apic files
-but not the SMP ones or the SMP variables.  The quickest fix is probably
-this one, since in these days of multi-core I suspect optimising the
-non-SMP but use APIC case for size has a lot less relevance.
-
-James
-
----
-
-diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
-index c0c68c1..808daf1 100644
---- a/arch/x86/kernel/setup.c
-+++ b/arch/x86/kernel/setup.c
-@@ -12,6 +12,7 @@
- #include <asm/mpspec.h>
- #include <asm/apicdef.h>
- 
-+#ifdef CONFIG_X86_MPPARSE
- unsigned int num_processors;
- unsigned disabled_cpus __cpuinitdata;
- /* Processor that is doing the boot up */
-@@ -23,8 +24,9 @@ EXPORT_PER_CPU_SYMBOL(x86_cpu_to_apicid);
- 
- /* Bitmask of physically existing CPUs */
- physid_mask_t phys_cpu_present_map;
-+#endif
- 
--#if defined(CONFIG_HAVE_SETUP_PER_CPU_AREA) && defined(CONFIG_SMP)
-+#if defined(CONFIG_HAVE_SETUP_PER_CPU_AREA) && defined(CONFIG_X86_SMP)
- /*
-  * Copy data used in early init routines from the initial arrays to the
-  * per cpu data areas.  These arrays then become expendable and the
-
+> 									Honza
 
