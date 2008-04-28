@@ -1,73 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965020AbYD1Rup@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965125AbYD1R77@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965020AbYD1Rup (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 13:50:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935772AbYD1RuI
+	id S965125AbYD1R77 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 13:59:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934421AbYD1R7k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 13:50:08 -0400
-Received: from main.gmane.org ([80.91.229.2]:54475 "EHLO ciao.gmane.org"
+	Mon, 28 Apr 2008 13:59:40 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:45598 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935514AbYD1RuD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 13:50:03 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Bill Davidsen <davidsen@tmr.com>
-Subject: Re: x86: 4kstacks default
-Date: Mon, 28 Apr 2008 13:56:51 -0400
-Message-ID: <48160FE3.6000401@tmr.com>
-References: <20080419142329.GA5339@elte.hu> <20080419145948.GA4528@lintop> <20080420080901.GF1595@cs181133002.pp.htv.fi> <20080420090623.7b173ef1@the-village.bc.nu> <20080420085104.GG1595@cs181133002.pp.htv.fi> <20080420103611.2c0d3519@the-village.bc.nu> <20080420104444.GI1595@cs181133002.pp.htv.fi> <87y778aezh.fsf@basil.nowhere.org> <20080420124717.GH8474@1wt.eu> <480B3FCF.1090207@firstfloor.org> <20080420133007.GB1899@cs181133002.pp.htv.fi>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@ger.gmane.org
-Cc: Andi Kleen <andi@firstfloor.org>, Willy Tarreau <w@1wt.eu>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Shawn Bohrer <shawn.bohrer@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-X-Gmane-NNTP-Posting-Host: pool-68-236-140-141.alb.east.verizon.net
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
-In-Reply-To: <20080420133007.GB1899@cs181133002.pp.htv.fi>
+	id S934380AbYD1R7j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Apr 2008 13:59:39 -0400
+Date: Mon, 28 Apr 2008 19:59:13 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Adrian Bunk <bunk@kernel.org>, Alexey Starikovskiy <astarikovskiy@suse.de>,
+       tglx@linutronix.de, hpa@zytor.com, linux-kernel@vger.kernel.org
+Subject: Re: Voyager phys_cpu_present_map compile error
+Message-ID: <20080428175913.GA31911@elte.hu>
+References: <20080421000238.GD26897@cs181133002.pp.htv.fi> <20080421085314.GI26897@cs181133002.pp.htv.fi> <20080421120054.GA6788@elte.hu> <20080421132705.GG6011@cs181133002.pp.htv.fi> <20080421201434.GN8770@elte.hu> <1209135044.3087.3.camel@localhost.localdomain> <20080425161745.GA21168@cs181133002.pp.htv.fi> <1209141233.3087.14.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1209141233.3087.14.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk wrote:
-> On Sun, Apr 20, 2008 at 03:06:23PM +0200, Andi Kleen wrote:
->> Willy Tarreau wrote:
->> ...
->>> I have nothing against changing the default setting to 4k provided that
->>> it is easy to get back to the save setting
->> So you're saying that only advanced users who understand all their
->> CONFIG options should have the safe settings? And everyone else
->> the "only explodes once a week" mode?
->>
->> For me that is exactly the wrong way around.
->>
->> If someone is sure they know what they're doing they can set whatever
->> crazy settings they want (given there is a quick way to check
->> for the crazy settings in oops reports so that I can ignore those), but
->> the default should be always safe and optimized for reliability.
-> 
-> That means we'll have nearly zero testing of the "crazy setting" and 
-> when someone tries it he'll have a high probability of running into some
-> problems.
-> 
-> Such a "crazy setting" shouldn't be offered to users at all.
-> 
-> We should either aim at 4k stacks unconditionally for all 32bit 
-> architectures with 4k page size or don't allow any architecture
-> to offer 4k stacks.
-> 
-I have suggested before that the solution is to allocate memory in 
-"stack size" units (obviously must be a multiple of the hardware page 
-size). The reason allocation fails is more often fragmentation than 
-actual lack of memory, or so it has been reported.
 
--- 
-Bill Davidsen <davidsen@tmr.com>
-   "We have more to fear from the bungling of the incompetent than from
-the machinations of the wicked."  - from Slashdot
+* James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
+
+> Oh ... oops ... unfortunately one I wouldn't spot in a voyager build.
+> 
+> This should be the corrected patch; thanks.
+
+randconfig testing on x86.git found the build breakage below, i bisected 
+it down to your patch. The config is:
+
+  http://redhat.com/~mingo/misc/config-Mon_Apr_28_19_39_30_CEST_2008.bad
+
+reverted the patch for now.
+
+	Ingo
+
+------------>
+arch/x86/kernel/built-in.o: In function `physflat_cpu_mask_to_apicid':
+genapic_flat_64.c:(.text+0x14373): undefined reference to `per_cpu__x86_cpu_to_apicid'
+arch/x86/kernel/built-in.o: In function `physflat_send_IPI_mask':
+genapic_flat_64.c:(.text+0x1447f): undefined reference to `per_cpu__x86_cpu_to_apicid'
+arch/x86/kernel/built-in.o: In function `flat_apic_id_registered':
+genapic_flat_64.c:(.text+0x14558): undefined reference to `phys_cpu_present_map'
+genapic_flat_64.c:(.text+0x1455f): undefined reference to `phys_cpu_present_map'
+arch/x86/kernel/built-in.o: In function `uv_cpu_mask_to_apicid':
+genx2apic_uv_x.c:(.text+0x14627): undefined reference to `per_cpu__x86_cpu_to_apicid'
+arch/x86/kernel/built-in.o: In function `uv_send_IPI_mask':
+genx2apic_uv_x.c:(.text+0x14658): undefined reference to `per_cpu__x86_cpu_to_apicid'
+arch/x86/kernel/built-in.o: In function `acpi_register_lapic_address':
+boot.c:(.init.text+0x3b1b): undefined reference to `boot_cpu_physical_apicid'
+boot.c:(.init.text+0x3b2c): undefined reference to `boot_cpu_physical_apicid'
+arch/x86/kernel/built-in.o: In function `__get_smp_config':
+mpparse.c:(.init.text+0x53ad): undefined reference to `num_processors'
+mpparse.c:(.init.text+0x53c4): undefined reference to `num_processors'
+mpparse.c:(.init.text+0x543c): undefined reference to `num_processors'
+arch/x86/kernel/built-in.o: In function `init_apic_mappings':
+: undefined reference to `boot_cpu_physical_apicid'
+arch/x86/kernel/built-in.o: In function `init_apic_mappings':
+: undefined reference to `boot_cpu_physical_apicid'
+arch/x86/kernel/built-in.o: In function `APIC_init_uniprocessor':
+: undefined reference to `boot_cpu_physical_apicid'
+arch/x86/kernel/built-in.o: In function `APIC_init_uniprocessor':
+: undefined reference to `phys_cpu_present_map'
+arch/x86/kernel/built-in.o: In function `APIC_init_uniprocessor':
+: undefined reference to `boot_cpu_physical_apicid'
+arch/x86/kernel/built-in.o: In function `early_init_lapic_mapping':
+: undefined reference to `boot_cpu_physical_apicid'
+arch/x86/kernel/built-in.o: In function `acpi_register_lapic':
+boot.c:(.cpuinit.text+0x177a): undefined reference to `disabled_cpus'
+arch/x86/kernel/built-in.o: In function `MP_processor_info':
+mpparse.c:(.cpuinit.text+0x179d): undefined reference to `disabled_cpus'
+mpparse.c:(.cpuinit.text+0x17b4): undefined reference to `boot_cpu_physical_apicid'
+arch/x86/kernel/built-in.o: In function `setup_secondary_APIC_clock':
+: undefined reference to `boot_cpu_physical_apicid'
+arch/x86/kernel/built-in.o: In function `generic_processor_info':
+: undefined reference to `num_processors'
+arch/x86/kernel/built-in.o: In function `generic_processor_info':
+: undefined reference to `num_processors'
+arch/x86/kernel/built-in.o: In function `generic_processor_info':
+: undefined reference to `phys_cpu_present_map'
+arch/x86/kernel/built-in.o: In function `generic_processor_info':
+: undefined reference to `per_cpu__x86_cpu_to_apicid'
+arch/x86/kernel/built-in.o: In function `uv_cpu_init':
+: undefined reference to `per_cpu__x86_cpu_to_apicid'
+arch/x86/kernel/built-in.o: In function `uv_cpu_init':
+: undefined reference to `per_cpu__x86_cpu_to_apicid'
+arch/x86/kernel/built-in.o: In function `uv_cpu_init':
+: undefined reference to `per_cpu__x86_cpu_to_apicid'
 
