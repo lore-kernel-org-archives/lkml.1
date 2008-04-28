@@ -1,109 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758583AbYD1GAt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765392AbYD1GBQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758583AbYD1GAt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 02:00:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765489AbYD1F7i
+	id S1765392AbYD1GBQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 02:01:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758029AbYD1F7s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 01:59:38 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:43510 "EHLO
+	Mon, 28 Apr 2008 01:59:48 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:43523 "EHLO
 	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763178AbYD1F7h (ORCPT
+	with ESMTP id S1765520AbYD1F7r (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 01:59:37 -0400
+	Mon, 28 Apr 2008 01:59:47 -0400
 To: torvalds@linux-foundation.org
-Subject: [PATCH] q40ide breakage
-Cc: linux-kernel@vger.kernel.org, sfr@canb.auug.org.au, bzolnier@gmail.com
-Message-Id: <E1JqMOl-0004mG-Vg@ZenIV.linux.org.uk>
+Subject: [PATCH] celleb_scc_pciex __iomem annotations
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Message-Id: <E1JqMOv-0004ml-Vo@ZenIV.linux.org.uk>
 From: Al Viro <viro@ftp.linux.org.uk>
-Date: Mon, 28 Apr 2008 06:59:35 +0100
+Date: Mon, 28 Apr 2008 06:59:45 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-again, fallout from ide merge
-
 Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
 ---
- drivers/ide/legacy/q40ide.c |   47 ++++++++++++------------------------------
- 1 files changed, 14 insertions(+), 33 deletions(-)
+ arch/powerpc/platforms/cell/celleb_scc_pciex.c |   18 +++++++++---------
+ 1 files changed, 9 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/ide/legacy/q40ide.c b/drivers/ide/legacy/q40ide.c
-index a3573d4..f921045 100644
---- a/drivers/ide/legacy/q40ide.c
-+++ b/drivers/ide/legacy/q40ide.c
-@@ -36,23 +36,6 @@ static const unsigned long pcide_bases[Q40IDE_NUM_HWIFS] = {
-     PCIDE_BASE6 */
+diff --git a/arch/powerpc/platforms/cell/celleb_scc_pciex.c b/arch/powerpc/platforms/cell/celleb_scc_pciex.c
+index ab24d94..31da84c 100644
+--- a/arch/powerpc/platforms/cell/celleb_scc_pciex.c
++++ b/arch/powerpc/platforms/cell/celleb_scc_pciex.c
+@@ -36,8 +36,8 @@
+ #include "celleb_scc.h"
+ #include "celleb_pci.h"
+ 
+-#define PEX_IN(base, off)	in_be32((void *)(base) + (off))
+-#define PEX_OUT(base, off, data) out_be32((void *)(base) + (off), (data))
++#define PEX_IN(base, off)	in_be32((void __iomem *)(base) + (off))
++#define PEX_OUT(base, off, data) out_be32((void __iomem *)(base) + (off), (data))
+ 
+ static void scc_pciex_io_flush(struct iowa_bus *bus)
+ {
+@@ -304,7 +304,7 @@ static int __init scc_pciex_iowa_init(struct iowa_bus *bus, void *data)
+ 	((((0x1 << (size))-1) << ((addr) & 0x3)) << PEXDCMND_BYTE_EN_SHIFT)
+ #define MK_PEXDCMND(cmd, addr, size) ((cmd) | MK_PEXDCMND_BYTE_EN(addr, size))
+ 
+-static uint32_t config_read_pciex_dev(unsigned int *base,
++static uint32_t config_read_pciex_dev(unsigned int __iomem *base,
+ 		uint64_t bus_no, uint64_t dev_no, uint64_t func_no,
+ 		uint64_t off, uint64_t size)
+ {
+@@ -320,7 +320,7 @@ static uint32_t config_read_pciex_dev(unsigned int *base,
+ 	return ret;
+ }
+ 
+-static void config_write_pciex_dev(unsigned int *base, uint64_t bus_no,
++static void config_write_pciex_dev(unsigned int __iomem *base, uint64_t bus_no,
+ 	uint64_t dev_no, uint64_t func_no, uint64_t off, uint64_t size,
+ 	uint32_t data)
+ {
+@@ -338,7 +338,7 @@ static void config_write_pciex_dev(unsigned int *base, uint64_t bus_no,
+ 	((((0x1 << (len)) - 1) << ((off) & 0x3)) << PEXCADRS_BYTE_EN_SHIFT)
+ #define MK_PEXCADRS(cmd, addr, size) \
+ 	((cmd) | MK_PEXCADRS_BYTE_EN(addr, size) | ((addr) & ~0x3))
+-static uint32_t config_read_pciex_rc(unsigned int *base,
++static uint32_t config_read_pciex_rc(unsigned int __iomem *base,
+ 				     uint32_t where, uint32_t size)
+ {
+ 	PEX_OUT(base, PEXCADRS, MK_PEXCADRS(PEXCADRS_CMD_READ, where, size));
+@@ -346,7 +346,7 @@ static uint32_t config_read_pciex_rc(unsigned int *base,
+ 		>> ((where & (4 - size)) * 8)) & ((0x1 << (size * 8)) - 1);
+ }
+ 
+-static void config_write_pciex_rc(unsigned int *base, uint32_t where,
++static void config_write_pciex_rc(unsigned int __iomem *base, uint32_t where,
+ 				  uint32_t size, uint32_t val)
+ {
+ 	uint32_t data;
+@@ -410,7 +410,7 @@ static struct pci_ops scc_pciex_pci_ops = {
+ 	scc_pciex_write_config,
  };
  
--
--    /*
--     *  Offsets from one of the above bases
--     */
--
--/* used to do addr translation here but it is easier to do in setup ports */
--/*#define IDE_OFF_B(x)	((unsigned long)Q40_ISA_IO_B((IDE_##x##_OFFSET)))*/
--
--#define IDE_OFF_B(x)	((unsigned long)((IDE_##x##_OFFSET)))
--#define IDE_OFF_W(x)	((unsigned long)((IDE_##x##_OFFSET)))
--
--static const int pcide_offsets[IDE_NR_PORTS] = {
--    IDE_OFF_W(DATA), IDE_OFF_B(ERROR), IDE_OFF_B(NSECTOR), IDE_OFF_B(SECTOR),
--    IDE_OFF_B(LCYL), IDE_OFF_B(HCYL), 6 /*IDE_OFF_B(CURRENT)*/, IDE_OFF_B(STATUS),
--    518/*IDE_OFF(CMD)*/
--};
--
- static int q40ide_default_irq(unsigned long base)
+-static void pciex_clear_intr_all(unsigned int *base)
++static void pciex_clear_intr_all(unsigned int __iomem *base)
  {
-            switch (base) {
-@@ -68,23 +51,22 @@ static int q40ide_default_irq(unsigned long base)
- /*
-  * Addresses are pretranslated for Q40 ISA access.
-  */
--void q40_ide_setup_ports ( hw_regs_t *hw,
--			unsigned long base, int *offsets,
--			unsigned long ctrl, unsigned long intr,
-+static void q40_ide_setup_ports(hw_regs_t *hw, unsigned long base,
- 			ide_ack_intr_t *ack_intr,
- 			int irq)
+ 	PEX_OUT(base, PEXAERRSTS, 0xffffffff);
+ 	PEX_OUT(base, PEXPRERRSTS, 0xffffffff);
+@@ -427,7 +427,7 @@ static void pciex_disable_intr_all(unsigned int *base)
+ }
+ #endif
+ 
+-static void pciex_enable_intr_all(unsigned int *base)
++static void pciex_enable_intr_all(unsigned int __iomem *base)
  {
--	int i;
--
- 	memset(hw, 0, sizeof(hw_regs_t));
--	for (i = 0; i < IDE_NR_PORTS; i++) {
--		/* BIG FAT WARNING: 
--		   assumption: only DATA port is ever used in 16 bit mode */
--		if (i == 0)
--			hw->io_ports_array[i] = Q40_ISA_IO_W(base + offsets[i]);
--		else
--			hw->io_ports_array[i] = Q40_ISA_IO_B(base + offsets[i]);
--	}
-+	/* BIG FAT WARNING: 
-+	   assumption: only DATA port is ever used in 16 bit mode */
-+	hw->io_ports.data_addr = Q40_ISA_IO_W(base);
-+	hw->io_ports.error_addr = Q40_ISA_IO_B(base + 1);
-+	hw->io_ports.nsect_addr = Q40_ISA_IO_B(base + 2);
-+	hw->io_ports.lbal_addr = Q40_ISA_IO_B(base + 3);
-+	hw->io_ports.lbam_addr = Q40_ISA_IO_B(base + 4);
-+	hw->io_ports.lbah_addr = Q40_ISA_IO_B(base + 5);
-+	hw->io_ports.device_addr = Q40_ISA_IO_B(base + 6);
-+	hw->io_ports.status_addr = Q40_ISA_IO_B(base + 7);
-+	hw->io_ports.ctl_addr = Q40_ISA_IO_B(base + 0x206);
+ 	PEX_OUT(base, PEXINTMASK, 0x0000e7f1);
+ 	PEX_OUT(base, PEXAERRMASK, 0x03ff01ff);
+@@ -435,7 +435,7 @@ static void pciex_enable_intr_all(unsigned int *base)
+ 	PEX_OUT(base, PEXVDMASK, 0x00000001);
+ }
  
- 	hw->irq = irq;
- 	hw->ack_intr = ack_intr;
-@@ -131,9 +113,8 @@ static int __init q40ide_init(void)
- 		release_region(pcide_bases[i], 8);
- 		continue;
- 	}
--	q40_ide_setup_ports(&hw,(unsigned long) pcide_bases[i], (int *)pcide_offsets, 
--			pcide_bases[i]+0x206, 
--			0, NULL,
-+	q40_ide_setup_ports(&hw, pcide_bases[i],
-+			NULL,
- //			m68kide_iops,
- 			q40ide_default_irq(pcide_bases[i]));
- 
+-static void pciex_check_status(unsigned int *base)
++static void pciex_check_status(unsigned int __iomem *base)
+ {
+ 	uint32_t err = 0;
+ 	uint32_t intsts, aerr, prerr, rcvcp, lenerr;
 -- 
 1.5.3.GIT
 
