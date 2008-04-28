@@ -1,152 +1,591 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966349AbYD1WDr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966470AbYD1WF1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966349AbYD1WDr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 18:03:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965393AbYD1WDf
+	id S966470AbYD1WF1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 18:05:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933385AbYD1WFR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 18:03:35 -0400
-Received: from yw-out-2324.google.com ([74.125.46.31]:61825 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965111AbYD1WDe (ORCPT
+	Mon, 28 Apr 2008 18:05:17 -0400
+Received: from an-out-0708.google.com ([209.85.132.251]:20302 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932175AbYD1WFN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 18:03:34 -0400
+	Mon, 28 Apr 2008 18:05:13 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=NY9CKj0CfhRegwGajLqNEsrveLMg1o/vkbOfaGiecqRRz45CNi1EIXlMc9UK0lFEVsxT3fOlOaObobc9b7mIf4hL2XJRm++WCQf2FEvy7RvAPc9ErMB0k8H9CU3sJ6eSzW7BRQAF6lhiEdVCVKcNBpMXlQSe5RGeyz2XExV2JXQ=
-Message-ID: <86802c440804281503q1f9e6f8anb18cd514e89b76fe@mail.gmail.com>
-Date: Mon, 28 Apr 2008 15:03:28 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Gabriel C" <nix.or.die@googlemail.com>
-Subject: Re: [PATCH] x86_32: trim memory by updating e820 v3
-Cc: "Mika Fischer" <mika.fischer@zoopnet.de>, "Ingo Molnar" <mingo@elte.hu>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>,
-       "Jesse Barnes" <jesse.barnes@intel.com>, balajirrao@gmail.com,
-       "Andi Kleen" <andi@firstfloor.org>,
-       "Thomas Gleixner" <tglx@linutronix.de>
-In-Reply-To: <48163F56.70704@googlemail.com>
+        h=reply-to:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id:from;
+        b=K6ueZCPhSiDdIafSA49rTxuMVrgiY8f1fmIdCatedp8ENnd6BGu+aBpfqhagzCsJLL1ndqDSeXCfKiax2PrcwJFkfpyZOr8l/0nJmcgVd19brmJ/qTsHkJHn7Sz4+ej5iE46modVF8L5zySe1jfRaGIYOz0NLo2RPsM1HnqjyBM=
+Reply-To: yhlu.kernel@gmail.com
+To: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Gabriel C <nix.or.die@googlemail.com>
+Subject: [PATCH] x86: mtrr cleanup for converting continuous to discrete layout v5
+Date: Mon, 28 Apr 2008 15:05:05 -0700
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Mika Fischer <mika.fischer@zoopnet.de>
+References: <200804272337.40130.yhlu.kernel@gmail.com> <200804281244.56938.yhlu.kernel@gmail.com> <200804281316.14168.yhlu.kernel@gmail.com>
+In-Reply-To: <200804281316.14168.yhlu.kernel@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <200801192045.17291.yinghai.lu@sun.com>
-	 <86802c440804280234y5b38b4bds330fc1a6987202c5@mail.gmail.com>
-	 <48159ECF.9020004@googlemail.com> <20080428135351.GF3973@elte.hu>
-	 <4815DB15.4070908@zoopnet.de> <4815DE0C.6000802@googlemail.com>
-	 <86802c440804281206u6b5086a3h42192b7d36b08325@mail.gmail.com>
-	 <481627B7.9060406@googlemail.com> <4816376B.8060907@googlemail.com>
-	 <48163F56.70704@googlemail.com>
+Message-Id: <200804281505.05764.yhlu.kernel@gmail.com>
+From: Yinghai Lu <yhlu.kernel.send@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 28, 2008 at 2:19 PM, Gabriel C <nix.or.die@googlemail.com> wrote:
->
-> Gabriel C wrote:
->  > Gabriel C wrote:
->  >> Yinghai Lu wrote:
->  >>> On Mon, Apr 28, 2008 at 7:24 AM, Gabriel C <nix.or.die@googlemail.com> wrote:
->  >>>> Mika Fischer wrote:
->  >>>>  > Hi Ingo,
->  >>>>  >
->  >>>>  > I'm having the same problem.
->  >>>>  >
->  >>>>  > Ingo Molnar schrieb:
->  >>>>  >> excellent. So just to make sure: this box never had proper graphics
->  >>>>  >> under Linux (under no previous kernel), due to the way the BIOS has set
->  >>>>  >> up the MTRR's, right?
->  >>>>  >
->  >>>>  > Well, not quite. X still works fine, but since the video memory is
->  >>>>  > overlapped by two of the existing MTRRs, X cannot add a write-combining
->  >>>>  > range for the video memory. That makes X rather slow especially if you
->  >>>>  > use DRI for Compiz etc.
->  >>>>
->  >>>>  Well you are lucky then :)
->  >>>>
->  >>>>  Yeah X 'worked' but it worked as slow as with vesa video driver here.
->  >>> [    0.000000] rangeX: 0000000000000000 - 00000000d0000000
->  >>> [    0.000000] Setting variable MTRR 0, base: 0MB, range: 2048MB, type WB
->  >>> [    0.000000] Setting variable MTRR 1, base: 2048MB, range: 1024MB, type WB
->  >>> [    0.000000] Setting variable MTRR 2, base: 3072MB, range: 256MB, type WB
->  >>> [    0.000000] range0: 00000000cf800000 - 00000000cf800000
->  >>> [    0.000000] range: 00000000cf800000 - 00000000d0000000
->  >>> [    0.000000] Setting variable MTRR 3, base: 3320MB, range: 8MB, type WB
->  >>> [    0.000000] range0: 0000000100000000 - 0000000120000000
->  >>> [    0.000000] Setting variable MTRR 4, base: 4096MB, range: 512MB, type WB
->  >>> [    0.000000] range: 0000000120000000 - 0000000130000000
->  >>> [    0.000000] Setting variable MTRR 5, base: 4608MB, range: 256MB, type WB
->  >>> [    0.000000] hole: 000000012c000000 - 0000000130000000
->  >>> [    0.000000] Setting variable MTRR 6, base: 4800MB, range: 64MB, type UC
->  >>>
->  >>> so your X server need two entries for WB?
->  >>>
->  >>> can you send out /proc/mtrr with booting with disable_mtrr_cleanup?
->  >> I can just not right now , cannot reboot the box yet. In about 1h or so , maybe less.
->  >
->  > Here the output with v3 which is disabled by default:
->  >
->  > --($:~)-- cat /proc/mtrr
->  > reg00: base=0xd0000000 (3328MB), size= 256MB: uncachable, count=1
->  > reg01: base=0xe0000000 (3584MB), size= 512MB: uncachable, count=1
->  > reg02: base=0x00000000 (   0MB), size=4096MB: write-back, count=1
->  > reg03: base=0x100000000 (4096MB), size= 512MB: write-back, count=1
->  > reg04: base=0x120000000 (4608MB), size= 128MB: write-back, count=1
->  > reg05: base=0x128000000 (4736MB), size=  64MB: write-back, count=1
->  > reg06: base=0xcf600000 (3318MB), size=   2MB: uncachable, count=1
->  >
->  > dmesg is saying now :
->  >
->  > [   22.764595] mtrr: type mismatch for d0000000,10000000 old: write-back new: write-combining
->  >
->  >
->  > My card settings in BIOS ( that was default ) are the following :
->  >
->  > DVMT Mode -> DVMT Mode ( possible setting DVMT Mode or Fixed Mode )
->  > DVMT / Memory -> 256MB ( possible settings 128/256 MB or Maximum DVMT )
->  >
->  > Initiate Graphics Adapter -> PEG/PCI ( possible settings IGD , PCI/IGD , PCI/PEG , PEG/IGD )
->  > Internal Graphics Mode Select -> Enabled,8MB ( possible settings Enabled,8MB , Enabled,1MB maybe Disabled I forgot to look)
->  > PEG Port -> Auto ( possible settings Auto , Disabled )
->  > PEG Port Force x1 -> Disabled ( possible settings Enabled , Disabled )
->  >
->  > Of course these settings are only possible when the card is not disabled :)
->  >
->  > I'm gonna try v4 now and enable it. Please let me know if you need more infos.
->
->  Hmm v4 doesn't work anymore here ( I've tested with all possible settings in BIOS ).
->  It takes 6 minutes to boot to :
->
 
-so you card is using 256M and 8M? 0xd0000000-0xe0000000, where is
-another 8M address.
+some BIOS like to use continus MTRR layout, and may X driver can not add
+WB entries for graphical cards when 4g or more RAM installed.
 
-mtrr by BIOS is very interesting:
-before
->  > reg02: base=0x00000000 (   0MB), size=4096MB: write-back, count=1
->  > reg06: base=0xcf600000 (3318MB), size=   2MB: uncachable, count=1
->  > reg00: base=0xd0000000 (3328MB), size= 256MB: uncachable, count=1
->  > reg01: base=0xe0000000 (3584MB), size= 512MB: uncachable, count=1
->  > reg03: base=0x100000000 (4096MB), size= 512MB: write-back, count=1
->  > reg04: base=0x120000000 (4608MB), size= 128MB: write-back, count=1
->  > reg05: base=0x128000000 (4736MB), size=  64MB: write-back, count=1
+the patch will change MTRR to discrete.
 
+mtrr_chunk_size= could be used to have smaller continuous block to hold holes.
+default is 256m, could be set according to size of graphics card memory.
 
-after 256M chunk size got
->  >>> [    0.000000] Setting variable MTRR 0, base: 0MB, range: 2048MB, type WB
->  >>> [    0.000000] Setting variable MTRR 1, base: 2048MB, range: 1024MB, type WB
->  >>> [    0.000000] Setting variable MTRR 2, base: 3072MB, range: 256MB, type WB
->  >>> [    0.000000] Setting variable MTRR 3, base: 3320MB, range: 8MB, type WB
->  >>> [    0.000000] Setting variable MTRR 4, base: 4096MB, range: 512MB, type WB
->  >>> [    0.000000] Setting variable MTRR 5, base: 4608MB, range: 256MB, type WB
->  >>> [    0.000000] Setting variable MTRR 6, base: 4800MB, range: 64MB, type UC
+v2: fix -1 for UC checking
+v3: default to disable, and need use enable_mtrr_cleanup to enable this feature
+    skip the var state change warning.
+    remove next_basek in range_to_mtrr()
+v4: correct warning mask.
+v5: CONFIG_MTRR_SANITIZER
 
-so the convering is right..., need to spare another entry for your card.
+Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
 
-or we can dumping the
->  >>> [    0.000000] Setting variable MTRR 3, base: 3320MB, range: 8MB, type WB
-for extra entra...
-
-but the mtrr trimming code need to be updated instead of only using highest_pfn
-
-YH
+Index: linux-2.6/arch/x86/kernel/cpu/mtrr/generic.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/cpu/mtrr/generic.c
++++ linux-2.6/arch/x86/kernel/cpu/mtrr/generic.c
+@@ -158,6 +158,20 @@ get_mtrr_var_range(unsigned int index, s
+ 	rdmsr(MTRRphysMask_MSR(index), vr->mask_lo, vr->mask_hi);
+ }
+ 
++/*  fill the MSR pair relating to a var range  */
++void fill_mtrr_var_range(unsigned int index,
++		u32 base_lo, u32 base_hi, u32 mask_lo, u32 mask_hi)
++{
++	struct mtrr_var_range *vr;
++
++	vr = mtrr_state.var_ranges;
++
++	vr[index].base_lo = base_lo;
++	vr[index].base_hi = base_hi;
++	vr[index].mask_lo = mask_lo;
++	vr[index].mask_hi = mask_hi;
++}
++
+ static void
+ get_fixed_ranges(mtrr_type * frs)
+ {
+Index: linux-2.6/arch/x86/kernel/cpu/mtrr/main.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/cpu/mtrr/main.c
++++ linux-2.6/arch/x86/kernel/cpu/mtrr/main.c
+@@ -37,6 +37,7 @@
+ #include <linux/smp.h>
+ #include <linux/cpu.h>
+ #include <linux/mutex.h>
++#include <linux/sort.h>
+ 
+ #include <asm/e820.h>
+ #include <asm/mtrr.h>
+@@ -609,6 +610,366 @@ static struct sysdev_driver mtrr_sysdev_
+ 	.resume		= mtrr_restore,
+ };
+ 
++#ifdef CONFIG_MTRR_SANITIZER
++
++#ifdef CONFIG_MTRR_SANITIZER_ENABLE_DEFAULT
++static int enable_mtrr_cleanup __initdata = 1;
++#else
++static int enable_mtrr_cleanup __initdata;
++#endif
++
++#else
++
++static int enable_mtrr_cleanup __initdata = -1;
++
++#endif
++
++static int __init disable_mtrr_cleanup_setup(char *str)
++{
++	if (enable_mtrr_cleanup != -1)
++		enable_mtrr_cleanup = 0;
++	return 0;
++}
++early_param("disable_mtrr_cleanup", disable_mtrr_cleanup_setup);
++
++static int __init enable_mtrr_cleanup_setup(char *str)
++{
++	if (enable_mtrr_cleanup != -1)
++		enable_mtrr_cleanup = 1;
++	return 0;
++}
++early_param("enble_mtrr_cleanup", enable_mtrr_cleanup_setup);
++
++#define RANGE_NUM 256
++
++struct res_range {
++	size_t start;
++	size_t end;
++};
++
++static void __init subtract_range(struct res_range *range, size_t start,
++				size_t end)
++{
++	int i;
++	int j;
++
++	for (j = 0; j < RANGE_NUM; j++) {
++		if (!range[j].end)
++			continue;
++
++		if (start <= range[j].start && end >= range[j].end) {
++			range[j].start = 0;
++			range[j].end = 0;
++			continue;
++		}
++
++		if (start <= range[j].start && end < range[j].end && range[j].start < end + 1) {
++			range[j].start = end + 1;
++			continue;
++		}
++
++
++		if (start > range[j].start && end >= range[j].end && range[j].end > start - 1) {
++			range[j].end = start - 1;
++			continue;
++		}
++
++		if (start > range[j].start && end < range[j].end) {
++			/* find the new spare */
++			for (i = 0; i < RANGE_NUM; i++) {
++				if (range[i].end == 0)
++					break;
++			}
++			if (i < RANGE_NUM) {
++				range[i].end = range[j].end;
++				range[i].start = end + 1;
++			} else {
++				printk(KERN_ERR "run of slot in ranges\n");
++			}
++			range[j].end = start - 1;
++			continue;
++		}
++	}
++}
++
++static int __cpuinit cmp_range(const void *x1, const void *x2)
++{
++	const struct res_range *r1 = x1;
++	const struct res_range *r2 = x2;
++	s64 start1, start2;
++
++	start1 = r1->start;
++	start2 = r2->start;
++
++	return start1 - start2;
++}
++
++struct var_mtrr_state {
++	unsigned long range_startk, range_sizek;
++	unsigned long chunk_sizek;
++	unsigned int reg;
++	unsigned address_bits;
++};
++
++static void __init set_var_mtrr(
++	unsigned int reg, unsigned long basek, unsigned long sizek,
++	unsigned char type, unsigned address_bits)
++{
++	u32 base_lo, base_hi, mask_lo, mask_hi;
++	unsigned address_mask_high;
++
++	if (!sizek) {
++		fill_mtrr_var_range(reg, 0, 0, 0, 0);
++		return;
++	}
++
++	address_mask_high = ((1u << (address_bits - 32u)) - 1u);
++
++	base_hi = basek >> 22;
++	base_lo  = basek << 10;
++
++	if (sizek < 4*1024*1024) {
++		mask_hi = address_mask_high;
++		mask_lo = ~((sizek << 10) - 1);
++	} else {
++		mask_hi = address_mask_high & (~((sizek >> 22) - 1));
++		mask_lo = 0;
++	}
++
++	base_lo |= type;
++	mask_lo |= 0x800;
++	fill_mtrr_var_range(reg, base_lo, base_hi, mask_lo, mask_hi);
++}
++
++static unsigned int __init range_to_mtrr(unsigned int reg,
++	unsigned long range_startk, unsigned long range_sizek,
++	unsigned char type, unsigned address_bits)
++{
++	if (!range_sizek || (reg >= num_var_ranges))
++		return reg;
++
++	while (range_sizek) {
++		unsigned long max_align, align;
++		unsigned long sizek;
++		/* Compute the maximum size I can make a range */
++		if (range_startk)
++			max_align = ffs(range_startk) - 1;
++		else
++			max_align = 32;
++		align = fls(range_sizek) - 1;
++		if (align > max_align)
++			align = max_align;
++
++		sizek = 1 << align;
++		printk(KERN_INFO "Setting variable MTRR %d, base: %ldMB, range: %ldMB, type %s\n",
++			reg, range_startk >> 10, sizek >> 10,
++			(type == MTRR_TYPE_UNCACHABLE)?"UC":
++			    ((type == MTRR_TYPE_WRBACK)?"WB":"Other")
++			);
++		set_var_mtrr(reg++, range_startk, sizek, type, address_bits);
++		range_startk += sizek;
++		range_sizek -= sizek;
++		if (reg >= num_var_ranges)
++			break;
++	}
++	return reg;
++}
++
++static void __init range_to_mtrr_with_hole(struct var_mtrr_state *state, unsigned long basek)
++{
++	unsigned long hole_basek, hole_sizek;
++	unsigned long range0_basek, range0_sizek;
++	unsigned long range_basek, range_sizek;
++	unsigned long chunk_sizek;
++
++	hole_basek = 0;
++	hole_sizek = 0;
++	chunk_sizek = state->chunk_sizek;
++	range0_basek = state->range_startk;
++
++	/* try to append some small hole */
++	range0_sizek = ALIGN(state->range_sizek, chunk_sizek);
++	if ((range0_sizek == state->range_sizek) ||
++		((range0_basek + range0_sizek > basek) && basek)) {
++			printk(KERN_INFO "rangeX: %016lx - %016lx\n", range0_basek<<10, (range0_basek + range0_sizek)<<10);
++			state->reg = range_to_mtrr(state->reg, range0_basek,
++				range0_sizek, MTRR_TYPE_WRBACK, state->address_bits);
++		return;
++	}
++
++	range0_sizek -= chunk_sizek;
++	range_basek = range0_basek + range0_sizek;
++	printk(KERN_INFO "range0: %016lx - %016lx\n", range0_basek<<10, (range0_basek + range0_sizek)<<10);
++	state->reg = range_to_mtrr(state->reg, range0_basek,
++			range0_sizek, MTRR_TYPE_WRBACK, state->address_bits);
++
++	range_sizek = chunk_sizek;
++	if (range_sizek - (state->range_sizek - range0_sizek) < (chunk_sizek >> 1))
++		hole_sizek = range_sizek - (state->range_sizek - range0_sizek);
++	else
++		range_sizek = state->range_sizek - range0_sizek;
++
++	printk(KERN_INFO "range: %016lx - %016lx\n", range_basek<<10, (range_basek + range_sizek)<<10);
++	state->reg = range_to_mtrr(state->reg, range_basek,
++			range_sizek, MTRR_TYPE_WRBACK, state->address_bits);
++	if (hole_sizek) {
++		printk(KERN_INFO "hole: %016lx - %016lx\n", hole_basek<<10, (hole_basek + hole_sizek)<<10);
++		state->reg = range_to_mtrr(state->reg, hole_basek,
++				hole_sizek, MTRR_TYPE_UNCACHABLE, state->address_bits);
++	}
++}
++
++static void __init set_var_mtrr_range(struct var_mtrr_state *state, size_t base_pfn, size_t size_pfn)
++{
++	unsigned long basek, sizek;
++
++	if (state->reg >= num_var_ranges)
++		return;
++
++	basek = base_pfn << (PAGE_SHIFT - 10);
++	sizek = size_pfn << (PAGE_SHIFT - 10);
++
++	/* See if I can merge with the last range */
++	if ((basek <= 1024) || (state->range_startk + state->range_sizek == basek)) {
++		unsigned long endk = basek + sizek;
++		state->range_sizek = endk - state->range_startk;
++		return;
++	}
++	/* Write the range mtrrs */
++	if (state->range_sizek != 0) {
++		range_to_mtrr_with_hole(state, basek);
++
++		state->range_startk = 0;
++		state->range_sizek = 0;
++	}
++	/* Allocate an msr */
++	state->range_startk = basek;
++	state->range_sizek  = sizek;
++}
++
++static u64 mtrr_chunk_size __initdata = (256ULL<<20);
++
++static int __init parse_mtrr_chunk_size_opt(char *p)
++{
++	if (!p)
++		return -EINVAL;
++	mtrr_chunk_size = memparse(p, &p);
++	return 0;
++}
++early_param("mtrr_chunk_size", parse_mtrr_chunk_size_opt);
++
++static void __init x86_setup_var_mtrrs(struct res_range *range, int nr_range, unsigned address_bits)
++{
++	struct var_mtrr_state var_state;
++	int i;
++
++	var_state.range_startk = 0;
++	var_state.range_sizek = 0;
++	var_state.reg = 0;
++	var_state.address_bits = address_bits;
++	var_state.chunk_sizek = mtrr_chunk_size >> 10;
++
++	/* Write the range etc */
++	for (i = 0; i < nr_range; i++)
++		set_var_mtrr_range(&var_state, range[i].start, range[i].end - range[i].start + 1);
++
++	/* Write the last range */
++	range_to_mtrr_with_hole(&var_state, 0);
++	printk(KERN_INFO "DONE variable MTRRs\n");
++	/* Clear out the extra MTRR's */
++	while (var_state.reg < num_var_ranges)
++		set_var_mtrr(var_state.reg++, 0, 0, 0, var_state.address_bits);
++}
++
++static int __init mtrr_cleanup(unsigned address_bits)
++{
++	unsigned long i, base, size, def, dummy;
++	mtrr_type type;
++	struct res_range range[RANGE_NUM];
++	int nr_range;
++
++	/* extra one for all 0 */
++	int num[MTRR_NUM_TYPES + 1];
++
++	if (!is_cpu(INTEL) || enable_mtrr_cleanup < 1)
++		return 0;
++	rdmsr(MTRRdefType_MSR, def, dummy);
++	def &= 0xff;
++	if (def != MTRR_TYPE_UNCACHABLE)
++		return 0;
++
++	/* check entries number */
++	memset(num, 0, sizeof(num));
++	for (i = 0; i < num_var_ranges; i++) {
++		mtrr_if->get(i, &base, &size, &type);
++		if (type >= MTRR_NUM_TYPES)
++			continue;
++		if (!size)
++			type = MTRR_NUM_TYPES;
++		num[type]++;
++	}
++
++	/* check if we got UC entries */
++	if (!num[MTRR_TYPE_UNCACHABLE])
++		return 0;
++
++	/* check if we only had WB and UC */
++	if (num[MTRR_TYPE_WRBACK] + num[MTRR_TYPE_UNCACHABLE] !=
++		num_var_ranges - num[MTRR_NUM_TYPES])
++		return 0;
++
++	/*
++	 * get WB ranges at first
++	 * assume BIOS don't give us overlapping WB entries
++	 * or add add_range?
++	 */
++	memset(range, 0, sizeof(range));
++	nr_range = 0;
++	for (i = 0; i < num_var_ranges; i++) {
++		mtrr_if->get(i, &base, &size, &type);
++		if (type != MTRR_TYPE_WRBACK)
++			continue;
++		range[nr_range].start = base;
++		range[nr_range].end = base + size - 1;
++		nr_range++;
++	}
++	printk(KERN_INFO "After WB checking\n");
++	for (i = 0; i < nr_range; i++)
++		printk(KERN_INFO "MTRR MAP PFN: %016lx - %016lx\n", range[i].start, range[i].end + 1);
++
++	/* take out UC ranges */
++	for (i = 0; i < num_var_ranges; i++) {
++		mtrr_if->get(i, &base, &size, &type);
++		if (type != MTRR_TYPE_UNCACHABLE)
++			continue;
++		if (!size)
++			continue;
++		subtract_range(range, base, base + size - 1);
++	}
++	/* get new range num */
++	nr_range = 0;
++	for (i = 0; i < RANGE_NUM; i++) {
++		if (!range[i].end)
++			continue;
++		nr_range++;
++	}
++	printk(KERN_INFO "After UC checking\n");
++	for (i = 0; i < nr_range; i++)
++		printk(KERN_INFO "MTRR MAP PFN: %016lx - %016lx\n", range[i].start, range[i].end + 1);
++
++	/* sort the ranges */
++	sort(range, nr_range, sizeof(struct res_range), cmp_range, NULL);
++	printk(KERN_INFO "After sorting\n");
++	for (i = 0; i < nr_range; i++)
++		printk(KERN_INFO "MTRR MAP PFN: %016lx - %016lx\n", range[i].start, range[i].end + 1);
++
++	/* convert ranges to var ranges state */
++	x86_setup_var_mtrrs(range, nr_range, address_bits);
++
++	return 1;
++
++}
++
+ static int disable_mtrr_trim;
+ 
+ static int __init disable_mtrr_trim_setup(char *str)
+@@ -729,18 +1090,21 @@ int __init mtrr_trim_uncached_memory(uns
+  */
+ void __init mtrr_bp_init(void)
+ {
++	u32 phys_addr;
+ 	init_ifs();
+ 
++	phys_addr = 32;
++
+ 	if (cpu_has_mtrr) {
+ 		mtrr_if = &generic_mtrr_ops;
+ 		size_or_mask = 0xff000000;	/* 36 bits */
+ 		size_and_mask = 0x00f00000;
++		phys_addr = 36;
+ 
+ 		/* This is an AMD specific MSR, but we assume(hope?) that
+ 		   Intel will implement it to when they extend the address
+ 		   bus of the Xeon. */
+ 		if (cpuid_eax(0x80000000) >= 0x80000008) {
+-			u32 phys_addr;
+ 			phys_addr = cpuid_eax(0x80000008) & 0xff;
+ 			/* CPUID workaround for Intel 0F33/0F34 CPU */
+ 			if (boot_cpu_data.x86_vendor == X86_VENDOR_INTEL &&
+@@ -758,6 +1122,7 @@ void __init mtrr_bp_init(void)
+ 			   don't support PAE */
+ 			size_or_mask = 0xfff00000;	/* 32 bits */
+ 			size_and_mask = 0;
++			phys_addr = 32;
+ 		}
+ 	} else {
+ 		switch (boot_cpu_data.x86_vendor) {
+@@ -791,8 +1156,13 @@ void __init mtrr_bp_init(void)
+ 	if (mtrr_if) {
+ 		set_num_var_ranges();
+ 		init_table();
+-		if (use_intel())
++		if (use_intel()) {
+ 			get_mtrr_state();
++
++			if (mtrr_cleanup(phys_addr))
++				mtrr_if->set_all();
++
++		}
+ 	}
+ }
+ 
+@@ -829,9 +1199,10 @@ static int __init mtrr_init_finialize(vo
+ {
+ 	if (!mtrr_if)
+ 		return 0;
+-	if (use_intel())
+-		mtrr_state_warn();
+-	else {
++	if (use_intel()) {
++		if (enable_mtrr_cleanup < 1)
++			mtrr_state_warn();
++	} else {
+ 		/* The CPUs haven't MTRR and seem to not support SMP. They have
+ 		 * specific drivers, we use a tricky method to support
+ 		 * suspend/resume for them.
+Index: linux-2.6/arch/x86/kernel/cpu/mtrr/mtrr.h
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/cpu/mtrr/mtrr.h
++++ linux-2.6/arch/x86/kernel/cpu/mtrr/mtrr.h
+@@ -81,6 +81,8 @@ void set_mtrr_done(struct set_mtrr_conte
+ void set_mtrr_cache_disable(struct set_mtrr_context *ctxt);
+ void set_mtrr_prepare_save(struct set_mtrr_context *ctxt);
+ 
++void fill_mtrr_var_range(unsigned int index,
++		u32 base_lo, u32 base_hi, u32 mask_lo, u32 mask_hi);
+ void get_mtrr_state(void);
+ 
+ extern void set_mtrr_ops(struct mtrr_ops * ops);
+Index: linux-2.6/Documentation/kernel-parameters.txt
+===================================================================
+--- linux-2.6.orig/Documentation/kernel-parameters.txt
++++ linux-2.6/Documentation/kernel-parameters.txt
+@@ -595,6 +595,16 @@ and is between 256 and 4096 characters. 
+ 			See drivers/char/README.epca and
+ 			Documentation/digiepca.txt.
+ 
++	disable_mtrr_cleanup [X86]
++	enable_mtrr_cleanup [X86]
++			The kernel try to adjust MTRR layout from continuous
++			to discrete, to make x server driver could add WB entry
++			later. This parameter enable/disable that.
++
++	mtrr_chunk_size=nn[KMG] [X86]
++			used for mtrr cleanup. It is largest continous chunk
++			that could hold holes aka. UC entries.
++
+ 	disable_mtrr_trim [X86, Intel and AMD only]
+ 			By default the kernel will trim any uncacheable
+ 			memory out of your available memory pool based on
+Index: linux-2.6/arch/x86/Kconfig
+===================================================================
+--- linux-2.6.orig/arch/x86/Kconfig
++++ linux-2.6/arch/x86/Kconfig
+@@ -1035,6 +1035,32 @@ config MTRR
+ 
+ 	  See <file:Documentation/mtrr.txt> for more information.
+ 
++config MTRR_SANITIZER
++	def_bool y
++	prompt "MTRR cleanup support"
++	depends on MTRR
++	help
++	  Convert MTRR layout from continuous to discrete, so some X driver
++	  could add WB entries.
++
++	  Say N here if you see bootup problems (boot crash, boot hang,
++	  spontaneous reboots).
++
++	  could be disabled with disable_mtrr_cleanup. also mtrr_chunk_size
++	  could be used to send largest mtrr entry size for continuous block
++	  to hold holes (aka. UC entries)
++
++	  If unsure, say Y.
++
++config MTRR_SANITIZER_ENABLE_DEFAULT
++	bool
++	prompt "MTRR cleanup enable default"
++	depends on MTRR_SANITIZER
++	help
++	  Enable mtrr cleanup by default
++
++	  If unsure, say Y.
++
+ config X86_PAT
+ 	bool
+ 	prompt "x86 PAT support"
