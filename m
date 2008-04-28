@@ -1,73 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765558AbYD1F7x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765518AbYD1GAY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765558AbYD1F7x (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 01:59:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764962AbYD1F7T
+	id S1765518AbYD1GAY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 02:00:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765320AbYD1F72
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 01:59:19 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:43498 "EHLO
+	Mon, 28 Apr 2008 01:59:28 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:43504 "EHLO
 	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753687AbYD1F7Q (ORCPT
+	with ESMTP id S1765251AbYD1F70 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 01:59:16 -0400
+	Mon, 28 Apr 2008 01:59:26 -0400
 To: torvalds@linux-foundation.org
-Subject: [PATCH] fix ia64 local_irq_save() et.al.
-Cc: linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org,
-       sfr@canb.auug.org.au
-Message-Id: <E1JqMOR-0004le-VO@ZenIV.linux.org.uk>
+Subject: [PATCH] more icside breakage (from next ide merge)
+Cc: linux-kernel@vger.kernel.org, sfr@canb.auug.org.au, bzolnier@gmail.com
+Message-Id: <E1JqMOb-0004lx-VW@ZenIV.linux.org.uk>
 From: Al Viro <viro@ftp.linux.org.uk>
-Date: Mon, 28 Apr 2008 06:59:15 +0100
+Date: Mon, 28 Apr 2008 06:59:25 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-psr is not a good name for local variable in macro body when it
-has a good chance of being the argument of said macro (actually
-is at least in one place)
-
 Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
 ---
- include/asm-ia64/system.h |   18 +++++++++---------
- 1 files changed, 9 insertions(+), 9 deletions(-)
+ drivers/ide/arm/icside.c |   14 ++++++++------
+ 1 files changed, 8 insertions(+), 6 deletions(-)
 
-diff --git a/include/asm-ia64/system.h b/include/asm-ia64/system.h
-index dff8128..26e250b 100644
---- a/include/asm-ia64/system.h
-+++ b/include/asm-ia64/system.h
-@@ -146,23 +146,23 @@ do {						\
+diff --git a/drivers/ide/arm/icside.c b/drivers/ide/arm/icside.c
+index 124445c..65038ca 100644
+--- a/drivers/ide/arm/icside.c
++++ b/drivers/ide/arm/icside.c
+@@ -419,17 +419,19 @@ icside_setup(void __iomem *base, struct cardinfo *info, struct expansion_card *e
  
- # define local_irq_save(x)					\
- do {								\
--	unsigned long psr;					\
-+	unsigned long __psr;					\
- 								\
--	__local_irq_save(psr);					\
--	if (psr & IA64_PSR_I)					\
-+	__local_irq_save(__psr);				\
-+	if (__psr & IA64_PSR_I)					\
- 		__save_ip();					\
--	(x) = psr;						\
-+	(x) = __psr;						\
- } while (0)
+ 	hwif = ide_find_port();
+ 	if (hwif) {
+-		int i;
+-
+ 		/*
+ 		 * Ensure we're using MMIO
+ 		 */
+ 		default_hwif_mmiops(hwif);
  
--# define local_irq_disable()	do { unsigned long x; local_irq_save(x); } while (0)
-+# define local_irq_disable()	do { unsigned long __x; local_irq_save(__x); } while (0)
- 
- # define local_irq_restore(x)					\
- do {								\
--	unsigned long old_psr, psr = (x);			\
-+	unsigned long __old_psr, __psr = (x);			\
- 								\
--	local_save_flags(old_psr);				\
--	__local_irq_restore(psr);				\
--	if ((old_psr & IA64_PSR_I) && !(psr & IA64_PSR_I))	\
-+	local_save_flags(__old_psr);				\
-+	__local_irq_restore(__psr);				\
-+	if ((__old_psr & IA64_PSR_I) && !(__psr & IA64_PSR_I))	\
- 		__save_ip();					\
- } while (0)
- 
+-		for (i = 0; i <= 7; i++) {
+-			hwif->io_ports_array[i] = port;
+-			port += 1 << info->stepping;
+-		}
++		hwif->io_ports.data_addr = port;
++		hwif->io_ports.error_addr = port + (1 << info->stepping);
++		hwif->io_ports.nsect_addr = port + (2 << info->stepping);
++		hwif->io_ports.lbal_addr = port + (3 << info->stepping);
++		hwif->io_ports.lbam_addr = port + (4 << info->stepping);
++		hwif->io_ports.lbah_addr = port + (5 << info->stepping);
++		hwif->io_ports.device_addr = port + (6 << info->stepping);
++		hwif->io_ports.status_addr = port + (7 << info->stepping);
+ 		hwif->io_ports.ctl_addr =
+ 			(unsigned long)base + info->ctrloffset;
+ 		hwif->irq     = ec->irq;
 -- 
 1.5.3.GIT
 
