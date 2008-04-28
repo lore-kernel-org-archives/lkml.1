@@ -1,106 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934073AbYD1MHA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933852AbYD1MJ6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934073AbYD1MHA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 08:07:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932090AbYD1MGq
+	id S933852AbYD1MJ6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 08:09:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765110AbYD1MJu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 08:06:46 -0400
-Received: from fg-out-1718.google.com ([72.14.220.154]:58333 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765251AbYD1MGo (ORCPT
+	Mon, 28 Apr 2008 08:09:50 -0400
+Received: from viefep18-int.chello.at ([213.46.255.22]:61754 "EHLO
+	viefep19-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1763142AbYD1MJt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 08:06:44 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:user-agent:mime-version:to:cc:subject:content-type:content-transfer-encoding:from;
-        b=jUDv4ZKDtbr4mUF9784zpG+S7rYKloBEdbN41klqqivgpuyPlv5HvJieqMlCD7kcytF9mkOlQ//Gb56WoczmabaOxKD7NjR2ZmrcgSPZYUuW/rPV/9oC/8PqBNnOgmpJ7cDOQkK8wqQLh7vZlYMMITAIHK1iynGbIrTdX4paiyQ=
-Message-ID: <4815BDF5.9070506@gmail.com>
-Date: Mon, 28 Apr 2008 14:07:17 +0200
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
-MIME-Version: 1.0
-To: Nick Piggin <npiggin@suse.de>
-CC: lkml <linux-kernel@vger.kernel.org>, mk <michael.kerrisk@gmail.com>
-Subject: Re: MAP_POPULATE behavior change?
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 28 Apr 2008 08:09:49 -0400
+Subject: Re: RLIMIT_RTTIME documentation for getrlimit.2
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Michael Kerrisk <mtk.manpages@googlemail.com>
+Cc: Eugene Teo <eugeneteo@kernel.sg>, linux-kernel@vger.kernel.org,
+       Neil Horman <nhorman@tuxdriver.com>, Ingo Molnar <mingo@elte.hu>,
+       linux-man@vger.kernel.org
+In-Reply-To: <cfd18e0f0804280444jd558060g6cf5ee7df0248ee1@mail.gmail.com>
+References: <20080208145950.GA3910@kernel.sg>
+	 <1204212100.12120.9.camel@twins>
+	 <cfd18e0f0804110156l658107e5x1f2695cacfc3ac75@mail.gmail.com>
+	 <1207904485.7074.28.camel@twins>
+	 <cfd18e0f0804110216l3c679bb6ned83f5d58d1c9d66@mail.gmail.com>
+	 <1207905668.7074.32.camel@twins>
+	 <cfd18e0f0804110227w37915734r8ca31271a3dfc8ab@mail.gmail.com>
+	 <1207906325.7153.2.camel@twins>
+	 <cfd18e0f0804110238l66fb60c8pa8ac934a2a43baa7@mail.gmail.com>
+	 <4808D1CC.80103@gmail.com>
+	 <cfd18e0f0804280444jd558060g6cf5ee7df0248ee1@mail.gmail.com>
+Content-Type: text/plain
+Date: Mon, 28 Apr 2008 14:09:20 +0200
+Message-Id: <1209384560.13978.9.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.0 
 Content-Transfer-Encoding: 7bit
-From: Michael Kerrisk <mtk.manpages@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hey Nick,
+On Mon, 2008-04-28 at 13:44 +0200, Michael Kerrisk wrote:
+> Hey Peter,
+> 
+> Ping!
 
-Ping!
+Thanks for the reminder ;-)
 
-Cheers,
+> Cheers,
+> 
+> Michael
+> 
+> 
+> ---------- Forwarded message ----------
+> From: Michael Kerrisk <mtk.manpages@googlemail.com>
+> Date: Fri, Apr 18, 2008 at 6:52 PM
+> Subject: RLIMIT_RTTIME documentation for getrlimit.2
+> To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> Cc: Eugene Teo <eugeneteo@kernel.sg>, linux-kernel@vger.kernel.org,
+> Neil Horman <nhorman@tuxdriver.com>, Ingo Molnar <mingo@elte.hu>,
+> linux-man@vger.kernel.org
+> 
+> 
+> Peter,
+> 
+> Below is the draft text that I will add to the getrlimit.2 man page to describe
+> RLIMIT_RTTIME.  Does it look okay to you?  (I will add a pointer in
+> sched_setscheduler.2 to this description in getrlimit.2.)
+> 
+>       RLIMIT_RTTIME (Since Linux 2.6.25)
+>              Specifies a limit on the amount of CPU time that a
+>              process  scheduled  under  a  real-time scheduling
+>              policy may consume without making a blocking  sys-
+>              tem  call.   For  the  purpose of this limit, each
+>              time a process makes a blocking system  call,  the
+>              count  of  its consumed CPU time is reset to zero.
+>              The CPU time count is not  reset  if  the  process
+>              continues  trying to use the CPU but is preempted,
+>              its   time   slice   expires,    or    it    calls
+>              sched_yield(2).
+> 
+>              Upon  reaching the soft limit, the process is sent
+>              a SIGXCPU  signal.   If  the  process  catches  or
+>              ignores  this  signal  and continues consuming CPU
+>              time, then SIGXCPU will  be  generated  once  each
+>              second  until  the hard limit is reached, at which
+>              point the process is sent a SIGKILL signal.
+> 
+>              The intended use of this limit is to stop  a  run-
+>              away real-time process from locking up the system.
 
-Michael
+Looks excellent, thanks!
 
+Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 
--------- Original Message --------
-Subject: MAP_POPULATE behavior change?
-Date: Tue, 22 Apr 2008 15:16:19 +0200
-From: Michael Kerrisk <mtk.manpages@gmail.com>
-To: Nick Piggin <npiggin@suse.de>
-CC: lkml <linux-kernel@vger.kernel.org>, mk <michael.kerrisk@gmail.com>
-
-Hi Nick,
-
-In 2.6.23, you had the commit below, which seems to have changed the
-kernel-userland API.
-
-Am I right to understand that with this patch MAP_POPULATE now also works with
-MAP_PRIVATE mappings?  (Formerly it only worked with MAP_SHARED mappings, but
-some very quick testing suggests that MAP_POPULATE now also has an affect for
-MAP_PRIVATE.)
-
-Also, can you summarize the status of MAP_NONBLOCK?  Is it now a no-op?
-
-Cheers,
-
-Michael
-
-==
-
-commit 54cb8821de07f2ffcd28c380ce9b93d5784b40d7
-Author: Nick Piggin <npiggin@suse.de>
-Date:   Thu Jul 19 01:46:59 2007 -0700
-
-    mm: merge populate and nopage into fault (fixes nonlinear)
-
-    Nonlinear mappings are (AFAIKS) simply a virtual memory concept that encodes
-    the virtual address -> file offset differently from linear mappings.
-
-    ->populate is a layering violation because the filesystem/pagecache code
-    should need to know anything about the virtual memory mapping.  The hitch here
-    is that the ->nopage handler didn't pass down enough information (ie.  pgoff).
-     But it is more logical to pass pgoff rather than have the ->nopage function
-    calculate it itself anyway (because that's a similar layering violation).
-
-    Having the populate handler install the pte itself is likewise a nasty thing
-    to be doing.
-
-    This patch introduces a new fault handler that replaces ->nopage and
-    ->populate and (later) ->nopfn.  Most of the old mechanism is still in place
-    so there is a lot of duplication and nice cleanups that can be removed if
-    everyone switches over.
-
-    The rationale for doing this in the first place is that nonlinear mappings are
-    subject to the pagefault vs invalidate/truncate race too, and it seemed stupid
-    to duplicate the synchronisation logic rather than just consolidate the two.
-
-    After this patch, MAP_NONBLOCK no longer sets up ptes for pages present in
-    pagecache.  Seems like a fringe functionality anyway.
-
-    NOPAGE_REFAULT is removed.  This should be implemented with ->fault, and no
-    users have hit mainline yet.
-
-
-
-
--- 
-Michael Kerrisk
-Linux man-pages maintainer; http://www.kernel.org/doc/man-pages/
-Found a bug? http://www.kernel.org/doc/man-pages/reporting_bugs.html
-
+in so far that is applicable to man pages ;-)
 
