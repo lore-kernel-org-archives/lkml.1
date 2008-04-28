@@ -1,132 +1,175 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S967649AbYD1XJZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S968354AbYD1XJz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967649AbYD1XJZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 19:09:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967474AbYD1WsD
+	id S968354AbYD1XJz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 19:09:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967882AbYD1Wxg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 18:48:03 -0400
-Received: from rv-out-0708.google.com ([209.85.198.241]:6143 "EHLO
+	Mon, 28 Apr 2008 18:53:36 -0400
+Received: from rv-out-0708.google.com ([209.85.198.240]:8823 "EHLO
 	rv-out-0506.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S967352AbYD1WsA (ORCPT
+	with ESMTP id S967842AbYD1Wxf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 18:48:00 -0400
+	Mon, 28 Apr 2008 18:53:35 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=f+NIsCnaXg2KhfzZQBsmTgC2vWagKR6IeovojVvBWWGS5SVYrDxyV2aeT4yUOkDlbNYyZ1n4pnF5Cj+e4xdbTBprmqdK5Gs8XYdjAABq2J+BSt+xK/vg6M0Jcycp/dRzr4cYhOBYCkX8MYF/Dpdn1BvhtvGvhU889APaNrBRIwI=
-Message-ID: <86802c440804281547mf258345mbb7a3e8c3c0fa2f5@mail.gmail.com>
-Date: Mon, 28 Apr 2008 15:47:59 -0700
+        b=MvOiilEJWU8DSrf7R/4c2z1uHUC/CDFqWSQw9sd5l2NqxOqI2ZTdn0Rg29+a9VeLbOJXUftYIIGm0xzmaq8f6yxP3RGxu6fkBhHPrsvkRBWsQEd9Y1ufA2tCfGeXC76D7aN4gv/3TQCiCHRjIiM/MZpg/iZXKsJQ28su/pBoy9E=
+Message-ID: <86802c440804281553y69a40b91l4b238cd5281e08d9@mail.gmail.com>
+Date: Mon, 28 Apr 2008 15:53:33 -0700
 From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Randy Dunlap" <randy.dunlap@oracle.com>
-Subject: Re: [PATCH] x86: mtrr cleanup for converting continuous to discrete layout v5
-Cc: "Yinghai Lu" <yhlu.kernel.send@gmail.com>,
+To: "Jesse Barnes" <jbarnes@virtuousgeek.org>
+Subject: Re: [git pull] "big box" x86 changes, PCI
+Cc: "Ingo Molnar" <mingo@elte.hu>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org,
        "Andrew Morton" <akpm@linux-foundation.org>,
-       "Ingo Molnar" <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
        "Thomas Gleixner" <tglx@linutronix.de>,
-       "Gabriel C" <nix.or.die@googlemail.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Mika Fischer" <mika.fischer@zoopnet.de>
-In-Reply-To: <20080428153617.bcd4e301.randy.dunlap@oracle.com>
+       "H. Peter Anvin" <hpa@zytor.com>
+In-Reply-To: <200804281334.16713.jbarnes@virtuousgeek.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <200804272337.40130.yhlu.kernel@gmail.com>
-	 <200804281244.56938.yhlu.kernel@gmail.com>
-	 <200804281316.14168.yhlu.kernel@gmail.com>
-	 <200804281505.05764.yhlu.kernel@gmail.com>
-	 <20080428153617.bcd4e301.randy.dunlap@oracle.com>
+References: <20080426185516.GA32364@elte.hu>
+	 <alpine.LFD.1.10.0804261205490.2813@woody.linux-foundation.org>
+	 <20080426215540.GA3545@elte.hu>
+	 <200804281334.16713.jbarnes@virtuousgeek.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 28, 2008 at 3:36 PM, Randy Dunlap <randy.dunlap@oracle.com> wrote:
-> On Mon, 28 Apr 2008 15:05:05 -0700 Yinghai Lu wrote:
+On Mon, Apr 28, 2008 at 1:34 PM, Jesse Barnes <jbarnes@virtuousgeek.org> wrote:
+> On Saturday, April 26, 2008 2:55 pm Ingo Molnar wrote:
 >
->  > Index: linux-2.6/Documentation/kernel-parameters.txt
->  > ===================================================================
->  > --- linux-2.6.orig/Documentation/kernel-parameters.txt
->  > +++ linux-2.6/Documentation/kernel-parameters.txt
->  > @@ -595,6 +595,16 @@ and is between 256 and 4096 characters.
->  >                       See drivers/char/README.epca and
->  >                       Documentation/digiepca.txt.
+>
+> > @@ -184,51 +322,80 @@ static void __init pci_mmcfg_reject_broken(int type)
 >  >
->  > +     disable_mtrr_cleanup [X86]
->  > +     enable_mtrr_cleanup [X86]
->  > +                     The kernel try to adjust MTRR layout from continuous
->
->                                    tries
->
->
->  > +                     to discrete, to make x server driver could add WB entry
->
->                                              X server driver able to add WB entry
->
->
->  > +                     later. This parameter enable/disable that.
->
->                                               enables/disables
->
->
->  > +
->  > +     mtrr_chunk_size=nn[KMG] [X86]
->  > +                     used for mtrr cleanup. It is largest continous chunk
->  > +                     that could hold holes aka. UC entries.
->  > +
->  >       disable_mtrr_trim [X86, Intel and AMD only]
->  >                       By default the kernel will trim any uncacheable
->  >                       memory out of your available memory pool based on
->  > Index: linux-2.6/arch/x86/Kconfig
->  > ===================================================================
->  > --- linux-2.6.orig/arch/x86/Kconfig
->  > +++ linux-2.6/arch/x86/Kconfig
->  > @@ -1035,6 +1035,32 @@ config MTRR
+>  >         cfg = &pci_mmcfg_config[0];
 >  >
->  >         See <file:Documentation/mtrr.txt> for more information.
->  >
->  > +config MTRR_SANITIZER
->  > +     def_bool y
->  > +     prompt "MTRR cleanup support"
->  > +     depends on MTRR
->  > +     help
->  > +       Convert MTRR layout from continuous to discrete, so some X driver
->  > +       could add WB entries.
+>  > -       /*
+>  > -        * Handle more broken MCFG tables on Asus etc.
+>  > -        * They only contain a single entry for bus 0-0.
+>  > -        */
+>  > -       if (pci_mmcfg_config_num == 1 &&
+>  > -           cfg->pci_segment == 0 &&
+>  > -           (cfg->start_bus_number | cfg->end_bus_number) == 0) {
+>  > -               printk(KERN_ERR "PCI: start and end of bus number is 0. "
+>  > -                      "Rejected as broken MCFG.\n");
+>  > -               goto reject;
+>  > +       for (i = 0; i < pci_mmcfg_config_num; i++) {
+>  > +               int valid = 0;
+>  > +               u32 size = (cfg->end_bus_number + 1) << 20;
+>  > +               cfg = &pci_mmcfg_config[i];
+>  > +               printk(KERN_NOTICE "PCI: MCFG configuration %d: base %lx "
+>  > +                      "segment %hu buses %u - %u\n",
+>  > +                      i, (unsigned long)cfg->address, cfg->pci_segment,
+>  > +                      (unsigned int)cfg->start_bus_number,
+>  > +                      (unsigned int)cfg->end_bus_number);
 >  > +
->  > +       Say N here if you see bootup problems (boot crash, boot hang,
->  > +       spontaneous reboots).
+>  > +               if (!early &&
+>  > +                   is_acpi_reserved(cfg->address, cfg->address + size -
+>  > 1)) { +                       printk(KERN_NOTICE "PCI: MCFG area at %Lx
+>  > reserved " +                              "in ACPI motherboard
+>  > resources\n",
+>  > +                              cfg->address);
+>  > +                       valid = 1;
+>  > +               }
 >  > +
->  > +       could be disabled with disable_mtrr_cleanup. also mtrr_chunk_size
->
->           Could                                        Also
->
->
->  > +       could be used to send largest mtrr entry size for continuous block
->  > +       to hold holes (aka. UC entries)
+>  > +               if (valid)
+>  > +                       continue;
 >  > +
->  > +       If unsure, say Y.
+>  > +               if (!early)
+>  > +                       printk(KERN_ERR "PCI: BIOS Bug: MCFG area at %Lx is
+>  > not" +                              " reserved in ACPI motherboard
+>  > resources\n", +                              cfg->address);
+>  > +               /* Don't try to do this check unless configuration
+>  > +                  type 1 is available. how about type 2 ?*/
+>  > +               if (raw_pci_ops && e820_all_mapped(cfg->address,
+>  > +                                                 cfg->address + size - 1,
+>  > +                                                 E820_RESERVED)) {
+>  > +                       printk(KERN_NOTICE
+>  > +                              "PCI: MCFG area at %Lx reserved in E820\n",
+>  > +                              cfg->address);
+>  > +                       valid = 1;
+>  > +               }
 >  > +
->  > +config MTRR_SANITIZER_ENABLE_DEFAULT
->  > +     bool
->  > +     prompt "MTRR cleanup enable default"
+>  > +               if (!valid)
+>  > +                       goto reject;
+>  >         }
 >
->         prompt "Enable MTRR cleanup"
->  or
->         prompt "Enable MTRR cleanup by default"
->
->
->  > +     depends on MTRR_SANITIZER
->  > +     help
->  > +       Enable mtrr cleanup by default
->
->                                  default.
->
->  > +
->  > +       If unsure, say Y.
->  > +
->  >  config X86_PAT
->  >       bool
->  >       prompt "x86 PAT support"
+>  This loop is a bit messy, is there some way of making it clearer?  Maybe the
+>  early vs. late stuff should be split into separate routines entirely...
 
-thanks.
+        for (i = 0; i < pci_mmcfg_config_num; i++) {
+                int valid = 0;
+                u32 size = (cfg->end_bus_number + 1) << 20;
+                cfg = &pci_mmcfg_config[i];
+                printk(KERN_NOTICE "PCI: MCFG configuration %d: base %lx "
+                       "segment %hu buses %u - %u\n",
+                       i, (unsigned long)cfg->address, cfg->pci_segment,
+                       (unsigned int)cfg->start_bus_number,
+                       (unsigned int)cfg->end_bus_number);
+
+                if (!early &&
+============================================> early check..
+                    is_acpi_reserved(cfg->address, cfg->address + size - 1)) {
+                        printk(KERN_NOTICE "PCI: MCFG area at %Lx reserved "
+                               "in ACPI motherboard resources\n",
+                               cfg->address);
+                        valid = 1;
+                }
+
+                if (valid)
+                        continue;
+
+                if (!early)
+=================================================> check early
+                        printk(KERN_ERR "PCI: BIOS Bug: MCFG area at %Lx is not"
+                               " reserved in ACPI motherboard resources\n",
+                               cfg->address);
+                /* Don't try to do this check unless configuration
+                   type 1 is available. how about type 2 ?*/
+                if (raw_pci_ops && e820_all_mapped(cfg->address,
+                                                  cfg->address + size - 1,
+                                                  E820_RESERVED)) {
+                        printk(KERN_NOTICE
+                               "PCI: MCFG area at %Lx reserved in E820\n",
+                               cfg->address);
+                        valid = 1;
+                }
+
+                if (!valid)
+                        goto reject;
+        }
+
+        return;
+
+only two early check ... , if split that we will get almost same
+duplicated lines.
+
+>
+>
+>  > @@ -842,11 +842,14 @@ static void set_pcie_port_type(struct pci_dev *pdev)
+>  >   * reading the dword at 0x100 which must either be 0 or a valid extended
+>  >   * capability header.
+>  >   */
+>  > -int pci_cfg_space_size(struct pci_dev *dev)
+>  > +int pci_cfg_space_size_ext(struct pci_dev *dev, unsigned check_exp_pcix)
+>  >  {
+>  >         int pos;
+>  >         u32 status;
+>  >
+>  > +       if (!check_exp_pcix)
+>  > +               goto skip;
+>  > +
+>
+>  Rather than adding a flag to pci_cfg_space_size, you could either factor out
+>  the extended space probe into a separate routine and use it from both
+>  pci_cfg_space_size and the fixup code, or just make the fixup code do the
+>  probe & cfg_size setting by hand, moving the PCI_CFG_SPACE_SIZE and
+>  PCI_CFG_SPACE_EXP_SIZE to pci.h.
+
+by hand, will need to check if mmconf is enabled or not.
+will check if can factor out it.
 
 YH
