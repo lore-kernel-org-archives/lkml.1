@@ -1,52 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934925AbYD1Onx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934437AbYD1Opb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934925AbYD1Onx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 10:43:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932574AbYD1Onm
+	id S934437AbYD1Opb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 10:45:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933634AbYD1OpX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 10:43:42 -0400
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:41042 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932106AbYD1Onk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 10:43:40 -0400
-Subject: Re: [PATCH 1/11] Add generic helpers for arch IPI function calls
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: David Howells <dhowells@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Jens Axboe <jens.axboe@oracle.com>, linux-arch@vger.kernel.org,
-       linux-kernel@vger.kernel.org, npiggin@suse.de,
-       torvalds@linux-foundation.org, peterz@infradead.org, sam@ravnborg.org,
-       "Paul E. McKenney" <paulmck@us.ibm.com>
-In-Reply-To: <18470.1209392727@redhat.com>
-References: <1209219236.3113.6.camel@localhost.localdomain>
-	 <1208890227-24808-1-git-send-email-jens.axboe@oracle.com>
-	 <1208890227-24808-2-git-send-email-jens.axboe@oracle.com>
-	 <20080425231100.b93a1601.akpm@linux-foundation.org>
-	 <18470.1209392727@redhat.com>
-Content-Type: text/plain
-Date: Mon, 28 Apr 2008 10:43:32 -0400
-Message-Id: <1209393812.3367.24.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-4.fc8) 
-Content-Transfer-Encoding: 7bit
+	Mon, 28 Apr 2008 10:45:23 -0400
+Received: from styx.suse.cz ([82.119.242.94]:47347 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S933539AbYD1OpX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Apr 2008 10:45:23 -0400
+From: Jan Kara <jack@suse.cz>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Jan Kara <jack@suse.cz>
+Subject: [PATCH] isofs: Fix access to unallocated memory when reading corrupted filesystem
+Date: Mon, 28 Apr 2008 16:45:21 +0200
+Message-Id: <12093939211835-git-send-email-jack@suse.cz>
+X-Mailer: git-send-email 1.5.2.4
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-04-28 at 15:25 +0100, David Howells wrote:
-> We could use a GOT, but I believe that would add an extra memory
-> access to any
-> memory access or jump - which I'd prefer to avoid.
+When directory of isofs is corrupted, we did not check whether length of the
+name in a directory entry and the lenght of the directory entry itself are
+consistent. This could lead to possible access beyond the end of buffer when
+the lenght of the name was too big. Add this sanity check to directory reading
+code.
 
-Not necessarily; this is how we work on PARISC with a GOT as the ELF
-spec defines.  The point is that the GOT is linker constructed, so we
-only lay down GOT entries when the linker sees that relative
-displacements fail, so they don't consume memory (or even get brought
-into existence) in the ordinary case.  The flip side of this is that we
-do double jump (relative to jump through got) for the long displacements
-we can't reach.
+Signed-off-by: Jan Kara <jack@suse.cz>
+---
+ fs/isofs/dir.c   |    8 ++++++++
+ fs/isofs/namei.c |    7 +++++++
+ 2 files changed, 15 insertions(+), 0 deletions(-)
 
-James
-
+diff --git a/fs/isofs/dir.c b/fs/isofs/dir.c
+index 1ba407c..2f0dc5a 100644
+--- a/fs/isofs/dir.c
++++ b/fs/isofs/dir.c
+@@ -145,6 +145,14 @@ static int do_isofs_readdir(struct inode *inode, struct file *filp,
+ 			}
+ 			de = tmpde;
+ 		}
++		/* Basic sanity check, whether name doesn't exceed dir entry */
++		if (de_len < de->name_len[0] +
++					sizeof(struct iso_directory_record)) {
++			printk(KERN_NOTICE "iso9660: Corrupted directory entry"
++			       " in block %lu of inode %lu\n", block,
++			       inode->i_ino);
++			return -EIO;
++		}
+ 
+ 		if (first_de) {
+ 			isofs_normalize_block_and_offset(de,
+diff --git a/fs/isofs/namei.c b/fs/isofs/namei.c
+index 344b247..8299889 100644
+--- a/fs/isofs/namei.c
++++ b/fs/isofs/namei.c
+@@ -111,6 +111,13 @@ isofs_find_entry(struct inode *dir, struct dentry *dentry,
+ 
+ 		dlen = de->name_len[0];
+ 		dpnt = de->name;
++		/* Basic sanity check, whether name doesn't exceed dir entry */
++		if (de_len < dlen + sizeof(struct iso_directory_record)) {
++			printk(KERN_NOTICE "iso9660: Corrupted directory entry"
++			       " in block %lu of inode %lu\n", block,
++			       dir->i_ino);
++			return 0;
++		}
+ 
+ 		if (sbi->s_rock &&
+ 		    ((i = get_rock_ridge_filename(de, tmpname, dir)))) {
+-- 
+1.5.2.4
 
