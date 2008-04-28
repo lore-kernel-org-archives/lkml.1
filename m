@@ -1,171 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763548AbYD1F7L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765421AbYD1F7c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763548AbYD1F7L (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 01:59:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751355AbYD1F65
+	id S1765421AbYD1F7c (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 01:59:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763017AbYD1F7J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 01:58:57 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:43478 "EHLO
+	Mon, 28 Apr 2008 01:59:09 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:43490 "EHLO
 	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751177AbYD1F65 (ORCPT
+	with ESMTP id S1762306AbYD1F7I (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 01:58:57 -0400
+	Mon, 28 Apr 2008 01:59:08 -0400
 To: torvalds@linux-foundation.org
-Subject: [PATCH] frv si_addr annotations
-Cc: linux-kernel@vger.kernel.org, dhowells@redhat.com
-Message-Id: <E1JqMO8-0004kV-0E@ZenIV.linux.org.uk>
+Subject: [PATCH] ia64 kvm fixes for O=... builds
+Cc: linux-kernel@vger.kernel.org, kvm-ia64-devel@lists.sourceforge.net,
+       sfr@canb.auug.org.au
+Message-Id: <E1JqMOH-0004ky-VF@ZenIV.linux.org.uk>
 From: Al Viro <viro@ftp.linux.org.uk>
-Date: Mon, 28 Apr 2008 06:58:56 +0100
+Date: Mon, 28 Apr 2008 06:59:05 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+* EXTRA_CFLAGS do not apply for *.S
+* don't bother with symlinks to ../lib/mem*.S, just add ../lib/mem*.o
+  to object list
+
 Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
 ---
- arch/frv/kernel/traps.c |   31 ++++++++++++++++---------------
- 1 files changed, 16 insertions(+), 15 deletions(-)
+ arch/ia64/kvm/Makefile |    7 ++-----
+ 1 files changed, 2 insertions(+), 5 deletions(-)
 
-diff --git a/arch/frv/kernel/traps.c b/arch/frv/kernel/traps.c
-index 7089c24..a40df80 100644
---- a/arch/frv/kernel/traps.c
-+++ b/arch/frv/kernel/traps.c
-@@ -49,7 +49,7 @@ asmlinkage void insn_access_error(unsigned long esfr1, unsigned long epcr0, unsi
- 	info.si_signo	= SIGSEGV;
- 	info.si_code	= SEGV_ACCERR;
- 	info.si_errno	= 0;
--	info.si_addr	= (void *) ((epcr0 & EPCR0_V) ? (epcr0 & EPCR0_PC) : __frame->pc);
-+	info.si_addr	= (void __user *) ((epcr0 & EPCR0_V) ? (epcr0 & EPCR0_PC) : __frame->pc);
+diff --git a/arch/ia64/kvm/Makefile b/arch/ia64/kvm/Makefile
+index 41b034f..5235339 100644
+--- a/arch/ia64/kvm/Makefile
++++ b/arch/ia64/kvm/Makefile
+@@ -42,10 +42,7 @@ $(obj)/$(offsets-file): arch/ia64/kvm/asm-offsets.s
+ #
  
- 	force_sig_info(info.si_signo, &info, current);
- } /* end insn_access_error() */
-@@ -73,7 +73,7 @@ asmlinkage void illegal_instruction(unsigned long esfr1, unsigned long epcr0, un
- 		      epcr0, esr0, esfr1);
+ EXTRA_CFLAGS += -Ivirt/kvm -Iarch/ia64/kvm/
+-
+-$(addprefix $(objtree)/,$(obj)/memcpy.S $(obj)/memset.S):
+-	$(shell ln -snf ../lib/memcpy.S $(src)/memcpy.S)
+-	$(shell ln -snf ../lib/memset.S $(src)/memset.S)
++EXTRA_AFLAGS += -Ivirt/kvm -Iarch/ia64/kvm/
  
- 	info.si_errno	= 0;
--	info.si_addr	= (void *) ((epcr0 & EPCR0_V) ? (epcr0 & EPCR0_PC) : __frame->pc);
-+	info.si_addr	= (void __user *) ((epcr0 & EPCR0_V) ? (epcr0 & EPCR0_PC) : __frame->pc);
+ common-objs = $(addprefix ../../../virt/kvm/, kvm_main.o ioapic.o)
  
- 	switch (__frame->tbr & TBR_TT) {
- 	case TBR_TT_ILLEGAL_INSTR:
-@@ -111,7 +111,8 @@ asmlinkage void atomic_operation(unsigned long esfr1, unsigned long epcr0,
- 				 unsigned long esr0)
- {
- 	static DEFINE_SPINLOCK(atomic_op_lock);
--	unsigned long x, y, z, *p;
-+	unsigned long x, y, z;
-+	unsigned long __user *p;
- 	mm_segment_t oldfs;
- 	siginfo_t info;
- 	int ret;
-@@ -128,7 +129,7 @@ asmlinkage void atomic_operation(unsigned long esfr1, unsigned long epcr0,
- 		 * u32 __atomic_user_cmpxchg32(u32 *ptr, u32 test, u32 new)
- 		 */
- 	case TBR_TT_ATOMIC_CMPXCHG32:
--		p = (unsigned long *) __frame->gr8;
-+		p = (unsigned long __user *) __frame->gr8;
- 		x = __frame->gr9;
- 		y = __frame->gr10;
- 
-@@ -158,7 +159,7 @@ asmlinkage void atomic_operation(unsigned long esfr1, unsigned long epcr0,
- 		 * u32 __atomic_kernel_xchg32(void *v, u32 new)
- 		 */
- 	case TBR_TT_ATOMIC_XCHG32:
--		p = (unsigned long *) __frame->gr8;
-+		p = (unsigned long __user *) __frame->gr8;
- 		y = __frame->gr9;
- 
- 		for (;;) {
-@@ -181,7 +182,7 @@ asmlinkage void atomic_operation(unsigned long esfr1, unsigned long epcr0,
- 		 * ulong __atomic_kernel_XOR_return(ulong i, ulong *v)
- 		 */
- 	case TBR_TT_ATOMIC_XOR:
--		p = (unsigned long *) __frame->gr8;
-+		p = (unsigned long __user *) __frame->gr8;
- 		x = __frame->gr9;
- 
- 		for (;;) {
-@@ -205,7 +206,7 @@ asmlinkage void atomic_operation(unsigned long esfr1, unsigned long epcr0,
- 		 * ulong __atomic_kernel_OR_return(ulong i, ulong *v)
- 		 */
- 	case TBR_TT_ATOMIC_OR:
--		p = (unsigned long *) __frame->gr8;
-+		p = (unsigned long __user *) __frame->gr8;
- 		x = __frame->gr9;
- 
- 		for (;;) {
-@@ -229,7 +230,7 @@ asmlinkage void atomic_operation(unsigned long esfr1, unsigned long epcr0,
- 		 * ulong __atomic_kernel_AND_return(ulong i, ulong *v)
- 		 */
- 	case TBR_TT_ATOMIC_AND:
--		p = (unsigned long *) __frame->gr8;
-+		p = (unsigned long __user *) __frame->gr8;
- 		x = __frame->gr9;
- 
- 		for (;;) {
-@@ -253,7 +254,7 @@ asmlinkage void atomic_operation(unsigned long esfr1, unsigned long epcr0,
- 		 * int __atomic_user_sub_return(atomic_t *v, int i)
- 		 */
- 	case TBR_TT_ATOMIC_SUB:
--		p = (unsigned long *) __frame->gr8;
-+		p = (unsigned long __user *) __frame->gr8;
- 		x = __frame->gr9;
- 
- 		for (;;) {
-@@ -277,7 +278,7 @@ asmlinkage void atomic_operation(unsigned long esfr1, unsigned long epcr0,
- 		 * int __atomic_user_add_return(atomic_t *v, int i)
- 		 */
- 	case TBR_TT_ATOMIC_ADD:
--		p = (unsigned long *) __frame->gr8;
-+		p = (unsigned long __user *) __frame->gr8;
- 		x = __frame->gr9;
- 
- 		for (;;) {
-@@ -322,7 +323,7 @@ error:
- 	info.si_signo	= SIGSEGV;
- 	info.si_code	= SEGV_ACCERR;
- 	info.si_errno	= 0;
--	info.si_addr	= (void *) __frame->pc;
-+	info.si_addr	= (void __user *) __frame->pc;
- 
- 	force_sig_info(info.si_signo, &info, current);
- }
-@@ -343,7 +344,7 @@ asmlinkage void media_exception(unsigned long msr0, unsigned long msr1)
- 	info.si_signo	= SIGFPE;
- 	info.si_code	= FPE_MDAOVF;
- 	info.si_errno	= 0;
--	info.si_addr	= (void *) __frame->pc;
-+	info.si_addr	= (void __user *) __frame->pc;
- 
- 	force_sig_info(info.si_signo, &info, current);
- } /* end media_exception() */
-@@ -383,7 +384,7 @@ asmlinkage void memory_access_exception(unsigned long esr0,
- 	info.si_addr	= NULL;
- 
- 	if ((esr0 & (ESRx_VALID | ESR0_EAV)) == (ESRx_VALID | ESR0_EAV))
--		info.si_addr = (void *) ear0;
-+		info.si_addr = (void __user *) ear0;
- 
- 	force_sig_info(info.si_signo, &info, current);
- 
-@@ -412,7 +413,7 @@ asmlinkage void data_access_error(unsigned long esfr1, unsigned long esr15, unsi
- 	info.si_signo	= SIGSEGV;
- 	info.si_code	= SEGV_ACCERR;
- 	info.si_errno	= 0;
--	info.si_addr	= (void *)
-+	info.si_addr	= (void __user *)
- 		(((esr15 & (ESRx_VALID|ESR15_EAV)) == (ESRx_VALID|ESR15_EAV)) ? ear15 : 0);
- 
- 	force_sig_info(info.si_signo, &info, current);
-@@ -446,7 +447,7 @@ asmlinkage void division_exception(unsigned long esfr1, unsigned long esr0, unsi
- 	info.si_signo	= SIGFPE;
- 	info.si_code	= FPE_INTDIV;
- 	info.si_errno	= 0;
--	info.si_addr	= (void *) __frame->pc;
-+	info.si_addr	= (void __user *) __frame->pc;
- 
- 	force_sig_info(info.si_signo, &info, current);
- } /* end division_exception() */
+@@ -57,5 +54,5 @@ EXTRA_CFLAGS_vcpu.o += -mfixed-range=f2-f5,f12-f127
+ kvm-intel-objs = vmm.o vmm_ivt.o trampoline.o vcpu.o optvfault.o mmio.o \
+ 	vtlb.o process.o
+ #Add link memcpy and memset to avoid possible structure assignment error
+-kvm-intel-objs += memset.o memcpy.o
++kvm-intel-objs += ../lib/memset.o ../lib/memcpy.o
+ obj-$(CONFIG_KVM_INTEL) += kvm-intel.o
 -- 
 1.5.3.GIT
 
