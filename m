@@ -1,29 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932808AbYD1IQt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932919AbYD1ISV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932808AbYD1IQt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 04:16:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765697AbYD1IQj
+	id S932919AbYD1ISV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 04:18:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765843AbYD1ISM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 04:16:39 -0400
-Received: from wa-out-1112.google.com ([209.85.146.182]:27767 "EHLO
+	Mon, 28 Apr 2008 04:18:12 -0400
+Received: from wa-out-1112.google.com ([209.85.146.176]:30964 "EHLO
 	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765668AbYD1IQi (ORCPT
+	with ESMTP id S1765673AbYD1ISL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 04:16:38 -0400
+	Mon, 28 Apr 2008 04:18:11 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=krR5tCaFiXY3P/YkqAZ42s5y/3WEb58Ry5D0dfoirSsBCJWo6O2FTQbEeMXbx7uKCD6t/ulrAiTB/Ef01RavuKGFBmaH83bK0MJu0IS4kG8TBjcK92WiHukuuO0KABczeh9vji3Nimo6VppEuNVjKLVK7reXVX6O4FPSnothq00=
-Message-ID: <68676e00804280116j7b44c2adwdaa488d078cb94a1@mail.gmail.com>
-Date: Mon, 28 Apr 2008 10:16:35 +0200
-From: "Luca Tettamanti" <kronos.it@gmail.com>
+        b=PlTJj8qfgdh72vR+4SivqEwHjTZzfSW+MwqG17BDkAFqaaGI4xsJpIy42fb+We9Rg+6TLq0XWilwb/6MMHxepfkQ8we4G3Mkgeg88dchTm9NxvVysHEYSoAbjy10lxl13LjqL1doZaNPV9TSb0+A8/jFLd6Pd/UF8L13IPavw60=
+Message-ID: <1ba2fa240804280118l5f813b38n8291789342b1d802@mail.gmail.com>
+Date: Mon, 28 Apr 2008 11:18:08 +0300
+From: "Tomas Winkler" <tomasw@gmail.com>
 To: "Adrian Bunk" <bunk@kernel.org>
 Subject: Re: [PATCH] Fix compile error with wifi & leds
-Cc: linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org,
-       "David S. Miller" <davem@davemloft.net>
+Cc: "Luca Tettamanti" <kronos.it@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-wireless@vger.kernel.org, "David S. Miller" <davem@davemloft.net>,
+       "Priit Laes" <plaes@plaes.org>
 In-Reply-To: <20080428075452.GB16379@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
 References: <20080426203408.GA12074@dreamland.darkstar.lan>
@@ -33,22 +34,38 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 28, 2008 at 9:54 AM, Adrian Bunk <bunk@kernel.org> wrote:
+On Mon, Apr 28, 2008 at 10:54 AM, Adrian Bunk <bunk@kernel.org> wrote:
 > On Mon, Apr 28, 2008 at 10:45:31AM +0300, Adrian Bunk wrote:
 >  > Can you send the .config that gives this problem?
-
-Just select IWL4965_LEDS without enabling LEDS_TRIGGERS.
-
+>
 >  Scrap that, I already got the problem (and your patch looks right).
+>
+>
 
-It works, yes - but I don't like it... NEW_LEDS enables the core code
-of the leds driver but also enables/disables the compilation of the
-whole driver/leds directory; *every* user of the led driver has to
-select whatever config option it wants (e.g. LEDS_TRIGGERS) _plus_
-NEW_LEDS, otherwise led code won't be compiled.
->From a quick inspection RT2{4,5}00PCI_LEDS
-(driver/net/wireless/rt2x00) have the same problem, they select
-LEDS_CLASS without enabling NEW_LEDS -> unresolved symbols :|
-Maybe LEDS_* should also select NEW_LEDS?
+I think it's time to be applied so we won't get another 5 of them.
+Please add also  Priit Laes <plaes@plaes.org>  as he was first to
+provide a patch
 
-Luca
+Thanks
+Tomas
+
+>  cu
+
+>  Adrian
+>
+>  --
+>
+>        "Is there not promise of rain?" Ling Tan asked suddenly out
+>         of the darkness. There had been need of rain for many days.
+>        "Only a promise," Lao Er said.
+>                                        Pearl S. Buck - Dragon Seed
+>
+>  --
+>  To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+>
+> the body of a message to majordomo@vger.kernel.org
+>  More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>
+>
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
