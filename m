@@ -1,73 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966257AbYD1TIV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966293AbYD1TJ3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966257AbYD1TIV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 15:08:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934379AbYD1TIN
+	id S966293AbYD1TJ3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 15:09:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934100AbYD1TJS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 15:08:13 -0400
-Received: from qb-out-0506.google.com ([72.14.204.230]:22478 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933938AbYD1TIK (ORCPT
+	Mon, 28 Apr 2008 15:09:18 -0400
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:52076 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S934017AbYD1TJR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 15:08:10 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=PYfLlMRueo5kwF4USIzV127uflgr8GsC1vW1FNTbiwIDyAuKFjuibqtgj4vXEM0Fq/JwscxaqDV4g0Uwrwsdd/D0psC4nnstpwrEo+FEtS4N4uRngKcZUtuQkS5n1+fGUwTzdasfqrio0VWnFukmIGP3bbp6KrmLKLqIlmD4lYU=
-Message-ID: <86802c440804281208n7cb7a03cj1a06b49ea15afb7b@mail.gmail.com>
-Date: Mon, 28 Apr 2008 12:08:09 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Gabriel C" <nix.or.die@googlemail.com>
-Subject: Re: [PATCH] x86_32: trim memory by updating e820 v3
-Cc: "Mika Fischer" <mika.fischer@zoopnet.de>, "Ingo Molnar" <mingo@elte.hu>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>,
-       "Jesse Barnes" <jesse.barnes@intel.com>, balajirrao@gmail.com,
-       "Andi Kleen" <andi@firstfloor.org>,
-       "Thomas Gleixner" <tglx@linutronix.de>
-In-Reply-To: <4815DE0C.6000802@googlemail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 28 Apr 2008 15:09:17 -0400
+Subject: Re: Voyager phys_cpu_present_map compile error
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Adrian Bunk <bunk@kernel.org>, Alexey Starikovskiy <astarikovskiy@suse.de>,
+       tglx@linutronix.de, hpa@zytor.com, linux-kernel@vger.kernel.org
+In-Reply-To: <20080428175913.GA31911@elte.hu>
+References: <20080421000238.GD26897@cs181133002.pp.htv.fi>
+	 <20080421085314.GI26897@cs181133002.pp.htv.fi>
+	 <20080421120054.GA6788@elte.hu>
+	 <20080421132705.GG6011@cs181133002.pp.htv.fi>
+	 <20080421201434.GN8770@elte.hu>
+	 <1209135044.3087.3.camel@localhost.localdomain>
+	 <20080425161745.GA21168@cs181133002.pp.htv.fi>
+	 <1209141233.3087.14.camel@localhost.localdomain>
+	 <20080428175913.GA31911@elte.hu>
+Content-Type: text/plain
+Date: Mon, 28 Apr 2008 15:09:10 -0400
+Message-Id: <1209409750.3367.41.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-4.fc8) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200801192045.17291.yinghai.lu@sun.com>
-	 <20080426035614.a30afb17.akpm@linux-foundation.org>
-	 <48132665.8050202@googlemail.com>
-	 <86802c440804272344yac6a9f0n40809169424247e6@mail.gmail.com>
-	 <48159668.5010808@googlemail.com>
-	 <86802c440804280234y5b38b4bds330fc1a6987202c5@mail.gmail.com>
-	 <48159ECF.9020004@googlemail.com> <20080428135351.GF3973@elte.hu>
-	 <4815DB15.4070908@zoopnet.de> <4815DE0C.6000802@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 28, 2008 at 7:24 AM, Gabriel C <nix.or.die@googlemail.com> wrote:
-> Mika Fischer wrote:
->  > Hi Ingo,
->  >
->  > I'm having the same problem.
->  >
->  > Ingo Molnar schrieb:
->  >> excellent. So just to make sure: this box never had proper graphics
->  >> under Linux (under no previous kernel), due to the way the BIOS has set
->  >> up the MTRR's, right?
->  >
->  > Well, not quite. X still works fine, but since the video memory is
->  > overlapped by two of the existing MTRRs, X cannot add a write-combining
->  > range for the video memory. That makes X rather slow especially if you
->  > use DRI for Compiz etc.
->
->  Well you are lucky then :)
->
->  Yeah X 'worked' but it worked as slow as with vesa video driver here.
->
->  Also starting something like supertuxkart made it crash or I got a black screen :(
->
->  The only game I managed to start ( without X to crash ) without that patch was supertux but is was slow as hell.
->  However I'm not a gamer but I need X to work right.
->
-or can you change graphics card memory in BIOS to some big like 256M
-instead of 64M?
 
-YH
+On Mon, 2008-04-28 at 19:59 +0200, Ingo Molnar wrote:
+> * James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
+> 
+> > Oh ... oops ... unfortunately one I wouldn't spot in a voyager build.
+> > 
+> > This should be the corrected patch; thanks.
+> 
+> randconfig testing on x86.git found the build breakage below, i bisected 
+> it down to your patch. The config is:
+> 
+>   http://redhat.com/~mingo/misc/config-Mon_Apr_28_19_39_30_CEST_2008.bad
+> 
+> reverted the patch for now.
+> 
+> 	Ingo
+> 
+> ------------>
+> arch/x86/kernel/built-in.o: In function `physflat_cpu_mask_to_apicid':
+> genapic_flat_64.c:(.text+0x14373): undefined reference to `per_cpu__x86_cpu_to_apicid'
+> arch/x86/kernel/built-in.o: In function `physflat_send_IPI_mask':
+> genapic_flat_64.c:(.text+0x1447f): undefined reference to `per_cpu__x86_cpu_to_apicid'
+> arch/x86/kernel/built-in.o: In function `flat_apic_id_registered':
+> genapic_flat_64.c:(.text+0x14558): undefined reference to `phys_cpu_present_map'
+> genapic_flat_64.c:(.text+0x1455f): undefined reference to `phys_cpu_present_map'
+> arch/x86/kernel/built-in.o: In function `uv_cpu_mask_to_apicid':
+> genx2apic_uv_x.c:(.text+0x14627): undefined reference to `per_cpu__x86_cpu_to_apicid'
+> arch/x86/kernel/built-in.o: In function `uv_send_IPI_mask':
+> genx2apic_uv_x.c:(.text+0x14658): undefined reference to `per_cpu__x86_cpu_to_apicid'
+> arch/x86/kernel/built-in.o: In function `acpi_register_lapic_address':
+> boot.c:(.init.text+0x3b1b): undefined reference to `boot_cpu_physical_apicid'
+> boot.c:(.init.text+0x3b2c): undefined reference to `boot_cpu_physical_apicid'
+> arch/x86/kernel/built-in.o: In function `__get_smp_config':
+> mpparse.c:(.init.text+0x53ad): undefined reference to `num_processors'
+> mpparse.c:(.init.text+0x53c4): undefined reference to `num_processors'
+> mpparse.c:(.init.text+0x543c): undefined reference to `num_processors'
+> arch/x86/kernel/built-in.o: In function `init_apic_mappings':
+> : undefined reference to `boot_cpu_physical_apicid'
+> arch/x86/kernel/built-in.o: In function `init_apic_mappings':
+> : undefined reference to `boot_cpu_physical_apicid'
+> arch/x86/kernel/built-in.o: In function `APIC_init_uniprocessor':
+> : undefined reference to `boot_cpu_physical_apicid'
+> arch/x86/kernel/built-in.o: In function `APIC_init_uniprocessor':
+> : undefined reference to `phys_cpu_present_map'
+> arch/x86/kernel/built-in.o: In function `APIC_init_uniprocessor':
+> : undefined reference to `boot_cpu_physical_apicid'
+> arch/x86/kernel/built-in.o: In function `early_init_lapic_mapping':
+> : undefined reference to `boot_cpu_physical_apicid'
+> arch/x86/kernel/built-in.o: In function `acpi_register_lapic':
+> boot.c:(.cpuinit.text+0x177a): undefined reference to `disabled_cpus'
+> arch/x86/kernel/built-in.o: In function `MP_processor_info':
+> mpparse.c:(.cpuinit.text+0x179d): undefined reference to `disabled_cpus'
+> mpparse.c:(.cpuinit.text+0x17b4): undefined reference to `boot_cpu_physical_apicid'
+> arch/x86/kernel/built-in.o: In function `setup_secondary_APIC_clock':
+> : undefined reference to `boot_cpu_physical_apicid'
+> arch/x86/kernel/built-in.o: In function `generic_processor_info':
+> : undefined reference to `num_processors'
+> arch/x86/kernel/built-in.o: In function `generic_processor_info':
+> : undefined reference to `num_processors'
+> arch/x86/kernel/built-in.o: In function `generic_processor_info':
+> : undefined reference to `phys_cpu_present_map'
+> arch/x86/kernel/built-in.o: In function `generic_processor_info':
+> : undefined reference to `per_cpu__x86_cpu_to_apicid'
+> arch/x86/kernel/built-in.o: In function `uv_cpu_init':
+> : undefined reference to `per_cpu__x86_cpu_to_apicid'
+> arch/x86/kernel/built-in.o: In function `uv_cpu_init':
+> : undefined reference to `per_cpu__x86_cpu_to_apicid'
+> arch/x86/kernel/built-in.o: In function `uv_cpu_init':
+> : undefined reference to `per_cpu__x86_cpu_to_apicid'
+
+
+Hmm, that's nasty.  What it's showing is that the non-SMP local APIC
+configuration pulls in large numbers of SMP variables.  This was all
+working right a while ago ... as in you need mpparse and the apic files
+but not the SMP ones or the SMP variables.  The quickest fix is probably
+this one, since in these days of multi-core I suspect optimising the
+non-SMP but use APIC case for size has a lot less relevance.
+
+James
+
+---
+
+diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
+index c0c68c1..808daf1 100644
+--- a/arch/x86/kernel/setup.c
++++ b/arch/x86/kernel/setup.c
+@@ -12,6 +12,7 @@
+ #include <asm/mpspec.h>
+ #include <asm/apicdef.h>
+ 
++#ifdef CONFIG_X86_MPPARSE
+ unsigned int num_processors;
+ unsigned disabled_cpus __cpuinitdata;
+ /* Processor that is doing the boot up */
+@@ -23,8 +24,9 @@ EXPORT_PER_CPU_SYMBOL(x86_cpu_to_apicid);
+ 
+ /* Bitmask of physically existing CPUs */
+ physid_mask_t phys_cpu_present_map;
++#endif
+ 
+-#if defined(CONFIG_HAVE_SETUP_PER_CPU_AREA) && defined(CONFIG_SMP)
++#if defined(CONFIG_HAVE_SETUP_PER_CPU_AREA) && defined(CONFIG_X86_SMP)
+ /*
+  * Copy data used in early init routines from the initial arrays to the
+  * per cpu data areas.  These arrays then become expendable and the
+
+
