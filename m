@@ -1,70 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763424AbYD1Dd2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764947AbYD1DeX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763424AbYD1Dd2 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Apr 2008 23:33:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762229AbYD1DdT
+	id S1764947AbYD1DeX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Apr 2008 23:34:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762303AbYD1DeO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Apr 2008 23:33:19 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:53408 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1762199AbYD1DdS (ORCPT
-	<rfc822;@sgi.com:linux-kernel@vger.kernel.org>);
-	Sun, 27 Apr 2008 23:33:18 -0400
-Date: Mon, 28 Apr 2008 13:32:49 +1000
-From: David Chinner <dgc@sgi.com>
-To: David Chinner <dgc@sgi.com>
-Cc: Denys Vlasenko <vda.linux@googlemail.com>, xfs@oss.sgi.com,
-       Eric Sandeen <sandeen@sandeen.net>, Adrian Bunk <bunk@kernel.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] xfs: reduce stack usage in xfs_bmap_btalloc()
-Message-ID: <20080428033249.GE103491721@sgi.com>
-References: <200804261651.02078.vda.linux@googlemail.com> <20080427234056.GA108924158@sgi.com>
-Mime-Version: 1.0
+	Sun, 27 Apr 2008 23:34:14 -0400
+Received: from sj-iport-6.cisco.com ([171.71.176.117]:40274 "EHLO
+	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751485AbYD1DeN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Apr 2008 23:34:13 -0400
+From: Roland Dreier <rdreier@cisco.com>
+To: linux-kernel@vger.kernel.org, tglx@linutronix.de, mingo@elte.hu
+Subject: Build failure (with insane config)
+X-Message-Flag: Warning: May contain useful information
+Date: Sun, 27 Apr 2008 20:34:12 -0700
+Message-ID: <adahcdm3b63.fsf@cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080427234056.GA108924158@sgi.com>
-User-Agent: Mutt/1.4.2.1i
+X-OriginalArrivalTime: 28 Apr 2008 03:34:12.0941 (UTC) FILETIME=[BA2867D0:01C8A8E0]
+Authentication-Results: sj-dkim-3; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim3002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 28, 2008 at 09:40:56AM +1000, David Chinner wrote:
-> On Sat, Apr 26, 2008 at 04:51:02PM +0200, Denys Vlasenko wrote:
-> > Hi David,
-> > 
-> > This patch reduces xfs_bmap_btalloc() stack usage by 50 bytes
-> > by moving part of its body into a helper function.
-> 
-> Can you please attach your patches inline, Denys (see
-> Documentation/SubmittingPatches)?
-> 
-> > This results in some variables not taking stack space in
-> > xfs_bmap_btalloc() anymore.
-> > 
-> > The helper itself does not call anything stack-deep.
-> > Stack-deep call to xfs_alloc_vextent() happen
-> > in xfs_bmap_btalloc(), as before.
-> 
-> I have a set of patches that introduces new functionality into the
-> allocator (dynamic allocation policies) that reduces
-> xfs_bmap_btalloc() function by 36 bytes (just by chance, I didn't
-> design it for this purpose). It breaks it down on functional
-> boundaries like Christoph's patch. I'm going to revist that patch
-> w.r.t both these patches and see what falls out the bottom...
+For x86-64, arch/x86/lib/Makefile has:
 
-44 bytes saved in xfs_bmap_btalloc with the same factoring as
-Christoph's patch being done. Given that most of this is now
-the struct xfs_alloc_arg, I don't think this will be reduced a whole
-lot more. I think I might be able to kill the tryagain and isaligned
-variables as well which will save another 8 bytes, but I'll leave
-that for later....
+        lib-y += csum-partial_64.o csum-copy_64.o csum-wrappers_64.o
 
-Good progress, folks.
+so in particular ip_compute_csum() (from csum-partial_64.c) gets put in
+libs, so even though it is exported, it gets thrown away at link time if
+there are no non-modular users.
 
-Cheers,
+However, if someone has an insane config with CONFIG_NET=n and
+CONFIG_VIDEO_BT848=m, then ip_compute_csum() gets discarded but the
+modular code in drivers/media/video/bt8xx/bttv-cards.c calls it and...
 
-Dave.
--- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
+        ERROR: "ip_compute_csum" [drivers/media/video/bt8xx/bttv.ko] undefined!
+
+I guess one fix is just to put at least csum-partial_64.c in obj-y
+instead; it does seem broken to have files with EXPORT_SYMBOL() be
+lib-y, since it is really an invitation for this problem.  Other ideas
+would be for bttv to depend on or select CONFIG_NET.
+
+[It's a long story why I noticed this problem, but maybe we want to fix
+it to save people doing randconfig test builds or something like that.
+Or maybe we don't really care, since the class of real systems with
+video capture cards but no networking is probably quite small]
+
+ - R.
