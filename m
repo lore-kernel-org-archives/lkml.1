@@ -1,62 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762653AbYD1FqC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763671AbYD1FqY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762653AbYD1FqC (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 01:46:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751605AbYD1Fpx
+	id S1763671AbYD1FqY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 01:46:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753153AbYD1Fpy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Mon, 28 Apr 2008 01:45:54 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:41545 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751903AbYD1Fpx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 28 Apr 2008 01:45:53 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:56740 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751394AbYD1Fpx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 01:45:53 -0400
-Message-ID: <481563E4.5090408@redhat.com>
-Date: Sun, 27 Apr 2008 22:43:00 -0700
-From: Ulrich Drepper <drepper@redhat.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080418)
-MIME-Version: 1.0
-To: Davide Libenzi <davidel@xmailserver.org>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH v2] eventfd, signalfd, timerfd, epoll_create w/flags
-References: <200804280315.m3S3FKsw028335@devserv.devel.redhat.com> <Pine.LNX.4.64.0804272200090.18184@alien.or.mcafeemobile.com>
-In-Reply-To: <Pine.LNX.4.64.0804272200090.18184@alien.or.mcafeemobile.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Subject: Re: [PATCH] sched: fair-group: fix a Div0 error of the fair group
+	scheduler
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: miaox@cn.fujitsu.com
+Cc: Ingo Molnar <mingo@elte.hu>, Linux-Kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <481558A0.9020803@cn.fujitsu.com>
+References: <481558A0.9020803@cn.fujitsu.com>
+Content-Type: text/plain
+Date: Mon, 28 Apr 2008 07:45:44 +0200
+Message-Id: <1209361544.6429.4.camel@lappy>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+On Mon, 2008-04-28 at 12:54 +0800, Miao Xie wrote:
+> When I echoed 0 into the "cpu.shares" file, a Div0 error occured.
+> 
+> We found it is caused by the following calling.
+> 
+>    sched_group_set_shares(tg, shares)
+>        set_se_shares(tg->se[i], shares/nr_cpu_ids)
+>            __set_se_shares(se, shares)
+>                div64_64((1ULL<<32), shares)
+> 
+> When the echoed value was less than the number of processores, the result of the
+> sentence "shares/nr_cpu_ids" was 0, and then the system called div64() to divide
+> the result, the Div0 error occured.
+> 
+> It is unnecessary that the shares value is divided by nr_cpu_ids, I think.
+> Because in the function  __update_group_shares_cpu() and init_tg_cfs_entry(),
+> the shares value isn't divided by nr_cpu_ids when setting shares of the sched
+> entity.
+> 
+> This patch fixes this bug. And echoing ULONG_MAX value into cpu.shares also
+> causes Div0 error, so we set a macro MAX_SHARES to limit the max value of
+> shares.
 
-Davide Libenzi wrote:
-> unsigned int oflags_remap(const struct oflags_rmap *m, int n,
-> 			  int f, int *rf)
-> {
-> 	int i;
-> 	for (i = 0, *rf = 0; i < n; i++, m++)
-> 		if (f & m->f) {
-> 			*rf |= m->of;
-> 			f &= ~m->f;
-> 		}
-> 	return f ? -EINVAL: 0;
-> }
+how about:
 
-This will be more expensive in terms of code and runtime.  Plus: who
-knows whether there will really be other flags which can be used like
-this?  I think it's overkill to do this.  If at some point there are
-more flags which are handled the same way one could do something like
-this but I don't think it's necessary now.
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 740fb40..b68127a 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -8025,7 +8025,7 @@ static void init_tg_cfs_entry(struct task_group *tg, struct cfs_rq *cfs_rq,
+ 
+ 	se->my_q = cfs_rq;
+ 	se->load.weight = tg->shares;
+-	se->load.inv_weight = div64_64(1ULL<<32, se->load.weight);
++	se->load.inv_weight = 0;
+ 	se->parent = parent;
+ }
+ #endif
+@@ -8692,7 +8692,7 @@ static void __set_se_shares(struct sched_entity *se, unsigned long shares)
+ 		dequeue_entity(cfs_rq, se, 0);
+ 
+ 	se->load.weight = shares;
+-	se->load.inv_weight = div64_64((1ULL<<32), shares);
++	se->load.inv_weight = 0;
+ 
+ 	if (on_rq)
+ 		enqueue_entity(cfs_rq, se, 0);
 
-- --
-➧ Ulrich Drepper ➧ Red Hat, Inc. ➧ 444 Castro St ➧ Mountain View, CA ❖
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-Comment: Using GnuPG with Fedora - http://enigmail.mozdev.org
 
-iEYEARECAAYFAkgVY+QACgkQ2ijCOnn/RHTN9gCdG6HxUENiLQqmSFPc5LMAcHna
-Nc0AnAhma85jwTCS+XTsQ/MrNngQAT+i
-=3vVs
------END PGP SIGNATURE-----
