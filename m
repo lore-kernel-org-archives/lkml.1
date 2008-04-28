@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S967452AbYD1Wrw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S967077AbYD1WsX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967452AbYD1Wrw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 18:47:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966129AbYD1WhJ
+	id S967077AbYD1WsX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 18:48:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966263AbYD1WhM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 18:37:09 -0400
-Received: from g5t0007.atlanta.hp.com ([15.192.0.44]:30599 "EHLO
+	Mon, 28 Apr 2008 18:37:12 -0400
+Received: from g5t0007.atlanta.hp.com ([15.192.0.44]:30634 "EHLO
 	g5t0007.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S966446AbYD1Wgx (ORCPT
+	with ESMTP id S965894AbYD1Wg5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 18:36:53 -0400
-Message-Id: <20080428223621.795967092@ldl.fc.hp.com>
+	Mon, 28 Apr 2008 18:36:57 -0400
+Message-Id: <20080428223622.418224943@ldl.fc.hp.com>
 References: <20080428223347.233593713@ldl.fc.hp.com>
 User-Agent: quilt/0.46-1
-Date: Mon, 28 Apr 2008 16:34:13 -0600
+Date: Mon, 28 Apr 2008 16:34:16 -0600
 From: Bjorn Helgaas <bjorn.helgaas@hp.com>
 To: Len Brown <lenb@kernel.org>
 Cc: linux-acpi@vger.kernel.org
@@ -26,173 +26,175 @@ Cc: Thomas Renninger <trenn@suse.de>
 Cc: Rene Herman <rene.herman@keyaccess.nl>
 Cc: Jaroslav Kysela <perex@perex.cz>
 Cc: Andrew Morton <akpm@linux-foundation.org>
-Subject: [patch 26/55] PNP: factor pnp_init_resource_table() and pnp_clean_resource_table()
-Content-Disposition: inline; filename=pnp-factor-init-resources
+Subject: [patch 29/55] PNP: convert resource accessors to use pnp_get_resource(), not pnp_resource_table
+Content-Disposition: inline; filename=pnp-convert-accessors-to-pnp_get_resource
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Move the common part of pnp_init_resource_table() and
-pnp_clean_resource_table() into a new pnp_init_resource().
-This reduces a little code duplication and will be
-useful later to initialize an individual resource.
+This removes more direct references to pnp_resource_table.
 
 Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
 
 ---
- drivers/pnp/base.h    |    2 +
- drivers/pnp/manager.c |   90 ++++++++++++++++++++++++--------------------------
- 2 files changed, 46 insertions(+), 46 deletions(-)
+ include/linux/pnp.h |  148 +++++++++++++++++++++++++++++++++++++---------------
+ 1 file changed, 108 insertions(+), 40 deletions(-)
 
-Index: work10/drivers/pnp/base.h
+Index: work10/include/linux/pnp.h
 ===================================================================
---- work10.orig/drivers/pnp/base.h	2008-04-28 16:09:22.000000000 -0600
-+++ work10/drivers/pnp/base.h	2008-04-28 16:09:25.000000000 -0600
-@@ -18,3 +18,5 @@
- int pnp_check_dma(struct pnp_dev * dev, int idx);
+--- work10.orig/include/linux/pnp.h	2008-04-28 16:09:26.000000000 -0600
++++ work10/include/linux/pnp.h	2008-04-28 16:09:30.000000000 -0600
+@@ -27,46 +27,111 @@
+  */
+ struct resource *pnp_get_resource(struct pnp_dev *, unsigned int, unsigned int);
  
- void dbg_pnp_show_resources(struct pnp_dev *dev, char *desc);
-+
-+void pnp_init_resource(struct resource *res);
-Index: work10/drivers/pnp/manager.c
-===================================================================
---- work10.orig/drivers/pnp/manager.c	2008-04-28 16:09:24.000000000 -0600
-+++ work10/drivers/pnp/manager.c	2008-04-28 16:09:25.000000000 -0600
-@@ -234,42 +234,52 @@
- 	dev_dbg(&dev->dev, "  disable dma %d\n", idx);
- }
- 
-+void pnp_init_resource(struct resource *res)
+-/* Use these instead of directly reading pnp_dev to get resource information */
+-#define pnp_port_start(dev,bar)   ((dev)->res.port_resource[(bar)].start)
+-#define pnp_port_end(dev,bar)     ((dev)->res.port_resource[(bar)].end)
+-#define pnp_port_flags(dev,bar)   ((dev)->res.port_resource[(bar)].flags)
+-#define pnp_port_valid(dev,bar) \
+-	((pnp_port_flags((dev),(bar)) & (IORESOURCE_IO | IORESOURCE_UNSET)) \
+-		== IORESOURCE_IO)
+-#define pnp_port_len(dev,bar) \
+-	((pnp_port_start((dev),(bar)) == 0 &&	\
+-	  pnp_port_end((dev),(bar)) ==		\
+-	  pnp_port_start((dev),(bar))) ? 0 :	\
+-	  					\
+-	 (pnp_port_end((dev),(bar)) -		\
+-	  pnp_port_start((dev),(bar)) + 1))
+-
+-#define pnp_mem_start(dev,bar)   ((dev)->res.mem_resource[(bar)].start)
+-#define pnp_mem_end(dev,bar)     ((dev)->res.mem_resource[(bar)].end)
+-#define pnp_mem_flags(dev,bar)   ((dev)->res.mem_resource[(bar)].flags)
+-#define pnp_mem_valid(dev,bar) \
+-	((pnp_mem_flags((dev),(bar)) & (IORESOURCE_MEM | IORESOURCE_UNSET)) \
+-		== IORESOURCE_MEM)
+-#define pnp_mem_len(dev,bar) \
+-	((pnp_mem_start((dev),(bar)) == 0 &&	\
+-	  pnp_mem_end((dev),(bar)) ==		\
+-	  pnp_mem_start((dev),(bar))) ? 0 :	\
+-	  					\
+-	 (pnp_mem_end((dev),(bar)) -		\
+-	  pnp_mem_start((dev),(bar)) + 1))
+-
+-#define pnp_irq(dev,bar)	 ((dev)->res.irq_resource[(bar)].start)
+-#define pnp_irq_flags(dev,bar)	 ((dev)->res.irq_resource[(bar)].flags)
+-#define pnp_irq_valid(dev,bar) \
+-	((pnp_irq_flags((dev),(bar)) & (IORESOURCE_IRQ | IORESOURCE_UNSET)) \
+-		== IORESOURCE_IRQ)
+-
+-#define pnp_dma(dev,bar)	 ((dev)->res.dma_resource[(bar)].start)
+-#define pnp_dma_flags(dev,bar)	 ((dev)->res.dma_resource[(bar)].flags)
+-#define pnp_dma_valid(dev,bar) \
+-	((pnp_dma_flags((dev),(bar)) & (IORESOURCE_DMA | IORESOURCE_UNSET)) \
+-		== IORESOURCE_DMA)
++static inline int pnp_resource_valid(struct resource *res)
 +{
-+	unsigned long type;
-+
-+	type = res->flags & (IORESOURCE_IO  | IORESOURCE_MEM |
-+			     IORESOURCE_IRQ | IORESOURCE_DMA);
-+
-+	res->name = NULL;
-+	res->flags = type | IORESOURCE_AUTO | IORESOURCE_UNSET;
-+	if (type == IORESOURCE_IRQ || type == IORESOURCE_DMA) {
-+		res->start = -1;
-+		res->end = -1;
-+	} else {
-+		res->start = 0;
-+		res->end = 0;
-+	}
++	if (res && !(res->flags & IORESOURCE_UNSET))
++		return 1;
++	return 0;
 +}
 +
- /**
-  * pnp_init_resources - Resets a resource table to default values.
-  * @table: pointer to the desired resource table
-  */
- void pnp_init_resources(struct pnp_dev *dev)
- {
--	struct pnp_resource_table *table = &dev->res;
-+	struct resource *res;
- 	int idx;
++static inline resource_size_t pnp_resource_len(struct resource *res)
++{
++	if (res->start == 0 && res->end == 0)
++		return 0;
++	return res->end - res->start + 1;
++}
++
++
++static inline resource_size_t pnp_port_start(struct pnp_dev *dev,
++					     unsigned int bar)
++{
++	return pnp_get_resource(dev, IORESOURCE_IO, bar)->start;
++}
++
++static inline resource_size_t pnp_port_end(struct pnp_dev *dev,
++					   unsigned int bar)
++{
++	return pnp_get_resource(dev, IORESOURCE_IO, bar)->end;
++}
++
++static inline unsigned long pnp_port_flags(struct pnp_dev *dev,
++					   unsigned int bar)
++{
++	return pnp_get_resource(dev, IORESOURCE_IO, bar)->flags;
++}
++
++static inline int pnp_port_valid(struct pnp_dev *dev, unsigned int bar)
++{
++	return pnp_resource_valid(pnp_get_resource(dev, IORESOURCE_IO, bar));
++}
++
++static inline resource_size_t pnp_port_len(struct pnp_dev *dev,
++					   unsigned int bar)
++{
++	return pnp_resource_len(pnp_get_resource(dev, IORESOURCE_IO, bar));
++}
++
++
++static inline resource_size_t pnp_mem_start(struct pnp_dev *dev,
++					    unsigned int bar)
++{
++	return pnp_get_resource(dev, IORESOURCE_MEM, bar)->start;
++}
++
++static inline resource_size_t pnp_mem_end(struct pnp_dev *dev,
++					  unsigned int bar)
++{
++	return pnp_get_resource(dev, IORESOURCE_MEM, bar)->end;
++}
++
++static inline unsigned long pnp_mem_flags(struct pnp_dev *dev, unsigned int bar)
++{
++	return pnp_get_resource(dev, IORESOURCE_MEM, bar)->flags;
++}
++
++static inline int pnp_mem_valid(struct pnp_dev *dev, unsigned int bar)
++{
++	return pnp_resource_valid(pnp_get_resource(dev, IORESOURCE_MEM, bar));
++}
++
++static inline resource_size_t pnp_mem_len(struct pnp_dev *dev,
++					  unsigned int bar)
++{
++	return pnp_resource_len(pnp_get_resource(dev, IORESOURCE_MEM, bar));
++}
++
++
++static inline resource_size_t pnp_irq(struct pnp_dev *dev, unsigned int bar)
++{
++	return pnp_get_resource(dev, IORESOURCE_IRQ, bar)->start;
++}
++
++static inline unsigned long pnp_irq_flags(struct pnp_dev *dev, unsigned int bar)
++{
++	return pnp_get_resource(dev, IORESOURCE_IRQ, bar)->flags;
++}
++
++static inline int pnp_irq_valid(struct pnp_dev *dev, unsigned int bar)
++{
++	return pnp_resource_valid(pnp_get_resource(dev, IORESOURCE_IRQ, bar));
++}
++
++
++static inline resource_size_t pnp_dma(struct pnp_dev *dev, unsigned int bar)
++{
++	return pnp_get_resource(dev, IORESOURCE_DMA, bar)->start;
++}
++
++static inline unsigned long pnp_dma_flags(struct pnp_dev *dev, unsigned int bar)
++{
++	return pnp_get_resource(dev, IORESOURCE_DMA, bar)->flags;
++}
++
++static inline int pnp_dma_valid(struct pnp_dev *dev, unsigned int bar)
++{
++	return pnp_resource_valid(pnp_get_resource(dev, IORESOURCE_DMA, bar));
++}
++
  
- 	for (idx = 0; idx < PNP_MAX_IRQ; idx++) {
--		table->irq_resource[idx].name = NULL;
--		table->irq_resource[idx].start = -1;
--		table->irq_resource[idx].end = -1;
--		table->irq_resource[idx].flags =
--		    IORESOURCE_IRQ | IORESOURCE_AUTO | IORESOURCE_UNSET;
-+		res = &dev->res.irq_resource[idx];
-+		res->flags = IORESOURCE_IRQ;
-+		pnp_init_resource(res);
- 	}
- 	for (idx = 0; idx < PNP_MAX_DMA; idx++) {
--		table->dma_resource[idx].name = NULL;
--		table->dma_resource[idx].start = -1;
--		table->dma_resource[idx].end = -1;
--		table->dma_resource[idx].flags =
--		    IORESOURCE_DMA | IORESOURCE_AUTO | IORESOURCE_UNSET;
-+		res = &dev->res.dma_resource[idx];
-+		res->flags = IORESOURCE_DMA;
-+		pnp_init_resource(res);
- 	}
- 	for (idx = 0; idx < PNP_MAX_PORT; idx++) {
--		table->port_resource[idx].name = NULL;
--		table->port_resource[idx].start = 0;
--		table->port_resource[idx].end = 0;
--		table->port_resource[idx].flags =
--		    IORESOURCE_IO | IORESOURCE_AUTO | IORESOURCE_UNSET;
-+		res = &dev->res.port_resource[idx];
-+		res->flags = IORESOURCE_IO;
-+		pnp_init_resource(res);
- 	}
- 	for (idx = 0; idx < PNP_MAX_MEM; idx++) {
--		table->mem_resource[idx].name = NULL;
--		table->mem_resource[idx].start = 0;
--		table->mem_resource[idx].end = 0;
--		table->mem_resource[idx].flags =
--		    IORESOURCE_MEM | IORESOURCE_AUTO | IORESOURCE_UNSET;
-+		res = &dev->res.mem_resource[idx];
-+		res->flags = IORESOURCE_MEM;
-+		pnp_init_resource(res);
- 	}
- }
- 
-@@ -279,40 +289,36 @@
-  */
- static void pnp_clean_resource_table(struct pnp_dev *dev)
- {
--	struct pnp_resource_table *res = &dev->res;
-+	struct resource *res;
- 	int idx;
- 
- 	for (idx = 0; idx < PNP_MAX_IRQ; idx++) {
--		if (!(res->irq_resource[idx].flags & IORESOURCE_AUTO))
--			continue;
--		res->irq_resource[idx].start = -1;
--		res->irq_resource[idx].end = -1;
--		res->irq_resource[idx].flags =
--		    IORESOURCE_IRQ | IORESOURCE_AUTO | IORESOURCE_UNSET;
-+		res = &dev->res.irq_resource[idx];
-+		if (res->flags & IORESOURCE_AUTO) {
-+			res->flags = IORESOURCE_IRQ;
-+			pnp_init_resource(res);
-+		}
- 	}
- 	for (idx = 0; idx < PNP_MAX_DMA; idx++) {
--		if (!(res->dma_resource[idx].flags & IORESOURCE_AUTO))
--			continue;
--		res->dma_resource[idx].start = -1;
--		res->dma_resource[idx].end = -1;
--		res->dma_resource[idx].flags =
--		    IORESOURCE_DMA | IORESOURCE_AUTO | IORESOURCE_UNSET;
-+		res = &dev->res.dma_resource[idx];
-+		if (res->flags & IORESOURCE_AUTO) {
-+			res->flags = IORESOURCE_DMA;
-+			pnp_init_resource(res);
-+		}
- 	}
- 	for (idx = 0; idx < PNP_MAX_PORT; idx++) {
--		if (!(res->port_resource[idx].flags & IORESOURCE_AUTO))
--			continue;
--		res->port_resource[idx].start = 0;
--		res->port_resource[idx].end = 0;
--		res->port_resource[idx].flags =
--		    IORESOURCE_IO | IORESOURCE_AUTO | IORESOURCE_UNSET;
-+		res = &dev->res.port_resource[idx];
-+		if (res->flags & IORESOURCE_AUTO) {
-+			res->flags = IORESOURCE_IO;
-+			pnp_init_resource(res);
-+		}
- 	}
- 	for (idx = 0; idx < PNP_MAX_MEM; idx++) {
--		if (!(res->mem_resource[idx].flags & IORESOURCE_AUTO))
--			continue;
--		res->mem_resource[idx].start = 0;
--		res->mem_resource[idx].end = 0;
--		res->mem_resource[idx].flags =
--		    IORESOURCE_MEM | IORESOURCE_AUTO | IORESOURCE_UNSET;
-+		res = &dev->res.mem_resource[idx];
-+		if (res->flags & IORESOURCE_AUTO) {
-+			res->flags = IORESOURCE_MEM;
-+			pnp_init_resource(res);
-+		}
- 	}
- }
- 
+ #define PNP_PORT_FLAG_16BITADDR	(1<<0)
+ #define PNP_PORT_FLAG_FIXED	(1<<1)
 
 -- 
