@@ -1,42 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935049AbYD1OrA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964820AbYD1OsT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935049AbYD1OrA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 10:47:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933881AbYD1Oqw
+	id S964820AbYD1OsT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 10:48:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933118AbYD1OsG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 10:46:52 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:50190 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933870AbYD1Oqv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 10:46:51 -0400
-Date: Mon, 28 Apr 2008 11:48:55 -0300
-From: Marcelo Tosatti <mtosatti@redhat.com>
-To: Andrea Arcangeli <andrea@qumranet.com>
-Cc: Anthony Liguori <anthony@codemonkey.ws>, Nick Piggin <npiggin@suse.de>,
-       Chris Wright <chrisw@redhat.com>, Jack Steiner <steiner@sgi.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       kvm-devel@lists.sourceforge.net, Kanoj Sarcar <kanojsarcar@yahoo.com>,
-       Roland Dreier <rdreier@cisco.com>, linux-kernel@vger.kernel.org,
-       Avi Kivity <avi@qumranet.com>, Marcelo Tosatti <marcelo@kvack.org>,
-       linux-mm@kvack.org, Robin Holt <holt@sgi.com>,
-       general@lists.openfabrics.org, Hugh Dickins <hugh@veritas.com>,
-       akpm@linux-foundation.org, Steve Wise <swise@opengridcomputing.com>,
-       Christoph Lameter <clameter@sgi.com>
-Subject: Re: [kvm-devel] mmu notifier #v14
-Message-ID: <20080428144855.GA1702@dmt>
-References: <20080426164511.GJ9514@duo.random> <48137B8B.7010202@us.ibm.com> <20080427002019.GL9514@duo.random> <4813DCCF.3020201@codemonkey.ws> <20080427030514.GM9514@duo.random>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080427030514.GM9514@duo.random>
-User-Agent: Mutt/1.4.2.1i
+	Mon, 28 Apr 2008 10:48:06 -0400
+Received: from DSL212-235-53-3.bb.netvision.net.il ([212.235.53.3]:56351 "EHLO
+	bh-buildlin2.bhalevy.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932260AbYD1OsE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Apr 2008 10:48:04 -0400
+Message-ID: <4815C1EC.7090109@panasas.com>
+Date: Mon, 28 Apr 2008 15:24:12 +0300
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+MIME-Version: 1.0
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+CC: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [GIT PATCH] another tranche of SCSI updates for 2.6.26
+References: <1209320076.3801.26.camel@localhost.localdomain>	 <20080428013400.GA6245@elte.hu>	 <1209351113.3801.107.camel@localhost.localdomain>	 <48157B6A.60307@panasas.com> <1209384784.3367.1.camel@localhost.localdomain>
+In-Reply-To: <1209384784.3367.1.camel@localhost.localdomain>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andrea,
+On Mon, Apr 28 2008 at 15:13 +0300, James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
+> On Mon, 2008-04-28 at 10:23 +0300, Boaz Harrosh wrote:
+>> If we are already on the subject. It looks like we always have at most 1 command in the 
+>> free list, so why the free list at all? or am I reading the code wrong?
+> 
+> Because list handlers are well understood mechanisms within the kernel.
+  This is not an excuse ;-). So is a simple pointer.
+ 
+> Also because in low memory situations, one command per host is
+> sufficient to guarantee forward progress, but it's not going to be very
+> efficient.  Embedded and other low memory environments can increase the
+> size of the free list to improve their I/O path.
+> 
 
-Looks good.
+Ok that is what I thought, but inspecting the code, I can't find it. Is there
+a config option or an external mechanism that let you do that? If not, is/was
+there a ready made external patch that will enable such facility in someway?
+Should there be one?
 
-Acked-by: Marcelo Tosatti <mtosatti@redhat.com>
+> James
+> 
 
+Boaz
