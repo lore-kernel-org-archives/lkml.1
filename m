@@ -1,129 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933137AbYD1IgA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932885AbYD1IiZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933137AbYD1IgA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 04:36:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932127AbYD1Ifs
+	id S932885AbYD1IiZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 04:38:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764064AbYD1IiR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 04:35:48 -0400
-Received: from mo11.iij4u.or.jp ([210.138.174.79]:50891 "EHLO mo11.iij4u.or.jp"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765958AbYD1Ifr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 04:35:47 -0400
-Date: Mon, 28 Apr 2008 17:34:01 +0900
-To: bharrosh@panasas.com
-Cc: James.Bottomley@HansenPartnership.com, mingo@elte.hu,
-       akpm@linux-foundation.org, torvalds@linux-foundation.org,
-       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [GIT PATCH] another tranche of SCSI updates for 2.6.26
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <48157B6A.60307@panasas.com>
-References: <20080428013400.GA6245@elte.hu>
-	<1209351113.3801.107.camel@localhost.localdomain>
-	<48157B6A.60307@panasas.com>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Mon, 28 Apr 2008 04:38:17 -0400
+Received: from trillian.zoopnet.de ([85.214.111.199]:50969 "EHLO
+	trillian.zoopnet.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762565AbYD1IiP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Apr 2008 04:38:15 -0400
+Message-ID: <48158CF3.60004@zoopnet.de>
+Date: Mon, 28 Apr 2008 10:38:11 +0200
+From: Mika Fischer <mika.fischer@zoopnet.de>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
+MIME-Version: 1.0
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+CC: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Andi Kleen <ak@suse.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Jesse Barnes <jesse.barnes@intel.com>, balajirrao@gmail.com
+Subject: Re: [PATCH] x86_32: trim memory by updating e820 v3
+References: <200801192045.17291.yinghai.lu@sun.com>	 <200801202256.48365.yinghai.lu@sun.com>	 <20080122165125.GA17992@elte.hu>	 <200801221623.20861.yinghai.lu@sun.com>	 <20080426035614.a30afb17.akpm@linux-foundation.org> <86802c440804272350y33d69a32o5533dc01dc5a6c96@mail.gmail.com>
+In-Reply-To: <86802c440804272350y33d69a32o5533dc01dc5a6c96@mail.gmail.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-Id: <20080428173459B.tomof@acm.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 28 Apr 2008 10:23:22 +0300
-Boaz Harrosh <bharrosh@panasas.com> wrote:
+Hi Yinghai,
 
-> On Mon, Apr 28 2008 at 5:51 +0300, James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
-> > On Mon, 2008-04-28 at 03:34 +0200, Ingo Molnar wrote:
-> >> * James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
-> >>
-> >>> This represents the tree I had waitin on other mergers.  I'm not sure 
-> >>> this is it, because there are other features (like aic94xx running 
-> >>> abort) we're racing to get in.
-> >>>
-> >>> The patch is available at:
-> >>>
-> >>> master.kernel.org:/pub/scm/linux/kernel/git/jejb/scsi-misc-2.6.git
-> >> hm, got this crash with latest -git shortly after i rebased from this 
-> >> morning's git to this night's git, it looks SCSI related:
-> >>
-> >> [   44.513114] Calling initcall 0xc1cece47: init_this_scsi_driver+0x0/0xd0()
-> >> [   47.919053] BUG: unable to handle kernel NULL pointer dereference at 00000004
-> >> [   47.927035] IP: [<c09cf947>] scsi_destroy_command_freelist+0x15/0x5a
-> >> [   47.931008] *pde = 00000000 
-> >> [   47.935253] Oops: 0000 [#1] SMP DEBUG_PAGEALLOC
-> >> [   47.939004] Modules linked in:
-> >> [   47.939004] 
-> >> [   47.939004] Pid: 1, comm: swapper Not tainted (2.6.25-sched-devel.git-x86-latest.git #5)
-> >> [   47.939004] EIP: 0060:[<c09cf947>] EFLAGS: 00010217 CPU: 0
-> >> [   47.939004] EIP is at scsi_destroy_command_freelist+0x15/0x5a
-> >> [   47.939004] EAX: c0042000 EBX: 00000000 ECX: c199ba14 EDX: fffffffc
-> >> [   47.939004] ESI: c0042000 EDI: c0042034 EBP: f7c36ebc ESP: f7c36eb0
-> >> [   47.939004]  DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
-> >> [   47.939004] Process swapper (pid: 1, ti=f7c36000 task=f7c4e000 task.ti=f7c36000)
-> >> [   47.939004] Stack: c0042000 00000000 00000000 f7c36ecc c09cfa4c c004225c c1a43378 f7c36ed4 
-> >> [   47.939004]        c0688535 f7c36ee8 c04e942b c0042260 c04e93e6 00000330 f7c36ef8 c04e9f20 
-> >> [   47.939004]        c004225c 00000002 f7c36f04 c04e9353 c0042000 f7c36f0c c0688aee f7c36f14 
-> >> [   47.939004] Call Trace:
-> >> [   47.939004]  [<c09cfa4c>] ? scsi_host_dev_release+0x79/0xa9
-> >> [   47.939004]  [<c0688535>] ? device_release+0x3e/0x54
-> >> [   47.939004]  [<c04e942b>] ? kobject_release+0x45/0x55
-> >> [   47.939004]  [<c04e93e6>] ? kobject_release+0x0/0x55
-> >> [   47.939004]  [<c04e9f20>] ? kref_put+0x3e/0x49
-> >> [   47.939004]  [<c04e9353>] ? kobject_put+0x41/0x46
-> >> [   47.939004]  [<c0688aee>] ? put_device+0x16/0x18
-> >> [   47.939004]  [<c09cf9d1>] ? scsi_host_put+0x12/0x14
-> >> [   47.939004]  [<c09cfbac>] ? scsi_unregister+0x1d/0x20
-> >> [   47.939004]  [<c1cece2d>] ? aha1542_detect+0x7d1/0x7eb
-> >> [   47.939004]  [<c016de2e>] ? trace_hardirqs_on+0xb/0xd
-> >> [   47.939004]  [<c1cece52>] ? init_this_scsi_driver+0xb/0xd0
-> >> [   47.939004]  [<c01922a7>] ? ftrace_record_ip+0x1d4/0x1ed
-> >> [   47.939004]  [<c1cecea5>] ? init_this_scsi_driver+0x5e/0xd0
-> >> [   47.939004]  [<c1c934e5>] ? kernel_init+0x152/0x2b0
-> >> [   47.939004]  [<c1c93393>] ? kernel_init+0x0/0x2b0
-> >> [   47.939004]  [<c1c93393>] ? kernel_init+0x0/0x2b0
-> >> [   47.939004]  [<c011c967>] ? kernel_thread_helper+0x7/0x10
-> >> [   47.939004]  =======================
-> >> [   47.939004] Code: ff eb 0c 89 fa 83 c0 04 e8 78 ba b2 ff 31 d2 5b 89 d0 5e 5f 5d c3 55 89 e5 57 56 53 e8 cf d0 74 ff 89 c6 8d 78 34 eb 1c 8d 53 fc <8b> 42 08 8b 4a 04 89 41 04 89 08 89 5a 08 89 5a 04 8b 46 10 e8 
-> >> [   47.939004] EIP: [<c09cf947>] scsi_destroy_command_freelist+0x15/0x5a SS:ESP 0068:f7c36eb0
-> >  
-> > sigh, every time I fix this free list stuff in one place, it breaks in
-> > another.  This one is caused by the alloc->put sequence for the host (it
-> > never got to scsi_add_host() where the freelist is allocated, so we need
-> > to not release it in that case).
-> > 
-> > Try this; the signature for an uninitialised free list is easy (both
-> > list pointers NULL), so the patch detects that and doesn't try to run
-> > over the uninitialised list head.
-> > 
-> > James
-> > 
-> > ---
-> > 
-> > diff --git a/drivers/scsi/scsi.c b/drivers/scsi/scsi.c
-> > index 12d69d7..dc36321 100644
-> > --- a/drivers/scsi/scsi.c
-> > +++ b/drivers/scsi/scsi.c
-> > @@ -481,6 +481,14 @@ int scsi_setup_command_freelist(struct Scsi_Host *shost)
-> >   */
-> >  void scsi_destroy_command_freelist(struct Scsi_Host *shost)
-> >  {
-> > +	if (shost->free_list.next == NULL && shost->free_list.prev == NULL)
-> > +		/*
-> > +		 * If the next and prev pointers are NULL, that
-> > +		 * means the list was never initialised, so it
-> > +		 * doesn't need freeing
-> > +		 */
-> > +		return;
-> > +
-> >  	while (!list_empty(&shost->free_list)) {
-> >  		struct scsi_cmnd *cmd;
-> >  
-> > 
-> > 
-> > --
+Yinghai Lu schrieb:
+>>  reg00: base=0xc0000000 (3072MB), size=1024MB: uncachable, count=1
+>>  reg01: base=0x00000000 ( 0MB), size=4096MB: write-back, count=1
+>>  reg02: base=0x100000000 (4096MB), size=1024MB: write-back, count=1
+>>  reg03: base=0xbf700000 (3063MB), size= 1MB: uncachable, count=1
+>>  reg04: base=0xbf800000 (3064MB), size= 8MB: uncachable, count=1
+>>
+>>  which screws up the X server's attempt to map the video memory at
+>>  0xd0000000.
 > 
-> If we are already on the subject. It looks like we always have at most 1 command in the 
-> free list, so why the free list at all? or am I reading the code wrong?
+> please try the patch at
+> 
+> http://lkml.org/lkml/2008/4/28/52
+> 
+> with mtrr_chunk_size=1g, and you should get
+> 
+> you should get
+>>  reg00: base=0x00000000 ( 0MB), size=2048MB: write-back, count=1
+>>  reg01: base=0x80000000 (2048MB), size=1024MB: write-back, count=1
+>>  reg02: base=0xbf700000 (3063MB), size= 1MB: uncachable, count=1
+>>  reg03: base=0xbf800000 (3064MB), size= 8MB: uncachable, count=1
+>>  reg04: base=0x100000000 (4096MB), size=1024MB: write-back, count=1
 
-scsi_add_host sets up one free command. If you call scsi_host_alloc
-and then scsi_host_put (some LLDs do on their failure path), you hit
-the above problem.
+Wow, thanks a lot for this patch! It almost works. This is what I get
+with mtrr_chunk_size=1g:
+reg00: base=0x00000000 (   0MB), size=2048MB: write-back, count=1
+reg01: base=0x80000000 (2048MB), size=1024MB: write-back, count=1
+reg02: base=0xbf700000 (3063MB), size=   1MB: uncachable, count=1
+reg03: base=0xbf800000 (3064MB), size=   8MB: uncachable, count=1
+reg04: base=0x100001000 (4096MB), size=   4KB: write-back, count=1
+reg05: base=0x100002000 (4096MB), size=   8KB: write-back, count=1
+reg06: base=0x100004000 (4096MB), size=  16KB: write-back, count=1
+reg07: base=0x100008000 (4096MB), size=  32KB: write-back, count=1
+
+And this is what I get without mtrr_chunk_size=1g:
+reg00: base=0x00000000 (   0MB), size=2048MB: write-back, count=1
+reg01: base=0x80000000 (2048MB), size= 512MB: write-back, count=1
+reg02: base=0xa0000000 (2560MB), size= 256MB: write-back, count=1
+reg03: base=0xb0000000 (2816MB), size= 256MB: write-back, count=1
+reg04: base=0xbf700000 (3063MB), size=   1MB: uncachable, count=1
+reg05: base=0xbf800000 (3064MB), size=   8MB: uncachable, count=1
+reg06: base=0x100001000 (4096MB), size=   4KB: write-back, count=1
+reg07: base=0x100002000 (4096MB), size=   8KB: write-back, count=1
+
+I attached these outputs and the dmesgs to the bug report:
+http://bugzilla.kernel.org/show_bug.cgi?id=10508
+
+dmesg with mtrr_chunk_size=1g:
+http://bugzilla.kernel.org/attachment.cgi?id=15945
+
+dmesg without mtrr_chunk_size=1g:
+http://bugzilla.kernel.org/attachment.cgi?id=15946
+
+There are some warnings in the output:
+[    0.000000] WARNING: BIOS bug: CPU MTRRs don't cover all of memory,
+losing 1023MB of RAM.
+[    0.000000] ------------[ cut here ]------------
+[    0.000000] WARNING: at
+/home/mika/src/linux-2.6/arch/x86/kernel/cpu/mtrr/main.c:1049
+mtrr_trim_uncached_memory+0x118/0x250()
+[    0.000000] Modules linked in:
+[    0.000000] Pid: 0, comm: swapper Not tainted 2.6.25 #5
+[    0.000000]  [<c01273af>] warn_on_slowpath+0x5f/0x90
+[    0.000000]  [<c03a8f9d>] _spin_unlock_irqrestore+0xd/0x10
+[    0.000000]  [<c0127d4a>] release_console_sem+0x1ba/0x1e0
+[    0.000000]  [<c01280d8>] vprintk+0x1c8/0x3a0
+[    0.000000]  [<c010ebd3>] generic_get_mtrr+0x93/0x100
+[    0.000000]  [<c01282cb>] printk+0x1b/0x20
+[    0.000000]  [<c05069d8>] mtrr_trim_uncached_memory+0x118/0x250
+[    0.000000]  [<c0504292>] setup_arch+0x312/0x590
+[    0.000000]  [<c04fd774>] start_kernel+0x64/0x3a0
+[    0.000000]  =======================
+[    0.000000] ---[ end trace ca143223eefdc828 ]---
+
+Let me know if there's anything else I can do to help!
+
+Regards,
+ Mika
