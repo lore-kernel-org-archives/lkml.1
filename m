@@ -1,107 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933483AbYD1L2z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932568AbYD1Lf6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933483AbYD1L2z (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 07:28:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763049AbYD1L2r
+	id S932568AbYD1Lf6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 07:35:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763049AbYD1Lfs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 07:28:47 -0400
-Received: from smtp.nokia.com ([192.100.122.230]:27882 "EHLO
-	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763195AbYD1L2q (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 07:28:46 -0400
-Message-ID: <4815B3AE.5010500@nokia.com>
-Date: Mon, 28 Apr 2008 14:23:26 +0300
-From: Adrian Hunter <ext-adrian.hunter@nokia.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
-MIME-Version: 1.0
-To: ext ext Christoph Hellwig <hch@infradead.org>
-CC: Artem Bityutskiy <dedekind@yandex.ru>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Artem Bityutskiy <Artem.Bityutskiy@nokia.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC PATCH 26/26] UBIFS: include FS to compilation
-References: <1206629746-4298-1-git-send-email-Artem.Bityutskiy@nokia.com> <1206629746-4298-27-git-send-email-Artem.Bityutskiy@nokia.com> <84144f020804010039n47133bd3l63f02258a2670e72@mail.gmail.com> <47F1F7A6.5020105@yandex.ru> <20080426093553.GA17730@infradead.org> <48157812.5090909@nokia.com> <20080428090032.GA14100@infradead.org>
-In-Reply-To: <20080428090032.GA14100@infradead.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 28 Apr 2008 07:35:48 -0400
+Received: from gateway.drzeus.cx ([85.8.24.16]:50590 "EHLO smtp.drzeus.cx"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762540AbYD1Lfr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Apr 2008 07:35:47 -0400
+Date: Mon, 28 Apr 2008 13:35:23 +0200
+From: Pierre Ossman <drzeus-list@drzeus.cx>
+To: "Justin Mattock" <justinmattock@gmail.com>
+Cc: "Jiri Slaby" <jirislaby@gmail.com>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: post-2.6.25 locks up hard without any message
+Message-ID: <20080428133523.34197aa3@mjolnir.drzeus.cx>
+In-Reply-To: <dd18b0c30804251650me69a06fi573418ed48a3261d@mail.gmail.com>
+References: <20080425175423.4bfd1c7b@mjolnir.drzeus.cx>
+	<48125094.9070007@gmail.com>
+	<dd18b0c30804251650me69a06fi573418ed48a3261d@mail.gmail.com>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 28 Apr 2008 11:28:21.0570 (UTC) FILETIME=[F6DCB220:01C8A922]
-X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Hellwig wrote:
->Artem Bityutskiy wrote:
->>Pekka Enberg wrote:
->>>>Artem Bityutskiy wrote:
->>>>  +config UBIFS_FS_DEBUG_MSG_GEN
->>>>  +
->>>>  +config UBIFS_FS_DEBUG_MSG_JRN
->>>>  +
->>>>  +config UBIFS_FS_DEBUG_MSG_CMT
->>>>  +
->>>>  +config UBIFS_FS_DEBUG_MSG_BUDG
->>>>  +
->>>>  +config UBIFS_FS_DEBUG_MSG_LOG
->>>>  +
->>>>  +config UBIFS_FS_DEBUG_MSG_TNC
->>>>  +
->>>>  +config UBIFS_FS_DEBUG_MSG_LP
->>>>  +
->>>>  +config UBIFS_FS_DEBUG_MSG_FIND
->>>>  +
->>>>  +config UBIFS_FS_DEBUG_MSG_MNT
->>>>  +
->>>>  +config UBIFS_FS_DEBUG_MSG_IO
->>>>  +
->>>>  +config UBIFS_FS_DEBUG_MSG_GC
->>>>  +
->>>>  +config UBIFS_FS_DEBUG_MSG_SCAN
->>>
->>> But these don't make much sense to me. Why would you want to be able
->>> to compile out printks at this granularity? Why not enable all of them
->>> when CONFIG_UBIFS_FS_DEBUG is enabled? 
->>
->>Well, its just more convenient for us. If I know the bug is somewhere in
->>the journal, I enable the journal messages - less flooding. We may
->>lessen the amount, but it is still handy to have some classes of
->>prints separate.
->>
->>We will think how to lessen the amount and granularity of this. 
->>
-> On Mon, Apr 28, 2008 at 10:09:06AM +0300, Adrian Hunter wrote:
->>Christoph Hellwig wrote:
->>> It's everything but convenient :)  Please make it one config option to
->>> compile in all debug code and then have a module option to select the
->>> verbosity level at runtime.
->> Surely that judgement should be made by people who actually debug UBIFS.
+On Fri, 25 Apr 2008 23:50:17 +0000
+"Justin Mattock" <justinmattock@gmail.com> wrote:
+
 > 
-> I've debugged enough code including filesystems far more complex than
-> ubifs so you can happily trust my judgement.  Even if not you can simply
-> switch on your brain and notice that a runtime/boottime switch is always
-> more convenient than a compile-time switch, and the only reason against
-> it would be a performance penalty.
+> You might have what I was experiencing, a complete lock up, I received
+> a patch from Peter Zijlstra that resolved the issue for me, I pass it
+> to you:
 
-You have gone off on a tangent.  The original context was discussing the
-need for granulated debug messages.  I have restored the context above.
+Seems like your mailer screwed up all the whitespace in the patch.
+Could you try resending it as an attachment?
 
-Addressing the original discussion, the convenience is best expressed by
-example.  Say you want to try improving the garbage collector.  It is
-convenient to be able to get messages just about the garbage collector.
-Say you want to add index node merging to the TNC, it is convenient to
-get messages just about the TNC.  And so on.  Hence my original point
-stands:  the convenience is evident to someone working with the code, but
-not to someone who isn't.
+Rgds
+-- 
+     -- Pierre Ossman
 
-Note also, that switching on all the debug messages is not exactly
-inconvenient.  After all, you just select all the config options.
-
-You seem to have mistakenly inferred I was impugning your judgement.  That
-was not the point.
-
-Coming back to your issue of a mount-time option for debug messages.  I am
-not sure any other file systems do that.  In general I would say having to
-switch on the debug config option and also change either the kernel command
-line or init scripts, seems in fact much less convenient.
-
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  PulseAudio, core developer          http://pulseaudio.org
+  rdesktop, core developer          http://www.rdesktop.org
