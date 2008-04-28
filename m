@@ -1,80 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937311AbYD1Uau@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937480AbYD1UbZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937311AbYD1Uau (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 16:30:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934305AbYD1Uaj
+	id S937480AbYD1UbZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 16:31:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934048AbYD1UbJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 16:30:39 -0400
-Received: from www.tglx.de ([62.245.132.106]:55157 "EHLO www.tglx.de"
+	Mon, 28 Apr 2008 16:31:09 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:36376 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765866AbYD1Uai (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 16:30:38 -0400
-Date: Mon, 28 Apr 2008 22:30:25 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: PJ Waskiewicz <peter.p.waskiewicz.jr@intel.com>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>, netdev@vger.kernel.org
-Subject: Re: [PATCH] ARCH: Fix 32-bit x86 MSI-X allocation leakage
-In-Reply-To: <20080426005850.7098.77479.stgit@scrappy.jf.intel.com>
-Message-ID: <alpine.LFD.1.10.0804282216570.3261@apollo.tec.linutronix.de>
-References: <20080426005850.7098.77479.stgit@scrappy.jf.intel.com>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	id S932381AbYD1UbF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Apr 2008 16:31:05 -0400
+Date: Mon, 28 Apr 2008 22:30:56 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Mauro Carvalho Chehab <mchehab@infradead.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [patch] dvb: build failure fix
+Message-ID: <20080428203056.GI15840@elte.hu>
+References: <20080428162421.GA16566@elte.hu> <20080428164730.43349c3d@gaivota>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080428164730.43349c3d@gaivota>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 25 Apr 2008, PJ Waskiewicz wrote:
-> This bug was introduced in the 2.6.24 i386/x86_64 tree merge, where
 
-Can you please explain what exactly caused the bug. Definitely not the
-move from arch/i386 to arch/x86 as the code there was not changed at
-all and has not be changed since then.
+* Mauro Carvalho Chehab <mchehab@infradead.org> wrote:
 
-CC'ed Eric as well.
+> On Mon, 28 Apr 2008 18:24:21 +0200
+> Ingo Molnar <mingo@elte.hu> wrote:
+> 
+> > 
+> > fix build failure found via x86.git randconfig testing:
+> > 
+> >  drivers/built-in.o: In function `tda829x_attach':
+> >  : undefined reference to `tda827x_attach'
+> >  drivers/built-in.o: In function `tda829x_attach':
+> >  : undefined reference to `tda18271_attach'
+> 
+> >  config TUNER_XC2028
+> >  config TUNER_MT20XX
+> >  config TUNER_TEA5761
+> >  config TUNER_TEA5767
+> >  config TUNER_SIMPLE
+> >  config TUNER_TDA9887
+> 
+> Hmm... if the issues are with tda827x and tda18271, why have you 
+> touched on the above drivers? I can't see why the above tuners would 
+> need DVB.
 
-Thanks
-	tglx
+ah, ok. I just copy & pasted to everything that had "depends on I2C".
 
+> >  config TUNER_TDA8290
+> >  	tristate "TDA 8290/8295 + 8275(a)/18271 tuner combo"
+> > -	depends on I2C
+> > +	depends on I2C && ((DVB_CORE = m && m) || (DVB_CORE = y))
+> >  	select DVB_TDA827X
+> >  	select DVB_TDA18271
+> >  	default m if VIDEO_TUNER_CUSTOMIZE
+> 
+> Ok, this one may be broken.
+> 
+> I'm working on some changes that will hopefully fix this issue at the 
+> proper way.
 
-> MSI-X vector allocation will eventually fail.  The cause is the new
-> bit array tracking used vectors is not getting cleared properly on
-> IRQ destruction on the 32-bit APIC code.
-> 
-> This can be seen easily using the ixgbe 10 GbE driver on multi-core
-> systems by simply loading and unloading the driver a few times.
-> Depending on the number of available vectors on the host system, the
-> MSI-X allocation will eventually fail, and the driver will only be
-> able to use legacy interrupts.
-> 
-> I am generating the same patch for both stable trees for 2.6.24 and
-> 2.6.25.
-> 
-> Signed-off-by: Peter P Waskiewicz Jr <peter.p.waskiewicz.jr@intel.com>
-> ---
-> 
->  arch/x86/kernel/io_apic_32.c |    1 +
->  1 files changed, 1 insertions(+), 0 deletions(-)
-> 
-> 
-> diff --git a/arch/x86/kernel/io_apic_32.c b/arch/x86/kernel/io_apic_32.c
-> index 2e2f420..77798b1 100644
-> --- a/arch/x86/kernel/io_apic_32.c
-> +++ b/arch/x86/kernel/io_apic_32.c
-> @@ -2444,6 +2444,7 @@ void destroy_irq(unsigned int irq)
->  	dynamic_irq_cleanup(irq);
->  
->  	spin_lock_irqsave(&vector_lock, flags);
-> +	clear_bit(irq_vector[irq], used_vectors);
->  	irq_vector[irq] = 0;
->  	spin_unlock_irqrestore(&vector_lock, flags);
->  }
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+ok, great. FYI, this has been reported months ago too so it's a 
+long-time breakage - would be nice to fix it upstream even if it's the 
+initial fix is a band-aid.
+
+	Ingo
