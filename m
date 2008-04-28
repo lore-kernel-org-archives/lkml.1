@@ -1,50 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966081AbYD1VEZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966978AbYD1VEy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966081AbYD1VEZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 17:04:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965028AbYD1VEQ
+	id S966978AbYD1VEy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 17:04:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934865AbYD1VEo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 17:04:16 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:59460 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965013AbYD1VEO (ORCPT
+	Mon, 28 Apr 2008 17:04:44 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:45435 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934620AbYD1VEn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 17:04:14 -0400
-Message-ID: <48163B84.90605@zytor.com>
-Date: Mon, 28 Apr 2008 14:03:00 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
-MIME-Version: 1.0
+	Mon, 28 Apr 2008 17:04:43 -0400
+Date: Mon, 28 Apr 2008 18:03:27 -0300
+From: Mauro Carvalho Chehab <mchehab@infradead.org>
 To: Ingo Molnar <mingo@elte.hu>
-CC: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [patch 0/2] Immediate Values - jump patching update
-References: <20080428033415.303000651@polymtl.ca> <481607AF.80803@zytor.com> <20080428202552.GG15840@elte.hu>
-In-Reply-To: <20080428202552.GG15840@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [patch] dvb: build failure fix
+Message-ID: <20080428180327.7f6f5204@gaivota>
+In-Reply-To: <20080428203056.GI15840@elte.hu>
+References: <20080428162421.GA16566@elte.hu>
+	<20080428164730.43349c3d@gaivota>
+	<20080428203056.GI15840@elte.hu>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.9; x86_64-mandriva-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * H. Peter Anvin <hpa@zytor.com> wrote:
+> > I'm working on some changes that will hopefully fix this issue at the 
+> > proper way.
 > 
->> Mathieu Desnoyers wrote:
->>> Thanks to Peter for the review.
->> Just in case someone gets the wrong idea...
->>
->> I still think this is the completely wrong approach.
-> 
-> hm, can it result in a broken kernel? If yes, how? Or are your 
-> objections more higher level?
-> 
+> ok, great. FYI, this has been reported months ago too so it's a 
+> long-time breakage - would be nice to fix it upstream even if it's the 
+> initial fix is a band-aid.
 
-My objections are higher level, I believe the current code is (a) 
-painfully complex, and I'd rather not see it in the kernel, and (b) the 
-wrong thing anyway.
+Agreed. Probably, this is broken since 2.6.24, where hybrid tuner support started.
 
-Put a 5-byte nop in as the marker, and patch it with a call instruction, 
-out of line, to a collector function.
-
-	-hpa
+Cheers,
+Mauro
