@@ -1,55 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932109AbYD1Gj0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932186AbYD1Gke@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932109AbYD1Gj0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 02:39:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756270AbYD1GjQ
+	id S932186AbYD1Gke (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 02:40:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757106AbYD1Gk0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 02:39:16 -0400
-Received: from out4.smtp.messagingengine.com ([66.111.4.28]:60216 "EHLO
-	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751081AbYD1GjO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 02:39:14 -0400
-X-Sasl-enc: ZMRM182xtuMthk0TjRY7J0N4zQt9khrlToMI6rVrgKdS 1209364753
-Subject: Re: [PATCH] autofs4 - use lookup access intent to support
-	recursive bind mounts
-From: Ian Kent <raven@themaw.net>
-To: Al Viro <viro@ZenIV.linux.org.uk>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       autofs mailing list <autofs@linux.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>
-In-Reply-To: <20080428062213.GB5882@ZenIV.linux.org.uk>
-References: <Pine.LNX.4.64.0804281410160.10684@raven.themaw.net>
-	 <20080428062213.GB5882@ZenIV.linux.org.uk>
-Content-Type: text/plain
-Date: Mon, 28 Apr 2008 14:38:25 +0800
-Message-Id: <1209364705.3243.1.camel@raven.themaw.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-4.fc8) 
-Content-Transfer-Encoding: 7bit
+	Mon, 28 Apr 2008 02:40:26 -0400
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:53727 "EHLO smtp5.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752693AbYD1GkZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Apr 2008 02:40:25 -0400
+Date: Mon, 28 Apr 2008 09:39:54 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: David Miller <davem@davemloft.net>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Kconfig 'depend' vs. 'select'
+Message-ID: <20080428063953.GA2088@cs181133002.pp.htv.fi>
+References: <20080427.174536.62560212.davem@davemloft.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20080427.174536.62560212.davem@davemloft.net>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Mon, 2008-04-28 at 07:22 +0100, Al Viro wrote:
-> On Mon, Apr 28, 2008 at 02:14:54PM +0800, Ian Kent wrote:
-> > 
-> > Hi Andrew,
-> > 
-> > For autofs maps that recursively reference other map entries in their
-> > mount point path we need to ensure that these mounts are performed
-> > prior to the current mount request being done. We've used the access
-> > system call, made just prior to performing the mount, to make this
-> > happen. In the case of bind mounts, however, the lookup flags in 
-> > the path walk don't trigger a mount. To do this we need to also
-> > trigger a mount when we see the LOOKUP_ACCESS flag.
+On Sun, Apr 27, 2008 at 05:45:36PM -0700, David Miller wrote:
 > 
-> That's too fscking bad, since ->lookup() is about to lose access to
-> nameidata *and* flags for anything but the last step.  IOW, we'll need
-> cleaner solution...
+> I'm trying to stir up interest in solving a problem that seems to pop
+> up frequently. :)
+> 
+> The short story is:
+> 
+> 1) If you say your driver "depend"s on a subsystem providing a set of
+>    interfaces you need, this doesn't work properly if your driver is
+>    marked built-in and that subsystem you need is modular for some
+>    reason.
+>...
 
-Spell it out for me please!
-Ian
+This should work.
+
+Can you give an example of the problem you are thinking of?
+
+> So if you had, for example:
+> 
+> config FOO_API
+> 	...
+> 
+> and then you had two drivers:
+> 
+> config DRIVER1
+> 	tristate ...
+> 	needs FOO_API
+> 
+> config DRIVER2
+> 	tristate ...
+> 	needs FOO_API
+> 
+> and DRIVER1 was built modular but DRIVER2 was built-in,
+> the Kconfig system would make sure FOO_API were built-in.
+> 
+> The "needs" name and syntax is just something arbitrary I came up
+> with, don't take it too seriously :-)
+
+What about "select"?
+
+That's exactly what it's doing.
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
