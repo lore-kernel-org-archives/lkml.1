@@ -1,205 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935872AbYD1S7j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966148AbYD1TA0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935872AbYD1S7j (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 14:59:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935207AbYD1S7K
+	id S966148AbYD1TA0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 15:00:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936508AbYD1S7v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 14:59:10 -0400
-Received: from hu-out-0506.google.com ([72.14.214.239]:62721 "EHLO
-	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932602AbYD1S7H (ORCPT
+	Mon, 28 Apr 2008 14:59:51 -0400
+Received: from nf-out-0910.google.com ([64.233.182.189]:44899 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933757AbYD1S7s (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 14:59:07 -0400
+	Mon, 28 Apr 2008 14:59:48 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer:mime-version:content-type:content-transfer-encoding:sender;
-        b=m8gDY3qRKsWBDTDYVqbua2Z+nVp7cLS93JlhHE7XWE+Ax/yt2SXkeHojX6ACwrkLjPbNkEkiJYSAC1Vyo9boC1HBmFFYJ9ioxNdS4rbN5aatmVmaiz3fjInRITHXRelhx6kp6R+1HvEZu+xn3+FfhO03AI1QDQc0Iyf47oA2hJY=
-Date: Mon, 28 Apr 2008 21:58:54 +0300
-From: Pekka Paalanen <pq@iki.fi>
-To: linux-kernel@vger.kernel.org
-Cc: Pekka Paalanen <pq@iki.fi>, Ingo Molnar <mingo@elte.hu>,
-       Christoph Hellwig <hch@infradead.org>,
-       Arjan van de Ven <arjan@infradead.org>, Pavel Roskin <proski@gnu.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [RFC 1/3] mmiotrace full patch, preview 3
-Message-ID: <20080428215854.1047eb5d@daedalus.pq.iki.fi>
-In-Reply-To: <20080428214504.5c359195@daedalus.pq.iki.fi>
-References: <20080428214504.5c359195@daedalus.pq.iki.fi>
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.8; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=hyRoWrvVPSHzJhrssnzNoumbOGEgtPkjKs+zAqGY65RLYUCEGsNVoYPMGL7QGPQMJ3uqCbw5qwRDh5LLHa2OeI2GSsHJerjZWdiow29xUXMQbbDcxgnWsxbkbalNNdnYYReqFgWMfgYrkjfD7qyz1WkB15GGTdDo8yDsB56LqnE=
+Date: Mon, 28 Apr 2008 23:55:09 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.25-$sha1: RIP call_for_each_cic+0x25/0x50
+Message-ID: <20080428195509.GA5247@martell.zuzino.mipt.ru>
+References: <20080427225553.GA4848@martell.zuzino.mipt.ru> <20080428050145.af036c4f.akpm@linux-foundation.org> <20080428120412.GY12774@kernel.dk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080428120412.GY12774@kernel.dk>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 28 Apr 2008 21:45:04 +0300
-Pekka Paalanen <pq@iki.fi> wrote:
-
-> Hi all,
+On Mon, Apr 28, 2008 at 02:04:13PM +0200, Jens Axboe wrote:
+> On Mon, Apr 28 2008, Andrew Morton wrote:
+> > On Mon, 28 Apr 2008 02:55:53 +0400 Alexey Dobriyan <adobriyan@gmail.com> wrote:
+> > 
+> > > This happened while ~90 cross-compile jobs were running in parallel on
+> > > ext2/noatime partition (slowly -- much debugging was on)
+> > > 
+> > > 
+> > > general protection fault: 0000 [1] PREEMPT SMP DEBUG_PAGEALLOC
+> > > CPU 0 
+> > > Modules linked in: ext2 nf_conntrack_irc ipt_MASQUERADE iptable_nat nf_nat nf_conntrack_ipv4 xt_state nf_conntrack iptable_filter ip_tables x_tables usblp uhci_hcd ehci_hcd usbcore sr_mod cdrom
+> > > Pid: 16483, comm: as Not tainted 2.6.25-c3bf9bc243092c53946fd6d8ebd6dc2f4e572d48 #1
+> > > RIP: 0010:[<ffffffff80307525>]  [<ffffffff80307525>] call_for_each_cic+0x25/0x50
+> > > RSP: 0018:ffff810170811e58  EFLAGS: 00010202
+> > > RAX: 6b6b6b6b6b6b6b6b RBX: 6b6b6b6b6b6b6b6b RCX: 0000000000000000
+> > > RDX: 0000000000000001 RSI: 0000000000000000 RDI: ffff81010ff92000
+> > > RBP: ffff810170811e78 R08: 0000000000000001 R09: 0000000000000000
+> > > R10: 0000000000000000 R11: ffff8100010069d8 R12: ffff810138ada300
+> > > R13: ffffffff803075b0 R14: ffff81017fcd2000 R15: ffff81010ff92168
+> > > FS:  00002ac3462426f0(0000) GS:ffffffff805d0000(0000) knlGS:0000000000000000
+> > > CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+> > > CR2: 00002ab602550000 CR3: 000000013609d000 CR4: 0000000000000660
+> > > DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+> > > DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+> > > Process as (pid: 16483, threadinfo ffff810170810000, task ffff81010ff92000)
+> > > Stack:  ffff810170811e88 ffff810138ada300 0000000000000010 ffff81010ff92100
+> > >  ffff810170811e88 ffffffff80307580 ffff810170811ea8 ffffffff80302a55
+> > >  ffff81010ff92100 ffff810138ada300 ffff810170811ec8 ffffffff80302b1f
+> > > Call Trace:
+> > >  [<ffffffff80307580>] cfq_free_io_context+0x10/0x20
+> > >  [<ffffffff80302a55>] put_io_context+0x85/0x90
+> > >  [<ffffffff80302b1f>] exit_io_context+0x8f/0xb0
+> > >  [<ffffffff80235d19>] do_exit+0x549/0x780
+> > >  [<ffffffff80235f8e>] do_group_exit+0x3e/0xb0
+> > >  [<ffffffff80236012>] sys_exit_group+0x12/0x20
+> > >  [<ffffffff8020b6db>] system_call_after_swapgs+0x7b/0x80
+> > > 
+> > > 
+> > > Code: 84 00 00 00 00 00 55 48 89 e5 41 55 49 89 f5 41 54 49 89 fc 53 48 83 ec 08 e8 18 e1 f5 ff 49 8b 44 24 68 48 85 c0 74 1e 48 89 c3 <48> 8b 03 48 8d 73 88 4c 89 e7 0f 18 08 41 ff d5 48 8b 03 48 85 
+> > > RIP  [<ffffffff80307525>] call_for_each_cic+0x25/0x50
+> > >  RSP <ffff810170811e58>
+> > > ---[ end trace ca143223eefdc828 ]---
+> > > Fixing recursive fault but reboot is needed!
+> > > 
+> > > 
+> > > ffffffff80307500 <call_for_each_cic>:
+> > > ffffffff80307500:	55                   	push   %rbp
+> > > ffffffff80307501:	48 89 e5             	mov    %rsp,%rbp
+> > > ffffffff80307504:	41 55                	push   %r13
+> > > ffffffff80307506:	49 89 f5             	mov    %rsi,%r13
+> > > ffffffff80307509:	41 54                	push   %r12
+> > > ffffffff8030750b:	49 89 fc             	mov    %rdi,%r12
+> > > ffffffff8030750e:	53                   	push   %rbx
+> > > ffffffff8030750f:	48 83 ec 08          	sub    $0x8,%rsp
+> > > ffffffff80307513:	e8 18 e1 f5 ff       	callq  ffffffff80265630 <__rcu_read_lock>
+> > > ffffffff80307518:	49 8b 44 24 68       	mov    0x68(%r12),%rax
+> > > ffffffff8030751d:	48 85 c0             	test   %rax,%rax
+> > > ffffffff80307520:	74 1e                	je     ffffffff80307540 <call_for_each_cic+0x40>
+> > > ffffffff80307522:	48 89 c3             	mov    %rax,%rbx
+> > > ffffffff80307525:	48 8b 03             	mov    (%rbx),%rax
+> > 
+> > use-after-free.
 > 
-> this is the third full mmiotrace patch set for review (a bit late, sorry).
-> These patches do not apply to any git tree that I know of, but after Ingo
-> pushes a new version of his sched-devel/latest tree, these patches should
-> be subtractable from there.
-...
-> This first patch adds the bulk of the new code, only introducing new files.
-> The second patch establishes the interfaces to the ftrace framework, and
-> the third patch hooks everything up into the Kbuild system, page fault
-> handler, and ioremap functions.
+> Yep, apparently a freed entry on the list. Not good...
+> 
+> > > ffffffff80307528:	48 8d 73 88          	lea    -0x78(%rbx),%rsi
+> > > ffffffff8030752c:	4c 89 e7             	mov    %r12,%rdi
+> > > ffffffff8030752f:	0f 18 08             	prefetcht0 (%rax)
+> > > ffffffff80307532:	41 ff d5             	callq  *%r13
+> > > ffffffff80307535:	48 8b 03             	mov    (%rbx),%rax
+> > > ffffffff80307538:	48 85 c0             	test   %rax,%rax
+> > > ffffffff8030753b:	48 89 c3             	mov    %rax,%rbx
+> > > ffffffff8030753e:	75 e5                	jne    ffffffff80307525 <call_for_each_cic+0x25>
+> > > ffffffff80307540:	e8 2b e0 f5 ff       	callq  ffffffff80265570 <__rcu_read_unlock>
+> > > ffffffff80307545:	48 83 c4 08          	add    $0x8,%rsp
+> > > ffffffff80307549:	5b                   	pop    %rbx
+> > > ffffffff8030754a:	41 5c                	pop    %r12
+> > > ffffffff8030754c:	41 5d                	pop    %r13
+> > > ffffffff8030754e:	c9                   	leaveq 
+> > > ffffffff8030754f:	c3                   	retq   
+> > 
+> > cfq-iosched.c hasn't been altered (yet) so it might not be a regression.
+> 
+> It's not a regression, it's definitely in 2.6.25 as well. So that's a
+> bit scary, I've been looking over this stuff this morning but haven't
+> pin pointed anything yet.
+> 
+> Alexey, is this something that reproduces for you?
 
- arch/x86/Kconfig.debug |   28 ++++++++++++++++++++++++++++
- arch/x86/mm/Makefile   |    5 +++++
- arch/x86/mm/fault.c    |   13 +++++++++++++
- arch/x86/mm/ioremap.c  |    9 ++++++++-
- arch/x86/mm/pageattr.c |    1 +
- 5 files changed, 55 insertions(+), 1 deletions(-)
+Not yet, second run of same workload went fine and I've never seen such
+oopses before.
 
-diff --git a/arch/x86/Kconfig.debug b/arch/x86/Kconfig.debug
-index 1f237d2..fb0794e 100644
---- a/arch/x86/Kconfig.debug
-+++ b/arch/x86/Kconfig.debug
-@@ -170,6 +170,34 @@ config IOMMU_LEAK
- 	  Add a simple leak tracer to the IOMMU code. This is useful when you
- 	  are debugging a buggy device driver that leaks IOMMU mappings.
- 
-+config MMIOTRACE_HOOKS
-+	bool
-+
-+config MMIOTRACE
-+	bool "Memory mapped IO tracing"
-+	depends on DEBUG_KERNEL && PCI
-+	select TRACING
-+	select MMIOTRACE_HOOKS
-+	default y
-+	help
-+	  Mmiotrace traces Memory Mapped I/O access and is meant for
-+	  debugging and reverse engineering. It is called from the ioremap
-+	  implementation and works via page faults. Tracing is disabled by
-+	  default and can be enabled at run-time.
-+
-+	  See Documentation/tracers/mmiotrace.txt.
-+	  If you are not helping to develop drivers, say N.
-+
-+config MMIOTRACE_TEST
-+	tristate "Test module for mmiotrace"
-+	depends on MMIOTRACE && m
-+	help
-+	  This is a dumb module for testing mmiotrace. It is very dangerous
-+	  as it will write garbage to IO memory starting at a given address.
-+	  However, it should be safe to use on e.g. unused portion of VRAM.
-+
-+	  Say N, unless you absolutely know what you are doing.
-+
- #
- # IO delay types:
- #
-diff --git a/arch/x86/mm/Makefile b/arch/x86/mm/Makefile
-index b7b3e4c..07dab50 100644
---- a/arch/x86/mm/Makefile
-+++ b/arch/x86/mm/Makefile
-@@ -8,6 +8,11 @@ obj-$(CONFIG_X86_PTDUMP)	+= dump_pagetables.o
- 
- obj-$(CONFIG_HIGHMEM)		+= highmem_32.o
- 
-+obj-$(CONFIG_MMIOTRACE_HOOKS)	+= kmmio.o
-+obj-$(CONFIG_MMIOTRACE)		+= mmiotrace.o
-+mmiotrace-y			:= pf_in.o mmio-mod.o
-+obj-$(CONFIG_MMIOTRACE_TEST)	+= testmmiotrace.o
-+
- ifeq ($(CONFIG_X86_32),y)
- obj-$(CONFIG_NUMA)		+= discontig_32.o
- else
-diff --git a/arch/x86/mm/fault.c b/arch/x86/mm/fault.c
-index 4145597..0440dce 100644
---- a/arch/x86/mm/fault.c
-+++ b/arch/x86/mm/fault.c
-@@ -26,6 +26,7 @@
- #include <linux/uaccess.h>
- #include <linux/kdebug.h>
- #include <linux/magic.h>
-+#include <linux/mmiotrace.h>
- 
- #include <asm/system.h>
- #include <asm/desc.h>
-@@ -51,6 +52,16 @@
- #define PF_RSVD		(1<<3)
- #define PF_INSTR	(1<<4)
- 
-+static inline int kmmio_fault(struct pt_regs *regs, unsigned long addr)
-+{
-+#ifdef CONFIG_MMIOTRACE_HOOKS
-+	if (unlikely(is_kmmio_active()))
-+		if (kmmio_handler(regs, addr) == 1)
-+			return -1;
-+#endif
-+	return 0;
-+}
-+
- static inline int notify_page_fault(struct pt_regs *regs)
- {
- #ifdef CONFIG_KPROBES
-@@ -623,6 +634,8 @@ void __kprobes do_page_fault(struct pt_regs *regs, unsigned long error_code)
- 
- 	if (notify_page_fault(regs))
- 		return;
-+	if (unlikely(kmmio_fault(regs, address)))
-+		return;
- 
- 	/*
- 	 * We fault-in kernel-space virtual memory on-demand. The
-diff --git a/arch/x86/mm/ioremap.c b/arch/x86/mm/ioremap.c
-index d176b23..68b287d 100644
---- a/arch/x86/mm/ioremap.c
-+++ b/arch/x86/mm/ioremap.c
-@@ -12,6 +12,7 @@
- #include <linux/module.h>
- #include <linux/slab.h>
- #include <linux/vmalloc.h>
-+#include <linux/mmiotrace.h>
- 
- #include <asm/cacheflush.h>
- #include <asm/e820.h>
-@@ -126,6 +127,7 @@ static void __iomem *__ioremap(resource_size_t phys_addr, unsigned long size,
- 	unsigned long new_prot_val;
- 	pgprot_t prot;
- 	int retval;
-+	void __iomem *ret_addr;
- 
- 	/* Don't allow wraparound or zero size */
- 	last_addr = phys_addr + size - 1;
-@@ -229,7 +231,10 @@ static void __iomem *__ioremap(resource_size_t phys_addr, unsigned long size,
- 		return NULL;
- 	}
- 
--	return (void __iomem *) (vaddr + offset);
-+	ret_addr = (void __iomem *) (vaddr + offset);
-+	mmiotrace_ioremap(phys_addr, size, ret_addr);
-+
-+	return ret_addr;
- }
- 
- /**
-@@ -306,6 +311,8 @@ void iounmap(volatile void __iomem *addr)
- 	    addr < phys_to_virt(ISA_END_ADDRESS))
- 		return;
- 
-+	mmiotrace_iounmap(addr);
-+
- 	addr = (volatile void __iomem *)
- 		(PAGE_MASK & (unsigned long __force)addr);
- 
-diff --git a/arch/x86/mm/pageattr.c b/arch/x86/mm/pageattr.c
-index bd5e05c..099374b 100644
---- a/arch/x86/mm/pageattr.c
-+++ b/arch/x86/mm/pageattr.c
-@@ -227,6 +227,7 @@ pte_t *lookup_address(unsigned long address, unsigned int *level)
- 
- 	return pte_offset_kernel(pmd, address);
- }
-+EXPORT_SYMBOL_GPL(lookup_address);
- 
- /*
-  * Set the new pmd in all the pgds we know about:
+FWIW, the only unusual thing in .config is preemptible RCU. Before
+2.6.25 it was turned off here. 
+
