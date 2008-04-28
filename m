@@ -1,74 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765782AbYD1GRX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765416AbYD1GSj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765782AbYD1GRX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 02:17:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753710AbYD1GQq
+	id S1765416AbYD1GSj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 02:18:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751541AbYD1GSb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 02:16:46 -0400
-Received: from out4.smtp.messagingengine.com ([66.111.4.28]:48111 "EHLO
-	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751078AbYD1GQo (ORCPT
+	Mon, 28 Apr 2008 02:18:31 -0400
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:40531 "EHLO
+	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750898AbYD1GSa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 02:16:44 -0400
-X-Sasl-enc: 1sPFgftUD3bb/j6jVWuKLtvK5WSVc1btJLIsLd2n8aja 1209363341
-Date: Mon, 28 Apr 2008 14:14:54 +0800 (WST)
-From: Ian Kent <raven@themaw.net>
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       autofs mailing list <autofs@linux.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>
-Subject: [PATCH] autofs4 - use lookup access intent to support recursive bind
- mounts
-Message-ID: <Pine.LNX.4.64.0804281410160.10684@raven.themaw.net>
+	Mon, 28 Apr 2008 02:18:30 -0400
+Date: Mon, 28 Apr 2008 02:18:26 -0400 (EDT)
+From: Jeff Arnold <jbarnold@MIT.EDU>
+To: Andi Kleen <andi@firstfloor.org>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: A system for rebootless kernel security updates
+In-Reply-To: <87r6cvgyi1.fsf@basil.nowhere.org>
+Message-ID: <alpine.DEB.1.10.0804280119001.9237@vinegar-pot.mit.edu>
+References: <alpine.DEB.1.00.0802221606520.21343@vinegar-pot.mit.edu> <87r6cvgyi1.fsf@basil.nowhere.org>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
+X-Spam-Flag: NO
+X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> You should consider bringing the kernel module up to kernel coding 
+> standards and submitting it for mainline. That would be the best way to 
+> get more users and testers.
 
-Hi Andrew,
+I'm certainly interested in bringing the code up to kernel coding 
+standards (for example, I'd be happy to address any issues with the code 
+that are brought to my attention).  I'm not sure whether submitting it for 
+mainline makes sense since the software doesn't significantly benefit from 
+being bundled with the kernel.
 
-For autofs maps that recursively reference other map entries in their
-mount point path we need to ensure that these mounts are performed
-prior to the current mount request being done. We've used the access
-system call, made just prior to performing the mount, to make this
-happen. In the case of bind mounts, however, the lookup flags in 
-the path walk don't trigger a mount. To do this we need to also
-trigger a mount when we see the LOOKUP_ACCESS flag.
+Instead, it might be more important to 1) package the userspace 
+update-construction software for common Linux distributions to make it 
+easily available to interested users, and 2) to provide binary kernel 
+updates for common distribution kernels so that users can simply sign up 
+and get fewer "your machine needs to be rebooted now for an update to take 
+effect" notifications.
 
-Signed-off-by: Ian Kent <raven@themaw.net>
+I'm open to suggestions about how I should proceed, however.
 
-Ian
+> Have you also considered to turn it into a generic incremental binary
+> linker too?
 
----
-diff -up linux-2.6.25-mm1/fs/autofs4/root.c.lookup-access-intent-trigger linux-2.6.25-mm1/fs/autofs4/root.c
---- linux-2.6.25-mm1/fs/autofs4/root.c.lookup-access-intent-trigger	2008-04-28 11:33:20.000000000 +0800
-+++ linux-2.6.25-mm1/fs/autofs4/root.c	2008-04-28 11:36:06.000000000 +0800
-@@ -19,6 +19,8 @@
- #include <linux/time.h>
- #include "autofs_i.h"
- 
-+#define LOOKUP_TRIGGER_FLAGS (LOOKUP_CONTINUE|LOOKUP_DIRECTORY|LOOKUP_ACCESS)
-+
- static int autofs4_dir_symlink(struct inode *,struct dentry *,const char *);
- static int autofs4_dir_unlink(struct inode *,struct dentry *);
- static int autofs4_dir_rmdir(struct inode *,struct dentry *);
-@@ -291,7 +293,7 @@ static int try_to_fill_dentry(struct den
- 			return status;
- 		}
- 	/* Trigger mount for path component or follow link */
--	} else if (flags & (LOOKUP_CONTINUE | LOOKUP_DIRECTORY) ||
-+	} else if (flags & LOOKUP_TRIGGER_FLAGS ||
- 			current->link_count) {
- 		DPRINTK("waiting for mount name=%.*s",
- 			dentry->d_name.len, dentry->d_name.name);
-@@ -335,7 +337,7 @@ static void *autofs4_follow_link(struct 
- 		nd->flags);
- 
- 	/* If it's our master or we shouldn't trigger a mount we're done */
--	lookup_type = nd->flags & (LOOKUP_CONTINUE | LOOKUP_DIRECTORY);
-+	lookup_type = nd->flags & LOOKUP_TRIGGER_FLAGS;
- 	if (oz_mode || !lookup_type)
- 		goto done;
- 
+I've considered modifying the system for use in other contexts, but I 
+don't think that I'll get around to such a project anytime soon; my 
+current focus is on making it easier for people to perform rebootless 
+kernel security updates.
+
+Jeff Arnold
+jbarnold@mit.edu
