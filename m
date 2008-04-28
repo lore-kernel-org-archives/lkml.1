@@ -1,93 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936039AbYD1SFz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964868AbYD1SGx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936039AbYD1SFz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 14:05:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935611AbYD1SFc
+	id S964868AbYD1SGx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 14:06:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934576AbYD1SGm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 14:05:32 -0400
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:40186 "EHLO smtp6.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935565AbYD1SFb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 14:05:31 -0400
-Date: Mon, 28 Apr 2008 21:04:57 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Mauro Carvalho Chehab <mchehab@infradead.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch] dvb: build failure fix
-Message-ID: <20080428180457.GY2813@cs181133002.pp.htv.fi>
-References: <20080428162421.GA16566@elte.hu>
+	Mon, 28 Apr 2008 14:06:42 -0400
+Received: from minx.mdc-dayton.com ([70.62.41.4]:48627 "EHLO daetwyler-rd.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S934525AbYD1SGl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Apr 2008 14:06:41 -0400
+From: "Kathy Frazier" <kfrazier@daetwyler-rd.com>
+To: "'Miguel Ojeda'" <miguel.ojeda.sandonis@gmail.com>,
+       "'Alan Cox'" <alan@lxorguk.ukuu.org.uk>
+Cc: "'Kathy Frazier'" <kfrazier@daetwyler-rd.com>,
+       <linux-kernel@vger.kernel.org>
+References: <009501c89e28$3d7530f0$b85f92d0$@com>	 <20080414133937.7080d30d@core> <006f01c8a4a7$82e37ea0$88aa7be0$@com>	 <20080425181219.61e29b1f@core> <ca2dc2820804251118j625abb76j100d165aee18a7c8@mail.gmail.com>
+In-Reply-To: <ca2dc2820804251118j625abb76j100d165aee18a7c8@mail.gmail.com>
+Subject: RE: Talking to parallel port in 2.6 kernel without using parport
+Date: Mon, 28 Apr 2008 14:06:20 -0400
+Message-ID: <004301c8a95a$906666c0$b1333440$@com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20080428162421.GA16566@elte.hu>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Microsoft Office Outlook 12.0
+Thread-Index: AcinAOtTwdUwR5x4Q6C4ejvsqYAiQQCWLj3w
+Content-Language: en-us
+X-MyHeader: SpamAssassin Check skipped due to Authenication or Internal MDC-Dayton Address
+X-MyHeader: Clam AV Check skipped due to Authenication or Internal MDC-Dayton Address
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 28, 2008 at 06:24:21PM +0200, Ingo Molnar wrote:
-> 
-> fix build failure found via x86.git randconfig testing:
-> 
->  drivers/built-in.o: In function `tda829x_attach':
->  : undefined reference to `tda827x_attach'
->  drivers/built-in.o: In function `tda829x_attach':
->  : undefined reference to `tda18271_attach'
-> 
-> build failure is due to this nasty dependency:
-> 
->   CONFIG_DVB_CORE=m but CONFIG_TUNER_TDA8290=y.
-> 
-> the solution is to follow the DVB_CORE constraint in the Kconfig. It's 
-> not pretty but works.
+Miguel,
+
+Thanks for your response!  I took a look at ks0108.c.  You are right:  very
+straightforward and a good reference.  I had added some other things based
+on what I saw in /drivers/char/ppdev.c, lp.c and tipar.c.  After reviewing
+yours, I am realizing I really don't need some of that, so I can simplify
+mine.
+
+My biggest problem was that lp was loaded.  When I remove that, my call to
+parport_register_device returns success! 
+
+Thanks for your help!
+
+Regards,
+Kathy 
 
 
-It might work around the problem in your specific configuration, but 
-it's not the correct solution.
 
-Please send your .config .
+-----Original Message-----
+From: Miguel Ojeda [mailto:miguel.ojeda.sandonis@gmail.com] 
+Sent: Friday, April 25, 2008 2:18 PM
+To: Alan Cox
+Cc: Kathy Frazier; linux-kernel@vger.kernel.org
+Subject: Re: Talking to parallel port in 2.6 kernel without using parport
 
+>  > Can you tell me what I am missing?  Where can I get the actual 
+> source code  > that goes with this version to further unravel this?
 
-> Kconfig should be enhanced instead with a new keyword: "depends on 
-> instructure ..." that makes it clear that the dependent module can only 
-> be of equal or lesser link mode - but not =y while the infrastructure 
-> module is =m. But i digress.
+About two years ago (~2.6.18) I wrote one driver that needed exclusive
+access to the parallel port and, like this time, Alan Cox guided me (thank
+you Alan!). If you want, you can check the code at
+drivers/auxdisplay/ks0108.c. I tested it as of 2.6.25 and worked fine, so it
+could be a good reference for you. In addition, the code is pretty
+straightforward!
 
+>
+>  To be honest this area of the kernel hasn't changed much over recent  
+> times. Let me know if you can't figure out what is going on.
+>
 
-What are you smoking?
+Right, I haven't had to change the code since 2.6.18.
 
-That's exactly what "depends on" always did and still does.
-
-
-> Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> ---
->  drivers/media/Kconfig |   14 +++++++-------
->  1 file changed, 7 insertions(+), 7 deletions(-)
-> 
-> Index: linux/drivers/media/Kconfig
-> ===================================================================
-> --- linux.orig/drivers/media/Kconfig
-> +++ linux/drivers/media/Kconfig
-> @@ -106,21 +106,21 @@ if VIDEO_TUNER_CUSTOMIZE
->  
->  config TUNER_XC2028
->  	tristate "XCeive xc2028/xc3028 tuners"
-> -	depends on I2C && FW_LOADER
-> +	depends on I2C && FW_LOADER && ((DVB_CORE = m && m) || (DVB_CORE = y))
->...
-
-
-Your funny additions are equivalent to "&& DVB_CORE".
-
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+--
+Miguel Ojeda
 
