@@ -1,51 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965367AbYD1Ute@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937580AbYD1Ut5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965367AbYD1Ute (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 16:49:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934357AbYD1UtZ
+	id S937580AbYD1Ut5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 16:49:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965391AbYD1Utf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 16:49:25 -0400
-Received: from ns1.suse.de ([195.135.220.2]:42754 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934092AbYD1UtY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 16:49:24 -0400
-Date: Mon, 28 Apr 2008 13:49:06 -0700
-From: Greg KH <gregkh@suse.de>
-To: Badari Pulavarty <pbadari@us.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.25-git12 sysfs panic
-Message-ID: <20080428204906.GA10811@suse.de>
-References: <1209414970.23575.17.camel@badari-desktop>
+	Mon, 28 Apr 2008 16:49:35 -0400
+Received: from sd-green-bigip-66.dreamhost.com ([208.97.132.66]:55408 "EHLO
+	spunkymail-a14.g.dreamhost.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S965358AbYD1Ute (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Apr 2008 16:49:34 -0400
+Message-ID: <481637D7.8090000@dawes.za.net>
+Date: Mon, 28 Apr 2008 22:47:19 +0200
+From: Rogan Dawes <lists@dawes.za.net>
+User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1209414970.23575.17.camel@badari-desktop>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Paul Jackson <pj@sgi.com>
+Cc: Andy Whitcroft <apw@shadowen.org>, linux-kernel@vger.kernel.org
+Subject: Re: Why these dot chars in scripts/checkpatch.pl?
+References: <20080428153122.a94d21ba.pj@sgi.com>
+In-Reply-To: <20080428153122.a94d21ba.pj@sgi.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 28, 2008 at 01:36:10PM -0700, Badari Pulavarty wrote:
-> Hi Greg,
+Paul Jackson wrote:
+> Andy,
 > 
-> Ran into this sysfs oops while booting 2.6.25-git12.
+> Perhaps I'm loosing my magic regex pixie dust, but the dot '.' char
+> in the pattern "/^.#" in the following lines looks wrong to me, as if
+> one were trying to match pre-processor directives that were set in by
+> one character:
 
-It's not an "oops" but a WARN_ON(1);
+Perhaps it is because checkpatch.pl is supposed to check *patches*, 
+which are typically indented by one character (+- )?
 
-> ipr issue ?
+Rogan
 
-Stupid driver issue, yes:
-
-> ipr: IBM Power RAID SCSI Device Driver version: 2.4.1 (April 24, 2007)
-> ipr 0000:d0:01.0: Found IOA with IRQ: 119
-> ipr 0000:d0:01.0: Starting IOA initialization sequence.
-> ipr 0000:d0:01.0: Adapter firmware version: 020A005E
-> ipr 0000:d0:01.0: IOA initialized.
-> scsi0 : IBM 570B Storage Adapter
-> sysfs: duplicate filename 'state' can not be created
-
-Looks like someone messed up, not the sysfs core's fault here :)
-
-thanks,
-
-greg k-h
