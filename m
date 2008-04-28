@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S967262AbYD1Woa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S967290AbYD1Woy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967262AbYD1Woa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 18:44:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965150AbYD1Wgp
+	id S967290AbYD1Woy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 18:44:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966576AbYD1Wgr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 18:36:45 -0400
-Received: from g1t0028.austin.hp.com ([15.216.28.35]:2978 "EHLO
-	g1t0028.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S966526AbYD1Wgj (ORCPT
+	Mon, 28 Apr 2008 18:36:47 -0400
+Received: from g5t0007.atlanta.hp.com ([15.192.0.44]:30490 "EHLO
+	g5t0007.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S966529AbYD1Wgj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 28 Apr 2008 18:36:39 -0400
-Message-Id: <20080428223619.710535966@ldl.fc.hp.com>
+Message-Id: <20080428223619.502755454@ldl.fc.hp.com>
 References: <20080428223347.233593713@ldl.fc.hp.com>
 User-Agent: quilt/0.46-1
-Date: Mon, 28 Apr 2008 16:34:03 -0600
+Date: Mon, 28 Apr 2008 16:34:02 -0600
 From: Bjorn Helgaas <bjorn.helgaas@hp.com>
 To: Len Brown <lenb@kernel.org>
 Cc: linux-acpi@vger.kernel.org, Rene Herman <rene.herman@gmail.com>
@@ -26,62 +26,92 @@ Cc: Thomas Renninger <trenn@suse.de>
 Cc: Rene Herman <rene.herman@keyaccess.nl>
 Cc: Jaroslav Kysela <perex@perex.cz>
 Cc: Andrew Morton <akpm@linux-foundation.org>
-Subject: [patch 16/55] PNPACPI: pass pnp_dev instead of acpi_handle
-Content-Disposition: inline; filename=pnpacpi-use-pnp_dev
+Subject: [patch 15/55] PNPACPI: extend irq_flags() to set IORESOURCE_IRQ_SHAREABLE when appropriate
+Content-Disposition: inline; filename=pnpacpi-add-shareability-to-irq-flags
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pass the pnp_dev pointer when possible instead of the acpi_handle.
-This allows better error messages and reduces the chance of error
-in the caller.
+This simplifies IRQ resource parsing slightly by computing all the
+IORESOURCE_IRQ_* flags at the same time.
+
+This also keeps track of shareability information when parsing options
+from _PRS.  Previously we ignored shareability in _PRS.
 
 Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
 Acked-By: Rene Herman <rene.herman@gmail.com>
 
-Index: work10/drivers/pnp/pnpacpi/core.c
-===================================================================
---- work10.orig/drivers/pnp/pnpacpi/core.c	2008-04-28 16:09:12.000000000 -0600
-+++ work10/drivers/pnp/pnpacpi/core.c	2008-04-28 16:09:18.000000000 -0600
-@@ -88,10 +88,10 @@
- {
- 	acpi_handle handle = dev->data;
- 	struct acpi_buffer buffer;
--	int ret = 0;
-+	int ret;
- 	acpi_status status;
- 
--	ret = pnpacpi_build_resource_template(handle, &buffer);
-+	ret = pnpacpi_build_resource_template(dev, &buffer);
- 	if (ret)
- 		return ret;
- 	ret = pnpacpi_encode_resources(res, &buffer);
-Index: work10/drivers/pnp/pnpacpi/pnpacpi.h
-===================================================================
---- work10.orig/drivers/pnp/pnpacpi/pnpacpi.h	2008-04-28 15:57:04.000000000 -0600
-+++ work10/drivers/pnp/pnpacpi/pnpacpi.h	2008-04-28 16:09:18.000000000 -0600
-@@ -8,5 +8,5 @@
- acpi_status pnpacpi_parse_allocated_resource(acpi_handle, struct pnp_resource_table*);
- acpi_status pnpacpi_parse_resource_option_data(acpi_handle, struct pnp_dev*);
- int pnpacpi_encode_resources(struct pnp_resource_table *, struct acpi_buffer *);
--int pnpacpi_build_resource_template(acpi_handle, struct acpi_buffer*);
-+int pnpacpi_build_resource_template(struct pnp_dev *, struct acpi_buffer *);
- #endif
 Index: work10/drivers/pnp/pnpacpi/rsparser.c
 ===================================================================
 --- work10.orig/drivers/pnp/pnpacpi/rsparser.c	2008-04-28 16:09:17.000000000 -0600
-+++ work10/drivers/pnp/pnpacpi/rsparser.c	2008-04-28 16:09:18.000000000 -0600
-@@ -777,9 +777,10 @@
- 	return AE_OK;
++++ work10/drivers/pnp/pnpacpi/rsparser.c	2008-04-28 16:09:17.000000000 -0600
+@@ -32,19 +32,26 @@
+ /*
+  * Allocated Resources
+  */
+-static int irq_flags(int triggering, int polarity)
++static int irq_flags(int triggering, int polarity, int shareable)
+ {
++	int flags;
++
+ 	if (triggering == ACPI_LEVEL_SENSITIVE) {
+ 		if (polarity == ACPI_ACTIVE_LOW)
+-			return IORESOURCE_IRQ_LOWLEVEL;
++			flags = IORESOURCE_IRQ_LOWLEVEL;
+ 		else
+-			return IORESOURCE_IRQ_HIGHLEVEL;
++			flags = IORESOURCE_IRQ_HIGHLEVEL;
+ 	} else {
+ 		if (polarity == ACPI_ACTIVE_LOW)
+-			return IORESOURCE_IRQ_LOWEDGE;
++			flags = IORESOURCE_IRQ_LOWEDGE;
+ 		else
+-			return IORESOURCE_IRQ_HIGHEDGE;
++			flags = IORESOURCE_IRQ_HIGHEDGE;
+ 	}
++
++	if (shareable)
++		flags |= IORESOURCE_IRQ_SHAREABLE;
++
++	return flags;
  }
  
--int pnpacpi_build_resource_template(acpi_handle handle,
-+int pnpacpi_build_resource_template(struct pnp_dev *dev,
- 				    struct acpi_buffer *buffer)
- {
-+	acpi_handle handle = dev->data;
- 	struct acpi_resource *resource;
- 	int res_cnt = 0;
- 	acpi_status status;
+ static void decode_irq_flags(int flag, int *triggering, int *polarity)
+@@ -110,16 +117,13 @@
+ 	}
+ 
+ 	res->irq_resource[i].flags = IORESOURCE_IRQ;	// Also clears _UNSET flag
+-	res->irq_resource[i].flags |= irq_flags(triggering, polarity);
++	res->irq_resource[i].flags |= irq_flags(triggering, polarity, shareable);
+ 	irq = acpi_register_gsi(gsi, triggering, polarity);
+ 	if (irq < 0) {
+ 		res->irq_resource[i].flags |= IORESOURCE_DISABLED;
+ 		return;
+ 	}
+ 
+-	if (shareable)
+-		res->irq_resource[i].flags |= IORESOURCE_IRQ_SHAREABLE;
+-
+ 	res->irq_resource[i].start = irq;
+ 	res->irq_resource[i].end = irq;
+ 	pcibios_penalize_isa_irq(irq, 1);
+@@ -441,7 +445,7 @@
+ 	for (i = 0; i < p->interrupt_count; i++)
+ 		if (p->interrupts[i])
+ 			__set_bit(p->interrupts[i], irq->map);
+-	irq->flags = irq_flags(p->triggering, p->polarity);
++	irq->flags = irq_flags(p->triggering, p->polarity, p->sharable);
+ 
+ 	pnp_register_irq_resource(option, irq);
+ }
+@@ -461,7 +465,7 @@
+ 	for (i = 0; i < p->interrupt_count; i++)
+ 		if (p->interrupts[i])
+ 			__set_bit(p->interrupts[i], irq->map);
+-	irq->flags = irq_flags(p->triggering, p->polarity);
++	irq->flags = irq_flags(p->triggering, p->polarity, p->sharable);
+ 
+ 	pnp_register_irq_resource(option, irq);
+ }
 
 -- 
