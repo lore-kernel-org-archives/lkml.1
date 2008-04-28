@@ -1,47 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764957AbYD1DvK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765441AbYD1Dv3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764957AbYD1DvK (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Apr 2008 23:51:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762149AbYD1Duv
+	id S1765441AbYD1Dv3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Apr 2008 23:51:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763669AbYD1Duw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Apr 2008 23:50:51 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:57914 "EHLO smtp.polymtl.ca"
+	Sun, 27 Apr 2008 23:50:52 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:57916 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763572AbYD1Duu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Apr 2008 23:50:50 -0400
-Message-Id: <20080428033415.303000651@polymtl.ca>
+	id S1762445AbYD1Duv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Apr 2008 23:50:51 -0400
+Message-Id: <20080428035006.819701531@polymtl.ca>
+References: <20080428033415.303000651@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Sun, 27 Apr 2008 23:34:15 -0400
+Date: Sun, 27 Apr 2008 23:34:17 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
        linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>
-Subject: [patch 0/2] Immediate Values - jump patching update
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Subject: [patch 2/2] Markers - use imv_cond jump liveliness
+Content-Disposition: inline; filename=markers-use-imv-jump-liveliness.patch
 X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Mon, 28 Apr 2008 03:50:07 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ingo,
+Provide the imv_cond_ed() macros to mark the end of ZF and eax liveliness for
+imv_cond.
 
-Here is the update to the jump patching optimization taking care of Peter's
-comments about register liveliness and instruction re-use by gcc optimizations.
-A good thing : it actually simplifies the code. Unfortunately, it adds 3 bytes
-to the instructions in i-cache because I now have to use a 5-bytes mov
-instruction so I can replace it with a 5-bytes jump. Therefore, 9 bytes are
-added to rather small functions (5-bytes mov + 2-bytes test + 2 bytes
-conditional branch) and 13 bytes are added to larger functions which needs a 6
-bytes conditional branch at the branch site.
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: "H. Peter Anvin" <hpa@zytor.com>
+CC: Ingo Molnar <mingo@elte.hu>
+---
+ include/linux/marker.h |    5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
-Instead of having to execute a sequence of nop, nop and jump, we now only have
-to execute the near jump, which jumps either at the address following the
-conditional branch or at the target address of the conditional branch, depending
-on the immediate value variable state.
-
-Thanks to Peter for the review.
-
-Those two patches apply on top of sched-devel.git.
-
-Mathieu
+Index: linux-2.6-sched-devel/include/linux/marker.h
+===================================================================
+--- linux-2.6-sched-devel.orig/include/linux/marker.h	2008-04-25 13:46:14.000000000 -0400
++++ linux-2.6-sched-devel/include/linux/marker.h	2008-04-25 13:47:11.000000000 -0400
+@@ -76,10 +76,13 @@ struct marker {
+ 		{ __mark_empty_function, NULL}, NULL };			\
+ 		__mark_check_format(format, ## args);			\
+ 		if (!generic) {						\
+-			if (unlikely(imv_cond(__mark_##name.state)))	\
++			if (unlikely(imv_cond(__mark_##name.state))) {	\
++				imv_cond_end();				\
+ 				(*__mark_##name.call)			\
+ 					(&__mark_##name, call_private,	\
+ 					## args);			\
++			} else						\
++				imv_cond_end();				\
+ 		} else {						\
+ 			if (unlikely(_imv_read(__mark_##name.state)))	\
+ 				(*__mark_##name.call)			\
 
 -- 
 Mathieu Desnoyers
