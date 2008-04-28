@@ -1,64 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764789AbYD1CJ7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765233AbYD1CLR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764789AbYD1CJ7 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Apr 2008 22:09:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753754AbYD1CJv
+	id S1765233AbYD1CLR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Apr 2008 22:11:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753767AbYD1CLF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Apr 2008 22:09:51 -0400
-Received: from ug-out-1314.google.com ([66.249.92.174]:10352 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753547AbYD1CJv (ORCPT
+	Sun, 27 Apr 2008 22:11:05 -0400
+Received: from www.church-of-our-saviour.ORG ([69.25.196.31]:50104 "EHLO
+	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752942AbYD1CLE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Apr 2008 22:09:51 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
-        b=GyJjQr4jicViNUB+UJOL/CULFhDVexgkPI1tpTCAIG3YauqzfzgzV8A65iV5JyrJiEQV8iv1h1HEeeYjlpGBXgyrNO/c4JAe+241jKGB0vbPgTAI88xhg5VLVwkz76/3KmbNOZL9iYlbrZ6YQitXdl8pDcr3fsBiZROHbXmk/0w=
-Date: Mon, 28 Apr 2008 10:10:22 +0800
-From: Dave Young <hidave.darkstar@gmail.com>
-To: linux-kernel@vger.kernel.org
-Cc: jens.axboe@oracle.com
-Subject: [PATCH 2/2] loop : Don't hold the lo_ctl_mutex while fput in
-	loop_clr_fd
-Message-ID: <20080428021022.GB2698@darkstar.te-china.tietoenator.com>
+	Sun, 27 Apr 2008 22:11:04 -0400
+Date: Sun, 27 Apr 2008 22:10:43 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Soeren Sandmann <sandmann@daimi.au.dk>
+Cc: linux-kernel@vger.kernel.org, alexl@redhat.com
+Subject: Re: stat benchmark
+Message-ID: <20080428021042.GB30840@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Soeren Sandmann <sandmann@daimi.au.dk>,
+	linux-kernel@vger.kernel.org, alexl@redhat.com
+References: <ye8wsmnezq9.fsf@camel05.daimi.au.dk> <20080425194845.GE21193@mit.edu> <ye8iqy23mhb.fsf@camel27.daimi.au.dk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <ye8iqy23mhb.fsf@camel27.daimi.au.dk>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Fixing bug 10504]
+On Mon, Apr 28, 2008 at 01:29:52AM +0200, Soeren Sandmann wrote:
+> Sorting by inode is a major improvement. The numbers are less stable,
+> but consistently much lower:
+> 
+>     Time to readdir(): 0.238737 s
+>     Time to stat 2366 files: 1.338904 s
+> 
+> compared to
+> 
+>     Time to readdir(): 0.227599 s
+>     Time to stat 2366 files: 7.981752 s
+> 
+> Of course, 1.3 seconds is still far from instant, but it may be the
+> best we can get given the realities of ext3 disk layout.
 
-If the bakingfile is a block device file, losetuo -d will trigger lockdep
-warning of "circular locking dependency".
+Out of curiosity, what was the directory that you were stating?  If it
+took you 1.3 seconds to stat 2366, the directory have inodes scattered
+all over the disk, or the disk must be very slow.  On my laptop disk,
+I can stat 9543 files in 1.1 seconds (from a Maildir directory).
 
-open/release lock order : bdev->bd_mutex ---> lo->lo_ctl_mutex
-loop_clr_fd lock order  : lo->lo_ctl_mutex ---> bdev->bd_mutex (fput)
+Also, why does the application need to stat all of the files?  Is it
+just to get the file type?  (i.e., regular file vs. directory)  If so,
+maybe you can use the d_type field in the directory entry returned by
+readdir().
 
-Don't hold the lo_ctl_mutex while fput in loop_clr_fd to fix it. It's safe
-because all loop device state will be consistent here.
+> I don't know if a general library outside glib would be useful. It
+> seems that just telling people to "sort by inode before statting"
+> would be just as effective as telling them "use this optimized
+> library".
 
-Signed-off-by: Dave Young <hidave.darkstar@gmail.com>
+Well, the question is what we would need to do in order to make it
+really easy for people to drop that into their code.  Programmers are
+fundamentally lazy, after all, and if it's too much work to create an
+interim data structure, and then qsort it, they won't.  But maybe the
+glib interface is that convenient interface, and all we need to do is
+change glibc to sort with a much larger chunk size.
 
----
-drivers/block/loop.c |    5 +++++
-1 file changed, 5 insertions(+)
+We do need to get similar changes into find, ls, and many other
+programs that might not be so interestedin linking against glibc,
+though.
 
-diff -upr linux/drivers/block/loop.c linux.new/drivers/block/loop.c
---- linux/drivers/block/loop.c	2008-04-25 10:10:25.000000000 +0800
-+++ linux.new/drivers/block/loop.c	2008-04-25 10:10:35.000000000 +0800
-@@ -923,7 +923,12 @@ static int loop_clr_fd(struct loop_devic
- 	bd_set_size(bdev, 0);
- 	mapping_set_gfp_mask(filp->f_mapping, gfp);
- 	lo->lo_state = Lo_unbound;
-+
-+	/* unlock the lo_ctl_mutex to silence lockdep in case
-+	 the backingfile is a block device */
-+	mutex_unlock(&lo->lo_ctl_mutex);
- 	fput(filp);
-+	mutex_lock(&lo->lo_ctl_mutex);
- 	/* This is safe: open() is still holding a reference. */
- 	module_put(THIS_MODULE);
- 	if (max_part > 0)
+                     	     	     	    	 - Ted
