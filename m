@@ -1,73 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935883AbYD1UTm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935690AbYD1UW5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935883AbYD1UTm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 16:19:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934190AbYD1UTa
+	id S935690AbYD1UW5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 16:22:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933240AbYD1UWp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 16:19:30 -0400
-Received: from wa-out-1112.google.com ([209.85.146.183]:24002 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934069AbYD1UT3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 16:19:29 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=P0FWYT0Olws2HTgqrVmCv62EfNv9eenQvmEYwafVii/Jodj474v+FMzkTYK3qfA5iidRjVQxh2q5dJnsuxhQ//LrCFgcm/jCjUhutjJdXM9ZcC2kV2LyEZo2t+CoWHIz2s9AxQZdA0k02ZWHTHwcQ4WtyhhGIhYeXfY7sdjTpUM=
-Date: Mon, 28 Apr 2008 16:19:25 -0400
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Stas Sergeev <stsp@aknet.ru>, Andrew Morton <akpm@linux-foundation.org>,
-       Takashi Iwai <tiwai@suse.de>,
-       Linux kernel <linux-kernel@vger.kernel.org>,
-       Vojtech Pavlik <vojtech@suse.cz>,
-       Michael Opdenacker <michael@free-electrons.com>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [patch] pcspkr: fix dependancies
-Message-ID: <20080428161544.ZZRA012@mailhub.coreip.homeip.net>
-References: <4813476A.7000705@aknet.ru> <200804261918.14711.dtor-oss@comcast.net> <4813BD39.1080105@aknet.ru> <20080427042331.GB29127@anvil.corenet.prv> <481626B6.5040207@aknet.ru> <20080428155811.ZZRA012@mailhub.coreip.homeip.net> <20080428201225.GB18135@uranus.ravnborg.org>
+	Mon, 28 Apr 2008 16:22:45 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:54349 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932718AbYD1UWo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Apr 2008 16:22:44 -0400
+Date: Mon, 28 Apr 2008 22:21:30 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       "H. Peter Anvin" <hpa@zytor.com>, Andi Kleen <andi@firstfloor.org>,
+       Jiri Slaby <jirislaby@gmail.com>, David Miller <davem@davemloft.net>,
+       zdenek.kabelac@gmail.com, rjw@sisk.pl, paulmck@linux.vnet.ibm.com,
+       akpm@linux-foundation.org, linux-ext4@vger.kernel.org,
+       herbert@gondor.apana.org.au, penberg@cs.helsinki.fi, clameter@sgi.com,
+       linux-kernel@vger.kernel.org, pageexec@freemail.hu,
+       Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: [PATCH 1/1] x86: fix text_poke
+Message-ID: <20080428202130.GF15840@elte.hu>
+References: <48123C9B.9020306@zytor.com> <20080425203717.GB25950@Krystal> <481241DC.3070601@zytor.com> <alpine.LFD.1.10.0804251349510.2779@woody.linux-foundation.org> <20080425211205.GC25950@Krystal> <481249FB.8070204@zytor.com> <20080425214704.GD25950@Krystal> <48125635.3060303@zytor.com> <20080425223015.GB31226@Krystal> <alpine.LFD.1.10.0804251534420.2779@woody.linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080428201225.GB18135@uranus.ravnborg.org>
+In-Reply-To: <alpine.LFD.1.10.0804251534420.2779@woody.linux-foundation.org>
 User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 28, 2008 at 10:12:25PM +0200, Sam Ravnborg wrote:
-> On Mon, Apr 28, 2008 at 03:58:56PM -0400, Dmitry Torokhov wrote:
-> > On Mon, Apr 28, 2008 at 11:34:14PM +0400, Stas Sergeev wrote:
-> > > Hello.
-> > > 
-> > > Dmitry Torokhov wrote:
-> > > > It looks like the change was introduced by commit
-> > > > 67926892ef7a7fbc76de607120d44416019fdf07
-> > > Indeed. But the log message
-> > > http://www.mail-archive.com/git-commits-head@vger.kernel.org/msg36026.html
-> > > doesn't seem to specify the reason
-> > > for the change, so this doesn't
-> > > clarify a thing, unfortunately.
-> > > 
-> > > > I think that we should register devices even if there is no driver in
-> > > > the kernel for it because driver may be compiled at later time or be out
-> > > > of tree. Adding patch author and other people that signed off the patch
-> > > > to CC...
-> > > Since there seem to be no objections,
-> > > would you mind adding the patch to your
-> > > git tree? Or who should that be?
-> > 
-> > I try to stay within drivers/input boundaries ;) Ingo I think is the
-> > person you need.
-> If you google you will find a long thread about this patch.
-> It is all about saving memory for embedded platforms.
-> No need to have the driver if there is no speaker on the board.
-> 
 
-The patch does it backwards though - it disables platform device if
-there is no driver. We don't stop enumerating PCI devices if some of
-them don't have a driver for them, do we? The arch code should not
-create the device if it knows that the boards does not have it.
+* Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
--- 
-Dmitry
+> I'd much rather see something truly generic that doesn't need any 
+> pre-inserted "markers" at all that disable optimizations, and that 
+> allows just about anything. Including live system bug-fixes etc 
+> (imagine finding a bug - and not at somethign that was previously 
+> already "marked" - and just replacing the buggy function with a 
+> non-buggy one).
+
+Ob'plug: with the pending dyn-ftrace function tracer feature we do 
+something rather close to that already: we have a 5 byte NOP in the 
+prologue of every function that can be used as a non-destructive 'branch 
+away' place.
+
+Right now we use that to trace a (regex-ish pattern identified) set of 
+functions. The regex pattern can be configured runtime via 
+/debug/tracing/function_filter is not parsed runtime in any fastpath - 
+it is used to activate/deactivate the tracepoints and patches them from 
+NOPs into CALLs.
+
+_But_ the same mechanism could perhaps be used to patch the function as 
+well.
+
+The cost is +5 bytes of NOP for every function in the system, but in 
+practice we've not been able to measure any actual runtime costs of 
+these NOPs - neither in micro-benchmarks nor in macro-benchmarks. (the 
+only real cost here is the +5 bytes of I$ cost - otherwise the NOP will 
+just be skipped by the decoder.)
+
+the patching of these NOPs is inherently safe because they are inserted 
+at build time. There's no negative impact to gcc optimizations at all. 
+We get a nice selection of 75,000 tracepoints in an allmodconfig kernel 
+- without _any_ source code level impact in the functions.
+
+On the other hand, i'm not opposed to a handful of static markers either 
+- i think the best model is to have both of these facilities. There are 
+a couple of 'core events' that are not expressed via function calls, and 
+even where they are expressed via function calls the function call 
+layout is not stable while markers are stable across kernel versions. 
+The notion of "a context-switch happened from task X to task Y" or "task 
+X woke up task Y" is not going to change anytime soon so i'm not opposed 
+to exposing that kind of information. And once we accept the static 
+markers, we might as well make them as cheap as possible.
+
+	Ingo
