@@ -1,64 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763050AbYD1E7G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763297AbYD1FAp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763050AbYD1E7G (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 00:59:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751085AbYD1E6z
+	id S1763297AbYD1FAp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 01:00:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751085AbYD1FAh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 00:58:55 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:53126 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750865AbYD1E6z (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 00:58:55 -0400
-Date: Sun, 27 Apr 2008 21:58:40 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: David Miller <davem@davemloft.net>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Kconfig 'depend' vs. 'select'
-Message-ID: <20080427215840.0961be81@laptopd505.fenrus.org>
-In-Reply-To: <20080427.174536.62560212.davem@davemloft.net>
-References: <20080427.174536.62560212.davem@davemloft.net>
-Organization: Intel
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; i386-redhat-linux-gnu)
+	Mon, 28 Apr 2008 01:00:37 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:58028 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750851AbYD1FAg (ORCPT
+	<rfc822;@sgi.com:linux-kernel@vger.kernel.org>);
+	Mon, 28 Apr 2008 01:00:36 -0400
+Date: Mon, 28 Apr 2008 14:59:54 +1000
+From: David Chinner <dgc@sgi.com>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Daniel Walker <dwalker@mvista.com>, Matthew Wilcox <matthew@wil.cx>,
+       linux-kernel@vger.kernel.org, Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: Announce: Semaphore-Removal tree
+Message-ID: <20080428045954.GG103491721@sgi.com>
+References: <20080425170021.GH14990@parisc-linux.org> <1209155917.12461.46.camel@localhost.localdomain> <20080425211250.GA13858@infradead.org> <1209158552.12461.53.camel@localhost.localdomain> <20080426093048.GA11443@infradead.org> <1209217153.1956.14.camel@lappy> <20080426134430.GA28205@infradead.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080426134430.GA28205@infradead.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 27 Apr 2008 17:45:36 -0700 (PDT)
-David Miller <davem@davemloft.net> wrote:
+On Sat, Apr 26, 2008 at 09:44:30AM -0400, Christoph Hellwig wrote:
+> On Sat, Apr 26, 2008 at 03:39:13PM +0200, Peter Zijlstra wrote:
+> > I'm guessing RCU would be a bit more work?
+> 
+> Actually the whole XFS inode hash is gone now and replaced by a radix tree.
+> As soon as nick and your work on the lockless radix trees goes in I'm
+> pretty sure Dave will make use of that.
 
-> 
-> I'm trying to stir up interest in solving a problem that seems to pop
-> up frequently. :)
-> 
-> The short story is:
-> 
-> 1) If you say your driver "depend"s on a subsystem providing a set of
->    interfaces you need, this doesn't work properly if your driver is
->    marked built-in and that subsystem you need is modular for some
->    reason.
-> 
-> 2) If you say "select" on some subsystem, to try and solve the
->    conflict in #1, that doesn't take care of any dependencies the
->    subsystem may have.  This can also break the build.
-> 
-> There should be an elegant solution to this problem.  But I don't
-> think changing how 'select' or 'depend' works is it.
-> 
-> 'depend' as it stands now works fine for purely boolean things like
-> "this architecture has or wants FOO".  There is no reason to remove
-> it or change it's semantics, I think.
+I have patches for that, but came across reference counting issues
+with the refcount being held in the linux inode not the XFS inode
+and hence not being able to properly refcount the xfs inode once
+the linux inode is gone away....
 
-how far would "if you DEPENDS on FOO, and FOO is =m, you can only be =m or =n" get us?
-or are there hidden traps on this?
-(the hard case is if a non-tristate DEPENDS on a tristate, but... that's a trap anyway)
+Solvable, but I've got to find some time to work on stuff that isn't
+just bug fixing....
 
+Cheers,
+
+Dave.
 -- 
-If you want to reach me at my work email, use arjan@linux.intel.com
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+Dave Chinner
+Principal Engineer
+SGI Australian Software Group
