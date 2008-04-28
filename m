@@ -1,27 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935437AbYD1Xus@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936952AbYD1XvO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935437AbYD1Xus (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 19:50:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934906AbYD1Xt6
+	id S936952AbYD1XvO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 19:51:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935082AbYD1Xt7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 19:49:58 -0400
-Received: from wx-out-0506.google.com ([66.249.82.228]:6972 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934628AbYD1Xt4 (ORCPT
+	Mon, 28 Apr 2008 19:49:59 -0400
+Received: from wa-out-1112.google.com ([209.85.146.183]:25522 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934628AbYD1Xt6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 19:49:56 -0400
+	Mon, 28 Apr 2008 19:49:58 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=YkGQWhXnXRU0WoibN3RZhzzELjkvoY7UNYjE2SveQxZsl+c5aqpUqX4JBTU3WR4cVC5L+i5Os6ZgY2mdONQSMCntXMCnFRn50BVlFYAVBHaVVqVoPT12gZe3LdOkByze/+/wdbCZs1/vf8Fe2ygHjy2lFMNxjSvAqRSaoxTr+oY=
-Subject: [PATCH 2/3] media: fix integer as NULL pointer warnings
+        b=gUc0hhd76v+r/CXjmwA5xuF5/K7LFxhb95tlnpbxVV783KbintpVdaKrYFiZ2D3UdlL+CPDOh37kR0uoN7e1fRa5p91xtp2nCLjlCudBbSIfWncGTIKHK5PkQlrNggp82dcMquEaqHStnpEb+mO3+JCMO62iiV+wYIYwB85PIBY=
+Subject: [PATCH 3/3] drivers: fix integer as NULL pointer warnings
 From: Harvey Harrison <harvey.harrison@gmail.com>
 To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Mauro Carvalho Chehab <mchehab@infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>
 Content-Type: text/plain
-Date: Mon, 28 Apr 2008 16:50:03 -0700
-Message-Id: <1209426603.24729.8.camel@brick>
+Date: Mon, 28 Apr 2008 16:50:04 -0700
+Message-Id: <1209426605.24729.10.camel@brick>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
@@ -29,188 +28,94 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-drivers/media/video/v4l2-common.c:719:16: warning: Using plain integer as NULL pointer
-drivers/media/video/au0828/au0828-dvb.c:122:19: warning: Using plain integer as NULL pointer
-drivers/media/video/ivtv/ivtv-yuv.c:1101:22: warning: Using plain integer as NULL pointer
-drivers/media/video/ivtv/ivtv-yuv.c:1102:23: warning: Using plain integer as NULL pointer
-drivers/media/video/pvrusb2/pvrusb2-audio.c:78:39: warning: Using plain integer as NULL pointer
-drivers/media/video/pvrusb2/pvrusb2-video-v4l.c:84:39: warning: Using plain integer as NULL pointer
-drivers/media/video/pvrusb2/pvrusb2-v4l2.c:1264:9: warning: Using plain integer as NULL pointer
-drivers/media/video/pvrusb2/pvrusb2-context.c:197:28: warning: Using plain integer as NULL pointer
-drivers/media/video/pvrusb2/pvrusb2-cx2584x-v4l.c:126:39: warning: Using plain integer as NULL pointer
-drivers/media/video/pvrusb2/pvrusb2-dvb.c:133:32: warning: Using plain integer as NULL pointer
-drivers/media/video/pvrusb2/pvrusb2-dvb.c:145:31: warning: Using plain integer as NULL pointer
-drivers/media/video/pvrusb2/pvrusb2-dvb.c:177:55: warning: Using plain integer as NULL pointer
-drivers/media/video/videobuf-core.c:100:9: warning: Using plain integer as NULL pointer
-
 Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
 ---
- drivers/media/video/au0828/au0828-dvb.c           |    2 +-
- drivers/media/video/ivtv/ivtv-yuv.c               |    4 ++--
- drivers/media/video/pvrusb2/pvrusb2-audio.c       |    2 +-
- drivers/media/video/pvrusb2/pvrusb2-context.c     |    2 +-
- drivers/media/video/pvrusb2/pvrusb2-cx2584x-v4l.c |    2 +-
- drivers/media/video/pvrusb2/pvrusb2-dvb.c         |    6 +++---
- drivers/media/video/pvrusb2/pvrusb2-v4l2.c        |    2 +-
- drivers/media/video/pvrusb2/pvrusb2-video-v4l.c   |    2 +-
- drivers/media/video/v4l2-common.c                 |    2 +-
- drivers/media/video/videobuf-core.c               |    5 ++++-
- 10 files changed, 16 insertions(+), 13 deletions(-)
+ drivers/char/cs5535_gpio.c         |    2 +-
+ drivers/char/n_hdlc.c              |    2 +-
+ drivers/char/rio/rioroute.c        |    2 +-
+ drivers/firmware/iscsi_ibft_find.c |    2 +-
+ drivers/mtd/maps/plat-ram.c        |    2 +-
+ drivers/pci/pcie/aer/aerdrv_acpi.c |    2 +-
+ 6 files changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/media/video/au0828/au0828-dvb.c b/drivers/media/video/au0828/au0828-dvb.c
-index 5040d7f..1371b4e 100644
---- a/drivers/media/video/au0828/au0828-dvb.c
-+++ b/drivers/media/video/au0828/au0828-dvb.c
-@@ -119,7 +119,7 @@ static int start_urb_transfer(struct au0828_dev *dev)
- 		purb->transfer_buffer = kzalloc(URB_BUFSIZE, GFP_KERNEL);
- 		if (!purb->transfer_buffer) {
- 			usb_free_urb(purb);
--			dev->urbs[i] = 0;
-+			dev->urbs[i] = NULL;
- 			goto err;
- 		}
+diff --git a/drivers/char/cs5535_gpio.c b/drivers/char/cs5535_gpio.c
+index c2d23ca..c0a4a0b 100644
+--- a/drivers/char/cs5535_gpio.c
++++ b/drivers/char/cs5535_gpio.c
+@@ -215,7 +215,7 @@ static int __init cs5535_gpio_init(void)
+ 	else
+ 		mask = 0x0b003c66;
  
-diff --git a/drivers/media/video/ivtv/ivtv-yuv.c b/drivers/media/video/ivtv/ivtv-yuv.c
-index 393d917..62f70bd 100644
---- a/drivers/media/video/ivtv/ivtv-yuv.c
-+++ b/drivers/media/video/ivtv/ivtv-yuv.c
-@@ -1098,8 +1098,8 @@ void ivtv_yuv_setup_stream_frame(struct ivtv *itv)
- 	ivtv_yuv_next_free(itv);
- 
- 	/* Copy V4L2 parameters to an ivtv_dma_frame struct... */
--	dma_args.y_source = 0L;
--	dma_args.uv_source = 0L;
-+	dma_args.y_source = NULL;
-+	dma_args.uv_source = NULL;
- 	dma_args.src.left = 0;
- 	dma_args.src.top = 0;
- 	dma_args.src.width = yi->v4l2_src_w;
-diff --git a/drivers/media/video/pvrusb2/pvrusb2-audio.c b/drivers/media/video/pvrusb2/pvrusb2-audio.c
-index 9a7c8e9..8d859cc 100644
---- a/drivers/media/video/pvrusb2/pvrusb2-audio.c
-+++ b/drivers/media/video/pvrusb2/pvrusb2-audio.c
-@@ -75,7 +75,7 @@ static void set_stereo(struct pvr2_msp3400_handler *ctxt)
- 	pvr2_trace(PVR2_TRACE_CHIPS,"i2c msp3400 v4l2 set_stereo");
- 
- 	if ((sid < ARRAY_SIZE(routing_schemes)) &&
--	    ((sp = routing_schemes + sid) != 0) &&
-+	    ((sp = routing_schemes + sid) != NULL) &&
- 	    (hdw->input_val >= 0) &&
- 	    (hdw->input_val < sp->cnt)) {
- 		route.input = sp->def[hdw->input_val];
-diff --git a/drivers/media/video/pvrusb2/pvrusb2-context.c b/drivers/media/video/pvrusb2/pvrusb2-context.c
-index b5db6a5..73dcb1c 100644
---- a/drivers/media/video/pvrusb2/pvrusb2-context.c
-+++ b/drivers/media/video/pvrusb2/pvrusb2-context.c
-@@ -195,7 +195,7 @@ static int pvr2_context_thread_func(void *foo)
- int pvr2_context_global_init(void)
- {
- 	pvr2_context_thread_ptr = kthread_run(pvr2_context_thread_func,
--					      0,
-+					      NULL,
- 					      "pvrusb2-context");
- 	return (pvr2_context_thread_ptr ? 0 : -ENOMEM);
- }
-diff --git a/drivers/media/video/pvrusb2/pvrusb2-cx2584x-v4l.c b/drivers/media/video/pvrusb2/pvrusb2-cx2584x-v4l.c
-index 97350b0..29d5059 100644
---- a/drivers/media/video/pvrusb2/pvrusb2-cx2584x-v4l.c
-+++ b/drivers/media/video/pvrusb2/pvrusb2-cx2584x-v4l.c
-@@ -123,7 +123,7 @@ static void set_input(struct pvr2_v4l_cx2584x *ctxt)
- 	memset(&route,0,sizeof(route));
- 
- 	if ((sid < ARRAY_SIZE(routing_schemes)) &&
--	    ((sp = routing_schemes + sid) != 0) &&
-+	    ((sp = routing_schemes + sid) != NULL) &&
- 	    (hdw->input_val >= 0) &&
- 	    (hdw->input_val < sp->cnt)) {
- 		vid_input = sp->def[hdw->input_val].vid;
-diff --git a/drivers/media/video/pvrusb2/pvrusb2-dvb.c b/drivers/media/video/pvrusb2/pvrusb2-dvb.c
-index 2e64f98..6504c97 100644
---- a/drivers/media/video/pvrusb2/pvrusb2-dvb.c
-+++ b/drivers/media/video/pvrusb2/pvrusb2-dvb.c
-@@ -130,7 +130,7 @@ static void pvr2_dvb_stream_end(struct pvr2_dvb_adapter *adap)
- 		for (idx = 0; idx < PVR2_DVB_BUFFER_COUNT; idx++) {
- 			if (!(adap->buffer_storage[idx])) continue;
- 			kfree(adap->buffer_storage[idx]);
--			adap->buffer_storage[idx] = 0;
-+			adap->buffer_storage[idx] = NULL;
- 		}
- 		adap->stream_run = 0;
+-	if (request_region(gpio_base, CS5535_GPIO_SIZE, NAME) == 0) {
++	if (!request_region(gpio_base, CS5535_GPIO_SIZE, NAME)) {
+ 		printk(KERN_ERR NAME ": can't allocate I/O for GPIO\n");
+ 		return -ENODEV;
  	}
-@@ -142,7 +142,7 @@ static int pvr2_dvb_stream_do_start(struct pvr2_dvb_adapter *adap)
- 	unsigned int idx;
- 	int ret;
- 	struct pvr2_buffer *bp;
--	struct pvr2_stream *stream = 0;
-+	struct pvr2_stream *stream = NULL;
+diff --git a/drivers/char/n_hdlc.c b/drivers/char/n_hdlc.c
+index 82bcfb9..06803ed 100644
+--- a/drivers/char/n_hdlc.c
++++ b/drivers/char/n_hdlc.c
+@@ -501,7 +501,7 @@ static void n_hdlc_tty_receive(struct tty_struct *tty, const __u8 *data,
+ 			__FILE__,__LINE__, count);
+ 		
+ 	/* This can happen if stuff comes in on the backup tty */
+-	if (n_hdlc == 0 || tty != n_hdlc->tty)
++	if (!n_hdlc || tty != n_hdlc->tty)
+ 		return;
+ 		
+ 	/* verify line is using HDLC discipline */
+diff --git a/drivers/char/rio/rioroute.c b/drivers/char/rio/rioroute.c
+index 85091ff..7a9df7d 100644
+--- a/drivers/char/rio/rioroute.c
++++ b/drivers/char/rio/rioroute.c
+@@ -526,7 +526,7 @@ void RIOFixPhbs(struct rio_info *p, struct Host *HostP, unsigned int unit)
+ 			 ** If RTA is not powered on, the tx packets will be
+ 			 ** unset, so go no further.
+ 			 */
+-			if (PortP->TxStart == 0) {
++			if (!PortP->TxStart) {
+ 				rio_dprintk(RIO_DEBUG_ROUTE, "Tx pkts not set up yet\n");
+ 				rio_spin_unlock_irqrestore(&PortP->portSem, flags);
+ 				break;
+diff --git a/drivers/firmware/iscsi_ibft_find.c b/drivers/firmware/iscsi_ibft_find.c
+index d0e5fa4..11f1744 100644
+--- a/drivers/firmware/iscsi_ibft_find.c
++++ b/drivers/firmware/iscsi_ibft_find.c
+@@ -58,7 +58,7 @@ void __init reserve_ibft_region(void)
+ 	unsigned int len = 0;
+ 	void *virt;
  
- 	if (adap->stream_run) return -EIO;
+-	ibft_addr = 0;
++	ibft_addr = NULL;
  
-@@ -174,7 +174,7 @@ static int pvr2_dvb_stream_do_start(struct pvr2_dvb_adapter *adap)
- 	ret = pvr2_hdw_set_streaming(adap->channel.hdw, 1);
- 	if (ret < 0) return ret;
+ 	for (pos = IBFT_START; pos < IBFT_END; pos += 16) {
+ 		/* The table can't be inside the VGA BIOS reserved space,
+diff --git a/drivers/mtd/maps/plat-ram.c b/drivers/mtd/maps/plat-ram.c
+index f0b10ca..3eb2643 100644
+--- a/drivers/mtd/maps/plat-ram.c
++++ b/drivers/mtd/maps/plat-ram.c
+@@ -209,7 +209,7 @@ static int platram_probe(struct platform_device *pdev)
+ 	/* probe for the right mtd map driver
+ 	 * supplied by the platform_data struct */
  
--	while ((bp = pvr2_stream_get_idle_buffer(stream)) != 0) {
-+	while ((bp = pvr2_stream_get_idle_buffer(stream)) != NULL) {
- 		ret = pvr2_buffer_queue(bp);
- 		if (ret < 0) return ret;
- 	}
-diff --git a/drivers/media/video/pvrusb2/pvrusb2-v4l2.c b/drivers/media/video/pvrusb2/pvrusb2-v4l2.c
-index 087a182..e9b5d4e 100644
---- a/drivers/media/video/pvrusb2/pvrusb2-v4l2.c
-+++ b/drivers/media/video/pvrusb2/pvrusb2-v4l2.c
-@@ -1261,7 +1261,7 @@ struct pvr2_v4l2 *pvr2_v4l2_create(struct pvr2_context *mnp)
-  fail:
- 	pvr2_trace(PVR2_TRACE_STRUCT,"Failure creating pvr2_v4l2 id=%p",vp);
- 	pvr2_v4l2_destroy_no_lock(vp);
--	return 0;
-+	return NULL;
- }
+-	if (pdata->map_probes != 0) {
++	if (pdata->map_probes) {
+ 		const char **map_probes = pdata->map_probes;
  
- /*
-diff --git a/drivers/media/video/pvrusb2/pvrusb2-video-v4l.c b/drivers/media/video/pvrusb2/pvrusb2-video-v4l.c
-index 7c47345..2433a31 100644
---- a/drivers/media/video/pvrusb2/pvrusb2-video-v4l.c
-+++ b/drivers/media/video/pvrusb2/pvrusb2-video-v4l.c
-@@ -81,7 +81,7 @@ static void set_input(struct pvr2_v4l_decoder *ctxt)
- 	pvr2_trace(PVR2_TRACE_CHIPS,"i2c v4l2 set_input(%d)",hdw->input_val);
- 
- 	if ((sid < ARRAY_SIZE(routing_schemes)) &&
--	    ((sp = routing_schemes + sid) != 0) &&
-+	    ((sp = routing_schemes + sid) != NULL) &&
- 	    (hdw->input_val >= 0) &&
- 	    (hdw->input_val < sp->cnt)) {
- 		route.input = sp->def[hdw->input_val];
-diff --git a/drivers/media/video/v4l2-common.c b/drivers/media/video/v4l2-common.c
-index 34deb68..7cc42c1 100644
---- a/drivers/media/video/v4l2-common.c
-+++ b/drivers/media/video/v4l2-common.c
-@@ -716,7 +716,7 @@ int v4l2_i2c_attach(struct i2c_adapter *adapter, int address, struct i2c_driver
- 	int err;
- 
- 	client = kzalloc(sizeof(struct i2c_client), GFP_KERNEL);
--	if (client == 0)
-+	if (!client)
- 		return -ENOMEM;
- 
- 	client->addr = address;
-diff --git a/drivers/media/video/videobuf-core.c b/drivers/media/video/videobuf-core.c
-index fc51e49..982f446 100644
---- a/drivers/media/video/videobuf-core.c
-+++ b/drivers/media/video/videobuf-core.c
-@@ -97,7 +97,10 @@ int videobuf_iolock(struct videobuf_queue *q, struct videobuf_buffer *vb,
- void *videobuf_queue_to_vmalloc (struct videobuf_queue *q,
- 			   struct videobuf_buffer *buf)
+ 		for ( ; !info->mtd && *map_probes; map_probes++)
+diff --git a/drivers/pci/pcie/aer/aerdrv_acpi.c b/drivers/pci/pcie/aer/aerdrv_acpi.c
+index 96ac540..d39a78d 100644
+--- a/drivers/pci/pcie/aer/aerdrv_acpi.c
++++ b/drivers/pci/pcie/aer/aerdrv_acpi.c
+@@ -31,7 +31,7 @@ int aer_osc_setup(struct pcie_device *pciedev)
  {
--	return CALL(q, vmalloc, buf);
-+	if (q->int_ops->vmalloc)
-+		return q->int_ops->vmalloc(buf);
-+	else
-+		return NULL;
- }
- EXPORT_SYMBOL_GPL(videobuf_queue_to_vmalloc);
+ 	acpi_status status = AE_NOT_FOUND;
+ 	struct pci_dev *pdev = pciedev->port;
+-	acpi_handle handle = 0;
++	acpi_handle handle = NULL;
  
+ 	if (acpi_pci_disabled)
+ 		return -1;
 -- 
 1.5.5.1.270.g89765
-
 
