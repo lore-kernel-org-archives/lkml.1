@@ -1,54 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966529AbYD1VBA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966765AbYD1VBe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966529AbYD1VBA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 17:01:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934507AbYD1VAs
+	id S966765AbYD1VBe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 17:01:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934949AbYD1VBQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 17:00:48 -0400
-Received: from hu-out-0506.google.com ([72.14.214.225]:1203 "EHLO
-	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932185AbYD1VAr (ORCPT
+	Mon, 28 Apr 2008 17:01:16 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:51671 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934911AbYD1VBP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 17:00:47 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=s6HicQ/KjmWS+cohgR2GZsUPq2G+4kaq9qpDy2q/HObFBtPMnR+kynmA+a0mfcU+Bjsziaz6blaBmVzZxQrGl3vnA49cAMNAI6DSuVEX59Srx1jb7A/JXRdn4ugFbm46VNunZrnXdf39lMfY2UtnblsN/gnGGxk8FZMmrZ3gT0Y=
-Message-ID: <517f3f820804281400n21223d11mf1e518b11660774b@mail.gmail.com>
-Date: Mon, 28 Apr 2008 23:00:44 +0200
-From: "Michael Kerrisk" <mtk.manpages@gmail.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH] dup2 w/flags
-Cc: "Ulrich Drepper" <drepper@redhat.com>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, torvalds@linux-foundation.org
-In-Reply-To: <48163989.2000405@zytor.com>
+	Mon, 28 Apr 2008 17:01:15 -0400
+Date: Mon, 28 Apr 2008 15:01:13 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Adrian Bunk <bunk@kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>
+Subject: Re: [GIT PATCH] SCSI updates for 2.6.25
+Message-ID: <20080428210112.GC14990@parisc-linux.org>
+References: <1208540517.3063.18.camel@localhost.localdomain> <20080419151934.GA17089@elte.hu> <1208620484.3280.23.camel@localhost.localdomain> <20080419170530.GD1595@cs181133002.pp.htv.fi> <1208626496.3280.40.camel@localhost.localdomain> <alpine.LFD.1.10.0804191305360.2779@woody.linux-foundation.org> <20080419204511.GP20637@parisc-linux.org> <20080428210034.GE18248@uranus.ravnborg.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <200804280320.m3S3KSFu028466@devserv.devel.redhat.com>
-	 <517f3f820804280243q4a4bb9dbv27ce4be90fdd5954@mail.gmail.com>
-	 <48163989.2000405@zytor.com>
-X-Google-Sender-Auth: 4ceafe3b79de1349
+In-Reply-To: <20080428210034.GE18248@uranus.ravnborg.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 4/28/08, H. Peter Anvin <hpa@zytor.com> wrote:
-> Michael Kerrisk wrote:
->
-> >
-> > Ulrich,
-> >
-> > To repeat my earlier request, and as requested in Documentation/HOWTO,
-> > could you please CC me on API changes.  This alerts me to what may
-> > eventually need documenting in man-pages.
-> >
-> >
->
->  I think we may need a mailing list for this; you're not the only person who
-> would be affected by ABI-visible changes.
+On Mon, Apr 28, 2008 at 11:00:34PM +0200, Sam Ravnborg wrote:
+> On Sat, Apr 19, 2008 at 02:45:11PM -0600, Matthew Wilcox wrote:
+> > On Sat, Apr 19, 2008 at 01:14:23PM -0700, Linus Torvalds wrote:
+> > > So people: stop this total *idiocy* with "select is bad". It's not. The 
+> > > lack of select is *much* worse.
+> > 
+> > Could we consider applying this patch then?
+> 
+> I applied the following.
 
-I've been thinking the same thing.
+Reads much better.  Thanks!
 
-Perhaps linux-api@vger?
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
