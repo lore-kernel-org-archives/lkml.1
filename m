@@ -1,80 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765590AbYD1Gba@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765837AbYD1Gcq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765590AbYD1Gba (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 02:31:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753943AbYD1GbT
+	id S1765837AbYD1Gcq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 02:32:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753977AbYD1Gci
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 02:31:19 -0400
-Received: from out4.smtp.messagingengine.com ([66.111.4.28]:35798 "EHLO
-	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753006AbYD1GbS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 02:31:18 -0400
-X-Sasl-enc: TVImNDlxTkzJnuoF4N7QnHZ2qOZv2S+wsgzTEJfXufkF 1209364276
-Date: Mon, 28 Apr 2008 14:30:29 +0800 (WST)
-From: Ian Kent <raven@themaw.net>
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       autofs mailing list <autofs@linux.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>
-Subject: [PATCH 2/2] autofs4 - fix incorect return from root.c:try_to_fill_dentry()
-Message-ID: <Pine.LNX.4.64.0804281427050.10684@raven.themaw.net>
+	Mon, 28 Apr 2008 02:32:38 -0400
+Received: from mr1.bfh.ch ([147.87.250.50]:36499 "EHLO mr1.bfh.ch"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752737AbYD1Gci (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Apr 2008 02:32:38 -0400
+Message-ID: <48156F7C.3080402@bfh.ch>
+Date: Mon, 28 Apr 2008 08:32:28 +0200
+From: Seewer Philippe <philippe.seewer@bfh.ch>
+Organization: BFH
+User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Arjan van de Ven <arjan@infradead.org>
+CC: David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org
+Subject: Re: Kconfig 'depend' vs. 'select'
+References: <20080427.174536.62560212.davem@davemloft.net> <20080427215840.0961be81@laptopd505.fenrus.org>
+In-Reply-To: <20080427215840.0961be81@laptopd505.fenrus.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 28 Apr 2008 06:31:51.0737 (UTC) FILETIME=[8B4B9A90:01C8A8F9]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-Hi Andrew,
-
-Jeff Moyer has identified a case where the autofs4 function
-root.c:try_to_fill_dentry() can return -EBUSY when it should return
-0.
-
-Jeffs description of the way this happens is:
-
-"automount starts an expire for directory d.
-after the callout to the daemon, but before the rmdir, another
-process tries to walk into the same directory.  It puts itself
-onto the waitq, pending the expiration.
-
-When the expire finishes, the second process is woken up.  In
-try_to_fill_dentry, it does this check:
-
-                status = d_invalidate(dentry);
-                if (status != -EBUSY)
-                        return -EAGAIN;
-
-And status is EBUSY.  The dentry still has a non-zero d_inode, and the
-flags do not contain LOOKUP_CONTINUE or LOOKUP_DIRECTORY
-
-So, we fall through and return -EBUSY to the caller."
-
-Signed-off-by: Jeff Moyer <jmoyer@redhat.com>
-Acked-by: Ian Kent <raven@themaw.net>
-
-Ian
-
----
-diff -up linux-2.6.25-mm1/fs/autofs4/root.c.correct-return-in-ttfd linux-2.6.25-mm1/fs/autofs4/root.c
---- linux-2.6.25-mm1/fs/autofs4/root.c.correct-return-in-ttfd	2008-04-28 11:47:20.000000000 +0800
-+++ linux-2.6.25-mm1/fs/autofs4/root.c	2008-04-28 11:48:00.000000000 +0800
-@@ -245,7 +245,7 @@ static int try_to_fill_dentry(struct den
- 	struct autofs_sb_info *sbi = autofs4_sbi(dentry->d_sb);
- 	struct autofs_info *ino = autofs4_dentry_ino(dentry);
- 	struct dentry *new;
--	int status = 0;
-+	int status;
- 
- 	/* Block on any pending expiry here; invalidate the dentry
-            when expiration is done to trigger mount request with a new
-@@ -342,7 +342,7 @@ static int try_to_fill_dentry(struct den
- 		}
- 	}
- 
--	return status;
-+	return 0;
- }
- 
- /* For autofs direct mounts the follow link triggers the mount */
+Arjan van de Ven wrote:
+[snip]
+> how far would "if you DEPENDS on FOO, and FOO is =m, you can only be =m or =n" get us?
+> or are there hidden traps on this?
+> (the hard case is if a non-tristate DEPENDS on a tristate, but... that's a trap anyway)
+I guess it depends on the (use-)case. But in general I'd like a system 
+like that, especially if it would spew out warnings and errors for cases 
+like the one mentioned.
