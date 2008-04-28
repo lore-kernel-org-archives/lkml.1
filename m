@@ -1,222 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764980AbYD1Bkq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763492AbYD1Bp5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764980AbYD1Bkq (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Apr 2008 21:40:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753999AbYD1Bkh
+	id S1763492AbYD1Bp5 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Apr 2008 21:45:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753354AbYD1Bpq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Apr 2008 21:40:37 -0400
-Received: from mail.queued.net ([207.210.101.209]:3955 "EHLO mail.queued.net"
+	Sun, 27 Apr 2008 21:45:46 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:49646 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752038AbYD1Bkg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Apr 2008 21:40:36 -0400
-Date: Sun, 27 Apr 2008 21:43:39 -0400
-From: Andres Salomon <dilinger@queued.net>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-kbuild@vger.kernel.org
-Subject: Re: [PATCH 4/4] kconfig: add *_silentdefconfig feature for config
- targets
-Message-ID: <20080427214339.48bc2ed8@ephemeral>
-In-Reply-To: <20080427204744.GA444@uranus.ravnborg.org>
-References: <20080425223530.10b9d50d@ephemeral>
-	<20080427204744.GA444@uranus.ravnborg.org>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.12.0; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1753301AbYD1Bpp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Apr 2008 21:45:45 -0400
+From: Roland McGrath <roland@redhat.com>
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] x86_64 vDSO: use initdata
+X-Fcc: ~/Mail/linus
+X-Shopping-List: (1) Tremulous vagrants
+   (2) Atomic Garden Weasels
+   (3) Instant Ritz Cracker Crumbs
+Message-Id: <20080428014538.DC68926F8F0@magilla.localdomain>
+Date: Sun, 27 Apr 2008 18:45:38 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 27 Apr 2008 22:47:44 +0200
-Sam Ravnborg <sam@ravnborg.org> wrote:
+The 64-bit vDSO image is in a special ".vdso" section for no reason
+I can determine.  Furthermore, the location of the vdso_end symbol
+includes some wrongly-calculated padding space in the image, which
+is then (correctly) rounded to page size, resulting in an extra page
+of zeros in the image mapped in to user processes.
 
-> On Fri, Apr 25, 2008 at 10:35:30PM -0400, Andres Salomon wrote:
-> > 
-> > Being able to run 'silentoldconfig' with an existing .config has been
-> > immensely useful, especially for automated builds.  If the kernel code
-> > changes in an incompatible manner without the associated .config being
-> > updated, the build will fail and call attention to the need for an update.
-> > 
-> > AFAICT, there is nothing similar when using *_defconfig; one must copy
-> > a .config manually, and then run silentoldconfig.  Simply running the
-> > associated _defconfig will quietly update the config (which may silently
-> > drop config options).  This patch adds a *_silentdefconfig target, with
-> > semantics similar to silentoldconfig.  It will take the defconfig from
-> > arch/$(SRCARCH)/configs/$x_defconfig, check for changes, and if there are
-> > none, write out a .config.  If there have been changes and stdin is
-> > valid, it will prompt for updates.  If there have been changes and
-> > stdin is not valid, it will bail out with an error.
-> 
-> I like what you achieve by this patchset.
-> But I do not agree on the naming you chose.
+This changes it to put the vdso.so image into normal initdata as we
+have always done for the 32-bit vDSO images.  The extra padding is
+gone, so the user VMA is one page instead of two.  The image that
+was already copied around at boot time is now in initdata, so we
+recover that wasted space after boot.
 
+Signed-off-by: Roland McGrath <roland@redhat.com>
+---
+ arch/x86/kernel/vmlinux_64.lds.S |    6 ------
+ arch/x86/vdso/vdso.S             |   10 +++++++++-
+ 2 files changed, 9 insertions(+), 7 deletions(-)
 
-Yeah, I don't really like the name either, but I wasn't sure what to call
-it.  I want behavior that is similar to silentoldconfig, but not because
-I want it to not be chatty, but because I want it to fail if there have
-been changes and there's no tty (ie, !valid_stdin).  So basically,
-silentdefoldconfig or something ridiculously long like that. :)
-
-> 
-> We have today:
-> oldconfig	=> very chatty
-> silentoldconfig	=> Asks only relevant questions
-> defconfig	=> silent
-> 
-> [I plan one day to make oldconfig behave like
-> silentoldconfig and drop the chatty mode]
-> 
-> And I see why you went for the name *_silentdefconfig
-> But in reality what we want to say is that we want to
-> interactively apply the _defconfig.
-
-Do I?  I'm not sure what you mean by "interactively apply".  I want
-to non-interactively apply the defconfig, and fail if prompting is
-required (rather than just choosing default values).
-
-Perhaps _silentoldconfig would've been a better name.  Actually, I'm
-pretty sure that it is. 
-
-> 
-> So if we could come up with something where we told
-> that we want to interactively use i386_defconfig
-> then the users would hopefully be less confused.
-> 
-> I have considered a few way to do so:
-> 
-> a) make I=1 i386_defconfig
-> b) make i_i386_defconfig
-> c) make ii386_defconfig
-> d) make i386_config
-> 
-> And none of these are actually good.
-> Any better ideas here?
-
-Sounds like you're saying that you want:
-
-make oldconfig V=1   (chatty, prompt if possible or fail)
-make oldconfig V=0   (silentoldconfig, prompt if possible or fail)
-
-make defconfig V=1   (chatty, use defaults)
-make defconfig V=0   (silent, use defaults)
-
-make i386_oldconfig V=1 (chatty, prompt if possible or fail)
-make i386_oldconfig V=0 (silent, prompt if possible or fail)
-
-make i386_defconfig V=1 (chatty, use defaults)
-make i386_defconfig V=0 (silent, use defaults)
-
-Does that sound right?  Would using the build system's verbose variable
-work?  If so, what should the default be?
-
-
-
-
-> 
-> See a few comments below.
-> 
-> 	Sam
-> 
-> 
-> > 
-> > Signed-off-by: Andres Salomon <dilinger@debian.org>
-> > ---
-> >  Makefile                 |    4 ++++
-> >  scripts/kconfig/Makefile |    3 +++
-> >  scripts/kconfig/conf.c   |   13 +++++++++++--
-> >  3 files changed, 18 insertions(+), 2 deletions(-)
-> > 
-> > diff --git a/Makefile b/Makefile
-> > index e77149e..c264f7f 100644
-> > --- a/Makefile
-> > +++ b/Makefile
-> > @@ -1225,6 +1225,10 @@ help:
-> >  		$(foreach b, $(boards), \
-> >  		printf "  %-24s - Build for %s\\n" $(b) $(subst _defconfig,,$(b));) \
-> >  		echo '')
-> > +	@$(if $(boards), \
-> > +		$(foreach b, $(boards), \
-> > +		printf "  %-24s - Quiet Build for %s\\n" $(subst _defconfig,_silentdefconfig,$(b)) $(subst _defconfig,,$(b));) \
-> > +		echo '')
-> This is the first time we use printf in the top-level Makefile.
-> Most likely because I never use printf in my shell scripts
-> so I guess this is not a problem.
-
-
-Eh?  There's already a printf, this just adds an additional printf.
-
-
-> 
-> >  
-> >  	@echo  '  make V=0|1 [targets] 0 => quiet build (default), 1 => verbose build'
-> >  	@echo  '  make V=2   [targets] 2 => give reason for rebuild of target'
-> > diff --git a/scripts/kconfig/Makefile b/scripts/kconfig/Makefile
-> > index ce7d754..19ba562 100644
-> > --- a/scripts/kconfig/Makefile
-> > +++ b/scripts/kconfig/Makefile
-> > @@ -72,6 +72,9 @@ endif
-> >  %_defconfig: $(obj)/conf
-> >  	$(Q)$< -d -D arch/$(SRCARCH)/configs/$@ $(Kconfig)
-> >  
-> > +%_silentdefconfig: $(obj)/conf
-> > +	$(Q)$< -s -o -D arch/$(SRCARCH)/configs/$(subst _silentdefconfig,_defconfig,$@) $(Kconfig)
-> > +
-> >  # Help text used by make help
-> >  help:
-> >  	@echo  '  config	  - Update current config utilising a line-oriented program'
-> > diff --git a/scripts/kconfig/conf.c b/scripts/kconfig/conf.c
-> > index 9a27638..264eee9 100644
-> > --- a/scripts/kconfig/conf.c
-> > +++ b/scripts/kconfig/conf.c
-> > @@ -558,7 +558,8 @@ int main(int ac, char **av)
-> >  		}
-> >  		break;
-> >  	case ask_new:
-> > -		if (silent_mode && stat(".config", &tmpstat)) {
-> > +		if (!defconfig_file && silent_mode &&
-> > +				stat(".config", &tmpstat)) {
-> 
-> This belong in a preparation patch. We should handle this
-> also if we do not do so from the Makefile.
-
-I'm not sure what you mean.  This isn't really preparation for this patch;
-it's just ensuring that we can use '-o' and '-D' together without
-running a check for .config.  Basically, if '-o' is specified but '-D'
-is not, check for .config (and fail if it doesn't exist.  If '-o' and '-D'
-are both specified, we don't care about .config.
-
-> 
-> >  			printf(_("***\n"
-> >  				"*** You have not yet configured your kernel!\n"
-> >  				"*** (missing kernel .config file)\n"
-> > @@ -570,7 +571,15 @@ int main(int ac, char **av)
-> >  		}
-> >  		/* fall through */
-> >  	case ask_all:
-> > -		conf_read(NULL);
-> > +		if (defconfig_file) {
-> > +			if (conf_read(defconfig_file)) {
-> > +				printf(_("***\n*** Can't find default "
-> > +					 "configuration \"%s\"!\n***\n"),
-> > +					 defconfig_file);
-> > +				exit(1);
-> > +			}
-> > +		} else
-> > +			conf_read(NULL);
-> 
-> Does conf_read() fail if we use the NULL argument?
-> I assume not so the above code can be simplified and
-> should also be in the same preparational patch as the change above.
-
-I don't believe it fails, it uses a default config name.  I'm not sure
-if it fails if _that_ file isn't found, though.  I can't make much
-sense of the symbol stuff..
-
-We definitely _do_ want to fail if conf_read(defconfig_file) can't find
-the file, and we definitely don't want to fail if conf_read(NULL) can't
-open the file.
-
-
-> 
-> 	Sam
+diff --git a/arch/x86/kernel/vmlinux_64.lds.S b/arch/x86/kernel/vmlinux_64.lds.S
+index b7ab3c3..fad3674 100644
+--- a/arch/x86/kernel/vmlinux_64.lds.S
++++ b/arch/x86/kernel/vmlinux_64.lds.S
+@@ -209,12 +209,6 @@ SECTIONS
+ 	EXIT_DATA
+   }
+ 
+-/* vdso blob that is mapped into user space */
+-  vdso_start = . ;
+-  .vdso  : AT(ADDR(.vdso) - LOAD_OFFSET) { *(.vdso) }
+-  . = ALIGN(PAGE_SIZE);
+-  vdso_end = .;
+-
+ #ifdef CONFIG_BLK_DEV_INITRD
+   . = ALIGN(PAGE_SIZE);
+   __initramfs_start = .;
+diff --git a/arch/x86/vdso/vdso.S b/arch/x86/vdso/vdso.S
+index 4b1620a..1d3aa6b 100644
+--- a/arch/x86/vdso/vdso.S
++++ b/arch/x86/vdso/vdso.S
+@@ -1,2 +1,10 @@
+-	.section ".vdso","a"
++#include <linux/init.h>
++
++__INITDATA
++
++	.globl vdso_start, vdso_end
++vdso_start:
+ 	.incbin "arch/x86/vdso/vdso.so"
++vdso_end:
++
++__FINIT
