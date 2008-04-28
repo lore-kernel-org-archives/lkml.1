@@ -1,63 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964961AbYD1Pjn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936362AbYD1Pp6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964961AbYD1Pjn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 11:39:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935850AbYD1PjE
+	id S936362AbYD1Pp6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 11:45:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934242AbYD1PkH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 11:39:04 -0400
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:59565 "EHLO smtp6.pp.htv.fi"
+	Mon, 28 Apr 2008 11:40:07 -0400
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:59648 "EHLO smtp6.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935735AbYD1PjC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 11:39:02 -0400
-Date: Mon, 28 Apr 2008 18:38:29 +0300
+	id S935969AbYD1PkD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Apr 2008 11:40:03 -0400
+Date: Mon, 28 Apr 2008 18:39:30 +0300
 From: Adrian Bunk <bunk@kernel.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Alexander van Heukelum <heukelum@mailshack.com>, jdike@addtoit.com
-Subject: [2.6 patch] fs/buffer.c:init_buffer() mustn't be inline
-Message-ID: <20080428153829.GB2813@cs181133002.pp.htv.fi>
-References: <20080424215739.GA32378@elte.hu> <alpine.LFD.1.10.0804241510420.2779@woody.linux-foundation.org> <20080426151516.GA27894@elte.hu> <alpine.LFD.1.10.0804260955300.2813@woody.linux-foundation.org> <20080426172222.GD17345@elte.hu>
+To: Guennadi Liakhovetski <g.liakhovetski@pengutronix.de>,
+       Mauro Carvalho Chehab <mchehab@infradead.org>
+Cc: v4l-dvb-maintainer@linuxtv.org, linux-kernel@vger.kernel.org
+Subject: [2.6 patch] make mt9{m001,v022}_controls[] static
+Message-ID: <20080428153930.GO2813@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20080426172222.GD17345@elte.hu>
 User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch fixes the following build error with UML and gcc 4.3:
-
-<--  snip  -->
-
-...
-  CC      fs/buffer.o
-/home/bunk/linux/kernel-2.6/git/linux-2.6/fs/buffer.c: In function ‘init_page_buffers’:
-/home/bunk/linux/kernel-2.6/git/linux-2.6/fs/buffer.c:51: sorry, unimplemented: inlining failed in call to ‘init_buffer’: function body not available
-/home/bunk/linux/kernel-2.6/git/linux-2.6/fs/buffer.c:1007: sorry, unimplemented: called from here
-make[2]: *** [fs/buffer.o] Error 1
-
-<--  snip  -->
+This patch makes the needlessly global mt9{m001,v022}_controls[] static.
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
-922267dbec9ea632537ab61ef9cb2d0d5f9d8f9e diff --git a/fs/buffer.c b/fs/buffer.c
-index 39ff144..d74743d 100644
---- a/fs/buffer.c
-+++ b/fs/buffer.c
-@@ -46,8 +46,7 @@ static int fsync_buffers_list(spinlock_t *lock, struct list_head *list);
+
+ drivers/media/video/mt9m001.c |    2 +-
+ drivers/media/video/mt9v022.c |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+d7560162fe24391e091574b08b25ac124369fb7b diff --git a/drivers/media/video/mt9m001.c b/drivers/media/video/mt9m001.c
+index 3fb5f63..04864cf 100644
+--- a/drivers/media/video/mt9m001.c
++++ b/drivers/media/video/mt9m001.c
+@@ -372,7 +372,7 @@ static int mt9m001_set_register(struct soc_camera_device *icd,
+ }
+ #endif
  
- #define BH_ENTRY(list) list_entry((list), struct buffer_head, b_assoc_buffers)
+-const struct v4l2_queryctrl mt9m001_controls[] = {
++static const struct v4l2_queryctrl mt9m001_controls[] = {
+ 	{
+ 		.id		= V4L2_CID_VFLIP,
+ 		.type		= V4L2_CTRL_TYPE_BOOLEAN,
+diff --git a/drivers/media/video/mt9v022.c b/drivers/media/video/mt9v022.c
+index d4b9e27..597df65 100644
+--- a/drivers/media/video/mt9v022.c
++++ b/drivers/media/video/mt9v022.c
+@@ -452,7 +452,7 @@ static int mt9v022_set_register(struct soc_camera_device *icd,
+ }
+ #endif
  
--inline void
--init_buffer(struct buffer_head *bh, bh_end_io_t *handler, void *private)
-+void init_buffer(struct buffer_head *bh, bh_end_io_t *handler, void *private)
- {
- 	bh->b_end_io = handler;
- 	bh->b_private = private;
+-const struct v4l2_queryctrl mt9v022_controls[] = {
++static const struct v4l2_queryctrl mt9v022_controls[] = {
+ 	{
+ 		.id		= V4L2_CID_VFLIP,
+ 		.type		= V4L2_CTRL_TYPE_BOOLEAN,
 
