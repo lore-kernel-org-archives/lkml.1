@@ -1,54 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935900AbYD1Rkt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964845AbYD1RlS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935900AbYD1Rkt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 13:40:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935311AbYD1RkM
+	id S964845AbYD1RlS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 13:41:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935739AbYD1Rkn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 13:40:12 -0400
-Received: from mga09.intel.com ([134.134.136.24]:4592 "EHLO mga09.intel.com"
+	Mon, 28 Apr 2008 13:40:43 -0400
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:42201 "EHLO smtp5.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935190AbYD1RkI convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 13:40:08 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,717,1199692800"; 
-   d="scan'208";a="322228340"
-Content-class: urn:content-classes:message
+	id S935709AbYD1Rkm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Apr 2008 13:40:42 -0400
+Date: Mon, 28 Apr 2008 20:40:08 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Yasunori Goto <y-goto@jp.fujitsu.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: [2.6 patch] mm/memory_hotplug.c must #include "internal.h"
+Message-ID: <20080428174008.GX2813@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-x-mimeole: Produced By Microsoft Exchange V6.5
-Subject: RE: [stable] [PATCH] ARCH 2.6.25.y: Fix 32-bit x86 MSI-Xallocation leakage
-Date: Mon, 28 Apr 2008 10:39:57 -0700
-Message-ID: <D5C1322C3E673F459512FB59E0DDC32904F9EA21@orsmsx414.amr.corp.intel.com>
-In-Reply-To: <20080428173801.GA933@kroah.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [stable] [PATCH] ARCH 2.6.25.y: Fix 32-bit x86 MSI-Xallocation leakage
-Thread-Index: AcipVqew/HOYmOsaRzyZst3rqGDuQQAABTlw
-References: <20080426010025.7212.3940.stgit@scrappy.jf.intel.com> <20080428173801.GA933@kroah.com>
-From: "Waskiewicz Jr, Peter P" <peter.p.waskiewicz.jr@intel.com>
-To: "Greg KH" <greg@kroah.com>
-Cc: <stable@kernel.org>, <linux-kernel@vger.kernel.org>,
-       <netdev@vger.kernel.org>
-X-OriginalArrivalTime: 28 Apr 2008 17:39:54.0604 (UTC) FILETIME=[DE8BBAC0:01C8A956]
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> When sending patches to -stable, please add "CC: stable 
-> <stable@kernel.org> to the patch itself in the signed-off-by 
-> area, that way we get notified automatically when it goes 
-> into Linus's tree so that we can then know to apply it to the 
-> tree.  Otherwise it's a tough job to try to track all of 
-> these knowing when to watch out for them to be committed.
-> 
-> Can you please resend them to stable@kernel.org when they do 
-> go into Linus's tree?
+This patch fixes the following compile error caused by
+commit 04753278769f3b6c3b79a080edb52f21d83bf6e2
+(memory hotplug: register section/node id to free):
 
-Sure thing.
+<--  snip  -->
 
-Thanks Greg,
+...
+  CC      mm/memory_hotplug.o
+/home/bunk/linux/kernel-2.6/git/linux-2.6/mm/memory_hotplug.c: In function ‘put_page_bootmem’:
+/home/bunk/linux/kernel-2.6/git/linux-2.6/mm/memory_hotplug.c:82: error: implicit declaration of function ‘__free_pages_bootmem’
+/home/bunk/linux/kernel-2.6/git/linux-2.6/mm/memory_hotplug.c: At top level:
+/home/bunk/linux/kernel-2.6/git/linux-2.6/mm/memory_hotplug.c:87: warning: no previous prototype for ‘register_page_bootmem_info_section’
+make[2]: *** [mm/memory_hotplug.o] Error 1
 
--PJ Waskiewicz
+<--  snip  -->
+
+Signed-off-by: Adrian Bunk <bunk@kernel.org>
+
+---
+17f56d2d66ee41f504fcf0394687953c41afb8a4 diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
+index c4ba85c..b17dca7 100644
+--- a/mm/memory_hotplug.c
++++ b/mm/memory_hotplug.c
+@@ -29,6 +29,8 @@
+ 
+ #include <asm/tlbflush.h>
+ 
++#include "internal.h"
++
+ /* add this memory to iomem resource */
+ static struct resource *register_memory_resource(u64 start, u64 size)
+ {
+
