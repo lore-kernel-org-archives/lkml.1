@@ -1,104 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934478AbYD1OKr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934671AbYD1OLk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934478AbYD1OKr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 10:10:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933360AbYD1OKj
+	id S934671AbYD1OLk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 10:11:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765642AbYD1OLb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 10:10:39 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:40766 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933228AbYD1OKi (ORCPT
+	Mon, 28 Apr 2008 10:11:31 -0400
+Received: from mail164.messagelabs.com ([216.82.253.131]:20859 "EHLO
+	mail164.messagelabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763151AbYD1OLa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 10:10:38 -0400
-Date: Mon, 28 Apr 2008 07:10:06 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "David S. Miller" <davem@davemloft.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [patch] x86, voyager: fix ioremap_nocache()
-Message-ID: <20080428071006.5ce27533@laptopd505.fenrus.org>
-In-Reply-To: <4815009C.2010809@garzik.org>
-References: <1209329485.3801.46.camel@localhost.localdomain>
-	<20080427214837.GA11631@elte.hu>
-	<1209335660.3801.79.camel@localhost.localdomain>
-	<4815009C.2010809@garzik.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Mon, 28 Apr 2008 10:11:30 -0400
+X-VirusChecked: Checked
+X-Env-Sender: Uwe.Kleine-Koenig@digi.com
+X-Msg-Ref: server-6.tower-164.messagelabs.com!1209391885!6539425!1
+X-StarScan-Version: 5.5.12.14.2; banners=-,-,-
+X-Originating-IP: [66.77.174.14]
+Date: Mon, 28 Apr 2008 16:11:16 +0200
+From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <Uwe.Kleine-Koenig@digi.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+CC: <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] let setup_irq reenable a shared irq
+Message-ID: <20080428141116.GB9048@digi.com>
+References: <1209381171-5520-1-git-send-email-Uwe.Kleine-Koenig@digi.com> <alpine.LFD.1.10.0804281443090.3261@apollo.tec.linutronix.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <alpine.LFD.1.10.0804281443090.3261@apollo.tec.linutronix.de>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-OriginalArrivalTime: 28 Apr 2008 14:11:17.0104 (UTC) FILETIME=[B988CF00:01C8A939]
+X-TM-AS-Product-Ver: SMEX-8.0.0.1181-5.500.1026-15876.007
+X-TM-AS-Result: No--14.837000-8.000000-31
+X-TM-AS-User-Approved-Sender: No
+X-TM-AS-User-Blocked-Sender: No
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 27 Apr 2008 18:39:24 -0400
-Jeff Garzik <jeff@garzik.org> wrote:
+Hello,
 
-> James Bottomley wrote:
-> > Here's another piece of the x86 API that's designed to be cached.
-> > The dma_declare_coherent_memory() usually represents behind bridge
-> > memory that's fully participatory in the coherence model.
-> > 
-> > Making it uncached damages the utility of this memory because doing
-> > cacheline sized burst cycles when needed to it is far faster than
-> > individual byte/word/quad writes.
-> > 
-> > Signed-off-by: James Bottomley
-> > <James.Bottomley@HansenPartnership.com>
-> > 
-> > ---
-> > 
-> > diff --git a/arch/x86/kernel/pci-dma.c b/arch/x86/kernel/pci-dma.c
-> > index 388b113..df83ffd 100644
-> > --- a/arch/x86/kernel/pci-dma.c
-> > +++ b/arch/x86/kernel/pci-dma.c
-> > @@ -214,7 +214,7 @@ int dma_declare_coherent_memory(struct device
-> > *dev, dma_addr_t bus_addr, 
-> >  	/* FIXME: this routine just ignores
-> > DMA_MEMORY_INCLUDES_CHILDREN */ 
-> > -	mem_base = ioremap(bus_addr, size);
-> > +	mem_base = ioremap_cache(bus_addr, size);
-> >  	if (!mem_base)
-> >  		goto out;
-
-this patch patch is likely broken on x86; or rather, anyone who uses it is...
-thinking you can find cache coherent memory on a PCI or similar bus that is actually
-cachable... keep dreaming. (for now; there's talk about extending PCI)
-
-
-> I would rather change drivers to use ioremap_nocache(), and leave the 
-> API as-is.
+Thomas Gleixner wrote:
+> On Mon, 28 Apr 2008, Uwe Kleine-König wrote:
+> > Consider two devices A and B sharing an irq and B already asserts the irq on
+> > a booting machine.
+> > If the driver for A is loaded first the irq starts triggering and gets
+> > disabled after some time by note_interrupt().  Later when the driver for B
+> > is loaded the interrupt should be reenabled---other wise both A and B don't
+> > work properly.
 > 
-> Isn't there Yet More Breakage in lib/iomap.c, given these new
-> semantics?
+> Oh no. There is lots of code in drivers, which does:
 > 
->          if (flags & IORESOURCE_MEM) {
->                  if (flags & IORESOURCE_CACHEABLE)
->                          return ioremap(start, len);
->                  return ioremap_nocache(start, len);
->          }
+>    disable_irq();
+>    do_some_protected_stuff();
+>    enable_irq();
 > 
-> Any driver using pci_iomap() (libata, and others) is affected.
+> So when the second driver is loaded on another CPU it would see the
+> IRQ_DISABLED bit set and unconditionally reenable the interrupt. 
+> 
+> This unprotects the protected operation and definitely triggers the
+> WARN_ON() in enable_irq() where we check for desc->depth == 0.
+mmpf.
 
-only if you map ROM's. Anything but ROMs you cannot set IORESOURCE_CACHEABLE
-on... since PCI MMIO memory isn't cache coherent per se. (it's cache coherent on
-x86 by virtue of being uncachable ;-)
-Thankfully Linux doesn't do that.
+It's not nice to use disable_irq()/enable_irq() in a driver, is it?
+ 
+> I can see the rationale for your patch, as we have no way to silence
+> stupid hardware or hardware which was left in that state by the BIOS
+> other than disabling the interrupt line completely.
+> 
+> Waht kind of scenario/devices do you have which trigger this ?
+It's a ns9215 SoC.  The rtc component has a clock flag that I need to
+set before accessing the address space.  After enabling the clock flag
+I get an irq if the rtc is up.  The rtc itself uses the same irq.  As I
+want to handle the clk enabling in platform code and the actual rtc in a
+driver I need a shared irq.
+Now the problem is that the rtc remembers its alarm flags over
+reboots[1] and starts asserting the irq when the platform code has
+requested the irq.
 
-> I disagree with this semantics change.  A number of code places _and 
-> drivers_ GET IT RIGHT, and these are all broken now?
+I currently see two ways to handle that:
+ 1) find an alternative patch similar to the one I sent that don't break
+    driver code; or
+ 2) let the platform code disable the rtc's irqs.
 
-Can you list one that gets it actually right ?
-(cachable pretty much means: "the cpu is the only one changing it AND there is no side effect of 
-reading or writing")
+for 1) you need to remember the reason for disabling the irq (or fix all
+drivers not to use disable_irq()).  And 2) is ugly because I have to
+ioremap then.
+
+Best regards
+Uwe
+
+[1] not entirely sure, but I had the rtc in a state in which the rtc
+component asserted an irq directly after a reset.
 
 -- 
-If you want to reach me at my work email, use arjan@linux.intel.com
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+Uwe Kleine-König, Software Engineer
+Digi International GmbH Branch Breisach, Küferstrasse 8, 79206 Breisach, Germany
+Tax: 315/5781/0242 / VAT: DE153662976 / Reg. Amtsgericht Dortmund HRB 13962
