@@ -1,48 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965503AbYD1Pr5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965589AbYD1Psi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965503AbYD1Pr5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 11:47:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935470AbYD1Pk1
+	id S965589AbYD1Psi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 11:48:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964991AbYD1Pkb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 11:40:27 -0400
-Received: from outbound-mail-36.bluehost.com ([69.89.20.190]:45612 "HELO
-	outbound-mail-36.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S935133AbYD1PkY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 11:40:24 -0400
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Matti Linnanvuori <mattilinnanvuori@yahoo.com>
-Subject: Re: [patch v3] doc: DMA-mapping.txt has undeclared variables [Bug 10397]
-Date: Mon, 28 Apr 2008 08:33:37 -0700
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
-       grundler@parisc-linux.org
-References: <987999.8753.qm@web52011.mail.re2.yahoo.com>
-In-Reply-To: <987999.8753.qm@web52011.mail.re2.yahoo.com>
+	Mon, 28 Apr 2008 11:40:31 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:49172 "EHLO smtp4.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S935649AbYD1Pk2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Apr 2008 11:40:28 -0400
+Date: Mon, 28 Apr 2008 18:39:55 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Trond Myklebust <Trond.Myklebust@netapp.com>
+Cc: linux-nfs@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [2.6 patch] make nfs4_drop_state_owner() static
+Message-ID: <20080428153955.GS2813@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Message-Id: <200804280833.38130.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, April 28, 2008 5:58 am Matti Linnanvuori wrote:
-> From: Matti Linnanvuori <mattilinnanvuori@yahoo.com>
->
-> Consistently use pdev as the variable of type struct pci_dev *.
-> Update DMA mapping documentation to use 'pdev' rather than 'dev' in
-> example code that calls routines expecting 'struct pci_device *', since
-> 'dev' might make readers think they're passing 'struct device *'
-> parameters. Bug 10397.
->
-> Signed-off-by: Matti Linnanvuori <mattilinnanvuori@yahoo.com>
+nfs4_drop_state_owner() can now become static.
 
-Looks like your mailer or cut & paste corrupted the whitespace in this patch.  
-Care to send another as an attachment?
+Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
-Thanks,
-Jesse
+---
+
+ fs/nfs/nfs4_fs.h   |    1 -
+ fs/nfs/nfs4state.c |    2 +-
+ 2 files changed, 1 insertion(+), 2 deletions(-)
+
+c13c9c023ace63d07e04e85ed60bab169abbeabc diff --git a/fs/nfs/nfs4_fs.h b/fs/nfs/nfs4_fs.h
+index bd1b9d6..ea79064 100644
+--- a/fs/nfs/nfs4_fs.h
++++ b/fs/nfs/nfs4_fs.h
+@@ -206,7 +206,6 @@ struct rpc_cred *nfs4_get_renew_cred(struct nfs_client *clp);
+ 
+ extern struct nfs4_state_owner * nfs4_get_state_owner(struct nfs_server *, struct rpc_cred *);
+ extern void nfs4_put_state_owner(struct nfs4_state_owner *);
+-extern void nfs4_drop_state_owner(struct nfs4_state_owner *);
+ extern struct nfs4_state * nfs4_get_open_state(struct inode *, struct nfs4_state_owner *);
+ extern void nfs4_put_open_state(struct nfs4_state *);
+ extern void nfs4_close_state(struct path *, struct nfs4_state *, mode_t);
+diff --git a/fs/nfs/nfs4state.c b/fs/nfs/nfs4state.c
+index 46eb624..da76c2e 100644
+--- a/fs/nfs/nfs4state.c
++++ b/fs/nfs/nfs4state.c
+@@ -282,7 +282,7 @@ nfs4_alloc_state_owner(void)
+ 	return sp;
+ }
+ 
+-void
++static void
+ nfs4_drop_state_owner(struct nfs4_state_owner *sp)
+ {
+ 	if (!RB_EMPTY_NODE(&sp->so_client_node)) {
+
