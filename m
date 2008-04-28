@@ -1,146 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762814AbYD1EoX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757308AbYD1EtL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762814AbYD1EoX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 00:44:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750865AbYD1EoP
+	id S1757308AbYD1EtL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 00:49:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751054AbYD1Es6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 00:44:15 -0400
-Received: from ozlabs.org ([203.10.76.45]:40996 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750845AbYD1EoO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 00:44:14 -0400
-MIME-Version: 1.0
+	Mon, 28 Apr 2008 00:48:58 -0400
+Received: from e28smtp05.in.ibm.com ([59.145.155.5]:55495 "EHLO
+	e28smtp05.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750845AbYD1Es5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Apr 2008 00:48:57 -0400
+Date: Mon, 28 Apr 2008 10:18:54 +0530
+From: "K. Prasad" <prasad@linux.vnet.ibm.com>
+To: Michael Ellerman <michael@ellerman.id.au>
+Cc: prasad@linux.vnet.ibm.com, dwilder@us.ibm.com,
+       linux-kernel@vger.kernel.org, mathieu.desnoyers@polymtl.ca,
+       hunt@redhat.com, dave@linux.vnet.ibm.com
+Subject: Re: [RFC Patch 1/1] debugfs_printk and debugfs_dump interface
+Message-ID: <20080428044854.GA5437@in.ibm.com>
+Reply-To: prasad@linux.vnet.ibm.com
+References: <20080415111459.GB5295@in.ibm.com> <20080415112603.GA5770@in.ibm.com> <48066EBE.3040608@us.ibm.com> <20080421124329.GA14118@in.ibm.com> <4810FA44.9060402@us.ibm.com> <20080425074200.GA8600@in.ibm.com> <20080425081959.GA15011@in.ibm.com> <1209343851.8118.1.camel@localhost>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18453.22040.750843.373369@cargo.ozlabs.ibm.com>
-Date: Mon, 28 Apr 2008 14:44:08 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Subject: [POWERPC] Use __always_inline for xchg* and cmpxchg*
-X-Mailer: VM 7.19 under Emacs 22.1.1
+Content-Disposition: inline
+In-Reply-To: <1209343851.8118.1.camel@localhost>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This changes the definitions of the xchg and cmpxchg families of
-functions in include/asm-powerpc/system.h to be marked __always_inline
-rather than __inline__.  The reason for doing this is that we rely on
-the compiler inlining them in order to eliminate the references to 
-__xchg_called_with_bad_pointer and __cmpxchg_called_with_bad_pointer,
-which are deliberately left undefined.  Thus this change will enable
-us to make the inline keyword be just a hint rather than a directive.
+On Mon, Apr 28, 2008 at 10:50:51AM +1000, Michael Ellerman wrote:
+> On Fri, 2008-04-25 at 13:49 +0530, K. Prasad wrote:
+> > On Fri, Apr 25, 2008 at 01:12:00PM +0530, K. Prasad wrote:
+> > > Please find the new patch below.
+> > > > 
+> > Let the email slip through a little early. Please find the revised
+> > patch below.
+> > 
+> > Thanks,
+> > K.Prasad
+> > 
+> > This patch introduces two new interfaces called debugfs_printk and 
+> > debugfs_dump which can be used to print to the debugfs mount directly.
+> > It uses the 'trace' infrastructure underneath and is a patch over it.
+> > A sample file is also created to demonstrate its ease of use.
+> 
+> I still think debugfs_printk() is not the right name, as it is not part
+> of the existing family of debugfs_* routines.
+Whether to call it trace_printk() and trace_dump() is a suggestion I
+would like to ask David Wilder (and others). Let me know if you think
+there are better names.
 
-Signed-off-by: Paul Mackerras <paulus@samba.org>
----
-diff --git a/include/asm-powerpc/system.h b/include/asm-powerpc/system.h
-index fab1674..2b6559a 100644
---- a/include/asm-powerpc/system.h
-+++ b/include/asm-powerpc/system.h
-@@ -204,7 +204,7 @@ extern int powersave_nap;	/* set if nap mode can be used in idle loop */
-  * Changes the memory location '*ptr' to be val and returns
-  * the previous value stored there.
-  */
--static __inline__ unsigned long
-+static __always_inline unsigned long
- __xchg_u32(volatile void *p, unsigned long val)
- {
- 	unsigned long prev;
-@@ -229,7 +229,7 @@ __xchg_u32(volatile void *p, unsigned long val)
-  * Changes the memory location '*ptr' to be val and returns
-  * the previous value stored there.
-  */
--static __inline__ unsigned long
-+static __always_inline unsigned long
- __xchg_u32_local(volatile void *p, unsigned long val)
- {
- 	unsigned long prev;
-@@ -247,7 +247,7 @@ __xchg_u32_local(volatile void *p, unsigned long val)
- }
- 
- #ifdef CONFIG_PPC64
--static __inline__ unsigned long
-+static __always_inline unsigned long
- __xchg_u64(volatile void *p, unsigned long val)
- {
- 	unsigned long prev;
-@@ -266,7 +266,7 @@ __xchg_u64(volatile void *p, unsigned long val)
- 	return prev;
- }
- 
--static __inline__ unsigned long
-+static __always_inline unsigned long
- __xchg_u64_local(volatile void *p, unsigned long val)
- {
- 	unsigned long prev;
-@@ -290,7 +290,7 @@ __xchg_u64_local(volatile void *p, unsigned long val)
-  */
- extern void __xchg_called_with_bad_pointer(void);
- 
--static __inline__ unsigned long
-+static __always_inline unsigned long
- __xchg(volatile void *ptr, unsigned long x, unsigned int size)
- {
- 	switch (size) {
-@@ -305,7 +305,7 @@ __xchg(volatile void *ptr, unsigned long x, unsigned int size)
- 	return x;
- }
- 
--static __inline__ unsigned long
-+static __always_inline unsigned long
- __xchg_local(volatile void *ptr, unsigned long x, unsigned int size)
- {
- 	switch (size) {
-@@ -338,7 +338,7 @@ __xchg_local(volatile void *ptr, unsigned long x, unsigned int size)
-  */
- #define __HAVE_ARCH_CMPXCHG	1
- 
--static __inline__ unsigned long
-+static __always_inline unsigned long
- __cmpxchg_u32(volatile unsigned int *p, unsigned long old, unsigned long new)
- {
- 	unsigned int prev;
-@@ -361,7 +361,7 @@ __cmpxchg_u32(volatile unsigned int *p, unsigned long old, unsigned long new)
- 	return prev;
- }
- 
--static __inline__ unsigned long
-+static __always_inline unsigned long
- __cmpxchg_u32_local(volatile unsigned int *p, unsigned long old,
- 			unsigned long new)
- {
-@@ -384,7 +384,7 @@ __cmpxchg_u32_local(volatile unsigned int *p, unsigned long old,
- }
- 
- #ifdef CONFIG_PPC64
--static __inline__ unsigned long
-+static __always_inline unsigned long
- __cmpxchg_u64(volatile unsigned long *p, unsigned long old, unsigned long new)
- {
- 	unsigned long prev;
-@@ -406,7 +406,7 @@ __cmpxchg_u64(volatile unsigned long *p, unsigned long old, unsigned long new)
- 	return prev;
- }
- 
--static __inline__ unsigned long
-+static __always_inline unsigned long
- __cmpxchg_u64_local(volatile unsigned long *p, unsigned long old,
- 			unsigned long new)
- {
-@@ -432,7 +432,7 @@ __cmpxchg_u64_local(volatile unsigned long *p, unsigned long old,
-    if something tries to do an invalid cmpxchg().  */
- extern void __cmpxchg_called_with_bad_pointer(void);
- 
--static __inline__ unsigned long
-+static __always_inline unsigned long
- __cmpxchg(volatile void *ptr, unsigned long old, unsigned long new,
- 	  unsigned int size)
- {
-@@ -448,7 +448,7 @@ __cmpxchg(volatile void *ptr, unsigned long old, unsigned long new,
- 	return old;
- }
- 
--static __inline__ unsigned long
-+static __always_inline unsigned long
- __cmpxchg_local(volatile void *ptr, unsigned long old, unsigned long new,
- 	  unsigned int size)
- {
+Thanks,
+K.Prasad
+
