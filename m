@@ -1,58 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965262AbYD1Sqa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965910AbYD1StV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965262AbYD1Sqa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 14:46:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934255AbYD1SqR
+	id S965910AbYD1StV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 14:49:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965529AbYD1Ss6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 14:46:17 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:58895 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933507AbYD1SqQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 14:46:16 -0400
-Date: Mon, 28 Apr 2008 20:45:55 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Alexander van Heukelum <heukelum@mailshack.com>
-Cc: Alexander van Heukelum <heukelum@fastmail.fm>,
-       LKML <linux-kernel@vger.kernel.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH] x86: move i386 memory setup code to e820_32.c
-Message-ID: <20080428184555.GB4491@elte.hu>
-References: <20080423130905.GA7347@mailshack.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080423130905.GA7347@mailshack.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Mon, 28 Apr 2008 14:48:58 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:38107 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S964908AbYD1Ss5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Apr 2008 14:48:57 -0400
+Date: Mon, 28 Apr 2008 11:47:58 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+Subject: Re: [patch 00/37] Linux Kernel Markers instrumentation for
+ sched-devel.git
+Message-Id: <20080428114758.bcc08eef.akpm@linux-foundation.org>
+In-Reply-To: <20080428184050.GA23391@infradead.org>
+References: <20080424150324.802695381@polymtl.ca>
+	<1209238735.6441.4.camel@lappy>
+	<20080428113610.b2d1e8e4.akpm@linux-foundation.org>
+	<20080428184050.GA23391@infradead.org>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 28 Apr 2008 14:40:51 -0400 Christoph Hellwig <hch@infradead.org> wrote:
 
-* Alexander van Heukelum <heukelum@mailshack.com> wrote:
+> On Mon, Apr 28, 2008 at 11:36:10AM -0700, Andrew Morton wrote:
+> > It hides the cosmetically-ugly bits, but not the deeply ugly: each of these
+> > trace points is an extension to the kernel->userspace API, with all that
+> > this implies.
+> 
+> Not at all.  It's only accessibe to kernel code, so it per defintion
+> can't be a userspace API.
 
-> The x86_64 code has centralized the memory setup code in e820_64.c. 
-> This patch copies that approach to i386:
-> 
-> - early_param("mem", ...) parsing is moved from
-> setup_32.c to e820_32.c.
-> 
-> - setup_memory_map() and finish_e820_parsing() are
-> factored out from setup_arch(), and declarations
-> are added to e820_32.h.
-> 
-> - print_memory_map() is made static and removed from
-> e820_32.h.
-> 
-> - user_defined_memmap is marked as __initdata.
-
-applied, thanks Alexander.
-
-	Ingo
+eh?  It adds human-readable printk strings.
