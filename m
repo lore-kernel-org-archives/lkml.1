@@ -1,32 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765110AbYD1Ax4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762678AbYD1BYR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765110AbYD1Ax4 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Apr 2008 20:53:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753117AbYD1Axo
+	id S1762678AbYD1BYR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Apr 2008 21:24:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752034AbYD1BYI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Apr 2008 20:53:44 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:40137 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751274AbYD1Axm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Apr 2008 20:53:42 -0400
-Message-ID: <48151F15.7050606@redhat.com>
-Date: Sun, 27 Apr 2008 20:49:25 -0400
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Sun, 27 Apr 2008 21:24:08 -0400
+Received: from yw-out-2324.google.com ([74.125.46.31]:1902 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751999AbYD1BYF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Apr 2008 21:24:05 -0400
+Message-ID: <48152747.4030107@larces.uece.br>
+Date: Sun, 27 Apr 2008 22:24:23 -0300
+From: Sergio Luis <sergio@larces.uece.br>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Andi Kleen <andi@firstfloor.org>,
-       Ingo Molnar <mingo@elte.hu>, Jiri Slaby <jirislaby@gmail.com>,
-       David Miller <davem@davemloft.net>, zdenek.kabelac@gmail.com,
-       rjw@sisk.pl, paulmck@linux.vnet.ibm.com, akpm@linux-foundation.org,
-       linux-ext4@vger.kernel.org, herbert@gondor.apana.org.au,
-       penberg@cs.helsinki.fi, clameter@sgi.com, linux-kernel@vger.kernel.org,
-       pageexec@freemail.hu
-Subject: Re: [PATCH 1/1] x86: fix text_poke
-References: <alpine.LFD.1.10.0804250904560.2779@woody.linux-foundation.org> <20080425161916.GD3265@one.firstfloor.org> <20080425163035.GE9503@Krystal> <481209F2.4050908@zytor.com> <20080425170929.GA16180@Krystal> <20080425183748.GB16180@Krystal> <48123C9B.9020306@zytor.com> <20080425203717.GB25950@Krystal> <481241DC.3070601@zytor.com> <alpine.LFD.1.10.0804251349510.2779@woody.linux-foundation.org> <20080425211205.GC25950@Krystal> <4812D09D.6010901@goop.org>
-In-Reply-To: <4812D09D.6010901@goop.org>
+To: Ken Moffat <zarniwhoop@ntlworld.com>
+CC: Bart Van Assche <bart.vanassche@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Glauber Costa <gcosta@redhat.com>
+Subject: Re: 2.6.25 slow boot/reboot
+References: <48141111.7010605@larces.uece.br> <e2e108260804270823t45611ec2t35da085833d82dfa@mail.gmail.com> <20080427235554.GA28344@deepthought>
+In-Reply-To: <20080427235554.GA28344@deepthought>
 X-Enigmail-Version: 0.95.6
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
@@ -34,60 +29,73 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge wrote:
-> Mathieu Desnoyers wrote:
->> * Linus Torvalds (torvalds@linux-foundation.org) wrote:
->>   
->>> On Fri, 25 Apr 2008, H. Peter Anvin wrote:
->>>     
->>>> Yes, that should work.  It's still ugly, and I have to say I find the
->>>> complexity rather distasteful.  I am willing to be convinced it's worth it,
->>>> but I would really like to see hard numbers.
->>>>       
->>> I really cannot imagine that this kind of pain is *ever* worth it. 
->>>
->>> Please give an example of something so important that we'd want to do 
->>> complex code rewriting on the fly. What _is_ the point of imv_cond()?
->>>
->>> 		Linus
->>>     
->> The point is to provide a way to dynamically enable code at runtime
->> without noticeable performance impact on the system. It's principally
->> useful to control the markers in the kernel, which can be placed in very
->> frequently executed code paths. The original markers add a memory read,
->> test and conditional branch at each marker site. By using the immediate
->> values patchset, it goes down to a load immediate value, test and branch.
+Ken Moffat wrote:
+> On Sun, Apr 27, 2008 at 05:23:57PM +0200, Bart Van Assche wrote:
+>> On Sun, Apr 27, 2008 at 7:37 AM, Sergio Luis <sergio@larces.uece.br> wrote:
+>>>  This weekend I got some time and decided to try out 2.6.25, but its booting process was _really_ slow in my laptop[1]. With 'old' 2.6.24.5 my machine would take about 48 secs until it gave me the login prompt. And it would take about 22 seconds to reboot.
+>> Do you use LILO or GRUB for booting ? 2.6.25 works OK on the systems I
+>> tested, but LILO really needs a lot of time to load the 2.6.25 kernel.
+>> GRUB loads the 2.6.25 kernel at normal speed.
 >>
->> However, Ingo was still unhappy with the conditional branch, so I cooked
->> this jump patching optimization on top of the immediate values. 
+>> Bart.
+>  ISTR that an _old_ version of lilo was mentioned earlier in this
+> thread.  As a datapoint, on my one desktop box which uses lilo (an
+> athlon64 uniprocessor) both 32 and 64-bit 2.6.25 kernels boot fine.
+> Both of those systems are with lilo-22.8, and gcc-4.2.2.
 > 
-> I think all this demonstrates that the conditional branch is a bearable 
-> cost compared to the alternative.  A conditional branch which almost 
-> always branches the same way is very predictable, and really shouldn't 
-> cost very much.
+>  But, I think you (Bart) haven't said which version of lilo you are
+> using ?  If it isn't recent, perhaps upgrading it might help ?
+> 
+>  For Sergio, you have my sympathy.  I totally failed to bisect my own
+> problem with 2.6.25-rc (and 2.6.24.1), although I did find the problem
+> by other means, and got a work-around, so I'm not competent to
+> diagnose what is wrong, but maybe I can help to tease out what is
+> different about your box.  As a start, you could try diffing your
+> config's for 2.6.24.5 and 2.6.25 in case something odd has changed.
+> 
 
-I agree with you.
+I tried bisecting and after some hours I got 
+9713277607f9eac7d655c6854dd92bc2ce1b6f02 as first bad commit
 
-When I measured the performance of a tracer (LKST) which used conditional
-branches, the overhead of the conditional branch itself was very small
-(less than 1%).
-Moreover, some benchmarks showed the performance of the patched kernel
-became ~1% faster than before :-) (I guessed that came from changing of
-memory access pattern and timing.)
+commit 9713277607f9eac7d655c6854dd92bc2ce1b6f02
+Author: Glauber de Oliveira Costa <gcosta@redhat.com>
+Date:   Wed Mar 19 14:25:43 2008 -0300
 
-I think, if someone is considering about the actual performance impacts,
-we'd better discuss the effects of the individual trace points, based
-on the actual results of some benchmarks.
-Thus, we can improve it step by step.
+    x86: boot cpus from cpu_up, instead of prepare_cpus
 
-Thank you,
+    After all the infrastructure work, we're now prepared
+    to boot the cpus from cpu_up, and not from prepare_cpus.
+    So the difference between cold boot and hotplug is effectively
+    over, and the functions are used to the purposes they're meant to.
 
--- 
-Masami Hiramatsu
+    Signed-off-by: Glauber Costa <gcosta@redhat.com>
+    Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
-Software Engineer
-Hitachi Computer Products (America) Inc.
-Software Solutions Division
+(cc'ing Glauber and Ingo, maybe they can help)
 
-e-mail: mhiramat@redhat.com
+>  Or, perhaps this is a problem specific to a certain processor ?  So
+> far, I think all the list knows is that you have a problem, and an
+> old version of lilo.  More data might eventually help to identify
+> what is causing this.  If you have a fairly old version of lilo,
+> maybe you also have an old version of gcc ?
 
+lilo version is 22.8
+gcc version is 4.1.2
+the processor is an amd turion 64x2 2.0 ghz (tl-60) and I am building a 32bit kernel.
+please, let me know if more info is needed.
+
+> 
+>  For Bart too, which version(s) of gcc are you using on the systems
+> where lilo is slow to load, and which cpu(s) do you have there ?
+> 
+> Ken, who relies on lilo for his server, and gets worried by reports
+> of trouble with it.
+
+note lilo is indeed much slower than grub to start booting the kernel here, but I am 
+talking about this 2.6.25 kernel taking almost 5 min to finish the boot process (once it is
+actually started by the bootloader) when it would take less than 1 minute with 2.6.24.5 in
+this same machine.
+
+thanks,
+
+-sergio
