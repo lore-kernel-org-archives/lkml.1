@@ -1,68 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934035AbYD1MPz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933728AbYD1MUT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934035AbYD1MPz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 08:15:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932089AbYD1MPs
+	id S933728AbYD1MUT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 08:20:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764572AbYD1MUH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 08:15:48 -0400
-Received: from zone0.gcu-squad.org ([212.85.147.21]:46728 "EHLO
-	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765863AbYD1MPr (ORCPT
+	Mon, 28 Apr 2008 08:20:07 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:52397 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763424AbYD1MUG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 08:15:47 -0400
-Date: Mon, 28 Apr 2008 14:15:26 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Ulrich Drepper <drepper@redhat.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, i2c@lm-sensors.org
-Subject: Re: [i2c] i2c or eeprom enumeration problem
-Message-ID: <20080428141526.2f4e993f@hyperion.delvare>
-In-Reply-To: <20080428050515.fcc05689.akpm@linux-foundation.org>
-References: <4815509A.9040802@redhat.com>
-	<20080428050515.fcc05689.akpm@linux-foundation.org>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 28 Apr 2008 08:20:06 -0400
+Date: Mon, 28 Apr 2008 06:20:04 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: David Chinner <dgc@sgi.com>
+Cc: linux-kernel@vger.kernel.org, Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: Announce: Semaphore-Removal tree
+Message-ID: <20080428122004.GT14990@parisc-linux.org>
+References: <20080425170021.GH14990@parisc-linux.org> <20080428051040.GH103491721@sgi.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080428051040.GH103491721@sgi.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 28 Apr 2008 05:05:15 -0700, Andrew Morton wrote:
-> On Sun, 27 Apr 2008 21:20:42 -0700 Ulrich Drepper <drepper@redhat.com> wrote:
+On Mon, Apr 28, 2008 at 03:10:40PM +1000, David Chinner wrote:
+> On Fri, Apr 25, 2008 at 11:00:21AM -0600, Matthew Wilcox wrote:
+> > 
+> > It's been a Good Idea for a while to use mutexes instead of
+> > semaphores where possible.  Additional debuggability, better optimised,
+> > better-enforced semantics, etc.
+> > 
+> > Obviously, there are some places that can't be converted to mutexes.
+> > I'm not proposing blind changes. 
 > 
-> > -----BEGIN PGP SIGNED MESSAGE-----
-> > Hash: SHA1
-> > 
-> > On a NUMA system the eeprom interface in /sys
-> > 
-> >   /sys/bus/i2c/drivers/eeprom/*
-> > 
-> > do not list all the DRAM eeproms.  Only the DRAM from one node is
-> > listed.  I have a 4 socket system with all 16 banks filled and see only
-> > 4 entries.
-> > 
-> > My suspicion (without looking at any code) is that the list of i2c
-> > devices with eeproms is collected once and this happens only on one CPU.
-> >  I sees not to be dynamic since when I read the files with taskset
-> > restricting execution on certain sockets and cores the result doesn't
-> > change.
-> > 
-> > Is this known or expected (I hope not the latter)?  Where should I look
-> > at?  I assume that's in the i2c code?
-> > 
-> 
-> Let's cc the i2c list.
+> Matthew, what's the plan for code using semaphores that cannot be
+> easily converted to something else? e.g. XFS?
 
-Motherboard manufacturer and model?
+I'm glad you asked!
 
-Most likely the SMBus is multiplexed and each CPU gets it's own SMBus
-segment, as was seen on the Tyan S4882. The EEPROMs you see are the
-ones on the segment which happens to be active at boot time.
+Arjan, Ingo and I have been batting around something called a kcounter.
+I appear to have misplaced the patch right now, but the basic idea is
+that it returns you a cookie when you down(), which you then have to
+pass to the up()-equivalent.  This gives you at least some of the
+assurances you get from mutexes.
 
-The i2c subsystem (still) doesn't support that properly, although we
-have a quirk for the Tyan S4882 (see
-drivers/i2c/busses/i2c-amd756-s4882.c).
+Though ... looking at XFS, you have 5 counting semaphores currently:
+
+1. i_flock
+
+This one seems to be a mutex.  I'd need to immerse myself in XFS for a
+couple of days to verify that though -- there's a lot of places that use
+it, and it doesn't have obvious lock/unlock pairing.  Is it sometimes
+unlocked from a different thread than the one which locked it?  If so,
+kcounters might be the right thing to use here.
+
+2. l_flushsema
+
+This seems to be a completion.  ie you're using it to wait for the log
+to be flushed.
+
+3. q_flock
+
+Ow.  ow.  My brain hurts.  What are these semantics?
+
+4. b_iodonesema
+
+This should be a completion.  It's used to wait for the io to be
+complete.
+
+5. b_sema
+
+This looks like a mutex, but I think it's released in a different
+context from the one which acquires it.
+
+-----
+
+Possibly XFS should be using constructs like wait_on_bit instead of
+semaphores.  See the implementation of wait_on_buffer for an example.
 
 -- 
-Jean Delvare
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
