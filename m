@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966594AbYD1Whp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966833AbYD1Wij@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966594AbYD1Whp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 18:37:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964909AbYD1WgV
+	id S966833AbYD1Wij (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 18:38:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934799AbYD1WgW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 18:36:21 -0400
-Received: from g4t0017.houston.hp.com ([15.201.24.20]:9194 "EHLO
+	Mon, 28 Apr 2008 18:36:22 -0400
+Received: from g4t0017.houston.hp.com ([15.201.24.20]:9212 "EHLO
 	g4t0017.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934495AbYD1WgT (ORCPT
+	with ESMTP id S934507AbYD1WgU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 18:36:19 -0400
-Message-Id: <20080428223616.616114896@ldl.fc.hp.com>
+	Mon, 28 Apr 2008 18:36:20 -0400
+Message-Id: <20080428223617.027828411@ldl.fc.hp.com>
 References: <20080428223347.233593713@ldl.fc.hp.com>
 User-Agent: quilt/0.46-1
-Date: Mon, 28 Apr 2008 16:33:48 -0600
+Date: Mon, 28 Apr 2008 16:33:50 -0600
 From: Bjorn Helgaas <bjorn.helgaas@hp.com>
 To: Len Brown <lenb@kernel.org>
-Cc: linux-acpi@vger.kernel.org, Rene Herman <rene.herman@gmail.com>
+Cc: linux-acpi@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
 Cc: Adam Belay <ambx1@neo.rr.com>
 Cc: Adam M Belay <abelay@mit.edu>
@@ -26,53 +26,53 @@ Cc: Thomas Renninger <trenn@suse.de>
 Cc: Rene Herman <rene.herman@keyaccess.nl>
 Cc: Jaroslav Kysela <perex@perex.cz>
 Cc: Andrew Morton <akpm@linux-foundation.org>
-Subject: [patch 01/55] PNP: turn on -DDEBUG when CONFIG_PNP_DEBUG is set
-Content-Disposition: inline; filename=pnp-turn-on-debug-in-makefiles
+Subject: [patch 03/55] PNPACPI: continue after _CRS and _PRS errors
+Content-Disposition: inline; filename=pnpacpi-ignore-errors
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Turn on -DDEBUG in CFLAGS when CONFIG_PNP_DEBUG=y.  This makes
-dev_dbg() do what you expect.
+Keep going and register the device even if we have trouble parsing
+_CRS or _PRS.  A parsing problem might mean we ignore some resources
+the device is using, or we might not be able to change its resources.
+But we should still take note of anything we *could* parse correctly.
+
+Also remove reference to dev_id because I plan to remove it soon.
 
 Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
-Acked-by: Rene Herman <rene.herman@gmail.com>
 
-Index: work10/drivers/pnp/isapnp/Makefile
+Index: work10/drivers/pnp/pnpacpi/core.c
 ===================================================================
---- work10.orig/drivers/pnp/isapnp/Makefile	2008-04-28 16:00:27.000000000 -0600
-+++ work10/drivers/pnp/isapnp/Makefile	2008-04-28 16:09:03.000000000 -0600
-@@ -5,3 +5,7 @@
- isapnp-proc-$(CONFIG_PROC_FS) = proc.o
+--- work10.orig/drivers/pnp/pnpacpi/core.c	2008-04-28 15:57:04.000000000 -0600
++++ work10/drivers/pnp/pnpacpi/core.c	2008-04-28 16:09:08.000000000 -0600
+@@ -213,8 +213,7 @@
+ 							  &dev->res);
+ 		if (ACPI_FAILURE(status) && (status != AE_NOT_FOUND)) {
+ 			pnp_err("PnPACPI: METHOD_NAME__CRS failure for %s",
+-				dev_id->id);
+-			goto err1;
++				acpi_device_hid(device));
+ 		}
+ 	}
  
- obj-y := core.o compat.o $(isapnp-proc-y)
-+
-+ifeq ($(CONFIG_PNP_DEBUG),y)
-+EXTRA_CFLAGS += -DDEBUG
-+endif
-Index: work10/drivers/pnp/pnpacpi/Makefile
-===================================================================
---- work10.orig/drivers/pnp/pnpacpi/Makefile	2008-04-28 16:00:27.000000000 -0600
-+++ work10/drivers/pnp/pnpacpi/Makefile	2008-04-28 16:09:03.000000000 -0600
-@@ -3,3 +3,7 @@
- #
+@@ -223,8 +222,7 @@
+ 							    dev);
+ 		if (ACPI_FAILURE(status) && (status != AE_NOT_FOUND)) {
+ 			pnp_err("PnPACPI: METHOD_NAME__PRS failure for %s",
+-				dev_id->id);
+-			goto err1;
++				acpi_device_hid(device));
+ 		}
+ 	}
  
- obj-y := core.o rsparser.o
-+
-+ifeq ($(CONFIG_PNP_DEBUG),y)
-+EXTRA_CFLAGS += -DDEBUG
-+endif
-Index: work10/drivers/pnp/pnpbios/Makefile
-===================================================================
---- work10.orig/drivers/pnp/pnpbios/Makefile	2008-04-28 16:00:27.000000000 -0600
-+++ work10/drivers/pnp/pnpbios/Makefile	2008-04-28 16:09:03.000000000 -0600
-@@ -5,3 +5,7 @@
- pnpbios-proc-$(CONFIG_PNPBIOS_PROC_FS) = proc.o
+@@ -252,8 +250,6 @@
+ 	num++;
  
- obj-y := core.o bioscalls.o rsparser.o $(pnpbios-proc-y)
-+
-+ifeq ($(CONFIG_PNP_DEBUG),y)
-+EXTRA_CFLAGS += -DDEBUG
-+endif
+ 	return AE_OK;
+-err1:
+-	kfree(dev_id);
+ err:
+ 	kfree(dev);
+ 	return -EINVAL;
 
 -- 
