@@ -1,198 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966858AbYD1VCQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966954AbYD1VCi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966858AbYD1VCQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 17:02:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934949AbYD1VB5
+	id S966954AbYD1VCi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 17:02:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965662AbYD1VCW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 17:01:57 -0400
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:50222 "EHLO smtp6.pp.htv.fi"
+	Mon, 28 Apr 2008 17:02:22 -0400
+Received: from gw.goop.org ([64.81.55.164]:53623 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933541AbYD1VB4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 17:01:56 -0400
-Date: Tue, 29 Apr 2008 00:01:22 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Mauro Carvalho Chehab <mchehab@infradead.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch] dvb: build failure fix
-Message-ID: <20080428210122.GC2813@cs181133002.pp.htv.fi>
-References: <20080428162421.GA16566@elte.hu> <20080428180457.GY2813@cs181133002.pp.htv.fi> <20080428195330.GE9907@elte.hu>
+	id S965811AbYD1VCV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Apr 2008 17:02:21 -0400
+Message-ID: <48163B50.8010608@goop.org>
+Date: Mon, 28 Apr 2008 14:02:08 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080418)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20080428195330.GE9907@elte.hu>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Andi Kleen <andi@firstfloor.org>,
+       Ingo Molnar <mingo@elte.hu>, Jiri Slaby <jirislaby@gmail.com>,
+       David Miller <davem@davemloft.net>, zdenek.kabelac@gmail.com,
+       rjw@sisk.pl, paulmck@linux.vnet.ibm.com, akpm@linux-foundation.org,
+       linux-ext4@vger.kernel.org, herbert@gondor.apana.org.au,
+       penberg@cs.helsinki.fi, clameter@sgi.com, linux-kernel@vger.kernel.org,
+       pageexec@freemail.hu
+Subject: Re: [PATCH 1/1] x86: fix text_poke
+References: <48123C9B.9020306@zytor.com> <20080425203717.GB25950@Krystal> <481241DC.3070601@zytor.com> <alpine.LFD.1.10.0804251349510.2779@woody.linux-foundation.org> <20080425211205.GC25950@Krystal> <481249FB.8070204@zytor.com> <20080425214704.GD25950@Krystal> <48125635.3060303@zytor.com> <20080425223015.GB31226@Krystal> <alpine.LFD.1.10.0804251534420.2779@woody.linux-foundation.org> <20080428204342.GD27154@Krystal>
+In-Reply-To: <20080428204342.GD27154@Krystal>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 28, 2008 at 09:53:30PM +0200, Ingo Molnar wrote:
-> 
-> * Adrian Bunk <bunk@kernel.org> wrote:
-> 
-> > On Mon, Apr 28, 2008 at 06:24:21PM +0200, Ingo Molnar wrote:
-> > > 
-> > > fix build failure found via x86.git randconfig testing:
-> > > 
-> > >  drivers/built-in.o: In function `tda829x_attach':
-> > >  : undefined reference to `tda827x_attach'
-> > >  drivers/built-in.o: In function `tda829x_attach':
-> > >  : undefined reference to `tda18271_attach'
-> > > 
-> > > build failure is due to this nasty dependency:
-> > > 
-> > >   CONFIG_DVB_CORE=m but CONFIG_TUNER_TDA8290=y.
-> 
-> > It might work around the problem in your specific configuration, but 
-> > it's not the correct solution.
-> > 
-> > Please send your .config .
-> 
-> i dont have it anymore,
+Mathieu Desnoyers wrote:
+> Markers, with immediate values, only clobbers the eax register and the
+> ZF. It does not restrain inlining nor loop unrolling. It also requires
+> gcc to leave the variables in which the marker is interested "live".
 
-That's bad since it makes it harder for other people to reproduce the 
-problem.
+That in itself is pretty significant.  If that value would otherwise be 
+constant folded or strength-reduced away, you're putting a big 
+limitation on what the compiler can do.  The mere fact that its 
+necessary to do something to preserve many values shows how much the 
+compiler transforms the code away from what's in the source, and 
+specifically referencing otherwise unused intermediates inhibits that.
 
-> but the key was what i wrote in the changelog 
-> above:
-> 
->   CONFIG_DVB_CORE=m
->   CONFIG_TUNER_TDA8290=y
-> 
-> if you look at the symbols above, their definition sites, and the 
-> dependencies between them you'll see why that breaks the build. (There 
-> might be more to it, this area has been a frequent source of problems.)
+In other words, if you weren't preventing optimisations, you wouldn't 
+need to preserve values as much, because the optimiser wouldn't be 
+getting rid of them.  If you need to preserve lots of values, you're 
+necessarily preventing the optimiser from doing its job.
 
-TUNER_TDA8290 is the only affected driver, your patch also adds wrong 
-dependences to other driver.
-
-And the underlying problem is that it has both an analog an a DVB tuner, 
-and although forcing a dependency on DVB_CORE might make the randconfig 
-crowd happy it's not the correct solution.
-
-Mauro, where were we regarding this issue?
-
-What about:
-
-config TUNER_TDA8290
-        tristate "TDA 8290/8295 + 8275(a)/18271 tuner combo"
-        depends on I2C
-	depends on DVB_CORE || DVB_CORE=n
-        select DVB_TDA827X if DVB_CORE
-        select DVB_TDA18271 if DVB_CORE
-        default m if VIDEO_TUNER_CUSTOMIZE
-        help
-          Say Y here to include support for Philips TDA8290+8275(a) tuner.
-
-Or is there some twist I'm missing?
-
-> > > -	depends on I2C && FW_LOADER
-> > > +	depends on I2C && FW_LOADER && ((DVB_CORE = m && m) || (DVB_CORE = y))
-> > >...
-> > 
-> > Your funny additions are equivalent to "&& DVB_CORE".
-> 
-> right you are, thanks - the above change was the best hack 4 hours of 
-> sleep can buy ;-) Simplified patch below.
-
-Still the old one...
-
-But as described above, even the fixed one would be wrong.
-
-> 	Ingo
-> 
-> ---------------------->
-> Subject: dvb: build failure fix
-> From: Ingo Molnar <mingo@elte.hu>
-> Date: Mon Apr 28 18:17:58 CEST 2008
-> 
-> fix build failure:
-> 
->  drivers/built-in.o: In function `tda829x_attach':
->  : undefined reference to `tda827x_attach'
->  drivers/built-in.o: In function `tda829x_attach':
->  : undefined reference to `tda18271_attach'
-> 
-> due to:
-> 
->   CONFIG_DVB_CORE=m but CONFIG_TUNER_TDA8290=y.
-> 
-> Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> ---
->  drivers/media/Kconfig |   14 +++++++-------
->  1 file changed, 7 insertions(+), 7 deletions(-)
-> 
-> Index: linux/drivers/media/Kconfig
-> ===================================================================
-> --- linux.orig/drivers/media/Kconfig
-> +++ linux/drivers/media/Kconfig
-> @@ -106,21 +106,21 @@ if VIDEO_TUNER_CUSTOMIZE
->  
->  config TUNER_XC2028
->  	tristate "XCeive xc2028/xc3028 tuners"
-> -	depends on I2C && FW_LOADER
-> +	depends on I2C && FW_LOADER && ((DVB_CORE = m && m) || (DVB_CORE = y))
->  	default m if VIDEO_TUNER_CUSTOMIZE
->  	help
->  	  Say Y here to include support for the xc2028/xc3028 tuners.
->  
->  config TUNER_MT20XX
->  	tristate "Microtune 2032 / 2050 tuners"
-> -	depends on I2C
-> +	depends on I2C && ((DVB_CORE = m && m) || (DVB_CORE = y))
->  	default m if VIDEO_TUNER_CUSTOMIZE
->  	help
->  	  Say Y here to include support for the MT2032 / MT2050 tuner.
->  
->  config TUNER_TDA8290
->  	tristate "TDA 8290/8295 + 8275(a)/18271 tuner combo"
-> -	depends on I2C
-> +	depends on I2C && ((DVB_CORE = m && m) || (DVB_CORE = y))
->  	select DVB_TDA827X
->  	select DVB_TDA18271
->  	default m if VIDEO_TUNER_CUSTOMIZE
-> @@ -129,21 +129,21 @@ config TUNER_TDA8290
->  
->  config TUNER_TEA5761
->  	tristate "TEA 5761 radio tuner (EXPERIMENTAL)"
-> -	depends on I2C && EXPERIMENTAL
-> +	depends on I2C && EXPERIMENTAL && ((DVB_CORE = m && m) || (DVB_CORE = y))
->  	default m if VIDEO_TUNER_CUSTOMIZE
->  	help
->  	  Say Y here to include support for the Philips TEA5761 radio tuner.
->  
->  config TUNER_TEA5767
->  	tristate "TEA 5767 radio tuner"
-> -	depends on I2C
-> +	depends on I2C && ((DVB_CORE = m && m) || (DVB_CORE = y))
->  	default m if VIDEO_TUNER_CUSTOMIZE
->  	help
->  	  Say Y here to include support for the Philips TEA5767 radio tuner.
->  
->  config TUNER_SIMPLE
->  	tristate "Simple tuner support"
-> -	depends on I2C
-> +	depends on I2C && ((DVB_CORE = m && m) || (DVB_CORE = y))
->  	select TUNER_TDA9887
->  	default m if VIDEO_TUNER_CUSTOMIZE
->  	help
-> @@ -151,7 +151,7 @@ config TUNER_SIMPLE
->  
->  config TUNER_TDA9887
->  	tristate "TDA 9885/6/7 analog IF demodulator"
-> -	depends on I2C
-> +	depends on I2C && ((DVB_CORE = m && m) || (DVB_CORE = y))
->  	default m if VIDEO_TUNER_CUSTOMIZE
->  	help
->  	  Say Y here to include support for Philips TDA9885/6/7
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+    J
