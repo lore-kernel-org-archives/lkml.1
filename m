@@ -1,60 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936738AbYD1Xwt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936662AbYD1Xzl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936738AbYD1Xwt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 19:52:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755509AbYD1Xwl
+	id S936662AbYD1Xzl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 19:55:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934628AbYD1Xzd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 19:52:41 -0400
-Received: from prod.aconex.com ([203.89.192.138]:48507 "EHLO
-	postoffice2.aconex.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755012AbYD1Xwk (ORCPT
+	Mon, 28 Apr 2008 19:55:33 -0400
+Received: from web36702.mail.mud.yahoo.com ([209.191.85.36]:42589 "HELO
+	web36702.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S933111AbYD1Xzc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 19:52:40 -0400
-X-ASG-Debug-ID: 1209426745-0bfd00070000-xx1T2L
-X-Barracuda-URL: http://intranex.aconex.com:8000/cgi-bin/mark.cgi
-X-ASG-Orig-Subj: Re: [PATCH] xfs: reduce stack usage in xfs_bmap_btalloc()
-Subject: Re: [PATCH] xfs: reduce stack usage in xfs_bmap_btalloc()
-From: Nathan Scott <nscott@aconex.com>
-Reply-To: nscott@aconex.com
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Christoph Hellwig <hch@infradead.org>,
-       Denys Vlasenko <vda.linux@googlemail.com>, David Chinner <dgc@sgi.com>,
-       xfs@oss.sgi.com, Eric Sandeen <sandeen@sandeen.net>,
-       Adrian Bunk <bunk@kernel.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <4815A7A5.9040507@firstfloor.org>
-References: <200804261651.02078.vda.linux__2040.04651536724$1209223026$gmane$org@googlemail.com>
-	 <87iqy4wfjq.fsf@basil.nowhere.org> <20080426200701.GA10883@infradead.org>
-	 <20080426202630.GG17905@one.firstfloor.org>
-	 <20080426202323.GA14245@infradead.org>
-	 <1209341212.23166.122.camel@edge.scott.net.au>
-	 <4815A7A5.9040507@firstfloor.org>
-Content-Type: text/plain
-Organization: Aconex
-Date: Tue, 29 Apr 2008 09:52:33 +1000
-Message-Id: <1209426754.23166.160.camel@edge.scott.net.au>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 
-Content-Transfer-Encoding: 7bit
-X-Barracuda-Connect: postoffice.yarra.acx[192.168.3.1]
-X-Barracuda-Start-Time: 1209426745
-X-Barracuda-Virus-Scanned: by Aconex Staff Email Spam Firewall at aconex.com
+	Mon, 28 Apr 2008 19:55:32 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=DNo5ImDtjVv8LAr8hoLzzhCkWe8ELMDZuL+R/MzTTCctUlyXitPVPBazGDh4UlvJTuxL4IDTudMMRxjkamW/u9BxFInGpcuwkob/I45/ifcT7gwxp2hQQRvoPu29rg5gbmAXh7o3F+sWPsAu3dvDTDzOgaUmmhGRYInRDDVdeu8=;
+X-YMail-OSG: HBVTsMAVM1mrYYVtGXKn0D2R8AQdwM0N6o42BzZNp2VucviQS.oRgCXhIww8dYUS3g--
+Date: Mon, 28 Apr 2008 16:55:31 -0700 (PDT)
+From: Alex Dubov <oakad@yahoo.com>
+Subject: Re: tifm_7xx1: SD card is ignored
+To: Kim Hansen <kimhanse@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <c878e2290804281343x21b7d4aau479bea16c0f7a2c6@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <462475.15585.qm@web36702.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-04-28 at 12:32 +0200, Andi Kleen wrote:
-> > and
-> > its a side-effect of needing to do that (all the code
-> > dealing with specifics of ondisk format is shared).
+
+--- Kim Hansen <kimhanse@gmail.com> wrote:
+> Is there a way to find out which one to use ?
 > 
-> But does that really need "STATIC"? Seems doubtful to me.
+> 
+> Is there some tests I could run to see if I can find the errors?
+> 
 
-In userspace STATIC is defined to nothing, and the tools
-(and/or libxfs) directly call into numerous functions that
-are (really) static in the kernel.
+If you happen to have some good friends at TI, then probably yes.
 
-cheers.
+I don't have any datasheets for these chips.
 
--- 
-Nathan
 
+
+      ____________________________________________________________________________________
+Be a better friend, newshound, and 
+know-it-all with Yahoo! Mobile.  Try it now.  http://mobile.yahoo.com/;_ylt=Ahu06i62sR8HDtDypao8Wcj9tAcJ
