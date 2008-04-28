@@ -1,51 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965949AbYD1SbX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966335AbYD1Sbr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965949AbYD1SbX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 14:31:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936606AbYD1SXh
+	id S966335AbYD1Sbr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 14:31:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936738AbYD1SYZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 14:23:37 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:50980 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S936597AbYD1SXf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 14:23:35 -0400
-Date: Mon, 28 Apr 2008 20:23:23 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Cyrill Gorcunov <gorcunov@gmail.com>,
-       David Woodhouse <dwmw2@infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: vm86 - hide X86_VM_MASK from userland programs v2
-Message-ID: <20080428182323.GD1685@elte.hu>
-References: <20080424144120.GA7717@cvg> <4810CC2F.3010600@zytor.com>
+	Mon, 28 Apr 2008 14:24:25 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:37852 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S936517AbYD1SYY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Apr 2008 14:24:24 -0400
+Date: Mon, 28 Apr 2008 19:24:16 +0100
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: "Zhang, Xiantao" <xiantao.zhang@intel.com>
+Cc: Al Viro <viro@ftp.linux.org.uk>, torvalds@linux-foundation.org,
+       sfr@canb.auug.org.au, linux-kernel@vger.kernel.org,
+       kvm-ia64-devel@lists.sourceforge.net
+Subject: Re: [kvm-ia64-devel] [PATCH] ia64 kvm fixes for O=... builds
+Message-ID: <20080428182416.GE5882@ZenIV.linux.org.uk>
+References: <E1JqMOH-0004ky-VF@ZenIV.linux.org.uk> <42DFA526FC41B1429CE7279EF83C6BDC011CA51F@pdsmsx415.ccr.corp.intel.com> <20080428141402.GD5882@ZenIV.linux.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4810CC2F.3010600@zytor.com>
+In-Reply-To: <20080428141402.GD5882@ZenIV.linux.org.uk>
 User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0032]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Apr 28, 2008 at 03:14:02PM +0100, Al Viro wrote:
+> On Mon, Apr 28, 2008 at 09:46:44PM +0800, Zhang, Xiantao wrote:
+> > >  kvm-intel-objs = vmm.o vmm_ivt.o trampoline.o vcpu.o optvfault.o
+> > >  	mmio.o \ vtlb.o process.o
+> > >  #Add link memcpy and memset to avoid possible structure assignment
+> > > error -kvm-intel-objs += memset.o memcpy.o
+> > > +kvm-intel-objs += ../lib/memset.o ../lib/memcpy.o
+> > >  obj-$(CONFIG_KVM_INTEL) += kvm-intel.o
+> > 
+> > I don't think it is workable for kvm-ia64.  Currently,  kvm-intel module
+> > needs to be relocated at insertion time, so the code is
+> > position-indenpent. Howerver, lib/*.memset.o(memcoy.o) are not compiled
+> > as position independent code, they can't be linked into the module
+> > correctly in your way. That is why we use symbol link instead of linking
+> > the objects under /lib. 
+> 
+> symlinks won't work as you use them.  If you really need separately
+> compiled, use file with a couple of #include "../lib/......S" and
+> be done with that.
 
-* H. Peter Anvin <hpa@zytor.com> wrote:
+... like this, perhaps?  I still wonder what will happen with either this
+or the original tree if you make CONFIG_KVM_INTEL=y, though - won't either
+variant give you duplicate symbols?
 
-> Cyrill Gorcunov wrote:
->> X86_VM_MASK is a kernel specific flag so lets hide it from userland programs
->>  Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
->
-> Looks good to me.
->
-> Acked-by: H. Peter Anvin <hpa@zytor.com>
+diff --git a/arch/ia64/kvm/Makefile b/arch/ia64/kvm/Makefile
+index 5235339..e7b9432 100644
+--- a/arch/ia64/kvm/Makefile
++++ b/arch/ia64/kvm/Makefile
+@@ -54,5 +54,5 @@ EXTRA_CFLAGS_vcpu.o += -mfixed-range=f2-f5,f12-f127
+ kvm-intel-objs = vmm.o vmm_ivt.o trampoline.o vcpu.o optvfault.o mmio.o \
+ 	vtlb.o process.o
+ #Add link memcpy and memset to avoid possible structure assignment error
+-kvm-intel-objs += ../lib/memset.o ../lib/memcpy.o
++kvm-intel-objs += memset.o memcpy.o
+ obj-$(CONFIG_KVM_INTEL) += kvm-intel.o
+diff --git a/arch/ia64/kvm/memcpy.S b/arch/ia64/kvm/memcpy.S
+new file mode 100644
+index 0000000..c04cdbe
+--- /dev/null
++++ b/arch/ia64/kvm/memcpy.S
+@@ -0,0 +1 @@
++#include "../lib/memcpy.S"
+diff --git a/arch/ia64/kvm/memset.S b/arch/ia64/kvm/memset.S
+new file mode 100644
+index 0000000..83c3066
+--- /dev/null
++++ b/arch/ia64/kvm/memset.S
+@@ -0,0 +1 @@
++#include "../lib/memset.S"
 
-applied, thanks.
-
-	Ingo
