@@ -1,72 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936846AbYD1Vy3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937224AbYD1V4h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936846AbYD1Vy3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 17:54:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935215AbYD1Vxb
+	id S937224AbYD1V4h (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 17:56:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935717AbYD1V4O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 17:53:31 -0400
-Received: from mail.fieldses.org ([66.93.2.214]:49271 "EHLO fieldses.org"
+	Mon, 28 Apr 2008 17:56:14 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:42571 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935036AbYD1Vx3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 17:53:29 -0400
-Date: Mon, 28 Apr 2008 17:53:13 -0400
-To: Al Viro <viro@ZenIV.linux.org.uk>
-Cc: Erez Zadok <ezk@cs.sunysb.edu>, Miklos Szeredi <miklos@szeredi.hu>,
-       akpm@linux-foundation.org, torvalds@linux-foundation.org,
-       dave@linux.vnet.ibm.com, mhalcrow@us.ibm.com,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [patch 00/13] vfs: add helpers to check r/o bind mounts
-Message-ID: <20080428215313.GE28142@fieldses.org>
-References: <20080424142857.GF15214@ZenIV.linux.org.uk> <200804241729.m3OHTnNx016180@agora.fsl.cs.sunysb.edu> <20080424181332.GB5882@ZenIV.linux.org.uk>
+	id S935666AbYD1V4L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Apr 2008 17:56:11 -0400
+Date: Mon, 28 Apr 2008 23:55:55 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>,
+       Harvey Harrison <harvey.harrison@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, David Miller <davem@davemloft.net>
+Subject: Re: [PATCH] bitops: simplify generic bit finding functions
+Message-ID: <20080428215555.GB16153@elte.hu>
+References: <1209327591.14173.74.camel@brick> <alpine.LFD.1.10.0804271325350.3119@woody.linux-foundation.org> <alpine.LFD.1.10.0804281534530.3261@apollo.tec.linutronix.de> <alpine.LFD.1.10.0804280924270.3119@woody.linux-foundation.org> <alpine.LFD.1.10.0804281845250.3261@apollo.tec.linutronix.de> <alpine.LFD.1.10.0804280953570.3119@woody.linux-foundation.org> <alpine.LFD.1.10.0804282038160.3261@apollo.tec.linutronix.de> <alpine.LFD.1.10.0804281233090.3119@woody.linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080424181332.GB5882@ZenIV.linux.org.uk>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-From: "J. Bruce Fields" <bfields@fieldses.org>
+In-Reply-To: <alpine.LFD.1.10.0804281233090.3119@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 24, 2008 at 07:13:32PM +0100, Al Viro wrote:
-> On Thu, Apr 24, 2008 at 01:29:49PM -0400, Erez Zadok wrote:
-> > In message <20080424142857.GF15214@ZenIV.linux.org.uk>, Al Viro writes:
-> > > On Thu, Apr 24, 2008 at 04:09:18PM +0200, Miklos Szeredi wrote:
-> > [...]
-> > > FWIW, I'm not all that happy about the way ecryptfs_interpose() is done,
-> > > while we are at it.  We get the sucker opened by whoever steps on given
-> > > place in the tree first, with subsequent operations done using the resulting
-> > > struct file.  With fallback to r/o open.  What happens to somebody who
-> > > tries to open it with enough permissions to do r/w?
-> > 
-> > Yes, ecryptfs_interpose() calls ecryptfs_init_persistent_file() which calls
-> > dentry_open(O_RDWR).  What's the proposed solution for this in the face of
-> > r/o vfsmounts?  How could ecryptfs avoid calling this dentry_open in the
-> > first place?
-> 
-> Doesn't have anything to do with vfsmounts (you have one to deal with and
-> if it's r/o, it's equivalent to just doing the entire thing on top of r/o
-> fs; not interesting).
-> 
-> No, what I'm worried about is much simpler.  Look: we have a file on
-> underlying fs, owned by root.root with 644 for permissions.  Comes a
-> luser and tries to open the counterpart of that file in ecryptfs; that
-> triggers ecryptfs_interpose() and attempts to open file.  Of course,
-> that's going to fail - it's not world-writable.  So then it (actually
-> ecryptfs_init_persistent_file()) falls back to opening with O_RDONLY.
-> Which succeeds just fine and file (opened r/o) is set as ->lower_file.
-> 
-> Now comes root and tries to open the damn thing r/w.  It should be able
-> to and if it came first it'd get it; as it is, what it gets is ->lower_file
-> and that puppy is opened read-only and you have no guarantee that underlying
-> fs will not go bonkers seeing write attempts on it (e.g. open for write
-> doing a bit more setup of ->private_data, etc.).
 
-This looks like the same ugly stuff that the nfsv4 server is currently
-doing; see, e.g., fs/nfsd/nfs4state.c:nfs4_upgrade_open().
+* Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-A concrete example of a bug (e.g., export FOOfs over nfsd, do an open
-upgrade, watch the oops) would be great motivation to finally get this
-fixed, if you know of such an example off the top of your head....
+> So we do have cases where the inlines are obviously worth it. But in 
+> general, I think we should try to move things from the header files 
+> into *.c files unless there is a really clear reason for keeping it 
+> that way.
 
---b.
+there's another benefit, and in asm-x86 we prefer to move inlines to .c 
+files even in borderline cases because it simplifies the type 
+dependencies: not having to fully define all types at the function 
+prototype site avoids include file dependency hell.
+
+Putting things like a task struct dereference into a lowlevel inline 
+file easily causes dependency problems that causes people to use macros 
+instead - which have their own set of readability and side-effect 
+problems.
+
+a third argument is that inlines seldom get smaller. So if they are 
+borderline and we move them into a .c, and later on the function gets 
+larger, no harm is done. But if we keep the inline in a .h in the 
+borderline case and we grow the inline later on, the whole kernel bloats 
+in a multiplied way, without any apparent direct feedback to the 
+developer that something wrong and harmful just happened.
+
+	Ingo
