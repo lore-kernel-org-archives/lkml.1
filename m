@@ -1,53 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764947AbYD1DeX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763306AbYD1Duj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764947AbYD1DeX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Apr 2008 23:34:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762303AbYD1DeO
+	id S1763306AbYD1Duj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Apr 2008 23:50:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762149AbYD1Dua
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Apr 2008 23:34:14 -0400
-Received: from sj-iport-6.cisco.com ([171.71.176.117]:40274 "EHLO
-	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751485AbYD1DeN (ORCPT
+	Sun, 27 Apr 2008 23:50:30 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:46307 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760714AbYD1Du3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Apr 2008 23:34:13 -0400
-From: Roland Dreier <rdreier@cisco.com>
-To: linux-kernel@vger.kernel.org, tglx@linutronix.de, mingo@elte.hu
-Subject: Build failure (with insane config)
-X-Message-Flag: Warning: May contain useful information
-Date: Sun, 27 Apr 2008 20:34:12 -0700
-Message-ID: <adahcdm3b63.fsf@cisco.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+	Sun, 27 Apr 2008 23:50:29 -0400
+Date: Sun, 27 Apr 2008 23:50:23 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: David Chinner <dgc@sgi.com>
+Cc: Denys Vlasenko <vda.linux@googlemail.com>, xfs@oss.sgi.com,
+       Eric Sandeen <sandeen@sandeen.net>, Adrian Bunk <bunk@kernel.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] xfs: reduce stack usage in xfs_page_state_convert()
+Message-ID: <20080428035023.GA14275@infradead.org>
+References: <200804270246.58828.vda.linux@googlemail.com> <20080427232317.GB103491721@sgi.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 28 Apr 2008 03:34:12.0941 (UTC) FILETIME=[BA2867D0:01C8A8E0]
-Authentication-Results: sj-dkim-3; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim3002 verified; ); 
+Content-Disposition: inline
+In-Reply-To: <20080427232317.GB103491721@sgi.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-For x86-64, arch/x86/lib/Makefile has:
+On Mon, Apr 28, 2008 at 09:23:17AM +1000, David Chinner wrote:
+> No. That code is complex enough with only one copy of it around. I don't
+> want two copies that differ subtly and hence have two different sets
+> of nasty, rarely hit corner cases in them.
 
-        lib-y += csum-partial_64.o csum-copy_64.o csum-wrappers_64.o
+Actually the split makes some sense.  I had a ready patch to split out
+releasepage which makes the whole code a lot nicer.  I didn't go forward
+with it because I had this idea that it would get replaced by Chris
+extent_map stuff ASAP..
 
-so in particular ip_compute_csum() (from csum-partial_64.c) gets put in
-libs, so even though it is exported, it gets thrown away at link time if
-there are no non-modular users.
-
-However, if someone has an insane config with CONFIG_NET=n and
-CONFIG_VIDEO_BT848=m, then ip_compute_csum() gets discarded but the
-modular code in drivers/media/video/bt8xx/bttv-cards.c calls it and...
-
-        ERROR: "ip_compute_csum" [drivers/media/video/bt8xx/bttv.ko] undefined!
-
-I guess one fix is just to put at least csum-partial_64.c in obj-y
-instead; it does seem broken to have files with EXPORT_SYMBOL() be
-lib-y, since it is really an invitation for this problem.  Other ideas
-would be for bttv to depend on or select CONFIG_NET.
-
-[It's a long story why I noticed this problem, but maybe we want to fix
-it to save people doing randconfig test builds or something like that.
-Or maybe we don't really care, since the class of real systems with
-video capture cards but no networking is probably quite small]
-
- - R.
