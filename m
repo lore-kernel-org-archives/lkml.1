@@ -1,83 +1,986 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938113AbYD1VOm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938177AbYD1VPI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938113AbYD1VOm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 17:14:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965262AbYD1VNP
+	id S938177AbYD1VPI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 17:15:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937876AbYD1VOV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 17:13:15 -0400
-Received: from wr-out-0506.google.com ([64.233.184.229]:20776 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S936080AbYD1VNO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 17:13:14 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=mjgJwEodCbn9Uls2BLxBC1olSoqyDY17hjq24g82Qyx/oVLWtozApsAKY/LMfi6thBcydkRFTlXibIZ1nXFfUA+vFq278QytLvKW5w7idLLd99WVmpNLkryaGpEmZxg77rxVZMVpeCrPU5BLuzrKzhCCm4/6r6gLs72Gv8FrULQ=
-Subject: [PATCH 4/4] drivers: atm, char fix integer as NULL pointer warnings
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Al Viro <viro@ZenIV.linux.org.uk>, LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Mon, 28 Apr 2008 14:13:20 -0700
-Message-Id: <1209417200.14173.103.camel@brick>
+	Mon, 28 Apr 2008 17:14:21 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:54908 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S937868AbYD1VOO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Apr 2008 17:14:14 -0400
+Date: Mon, 28 Apr 2008 23:14:46 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       linux-kbuild <linux-kbuild@vger.kernel.org>
+Subject: [GIT PULL] kbuild updates
+Message-ID: <20080428211446.GA24074@uranus.ravnborg.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-drivers/atm/nicstar.c:418:25: warning: Using plain integer as NULL pointer
-drivers/char/drm/r128_cce.c:820:25: warning: Using plain integer as NULL pointer
-drivers/char/tty_io.c:1183:10: warning: Using plain integer as NULL pointer
+Hi Linus.
 
-Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
----
- drivers/atm/nicstar.c       |    2 +-
- drivers/char/drm/r128_cce.c |    2 +-
- drivers/char/tty_io.c       |    2 +-
- 3 files changed, 3 insertions(+), 3 deletions(-)
+Second round of kbuild patches.
 
-diff --git a/drivers/atm/nicstar.c b/drivers/atm/nicstar.c
-index 38c769f..3da804b 100644
---- a/drivers/atm/nicstar.c
-+++ b/drivers/atm/nicstar.c
-@@ -415,7 +415,7 @@ static int __devinit ns_init_card(int i, struct pci_dev *pcidev)
-    card->pcidev = pcidev;
-    membase = pci_resource_start(pcidev, 1);
-    card->membase = ioremap(membase, NS_IOREMAP_SIZE);
--   if (card->membase == 0)
-+   if (!card->membase)
-    {
-       printk("nicstar%d: can't ioremap() membase.\n",i);
-       error = 3;
-diff --git a/drivers/char/drm/r128_cce.c b/drivers/char/drm/r128_cce.c
-index f36adbd..c31afbd 100644
---- a/drivers/char/drm/r128_cce.c
-+++ b/drivers/char/drm/r128_cce.c
-@@ -817,7 +817,7 @@ static struct drm_buf *r128_freelist_get(struct drm_device * dev)
- 	for (i = 0; i < dma->buf_count; i++) {
- 		buf = dma->buflist[i];
- 		buf_priv = buf->dev_private;
--		if (buf->file_priv == 0)
-+		if (!buf->file_priv)
- 			return buf;
+Please pull from:
+   master.kernel.org:/pub/scm/linux/kernel/git/sam/kbuild.git
+
+None of this has been in -mm / -next due to me being sloppy.
+But except from the kconfig stuff it is trivialities
+
+	Sam
+
+
+Andres Salomon (1):
+      kbuild: fix help output to show correct arch
+
+Ben Dooks (2):
+      dontdiff: add modules.order
+      dontdiff: ignore timeconst.h
+
+Felix Fietkau (1):
+      kbuild: fix unportability in gen_initramfs_list.sh
+
+Matthew Wilcox (1):
+      kconifg: 'select' considered less evil
+
+Roman Zippel (2):
+      kconfig: fix choice dependency check
+      kconfig: add named choice group
+
+
+ Documentation/dontdiff                    |    2 +
+ Documentation/kbuild/kconfig-language.txt |   17 +-
+ Makefile                                  |    4 +-
+ scripts/gen_initramfs_list.sh             |    2 +-
+ scripts/kconfig/lex.zconf.c_shipped       |   25 +--
+ scripts/kconfig/lkc_proto.h               |    2 +-
+ scripts/kconfig/menu.c                    |   64 +++----
+ scripts/kconfig/symbol.c                  |  118 +++++++++---
+ scripts/kconfig/zconf.tab.c_shipped       |  301 +++++++++++++++--------------
+ scripts/kconfig/zconf.y                   |   13 +-
+ 10 files changed, 296 insertions(+), 252 deletions(-)
+
+
+diff --git a/Documentation/dontdiff b/Documentation/dontdiff
+index 354aec0..881e6dd 100644
+--- a/Documentation/dontdiff
++++ b/Documentation/dontdiff
+@@ -141,6 +141,7 @@ mkprep
+ mktables
+ mktree
+ modpost
++modules.order
+ modversions.h*
+ offset.h
+ offsets.h
+@@ -171,6 +172,7 @@ sm_tbl*
+ split-include
+ tags
+ tftpboot.img
++timeconst.h
+ times.h*
+ tkparse
+ trix_boot.h
+diff --git a/Documentation/kbuild/kconfig-language.txt b/Documentation/kbuild/kconfig-language.txt
+index 649cb87..00b950d 100644
+--- a/Documentation/kbuild/kconfig-language.txt
++++ b/Documentation/kbuild/kconfig-language.txt
+@@ -104,14 +104,15 @@ applicable everywhere (see syntax).
+   Reverse dependencies can only be used with boolean or tristate
+   symbols.
+   Note:
+-	select is evil.... select will by brute force set a symbol
+-	equal to 'y' without visiting the dependencies. So abusing
+-	select you are able to select a symbol FOO even if FOO depends
+-	on BAR that is not set. In general use select only for
+-	non-visible symbols (no prompts anywhere) and for symbols with
+-	no dependencies. That will limit the usefulness but on the
+-	other hand avoid the illegal configurations all over. kconfig
+-	should one day warn about such things.
++	select should be used with care. select will force
++	a symbol to a value without visiting the dependencies.
++	By abusing select you are able to select a symbol FOO even
++	if FOO depends on BAR that is not set.
++	In general use select only for non-visible symbols
++	(no prompts anywhere) and for symbols with no dependencies.
++	That will limit the usefulness but on the other hand avoid
++	the illegal configurations all over.
++	kconfig should one day warn about such things.
+ 
+ - numerical ranges: "range" <symbol> <symbol> ["if" <expr>]
+   This allows to limit the range of possible input values for int
+diff --git a/Makefile b/Makefile
+index da76f51..d3634cd 100644
+--- a/Makefile
++++ b/Makefile
+@@ -1223,9 +1223,9 @@ help:
+ 	@echo  'Documentation targets:'
+ 	@$(MAKE) -f $(srctree)/Documentation/DocBook/Makefile dochelp
+ 	@echo  ''
+-	@echo  'Architecture specific targets ($(ARCH)):'
++	@echo  'Architecture specific targets ($(SRCARCH)):'
+ 	@$(if $(archhelp),$(archhelp),\
+-		echo '  No architecture specific help defined for $(ARCH)')
++		echo '  No architecture specific help defined for $(SRCARCH)')
+ 	@echo  ''
+ 	@$(if $(boards), \
+ 		$(foreach b, $(boards), \
+diff --git a/scripts/gen_initramfs_list.sh b/scripts/gen_initramfs_list.sh
+index 684fb9c..5f3415f 100644
+--- a/scripts/gen_initramfs_list.sh
++++ b/scripts/gen_initramfs_list.sh
+@@ -135,7 +135,7 @@ parse() {
+ 			str="${ftype} ${name} ${str} ${dev} ${maj} ${min}"
+ 			;;
+ 		"slink")
+-			local target=`field 11 $(LC_ALL=C ls -l "${location}")`
++			local target=`readlink "${location}"`
+ 			str="${ftype} ${name} ${target} ${str}"
+ 			;;
+ 		*)
+diff --git a/scripts/kconfig/lex.zconf.c_shipped b/scripts/kconfig/lex.zconf.c_shipped
+index bed0f4e..6a61cee 100644
+--- a/scripts/kconfig/lex.zconf.c_shipped
++++ b/scripts/kconfig/lex.zconf.c_shipped
+@@ -5,25 +5,6 @@
+ 
+ /* A lexical scanner generated by flex */
+ 
+-#define yy_create_buffer zconf_create_buffer
+-#define yy_delete_buffer zconf_delete_buffer
+-#define yy_flex_debug zconf_flex_debug
+-#define yy_init_buffer zconf_init_buffer
+-#define yy_flush_buffer zconf_flush_buffer
+-#define yy_load_buffer_state zconf_load_buffer_state
+-#define yy_switch_to_buffer zconf_switch_to_buffer
+-#define yyin zconfin
+-#define yyleng zconfleng
+-#define yylex zconflex
+-#define yylineno zconflineno
+-#define yyout zconfout
+-#define yyrestart zconfrestart
+-#define yytext zconftext
+-#define yywrap zconfwrap
+-#define yyalloc zconfalloc
+-#define yyrealloc zconfrealloc
+-#define yyfree zconffree
+-
+ #define FLEX_SCANNER
+ #define YY_FLEX_MAJOR_VERSION 2
+ #define YY_FLEX_MINOR_VERSION 5
+@@ -354,7 +335,7 @@ void zconffree (void *  );
+ 
+ /* Begin user sect3 */
+ 
+-#define zconfwrap(n) 1
++#define zconfwrap() 1
+ #define YY_SKIP_YYWRAP
+ 
+ typedef unsigned char YY_CHAR;
+@@ -1535,7 +1516,7 @@ static int yy_get_next_buffer (void)
+ 
+ 		/* Read in more data. */
+ 		YY_INPUT( (&YY_CURRENT_BUFFER_LVALUE->yy_ch_buf[number_to_move]),
+-			(yy_n_chars), num_to_read );
++			(yy_n_chars), (size_t) num_to_read );
+ 
+ 		YY_CURRENT_BUFFER_LVALUE->yy_n_chars = (yy_n_chars);
+ 		}
+@@ -2007,7 +1988,7 @@ YY_BUFFER_STATE zconf_scan_buffer  (char * base, yy_size_t  size )
+ 
+ /** Setup the input buffer state to scan a string. The next call to zconflex() will
+  * scan from a @e copy of @a str.
+- * @param str a NUL-terminated string to scan
++ * @param yystr a NUL-terminated string to scan
+  * 
+  * @return the newly allocated buffer state object.
+  * @note If you want to scan bytes that may contain NUL values, then use
+diff --git a/scripts/kconfig/lkc_proto.h b/scripts/kconfig/lkc_proto.h
+index 4d09f6d..8e69461 100644
+--- a/scripts/kconfig/lkc_proto.h
++++ b/scripts/kconfig/lkc_proto.h
+@@ -21,7 +21,7 @@ P(menu_get_help,const char *,(struct menu *menu));
+ /* symbol.c */
+ P(symbol_hash,struct symbol *,[SYMBOL_HASHSIZE]);
+ 
+-P(sym_lookup,struct symbol *,(const char *name, int isconst));
++P(sym_lookup,struct symbol *,(const char *name, int flags));
+ P(sym_find,struct symbol *,(const char *name));
+ P(sym_re_search,struct symbol **,(const char *pattern));
+ P(sym_type_name,const char *,(enum symbol_type type));
+diff --git a/scripts/kconfig/menu.c b/scripts/kconfig/menu.c
+index 606ceb9..07ff8d1 100644
+--- a/scripts/kconfig/menu.c
++++ b/scripts/kconfig/menu.c
+@@ -235,18 +235,22 @@ void menu_finalize(struct menu *parent)
+ 	sym = parent->sym;
+ 	if (parent->list) {
+ 		if (sym && sym_is_choice(sym)) {
+-			/* find the first choice value and find out choice type */
+-			for (menu = parent->list; menu; menu = menu->next) {
+-				if (menu->sym) {
+-					current_entry = parent;
+-					if (sym->type == S_UNKNOWN)
++			if (sym->type == S_UNKNOWN) {
++				/* find the first choice value to find out choice type */
++				current_entry = parent;
++				for (menu = parent->list; menu; menu = menu->next) {
++					if (menu->sym && menu->sym->type != S_UNKNOWN) {
+ 						menu_set_type(menu->sym->type);
+-					current_entry = menu;
+-					if (menu->sym->type == S_UNKNOWN)
+-						menu_set_type(sym->type);
+-					break;
++						break;
++					}
+ 				}
+ 			}
++			/* set the type of the remaining choice values */
++			for (menu = parent->list; menu; menu = menu->next) {
++				current_entry = menu;
++				if (menu->sym && menu->sym->type == S_UNKNOWN)
++					menu_set_type(sym->type);
++			}
+ 			parentdep = expr_alloc_symbol(sym);
+ 		} else if (parent->prompt)
+ 			parentdep = parent->prompt->visible.expr;
+@@ -313,50 +317,36 @@ void menu_finalize(struct menu *parent)
+ 		}
+ 	}
+ 	for (menu = parent->list; menu; menu = menu->next) {
+-		if (sym && sym_is_choice(sym) && menu->sym) {
++		if (sym && sym_is_choice(sym) &&
++		    menu->sym && !sym_is_choice_value(menu->sym)) {
++			current_entry = menu;
+ 			menu->sym->flags |= SYMBOL_CHOICEVAL;
+ 			if (!menu->prompt)
+ 				menu_warn(menu, "choice value must have a prompt");
+ 			for (prop = menu->sym->prop; prop; prop = prop->next) {
+-				if (prop->type == P_PROMPT && prop->menu != menu) {
+-					prop_warn(prop, "choice values "
+-					    "currently only support a "
+-					    "single prompt");
+-				}
+ 				if (prop->type == P_DEFAULT)
+ 					prop_warn(prop, "defaults for choice "
+-					    "values not supported");
++						  "values not supported");
++				if (prop->menu == menu)
++					continue;
++				if (prop->type == P_PROMPT &&
++				    prop->menu->parent->sym != sym)
++					prop_warn(prop, "choice value used outside its choice group");
+ 			}
+-			current_entry = menu;
+-			if (menu->sym->type == S_UNKNOWN)
+-				menu_set_type(sym->type);
+ 			/* Non-tristate choice values of tristate choices must
+ 			 * depend on the choice being set to Y. The choice
+ 			 * values' dependencies were propagated to their
+ 			 * properties above, so the change here must be re-
+-			 * propagated. */
++			 * propagated.
++			 */
+ 			if (sym->type == S_TRISTATE && menu->sym->type != S_TRISTATE) {
+ 				basedep = expr_alloc_comp(E_EQUAL, sym, &symbol_yes);
+-				basedep = expr_alloc_and(basedep, menu->dep);
+-				basedep = expr_eliminate_dups(basedep);
+-				menu->dep = basedep;
++				menu->dep = expr_alloc_and(basedep, menu->dep);
+ 				for (prop = menu->sym->prop; prop; prop = prop->next) {
+ 					if (prop->menu != menu)
+ 						continue;
+-					dep = expr_alloc_and(expr_copy(basedep),
+-							     prop->visible.expr);
+-					dep = expr_eliminate_dups(dep);
+-					dep = expr_trans_bool(dep);
+-					prop->visible.expr = dep;
+-					if (prop->type == P_SELECT) {
+-						struct symbol *es = prop_get_symbol(prop);
+-						dep2 = expr_alloc_symbol(menu->sym);
+-						dep = expr_alloc_and(dep2,
+-								     expr_copy(dep));
+-						dep = expr_alloc_or(es->rev_dep.expr, dep);
+-						dep = expr_eliminate_dups(dep);
+-						es->rev_dep.expr = dep;
+-					}
++					prop->visible.expr = expr_alloc_and(expr_copy(basedep),
++									    prop->visible.expr);
+ 				}
+ 			}
+ 			menu_add_symbol(P_CHOICE, sym, NULL);
+diff --git a/scripts/kconfig/symbol.c b/scripts/kconfig/symbol.c
+index 4a03191..18f3e5c 100644
+--- a/scripts/kconfig/symbol.c
++++ b/scripts/kconfig/symbol.c
+@@ -40,7 +40,7 @@ void sym_add_default(struct symbol *sym, const char *def)
+ {
+ 	struct property *prop = prop_alloc(P_DEFAULT, sym);
+ 
+-	prop->expr = expr_alloc_symbol(sym_lookup(def, 1));
++	prop->expr = expr_alloc_symbol(sym_lookup(def, SYMBOL_CONST));
+ }
+ 
+ void sym_init(void)
+@@ -350,9 +350,6 @@ void sym_calc_value(struct symbol *sym)
+ 		;
  	}
  
-diff --git a/drivers/char/tty_io.c b/drivers/char/tty_io.c
-index 4d3c701..98b65a2 100644
---- a/drivers/char/tty_io.c
-+++ b/drivers/char/tty_io.c
-@@ -1180,7 +1180,7 @@ struct tty_driver *tty_find_polling_driver(char *name, int *line)
- 		if (*str == ',')
- 			str++;
- 		if (*str == '\0')
--			str = 0;
-+			str = NULL;
+-	if (sym->flags & SYMBOL_AUTO)
+-		sym->flags &= ~SYMBOL_WRITE;
+-
+ 	sym->curr = newval;
+ 	if (sym_is_choice(sym) && newval.tri == yes)
+ 		sym->curr.val = sym_calc_choice(sym);
+@@ -377,6 +374,9 @@ void sym_calc_value(struct symbol *sym)
+ 				sym_set_changed(choice_sym);
+ 		}
+ 	}
++
++	if (sym->flags & SYMBOL_AUTO)
++		sym->flags &= ~SYMBOL_WRITE;
+ }
  
- 		if (tty_line >= 0 && tty_line <= p->num && p->poll_init &&
- 				!p->poll_init(p, tty_line, str)) {
--- 
-1.5.5.1.270.g89765
-
+ void sym_clear_all_valid(void)
+@@ -651,7 +651,7 @@ bool sym_is_changable(struct symbol *sym)
+ 	return sym->visible > sym->rev_dep.tri;
+ }
+ 
+-struct symbol *sym_lookup(const char *name, int isconst)
++struct symbol *sym_lookup(const char *name, int flags)
+ {
+ 	struct symbol *symbol;
+ 	const char *ptr;
+@@ -671,11 +671,10 @@ struct symbol *sym_lookup(const char *name, int isconst)
+ 		hash &= 0xff;
+ 
+ 		for (symbol = symbol_hash[hash]; symbol; symbol = symbol->next) {
+-			if (!strcmp(symbol->name, name)) {
+-				if ((isconst && symbol->flags & SYMBOL_CONST) ||
+-				    (!isconst && !(symbol->flags & SYMBOL_CONST)))
+-					return symbol;
+-			}
++			if (!strcmp(symbol->name, name) &&
++			    (flags ? symbol->flags & flags
++				   : !(symbol->flags & (SYMBOL_CONST|SYMBOL_CHOICE))))
++				return symbol;
+ 		}
+ 		new_name = strdup(name);
+ 	} else {
+@@ -687,8 +686,7 @@ struct symbol *sym_lookup(const char *name, int isconst)
+ 	memset(symbol, 0, sizeof(*symbol));
+ 	symbol->name = new_name;
+ 	symbol->type = S_UNKNOWN;
+-	if (isconst)
+-		symbol->flags |= SYMBOL_CONST;
++	symbol->flags |= flags;
+ 
+ 	symbol->next = symbol_hash[hash];
+ 	symbol_hash[hash] = symbol;
+@@ -762,8 +760,6 @@ struct symbol **sym_re_search(const char *pattern)
+ }
+ 
+ 
+-struct symbol *sym_check_deps(struct symbol *sym);
+-
+ static struct symbol *sym_check_expr_deps(struct expr *e)
+ {
+ 	struct symbol *sym;
+@@ -795,40 +791,100 @@ static struct symbol *sym_check_expr_deps(struct expr *e)
+ }
+ 
+ /* return NULL when dependencies are OK */
+-struct symbol *sym_check_deps(struct symbol *sym)
++static struct symbol *sym_check_sym_deps(struct symbol *sym)
+ {
+ 	struct symbol *sym2;
+ 	struct property *prop;
+ 
+-	if (sym->flags & SYMBOL_CHECK) {
+-		fprintf(stderr, "%s:%d:error: found recursive dependency: %s",
+-		        sym->prop->file->name, sym->prop->lineno, sym->name);
+-		return sym;
+-	}
+-	if (sym->flags & SYMBOL_CHECKED)
+-		return NULL;
+-
+-	sym->flags |= (SYMBOL_CHECK | SYMBOL_CHECKED);
+ 	sym2 = sym_check_expr_deps(sym->rev_dep.expr);
+ 	if (sym2)
+-		goto out;
++		return sym2;
+ 
+ 	for (prop = sym->prop; prop; prop = prop->next) {
+ 		if (prop->type == P_CHOICE || prop->type == P_SELECT)
+ 			continue;
+ 		sym2 = sym_check_expr_deps(prop->visible.expr);
+ 		if (sym2)
+-			goto out;
++			break;
+ 		if (prop->type != P_DEFAULT || sym_is_choice(sym))
+ 			continue;
+ 		sym2 = sym_check_expr_deps(prop->expr);
+ 		if (sym2)
+-			goto out;
++			break;
+ 	}
+-out:
++
++	return sym2;
++}
++
++static struct symbol *sym_check_choice_deps(struct symbol *choice)
++{
++	struct symbol *sym, *sym2;
++	struct property *prop;
++	struct expr *e;
++
++	prop = sym_get_choice_prop(choice);
++	expr_list_for_each_sym(prop->expr, e, sym)
++		sym->flags |= (SYMBOL_CHECK | SYMBOL_CHECKED);
++
++	choice->flags |= (SYMBOL_CHECK | SYMBOL_CHECKED);
++	sym2 = sym_check_sym_deps(choice);
++	choice->flags &= ~SYMBOL_CHECK;
+ 	if (sym2)
+-		fprintf(stderr, " -> %s%s", sym->name, sym2 == sym? "\n": "");
+-	sym->flags &= ~SYMBOL_CHECK;
++		goto out;
++
++	expr_list_for_each_sym(prop->expr, e, sym) {
++		sym2 = sym_check_sym_deps(sym);
++		if (sym2) {
++			fprintf(stderr, " -> %s", sym->name);
++			break;
++		}
++	}
++out:
++	expr_list_for_each_sym(prop->expr, e, sym)
++		sym->flags &= ~SYMBOL_CHECK;
++
++	if (sym2 && sym_is_choice_value(sym2) &&
++	    prop_get_symbol(sym_get_choice_prop(sym2)) == choice)
++		sym2 = choice;
++
++	return sym2;
++}
++
++struct symbol *sym_check_deps(struct symbol *sym)
++{
++	struct symbol *sym2;
++	struct property *prop;
++
++	if (sym->flags & SYMBOL_CHECK) {
++		fprintf(stderr, "%s:%d:error: found recursive dependency: %s",
++		        sym->prop->file->name, sym->prop->lineno,
++			sym->name ? sym->name : "<choice>");
++		return sym;
++	}
++	if (sym->flags & SYMBOL_CHECKED)
++		return NULL;
++
++	if (sym_is_choice_value(sym)) {
++		/* for choice groups start the check with main choice symbol */
++		prop = sym_get_choice_prop(sym);
++		sym2 = sym_check_deps(prop_get_symbol(prop));
++	} else if (sym_is_choice(sym)) {
++		sym2 = sym_check_choice_deps(sym);
++	} else {
++		sym->flags |= (SYMBOL_CHECK | SYMBOL_CHECKED);
++		sym2 = sym_check_sym_deps(sym);
++		sym->flags &= ~SYMBOL_CHECK;
++	}
++
++	if (sym2) {
++		fprintf(stderr, " -> %s", sym->name ? sym->name : "<choice>");
++		if (sym2 == sym) {
++			fprintf(stderr, "\n");
++			zconfnerrs++;
++			sym2 = NULL;
++		}
++	}
++
+ 	return sym2;
+ }
+ 
+@@ -904,7 +960,7 @@ void prop_add_env(const char *env)
+ 	}
+ 
+ 	prop = prop_alloc(P_ENV, sym);
+-	prop->expr = expr_alloc_symbol(sym_lookup(env, 1));
++	prop->expr = expr_alloc_symbol(sym_lookup(env, SYMBOL_CONST));
+ 
+ 	sym_env_list = expr_alloc_one(E_LIST, sym_env_list);
+ 	sym_env_list->right.sym = sym;
+diff --git a/scripts/kconfig/zconf.tab.c_shipped b/scripts/kconfig/zconf.tab.c_shipped
+index d22d924..95df833 100644
+--- a/scripts/kconfig/zconf.tab.c_shipped
++++ b/scripts/kconfig/zconf.tab.c_shipped
+@@ -446,16 +446,16 @@ union yyalloc
+ /* YYFINAL -- State number of the termination state.  */
+ #define YYFINAL  3
+ /* YYLAST -- Last index in YYTABLE.  */
+-#define YYLAST   258
++#define YYLAST   259
+ 
+ /* YYNTOKENS -- Number of terminals.  */
+ #define YYNTOKENS  35
+ /* YYNNTS -- Number of nonterminals.  */
+-#define YYNNTS  45
++#define YYNNTS  46
+ /* YYNRULES -- Number of rules.  */
+-#define YYNRULES  108
++#define YYNRULES  110
+ /* YYNRULES -- Number of states.  */
+-#define YYNSTATES  178
++#define YYNSTATES  180
+ 
+ /* YYTRANSLATE(YYLEX) -- Bison symbol number corresponding to YYLEX.  */
+ #define YYUNDEFTOK  2
+@@ -507,13 +507,14 @@ static const yytype_uint16 yyprhs[] =
+       28,    33,    37,    39,    41,    43,    45,    47,    49,    51,
+       53,    55,    57,    59,    61,    63,    67,    70,    74,    77,
+       81,    84,    85,    88,    91,    94,    97,   100,   103,   107,
+-     112,   117,   122,   128,   132,   133,   137,   138,   141,   144,
+-     147,   149,   153,   154,   157,   160,   163,   166,   169,   174,
+-     178,   181,   186,   187,   190,   194,   196,   200,   201,   204,
+-     207,   210,   214,   217,   219,   223,   224,   227,   230,   233,
+-     237,   241,   244,   247,   250,   251,   254,   257,   260,   265,
+-     266,   269,   271,   273,   276,   279,   282,   284,   287,   288,
+-     291,   293,   297,   301,   305,   308,   312,   316,   318
++     112,   117,   122,   128,   132,   133,   137,   138,   141,   145,
++     148,   150,   154,   155,   158,   161,   164,   167,   170,   175,
++     179,   182,   187,   188,   191,   195,   197,   201,   202,   205,
++     208,   211,   215,   218,   220,   224,   225,   228,   231,   234,
++     238,   242,   245,   248,   251,   252,   255,   258,   261,   266,
++     267,   270,   272,   274,   277,   280,   283,   285,   288,   289,
++     292,   294,   298,   302,   306,   309,   313,   317,   319,   321,
++     322
+ };
+ 
+ /* YYRHS -- A `-1'-separated list of the rules' RHS.  */
+@@ -533,24 +534,25 @@ static const yytype_int8 yyrhs[] =
+       30,    -1,    20,    78,    77,    30,    -1,    21,    25,    77,
+       30,    -1,    22,    79,    79,    77,    30,    -1,    23,    48,
+       30,    -1,    -1,    48,    25,    49,    -1,    -1,    33,    74,
+-      -1,     7,    30,    -1,    50,    54,    -1,    75,    -1,    51,
+-      56,    52,    -1,    -1,    54,    55,    -1,    54,    72,    -1,
+-      54,    70,    -1,    54,    30,    -1,    54,    40,    -1,    18,
+-      74,    77,    30,    -1,    19,    73,    30,    -1,    17,    30,
+-      -1,    20,    25,    77,    30,    -1,    -1,    56,    39,    -1,
+-      14,    78,    76,    -1,    75,    -1,    57,    60,    58,    -1,
+-      -1,    60,    39,    -1,    60,    64,    -1,    60,    53,    -1,
+-       4,    74,    30,    -1,    61,    71,    -1,    75,    -1,    62,
+-      65,    63,    -1,    -1,    65,    39,    -1,    65,    64,    -1,
+-      65,    53,    -1,     6,    74,    30,    -1,     9,    74,    30,
+-      -1,    67,    71,    -1,    12,    30,    -1,    69,    13,    -1,
+-      -1,    71,    72,    -1,    71,    30,    -1,    71,    40,    -1,
+-      16,    24,    78,    30,    -1,    -1,    74,    77,    -1,    25,
+-      -1,    26,    -1,     5,    30,    -1,     8,    30,    -1,    15,
+-      30,    -1,    30,    -1,    76,    30,    -1,    -1,    14,    78,
+-      -1,    79,    -1,    79,    33,    79,    -1,    79,    27,    79,
+-      -1,    29,    78,    28,    -1,    34,    78,    -1,    78,    31,
+-      78,    -1,    78,    32,    78,    -1,    25,    -1,    26,    -1
++      -1,     7,    80,    30,    -1,    50,    54,    -1,    75,    -1,
++      51,    56,    52,    -1,    -1,    54,    55,    -1,    54,    72,
++      -1,    54,    70,    -1,    54,    30,    -1,    54,    40,    -1,
++      18,    74,    77,    30,    -1,    19,    73,    30,    -1,    17,
++      30,    -1,    20,    25,    77,    30,    -1,    -1,    56,    39,
++      -1,    14,    78,    76,    -1,    75,    -1,    57,    60,    58,
++      -1,    -1,    60,    39,    -1,    60,    64,    -1,    60,    53,
++      -1,     4,    74,    30,    -1,    61,    71,    -1,    75,    -1,
++      62,    65,    63,    -1,    -1,    65,    39,    -1,    65,    64,
++      -1,    65,    53,    -1,     6,    74,    30,    -1,     9,    74,
++      30,    -1,    67,    71,    -1,    12,    30,    -1,    69,    13,
++      -1,    -1,    71,    72,    -1,    71,    30,    -1,    71,    40,
++      -1,    16,    24,    78,    30,    -1,    -1,    74,    77,    -1,
++      25,    -1,    26,    -1,     5,    30,    -1,     8,    30,    -1,
++      15,    30,    -1,    30,    -1,    76,    30,    -1,    -1,    14,
++      78,    -1,    79,    -1,    79,    33,    79,    -1,    79,    27,
++      79,    -1,    29,    78,    28,    -1,    34,    78,    -1,    78,
++      31,    78,    -1,    78,    32,    78,    -1,    25,    -1,    26,
++      -1,    -1,    25,    -1
+ };
+ 
+ /* YYRLINE[YYN] -- source line where rule number YYN was defined.  */
+@@ -566,7 +568,8 @@ static const yytype_uint16 yyrline[] =
+      339,   344,   351,   356,   364,   367,   369,   370,   371,   374,
+      382,   389,   396,   402,   409,   411,   412,   413,   416,   424,
+      426,   431,   432,   435,   436,   437,   441,   442,   445,   446,
+-     449,   450,   451,   452,   453,   454,   455,   458,   459
++     449,   450,   451,   452,   453,   454,   455,   458,   459,   462,
++     463
+ };
+ #endif
+ 
+@@ -590,7 +593,8 @@ static const char *const yytname[] =
+   "if_entry", "if_end", "if_stmt", "if_block", "menu", "menu_entry",
+   "menu_end", "menu_stmt", "menu_block", "source_stmt", "comment",
+   "comment_stmt", "help_start", "help", "depends_list", "depends",
+-  "prompt_stmt_opt", "prompt", "end", "nl", "if_expr", "expr", "symbol", 0
++  "prompt_stmt_opt", "prompt", "end", "nl", "if_expr", "expr", "symbol",
++  "word_opt", 0
+ };
+ #endif
+ 
+@@ -619,7 +623,8 @@ static const yytype_uint8 yyr1[] =
+       60,    61,    62,    63,    64,    65,    65,    65,    65,    66,
+       67,    68,    69,    70,    71,    71,    71,    71,    72,    73,
+       73,    74,    74,    75,    75,    75,    76,    76,    77,    77,
+-      78,    78,    78,    78,    78,    78,    78,    79,    79
++      78,    78,    78,    78,    78,    78,    78,    79,    79,    80,
++      80
+ };
+ 
+ /* YYR2[YYN] -- Number of symbols composing right hand side of rule YYN.  */
+@@ -629,13 +634,14 @@ static const yytype_uint8 yyr2[] =
+        4,     3,     1,     1,     1,     1,     1,     1,     1,     1,
+        1,     1,     1,     1,     1,     3,     2,     3,     2,     3,
+        2,     0,     2,     2,     2,     2,     2,     2,     3,     4,
+-       4,     4,     5,     3,     0,     3,     0,     2,     2,     2,
++       4,     4,     5,     3,     0,     3,     0,     2,     3,     2,
+        1,     3,     0,     2,     2,     2,     2,     2,     4,     3,
+        2,     4,     0,     2,     3,     1,     3,     0,     2,     2,
+        2,     3,     2,     1,     3,     0,     2,     2,     2,     3,
+        3,     2,     2,     2,     0,     2,     2,     2,     4,     0,
+        2,     1,     1,     2,     2,     2,     1,     2,     0,     2,
+-       1,     3,     3,     3,     2,     3,     3,     1,     1
++       1,     3,     3,     3,     2,     3,     3,     1,     1,     0,
++       1
+ };
+ 
+ /* YYDEFACT[STATE-NAME] -- Default rule to reduce with in state
+@@ -643,69 +649,69 @@ static const yytype_uint8 yyr2[] =
+    means the default is an error.  */
+ static const yytype_uint8 yydefact[] =
+ {
+-       3,     0,     0,     1,     0,     0,     0,     0,     0,     0,
++       3,     0,     0,     1,     0,     0,     0,     0,     0,   109,
+        0,     0,     0,     0,     0,     0,    12,    16,    13,    14,
+       18,    15,    17,     0,    19,     0,     4,    31,    22,    31,
+       23,    52,    62,     5,    67,    20,    84,    75,     6,    24,
+       84,    21,     8,    11,    91,    92,     0,     0,    93,     0,
+-      48,    94,     0,     0,     0,   107,   108,     0,     0,     0,
+-     100,    95,     0,     0,     0,     0,     0,     0,     0,     0,
+-       0,     0,    96,     7,    71,    79,    80,    27,    29,     0,
+-     104,     0,     0,    64,     0,     0,     9,    10,     0,     0,
+-       0,     0,    89,     0,     0,     0,    44,     0,    37,    36,
+-      32,    33,     0,    35,    34,     0,     0,    89,     0,    56,
+-      57,    53,    55,    54,    63,    51,    50,    68,    70,    66,
+-      69,    65,    86,    87,    85,    76,    78,    74,    77,    73,
+-      97,   103,   105,   106,   102,   101,    26,    82,     0,    98,
+-       0,    98,    98,    98,     0,     0,     0,    83,    60,    98,
+-       0,    98,     0,     0,     0,    38,    90,     0,     0,    98,
+-      46,    43,    25,     0,    59,     0,    88,    99,    39,    40,
+-      41,     0,     0,    45,    58,    61,    42,    47
++     110,     0,    94,     0,     0,     0,   107,   108,     0,     0,
++       0,   100,    95,     0,     0,     0,     0,     0,     0,     0,
++       0,     0,     0,    96,     7,    71,    79,    48,    80,    27,
++      29,     0,   104,     0,     0,    64,     0,     0,     9,    10,
++       0,     0,     0,     0,    89,     0,     0,     0,    44,     0,
++      37,    36,    32,    33,     0,    35,    34,     0,     0,    89,
++       0,    56,    57,    53,    55,    54,    63,    51,    50,    68,
++      70,    66,    69,    65,    86,    87,    85,    76,    78,    74,
++      77,    73,    97,   103,   105,   106,   102,   101,    26,    82,
++       0,    98,     0,    98,    98,    98,     0,     0,     0,    83,
++      60,    98,     0,    98,     0,     0,     0,    38,    90,     0,
++       0,    98,    46,    43,    25,     0,    59,     0,    88,    99,
++      39,    40,    41,     0,     0,    45,    58,    61,    42,    47
+ };
+ 
+ /* YYDEFGOTO[NTERM-NUM].  */
+ static const yytype_int16 yydefgoto[] =
+ {
+-      -1,     1,     2,    25,    26,    99,    27,    28,    29,    30,
+-      64,   100,   101,   145,   173,    31,    32,   115,    33,    66,
+-     111,    67,    34,   119,    35,    68,    36,    37,   127,    38,
+-      70,    39,    40,    41,   102,   103,    69,   104,   140,   141,
+-      42,    73,   154,    59,    60
++      -1,     1,     2,    25,    26,   101,    27,    28,    29,    30,
++      65,   102,   103,   147,   175,    31,    32,   117,    33,    67,
++     113,    68,    34,   121,    35,    69,    36,    37,   129,    38,
++      71,    39,    40,    41,   104,   105,    70,   106,   142,   143,
++      42,    74,   156,    60,    61,    51
+ };
+ 
+ /* YYPACT[STATE-NUM] -- Index in YYTABLE of the portion describing
+    STATE-NUM.  */
+-#define YYPACT_NINF -78
++#define YYPACT_NINF -80
+ static const yytype_int16 yypact[] =
+ {
+-     -78,    33,   130,   -78,   -28,    73,    73,     7,    73,    36,
+-      41,    73,    26,    52,    -4,    58,   -78,   -78,   -78,   -78,
+-     -78,   -78,   -78,    90,   -78,    94,   -78,   -78,   -78,   -78,
+-     -78,   -78,   -78,   -78,   -78,   -78,   -78,   -78,   -78,   -78,
+-     -78,   -78,   -78,   -78,   -78,   -78,    74,    85,   -78,    96,
+-     -78,   -78,   131,   134,   147,   -78,   -78,    -4,    -4,   193,
+-     -10,   -78,   162,   164,    38,   102,    64,   148,     5,   192,
+-       5,   165,   -78,   174,   -78,   -78,   -78,   -78,   -78,    65,
+-     -78,    -4,    -4,   174,   103,   103,   -78,   -78,   175,   185,
+-     197,    73,    73,    -4,   194,   103,   -78,   231,   -78,   -78,
+-     -78,   -78,   220,   -78,   -78,   204,    73,    73,   210,   -78,
+-     -78,   -78,   -78,   -78,   -78,   -78,   -78,   -78,   -78,   -78,
+-     -78,   -78,   -78,   -78,   -78,   -78,   -78,   -78,   -78,   -78,
+-     -78,   -78,   205,   -78,   -78,   -78,   -78,   -78,    -4,   222,
+-     208,   222,   195,   222,   103,     2,   209,   -78,   -78,   222,
+-     211,   222,   199,    -4,   212,   -78,   -78,   213,   214,   222,
+-     207,   -78,   -78,   215,   -78,   216,   -78,   111,   -78,   -78,
+-     -78,   217,    73,   -78,   -78,   -78,   -78,   -78
++     -80,     2,   132,   -80,   -13,    -1,    -1,    -2,    -1,     9,
++      33,    -1,    27,    40,    -3,    38,   -80,   -80,   -80,   -80,
++     -80,   -80,   -80,    71,   -80,    77,   -80,   -80,   -80,   -80,
++     -80,   -80,   -80,   -80,   -80,   -80,   -80,   -80,   -80,   -80,
++     -80,   -80,   -80,   -80,   -80,   -80,    57,    61,   -80,    63,
++     -80,    76,   -80,    87,   101,   133,   -80,   -80,    -3,    -3,
++     195,    -6,   -80,   136,   149,    39,   104,    65,   150,     5,
++     194,     5,   167,   -80,   176,   -80,   -80,   -80,   -80,   -80,
++     -80,    68,   -80,    -3,    -3,   176,    72,    72,   -80,   -80,
++     177,   187,    78,    -1,    -1,    -3,   196,    72,   -80,   222,
++     -80,   -80,   -80,   -80,   221,   -80,   -80,   205,    -1,    -1,
++     211,   -80,   -80,   -80,   -80,   -80,   -80,   -80,   -80,   -80,
++     -80,   -80,   -80,   -80,   -80,   -80,   -80,   -80,   -80,   -80,
++     -80,   -80,   -80,   -80,   206,   -80,   -80,   -80,   -80,   -80,
++      -3,   223,   209,   223,   197,   223,    72,     7,   210,   -80,
++     -80,   223,   212,   223,   201,    -3,   213,   -80,   -80,   214,
++     215,   223,   208,   -80,   -80,   216,   -80,   217,   -80,   113,
++     -80,   -80,   -80,   218,    -1,   -80,   -80,   -80,   -80,   -80
+ };
+ 
+ /* YYPGOTO[NTERM-NUM].  */
+ static const yytype_int16 yypgoto[] =
+ {
+-     -78,   -78,   -78,   -78,   121,   -35,   -78,   -78,   -78,   -78,
+-     219,   -78,   -78,   -78,   -78,   -78,   -78,   -78,   -44,   -78,
+-     -78,   -78,   -78,   -78,   -78,   -78,   -78,   -78,   -78,    -6,
+-     -78,   -78,   -78,   -78,   -78,   183,   218,    21,   143,    -5,
+-     146,   196,    69,   -53,   -77
++     -80,   -80,   -80,   -80,   122,   -34,   -80,   -80,   -80,   -80,
++     220,   -80,   -80,   -80,   -80,   -80,   -80,   -80,    59,   -80,
++     -80,   -80,   -80,   -80,   -80,   -80,   -80,   -80,   -80,   125,
++     -80,   -80,   -80,   -80,   -80,   183,   219,    22,   142,    -5,
++     147,   192,    69,   -54,   -79,   -80
+ };
+ 
+ /* YYTABLE[YYPACT[STATE-NUM]].  What to do in state STATE-NUM.  If
+@@ -715,62 +721,62 @@ static const yytype_int16 yypgoto[] =
+ #define YYTABLE_NINF -82
+ static const yytype_int16 yytable[] =
+ {
+-      46,    47,    43,    49,    79,    80,    52,   134,   135,     6,
+-       7,     8,     9,    10,    11,    12,    13,    84,   144,    14,
+-      15,    55,    56,    85,   118,    57,   126,   160,   132,   133,
+-      58,   110,   161,     3,   123,    24,   123,    48,   -28,    88,
+-     142,   -28,   -28,   -28,   -28,   -28,   -28,   -28,   -28,   -28,
+-      89,    53,   -28,   -28,    90,   -28,    91,    92,    93,    94,
+-      95,    96,   120,    97,   128,    88,    50,   159,    98,   -49,
+-     -49,    51,   -49,   -49,   -49,   -49,    89,    54,   -49,   -49,
+-      90,   105,   106,   107,   108,   152,   139,   113,    61,    97,
+-     124,    62,   124,   131,   109,    63,    81,    82,    44,    45,
+-     167,   149,   -30,    88,    72,   -30,   -30,   -30,   -30,   -30,
+-     -30,   -30,   -30,   -30,    89,    74,   -30,   -30,    90,   -30,
+-      91,    92,    93,    94,    95,    96,    75,    97,    55,    56,
+-      -2,     4,    98,     5,     6,     7,     8,     9,    10,    11,
+-      12,    13,    81,    82,    14,    15,    16,    17,    18,    19,
+-      20,    21,    22,     7,     8,    23,    10,    11,    12,    13,
+-      24,    76,    14,    15,    77,   -81,    88,   177,   -81,   -81,
+-     -81,   -81,   -81,   -81,   -81,   -81,   -81,    78,    24,   -81,
+-     -81,    90,   -81,   -81,   -81,   -81,   -81,   -81,   114,   117,
+-      97,   125,    86,    88,    87,   122,   -72,   -72,   -72,   -72,
+-     -72,   -72,   -72,   -72,   130,   136,   -72,   -72,    90,   153,
+-     156,   157,   158,   116,   121,   137,   129,    97,   163,   143,
+-     165,   138,   122,    72,    81,    82,    81,    82,   171,   166,
+-      81,    82,   146,   147,   148,   151,   153,    82,   155,   162,
+-     172,   164,   168,   169,   170,   174,   175,   176,    65,   112,
+-     150,     0,     0,     0,     0,    83,     0,     0,    71
++      46,    47,     3,    49,    81,    82,    53,   136,   137,     6,
++       7,     8,     9,    10,    11,    12,    13,    43,   146,    14,
++      15,    86,    56,    57,    44,    45,    58,    87,    48,   134,
++     135,    59,   162,   112,    50,    24,   125,   163,   125,   -28,
++      90,   144,   -28,   -28,   -28,   -28,   -28,   -28,   -28,   -28,
++     -28,    91,    54,   -28,   -28,    92,   -28,    93,    94,    95,
++      96,    97,    98,    52,    99,    55,    90,   161,    62,   100,
++     -49,   -49,    63,   -49,   -49,   -49,   -49,    91,    64,   -49,
++     -49,    92,   107,   108,   109,   110,   154,    73,   141,   115,
++      99,    75,   126,    76,   126,   111,   133,    56,    57,    83,
++      84,   169,   140,   151,   -30,    90,    77,   -30,   -30,   -30,
++     -30,   -30,   -30,   -30,   -30,   -30,    91,    78,   -30,   -30,
++      92,   -30,    93,    94,    95,    96,    97,    98,   120,    99,
++     128,    79,    -2,     4,   100,     5,     6,     7,     8,     9,
++      10,    11,    12,    13,    83,    84,    14,    15,    16,    17,
++      18,    19,    20,    21,    22,     7,     8,    23,    10,    11,
++      12,    13,    24,    80,    14,    15,    88,   -81,    90,   179,
++     -81,   -81,   -81,   -81,   -81,   -81,   -81,   -81,   -81,    89,
++      24,   -81,   -81,    92,   -81,   -81,   -81,   -81,   -81,   -81,
++     116,   119,    99,   127,   122,    90,   130,   124,   -72,   -72,
++     -72,   -72,   -72,   -72,   -72,   -72,   132,   138,   -72,   -72,
++      92,   155,   158,   159,   160,   118,   123,   139,   131,    99,
++     165,   145,   167,   148,   124,    73,    83,    84,    83,    84,
++     173,   168,    83,    84,   149,   150,   153,   155,    84,   157,
++     164,   174,   166,   170,   171,   172,   176,   177,   178,    66,
++     114,   152,    85,     0,     0,     0,     0,     0,     0,    72
+ };
+ 
+ static const yytype_int16 yycheck[] =
+ {
+-       5,     6,    30,     8,    57,    58,    11,    84,    85,     4,
+-       5,     6,     7,     8,     9,    10,    11,    27,    95,    14,
+-      15,    25,    26,    33,    68,    29,    70,    25,    81,    82,
+-      34,    66,    30,     0,    69,    30,    71,    30,     0,     1,
+-      93,     3,     4,     5,     6,     7,     8,     9,    10,    11,
+-      12,    25,    14,    15,    16,    17,    18,    19,    20,    21,
+-      22,    23,    68,    25,    70,     1,    30,   144,    30,     5,
+-       6,    30,     8,     9,    10,    11,    12,    25,    14,    15,
+-      16,    17,    18,    19,    20,   138,    91,    66,    30,    25,
+-      69,     1,    71,    28,    30,     1,    31,    32,    25,    26,
+-     153,   106,     0,     1,    30,     3,     4,     5,     6,     7,
+-       8,     9,    10,    11,    12,    30,    14,    15,    16,    17,
+-      18,    19,    20,    21,    22,    23,    30,    25,    25,    26,
+-       0,     1,    30,     3,     4,     5,     6,     7,     8,     9,
+-      10,    11,    31,    32,    14,    15,    16,    17,    18,    19,
+-      20,    21,    22,     5,     6,    25,     8,     9,    10,    11,
+-      30,    30,    14,    15,    30,     0,     1,   172,     3,     4,
+-       5,     6,     7,     8,     9,    10,    11,    30,    30,    14,
+-      15,    16,    17,    18,    19,    20,    21,    22,    67,    68,
+-      25,    70,    30,     1,    30,    30,     4,     5,     6,     7,
+-       8,     9,    10,    11,    30,    30,    14,    15,    16,    14,
+-     141,   142,   143,    67,    68,    30,    70,    25,   149,    25,
+-     151,    24,    30,    30,    31,    32,    31,    32,   159,    30,
+-      31,    32,     1,    13,    30,    25,    14,    32,    30,    30,
+-      33,    30,    30,    30,    30,    30,    30,    30,    29,    66,
+-     107,    -1,    -1,    -1,    -1,    59,    -1,    -1,    40
++       5,     6,     0,     8,    58,    59,    11,    86,    87,     4,
++       5,     6,     7,     8,     9,    10,    11,    30,    97,    14,
++      15,    27,    25,    26,    25,    26,    29,    33,    30,    83,
++      84,    34,    25,    67,    25,    30,    70,    30,    72,     0,
++       1,    95,     3,     4,     5,     6,     7,     8,     9,    10,
++      11,    12,    25,    14,    15,    16,    17,    18,    19,    20,
++      21,    22,    23,    30,    25,    25,     1,   146,    30,    30,
++       5,     6,     1,     8,     9,    10,    11,    12,     1,    14,
++      15,    16,    17,    18,    19,    20,   140,    30,    93,    67,
++      25,    30,    70,    30,    72,    30,    28,    25,    26,    31,
++      32,   155,    24,   108,     0,     1,    30,     3,     4,     5,
++       6,     7,     8,     9,    10,    11,    12,    30,    14,    15,
++      16,    17,    18,    19,    20,    21,    22,    23,    69,    25,
++      71,    30,     0,     1,    30,     3,     4,     5,     6,     7,
++       8,     9,    10,    11,    31,    32,    14,    15,    16,    17,
++      18,    19,    20,    21,    22,     5,     6,    25,     8,     9,
++      10,    11,    30,    30,    14,    15,    30,     0,     1,   174,
++       3,     4,     5,     6,     7,     8,     9,    10,    11,    30,
++      30,    14,    15,    16,    17,    18,    19,    20,    21,    22,
++      68,    69,    25,    71,    69,     1,    71,    30,     4,     5,
++       6,     7,     8,     9,    10,    11,    30,    30,    14,    15,
++      16,    14,   143,   144,   145,    68,    69,    30,    71,    25,
++     151,    25,   153,     1,    30,    30,    31,    32,    31,    32,
++     161,    30,    31,    32,    13,    30,    25,    14,    32,    30,
++      30,    33,    30,    30,    30,    30,    30,    30,    30,    29,
++      67,   109,    60,    -1,    -1,    -1,    -1,    -1,    -1,    40
+ };
+ 
+ /* YYSTOS[STATE-NUM] -- The (internal number of the) accessing
+@@ -782,19 +788,19 @@ static const yytype_uint8 yystos[] =
+       20,    21,    22,    25,    30,    38,    39,    41,    42,    43,
+       44,    50,    51,    53,    57,    59,    61,    62,    64,    66,
+       67,    68,    75,    30,    25,    26,    74,    74,    30,    74,
+-      30,    30,    74,    25,    25,    25,    26,    29,    34,    78,
+-      79,    30,     1,     1,    45,    45,    54,    56,    60,    71,
+-      65,    71,    30,    76,    30,    30,    30,    30,    30,    78,
+-      78,    31,    32,    76,    27,    33,    30,    30,     1,    12,
+-      16,    18,    19,    20,    21,    22,    23,    25,    30,    40,
+-      46,    47,    69,    70,    72,    17,    18,    19,    20,    30,
+-      40,    55,    70,    72,    39,    52,    75,    39,    53,    58,
+-      64,    75,    30,    40,    72,    39,    53,    63,    64,    75,
+-      30,    28,    78,    78,    79,    79,    30,    30,    24,    74,
+-      73,    74,    78,    25,    79,    48,     1,    13,    30,    74,
+-      73,    25,    78,    14,    77,    30,    77,    77,    77,    79,
+-      25,    30,    30,    77,    30,    77,    30,    78,    30,    30,
+-      30,    77,    33,    49,    30,    30,    30,    74
++      25,    80,    30,    74,    25,    25,    25,    26,    29,    34,
++      78,    79,    30,     1,     1,    45,    45,    54,    56,    60,
++      71,    65,    71,    30,    76,    30,    30,    30,    30,    30,
++      30,    78,    78,    31,    32,    76,    27,    33,    30,    30,
++       1,    12,    16,    18,    19,    20,    21,    22,    23,    25,
++      30,    40,    46,    47,    69,    70,    72,    17,    18,    19,
++      20,    30,    40,    55,    70,    72,    39,    52,    75,    39,
++      53,    58,    64,    75,    30,    40,    72,    39,    53,    63,
++      64,    75,    30,    28,    78,    78,    79,    79,    30,    30,
++      24,    74,    73,    74,    78,    25,    79,    48,     1,    13,
++      30,    74,    73,    25,    78,    14,    77,    30,    77,    77,
++      77,    79,    25,    30,    30,    77,    30,    77,    30,    78,
++      30,    30,    30,    77,    33,    49,    30,    30,    30,    74
+ };
+ 
+ #define yyerrok		(yyerrstatus = 0)
+@@ -1781,8 +1787,8 @@ yyreduce:
+   case 48:
+ 
+     {
+-	struct symbol *sym = sym_lookup(NULL, 0);
+-	sym->flags |= SYMBOL_CHOICE;
++	struct symbol *sym = sym_lookup((yyvsp[(2) - (3)].string), SYMBOL_CHOICE);
++	sym->flags |= SYMBOL_AUTO;
+ 	menu_add_entry(sym);
+ 	menu_add_expr(P_CHOICE, NULL, NULL);
+ 	printd(DEBUG_PARSE, "%s:%d:choice\n", zconf_curname(), zconf_lineno());
+@@ -2014,7 +2020,12 @@ yyreduce:
+ 
+   case 108:
+ 
+-    { (yyval.symbol) = sym_lookup((yyvsp[(1) - (1)].string), 1); free((yyvsp[(1) - (1)].string)); ;}
++    { (yyval.symbol) = sym_lookup((yyvsp[(1) - (1)].string), SYMBOL_CONST); free((yyvsp[(1) - (1)].string)); ;}
++    break;
++
++  case 109:
++
++    { (yyval.string) = NULL; ;}
+     break;
+ 
+ 
+diff --git a/scripts/kconfig/zconf.y b/scripts/kconfig/zconf.y
+index d9b96ba..9710b82 100644
+--- a/scripts/kconfig/zconf.y
++++ b/scripts/kconfig/zconf.y
+@@ -91,7 +91,7 @@ static struct menu *current_menu, *current_entry;
+ %type <id> end
+ %type <id> option_name
+ %type <menu> if_entry menu_entry choice_entry
+-%type <string> symbol_option_arg
++%type <string> symbol_option_arg word_opt
+ 
+ %destructor {
+ 	fprintf(stderr, "%s:%d: missing end statement for this entry\n",
+@@ -239,10 +239,10 @@ symbol_option_arg:
+ 
+ /* choice entry */
+ 
+-choice: T_CHOICE T_EOL
++choice: T_CHOICE word_opt T_EOL
+ {
+-	struct symbol *sym = sym_lookup(NULL, 0);
+-	sym->flags |= SYMBOL_CHOICE;
++	struct symbol *sym = sym_lookup($2, SYMBOL_CHOICE);
++	sym->flags |= SYMBOL_AUTO;
+ 	menu_add_entry(sym);
+ 	menu_add_expr(P_CHOICE, NULL, NULL);
+ 	printd(DEBUG_PARSE, "%s:%d:choice\n", zconf_curname(), zconf_lineno());
+@@ -456,9 +456,12 @@ expr:	  symbol				{ $$ = expr_alloc_symbol($1); }
+ ;
+ 
+ symbol:	  T_WORD	{ $$ = sym_lookup($1, 0); free($1); }
+-	| T_WORD_QUOTE	{ $$ = sym_lookup($1, 1); free($1); }
++	| T_WORD_QUOTE	{ $$ = sym_lookup($1, SYMBOL_CONST); free($1); }
+ ;
+ 
++word_opt: /* empty */			{ $$ = NULL; }
++	| T_WORD
++
+ %%
+ 
+ void conf_parse(const char *name)
