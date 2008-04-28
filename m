@@ -1,42 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763306AbYD1Duj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764957AbYD1DvK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763306AbYD1Duj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Apr 2008 23:50:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762149AbYD1Dua
+	id S1764957AbYD1DvK (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Apr 2008 23:51:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762149AbYD1Duv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Apr 2008 23:50:30 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:46307 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760714AbYD1Du3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Apr 2008 23:50:29 -0400
-Date: Sun, 27 Apr 2008 23:50:23 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: David Chinner <dgc@sgi.com>
-Cc: Denys Vlasenko <vda.linux@googlemail.com>, xfs@oss.sgi.com,
-       Eric Sandeen <sandeen@sandeen.net>, Adrian Bunk <bunk@kernel.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] xfs: reduce stack usage in xfs_page_state_convert()
-Message-ID: <20080428035023.GA14275@infradead.org>
-References: <200804270246.58828.vda.linux@googlemail.com> <20080427232317.GB103491721@sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080427232317.GB103491721@sgi.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+	Sun, 27 Apr 2008 23:50:51 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:57914 "EHLO smtp.polymtl.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1763572AbYD1Duu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Apr 2008 23:50:50 -0400
+Message-Id: <20080428033415.303000651@polymtl.ca>
+User-Agent: quilt/0.46-1
+Date: Sun, 27 Apr 2008 23:34:15 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>
+Subject: [patch 0/2] Immediate Values - jump patching update
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Mon, 28 Apr 2008 03:50:07 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 28, 2008 at 09:23:17AM +1000, David Chinner wrote:
-> No. That code is complex enough with only one copy of it around. I don't
-> want two copies that differ subtly and hence have two different sets
-> of nasty, rarely hit corner cases in them.
+Hi Ingo,
 
-Actually the split makes some sense.  I had a ready patch to split out
-releasepage which makes the whole code a lot nicer.  I didn't go forward
-with it because I had this idea that it would get replaced by Chris
-extent_map stuff ASAP..
+Here is the update to the jump patching optimization taking care of Peter's
+comments about register liveliness and instruction re-use by gcc optimizations.
+A good thing : it actually simplifies the code. Unfortunately, it adds 3 bytes
+to the instructions in i-cache because I now have to use a 5-bytes mov
+instruction so I can replace it with a 5-bytes jump. Therefore, 9 bytes are
+added to rather small functions (5-bytes mov + 2-bytes test + 2 bytes
+conditional branch) and 13 bytes are added to larger functions which needs a 6
+bytes conditional branch at the branch site.
 
+Instead of having to execute a sequence of nop, nop and jump, we now only have
+to execute the near jump, which jumps either at the address following the
+conditional branch or at the target address of the conditional branch, depending
+on the immediate value variable state.
+
+Thanks to Peter for the review.
+
+Those two patches apply on top of sched-devel.git.
+
+Mathieu
+
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
