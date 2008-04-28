@@ -1,68 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937001AbYD1TBb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936780AbYD1TA6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937001AbYD1TBb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 15:01:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966180AbYD1TAl
+	id S936780AbYD1TA6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 15:00:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966176AbYD1TAj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 15:00:41 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:42275 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S966174AbYD1TAj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 28 Apr 2008 15:00:39 -0400
-Date: Mon, 28 Apr 2008 15:00:36 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org
-Subject: Re: [PATCH -rt 1/4] x86_64: send NMI after nmi_show_regs on
-In-Reply-To: <4816140F.50005@ct.jp.nec.com>
-Message-ID: <Pine.LNX.4.58.0804281457330.4615@gandalf.stny.rr.com>
-References: <48161325.1080508@ct.jp.nec.com> <4816140F.50005@ct.jp.nec.com>
+Received: from mail.tmr.com ([64.65.253.246]:51140 "EHLO gaimboi.tmr.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S935059AbYD1TAi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Apr 2008 15:00:38 -0400
+Message-ID: <4816205D.7000109@tmr.com>
+Date: Mon, 28 Apr 2008 15:07:09 -0400
+From: Bill Davidsen <davidsen@tmr.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Tomasz Chmielewski <mangoo@wpkg.org>
+CC: LKML <linux-kernel@vger.kernel.org>, jbarnold@MIT.EDU,
+       francois.cami@free.fr, Andi Kleen <andi@firstfloor.org>,
+       mail@earthworm.de
+Subject: Re: A system for rebootless kernel security updates
+References: <481098A4.50107@wpkg.org>
+In-Reply-To: <481098A4.50107@wpkg.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Tomasz Chmielewski wrote:
+> Jeff Arnold wrote:
+> 
+>> I've put together an automatic system for applying kernel security 
+>> patches to the Linux kernel without rebooting it, and I wanted to 
+>> share this system with the community in case others find it useful or 
+>> interesting.
+> 
+> Hmm, the idea seem to be patented by Microsoft, i.e. this patent from 
+> December 2002:
+> 
+> http://www.google.com/patents?id=cVyWAAAAEBAJ&dq=hotpatching
+> 
+> (and other patents by Microsoft if you search for "hotpatching").
+> 
+> 
+> And those patent descriptions, by the way, remind the way kexec works 
+> ("A software module is hotpatched by loading a patch into memory and 
+> modifying an instruction in the original module to jump to the patch"), 
+> which was released much earlier... In essence, they patented kexec ;)
+> 
+I think you will find prior art all the way back to the PDP-8 (or 11) 
+and if memory serves DTSS, which was in the 1960's. I think MULTICS 
+allowed that as well, by patching the library dispatch table (sort of 
+like TLB) to map a virtual address of the entry point to a new location.
 
+All of which doesn't matter, of course, because no one has the money to 
+challenge MSFT, and it would be in court until the heat death of the 
+universe anyway.
 
-On Mon, 28 Apr 2008, Hiroshi Shimamoto wrote:
-> diff --git a/arch/x86/kernel/nmi_64.c b/arch/x86/kernel/nmi_64.c
-> index d187ab9..69cc737 100644
-> --- a/arch/x86/kernel/nmi_64.c
-> +++ b/arch/x86/kernel/nmi_64.c
-> @@ -327,11 +327,11 @@ void nmi_show_all_regs(void)
->  	if (system_state == SYSTEM_BOOTING)
->  		return;
->
-> -	smp_send_nmi_allbutself();
-> -
->  	for_each_online_cpu(i)
->  		nmi_show_regs[i] = 1;
-
-Hi Hiroshi,
-
-I know this wasn't your code to begin with but, how does this function
-exit?  I mean, we set an array where each index per online cpu is set to
-one, then do an "nmi_allbutself", and then wait on those indexes to turn
-zero, one at a time.  If we are CPU 0 here, we set that index to 1, then
-enter the loop, and will block forever on this "while" loop below.
-
-Am I missing something?
-
-Thanks,
-
--- Steve
-
-
-
-> +	smp_send_nmi_allbutself();
-> +
->  	for_each_online_cpu(i) {
->  		while (nmi_show_regs[i] == 1)
->  			barrier();
-> --
-> 1.5.4.1
->
+-- 
+Bill Davidsen <davidsen@tmr.com>
+   "We have more to fear from the bungling of the incompetent than from
+the machinations of the wicked."  - from Slashdot
