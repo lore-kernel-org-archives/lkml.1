@@ -1,120 +1,412 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764824AbYD1CwM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763573AbYD1DPh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764824AbYD1CwM (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Apr 2008 22:52:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761192AbYD1Cv7
+	id S1763573AbYD1DPh (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Apr 2008 23:15:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762199AbYD1DP1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Apr 2008 22:51:59 -0400
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:59990 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753379AbYD1Cv6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Apr 2008 22:51:58 -0400
-Subject: Re: [GIT PATCH] another tranche of SCSI updates for 2.6.26
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080428013400.GA6245@elte.hu>
-References: <1209320076.3801.26.camel@localhost.localdomain>
-	 <20080428013400.GA6245@elte.hu>
-Content-Type: text/plain
-Date: Sun, 27 Apr 2008 22:51:52 -0400
-Message-Id: <1209351113.3801.107.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-4.fc8) 
-Content-Transfer-Encoding: 7bit
+	Sun, 27 Apr 2008 23:15:27 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:48500 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762197AbYD1DP1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Apr 2008 23:15:27 -0400
+Date: Sun, 27 Apr 2008 23:15:20 -0400
+From: Ulrich Drepper <drepper@redhat.com>
+Message-Id: <200804280315.m3S3FKsw028335@devserv.devel.redhat.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH v2] eventfd, signalfd, timerfd, epoll_create w/flags
+Cc: akpm@linux-foundation.org, davidel@xmailserver.org,
+       torvalds@linux-foundation.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-04-28 at 03:34 +0200, Ingo Molnar wrote:
-> * James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
-> 
-> > This represents the tree I had waitin on other mergers.  I'm not sure 
-> > this is it, because there are other features (like aic94xx running 
-> > abort) we're racing to get in.
-> > 
-> > The patch is available at:
-> > 
-> > master.kernel.org:/pub/scm/linux/kernel/git/jejb/scsi-misc-2.6.git
-> 
-> hm, got this crash with latest -git shortly after i rebased from this 
-> morning's git to this night's git, it looks SCSI related:
-> 
-> [   44.513114] Calling initcall 0xc1cece47: init_this_scsi_driver+0x0/0xd0()
-> [   47.919053] BUG: unable to handle kernel NULL pointer dereference at 00000004
-> [   47.927035] IP: [<c09cf947>] scsi_destroy_command_freelist+0x15/0x5a
-> [   47.931008] *pde = 00000000 
-> [   47.935253] Oops: 0000 [#1] SMP DEBUG_PAGEALLOC
-> [   47.939004] Modules linked in:
-> [   47.939004] 
-> [   47.939004] Pid: 1, comm: swapper Not tainted (2.6.25-sched-devel.git-x86-latest.git #5)
-> [   47.939004] EIP: 0060:[<c09cf947>] EFLAGS: 00010217 CPU: 0
-> [   47.939004] EIP is at scsi_destroy_command_freelist+0x15/0x5a
-> [   47.939004] EAX: c0042000 EBX: 00000000 ECX: c199ba14 EDX: fffffffc
-> [   47.939004] ESI: c0042000 EDI: c0042034 EBP: f7c36ebc ESP: f7c36eb0
-> [   47.939004]  DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
-> [   47.939004] Process swapper (pid: 1, ti=f7c36000 task=f7c4e000 task.ti=f7c36000)
-> [   47.939004] Stack: c0042000 00000000 00000000 f7c36ecc c09cfa4c c004225c c1a43378 f7c36ed4 
-> [   47.939004]        c0688535 f7c36ee8 c04e942b c0042260 c04e93e6 00000330 f7c36ef8 c04e9f20 
-> [   47.939004]        c004225c 00000002 f7c36f04 c04e9353 c0042000 f7c36f0c c0688aee f7c36f14 
-> [   47.939004] Call Trace:
-> [   47.939004]  [<c09cfa4c>] ? scsi_host_dev_release+0x79/0xa9
-> [   47.939004]  [<c0688535>] ? device_release+0x3e/0x54
-> [   47.939004]  [<c04e942b>] ? kobject_release+0x45/0x55
-> [   47.939004]  [<c04e93e6>] ? kobject_release+0x0/0x55
-> [   47.939004]  [<c04e9f20>] ? kref_put+0x3e/0x49
-> [   47.939004]  [<c04e9353>] ? kobject_put+0x41/0x46
-> [   47.939004]  [<c0688aee>] ? put_device+0x16/0x18
-> [   47.939004]  [<c09cf9d1>] ? scsi_host_put+0x12/0x14
-> [   47.939004]  [<c09cfbac>] ? scsi_unregister+0x1d/0x20
-> [   47.939004]  [<c1cece2d>] ? aha1542_detect+0x7d1/0x7eb
-> [   47.939004]  [<c016de2e>] ? trace_hardirqs_on+0xb/0xd
-> [   47.939004]  [<c1cece52>] ? init_this_scsi_driver+0xb/0xd0
-> [   47.939004]  [<c01922a7>] ? ftrace_record_ip+0x1d4/0x1ed
-> [   47.939004]  [<c1cecea5>] ? init_this_scsi_driver+0x5e/0xd0
-> [   47.939004]  [<c1c934e5>] ? kernel_init+0x152/0x2b0
-> [   47.939004]  [<c1c93393>] ? kernel_init+0x0/0x2b0
-> [   47.939004]  [<c1c93393>] ? kernel_init+0x0/0x2b0
-> [   47.939004]  [<c011c967>] ? kernel_thread_helper+0x7/0x10
-> [   47.939004]  =======================
-> [   47.939004] Code: ff eb 0c 89 fa 83 c0 04 e8 78 ba b2 ff 31 d2 5b 89 d0 5e 5f 5d c3 55 89 e5 57 56 53 e8 cf d0 74 ff 89 c6 8d 78 34 eb 1c 8d 53 fc <8b> 42 08 8b 4a 04 89 41 04 89 08 89 5a 08 89 5a 04 8b 46 10 e8 
-> [   47.939004] EIP: [<c09cf947>] scsi_destroy_command_freelist+0x15/0x5a SS:ESP 0068:f7c36eb0
+This is the same patch with only epoll_create2 as the new syscall name,
+as per Davide's request.
+
+Again, it applies on top of the socket patch.
  
-sigh, every time I fix this free list stuff in one place, it breaks in
-another.  This one is caused by the alloc->put sequence for the host (it
-never got to scsi_add_host() where the freelist is allocated, so we need
-to not release it in that case).
 
-Try this; the signature for an uninitialised free list is easy (both
-list pointers NULL), so the patch detects that and doesn't try to run
-over the uninitialised list head.
+ arch/x86/ia32/ia32entry.S          |    3 +++
+ arch/x86/kernel/syscall_table_32.S |    3 +++
+ b/include/asm-x86/unistd_64.h      |    6 ++++++
+ b/include/linux/syscalls.h         |    3 +++
+ fs/anon_inodes.c                   |    9 +++++----
+ fs/compat.c                        |   14 ++++++++++----
+ fs/eventfd.c                       |   19 +++++++++++++++++--
+ fs/eventpoll.c                     |   19 +++++++++++++++++--
+ fs/signalfd.c                      |   19 +++++++++++++++++--
+ fs/timerfd.c                       |   13 ++++++++++---
+ include/asm-x86/unistd_32.h        |    3 +++
+ include/linux/anon_inodes.h        |    2 +-
+ include/linux/eventfd.h            |    2 ++
+ include/linux/eventpoll.h          |    2 ++
+ include/linux/signalfd.h           |    3 +++
+ include/linux/timerfd.h            |    4 +++-
+ 16 files changed, 105 insertions(+), 19 deletions(-)
 
-James
 
----
+Signed-off-by: Ulrich Drepper <drepper@redhat.com>
 
-diff --git a/drivers/scsi/scsi.c b/drivers/scsi/scsi.c
-index 12d69d7..dc36321 100644
---- a/drivers/scsi/scsi.c
-+++ b/drivers/scsi/scsi.c
-@@ -481,6 +481,14 @@ int scsi_setup_command_freelist(struct Scsi_Host *shost)
+diff -u b/include/asm-x86/unistd_64.h b/include/asm-x86/unistd_64.h
+--- b/include/asm-x86/unistd_64.h
++++ b/include/asm-x86/unistd_64.h
+@@ -641,6 +641,12 @@
+ __SYSCALL(__NR_timerfd_gettime, sys_timerfd_gettime)
+ #define __NR_paccept				288
+ __SYSCALL(__NR_paccept, sys_paccept)
++#define __NR_signalfd4				289
++__SYSCALL(__NR_signalfd4, sys_signalfd4)
++#define __NR_eventfd2				290
++__SYSCALL(__NR_eventfd2, sys_eventfd2)
++#define __NR_epoll_create2			291
++__SYSCALL(__NR_epoll_create2, sys_epoll_create2)
+ 
+ 
+ #ifndef __NO_STUBS
+diff -u b/include/linux/syscalls.h b/include/linux/syscalls.h
+--- b/include/linux/syscalls.h
++++ b/include/linux/syscalls.h
+@@ -428,6 +428,7 @@
+ asmlinkage long sys_select(int n, fd_set __user *inp, fd_set __user *outp,
+ 			fd_set __user *exp, struct timeval __user *tvp);
+ asmlinkage long sys_epoll_create(int size);
++asmlinkage long sys_epoll_create2(int size, int flags);
+ asmlinkage long sys_epoll_ctl(int epfd, int op, int fd,
+ 				struct epoll_event __user *event);
+ asmlinkage long sys_epoll_wait(int epfd, struct epoll_event __user *events,
+@@ -608,12 +609,14 @@
+ 				    size_t len);
+ asmlinkage long sys_getcpu(unsigned __user *cpu, unsigned __user *node, struct getcpu_cache __user *cache);
+ asmlinkage long sys_signalfd(int ufd, sigset_t __user *user_mask, size_t sizemask);
++asmlinkage long sys_signalfd4(int ufd, sigset_t __user *user_mask, size_t sizemask, int flags);
+ asmlinkage long sys_timerfd_create(int clockid, int flags);
+ asmlinkage long sys_timerfd_settime(int ufd, int flags,
+ 				    const struct itimerspec __user *utmr,
+ 				    struct itimerspec __user *otmr);
+ asmlinkage long sys_timerfd_gettime(int ufd, struct itimerspec __user *otmr);
+ asmlinkage long sys_eventfd(unsigned int count);
++asmlinkage long sys_eventfd2(unsigned int count, int flags);
+ asmlinkage long sys_fallocate(int fd, int mode, loff_t offset, loff_t len);
+ 
+ int kernel_execve(const char *filename, char *const argv[], char *const envp[]);
+--- a/arch/x86/ia32/ia32entry.S
++++ b/arch/x86/ia32/ia32entry.S
+@@ -731,4 +731,7 @@ ia32_sys_call_table:
+ 	.quad sys32_fallocate
+ 	.quad compat_sys_timerfd_settime	/* 325 */
+ 	.quad compat_sys_timerfd_gettime
++	.quad compat_sys_signalfd4
++	.quad sys_eventfd2
++	.quad sys_epoll_create2
+ ia32_syscall_end:
+--- a/arch/x86/kernel/syscall_table_32.S
++++ b/arch/x86/kernel/syscall_table_32.S
+@@ -326,3 +326,6 @@ ENTRY(sys_call_table)
+ 	.long sys_fallocate
+ 	.long sys_timerfd_settime	/* 325 */
+ 	.long sys_timerfd_gettime
++	.long sys_signalfd4
++	.long sys_eventfd2
++	.long sys_epoll_create2
+--- a/fs/anon_inodes.c
++++ b/fs/anon_inodes.c
+@@ -61,8 +61,9 @@ static struct dentry_operations anon_inodefs_dentry_operations = {
+  * @dpinode: [out]   pointer to the inode
+  * @pfile:   [out]   pointer to the file struct
+  * @name:    [in]    name of the "class" of the new file
+- * @fops     [in]    file operations for the new file
+- * @priv     [in]    private data for the new file (will be file's private_data)
++ * @fops:    [in]    file operations for the new file
++ * @priv:    [in]    private data for the new file (will be file's private_data)
++ * @flags:   [in]    flags
+  *
+  * Creates a new file by hooking it on a single inode. This is useful for files
+  * that do not need to have a full-fledged inode in order to operate correctly.
+@@ -72,7 +73,7 @@ static struct dentry_operations anon_inodefs_dentry_operations = {
   */
- void scsi_destroy_command_freelist(struct Scsi_Host *shost)
+ int anon_inode_getfd(int *pfd, struct inode **pinode, struct file **pfile,
+ 		     const char *name, const struct file_operations *fops,
+-		     void *priv)
++		     void *priv, int flags)
  {
-+	if (shost->free_list.next == NULL && shost->free_list.prev == NULL)
-+		/*
-+		 * If the next and prev pointers are NULL, that
-+		 * means the list was never initialised, so it
-+		 * doesn't need freeing
-+		 */
-+		return;
-+
- 	while (!list_empty(&shost->free_list)) {
- 		struct scsi_cmnd *cmd;
+ 	struct qstr this;
+ 	struct dentry *dentry;
+@@ -82,7 +83,7 @@ int anon_inode_getfd(int *pfd, struct inode **pinode, struct file **pfile,
+ 	if (IS_ERR(anon_inode_inode))
+ 		return -ENODEV;
  
-
-
+-	error = get_unused_fd();
++	error = get_unused_fd_flags(flags);
+ 	if (error < 0)
+ 		return error;
+ 	fd = error;
+--- a/fs/compat.c
++++ b/fs/compat.c
+@@ -2130,9 +2130,9 @@ asmlinkage long compat_sys_epoll_pwait(int epfd,
+ 
+ #ifdef CONFIG_SIGNALFD
+ 
+-asmlinkage long compat_sys_signalfd(int ufd,
+-				    const compat_sigset_t __user *sigmask,
+-				    compat_size_t sigsetsize)
++asmlinkage long compat_sys_signalfd4(int ufd,
++				     const compat_sigset_t __user *sigmask,
++				     compat_size_t sigsetsize, int flags)
+ {
+ 	compat_sigset_t ss32;
+ 	sigset_t tmp;
+@@ -2147,9 +2147,15 @@ asmlinkage long compat_sys_signalfd(int ufd,
+ 	if (copy_to_user(ksigmask, &tmp, sizeof(sigset_t)))
+ 		return -EFAULT;
+ 
+-	return sys_signalfd(ufd, ksigmask, sizeof(sigset_t));
++	return sys_signalfd(ufd, ksigmask, sizeof(sigset_t), flags);
+ }
+ 
++asmlinkage long compat_sys_signalfd(int ufd,
++				    const compat_sigset_t __user *sigmask,
++				    compat_size_t sigsetsize)
++{
++	return compat_sys_signalfd4(ufd, sigmask, sigsetsize, 0);
++}
+ #endif /* CONFIG_SIGNALFD */
+ 
+ #ifdef CONFIG_TIMERFD
+--- a/fs/eventfd.c
++++ b/fs/eventfd.c
+@@ -198,12 +198,22 @@ struct file *eventfd_fget(int fd)
+ 	return file;
+ }
+ 
+-asmlinkage long sys_eventfd(unsigned int count)
++asmlinkage long sys_eventfd2(unsigned int count, int flags)
+ {
+ 	int error, fd;
+ 	struct eventfd_ctx *ctx;
+ 	struct file *file;
+ 	struct inode *inode;
++	int fflags = 0;
++
++	if (flags) {
++		if ((flags & EFD_CLOEXEC) != 0) {
++			fflags |= O_CLOEXEC;
++			flags &= ~EFD_CLOEXEC;
++		}
++		if (flags)
++			return -EINVAL;
++	}
+ 
+ 	ctx = kmalloc(sizeof(*ctx), GFP_KERNEL);
+ 	if (!ctx)
+@@ -217,7 +227,7 @@ asmlinkage long sys_eventfd(unsigned int count)
+ 	 * anon_inode_getfd() will install the fd.
+ 	 */
+ 	error = anon_inode_getfd(&fd, &inode, &file, "[eventfd]",
+-				 &eventfd_fops, ctx);
++				 &eventfd_fops, ctx, fflags);
+ 	if (!error)
+ 		return fd;
+ 
+@@ -225,3 +235,8 @@ asmlinkage long sys_eventfd(unsigned int count)
+ 	return error;
+ }
+ 
++asmlinkage long sys_eventfd(unsigned int count)
++{
++	return sys_eventfd2(count, 0);
++}
++
+--- a/fs/eventpoll.c
++++ b/fs/eventpoll.c
+@@ -1067,12 +1067,22 @@ retry:
+  * RB tree. With the current implementation, the "size" parameter is ignored
+  * (besides sanity checks).
+  */
+-asmlinkage long sys_epoll_create(int size)
++asmlinkage long sys_epoll_create2(int size, int flags)
+ {
+ 	int error, fd = -1;
+ 	struct eventpoll *ep;
+ 	struct inode *inode;
+ 	struct file *file;
++	int fflags = 0;
++
++	if (flags) {
++		if ((flags & EPOLL_CLOEXEC) != 0) {
++			fflags |= O_CLOEXEC;
++			flags &= ~EPOLL_CLOEXEC;
++		}
++		if (flags)
++			return -EINVAL;
++	}
+ 
+ 	DNPRINTK(3, (KERN_INFO "[%p] eventpoll: sys_epoll_create(%d)\n",
+ 		     current, size));
+@@ -1090,7 +1100,7 @@ asmlinkage long sys_epoll_create(int size)
+ 	 * a file structure, and inode and a free file descriptor.
+ 	 */
+ 	error = anon_inode_getfd(&fd, &inode, &file, "[eventpoll]",
+-				 &eventpoll_fops, ep);
++				 &eventpoll_fops, ep, fflags);
+ 	if (error)
+ 		goto error_free;
+ 
+@@ -1107,6 +1117,11 @@ error_return:
+ 	return error;
+ }
+ 
++asmlinkage long sys_epoll_create(int size)
++{
++	return sys_epoll_create2(size, 0);
++}
++
+ /*
+  * The following function implements the controller interface for
+  * the eventpoll file that enables the insertion/removal/change of
+--- a/fs/signalfd.c
++++ b/fs/signalfd.c
+@@ -205,13 +205,24 @@ static const struct file_operations signalfd_fops = {
+ 	.read		= signalfd_read,
+ };
+ 
+-asmlinkage long sys_signalfd(int ufd, sigset_t __user *user_mask, size_t sizemask)
++asmlinkage long sys_signalfd4(int ufd, sigset_t __user *user_mask,
++			      size_t sizemask, int flags)
+ {
+ 	int error;
+ 	sigset_t sigmask;
+ 	struct signalfd_ctx *ctx;
+ 	struct file *file;
+ 	struct inode *inode;
++	int fflags = 0;
++
++	if (flags) {
++		if ((flags & SFD_CLOEXEC) != 0 && ufd == -1) {
++			fflags |= O_CLOEXEC;
++			flags &= ~SFD_CLOEXEC;
++		}
++		if (flags)
++			return -EINVAL;
++	}
+ 
+ 	if (sizemask != sizeof(sigset_t) ||
+ 	    copy_from_user(&sigmask, user_mask, sizeof(sigmask)))
+@@ -231,7 +242,7 @@ asmlinkage long sys_signalfd(int ufd, sigset_t __user *user_mask, size_t sizemas
+ 		 * anon_inode_getfd() will install the fd.
+ 		 */
+ 		error = anon_inode_getfd(&ufd, &inode, &file, "[signalfd]",
+-					 &signalfd_fops, ctx);
++					 &signalfd_fops, ctx, fflags);
+ 		if (error)
+ 			goto err_fdalloc;
+ 	} else {
+@@ -258,3 +269,7 @@ err_fdalloc:
+ 	return error;
+ }
+ 
++asmlinkage long sys_signalfd(int ufd, sigset_t __user *user_mask, size_t sizemask)
++{
++	return sys_signalfd4(ufd, user_mask, sizemask, 0);
++}
+--- a/fs/timerfd.c
++++ b/fs/timerfd.c
+@@ -184,9 +184,16 @@ asmlinkage long sys_timerfd_create(int clockid, int flags)
+ 	struct timerfd_ctx *ctx;
+ 	struct file *file;
+ 	struct inode *inode;
++	int fflags = 0;
+ 
+-	if (flags)
+-		return -EINVAL;
++	if (flags) {
++		if ((flags & TFD_CLOEXEC) != 0) {
++			fflags |= O_CLOEXEC;
++			flags &= ~TFD_CLOEXEC;
++		}
++		if (flags)
++			return -EINVAL;
++	}
+ 	if (clockid != CLOCK_MONOTONIC &&
+ 	    clockid != CLOCK_REALTIME)
+ 		return -EINVAL;
+@@ -200,7 +207,7 @@ asmlinkage long sys_timerfd_create(int clockid, int flags)
+ 	hrtimer_init(&ctx->tmr, clockid, HRTIMER_MODE_ABS);
+ 
+ 	error = anon_inode_getfd(&ufd, &inode, &file, "[timerfd]",
+-				 &timerfd_fops, ctx);
++				 &timerfd_fops, ctx, fflags);
+ 	if (error) {
+ 		kfree(ctx);
+ 		return error;
+--- a/include/asm-x86/unistd_32.h
++++ b/include/asm-x86/unistd_32.h
+@@ -332,6 +332,9 @@
+ #define __NR_fallocate		324
+ #define __NR_timerfd_settime	325
+ #define __NR_timerfd_gettime	326
++#define __NR_signalfd4		327
++#define __NR_eventfd2		328
++#define __NR_epoll_create2	329
+ 
+ #ifdef __KERNEL__
+ 
+--- a/include/linux/anon_inodes.h
++++ b/include/linux/anon_inodes.h
+@@ -10,7 +10,7 @@
+ 
+ int anon_inode_getfd(int *pfd, struct inode **pinode, struct file **pfile,
+ 		     const char *name, const struct file_operations *fops,
+-		     void *priv);
++		     void *priv, int flags);
+ 
+ #endif /* _LINUX_ANON_INODES_H */
+ 
+--- a/include/linux/eventfd.h
++++ b/include/linux/eventfd.h
+@@ -8,6 +8,8 @@
+ #ifndef _LINUX_EVENTFD_H
+ #define _LINUX_EVENTFD_H
+ 
++/* Flags for eventfd2.  */
++#define EFD_CLOEXEC (1 << 0)
+ 
+ #ifdef __KERNEL__
+ 
+--- a/include/linux/eventpoll.h
++++ b/include/linux/eventpoll.h
+@@ -16,6 +16,8 @@
+ 
+ #include <linux/types.h>
+ 
++/* Flags for epoll_create2.  */
++#define EPOLL_CLOEXEC (1 << 0)
+ 
+ /* Valid opcodes to issue to sys_epoll_ctl() */
+ #define EPOLL_CTL_ADD 1
+--- a/include/linux/signalfd.h
++++ b/include/linux/signalfd.h
+@@ -9,6 +9,9 @@
+ #define _LINUX_SIGNALFD_H
+ 
+ 
++/* Flags for signalfd4.  */
++#define SFD_CLOEXEC (1 << 0)
++
+ struct signalfd_siginfo {
+ 	__u32 ssi_signo;
+ 	__s32 ssi_errno;
+--- a/include/linux/timerfd.h
++++ b/include/linux/timerfd.h
+@@ -8,9 +8,11 @@
+ #ifndef _LINUX_TIMERFD_H
+ #define _LINUX_TIMERFD_H
+ 
+-
++/* Flags for timerfd_settime.  */
+ #define TFD_TIMER_ABSTIME (1 << 0)
+ 
++/* Flags for timerfd_create.  */
++#define TFD_CLOEXEC (1 << 0)
+ 
+ 
+ #endif /* _LINUX_TIMERFD_H */
