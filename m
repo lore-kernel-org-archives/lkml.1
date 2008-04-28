@@ -1,62 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965409AbYD1Prf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965503AbYD1Pr5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965409AbYD1Prf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 11:47:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935278AbYD1PkZ
+	id S965503AbYD1Pr5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 11:47:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935470AbYD1Pk1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 11:40:25 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:39836 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934933AbYD1PkX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 11:40:23 -0400
-Date: Mon, 28 Apr 2008 17:39:56 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       Steven Rostedt <rostedt@goodmis.org>, Pekka Paalanen <pq@iki.fi>
-Subject: Re: ftrace and debugfs weird interaction
-Message-ID: <20080428153956.GH18776@elte.hu>
-References: <20080426185403.GA22522@Krystal>
+	Mon, 28 Apr 2008 11:40:27 -0400
+Received: from outbound-mail-36.bluehost.com ([69.89.20.190]:45612 "HELO
+	outbound-mail-36.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S935133AbYD1PkY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Apr 2008 11:40:24 -0400
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Matti Linnanvuori <mattilinnanvuori@yahoo.com>
+Subject: Re: [patch v3] doc: DMA-mapping.txt has undeclared variables [Bug 10397]
+Date: Mon, 28 Apr 2008 08:33:37 -0700
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
+       grundler@parisc-linux.org
+References: <987999.8753.qm@web52011.mail.re2.yahoo.com>
+In-Reply-To: <987999.8753.qm@web52011.mail.re2.yahoo.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080426185403.GA22522@Krystal>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-Id: <200804280833.38130.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Monday, April 28, 2008 5:58 am Matti Linnanvuori wrote:
+> From: Matti Linnanvuori <mattilinnanvuori@yahoo.com>
+>
+> Consistently use pdev as the variable of type struct pci_dev *.
+> Update DMA mapping documentation to use 'pdev' rather than 'dev' in
+> example code that calls routines expecting 'struct pci_device *', since
+> 'dev' might make readers think they're passing 'struct device *'
+> parameters. Bug 10397.
+>
+> Signed-off-by: Matti Linnanvuori <mattilinnanvuori@yahoo.com>
 
-* Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
+Looks like your mailer or cut & paste corrupted the whitespace in this patch.  
+Care to send another as an attachment?
 
-> Hi,
-> 
-> When trying to figure out what was going on with the sched tracer
-> "tracing_enabled" file (sched-devel.git tree), I fell on this strange
-> behavior :
-> 
-> echo 1>tracing_enabled seems _not_ to send 1 to the tracing_ctrl_write
-> callback. However, sending garbage, e.g. echo s> tracing_enabled,
-> correctly sends the 's' character down the chain. echo 0>tracing_enabled
-> sometimes results in the callback not even being called.
-> 
-> The debugfs file has been created with
-> 
->         entry = debugfs_create_file("tracing_enabled", 0644, d_tracer,
->                                     &global_trace, &tracing_ctrl_fops);
->         if (!entry)
->                 pr_warning("Could not create debugfs 'tracing_enabled' entry\n");
-> 
-> I wonder what kind of weird debugfs interaction we might have here ?
-
-hm. Cc:-ed more ftrace developers.
-
-	Ingo
+Thanks,
+Jesse
