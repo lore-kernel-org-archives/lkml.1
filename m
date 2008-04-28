@@ -1,344 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933350AbYD1Kjo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933261AbYD1Kmz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933350AbYD1Kjo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 06:39:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763083AbYD1Kjd
+	id S933261AbYD1Kmz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 06:42:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755202AbYD1Kmr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 06:39:33 -0400
-Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:63497 "EHLO
-	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752963AbYD1Kjb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 06:39:31 -0400
-To: "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>,
-       "xfs@oss.sgi.com" <xfs@oss.sgi.com>,
-       "dm-devel@redhat.com" <dm-devel@redhat.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: [RFC PATCH 3/3] Add timeout feature
-Message-Id: <20080428193908t-sato@mail.jp.nec.com>
-Mime-Version: 1.0
-X-Mailer: WeMail32[2.51] ID:1K0086
-From: Takashi Sato <t-sato@yk.jp.nec.com>
-Date: Mon, 28 Apr 2008 19:39:08 +0900
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Mon, 28 Apr 2008 06:42:47 -0400
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:40037 "EHLO smtp6.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753793AbYD1Kmq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Apr 2008 06:42:46 -0400
+Date: Mon, 28 Apr 2008 13:42:14 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: David Miller <davem@davemloft.net>, mingo@elte.hu,
+       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, viro@ZenIV.linux.org.uk
+Subject: Re: CONFIG_OPTIMIZE_INLINING
+Message-ID: <20080428104214.GH16379@cs181133002.pp.htv.fi>
+References: <20080426.215513.141243565.davem@davemloft.net> <20080427055943.GA16290@elte.hu> <20080426.230807.144232984.davem@davemloft.net> <20080427172542.GA5485@ucw.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20080427172542.GA5485@ucw.cz>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The timeout feature is added to freeze ioctl.  And new ioctl
-to reset the timeout period is added.
-o Freeze the filesystem
-  int ioctl(int fd, int FIFREEZE, long *timeval)
-  fd: The file descriptor of the mountpoint
-  FIFREEZE: request code for the freeze
-  timeval: the timeout period in seconds
-           If it's 0 or 1, the timeout isn't set.
-           This special case of "1" is implemented to keep
-           the compatibility with XFS applications.
-  Return value: 0 if the operation succeeds. Otherwise, -1
+On Sun, Apr 27, 2008 at 07:25:43PM +0200, Pavel Machek wrote:
+> Hi!
+> 
+> > > ... as i saw no reason why this feature, which i found rather useful, 
+> > > should be delayed another year or so. I'd be more than happy to promote 
+> > > this feature back to lib/Kconfig.debug, sparc64 interest would make that 
+> > > a strong argument.
+> > 
+> > So you caved in to FUD in order to pad your commit and signoff count?
+> > 
+> > Because anyone who is paying attention can see clearly that you're
+> > trying to push as much stuff as quickly as possible into Linus's tree
+> > with your singoffs and authorship on it this merge window.
+> > 
+> > Gee, I wonder why...
+> 
+> What is going on here?
+> 
+> Yes, Ingo wants to merge a lots of stuff so that he does not have to
+> maintain it for two more months. That's the result of 14-days merge
+> window decission. ... 
+> 
+> No, I don't like that, either, but I don't think you can blame Ingo
+> for the merge window.
 
-o Reset the timeout period
-  int ioctl(int fd, int FIFREEZE_RESET_TIMEOUT, long *timeval)
-    fd:file descriptor of mountpoint
-    FIFREEZE_RESET_TIMEOUT: request code for reset of timeout period
-    timeval: new timeout period in seconds
-    Return value: 0 if the operation succeeds. Otherwise, -1
-    Error number: If the filesystem has already been unfrozen,
-                  errno is set to EINVAL.
+Do you remember the IDE disaster during 2.5?
+It was caused by a maintainer sending unreviewed patches directly
+to Linus.
 
-Signed-off-by: Takashi Sato <t-sato@yk.jp.nec.com>
-Signed-off-by: Masayuki Hamaguchi <m-hamaguchi@ys.jp.nec.com>
----
- drivers/md/dm.c             |    2 -
- fs/block_dev.c              |    2 +
- fs/buffer.c                 |   14 ++++++++-
- fs/ioctl.c                  |   64 +++++++++++++++++++++++++++++++++++++++++++-
- fs/super.c                  |   52 +++++++++++++++++++++++++++++++++++
- fs/xfs/xfs_fsops.c          |    2 -
- include/linux/buffer_head.h |    2 -
- include/linux/fs.h          |    8 +++++
- 8 files changed, 140 insertions(+), 6 deletions(-)
+What gets merged during the merge window should have been reviewed weeks 
+or months earlier, and have gotten tested for some weeks by people 
+(that's what linux-next and -mm are for).
 
-diff -uprN -X /home/sho/pub/MC/freeze-set/dontdiff linux-2.6.25-xfs/drivers/md/dm.c linux-2.6.25-timeout/drivers/md/dm.c
---- linux-2.6.25-xfs/drivers/md/dm.c	2008-04-24 20:43:48.000000000 +0900
-+++ linux-2.6.25-timeout/drivers/md/dm.c	2008-04-24 20:45:54.000000000 +0900
-@@ -1407,7 +1407,7 @@ static int lock_fs(struct mapped_device 
- 
- 	WARN_ON(md->frozen_sb);
- 
--	md->frozen_sb = freeze_bdev(md->suspended_bdev);
-+	md->frozen_sb = freeze_bdev(md->suspended_bdev, 0);
- 	if (IS_ERR(md->frozen_sb)) {
- 		r = PTR_ERR(md->frozen_sb);
- 		md->frozen_sb = NULL;
-diff -uprN -X /home/sho/pub/MC/freeze-set/dontdiff linux-2.6.25-xfs/fs/block_dev.c linux-2.6.25-timeout/fs/block_dev.c
---- linux-2.6.25-xfs/fs/block_dev.c	2008-04-24 20:44:03.000000000 +0900
-+++ linux-2.6.25-timeout/fs/block_dev.c	2008-04-24 20:45:54.000000000 +0900
-@@ -287,6 +287,8 @@ static void init_once(struct kmem_cache 
- 
- 	/* Initialize semaphore for freeze. */
- 	sema_init(&bdev->bd_freeze_sem, 1);
-+	/* Setup freeze timeout function. */
-+	INIT_DELAYED_WORK(&bdev->bd_freeze_timeout, freeze_timeout);
- }
- 
- static inline void __bd_forget(struct inode *inode)
-diff -uprN -X /home/sho/pub/MC/freeze-set/dontdiff linux-2.6.25-xfs/fs/buffer.c linux-2.6.25-timeout/fs/buffer.c
---- linux-2.6.25-xfs/fs/buffer.c	2008-04-24 20:43:59.000000000 +0900
-+++ linux-2.6.25-timeout/fs/buffer.c	2008-04-24 20:45:54.000000000 +0900
-@@ -190,14 +190,17 @@ int fsync_bdev(struct block_device *bdev
- 
- /**
-  * freeze_bdev  --  lock a filesystem and force it into a consistent state
-- * @bdev:	blockdevice to lock
-+ * @bdev:		blockdevice to lock
-+ * @timeout_msec:	timeout period
-  *
-  * This takes the block device bd_mount_sem to make sure no new mounts
-  * happen on bdev until thaw_bdev() is called.
-  * If a superblock is found on this device, we take the s_umount semaphore
-  * on it to make sure nobody unmounts until the snapshot creation is done.
-+ * If timeout_msec is bigger than 0, this registers the delayed work for
-+ * timeout of the freeze feature.
-  */
--struct super_block *freeze_bdev(struct block_device *bdev)
-+struct super_block *freeze_bdev(struct block_device *bdev, long timeout_msec)
- {
- 	struct super_block *sb;
- 
-@@ -233,6 +236,10 @@ struct super_block *freeze_bdev(struct b
- 
- 	sync_blockdev(bdev);
- 
-+	/* Setup unfreeze timer. */
-+	if (timeout_msec > 0)
-+		add_freeze_timeout(bdev, timeout_msec);
-+
- 	up(&bdev->bd_freeze_sem);
- 
- 	return sb;	/* thaw_bdev releases s->s_umount and bd_mount_sem */
-@@ -255,6 +262,9 @@ void thaw_bdev(struct block_device *bdev
- 		return;
- 	}
- 
-+	/* Delete unfreeze timer. */
-+	del_freeze_timeout(bdev);
-+
- 	if (sb) {
- 		BUG_ON(sb->s_bdev != bdev);
- 
-diff -uprN -X /home/sho/pub/MC/freeze-set/dontdiff linux-2.6.25-xfs/fs/ioctl.c linux-2.6.25-timeout/fs/ioctl.c
---- linux-2.6.25-xfs/fs/ioctl.c	2008-04-24 20:44:03.000000000 +0900
-+++ linux-2.6.25-timeout/fs/ioctl.c	2008-04-24 20:45:54.000000000 +0900
-@@ -184,6 +184,8 @@ int do_vfs_ioctl(struct file *filp, unsi
- 		break;
- 
- 	case FIFREEZE: {
-+		long timeout_sec;
-+		long timeout_msec;
- 		struct super_block *sb = filp->f_path.dentry->d_inode->i_sb;
- 
- 		if (!capable(CAP_SYS_ADMIN)) {
-@@ -197,8 +199,31 @@ int do_vfs_ioctl(struct file *filp, unsi
- 			break;
- 		}
- 
-+		/* arg(sec) to tick value. */
-+		error = get_user(timeout_sec, (long __user *) arg);
-+		if (error != 0)
-+			break;
-+		/*
-+		 * If 1 is specified as the timeout period,
-+		 * it will be changed into 0 to keep the compatibility
-+		 * of XFS application(xfs_freeze).
-+		 */
-+		if (timeout_sec < 0) {
-+			error = -EINVAL;
-+			break;
-+		} else if (timeout_sec < 2) {
-+			timeout_sec = 0;
-+		}
-+
-+		timeout_msec = timeout_sec * 1000;
-+		/* overflow case */
-+		if (timeout_msec < 0) {
-+			error = -EINVAL;
-+			break;
-+		}
-+
- 		/* Freeze. */
--		freeze_bdev(sb->s_bdev);
-+		freeze_bdev(sb->s_bdev, timeout_msec);
- 
- 		break;
- 	}
-@@ -216,6 +241,43 @@ int do_vfs_ioctl(struct file *filp, unsi
- 		break;
- 	}
- 
-+	case FIFREEZE_RESET_TIMEOUT: {
-+		long timeout_sec;
-+		long timeout_msec;
-+		struct super_block *sb
-+			= filp->f_path.dentry->d_inode->i_sb;
-+
-+		if (!capable(CAP_SYS_ADMIN)) {
-+			error = -EPERM;
-+			break;
-+		}
-+
-+		/* arg(sec) to tick value */
-+		error = get_user(timeout_sec, (long __user *) arg);
-+		if (error)
-+			break;
-+		timeout_msec = timeout_sec * 1000;
-+		if (timeout_msec < 0) {
-+			error = -EINVAL;
-+			break;
-+		}
-+
-+		if (sb) {
-+			down(&sb->s_bdev->bd_freeze_sem);
-+			if (sb->s_frozen == SB_UNFROZEN) {
-+				up(&sb->s_bdev->bd_freeze_sem);
-+				error = -EINVAL;
-+				break;
-+			}
-+			/* setup unfreeze timer */
-+			if (timeout_msec > 0)
-+				add_freeze_timeout(sb->s_bdev,
-+					timeout_msec);
-+			up(&sb->s_bdev->bd_freeze_sem);
-+		}
-+		break;
-+	}
-+
- 	default:
- 		if (S_ISREG(filp->f_path.dentry->d_inode->i_mode))
- 			error = file_ioctl(filp, cmd, arg);
-diff -uprN -X /home/sho/pub/MC/freeze-set/dontdiff linux-2.6.25-xfs/fs/super.c linux-2.6.25-timeout/fs/super.c
---- linux-2.6.25-xfs/fs/super.c	2008-04-24 20:44:03.000000000 +0900
-+++ linux-2.6.25-timeout/fs/super.c	2008-04-24 20:45:54.000000000 +0900
-@@ -983,3 +983,55 @@ struct vfsmount *kern_mount_data(struct 
- }
- 
- EXPORT_SYMBOL_GPL(kern_mount_data);
-+
-+/*
-+ * freeze_timeout - Thaw the filesystem.
-+ *
-+ * @work:	work queue (delayed_work.work)
-+ *
-+ * Called by the delayed work when elapsing the timeout period.
-+ * Thaw the filesystem.
-+ */
-+void freeze_timeout(struct work_struct *work)
-+{
-+	struct block_device *bd = container_of(work,
-+			struct block_device, bd_freeze_timeout.work);
-+
-+	struct super_block *sb = get_super_without_lock(bd);
-+
-+	thaw_bdev(bd, sb);
-+
-+	if (sb)
-+		put_super(sb);
-+}
-+EXPORT_SYMBOL_GPL(freeze_timeout);
-+
-+/*
-+ * add_freeze_timeout - Add timeout for freeze.
-+ *
-+ * @bdev:		block device struct
-+ * @timeout_msec:	timeout period
-+ *
-+ * Add the delayed work for freeze timeout to the delayed work queue.
-+ */
-+void add_freeze_timeout(struct block_device *bdev, long timeout_msec)
-+{
-+	s64 timeout_jiffies = msecs_to_jiffies(timeout_msec);
-+
-+	/* Set delayed work queue */
-+	cancel_delayed_work(&bdev->bd_freeze_timeout);
-+	schedule_delayed_work(&bdev->bd_freeze_timeout, timeout_jiffies);
-+}
-+
-+/*
-+ * del_freeze_timeout - Delete timeout for freeze.
-+ *
-+ * @bdev:	block device struct
-+ *
-+ * Delete the delayed work for freeze timeout from the delayed work queue.
-+ */
-+void del_freeze_timeout(struct block_device *bdev)
-+{
-+	if (delayed_work_pending(&bdev->bd_freeze_timeout))
-+		cancel_delayed_work(&bdev->bd_freeze_timeout);
-+}
-diff -uprN -X /home/sho/pub/MC/freeze-set/dontdiff linux-2.6.25-xfs/fs/xfs/xfs_fsops.c linux-2.6.25-timeout/fs/xfs/xfs_f
-sops.c
---- linux-2.6.25-xfs/fs/xfs/xfs_fsops.c	2008-04-24 20:43:59.000000000 +0900
-+++ linux-2.6.25-timeout/fs/xfs/xfs_fsops.c	2008-04-24 20:45:54.000000000 +0900
-@@ -623,7 +623,7 @@ xfs_fs_goingdown(
- {
- 	switch (inflags) {
- 	case XFS_FSOP_GOING_FLAGS_DEFAULT: {
--		struct super_block *sb = freeze_bdev(mp->m_super->s_bdev);
-+		struct super_block *sb = freeze_bdev(mp->m_super->s_bdev, 0);
- 
- 		if (sb && !IS_ERR(sb)) {
- 			xfs_force_shutdown(mp, SHUTDOWN_FORCE_UMOUNT);
-diff -uprN -X /home/sho/pub/MC/freeze-set/dontdiff linux-2.6.25-xfs/include/linux/buffer_head.h linux-2.6.25-timeout/inc
-lude/linux/buffer_head.h
---- linux-2.6.25-xfs/include/linux/buffer_head.h	2008-04-24 20:44:04.000000000 +0900
-+++ linux-2.6.25-timeout/include/linux/buffer_head.h	2008-04-24 20:45:54.000000000 +0900
-@@ -170,7 +170,7 @@ int sync_blockdev(struct block_device *b
- void __wait_on_buffer(struct buffer_head *);
- wait_queue_head_t *bh_waitq_head(struct buffer_head *bh);
- int fsync_bdev(struct block_device *);
--struct super_block *freeze_bdev(struct block_device *);
-+struct super_block *freeze_bdev(struct block_device *, long timeout_msec);
- void thaw_bdev(struct block_device *, struct super_block *);
- int fsync_super(struct super_block *);
- int fsync_no_super(struct block_device *);
-diff -uprN -X /home/sho/pub/MC/freeze-set/dontdiff linux-2.6.25-xfs/include/linux/fs.h linux-2.6.25-timeout/include/linu
-x/fs.h
---- linux-2.6.25-xfs/include/linux/fs.h	2008-04-24 20:44:04.000000000 +0900
-+++ linux-2.6.25-timeout/include/linux/fs.h	2008-04-24 20:45:54.000000000 +0900
-@@ -8,6 +8,7 @@
- 
- #include <linux/limits.h>
- #include <linux/ioctl.h>
-+#include <linux/workqueue.h>
- 
- /*
-  * It's silly to have NR_OPEN bigger than NR_FILE, but you can change
-@@ -225,6 +226,7 @@ extern int dir_notify_enable;
- #define FIGETBSZ   _IO(0x00,2)	/* get the block size used for bmap */
- #define FIFREEZE	_IOWR('X', 119, int)	/* Freeze */
- #define FITHAW		_IOWR('X', 120, int)	/* Thaw */
-+#define	FIFREEZE_RESET_TIMEOUT	_IO(0x00, 3)	/* Reset freeze timeout */
- 
- #define	FS_IOC_GETFLAGS			_IOR('f', 1, long)
- #define	FS_IOC_SETFLAGS			_IOW('f', 2, long)
-@@ -551,6 +553,8 @@ struct block_device {
- 	 */
- 	unsigned long		bd_private;
- 
-+	/* Delayed work for freeze */
-+	struct delayed_work	bd_freeze_timeout;
- 	/* Semaphore for freeze */
- 	struct semaphore	bd_freeze_sem;
- };
-@@ -2104,5 +2108,9 @@ int proc_nr_files(struct ctl_table *tabl
- 
- int get_filesystem_list(char * buf);
- 
-+extern void add_freeze_timeout(struct block_device *bdev, long timeout_msec);
-+extern void del_freeze_timeout(struct block_device *bdev);
-+extern void freeze_timeout(struct work_struct *work);
-+
- #endif /* __KERNEL__ */
- #endif /* _LINUX_FS_H */
+If someone has fresh stuff during a merge window the best solution in 
+many cases is to keep it for the next merge window, and get it properly 
+reviewed and tested in the meantime.
+
+We have serious problems to cope with the regressions that get merged 
+during a merge window, and the options are:
+- very buggy stable kernels
+- longer release cycles (which in turn result in even more stuff being
+  merged during merge windows, making all problems even worse)
+- get stuff reviewed and tested *before* it hits mainline
+
+We are currently changing more than one million lines per release, 
+and we somehow need to ensure that we don't ruin Linux' reputation
+as a stable OS due to a lack of QA.
+
+> 							Pavel
+
+cu
+Adrian
+
+BTW:
+This obviously doesn't strictly apply to e.g. new drivers or simple
+patches (although we really need a better review for drivers before 
+merging, since usually once they are in Linus' tree noone (except Al)
+does serious cleanups on them).
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
