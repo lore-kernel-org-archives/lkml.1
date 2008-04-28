@@ -1,59 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966542AbYD1SdW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966552AbYD1Sdm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966542AbYD1SdW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 14:33:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966155AbYD1Sak
+	id S966552AbYD1Sdm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 14:33:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965486AbYD1Sal
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 14:30:40 -0400
-Received: from nf-out-0910.google.com ([64.233.182.187]:56197 "EHLO
+	Mon, 28 Apr 2008 14:30:41 -0400
+Received: from nf-out-0910.google.com ([64.233.182.187]:56232 "EHLO
 	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S966177AbYD1Sah (ORCPT
+	with ESMTP id S966137AbYD1Sai (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 14:30:37 -0400
+	Mon, 28 Apr 2008 14:30:38 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=kbUbMTYwnU0t0gJZHtnBmPxdvIwnZFFrTmy6eLFgN7VDRhEJq2yMDBwbQNX5fvPl2PEMuorzUa6OwB83mCtjd2zhIbjzIRTc97sT5d1Y1eX1U04V1sZBDobvqIm7gZTlaH1C6+7uAe13bnm9ND/P/dvws10eU1jz4zmQHluDTFk=
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-disposition:message-id:content-type:content-transfer-encoding;
+        b=eVE+8LsR7/TtkbbcFKfEhQaJmOEQHBg85qQOwIxNVGK3kCq9/II/D2NdE+8ciiMEp72lpxrAHYz1LD/zRQEudjBmCp6S/eTGctVdD/0EBtcoxlV9PtA7EYYZ+HjduTdwUgp5XyoGYwA7sWsHrBJgqi+kOV7yZajpw0Mhz5dru/U=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: [2.6 patch] ARM: always select HAVE_IDE
-Date: Sun, 27 Apr 2008 23:06:00 +0200
+To: Mel Gorman <mel@csn.ul.ie>
+Subject: Re: 2.6.25-mm1: Failing to probe IDE interface
+Date: Mon, 28 Apr 2008 20:44:34 +0200
 User-Agent: KMail/1.9.9
-Cc: Adrian Bunk <bunk@kernel.org>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-pcmcia@lists.infradead.org
-References: <20080414141659.GF6695@cs181133002.pp.htv.fi> <200804272032.44273.bzolnier@gmail.com> <20080427202929.GB32762@uranus.ravnborg.org>
-In-Reply-To: <20080427202929.GB32762@uranus.ravnborg.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+References: <20080417160331.b4729f0c.akpm@linux-foundation.org> <20080428164235.GA29229@csn.ul.ie>
+In-Reply-To: <20080428164235.GA29229@csn.ul.ie>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200804272306.01052.bzolnier@gmail.com>
+Message-Id: <200804282044.34783.bzolnier@gmail.com>
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 27 April 2008, Sam Ravnborg wrote:
-> > > 
-> > > I do actually not care much how this gets resolved (we could even 
-> > > ditch HAVE_IDE and provide asm/ide.h on all architectures) if there's 
-> > > general agreement that this is the way to go.
-> > 
-> > Seems like a way to go now that all crazy IDE core code vs arch code
-> > inter-dependiences have been fixed (the ideal solution would be to ditch
-> > asm/ide.h completely but this requires some more time/work).
+
+Hi,
+
+On Monday 28 April 2008, Mel Gorman wrote:
+> An old T21 is failing to boot and the relevant message appears to be
 > 
-> I invented HAVE_IDE in the past to make it trivial for arm to
-> use drivers/Kconfig.
-> And that incentive are not broken by your suggestion so fine with me.
+> [    1.929536] Probing IDE interface ide0...
+> [   36.939317] ide0: Wait for ready failed before probe !
+> [   37.502676] ide0: DISABLED, NO IRQ
+> [   37.506356] ide0: failed to initialize IDE interface
+> 
+> The owner of ide-mm-ide-add-struct-ide_io_ports-take-2.patch with the
+> "DISABLED, NO IRQ" message is cc'd. I've attached the config, full boot log
+> and lspci -v for the machine in question. I'll start reverting some of the
+> these patches to see if ide-mm-ide-add-struct-ide_io_ports-take-2.patch
+> is really the culprit.
 
-Cool.
-
-> But I really do not know about s390. They were the only one
-> without IDE in the past.
-
-They don't seem to support neither PCI nor ISA so I think that we
-should just special case them (== make IDE depend on BLOCK && !S390).
+Please try reverting ide-fix-hwif-s-initialization.patch first - it has
+already been dropped from IDE tree because people were reporting problems
+similar to the one encountered by you.
 
 Thanks,
 Bart
