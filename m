@@ -1,98 +1,152 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966187AbYD1WC2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966349AbYD1WDr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966187AbYD1WC2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 18:02:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965832AbYD1WCN
+	id S966349AbYD1WDr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 18:03:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965393AbYD1WDf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 18:02:13 -0400
-Received: from an-out-0708.google.com ([209.85.132.244]:14858 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965828AbYD1WCK (ORCPT
+	Mon, 28 Apr 2008 18:03:35 -0400
+Received: from yw-out-2324.google.com ([74.125.46.31]:61825 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965111AbYD1WDe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 18:02:10 -0400
+	Mon, 28 Apr 2008 18:03:34 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=xdAYApj6o9zbfp4rDqpCgCQMnYuxsWDXNNvI6nSDp6FdLbhEr5GJf8BjJ/A3kZahjIWK/KU6+M1IH8bvt1wmGQQsncuKTloAeo0nxiwBUKfqxnbCTpEWt8allcGO5XW7CIIan4E3exfrZd8442cstuMaQnBb4M3A0nWC0aQMGf8=
-Message-ID: <dd18b0c30804281502k694b30ferfd79217c1da458f0@mail.gmail.com>
-Date: Mon, 28 Apr 2008 22:02:06 +0000
-From: "Justin Mattock" <justinmattock@gmail.com>
-To: "Venki Pallipadi" <venkatesh.pallipadi@intel.com>
-Subject: Re: spinlock lockup on CPU#0
-Cc: "Bob Copeland" <me@bobcopeland.com>, "Ingo Molnar" <mingo@elte.hu>,
+        b=NY9CKj0CfhRegwGajLqNEsrveLMg1o/vkbOfaGiecqRRz45CNi1EIXlMc9UK0lFEVsxT3fOlOaObobc9b7mIf4hL2XJRm++WCQf2FEvy7RvAPc9ErMB0k8H9CU3sJ6eSzW7BRQAF6lhiEdVCVKcNBpMXlQSe5RGeyz2XExV2JXQ=
+Message-ID: <86802c440804281503q1f9e6f8anb18cd514e89b76fe@mail.gmail.com>
+Date: Mon, 28 Apr 2008 15:03:28 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Gabriel C" <nix.or.die@googlemail.com>
+Subject: Re: [PATCH] x86_32: trim memory by updating e820 v3
+Cc: "Mika Fischer" <mika.fischer@zoopnet.de>, "Ingo Molnar" <mingo@elte.hu>,
        "Andrew Morton" <akpm@linux-foundation.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       hugh@veritas.com
-In-Reply-To: <20080428203824.GA14044@linux-os.sc.intel.com>
+       "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>,
+       "Jesse Barnes" <jesse.barnes@intel.com>, balajirrao@gmail.com,
+       "Andi Kleen" <andi@firstfloor.org>,
+       "Thomas Gleixner" <tglx@linutronix.de>
+In-Reply-To: <48163F56.70704@googlemail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <dd18b0c30804231841m3bbfab44x53d635b7ea6fc58d@mail.gmail.com>
-	 <20080426112907.77613dee.akpm@linux-foundation.org>
-	 <20080426191432.GA2927@elte.hu>
-	 <b6c5339f0804261406o447b95b2i18c937a6c738f8db@mail.gmail.com>
-	 <dd18b0c30804261448n128293e6s1149931726e95b36@mail.gmail.com>
-	 <20080428203824.GA14044@linux-os.sc.intel.com>
+References: <200801192045.17291.yinghai.lu@sun.com>
+	 <86802c440804280234y5b38b4bds330fc1a6987202c5@mail.gmail.com>
+	 <48159ECF.9020004@googlemail.com> <20080428135351.GF3973@elte.hu>
+	 <4815DB15.4070908@zoopnet.de> <4815DE0C.6000802@googlemail.com>
+	 <86802c440804281206u6b5086a3h42192b7d36b08325@mail.gmail.com>
+	 <481627B7.9060406@googlemail.com> <4816376B.8060907@googlemail.com>
+	 <48163F56.70704@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 28, 2008 at 8:38 PM, Venki Pallipadi
-<venkatesh.pallipadi@intel.com> wrote:
-> On Sat, Apr 26, 2008 at 09:48:55PM +0000, Justin Mattock wrote:
->  > On Sat, Apr 26, 2008 at 9:06 PM, Bob Copeland <me@bobcopeland.com> wrote:
->  > > On Sat, Apr 26, 2008 at 3:14 PM, Ingo Molnar <mingo@elte.hu> wrote:
->  > >  >  > Can you add this please, see if it triggers?
->  > >  >
->  > >  >  there's fixes pending in this area. The main fix would be the one below.
->  > >  >
->  > >  >         Ingo
->  > >  >
->  > >  >  ---------------->
->  > >  >  Subject: idle (arch, acpi and apm) and lockdep
->  > >
->  > >  FWIW, I was seeing the same lockdep trace with eventual hangs, and
->  > >  this patch (applied with some fuzz) fixed the problem.
->  > >
->  > >  --
->  > >  Bob Copeland %% www.bobcopeland.com
->  > >
+On Mon, Apr 28, 2008 at 2:19 PM, Gabriel C <nix.or.die@googlemail.com> wrote:
+>
+> Gabriel C wrote:
+>  > Gabriel C wrote:
+>  >> Yinghai Lu wrote:
+>  >>> On Mon, Apr 28, 2008 at 7:24 AM, Gabriel C <nix.or.die@googlemail.com> wrote:
+>  >>>> Mika Fischer wrote:
+>  >>>>  > Hi Ingo,
+>  >>>>  >
+>  >>>>  > I'm having the same problem.
+>  >>>>  >
+>  >>>>  > Ingo Molnar schrieb:
+>  >>>>  >> excellent. So just to make sure: this box never had proper graphics
+>  >>>>  >> under Linux (under no previous kernel), due to the way the BIOS has set
+>  >>>>  >> up the MTRR's, right?
+>  >>>>  >
+>  >>>>  > Well, not quite. X still works fine, but since the video memory is
+>  >>>>  > overlapped by two of the existing MTRRs, X cannot add a write-combining
+>  >>>>  > range for the video memory. That makes X rather slow especially if you
+>  >>>>  > use DRI for Compiz etc.
+>  >>>>
+>  >>>>  Well you are lucky then :)
+>  >>>>
+>  >>>>  Yeah X 'worked' but it worked as slow as with vesa video driver here.
+>  >>> [    0.000000] rangeX: 0000000000000000 - 00000000d0000000
+>  >>> [    0.000000] Setting variable MTRR 0, base: 0MB, range: 2048MB, type WB
+>  >>> [    0.000000] Setting variable MTRR 1, base: 2048MB, range: 1024MB, type WB
+>  >>> [    0.000000] Setting variable MTRR 2, base: 3072MB, range: 256MB, type WB
+>  >>> [    0.000000] range0: 00000000cf800000 - 00000000cf800000
+>  >>> [    0.000000] range: 00000000cf800000 - 00000000d0000000
+>  >>> [    0.000000] Setting variable MTRR 3, base: 3320MB, range: 8MB, type WB
+>  >>> [    0.000000] range0: 0000000100000000 - 0000000120000000
+>  >>> [    0.000000] Setting variable MTRR 4, base: 4096MB, range: 512MB, type WB
+>  >>> [    0.000000] range: 0000000120000000 - 0000000130000000
+>  >>> [    0.000000] Setting variable MTRR 5, base: 4608MB, range: 256MB, type WB
+>  >>> [    0.000000] hole: 000000012c000000 - 0000000130000000
+>  >>> [    0.000000] Setting variable MTRR 6, base: 4800MB, range: 64MB, type UC
+>  >>>
+>  >>> so your X server need two entries for WB?
+>  >>>
+>  >>> can you send out /proc/mtrr with booting with disable_mtrr_cleanup?
+>  >> I can just not right now , cannot reboot the box yet. In about 1h or so , maybe less.
 >  >
->  > Just out of curiosity I put the kernel back to it's original state,
->  > were the freezing occurs, then booted with nohz=off, then added
->  > WARN_ON(!irqs_disabled()); to sched.c only to the kernel, no other
->  > patches, upon rebooting
->  > I received different results: The screen from what I could tell was
->  > spitting out the spinlock messages, but instead of printing that out,
->  > and going on to the next task it just keep't printing, from what I
->  > could tell something with ehci, uhci, agpgart, ieee1394 etc... too
->  > fast to really make anything out, the numbers on the left side keept
->  > moving upward, the fans started hauling ass, I waitied a few minuetes
->  > hopeing this would stop
->  > so I can grab dmesg, but it would'nt. is there a way to use the boot
->  > param to write date to a file? so I could capture this event.
->  > regards
+>  > Here the output with v3 which is disabled by default:
 >  >
+>  > --($:~)-- cat /proc/mtrr
+>  > reg00: base=0xd0000000 (3328MB), size= 256MB: uncachable, count=1
+>  > reg01: base=0xe0000000 (3584MB), size= 512MB: uncachable, count=1
+>  > reg02: base=0x00000000 (   0MB), size=4096MB: write-back, count=1
+>  > reg03: base=0x100000000 (4096MB), size= 512MB: write-back, count=1
+>  > reg04: base=0x120000000 (4608MB), size= 128MB: write-back, count=1
+>  > reg05: base=0x128000000 (4736MB), size=  64MB: write-back, count=1
+>  > reg06: base=0xcf600000 (3318MB), size=   2MB: uncachable, count=1
+>  >
+>  > dmesg is saying now :
+>  >
+>  > [   22.764595] mtrr: type mismatch for d0000000,10000000 old: write-back new: write-combining
+>  >
+>  >
+>  > My card settings in BIOS ( that was default ) are the following :
+>  >
+>  > DVMT Mode -> DVMT Mode ( possible setting DVMT Mode or Fixed Mode )
+>  > DVMT / Memory -> 256MB ( possible settings 128/256 MB or Maximum DVMT )
+>  >
+>  > Initiate Graphics Adapter -> PEG/PCI ( possible settings IGD , PCI/IGD , PCI/PEG , PEG/IGD )
+>  > Internal Graphics Mode Select -> Enabled,8MB ( possible settings Enabled,8MB , Enabled,1MB maybe Disabled I forgot to look)
+>  > PEG Port -> Auto ( possible settings Auto , Disabled )
+>  > PEG Port Force x1 -> Disabled ( possible settings Enabled , Disabled )
+>  >
+>  > Of course these settings are only possible when the card is not disabled :)
+>  >
+>  > I'm gonna try v4 now and enable it. Please let me know if you need more infos.
 >
->  OK. Hunted this bug down to
->  commit 3b22ec7b13cb31e0d87fbc0aabe14caaaad309e8
->
->  which for some reason enables interrupt in mwait_idle_with_hints(), which
->  eventually causes interrupts to be enabled in acpi idle call, resulting in
->  sched_clock_idle_wakeup_event() with interrupts enabled. This bug
->  was only in x86 32 bit version.
->
->  Peter's patch below which is already in git fixes this. So we don't need any
->  additional fixes here...
->
->  Thanks,
->  Venki
->
+>  Hmm v4 doesn't work anymore here ( I've tested with all possible settings in BIOS ).
+>  It takes 6 minutes to boot to :
 >
 
-Alright, I was concerned about having additional fixes.
-regards;
+so you card is using 256M and 8M? 0xd0000000-0xe0000000, where is
+another 8M address.
 
--- 
-Justin P. Mattock
+mtrr by BIOS is very interesting:
+before
+>  > reg02: base=0x00000000 (   0MB), size=4096MB: write-back, count=1
+>  > reg06: base=0xcf600000 (3318MB), size=   2MB: uncachable, count=1
+>  > reg00: base=0xd0000000 (3328MB), size= 256MB: uncachable, count=1
+>  > reg01: base=0xe0000000 (3584MB), size= 512MB: uncachable, count=1
+>  > reg03: base=0x100000000 (4096MB), size= 512MB: write-back, count=1
+>  > reg04: base=0x120000000 (4608MB), size= 128MB: write-back, count=1
+>  > reg05: base=0x128000000 (4736MB), size=  64MB: write-back, count=1
+
+
+after 256M chunk size got
+>  >>> [    0.000000] Setting variable MTRR 0, base: 0MB, range: 2048MB, type WB
+>  >>> [    0.000000] Setting variable MTRR 1, base: 2048MB, range: 1024MB, type WB
+>  >>> [    0.000000] Setting variable MTRR 2, base: 3072MB, range: 256MB, type WB
+>  >>> [    0.000000] Setting variable MTRR 3, base: 3320MB, range: 8MB, type WB
+>  >>> [    0.000000] Setting variable MTRR 4, base: 4096MB, range: 512MB, type WB
+>  >>> [    0.000000] Setting variable MTRR 5, base: 4608MB, range: 256MB, type WB
+>  >>> [    0.000000] Setting variable MTRR 6, base: 4800MB, range: 64MB, type UC
+
+so the convering is right..., need to spare another entry for your card.
+
+or we can dumping the
+>  >>> [    0.000000] Setting variable MTRR 3, base: 3320MB, range: 8MB, type WB
+for extra entra...
+
+but the mtrr trimming code need to be updated instead of only using highest_pfn
+
+YH
