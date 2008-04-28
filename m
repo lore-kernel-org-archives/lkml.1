@@ -1,118 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936793AbYD1Vaa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965808AbYD1VeT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936793AbYD1Vaa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 17:30:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932721AbYD1VaJ
+	id S965808AbYD1VeT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 17:34:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935481AbYD1VeH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 17:30:09 -0400
-Received: from mail.hauppauge.com ([167.206.143.4]:4040 "EHLO
-	mail.hauppauge.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933679AbYD1VaH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 17:30:07 -0400
-Message-ID: <481641CD.5030202@linuxtv.org>
-From: mkrufky@linuxtv.org
-To: mchehab@infradead.org
-Cc: bunk@kernel.org, mingo@elte.hu, linux-kernel@vger.kernel.org
-Subject: Re: [patch] dvb: build failure fix
-Date: Mon, 28 Apr 2008 17:29:49 -0400
-MIME-Version: 1.0
-X-Mailer: Internet Mail Service (5.5.2657.72)
-in-reply-to: <20080428182501.5bb87058@gaivota>
-x-originalarrivaltime: 28 Apr 2008 21:26:43.0374 (UTC) FILETIME=[8E013CE0:01C8A976]
-user-agent: Thunderbird 2.0.0.12 (Windows/20080213)
-Content-Type: text/plain;
-	charset="iso-8859-1"
+	Mon, 28 Apr 2008 17:34:07 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:48984 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S935069AbYD1VeE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Apr 2008 17:34:04 -0400
+Date: Mon, 28 Apr 2008 23:34:37 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Andres Salomon <dilinger@queued.net>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-kbuild@vger.kernel.org
+Subject: Re: [PATCH 4/4] kconfig: add *_silentdefconfig feature for config targets
+Message-ID: <20080428213437.GA24202@uranus.ravnborg.org>
+References: <20080425223530.10b9d50d@ephemeral> <20080427204744.GA444@uranus.ravnborg.org> <20080427214339.48bc2ed8@ephemeral>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080427214339.48bc2ed8@ephemeral>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mauro Carvalho Chehab wrote:
-> On Tue, 29 Apr 2008 00:01:22 +0300
-> Adrian Bunk <bunk@kernel.org> wrote:
->
->   
->> On Mon, Apr 28, 2008 at 09:53:30PM +0200, Ingo Molnar wrote:
->>     
->>> * Adrian Bunk <bunk@kernel.org> wrote:
->>>
->>>       
->>>> On Mon, Apr 28, 2008 at 06:24:21PM +0200, Ingo Molnar wrote:
->>>>         
->>>>> fix build failure found via x86.git randconfig testing:
->>>>>
->>>>>  drivers/built-in.o: In function `tda829x_attach':
->>>>>  : undefined reference to `tda827x_attach'
->>>>>  drivers/built-in.o: In function `tda829x_attach':
->>>>>  : undefined reference to `tda18271_attach'
->>>>>
->>>>> build failure is due to this nasty dependency:
->>>>>
->>>>>   CONFIG_DVB_CORE=m but CONFIG_TUNER_TDA8290=y.
->>>>>           
->>>> It might work around the problem in your specific configuration, but 
->>>> it's not the correct solution.
->>>>
->>>> Please send your .config .
->>>>         
->>> i dont have it anymore,
->>>       
->> That's bad since it makes it harder for other people to reproduce the 
->> problem.
->>
->>     
->>> but the key was what i wrote in the changelog 
->>> above:
->>>
->>>   CONFIG_DVB_CORE=m
->>>   CONFIG_TUNER_TDA8290=y
->>>
->>> if you look at the symbols above, their definition sites, and the 
->>> dependencies between them you'll see why that breaks the build. (There 
->>> might be more to it, this area has been a frequent source of problems.)
->>>       
->> TUNER_TDA8290 is the only affected driver, your patch also adds wrong 
->> dependences to other driver.
->>
->> And the underlying problem is that it has both an analog an a DVB tuner, 
->> and although forcing a dependency on DVB_CORE might make the randconfig 
->> crowd happy it's not the correct solution.
->>
->> Mauro, where were we regarding this issue?
->>
->> What about:
->>
->> config TUNER_TDA8290
->>         tristate "TDA 8290/8295 + 8275(a)/18271 tuner combo"
->>         depends on I2C
->> 	depends on DVB_CORE || DVB_CORE=n
->>         select DVB_TDA827X if DVB_CORE
->>         select DVB_TDA18271 if DVB_CORE
->>         default m if VIDEO_TUNER_CUSTOMIZE
->>         help
->>           Say Y here to include support for Philips TDA8290+8275(a)
-tuner.
->>
->> Or is there some twist I'm missing?
->>     
->
->
-> This will fix compilation, but some drivers will be broken, since tda8275
-is
-> needed even for some analog-only drivers.
->
-> It would be better to do a "select DVB_CORE", although this is also ugly.
->
-> I'm pinging Mkrufky. He is the one that touched a lot on those drivers.
-Maybe
-> he can come up with a better solution.
+> > 
+> > And I see why you went for the name *_silentdefconfig
+> > But in reality what we want to say is that we want to
+> > interactively apply the _defconfig.
+> 
+> Do I?  I'm not sure what you mean by "interactively apply".  I want
+> to non-interactively apply the defconfig, and fail if prompting is
+> required (rather than just choosing default values).
+I mean exactly the behaviour you ask for.
 
-The fix for this issue will come "for free" after the tuner location 
-reorganization to the media/common/ folder.
+> Sounds like you're saying that you want:
+> 
+> make oldconfig V=1   (chatty, prompt if possible or fail)
+> make oldconfig V=0   (silentoldconfig, prompt if possible or fail)
+> 
+> make defconfig V=1   (chatty, use defaults)
+> make defconfig V=0   (silent, use defaults)
+> 
+> make i386_oldconfig V=1 (chatty, prompt if possible or fail)
+> make i386_oldconfig V=0 (silent, prompt if possible or fail)
+> 
+> make i386_defconfig V=1 (chatty, use defaults)
+> make i386_defconfig V=0 (silent, use defaults)
+> 
+> Does that sound right?  Would using the build system's verbose variable
+> work?  If so, what should the default be?
 
-If you try the devel branch of mauro's v4l-dvb tree, is the issue 
-resolved for you?
+V= shall not be used for this. I will try to cook up something.
 
-Regards,
+> > > 
+> > > diff --git a/Makefile b/Makefile
+> > > index e77149e..c264f7f 100644
+> > > --- a/Makefile
+> > > +++ b/Makefile
+> > > @@ -1225,6 +1225,10 @@ help:
+> > >  		$(foreach b, $(boards), \
+> > >  		printf "  %-24s - Build for %s\\n" $(b) $(subst _defconfig,,$(b));) \
+> > >  		echo '')
+> > > +	@$(if $(boards), \
+> > > +		$(foreach b, $(boards), \
+> > > +		printf "  %-24s - Quiet Build for %s\\n" $(subst _defconfig,_silentdefconfig,$(b)) $(subst _defconfig,,$(b));) \
+> > > +		echo '')
+> > This is the first time we use printf in the top-level Makefile.
+> > Most likely because I never use printf in my shell scripts
+> > so I guess this is not a problem.
+> 
+> 
+> Eh?  There's already a printf, this just adds an additional printf.
+I'm blind and you are right.
 
-Mike
+> > > --- a/scripts/kconfig/conf.c
+> > > +++ b/scripts/kconfig/conf.c
+> > > @@ -558,7 +558,8 @@ int main(int ac, char **av)
+> > >  		}
+> > >  		break;
+> > >  	case ask_new:
+> > > -		if (silent_mode && stat(".config", &tmpstat)) {
+> > > +		if (!defconfig_file && silent_mode &&
+> > > +				stat(".config", &tmpstat)) {
+> > 
+> > This belong in a preparation patch. We should handle this
+> > also if we do not do so from the Makefile.
+> 
+> I'm not sure what you mean.  This isn't really preparation for this patch;
+> it's just ensuring that we can use '-o' and '-D' together without
+> running a check for .config.  Basically, if '-o' is specified but '-D'
+> is not, check for .config (and fail if it doesn't exist.  If '-o' and '-D'
+> are both specified, we don't care about .config.
+
+OK - but then it really does not belong in this patch.
+
+> 
+> > 
+> > >  			printf(_("***\n"
+> > >  				"*** You have not yet configured your kernel!\n"
+> > >  				"*** (missing kernel .config file)\n"
+> > > @@ -570,7 +571,15 @@ int main(int ac, char **av)
+> > >  		}
+> > >  		/* fall through */
+> > >  	case ask_all:
+> > > -		conf_read(NULL);
+> > > +		if (defconfig_file) {
+> > > +			if (conf_read(defconfig_file)) {
+> > > +				printf(_("***\n*** Can't find default "
+> > > +					 "configuration \"%s\"!\n***\n"),
+> > > +					 defconfig_file);
+> > > +				exit(1);
+> > > +			}
+> > > +		} else
+> > > +			conf_read(NULL);
+> > 
+> > Does conf_read() fail if we use the NULL argument?
+> > I assume not so the above code can be simplified and
+> > should also be in the same preparational patch as the change above.
+> 
+> I don't believe it fails, it uses a default config name.  I'm not sure
+> if it fails if _that_ file isn't found, though.  I can't make much
+> sense of the symbol stuff..
+Thought we could simplify the code if defconfig_file is by default NULL.
+Then we can drop the else.
+
+I will try to get back to you on this later. The patches are anyway
+too late for this merge window.
+
+	Sam
