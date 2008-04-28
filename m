@@ -1,225 +1,723 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935436AbYD1SYy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936862AbYD1SZv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935436AbYD1SYy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 14:24:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935314AbYD1SWp
+	id S936862AbYD1SZv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 14:25:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936454AbYD1SWr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 14:22:45 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:39368 "EHLO mx1.redhat.com"
+	Mon, 28 Apr 2008 14:22:47 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:39369 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S936401AbYD1SWi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S936404AbYD1SWi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 28 Apr 2008 14:22:38 -0400
-Message-Id: <20080428181852.356380291@redhat.com>
+Message-Id: <20080428181852.447755018@redhat.com>
 References: <20080428181835.502876582@redhat.com>
 User-Agent: quilt/0.46-1
-Date: Mon, 28 Apr 2008 14:18:37 -0400
+Date: Mon, 28 Apr 2008 14:18:38 -0400
 From: Rik van Riel <riel@redhat.com>
 To: linux-kernel@vger.kernel.org
 Cc: lee.schermerhorn@hp.com, akpm@linux-foundation.org,
-       kosaki.motohiro@jp.fujitsu.com, Nick Piggin <npiggin@suse.de>,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-Subject: [PATCH -mm 02/15] move isolate_lru_page() to vmscan.c
-Content-Disposition: inline; filename=np-01-move-and-rework-isolate_lru_page-v2.patch
+       kosaki.motohiro@jp.fujitsu.com, Christoph Lameter <clameter@sgi.com>
+Subject: [PATCH -mm 03/15] Use an indexed array for LRU variables
+Content-Disposition: inline; filename=cl-use-indexed-array-of-lru-lists.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+V3 [riel]: memcontrol LRU arrayification
+
 V1 -> V2 [lts]:
-+  fix botched merge -- add back "get_page_unless_zero()"
++ Remove extraneous  __dec_zone_state(zone, NR_ACTIVE) pointed
+  out by Mel G.
 
-  From: Nick Piggin <npiggin@suse.de>
-  To: Linux Memory Management <linux-mm@kvack.org>
-  Subject: [patch 1/4] mm: move and rework isolate_lru_page
-  Date:	Mon, 12 Mar 2007 07:38:44 +0100 (CET)
+>From clameter@sgi.com Wed Aug 29 11:39:51 2007
 
-isolate_lru_page logically belongs to be in vmscan.c than migrate.c.
+Currently we are defining explicit variables for the inactive
+and active list. An indexed array can be more generic and avoid
+repeating similar code in several places in the reclaim code.
 
-It is tough, because we don't need that function without memory migration
-so there is a valid argument to have it in migrate.c. However a subsequent
-patch needs to make use of it in the core mm, so we can happily move it
-to vmscan.c.
+We are saving a few bytes in terms of code size:
 
-Also, make the function a little more generic by not requiring that it
-adds an isolated page to a given list. Callers can do that.
+Before:
 
-	Note that we now have '__isolate_lru_page()', that does
-	something quite different, visible outside of vmscan.c
-	for use with memory controller.  Methinks we need to
-	rationalize these names/purposes.	--lts
+   text    data     bss     dec     hex filename
+4097753  573120 4092484 8763357  85b7dd vmlinux
 
-Signed-off-by: Nick Piggin <npiggin@suse.de>
+After:
+
+   text    data     bss     dec     hex filename
+4097729  573120 4092484 8763333  85b7c5 vmlinux
+
+Having an easy way to add new lru lists may ease future work on
+the reclaim code.
+
 Signed-off-by: Rik van Riel <riel@redhat.com>
-Signed-off-by: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+Signed-off-by: Lee Schermerhorn <lee.schermerhorn@hp.com>
+Signed-off-by: Christoph Lameter <clameter@sgi.com>
 
-Index: linux-2.6.25-mm1/include/linux/migrate.h
+ include/linux/memcontrol.h |   17 +---
+ include/linux/mm_inline.h  |   33 +++++---
+ include/linux/mmzone.h     |   17 ++--
+ mm/memcontrol.c            |  116 ++++++++++------------------
+ mm/page_alloc.c            |    9 +-
+ mm/swap.c                  |    2 
+ mm/vmscan.c                |  141 +++++++++++++++++------------------
+ mm/vmstat.c                |    3 
+ 8 files changed, 158 insertions(+), 180 deletions(-)
+
+Index: linux-2.6.25-mm1/include/linux/mmzone.h
 ===================================================================
---- linux-2.6.25-mm1.orig/include/linux/migrate.h	2007-07-08 19:32:17.000000000 -0400
-+++ linux-2.6.25-mm1/include/linux/migrate.h	2008-04-23 17:31:13.000000000 -0400
-@@ -25,7 +25,6 @@ static inline int vma_migratable(struct 
- 	return 1;
- }
+--- linux-2.6.25-mm1.orig/include/linux/mmzone.h	2008-04-22 10:33:44.000000000 -0400
++++ linux-2.6.25-mm1/include/linux/mmzone.h	2008-04-24 10:46:43.000000000 -0400
+@@ -81,8 +81,8 @@ struct zone_padding {
+ enum zone_stat_item {
+ 	/* First 128 byte cacheline (assuming 64 bit words) */
+ 	NR_FREE_PAGES,
+-	NR_INACTIVE,
+-	NR_ACTIVE,
++	NR_INACTIVE,	/* must match order of LRU_[IN]ACTIVE */
++	NR_ACTIVE,	/*  "     "     "   "       "         */
+ 	NR_ANON_PAGES,	/* Mapped anonymous pages */
+ 	NR_FILE_MAPPED,	/* pagecache pages mapped into pagetables.
+ 			   only modified from process context */
+@@ -107,6 +107,13 @@ enum zone_stat_item {
+ #endif
+ 	NR_VM_ZONE_STAT_ITEMS };
  
--extern int isolate_lru_page(struct page *p, struct list_head *pagelist);
- extern int putback_lru_pages(struct list_head *l);
- extern int migrate_page(struct address_space *,
- 			struct page *, struct page *);
-@@ -42,8 +41,6 @@ extern int migrate_vmas(struct mm_struct
- static inline int vma_migratable(struct vm_area_struct *vma)
- 					{ return 0; }
- 
--static inline int isolate_lru_page(struct page *p, struct list_head *list)
--					{ return -ENOSYS; }
- static inline int putback_lru_pages(struct list_head *l) { return 0; }
- static inline int migrate_pages(struct list_head *l, new_page_t x,
- 		unsigned long private) { return -ENOSYS; }
-Index: linux-2.6.25-mm1/mm/internal.h
-===================================================================
---- linux-2.6.25-mm1.orig/mm/internal.h	2008-04-22 10:33:45.000000000 -0400
-+++ linux-2.6.25-mm1/mm/internal.h	2008-04-23 17:31:13.000000000 -0400
-@@ -34,6 +34,8 @@ static inline void __put_page(struct pag
- 	atomic_dec(&page->_count);
- }
- 
-+extern int isolate_lru_page(struct page *page);
++enum lru_list {
++	LRU_INACTIVE,	/* must match order of NR_[IN]ACTIVE */
++	LRU_ACTIVE,	/*  "     "     "   "       "        */
++	NR_LRU_LISTS };
 +
- extern void __free_pages_bootmem(struct page *page, unsigned int order);
++#define for_each_lru(l) for (l = 0; l < NR_LRU_LISTS; l++)
++
+ struct per_cpu_pages {
+ 	int count;		/* number of pages in the list */
+ 	int high;		/* high watermark, emptying needed */
+@@ -251,10 +258,8 @@ struct zone {
  
- /*
-Index: linux-2.6.25-mm1/mm/migrate.c
+ 	/* Fields commonly accessed by the page reclaim scanner */
+ 	spinlock_t		lru_lock;	
+-	struct list_head	active_list;
+-	struct list_head	inactive_list;
+-	unsigned long		nr_scan_active;
+-	unsigned long		nr_scan_inactive;
++	struct list_head	list[NR_LRU_LISTS];
++	unsigned long		nr_scan[NR_LRU_LISTS];
+ 	unsigned long		pages_scanned;	   /* since last reclaim */
+ 	unsigned long		flags;		   /* zone flags, see below */
+ 
+Index: linux-2.6.25-mm1/include/linux/mm_inline.h
 ===================================================================
---- linux-2.6.25-mm1.orig/mm/migrate.c	2008-04-22 10:33:26.000000000 -0400
-+++ linux-2.6.25-mm1/mm/migrate.c	2008-04-23 17:31:13.000000000 -0400
-@@ -36,36 +36,6 @@
- #define lru_to_page(_head) (list_entry((_head)->prev, struct page, lru))
+--- linux-2.6.25-mm1.orig/include/linux/mm_inline.h	2007-07-08 19:32:17.000000000 -0400
++++ linux-2.6.25-mm1/include/linux/mm_inline.h	2008-04-24 10:46:43.000000000 -0400
+@@ -1,40 +1,51 @@
+ static inline void
++add_page_to_lru_list(struct zone *zone, struct page *page, enum lru_list l)
++{
++	list_add(&page->lru, &zone->list[l]);
++	__inc_zone_state(zone, NR_INACTIVE + l);
++}
++
++static inline void
++del_page_from_lru_list(struct zone *zone, struct page *page, enum lru_list l)
++{
++	list_del(&page->lru);
++	__dec_zone_state(zone, NR_INACTIVE + l);
++}
++
++static inline void
+ add_page_to_active_list(struct zone *zone, struct page *page)
+ {
+-	list_add(&page->lru, &zone->active_list);
+-	__inc_zone_state(zone, NR_ACTIVE);
++	add_page_to_lru_list(zone, page, LRU_ACTIVE);
+ }
  
- /*
-- * Isolate one page from the LRU lists. If successful put it onto
-- * the indicated list with elevated page count.
-- *
-- * Result:
-- *  -EBUSY: page not on LRU list
-- *  0: page removed from LRU list and added to the specified list.
-- */
--int isolate_lru_page(struct page *page, struct list_head *pagelist)
--{
--	int ret = -EBUSY;
--
--	if (PageLRU(page)) {
--		struct zone *zone = page_zone(page);
--
--		spin_lock_irq(&zone->lru_lock);
--		if (PageLRU(page) && get_page_unless_zero(page)) {
--			ret = 0;
--			ClearPageLRU(page);
--			if (PageActive(page))
--				del_page_from_active_list(zone, page);
--			else
--				del_page_from_inactive_list(zone, page);
--			list_add_tail(&page->lru, pagelist);
--		}
--		spin_unlock_irq(&zone->lru_lock);
--	}
--	return ret;
--}
--
--/*
-  * migrate_prep() needs to be called before we start compiling a list of pages
-  * to be migrated using isolate_lru_page().
-  */
-@@ -879,7 +849,9 @@ static int do_move_pages(struct mm_struc
- 				!migrate_all)
- 			goto put_and_set;
+ static inline void
+ add_page_to_inactive_list(struct zone *zone, struct page *page)
+ {
+-	list_add(&page->lru, &zone->inactive_list);
+-	__inc_zone_state(zone, NR_INACTIVE);
++	add_page_to_lru_list(zone, page, LRU_INACTIVE);
+ }
  
--		err = isolate_lru_page(page, &pagelist);
-+		err = isolate_lru_page(page);
-+		if (!err)
-+			list_add_tail(&page->lru, &pagelist);
- put_and_set:
- 		/*
- 		 * Either remove the duplicate refcount from
+ static inline void
+ del_page_from_active_list(struct zone *zone, struct page *page)
+ {
+-	list_del(&page->lru);
+-	__dec_zone_state(zone, NR_ACTIVE);
++	del_page_from_lru_list(zone, page, LRU_ACTIVE);
+ }
+ 
+ static inline void
+ del_page_from_inactive_list(struct zone *zone, struct page *page)
+ {
+-	list_del(&page->lru);
+-	__dec_zone_state(zone, NR_INACTIVE);
++	del_page_from_lru_list(zone, page, LRU_INACTIVE);
+ }
+ 
+ static inline void
+ del_page_from_lru(struct zone *zone, struct page *page)
+ {
++	enum lru_list l = LRU_INACTIVE;
++
+ 	list_del(&page->lru);
+ 	if (PageActive(page)) {
+ 		__ClearPageActive(page);
+-		__dec_zone_state(zone, NR_ACTIVE);
+-	} else {
+-		__dec_zone_state(zone, NR_INACTIVE);
++		l = LRU_ACTIVE;
+ 	}
++	__dec_zone_state(zone, NR_INACTIVE + l);
+ }
+ 
+Index: linux-2.6.25-mm1/mm/page_alloc.c
+===================================================================
+--- linux-2.6.25-mm1.orig/mm/page_alloc.c	2008-04-22 10:33:45.000000000 -0400
++++ linux-2.6.25-mm1/mm/page_alloc.c	2008-04-24 10:46:43.000000000 -0400
+@@ -3447,6 +3447,7 @@ static void __paginginit free_area_init_
+ 	for (j = 0; j < MAX_NR_ZONES; j++) {
+ 		struct zone *zone = pgdat->node_zones + j;
+ 		unsigned long size, realsize, memmap_pages;
++		enum lru_list l;
+ 
+ 		size = zone_spanned_pages_in_node(nid, j, zones_size);
+ 		realsize = size - zone_absent_pages_in_node(nid, j,
+@@ -3496,10 +3497,10 @@ static void __paginginit free_area_init_
+ 		zone->prev_priority = DEF_PRIORITY;
+ 
+ 		zone_pcp_init(zone);
+-		INIT_LIST_HEAD(&zone->active_list);
+-		INIT_LIST_HEAD(&zone->inactive_list);
+-		zone->nr_scan_active = 0;
+-		zone->nr_scan_inactive = 0;
++		for_each_lru(l) {
++			INIT_LIST_HEAD(&zone->list[l]);
++			zone->nr_scan[l] = 0;
++		}
+ 		zap_zone_vm_stats(zone);
+ 		zone->flags = 0;
+ 		if (!size)
+Index: linux-2.6.25-mm1/mm/swap.c
+===================================================================
+--- linux-2.6.25-mm1.orig/mm/swap.c	2008-04-22 10:33:45.000000000 -0400
++++ linux-2.6.25-mm1/mm/swap.c	2008-04-24 10:46:43.000000000 -0400
+@@ -117,7 +117,7 @@ static void pagevec_move_tail(struct pag
+ 			spin_lock(&zone->lru_lock);
+ 		}
+ 		if (PageLRU(page) && !PageActive(page)) {
+-			list_move_tail(&page->lru, &zone->inactive_list);
++			list_move_tail(&page->lru, &zone->list[LRU_INACTIVE]);
+ 			pgmoved++;
+ 		}
+ 	}
 Index: linux-2.6.25-mm1/mm/vmscan.c
 ===================================================================
---- linux-2.6.25-mm1.orig/mm/vmscan.c	2008-04-22 10:33:45.000000000 -0400
-+++ linux-2.6.25-mm1/mm/vmscan.c	2008-04-23 17:31:13.000000000 -0400
-@@ -816,6 +816,51 @@ static unsigned long clear_active_flags(
- 	return nr_active;
+--- linux-2.6.25-mm1.orig/mm/vmscan.c	2008-04-23 17:31:13.000000000 -0400
++++ linux-2.6.25-mm1/mm/vmscan.c	2008-04-24 10:46:43.000000000 -0400
+@@ -791,10 +791,10 @@ static unsigned long isolate_pages_globa
+ 					int active)
+ {
+ 	if (active)
+-		return isolate_lru_pages(nr, &z->active_list, dst,
++		return isolate_lru_pages(nr, &z->list[LRU_ACTIVE], dst,
+ 						scanned, order, mode);
+ 	else
+-		return isolate_lru_pages(nr, &z->inactive_list, dst,
++		return isolate_lru_pages(nr, &z->list[LRU_INACTIVE], dst,
+ 						scanned, order, mode);
  }
  
-+/**
-+ * isolate_lru_page - tries to isolate a page from its LRU list
-+ * @page: page to isolate from its LRU list
-+ *
-+ * Isolates a @page from an LRU list, clears PageLRU and adjusts the
-+ * vmstat statistic corresponding to whatever LRU list the page was on.
-+ *
-+ * Returns 0 if the page was removed from an LRU list.
-+ * Returns -EBUSY if the page was not on an LRU list.
-+ *
-+ * The returned page will have PageLRU() cleared.  If it was found on
-+ * the active list, it will have PageActive set.  That flag may need
-+ * to be cleared by the caller before letting the page go.
-+ *
-+ * The vmstat statistic corresponding to the list on which the page was
-+ * found will be decremented.
-+ *
-+ * Restrictions:
-+ * (1) Must be called with an elevated refcount on the page. This is a
-+ *     fundamentnal difference from isolate_lru_pages (which is called
-+ *     without a stable reference).
-+ * (2) the lru_lock must not be held.
-+ * (3) interrupts must be enabled.
-+ */
-+int isolate_lru_page(struct page *page)
+@@ -945,10 +945,7 @@ static unsigned long shrink_inactive_lis
+ 			VM_BUG_ON(PageLRU(page));
+ 			SetPageLRU(page);
+ 			list_del(&page->lru);
+-			if (PageActive(page))
+-				add_page_to_active_list(zone, page);
+-			else
+-				add_page_to_inactive_list(zone, page);
++			add_page_to_lru_list(zone, page, PageActive(page));
+ 			if (!pagevec_add(&pvec, page)) {
+ 				spin_unlock_irq(&zone->lru_lock);
+ 				__pagevec_release(&pvec);
+@@ -1116,8 +1113,8 @@ static void shrink_active_list(unsigned 
+ 	int pgdeactivate = 0;
+ 	unsigned long pgscanned;
+ 	LIST_HEAD(l_hold);	/* The pages which were snipped off */
+-	LIST_HEAD(l_inactive);	/* Pages to go onto the inactive_list */
+-	LIST_HEAD(l_active);	/* Pages to go onto the active_list */
++	LIST_HEAD(l_active);
++	LIST_HEAD(l_inactive);
+ 	struct page *page;
+ 	struct pagevec pvec;
+ 	int reclaim_mapped = 0;
+@@ -1169,7 +1166,7 @@ static void shrink_active_list(unsigned 
+ 		VM_BUG_ON(!PageActive(page));
+ 		ClearPageActive(page);
+ 
+-		list_move(&page->lru, &zone->inactive_list);
++		list_move(&page->lru, &zone->list[LRU_INACTIVE]);
+ 		mem_cgroup_move_lists(page, false);
+ 		pgmoved++;
+ 		if (!pagevec_add(&pvec, page)) {
+@@ -1199,7 +1196,7 @@ static void shrink_active_list(unsigned 
+ 		SetPageLRU(page);
+ 		VM_BUG_ON(!PageActive(page));
+ 
+-		list_move(&page->lru, &zone->active_list);
++		list_move(&page->lru, &zone->list[LRU_ACTIVE]);
+ 		mem_cgroup_move_lists(page, true);
+ 		pgmoved++;
+ 		if (!pagevec_add(&pvec, page)) {
+@@ -1219,65 +1216,64 @@ static void shrink_active_list(unsigned 
+ 	pagevec_release(&pvec);
+ }
+ 
++static unsigned long shrink_list(enum lru_list l, unsigned long nr_to_scan,
++	struct zone *zone, struct scan_control *sc, int priority)
 +{
-+	int ret = -EBUSY;
-+
-+	if (PageLRU(page)) {
-+		struct zone *zone = page_zone(page);
-+
-+		spin_lock_irq(&zone->lru_lock);
-+		if (PageLRU(page) && get_page_unless_zero(page)) {
-+			ret = 0;
-+			ClearPageLRU(page);
-+			if (PageActive(page))
-+				del_page_from_active_list(zone, page);
-+			else
-+				del_page_from_inactive_list(zone, page);
-+		}
-+		spin_unlock_irq(&zone->lru_lock);
++	if (l == LRU_ACTIVE) {
++		shrink_active_list(nr_to_scan, zone, sc, priority);
++		return 0;
 +	}
-+	return ret;
++	return shrink_inactive_list(nr_to_scan, zone, sc);
 +}
 +
  /*
-  * shrink_inactive_list() is a helper for shrink_zone().  It returns the number
-  * of reclaimed pages
-Index: linux-2.6.25-mm1/mm/mempolicy.c
-===================================================================
---- linux-2.6.25-mm1.orig/mm/mempolicy.c	2008-04-22 10:33:45.000000000 -0400
-+++ linux-2.6.25-mm1/mm/mempolicy.c	2008-04-23 17:31:13.000000000 -0400
-@@ -93,6 +93,8 @@
- #include <asm/tlbflush.h>
- #include <asm/uaccess.h>
+  * This is a basic per-zone page freer.  Used by both kswapd and direct reclaim.
+  */
+ static unsigned long shrink_zone(int priority, struct zone *zone,
+ 				struct scan_control *sc)
+ {
+-	unsigned long nr_active;
+-	unsigned long nr_inactive;
++	unsigned long nr[NR_LRU_LISTS];
+ 	unsigned long nr_to_scan;
+ 	unsigned long nr_reclaimed = 0;
++	enum lru_list l;
  
-+#include "internal.h"
-+
- /* Internal flags */
- #define MPOL_MF_DISCONTIG_OK (MPOL_MF_INTERNAL << 0)	/* Skip checks for continuous vmas */
- #define MPOL_MF_INVERT (MPOL_MF_INTERNAL << 1)		/* Invert check for nodemask */
-@@ -758,8 +760,11 @@ static void migrate_page_add(struct page
- 	/*
- 	 * Avoid migrating a page that is shared with others.
- 	 */
--	if ((flags & MPOL_MF_MOVE_ALL) || page_mapcount(page) == 1)
--		isolate_lru_page(page, pagelist);
-+	if ((flags & MPOL_MF_MOVE_ALL) || page_mapcount(page) == 1) {
-+		if (!isolate_lru_page(page)) {
-+			list_add_tail(&page->lru, pagelist);
+ 	if (scan_global_lru(sc)) {
+ 		/*
+ 		 * Add one to nr_to_scan just to make sure that the kernel
+ 		 * will slowly sift through the active list.
+ 		 */
+-		zone->nr_scan_active +=
+-			(zone_page_state(zone, NR_ACTIVE) >> priority) + 1;
+-		nr_active = zone->nr_scan_active;
+-		zone->nr_scan_inactive +=
+-			(zone_page_state(zone, NR_INACTIVE) >> priority) + 1;
+-		nr_inactive = zone->nr_scan_inactive;
+-		if (nr_inactive >= sc->swap_cluster_max)
+-			zone->nr_scan_inactive = 0;
+-		else
+-			nr_inactive = 0;
+-
+-		if (nr_active >= sc->swap_cluster_max)
+-			zone->nr_scan_active = 0;
+-		else
+-			nr_active = 0;
++		for_each_lru(l) {
++			zone->nr_scan[l] += (zone_page_state(zone,
++					NR_INACTIVE + l)  >> priority) + 1;
++			nr[l] = zone->nr_scan[l];
++			if (nr[l] >= sc->swap_cluster_max)
++				zone->nr_scan[l] = 0;
++			else
++				nr[l] = 0;
 +		}
-+	}
+ 	} else {
+ 		/*
+ 		 * This reclaim occurs not because zone memory shortage but
+ 		 * because memory controller hits its limit.
+ 		 * Then, don't modify zone reclaim related data.
+ 		 */
+-		nr_active = mem_cgroup_calc_reclaim_active(sc->mem_cgroup,
+-					zone, priority);
++		nr[LRU_ACTIVE] = mem_cgroup_calc_reclaim(sc->mem_cgroup,
++					zone, priority, LRU_ACTIVE);
+ 
+-		nr_inactive = mem_cgroup_calc_reclaim_inactive(sc->mem_cgroup,
+-					zone, priority);
++		nr[LRU_INACTIVE] = mem_cgroup_calc_reclaim(sc->mem_cgroup,
++					zone, priority, LRU_INACTIVE);
+ 	}
+ 
+-
+-	while (nr_active || nr_inactive) {
+-		if (nr_active) {
+-			nr_to_scan = min(nr_active,
++	while (nr[LRU_ACTIVE] || nr[LRU_INACTIVE]) {
++		for_each_lru(l) {
++			if (nr[l]) {
++				nr_to_scan = min(nr[l],
+ 					(unsigned long)sc->swap_cluster_max);
+-			nr_active -= nr_to_scan;
+-			shrink_active_list(nr_to_scan, zone, sc, priority);
+-		}
++				nr[l] -= nr_to_scan;
+ 
+-		if (nr_inactive) {
+-			nr_to_scan = min(nr_inactive,
+-					(unsigned long)sc->swap_cluster_max);
+-			nr_inactive -= nr_to_scan;
+-			nr_reclaimed += shrink_inactive_list(nr_to_scan, zone,
+-								sc);
++				nr_reclaimed += shrink_list(l, nr_to_scan,
++							zone, sc, priority);
++			}
+ 		}
+ 	}
+ 
+@@ -1791,6 +1787,7 @@ static unsigned long shrink_all_zones(un
+ {
+ 	struct zone *zone;
+ 	unsigned long nr_to_scan, ret = 0;
++	enum lru_list l;
+ 
+ 	for_each_zone(zone) {
+ 
+@@ -1800,28 +1797,25 @@ static unsigned long shrink_all_zones(un
+ 		if (zone_is_all_unreclaimable(zone) && prio != DEF_PRIORITY)
+ 			continue;
+ 
+-		/* For pass = 0 we don't shrink the active list */
+-		if (pass > 0) {
+-			zone->nr_scan_active +=
+-				(zone_page_state(zone, NR_ACTIVE) >> prio) + 1;
+-			if (zone->nr_scan_active >= nr_pages || pass > 3) {
+-				zone->nr_scan_active = 0;
++		for_each_lru(l) {
++			/* For pass = 0 we don't shrink the active list */
++			if (pass == 0 && l == LRU_ACTIVE)
++				continue;
++
++			zone->nr_scan[l] +=
++				(zone_page_state(zone, NR_INACTIVE + l)
++								>> prio) + 1;
++			if (zone->nr_scan[l] >= nr_pages || pass > 3) {
++				zone->nr_scan[l] = 0;
+ 				nr_to_scan = min(nr_pages,
+-					zone_page_state(zone, NR_ACTIVE));
+-				shrink_active_list(nr_to_scan, zone, sc, prio);
++					zone_page_state(zone,
++							NR_INACTIVE + l));
++				ret += shrink_list(l, nr_to_scan, zone,
++								sc, prio);
++				if (ret >= nr_pages)
++					return ret;
+ 			}
+ 		}
+-
+-		zone->nr_scan_inactive +=
+-			(zone_page_state(zone, NR_INACTIVE) >> prio) + 1;
+-		if (zone->nr_scan_inactive >= nr_pages || pass > 3) {
+-			zone->nr_scan_inactive = 0;
+-			nr_to_scan = min(nr_pages,
+-				zone_page_state(zone, NR_INACTIVE));
+-			ret += shrink_inactive_list(nr_to_scan, zone, sc);
+-			if (ret >= nr_pages)
+-				return ret;
+-		}
+ 	}
+ 
+ 	return ret;
+Index: linux-2.6.25-mm1/mm/vmstat.c
+===================================================================
+--- linux-2.6.25-mm1.orig/mm/vmstat.c	2008-04-23 17:31:10.000000000 -0400
++++ linux-2.6.25-mm1/mm/vmstat.c	2008-04-24 10:46:43.000000000 -0400
+@@ -764,7 +764,8 @@ static void zoneinfo_show_print(struct s
+ 		   zone->pages_low,
+ 		   zone->pages_high,
+ 		   zone->pages_scanned,
+-		   zone->nr_scan_active, zone->nr_scan_inactive,
++		   zone->nr_scan[LRU_ACTIVE],
++		   zone->nr_scan[LRU_INACTIVE],
+ 		   zone->spanned_pages,
+ 		   zone->present_pages);
+ 
+Index: linux-2.6.25-mm1/include/linux/memcontrol.h
+===================================================================
+--- linux-2.6.25-mm1.orig/include/linux/memcontrol.h	2008-04-22 10:33:44.000000000 -0400
++++ linux-2.6.25-mm1/include/linux/memcontrol.h	2008-04-24 10:46:43.000000000 -0400
+@@ -66,10 +66,8 @@ extern void mem_cgroup_note_reclaim_prio
+ extern void mem_cgroup_record_reclaim_priority(struct mem_cgroup *mem,
+ 							int priority);
+ 
+-extern long mem_cgroup_calc_reclaim_active(struct mem_cgroup *mem,
+-				struct zone *zone, int priority);
+-extern long mem_cgroup_calc_reclaim_inactive(struct mem_cgroup *mem,
+-				struct zone *zone, int priority);
++extern long mem_cgroup_calc_reclaim(struct mem_cgroup *mem, struct zone *zone,
++					int priority, enum lru_list lru);
+ 
+ #else /* CONFIG_CGROUP_MEM_RES_CTLR */
+ static inline void page_reset_bad_cgroup(struct page *page)
+@@ -151,14 +149,9 @@ static inline void mem_cgroup_record_rec
+ {
  }
  
- static struct page *new_node_page(struct page *page, unsigned long node, int **x)
+-static inline long mem_cgroup_calc_reclaim_active(struct mem_cgroup *mem,
+-					struct zone *zone, int priority)
+-{
+-	return 0;
+-}
+-
+-static inline long mem_cgroup_calc_reclaim_inactive(struct mem_cgroup *mem,
+-					struct zone *zone, int priority)
++static inline long mem_cgroup_calc_reclaim(struct mem_cgroup *mem,
++					struct zone *zone, int priority,
++					enum lru_list lru)
+ {
+ 	return 0;
+ }
+Index: linux-2.6.25-mm1/mm/memcontrol.c
+===================================================================
+--- linux-2.6.25-mm1.orig/mm/memcontrol.c	2008-04-22 10:33:45.000000000 -0400
++++ linux-2.6.25-mm1/mm/memcontrol.c	2008-04-24 10:56:57.000000000 -0400
+@@ -32,6 +32,7 @@
+ #include <linux/fs.h>
+ #include <linux/seq_file.h>
+ #include <linux/vmalloc.h>
++#include <linux/mm_inline.h>
+ 
+ #include <asm/uaccess.h>
+ 
+@@ -83,22 +84,13 @@ static s64 mem_cgroup_read_stat(struct m
+ /*
+  * per-zone information in memory controller.
+  */
+-
+-enum mem_cgroup_zstat_index {
+-	MEM_CGROUP_ZSTAT_ACTIVE,
+-	MEM_CGROUP_ZSTAT_INACTIVE,
+-
+-	NR_MEM_CGROUP_ZSTAT,
+-};
+-
+ struct mem_cgroup_per_zone {
+ 	/*
+ 	 * spin_lock to protect the per cgroup LRU
+ 	 */
+ 	spinlock_t		lru_lock;
+-	struct list_head	active_list;
+-	struct list_head	inactive_list;
+-	unsigned long count[NR_MEM_CGROUP_ZSTAT];
++	struct list_head	lists[NR_LRU_LISTS];
++	unsigned long		count[NR_LRU_LISTS];
+ };
+ /* Macro for accessing counter */
+ #define MEM_CGROUP_ZSTAT(mz, idx)	((mz)->count[(idx)])
+@@ -218,7 +210,7 @@ page_cgroup_zoneinfo(struct page_cgroup 
+ }
+ 
+ static unsigned long mem_cgroup_get_all_zonestat(struct mem_cgroup *mem,
+-					enum mem_cgroup_zstat_index idx)
++					enum lru_list idx)
+ {
+ 	int nid, zid;
+ 	struct mem_cgroup_per_zone *mz;
+@@ -280,11 +272,9 @@ static void __mem_cgroup_remove_list(str
+ 			struct page_cgroup *pc)
+ {
+ 	int from = pc->flags & PAGE_CGROUP_FLAG_ACTIVE;
++	int lru = !!from;
+ 
+-	if (from)
+-		MEM_CGROUP_ZSTAT(mz, MEM_CGROUP_ZSTAT_ACTIVE) -= 1;
+-	else
+-		MEM_CGROUP_ZSTAT(mz, MEM_CGROUP_ZSTAT_INACTIVE) -= 1;
++	MEM_CGROUP_ZSTAT(mz, lru) -= 1;
+ 
+ 	mem_cgroup_charge_statistics(pc->mem_cgroup, pc->flags, false);
+ 	list_del_init(&pc->lru);
+@@ -293,37 +283,35 @@ static void __mem_cgroup_remove_list(str
+ static void __mem_cgroup_add_list(struct mem_cgroup_per_zone *mz,
+ 				struct page_cgroup *pc)
+ {
+-	int to = pc->flags & PAGE_CGROUP_FLAG_ACTIVE;
++	int lru = LRU_INACTIVE;
++
++	if (pc->flags & PAGE_CGROUP_FLAG_ACTIVE)
++		lru += LRU_ACTIVE;
++
++	MEM_CGROUP_ZSTAT(mz, lru) += 1;
++	list_add(&pc->lru, &mz->lists[lru]);
+ 
+-	if (!to) {
+-		MEM_CGROUP_ZSTAT(mz, MEM_CGROUP_ZSTAT_INACTIVE) += 1;
+-		list_add(&pc->lru, &mz->inactive_list);
+-	} else {
+-		MEM_CGROUP_ZSTAT(mz, MEM_CGROUP_ZSTAT_ACTIVE) += 1;
+-		list_add(&pc->lru, &mz->active_list);
+-	}
+ 	mem_cgroup_charge_statistics(pc->mem_cgroup, pc->flags, true);
+ }
+ 
+ static void __mem_cgroup_move_lists(struct page_cgroup *pc, bool active)
+ {
+-	int from = pc->flags & PAGE_CGROUP_FLAG_ACTIVE;
+ 	struct mem_cgroup_per_zone *mz = page_cgroup_zoneinfo(pc);
++	int lru = LRU_INACTIVE;
+ 
+-	if (from)
+-		MEM_CGROUP_ZSTAT(mz, MEM_CGROUP_ZSTAT_ACTIVE) -= 1;
+-	else
+-		MEM_CGROUP_ZSTAT(mz, MEM_CGROUP_ZSTAT_INACTIVE) -= 1;
++	if (pc->flags & PAGE_CGROUP_FLAG_ACTIVE)
++		lru += LRU_ACTIVE;
+ 
+-	if (active) {
+-		MEM_CGROUP_ZSTAT(mz, MEM_CGROUP_ZSTAT_ACTIVE) += 1;
++	MEM_CGROUP_ZSTAT(mz, lru) -= 1;
++
++	if (active)
+ 		pc->flags |= PAGE_CGROUP_FLAG_ACTIVE;
+-		list_move(&pc->lru, &mz->active_list);
+-	} else {
+-		MEM_CGROUP_ZSTAT(mz, MEM_CGROUP_ZSTAT_INACTIVE) += 1;
++	else
+ 		pc->flags &= ~PAGE_CGROUP_FLAG_ACTIVE;
+-		list_move(&pc->lru, &mz->inactive_list);
+-	}
++
++	lru = !!active;
++	MEM_CGROUP_ZSTAT(mz, lru) += 1;
++	list_move(&pc->lru, &mz->lists[lru]);
+ }
+ 
+ int task_in_mem_cgroup(struct task_struct *task, const struct mem_cgroup *mem)
+@@ -392,8 +380,8 @@ long mem_cgroup_reclaim_imbalance(struct
+ {
+ 	unsigned long active, inactive;
+ 	/* active and inactive are the number of pages. 'long' is ok.*/
+-	active = mem_cgroup_get_all_zonestat(mem, MEM_CGROUP_ZSTAT_ACTIVE);
+-	inactive = mem_cgroup_get_all_zonestat(mem, MEM_CGROUP_ZSTAT_INACTIVE);
++	active = mem_cgroup_get_all_zonestat(mem, LRU_ACTIVE);
++	inactive = mem_cgroup_get_all_zonestat(mem, LRU_INACTIVE);
+ 	return (long) (active / (inactive + 1));
+ }
+ 
+@@ -424,28 +412,17 @@ void mem_cgroup_record_reclaim_priority(
+  * (see include/linux/mmzone.h)
+  */
+ 
+-long mem_cgroup_calc_reclaim_active(struct mem_cgroup *mem,
+-				   struct zone *zone, int priority)
++long mem_cgroup_calc_reclaim(struct mem_cgroup *mem, struct zone *zone,
++					int priority, enum lru_list lru)
+ {
+-	long nr_active;
++	long nr_pages;
+ 	int nid = zone->zone_pgdat->node_id;
+ 	int zid = zone_idx(zone);
+ 	struct mem_cgroup_per_zone *mz = mem_cgroup_zoneinfo(mem, nid, zid);
+ 
+-	nr_active = MEM_CGROUP_ZSTAT(mz, MEM_CGROUP_ZSTAT_ACTIVE);
+-	return (nr_active >> priority);
+-}
+-
+-long mem_cgroup_calc_reclaim_inactive(struct mem_cgroup *mem,
+-					struct zone *zone, int priority)
+-{
+-	long nr_inactive;
+-	int nid = zone->zone_pgdat->node_id;
+-	int zid = zone_idx(zone);
+-	struct mem_cgroup_per_zone *mz = mem_cgroup_zoneinfo(mem, nid, zid);
++	nr_pages = MEM_CGROUP_ZSTAT(mz, lru);
+ 
+-	nr_inactive = MEM_CGROUP_ZSTAT(mz, MEM_CGROUP_ZSTAT_INACTIVE);
+-	return (nr_inactive >> priority);
++	return (nr_pages >> priority);
+ }
+ 
+ unsigned long mem_cgroup_isolate_pages(unsigned long nr_to_scan,
+@@ -464,14 +441,11 @@ unsigned long mem_cgroup_isolate_pages(u
+ 	int nid = z->zone_pgdat->node_id;
+ 	int zid = zone_idx(z);
+ 	struct mem_cgroup_per_zone *mz;
++	int lru = !!active;
+ 
+ 	BUG_ON(!mem_cont);
+ 	mz = mem_cgroup_zoneinfo(mem_cont, nid, zid);
+-	if (active)
+-		src = &mz->active_list;
+-	else
+-		src = &mz->inactive_list;
+-
++	src = &mz->lists[lru];
+ 
+ 	spin_lock(&mz->lru_lock);
+ 	scan = 0;
+@@ -762,7 +736,7 @@ void mem_cgroup_page_migration(struct pa
+ #define FORCE_UNCHARGE_BATCH	(128)
+ static void mem_cgroup_force_empty_list(struct mem_cgroup *mem,
+ 			    struct mem_cgroup_per_zone *mz,
+-			    int active)
++			    enum lru_list lru)
+ {
+ 	struct page_cgroup *pc;
+ 	struct page *page;
+@@ -770,10 +744,7 @@ static void mem_cgroup_force_empty_list(
+ 	unsigned long flags;
+ 	struct list_head *list;
+ 
+-	if (active)
+-		list = &mz->active_list;
+-	else
+-		list = &mz->inactive_list;
++	list = &mz->lists[lru];
+ 
+ 	spin_lock_irqsave(&mz->lru_lock, flags);
+ 	while (!list_empty(list)) {
+@@ -816,11 +787,10 @@ static int mem_cgroup_force_empty(struct
+ 		for_each_node_state(node, N_POSSIBLE)
+ 			for (zid = 0; zid < MAX_NR_ZONES; zid++) {
+ 				struct mem_cgroup_per_zone *mz;
++				enum lru_list l;
+ 				mz = mem_cgroup_zoneinfo(mem, node, zid);
+-				/* drop all page_cgroup in active_list */
+-				mem_cgroup_force_empty_list(mem, mz, 1);
+-				/* drop all page_cgroup in inactive_list */
+-				mem_cgroup_force_empty_list(mem, mz, 0);
++				for_each_lru(l)
++					mem_cgroup_force_empty_list(mem, mz, l);
+ 			}
+ 	}
+ 	ret = 0;
+@@ -905,9 +875,9 @@ static int mem_control_stat_show(struct 
+ 		unsigned long active, inactive;
+ 
+ 		inactive = mem_cgroup_get_all_zonestat(mem_cont,
+-						MEM_CGROUP_ZSTAT_INACTIVE);
++						LRU_INACTIVE);
+ 		active = mem_cgroup_get_all_zonestat(mem_cont,
+-						MEM_CGROUP_ZSTAT_ACTIVE);
++						LRU_ACTIVE);
+ 		cb->fill(cb, "active", (active) * PAGE_SIZE);
+ 		cb->fill(cb, "inactive", (inactive) * PAGE_SIZE);
+ 	}
+@@ -952,6 +922,7 @@ static int alloc_mem_cgroup_per_zone_inf
+ {
+ 	struct mem_cgroup_per_node *pn;
+ 	struct mem_cgroup_per_zone *mz;
++	enum lru_list l;
+ 	int zone, tmp = node;
+ 	/*
+ 	 * This routine is called against possible nodes.
+@@ -972,9 +943,9 @@ static int alloc_mem_cgroup_per_zone_inf
+ 
+ 	for (zone = 0; zone < MAX_NR_ZONES; zone++) {
+ 		mz = &pn->zoneinfo[zone];
+-		INIT_LIST_HEAD(&mz->active_list);
+-		INIT_LIST_HEAD(&mz->inactive_list);
+ 		spin_lock_init(&mz->lru_lock);
++		for_each_lru(l)
++			INIT_LIST_HEAD(&mz->lists[l]);
+ 	}
+ 	return 0;
+ }
 
 -- 
 All Rights Reversed
