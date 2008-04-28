@@ -1,65 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965208AbYD1RJ2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965985AbYD1RME@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965208AbYD1RJ2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 13:09:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933728AbYD1RJU
+	id S965985AbYD1RME (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 13:12:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933732AbYD1RLw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 13:09:20 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:51326 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1762368AbYD1RJT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 13:09:19 -0400
-Message-ID: <481604BD.7000009@sgi.com>
-Date: Mon, 28 Apr 2008 10:09:17 -0700
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
-MIME-Version: 1.0
-To: Paul Jackson <pj@sgi.com>
-CC: WANG Cong <xiyou.wangcong@gmail.com>, bert.wesarg@googlemail.com,
-       mingo@elte.hu, linux-kernel@vger.kernel.org,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org
-Subject: Re: [PATCH] Fix calculus of bitmap_scnprintf_len()
-References: <1209329003-22036-1-git-send-email-bert.wesarg@googlemail.com>	<20080427160118.ad4cadf0.pj@sgi.com>	<alpine.LFD.1.00.0804281414020.2870@localhost.localdomain> <20080428081326.fc62f1ce.pj@sgi.com>
-In-Reply-To: <20080428081326.fc62f1ce.pj@sgi.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 28 Apr 2008 13:11:52 -0400
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:46043 "EHLO e6.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933728AbYD1RLv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Apr 2008 13:11:51 -0400
+Subject: Re: Possible race between direct IO and JBD?
+From: Badari Pulavarty <pbadari@us.ibm.com>
+To: Jan Kara <jack@suse.cz>
+Cc: Mingming Cao <cmm@us.ibm.com>, akpm@linux-foundation.org,
+       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20080428122626.GC17054@duck.suse.cz>
+References: <20080306174209.GA14193@duck.suse.cz>
+	 <1209166706.6040.20.camel@localhost.localdomain>
+	 <20080428122626.GC17054@duck.suse.cz>
+Content-Type: text/plain
+Date: Mon, 28 Apr 2008 10:11:34 -0700
+Message-Id: <1209402694.23575.5.camel@badari-desktop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul Jackson wrote:
-> Bert wrote:
->> The function bitmap_scnprintf_len() is currently not used
+
+On Mon, 2008-04-28 at 14:26 +0200, Jan Kara wrote:
+> Hi,
 > 
-> Paul Jackson wrote:
->> How about we just remove that function?
-> 
-> WANG Cong wrote:
->> I am afraid no. See:
->>
->> include/linux/cpumask.h:292:    return bitmap_scnprintf_len(len);
-> 
-> Good point.
-> 
-> 
-> Then how about we also remove from cpumask.h:
-> 
-> #define cpumask_scnprintf_len(len) \
->                         __cpumask_scnprintf_len((len))
-> static inline int __cpumask_scnprintf_len(int len)
-> {
->         return bitmap_scnprintf_len(len);
-> }
+> On Fri 25-04-08 16:38:23, Mingming Cao wrote:
+> > While looking at a bug related to direct IO returns to EIO, after
+> > looking at the code, I found there is a window that
+> > try_to_free_buffers() from direct IO could race with JBD, which holds
+> > the reference to the data buffers before journal_commit_transaction()
+> > ensures the data buffers has reached to the disk.
+> > 
+> > A little more detail: to prepare for direct IO, generic_file_direct_IO()
+> > calls invalidate_inode_pages2_range() to invalidate the pages in the
+> > cache before performaning direct IO.  invalidate_inode_pages2_range()
+> > tries to free the buffers via try_to free_buffers(), but sometimes it
+> > can't, due to the buffers is possible still on some transaction's
+> > t_sync_datalist or t_locked_list waiting for
+> > journal_commit_transaction() to process it. 
+> > 
+> > Currently Direct IO simply returns EIO if try_to_free_buffers() finds
+> > the buffer is busy, as it has no clue that JBD is referencing it.
+> > 
+> > Is this a known issue and expected behavior? Any thoughts?
+>   Are you seeing this in data=ordered mode? As Andrew pointed out we do
+> filemap_write_and_wait() so all the relevant data buffers of the inode
+> should be already on disk. In __journal_try_to_free_buffer() we check
+> whether the buffer is already-written-out data buffer and unfile and free
+> it in that case. It shouldn't happen that a data buffer has
+> b_next_transaction set so really the only idea why try_to_free_buffers()
+> could fail is that somebody manages to write to a page via mmap before
+> invalidate_inode_pages2_range() gets to it. Under which kind of load do you
+> observe the problem? Do you know exactly because of which condition does
+> journal_try_to_free_buffers() fail?
 > 
 
-That's fine with me.  A later version of the patch did have
-the function removed but it didn't get picked up.  The other
-changes there were to use function pointers instead of the
-flag variable to select list or mask output format, and the
-addition of mask variants for the cpu/{present,possible,
-online,system} map outputs.
+Thank you for your reply.
 
-I'll dig that one back up and resubmit it.
+What we are noticing is invalidate_inode_pages2_range() fails with -EIO
+(from try_to_free_buffers() since b_count > 0).
+
+I don't think the file is being updated through mmap(). Previous
+writepage() added these buffers to t_sync_data list (data=ordered).
+filemap_write_and_wait() waits for pagewrite back to be cleared.
+So, buffers are no longer dirty, but still on the t_sync_data and
+kjournald didn't get chance to process them yet :(
+
+Since we have elevated b_count on these buffers, try_to_free_buffers()
+fails. How can we make filemap_write_and_wait() to wait for kjournald
+to unfile these buffers ?
+
+Does this makes sense ? Am I missing something here ?
 
 Thanks,
-Mike
+Badari
+
