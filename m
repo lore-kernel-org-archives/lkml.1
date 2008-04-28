@@ -1,54 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966880AbYD1TeZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935289AbYD1Tfi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966880AbYD1TeZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 15:34:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966746AbYD1Tdn
+	id S935289AbYD1Tfi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 15:35:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933775AbYD1TfN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 15:33:43 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:40126 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S966584AbYD1Tdk (ORCPT
+	Mon, 28 Apr 2008 15:35:13 -0400
+Received: from fk-out-0910.google.com ([209.85.128.189]:40055 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932683AbYD1TfJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 15:33:40 -0400
-Date: Mon, 28 Apr 2008 13:33:23 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Russ Anderson <rja@sgi.com>
-Cc: linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Tony Luck <tony.luck@intel.com>, Christoph Lameter <clameter@sgi.com>
-Subject: Re: [PATCH 0/2] ia64: Migrate data off physical pages with correctable errors
-Message-ID: <20080428193323.GA14990@parisc-linux.org>
-References: <20080428192252.GA14629@sgi.com>
+	Mon, 28 Apr 2008 15:35:09 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=OYIwYv78eS1Y2h1nr5c0tlnoEhxdzBLsa0O74xADymfBL4tQbK68CxG8p/w+qE66cRbKQA9ZXZ4xi7ZSi/nqWqbxmEO/dUSI2fd1RnftjVeJAm2kA+uyliAUMq5dG9SJ/gDJ7tKDSvdWVcZJ1gKOo2Ixju/1aa9/wmGGCpxo6EY=
+Message-ID: <ca2dc2820804281235n533f1daam26a5c064829165dc@mail.gmail.com>
+Date: Mon, 28 Apr 2008 21:35:00 +0200
+From: "Miguel Ojeda" <miguel.ojeda.sandonis@gmail.com>
+To: "Kathy Frazier" <kfrazier@daetwyler-rd.com>
+Subject: Re: Talking to parallel port in 2.6 kernel without using parport
+Cc: "Alan Cox" <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
+In-Reply-To: <004301c8a95a$906666c0$b1333440$@com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080428192252.GA14629@sgi.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+References: <009501c89e28$3d7530f0$b85f92d0$@com>
+	 <20080414133937.7080d30d@core> <006f01c8a4a7$82e37ea0$88aa7be0$@com>
+	 <20080425181219.61e29b1f@core>
+	 <ca2dc2820804251118j625abb76j100d165aee18a7c8@mail.gmail.com>
+	 <004301c8a95a$906666c0$b1333440$@com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 28, 2008 at 02:22:52PM -0500, Russ Anderson wrote:
-> 	There is always an issue of how agressive the code should be on
-> 	migrating pages.  Should it migrate on the first correctable error,
-> 	or wait for some threshold?  Reasonable people may disagree on the
-> 	threshold and the "right" answer may be hardware specific.  The 
-> 	decision making is confined to the cpe_migrate.c code.  It is
-> 	currently set to migrate on the first correctable error.
+On Mon, Apr 28, 2008 at 8:06 PM, Kathy Frazier
+<kfrazier@daetwyler-rd.com> wrote:
+> Miguel,
+>
+>  Thanks for your response!  I took a look at ks0108.c.  You are right:  very
+>  straightforward and a good reference.  I had added some other things based
+>  on what I saw in /drivers/char/ppdev.c, lp.c and tipar.c.  After reviewing
+>  yours, I am realizing I really don't need some of that, so I can simplify
+>  mine.
 
-I think the kernel code should do the migration ASAP.  But I think we
-should have a list of 'bad' pages.  We could then have a badram driver
-that userspace can talk to to find out which pages are bad, map those
-pages into a badram process, do various tests on them, and return the
-pages to the pool if they're determined to be 'good'.
+I'm glad the code is helpful.
 
-I could also see badramd having a list of pages found to be bad
-in previous boots and asking the badram driver to take them out of
-circulation early in boot before they've been allocated.
+>
+>  My biggest problem was that lp was loaded.  When I remove that, my call to
+>  parport_register_device returns success!
+>
 
--- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+Yeah, I made the same mistake two years ago too. ;)
+
+>
+>  Thanks for your help!
+>
+
+You are welcome!
+
+--
+Miguel Ojeda
