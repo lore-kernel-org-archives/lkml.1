@@ -1,137 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932397AbYD1HJ5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932148AbYD1HMa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932397AbYD1HJ5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 03:09:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764765AbYD1HJt
+	id S932148AbYD1HMa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 03:12:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765098AbYD1HMW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 03:09:49 -0400
-Received: from mtagate2.de.ibm.com ([195.212.29.151]:38490 "EHLO
-	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763374AbYD1HJs (ORCPT
+	Mon, 28 Apr 2008 03:12:22 -0400
+Received: from fg-out-1718.google.com ([72.14.220.153]:54588 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754307AbYD1HMW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 03:09:48 -0400
-Date: Mon, 28 Apr 2008 09:09:46 +0200
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Gautham R Shenoy <ego@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Paul Jackson <pj@sgi.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] sched: missing locking in sched_domains code
-Message-ID: <20080428070946.GA4507@osiris.boeblingen.de.ibm.com>
-References: <20080427211224.GA21830@osiris.boeblingen.de.ibm.com> <20080427183926.acb66fff.akpm@linux-foundation.org>
+	Mon, 28 Apr 2008 03:12:22 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=dh2b4Mjx/H/cXC2TZ5RuUTpfa+OR/fjrEsBBq/n0h4zyokNJUSacQ6vgVOIFJeksC92CDqjbHhHgQlL0igNakW5Pb5yR8NyOzrLFFRkF+BeNkC8Fj99VzeaflE2tjedrH8qOE+0HrErAYTRJhO//boAkluwCiIv8sA506hsBHR8=
+Message-ID: <517f3f820804280012n3e289db7mb23950cfd3ac04b1@mail.gmail.com>
+Date: Mon, 28 Apr 2008 09:12:20 +0200
+From: "Michael Kerrisk" <mtk.manpages@gmail.com>
+To: "Davide Libenzi" <davidel@xmailserver.org>
+Subject: Re: [PATCH] eventfd, signalfd, timerfd, epoll_create w/flags
+Cc: "Ulrich Drepper" <drepper@redhat.com>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0804271614240.18184@alien.or.mcafeemobile.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080427183926.acb66fff.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+References: <200804272217.m3RMHZ0S021481@devserv.devel.redhat.com>
+	 <Pine.LNX.4.64.0804271614240.18184@alien.or.mcafeemobile.com>
+X-Google-Sender-Auth: 1f4a5e65a94c564e
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Apr 27, 2008 at 06:39:26PM -0700, Andrew Morton wrote:
-> On Sun, 27 Apr 2008 23:12:24 +0200 Heiko Carstens <heiko.carstens@de.ibm.com> wrote:
-> > Index: linux-2.6/kernel/cpuset.c
-> > ===================================================================
-> > --- linux-2.6.orig/kernel/cpuset.c
-> > +++ linux-2.6/kernel/cpuset.c
-> > @@ -684,7 +684,9 @@ restart:
-> >  rebuild:
-> >  	/* Have scheduler rebuild sched domains */
-> >  	get_online_cpus();
-> > +	mutex_lock(&sched_domains_mutex);
-> >  	partition_sched_domains(ndoms, doms, dattr);
-> > +	mutex_unlock(&sched_domains_mutex);
-> >  	put_online_cpus();
-> >  
-> 
-> It seems a bit fragile to take this lock in the caller without even adding
-> a comment at the callee site which documents the new locking rule.
-> 
-> It would be more robust to take the lock within partition_sched_domains().
-> 
-> partition_sched_domains() already covers itself with lock_doms_cur().  Can
-> we take that in arch_reinit_sched_domains() rather than adding the new lock?
+On 4/28/08, Davide Libenzi <davidel@xmailserver.org> wrote:
+> On Sun, 27 Apr 2008, Ulrich Drepper wrote:
+>
+>  > In the absence of sys_indirect we need the following patches as well.  These
+>  > are all the event handling functions: epoll_create, signalfd, timerfd, eventd.
+>  >
+>  > There is good news and bad.  The good news is that the timerfd interface
+>  > already has a flags parameter.  We just have to put it to use.  It's IMO
+>  > not a good idea to use the O_* values for any of the flag parameters so I
+>  > introduced new macros for all the functions.
+>  >
+>  > For signalfd and eventfd no flags parameter is available in the syscall.
+>  > But for the userlevel interfaces I have added such a parameter back when.
+>  > They are just required to be zero so far.  This means the new syscalls
+>  > will completely transparently be used once glibc knows about them.
+>  > Programs can start using the new flags and get told when the implementation
+>  > doesn't support it.
+>  >
+>  > The bad case is epoll_create.  Neither the kernel nor the userlevel interface
+>  > has a flags parameter.  So we need a new, additional interface.  We could have
+>  > one which differs from epoll_create only in that it returns a file descriptor
+>  > with close-on-exec already set.  I don't like that.  Instead, the patch adds
+>  > a new interface with a flags parameter.  More flexibility in future.
+>
+>
+> Ok, I asked this myself for about ten minutes, than I gave up. But why
+>  sys_epoll_createp() instead of sys_epoll_create2()? There MUST be a reason
+>  to deviate from the standard of all the other ones...
+>  The one between sys_indirect and syscall explosion is the battle of the
+>  ugly.
+>  Besides that, patches look fine to me (though w/out a very good reason, I
+>  prefer sys_epoll_create2() instead of sys_epoll_createp()).
 
-I think you meant taking it in partition_sched_domains? But anyway, I moved
-it all over to sched.c. So here's the new patch. Shorter and doesn't export
-a new lock :)
+This "p" doesn't follow convention.  The "p" that has appeared on some
+syscalls is by analogy with pselect().
 
+pselect() = select() + a sigset parama=ter.
 
-Subject: [PATCH] sched: fix sched_domains locking
+I seem to recall that the "p" is because this was a POSIX invention.
 
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
+Anyway, the "p" has been added to a number of other Linux syscalls
+that have likewise added a sigset:
 
-Concurrent calls to detach_destroy_domains and arch_init_sched_domains
-were prevented by the old scheduler subsystem cpu hotplug mutex. When
-this got converted to get_online_cpus() the locking got broken.
-Unlike before now several processes can concurrently enter the critical
-sections that were protected by the old lock.
+poll() --> ppoll()
+epoll_wait() --> epoll_pwait()
+and now: accept() --> paccept()
 
-So add a new sched_domains_mutex which protects these sections again.
-
-Cc: Gautham R Shenoy <ego@in.ibm.com>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Paul Jackson <pj@sgi.com>
-Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
----
- kernel/sched.c |   14 +++++++++++++-
- 1 file changed, 13 insertions(+), 1 deletion(-)
-
-Index: linux-2.6/kernel/sched.c
-===================================================================
---- linux-2.6.orig/kernel/sched.c
-+++ linux-2.6/kernel/sched.c
-@@ -7730,6 +7730,12 @@ static int dattrs_equal(struct sched_dom
- }
- 
- /*
-+ * Protects against concurrent calls to detach_destroy_domains
-+ * and arch_init_sched_domains.
-+ */
-+static DEFINE_MUTEX(sched_domains_mutex);
-+
-+/*
-  * Partition sched domains as specified by the 'ndoms_new'
-  * cpumasks in the array doms_new[] of cpumasks. This compares
-  * doms_new[] to the current sched domain partitioning, doms_cur[].
-@@ -7756,7 +7762,8 @@ void partition_sched_domains(int ndoms_n
- 	int i, j;
- 
- 	lock_doms_cur();
--
-+	mutex_lock(&sched_domains_mutex);
-+
- 	/* always unregister in case we don't destroy any domains */
- 	unregister_sched_domain_sysctl();
- 
-@@ -7804,6 +7811,7 @@ match2:
- 
- 	register_sched_domain_sysctl();
- 
-+	mutex_unlock(&sched_domains_mutex);
- 	unlock_doms_cur();
- }
- 
-@@ -7813,8 +7821,10 @@ int arch_reinit_sched_domains(void)
- 	int err;
- 
- 	get_online_cpus();
-+	mutex_lock(&sched_domains_mutex);
- 	detach_destroy_domains(&cpu_online_map);
- 	err = arch_init_sched_domains(&cpu_online_map);
-+	mutex_unlock(&sched_domains_mutex);
- 	put_online_cpus();
- 
- 	return err;
-@@ -7932,10 +7942,12 @@ void __init sched_init_smp(void)
- 	BUG_ON(sched_group_nodes_bycpu == NULL);
- #endif
- 	get_online_cpus();
-+	mutex_lock(&sched_domains_mutex);
- 	arch_init_sched_domains(&cpu_online_map);
- 	cpus_andnot(non_isolated_cpus, cpu_possible_map, cpu_isolated_map);
- 	if (cpus_empty(non_isolated_cpus))
- 		cpu_set(smp_processor_id(), non_isolated_cpus);
-+	mutex_unlock(&sched_domains_mutex);
- 	put_online_cpus();
- 	/* XXX: Theoretical race here - CPU may be hotplugged now */
- 	hotcpu_notifier(update_sched_domains, 0);
+Adding a "p" to the name epoll_create() would be a mistake by this convention.
