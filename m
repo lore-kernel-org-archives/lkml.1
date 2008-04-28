@@ -1,76 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764385AbYD1AT1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763336AbYD1AWk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764385AbYD1AT1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Apr 2008 20:19:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752939AbYD1ATT
+	id S1763336AbYD1AWk (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Apr 2008 20:22:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751999AbYD1AWd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Apr 2008 20:19:19 -0400
-Received: from saeurebad.de ([85.214.36.134]:48737 "EHLO saeurebad.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751111AbYD1ATT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Apr 2008 20:19:19 -0400
-From: Johannes Weiner <hannes@saeurebad.de>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Yinghai Lu <yinghai.lu@sun.com>, Yinghai Lu <yhlu.kernel@gmail.com>,
-       jbarnes@virtuousgeek.org
-Subject: Re: [git pull] "big box" x86 changes, bootmem/sparsemem
-References: <20080426185516.GA32364@elte.hu>
-	<alpine.LFD.1.10.0804261205490.2813@woody.linux-foundation.org>
-	<20080426194143.GA8366@elte.hu> <87hcdmnccu.fsf@saeurebad.de>
-	<20080427234630.GC14338@elte.hu>
-Date: Mon, 28 Apr 2008 02:19:14 +0200
-In-Reply-To: <20080427234630.GC14338@elte.hu> (Ingo Molnar's message of "Mon,
-	28 Apr 2008 01:46:30 +0200")
-Message-ID: <877iein859.fsf@saeurebad.de>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
+	Sun, 27 Apr 2008 20:22:33 -0400
+Received: from prod.aconex.com ([203.89.192.138]:44266 "EHLO
+	postoffice2.aconex.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751007AbYD1AWc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Apr 2008 20:22:32 -0400
+X-Greylist: delayed 935 seconds by postgrey-1.27 at vger.kernel.org; Sun, 27 Apr 2008 20:22:32 EDT
+X-ASG-Debug-ID: 1209341204-6939002a0000-xx1T2L
+X-Barracuda-URL: http://intranex.aconex.com:8000/cgi-bin/mark.cgi
+X-ASG-Orig-Subj: Re: [PATCH] xfs: reduce stack usage in xfs_bmap_btalloc()
+Subject: Re: [PATCH] xfs: reduce stack usage in xfs_bmap_btalloc()
+From: Nathan Scott <nscott@aconex.com>
+Reply-To: nscott@aconex.com
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       Denys Vlasenko <vda.linux@googlemail.com>, David Chinner <dgc@sgi.com>,
+       xfs@oss.sgi.com, Eric Sandeen <sandeen@sandeen.net>,
+       Adrian Bunk <bunk@kernel.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <20080426202323.GA14245@infradead.org>
+References: <200804261651.02078.vda.linux__2040.04651536724$1209223026$gmane$org@googlemail.com>
+	 <87iqy4wfjq.fsf@basil.nowhere.org> <20080426200701.GA10883@infradead.org>
+	 <20080426202630.GG17905@one.firstfloor.org>
+	 <20080426202323.GA14245@infradead.org>
+Content-Type: text/plain
+Organization: Aconex
+Date: Mon, 28 Apr 2008 10:06:51 +1000
+Message-Id: <1209341212.23166.122.camel@edge.scott.net.au>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 
+Content-Transfer-Encoding: 7bit
+X-Barracuda-Connect: postoffice.yarra.acx[192.168.3.1]
+X-Barracuda-Start-Time: 1209341204
+X-Barracuda-Virus-Scanned: by Aconex Staff Email Spam Firewall at aconex.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ingo,
+On Sat, 2008-04-26 at 16:23 -0400, Christoph Hellwig wrote:
+> 
+> 
+> 
+> 
+>                              Date: 
+> Sat, 26 Apr 2008 16:23:23 -0400
+> (Sun, 06:23 EST)
+> 
+> 
+> On Sat, Apr 26, 2008 at 10:26:30PM +0200, Andi Kleen wrote:
+> > > STATIC as defined by xfs already does this..
+> > 
+> > Weird. Unexpected. Different from everyone else. Is this some
+> exercise in 
+> > obfuscation?
+> 
+> The whole STATIC thing is weird to start with..
+> 
 
-Ingo Molnar <mingo@elte.hu> writes:
+Having to compile chunks of XFS code in both kernel and
+userspace is also wierd (relative to other drivers), and
+its a side-effect of needing to do that (all the code
+dealing with specifics of ondisk format is shared).
 
-> * Johannes Weiner <hannes@saeurebad.de> wrote:
->
->> >       mm: allow reserve_bootmem() cross nodes
->> 
->> I find it sad that this goes in now.  I wrote a clean version of 
->> reserve_bootmem() [1] and it was rejected with arguments that I did 
->> not understand [2] and that were not further explained even though I 
->> asked for it [3].
->> 
->> http://lkml.org/lkml/2008/4/16/76
->> http://lkml.org/lkml/2008/4/16/234
->> http://lkml.org/lkml/2008/4/16/250
->
-> oh, i had your patches applied then undid them due to this:
->
->    http://www.ussg.iu.edu/hypermail/linux/kernel/0804.2/0253.html
->
-> havent seen a followup to that mail so it was 'issue pending'.
+cheers.
 
-> so i very much agree that your changes are cleaner, i just wanted to 
-> have one that has all the fixes included.
+-- 
+Nathan
 
-I had planned this to be another patch because there are more then one
-boundary check I wanted to tighten.  I can merge them though if you
-like.
-
-> Would you like to post a patch against current -git or should i extract 
-> the cleaner reserve_bootmem() from your previous patch?
-
-I just moved and have only sporadic internet access and free time slots
-available.  Would be nice if you could do it!
-
-> 	Ingo
-
-Thanks!
-
-	Hannes
