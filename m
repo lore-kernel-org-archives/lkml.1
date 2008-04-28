@@ -1,74 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934521AbYD1NuD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934559AbYD1Nv3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934521AbYD1NuD (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 09:50:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932153AbYD1Ntx
+	id S934559AbYD1Nv3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 09:51:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932153AbYD1NvS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 09:49:53 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:54284 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932140AbYD1Ntx (ORCPT
+	Mon, 28 Apr 2008 09:51:18 -0400
+Received: from mx2.netapp.com ([216.240.18.37]:6850 "EHLO mx2.netapp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1765721AbYD1NvQ convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 09:49:53 -0400
-Date: Mon, 28 Apr 2008 06:49:25 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: yhlu.kernel@gmail.com, Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH] x86: mtrr cleanup for converting continuous to discrete
- layout v2
-Message-ID: <20080428064925.318659b9@laptopd505.fenrus.org>
-In-Reply-To: <20080428130826.GH27997@elte.hu>
-References: <200804272337.40130.yhlu.kernel@gmail.com>
-	<200804280206.52641.yhlu.kernel@gmail.com>
-	<20080428130826.GH27997@elte.hu>
-Organization: Intel
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Mon, 28 Apr 2008 09:51:16 -0400
+X-IronPort-AV: E=Sophos;i="4.25,716,1199692800"; 
+   d="scan'208";a="44157209"
+X-MimeOLE: Produced By Microsoft Exchange V6.5.7226.0
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [ofa-general] [PATCH 2.6.26 3/3] RDMA/cxgb3: Support peer-2-peerconnection setup.
+Date: Mon, 28 Apr 2008 09:51:11 -0400
+Message-ID: <C98692FD98048C41885E0B0FACD9DFB8078B23DC@exnane01.hq.netapp.com>
+In-Reply-To: <4814AD7B.2060006@opengridcomputing.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [ofa-general] [PATCH 2.6.26 3/3] RDMA/cxgb3: Support peer-2-peerconnection setup.
+Thread-Index: AciohgxutIWeBV4eRpaDkLBYYpGAnAAsLaTg
+References: <20080427155456.31018.22282.stgit@dell3.ogc.int>	<20080427160010.31018.67436.stgit@dell3.ogc.int><adatzhn2r5z.fsf@cisco.com> <4814AD7B.2060006@opengridcomputing.com>
+From: "Kanevsky, Arkady" <Arkady.Kanevsky@netapp.com>
+To: "Steve Wise" <swise@opengridcomputing.com>,
+       "Roland Dreier" <rdreier@cisco.com>
+Cc: <netdev@vger.kernel.org>, <general@lists.openfabrics.org>,
+       <linux-kernel@vger.kernel.org>, <divy@chelsio.com>
+X-OriginalArrivalTime: 28 Apr 2008 13:51:13.0926 (UTC) FILETIME=[EC626A60:01C8A936]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 28 Apr 2008 15:08:26 +0200
-Ingo Molnar <mingo@elte.hu> wrote:
+I expect it to be tests at Sept interop event.
+If it works then I will send proposal to IETF for MPA enhancement.
+Thanks,
 
+Arkady Kanevsky                       email: arkady@netapp.com
+Network Appliance Inc.               phone: 781-768-5395
+1601 Trapelo Rd. - Suite 16.        Fax: 781-895-1195
+Waltham, MA 02451                   central phone: 781-768-5300
+ 
+
+> -----Original Message-----
+> From: Steve Wise [mailto:swise@opengridcomputing.com] 
+> Sent: Sunday, April 27, 2008 12:45 PM
+> To: Roland Dreier
+> Cc: netdev@vger.kernel.org; general@lists.openfabrics.org; 
+> linux-kernel@vger.kernel.org; divy@chelsio.com
+> Subject: Re: [ofa-general] [PATCH 2.6.26 3/3] RDMA/cxgb3: 
+> Support peer-2-peerconnection setup.
 > 
-> * Yinghai Lu <yhlu.kernel.send@gmail.com> wrote:
 > 
-> > some BIOS like to use continus MTRR layout, and X driver can not
-> > add WB entries for graphical cards when 4g or more RAM installed.
+> 
+> Roland Dreier wrote:
+> > What are the interoperability implications of this?
 > > 
-> > the patch will change MTRR to discrete.
+> > Looking closer I see that iw_nes has the send_first module 
+> parameter.
+> > How does this interact with that?
 > > 
-> > mtrr_chunk_size= could be used to have smaller continuous block to 
-> > hold holes. default is 256m, could be set according to size of 
-> > graphics card memory.
 > 
-> hm.
+> It doesn't...yet.  But we wanted to enable these applications 
+> for chelsio now and get the low level fw and driver changes 
+> done first and tested.
 > 
-> > +static int disable_mtrr_cleanup;
+> > I guess it's fine to apply this, but do we have a plan for 
+> how we want 
+> > to handle this issue in the long-term?
+> > 
 > 
-> i think this should be default-disabled. Touching MTRRs on a live
-> system could interact with SMM and MCE handlers.
-
-yep one should not touch existing MTRRs. If you run out, tough luck.
-Thats what we have PAT for.
-Changing them anyway is a deathtrap with various things, suspend/resume being only
-one of the nasty cases.
-
+> Yes!  If you'll recall, we had a thread on the ofa general 
+> list discussing how to enhance the MPA negotiation so peers 
+> can indicate whether they want/need the RTR and what type of 
+> RTR (0B read, 0B write, or 0B send) should be sent.  This 
+> will be done by standardizing a few bits of the private data 
+> in order to negotiate all this.  The rdma-cma API will be 
+> extended so applications will have to request this 
+> peer-2-peer model since it adds overhead to the connection setup.
 > 
-> how relevant is this feature with modern Xorg? I thought modern Xorg 
-> would get its mappings via /sys, hence it would not have to touch
-> MTRRs at all.
-
-that's true for current X, but not for 6 month old X :=(
-
--- 
-If you want to reach me at my work email, use arjan@linux.intel.com
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+> I plan to do this work for 2.6.27/ofed-1.4.  I think it was 
+> listed in Felix's talk at Sonoma.  This work (design, API, 
+> and code changes affecting core and placing requirements on 
+> iwarp providers) will be posted as RFC changes to get 
+> everyones feedback as soon as I get something going.
+> 
+> Does that sound ok?
+> 
+> 
+> Steve.
+> _______________________________________________
+> general mailing list
+> general@lists.openfabrics.org
+> http://lists.openfabrics.org/cgi-bin/mailman/listinfo/general
+> 
+> To unsubscribe, please visit 
+> http://openib.org/mailman/listinfo/openib-general
+> 
