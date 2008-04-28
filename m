@@ -1,23 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937606AbYD1X5B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937683AbYD1X5d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937606AbYD1X5B (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 19:57:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937012AbYD1X4O
+	id S937683AbYD1X5d (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 19:57:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937050AbYD1X4Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 19:56:14 -0400
-Received: from mx2.suse.de ([195.135.220.15]:60328 "EHLO mx2.suse.de"
+	Mon, 28 Apr 2008 19:56:16 -0400
+Received: from mail.suse.de ([195.135.220.2]:51130 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935486AbYD1X4L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 19:56:11 -0400
-Subject: patch sysfs-add-sys-dev-char-block-to-lookup-sysfs-path-by-major-minor.patch added to gregkh-2.6 tree
-To: dan.j.williams@intel.com, akpm@linux-foundation.org, gregkh@suse.de,
-       greg@kroah.com, hpa@zytor.com, htejun@gmail.com, kay.sievers@vrfy.org,
-       linux-kernel@vger.kernel.org, lkml@rtr.ca, neilb@suse.de,
-       steve@xemacs.org
+	id S937033AbYD1X4P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Apr 2008 19:56:15 -0400
+Subject: patch sysfs-disallow-truncation-of-files-in-sysfs.patch added to gregkh-2.6 tree
+To: bhutchings@solarflare.com, gregkh@suse.de, linux-kernel@vger.kernel.org
 From: <gregkh@suse.de>
-Date: Mon, 28 Apr 2008 16:51:39 -0700
-In-Reply-To: <1208800267.26479.3.camel@dwillia2-linux.ch.intel.com>
-Message-ID: <12094266993881@kroah.org>
+Date: Mon, 28 Apr 2008 16:51:45 -0700
+In-Reply-To: <20080428145957.GD8986@solarflare.com>
+Message-ID: <1209426705637@kroah.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -25,309 +22,78 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 This is a note to let you know that I've just added the patch titled
 
-     Subject: sysfs: add /sys/dev/{char,block} to lookup sysfs path by major:minor
+     Subject: sysfs: Disallow truncation of files in sysfs
 
 to my gregkh-2.6 tree.  Its filename is
 
-     sysfs-add-sys-dev-char-block-to-lookup-sysfs-path-by-major-minor.patch
+     sysfs-disallow-truncation-of-files-in-sysfs.patch
 
 This tree can be found at 
     http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/patches/
 
 
->From dan.j.williams@intel.com Mon Apr 21 10:51:11 2008
-From: Dan Williams <dan.j.williams@intel.com>
-Date: Mon, 21 Apr 2008 10:51:07 -0700
-Subject: sysfs: add /sys/dev/{char,block} to lookup sysfs path by major:minor
-To: Greg KH <greg@kroah.com>, Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
-Message-ID: <1208800267.26479.3.camel@dwillia2-linux.ch.intel.com>
+>From bwh@level5networks.com Mon Apr 28 08:00:07 2008
+From: Ben Hutchings <bhutchings@solarflare.com>
+Date: Mon, 28 Apr 2008 15:59:58 +0100
+Subject: sysfs: Disallow truncation of files in sysfs
+To: Linux kernel mailing list <linux-kernel@vger.kernel.org>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>
+Message-ID: <20080428145957.GD8986@solarflare.com>
+Content-Disposition: inline
 
-From: Dan Williams <dan.j.williams@intel.com>
 
-Why?:
-There are occasions where userspace would like to access sysfs
-attributes for a device but it may not know how sysfs has named the
-device or the path.  For example what is the sysfs path for
-/dev/disk/by-id/ata-ST3160827AS_5MT004CK?  With this change a call to
-stat(2) returns the major:minor then userspace can see that
-/sys/dev/block/8:32 links to /sys/block/sdc.
+sysfs allows attribute files to be truncated, e.g. using ftruncate(), with the
+expected effect on their inode.   For most attributes, this doesn't change the
+"real" size of the file i.e. how much can be read from it.  However, the
+parameter validation for reading and writing binary attribute files is based
+on the inode size and not the size specified in the file's bin_attribute, so it
+can be broken by this. For example, if we try using dd to write to such a file:
 
-What are the alternatives?:
-1/ Add an ioctl to return the path: Doable, but sysfs is meant to reduce
-   the need to proliferate ioctl interfaces into the kernel, so this
-   seems counter productive.
+# pwd
+/sys/bus/pci/devices/0000:08:00.0
+# ls -l config
+-rw-r--r--  1 root root 4096 Feb  1 17:35 config
+# dd if=/dev/zero of=config bs=4 count=1
+1+0 records in
+1+0 records out
+# ls -l config
+-rw-r--r--  1 root root 0 Feb  1 17:50 config
+# dd if=/dev/zero of=config bs=4 count=1 seek=128
+dd: writing `config': No space left on device
+1+0 records in
+0+0 records out
 
-2/ Use udev to create these symlinks: Also doable, but it adds a
-   udev dependency to utilities that might be running in a limited
-   environment like an initramfs.
+Also, after truncation to 0, parameter validation for read and write is
+disabled.  Most bin_attribute read and write methods also validate the size and
+offset, but for some this will allow out-of-range access.  This may be a
+security issue, though access to such files is often limited to root.  In any
+case, the validation should remain for safety's sake!)
 
-3/ Do a full-tree search of sysfs.
+This was previously reported in Bugzilla as bug 9867.
 
-[kay.sievers@vrfy.org: fix duplicate registrations]
-[kay.sievers@vrfy.org: cleanup suggestions]
+sysfs should ignore size changes or else refuse them (by returning -EINVAL).
+This patch makes it ignore them.
 
-Cc: Neil Brown <neilb@suse.de>
-Cc: Tejun Heo <htejun@gmail.com>
-Cc: Kay Sievers <kay.sievers@vrfy.org>
-Cc: SL Baur <steve@xemacs.org>
-Acked-by: Kay Sievers <kay.sievers@vrfy.org>
-Acked-by: Mark Lord <lkml@rtr.ca>
-Acked-by: H. Peter Anvin <hpa@zytor.com>
-Signed-off-by: Dan Williams <dan.j.williams@intel.com>
+Signed-off-by: Ben Hutchings <bhutchings@solarflare.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- Documentation/ABI/testing/sysfs-dev |   20 ++++++++
- Documentation/filesystems/sysfs.txt |    6 ++
- block/genhd.c                       |    5 +-
- drivers/base/class.c                |    4 +
- drivers/base/core.c                 |   83 +++++++++++++++++++++++++++++++++++-
- drivers/usb/core/devio.c            |    5 ++
- include/linux/device.h              |    3 +
- 7 files changed, 124 insertions(+), 2 deletions(-)
+ fs/sysfs/inode.c |    2 ++
+ 1 file changed, 2 insertions(+)
 
---- a/block/genhd.c
-+++ b/block/genhd.c
-@@ -360,7 +360,10 @@ static struct kobject *base_probe(dev_t 
- 
- static int __init genhd_device_init(void)
- {
--	int error = class_register(&block_class);
-+	int error;
-+
-+	block_class.dev_kobj = sysfs_dev_block_kobj;
-+	error = class_register(&block_class);
- 	if (unlikely(error))
- 		return error;
- 	bdev_map = kobj_map_init(base_probe, &block_class_lock);
---- /dev/null
-+++ b/Documentation/ABI/testing/sysfs-dev
-@@ -0,0 +1,20 @@
-+What:		/sys/dev
-+Date:		April 2008
-+KernelVersion:	2.6.26
-+Contact:	Dan Williams <dan.j.williams@intel.com>
-+Description:	The /sys/dev tree provides a method to look up the sysfs
-+		path for a device using the information returned from
-+		stat(2).  There are two directories, 'block' and 'char',
-+		beneath /sys/dev containing symbolic links with names of
-+		the form "<major>:<minor>".  These links point to the
-+		corresponding sysfs path for the given device.
-+
-+		Example:
-+		$ readlink /sys/dev/block/8:32
-+		../../block/sdc
-+
-+		Entries in /sys/dev/char and /sys/dev/block will be
-+		dynamically created and destroyed as devices enter and
-+		leave the system.
-+
-+Users:		mdadm <linux-raid@vger.kernel.org>
---- a/Documentation/filesystems/sysfs.txt
-+++ b/Documentation/filesystems/sysfs.txt
-@@ -248,6 +248,7 @@ The top level sysfs directory looks like
- block/
- bus/
- class/
-+dev/
- devices/
- firmware/
- net/
-@@ -274,6 +275,11 @@ fs/ contains a directory for some filesy
- filesystem wanting to export attributes must create its own hierarchy
- below fs/ (see ./fuse.txt for an example).
- 
-+dev/ contains two directories char/ and block/. Inside these two
-+directories there are symlinks named <major>:<minor>.  These symlinks
-+point to the sysfs directory for the given device.  /sys/dev provides a
-+quick way to lookup the sysfs interface for a device from the result of
-+a stat(2) operation.
- 
- More information can driver-model specific features can be found in
- Documentation/driver-model/. 
---- a/drivers/base/class.c
-+++ b/drivers/base/class.c
-@@ -149,6 +149,10 @@ int class_register(struct class *cls)
+--- a/fs/sysfs/inode.c
++++ b/fs/sysfs/inode.c
+@@ -59,6 +59,8 @@ int sysfs_setattr(struct dentry * dentry
  	if (error)
  		return error;
  
-+	/* set the default /sys/dev directory for devices of this class */
-+	if (!cls->dev_kobj)
-+		cls->dev_kobj = sysfs_dev_char_kobj;
++	iattr->ia_valid &= ~ATTR_SIZE; /* ignore size changes */
 +
- #if defined(CONFIG_SYSFS_DEPRECATED) && defined(CONFIG_BLOCK)
- 	/* let the block class directory show up in the root of sysfs */
- 	if (cls != &block_class)
---- a/drivers/base/core.c
-+++ b/drivers/base/core.c
-@@ -27,6 +27,9 @@
- 
- int (*platform_notify)(struct device *dev) = NULL;
- int (*platform_notify_remove)(struct device *dev) = NULL;
-+static struct kobject *dev_kobj;
-+struct kobject *sysfs_dev_char_kobj;
-+struct kobject *sysfs_dev_block_kobj;
- 
- #ifdef CONFIG_BLOCK
- static inline int device_is_not_partition(struct device *dev)
-@@ -761,6 +764,54 @@ static void device_remove_class_symlinks
- }
- 
- /**
-+ * device_to_dev_kobj - select a /sys/dev/ directory for the device
-+ * @dev: device
-+ *
-+ * By default we select char/ for new entries.  Setting class->dev_obj
-+ * to NULL prevents an entry from being created.  class->dev_kobj must
-+ * be set (or cleared) before any devices are registered to the class
-+ * otherwise device_create_sys_dev_entry() and
-+ * device_remove_sys_dev_entry() will disagree about the the presence
-+ * of the link.
-+ */
-+static struct kobject *device_to_dev_kobj(struct device *dev)
-+{
-+	struct kobject *kobj;
-+
-+	if (dev->class)
-+		kobj = dev->class->dev_kobj;
-+	else
-+		kobj = sysfs_dev_char_kobj;
-+
-+	return kobj;
-+}
-+
-+static int device_create_sys_dev_entry(struct device *dev)
-+{
-+	struct kobject *kobj = device_to_dev_kobj(dev);
-+	int error = 0;
-+	char devt_str[15];
-+
-+	if (kobj) {
-+		format_dev_t(devt_str, dev->devt);
-+		error = sysfs_create_link(kobj, &dev->kobj, devt_str);
-+	}
-+
-+	return error;
-+}
-+
-+static void device_remove_sys_dev_entry(struct device *dev)
-+{
-+	struct kobject *kobj = device_to_dev_kobj(dev);
-+	char devt_str[15];
-+
-+	if (kobj) {
-+		format_dev_t(devt_str, dev->devt);
-+		sysfs_remove_link(kobj, devt_str);
-+	}
-+}
-+
-+/**
-  * device_add - add device to device hierarchy.
-  * @dev: device.
-  *
-@@ -810,6 +861,10 @@ int device_add(struct device *dev)
- 		error = device_create_file(dev, &devt_attr);
- 		if (error)
- 			goto ueventattrError;
-+
-+		error = device_create_sys_dev_entry(dev);
-+		if (error)
-+			goto devtattrError;
- 	}
- 
- 	error = device_add_class_symlinks(dev);
-@@ -854,6 +909,9 @@ int device_add(struct device *dev)
- 	device_remove_class_symlinks(dev);
-  SymlinkError:
- 	if (MAJOR(dev->devt))
-+		device_remove_sys_dev_entry(dev);
-+ devtattrError:
-+	if (MAJOR(dev->devt))
- 		device_remove_file(dev, &devt_attr);
-  ueventattrError:
- 	device_remove_file(dev, &uevent_attr);
-@@ -929,8 +987,10 @@ void device_del(struct device *dev)
- 	device_pm_remove(dev);
- 	if (parent)
- 		klist_del(&dev->knode_parent);
--	if (MAJOR(dev->devt))
-+	if (MAJOR(dev->devt)) {
-+		device_remove_sys_dev_entry(dev);
- 		device_remove_file(dev, &devt_attr);
-+	}
- 	if (dev->class) {
- 		device_remove_class_symlinks(dev);
- 
-@@ -1055,7 +1115,25 @@ int __init devices_init(void)
- 	devices_kset = kset_create_and_add("devices", &device_uevent_ops, NULL);
- 	if (!devices_kset)
- 		return -ENOMEM;
-+	dev_kobj = kobject_create_and_add("dev", NULL);
-+	if (!dev_kobj)
-+		goto dev_kobj_err;
-+	sysfs_dev_block_kobj = kobject_create_and_add("block", dev_kobj);
-+	if (!sysfs_dev_block_kobj)
-+		goto block_kobj_err;
-+	sysfs_dev_char_kobj = kobject_create_and_add("char", dev_kobj);
-+	if (!sysfs_dev_char_kobj)
-+		goto char_kobj_err;
-+
- 	return 0;
-+
-+ char_kobj_err:
-+	kobject_put(sysfs_dev_block_kobj);
-+ block_kobj_err:
-+	kobject_put(dev_kobj);
-+ dev_kobj_err:
-+	kset_unregister(devices_kset);
-+	return -ENOMEM;
- }
- 
- EXPORT_SYMBOL_GPL(device_for_each_child);
-@@ -1351,4 +1429,7 @@ void device_shutdown(void)
- 			dev->driver->shutdown(dev);
- 		}
- 	}
-+	kobject_put(sysfs_dev_char_kobj);
-+	kobject_put(sysfs_dev_block_kobj);
-+	kobject_put(dev_kobj);
- }
---- a/drivers/usb/core/devio.c
-+++ b/drivers/usb/core/devio.c
-@@ -1748,6 +1748,11 @@ int __init usb_devio_init(void)
- 		usb_classdev_class = NULL;
- 		goto out;
- 	}
-+	/* devices of this class shadow the major:minor of their parent
-+	 * device, so clear ->dev_kobj to prevent adding duplicate entries
-+	 * to /sys/dev
-+	 */
-+	usb_classdev_class->dev_kobj = NULL;
- 
- 	usb_register_notify(&usbdev_nb);
- #endif
---- a/include/linux/device.h
-+++ b/include/linux/device.h
-@@ -194,6 +194,7 @@ struct class {
- 	struct semaphore	sem; /* locks children, devices, interfaces */
- 	struct class_attribute		*class_attrs;
- 	struct device_attribute		*dev_attrs;
-+	struct kobject			*dev_kobj;
- 
- 	int (*dev_uevent)(struct device *dev, struct kobj_uevent_env *env);
- 
-@@ -206,6 +207,8 @@ struct class {
- 	struct pm_ops *pm;
- };
- 
-+extern struct kobject *sysfs_dev_block_kobj;
-+extern struct kobject *sysfs_dev_char_kobj;
- extern int __must_check class_register(struct class *class);
- extern void class_unregister(struct class *class);
- extern int class_for_each_device(struct class *class, void *data,
+ 	error = inode_setattr(inode, iattr);
+ 	if (error)
+ 		return error;
 
 
-Patches currently in gregkh-2.6 which might be from dan.j.williams@intel.com are
+Patches currently in gregkh-2.6 which might be from bhutchings@solarflare.com are
 
-driver-core/sysfs-add-sys-dev-char-block-to-lookup-sysfs-path-by-major-minor.patch
+driver-core/sysfs-disallow-truncation-of-files-in-sysfs.patch
