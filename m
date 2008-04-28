@@ -1,47 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965463AbYD1RAa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965624AbYD1RAy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965463AbYD1RAa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 13:00:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935959AbYD1RAH
+	id S965624AbYD1RAy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 13:00:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965442AbYD1RA0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 13:00:07 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:58525 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S933408AbYD1RAD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 13:00:03 -0400
-Date: Mon, 28 Apr 2008 09:59:24 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Mel Gorman <mel@csn.ul.ie>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, bzolnier@gmail.com
-Subject: Re: 2.6.25-mm1: Failing to probe IDE interface
-Message-Id: <20080428095924.3b7dfb96.akpm@linux-foundation.org>
-In-Reply-To: <20080428164235.GA29229@csn.ul.ie>
-References: <20080417160331.b4729f0c.akpm@linux-foundation.org>
-	<20080428164235.GA29229@csn.ul.ie>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 28 Apr 2008 13:00:26 -0400
+Received: from gw.goop.org ([64.81.55.164]:37142 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965433AbYD1RAY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Apr 2008 13:00:24 -0400
+Message-ID: <4816029D.3030508@goop.org>
+Date: Mon, 28 Apr 2008 10:00:13 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080418)
+MIME-Version: 1.0
+To: Gerhard Mack <gmack@innerfire.net>
+CC: Jiri Kosina <jkosina@suse.cz>, linux-kernel@vger.kernel.org
+Subject: Re: [2.6.25] compat VDSO option not disabling
+References: <alpine.DEB.1.10.0804241244360.28216@mtl.rackplans.net> <Pine.LNX.4.64.0804251632490.19002@twin.jikos.cz> <alpine.DEB.1.10.0804261213200.28624@mtl.rackplans.net> <48140ACF.4000500@goop.org> <alpine.DEB.1.10.0804281145090.17060@mtl.rackplans.net>
+In-Reply-To: <alpine.DEB.1.10.0804281145090.17060@mtl.rackplans.net>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 28 Apr 2008 17:42:36 +0100 Mel Gorman <mel@csn.ul.ie> wrote:
+Gerhard Mack wrote:
+> On Sat, 26 Apr 2008, Jeremy Fitzhardinge wrote:
+>   
+>> Gerhard Mack wrote:
+>>     
+>>> I havn't enabled compat VDSO at the kernel command line or otherwise.
+>>> Something broke with this option.   
+>>>       
+>> Yes, you might be on to something.  I think I've been seeing that message when
+>> I wouldn't expect to.  I'll double-check.  Could you send your complete dmesg
+>> output?
+>>
+>>     
+> Of course
+>
+>
+> Compat vDSO mapped to ffffe000.
+>   
 
-> An old T21 is failing to boot and the relevant message appears to be
-> 
-> [    1.929536] Probing IDE interface ide0...
-> [   36.939317] ide0: Wait for ready failed before probe !
-> [   37.502676] ide0: DISABLED, NO IRQ
-> [   37.506356] ide0: failed to initialize IDE interface
-> 
-> The owner of ide-mm-ide-add-struct-ide_io_ports-take-2.patch with the
-> "DISABLED, NO IRQ" message is cc'd. I've attached the config, full boot log
-> and lspci -v for the machine in question. I'll start reverting some of the
-> these patches to see if ide-mm-ide-add-struct-ide_io_ports-take-2.patch
-> is really the culprit.
+I think this is just a false alarm.  sysenter_setup always prints this, 
+but if compat mode isn't enabled this is just the address the compat 
+vdso would be at if it were mapped.  You can confirm this by doing "cat 
+/proc/self/maps" and making sure that there's nothing mapped at 
+ffffe000.  And then cross confirm with "sysctl -w vm.vdso_enabled=2; cat 
+/proc/self/maps" to make sure it appears.
 
-ide-mm-ide-add-struct-ide_io_ports-take-2.patch is now in mainline so a
-quicky confirmation would be to test Linus's tree.
-
+    J
