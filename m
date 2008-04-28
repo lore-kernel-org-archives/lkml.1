@@ -1,44 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765602AbYD1GK5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765428AbYD1GMT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765602AbYD1GK5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 02:10:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751624AbYD1GKr
+	id S1765428AbYD1GMT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 02:12:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751607AbYD1GMG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 02:10:47 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:38258 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751607AbYD1GKp (ORCPT
+	Mon, 28 Apr 2008 02:12:06 -0400
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:40114 "EHLO
+	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751177AbYD1GMF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 02:10:45 -0400
-Date: Mon, 28 Apr 2008 02:10:40 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "David S. Miller" <davem@davemloft.net>
-Subject: Re: [patch] x86, voyager: fix ioremap_nocache()
-Message-ID: <20080428061040.GA17554@infradead.org>
-References: <1209329485.3801.46.camel@localhost.localdomain> <20080427214837.GA11631@elte.hu> <1209333959.3801.67.camel@localhost.localdomain> <20080427231809.GA13848@elte.hu>
+	Mon, 28 Apr 2008 02:12:05 -0400
+Date: Mon, 28 Apr 2008 02:11:59 -0400 (EDT)
+From: Jeff Arnold <jbarnold@MIT.EDU>
+To: linux-kernel@vger.kernel.org
+Subject: Re: A system for rebootless kernel security updates
+In-Reply-To: <200804242116.54019.mail@earthworm.de>
+Message-ID: <alpine.DEB.1.10.0804272022560.15570@vinegar-pot.mit.edu>
+References: <alpine.DEB.1.00.0802221606520.21343@vinegar-pot.mit.edu> <200804241543.06874.mail@earthworm.de> <alpine.DEB.1.00.0804241306260.21001@vinegar-pot.mit.edu> <200804242116.54019.mail@earthworm.de>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080427231809.GA13848@elte.hu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
+X-Spam-Flag: NO
+X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 28, 2008 at 01:18:09AM +0200, Ingo Molnar wrote:
-> ... but the PAT patchset was all around lkml. The ioremap change was 
-> trivial, went into v2.6.25 and was discussed on lkml:
-> 
->   http://lkml.org/lkml/2008/1/25/287
+> On Thu, 24 Apr 2008, Christian Hesse wrote:
+> This time I get the following in syslog:
 
-lkml is a hell-hole with a signal/noise ratio worse than slashdot.  Any
-chance you could create a linux-x86 list for x86 specific changes so
-that a focussed review and discussion can happen?
+This problem has now been resolved (a broken wireless card apparently left 
+a kernel thread in an unusual state, which led to Ksplice aborting the 
+upgrade).  Christian now has Ksplice working on his system.
 
+If anyone else tries the software and encounters trouble, please let me 
+know.
+
+Thanks,
+
+Jeff Arnold
+jbarnold@mit.edu
