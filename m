@@ -1,77 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965464AbYD1SIb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965538AbYD1SJv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965464AbYD1SIb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 14:08:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765875AbYD1SIW
+	id S965538AbYD1SJv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 14:09:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934217AbYD1SJf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 14:08:22 -0400
-Received: from out02.mta.xmission.com ([166.70.13.232]:45817 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764945AbYD1SIU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 14:08:20 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: "Yinghai Lu" <yhlu.kernel@gmail.com>
-Cc: "Gabriel C" <nix.or.die@googlemail.com>,
-       "Andi Kleen" <andi@firstfloor.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Ingo Molnar" <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Jesse Barnes" <jesse.barnes@intel.com>,
-       "Mika Fischer" <mika.fischer@zoopnet.de>, balajirrao@gmail.com
-References: <200801192045.17291.yinghai.lu@sun.com>
-	<200801202256.48365.yinghai.lu@sun.com>
-	<20080122165125.GA17992@elte.hu>
-	<200801221623.20861.yinghai.lu@sun.com>
-	<20080426035614.a30afb17.akpm@linux-foundation.org>
-	<48132665.8050202@googlemail.com>
-	<86802c440804261805rc739f9as519213fecdc0cdff@mail.gmail.com>
-Date: Mon, 28 Apr 2008 11:07:59 -0700
-In-Reply-To: <86802c440804261805rc739f9as519213fecdc0cdff@mail.gmail.com>
-	(Yinghai Lu's message of "Sat, 26 Apr 2008 18:05:39 -0700")
-Message-ID: <m17ieh4zuo.fsf@frodo.ebiederm.org>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Mon, 28 Apr 2008 14:09:35 -0400
+Received: from styx.suse.cz ([82.119.242.94]:57382 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S932212AbYD1SJe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Apr 2008 14:09:34 -0400
+Date: Mon, 28 Apr 2008 20:09:32 +0200
+From: Jan Kara <jack@suse.cz>
+To: Badari Pulavarty <pbadari@us.ibm.com>
+Cc: Mingming Cao <cmm@us.ibm.com>, akpm@linux-foundation.org,
+       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: Possible race between direct IO and JBD?
+Message-ID: <20080428180932.GI17054@duck.suse.cz>
+References: <20080306174209.GA14193@duck.suse.cz> <1209166706.6040.20.camel@localhost.localdomain> <20080428122626.GC17054@duck.suse.cz> <1209402694.23575.5.camel@badari-desktop>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-SA-Exim-Connect-IP: 24.130.11.59
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa03 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
-	*      [score: 0.0000]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa03 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-Subject: Re: [PATCH] x86_32: trim memory by updating e820 v3
-X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
-X-SA-Exim-Scanned: Yes (on mgr1.xmission.com)
+Content-Disposition: inline
+In-Reply-To: <1209402694.23575.5.camel@badari-desktop>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Yinghai Lu" <yhlu.kernel@gmail.com> writes:
+On Mon 28-04-08 10:11:34, Badari Pulavarty wrote:
+> 
+> On Mon, 2008-04-28 at 14:26 +0200, Jan Kara wrote:
+> > Hi,
+> > 
+> > On Fri 25-04-08 16:38:23, Mingming Cao wrote:
+> > > While looking at a bug related to direct IO returns to EIO, after
+> > > looking at the code, I found there is a window that
+> > > try_to_free_buffers() from direct IO could race with JBD, which holds
+> > > the reference to the data buffers before journal_commit_transaction()
+> > > ensures the data buffers has reached to the disk.
+> > > 
+> > > A little more detail: to prepare for direct IO, generic_file_direct_IO()
+> > > calls invalidate_inode_pages2_range() to invalidate the pages in the
+> > > cache before performaning direct IO.  invalidate_inode_pages2_range()
+> > > tries to free the buffers via try_to free_buffers(), but sometimes it
+> > > can't, due to the buffers is possible still on some transaction's
+> > > t_sync_datalist or t_locked_list waiting for
+> > > journal_commit_transaction() to process it. 
+> > > 
+> > > Currently Direct IO simply returns EIO if try_to_free_buffers() finds
+> > > the buffer is busy, as it has no clue that JBD is referencing it.
+> > > 
+> > > Is this a known issue and expected behavior? Any thoughts?
+> >   Are you seeing this in data=ordered mode? As Andrew pointed out we do
+> > filemap_write_and_wait() so all the relevant data buffers of the inode
+> > should be already on disk. In __journal_try_to_free_buffer() we check
+> > whether the buffer is already-written-out data buffer and unfile and free
+> > it in that case. It shouldn't happen that a data buffer has
+> > b_next_transaction set so really the only idea why try_to_free_buffers()
+> > could fail is that somebody manages to write to a page via mmap before
+> > invalidate_inode_pages2_range() gets to it. Under which kind of load do you
+> > observe the problem? Do you know exactly because of which condition does
+> > journal_try_to_free_buffers() fail?
+> > 
+> 
+> Thank you for your reply.
+> 
+> What we are noticing is invalidate_inode_pages2_range() fails with -EIO
+> (from try_to_free_buffers() since b_count > 0).
+> 
+> I don't think the file is being updated through mmap(). Previous
+> writepage() added these buffers to t_sync_data list (data=ordered).
+> filemap_write_and_wait() waits for pagewrite back to be cleared.
+> So, buffers are no longer dirty, but still on the t_sync_data and
+> kjournald didn't get chance to process them yet :(
+> 
+> Since we have elevated b_count on these buffers, try_to_free_buffers()
+> fails. How can we make filemap_write_and_wait() to wait for kjournald
+> to unfile these buffers ?
+  Hmm, I don't get one thing:
+  The call chain is invalidate_inode_pages2_range() ->
+invalidate_complete_page2() -> try_to_release_page() -> ext3_releasepage()
+-> journal_try_to_free_buffers() -> __journal_try_to_free_buffer() and this
+function should remove the buffer from the committing transaction. So who's
+holding the reference to those buffers? Or is it that
+__journal_try_to_free_buffer() fails to remove the buffer from the
+committing transaction? Why?
+  Hmm, maybe I have one idea - in theory we could call
+__journal_try_to_free_buffer() exactly at the moment commit code inspects
+the buffer. Then we'd release the buffer from the transaction but
+try_to_free_buffers() would fail because of elevated b_count exactly as you
+described. Could you maybe verify this? Not that I'd know how to easily fix
+this ;)...
 
-> On Sat, Apr 26, 2008 at 5:56 AM, Gabriel C <nix.or.die@googlemail.com> wrote:
-
-> another continuous MTRR mapping.
->
-> several months ago, we were talking about modifying MTRR. but Eric
-> said that is not safe because acpi and smi...
-
-I think it was Andi who spotted that originally, and yes I do think it
-is a pretty horrific failure mode.  Reprogramming the MTRRs requires
-full knowledge of the hardware and what is going on that we don't
-always have.  PAT support has just been merged, and using that only
-requires knowledge about the region whose attributes we intend to change.
-
-So lets concentrate on PAT to solve contiguous MTRR region problems.
-
-We can upgrade UC to WC with pat.  As well as demote WB to UC or WC.
-So for those regions we know about we should be in good shape.
-
-In a slightly related vein.  Trimming the memory we consider usable by
-looking at MTRRs and if a region is not WB not considering it RAM
-sounds like a very reasonable work around for one class of BIOS bugs.
-
-Eric
+									Honza
+-- 
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
