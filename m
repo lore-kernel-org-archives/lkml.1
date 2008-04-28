@@ -1,54 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934962AbYD1SFc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936039AbYD1SFz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934962AbYD1SFc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 14:05:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933086AbYD1SFT
+	id S936039AbYD1SFz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 14:05:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935611AbYD1SFc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 14:05:19 -0400
-Received: from gw.goop.org ([64.81.55.164]:37446 "EHLO mail.goop.org"
+	Mon, 28 Apr 2008 14:05:32 -0400
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:40186 "EHLO smtp6.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933473AbYD1SFR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 14:05:17 -0400
-Message-ID: <481611D3.9020302@goop.org>
-Date: Mon, 28 Apr 2008 11:05:07 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080418)
-MIME-Version: 1.0
+	id S935565AbYD1SFb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Apr 2008 14:05:31 -0400
+Date: Mon, 28 Apr 2008 21:04:57 +0300
+From: Adrian Bunk <bunk@kernel.org>
 To: Ingo Molnar <mingo@elte.hu>
-CC: Gerhard Mack <gmack@innerfire.net>, Jiri Kosina <jkosina@suse.cz>,
+Cc: Mauro Carvalho Chehab <mchehab@infradead.org>,
        linux-kernel@vger.kernel.org
-Subject: [PATCH] x86: don't bother printing compat vdso address
-References: <alpine.DEB.1.10.0804241244360.28216@mtl.rackplans.net> <Pine.LNX.4.64.0804251632490.19002@twin.jikos.cz> <alpine.DEB.1.10.0804261213200.28624@mtl.rackplans.net> <48140ACF.4000500@goop.org> <alpine.DEB.1.10.0804281145090.17060@mtl.rackplans.net> <4816029D.3030508@goop.org> <alpine.DEB.1.10.0804281322200.17060@mtl.rackplans.net>
-In-Reply-To: <alpine.DEB.1.10.0804281322200.17060@mtl.rackplans.net>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Subject: Re: [patch] dvb: build failure fix
+Message-ID: <20080428180457.GY2813@cs181133002.pp.htv.fi>
+References: <20080428162421.GA16566@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20080428162421.GA16566@elte.hu>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The kernel prints the compat vdso address regardless of whether compat
-vdso mode is enabled or not, which is confusing.  Given that this
-isn't very interesting information anyway, just remove the printk.
-
-Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Cc: Gerhard Mack <gmack@innerfire.net>
----
- arch/x86/vdso/vdso32-setup.c |    2 --
- 1 file changed, 2 deletions(-)
-
-===================================================================
---- a/arch/x86/vdso/vdso32-setup.c
-+++ b/arch/x86/vdso/vdso32-setup.c
-@@ -303,8 +303,6 @@
- 
- #ifdef CONFIG_X86_32
- 	gate_vma_init();
--
--	printk("Compat vDSO mapped to %08lx.\n", __fix_to_virt(FIX_VDSO));
- #endif
- 
- 	if (!vdso32_sysenter()) {
+On Mon, Apr 28, 2008 at 06:24:21PM +0200, Ingo Molnar wrote:
+> 
+> fix build failure found via x86.git randconfig testing:
+> 
+>  drivers/built-in.o: In function `tda829x_attach':
+>  : undefined reference to `tda827x_attach'
+>  drivers/built-in.o: In function `tda829x_attach':
+>  : undefined reference to `tda18271_attach'
+> 
+> build failure is due to this nasty dependency:
+> 
+>   CONFIG_DVB_CORE=m but CONFIG_TUNER_TDA8290=y.
+> 
+> the solution is to follow the DVB_CORE constraint in the Kconfig. It's 
+> not pretty but works.
 
 
+It might work around the problem in your specific configuration, but 
+it's not the correct solution.
+
+Please send your .config .
+
+
+> Kconfig should be enhanced instead with a new keyword: "depends on 
+> instructure ..." that makes it clear that the dependent module can only 
+> be of equal or lesser link mode - but not =y while the infrastructure 
+> module is =m. But i digress.
+
+
+What are you smoking?
+
+That's exactly what "depends on" always did and still does.
+
+
+> Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> ---
+>  drivers/media/Kconfig |   14 +++++++-------
+>  1 file changed, 7 insertions(+), 7 deletions(-)
+> 
+> Index: linux/drivers/media/Kconfig
+> ===================================================================
+> --- linux.orig/drivers/media/Kconfig
+> +++ linux/drivers/media/Kconfig
+> @@ -106,21 +106,21 @@ if VIDEO_TUNER_CUSTOMIZE
+>  
+>  config TUNER_XC2028
+>  	tristate "XCeive xc2028/xc3028 tuners"
+> -	depends on I2C && FW_LOADER
+> +	depends on I2C && FW_LOADER && ((DVB_CORE = m && m) || (DVB_CORE = y))
+>...
+
+
+Your funny additions are equivalent to "&& DVB_CORE".
+
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
