@@ -1,53 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966954AbYD1VCi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937123AbYD1VDt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966954AbYD1VCi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 17:02:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965662AbYD1VCW
+	id S937123AbYD1VDt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 17:03:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934620AbYD1VDk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 17:02:22 -0400
-Received: from gw.goop.org ([64.81.55.164]:53623 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965811AbYD1VCV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 17:02:21 -0400
-Message-ID: <48163B50.8010608@goop.org>
-Date: Mon, 28 Apr 2008 14:02:08 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080418)
+	Mon, 28 Apr 2008 17:03:40 -0400
+Received: from vigor.karmaclothing.net ([217.169.26.28]:42980 "EHLO
+	dl5rb.ham-radio-op.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S934532AbYD1VDk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Apr 2008 17:03:40 -0400
+X-Greylist: delayed 610 seconds by postgrey-1.27 at vger.kernel.org; Mon, 28 Apr 2008 17:03:39 EDT
+Date: Mon, 28 Apr 2008 21:53:14 +0100
+From: Ralf Baechle <ralf@linux-mips.org>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 12/15] [MIPS] pmc-sierra/msp71xx/msp_hwbutton.c: minor
+	irq handler cleanups
+Message-ID: <20080428205314.GA12221@linux-mips.org>
+References: <d7afbccda111e535bb14ad8082b208c7a2cd9833.1208559659.git.jgarzik@redhat.com> <1fe60a9e2aaf5ddc410e5eefd7aa1163821c59b5.1208559659.git.jgarzik@redhat.com>
 MIME-Version: 1.0
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Andi Kleen <andi@firstfloor.org>,
-       Ingo Molnar <mingo@elte.hu>, Jiri Slaby <jirislaby@gmail.com>,
-       David Miller <davem@davemloft.net>, zdenek.kabelac@gmail.com,
-       rjw@sisk.pl, paulmck@linux.vnet.ibm.com, akpm@linux-foundation.org,
-       linux-ext4@vger.kernel.org, herbert@gondor.apana.org.au,
-       penberg@cs.helsinki.fi, clameter@sgi.com, linux-kernel@vger.kernel.org,
-       pageexec@freemail.hu
-Subject: Re: [PATCH 1/1] x86: fix text_poke
-References: <48123C9B.9020306@zytor.com> <20080425203717.GB25950@Krystal> <481241DC.3070601@zytor.com> <alpine.LFD.1.10.0804251349510.2779@woody.linux-foundation.org> <20080425211205.GC25950@Krystal> <481249FB.8070204@zytor.com> <20080425214704.GD25950@Krystal> <48125635.3060303@zytor.com> <20080425223015.GB31226@Krystal> <alpine.LFD.1.10.0804251534420.2779@woody.linux-foundation.org> <20080428204342.GD27154@Krystal>
-In-Reply-To: <20080428204342.GD27154@Krystal>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1fe60a9e2aaf5ddc410e5eefd7aa1163821c59b5.1208559659.git.jgarzik@redhat.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mathieu Desnoyers wrote:
-> Markers, with immediate values, only clobbers the eax register and the
-> ZF. It does not restrain inlining nor loop unrolling. It also requires
-> gcc to leave the variables in which the marker is interested "live".
+On Fri, Apr 18, 2008 at 07:23:01PM -0400, Jeff Garzik wrote:
 
-That in itself is pretty significant.  If that value would otherwise be 
-constant folded or strength-reduced away, you're putting a big 
-limitation on what the compiler can do.  The mere fact that its 
-necessary to do something to preserve many values shows how much the 
-compiler transforms the code away from what's in the source, and 
-specifically referencing otherwise unused intermediates inhibits that.
+> - remove always-true test
+> 
+> - neaten request_irq() indentation
+> 
+> This change's main purpose is to prepare for the patchset in
+> jgarzik/misc-2.6.git#irq-remove, that explores removal of the
+> never-used 'irq' argument in each interrupt handler.
+> 
+> Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
 
-In other words, if you weren't preventing optimisations, you wouldn't 
-need to preserve values as much, because the optimiser wouldn't be 
-getting rid of them.  If you need to preserve lots of values, you're 
-necessarily preventing the optimiser from doing its job.
+Applied, thanks Jeff.
 
-    J
+  Ralf
