@@ -1,40 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965669AbYD1Uvv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966316AbYD1UwU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965669AbYD1Uvv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 16:51:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933022AbYD1Uvk
+	id S966316AbYD1UwU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 16:52:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965437AbYD1Uvz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 16:51:40 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:56113 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1765989AbYD1Uvk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 16:51:40 -0400
-Date: Mon, 28 Apr 2008 15:51:39 -0500
-From: Paul Jackson <pj@sgi.com>
-To: Rogan Dawes <lists@dawes.za.net>
-Cc: apw@shadowen.org, linux-kernel@vger.kernel.org
-Subject: Re: Why these dot chars in scripts/checkpatch.pl?
-Message-Id: <20080428155139.d89e47d2.pj@sgi.com>
-In-Reply-To: <481637D7.8090000@dawes.za.net>
-References: <20080428153122.a94d21ba.pj@sgi.com>
-	<481637D7.8090000@dawes.za.net>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
+	Mon, 28 Apr 2008 16:51:55 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:54019 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965711AbYD1Uvx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Apr 2008 16:51:53 -0400
+Date: Mon, 28 Apr 2008 22:52:27 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Ben Dooks <ben-linux@fluff.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] dontdiff: add modules.order
+Message-ID: <20080428205227.GD18248@uranus.ravnborg.org>
+References: <20080418151816.GA18030@fluff.org.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080418151816.GA18030@fluff.org.uk>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rogan wrote:
-> Perhaps it is because checkpatch.pl is supposed to check *patches*, 
-> which are typically indented by one character (+- )?
+On Fri, Apr 18, 2008 at 04:18:16PM +0100, Ben Dooks wrote:
+> Add modules.order to the list of files that
+> shoud be ignored when using diff on a built
+> kernel tree.
+> 
+> Signed-off-by: Ben Dooks <ben-linux@fluff.org>
+> 
+> diff -rup linux-2.6.25/Documentation/dontdiff linux-2.6.25-dontdiff/Documentation/dontdiff
+> --- linux-2.6.25/Documentation/dontdiff	2008-04-17 09:48:05.000000000 +0100
+> +++ linux-2.6.25-dontdiff/Documentation/dontdiff	2008-04-18 16:16:45.000000000 +0100
+> @@ -142,6 +142,7 @@ mkprep
+>  mktables
+>  mktree
+>  modpost
+> +modules.order
+>  modversions.h*
+>  offset.h
+>  offsets.h
 
-You're a genius.  It's an honor to be of the same species.
+Applied this and the other.
 
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.940.382.4214
+	Sam
