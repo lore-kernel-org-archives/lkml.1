@@ -1,79 +1,146 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964868AbYD1SGx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965308AbYD1SHZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964868AbYD1SGx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 14:06:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934576AbYD1SGm
+	id S965308AbYD1SHZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 14:07:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964913AbYD1SG5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 14:06:42 -0400
-Received: from minx.mdc-dayton.com ([70.62.41.4]:48627 "EHLO daetwyler-rd.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S934525AbYD1SGl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 14:06:41 -0400
-From: "Kathy Frazier" <kfrazier@daetwyler-rd.com>
-To: "'Miguel Ojeda'" <miguel.ojeda.sandonis@gmail.com>,
-       "'Alan Cox'" <alan@lxorguk.ukuu.org.uk>
-Cc: "'Kathy Frazier'" <kfrazier@daetwyler-rd.com>,
-       <linux-kernel@vger.kernel.org>
-References: <009501c89e28$3d7530f0$b85f92d0$@com>	 <20080414133937.7080d30d@core> <006f01c8a4a7$82e37ea0$88aa7be0$@com>	 <20080425181219.61e29b1f@core> <ca2dc2820804251118j625abb76j100d165aee18a7c8@mail.gmail.com>
-In-Reply-To: <ca2dc2820804251118j625abb76j100d165aee18a7c8@mail.gmail.com>
-Subject: RE: Talking to parallel port in 2.6 kernel without using parport
-Date: Mon, 28 Apr 2008 14:06:20 -0400
-Message-ID: <004301c8a95a$906666c0$b1333440$@com>
+	Mon, 28 Apr 2008 14:06:57 -0400
+Received: from e28smtp03.in.ibm.com ([59.145.155.3]:47462 "EHLO
+	e28smtp03.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S964875AbYD1SGy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Apr 2008 14:06:54 -0400
+Message-ID: <48161159.6010802@linux.vnet.ibm.com>
+Date: Mon, 28 Apr 2008 23:33:05 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Balaji Rao <balajirrao@gmail.com>, linux-kernel@vger.kernel.org,
+       containers@lists.osdl.org, menage@google.com, balbir@in.ibm.com,
+       dhaval@linux.vnet.ibm.com
+Subject: Re: [RFC][-mm] [2/2] Simple stats for memory resource controller
+References: <200804052340.02386.balajirrao@gmail.com> <48036CB4.5050700@linux.vnet.ibm.com> <200804282130.30188.balajirrao@gmail.com> <20080428094026.bc78ccc7.akpm@linux-foundation.org>
+In-Reply-To: <20080428094026.bc78ccc7.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Mailer: Microsoft Office Outlook 12.0
-Thread-Index: AcinAOtTwdUwR5x4Q6C4ejvsqYAiQQCWLj3w
-Content-Language: en-us
-X-MyHeader: SpamAssassin Check skipped due to Authenication or Internal MDC-Dayton Address
-X-MyHeader: Clam AV Check skipped due to Authenication or Internal MDC-Dayton Address
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Miguel,
+Andrew Morton wrote:
+> On Mon, 28 Apr 2008 21:30:29 +0530 Balaji Rao <balajirrao@gmail.com> wrote:
+> 
+>> On Monday 14 April 2008 08:09:48 pm Balbir Singh wrote:
+>>> Balaji Rao wrote:
+>>>> This patch implements trivial statistics for the memory resource controller.
+>>>>
+>>>> Signed-off-by: Balaji Rao <balajirrao@gmail.com>
+>>>> CC: Balbir Singh <balbir@linux.vnet.ibm.com>
+>>>> CC: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+>>>>
+>>>> diff --git a/mm/memcontrol.c b/mm/memcontrol.c
+>>>> index a860765..ca98b21 100644
+>>>> --- a/mm/memcontrol.c
+>>>> +++ b/mm/memcontrol.c
+>>>> @@ -47,6 +47,8 @@ enum mem_cgroup_stat_index {
+>>>>  	 */
+>>>>  	MEM_CGROUP_STAT_CACHE, 	   /* # of pages charged as cache */
+>>>>  	MEM_CGROUP_STAT_RSS,	   /* # of pages charged as rss */
+>>>> +	MEM_CGROUP_STAT_PGPGIN_COUNT,	/* # of pages paged in */
+>>>> +	MEM_CGROUP_STAT_PGPGOUT_COUNT,	/* # of pages paged out */
+>>>>
+>>>>  	MEM_CGROUP_STAT_NSTATS,
+>>>>  };
+>>>> @@ -198,6 +200,13 @@ static void mem_cgroup_charge_statistics(struct mem_cgroup *mem, int flags,
+>>>>  		__mem_cgroup_stat_add_safe(stat, MEM_CGROUP_STAT_CACHE, val);
+>>>>  	else
+>>>>  		__mem_cgroup_stat_add_safe(stat, MEM_CGROUP_STAT_RSS, val);
+>>>> +
+>>>> +	if (charge)
+>>>> +		__mem_cgroup_stat_add_safe(stat,
+>>>> +				MEM_CGROUP_STAT_PGPGIN_COUNT, 1);
+>>>> +	else
+>>>> +		__mem_cgroup_stat_add_safe(stat,
+>>>> +				MEM_CGROUP_STAT_PGPGOUT_COUNT, 1);
+>>>>  }
+>>>>
+>>>>  static struct mem_cgroup_per_zone *
+>>>> @@ -897,6 +906,8 @@ static const struct mem_cgroup_stat_desc {
+>>>>  } mem_cgroup_stat_desc[] = {
+>>>>  	[MEM_CGROUP_STAT_CACHE] = { "cache", PAGE_SIZE, },
+>>>>  	[MEM_CGROUP_STAT_RSS] = { "rss", PAGE_SIZE, },
+>>>> +	[MEM_CGROUP_STAT_PGPGIN_COUNT] = {"pgpgin", 1, },
+>>>> +	[MEM_CGROUP_STAT_PGPGOUT_COUNT] = {"pgpgout", 1, },
+>>>>  };
+>>>>
+>>>>  static int mem_control_stat_show(struct cgroup *cont, struct cftype *cft,
+>>>>
+>>> Acked-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+>>>
+>>> Hi, Andrew,
+>>>
+>>> Could you please include these statistics in -mm.
+>>>
+>>> Balbir
+>>>
+>>>
+>> Hi Andrew,
+>>
+>> Now that Balbir Singh has ACKed it, could you please include it in -mm ?
+> 
+> <looks>
+> 
+> I guess we can add this one, sure.  But [patch 1/2] needs work.
+> 
+> - The local_irq_save()-around-for_each_possible_cpu() locking doesn't
+>   make sense.
+> 
 
-Thanks for your response!  I took a look at ks0108.c.  You are right:  very
-straightforward and a good reference.  I had added some other things based
-on what I saw in /drivers/char/ppdev.c, lp.c and tipar.c.  After reviewing
-yours, I am realizing I really don't need some of that, so I can simplify
-mine.
+Yes, that needs re-work. Peter Zijlstra had detailed review comments for the patch
 
-My biggest problem was that lp was loaded.  When I remove that, my call to
-parport_register_device returns success! 
+> - indenting is busted in account_user_time() and account_system_time()
+> 
+> - The use of for_each_possible_cpu() can be grossly inefficient.  It
+>   would be preferred to use for_each_possible_cpu() and add a cpu-hotplug
+>   notifier.
+> 
+> - The proposed newly-added userspace interfaces are undocumented
+> 
 
-Thanks for your help!
+Yes, we need more documentation
 
-Regards,
-Kathy 
+> - The changelogs don't explain why we might want this feature in Linux.
+> 
+
+We need more accurate utime/stime per cgroup. Summing them in user space is
+insufficient, since tasks can move across groups and what we have is accumulated
+time per task.
+
+> - Generally: there are a heck of a lot of different ways of accounting
+>   for things in core kernel and it's really sad to see yet another one
+>   being added.
+> 
+
+We thought of summing up stuff in user space, we've look harder. The plan is to
+finally send all the data using cgroupstats.
+
+> 
+> Actually, [patch 2/2] adds new kerenl->user interfaces and doesn't document
+> them.  But afaict the existing memcgroup stats are secret too.
+> 
+
+The statistics was added as a part of git commit
+d52aa412d43827033a8e2ce4415ef6e8f8d53635. I'll go ahead and try to document
+them. These patches piggy back on the statistics patches and add pagein/pageout
+counts, which is a useful statistic for the memory controller.
 
 
 
------Original Message-----
-From: Miguel Ojeda [mailto:miguel.ojeda.sandonis@gmail.com] 
-Sent: Friday, April 25, 2008 2:18 PM
-To: Alan Cox
-Cc: Kathy Frazier; linux-kernel@vger.kernel.org
-Subject: Re: Talking to parallel port in 2.6 kernel without using parport
-
->  > Can you tell me what I am missing?  Where can I get the actual 
-> source code  > that goes with this version to further unravel this?
-
-About two years ago (~2.6.18) I wrote one driver that needed exclusive
-access to the parallel port and, like this time, Alan Cox guided me (thank
-you Alan!). If you want, you can check the code at
-drivers/auxdisplay/ks0108.c. I tested it as of 2.6.25 and worked fine, so it
-could be a good reference for you. In addition, the code is pretty
-straightforward!
-
->
->  To be honest this area of the kernel hasn't changed much over recent  
-> times. Let me know if you can't figure out what is going on.
->
-
-Right, I haven't had to change the code since 2.6.18.
-
---
-Miguel Ojeda
-
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
