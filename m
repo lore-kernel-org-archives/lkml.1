@@ -1,69 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966784AbYD1T1m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966754AbYD1T25@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966784AbYD1T1m (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 15:27:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966730AbYD1T1Y
+	id S966754AbYD1T25 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 15:28:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933418AbYD1T2n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 15:27:24 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:32808 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S966726AbYD1T1W (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 15:27:22 -0400
-Date: Mon, 28 Apr 2008 15:27:21 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Ingo Molnar <mingo@elte.hu>
-cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       Pekka Paalanen <pq@iki.fi>
-Subject: Re: ftrace and debugfs weird interaction
-In-Reply-To: <20080428153956.GH18776@elte.hu>
-Message-ID: <Pine.LNX.4.58.0804281523260.4615@gandalf.stny.rr.com>
-References: <20080426185403.GA22522@Krystal> <20080428153956.GH18776@elte.hu>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 28 Apr 2008 15:28:43 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:57292 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934661AbYD1T2m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Apr 2008 15:28:42 -0400
+From: Mel Gorman <mel@csn.ul.ie>
+To: akpm@linux-foundation.org
+Cc: Mel Gorman <mel@csn.ul.ie>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, apw@shadowen.org, mingo@elte.hu, clameter@sgi.com
+Message-Id: <20080428192839.23649.82172.sendpatchset@skynet.skynet.ie>
+Subject: [PATCH 0/4] Verification and debugging of memory initialisation V4
+Date: Mon, 28 Apr 2008 20:28:39 +0100 (IST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-5BOn Mon, 28 Apr 2008, Ingo Molnar wrote:
+Boot initialisation is very complex, with significant numbers of
+architecture-specific routines, hooks and code ordering. While significant
+amounts of the initialisation is architecture-independent, it trusts
+the data received from the architecture layer. This is a mistake, and has
+resulted in a number of difficult-to-diagnose bugs. This patchset adds some
+validation and tracing to memory initialisation. It also introduces a few
+basic defensive measures.  The validation code can be explicitly disabled
+for embedded systems.
 
->
-> * Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
->
-> > Hi,
-> >
-> > When trying to figure out what was going on with the sched tracer
-> > "tracing_enabled" file (sched-devel.git tree), I fell on this strange
-> > behavior :
-> >
-> > echo 1>tracing_enabled seems _not_ to send 1 to the tracing_ctrl_write
+I believe it's ready for a round of testing in -mm. The patches are based
+against 2.6.25-mm1.
 
-It should actually send "1" and not 1 (and technically "1\n") ;-)
+Changelog since V3
+  o (Andrew) Only allow disabling of verification checks on CONFIG_EMBEDDED
+  o (Andy Whitcroft) Documentation and leader fixups
+  o (Andy) Rename mminit_debug_printk to mminit_dprintk for consistency
+  o (Andy) Rename mminit_verify_pageflags to mminit_verify_pageflags_layout
+  o (Andy) Rename mminit_validate_physlimits to mminit_validate_memmodel_limits
+  o (Andy) Fix page->flags bitmap overlap checks
+  o (Andy) Fix argument type for level in mminit_dprintk()
+  o (Mel) Add WARNING error level that is the default logging level for
+  	  mminit_loglevel=. Messages printed at this or lower levels will use
+	  KERN_WARNING for the printk loglevel. Otherwise KERN_DEBUG is used.
 
-> > callback. However, sending garbage, e.g. echo s> tracing_enabled,
-> > correctly sends the 's' character down the chain. echo 0>tracing_enabled
-> > sometimes results in the callback not even being called.
+Changelog since V2
+  o (Mel) Rebase to 2.6.25-mm1 and rewrite zonelist dump
+  o (Mel) Depend on DEBUG_VM instead of DEBUG_KERNEL
+  o (Mel) Use __meminitdata instead of __initdata for logging level
+  o (Christoph) Get rid of FLAGS_RESERVED references
+  o (Christoph) Print out flag usage information
+  o (Ingo) Default do the verifications on DEBUG_VM and instead control the
+           level of verbose logging with mminit_loglevel= instead of
+	   mminit_debug_level=
+  o (Anon) Log at KERN_DEBUG level
+  o (Anon) Optimisation to the mminit_debug_printk macro
 
-I haven't seen this. Perhaps I'm confused about what you are seeing.
+Changelog since V1
+  o (Ingo) Make memory initialisation verification a DEBUG option depending on
+    DEBUG_KERNEL option. By default it will then to verify structures but
+    tracing can be enabled via the command-line. Without the CONFIG option,
+    checks will still be made on PFN ranges passed by the architecture-specific
+    code and a warning printed once if a problem is encountered
+  o (Ingo) WARN_ON_ONCE when PFNs from the architecture violate SPARSEMEM
+    limitations. The warning should be "harmless" as the system will boot
+    regardless but it acts as a reminder that bad input is being used.
+  o (Anon) Convert mminit_debug_printk() to a macro
+  o (Anon) Spelling mistake corrections
+  o (Anon) Use of KERN_CONT properly for multiple printks
+  o (Mel) Reshuffle the patches so that the zonelist printing is at the
+    end of the patchset. This is because -mm requires a different patch to
+    print zonelists and this allows the end patch to be temporarily dropped
+    when testing against -mm
+  o (Mel) Rebase on top of Ingo's sparsemem fix for easier testing
+  o (Mel) Document mminit_debug_level=
+  o (Mel) Fix check on pageflags where the masks were not being shifted
+  o (Mel) The zone ID should should have used page_zonenum not page_zone_id
+  o (Mel) Iterate all zonelists correctly
+  o (Mel) Correct typo of SECTIONS_SHIFT
 
-> >
-> > The debugfs file has been created with
-> >
-> >         entry = debugfs_create_file("tracing_enabled", 0644, d_tracer,
-> >                                     &global_trace, &tracing_ctrl_fops);
-> >         if (!entry)
-> >                 pr_warning("Could not create debugfs 'tracing_enabled' entry\n");
-> >
-> > I wonder what kind of weird debugfs interaction we might have here ?
-
-This looks normal to me. Could you provide a bit more detail to what you
-are doing, what the results are, and what you expect the restults to be?
-
->
-> hm. Cc:-ed more ftrace developers.
-
-Thanks,
-
--- Steve
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
