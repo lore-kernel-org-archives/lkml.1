@@ -1,85 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965985AbYD1RME@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935330AbYD1RNM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965985AbYD1RME (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 13:12:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933732AbYD1RLw
+	id S935330AbYD1RNM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 13:13:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934076AbYD1RM5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 13:11:52 -0400
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:46043 "EHLO e6.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933728AbYD1RLv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 13:11:51 -0400
-Subject: Re: Possible race between direct IO and JBD?
-From: Badari Pulavarty <pbadari@us.ibm.com>
-To: Jan Kara <jack@suse.cz>
-Cc: Mingming Cao <cmm@us.ibm.com>, akpm@linux-foundation.org,
-       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20080428122626.GC17054@duck.suse.cz>
-References: <20080306174209.GA14193@duck.suse.cz>
-	 <1209166706.6040.20.camel@localhost.localdomain>
-	 <20080428122626.GC17054@duck.suse.cz>
-Content-Type: text/plain
-Date: Mon, 28 Apr 2008 10:11:34 -0700
-Message-Id: <1209402694.23575.5.camel@badari-desktop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+	Mon, 28 Apr 2008 13:12:57 -0400
+Received: from 75-130-111-13.dhcp.oxfr.ma.charter.com ([75.130.111.13]:36823
+	"EHLO novell1.haskins.net" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S933732AbYD1RM5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Apr 2008 13:12:57 -0400
+From: Gregory Haskins <ghaskins@novell.com>
+Subject: [(RESEND) PATCH] sched: fix SCHED_FAIR wake-idle logic error
+To: Ingo Molnar <mingo@elte.hu>
+Cc: peterz@infradead.org, Gregory Haskins <ghaskins@novell.com>,
+       linux-kernel@vger.kernel.org
+Date: Mon, 28 Apr 2008 12:40:01 -0400
+Message-ID: <20080428163908.5900.74943.stgit@novell1.haskins.net>
+User-Agent: StGIT/0.12.1
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Ingo, Peter,
+  Please ACK/NACK this patch so I know where you stand.  Thanks!
 
-On Mon, 2008-04-28 at 14:26 +0200, Jan Kara wrote:
-> Hi,
-> 
-> On Fri 25-04-08 16:38:23, Mingming Cao wrote:
-> > While looking at a bug related to direct IO returns to EIO, after
-> > looking at the code, I found there is a window that
-> > try_to_free_buffers() from direct IO could race with JBD, which holds
-> > the reference to the data buffers before journal_commit_transaction()
-> > ensures the data buffers has reached to the disk.
-> > 
-> > A little more detail: to prepare for direct IO, generic_file_direct_IO()
-> > calls invalidate_inode_pages2_range() to invalidate the pages in the
-> > cache before performaning direct IO.  invalidate_inode_pages2_range()
-> > tries to free the buffers via try_to free_buffers(), but sometimes it
-> > can't, due to the buffers is possible still on some transaction's
-> > t_sync_datalist or t_locked_list waiting for
-> > journal_commit_transaction() to process it. 
-> > 
-> > Currently Direct IO simply returns EIO if try_to_free_buffers() finds
-> > the buffer is busy, as it has no clue that JBD is referencing it.
-> > 
-> > Is this a known issue and expected behavior? Any thoughts?
->   Are you seeing this in data=ordered mode? As Andrew pointed out we do
-> filemap_write_and_wait() so all the relevant data buffers of the inode
-> should be already on disk. In __journal_try_to_free_buffer() we check
-> whether the buffer is already-written-out data buffer and unfile and free
-> it in that case. It shouldn't happen that a data buffer has
-> b_next_transaction set so really the only idea why try_to_free_buffers()
-> could fail is that somebody manages to write to a page via mmap before
-> invalidate_inode_pages2_range() gets to it. Under which kind of load do you
-> observe the problem? Do you know exactly because of which condition does
-> journal_try_to_free_buffers() fail?
-> 
+-Greg
 
-Thank you for your reply.
+----------------------------------
+sched: fix SCHED_FAIR wake-idle logic error
 
-What we are noticing is invalidate_inode_pages2_range() fails with -EIO
-(from try_to_free_buffers() since b_count > 0).
+We currently use an optimization to skip the overhead of wake-idle
+processing if more than one task is assigned to a run-queue.  The
+assumption is that the system must already be load-balanced or we
+wouldnt be overloaded to begin with.
 
-I don't think the file is being updated through mmap(). Previous
-writepage() added these buffers to t_sync_data list (data=ordered).
-filemap_write_and_wait() waits for pagewrite back to be cleared.
-So, buffers are no longer dirty, but still on the t_sync_data and
-kjournald didn't get chance to process them yet :(
+The problem is that we are looking at rq->nr_running, which may include
+RT tasks in addition to CFS tasks.  Since the presence of RT tasks
+really has no bearing on the balance status of CFS tasks, this throws
+the calculation off.
 
-Since we have elevated b_count on these buffers, try_to_free_buffers()
-fails. How can we make filemap_write_and_wait() to wait for kjournald
-to unfile these buffers ?
+This patch changes the logic to only consider the number of CFS tasks
+when making the decision to optimze the wake-idle.
 
-Does this makes sense ? Am I missing something here ?
+Signed-off-by: Gregory Haskins <ghaskins@novell.com>
+CC: Ingo Molnar <mingo@elte.hu>
+CC: Peter Zijlstra <peterz@infradead.org>
+---
 
-Thanks,
-Badari
+ kernel/sched_fair.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
+index 89fa32b..80b7891 100644
+--- a/kernel/sched_fair.c
++++ b/kernel/sched_fair.c
+@@ -1007,7 +1007,7 @@ static int wake_idle(int cpu, struct task_struct *p)
+ 	 * sibling runqueue info. This will avoid the checks and cache miss
+ 	 * penalities associated with that.
+ 	 */
+-	if (idle_cpu(cpu) || cpu_rq(cpu)->nr_running > 1)
++	if (idle_cpu(cpu) || cpu_rq(cpu)->cfs.nr_running > 1)
+ 		return cpu;
+ 
+ 	for_each_domain(cpu, sd) {
 
