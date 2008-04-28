@@ -1,140 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936320AbYD1STy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935403AbYD1SVJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936320AbYD1STy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 14:19:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934868AbYD1ST1
+	id S935403AbYD1SVJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 14:21:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933074AbYD1SUy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 14:19:27 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:4390 "EHLO
-	dwalker1.mvista.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S933231AbYD1STY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 14:19:24 -0400
-Message-Id: <20080428181445.546732331@mvista.com>
-User-Agent: quilt/0.46-1
-Date: Mon, 28 Apr 2008 11:14:45 -0700
-From: Daniel Walker <dwalker@mvista.com>
-To: akpm@linux-foundation.org
-Cc: gprocida@madge.com, mingo@elte.hu, matthew@wil.cx, chas@cmf.nrl.navy.mil,
+	Mon, 28 Apr 2008 14:20:54 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:53491 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932335AbYD1SUx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Apr 2008 14:20:53 -0400
+Subject: Re: Linux 2.6.25 (coretemp reads high temperatures)
+From: Kasper Sandberg <lkml@metanurb.dk>
+To: Maxim Levitsky <maximlevitsky@gmail.com>
+Cc: Len Brown <lenb@kernel.org>, Matthew <jackdachef@gmail.com>,
+       linux-acpi@vger.kernel.org, torvalds@linux-foundation.org,
        linux-kernel@vger.kernel.org
-Subject: [PATCH] atm: ambassador: vcc_sf semaphore to mutex
+In-Reply-To: <200804231143.10875.maximlevitsky@gmail.com>
+References: <e85b9d30804180837y39c52e26i588e4b67c87a5e9d@mail.gmail.com>
+	 <200804182151.49021.lenb@kernel.org>
+	 <200804231143.10875.maximlevitsky@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-15
+Date: Mon, 28 Apr 2008 20:19:44 +0200
+Message-Id: <1209406784.11608.15.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.4.0 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Daniel Walker <dwalker@mvista.com>
+On Wed, 2008-04-23 at 11:43 +0300, Maxim Levitsky wrote:
+> On Saturday, 19 April 2008 04:51:48 Len Brown wrote:
+> > On Friday 18 April 2008, Matthew wrote:
+> > > Hi everyone, hi Linus,
+> > > 
+> > > congratulations on this new great kernel-release :)
+> > > 
+> > > I've another "regression" to report for 2.6.25:
+> > > 
+> > > it's concerning much higher temperatures being read out by the
+> > > "coretemp" kernel-module in comparison to 2.6.24* series
+> > > 
+> > > e.g. where temperatures were around 40-47캜 they are now constantly
+> > > jumping around 55-70캜 (even in idle !)
+> 
+> I just updated from 2.6.24 to 2.6.25
+> (I usually follow whole development cycle, but I was very busy, so I skipped 2.6.25 cycle)
+> 
+> I confirm this.
+> I *know* that temperatures reported now are wrong.
 
----
- drivers/atm/ambassador.c |   19 ++++++++++---------
- drivers/atm/ambassador.h |    2 +-
- 2 files changed, 11 insertions(+), 10 deletions(-)
+I too can confirm that it reports incorrect temperatures.
 
-Index: linux-2.6.23/drivers/atm/ambassador.c
-===================================================================
---- linux-2.6.23.orig/drivers/atm/ambassador.c
-+++ linux-2.6.23/drivers/atm/ambassador.c
-@@ -33,6 +33,7 @@
- #include <linux/interrupt.h>
- #include <linux/poison.h>
- #include <linux/bitrev.h>
-+#include <linux/mutex.h>
- 
- #include <asm/atomic.h>
- #include <asm/io.h>
-@@ -1177,7 +1178,7 @@ static int amb_open (struct atm_vcc * at
-     
-     vcc->tx_frame_bits = tx_frame_bits;
-     
--    down (&dev->vcc_sf);
-+    mutex_lock(&dev->vcc_sf);
-     if (dev->rxer[vci]) {
-       // RXer on the channel already, just modify rate...
-       cmd.request = cpu_to_be32 (SRB_MODIFY_VC_RATE);
-@@ -1203,7 +1204,7 @@ static int amb_open (struct atm_vcc * at
- 	schedule();
-     }
-     dev->txer[vci].tx_present = 1;
--    up (&dev->vcc_sf);
-+    mutex_unlock(&dev->vcc_sf);
-   }
-   
-   if (rxtp->traffic_class != ATM_NONE) {
-@@ -1211,7 +1212,7 @@ static int amb_open (struct atm_vcc * at
-     
-     vcc->rx_info.pool = pool;
-     
--    down (&dev->vcc_sf); 
-+    mutex_lock(&dev->vcc_sf);
-     /* grow RX buffer pool */
-     if (!dev->rxq[pool].buffers_wanted)
-       dev->rxq[pool].buffers_wanted = rx_lats;
-@@ -1237,7 +1238,7 @@ static int amb_open (struct atm_vcc * at
-       schedule();
-     // this link allows RX frames through
-     dev->rxer[vci] = atm_vcc;
--    up (&dev->vcc_sf);
-+    mutex_unlock(&dev->vcc_sf);
-   }
-   
-   // indicate readiness
-@@ -1262,7 +1263,7 @@ static void amb_close (struct atm_vcc * 
-   if (atm_vcc->qos.txtp.traffic_class != ATM_NONE) {
-     command cmd;
-     
--    down (&dev->vcc_sf);
-+    mutex_lock(&dev->vcc_sf);
-     if (dev->rxer[vci]) {
-       // RXer still on the channel, just modify rate... XXX not really needed
-       cmd.request = cpu_to_be32 (SRB_MODIFY_VC_RATE);
-@@ -1277,7 +1278,7 @@ static void amb_close (struct atm_vcc * 
-     dev->txer[vci].tx_present = 0;
-     while (command_do (dev, &cmd))
-       schedule();
--    up (&dev->vcc_sf);
-+    mutex_unlock(&dev->vcc_sf);
-   }
-   
-   // disable RXing
-@@ -1287,7 +1288,7 @@ static void amb_close (struct atm_vcc * 
-     // this is (the?) one reason why we need the amb_vcc struct
-     unsigned char pool = vcc->rx_info.pool;
-     
--    down (&dev->vcc_sf);
-+    mutex_lock(&dev->vcc_sf);
-     if (dev->txer[vci].tx_present) {
-       // TXer still on the channel, just go to pool zero XXX not really needed
-       cmd.request = cpu_to_be32 (SRB_MODIFY_VC_FLAGS);
-@@ -1314,7 +1315,7 @@ static void amb_close (struct atm_vcc * 
-       dev->rxq[pool].buffers_wanted = 0;
-       drain_rx_pool (dev, pool);
-     }
--    up (&dev->vcc_sf);
-+    mutex_unlock(&dev->vcc_sf);
-   }
-   
-   // free our structure
-@@ -2189,7 +2190,7 @@ static void setup_dev(amb_dev *dev, stru
-       
-       // semaphore for txer/rxer modifications - we cannot use a
-       // spinlock as the critical region needs to switch processes
--      init_MUTEX (&dev->vcc_sf);
-+      mutex_init(&dev->vcc_sf);
-       // queue manipulation spinlocks; we want atomic reads and
-       // writes to the queue descriptors (handles IRQ and SMP)
-       // consider replacing "int pending" -> "atomic_t available"
-Index: linux-2.6.23/drivers/atm/ambassador.h
-===================================================================
---- linux-2.6.23.orig/drivers/atm/ambassador.h
-+++ linux-2.6.23/drivers/atm/ambassador.h
-@@ -638,7 +638,7 @@ struct amb_dev {
-   amb_txq          txq;
-   amb_rxq          rxq[NUM_RX_POOLS];
-   
--  struct semaphore vcc_sf;
-+  struct mutex     vcc_sf;
-   amb_tx_info      txer[NUM_VCS];
-   struct atm_vcc * rxer[NUM_VCS];
-   unsigned int     tx_avail;
--- 
+I have a Q9450, and this is my "sensors" output:
+it8718-isa-0290
+Adapter: ISA adapter
+<snip>
+temp1:       +44째C  (low  =  +127째C, high =  +127째C)   sensor =
+thermistor
+temp2:       +22째C  (low  =  +127째C, high =   +60째C)   sensor = diode
+temp3:        -2째C  (low  =  +127째C, high =  +127째C)   sensor =
+thermistor
+vid:      +0.000 V
 
--- 
+coretemp-isa-0000
+Adapter: ISA adapter
+Core 0:      +44째C  (high =  +100째C)
+
+coretemp-isa-0001
+Adapter: ISA adapter
+Core 1:      +44째C  (high =  +100째C)
+
+coretemp-isa-0002
+Adapter: ISA adapter
+Core 2:      +43째C  (high =  +100째C)
+
+coretemp-isa-0003
+Adapter: ISA adapter
+Core 3:      +41째C  (high =  +100째C)
+
+
+temp2 is the cpu temperature(matches bios), temp1 is the northbridge(i
+think, bios says "system temp").
+
+i have watercooling, and well :P when i touch the "tube", its normal
+room temperature, and believe me, i would notice if it was 45.. this is
+with my cpu at idle - at full load on all 4 cores, temp2 says 35, and
+~60 on coretemp, and THIS i would surely be able to notice over room
+temp :)
+
+any progress on this bug?
+
+> 
+> The reason is that bios did report same temperatures as coretemp in 2.6.24,
+> moreover some time ago I have run a cpu tool (don't remember its name) on windows
+> which similar to coretemp reads from each core directly, sensor data , 
+> and I noticed that temperature that bios reports is exactly the average 
+> temperature of both cores
+> (I had to run this on windows - intel haven't released 
+> drivers for their QST for temperature monitoring from bios - very sad)
+> 
+> And the driver did say in kernel log that TJMAX is 85C
+> 
+> Lets at least make a kernel option to override tjmax?
+> 
+> Best regards,
+> 	Maxim Levitsky
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+
