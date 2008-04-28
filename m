@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S967589AbYD1WtJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S967643AbYD1Wtd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967589AbYD1WtJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 18:49:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966773AbYD1WhS
+	id S967643AbYD1Wtd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 18:49:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966799AbYD1WhU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 18:37:18 -0400
-Received: from g5t0006.atlanta.hp.com ([15.192.0.43]:3688 "EHLO
+	Mon, 28 Apr 2008 18:37:20 -0400
+Received: from g5t0006.atlanta.hp.com ([15.192.0.43]:3704 "EHLO
 	g5t0006.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S966610AbYD1Wg6 (ORCPT
+	with ESMTP id S966620AbYD1WhA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 18:36:58 -0400
-Message-Id: <20080428223622.619125086@ldl.fc.hp.com>
+	Mon, 28 Apr 2008 18:37:00 -0400
+Message-Id: <20080428223622.817032321@ldl.fc.hp.com>
 References: <20080428223347.233593713@ldl.fc.hp.com>
 User-Agent: quilt/0.46-1
-Date: Mon, 28 Apr 2008 16:34:17 -0600
+Date: Mon, 28 Apr 2008 16:34:18 -0600
 From: Bjorn Helgaas <bjorn.helgaas@hp.com>
 To: Len Brown <lenb@kernel.org>
 Cc: linux-acpi@vger.kernel.org, Rene Herman <rene.herman@gmail.com>
@@ -26,222 +26,286 @@ Cc: Thomas Renninger <trenn@suse.de>
 Cc: Rene Herman <rene.herman@keyaccess.nl>
 Cc: Jaroslav Kysela <perex@perex.cz>
 Cc: Andrew Morton <akpm@linux-foundation.org>
-Subject: [patch 30/55] PNP: use conventional "i" for loop indices
-Content-Disposition: inline; filename=pnp-rename-temps
+Subject: [patch 31/55] PNP: reduce redundancy in pnp_assign_port() and others
+Content-Disposition: inline; filename=pnp-simplify-assign-functions
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Cosmetic only: just use "i" instead of "tmp".
+Use a temporary "res" pointer to replace repeated lookups in
+the pnp resource tables.
 
 Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
 Acked-By: Rene Herman <rene.herman@gmail.com>
 
-Index: work10/drivers/pnp/resource.c
+---
+ drivers/pnp/manager.c |  108 ++++++++++++++++++++++----------------------------
+ 1 file changed, 48 insertions(+), 60 deletions(-)
+
+Index: work10/drivers/pnp/manager.c
 ===================================================================
---- work10.orig/drivers/pnp/resource.c	2008-04-28 16:09:26.000000000 -0600
-+++ work10/drivers/pnp/resource.c	2008-04-28 16:09:31.000000000 -0600
-@@ -241,7 +241,7 @@
+--- work10.orig/drivers/pnp/manager.c	2008-04-28 16:09:25.000000000 -0600
++++ work10/drivers/pnp/manager.c	2008-04-28 16:09:31.000000000 -0600
+@@ -19,8 +19,7 @@
  
- int pnp_check_port(struct pnp_dev *dev, int idx)
+ static int pnp_assign_port(struct pnp_dev *dev, struct pnp_port *rule, int idx)
  {
--	int tmp;
-+	int i;
- 	struct pnp_dev *tdev;
- 	resource_size_t *port, *end, *tport, *tend;
+-	resource_size_t *start, *end;
+-	unsigned long *flags;
++	struct resource *res;
  
-@@ -260,18 +260,18 @@
+ 	if (idx >= PNP_MAX_PORT) {
+ 		dev_err(&dev->dev, "too many I/O port resources\n");
+@@ -28,49 +27,46 @@
+ 		return 1;
  	}
  
- 	/* check if the resource is reserved */
--	for (tmp = 0; tmp < 8; tmp++) {
--		int rport = pnp_reserve_io[tmp << 1];
--		int rend = pnp_reserve_io[(tmp << 1) + 1] + rport - 1;
-+	for (i = 0; i < 8; i++) {
-+		int rport = pnp_reserve_io[i << 1];
-+		int rend = pnp_reserve_io[(i << 1) + 1] + rport - 1;
- 		if (ranged_conflict(port, end, &rport, &rend))
+-	start = &dev->res.port_resource[idx].start;
+-	end = &dev->res.port_resource[idx].end;
+-	flags = &dev->res.port_resource[idx].flags;
++	res = &dev->res.port_resource[idx];
+ 
+ 	/* check if this resource has been manually set, if so skip */
+-	if (!(dev->res.port_resource[idx].flags & IORESOURCE_AUTO)) {
++	if (!(res->flags & IORESOURCE_AUTO)) {
+ 		dev_dbg(&dev->dev, "  io %d already set to %#llx-%#llx "
+-			"flags %#lx\n", idx, (unsigned long long) *start,
+-			(unsigned long long) *end, *flags);
++			"flags %#lx\n", idx, (unsigned long long) res->start,
++			(unsigned long long) res->end, res->flags);
+ 		return 1;
+ 	}
+ 
+ 	/* set the initial values */
+-	*flags |= rule->flags | IORESOURCE_IO;
+-	*flags &= ~IORESOURCE_UNSET;
++	res->flags |= rule->flags | IORESOURCE_IO;
++	res->flags &= ~IORESOURCE_UNSET;
+ 
+ 	if (!rule->size) {
+-		*flags |= IORESOURCE_DISABLED;
++		res->flags |= IORESOURCE_DISABLED;
+ 		dev_dbg(&dev->dev, "  io %d disabled\n", idx);
+ 		return 1;	/* skip disabled resource requests */
+ 	}
+ 
+-	*start = rule->min;
+-	*end = *start + rule->size - 1;
++	res->start = rule->min;
++	res->end = res->start + rule->size - 1;
+ 
+ 	/* run through until pnp_check_port is happy */
+ 	while (!pnp_check_port(dev, idx)) {
+-		*start += rule->align;
+-		*end = *start + rule->size - 1;
+-		if (*start > rule->max || !rule->align) {
++		res->start += rule->align;
++		res->end = res->start + rule->size - 1;
++		if (res->start > rule->max || !rule->align) {
+ 			dev_dbg(&dev->dev, "  couldn't assign io %d\n", idx);
  			return 0;
- 	}
- 
- 	/* check for internal conflicts */
--	for (tmp = 0; tmp < PNP_MAX_PORT && tmp != idx; tmp++) {
--		if (dev->res.port_resource[tmp].flags & IORESOURCE_IO) {
--			tport = &dev->res.port_resource[tmp].start;
--			tend = &dev->res.port_resource[tmp].end;
-+	for (i = 0; i < PNP_MAX_PORT && i != idx; i++) {
-+		if (dev->res.port_resource[i].flags & IORESOURCE_IO) {
-+			tport = &dev->res.port_resource[i].start;
-+			tend = &dev->res.port_resource[i].end;
- 			if (ranged_conflict(port, end, tport, tend))
- 				return 0;
  		}
-@@ -281,13 +281,13 @@
- 	pnp_for_each_dev(tdev) {
- 		if (tdev == dev)
- 			continue;
--		for (tmp = 0; tmp < PNP_MAX_PORT; tmp++) {
--			if (tdev->res.port_resource[tmp].flags & IORESOURCE_IO) {
-+		for (i = 0; i < PNP_MAX_PORT; i++) {
-+			if (tdev->res.port_resource[i].flags & IORESOURCE_IO) {
- 				if (cannot_compare
--				    (tdev->res.port_resource[tmp].flags))
-+				    (tdev->res.port_resource[i].flags))
- 					continue;
--				tport = &tdev->res.port_resource[tmp].start;
--				tend = &tdev->res.port_resource[tmp].end;
-+				tport = &tdev->res.port_resource[i].start;
-+				tend = &tdev->res.port_resource[i].end;
- 				if (ranged_conflict(port, end, tport, tend))
- 					return 0;
- 			}
-@@ -299,7 +299,7 @@
+ 	}
+ 	dev_dbg(&dev->dev, "  assign io  %d %#llx-%#llx\n", idx,
+-		(unsigned long long) *start, (unsigned long long) *end);
++		(unsigned long long) res->start, (unsigned long long) res->end);
+ 	return 1;
+ }
  
- int pnp_check_mem(struct pnp_dev *dev, int idx)
+ static int pnp_assign_mem(struct pnp_dev *dev, struct pnp_mem *rule, int idx)
  {
--	int tmp;
-+	int i;
- 	struct pnp_dev *tdev;
- 	resource_size_t *addr, *end, *taddr, *tend;
+-	resource_size_t *start, *end;
+-	unsigned long *flags;
++	struct resource *res;
  
-@@ -318,18 +318,18 @@
+ 	if (idx >= PNP_MAX_MEM) {
+ 		dev_err(&dev->dev, "too many memory resources\n");
+@@ -78,59 +74,56 @@
+ 		return 1;
  	}
  
- 	/* check if the resource is reserved */
--	for (tmp = 0; tmp < 8; tmp++) {
--		int raddr = pnp_reserve_mem[tmp << 1];
--		int rend = pnp_reserve_mem[(tmp << 1) + 1] + raddr - 1;
-+	for (i = 0; i < 8; i++) {
-+		int raddr = pnp_reserve_mem[i << 1];
-+		int rend = pnp_reserve_mem[(i << 1) + 1] + raddr - 1;
- 		if (ranged_conflict(addr, end, &raddr, &rend))
+-	start = &dev->res.mem_resource[idx].start;
+-	end = &dev->res.mem_resource[idx].end;
+-	flags = &dev->res.mem_resource[idx].flags;
++	res = &dev->res.mem_resource[idx];
+ 
+ 	/* check if this resource has been manually set, if so skip */
+-	if (!(dev->res.mem_resource[idx].flags & IORESOURCE_AUTO)) {
++	if (!(res->flags & IORESOURCE_AUTO)) {
+ 		dev_dbg(&dev->dev, "  mem %d already set to %#llx-%#llx "
+-			"flags %#lx\n", idx, (unsigned long long) *start,
+-			(unsigned long long) *end, *flags);
++			"flags %#lx\n", idx, (unsigned long long) res->start,
++			(unsigned long long) res->end, res->flags);
+ 		return 1;
+ 	}
+ 
+ 	/* set the initial values */
+-	*flags |= rule->flags | IORESOURCE_MEM;
+-	*flags &= ~IORESOURCE_UNSET;
++	res->flags |= rule->flags | IORESOURCE_MEM;
++	res->flags &= ~IORESOURCE_UNSET;
+ 
+ 	/* convert pnp flags to standard Linux flags */
+ 	if (!(rule->flags & IORESOURCE_MEM_WRITEABLE))
+-		*flags |= IORESOURCE_READONLY;
++		res->flags |= IORESOURCE_READONLY;
+ 	if (rule->flags & IORESOURCE_MEM_CACHEABLE)
+-		*flags |= IORESOURCE_CACHEABLE;
++		res->flags |= IORESOURCE_CACHEABLE;
+ 	if (rule->flags & IORESOURCE_MEM_RANGELENGTH)
+-		*flags |= IORESOURCE_RANGELENGTH;
++		res->flags |= IORESOURCE_RANGELENGTH;
+ 	if (rule->flags & IORESOURCE_MEM_SHADOWABLE)
+-		*flags |= IORESOURCE_SHADOWABLE;
++		res->flags |= IORESOURCE_SHADOWABLE;
+ 
+ 	if (!rule->size) {
+-		*flags |= IORESOURCE_DISABLED;
++		res->flags |= IORESOURCE_DISABLED;
+ 		dev_dbg(&dev->dev, "  mem %d disabled\n", idx);
+ 		return 1;	/* skip disabled resource requests */
+ 	}
+ 
+-	*start = rule->min;
+-	*end = *start + rule->size - 1;
++	res->start = rule->min;
++	res->end = res->start + rule->size - 1;
+ 
+ 	/* run through until pnp_check_mem is happy */
+ 	while (!pnp_check_mem(dev, idx)) {
+-		*start += rule->align;
+-		*end = *start + rule->size - 1;
+-		if (*start > rule->max || !rule->align) {
++		res->start += rule->align;
++		res->end = res->start + rule->size - 1;
++		if (res->start > rule->max || !rule->align) {
+ 			dev_dbg(&dev->dev, "  couldn't assign mem %d\n", idx);
  			return 0;
- 	}
- 
- 	/* check for internal conflicts */
--	for (tmp = 0; tmp < PNP_MAX_MEM && tmp != idx; tmp++) {
--		if (dev->res.mem_resource[tmp].flags & IORESOURCE_MEM) {
--			taddr = &dev->res.mem_resource[tmp].start;
--			tend = &dev->res.mem_resource[tmp].end;
-+	for (i = 0; i < PNP_MAX_MEM && i != idx; i++) {
-+		if (dev->res.mem_resource[i].flags & IORESOURCE_MEM) {
-+			taddr = &dev->res.mem_resource[i].start;
-+			tend = &dev->res.mem_resource[i].end;
- 			if (ranged_conflict(addr, end, taddr, tend))
- 				return 0;
  		}
-@@ -339,13 +339,13 @@
- 	pnp_for_each_dev(tdev) {
- 		if (tdev == dev)
- 			continue;
--		for (tmp = 0; tmp < PNP_MAX_MEM; tmp++) {
--			if (tdev->res.mem_resource[tmp].flags & IORESOURCE_MEM) {
-+		for (i = 0; i < PNP_MAX_MEM; i++) {
-+			if (tdev->res.mem_resource[i].flags & IORESOURCE_MEM) {
- 				if (cannot_compare
--				    (tdev->res.mem_resource[tmp].flags))
-+				    (tdev->res.mem_resource[i].flags))
- 					continue;
--				taddr = &tdev->res.mem_resource[tmp].start;
--				tend = &tdev->res.mem_resource[tmp].end;
-+				taddr = &tdev->res.mem_resource[i].start;
-+				tend = &tdev->res.mem_resource[i].end;
- 				if (ranged_conflict(addr, end, taddr, tend))
- 					return 0;
- 			}
-@@ -362,7 +362,7 @@
+ 	}
+ 	dev_dbg(&dev->dev, "  assign mem %d %#llx-%#llx\n", idx,
+-		(unsigned long long) *start, (unsigned long long) *end);
++		(unsigned long long) res->start, (unsigned long long) res->end);
+ 	return 1;
+ }
  
- int pnp_check_irq(struct pnp_dev *dev, int idx)
+ static int pnp_assign_irq(struct pnp_dev *dev, struct pnp_irq *rule, int idx)
  {
--	int tmp;
-+	int i;
- 	struct pnp_dev *tdev;
- 	resource_size_t *irq = &dev->res.irq_resource[idx].start;
+-	resource_size_t *start, *end;
+-	unsigned long *flags;
++	struct resource *res;
+ 	int i;
  
-@@ -375,15 +375,15 @@
- 		return 0;
- 
- 	/* check if the resource is reserved */
--	for (tmp = 0; tmp < 16; tmp++) {
--		if (pnp_reserve_irq[tmp] == *irq)
-+	for (i = 0; i < 16; i++) {
-+		if (pnp_reserve_irq[i] == *irq)
- 			return 0;
+ 	/* IRQ priority: this table is good for i386 */
+@@ -144,40 +137,39 @@
+ 		return 1;
  	}
  
- 	/* check for internal conflicts */
--	for (tmp = 0; tmp < PNP_MAX_IRQ && tmp != idx; tmp++) {
--		if (dev->res.irq_resource[tmp].flags & IORESOURCE_IRQ) {
--			if (dev->res.irq_resource[tmp].start == *irq)
-+	for (i = 0; i < PNP_MAX_IRQ && i != idx; i++) {
-+		if (dev->res.irq_resource[i].flags & IORESOURCE_IRQ) {
-+			if (dev->res.irq_resource[i].start == *irq)
- 				return 0;
- 		}
+-	start = &dev->res.irq_resource[idx].start;
+-	end = &dev->res.irq_resource[idx].end;
+-	flags = &dev->res.irq_resource[idx].flags;
++	res = &dev->res.irq_resource[idx];
+ 
+ 	/* check if this resource has been manually set, if so skip */
+-	if (!(dev->res.irq_resource[idx].flags & IORESOURCE_AUTO)) {
++	if (!(res->flags & IORESOURCE_AUTO)) {
+ 		dev_dbg(&dev->dev, "  irq %d already set to %d flags %#lx\n",
+-			idx, (int) *start, *flags);
++			idx, (int) res->start, res->flags);
+ 		return 1;
  	}
-@@ -414,12 +414,12 @@
- 	pnp_for_each_dev(tdev) {
- 		if (tdev == dev)
- 			continue;
--		for (tmp = 0; tmp < PNP_MAX_IRQ; tmp++) {
--			if (tdev->res.irq_resource[tmp].flags & IORESOURCE_IRQ) {
-+		for (i = 0; i < PNP_MAX_IRQ; i++) {
-+			if (tdev->res.irq_resource[i].flags & IORESOURCE_IRQ) {
- 				if (cannot_compare
--				    (tdev->res.irq_resource[tmp].flags))
-+				    (tdev->res.irq_resource[i].flags))
- 					continue;
--				if ((tdev->res.irq_resource[tmp].start == *irq))
-+				if ((tdev->res.irq_resource[i].start == *irq))
- 					return 0;
+ 
+ 	/* set the initial values */
+-	*flags |= rule->flags | IORESOURCE_IRQ;
+-	*flags &= ~IORESOURCE_UNSET;
++	res->flags |= rule->flags | IORESOURCE_IRQ;
++	res->flags &= ~IORESOURCE_UNSET;
+ 
+ 	if (bitmap_empty(rule->map, PNP_IRQ_NR)) {
+-		*flags |= IORESOURCE_DISABLED;
++		res->flags |= IORESOURCE_DISABLED;
+ 		dev_dbg(&dev->dev, "  irq %d disabled\n", idx);
+ 		return 1;	/* skip disabled resource requests */
+ 	}
+ 
+ 	/* TBD: need check for >16 IRQ */
+-	*start = find_next_bit(rule->map, PNP_IRQ_NR, 16);
+-	if (*start < PNP_IRQ_NR) {
+-		*end = *start;
+-		dev_dbg(&dev->dev, "  assign irq %d %d\n", idx, (int) *start);
++	res->start = find_next_bit(rule->map, PNP_IRQ_NR, 16);
++	if (res->start < PNP_IRQ_NR) {
++		res->end = res->start;
++		dev_dbg(&dev->dev, "  assign irq %d %d\n", idx,
++			(int) res->start);
+ 		return 1;
+ 	}
+ 	for (i = 0; i < 16; i++) {
+ 		if (test_bit(xtab[i], rule->map)) {
+-			*start = *end = xtab[i];
++			res->start = res->end = xtab[i];
+ 			if (pnp_check_irq(dev, idx)) {
+ 				dev_dbg(&dev->dev, "  assign irq %d %d\n", idx,
+-					(int) *start);
++					(int) res->start);
+ 				return 1;
  			}
  		}
-@@ -431,7 +431,7 @@
- int pnp_check_dma(struct pnp_dev *dev, int idx)
+@@ -188,8 +180,7 @@
+ 
+ static void pnp_assign_dma(struct pnp_dev *dev, struct pnp_dma *rule, int idx)
  {
- #ifndef CONFIG_IA64
--	int tmp;
-+	int i;
- 	struct pnp_dev *tdev;
- 	resource_size_t *dma = &dev->res.dma_resource[idx].start;
+-	resource_size_t *start, *end;
+-	unsigned long *flags;
++	struct resource *res;
+ 	int i;
  
-@@ -444,15 +444,15 @@
- 		return 0;
- 
- 	/* check if the resource is reserved */
--	for (tmp = 0; tmp < 8; tmp++) {
--		if (pnp_reserve_dma[tmp] == *dma)
-+	for (i = 0; i < 8; i++) {
-+		if (pnp_reserve_dma[i] == *dma)
- 			return 0;
+ 	/* DMA priority: this table is good for i386 */
+@@ -202,35 +193,33 @@
+ 		return;
  	}
  
- 	/* check for internal conflicts */
--	for (tmp = 0; tmp < PNP_MAX_DMA && tmp != idx; tmp++) {
--		if (dev->res.dma_resource[tmp].flags & IORESOURCE_DMA) {
--			if (dev->res.dma_resource[tmp].start == *dma)
-+	for (i = 0; i < PNP_MAX_DMA && i != idx; i++) {
-+		if (dev->res.dma_resource[i].flags & IORESOURCE_DMA) {
-+			if (dev->res.dma_resource[i].start == *dma)
- 				return 0;
- 		}
+-	start = &dev->res.dma_resource[idx].start;
+-	end = &dev->res.dma_resource[idx].end;
+-	flags = &dev->res.dma_resource[idx].flags;
++	res = &dev->res.dma_resource[idx];
+ 
+ 	/* check if this resource has been manually set, if so skip */
+-	if (!(dev->res.dma_resource[idx].flags & IORESOURCE_AUTO)) {
++	if (!(res->flags & IORESOURCE_AUTO)) {
+ 		dev_dbg(&dev->dev, "  dma %d already set to %d flags %#lx\n",
+-			idx, (int) *start, *flags);
++			idx, (int) res->start, res->flags);
+ 		return;
  	}
-@@ -469,12 +469,12 @@
- 	pnp_for_each_dev(tdev) {
- 		if (tdev == dev)
- 			continue;
--		for (tmp = 0; tmp < PNP_MAX_DMA; tmp++) {
--			if (tdev->res.dma_resource[tmp].flags & IORESOURCE_DMA) {
-+		for (i = 0; i < PNP_MAX_DMA; i++) {
-+			if (tdev->res.dma_resource[i].flags & IORESOURCE_DMA) {
- 				if (cannot_compare
--				    (tdev->res.dma_resource[tmp].flags))
-+				    (tdev->res.dma_resource[i].flags))
- 					continue;
--				if ((tdev->res.dma_resource[tmp].start == *dma))
-+				if ((tdev->res.dma_resource[i].start == *dma))
- 					return 0;
+ 
+ 	/* set the initial values */
+-	*flags |= rule->flags | IORESOURCE_DMA;
+-	*flags &= ~IORESOURCE_UNSET;
++	res->flags |= rule->flags | IORESOURCE_DMA;
++	res->flags &= ~IORESOURCE_UNSET;
+ 
+ 	for (i = 0; i < 8; i++) {
+ 		if (rule->map & (1 << xtab[i])) {
+-			*start = *end = xtab[i];
++			res->start = res->end = xtab[i];
+ 			if (pnp_check_dma(dev, idx)) {
+ 				dev_dbg(&dev->dev, "  assign dma %d %d\n", idx,
+-					(int) *start);
++					(int) res->start);
+ 				return;
  			}
  		}
+ 	}
+ #ifdef MAX_DMA_CHANNELS
+-	*start = *end = MAX_DMA_CHANNELS;
++	res->start = res->end = MAX_DMA_CHANNELS;
+ #endif
+-	*flags |= IORESOURCE_UNSET | IORESOURCE_DISABLED;
++	res->flags |= IORESOURCE_UNSET | IORESOURCE_DISABLED;
+ 	dev_dbg(&dev->dev, "  disable dma %d\n", idx);
+ }
+ 
 
 -- 
