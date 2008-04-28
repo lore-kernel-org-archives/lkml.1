@@ -1,25 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934999AbYD1OZs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935054AbYD1O0W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934999AbYD1OZs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 10:25:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933675AbYD1OZk
+	id S935054AbYD1O0W (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 10:26:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933743AbYD1O0M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 10:25:40 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:33530 "EHLO mx1.redhat.com"
+	Mon, 28 Apr 2008 10:26:12 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:33585 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933761AbYD1OZj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 10:25:39 -0400
-Message-ID: <4815DC28.9050801@redhat.com>
-Date: Mon, 28 Apr 2008 11:16:08 -0300
+	id S933118AbYD1O0L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Apr 2008 10:26:11 -0400
+Message-ID: <4815DCEF.3000602@redhat.com>
+Date: Mon, 28 Apr 2008 11:19:27 -0300
 From: Glauber Costa <gcosta@redhat.com>
 User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-To: Sergio Luis <sergio@uece.br>
-CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, tglx@linutronix.de, ak@suse.de
-Subject: Re: [PATCH] build fix for smp
-References: <12059466674071-git-send-email-gcosta@redhat.com>	 <20080319195217.GA20762@elte.hu> <ce0170d90804280052y130c3fa2pbf3f97147f03b159@mail.gmail.com>
-In-Reply-To: <ce0170d90804280052y130c3fa2pbf3f97147f03b159@mail.gmail.com>
+To: Sergio Luis <sergio@larces.uece.br>
+CC: Ken Moffat <zarniwhoop@ntlworld.com>,
+       Bart Van Assche <bart.vanassche@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: 2.6.25 slow boot/reboot
+References: <48141111.7010605@larces.uece.br> <e2e108260804270823t45611ec2t35da085833d82dfa@mail.gmail.com> <20080427235554.GA28344@deepthought> <48152747.4030107@larces.uece.br>
+In-Reply-To: <48152747.4030107@larces.uece.br>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
@@ -27,34 +28,74 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Sergio Luis wrote:
-> On Wed, Mar 19, 2008 at 4:52 PM, Ingo Molnar <mingo@elte.hu> wrote:
->>  * Glauber de Oliveira Costa <gcosta@redhat.com> wrote:
+> Ken Moffat wrote:
+>> On Sun, Apr 27, 2008 at 05:23:57PM +0200, Bart Van Assche wrote:
+>>> On Sun, Apr 27, 2008 at 7:37 AM, Sergio Luis <sergio@larces.uece.br> wrote:
+>>>>  This weekend I got some time and decided to try out 2.6.25, but its booting process was _really_ slow in my laptop[1]. With 'old' 2.6.24.5 my machine would take about 48 secs until it gave me the login prompt. And it would take about 22 seconds to reboot.
+>>> Do you use LILO or GRUB for booting ? 2.6.25 works OK on the systems I
+>>> tested, but LILO really needs a lot of time to load the 2.6.25 kernel.
+>>> GRUB loads the 2.6.25 kernel at normal speed.
+>>>
+>>> Bart.
+>>  ISTR that an _old_ version of lilo was mentioned earlier in this
+>> thread.  As a datapoint, on my one desktop box which uses lilo (an
+>> athlon64 uniprocessor) both 32 and 64-bit 2.6.25 kernels boot fine.
+>> Both of those systems are with lilo-22.8, and gcc-4.2.2.
 >>
->>  > +#if defined(CONFIG_X86_64) || defined(CONFIG_X86_BIOS_REBOOT)
->>  >       if (reboot_force)
->>  >               return;
->>  > +#endif
+>>  But, I think you (Bart) haven't said which version of lilo you are
+>> using ?  If it isn't recent, perhaps upgrading it might help ?
 >>
->>  please solve it slightly differently: introduce a uniformly usable
->>  reboot_force flag, that will always default to the constant of 1 if
->>  !X86_64 && !X86_BIOS_REBOOT. That makes the code cleaner - and not the
->>  least i can also merge the fix earlier in the series, without having to
->>  redo the big smp.c movement patch :-)
->>
->>         Ingo
+>>  For Sergio, you have my sympathy.  I totally failed to bisect my own
+>> problem with 2.6.25-rc (and 2.6.24.1), although I did find the problem
+>> by other means, and got a work-around, so I'm not competent to
+>> diagnose what is wrong, but maybe I can help to tease out what is
+>> different about your box.  As a start, you could try diffing your
+>> config's for 2.6.24.5 and 2.6.25 in case something odd has changed.
 >>
 > 
-> Hello,
-> what's the final fix for this issue? 2.6.25-git11 is still broken, just gave me
-Doh. I had the patch, but completely forgot to send it to ingo. Thanks 
-for raising this issue again. (But I saw ingo already put a fix for this in)
-
-> arch/x86/kernel/built-in.o: In function `native_smp_send_stop':
-> smp.c:(.text+0xc751): undefined reference to `reboot_force'
-> make: *** [.tmp_vmlinux1] Error 1
+> I tried bisecting and after some hours I got 
+> 9713277607f9eac7d655c6854dd92bc2ce1b6f02 as first bad commit
 > 
-> for a randconfig. Same reported at http://lkml.org/lkml/2008/4/27/39
+> commit 9713277607f9eac7d655c6854dd92bc2ce1b6f02
+> Author: Glauber de Oliveira Costa <gcosta@redhat.com>
+> Date:   Wed Mar 19 14:25:43 2008 -0300
+> 
+>     x86: boot cpus from cpu_up, instead of prepare_cpus
+> 
+>     After all the infrastructure work, we're now prepared
+>     to boot the cpus from cpu_up, and not from prepare_cpus.
+>     So the difference between cold boot and hotplug is effectively
+>     over, and the functions are used to the purposes they're meant to.
+> 
+>     Signed-off-by: Glauber Costa <gcosta@redhat.com>
+>     Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> 
+> (cc'ing Glauber and Ingo, maybe they can help)
+> 
+>>  Or, perhaps this is a problem specific to a certain processor ?  So
+>> far, I think all the list knows is that you have a problem, and an
+>> old version of lilo.  More data might eventually help to identify
+>> what is causing this.  If you have a fairly old version of lilo,
+>> maybe you also have an old version of gcc ?
+> 
+> lilo version is 22.8
+> gcc version is 4.1.2
+> the processor is an amd turion 64x2 2.0 ghz (tl-60) and I am building a 32bit kernel.
+> please, let me know if more info is needed.
+> 
+>>  For Bart too, which version(s) of gcc are you using on the systems
+>> where lilo is slow to load, and which cpu(s) do you have there ?
+>>
+>> Ken, who relies on lilo for his server, and gets worried by reports
+>> of trouble with it.
+> 
+> note lilo is indeed much slower than grub to start booting the kernel here, but I am 
+> talking about this 2.6.25 kernel taking almost 5 min to finish the boot process (once it is
+> actually started by the bootloader) when it would take less than 1 minute with 2.6.24.5 in
+> this same machine.
 > 
 > thanks,
-> -sergio
+Can you give me more information on that?
+your .config and cpuinfo would be a great start.
 
+I'm specially interested in things involving APIC.
