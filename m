@@ -1,133 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965808AbYD1VeT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937146AbYD1Vev@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965808AbYD1VeT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 17:34:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935481AbYD1VeH
+	id S937146AbYD1Vev (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 17:34:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935551AbYD1Vel
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 17:34:07 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:48984 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935069AbYD1VeE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 17:34:04 -0400
-Date: Mon, 28 Apr 2008 23:34:37 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Andres Salomon <dilinger@queued.net>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-kbuild@vger.kernel.org
-Subject: Re: [PATCH 4/4] kconfig: add *_silentdefconfig feature for config targets
-Message-ID: <20080428213437.GA24202@uranus.ravnborg.org>
-References: <20080425223530.10b9d50d@ephemeral> <20080427204744.GA444@uranus.ravnborg.org> <20080427214339.48bc2ed8@ephemeral>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080427214339.48bc2ed8@ephemeral>
-User-Agent: Mutt/1.4.2.1i
+	Mon, 28 Apr 2008 17:34:41 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:59167 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S935206AbYD1Vej (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Apr 2008 17:34:39 -0400
+Message-ID: <481642EB.7010807@ct.jp.nec.com>
+Date: Mon, 28 Apr 2008 14:34:35 -0700
+From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
+MIME-Version: 1.0
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org
+Subject: Re: [PATCH -rt 1/4] x86_64: send NMI after nmi_show_regs on
+References: <48161325.1080508@ct.jp.nec.com> <4816140F.50005@ct.jp.nec.com> <Pine.LNX.4.58.0804281457330.4615@gandalf.stny.rr.com>
+In-Reply-To: <Pine.LNX.4.58.0804281457330.4615@gandalf.stny.rr.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > 
-> > And I see why you went for the name *_silentdefconfig
-> > But in reality what we want to say is that we want to
-> > interactively apply the _defconfig.
+Steven Rostedt wrote:
 > 
-> Do I?  I'm not sure what you mean by "interactively apply".  I want
-> to non-interactively apply the defconfig, and fail if prompting is
-> required (rather than just choosing default values).
-I mean exactly the behaviour you ask for.
+> On Mon, 28 Apr 2008, Hiroshi Shimamoto wrote:
+>> diff --git a/arch/x86/kernel/nmi_64.c b/arch/x86/kernel/nmi_64.c
+>> index d187ab9..69cc737 100644
+>> --- a/arch/x86/kernel/nmi_64.c
+>> +++ b/arch/x86/kernel/nmi_64.c
+>> @@ -327,11 +327,11 @@ void nmi_show_all_regs(void)
+>>  	if (system_state == SYSTEM_BOOTING)
+>>  		return;
+>>
+>> -	smp_send_nmi_allbutself();
+>> -
+>>  	for_each_online_cpu(i)
+>>  		nmi_show_regs[i] = 1;
+> 
+> Hi Hiroshi,
+> 
+> I know this wasn't your code to begin with but, how does this function
+> exit?  I mean, we set an array where each index per online cpu is set to
+> one, then do an "nmi_allbutself", and then wait on those indexes to turn
+> zero, one at a time.  If we are CPU 0 here, we set that index to 1, then
+> enter the loop, and will block forever on this "while" loop below.
 
-> Sounds like you're saying that you want:
-> 
-> make oldconfig V=1   (chatty, prompt if possible or fail)
-> make oldconfig V=0   (silentoldconfig, prompt if possible or fail)
-> 
-> make defconfig V=1   (chatty, use defaults)
-> make defconfig V=0   (silent, use defaults)
-> 
-> make i386_oldconfig V=1 (chatty, prompt if possible or fail)
-> make i386_oldconfig V=0 (silent, prompt if possible or fail)
-> 
-> make i386_defconfig V=1 (chatty, use defaults)
-> make i386_defconfig V=0 (silent, use defaults)
-> 
-> Does that sound right?  Would using the build system's verbose variable
-> work?  If so, what should the default be?
+Hm, I'm not quit sure when NMI disabled.
+If NMI is working issuing CPU will receive NMI and the flag turns off in
+NMI handler.
+I'll look into it again and will work if needed.
 
-V= shall not be used for this. I will try to cook up something.
+thanks,
+Hiroshi Shimamoto
 
-> > > 
-> > > diff --git a/Makefile b/Makefile
-> > > index e77149e..c264f7f 100644
-> > > --- a/Makefile
-> > > +++ b/Makefile
-> > > @@ -1225,6 +1225,10 @@ help:
-> > >  		$(foreach b, $(boards), \
-> > >  		printf "  %-24s - Build for %s\\n" $(b) $(subst _defconfig,,$(b));) \
-> > >  		echo '')
-> > > +	@$(if $(boards), \
-> > > +		$(foreach b, $(boards), \
-> > > +		printf "  %-24s - Quiet Build for %s\\n" $(subst _defconfig,_silentdefconfig,$(b)) $(subst _defconfig,,$(b));) \
-> > > +		echo '')
-> > This is the first time we use printf in the top-level Makefile.
-> > Most likely because I never use printf in my shell scripts
-> > so I guess this is not a problem.
-> 
-> 
-> Eh?  There's already a printf, this just adds an additional printf.
-I'm blind and you are right.
-
-> > > --- a/scripts/kconfig/conf.c
-> > > +++ b/scripts/kconfig/conf.c
-> > > @@ -558,7 +558,8 @@ int main(int ac, char **av)
-> > >  		}
-> > >  		break;
-> > >  	case ask_new:
-> > > -		if (silent_mode && stat(".config", &tmpstat)) {
-> > > +		if (!defconfig_file && silent_mode &&
-> > > +				stat(".config", &tmpstat)) {
-> > 
-> > This belong in a preparation patch. We should handle this
-> > also if we do not do so from the Makefile.
-> 
-> I'm not sure what you mean.  This isn't really preparation for this patch;
-> it's just ensuring that we can use '-o' and '-D' together without
-> running a check for .config.  Basically, if '-o' is specified but '-D'
-> is not, check for .config (and fail if it doesn't exist.  If '-o' and '-D'
-> are both specified, we don't care about .config.
-
-OK - but then it really does not belong in this patch.
-
-> 
-> > 
-> > >  			printf(_("***\n"
-> > >  				"*** You have not yet configured your kernel!\n"
-> > >  				"*** (missing kernel .config file)\n"
-> > > @@ -570,7 +571,15 @@ int main(int ac, char **av)
-> > >  		}
-> > >  		/* fall through */
-> > >  	case ask_all:
-> > > -		conf_read(NULL);
-> > > +		if (defconfig_file) {
-> > > +			if (conf_read(defconfig_file)) {
-> > > +				printf(_("***\n*** Can't find default "
-> > > +					 "configuration \"%s\"!\n***\n"),
-> > > +					 defconfig_file);
-> > > +				exit(1);
-> > > +			}
-> > > +		} else
-> > > +			conf_read(NULL);
-> > 
-> > Does conf_read() fail if we use the NULL argument?
-> > I assume not so the above code can be simplified and
-> > should also be in the same preparational patch as the change above.
-> 
-> I don't believe it fails, it uses a default config name.  I'm not sure
-> if it fails if _that_ file isn't found, though.  I can't make much
-> sense of the symbol stuff..
-Thought we could simplify the code if defconfig_file is by default NULL.
-Then we can drop the else.
-
-I will try to get back to you on this later. The patches are anyway
-too late for this merge window.
-
-	Sam
