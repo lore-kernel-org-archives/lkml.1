@@ -1,27 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934425AbYD1NO3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934490AbYD1NOo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934425AbYD1NO3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 09:14:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934104AbYD1NN7
+	id S934490AbYD1NOo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 09:14:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933901AbYD1NO2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 09:13:59 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:50781 "EHLO mx2.mail.elte.hu"
+	Mon, 28 Apr 2008 09:14:28 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:51077 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934289AbYD1NN6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 09:13:58 -0400
-Date: Mon, 28 Apr 2008 15:13:32 +0200
+	id S932991AbYD1NO1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Apr 2008 09:14:27 -0400
+Date: Mon, 28 Apr 2008 15:14:08 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Heiko Carstens <heiko.carstens@de.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Gautham R Shenoy <ego@in.ibm.com>, Paul Jackson <pj@sgi.com>,
+To: Roland McGrath <roland@redhat.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] sched: missing locking in sched_domains code
-Message-ID: <20080428131332.GA3723@elte.hu>
-References: <20080427183926.acb66fff.akpm@linux-foundation.org> <20080428070946.GA4507@osiris.boeblingen.de.ibm.com> <20080428002853.1693e7fd.akpm@linux-foundation.org> <20080428075253.GB4507@osiris.boeblingen.de.ibm.com> <20080428081129.GC4507@osiris.boeblingen.de.ibm.com> <20080428083222.GA16963@elte.hu> <20080428084904.GA27056@osiris.boeblingen.de.ibm.com> <20080428015723.e1632c45.akpm@linux-foundation.org> <20080428091745.GB27056@osiris.boeblingen.de.ibm.com> <20080428093307.GC27056@osiris.boeblingen.de.ibm.com>
+Subject: Re: [PATCH] x86_64 vDSO: use initdata
+Message-ID: <20080428131408.GI27997@elte.hu>
+References: <20080428014538.DC68926F8F0@magilla.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080428093307.GC27056@osiris.boeblingen.de.ibm.com>
+In-Reply-To: <20080428014538.DC68926F8F0@magilla.localdomain>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -36,26 +37,21 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Heiko Carstens <heiko.carstens@de.ibm.com> wrote:
+* Roland McGrath <roland@redhat.com> wrote:
 
-> > version 42. Please feel free to change the comment if you think it could
-> > be better :)
+> The 64-bit vDSO image is in a special ".vdso" section for no reason I 
+> can determine.  Furthermore, the location of the vdso_end symbol 
+> includes some wrongly-calculated padding space in the image, which is 
+> then (correctly) rounded to page size, resulting in an extra page of 
+> zeros in the image mapped in to user processes.
 > 
-> I don't believe this... version 43 ;) I forgot to add the lock in 
-> sched_init_smp(). Not that it would really matter, but it should be 
-> there to avoid (even more) confusion.
+> This changes it to put the vdso.so image into normal initdata as we 
+> have always done for the 32-bit vDSO images.  The extra padding is 
+> gone, so the user VMA is one page instead of two.  The image that was 
+> already copied around at boot time is now in initdata, so we recover 
+> that wasted space after boot.
 
-hey i just had to iterate it to version 44.
-
-this bit:
-
-> -/* doms_cur_mutex serializes access to doms_cur[] array */
-> -static DEFINE_MUTEX(doms_cur_mutex);
-> +/* sched_domains_mutex serializes calls to arch_init_sched_domains,
-> + * detach_destroy_domains and partition_sched_domains.
-> + */
-> +static DEFINE_MUTEX(sched_domains_mutex);
-
-was inside an #ifdef section ;-)
+thanks Roland, applied. I suspect this will need a few days of test-time 
+as we change the user-space vma layout. (not in material ways though)
 
 	Ingo
