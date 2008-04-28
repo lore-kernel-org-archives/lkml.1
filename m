@@ -1,144 +1,285 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966550AbYD1TXa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966609AbYD1TYS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966550AbYD1TXa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 15:23:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966284AbYD1TXT
+	id S966609AbYD1TYS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 15:24:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934580AbYD1TYB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 15:23:19 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:56913 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965176AbYD1TXS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 15:23:18 -0400
-Date: Mon, 28 Apr 2008 15:22:44 -0400
-From: Dave Jones <davej@redhat.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: cpufreq pull request for 2.6.26
-Message-ID: <20080428192244.GB18326@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Linux Kernel <linux-kernel@vger.kernel.org>
-MIME-Version: 1.0
+	Mon, 28 Apr 2008 15:24:01 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:52453 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S934627AbYD1TX7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Apr 2008 15:23:59 -0400
+Date: Mon, 28 Apr 2008 14:23:58 -0500
+From: Russ Anderson <rja@sgi.com>
+To: linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Tony Luck <tony.luck@intel.com>, Christoph Lameter <clameter@sgi.com>,
+       Russ Anderson <rja@sgi.com>
+Subject: [PATCH 1/2] mm: Avoid putting a bad page back on the LRU
+Message-ID: <20080428192358.GB14629@sgi.com>
+Reply-To: Russ Anderson <rja@sgi.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Slightly late, but mostly trivial stuff..
+Prevent a page with a physical memory error from being placed back
+on the LRU.  A new page flag bit is added.  PG_memerror is given
+bit 32 and is only defined on 64 bit architectures.  This avoids
+burning a page flag bit on 32 bit architectures.  "BadPages:" is
+added to the output of /proc/meminfo to display the amount of memory 
+marked bad (on 64 bit architectures).
 
-Please pull from ..
-master.kernel.org:/pub/scm/linux/kernel/git/davej/cpufreq.git/ 
+Signed-off-by: Russ Anderson <rja@sgi.com>
 
- arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c |   10 ++
- drivers/acpi/processor_thermal.c           |   30 ++++---
- drivers/cpufreq/cpufreq.c                  |  129 ++++++++++++---------------
- drivers/cpufreq/cpufreq_stats.c            |    6 +-
- 4 files changed, 88 insertions(+), 87 deletions(-)
+---
+ fs/proc/proc_misc.c        |    6 ++++++
+ include/linux/kernel.h     |    1 +
+ include/linux/page-flags.h |   23 +++++++++++++++++++++++
+ include/linux/swap.h       |    1 +
+ mm/migrate.c               |    3 +++
+ mm/page_alloc.c            |   45 +++++++++++----------------------------------
+ mm/swap.c                  |    4 ++++
+ 7 files changed, 49 insertions(+), 34 deletions(-)
 
-commit e56a727b023d40d1adf660168883f30f2e6abe0a
-Author: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-Date:   Mon Apr 28 15:13:43 2008 -0400
-
-    [CPUFREQ] Make acpi-cpufreq more robust against BIOS freq changes behind our back.
-    
-    We checked the hardware freq with OS cached freq value in get_cur_freqon_cpu().
-    
-    Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-    Signed-off-by: Thomas Renninger <trenn@suse.de>
-    Signed-off-by: Dave Jones <davej@redhat.com>
-
-commit c938ac21329f19ad286eaaed7e26434943c8061b
-Author: Mike Travis <travis@sgi.com>
-Date:   Wed Mar 5 08:31:29 2008 -0800
-
-    [CPUFREQ] change cpu freq tables to per_cpu variables
-    
-    Change cpufreq tables from arrays to per_cpu variables in
-    drivers/acpi/processor_thermal.c
-    
-    Based on git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
-    
-    Cc: Len Brown <len.brown@intel.com>
-    Signed-off-by: Mike Travis <travis@sgi.com>
-    Signed-off-by: Dave Jones <davej@codemonkey.org.uk>
-
-commit 25aca347d49ffc38aa3b7e63ce9b90df7f8b79c8
-Author: Cesar Eduardo Barros <cesarb@cesarb.net>
-Date:   Sat Feb 16 08:41:25 2008 -0200
-
-    [CPUFREQ] fix show_trans_table
-    
-    Fix show_trans_table when it overflows PAGE_SIZE.
-    
-    * Not all snprintf calls were protected against being passed a negative
-    length.
-    * When show_trans_table overflows, len might be > PAGE_SIZE. In that case,
-    returns PAGE_SIZE.
-    
-    Signed-off-by: Cesar Eduardo Barros <cesarb@cesarb.net>
-    Signed-off-by: Dave Jones <davej@codemonkey.org.uk>
-
-commit 74212ca432982903d0fc6a0f282b199e000ad8b1
-Author: Cesar Eduardo Barros <cesarb@cesarb.net>
-Date:   Sat Feb 16 08:41:24 2008 -0200
-
-    [CPUFREQ] Warn when cpufreq_register_notifier called before pure initcalls
-    
-    If cpufreq_register_notifier is called before pure initcalls,
-    init_cpufreq_transition_notifier_list will overwrite whatever it did,
-    causing notifiers to be ignored.
-    
-    Print some noise to the kernel log if that happens.
-    
-    Signed-off-by: Cesar Eduardo Barros <cesarb@cesarb.net>
-    Signed-off-by: Dave Jones <davej@codemonkey.org.uk>
-
-commit 457091181176643787a547dc04eb3cf5dcd822ce
-Author: Dave Jones <davej@redhat.com>
-Date:   Wed Mar 5 14:07:34 2008 -0500
-
-    [CPUFREQ] Refactor locking in cpufreq_add_dev
-    
-    Simplify this by moving the unlocking out of the error
-    paths into the exit path.
-    
-    Signed-off-by: Dave Jones <davej@codemonkey.org.uk>
-
-commit 905d77cd95e856b8e0b2d099fb70b9b8ccb7337e
-Author: Dave Jones <davej@redhat.com>
-Date:   Wed Mar 5 14:28:32 2008 -0500
-
-    [CPUFREQ] more CodingStyle
-    
-    void * p   ->  void *p
-    no space between function parameters
-    removed excess whitespace
-    
-    Signed-off-by: Dave Jones <davej@codemonkey.org.uk>
-
-commit 4d34a67d0204029079815c8c2753ca647cd0e7e9
-Author: Dave Jones <davej@redhat.com>
-Date:   Thu Feb 7 16:33:49 2008 -0500
-
-    [CPUFREQ] CodingStyle
-    
-    return is not a function.
-    
-    Signed-off-by: Dave Jones <davej@redhat.com>
-
-commit c906049447019d69b9cc2d591a142af561afa7f9
-Author: Dave Jones <davej@redhat.com>
-Date:   Thu Feb 7 16:32:18 2008 -0500
-
-    [CPUFREQ] Slightly shorten the error paths of cpufreq_suspend/cpufreq_resume
-    
-    Signed-off-by: Dave Jones <davej@redhat.com>
-
-
-
+Index: test/mm/swap.c
+===================================================================
+--- test.orig/mm/swap.c	2008-04-25 15:22:11.204934760 -0500
++++ test/mm/swap.c	2008-04-25 15:42:02.806263586 -0500
+@@ -208,6 +208,8 @@ void lru_cache_add(struct page *page)
+ 	struct pagevec *pvec = &get_cpu_var(lru_add_pvecs);
+ 
+ 	page_cache_get(page);
++	if (unlikely(PageMemError(page)))
++		return;		/* Don't add bad pages to the page list */
+ 	if (!pagevec_add(pvec, page))
+ 		__pagevec_lru_add(pvec);
+ 	put_cpu_var(lru_add_pvecs);
+@@ -218,6 +220,8 @@ void lru_cache_add_active(struct page *p
+ 	struct pagevec *pvec = &get_cpu_var(lru_add_active_pvecs);
+ 
+ 	page_cache_get(page);
++	if (unlikely(PageMemError(page)))
++		return;		/* Don't add bad pages to the page list */
+ 	if (!pagevec_add(pvec, page))
+ 		__pagevec_lru_add_active(pvec);
+ 	put_cpu_var(lru_add_active_pvecs);
+Index: test/mm/page_alloc.c
+===================================================================
+--- test.orig/mm/page_alloc.c	2008-04-25 15:22:11.196933787 -0500
++++ test/mm/page_alloc.c	2008-04-25 15:42:02.818265056 -0500
+@@ -70,6 +70,7 @@ unsigned long totalram_pages __read_most
+ unsigned long totalreserve_pages __read_mostly;
+ long nr_swap_pages;
+ int percpu_pagelist_fraction;
++unsigned int totalbad_pages;
+ 
+ #ifdef CONFIG_HUGETLB_PAGE_SIZE_VARIABLE
+ int pageblock_order __read_mostly;
+@@ -236,16 +237,7 @@ static void bad_page(struct page *page)
+ 	printk(KERN_EMERG "Trying to fix it up, but a reboot is needed\n"
+ 		KERN_EMERG "Backtrace:\n");
+ 	dump_stack();
+-	page->flags &= ~(1 << PG_lru	|
+-			1 << PG_private |
+-			1 << PG_locked	|
+-			1 << PG_active	|
+-			1 << PG_dirty	|
+-			1 << PG_reclaim |
+-			1 << PG_slab    |
+-			1 << PG_swapcache |
+-			1 << PG_writeback |
+-			1 << PG_buddy );
++	page->flags &= ~(PAGE_FLAGS_RECLAIM);
+ 	set_page_count(page, 0);
+ 	reset_page_mapcount(page);
+ 	page->mapping = NULL;
+@@ -462,16 +454,7 @@ static inline int free_pages_check(struc
+ 		(page->mapping != NULL)  |
+ 		(page_get_page_cgroup(page) != NULL) |
+ 		(page_count(page) != 0)  |
+-		(page->flags & (
+-			1 << PG_lru	|
+-			1 << PG_private |
+-			1 << PG_locked	|
+-			1 << PG_active	|
+-			1 << PG_slab	|
+-			1 << PG_swapcache |
+-			1 << PG_writeback |
+-			1 << PG_reserved |
+-			1 << PG_buddy ))))
++		(page->flags & (PAGE_FLAGS_RESERVE))))
+ 		bad_page(page);
+ 	if (PageDirty(page))
+ 		__ClearPageDirty(page);
+@@ -612,24 +595,14 @@ static int prep_new_page(struct page *pa
+ 		(page->mapping != NULL)  |
+ 		(page_get_page_cgroup(page) != NULL) |
+ 		(page_count(page) != 0)  |
+-		(page->flags & (
+-			1 << PG_lru	|
+-			1 << PG_private	|
+-			1 << PG_locked	|
+-			1 << PG_active	|
+-			1 << PG_dirty	|
+-			1 << PG_slab    |
+-			1 << PG_swapcache |
+-			1 << PG_writeback |
+-			1 << PG_reserved |
+-			1 << PG_buddy ))))
++		(page->flags & (PAGE_FLAGS_DIRTY))))
+ 		bad_page(page);
+ 
+ 	/*
+-	 * For now, we report if PG_reserved was found set, but do not
+-	 * clear it, and do not allocate the page: as a safety net.
++	 * For now, we report if PG_reserved or PG_memerror was found set, but
++	 * do not clear it, and do not allocate the page: as a safety net.
+ 	 */
+-	if (PageReserved(page))
++	if (PageReserved(page) || PageMemError(page))
+ 		return 1;
+ 
+ 	page->flags &= ~(1 << PG_uptodate | 1 << PG_error | 1 << PG_readahead |
+@@ -1762,6 +1735,7 @@ void si_meminfo(struct sysinfo *val)
+ 	val->totalhigh = totalhigh_pages;
+ 	val->freehigh = nr_free_highpages();
+ 	val->mem_unit = PAGE_SIZE;
++	val->badpages = totalbad_pages;
+ }
+ 
+ EXPORT_SYMBOL(si_meminfo);
+@@ -2478,6 +2452,9 @@ static void setup_zone_migrate_reserve(s
+ 
+ 		/* Blocks with reserved pages will never free, skip them. */
+ 		if (PageReserved(page))
++			continue;
++		/* Blocks with error pages will never free, skip them. */
++		if (PageMemError(page))
+ 			continue;
+ 
+ 		block_migratetype = get_pageblock_migratetype(page);
+Index: test/include/linux/kernel.h
+===================================================================
+--- test.orig/include/linux/kernel.h	2008-04-25 15:22:07.640501421 -0500
++++ test/include/linux/kernel.h	2008-04-25 15:42:02.826266036 -0500
+@@ -412,6 +412,7 @@ struct sysinfo {
+ 	unsigned long totalhigh;	/* Total high memory size */
+ 	unsigned long freehigh;		/* Available high memory size */
+ 	unsigned int mem_unit;		/* Memory unit size in bytes */
++	unsigned int badpages;		/* Number of bad (PG_memerror) pages */
+ 	char _f[20-2*sizeof(long)-sizeof(int)];	/* Padding: libc5 uses this.. */
+ };
+ 
+Index: test/include/linux/swap.h
+===================================================================
+--- test.orig/include/linux/swap.h	2008-04-25 15:22:08.040550056 -0500
++++ test/include/linux/swap.h	2008-04-25 15:42:02.854269468 -0500
+@@ -165,6 +165,7 @@ extern unsigned long totalreserve_pages;
+ extern long nr_swap_pages;
+ extern unsigned int nr_free_buffer_pages(void);
+ extern unsigned int nr_free_pagecache_pages(void);
++extern unsigned int totalbad_pages;
+ 
+ /* Definition of global_page_state not available yet */
+ #define nr_free_pages() global_page_state(NR_FREE_PAGES)
+Index: test/mm/migrate.c
+===================================================================
+--- test.orig/mm/migrate.c	2008-04-25 15:22:11.192933300 -0500
++++ test/mm/migrate.c	2008-04-28 13:27:48.686601486 -0500
+@@ -368,6 +368,7 @@ static void migrate_page_copy(struct pag
+ {
+ 	copy_highpage(newpage, page);
+ 
++	/* Do not migrate PG_memerror to the new page */
+ 	if (PageError(page))
+ 		SetPageError(newpage);
+ 	if (PageReferenced(page))
+@@ -714,6 +715,8 @@ unlock:
+  		 */
+  		list_del(&page->lru);
+  		move_to_lru(page);
++		if (PageMemError(page))
++			totalbad_pages++;
+ 	}
+ 
+ move_newpage:
+Index: test/fs/proc/proc_misc.c
+===================================================================
+--- test.orig/fs/proc/proc_misc.c	2008-04-25 15:22:04.684142013 -0500
++++ test/fs/proc/proc_misc.c	2008-04-25 15:42:02.890273879 -0500
+@@ -179,6 +179,9 @@ static int meminfo_read_proc(char *page,
+ 		"PageTables:   %8lu kB\n"
+ 		"NFS_Unstable: %8lu kB\n"
+ 		"Bounce:       %8lu kB\n"
++#if (BITS_PER_LONG > 32)
++		"BadPages:     %8u kB\n"
++#endif
+ 		"CommitLimit:  %8lu kB\n"
+ 		"Committed_AS: %8lu kB\n"
+ 		"VmallocTotal: %8lu kB\n"
+@@ -210,6 +213,9 @@ static int meminfo_read_proc(char *page,
+ 		K(global_page_state(NR_PAGETABLE)),
+ 		K(global_page_state(NR_UNSTABLE_NFS)),
+ 		K(global_page_state(NR_BOUNCE)),
++#if (BITS_PER_LONG > 32)
++		K(i.badpages),
++#endif
+ 		K(allowed),
+ 		K(committed),
+ 		(unsigned long)VMALLOC_TOTAL >> 10,
+Index: test/include/linux/page-flags.h
+===================================================================
+--- test.orig/include/linux/page-flags.h	2008-04-25 15:22:07.868529143 -0500
++++ test/include/linux/page-flags.h	2008-04-25 15:42:02.914276820 -0500
+@@ -48,6 +48,9 @@
+  * PG_buddy is set to indicate that the page is free and in the buddy system
+  * (see mm/page_alloc.c).
+  *
++ * PG_memerror indicates a physical memory error on the page.  The page
++ * should not be reused (ie put on the LRU).
++ *
+  */
+ 
+ /*
+@@ -106,6 +109,7 @@
+  *         63                            32                              0
+  */
+ #define PG_uncached		31	/* Page has been mapped as uncached */
++#define PG_memerror		32	/* Page has a physical memory error */
+ #endif
+ 
+ /*
+@@ -307,5 +311,24 @@ static inline void set_page_writeback(st
+ {
+ 	test_set_page_writeback(page);
+ }
++
++#if (BITS_PER_LONG > 32)
++#define PageMemError(page)	test_bit(PG_memerror, &(page)->flags)
++#define SetPageMemError(page)	set_bit(PG_memerror, &(page)->flags)
++#define ClearPageMemError(page)	clear_bit(PG_memerror, &(page)->flags)
++#define PAGE_FLAGS	(1 << PG_lru   | 1 << PG_private   | 1 << PG_locked | \
++			 1 << PG_buddy | 1 << PG_writeback | \
++			 1 << PG_slab  | 1 << PG_swapcache | 1 << PG_active | \
++			 1UL << PG_memerror)
++#else
++#define PageMemError(page)	0
++#define PAGE_FLAGS	(1 << PG_lru   | 1 << PG_private   | 1 << PG_locked | \
++			 1 << PG_buddy | 1 << PG_writeback | \
++			 1 << PG_slab  | 1 << PG_swapcache | 1 << PG_active)
++#endif
++#define PAGE_FLAGS_RECLAIM	(PAGE_FLAGS | 1 << PG_reclaim | 1 << PG_dirty)
++#define PAGE_FLAGS_RESERVE	(PAGE_FLAGS | 1 << PG_reserved)
++#define PAGE_FLAGS_DIRTY	(PAGE_FLAGS | 1 << PG_reserved | 1 << PG_dirty)
++
+ 
+ #endif	/* PAGE_FLAGS_H */
 -- 
-http://www.codemonkey.org.uk
+Russ Anderson, OS RAS/Partitioning Project Lead  
+SGI - Silicon Graphics Inc          rja@sgi.com
