@@ -1,108 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932272AbYD1HIq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932397AbYD1HJ5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932272AbYD1HIq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 03:08:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763374AbYD1HIi
+	id S932397AbYD1HJ5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 03:09:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764765AbYD1HJt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 03:08:38 -0400
-Received: from yw-out-2324.google.com ([74.125.46.29]:20200 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765375AbYD1HIh (ORCPT
+	Mon, 28 Apr 2008 03:09:49 -0400
+Received: from mtagate2.de.ibm.com ([195.212.29.151]:38490 "EHLO
+	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763374AbYD1HJs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 03:08:37 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=r/BmyqtjWBd/LFUapPm4Lzv4mP/YAHGcFXNtcjjtMtB759OF/A5fIdZjsDVMtX31sV344YAAUN1gG/gGhrpW33DgUyyZyTH9viKvIl/zI7nUepD2/LaqHjtqoBSHMjkupwRsE4ZELUNKLeAdT41LrJPjQCgELTKQYqBuL1V81Ps=
-Message-ID: <a8e1da0804280008s38d3b16vfedb3860cd7d5222@mail.gmail.com>
-Date: Mon, 28 Apr 2008 15:08:36 +0800
-From: "Dave Young" <hidave.darkstar@gmail.com>
-To: dpn@isomerica.net
-Subject: Re: NULL dereference OOPS on SysRq-w
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>, mingo@elte.hu
-In-Reply-To: <48157664.2060302@isomerica.net>
+	Mon, 28 Apr 2008 03:09:48 -0400
+Date: Mon, 28 Apr 2008 09:09:46 +0200
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Gautham R Shenoy <ego@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       Paul Jackson <pj@sgi.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] sched: missing locking in sched_domains code
+Message-ID: <20080428070946.GA4507@osiris.boeblingen.de.ibm.com>
+References: <20080427211224.GA21830@osiris.boeblingen.de.ibm.com> <20080427183926.acb66fff.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <48141EFA.6080700@isomerica.net>
-	 <20080428065736.GA2714@darkstar.te-china.tietoenator.com>
-	 <48157664.2060302@isomerica.net>
+In-Reply-To: <20080427183926.acb66fff.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 28, 2008 at 3:01 PM, Dan Noe <dpn@isomerica.net> wrote:
-> Dave Young wrote:
->
-> > [snip]
-> >
-> > I have a fix for the NULL pointer reference BUG, tested on my pc.
-> > ---
-> >
-> > "m" will be NULL if seq_printf & seq_puts is called from sched_debug_show
-> > Use SEQ_* macros to fix it
-> > Signed-off-by: Dave Young <hidave.darkstar@gmail.com>
-> >
->
->  There is actually already a patch out for this which simply hasn't made it
-> upstream yet - Mike Galbraith emailed me with it and it indeed fixes the
-> problem.  I hadn't realized his email didn't go to lkml.. otherwise I would
-> have echoed that here to avoid wasting people's time.  My apologies.
+On Sun, Apr 27, 2008 at 06:39:26PM -0700, Andrew Morton wrote:
+> On Sun, 27 Apr 2008 23:12:24 +0200 Heiko Carstens <heiko.carstens@de.ibm.com> wrote:
+> > Index: linux-2.6/kernel/cpuset.c
+> > ===================================================================
+> > --- linux-2.6.orig/kernel/cpuset.c
+> > +++ linux-2.6/kernel/cpuset.c
+> > @@ -684,7 +684,9 @@ restart:
+> >  rebuild:
+> >  	/* Have scheduler rebuild sched domains */
+> >  	get_online_cpus();
+> > +	mutex_lock(&sched_domains_mutex);
+> >  	partition_sched_domains(ndoms, doms, dattr);
+> > +	mutex_unlock(&sched_domains_mutex);
+> >  	put_online_cpus();
+> >  
+> 
+> It seems a bit fragile to take this lock in the caller without even adding
+> a comment at the callee site which documents the new locking rule.
+> 
+> It would be more robust to take the lock within partition_sched_domains().
+> 
+> partition_sched_domains() already covers itself with lock_doms_cur().  Can
+> we take that in arch_reinit_sched_domains() rather than adding the new lock?
 
-Ok, thanks.
+I think you meant taking it in partition_sched_domains? But anyway, I moved
+it all over to sched.c. So here's the new patch. Shorter and doesn't export
+a new lock :)
 
-While debuging this issue I found another BUG about sysrq,
 
-echo w >/proc/sys/kernel/sysrq
-My system hangs, there's no response from then on.
+Subject: [PATCH] sched: fix sched_domains locking
 
->
->  Cheers,
->  Dan
->
->  ===
->
->  Here is his message:
->
->  From: efault@gmx.de
->
->  Peter's fix didn't make it up-stream.
->
->  Subject: sched: fix oops
->
->  sched_debug uses SEQ_printf to use printk when the seqfile 'm' is NULL.
->  Instead of doing that here too; choose to not output the weight tree
->  to cut back on output.
->
->  Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
->  ---
->  diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
->  index 89fa32b..353a481 100644
->  --- a/kernel/sched_fair.c
->  +++ b/kernel/sched_fair.c
->  @@ -1643,8 +1643,10 @@ static void print_cfs_stats(struct seq_file *m, int
-> cpu)
->
->         for_each_leaf_cfs_rq(cpu_rq(cpu), cfs_rq)
->                 print_cfs_rq(m, cpu, cfs_rq);
->
->  -       seq_printf(m, "\nWeight tree:\n");
->  -       print_cfs_rq_tasks(m, &cpu_rq(cpu)->cfs, 1);
->  +       if (m) {
->  +               seq_printf(m, "\nWeight tree:\n");
->
->  +               print_cfs_rq_tasks(m, &cpu_rq(cpu)->cfs, 1);
->  +       }
->         rcu_read_unlock();
->   }
->   #endif
->
->
->
->
->  --
->                     /--------------- - -  -  -   -   -
->                     |  Dan Noe
->                     |  http://isomerica.net/~dpn/
->
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+
+Concurrent calls to detach_destroy_domains and arch_init_sched_domains
+were prevented by the old scheduler subsystem cpu hotplug mutex. When
+this got converted to get_online_cpus() the locking got broken.
+Unlike before now several processes can concurrently enter the critical
+sections that were protected by the old lock.
+
+So add a new sched_domains_mutex which protects these sections again.
+
+Cc: Gautham R Shenoy <ego@in.ibm.com>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Paul Jackson <pj@sgi.com>
+Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
+---
+ kernel/sched.c |   14 +++++++++++++-
+ 1 file changed, 13 insertions(+), 1 deletion(-)
+
+Index: linux-2.6/kernel/sched.c
+===================================================================
+--- linux-2.6.orig/kernel/sched.c
++++ linux-2.6/kernel/sched.c
+@@ -7730,6 +7730,12 @@ static int dattrs_equal(struct sched_dom
+ }
+ 
+ /*
++ * Protects against concurrent calls to detach_destroy_domains
++ * and arch_init_sched_domains.
++ */
++static DEFINE_MUTEX(sched_domains_mutex);
++
++/*
+  * Partition sched domains as specified by the 'ndoms_new'
+  * cpumasks in the array doms_new[] of cpumasks. This compares
+  * doms_new[] to the current sched domain partitioning, doms_cur[].
+@@ -7756,7 +7762,8 @@ void partition_sched_domains(int ndoms_n
+ 	int i, j;
+ 
+ 	lock_doms_cur();
+-
++	mutex_lock(&sched_domains_mutex);
++
+ 	/* always unregister in case we don't destroy any domains */
+ 	unregister_sched_domain_sysctl();
+ 
+@@ -7804,6 +7811,7 @@ match2:
+ 
+ 	register_sched_domain_sysctl();
+ 
++	mutex_unlock(&sched_domains_mutex);
+ 	unlock_doms_cur();
+ }
+ 
+@@ -7813,8 +7821,10 @@ int arch_reinit_sched_domains(void)
+ 	int err;
+ 
+ 	get_online_cpus();
++	mutex_lock(&sched_domains_mutex);
+ 	detach_destroy_domains(&cpu_online_map);
+ 	err = arch_init_sched_domains(&cpu_online_map);
++	mutex_unlock(&sched_domains_mutex);
+ 	put_online_cpus();
+ 
+ 	return err;
+@@ -7932,10 +7942,12 @@ void __init sched_init_smp(void)
+ 	BUG_ON(sched_group_nodes_bycpu == NULL);
+ #endif
+ 	get_online_cpus();
++	mutex_lock(&sched_domains_mutex);
+ 	arch_init_sched_domains(&cpu_online_map);
+ 	cpus_andnot(non_isolated_cpus, cpu_possible_map, cpu_isolated_map);
+ 	if (cpus_empty(non_isolated_cpus))
+ 		cpu_set(smp_processor_id(), non_isolated_cpus);
++	mutex_unlock(&sched_domains_mutex);
+ 	put_online_cpus();
+ 	/* XXX: Theoretical race here - CPU may be hotplugged now */
+ 	hotcpu_notifier(update_sched_domains, 0);
