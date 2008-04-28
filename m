@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935941AbYD1XuM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935437AbYD1Xus@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935941AbYD1XuM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 19:50:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934871AbYD1Xt5
+	id S935437AbYD1Xus (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 19:50:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934906AbYD1Xt6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 19:49:57 -0400
-Received: from wa-out-1112.google.com ([209.85.146.183]:25522 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755853AbYD1Xtz (ORCPT
+	Mon, 28 Apr 2008 19:49:58 -0400
+Received: from wx-out-0506.google.com ([66.249.82.228]:6972 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934628AbYD1Xt4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 19:49:55 -0400
+	Mon, 28 Apr 2008 19:49:56 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=Wq9sDebrbXqgbhBhkbZwNFYCroZKC8Vz6sDV2tL5yVAwnn3RTfxz9SEBFL0Jx+oKiOt1tZLb62ZhKn2R5JcxEgLcnTgFSl/h6kja2ME6frUzTZ9b8zB43NWYrQV0b+vLskBppCp+9YC+R1tGooLcKVmrI01QsOG7EiYMlYxR0vI=
-Subject: [PATCH 1/3] scsi: fix integer as NULL pointer warnings
+        b=YkGQWhXnXRU0WoibN3RZhzzELjkvoY7UNYjE2SveQxZsl+c5aqpUqX4JBTU3WR4cVC5L+i5Os6ZgY2mdONQSMCntXMCnFRn50BVlFYAVBHaVVqVoPT12gZe3LdOkByze/+/wdbCZs1/vf8Fe2ygHjy2lFMNxjSvAqRSaoxTr+oY=
+Subject: [PATCH 2/3] media: fix integer as NULL pointer warnings
 From: Harvey Harrison <harvey.harrison@gmail.com>
 To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
+Cc: Mauro Carvalho Chehab <mchehab@infradead.org>,
        LKML <linux-kernel@vger.kernel.org>
 Content-Type: text/plain
 Date: Mon, 28 Apr 2008 16:50:03 -0700
-Message-Id: <1209426603.24729.6.camel@brick>
+Message-Id: <1209426603.24729.8.camel@brick>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
@@ -29,199 +29,187 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-drivers/scsi/aic7xxx/aic7770_osm.c:53:58: warning: Using plain integer as NULL pointer
-drivers/scsi/aic7xxx/aic7xxx_osm_pci.c:355:47: warning: Using plain integer as NULL pointer
-drivers/scsi/aic7xxx/aic7xxx_osm_pci.c:372:55: warning: Using plain integer as NULL pointer
-drivers/scsi/aha152x.c:997:28: warning: Using plain integer as NULL pointer
-drivers/scsi/aha152x.c:1003:28: warning: Using plain integer as NULL pointer
-drivers/scsi/aha152x.c:1165:46: warning: Using plain integer as NULL pointer
-drivers/scsi/fdomain.c:1446:40: warning: Using plain integer as NULL pointer
-drivers/scsi/sym53c8xx_2/sym_hipd.c:1650:51: warning: Using plain integer as NULL pointer
-drivers/scsi/sym53c8xx_2/sym_hipd.c:3171:42: warning: Using plain integer as NULL pointer
-drivers/scsi/sym53c8xx_2/sym_hipd.c:5732:52: warning: Using plain integer as NULL pointer
-drivers/scsi/ncr53c8xx.c:8189:31: warning: Using plain integer as NULL pointer
-drivers/scsi/ncr53c8xx.c:8225:34: warning: Using plain integer as NULL pointer
-drivers/scsi/dpt_i2o.c:156:32: warning: Using plain integer as NULL pointer
-drivers/scsi/ultrastor.c:954:42: warning: Using plain integer as NULL pointer
-drivers/scsi/ultrastor.c:1104:18: warning: Using plain integer as NULL pointer
+drivers/media/video/v4l2-common.c:719:16: warning: Using plain integer as NULL pointer
+drivers/media/video/au0828/au0828-dvb.c:122:19: warning: Using plain integer as NULL pointer
+drivers/media/video/ivtv/ivtv-yuv.c:1101:22: warning: Using plain integer as NULL pointer
+drivers/media/video/ivtv/ivtv-yuv.c:1102:23: warning: Using plain integer as NULL pointer
+drivers/media/video/pvrusb2/pvrusb2-audio.c:78:39: warning: Using plain integer as NULL pointer
+drivers/media/video/pvrusb2/pvrusb2-video-v4l.c:84:39: warning: Using plain integer as NULL pointer
+drivers/media/video/pvrusb2/pvrusb2-v4l2.c:1264:9: warning: Using plain integer as NULL pointer
+drivers/media/video/pvrusb2/pvrusb2-context.c:197:28: warning: Using plain integer as NULL pointer
+drivers/media/video/pvrusb2/pvrusb2-cx2584x-v4l.c:126:39: warning: Using plain integer as NULL pointer
+drivers/media/video/pvrusb2/pvrusb2-dvb.c:133:32: warning: Using plain integer as NULL pointer
+drivers/media/video/pvrusb2/pvrusb2-dvb.c:145:31: warning: Using plain integer as NULL pointer
+drivers/media/video/pvrusb2/pvrusb2-dvb.c:177:55: warning: Using plain integer as NULL pointer
+drivers/media/video/videobuf-core.c:100:9: warning: Using plain integer as NULL pointer
 
 Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
 ---
- drivers/scsi/aha152x.c                 |    6 +++---
- drivers/scsi/aic7xxx/aic7770_osm.c     |    2 +-
- drivers/scsi/aic7xxx/aic7xxx_osm_pci.c |    4 ++--
- drivers/scsi/dpt_i2o.c                 |    2 +-
- drivers/scsi/fdomain.c                 |    2 +-
- drivers/scsi/ncr53c8xx.c               |    4 ++--
- drivers/scsi/sym53c8xx_2/sym_hipd.c    |    6 +++---
- drivers/scsi/ultrastor.c               |    4 ++--
- 8 files changed, 15 insertions(+), 15 deletions(-)
+ drivers/media/video/au0828/au0828-dvb.c           |    2 +-
+ drivers/media/video/ivtv/ivtv-yuv.c               |    4 ++--
+ drivers/media/video/pvrusb2/pvrusb2-audio.c       |    2 +-
+ drivers/media/video/pvrusb2/pvrusb2-context.c     |    2 +-
+ drivers/media/video/pvrusb2/pvrusb2-cx2584x-v4l.c |    2 +-
+ drivers/media/video/pvrusb2/pvrusb2-dvb.c         |    6 +++---
+ drivers/media/video/pvrusb2/pvrusb2-v4l2.c        |    2 +-
+ drivers/media/video/pvrusb2/pvrusb2-video-v4l.c   |    2 +-
+ drivers/media/video/v4l2-common.c                 |    2 +-
+ drivers/media/video/videobuf-core.c               |    5 ++++-
+ 10 files changed, 16 insertions(+), 13 deletions(-)
 
-diff --git a/drivers/scsi/aha152x.c b/drivers/scsi/aha152x.c
-index a09b2d3..f5215fd 100644
---- a/drivers/scsi/aha152x.c
-+++ b/drivers/scsi/aha152x.c
-@@ -994,13 +994,13 @@ static int aha152x_internal_queue(Scsi_Cmnd *SCpnt, struct completion *complete,
- 	SCpnt->SCp.sent_command	= 0;
- 
- 	if(SCpnt->SCp.phase & (resetting|check_condition)) {
--		if(SCpnt->host_scribble==0 || SCSEM(SCpnt) || SCNEXT(SCpnt)) {
-+		if (!SCpnt->host_scribble || SCSEM(SCpnt) || SCNEXT(SCpnt)) {
- 			printk(ERR_LEAD "cannot reuse command\n", CMDINFO(SCpnt));
- 			return FAILED;
+diff --git a/drivers/media/video/au0828/au0828-dvb.c b/drivers/media/video/au0828/au0828-dvb.c
+index 5040d7f..1371b4e 100644
+--- a/drivers/media/video/au0828/au0828-dvb.c
++++ b/drivers/media/video/au0828/au0828-dvb.c
+@@ -119,7 +119,7 @@ static int start_urb_transfer(struct au0828_dev *dev)
+ 		purb->transfer_buffer = kzalloc(URB_BUFSIZE, GFP_KERNEL);
+ 		if (!purb->transfer_buffer) {
+ 			usb_free_urb(purb);
+-			dev->urbs[i] = 0;
++			dev->urbs[i] = NULL;
+ 			goto err;
  		}
- 	} else {
- 		SCpnt->host_scribble = kmalloc(sizeof(struct aha152x_scdata), GFP_ATOMIC);
--		if(SCpnt->host_scribble==0) {
-+		if(!SCpnt->host_scribble) {
- 			printk(ERR_LEAD "allocation failed\n", CMDINFO(SCpnt));
- 			return FAILED;
- 		}
-@@ -1162,7 +1162,7 @@ static int aha152x_device_reset(Scsi_Cmnd * SCpnt)
- 	}
  
- 	DO_LOCK(flags);
--	issued       = remove_SC(&ISSUE_SC, SCpnt)==0;
-+	issued       = remove_SC(&ISSUE_SC, SCpnt) == NULL;
- 	disconnected = issued && remove_SC(&DISCONNECTED_SC, SCpnt);
- 	DO_UNLOCK(flags);
+diff --git a/drivers/media/video/ivtv/ivtv-yuv.c b/drivers/media/video/ivtv/ivtv-yuv.c
+index 393d917..62f70bd 100644
+--- a/drivers/media/video/ivtv/ivtv-yuv.c
++++ b/drivers/media/video/ivtv/ivtv-yuv.c
+@@ -1098,8 +1098,8 @@ void ivtv_yuv_setup_stream_frame(struct ivtv *itv)
+ 	ivtv_yuv_next_free(itv);
  
-diff --git a/drivers/scsi/aic7xxx/aic7770_osm.c b/drivers/scsi/aic7xxx/aic7770_osm.c
-index 1ac1197..f220e5e 100644
---- a/drivers/scsi/aic7xxx/aic7770_osm.c
-+++ b/drivers/scsi/aic7xxx/aic7770_osm.c
-@@ -50,7 +50,7 @@ aic7770_map_registers(struct ahc_softc *ahc, u_int port)
- 	/*
- 	 * Lock out other contenders for our i/o space.
- 	 */
--	if (request_region(port, AHC_EISA_IOSIZE, "aic7xxx") == 0)
-+	if (!request_region(port, AHC_EISA_IOSIZE, "aic7xxx"))
- 		return (ENOMEM);
- 	ahc->tag = BUS_SPACE_PIO;
- 	ahc->bsh.ioport = port;
-diff --git a/drivers/scsi/aic7xxx/aic7xxx_osm_pci.c b/drivers/scsi/aic7xxx/aic7xxx_osm_pci.c
-index 0d7628f..00f5b98 100644
---- a/drivers/scsi/aic7xxx/aic7xxx_osm_pci.c
-+++ b/drivers/scsi/aic7xxx/aic7xxx_osm_pci.c
-@@ -352,7 +352,7 @@ ahc_linux_pci_reserve_io_region(struct ahc_softc *ahc, resource_size_t *base)
- 	*base = pci_resource_start(ahc->dev_softc, 0);
- 	if (*base == 0)
- 		return (ENOMEM);
--	if (request_region(*base, 256, "aic7xxx") == 0)
-+	if (!request_region(*base, 256, "aic7xxx"))
- 		return (ENOMEM);
- 	return (0);
- }
-@@ -369,7 +369,7 @@ ahc_linux_pci_reserve_mem_region(struct ahc_softc *ahc,
- 	start = pci_resource_start(ahc->dev_softc, 1);
- 	if (start != 0) {
- 		*bus_addr = start;
--		if (request_mem_region(start, 0x1000, "aic7xxx") == 0)
-+		if (!request_mem_region(start, 0x1000, "aic7xxx"))
- 			error = ENOMEM;
- 		if (error == 0) {
- 			*maddr = ioremap_nocache(start, 256);
-diff --git a/drivers/scsi/dpt_i2o.c b/drivers/scsi/dpt_i2o.c
-index c9dd839..ac92ac1 100644
---- a/drivers/scsi/dpt_i2o.c
-+++ b/drivers/scsi/dpt_i2o.c
-@@ -153,7 +153,7 @@ static DEFINE_SPINLOCK(adpt_post_wait_lock);
+ 	/* Copy V4L2 parameters to an ivtv_dma_frame struct... */
+-	dma_args.y_source = 0L;
+-	dma_args.uv_source = 0L;
++	dma_args.y_source = NULL;
++	dma_args.uv_source = NULL;
+ 	dma_args.src.left = 0;
+ 	dma_args.src.top = 0;
+ 	dma_args.src.width = yi->v4l2_src_w;
+diff --git a/drivers/media/video/pvrusb2/pvrusb2-audio.c b/drivers/media/video/pvrusb2/pvrusb2-audio.c
+index 9a7c8e9..8d859cc 100644
+--- a/drivers/media/video/pvrusb2/pvrusb2-audio.c
++++ b/drivers/media/video/pvrusb2/pvrusb2-audio.c
+@@ -75,7 +75,7 @@ static void set_stereo(struct pvr2_msp3400_handler *ctxt)
+ 	pvr2_trace(PVR2_TRACE_CHIPS,"i2c msp3400 v4l2 set_stereo");
  
- static u8 adpt_read_blink_led(adpt_hba* host)
+ 	if ((sid < ARRAY_SIZE(routing_schemes)) &&
+-	    ((sp = routing_schemes + sid) != 0) &&
++	    ((sp = routing_schemes + sid) != NULL) &&
+ 	    (hdw->input_val >= 0) &&
+ 	    (hdw->input_val < sp->cnt)) {
+ 		route.input = sp->def[hdw->input_val];
+diff --git a/drivers/media/video/pvrusb2/pvrusb2-context.c b/drivers/media/video/pvrusb2/pvrusb2-context.c
+index b5db6a5..73dcb1c 100644
+--- a/drivers/media/video/pvrusb2/pvrusb2-context.c
++++ b/drivers/media/video/pvrusb2/pvrusb2-context.c
+@@ -195,7 +195,7 @@ static int pvr2_context_thread_func(void *foo)
+ int pvr2_context_global_init(void)
  {
--	if(host->FwDebugBLEDflag_P != 0) {
-+	if (host->FwDebugBLEDflag_P) {
- 		if( readb(host->FwDebugBLEDflag_P) == 0xbc ){
- 			return readb(host->FwDebugBLEDvalue_P);
+ 	pvr2_context_thread_ptr = kthread_run(pvr2_context_thread_func,
+-					      0,
++					      NULL,
+ 					      "pvrusb2-context");
+ 	return (pvr2_context_thread_ptr ? 0 : -ENOMEM);
+ }
+diff --git a/drivers/media/video/pvrusb2/pvrusb2-cx2584x-v4l.c b/drivers/media/video/pvrusb2/pvrusb2-cx2584x-v4l.c
+index 97350b0..29d5059 100644
+--- a/drivers/media/video/pvrusb2/pvrusb2-cx2584x-v4l.c
++++ b/drivers/media/video/pvrusb2/pvrusb2-cx2584x-v4l.c
+@@ -123,7 +123,7 @@ static void set_input(struct pvr2_v4l_cx2584x *ctxt)
+ 	memset(&route,0,sizeof(route));
+ 
+ 	if ((sid < ARRAY_SIZE(routing_schemes)) &&
+-	    ((sp = routing_schemes + sid) != 0) &&
++	    ((sp = routing_schemes + sid) != NULL) &&
+ 	    (hdw->input_val >= 0) &&
+ 	    (hdw->input_val < sp->cnt)) {
+ 		vid_input = sp->def[hdw->input_val].vid;
+diff --git a/drivers/media/video/pvrusb2/pvrusb2-dvb.c b/drivers/media/video/pvrusb2/pvrusb2-dvb.c
+index 2e64f98..6504c97 100644
+--- a/drivers/media/video/pvrusb2/pvrusb2-dvb.c
++++ b/drivers/media/video/pvrusb2/pvrusb2-dvb.c
+@@ -130,7 +130,7 @@ static void pvr2_dvb_stream_end(struct pvr2_dvb_adapter *adap)
+ 		for (idx = 0; idx < PVR2_DVB_BUFFER_COUNT; idx++) {
+ 			if (!(adap->buffer_storage[idx])) continue;
+ 			kfree(adap->buffer_storage[idx]);
+-			adap->buffer_storage[idx] = 0;
++			adap->buffer_storage[idx] = NULL;
  		}
-diff --git a/drivers/scsi/fdomain.c b/drivers/scsi/fdomain.c
-index 2cd6b49..c33bcb2 100644
---- a/drivers/scsi/fdomain.c
-+++ b/drivers/scsi/fdomain.c
-@@ -1443,7 +1443,7 @@ static int fdomain_16x0_queue(struct scsi_cmnd *SCpnt,
- 	   current_SC->SCp.this_residual    = current_SC->SCp.buffer->length;
- 	   current_SC->SCp.buffers_residual = scsi_sg_count(current_SC) - 1;
-    } else {
--	   current_SC->SCp.ptr              = 0;
-+	   current_SC->SCp.ptr              = NULL;
- 	   current_SC->SCp.this_residual    = 0;
- 	   current_SC->SCp.buffer           = NULL;
- 	   current_SC->SCp.buffers_residual = 0;
-diff --git a/drivers/scsi/ncr53c8xx.c b/drivers/scsi/ncr53c8xx.c
-index d892894..ceab4f7 100644
---- a/drivers/scsi/ncr53c8xx.c
-+++ b/drivers/scsi/ncr53c8xx.c
-@@ -8186,7 +8186,7 @@ static void insert_into_waiting_list(struct ncb *np, struct scsi_cmnd *cmd)
- 	cmd->next_wcmd = NULL;
- 	if (!(wcmd = np->waiting_list)) np->waiting_list = cmd;
- 	else {
--		while ((wcmd->next_wcmd) != 0)
-+		while (wcmd->next_wcmd)
- 			wcmd = (struct scsi_cmnd *) wcmd->next_wcmd;
- 		wcmd->next_wcmd = (char *) cmd;
+ 		adap->stream_run = 0;
  	}
-@@ -8222,7 +8222,7 @@ static void process_waiting_list(struct ncb *np, int sts)
- #ifdef DEBUG_WAITING_LIST
- 	if (waiting_list) printk("%s: waiting_list=%lx processing sts=%d\n", ncr_name(np), (u_long) waiting_list, sts);
- #endif
--	while ((wcmd = waiting_list) != 0) {
-+	while (wcmd = waiting_list) {
- 		waiting_list = (struct scsi_cmnd *) wcmd->next_wcmd;
- 		wcmd->next_wcmd = NULL;
- 		if (sts == DID_OK) {
-diff --git a/drivers/scsi/sym53c8xx_2/sym_hipd.c b/drivers/scsi/sym53c8xx_2/sym_hipd.c
-index 35142b5..22a6aae 100644
---- a/drivers/scsi/sym53c8xx_2/sym_hipd.c
-+++ b/drivers/scsi/sym53c8xx_2/sym_hipd.c
-@@ -1647,7 +1647,7 @@ static void sym_flush_comp_queue(struct sym_hcb *np, int cam_status)
- 	SYM_QUEHEAD *qp;
- 	struct sym_ccb *cp;
+@@ -142,7 +142,7 @@ static int pvr2_dvb_stream_do_start(struct pvr2_dvb_adapter *adap)
+ 	unsigned int idx;
+ 	int ret;
+ 	struct pvr2_buffer *bp;
+-	struct pvr2_stream *stream = 0;
++	struct pvr2_stream *stream = NULL;
  
--	while ((qp = sym_remque_head(&np->comp_ccbq)) != 0) {
-+	while ((qp = sym_remque_head(&np->comp_ccbq)) != NULL) {
- 		struct scsi_cmnd *cmd;
- 		cp = sym_que_entry(qp, struct sym_ccb, link_ccbq);
- 		sym_insque_tail(&cp->link_ccbq, &np->busy_ccbq);
-@@ -3168,7 +3168,7 @@ int sym_clear_tasks(struct sym_hcb *np, int cam_status, int target, int lun, int
- 	 *  the COMP queue and put back other ones into 
- 	 *  the BUSY queue.
- 	 */
--	while ((qp = sym_remque_head(&qtmp)) != 0) {
-+	while ((qp = sym_remque_head(&qtmp)) != NULL) {
- 		struct scsi_cmnd *cmd;
- 		cp = sym_que_entry(qp, struct sym_ccb, link_ccbq);
- 		cmd = cp->cmd;
-@@ -5729,7 +5729,7 @@ void sym_hcb_free(struct sym_hcb *np)
- 		sym_mfree_dma(np->dqueue, sizeof(u32)*(MAX_QUEUE*2), "DQUEUE");
+ 	if (adap->stream_run) return -EIO;
  
- 	if (np->actccbs) {
--		while ((qp = sym_remque_head(&np->free_ccbq)) != 0) {
-+		while ((qp = sym_remque_head(&np->free_ccbq)) != NULL) {
- 			cp = sym_que_entry(qp, struct sym_ccb, link_ccbq);
- 			sym_mfree_dma(cp, sizeof(*cp), "CCB");
- 		}
-diff --git a/drivers/scsi/ultrastor.c b/drivers/scsi/ultrastor.c
-index f385dce..27aa40f 100644
---- a/drivers/scsi/ultrastor.c
-+++ b/drivers/scsi/ultrastor.c
-@@ -951,7 +951,7 @@ static int ultrastor_abort(struct scsi_cmnd *SCpnt)
- 	printk("abort: command mismatch, %p != %p\n",
- 	       config.mscp[mscp_index].SCint, SCpnt);
- #endif
--    if (config.mscp[mscp_index].SCint == 0)
-+    if (config.mscp[mscp_index].SCint == NULL)
- 	return FAILED;
+@@ -174,7 +174,7 @@ static int pvr2_dvb_stream_do_start(struct pvr2_dvb_adapter *adap)
+ 	ret = pvr2_hdw_set_streaming(adap->channel.hdw, 1);
+ 	if (ret < 0) return ret;
  
-     if (config.mscp[mscp_index].SCint != SCpnt) panic("Bad abort");
-@@ -1101,7 +1101,7 @@ static void ultrastor_interrupt(void *dev_id)
-     SCtmp = mscp->SCint;
-     mscp->SCint = NULL;
+-	while ((bp = pvr2_stream_get_idle_buffer(stream)) != 0) {
++	while ((bp = pvr2_stream_get_idle_buffer(stream)) != NULL) {
+ 		ret = pvr2_buffer_queue(bp);
+ 		if (ret < 0) return ret;
+ 	}
+diff --git a/drivers/media/video/pvrusb2/pvrusb2-v4l2.c b/drivers/media/video/pvrusb2/pvrusb2-v4l2.c
+index 087a182..e9b5d4e 100644
+--- a/drivers/media/video/pvrusb2/pvrusb2-v4l2.c
++++ b/drivers/media/video/pvrusb2/pvrusb2-v4l2.c
+@@ -1261,7 +1261,7 @@ struct pvr2_v4l2 *pvr2_v4l2_create(struct pvr2_context *mnp)
+  fail:
+ 	pvr2_trace(PVR2_TRACE_STRUCT,"Failure creating pvr2_v4l2 id=%p",vp);
+ 	pvr2_v4l2_destroy_no_lock(vp);
+-	return 0;
++	return NULL;
+ }
  
--    if (SCtmp == 0)
-+    if (!SCtmp)
-       {
- #if ULTRASTOR_DEBUG & (UD_ABORT|UD_INTERRUPT)
- 	printk("MSCP %d (%x): no command\n", mscp_index, (unsigned int) mscp);
+ /*
+diff --git a/drivers/media/video/pvrusb2/pvrusb2-video-v4l.c b/drivers/media/video/pvrusb2/pvrusb2-video-v4l.c
+index 7c47345..2433a31 100644
+--- a/drivers/media/video/pvrusb2/pvrusb2-video-v4l.c
++++ b/drivers/media/video/pvrusb2/pvrusb2-video-v4l.c
+@@ -81,7 +81,7 @@ static void set_input(struct pvr2_v4l_decoder *ctxt)
+ 	pvr2_trace(PVR2_TRACE_CHIPS,"i2c v4l2 set_input(%d)",hdw->input_val);
+ 
+ 	if ((sid < ARRAY_SIZE(routing_schemes)) &&
+-	    ((sp = routing_schemes + sid) != 0) &&
++	    ((sp = routing_schemes + sid) != NULL) &&
+ 	    (hdw->input_val >= 0) &&
+ 	    (hdw->input_val < sp->cnt)) {
+ 		route.input = sp->def[hdw->input_val];
+diff --git a/drivers/media/video/v4l2-common.c b/drivers/media/video/v4l2-common.c
+index 34deb68..7cc42c1 100644
+--- a/drivers/media/video/v4l2-common.c
++++ b/drivers/media/video/v4l2-common.c
+@@ -716,7 +716,7 @@ int v4l2_i2c_attach(struct i2c_adapter *adapter, int address, struct i2c_driver
+ 	int err;
+ 
+ 	client = kzalloc(sizeof(struct i2c_client), GFP_KERNEL);
+-	if (client == 0)
++	if (!client)
+ 		return -ENOMEM;
+ 
+ 	client->addr = address;
+diff --git a/drivers/media/video/videobuf-core.c b/drivers/media/video/videobuf-core.c
+index fc51e49..982f446 100644
+--- a/drivers/media/video/videobuf-core.c
++++ b/drivers/media/video/videobuf-core.c
+@@ -97,7 +97,10 @@ int videobuf_iolock(struct videobuf_queue *q, struct videobuf_buffer *vb,
+ void *videobuf_queue_to_vmalloc (struct videobuf_queue *q,
+ 			   struct videobuf_buffer *buf)
+ {
+-	return CALL(q, vmalloc, buf);
++	if (q->int_ops->vmalloc)
++		return q->int_ops->vmalloc(buf);
++	else
++		return NULL;
+ }
+ EXPORT_SYMBOL_GPL(videobuf_queue_to_vmalloc);
+ 
 -- 
 1.5.5.1.270.g89765
 
