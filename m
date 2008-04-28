@@ -1,20 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936209AbYD1Pmu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935749AbYD1Pph@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936209AbYD1Pmu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 11:42:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964885AbYD1Pje
+	id S935749AbYD1Pph (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 11:45:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934654AbYD1Pjs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 11:39:34 -0400
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:59607 "EHLO smtp6.pp.htv.fi"
+	Mon, 28 Apr 2008 11:39:48 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:49130 "EHLO smtp4.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964876AbYD1Pjd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 11:39:33 -0400
-Date: Mon, 28 Apr 2008 18:39:00 +0300
+	id S964981AbYD1Pjr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Apr 2008 11:39:47 -0400
+Date: Mon, 28 Apr 2008 18:39:14 +0300
 From: Adrian Bunk <bunk@kernel.org>
-To: Jeremy Fitzhardinge <jeremy@xensource.com>, chrisw@sous-sol.org
-Cc: xen-devel@lists.xensource.com, linux-kernel@vger.kernel.org
-Subject: drivers/xen/grant-table.c:gnttab_suspend() is unused
-Message-ID: <20080428153900.GI2813@cs181133002.pp.htv.fi>
+To: Aidan Thornton <makosoft@googlemail.com>,
+       Mauro Carvalho Chehab <mchehab@infradead.org>
+Cc: v4l-dvb-maintainer@linuxtv.org, linux-kernel@vger.kernel.org
+Subject: [2.6 patch] make em28xx-dvb.c:register_dvb() static
+Message-ID: <20080428153914.GN2813@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -23,18 +24,28 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-drivers/xen/grant-table.c:gnttab_suspend() is unused, and I have the gut 
-feeling it should have been used.
+This patch makes the needlessly global register_dvb() static.
 
-Spotted by the GNU C compiler.
+Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+---
+72255e23e002cff5a8c8b2b6bf6c166340fc1a09 diff --git a/drivers/media/video/em28xx/em28xx-dvb.c b/drivers/media/video/em28xx/em28xx-dvb.c
+index 7df8157..8af318e 100644
+--- a/drivers/media/video/em28xx/em28xx-dvb.c
++++ b/drivers/media/video/em28xx/em28xx-dvb.c
+@@ -263,10 +263,10 @@ static int attach_xc3028(u8 addr, struct em28xx *dev)
+ 
+ /* ------------------------------------------------------------------ */
+ 
+-int register_dvb(struct em28xx_dvb *dvb,
+-		 struct module *module,
+-		 struct em28xx *dev,
+-		 struct device *device)
++static int register_dvb(struct em28xx_dvb *dvb,
++			struct module *module,
++			struct em28xx *dev,
++			struct device *device)
+ {
+ 	int result;
+ 
 
