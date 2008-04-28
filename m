@@ -1,65 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933749AbYD1L7i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932383AbYD1MAy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933749AbYD1L7i (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 07:59:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763297AbYD1L73
+	id S932383AbYD1MAy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 08:00:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765067AbYD1MAo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 07:59:29 -0400
-Received: from bzq-179-150-194.static.bezeqint.net ([212.179.150.194]:26381
-	"EHLO il.qumranet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754756AbYD1L73 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 07:59:29 -0400
-Message-ID: <4815BC1E.6020805@qumranet.com>
-Date: Mon, 28 Apr 2008 14:59:26 +0300
-From: Avi Kivity <avi@qumranet.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Mon, 28 Apr 2008 08:00:44 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:37256 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1763526AbYD1MAn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Apr 2008 08:00:43 -0400
+Date: Mon, 28 Apr 2008 14:00:32 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Mauro Carvalho Chehab <mchehab@infradead.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: [patch] video: fix SOC_CAMERA_MT9M001 build bug
+Message-ID: <20080428120032.GA23847@elte.hu>
 MIME-Version: 1.0
-To: Theodore Tso <tytso@mit.edu>, Ulrich Drepper <drepper@gmail.com>,
-       Soeren Sandmann <sandmann@daimi.au.dk>, linux-kernel@vger.kernel.org
-Subject: Re: stat benchmark
-References: <ye8wsmnezq9.fsf@camel05.daimi.au.dk> <a36005b50804272143g68dc5f3ax848e9548a3d14ed7@mail.gmail.com> <20080428115321.GD30840@mit.edu>
-In-Reply-To: <20080428115321.GD30840@mit.edu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Theodore Tso wrote:
->> Aside from what has already been proposed there is also the
->> readdirplus() route.  Unfortunately the people behind this and related
->> proposals vanished after the last discussions.  I was  hoping they
->> come back with a revised proposal but perhaps not.  Maybe it's time to
->> pick up the ball myself.
->>
->> As a reminder, readdirplus() is an extended readdir() which also
->> returns (a subset of) the stat information for the file at the same
->> time.  The subset part is needed to account for the different
->> information contained in the inodes.  For most applications the subset
->> should be sufficient and therefore all that's needed is a single
->> iteration over the directory.
->>     
->
-> I'm not sure this would help in the cold cache case, which is what
-> Soeren originally complained about.[1] The problem is whaever
-> information the user might need won't be store in the directory, so
-> the filesystem would end having to stat the file anyway, incurring a
-> disk seek, which was what the user was complaining about.  A
-> readdirplus() would save a whole bunch of system calls if the inode
-> was already cached, yes, but I'm not sure that's it would be worth the
-> effort given how small Linux's system call overhead would be.  But in
-> the cold cache case, you end up seeking all over the disk, and the
-> only thing you can do is to try to keep the inodes close to each
-> other, and to have either readdir() or the caller of readdir() sort
-> all of the returned directory entries by inode number to avoid seeking
-> all over the disk.
->   
 
-A readdirplus() could sort the inodes according to the filesystem's 
-layout, and additionally issue the stats in parallel, so if you have 
-multiple spindles you get significant additional speedup.
+on latest -git, with this config:
 
--- 
-error compiling committee.c: too many arguments to function
+  http://redhat.com/~mingo/misc/config-Mon_Apr_28_13_25_34_CEST_2008.bad
+
+  CONFIG_SOC_CAMERA_MT9M001=y
+  CONFIG_SOC_CAMERA_MT9V022=y
+  # CONFIG_I2C is not set
+
+the build fails:
+
+drivers/built-in.o: In function `reg_read':
+mt9m001.c:(.text+0x140a87): undefined reference to `i2c_smbus_read_word_data'
+drivers/built-in.o: In function `reg_write':
+mt9m001.c:(.text+0x140b6e): undefined reference to `i2c_smbus_write_word_data'
+drivers/built-in.o: In function `reg_read':
+mt9v022.c:(.text+0x1413a7): undefined reference to `i2c_smbus_read_word_data'
+drivers/built-in.o: In function `reg_write':
+mt9v022.c:(.text+0x1414ce): undefined reference to `i2c_smbus_write_word_data'
+drivers/built-in.o: In function `mt9m001_mod_init':
+mt9m001.c:(.init.text+0x158a8): undefined reference to `i2c_register_driver'
+drivers/built-in.o: In function `mt9v022_mod_init':
+mt9v022.c:(.init.text+0x158b8): undefined reference to `i2c_register_driver'
+drivers/built-in.o: In function `mt9m001_mod_exit':
+mt9m001.c:(.exit.text+0x1656): undefined reference to `i2c_del_driver'
+drivers/built-in.o: In function `mt9v022_mod_exit':
+mt9v022.c:(.exit.text+0x1666): undefined reference to `i2c_del_driver'
+
+adding the missing I2C dependency fixes it.
+
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ drivers/media/video/Kconfig |    1 +
+ 1 file changed, 1 insertion(+)
+
+Index: linux/drivers/media/video/Kconfig
+===================================================================
+--- linux.orig/drivers/media/video/Kconfig
++++ linux/drivers/media/video/Kconfig
+@@ -850,6 +850,7 @@ endif # V4L_USB_DRIVERS
+ config SOC_CAMERA
+ 	tristate "SoC camera support"
+ 	depends on VIDEO_V4L2
++	depends on I2C
+ 	select VIDEOBUF_DMA_SG
+ 	help
+ 	  SoC Camera is a common API to several cameras, not connecting
 
