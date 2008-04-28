@@ -1,101 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935766AbYD1QAz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965203AbYD1QC1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935766AbYD1QAz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 12:00:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934142AbYD1QAq
+	id S965203AbYD1QC1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 12:02:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934142AbYD1QCO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 12:00:46 -0400
-Received: from wr-out-0506.google.com ([64.233.184.230]:36630 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934136AbYD1QAp (ORCPT
+	Mon, 28 Apr 2008 12:02:14 -0400
+Received: from fg-out-1718.google.com ([72.14.220.153]:45097 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932307AbYD1QCN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 12:00:45 -0400
+	Mon, 28 Apr 2008 12:02:13 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:organization:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=etBxdGeFMvkj1wx9dPJjoA8rx+pQ77JlJ6p70163gEErZFqlrCTL1Q+/1JUdN4+E5NtJ86SN6z8pIIDZgE2mJJzWgP76cTY5p6BRkXeoCS4iPrj2gyUA65zZ4SfvRKJGVDzJjxUsAmHij4Voa+uEEhc+dgvcoluYZm6gUJywR1o=
-From: Balaji Rao <balajirrao@gmail.com>
-Organization: National Institute of Technology Karnataka
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [RFC][-mm] [2/2] Simple stats for memory resource controller
-Date: Mon, 28 Apr 2008 21:30:29 +0530
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, containers@lists.osdl.org, menage@google.com,
-       balbir@in.ibm.com, dhaval@linux.vnet.ibm.com
-References: <200804052340.02386.balajirrao@gmail.com> <48036CB4.5050700@linux.vnet.ibm.com>
-In-Reply-To: <48036CB4.5050700@linux.vnet.ibm.com>
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=qCeVyMMKOPGuJsfoWU+HrEPgm8MTZjovSVhqaAtJxDIGIxCQn9X9yONT3cWMETPjsTSj8ge1MKqcDfHv0jhpigxCcQC4ZS4GhuqIp1WifAaYam6AM+dL4urRPLVGt9bj7V/mLBjyBt20mNTO2Bp1KiVsSdFwWvMVEtrdxeKaGNs=
+Message-ID: <4815F4F6.1030708@googlemail.com>
+Date: Mon, 28 Apr 2008 18:01:58 +0200
+From: Gabriel C <nix.or.die@googlemail.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Mika Fischer <mika.fischer@zoopnet.de>
+CC: Arjan van de Ven <arjan@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       yhlu.kernel@gmail.com, Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH] x86: mtrr cleanup for converting continuous to discrete
+   layout v2
+References: <200804272337.40130.yhlu.kernel@gmail.com>	<200804280206.52641.yhlu.kernel@gmail.com>	<20080428130826.GH27997@elte.hu> <20080428064925.318659b9@laptopd505.fenrus.org> <4815ED15.3080702@zoopnet.de>
+In-Reply-To: <4815ED15.3080702@zoopnet.de>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200804282130.30188.balajirrao@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 14 April 2008 08:09:48 pm Balbir Singh wrote:
-> Balaji Rao wrote:
-> > This patch implements trivial statistics for the memory resource controller.
-> > 
-> > Signed-off-by: Balaji Rao <balajirrao@gmail.com>
-> > CC: Balbir Singh <balbir@linux.vnet.ibm.com>
-> > CC: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-> > 
-> > diff --git a/mm/memcontrol.c b/mm/memcontrol.c
-> > index a860765..ca98b21 100644
-> > --- a/mm/memcontrol.c
-> > +++ b/mm/memcontrol.c
-> > @@ -47,6 +47,8 @@ enum mem_cgroup_stat_index {
-> >  	 */
-> >  	MEM_CGROUP_STAT_CACHE, 	   /* # of pages charged as cache */
-> >  	MEM_CGROUP_STAT_RSS,	   /* # of pages charged as rss */
-> > +	MEM_CGROUP_STAT_PGPGIN_COUNT,	/* # of pages paged in */
-> > +	MEM_CGROUP_STAT_PGPGOUT_COUNT,	/* # of pages paged out */
-> > 
-> >  	MEM_CGROUP_STAT_NSTATS,
-> >  };
-> > @@ -198,6 +200,13 @@ static void mem_cgroup_charge_statistics(struct mem_cgroup *mem, int flags,
-> >  		__mem_cgroup_stat_add_safe(stat, MEM_CGROUP_STAT_CACHE, val);
-> >  	else
-> >  		__mem_cgroup_stat_add_safe(stat, MEM_CGROUP_STAT_RSS, val);
-> > +
-> > +	if (charge)
-> > +		__mem_cgroup_stat_add_safe(stat,
-> > +				MEM_CGROUP_STAT_PGPGIN_COUNT, 1);
-> > +	else
-> > +		__mem_cgroup_stat_add_safe(stat,
-> > +				MEM_CGROUP_STAT_PGPGOUT_COUNT, 1);
-> >  }
-> > 
-> >  static struct mem_cgroup_per_zone *
-> > @@ -897,6 +906,8 @@ static const struct mem_cgroup_stat_desc {
-> >  } mem_cgroup_stat_desc[] = {
-> >  	[MEM_CGROUP_STAT_CACHE] = { "cache", PAGE_SIZE, },
-> >  	[MEM_CGROUP_STAT_RSS] = { "rss", PAGE_SIZE, },
-> > +	[MEM_CGROUP_STAT_PGPGIN_COUNT] = {"pgpgin", 1, },
-> > +	[MEM_CGROUP_STAT_PGPGOUT_COUNT] = {"pgpgout", 1, },
-> >  };
-> > 
-> >  static int mem_control_stat_show(struct cgroup *cont, struct cftype *cft,
-> > 
+Mika Fischer wrote:
+>>> how relevant is this feature with modern Xorg? I thought modern Xorg 
+>>> would get its mappings via /sys, hence it would not have to touch
+>>> MTRRs at all.
+>> that's true for current X, but not for 6 month old X :=(
 > 
-> Acked-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+> Ah, so the new X will be able to use the video memory in write-combining
+> mode even if I have an MTRR saying this area is uncachable or write-back?
 > 
-> Hi, Andrew,
-> 
-> Could you please include these statistics in -mm.
-> 
-> Balbir
-> 
-> 
-Hi Andrew,
+> If that is the case, then I agree that this patch is not really needed.
 
-Now that Balbir Singh has ACKed it, could you please include it in -mm ?
+I doubt there will be any usable Xorg release soon.
+And I doubt peoples will run Xorg , mesa , etc master HEAD to have that feature. 
 
--- 
-Warm Regards,
+I think this patch is needed for now but as Ingo said , it should not be default.
+Peoples with these sort problems could boot with some option to enables this workaround.
 
-Balaji Rao
-Dept. of Mechanical Engineering
-NITK
+Just my opinion.
+
+> 
+> Regards,
+>  Mika
+> 
+
+Gabriel
