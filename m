@@ -1,92 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S967278AbYD1XO6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S968570AbYD1XQl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967278AbYD1XO6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 19:14:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967575AbYD1XOn
+	id S968570AbYD1XQl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 19:16:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965597AbYD1XQ2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 19:14:43 -0400
-Received: from mga11.intel.com ([192.55.52.93]:54263 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S966152AbYD1XOm convert rfc822-to-8bit (ORCPT
+	Mon, 28 Apr 2008 19:16:28 -0400
+Received: from rv-out-0708.google.com ([209.85.198.241]:19595 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S965348AbYD1XQ1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 19:14:42 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,718,1199692800"; 
-   d="scan'208";a="322341830"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Mon, 28 Apr 2008 19:16:27 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=u+QJJLoPc3Qnnp9I4c9Gd/Rf0bx6iRQBHhZE2tlbrmdwGPfzXsYfg3MIQ9/rG8OrqaqItDfgLf6D9uK2eHX3qMn4e9ZRimtL+Eel9yU2y4PLe2yWeFVJvJsN3286C9zvt0DkOtmGpQQrkAC4UvHLnTGYbvrPltsTT1TqgJ7zrCE=
+Message-ID: <86802c440804281616t6a62cb74h430b4ca598d101bc@mail.gmail.com>
+Date: Mon, 28 Apr 2008 16:16:26 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [PATCH] x86_32: trim memory by updating e820 v3
+Cc: "Gabriel C" <nix.or.die@googlemail.com>,
+       "Andi Kleen" <andi@firstfloor.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Ingo Molnar" <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Jesse Barnes" <jesse.barnes@intel.com>,
+       "Mika Fischer" <mika.fischer@zoopnet.de>, balajirrao@gmail.com
+In-Reply-To: <m17ieh4zuo.fsf@frodo.ebiederm.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH] x86: !x & y typo in mtrr code
-Date: Mon, 28 Apr 2008 16:16:44 -0700
-Message-ID: <924EFEDD5F540B4284297C4DC59F3DEEF31AAF@orsmsx423.amr.corp.intel.com>
-In-Reply-To: <1209268817.14173.43.camel@brick>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] x86: !x & y typo in mtrr code
-Thread-Index: AcioG0AL6HCHNbVVS0GA77SBOvv1uwBamOyQ
-References: <1209268817.14173.43.camel@brick>
-From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-To: "Harvey Harrison" <harvey.harrison@gmail.com>,
-       "Ingo Molnar" <mingo@elte.hu>
-Cc: "Thomas Gleixner" <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       "LKML" <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 28 Apr 2008 23:14:41.0297 (UTC) FILETIME=[A325D810:01C8A985]
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200801192045.17291.yinghai.lu@sun.com>
+	 <200801202256.48365.yinghai.lu@sun.com>
+	 <20080122165125.GA17992@elte.hu>
+	 <200801221623.20861.yinghai.lu@sun.com>
+	 <20080426035614.a30afb17.akpm@linux-foundation.org>
+	 <48132665.8050202@googlemail.com>
+	 <86802c440804261805rc739f9as519213fecdc0cdff@mail.gmail.com>
+	 <m17ieh4zuo.fsf@frodo.ebiederm.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- 
+On Mon, Apr 28, 2008 at 11:07 AM, Eric W. Biederman
+<ebiederm@xmission.com> wrote:
+> "Yinghai Lu" <yhlu.kernel@gmail.com> writes:
+>
+>  > On Sat, Apr 26, 2008 at 5:56 AM, Gabriel C <nix.or.die@googlemail.com> wrote:
+>
+>
+> > another continuous MTRR mapping.
+>  >
+>  > several months ago, we were talking about modifying MTRR. but Eric
+>  > said that is not safe because acpi and smi...
+>
+>  I think it was Andi who spotted that originally, and yes I do think it
+>  is a pretty horrific failure mode.  Reprogramming the MTRRs requires
+>  full knowledge of the hardware and what is going on that we don't
+>  always have.  PAT support has just been merged, and using that only
+>  requires knowledge about the region whose attributes we intend to change.
+>
+>  So lets concentrate on PAT to solve contiguous MTRR region problems.
+>
+>  We can upgrade UC to WC with pat.  As well as demote WB to UC or WC.
+>  So for those regions we know about we should be in good shape.
+>
+>  In a slightly related vein.  Trimming the memory we consider usable by
+>  looking at MTRRs and if a region is not WB not considering it RAM
+>  sounds like a very reasonable work around for one class of BIOS bugs.
 
->-----Original Message-----
->From: linux-kernel-owner@vger.kernel.org 
->[mailto:linux-kernel-owner@vger.kernel.org] On Behalf Of 
->Harvey Harrison
->Sent: Saturday, April 26, 2008 9:00 PM
->To: Ingo Molnar
->Cc: Thomas Gleixner; H. Peter Anvin; LKML
->Subject: [PATCH] x86: !x & y typo in mtrr code
->
->As written, this can never be true.
->
+yeah, i will look at to loop the ram region array instead of checking
+highest_pfn only...
 
-My bad. I introduced this ugly and nasty bug.
 
-Harvey: Thanks for catching the bug and the patch.
-
-Thanks,
-Venki
-
->Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
->---
-> arch/x86/kernel/cpu/mtrr/generic.c |    2 +-
-> 1 files changed, 1 insertions(+), 1 deletions(-)
->
->diff --git a/arch/x86/kernel/cpu/mtrr/generic.c 
->b/arch/x86/kernel/cpu/mtrr/generic.c
->index 353efe4..5d241ce 100644
->--- a/arch/x86/kernel/cpu/mtrr/generic.c
->+++ b/arch/x86/kernel/cpu/mtrr/generic.c
->@@ -90,7 +90,7 @@ u8 mtrr_type_lookup(u64 start, u64 end)
-> 	 * Look of multiple ranges matching this address and pick type
-> 	 * as per MTRR precedence
-> 	 */
->-	if (!mtrr_state.enabled & 2) {
->+	if (!(mtrr_state.enabled & 2)) {
-> 		return mtrr_state.def_type;
-> 	}
-> 
->-- 
->1.5.5.1.270.g89765
->
->
->
->--
->To unsubscribe from this list: send the line "unsubscribe 
->linux-kernel" in
->the body of a message to majordomo@vger.kernel.org
->More majordomo info at  http://vger.kernel.org/majordomo-info.html
->Please read the FAQ at  http://www.tux.org/lkml/
->
+YH
