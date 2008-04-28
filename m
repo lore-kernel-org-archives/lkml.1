@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764896AbYD1BfX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765255AbYD1Bfp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764896AbYD1BfX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Apr 2008 21:35:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753999AbYD1Bek
+	id S1765255AbYD1Bfp (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Apr 2008 21:35:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764737AbYD1BfT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Apr 2008 21:34:40 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:38687 "EHLO
+	Sun, 27 Apr 2008 21:35:19 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:59431 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753354AbYD1Bei (ORCPT
+	with ESMTP id S1764559AbYD1BfR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Apr 2008 21:34:38 -0400
-Message-ID: <481529AB.7050304@tabi.org>
-Date: Sun, 27 Apr 2008 20:34:35 -0500
-From: Timur Tabi <timur@tabi.org>
+	Sun, 27 Apr 2008 21:35:17 -0400
+Message-ID: <481529B6.6030802@freescale.com>
+Date: Sun, 27 Apr 2008 20:34:46 -0500
+From: timur@freescale.com
 User-Agent: Mozilla/5.0 (Macintosh; U; Intel Mac OS X; en-US; rv:1.8.1.13) Gecko/20080313 SeaMonkey/1.1.9
 MIME-Version: 1.0
 To: linux-kernel@vger.kernel.org
