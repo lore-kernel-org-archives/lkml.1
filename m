@@ -1,321 +1,225 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936470AbYD1SYa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935436AbYD1SYy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936470AbYD1SYa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 14:24:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936441AbYD1SWo
+	id S935436AbYD1SYy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 14:24:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935314AbYD1SWp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 14:22:44 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:39352 "EHLO mx1.redhat.com"
+	Mon, 28 Apr 2008 14:22:45 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:39368 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S936348AbYD1SWi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S936401AbYD1SWi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 28 Apr 2008 14:22:38 -0400
-Message-Id: <20080428181852.529494777@redhat.com>
+Message-Id: <20080428181852.356380291@redhat.com>
 References: <20080428181835.502876582@redhat.com>
 User-Agent: quilt/0.46-1
-Date: Mon, 28 Apr 2008 14:18:39 -0400
+Date: Mon, 28 Apr 2008 14:18:37 -0400
 From: Rik van Riel <riel@redhat.com>
 To: linux-kernel@vger.kernel.org
 Cc: lee.schermerhorn@hp.com, akpm@linux-foundation.org,
-       kosaki.motohiro@jp.fujitsu.com
-Subject: [PATCH -mm 04/15] use an array for the LRU pagevecs
-Content-Disposition: inline; filename=pagevec-array.patch
+       kosaki.motohiro@jp.fujitsu.com, Nick Piggin <npiggin@suse.de>,
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+Subject: [PATCH -mm 02/15] move isolate_lru_page() to vmscan.c
+Content-Disposition: inline; filename=np-01-move-and-rework-isolate_lru_page-v2.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Turn the pagevecs into an array just like the LRUs.  This significantly
-cleans up the source code and reduces the size of the kernel by about
-13kB after all the LRU lists have been created further down in the split
-VM patch series.
+V1 -> V2 [lts]:
++  fix botched merge -- add back "get_page_unless_zero()"
 
+  From: Nick Piggin <npiggin@suse.de>
+  To: Linux Memory Management <linux-mm@kvack.org>
+  Subject: [patch 1/4] mm: move and rework isolate_lru_page
+  Date:	Mon, 12 Mar 2007 07:38:44 +0100 (CET)
+
+isolate_lru_page logically belongs to be in vmscan.c than migrate.c.
+
+It is tough, because we don't need that function without memory migration
+so there is a valid argument to have it in migrate.c. However a subsequent
+patch needs to make use of it in the core mm, so we can happily move it
+to vmscan.c.
+
+Also, make the function a little more generic by not requiring that it
+adds an isolated page to a given list. Callers can do that.
+
+	Note that we now have '__isolate_lru_page()', that does
+	something quite different, visible outside of vmscan.c
+	for use with memory controller.  Methinks we need to
+	rationalize these names/purposes.	--lts
+
+Signed-off-by: Nick Piggin <npiggin@suse.de>
 Signed-off-by: Rik van Riel <riel@redhat.com>
-Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Signed-off-by: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
 
- include/linux/mmzone.h  |   15 +++++-
- include/linux/pagevec.h |   13 ++++-
- include/linux/swap.h    |   18 ++++++-
- mm/migrate.c            |   11 ----
- mm/swap.c               |   87 +++++++++++++++-----------------------
- 5 files changed, 76 insertions(+), 68 deletions(-)
-
-Index: linux-2.6.25-mm1/include/linux/mmzone.h
+Index: linux-2.6.25-mm1/include/linux/migrate.h
 ===================================================================
---- linux-2.6.25-mm1.orig/include/linux/mmzone.h	2008-04-24 10:46:43.000000000 -0400
-+++ linux-2.6.25-mm1/include/linux/mmzone.h	2008-04-24 11:59:51.000000000 -0400
-@@ -107,13 +107,22 @@ enum zone_stat_item {
- #endif
- 	NR_VM_ZONE_STAT_ITEMS };
+--- linux-2.6.25-mm1.orig/include/linux/migrate.h	2007-07-08 19:32:17.000000000 -0400
++++ linux-2.6.25-mm1/include/linux/migrate.h	2008-04-23 17:31:13.000000000 -0400
+@@ -25,7 +25,6 @@ static inline int vma_migratable(struct 
+ 	return 1;
+ }
  
-+#define LRU_BASE 0
-+
- enum lru_list {
--	LRU_INACTIVE,	/* must match order of NR_[IN]ACTIVE */
--	LRU_ACTIVE,	/*  "     "     "   "       "        */
-+	LRU_INACTIVE = LRU_BASE,	/* must match order of NR_[IN]ACTIVE */
-+	LRU_ACTIVE,			/*  "     "     "   "       "        */
- 	NR_LRU_LISTS };
+-extern int isolate_lru_page(struct page *p, struct list_head *pagelist);
+ extern int putback_lru_pages(struct list_head *l);
+ extern int migrate_page(struct address_space *,
+ 			struct page *, struct page *);
+@@ -42,8 +41,6 @@ extern int migrate_vmas(struct mm_struct
+ static inline int vma_migratable(struct vm_area_struct *vma)
+ 					{ return 0; }
  
- #define for_each_lru(l) for (l = 0; l < NR_LRU_LISTS; l++)
- 
-+static inline int is_active_lru(enum lru_list l)
-+{
-+	return (l == LRU_ACTIVE);
-+}
-+
-+enum lru_list page_lru(struct page *page);
-+
- struct per_cpu_pages {
- 	int count;		/* number of pages in the list */
- 	int high;		/* high watermark, emptying needed */
-Index: linux-2.6.25-mm1/mm/swap.c
+-static inline int isolate_lru_page(struct page *p, struct list_head *list)
+-					{ return -ENOSYS; }
+ static inline int putback_lru_pages(struct list_head *l) { return 0; }
+ static inline int migrate_pages(struct list_head *l, new_page_t x,
+ 		unsigned long private) { return -ENOSYS; }
+Index: linux-2.6.25-mm1/mm/internal.h
 ===================================================================
---- linux-2.6.25-mm1.orig/mm/swap.c	2008-04-24 10:46:43.000000000 -0400
-+++ linux-2.6.25-mm1/mm/swap.c	2008-04-24 11:59:51.000000000 -0400
-@@ -34,8 +34,7 @@
- /* How many pages do we try to swap or page in/out together? */
- int page_cluster;
+--- linux-2.6.25-mm1.orig/mm/internal.h	2008-04-22 10:33:45.000000000 -0400
++++ linux-2.6.25-mm1/mm/internal.h	2008-04-23 17:31:13.000000000 -0400
+@@ -34,6 +34,8 @@ static inline void __put_page(struct pag
+ 	atomic_dec(&page->_count);
+ }
  
--static DEFINE_PER_CPU(struct pagevec, lru_add_pvecs) = { 0, };
--static DEFINE_PER_CPU(struct pagevec, lru_add_active_pvecs) = { 0, };
-+static DEFINE_PER_CPU(struct pagevec[NR_LRU_LISTS], lru_add_pvecs) = { {0,}, };
- static DEFINE_PER_CPU(struct pagevec, lru_rotate_pvecs) = { 0, };
++extern int isolate_lru_page(struct page *page);
++
+ extern void __free_pages_bootmem(struct page *page, unsigned int order);
  
  /*
-@@ -96,6 +95,23 @@ void put_pages_list(struct list_head *pa
- }
- EXPORT_SYMBOL(put_pages_list);
- 
-+/**
-+ * page_lru - which LRU list should a page be on?
-+ * @page: the page to test
-+ *
-+ * Returns the LRU list a page should be on, as an index
-+ * into the array of LRU lists.
-+ */
-+enum lru_list page_lru(struct page *page)
-+{
-+	enum lru_list lru = LRU_BASE;
-+
-+	if (PageActive(page))
-+		lru += LRU_ACTIVE;
-+
-+	return lru;
-+}
-+
- /*
-  * pagevec_move_tail() must be called with IRQ disabled.
-  * Otherwise this may cause nasty races.
-@@ -186,28 +202,29 @@ void mark_page_accessed(struct page *pag
- 
- EXPORT_SYMBOL(mark_page_accessed);
- 
--/**
-- * lru_cache_add: add a page to the page lists
-- * @page: the page to add
-- */
--void lru_cache_add(struct page *page)
-+void __lru_cache_add(struct page *page, enum lru_list lru)
- {
--	struct pagevec *pvec = &get_cpu_var(lru_add_pvecs);
-+	struct pagevec *pvec = &get_cpu_var(lru_add_pvecs)[lru];
- 
- 	page_cache_get(page);
- 	if (!pagevec_add(pvec, page))
--		__pagevec_lru_add(pvec);
-+		____pagevec_lru_add(pvec, lru);
- 	put_cpu_var(lru_add_pvecs);
- }
- 
--void lru_cache_add_active(struct page *page)
-+/**
-+ * lru_cache_add_lru - add a page to a page list
-+ * @page: the page to be added to the LRU.
-+ * @lru: the LRU list to which the page is added.
-+ */
-+void lru_cache_add_lru(struct page *page, enum lru_list lru)
- {
--	struct pagevec *pvec = &get_cpu_var(lru_add_active_pvecs);
-+	if (PageActive(page)) {
-+		ClearPageActive(page);
-+	}
- 
--	page_cache_get(page);
--	if (!pagevec_add(pvec, page))
--		__pagevec_lru_add_active(pvec);
--	put_cpu_var(lru_add_active_pvecs);
-+	VM_BUG_ON(PageLRU(page) || PageActive(page));
-+	__lru_cache_add(page, lru);
- }
- 
- /*
-@@ -217,15 +234,15 @@ void lru_cache_add_active(struct page *p
-  */
- static void drain_cpu_pagevecs(int cpu)
- {
-+	struct pagevec *pvecs = per_cpu(lru_add_pvecs, cpu);
- 	struct pagevec *pvec;
-+	int lru;
- 
--	pvec = &per_cpu(lru_add_pvecs, cpu);
--	if (pagevec_count(pvec))
--		__pagevec_lru_add(pvec);
--
--	pvec = &per_cpu(lru_add_active_pvecs, cpu);
--	if (pagevec_count(pvec))
--		__pagevec_lru_add_active(pvec);
-+	for_each_lru(lru) {
-+		pvec = &pvecs[lru - LRU_BASE];
-+		if (pagevec_count(pvec))
-+			____pagevec_lru_add(pvec, lru);
-+	}
- 
- 	pvec = &per_cpu(lru_rotate_pvecs, cpu);
- 	if (pagevec_count(pvec)) {
-@@ -379,7 +396,7 @@ void __pagevec_release_nonlru(struct pag
-  * Add the passed pages to the LRU, then drop the caller's refcount
-  * on them.  Reinitialises the caller's pagevec.
-  */
--void __pagevec_lru_add(struct pagevec *pvec)
-+void ____pagevec_lru_add(struct pagevec *pvec, enum lru_list lru)
- {
- 	int i;
- 	struct zone *zone = NULL;
-@@ -396,7 +413,9 @@ void __pagevec_lru_add(struct pagevec *p
- 		}
- 		VM_BUG_ON(PageLRU(page));
- 		SetPageLRU(page);
--		add_page_to_inactive_list(zone, page);
-+		if (is_active_lru(lru))
-+			SetPageActive(page);
-+		add_page_to_lru_list(zone, page, lru);
- 	}
- 	if (zone)
- 		spin_unlock_irq(&zone->lru_lock);
-@@ -404,34 +423,7 @@ void __pagevec_lru_add(struct pagevec *p
- 	pagevec_reinit(pvec);
- }
- 
--EXPORT_SYMBOL(__pagevec_lru_add);
--
--void __pagevec_lru_add_active(struct pagevec *pvec)
--{
--	int i;
--	struct zone *zone = NULL;
--
--	for (i = 0; i < pagevec_count(pvec); i++) {
--		struct page *page = pvec->pages[i];
--		struct zone *pagezone = page_zone(page);
--
--		if (pagezone != zone) {
--			if (zone)
--				spin_unlock_irq(&zone->lru_lock);
--			zone = pagezone;
--			spin_lock_irq(&zone->lru_lock);
--		}
--		VM_BUG_ON(PageLRU(page));
--		SetPageLRU(page);
--		VM_BUG_ON(PageActive(page));
--		SetPageActive(page);
--		add_page_to_active_list(zone, page);
--	}
--	if (zone)
--		spin_unlock_irq(&zone->lru_lock);
--	release_pages(pvec->pages, pvec->nr, pvec->cold);
--	pagevec_reinit(pvec);
--}
-+EXPORT_SYMBOL(____pagevec_lru_add);
- 
- /*
-  * Try to drop buffers from the pages in a pagevec
-Index: linux-2.6.25-mm1/include/linux/pagevec.h
-===================================================================
---- linux-2.6.25-mm1.orig/include/linux/pagevec.h	2007-07-08 19:32:17.000000000 -0400
-+++ linux-2.6.25-mm1/include/linux/pagevec.h	2008-04-24 11:59:51.000000000 -0400
-@@ -23,8 +23,7 @@ struct pagevec {
- void __pagevec_release(struct pagevec *pvec);
- void __pagevec_release_nonlru(struct pagevec *pvec);
- void __pagevec_free(struct pagevec *pvec);
--void __pagevec_lru_add(struct pagevec *pvec);
--void __pagevec_lru_add_active(struct pagevec *pvec);
-+void ____pagevec_lru_add(struct pagevec *pvec, enum lru_list lru);
- void pagevec_strip(struct pagevec *pvec);
- unsigned pagevec_lookup(struct pagevec *pvec, struct address_space *mapping,
- 		pgoff_t start, unsigned nr_pages);
-@@ -81,6 +80,16 @@ static inline void pagevec_free(struct p
- 		__pagevec_free(pvec);
- }
- 
-+static inline void __pagevec_lru_add(struct pagevec *pvec)
-+{
-+	____pagevec_lru_add(pvec, LRU_INACTIVE);
-+}
-+
-+static inline void __pagevec_lru_add_active(struct pagevec *pvec)
-+{
-+	____pagevec_lru_add(pvec, LRU_ACTIVE);
-+}
-+
- static inline void pagevec_lru_add(struct pagevec *pvec)
- {
- 	if (pagevec_count(pvec))
-Index: linux-2.6.25-mm1/include/linux/swap.h
-===================================================================
---- linux-2.6.25-mm1.orig/include/linux/swap.h	2008-04-22 10:33:44.000000000 -0400
-+++ linux-2.6.25-mm1/include/linux/swap.h	2008-04-24 11:59:51.000000000 -0400
-@@ -171,8 +171,8 @@ extern unsigned int nr_free_pagecache_pa
- 
- 
- /* linux/mm/swap.c */
--extern void lru_cache_add(struct page *);
--extern void lru_cache_add_active(struct page *);
-+extern void __lru_cache_add(struct page *, enum lru_list lru);
-+extern void lru_cache_add_lru(struct page *, enum lru_list lru);
- extern void activate_page(struct page *);
- extern void mark_page_accessed(struct page *);
- extern void lru_add_drain(void);
-@@ -180,6 +180,20 @@ extern int lru_add_drain_all(void);
- extern void rotate_reclaimable_page(struct page *page);
- extern void swap_setup(void);
- 
-+/**
-+ * lru_cache_add: add a page to the page lists
-+ * @page: the page to add
-+ */
-+static inline void lru_cache_add(struct page *page)
-+{
-+	__lru_cache_add(page, LRU_INACTIVE);
-+}
-+
-+static inline void lru_cache_add_active(struct page *page)
-+{
-+	__lru_cache_add(page, LRU_ACTIVE);
-+}
-+
- /* linux/mm/vmscan.c */
- extern unsigned long try_to_free_pages(struct zonelist *zonelist, int order,
- 					gfp_t gfp_mask);
 Index: linux-2.6.25-mm1/mm/migrate.c
 ===================================================================
---- linux-2.6.25-mm1.orig/mm/migrate.c	2008-04-23 17:31:13.000000000 -0400
-+++ linux-2.6.25-mm1/mm/migrate.c	2008-04-24 11:59:51.000000000 -0400
-@@ -54,16 +54,7 @@ int migrate_prep(void)
+--- linux-2.6.25-mm1.orig/mm/migrate.c	2008-04-22 10:33:26.000000000 -0400
++++ linux-2.6.25-mm1/mm/migrate.c	2008-04-23 17:31:13.000000000 -0400
+@@ -36,36 +36,6 @@
+ #define lru_to_page(_head) (list_entry((_head)->prev, struct page, lru))
  
- static inline void move_to_lru(struct page *page)
- {
--	if (PageActive(page)) {
--		/*
--		 * lru_cache_add_active checks that
--		 * the PG_active bit is off.
--		 */
--		ClearPageActive(page);
--		lru_cache_add_active(page);
--	} else {
--		lru_cache_add(page);
+ /*
+- * Isolate one page from the LRU lists. If successful put it onto
+- * the indicated list with elevated page count.
+- *
+- * Result:
+- *  -EBUSY: page not on LRU list
+- *  0: page removed from LRU list and added to the specified list.
+- */
+-int isolate_lru_page(struct page *page, struct list_head *pagelist)
+-{
+-	int ret = -EBUSY;
+-
+-	if (PageLRU(page)) {
+-		struct zone *zone = page_zone(page);
+-
+-		spin_lock_irq(&zone->lru_lock);
+-		if (PageLRU(page) && get_page_unless_zero(page)) {
+-			ret = 0;
+-			ClearPageLRU(page);
+-			if (PageActive(page))
+-				del_page_from_active_list(zone, page);
+-			else
+-				del_page_from_inactive_list(zone, page);
+-			list_add_tail(&page->lru, pagelist);
+-		}
+-		spin_unlock_irq(&zone->lru_lock);
 -	}
-+	lru_cache_add_lru(page, page_lru(page));
- 	put_page(page);
+-	return ret;
+-}
+-
+-/*
+  * migrate_prep() needs to be called before we start compiling a list of pages
+  * to be migrated using isolate_lru_page().
+  */
+@@ -879,7 +849,9 @@ static int do_move_pages(struct mm_struc
+ 				!migrate_all)
+ 			goto put_and_set;
+ 
+-		err = isolate_lru_page(page, &pagelist);
++		err = isolate_lru_page(page);
++		if (!err)
++			list_add_tail(&page->lru, &pagelist);
+ put_and_set:
+ 		/*
+ 		 * Either remove the duplicate refcount from
+Index: linux-2.6.25-mm1/mm/vmscan.c
+===================================================================
+--- linux-2.6.25-mm1.orig/mm/vmscan.c	2008-04-22 10:33:45.000000000 -0400
++++ linux-2.6.25-mm1/mm/vmscan.c	2008-04-23 17:31:13.000000000 -0400
+@@ -816,6 +816,51 @@ static unsigned long clear_active_flags(
+ 	return nr_active;
  }
  
++/**
++ * isolate_lru_page - tries to isolate a page from its LRU list
++ * @page: page to isolate from its LRU list
++ *
++ * Isolates a @page from an LRU list, clears PageLRU and adjusts the
++ * vmstat statistic corresponding to whatever LRU list the page was on.
++ *
++ * Returns 0 if the page was removed from an LRU list.
++ * Returns -EBUSY if the page was not on an LRU list.
++ *
++ * The returned page will have PageLRU() cleared.  If it was found on
++ * the active list, it will have PageActive set.  That flag may need
++ * to be cleared by the caller before letting the page go.
++ *
++ * The vmstat statistic corresponding to the list on which the page was
++ * found will be decremented.
++ *
++ * Restrictions:
++ * (1) Must be called with an elevated refcount on the page. This is a
++ *     fundamentnal difference from isolate_lru_pages (which is called
++ *     without a stable reference).
++ * (2) the lru_lock must not be held.
++ * (3) interrupts must be enabled.
++ */
++int isolate_lru_page(struct page *page)
++{
++	int ret = -EBUSY;
++
++	if (PageLRU(page)) {
++		struct zone *zone = page_zone(page);
++
++		spin_lock_irq(&zone->lru_lock);
++		if (PageLRU(page) && get_page_unless_zero(page)) {
++			ret = 0;
++			ClearPageLRU(page);
++			if (PageActive(page))
++				del_page_from_active_list(zone, page);
++			else
++				del_page_from_inactive_list(zone, page);
++		}
++		spin_unlock_irq(&zone->lru_lock);
++	}
++	return ret;
++}
++
+ /*
+  * shrink_inactive_list() is a helper for shrink_zone().  It returns the number
+  * of reclaimed pages
+Index: linux-2.6.25-mm1/mm/mempolicy.c
+===================================================================
+--- linux-2.6.25-mm1.orig/mm/mempolicy.c	2008-04-22 10:33:45.000000000 -0400
++++ linux-2.6.25-mm1/mm/mempolicy.c	2008-04-23 17:31:13.000000000 -0400
+@@ -93,6 +93,8 @@
+ #include <asm/tlbflush.h>
+ #include <asm/uaccess.h>
+ 
++#include "internal.h"
++
+ /* Internal flags */
+ #define MPOL_MF_DISCONTIG_OK (MPOL_MF_INTERNAL << 0)	/* Skip checks for continuous vmas */
+ #define MPOL_MF_INVERT (MPOL_MF_INTERNAL << 1)		/* Invert check for nodemask */
+@@ -758,8 +760,11 @@ static void migrate_page_add(struct page
+ 	/*
+ 	 * Avoid migrating a page that is shared with others.
+ 	 */
+-	if ((flags & MPOL_MF_MOVE_ALL) || page_mapcount(page) == 1)
+-		isolate_lru_page(page, pagelist);
++	if ((flags & MPOL_MF_MOVE_ALL) || page_mapcount(page) == 1) {
++		if (!isolate_lru_page(page)) {
++			list_add_tail(&page->lru, pagelist);
++		}
++	}
+ }
+ 
+ static struct page *new_node_page(struct page *page, unsigned long node, int **x)
 
 -- 
 All Rights Reversed
