@@ -1,62 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965983AbYD1Sg6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966082AbYD1SlT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965983AbYD1Sg6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 14:36:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933293AbYD1Sgs
+	id S966082AbYD1SlT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 14:41:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934007AbYD1SlE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 14:36:48 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:51096 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S933131AbYD1Sgr (ORCPT
+	Mon, 28 Apr 2008 14:41:04 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:50580 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933987AbYD1SlD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 14:36:47 -0400
-Date: Mon, 28 Apr 2008 11:36:10 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+	Mon, 28 Apr 2008 14:41:03 -0400
+Date: Mon, 28 Apr 2008 14:40:51 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
        Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
 Subject: Re: [patch 00/37] Linux Kernel Markers instrumentation for
- sched-devel.git
-Message-Id: <20080428113610.b2d1e8e4.akpm@linux-foundation.org>
-In-Reply-To: <1209238735.6441.4.camel@lappy>
-References: <20080424150324.802695381@polymtl.ca>
-	<1209238735.6441.4.camel@lappy>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	sched-devel.git
+Message-ID: <20080428184050.GA23391@infradead.org>
+References: <20080424150324.802695381@polymtl.ca> <1209238735.6441.4.camel@lappy> <20080428113610.b2d1e8e4.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080428113610.b2d1e8e4.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 26 Apr 2008 21:38:54 +0200 Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+On Mon, Apr 28, 2008 at 11:36:10AM -0700, Andrew Morton wrote:
+> It hides the cosmetically-ugly bits, but not the deeply ugly: each of these
+> trace points is an extension to the kernel->userspace API, with all that
+> this implies.
 
-> On Thu, 2008-04-24 at 11:03 -0400, Mathieu Desnoyers wrote:
-> > Hi Ingo,
-> > 
-> > Here is a rather large patchset applying kernel instrumentation to
-> > sched-devel.git. It includes, mainly :
-> 
-> I saw this land in sched-devel, how about this:
-> 
-> ---
-> Subject: sched: de-uglyfy marker impact
-> 
-> These trace_mark() things look like someone puked all over the code,
-
-lol.
-
-> lets hide the ugly bits.
-
-It hides the cosmetically-ugly bits, but not the deeply ugly: each of these
-trace points is an extension to the kernel->userspace API, with all that
-this implies.
-
-> +static inline
-> +void trace_kernel_sched_wakeup(struct rq *rq, struct task_struct *p)
-
-When doing this please put the newline immediately preceding the function
-name.  Putting it between the `inline' and the return-type-declaration is
-weird.
-
+Not at all.  It's only accessibe to kernel code, so it per defintion
+can't be a userspace API.
 
