@@ -1,82 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937399AbYD1UmT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937654AbYD1Umx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937399AbYD1UmT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 16:42:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933008AbYD1UmF
+	id S937654AbYD1Umx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 16:42:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936529AbYD1Umj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 16:42:05 -0400
-Received: from smtpq2.groni1.gr.home.nl ([213.51.130.201]:47366 "EHLO
-	smtpq2.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765500AbYD1UmD (ORCPT
+	Mon, 28 Apr 2008 16:42:39 -0400
+Received: from mga11.intel.com ([192.55.52.93]:44123 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933008AbYD1Umi convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 16:42:03 -0400
-Message-ID: <4816368A.1070100@keyaccess.nl>
-Date: Mon, 28 Apr 2008 22:41:46 +0200
-From: Rene Herman <rene.herman@keyaccess.nl>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+	Mon, 28 Apr 2008 16:42:38 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,718,1199692800"; 
+   d="scan'208";a="322291194"
+x-mimeole: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-To: Bjorn Helgaas <bjorn.helgaas@hp.com>
-CC: Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Adam Belay <ambx1@neo.rr.com>,
-       Adam M Belay <abelay@mit.edu>, Li Shaohua <shaohua.li@intel.com>,
-       Matthieu Castet <castet.matthieu@free.fr>,
-       Thomas Renninger <trenn@suse.de>, Jaroslav Kysela <perex@perex.cz>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [patch 41/54] PNP: remove pnp_resource_table references from
- resource decoders
-References: <20080425183807.366134771@ldl.fc.hp.com> <20080425183932.457629051@ldl.fc.hp.com> <4813AC7D.9000006@keyaccess.nl> <200804281436.21061.bjorn.helgaas@hp.com>
-In-Reply-To: <200804281436.21061.bjorn.helgaas@hp.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -1.0 (-)
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH] ARCH: Fix 32-bit x86 MSI-X allocation leakage
+Date: Mon, 28 Apr 2008 13:42:40 -0700
+Message-ID: <D5C1322C3E673F459512FB59E0DDC32904F9EC8C@orsmsx414.amr.corp.intel.com>
+In-Reply-To: <alpine.LFD.1.10.0804282216570.3261@apollo.tec.linutronix.de>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH] ARCH: Fix 32-bit x86 MSI-X allocation leakage
+Thread-Index: AcipbrTiXKNe5aE5QuS00730ftqEaQAACccw
+References: <20080426005850.7098.77479.stgit@scrappy.jf.intel.com> <alpine.LFD.1.10.0804282216570.3261@apollo.tec.linutronix.de>
+From: "Waskiewicz Jr, Peter P" <peter.p.waskiewicz.jr@intel.com>
+To: "Thomas Gleixner" <tglx@linutronix.de>
+Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "LKML" <linux-kernel@vger.kernel.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>, <netdev@vger.kernel.org>
+X-OriginalArrivalTime: 28 Apr 2008 20:42:37.0418 (UTC) FILETIME=[64E464A0:01C8A970]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 28-04-08 22:36, Bjorn Helgaas wrote:
-> On Saturday 26 April 2008 04:28:13 pm Rene Herman wrote:
->> On 25-04-08 20:38, Bjorn Helgaas wrote:
->>
->>> Index: work10/drivers/pnp/pnpacpi/rsparser.c
->>> ===================================================================
->>> --- work10.orig/drivers/pnp/pnpacpi/rsparser.c	2008-04-25 11:15:08.000000000 -0600
->>> +++ work10/drivers/pnp/pnpacpi/rsparser.c	2008-04-25 11:15:09.000000000 -0600
->>> @@ -82,8 +82,8 @@
->>>  						u32 gsi, int triggering,
->>>  						int polarity, int shareable)
->>>  {
->>> -	struct pnp_resource_table *res = dev->res;
->>> -	int i = 0;
->>> +	struct resource *res;
->>> +	int i;
->>>  	int irq;
->>>  	int p, t;
->>>  	static unsigned char warned;
->>> @@ -91,9 +91,11 @@
->>>  	if (!valid_IRQ(gsi))
->>>  		return;
->>>  
->>> -	while (!(res->irq_resource[i].flags & IORESOURCE_UNSET) &&
->>> -	       i < PNP_MAX_IRQ)
->>> -		i++;
->>> +	for (i = 0; i < PNP_MAX_IRQ; i++) {
->>> +		res = &dev->res->irq_resource[i];
->>> +		if (res->flags & IORESOURCE_UNSET)
->>> +			break;
->>> +	}
->> Another possible user of pnp_resource_valid.
+> On Fri, 25 Apr 2008, PJ Waskiewicz wrote:
+> > This bug was introduced in the 2.6.24 i386/x86_64 tree merge, where
 > 
-> I changed this, and also changed the array lookups to use
-> pnp_get_resource().  And I made similar changes in ISAPNP.
+> Can you please explain what exactly caused the bug. 
+> Definitely not the move from arch/i386 to arch/x86 as the 
+> code there was not changed at all and has not be changed since then.
 > 
-> And I replaced many of these &dev->res->irq_resource[] things
-> with pnp_get_resource().  This change rippled through several
-> subsequent patches, but it's just more mechanical changes.
+> CC'ed Eric as well.
 
-Great. If you can do the same thing as previously, and leave out / remove my 
-Acked-By from the ones that changed so that I can easily identify them, I'll 
-  go over the remaining ones (tomorrow, probably).
+Eric replied with the actual commit during the 2.6.24 merge window that
+introduced this bug.  The io_apic.c code from the i386 tree did not stay
+completely static when it was merged into the x86 io_apic_32.c code.
+Here is the commit that Eric identified that introduced the defect:
 
-Rene.
+In particular commit dbeb2be21d678c49a8d8bbf774903df15dd55474
+Author: Rusty Russell <rusty@rustcorp.com.au>
+Date:   Fri Oct 19 20:35:03 2007 +0200
 
+    i386: introduce "used_vectors" bitmap which can be used to reserve
+vectors.
+    
+    This simplifies the io_apic.c __assign_irq_vector() logic and
+removes
+    the explicit SYSCALL_VECTOR check, and also allows for vectors to be
+    reserved by other mechanisms (ie. lguest).
+    
+    [ tglx: arch/x86 adaptation ]
+    
+    Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+    Signed-off-by: Andi Kleen <ak@suse.de>
+    Signed-off-by: Ingo Molnar <mingo@elte.hu>
+    Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 
+Basically the code introduced the test_and_set_bit() on the used_vectors
+bitmap, but it didn't have a corresponding clear_bit() on IRQ
+destruction.
+
+Cheers,
+-PJ Waskiewicz
