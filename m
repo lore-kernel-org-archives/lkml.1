@@ -1,90 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932212AbYD1JBp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932292AbYD1JEA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932212AbYD1JBp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 05:01:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752826AbYD1JBg
+	id S932292AbYD1JEA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 05:04:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752913AbYD1JDu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 05:01:36 -0400
-Received: from fk-out-0910.google.com ([209.85.128.185]:9709 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752454AbYD1JBg (ORCPT
+	Mon, 28 Apr 2008 05:03:50 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:53850 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752826AbYD1JDu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 05:01:36 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=TxLQtWZPEB+YUoGtYLNdgu2y5+7mbf2b4GVkAdguIYWtYqZo18wnv5t5Wk2KWCQcVIGxiZM2z5zJJk9IaGjIjj7MfyIhD0Az1z7UVxxiTDcsB5VQd6f0XzVVZxZEUQyfjyT01g9c3Wwfm8CUEvgVQG2nw++8UyAWOkeKZCjJPLg=
-Message-ID: <ce0170d90804280201v77e4302crb8171357a3ef3bbc@mail.gmail.com>
-Date: Mon, 28 Apr 2008 06:01:34 -0300
-From: "Sergio Luis" <sergio@uece.br>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [PATCH] build fix for smp
-Cc: "Glauber de Oliveira Costa" <gcosta@redhat.com>,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       tglx@linutronix.de, ak@suse.de, "Avi Kivity" <avi@qumranet.com>
-In-Reply-To: <20080428085044.GB16963@elte.hu>
+	Mon, 28 Apr 2008 05:03:50 -0400
+Date: Mon, 28 Apr 2008 05:03:46 -0400
+From: ext Christoph Hellwig <hch@infradead.org>
+To: Adrian Hunter <ext-adrian.hunter@nokia.com>
+Cc: ext Christoph Hellwig <hch@infradead.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Artem.Bityutskiy@nokia.com,
+       Artem Bityutskiy <dedekind@yandex.ru>,
+       LKML <linux-kernel@vger.kernel.org>,
+       David Woodhouse <dwmw2@infradead.org>
+Subject: Re: [RFC PATCH 26/26] UBIFS: include FS to compilation
+Message-ID: <20080428090346.GB14100@infradead.org>
+References: <1206629746-4298-27-git-send-email-Artem.Bityutskiy@nokia.com> <84144f020804010039n47133bd3l63f02258a2670e72@mail.gmail.com> <47F1F7A6.5020105@yandex.ru> <84144f020804010215o209fbed8gf629dc6557fcd091@mail.gmail.com> <47F1FF98.9020809@nokia.com> <84144f020804010304w7057a68cqa5b9a7a5364b9489@mail.gmail.com> <47F20DEE.7090105@nokia.com> <84144f020804010433xafc6f28o5a5375ce82903a7a@mail.gmail.com> <20080426093732.GB17730@infradead.org> <4815784F.2070601@nokia.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <12059466674071-git-send-email-gcosta@redhat.com>
-	 <20080319195217.GA20762@elte.hu>
-	 <ce0170d90804280052y130c3fa2pbf3f97147f03b159@mail.gmail.com>
-	 <20080428085044.GB16963@elte.hu>
-X-Google-Sender-Auth: aed45ae1ee9970e1
+In-Reply-To: <4815784F.2070601@nokia.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 28, 2008 at 5:50 AM, Ingo Molnar <mingo@elte.hu> wrote:
+On Mon, Apr 28, 2008 at 10:10:07AM +0300, Adrian Hunter wrote:
+>>> So instead of arguing about this you really ought to look at what
+>>> SLUB, for example, does. It's perfectly okay to have _debugging
+>>> checks_ compiled out (stuff like verify_inode and such) but at the
+>>> assertion level it makes no sense whatsoever!
+>>
+>> Yes, having this in filesystems is not very nice.
 >
->  * Sergio Luis <sergio@uece.br> wrote:
->
->  > Hello, what's the final fix for this issue? 2.6.25-git11 is still
->  > broken, just gave me
->
->  > arch/x86/kernel/built-in.o: In function `native_smp_send_stop':
->  > smp.c:(.text+0xc751): undefined reference to `reboot_force'
->  > make: *** [.tmp_vmlinux1] Error 1
->
->  > for a randconfig. Same reported at http://lkml.org/lkml/2008/4/27/39
->
->  btw., that's a VISWS config - that wont boot on any PC. The patch below
->  should fix this.
+> A technical reason would be more compelling than "not very nice".
 
-Yep, it does fix it thanks.
--sergio
+These checks are if properly maintained not harmful for the code,
+but they make the code less readable and there's of course the chance
+that they get out of sync.  That's why the term "not very nice" is
+entirely apropinquate here.
 
+>> If someone feels
+>> very strong about interface assertation we should add them at the
+>> method level boundary so that the interface is verified for all
+>> filesystems.
+>>
 >
->         Ingo
+> The checks are not valid for all file systems.
 >
->  --------------------------->
->  Subject: x86 VISWS: build fix
->  From: Ingo Molnar <mingo@elte.hu>
->  Date: Mon Apr 28 10:46:58 CEST 2008
+> The point of the checks as preconditions is lost if they moved elsewhere.
 >
->  the 'reboot_force' flag is a notion that non-PC subarchitectures do
->  not have.
->
->  Signed-off-by: Ingo Molnar <mingo@elte.hu>
->  ---
->   include/asm-x86/proto.h |    4 ++++
->   1 file changed, 4 insertions(+)
->
->  Index: linux/include/asm-x86/proto.h
->  ===================================================================
->  --- linux.orig/include/asm-x86/proto.h
->  +++ linux/include/asm-x86/proto.h
->  @@ -20,7 +20,11 @@ extern void syscall32_cpu_init(void);
->
->   extern void check_efer(void);
->
->  +#ifdef X86_BIOS_REBOOT
->   extern int reboot_force;
->  +#else
->  +static const int reboot_force = 0;
->  +#endif
->
->   long do_arch_prctl(struct task_struct *task, int code, unsigned long addr);
->
->
+> VFS code paths are not simple, so the suggestion is impractical anyway.
+
+Most of these checks are indeed generic.  Those that arise from special
+filesystem invariants like not having unmapped buffers due to
+implementing ->page_mkwrite should for now be checked in the filesystem,
+although I'd like to make sure this is true for all filesystems
+long-term.
