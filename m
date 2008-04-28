@@ -1,108 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937885AbYD1V0o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965827AbYD1V1v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937885AbYD1V0o (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 17:26:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936545AbYD1V0c
+	id S965827AbYD1V1v (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 17:27:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935087AbYD1V1j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 17:26:32 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:53262 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932105AbYD1V0b (ORCPT
+	Mon, 28 Apr 2008 17:27:39 -0400
+Received: from mga09.intel.com ([134.134.136.24]:15045 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934594AbYD1V1i convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 17:26:31 -0400
-Date: Mon, 28 Apr 2008 18:25:01 -0300
-From: Mauro Carvalho Chehab <mchehab@infradead.org>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Michael Krufky <mkrufky@linuxtv.org>
-Subject: Re: [patch] dvb: build failure fix
-Message-ID: <20080428182501.5bb87058@gaivota>
-In-Reply-To: <20080428210122.GC2813@cs181133002.pp.htv.fi>
-References: <20080428162421.GA16566@elte.hu>
-	<20080428180457.GY2813@cs181133002.pp.htv.fi>
-	<20080428195330.GE9907@elte.hu>
-	<20080428210122.GC2813@cs181133002.pp.htv.fi>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.9; x86_64-mandriva-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+	Mon, 28 Apr 2008 17:27:38 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,718,1199692800"; 
+   d="scan'208";a="322307397"
+x-mimeole: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH] ARCH: Fix 32-bit x86 MSI-X allocation leakage
+Date: Mon, 28 Apr 2008 14:27:40 -0700
+Message-ID: <D5C1322C3E673F459512FB59E0DDC32904F9ED35@orsmsx414.amr.corp.intel.com>
+In-Reply-To: <200804281909.m3SJ9v0k015496@frodo.ebiederm.org>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH] ARCH: Fix 32-bit x86 MSI-X allocation leakage
+Thread-Index: AcipY3uzxpfKXiGVTCOGuxEnYhoVDAAElpWQ
+References: <20080426005850.7098.77479.stgit@scrappy.jf.intel.com> <200804281909.m3SJ9v0k015496@frodo.ebiederm.org>
+From: "Waskiewicz Jr, Peter P" <peter.p.waskiewicz.jr@intel.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: <torvalds@linux-foundation.org>, <linux-kernel@vger.kernel.org>,
+       <netdev@vger.kernel.org>
+X-OriginalArrivalTime: 28 Apr 2008 21:27:36.0789 (UTC) FILETIME=[ADD7B850:01C8A976]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 29 Apr 2008 00:01:22 +0300
-Adrian Bunk <bunk@kernel.org> wrote:
+> Thanks Jesse for forwarding this to me.
 
-> On Mon, Apr 28, 2008 at 09:53:30PM +0200, Ingo Molnar wrote:
-> > 
-> > * Adrian Bunk <bunk@kernel.org> wrote:
-> > 
-> > > On Mon, Apr 28, 2008 at 06:24:21PM +0200, Ingo Molnar wrote:
-> > > > 
-> > > > fix build failure found via x86.git randconfig testing:
-> > > > 
-> > > >  drivers/built-in.o: In function `tda829x_attach':
-> > > >  : undefined reference to `tda827x_attach'
-> > > >  drivers/built-in.o: In function `tda829x_attach':
-> > > >  : undefined reference to `tda18271_attach'
-> > > > 
-> > > > build failure is due to this nasty dependency:
-> > > > 
-> > > >   CONFIG_DVB_CORE=m but CONFIG_TUNER_TDA8290=y.
-> > 
-> > > It might work around the problem in your specific configuration, but 
-> > > it's not the correct solution.
-> > > 
-> > > Please send your .config .
-> > 
-> > i dont have it anymore,
-> 
-> That's bad since it makes it harder for other people to reproduce the 
-> problem.
-> 
-> > but the key was what i wrote in the changelog 
-> > above:
-> > 
-> >   CONFIG_DVB_CORE=m
-> >   CONFIG_TUNER_TDA8290=y
-> > 
-> > if you look at the symbols above, their definition sites, and the 
-> > dependencies between them you'll see why that breaks the build. (There 
-> > might be more to it, this area has been a frequent source of problems.)
-> 
-> TUNER_TDA8290 is the only affected driver, your patch also adds wrong 
-> dependences to other driver.
-> 
-> And the underlying problem is that it has both an analog an a DVB tuner, 
-> and although forcing a dependency on DVB_CORE might make the randconfig 
-> crowd happy it's not the correct solution.
-> 
-> Mauro, where were we regarding this issue?
-> 
-> What about:
-> 
-> config TUNER_TDA8290
->         tristate "TDA 8290/8295 + 8275(a)/18271 tuner combo"
->         depends on I2C
-> 	depends on DVB_CORE || DVB_CORE=n
->         select DVB_TDA827X if DVB_CORE
->         select DVB_TDA18271 if DVB_CORE
->         default m if VIDEO_TUNER_CUSTOMIZE
->         help
->           Say Y here to include support for Philips TDA8290+8275(a) tuner.
-> 
-> Or is there some twist I'm missing?
+Yes, Jesse took care of that oversight for me.  I owe him a tasty
+beverage.  :-)
 
+> The patch below does looks ok in terms of fixing the issue 
+> with respect to MSIs.
+> 
+> Unfortunately the entire used_vectors concept appears broken. 
+>  Rusty is not taking vector_lock.  used_vectors as designed 
+> can not work on x86_64 as vectors are allocated to interrupts 
+> in a per cpu manner, resulting in unnecessary divergences 
+> between the two pieces of code.  used_vectors is an an extra 
+> data structure that we have to keep in sync, and failing to 
+> keep that data structure in sync is why we have a problem.
+> 
+> For the concept of allocating a non 0x80 vector for 
+> interrupts Rusty was on the right track.  His implementation 
+> just appears to be broken in the corner cases, and has a 
+> design we can not use long term.
+> 
+> To fix this my inclination is to revert:
+> dbeb2be21d678c49a8d8bbf774903df15dd55474 (the infracture) and 
+> c18acd73ffc209def08003a1927473096f66c5ad (the lguest user) as 
+> we need to rework those pieces of code anyway, and then work 
+> with Rusty to come up with something that we can share on x86 
+> and x86_64.
 
-This will fix compilation, but some drivers will be broken, since tda8275 is
-needed even for some analog-only drivers.
-
-It would be better to do a "select DVB_CORE", although this is also ugly.
-
-I'm pinging Mkrufky. He is the one that touched a lot on those drivers. Maybe
-he can come up with a better solution.
+Either way, I'm fine if that gets reverted or not, just as long as we
+don't revert back to leaking vectors on device unload.  But if things
+are somewhat functional today, I'd say leave the code in there until the
+proper solution can be worked out.  Then go ahead and pull it out and
+put the new bits in, so anyone currently using the functionality
+provided isn't left out in the cold.  That is assuming that these bits
+are being used...
 
 Cheers,
-Mauro
+-PJ Waskiewicz
