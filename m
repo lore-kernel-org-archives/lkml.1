@@ -1,61 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965148AbYD1Pot@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965059AbYD1QAF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965148AbYD1Pot (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 11:44:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964976AbYD1Pjq
+	id S965059AbYD1QAF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 12:00:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934142AbYD1P7x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 11:39:46 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:35025 "EHLO smtp5.pp.htv.fi"
+	Mon, 28 Apr 2008 11:59:53 -0400
+Received: from www.tglx.de ([62.245.132.106]:35662 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964971AbYD1Pjp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 11:39:45 -0400
-Date: Mon, 28 Apr 2008 18:39:12 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Mauro Carvalho Chehab <mchehab@infradead.org>
-Cc: v4l-dvb-maintainer@linuxtv.org, linux-kernel@vger.kernel.org
-Subject: [2.6 patch] make em28xx_capture_start() static
-Message-ID: <20080428153912.GM2813@cs181133002.pp.htv.fi>
+	id S933622AbYD1P7w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Apr 2008 11:59:52 -0400
+Date: Mon, 28 Apr 2008 17:58:44 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Alexander van Heukelum <heukelum@fastmail.fm>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Harvey Harrison <harvey.harrison@gmail.com>,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, David Miller <davem@davemloft.net>
+Subject: Re: [PATCH] bitops: simplify generic bit finding functions
+In-Reply-To: <1209395443.25700.1250273669@webmail.messagingengine.com>
+Message-ID: <alpine.LFD.1.10.0804281757340.3261@apollo.tec.linutronix.de>
+References: <1209327591.14173.74.camel@brick>   <alpine.LFD.1.10.0804271325350.3119@woody.linux-foundation.org>   <alpine.LFD.1.10.0804281534530.3261@apollo.tec.linutronix.de> <1209395443.25700.1250273669@webmail.messagingengine.com>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-em28xx_capture_start() can now become static.
+On Mon, 28 Apr 2008, Alexander van Heukelum wrote:
+> > See patch below. It gives back the 1400 bytes on SPARC64 and other
+> > platforms that have no instruction for find bit.
+> 
+> Hi,
+> 
+> I, personally, see this patch as a stopgap measure. The real problem
+> is that the generic __ffs is inlined and ends up generating a lot
+> of instructions.
+> 
+> Until the generic implementation of __ffs is fixed not to be an
+> enormous inline function, this seems to be a reasonable thing
+> to do, though it's a shame that the optimization is now default-
+> off for architectures with a good implementation of __ffs.
 
-Signed-off-by: Adrian Bunk <bunk@kernel.org>
+Yup, it hasn't been there before and we explicitely enable it on
+x86. If there are other archs which have a good one it's a nobrainer
+to enable it.
 
----
-
- drivers/media/video/em28xx/em28xx-core.c |    2 +-
- drivers/media/video/em28xx/em28xx.h      |    1 -
- 2 files changed, 1 insertion(+), 2 deletions(-)
-
-bd1af5dee0801229ebd017be2fda03b25b4cdebb diff --git a/drivers/media/video/em28xx/em28xx-core.c b/drivers/media/video/em28xx/em28xx-core.c
-index 5d837c1..c80a665 100644
---- a/drivers/media/video/em28xx/em28xx-core.c
-+++ b/drivers/media/video/em28xx/em28xx-core.c
-@@ -356,7 +356,7 @@ int em28xx_colorlevels_set_default(struct em28xx *dev)
- 	return em28xx_write_regs(dev, EM28XX_R1A_BOFFSET, "\x00", 1);
- }
- 
--int em28xx_capture_start(struct em28xx *dev, int start)
-+static int em28xx_capture_start(struct em28xx *dev, int start)
- {
- 	int rc;
- 	/* FIXME: which is the best order? */
-diff --git a/drivers/media/video/em28xx/em28xx.h b/drivers/media/video/em28xx/em28xx.h
-index 002f170..e1430a9 100644
---- a/drivers/media/video/em28xx/em28xx.h
-+++ b/drivers/media/video/em28xx/em28xx.h
-@@ -450,7 +450,6 @@ int em28xx_write_regs(struct em28xx *dev, u16 reg, char *buf, int len);
- int em28xx_audio_analog_set(struct em28xx *dev);
- 
- int em28xx_colorlevels_set_default(struct em28xx *dev);
--int em28xx_capture_start(struct em28xx *dev, int start);
- int em28xx_outfmt_set_yuv422(struct em28xx *dev);
- int em28xx_resolution_set(struct em28xx *dev);
- int em28xx_set_alternate(struct em28xx *dev);
+Thanks,
+	tglx
 
