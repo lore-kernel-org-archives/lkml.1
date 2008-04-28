@@ -1,79 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934693AbYD1SAc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935434AbYD1SB1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934693AbYD1SAc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 14:00:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934454AbYD1R7l
+	id S935434AbYD1SB1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 14:01:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933561AbYD1SBO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 13:59:41 -0400
-Received: from minx.mdc-dayton.com ([70.62.41.4]:48321 "EHLO daetwyler-rd.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S934384AbYD1R7k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 13:59:40 -0400
-From: "Kathy Frazier" <kfrazier@daetwyler-rd.com>
-To: "'Alan Cox'" <alan@lxorguk.ukuu.org.uk>,
-       "'Kathy Frazier'" <kfrazier@daetwyler-rd.com>
-Cc: "'Kathy Frazier'" <kfrazier@daetwyler-rd.com>,
-       <linux-kernel@vger.kernel.org>
-References: <009501c89e28$3d7530f0$b85f92d0$@com>	<20080414133937.7080d30d@core>	<006f01c8a4a7$82e37ea0$88aa7be0$@com> <20080425181219.61e29b1f@core>
-In-Reply-To: <20080425181219.61e29b1f@core>
-Subject: RE: Talking to parallel port in 2.6 kernel without using parport
-Date: Mon, 28 Apr 2008 13:59:26 -0400
-Message-ID: <003f01c8a959$9a915b60$cfb41220$@com>
+	Mon, 28 Apr 2008 14:01:14 -0400
+Received: from ug-out-1314.google.com ([66.249.92.172]:30521 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763964AbYD1SBN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Apr 2008 14:01:13 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:references:in-reply-to:cc:mime-version:content-type:content-transfer-encoding:message-id;
+        b=CHRXKTXamTTyrGlkTgqoLLR9GFwGJ9eMCzYhYN0sH7pj/DPPgwAKU3CephIPPH8evTAWAwHnz8fhiWbHJntipsP9+/34w9r1xAY4OGWJZ4ovYt3UVPHQyTvo8/4ha2BNcpJsjLP27eGyleRK/v+Rln7nU+dHJ1JHTrlcYNKiOoU=
+From: Daniel Klaffenbach <danielklaffenbach@gmail.com>
+To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+Subject: Re: [2.6.25-stable PATCH] regression: powertop says 120K wakeups/sec
+Date: Mon, 28 Apr 2008 20:01:00 +0200
+User-Agent: KMail/1.9.9
+References: <200804242015.19462.lenb@kernel.org> <200804281209.47927.danielklaffenbach@gmail.com> <924EFEDD5F540B4284297C4DC59F3DEEF31621@orsmsx423.amr.corp.intel.com>
+In-Reply-To: <924EFEDD5F540B4284297C4DC59F3DEEF31621@orsmsx423.amr.corp.intel.com>
+Cc: "Len Brown" <lenb@kernel.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
+Content-Type: multipart/signed;
+  boundary="nextPart1999919.mZ0I2DdeAx";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
-X-Mailer: Microsoft Office Outlook 12.0
-Thread-Index: Acim+HetRg3vdLwRTgm/5GyNr8MJ5QCYIevg
-Content-Language: en-us
-X-MyHeader: SpamAssassin Check skipped due to Authenication or Internal MDC-Dayton Address
-X-MyHeader: Clam AV Check skipped due to Authenication or Internal MDC-Dayton Address
+Message-Id: <200804282001.06680.danielklaffenbach@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan,
+--nextPart1999919.mZ0I2DdeAx
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-That was a problem!  The lp driver was already loaded.  If I remove it and
-then load my driver, it returns with success from parport_register_device.
-Thanks for your help!
+Pallipadi, Venkatesh wrote:
+> Did C1, C2 work fine with 2.6.24?
+> Can you send me the full dmesg when it is failing to enter C1, C2 with
+> latest git + patch.
+> Output of
+> #grep . /sys/devices/system/cpu/cpu*/cpuidle/*/*
+> And also attach the acpidump output (pmtools package here
+> http://www.lesswatts.org/projects/acpi/utilities.php)
+No, C1/C2 did not seem to work with 2.6.24 - at least powertop reported 99,=
+9%=20
+C0 usage. It was the same behavior as after applying the wakeup patch.=20
+However in 2.6.25 and 2.6.25-git11 C1/C2 worked correctly and C2 showed up =
+in=20
+pt. But after applying your patch to 2.6.25-git11 they did not:
 
-Regards,
-Kathy
+git11:
+PowerTOP version 1.9       (C) 2007 Intel Corporation
+Cn                Avg residency       P-states (frequencies)
+C0 (cpu running)        ( 9,4%)         1,80 Ghz   100,0%
+C1                0,0ms ( 0,0%)         1,60 Ghz     0,0%
+C2                0,4ms (90,6%)          800 Mhz     0,0%
+Wakeups-from-idle per second : 9051,0   interval: 5,0s
 
------Original Message-----
-From: Alan Cox [mailto:alan@lxorguk.ukuu.org.uk] 
-Sent: Friday, April 25, 2008 1:12 PM
-To: Kathy Frazier
-Cc: 'Kathy Frazier'; linux-kernel@vger.kernel.org
-Subject: Re: Talking to parallel port in 2.6 kernel without using parport
+git11 with wakeup-patch:
+PowerTOP version 1.9       (C) 2007 Intel Corporation
+Cn                Avg residency       P-states (frequencies)
+C0 (cpu running)        (99,9%)         1,80 Ghz   100,0%
+C1                0,0ms ( 0,0%)         1,60 Ghz     0,0%
+C2                0,2ms ( 0,1%)          800 Mhz     0,0%
+Wakeups-from-idle per second : 59,8     interval: 10,0s
 
-> One of our engineers downloaded source code a while back from 
-> linux-2.6.18-rc7, but I am not sure how close that is to what is 
-> installed on my system (uname -r returns 2.6.18-1.2798.fc6.  When I 
-> set my printk to 8 (echo 8 > /proc/sys/kernel/printk), there are no 
-> messages shown on the failure.  According to the source code I have, 
-> the only silent failure in parport_register_device is:
+In both cases the system was idle. I've uploaded the files you wanted:
+http://www-user.tu-chemnitz.de/~klada/misc/kernel/cpuidle_git11.txt
+http://www-user.tu-chemnitz.de/~klada/misc/kernel/cpuidle_git11_wakeuppatch=
+=2Etxt
+http://www-user.tu-chemnitz.de/~klada/misc/kernel/dmesg_git11.txt
+http://www-user.tu-chemnitz.de/~klada/misc/kernel/dmesg_git11_wakeuppatch.t=
+xt
+http://www-user.tu-chemnitz.de/~klada/misc/kernel/nx6125_acpidump.out
 
-Nothing immediately strikes me.
+If there is anything else I can do for debugging this issue please let me=20
+know.
 
-> When I change the flags from PARPORT_FLAG_EXCL to 0 in the call to 
-> parport_register_device, the call returns a non-zero to indicate success.
+=2D Daniel
 
-Do you have the printer driver loaded already ? (and does it behave if you
-do rmmod lp first)
+--nextPart1999919.mZ0I2DdeAx
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
 
-> Can you tell me what I am missing?  Where can I get the actual source 
-> code that goes with this version to further unravel this?
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.7 (GNU/Linux)
 
->From the .fc6 it would be an old Fedora kernel so very close to standard
-2.6.18 from kernel.org, but the Fedora Core kernels are available from the
-Fedora download pages - the .srpm package for each kernel is the one
-matching the same binary - so google for "2.6.18-1.2798.fc6.src.rpm"
+iD8DBQBIFhDiM8RD99ZskA8RArTbAJwO/3ORYomwNZPOY41B3+TH8nFmegCdH90X
+Dl6SKxwfSjUAt48NhzODS+I=
+=Kuf5
+-----END PGP SIGNATURE-----
 
-http://www.mjmwired.net/resources/mjm-fedora-fc6.html has a few notes on it.
-
-
-To be honest this area of the kernel hasn't changed much over recent times.
-Let me know if you can't figure out what is going on.
-
+--nextPart1999919.mZ0I2DdeAx--
