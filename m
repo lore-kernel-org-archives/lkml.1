@@ -1,103 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966403AbYD1Uhr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966583AbYD1Uih@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966403AbYD1Uhr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 16:37:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934753AbYD1Uhb
+	id S966583AbYD1Uih (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 16:38:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934389AbYD1Ui1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 16:37:31 -0400
-Received: from www.tglx.de ([62.245.132.106]:33096 "EHLO www.tglx.de"
+	Mon, 28 Apr 2008 16:38:27 -0400
+Received: from mga14.intel.com ([143.182.124.37]:7142 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934590AbYD1Uh3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 16:37:29 -0400
-Date: Mon, 28 Apr 2008 22:36:54 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: [GTI pull] hrtimer fixes
-Message-ID: <alpine.LFD.1.10.0804282234040.3261@apollo.tec.linutronix.de>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S932871AbYD1Ui0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Apr 2008 16:38:26 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,718,1199692800"; 
+   d="scan'208";a="239072186"
+Date: Mon, 28 Apr 2008 13:38:24 -0700
+From: Venki Pallipadi <venkatesh.pallipadi@intel.com>
+To: Justin Mattock <justinmattock@gmail.com>
+Cc: Bob Copeland <me@bobcopeland.com>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>, hugh@veritas.com
+Subject: Re: spinlock lockup on CPU#0
+Message-ID: <20080428203824.GA14044@linux-os.sc.intel.com>
+References: <dd18b0c30804231841m3bbfab44x53d635b7ea6fc58d@mail.gmail.com> <20080426112907.77613dee.akpm@linux-foundation.org> <20080426191432.GA2927@elte.hu> <b6c5339f0804261406o447b95b2i18c937a6c738f8db@mail.gmail.com> <dd18b0c30804261448n128293e6s1149931726e95b36@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <dd18b0c30804261448n128293e6s1149931726e95b36@mail.gmail.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
+On Sat, Apr 26, 2008 at 09:48:55PM +0000, Justin Mattock wrote:
+> On Sat, Apr 26, 2008 at 9:06 PM, Bob Copeland <me@bobcopeland.com> wrote:
+> > On Sat, Apr 26, 2008 at 3:14 PM, Ingo Molnar <mingo@elte.hu> wrote:
+> >  >  > Can you add this please, see if it triggers?
+> >  >
+> >  >  there's fixes pending in this area. The main fix would be the one below.
+> >  >
+> >  >         Ingo
+> >  >
+> >  >  ---------------->
+> >  >  Subject: idle (arch, acpi and apm) and lockdep
+> >
+> >  FWIW, I was seeing the same lockdep trace with eventual hangs, and
+> >  this patch (applied with some fuzz) fixed the problem.
+> >
+> >  --
+> >  Bob Copeland %% www.bobcopeland.com
+> >
+> 
+> Just out of curiosity I put the kernel back to it's original state,
+> were the freezing occurs, then booted with nohz=off, then added
+> WARN_ON(!irqs_disabled()); to sched.c only to the kernel, no other
+> patches, upon rebooting
+> I received different results: The screen from what I could tell was
+> spitting out the spinlock messages, but instead of printing that out,
+> and going on to the next task it just keep't printing, from what I
+> could tell something with ehci, uhci, agpgart, ieee1394 etc... too
+> fast to really make anything out, the numbers on the left side keept
+> moving upward, the fans started hauling ass, I waitied a few minuetes
+> hopeing this would stop
+> so I can grab dmesg, but it would'nt. is there a way to use the boot
+> param to write date to a file? so I could capture this event.
+> regards
+> 
 
-please pull hrtimer fixes from:
+OK. Hunted this bug down to
+commit 3b22ec7b13cb31e0d87fbc0aabe14caaaad309e8
 
-  ssh://master.kernel.org/pub/scm/linux/kernel/git/tglx/linux-2.6-hrt.git master
+which for some reason enables interrupt in mwait_idle_with_hints(), which
+eventually causes interrupts to be enabled in acpi idle call, resulting in
+sched_clock_idle_wakeup_event() with interrupts enabled. This bug
+was only in x86 32 bit version.
 
-Fix for a potential deadlock which was introduced with the scheduler
-hrtimer changes in .25.
+Peter's patch below which is already in git fixes this. So we don't need any
+additional fixes here...
 
 Thanks,
-	tglx
+Venki
 
----
-Thomas Gleixner (1):
-      hrtimer: raise softirq unlocked to avoid circular lock dependency
-
- kernel/hrtimer.c |   19 +++++++++++++++++--
- 1 files changed, 17 insertions(+), 2 deletions(-)
-diff --git a/kernel/hrtimer.c b/kernel/hrtimer.c
-index e379ef0..dea4c91 100644
---- a/kernel/hrtimer.c
-+++ b/kernel/hrtimer.c
-@@ -590,7 +590,6 @@ static inline int hrtimer_enqueue_reprogram(struct hrtimer *timer,
- 			list_add_tail(&timer->cb_entry,
- 				      &base->cpu_base->cb_pending);
- 			timer->state = HRTIMER_STATE_PENDING;
--			raise_softirq(HRTIMER_SOFTIRQ);
- 			return 1;
- 		default:
- 			BUG();
-@@ -633,6 +632,11 @@ static int hrtimer_switch_to_hres(void)
- 	return 1;
- }
- 
-+static inline void hrtimer_raise_softirq(void)
-+{
-+	raise_softirq(HRTIMER_SOFTIRQ);
-+}
-+
- #else
- 
- static inline int hrtimer_hres_active(void) { return 0; }
-@@ -651,6 +655,7 @@ static inline int hrtimer_reprogram(struct hrtimer *timer,
- {
- 	return 0;
- }
-+static inline void hrtimer_raise_softirq(void) { }
- 
- #endif /* CONFIG_HIGH_RES_TIMERS */
- 
-@@ -850,7 +855,7 @@ hrtimer_start(struct hrtimer *timer, ktime_t tim, const enum hrtimer_mode mode)
- {
- 	struct hrtimer_clock_base *base, *new_base;
- 	unsigned long flags;
--	int ret;
-+	int ret, raise;
- 
- 	base = lock_hrtimer_base(timer, &flags);
- 
-@@ -884,8 +889,18 @@ hrtimer_start(struct hrtimer *timer, ktime_t tim, const enum hrtimer_mode mode)
- 	enqueue_hrtimer(timer, new_base,
- 			new_base->cpu_base == &__get_cpu_var(hrtimer_bases));
- 
-+	/*
-+	 * The timer may be expired and moved to the cb_pending
-+	 * list. We can not raise the softirq with base lock held due
-+	 * to a possible deadlock with runqueue lock.
-+	 */
-+	raise = timer->state == HRTIMER_STATE_PENDING;
-+
- 	unlock_hrtimer_base(timer, &flags);
- 
-+	if (raise)
-+		hrtimer_raise_softirq();
-+
- 	return ret;
- }
- EXPORT_SYMBOL_GPL(hrtimer_start);
