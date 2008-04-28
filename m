@@ -1,49 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765923AbYD1G3r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765590AbYD1Gba@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765923AbYD1G3r (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 02:29:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753918AbYD1G3i
+	id S1765590AbYD1Gba (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 02:31:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753943AbYD1GbT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 02:29:38 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:50756 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753858AbYD1G3h (ORCPT
+	Mon, 28 Apr 2008 02:31:19 -0400
+Received: from out4.smtp.messagingengine.com ([66.111.4.28]:35798 "EHLO
+	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753006AbYD1GbS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 02:29:37 -0400
-Date: Mon, 28 Apr 2008 02:29:35 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: David Miller <davem@davemloft.net>
-Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [GIT]: Sparc
-Message-ID: <20080428062935.GA13876@infradead.org>
-References: <20080427.170139.242528272.davem@davemloft.net>
+	Mon, 28 Apr 2008 02:31:18 -0400
+X-Sasl-enc: TVImNDlxTkzJnuoF4N7QnHZ2qOZv2S+wsgzTEJfXufkF 1209364276
+Date: Mon, 28 Apr 2008 14:30:29 +0800 (WST)
+From: Ian Kent <raven@themaw.net>
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       autofs mailing list <autofs@linux.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>
+Subject: [PATCH 2/2] autofs4 - fix incorect return from root.c:try_to_fill_dentry()
+Message-ID: <Pine.LNX.4.64.0804281427050.10684@raven.themaw.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080427.170139.242528272.davem@davemloft.net>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Apr 27, 2008 at 05:01:39PM -0700, David Miller wrote:
-> 
-> Several fixes and cleanups:
-> 
-> 1) Remove SunOS signal frame support, that Linux used for like
->    a month some 12 years ago :-)  I added an assertion that checks
->    to make sure 32-bit processes request the newer style signal
->    frames, which I doubt will ever trigger since Jakub Jelinek
->    and myself are probably the only two people on the planet who
->    ever had such Linux binaries on their system :-)
 
-Is a WARN_ON the right check for user-triggerable behaviour?  I think
-a normal rate-limited printk with a descriptive text would be better.
+Hi Andrew,
 
->    Getting rid of the EBUS layer is much hardware, and will require
+Jeff Moyer has identified a case where the autofs4 function
+root.c:try_to_fill_dentry() can return -EBUSY when it should return
+0.
 
-					  harder? :)
+Jeffs description of the way this happens is:
 
+"automount starts an expire for directory d.
+after the callout to the daemon, but before the rmdir, another
+process tries to walk into the same directory.  It puts itself
+onto the waitq, pending the expiration.
+
+When the expire finishes, the second process is woken up.  In
+try_to_fill_dentry, it does this check:
+
+                status = d_invalidate(dentry);
+                if (status != -EBUSY)
+                        return -EAGAIN;
+
+And status is EBUSY.  The dentry still has a non-zero d_inode, and the
+flags do not contain LOOKUP_CONTINUE or LOOKUP_DIRECTORY
+
+So, we fall through and return -EBUSY to the caller."
+
+Signed-off-by: Jeff Moyer <jmoyer@redhat.com>
+Acked-by: Ian Kent <raven@themaw.net>
+
+Ian
+
+---
+diff -up linux-2.6.25-mm1/fs/autofs4/root.c.correct-return-in-ttfd linux-2.6.25-mm1/fs/autofs4/root.c
+--- linux-2.6.25-mm1/fs/autofs4/root.c.correct-return-in-ttfd	2008-04-28 11:47:20.000000000 +0800
++++ linux-2.6.25-mm1/fs/autofs4/root.c	2008-04-28 11:48:00.000000000 +0800
+@@ -245,7 +245,7 @@ static int try_to_fill_dentry(struct den
+ 	struct autofs_sb_info *sbi = autofs4_sbi(dentry->d_sb);
+ 	struct autofs_info *ino = autofs4_dentry_ino(dentry);
+ 	struct dentry *new;
+-	int status = 0;
++	int status;
+ 
+ 	/* Block on any pending expiry here; invalidate the dentry
+            when expiration is done to trigger mount request with a new
+@@ -342,7 +342,7 @@ static int try_to_fill_dentry(struct den
+ 		}
+ 	}
+ 
+-	return status;
++	return 0;
+ }
+ 
+ /* For autofs direct mounts the follow link triggers the mount */
