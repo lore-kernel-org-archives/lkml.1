@@ -1,81 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764352AbYD1Bvp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765336AbYD1BwM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764352AbYD1Bvp (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Apr 2008 21:51:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753301AbYD1Bvh
+	id S1765336AbYD1BwM (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Apr 2008 21:52:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753301AbYD1Bvy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Apr 2008 21:51:37 -0400
-Received: from wa-out-1112.google.com ([209.85.146.177]:35209 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753117AbYD1Bvg (ORCPT
+	Sun, 27 Apr 2008 21:51:54 -0400
+Received: from pythia.bakeyournoodle.com ([203.82.209.197]:48040 "EHLO
+	pythia.bakeyournoodle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754174AbYD1Bvx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Apr 2008 21:51:36 -0400
-Message-ID: <a24804730804271851j61ded9c2tf1c15b6da845050c@mail.gmail.com>
-Date: Sun, 27 Apr 2008 18:51:35 -0700
-From: "Chris Peterson" <cpeterso@cpeterso.com>
-To: "Jiri Slaby" <jirislaby@gmail.com>
-Subject: Re: [PATCH] fix warning: remove unused static function in drivers/char/ip2/i2ellis.c
+	Sun, 27 Apr 2008 21:51:53 -0400
+Date: Mon, 28 Apr 2008 11:51:51 +1000
+To: timur@freescale.com
 Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <48142E5B.3000109@gmail.com>
+Subject: Re: cross-compiling on OS X, make menuconfig fails
+Message-ID: <20080428015151.GW20457@bakeyournoodle.com>
+References: <481529B6.6030802@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-References: <a24804730804270009x3398a190wf68e52280015fc7f@mail.gmail.com>
-	 <48142E5B.3000109@gmail.com>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <481529B6.6030802@freescale.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: tony@bakeyournoodle.com (Tony Breeds)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yes, I did compile it, but I now realize I had compiled the computone
-driver to be linked statically, but iiEllisCleanup() is only called
-when the driver is built as a module. What is the appropriate cleanup
-code path for non-modular drivers?
+On Sun, Apr 27, 2008 at 08:34:46PM -0500, timur@freescale.com wrote:
+> I'm trying to cross-compile a PowerPC kernel from an Intel OS X system. 
 
+<snip>
+ 
+> However, I do not think that ncurses is the real problem, since I do 
+> have ncurses installed.  I think the real problem is that the 
+> check-lxdialog.sh is trying to execute this code:
+> 
+> echo -e ' #include CURSES_LOC \n main() {}' | gcc 
+> '-DCURSES_LOC=<ncurses.h>' -DLOCALE -DKBUILD_NO_NLS -lncurses -xc - -o 
+> .lxdialog.tmp
+> 
+> And the compiler is failing with this output:
+> 
+> <stdin>:1: error: syntax error before ‘-’ token
+> <stdin>:1: error: stray ‘#’ in program
 
-chris
+On most linux systems echo supports c-syle escapes with "-e".  I'm
+guessing which ever echo you're getting dosesn't do that.
 
+I think the best fix is to ensure you're getting bash as your shell.
 
-On Sun, Apr 27, 2008 at 12:42 AM, Jiri Slaby <jirislaby@gmail.com> wrote:
-> On 04/27/2008 09:09 AM, Chris Peterson wrote:
->
-> > This patch against linux-2.6.25-git7.
-> >
-> > chris
-> >
-> >
-> > Signed-off-by: Chris Peterson <cpeterso@cpeterso.com>
-> > ---
-> > diff -Naur linux-2.6.25-git7/drivers/char/ip2/i2ellis.c
-> > linux-2.6.25-git7+patch/drivers/char/ip2/i2ellis.c
-> > --- linux-2.6.25-git7/drivers/char/ip2/i2ellis.c        2008-04-25
-> > 22:47:01.000000000 -0700
-> > +++ linux-2.6.25-git7+patch/drivers/char/ip2/i2ellis.c  2008-04-25
-> > 23:19:57.000000000 -0700
-> > @@ -86,22 +86,6 @@
-> >  }
-> >
-> >
-> //******************************************************************************
-> > -// Function:   iiEllisCleanup()
-> > -// Parameters: None
-> > -//
-> > -// Returns:    Nothing
-> > -//
-> > -// Description:
-> > -//
-> > -// This routine performs any required cleanup of the iiEllis subsystem.
-> > -//
-> >
-> -//******************************************************************************
-> > -static void
-> > -iiEllisCleanup(void)
-> > -{
-> > -}
-> >
->
->  Well, have you tried to even build it? The .c file is *included* into
-> i2main.c where this function is used.
->
->  NAK
->
+A nasty hack would be to make check-lxdialog.sh do something like:
+(echo ' #include CURSES_LOC';echo 'main() {}') | gcc '-DCURSES_LOC=<ncurses.h>' -DLOCALE -DKBUILD_NO_NLS -lncurses -xc - -o .lxdialog.tmp
+
+But you'll likley find other palces it breaks.
+
+Yours Tony
+
+  linux.conf.au    http://www.marchsouth.org/
+  Jan 19 - 24 2009 The Australian Linux Technical Conference!
+
