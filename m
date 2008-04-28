@@ -1,132 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764246AbYD1DUl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763424AbYD1Dd2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764246AbYD1DUl (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Apr 2008 23:20:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762264AbYD1DUc
+	id S1763424AbYD1Dd2 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Apr 2008 23:33:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762229AbYD1DdT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Apr 2008 23:20:32 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:45964 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762199AbYD1DUb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Apr 2008 23:20:31 -0400
-Date: Sun, 27 Apr 2008 23:20:28 -0400
-From: Ulrich Drepper <drepper@redhat.com>
-Message-Id: <200804280320.m3S3KSFu028466@devserv.devel.redhat.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] dup2 w/flags
-Cc: akpm@linux-foundation.org, torvalds@linux-foundation.org
+	Sun, 27 Apr 2008 23:33:19 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:53408 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1762199AbYD1DdS (ORCPT
+	<rfc822;@sgi.com:linux-kernel@vger.kernel.org>);
+	Sun, 27 Apr 2008 23:33:18 -0400
+Date: Mon, 28 Apr 2008 13:32:49 +1000
+From: David Chinner <dgc@sgi.com>
+To: David Chinner <dgc@sgi.com>
+Cc: Denys Vlasenko <vda.linux@googlemail.com>, xfs@oss.sgi.com,
+       Eric Sandeen <sandeen@sandeen.net>, Adrian Bunk <bunk@kernel.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] xfs: reduce stack usage in xfs_bmap_btalloc()
+Message-ID: <20080428033249.GE103491721@sgi.com>
+References: <200804261651.02078.vda.linux@googlemail.com> <20080427234056.GA108924158@sgi.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080427234056.GA108924158@sgi.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds dup3 which is dup2 with an additional parameter.  The
-parameter takes the usual O_* flags, with only O_CLOEXEC handled so far
-(it's possible to handle O_NONBLOCK in future, if this is wanted).
+On Mon, Apr 28, 2008 at 09:40:56AM +1000, David Chinner wrote:
+> On Sat, Apr 26, 2008 at 04:51:02PM +0200, Denys Vlasenko wrote:
+> > Hi David,
+> > 
+> > This patch reduces xfs_bmap_btalloc() stack usage by 50 bytes
+> > by moving part of its body into a helper function.
+> 
+> Can you please attach your patches inline, Denys (see
+> Documentation/SubmittingPatches)?
+> 
+> > This results in some variables not taking stack space in
+> > xfs_bmap_btalloc() anymore.
+> > 
+> > The helper itself does not call anything stack-deep.
+> > Stack-deep call to xfs_alloc_vextent() happen
+> > in xfs_bmap_btalloc(), as before.
+> 
+> I have a set of patches that introduces new functionality into the
+> allocator (dynamic allocation policies) that reduces
+> xfs_bmap_btalloc() function by 36 bytes (just by chance, I didn't
+> design it for this purpose). It breaks it down on functional
+> boundaries like Christoph's patch. I'm going to revist that patch
+> w.r.t both these patches and see what falls out the bottom...
 
-I've read some people mentioning that we simply should use a new fcntl()
-extension similar to F_DUPFD_CLOEXEC.  I think that's a terrible idea
-and in any case not better than sys_indirect.  A new syscall is the
-cleanest solution and it's really only a little bit of effort.
+44 bytes saved in xfs_bmap_btalloc with the same factoring as
+Christoph's patch being done. Given that most of this is now
+the struct xfs_alloc_arg, I don't think this will be reduced a whole
+lot more. I think I might be able to kill the tryagain and isaligned
+variables as well which will save another 8 bytes, but I'll leave
+that for later....
 
+Good progress, folks.
 
- b/arch/x86/ia32/ia32entry.S          |    1 +
- b/arch/x86/kernel/syscall_table_32.S |    1 +
- b/include/asm-x86/unistd_32.h        |    1 +
- b/include/asm-x86/unistd_64.h        |    2 ++
- b/include/linux/syscalls.h           |    1 +
- b/fs/fcntl.c                         |   15 +++++++++++++--
- 6 files changed, 19 insertions(+), 2 deletions(-)
+Cheers,
 
-
-Signed-off-by: Ulrich Drepper <drepper@redhat.com>
-
-diff -u b/arch/x86/ia32/ia32entry.S b/arch/x86/ia32/ia32entry.S
---- b/arch/x86/ia32/ia32entry.S
-+++ b/arch/x86/ia32/ia32entry.S
-@@ -736,2 +736,3 @@
- 	.quad sys_epoll_create2
-+	.quad sys_dup3			/* 330 */
- ia32_syscall_end:
-diff -u b/arch/x86/kernel/syscall_table_32.S b/arch/x86/kernel/syscall_table_32.S
---- b/arch/x86/kernel/syscall_table_32.S
-+++ b/arch/x86/kernel/syscall_table_32.S
-@@ -331,0 +332 @@
-+	.long sys_dup3			/* 330 */
-diff -u b/include/asm-x86/unistd_32.h b/include/asm-x86/unistd_32.h
---- b/include/asm-x86/unistd_32.h
-+++ b/include/asm-x86/unistd_32.h
-@@ -335,6 +335,7 @@
- #define __NR_signalfd4		327
- #define __NR_eventfd2		328
- #define __NR_epoll_create2	329
-+#define __NR_dup3		330
- 
- #ifdef __KERNEL__
- 
-diff -u b/include/asm-x86/unistd_64.h b/include/asm-x86/unistd_64.h
---- b/include/asm-x86/unistd_64.h
-+++ b/include/asm-x86/unistd_64.h
-@@ -647,6 +647,8 @@
- __SYSCALL(__NR_eventfd2, sys_eventfd2)
- #define __NR_epoll_create2			291
- __SYSCALL(__NR_epoll_create2, sys_epoll_create2)
-+#define __NR_dup3				292
-+__SYSCALL(__NR_dup3, sys_dup3)
- 
- 
- #ifndef __NO_STUBS
-diff -u b/include/linux/syscalls.h b/include/linux/syscalls.h
---- b/include/linux/syscalls.h
-+++ b/include/linux/syscalls.h
-@@ -303,6 +303,7 @@
- #endif
- asmlinkage long sys_dup(unsigned int fildes);
- asmlinkage long sys_dup2(unsigned int oldfd, unsigned int newfd);
-+asmlinkage long sys_dup3(unsigned int oldfd, unsigned int newfd, int flags);
- asmlinkage long sys_ioperm(unsigned long from, unsigned long num, int on);
- asmlinkage long sys_ioctl(unsigned int fd, unsigned int cmd,
- 				unsigned long arg);
---- a/fs/fcntl.c
-+++ b/fs/fcntl.c
-@@ -125,13 +125,16 @@ static int dupfd(struct file *file, unsigned int start, int cloexec)
- 	return fd;
- }
- 
--asmlinkage long sys_dup2(unsigned int oldfd, unsigned int newfd)
-+asmlinkage long sys_dup3(unsigned int oldfd, unsigned int newfd, int flags)
- {
- 	int err = -EBADF;
- 	struct file * file, *tofree;
- 	struct files_struct * files = current->files;
- 	struct fdtable *fdt;
- 
-+	if ((flags & ~O_CLOEXEC) != 0)
-+		return -EINVAL;
-+
- 	spin_lock(&files->file_lock);
- 	if (!(file = fcheck(oldfd)))
- 		goto out_unlock;
-@@ -163,7 +166,10 @@ asmlinkage long sys_dup2(unsigned int oldfd, unsigned int newfd)
- 
- 	rcu_assign_pointer(fdt->fd[newfd], file);
- 	FD_SET(newfd, fdt->open_fds);
--	FD_CLR(newfd, fdt->close_on_exec);
-+	if (flags & O_CLOEXEC)
-+		FD_SET(newfd, fdt->close_on_exec);
-+	else
-+		FD_CLR(newfd, fdt->close_on_exec);
- 	spin_unlock(&files->file_lock);
- 
- 	if (tofree)
-@@ -181,6 +187,11 @@ out_fput:
- 	goto out;
- }
- 
-+asmlinkage long sys_dup2(unsigned int oldfd, unsigned int newfd)
-+{
-+	return sys_dup3(oldfd, newfd, 0);
-+}
-+
- asmlinkage long sys_dup(unsigned int fildes)
- {
- 	int ret = -EBADF;
+Dave.
+-- 
+Dave Chinner
+Principal Engineer
+SGI Australian Software Group
