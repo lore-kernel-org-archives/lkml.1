@@ -1,65 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932859AbYD1HwY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932893AbYD1HxP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932859AbYD1HwY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 03:52:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763172AbYD1HwN
+	id S932893AbYD1HxP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 03:53:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764112AbYD1Hw5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 03:52:13 -0400
-Received: from fk-out-0910.google.com ([209.85.128.185]:16068 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763158AbYD1HwM (ORCPT
+	Mon, 28 Apr 2008 03:52:57 -0400
+Received: from mtagate8.uk.ibm.com ([195.212.29.141]:2976 "EHLO
+	mtagate8.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1765632AbYD1Hw4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 03:52:12 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=V/hGCTZWOLf75IxQE4WET3ehoES2aA0Ve6rU4oOgzWNN6uq3UUa6o3wfpIfdyFEHNIfcUpxTn2NZHTel8MGAHXUfZvKfoG+jdxq3OB3MsfxHL9+IYTYXujdgCTNhm5awT9fPf/I4m0+P1tgTGXg7moiulUkcfbT/AQ67lEgkQRI=
-Message-ID: <ce0170d90804280052y130c3fa2pbf3f97147f03b159@mail.gmail.com>
-Date: Mon, 28 Apr 2008 04:52:11 -0300
-From: "Sergio Luis" <sergio@uece.br>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [PATCH] build fix for smp
-Cc: "Glauber de Oliveira Costa" <gcosta@redhat.com>,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       tglx@linutronix.de, ak@suse.de
-In-Reply-To: <20080319195217.GA20762@elte.hu>
+	Mon, 28 Apr 2008 03:52:56 -0400
+Date: Mon, 28 Apr 2008 09:52:53 +0200
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Gautham R Shenoy <ego@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       Paul Jackson <pj@sgi.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] sched: missing locking in sched_domains code
+Message-ID: <20080428075253.GB4507@osiris.boeblingen.de.ibm.com>
+References: <20080427211224.GA21830@osiris.boeblingen.de.ibm.com> <20080427183926.acb66fff.akpm@linux-foundation.org> <20080428070946.GA4507@osiris.boeblingen.de.ibm.com> <20080428002853.1693e7fd.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <12059466674071-git-send-email-gcosta@redhat.com>
-	 <20080319195217.GA20762@elte.hu>
-X-Google-Sender-Auth: 3c885c7ae9292dd4
+In-Reply-To: <20080428002853.1693e7fd.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 19, 2008 at 4:52 PM, Ingo Molnar <mingo@elte.hu> wrote:
->
->  * Glauber de Oliveira Costa <gcosta@redhat.com> wrote:
->
->  > +#if defined(CONFIG_X86_64) || defined(CONFIG_X86_BIOS_REBOOT)
->  >       if (reboot_force)
->  >               return;
->  > +#endif
->
->  please solve it slightly differently: introduce a uniformly usable
->  reboot_force flag, that will always default to the constant of 1 if
->  !X86_64 && !X86_BIOS_REBOOT. That makes the code cleaner - and not the
->  least i can also merge the fix earlier in the series, without having to
->  redo the big smp.c movement patch :-)
->
->         Ingo
->
+On Mon, Apr 28, 2008 at 12:28:53AM -0700, Andrew Morton wrote:
+> On Mon, 28 Apr 2008 09:09:46 +0200 Heiko Carstens <heiko.carstens@de.ibm.com> wrote:
+> 
+> > On Sun, Apr 27, 2008 at 06:39:26PM -0700, Andrew Morton wrote:
+> > > On Sun, 27 Apr 2008 23:12:24 +0200 Heiko Carstens <heiko.carstens@de.ibm.com> wrote:
+> > > > Index: linux-2.6/kernel/cpuset.c
+> > > > ===================================================================
+> > > > --- linux-2.6.orig/kernel/cpuset.c
+> > > > +++ linux-2.6/kernel/cpuset.c
+> > > > @@ -684,7 +684,9 @@ restart:
+> > > >  rebuild:
+> > > >  	/* Have scheduler rebuild sched domains */
+> > > >  	get_online_cpus();
+> > > > +	mutex_lock(&sched_domains_mutex);
+> > > >  	partition_sched_domains(ndoms, doms, dattr);
+> > > > +	mutex_unlock(&sched_domains_mutex);
+> > > >  	put_online_cpus();
+> > > >  
+> > > 
+> > > It seems a bit fragile to take this lock in the caller without even adding
+> > > a comment at the callee site which documents the new locking rule.
+> > > 
+> > > It would be more robust to take the lock within partition_sched_domains().
+> > > 
+> > > partition_sched_domains() already covers itself with lock_doms_cur().  Can
+> > > we take that in arch_reinit_sched_domains() rather than adding the new lock?
+> > 
+> > I think you meant taking it in partition_sched_domains?
+> 
+> What I meant was: rather than adding the new sched_domains_mutex, can we
+> instead call lock_doms_cur() from arch_reinit_sched_domains() and
+> sched_init_smp()?  Borrow the existing lock?
+> 
+> Whether that makes sense depends upon what lock_doms_cur() semantically
+> *means*.  As that appears to be somewhat of a secret, we get to decide ;)
 
-Hello,
-what's the final fix for this issue? 2.6.25-git11 is still broken, just gave me
-
-arch/x86/kernel/built-in.o: In function `native_smp_send_stop':
-smp.c:(.text+0xc751): undefined reference to `reboot_force'
-make: *** [.tmp_vmlinux1] Error 1
-
-for a randconfig. Same reported at http://lkml.org/lkml/2008/4/27/39
-
-thanks,
--sergio
+Oh, I didn't realize that lock_doms_cur() was only used in one function.
+So that should work. Will try.
