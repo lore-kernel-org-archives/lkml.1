@@ -1,78 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763671AbYD1FqY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763267AbYD1Fr3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763671AbYD1FqY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 01:46:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753153AbYD1Fpy
+	id S1763267AbYD1Fr3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 01:47:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751605AbYD1FrS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 01:45:54 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:41545 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751903AbYD1Fpx (ORCPT
+	Mon, 28 Apr 2008 01:47:18 -0400
+Received: from ug-out-1314.google.com ([66.249.92.174]:12124 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751177AbYD1FrQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 01:45:53 -0400
-Subject: Re: [PATCH] sched: fair-group: fix a Div0 error of the fair group
-	scheduler
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: miaox@cn.fujitsu.com
-Cc: Ingo Molnar <mingo@elte.hu>, Linux-Kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <481558A0.9020803@cn.fujitsu.com>
-References: <481558A0.9020803@cn.fujitsu.com>
-Content-Type: text/plain
-Date: Mon, 28 Apr 2008 07:45:44 +0200
-Message-Id: <1209361544.6429.4.camel@lappy>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 28 Apr 2008 01:47:16 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=LdcOTFrn97vEfj19fkugSjYvajpLOeoiTCYKA3QJpNOj73P0PxMyEM0CKg+3cOo0ZQdyhbPOoyANMNgm+FAN+FBvpLh6kPIRw3zk/XnoPohbv7bcaPvB+mQvQ6981GoZj+1//uKuoFfd/xN4qNDyQDYeniXpfBuUIkJG4FTqnsE=
+Date: Mon, 28 Apr 2008 10:42:38 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Jay Cliburn <jacliburn@bellsouth.net>
+Cc: Luca Tettamanti <kronos.it@gmail.com>, Chris Snook <csnook@redhat.com>,
+       Jeff Garzik <jeff@garzik.org>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, Christoph Lameter <clameter@sgi.com>,
+       torvalds@osdl.org
+Subject: Re: atl1 64-bit => 32-bit DMA borkage (reproducible, bisected)
+Message-ID: <20080428064238.GA4768@martell.zuzino.mipt.ru>
+References: <20080419111719.GA6724@martell.zuzino.mipt.ru> <20080419144535.GA4814@martell.zuzino.mipt.ru> <20080419215444.2d4623f5@osprey.hogchain.net> <20080420111453.GA4902@martell.zuzino.mipt.ru> <20080420060607.2b1be48b@osprey.hogchain.net> <20080420122631.GA4761@martell.zuzino.mipt.ru> <20080420133704.63f5cc10@osprey.hogchain.net> <20080420205500.GA4762@martell.zuzino.mipt.ru> <20080421210821.28053a92@osprey.hogchain.net> <20080425195743.2bfe66ee@osprey.hogchain.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080425195743.2bfe66ee@osprey.hogchain.net>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-04-28 at 12:54 +0800, Miao Xie wrote:
-> When I echoed 0 into the "cpu.shares" file, a Div0 error occured.
+On Fri, Apr 25, 2008 at 07:57:43PM -0500, Jay Cliburn wrote:
+> On Mon, 21 Apr 2008 21:08:21 -0500
+> Jay Cliburn <jacliburn@bellsouth.net> wrote:
 > 
-> We found it is caused by the following calling.
+> > 
+> > Alexey, can you please try this (very minimally tested) patch?
 > 
->    sched_group_set_shares(tg, shares)
->        set_se_shares(tg->se[i], shares/nr_cpu_ids)
->            __set_se_shares(se, shares)
->                div64_64((1ULL<<32), shares)
-> 
-> When the echoed value was less than the number of processores, the result of the
-> sentence "shares/nr_cpu_ids" was 0, and then the system called div64() to divide
-> the result, the Div0 error occured.
-> 
-> It is unnecessary that the shares value is divided by nr_cpu_ids, I think.
-> Because in the function  __update_group_shares_cpu() and init_tg_cfs_entry(),
-> the shares value isn't divided by nr_cpu_ids when setting shares of the sched
-> entity.
-> 
-> This patch fixes this bug. And echoing ULONG_MAX value into cpu.shares also
-> causes Div0 error, so we set a macro MAX_SHARES to limit the max value of
-> shares.
+> Alexey, have you found time to try this patch yet?
 
-how about:
+I've tried it and it doesn't help.
+http://marc.info/?l=linux-netdev&m=120888791230434&w=2
 
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 740fb40..b68127a 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -8025,7 +8025,7 @@ static void init_tg_cfs_entry(struct task_group *tg, struct cfs_rq *cfs_rq,
- 
- 	se->my_q = cfs_rq;
- 	se->load.weight = tg->shares;
--	se->load.inv_weight = div64_64(1ULL<<32, se->load.weight);
-+	se->load.inv_weight = 0;
- 	se->parent = parent;
- }
- #endif
-@@ -8692,7 +8692,7 @@ static void __set_se_shares(struct sched_entity *se, unsigned long shares)
- 		dequeue_entity(cfs_rq, se, 0);
- 
- 	se->load.weight = shares;
--	se->load.inv_weight = div64_64((1ULL<<32), shares);
-+	se->load.inv_weight = 0;
- 
- 	if (on_rq)
- 		enqueue_entity(cfs_rq, se, 0);
-
+> > --- a/drivers/net/atlx/atl1.c
+> > +++ b/drivers/net/atlx/atl1.c
+> > @@ -1115,9 +1115,6 @@ static void atl1_free_ring_resources(struct
+> > atl1_adapter *adapter) struct atl1_rrd_ring *rrd_ring =
+> > &adapter->rrd_ring; struct atl1_ring_header *ring_header =
+> > &adapter->ring_header; 
+> > -	atl1_clean_tx_ring(adapter);
+> > -	atl1_clean_rx_ring(adapter);
+> > -
+> >  	kfree(tpd_ring->buffer_info);
+> >  	pci_free_consistent(pdev, ring_header->size,
+> > ring_header->desc, ring_header->dma);
+> > @@ -3423,6 +3420,8 @@ static int atl1_set_ringparam(struct net_device
+> > *netdev, adapter->rrd_ring = rrd_old;
+> >  		adapter->tpd_ring = tpd_old;
+> >  		adapter->ring_header = rhdr_old;
+> > +		atl1_clean_tx_ring(adapter);
+> > +		atl1_clean_rx_ring(adapter);
+> >  		atl1_free_ring_resources(adapter);
+> >  		adapter->rfd_ring = rfd_new;
+> >  		adapter->rrd_ring = rrd_new;
 
