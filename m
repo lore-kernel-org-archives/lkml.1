@@ -1,174 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935541AbYD1UYo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937052AbYD1UZG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935541AbYD1UYo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 16:24:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932783AbYD1UYg
+	id S937052AbYD1UZG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 16:25:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935943AbYD1UYp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 16:24:36 -0400
-Received: from hera.kernel.org ([140.211.167.34]:47274 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932409AbYD1UYf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 16:24:35 -0400
-Date: Mon, 28 Apr 2008 20:24:33 +0000
-From: Willy Tarreau <wtarreau@hera.kernel.org>
-To: linux-kernel@vger.kernel.org
-Subject: Linux 2.4 usage statistics
-Message-ID: <20080428202433.GA13417@hera.kernel.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.1i
+	Mon, 28 Apr 2008 16:24:45 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:37283 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S935326AbYD1UYo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Apr 2008 16:24:44 -0400
+Date: Mon, 28 Apr 2008 13:24:42 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Andi Kleen <andi@firstfloor.org>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Jiri Slaby <jirislaby@gmail.com>, David Miller <davem@davemloft.net>,
+       zdenek.kabelac@gmail.com, rjw@sisk.pl, paulmck@linux.vnet.ibm.com,
+       akpm@linux-foundation.org, linux-ext4@vger.kernel.org,
+       herbert@gondor.apana.org.au, penberg@cs.helsinki.fi,
+       linux-kernel@vger.kernel.org,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>, pageexec@freemail.hu,
+       "H. Peter Anvin" <hpa@zytor.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: VIRTUAL_BUG_ON()
+In-Reply-To: <20080426095938.GB17905@one.firstfloor.org>
+Message-ID: <Pine.LNX.4.64.0804281322510.31163@schroedinger.engr.sgi.com>
+References: <20080425.021301.193689806.davem@davemloft.net>
+ <1209343883-7991-1-git-send-email-jirislaby@gmail.com>
+ <alpine.LFD.1.10.0804250759260.2779@woody.linux-foundation.org>
+ <20080425151747.GA3265@one.firstfloor.org> <Pine.LNX.4.64.0804251235550.6337@schroedinger.engr.sgi.com>
+ <20080426095938.GB17905@one.firstfloor.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+On Sat, 26 Apr 2008, Andi Kleen wrote:
 
-I would be very interested in getting feedback about kernel 2.4 usage.
-Please, please, I do not want this thread to degenerate into a useless
-flamewar or "mine is bigger" discussion. For this reason, I would like
-that participants reply privately to me so that this mail does not turn
-into a thread.
+> > Good idea! Do you have a patch?
+> 
+> Yes. Appended. But it just enables the old NUMA VIRTUAL_BUG_ON()s, more 
+> work could be done e.g. by instrumenting pa/va and the non NUMA and i386 
+> case too.
 
-I know 2.4 is still used in a lot of sensible areas, although far less
-than 2.6 nowadays. At least I know that several appliance makers/sellers
-still use it in new products, and even very old versions sometimes. What
-I'd like to estimate is the way it is used, if it is systematically
-patched with local add-ons, frequency of updates (if any), etc... so
-that I can adapt my process if needed. For instance, I don't release
-any -rc for stable releases because I'm convinced that nobody will ever
-test them, but I have no problem being proved wrong.
+Hmmmm.. No hooks yet? I have some pieces here that do something similar:
 
-If I get enough replies to build up a statistic synthesis, I'll try to
-summarise it (eventhough 73% of statistics are all made up :-) ).
+Subject: Add checks for virtual addresses
 
-This "poll" is not meant to dictate what will get merged next (we're in
-feature freeze anyway), but it helps me know your usage better, to try
-to serve you better. Also, if a majority of people report the same
-problem or lacking feature for which a trivial fix is know, it can be
-studied.
+Add checks to insure that virtual addresses are not used in invalid contexts.
 
-Basically what I'd like to know is the following. You can use the proposed
-responses as a guide, but they're not mandatory. Also if possible and adapted,
-please report number of concerned units :
+Signed-off-by: Christoph Lameter <clameter@sgi.com>
 
-1) where do you use it ?
-   - PC turned into network equipment (router, LB, BGP route reflector, ...)
-   - security equipment (firewall, vpn, ids/ips, traffic analyzer, ...)
-   - proxy services (proxy, smtp relay, reverse-proxy, anti-virus/spam, ...)
-   - storage/directory server (NFS, LDAP, logging, ...)
-   - multi-function server (proxy/fw/nfs/mail/...)
-   - monitoring / remote access
-   - desktop/workstation
-   - laptop (if recent, what model ?)
-   - dedicated appliances (that you may be designing/selling)
-   - soho embedded systems (eg: wifi routers, ...)
-   - PDA ?
-   - other ?
+---
+ arch/x86/mm/ioremap.c     |    1 +
+ include/asm-x86/page_32.h |    7 ++++++-
+ 2 files changed, 7 insertions(+), 1 deletion(-)
 
-2) how critical are the systems it runs on ?
-   - medical (people's health depend on them) ?
-   - finance (massive amounts of money pass through them) ?
-   - business-critical (you may go bankrupt if it fails too often) ?
-   - mission-critical (you may loose your job if it fails too often) ?
-   - security-critical (security gets degraded when it fails) ?
-   - users get angry at you when it fails (admin, or do this for a living) ?
-   - not that important (you may reboot when you decide to do so) ?
-   - no importance at all (eg: home usage, experimentation, ...) ?
-
-3) how many users are you serving with it approximately, all systems
-   included ? Or better, how many people will notice the failure at once
-   if any ? Note: do not count web population as users, but use maximum
-   concurrent users instead.
-   - < 10
-   - < 100
-   - < 1000
-   - < 10000
-   - more ?
-
-4) what version are you running ?
-   - latest or close to that (eg: 2.4.36.x)
-   - latest was available last time you upgraded
-   - somewhat old mainline (2.4.32-2.4.34)
-   - quite old mainline (2.4.21..2.4.31)
-   - very old mainline (2.4.2, 2.4.17, ...)
-   - debian's 2.4.27
-   - rhel 3's 2.4.21
-   - my other standard distros's 2.4 kernel
-   - an embedded distro's heavily patched 2.4 (port to other archs, ...)
-
-5) have you applied any patches ?
-   - provided with the distro
-   - security: pax/grsec/ow, capabilities, ...
-   - performance: epoll, variable_hz, jiffies_64, preempt, O(1), ...
-   - network: tcp md5, transparent proxy, netfilter tcp_window_tracking...
-   - drivers: very specific to your platform, self-added PCI-IDs, vendors'
-   - filesystems: updated jffs2+mtd, squashfs, cifs, fuse, ...
-   - security/stability fixes backported from later 2.4 versions
-   - other security/stability fixes or improvements
-   - drivers backported from 2.6
-   - other ?
-
-6) how often do you update (may translate into avg uptime) ?
-   - every release
-   - every major release after a few dot-versions
-   - only when you see an important (to you) security fix
-   - same as well as with reliability fixes
-   - at least once a year
-   - only if you need to re-install
-   - after a lot of careful revalidation
-   - never
-
-7) how do you test ?
-   - pre-production environment in equivalent conditions
-   - long-term reliability stress-tests (days to weeks)
-   - quick regression testing before production
-   - you test in production
-   - no test at all, blind upgrade
-   - other ?
-
-8) why have you not upgraded to 2.6 yet (including Adrian's 2.6.16.X ?)
-   - not needed, all features OK and hardware still 100% compatible
-   - you have to change user-space tools
-   - you don't feel comfortable with 2.6's patch pace (but 2.6.16 is quite
-     comparable to 2.4)
-   - you do not trust 2.6 enough yet ? (why ?)
-   - missing features you had in 2.4 mainline that are not in 2.6 anymore ?
-   - missing features you had in your 2.4 patches that do not exist in 2.6 ?
-   - drivers not existing anymore in 2.6 ?
-   - drivers not working anymore in 2.6 ?
-   - performance regression in 2.6 ?
-   - you find 2.6 more complicated ?
-   - other ?
-
-9) when do you plan to switch to 2.6 ?
-   - it has already begun (and as a supplement, if you had to do so because
-     2.4 did not work anymore for you for other reasons than hardware
-     support and features, please indicate which ones)
-   - very soon (<1 year)
-   - not before 1 year
-   - next installations
-   - next batch of major upgrades
-   - when your hardware is not compatible anymore
-   - when you can't build 2.4 with your distro's gcc
-   - when 2.6 supports feature/driver XXX
-   - when 2.6 is more reliable (example ?)
-   - when 2.6 development slows down
-   - the latest possible (why ???)
-   - never (why ??? and what would you switch to then ?)
-
-10) any comments or suggestions about current release process, minor issues
-    that you are facing each time such as external patches that do not apply,
-    recurrent problems on all of your setups, etc... ?
-
-
-Well, that's all. You do not need to respond precisely, and once again,
-I'm just trying to get the figure.
-
-And please do not forget! Reply to me directly, do not pollute the list,
-that way you will refrain the random geeks from comparing their setups
-to other ones.
-
-Thanks!
-Willy
-
+Index: linux-2.6.25-mm1/arch/x86/mm/ioremap.c
+===================================================================
+--- linux-2.6.25-mm1.orig/arch/x86/mm/ioremap.c	2008-04-25 23:17:31.872390404 -0700
++++ linux-2.6.25-mm1/arch/x86/mm/ioremap.c	2008-04-25 23:37:43.202391820 -0700
+@@ -25,6 +25,7 @@
+ 
+ unsigned long __phys_addr(unsigned long x)
+ {
++	VM_BUG_ON(is_vmalloc_addr((void *)x));
+ 	if (x >= __START_KERNEL_map)
+ 		return x - __START_KERNEL_map + phys_base;
+ 	return x - PAGE_OFFSET;
+Index: linux-2.6.25-mm1/include/asm-x86/page_32.h
+===================================================================
+--- linux-2.6.25-mm1.orig/include/asm-x86/page_32.h	2008-04-25 23:17:31.882389317 -0700
++++ linux-2.6.25-mm1/include/asm-x86/page_32.h	2008-04-25 23:37:43.202391820 -0700
+@@ -64,7 +64,12 @@ typedef struct page *pgtable_t;
+ #endif
+ 
+ #ifndef __ASSEMBLY__
+-#define __phys_addr(x)		((x) - PAGE_OFFSET)
++static inline unsigned long __phys_addr(unsigned long x)
++{
++	VM_BUG_ON(is_vmalloc_addr((void *)x));
++	return x - PAGE_OFFSET;
++}
++
+ #define __phys_reloc_hide(x)	RELOC_HIDE((x), 0)
+ 
+ #ifdef CONFIG_FLATMEM
