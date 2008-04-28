@@ -1,80 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966335AbYD1Sbr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966411AbYD1ScY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966335AbYD1Sbr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 14:31:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936738AbYD1SYZ
+	id S966411AbYD1ScY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 14:32:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936646AbYD1SZl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 14:24:25 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:37852 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S936517AbYD1SYY (ORCPT
+	Mon, 28 Apr 2008 14:25:41 -0400
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:53362 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S936320AbYD1SZi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 14:24:24 -0400
-Date: Mon, 28 Apr 2008 19:24:16 +0100
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: "Zhang, Xiantao" <xiantao.zhang@intel.com>
-Cc: Al Viro <viro@ftp.linux.org.uk>, torvalds@linux-foundation.org,
-       sfr@canb.auug.org.au, linux-kernel@vger.kernel.org,
-       kvm-ia64-devel@lists.sourceforge.net
-Subject: Re: [kvm-ia64-devel] [PATCH] ia64 kvm fixes for O=... builds
-Message-ID: <20080428182416.GE5882@ZenIV.linux.org.uk>
-References: <E1JqMOH-0004ky-VF@ZenIV.linux.org.uk> <42DFA526FC41B1429CE7279EF83C6BDC011CA51F@pdsmsx415.ccr.corp.intel.com> <20080428141402.GD5882@ZenIV.linux.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080428141402.GD5882@ZenIV.linux.org.uk>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Mon, 28 Apr 2008 14:25:38 -0400
+Subject: Re: [GIT PATCH] another tranche of SCSI updates for 2.6.26
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <alpine.LFD.1.10.0804280903230.3119@woody.linux-foundation.org>
+References: <1209320076.3801.26.camel@localhost.localdomain>
+	 <20080428013400.GA6245@elte.hu>
+	 <1209351113.3801.107.camel@localhost.localdomain>
+	 <alpine.LFD.1.10.0804280903230.3119@woody.linux-foundation.org>
+Content-Type: text/plain
+Date: Mon, 28 Apr 2008 14:25:33 -0400
+Message-Id: <1209407133.3367.37.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-4.fc8) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 28, 2008 at 03:14:02PM +0100, Al Viro wrote:
-> On Mon, Apr 28, 2008 at 09:46:44PM +0800, Zhang, Xiantao wrote:
-> > >  kvm-intel-objs = vmm.o vmm_ivt.o trampoline.o vcpu.o optvfault.o
-> > >  	mmio.o \ vtlb.o process.o
-> > >  #Add link memcpy and memset to avoid possible structure assignment
-> > > error -kvm-intel-objs += memset.o memcpy.o
-> > > +kvm-intel-objs += ../lib/memset.o ../lib/memcpy.o
-> > >  obj-$(CONFIG_KVM_INTEL) += kvm-intel.o
-> > 
-> > I don't think it is workable for kvm-ia64.  Currently,  kvm-intel module
-> > needs to be relocated at insertion time, so the code is
-> > position-indenpent. Howerver, lib/*.memset.o(memcoy.o) are not compiled
-> > as position independent code, they can't be linked into the module
-> > correctly in your way. That is why we use symbol link instead of linking
-> > the objects under /lib. 
+On Mon, 2008-04-28 at 09:05 -0700, Linus Torvalds wrote:
 > 
-> symlinks won't work as you use them.  If you really need separately
-> compiled, use file with a couple of #include "../lib/......S" and
-> be done with that.
+> On Sun, 27 Apr 2008, James Bottomley wrote:
+> > 
+> > Try this; the signature for an uninitialised free list is easy (both
+> > list pointers NULL), so the patch detects that and doesn't try to run
+> > over the uninitialised list head.
+> 
+> Why aren't these things initialized?
 
-... like this, perhaps?  I still wonder what will happen with either this
-or the original tree if you make CONFIG_KVM_INTEL=y, though - won't either
-variant give you duplicate symbols?
+They are, but not until we begin the freelist allocation.  That way we
+can keep the list head being NULL as the signal for the freelist not
+being initialised.
 
-diff --git a/arch/ia64/kvm/Makefile b/arch/ia64/kvm/Makefile
-index 5235339..e7b9432 100644
---- a/arch/ia64/kvm/Makefile
-+++ b/arch/ia64/kvm/Makefile
-@@ -54,5 +54,5 @@ EXTRA_CFLAGS_vcpu.o += -mfixed-range=f2-f5,f12-f127
- kvm-intel-objs = vmm.o vmm_ivt.o trampoline.o vcpu.o optvfault.o mmio.o \
- 	vtlb.o process.o
- #Add link memcpy and memset to avoid possible structure assignment error
--kvm-intel-objs += ../lib/memset.o ../lib/memcpy.o
-+kvm-intel-objs += memset.o memcpy.o
- obj-$(CONFIG_KVM_INTEL) += kvm-intel.o
-diff --git a/arch/ia64/kvm/memcpy.S b/arch/ia64/kvm/memcpy.S
-new file mode 100644
-index 0000000..c04cdbe
---- /dev/null
-+++ b/arch/ia64/kvm/memcpy.S
-@@ -0,0 +1 @@
-+#include "../lib/memcpy.S"
-diff --git a/arch/ia64/kvm/memset.S b/arch/ia64/kvm/memset.S
-new file mode 100644
-index 0000000..83c3066
---- /dev/null
-+++ b/arch/ia64/kvm/memset.S
-@@ -0,0 +1 @@
-+#include "../lib/memset.S"
+> You say that the signature of an uninitialised free list is trivial, but 
+> that's not at all true in general. It depends intimately on how the memory 
+> was allocated, and is thus very subtle indeed - some change to allocations 
+> can break something simple like this, by initializing it with random old 
+> memory contents.
+
+No, no; for us it's guaranteed to be NULL ... they're allocated in the
+host memory area with kzalloc. (and before kzalloc, we were using
+kmalloc/memset because the host area has an API guarantee of being zero
+initialised).
+
+> So why not just initialize lists like this so early (ie at allocation 
+> time) that problems like this cannot happen? Instead of adding ugly and 
+> fragile cases to the freeing?
+
+Because then I'd need another flag to know whether or not the free list
+has actually been set up.  In theory, if we initialise the list,
+list_empty() would do because when you're freeing you should always have
+the reserve command on the free list ... but that would have prevented
+us from seeing the bug Ingo reported recently (where we were freeing
+with active commands), so I'm a bit reluctant to do that.
+
+James
+
 
