@@ -1,89 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935114AbYD1OtX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932574AbYD1Ovh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935114AbYD1OtX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 10:49:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933696AbYD1OtI
+	id S932574AbYD1Ovh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 10:51:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933635AbYD1OvY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 10:49:08 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:59637 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933541AbYD1OtH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 10:49:07 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <1209219236.3113.6.camel@localhost.localdomain>
-References: <1209219236.3113.6.camel@localhost.localdomain> <1208890227-24808-1-git-send-email-jens.axboe@oracle.com> <1208890227-24808-2-git-send-email-jens.axboe@oracle.com> <20080425231100.b93a1601.akpm@linux-foundation.org>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: dhowells@redhat.com, Andrew Morton <akpm@linux-foundation.org>,
-       Jens Axboe <jens.axboe@oracle.com>, linux-arch@vger.kernel.org,
-       linux-kernel@vger.kernel.org, npiggin@suse.de,
-       torvalds@linux-foundation.org, peterz@infradead.org, sam@ravnborg.org,
-       "Paul E. McKenney" <paulmck@us.ibm.com>
-Subject: Re: [PATCH 1/11] Add generic helpers for arch IPI function calls
-X-Mailer: MH-E 8.0.3+cvs; nmh 1.2-20070115cvs; GNU Emacs 23.0.50
-Date: Mon, 28 Apr 2008 15:25:27 +0100
-Message-ID: <18470.1209392727@redhat.com>
+	Mon, 28 Apr 2008 10:51:24 -0400
+Received: from el-out-1112.google.com ([209.85.162.180]:16200 "EHLO
+	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933118AbYD1OvX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Apr 2008 10:51:23 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=r2NUD/7pdoYMrH3eOaeo2RXMTY+zL/MKeeota0kuvWpKfqFUAhl46HwJBCIoLB90Zdc8VoxGxeJsuGxqPk8gDJ/O6zk1h1ylGCYcjSNpjlNp20vY2GvtDYpy5szKWfKdCzwiBeq/Yc04vYKCvw07e8M6OTyH94XvvxcZtUJsmwA=
+Message-ID: <cfd18e0f0804280751x21833b51y4b1f6f7ce3201d0d@mail.gmail.com>
+Date: Mon, 28 Apr 2008 16:51:21 +0200
+From: "Michael Kerrisk" <mtk.manpages@googlemail.com>
+To: "Ulrich Drepper" <drepper@redhat.com>
+Subject: Re: [PATCH] paccept, socket, socketpair w/flags
+Cc: "Michael Kerrisk" <mtk.manpages@gmail.com>,
+       "Alan Cox" <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, akpm@linux-foundation.org,
+       torvalds@linux-foundation.org
+In-Reply-To: <4815DB8B.7060606@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200804262224.m3QMOP3a006296@devserv.devel.redhat.com>
+	 <517f3f820804280252h753c8cacv7fe9580f96dcf1ce@mail.gmail.com>
+	 <4815DB8B.7060606@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
+On Mon, Apr 28, 2008 at 4:13 PM, Ulrich Drepper <drepper@redhat.com> wrote:
+> -----BEGIN PGP SIGNED MESSAGE-----
+> Hash: SHA1
+>
+> Michael Kerrisk wrote:
+> > This is ugly.  Why invent a diffent set of flags here.  I agree with
+> > your earlier statement that new syscalls would be cleaner.
+>
+> Don't lay words in my mouth.  I do think that different flags are
+> needed.
 
-> Erm, that's a bug in the frv toolchain, isn't it?  The linker should
-> *never* rely on C code annotation for jump lengths ... mainly because
-> you can screw it all up again in the linker script, so the sectional
-> annotations should only be in the function body (think
-> -ffunction-sections)
+Okay -- to some extent I seem to have misunderstood you.  I'll step
+back a little and start again.
 
-The problem with FRV has to do with global variables, not functions.
+You have said it would be cleaner to have new syscalls for socket()
+and socketpair().  I understand your reasoning for that to be that
+doing so is cleaner than overloading the type argument of the existing
+versions of these syscalls.  I agree.  So, since you are adding new
+syscalls for all of the other interfaces, why not do it for these two
+syscalls also?
 
-With FRV, we attempt to pack as many small variables into the "small data
-section" (.sdata) as we can, and then retain a pointer to it in a register.
-Thus for small variables, we can use a single instruction, such as:
+> The name of the flag must indicate what it is for and you don't
+> want to mix flags with different prefixes for the same flags parameter.
+>  Not introducing separate flags would mean all the functions would have
+> to accept the same set of flags which will sooner or later create
+> problems.  I really don't see the problem here.
+>
+>
+> > then *please* let's go the hwole way cleanly, and have new syscalls
+> > also for socketpair() and socket(), and make all of the new syscalls
+> > use the same flags.
+>
+> Hell, no, that's worse than everything else proposed.  We don't have the
+> luxury to have a separate parameter to indicate close-on-exec or not.
+> For efficiency it has to be a multi-purpose flags parameter and the
+> flags each syscall takes are different since the functionality is different.
 
-	LDI	@(GR16,%gprel(my_variable)),GRx
+Okay -- I see your point (and I didn't read your patches closely
+enough).  However, the rationale for the implementations proposed to
+date isn't very clear.  So far we have the following new flags:
 
-to access it.  However, this limits the offset of my_variable to be +/-2048
-from GR16 because all the instructions are the same size, and that's the size
-of the offset field therein.
+timerfd_create() -- TFD_CLOEXEC
+signalfd4() -- SFD_CLOEXEC
+eventfd2() -- EFD_CLOEXEC
+epoll_create2() -- EPOLL_CLOEXEC
+open() (and openat()), dup3() -- all use O_CLOEXEC
+socketpair(), socket(), paccept -- all use SOCK_CLOEXEC
+pipe2() -- to be determined
+inotify_init2() -- to be determined
 
-Alternatively, we can use:
-
-	SETHI.P	%hi(my_variable),GRy
-	SETLO	%lo(my_variable),GRy
-	LD	@(GRy,GR0),GRx
-
-which obviously takes two more instructions, although they can be executed
-simultaneously, and 8 more bytes of RAM/icache.
-
-However, the compiler will assume that it should access _all_ global variables
-using GPREL-addressing unless it is told otherwise.  This means that if a
-global variable should not be GPREL-addressed, its *declaration* should be
-annotated, as this affects how it is addressed.  Furthermore, if the variable
-is *defined* in C, that definition should be annotated the same as the
-declaration, otherwise it'll eat storage from .sdata rather than the
-appropriate section.
-
-
-Global functions are another matter.  The FRV's PC+offset call and branch
-instructions have 24-bit displacements, which is fine for leaping about within
-the kernel core with a single instruction.
-
-In modules, we instead (a) suppress GPREL addressing entirely because we can't
-put module variables in .sdata, and (b) make all interfunction jumps that the
-assembler can't resolve into:
-
-	SETHI.P	%hi(that_function),GRy
-	SETLO	%lo(that_function),GRy
-	JMPL	@(GRy,GR0)
-
-because a 24-bit offset can only span 16MB, which isn't far enough.
-
-
-We could use a GOT, but I believe that would add an extra memory access to any
-memory access or jump - which I'd prefer to avoid.
-
-David
+It would help if you laid out your reasoning for creating distinct
+flags for some syscalls but not others.  For example, is the
+assumption here that socketpair(), socket(), and paccept() will always
+use the same set of flags?  If so, what makes that group special with
+respect to your arguments about the need for separate flags for each
+syscall?
