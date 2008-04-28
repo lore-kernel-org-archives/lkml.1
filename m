@@ -1,72 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935152AbYD1S46@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936534AbYD1S61@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935152AbYD1S46 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 14:56:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933717AbYD1S4n
+	id S936534AbYD1S61 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 14:58:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933904AbYD1S6J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 14:56:43 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:46842 "EHLO smtp5.pp.htv.fi"
+	Mon, 28 Apr 2008 14:58:09 -0400
+Received: from mga14.intel.com ([143.182.124.37]:18945 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933241AbYD1S4m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 14:56:42 -0400
-Date: Mon, 28 Apr 2008 21:56:08 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Dmitri Vorobiev <dmitri.vorobiev@gmail.com>, tglx@linutronix.de,
-       hpa@zytor.com, linux-kernel@vger.kernel.org,
-       Alexander Viro <viro@ftp.linux.org.uk>
-Subject: Re: x86: fix a couple of sparse warnings
-Message-ID: <20080428185608.GZ2813@cs181133002.pp.htv.fi>
-References: <1209338159-30095-1-git-send-email-dmitri.vorobiev@gmail.com> <20080428123809.GD27997@elte.hu> <20080428133756.GJ16379@cs181133002.pp.htv.fi> <90edad820804280643p43509911gd7b497131c3f5004@mail.gmail.com> <20080428135957.GK16379@cs181133002.pp.htv.fi> <20080428150156.GA7412@elte.hu>
+	id S933714AbYD1S6H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Apr 2008 14:58:07 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,717,1199692800"; 
+   d="scan'208";a="239027033"
+From: PJ Waskiewicz <peter.p.waskiewicz.jr@intel.com>
+Subject: [PATCH] ARCH 2.6.24.y: Fix 32-bit x86 MSI-X allocation leakage
+To: stable@kernel.org, linux-kernel@vger.kernel.org
+Cc: netdev@vger.kernel.org
+Date: Mon, 28 Apr 2008 11:56:03 -0700
+Message-ID: <20080428185603.11595.17319.stgit@scrappy.jf.intel.com>
+User-Agent: StGIT/0.14.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20080428150156.GA7412@elte.hu>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 28 Apr 2008 18:57:57.0564 (UTC) FILETIME=[C5CEB7C0:01C8A961]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 28, 2008 at 05:01:56PM +0200, Ingo Molnar wrote:
-> 
-> * Adrian Bunk <bunk@kernel.org> wrote:
-> 
-> > On Mon, Apr 28, 2008 at 05:43:25PM +0400, Dmitri Vorobiev wrote:
-> > > 2008/4/28 Adrian Bunk <bunk@kernel.org>:
-> > > >
-> > > >  /me wonders what was wrong with http://lkml.org/lkml/2008/4/23/131
-> > > >     that contains a superset of the first patch
-> > > >     (and got no response at all)
-> > > 
-> > > Adrian, I am sorry for duplicating your work. The clash wasn't 
-> > > intentional: I did not notice your earlier patch in the high traffic 
-> > > of this mailing list.
-> > 
-> > No problem, and I'm actually more interested why my patch got lost.
-> 
-> It's simple: in this case i had two patches in my backlog, one from a 
-> new person and one from a frequent contributor - doing the very same 
-> change. I preferred the newbie's patch, to encourage Dmitri to keep 
-> contributing to Linux and to help him learn from the experience of 
-> working with various Linux maintainers.
->...
+Resend now that this patch was merged into -upstream.
 
-Every maintainer except you will teach the newbie where to find the 
-current tree to avoid duplicating work...
+This bug was introduced in the 2.6.24 i386/x86_64 tree merge, where
+MSI-X vector allocation will eventually fail.  The cause is the new
+bit array tracking used vectors is not getting cleared properly on
+IRQ destruction on the 32-bit APIC code.
 
-But OK, instead of spending my time duplicating later patches I'll put 
-possible cleanups and bugs for x86 on a list and check 1 or 2 months 
-later whether they are still present.
+This can be seen easily using the ixgbe 10 GbE driver on multi-core
+systems by simply loading and unloading the driver a few times.
+Depending on the number of available vectors on the host system, the
+MSI-X allocation will eventually fail, and the driver will only be
+able to use legacy interrupts.
 
-> 	Ingo
+Signed-off-by: Peter P Waskiewicz Jr <peter.p.waskiewicz.jr@intel.com>
+---
 
-cu
-Adrian
+ arch/x86/kernel/io_apic_32.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
--- 
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+diff --git a/arch/x86/kernel/io_apic_32.c b/arch/x86/kernel/io_apic_32.c
+index 232fdeb..9994c52 100644
+--- a/arch/x86/kernel/io_apic_32.c
++++ b/arch/x86/kernel/io_apic_32.c
+@@ -2478,6 +2478,7 @@ void destroy_irq(unsigned int irq)
+ 	dynamic_irq_cleanup(irq);
+ 
+ 	spin_lock_irqsave(&vector_lock, flags);
++	clear_bit(irq_vector[irq], used_vectors);
+ 	irq_vector[irq] = 0;
+ 	spin_unlock_irqrestore(&vector_lock, flags);
+ }
 
