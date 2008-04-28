@@ -1,112 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966329AbYD1TXG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966550AbYD1TXa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966329AbYD1TXG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 15:23:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965176AbYD1TWz
+	id S966550AbYD1TXa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 15:23:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966284AbYD1TXT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 15:22:55 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:39257 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S965044AbYD1TWy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 15:22:54 -0400
-Date: Mon, 28 Apr 2008 14:22:52 -0500
-From: Russ Anderson <rja@sgi.com>
-To: linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Tony Luck <tony.luck@intel.com>, Christoph Lameter <clameter@sgi.com>,
-       Russ Anderson <rja@sgi.com>
-Subject: [PATCH 0/2] ia64: Migrate data off physical pages with correctable errors
-Message-ID: <20080428192252.GA14629@sgi.com>
-Reply-To: Russ Anderson <rja@sgi.com>
-Mime-Version: 1.0
+	Mon, 28 Apr 2008 15:23:19 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:56913 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965176AbYD1TXS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Apr 2008 15:23:18 -0400
+Date: Mon, 28 Apr 2008 15:22:44 -0400
+From: Dave Jones <davej@redhat.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: cpufreq pull request for 2.6.26
+Message-ID: <20080428192244.GB18326@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Linux Kernel <linux-kernel@vger.kernel.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.9i
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-	Migrate data off physical pages with corrected memory errors
+Slightly late, but mostly trivial stuff..
 
-Purpose:
+Please pull from ..
+master.kernel.org:/pub/scm/linux/kernel/git/davej/cpufreq.git/ 
 
-	Physical memory with corrected errors may decay over time into
-	uncorrectable errors.  The purpose of this patch is to move the
-	data off pages with correctable memory errors before the memory
-	goes bad.
+ arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c |   10 ++
+ drivers/acpi/processor_thermal.c           |   30 ++++---
+ drivers/cpufreq/cpufreq.c                  |  129 ++++++++++++---------------
+ drivers/cpufreq/cpufreq_stats.c            |    6 +-
+ 4 files changed, 88 insertions(+), 87 deletions(-)
 
-The patches:
+commit e56a727b023d40d1adf660168883f30f2e6abe0a
+Author: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+Date:   Mon Apr 28 15:13:43 2008 -0400
 
-  [1/2] page.discard: Avoid putting a bad page back on the LRU.
+    [CPUFREQ] Make acpi-cpufreq more robust against BIOS freq changes behind our back.
+    
+    We checked the hardware freq with OS cached freq value in get_cur_freqon_cpu().
+    
+    Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+    Signed-off-by: Thomas Renninger <trenn@suse.de>
+    Signed-off-by: Dave Jones <davej@redhat.com>
 
-	page.discard are the arch independent changes.  It adds a new
-	page flag (PG_memerror) to mark the page as bad and prevent it
-	from being put back on the LRU.  PG_memerror is bit 32 and only
-	defined on 64 bit architectures.  It adds "BadPages:" output to
-	/proc/meminfo on 64 bit architectures.  
+commit c938ac21329f19ad286eaaed7e26434943c8061b
+Author: Mike Travis <travis@sgi.com>
+Date:   Wed Mar 5 08:31:29 2008 -0800
 
-  [2/2] cpe.migrate: Call migration code on correctable errors
+    [CPUFREQ] change cpu freq tables to per_cpu variables
+    
+    Change cpufreq tables from arrays to per_cpu variables in
+    drivers/acpi/processor_thermal.c
+    
+    Based on git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
+    
+    Cc: Len Brown <len.brown@intel.com>
+    Signed-off-by: Mike Travis <travis@sgi.com>
+    Signed-off-by: Dave Jones <davej@codemonkey.org.uk>
 
-	cpe.migrate are the IA64 specific changes.  It connects the CPE
-	handler to the page migration code.  It is implemented as a kernel
-	loadable module, similar to the mca recovery code (mca_recovery.ko),
-	so that it can be removed to turn off the feature.  It exports
-	three symbols (migrate_prep, isolate_lru_page, and migrate_pages).
+commit 25aca347d49ffc38aa3b7e63ce9b90df7f8b79c8
+Author: Cesar Eduardo Barros <cesarb@cesarb.net>
+Date:   Sat Feb 16 08:41:25 2008 -0200
 
-Comments:
+    [CPUFREQ] fix show_trans_table
+    
+    Fix show_trans_table when it overflows PAGE_SIZE.
+    
+    * Not all snprintf calls were protected against being passed a negative
+    length.
+    * When show_trans_table overflows, len might be > PAGE_SIZE. In that case,
+    returns PAGE_SIZE.
+    
+    Signed-off-by: Cesar Eduardo Barros <cesarb@cesarb.net>
+    Signed-off-by: Dave Jones <davej@codemonkey.org.uk>
 
-	Since page flags are a precious commodity on 32 bit architectures,
-	the choice was made to implement PG_memerror only on 64 bit 
-	architectures, in the upper 32 bits.  If there is interest in
-	this feature on 32 bit, it only requires defining PG_memerror
-	in one of the lower 32 page flage bits and removing the BITS_PER_LONG
-	checks.
+commit 74212ca432982903d0fc6a0f282b199e000ad8b1
+Author: Cesar Eduardo Barros <cesarb@cesarb.net>
+Date:   Sat Feb 16 08:41:24 2008 -0200
 
-	There is always an issue of how agressive the code should be on
-	migrating pages.  Should it migrate on the first correctable error,
-	or wait for some threshold?  Reasonable people may disagree on the
-	threshold and the "right" answer may be hardware specific.  The 
-	decision making is confined to the cpe_migrate.c code.  It is
-	currently set to migrate on the first correctable error.
+    [CPUFREQ] Warn when cpufreq_register_notifier called before pure initcalls
+    
+    If cpufreq_register_notifier is called before pure initcalls,
+    init_cpufreq_transition_notifier_list will overwrite whatever it did,
+    causing notifiers to be ignored.
+    
+    Print some noise to the kernel log if that happens.
+    
+    Signed-off-by: Cesar Eduardo Barros <cesarb@cesarb.net>
+    Signed-off-by: Dave Jones <davej@codemonkey.org.uk>
 
-	Only pages that can be isolated on the LRU are migrated.  Other
-	pages, such as compound pages, are not migrated.  That functionality
-	could be a future enhancement.
+commit 457091181176643787a547dc04eb3cf5dcd822ce
+Author: Dave Jones <davej@redhat.com>
+Date:   Wed Mar 5 14:07:34 2008 -0500
 
-Flow of the code description (while testing on IA64):
+    [CPUFREQ] Refactor locking in cpufreq_add_dev
+    
+    Simplify this by moving the unlocking out of the error
+    paths into the exit path.
+    
+    Signed-off-by: Dave Jones <davej@codemonkey.org.uk>
 
-	1) A user level application test program allocates memory and
-	   passes the virtual address of the memory to the error injection
-	   driver.
+commit 905d77cd95e856b8e0b2d099fb70b9b8ccb7337e
+Author: Dave Jones <davej@redhat.com>
+Date:   Wed Mar 5 14:28:32 2008 -0500
 
-	2) The error injection driver converts the virtual address to
-	   physical, functions the Altix hardware to modify the ECC for the
-	   physical page, creating a correctable error, and returns to the
-	   user application.
+    [CPUFREQ] more CodingStyle
+    
+    void * p   ->  void *p
+    no space between function parameters
+    removed excess whitespace
+    
+    Signed-off-by: Dave Jones <davej@codemonkey.org.uk>
 
-	3) The user application reads the memory.
+commit 4d34a67d0204029079815c8c2753ca647cd0e7e9
+Author: Dave Jones <davej@redhat.com>
+Date:   Thu Feb 7 16:33:49 2008 -0500
 
-	4) The Altix hardware detects the correctable error and interrupts
-	   prom.  SAL builds a CPU error record, then sends a CPE 
-	   interrupt to linux.
+    [CPUFREQ] CodingStyle
+    
+    return is not a function.
+    
+    Signed-off-by: Dave Jones <davej@redhat.com>
 
-	5) The linux CPE handler calls the cpe_migrate module (if installed).
+commit c906049447019d69b9cc2d591a142af561afa7f9
+Author: Dave Jones <davej@redhat.com>
+Date:   Thu Feb 7 16:32:18 2008 -0500
 
-	6) cpe_migrate parses the physical address from the CPE record and
-	   adds the address to the migrate list (if not already on the list)
-	   and schedules the worker thread (cpe_enable_work).
+    [CPUFREQ] Slightly shorten the error paths of cpufreq_suspend/cpufreq_resume
+    
+    Signed-off-by: Dave Jones <davej@redhat.com>
 
-	7) cpe_enable_work calls ia64_mca_cpe_move_page.
 
-	8) ia64_mca_cpe_move_page validates the physical address, converts
-	   to page, sets PG_memerror flag and calls the migration code
-	   (migrate_prep(), isolate_lru_page(), and migrate_pages().  If the
-	   page migrates successfully, the bad page is added to badpagelist.
-
-	9) Because PG_memerror is set, the bad page is not added back on the LRU
-	   due to checks in lru_cache_add() and lru_cache_add_active().
 
 -- 
-Russ Anderson, OS RAS/Partitioning Project Lead  
-SGI - Silicon Graphics Inc          rja@sgi.com
+http://www.codemonkey.org.uk
