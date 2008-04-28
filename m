@@ -1,101 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932466AbYD1H3M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932555AbYD1HaV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932466AbYD1H3M (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 03:29:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763172AbYD1H26
+	id S932555AbYD1HaV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 03:30:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763654AbYD1HaI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 03:28:58 -0400
-Received: from wx-out-0506.google.com ([66.249.82.228]:7815 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751605AbYD1H25 (ORCPT
+	Mon, 28 Apr 2008 03:30:08 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:44820 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1763172AbYD1HaH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 03:28:57 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=aOgUKZpF/xPMvCNDiX4Vf2icUEhCzI6eS2r5vQ53sVHE+AHNf63Y63jgYywdyrr/ZE17hRd8kqilpZv3gj5yYr6Ndzv14G4HhJxkoZg/Z/udqHE/Z7/1u+aNuv+RKX4t1VyQyanfcJIbsSEuBY3W3/xfvCfp6WgNcK1ds6EC4+Y=
-Date: Mon, 28 Apr 2008 04:32:14 -0300
-From: "Carlos R. Mafra" <crmafra2@gmail.com>
-To: David Miller <davem@davemloft.net>
-Cc: linux-kernel@vger.kernel.org, reinette.chatre@intel.com,
-       linville@tuxdriver.com, torvalds@linux-foundation.org
-Subject: Re: [PATCH] iwlwifi: Fix build error in v2.6.25-5561-g064922a
-Message-ID: <20080428073212.GA7260@Pilar.virtua.com.br>
-References: <20080428054700.GA16177@Pilar.virtua.com.br> <20080427.233507.261574307.davem@davemloft.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080427.233507.261574307.davem@davemloft.net>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Mon, 28 Apr 2008 03:30:07 -0400
+Date: Mon, 28 Apr 2008 00:28:53 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Heiko Carstens <heiko.carstens@de.ibm.com>
+Cc: Gautham R Shenoy <ego@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       Paul Jackson <pj@sgi.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] sched: missing locking in sched_domains code
+Message-Id: <20080428002853.1693e7fd.akpm@linux-foundation.org>
+In-Reply-To: <20080428070946.GA4507@osiris.boeblingen.de.ibm.com>
+References: <20080427211224.GA21830@osiris.boeblingen.de.ibm.com>
+	<20080427183926.acb66fff.akpm@linux-foundation.org>
+	<20080428070946.GA4507@osiris.boeblingen.de.ibm.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun 27.Apr'08 at 23:35:07 -0700, David Miller wrote:
-> From: "Carlos R. Mafra" <crmafra2@gmail.com>
-> Date: Mon, 28 Apr 2008 02:47:01 -0300
+On Mon, 28 Apr 2008 09:09:46 +0200 Heiko Carstens <heiko.carstens@de.ibm.com> wrote:
+
+> On Sun, Apr 27, 2008 at 06:39:26PM -0700, Andrew Morton wrote:
+> > On Sun, 27 Apr 2008 23:12:24 +0200 Heiko Carstens <heiko.carstens@de.ibm.com> wrote:
+> > > Index: linux-2.6/kernel/cpuset.c
+> > > ===================================================================
+> > > --- linux-2.6.orig/kernel/cpuset.c
+> > > +++ linux-2.6/kernel/cpuset.c
+> > > @@ -684,7 +684,9 @@ restart:
+> > >  rebuild:
+> > >  	/* Have scheduler rebuild sched domains */
+> > >  	get_online_cpus();
+> > > +	mutex_lock(&sched_domains_mutex);
+> > >  	partition_sched_domains(ndoms, doms, dattr);
+> > > +	mutex_unlock(&sched_domains_mutex);
+> > >  	put_online_cpus();
+> > >  
+> > 
+> > It seems a bit fragile to take this lock in the caller without even adding
+> > a comment at the callee site which documents the new locking rule.
+> > 
+> > It would be more robust to take the lock within partition_sched_domains().
+> > 
+> > partition_sched_domains() already covers itself with lock_doms_cur().  Can
+> > we take that in arch_reinit_sched_domains() rather than adding the new lock?
 > 
-> > I've just tried to compile v2.6.25-5561-g064922a and it failed with
-> > these messages:
-> 
-> Already fixed in net-2.6 by:
-> 
-> commit bd8fd21dfddf51299d782f598cb776b15b7d64cc
-> Author: Luca Tettamanti <kronos.it@gmail.com>
-> Date:   Sun Apr 27 15:34:55 2008 -0700
-> 
->     wireless: Fix compile error with wifi & leds
->     
->     Fix build error caused by commit
->     e82404ad612ebabc65d15c3d59b971cb35c3ff36 ("iwlwifi: Select
->     LEDS_CLASS.") from David Miller:
->     
->     Since MAC80211_LEDS is selected by wireless drivers it must select its
->     own dependencies otherwise a build error may occur (kbuild will select
->     the symbol regardless of "depends" constraints).
->     
->     Signed-off-By: Luca Tettamanti <kronos.it@gmail.com>
->     Signed-off-by: David S. Miller <davem@davemloft.net>
-> 
-> diff --git a/net/mac80211/Kconfig b/net/mac80211/Kconfig
-> index 520a518..a24b459 100644
-> --- a/net/mac80211/Kconfig
-> +++ b/net/mac80211/Kconfig
-> @@ -73,7 +73,9 @@ config MAC80211_MESH
->  
->  config MAC80211_LEDS
->  	bool "Enable LED triggers"
-> -	depends on MAC80211 && LEDS_TRIGGERS
-> +	depends on MAC80211
-> +	select NEW_LEDS
-> +	select LEDS_TRIGGERS
->  	---help---
->  	  This option enables a few LED triggers for different
->  	  packet receive/transmit events.
+> I think you meant taking it in partition_sched_domains?
 
-Hmm, I just tested this patch and it does not solve the problem. 
+What I meant was: rather than adding the new sched_domains_mutex, can we
+instead call lock_doms_cur() from arch_reinit_sched_domains() and
+sched_init_smp()?  Borrow the existing lock?
 
-I could create a .config using 'make menuconfig' in which I had
-
-CONFIG_MAC80211_LEDS=y
-CONFIG_RFKILL_LEDS=y
-CONFIG_IWLWIFI_LEDS=y
-CONFIG_IWL4965_LEDS=y
-CONFIG_NEW_LEDS=y
-CONFIG_LEDS_CLASS=m
-
-So I recompiled the kernel and got the same error message as before.
-
-What my patch does is to make a .config with CONFIG_LEDS_CLASS=m and 
-CONFIG_IWL4965_LEDS=y be impossible to exist, because it
-appears that this combination is what causes the build error.
-
-But anyways, I've just read about the Kconfig language a few hours
-ago when I had this problem and tried to solve it, so my patch is
-probably missing something. But it works for me in the sense that
-IWL4965_LEDS doesn't even show as an option in 'make menuconfig' 
-if LEDS_CLASS=m, so I user like me can not generate a .config which 
-does not build correctly.
-
+Whether that makes sense depends upon what lock_doms_cur() semantically
+*means*.  As that appears to be somewhat of a secret, we get to decide ;)
 
 
