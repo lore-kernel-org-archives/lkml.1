@@ -1,37 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765837AbYD1Gcq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932090AbYD1Gdn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765837AbYD1Gcq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 02:32:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753977AbYD1Gci
+	id S932090AbYD1Gdn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 02:33:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753858AbYD1Gdf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 02:32:38 -0400
-Received: from mr1.bfh.ch ([147.87.250.50]:36499 "EHLO mr1.bfh.ch"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752737AbYD1Gci (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 02:32:38 -0400
-Message-ID: <48156F7C.3080402@bfh.ch>
-Date: Mon, 28 Apr 2008 08:32:28 +0200
-From: Seewer Philippe <philippe.seewer@bfh.ch>
-Organization: BFH
-User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
-MIME-Version: 1.0
-To: Arjan van de Ven <arjan@infradead.org>
-CC: David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org
-Subject: Re: Kconfig 'depend' vs. 'select'
-References: <20080427.174536.62560212.davem@davemloft.net> <20080427215840.0961be81@laptopd505.fenrus.org>
-In-Reply-To: <20080427215840.0961be81@laptopd505.fenrus.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 28 Apr 2008 02:33:35 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:37380
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751081AbYD1Gdf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Apr 2008 02:33:35 -0400
+Date: Sun, 27 Apr 2008 23:33:35 -0700 (PDT)
+Message-Id: <20080427.233335.222433804.davem@davemloft.net>
+To: cpeterso@cpeterso.com
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] fix uninitialized variable warning in
+ crypto/async_tx/async_tx.c (fixed?)
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <A9BE4B91-0B5E-4F42-B4A8-95A45B566BD1@cpeterso.com>
+References: <a24804730804270012ycdbd962v377e0a3b9a379013@mail.gmail.com>
+	<20080427.001709.221075811.davem@davemloft.net>
+	<A9BE4B91-0B5E-4F42-B4A8-95A45B566BD1@cpeterso.com>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 28 Apr 2008 06:31:51.0737 (UTC) FILETIME=[8B4B9A90:01C8A8F9]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arjan van de Ven wrote:
-[snip]
-> how far would "if you DEPENDS on FOO, and FOO is =m, you can only be =m or =n" get us?
-> or are there hidden traps on this?
-> (the hard case is if a non-tristate DEPENDS on a tristate, but... that's a trap anyway)
-I guess it depends on the (use-)case. But in general I'd like a system 
-like that, especially if it would spew out warnings and errors for cases 
-like the one mentioned.
+From: Chris Peterson <cpeterso@cpeterso.com>
+Date: Sun, 27 Apr 2008 22:04:33 -0700
+
+> oops, sorry. Let me try this again.
+
+Same problem.
