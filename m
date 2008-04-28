@@ -1,84 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933114AbYD1JVZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932442AbYD1Jay@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933114AbYD1JVZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 05:21:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762508AbYD1JVO
+	id S932442AbYD1Jay (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 05:30:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760882AbYD1Jap
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 05:21:14 -0400
-Received: from mail.windriver.com ([147.11.1.11]:48000 "EHLO mail.wrs.com"
+	Mon, 28 Apr 2008 05:30:45 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:52362 "EHLO smtp4.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762211AbYD1JVN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 05:21:13 -0400
-Message-ID: <481588A2.3090706@windriver.com>
-Date: Mon, 28 Apr 2008 17:19:46 +0900
-From: Andrew Liu <shengping.liu@windriver.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	id S1751744AbYD1Jao (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Apr 2008 05:30:44 -0400
+Date: Mon, 28 Apr 2008 12:30:13 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Roland Dreier <rdreier@cisco.com>
+Cc: linux-kernel@vger.kernel.org, tglx@linutronix.de, mingo@elte.hu
+Subject: Re: Build failure (with insane config)
+Message-ID: <20080428093012.GE16379@cs181133002.pp.htv.fi>
+References: <adahcdm3b63.fsf@cisco.com>
 MIME-Version: 1.0
-CC: linux-kernel@vger.kernel.org
-Subject: [PATCH] workqueue: Remove redundant function invocation
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 28 Apr 2008 09:21:12.0214 (UTC) FILETIME=[33695B60:01C8A911]
-To: unlisted-recipients:; (no To-header on input)
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <adahcdm3b63.fsf@cisco.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-workqueue: Remove redundant function invocation
-       
-    timer_stats_timer_set_start_info is invoked twice,
-    additionally, the invocation of this function can be moved to
-    where it is only called when a delay is really required.
-   
-    Signed-off-by: Andrew Liu <shengping.liu@windriver.com>
+On Sun, Apr 27, 2008 at 08:34:12PM -0700, Roland Dreier wrote:
+> For x86-64, arch/x86/lib/Makefile has:
+> 
+>         lib-y += csum-partial_64.o csum-copy_64.o csum-wrappers_64.o
+> 
+> so in particular ip_compute_csum() (from csum-partial_64.c) gets put in
+> libs, so even though it is exported, it gets thrown away at link time if
+> there are no non-modular users.
+> 
+> However, if someone has an insane config with CONFIG_NET=n and
+> CONFIG_VIDEO_BT848=m, then ip_compute_csum() gets discarded but the
+> modular code in drivers/media/video/bt8xx/bttv-cards.c calls it and...
+> 
+>         ERROR: "ip_compute_csum" [drivers/media/video/bt8xx/bttv.ko] undefined!
+> 
+> I guess one fix is just to put at least csum-partial_64.c in obj-y
+> instead; it does seem broken to have files with EXPORT_SYMBOL() be
+> lib-y, since it is really an invitation for this problem.  Other ideas
+> would be for bttv to depend on or select CONFIG_NET.
+>...
 
-diff --git a/kernel/workqueue.c b/kernel/workqueue.c
-index 00ff4d0..9b50a4d 100644
---- a/kernel/workqueue.c
-+++ b/kernel/workqueue.c
-@@ -195,10 +195,10 @@ static void delayed_work_timer_fn(unsigned long 
-__data)
-int queue_delayed_work(struct workqueue_struct *wq,
-                       struct delayed_work *dwork, unsigned long delay)
-{
--       timer_stats_timer_set_start_info(&dwork->timer);
-       if (delay == 0)
-               return queue_work(wq, &dwork->work);
+This isn't the first time csum-partial_64.c is involved in such a kind 
+of breakage (and we constantly have this kind of bugs with various 
+exports from lib-y), and EXPORT_SYMBOL's in lib-y are simply wrong and 
+always bugs waiting to happen.
 
-+       timer_stats_timer_set_start_info(&dwork->timer);
-       return queue_delayed_work_on(-1, wq, dwork, delay);
-}
-EXPORT_SYMBOL_GPL(queue_delayed_work);
-@@ -219,11 +219,12 @@ int queue_delayed_work_on(int cpu, struct 
-workqueue_struct *wq,
-       struct timer_list *timer = &dwork->timer;
-       struct work_struct *work = &dwork->work;
+Axing lib-y is somewhere low priority on my TODO list.
 
--       timer_stats_timer_set_start_info(&dwork->timer);
-       if (!test_and_set_bit(WORK_STRUCT_PENDING, work_data_bits(work))) {
-               BUG_ON(timer_pending(timer));
-               BUG_ON(!list_empty(&work->entry));
+>  - R.
 
-+               timer_stats_timer_set_start_info(&dwork->timer);
-+                     /* This stores cwq for the moment, for the 
-timer_fn */
-               set_wq_data(work, wq_per_cpu(wq, raw_smp_processor_id()));
-               timer->expires = jiffies + delay;
-@@ -564,7 +565,6 @@ EXPORT_SYMBOL(schedule_work);
-int schedule_delayed_work(struct delayed_work *dwork,
-                                       unsigned long delay)
-{
--       timer_stats_timer_set_start_info(&dwork->timer);
-       return queue_delayed_work(keventd_wq, dwork, delay);
-}
-EXPORT_SYMBOL(schedule_delayed_work);
-@@ -581,7 +581,6 @@ EXPORT_SYMBOL(schedule_delayed_work);
-int schedule_delayed_work_on(int cpu,
-                       struct delayed_work *dwork, unsigned long delay)
-{
--       timer_stats_timer_set_start_info(&dwork->timer);
-       return queue_delayed_work_on(cpu, keventd_wq, dwork, delay);
-}
-EXPORT_SYMBOL(schedule_delayed_work_on);
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
