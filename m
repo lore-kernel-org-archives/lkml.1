@@ -1,83 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932615AbYD1Ivn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932410AbYD1IyX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932615AbYD1Ivn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 04:51:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932372AbYD1Iv2
+	id S932410AbYD1IyX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 04:54:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753918AbYD1IyQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 04:51:28 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:59779 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932369AbYD1Iv1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 04:51:27 -0400
-Date: Mon, 28 Apr 2008 10:50:44 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Sergio Luis <sergio@uece.br>
-Cc: Glauber de Oliveira Costa <gcosta@redhat.com>,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       tglx@linutronix.de, ak@suse.de, Avi Kivity <avi@qumranet.com>
-Subject: Re: [PATCH] build fix for smp
-Message-ID: <20080428085044.GB16963@elte.hu>
-References: <12059466674071-git-send-email-gcosta@redhat.com> <20080319195217.GA20762@elte.hu> <ce0170d90804280052y130c3fa2pbf3f97147f03b159@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <ce0170d90804280052y130c3fa2pbf3f97147f03b159@mail.gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Mon, 28 Apr 2008 04:54:16 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:38091
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1754484AbYD1IyP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Apr 2008 04:54:15 -0400
+Date: Mon, 28 Apr 2008 01:54:14 -0700 (PDT)
+Message-Id: <20080428.015414.193700356.davem@davemloft.net>
+To: bunk@kernel.org
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Kconfig 'depend' vs. 'select'
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20080428081319.GC16379@cs181133002.pp.htv.fi>
+References: <20080428063953.GA2088@cs181133002.pp.htv.fi>
+	<20080427.234221.40346351.davem@davemloft.net>
+	<20080428081319.GC16379@cs181133002.pp.htv.fi>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Adrian Bunk <bunk@kernel.org>
+Date: Mon, 28 Apr 2008 11:13:19 +0300
 
-* Sergio Luis <sergio@uece.br> wrote:
+> The non-modular is only true for "bool selects tristate".
+> 
+> You are talking about things like:
+> 
+> config IWL4965_LEDS
+>         bool "Enable LEDS features in iwl4965 driver"
+>         select LEDS_CLASS
+> 
+> The problem here is that from a kconfig perspective IWL4965_LEDS could 
+> as well be an own driver you want for some reason non-modular.
+> 
+> The solution is to do the following instead:
+> 
+> config IWL4965
+>         tristate "Intel Wireless WiFi 4965AGN"
+> 	select LEDS_CLASS if IWL4965_LEDS
 
-> Hello, what's the final fix for this issue? 2.6.25-git11 is still 
-> broken, just gave me
-
-> arch/x86/kernel/built-in.o: In function `native_smp_send_stop':
-> smp.c:(.text+0xc751): undefined reference to `reboot_force'
-> make: *** [.tmp_vmlinux1] Error 1
-
-> for a randconfig. Same reported at http://lkml.org/lkml/2008/4/27/39
-
-btw., that's a VISWS config - that wont boot on any PC. The patch below 
-should fix this.
-
-	Ingo
-
---------------------------->
-Subject: x86 VISWS: build fix
-From: Ingo Molnar <mingo@elte.hu>
-Date: Mon Apr 28 10:46:58 CEST 2008
-
-the 'reboot_force' flag is a notion that non-PC subarchitectures do
-not have.
-
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- include/asm-x86/proto.h |    4 ++++
- 1 file changed, 4 insertions(+)
-
-Index: linux/include/asm-x86/proto.h
-===================================================================
---- linux.orig/include/asm-x86/proto.h
-+++ linux/include/asm-x86/proto.h
-@@ -20,7 +20,11 @@ extern void syscall32_cpu_init(void);
- 
- extern void check_efer(void);
- 
-+#ifdef X86_BIOS_REBOOT
- extern int reboot_force;
-+#else
-+static const int reboot_force = 0;
-+#endif
- 
- long do_arch_prctl(struct task_struct *task, int code, unsigned long addr);
- 
+Ok, thanks Adrian.
