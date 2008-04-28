@@ -1,64 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933586AbYD1M0j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933846AbYD1M2V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933586AbYD1M0j (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 08:26:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764572AbYD1M03
+	id S933846AbYD1M2V (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 08:28:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765110AbYD1M2M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 08:26:29 -0400
-Received: from styx.suse.cz ([82.119.242.94]:39282 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1763297AbYD1M02 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 08:26:28 -0400
-Date: Mon, 28 Apr 2008 14:26:26 +0200
-From: Jan Kara <jack@suse.cz>
-To: Mingming Cao <cmm@us.ibm.com>
-Cc: akpm@linux-foundation.org, pbadari@us.ibm.com, linux-ext4@vger.kernel.org,
+	Mon, 28 Apr 2008 08:28:12 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:33848 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1765378AbYD1M2L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Apr 2008 08:28:11 -0400
+Date: Mon, 28 Apr 2008 14:27:41 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Heiko Carstens <heiko.carstens@de.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Gautham R Shenoy <ego@in.ibm.com>, Paul Jackson <pj@sgi.com>,
        linux-kernel@vger.kernel.org
-Subject: Re: Possible race between direct IO and JBD?
-Message-ID: <20080428122626.GC17054@duck.suse.cz>
-References: <20080306174209.GA14193@duck.suse.cz> <1209166706.6040.20.camel@localhost.localdomain>
+Subject: Re: [PATCH] sched: missing locking in sched_domains code
+Message-ID: <20080428122741.GA27997@elte.hu>
+References: <20080427183926.acb66fff.akpm@linux-foundation.org> <20080428070946.GA4507@osiris.boeblingen.de.ibm.com> <20080428002853.1693e7fd.akpm@linux-foundation.org> <20080428075253.GB4507@osiris.boeblingen.de.ibm.com> <20080428081129.GC4507@osiris.boeblingen.de.ibm.com> <20080428083222.GA16963@elte.hu> <20080428084904.GA27056@osiris.boeblingen.de.ibm.com> <20080428015723.e1632c45.akpm@linux-foundation.org> <20080428091745.GB27056@osiris.boeblingen.de.ibm.com> <20080428093307.GC27056@osiris.boeblingen.de.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1209166706.6040.20.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <20080428093307.GC27056@osiris.boeblingen.de.ibm.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: 0.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.3
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  Hi,
 
-On Fri 25-04-08 16:38:23, Mingming Cao wrote:
-> While looking at a bug related to direct IO returns to EIO, after
-> looking at the code, I found there is a window that
-> try_to_free_buffers() from direct IO could race with JBD, which holds
-> the reference to the data buffers before journal_commit_transaction()
-> ensures the data buffers has reached to the disk.
-> 
-> A little more detail: to prepare for direct IO, generic_file_direct_IO()
-> calls invalidate_inode_pages2_range() to invalidate the pages in the
-> cache before performaning direct IO.  invalidate_inode_pages2_range()
-> tries to free the buffers via try_to free_buffers(), but sometimes it
-> can't, due to the buffers is possible still on some transaction's
-> t_sync_datalist or t_locked_list waiting for
-> journal_commit_transaction() to process it. 
-> 
-> Currently Direct IO simply returns EIO if try_to_free_buffers() finds
-> the buffer is busy, as it has no clue that JBD is referencing it.
-> 
-> Is this a known issue and expected behavior? Any thoughts?
-  Are you seeing this in data=ordered mode? As Andrew pointed out we do
-filemap_write_and_wait() so all the relevant data buffers of the inode
-should be already on disk. In __journal_try_to_free_buffer() we check
-whether the buffer is already-written-out data buffer and unfile and free
-it in that case. It shouldn't happen that a data buffer has
-b_next_transaction set so really the only idea why try_to_free_buffers()
-could fail is that somebody manages to write to a page via mmap before
-invalidate_inode_pages2_range() gets to it. Under which kind of load do you
-observe the problem? Do you know exactly because of which condition does
-journal_try_to_free_buffers() fail?
+* Heiko Carstens <heiko.carstens@de.ibm.com> wrote:
 
-								Honza
--- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+> > version 42. Please feel free to change the comment if you think it 
+> > could be better :)
+> 
+> I don't believe this... version 43 ;) I forgot to add the lock in 
+> sched_init_smp(). Not that it would really matter, but it should be 
+> there to avoid (even more) confusion.
+> 
+> Subject: [PATCH] sched: fix locking in arch_reinit_sched_domains
+
+thanks Heiko, applied.
+
+	Ingo
