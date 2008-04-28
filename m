@@ -1,108 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934125AbYD1Mbu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933868AbYD1Mh5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934125AbYD1Mbu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 08:31:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765164AbYD1Mbj
+	id S933868AbYD1Mh5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 08:37:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763457AbYD1Mht
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 08:31:39 -0400
-Received: from moutng.kundenserver.de ([212.227.126.183]:54360 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765378AbYD1Mbh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 08:31:37 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: John Williams <jwilliams@itee.uq.edu.au>
-Subject: Re: microblaze syscall list
-Date: Mon, 28 Apr 2008 14:31:25 +0200
-User-Agent: KMail/1.9.9
-Cc: monstr@seznam.cz, microblaze-uclinux@itee.uq.edu.au,
-       Matthew Wilcox <matthew@wil.cx>, Will Newton <will.newton@gmail.com>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       linux-arch@vger.kernel.org, git@xilinx.com,
-       John Williams <john.williams@petalogix.com>,
-       Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>,
-       John Linn <John.Linn@xilinx.com>
-References: <87a5b0800804220513t75690ceao938a288596b5ad0c@mail.gmail.com> <200804272215.32862.arnd@arndb.de> <48151726.9000204@itee.uq.edu.au>
-In-Reply-To: <48151726.9000204@itee.uq.edu.au>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Mon, 28 Apr 2008 08:37:49 -0400
+Received: from tomts43-srv.bellnexxia.net ([209.226.175.110]:64186 "EHLO
+	tomts43-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1762992AbYD1Mhs convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Apr 2008 08:37:48 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AtIgANphFUhMROPA/2dsb2JhbAABgVKoSg
+Date: Mon, 28 Apr 2008 08:37:42 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch 27/37] From: Adrian Bunk <bunk@kernel.org>
+Message-ID: <20080428123742.GA4821@Krystal>
+References: <20080424150324.802695381@polymtl.ca> <20080424151404.283234087@polymtl.ca> <20080428095403.GG16379@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200804281431.26570.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1+3fKbQef1YZhUOwmB7Sj3IZ0SwyxW2YlyAeRB
- Z0p4isDFXjW2h213Wv+laS8k5IC8ABfgwzt87GXCRh+nC5bKxI
- kra6y1apuyLIGiE36sakg==
+Content-Transfer-Encoding: 8BIT
+In-Reply-To: <20080428095403.GG16379@cs181133002.pp.htv.fi>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 08:36:46 up 59 days,  8:47,  3 users,  load average: 0.97, 0.95,
+	0.75
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 28 April 2008, John Williams wrote:
+* Adrian Bunk (bunk@kernel.org) wrote:
+> Something went wrong with the Subject.
 > 
-> Until very recently with the MMU support added to the CPU (and upcoming 
-> MMU support patches for MicroBlaze), all apps were statically linked 
-> anyway. So, this is not too much of an issue I don't think.
-> 
-> Because the CPU is so configurable re: instruction set and features, it 
-> is common to rebuild your entire userland and libs + kernel in one go. 
-> If you add support for HW integer mul or div, barrel shift etc, you need 
-> to rebuild not just the kernel but apps and libs as well.  Or rather, 
-> rebuild apps, and relink against a different multilib'd libc.
 
-If this is the common case, that is a good argument for breaking the ABI
-completely now. You will just require a new libc build with a new kernel.
+Yes, the patch should look like this. Thanks!
 
-> So, the issue seems not so much that there's a bunch of legacy binaries 
-> out there that will break, but rather that there will be a dead-zone 
-> period in which the kernel is exporting an ABI that is simply not 
-> available in the C libs and existing toolchains.  We should be doing all 
-> we can to encourage individual developers and distro maintainers (like 
-> PetaLogix) to base from the kernel.org tree.
+Mathieu
 
-As far as I can tell, these distrbutions typically come with both
-kernel and libc source code together. It would be logical to just
-require updating both here as well.
 
-> Maybe I misunderstand, but is there an option 1(a) where we keep the 
-> old, add the new, and suffer the bloat for a short period until the 
-> toolchains and C libs catch up and we remove out the old interfaces?
->
-> Are the old and new syscalls necessarily overloaded onto the same 
-> numbers?  We'd obviously like to be as "standard" as reasonably possible 
-> regarding syscall numbers
+make marker_debug static
 
-It's more than just the syscall numbers that should ideally change.
-The other changes I would recommend include moving to large file
-types (64 bit off_t), 32 bit UIDs, cleaned up sysV-IPC types, and a
-few others. All these break the user code in the same way that changing
-the instruction set does, which is the reason that we can't change
-any of the existing architectures that started out in the old days.
+With the needlessly global marker_debug being static gcc can optimize the
+unused code away.
 
-The syscall numbers are entirely arbitrary, that's why I suggested
-in my approach 3. that you introduce a new set of syscall numbers for
-the new ABI, and keep compatibility with the old calls in their existing
-numbers as an out-of-tree patch.
+From: Adrian Bunk <bunk@kernel.org>
+Signed-off-by: Adrian Bunk <bunk@kernel.org>
+Acked-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
 
-If you assume that the user recompiles the libc and the kernel together,
-you can obviously change syscall numbers and data types in any way you
-please, but still I'd suggest you don't change them after the kernel
-gets merged upstream.
+ kernel/marker.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-How about this strategy then:
-* Change all the data types and syscall numbers in the -for-2.6.27
-branch to only include the minimal set, and a modern ABI
-* Add the old interfaces as an out-of-tree patch that adds source
-level compatibility with the old libc, but does not modify any
-of the new interfaces, so that a patched kernel can run all binaries
-built for the upstream version.
-* phase out the old source interface gradually, as all users update
-their libc source code.
+diff -puN kernel/marker.c~make-marker_debug-static kernel/marker.c
+--- a/kernel/marker.c~make-marker_debug-static
++++ a/kernel/marker.c
+@@ -28,7 +28,7 @@ extern struct marker __start___markers[]
+ extern struct marker __stop___markers[];
+ 
+ /* Set to 1 to enable marker debug output */
+-const int marker_debug;
++static const int marker_debug;
+ 
+ /*
+  * markers_mutex nests inside module_mutex. Markers mutex protects the builtin
+_
 
-This way, early adopters suffer the pain of incompatibility twice, but
-get the clean kernel port quickly.
-
-	Arnd <><
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
