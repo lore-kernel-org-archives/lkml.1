@@ -1,58 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765416AbYD1GSj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765602AbYD1GUJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765416AbYD1GSj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 02:18:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751541AbYD1GSb
+	id S1765602AbYD1GUJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 02:20:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751541AbYD1GT4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 02:18:31 -0400
-Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:40531 "EHLO
-	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750898AbYD1GSa (ORCPT
+	Mon, 28 Apr 2008 02:19:56 -0400
+Received: from out4.smtp.messagingengine.com ([66.111.4.28]:48112 "EHLO
+	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751078AbYD1GTz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 02:18:30 -0400
-Date: Mon, 28 Apr 2008 02:18:26 -0400 (EDT)
-From: Jeff Arnold <jbarnold@MIT.EDU>
-To: Andi Kleen <andi@firstfloor.org>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: A system for rebootless kernel security updates
-In-Reply-To: <87r6cvgyi1.fsf@basil.nowhere.org>
-Message-ID: <alpine.DEB.1.10.0804280119001.9237@vinegar-pot.mit.edu>
-References: <alpine.DEB.1.00.0802221606520.21343@vinegar-pot.mit.edu> <87r6cvgyi1.fsf@basil.nowhere.org>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Mon, 28 Apr 2008 02:19:55 -0400
+X-Sasl-enc: +fcv5cEbt67GyMXsGrJiXOo9nvdH4Edaj/gUzaynsGI6 1209363593
+Date: Mon, 28 Apr 2008 14:19:06 +0800 (WST)
+From: Ian Kent <raven@themaw.net>
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       autofs mailing list <autofs@linux.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>
+Subject: [PATCH] autofs4 - fix compile warning in waitq.c:autofs4_expire_indirect()
+Message-ID: <Pine.LNX.4.64.0804281417080.10684@raven.themaw.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
-X-Spam-Flag: NO
-X-Spam-Score: 0.00
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> You should consider bringing the kernel module up to kernel coding 
-> standards and submitting it for mainline. That would be the best way to 
-> get more users and testers.
 
-I'm certainly interested in bringing the code up to kernel coding 
-standards (for example, I'd be happy to address any issues with the code 
-that are brought to my attention).  I'm not sure whether submitting it for 
-mainline makes sense since the software doesn't significantly benefit from 
-being bundled with the kernel.
+Hi Andrew,
 
-Instead, it might be more important to 1) package the userspace 
-update-construction software for common Linux distributions to make it 
-easily available to interested users, and 2) to provide binary kernel 
-updates for common distribution kernels so that users can simply sign up 
-and get fewer "your machine needs to be rebooted now for an update to take 
-effect" notifications.
+This patch re-orders some code in expire.c:autofs4_expire_indirect()
+to avoid compile warning, reported by Harvey Harrison:
 
-I'm open to suggestions about how I should proceed, however.
+ CHECK   fs/autofs4/expire.c
+fs/autofs4/expire.c:383:2: warning: context imbalance in
+'autofs4_expire_indirect' - unexpected unlock
 
-> Have you also considered to turn it into a generic incremental binary
-> linker too?
+Signed-off-by: Ian Kent <raven@themaw.net>
 
-I've considered modifying the system for use in other contexts, but I 
-don't think that I'll get around to such a project anytime soon; my 
-current focus is on making it easier for people to perform rebootless 
-kernel security updates.
-
-Jeff Arnold
-jbarnold@mit.edu
+---
+diff -up linux-2.6.25-mm1/fs/autofs4/expire.c.cleanup-expire-indirect linux-2.6.25-mm1/fs/autofs4/expire.c
+--- linux-2.6.25-mm1/fs/autofs4/expire.c.cleanup-expire-indirect	2008-04-28 11:38:55.000000000 +0800
++++ linux-2.6.25-mm1/fs/autofs4/expire.c	2008-04-28 11:39:17.000000000 +0800
+@@ -333,7 +333,7 @@ static struct dentry *autofs4_expire_ind
+ 			/* Can we expire this guy */
+ 			if (autofs4_can_expire(dentry, timeout, do_now)) {
+ 				expired = dentry;
+-				break;
++				goto found;
+ 			}
+ 			goto next;
+ 		}
+@@ -352,7 +352,7 @@ static struct dentry *autofs4_expire_ind
+ 				inf->flags |= AUTOFS_INF_EXPIRING;
+ 				spin_unlock(&sbi->fs_lock);
+ 				expired = dentry;
+-				break;
++				goto found;
+ 			}
+ 			spin_unlock(&sbi->fs_lock);
+ 		/*
+@@ -363,7 +363,7 @@ static struct dentry *autofs4_expire_ind
+ 			expired = autofs4_check_leaves(mnt, dentry, timeout, do_now);
+ 			if (expired) {
+ 				dput(dentry);
+-				break;
++				goto found;
+ 			}
+ 		}
+ next:
+@@ -371,18 +371,16 @@ next:
+ 		spin_lock(&dcache_lock);
+ 		next = next->next;
+ 	}
+-
+-	if (expired) {
+-		DPRINTK("returning %p %.*s",
+-			expired, (int)expired->d_name.len, expired->d_name.name);
+-		spin_lock(&dcache_lock);
+-		list_move(&expired->d_parent->d_subdirs, &expired->d_u.d_child);
+-		spin_unlock(&dcache_lock);
+-		return expired;
+-	}
+ 	spin_unlock(&dcache_lock);
+-
+ 	return NULL;
++
++found:
++	DPRINTK("returning %p %.*s",
++		expired, (int)expired->d_name.len, expired->d_name.name);
++	spin_lock(&dcache_lock);
++	list_move(&expired->d_parent->d_subdirs, &expired->d_u.d_child);
++	spin_unlock(&dcache_lock);
++	return expired;
+ }
+ 
+ /* Perform an expiry operation */
