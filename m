@@ -1,68 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765531AbYD1GGT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764994AbYD1GK0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765531AbYD1GGT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 02:06:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751299AbYD1GGF
+	id S1764994AbYD1GK0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 02:10:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751608AbYD1GKN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 02:06:05 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:50251 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752693AbYD1GGE (ORCPT
+	Mon, 28 Apr 2008 02:10:13 -0400
+Received: from fg-out-1718.google.com ([72.14.220.153]:50101 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751541AbYD1GKM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 02:06:04 -0400
-X-AuthUser: davidel@xmailserver.org
-Date: Sun, 27 Apr 2008 23:06:03 -0700 (PDT)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Ulrich Drepper <drepper@redhat.com>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH v2] eventfd, signalfd, timerfd, epoll_create w/flags
-In-Reply-To: <481563E4.5090408@redhat.com>
-Message-ID: <Pine.LNX.4.64.0804272301270.18184@alien.or.mcafeemobile.com>
-References: <200804280315.m3S3FKsw028335@devserv.devel.redhat.com>
- <Pine.LNX.4.64.0804272200090.18184@alien.or.mcafeemobile.com>
- <481563E4.5090408@redhat.com>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Mon, 28 Apr 2008 02:10:12 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=ZJgHbGU29ngqRgCHASwXS9fRmsLINtK2wxZg12Ou+3aHgyot/v4wcnuOnJUcI9RzH4ccdQ8o4553bmW7af0yzkTw11194YFXq/QM7bLAZpNmCmvIJNlCP5cUWypx8gOhibl7vAXiki+iPsKP+KIZGBGWRadWpKNWCetyiM/qbFI=
+Message-ID: <e2e108260804272310r7aa99a91x204aeac5418fb25e@mail.gmail.com>
+Date: Mon, 28 Apr 2008 08:10:10 +0200
+From: "Bart Van Assche" <bart.vanassche@gmail.com>
+To: "Ken Moffat" <zarniwhoop@ntlworld.com>
+Subject: Re: 2.6.25 slow boot/reboot
+Cc: "Sergio Luis" <sergio@larces.uece.br>, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080427235554.GA28344@deepthought>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <48141111.7010605@larces.uece.br>
+	 <e2e108260804270823t45611ec2t35da085833d82dfa@mail.gmail.com>
+	 <20080427235554.GA28344@deepthought>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 27 Apr 2008, Ulrich Drepper wrote:
+On Mon, Apr 28, 2008 at 1:55 AM, Ken Moffat <zarniwhoop@ntlworld.com> wrote:
+>   But, I think you (Bart) haven't said which version of lilo you are
+>  using ?  If it isn't recent, perhaps upgrading it might help ?
 
-> -----BEGIN PGP SIGNED MESSAGE-----
-> Hash: SHA1
-> 
-> Davide Libenzi wrote:
-> > unsigned int oflags_remap(const struct oflags_rmap *m, int n,
-> > 			  int f, int *rf)
-> > {
-> > 	int i;
-> > 	for (i = 0, *rf = 0; i < n; i++, m++)
-> > 		if (f & m->f) {
-> > 			*rf |= m->of;
-> > 			f &= ~m->f;
-> > 		}
-> > 	return f ? -EINVAL: 0;
-> > }
-> 
-> This will be more expensive in terms of code and runtime.  Plus: who
-> knows whether there will really be other flags which can be used like
-> this?  I think it's overkill to do this.  If at some point there are
-> more flags which are handled the same way one could do something like
-> this but I don't think it's necessary now.
+I noticed the slow loading behavior of LILO after a fresh install of
+Ubuntu 8.04 beta with XFS as root file system. I did not check the
+version number. Should I look it up ?
 
-There are already, not one, not two, not three, but four call sites where 
-an aweful cut&paste is used to basically do the same thing. And probably 
-there's another one you likely did for the sockets.
-
-
-
-
-- Davide
-
-
+Bart.
