@@ -1,61 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966371AbYD1TNf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936336AbYD1TQQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966371AbYD1TNf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 15:13:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933762AbYD1TN0
+	id S936336AbYD1TQQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 15:16:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933866AbYD1TP7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 15:13:26 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:50122 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933800AbYD1TNY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 15:13:24 -0400
-Date: Mon, 28 Apr 2008 21:13:57 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Dmitri Vorobiev <dmitri.vorobiev@gmail.com>,
-       tglx@linutronix.de, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       Alexander Viro <viro@ftp.linux.org.uk>
-Subject: Re: x86: fix a couple of sparse warnings
-Message-ID: <20080428191357.GB13400@uranus.ravnborg.org>
-References: <1209338159-30095-1-git-send-email-dmitri.vorobiev@gmail.com> <20080428123809.GD27997@elte.hu> <20080428133756.GJ16379@cs181133002.pp.htv.fi> <90edad820804280643p43509911gd7b497131c3f5004@mail.gmail.com> <20080428135957.GK16379@cs181133002.pp.htv.fi> <20080428150156.GA7412@elte.hu> <20080428185608.GZ2813@cs181133002.pp.htv.fi>
-Mime-Version: 1.0
+	Mon, 28 Apr 2008 15:15:59 -0400
+Received: from fg-out-1718.google.com ([72.14.220.155]:64961 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933720AbYD1TP6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Apr 2008 15:15:58 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
+        b=tlG0ONmWYYHuCPVikQxVMZGUdy4gJBkDTvccIkQPBmNAYzYo9uzbqh9dh+6ndaLUy/V2/A4yg8qnuihuYusCJGLinMzZecq8xolFZxbwvoAb4t+0zDYO1dYYDm7QvxxWxezf2tcYpsna+4MBjUA1Td4dUUZN9j/osszK2u4uer0=
+Date: Mon, 28 Apr 2008 23:15:04 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       Markus Metzger <markus.t.metzger@intel.com>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] x86: DS cleanup - dont treat 0 as NULL
+Message-ID: <20080428191504.GA6842@cvg>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080428185608.GZ2813@cs181133002.pp.htv.fi>
-User-Agent: Mutt/1.4.2.1i
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 28, 2008 at 09:56:08PM +0300, Adrian Bunk wrote:
-> On Mon, Apr 28, 2008 at 05:01:56PM +0200, Ingo Molnar wrote:
-> > 
-> > * Adrian Bunk <bunk@kernel.org> wrote:
-> > 
-> > > On Mon, Apr 28, 2008 at 05:43:25PM +0400, Dmitri Vorobiev wrote:
-> > > > 2008/4/28 Adrian Bunk <bunk@kernel.org>:
-> > > > >
-> > > > >  /me wonders what was wrong with http://lkml.org/lkml/2008/4/23/131
-> > > > >     that contains a superset of the first patch
-> > > > >     (and got no response at all)
-> > > > 
-> > > > Adrian, I am sorry for duplicating your work. The clash wasn't 
-> > > > intentional: I did not notice your earlier patch in the high traffic 
-> > > > of this mailing list.
-> > > 
-> > > No problem, and I'm actually more interested why my patch got lost.
-> > 
-> > It's simple: in this case i had two patches in my backlog, one from a 
-> > new person and one from a frequent contributor - doing the very same 
-> > change. I preferred the newbie's patch, to encourage Dmitri to keep 
-> > contributing to Linux and to help him learn from the experience of 
-> > working with various Linux maintainers.
-> >...
-> 
-> Every maintainer except you will teach the newbie where to find the 
-> current tree to avoid duplicating work...
-I have seen Ingo referring to his README file countless number of
-times which describes where to locate the x86.git tree and
-how to pull it. So has you.
+Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
+---
 
-	Sam
+Actually I wonder why in original code Atom processors was
+_that_ aligned? Was it made with a special purpose? yes,
+it's a mobile platform, but can't see any reason for such
+alignment.
+
+ arch/x86/kernel/ds.c |   18 +++++++++---------
+ 1 files changed, 9 insertions(+), 9 deletions(-)
+
+diff --git a/arch/x86/kernel/ds.c b/arch/x86/kernel/ds.c
+index 5b32b6d..24a323c 100644
+--- a/arch/x86/kernel/ds.c
++++ b/arch/x86/kernel/ds.c
+@@ -238,12 +238,12 @@ static inline struct ds_context *ds_alloc_context(struct task_struct *task)
+ 		context = kzalloc(sizeof(*context), GFP_KERNEL);
+ 
+ 		if (!context)
+-			return 0;
++			return NULL;
+ 
+ 		context->ds = kzalloc(ds_cfg.sizeof_ds, GFP_KERNEL);
+ 		if (!context->ds) {
+ 			kfree(context);
+-			return 0;
++			return NULL;
+ 		}
+ 
+ 		*p_context = context;
+@@ -279,7 +279,7 @@ static inline void ds_put_context(struct ds_context *context)
+ 	if (--context->count)
+ 		goto out;
+ 
+-	*(context->this) = 0;
++	*(context->this) = NULL;
+ 
+ 	if (context->task)
+ 		clear_tsk_thread_flag(context->task, TIF_DS_AREA_MSR);
+@@ -341,16 +341,16 @@ static inline void *ds_allocate_buffer(size_t size, unsigned int *pages)
+ 	rlim = current->signal->rlim[RLIMIT_AS].rlim_cur >> PAGE_SHIFT;
+ 	vm   = current->mm->total_vm  + pgsz;
+ 	if (rlim < vm)
+-		return 0;
++		return NULL;
+ 
+ 	rlim = current->signal->rlim[RLIMIT_MEMLOCK].rlim_cur >> PAGE_SHIFT;
+ 	vm   = current->mm->locked_vm  + pgsz;
+ 	if (rlim < vm)
+-		return 0;
++		return NULL;
+ 
+ 	buffer = kzalloc(size, GFP_KERNEL);
+ 	if (!buffer)
+-		return 0;
++		return NULL;
+ 
+ 	current->mm->total_vm  += pgsz;
+ 	current->mm->locked_vm += pgsz;
+@@ -395,7 +395,7 @@ static int ds_request(struct task_struct *task, void *base, size_t size,
+ 	if (context->owner[qual] == current)
+ 		goto out_unlock;
+ 	error = -EPERM;
+-	if (context->owner[qual] != 0)
++	if (context->owner[qual] != NULL)
+ 		goto out_unlock;
+ 	context->owner[qual] = current;
+ 
+@@ -445,7 +445,7 @@ static int ds_request(struct task_struct *task, void *base, size_t size,
+ 	return error;
+ 
+  out_release:
+-	context->owner[qual] = 0;
++	context->owner[qual] = NULL;
+ 	ds_put_context(context);
+ 	return error;
+ 
+@@ -825,7 +825,7 @@ void __cpuinit ds_init_intel(struct cpuinfo_x86 *c)
+ 			ds_configure(&ds_cfg_var);
+ 			break;
+ 		case 0xF: /* Core2 */
+-        case 0x1C: /* Atom */
++		case 0x1C: /* Atom */
+ 			ds_configure(&ds_cfg_64);
+ 			break;
+ 		default:
+
