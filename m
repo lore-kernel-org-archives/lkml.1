@@ -1,168 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964791AbYD1Sat@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965949AbYD1SbX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964791AbYD1Sat (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 14:30:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935092AbYD1SXR
+	id S965949AbYD1SbX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 14:31:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936606AbYD1SXh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 14:23:17 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:39445 "EHLO mx1.redhat.com"
+	Mon, 28 Apr 2008 14:23:37 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:50980 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S936587AbYD1SXL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 14:23:11 -0400
-Message-Id: <20080428181853.304176706@redhat.com>
-References: <20080428181835.502876582@redhat.com>
-User-Agent: quilt/0.46-1
-Date: Mon, 28 Apr 2008 14:18:48 -0400
-From: Rik van Riel <riel@redhat.com>
-To: linux-kernel@vger.kernel.org
-Cc: lee.schermerhorn@hp.com, akpm@linux-foundation.org,
-       kosaki.motohiro@jp.fujitsu.com, linux-mm@kvack.org,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-Subject: [PATCH -mm 13/15] Non-reclaimable page statistics
-Content-Disposition: inline; filename=rvr-12-lts-noreclaim-non-reclaimable-page-statistics.patch
+	id S936597AbYD1SXf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Apr 2008 14:23:35 -0400
+Date: Mon, 28 Apr 2008 20:23:23 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Cyrill Gorcunov <gorcunov@gmail.com>,
+       David Woodhouse <dwmw2@infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: vm86 - hide X86_VM_MASK from userland programs v2
+Message-ID: <20080428182323.GD1685@elte.hu>
+References: <20080424144120.GA7717@cvg> <4810CC2F.3010600@zytor.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4810CC2F.3010600@zytor.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0032]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-V2 -> V3:
-+ rebase to 23-mm1 atop RvR's split LRU series
 
-V1 -> V2:
-	no changes
+* H. Peter Anvin <hpa@zytor.com> wrote:
 
-Report non-reclaimable pages per zone and system wide.
+> Cyrill Gorcunov wrote:
+>> X86_VM_MASK is a kernel specific flag so lets hide it from userland programs
+>>  Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
+>
+> Looks good to me.
+>
+> Acked-by: H. Peter Anvin <hpa@zytor.com>
 
-Note:  may want to track/report some specific reasons for 
-nonreclaimability for deciding when to splice the noreclaim
-lists back to the normal lru.  That will be tricky,
-especially in shrink_active_list(), where we'd need someplace
-to save the per page reason for non-reclaimability until the
-pages are dumped back onto the noreclaim list from the pagevec.
+applied, thanks.
 
-Note:  my tests indicate that NR_NORECLAIM and probably the
-other LRU stats aren't being maintained properly--especially
-with large amounts of mlocked memory and the mlock patch in
-this series installed.  Can't be sure of this, as I don't 
-know why the pages are on the noreclaim list. Needs further
-investigation.
-
-Signed-off-by: Lee Schermerhorn <lee.schermerhorn@hp.com>
-
- drivers/base/node.c |    6 ++++++
- fs/proc/proc_misc.c |    6 ++++++
- mm/page_alloc.c     |   16 +++++++++++++++-
- mm/vmstat.c         |    3 +++
- 4 files changed, 30 insertions(+), 1 deletion(-)
-
-Index: linux-2.6.25-mm1/mm/page_alloc.c
-===================================================================
---- linux-2.6.25-mm1.orig/mm/page_alloc.c	2008-04-24 12:03:54.000000000 -0400
-+++ linux-2.6.25-mm1/mm/page_alloc.c	2008-04-24 12:04:01.000000000 -0400
-@@ -1933,12 +1933,20 @@ void show_free_areas(void)
- 	}
- 
- 	printk("Active_anon:%lu active_file:%lu inactive_anon%lu\n"
--		" inactive_file:%lu dirty:%lu writeback:%lu unstable:%lu\n"
-+		" inactive_file:%lu"
-+//TODO:  check/adjust line lengths
-+#ifdef CONFIG_NORECLAIM_LRU
-+		" noreclaim:%lu"
-+#endif
-+		" dirty:%lu writeback:%lu unstable:%lu\n"
- 		" free:%lu slab:%lu mapped:%lu pagetables:%lu bounce:%lu\n",
- 		global_page_state(NR_ACTIVE_ANON),
- 		global_page_state(NR_ACTIVE_FILE),
- 		global_page_state(NR_INACTIVE_ANON),
- 		global_page_state(NR_INACTIVE_FILE),
-+#ifdef CONFIG_NORECLAIM_LRU
-+		global_page_state(NR_NORECLAIM),
-+#endif
- 		global_page_state(NR_FILE_DIRTY),
- 		global_page_state(NR_WRITEBACK),
- 		global_page_state(NR_UNSTABLE_NFS),
-@@ -1965,6 +1973,9 @@ void show_free_areas(void)
- 			" inactive_anon:%lukB"
- 			" active_file:%lukB"
- 			" inactive_file:%lukB"
-+#ifdef CONFIG_NORECLAIM_LRU
-+			" noreclaim:%lukB"
-+#endif
- 			" present:%lukB"
- 			" pages_scanned:%lu"
- 			" all_unreclaimable? %s"
-@@ -1978,6 +1989,9 @@ void show_free_areas(void)
- 			K(zone_page_state(zone, NR_INACTIVE_ANON)),
- 			K(zone_page_state(zone, NR_ACTIVE_FILE)),
- 			K(zone_page_state(zone, NR_INACTIVE_FILE)),
-+#ifdef CONFIG_NORECLAIM_LRU
-+			K(zone_page_state(zone, NR_NORECLAIM)),
-+#endif
- 			K(zone->present_pages),
- 			zone->pages_scanned,
- 			(zone_is_all_unreclaimable(zone) ? "yes" : "no")
-Index: linux-2.6.25-mm1/mm/vmstat.c
-===================================================================
---- linux-2.6.25-mm1.orig/mm/vmstat.c	2008-04-24 12:03:35.000000000 -0400
-+++ linux-2.6.25-mm1/mm/vmstat.c	2008-04-24 12:04:01.000000000 -0400
-@@ -691,6 +691,9 @@ static const char * const vmstat_text[] 
- 	"nr_active_anon",
- 	"nr_inactive_file",
- 	"nr_active_file",
-+#ifdef CONFIG_NORECLAIM_LRU
-+	"nr_noreclaim",
-+#endif
- 	"nr_anon_pages",
- 	"nr_mapped",
- 	"nr_file_pages",
-Index: linux-2.6.25-mm1/drivers/base/node.c
-===================================================================
---- linux-2.6.25-mm1.orig/drivers/base/node.c	2008-04-24 12:01:36.000000000 -0400
-+++ linux-2.6.25-mm1/drivers/base/node.c	2008-04-24 12:04:01.000000000 -0400
-@@ -54,6 +54,9 @@ static ssize_t node_read_meminfo(struct 
- 		       "Node %d Inactive(anon): %8lu kB\n"
- 		       "Node %d Active(file):   %8lu kB\n"
- 		       "Node %d Inactive(file): %8lu kB\n"
-+#ifdef CONFIG_NORECLAIM_LRU
-+		       "Node %d Noreclaim:    %8lu kB\n"
-+#endif
- #ifdef CONFIG_HIGHMEM
- 		       "Node %d HighTotal:      %8lu kB\n"
- 		       "Node %d HighFree:       %8lu kB\n"
-@@ -83,6 +86,9 @@ static ssize_t node_read_meminfo(struct 
- 		       nid, node_page_state(nid, NR_INACTIVE_ANON),
- 		       nid, node_page_state(nid, NR_ACTIVE_FILE),
- 		       nid, node_page_state(nid, NR_INACTIVE_FILE),
-+#ifdef CONFIG_NORECLAIM_LRU
-+		       nid, node_page_state(nid, NR_NORECLAIM),
-+#endif
- #ifdef CONFIG_HIGHMEM
- 		       nid, K(i.totalhigh),
- 		       nid, K(i.freehigh),
-Index: linux-2.6.25-mm1/fs/proc/proc_misc.c
-===================================================================
---- linux-2.6.25-mm1.orig/fs/proc/proc_misc.c	2008-04-24 12:01:36.000000000 -0400
-+++ linux-2.6.25-mm1/fs/proc/proc_misc.c	2008-04-24 12:04:01.000000000 -0400
-@@ -174,6 +174,9 @@ static int meminfo_read_proc(char *page,
- 		"Inactive(anon): %8lu kB\n"
- 		"Active(file):   %8lu kB\n"
- 		"Inactive(file): %8lu kB\n"
-+#ifdef CONFIG_NORECLAIM_LRU
-+		"Noreclaim:    %8lu kB\n"
-+#endif
- #ifdef CONFIG_HIGHMEM
- 		"HighTotal:      %8lu kB\n"
- 		"HighFree:       %8lu kB\n"
-@@ -209,6 +212,9 @@ static int meminfo_read_proc(char *page,
- 		K(inactive_anon),
- 		K(active_file),
- 		K(inactive_file),
-+#ifdef CONFIG_NORECLAIM_LRU
-+		K(global_page_state(NR_NORECLAIM)),
-+#endif
- #ifdef CONFIG_HIGHMEM
- 		K(i.totalhigh),
- 		K(i.freehigh),
-
--- 
-All Rights Reversed
-
+	Ingo
