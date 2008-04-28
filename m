@@ -1,154 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934956AbYD1TaX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937285AbYD1Tat@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934956AbYD1TaX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 15:30:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936794AbYD1T3n
+	id S937285AbYD1Tat (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 15:30:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935148AbYD1TaH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 15:29:43 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:57364 "EHLO gir.skynet.ie"
+	Mon, 28 Apr 2008 15:30:07 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:57384 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S936785AbYD1T3m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 15:29:42 -0400
+	id S937070AbYD1TaB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Apr 2008 15:30:01 -0400
 From: Mel Gorman <mel@csn.ul.ie>
 To: akpm@linux-foundation.org
 Cc: Mel Gorman <mel@csn.ul.ie>, linux-kernel@vger.kernel.org,
        linux-mm@kvack.org, apw@shadowen.org, mingo@elte.hu, clameter@sgi.com
-Message-Id: <20080428192939.23649.43846.sendpatchset@skynet.skynet.ie>
+Message-Id: <20080428192959.23649.58799.sendpatchset@skynet.skynet.ie>
 In-Reply-To: <20080428192839.23649.82172.sendpatchset@skynet.skynet.ie>
 References: <20080428192839.23649.82172.sendpatchset@skynet.skynet.ie>
-Subject: [PATCH 3/4] Make defensive checks around PFN values registered for memory usage
-Date: Mon, 28 Apr 2008 20:29:39 +0100 (IST)
+Subject: [PATCH 4/4] Print out the zonelists on request for manual verification
+Date: Mon, 28 Apr 2008 20:29:59 +0100 (IST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-There are a number of different views to how much memory is currently
-active. There is the arch-independent zone-sizing view, the bootmem allocator
-and memory models view. Architectures register this information at different
-times and is not necessarily in sync particularly with respect to some
-SPARSEMEM limitations. This patch introduces mminit_validate_memmodel_limits()
-which is able to validate and correct PFN ranges with respect to the
-memory model. It is only SPARSEMEM that currently validates itself.
+This patch prints out the zonelists during boot for manual verification by
+the user if the mminit_loglevel is MMINIT_VERIFY or higher.
 
 Signed-off-by: Mel Gorman <mel@csn.ul.ie>
 ---
 
- mm/bootmem.c    |    1 +
- mm/internal.h   |   12 ++++++++++++
- mm/page_alloc.c |    2 ++
- mm/sparse.c     |   37 +++++++++++++++++++++++++++++--------
- 4 files changed, 44 insertions(+), 8 deletions(-)
+ mm/internal.h   |    5 +++++
+ mm/mm_init.c    |   45 +++++++++++++++++++++++++++++++++++++++++++++
+ mm/page_alloc.c |    1 +
+ 3 files changed, 51 insertions(+)
 
-diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.25-mm1-0020_memmap_init_debug/mm/bootmem.c linux-2.6.25-mm1-0025_defensive_pfn_checks/mm/bootmem.c
---- linux-2.6.25-mm1-0020_memmap_init_debug/mm/bootmem.c	2008-04-22 10:30:04.000000000 +0100
-+++ linux-2.6.25-mm1-0025_defensive_pfn_checks/mm/bootmem.c	2008-04-28 14:41:59.000000000 +0100
-@@ -91,6 +91,7 @@ static unsigned long __init init_bootmem
- 	bootmem_data_t *bdata = pgdat->bdata;
- 	unsigned long mapsize;
+diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.25-mm1-0025_defensive_pfn_checks/mm/internal.h linux-2.6.25-mm1-0030_display_zonelist/mm/internal.h
+--- linux-2.6.25-mm1-0025_defensive_pfn_checks/mm/internal.h	2008-04-28 14:41:59.000000000 +0100
++++ linux-2.6.25-mm1-0030_display_zonelist/mm/internal.h	2008-04-28 14:47:09.000000000 +0100
+@@ -81,6 +81,7 @@ do { \
+ extern void mminit_verify_pageflags_layout(void);
+ extern void mminit_verify_page_links(struct page *page,
+ 		enum zone_type zone, unsigned long nid, unsigned long pfn);
++extern void mminit_verify_zonelist(void);
  
-+	mminit_validate_memmodel_limits(&start, &end);
- 	bdata->node_bootmem_map = phys_to_virt(PFN_PHYS(mapstart));
- 	bdata->node_boot_start = PFN_PHYS(start);
- 	bdata->node_low_pfn = end;
-diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.25-mm1-0020_memmap_init_debug/mm/internal.h linux-2.6.25-mm1-0025_defensive_pfn_checks/mm/internal.h
---- linux-2.6.25-mm1-0020_memmap_init_debug/mm/internal.h	2008-04-28 14:41:48.000000000 +0100
-+++ linux-2.6.25-mm1-0025_defensive_pfn_checks/mm/internal.h	2008-04-28 14:41:59.000000000 +0100
-@@ -98,4 +98,16 @@ static inline void mminit_verify_page_li
+ #else
+ 
+@@ -97,6 +98,10 @@ static inline void mminit_verify_page_li
+ 		enum zone_type zone, unsigned long nid, unsigned long pfn)
  {
  }
++
++static inline void mminit_verify_zonelist(void)
++{
++}
  #endif /* CONFIG_DEBUG_MEMORY_INIT */
+ 
+ /* mminit_validate_memmodel_limits is independent of CONFIG_DEBUG_MEMORY_INIT */
+diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.25-mm1-0025_defensive_pfn_checks/mm/mm_init.c linux-2.6.25-mm1-0030_display_zonelist/mm/mm_init.c
+--- linux-2.6.25-mm1-0025_defensive_pfn_checks/mm/mm_init.c	2008-04-28 14:41:48.000000000 +0100
++++ linux-2.6.25-mm1-0030_display_zonelist/mm/mm_init.c	2008-04-28 14:47:09.000000000 +0100
+@@ -11,6 +11,51 @@
+ 
+ int __meminitdata mminit_loglevel;
+ 
++/* The zonelists are simply reported, validation is manual. */
++void mminit_verify_zonelist(void)
++{
++	int nid;
 +
-+/* mminit_validate_memmodel_limits is independent of CONFIG_DEBUG_MEMORY_INIT */
-+#if defined(CONFIG_SPARSEMEM)
-+extern void mminit_validate_memmodel_limits(unsigned long *start_pfn,
-+				unsigned long *end_pfn);
++	if (mminit_loglevel < MMINIT_VERIFY)
++		return;
++
++	for_each_online_node(nid) {
++		pg_data_t *pgdat = NODE_DATA(nid);
++		struct zone *zone;
++		struct zoneref *z;
++		struct zonelist *zonelist;
++		int i, listid, zoneid;
++
++		BUG_ON(MAX_ZONELISTS > 2);
++		for (i = 0; i < MAX_ZONELISTS * MAX_NR_ZONES; i++) {
++
++			/* Identify the zone and nodelist */
++			zoneid = i % MAX_NR_ZONES;
++			listid = i / MAX_NR_ZONES;
++			zonelist = &pgdat->node_zonelists[listid];
++			zone = &pgdat->node_zones[zoneid];
++			if (!populated_zone(zone))
++				continue;
++
++			/* Print information about the zonelist */
++			printk(KERN_DEBUG "mminit::zonelist %s %d:%s = ",
++				listid > 0 ? "thisnode" : "general", nid,
++				zone->name);
++
++			/* Iterate the zonelist */
++			for_each_zone_zonelist(zone, z, zonelist, zoneid) {
++#ifdef CONFIG_NUMA
++				printk(KERN_CONT "%d:%s ",
++					zone->node, zone->name);
 +#else
-+static inline void mminit_validate_memmodel_limits(unsigned long *start_pfn,
-+				unsigned long *end_pfn)
-+{
++				printk(KERN_CONT "0:%s ", zone->name);
++#endif /* CONFIG_NUMA */
++			}
++			printk(KERN_CONT "\n");
++		}
++	}
 +}
-+#endif /* CONFIG_SPARSEMEM */
 +
- #endif
-diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.25-mm1-0020_memmap_init_debug/mm/page_alloc.c linux-2.6.25-mm1-0025_defensive_pfn_checks/mm/page_alloc.c
---- linux-2.6.25-mm1-0020_memmap_init_debug/mm/page_alloc.c	2008-04-28 14:41:48.000000000 +0100
-+++ linux-2.6.25-mm1-0025_defensive_pfn_checks/mm/page_alloc.c	2008-04-28 14:41:59.000000000 +0100
-@@ -3623,6 +3623,8 @@ void __init add_active_range(unsigned in
- 			  nid, start_pfn, end_pfn,
- 			  nr_nodemap_entries, MAX_ACTIVE_REGIONS);
- 
-+	mminit_validate_memmodel_limits(&start_pfn, &end_pfn);
-+
- 	/* Merge with existing active regions if possible */
- 	for (i = 0; i < nr_nodemap_entries; i++) {
- 		if (early_node_map[i].nid != nid)
-diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.25-mm1-0020_memmap_init_debug/mm/sparse.c linux-2.6.25-mm1-0025_defensive_pfn_checks/mm/sparse.c
---- linux-2.6.25-mm1-0020_memmap_init_debug/mm/sparse.c	2008-04-22 10:30:04.000000000 +0100
-+++ linux-2.6.25-mm1-0025_defensive_pfn_checks/mm/sparse.c	2008-04-28 14:41:59.000000000 +0100
-@@ -12,6 +12,7 @@
- #include <asm/dma.h>
- #include <asm/pgalloc.h>
- #include <asm/pgtable.h>
-+#include "internal.h"
- 
- /*
-  * Permanent SPARSEMEM data:
-@@ -147,22 +148,41 @@ static inline int sparse_early_nid(struc
- 	return (section->section_mem_map >> SECTION_NID_SHIFT);
- }
- 
--/* Record a memory area against a node. */
--void __init memory_present(int nid, unsigned long start, unsigned long end)
-+/* Validate the physical addressing limitations of the model */
-+void __meminit mminit_validate_memmodel_limits(unsigned long *start_pfn,
-+						unsigned long *end_pfn)
+ void __init mminit_verify_pageflags_layout(void)
  {
--	unsigned long max_arch_pfn = 1UL << (MAX_PHYSMEM_BITS-PAGE_SHIFT);
--	unsigned long pfn;
-+	unsigned long max_sparsemem_pfn = 1UL << (MAX_PHYSMEM_BITS-PAGE_SHIFT);
+ 	int shift, width;
+diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.25-mm1-0025_defensive_pfn_checks/mm/page_alloc.c linux-2.6.25-mm1-0030_display_zonelist/mm/page_alloc.c
+--- linux-2.6.25-mm1-0025_defensive_pfn_checks/mm/page_alloc.c	2008-04-28 14:41:59.000000000 +0100
++++ linux-2.6.25-mm1-0030_display_zonelist/mm/page_alloc.c	2008-04-28 14:47:09.000000000 +0100
+@@ -2456,6 +2456,7 @@ void build_all_zonelists(void)
  
- 	/*
- 	 * Sanity checks - do not allow an architecture to pass
- 	 * in larger pfns than the maximum scope of sparsemem:
- 	 */
--	if (start >= max_arch_pfn)
--		return;
--	if (end >= max_arch_pfn)
--		end = max_arch_pfn;
-+	if (*start_pfn > max_sparsemem_pfn) {
-+		mminit_dprintk(MMINIT_WARNING, "pfnvalidation",
-+			"Start of range %lu -> %lu exceeds SPARSEMEM max %lu\n",
-+			*start_pfn, *end_pfn, max_sparsemem_pfn);
-+		WARN_ON_ONCE(1);
-+		*start_pfn = max_sparsemem_pfn;
-+		*end_pfn = max_sparsemem_pfn;
-+	}
-+
-+	if (*end_pfn > max_sparsemem_pfn) {
-+		mminit_dprintk(MMINIT_WARNING, "pfnvalidation",
-+			"End of range %lu -> %lu exceeds SPARSEMEM max %lu\n",
-+			*start_pfn, *end_pfn, max_sparsemem_pfn);
-+		WARN_ON_ONCE(1);
-+		*end_pfn = max_sparsemem_pfn;
-+	}
-+}
-+
-+/* Record a memory area against a node. */
-+void __init memory_present(int nid, unsigned long start, unsigned long end)
-+{
-+	unsigned long pfn;
- 
- 	start &= PAGE_SECTION_MASK;
-+	mminit_validate_memmodel_limits(&start, &end);
- 	for (pfn = start; pfn < end; pfn += PAGES_PER_SECTION) {
- 		unsigned long section = pfn_to_section_nr(pfn);
- 		struct mem_section *ms;
-@@ -187,6 +207,7 @@ unsigned long __init node_memmap_size_by
- 	unsigned long pfn;
- 	unsigned long nr_pages = 0;
- 
-+	mminit_validate_memmodel_limits(&start_pfn, &end_pfn);
- 	for (pfn = start_pfn; pfn < end_pfn; pfn += PAGES_PER_SECTION) {
- 		if (nid != early_pfn_to_nid(pfn))
- 			continue;
+ 	if (system_state == SYSTEM_BOOTING) {
+ 		__build_all_zonelists(NULL);
++		mminit_verify_zonelist();
+ 		cpuset_init_current_mems_allowed();
+ 	} else {
+ 		/* we have to stop all cpus to guarantee there is no user
