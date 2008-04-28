@@ -1,93 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765116AbYD1BqS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764671AbYD1Bse@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765116AbYD1BqS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Apr 2008 21:46:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762991AbYD1Bpx
+	id S1764671AbYD1Bse (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Apr 2008 21:48:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753117AbYD1Bs1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Apr 2008 21:45:53 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:36350 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761852AbYD1Bpv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Apr 2008 21:45:51 -0400
-Date: Mon, 28 Apr 2008 03:45:40 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [GIT PATCH] another tranche of SCSI updates for 2.6.26
-Message-ID: <20080428014540.GB10660@elte.hu>
-References: <1209320076.3801.26.camel@localhost.localdomain> <20080428013400.GA6245@elte.hu>
+	Sun, 27 Apr 2008 21:48:27 -0400
+Received: from rv-out-0708.google.com ([209.85.198.248]:56784 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751111AbYD1Bs0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Apr 2008 21:48:26 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=fjVrNXU9PSjxCxwipOaEvpUdPLd4YN9LymU/jlXnic4d5Q+PnZCSTSc5esmOP5DFbPeE2SnYmldV1eCNoI5D7wtZIcJKy4wp/CF+RomrcWfb/SE0nH8XJ7WmuEv719ehKC91KqOOXZr8l2r+gUuLj8EqI3shoABXKfyXDpf7tuE=
+Message-ID: <86802c440804271848o5498eb9eu944f995cb9b8fc9a@mail.gmail.com>
+Date: Sun, 27 Apr 2008 18:48:23 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: [patch] mm: node-setup agnostic free_bootmem()
+Cc: "Johannes Weiner" <hannes@saeurebad.de>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Thomas Gleixner" <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>, jbarnes@virtuousgeek.org,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>
+In-Reply-To: <20080428004046.GA16155@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080428013400.GA6245@elte.hu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0001]
+References: <20080426185516.GA32364@elte.hu>
+	 <alpine.LFD.1.10.0804261205490.2813@woody.linux-foundation.org>
+	 <20080426194143.GA8366@elte.hu> <87hcdmnccu.fsf@saeurebad.de>
+	 <20080427234630.GC14338@elte.hu> <877iein859.fsf@saeurebad.de>
+	 <20080428004046.GA16155@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, Apr 27, 2008 at 5:40 PM, Ingo Molnar <mingo@elte.hu> wrote:
+>
+>  * Johannes Weiner <hannes@saeurebad.de> wrote:
+>
+>  > > so i very much agree that your changes are cleaner, i just wanted to
+>  > > have one that has all the fixes included.
+>  >
+>  > I had planned this to be another patch because there are more then one
+>  > boundary check I wanted to tighten.  I can merge them though if you
+>  > like.
+>
+>  no, better to have them in separate patches.
+>
+>  > > Would you like to post a patch against current -git or should i
+>  > > extract the cleaner reserve_bootmem() from your previous patch?
+>  >
+>  > I just moved and have only sporadic internet access and free time
+>  > slots available.  Would be nice if you could do it!
+>
+>  sure, find the merged patch below, against latest -git, boot-tested on
+>  x86. Is this what you had in mind?
+>
+>         Ingo
+>
+>  ---------------->
+>  Subject: mm: node-setup agnostic free_bootmem()
+>  From: Johannes Weiner <hannes@saeurebad.de>
+>  Date: Wed, 16 Apr 2008 13:36:31 +0200
+>
+>  Make free_bootmem() look up the node holding the specified address
+>  range which lets it work transparently on single-node and multi-node
+>  configurations.
+>
+>  If the address range exceeds the node range, it well be marked free
+>  across node boundaries, too.
+>
+>  Signed-off-by: Johannes Weiner <hannes@saeurebad.de>
+>  CC: Andi Kleen <andi@firstfloor.org>
+>  CC: Yinghai Lu <yhlu.kernel@gmail.com>
+>  CC: Yasunori Goto <y-goto@jp.fujitsu.com>
+>  CC: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+>  CC: Christoph Lameter <clameter@sgi.com>
+>  CC: Andrew Morton <akpm@linux-foundation.org>
+>  Signed-off-by: Ingo Molnar <mingo@elte.hu>
+>  ---
+>   mm/bootmem.c |   27 +++++++++++++++++++++++++--
+>   1 file changed, 25 insertions(+), 2 deletions(-)
+>
+>  Index: linux-x86.q/mm/bootmem.c
+>  ===================================================================
+>  --- linux-x86.q.orig/mm/bootmem.c
+>  +++ linux-x86.q/mm/bootmem.c
+>  @@ -493,8 +493,31 @@ int __init reserve_bootmem(unsigned long
+>   void __init free_bootmem(unsigned long addr, unsigned long size)
+>   {
+>         bootmem_data_t *bdata;
+>  -       list_for_each_entry(bdata, &bdata_list, list)
+>  -               free_bootmem_core(bdata, addr, size);
+>  +       unsigned long pos = addr;
+>  +       unsigned long partsize = size;
+>  +
+>  +       list_for_each_entry(bdata, &bdata_list, list) {
+>  +               unsigned long remainder = 0;
+>  +
+>  +               if (pos < bdata->node_boot_start)
+>  +                       continue;
+>  +
+>  +               if (PFN_DOWN(pos + partsize) > bdata->node_low_pfn) {
+>  +                       remainder = PFN_DOWN(pos + partsize) - bdata->node_low_pfn;
+>  +                       partsize -= remainder;
+>  +               }
+>  +
+>  +               free_bootmem_core(bdata, pos, partsize);
+>  +
+>  +               if (!remainder)
+>  +                       return;
+>  +
+>  +               pos = PFN_PHYS(bdata->node_low_pfn + 1);
+>  +       }
+>  +       printk(KERN_ERR "free_bootmem: request: addr=%lx, size=%lx, "
+>  +                       "state: pos=%lx, partsize=%lx\n", addr, size,
+>  +                       pos, partsize);
+>  +       BUG();
+>   }
+>
+>   unsigned long __init free_all_bootmem(void)
+>
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+it will not work with cross nodes.
 
-> see:
-> 
->  http://redhat.com/~mingo/misc/config-Mon_Apr_28_03_01_00_CEST_2008.bad
->  http://redhat.com/~mingo/misc/log-Mon_Apr_28_03_01_00_CEST_2008.bad
-> 
-> the commits i pulled are below. The tree before that survived 100+ 
-> randconfig bootups - this failed after 7 iterations.
+for example: node 0: 0-2g, 4-6g, node1: 2-4g, 6-8g.
+and if ramdisk sit cross 2G boundary. you will only free the range before 2g.
 
-did some more digging, regression is not too serious - excluding the ISA 
-drivers below did the trick and it now boots up fine. Time to sleep now 
-:-/
-
-	Ingo
-
------------------>
-Subject: qa: no scsi aha
-From: Ingo Molnar <mingo@elte.hu>
-Date: Mon Apr 28 03:34:16 CEST 2008
-
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- drivers/scsi/Kconfig |    3 +++
- 1 file changed, 3 insertions(+)
-
-Index: linux/drivers/scsi/Kconfig
-===================================================================
---- linux.orig/drivers/scsi/Kconfig
-+++ linux/drivers/scsi/Kconfig
-@@ -406,6 +406,7 @@ config SCSI_ACARD
- config SCSI_AHA152X
- 	tristate "Adaptec AHA152X/2825 support"
- 	depends on ISA && SCSI && !64BIT
-+	depends on 0
- 	select SCSI_SPI_ATTRS
- 	select CHECK_SIGNATURE
- 	---help---
-@@ -423,6 +424,7 @@ config SCSI_AHA152X
- config SCSI_AHA1542
- 	tristate "Adaptec AHA1542 support"
- 	depends on ISA && SCSI && ISA_DMA_API
-+	depends on 0
- 	---help---
- 	  This is support for a SCSI host adapter.  It is explained in section
- 	  3.4 of the SCSI-HOWTO, available from
-@@ -437,6 +439,7 @@ config SCSI_AHA1542
- config SCSI_AHA1740
- 	tristate "Adaptec AHA1740 support"
- 	depends on EISA && SCSI
-+	depends on 0
- 	---help---
- 	  This is support for a SCSI host adapter.  It is explained in section
- 	  3.5 of the SCSI-HOWTO, available from
+YH
