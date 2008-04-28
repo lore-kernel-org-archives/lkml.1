@@ -1,105 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763337AbYD1Ail@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763605AbYD1AlR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763337AbYD1Ail (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Apr 2008 20:38:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751002AbYD1Aic
+	id S1763605AbYD1AlR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Apr 2008 20:41:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751007AbYD1AlH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Apr 2008 20:38:32 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:46581 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750970AbYD1Aib (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Apr 2008 20:38:31 -0400
-Date: Mon, 28 Apr 2008 09:39:17 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Hugh Dickins <hugh@veritas.com>, Mel Gorman <mel@csn.ul.ie>,
-       Shi Weihua <shiwh@cn.fujitsu.com>, balbir@linux.vnet.ibm.com,
-       xemul@openvz.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [BUGFIX][PATCH] Fix usemap initialization v3
-Message-Id: <20080428093917.ea6f2647.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20080427121817.03b432ca.akpm@linux-foundation.org>
-References: <20080418161522.GB9147@csn.ul.ie>
-	<48080706.50305@cn.fujitsu.com>
-	<48080930.5090905@cn.fujitsu.com>
-	<48080B86.7040200@cn.fujitsu.com>
-	<20080418211214.299f91cd.kamezawa.hiroyu@jp.fujitsu.com>
-	<21878461.1208539556838.kamezawa.hiroyu@jp.fujitsu.com>
-	<20080421112048.78f0ec76.kamezawa.hiroyu@jp.fujitsu.com>
-	<Pine.LNX.4.64.0804211250000.16476@blonde.site>
-	<20080422104043.215c7dc4.kamezawa.hiroyu@jp.fujitsu.com>
-	<20080423134621.6020dd83.kamezawa.hiroyu@jp.fujitsu.com>
-	<20080427121817.03b432ca.akpm@linux-foundation.org>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 27 Apr 2008 20:41:07 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:38908 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750970AbYD1AlF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Apr 2008 20:41:05 -0400
+Date: Mon, 28 Apr 2008 02:40:46 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Johannes Weiner <hannes@saeurebad.de>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Yinghai Lu <yinghai.lu@sun.com>, Yinghai Lu <yhlu.kernel@gmail.com>,
+       jbarnes@virtuousgeek.org
+Subject: [patch] mm: node-setup agnostic free_bootmem()
+Message-ID: <20080428004046.GA16155@elte.hu>
+References: <20080426185516.GA32364@elte.hu> <alpine.LFD.1.10.0804261205490.2813@woody.linux-foundation.org> <20080426194143.GA8366@elte.hu> <87hcdmnccu.fsf@saeurebad.de> <20080427234630.GC14338@elte.hu> <877iein859.fsf@saeurebad.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <877iein859.fsf@saeurebad.de>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 27 Apr 2008 12:18:17 -0700
-Andrew Morton <akpm@linux-foundation.org> wrote:
-> > Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> > 
-> > ---
-> >  mm/page_alloc.c |   14 ++++++++++++--
-> >  1 file changed, 12 insertions(+), 2 deletions(-)
-> > 
-> > Index: linux-2.6.25/mm/page_alloc.c
-> > ===================================================================
-> > --- linux-2.6.25.orig/mm/page_alloc.c
-> > +++ linux-2.6.25/mm/page_alloc.c
-> > @@ -2518,7 +2518,9 @@ void __meminit memmap_init_zone(unsigned
-> >  	struct page *page;
-> >  	unsigned long end_pfn = start_pfn + size;
-> >  	unsigned long pfn;
-> > +	struct zone *z;
-> >  
-> > +	z = &NODE_DATA(nid)->node_zones[zone];
-> >  	for (pfn = start_pfn; pfn < end_pfn; pfn++) {
-> >  		/*
-> >  		 * There can be holes in boot-time mem_map[]s
-> > @@ -2536,7 +2538,6 @@ void __meminit memmap_init_zone(unsigned
-> >  		init_page_count(page);
-> >  		reset_page_mapcount(page);
-> >  		SetPageReserved(page);
-> > -
-> >  		/*
-> >  		 * Mark the block movable so that blocks are reserved for
-> >  		 * movable at startup. This will force kernel allocations
-> > @@ -2545,8 +2546,15 @@ void __meminit memmap_init_zone(unsigned
-> >  		 * kernel allocations are made. Later some blocks near
-> >  		 * the start are marked MIGRATE_RESERVE by
-> >  		 * setup_zone_migrate_reserve()
-> > +		 *
-> > +		 * bitmap is created for zone's valid pfn range. but memmap
-> > +		 * can be created for invalid pages (for alignment)
-> > +		 * check here not to call set_pageblock_migratetype() against
-> > +		 * pfn out of zone.
-> >  		 */
-> > -		if ((pfn & (pageblock_nr_pages-1)))
-> > +		if ((z->zone_start_pfn <= pfn)
-> > +		    && (pfn < z->zone_start_pfn + z->spanned_pages)
-> > +		    && !(pfn & (pageblock_nr_pages - 1)))
-> >  			set_pageblock_migratetype(page, MIGRATE_MOVABLE);
-> >  
-> >  		INIT_LIST_HEAD(&page->lru);
-> > @@ -4460,6 +4468,8 @@ void set_pageblock_flags_group(struct pa
-> >  	pfn = page_to_pfn(page);
-> >  	bitmap = get_pageblock_bitmap(zone, pfn);
-> >  	bitidx = pfn_to_bitidx(zone, pfn);
-> > +	VM_BUG_ON(pfn < zone->zone_start_pfn);
-> > +	VM_BUG_ON(pfn >= zone->zone_start_pfn + zone->spanned_pages);
-> >  
-> >  	for (; start_bitidx <= end_bitidx; start_bitidx++, value <<= 1)
-> >  		if (flags & value)
-> 
-> Do we think this is needed in 2.6.25.x?
-> 
-Yes, I think.
 
-Thanks,
--Kame
+* Johannes Weiner <hannes@saeurebad.de> wrote:
 
+> > so i very much agree that your changes are cleaner, i just wanted to 
+> > have one that has all the fixes included.
+> 
+> I had planned this to be another patch because there are more then one 
+> boundary check I wanted to tighten.  I can merge them though if you 
+> like.
+
+no, better to have them in separate patches.
+
+> > Would you like to post a patch against current -git or should i 
+> > extract the cleaner reserve_bootmem() from your previous patch?
+> 
+> I just moved and have only sporadic internet access and free time 
+> slots available.  Would be nice if you could do it!
+
+sure, find the merged patch below, against latest -git, boot-tested on 
+x86. Is this what you had in mind?
+
+	Ingo
+
+---------------->
+Subject: mm: node-setup agnostic free_bootmem()
+From: Johannes Weiner <hannes@saeurebad.de>
+Date: Wed, 16 Apr 2008 13:36:31 +0200
+
+Make free_bootmem() look up the node holding the specified address
+range which lets it work transparently on single-node and multi-node
+configurations.
+
+If the address range exceeds the node range, it well be marked free
+across node boundaries, too.
+
+Signed-off-by: Johannes Weiner <hannes@saeurebad.de>
+CC: Andi Kleen <andi@firstfloor.org>
+CC: Yinghai Lu <yhlu.kernel@gmail.com>
+CC: Yasunori Goto <y-goto@jp.fujitsu.com>
+CC: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+CC: Christoph Lameter <clameter@sgi.com>
+CC: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ mm/bootmem.c |   27 +++++++++++++++++++++++++--
+ 1 file changed, 25 insertions(+), 2 deletions(-)
+
+Index: linux-x86.q/mm/bootmem.c
+===================================================================
+--- linux-x86.q.orig/mm/bootmem.c
++++ linux-x86.q/mm/bootmem.c
+@@ -493,8 +493,31 @@ int __init reserve_bootmem(unsigned long
+ void __init free_bootmem(unsigned long addr, unsigned long size)
+ {
+ 	bootmem_data_t *bdata;
+-	list_for_each_entry(bdata, &bdata_list, list)
+-		free_bootmem_core(bdata, addr, size);
++	unsigned long pos = addr;
++	unsigned long partsize = size;
++
++	list_for_each_entry(bdata, &bdata_list, list) {
++		unsigned long remainder = 0;
++
++		if (pos < bdata->node_boot_start)
++			continue;
++
++		if (PFN_DOWN(pos + partsize) > bdata->node_low_pfn) {
++			remainder = PFN_DOWN(pos + partsize) - bdata->node_low_pfn;
++			partsize -= remainder;
++		}
++
++		free_bootmem_core(bdata, pos, partsize);
++
++		if (!remainder)
++			return;
++
++		pos = PFN_PHYS(bdata->node_low_pfn + 1);
++	}
++	printk(KERN_ERR "free_bootmem: request: addr=%lx, size=%lx, "
++			"state: pos=%lx, partsize=%lx\n", addr, size,
++			pos, partsize);
++	BUG();
+ }
+ 
+ unsigned long __init free_all_bootmem(void)
