@@ -1,61 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932286AbYD1I3o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932639AbYD1Icv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932286AbYD1I3o (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 04:29:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765863AbYD1I3e
+	id S932639AbYD1Icv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 04:32:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765924AbYD1Icn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 04:29:34 -0400
-Received: from wa-out-1112.google.com ([209.85.146.177]:65434 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765407AbYD1I3d (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 04:29:33 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=TYW/SlCaeeJ7skbP4EaXXcQr32U7l3SP3CSaJ30VFy8iU7jUuEZfD6oDiz2wEEbkmeDDtGuelpHMFiJjULwkoFHhqcoEXAodOF82ggtNqMNLeeD0VHUELz8M8JGlVgd3JsELoP2szMvd9+L0iiFRpPo+0B8hX1gDSjAe+cb0HVI=
-Message-ID: <1ba2fa240804280129r48762639jac501a3010e132a6@mail.gmail.com>
-Date: Mon, 28 Apr 2008 11:29:32 +0300
-From: "Tomas Winkler" <tomasw@gmail.com>
-To: "Adrian Bunk" <bunk@kernel.org>
-Subject: Re: [PATCH] Fix compile error with wifi & leds
-Cc: "Luca Tettamanti" <kronos.it@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-wireless@vger.kernel.org, "David S. Miller" <davem@davemloft.net>,
-       "Priit Laes" <plaes@plaes.org>
-In-Reply-To: <20080428082030.GD16379@cs181133002.pp.htv.fi>
+	Mon, 28 Apr 2008 04:32:43 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:44836 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1765860AbYD1Icn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Apr 2008 04:32:43 -0400
+Date: Mon, 28 Apr 2008 10:32:22 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Heiko Carstens <heiko.carstens@de.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Gautham R Shenoy <ego@in.ibm.com>, Paul Jackson <pj@sgi.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] sched: missing locking in sched_domains code
+Message-ID: <20080428083222.GA16963@elte.hu>
+References: <20080427211224.GA21830@osiris.boeblingen.de.ibm.com> <20080427183926.acb66fff.akpm@linux-foundation.org> <20080428070946.GA4507@osiris.boeblingen.de.ibm.com> <20080428002853.1693e7fd.akpm@linux-foundation.org> <20080428075253.GB4507@osiris.boeblingen.de.ibm.com> <20080428081129.GC4507@osiris.boeblingen.de.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20080426203408.GA12074@dreamland.darkstar.lan>
-	 <20080428074531.GA16379@cs181133002.pp.htv.fi>
-	 <20080428075452.GB16379@cs181133002.pp.htv.fi>
-	 <1ba2fa240804280118l5f813b38n8291789342b1d802@mail.gmail.com>
-	 <20080428082030.GD16379@cs181133002.pp.htv.fi>
+In-Reply-To: <20080428081129.GC4507@osiris.boeblingen.de.ibm.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 28, 2008 at 11:20 AM, Adrian Bunk <bunk@kernel.org> wrote:
-> On Mon, Apr 28, 2008 at 11:18:08AM +0300, Tomas Winkler wrote:
->  > On Mon, Apr 28, 2008 at 10:54 AM, Adrian Bunk <bunk@kernel.org> wrote:
->  > > On Mon, Apr 28, 2008 at 10:45:31AM +0300, Adrian Bunk wrote:
->  > >  > Can you send the .config that gives this problem?
->  > >
->  > >  Scrap that, I already got the problem (and your patch looks right).
->  > >
->  > >
->  >
->  > I think it's time to be applied so we won't get another 5 of them.
->  > Please add also  Priit Laes <plaes@plaes.org>  as he was first to
->  > provide a patch
->
->  David already sent a pull request that includes Luca's patch to Linus.
->
->  My question was due to me first misunderstanding what's happening here.
->
-I see... I wasn't subscribed so I missed that.
-Anyhow what is happening is that I've assumed that 'select' is
-transitive and selecting MAC80211_LEDs is enough.
 
-Tomas
+* Heiko Carstens <heiko.carstens@de.ibm.com> wrote:
+
+>  /* doms_cur_mutex serializes access to doms_cur[] array */
+>  static DEFINE_MUTEX(doms_cur_mutex);
+>  
+> +static inline void lock_doms_cur(void)
+> +{
+> +	mutex_lock(&doms_cur_mutex);
+> +}
+
+> @@ -7813,8 +7811,10 @@ int arch_reinit_sched_domains(void)
+>  	int err;
+>  
+>  	get_online_cpus();
+> +	lock_doms_cur();
+
+thanks, that looks a lot more clean already. May i ask for another 
+thing, if you are hacking on this anyway? Please get rid of the 
+lock_doms_cur() complication now that it's not conditional - an open 
+coded mutex_lock(&sched_doms_mutex) looks more readable - it gives a 
+clear idea about what's happening. Also, please rename sched_doms_mutex 
+to something less tongue-twisting - such as sched_domains_mutex. Hm?
+
+	Ingo
