@@ -1,128 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760840AbYD2Ita@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759211AbYD2I45@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760840AbYD2Ita (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 04:49:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754538AbYD2ItW
+	id S1759211AbYD2I45 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 04:56:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754047AbYD2I4s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 04:49:22 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:49453 "EHLO mx3.mail.elte.hu"
+	Tue, 29 Apr 2008 04:56:48 -0400
+Received: from mail.windriver.com ([147.11.1.11]:36098 "EHLO mail.wrs.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753948AbYD2ItU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 04:49:20 -0400
-Date: Tue, 29 Apr 2008 10:48:54 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: akpm@linux-foundation.org, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [2/2] vmallocinfo: Add caller information
-Message-ID: <20080429084854.GA14913@elte.hu>
-References: <20080318222701.788442216@sgi.com> <20080318222827.519656153@sgi.com>
+	id S1753948AbYD2I4r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Apr 2008 04:56:47 -0400
+Message-ID: <4816D438.3040301@windriver.com>
+Date: Tue, 29 Apr 2008 16:54:32 +0900
+From: Andrew Liu <shengping.liu@windriver.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080318222827.519656153@sgi.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: akpm@linux-foundation.org
+CC: linux-kernel@vger.kernel.org
+Subject: [PATCH] workqueue: Remove redundant function invocation
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 29 Apr 2008 08:56:12.0129 (UTC) FILETIME=[DFB44D10:01C8A9D6]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+workqueue: Remove redundant function invocation
 
-* Christoph Lameter <clameter@sgi.com> wrote:
+timer_stats_timer_set_start_info is invoked twice,
+additionally, the invocation of this function can be
+moved to  where it is only called when a delay is
+really required.
 
-> Add caller information so that /proc/vmallocinfo shows where the 
-> allocation request for a slice of vmalloc memory originated.
+Signed-off-by: Andrew Liu <shengping.liu@windriver.com>
+---
 
-i _specifically_ objected to the uglification that this patch brings 
-with itself to the modified arch/x86 files (see the diff excerpt below), 
-in:
+diff --git a/kernel/workqueue.c b/kernel/workqueue.c
+index 00ff4d0..14a7674 100644
+--- a/kernel/workqueue.c
++++ b/kernel/workqueue.c
+@@ -195,7 +195,6 @@ static void delayed_work_timer_fn(unsigned long __data)
+  int queue_delayed_work(struct workqueue_struct *wq,
+                         struct delayed_work *dwork, unsigned long delay)
+  {
+-       timer_stats_timer_set_start_info(&dwork->timer);
+         if (delay == 0)
+                 return queue_work(wq, &dwork->work);
 
-    http://lkml.org/lkml/2008/3/19/450
+@@ -219,11 +218,12 @@ int queue_delayed_work_on(int cpu, struct workqueue_struct 
+*wq,
+         struct timer_list *timer = &dwork->timer;
+         struct work_struct *work = &dwork->work;
 
-i pointed out how it should be done _much cleaner_ (and much smaller - 
-only a single patch needed) via stack-trace, without changing a dozen 
-architectures, and even gave a patch to make it all easier for you:
+-       timer_stats_timer_set_start_info(&dwork->timer);
+         if (!test_and_set_bit(WORK_STRUCT_PENDING, work_data_bits(work))) {
+                 BUG_ON(timer_pending(timer));
+                 BUG_ON(!list_empty(&work->entry));
 
-    http://lkml.org/lkml/2008/3/19/568
-    http://lkml.org/lkml/2008/3/21/88
-
-in fact, a stacktrace printout is much more informative as well to 
-users, than a punny __builtin_return_address(0)!
-
-but you did not reply to my objections in substance, hence i considered 
-the issue closed - but you apparently went ahead without addressing my 
-concerns (which are rather obvious to anyone doing debug code) and now 
-this ugly code is upstream.
-
-If lockdep can get stacktrace samples from all around the kernel without 
-adding "caller" info parameters to widely used APIs, then the MM is 
-evidently able to do it too. _Saving_ a stacktrace is relatively fast 
-[printing it to the console is what is slow], and vmalloc() is an utter 
-slowpath anyway [and 1 million file descriptors does not count as a 
-fastpath].
-
-If performance is of any concern then make it dependent on 
-CONFIG_DEBUG_VM or whatever debug switch in the MM - that will be 
-_faster_ in the default case than the current 
-pass-parameter-deep-down-the-arch crap you've pushed here. I dont 
-remember the last time i genuinely needed the allocation site of a 
-vmalloc().
-
-I any case, do _NOT_ pollute any architectures with stack debugging 
-hacks (and that holds for future similar patches too), that's why we 
-wrote stacktrace. This needs to be reverted or fixed properly.
-
-	Ingo
-
-> Index: linux-2.6.25-rc5-mm1/arch/x86/mm/ioremap.c
-> ===================================================================
-> --- linux-2.6.25-rc5-mm1.orig/arch/x86/mm/ioremap.c	2008-03-18 12:20:10.803827969 -0700
-> +++ linux-2.6.25-rc5-mm1/arch/x86/mm/ioremap.c	2008-03-18 12:22:09.744570798 -0700
-> @@ -118,8 +118,8 @@ static int ioremap_change_attr(unsigned 
->   * have to convert them into an offset in a page-aligned mapping, but the
->   * caller shouldn't need to know that small detail.
->   */
-> -static void __iomem *__ioremap(unsigned long phys_addr, unsigned long size,
-> -			       enum ioremap_mode mode)
-> +static void __iomem *__ioremap_caller(unsigned long phys_addr,
-> +	unsigned long size, enum ioremap_mode mode, void *caller)
->  {
->  	unsigned long pfn, offset, last_addr, vaddr;
->  	struct vm_struct *area;
-> @@ -176,7 +176,7 @@ static void __iomem *__ioremap(unsigned 
->  	/*
->  	 * Ok, go for it..
->  	 */
-> -	area = get_vm_area(size, VM_IOREMAP);
-> +	area = get_vm_area_caller(size, VM_IOREMAP, caller);
->  	if (!area)
->  		return NULL;
->  	area->phys_addr = phys_addr;
-> @@ -217,13 +217,15 @@ static void __iomem *__ioremap(unsigned 
->   */
->  void __iomem *ioremap_nocache(unsigned long phys_addr, unsigned long size)
->  {
-> -	return __ioremap(phys_addr, size, IOR_MODE_UNCACHED);
-> +	return __ioremap_caller(phys_addr, size, IOR_MODE_UNCACHED,
-> +						__builtin_return_address(0));
->  }
->  EXPORT_SYMBOL(ioremap_nocache);
->  
->  void __iomem *ioremap_cache(unsigned long phys_addr, unsigned long size)
->  {
-> -	return __ioremap(phys_addr, size, IOR_MODE_CACHED);
-> +	return __ioremap_caller(phys_addr, size, IOR_MODE_CACHED,
-> +						__builtin_return_address(0));
->  }
->  EXPORT_SYMBOL(ioremap_cache);
++               timer_stats_timer_set_start_info(&dwork->timer);
++
+                 /* This stores cwq for the moment, for the timer_fn */
+                 set_wq_data(work, wq_per_cpu(wq, raw_smp_processor_id()));
+                 timer->expires = jiffies + delay;
+@@ -564,7 +564,6 @@ EXPORT_SYMBOL(schedule_work);
+  int schedule_delayed_work(struct delayed_work *dwork,
+                                         unsigned long delay)
+  {
+-       timer_stats_timer_set_start_info(&dwork->timer);
+         return queue_delayed_work(keventd_wq, dwork, delay);
+  }
+  EXPORT_SYMBOL(schedule_delayed_work);
+@@ -581,7 +580,6 @@ EXPORT_SYMBOL(schedule_delayed_work);
+  int schedule_delayed_work_on(int cpu,
+                         struct delayed_work *dwork, unsigned long delay)
+  {
+-       timer_stats_timer_set_start_info(&dwork->timer);
+         return queue_delayed_work_on(cpu, keventd_wq, dwork, delay);
+  }
+  EXPORT_SYMBOL(schedule_delayed_work_on);
 
