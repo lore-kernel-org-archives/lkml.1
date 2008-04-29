@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765520AbYD2Rc7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759016AbYD2Rda@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765520AbYD2Rc7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 13:32:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759439AbYD2RWK
+	id S1759016AbYD2Rda (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 13:33:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759438AbYD2RWO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 13:22:10 -0400
-Received: from mx2.suse.de ([195.135.220.15]:43649 "EHLO mx2.suse.de"
+	Tue, 29 Apr 2008 13:22:14 -0400
+Received: from mx2.suse.de ([195.135.220.15]:43687 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759433AbYD2RWH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 13:22:07 -0400
-Date: Tue, 29 Apr 2008 10:19:14 -0700
+	id S1755505AbYD2RWM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Apr 2008 13:22:12 -0400
+Date: Tue, 29 Apr 2008 10:19:17 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -20,14 +20,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Bodo Stroesser <bstroesser@fujitsu-siemens.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: [32/37] hrtimer: timeout too long when using HRTIMER_CB_SOFTIRQ
-Message-ID: <20080429171914.GG14724@suse.de>
+       Chien Tung <ctung@neteffect.com>, Roland Dreier <rolandd@cisco.com>
+Subject: [33/37] RDMA/nes: Fix adapter reset after PXE boot
+Message-ID: <20080429171917.GH14724@suse.de>
 References: <20080429171222.073929148@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="hrtimer-timeout-too-long-when-using-hrtimer_cb_softirq.patch"
+Content-Disposition: inline; filename="rdma-nes-fix-adapter-reset-after-pxe-boot.patch"
 In-Reply-To: <20080429171730.GA14724@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -38,54 +37,79 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 know.
 
 ------------------
-From: Bodo Stroesser <bstroesser@fujitsu-siemens.com>
+From: Chien Tung <ctung@neteffect.com>
 
-commit d7b41a24bfb5d7fa02f7b49be1293d468814e424 upstream
+commit: bc5698f3ecc9587e1edb343a2878f8d228c49e0e upstream
 
-When using hrtimer with timer->cb_mode == HRTIMER_CB_SOFTIRQ
-in some cases the clockevent is not programmed.
-This happens, if:
- - a timer is rearmed while it's state is HRTIMER_STATE_CALLBACK
- - hrtimer_reprogram() returns -ETIME, when it is called after
-   CALLBACK is finished. This occurs if the new timer->expires
-   is in the past when CALLBACK is done.
-In this case, the timer needs to be removed from the tree and put
-onto the pending list again.
+After PXE boot, the iw_nes driver does a full reset to ensure the card
+is in a clean state.  However, it doesn't wait for firmware to
+complete its work before issuing a port reset to enable the ports,
+which leads to problems bringing up the ports.
 
-The patch is against 2.6.22.5, but AFAICS, it is relevant
-for 2.6.25 also (in run_hrtimer_pending()).
+The solution is to wait for firmware to complete its work before
+proceeding with port reset.
 
-Signed-off-by: Bodo Stroesser <bstroesser@fujitsu-siemens.com>
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+This bug was flagged by Roland Dreier <rolandd@cisco.com>.
+
+Signed-off-by: Chien Tung <ctung@neteffect.com>
+Signed-off-by: Roland Dreier <rolandd@cisco.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- kernel/hrtimer.c |   15 +++++++++++++--
- 1 file changed, 13 insertions(+), 2 deletions(-)
+ drivers/infiniband/hw/nes/nes_cm.c |    6 ++++--
+ drivers/infiniband/hw/nes/nes_hw.c |   20 +++++++++-----------
+ 2 files changed, 13 insertions(+), 13 deletions(-)
 
---- a/kernel/hrtimer.c
-+++ b/kernel/hrtimer.c
-@@ -1080,8 +1080,19 @@ static void run_hrtimer_pending(struct h
- 			 * If the timer was rearmed on another CPU, reprogram
- 			 * the event device.
- 			 */
--			if (timer->base->first == &timer->node)
--				hrtimer_reprogram(timer, timer->base);
-+			struct hrtimer_clock_base *base = timer->base;
+--- a/drivers/infiniband/hw/nes/nes_cm.c
++++ b/drivers/infiniband/hw/nes/nes_cm.c
+@@ -1834,8 +1834,10 @@ int mini_cm_recv_pkt(struct nes_cm_core 
+ 	nfo.rem_addr = ntohl(iph->saddr);
+ 	nfo.rem_port = ntohs(tcph->source);
+ 
+-	nes_debug(NES_DBG_CM, "Received packet: dest=0x%08X:0x%04X src=0x%08X:0x%04X\n",
+-			iph->daddr, tcph->dest, iph->saddr, tcph->source);
++	nes_debug(NES_DBG_CM, "Received packet: dest=" NIPQUAD_FMT
++		  ":0x%04X src=" NIPQUAD_FMT ":0x%04X\n",
++		  NIPQUAD(iph->daddr), tcph->dest,
++		  NIPQUAD(iph->saddr), tcph->source);
+ 
+ 	/* note: this call is going to increment cm_node ref count */
+ 	cm_node = find_node(cm_core,
+--- a/drivers/infiniband/hw/nes/nes_hw.c
++++ b/drivers/infiniband/hw/nes/nes_hw.c
+@@ -625,6 +625,15 @@ unsigned int nes_reset_adapter_ne020(str
+ 			nes_debug(NES_DBG_INIT, "Did not see full soft reset done.\n");
+ 			return 0;
+ 		}
 +
-+			if (base->first == &timer->node &&
-+			    hrtimer_reprogram(timer, base)) {
-+				/*
-+				 * Timer is expired. Thus move it from tree to
-+				 * pending list again.
-+				 */
-+				__remove_hrtimer(timer, base,
-+						 HRTIMER_STATE_PENDING, 0);
-+				list_add_tail(&timer->cb_entry,
-+					      &base->cpu_base->cb_pending);
-+			}
++		i = 0;
++		while ((nes_read_indexed(nesdev, NES_IDX_INT_CPU_STATUS) != 0x80) && i++ < 10000)
++			mdelay(1);
++		if (i >= 10000) {
++			printk(KERN_ERR PFX "Internal CPU not ready, status = %02X\n",
++			       nes_read_indexed(nesdev, NES_IDX_INT_CPU_STATUS));
++			return 0;
++		}
+ 	}
+ 
+ 	/* port reset */
+@@ -673,17 +682,6 @@ unsigned int nes_reset_adapter_ne020(str
  		}
  	}
- 	spin_unlock_irq(&cpu_base->lock);
+ 
+-
+-
+-	i = 0;
+-	while ((nes_read_indexed(nesdev, NES_IDX_INT_CPU_STATUS) != 0x80) && i++ < 10000)
+-		mdelay(1);
+-	if (i >= 10000) {
+-		printk(KERN_ERR PFX "Internal CPU not ready, status = %02X\n",
+-				nes_read_indexed(nesdev, NES_IDX_INT_CPU_STATUS));
+-		return 0;
+-	}
+-
+ 	return port_count;
+ }
+ 
 
 -- 
