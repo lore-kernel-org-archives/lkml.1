@@ -1,350 +1,159 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757420AbYD2XSg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758260AbYD2XUt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757420AbYD2XSg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 19:18:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753905AbYD2XSX
+	id S1758260AbYD2XUt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 19:20:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754654AbYD2XUk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 19:18:23 -0400
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:55032 "EHLO e5.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753681AbYD2XSV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 19:18:21 -0400
-Date: Tue, 29 Apr 2008 18:18:19 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Benjamin Thery <benjamin.thery@bull.net>, linux-kernel@vger.kernel.org,
-       Tejun Heo <htejun@gmail.com>, Greg Kroah-Hartman <gregkh@suse.de>,
-       Daniel Lezcano <dlezcano@fr.ibm.com>,
-       "Serge E. Hallyn" <serue@us.ibm.com>,
-       Pavel Emelyanov <xemul@openvz.org>, netdev@vger.kernel.org
-Subject: Re: [PATCH 10/10] sysfs: user namespaces: add ns to user_struct
-Message-ID: <20080429231819.GA27705@sergelap.austin.ibm.com>
-References: <20080429171015.473938697@theryb.frec.bull.fr> <20080429171703.529721456@theryb.frec.bull.fr> <m17ieg1ltq.fsf@frodo.ebiederm.org>
+	Tue, 29 Apr 2008 19:20:40 -0400
+Received: from g4t0015.houston.hp.com ([15.201.24.18]:40926 "EHLO
+	g4t0015.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754021AbYD2XUi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Apr 2008 19:20:38 -0400
+Date: Tue, 29 Apr 2008 17:20:37 -0600
+From: Alex Chiang <achiang@hp.com>
+To: "Luck, Tony" <tony.luck@intel.com>
+Cc: lenb@kernel.org, linux-ia64@vger.kernel.org, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] ia64: Provide ACPI fixup for
+	/proc/cpuinfo/physical_id
+Message-ID: <20080429232037.GA3820@ldl.fc.hp.com>
+Mail-Followup-To: Alex Chiang <achiang@hp.com>,
+	"Luck, Tony" <tony.luck@intel.com>, lenb@kernel.org,
+	linux-ia64@vger.kernel.org, linux-acpi@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+References: <20080310222735.GA22619@ldl.fc.hp.com> <1FE6DD409037234FAB833C420AA843ECCBFA9D@orsmsx424.amr.corp.intel.com> <20080319233140.GD16237@ldl.fc.hp.com> <1FE6DD409037234FAB833C420AA843ECE13C6E@orsmsx424.amr.corp.intel.com> <20080326185912.GA30749@ldl.fc.hp.com> <20080421052450.GA24055@ldl.fc.hp.com> <1FE6DD409037234FAB833C420AA843EC012664E0@orsmsx424.amr.corp.intel.com> <20080424184417.GA32553@ldl.fc.hp.com> <20080424185222.GC32553@ldl.fc.hp.com> <1FE6DD409037234FAB833C420AA843EC0138200C@orsmsx424.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <m17ieg1ltq.fsf@frodo.ebiederm.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <1FE6DD409037234FAB833C420AA843EC0138200C@orsmsx424.amr.corp.intel.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Eric W. Biederman (ebiederm@xmission.com):
-> Benjamin Thery <benjamin.thery@bull.net> writes:
+Hi Tony,
+
+* Luck, Tony <tony.luck@intel.com>:
+> Alex,
 > 
-> > Add the user_namespace to user_struct.
-> >
-> > Add a user_namespace to the sysfs_tag struct.
-> >
-> > Mark the /sys/kernel/uids directory to be tagged so that processes in
-> > different user namespaces can remount /sys and see their own uid
-> > listings.
-> >
-> > Without this patch, having CONFIG_FAIR_SCHED=y makes user namespaces
-> > unusable, because when you
-> >   clone(CLONE_NEWUSER)
-> > it will auto-create the root userid and try to create
-> > /sys/kernel/uids/0.  Since that already exists from the parent user
-> > namespace, the create fails, and the clone misleadingly ends up
-> > returning -ENOMEM.
-> >
-> > This patch fixes the issue by allowing each user namespace to remount
-> > /sys, and having /sys filter the /sys/kernel/uid/ entries by user
-> > namespace.
+> I chewed on this a bit ... 
+
+Thanks for all the fixups -- your version looks a lot nicer!
+
+> diff --git a/include/asm-x86/topology.h b/include/asm-x86/topology.h
+> +#define arch_fix_phys_package_id(num, slot)
 > 
-> There is a lot of promising code in this patch.  This patch appears to
-> be building up a lot of userns infrastructure that is only indirectly
-> related to sysfs, and it still appears to have some debugging code
-> present.  
+> Style preference is to now use a "static inline void" function for
+> this to make sure args are correctly typed, and to avoid warnings about
+> unused variables.
 
-Good point.
+*nod*
 
-I left in more cruft than I thought I had.  Really the k_uid_t
-shouldn't be there at all.  But to have any fix at all I do need the
-user_namespace in the user_struct.  So unless you're ok with putting
-that in explicitly for now, then until we decide how to handle the
-user_struct being in multiple namespaces, the fix will have to wait.
+I'll use that convention in the future, thanks.
 
-> As a proof of concept patch (which I asked for) this looks good.
+> updated version of the patch looks like this ... ok???
+
+Looks great to me.
+
+/ac
+
 > 
-> I do think this patch should get split into logical changes
-> and cleaned up a bit before it gets merged into mainline.
-
-Agreed.  I didn't pull out enough for the simple sysfs fix.
-
-> More comments inline below.
+> -Tony
 > 
-> Eric
+> commit fe086a7bea7ab714930bd48addba961ceeef7634
+> Author: Alex Chiang <achiang@hp.com>
+> Date:   Tue Apr 29 15:05:29 2008 -0700
 > 
-> > Index: linux-mm/fs/sysfs/mount.c
-> > ===================================================================
-> > --- linux-mm.orig/fs/sysfs/mount.c
-> > +++ linux-mm/fs/sysfs/mount.c
-> > @@ -17,6 +17,7 @@
-> >  #include <linux/pagemap.h>
-> >  #include <linux/init.h>
-> >  #include <linux/nsproxy.h>
-> > +#include <linux/user_namespace.h>
-> >  #include <net/net_namespace.h>
-> >  
-> >  #include "sysfs.h"
-> > @@ -81,6 +82,7 @@ static int sysfs_fill_super(struct super
-> >  	sb->s_root = root;
-> >  	sb->s_fs_info = info;
-> >  	info->tag.net_ns = hold_net(current->nsproxy->net_ns);
-> > +	info->tag.user_ns = current->nsproxy->user_ns;
-> >  	return 0;
-> >  
-> >  out_err:
-> > @@ -100,6 +102,8 @@ static int sysfs_test_super(struct super
-> >  
-> >  	if (task->nsproxy->net_ns != info->tag.net_ns)
-> >  		found = 0;
-> > +	if (task->nsproxy->user_ns != info->tag.user_ns)
-> > +		found = 0;
-> >  
-> >  	return found;
-> >  }
-> > @@ -214,6 +218,27 @@ static struct pernet_operations sysfs_ne
-> >  };
-> >  #endif
-> >  
-> > +#ifdef CONFIG_USER_NS
-> > +void sysfs_userns_exit(struct user_namespace *user_ns)
-> > +{
-> > +	/* Allow the net namespace to go away while sysfs is still mounted. */
-> > +	struct super_block *sb;
-> > +	printk(KERN_NOTICE "sysfs: user namespace exiting\n");
-> Debugging?
-
-Yes, sorry.
-
-> > +	mutex_lock(&sysfs_rename_mutex);
-> > +	sysfs_grab_supers();
-> > +	mutex_lock(&sysfs_mutex);
-> > +	list_for_each_entry(sb, &sysfs_fs_type.fs_supers, s_instances) {
-> > +		struct sysfs_super_info *info = sysfs_info(sb);
-> > +		if (info->tag.user_ns != user_ns)
-> > +			continue;
-> > +		info->tag.user_ns = NULL;
-> > +	}
-> > +	mutex_unlock(&sysfs_mutex);
-> > +	sysfs_release_supers();
-> > +	mutex_unlock(&sysfs_rename_mutex);
-> > +}
-> > +#endif
-> > +
-> >  int __init sysfs_init(void)
-> >  {
-> >  	int err = -ENOMEM;
-> > Index: linux-mm/include/linux/sched.h
-> > ===================================================================
-> > --- linux-mm.orig/include/linux/sched.h
-> > +++ linux-mm/include/linux/sched.h
-> > @@ -598,7 +598,7 @@ struct user_struct {
-> >  
-> >  	/* Hash table maintenance information */
-> >  	struct hlist_node uidhash_node;
-> > -	uid_t uid;
-> > +	struct k_uid_t uid;
+>     [IA64] Provide ACPI fixup for /proc/cpuinfo/physical_id
+>     
+>     Legacy HP ia64 platforms currently cannot provide
+>     /proc/cpuinfo/physical_id due to legacy SAL/PAL implementations.
+>     However, that physical topology information can be obtained
+>     via ACPI.
+>     
+>     Provide an interface that gives ACPI one last chance to provide
+>     physical_id for these legacy platforms. This logic only comes
+>     into play iff:
+>     
+>     - ACPI actually provides slot information for the CPU
+>     - we lack a valid socket_id
+>     
+>     Otherwise, we don't do anything.
+>     
+>     Since x86 uses the ACPI processor driver as well, we provide a nop
+>     stub function for arch_fix_phys_package_id() in asm-x86/topology.h
+>     
+>     Signed-off-by: Alex Chiang <achiang@hp.com>
+>     Signed-off-by: Tony Luck <tony.luck@intel.com>
 > 
-> If we are going to go this direction my inclination
-> is to include an array of a single element in user_struct.
+> diff --git a/arch/ia64/kernel/topology.c b/arch/ia64/kernel/topology.c
+> index a2484fc..abb17a6 100644
+> --- a/arch/ia64/kernel/topology.c
+> +++ b/arch/ia64/kernel/topology.c
+> @@ -27,6 +27,15 @@
+>  
+>  static struct ia64_cpu *sysfs_cpus;
+>  
+> +void arch_fix_phys_package_id(int num, u32 slot)
+> +{
+> +#ifdef CONFIG_SMP
+> +	if (cpu_data(num)->socket_id == -1)
+> +		cpu_data(num)->socket_id = slot;
+> +#endif
+> +}
+> +EXPORT_SYMBOL_GPL(arch_fix_phys_package_id);
+> +
+>  int arch_register_cpu(int num)
+>  {
+>  #if defined (CONFIG_ACPI) && defined (CONFIG_HOTPLUG_CPU)
+> diff --git a/drivers/acpi/processor_core.c b/drivers/acpi/processor_core.c
+> index dd28c91..5241e3f 100644
+> --- a/drivers/acpi/processor_core.c
+> +++ b/drivers/acpi/processor_core.c
+> @@ -603,6 +603,15 @@ static int acpi_processor_get_info(struct acpi_processor *pr, unsigned has_uid)
+>  		request_region(pr->throttling.address, 6, "ACPI CPU throttle");
+>  	}
+>  
+> +	/*
+> +	 * If ACPI describes a slot number for this CPU, we can use it
+> +	 * ensure we get the right value in the "physical id" field
+> +	 * of /proc/cpuinfo
+> +	 */
+> +	status = acpi_evaluate_object(pr->handle, "_SUN", NULL, &buffer);
+> +	if (ACPI_SUCCESS(status))
+> +		arch_fix_phys_package_id(pr->id, object.integer.value);
+> +
+>  	return 0;
+>  }
+>  
+> diff --git a/include/asm-ia64/topology.h b/include/asm-ia64/topology.h
+> index f2f72ef..32863b3 100644
+> --- a/include/asm-ia64/topology.h
+> +++ b/include/asm-ia64/topology.h
+> @@ -116,6 +116,8 @@ void build_cpu_to_node_map(void);
+>  #define smt_capable() 				(smp_num_siblings > 1)
+>  #endif
+>  
+> +extern void arch_fix_phys_package_id(int num, u32 slot);
+> +
+>  #define pcibus_to_cpumask(bus)	(pcibus_to_node(bus) == -1 ? \
+>  					CPU_MASK_ALL : \
+>  					node_to_cpumask(pcibus_to_node(bus)) \
+> diff --git a/include/asm-x86/topology.h b/include/asm-x86/topology.h
+> index 0e6d6b0..4f35a0f 100644
+> --- a/include/asm-x86/topology.h
+> +++ b/include/asm-x86/topology.h
+> @@ -193,6 +193,10 @@ extern cpumask_t cpu_coregroup_map(int cpu);
+>  #define topology_thread_siblings(cpu)		(per_cpu(cpu_sibling_map, cpu))
+>  #endif
+>  
+> +static inline void arch_fix_phys_package_id(int num, u32 slot)
+> +{
+> +}
+> +
+>  struct pci_bus;
+>  void set_pci_bus_resources_arch_default(struct pci_bus *b);
+>  
 > 
-> Maybe that makes sense.  I just know we need to talk about
-> how a user maps into different user namespaces.  As that
-
-My thought had been that a task belongs to several user_structs, but
-each user_struct belongs to just one user namespace.  Maybe as you
-suggest that's not the right way to go.
-
-But are you ok with just sticking a user_namespace * in here for now,
-and making it clear that the user_struct-user_namespace relation is yet
-to be defined?
-
-If not that's fine, we just won't be able to clone(CLONE_NEWUSER)
-until we get the relationship straightened out.
-
-> is a real concept that really occurs in real filesystems
-> like nfsv4 and p9fs, and having infrastructure that can
-> deal with the concept (even if it doesn't support it yet) would be
-> useful.
-
-I'll have to look at 9p, bc right now I don't know what you're talking
-about.  Then I'll move to the containers list to discuss what the
-user_struct should look like.
-
-Thanks for taking a look.
-
--serge
-
-> >  #endif /* _SYSFS_H_ */
-> > Index: linux-mm/include/linux/types.h
-> > ===================================================================
-> > --- linux-mm.orig/include/linux/types.h
-> > +++ linux-mm/include/linux/types.h
-> > @@ -37,6 +37,11 @@ typedef __kernel_gid32_t	gid_t;
-> >  typedef __kernel_uid16_t        uid16_t;
-> >  typedef __kernel_gid16_t        gid16_t;
-> >  
-> > +struct k_uid_t {
-> > +	uid_t uid;
-> > +	struct user_namespace *ns;
-> > +};
 > 
-> Weird a _t suffix in a structure name.  Usually _t indicates
-> that something is a typedef.
-> 
-> > +
-> >  typedef unsigned long		uintptr_t;
-> >  
-> >  #ifdef CONFIG_UID16
-> > Index: linux-mm/include/linux/user_namespace.h
-> > ===================================================================
-> > --- linux-mm.orig/include/linux/user_namespace.h
-> > +++ linux-mm/include/linux/user_namespace.h
-> > @@ -12,10 +12,15 @@
-> >  struct user_namespace {
-> >  	struct kref		kref;
-> >  	struct hlist_head	uidhash_table[UIDHASH_SZ];
-> > +	struct kset		*kset;
-> >  	struct user_struct	*root_user;
-> >  };
-> >  
-> >  extern struct user_namespace init_user_ns;
-> > +extern int register_user_ns_kobj(struct user_namespace *ns);
-> > +extern void unregister_user_ns_kobj(struct user_namespace *ns);
-> > +extern int register_user_ns_kobj(struct user_namespace *ns);
-> > +extern void unregister_user_ns_kobj(struct user_namespace *ns);
-> >  
-> >  #ifdef CONFIG_USER_NS
-> >  
-> > Index: linux-mm/kernel/user.c
-> > ===================================================================
-> > --- linux-mm.orig/kernel/user.c
-> > +++ linux-mm/kernel/user.c
-> > @@ -53,6 +53,10 @@ struct user_struct root_user = {
-> >  	.files		= ATOMIC_INIT(0),
-> >  	.sigpending	= ATOMIC_INIT(0),
-> >  	.locked_shm     = 0,
-> > +	.uid		= {
-> > +		.uid = 0,
-> > +		.ns = &init_user_ns,
-> > +	},
-> >  #ifdef CONFIG_USER_SCHED
-> >  	.tg		= &init_task_group,
-> >  #endif
-> > @@ -71,13 +75,23 @@ static void uid_hash_remove(struct user_
-> >  	hlist_del_init(&up->uidhash_node);
-> >  }
-> >  
-> > -static struct user_struct *uid_hash_find(uid_t uid, struct hlist_head *hashent)
-> > +int task_user_equiv(struct task_struct *tsk, struct user_struct *u)
-> > +{
-> > +	if (tsk->uid != u->uid.uid)
-> > +		return 0;
-> > +	if (tsk->nsproxy->user_ns != u->uid.ns)
-> > +		return 0;
-> > +	return 1;
-> > +}
-> > +
-> > +static struct user_struct *uid_hash_find(uid_t uid,
-> > +				struct hlist_head *hashent)
-> >  {
-> >  	struct user_struct *user;
-> >  	struct hlist_node *h;
-> >  
-> >  	hlist_for_each_entry(user, h, hashent, uidhash_node) {
-> > -		if (user->uid == uid) {
-> > +		if (user->uid.uid == uid) {
-> >  			atomic_inc(&user->__count);
-> >  			return user;
-> >  		}
-> > @@ -236,6 +250,23 @@ static void uids_release(struct kobject 
-> >  	return;
-> >  }
-> >  
-> > +static const void *userns_sb_tag(struct sysfs_tag_info *info)
-> > +{
-> > +       return info->user_ns;
-> > +}
-> > +
-> > +static const void *userns_kobject_tag(struct kobject *kobj)
-> > +{
-> > +       struct user_struct *up;
-> > +       up = container_of(kobj, struct user_struct, kobj);
-> > +       return up->uid.ns;
-> > +}
-> > +
-> > +static struct sysfs_tagged_dir_operations userns_tagged_dir_operations = {
-> > +       .sb_tag = userns_sb_tag,
-> > +       .kobject_tag = userns_kobject_tag,
-> > +};
-> > +
-> >  static struct kobj_type uids_ktype = {
-> >  	.sysfs_ops = &kobj_sysfs_ops,
-> >  	.default_attrs = uids_attributes,
-> > @@ -246,19 +277,19 @@ static struct kobj_type uids_ktype = {
-> >  static int uids_user_create(struct user_struct *up)
-> >  {
-> >  	struct kobject *kobj = &up->kobj;
-> > -	int error;
-> > +	int err;
-> >  
-> >  	memset(kobj, 0, sizeof(struct kobject));
-> >  	kobj->kset = uids_kset;
-> > -	error = kobject_init_and_add(kobj, &uids_ktype, NULL, "%d", up->uid);
-> > -	if (error) {
-> > +	err = kobject_init_and_add(kobj, &uids_ktype, NULL, "%d", up->uid.uid);
-> > +	if (err) {
-> >  		kobject_put(kobj);
-> >  		goto done;
-> >  	}
-> >  
-> >  	kobject_uevent(kobj, KOBJ_ADD);
-> >  done:
-> > -	return error;
-> > +	return err;
-> >  }
-> >  
-> >  /* create these entries in sysfs:
-> > @@ -271,7 +302,7 @@ int __init uids_sysfs_init(void)
-> >  	uids_kset = kset_create_and_add("uids", NULL, kernel_kobj);
-> >  	if (!uids_kset)
-> >  		return -ENOMEM;
-> > -
-> > +	sysfs_enable_tagging(&uids_kset->kobj, &userns_tagged_dir_operations);
-> >  	return uids_user_create(&root_user);
-> >  }
-> >  
-> > @@ -403,7 +434,8 @@ struct user_struct *alloc_uid(struct use
-> >  		if (!new)
-> >  			goto out_unlock;
-> >  
-> > -		new->uid = uid;
-> > +		new->uid.uid = uid;
-> > +		new->uid.ns = ns;
-> >  		atomic_set(&new->__count, 1);
-> >  
-> >  		if (sched_create_user(new) < 0)
-> > Index: linux-mm/kernel/user_namespace.c
-> > ===================================================================
-> > --- linux-mm.orig/kernel/user_namespace.c
-> > +++ linux-mm/kernel/user_namespace.c
-> > @@ -22,7 +22,7 @@ static struct user_namespace *clone_user
-> >  	struct user_struct *new_user;
-> >  	int n;
-> >  
-> > -	ns = kmalloc(sizeof(struct user_namespace), GFP_KERNEL);
-> > +	ns = kzalloc(sizeof(struct user_namespace), GFP_KERNEL);
-> >  	if (!ns)
-> >  		return ERR_PTR(-ENOMEM);
-> >  
-> > @@ -71,6 +71,7 @@ void free_user_ns(struct kref *kref)
-> >  	struct user_namespace *ns;
-> >  
-> >  	ns = container_of(kref, struct user_namespace, kref);
-> > +	sysfs_userns_exit(ns);
-> >  	release_uids(ns);
-> >  	kfree(ns);
-> >  }
