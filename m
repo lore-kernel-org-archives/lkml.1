@@ -1,58 +1,222 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762841AbYD2Ncr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763380AbYD2NeV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762841AbYD2Ncr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 09:32:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755124AbYD2Ncj
+	id S1763380AbYD2NeV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 09:34:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754553AbYD2NeO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 09:32:39 -0400
-Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:37984
-	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753290AbYD2Nci (ORCPT
+	Tue, 29 Apr 2008 09:34:14 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:51456 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751613AbYD2NeN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 09:32:38 -0400
-Date: Tue, 29 Apr 2008 15:32:35 +0200
-From: Andrea Arcangeli <andrea@qumranet.com>
-To: Hugh Dickins <hugh@veritas.com>
-Cc: Christoph Lameter <clameter@sgi.com>, Robin Holt <holt@sgi.com>,
-       Jack Steiner <steiner@sgi.com>, Nick Piggin <npiggin@suse.de>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       kvm-devel@lists.sourceforge.net, Kanoj Sarcar <kanojsarcar@yahoo.com>,
-       Roland Dreier <rdreier@cisco.com>,
-       Steve Wise <swise@opengridcomputing.com>, linux-kernel@vger.kernel.org,
-       Avi Kivity <avi@qumranet.com>, linux-mm@kvack.org,
-       general@lists.openfabrics.org, akpm@linux-foundation.org,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [PATCH 01 of 12] Core of mmu notifiers
-Message-ID: <20080429133235.GC8315@duo.random>
-References: <20080423221928.GV24536@duo.random> <20080424064753.GH24536@duo.random> <20080424095112.GC30298@sgi.com> <20080424153943.GJ24536@duo.random> <20080424174145.GM24536@duo.random> <20080426131734.GB19717@sgi.com> <20080427122727.GO9514@duo.random> <Pine.LNX.4.64.0804281332030.31163@schroedinger.engr.sgi.com> <20080429001052.GA8315@duo.random> <Pine.LNX.4.64.0804291128330.12702@blonde.site>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0804291128330.12702@blonde.site>
+	Tue, 29 Apr 2008 09:34:13 -0400
+Date: Tue, 29 Apr 2008 14:26:11 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: akpm@osdl.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] tty: Add throttle/unthrottle helpers
+Message-ID: <20080429142611.5aafcfce@core>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Hugh!!
+Something Arjan suggested which allows us to clean up the code nicely
 
-On Tue, Apr 29, 2008 at 11:49:11AM +0100, Hugh Dickins wrote:
-> [I'm scarcely following the mmu notifiers to-and-fro, which seems
-> to be in good hands, amongst faster thinkers than me: who actually
-> need and can test this stuff.  Don't let me slow you down; but I
-> can quickly clarify on this history.]
+Signed-off-by: Alan Cox <alan@redhat.com>
 
-Still I think it'd be great if you could review mmu-notifier-core v14.
-You and Nick are the core VM maintainers so it'd be great to hear any
-feedback about it. I think it's fairly easy to classify the patch as
-obviously safe as long as mmu notifiers are disarmed. Here a link for
-your convenience.
-
-http://www.kernel.org/pub/linux/kernel/people/andrea/patches/v2.6/2.6.25/mmu-notifier-v14/mmu-notifier-core
-
-> No, the locking was different as you had it, Andrea: there was an extra
-> bitspin lock, carried over from the pte_chains days (maybe we changed
-> the name, maybe we disagreed over the name, I forget), which mainly
-> guarded the page->mapcount.  I thought that was one lock more than we
-> needed, and eliminated it in favour of atomic page->mapcount in 2.6.9.
-
-Thanks a lot for the explanation!
+diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.25-mm1/drivers/char/tty_ioctl.c linux-2.6.25-mm1/drivers/char/tty_ioctl.c
+--- linux.vanilla-2.6.25-mm1/drivers/char/tty_ioctl.c	2008-04-28 11:36:48.000000000 +0100
++++ linux-2.6.25-mm1/drivers/char/tty_ioctl.c	2008-04-14 14:27:41.000000000 +0100
+@@ -67,6 +67,24 @@
+ 
+ EXPORT_SYMBOL(tty_driver_flush_buffer);
+ 
++void tty_throttle(struct tty_struct *tty)
++{
++	/* check TTY_THROTTLED first so it indicates our state */
++	if (!test_and_set_bit(TTY_THROTTLED, &tty->flags) &&
++	    tty->ops->throttle)
++		tty->ops->throttle(tty);
++}
++
++EXPORT_SYMBOL(tty_throttle);
++
++void tty_unthrottle(struct tty_struct *tty)
++{
++	if (test_and_clear_bit(TTY_THROTTLED, &tty->flags) &&
++	    tty->ops->unthrottle)
++		tty->ops->unthrottle(tty);
++}
++
++EXPORT_SYMBOL(tty_unthrottle);
+ 
+ /**
+  *	tty_wait_until_sent	-	wait for I/O to finish
+diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.25-mm1/include/linux/tty_driver.h linux-2.6.25-mm1/include/linux/tty_driver.h
+--- linux.vanilla-2.6.25-mm1/include/linux/tty_driver.h	2008-04-28 11:36:52.000000000 +0100
++++ linux-2.6.25-mm1/include/linux/tty_driver.h	2008-04-14 14:27:30.000000000 +0100
+@@ -83,10 +83,10 @@
+  * void (*set_termios)(struct tty_struct *tty, struct ktermios * old);
+  *
+  * 	This routine allows the tty driver to be notified when
+- * 	device's termios settings have changed.
++ * 	device's termios settings have changed.
+  *
+  *	Optional: Called under the termios lock
+  *
+  *
+  * void (*set_ldisc)(struct tty_struct *tty);
+  *
+@@ -100,6 +100,8 @@
+  * 	This routine notifies the tty driver that input buffers for
+  * 	the line discipline are close to full, and it should somehow
+  * 	signal that no more characters should be sent to the tty.
++ *
++ *	Optional: Always invoke via tty_throttle();
+  * 
+  * void (*unthrottle)(struct tty_struct * tty);
+  *
+@@ -107,12 +109,14 @@
+  * 	that characters can now be sent to the tty without fear of
+  * 	overrunning the input buffers of the line disciplines.
+  * 
++ *	Optional: Always invoke via tty_unthrottle();
++ *
+  * void (*stop)(struct tty_struct *tty);
+  *
+  * 	This routine notifies the tty driver that it should stop
+  * 	outputting characters to the tty device.  
+  *
+- *	Optional:
++ *	Optional: 
+  *
+  *	Note: Call stop_tty not this method.
+  * 
+@@ -141,7 +145,7 @@
+  *
+  * 	If this routine is implemented, the high-level tty driver will
+  * 	handle the following ioctls: TCSBRK, TCSBRKP, TIOCSBRK,
+- * 	TIOCCBRK.
++ * 	TIOCCBRK. 
+  *
+  *	Optional: Required for TCSBRK/BRKP/etc handling.
+  *
+diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.25-mm1/include/linux/tty.h linux-2.6.25-mm1/include/linux/tty.h
+--- linux.vanilla-2.6.25-mm1/include/linux/tty.h	2008-04-28 11:36:52.000000000 +0100
++++ linux-2.6.25-mm1/include/linux/tty.h	2008-04-28 12:26:36.000000000 +0100
+@@ -303,6 +321,8 @@
+ extern int tty_chars_in_buffer(struct tty_struct *tty);
+ extern int tty_write_room(struct tty_struct *tty);
+ extern void tty_driver_flush_buffer(struct tty_struct *tty);
++extern void tty_throttle(struct tty_struct *tty);
++extern void tty_unthrottle(struct tty_struct *tty);
+ 
+ extern int is_current_pgrp_orphaned(void);
+ extern struct pid *tty_get_pgrp(struct tty_struct *tty);
+diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.25-mm1/drivers/bluetooth/hci_ldisc.c linux-2.6.25-mm1/drivers/bluetooth/hci_ldisc.c
+--- linux.vanilla-2.6.25-mm1/drivers/bluetooth/hci_ldisc.c	2008-04-28 11:36:48.000000000 +0100
++++ linux-2.6.25-mm1/drivers/bluetooth/hci_ldisc.c	2008-04-28 11:43:39.000000000 +0100
+@@ -370,9 +370,7 @@
+ 	hu->hdev->stat.byte_rx += count;
+ 	spin_unlock(&hu->rx_lock);
+ 
+-	if (test_and_clear_bit(TTY_THROTTLED, &tty->flags) &&
+-					tty->ops->unthrottle)
+-		tty->ops->unthrottle(tty);
++	tty_unthrottle(tty);
+ }
+ 
+ static int hci_uart_register_dev(struct hci_uart *hu)
+diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.25-mm1/drivers/char/n_tty.c linux-2.6.25-mm1/drivers/char/n_tty.c
+--- linux.vanilla-2.6.25-mm1/drivers/char/n_tty.c	2008-04-28 11:36:48.000000000 +0100
++++ linux-2.6.25-mm1/drivers/char/n_tty.c	2008-04-14 14:26:29.000000000 +0100
+@@ -147,10 +147,8 @@
+ 
+ static void check_unthrottle(struct tty_struct *tty)
+ {
+-	if (tty->count &&
+-	    test_and_clear_bit(TTY_THROTTLED, &tty->flags) &&
+-	    tty->ops->unthrottle)
+-		tty->ops->unthrottle(tty);
++	if (tty->count)
++		tty_unthrottle(tty);
+ }
+ 
+ /**
+@@ -982,12 +980,8 @@
+ 	 * mode.  We don't want to throttle the driver if we're in
+ 	 * canonical mode and don't have a newline yet!
+ 	 */
+-	if (tty->receive_room < TTY_THRESHOLD_THROTTLE) {
+-		/* check TTY_THROTTLED first so it indicates our state */
+-		if (!test_and_set_bit(TTY_THROTTLED, &tty->flags) &&
+-		    tty->ops->throttle)
+-			tty->ops->throttle(tty);
+-	}
++	if (tty->receive_room < TTY_THRESHOLD_THROTTLE)
++		tty_throttle(tty);
+ }
+ 
+ int is_ignored(int sig)
+diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.25-mm1/drivers/net/hamradio/6pack.c linux-2.6.25-mm1/drivers/net/hamradio/6pack.c
+--- linux.vanilla-2.6.25-mm1/drivers/net/hamradio/6pack.c	2008-04-28 11:36:49.000000000 +0100
++++ linux-2.6.25-mm1/drivers/net/hamradio/6pack.c	2008-04-14 14:29:14.000000000 +0100
+@@ -491,9 +491,7 @@
+ 	sixpack_decode(sp, buf, count1);
+ 
+ 	sp_put(sp);
+-	if (test_and_clear_bit(TTY_THROTTLED, &tty->flags)
+-	    && tty->ops->unthrottle)
+-		tty->ops->unthrottle(tty);
++	tty_unthrottle(tty);
+ }
+ 
+ /*
+diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.25-mm1/drivers/net/hamradio/mkiss.c linux-2.6.25-mm1/drivers/net/hamradio/mkiss.c
+--- linux.vanilla-2.6.25-mm1/drivers/net/hamradio/mkiss.c	2008-04-28 11:36:49.000000000 +0100
++++ linux-2.6.25-mm1/drivers/net/hamradio/mkiss.c	2008-04-14 14:29:29.000000000 +0100
+@@ -936,9 +936,7 @@
+ 	}
+ 
+ 	mkiss_put(ax);
+-	if (test_and_clear_bit(TTY_THROTTLED, &tty->flags)
+-	    && tty->ops->unthrottle)
+-		tty->ops->unthrottle(tty);
++	tty_unthrottle(tty);
+ }
+ 
+ /*
+diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.25-mm1/drivers/net/ppp_async.c linux-2.6.25-mm1/drivers/net/ppp_async.c
+--- linux.vanilla-2.6.25-mm1/drivers/net/ppp_async.c	2008-04-28 11:36:49.000000000 +0100
++++ linux-2.6.25-mm1/drivers/net/ppp_async.c	2008-04-14 14:28:29.000000000 +0100
+@@ -361,9 +361,7 @@
+ 	if (!skb_queue_empty(&ap->rqueue))
+ 		tasklet_schedule(&ap->tsk);
+ 	ap_put(ap);
+-	if (test_and_clear_bit(TTY_THROTTLED, &tty->flags)
+-	    && tty->ops->unthrottle)
+-		tty->ops->unthrottle(tty);
++	tty_unthrottle(tty);
+ }
+ 
+ static void
+diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.25-mm1/drivers/net/ppp_synctty.c linux-2.6.25-mm1/drivers/net/ppp_synctty.c
+--- linux.vanilla-2.6.25-mm1/drivers/net/ppp_synctty.c	2008-04-28 11:36:49.000000000 +0100
++++ linux-2.6.25-mm1/drivers/net/ppp_synctty.c	2008-04-14 14:28:46.000000000 +0100
+@@ -401,9 +401,7 @@
+ 	if (!skb_queue_empty(&ap->rqueue))
+ 		tasklet_schedule(&ap->tsk);
+ 	sp_put(ap);
+-	if (test_and_clear_bit(TTY_THROTTLED, &tty->flags)
+-	    && tty->ops->unthrottle)
+-		tty->ops->unthrottle(tty);
++	tty_unthrottle(tty);
+ }
+ 
+ static void
