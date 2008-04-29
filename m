@@ -1,60 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757169AbYD2Dmp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758070AbYD2DnU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757169AbYD2Dmp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 23:42:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751984AbYD2Dmh
+	id S1758070AbYD2DnU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 23:43:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752155AbYD2DnI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 23:42:37 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:42410 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751096AbYD2Dmg (ORCPT
+	Mon, 28 Apr 2008 23:43:08 -0400
+Received: from yw-out-2324.google.com ([74.125.46.30]:37864 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751384AbYD2DnG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 23:42:36 -0400
-Date: Mon, 28 Apr 2008 20:42:19 -0700
-From: Greg KH <greg@kroah.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: David Brownell <david-b@pacbell.net>, lkml <linux-kernel@vger.kernel.org>,
-       Trent Piepho <tpiepho@freescale.com>,
-       hartleys <hartleys@visionengravers.com>,
-       Ben Nizette <bn@niasdigital.com>, Mike Frysinger <vapier.adi@gmail.com>,
-       Bryan Wu <cooloney@kernel.org>
-Subject: Re: [patch/rfc 2.6.25-git] gpio: sysfs interface
-Message-ID: <20080429034219.GA1413@kroah.com>
-References: <200804281239.51729.david-b@pacbell.net> <20080428134649.44cf239c.akpm@linux-foundation.org> <200804281628.14004.david-b@pacbell.net> <20080428195455.6e07cb8d.akpm@linux-foundation.org>
+	Mon, 28 Apr 2008 23:43:06 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition:x-google-sender-auth;
+        b=CGgtxhHfMjIKPSSjtbT9HCo5cL5eyT7Dt2oIuLh4RYCaJZ6NNbBadtlP2B4cnlQKqynr/A6MXK0OUeV2RmoB1e2RQOlytx5F7BUhJk2OvfVjjVENPj0X4ZR8BHJP3zPe6kfB0852d/+V6Fy4dOUgai8rdl6B89O3ibf3H26dP2A=
+Message-ID: <386072610804282042y2dda4b52h927683a8a938ce1f@mail.gmail.com>
+Date: Tue, 29 Apr 2008 11:42:48 +0800
+From: "Bryan Wu" <cooloney@kernel.org>
+To: LKML <linux-kernel@vger.kernel.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>, willy@debian.org,
+       "Al Viro" <viro@zeniv.linux.org.uk>,
+       uclinux-dist-devel <uclinux-dist-devel@blackfin.uclinux.org>
+Subject: [LTP/VFS] fcntl SETLEASE fails on ramfs/tmpfs
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080428195455.6e07cb8d.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+X-Google-Sender-Auth: 00885543cdaa4f85
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 28, 2008 at 07:54:55PM -0700, Andrew Morton wrote:
-> On Mon, 28 Apr 2008 16:28:13 -0700 David Brownell <david-b@pacbell.net> wrote:
-> 
-> > > If we had a strcmp() variant which treats a \n in the first arg as a \0
-> > > the above would become
-> > > 
-> > > 	if (sysfs_streq(buf, "high"))
-> > > 		status = gpio_direction_output(gpio, 1);
-> > > 	else if (sysfs_streq(buf, "out") || sysfs_streq(buf, "low"))
-> > > 		status = gpio_direction_output(gpio, 0);
-> > > 	else if (sysfs_streq(buf, "in"))
-> > > 		status = gpio_direction_input(gpio);
-> > 
-> > That would indeed be better.  Maybe I should whip up a sysfs
-> > patch adding that, and have this depend on that patch.  (I've
-> > CC'd Greg in case he has comments on that...)
-> 
-> Yes, it would be a standalone patch.  The sort which generates oceans of
-> useful feedback ;) The sort which also generates hundreds of
-> use-new-toy-to-clean-up-old-code patches for me to merge :(
+Hi folk,
 
-Heh, sounds good to me :)
+This days I am digging into this LTP bug reported on our Blackfin test
+machine, but I think it is general for other system.
+https://blackfin.uclinux.org/gf/project/uclinux-dist/tracker/?action=TrackerItemEdit&tracker_id=141&tracker_item_id=3743
 
-Becides, with linux-next, that merge mess is my problem now, not -mm...
+And I also found Kumar Gala reported this similar bug before.
+http://lkml.org/lkml/2007/11/14/388
 
-thanks,
+1, when opening and creating a new on ramfs/tmpfs, the dentry->d_count
+will be added one as below:
+--
+ramfs_mknod(struct inode *dir, struct dentry *dentry, int mode, dev_t dev)
+{
+|_______struct inode * inode = ramfs_get_inode(dir->i_sb, mode, dev);
+|_______int error = -ENOSPC;
 
-greg k-h
+|_______if (inode) {
+|_______|_______if (dir->i_mode & S_ISGID) {
+|_______|_______|_______inode->i_gid = dir->i_gid;
+|_______|_______|_______if (S_ISDIR(mode))
+|_______|_______|_______|_______inode->i_mode |= S_ISGID;
+|_______|_______}
+|_______|_______d_instantiate(dentry, inode);
+|_______|_______dget(dentry);|__/* Extra count - pin the dentry in core */
+|_______|_______error = 0;
+|_______|_______dir->i_mtime = dir->i_ctime = CURRENT_TIME;
+|_______}
+|_______return error;
+}
+--
+The dget(dentry) call introduces an extra count, why?
+it is the same in tmpfs.
+
+2, when calling  fcntl(fd, F_SETLEASE,F_WRLCK), it will return -EAGAIN
+--
+|_______if ((arg == F_WRLCK)
+|_______    && ((atomic_read(&dentry->d_count) > 1)
+|_______|_______|| (atomic_read(&inode->i_count) > 1)))
+|_______|_______goto out;
+--
+
+because the dentry->d_count will be 2 not 1. I tested ext2 on Blackfin, it is 1.
+
+3, so I guess maybe the dget(dentry) of ramfs_mknod is useless. But
+after remove this dget(),
+the ramfs can not be mounted as rootfs at all.
+
+Is the bug in generic_setlease() or in the ramfs/tmpfs inode create function?
+
+Of course, simply remove the test '((atomic_read(&dentry->d_count) >
+1)' can workaround this issue.
+
+Thanks
+Best Regards,
+-Bryan Wu
