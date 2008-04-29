@@ -1,77 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759516AbYD2X3g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760121AbYD2XaX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759516AbYD2X3g (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 19:29:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754693AbYD2X33
+	id S1760121AbYD2XaX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 19:30:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754094AbYD2XaK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 19:29:29 -0400
-Received: from outbound.icp-qv1-irony-out3.iinet.net.au ([203.59.1.148]:31666
-	"EHLO outbound.icp-qv1-irony-out3.iinet.net.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753446AbYD2X32 (ORCPT
+	Tue, 29 Apr 2008 19:30:10 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:41066
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752630AbYD2XaJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 19:29:28 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AngBAN5LF0h8qMj2/2dsb2JhbAAIrHk
-X-IronPort-AV: E=Sophos;i="4.25,725,1199631600"; 
-   d="scan'208";a="256124500"
-Subject: Re: [patch/rfc 2.6.25-git] gpio: sysfs interface
-From: Ben Nizette <bn@niasdigital.com>
-To: David Brownell <david-b@pacbell.net>
-Cc: Trent Piepho <tpiepho@freescale.com>, lkml <linux-kernel@vger.kernel.org>,
-       hartleys <hartleys@visionengravers.com>,
-       Mike Frysinger <vapier.adi@gmail.com>, Bryan Wu <cooloney@kernel.org>
-In-Reply-To: <200804291455.39674.david-b@pacbell.net>
-References: <200804281239.51729.david-b@pacbell.net>
-	 <Pine.LNX.4.64.0804282202340.8286@t2.domain.actdsltmp>
-	 <1209472526.311.50.camel@moss.renham>
-	 <200804291455.39674.david-b@pacbell.net>
-Content-Type: text/plain
-Organization: Nias Digital
-Date: Wed, 30 Apr 2008 09:29:32 +1000
-Message-Id: <1209511772.311.55.camel@moss.renham>
+	Tue, 29 Apr 2008 19:30:09 -0400
+Date: Tue, 29 Apr 2008 16:30:07 -0700 (PDT)
+Message-Id: <20080429.163007.59388708.davem@davemloft.net>
+To: tglx@linutronix.de
+Cc: torvalds@linux-foundation.org, harvey.harrison@gmail.com, mingo@elte.hu,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] bitops: remove "optimizations"
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20080429.155824.183713623.davem@davemloft.net>
+References: <20080429.053412.15412725.davem@davemloft.net>
+	<alpine.LFD.1.10.0804291843550.6003@apollo.tec.linutronix.de>
+	<20080429.155824.183713623.davem@davemloft.net>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: David Miller <davem@davemloft.net>
+Date: Tue, 29 Apr 2008 15:58:24 -0700 (PDT)
 
-On Tue, 2008-04-29 at 14:55 -0700, David Brownell wrote:
-> On Tuesday 29 April 2008, Ben Nizette wrote:
-> > 4) Status quo.  Easy, efficient, potentially hard to discover which gpio
-> > you actually want.
-> > 
-> > My vote's for 1 or 4.  The first one is heavier but easier.  The last
-> > one will need something like the discussed file mapping ranges to gpios.
-> 
-> My vote is for #4 with a chip listing file.
-> 
-> I don't like the hacked names ... none of the other /sys/class/*/name
-> files on any of my systems use hacked names.  The entire motivation for
-> name hacking seems wrong to me, and by observation it's been rejected
-> for all other class names.
+> Given that others who tested could not find one case where the
+> optimization cases actually applied, and it's breaking things for me,
+> my theory is that it's triggering for some obscure case on sparc64 and
+> thus showing a bug in these optimizations since in practice I'm the
+> only person to actually test this new code.
 
-Right, agreed.
+Ok, I think I see the problem.
 
-I guess one last option (which is made hard by chip label non-uniqueness
-but I'll throw out anyway) would be
+The core issue is that (X << N) is undefined when N is >= the
+word size, but that's exactly what the find_next_bit() inline
+optimizations do.
 
-/sys/class/gpio
-	/chipa
-		/gpio-n
-			/value
-			/direction
-		/control
-	/chipb
-		:
-		:
+This optimization code will trigger on 64-bit if NR_CPUS is set
+to 64, and you actually have 64 cpus.  It should also occur
+on 32-bit if NR_CPUS=32 and you have 32 cpus.
 
-I guess this doesn't gain much over labelling files chipname:N (and has
-the same pitfalls) but does at least seem less hackish.
+The bogus expansion occurs in lib/cpumask.c:__next_cpu()
 
+After processing cpu 63, we'll use offset==64 and thus try
+to make the undefined shift I described above, causing the
+caller's cpumask iteration loop to run forever.
 
-	--Ben.
-> 
-> - Dave
-> 
+This code was really not tested very well at all.
