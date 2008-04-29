@@ -1,55 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760869AbYD2UFd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761314AbYD2UFs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760869AbYD2UFd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 16:05:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757276AbYD2UFN
+	id S1761314AbYD2UFs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 16:05:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759217AbYD2UFT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 16:05:13 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:45713 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756430AbYD2UFM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 16:05:12 -0400
-Date: Tue, 29 Apr 2008 17:03:44 -0300
-From: Mauro Carvalho Chehab <mchehab@infradead.org>
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
-Subject: Re: [patch] video: fix SOC_CAMERA_MT9M001 build bug
-Message-ID: <20080429170344.5a6d01bc@gaivota>
-In-Reply-To: <Pine.LNX.4.64.0804291345050.5602@axis700.grange>
-References: <20080428120032.GA23847@elte.hu>
-	<Pine.LNX.4.64.0804281944100.10718@axis700.grange>
-	<20080428193130.GC9907@elte.hu>
-	<Pine.LNX.4.64.0804282138000.11449@axis700.grange>
-	<20080428201105.GD15840@elte.hu>
-	<Pine.LNX.4.64.0804291345050.5602@axis700.grange>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.9; x86_64-mandriva-linux-gnu)
+	Tue, 29 Apr 2008 16:05:19 -0400
+Received: from 1wt.eu ([62.212.114.60]:3553 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756372AbYD2UFR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Apr 2008 16:05:17 -0400
+Date: Tue, 29 Apr 2008 22:05:05 +0200
+From: Willy Tarreau <w@1wt.eu>
+To: "H. Peter Anvin" <hpa@kernel.org>
+Cc: Adrian Bunk <bunk@kernel.org>, linux-kernel@vger.kernel.org,
+       trivial@kernel.org
+Subject: Re: [2.6 patch] UTF-8 fixes in comments
+Message-ID: <20080429200505.GA15596@1wt.eu>
+References: <20080428154023.GU2813@cs181133002.pp.htv.fi> <20080428230524.GK8474@1wt.eu> <48167A07.4000305@kernel.org> <20080429050605.GA27875@1wt.eu> <20080429072911.GA28059@cs181133002.pp.htv.fi> <20080429081423.GD30507@1wt.eu> <48177775.4000306@kernel.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <48177775.4000306@kernel.org>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 29 Apr 2008 13:48:21 +0200 (CEST)
-Guennadi Liakhovetski <g.liakhovetski@gmx.de> wrote:
-
-> On Mon, 28 Apr 2008, Ingo Molnar wrote:
+On Tue, Apr 29, 2008 at 12:31:01PM -0700, H. Peter Anvin wrote:
+> Willy Tarreau wrote:
+> >
+> >Well, I accidentally used a freshly installed laptop running mandriva 2008.
+> >I was typing in a terminal inside KDE (I don't know the program name, sort
+> >of an xterm, but with huge borders all around). I made a typo in a word and
+> >typed in a "é" (e acute). Pressing backspace to fix it showed me that I
+> >remove more chars than typed. I tried again. Pressing this letter 5 times,
+> >then 10 times backspace. I removed 5 chars from the prompt. I suspect that
+> >if I had used some chars with wider encoding (eg 4 bytes), I could have
+> >removed as many... Clearly those tools are not ready.
+> >
 > 
-> > sorry, you are right. Mind doing the right patch as you know this code 
-> > much better than i do?
-> 
-> Mauro, as you've already committed Ingo's patch to your hg tree, what's 
-> the best way to fix this? Should a revert be committed, or would you drop 
-> that patch? The latter would be better, I guess, but then I better wait 
-> for you to do it, then update against your new tree, and then add a 
-> correct fix, right?
+> Presumably, this was konsole.
 
-Send me a pull request with a patch reverting it and applying the proper one.
-I'll drop it from my patch series at -git.
+Possible. It was the one you get by clicking on a terminal icon.
+Huuhhh what an horror, I'm discussing icons and GUIs on LKML. I must
+take my meds :-)
 
+> konsole works fine with UTF-8 (I use it 
+> that way every day); the most common cause of this kind of problems is 
+> people explicitly clobbering the locale or charset class defaults in 
+> their login scripts.
 
-Cheers,
-Mauro
+I really doubt the miss would have done this. Or someone would have done
+it for her which I really doubt in such a small time frame after a fresh
+install from the day before. I will investigate though.
+
+Willy
+
