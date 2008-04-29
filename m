@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762258AbYD2NBo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762631AbYD2NCV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762258AbYD2NBo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 09:01:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762070AbYD2NB3
+	id S1762631AbYD2NCV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 09:02:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755621AbYD2NCJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 09:01:29 -0400
-Received: from e28smtp03.in.ibm.com ([59.145.155.3]:48750 "EHLO
-	e28smtp03.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761967AbYD2NB2 (ORCPT
+	Tue, 29 Apr 2008 09:02:09 -0400
+Received: from E23SMTP01.au.ibm.com ([202.81.18.162]:32889 "EHLO
+	e23smtp01.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756567AbYD2NCH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 09:01:28 -0400
-Date: Tue, 29 Apr 2008 18:31:11 +0530
+	Tue, 29 Apr 2008 09:02:07 -0400
+Date: Tue, 29 Apr 2008 18:32:01 +0530
 From: Gautham R Shenoy <ego@in.ibm.com>
 To: linux-kernel@vger.kernel.org, Zdenek Kabelac <zdenek.kabelac@gmail.com>,
        Peter Zijlstra <a.p.zijlstra@chello.nl>,
@@ -18,11 +18,9 @@ To: linux-kernel@vger.kernel.org, Zdenek Kabelac <zdenek.kabelac@gmail.com>,
        Heiko Carstens <heiko.carstens@de.ibm.com>,
        "Rafael J. Wysocki" <rjw@sisk.pl>
 Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Srivatsa Vaddagiri <vatsa@in.ibm.com>,
-       Eric Dumazet <dada1@cosmosbay.com>,
-       "David S. Miller" <davem@davemloft.net>
-Subject: [PATCH 4/8] net: af_netlink: deadlock
-Message-ID: <20080429130111.GE23562@in.ibm.com>
+       Srivatsa Vaddagiri <vatsa@in.ibm.com>
+Subject: [PATCH 5/8] cpu: cpu-hotplug deadlock
+Message-ID: <20080429130201.GF23562@in.ibm.com>
 Reply-To: ego@in.ibm.com
 References: <20080429125659.GA23562@in.ibm.com>
 MIME-Version: 1.0
@@ -34,103 +32,182 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Subject: net: af_netlink: deadlock
+Subject: cpu: cpu-hotplug deadlock
 
-From: Gautham R Shenoy <ego@in.ibm.com>
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 
-=========================================================
-    [ INFO: possible irq lock inversion dependency detected ]
-    2.6.25-rc3 #61
-    ---------------------------------------------------------
-    swapper/0 just changed the state of lock:
-     (&tb->tb6_lock){-+..}, at: [<c049a5ab>] __ip6_ins_rt+0x1e/0x3c
-    but this lock took another, soft-read-irq-unsafe lock in the past:
-     (nl_table_lock){..-?}
+cpu_hotplug.mutex is basically a lock-internal lock; but by keeping it locked
+over the 'write' section (cpu_hotplug_begin/done) a lock inversion happens when
+some of the write side code calls into code that would otherwise take a
+read lock.
 
-    and interrupts could create inverse lock ordering between them.
+And it so happens that read-in-write recursion is expressly permitted.
 
-    Full lockdep report at
-    http://gautham.shenoy.googlepages.com/nl_table_lock_irq_inversion.log
+Fix this by turning cpu_hotplug into a proper stand alone unfair reader/writer
+lock that allows reader-in-reader and reader-in-writer recursion.
 
-    This patch fixes the problem by making the read acquire of nl_table_lock
-    softirq safe.
-
-Signed-off-by: Gautham R Shenoy <ego@in.ibm.com>
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Eric Dumazet <dada1@cosmosbay.com>
-Cc: David S. Miller <davem@davemloft.net>
+Signed-off-by: Gautham R Shenoy <ego@in.ibm.com>
 ---
 
- net/netlink/af_netlink.c |   16 ++++++++--------
- 1 files changed, 8 insertions(+), 8 deletions(-)
+ kernel/cpu.c |   97 +++++++++++++++++++++++++++++++++-------------------------
+ 1 files changed, 55 insertions(+), 42 deletions(-)
 
-diff --git a/net/netlink/af_netlink.c b/net/netlink/af_netlink.c
-index 1ab0da2..7ade317 100644
---- a/net/netlink/af_netlink.c
-+++ b/net/netlink/af_netlink.c
-@@ -205,9 +205,9 @@ netlink_lock_table(void)
- {
- 	/* read_lock() synchronizes us to netlink_table_grab */
+diff --git a/kernel/cpu.c b/kernel/cpu.c
+index 2eff3f6..e856c22 100644
+--- a/kernel/cpu.c
++++ b/kernel/cpu.c
+@@ -27,12 +27,13 @@ static int cpu_hotplug_disabled;
  
--	read_lock(&nl_table_lock);
-+	read_lock_bh(&nl_table_lock);
- 	atomic_inc(&nl_table_users);
--	read_unlock(&nl_table_lock);
-+	read_unlock_bh(&nl_table_lock);
+ static struct {
+ 	struct task_struct *active_writer;
+-	struct mutex lock; /* Synchronizes accesses to refcount, */
++	spinlock_t lock; /* Synchronizes accesses to refcount, */
+ 	/*
+ 	 * Also blocks the new readers during
+ 	 * an ongoing cpu hotplug operation.
+ 	 */
+ 	int refcount;
++	wait_queue_head_t reader_queue;
+ 	wait_queue_head_t writer_queue;
+ } cpu_hotplug;
+ 
+@@ -41,8 +42,9 @@ static struct {
+ void __init cpu_hotplug_init(void)
+ {
+ 	cpu_hotplug.active_writer = NULL;
+-	mutex_init(&cpu_hotplug.lock);
++	spin_lock_init(&cpu_hotplug.lock);
+ 	cpu_hotplug.refcount = 0;
++	init_waitqueue_head(&cpu_hotplug.reader_queue);
+ 	init_waitqueue_head(&cpu_hotplug.writer_queue);
  }
  
- static inline void
-@@ -225,7 +225,7 @@ static inline struct sock *netlink_lookup(struct net *net, int protocol,
- 	struct sock *sk;
- 	struct hlist_node *node;
+@@ -51,27 +53,42 @@ void __init cpu_hotplug_init(void)
+ void get_online_cpus(void)
+ {
+ 	might_sleep();
++
++	spin_lock(&cpu_hotplug.lock);
+ 	if (cpu_hotplug.active_writer == current)
+-		return;
+-	mutex_lock(&cpu_hotplug.lock);
++		goto unlock;
++
++	if (cpu_hotplug.active_writer) {
++		DEFINE_WAIT(wait);
++
++		for (;;) {
++			prepare_to_wait(&cpu_hotplug.reader_queue, &wait,
++					TASK_UNINTERRUPTIBLE);
++			if (!cpu_hotplug.active_writer)
++				break;
++			spin_unlock(&cpu_hotplug.lock);
++			schedule();
++			spin_lock(&cpu_hotplug.lock);
++		}
++		finish_wait(&cpu_hotplug.reader_queue, &wait);
++	}
+ 	cpu_hotplug.refcount++;
+-	mutex_unlock(&cpu_hotplug.lock);
+-
++ unlock:
++	spin_unlock(&cpu_hotplug.lock);
+ }
+ EXPORT_SYMBOL_GPL(get_online_cpus);
  
--	read_lock(&nl_table_lock);
-+	read_lock_bh(&nl_table_lock);
- 	head = nl_pid_hashfn(hash, pid);
- 	sk_for_each(sk, node, head) {
- 		if ((sk->sk_net == net) && (nlk_sk(sk)->pid == pid)) {
-@@ -235,7 +235,7 @@ static inline struct sock *netlink_lookup(struct net *net, int protocol,
+ void put_online_cpus(void)
+ {
++	spin_lock(&cpu_hotplug.lock);
+ 	if (cpu_hotplug.active_writer == current)
+-		return;
+-	mutex_lock(&cpu_hotplug.lock);
+-	cpu_hotplug.refcount--;
++		goto unlock;
+ 
+-	if (unlikely(writer_exists()) && !cpu_hotplug.refcount)
++	cpu_hotplug.refcount--;
++	if (!cpu_hotplug.refcount)
+ 		wake_up(&cpu_hotplug.writer_queue);
+-
+-	mutex_unlock(&cpu_hotplug.lock);
+-
++ unlock:
++	spin_unlock(&cpu_hotplug.lock);
+ }
+ EXPORT_SYMBOL_GPL(put_online_cpus);
+ 
+@@ -95,45 +112,41 @@ void cpu_maps_update_done(void)
+  * This ensures that the hotplug operation can begin only when the
+  * refcount goes to zero.
+  *
+- * Note that during a cpu-hotplug operation, the new readers, if any,
+- * will be blocked by the cpu_hotplug.lock
+- *
+- * Since cpu_maps_update_begin is always called after invoking
+- * cpu_maps_update_begin, we can be sure that only one writer is active.
+- *
+- * Note that theoretically, there is a possibility of a livelock:
+- * - Refcount goes to zero, last reader wakes up the sleeping
+- *   writer.
+- * - Last reader unlocks the cpu_hotplug.lock.
+- * - A new reader arrives at this moment, bumps up the refcount.
+- * - The writer acquires the cpu_hotplug.lock finds the refcount
+- *   non zero and goes to sleep again.
+- *
+- * However, this is very difficult to achieve in practice since
+- * get_online_cpus() not an api which is called all that often.
+- *
++ * cpu_hotplug is basically an unfair recursive reader/writer lock that
++ * allows reader in writer recursion.
+  */
+ static void cpu_hotplug_begin(void)
+ {
+-	DECLARE_WAITQUEUE(wait, current);
+-
+-	mutex_lock(&cpu_hotplug.lock);
++	might_sleep();
+ 
+-	cpu_hotplug.active_writer = current;
+-	add_wait_queue_exclusive(&cpu_hotplug.writer_queue, &wait);
+-	while (cpu_hotplug.refcount) {
+-		set_current_state(TASK_UNINTERRUPTIBLE);
+-		mutex_unlock(&cpu_hotplug.lock);
+-		schedule();
+-		mutex_lock(&cpu_hotplug.lock);
++	spin_lock(&cpu_hotplug.lock);
++	if (cpu_hotplug.refcount || cpu_hotplug.active_writer) {
++		DEFINE_WAIT(wait);
++
++		for (;;) {
++			prepare_to_wait(&cpu_hotplug.writer_queue, &wait,
++					TASK_UNINTERRUPTIBLE);
++			if (!cpu_hotplug.refcount && !cpu_hotplug.active_writer)
++				break;
++			spin_unlock(&cpu_hotplug.lock);
++			schedule();
++			spin_lock(&cpu_hotplug.lock);
++		}
++		finish_wait(&cpu_hotplug.writer_queue, &wait);
  	}
- 	sk = NULL;
- found:
--	read_unlock(&nl_table_lock);
-+	read_unlock_bh(&nl_table_lock);
- 	return sk;
+-	remove_wait_queue_locked(&cpu_hotplug.writer_queue, &wait);
++	cpu_hotplug.active_writer = current;
++	spin_unlock(&cpu_hotplug.lock);
  }
  
-@@ -1078,12 +1078,12 @@ void netlink_set_err(struct sock *ssk, u32 pid, u32 group, int code)
- 	info.group = group;
- 	info.code = code;
- 
--	read_lock(&nl_table_lock);
-+	read_lock_bh(&nl_table_lock);
- 
- 	sk_for_each_bound(sk, node, &nl_table[ssk->sk_protocol].mc_list)
- 		do_one_set_err(sk, &info);
- 
--	read_unlock(&nl_table_lock);
-+	read_unlock_bh(&nl_table_lock);
- }
- 
- /* must be called with netlink table grabbed */
-@@ -1776,7 +1776,7 @@ static struct sock *netlink_seq_socket_idx(struct seq_file *seq, loff_t pos)
- static void *netlink_seq_start(struct seq_file *seq, loff_t *pos)
- 	__acquires(nl_table_lock)
+ static void cpu_hotplug_done(void)
  {
--	read_lock(&nl_table_lock);
-+	read_lock_bh(&nl_table_lock);
- 	return *pos ? netlink_seq_socket_idx(seq, *pos - 1) : SEQ_START_TOKEN;
++	spin_lock(&cpu_hotplug.lock);
+ 	cpu_hotplug.active_writer = NULL;
+-	mutex_unlock(&cpu_hotplug.lock);
++	if (!list_empty(&cpu_hotplug.writer_queue.task_list))
++		wake_up(&cpu_hotplug.writer_queue);
++	else
++		wake_up_all(&cpu_hotplug.reader_queue);
++	spin_unlock(&cpu_hotplug.lock);
  }
- 
-@@ -1825,7 +1825,7 @@ static void *netlink_seq_next(struct seq_file *seq, void *v, loff_t *pos)
- static void netlink_seq_stop(struct seq_file *seq, void *v)
- 	__releases(nl_table_lock)
- {
--	read_unlock(&nl_table_lock);
-+	read_unlock_bh(&nl_table_lock);
- }
- 
- 
+ /* Need to know about CPUs going up/down? */
+ int __cpuinit register_cpu_notifier(struct notifier_block *nb)
 -- 
 Thanks and Regards
 gautham
