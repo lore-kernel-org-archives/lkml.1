@@ -1,51 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756423AbYD2WCF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753928AbYD2WC0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756423AbYD2WCF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 18:02:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756589AbYD2WBu
+	id S1753928AbYD2WC0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 18:02:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757491AbYD2WCA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 18:01:50 -0400
-Received: from el-out-1112.google.com ([209.85.162.181]:51096 "EHLO
-	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754293AbYD2WBt (ORCPT
+	Tue, 29 Apr 2008 18:02:00 -0400
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:40586 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757412AbYD2WB6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 18:01:49 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=KV0+QQl/YHIHh0h5KIPKlK527Ln8JDMSdgoZpuYJ09msc030PAM8gamyTHcJXHiZiPU8dOXsdJLFxeX+mtgQCbftowjmumSqhhZphOciN6Vrx3/BO4pqNS1e41dQW6xsEArSks2W2UGCMFCX+ajpkLiXDBIeLRqJMW5kpFB3sVw=
-Message-ID: <8bd0f97a0804291501i2751d688h933508df2a4587b4@mail.gmail.com>
-Date: Tue, 29 Apr 2008 18:01:47 -0400
-From: "Mike Frysinger" <vapier.adi@gmail.com>
-To: "J. Bruce Fields" <bfields@fieldses.org>
-Subject: Re: [LTP/VFS] fcntl SETLEASE fails on ramfs/tmpfs
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       "Bryan Wu" <cooloney@kernel.org>, linux-kernel@vger.kernel.org,
-       torvalds@linux-foundation.org, willy@debian.org,
-       viro@zeniv.linux.org.uk, uclinux-dist-devel@blackfin.uclinux.org,
-       richterd@citi.umich.edu
-In-Reply-To: <20080429214231.GC26468@fieldses.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Tue, 29 Apr 2008 18:01:58 -0400
+Date: Tue, 29 Apr 2008 22:56:20 +0100
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Randy Dunlap <rdunlap@xenotime.net>, harvey.harrison@gmail.com,
+       bunk@kernel.org, den@openvz.org, linux-pcmcia@lists.infradead.org,
+       adobriyan@gmail.com, linux-kernel@vger.kernel.org
+Subject: Re: pcmcia_ioctl.c compile error
+Message-ID: <20080429215620.GA14848@flint.arm.linux.org.uk>
+Mail-Followup-To: Andrew Morton <akpm@linux-foundation.org>,
+	Randy Dunlap <rdunlap@xenotime.net>, harvey.harrison@gmail.com,
+	bunk@kernel.org, den@openvz.org, linux-pcmcia@lists.infradead.org,
+	adobriyan@gmail.com, linux-kernel@vger.kernel.org
+References: <20080429182709.GB2898@cs181133002.pp.htv.fi> <20080429201704.GA31311@flint.arm.linux.org.uk> <20080429135902.504b6362.rdunlap@xenotime.net> <1209502988.24729.31.camel@brick> <20080429140926.bb763630.akpm@linux-foundation.org> <20080429141520.7a778606.rdunlap@xenotime.net> <20080429143824.8015c502.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <386072610804282042y2dda4b52h927683a8a938ce1f@mail.gmail.com>
-	 <20080429135454.efebec8f.akpm@linux-foundation.org>
-	 <20080429214231.GC26468@fieldses.org>
+In-Reply-To: <20080429143824.8015c502.akpm@linux-foundation.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 29, 2008 at 5:42 PM, J. Bruce Fields <bfields@fieldses.org> wrote:
->  The one thing I suspect is *not* a really serious problem here is the
->  reported LTP failure, since probably the only user of this is Samba,
->  which probably doesn't do a lot of tmpfs exports, and in any case it can
->  probably soldier on (if with degraded performance--how badly I don't
->  know) without getting the write lease it wants.
+On Tue, Apr 29, 2008 at 02:38:24PM -0700, Andrew Morton wrote:
+> On Tue, 29 Apr 2008 14:15:20 -0700
+> Randy Dunlap <rdunlap@xenotime.net> wrote:
+> 
+> > > > I believe Russell is referring to the removal of the ioctl, not the
+> > > > compile breakage.
+> > > > 
+> > > 
+> > > That would be interesting information (although I have a vague feeling that
+> > > it has been discussed before).
+> > 
+> > Yes:  http://lkml.org/lkml/2008/2/27/291
+> > (now that Harvey reminded me/us)
+> 
+> oh, OK, whatever, that's easy.  I dropped the old patch and queued this
+> one:
 
-i'm not sure i follow.  the reported problem is that file locking does
-not work on tmpfs/ramfs storage.  a not terribly uncommon scenario is
-to use tmpfs on /tmp (or similar location) and have file locking not
-work at all.  so programs that use file locking or scripts that
-leverage the flock utility from the util-linux package break.
--mike
+I'll spend some time this coming weekend working out precisely what it
+requires from the ioctl interface - maybe we can have a cut-down ioctl
+interface that bolts straight on as an "add on" to the new controls
+without being too invasive, while still allowing its PCMCIA bits to
+work.
+
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
