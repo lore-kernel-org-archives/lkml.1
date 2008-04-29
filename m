@@ -1,65 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932561AbYD2S4Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932751AbYD2S4q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932561AbYD2S4Z (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 14:56:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765993AbYD2SzX
+	id S932751AbYD2S4q (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 14:56:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932463AbYD2S4G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 14:55:23 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:38640 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1765978AbYD2SzW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 14:55:22 -0400
-Date: Tue, 29 Apr 2008 11:54:24 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Nadia.Derbey@bull.net
-Cc: manfred@colorfullife.com, paulmck@linux.vnet.ibm.com,
-       linux-kernel@vger.kernel.org, efault@gmx.de
-Subject: Re: [PATCH 00/10] Scalability requirements for sysv ipc - v2
-Message-Id: <20080429115424.41b82fcb.akpm@linux-foundation.org>
-In-Reply-To: <20080429143304.741001000@bull.net>
-References: <20080429143304.741001000@bull.net>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 29 Apr 2008 14:56:06 -0400
+Received: from ns2.suse.de ([195.135.220.15]:42812 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932431AbYD2S4E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Apr 2008 14:56:04 -0400
+Date: Tue, 29 Apr 2008 11:55:43 -0700
+From: Greg KH <gregkh@suse.de>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: linux-kernel@vger.kernel.org, stable@kernel.org,
+       Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, Jeff Garzik <jgarzik@redhat.com>
+Subject: Re: [27/37] tehuti: move ioctl perm check closer to function start
+	(CVE-2008-1675)
+Message-ID: <20080429185543.GA24643@suse.de>
+References: <20080429171222.073929148@mini.kroah.org> <20080429171901.GB14724@suse.de> <20080429191310.203384eb@core>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080429191310.203384eb@core>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 29 Apr 2008 16:33:04 +0200
-Nadia.Derbey@bull.net wrote:
+On Tue, Apr 29, 2008 at 07:13:09PM +0100, Alan Cox wrote:
+> On Tue, 29 Apr 2008 10:19:01 -0700
+> Greg KH <gregkh@suse.de> wrote:
+> 
+> > 2.6.25-stable review patch.  If anyone has any objections, please let us
+> > know.
+> > 
+> > ------------------
+> > From: Jeff Garzik <jeff@garzik.org>
+> > 
+> > Commit f946dffed6334f08da065a89ed65026ebf8b33b4 upstream
+> > 
+> > Noticed by davem.
+> > 
+> > Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
+> > Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+> > 
+> > ---
+> >  drivers/net/tehuti.c |    5 +++--
+> >  1 file changed, 3 insertions(+), 2 deletions(-)
+> > 
+> > --- a/drivers/net/tehuti.c
+> > +++ b/drivers/net/tehuti.c
+> > @@ -649,6 +649,9 @@ static int bdx_ioctl_priv(struct net_dev
+> >  		DBG("%d 0x%x 0x%x\n", data[0], data[1], data[2]);
+> >  	}
+> >  
+> > +	if (!capable(CAP_NET_ADMIN))
+> > +		return -EPERM;
+> > +
+> 
+> Should be CAP_SYS_RAWIO
 
-> After scalability problems had been detected when using the sysV ipcs, I
-> have proposed to use an RCU based implementation of the IDR api instead
-> (see thread http://lkml.org/lkml/2008/4/11/212).
-> 
-> Resending the patch series after
->  . integrating Paul's remarks
->  . fixing a bug I had introduced
->  . porting it to 2.6.25-mm1.
-> 
-> Reviewers are still welcome!
-> 
-> Patch 1 can be taken alone: it fixes a problem in the existing IDR API.
-> 
-> Patches should be applied on linux-2.6.25-mm1, in the following order:
-> 
-> [ PATCH 01/10 ] : idr_minor_fix.patch
-> [ PATCH 02/10 ] : ridr_structure.patch
-> [ PATCH 03/10 ] : ridr_pre_get.patch
-> [ PATCH 04/10 ] : ridr_init.patch
-> [ PATCH 05/10 ] : ridr_get_new_above.patch
-> [ PATCH 06/10 ] : ridr_get_new.patch
-> [ PATCH 07/10 ] : ridr_find.patch
-> [ PATCH 08/10 ] : ridr_remove.patch
-> [ PATCH 09/10 ] : ipc_use_ridr.patch
-> [ PATCH 10/10 ] : remove_ipc_lock_down.patch
-> 
+Hm, that's the way it is in Linus's tree, we should change it there
+first.
 
-hm, you've been busy.
+thanks,
 
-As all this work is entirely for performance reasons, the changelog should
-have (lots of) performance testing results!  Please.
-
-
+greg k-h
