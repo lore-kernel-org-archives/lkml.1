@@ -1,46 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755183AbYD2Jfi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755582AbYD2JhI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755183AbYD2Jfi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 05:35:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751434AbYD2Jf1
+	id S1755582AbYD2JhI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 05:37:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751519AbYD2Jg5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 05:35:27 -0400
-Received: from 1wt.eu ([62.212.114.60]:3515 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750848AbYD2Jf1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 05:35:27 -0400
-Date: Tue, 29 Apr 2008 11:34:58 +0200
-From: Willy Tarreau <w@1wt.eu>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Adrian Bunk <bunk@kernel.org>, linux-kernel@vger.kernel.org,
-       trivial@kernel.org
-Subject: Re: [2.6 patch] UTF-8 fixes in comments
-Message-ID: <20080429093458.GA1473@1wt.eu>
-References: <20080428154023.GU2813@cs181133002.pp.htv.fi> <20080428230524.GK8474@1wt.eu> <20080429100107.79ebf0cc@core>
-Mime-Version: 1.0
+	Tue, 29 Apr 2008 05:36:57 -0400
+Received: from ppsw-6.csi.cam.ac.uk ([131.111.8.136]:45536 "EHLO
+	ppsw-6.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751203AbYD2Jg5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Apr 2008 05:36:57 -0400
+X-Greylist: delayed 1668 seconds by postgrey-1.27 at vger.kernel.org; Tue, 29 Apr 2008 05:36:56 EDT
+X-Cam-SpamDetails: Not scanned
+X-Cam-AntiVirus: No virus found
+X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
+Date: Tue, 29 Apr 2008 10:08:59 +0100
+From: David Simner <djs203@srcf.ucam.org>
+To: linux-kernel@vger.kernel.org
+Cc: mingo@elte.hu
+Subject: [patch] sched_info_switch not being called according to
+	documentation (10545)
+Message-ID: <20080429090859.GA16568@srcf.ucam.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080429100107.79ebf0cc@core>
-User-Agent: Mutt/1.5.11
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 29, 2008 at 10:01:07AM +0100, Alan Cox wrote:
-> > In fact, I would have better converted accentuated chars to their ASCII
-> > equivalent to be more friendly with people who only read 7-bit.
-> 
-> Perhaps we should put them in latin as well just in case any Roman is
-> struggling with this new language 8) Distibutions have been shipping UTF
-> enabled by default for years and years.
+Hi,
 
-"enabled" does not mean "working" Alan. I know one distro which I will
-not name in order not to offense you which shipped with it enabled by
-default, but which would not properly display the characters on the
-console, resulting in mangled messages during boot. I particularly
-remember the "[ECHEC]" ("[FAILED]") with random garbage instead of the
-first 'E'.
+http://bugzilla.kernel.org/show_bug.cgi?id=10545
 
-:-)
-Willy
+sched_stats.h says that __sched_info_switch is "called when prev !=
+next" in the comment.  sched.c should therefore do that, see the patch
+below:
 
+David
+
+--- linux-2.6.25-old/kernel/sched.c	2008-04-17 03:49:44.000000000 +0100
++++ linux-2.6.25/kernel/sched.c	2008-04-29 10:54:11.000000000 +0100
+@@ -3944,9 +3944,9 @@
+ 	prev->sched_class->put_prev_task(rq, prev);
+ 	next = pick_next_task(rq, prev);
+ 
+-	sched_info_switch(prev, next);
+-
+ 	if (likely(prev != next)) {
++		sched_info_switch(prev, next);
++
+ 		rq->nr_switches++;
+ 		rq->curr = next;
+ 		++*switch_count;
