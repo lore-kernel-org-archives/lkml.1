@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759181AbYD2RVi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751586AbYD2RWC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759181AbYD2RVi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 13:21:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757148AbYD2RUO
+	id S1751586AbYD2RWC (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 13:22:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757222AbYD2RUR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 13:20:14 -0400
-Received: from ns.suse.de ([195.135.220.2]:51778 "EHLO mx1.suse.de"
+	Tue, 29 Apr 2008 13:20:17 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:42861 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754551AbYD2RUL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 13:20:11 -0400
-Date: Tue, 29 Apr 2008 10:18:00 -0700
+	id S1757193AbYD2RUP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Apr 2008 13:20:15 -0400
+Date: Tue, 29 Apr 2008 10:18:03 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -20,14 +20,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Matt Carlson <mcarlson@broadcom.com>, Michael Chan <mchan@broadcom.com>,
+       Tom Quetchenbach <virtualphtn@gmail.com>,
        "David S. Miller" <davem@davemloft.net>
-Subject: [04/37] tg3: 5701 DMA corruption fix
-Message-ID: <20080429171800.GE14724@suse.de>
+Subject: [05/37] tcp: tcp_probe buffer overflow and incorrect return value
+Message-ID: <20080429171803.GF14724@suse.de>
 References: <20080429171222.073929148@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="tg3-5701-dma-corruption-fix.patch"
+Content-Disposition: inline; filename="tcp-tcp_probe-buffer-overflow-and-incorrect-return-value.patch"
 In-Reply-To: <20080429171730.GA14724@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -38,125 +38,59 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 know.
 
 ------------------
-From: Matt Carlson <mcarlson@broadcom.com>
+From: Tom Quetchenbach <virtualphtn@gmail.com>
 
-[ Upstream commit: 41588ba1ae166eaba0a70abf2d7ff064ad9331d3 ]
+[ Upstream commit: 8d390efd903485923419584275fd0c2aa4c94183 ]
 
-Herbert Xu's commit fb93134dfc2a6e6fbedc7c270a31da03fce88db9, entitled
-"[TCP]: Fix size calculation in sk_stream_alloc_pskb", has triggered a
-bug in the 5701 where the 5701 DMA engine will corrupt outgoing
-packets.  This problem only happens when the starting address of the
-packet matches a certain range of offsets and only when the 5701 is
-placed downstream of a particular Intel bridge.
+tcp_probe has a bounds-checking bug that causes many programs (less,
+python) to crash reading /proc/net/tcp_probe. When it outputs a log
+line to the reader, it only checks if that line alone will fit in the
+reader's buffer, rather than that line and all the previous lines it
+has already written.
 
-This patch detects the problematic bridge and if present, readjusts the
-starting address of the packet data to a dword aligned boundary.
+tcpprobe_read also returns the wrong value if copy_to_user fails--it
+just passes on the return value of copy_to_user (number of bytes not
+copied), which makes a failure look like a success.
 
-Signed-off-by: Matt Carlson <mcarlson@broadcom.com>
-Signed-off-by: Michael Chan <mchan@broadcom.com>
+This patch fixes the buffer overflow and sets the return value to
+-EFAULT if copy_to_user fails.
+
+Patch is against latest net-2.6; tested briefly and seems to fix the
+crashes in less and python.
+
+Signed-off-by: Tom Quetchenbach <virtualphtn@gmail.com>
 Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/net/tg3.c |   52 ++++++++++++++++++++++++++++++++++++++++++++++++----
- drivers/net/tg3.h |    1 +
- 2 files changed, 49 insertions(+), 4 deletions(-)
+ net/ipv4/tcp_probe.c |    9 ++++-----
+ 1 file changed, 4 insertions(+), 5 deletions(-)
 
---- a/drivers/net/tg3.c
-+++ b/drivers/net/tg3.c
-@@ -64,8 +64,8 @@
+--- a/net/ipv4/tcp_probe.c
++++ b/net/ipv4/tcp_probe.c
+@@ -190,19 +190,18 @@ static ssize_t tcpprobe_read(struct file
  
- #define DRV_MODULE_NAME		"tg3"
- #define PFX DRV_MODULE_NAME	": "
--#define DRV_MODULE_VERSION	"3.90"
--#define DRV_MODULE_RELDATE	"April 12, 2008"
-+#define DRV_MODULE_VERSION	"3.91"
-+#define DRV_MODULE_RELDATE	"April 18, 2008"
+ 		width = tcpprobe_sprint(tbuf, sizeof(tbuf));
  
- #define TG3_DEF_MAC_MODE	0
- #define TG3_DEF_RX_MODE		0
-@@ -4135,11 +4135,21 @@ static int tigon3_dma_hwbug_workaround(s
- 				       u32 last_plus_one, u32 *start,
- 				       u32 base_flags, u32 mss)
- {
--	struct sk_buff *new_skb = skb_copy(skb, GFP_ATOMIC);
-+	struct sk_buff *new_skb;
- 	dma_addr_t new_addr = 0;
- 	u32 entry = *start;
- 	int i, ret = 0;
+-		if (width < len)
++		if (cnt + width < len)
+ 			tcp_probe.tail = (tcp_probe.tail + 1) % bufsize;
  
-+	if (GET_ASIC_REV(tp->pci_chip_rev_id) != ASIC_REV_5701)
-+		new_skb = skb_copy(skb, GFP_ATOMIC);
-+	else {
-+		int more_headroom = 4 - ((unsigned long)skb->data & 3);
-+
-+		new_skb = skb_copy_expand(skb,
-+					  skb_headroom(skb) + more_headroom,
-+					  skb_tailroom(skb), GFP_ATOMIC);
-+	}
-+
- 	if (!new_skb) {
- 		ret = -1;
- 	} else {
-@@ -4462,7 +4472,9 @@ static int tg3_start_xmit_dma_bug(struct
+ 		spin_unlock_bh(&tcp_probe.lock);
  
- 	would_hit_hwbug = 0;
+ 		/* if record greater than space available
+ 		   return partial buffer (so far) */
+-		if (width >= len)
++		if (cnt + width >= len)
+ 			break;
  
--	if (tg3_4g_overflow_test(mapping, len))
-+	if (tp->tg3_flags3 & TG3_FLG3_5701_DMA_BUG)
-+		would_hit_hwbug = 1;
-+	else if (tg3_4g_overflow_test(mapping, len))
- 		would_hit_hwbug = 1;
- 
- 	tg3_set_txd(tp, entry, mapping, len, base_flags,
-@@ -11339,6 +11351,38 @@ static int __devinit tg3_get_invariants(
- 		}
+-		error = copy_to_user(buf + cnt, tbuf, width);
+-		if (error)
+-			break;
++		if (copy_to_user(buf + cnt, tbuf, width))
++			return -EFAULT;
+ 		cnt += width;
  	}
  
-+	if ((GET_ASIC_REV(tp->pci_chip_rev_id) == ASIC_REV_5701)) {
-+		static struct tg3_dev_id {
-+			u32	vendor;
-+			u32	device;
-+		} bridge_chipsets[] = {
-+			{ PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_PXH_0 },
-+			{ PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_PXH_1 },
-+			{ },
-+		};
-+		struct tg3_dev_id *pci_id = &bridge_chipsets[0];
-+		struct pci_dev *bridge = NULL;
-+
-+		while (pci_id->vendor != 0) {
-+			bridge = pci_get_device(pci_id->vendor,
-+						pci_id->device,
-+						bridge);
-+			if (!bridge) {
-+				pci_id++;
-+				continue;
-+			}
-+			if (bridge->subordinate &&
-+			    (bridge->subordinate->number <=
-+			     tp->pdev->bus->number) &&
-+			    (bridge->subordinate->subordinate >=
-+			     tp->pdev->bus->number)) {
-+				tp->tg3_flags3 |= TG3_FLG3_5701_DMA_BUG;
-+				pci_dev_put(bridge);
-+				break;
-+			}
-+		}
-+	}
-+
- 	/* The EPB bridge inside 5714, 5715, and 5780 cannot support
- 	 * DMA addresses > 40-bit. This bridge may have other additional
- 	 * 57xx devices behind it in some 4-port NIC designs for example.
---- a/drivers/net/tg3.h
-+++ b/drivers/net/tg3.h
-@@ -2476,6 +2476,7 @@ struct tg3 {
- #define TG3_FLG3_NO_NVRAM_ADDR_TRANS	0x00000001
- #define TG3_FLG3_ENABLE_APE		0x00000002
- #define TG3_FLG3_5761_5784_AX_FIXES	0x00000004
-+#define TG3_FLG3_5701_DMA_BUG		0x00000008
- 
- 	struct timer_list		timer;
- 	u16				timer_counter;
 
 -- 
