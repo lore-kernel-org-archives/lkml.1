@@ -1,53 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758698AbYD2Mvr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756108AbYD2M5Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758698AbYD2Mvr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 08:51:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751894AbYD2Mvk
+	id S1756108AbYD2M5Y (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 08:57:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751710AbYD2M5Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 08:51:40 -0400
-Received: from mx0.towertech.it ([213.215.222.73]:48974 "HELO mx0.towertech.it"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751631AbYD2Mvj convert rfc822-to-8bit (ORCPT
+	Tue, 29 Apr 2008 08:57:16 -0400
+Received: from e28smtp05.in.ibm.com ([59.145.155.5]:42049 "EHLO
+	e28smtp05.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751682AbYD2M5P (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 08:51:39 -0400
-Date: Tue, 29 Apr 2008 14:51:35 +0200
-From: Alessandro Zummo <alessandro.zummo@towertech.it>
-To: Uwe =?ISO-8859-1?Q?Kleine-K=F6nig?= <Uwe.Kleine-Koenig@digi.com>
-Cc: David Brownell <dbrownell@users.sourceforge.net>,
-       <linux-kernel@vger.kernel.org>
-Subject: Re: rtc: how should I handle an invalid state?
-Message-ID: <20080429145135.26d53758@i1501.lan.towertech.it>
-In-Reply-To: <20080429121924.GA2137@digi.com>
-References: <20080429121924.GA2137@digi.com>
-Organization: Tower Technologies
-X-Mailer: Sylpheed
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Tue, 29 Apr 2008 08:57:15 -0400
+Date: Tue, 29 Apr 2008 18:26:59 +0530
+From: Gautham R Shenoy <ego@in.ibm.com>
+To: linux-kernel@vger.kernel.org, Zdenek Kabelac <zdenek.kabelac@gmail.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Oleg Nesterov <oleg@tv-sign.ru>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Srivatsa Vaddagiri <vatsa@in.ibm.com>
+Subject: [PATCH 0/8] CPU-Hotplug: Fix CPU-Hotplug <--> cpufreq locking
+	dependency
+Message-ID: <20080429125659.GA23562@in.ibm.com>
+Reply-To: ego@in.ibm.com
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 29 Apr 2008 14:19:24 +0200
-Uwe Kleine-König <Uwe.Kleine-Koenig@digi.com> wrote:
+Hello everyone,
 
-> Hello,
-> 
-> I'm still stuck with my rtc.  My current problem is setting the rtc
-> using hwclock --systohc.
-> 
-> The problem is that hwclock tries to read the current time before
-> setting the new one.  And if that fails, it doesn't update the rtc.
+A couple of months ago Zdenek Kabelac had reported a Circular locking
+dependency in resume, which was related to the locking dependency
+between the cpufreq and CPU-Hotplug subsystems.
 
- That's a bug of hwclock. :( The correct behaviour for a driver
- is to return an error if the clock cannot be read.
+http://lkml.org/lkml/2008/2/26/479
 
--- 
+This patchset aggregates the various patches that have been posted in
+the recent past, to solve this problem.
 
- Best regards,
+There are a few more TODO items in CPU-Hotplug , unrelated to
+this problem, that cropped up in the various discussions.
+They will be posted in a seperate thread.
 
- Alessandro Zummo,
-  Tower Technologies - Torino, Italy
+The patchstack has been lightly tested on a 4-way x86 machine with
+CPU-Hotplug running in parallel with kernbench and changing cpufreq
+governors simultaneously.
 
-  http://www.towertech.it
-
+Awaiting your feedback,
+gautham
