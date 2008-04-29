@@ -1,61 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765897AbYD2QHa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932337AbYD2QHw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765897AbYD2QHa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 12:07:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754092AbYD2QHS
+	id S932337AbYD2QHw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 12:07:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932098AbYD2QHh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 12:07:18 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:55584 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752311AbYD2QHR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 12:07:17 -0400
-Message-ID: <481747B3.4070903@sgi.com>
-Date: Tue, 29 Apr 2008 09:07:15 -0700
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/1] x86: fix remove cpu_pda table patch
-References: <20080428210906.348866000@polaris-admin.engr.sgi.com> <20080428214541.GA16153@elte.hu>
-In-Reply-To: <20080428214541.GA16153@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Tue, 29 Apr 2008 12:07:37 -0400
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:48557 "EHLO
+	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755985AbYD2QHd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Apr 2008 12:07:33 -0400
+Date: Tue, 29 Apr 2008 11:49:37 -0400
+Message-Id: <200804291549.m3TFnb3H024733@agora.fsl.cs.sunysb.edu>
+From: Erez Zadok <ezk@cs.sunysb.edu>
+To: bsn.0007@gmail.com
+Cc: libc-alpha@sourceware.org, Jan Blunck <jblunck@suse.de>,
+       Erez Zadok <ezk@cs.sunysb.edu>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, viro@zeniv.linux.org.uk,
+       Christoph Hellwig <hch@lst.de>, Ulrich Drepper <drepper@redhat.com>,
+       Mingming Cao <cmm@us.ibm.com>, Dave Hansen <haveblue@us.ibm.com>,
+       Trond Myklebust <trond.myklebust@fys.uio.no>,
+       bharata@linux.vnet.ibm.com, David Woodhouse <dwmw2@infradead.org>
+Subject: Re: [RFC PATCH 0/2] Union Mount: Directory listing in glibc 
+In-reply-to: Your message of "Tue, 29 Apr 2008 19:02:01 +0530."
+             <20080429133201.GA9938@localhost.localdomain> 
+X-MailKey: Erez_Zadok
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Mike Travis <travis@sgi.com> wrote:
+In message <20080429133201.GA9938@localhost.localdomain>, bsn.0007@gmail.com writes:
+> Hi,
 > 
->> [Ingo - please replace "PATCH 07/11" with this one.]
->>
->>     *	Remove 544k bytes from the kernel by removing the boot_cpu_pda
->> 	array from the data section and allocating it during startup.
->>
->> 	Fixed panic in setup_per_cpu_areas when HOTPLUG_CPU not set.
->>
->> For inclusion into sched-devel/latest tree.
-> 
-> sched-devel.git randconfig testing found another crash with your queue:
-> 
-> [    0.111060] Brought up 1 CPUs
-> [    0.111986] Total of 1 processors activated (4022.73 BogoMIPS).
-> [    0.112987] Testing NMI watchdog ... <1>BUG: unable to handle kernel NULL pointer dereference at 0000000000000040
-> [    0.114982] IP: [<ffffffff8180d4a0>] check_nmi_watchdog+0xb0/0x210
-> [    0.114982] PGD 0
-> [    0.114982] Oops: 0000 [1] SMP
-> [    0.114982] CPU 0
-> [............]
-> 
->  http://redhat.com/~mingo/misc/config-Mon_Apr_28_23_25_25_CEST_2008.bad
->  http://redhat.com/~mingo/misc/log-Mon_Apr_28_23_25_25_CEST_2008.bad
-> 
-> 	Ingo
+> I went through Bharata's RFC post on glibc based Union Mount readdir solution
+> (http://lkml.org/lkml/2008/3/11/34) and have come up with patches
+> against glibc to implement the same.
+[...]
 
-Ouch! ;-) Ok, I'll check it out.
+The last set of discussions on glibc support ended, as I understood it, with
+the glibc people objecting to such "special-purpose" code in glibc.  See
+<http://lkml.org/lkml/2008/3/11/66>.  So has anything changed behind the
+scenes, or is this idea unlikely to be merged into glibc any time soon, if
+ever.  (Personally I'd love to rip out the readdir-related code from unionfs
+if glibc supported the same.)
 
-Thanks,
-Mike
+> Patch 1. readdir support for union mounted directories.
+> 	I am caching the dirent names in a list to aid duplicate elimination.
+> And this cache is stored in DIRP. For duplicate elimination I am using
+> strcmp(). I am not sure if this works universally with different types
+> of filesystems. Any suggestions here would be welcome.
+[...]
+
+You might consider using a hash table instead of a list; it'll be faster in
+case where there are a lot of whiteouts/duplicates to process.
+
+
+Also, I'll reiterate my previous concern that I think you may need to also
+handle "opaque directories".  See the discussion in section 5.1 "Creation
+and deletion of whiteouts", in the original union mounts paper:
+
+<http://www.usenix.org/publications/library/proceedings/neworl/full_papers/mckusick.a>
+
+Cheers,
+Erez.
