@@ -1,138 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759632AbYD2UnY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760249AbYD2UoZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759632AbYD2UnY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 16:43:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751282AbYD2UnQ
+	id S1760249AbYD2UoZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 16:44:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751246AbYD2UoP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 16:43:16 -0400
-Received: from nf-out-0910.google.com ([64.233.182.185]:19710 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751274AbYD2UnP convert rfc822-to-8bit (ORCPT
+	Tue, 29 Apr 2008 16:44:15 -0400
+Received: from outbound-mail-134.bluehost.com ([67.222.39.24]:55259 "HELO
+	outbound-mail-134.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751282AbYD2UoO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 16:43:15 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer:mime-version:content-type:content-transfer-encoding:sender;
-        b=I3pTZ/aIDkxxX+KaPD2c//xnG6AUyJR9LoIfeDrKBUQR4R0iJ3LEQNVsosk8tMkvKQQ8PQHywdhrEk2xKZlNHrVDIQmGtIgGOMevzTFZV+hccuYfdsyr3Abcqu/INWeC+zuwRk0zOUOH0JOQ/aTuC9L0mNEXslV5LNViqG+dajw=
-Date: Tue, 29 Apr 2008 23:43:09 +0300
-From: Pekka Paalanen <pq@iki.fi>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Pekka Paalanen <pq@iki.fi>, linux-kernel@vger.kernel.org,
-       Christoph Hellwig <hch@infradead.org>,
-       Arjan van de Ven <arjan@infradead.org>, Pavel Roskin <proski@gnu.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 1/3] x86 mmiotrace: fix page-unaligned ioremaps
-Message-ID: <20080429234309.603251ff@daedalus.pq.iki.fi>
-In-Reply-To: <20080429234021.071f7948@daedalus.pq.iki.fi>
-References: <20080428214504.5c359195@daedalus.pq.iki.fi>
-	<20080429234021.071f7948@daedalus.pq.iki.fi>
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.8; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
+	Tue, 29 Apr 2008 16:44:14 -0400
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: [PATCH] x86: fix section mismatch in pci_scan_bus
+Date: Tue, 29 Apr 2008 13:44:06 -0700
+User-Agent: KMail/1.9.9
+Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>
+References: <20080429203848.GA13741@uranus.ravnborg.org>
+In-Reply-To: <20080429203848.GA13741@uranus.ravnborg.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200804291344.06657.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From c306ab1bc1f40e74f7015a498784e1a39ec6229b Mon Sep 17 00:00:00 2001
-From: Pekka Paalanen <pq@iki.fi>
-Date: Tue, 29 Apr 2008 22:39:40 +0300
-Subject: [PATCH] x86 mmiotrace: fix page-unaligned ioremaps
+On Tuesday, April 29, 2008 1:38 pm Sam Ravnborg wrote:
+> Fix following section mismatch warning:
+> WARNING: vmlinux.o(.text+0x275616): Section mismatch in reference from the
+> function pci_scan_bus() to the function
+> .devinit.text:pci_scan_bus_parented()
+>
+> The warning was seen with a CONFIG_DEBUG_SECTION_MISMATCH=y build.
+> The inline function pci_scan_bus refer to functions annotated
+> __devinit - so annotate it __devinit too.
+> This revealed a few x86 specific functions that were only
+> used from __init or __devinit context.
+> So annotate these __devinit and the warning was killed.
+>
+> The added include in pci.h was not strictly required but
+> added to avoid being dependent on indirect includes.
+>
+> Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
 
-mmiotrace_ioremap() expects to receive the original unaligned map phys address
-and size. Also fix {un,}register_kmmio_probe() to deal properly with
-unaligned size.
+Applied, thanks Sam.
 
-Signed-off-by: Pekka Paalanen <pq@iki.fi>
----
- arch/x86/mm/ioremap.c  |    4 +++-
- arch/x86/mm/kmmio.c    |   13 +++++++++++--
- arch/x86/mm/mmio-mod.c |    1 +
- 3 files changed, 15 insertions(+), 3 deletions(-)
-
-diff --git a/arch/x86/mm/ioremap.c b/arch/x86/mm/ioremap.c
-index ce73980..923621d 100644
---- a/arch/x86/mm/ioremap.c
-+++ b/arch/x86/mm/ioremap.c
-@@ -123,6 +123,8 @@ static void __iomem *__ioremap_caller(resource_size_t phys_addr,
- {
- 	unsigned long pfn, offset, vaddr;
- 	resource_size_t last_addr;
-+	const resource_size_t unaligned_phys_addr = phys_addr;
-+	const unsigned long unaligned_size = size;
- 	struct vm_struct *area;
- 	unsigned long new_prot_val;
- 	pgprot_t prot;
-@@ -235,7 +237,7 @@ static void __iomem *__ioremap_caller(resource_size_t phys_addr,
- 	}
- 
- 	ret_addr = (void __iomem *) (vaddr + offset);
--	mmiotrace_ioremap(phys_addr, size, ret_addr);
-+	mmiotrace_ioremap(unaligned_phys_addr, unaligned_size, ret_addr);
- 
- 	return ret_addr;
- }
-diff --git a/arch/x86/mm/kmmio.c b/arch/x86/mm/kmmio.c
-index 40567d8..c12be07 100644
---- a/arch/x86/mm/kmmio.c
-+++ b/arch/x86/mm/kmmio.c
-@@ -352,11 +352,19 @@ static void release_kmmio_fault_page(unsigned long page,
- 	}
- }
- 
-+/*
-+ * With page-unaligned ioremaps, one or two armed pages may contain
-+ * addresses from outside the intended mapping. Events for these addresses
-+ * are currently silently dropped. The events may result only from programming
-+ * mistakes by accessing addresses before the beginning or past the end of a
-+ * mapping.
-+ */
- int register_kmmio_probe(struct kmmio_probe *p)
- {
- 	unsigned long flags;
- 	int ret = 0;
- 	unsigned long size = 0;
-+	const unsigned long size_lim = p->len + (p->addr & ~PAGE_MASK);
- 
- 	spin_lock_irqsave(&kmmio_lock, flags);
- 	if (get_kmmio_probe(p->addr)) {
-@@ -365,7 +373,7 @@ int register_kmmio_probe(struct kmmio_probe *p)
- 	}
- 	kmmio_count++;
- 	list_add_rcu(&p->list, &kmmio_probes);
--	while (size < p->len) {
-+	while (size < size_lim) {
- 		if (add_kmmio_fault_page(p->addr + size))
- 			pr_err("kmmio: Unable to set page fault.\n");
- 		size += PAGE_SIZE;
-@@ -437,11 +445,12 @@ void unregister_kmmio_probe(struct kmmio_probe *p)
- {
- 	unsigned long flags;
- 	unsigned long size = 0;
-+	const unsigned long size_lim = p->len + (p->addr & ~PAGE_MASK);
- 	struct kmmio_fault_page *release_list = NULL;
- 	struct kmmio_delayed_release *drelease;
- 
- 	spin_lock_irqsave(&kmmio_lock, flags);
--	while (size < p->len) {
-+	while (size < size_lim) {
- 		release_kmmio_fault_page(p->addr + size, &release_list);
- 		size += PAGE_SIZE;
- 	}
-diff --git a/arch/x86/mm/mmio-mod.c b/arch/x86/mm/mmio-mod.c
-index a8d2a00..278998c 100644
---- a/arch/x86/mm/mmio-mod.c
-+++ b/arch/x86/mm/mmio-mod.c
-@@ -280,6 +280,7 @@ static void ioremap_trace_core(unsigned long offset, unsigned long size,
- {
- 	static atomic_t next_id;
- 	struct remap_trace *trace = kmalloc(sizeof(*trace), GFP_KERNEL);
-+	/* These are page-unaligned. */
- 	struct mmiotrace_map map = {
- 		.phys = offset,
- 		.virt = (unsigned long)addr,
--- 
-1.5.3.7
-
+Jesse
