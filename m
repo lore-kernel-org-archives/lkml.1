@@ -1,86 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760589AbYD2WhY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757725AbYD2Wlq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760589AbYD2WhY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 18:37:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755322AbYD2WhM
+	id S1757725AbYD2Wlq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 18:41:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752705AbYD2Wli
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 18:37:12 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:36325 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753918AbYD2WhL (ORCPT
+	Tue, 29 Apr 2008 18:41:38 -0400
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:53567 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752686AbYD2Wlh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 18:37:11 -0400
-Date: Tue, 29 Apr 2008 15:36:34 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: benh@kernel.crashing.org
-Cc: riel@redhat.com, linux-kernel@vger.kernel.org, ajackson@redhat.com,
-       airlied@redhat.com, paulus@samba.org
-Subject: Re: [PATCH 2/3] powerpc ioremap_prot
-Message-Id: <20080429153634.1f7ceffb.akpm@linux-foundation.org>
-In-Reply-To: <1209506873.18023.197.camel@pasglop>
-References: <20080429113348.3f132ebc@cuia.boston.redhat.com>
-	<20080429111734.b4bc93fc.akpm@linux-foundation.org>
-	<1209506873.18023.197.camel@pasglop>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Tue, 29 Apr 2008 18:41:37 -0400
+Date: Tue, 29 Apr 2008 23:35:41 +0100
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Randy Dunlap <rdunlap@xenotime.net>, Adrian Bunk <bunk@kernel.org>,
+       "Denis V. Lunev" <den@openvz.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-pcmcia@lists.infradead.org, Alexey Dobriyan <adobriyan@gmail.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: pcmcia_ioctl.c compile error
+Message-ID: <20080429223540.GA19471@flint.arm.linux.org.uk>
+Mail-Followup-To: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+	Randy Dunlap <rdunlap@xenotime.net>, Adrian Bunk <bunk@kernel.org>,
+	"Denis V. Lunev" <den@openvz.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	linux-pcmcia@lists.infradead.org,
+	Alexey Dobriyan <adobriyan@gmail.com>, linux-kernel@vger.kernel.org
+References: <20080429182709.GB2898@cs181133002.pp.htv.fi> <20080429201704.GA31311@flint.arm.linux.org.uk> <20080429135902.504b6362.rdunlap@xenotime.net> <20080429211410.GD31311@flint.arm.linux.org.uk> <20080429225845.0f60eb72@core>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080429225845.0f60eb72@core>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 30 Apr 2008 08:07:53 +1000
-Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
-
+On Tue, Apr 29, 2008 at 10:58:45PM +0100, Alan Cox wrote:
+> > So, between Monday midnight and Thursday morning, when do you expect me
+> > to sort the resulting mess out, given that I was not even able to be
+> > in front of a computer until about 10pm on Tuesday and Wednesday?
 > 
-> On Tue, 2008-04-29 at 11:17 -0700, Andrew Morton wrote:
-> > 
-> > Given that x86 implements ioremap_prot() as a regular C function, it
-> > would
-> > be nicer to require that all architectures do that.  Especially as
-> > macros
-> > suck.
-> > 
-> > Your powerpc implementation of ioremap_prot() has a different
-> > signature
-> > from the x86 one: `phys_addr_t address' versus `resource_size_t
-> > phys_addr'.
-> > Can that be improved?
-> 
-> Well, we already had ioremap_flags() which is the same thing, that's why
-> I made it just a #define :-)
-> 
-> But I'm pondering removing our ioremap_flags completely in favor of
-> ioremap_prot. This was just a patch to "make it work" so Rik could move
-> on with his core patch (btw. Rik, you got the SOBs in the wrong order on
-> that one).
-> 
-> Regarding the difference, well, it has to do with us historically using
-> that phys_addr_t type for ioremap. I can try to look into changing that
-> but it will take a bit more effort.
+> How about delegate some of the control to other people ? There's something
+> wrong if it has to be you that sorts it out eveyr time - especially as you
+> effectively manage as many platforms as everyone else put together right
+> now.
 
-It does seem pretty bad to create the same-named function in two
-architectures, only with sometimes-different argument types.
+I believe I pointed at the patch required to fix the problem via this
+URL:
 
-A minimal fix would be to make powerpc's implementation be an out-of-line C
-function which takes a resource_size_t and which calls ioremap_flags()?
+  http://www.arm.linux.org.uk/developer/patches/viewpatch.php?id=5010/1
 
-> > >  static inline pte_t pte_mkspecial(pte_t pte) {
-> > >       return pte; }
-> > > +static inline unsigned long pte_pgprot(pte_t pte) {
-> > > +     return __pgprot(pte_val(pte)) & PAGE_PROT_BITS; }
-> > 
-> > ick.  \n's are cheap.
-> 
-> Yeah well, just adapted to the style of the other ones around it :-)
+A subset of that patch had also already been discussed between Philipp,
+akpm and myself.  The URL also shows when it was applied (though not to
+a branch of my tree I could've pushed into mainline at that stage.)
 
-I'm not a big believer in making new code match broken old code.
+The fix was already known...  The fix had been pointed out by me during
+the various mails I got about the breakage...  I'd effectively already
+approved the fix by applying it...  And I had said I wouldn't be able to
+sort it until Thursday.
 
-> Those things have been there forever, I think we can even blame
-> pre-paulus maintainership here !
+Yes, maybe I should've said to Andrew "please grab this patch off this
+URL and ensure it gets to Linus ASAP."  Hind sight is always a wonderful
+thing.
 
-I blame Rusty.
-
-> I'll change them all in one go in a different patch if you want.
-
-whatever ;)
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
