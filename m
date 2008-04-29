@@ -1,116 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760586AbYD2SfM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757510AbYD2Sic@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760586AbYD2SfM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 14:35:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754672AbYD2Se6
+	id S1757510AbYD2Sic (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 14:38:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754512AbYD2SiY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 14:34:58 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:57501 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754361AbYD2Se5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 14:34:57 -0400
-Date: Tue, 29 Apr 2008 20:35:31 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: linux-kbuild <linux-kbuild@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Cc: Dave Jones <davej@codemonkey.org.uk>, Roland McGrath <roland@redhat.com>,
-       Andres Salomon <dilinger@queued.net>
-Subject: Additional kconfig targets (cloneconfig, nonint_oldconfig etc)
-Message-ID: <20080429183531.GB19652@uranus.ravnborg.org>
+	Tue, 29 Apr 2008 14:38:24 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:35235 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753810AbYD2SiX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Apr 2008 14:38:23 -0400
+Date: Tue, 29 Apr 2008 11:38:00 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: den@openvz.org, adobriyan@gmail.com, linux-pcmcia@lists.infradead.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: pcmcia_ioctl.c compile error
+Message-Id: <20080429113800.8f8100b0.akpm@linux-foundation.org>
+In-Reply-To: <20080429182709.GB2898@cs181133002.pp.htv.fi>
+References: <20080429182709.GB2898@cs181133002.pp.htv.fi>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Recently there has been request for a number of new
-kconfig related targets.
+On Tue, 29 Apr 2008 21:27:10 +0300
+Adrian Bunk <bunk@kernel.org> wrote:
 
-In general it boils down to the following:
+> Commit 9c37066d888bf6e1b96ad12304971b3ddeabbad0 (proc: remove proc_bus) 
+> came through -mm that contains a patch implementing the overdue removal 
+> of the PCMCIA control ioctl that did not yet make it into Linus' tree:
+> 
+> <---  snip  -->
+> 
+> ...
+>   CC      drivers/pcmcia/pcmcia_ioctl.o
+> /home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/pcmcia/pcmcia_ioctl.c: In function ___pcmcia_setup_ioctl___:
+> /home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/pcmcia/pcmcia_ioctl.c:790: error: ___proc_bus___ undeclared (first use in this function)
+> /home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/pcmcia/pcmcia_ioctl.c:790: error: (Each undeclared identifier is reported only once
+> /home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/pcmcia/pcmcia_ioctl.c:790: error: for each function it appears in.)
+> /home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/pcmcia/pcmcia_ioctl.c: In function ___pcmcia_cleanup_ioctl___:
+> /home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/pcmcia/pcmcia_ioctl.c:801: error: ___proc_bus___ undeclared (first use in this function)
+> make[3]: *** [drivers/pcmcia/pcmcia_ioctl.o] Error 1
+> 
+> <--  snip  -->
+> 
 
-We need to be flexible in what configuration
-we start out from and how we apply it.
+Yes, I fixed it but then fumbled the fix :(
 
-We need to be able to apply it in following ways:
-1) automated - select defaults for all new symbols
-   => It is used for "make defconfig, make *_defconfig" today
+I sent Linus the below an hour or so ago.
 
-2) interactive - asking user for all new symbols
-   and error out if stdin is redirected
-
-3) list unknown - list all new symbols and do not
-   create a new config
-
-With oldconfig today we have two modes:
--> One mode where we are very chatty and show
-   all output.
--> And the 'silent' mode where we only start being
-   chatty when we see a new symbol.
-
-I plan to drop the 'very chatty' mode as I
-do not see it usefull.
-So in essense 'make oldconfig' and 'make silentoldconfig'
-become equal.
-
-The commands we have today for kconfig is:
-
-# Command line variants
-make oldconfig
-make silentoldconfig
-make defconfig
-make XXX_defconfig
-
-(The other frontends are left out on purpose).
-The challenge here is to come up with a syntax that
-allows us to select between the three behaviours,
-while keeping backward compatibility.
-
-The best suggestion I have so far is to say that:
-a) if defconfig is specified then we use method 1)
-b) if oldconfig is specified then we use method 2)
-c) if newconfig is specified then we use method 3)
-
-And we add support for a new 'commandline' parameter
-'K' so I can say:
-
-make K=/proc/config.gz defconfig
-make K=i386_defconfig  defconfig
-make K=i386_defconfig  oldconfig
-make K=/proc/config.gz newconfig
-
-So K is used to specify what config file we use
-to start out from.
-
-Care should be taken to keep the known good
-targets working as before.
-
-Andres Salomon already did some preparational work
-for this but I need to find a good way to handle the K=
-parameter.
-Dave J also posted patches that is useful for 'newconfig'.
-
-But I wanted to ask for opinions before diving into
-implmenting this.
-
-	Sam
-
-[Random notes..]
-
-# Enviroment variables affecting kconfig
-KCONFIG_ALLCONFIG
-KCONFIG_NOSILENTUPDATE
-KCONFIG_CONFIG
-KCONFIG_OVERWRITECONFIG
-KCONFIG_NOTIMESTAMP
-KCONFIG_AUTOCONFIG
-KCONFIG_AUTOHEADER
-
-#input files (aparts from the mandatory ones)
-all.config
-allno.config
-allmod.config
-allyes.config
-allrandom.config
+--- a/drivers/pcmcia/pcmcia_ioctl.c~drivers-pcmcia-pcmcia_ioctlc-fix-build
++++ a/drivers/pcmcia/pcmcia_ioctl.c
+@@ -787,7 +787,7 @@ void __init pcmcia_setup_ioctl(void) {
+ 		major_dev = i;
+ 
+ #ifdef CONFIG_PROC_FS
+-	proc_pccard = proc_mkdir("pccard", proc_bus);
++	proc_pccard = proc_mkdir("bus/pccard", NULL);
+ 	if (proc_pccard)
+ 		create_proc_read_entry("drivers",0,proc_pccard,proc_read_drivers,NULL);
+ #endif
+@@ -798,7 +798,7 @@ void __exit pcmcia_cleanup_ioctl(void) {
+ #ifdef CONFIG_PROC_FS
+ 	if (proc_pccard) {
+ 		remove_proc_entry("drivers", proc_pccard);
+-		remove_proc_entry("pccard", proc_bus);
++		remove_proc_entry("bus/pccard", NULL);
+ 	}
+ #endif
+ 	if (major_dev != -1)
+_
 
