@@ -1,46 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762136AbYD2Qsv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762490AbYD2QuA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762136AbYD2Qsv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 12:48:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755482AbYD2Qso
+	id S1762490AbYD2QuA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 12:50:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754375AbYD2Qtw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 12:48:44 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:35312 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753629AbYD2Qsn (ORCPT
+	Tue, 29 Apr 2008 12:49:52 -0400
+Received: from e33.co.us.ibm.com ([32.97.110.151]:40340 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754656AbYD2Qtu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 12:48:43 -0400
-Date: Tue, 29 Apr 2008 17:48:38 +0100
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Timur Tabi <timur@freescale.com>,
-       Roland Kuhn <rkuhn@e18.physik.tu-muenchen.de>,
-       linux-kernel@vger.kernel.org
-Subject: Re: cross-compiling on OS X, make menuconfig fails
-Message-ID: <20080429164838.GM5882@ZenIV.linux.org.uk>
-References: <481529B6.6030802@freescale.com> <8FEAC32C-868F-468C-B383-8450D400691C@e18.physik.tu-muenchen.de> <48173607.6080307@freescale.com> <20080429164501.GA18018@uranus.ravnborg.org>
+	Tue, 29 Apr 2008 12:49:50 -0400
+Date: Tue, 29 Apr 2008 09:49:18 -0700
+From: Nishanth Aravamudan <nacc@us.ibm.com>
+To: apw@shadowen.org
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: false negative in checpatch for asm/ vs. linux/
+Message-ID: <20080429164918.GB24967@us.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080429164501.GA18018@uranus.ravnborg.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+X-Operating-System: Linux 2.6.25-mm1-00017-g1feb4e5-dirty (x86_64)
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 29, 2008 at 06:45:01PM +0200, Sam Ravnborg wrote:
-> > 
-> > I read in the latest Linux Journal magazine that someone noticed that even
-> > though the kernel scripts say #!/bin/sh, many of them are really bash scripts.
-> > This person went through the effort of changing the script to be true 'sh'
-> > scripts.  Has that code been merged in?
-> 
-> I have no patches pending but I may have lost them.
-> As I am 100% ignorant about what is bash and what is not bash specialities
-> I will more or less be blind when I apply them so I hope they are well
-> tested.
+Hi Andy,
 
-*shrug*
+I think the following:
 
-As a sanity check, try to run them with ash(1).  Before going into review
-of portability.
+#warn if <asm/foo.h> is #included and <linux/foo.h> is available (uses RAW line)
+                if ($tree && $rawline =~ m{^.\#\s*include\s*\<asm\/(.*)\.h\>}) {
+                        my $checkfile = "$root/include/linux/$1.h";
+                        if (-f $checkfile && $1 ne 'irq') {
+                                WARN("Use #include <linux/$1.h> instead of <asm/$1.h>\n" .
+                                        $herecurr);
+                        }
+                }
+
+in checkpatch.pl can lead to false positives for asm/ includes from within
+linux/ files? e.g., I have a patch which moves the asm/hugetlb.h #include up to
+the top of include/linux/hugetlb.h, but I get:
+
+[09:46:27]nacc@arkanoid:~/linux/views/linux-2.6-work$ git show HEAD | ./scripts/checkpatch.pl -
+WARNING: Use #include <linux/hugetlb.h> instead of <asm/hugetlb.h>
+#17: FILE: include/linux/hugetlb.h:8:
++#include <asm/hugetlb.h>
+
+Thanks,
+Nish
+
+-- 
+Nishanth Aravamudan <nacc@us.ibm.com>
+IBM Linux Technology Center
