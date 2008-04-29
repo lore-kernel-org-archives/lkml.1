@@ -1,125 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937195AbYD2AJ6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937398AbYD2ALP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937195AbYD2AJ6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 20:09:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756197AbYD2AJu
+	id S937398AbYD2ALP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 20:11:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932531AbYD2AK7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 20:09:50 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:41107 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753854AbYD2AJt (ORCPT
-	<rfc822;@sgi.com:linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 20:09:49 -0400
-Date: Tue, 29 Apr 2008 10:09:30 +1000
-From: David Chinner <dgc@sgi.com>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: David Chinner <dgc@sgi.com>, linux-kernel@vger.kernel.org,
-       Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: Announce: Semaphore-Removal tree
-Message-ID: <20080429000929.GF108924158@sgi.com>
-References: <20080425170021.GH14990@parisc-linux.org> <20080428051040.GH103491721@sgi.com> <20080428122004.GT14990@parisc-linux.org>
-Mime-Version: 1.0
+	Mon, 28 Apr 2008 20:10:59 -0400
+Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:54154
+	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756197AbYD2AK6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Apr 2008 20:10:58 -0400
+Date: Tue, 29 Apr 2008 02:10:52 +0200
+From: Andrea Arcangeli <andrea@qumranet.com>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Robin Holt <holt@sgi.com>, Jack Steiner <steiner@sgi.com>,
+       Nick Piggin <npiggin@suse.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       kvm-devel@lists.sourceforge.net, Kanoj Sarcar <kanojsarcar@yahoo.com>,
+       Roland Dreier <rdreier@cisco.com>,
+       Steve Wise <swise@opengridcomputing.com>, linux-kernel@vger.kernel.org,
+       Avi Kivity <avi@qumranet.com>, linux-mm@kvack.org,
+       general@lists.openfabrics.org, Hugh Dickins <hugh@veritas.com>,
+       akpm@linux-foundation.org, Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [PATCH 01 of 12] Core of mmu notifiers
+Message-ID: <20080429001052.GA8315@duo.random>
+References: <20080423002848.GA32618@sgi.com> <20080423163713.GC24536@duo.random> <20080423221928.GV24536@duo.random> <20080424064753.GH24536@duo.random> <20080424095112.GC30298@sgi.com> <20080424153943.GJ24536@duo.random> <20080424174145.GM24536@duo.random> <20080426131734.GB19717@sgi.com> <20080427122727.GO9514@duo.random> <Pine.LNX.4.64.0804281332030.31163@schroedinger.engr.sgi.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080428122004.GT14990@parisc-linux.org>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <Pine.LNX.4.64.0804281332030.31163@schroedinger.engr.sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 28, 2008 at 06:20:04AM -0600, Matthew Wilcox wrote:
-> On Mon, Apr 28, 2008 at 03:10:40PM +1000, David Chinner wrote:
-> > On Fri, Apr 25, 2008 at 11:00:21AM -0600, Matthew Wilcox wrote:
-> > > 
-> > > It's been a Good Idea for a while to use mutexes instead of
-> > > semaphores where possible.  Additional debuggability, better optimised,
-> > > better-enforced semantics, etc.
-> > > 
-> > > Obviously, there are some places that can't be converted to mutexes.
-> > > I'm not proposing blind changes. 
-> > 
-> > Matthew, what's the plan for code using semaphores that cannot be
-> > easily converted to something else? e.g. XFS?
+On Mon, Apr 28, 2008 at 01:34:11PM -0700, Christoph Lameter wrote:
+> On Sun, 27 Apr 2008, Andrea Arcangeli wrote:
 > 
-> I'm glad you asked!
+> > Talking about post 2.6.26: the refcount with rcu in the anon-vma
+> > conversion seems unnecessary and may explain part of the AIM slowdown
+> > too. The rest looks ok and probably we should switch the code to a
+> > compile-time decision between rwlock and rwsem (so obsoleting the
+> > current spinlock).
 > 
-> Arjan, Ingo and I have been batting around something called a kcounter.
-> I appear to have misplaced the patch right now, but the basic idea is
-> that it returns you a cookie when you down(), which you then have to
-> pass to the up()-equivalent.  This gives you at least some of the
-> assurances you get from mutexes.
+> You are going to take a semphore in an rcu section? Guess you did not 
+> activate all debugging options while testing? I was not aware that you can 
+> take a sleeping lock from a non preemptible context.
 
-<sigh>
+I'd hoped to discuss this topic after mmu-notifier-core was already
+merged, but let's do it anyway.
 
-back to the days of cookies being required for locks. We only just
-removed all the remaining lock cruft left over from Irix that used
-cookies like this. i.e.:
+My point of view is that there was no rcu when I wrote that code, yet
+there was no reference count and yet all locking looks still exactly
+the same as I wrote it. There's even still the page_table_lock to
+serialize threads taking the mmap_sem in read mode against the first
+vma->anon_vma = anon_vma during the page fault.
 
-	DECL_LOCK_COOKIE(cookie);
+Frankly I've absolutely no idea why rcu is needed in all rmap code
+when walking the page->mapping. Definitely the PG_locked is taken so
+there's no way page->mapping could possibly go away under the rmap
+code, hence the anon_vma can't go away as it's queued in the vma, and
+the vma has to go away before the page is zapped out of the pte.
 
-	cookie = spin_lock(&lock);
-	.....
-	spin_unlock(&lock, cookie);
+So there are some possible scenarios:
 
-it's an ugly, ugly API....
+1) my original anon_vma code was buggy not taking the rcu_read_lock()
+and somebody fixed it (I tend to exclude it)
 
-> Though ... looking at XFS, you have 5 counting semaphores currently:
-> 
-> 1. i_flock
-> 
-> This one seems to be a mutex. 
+2) somebody has seen a race that doesn't exist and didn't bother to
+document it other than with this obscure comment
 
-No, it's a semaphore. It is the inode flush lock and is held over
-I/O on the inode. It is released in a different context to the
-process that holds it. We use trylock semantics on it all the time
-to determine if we can write the inode to disk.
+ * Getting a lock on a stable anon_vma from a page off the LRU is
+ * tricky: page_lock_anon_vma rely on RCU to guard against the races.
 
-> 2. l_flushsema
-> 
-> This seems to be a completion.  ie you're using it to wait for the log
-> to be flushed.
+I tend to exclude it too as VM folks are too smart for this to be the case.
 
-Yes, that could probably be a completion. I'm assuming that a completion
-can handle several thousand waiting processes, right?
+3) somebody did some microoptimization using rcu and we surely can
+undo that microoptimization to get the code back to my original code
+that didn't need rcu despite it worked exactly the same, and that is
+going to be cheaper to use with semaphores than doubling the number of
+locked ops for every lock instruction.
 
-> 3. q_flock
-> 
-> Ow.  ow.  My brain hurts.  What are these semantics?
-
-Same semantics as the i_flock - it's held while flushing the dquot
-to disk and is released by a different thread. Trylocks are used on
-this as well...
-
-> 4. b_iodonesema
-> 
-> This should be a completion.  It's used to wait for the io to be
-> complete.
-
-Yup, that could be done.
-
-> 5. b_sema
-> 
-> This looks like a mutex, but I think it's released in a different
-> context from the one which acquires it.
-
-Yup. held across I/O and typically released by a different thread.
-Trylock semantics used as well.
-
-> Possibly XFS should be using constructs like wait_on_bit instead of
-> semaphores.  See the implementation of wait_on_buffer for an example.
-
-That sounds to me like you are saying is "semaphores are going away so
-implement your own semaphore-like thingy using some other construct".
-Right?
-
-If that's the case, then AFAICT changing to completions and then
-s/semaphore/rw_semaphore/ and using only {down,up}_write() for
-the rest should work, right? Or are rwsem's going to go away, too?
-
-Cheers,
-
-Dave.
--- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
+Now the double atomic op may not be horrible when not contented, as it
+works on the same cacheline but with cacheline bouncing with
+contention it sounds doubly horrible than a single cacheline bounce
+and I don't see the point of it as you can't use rcu anyways, so you
+can't possibly take advantage of whatever microoptimization done over
+the original locking.
