@@ -1,145 +1,258 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761395AbYD2NHW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761599AbYD2NHo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761395AbYD2NHW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 09:07:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754650AbYD2NHH
+	id S1761599AbYD2NHo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 09:07:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761397AbYD2NHW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 09:07:07 -0400
-Received: from cantor.suse.de ([195.135.220.2]:38355 "EHLO mx1.suse.de"
+	Tue, 29 Apr 2008 09:07:22 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:44181 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751051AbYD2NHF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 09:07:05 -0400
-Subject: Re: Linux 2.6.25 (coretemp reads high temperatures)
-From: Thomas Renninger <trenn@suse.de>
-Reply-To: trenn@suse.de
-To: Kasper Sandberg <lkml@metanurb.dk>
-Cc: Maxim Levitsky <maximlevitsky@gmail.com>, Len Brown <lenb@kernel.org>,
-       Matthew <jackdachef@gmail.com>, linux-acpi@vger.kernel.org,
-       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       Jean Delvare <khali@linux-fr.org>, "Zhang, Rui" <rui.zhang@intel.com>
-In-Reply-To: <1209406784.11608.15.camel@localhost>
-References: <e85b9d30804180837y39c52e26i588e4b67c87a5e9d@mail.gmail.com>
-	 <200804182151.49021.lenb@kernel.org>
-	 <200804231143.10875.maximlevitsky@gmail.com>
-	 <1209406784.11608.15.camel@localhost>
-Content-Type: text/plain; charset=UTF-8
-Organization: Novell/SUSE
-Date: Tue, 29 Apr 2008 15:07:03 +0200
-Message-Id: <1209474423.1784.837.camel@queen.suse.de>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
-Content-Transfer-Encoding: 8bit
+	id S1761362AbYD2NHU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Apr 2008 09:07:20 -0400
+Date: Tue, 29 Apr 2008 15:07:04 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: yhlu.kernel@gmail.com
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Gabriel C <nix.or.die@googlemail.com>,
+       Mika Fischer <mika.fischer@zoopnet.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/2] x86: mtrr cleanup for converting continuous to
+	discrete layout v8
+Message-ID: <20080429130704.GC24766@elte.hu>
+References: <200804272337.40130.yhlu.kernel@gmail.com> <200804281505.05764.yhlu.kernel@gmail.com> <200804290200.33459.yhlu.kernel@gmail.com> <200804290352.33543.yhlu.kernel@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200804290352.33543.yhlu.kernel@gmail.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-04-28 at 20:19 +0200, Kasper Sandberg wrote:
-> On Wed, 2008-04-23 at 11:43 +0300, Maxim Levitsky wrote:
-> > On Saturday, 19 April 2008 04:51:48 Len Brown wrote:
-> > > On Friday 18 April 2008, Matthew wrote:
-> > > > Hi everyone, hi Linus,
-> > > > 
-> > > > congratulations on this new great kernel-release :)
-> > > > 
-> > > > I've another "regression" to report for 2.6.25:
-> > > > 
-> > > > it's concerning much higher temperatures being read out by the
-> > > > "coretemp" kernel-module in comparison to 2.6.24* series
-> > > > 
-> > > > e.g. where temperatures were around 40-47°C they are now constantly
-> > > > jumping around 55-70°C (even in idle !)
-> > 
-> > I just updated from 2.6.24 to 2.6.25
-> > (I usually follow whole development cycle, but I was very busy, so I skipped 2.6.25 cycle)
-> > 
-> > I confirm this.
-> > I *know* that temperatures reported now are wrong.
-> 
-> I too can confirm that it reports incorrect temperatures.
-> 
-> I have a Q9450, and this is my "sensors" output:
-> it8718-isa-0290
-> Adapter: ISA adapter
-> <snip>
-> temp1:       +44Â°C  (low  =  +127Â°C, high =  +127Â°C)   sensor =
-> thermistor
-> temp2:       +22Â°C  (low  =  +127Â°C, high =   +60Â°C)   sensor = diode
-> temp3:        -2Â°C  (low  =  +127Â°C, high =  +127Â°C)   sensor =
-> thermistor
-> vid:      +0.000 V
-> 
-> coretemp-isa-0000
-> Adapter: ISA adapter
-> Core 0:      +44Â°C  (high =  +100Â°C)
-> 
-> coretemp-isa-0001
-> Adapter: ISA adapter
-> Core 1:      +44Â°C  (high =  +100Â°C)
-> 
-> coretemp-isa-0002
-> Adapter: ISA adapter
-> Core 2:      +43Â°C  (high =  +100Â°C)
-> 
-> coretemp-isa-0003
-> Adapter: ISA adapter
-> Core 3:      +41Â°C  (high =  +100Â°C)
-> 
-> 
-> temp2 is the cpu temperature(matches bios), temp1 is the northbridge(i
-> think, bios says "system temp").
-> 
-> i have watercooling, and well :P when i touch the "tube", its normal
-> room temperature, and believe me, i would notice if it was 45.. this is
-> with my cpu at idle - at full load on all 4 cores, temp2 says 35, and
-> ~60 on coretemp, and THIS i would surely be able to notice over room
-> temp :)
-> 
-> any progress on this bug?
-> 
-> > 
-> > The reason is that bios did report same temperatures as coretemp in 2.6.24,
-> > moreover some time ago I have run a cpu tool (don't remember its name) on windows
-> > which similar to coretemp reads from each core directly, sensor data , 
-> > and I noticed that temperature that bios reports is exactly the average 
-> > temperature of both cores
-> > (I had to run this on windows - intel haven't released 
-> > drivers for their QST for temperature monitoring from bios - very sad)
-> > 
-> > And the driver did say in kernel log that TJMAX is 85C
-> > 
-> > Lets at least make a kernel option to override tjmax?
-> > 
 
-Could it be that due to latest thermal changes ACPI is reading
-temperatures more often, or started to read sensors that interfere with
-libsensors?
+a few minor cleanliness observations:
 
-There was a patch-set that detect such interference from myself and Jean
-which was not accepted by Linus.
-This is what I got from Jean recently, he should be able to point you to
-the latest patches if you want to give them a try:
-----------------------------------------------
-On Mon, 28 Apr 2008 22:13:13 -0700, Andrew Morton wrote:
-> In light of Linus's dummyspit last time around I guess I'll drop
-> this patch.
+> +#ifdef CONFIG_MTRR_SANITIZER
+> +
+> +#ifdef CONFIG_MTRR_SANITIZER_ENABLE_DEFAULT
+> +static int enable_mtrr_cleanup __initdata = 1;
+> +#else
+> +static int enable_mtrr_cleanup __initdata;
+> +#endif
+> +
+> +#else
+> +
+> +static int enable_mtrr_cleanup __initdata = -1;
+> +
+> +#endif
 
-That's OK, I'll include it in my i2c tree instead. While Linus doesn't
-like it, he didn't actually provide replacement code, only a vague idea
-which Thomas and myself know by experience, won't work well anyway. As
-the checks done by this driver are valuable, having it in -mm and
-linux-next is still good.
+this should be a single:
 
--- 
-Jean Delvare
-----------------------------------------------
+ #ifdef CONFIG_MTRR_SANITIZER
+ static int mtrr_cleanup_enabled = CONFIG_MTRR_SANITIZER_DEFAULT;
+ #endif
 
+block.
 
-If you get a conflict you should see something like this when loading
-the hwmon/sensor driver:
-i2c /dev entries driver
-f71805f: Found F71805F/FG chip at 0x290, revision 19
-ACPI: I/O resource f71805f [0x290-0x297] conflicts with ACPI region IP__ [0x295-0x296]
-ACPI: Device needs an ACPI driver
+> +#define RANGE_NUM 256
 
-   Thomas
+small explaination (comment) about what the limit means.
 
+> +static int __init add_range(struct res_range *range, int nr_range, unsigned long start,
+> +			      unsigned long end, int merge)
+
+looks cleaner this way:
+
+  static int __init
+  add_range(struct res_range *range, int nr_range, unsigned long start,
+            unsigned long end, int merge)
+
+> +{
+> +	int i;
+> +
+> +	if (!merge)
+> +		goto addit;
+> +
+> +	/* try to merge it with old one */
+> +	for (i = 0; i < nr_range; i++) {
+> +		unsigned long final_start, final_end;
+> +		unsigned long common_start, common_end;
+> +
+> +		if (!range[i].end)
+> +			continue;
+> +
+> +		common_start = max(range[i].start, start);
+> +		common_end = min(range[i].end, end);
+> +		if (common_start > common_end + 1)
+> +			continue;
+> +
+> +		final_start = min(range[i].start, start);
+> +		final_end = max(range[i].end, end);
+> +
+> +		range[i].start = final_start;
+> +		range[i].end =  final_end;
+> +		return nr_range;
+> +	}
+> +
+> +addit:
+
+perhaps factor out the loop into a separate function and avoid the goto.
+
+> +static void __init subtract_range(struct res_range *range, unsigned long start,
+> +				unsigned long end)
+
+should be:
+
+ static void __init
+ subtract_range(struct res_range *range, unsigned long start,
+                unsigned long end)
+
+> +	int i;
+> +	int j;
+
+can be:
+
+	int i, j;
+
+> +		}
+> +
+> +
+
+stale newline.
+
+> +		if (start > range[j].start && end >= range[j].end && range[j].end > start - 1) {
+
+should be some sort of more readable in_range() check?
+
+> +			range[j].end = start - 1;
+> +			continue;
+> +		}
+> +
+> +		if (start > range[j].start && end < range[j].end) {
+> +			/* find the new spare */
+> +			for (i = 0; i < RANGE_NUM; i++) {
+> +				if (range[i].end == 0)
+> +					break;
+> +			}
+> +			if (i < RANGE_NUM) {
+> +				range[i].end = range[j].end;
+> +				range[i].start = end + 1;
+> +			} else {
+> +				printk(KERN_ERR "run of slot in ranges\n");
+> +			}
+> +			range[j].end = start - 1;
+> +			continue;
+> +		}
+> +	}
+> +}
+
+> +struct var_mtrr_state {
+> +	unsigned long range_startk, range_sizek;
+> +	unsigned long chunk_sizek;
+> +	unsigned long gran_sizek;
+> +	unsigned int reg;
+> +	unsigned address_bits;
+> +};
+
+s/unsigned address_bits/unsigned int address_bits/
+
+also move range_sizek on a separate line.
+
+plus we tend to align structures this way:
+
+> +struct var_mtrr_state {
+> +	unsigned long		range_startk;
+> +	unsigned long		range_sizek;
+> +	unsigned long		chunk_sizek;
+> +	unsigned long		gran_sizek;
+> +	unsigned int		reg;
+> +	unsigned int		address_bits;
+> +};
+
+(to put the types and field names into a visually more consistent form)
+
+> +static void __init set_var_mtrr(
+> +	unsigned int reg, unsigned long basek, unsigned long sizek,
+> +	unsigned char type, unsigned address_bits)
+
+should be:
+
+ static void __init
+ set_var_mtrr(unsigned int reg, unsigned long basek, unsigned long sizek,
+              unsigned char type, unsigned address_bits)
+
+> +	u32 base_lo, base_hi, mask_lo, mask_hi;
+> +	unsigned address_mask_high;
+
+s/unsigned/unsigned int
+
+hm, will this work on 64-bit? Above-4G is controlled via separate 
+mechanisms though so i guess it does.
+
+> +	address_mask_high = ((1u << (address_bits - 32u)) - 1u);
+
+use alignment macros instead.
+
+> +		unsigned long sizek;
+> +		/* Compute the maximum size I can make a range */
+> +		if (range_startk)
+
+put extra newline between variable definition and code.
+
+> +	var_state.range_startk = 0;
+> +	var_state.range_sizek = 0;
+> +	var_state.reg = 0;
+> +	var_state.address_bits = address_bits;
+> +	var_state.chunk_sizek = mtrr_chunk_size >> 10;
+> +	var_state.gran_sizek = mtrr_gran_size >> 10;
+
+initialization looks nicer with vertical alignment, i.e.:
+
+> +	var_state.range_startk	= 0;
+> +	var_state.range_sizek	= 0;
+> +	var_state.reg		= 0;
+> +	var_state.address_bits	= address_bits;
+> +	var_state.chunk_sizek	= mtrr_chunk_size >> 10;
+> +	var_state.gran_sizek	= mtrr_gran_size >> 10;
+
+> +	/* Clear out the extra MTRR's */
+> +	while (var_state.reg < num_var_ranges)
+> +		set_var_mtrr(var_state.reg++, 0, 0, 0, var_state.address_bits);
+
+the ++ is a hard to notice side-effect of the loop. It's cleaner to 
+separate it out or to have a for() loop for it.
+
+> +static int __init mtrr_cleanup(unsigned address_bits)
+> +{
+> +	unsigned long i, base, size, def, dummy;
+> +	mtrr_type type;
+> +	struct res_range range[RANGE_NUM];
+> +	int nr_range;
+> +	unsigned long extra_remove_base, extra_remove_size;
+
+try to use a 'christmas tree' ordering of variables, i.e.:
+
+> +	unsigned long extra_remove_base, extra_remove_size;
+> +	unsigned long i, base, size, def, dummy;
+> +	struct res_range range[RANGE_NUM];
+> +	mtrr_type type;
+> +	int nr_range;
+
+> +	return 1;
+> +
+> +}
+
+superfluous newline.
+
+all in one, this is a very useful and nice feature.
+
+	Ingo
