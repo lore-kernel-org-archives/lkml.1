@@ -1,66 +1,160 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757180AbYD2PjE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934163AbYD2Pjd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757180AbYD2PjE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 11:39:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933826AbYD2Piq
+	id S934163AbYD2Pjd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 11:39:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765412AbYD2PjE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 11:38:46 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:55827 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S933816AbYD2Pip (ORCPT
+	Tue, 29 Apr 2008 11:39:04 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:13342 "EHLO
+	dwalker1.mvista.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S934023AbYD2PjB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 11:38:45 -0400
-Date: Tue, 29 Apr 2008 08:37:04 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
-       mingo@redhat.com
-Subject: Re: [PATCH] toshiba: Use ioremap_cached
-Message-Id: <20080429083704.41855699.akpm@linux-foundation.org>
-In-Reply-To: <20080429152312.GB19410@elte.hu>
-References: <20080429142023.093bfba6@core>
-	<20080429141559.GB26461@elte.hu>
-	<20080429081408.c9dc6b4f.akpm@linux-foundation.org>
-	<20080429152312.GB19410@elte.hu>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 29 Apr 2008 11:39:01 -0400
+Message-Id: <20080429153516.091218419@mvista.com>
+User-Agent: quilt/0.46-1
+Date: Tue, 29 Apr 2008 08:35:16 -0700
+From: Daniel Walker <dwalker@mvista.com>
+To: akpm@linux-foundation.org
+Cc: paulus@samba.org, benh@kernel.crashing.org, mingo@elte.hu, matthew@wil.cx,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] macintosh: therm_pm72: driver_lock semaphore to mutex
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 29 Apr 2008 17:23:12 +0200 Ingo Molnar <mingo@elte.hu> wrote:
+Signed-off-by: Daniel Walker <dwalker@mvista.com>
 
-> 
-> * Andrew Morton <akpm@linux-foundation.org> wrote:
-> 
-> > > Acked-by: Ingo Molnar <mingo@elte.hu>
-> > > 
-> > > i suspect this shouldnt go via x86.git but i've queued it up to 
-> > > track it.
-> > 
-> > Please don't "queue things up to track them".  Just queue them up to 
-> > merge them, or don't queue them at all.
-> > 
-> > Because if you queue it up then I will not.  If you later for some 
-> > reason unqueue it then volia, it is lost.  We should aim to avoid 
-> > having multiple copies of a patch sitting around the place.
-> 
-> but ... i dont just unqueue 'for some reason and then volia'. If we did 
-> that we'd be losing patches left and right. Every patch we unqueue 
-> happens in a very predictable protocol that should avoid patches getting 
-> lost.
-> 
-> ( basically we only remove any patch when they are broken but even then
->   there's a clear notification. Even a NAK or other fatal review 
->   feedback does not actually remove a patch in the typical case when the 
->   patch otherwise has practical use, and update is hoped for and the 
->   patch does not break things - it just freezes the patch at the "must 
->   not go upstream yet" end of the queue. )
-> 
-> if we lose any patches then let us know so we can improve the protocol.
+---
+ drivers/macintosh/therm_pm72.c |   31 ++++++++++++++++---------------
+ 1 file changed, 16 insertions(+), 15 deletions(-)
 
-OK, in that case please don't say "i've queued it up to track it"!
+Index: linux-2.6.24/drivers/macintosh/therm_pm72.c
+===================================================================
+--- linux-2.6.24.orig/drivers/macintosh/therm_pm72.c
++++ linux-2.6.24/drivers/macintosh/therm_pm72.c
+@@ -122,6 +122,7 @@
+ #include <linux/kmod.h>
+ #include <linux/i2c.h>
+ #include <linux/kthread.h>
++#include <linux/mutex.h>
+ #include <asm/prom.h>
+ #include <asm/machdep.h>
+ #include <asm/io.h>
+@@ -169,7 +170,7 @@ static int				rackmac;
+ static s32				dimm_output_clamp;
+ static int 				fcu_rpm_shift;
+ static int				fcu_tickle_ticks;
+-static DECLARE_MUTEX(driver_lock);
++static DEFINE_MUTEX(driver_lock);
+ 
+ /*
+  * We have 3 types of CPU PID control. One is "split" old style control
+@@ -729,9 +730,9 @@ static void fetch_cpu_pumps_minmax(void)
+ static ssize_t show_##name(struct device *dev, struct device_attribute *attr, char *buf)	\
+ {								\
+ 	ssize_t r;						\
+-	down(&driver_lock);					\
++	mutex_lock(&driver_lock);					\
+ 	r = sprintf(buf, "%d.%03d", FIX32TOPRINT(data));	\
+-	up(&driver_lock);					\
++	mutex_unlock(&driver_lock);					\
+ 	return r;						\
+ }
+ #define BUILD_SHOW_FUNC_INT(name, data)				\
+@@ -1803,11 +1804,11 @@ static int main_control_loop(void *x)
+ {
+ 	DBG("main_control_loop started\n");
+ 
+-	down(&driver_lock);
++	mutex_lock(&driver_lock);
+ 
+ 	if (start_fcu() < 0) {
+ 		printk(KERN_ERR "kfand: failed to start FCU\n");
+-		up(&driver_lock);
++		mutex_unlock(&driver_lock);
+ 		goto out;
+ 	}
+ 
+@@ -1822,14 +1823,14 @@ static int main_control_loop(void *x)
+ 
+ 	fcu_tickle_ticks = FCU_TICKLE_TICKS;
+ 
+-	up(&driver_lock);
++	mutex_unlock(&driver_lock);
+ 
+ 	while (state == state_attached) {
+ 		unsigned long elapsed, start;
+ 
+ 		start = jiffies;
+ 
+-		down(&driver_lock);
++		mutex_lock(&driver_lock);
+ 
+ 		/* Tickle the FCU just in case */
+ 		if (--fcu_tickle_ticks < 0) {
+@@ -1861,7 +1862,7 @@ static int main_control_loop(void *x)
+ 			do_monitor_slots(&slots_state);
+ 		else
+ 			do_monitor_drives(&drives_state);
+-		up(&driver_lock);
++		mutex_unlock(&driver_lock);
+ 
+ 		if (critical_state == 1) {
+ 			printk(KERN_WARNING "Temperature control detected a critical condition\n");
+@@ -2019,13 +2020,13 @@ static void detach_fcu(void)
+  */
+ static int therm_pm72_attach(struct i2c_adapter *adapter)
+ {
+-	down(&driver_lock);
++	mutex_lock(&driver_lock);
+ 
+ 	/* Check state */
+ 	if (state == state_detached)
+ 		state = state_attaching;
+ 	if (state != state_attaching) {
+-		up(&driver_lock);
++		mutex_unlock(&driver_lock);
+ 		return 0;
+ 	}
+ 
+@@ -2054,7 +2055,7 @@ static int therm_pm72_attach(struct i2c_
+ 		state = state_attached;
+ 		start_control_loops();
+ 	}
+-	up(&driver_lock);
++	mutex_unlock(&driver_lock);
+ 
+ 	return 0;
+ }
+@@ -2065,16 +2066,16 @@ static int therm_pm72_attach(struct i2c_
+  */
+ static int therm_pm72_detach(struct i2c_adapter *adapter)
+ {
+-	down(&driver_lock);
++	mutex_lock(&driver_lock);
+ 
+ 	if (state != state_detached)
+ 		state = state_detaching;
+ 
+ 	/* Stop control loops if any */
+ 	DBG("stopping control loops\n");
+-	up(&driver_lock);
++	mutex_unlock(&driver_lock);
+ 	stop_control_loops();
+-	down(&driver_lock);
++	mutex_lock(&driver_lock);
+ 
+ 	if (u3_0 != NULL && !strcmp(adapter->name, "u3 0")) {
+ 		DBG("lost U3-0, disposing control loops\n");
+@@ -2090,7 +2091,7 @@ static int therm_pm72_detach(struct i2c_
+ 	if (u3_0 == NULL && u3_1 == NULL)
+ 		state = state_detached;
+ 
+-	up(&driver_lock);
++	mutex_unlock(&driver_lock);
+ 
+ 	return 0;
+ }
+-- 
 
-Stick to the unambiguous, non-akpm-scary "applied" :)
+-- 
