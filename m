@@ -1,65 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758999AbYD2SGA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759314AbYD2SIj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758999AbYD2SGA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 14:06:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758206AbYD2SF2
+	id S1759314AbYD2SIj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 14:08:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751359AbYD2SI1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 14:05:28 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:46265 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758203AbYD2SF1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 14:05:27 -0400
-Date: Tue, 29 Apr 2008 20:06:01 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Al Viro <viro@ZenIV.linux.org.uk>
-Cc: Timur Tabi <timur@freescale.com>, Tony Breeds <tony@bakeyournoodle.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: cross-compiling on OS X, make menuconfig fails
-Message-ID: <20080429180601.GA19652@uranus.ravnborg.org>
-References: <481529B6.6030802@freescale.com> <20080428015151.GW20457@bakeyournoodle.com> <481739BF.8010305@freescale.com> <20080429164535.GB18018@uranus.ravnborg.org> <20080429172057.GN5882@ZenIV.linux.org.uk>
-Mime-Version: 1.0
+	Tue, 29 Apr 2008 14:08:27 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:53634 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755740AbYD2SI0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Apr 2008 14:08:26 -0400
+Date: Tue, 29 Apr 2008 19:08:25 +0100
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: [git pull] audit patches
+Message-ID: <20080429180825.GO5882@ZenIV.linux.org.uk>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080429172057.GN5882@ZenIV.linux.org.uk>
-User-Agent: Mutt/1.4.2.1i
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> 
-> Good grief, folks...
+Assorted audit patches for this cycle.  Please, pull from
+git.kernel.org/pub/scm/linux/kernel/git/viro/audit-current.git/ audit.b50
 
-Thanks Al.
-I've queued up the following patch.
+Shortlog:
+Al Viro (1):
+      new predicate - AUDIT_FILETYPE
 
-	Sam
+Eric Paris (7):
+      Audit: end printk with newline
+      Audit: collect sessionid in netlink messages
+      Audit: save audit_backlog_limit audit messages in case auditd comes back
+      Audit: stop deadlock from signals under load
+      Audit: standardize string audit interfaces
+      Audit: increase the maximum length of the key field
+      Audit: MAINTAINERS update
 
-commit c99cc32e0d92f5fdbdd39a7f42cfff869062fff5
-Author: Sam Ravnborg <sam@uranus.ravnborg.org>
-Date:   Tue Apr 29 20:02:44 2008 +0200
+Harvey Harrison (2):
+      audit: move extern declarations to audit.h
+      audit: fix sparse shadowed variable warnings
 
-    kconfig: made check-lxdialog more portable
-    
-    OS-X shell did not like 'echo -e' so implement
-    suggestion from Al Viro to use a more portable construct.
-    
-    Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
-    Cc: Al Viro <viro@ZenIV.linux.org.uk>
+Miloslav Trmac (1):
+      [patch 1/2] audit: let userspace fully control TTY input auditing
 
-diff --git a/scripts/kconfig/lxdialog/check-lxdialog.sh b/scripts/kconfig/lxdialog/check-lxdialog.sh
-index 62e1e02..5552154 100644
---- a/scripts/kconfig/lxdialog/check-lxdialog.sh
-+++ b/scripts/kconfig/lxdialog/check-lxdialog.sh
-@@ -36,8 +36,10 @@ trap "rm -f $tmp" 0 1 2 3 15
- 
- # Check if we can link to ncurses
- check() {
--	echo -e " #include CURSES_LOC \n main() {}" |
--	    $cc -xc - -o $tmp 2> /dev/null
-+        $cc -xc - -o $tmp 2>/dev/null <<'EOF'
-+#include CURSES_LOC
-+main() {}
-+EOF
- 	if [ $? != 0 ]; then
- 	    echo " *** Unable to find the ncurses libraries or the"       1>&2
- 	    echo " *** required header files."                            1>&2
+Pavel Emelyanov (1):
+      [patch 2/2] Use find_task_by_vpid in audit code
+
+Diffstat:
+ MAINTAINERS                       |    8 +-
+ drivers/char/tty_audit.c          |   63 +---------
+ drivers/char/tty_io.c             |    5 +-
+ include/linux/audit.h             |   28 +++--
+ include/linux/netlink.h           |    1 +
+ include/linux/tty.h               |    9 +-
+ include/net/netlabel.h            |    1 +
+ include/net/xfrm.h                |   23 ++--
+ kernel/audit.c                    |  249 +++++++++++++++++++++++++-----------
+ kernel/audit.h                    |   13 ++
+ kernel/auditfilter.c              |   45 ++++---
+ kernel/auditsc.c                  |   40 ++++---
+ net/key/af_key.c                  |   17 ++-
+ net/netlabel/netlabel_unlabeled.c |    1 +
+ net/netlabel/netlabel_user.c      |    4 +-
+ net/netlabel/netlabel_user.h      |    1 +
+ net/netlink/af_netlink.c          |    1 +
+ net/xfrm/xfrm_policy.c            |   12 ++-
+ net/xfrm/xfrm_state.c             |   13 ++-
+ net/xfrm/xfrm_user.c              |   41 ++++--
+ security/selinux/avc.c            |    2 +-
+ security/smack/smackfs.c          |    2 +
+ 22 files changed, 346 insertions(+), 233 deletions(-)
+
