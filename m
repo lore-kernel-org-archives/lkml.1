@@ -1,105 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764778AbYD2QDj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765507AbYD2QD5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764778AbYD2QDj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 12:03:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751968AbYD2QDb
+	id S1765507AbYD2QD5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 12:03:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751968AbYD2QDp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 12:03:31 -0400
-Received: from fg-out-1718.google.com ([72.14.220.158]:11522 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752986AbYD2QDa (ORCPT
+	Tue, 29 Apr 2008 12:03:45 -0400
+Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:46023
+	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764923AbYD2QDm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 12:03:30 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=tTwef3QbWzl0icNNbezMbLejMmneLR5xx7QXkVbM03kTP2IjM9H4dl84peR/3PM5wHZnO52ySLSwaJGjJUCxvdgIkVPVca18rIC6DxXIjdg9E/1oAICmhpRTVVkw7S0PKeQ+3Oy8Ad433bRxuPq6oj9w3HPi5IFUERpbYu6C5gA=
-Message-ID: <e2e108260804290903x44ad1cb7x1278027ab51b0831@mail.gmail.com>
-Date: Tue, 29 Apr 2008 18:03:26 +0200
-From: "Bart Van Assche" <bart.vanassche@gmail.com>
-To: "Peter Zijlstra" <a.p.zijlstra@chello.nl>
-Subject: Re: [PATCH 1/8] lockdep: fix recursive read lock validation
-Cc: ego@in.ibm.com, linux-kernel@vger.kernel.org,
-       "Zdenek Kabelac" <zdenek.kabelac@gmail.com>,
-       "Oleg Nesterov" <oleg@tv-sign.ru>,
-       "Heiko Carstens" <heiko.carstens@de.ibm.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Ingo Molnar" <mingo@elte.hu>, "Srivatsa Vaddagiri" <vatsa@in.ibm.com>
-In-Reply-To: <1209482101.13978.91.camel@twins>
+	Tue, 29 Apr 2008 12:03:42 -0400
+Date: Tue, 29 Apr 2008 18:03:40 +0200
+From: Andrea Arcangeli <andrea@qumranet.com>
+To: Robin Holt <holt@sgi.com>
+Cc: Christoph Lameter <clameter@sgi.com>, Jack Steiner <steiner@sgi.com>,
+       Nick Piggin <npiggin@suse.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       kvm-devel@lists.sourceforge.net, Kanoj Sarcar <kanojsarcar@yahoo.com>,
+       Roland Dreier <rdreier@cisco.com>,
+       Steve Wise <swise@opengridcomputing.com>, linux-kernel@vger.kernel.org,
+       Avi Kivity <avi@qumranet.com>, linux-mm@kvack.org,
+       general@lists.openfabrics.org, Hugh Dickins <hugh@veritas.com>,
+       akpm@linux-foundation.org, Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [PATCH 01 of 12] Core of mmu notifiers
+Message-ID: <20080429160340.GG8315@duo.random>
+References: <20080424095112.GC30298@sgi.com> <20080424153943.GJ24536@duo.random> <20080424174145.GM24536@duo.random> <20080426131734.GB19717@sgi.com> <20080427122727.GO9514@duo.random> <Pine.LNX.4.64.0804281332030.31163@schroedinger.engr.sgi.com> <20080429001052.GA8315@duo.random> <Pine.LNX.4.64.0804281819020.2502@schroedinger.engr.sgi.com> <20080429153052.GE8315@duo.random> <20080429155030.GB28944@sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20080429125659.GA23562@in.ibm.com>
-	 <20080429125750.GB23562@in.ibm.com>
-	 <e2e108260804290616l489ac8c2udcb2e80fc268b72b@mail.gmail.com>
-	 <1209481050.13978.72.camel@twins>
-	 <e2e108260804290803u75764b56t1c475a6d186aca8d@mail.gmail.com>
-	 <1209482101.13978.91.camel@twins>
+In-Reply-To: <20080429155030.GB28944@sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 29, 2008 at 5:15 PM, Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
->
-> On Tue, 2008-04-29 at 17:03 +0200, Bart Van Assche wrote:
->  > On Tue, Apr 29, 2008 at 4:57 PM, Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
->  > >
->  > > On Tue, 2008-04-29 at 15:16 +0200, Bart Van Assche wrote:
->  > >  > On Tue, Apr 29, 2008 at 2:57 PM, Gautham R Shenoy <ego@in.ibm.com> wrote:
->  > >  > > Subject: lockdep: fix recursive read lock validation
->  > >  > >  This means that the following sequence is now invalid, whereas previously
->  > >  > >  it was considered valid:
->  > >  > >
->  > >  > >   rlock(a); rlock(b); runlock(b); runlock(a)
->  > >  > >   rlock(b); rlock(a);
->  > >  >
->  > >  > Why are you marking this sequence as invalid ? Although it can be
->  > >  > debated whether it is good programming practice to be inconsistent
->  > >  > about the order of read-locking, the above sequence can't be involved
->  > >  > in a deadlock.
->  > >
->  > >  Not for pure read locks, but when you add write locks to it, it does get
->  > >  deadlocky. Lockdep does not keep separate chains for read and write
->  > >  locks.
->  >
->  > Nesting writer locks inside reader locks is always a bad idea. So
->  > please come up with an example of how varying the reader lock nesting
->  > order can trigger a deadlock (when no writer locks are nested inside
->  > reader locks and nested writer locks are always nested in the same
->  > order).
->
->  It can't deadlock when only readers are involved, but lockdep will not
->  be able to distinguish between the cases where only read locks are
->  involved and a mix of readers and writers is involved.
->
->  Hence disallow both.
->
->  But hitting this requires you do a series of rather unfortunate things:
->
->   1) use recursive locking
->   2) don't have strict lock order
->   3) make it work by using read locks only
->
->  Seriously, any code that triggers this might want to have its locking
->  re-throught.
+On Tue, Apr 29, 2008 at 10:50:30AM -0500, Robin Holt wrote:
+> You have said this continually about a CONFIG option.  I am unsure how
+> that could be achieved.  Could you provide a patch?
 
-You did not get my point.
+I'm busy with the reserved ram patch against 2.6.25 and latest kvm.git
+that is moving from pages to pfn for pci passthrough (that change will
+also remove the page pin with mmu notifiers).
 
-My point is that if you follow the following locking discipline, a
-deadlock will never be triggered:
-* Always obtain writer locks in a consistent order.
-* Never nest writer locks inside reader locks.
-* Nesting reader locks inside writer locks is okay, and nesting reader
-locks inside other reader locks is also OK.
+Unfortunately reserved-ram bugs out again in the blk-settings.c on
+real hardware. The fix I pushed in .25 for it, works when booting kvm
+(that's how I tested it) but on real hardware sata b_pfn happens to be
+1 page less than the result of the min comparison and I'll have to
+figure out what happens (only .24 code works on real hardware..., at
+least my fix is surely better than the previous .25-pre code).
 
-Again: if you do not agree with the above, please post an example that
-proves me wrong.
+I've other people waiting on that reserved-ram to be working, so once
+I've finished, I'll do the optimization to anon-vma (at least the
+removal of the unnecessary atomic_inc from fork) and add the config
+option.
 
-Or: whether or not to allow a sequence like "rlock(a); rlock(b);
-runlock(b); runlock(a); rlock(b); rlock(a);" is something we can
-choose. We do not have to forbid this sequence -- we can choose
-whether or not we allow this sequence.
+Christoph if you've interest in evolving anon-vma-sem and i_mmap_sem
+yourself in this direction, you're very welcome to go ahead while I
+finish sorting out reserved-ram. If you do, please let me know so we
+don't duplicate effort, and it'd be absolutely great if the patches
+could be incremental with #v14 so I can merge them trivially later and
+upload a new patchset once you're finished (the only outstanding fix
+you have to apply on top of #v14 that is already integrated in my
+patchset, is the i_mmap_sem deadlock fix I posted and that I'm sure
+you've already applied on top of #v14 before doing any more
+development on it).
 
-Bart.
+Thanks!
