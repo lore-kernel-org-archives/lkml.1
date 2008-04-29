@@ -1,87 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760981AbYD2Qpn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758762AbYD2QqD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760981AbYD2Qpn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 12:45:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758402AbYD2QpH
+	id S1758762AbYD2QqD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 12:46:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759516AbYD2Qpv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 12:45:07 -0400
-Received: from x346.tv-sign.ru ([89.108.83.215]:55402 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755268AbYD2QpF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 12:45:05 -0400
-Date: Tue, 29 Apr 2008 20:45:24 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Gautham R Shenoy <ego@in.ibm.com>, linux-kernel@vger.kernel.org,
-       Zdenek Kabelac <zdenek.kabelac@gmail.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Srivatsa Vaddagiri <vatsa@in.ibm.com>
-Subject: Re: [PATCH 5/8] cpu: cpu-hotplug deadlock
-Message-ID: <20080429164524.GA298@tv-sign.ru>
-References: <20080429125659.GA23562@in.ibm.com> <20080429130201.GF23562@in.ibm.com> <20080429143350.GA246@tv-sign.ru> <1209481748.13978.84.camel@twins>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1209481748.13978.84.camel@twins>
-User-Agent: Mutt/1.5.11
+	Tue, 29 Apr 2008 12:45:51 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:36580 "EHLO
+	dwalker1.mvista.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1758402AbYD2Qpv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Apr 2008 12:45:51 -0400
+Message-Id: <20080429164303.182092623@mvista.com>
+User-Agent: quilt/0.46-1
+Date: Tue, 29 Apr 2008 09:43:03 -0700
+From: Daniel Walker <dwalker@mvista.com>
+To: akpm@linux-foundation.org
+Cc: paulus@samba.org, benh@kernel.crashing.org, mingo@elte.hu, matthew@wil.cx,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] macintosh: qindfarm_smu_sat: semaphore to mutex
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 04/29, Peter Zijlstra wrote:
->
-> The only thing that changed is that the mutex is not held; so what we
-> change is:
-> 
->  LOCK
-> 
->  ... do the full hotplug thing ...
-> 
->  UNLOCK
-> 
-> into
-> 
->  LOCK
->   set state
->  UNLOCK
-> 
->  ... do the full hotplug thing ...
-> 
->  LOCK
->   unset state
->  UNLOCK
-> 
-> So that the lock isn't held over the hotplug operation.
+Signed-off-by: Daniel Walker <dwalker@mvista.com>
 
-Well, yes I see, but... Ugh, I have a a blind spot here ;)
+---
+ drivers/macintosh/windfarm_smu_sat.c |   10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
 
-why this makes any difference from the semantics POV ? why it is bad
-to hold the mutex throughout the "full hotplug thing" ?
+Index: linux-2.6.25/drivers/macintosh/windfarm_smu_sat.c
+===================================================================
+--- linux-2.6.25.orig/drivers/macintosh/windfarm_smu_sat.c
++++ linux-2.6.25/drivers/macintosh/windfarm_smu_sat.c
+@@ -13,7 +13,7 @@
+ #include <linux/init.h>
+ #include <linux/wait.h>
+ #include <linux/i2c.h>
+-#include <asm/semaphore.h>
++#include <linux/mutex.h>
+ #include <asm/prom.h>
+ #include <asm/smu.h>
+ #include <asm/pmac_low_i2c.h>
+@@ -36,7 +36,7 @@
+ struct wf_sat {
+ 	int			nr;
+ 	atomic_t		refcnt;
+-	struct semaphore	mutex;
++	struct mutex		mutex;
+ 	unsigned long		last_read; /* jiffies when cache last updated */
+ 	u8			cache[16];
+ 	struct i2c_client	i2c;
+@@ -163,7 +163,7 @@ static int wf_sat_get(struct wf_sensor *
+ 	if (sat->i2c.adapter == NULL)
+ 		return -ENODEV;
+ 
+-	down(&sat->mutex);
++	mutex_lock(&sat->mutex);
+ 	if (time_after(jiffies, (sat->last_read + MAX_AGE))) {
+ 		err = wf_sat_read_cache(sat);
+ 		if (err)
+@@ -182,7 +182,7 @@ static int wf_sat_get(struct wf_sensor *
+ 	err = 0;
+ 
+  fail:
+-	up(&sat->mutex);
++	mutex_unlock(&sat->mutex);
+ 	return err;
+ }
+ 
+@@ -233,7 +233,7 @@ static void wf_sat_create(struct i2c_ada
+ 	sat->nr = -1;
+ 	sat->node = of_node_get(dev);
+ 	atomic_set(&sat->refcnt, 0);
+-	init_MUTEX(&sat->mutex);
++	mutex_init(&sat->mutex);
+ 	sat->i2c.addr = (addr >> 1) & 0x7f;
+ 	sat->i2c.adapter = adapter;
+ 	sat->i2c.driver = &wf_sat_driver;
+-- 
 
-> > (actually, since write-locks should be very rare, perhaps we don't need
-> >  2 wait_queues ?)
-> 
-> And just let them race the wakeup race, sure that might work. Gautham
-> even pointed out that it never happens because there is another
-> exclusive lock on the write path.
-> 
-> But you say you like that it doesn't depend on that anymore - me too ;-)
-
-Yes. but let's suppose we have the single wait_queue, this doesn't make
-any difference from the correctness POV, no?
-
-To clarify: I am not arguing! this makes sense, but I'm asking to be sure
-I didn't miss a subtle reason why do we "really" need 2 wait_queues.
-
-Also. Let's suppose we have both read- and write- waiters, and cpu_hotplug_done()
-does wake_up(writer_queue). It is possible that another reader comes and does
-get_online_cpus() and increments .refcount first. After that, cpu_hotplug
-is "opened" for the read-lock, but other read-waiters continue to sleep, and
-the final put_online_cpus() wakes up write-waiters only. Yes, this all is
-correct, but not "symmetrical", and leads to the question "do we really need
-2 wait_queues" again.
-
-Oleg.
-
+-- 
