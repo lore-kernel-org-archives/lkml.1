@@ -1,65 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760292AbYD2IP4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760533AbYD2IQu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760292AbYD2IP4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 04:15:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755482AbYD2IPj
+	id S1760533AbYD2IQu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 04:16:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755547AbYD2IQe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 04:15:39 -0400
-Received: from rv-out-0708.google.com ([209.85.198.249]:11530 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752014AbYD2IPi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 04:15:38 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:x-x-sender:to:cc:subject:in-reply-to:message-id:references:user-agent:mime-version:content-type:from;
-        b=N8arWB25ISEZrdqgi26wsQSRZLeVSQrYRtOqnTA+04r1iQT/YpNvvHcpjFkMP06KH0+uwTqUjBJ7vdx6PP9EE6Q6amW6QPr53XBRAmwmcysiNV+ac7ZlTRkYYzmIeQItcV4Jic8sQkq2dMDsqOI91eR30aMBYTnRXhRQg7JUuhE=
-Date: Tue, 29 Apr 2008 16:14:25 +0800 (CST)
-X-X-Sender: wangcong@localhost.localdomain
-To: Jeff Dike <jdike@addtoit.com>
-cc: WANG Cong <xiyou.wangcong@gmail.com>, akpm@osdl.org,
-       linux-kernel@vger.kernel.org,
-       user-mode-linux-devel@lists.sourceforge.net
-Subject: Re: [PATCH 9/19] UML - Tidy ptrace interface
-In-Reply-To: <20080428154240.GD7334@c2.user-mode-linux.org>
-Message-ID: <alpine.LFD.1.00.0804291613570.2548@localhost.localdomain>
-References: <20080425175610.GA11188@c2.user-mode-linux.org> <20080426.173538.195417245.xiyou.wangcong@gmail.com> <20080428154240.GD7334@c2.user-mode-linux.org>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
-From: WANG Cong <xiyou.wangcong@gmail.com>
+	Tue, 29 Apr 2008 04:16:34 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:57291 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755482AbYD2IQd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Apr 2008 04:16:33 -0400
+Date: Tue, 29 Apr 2008 10:17:05 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Alexander van Heukelum <heukelum@mailshack.com>, jdike@addtoit.com
+Subject: Re: [2.6 patch] fs/block_dev.c:I_BDEV() mustn't be inline
+Message-ID: <20080429081705.GA3552@uranus.ravnborg.org>
+References: <20080424215739.GA32378@elte.hu> <alpine.LFD.1.10.0804241510420.2779@woody.linux-foundation.org> <20080426151516.GA27894@elte.hu> <alpine.LFD.1.10.0804260955300.2813@woody.linux-foundation.org> <20080426172222.GD17345@elte.hu> <20080428153831.GC2813@cs181133002.pp.htv.fi> <alpine.LFD.1.10.0804281736230.3119@woody.linux-foundation.org> <20080429080631.GB28059@cs181133002.pp.htv.fi>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080429080631.GB28059@cs181133002.pp.htv.fi>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 28 Apr 2008, Jeff Dike wrote:
+On Tue, Apr 29, 2008 at 11:06:31AM +0300, Adrian Bunk wrote:
+> On Mon, Apr 28, 2008 at 05:41:11PM -0700, Linus Torvalds wrote:
+> >...
+> > > -inline struct block_device *I_BDEV(struct inode *inode)
+> > > +struct block_device *I_BDEV(struct inode *inode)
+> > >  {
+> > >  	return &BDEV_I(inode)->bdev;
+> > >  }
+> > 
+> > There is NO WAY IN HELL this function shouldn't be inlined,
+> >...
+> 
+> Then CONFIG_OPTIMIZE_INLINING already broke it in your tree.
 
-> On Sat, Apr 26, 2008 at 05:35:38PM +0800, WANG Cong wrote:
->> From: Jeff Dike <jdike@addtoit.com>
->> Date: Fri, 25 Apr 2008 13:56:10 -0400
->> > Tidy the ptrace interface code.  Removed a bunch of unused macros.
->> > Started converting register sets from arrays of longs to structures.
->> 
->> Could you please explain a bit why do this? I think long arrary is OK.
->
-> It's wrong on x86_64.  There, FRAME_SIZE is 168 -
->     #define FRAME_SIZE 
-> and SS is the last register defined -
->    #define SS 160
-> but there are a number of registers beyond that in the user_regs_struct:
-> 	unsigned long	ss;
-> 	unsigned long	fs_base;
-> 	unsigned long	gs_base;
-> 	unsigned long	ds;
-> 	unsigned long	es;
-> 	unsigned long	fs;
-> 	unsigned long	gs;
->
-> The effect of GETREGS into a long[FRAME_SIZE] will be stack corruption.
->
+Can you please help me here.
+Previously we said: gcc shall inline
+Now we say: hi gcc - it is a good idea to inline this
 
-Thanks for teaching this. ;-)
+But even without any inline annotation we would expect gcc
+to inline it based on normal heuristics simply due to the
+small size/footprint of the function.
 
---
-Hi, I'm a .signature virus, please copy/paste me to help me spread
-all over the world.
+So I cannot see how the CONFIG_OPTIMIZE_INLINING have any
+effect here.
+It all smells like a gcc bug to me.
+
+
+	Sam
