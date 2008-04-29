@@ -1,86 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761177AbYD2UiY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761602AbYD2Ujz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761177AbYD2UiY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 16:38:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755880AbYD2UiP
+	id S1761602AbYD2Ujz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 16:39:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756678AbYD2Ujo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 16:38:15 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:53748 "EHLO pasmtpA.tele.dk"
+	Tue, 29 Apr 2008 16:39:44 -0400
+Received: from email.gcom.com ([12.193.232.146]:37282 "EHLO email.gcom.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755490AbYD2UiP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 16:38:15 -0400
-Date: Tue, 29 Apr 2008 22:38:48 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: [PATCH] x86: fix section mismatch in pci_scan_bus
-Message-ID: <20080429203848.GA13741@uranus.ravnborg.org>
+	id S1755934AbYD2Ujl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Apr 2008 16:39:41 -0400
+Message-Id: <7.0.1.0.2.20080429153715.04a109b0@gcom.com>
+Message-Id: <7.0.1.0.2.20080429142001.046b6c08@gcom.com>
+X-Mailer: QUALCOMM Windows Eudora Version 7.0.1.0
+Date: Tue, 29 Apr 2008 15:39:41 -0500
+To: linux-kernel@vger.kernel.org
+From: Dave Grothe <dave@gcom.com>
+Subject: profile_pc oops in 2.6.18
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.1i
+Content-Type: multipart/mixed; boundary="=====================_1908950890==_"; x-avg-checked=avg-ok-52272057
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix following section mismatch warning:
-WARNING: vmlinux.o(.text+0x275616): Section mismatch in reference from the function pci_scan_bus() to the function .devinit.text:pci_scan_bus_parented()
+--=====================_1908950890==_
+Content-Type: text/plain; charset=us-ascii; format=flowed; x-avg-checked=avg-ok-52272057
 
-The warning was seen with a CONFIG_DEBUG_SECTION_MISMATCH=y build.
-The inline function pci_scan_bus refer to functions annotated
-__devinit - so annotate it __devinit too.
-This revealed a few x86 specific functions that were only
-used from __init or __devinit context.
-So annotate these __devinit and the warning was killed.
+I have had a problem with a kernel oops in 2.6.18 with the kernel
+compiled with stack frame pointers and a loadable module compiled
+without stack frame pointers.
 
-The added include in pci.h was not strictly required but
-added to avoid being dependent on indirect includes.
+I have a patch that fixes the problem for 2.6.18.  It is attached to 
+this email.
 
-Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
----
+-- Dave  
+--=====================_1908950890==_
+Content-Type: application/octet-stream; name=patch-time.c; x-avg-checked=avg-ok-52272057
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment; filename="patch-time.c"
 
-diff --git a/arch/x86/pci/common.c b/arch/x86/pci/common.c
-index 2a4d751..88b5416 100644
---- a/arch/x86/pci/common.c
-+++ b/arch/x86/pci/common.c
-@@ -489,7 +489,7 @@ void pcibios_disable_device (struct pci_dev *dev)
- 		pcibios_disable_irq(dev);
- }
- 
--struct pci_bus *pci_scan_bus_on_node(int busno, struct pci_ops *ops, int node)
-+struct pci_bus * __devinit pci_scan_bus_on_node(int busno, struct pci_ops *ops, int node)
- {
- 	struct pci_bus *bus = NULL;
- 	struct pci_sysdata *sd;
-@@ -512,7 +512,7 @@ struct pci_bus *pci_scan_bus_on_node(int busno, struct pci_ops *ops, int node)
- 	return bus;
- }
- 
--struct pci_bus *pci_scan_bus_with_sysdata(int busno)
-+struct pci_bus * __devinit pci_scan_bus_with_sysdata(int busno)
- {
- 	return pci_scan_bus_on_node(busno, &pci_root_ops, -1);
- }
-diff --git a/include/linux/pci.h b/include/linux/pci.h
-index 96acd0d..a59517b 100644
---- a/include/linux/pci.h
-+++ b/include/linux/pci.h
-@@ -44,6 +44,7 @@
- #include <linux/mod_devicetable.h>
- 
- #include <linux/types.h>
-+#include <linux/init.h>
- #include <linux/ioport.h>
- #include <linux/list.h>
- #include <linux/compiler.h>
-@@ -474,7 +475,7 @@ extern struct pci_bus *pci_find_bus(int domain, int busnr);
- void pci_bus_add_devices(struct pci_bus *bus);
- struct pci_bus *pci_scan_bus_parented(struct device *parent, int bus,
- 				      struct pci_ops *ops, void *sysdata);
--static inline struct pci_bus *pci_scan_bus(int bus, struct pci_ops *ops,
-+static inline struct pci_bus * __devinit pci_scan_bus(int bus, struct pci_ops *ops,
- 					   void *sysdata)
- {
- 	struct pci_bus *root_bus;
+VGhpcyBwYXRjaCBmaXhlcyBhIHByb2JsZW0gaW52b2x2aW5nIGEga2VybmVsIGNyYXNoLgoKSWYg
+dGhlIGtlcm5lbCBpcyBjb21waWxlZCB3aXRoIGZyYW1lIHBvaW50ZXJzIGFuZCBhIG1vZHVsZSB0
+aGF0IHdhcwpjb21waWxlZCB3aXRob3V0IGZyYW1lIHBvaW50ZXJzIGlzIGxvYWRlZCBhbmQgcnVu
+OyBhbmQgaWYgdGhlIAprZXJuZWwgcHJvZmlsZV9wYyByb3V0aW5lIGdldHMgY2FsbGVkIHdoaWxl
+IHRoYXQgbW9kdWxlIGlzIGluIGEKc3BpbiBsb2NrLCB0aGVuIHJlZ3MtPmVicCBkb2VzIG5vdCBj
+b250YWluIGEgdmFsaWQgZnJhbWUgcG9pbnRlcgphbmQgdGhlIGFjY2VzcyB0byAqKHJlZ3MtPmVi
+cCs0KSBwcm9kdWNlcyAodXN1YWxseSkgYW4gYWNjZXNzIHRvCmFuIGludmFsaWQgYWRkcmVzcy4K
+ClRoaXMgcGF0Y2ggaW1wbGVtZW50cyBhIGNoZWNrIHRvIHNlZSB0aGF0IHRoZSByZWdzLT5lYnAg
+dmFsdWUgbGllcwp3aXRoaW4gdGhlIHRocmVhZF9pbmZvIHJlZ2lvbiBmb3IgdGhlIGN1cnJlbnQg
+cHJvY2Vzcy4KClRoZSBwYXRjaCBpcyBmb3IgMi42LjE4LCBhcyBJIGFtIHRlc3Rpbmcgb24gQ2Vu
+dE9TLTUuICBIb3dldmVyLApsb29raW5nIGF0IDIuNi4yNSBpdCBzZWVtcyB0aGF0IGl0IHdvdWxk
+IGVhc2lseSBhcHBseSB0byB0aGF0Cmtlcm5lbCB2ZXJzaW9uIGFzIHdlbGwsIHdpdGgganVzdCBh
+IGxpdHRsZSBtYW51YWwgZml0dGluZy4KCkRhdmUgR3JvdGhlIDI5QXByMjAwOAoKLS0tIGFyY2gv
+aTM4Ni9rZXJuZWwvdGltZS5jLm9yaWcJMjAwOC0wNC0yOSAxMTowMjowMi4wMDAwMDAwMDAgLTA1
+MDAKKysrIGFyY2gvaTM4Ni9rZXJuZWwvdGltZS5jCTIwMDgtMDQtMjkgMTM6Mjg6MzUuMDAwMDAw
+MDAwIC0wNTAwCkBAIC0xMzYsNyArMTM2LDE0IEBACiAJdW5zaWduZWQgbG9uZyBwYyA9IGluc3Ry
+dWN0aW9uX3BvaW50ZXIocmVncyk7CiAKIAlpZiAoIXVzZXJfbW9kZV92bShyZWdzKSAmJiBpbl9s
+b2NrX2Z1bmN0aW9ucyhwYykpCi0JCXJldHVybiAqKHVuc2lnbmVkIGxvbmcgKikocmVncy0+ZWJw
+ICsgNCk7CisJewkJCS8qIGlzIGJwIGEgdmFsaWQgc3RhY2sgYWRkcmVzcz8gICAqLworCSAgICB1
+aW50MzJfdCB0aV9iYXNlID0gKHVpbnQzMl90KWN1cnJlbnRfdGhyZWFkX2luZm8oKSA7CisKKwkg
+ICAgaWYgKHJlZ3MtPmVicCA+PSB0aV9iYXNlICYmIHJlZ3MtPmVicCA8IHRpX2Jhc2UgKyBUSFJF
+QURfU0laRSkKKwkJcmV0dXJuICoodW5zaWduZWQgbG9uZyAqKShyZWdzLT5lYnAgKyA0KTsJLyog
+eWVzLCB1c2UgaXQqLworCSAgICBlbHNlCisJCXJldHVybiBwYyA7CisJfQogCiAJcmV0dXJuIHBj
+OwogfQo=
+--=====================_1908950890==_
+Content-Type: text/plain; charset=us-ascii; format=flowed; x-avg-checked=avg-ok-52272057
+
+
+--=====================_1908950890==_--
+
