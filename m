@@ -1,64 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760174AbYD2TqL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756797AbYD2T5F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760174AbYD2TqL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 15:46:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754390AbYD2Tp5
+	id S1756797AbYD2T5F (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 15:57:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752900AbYD2T4z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 15:45:57 -0400
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:39756 "EHLO smtp6.pp.htv.fi"
+	Tue, 29 Apr 2008 15:56:55 -0400
+Received: from mail.AKNET.ru ([77.246.241.226]:63740 "EHLO mail.aknet.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754848AbYD2Tp4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 15:45:56 -0400
-Date: Tue, 29 Apr 2008 22:45:17 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Sam Ravnborg <sam@ravnborg.org>, paulus@samba.org
-Cc: Tony Breeds <tony@bakeyournoodle.com>,
-       Christian Kujau <lists@nerdbynature.de>, linuxppc-dev@ozlabs.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.25: pmac_newworld undefined
-Message-ID: <20080429194517.GC2898@cs181133002.pp.htv.fi>
-References: <alpine.DEB.1.10.0804271951190.11017@sheep.housecafe.de> <20080428042044.GX20457@bakeyournoodle.com> <20080428193324.GC13400@uranus.ravnborg.org> <20080429133514.GA30524@cs181133002.pp.htv.fi> <20080429191753.GA32685@uranus.ravnborg.org>
+	id S1752357AbYD2T4y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Apr 2008 15:56:54 -0400
+Message-ID: <48177D70.5010803@aknet.ru>
+Date: Tue, 29 Apr 2008 23:56:32 +0400
+From: Stas Sergeev <stsp@aknet.ru>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20080429191753.GA32685@uranus.ravnborg.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: Sam Ravnborg <sam@ravnborg.org>
+CC: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Takashi Iwai <tiwai@suse.de>,
+       Linux kernel <linux-kernel@vger.kernel.org>,
+       Vojtech Pavlik <vojtech@suse.cz>,
+       Michael Opdenacker <michael@free-electrons.com>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [patch] pcspkr: fix dependancies
+References: <4813476A.7000705@aknet.ru> <200804261918.14711.dtor-oss@comcast.net> <4813BD39.1080105@aknet.ru> <20080427042331.GB29127@anvil.corenet.prv> <481626B6.5040207@aknet.ru> <20080428155811.ZZRA012@mailhub.coreip.homeip.net> <20080428201225.GB18135@uranus.ravnborg.org>
+In-Reply-To: <20080428201225.GB18135@uranus.ravnborg.org>
+X-Enigmail-Version: 0.95.2
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 29, 2008 at 09:17:53PM +0200, Sam Ravnborg wrote:
->...
-> So something like:
-> 
-> config PPC32_NVRAM
-> 	bool
-> 	depends on NVRAM
-> 
-> obj-$(CONFIG_PPC32_NVRAM) += nvram.o
-> obj-$(CONFIG_NVRAM)       += nvram.o
-> 
-> Or did you have another solution in mind?
+Hello.
 
-I start to understand the problem, and I'm currently wondering why 
-powerpc uses CONFIG_NVRAM although the code CONFIG_NVRAM enables on 
-other platforms is not enabled on powerpc.
+Sam Ravnborg wrote:
+> If you google you will find a long thread about this patch.
+Yes, indeed, thankyou.
+http://kerneltrap.org/mailarchive/linux-kernel/2008/1/17/577151
 
-Can we rename it and move drivers/char/generic_nvram.c under 
-arch/powerpc/ ?
+> It is all about saving memory for embedded platforms.
+OK. This wasn't clear from the log
+message for some reason, but it is
+said in the above thread.
 
-Can some powerpc person bring some background what's going on and why 
-it's this way?
+> No need to have the driver if there is no speaker on the board.
+Very probably, and for that case I
+made the patch like this:
+http://uwsg.ucs.indiana.edu/hypermail/linux/kernel/0804.3/1189.html
 
-> 	Sam
+> Ask Michael (author) if you need more info.
+Reading the thread, it actually seems
+like Michael wanted to submit the patch
+much like the aforementioned one of
+mine:
+http://kerneltrap.org/mailarchive/linux-kernel/2008/1/18/580583
+but haven't done so in time, and as the
+result, the wrong one stuck in.
+But this is never too late to correct, I
+hope.
 
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+So I see 2 options: either revert the
+patch completely, or revert the dependancies
+like Michael suggested initially (if I
+understand his suggestion right).
+Both patches are here, in this thread.
+Thoughts?
