@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759986AbYD2Swm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763875AbYD2Sw5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759986AbYD2Swm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 14:52:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760819AbYD2Suw
+	id S1763875AbYD2Sw5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 14:52:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762091AbYD2Su4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 14:50:52 -0400
-Received: from cantor.suse.de ([195.135.220.2]:51535 "EHLO mx1.suse.de"
+	Tue, 29 Apr 2008 14:50:56 -0400
+Received: from cantor.suse.de ([195.135.220.2]:51558 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758768AbYD2Suv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 14:50:51 -0400
-Date: Tue, 29 Apr 2008 11:49:34 -0700
+	id S1762050AbYD2Suz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Apr 2008 14:50:55 -0400
+Date: Tue, 29 Apr 2008 11:49:36 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -20,14 +20,17 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Jeff Garzik <jgarzik@redhat.com>
-Subject: [05/12] tehuti: move ioctl perm check closer to function start
-	(CVE-2008-1675)
-Message-ID: <20080429184934.GF24199@suse.de>
+       Benedikt Spranger <b.spranger@linutronix.de>,
+       Jan Altenberg <jan.altenberg@linutronix.de>,
+       David Brownell <dbrownell@users.sourceforge.net>,
+       Vernon Sauder <vernoninhand@gmail.com>
+Subject: [06/12] USB: gadget: queue usb USB_CDC_GET_ENCAPSULATED_RESPONSE
+	message
+Message-ID: <20080429184936.GG24199@suse.de>
 References: <20080429184543.308594866@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="tehuti-move-ioctl-perm-check-closer-to-function-start.patch"
+Content-Disposition: inline; filename="usb-gadget-queue-usb-usb_cdc_get_encapsulated_response-message.patch"
 In-Reply-To: <20080429184911.GA24199@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -39,39 +42,34 @@ know.
 
 ------------------
 
-From: Jeff Garzik <jeff@garzik.org>
+From: Jan Altenberg <jan.altenberg@linutronix.de>
 
-Commit f946dffed6334f08da065a89ed65026ebf8b33b4 upstream
+backport of 41566bcf35a8b23ce4715dadb5acfd1098c1d3e4
 
-Noticed by davem.
+commit 0cf4f2de0a0f4100795f38ef894d4910678c74f8 introduced a bug, which
+prevents sending an USB_CDC_GET_ENCAPSULATED_RESPONSE message. This
+breaks the RNDIS initialization (especially / only Windoze machines
+dislike this behavior...).
 
-Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
+Signed-off-by: Benedikt Spranger <b.spranger@linutronix.de>
+Signed-off-by: Jan Altenberg <jan.altenberg@linutronix.de>
+Acked-by: David Brownell <dbrownell@users.sourceforge.net>
+Cc: Vernon Sauder <vernoninhand@gmail.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/net/tehuti.c |    5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+ drivers/usb/gadget/ether.c |    1 +
+ 1 file changed, 1 insertion(+)
 
---- a/drivers/net/tehuti.c
-+++ b/drivers/net/tehuti.c
-@@ -649,6 +649,9 @@ static int bdx_ioctl_priv(struct net_dev
- 		DBG("%d 0x%x 0x%x\n", data[0], data[1], data[2]);
- 	}
- 
-+	if (!capable(CAP_NET_ADMIN))
-+		return -EPERM;
-+
- 	switch (data[0]) {
- 
- 	case BDX_OP_READ:
-@@ -664,8 +667,6 @@ static int bdx_ioctl_priv(struct net_dev
- 		break;
- 
- 	case BDX_OP_WRITE:
--		if (!capable(CAP_NET_ADMIN))
--			return -EPERM;
- 		error = bdx_range_check(priv, data[1]);
- 		if (error < 0)
- 			return error;
+--- a/drivers/usb/gadget/ether.c
++++ b/drivers/usb/gadget/ether.c
+@@ -1561,6 +1561,7 @@ done_set_intf:
+ 				memcpy(req->buf, buf, n);
+ 				req->complete = rndis_response_complete;
+ 				rndis_free_response(dev->rndis_config, buf);
++				value = n;
+ 			}
+ 			/* else stalls ... spec says to avoid that */
+ 		}
 
 -- 
