@@ -1,73 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932094AbYD2Rds@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764637AbYD2Rfo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932094AbYD2Rds (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 13:33:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759457AbYD2RWS
+	id S1764637AbYD2Rfo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 13:35:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760951AbYD2RYr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 13:22:18 -0400
-Received: from ns.suse.de ([195.135.220.2]:52650 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759447AbYD2RWQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 13:22:16 -0400
-Date: Tue, 29 Apr 2008 10:19:19 -0700
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
-Cc: Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Andrew Vasquez <andrew.vasquez@qlogic.com>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>
-Subject: [34/37] SCSI: qla2xxx: Correct regression in relogin code.
-Message-ID: <20080429171919.GI14724@suse.de>
-References: <20080429171222.073929148@mini.kroah.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="scsi-qla2xxx-correct-regression-in-relogin-code.patch"
-In-Reply-To: <20080429171730.GA14724@suse.de>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Tue, 29 Apr 2008 13:24:47 -0400
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:47139 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760927AbYD2RYq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Apr 2008 13:24:46 -0400
+Message-Id: <20080429171015.473938697@theryb.frec.bull.fr>
+User-Agent: quilt/0.46-1
+Date: Tue, 29 Apr 2008 19:10:15 +0200
+From: Benjamin Thery <benjamin.thery@bull.net>
+To: linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Tejun Heo <htejun@gmail.com>, Greg Kroah-Hartman <gregkh@suse.de>,
+       Daniel Lezcano <dlezcano@fr.ibm.com>,
+       "Serge E. Hallyn" <serue@us.ibm.com>,
+       Pavel Emelyanov <xemul@openvz.org>, netdev@vger.kernel.org,
+       Benjamin Thery <benjamin.thery@bull.net>
+Subject: [PATCH 00/10] sysfs tagged directories
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is a port to 2.6.25-mm1 of Eric Biederman's patchset to implement
+tagged directories in sysfs. This patchset was discussed a few months
+ago on lkml@.
 
-2.6.25-stable review patch.  If anyone has any objections, please let us
-know.
-
-------------------
-From: Andrew Vasquez <andrew.vasquez@qlogic.com>
-
-commit: 666301e673e192c87a40e07a8357d6996b57b70f upstream
+I re-post this patchset as most of network namespace work has been
+merged in net-2.6.26 and the issue is it is currently easy to test
+because of this missing piece.
+(today sysfs must be disabled to test netns).
 
 
-Commit 63a8651f2548c6bb5132c0b4e7dad4f57a9274db ([SCSI] qla2xxx:
-Correct infinite-login-retry issue.) introduced a small
-regression where a successful relogin would result in an fcport's
-loop_id to be incorrectly reset to FC_NO_LOOP_ID.  Only clear-out
-loopid, if retries have been 'truly' exhausted.
+This feature is needed for network namespaces where we have to be able
+to have multiple network devices with the same name in different network
+namespaces. 
 
-Signed-off-by: Andrew Vasquez <andrew.vasquez@qlogic.com>
-Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+On top of that, the final patch from Serge Hallyn also implements 
+tagging for user namespaces.
 
----
- drivers/scsi/qla2xxx/qla_os.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/drivers/scsi/qla2xxx/qla_os.c
-+++ b/drivers/scsi/qla2xxx/qla_os.c
-@@ -2357,7 +2357,7 @@ qla2x00_do_dpc(void *data)
- 					} else {
- 						fcport->login_retry = 0;
- 					}
--					if (fcport->login_retry == 0)
-+					if (fcport->login_retry == 0 && status != QLA_SUCCESS)
- 						fcport->loop_id = FC_NO_LOOP_ID;
- 				}
- 				if (test_bit(LOOP_RESYNC_NEEDED, &ha->dpc_flags))
+Here is the announcement Eric wrote back in December to introduce his 
+patchset:
+
+"
+Now that we have network namespace support merged it is time to
+revisit the sysfs support so we can remove the dependency on !SYSFS.
+
+[...]
+
+The bulk of the patches are the changes to allow multiple sysfs
+superblocks.
+
+Then comes the tagged directory sysfs support which uses information
+captured at mount time to decide which object with which tag will
+appear in a directory.
+
+Then the support for renaming and deleting objects where the source
+may be ambiguous because of tagging.
+
+Then finally the network namespace support so it is clear how all
+of this tied together.
+"
+
+Regards,
+Benjamin
 
 -- 
