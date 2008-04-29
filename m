@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764355AbYD2Sxj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764750AbYD2Sxz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764355AbYD2Sxj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 14:53:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762227AbYD2SvJ
+	id S1764750AbYD2Sxz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 14:53:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762235AbYD2SvM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 14:51:09 -0400
-Received: from mx2.suse.de ([195.135.220.15]:41348 "EHLO mx2.suse.de"
+	Tue, 29 Apr 2008 14:51:12 -0400
+Received: from mx2.suse.de ([195.135.220.15]:41379 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762212AbYD2SvI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 14:51:08 -0400
-Date: Tue, 29 Apr 2008 11:49:56 -0700
+	id S1757348AbYD2SvL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Apr 2008 14:51:11 -0400
+Date: Tue, 29 Apr 2008 11:50:02 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,7 +22,7 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
        Oliver Neukum <oliver@neukum.org>
 Subject: [09/12] USB: remove broken usb-serial num_endpoints check
-Message-ID: <20080429184956.GJ24199@suse.de>
+Message-ID: <20080429185002.GK24199@suse.de>
 References: <20080429184543.308594866@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
