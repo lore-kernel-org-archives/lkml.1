@@ -1,90 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933537AbYD2Pbz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933014AbYD2PdL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933537AbYD2Pbz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 11:31:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933265AbYD2Pb0
+	id S933014AbYD2PdL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 11:33:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757526AbYD2Pc5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 11:31:26 -0400
-Received: from gate.crashing.org ([63.228.1.57]:58173 "EHLO gate.crashing.org"
+	Tue, 29 Apr 2008 11:32:57 -0400
+Received: from dspnet.fr.eu.org ([213.186.44.138]:3839 "EHLO dspnet.fr.eu.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933257AbYD2PbY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 11:31:24 -0400
-Date: Tue, 29 Apr 2008 10:25:48 -0500 (CDT)
-From: Kumar Gala <galak@kernel.crashing.org>
-X-X-Sender: galak@blarg.am.freescale.net
-To: Greg KH <greg@kroah.com>
-cc: Tejun Heo <htejun@gmail.com>, Jeff Garzik <jgarzik@pobox.com>,
-       Andrew Morton <akpm@osdl.org>,
-       "linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>,
-       lkml Mailing List <linux-kernel@vger.kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: [PATCH][RESEND] devres: support addresses greater than an unsigned
- long via dev_ioremap
-In-Reply-To: <20080429152331.GC11329@kroah.com>
-Message-ID: <Pine.LNX.4.64.0804291025140.25102@blarg.am.freescale.net>
-References: <Pine.LNX.4.64.0804290122210.10928@blarg.am.freescale.net>
- <4816C094.6030601@gmail.com> <4816C214.60806@pobox.com>
- <C415A4D5-CE5A-4E48-B5D5-0B9A6C7A5CA6@kernel.crashing.org>
- <20080429152331.GC11329@kroah.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S1756978AbYD2Pc4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Apr 2008 11:32:56 -0400
+X-Greylist: delayed 402 seconds by postgrey-1.27 at vger.kernel.org; Tue, 29 Apr 2008 11:32:56 EDT
+Date: Tue, 29 Apr 2008 17:26:07 +0200
+From: Olivier Galibert <galibert@pobox.com>
+To: linux-kernel@vger.kernel.org
+Cc: alan@redhat.com
+Subject: Re: [PATCH] isicom: Fix buffer allocation
+Message-ID: <20080429152607.GA40409@dspnet.fr.eu.org>
+Mail-Followup-To: Olivier Galibert <galibert@pobox.com>,
+	linux-kernel@vger.kernel.org, alan@redhat.com
+References: <20080429141733.607a2306@core>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080429141733.607a2306@core>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use a resource_size_t instead of unsigned long since some arch's are
-capable of having ioremap deal with addresses greater than the size of a
-unsigned long.
+On Tue, Apr 29, 2008 at 02:17:33PM +0100, Alan Cox wrote:
+> Fix the rather strange buffer management on open that turned up while
+> auditing for BKL dependancies
+> 
+> Signed-off-by: Alan Cox <alan@redhat.com>
+> 
+> diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.25-mm1/drivers/char/isicom.c linux-2.6.25-mm1/drivers/char/isicom.c
+> --- linux.vanilla-2.6.25-mm1/drivers/char/isicom.c	2008-04-28 11:36:48.000000000 +0100
+> +++ linux-2.6.25-mm1/drivers/char/isicom.c	2008-04-14 10:56:25.000000000 +0100
+> @@ -813,15 +813,13 @@
+>  		return 0;
+>  	if (!port->xmit_buf) {
+>  		/* Relies on BKL */
+> +		unsigned long page  = get_zeroed_page(GFP_KERNEL);
+> +		if (page == 0)
+>  			return -ENOMEM;
+> +		if (port->xmit_buf)
+> +			free_page(page);
+> +		else
+> +			port->xmit_buf = (unsigned char *) page;
+>  	}
 
-Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
----
 
-For GregKH to actually get the patch.
+Still looks rather strange.  An if(x) inside an if(!x) ?
 
-- k
-
- include/linux/io.h |    4 ++--
- lib/devres.c       |    4 ++--
- 2 files changed, 4 insertions(+), 4 deletions(-)
-
-diff --git a/include/linux/io.h b/include/linux/io.h
-index e3b2dda..831f57c 100644
---- a/include/linux/io.h
-+++ b/include/linux/io.h
-@@ -58,9 +58,9 @@ static inline void devm_ioport_unmap(struct device *dev, void __iomem *addr)
- }
- #endif
-
--void __iomem * devm_ioremap(struct device *dev, unsigned long offset,
-+void __iomem * devm_ioremap(struct device *dev, resource_size_t offset,
- 			    unsigned long size);
--void __iomem * devm_ioremap_nocache(struct device *dev, unsigned long offset,
-+void __iomem * devm_ioremap_nocache(struct device *dev, resource_size_t offset,
- 				    unsigned long size);
- void devm_iounmap(struct device *dev, void __iomem *addr);
- int check_signature(const volatile void __iomem *io_addr,
-diff --git a/lib/devres.c b/lib/devres.c
-index edc27a5..26c87c4 100644
---- a/lib/devres.c
-+++ b/lib/devres.c
-@@ -20,7 +20,7 @@ static int devm_ioremap_match(struct device *dev, void *res, void *match_data)
-  *
-  * Managed ioremap().  Map is automatically unmapped on driver detach.
-  */
--void __iomem *devm_ioremap(struct device *dev, unsigned long offset,
-+void __iomem *devm_ioremap(struct device *dev, resource_size_t offset,
- 			   unsigned long size)
- {
- 	void __iomem **ptr, *addr;
-@@ -49,7 +49,7 @@ EXPORT_SYMBOL(devm_ioremap);
-  * Managed ioremap_nocache().  Map is automatically unmapped on driver
-  * detach.
-  */
--void __iomem *devm_ioremap_nocache(struct device *dev, unsigned long offset,
-+void __iomem *devm_ioremap_nocache(struct device *dev, resource_size_t offset,
- 				   unsigned long size)
- {
- 	void __iomem **ptr, *addr;
--- 
-1.5.4.1
-
+  OG.
