@@ -1,82 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763321AbYD2NSu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760680AbYD2NU1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763321AbYD2NSu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 09:18:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754553AbYD2NSm
+	id S1760680AbYD2NU1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 09:20:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753530AbYD2NUP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 09:18:42 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:41767 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754510AbYD2NSl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 09:18:41 -0400
-Date: Tue, 29 Apr 2008 15:18:24 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Mauro Carvalho Chehab <mchehab@infradead.org>,
-       Jaime Velasco Juan <jsagarribay@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: [patch] video: fix build bugs in drivers/media/video/stk-webcam.c
-Message-ID: <20080429131824.GA4742@elte.hu>
+	Tue, 29 Apr 2008 09:20:15 -0400
+Received: from spirit.analogic.com ([204.178.40.4]:1372 "EHLO
+	spirit.analogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751847AbYD2NUO convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Apr 2008 09:20:14 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+X-OriginalArrivalTime: 29 Apr 2008 13:19:19.0619 (UTC) FILETIME=[A1C81930:01C8A9FB]
+Content-class: urn:content-classes:message
+Subject: Re: Hans Reiser, reiserfs developer
+Date: Tue, 29 Apr 2008 09:19:19 -0400
+Message-ID: <Pine.LNX.4.61.0804290911170.14924@chaos.analogic.com>
+In-Reply-To: <20080429130111.GE23562@in.ibm.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: Hans Reiser, reiserfs developer
+thread-index: Acip+6Hn0ODPzmIQThyJ2LzgmNdcQQ==
+References: <20080429125659.GA23562@in.ibm.com> <20080429130111.GE23562@in.ibm.com>
+From: "linux-os (Dick Johnson)" <linux-os@analogic.com>
+To: "Linux kernel" <linux-kernel@vger.kernel.org>
+Reply-To: "linux-os (Dick Johnson)" <linux-os@analogic.com>
+X-TM-AS-Product-Ver: SMEX-8.0.0.1259-5.500.1026-15878.007
+X-TM-AS-Result: No--5.216000-8.000000-31
+X-TM-AS-User-Approved-Sender: No
+X-TM-AS-User-Blocked-Sender: No
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-x86.git randconfig testing found these build bugs in current -git:
+Hello all,
+Hans Reiser, the reiserfs developer was found guilty
+yesterday of killing his wife.
 
- drivers/media/video/stk-webcam.c: In function 'stk_create_sysfs_files':
- drivers/media/video/stk-webcam.c:340: error: implicit declaration of function 'video_device_create_file'
- drivers/media/video/stk-webcam.c: In function 'stk_remove_sysfs_files':
- [...]
- drivers/media/video/stk-webcam.c: In function 'v4l_stk_mmap':
- drivers/media/video/stk-webcam.c:846: error: 'VM_WRITE' undeclared (first use in this function)
- [...]
+http://yro.slashdot.prg/article.pl?sid=08/04/28/2243232
 
-config at:
+No body, no crime scene, no physical evidence, and no
+witnesses, but they still found him guilty!
 
-  http://redhat.com/~mingo/misc/config-Tue_Apr_29_15_00_47_CEST_2008.bad
 
-the reason was a missing include file, and a dependency on a deprecated
-(but still in use) VIDEO_V4L1_COMPAT API.
+Cheers,
+Dick Johnson
+Penguin : Linux version 2.6.22.1 on an i686 machine (5588.29 BogoMips).
+My book : http://www.AbominableFirebug.com/
+_
 
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- drivers/media/video/Kconfig      |    1 +
- drivers/media/video/stk-webcam.c |    1 +
- 2 files changed, 2 insertions(+)
 
-Index: linux/drivers/media/video/Kconfig
-===================================================================
---- linux.orig/drivers/media/video/Kconfig
-+++ linux/drivers/media/video/Kconfig
-@@ -835,6 +835,7 @@ config USB_ZR364XX
- config USB_STKWEBCAM
- 	tristate "USB Syntek DC1125 Camera support"
- 	depends on VIDEO_V4L2 && EXPERIMENTAL
-+	select VIDEO_V4L1_COMPAT
- 	---help---
- 	  Say Y here if you want to use this type of camera.
- 	  Supported devices are typically found in some Asus laptops,
-Index: linux/drivers/media/video/stk-webcam.c
-===================================================================
---- linux.orig/drivers/media/video/stk-webcam.c
-+++ linux/drivers/media/video/stk-webcam.c
-@@ -28,6 +28,7 @@
- #include <linux/errno.h>
- #include <linux/slab.h>
- #include <linux/kref.h>
-+#include <linux/mm.h>
- 
- #include <linux/usb.h>
- #include <linux/vmalloc.h>
+****************************************************************
+The information transmitted in this message is confidential and may be privileged.  Any review, retransmission, dissemination, or other use of this information by persons or entities other than the intended recipient is prohibited.  If you are not the intended recipient, please notify Analogic Corporation immediately - by replying to this message or by sending an email to DeliveryErrors@analogic.com - and destroy all copies of this information, including any attachments, without reading or disclosing them.
+
+Thank you.
