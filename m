@@ -1,41 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933844AbYD2Rku@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755774AbYD2RlT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933844AbYD2Rku (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 13:40:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764095AbYD2Rau
+	id S1755774AbYD2RlT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 13:41:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765652AbYD2RdY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 13:30:50 -0400
-Received: from eth7959.sa.adsl.internode.on.net ([150.101.82.22]:34577 "EHLO
-	hawking.rebel.net.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1764057AbYD2Rat (ORCPT
+	Tue, 29 Apr 2008 13:33:24 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:58243 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758985AbYD2RdX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 13:30:49 -0400
-Message-ID: <48175B45.2030500@davidnewall.com>
-Date: Wed, 30 Apr 2008 03:00:45 +0930
-From: David Newall <davidn@davidnewall.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
-MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: Cyrill Gorcunov <gorcunov@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Markus Metzger <markus.t.metzger@intel.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: DS cleanup - dont treat 0 as NULL
-References: <20080428191504.GA6842@cvg> <4816BEC8.1080708@davidnewall.com> <4816C258.7050203@zytor.com>
-In-Reply-To: <4816C258.7050203@zytor.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 29 Apr 2008 13:33:23 -0400
+Subject: Re: [PATCH 5/8] cpu: cpu-hotplug deadlock
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: Gautham R Shenoy <ego@in.ibm.com>, linux-kernel@vger.kernel.org,
+       Zdenek Kabelac <zdenek.kabelac@gmail.com>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Srivatsa Vaddagiri <vatsa@in.ibm.com>
+In-Reply-To: <20080429164524.GA298@tv-sign.ru>
+References: <20080429125659.GA23562@in.ibm.com>
+	 <20080429130201.GF23562@in.ibm.com> <20080429143350.GA246@tv-sign.ru>
+	 <1209481748.13978.84.camel@twins>  <20080429164524.GA298@tv-sign.ru>
+Content-Type: text/plain
+Date: Tue, 29 Apr 2008 19:31:56 +0200
+Message-Id: <1209490317.6433.30.camel@lappy>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin wrote:
-> David Newall wrote:
->> Cyrill Gorcunov wrote:
->>> -            return 0;
->>> +            return NULL;
->>
->> Why?  The constant 0 is C's official symbol for a null pointer.
->
-> It's still bad style.
+On Tue, 2008-04-29 at 20:45 +0400, Oleg Nesterov wrote:
+> On 04/29, Peter Zijlstra wrote:
+> >
+> > The only thing that changed is that the mutex is not held; so what we
+> > change is:
+> > 
+> >  LOCK
+> > 
+> >  ... do the full hotplug thing ...
+> > 
+> >  UNLOCK
+> > 
+> > into
+> > 
+> >  LOCK
+> >   set state
+> >  UNLOCK
+> > 
+> >  ... do the full hotplug thing ...
+> > 
+> >  LOCK
+> >   unset state
+> >  UNLOCK
+> > 
+> > So that the lock isn't held over the hotplug operation.
+> 
+> Well, yes I see, but... Ugh, I have a a blind spot here ;)
+> 
+> why this makes any difference from the semantics POV ? why it is bad
+> to hold the mutex throughout the "full hotplug thing" ?
 
-I disagree, but I don't want to debate the point.
+Darn, now you make me think ;-)
+
+Ok, I think I have it; the crux of the matter is that we want
+reader-in-writer recursion for the cpu hotplug lock.
+
+So we want:
+
+ cpu_hotplug.write_lock()
+   A.lock()
+     cpu_hotplug.read_lock()
+
+When - as it was - the write lock is implemented as keeping the lock
+internal lock (the lock guarding the lock state) locked over the entire
+write section, and the read lock side is, LOCK; change state; UNLOCK,
+the above will result in a deadlock like:
+
+  C.lock
+    A.lock
+      C.lock
+
+By making both the read and write side work like:
+
+ LOCK
+  change state
+ UNLOCK
+
+the internal lock will not deadlock.
+
+So what I did was promote cpu_hotplug to a full lock that handled
+read-in-read and read-in-write recursion and made cpu_hotplug.lock the
+lock internal lock.
+
+> > > (actually, since write-locks should be very rare, perhaps we don't need
+> > >  2 wait_queues ?)
+> > 
+> > And just let them race the wakeup race, sure that might work. Gautham
+> > even pointed out that it never happens because there is another
+> > exclusive lock on the write path.
+> > 
+> > But you say you like that it doesn't depend on that anymore - me too ;-)
+> 
+> Yes. but let's suppose we have the single wait_queue, this doesn't make
+> any difference from the correctness POV, no?
+> 
+> To clarify: I am not arguing! this makes sense, but I'm asking to be sure
+> I didn't miss a subtle reason why do we "really" need 2 wait_queues.
+> 
+> Also. Let's suppose we have both read- and write- waiters, and cpu_hotplug_done()
+> does wake_up(writer_queue). It is possible that another reader comes and does
+> get_online_cpus() and increments .refcount first. After that, cpu_hotplug
+> is "opened" for the read-lock, but other read-waiters continue to sleep, and
+> the final put_online_cpus() wakes up write-waiters only. Yes, this all is
+> correct, but not "symmetrical", and leads to the question "do we really need
+> 2 wait_queues" again.
+
+I don't think we do. It just didn't occur to me to pile read-waiters and
+write-waiters on the same waitqueue.
+
