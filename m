@@ -1,48 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757992AbYD2TeX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760716AbYD2Teo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757992AbYD2TeX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 15:34:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752299AbYD2TeP
+	id S1760716AbYD2Teo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 15:34:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752299AbYD2Te3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 15:34:15 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:38657 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752007AbYD2TeO (ORCPT
+	Tue, 29 Apr 2008 15:34:29 -0400
+Received: from e34.co.us.ibm.com ([32.97.110.152]:58903 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752007AbYD2Te1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 15:34:14 -0400
-Message-ID: <481777EC.4060601@kernel.org>
-Date: Tue, 29 Apr 2008 12:33:00 -0700
-From: "H. Peter Anvin" <hpa@kernel.org>
-Organization: Linux Kernel Organization, Inc.
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Tue, 29 Apr 2008 15:34:27 -0400
+Date: Tue, 29 Apr 2008 14:34:17 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Greg KH <gregkh@suse.de>
+Cc: "Serge E. Hallyn" <serue@us.ibm.com>,
+       Benjamin Thery <benjamin.thery@bull.net>, linux-kernel@vger.kernel.org,
+       Al Viro <viro@ftp.linux.org.uk>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Tejun Heo <htejun@gmail.com>, Daniel Lezcano <dlezcano@fr.ibm.com>,
+       Pavel Emelyanov <xemul@openvz.org>, netdev@vger.kernel.org
+Subject: Re: [PATCH 00/10] sysfs tagged directories
+Message-ID: <20080429193417.GA19282@sergelap.austin.ibm.com>
+References: <20080429171015.473938697@theryb.frec.bull.fr> <20080429173621.GA16625@suse.de> <20080429180445.GA18110@sergelap.austin.ibm.com> <20080429184151.GA19794@suse.de>
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: Willy Tarreau <w@1wt.eu>, Helge Hafting <helge.hafting@aitel.hist.no>,
-       Adrian Bunk <bunk@kernel.org>, linux-kernel@vger.kernel.org,
-       trivial@kernel.org
-Subject: Re: [2.6 patch] UTF-8 fixes in comments
-References: <20080428154023.GU2813@cs181133002.pp.htv.fi>	<20080428230524.GK8474@1wt.eu>	<48167A07.4000305@kernel.org>	<20080429050605.GA27875@1wt.eu>	<20080429072911.GA28059@cs181133002.pp.htv.fi>	<20080429081423.GD30507@1wt.eu>	<4816E4FD.5060605@aitel.hist.no>	<20080429100934.GB1473@1wt.eu> <20080429111014.5a065b88@core>
-In-Reply-To: <20080429111014.5a065b88@core>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080429184151.GA19794@suse.de>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
+Quoting Greg KH (gregkh@suse.de):
+> On Tue, Apr 29, 2008 at 01:04:45PM -0500, Serge E. Hallyn wrote:
+> > Quoting Greg KH (gregkh@suse.de):
+> > > On Tue, Apr 29, 2008 at 07:10:15PM +0200, Benjamin Thery wrote:
+> > > > Here is the announcement Eric wrote back in December to introduce his 
+> > > > patchset:
+> > > 
+> > > <snip>
+> > > 
+> > > Are the objections that Al Viro made to this patchset when it was last
+> > > sent out addressed in this new series?
+> > > 
+> > > thanks,
+> > > 
+> > > greg k-h
+> > 
+> > Which objections were those?  The last submission which I see by Eric
+> > was http://lkml.org/lkml/2007/12/1/15 this past December.  I see no
+> > response from Al and get the feeling you were ok with them.
+> > 
+> > So my hunch would be that Eric had addressed those before that last
+> > submission, but if not I'm sorry, and please do set me straight.
 > 
->> Funny that you mention Windows. Windows has been using 16-bit unicode
->> for a long time without problems. It's a clean encoding. Like it or not.
+> See the thread from Al starting with:
+> 	Date: Mon, 7 Jan 2008 10:24:17 +0000
+> 	From: Al Viro <viro@ZenIV.linux.org.uk>
+> 	To: "Eric W. Biederman" <ebiederm@xmission.com>
+> 	Cc: linux-kernel@vger.kernel.org, htejun@gmail.com,
+> 	        linux-fsdevel@vger.kernel.org, gregkh@suse.de
+> 	Subject: [RFC] netns / sysfs interaction
+> 	Message-ID: <20080107072301.GW27894@ZenIV.linux.org.uk>
 > 
-> I would describe the UCS-2 situation as a disaster area - embedded nuls
-> causing breakage, inability to represent the full unicode space and
-> awkward programming interfaces.
-> 
+> He had a lot of questions and objections to this way forward, and I
+> share those objections.
 
-Not to mention the fact that UCS-2 ran out of code points almost as soon 
-as they said "no more codepoints."  The result was UTF-16, a hideous 
-abortion which took all the problems with wide encodings, combined it 
-with all the problems of multibyte encodings, and added a few new ones 
-for good measure.
+Ah I see it, thanks.
 
-	-hpa
+All Al's questions appear to be about how a task migration will be handled
+in the face of funky userspace usage of sysfs files.  But it seems clear the
+first use of these will not be for migration but for vservers.  The key
+thing to remember is that we don't (as decided at kernel-summit 06) aim
+to hide from userspace the fact that it's in a vserver, we just give it
+what it needs so that it can pretend.
+
+As we start implementing checkpoint and restart to effect migration,
+*clearly* if we're trying to restart a task which has cwd or an open fd
+in /sys/class/net/eth42/, but that directory doesn't exist on the target
+machine, then the restart (and hence migrate) fails.
+
+There was a concern about
+/sys/devices/pci0000\:00/0000\:00\:0a.0/net:eth0.  Since that's a
+symlink to ../../../class/net/eth0, it will either point nowhere or
+point to the virtualized eth0, if veth1 (or vethN) was renamed to eth0
+in the container.  (see below)  If that is the wrong thing to do we
+could try to address it in this patchset, but I suspect it is better
+left until device namespace are implemented.  Does that sounds sane?
+
+The last question of Al's which went unanswered was
+
+> Excuse me, _what_?  Are you seriously suggesting going through all dentry
+> trees, doing d_move() in each?  I want to see your locking.  It's promising
+> to be worse than devfs had ever been.  Much worse.
+
+I think this is answered in patch 4.  So yeah, it does d_move() in each
+sysfs mount.  It's all done under the sysfs_rename_mutex.  Judging by
+the phrasing of the question, is that not acceptable?
+
+Finally, to give an idea about how the trees end up looking, here is
+what I just did on my test box;
+
+/usr/sbin/ip link add type veth
+mount --bind /mnt /mnt
+mkdir /mnt/sys
+mount --make-shared /mnt
+ns_exec -cmn /bin/sh  # unshare netns and mounts ns
+ # At this point, I still see eth0 and friends under /sys/class/net etc
+mount -t sysfs none /sys
+ # At this point, /sys/class/net has only lo0 and sit0, and
+ # /sys/devices/pci0000:00/0000:00:03.0/net:eth0 is a dead link
+mount --bind /sys /mnt/sys
+echo $$
+	3050
+
+(back in another shell):
+/usr/sbin/ip link set veth1 netns 3050
+
+(back in container shell):
+/usr/sbin/ip link set veth1 name eth0
+ # Now /sys/devices/pci0000:00/0000:00:03.0/net:eth0 is a live link to
+ # the /sys/class/net/eth0 which is really the original veth1
+exit
+
+ls /mnt/sys/class/net
+ # empty directory
+
+thanks,
+-serge
