@@ -1,57 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755162AbYD2EhP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754745AbYD2Eo2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755162AbYD2EhP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 00:37:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752004AbYD2EhD
+	id S1754745AbYD2Eo2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 00:44:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751697AbYD2EoS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 00:37:03 -0400
-Received: from hobbit.corpit.ru ([81.13.94.6]:23031 "EHLO hobbit.corpit.ru"
+	Tue, 29 Apr 2008 00:44:18 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:39227 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751542AbYD2EhB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 00:37:01 -0400
-Message-ID: <4816A5EB.5090402@msgid.tls.msk.ru>
-Date: Tue, 29 Apr 2008 08:36:59 +0400
-From: Michael Tokarev <mjt@tls.msk.ru>
-Organization: Telecom Service, JSC
-User-Agent: Mozilla-Thunderbird 2.0.0.12 (X11/20080406)
-MIME-Version: 1.0
-To: Al Viro <viro@ZenIV.linux.org.uk>
-CC: Linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: umount(/proc) after CLONE_NEWNS in 2.6.25?
-References: <481609A5.1080905@msgid.tls.msk.ru> <20080428182759.GF5882@ZenIV.linux.org.uk> <20080429014718.GI5882@ZenIV.linux.org.uk> <20080429020638.GJ5882@ZenIV.linux.org.uk> <20080429021228.GK5882@ZenIV.linux.org.uk>
-In-Reply-To: <20080429021228.GK5882@ZenIV.linux.org.uk>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	id S1751024AbYD2EoR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Apr 2008 00:44:17 -0400
+Date: Tue, 29 Apr 2008 00:44:05 -0400
+From: Rik van Riel <riel@redhat.com>
+To: David Miller <davem@davemloft.net>
+Cc: benh@kernel.crashing.org, roland@redhat.com, linux-kernel@vger.kernel.org
+Subject: Re: PTRACE_{READ,WRITE}{TEXT,DATA}
+Message-ID: <20080429004405.2c375723@bree.surriel.com>
+In-Reply-To: <20080428.213416.193699665.davem@davemloft.net>
+References: <1209441248.18023.124.camel@pasglop>
+	<20080428.213416.193699665.davem@davemloft.net>
+Organization: Red Hat, Inc.
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Al Viro wrote:
-> On Tue, Apr 29, 2008 at 03:06:38AM +0100, Al Viro wrote:
-> 
->>> Check the version of umount(8) you've got.  And see if that strace happens
->>> to have open of /proc/mounts, without matching close by the time it calls
->>> umount().  util-linux-ng 2.13.1 is _that_ dumb...
->> Umm...  Looks like something more odd is going on...
-> 
-> ... or something much simpler:
-> 
-> ; cat /proc/mounts |grep proc
-> proc /proc proc rw,nosuid,nodev,noexec 0 0
-> usbfs /proc/bus/usb usbfs rw 0 0
-> ;
-> 
-> and unmounting the stuff mounted under /proc before doing umount /proc
-> works as expected.  Amazing how well the first cup of coffee helps...
+On Mon, 28 Apr 2008 21:34:16 -0700 (PDT)
+David Miller <davem@davemloft.net> wrote:
 
-Hey.  Don't paint ME *that* dumb... ;)
+> From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Date: Tue, 29 Apr 2008 13:54:08 +1000
+> 
+> > I noticed kernel/ptrace.c has ptrace_readdata/writedata functions that
+> > are only used by sparc and sparc64 which implements the ptrace requests
+> > PTRACE_READ_DATA, PTRACE_WRITE_DATA (and _TEXT variants).
+> > 
+> > Any reason not to make everybody benefit from these and moving the sparc
+> > implementation to the generic ptrace_request (&compat) ?
+> > 
+> > It's more efficient than read/writing one word at a time... I thought
+> > about it in the light of some work Rik is doing to make
+> > access_process_vm useable on video ram mappings done by the X server...
+> 
+> It's kind of pointless because what gdb does these days on Linux is
+> use the procfs 'mem' file to directly read in parts of the inferior's
+> address space.
+> 
+> See linux_proc_xfer_partial() in gdb/linux-nat.c
 
-It was indeed the case here.  I never tried those things on my
-home machine before, and decided to experiment, but I forgot
-that it has /proc/bus/usb mounted.  And for comparison I used
-another machine which does NOT have that filesystem mounted.
-How.. dum^Wodd... ;)
+Strange, changing access_process_vm on Fedora 9 made gdb able to
+see video memory that the X server had mmapped.
 
-Please excuse me for the noise.
+Are you sure gdb behaves as you suggest?  
 
-/mj
+On x86 my patch seems to work as I expected...
+
+-- 
+All rights reversed.
