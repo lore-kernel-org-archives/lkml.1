@@ -1,82 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758743AbYD2UDt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759431AbYD2UEk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758743AbYD2UDt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 16:03:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755880AbYD2UDl
+	id S1759431AbYD2UEk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 16:04:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752007AbYD2UE2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 16:03:41 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:40553 "EHLO mx1.redhat.com"
+	Tue, 29 Apr 2008 16:04:28 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:17827 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753454AbYD2UDk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 16:03:40 -0400
-Date: Tue, 29 Apr 2008 16:02:09 -0400 (EDT)
-From: Mikulas Patocka <mpatocka@redhat.com>
-To: Jens Axboe <jens.axboe@oracle.com>
-cc: linux-kernel@vger.kernel.org, Mike Anderson <andmike@linux.vnet.ibm.com>,
-       Alasdair Graeme Kergon <agk@redhat.com>
-Subject: Re: [PATCH] Optimize lock in queue unplugging
-In-Reply-To: <20080429192556.GB12774@kernel.dk>
-Message-ID: <Pine.LNX.4.64.0804291554490.26643@engineering.redhat.com>
-References: <Pine.LNX.4.64.0804291459030.17110@engineering.redhat.com>
- <20080429192556.GB12774@kernel.dk>
+	id S1755880AbYD2UE1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Apr 2008 16:04:27 -0400
+Date: Tue, 29 Apr 2008 22:04:20 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, Jeff Garzik <jgarzik@pobox.com>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>
+Subject: Re: [bug - scsi/blk] -git, WARNING: at include/linux/blkdev.h:427  __blk_run_queue+0x74/0xa0()
+Message-ID: <20080429200419.GF12774@kernel.dk>
+References: <20080429195508.GA30109@elte.hu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080429195508.GA30109@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Apr 29 2008, Ingo Molnar wrote:
+> 
+> x86.git auto-testing found two new warnings below with latest -git:
+> 
+>  WARNING: at include/linux/blkdev.h:439 blk_remove_plug+0x69/0x80()
+>  WARNING: at include/linux/blkdev.h:427 __blk_run_queue+0x74/0xa0()
+> 
+> one seems a relatively harmless init locking bug (unlocked access in a 
+> probe function), the other seems scarier as it happens in an irq handler 
+> and it likely would trigger multiple times if it wasnt a WARN_ON_ONCE().
+> 
+> Config and full log at:
+> 
+>  http://redhat.com/~mingo/misc/log-Tue_Apr_29_21_40_46_CEST_2008.bad
+>  http://redhat.com/~mingo/misc/config-Tue_Apr_29_21_40_46_CEST_2008.bad
 
+404 on those, but I think Bart and I already closed this one:
 
-On Tue, 29 Apr 2008, Jens Axboe wrote:
+diff --git a/include/linux/blkdev.h b/include/linux/blkdev.h
+index 669b65c..9e2e23b 100644
+--- a/include/linux/blkdev.h
++++ b/include/linux/blkdev.h
+@@ -418,8 +418,12 @@ struct request_queue
+ 
+ static inline int queue_is_locked(struct request_queue *q)
+ {
++#ifdef CONFIG_SMP
+ 	spinlock_t *lock = q->queue_lock;
+ 	return lock && spin_is_locked(lock);
++#else
++	return 1;
++#endif
+ }
+ 
+ static inline void queue_flag_set_unlocked(unsigned int flag,
 
-> On Tue, Apr 29 2008, Mikulas Patocka wrote:
->> Hi
->>
->> Mike Anderson was doing an OLTP benchmark on a computer with 48 physical
->> disks mapped to one logical device via device mapper.
->>
->> He found that there was a slowdown on request_queue->lock in function
->> generic_unplug_device. The slowdown is caused by the fact that when some
->> code calls unplug on the device mapper, device mapper calls unplug on all
->> physical disks. These unplug calls take the lock, find that the queue is
->> already unplugged, release the lock and exit.
->>
->> With the below patch, performance of the benchmark was increased by 18%
->> (the whole OLTP application, not just block layer microbenchmarks).
->>
->> So I'm submitting this patch for upstream. I think the patch is correct,
->> because when more threads call simultaneously plug and unplug, it is
->> unspecified, if the queue is or isn't plugged (so the patch can't make
->> this worse). And the caller that plugged the queue should unplug it
->> anyway. (if it doesn't, there's 3ms timeout).
->
-> Where were these unplug calls coming from? The block layer will
-> generally only unplug when it is already unplugged, so if you are seeing
-> so many unplug calls that the patch redues overhead by as much
-> described, perhaps the callsite is buggy?
->
-> -- 
-> Jens Axboe
+-- 
+Jens Axboe
 
-unplug is called on any wait_on_buffer (and similar calls) 
-__wait_on_buffer -> sync_buffer -> blk_run_address_space -> 
-blk_run_backing_dev -> bdi->unplug_io_fn(bdi, page);
-
-(I'm not sure that this was the IBM's case, I'm just guessing - this is 
-the most obvious example where unplug is called repeatedly)
-
-
-There is not any test that the queue is plugged and there shouldn't be. If 
-you have this situation
-
-dm-linear(unplugged) -> physical-disk(plugged)
-
-then uplung should be called on dm-linear (that will call dm-unplug method 
-dm_unplug_all and that will unplug the disk). If you add the test of 
-plugged queue to the upper layer, you mess this situation with stacked 
-drivers completely.
-
-The test for already plugged queue should be at the lowest physical device 
-driver, not in upper layers.
-
-Mikulas
