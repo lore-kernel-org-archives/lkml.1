@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761531AbYD2R0j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761703AbYD2R0z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761531AbYD2R0j (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 13:26:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758443AbYD2RU4
+	id S1761703AbYD2R0z (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 13:26:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758549AbYD2RVA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 13:20:56 -0400
-Received: from ns1.suse.de ([195.135.220.2]:52035 "EHLO mx1.suse.de"
+	Tue, 29 Apr 2008 13:21:00 -0400
+Received: from mail.suse.de ([195.135.220.2]:52059 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758416AbYD2RUz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 13:20:55 -0400
-Date: Tue, 29 Apr 2008 10:18:31 -0700
+	id S1758509AbYD2RU7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Apr 2008 13:20:59 -0400
+Date: Tue, 29 Apr 2008 10:18:33 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -20,15 +20,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Alan Cox <alan@redhat.com>, Hans Verkuil <hverkuil@xs4all.nl>,
        v4l-dvb maintainer list <v4l-dvb-maintainer@linuxtv.org>,
        Mauro Carvalho Chehab <mchehab@infradead.org>
-Subject: [15/37] V4L: Fix VIDIOCGAP corruption in ivtv
-Message-ID: <20080429171831.GP14724@suse.de>
+Subject: [16/37] V4L: tea5761: bugzilla #10462: tea5761 autodetection code
+	were broken
+Message-ID: <20080429171833.GQ14724@suse.de>
 References: <20080429171222.073929148@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="v4l-fix-vidiocgap-corruption-in-ivtv.patch"
+Content-Disposition: inline; filename="v4l-tea5761-bugzilla-10462-tea5761-autodetection-code-were-broken.patch"
 In-Reply-To: <20080429171730.GA14724@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,40 +40,69 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 know.
 
 ------------------
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+From: Mauro Carvalho Chehab <mchehab@infradead.org>
 
-(cherry picked from commit d2b213f7b76f187c4391079c7581d3a08b940133)
+(cherry picked from commit 867e835f4db4eba6d49072382cc05fc210c4ed1c)
 
-Frank Bennett reported that ivtv was causing skype to crash. With help
-from one of their developers he showed it was a kernel problem.
-VIDIOCGCAP copies a name into a fixed length buffer - ivtv uses names
-that are too long and does not truncate them so corrupts a few bytes of
-the app data area.
+Fix bugzilla #10462: "tea5761 autodetection code were broken"
 
-Possibly the names also want trimming but for now this should fix the
-corruption case.
-
-Signed-off-by: Alan Cox <alan@redhat.com>
-Signed-off-by: Hans Verkuil <hverkuil@xs4all.nl>
 Signed-off-by: Mauro Carvalho Chehab <mchehab@infradead.org>
 Signed-off-by: Michael Krufky <mkrufky@linuxtv.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/media/video/ivtv/ivtv-ioctl.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ drivers/media/video/tea5761.c    |   15 ++++++++++-----
+ drivers/media/video/tuner-core.c |    6 +++---
+ 2 files changed, 13 insertions(+), 8 deletions(-)
 
---- a/drivers/media/video/ivtv/ivtv-ioctl.c
-+++ b/drivers/media/video/ivtv/ivtv-ioctl.c
-@@ -741,7 +741,8 @@ int ivtv_v4l2_ioctls(struct ivtv *itv, s
+--- a/drivers/media/video/tea5761.c
++++ b/drivers/media/video/tea5761.c
+@@ -249,14 +249,19 @@ int tea5761_autodetection(struct i2c_ada
  
- 		memset(vcap, 0, sizeof(*vcap));
- 		strcpy(vcap->driver, IVTV_DRIVER_NAME);     /* driver name */
--		strcpy(vcap->card, itv->card_name); 	    /* card type */
-+		strncpy(vcap->card, itv->card_name,
-+				sizeof(vcap->card)-1); 	    /* card type */
- 		strcpy(vcap->bus_info, pci_name(itv->dev)); /* bus info... */
- 		vcap->version = IVTV_DRIVER_VERSION; 	    /* version */
- 		vcap->capabilities = itv->v4l2_cap; 	    /* capabilities */
+ 	if (16 != (rc = tuner_i2c_xfer_recv(&i2c, buffer, 16))) {
+ 		printk(KERN_WARNING "it is not a TEA5761. Received %i chars.\n", rc);
+-		return EINVAL;
++		return -EINVAL;
+ 	}
+ 
+-	if (!((buffer[13] != 0x2b) || (buffer[14] != 0x57) || (buffer[15] != 0x061))) {
+-		printk(KERN_WARNING "Manufacturer ID= 0x%02x, Chip ID = %02x%02x. It is not a TEA5761\n",buffer[13],buffer[14],buffer[15]);
+-		return EINVAL;
++	if ((buffer[13] != 0x2b) || (buffer[14] != 0x57) || (buffer[15] != 0x061)) {
++		printk(KERN_WARNING "Manufacturer ID= 0x%02x, Chip ID = %02x%02x."
++				    " It is not a TEA5761\n",
++				    buffer[13], buffer[14], buffer[15]);
++		return -EINVAL;
+ 	}
+-	printk(KERN_WARNING "TEA5761 detected.\n");
++	printk(KERN_WARNING "tea5761: TEA%02x%02x detected. "
++			    "Manufacturer ID= 0x%02x\n",
++			    buffer[14], buffer[15], buffer[13]);
++
+ 	return 0;
+ }
+ 
+--- a/drivers/media/video/tuner-core.c
++++ b/drivers/media/video/tuner-core.c
+@@ -1112,8 +1112,8 @@ static int tuner_probe(struct i2c_client
+ 	if (!no_autodetect) {
+ 		switch (client->addr) {
+ 		case 0x10:
+-			if (tea5761_autodetection(t->i2c->adapter, t->i2c->addr)
+-					!= EINVAL) {
++			if (tea5761_autodetection(t->i2c->adapter,
++						  t->i2c->addr) >= 0) {
+ 				t->type = TUNER_TEA5761;
+ 				t->mode_mask = T_RADIO;
+ 				t->mode = T_STANDBY;
+@@ -1125,7 +1125,7 @@ static int tuner_probe(struct i2c_client
+ 
+ 				goto register_client;
+ 			}
+-			break;
++			return -ENODEV;
+ 		case 0x42:
+ 		case 0x43:
+ 		case 0x4a:
 
 -- 
