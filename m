@@ -1,159 +1,330 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758454AbYD2T5e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757564AbYD2T7q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758454AbYD2T5e (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 15:57:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752287AbYD2T5V
+	id S1757564AbYD2T7q (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 15:59:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755418AbYD2T7f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 15:57:21 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:54077 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752357AbYD2T5T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 15:57:19 -0400
-Date: Tue, 29 Apr 2008 21:55:08 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: linux-kernel@vger.kernel.org
-Cc: Jens Axboe <jens.axboe@oracle.com>, Jeff Garzik <jgarzik@pobox.com>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>
-Subject: [bug - scsi/blk] -git, WARNING: at include/linux/blkdev.h:427
-	__blk_run_queue+0x74/0xa0()
-Message-ID: <20080429195508.GA30109@elte.hu>
+	Tue, 29 Apr 2008 15:59:35 -0400
+Received: from out01.mta.xmission.com ([166.70.13.231]:43674 "EHLO
+	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755380AbYD2T7e (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Apr 2008 15:59:34 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Benjamin Thery <benjamin.thery@bull.net>
+Cc: linux-kernel@vger.kernel.org, Tejun Heo <htejun@gmail.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Daniel Lezcano <dlezcano@fr.ibm.com>,
+       "Serge E. Hallyn" <serue@us.ibm.com>,
+       Pavel Emelyanov <xemul@openvz.org>, netdev@vger.kernel.org
+References: <20080429171015.473938697@theryb.frec.bull.fr>
+	<20080429171703.529721456@theryb.frec.bull.fr>
+Date: Tue, 29 Apr 2008 12:51:29 -0700
+In-Reply-To: <20080429171703.529721456@theryb.frec.bull.fr> (Benjamin Thery's
+	message of "Tue, 29 Apr 2008 19:11:55 +0200")
+Message-ID: <m17ieg1ltq.fsf@frodo.ebiederm.org>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-SA-Exim-Connect-IP: 24.130.11.59
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa03 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	* -1.1 BAYES_05 BODY: Bayesian spam probability is 1 to 5%
+	*      [score: 0.0216]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa03 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+Subject: Re: [PATCH 10/10] sysfs: user namespaces: add ns to user_struct
+X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
+X-SA-Exim-Scanned: Yes (on mgr1.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Benjamin Thery <benjamin.thery@bull.net> writes:
 
-x86.git auto-testing found two new warnings below with latest -git:
+> Add the user_namespace to user_struct.
+>
+> Add a user_namespace to the sysfs_tag struct.
+>
+> Mark the /sys/kernel/uids directory to be tagged so that processes in
+> different user namespaces can remount /sys and see their own uid
+> listings.
+>
+> Without this patch, having CONFIG_FAIR_SCHED=y makes user namespaces
+> unusable, because when you
+>   clone(CLONE_NEWUSER)
+> it will auto-create the root userid and try to create
+> /sys/kernel/uids/0.  Since that already exists from the parent user
+> namespace, the create fails, and the clone misleadingly ends up
+> returning -ENOMEM.
+>
+> This patch fixes the issue by allowing each user namespace to remount
+> /sys, and having /sys filter the /sys/kernel/uid/ entries by user
+> namespace.
 
- WARNING: at include/linux/blkdev.h:439 blk_remove_plug+0x69/0x80()
- WARNING: at include/linux/blkdev.h:427 __blk_run_queue+0x74/0xa0()
+There is a lot of promising code in this patch.  This patch appears to
+be building up a lot of userns infrastructure that is only indirectly
+related to sysfs, and it still appears to have some debugging code
+present.  
 
-one seems a relatively harmless init locking bug (unlocked access in a 
-probe function), the other seems scarier as it happens in an irq handler 
-and it likely would trigger multiple times if it wasnt a WARN_ON_ONCE().
+As a proof of concept patch (which I asked for) this looks good.
 
-Config and full log at:
+I do think this patch should get split into logical changes
+and cleaned up a bit before it gets merged into mainline.
 
- http://redhat.com/~mingo/misc/log-Tue_Apr_29_21_40_46_CEST_2008.bad
- http://redhat.com/~mingo/misc/config-Tue_Apr_29_21_40_46_CEST_2008.bad
+More comments inline below.
 
-system booted up fine otherwise and the warnings did not trigger again.
+Eric
 
-	Ingo
+> Index: linux-mm/fs/sysfs/mount.c
+> ===================================================================
+> --- linux-mm.orig/fs/sysfs/mount.c
+> +++ linux-mm/fs/sysfs/mount.c
+> @@ -17,6 +17,7 @@
+>  #include <linux/pagemap.h>
+>  #include <linux/init.h>
+>  #include <linux/nsproxy.h>
+> +#include <linux/user_namespace.h>
+>  #include <net/net_namespace.h>
+>  
+>  #include "sysfs.h"
+> @@ -81,6 +82,7 @@ static int sysfs_fill_super(struct super
+>  	sb->s_root = root;
+>  	sb->s_fs_info = info;
+>  	info->tag.net_ns = hold_net(current->nsproxy->net_ns);
+> +	info->tag.user_ns = current->nsproxy->user_ns;
+>  	return 0;
+>  
+>  out_err:
+> @@ -100,6 +102,8 @@ static int sysfs_test_super(struct super
+>  
+>  	if (task->nsproxy->net_ns != info->tag.net_ns)
+>  		found = 0;
+> +	if (task->nsproxy->user_ns != info->tag.user_ns)
+> +		found = 0;
+>  
+>  	return found;
+>  }
+> @@ -214,6 +218,27 @@ static struct pernet_operations sysfs_ne
+>  };
+>  #endif
+>  
+> +#ifdef CONFIG_USER_NS
+> +void sysfs_userns_exit(struct user_namespace *user_ns)
+> +{
+> +	/* Allow the net namespace to go away while sysfs is still mounted. */
+> +	struct super_block *sb;
+> +	printk(KERN_NOTICE "sysfs: user namespace exiting\n");
+Debugging?
+> +	mutex_lock(&sysfs_rename_mutex);
+> +	sysfs_grab_supers();
+> +	mutex_lock(&sysfs_mutex);
+> +	list_for_each_entry(sb, &sysfs_fs_type.fs_supers, s_instances) {
+> +		struct sysfs_super_info *info = sysfs_info(sb);
+> +		if (info->tag.user_ns != user_ns)
+> +			continue;
+> +		info->tag.user_ns = NULL;
+> +	}
+> +	mutex_unlock(&sysfs_mutex);
+> +	sysfs_release_supers();
+> +	mutex_unlock(&sysfs_rename_mutex);
+> +}
+> +#endif
+> +
+>  int __init sysfs_init(void)
+>  {
+>  	int err = -ENOMEM;
+> Index: linux-mm/include/linux/sched.h
+> ===================================================================
+> --- linux-mm.orig/include/linux/sched.h
+> +++ linux-mm/include/linux/sched.h
+> @@ -598,7 +598,7 @@ struct user_struct {
+>  
+>  	/* Hash table maintenance information */
+>  	struct hlist_node uidhash_node;
+> -	uid_t uid;
+> +	struct k_uid_t uid;
 
-EXT3-fs: write access will be enabled during recovery.
-------------[ cut here ]------------
-WARNING: at include/linux/blkdev.h:427 __blk_run_queue+0x74/0xa0()
-Modules linked in:
-Pid: 0, comm: swapper Tainted: G        W 2.6.25-sched-devel.git-x86-latest.git #2
- [<c0126e09>] warn_on_slowpath+0x59/0x80
- [<c0175445>] ? cache_flusharray+0xb5/0x100
- [<c015a243>] ? mempool_free_slab+0x13/0x20
- [<c0174a4b>] ? poison_obj+0x2b/0x50
- [<c0174cfe>] ? cache_free_debugcheck+0xce/0x240
- [<c015a243>] ? mempool_free_slab+0x13/0x20
- [<c015a4d8>] ? mempool_free+0x68/0xe0
- [<c015a243>] ? mempool_free_slab+0x13/0x20
- [<c0174a4b>] ? poison_obj+0x2b/0x50
- [<c0174cfe>] ? cache_free_debugcheck+0xce/0x240
- [<c02d9feb>] ? __freed_request+0xab/0xf0
- [<c0404b1d>] ? scsi_pool_free_command+0x2d/0x40
- [<c02daeb4>] __blk_run_queue+0x74/0xa0
- [<c02db356>] blk_run_queue+0x36/0x80
- [<c04097cf>] scsi_run_queue+0x15f/0x300
- [<c04051ec>] ? scsi_put_command+0x6c/0x90
- [<c0409e58>] scsi_next_command+0x38/0x50
- [<c040a0ef>] scsi_end_request+0x6f/0xb0
- [<c040ab37>] scsi_io_completion+0x97/0x410
- [<c0404a46>] scsi_finish_command+0x76/0x90
- [<c040a6e7>] scsi_softirq_done+0x77/0xf0
- [<c02d960a>] blk_done_softirq+0x7a/0x90
- [<c012c485>] __do_softirq+0x85/0x140
- [<c0105ee2>] do_softirq+0xc2/0x100
- [<c014db50>] ? handle_edge_irq+0x0/0xf0
- [<c012c3eb>] irq_exit+0x3b/0x50
- [<c0105fa1>] do_IRQ+0x81/0xc0
- [<c01028e0>] ? default_idle+0x0/0x80
- [<c01028e0>] ? default_idle+0x0/0x80
- [<c01047e0>] common_interrupt+0x28/0x30
- [<c01028e0>] ? default_idle+0x0/0x80
- [<c011799a>] ? native_safe_halt+0xa/0x10
- [<c0102933>] default_idle+0x53/0x80
- [<c0102800>] cpu_idle+0x40/0x90
- [<c05decb8>] rest_init+0x48/0x50
- [<c0872b9f>] start_kernel+0x26f/0x300
- [<c0872410>] ? unknown_bootoption+0x0/0x210
- [<c0104998>] ? mcount_call+0x5/0x9
- [<c08722ad>] i386_start_kernel+0xd/0x10
- =======================
----[ end trace e97bb6de0cc9400b ]---
-kjournald starting.  Commit interval 5 seconds
-EXT3-fs: recovery complete.
+If we are going to go this direction my inclination
+is to include an array of a single element in user_struct.
 
-ata2.01: configured for UDMA/33
-------------[ cut here ]------------
-WARNING: at include/linux/blkdev.h:439 blk_remove_plug+0x69/0x80()
-Modules linked in:
-Pid: 1, comm: swapper Not tainted 2.6.25-sched-devel.git-x86-latest.git #2
- [<c0126e09>] warn_on_slowpath+0x59/0x80
- [<c0104998>] ? mcount_call+0x5/0x9
- [<c02dd83e>] ? blk_recalc_rq_segments+0xe/0x210
- [<c0150427>] ? marker_probe_cb+0x37/0x80
- [<c02d8bbe>] ? elv_insert+0xe/0x160
- [<c0151eab>] ? ftrace_record_ip+0xeb/0x210
- [<c02dabd9>] ? blk_remove_plug+0x9/0x80
- [<c0151eab>] ? ftrace_record_ip+0xeb/0x210
- [<c02dac39>] blk_remove_plug+0x69/0x80
- [<c02daca9>] __generic_unplug_device+0x19/0x30
- [<c02dd72a>] blk_execute_rq_nowait+0x6a/0xa0
- [<c02dd7bb>] blk_execute_rq+0x5b/0xa0
- [<c02dd800>] ? blk_end_sync_rq+0x0/0x30
- [<c0104998>] ? mcount_call+0x5/0x9
- [<c016cefe>] ? blk_queue_bounce+0xe/0x280
- [<c019d639>] ? bio_hw_segments+0x9/0x30
- [<c02d96a0>] ? blk_rq_bio_prep+0x30/0xc0
- [<c040a89f>] scsi_execute+0xcf/0xf0
- [<c040a931>] scsi_execute_req+0x71/0xe0
- [<c040c4ed>] scsi_probe_and_add_lun+0x19d/0x8d0
- [<c05fe98d>] ? mutex_unlock+0xd/0x10
- [<c0373ff6>] ? get_device+0x16/0x20
- [<c040c01c>] ? scsi_alloc_target+0x20c/0x2c0
- [<c040c29c>] ? scsi_complete_async_scans+0xc/0xc0
- [<c0104998>] ? mcount_call+0x5/0x9
- [<c040d7b1>] __scsi_add_device+0xe1/0xf0
- [<c044a36f>] ata_scsi_scan_host+0xdf/0x2a0
- [<c0446fc1>] ata_host_register+0x271/0x290
- [<c0450a3b>] ata_pci_sff_activate_host+0x9b/0x210
- [<c0453350>] ? ata_sff_interrupt+0x0/0x230
- [<c045105e>] ata_pci_sff_init_one+0xde/0x100
- [<c045c2f3>] amd_init_one+0xd3/0x1c0
- [<c045c220>] ? amd_init_one+0x0/0x1c0
- [<c02ff04e>] pci_device_probe+0x5e/0x90
- [<c0376912>] driver_probe_device+0x82/0x180
- [<c0376a82>] __driver_attach+0x72/0x80
- [<c0375fe9>] bus_for_each_dev+0x49/0x70
- [<c037678e>] driver_attach+0x1e/0x20
- [<c0376a10>] ? __driver_attach+0x0/0x80
- [<c037645b>] bus_add_driver+0xab/0x210
- [<c02fef90>] ? pci_device_remove+0x0/0x40
- [<c0376c12>] driver_register+0x42/0xf0
- [<c02ff23e>] __pci_register_driver+0x3e/0x90
- [<c0898289>] amd_init+0x19/0x20
- [<c08727a6>] kernel_init+0x86/0x210
- [<c0872720>] ? kernel_init+0x0/0x210
- [<c0104983>] kernel_thread_helper+0x7/0x10
- =======================
----[ end trace e97bb6de0cc9400b ]---
-scsi 0:0:0:0: Direct-Access     ATA      HDS722525VLAT80  V36O PQ: 0 ANSI: 5
-sd 0:0:0:0: [sda] 488397168 512-byte hardware sectors (250059 MB)
+Maybe that makes sense.  I just know we need to talk about
+how a user maps into different user namespaces.  As that
+is a real concept that really occurs in real filesystems
+like nfsv4 and p9fs, and having infrastructure that can
+deal with the concept (even if it doesn't support it yet) would be
+useful.
+
+>  #endif /* _SYSFS_H_ */
+> Index: linux-mm/include/linux/types.h
+> ===================================================================
+> --- linux-mm.orig/include/linux/types.h
+> +++ linux-mm/include/linux/types.h
+> @@ -37,6 +37,11 @@ typedef __kernel_gid32_t	gid_t;
+>  typedef __kernel_uid16_t        uid16_t;
+>  typedef __kernel_gid16_t        gid16_t;
+>  
+> +struct k_uid_t {
+> +	uid_t uid;
+> +	struct user_namespace *ns;
+> +};
+
+Weird a _t suffix in a structure name.  Usually _t indicates
+that something is a typedef.
+
+> +
+>  typedef unsigned long		uintptr_t;
+>  
+>  #ifdef CONFIG_UID16
+> Index: linux-mm/include/linux/user_namespace.h
+> ===================================================================
+> --- linux-mm.orig/include/linux/user_namespace.h
+> +++ linux-mm/include/linux/user_namespace.h
+> @@ -12,10 +12,15 @@
+>  struct user_namespace {
+>  	struct kref		kref;
+>  	struct hlist_head	uidhash_table[UIDHASH_SZ];
+> +	struct kset		*kset;
+>  	struct user_struct	*root_user;
+>  };
+>  
+>  extern struct user_namespace init_user_ns;
+> +extern int register_user_ns_kobj(struct user_namespace *ns);
+> +extern void unregister_user_ns_kobj(struct user_namespace *ns);
+> +extern int register_user_ns_kobj(struct user_namespace *ns);
+> +extern void unregister_user_ns_kobj(struct user_namespace *ns);
+>  
+>  #ifdef CONFIG_USER_NS
+>  
+> Index: linux-mm/kernel/user.c
+> ===================================================================
+> --- linux-mm.orig/kernel/user.c
+> +++ linux-mm/kernel/user.c
+> @@ -53,6 +53,10 @@ struct user_struct root_user = {
+>  	.files		= ATOMIC_INIT(0),
+>  	.sigpending	= ATOMIC_INIT(0),
+>  	.locked_shm     = 0,
+> +	.uid		= {
+> +		.uid = 0,
+> +		.ns = &init_user_ns,
+> +	},
+>  #ifdef CONFIG_USER_SCHED
+>  	.tg		= &init_task_group,
+>  #endif
+> @@ -71,13 +75,23 @@ static void uid_hash_remove(struct user_
+>  	hlist_del_init(&up->uidhash_node);
+>  }
+>  
+> -static struct user_struct *uid_hash_find(uid_t uid, struct hlist_head *hashent)
+> +int task_user_equiv(struct task_struct *tsk, struct user_struct *u)
+> +{
+> +	if (tsk->uid != u->uid.uid)
+> +		return 0;
+> +	if (tsk->nsproxy->user_ns != u->uid.ns)
+> +		return 0;
+> +	return 1;
+> +}
+> +
+> +static struct user_struct *uid_hash_find(uid_t uid,
+> +				struct hlist_head *hashent)
+>  {
+>  	struct user_struct *user;
+>  	struct hlist_node *h;
+>  
+>  	hlist_for_each_entry(user, h, hashent, uidhash_node) {
+> -		if (user->uid == uid) {
+> +		if (user->uid.uid == uid) {
+>  			atomic_inc(&user->__count);
+>  			return user;
+>  		}
+> @@ -236,6 +250,23 @@ static void uids_release(struct kobject 
+>  	return;
+>  }
+>  
+> +static const void *userns_sb_tag(struct sysfs_tag_info *info)
+> +{
+> +       return info->user_ns;
+> +}
+> +
+> +static const void *userns_kobject_tag(struct kobject *kobj)
+> +{
+> +       struct user_struct *up;
+> +       up = container_of(kobj, struct user_struct, kobj);
+> +       return up->uid.ns;
+> +}
+> +
+> +static struct sysfs_tagged_dir_operations userns_tagged_dir_operations = {
+> +       .sb_tag = userns_sb_tag,
+> +       .kobject_tag = userns_kobject_tag,
+> +};
+> +
+>  static struct kobj_type uids_ktype = {
+>  	.sysfs_ops = &kobj_sysfs_ops,
+>  	.default_attrs = uids_attributes,
+> @@ -246,19 +277,19 @@ static struct kobj_type uids_ktype = {
+>  static int uids_user_create(struct user_struct *up)
+>  {
+>  	struct kobject *kobj = &up->kobj;
+> -	int error;
+> +	int err;
+>  
+>  	memset(kobj, 0, sizeof(struct kobject));
+>  	kobj->kset = uids_kset;
+> -	error = kobject_init_and_add(kobj, &uids_ktype, NULL, "%d", up->uid);
+> -	if (error) {
+> +	err = kobject_init_and_add(kobj, &uids_ktype, NULL, "%d", up->uid.uid);
+> +	if (err) {
+>  		kobject_put(kobj);
+>  		goto done;
+>  	}
+>  
+>  	kobject_uevent(kobj, KOBJ_ADD);
+>  done:
+> -	return error;
+> +	return err;
+>  }
+>  
+>  /* create these entries in sysfs:
+> @@ -271,7 +302,7 @@ int __init uids_sysfs_init(void)
+>  	uids_kset = kset_create_and_add("uids", NULL, kernel_kobj);
+>  	if (!uids_kset)
+>  		return -ENOMEM;
+> -
+> +	sysfs_enable_tagging(&uids_kset->kobj, &userns_tagged_dir_operations);
+>  	return uids_user_create(&root_user);
+>  }
+>  
+> @@ -403,7 +434,8 @@ struct user_struct *alloc_uid(struct use
+>  		if (!new)
+>  			goto out_unlock;
+>  
+> -		new->uid = uid;
+> +		new->uid.uid = uid;
+> +		new->uid.ns = ns;
+>  		atomic_set(&new->__count, 1);
+>  
+>  		if (sched_create_user(new) < 0)
+> Index: linux-mm/kernel/user_namespace.c
+> ===================================================================
+> --- linux-mm.orig/kernel/user_namespace.c
+> +++ linux-mm/kernel/user_namespace.c
+> @@ -22,7 +22,7 @@ static struct user_namespace *clone_user
+>  	struct user_struct *new_user;
+>  	int n;
+>  
+> -	ns = kmalloc(sizeof(struct user_namespace), GFP_KERNEL);
+> +	ns = kzalloc(sizeof(struct user_namespace), GFP_KERNEL);
+>  	if (!ns)
+>  		return ERR_PTR(-ENOMEM);
+>  
+> @@ -71,6 +71,7 @@ void free_user_ns(struct kref *kref)
+>  	struct user_namespace *ns;
+>  
+>  	ns = container_of(kref, struct user_namespace, kref);
+> +	sysfs_userns_exit(ns);
+>  	release_uids(ns);
+>  	kfree(ns);
+>  }
