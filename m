@@ -1,96 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759323AbYD2Mfh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759765AbYD2Mfv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759323AbYD2Mfh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 08:35:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753925AbYD2Mf0
+	id S1759765AbYD2Mfv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 08:35:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756757AbYD2Mfg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 08:35:26 -0400
-Received: from outbound.icp-qv1-irony-out3.iinet.net.au ([203.59.1.148]:10252
-	"EHLO outbound.icp-qv1-irony-out3.iinet.net.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753950AbYD2MfY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 08:35:24 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Av8BAJayFkh8qMj2/2dsb2JhbAAIrFc
-X-IronPort-AV: E=Sophos;i="4.25,722,1199631600"; 
-   d="scan'208";a="255942499"
-Subject: Re: [patch/rfc 2.6.25-git] gpio: sysfs interface
-From: Ben Nizette <bn@niasdigital.com>
-To: Trent Piepho <tpiepho@freescale.com>
-Cc: David Brownell <david-b@pacbell.net>, lkml <linux-kernel@vger.kernel.org>,
-       hartleys <hartleys@visionengravers.com>,
-       Mike Frysinger <vapier.adi@gmail.com>, Bryan Wu <cooloney@kernel.org>
-In-Reply-To: <Pine.LNX.4.64.0804282202340.8286@t2.domain.actdsltmp>
-References: <200804281239.51729.david-b@pacbell.net>
-	 <Pine.LNX.4.64.0804281507160.6832@t2.domain.actdsltmp>
-	 <200804281745.59442.david-b@pacbell.net>
-	 <Pine.LNX.4.64.0804282202340.8286@t2.domain.actdsltmp>
-Content-Type: text/plain
-Organization: Nias Digital
-Date: Tue, 29 Apr 2008 22:35:26 +1000
-Message-Id: <1209472526.311.50.camel@moss.renham>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
-Content-Transfer-Encoding: 7bit
+	Tue, 29 Apr 2008 08:35:36 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:54723 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759139AbYD2Mff (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Apr 2008 08:35:35 -0400
+Date: Tue, 29 Apr 2008 14:35:22 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Dimitri Sivanich <sivanich@sgi.com>
+Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [PATCH] disable softlockup detection at boottime
+Message-ID: <20080429123522.GK31271@elte.hu>
+References: <20080423201613.GA8546@sgi.com> <20080428165544.GE18210@elte.hu> <20080428185252.GC1167@sgi.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080428185252.GC1167@sgi.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Mon, 2008-04-28 at 22:48 -0700, Trent Piepho wrote:
-> On Mon, 28 Apr 2008, David Brownell wrote:
-> > On Monday 28 April 2008, Trent Piepho wrote:
-> >> On Mon, 28 Apr 2008, David Brownell wrote:
-> >>> Simple sysfs interface for GPIOs.
-> >>>
-> >>>    /sys/class/gpio
-> >>>        /gpio-N ... for each exported GPIO #N
-> >>
-> >> I liked it better they way I had it, "label:N".
-> >
-> > Those labels may not be available though; or valid in pathnames.
+* Dimitri Sivanich <sivanich@sgi.com> wrote:
+
+> On Mon, Apr 28, 2008 at 06:55:44PM +0200, Ingo Molnar wrote:
+> > 
+> > good idea - but why dont you set softlockup_thresh to 0, which is the 
+> > "off" switch already? (and that way it can be turned back on later as 
+> > well, by the sysadmin.)
+> > 
 > 
-> So just fall back to "gpio" if there is no label?  The only character that's
-> not valid in a pathname is '/', so that's trivial to check for.
+> I'm getting unaligned access errors trying to set it to anything, so 
+> it's not working for me currently (2.6.25):
 > 
-> const char *label = chip->label && !strchr(chip->label, '/') ?
->  	chip->label : "gpio"; /* or "generic" or "unknown", or ...*/
+> It's tripping up on the address of 'one', which is an int that is not 
+> properly aligned for the unsigned long comparison in 
+> proc_doulongvec_minmax on my 64 bit machine.  Also, the value '0' is 
+> invalid for softlockup_thresh, correct?
 > 
-> This means you don't need a file with number to device assignents.  It makes
-> shell scripting a lot easier too.  Say I want the first gpio on a pca9557 gpio
-> expander?  It's will be something like:  /sys/class/gpio/pca9557-0:0
-> 
-> You don't have to worry about dynamic assigments.  You don't have to resort to
-> convoluted shell script code to extract the proper range from a mapping file
-> and then construct the name.
+> I temporarily got around these issues with the following hack.
 
-Sorry if I'm being dense; how do you want this bit to work?  As I see
-it, there are a few options:
+ah, sorry. But ... perhaps using threshold -1 would be the most 
+intuitive setting? (for 'infinite timeout' ==> softlockup detector 
+turned off) That way it all becomes configurable as part of the 
+threshold? No strong opinion though.
 
-1) Have the files named as you suggest and all of them always present,
-albeit read-only until export.  Very easy to use, easy to discover which
-file is which, a decent bit of memory usage having them all listed.
-
-2) Have the files named as you suggest and you have to explicitly
-request them or have the kernel explicitly export them.  To request them
-yourself you're going to need the gpio number so having the created file
-labelled nicely isn't a win over having it labelled with the gpio
-number.  I 'spose there's a win for kernel exported gpios, they're more
-human readable, but you're still going to have to have the mappings
-available somewhere for the manually exported gpios anyway.
-
-3) Have the files named as you suggest, explicit export/request but
-better parsing behind the control file so something like
-echo "export pca9557-0:5" > control
-works.  Very very nice for the user, big heavy back end.
-
-4) Status quo.  Easy, efficient, potentially hard to discover which gpio
-you actually want.
-
-My vote's for 1 or 4.  The first one is heavier but easier.  The last
-one will need something like the discussed file mapping ranges to gpios.
-Do your expectations/ideas fit in cleanly anywhere above?
-
-Thanks,
-	--Ben  
-
+	Ingo
