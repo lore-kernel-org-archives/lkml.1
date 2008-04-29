@@ -1,43 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757591AbYD2XkL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757167AbYD2XsB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757591AbYD2XkL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 19:40:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755199AbYD2Xj6
+	id S1757167AbYD2XsB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 19:48:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752065AbYD2Xrv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 19:39:58 -0400
-Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:40637 "EHLO
-	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754985AbYD2Xj5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 19:39:57 -0400
-Date: Tue, 29 Apr 2008 19:39:44 -0400 (EDT)
-From: Jeff Arnold <jbarnold@MIT.EDU>
-To: Tomasz Chmielewski <mangoo@wpkg.org>
-cc: LKML <linux-kernel@vger.kernel.org>, francois.cami@free.fr,
-       Andi Kleen <andi@firstfloor.org>, mail@earthworm.de
-Subject: Re: A system for rebootless kernel security updates
-In-Reply-To: <481098A4.50107@wpkg.org>
-Message-ID: <alpine.DEB.1.10.0804291915510.32370@vinegar-pot.mit.edu>
-References: <481098A4.50107@wpkg.org>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
-X-Spam-Flag: NO
-X-Spam-Score: 0.00
+	Tue, 29 Apr 2008 19:47:51 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:54957 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751892AbYD2Xru (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Apr 2008 19:47:50 -0400
+Date: Wed, 30 Apr 2008 09:47:42 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: linux-kernel@vger.kernel.org, linux-next@vger.kernel.org,
+       linux-pci@atrey.karlin.mff.cuni.cz,
+       Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+Subject: Re: PCI tree info
+Message-Id: <20080430094742.589add5a.sfr@canb.auug.org.au>
+In-Reply-To: <200804291100.08622.jbarnes@virtuousgeek.org>
+References: <200804291100.08622.jbarnes@virtuousgeek.org>
+X-Mailer: Sylpheed 2.5.0beta3 (GTK+ 2.12.9; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Wed__30_Apr_2008_09_47_42_+1000_+78W4cq8gQEjrlzC"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> i.e. this patent from December 2002
+--Signature=_Wed__30_Apr_2008_09_47_42_+1000_+78W4cq8gQEjrlzC
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-That's a patent application, not a patent.  That application has received 
-a "final rejection" from the U.S. patent office (Microsoft is appealing, 
-but so far their attempts at arguing the merits of the application have 
-not been successful).  You can browse the relevant documents at
+Hi Jesse,
 
-http://portal.uspto.gov/external/portal/pair
+On Tue, 29 Apr 2008 11:00:08 -0700 Jesse Barnes <jbarnes@virtuousgeek.org> =
+wrote:
+>
+> The PCI tree now lives in git: =20
+> git://git.kernel.org/pub/scm/linux/kernel/git/jbarnes/pci-2.6.  There are=
+ a=20
+> few branches:
+>   for-linus - stuff headed to Linus in the next pull request
+>   linux-next - patches targetted at the following release
 
-(The application number is 10/307,902).
+I have added both these to linux-next as "pci-current" and "pci"
+respectively.  These have just you as the contact - let me know if you
+want someone else as well (or even a mailing list).
 
-Jeff Arnold
-jbarnold@mit.edu
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Wed__30_Apr_2008_09_47_42_+1000_+78W4cq8gQEjrlzC
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFIF7OiTgG2atn1QN8RAvmZAJ4rvw6iCd4iLVMTRe+TnIqTm2HaLwCdG2v3
+BJDBJ/OqFg5J1QfpLTWDHEU=
+=VVIR
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__30_Apr_2008_09_47_42_+1000_+78W4cq8gQEjrlzC--
