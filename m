@@ -1,52 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758200AbYD2Ghe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758738AbYD2Gl6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758200AbYD2Ghe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 02:37:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751608AbYD2GhZ
+	id S1758738AbYD2Gl6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 02:41:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754564AbYD2Glu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 02:37:25 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:60855 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751477AbYD2GhZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 02:37:25 -0400
-Message-ID: <4816C214.60806@pobox.com>
-Date: Tue, 29 Apr 2008 02:37:08 -0400
-From: Jeff Garzik <jgarzik@pobox.com>
+	Tue, 29 Apr 2008 02:41:50 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:54450 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754169AbYD2Glu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Apr 2008 02:41:50 -0400
+Message-ID: <4816C258.7050203@zytor.com>
+Date: Mon, 28 Apr 2008 23:38:16 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
 User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-To: Tejun Heo <htejun@gmail.com>
-CC: Kumar Gala <galak@kernel.crashing.org>, Andrew Morton <akpm@osdl.org>,
-       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-       Greg KH <greg@kroah.com>, Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: [PATCH] devres: support addresses greater than an unsigned long
- via dev_ioremap
-References: <Pine.LNX.4.64.0804290122210.10928@blarg.am.freescale.net> <4816C094.6030601@gmail.com>
-In-Reply-To: <4816C094.6030601@gmail.com>
+To: David Newall <davidn@davidnewall.com>
+CC: Cyrill Gorcunov <gorcunov@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Markus Metzger <markus.t.metzger@intel.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: DS cleanup - dont treat 0 as NULL
+References: <20080428191504.GA6842@cvg> <4816BEC8.1080708@davidnewall.com>
+In-Reply-To: <4816BEC8.1080708@davidnewall.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo wrote:
-> Kumar Gala wrote:
->> Use a resource_size_t instead of unsigned long since some arch's are
->> capable of having ioremap deal with addresses greater than the size of a
->> unsigned long.
->>
->> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+David Newall wrote:
+> Cyrill Gorcunov wrote:
+>> -			return 0;
+>> +			return NULL;
 > 
-> Acked-by: Tejun Heo <htejun@gmail.com>
+> Why?  The constant 0 is C's official symbol for a null pointer.
 
-Fine with me, too.
+It's still bad style.
 
-I think devres changes should go via GregKH (device core) or Jesse (PCI) 
-rather than my libata tree, unless there are obvious dependencies...
-
-	Jeff
-
-
-
+	-hpa
