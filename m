@@ -1,56 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758197AbYD2GpI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758433AbYD2GtZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758197AbYD2GpI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 02:45:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750848AbYD2Go4
+	id S1758433AbYD2GtZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 02:49:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752923AbYD2GtR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 02:44:56 -0400
-Received: from mail164.messagelabs.com ([216.82.253.131]:51771 "EHLO
-	mail164.messagelabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750837AbYD2Goz (ORCPT
+	Tue, 29 Apr 2008 02:49:17 -0400
+Received: from rekin23.go2.pl ([193.17.41.16]:56450 "EHLO rekin23.go2.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750771AbYD2GtR convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 02:44:55 -0400
-X-VirusChecked: Checked
-X-Env-Sender: Uwe.Kleine-Koenig@digi.com
-X-Msg-Ref: server-10.tower-164.messagelabs.com!1209451493!9187450!1
-X-StarScan-Version: 5.5.12.14.2; banners=-,-,-
-X-Originating-IP: [66.77.174.14]
-Date: Tue, 29 Apr 2008 08:44:08 +0200
-From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <Uwe.Kleine-Koenig@digi.com>
-To: Alessandro Zummo <a.zummo@towertech.it>,
-       David Brownell <dbrownell@users.sourceforge.net>
-CC: <linux-kernel@vger.kernel.org>
-Subject: rtc_valid_tm doesn't check tm_wday
-Message-ID: <20080429064408.GA8352@digi.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-OriginalArrivalTime: 29 Apr 2008 06:44:09.0337 (UTC) FILETIME=[6D5A2E90:01C8A9C4]
-X-TM-AS-Product-Ver: SMEX-8.0.0.1181-5.500.1026-15878.004
-X-TM-AS-Result: No--3.904000-8.000000-31
-X-TM-AS-User-Approved-Sender: No
-X-TM-AS-User-Blocked-Sender: No
+	Tue, 29 Apr 2008 02:49:17 -0400
+X-Greylist: delayed 83779 seconds by postgrey-1.27 at vger.kernel.org; Tue, 29 Apr 2008 02:49:16 EDT
+Subject: =?UTF-8?Q?Re:_Re:_Fwd:_[PATCH]_[MMC]_fix_clock_problem_in_PXA255/270?=
+From: =?UTF-8?Q?Tadeusz_Gozdek?= <linux_fan@o2.pl>
+To: drzeus-list@drzeus.cx
+Cc: linux-kernel@vger.kernel.org, marcel@holtmann.org
+In-Reply-To: <20080428152859.05efccf7@mjolnir.drzeus.cx>
+References: <441f2104.26c7abf7.48157da1.e45c7@o2.pl> <20080428152859.05efccf7@mjolnir.drzeus.cx>
+Mime-Version: 1.0
+Message-ID: <61fb248d.11640040.4816c4ed.cc@o2.pl>
+Date: Tue, 29 Apr 2008 08:49:17 +0200
+X-Originator: 62.93.34.186
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+Hi
+As you can check, after finishing all operations clock is leaved as switched on (its switched off and on again during sending next command e.g. GO_INACTIVE_STATE). The same is after wake-up the system, even if the clock was switched off. 
+Switched on clock has sometimes an influence on the rest of the hardware e.g. the GPS modules and on battery life in a battery powered systems.
 
-I'm currently writing an rtc driver and want to use rtc_valid_tm to
-assert to have a valid date before writing it to the rtc.
+Tadeusz
 
-Now I wonder why rtc_valid_tm doesn't check tm_wday for being in the
-range [0 .. 6].  Is there a reason?  I could imagine that you want to
-be able to check paritial "struct rtc_time"s, too.
+> On Mon, 28 Apr 2008 09:32:49 +0200
+> Tadeusz Gozdek <linux_fan@o2.pl> wrote:
+> 
+> > It solves the problems with clock in the PXA255/270 MMC/SD hardware.
+> > This solution was testes with our devices and works good.
+> > Kernel 2.6.24.4 (but should work with >=2.6.19)
+> > 
+> 
+> What issue is this supposed to solve?
+> 
+> Rgds
+> 
+> -- 
+>      -- Pierre Ossman
+> 
+>   Linux kernel, MMC maintainer        http://www.kernel.org
+>   PulseAudio, core developer          http://pulseaudio.org
+>   rdesktop, core developer          http://www.rdesktop.org
+---- WiadomoÅ›Ä‡ Oryginalna ----
+Od: Pierre Ossman <drzeus-list@drzeus.cx>
+Do: Tadeusz Gozdek <linux_fan@o2.pl>
+Kopia do: linux-kernel@vger.kernel.org, Marcel Holtmann <marcel@holtmann.org>
+Data: 28 kwietnia 2008 15:28
+Temat: Re: Fwd: [PATCH] [MMC] fix clock problem in PXA255/270
 
-So should I check tm_wday myself?
+> On Mon, 28 Apr 2008 09:32:49 +0200
+> Tadeusz Gozdek <linux_fan@o2.pl> wrote:
+> 
+> > It solves the problems with clock in the PXA255/270 MMC/SD hardware.
+> > This solution was testes with our devices and works good.
+> > Kernel 2.6.24.4 (but should work with >=2.6.19)
+> > 
+> 
+> What issue is this supposed to solve?
+> 
+> Rgds
+> 
+> -- 
+>      -- Pierre Ossman
+> 
+>   Linux kernel, MMC maintainer        http://www.kernel.org
+>   PulseAudio, core developer          http://pulseaudio.org
+>   rdesktop, core developer          http://www.rdesktop.org
 
-Best regards
-Uwe
-
--- 
-Uwe Kleine-König, Software Engineer
-Digi International GmbH Branch Breisach, Küferstrasse 8, 79206 Breisach, Germany
-Tax: 315/5781/0242 / VAT: DE153662976 / Reg. Amtsgericht Dortmund HRB 13962
