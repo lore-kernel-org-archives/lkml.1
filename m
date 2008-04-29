@@ -1,48 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757222AbYD2SAu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757916AbYD2SFG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757222AbYD2SAu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 14:00:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753331AbYD2SAk
+	id S1757916AbYD2SFG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 14:05:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755350AbYD2SEt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 14:00:40 -0400
-Received: from outbound-mail-111.bluehost.com ([69.89.18.7]:35775 "HELO
-	outbound-mail-111.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753480AbYD2SAk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 14:00:40 -0400
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: PCI tree info
-Date: Tue, 29 Apr 2008 11:00:08 -0700
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
-       Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+	Tue, 29 Apr 2008 14:04:49 -0400
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:58513 "EHLO e6.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755132AbYD2SEs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Apr 2008 14:04:48 -0400
+Date: Tue, 29 Apr 2008 13:04:45 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Greg KH <gregkh@suse.de>
+Cc: Benjamin Thery <benjamin.thery@bull.net>, linux-kernel@vger.kernel.org,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Tejun Heo <htejun@gmail.com>, Daniel Lezcano <dlezcano@fr.ibm.com>,
+       "Serge E. Hallyn" <serue@us.ibm.com>,
+       Pavel Emelyanov <xemul@openvz.org>, netdev@vger.kernel.org
+Subject: Re: [PATCH 00/10] sysfs tagged directories
+Message-ID: <20080429180445.GA18110@sergelap.austin.ibm.com>
+References: <20080429171015.473938697@theryb.frec.bull.fr> <20080429173621.GA16625@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200804291100.08622.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
+In-Reply-To: <20080429173621.GA16625@suse.de>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The PCI tree now lives in git:  
-git://git.kernel.org/pub/scm/linux/kernel/git/jbarnes/pci-2.6.  There are a 
-few branches:
-  for-linus - stuff headed to Linus in the next pull request
-  linux-next - patches targetted at the following release
-  master - unmodified Linus upstream branch
+Quoting Greg KH (gregkh@suse.de):
+> On Tue, Apr 29, 2008 at 07:10:15PM +0200, Benjamin Thery wrote:
+> > Here is the announcement Eric wrote back in December to introduce his 
+> > patchset:
+> 
+> <snip>
+> 
+> Are the objections that Al Viro made to this patchset when it was last
+> sent out addressed in this new series?
+> 
+> thanks,
+> 
+> greg k-h
 
-I'll try to avoid re-basing, but since the main downstream tree is the PCI 
-hotplug tree, and Kristen uses quilt, that probably won't be much of an 
-issue.
+Which objections were those?  The last submission which I see by Eric
+was http://lkml.org/lkml/2007/12/1/15 this past December.  I see no
+response from Al and get the feeling you were ok with them.
 
-If we end up with some big patchsets (like the resource management unification 
-benh has been talking about) needing a lot of testing, I may create a 'test' 
-or 'all' branch for akpm and others, but I'll keep everyone posted in that 
-case.
+So my hunch would be that Eric had addressed those before that last
+submission, but if not I'm sorry, and please do set me straight.
 
-Thanks,
-Jesse
+thanks,
+-serge
