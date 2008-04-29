@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760953AbYD2RYr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760625AbYD2RYA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760953AbYD2RYr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 13:24:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758123AbYD2RUn
+	id S1760625AbYD2RYA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 13:24:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758069AbYD2RUk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 13:20:43 -0400
-Received: from ns2.suse.de ([195.135.220.15]:43032 "EHLO mx2.suse.de"
+	Tue, 29 Apr 2008 13:20:40 -0400
+Received: from ns2.suse.de ([195.135.220.15]:43002 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758101AbYD2RUm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 13:20:42 -0400
-Date: Tue, 29 Apr 2008 10:18:23 -0700
+	id S1758036AbYD2RUi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Apr 2008 13:20:38 -0400
+Date: Tue, 29 Apr 2008 10:18:21 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -20,14 +20,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Mikulas Patocka <mpatocka@redhat.com>, Milan Broz <mbroz@redhat.com>,
-       Alasdair G Kergon <agk@redhat.com>
-Subject: [12/37] dm snapshot: fix chunksize sector conversion
-Message-ID: <20080429171823.GM14724@suse.de>
+       Alan Stern <stern@rowland.harvard.edu>,
+       David Brownell <david-b@pacbell.net>
+Subject: [11/37] USB: OHCI: fix bug in controller resume
+Message-ID: <20080429171821.GL14724@suse.de>
 References: <20080429171222.073929148@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="dm-snapshot-fix-chunksize-sector-conversion.patch"
+Content-Disposition: inline; filename="usb-ohci-fix-bug-in-controller-resume.patch"
 In-Reply-To: <20080429171730.GA14724@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -38,33 +38,41 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 know.
 
 ------------------
-From: Mikulas Patocka <mpatocka@redhat.com>
+From: Alan Stern <stern@rowland.harvard.edu>
 
-commit: 924362629bf5645aee5f49f8a0d0d5b193e65997
+commit: 0d22f65515307c878ddd20b1305cce925ca9516c
 
-If a snapshot has a smaller chunksize than the page size the
-conversion to pages currently returns 0 instead of 1, causing:
-kernel BUG in mempool_resize.
+This patch (as1063) fixes a bug in the way ohci-hcd resumes its
+controllers.  It leaves the Master Interrupt Enable bit turned off.
 
-Signed-off-by: Mikulas Patocka <mpatocka@redhat.com>
-Signed-off-by: Milan Broz <mbroz@redhat.com>
-Signed-off-by: Alasdair G Kergon <agk@redhat.com>
+If the root hub is resumed immediately this won't matter.  But if the
+root hub is suspended (say because no devices are plugged in), it won't
+ever wake up by itself.
+
+Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
+CC: David Brownell <david-b@pacbell.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/md/dm-exception-store.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/usb/host/ohci-pci.c |    4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
---- a/drivers/md/dm-exception-store.c
-+++ b/drivers/md/dm-exception-store.c
-@@ -131,7 +131,7 @@ struct pstore {
+--- a/drivers/usb/host/ohci-pci.c
++++ b/drivers/usb/host/ohci-pci.c
+@@ -312,11 +312,13 @@ static int ohci_pci_suspend (struct usb_
  
- static unsigned sectors_to_pages(unsigned sectors)
+ static int ohci_pci_resume (struct usb_hcd *hcd)
  {
--	return sectors / (PAGE_SIZE >> 9);
-+	return DIV_ROUND_UP(sectors, PAGE_SIZE >> 9);
++	struct ohci_hcd	*ohci = hcd_to_ohci(hcd);
++
+ 	set_bit(HCD_FLAG_HW_ACCESSIBLE, &hcd->flags);
+ 
+ 	/* FIXME: we should try to detect loss of VBUS power here */
+ 	prepare_for_handover(hcd);
+-
++	ohci_writel(ohci, OHCI_INTR_MIE, &ohci->regs->intrenable);
+ 	return 0;
  }
  
- static int alloc_area(struct pstore *ps)
 
 -- 
