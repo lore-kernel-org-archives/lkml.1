@@ -1,79 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758009AbYD2Pbl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933537AbYD2Pbz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758009AbYD2Pbl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 11:31:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933090AbYD2Pa4
+	id S933537AbYD2Pbz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 11:31:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933265AbYD2Pb0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 11:30:56 -0400
-Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:41152
-	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932098AbYD2Paz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 11:30:55 -0400
-Date: Tue, 29 Apr 2008 17:30:52 +0200
-From: Andrea Arcangeli <andrea@qumranet.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Robin Holt <holt@sgi.com>, Jack Steiner <steiner@sgi.com>,
-       Nick Piggin <npiggin@suse.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       kvm-devel@lists.sourceforge.net, Kanoj Sarcar <kanojsarcar@yahoo.com>,
-       Roland Dreier <rdreier@cisco.com>,
-       Steve Wise <swise@opengridcomputing.com>, linux-kernel@vger.kernel.org,
-       Avi Kivity <avi@qumranet.com>, linux-mm@kvack.org,
-       general@lists.openfabrics.org, Hugh Dickins <hugh@veritas.com>,
-       akpm@linux-foundation.org, Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [PATCH 01 of 12] Core of mmu notifiers
-Message-ID: <20080429153052.GE8315@duo.random>
-References: <20080423221928.GV24536@duo.random> <20080424064753.GH24536@duo.random> <20080424095112.GC30298@sgi.com> <20080424153943.GJ24536@duo.random> <20080424174145.GM24536@duo.random> <20080426131734.GB19717@sgi.com> <20080427122727.GO9514@duo.random> <Pine.LNX.4.64.0804281332030.31163@schroedinger.engr.sgi.com> <20080429001052.GA8315@duo.random> <Pine.LNX.4.64.0804281819020.2502@schroedinger.engr.sgi.com>
+	Tue, 29 Apr 2008 11:31:26 -0400
+Received: from gate.crashing.org ([63.228.1.57]:58173 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933257AbYD2PbY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Apr 2008 11:31:24 -0400
+Date: Tue, 29 Apr 2008 10:25:48 -0500 (CDT)
+From: Kumar Gala <galak@kernel.crashing.org>
+X-X-Sender: galak@blarg.am.freescale.net
+To: Greg KH <greg@kroah.com>
+cc: Tejun Heo <htejun@gmail.com>, Jeff Garzik <jgarzik@pobox.com>,
+       Andrew Morton <akpm@osdl.org>,
+       "linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>,
+       lkml Mailing List <linux-kernel@vger.kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: [PATCH][RESEND] devres: support addresses greater than an unsigned
+ long via dev_ioremap
+In-Reply-To: <20080429152331.GC11329@kroah.com>
+Message-ID: <Pine.LNX.4.64.0804291025140.25102@blarg.am.freescale.net>
+References: <Pine.LNX.4.64.0804290122210.10928@blarg.am.freescale.net>
+ <4816C094.6030601@gmail.com> <4816C214.60806@pobox.com>
+ <C415A4D5-CE5A-4E48-B5D5-0B9A6C7A5CA6@kernel.crashing.org>
+ <20080429152331.GC11329@kroah.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0804281819020.2502@schroedinger.engr.sgi.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 28, 2008 at 06:28:06PM -0700, Christoph Lameter wrote:
-> On Tue, 29 Apr 2008, Andrea Arcangeli wrote:
-> 
-> > Frankly I've absolutely no idea why rcu is needed in all rmap code
-> > when walking the page->mapping. Definitely the PG_locked is taken so
-> > there's no way page->mapping could possibly go away under the rmap
-> > code, hence the anon_vma can't go away as it's queued in the vma, and
-> > the vma has to go away before the page is zapped out of the pte.
-> 
-> zap_pte_range can race with the rmap code and it does not take the page 
-> lock. The page may not go away since a refcount was taken but the mapping 
-> can go away. Without RCU you have no guarantee that the anon_vma is 
-> existing when you take the lock. 
+Use a resource_size_t instead of unsigned long since some arch's are
+capable of having ioremap deal with addresses greater than the size of a
+unsigned long.
 
-There's some room for improvement, like using down_read_trylock, if
-that succeeds we don't need to increase the refcount and we can keep
-the rcu_read_lock held instead.
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+---
 
-Secondly we don't need to increase the refcount in fork() when we
-queue the vma-copy in the anon_vma. You should init the refcount to 1
-when the anon_vma is allocated, remove the atomic_inc from all code
-(except when down_read_trylock fails) and then change anon_vma_unlink
-to:
+For GregKH to actually get the patch.
 
-        up_write(&anon_vma->sem);
-	if (empty)
-		put_anon_vma(anon_vma);
+- k
 
-While the down_read_trylock surely won't help in AIM, the second
-change will reduce a bit the overhead in the VM core fast paths by
-avoiding all refcounting changes by checking the list_empty the same
-way the current code does. I really like how I designed the garbage
-collection through list_empty and that's efficient and I'd like to
-keep it.
+ include/linux/io.h |    4 ++--
+ lib/devres.c       |    4 ++--
+ 2 files changed, 4 insertions(+), 4 deletions(-)
 
-I however doubt this will bring us back to the same performance of the
-current spinlock version, as the real overhead should come out of
-overscheduling in down_write ai anon_vma_link. Here an initially
-spinning lock would help but that's gray area, it greatly depends on
-timings, and on very large systems where a cacheline wait with many
-cpus forking at the same time takes more than scheduling a semaphore
-may not slowdown performance that much. So I think the only way is a
-configuration option to switch the locking at compile time, then XPMEM
-will depend on that option to be on, I don't see a big deal and this
-guarantees embedded isn't screwed up by totally unnecessary locks on UP.
+diff --git a/include/linux/io.h b/include/linux/io.h
+index e3b2dda..831f57c 100644
+--- a/include/linux/io.h
++++ b/include/linux/io.h
+@@ -58,9 +58,9 @@ static inline void devm_ioport_unmap(struct device *dev, void __iomem *addr)
+ }
+ #endif
+
+-void __iomem * devm_ioremap(struct device *dev, unsigned long offset,
++void __iomem * devm_ioremap(struct device *dev, resource_size_t offset,
+ 			    unsigned long size);
+-void __iomem * devm_ioremap_nocache(struct device *dev, unsigned long offset,
++void __iomem * devm_ioremap_nocache(struct device *dev, resource_size_t offset,
+ 				    unsigned long size);
+ void devm_iounmap(struct device *dev, void __iomem *addr);
+ int check_signature(const volatile void __iomem *io_addr,
+diff --git a/lib/devres.c b/lib/devres.c
+index edc27a5..26c87c4 100644
+--- a/lib/devres.c
++++ b/lib/devres.c
+@@ -20,7 +20,7 @@ static int devm_ioremap_match(struct device *dev, void *res, void *match_data)
+  *
+  * Managed ioremap().  Map is automatically unmapped on driver detach.
+  */
+-void __iomem *devm_ioremap(struct device *dev, unsigned long offset,
++void __iomem *devm_ioremap(struct device *dev, resource_size_t offset,
+ 			   unsigned long size)
+ {
+ 	void __iomem **ptr, *addr;
+@@ -49,7 +49,7 @@ EXPORT_SYMBOL(devm_ioremap);
+  * Managed ioremap_nocache().  Map is automatically unmapped on driver
+  * detach.
+  */
+-void __iomem *devm_ioremap_nocache(struct device *dev, unsigned long offset,
++void __iomem *devm_ioremap_nocache(struct device *dev, resource_size_t offset,
+ 				   unsigned long size)
+ {
+ 	void __iomem **ptr, *addr;
+-- 
+1.5.4.1
+
