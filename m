@@ -1,73 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761309AbYD2H3v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761044AbYD2HaN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761309AbYD2H3v (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 03:29:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759915AbYD2H1X
+	id S1761044AbYD2HaN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 03:30:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760768AbYD2H3s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 03:27:23 -0400
-Received: from ug-out-1314.google.com ([66.249.92.175]:58588 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760270AbYD2H1U (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 03:27:20 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=FLbzF1gRRR8NNe4QxmfO0xaznuoqQXBpRbtGmjd+TX5dR4d2asm1fyKAq63kFe0joA4BTUwQJG0oU9p8CR6UYrZ4ofKv75xchphElZXQ1jjOF163wHk31/9Beloq3+eHgc1N3ZdfPhZ5fMd5okc8ArU0insDb8ei2GE/2Gp6A58=
-Message-ID: <4816CDCF.50100@gmail.com>
-Date: Tue, 29 Apr 2008 08:27:11 +0100
-From: Richard <tuxbox.guru@gmail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070914)
+	Tue, 29 Apr 2008 03:29:48 -0400
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:50616 "EHLO smtp5.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761275AbYD2H3r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Apr 2008 03:29:47 -0400
+Date: Tue, 29 Apr 2008 10:29:11 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Willy Tarreau <w@1wt.eu>
+Cc: "H. Peter Anvin" <hpa@kernel.org>, linux-kernel@vger.kernel.org,
+       trivial@kernel.org
+Subject: Re: [2.6 patch] UTF-8 fixes in comments
+Message-ID: <20080429072911.GA28059@cs181133002.pp.htv.fi>
+References: <20080428154023.GU2813@cs181133002.pp.htv.fi> <20080428230524.GK8474@1wt.eu> <48167A07.4000305@kernel.org> <20080429050605.GA27875@1wt.eu>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Adam Belay <ambx1@neo.rr.com>, Adam M Belay <abelay@mit.edu>,
-       Li Shaohua <shaohua.li@intel.com>,
-       Matthieu Castet <castet.matthieu@free.fr>,
-       Thomas Renninger <trenn@suse.de>, Jaroslav Kysela <perex@perex.cz>
-Subject: Re: 2.6.25 pci=noacpi
-References: <20080425183807.366134771@ldl.fc.hp.com>	<20080425183934.516655076@ldl.fc.hp.com>	<4813B5AB.4060308@keyaccess.nl>	<200804281507.38309.bjorn.helgaas@hp.com>	<4816C605.4000601@gmail.com> <20080429000411.ce73230f.akpm@linux-foundation.org>
-In-Reply-To: <20080429000411.ce73230f.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20080429050605.GA27875@1wt.eu>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sorry,
+On Tue, Apr 29, 2008 at 07:06:05AM +0200, Willy Tarreau wrote:
+> On Mon, Apr 28, 2008 at 06:29:43PM -0700, H. Peter Anvin wrote:
+> > Willy Tarreau wrote:
+> > >Is this really needed Adrian ? I mean, everyone reads iso-8859-1, not
+> > >everyone reads UTF-8.
+> > 
+> > "Everyone" who speaks a Western European language, perhaps; and even 
+> > then, mostly because a lot of tools still have a "oh, it's not valid 
+> > UTF-8, guess iso-8859-1" mode.
+> 
+> Or simply because people have not migrated all their install, or have
+> explicitly disabled UTF-8 a few hours after starting to use it once
+> they discovered the mess it caused and the poor support from the
+> tools :-/
 
-I sent my previous mail too eagerly..
+Non-ancient distributions default to UTF-8 and have tools that handle it 
+fine.
 
-2.6.22 worked
-2.6.23 not tested
-2.6.24 broken
+If you had bad experiences in the last millenium you should try again.
 
-I will grab a .23 kernel and see if its problem too :-P
+> > The most common instance of non-ASCII 
+> > characters in Linux kernel code are people's names, and there are plenty 
+> > of names which aren't representable in either ASCII or iso-8859-1.
+> > 
+> > The debate on this was years ago, and the consensus was to migrate to 
+> > UTF-8; however, the salient information should be expressed in the ASCII 
+> > character set unless impossible.
+> 
+> And do we really consider that people's names in *comments* cannot
+> be converted to pure ASCII ? I'm western european and have always
+> been against accents in comments (another reason to write comments
+> in english BTW).
 
-R
+Accents are very rare in names in the kernel.
 
-Andrew Morton wrote:
-> On Tue, 29 Apr 2008 07:53:57 +0100 Richard <tuxbox.guru@gmail.com> wrote:
->
->   
->> Hi all,
->>
->> Using an AMD Sempron notebook (HP Compaq 6715b) single processor 
->> machine,  It shuts down during bootup when ACPI is fully enabled.  I 
->> added pci=noacpi to the cmdline and it finally boots, but its extremely 
->> slow...  (kdm times out with error saying it took too long to load and 
->> disables graphical)
->>
->> Dmesg doest show anything out of the ordinary, irq_stats only shows the 
->> timer interrupts being incremented. (noirq also works, but same 
->> behaviour) Can someone please offer me some pointers so I can fault find 
->> this problem.
->>
->>     
->
-> Did any earlier kernels work OK?  If so, which versions?
->
-> Thanks.
->
->   
+Most non-ASCII characters are umlauts and there's no sane way to 
+express them in ASCII (and the vowels without umlaut are pronounced 
+quite differently and might even make names look very strange).
+
+And that's only within European languages, outside it becomes even 
+worse.
+
+> Unix and internet have lived without accents for
+> almost 30 years without anyone really bothering. And now we try to
+> put them everywhere (even in domain names, implying big security
+> issues) and it causes real annoyances. People's names have not
+> changed in 30 years, so I guess that the rules used during this
+> time to ASCII-fy the names are still usable.
+
+The comments in the kernel have been converted to UTF-8 quite some time 
+ago, what I'm fixing with my patch is just some recent non-UTF-8 stuff 
+that creeped in.
+
+And names in comments in the kernel were not pure ASCII since very 
+early, they were in other charsets.
+
+Mostly iso-8859-1, but not all of them.
+
+I remember that for one name we first guessed which character it was and 
+then tried to figure out which charset it was in (no, it was not one 
+of iso-8859-*).
+
+So it was not "ASCII -> UTF-8", it was
+"several different charsets -> UTF-8".
+
+> Willy
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
