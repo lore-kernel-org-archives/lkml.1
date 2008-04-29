@@ -1,183 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758028AbYD2Jq6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755181AbYD2Jrj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758028AbYD2Jq6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 05:46:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753777AbYD2Jqu
+	id S1755181AbYD2Jrj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 05:47:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751503AbYD2Jrb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 05:46:50 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:59623 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753484AbYD2Jqt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 05:46:49 -0400
-Date: Tue, 29 Apr 2008 11:46:08 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: ego@in.ibm.com, Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Srivatsa Vaddagiri <vatsa@in.ibm.com>, Balbir Singh <balbir@in.ibm.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [BUG-REPORT] hrtick_start_fair and CPU-Hotplug
-Message-ID: <20080429094608.GB23198@elte.hu>
-References: <20080429065211.GB7859@in.ibm.com> <1209452359.13978.26.camel@twins> <1209456166.13978.30.camel@twins>
+	Tue, 29 Apr 2008 05:47:31 -0400
+Received: from hu-out-0506.google.com ([72.14.214.239]:46446 "EHLO
+	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752054AbYD2Jra (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Apr 2008 05:47:30 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=kUCAHzDMmiUfgSKL7BeMSgfb+4olidtoJc2Kml17tmjPHjmFhU8IXpfU/VRA7JzGTW7KqrzYPy40A39eKU/GsDbT1uDtehbPxoDzN+UJ06NCcJ0LuRTzQFd00OcRlBx0GeKDR2cPy9cQx08Ae6khCCcrMcnOleo9vX5TwKafjk4=
+Message-ID: <4816EEA1.6050804@googlemail.com>
+Date: Tue, 29 Apr 2008 11:47:13 +0200
+From: Gabriel C <nix.or.die@googlemail.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1209456166.13978.30.camel@twins>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: yhlu.kernel@gmail.com
+CC: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Mika Fischer <mika.fischer@zoopnet.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/2] x86: mtrr cleanup for converting continuous to discrete
+ layout v7
+References: <200804272337.40130.yhlu.kernel@gmail.com> <200804281316.14168.yhlu.kernel@gmail.com> <200804281505.05764.yhlu.kernel@gmail.com> <200804290200.33459.yhlu.kernel@gmail.com>
+In-Reply-To: <200804290200.33459.yhlu.kernel@gmail.com>
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Yinghai Lu wrote:
+> some BIOS like to use continus MTRR layout, and may X driver can not add
+> WB entries for graphical cards when 4g or more RAM installed.
+> 
+> the patch will change MTRR to discrete.
+> 
+> mtrr_chunk_size= could be used to have smaller continuous block to hold holes.
+> default is 256m, could be set according to size of graphics card memory.
+> 
+> v2: fix -1 for UC checking
+> v3: default to disable, and need use enable_mtrr_cleanup to enable this feature
+>     skip the var state change warning.
+>     remove next_basek in range_to_mtrr()
+> v4: correct warning mask.
+> v5: CONFIG_MTRR_SANITIZER
+> v6: fix 1g, 2g, 512 aligment with extra hole
+> v7: gran_sizek to prevent running out of MTRRs.
+> 
 
-* Peter Zijlstra <peterz@infradead.org> wrote:
+With this version ( and patch http://lkml.org/lkml/2008/4/29/97 ) applyed on latest linus git tree
+the box OOPS'es early.
 
-> > This looks like its not cancelled at all and migrates the it to 
-> > another cpu. I'll see what I can come up with.
+Sorry I don't have time right now to write down the part of the OOPS I can see on monitor , I can try to find
+some time later.
 
-thanks - i've queued up the patch below. Once this goes upstream it 
-would be a backport candidate as wel.
+In any way OOPS'es on __free_one_page+0x191/0x21e
 
-	Ingo
 
--------------------------->
-Subject: sched: fix hrtick_start_fair and CPU-Hotplug
-From: Peter Zijlstra <peterz@infradead.org>
-Date: Tue, 29 Apr 2008 10:02:46 +0200
-
-Gautham R Shenoy reported:
-
- > While running the usual CPU-Hotplug stress tests on linux-2.6.25,
- > I noticed the following in the console logs.
- >
- > This is a wee bit difficult to reproduce. In the past 10 runs I hit this
- > only once.
- >
- > ------------[ cut here ]------------
- >
- > WARNING: at kernel/sched.c:962 hrtick+0x2e/0x65()
- >
- > Just wondering if we are doing a good job at handling the cancellation
- > of any per-cpu scheduler timers during CPU-Hotplug.
-
-This looks like its indeed not cancelled at all and migrates the it to
-another cpu. Fix it via a proper hotplug notifier mechanism.
-
-Reported-by: Gautham R Shenoy <ego@in.ibm.com>
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- kernel/sched.c |   66 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++-
- 1 file changed, 65 insertions(+), 1 deletion(-)
-
-Index: linux/kernel/sched.c
-===================================================================
---- linux.orig/kernel/sched.c
-+++ linux/kernel/sched.c
-@@ -1238,6 +1238,7 @@ static inline void resched_rq(struct rq 
- enum {
- 	HRTICK_SET,		/* re-programm hrtick_timer */
- 	HRTICK_RESET,		/* not a new slice */
-+	HRTICK_BLOCK,		/* stop hrtick operations */
- };
- 
- /*
-@@ -1249,6 +1250,8 @@ static inline int hrtick_enabled(struct 
- {
- 	if (!sched_feat(HRTICK))
- 		return 0;
-+	if (unlikely(test_bit(HRTICK_BLOCK, &rq->hrtick_flags)))
-+		return 0;
- 	return hrtimer_is_hres_active(&rq->hrtick_timer);
- }
- 
-@@ -1331,7 +1334,63 @@ static enum hrtimer_restart hrtick(struc
- 	return HRTIMER_NORESTART;
- }
- 
--static inline void init_rq_hrtick(struct rq *rq)
-+static void hotplug_hrtick_disable(int cpu)
-+{
-+	struct rq *rq = cpu_rq(cpu);
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&rq->lock, flags);
-+	rq->hrtick_flags = 0;
-+	__set_bit(HRTICK_BLOCK, &rq->hrtick_flags);
-+	spin_unlock_irqrestore(&rq->lock, flags);
-+
-+	hrtick_clear(rq);
-+}
-+
-+static void hotplug_hrtick_enable(int cpu)
-+{
-+	struct rq *rq = cpu_rq(cpu);
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&rq->lock, flags);
-+	__clear_bit(HRTICK_BLOCK, &rq->hrtick_flags);
-+	spin_unlock_irqrestore(&rq->lock, flags);
-+}
-+
-+static int
-+hotplug_hrtick(struct notifier_block *nfb, unsigned long action, void *hcpu)
-+{
-+	int cpu = (int)hcpu;
-+
-+	switch (action) {
-+	case CPU_UP_CANCELED:
-+	case CPU_UP_CANCELED_FROZEN:
-+	case CPU_DOWN_PREPARE:
-+	case CPU_DOWN_PREPARE_FROZEN:
-+	case CPU_DEAD:
-+	case CPU_DEAD_FROZEN:
-+		hotplug_hrtick_disable(cpu);
-+		return NOTIFY_OK;
-+
-+	case CPU_UP_PREPARE:
-+	case CPU_UP_PREPARE_FROZEN:
-+	case CPU_DOWN_FAILED:
-+	case CPU_DOWN_FAILED_FROZEN:
-+	case CPU_ONLINE:
-+	case CPU_ONLINE_FROZEN:
-+		hotplug_hrtick_enable(cpu);
-+		return NOTIFY_OK;
-+	}
-+
-+	return NOTIFY_DONE;
-+}
-+
-+static void init_hrtick(void)
-+{
-+	hotcpu_notifier(hotplug_hrtick, 0);
-+}
-+
-+static void init_rq_hrtick(struct rq *rq)
- {
- 	rq->hrtick_flags = 0;
- 	hrtimer_init(&rq->hrtick_timer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
-@@ -1368,6 +1427,10 @@ static inline void init_rq_hrtick(struct
- void hrtick_resched(void)
- {
- }
-+
-+static inline void init_hrtick(void)
-+{
-+}
- #endif
- 
- /*
-@@ -8020,6 +8083,7 @@ void __init sched_init_smp(void)
- 	put_online_cpus();
- 	/* XXX: Theoretical race here - CPU may be hotplugged now */
- 	hotcpu_notifier(update_sched_domains, 0);
-+	init_hrtick();
- 
- 	/* Move init over to a non-isolated CPU */
- 	if (set_cpus_allowed_ptr(current, &non_isolated_cpus) < 0)
+Gabriel
