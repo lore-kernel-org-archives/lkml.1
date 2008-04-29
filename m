@@ -1,117 +1,169 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763090AbYD2P5m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763407AbYD2QAq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763090AbYD2P5m (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 11:57:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751974AbYD2P5e
+	id S1763407AbYD2QAq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 12:00:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754392AbYD2QAi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 11:57:34 -0400
-Received: from mis011-2.exch011.intermedia.net ([64.78.21.129]:14121 "EHLO
-	mis011-2.exch011.intermedia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751631AbYD2P5d (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 11:57:33 -0400
-From: Amit Shah <amit.shah@qumranet.com>
-Organization: Qumranet Inc.
-To: Glauber Costa <gcosta@redhat.com>
-Subject: Re: [PATCH] KVM x86: Handle hypercalls for assigned PCI devices
-Date: Tue, 29 Apr 2008 21:28:51 +0530
-User-Agent: KMail/1.9.9
-Cc: kvm-devel@lists.sourceforge.net, virtualization@lists.linux-foundation.org,
-       muli@il.ibm.com, BENAMI@il.ibm.com, chrisw@redhat.com,
-       dor.laor@qumranet.com, allen.m.kay@intel.com, avi@qumranet.com,
-       linux-kernel@vger.kernel.org
-References: <1209465451-3758-1-git-send-email-amit.shah@qumranet.com> <1209465451-3758-3-git-send-email-amit.shah@qumranet.com> <48173440.304@redhat.com>
-In-Reply-To: <48173440.304@redhat.com>
+	Tue, 29 Apr 2008 12:00:38 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:37236 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754365AbYD2QAh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Apr 2008 12:00:37 -0400
+Date: Tue, 29 Apr 2008 18:00:22 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [git pull] x86 updates
+Message-ID: <20080429160022.GA7687@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200804292128.52268.amit.shah@qumranet.com>
-X-OriginalArrivalTime: 29 Apr 2008 15:57:32.0595 (UTC) FILETIME=[BC094830:01C8AA11]
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 29 April 2008 20:14:16 Glauber Costa wrote:
-> Amit Shah wrote:
 
-> > +static struct kvm_pv_dma_map*
-> > +find_pci_pv_dmap(struct list_head *head, dma_addr_t dma)
-> > +{
->
-> might be better to prefix those functions with kvm? Even though they are
-> static, it seems to be the current practice.
+Linus, please pull the latest x86 fixes git tree from:
 
-The function names are long enough already. Prefixing everything with kvm_ 
-could hurt the eye as well.
+   git://git.kernel.org/pub/scm/linux/kernel/git/x86/linux-2.6-x86-fixes.git for-linus
 
-> > +	host_page = gfn_to_page(vcpu->kvm, page_gfn);
->
-> you need mmap_sem held for read to use gfn_to_page.
+Thanks!
 
-Yes; it's going to trickle down soon.
+	Ingo
 
-> > +	/* FIXME: guest should send the direction */
-> > +	r = dma_ops->map_sg(NULL, sg, npages, PCI_DMA_BIDIRECTIONAL);
-> > +	if (r) {
-> > +		r = npages;
-> > +		*hcall_page = sg[0].dma_address | (*hcall_page & ~PAGE_MASK);
-> > +	}
-> > +
-> > + out_unmap:
-> > +	if (!r)
-> > +		*hcall_page = bad_dma_address;
-> > +	kunmap(host_page);
-> > + out:
-> > +	++vcpu->stat.hypercall_map;
-> > +	return r;
-> > + out_unmap_sg_dmap:
-> > +	kfree(dmap);
-> > + out_unmap_sg:
-> > +	kfree(sg);
-> > +	goto out_unmap;
->
-> those backwards goto are very clumsy. Might be better to give it a
-> further attention in order to avoid id.
+------------------>
+Alexander van Heukelum (1):
+      x86: fix warning in "x86: clean up vSMP detection"
 
-It does keep everything nicely in one place though. You're right though. Some 
-more attention is needed.
+Harvey Harrison (1):
+      x86: !x & y typo in mtrr code
 
-> > +static int free_dmap(struct kvm_pv_dma_map *dmap, struct list_head
-> > *head) +{
-> > +	int i;
-> > +
-> > +	if (!dmap)
-> > +		return 1;
->
-> that's ugly.
->
-> it's better to keep the free function with free-like semantics: just a
-> void function that plainly returns if !dmap, and check in the caller.
+Hugh Dickins (1):
+      x86: vget_cycles() __always_inline
 
-I was lazy and used the return value from here to propagate it down further. 
-But this kicked me to modify that.
+Ian Campbell (1):
+      x86: add more boot protocol documentation
 
-> > +	if (is_error_page(host_page)) {
-> > +		printk(KERN_INFO "%s: gfn %p not valid\n",
-> > +		       __func__, (void *)page_gfn);
-> > +		r = -1;
->
-> r = -1 is not really informative. Better use some meaningful error.
+Ingo Molnar (1):
+      bootprotocol: cleanup
 
-The error's going to the guest. The guest, as we know, has already done a 
-successful DMA allocation. Something went wrong in the hypercall, and we 
-don't know why (bad page). Any kind of error here isn't going to be 
-intelligible to the guest anyway. It's mostly a host thing if we ever hit 
-this.
+Jesse Barnes (1):
+      x86: fix PCI MSI breaks when booting with nosmp
 
-> > +	if (find_pci_pt_dev(&vcpu->kvm->arch.pci_pt_dev_head,
-> > +			    &pci_pt_info, 0, KVM_PT_SOURCE_ASSIGN))
-> > +		r++; /* We have assigned the device */
-> > +
-> > +	kunmap(host_page);
->
-> better use atomic mappings here.
+ Documentation/i386/boot.txt        |   12 ++++++++++--
+ arch/x86/kernel/cpu/mtrr/generic.c |    2 +-
+ arch/x86/kernel/e820_64.c          |    2 +-
+ arch/x86/kernel/smpboot.c          |   10 +++-------
+ arch/x86/kernel/vsmp_64.c          |    2 +-
+ include/asm-x86/tsc.h              |    2 +-
+ 6 files changed, 17 insertions(+), 13 deletions(-)
 
-We can't use atomic mappings for guest pages. They can be swapped out.
+diff --git a/Documentation/i386/boot.txt b/Documentation/i386/boot.txt
+index 0fac346..95ad15c 100644
+--- a/Documentation/i386/boot.txt
++++ b/Documentation/i386/boot.txt
+@@ -40,9 +40,17 @@ Protocol 2.05:	(Kernel 2.6.20) Make protected mode kernel relocatable.
+ 		Introduce relocatable_kernel and kernel_alignment fields.
+ 
+ Protocol 2.06:	(Kernel 2.6.22) Added a field that contains the size of
+-		the boot command line
++		the boot command line.
+ 
+-Protocol 2.09:	(kernel 2.6.26) Added a field of 64-bit physical
++Protocol 2.07:	(Kernel 2.6.24) Added paravirtualised boot protocol.
++		Introduced hardware_subarch and hardware_subarch_data
++		and KEEP_SEGMENTS flag in load_flags.
++
++Protocol 2.08:	(Kernel 2.6.26) Added crc32 checksum and ELF format
++		payload. Introduced payload_offset and payload length
++		fields to aid in locating the payload.
++
++Protocol 2.09:	(Kernel 2.6.26) Added a field of 64-bit physical
+ 		pointer to single linked list of struct	setup_data.
+ 
+ **** MEMORY LAYOUT
+diff --git a/arch/x86/kernel/cpu/mtrr/generic.c b/arch/x86/kernel/cpu/mtrr/generic.c
+index 353efe4..5d241ce 100644
+--- a/arch/x86/kernel/cpu/mtrr/generic.c
++++ b/arch/x86/kernel/cpu/mtrr/generic.c
+@@ -90,7 +90,7 @@ u8 mtrr_type_lookup(u64 start, u64 end)
+ 	 * Look of multiple ranges matching this address and pick type
+ 	 * as per MTRR precedence
+ 	 */
+-	if (!mtrr_state.enabled & 2) {
++	if (!(mtrr_state.enabled & 2)) {
+ 		return mtrr_state.def_type;
+ 	}
+ 
+diff --git a/arch/x86/kernel/e820_64.c b/arch/x86/kernel/e820_64.c
+index 645ee5e..124480c 100644
+--- a/arch/x86/kernel/e820_64.c
++++ b/arch/x86/kernel/e820_64.c
+@@ -100,7 +100,7 @@ void __init free_early(unsigned long start, unsigned long end)
+ 	for (j = i + 1; j < MAX_EARLY_RES && early_res[j].end; j++)
+ 		;
+ 
+-	memcpy(&early_res[i], &early_res[i + 1],
++	memmove(&early_res[i], &early_res[i + 1],
+ 	       (j - 1 - i) * sizeof(struct early_res));
+ 
+ 	early_res[j - 1].end = 0;
+diff --git a/arch/x86/kernel/smpboot.c b/arch/x86/kernel/smpboot.c
+index 04c662b..84241a2 100644
+--- a/arch/x86/kernel/smpboot.c
++++ b/arch/x86/kernel/smpboot.c
+@@ -1149,14 +1149,10 @@ static int __init smp_sanity_check(unsigned max_cpus)
+ 				 "forcing use of dummy APIC emulation.\n");
+ 		smpboot_clear_io_apic();
+ #ifdef CONFIG_X86_32
+-		if (nmi_watchdog == NMI_LOCAL_APIC) {
+-			printk(KERN_INFO "activating minimal APIC for"
+-					 "NMI watchdog use.\n");
+-			connect_bsp_APIC();
+-			setup_local_APIC();
+-			end_local_APIC_setup();
+-		}
++		connect_bsp_APIC();
+ #endif
++		setup_local_APIC();
++		end_local_APIC_setup();
+ 		return -1;
+ 	}
+ 
+diff --git a/arch/x86/kernel/vsmp_64.c b/arch/x86/kernel/vsmp_64.c
+index caf2a26..ba8c0b7 100644
+--- a/arch/x86/kernel/vsmp_64.c
++++ b/arch/x86/kernel/vsmp_64.c
+@@ -133,7 +133,7 @@ int is_vsmp_box(void)
+ 	}
+ }
+ #else
+-static int __init detect_vsmp_box(void)
++static void __init detect_vsmp_box(void)
+ {
+ }
+ int is_vsmp_box(void)
+diff --git a/include/asm-x86/tsc.h b/include/asm-x86/tsc.h
+index d2d8eb5..548873a 100644
+--- a/include/asm-x86/tsc.h
++++ b/include/asm-x86/tsc.h
+@@ -32,7 +32,7 @@ static inline cycles_t get_cycles(void)
+ 	return ret;
+ }
+ 
+-static inline cycles_t vget_cycles(void)
++static __always_inline cycles_t vget_cycles(void)
+ {
+ 	/*
+ 	 * We only do VDSOs on TSC capable CPUs, so this shouldnt
