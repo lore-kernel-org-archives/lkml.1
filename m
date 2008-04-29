@@ -1,82 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763219AbYD2TTv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759234AbYD2TXT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763219AbYD2TTv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 15:19:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754981AbYD2TTi
+	id S1759234AbYD2TXT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 15:23:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751928AbYD2TXF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 15:19:38 -0400
-Received: from out02.mta.xmission.com ([166.70.13.232]:57354 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753155AbYD2TTg (ORCPT
+	Tue, 29 Apr 2008 15:23:05 -0400
+Received: from rv-out-0708.google.com ([209.85.198.247]:7398 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752877AbYD2TXC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 15:19:36 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Greg KH <gregkh@suse.de>
-Cc: Benjamin Thery <benjamin.thery@bull.net>, linux-kernel@vger.kernel.org,
-       Tejun Heo <htejun@gmail.com>, Daniel Lezcano <dlezcano@fr.ibm.com>,
-       "Serge E. Hallyn" <serue@us.ibm.com>,
-       Pavel Emelyanov <xemul@openvz.org>, netdev@vger.kernel.org
-References: <20080429171015.473938697@theryb.frec.bull.fr>
-	<20080429173621.GA16625@suse.de>
-Date: Tue, 29 Apr 2008 12:14:21 -0700
-In-Reply-To: <20080429173621.GA16625@suse.de> (Greg KH's message of "Tue, 29
-	Apr 2008 10:36:21 -0700")
-Message-ID: <m1d4o83242.fsf@frodo.ebiederm.org>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Tue, 29 Apr 2008 15:23:02 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=lnQJXio+f2FRSCgfkPmsImyUyFJmKeXgM46bmnsmPd8OD4x39SUwB62PAFB6EnEhExgA72npE/iHGnCrd3IHq/nNqb6XSXRe4KCrFw5/pNOwmHslzeHhEdwZCkUxeDG5kkNXQCEKaG/X+W7rcCA4y37rNe3lJkDiRRgvqoT7yJM=
+Message-ID: <84144f020804291223x6e40509fk8461ed4d96d443b@mail.gmail.com>
+Date: Tue, 29 Apr 2008 22:23:02 +0300
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "Christoph Lameter" <clameter@sgi.com>
+Subject: Re: [2/2] vmallocinfo: Add caller information
+Cc: "Arjan van de Ven" <arjan@infradead.org>, "Ingo Molnar" <mingo@elte.hu>,
+       akpm@linux-foundation.org, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Peter Zijlstra" <a.p.zijlstra@chello.nl>
+In-Reply-To: <Pine.LNX.4.64.0804291204450.12689@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-SA-Exim-Connect-IP: 24.130.11.59
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa04 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
-	*      [score: 0.0000]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa04 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-Subject: Re: [PATCH 00/10] sysfs tagged directories
-X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
-X-SA-Exim-Scanned: Yes (on mgr1.xmission.com)
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080318222701.788442216@sgi.com>
+	 <20080318222827.519656153@sgi.com> <20080429084854.GA14913@elte.hu>
+	 <Pine.LNX.4.64.0804291001420.10847@schroedinger.engr.sgi.com>
+	 <20080428124849.4959c419@infradead.org>
+	 <Pine.LNX.4.64.0804291143080.12128@schroedinger.engr.sgi.com>
+	 <20080428140026.32aaf3bf@infradead.org>
+	 <Pine.LNX.4.64.0804291204450.12689@schroedinger.engr.sgi.com>
+X-Google-Sender-Auth: b7a015a538953700
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH <gregkh@suse.de> writes:
+On Tue, Apr 29, 2008 at 10:09 PM, Christoph Lameter <clameter@sgi.com> wrote:
+>  Well so we display out of whack backtraces? There are also issues on
+>  platforms that do not have a stack in the classic sense (rotating register
+>  file on IA64 and Sparc64 f.e.). Determining a backtrace can be very
+>  expensive.
 
-> On Tue, Apr 29, 2008 at 07:10:15PM +0200, Benjamin Thery wrote:
->> Here is the announcement Eric wrote back in December to introduce his 
->> patchset:
->
-> <snip>
->
-> Are the objections that Al Viro made to this patchset when it was last
-> sent out addressed in this new series?
+I think that's the key question here whether we need to enable this on
+production systems? If yes, why? If it's just a debugging aid, then I
+see Ingo's point of save_stack_trace(); otherwise the low-overhead
+__builtin_return_address() makes more sense.
 
-I'm trying to recall.  Al was nervous when the approach was described
-to him but I don't remember him looking at specific patches and
-objecting.
-
-There was also an issue about races in sysfs between rename
-and unlink that Al brought up, that causes real problems in
-at least one piece of code that uses that functionality.  I have been
-busy so I don't know if anyone has addressed that issue.  It is
-independent but this patchset may make that issue slightly harder
-to fix.
-
-If the concern is Al nervousness with respect to locking order
-(and that is complex) the only really sane way to fix that is
-to dig into the VFS and change the lock ordering so that is 
-friendlier to distributed filesystems like sysfs.
-
-This patchset does not introduce any new lock ordering issues
-but it may make the existing convolutions we have to go through
-to keep the dcache for existing file handles in sync with the
-internal sysfs tree more visible.  As of my last posting I am
-not aware of any locking problems in the code itself.
-
-Greg I had thought you had dropped the patchset simply because
-you got busy.  I know it languished for a long time because of
-that.
-
-Eric
+And btw, why is this new file not in /sys/kernel....?
