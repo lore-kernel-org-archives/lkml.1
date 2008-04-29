@@ -1,119 +1,410 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759005AbYD2SlF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756219AbYD2Sl5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759005AbYD2SlF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 14:41:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754630AbYD2Sky
+	id S1756219AbYD2Sl5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 14:41:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755636AbYD2Sls
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 14:40:54 -0400
-Received: from qb-out-0506.google.com ([72.14.204.238]:64016 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754562AbYD2Skx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 14:40:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=LAhNBYk5V13pyW3GV4Ml8KrhYgbcQ8x/+Ck/V+U6IyGDf84GKBxw65MrBVmkDviMAWQ/bs3YHLX1pyeCCWbF0tqs2q0xObYF5Mrlluny20peZ8bvTB3GRA3OjO6edFZo6s91+0f/5p31q1iniHiyCZOtyME7wCrqw1RQeTqmJRQ=
-Message-ID: <86802c440804291140k7e96b6cftbb350b8fc72103f@mail.gmail.com>
-Date: Tue, 29 Apr 2008 11:40:51 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [PATCH] x86_32: trim memory by updating e820 v3
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Gabriel C" <nix.or.die@googlemail.com>,
-       "Andi Kleen" <andi@firstfloor.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>,
-       "Jesse Barnes" <jesse.barnes@intel.com>,
-       "Mika Fischer" <mika.fischer@zoopnet.de>, balajirrao@gmail.com
-In-Reply-To: <m1ej8o4liv.fsf@frodo.ebiederm.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Tue, 29 Apr 2008 14:41:48 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:49061 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755631AbYD2Slr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Apr 2008 14:41:47 -0400
+Date: Tue, 29 Apr 2008 14:41:43 -0400
+From: Jason Baron <jbaron@redhat.com>
+To: akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org
+Subject: [patch 1/3] dynamic_printk: core
+Message-ID: <20080429184143.GB8717@redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <200801192045.17291.yinghai.lu@sun.com>
-	 <200801202256.48365.yinghai.lu@sun.com>
-	 <20080122165125.GA17992@elte.hu>
-	 <200801221623.20861.yinghai.lu@sun.com>
-	 <20080426035614.a30afb17.akpm@linux-foundation.org>
-	 <48132665.8050202@googlemail.com>
-	 <86802c440804261805rc739f9as519213fecdc0cdff@mail.gmail.com>
-	 <m17ieh4zuo.fsf@frodo.ebiederm.org> <20080429103150.GJ23198@elte.hu>
-	 <m1ej8o4liv.fsf@frodo.ebiederm.org>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 29, 2008 at 10:29 AM, Eric W. Biederman
-<ebiederm@xmission.com> wrote:
->
-> Ingo Molnar <mingo@elte.hu> writes:
->
->  > * Eric W. Biederman <ebiederm@xmission.com> wrote:
->  >
->  >> So lets concentrate on PAT to solve contiguous MTRR region problems.
->  >>
->  >> We can upgrade UC to WC with pat.  As well as demote WB to UC or WC.
->  >> So for those regions we know about we should be in good shape.
->  >
->  > sure, but whatever we do now in the sysfs API space, it will hit distros
->  > only in a year, relistically, because Xorg also has to adopt to it. The
->  > workaround from Yinghai looks reasonably configurable - if we mess up
->  > (say an SMM comes in while we fiddle with the MTRRs) we'll likely get a
->  > lockup right then, during bootup, so it wont be hard to realize what
->  > went wrong. In that sense it's in fact safer to do it during early init
->  > than let the user do it via some script, because the window is smaller,
->  > etc.
->  >
->  > we still default to the safe mode of course and dont touch MTRRs, but
->  > for note the various configuration options that are available to distros
->  > and users.
->
->  The potential problem isn't while we reprogram the MTRRs, the potential
->  problem is mapping the SMM area uncachable.  In which case we will
->  make each SMM interrupt drastically slower.  Which can have all kinds of
->  unpleasant side effects.
 
-and ACPI area too.
+Add the ability to dynamically enable/disable pr_debug()/dev_dbg() in the
+kernel. Yes, these calls could be converted to printk(KERN_DEBUG), but there
+are enough to cause overhead. Additionally, the logs become difficult to read.
+Here, one can turn these messages on/off per module via:
 
-that only try to make the continuous to discrete layout. and still try
-to cover all that is (WBs - UC) directly with WB.
-only thing is that could run out of MTRR..., and mtrr_gran_size is
-used to avoid that.
-then some RAM that is less than mtrr_gran_size could be dumped.
-so mtrr_gran_size could do sth.
-anyway this patch only can meet one end.
-for example Mika Fischer's system doesn't need to trim any RAM in MTRR.
-but for Gabriel's system may need to trim some RAM in MTRR.
+echo "add module_name" >  <debugfs>/dynamic_printk/modules
+echo "remove module_name" >  <debugfs>/dynamic_printk/modules
 
-current mtrr_gran_size is default to 64M...
+There is also a special 'all' value that turns on all the debugging messages.
 
-may need another patch to loop all mtrr_chunk_size (2g, 1g, ...64M) ,
-mtrr_gran_size (2g, 1g, ...1M) meet
-1. leave one or two entry for X server driver
-2. lose less cover for RAM in MTRR.
+Signed-off-by: Jason Baron <jbaron@redhat.com>
+---
 
-anyway that should be done in BIOS. but ...
+ include/linux/device.h |   10 ++
+ include/linux/kernel.h |    9 ++
+ lib/Kconfig.debug      |   40 ++++++++
+ lib/Makefile           |    2 
+ lib/dynamic_printk.c   |  251 ++++++++++++++++++++++++++++++++++++++++++++++++
+ 5 files changed, 312 insertions(+), 0 deletions(-)
+ create mode 100644 lib/dynamic_printk.c
 
->
->  If we really can mess up SMM mode that way we have a really nasty
->  interaction that is horrible to debug, or recognize.
->
->  Further the opportunity for this kind of fixup is small.
->  Newer AMD systems don't need it as they have an extra
->  way of specifying memory about 4G as WB.  Systems with just
->  the MTRRs can only use this when they have right around 4GB
->  because with more memory there are not enough MTRRs to leave them
->  non-overlapping and still mark all of memory WB.
 
-yes. the patch handle the AMD rev f later with mtrr_tom2.
-I have one system that give me - ( strange one ?)
-0 - 128g WB
-4g-512m, 4g wc
-
-after the patch i got
-
-0 - 2048m wb
-2048m - 1024m wb
-3072m - 3584m wb
-
-YH
+diff --git a/include/linux/device.h b/include/linux/device.h
+index 1a06026..e2739f6 100644
+--- a/include/linux/device.h
++++ b/include/linux/device.h
+@@ -595,6 +595,16 @@ extern const char *dev_driver_string(struct device *dev);
+ #ifdef DEBUG
+ #define dev_dbg(dev, format, arg...)		\
+ 	dev_printk(KERN_DEBUG , dev , format , ## arg)
++#elif defined(CONFIG_DYNAMIC_PRINTK)
++extern void dynamic_printk(char *, char *, ...);
++extern int dynamic_debug_on;
++#define dev_dbg(dev, format, ...) do {				    	     \
++	if (unlikely(dynamic_debug_on))					     \
++		dynamic_printk(KBUILD_MODNAME,				     \
++				KERN_DEBUG KBUILD_MODNAME ": %s %s: " format,\
++				dev_driver_string(dev), (dev)->bus_id,	     \
++				##__VA_ARGS__);				     \
++	} while (0)
+ #else
+ #define dev_dbg(dev, format, arg...)		\
+ 	({ if (0) dev_printk(KERN_DEBUG, dev, format, ##arg); 0; })
+diff --git a/include/linux/kernel.h b/include/linux/kernel.h
+index cd6d02c..1895331 100644
+--- a/include/linux/kernel.h
++++ b/include/linux/kernel.h
+@@ -292,6 +292,15 @@ extern void print_hex_dump_bytes(const char *prefix_str, int prefix_type,
+ /* If you are writing a driver, please use dev_dbg instead */
+ #define pr_debug(fmt, arg...) \
+ 	printk(KERN_DEBUG fmt, ##arg)
++#elif defined(CONFIG_DYNAMIC_PRINTK)
++extern void dynamic_printk(char *, char *, ...);
++extern int dynamic_debug_on;
++#define pr_debug(fmt, ...) do { \
++	if (unlikely(dynamic_debug_on))				   \
++		dynamic_printk(KBUILD_MODNAME,			   \
++				KERN_DEBUG KBUILD_MODNAME ": " fmt,\
++				##__VA_ARGS__);			   \
++	} while (0)
+ #else
+ #define pr_debug(fmt, arg...) \
+ 	({ if (0) printk(KERN_DEBUG fmt, ##arg); 0; })
+diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
+index 623ef24..63e5229 100644
+--- a/lib/Kconfig.debug
++++ b/lib/Kconfig.debug
+@@ -632,6 +632,46 @@ config FIREWIRE_OHCI_REMOTE_DMA
+ 
+ 	  If unsure, say N.
+ 
++config DYNAMIC_PRINTK
++	bool "Enable dynamic printk() call support"
++	default n
++	depends on PRINTK
++	help
++	  
++	  Allows pr_debug() and dev_dbg() calls to be dynamically enabled based
++	  upon their source module. Traditionally, these calls are only
++	  enabled if one set #define DEBUG and recompiled the kernel. This
++	  option obviates time consuming re-compiles.
++
++	  The impact of this compile option is a larger kerenl text size ~1%.
++	  However, if CONFIG_IMMEDIATE is set, the run-time impact is 
++	  negligible. Without CONFIG_IMMEDIATE set, a global variable is
++	  referenced for each pr_debug() and dev_dbg() calls.
++
++	  Usage:
++
++	  The printing of pr_debug() and dev_dbg() is controlled by the
++	  debugfs file, dynamic_printk/modules. This file contains a list of
++	  the active modules. To add and remove modules:
++
++		echo "add <module_name>" > dynamic_printk/modules
++		echo "remove <module_name>" > dynamic_printk/modules
++
++	  For example:
++
++		 echo "add kobject" > dynamic_printk/modules
++		 /sbin/modprobe <module>
++	
++	  This will cause kobject debug messages to spew out. Also, a special 
++	  "all" value will print all pr_debug() and dev_dbg() calls. I.e.:
++
++		echo "add all" > dynamic_printk/modules
++		echo "remove all" > dynamic_printk/modules
++
++	  Finally, passing "dynamic_printk" at the command line enables all
++	  pr_debug() and dev_dbg() call to come out (same as "all"). This mode
++	  can be disabled via a "remove all".
++	
+ source "samples/Kconfig"
+ 
+ source "lib/Kconfig.kgdb"
+diff --git a/lib/Makefile b/lib/Makefile
+index bf8000f..5916731 100644
+--- a/lib/Makefile
++++ b/lib/Makefile
+@@ -66,6 +66,8 @@ obj-$(CONFIG_SWIOTLB) += swiotlb.o
+ obj-$(CONFIG_IOMMU_HELPER) += iommu-helper.o
+ obj-$(CONFIG_FAULT_INJECTION) += fault-inject.o
+ 
++obj-$(CONFIG_DYNAMIC_PRINTK) += dynamic_printk.o
++
+ lib-$(CONFIG_GENERIC_BUG) += bug.o
+ 
+ obj-$(CONFIG_HAVE_LMB) += lmb.o
+diff --git a/lib/dynamic_printk.c b/lib/dynamic_printk.c
+new file mode 100644
+index 0000000..7fab61f
+--- /dev/null
++++ b/lib/dynamic_printk.c
+@@ -0,0 +1,251 @@
++/*
++ * lib/dynamic_printk.c
++ *
++ * make pr_debug()/dev_dbg() calls runtime configurable based upon their
++ * their source module.
++ *
++ * Copyright (C) 2008 Red Hat, Inc., Jason Baron <jbaron@redhat.com>
++ */
++
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/uaccess.h>
++#include <linux/seq_file.h>
++#include <linux/debugfs.h>
++#include <linux/fs.h>
++#include <linux/hash.h>
++
++#define FILE_HASH_BITS 5
++#define FILE_TABLE_SIZE (1 << FILE_HASH_BITS)
++
++int dynamic_debug_on;
++EXPORT_SYMBOL_GPL(dynamic_debug_on);
++static int all;
++static struct hlist_head module_table[FILE_TABLE_SIZE] =
++	{ [0 ... FILE_TABLE_SIZE-1] = HLIST_HEAD_INIT };
++static DECLARE_MUTEX(debug_list_mutex);
++static int nr_entries;
++
++struct debug_name {
++	struct hlist_node hlist;
++	char *name;
++};
++
++static inline unsigned int name_hash(char *name)
++{
++	unsigned int hash = full_name_hash(name, strlen(name));
++	return (hash & ((1 << FILE_HASH_BITS) - 1));
++}
++
++static struct debug_name *find_debug_file(char *module_name)
++{
++	int found = 0;
++	struct hlist_head *head;
++	struct hlist_node *node;
++	struct debug_name *element;
++
++	head = &module_table[name_hash(module_name)];
++	rcu_read_lock();
++	hlist_for_each_entry_rcu(element, node, head, hlist) {
++		if (!strcmp(element->name, module_name)) {
++			found = 1;
++			break;
++		}
++	}
++	rcu_read_unlock();
++	if (found)
++		return element;
++	return NULL;
++}
++
++static int add_debug_file(char *module_name)
++{
++	struct debug_name *new;
++
++	if (find_debug_file(module_name))
++		return -EINVAL;
++	new = kmalloc(sizeof(struct debug_name), GFP_KERNEL);
++	if (!new)
++		return -ENOMEM;
++	INIT_HLIST_NODE(&new->hlist);
++	new->name = module_name;
++	hlist_add_head_rcu(&new->hlist,
++			&module_table[name_hash(new->name)]);
++	nr_entries++;
++	return 0;
++}
++
++static int remove_debug_file(char *module_name)
++{
++	struct debug_name *element;
++
++	element = find_debug_file(module_name);
++	if (element == NULL)
++		return -EINVAL;
++	hlist_del_rcu(&element->hlist);
++	synchronize_rcu();
++	kfree(element->name);
++	kfree(element);
++	nr_entries--;
++	return 0;
++}
++
++void dynamic_printk(char *module_name, char *fmt, ...)
++{
++	va_list args;
++
++	va_start(args, fmt);
++	if (all)
++		vprintk(fmt, args);
++	else {
++		if (find_debug_file(module_name))
++			vprintk(fmt, args);
++	}
++	va_end(args);
++}
++EXPORT_SYMBOL_GPL(dynamic_printk);
++
++static ssize_t pr_debug_write(struct file *file, const char __user *buf,
++				size_t length, loff_t *ppos)
++{
++	char *buffer, *module_name, *s;
++	int err;
++
++	if (!buf || length > PAGE_SIZE || length < 0)
++		return -EINVAL;
++
++	buffer = (char *)__get_free_page(GFP_KERNEL);
++	if (!buffer)
++		return -ENOMEM;
++
++	err = -EFAULT;
++	if (copy_from_user(buffer, buf, length))
++		goto out;
++
++	err = -EINVAL;
++	if (length < PAGE_SIZE)
++		buffer[length] = '\0';
++	else if (buffer[PAGE_SIZE-1])
++		goto out;
++
++	err = -EINVAL;
++	down(&debug_list_mutex);
++	if (!strncmp("add all", buffer, 7)) {
++		if (!all && (nr_entries == 0))
++			dynamic_debug_on = 1;
++		all = 1;
++		err = 0;
++	} else if (!strncmp("remove all", buffer, 10)) {
++		if (all && (nr_entries == 0))
++			dynamic_debug_on = 0;
++		all = 0;
++		err = 0;
++	} else if (!strncmp("add ", buffer, 4)) {
++		s = strstrip(buffer + 4);
++		module_name = kmalloc(strlen(s) + 1, GFP_KERNEL);
++		if (!module_name) {
++			err = -ENOMEM;
++			goto out_up;
++		}
++		module_name = strcpy(module_name, s);
++		err = add_debug_file(module_name);
++		if (err && err != -ENOMEM)
++			kfree(module_name);
++		if (!err && (nr_entries == 1) && !all)
++			dynamic_debug_on = 1;
++	} else if (!strncmp("remove ", buffer, 7)) {
++		s = strstrip(buffer + 7);
++		err = remove_debug_file(s);
++		if (!err && (nr_entries == 0) && !all)
++			dynamic_debug_on = 0;
++	}
++	if (!err)
++		err = length;
++out_up:
++	up(&debug_list_mutex);
++out:
++	free_page((unsigned long)buffer);
++	return err;
++}
++
++static void *pr_debug_seq_start(struct seq_file *f, loff_t *pos)
++{
++	return (*pos < FILE_TABLE_SIZE) ? pos : NULL;
++}
++
++static void *pr_debug_seq_next(struct seq_file *s, void *v, loff_t *pos)
++{
++	(*pos)++;
++	if (*pos >= FILE_TABLE_SIZE)
++		return NULL;
++	return pos;
++}
++
++static void pr_debug_seq_stop(struct seq_file *s, void *v)
++{
++	/* Nothing to do */
++}
++
++static int pr_debug_seq_show(struct seq_file *s, void *v)
++{
++	struct hlist_head *head;
++	struct hlist_node *node;
++	struct debug_name *element;
++	unsigned int i = *(loff_t *) v;
++
++	if (i == 0 && all)
++		seq_printf(s, "all\n");
++	rcu_read_lock();
++	head = &module_table[i];
++	hlist_for_each_entry_rcu(element, node, head, hlist)
++		seq_printf(s, "%s\n", element->name);
++	rcu_read_unlock();
++	return 0;
++}
++
++static struct seq_operations pr_debug_seq_ops = {
++	.start = pr_debug_seq_start,
++	.next  = pr_debug_seq_next,
++	.stop  = pr_debug_seq_stop,
++	.show  = pr_debug_seq_show
++};
++
++static int pr_debug_open(struct inode *inode, struct file *filp)
++{
++	return seq_open(filp, &pr_debug_seq_ops);
++}
++
++static const struct file_operations pr_debug_operations = {
++	.open           = pr_debug_open,
++	.read           = seq_read,
++	.write          = pr_debug_write,
++	.llseek         = seq_lseek,
++	.release        = seq_release,
++};
++
++int __init dynamic_printk_init(void)
++{
++	struct dentry *dir, *file;
++
++	dir = debugfs_create_dir("dynamic_printk", NULL);
++	if (!dir)
++		return -ENOMEM;
++	file = debugfs_create_file("modules", 0644, dir, NULL,
++					&pr_debug_operations);
++	if (!file) {
++		debugfs_remove(dir);
++		return -ENOMEM;
++	}
++	return 0;
++}
++__initcall(dynamic_printk_init);
++
++static int __init dynamic_printk_setup(char *str)
++{
++	if (str)
++		return -ENOENT;
++	all = 1;
++	dynamic_debug_on = 1;
++	return 0;
++}
++early_param("dynamic_printk", dynamic_printk_setup);
