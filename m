@@ -1,51 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932783AbYD2AjW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933657AbYD2AmE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932783AbYD2AjW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 20:39:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753336AbYD2AjL
+	id S933657AbYD2AmE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 20:42:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755012AbYD2Aly
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 20:39:11 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:41225 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751744AbYD2AjK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 20:39:10 -0400
-Message-ID: <48166CA1.1070000@redhat.com>
-Date: Mon, 28 Apr 2008 21:32:33 -0300
-From: Glauber Costa <gcosta@redhat.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Mon, 28 Apr 2008 20:41:54 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:37950 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755708AbYD2Alx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Apr 2008 20:41:53 -0400
+Date: Mon, 28 Apr 2008 17:41:11 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Adrian Bunk <bunk@kernel.org>
+cc: Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Alexander van Heukelum <heukelum@mailshack.com>, jdike@addtoit.com
+Subject: Re: [2.6 patch] fs/block_dev.c:I_BDEV() mustn't be inline
+In-Reply-To: <20080428153831.GC2813@cs181133002.pp.htv.fi>
+Message-ID: <alpine.LFD.1.10.0804281736230.3119@woody.linux-foundation.org>
+References: <20080424215739.GA32378@elte.hu> <alpine.LFD.1.10.0804241510420.2779@woody.linux-foundation.org> <20080426151516.GA27894@elte.hu> <alpine.LFD.1.10.0804260955300.2813@woody.linux-foundation.org> <20080426172222.GD17345@elte.hu>
+ <20080428153831.GC2813@cs181133002.pp.htv.fi>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-To: Sergio Luis <sergio@larces.uece.br>
-CC: Ken Moffat <zarniwhoop@ntlworld.com>,
-       Bart Van Assche <bart.vanassche@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: 2.6.25 slow boot/reboot
-References: <48141111.7010605@larces.uece.br>	 <e2e108260804270823t45611ec2t35da085833d82dfa@mail.gmail.com>	 <20080427235554.GA28344@deepthought> <48152747.4030107@larces.uece.br>	 <4815DCEF.3000602@redhat.com> <430c4fa50804280735o3d1c3b9cg687f7d374dafbdec@mail.gmail.com>
-In-Reply-To: <430c4fa50804280735o3d1c3b9cg687f7d374dafbdec@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sergio Luis wrote:
-> On Mon, Apr 28, 2008 at 11:19 AM, Glauber Costa <gcosta@redhat.com> wrote:
->> Sergio Luis wrote:
->>
->>> Ken Moffat wrote:
->>>
->>>> On Sun, Apr 27, 2008 at 05:23:57PM +0200, Bart Van Assche wrote:
->>>>
->>>>> On Sun, Apr 27, 2008 at 7:37 AM, Sergio Luis <sergio@larces.uece.br>
->> wrote:
->>>>>>  This weekend I got some time and decided to try out 2.6.25, but its
->> booting process was _really_ slow in my laptop[1]. With 'old' 2.6.24.5 my
->> machine would take about 48 secs until it gave me the login prompt. And it
->> would take about 22 seconds to reboot.
 
-Sergio,
 
-You said your system freezes. Does it happen after the last message you 
-see on dmesg, or during the kernel start up? It would help me to rule 
-out (or not), any issues in the cpu initialization process itself.
+On Mon, 28 Apr 2008, Adrian Bunk wrote:
+>
+> This patch fixes the following build error with UML and gcc 4.3:
 
-As for reboot, any suspicious message on your kernel log?
+I'm not going to apply these before I understand what the breakage is all 
+about.
+
+> -inline struct block_device *I_BDEV(struct inode *inode)
+> +struct block_device *I_BDEV(struct inode *inode)
+>  {
+>  	return &BDEV_I(inode)->bdev;
+>  }
+
+There is NO WAY IN HELL this function shouldn't be inlined, and it doesn't 
+matter a whit if some users outside of this file then also want the 
+non-inlined version.
+
+The whole setup should result in a single offset-of from the inode, ie 
+we're talking something that normally generates no code at all when 
+inlined (because the offset will be subsumed into whatever actually uses 
+the result).
+
+So just removing the inline is simply not acceptable any more, since it 
+just implies total and utter breakage of the compiler. At some point you 
+just have to say: "That is sh*t", and not take it any more.
+
+What is UML doing to trigger this? 
+
+Or should be just tell people that gcc-4.3 is unusable crap?
+
+			Linus
