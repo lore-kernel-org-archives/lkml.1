@@ -1,78 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758886AbYD2INw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759840AbYD2IOU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758886AbYD2INw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 04:13:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753350AbYD2INg
+	id S1759840AbYD2IOU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 04:14:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755247AbYD2IN7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 04:13:36 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:56241 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1753582AbYD2INe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 04:13:34 -0400
-Message-ID: <4816D881.8060005@cn.fujitsu.com>
-Date: Tue, 29 Apr 2008 16:12:49 +0800
-From: Shi Weihua <shiwh@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
+	Tue, 29 Apr 2008 04:13:59 -0400
+Received: from wa-out-1112.google.com ([209.85.146.181]:50068 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752370AbYD2IN6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Apr 2008 04:13:58 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:x-x-sender:to:cc:subject:in-reply-to:message-id:references:user-agent:mime-version:content-type:from;
+        b=WPVJ5C+0LncV01KEtCSaxm0+UlOnDxwhIUTcy5+OA6DXxOPQitr52ozTTXvQtKsQr/N4ST4s9QxJuAtLlzAwQSHB0WQXbMXA6QMRf+EMGquZFCYlaTOSutUtSwUR7tUm4Ak3J6kkCTEcgWIEIYRuaYz16vtrR/9uxB5ijWV2KmM=
+Date: Tue, 29 Apr 2008 16:12:55 +0800 (CST)
+X-X-Sender: wangcong@localhost.localdomain
+To: Jeff Dike <jdike@addtoit.com>
+cc: WANG Cong <xiyou.wangcong@gmail.com>, akpm@osdl.org,
+       linux-kernel@vger.kernel.org,
+       user-mode-linux-devel@lists.sourceforge.net
+Subject: Re: [PATCH 7/19] UML - Move hppfs_kern.c to hppfs.c
+In-Reply-To: <20080428153716.GC7334@c2.user-mode-linux.org>
+Message-ID: <alpine.LFD.1.00.0804291610070.2548@localhost.localdomain>
+References: <20080425175609.GA11180@c2.user-mode-linux.org> <20080426.171755.99884416.xiyou.wangcong@gmail.com> <20080428153716.GC7334@c2.user-mode-linux.org>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
 MIME-Version: 1.0
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-CC: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Mel Gorman <mel@csn.ul.ie>, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] on memoryless node, /proc/pagetypeinfo is displayed slightly
- funny output.
-References: <20080429162859.3540.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-In-Reply-To: <20080429162859.3540.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+From: WANG Cong <xiyou.wangcong@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-KOSAKI Motohiro wrote::
-> Hi Mel,
-> 
-> I make patch of solve trivial pagetypeinfo problem.
-> please review it.
-> 
-> 
-> =================================================================
-> on memoryless node, /proc/pagetypeinfo is displayed slightly funny output.
-> this patch fix it.
-> 
-> 
-> output example (header is outputed, but no data is outputed)
-> --------------------------------------------------------------
-> Page block order: 14
-> Pages per block:  16384
-> 
-> Free pages count per migrate type at order       0      1      2      3      4      5    \
->   6      7      8      9     10     11     12     13     14     15     16
-> 
-> Number of blocks type     Unmovable  Reclaimable      Movable      Reserve      Isolate
-> Page block order: 14
-> Pages per block:  16384
-> 
-> Free pages count per migrate type at order       0      1      2      3      4      5    \
->   6      7      8      9     10     11     12     13     14     15     16
-> 
-> 
-> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> CC: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> CC: Mel Gorman <mel@csn.ul.ie>
-> 
-> ---
->  mm/vmstat.c |    4 ++++
->  1 file changed, 4 insertions(+)
-> 
-> Index: b/mm/vmstat.c
-> ===================================================================
-> --- a/mm/vmstat.c       2008-04-29 16:48:58.000000000 +0900
-> +++ b/mm/vmstat.c       2008-04-29 16:58:33.000000000 +0900
-> @@ -638,6 +638,10 @@ static int pagetypeinfo_show(struct seq_
->  {
->         pg_data_t *pgdat = (pg_data_t *)arg;
-> 
-> +       /* check memoryless ndoe*/
+On Mon, 28 Apr 2008, Jeff Dike wrote:
 
-ndoe -> node ?
+> On Sat, Apr 26, 2008 at 05:17:55PM +0800, WANG Cong wrote:
+>> > +static struct inode *get_inode(struct super_block *, struct dentry *);
+>> > +
+>> > +struct hppfs_data {
+>> > +	struct list_head list;
+>> > +	char contents[PAGE_SIZE - sizeof(struct list_head)];
+>> > +};
+>> > +
+>> > +struct hppfs_private {
+>> > +	struct file *proc_file;
+>> > +	int host_fd;
+>> > +	loff_t len;
+>> > +	struct hppfs_data *contents;
+>> > +};
+>> > +
+>> > +struct hppfs_inode_info {
+>> > +	struct dentry *proc_dentry;
+>> > +	struct inode vfs_inode;
+>> > +};
+>> > +
+>> > +static inline struct hppfs_inode_info *HPPFS_I(struct inode *inode)
+>> > +{
+>> > +	return container_of(inode, struct hppfs_inode_info, vfs_inode);
+>> > +}
+>> > +
+>> > +#define HPPFS_SUPER_MAGIC 0xb00000ee
+>> 
+>> 
+>> These can be put into a single header, e.g. hppfs.h.
+>
+> Why, when this one C file is the only user?
 
+Just looks cleaner for me. ;-)
+
+<snip>
+
+>
+> Oops, nice spotting.
+>
+> See what you think about the patch below...
+
+<snip>
+
+This patch looks OK for me. Thank you!
+
+  Cong
