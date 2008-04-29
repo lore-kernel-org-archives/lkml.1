@@ -1,86 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765985AbYD2OjU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933053AbYD2OkU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765985AbYD2OjU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 10:39:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759052AbYD2Ohs
+	id S933053AbYD2OkU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 10:40:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761398AbYD2Ohy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 10:37:48 -0400
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:49802 "EHLO
+	Tue, 29 Apr 2008 10:37:54 -0400
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:49844 "EHLO
 	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761214AbYD2Ohr (ORCPT
+	with ESMTP id S1761383AbYD2Ohw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 10:37:47 -0400
-Message-Id: <20080429143730.504910000@bull.net>
+	Tue, 29 Apr 2008 10:37:52 -0400
+Message-Id: <20080429143730.898334000@bull.net>
 References: <20080429143304.741001000@bull.net>
 User-Agent: quilt/0.45-1
-Date: Tue, 29 Apr 2008 16:33:10 +0200
+Date: Tue, 29 Apr 2008 16:33:11 +0200
 From: Nadia.Derbey@bull.net
 To: manfred@colorfullife.com, paulmck@linux.vnet.ibm.com
 Cc: linux-kernel@vger.kernel.org, efault@gmx.de, akpm@linux-foundation.org,
        Nadia Derbey <Nadia.Derbey@bull.net>
-Subject: [PATCH 06/10] Introduce ridr_get_new()
-Content-Disposition: inline; filename=ridr_get_new.patch
+Subject: [PATCH 07/10] Introduce ridr_find()
+Content-Disposition: inline; filename=ridr_find.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[PATCH 06/10]
+[PATCH 07/10]
 
-This patch introduces the ridr_get_new() routine.
+This patch introduces the ridr_find() routine.
 
 Signed-off-by: Nadia Derbey <Nadia.Derbey@bull.net>
 
 ---
- include/linux/ridr.h |    1 +
- lib/ridr.c           |   27 +++++++++++++++++++++++++++
- 2 files changed, 28 insertions(+)
+ include/linux/ridr.h |   17 +++++++++++++++++
+ lib/ridr.c           |   34 ++++++++++++++++++++++++++++++++++
+ 2 files changed, 51 insertions(+)
 
 Index: linux-2.6.25-mm1/include/linux/ridr.h
 ===================================================================
---- linux-2.6.25-mm1.orig/include/linux/ridr.h	2008-04-29 14:03:35.000000000 +0200
-+++ linux-2.6.25-mm1/include/linux/ridr.h	2008-04-29 14:16:09.000000000 +0200
-@@ -44,6 +44,7 @@ struct ridr {
-  * This is what we export.
-  */
- int ridr_pre_get(struct ridr *, gfp_t);
-+int ridr_get_new(struct ridr *, void *, int *);
- int ridr_get_new_above(struct ridr *, void *, int, int *);
- void ridr_init(struct ridr *);
- 
-Index: linux-2.6.25-mm1/lib/ridr.c
-===================================================================
---- linux-2.6.25-mm1.orig/lib/ridr.c	2008-04-29 14:03:35.000000000 +0200
-+++ linux-2.6.25-mm1/lib/ridr.c	2008-04-29 14:17:05.000000000 +0200
-@@ -232,6 +232,33 @@ int ridr_get_new_above(struct ridr *idp,
- }
- EXPORT_SYMBOL(ridr_get_new_above);
+--- linux-2.6.25-mm1.orig/include/linux/ridr.h	2008-04-29 14:16:09.000000000 +0200
++++ linux-2.6.25-mm1/include/linux/ridr.h	2008-04-29 14:31:43.000000000 +0200
+@@ -40,9 +40,26 @@ struct ridr {
+ #define idr_to_ridr(p) container_of((p), struct ridr_layer, idr)
+ #define ridr_to_idr(p) (&((p)->idr))
  
 +/**
-+ * ridr_get_new - allocate new ridr entry
-+ * @idp: ridr handle
-+ * @ptr: pointer you want associated with the ide
-+ * @id: pointer to the allocated handle
++ * Ridr synchronization (see radix-tree.h)
 + *
-+ * This is the allocate id function.  It should be called with any
-+ * required locks.
++ * ridr_find() is able to be called locklessly, using RCU. The caller must
++ * ensure calls to this function are made within rcu_read_lock() regions.
++ * Other readers (lock-free or otherwise) and modifications may be running
++ * concurrently.
 + *
-+ * If memory is required, it will return -EAGAIN, you should unlock
-+ * and go back to the ridr_pre_get() call.  If the ridr is full, it will
-+ * return -ENOSPC.
-+ *
-+ * @id returns a value in the range 0 ... 0x7fffffff
++ * It is still required that the caller manage the synchronization and
++ * lifetimes of the items. So if RCU lock-free lookups are used, typically
++ * this would mean that the items have their own locks, or are amenable to
++ * lock-free access; and that the items are freed by RCU (or only freed after
++ * having been deleted from the ridr tree *and* a synchronize_rcu() grace
++ * period).
 + */
-+int ridr_get_new(struct ridr *idp, void *ptr, int *id)
-+{
-+	int rv;
 +
-+	rv = ridr_get_new_above_int(idp, ptr, 0);
-+	if (rv < 0)
-+		return _idr_rc_to_errno(rv);
-+	*id = rv;
-+	return 0;
+ /*
+  * This is what we export.
+  */
++void *ridr_find(struct ridr *, int);
+ int ridr_pre_get(struct ridr *, gfp_t);
+ int ridr_get_new(struct ridr *, void *, int *);
+ int ridr_get_new_above(struct ridr *, void *, int, int *);
+Index: linux-2.6.25-mm1/lib/ridr.c
+===================================================================
+--- linux-2.6.25-mm1.orig/lib/ridr.c	2008-04-29 14:17:05.000000000 +0200
++++ linux-2.6.25-mm1/lib/ridr.c	2008-04-29 14:32:26.000000000 +0200
+@@ -259,6 +259,40 @@ int ridr_get_new(struct ridr *idp, void 
+ }
+ EXPORT_SYMBOL(ridr_get_new);
+ 
++/**
++ * ridr_find - return pointer for given id
++ * @idp: ridr handle
++ * @id: lookup key
++ *
++ * Return the pointer given the id it has been registered with.  A %NULL
++ * return indicates that @id is not valid or you passed %NULL in
++ * ridr_get_new().
++ *
++ * This function can be called under rcu_read_lock(), given that the leaf
++ * pointers lifetimes are correctly managed.
++ */
++void *ridr_find(struct ridr *idp, int id)
++{
++	int n;
++	struct ridr_layer *p;
++
++	n = idp->layers * IDR_BITS;
++	p = rcu_dereference(idp->top);
++
++	/* Mask off upper bits we don't use for the search. */
++	id &= MAX_ID_MASK;
++
++	if (id >= (1 << n))
++		return NULL;
++
++	while (n > 0 && p) {
++		n -= IDR_BITS;
++		p = rcu_dereference(p->idr.ary[(id >> n) & IDR_MASK]);
++	}
++	return((void *)p);
 +}
-+EXPORT_SYMBOL(ridr_get_new);
++EXPORT_SYMBOL(ridr_find);
 +
  static void ridr_cache_ctor(struct kmem_cache *ridr_layer_cache,
  			void *ridr_layer)
