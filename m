@@ -1,105 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759843AbYD2Hk1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755393AbYD2Hkn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759843AbYD2Hk1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 03:40:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752096AbYD2HkR
+	id S1755393AbYD2Hkn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 03:40:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759894AbYD2Hk2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 03:40:17 -0400
-Received: from mtagate1.de.ibm.com ([195.212.29.150]:61903 "EHLO
-	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751242AbYD2HkQ convert rfc822-to-8bit (ORCPT
+	Tue, 29 Apr 2008 03:40:28 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:51891 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759036AbYD2Hk1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 03:40:16 -0400
-From: Christian Borntraeger <borntraeger@de.ibm.com>
-To: Olof Johansson <olof@lixom.net>, Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH/resend] 2.6.25+: Fix cpu hotplug problem in softirq code
-Date: Tue, 29 Apr 2008 09:40:12 +0200
-User-Agent: KMail/1.9.9
-Cc: "David S. Miller" <davem@davemloft.net>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       linux-kernel@vger.kernel.org
-References: <200804242113.11602.borntraeger@de.ibm.com>
-In-Reply-To: <200804242113.11602.borntraeger@de.ibm.com>
+	Tue, 29 Apr 2008 03:40:27 -0400
+Date: Tue, 29 Apr 2008 16:40:02 +0900
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Mel Gorman <mel@csn.ul.ie>, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] on memoryless node, /proc/pagetypeinfo is displayed slightly funny output.
+Cc: kosaki.motohiro@jp.fujitsu.com
+Message-Id: <20080429162859.3540.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200804290940.12838.borntraeger@de.ibm.com>
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.42 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a resend of a patch, which fixes a bug in cpu hotplug introduced
-after 2.6.25. Andrew, Olof, any opinions on this patch?
+Hi Mel,
 
-Christian
+I make patch of solve trivial pagetypeinfo problem.
+please review it.
 
 
---- old mail ---
+=================================================================
+on memoryless node, /proc/pagetypeinfo is displayed slightly funny output.
+this patch fix it.
 
-Hello Olof,
 
-currently cpu hotplug (unplug) seems broken on s390 and likely others. On cpu 
-unplug the system starts to behave very strange and hangs.
+output example (header is outputed, but no data is outputed)
+--------------------------------------------------------------
+Page block order: 14
+Pages per block:  16384
 
-I bisected the problem to the following commit:
+Free pages count per migrate type at order       0      1      2      3      4      5    \
+  6      7      8      9     10     11     12     13     14     15     16
 
------
-commit 48f20a9a9488c432fc86df1ff4b7f4fa895d1183
-Author: Olof Johansson <olof@lixom.net>
-Date:   Tue Mar 4 15:23:25 2008 -0800
-    tasklets: execute tasklets in the same order they were queued
------
+Number of blocks type     Unmovable  Reclaimable      Movable      Reserve      Isolate
+Page block order: 14
+Pages per block:  16384
 
-Reverting this patch seems to fix the problem. I looked into takeover_tasklet
-and it seems that there is a way to corrupt the tail pointer of the current 
-cpu. If the tasklet list of the frozen cpu is empty, the tail pointer of the
-current cpu points to the address of the head pointer of the stopped cpu and 
-not to the next pointer of a tasklet_struct.
+Free pages count per migrate type at order       0      1      2      3      4      5    \
+  6      7      8      9     10     11     12     13     14     15     16
 
-This patch avoids the list splice of the list is empty and cpu hotplug seems
-to work as the tail pointer is not corrupted.
-Olof, can you look into that patch and ACK/NACK it so Andrew can push this to
-Linus, if appropriate?
-Please note that some lines are longer than 80 chars, but line-wrapping looked
-worse that this version.
 
-Signed-off-by: Christian Borntraeger <borntraeger@de.ibm.com>
+Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+CC: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+CC: Mel Gorman <mel@csn.ul.ie>
+
 ---
- kernel/softirq.c |   20 ++++++++++++--------
- 1 file changed, 12 insertions(+), 8 deletions(-)
+ mm/vmstat.c |    4 ++++
+ 1 file changed, 4 insertions(+)
 
-Index: kvm/kernel/softirq.c
+Index: b/mm/vmstat.c
 ===================================================================
---- kvm.orig/kernel/softirq.c
-+++ kvm/kernel/softirq.c
-@@ -589,16 +589,20 @@ static void takeover_tasklets(unsigned i
- 	local_irq_disable();
- 
- 	/* Find end, append list for that CPU. */
--	*__get_cpu_var(tasklet_vec).tail = per_cpu(tasklet_vec, cpu).head;
--	__get_cpu_var(tasklet_vec).tail = per_cpu(tasklet_vec, cpu).tail;
--	per_cpu(tasklet_vec, cpu).head = NULL;
--	per_cpu(tasklet_vec, cpu).tail = &per_cpu(tasklet_vec, cpu).head;
-+	if (&per_cpu(tasklet_vec, cpu).head != per_cpu(tasklet_vec, cpu).tail) {
-+		*(__get_cpu_var(tasklet_vec).tail) = per_cpu(tasklet_vec, cpu).head;
-+		__get_cpu_var(tasklet_vec).tail = per_cpu(tasklet_vec, cpu).tail;
-+		per_cpu(tasklet_vec, cpu).head = NULL;
-+		per_cpu(tasklet_vec, cpu).tail = &per_cpu(tasklet_vec, cpu).head;
-+	}
- 	raise_softirq_irqoff(TASKLET_SOFTIRQ);
- 
--	*__get_cpu_var(tasklet_hi_vec).tail = per_cpu(tasklet_hi_vec, cpu).head;
--	__get_cpu_var(tasklet_hi_vec).tail = per_cpu(tasklet_hi_vec, cpu).tail;
--	per_cpu(tasklet_hi_vec, cpu).head = NULL;
--	per_cpu(tasklet_hi_vec, cpu).tail = &per_cpu(tasklet_hi_vec, cpu).head;
-+	if (&per_cpu(tasklet_hi_vec, cpu).head != per_cpu(tasklet_hi_vec, cpu).tail) {
-+		*__get_cpu_var(tasklet_hi_vec).tail = per_cpu(tasklet_hi_vec, cpu).head;
-+		__get_cpu_var(tasklet_hi_vec).tail = per_cpu(tasklet_hi_vec, cpu).tail;
-+		per_cpu(tasklet_hi_vec, cpu).head = NULL;
-+		per_cpu(tasklet_hi_vec, cpu).tail = &per_cpu(tasklet_hi_vec, cpu).head;
-+	}
- 	raise_softirq_irqoff(HI_SOFTIRQ);
- 
- 	local_irq_enable();
+--- a/mm/vmstat.c       2008-04-29 16:48:58.000000000 +0900
++++ b/mm/vmstat.c       2008-04-29 16:58:33.000000000 +0900
+@@ -638,6 +638,10 @@ static int pagetypeinfo_show(struct seq_
+ {
+        pg_data_t *pgdat = (pg_data_t *)arg;
+
++       /* check memoryless ndoe*/
++       if (!node_state(pgdat->node_id, N_HIGH_MEMORY))
++               return 0;
++
+        seq_printf(m, "Page block order: %d\n", pageblock_order);
+        seq_printf(m, "Pages per block:  %lu\n", pageblock_nr_pages);
+        seq_putc(m, '\n');
+
+
+
