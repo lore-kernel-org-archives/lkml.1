@@ -1,45 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764100AbYD2TKF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764563AbYD2TKf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764100AbYD2TKF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 15:10:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760504AbYD2TJn
+	id S1764563AbYD2TKf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 15:10:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763896AbYD2TJx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 15:09:43 -0400
-Received: from py-out-1112.google.com ([64.233.166.182]:5657 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759667AbYD2TJm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 15:09:42 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=OAioMjZasLhTl6ErrfcJ5us/8ptYHEfL9WfMTETfGgcIpl1RYG+s5KNXo+dzTUmoXuPPUA659m+o3c2Cri+n4cxEHF9hsm+d1E6IsWCRHj5c9SPEI1xAHlmJTdEeWYfGjkLI3ignkx/76cTAUIXdv0ix6lMisfzjI9x9RcooryQ=
-Message-ID: <7b9198260804291209t45640430x3af9a130950766fc@mail.gmail.com>
-Date: Tue, 29 Apr 2008 20:09:40 +0100
-From: "Tom Spink" <tspink@gmail.com>
-To: "Jason Baron" <jbaron@redhat.com>
-Subject: Re: [patch 1/3] dynamic_printk: core
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20080429184143.GB8717@redhat.com>
+	Tue, 29 Apr 2008 15:09:53 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:37431 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1763850AbYD2TJw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Apr 2008 15:09:52 -0400
+Date: Tue, 29 Apr 2008 12:09:51 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Arjan van de Ven <arjan@infradead.org>
+cc: Ingo Molnar <mingo@elte.hu>, akpm@linux-foundation.org, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [2/2] vmallocinfo: Add caller information
+In-Reply-To: <20080428140026.32aaf3bf@infradead.org>
+Message-ID: <Pine.LNX.4.64.0804291204450.12689@schroedinger.engr.sgi.com>
+References: <20080318222701.788442216@sgi.com> <20080318222827.519656153@sgi.com>
+ <20080429084854.GA14913@elte.hu> <Pine.LNX.4.64.0804291001420.10847@schroedinger.engr.sgi.com>
+ <20080428124849.4959c419@infradead.org> <Pine.LNX.4.64.0804291143080.12128@schroedinger.engr.sgi.com>
+ <20080428140026.32aaf3bf@infradead.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080429184143.GB8717@redhat.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/4/29 Jason Baron <jbaron@redhat.com>:
-> [...]
->  +         The impact of this compile option is a larger kerenl text size ~1%.
-> [...]
+On Mon, 28 Apr 2008, Arjan van de Ven wrote:
 
-Hi,
+> > Hmmm... Why do we have CONFIG_FRAMEPOINTER then?
+> 
+> to make the backtraces more accurate.
 
-Just noticed the typo above!
+Well so we display out of whack backtraces? There are also issues on 
+platforms that do not have a stack in the classic sense (rotating register 
+file on IA64 and Sparc64 f.e.). Determining a backtrace can be very 
+expensive.
 
--- 
-Regards,
-Tom Spink
-University of Edinburgh
+> > The current implementation of vmalloc_caller() follows what we have
+> > done with kmalloc_track_caller. Its low overhead and always on.
+> 
+> stacktraces aren't entirely free, the cost is O(nr of modules) unfortunately ;(
+
+The current implementation /proc/vmallocinfo avoids these issues and 
+with just one caller address it can print one line per vmalloc request. 
