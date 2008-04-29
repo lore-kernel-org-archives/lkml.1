@@ -1,59 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760684AbYD2T3X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761283AbYD2T3q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760684AbYD2T3X (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 15:29:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754986AbYD2T3F
+	id S1761283AbYD2T3q (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 15:29:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756065AbYD2T3e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 15:29:05 -0400
-Received: from wr-out-0506.google.com ([64.233.184.239]:7351 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754142AbYD2T3D (ORCPT
+	Tue, 29 Apr 2008 15:29:34 -0400
+Received: from out02.mta.xmission.com ([166.70.13.232]:35873 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754986AbYD2T3c (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 15:29:03 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=ebvcGq6CfzZS4wU9XgPRABdm2Zcolk/pRrcVvYLy1VRqhuxBU2TbJDaABZ9xoHXximtaox+jRZawXHttYx2iDg0WHLN+CkPM3tYuBGSXCPokYeTKl9bKk0KQng2MnFM8+O8HNyg2CJ/GCAAgfvxvmYfqBhv4lt4ZHxQeDyqBOGo=
-Message-ID: <84144f020804291229t55d207afk97457f14175ebe18@mail.gmail.com>
-Date: Tue, 29 Apr 2008 22:29:01 +0300
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Christoph Lameter" <clameter@sgi.com>
-Subject: Re: [2/2] vmallocinfo: Add caller information
-Cc: "Arjan van de Ven" <arjan@infradead.org>, "Ingo Molnar" <mingo@elte.hu>,
-       akpm@linux-foundation.org, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Peter Zijlstra" <a.p.zijlstra@chello.nl>
-In-Reply-To: <84144f020804291223x6e40509fk8461ed4d96d443b@mail.gmail.com>
+	Tue, 29 Apr 2008 15:29:32 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: "Yinghai Lu" <yhlu.kernel@gmail.com>
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Gabriel C" <nix.or.die@googlemail.com>,
+       "Andi Kleen" <andi@firstfloor.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>,
+       "Jesse Barnes" <jesse.barnes@intel.com>,
+       "Mika Fischer" <mika.fischer@zoopnet.de>, balajirrao@gmail.com
+References: <200801192045.17291.yinghai.lu@sun.com>
+	<200801202256.48365.yinghai.lu@sun.com>
+	<20080122165125.GA17992@elte.hu>
+	<200801221623.20861.yinghai.lu@sun.com>
+	<20080426035614.a30afb17.akpm@linux-foundation.org>
+	<48132665.8050202@googlemail.com>
+	<86802c440804261805rc739f9as519213fecdc0cdff@mail.gmail.com>
+	<m17ieh4zuo.fsf@frodo.ebiederm.org> <20080429103150.GJ23198@elte.hu>
+	<m1ej8o4liv.fsf@frodo.ebiederm.org>
+	<86802c440804291140k7e96b6cftbb350b8fc72103f@mail.gmail.com>
+Date: Tue, 29 Apr 2008 12:19:43 -0700
+In-Reply-To: <86802c440804291140k7e96b6cftbb350b8fc72103f@mail.gmail.com>
+	(Yinghai Lu's message of "Tue, 29 Apr 2008 11:40:51 -0700")
+Message-ID: <m18wyw31v4.fsf@frodo.ebiederm.org>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080318222701.788442216@sgi.com>
-	 <20080318222827.519656153@sgi.com> <20080429084854.GA14913@elte.hu>
-	 <Pine.LNX.4.64.0804291001420.10847@schroedinger.engr.sgi.com>
-	 <20080428124849.4959c419@infradead.org>
-	 <Pine.LNX.4.64.0804291143080.12128@schroedinger.engr.sgi.com>
-	 <20080428140026.32aaf3bf@infradead.org>
-	 <Pine.LNX.4.64.0804291204450.12689@schroedinger.engr.sgi.com>
-	 <84144f020804291223x6e40509fk8461ed4d96d443b@mail.gmail.com>
-X-Google-Sender-Auth: 6364abbc6c96ed53
+Content-Type: text/plain; charset=us-ascii
+X-SA-Exim-Connect-IP: 24.130.11.59
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa02 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
+	*      [score: 0.0000]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa02 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+Subject: Re: [PATCH] x86_32: trim memory by updating e820 v3
+X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
+X-SA-Exim-Scanned: Yes (on mgr1.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 29, 2008 at 10:09 PM, Christoph Lameter <clameter@sgi.com> wrote:
->  >  Well so we display out of whack backtraces? There are also issues on
->  >  platforms that do not have a stack in the classic sense (rotating register
->  >  file on IA64 and Sparc64 f.e.). Determining a backtrace can be very
->  >  expensive.
+"Yinghai Lu" <yhlu.kernel@gmail.com> writes:
 
-On Tue, Apr 29, 2008 at 10:23 PM, Pekka Enberg <penberg@cs.helsinki.fi> wrote:
->  I think that's the key question here whether we need to enable this on
->  production systems? If yes, why? If it's just a debugging aid, then I
->  see Ingo's point of save_stack_trace(); otherwise the low-overhead
->  __builtin_return_address() makes more sense.
+>>  The potential problem isn't while we reprogram the MTRRs, the potential
+>>  problem is mapping the SMM area uncachable.  In which case we will
+>>  make each SMM interrupt drastically slower.  Which can have all kinds of
+>>  unpleasant side effects.
+>
+> and ACPI area too.
 
-Actually, this is vmalloc() so why do we even care? If there are
-callers in the tree that use vmalloc() for performance sensitive
-stuff, they ought to be converted to kmalloc() anyway, no?
+True but at least that one is visible.
+
+> that only try to make the continuous to discrete layout. and still try
+> to cover all that is (WBs - UC) directly with WB.
+> only thing is that could run out of MTRR..., and mtrr_gran_size is
+> used to avoid that.
+> then some RAM that is less than mtrr_gran_size could be dumped.
+> so mtrr_gran_size could do sth.
+> anyway this patch only can meet one end.
+> for example Mika Fischer's system doesn't need to trim any RAM in MTRR.
+> but for Gabriel's system may need to trim some RAM in MTRR.
+
+Right.  Ram trimming (changing memory from WB to UC) is the potential
+problem.
+
+See my other post, in short I think we can address safely address all
+of the systems where the only problem is the selection of MTRRs by the
+BIOS.
+
+Then have an option (mtrr_chunk_size) for RAM trimming that is
+off by default.
+
+It is good to hear that some users and some systems
+get the benefit without trimming.
+
+Eric
