@@ -1,136 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758068AbYD2By7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757962AbYD2Bzr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758068AbYD2By7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 21:54:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753419AbYD2BxH
+	id S1757962AbYD2Bzr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 21:55:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752106AbYD2BxM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 21:53:07 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:56031 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751242AbYD2BxB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 21:53:01 -0400
-Message-Id: <20080429015300.946774085@sgi.com>
+	Mon, 28 Apr 2008 21:53:12 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:37585 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752578AbYD2BxD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Apr 2008 21:53:03 -0400
+Message-Id: <20080429015302.250786152@sgi.com>
 References: <20080429015231.908196699@sgi.com>
 User-Agent: quilt/0.46-1
-Date: Mon, 28 Apr 2008 18:52:35 -0700
+Date: Mon, 28 Apr 2008 18:52:39 -0700
 From: Christoph Lameter <clameter@sgi.com>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: travis@sgi.com, linux-kernel@vger.kernel.org
-Subject: [patch 4/9] x86: common thread_info definitions
-Content-Disposition: inline; filename=merge_threadinfo2
+Subject: [patch 8/9] x86: thread_info: merge tif masks.
+Content-Disposition: inline; filename=merge_tif_masks
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Merge the thread_info definition into one structure definition for both arches.
+The TIF masks are basically the same. x86_32 also has _TIF_SYSCALL_EMU which is
+zero for the 64 bit case. The tif masks become the same.
 
-The __u32 is equal to unsigned long for 32 bit.
-
-sysenter_return is used both for the IA32 emulation for 64 and x86_32.
-Avoid complicated #ifdef by simply always including it.
+x86_64 has an additional _TIF_DONOTIFY_MASK. Does not hurt for the 32 bit case
+since it is only used in x86_64 arch code.
 
 Signed-off-by: Christoph Lameter <clameter@sgi.com>
 
 ---
- include/asm-x86/thread_info.h |   55 +++++++++---------------------------------
- 1 file changed, 12 insertions(+), 43 deletions(-)
+ include/asm-x86/thread_info.h |   51 +++++++++++++++++-------------------------
+ 1 file changed, 21 insertions(+), 30 deletions(-)
 
 Index: linux-2.6/include/asm-x86/thread_info.h
 ===================================================================
---- linux-2.6.orig/include/asm-x86/thread_info.h	2008-04-28 17:47:10.563649517 -0700
-+++ linux-2.6/include/asm-x86/thread_info.h	2008-04-28 17:47:14.822390659 -0700
-@@ -11,47 +11,42 @@
- #include <asm/page.h>
- #include <asm/types.h>
+--- linux-2.6.orig/include/asm-x86/thread_info.h	2008-04-28 17:57:21.724529078 -0700
++++ linux-2.6/include/asm-x86/thread_info.h	2008-04-28 17:57:48.509890170 -0700
+@@ -123,6 +123,27 @@ struct thread_info {
+ #define _TIF_DS_AREA_MSR	(1 << TIF_DS_AREA_MSR)
+ #define _TIF_BTS_TRACE_TS	(1 << TIF_BTS_TRACE_TS)
  
--#ifdef CONFIG_X86_32
--
--#ifndef __ASSEMBLY__
--#include <asm/processor.h>
--#endif
--
- /*
-  * low level task data that entry.S needs immediate access to
-  * - this struct should fit entirely inside of one cache line
-  * - this struct shares the supervisor stack pages
-- * - if the contents of this structure are changed,
-- *   the assembly constants must also be changed
-  */
- #ifndef __ASSEMBLY__
-+struct task_struct;
-+struct exec_domain;
-+#include <asm/processor.h>
++/* work to do on interrupt/exception return */
++#define _TIF_WORK_MASK							\
++	(0x0000FFFF &							\
++	 ~(_TIF_SYSCALL_TRACE|_TIF_SYSCALL_AUDIT|_TIF_SINGLESTEP|	\
++	 _TIF_SECCOMP|_TIF_SYSCALL_EMU))
++
++/* work to do on any return to user space */
++#define _TIF_ALLWORK_MASK (0x0000FFFF & ~_TIF_SECCOMP)
++
++#define _TIF_DO_NOTIFY_MASK						\
++	(_TIF_SIGPENDING|_TIF_SINGLESTEP|_TIF_MCE_NOTIFY|_TIF_HRTICK_RESCHED)
++
++/* flags to check in __switch_to() */
++#define _TIF_WORK_CTXSW							\
++	(_TIF_IO_BITMAP|_TIF_DEBUGCTLMSR|_TIF_DS_AREA_MSR|_TIF_BTS_TRACE_TS| \
++								_TIF_NOTSC)
++
++#define _TIF_WORK_CTXSW_PREV _TIF_WORK_CTXSW
++#define _TIF_WORK_CTXSW_NEXT (_TIF_WORK_CTXSW|_TIF_DEBUG)
++
++
+ #define PREEMPT_ACTIVE		0x10000000
  
- struct thread_info {
- 	struct task_struct	*task;		/* main task structure */
- 	struct exec_domain	*exec_domain;	/* execution domain */
--	unsigned long		flags;		/* low level flags */
--	unsigned long		status;		/* thread-synchronous flags */
-+	__u32			flags;		/* low level flags */
-+	__u32			status;		/* thread synchronous flags */
- 	__u32			cpu;		/* current CPU */
--	int			preempt_count;	/* 0 => preemptable,
-+	int 			preempt_count;	/* 0 => preemptable,
- 						   <0 => BUG */
--	mm_segment_t		addr_limit;	/* thread address space:
--						   0-0xBFFFFFFF user-thread
--						   0-0xFFFFFFFF kernel-thread
--						*/
--	void			*sysenter_return;
-+	mm_segment_t		addr_limit;
- 	struct restart_block    restart_block;
-+	void __user		*sysenter_return;
-+#ifdef CONFIG_X86_32
- 	unsigned long           previous_esp;   /* ESP of the previous stack in
- 						   case of nested (IRQ) stacks
- 						*/
- 	__u8			supervisor_stack[0];
-+#endif
- };
--
- #else /* !__ASSEMBLY__ */
- 
- #include <asm/asm-offsets.h>
+ #ifdef CONFIG_X86_32
+@@ -174,20 +195,6 @@ static inline struct thread_info *curren
  
  #endif
  
-+#ifdef CONFIG_X86_32
-+
- #define PREEMPT_ACTIVE		0x10000000
- #ifdef CONFIG_4KSTACKS
- #define THREAD_SIZE            (4096)
-@@ -182,32 +177,6 @@ static inline struct thread_info *curren
+-/* work to do on interrupt/exception return */
+-#define _TIF_WORK_MASK							\
+-	(0x0000FFFF & ~(_TIF_SYSCALL_TRACE | _TIF_SYSCALL_AUDIT |	\
+-			_TIF_SECCOMP | _TIF_SYSCALL_EMU))
+-/* work to do on any return to u-space */
+-#define _TIF_ALLWORK_MASK	(0x0000FFFF & ~_TIF_SECCOMP)
+-
+-/* flags to check in __switch_to() */
+-#define _TIF_WORK_CTXSW						\
+-	(_TIF_IO_BITMAP | _TIF_NOTSC | _TIF_DEBUGCTLMSR |	\
+-	 _TIF_DS_AREA_MSR | _TIF_BTS_TRACE_TS)
+-#define _TIF_WORK_CTXSW_PREV _TIF_WORK_CTXSW
+-#define _TIF_WORK_CTXSW_NEXT (_TIF_WORK_CTXSW | _TIF_DEBUG)
+-
+ #else /* X86_32 */
+ 
  #include <asm/pda.h>
+@@ -231,22 +238,6 @@ static inline struct thread_info *stack_
+ 
+ #endif
+ 
+-/* work to do on interrupt/exception return */
+-#define _TIF_WORK_MASK							\
+-	(0x0000FFFF &							\
+-	 ~(_TIF_SYSCALL_TRACE|_TIF_SYSCALL_AUDIT|_TIF_SINGLESTEP|_TIF_SECCOMP))
+-/* work to do on any return to user space */
+-#define _TIF_ALLWORK_MASK (0x0000FFFF & ~_TIF_SECCOMP)
+-
+-#define _TIF_DO_NOTIFY_MASK						\
+-	(_TIF_SIGPENDING|_TIF_SINGLESTEP|_TIF_MCE_NOTIFY|_TIF_HRTICK_RESCHED)
+-
+-/* flags to check in __switch_to() */
+-#define _TIF_WORK_CTXSW							\
+-	(_TIF_IO_BITMAP|_TIF_DEBUGCTLMSR|_TIF_DS_AREA_MSR|_TIF_BTS_TRACE_TS|_TIF_NOTSC)
+-#define _TIF_WORK_CTXSW_PREV _TIF_WORK_CTXSW
+-#define _TIF_WORK_CTXSW_NEXT (_TIF_WORK_CTXSW|_TIF_DEBUG)
+-
+ #endif /* !X86_32 */
  
  /*
-- * low level task data that entry.S needs immediate access to
-- * - this struct should fit entirely inside of one cache line
-- * - this struct shares the supervisor stack pages
-- */
--#ifndef __ASSEMBLY__
--struct task_struct;
--struct exec_domain;
--#include <asm/processor.h>
--
--struct thread_info {
--	struct task_struct	*task;		/* main task structure */
--	struct exec_domain	*exec_domain;	/* execution domain */
--	__u32			flags;		/* low level flags */
--	__u32			status;		/* thread synchronous flags */
--	__u32			cpu;		/* current CPU */
--	int 			preempt_count;	/* 0 => preemptable,
--						   <0 => BUG */
--	mm_segment_t		addr_limit;
--	struct restart_block    restart_block;
--#ifdef CONFIG_IA32_EMULATION
--	void __user		*sysenter_return;
--#endif
--};
--#endif
--
--/*
-  * macros/functions for gaining access to the thread information structure
-  * preempt_count needs to be 1 initially, until the scheduler is functional.
-  */
 
 -- 
