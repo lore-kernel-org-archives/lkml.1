@@ -1,52 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756944AbYD2JlS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758434AbYD2Jln@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756944AbYD2JlS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 05:41:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752624AbYD2JlI
+	id S1758434AbYD2Jln (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 05:41:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753351AbYD2Jld
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 05:41:08 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:50348 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752440AbYD2JlH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 05:41:07 -0400
-Date: Tue, 29 Apr 2008 11:40:53 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: travis@sgi.com, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [patch 0/9] [RFC] x86: Merge thread_info_32/64 to thread_info.h
-Message-ID: <20080429094053.GA23198@elte.hu>
-References: <20080429015231.908196699@sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080429015231.908196699@sgi.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Tue, 29 Apr 2008 05:41:33 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:59089 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753722AbYD2Jlc convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Apr 2008 05:41:32 -0400
+Date: Tue, 29 Apr 2008 10:33:55 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Helge Hafting <helge.hafting@aitel.hist.no>
+Cc: Willy Tarreau <w@1wt.eu>, Adrian Bunk <bunk@kernel.org>,
+       "H. Peter Anvin" <hpa@kernel.org>, linux-kernel@vger.kernel.org,
+       trivial@kernel.org
+Subject: Re: [2.6 patch] UTF-8 fixes in comments
+Message-ID: <20080429103355.00c61fc2@core>
+In-Reply-To: <4816E4FD.5060605@aitel.hist.no>
+References: <20080428154023.GU2813@cs181133002.pp.htv.fi>
+	<20080428230524.GK8474@1wt.eu>
+	<48167A07.4000305@kernel.org>
+	<20080429050605.GA27875@1wt.eu>
+	<20080429072911.GA28059@cs181133002.pp.htv.fi>
+	<20080429081423.GD30507@1wt.eu>
+	<4816E4FD.5060605@aitel.hist.no>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> Outside the english-speaking world, userland _was_ completely
 
-* Christoph Lameter <clameter@sgi.com> wrote:
+(American)
 
-> The following patchset merges the 32 and 64 bit thread_info files into 
-> one.
-> 
-> First just move the stuff into a single file and then gradually 
-> extract common code. Ends up with pretty small differences. Had some 
-> time last Saturday to play with it. Feedback/takeover appreciated.
-> 
-> Patch against git tree of today.
+Formal UK English uses accented characters for some foreign imports (eg
+café), ï for words like naïve, and if you are really pretentious you need
+the æ symbol for words like mediæval although for modern writing this is
+considered silly.
 
-this unification looks very nicely structured. I'll throw it into the 
-x86 testbed, lets see what happens.
+The bash problem btw should have been fixed (if it is bash causing it) as
+of 2.05b and readline 4.3. If its being cause by the KDE terminal that
+would suprise me but might be worth filing a bug.
 
-	Ingo
+Alan
