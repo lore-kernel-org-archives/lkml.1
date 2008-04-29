@@ -1,73 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756928AbYD2R1k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762869AbYD2R2o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756928AbYD2R1k (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 13:27:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758674AbYD2RVM
+	id S1762869AbYD2R2o (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 13:28:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756535AbYD2RVU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 13:21:12 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:51569 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758661AbYD2RVK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 13:21:10 -0400
-Date: Tue, 29 Apr 2008 18:20:57 +0100
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Timur Tabi <timur@freescale.com>, Tony Breeds <tony@bakeyournoodle.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: cross-compiling on OS X, make menuconfig fails
-Message-ID: <20080429172057.GN5882@ZenIV.linux.org.uk>
-References: <481529B6.6030802@freescale.com> <20080428015151.GW20457@bakeyournoodle.com> <481739BF.8010305@freescale.com> <20080429164535.GB18018@uranus.ravnborg.org>
+	Tue, 29 Apr 2008 13:21:20 -0400
+Received: from ns.suse.de ([195.135.220.2]:52156 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754683AbYD2RVS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Apr 2008 13:21:18 -0400
+Date: Tue, 29 Apr 2008 10:18:43 -0700
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org, selinux@tycho.nsa.gov
+Cc: Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk, sds@tycho.nsa.gov,
+       jmorris@namei.org, Eric Paris <eparis@redhat.com>
+Subject: [20/37] SELinux: no BUG_ON(!ss_initialized) in
+	selinux_clone_mnt_opts
+Message-ID: <20080429171843.GU14724@suse.de>
+References: <20080429171222.073929148@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080429164535.GB18018@uranus.ravnborg.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Disposition: inline; filename="selinux-no-bug_on-in-selinux_clone_mnt_opts.patch"
+In-Reply-To: <20080429171730.GA14724@suse.de>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 29, 2008 at 06:45:35PM +0200, Sam Ravnborg wrote:
-> On Tue, Apr 29, 2008 at 10:07:43AM -0500, Timur Tabi wrote:
-> > Tony Breeds wrote:
-> > 
-> > > On most linux systems echo supports c-syle escapes with "-e".  I'm
-> > > guessing which ever echo you're getting dosesn't do that.
-> > 
-> > Yes, that is my problem.
-> > 
-> > > I think the best fix is to ensure you're getting bash as your shell.
-> > 
-> > The script starts off with this line:
-> > 
-> > #!/bin/sh
-> > 
-> > Doesn't that mean that it should be interpreted by sh and not bash?
-> > 
-> > > A nasty hack would be to make check-lxdialog.sh do something like:
-> > > (echo ' #include CURSES_LOC';echo 'main() {}') | gcc '-DCURSES_LOC=<ncurses.h>' -DLOCALE -DKBUILD_NO_NLS -lncurses -xc - -o .lxdialog.tmp
-> > 
-> > This works.  Do you think if I posted a patch that makes this change, it will be
-> > accepted?
-> 
-> Yes.
+2.6.25-stable review patch.  If anyone has any objections, please let us
+know.
 
-Good grief, folks...
+------------------
+From: Eric Paris <eparis@redhat.com>
 
-check() {
-	$cc -xc - -o $tmp 2>/dev/null <<'EOF'
-#include CURSES_LOC
-main() {}
-EOF
-	...
-if you insist on feeding these two lines to gcc stdin.  Nasty hack, indeed...
+commit 0f5e64200f20fc8f5b759c4010082f577ab0af3f upstream
 
-<<'word'
-[lines]
-word
+The Fedora installer actually makes multiple NFS mounts before it loads
+selinux policy.  The code in selinux_clone_mnt_opts() assumed that the
+init process would always be loading policy before NFS was up and
+running.  It might be possible to hit this in a diskless environment as
+well, I'm not sure.  There is no need to BUG_ON() in this situation
+since we can safely continue given the circumstances.
 
-redirects stdin and feeds lines to it verbatim.  Same without quotes will
-do the same, but do expansion in the text first.
+Signed-off-by: Eric Paris <eparis@redhat.com>
+Signed-off-by: James Morris <jmorris@namei.org>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
-It's been there since the original Bourne's shell in v7 and it's a bloody
-standard way to redirect from text...
+---
+ security/selinux/hooks.c |   15 ++++++++++++---
+ 1 file changed, 12 insertions(+), 3 deletions(-)
+
+--- a/security/selinux/hooks.c
++++ b/security/selinux/hooks.c
+@@ -756,9 +756,18 @@ static void selinux_sb_clone_mnt_opts(co
+ 	int set_context =	(oldsbsec->flags & CONTEXT_MNT);
+ 	int set_rootcontext =	(oldsbsec->flags & ROOTCONTEXT_MNT);
+ 
+-	/* we can't error, we can't save the info, this shouldn't get called
+-	 * this early in the boot process. */
+-	BUG_ON(!ss_initialized);
++	/*
++	 * if the parent was able to be mounted it clearly had no special lsm
++	 * mount options.  thus we can safely put this sb on the list and deal
++	 * with it later
++	 */
++	if (!ss_initialized) {
++		spin_lock(&sb_security_lock);
++		if (list_empty(&newsbsec->list))
++			list_add(&newsbsec->list, &superblock_security_head);
++		spin_unlock(&sb_security_lock);
++		return;
++	}
+ 
+ 	/* how can we clone if the old one wasn't set up?? */
+ 	BUG_ON(!oldsbsec->initialized);
+
+-- 
