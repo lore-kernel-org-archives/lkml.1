@@ -1,46 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759293AbYD2WRX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759861AbYD2WSq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759293AbYD2WRX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 18:17:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753749AbYD2WRP
+	id S1759861AbYD2WSq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 18:18:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753333AbYD2WSi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 18:17:15 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:53999 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753426AbYD2WRO (ORCPT
+	Tue, 29 Apr 2008 18:18:38 -0400
+Received: from po-out-1718.google.com ([72.14.252.156]:29759 "EHLO
+	po-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752705AbYD2WSh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 18:17:14 -0400
-Date: Tue, 29 Apr 2008 23:04:03 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Harvey Harrison <harvey.harrison@gmail.com>, rdunlap@xenotime.net,
-       rmk+lkml@arm.linux.org.uk, bunk@kernel.org, den@openvz.org,
-       linux-pcmcia@lists.infradead.org, adobriyan@gmail.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: pcmcia_ioctl.c compile error
-Message-ID: <20080429230403.33e1f8c2@core>
-In-Reply-To: <20080429140926.bb763630.akpm@linux-foundation.org>
-References: <20080429182709.GB2898@cs181133002.pp.htv.fi>
-	<20080429201704.GA31311@flint.arm.linux.org.uk>
-	<20080429135902.504b6362.rdunlap@xenotime.net>
-	<1209502988.24729.31.camel@brick>
-	<20080429140926.bb763630.akpm@linux-foundation.org>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 29 Apr 2008 18:18:37 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=K4iuwSUerHrIhKmTtifs3yRvVHk9CvLXzYMBNXhNcZmclw+tscbWPQ7kk61hwI48sMuKdc2D+jc5/3fMrWv5ulU2EEjCHSS15R8s5ca+GLbDHBt6pmTZnD143C0sgHcMlcmpv4fm6gi4bKPC3sNl7bHtRYJEfLh86IcY8E9NJTk=
+Message-ID: <86802c440804291518v58dba61dk656ed74cae207010@mail.gmail.com>
+Date: Tue, 29 Apr 2008 15:18:34 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: [PATCH] x86: mtrr cleanup for converting continuous to discrete layout v5
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       "Thomas Gleixner" <tglx@linutronix.de>,
+       "Gabriel C" <nix.or.die@googlemail.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "Mika Fischer" <mika.fischer@zoopnet.de>
+In-Reply-To: <20080429220953.GI2302@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200804272337.40130.yhlu.kernel@gmail.com>
+	 <200804281244.56938.yhlu.kernel@gmail.com>
+	 <200804281316.14168.yhlu.kernel@gmail.com>
+	 <200804281505.05764.yhlu.kernel@gmail.com>
+	 <m1wsmg32qk.fsf@frodo.ebiederm.org>
+	 <86802c440804291304r7ff169f6k9132f98761ecef42@mail.gmail.com>
+	 <m1abjcz9ow.fsf@frodo.ebiederm.org>
+	 <86802c440804291457k79099d84w53110fabf59e9e37@mail.gmail.com>
+	 <20080429220953.GI2302@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I could just drop it, shrug.
+On Tue, Apr 29, 2008 at 3:09 PM, Ingo Molnar <mingo@elte.hu> wrote:
+>
+>  * Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+>
+>  > agreed. so that feature is compiled in but disable by default.
+>  >
+>  > BTW: is any chance for OS to disable SMI etc? to verify is the
+>  > unstatbility is caused by SMI?
+>
+>  i dont think there's any documented way for that. SMI might be the
+>  mechanism that ensures blue-smoke type of system reliability (CPU fan,
+>  temperature, etc.) so it would be extremely dangerous to mess with it.
 
-I'd favour pushing it. If it matters someone will then fix up the problem
-platform. If it isn't pushed then it lets one obscure platform stall
-progress for everyone else.
+then that is bad and sick HW design.
 
-Alan (still trying to get all the termios ioctl changes into some ports)
+for example. cpu fan is supposed to full speed, if SW send insane
+instruction and lose connection.
+also, CPU should shutdown by thermal strip is FAN is stopped.
 
+when we were working on LinuxBIOS, found one MB cpu fan need to be
+started by BIOS, and another one is auto full speed if BIOS don't
+touch it. We always like the second design.
+
+YH
