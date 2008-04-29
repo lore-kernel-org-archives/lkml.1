@@ -1,48 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758553AbYD2WWQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758099AbYD2WYa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758553AbYD2WWQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 18:22:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753637AbYD2WV7
+	id S1758099AbYD2WYa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 18:24:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753634AbYD2WYX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 18:21:59 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:47125 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753883AbYD2WV6 (ORCPT
+	Tue, 29 Apr 2008 18:24:23 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:60855 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753156AbYD2WYW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 18:21:58 -0400
-Date: Tue, 29 Apr 2008 16:21:42 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Bryan Wu <cooloney@kernel.org>, linux-kernel@vger.kernel.org,
-       torvalds@linux-foundation.org, willy@debian.org,
-       viro@zeniv.linux.org.uk, uclinux-dist-devel@blackfin.uclinux.org,
-       "J. Bruce Fields" <bfields@fieldses.org>
-Subject: Re: [LTP/VFS] fcntl SETLEASE fails on ramfs/tmpfs
-Message-ID: <20080429222141.GD14976@parisc-linux.org>
-References: <386072610804282042y2dda4b52h927683a8a938ce1f@mail.gmail.com> <20080429135454.efebec8f.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080429135454.efebec8f.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Tue, 29 Apr 2008 18:24:22 -0400
+Date: Tue, 29 Apr 2008 23:15:54 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Willy Tarreau <w@1wt.eu>
+Cc: Helge Hafting <helge.hafting@aitel.hist.no>, Adrian Bunk <bunk@kernel.org>,
+       "H. Peter Anvin" <hpa@kernel.org>, linux-kernel@vger.kernel.org,
+       trivial@kernel.org
+Subject: Re: [2.6 patch] UTF-8 fixes in comments
+Message-ID: <20080429231554.69973c45@core>
+In-Reply-To: <20080429221230.GA17360@1wt.eu>
+References: <20080428230524.GK8474@1wt.eu>
+	<48167A07.4000305@kernel.org>
+	<20080429050605.GA27875@1wt.eu>
+	<20080429072911.GA28059@cs181133002.pp.htv.fi>
+	<20080429081423.GD30507@1wt.eu>
+	<4816E4FD.5060605@aitel.hist.no>
+	<20080429100934.GB1473@1wt.eu>
+	<20080429111014.5a065b88@core>
+	<20080429103335.GD1473@1wt.eu>
+	<20080429113410.0971d071@core>
+	<20080429221230.GA17360@1wt.eu>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 29, 2008 at 01:54:54PM -0700, Andrew Morton wrote:
-> I guess we should make the generic_setlease() heuristic smarter.
-> 
-> Of course the _reason_ for that heuristic is uncommented and lost in time. 
-> And one wonders what locking prevents it from being totally racy, and if
-> "none", what happens when the race hits.  Sigh.
+> OK I could reproduce the case without ever involving either a shell or
+> readline or anything. Using "cat" as the init program exhibited the
+> anomaly, though it was not much easy to analyze. Then I switched to
+> "init=od -An -tx1 -".
 
-It's hardly "lost in time" when you can ask the original author.
-
-If there are multiple processes with this file open, you can't place a
-lease on it.
-
--- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+Did you put the console into utf-8 mode before the cat ?
