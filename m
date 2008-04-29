@@ -1,87 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760287AbYD2NgA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763600AbYD2Nhp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760287AbYD2NgA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 09:36:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757235AbYD2Nfw
+	id S1763600AbYD2Nhp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 09:37:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757607AbYD2Nhe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 09:35:52 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:46000 "EHLO smtp5.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755388AbYD2Nfv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 09:35:51 -0400
-Date: Tue, 29 Apr 2008 16:35:14 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Tony Breeds <tony@bakeyournoodle.com>,
-       Christian Kujau <lists@nerdbynature.de>, linuxppc-dev@ozlabs.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.25: pmac_newworld undefined
-Message-ID: <20080429133514.GA30524@cs181133002.pp.htv.fi>
-References: <alpine.DEB.1.10.0804271951190.11017@sheep.housecafe.de> <20080428042044.GX20457@bakeyournoodle.com> <20080428193324.GC13400@uranus.ravnborg.org>
+	Tue, 29 Apr 2008 09:37:34 -0400
+Received: from qb-out-0506.google.com ([72.14.204.227]:53257 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753294AbYD2Nhd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Apr 2008 09:37:33 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent:from;
+        b=tLwv10UZe7l9++p3LtBpcuyUrzgdCxQxqlZkPaLLd0tUafjzTwrFA9naMHzRNk4qBppFeU+cyV/3vYt6sdvu9sjDT1anFcD9Y2Tjg4W5e7a8Qf3naIn8rtjqHBDN1qeMPI+KO+wrNC0OutecgSCZCFOd9LNEH0JRkt6wbcqFwos=
+Date: Tue, 29 Apr 2008 19:02:01 +0530
+To: libc-alpha@sourceware.org
+Cc: Jan Blunck <jblunck@suse.de>, Erez Zadok <ezk@cs.sunysb.edu>,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       viro@zeniv.linux.org.uk, Christoph Hellwig <hch@lst.de>,
+       Ulrich Drepper <drepper@redhat.com>, Mingming Cao <cmm@us.ibm.com>,
+       Dave Hansen <haveblue@us.ibm.com>,
+       Trond Myklebust <trond.myklebust@fys.uio.no>,
+       bharata@linux.vnet.ibm.com, David Woodhouse <dwmw2@infradead.org>
+Subject: [RFC PATCH 0/2] Union Mount: Directory listing in glibc
+Message-ID: <20080429133201.GA9938@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080428193324.GC13400@uranus.ravnborg.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+User-Agent: Mutt/1.5.17 (2007-11-01)
+From: bsn.0007@gmail.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 28, 2008 at 09:33:24PM +0200, Sam Ravnborg wrote:
-> On Mon, Apr 28, 2008 at 02:20:44PM +1000, Tony Breeds wrote:
-> > On Sun, Apr 27, 2008 at 08:03:46PM +0200, Christian Kujau wrote:
-> > > Hi,
-> > > 
-> > > the build failure reported[0] by Kamalesh back in 01/2008 is still 
-> > > present in today's 2.6.25-git with CONFIG_NVRAM=m (instead of =y):
-> > > 
-> > >   Building modules, stage 2.
-> > >   MODPOST 72 modules
-> > > ERROR: "pmac_newworld" [arch/powerpc/platforms/powermac/nvram.ko] undefined!
-> > > ERROR: "__alloc_bootmem" [arch/powerpc/platforms/powermac/nvram.ko] 
-> > > undefined!
-> > > make[1]: *** [__modpost] Error 1
-> > 
-> > Yeah that isn't really surprising.  Essentially
-> > arch/powerpc/platforms/powermac/nvram.c must be builtin (not modular)
-> > but CONFIG_NVRAM is tristate, and your .config has CONFIG_NVRAM=m.
-> > 
-> > We can probably "fix" this by adding another config config symbol and
-> > "selecting" that from CONFIG_NVRAM.  Then using this new symbol in
-> > arch/powerpc/platforms/powermac/*
-> > 
-> > so I think with we need is:
-> > config NVRAM
-> >   bool "..." if PPC32
-> >   tristate "..." if !PPC32
-> >   ...
-> >   ...
-> > 
-> > Sam is there some way to achieve that or should we just create an
-> > secondary symbol?
-> 
-> In the Makefile you could just do a:
-> 
-> obj-$(CONFIG_NVRAM:m=y)             += nvram.o
-> 
-> Then you would force nvram to be build-in.
-> That looks simpler than messing with Kconfig in this case.
+Hi,
 
-You miss that this is only true on powerpc.
+I went through Bharata's RFC post on glibc based Union Mount readdir solution
+(http://lkml.org/lkml/2008/3/11/34) and have come up with patches
+against glibc to implement the same.
 
-And for such issues Kconfig anyway is the right place - assume how your 
-solution would break if NVRAM would some day select or depend on some 
-helper code.
+The RFC discussed about the information glibc readdir needs to get about
+union mounted directories and I have assumed the following information
+to be available from the kernel for this implementation.
 
-> 	Sam
+- Kernel would return all the dirents (including duplicates and whiteouts)
+starting from the topmost directory of the union.
 
-cu
-Adrian
+- Indication that this directory is a union mounted directory
+	I have assumed that kernel would return a "." whiteout as the first
+directory entry of the union. This would tell glibc readdir(3) that it is
+working with a union mounted directory and it needs to do duplicate
+elimination and whiteout suppression. It starts building a dirent cache
+for this purpose.
 
--- 
+Ulrich had suggested that we could use the fstat call to recognize union
+mounts. But looking at the stat structure from stat(2), it was not obvious
+as to which field in there could be used for this purpose. Hence for this
+prototype implementation, I decided to go with what Al Viro suggested, which
+is about using a "." whiteout.
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+- Indication that kernel is done with returning entries from the topmost
+directory.
+	I have assumed that kernel would return a "." whiteout at the beginning
+of each directory of the union. So when glibc gets a 2nd "." whiteout, it
+will start performing duplicate elimination.
 
+- Whiteout indication
+	glibc will depend on dirent->d_type to be set to DT_WHT on a whiteout
+file.
+
+With this post, I am sending two patches:
+
+Patch 1. readdir support for union mounted directories.
+	I am caching the dirent names in a list to aid duplicate elimination.
+And this cache is stored in DIRP. For duplicate elimination I am using
+strcmp(). I am not sure if this works universally with different types
+of filesystems. Any suggestions here would be welcome.
+
+Patch 2. seekdir support.
+	The seekdir works on the cache maintained by readdir. Since after a
+seekdir, it might become necessary for readdir to return dirents from cache
+(as against getting them from readdir(2)/getdents(2)), I had to cache the
+entire dirent structure in readdir. I understand that this is expensive, but
+not sure if this is avoidable if we have to support seekdir.
+
+To support seekdir on a union mounted directory, the seek is applied
+to the cache of dirents. The offsets (dirent->d_off) returned by readdir(3) has
+been modified to return linearly increasing offsets like 0,1,2,... rather
+than returning filesystem-returned offsets. This helps us to have a uniform
+seek across all the directories of the union.
+
+With seekdir modified, I had to modify telldir also not to return
+filesystem-returned offsets for union mounted directories.
+
+With seekdir support, it becomes necessary in readdir to check if we need
+to return dirents from cache. And this adds a bit of overhead to readdir
+as we have to do this check for every directory.
+
+Compatibility issues
+--------------------
+There are many versions of dirent structure in glibc and I have tried my
+best to take care of compatibility issues. But I have not really tested
+readdir64 or old_readdir64. Also atleast one version of dirent structure
+doesn't have d_type field and my whiteout suppression logic depends on it
+and uses it in the generic __READDIR routine which gets used by various
+version of readdir and I think this would break that readdir version which
+uses dirent structure w/o d_type. I will be taking care of such compatibility
+issues more cleanly/thoroughly in subsequent posts.
+
+Testing
+-------
+I have done very minimal testing of these patches on a Intel machine which
+uses 32 bit readdir. There might be some corner cases in readdir, seekdir
+and telldir which I might not have taken care of and would be happy to fix them
+if pointed to. I have tested these patches together with Union Mount
+patches for 2.6.24-rc2-mm1. These patches are for glibc-2.7.
+
+I request you to reveiw the patches. Any comments and suggestions are
+greatly welcome.
+
+Regards
+Nagabhushan
