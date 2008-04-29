@@ -1,46 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757991AbYD2UBu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758743AbYD2UDt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757991AbYD2UBu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 16:01:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752634AbYD2UBn
+	id S1758743AbYD2UDt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 16:03:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755880AbYD2UDl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 16:01:43 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:40440 "EHLO mx1.redhat.com"
+	Tue, 29 Apr 2008 16:03:41 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:40553 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752007AbYD2UBm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 16:01:42 -0400
-Date: Tue, 29 Apr 2008 16:01:22 -0400
-From: Dave Jones <davej@redhat.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: [TRIVIAL] typo in hfsplus.
-Message-ID: <20080429200122.GA2859@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Linux Kernel <linux-kernel@vger.kernel.org>
+	id S1753454AbYD2UDk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Apr 2008 16:03:40 -0400
+Date: Tue, 29 Apr 2008 16:02:09 -0400 (EDT)
+From: Mikulas Patocka <mpatocka@redhat.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+cc: linux-kernel@vger.kernel.org, Mike Anderson <andmike@linux.vnet.ibm.com>,
+       Alasdair Graeme Kergon <agk@redhat.com>
+Subject: Re: [PATCH] Optimize lock in queue unplugging
+In-Reply-To: <20080429192556.GB12774@kernel.dk>
+Message-ID: <Pine.LNX.4.64.0804291554490.26643@engineering.redhat.com>
+References: <Pine.LNX.4.64.0804291459030.17110@engineering.redhat.com>
+ <20080429192556.GB12774@kernel.dk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Dave Jones <davej@redhat.com>
 
---- linux-2.6/fs/hfsplus/super.c~	2008-04-29 15:59:42.000000000 -0400
-+++ linux-2.6/fs/hfsplus/super.c	2008-04-29 15:59:51.000000000 -0400
-@@ -357,7 +357,7 @@ static int hfsplus_fill_super(struct sup
- 		printk(KERN_WARNING "hfs: Filesystem is marked locked, mounting read-only.\n");
- 		sb->s_flags |= MS_RDONLY;
- 	} else if (vhdr->attributes & cpu_to_be32(HFSPLUS_VOL_JOURNALED)) {
--		printk(KERN_WARNING "hfs: write access to a jounaled filesystem is not supported, "
-+		printk(KERN_WARNING "hfs: write access to a journaled filesystem is not supported, "
- 		       "use the force option at your own risk, mounting read-only.\n");
- 		sb->s_flags |= MS_RDONLY;
- 	}
 
--- 
-http://www.codemonkey.org.uk
+On Tue, 29 Apr 2008, Jens Axboe wrote:
+
+> On Tue, Apr 29 2008, Mikulas Patocka wrote:
+>> Hi
+>>
+>> Mike Anderson was doing an OLTP benchmark on a computer with 48 physical
+>> disks mapped to one logical device via device mapper.
+>>
+>> He found that there was a slowdown on request_queue->lock in function
+>> generic_unplug_device. The slowdown is caused by the fact that when some
+>> code calls unplug on the device mapper, device mapper calls unplug on all
+>> physical disks. These unplug calls take the lock, find that the queue is
+>> already unplugged, release the lock and exit.
+>>
+>> With the below patch, performance of the benchmark was increased by 18%
+>> (the whole OLTP application, not just block layer microbenchmarks).
+>>
+>> So I'm submitting this patch for upstream. I think the patch is correct,
+>> because when more threads call simultaneously plug and unplug, it is
+>> unspecified, if the queue is or isn't plugged (so the patch can't make
+>> this worse). And the caller that plugged the queue should unplug it
+>> anyway. (if it doesn't, there's 3ms timeout).
+>
+> Where were these unplug calls coming from? The block layer will
+> generally only unplug when it is already unplugged, so if you are seeing
+> so many unplug calls that the patch redues overhead by as much
+> described, perhaps the callsite is buggy?
+>
+> -- 
+> Jens Axboe
+
+unplug is called on any wait_on_buffer (and similar calls) 
+__wait_on_buffer -> sync_buffer -> blk_run_address_space -> 
+blk_run_backing_dev -> bdi->unplug_io_fn(bdi, page);
+
+(I'm not sure that this was the IBM's case, I'm just guessing - this is 
+the most obvious example where unplug is called repeatedly)
+
+
+There is not any test that the queue is plugged and there shouldn't be. If 
+you have this situation
+
+dm-linear(unplugged) -> physical-disk(plugged)
+
+then uplung should be called on dm-linear (that will call dm-unplug method 
+dm_unplug_all and that will unplug the disk). If you add the test of 
+plugged queue to the upper layer, you mess this situation with stacked 
+drivers completely.
+
+The test for already plugged queue should be at the lowest physical device 
+driver, not in upper layers.
+
+Mikulas
