@@ -1,148 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758613AbYD2MfG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759323AbYD2Mfh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758613AbYD2MfG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 08:35:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753925AbYD2Mez
+	id S1759323AbYD2Mfh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 08:35:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753925AbYD2Mf0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 08:34:55 -0400
-Received: from g1t0027.austin.hp.com ([15.216.28.34]:21527 "EHLO
-	g1t0027.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755158AbYD2Mey (ORCPT
+	Tue, 29 Apr 2008 08:35:26 -0400
+Received: from outbound.icp-qv1-irony-out3.iinet.net.au ([203.59.1.148]:10252
+	"EHLO outbound.icp-qv1-irony-out3.iinet.net.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753950AbYD2MfY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 08:34:54 -0400
-Message-ID: <481715E7.2070103@hp.com>
-Date: Tue, 29 Apr 2008 08:34:47 -0400
-From: "Alan D. Brunelle" <Alan.Brunelle@hp.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
-MIME-Version: 1.0
-To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Cc: Jens Axboe <jens.axboe@oracle.com>
-Subject: [PATCH] Skip I/O merges when disabled
-Content-Type: multipart/mixed;
- boundary="------------060901000500000506020008"
+	Tue, 29 Apr 2008 08:35:24 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Av8BAJayFkh8qMj2/2dsb2JhbAAIrFc
+X-IronPort-AV: E=Sophos;i="4.25,722,1199631600"; 
+   d="scan'208";a="255942499"
+Subject: Re: [patch/rfc 2.6.25-git] gpio: sysfs interface
+From: Ben Nizette <bn@niasdigital.com>
+To: Trent Piepho <tpiepho@freescale.com>
+Cc: David Brownell <david-b@pacbell.net>, lkml <linux-kernel@vger.kernel.org>,
+       hartleys <hartleys@visionengravers.com>,
+       Mike Frysinger <vapier.adi@gmail.com>, Bryan Wu <cooloney@kernel.org>
+In-Reply-To: <Pine.LNX.4.64.0804282202340.8286@t2.domain.actdsltmp>
+References: <200804281239.51729.david-b@pacbell.net>
+	 <Pine.LNX.4.64.0804281507160.6832@t2.domain.actdsltmp>
+	 <200804281745.59442.david-b@pacbell.net>
+	 <Pine.LNX.4.64.0804282202340.8286@t2.domain.actdsltmp>
+Content-Type: text/plain
+Organization: Nias Digital
+Date: Tue, 29 Apr 2008 22:35:26 +1000
+Message-Id: <1209472526.311.50.camel@moss.renham>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------060901000500000506020008
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
 
+On Mon, 2008-04-28 at 22:48 -0700, Trent Piepho wrote:
+> On Mon, 28 Apr 2008, David Brownell wrote:
+> > On Monday 28 April 2008, Trent Piepho wrote:
+> >> On Mon, 28 Apr 2008, David Brownell wrote:
+> >>> Simple sysfs interface for GPIOs.
+> >>>
+> >>>    /sys/class/gpio
+> >>>        /gpio-N ... for each exported GPIO #N
+> >>
+> >> I liked it better they way I had it, "label:N".
+> >
+> > Those labels may not be available though; or valid in pathnames.
+> 
+> So just fall back to "gpio" if there is no label?  The only character that's
+> not valid in a pathname is '/', so that's trivial to check for.
+> 
+> const char *label = chip->label && !strchr(chip->label, '/') ?
+>  	chip->label : "gpio"; /* or "generic" or "unknown", or ...*/
+> 
+> This means you don't need a file with number to device assignents.  It makes
+> shell scripting a lot easier too.  Say I want the first gpio on a pca9557 gpio
+> expander?  It's will be something like:  /sys/class/gpio/pca9557-0:0
+> 
+> You don't have to worry about dynamic assigments.  You don't have to resort to
+> convoluted shell script code to extract the proper range from a mapping file
+> and then construct the name.
 
---------------060901000500000506020008
-Content-Type: text/x-diff;
- name="0001-Skip-I-O-merges-when-disabled.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="0001-Skip-I-O-merges-when-disabled.patch"
+Sorry if I'm being dense; how do you want this bit to work?  As I see
+it, there are a few options:
 
+1) Have the files named as you suggest and all of them always present,
+albeit read-only until export.  Very easy to use, easy to discover which
+file is which, a decent bit of memory usage having them all listed.
 
-The block I/O + elevator + I/O scheduler code spend a lot of time trying
-to merge I/Os -- rightfully so under "normal" circumstances. However,
-if one were to know that the incoming I/O stream was /very/ random in
-nature, the cycles are wasted.
+2) Have the files named as you suggest and you have to explicitly
+request them or have the kernel explicitly export them.  To request them
+yourself you're going to need the gpio number so having the created file
+labelled nicely isn't a win over having it labelled with the gpio
+number.  I 'spose there's a win for kernel exported gpios, they're more
+human readable, but you're still going to have to have the mappings
+available somewhere for the manually exported gpios anyway.
 
-This patch adds a per-request_queue tunable that (when set) disables
-merge attempts (beyond the simple one-hit cache check), thus freeing up
-a non-trivial amount of CPU cycles.
+3) Have the files named as you suggest, explicit export/request but
+better parsing behind the control file so something like
+echo "export pca9557-0:5" > control
+works.  Very very nice for the user, big heavy back end.
 
-Cc: Jens Axboe <jens.axboe@oracle.com>
-Signed-off-by: Alan D. Brunelle <alan.brunelle@hp.com>
----
- block/blk-sysfs.c      |   27 +++++++++++++++++++++++++++
- block/elevator.c       |    3 +++
- include/linux/blkdev.h |    2 ++
- 3 files changed, 32 insertions(+), 0 deletions(-)
+4) Status quo.  Easy, efficient, potentially hard to discover which gpio
+you actually want.
 
-diff --git a/block/blk-sysfs.c b/block/blk-sysfs.c
-index fc41d83..00151e1 100644
---- a/block/blk-sysfs.c
-+++ b/block/blk-sysfs.c
-@@ -135,6 +135,26 @@ static ssize_t queue_max_hw_sectors_show(struct request_queue *q, char *page)
- 	return queue_var_show(max_hw_sectors_kb, (page));
- }
- 
-+static ssize_t queue_nomerges_show(struct request_queue *q, char *page)
-+{
-+	int nm = test_bit(QUEUE_FLAG_NOMERGES, &q->queue_flags);
-+	return queue_var_show(nm, page);
-+}
-+
-+static ssize_t queue_nomerges_store(struct request_queue *q, const char *page,
-+				    size_t count)
-+{
-+	unsigned long nm;
-+	ssize_t ret = queue_var_store(&nm, page, count);
-+
-+	if (nm)
-+	       set_bit(QUEUE_FLAG_NOMERGES, &q->queue_flags);
-+	else
-+	       clear_bit(QUEUE_FLAG_NOMERGES, &q->queue_flags);
-+
-+	return ret;
-+}
-+
- 
- static struct queue_sysfs_entry queue_requests_entry = {
- 	.attr = {.name = "nr_requests", .mode = S_IRUGO | S_IWUSR },
-@@ -170,6 +190,12 @@ static struct queue_sysfs_entry queue_hw_sector_size_entry = {
- 	.show = queue_hw_sector_size_show,
- };
- 
-+static struct queue_sysfs_entry queue_nomerges_entry = {
-+	.attr = {.name = "nomerges", .mode = S_IRUGO | S_IWUSR },
-+	.show = queue_nomerges_show,
-+	.store = queue_nomerges_store,
-+};
-+
- static struct attribute *default_attrs[] = {
- 	&queue_requests_entry.attr,
- 	&queue_ra_entry.attr,
-@@ -177,6 +203,7 @@ static struct attribute *default_attrs[] = {
- 	&queue_max_sectors_entry.attr,
- 	&queue_iosched_entry.attr,
- 	&queue_hw_sector_size_entry.attr,
-+	&queue_nomerges_entry.attr,
- 	NULL,
- };
- 
-diff --git a/block/elevator.c b/block/elevator.c
-index 88318c3..13b24d3 100644
---- a/block/elevator.c
-+++ b/block/elevator.c
-@@ -488,6 +488,9 @@ int elv_merge(struct request_queue *q, struct request **req, struct bio *bio)
- 		}
- 	}
- 
-+	if (blk_queue_nomerges(q))
-+		return ELEVATOR_NO_MERGE;
-+
- 	/*
- 	 * See if our hash lookup can find a potential backmerge.
- 	 */
-diff --git a/include/linux/blkdev.h b/include/linux/blkdev.h
-index c5065e3..d8361ea 100644
---- a/include/linux/blkdev.h
-+++ b/include/linux/blkdev.h
-@@ -407,6 +407,7 @@ struct request_queue
- #define QUEUE_FLAG_PLUGGED	7	/* queue is plugged */
- #define QUEUE_FLAG_ELVSWITCH	8	/* don't use elevator, just do FIFO */
- #define QUEUE_FLAG_BIDI		9	/* queue supports bidi requests */
-+#define QUEUE_FLAG_NOMERGES    10	/* disable merge attempts */
- 
- enum {
- 	/*
-@@ -451,6 +452,7 @@ enum {
- #define blk_queue_plugged(q)	test_bit(QUEUE_FLAG_PLUGGED, &(q)->queue_flags)
- #define blk_queue_tagged(q)	test_bit(QUEUE_FLAG_QUEUED, &(q)->queue_flags)
- #define blk_queue_stopped(q)	test_bit(QUEUE_FLAG_STOPPED, &(q)->queue_flags)
-+#define blk_queue_nomerges(q)	test_bit(QUEUE_FLAG_NOMERGES, &(q)->queue_flags)
- #define blk_queue_flushing(q)	((q)->ordseq)
- 
- #define blk_fs_request(rq)	((rq)->cmd_type == REQ_TYPE_FS)
--- 
-1.5.4.3
+My vote's for 1 or 4.  The first one is heavier but easier.  The last
+one will need something like the discussed file mapping ranges to gpios.
+Do your expectations/ideas fit in cleanly anywhere above?
 
+Thanks,
+	--Ben  
 
---------------060901000500000506020008--
