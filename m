@@ -1,131 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756092AbYD2EsA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756736AbYD2Esi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756092AbYD2EsA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 00:48:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752466AbYD2Erw
+	id S1756736AbYD2Esi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 00:48:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752859AbYD2Es2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 00:47:52 -0400
-Received: from outbound.icp-qv1-irony-out1.iinet.net.au ([203.59.1.108]:63740
-	"EHLO outbound.icp-qv1-irony-out1.iinet.net.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751697AbYD2Erw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 00:47:52 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AlsBANZFFkh8qMj2/2dsb2JhbAAIrCY
-X-IronPort-AV: E=Sophos;i="4.25,720,1199631600"; 
-   d="scan'208";a="321700143"
-Subject: Re: [patch/rfc 2.6.25-git] gpio: sysfs interface
-From: Ben Nizette <bn@niasdigital.com>
-To: David Brownell <david-b@pacbell.net>
-Cc: lkml <linux-kernel@vger.kernel.org>, Trent Piepho <tpiepho@freescale.com>,
-       hartleys <hartleys@visionengravers.com>,
-       Mike Frysinger <vapier.adi@gmail.com>, Bryan Wu <cooloney@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <200804282044.00706.david-b@pacbell.net>
-References: <200804281239.51729.david-b@pacbell.net>
-	 <200804281744.11564.david-b@pacbell.net>
-	 <1209434284.14631.71.camel@moss.renham>
-	 <200804282044.00706.david-b@pacbell.net>
-Content-Type: text/plain
-Organization: Nias Digital
-Date: Tue, 29 Apr 2008 14:47:44 +1000
-Message-Id: <1209444464.311.25.camel@moss.renham>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
+	Tue, 29 Apr 2008 00:48:28 -0400
+Received: from mail.AKNET.ru ([77.246.241.226]:63695 "EHLO mail.aknet.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752631AbYD2Es1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Apr 2008 00:48:27 -0400
+Message-ID: <4816A888.9000802@aknet.ru>
+Date: Tue, 29 Apr 2008 08:48:08 +0400
+From: Stas Sergeev <stsp@aknet.ru>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+MIME-Version: 1.0
+To: tiwai@suse.de
+CC: gregkh@suse.de, Linux kernel <linux-kernel@vger.kernel.org>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Subject: Re: patch driver-core-warn-about-duplicate-driver-names-on-the-same-bus.patch
+ added to gregkh-2.6 tree
+References: <12094266793898@kroah.org>
+In-Reply-To: <12094266793898@kroah.org>
+X-Enigmail-Version: 0.95.2
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello.
 
-On Mon, 2008-04-28 at 20:44 -0700, David Brownell wrote:
-> On Monday 28 April 2008, Ben Nizette wrote:
-> >
-> > Ah well we're backwards there, though now I think of it I can't think of
-> > a great many valid use-cases on my side.  Just for funzies I'll post on
-> > the avrfreaks AVR32 support forum and see how many I can actually dig
-> > up.
+gregkh@suse.de wrote:
+> This is a note to let you know that I've just added the patch titled
+>      Subject: driver core: warn about duplicate driver names on the same bus
+> to my gregkh-2.6 tree.  Its filename is
+Thanks.
+
+Takashi, do you think this fixes the
+pcspkr/snd-pcsp conflict sufficienly
+well? I think the Kconfig protection
+is no longer needed. For the better
+convinience the modprobe rule can be
+created that will remove one driver
+before inserting another. But this is
+optional.
+What do you think? Can we now remove
+the Kconfig protection?
+
+
+>      driver-core-warn-about-duplicate-driver-names-on-the-same-bus.patch
 > 
-> Use cases would always help clarify things.  I've seen just
-> enough to make me understand this is a useful feature, and
-> for more reasons than just "feature equality" letting us
-> obsolete three drivers/i2c/chips/*.c drivers and help vanish
-> half a dozen (at least!) out-of-tree drivers doing that.
-
-Oh yeah, nearly every vendor of small not-a-simple-PC Linux boards would
-have their own solution to this problem.  About time they were put to
-the knackers.
-
-> 
-> The Gumstix user forums and wiki may help too.  ISTR they
-> have such a GPIO widget (maybe that's the one I saw which
-> supports polling?) and have shipped it for ages ... so they
-> will surely have some (PXA-specific) examples lurking.
-
-At a glance there's a bunch of how-to but very little why-to.  Bugger.
-In fact their driver looks to be mostly obsoleted by gpio-keys anyway so
-not only can't a see a specific use-case of their driver, I can't see
-the point of it's existence at all :-/
-
+> This tree can be found at 
+>     http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/patches/
 > 
 > 
-> > > Trent pointed out that dynamic range assignment can make trouble,
-> > > so I can see some help might be needed here.  Were you suggesting
-> > > something like a /sys/class/gpio/chips file with contents like
-> > > 
-> > > 	0-15	gpio
-> > > 	16-31	gpio
-> > > 	32-47	gpio
-> > > 	48-63	gpio
-> > > 	192-207	mpuio
-> > > 	208-213	tps65010
-> > > 
-> > > (Matching a stock OMAP 5912 OSK board, for what it's worth.)
-> > 
-> > Yeah that's the kind of a thing.  Would be well worth having that info
-> > especially for dynamically allocated chip bases.
+>>From stsp@aknet.ru Sat Apr 26 08:52:51 2008
+> From: Stas Sergeev <stsp@aknet.ru>
+> Date: Sat, 26 Apr 2008 19:52:35 +0400
+> Subject: driver core: warn about duplicate driver names on the same bus
+> To: Andrew Morton <akpm@linux-foundation.org>
+> Cc: Greg KH <greg@kroah.com>, Takashi Iwai <tiwai@suse.de>
+> Message-ID: <48134FC3.6040002@aknet.ru>
 > 
-> I'd have no problem with that.  Some people surely would though;
-> it has more than one value in that file!  OMG, it's readable! We
-> can't have any of that!!  The Earth will turn in its grave!  And
-> Slashdot will be decorated in Pink!  Teh End Daze arrive!  :)
-
-xD
-
-Where would the doom mongers prefer it live?  /proc? ;-)
-
 > 
+> Currently an attempt to register multiple
+> drivers with the same name causes the
+> stack trace with some cryptic error message.
+> The attached patch adds the necessary check
+> and the clear error message.
+> 
+> Signed-off-by: Stas Sergeev <stsp@aknet.ru>
+> Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+> 
+> ---
+>  drivers/base/driver.c |   10 ++++++++++
+>  1 file changed, 10 insertions(+)
+> 
+> --- a/drivers/base/driver.c
+> +++ b/drivers/base/driver.c
+> @@ -217,12 +217,22 @@ static void driver_remove_groups(struct 
+>  int driver_register(struct device_driver *drv)
+>  {
+>  	int ret;
+> +	struct device_driver *other;
 >  
-> > > > > The D-space footprint is negligible, except for the sysfs resources
-> > > > > associated with each exported GPIO.  The additional I-space footprint
-> > > > > is about half of the current size of gpiolib.  No /dev node creation
-> > > > > involved, and no "udev" support is needed.
-> > > > 
-> > > > Which is good for simplicity but makes async notification kinda tricky.
-> > > 
-> > > Sysfs attributes are supposed to be pollable.  I've not done it,
-> > > but fs/sysfs/file.c::sysfs_notify() looks relevant ...
-> > 
-> > Right, that'll work.
+>  	if ((drv->bus->probe && drv->probe) ||
+>  	    (drv->bus->remove && drv->remove) ||
+>  	    (drv->bus->shutdown && drv->shutdown))
+>  		printk(KERN_WARNING "Driver '%s' needs updating - please use "
+>  			"bus_type methods\n", drv->name);
+> +
+> +	other = driver_find(drv->name, drv->bus);
+> +	if (other) {
+> +		put_driver(other);
+> +		printk(KERN_ERR "Error: Driver '%s' is already registered, "
+> +			"aborting...\n", drv->name);
+> +		return -EEXIST;
+> +	}
+> +
+>  	ret = bus_add_driver(drv);
+>  	if (ret)
+>  		return ret;
 > 
-> OK.  In that case, I think I should plan to rename the "direction"
-> attribute as "configuration" or something a bit broader ... so that
-> writing "irq" (or maybe "rising", "falling", "bothedges", "poll")
-> would eventually configure it as an input with an IRQ handler.
-
-Good plan, unless you'd prefer to see "direction" and "interrupt" config
-separate.  I have no real preference but IMO
-echo "falling" > interrupt
-makes more immediate sense than
-echo "falling" > configuration
-
 > 
-> Whenever someone contributes such an async notification scheme,
-> that is.  ;)
-
-;)
-
---Ben.
-
+> Patches currently in gregkh-2.6 which might be from stsp@aknet.ru are
 > 
-> - Dave
+> driver-core/driver-core-warn-about-duplicate-driver-names-on-the-same-bus.patch
+> 
+
