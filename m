@@ -1,90 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758070AbYD2DnU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757891AbYD2DoT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758070AbYD2DnU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 23:43:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752155AbYD2DnI
+	id S1757891AbYD2DoT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 23:44:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752787AbYD2DoG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 23:43:08 -0400
-Received: from yw-out-2324.google.com ([74.125.46.30]:37864 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751384AbYD2DnG (ORCPT
+	Mon, 28 Apr 2008 23:44:06 -0400
+Received: from smtp124.sbc.mail.sp1.yahoo.com ([69.147.64.97]:25487 "HELO
+	smtp124.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752551AbYD2DoF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 23:43:06 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition:x-google-sender-auth;
-        b=CGgtxhHfMjIKPSSjtbT9HCo5cL5eyT7Dt2oIuLh4RYCaJZ6NNbBadtlP2B4cnlQKqynr/A6MXK0OUeV2RmoB1e2RQOlytx5F7BUhJk2OvfVjjVENPj0X4ZR8BHJP3zPe6kfB0852d/+V6Fy4dOUgai8rdl6B89O3ibf3H26dP2A=
-Message-ID: <386072610804282042y2dda4b52h927683a8a938ce1f@mail.gmail.com>
-Date: Tue, 29 Apr 2008 11:42:48 +0800
-From: "Bryan Wu" <cooloney@kernel.org>
-To: LKML <linux-kernel@vger.kernel.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>, willy@debian.org,
-       "Al Viro" <viro@zeniv.linux.org.uk>,
-       uclinux-dist-devel <uclinux-dist-devel@blackfin.uclinux.org>
-Subject: [LTP/VFS] fcntl SETLEASE fails on ramfs/tmpfs
+	Mon, 28 Apr 2008 23:44:05 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=QTKW6DqOW054jZnivKHg145nkRw2SyDVNBHnLkxjcgVVR6y1VpRKjLSfPmiZMzNGbzV8rDGOLfZlJYi2c/wDNTcNZtIp71pkY7Vl6/gdj+c5i5p6efrySQwWf/+NqvVO50c6uS8pMXWZddEeu7uCmw2FrOoaGA/ouWDmKr4epiM=  ;
+X-YMail-OSG: ELIY0NYVM1mQXu_9qBo8i8eUO7rL.X5ghcDEzUoAE391FODADuTi2oHdKCF9Gklgm6tVCi9VKwTVEwRV8ImchvYMme64k7c5ELrzVbB1XYTdbPtKjamX.HsYOeN0.7WUbUQ-
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Ben Nizette <bn@niasdigital.com>
+Subject: Re: [patch/rfc 2.6.25-git] gpio: sysfs interface
+Date: Mon, 28 Apr 2008 20:44:00 -0700
+User-Agent: KMail/1.9.6
+Cc: lkml <linux-kernel@vger.kernel.org>, Trent Piepho <tpiepho@freescale.com>,
+       hartleys <hartleys@visionengravers.com>,
+       Mike Frysinger <vapier.adi@gmail.com>, Bryan Wu <cooloney@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+References: <200804281239.51729.david-b@pacbell.net> <200804281744.11564.david-b@pacbell.net> <1209434284.14631.71.camel@moss.renham>
+In-Reply-To: <1209434284.14631.71.camel@moss.renham>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-X-Google-Sender-Auth: 00885543cdaa4f85
+Message-Id: <200804282044.00706.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi folk,
+On Monday 28 April 2008, Ben Nizette wrote:
+>
+> Ah well we're backwards there, though now I think of it I can't think of
+> a great many valid use-cases on my side.  Just for funzies I'll post on
+> the avrfreaks AVR32 support forum and see how many I can actually dig
+> up.
 
-This days I am digging into this LTP bug reported on our Blackfin test
-machine, but I think it is general for other system.
-https://blackfin.uclinux.org/gf/project/uclinux-dist/tracker/?action=TrackerItemEdit&tracker_id=141&tracker_item_id=3743
+Use cases would always help clarify things.  I've seen just
+enough to make me understand this is a useful feature, and
+for more reasons than just "feature equality" letting us
+obsolete three drivers/i2c/chips/*.c drivers and help vanish
+half a dozen (at least!) out-of-tree drivers doing that.
 
-And I also found Kumar Gala reported this similar bug before.
-http://lkml.org/lkml/2007/11/14/388
+The Gumstix user forums and wiki may help too.  ISTR they
+have such a GPIO widget (maybe that's the one I saw which
+supports polling?) and have shipped it for ages ... so they
+will surely have some (PXA-specific) examples lurking.
 
-1, when opening and creating a new on ramfs/tmpfs, the dentry->d_count
-will be added one as below:
---
-ramfs_mknod(struct inode *dir, struct dentry *dentry, int mode, dev_t dev)
-{
-|_______struct inode * inode = ramfs_get_inode(dir->i_sb, mode, dev);
-|_______int error = -ENOSPC;
 
-|_______if (inode) {
-|_______|_______if (dir->i_mode & S_ISGID) {
-|_______|_______|_______inode->i_gid = dir->i_gid;
-|_______|_______|_______if (S_ISDIR(mode))
-|_______|_______|_______|_______inode->i_mode |= S_ISGID;
-|_______|_______}
-|_______|_______d_instantiate(dentry, inode);
-|_______|_______dget(dentry);|__/* Extra count - pin the dentry in core */
-|_______|_______error = 0;
-|_______|_______dir->i_mtime = dir->i_ctime = CURRENT_TIME;
-|_______}
-|_______return error;
-}
---
-The dget(dentry) call introduces an extra count, why?
-it is the same in tmpfs.
+> > Trent pointed out that dynamic range assignment can make trouble,
+> > so I can see some help might be needed here.  Were you suggesting
+> > something like a /sys/class/gpio/chips file with contents like
+> > 
+> > 	0-15	gpio
+> > 	16-31	gpio
+> > 	32-47	gpio
+> > 	48-63	gpio
+> > 	192-207	mpuio
+> > 	208-213	tps65010
+> > 
+> > (Matching a stock OMAP 5912 OSK board, for what it's worth.)
+> 
+> Yeah that's the kind of a thing.  Would be well worth having that info
+> especially for dynamically allocated chip bases.
 
-2, when calling  fcntl(fd, F_SETLEASE,F_WRLCK), it will return -EAGAIN
---
-|_______if ((arg == F_WRLCK)
-|_______    && ((atomic_read(&dentry->d_count) > 1)
-|_______|_______|| (atomic_read(&inode->i_count) > 1)))
-|_______|_______goto out;
---
+I'd have no problem with that.  Some people surely would though;
+it has more than one value in that file!  OMG, it's readable! We
+can't have any of that!!  The Earth will turn in its grave!  And
+Slashdot will be decorated in Pink!  Teh End Daze arrive!  :)
 
-because the dentry->d_count will be 2 not 1. I tested ext2 on Blackfin, it is 1.
+ 
+> > > > The D-space footprint is negligible, except for the sysfs resources
+> > > > associated with each exported GPIO.  The additional I-space footprint
+> > > > is about half of the current size of gpiolib.  No /dev node creation
+> > > > involved, and no "udev" support is needed.
+> > > 
+> > > Which is good for simplicity but makes async notification kinda tricky.
+> > 
+> > Sysfs attributes are supposed to be pollable.  I've not done it,
+> > but fs/sysfs/file.c::sysfs_notify() looks relevant ...
+> 
+> Right, that'll work.
 
-3, so I guess maybe the dget(dentry) of ramfs_mknod is useless. But
-after remove this dget(),
-the ramfs can not be mounted as rootfs at all.
+OK.  In that case, I think I should plan to rename the "direction"
+attribute as "configuration" or something a bit broader ... so that
+writing "irq" (or maybe "rising", "falling", "bothedges", "poll")
+would eventually configure it as an input with an IRQ handler.
 
-Is the bug in generic_setlease() or in the ramfs/tmpfs inode create function?
+Whenever someone contributes such an async notification scheme,
+that is.  ;)
 
-Of course, simply remove the test '((atomic_read(&dentry->d_count) >
-1)' can workaround this issue.
-
-Thanks
-Best Regards,
--Bryan Wu
+- Dave
