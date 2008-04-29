@@ -1,119 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760181AbYD2Sdg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760586AbYD2SfM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760181AbYD2Sdg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 14:33:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755557AbYD2Sd1
+	id S1760586AbYD2SfM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 14:35:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754672AbYD2Se6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 14:33:27 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:44532 "EHLO mx1.redhat.com"
+	Tue, 29 Apr 2008 14:34:58 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:57501 "EHLO pasmtpB.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753074AbYD2Sd0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 14:33:26 -0400
-Date: Tue, 29 Apr 2008 14:32:54 -0400
-From: Rik van Riel <riel@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, ajackson@redhat.com, airlied@redhat.com,
-       benh@kernel.crashing.org
-Subject: Re: [PATCH 1/3] make access_process_vm work on device memory
-Message-ID: <20080429143254.38f60106@cuia.boston.redhat.com>
-In-Reply-To: <20080429110919.dc7b8565.akpm@linux-foundation.org>
-References: <20080429113237.614f89a1@cuia.boston.redhat.com>
-	<20080429110919.dc7b8565.akpm@linux-foundation.org>
-Organization: Red Hat, Inc
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; i386-redhat-linux-gnu)
+	id S1754361AbYD2Se5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Apr 2008 14:34:57 -0400
+Date: Tue, 29 Apr 2008 20:35:31 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: linux-kbuild <linux-kbuild@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Cc: Dave Jones <davej@codemonkey.org.uk>, Roland McGrath <roland@redhat.com>,
+       Andres Salomon <dilinger@queued.net>
+Subject: Additional kconfig targets (cloneconfig, nonint_oldconfig etc)
+Message-ID: <20080429183531.GB19652@uranus.ravnborg.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 29 Apr 2008 11:09:19 -0700
-Andrew Morton <akpm@linux-foundation.org> wrote:
+Recently there has been request for a number of new
+kconfig related targets.
 
-> I'll consider this an MM patch, to be mastered in -mm.  If agreeable, x86
-> review-and-acks would be nice, please.
+In general it boils down to the following:
 
-Sounds good to me.  Ben Herrenschmidt has tested this patch on PPC Cell,
-accessing SPU memory and Adam Jackson has tested it on x86, accessing
-video memory with gdb attached to an X server.
+We need to be flexible in what configuration
+we start out from and how we apply it.
 
-Considering the recent amount of change in the ioremap code upstream,
-having this patch live in -mm for a few weeks is probably a good idea.
+We need to be able to apply it in following ways:
+1) automated - select defaults for all new symbols
+   => It is used for "make defconfig, make *_defconfig" today
 
-> > Index: linux-2.6.25-mm1/mm/memory.c
-> > ===================================================================
-> > --- linux-2.6.25-mm1.orig/mm/memory.c	2008-04-27 11:06:04.000000000 -0400
-> > +++ linux-2.6.25-mm1/mm/memory.c	2008-04-29 00:52:01.000000000 -0400
-> > @@ -2720,6 +2720,86 @@ int in_gate_area_no_task(unsigned long a
-> >  
-> >  #endif	/* __HAVE_ARCH_GATE_AREA */
-> >  
-> > +#ifdef _HAVE_ARCH_IOREMAP_PROT
-> 
-> urgh.
-> 
-> We have HAVE_ARCH*
-> We have __HAVE_ARCH*
-> We have ARCH_HAS*
-> We have __ARCH_HAS*
+2) interactive - asking user for all new symbols
+   and error out if stdin is redirected
 
-We already have _HAVE_ARCH* too.  I copied the convention from the
-first definition I ran into.
+3) list unknown - list all new symbols and do not
+   create a new config
 
-> what a mess.
+With oldconfig today we have two modes:
+-> One mode where we are very chatty and show
+   all output.
+-> And the 'silent' mode where we only start being
+   chatty when we see a new symbol.
 
-No kidding.
+I plan to drop the 'very chatty' mode as I
+do not see it usefull.
+So in essense 'make oldconfig' and 'make silentoldconfig'
+become equal.
 
-> Probably the preferred (but still ugly) approach is to implement
-> CONFIG_ARCH_*.
+The commands we have today for kconfig is:
 
-If you feel strongly about having this as CONFIG_ARCH_IOREMAP_PROT I can
-send you an incremental patch to do things that way.  Just let me know.
+# Command line variants
+make oldconfig
+make silentoldconfig
+make defconfig
+make XXX_defconfig
 
-> > +	ptep = pte_offset_map_lock(mm, pmd, address, &ptl);
-> > +	if (!ptep)
-> > +		goto out;
-> 
-> hm, more copy-n-paste.
+(The other frontends are left out on purpose).
+The challenge here is to come up with a syntax that
+allows us to select between the three behaviours,
+while keeping backward compatibility.
 
-It's pretty close, yeah.  Not quite the same though :(
- 
-> > +	pte = *ptep;
-> > +	if (!pte_present(pte))
-> > +		goto unlock;
-> > +	if ((flags & FOLL_WRITE) && !pte_write(pte))
-> > +		goto unlock;
-> > +	phys_addr = pte_pfn(pte);
-> > +	phys_addr <<= PAGE_SHIFT; /* Shift here to avoid overflow on PAE? */
-> 
-> That comment betrays a lack of confidence ;)
-> 
-> What's the score here?
+The best suggestion I have so far is to say that:
+a) if defconfig is specified then we use method 1)
+b) if oldconfig is specified then we use method 2)
+c) if newconfig is specified then we use method 3)
 
-On PAE I think that pte_pfn() returns an unsigned long, which cannot be
-left shifted by PAGE_SHIFT. After assigning that value to a resource_size_t
-(which is 64 bit on PAE) we can safely do the shift.
+And we add support for a new 'commandline' parameter
+'K' so I can say:
 
-I can remove the question mark if you want.
+make K=/proc/config.gz defconfig
+make K=i386_defconfig  defconfig
+make K=i386_defconfig  oldconfig
+make K=/proc/config.gz newconfig
 
-> > +++ linux-2.6.25-mm1/include/asm-x86/io_64.h	2008-04-28 21:37:42.000000000 -0400
-> > @@ -175,6 +175,9 @@ extern void early_iounmap(void *addr, un
-> >   */
-> >  extern void __iomem *ioremap_nocache(resource_size_t offset, unsigned long size);
-> >  extern void __iomem *ioremap_cache(resource_size_t offset, unsigned long size);
-> > +extern void __iomem *ioremap_prot(resource_size_t offset, unsigned long size,
-> > +				unsigned long prot_val);
-> > +#define _HAVE_ARCH_IOREMAP_PROT
-> 
-> I expect that any architecture which implements ioremap_prot() will have to
-> implement it with the same signature, yes?
-> 
-> So perhaps the declaration should be placed in include/linux/io.h.
+So K is used to specify what config file we use
+to start out from.
 
-Well, they also need to implement pgprot_val and pte_pgprot.  As for the ioremap
-declarations, I just placed them near the others, none of the function declarations
-for ioremap() itself are in include/linux/io.h.
+Care should be taken to keep the known good
+targets working as before.
 
--- 
-All Rights Reversed
+Andres Salomon already did some preparational work
+for this but I need to find a good way to handle the K=
+parameter.
+Dave J also posted patches that is useful for 'newconfig'.
+
+But I wanted to ask for opinions before diving into
+implmenting this.
+
+	Sam
+
+[Random notes..]
+
+# Enviroment variables affecting kconfig
+KCONFIG_ALLCONFIG
+KCONFIG_NOSILENTUPDATE
+KCONFIG_CONFIG
+KCONFIG_OVERWRITECONFIG
+KCONFIG_NOTIMESTAMP
+KCONFIG_AUTOCONFIG
+KCONFIG_AUTOHEADER
+
+#input files (aparts from the mandatory ones)
+all.config
+allno.config
+allmod.config
+allyes.config
+allrandom.config
+
