@@ -1,45 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755051AbYD2MPK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755403AbYD2MSh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755051AbYD2MPK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 08:15:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752661AbYD2MO4
+	id S1755403AbYD2MSh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 08:18:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752989AbYD2MSa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 08:14:56 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:34681 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752626AbYD2MOz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 08:14:55 -0400
-Date: Tue, 29 Apr 2008 14:14:38 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: mkrufky@linuxtv.org
-Cc: mchehab@infradead.org, bunk@kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [patch] dvb: build failure fix
-Message-ID: <20080429121438.GD31271@elte.hu>
-References: <20080428182501.5bb87058@gaivota> <481641CD.5030202@linuxtv.org>
+	Tue, 29 Apr 2008 08:18:30 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:59234 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752355AbYD2MS3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Apr 2008 08:18:29 -0400
+Date: Tue, 29 Apr 2008 21:18:38 +0900
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Adrian Bunk <bunk@kernel.org>
+Subject: Re: [2.6 patch] UTF-8 fixes in comments
+Cc: kosaki.motohiro@jp.fujitsu.com, linux-kernel@vger.kernel.org,
+       trivial@kernel.org
+In-Reply-To: <20080428154023.GU2813@cs181133002.pp.htv.fi>
+References: <20080428154023.GU2813@cs181133002.pp.htv.fi>
+Message-Id: <20080429210315.354E.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <481641CD.5030202@linuxtv.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.42 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> This patch converts some non-UTF-8 encoded text in comments to UTF-8.
+> 
+> Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
-* mkrufky@linuxtv.org <mkrufky@linuxtv.org> wrote:
+Good Job!
 
-> The fix for this issue will come "for free" after the tuner location 
-> reorganization to the media/common/ folder.
+   Acked-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
 
-btw., will that go into v2.6.26? If not automatically then please push 
-it into ahead separately if possible.
 
-	Ingo
+AFAIK some file already are written by utf-8.
+frankly, I say from the standpoint as the non-Europian,
+
+all files are written by ascii:      no problem
+all files are written by iso8859-1:  need editor customize
+all files are written by utf-8:      no problem
+some files are written by iso8859-1, 
+but another files are written by utf-8: Ouch! Noooooo!!
+
+
+
