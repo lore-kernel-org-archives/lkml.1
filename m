@@ -1,269 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756813AbYD2MT5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757650AbYD2MUS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756813AbYD2MT5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 08:19:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752989AbYD2MTt
+	id S1757650AbYD2MUS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 08:20:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756930AbYD2MT7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 08:19:49 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:60595 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752355AbYD2MTs (ORCPT
+	Tue, 29 Apr 2008 08:19:59 -0400
+Received: from mail164.messagelabs.com ([216.82.253.131]:4084 "EHLO
+	mail164.messagelabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754658AbYD2MT5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 08:19:48 -0400
-Date: Tue, 29 Apr 2008 14:19:46 +0200 (CEST)
-From: Jan Engelhardt <jengelh@medozas.de>
-To: Takashi Iwai <tiwai@suse.de>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: sound: azx_get_response timeout
-In-Reply-To: <s5h63u0x6i4.wl%tiwai@suse.de>
-Message-ID: <alpine.LNX.1.10.0804291326160.21466@fbirervta.pbzchgretzou.qr>
-References: <alpine.LNX.1.10.0804291225350.21466@fbirervta.pbzchgretzou.qr> <s5h63u0x6i4.wl%tiwai@suse.de>
-User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
+	Tue, 29 Apr 2008 08:19:57 -0400
+X-VirusChecked: Checked
+X-Env-Sender: Uwe.Kleine-Koenig@digi.com
+X-Msg-Ref: server-2.tower-164.messagelabs.com!1209471595!12552682!2
+X-StarScan-Version: 5.5.12.14.2; banners=-,-,-
+X-Originating-IP: [66.77.174.14]
+Date: Tue, 29 Apr 2008 14:19:24 +0200
+From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <Uwe.Kleine-Koenig@digi.com>
+To: Alessandro Zummo <a.zummo@towertech.it>,
+       David Brownell <dbrownell@users.sourceforge.net>
+CC: <linux-kernel@vger.kernel.org>
+Subject: rtc: how should I handle an invalid state?
+Message-ID: <20080429121924.GA2137@digi.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-OriginalArrivalTime: 29 Apr 2008 12:19:24.0331 (UTC) FILETIME=[42D2AFB0:01C8A9F3]
+X-TM-AS-Product-Ver: SMEX-8.0.0.1181-5.500.1026-15878.007
+X-TM-AS-Result: No--5.379000-8.000000-31
+X-TM-AS-User-Approved-Sender: No
+X-TM-AS-User-Blocked-Sender: No
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello,
 
-On Tuesday 2008-04-29 13:09, Takashi Iwai wrote:
->> Out of the blue, sound stops and dmesg throws:
->> 
->> ALSA sound/pci/hda/hda_intel.c:596: hda_intel: azx_get_response timeout, 
->> switching to polling mode: last cmd=0x000f0000
->
->It's a warining and usually OK as long as you don't get errors with
->single_cmd mode after this message.
+I'm still stuck with my rtc.  My current problem is setting the rtc
+using hwclock --systohc.
 
-Well I do ..
+The problem is that hwclock tries to read the current time before
+setting the new one.  And if that fails, it doesn't update the rtc.
 
->> ALSA sound/pci/hda/hda_codec.c:2868:    hp_outs=1 (0x20/0x0/0x0/0x0/0x0)
->> ALSA sound/pci/hda/hda_codec.c:2869:    mono: mono_out=0x0
->> ALSA sound/pci/hda/hda_codec.c:2877:    inputs: mic=0x1d, fmic=0x21, line=0x1e, fline=0x0, cd=0x24, aux=0x0
->> hda_codec: num_steps = 0 for NID=0x1f (ctl = Front Playback Volume)
->> hda_codec: num_steps = 0 for NID=0x1a (ctl = Center Playback Volume)
->> hda_codec: num_steps = 0 for NID=0x19 (ctl = Side Playback Volume)
->> hda_codec: num_steps = 0 for NID=0x20 (ctl = Headphone Playback Volume)
->> hda_codec: num_steps = 0 for NID=0x15 (ctl = Capture Volume)
->
->These look bad.  It seems that the codec doesn't provide any amp
->information of the corresponding widgets although the driver tries to
->create mixer elements with them.
->
->What show /proc/asound/card0/codec#* files?
+If no error occurs the procedure to read the time is:
 
-Codec: VIA VIA VT1708
-Address: 0
-Vendor Id: 0x11061708
-Subsystem Id: 0x11060300
-Revision Id: 0x100700
-No Modem Function Group found
-Default PCM:
-    rates [0x0]:
-    bits [0x0]:
-    formats [0x0]:
-Default Amp-In caps: N/A
-Default Amp-Out caps: N/A
-GPIO: io=0, o=0, i=0, unsolicited=0, wake=0
-Node 0x10 [Audio Output] wcaps 0x411: Stereo
-  Converter: stream=5, channel=0
-  PCM:
-    rates [0x7e0]: 44100 48000 88200 96000 176400 192000
-    bits [0xa]: 16 24
-    formats [0x1]: PCM
-  Power: setting=D0, actual=D0
-Node 0x11 [Audio Output] wcaps 0x411: Stereo
-  Converter: stream=5, channel=0
-  PCM:
-    rates [0x7e0]: 44100 48000 88200 96000 176400 192000
-    bits [0xa]: 16 24
-    formats [0x1]: PCM
-  Power: setting=D0, actual=D0
-Node 0x12 [Audio Output] wcaps 0x411: Stereo
-  Converter: stream=5, channel=0
-  PCM:
-    rates [0x7e0]: 44100 48000 88200 96000 176400 192000
-    bits [0xa]: 16 24
-    formats [0x1]: PCM
-  Power: setting=D0, actual=D0
-Node 0x13 [Audio Output] wcaps 0x411: Stereo
-  Converter: stream=5, channel=0
-  PCM:
-    rates [0x7e0]: 44100 48000 88200 96000 176400 192000
-    bits [0xa]: 16 24
-    formats [0x1]: PCM
-  Power: setting=D0, actual=D0
-Node 0x14 [Audio Output] wcaps 0x211: Stereo Digital
-  Converter: stream=5, channel=0
-  Digital:
-  Digital category: 0x0
-  PCM:
-    rates [0x7e0]: 44100 48000 88200 96000 176400 192000
-    bits [0xa]: 16 24
-    formats [0x5]: PCM AC3
-Node 0x15 [Audio Input] wcaps 0x10051b: Stereo Amp-In
-  Amp-In caps: ofs=0x00, nsteps=0x14, stepsize=0x06, mute=1
-  Amp-In vals:  [0x00 0x00]
-  Converter: stream=0, channel=0
-  SDI-Select: 0
-  PCM:
-    rates [0x440]: 48000 192000
-    bits [0xa]: 16 24
-    formats [0x1]: PCM
-  Power: setting=D0, actual=D0
-  Connection: 1
-     0x18
-Node 0x16 [Audio Input] wcaps 0x100311: Stereo Digital
-  Converter: stream=0, channel=0
-  SDI-Select: 0
-  Digital: Validity
-  Digital category: 0x0
-  PCM:
-    rates [0x1f0]: 32000 44100 48000 88200 96000
-    bits [0xa]: 16 24
-    formats [0x5]: PCM AC3
-  Connection: 1
-     0x26
-Node 0x17 [Audio Mixer] wcaps 0x20010b: Stereo Amp-In
-  Amp-In caps: ofs=0x17, nsteps=0x1f, stepsize=0x06, mute=1
-  Amp-In vals:  [0x09 0x09] [0x80 0x80] [0x80 0x80] [0x80 0x80] [0x80 0x80]
-  [0x80 0x80]
-  Connection: 6
-     0x10 0x24 0x1d 0x1e 0x21 0x13
-Node 0x18 [Audio Selector] wcaps 0x300101: Stereo
-  Connection: 5
-     0x17* 0x24 0x1d 0x1e 0x21
-Node 0x19 [Audio Selector] wcaps 0x30010d: Stereo Amp-Out
-  Amp-Out caps: ofs=0x1b, nsteps=0x1b, stepsize=0x06, mute=1
-  Amp-Out vals:  [0x80 0x80]
-  Connection: 1
-     0x11
-Node 0x1a [Audio Selector] wcaps 0x30010d: Stereo Amp-Out
-  Amp-Out caps: ofs=0x1b, nsteps=0x1b, stepsize=0x06, mute=1
-  Amp-Out vals:  [0x80 0x80]
-  Connection: 1
-     0x12
-Node 0x1b [Audio Selector] wcaps 0x30010d: Stereo Amp-Out
-  Amp-Out caps: ofs=0x1b, nsteps=0x1b, stepsize=0x06, mute=1
-  Amp-Out vals:  [0x80 0x80]
-  Connection: 1
-     0x13
-Node 0x1c [Pin Complex] wcaps 0x40010d: Stereo Amp-Out
-  Amp-Out caps: N/A
-  Amp-Out vals:  [0x00 0x00]
-  Pincap 0x081c: OUT HP Detect
-  Pin Default 0x01011012: [Jack] Line Out at Ext Rear
-    Conn = 1/8, Color = Black
-    DefAssociation = 0x1, Sequence = 0x2
-  Pin-ctls: 0x40: OUT
-  Connection: 1
-     0x19
-Node 0x1d [Pin Complex] wcaps 0x400101: Stereo
-  Pincap 0x08334: IN OUT Detect
-    Vref caps: HIZ 50
-  Pin Default 0x01a19026: [Jack] Mic at Ext Rear
-    Conn = 1/8, Color = Pink
-    DefAssociation = 0x2, Sequence = 0x6
-  Pin-ctls: 0x21: IN VREF_50
-  Connection: 1
-     0x1a
-Node 0x1e [Pin Complex] wcaps 0x400101: Stereo
-  Pincap 0x08334: IN OUT Detect
-    Vref caps: HIZ 50
-  Pin Default 0x0181302e: [Jack] Line In at Ext Rear
-    Conn = 1/8, Color = Blue
-    DefAssociation = 0x2, Sequence = 0xe
-  Pin-ctls: 0x20: IN VREF_HIZ
-  Connection: 1
-     0x19
-Node 0x1f [Pin Complex] wcaps 0x40010d: Stereo Amp-Out
-  Amp-Out caps: ofs=0x1b, nsteps=0x1b, stepsize=0x06, mute=1
-  Amp-Out vals:  [0x1b 0x1b]
-  Pincap 0x081c: OUT HP Detect
-  Pin Default 0x01014010: [Jack] Line Out at Ext Rear
-    Conn = 1/8, Color = Green
-    DefAssociation = 0x1, Sequence = 0x0
-  Pin-ctls: 0x40: OUT
-  Connection: 1
-     0x17
-Node 0x20 [Pin Complex] wcaps 0x40010d: Stereo Amp-Out
-  Amp-Out caps: ofs=0x1b, nsteps=0x1b, stepsize=0x06, mute=1
-  Amp-Out vals:  [0x80 0x80]
-  Pincap 0x081c: OUT HP Detect
-  Pin Default 0x022140f0: [Jack] HP Out at Ext Front
-    Conn = 1/8, Color = Green
-    DefAssociation = 0xf, Sequence = 0x0
-  Pin-ctls: 0xc0: OUT HP
-  Connection: 1
-     0x17
-Node 0x21 [Pin Complex] wcaps 0x400101: Stereo
-  Pincap 0x08334: IN OUT Detect
-    Vref caps: HIZ 50
-  Pin Default 0x02a190f0: [Jack] Mic at Ext Front
-    Conn = 1/8, Color = Pink
-    DefAssociation = 0xf, Sequence = 0x0
-  Pin-ctls: 0x21: IN VREF_50
-  Connection: 1
-     0x1b
-Node 0x22 [Pin Complex] wcaps 0x400101: Stereo
-  Pincap 0x0814: OUT Detect
-  Pin Default 0x01016011: [Jack] Line Out at Ext Rear
-    Conn = 1/8, Color = Orange
-    DefAssociation = 0x1, Sequence = 0x1
-  Pin-ctls: 0x40: OUT
-  Connection: 1
-     0x1a
-Node 0x23 [Pin Complex] wcaps 0x400101: Stereo
-  Pincap 0x0814: OUT Detect
-  Pin Default 0x01012014: [Jack] Line Out at Ext Rear
-    Conn = 1/8, Color = Grey
-    DefAssociation = 0x1, Sequence = 0x4
-  Pin-ctls: 0x40: OUT
-  Connection: 1
-     0x1b
-Node 0x24 [Pin Complex] wcaps 0x400001: Stereo
-  Pincap 0x0820: IN
-  Pin Default 0x99330127: [Fixed] CD at Int ATAPI
-    Conn = ATAPI, Color = Unknown
-    DefAssociation = 0x2, Sequence = 0x7
-    Misc = NO_PRESENCE
-  Pin-ctls: 0x20: IN
-Node 0x25 [Pin Complex] wcaps 0x400301: Stereo Digital
-  Pincap 0x0810: OUT
-  Pin Default 0x074411f0: [Jack] SPDIF Out at Ext Rear Panel
-    Conn = RCA, Color = Black
-    DefAssociation = 0xf, Sequence = 0x0
-    Misc = NO_PRESENCE
-  Pin-ctls: 0x40: OUT
-  Connection: 1
-     0x14
-Node 0x26 [Pin Complex] wcaps 0x400201: Stereo Digital
-  Pincap 0x0810030: IN OUT EAPD
-  EAPD 0x0:
-  Pin Default 0x07c421f0: [Jack] SPDIF In at Ext Rear Panel
-    Conn = RCA, Color = Grey
-    DefAssociation = 0xf, Sequence = 0x0
-    Misc = NO_PRESENCE
-  Pin-ctls: 0x20: IN
-Node 0x27 [Audio Input] wcaps 0x10051b: Stereo Amp-In
-  Amp-In caps: ofs=0x00, nsteps=0x14, stepsize=0x06, mute=1
-  Amp-In vals:  [0x00 0x00]
-  Converter: stream=0, channel=0
-  SDI-Select: 0
-  PCM:
-    rates [0x440]: 48000 192000
-    bits [0xa]: 16 24
-    formats [0x1]: PCM
-  Power: setting=D0, actual=D0
-  Connection: 1
-     0x21
+	fd = open("/dev/rtc", O_RDONLY|O_LARGEFILE)
+	ioctl(fd, RTC_UIE_ON, 0);
+	select(fd + 1, [fd], NULL, NULL, {5, 0});
+	ioctl(fd, RTC_RD_TIME, &rtc_time);
 
->> The only way to get rid of the GETOSPACE=0 state is to reboot the
->> machine. Say, could this be due to the crappy VIA hardware?
->
->Possible.
->
->You may try some module options for snd-hda-intel,
->e.g. position_fix=0.  See ALSA-Configuration.txt.
+If one of ioctl(fd, RTC_UIE_ON, 0) or select(fd + 1, [fd], NULL, NULL,
+{5, 0}) fail, hwclock aborts.
 
-No change.
+OTOH I don't want to report success in both because then there is no way
+to distinguish between a valid and an unvalid date for hwclock.
+
+Looking at some other drivers they don't seem to handle that case.
+
+Maybe returning an invalid date could work?
+
+What do you think?
+
+Best regards
+Uwe
+
+-- 
+Uwe Kleine-König, Software Engineer
+Digi International GmbH Branch Breisach, Küferstrasse 8, 79206 Breisach, Germany
+Tax: 315/5781/0242 / VAT: DE153662976 / Reg. Amtsgericht Dortmund HRB 13962
