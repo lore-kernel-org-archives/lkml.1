@@ -1,114 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761601AbYD2WTU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762056AbYD2WTq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761601AbYD2WTU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 18:19:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755781AbYD2WTJ
+	id S1762056AbYD2WTq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 18:19:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757821AbYD2WTg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 18:19:09 -0400
-Received: from 1wt.eu ([62.212.114.60]:3569 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751523AbYD2WTH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 18:19:07 -0400
-Date: Wed, 30 Apr 2008 00:12:30 +0200
-From: Willy Tarreau <w@1wt.eu>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Helge Hafting <helge.hafting@aitel.hist.no>, Adrian Bunk <bunk@kernel.org>,
-       "H. Peter Anvin" <hpa@kernel.org>, linux-kernel@vger.kernel.org,
-       trivial@kernel.org
-Subject: Re: [2.6 patch] UTF-8 fixes in comments
-Message-ID: <20080429221230.GA17360@1wt.eu>
-References: <20080428230524.GK8474@1wt.eu> <48167A07.4000305@kernel.org> <20080429050605.GA27875@1wt.eu> <20080429072911.GA28059@cs181133002.pp.htv.fi> <20080429081423.GD30507@1wt.eu> <4816E4FD.5060605@aitel.hist.no> <20080429100934.GB1473@1wt.eu> <20080429111014.5a065b88@core> <20080429103335.GD1473@1wt.eu> <20080429113410.0971d071@core>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20080429113410.0971d071@core>
-User-Agent: Mutt/1.5.11
+	Tue, 29 Apr 2008 18:19:36 -0400
+Received: from out02.mta.xmission.com ([166.70.13.232]:55583 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757401AbYD2WTf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Apr 2008 18:19:35 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: "Yinghai Lu" <yhlu.kernel@gmail.com>
+Cc: "Andrew Morton" <akpm@linux-foundation.org>, "Ingo Molnar" <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       "Thomas Gleixner" <tglx@linutronix.de>,
+       "Gabriel C" <nix.or.die@googlemail.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "Mika Fischer" <mika.fischer@zoopnet.de>
+References: <200804272337.40130.yhlu.kernel@gmail.com>
+	<200804281244.56938.yhlu.kernel@gmail.com>
+	<200804281316.14168.yhlu.kernel@gmail.com>
+	<200804281505.05764.yhlu.kernel@gmail.com>
+	<m1wsmg32qk.fsf@frodo.ebiederm.org>
+	<86802c440804291304r7ff169f6k9132f98761ecef42@mail.gmail.com>
+	<m1abjcz9ow.fsf@frodo.ebiederm.org>
+	<86802c440804291457k79099d84w53110fabf59e9e37@mail.gmail.com>
+Date: Tue, 29 Apr 2008 15:14:33 -0700
+In-Reply-To: <86802c440804291457k79099d84w53110fabf59e9e37@mail.gmail.com>
+	(Yinghai Lu's message of "Tue, 29 Apr 2008 14:57:48 -0700")
+Message-ID: <m11w4oxq9i.fsf@frodo.ebiederm.org>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-SA-Exim-Connect-IP: 24.130.11.59
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa02 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
+	*      [score: 0.0000]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa02 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+Subject: Re: [PATCH] x86: mtrr cleanup for converting continuous to discrete layout v5
+X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
+X-SA-Exim-Scanned: Yes (on mgr1.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+"Yinghai Lu" <yhlu.kernel@gmail.com> writes:
 
-Hi Alan,
+> On Tue, Apr 29, 2008 at 1:29 PM, Eric W. Biederman
+> <ebiederm@xmission.com> wrote:
+>> "Yinghai Lu" <yhlu.kernel@gmail.com> writes:
+>>
+>>  > (less memory + fast X) or  (more 8M RAM + slow...)
+>>
+>>  Yes. That is the basic question.  Not all X drivers need it and
+>>  potentially the current kernel drm modules can use the
+>>  PAT infrastructure that has been merged.
+>>
+>>  Further a SMM monitor running 100 times or more slower may cause
+>>  problems if SMM mode is entered frequently, slowing down the entire
+>>  system not just X.
+>>
+>>  So if you don't have X or you have a crazy SMM monitor this can
+>>  be an issue.
+>
+> agreed. so that feature is compiled in but disable by default.
+>
+> BTW: is any chance for OS to disable SMI etc? to verify is the
+> unstatbility is caused by SMI?
 
-On Tue, Apr 29, 2008 at 11:34:10AM +0100, Alan Cox wrote:
-> > behaviour). The shell no, it was the one present on my machine and
-> > has never been compiled with UTF-8 support, and should not have to.
-> 
-> Bizarre, so you are using deliberately misconfigured ancient userspace to
-> complain about utf-8
+Not in general no.  Frequently you can get at the registers that
+will enable/disable an SMI but that is chipset specific.
 
-No I'm not using anything deliberately misconfigured. I'm trying to explain
-that on the opposite, any tool which has not been explicitly adapted to those
-new usages is impacted.
+Think of SMM mode is a lightweight hypervisor that we can't get rid
+of, if you want to understand the worst case.
 
-> > In my opinion, the problem is that when I press "é", the system sends
-> > two chars to the bash, which itself sends two chars to the terminal,
-> > which only displays one and moves the cursor one step ahead. Then,
-> > pressing backspace once sends one backspace all along, resulting in
-> > the terminal blanking one displayed char, but the shell not being
-> 
-> The shell puts the terminal in character by character mode and readline
-> does this. If you have your shell/readline deliberately set up not to be
-> doing unicode locales then it will do the wrong thing.
+In theory SMM mode is completely unnecessary as soon as we enable
+ACPI.  In practice ACPI appears to frequently trap into SMM mode.
 
-Please, I'm not "deliberately" setting my tools *not* to support unicode.
-I have tools which have worked for years and which are now asked to behave
-strangely.
-
-> > So in my opinion, when we send one backspace to the terminal to
-> > remove one character, since there are two in the buffer, we
-> > should not get back one full char. Ideally, the console driver
-> > should send as many backspaces as needed to fix the multiple
-> 
-> The console driver isn't involved - readline took over for the shell, and
-> readline most definitely supports this in a utf8 locale.
-
-OK I could reproduce the case without ever involving either a shell or
-readline or anything. Using "cat" as the init program exhibited the
-anomaly, though it was not much easy to analyze. Then I switched to
-"init=od -An -tx1 -".
-
-1) if I enter "A" then press backspace, I get nothing. Pressing enter 16
-   times flushes the line buffer and "od" prints 16 times "0a", indicating
-   nothing was remaining in the buffer.
-
-2) if I enter Ctrl-V Ctrl-A, my display prints "^A", and when I press
-   backspace, I correctly get the cursor back two chars. Once again,
-   flushing the buffer with enter shows it was empty.
-
-3) if I enter Alt-196, I get a "Ä". Flushing the buffer shows that od
-   got two bytes: c3 84.
-
-4) now if I enter Alt-196 and press backspace, my "Ä" is removed by the
-   backspace, but only the second byte is flushed from the line buffer.
-   Then, if I press enter 15 times, I get a line with c3 0a 0a 0a ...
-   And there is no user-land involved here.
-
-I'm really hoping you better understand the problem now. Pressing backspace
-to fix input does not correct the input with multi-byte chars, it leaves
-incomplete start sequences. If I press Alt-1111111, then backspace, I get
-f4 8f 91 0a 0a 0a 0a because it is f4 8f 91 87 minus one byte.
-
-Of course, pressing Backspace multiple times removes them all, but it also
-removes previous characters on the display.
-
-Another experience :
-
-I press 01234, then Alt-255, Backspace, then 56789. On the display, I have
-0123456789. od gets 30 31 32 33 34 c3 35 36 37 38 39.
-
-Now if I want to correctly fix the input, I have to press backspace twice,
-but then I have to make the '4' disappear from my display, while knowing it
-still remains in the buffer. And indeed, my display shows "012356789" but
-od sees 30 31 32 33 34 35 36 37 38 39.
-
-And this is without anything on the user-land (except 'od'), just plain
-stupid text console booted with "init=..."
-
-So obviously there is something broken as the data fed into stdin does not
-match what is displayed for multi-byte characters.
-
-Hoping this clarifies the situation,
-Willy
+Eric
 
