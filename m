@@ -1,137 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760113AbYD2TMX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932428AbYD2TM4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760113AbYD2TMX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 15:12:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756141AbYD2TMP
+	id S932428AbYD2TM4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 15:12:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755939AbYD2TMo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 15:12:15 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:44570 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752582AbYD2TMO (ORCPT
+	Tue, 29 Apr 2008 15:12:44 -0400
+Received: from smtp120.sbc.mail.sp1.yahoo.com ([69.147.64.93]:31939 "HELO
+	smtp120.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1756141AbYD2TMn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 15:12:14 -0400
-Date: Tue, 29 Apr 2008 12:09:29 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: David Brownell <david-b@pacbell.net>
-Cc: greg@kroah.com, linux-kernel@vger.kernel.org, tpiepho@freescale.com,
-       hartleys@visionengravers.com, bn@niasdigital.com, vapier.adi@gmail.com,
-       cooloney@kernel.org
-Subject: Re: [patch/rfc 2.6.25-git] gpio: sysfs interface
-Message-Id: <20080429120929.ec1899d4.akpm@linux-foundation.org>
-In-Reply-To: <200804291145.14172.david-b@pacbell.net>
-References: <200804281239.51729.david-b@pacbell.net>
-	<20080428195455.6e07cb8d.akpm@linux-foundation.org>
-	<20080429034219.GA1413@kroah.com>
-	<200804291145.14172.david-b@pacbell.net>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 29 Apr 2008 15:12:43 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=iD2DnH6C4So58OzagY/OHQORXb4xU08DtPwVSU9n4x2NE326Nk3hq5ZLhNs6jbmERI74Y9bwIPovO3q4LXuS95XK7G/bHJUxoqFdJjKvNRB0Ij/TSdqnwa/UEobfWIJhe6tytxWcnCUeMGvdYqvWDqZ5xkq80geVsJYlmIaSxQI=  ;
+X-YMail-OSG: wHFH9ssVM1l6HEQF7plv2_S7U5JY.FC5YAnof52i4qHbroR7Nxofnf2VyqIR1PoASo.3Fb3G6bzkuxRHJry7MlXKsjOqKBtC.9YUE.v0Lygz3GeHtHt8oyT_Ne82WVARxG4-
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Uwe =?iso-8859-1?q?Kleine-K=F6nig?= <Uwe.Kleine-Koenig@digi.com>
+Subject: Re: rtc: how should I handle an invalid state?
+Date: Tue, 29 Apr 2008 12:12:40 -0700
+User-Agent: KMail/1.9.6
+Cc: Alessandro Zummo <a.zummo@towertech.it>, linux-kernel@vger.kernel.org
+References: <20080429121924.GA2137@digi.com>
+In-Reply-To: <20080429121924.GA2137@digi.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
+Content-Disposition: inline
+Message-Id: <200804291212.40638.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 29 Apr 2008 11:45:13 -0700
-David Brownell <david-b@pacbell.net> wrote:
+On Tuesday 29 April 2008, Uwe Kleine-König wrote:
+> The problem is that hwclock tries to read the current time before
+> setting the new one.  And if that fails, it doesn't update the rtc.
 
-> On Monday 28 April 2008, Greg KH wrote:
-> > On Mon, Apr 28, 2008 at 07:54:55PM -0700, Andrew Morton wrote:
-> > > On Mon, 28 Apr 2008 16:28:13 -0700 David Brownell <david-b@pacbell.net> wrote:
-> > > 
-> > > > > If we had a strcmp() variant which treats a \n in the first arg as a \0
-> > > > > the above would become
-> > > > > 
-> > > > > 	if (sysfs_streq(buf, "high"))
-> > > > > 		status = gpio_direction_output(gpio, 1);
-> > > > > 	else if (sysfs_streq(buf, "out") || sysfs_streq(buf, "low"))
-> > > > > 		status = gpio_direction_output(gpio, 0);
-> > > > > 	else if (sysfs_streq(buf, "in"))
-> > > > > 		status = gpio_direction_input(gpio);
-> > > > 
-> > > > That would indeed be better.  Maybe I should whip up a sysfs
-> > > > patch adding that, and have this depend on that patch.  (I've
-> > > > CC'd Greg in case he has comments on that...)
-> > > 
-> > > Yes, it would be a standalone patch.  The sort which generates oceans of
-> > > useful feedback ;) The sort which also generates hundreds of
-> > > use-new-toy-to-clean-up-old-code patches for me to merge :(
-> > 
-> > Heh, sounds good to me :)
-> 
-> Hard to say where should live, but lib/strings.c seemed fair.
-> See the appended patch.  I made it not care which string has
-> newline termination, since caring seems very error-prone.
-> 
-> - Dave
-> 
-> ========= CUT HERE
-> Add a new sysfs_streq() string comparison function, which ignores
-> the trailing newlines found in sysfs inputs.  By example:
-> 
-> 	sysfs_streq("a", "b")	==> false
-> 	sysfs_streq("a", "a")	==> true
-> 	sysfs_streq("a", "a\n")	==> true
-> 	sysfs_streq("a\n", "a")	==> true
+Which version of hwclock?  That does seem like a bug in that
+particular version.  If it's in util-linux-ng or busybox,
+please send in a patch.  I don't think anyone should be
+deploying *new* systems using *old/unmaintained* util-linux.
 
-And
+I'll suspect this is on some util-linux version, since I'm
+quite sure that I've had busybox based systems that don't
+show this misbehavior.  Haven't had occasion to use non-PC
+RTCs with a util-linux-ng version; I wouldn't call a bug in
+such combinations a kernel regression, either...
 
-	sysfs_streq("a\n", "a\n") ==> true
+I think the preferred solution never returns invalid times as
+valid.  Some RTC drivers do this themselves:
 
-which actually isn't very interesting.
+        int my_rtc_read_time(struct device *dev, struct rtc_time *time)
+	{
+		... read the hardware into *time ...
+		return rtc_valid_tm(time);
+	}
 
-> This is intended to simplify parsing of sysfs inputs, letting them
-> avoid the need to manually strip off newlines from inputs.
-> 
-> Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
-> ---
->  include/linux/string.h |    2 ++
->  lib/string.c           |   27 +++++++++++++++++++++++++++
->  2 files changed, 29 insertions(+)
-> 
-> --- g26.orig/include/linux/string.h	2008-04-29 05:45:53.000000000 -0700
-> +++ g26/include/linux/string.h	2008-04-29 05:55:14.000000000 -0700
-> @@ -109,5 +109,7 @@ extern void *kmemdup(const void *src, si
->  extern char **argv_split(gfp_t gfp, const char *str, int *argcp);
->  extern void argv_free(char **argv);
->  
-> +extern bool sysfs_streq(const char *s1, const char *s2);
-> +
->  #endif
->  #endif /* _LINUX_STRING_H_ */
-> --- g26.orig/lib/string.c	2008-04-29 05:15:52.000000000 -0700
-> +++ g26/lib/string.c	2008-04-29 05:55:32.000000000 -0700
-> @@ -493,6 +493,33 @@ char *strsep(char **s, const char *ct)
->  EXPORT_SYMBOL(strsep);
->  #endif
->  
-> +/**
-> + * sysfs_streq - return true if strings are equal, modulo trailing newline
-> + * @s1: one string
-> + * @s2: another string
-> + *
-> + * This routine returns true iff two strings are equal, treating both
-> + * NUL and newline-then-NUL as equivalent string terminations.  It's
-> + * geared for use with sysfs input strings, which generally terminate
-> + * with newlines but are compared against values without newlines.
-> + */
-> +bool sysfs_streq(const char *s1, const char *s2)
-> +{
-> +	while (*s1 && *s1 == *s2) {
-> +		s1++;
-> +		s2++;
-> +	}
-> +
-> +	if (*s1 == *s2)
-> +		return true;
-> +	if (!*s1 && *s2 == '\n' && !s2[1])
-> +		return true;
-> +	if (*s1 == '\n' && !s1[1] && !*s2)
-> +		return true;
-> +	return false;
-> +}
-> +EXPORT_SYMBOL(sysfs_streq);
-> +
+Or rtc_valid_tm() might be checked in the RTC framework glue,
+to provide more uniform behavior at the framework level.
 
-Looks good to me.  I'll plan on sliding it into 2.6.26 a few days
-hence.
+Either way, it's not unknown that an un-initialized RTC have
+undefined state, and thus return invalid times until they've
+been set (using wall clock, NTP, or whatever).
 
+- Dave
