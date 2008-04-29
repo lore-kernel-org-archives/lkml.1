@@ -1,54 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756108AbYD2M5Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758227AbYD2M6D@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756108AbYD2M5Y (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 08:57:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751710AbYD2M5Q
+	id S1758227AbYD2M6D (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 08:58:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753828AbYD2M5x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 08:57:16 -0400
-Received: from e28smtp05.in.ibm.com ([59.145.155.5]:42049 "EHLO
-	e28smtp05.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751682AbYD2M5P (ORCPT
+	Tue, 29 Apr 2008 08:57:53 -0400
+Received: from colobus.isomerica.net ([216.93.242.10]:48080 "EHLO
+	colobus.isomerica.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753290AbYD2M5w (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 08:57:15 -0400
-Date: Tue, 29 Apr 2008 18:26:59 +0530
-From: Gautham R Shenoy <ego@in.ibm.com>
-To: linux-kernel@vger.kernel.org, Zdenek Kabelac <zdenek.kabelac@gmail.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Oleg Nesterov <oleg@tv-sign.ru>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Srivatsa Vaddagiri <vatsa@in.ibm.com>
-Subject: [PATCH 0/8] CPU-Hotplug: Fix CPU-Hotplug <--> cpufreq locking
-	dependency
-Message-ID: <20080429125659.GA23562@in.ibm.com>
-Reply-To: ego@in.ibm.com
+	Tue, 29 Apr 2008 08:57:52 -0400
+Message-ID: <48171B4D.7000509@isomerica.net>
+Date: Tue, 29 Apr 2008 08:57:49 -0400
+From: Dan Noe <dpn@isomerica.net>
+Reply-To: dpn@isomerica.net
+Organization: isomerica.net
+User-Agent: Thunderbird 2.0.0.12 (Macintosh/20080213)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+To: Jeff Arnold <jbarnold@MIT.EDU>
+CC: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org
+Subject: Re: A system for rebootless kernel security updates
+References: <alpine.DEB.1.00.0802221606520.21343@vinegar-pot.mit.edu> <87r6cvgyi1.fsf@basil.nowhere.org> <alpine.DEB.1.10.0804280119001.9237@vinegar-pot.mit.edu> <4815A721.1040101@firstfloor.org> <alpine.DEB.1.10.0804281907150.28653@vinegar-pot.mit.edu>
+In-Reply-To: <alpine.DEB.1.10.0804281907150.28653@vinegar-pot.mit.edu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello everyone,
+Jeff Arnold wrote:
+> If there's anything that I can do to facilitate feedback at this stage, 
+> please let me know.
 
-A couple of months ago Zdenek Kabelac had reported a Circular locking
-dependency in resume, which was related to the locking dependency
-between the cpufreq and CPU-Hotplug subsystems.
+Is there a ksplice mailing list?  I did not see mention of one on the 
+web page.
 
-http://lkml.org/lkml/2008/2/26/479
+Cheers,
+Dan
 
-This patchset aggregates the various patches that have been posted in
-the recent past, to solve this problem.
-
-There are a few more TODO items in CPU-Hotplug , unrelated to
-this problem, that cropped up in the various discussions.
-They will be posted in a seperate thread.
-
-The patchstack has been lightly tested on a 4-way x86 machine with
-CPU-Hotplug running in parallel with kernbench and changing cpufreq
-governors simultaneously.
-
-Awaiting your feedback,
-gautham
+-- 
+                     /--------------- - -  -  -   -   -
+                     |  Dan Noe
+                     |  http://isomerica.net/~dpn/
