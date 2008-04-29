@@ -1,46 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754270AbYD2Jtf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759167AbYD2JwL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754270AbYD2Jtf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 05:49:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754373AbYD2JtY
+	id S1759167AbYD2JwL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 05:52:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751133AbYD2Jv5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 05:49:24 -0400
-Received: from ns2.suse.de ([195.135.220.15]:50440 "EHLO mx2.suse.de"
+	Tue, 29 Apr 2008 05:51:57 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:53332 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753803AbYD2JtY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 05:49:24 -0400
-Date: Tue, 29 Apr 2008 11:50:29 +0200
-From: Bernhard Walle <bwalle@suse.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Gabor Gombas <gombasg@sztaki.hu>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: Solid freezes with 2.6.25
-Message-ID: <20080429115029.69a8059b@strauss.suse.de>
-In-Reply-To: <20080428092513.495378af.akpm@linux-foundation.org>
-References: <20080428142935.GQ14074@boogie.lpds.sztaki.hu>
-	<20080428092513.495378af.akpm@linux-foundation.org>
-Organization: SUSE Linux Products GmbH
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; x86_64-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1752033AbYD2Jv5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Apr 2008 05:51:57 -0400
+Date: Tue, 29 Apr 2008 11:51:46 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: David Simner <djs203@srcf.ucam.org>
+Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [patch] sched_info_switch not being called according to
+	documentation (10545)
+Message-ID: <20080429095146.GD23198@elte.hu>
+References: <20080429090859.GA16568@srcf.ucam.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080429090859.GA16568@srcf.ucam.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Andrew Morton [2008-04-28 09:25]:
->
-> Suspicion would have to be directed at the 2.6.25 CONFIG_HPET_EMULATE_RTC
-> changes.
+
+* David Simner <djs203@srcf.ucam.org> wrote:
+
+> Hi,
 > 
-> I think our best bet here would be to persuade someone who knows what's
-> going on in there to prepare a debugging patch for you to run with
-> (please).  See if we can find out what the code is doing at the time when
-> it freezes up.
+> http://bugzilla.kernel.org/show_bug.cgi?id=10545
+> 
+> sched_stats.h says that __sched_info_switch is "called when prev != 
+> next" in the comment.  sched.c should therefore do that, see the patch 
+> below:
 
-So the problem goes away if CONFIG_HPET_EMULATE_RTC is not set? I'm
-trying to come up with a debug patch ...
+thanks David, applied you fix.
 
-
-
-	Bernhard
+	Ingo
