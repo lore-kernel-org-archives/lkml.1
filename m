@@ -1,82 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756873AbYD2Mme@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760156AbYD2Mne@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756873AbYD2Mme (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 08:42:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754417AbYD2Mm0
+	id S1760156AbYD2Mne (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 08:43:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754143AbYD2MnY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 08:42:26 -0400
-Received: from mail.gmx.net ([213.165.64.20]:45147 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1754231AbYD2MmZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 08:42:25 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX18vSWE2mmovpRoZq8/0PbgKrhbdvyYJB80Q5n7PvH
-	RD/XAKoWM/QwCB
-Subject: [patch] fix sched_debug livelock
-From: Mike Galbraith <efault@gmx.de>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>
-Content-Type: text/plain
-Date: Tue, 29 Apr 2008 14:42:21 +0200
-Message-Id: <1209472941.4874.7.camel@marge.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
+	Tue, 29 Apr 2008 08:43:24 -0400
+Received: from styx.suse.cz ([82.119.242.94]:35714 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753263AbYD2MnX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Apr 2008 08:43:23 -0400
+Date: Tue, 29 Apr 2008 14:43:21 +0200
+From: Jan Kara <jack@suse.cz>
+To: Mingming Cao <cmm@us.ibm.com>
+Cc: Badari Pulavarty <pbadari@us.ibm.com>, akpm@linux-foundation.org,
+       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: Possible race between direct IO and JBD?
+Message-ID: <20080429124321.GD1987@duck.suse.cz>
+References: <20080306174209.GA14193@duck.suse.cz> <1209166706.6040.20.camel@localhost.localdomain> <20080428122626.GC17054@duck.suse.cz> <1209402694.23575.5.camel@badari-desktop> <20080428180932.GI17054@duck.suse.cz> <1209409764.11872.6.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1209409764.11872.6.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(resending, didn't cc lkml)
+On Mon 28-04-08 12:09:23, Mingming Cao wrote:
+> On Mon, 2008-04-28 at 20:09 +0200, Jan Kara wrote: 
+> > On Mon 28-04-08 10:11:34, Badari Pulavarty wrote:
+> > > 
+> > > On Mon, 2008-04-28 at 14:26 +0200, Jan Kara wrote:
+> > > > Hi,
+> > > > 
+> > > > On Fri 25-04-08 16:38:23, Mingming Cao wrote:
+> > > > > While looking at a bug related to direct IO returns to EIO, after
+> > > > > looking at the code, I found there is a window that
+> > > > > try_to_free_buffers() from direct IO could race with JBD, which holds
+> > > > > the reference to the data buffers before journal_commit_transaction()
+> > > > > ensures the data buffers has reached to the disk.
+> > > > > 
+> > > > > A little more detail: to prepare for direct IO, generic_file_direct_IO()
+> > > > > calls invalidate_inode_pages2_range() to invalidate the pages in the
+> > > > > cache before performaning direct IO.  invalidate_inode_pages2_range()
+> > > > > tries to free the buffers via try_to free_buffers(), but sometimes it
+> > > > > can't, due to the buffers is possible still on some transaction's
+> > > > > t_sync_datalist or t_locked_list waiting for
+> > > > > journal_commit_transaction() to process it. 
+> > > > > 
+> > > > > Currently Direct IO simply returns EIO if try_to_free_buffers() finds
+> > > > > the buffer is busy, as it has no clue that JBD is referencing it.
+> > > > > 
+> > > > > Is this a known issue and expected behavior? Any thoughts?
+> > > >   Are you seeing this in data=ordered mode? As Andrew pointed out we do
+> > > > filemap_write_and_wait() so all the relevant data buffers of the inode
+> > > > should be already on disk. In __journal_try_to_free_buffer() we check
+> > > > whether the buffer is already-written-out data buffer and unfile and free
+> > > > it in that case. It shouldn't happen that a data buffer has
+> > > > b_next_transaction set so really the only idea why try_to_free_buffers()
+> > > > could fail is that somebody manages to write to a page via mmap before
+> > > > invalidate_inode_pages2_range() gets to it. Under which kind of load do you
+> > > > observe the problem? Do you know exactly because of which condition does
+> > > > journal_try_to_free_buffers() fail?
+> > > > 
+> > > 
+> > > Thank you for your reply.
+> > > 
+> > > What we are noticing is invalidate_inode_pages2_range() fails with -EIO
+> > > (from try_to_free_buffers() since b_count > 0).
+> > > 
+> > > I don't think the file is being updated through mmap(). Previous
+> > > writepage() added these buffers to t_sync_data list (data=ordered).
+> > > filemap_write_and_wait() waits for pagewrite back to be cleared.
+> > > So, buffers are no longer dirty, but still on the t_sync_data and
+> > > kjournald didn't get chance to process them yet :(
+> > > 
+> > > Since we have elevated b_count on these buffers, try_to_free_buffers()
+> > > fails. How can we make filemap_write_and_wait() to wait for kjournald
+> > > to unfile these buffers ?
+> >   Hmm, I don't get one thing:
+> >   The call chain is invalidate_inode_pages2_range() ->
+> > invalidate_complete_page2() -> try_to_release_page() -> ext3_releasepage()
+> > -> journal_try_to_free_buffers() -> __journal_try_to_free_buffer() and this
+> > function should remove the buffer from the committing transaction. 
+> 
+> Thanks, yes I noticed that after you pointing this out.
+> 
+> But __journal_try_to_free_buffer() only unfile the buffer from
+> t_sync_datalist or t_locked list, the journal head is not removed in
+> journal_remove_journal_head() there, at that time,
+> journal_remove_journal_head() just check if counter b_jcount is 0. But
+> before calling __journal_try_to_free_buffer(), since
+> journal_try_to_free_buffers() already increase the b_jcount in
+> journal_grab_journal_head(), so the journal head is not removed in
+> __journal_try_to_free_buffer-> journal_remove_journal_head()
+> 
+> > So who's
+> > holding the reference to those buffers? 
+> 
+> Looking at the code, it seems the it's the journal_put_journal_head(jh)
+> who remove the journal head and decrease the bh
+> 
+> journal_try_to_free_buffers() 
+> {
+> ...
+> 
+> jh = journal_grab_journal_head(bh);
+>                 if (!jh)
+>                         continue;
+> 
+>                 jbd_lock_bh_state(bh);
+>                 __journal_try_to_free_buffer(journal, bh);
+>                 journal_put_journal_head(jh);
+>                 jbd_unlock_bh_state(bh);
+> 
+> ...
+> 
+> }
+>  so when journal_put_journal_head()-> __journal_remove_journal_head(),
+> now the b_jcount is zero, but is  
+> jh->b_transaction is NULL? So it seems possible that bh ref count is non
+> zero when exit from journal_put_journal_head() if jh_b_transaction is
+> not cleared.
+> 
+> I miss where jh->b_transaction is clear to NULL? 
+  __journal_unfile_buffer() called from __journal_try_to_free_buffer() sets
+jh->b_transaction to NULL. So as soon as journal_put_journal_head() is
+called, it results in freeing of journal head and releasing buffer
+reference. So really the only possible race I see is what I describe
+below...
 
-Revert debugging commit 7ba2e74ab5a0518bc953042952dd165724bc70c9.  print_cfs_rq_tasks()
-can induce live-lock if a task is dequeued during list traversal.
+> >   Hmm, maybe I have one idea - in theory we could call
+> > __journal_try_to_free_buffer() exactly at the moment commit code inspects
+> > the buffer. Then we'd release the buffer from the transaction but
+> > try_to_free_buffers() would fail because of elevated b_count exactly as you
+> > described. Could you maybe verify this? Not that I'd know how to easily fix
+> > this ;)...
 
-Signed-off-by: Mike Galbraith <efault@gmx.de>
-
-index 89fa32b..d72e8b4 100644
---- a/kernel/sched_fair.c
-+++ b/kernel/sched_fair.c
-@@ -1611,30 +1611,6 @@ static const struct sched_class fair_sched_class = {
- };
- 
- #ifdef CONFIG_SCHED_DEBUG
--static void
--print_cfs_rq_tasks(struct seq_file *m, struct cfs_rq *cfs_rq, int depth)
--{
--	struct sched_entity *se;
--
--	if (!cfs_rq)
--		return;
--
--	list_for_each_entry_rcu(se, &cfs_rq->tasks, group_node) {
--		int i;
--
--		for (i = depth; i; i--)
--			seq_puts(m, "  ");
--
--		seq_printf(m, "%lu %s %lu\n",
--				se->load.weight,
--				entity_is_task(se) ? "T" : "G",
--				calc_delta_weight(SCHED_LOAD_SCALE, se)
--				);
--		if (!entity_is_task(se))
--			print_cfs_rq_tasks(m, group_cfs_rq(se), depth + 1);
--	}
--}
--
- static void print_cfs_stats(struct seq_file *m, int cpu)
- {
- 	struct cfs_rq *cfs_rq;
-@@ -1642,9 +1618,6 @@ static void print_cfs_stats(struct seq_file *m, int cpu)
- 	rcu_read_lock();
- 	for_each_leaf_cfs_rq(cpu_rq(cpu), cfs_rq)
- 		print_cfs_rq(m, cpu, cfs_rq);
--
--	seq_printf(m, "\nWeight tree:\n");
--	print_cfs_rq_tasks(m, &cpu_rq(cpu)->cfs, 1);
- 	rcu_read_unlock();
- }
- #endif
-
-
+									Honza
+-- 
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
