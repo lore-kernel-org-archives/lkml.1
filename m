@@ -1,90 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762116AbYD2TR2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762295AbYD2TTV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762116AbYD2TR2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 15:17:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751083AbYD2TRU
+	id S1762295AbYD2TTV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 15:19:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753155AbYD2TTN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 15:17:20 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:47539 "EHLO pasmtpA.tele.dk"
+	Tue, 29 Apr 2008 15:19:13 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:43466 "EHLO pasmtpB.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750983AbYD2TRU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 15:17:20 -0400
-Date: Tue, 29 Apr 2008 21:17:53 +0200
+	id S1752462AbYD2TTN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Apr 2008 15:19:13 -0400
+Date: Tue, 29 Apr 2008 21:19:46 +0200
 From: Sam Ravnborg <sam@ravnborg.org>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Tony Breeds <tony@bakeyournoodle.com>,
-       Christian Kujau <lists@nerdbynature.de>, linuxppc-dev@ozlabs.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.25: pmac_newworld undefined
-Message-ID: <20080429191753.GA32685@uranus.ravnborg.org>
-References: <alpine.DEB.1.10.0804271951190.11017@sheep.housecafe.de> <20080428042044.GX20457@bakeyournoodle.com> <20080428193324.GC13400@uranus.ravnborg.org> <20080429133514.GA30524@cs181133002.pp.htv.fi>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: riel@redhat.com, linux-kernel@vger.kernel.org, ajackson@redhat.com,
+       airlied@redhat.com, benh@kernel.crashing.org
+Subject: Re: [PATCH 1/3] make access_process_vm work on device memory
+Message-ID: <20080429191946.GB32685@uranus.ravnborg.org>
+References: <20080429113237.614f89a1@cuia.boston.redhat.com> <20080429110919.dc7b8565.akpm@linux-foundation.org> <20080429190132.GA25793@uranus.ravnborg.org> <20080429121322.6da6b176.akpm@linux-foundation.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080429133514.GA30524@cs181133002.pp.htv.fi>
+In-Reply-To: <20080429121322.6da6b176.akpm@linux-foundation.org>
 User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 29, 2008 at 04:35:14PM +0300, Adrian Bunk wrote:
-> On Mon, Apr 28, 2008 at 09:33:24PM +0200, Sam Ravnborg wrote:
-> > On Mon, Apr 28, 2008 at 02:20:44PM +1000, Tony Breeds wrote:
-> > > On Sun, Apr 27, 2008 at 08:03:46PM +0200, Christian Kujau wrote:
-> > > > Hi,
-> > > > 
-> > > > the build failure reported[0] by Kamalesh back in 01/2008 is still 
-> > > > present in today's 2.6.25-git with CONFIG_NVRAM=m (instead of =y):
-> > > > 
-> > > >   Building modules, stage 2.
-> > > >   MODPOST 72 modules
-> > > > ERROR: "pmac_newworld" [arch/powerpc/platforms/powermac/nvram.ko] undefined!
-> > > > ERROR: "__alloc_bootmem" [arch/powerpc/platforms/powermac/nvram.ko] 
-> > > > undefined!
-> > > > make[1]: *** [__modpost] Error 1
-> > > 
-> > > Yeah that isn't really surprising.  Essentially
-> > > arch/powerpc/platforms/powermac/nvram.c must be builtin (not modular)
-> > > but CONFIG_NVRAM is tristate, and your .config has CONFIG_NVRAM=m.
-> > > 
-> > > We can probably "fix" this by adding another config config symbol and
-> > > "selecting" that from CONFIG_NVRAM.  Then using this new symbol in
-> > > arch/powerpc/platforms/powermac/*
-> > > 
-> > > so I think with we need is:
-> > > config NVRAM
-> > >   bool "..." if PPC32
-> > >   tristate "..." if !PPC32
-> > >   ...
-> > >   ...
-> > > 
-> > > Sam is there some way to achieve that or should we just create an
-> > > secondary symbol?
-> > 
-> > In the Makefile you could just do a:
-> > 
-> > obj-$(CONFIG_NVRAM:m=y)             += nvram.o
-> > 
-> > Then you would force nvram to be build-in.
-> > That looks simpler than messing with Kconfig in this case.
+On Tue, Apr 29, 2008 at 12:13:22PM -0700, Andrew Morton wrote:
+> On Tue, 29 Apr 2008 21:01:32 +0200
+> Sam Ravnborg <sam@ravnborg.org> wrote:
 > 
-> You miss that this is only true on powerpc.
-And so is the Makefile - right?
-Or is this only true for 32 bit powerpc - in that case it is the wrong fix.
+> > > urgh.
+> > > 
+> > > We have HAVE_ARCH*
+> > > We have __HAVE_ARCH*
+> > > We have ARCH_HAS*
+> > > We have __ARCH_HAS*
+> > > 
+> > > what a mess.
+> > > 
+> > > Probably the preferred (but still ugly) approach is to implement
+> > > CONFIG_ARCH_*.
+> > Only if it is a Kconfig symbol.
+> > 
+> > We have recently started to use 'HAVE_*' for boolean symbols used
+> > to select a specific function for one architecture.
+> > See arch/Kconfig for a few samples.
+> > 
+> > And Documentation/kbuild/kconfig-language.txt for usage hints.
+> > 
+> 
+> I think what you're telling us is to use CONFIG_HAVE_IOREMAP_PROT?
 
-> And for such issues Kconfig anyway is the right place - assume how your 
-> solution would break if NVRAM would some day select or depend on some 
-> helper code.
+I think so. But I just stumbled upon this mail and have not even tried
+to follow what you discuss.
 
-So something like:
-
-config PPC32_NVRAM
-	bool
-	depends on NVRAM
-
-obj-$(CONFIG_PPC32_NVRAM) += nvram.o
-obj-$(CONFIG_NVRAM)       += nvram.o
-
-Or did you have another solution in mind?
+So yes - if it is a kconfig symbol.
+And if it is a bool.
+And if it has no dependencies, or we can create a helper
+with no dependencies - so yes.
 
 	Sam
