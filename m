@@ -1,94 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760399AbYD2UE5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760869AbYD2UFd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760399AbYD2UE5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 16:04:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759515AbYD2UEm
+	id S1760869AbYD2UFd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 16:05:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757276AbYD2UFN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 16:04:42 -0400
-Received: from qb-out-0506.google.com ([72.14.204.237]:36361 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754198AbYD2UEk (ORCPT
+	Tue, 29 Apr 2008 16:05:13 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:45713 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756430AbYD2UFM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 16:04:40 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=DnEftSe0fPisPDQ5yLOK/ZoNRhv70TXQ4YvJIvtSNHZBSgJQjQt/O0vgQerhaGxJM9SYn9U2q6p5EXWr+7LXGlLetDWulOZAKc+uvUWk5J6AW3eNIRXzMY9TUS7t/n5t7GsnfD8CGV8Wf49X7SmmHBvK3waNcHMzPScGsl/+SDE=
-Message-ID: <86802c440804291304r7ff169f6k9132f98761ecef42@mail.gmail.com>
-Date: Tue, 29 Apr 2008 13:04:36 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [PATCH] x86: mtrr cleanup for converting continuous to discrete layout v5
-Cc: "Andrew Morton" <akpm@linux-foundation.org>, "Ingo Molnar" <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       "Gabriel C" <nix.or.die@googlemail.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Mika Fischer" <mika.fischer@zoopnet.de>
-In-Reply-To: <m1wsmg32qk.fsf@frodo.ebiederm.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 29 Apr 2008 16:05:12 -0400
+Date: Tue, 29 Apr 2008 17:03:44 -0300
+From: Mauro Carvalho Chehab <mchehab@infradead.org>
+To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+Subject: Re: [patch] video: fix SOC_CAMERA_MT9M001 build bug
+Message-ID: <20080429170344.5a6d01bc@gaivota>
+In-Reply-To: <Pine.LNX.4.64.0804291345050.5602@axis700.grange>
+References: <20080428120032.GA23847@elte.hu>
+	<Pine.LNX.4.64.0804281944100.10718@axis700.grange>
+	<20080428193130.GC9907@elte.hu>
+	<Pine.LNX.4.64.0804282138000.11449@axis700.grange>
+	<20080428201105.GD15840@elte.hu>
+	<Pine.LNX.4.64.0804291345050.5602@axis700.grange>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.9; x86_64-mandriva-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200804272337.40130.yhlu.kernel@gmail.com>
-	 <200804281244.56938.yhlu.kernel@gmail.com>
-	 <200804281316.14168.yhlu.kernel@gmail.com>
-	 <200804281505.05764.yhlu.kernel@gmail.com>
-	 <m1wsmg32qk.fsf@frodo.ebiederm.org>
+X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 29, 2008 at 12:00 PM, Eric W. Biederman
-<ebiederm@xmission.com> wrote:
-> Yinghai Lu <yhlu.kernel.send@gmail.com> writes:
->
->  > some BIOS like to use continus MTRR layout, and may X driver can not add
->  > WB entries for graphical cards when 4g or more RAM installed.
->  >
->  > the patch will change MTRR to discrete.
->  >
->  > mtrr_chunk_size= could be used to have smaller continuous block to hold holes.
->  > default is 256m, could be set according to size of graphics card memory.
->  >
->  > v2: fix -1 for UC checking
->  > v3: default to disable, and need use enable_mtrr_cleanup to enable this feature
->  >     skip the var state change warning.
->  >     remove next_basek in range_to_mtrr()
->  > v4: correct warning mask.
->  > v5: CONFIG_MTRR_SANITIZER
->  >
->  > Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
->
->  Skimming through the code it looks fairly sane.
->
->  I do think it would be good to split this patch into two pieces.
->  1) The mtrr rewriter/sanitizer/normalize.
->    All it does it should do is rewrite the MTRRs with a
->    semantically equivalent value.  This code should always be
->    safe and work on any system with MTRRs.
->
->    This works around otherwise sane bios's that simply prefer
->    to have contiguous MTRRs.
->
->    I don't see a reason why this code should be configurable.
->
->    This approach avoids earlier concerns because it starts
->    with the existing MTRR layout and not with the e820 map.
->
->  2) The mtrr_chunk_size code that rounds things off and allows
->    us to use discrete MTRRs by reducing some RAM to uncacheable.
->    Because it makes things uncacheable it has potentially bad
->    side effects on performance and thus potentially bad side
->    effects on functionality.  For areas like the SMM and ACPI
->    especially as they usually occur at the end of RAM just
->    below 4G.
->
->    The chunk size code should be configurable and default to off
->    because it has potential side effects.  A KConfig option may
->    also be appropriate.  It asks an interesting trade off question
->    do you want your BIOS to be fast or X.
+On Tue, 29 Apr 2008 13:48:21 +0200 (CEST)
+Guennadi Liakhovetski <g.liakhovetski@gmx.de> wrote:
 
-(less memory + fast X) or  (more 8M RAM + slow...)
+> On Mon, 28 Apr 2008, Ingo Molnar wrote:
+> 
+> > sorry, you are right. Mind doing the right patch as you know this code 
+> > much better than i do?
+> 
+> Mauro, as you've already committed Ingo's patch to your hg tree, what's 
+> the best way to fix this? Should a revert be committed, or would you drop 
+> that patch? The latter would be better, I guess, but then I better wait 
+> for you to do it, then update against your new tree, and then add a 
+> correct fix, right?
 
-YH
+Send me a pull request with a patch reverting it and applying the proper one.
+I'll drop it from my patch series at -git.
+
+
+Cheers,
+Mauro
