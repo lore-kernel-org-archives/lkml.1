@@ -1,71 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762133AbYD2NKw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755815AbYD2NLM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762133AbYD2NKw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 09:10:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754182AbYD2NKn
+	id S1755815AbYD2NLM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 09:11:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761548AbYD2NKu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 09:10:43 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:21954 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751847AbYD2NKn (ORCPT
+	Tue, 29 Apr 2008 09:10:50 -0400
+Received: from mail29.messagelabs.com ([216.82.249.147]:18493 "HELO
+	mail29.messagelabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1761456AbYD2NKt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 09:10:43 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:mime-version:
-	content-type:content-transfer-encoding:content-disposition;
-	b=xIdja59NCwwPtltQGe1BLwIa96wZ0sonsdnCuWSUPcfgLv6BonQK3upOYWGWYQxLJ
-	jgloFvPq9d+2gweggMxHg==
-Message-ID: <d43160c70804290610t2135a271hd9b907529e89e74e@mail.gmail.com>
-Date: Tue, 29 Apr 2008 09:10:36 -0400
-From: "Ross Biro" <rossb@google.com>
-To: linux-mm@kvack.org, lkml <linux-kernel@vger.kernel.org>
-Subject: Page Faults slower in 2.6.25-rc9 than 2.6.23
+	Tue, 29 Apr 2008 09:10:49 -0400
+X-VirusChecked: Checked
+X-Env-Sender: Uwe.Kleine-Koenig@digi.com
+X-Msg-Ref: server-5.tower-29.messagelabs.com!1209474644!10949943!1
+X-StarScan-Version: 5.5.12.14.2; banners=-,-,-
+X-Originating-IP: [66.77.174.14]
+Date: Tue, 29 Apr 2008 15:08:46 +0200
+From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <Uwe.Kleine-Koenig@digi.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+CC: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] let setup_irq reenable a shared irq
+Message-ID: <20080429130846.GA20461@digi.com>
+References: <1209381171-5520-1-git-send-email-Uwe.Kleine-Koenig@digi.com> <alpine.LFD.1.10.0804281443090.3261@apollo.tec.linutronix.de> <20080428141116.GB9048@digi.com> <alpine.LFD.1.10.0804281640220.3261@apollo.tec.linutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
 Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <alpine.LFD.1.10.0804281640220.3261@apollo.tec.linutronix.de>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-OriginalArrivalTime: 29 Apr 2008 13:08:46.0924 (UTC) FILETIME=[28AA80C0:01C8A9FA]
+X-TM-AS-Product-Ver: SMEX-8.0.0.1181-5.500.1026-15878.007
+X-TM-AS-Result: No--22.575000-8.000000-31
+X-TM-AS-User-Approved-Sender: No
+X-TM-AS-User-Blocked-Sender: No
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I don't know if this has been noticed before.  I was benchmarking my
-page table relocation code and I noticed that on 2.6.25-rc9 page
-faults take 10% more time than on 2.6.22.  This is using lmbench
-running on an intel x86_64 system.  The good news is that the page
-table relocation code now only adds a 1.6% slow down to page faults.
+Hello,
 
-    Ross
+Thomas Gleixner wrote:
+> On Mon, 28 Apr 2008, Uwe Kleine-König wrote:
+> > > Oh no. There is lots of code in drivers, which does:
+> > > 
+> > >    disable_irq();
+> > >    do_some_protected_stuff();
+> > >    enable_irq();
+> > > 
+> > > So when the second driver is loaded on another CPU it would see the
+> > > IRQ_DISABLED bit set and unconditionally reenable the interrupt. 
+> > > 
+> > > This unprotects the protected operation and definitely triggers the
+> > > WARN_ON() in enable_irq() where we check for desc->depth == 0.
+> > mmpf.
+> > 
+> > It's not nice to use disable_irq()/enable_irq() in a driver, is it?
+> 
+> Well, it's not nice, but it's there (in rather large quantities)
+Ah, and now I finally understood desc->depth ...
+ 
+> Subject: genirq: reenable a nobody cared disabled irq when a new driver arrives
+> From: Thomas Gleixner <tglx@linutronix.de>
+> Date: Mon, 28 Apr 2008 17:01:56 +0200
+> 
+> Uwe Kleine-Koenig has some strange hardware where one of the shared
+> interrupts can be asserted during boot before the appropriate driver
+> loads. Requesting the shared irq line from another driver results in a
+> spurious interrupt storm which finally disables the interrupt line.
+> 
+> I have seen similar behaviour on resume before (the hardware does not
+> work anymore so I can not verify) and this spurious irq issue is
+> raised on a regular base in bugreports.
+> 
+> Change the spurious disable logic to increment the disable depth and
+> mark the interrupt with an extra flag which allows us to reenable the
+> interrupt when a new driver arrives which requests the same irq
+> line. In the worst case this will disable the irq again via the
+> spurious trap, but there is a decent chance that the new driver is the
+> one which can handle the already asserted interrupt and makes the box
+> usable again.
+> 
+> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+> Acked-by: Ingo Molnar <mingo@elte.hu>
+> ---
+>  include/linux/irq.h   |    1 +
+>  kernel/irq/manage.c   |   49 ++++++++++++++++++++++++++++++++-----------------
+>  kernel/irq/spurious.c |    4 ++--
+>  3 files changed, 35 insertions(+), 19 deletions(-)
+> 
+> Index: linux-2.6/include/linux/irq.h
+> ===================================================================
+> --- linux-2.6.orig/include/linux/irq.h
+> +++ linux-2.6/include/linux/irq.h
+> @@ -61,6 +61,7 @@ typedef	void (*irq_flow_handler_t)(unsig
+>  #define IRQ_WAKEUP		0x00100000	/* IRQ triggers system wakeup */
+>  #define IRQ_MOVE_PENDING	0x00200000	/* need to re-target IRQ destination */
+>  #define IRQ_NO_BALANCING	0x00400000	/* IRQ is excluded from balancing */
+> +#define IRQ_SPURIOUS_DISABLED	0x00400000	/* IRQ was disabled by the spurious trap */
+Is it intended that IRQ_NO_BALANCING == IRQ_SPURIOUS_DISABLED?
 
-2.6.25-rc9:
+Other than that
 
-File & VM system latencies in microseconds - smaller is better
--------------------------------------------------------------------------------
-Host                 OS   0K File      10K File     Mmap    Prot   Page   100fd
-                        Create Delete Create Delete Latency Fault  Fault  selct
---------- ------------- ------ ------ ------ ------ ------- ----- ------- -----
-ipnn2     Linux 2.6.25-   13.9 7.6111  103.4 9.7453   926.0 0.711 2.14250 2.552
-ipnn2     Linux 2.6.25-   13.7 7.6243  310.7 9.6574   932.0 0.750 2.15970 2.555
-ipnn2     Linux 2.6.25-   13.9 7.6831  192.5   10.0   927.0 0.760 2.21310 2.553
-ipnn2     Linux 2.6.25-   13.9 7.5739   98.4 9.5330   927.0 0.703 2.17610 2.554
-ipnn2     Linux 2.6.25-   14.6 7.6429   39.1   10.8   935.0 0.763 2.17250 2.552
-ipnn2     Linux 2.6.25-   14.1 7.8777  129.8 9.9375   930.0 0.782 2.26460 2.559
-ipnn2     Linux 2.6.25-   14.8 7.9639  623.8 8.2042   927.0 0.773 2.21510 2.557
-ipnn2     Linux 2.6.25-   14.4 7.5842  622.3 8.3272   920.0 0.745 2.22210 2.558
-ipnn2     Linux 2.6.25-   14.2 7.6339   45.7   10.2   935.0 0.675 2.23860 2.554
-ipnn2     Linux 2.6.25-   14.1 7.7175  263.7   10.1   929.0 0.762 2.22350 2.556
-ipnn2     Linux 2.6.25-   13.9 8.1230  378.2 9.4343   975.0 0.752 2.25920 2.554
+Tested-and-Acked-by: Uwe Kleine-König <Uwe.Kleine-Koenig@digi.com>
 
+Best regards and thanks
+Uwe
 
-2.6.23:
-File & VM system latencies in microseconds - smaller is better
--------------------------------------------------------------------------------
-Host                 OS   0K File      10K File     Mmap    Prot   Page   100fd
-                        Create Delete Create Delete Latency Fault  Fault  selct
---------- ------------- ------ ------ ------ ------ ------- ----- ------- -----
-ipnn2     Linux 2.6.23-                               218.0 0.912 1.94010 2.626
-ipnn2     Linux 2.6.23-                               219.0 1.095 1.96400 2.597
-ipnn2     Linux 2.6.23-                               219.0 0.774 1.96640 2.603
-ipnn2     Linux 2.6.23-                               221.0 0.946 1.99950 2.601
-ipnn2     Linux 2.6.23-                               219.0 0.902 1.99160 2.733
-ipnn2     Linux 2.6.23-                               217.0 0.904 2.04790 2.601
-ipnn2     Linux 2.6.23-                               225.0 0.893 1.99620 2.600
+-- 
+Uwe Kleine-König, Software Engineer
+Digi International GmbH Branch Breisach, Küferstrasse 8, 79206 Breisach, Germany
+Tax: 315/5781/0242 / VAT: DE153662976 / Reg. Amtsgericht Dortmund HRB 13962
