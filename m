@@ -1,60 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760533AbYD2IQu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760601AbYD2ISN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760533AbYD2IQu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 04:16:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755547AbYD2IQe
+	id S1760601AbYD2ISN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 04:18:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755308AbYD2IR7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 04:16:34 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:57291 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755482AbYD2IQd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 04:16:33 -0400
-Date: Tue, 29 Apr 2008 10:17:05 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Alexander van Heukelum <heukelum@mailshack.com>, jdike@addtoit.com
-Subject: Re: [2.6 patch] fs/block_dev.c:I_BDEV() mustn't be inline
-Message-ID: <20080429081705.GA3552@uranus.ravnborg.org>
-References: <20080424215739.GA32378@elte.hu> <alpine.LFD.1.10.0804241510420.2779@woody.linux-foundation.org> <20080426151516.GA27894@elte.hu> <alpine.LFD.1.10.0804260955300.2813@woody.linux-foundation.org> <20080426172222.GD17345@elte.hu> <20080428153831.GC2813@cs181133002.pp.htv.fi> <alpine.LFD.1.10.0804281736230.3119@woody.linux-foundation.org> <20080429080631.GB28059@cs181133002.pp.htv.fi>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080429080631.GB28059@cs181133002.pp.htv.fi>
-User-Agent: Mutt/1.4.2.1i
+	Tue, 29 Apr 2008 04:17:59 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:45444 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755547AbYD2IR6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Apr 2008 04:17:58 -0400
+Date: Tue, 29 Apr 2008 17:17:32 +0900
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Shi Weihua <shiwh@cn.fujitsu.com>
+Subject: [PATCH] on memoryless node, /proc/pagetypeinfo is displayed slightly funny output.  take2
+Cc: kosaki.motohiro@jp.fujitsu.com,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Mel Gorman <mel@csn.ul.ie>, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <4816D881.8060005@cn.fujitsu.com>
+References: <20080429162859.3540.KOSAKI.MOTOHIRO@jp.fujitsu.com> <4816D881.8060005@cn.fujitsu.com>
+Message-Id: <20080429171457.3543.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.42 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 29, 2008 at 11:06:31AM +0300, Adrian Bunk wrote:
-> On Mon, Apr 28, 2008 at 05:41:11PM -0700, Linus Torvalds wrote:
-> >...
-> > > -inline struct block_device *I_BDEV(struct inode *inode)
-> > > +struct block_device *I_BDEV(struct inode *inode)
-> > >  {
-> > >  	return &BDEV_I(inode)->bdev;
-> > >  }
+> > Index: b/mm/vmstat.c
+> > ===================================================================
+> > --- a/mm/vmstat.c       2008-04-29 16:48:58.000000000 +0900
+> > +++ b/mm/vmstat.c       2008-04-29 16:58:33.000000000 +0900
+> > @@ -638,6 +638,10 @@ static int pagetypeinfo_show(struct seq_
+> >  {
+> >         pg_data_t *pgdat = (pg_data_t *)arg;
 > > 
-> > There is NO WAY IN HELL this function shouldn't be inlined,
-> >...
+> > +       /* check memoryless ndoe*/
 > 
-> Then CONFIG_OPTIMIZE_INLINING already broke it in your tree.
+> ndoe -> node ?
 
-Can you please help me here.
-Previously we said: gcc shall inline
-Now we say: hi gcc - it is a good idea to inline this
+Agghhh!
+you are right ;-)
 
-But even without any inline annotation we would expect gcc
-to inline it based on normal heuristics simply due to the
-small size/footprint of the function.
-
-So I cannot see how the CONFIG_OPTIMIZE_INLINING have any
-effect here.
-It all smells like a gcc bug to me.
+fixed version is here.
 
 
-	Sam
+=================================================================
+on memoryless node, /proc/pagetypeinfo is displayed slightly funny output.
+this patch fix it.
+
+
+output example (header is outputed, but no data is outputed)
+--------------------------------------------------------------
+Page block order: 14
+Pages per block:  16384
+
+Free pages count per migrate type at order       0      1      2      3      4      5    \
+  6      7      8      9     10     11     12     13     14     15     16
+
+Number of blocks type     Unmovable  Reclaimable      Movable      Reserve      Isolate
+Page block order: 14
+Pages per block:  16384
+
+Free pages count per migrate type at order       0      1      2      3      4      5    \
+  6      7      8      9     10     11     12     13     14     15     16
+
+
+Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+CC: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+CC: Mel Gorman <mel@csn.ul.ie>
+---
+ mm/vmstat.c |    4 ++++
+ 1 file changed, 4 insertions(+)
+
+Index: b/mm/vmstat.c
+===================================================================
+--- a/mm/vmstat.c       2008-04-29 16:48:58.000000000 +0900
++++ b/mm/vmstat.c       2008-04-29 16:58:33.000000000 +0900
+@@ -638,6 +638,10 @@ static int pagetypeinfo_show(struct seq_
+ {
+        pg_data_t *pgdat = (pg_data_t *)arg;
+
++       /* check memoryless node */
++       if (!node_state(pgdat->node_id, N_HIGH_MEMORY))
++               return 0;
++
+        seq_printf(m, "Page block order: %d\n", pageblock_order);
+        seq_printf(m, "Pages per block:  %lu\n", pageblock_nr_pages);
+        seq_putc(m, '\n');
+
+
