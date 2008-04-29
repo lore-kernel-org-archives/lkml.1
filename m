@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763397AbYD2R3b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757419AbYD2R2Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763397AbYD2R3b (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 13:29:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758923AbYD2RV3
+	id S1757419AbYD2R2Y (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 13:28:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756798AbYD2RVR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 13:21:29 -0400
-Received: from mx1.suse.de ([195.135.220.2]:52194 "EHLO mx1.suse.de"
+	Tue, 29 Apr 2008 13:21:17 -0400
+Received: from ns2.suse.de ([195.135.220.15]:43212 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758905AbYD2RV1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 13:21:27 -0400
-Date: Tue, 29 Apr 2008 10:18:48 -0700
+	id S1752293AbYD2RVQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Apr 2008 13:21:16 -0400
+Date: Tue, 29 Apr 2008 10:18:38 -0700
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org, jeff@garzik.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -20,61 +20,50 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       linux-wireless@vger.kernel.org, bcm43xx-dev@lists.berlios.de,
-       Larry Finger <Larry.Finger@lwfinger.net>,
-       Gabor Stefanik <netrolller.3d@gmail.com>, Michael Buesch <mb@bu3sch.de>,
-       "John W. Linville" <linville@tuxdriver.com>
-Subject: [22/37] ssb: Fix all-ones boardflags
-Message-ID: <20080429171848.GW14724@suse.de>
+       support@neterion.com, Santosh Rastapur <santosh.rastapur@neterion.com>,
+       Ramkrishna Vepa <ram.vepa@neterion.com>,
+       Jeff Garzik <jgarzik@redhat.com>
+Subject: [18/37] S2io: Fix memory leak during free_tx_buffers
+Message-ID: <20080429171838.GS14724@suse.de>
 References: <20080429171222.073929148@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="ssb-fix-all-ones-boardflags.patch"
+Content-Disposition: inline; filename="s2io-fix-memory-leak-during-free_tx_buffers.patch"
 In-Reply-To: <20080429171730.GA14724@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
 2.6.25-stable review patch.  If anyone has any objections, please let us
 know.
 
 ------------------
-From: Larry Finger <Larry.Finger@lwfinger.net>
+From: Sreenivasa Honnur <Sreenivasa.Honnur@neterion.com>
 
-commit 4503183aa32e6886400d82282292934fa64a81b0 upstream
+commit b35b3b49fc6750806964048b31799c8782980ef9 upstream
 
-In the SSB SPROM a field set to all ones means the value
-is not defined in the SPROM.
-In case of the boardflags, we need to set them to zero
-to avoid confusing drivers. Drivers will only check the
-flags by ANDing.
+- Fix the memory leak during free_tx_buffers.
 
-
-Signed-off-by: Larry Finger <Larry.Finger@lwfinger.net>
-Signed-off-by: Gabor Stefanik <netrolller.3d@gmail.com>
-Signed-off-by: Michael Buesch <mb@bu3sch.de>
-Signed-off-by: John W. Linville <linville@tuxdriver.com>
+Signed-off-by: Santosh Rastapur <santosh.rastapur@neterion.com>
+Signed-off-by: Ramkrishna Vepa <ram.vepa@neterion.com>
+Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/ssb/pci.c |    5 +++++
- 1 file changed, 5 insertions(+)
+ drivers/net/s2io.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/drivers/ssb/pci.c
-+++ b/drivers/ssb/pci.c
-@@ -482,6 +482,11 @@ static int sprom_extract(struct ssb_bus 
- 			goto unsupported;
- 	}
- 
-+	if (out->boardflags_lo == 0xFFFF)
-+		out->boardflags_lo = 0;  /* per specs */
-+	if (out->boardflags_hi == 0xFFFF)
-+		out->boardflags_hi = 0;  /* per specs */
-+
- 	return 0;
- unsupported:
- 	ssb_printk(KERN_WARNING PFX "Unsupported SPROM revision %d "
+--- a/drivers/net/s2io.c
++++ b/drivers/net/s2io.c
+@@ -2339,7 +2339,7 @@ static void free_tx_buffers(struct s2io_
+ 	for (i = 0; i < config->tx_fifo_num; i++) {
+ 		unsigned long flags;
+ 		spin_lock_irqsave(&mac_control->fifos[i].tx_lock, flags);
+-		for (j = 0; j < config->tx_cfg[i].fifo_len - 1; j++) {
++		for (j = 0; j < config->tx_cfg[i].fifo_len; j++) {
+ 			txdp = (struct TxD *) \
+ 			mac_control->fifos[i].list_info[j].list_virt_addr;
+ 			skb = s2io_txdl_getskb(&mac_control->fifos[i], txdp, j);
 
 -- 
