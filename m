@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754205AbYD2R3F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763397AbYD2R3b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754205AbYD2R3F (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 13:29:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758860AbYD2RVY
+	id S1763397AbYD2R3b (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 13:29:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758923AbYD2RV3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 13:21:24 -0400
-Received: from ns2.suse.de ([195.135.220.15]:43267 "EHLO mx2.suse.de"
+	Tue, 29 Apr 2008 13:21:29 -0400
+Received: from mx1.suse.de ([195.135.220.2]:52194 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758822AbYD2RVX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 13:21:23 -0400
-Date: Tue, 29 Apr 2008 10:18:45 -0700
+	id S1758905AbYD2RV1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Apr 2008 13:21:27 -0400
+Date: Tue, 29 Apr 2008 10:18:48 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -20,98 +20,61 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       =?iso-8859-1?B?QmrDtnJu?= Steinbrink <B.Steinbrink@gmx.de>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: [21/37] x86, pci: fix off-by-one errors in some pirq warnings
-Message-ID: <20080429171845.GV14724@suse.de>
+       linux-wireless@vger.kernel.org, bcm43xx-dev@lists.berlios.de,
+       Larry Finger <Larry.Finger@lwfinger.net>,
+       Gabor Stefanik <netrolller.3d@gmail.com>, Michael Buesch <mb@bu3sch.de>,
+       "John W. Linville" <linville@tuxdriver.com>
+Subject: [22/37] ssb: Fix all-ones boardflags
+Message-ID: <20080429171848.GW14724@suse.de>
 References: <20080429171222.073929148@mini.kroah.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline; filename="x86-pci-fix-off-by-one-errors-in-some-pirq-warnings.patch"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline; filename="ssb-fix-all-ones-boardflags.patch"
 In-Reply-To: <20080429171730.GA14724@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+
 2.6.25-stable review patch.  If anyone has any objections, please let us
 know.
 
 ------------------
-From: Björn Steinbrink <B.Steinbrink@gmx.de>
+From: Larry Finger <Larry.Finger@lwfinger.net>
 
-commit 223ac2f42d49dd0324ca02ea15897ead1a2f5133 upstream.
+commit 4503183aa32e6886400d82282292934fa64a81b0 upstream
 
-fix bogus pirq warnings reported in:
+In the SSB SPROM a field set to all ones means the value
+is not defined in the SPROM.
+In case of the boardflags, we need to set them to zero
+to avoid confusing drivers. Drivers will only check the
+flags by ANDing.
 
-  http://bugzilla.kernel.org/show_bug.cgi?id=10366
 
-safe to be backported to v2.6.25 and earlier.
-
-Signed-off-by: Björn Steinbrink <B.Steinbrink@gmx.de>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Larry Finger <Larry.Finger@lwfinger.net>
+Signed-off-by: Gabor Stefanik <netrolller.3d@gmail.com>
+Signed-off-by: Michael Buesch <mb@bu3sch.de>
+Signed-off-by: John W. Linville <linville@tuxdriver.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/x86/pci/irq.c |   12 ++++++------
- 1 file changed, 6 insertions(+), 6 deletions(-)
+ drivers/ssb/pci.c |    5 +++++
+ 1 file changed, 5 insertions(+)
 
---- a/arch/x86/pci/irq.c
-+++ b/arch/x86/pci/irq.c
-@@ -200,7 +200,7 @@ static int pirq_ali_get(struct pci_dev *
- {
- 	static const unsigned char irqmap[16] = { 0, 9, 3, 10, 4, 5, 7, 6, 1, 11, 0, 12, 0, 14, 0, 15 };
+--- a/drivers/ssb/pci.c
++++ b/drivers/ssb/pci.c
+@@ -482,6 +482,11 @@ static int sprom_extract(struct ssb_bus 
+ 			goto unsupported;
+ 	}
  
--	WARN_ON_ONCE(pirq >= 16);
-+	WARN_ON_ONCE(pirq > 16);
- 	return irqmap[read_config_nybble(router, 0x48, pirq-1)];
- }
- 
-@@ -209,7 +209,7 @@ static int pirq_ali_set(struct pci_dev *
- 	static const unsigned char irqmap[16] = { 0, 8, 0, 2, 4, 5, 7, 6, 0, 1, 3, 9, 11, 0, 13, 15 };
- 	unsigned int val = irqmap[irq];
- 
--	WARN_ON_ONCE(pirq >= 16);
-+	WARN_ON_ONCE(pirq > 16);
- 	if (val) {
- 		write_config_nybble(router, 0x48, pirq-1, val);
- 		return 1;
-@@ -260,7 +260,7 @@ static int pirq_via586_get(struct pci_de
- {
- 	static const unsigned int pirqmap[5] = { 3, 2, 5, 1, 1 };
- 
--	WARN_ON_ONCE(pirq >= 5);
-+	WARN_ON_ONCE(pirq > 5);
- 	return read_config_nybble(router, 0x55, pirqmap[pirq-1]);
- }
- 
-@@ -268,7 +268,7 @@ static int pirq_via586_set(struct pci_de
- {
- 	static const unsigned int pirqmap[5] = { 3, 2, 5, 1, 1 };
- 
--	WARN_ON_ONCE(pirq >= 5);
-+	WARN_ON_ONCE(pirq > 5);
- 	write_config_nybble(router, 0x55, pirqmap[pirq-1], irq);
- 	return 1;
- }
-@@ -282,7 +282,7 @@ static int pirq_ite_get(struct pci_dev *
- {
- 	static const unsigned char pirqmap[4] = { 1, 0, 2, 3 };
- 
--	WARN_ON_ONCE(pirq >= 4);
-+	WARN_ON_ONCE(pirq > 4);
- 	return read_config_nybble(router,0x43, pirqmap[pirq-1]);
- }
- 
-@@ -290,7 +290,7 @@ static int pirq_ite_set(struct pci_dev *
- {
- 	static const unsigned char pirqmap[4] = { 1, 0, 2, 3 };
- 
--	WARN_ON_ONCE(pirq >= 4);
-+	WARN_ON_ONCE(pirq > 4);
- 	write_config_nybble(router, 0x43, pirqmap[pirq-1], irq);
- 	return 1;
- }
++	if (out->boardflags_lo == 0xFFFF)
++		out->boardflags_lo = 0;  /* per specs */
++	if (out->boardflags_hi == 0xFFFF)
++		out->boardflags_hi = 0;  /* per specs */
++
+ 	return 0;
+ unsupported:
+ 	ssb_printk(KERN_WARNING PFX "Unsupported SPROM revision %d "
 
 -- 
