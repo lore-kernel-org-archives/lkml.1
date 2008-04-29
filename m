@@ -1,27 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755550AbYD2M30@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756535AbYD2Mc3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755550AbYD2M30 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 08:29:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752884AbYD2M3S
+	id S1756535AbYD2Mc3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 08:32:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752989AbYD2McU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 08:29:18 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:36006 "EHLO mx3.mail.elte.hu"
+	Tue, 29 Apr 2008 08:32:20 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:44110 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752355AbYD2M3R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 08:29:17 -0400
-Date: Tue, 29 Apr 2008 14:29:03 +0200
+	id S1752370AbYD2McT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Apr 2008 08:32:19 -0400
+Date: Tue, 29 Apr 2008 14:32:02 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Frans Pop <elendil@planet.nl>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
-       Mike Galbraith <efault@gmx.de>, Richard Jonsson <richie@coderworld.net>,
-       Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [git pull] scheduler changes for v2.6.26
-Message-ID: <20080429122903.GG31271@elte.hu>
-References: <20080419181304.GB21353@elte.hu> <200804231136.50639.elendil@planet.nl> <20080423094644.GB23293@elte.hu> <200804231536.03076.elendil@planet.nl>
+To: Christian Borntraeger <borntraeger@de.ibm.com>
+Cc: Olof Johansson <olof@lixom.net>, Andrew Morton <akpm@linux-foundation.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH/resend] 2.6.25+: Fix cpu hotplug problem in softirq code
+Message-ID: <20080429123202.GI31271@elte.hu>
+References: <200804242113.11602.borntraeger@de.ibm.com> <200804290940.12838.borntraeger@de.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200804231536.03076.elendil@planet.nl>
+In-Reply-To: <200804290940.12838.borntraeger@de.ibm.com>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -36,13 +37,13 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Frans Pop <elendil@planet.nl> wrote:
+* Christian Borntraeger <borntraeger@de.ibm.com> wrote:
 
-> P.S. It would probably be good to just mention the units in the 
-> headers of the debug files. It may be obvious to you, but that way 
-> it's obvious even to morons like me :-P
+> This is a resend of a patch, which fixes a bug in cpu hotplug 
+> introduced after 2.6.25. Andrew, Olof, any opinions on this patch?
 
-yeah, agreed. We did that in -rt's /proc/latency_trace but it isnt there 
-in ftrace. Steve?
+hm, nice catch.
+
+  Acked-by: Ingo Molnar <mingo@elte.hu>
 
 	Ingo
