@@ -1,91 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757221AbYD2MeW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758613AbYD2MfG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757221AbYD2MeW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 08:34:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753950AbYD2MeO
+	id S1758613AbYD2MfG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 08:35:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753925AbYD2Mez
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 08:34:14 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:49567
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752626AbYD2MeN (ORCPT
+	Tue, 29 Apr 2008 08:34:55 -0400
+Received: from g1t0027.austin.hp.com ([15.216.28.34]:21527 "EHLO
+	g1t0027.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755158AbYD2Mey (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 08:34:13 -0400
-Date: Tue, 29 Apr 2008 05:34:12 -0700 (PDT)
-Message-Id: <20080429.053412.15412725.davem@davemloft.net>
-To: tglx@linutronix.de
-Cc: torvalds@linux-foundation.org, harvey.harrison@gmail.com, mingo@elte.hu,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] bitops: remove "optimizations"
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20080429.030332.88897602.davem@davemloft.net>
-References: <alpine.LFD.1.10.0804281233090.3119@woody.linux-foundation.org>
-	<alpine.LFD.1.10.0804291141580.3261@apollo.tec.linutronix.de>
-	<20080429.030332.88897602.davem@davemloft.net>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Tue, 29 Apr 2008 08:34:54 -0400
+Message-ID: <481715E7.2070103@hp.com>
+Date: Tue, 29 Apr 2008 08:34:47 -0400
+From: "Alan D. Brunelle" <Alan.Brunelle@hp.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
+MIME-Version: 1.0
+To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Cc: Jens Axboe <jens.axboe@oracle.com>
+Subject: [PATCH] Skip I/O merges when disabled
+Content-Type: multipart/mixed;
+ boundary="------------060901000500000506020008"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: David Miller <davem@davemloft.net>
-Date: Tue, 29 Apr 2008 03:03:32 -0700 (PDT)
+This is a multi-part message in MIME format.
+--------------060901000500000506020008
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-> From: Thomas Gleixner <tglx@linutronix.de>
-> Date: Tue, 29 Apr 2008 12:01:02 +0200 (CEST)
-> 
-> > Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-> 
-> Acked-by: David S. Miller <davem@davemloft.net>
 
-Ironically, I just bisected sparc64 bootup failures to the following
-changeset.  It's very late here, and I haven't looked into the
-details, but it seems to wedge in free_area_init_nodes() on a non-NUMA
-system with CONFIG_NUMA disabled.
+--------------060901000500000506020008
+Content-Type: text/x-diff;
+ name="0001-Skip-I-O-merges-when-disabled.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="0001-Skip-I-O-merges-when-disabled.patch"
 
-Isn't it funny that this optimization not only was useless, but also
-broke things. :-/
 
-64970b68d2b3ed32b964b0b30b1b98518fde388e is first bad commit
-commit 64970b68d2b3ed32b964b0b30b1b98518fde388e
-Author: Alexander van Heukelum <heukelum@mailshack.com>
-Date:   Tue Mar 11 16:17:19 2008 +0100
+The block I/O + elevator + I/O scheduler code spend a lot of time trying
+to merge I/Os -- rightfully so under "normal" circumstances. However,
+if one were to know that the incoming I/O stream was /very/ random in
+nature, the cycles are wasted.
 
-    x86, generic: optimize find_next_(zero_)bit for small constant-size bitmaps
-    
-    This moves an optimization for searching constant-sized small
-    bitmaps form x86_64-specific to generic code.
-    
-    On an i386 defconfig (the x86#testing one), the size of vmlinux hardly
-    changes with this applied. I have observed only four places where this
-    optimization avoids a call into find_next_bit:
-    
-    In the functions return_unused_surplus_pages, alloc_fresh_huge_page,
-    and adjust_pool_surplus, this patch avoids a call for a 1-bit bitmap.
-    In __next_cpu a call is avoided for a 32-bit bitmap. That's it.
-    
-    On x86_64, 52 locations are optimized with a minimal increase in
-    code size:
-    
-    Current #testing defconfig:
-        146 x bsf, 27 x find_next_*bit
-       text    data     bss     dec     hex filename
-       5392637  846592  724424 6963653  6a41c5 vmlinux
-    
-    After removing the x86_64 specific optimization for find_next_*bit:
-        94 x bsf, 79 x find_next_*bit
-       text    data     bss     dec     hex filename
-       5392358  846592  724424 6963374  6a40ae vmlinux
-    
-    After this patch (making the optimization generic):
-        146 x bsf, 27 x find_next_*bit
-       text    data     bss     dec     hex filename
-       5392396  846592  724424 6963412  6a40d4 vmlinux
-    
-    [ tglx@linutronix.de: build fixes ]
-    
-    Signed-off-by: Ingo Molnar <mingo@elte.hu>
+This patch adds a per-request_queue tunable that (when set) disables
+merge attempts (beyond the simple one-hit cache check), thus freeing up
+a non-trivial amount of CPU cycles.
 
-:040000 040000 c0407f7df7dc5333c78c300780931a269ae0dedd 2f6ef634a35b6dd46e40ea70128c39a742e60501 M      include
-:040000 040000 556ee6ccb15cdbb1aa5a690c732a5492d58dfe6f 937d05977f46056c12b5da64ca62959c06a912c0 M      lib
+Cc: Jens Axboe <jens.axboe@oracle.com>
+Signed-off-by: Alan D. Brunelle <alan.brunelle@hp.com>
+---
+ block/blk-sysfs.c      |   27 +++++++++++++++++++++++++++
+ block/elevator.c       |    3 +++
+ include/linux/blkdev.h |    2 ++
+ 3 files changed, 32 insertions(+), 0 deletions(-)
+
+diff --git a/block/blk-sysfs.c b/block/blk-sysfs.c
+index fc41d83..00151e1 100644
+--- a/block/blk-sysfs.c
++++ b/block/blk-sysfs.c
+@@ -135,6 +135,26 @@ static ssize_t queue_max_hw_sectors_show(struct request_queue *q, char *page)
+ 	return queue_var_show(max_hw_sectors_kb, (page));
+ }
+ 
++static ssize_t queue_nomerges_show(struct request_queue *q, char *page)
++{
++	int nm = test_bit(QUEUE_FLAG_NOMERGES, &q->queue_flags);
++	return queue_var_show(nm, page);
++}
++
++static ssize_t queue_nomerges_store(struct request_queue *q, const char *page,
++				    size_t count)
++{
++	unsigned long nm;
++	ssize_t ret = queue_var_store(&nm, page, count);
++
++	if (nm)
++	       set_bit(QUEUE_FLAG_NOMERGES, &q->queue_flags);
++	else
++	       clear_bit(QUEUE_FLAG_NOMERGES, &q->queue_flags);
++
++	return ret;
++}
++
+ 
+ static struct queue_sysfs_entry queue_requests_entry = {
+ 	.attr = {.name = "nr_requests", .mode = S_IRUGO | S_IWUSR },
+@@ -170,6 +190,12 @@ static struct queue_sysfs_entry queue_hw_sector_size_entry = {
+ 	.show = queue_hw_sector_size_show,
+ };
+ 
++static struct queue_sysfs_entry queue_nomerges_entry = {
++	.attr = {.name = "nomerges", .mode = S_IRUGO | S_IWUSR },
++	.show = queue_nomerges_show,
++	.store = queue_nomerges_store,
++};
++
+ static struct attribute *default_attrs[] = {
+ 	&queue_requests_entry.attr,
+ 	&queue_ra_entry.attr,
+@@ -177,6 +203,7 @@ static struct attribute *default_attrs[] = {
+ 	&queue_max_sectors_entry.attr,
+ 	&queue_iosched_entry.attr,
+ 	&queue_hw_sector_size_entry.attr,
++	&queue_nomerges_entry.attr,
+ 	NULL,
+ };
+ 
+diff --git a/block/elevator.c b/block/elevator.c
+index 88318c3..13b24d3 100644
+--- a/block/elevator.c
++++ b/block/elevator.c
+@@ -488,6 +488,9 @@ int elv_merge(struct request_queue *q, struct request **req, struct bio *bio)
+ 		}
+ 	}
+ 
++	if (blk_queue_nomerges(q))
++		return ELEVATOR_NO_MERGE;
++
+ 	/*
+ 	 * See if our hash lookup can find a potential backmerge.
+ 	 */
+diff --git a/include/linux/blkdev.h b/include/linux/blkdev.h
+index c5065e3..d8361ea 100644
+--- a/include/linux/blkdev.h
++++ b/include/linux/blkdev.h
+@@ -407,6 +407,7 @@ struct request_queue
+ #define QUEUE_FLAG_PLUGGED	7	/* queue is plugged */
+ #define QUEUE_FLAG_ELVSWITCH	8	/* don't use elevator, just do FIFO */
+ #define QUEUE_FLAG_BIDI		9	/* queue supports bidi requests */
++#define QUEUE_FLAG_NOMERGES    10	/* disable merge attempts */
+ 
+ enum {
+ 	/*
+@@ -451,6 +452,7 @@ enum {
+ #define blk_queue_plugged(q)	test_bit(QUEUE_FLAG_PLUGGED, &(q)->queue_flags)
+ #define blk_queue_tagged(q)	test_bit(QUEUE_FLAG_QUEUED, &(q)->queue_flags)
+ #define blk_queue_stopped(q)	test_bit(QUEUE_FLAG_STOPPED, &(q)->queue_flags)
++#define blk_queue_nomerges(q)	test_bit(QUEUE_FLAG_NOMERGES, &(q)->queue_flags)
+ #define blk_queue_flushing(q)	((q)->ordseq)
+ 
+ #define blk_fs_request(rq)	((rq)->cmd_type == REQ_TYPE_FS)
+-- 
+1.5.4.3
+
+
+--------------060901000500000506020008--
