@@ -1,75 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759363AbYD2Mlf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756873AbYD2Mme@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759363AbYD2Mlf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 08:41:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753950AbYD2MlY
+	id S1756873AbYD2Mme (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 08:42:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754417AbYD2Mm0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 08:41:24 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:40412 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751631AbYD2MlX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 08:41:23 -0400
-Date: Tue, 29 Apr 2008 05:40:45 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Jesse Barnes <jesse.barnes@intel.com>,
-       Gabriel C <nix.or.die@googlemail.com>,
-       Yinghai Lu <yhlu.kernel@gmail.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Mika Fischer <mika.fischer@zoopnet.de>, balajirrao@gmail.com,
-       Andi Kleen <andi@firstfloor.org>, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH] x86_32: trim memory by updating e820 v3
-Message-Id: <20080429054045.09d8a911.akpm@linux-foundation.org>
-In-Reply-To: <20080429103741.GL23198@elte.hu>
-References: <200801192045.17291.yinghai.lu@sun.com>
-	<48159ECF.9020004@googlemail.com>
-	<20080428135351.GF3973@elte.hu>
-	<200804280909.06561.jesse.barnes@intel.com>
-	<20080429103741.GL23198@elte.hu>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+	Tue, 29 Apr 2008 08:42:26 -0400
+Received: from mail.gmx.net ([213.165.64.20]:45147 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1754231AbYD2MmZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Apr 2008 08:42:25 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX18vSWE2mmovpRoZq8/0PbgKrhbdvyYJB80Q5n7PvH
+	RD/XAKoWM/QwCB
+Subject: [patch] fix sched_debug livelock
+From: Mike Galbraith <efault@gmx.de>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>
+Content-Type: text/plain
+Date: Tue, 29 Apr 2008 14:42:21 +0200
+Message-Id: <1209472941.4874.7.camel@marge.simson.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.12.0 
 Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 29 Apr 2008 12:37:41 +0200 Ingo Molnar <mingo@elte.hu> wrote:
+(resending, didn't cc lkml)
 
-> +static int pci_create_attr(struct pci_dev *pdev, int num, int write_combine)
-> +{
-> +	/* allocate attribute structure, piggyback attribute name */
-> +	int name_len = write_combine ? 13 : 10;
-> +	struct bin_attribute *res_attr;
-> +	int retval;
-> +
-> +	res_attr = kzalloc(sizeof(*res_attr) + name_len, GFP_ATOMIC);
+Revert debugging commit 7ba2e74ab5a0518bc953042952dd165724bc70c9.  print_cfs_rq_tasks()
+can induce live-lock if a task is dequeued during list traversal.
 
-That (retained from current code) GFP_ATOMIC cannot be necessary.
+Signed-off-by: Mike Galbraith <efault@gmx.de>
 
-> +	if (res_attr) {
-> +		char *res_attr_name = (char *)(res_attr + 1);
-> +
-> +		if (write_combine) {
-> +			pdev->res_attr_wc[num] = res_attr;
-> +			sprintf(res_attr_name, "resource%d_wc", num);
-> +			res_attr->mmap = pci_mmap_resource_wc;
-> +		} else {
-> +			pdev->res_attr[num] = res_attr;
-> +			sprintf(res_attr_name, "resource%d", num);
-> +			res_attr->mmap = pci_mmap_resource_uc;
-> +		}
-> +		res_attr->attr.name = res_attr_name;
-> +		res_attr->attr.mode = S_IRUSR | S_IWUSR;
-> +		res_attr->size = pci_resource_len(pdev, num);
-> +		res_attr->private = &pdev->resource[num];
-> +		retval = sysfs_create_bin_file(&pdev->dev.kobj, res_attr);
+index 89fa32b..d72e8b4 100644
+--- a/kernel/sched_fair.c
++++ b/kernel/sched_fair.c
+@@ -1611,30 +1611,6 @@ static const struct sched_class fair_sched_class = {
+ };
+ 
+ #ifdef CONFIG_SCHED_DEBUG
+-static void
+-print_cfs_rq_tasks(struct seq_file *m, struct cfs_rq *cfs_rq, int depth)
+-{
+-	struct sched_entity *se;
+-
+-	if (!cfs_rq)
+-		return;
+-
+-	list_for_each_entry_rcu(se, &cfs_rq->tasks, group_node) {
+-		int i;
+-
+-		for (i = depth; i; i--)
+-			seq_puts(m, "  ");
+-
+-		seq_printf(m, "%lu %s %lu\n",
+-				se->load.weight,
+-				entity_is_task(se) ? "T" : "G",
+-				calc_delta_weight(SCHED_LOAD_SCALE, se)
+-				);
+-		if (!entity_is_task(se))
+-			print_cfs_rq_tasks(m, group_cfs_rq(se), depth + 1);
+-	}
+-}
+-
+ static void print_cfs_stats(struct seq_file *m, int cpu)
+ {
+ 	struct cfs_rq *cfs_rq;
+@@ -1642,9 +1618,6 @@ static void print_cfs_stats(struct seq_file *m, int cpu)
+ 	rcu_read_lock();
+ 	for_each_leaf_cfs_rq(cpu_rq(cpu), cfs_rq)
+ 		print_cfs_rq(m, cpu, cfs_rq);
+-
+-	seq_printf(m, "\nWeight tree:\n");
+-	print_cfs_rq_tasks(m, &cpu_rq(cpu)->cfs, 1);
+ 	rcu_read_unlock();
+ }
+ #endif
 
-Because of this.
 
-> +	} else
-> +		retval = -ENOMEM;
-> +
-> +	return retval;
-> +}
