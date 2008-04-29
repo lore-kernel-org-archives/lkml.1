@@ -1,64 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757337AbYD2ILG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758886AbYD2INw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757337AbYD2ILG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 04:11:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753609AbYD2IKu
+	id S1758886AbYD2INw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 04:13:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753350AbYD2INg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 04:10:50 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:56169 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753018AbYD2IKt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 04:10:49 -0400
-Date: Tue, 29 Apr 2008 18:10:42 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Toralf =?UTF-8?B?RsO2cnN0ZXI=?= <toralf.foerster@gmx.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: linux-next: Tree for April 29
-Message-Id: <20080429181042.820d7023.sfr@canb.auug.org.au>
-In-Reply-To: <200804290937.19416.toralf.foerster@gmx.de>
-References: <200804290937.19416.toralf.foerster@gmx.de>
-X-Mailer: Sylpheed 2.5.0beta3 (GTK+ 2.12.9; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Tue__29_Apr_2008_18_10_42_+1000_c5eaNytgT5WDtZ1."
+	Tue, 29 Apr 2008 04:13:36 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:56241 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1753582AbYD2INe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Apr 2008 04:13:34 -0400
+Message-ID: <4816D881.8060005@cn.fujitsu.com>
+Date: Tue, 29 Apr 2008 16:12:49 +0800
+From: Shi Weihua <shiwh@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
+MIME-Version: 1.0
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+CC: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Mel Gorman <mel@csn.ul.ie>, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] on memoryless node, /proc/pagetypeinfo is displayed slightly
+ funny output.
+References: <20080429162859.3540.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+In-Reply-To: <20080429162859.3540.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Tue__29_Apr_2008_18_10_42_+1000_c5eaNytgT5WDtZ1.
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+KOSAKI Motohiro wrote::
+> Hi Mel,
+> 
+> I make patch of solve trivial pagetypeinfo problem.
+> please review it.
+> 
+> 
+> =================================================================
+> on memoryless node, /proc/pagetypeinfo is displayed slightly funny output.
+> this patch fix it.
+> 
+> 
+> output example (header is outputed, but no data is outputed)
+> --------------------------------------------------------------
+> Page block order: 14
+> Pages per block:  16384
+> 
+> Free pages count per migrate type at order       0      1      2      3      4      5    \
+>   6      7      8      9     10     11     12     13     14     15     16
+> 
+> Number of blocks type     Unmovable  Reclaimable      Movable      Reserve      Isolate
+> Page block order: 14
+> Pages per block:  16384
+> 
+> Free pages count per migrate type at order       0      1      2      3      4      5    \
+>   6      7      8      9     10     11     12     13     14     15     16
+> 
+> 
+> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> CC: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> CC: Mel Gorman <mel@csn.ul.ie>
+> 
+> ---
+>  mm/vmstat.c |    4 ++++
+>  1 file changed, 4 insertions(+)
+> 
+> Index: b/mm/vmstat.c
+> ===================================================================
+> --- a/mm/vmstat.c       2008-04-29 16:48:58.000000000 +0900
+> +++ b/mm/vmstat.c       2008-04-29 16:58:33.000000000 +0900
+> @@ -638,6 +638,10 @@ static int pagetypeinfo_show(struct seq_
+>  {
+>         pg_data_t *pgdat = (pg_data_t *)arg;
+> 
+> +       /* check memoryless ndoe*/
 
-Hi,
+ndoe -> node ?
 
-On Tue, 29 Apr 2008 09:37:16 +0200 Toralf F=C3=B6rster <toralf.foerster@gmx=
-.de> wrote:
->
-> I'd like to ask, if you could put a space before the character "." and ",=
-" of
-> the two links http://kisskb.ellerman.id.au/linux-next and http://l4x.org/=
-k/
-> b/c my firefox takes these 2 chars to the html link too therefore I cannot
-> simple click at these 2 links :-(
-
-Sure.  Remind me if I forget tomorrow.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Tue__29_Apr_2008_18_10_42_+1000_c5eaNytgT5WDtZ1.
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFIFtgGTgG2atn1QN8RAoEVAJ96W8gSohWDMBaTyiTi5W3vg7CXhQCgiQWZ
-zOWR80UGf4imwAClURCl7CM=
-=P8M/
------END PGP SIGNATURE-----
-
---Signature=_Tue__29_Apr_2008_18_10_42_+1000_c5eaNytgT5WDtZ1.--
