@@ -1,39 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758099AbYD2WYa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760690AbYD2WY4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758099AbYD2WYa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 18:24:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753634AbYD2WYX
+	id S1760690AbYD2WY4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 18:24:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755153AbYD2WYq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 18:24:23 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:60855 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753156AbYD2WYW (ORCPT
+	Tue, 29 Apr 2008 18:24:46 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:47459 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753634AbYD2WYp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 18:24:22 -0400
-Date: Tue, 29 Apr 2008 23:15:54 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Willy Tarreau <w@1wt.eu>
-Cc: Helge Hafting <helge.hafting@aitel.hist.no>, Adrian Bunk <bunk@kernel.org>,
-       "H. Peter Anvin" <hpa@kernel.org>, linux-kernel@vger.kernel.org,
-       trivial@kernel.org
-Subject: Re: [2.6 patch] UTF-8 fixes in comments
-Message-ID: <20080429231554.69973c45@core>
-In-Reply-To: <20080429221230.GA17360@1wt.eu>
-References: <20080428230524.GK8474@1wt.eu>
-	<48167A07.4000305@kernel.org>
-	<20080429050605.GA27875@1wt.eu>
-	<20080429072911.GA28059@cs181133002.pp.htv.fi>
-	<20080429081423.GD30507@1wt.eu>
-	<4816E4FD.5060605@aitel.hist.no>
-	<20080429100934.GB1473@1wt.eu>
-	<20080429111014.5a065b88@core>
-	<20080429103335.GD1473@1wt.eu>
-	<20080429113410.0971d071@core>
-	<20080429221230.GA17360@1wt.eu>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Tue, 29 Apr 2008 18:24:45 -0400
+Date: Tue, 29 Apr 2008 15:24:13 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: jesse.barnes@intel.com, torvalds@linux-foundation.org,
+       nix.or.die@googlemail.com, yhlu.kernel@gmail.com, hpa@zytor.com,
+       linux-kernel@vger.kernel.org, mika.fischer@zoopnet.de,
+       balajirrao@gmail.com, andi@firstfloor.org, tglx@linutronix.de
+Subject: Re: [patch] PCI: export resource_wc in pci sysfs
+Message-Id: <20080429152413.66bcc83a.akpm@linux-foundation.org>
+In-Reply-To: <20080429220345.GF2302@elte.hu>
+References: <200801192045.17291.yinghai.lu@sun.com>
+	<200804280909.06561.jesse.barnes@intel.com>
+	<20080429103741.GL23198@elte.hu>
+	<200804290852.17618.jesse.barnes@intel.com>
+	<20080429220345.GF2302@elte.hu>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -41,9 +33,45 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> OK I could reproduce the case without ever involving either a shell or
-> readline or anything. Using "cat" as the init program exhibited the
-> anomaly, though it was not much easy to analyze. Then I switched to
-> "init=od -An -tx1 -".
+On Wed, 30 Apr 2008 00:03:46 +0200
+Ingo Molnar <mingo@elte.hu> wrote:
 
-Did you put the console into utf-8 mode before the cat ?
+> +static int pci_create_attr(struct pci_dev *pdev, int num, int write_combine)
+> +{
+> +	/* allocate attribute structure, piggyback attribute name */
+> +	int name_len = write_combine ? 13 : 10;
+> +	struct bin_attribute *res_attr;
+> +	int retval;
+> +
+> +	res_attr = kzalloc(sizeof(*res_attr) + name_len, GFP_ATOMIC);
+> +	if (res_attr) {
+> +		char *res_attr_name = (char *)(res_attr + 1);
+> +
+> +		if (write_combine) {
+> +			pdev->res_attr_wc[num] = res_attr;
+> +			sprintf(res_attr_name, "resource%d_wc", num);
+> +			res_attr->mmap = pci_mmap_resource_wc;
+> +		} else {
+> +			pdev->res_attr[num] = res_attr;
+> +			sprintf(res_attr_name, "resource%d", num);
+> +			res_attr->mmap = pci_mmap_resource_uc;
+> +		}
+> +		res_attr->attr.name = res_attr_name;
+> +		res_attr->attr.mode = S_IRUSR | S_IWUSR;
+> +		res_attr->size = pci_resource_len(pdev, num);
+> +		res_attr->private = &pdev->resource[num];
+> +		retval = sysfs_create_bin_file(&pdev->dev.kobj, res_attr);
+> +	} else
+> +		retval = -ENOMEM;
+> +
+> +	return retval;
+> +}
+
+That GFP_ATOMIC should be switched to GFP_KERNEL.
+
+Do we reeeeeeeely need to pull this
+tack-the-string-onto-the-end-of-the-struct stunt?  If we didn't do that,
+this code could then be taught about kasprintf() and things like that "? 
+13 : 10" could be thankfully laid to rest.
+
+
