@@ -1,46 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755299AbYD2Vo0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755433AbYD2Vqf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755299AbYD2Vo0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 17:44:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752524AbYD2VoS
+	id S1755433AbYD2Vqf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 17:46:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752966AbYD2Vq1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 17:44:18 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:54946 "EHLO mx2.mail.elte.hu"
+	Tue, 29 Apr 2008 17:46:27 -0400
+Received: from www.tglx.de ([62.245.132.106]:37221 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751948AbYD2VoR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 17:44:17 -0400
-Date: Tue, 29 Apr 2008 23:44:01 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Mike Travis <travis@sgi.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/1] x86: fix remove cpu_pda table patch
-Message-ID: <20080429214401.GB2302@elte.hu>
-References: <20080428210906.348866000@polaris-admin.engr.sgi.com> <20080428214541.GA16153@elte.hu> <48175CF8.4010105@sgi.com> <48176EA6.8060506@sgi.com>
+	id S1752920AbYD2Vq0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Apr 2008 17:46:26 -0400
+Date: Tue, 29 Apr 2008 23:46:02 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: LKML <linux-kernel@vger.kernel.org>
+cc: Ingo Molnar <mingo@elte.hu>, Helge Wagner <Helge.Wagner@gefanuc.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: [PATCH] x86: restrict keyboard io ports reservation to make ipmi
+ driver work
+Message-ID: <alpine.LFD.1.10.0804292342060.6003@apollo.tec.linutronix.de>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <48176EA6.8060506@sgi.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0032]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Helge Wagner <Helge.Wagner@gefanuc.com>
 
-* Mike Travis <travis@sgi.com> wrote:
+On some of our (single board computer) boards (x86) we are using an
+IPMI controller that uses I/O ports 0x62 and 0x66 for a KCS (keyboard
+controller style) IPMI system interface.
+ 
+Trying to load the openipmi driver fails, because the ports
+(0x62/0x66) are reserved for keyboard. keyboard reserves the full
+range 0x60-0x6F while it doesn't need to.
 
-> -	prev_nmi_count = kmalloc(NR_CPUS * sizeof(int), GFP_KERNEL);
-> +	prev_nmi_count = kmalloc(nr_cpu_ids * sizeof(int), GFP_KERNEL);
+Reserve only ports 0x60 and 0x64 for the legacy PS/2 i8042 keyboad
+controller instead of 0x60-0x6F to allow the openipmi driver to work.
 
-yeah, that makes sense ... i'll reinstate your patches and check.
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+---
+ arch/x86/kernel/setup_32.c |    7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
 
-	Ingo
+Index: linux-2.6/arch/x86/kernel/setup_32.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/setup_32.c
++++ linux-2.6/arch/x86/kernel/setup_32.c
+@@ -127,7 +127,12 @@ static struct resource standard_io_resou
+ }, {
+ 	.name	= "keyboard",
+ 	.start	= 0x0060,
+-	.end	= 0x006f,
++	.end	= 0x0060,
++	.flags	= IORESOURCE_BUSY | IORESOURCE_IO
++}, {
++	.name	= "keyboard",
++	.start	= 0x0064,
++	.end	= 0x0064,
+ 	.flags	= IORESOURCE_BUSY | IORESOURCE_IO
+ }, {
+ 	.name	= "dma page reg",
