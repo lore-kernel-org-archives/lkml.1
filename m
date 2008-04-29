@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933291AbYD2RiX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933716AbYD2Rjx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933291AbYD2RiX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 13:38:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760965AbYD2RZi
+	id S933716AbYD2Rjx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 13:39:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761428AbYD2R0R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 13:25:38 -0400
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:47328 "EHLO
+	Tue, 29 Apr 2008 13:26:17 -0400
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:47452 "EHLO
 	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761184AbYD2RZe (ORCPT
+	with ESMTP id S1761394AbYD2R0P (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 13:25:34 -0400
-Message-Id: <20080429171702.480252075@theryb.frec.bull.fr>
+	Tue, 29 Apr 2008 13:26:15 -0400
+Message-Id: <20080429171703.312647423@theryb.frec.bull.fr>
 References: <20080429171015.473938697@theryb.frec.bull.fr>
 User-Agent: quilt/0.46-1
-Date: Tue, 29 Apr 2008 19:11:05 +0200
+Date: Tue, 29 Apr 2008 19:11:45 +0200
 From: Benjamin Thery <benjamin.thery@bull.net>
 To: linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>
 Cc: Tejun Heo <htejun@gmail.com>, Greg Kroah-Hartman <gregkh@suse.de>,
@@ -21,94 +21,196 @@ Cc: Tejun Heo <htejun@gmail.com>, Greg Kroah-Hartman <gregkh@suse.de>,
        "Serge E. Hallyn" <serue@us.ibm.com>,
        Pavel Emelyanov <xemul@openvz.org>, netdev@vger.kernel.org,
        Benjamin Thery <benjamin.thery@bull.net>
-Subject: [PATCH 05/10] sysfs: sysfs_chmod_file handle multiple superblocks
+Subject: [PATCH 09/10] net: netns: Enable tagging for net_class directories
+ in sysfs
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-sysfs: sysfs_chmod_file handle multiple superblocks
+net: Enable tagging for net_class directories in sysfs
 
-Teach sysfs_chmod_file how to handle multiple sysfs
-superblocks.
+The problem.  Network devices show up in sysfs and with the network
+namespace active multiple devices with the same name can show up in
+the same directory, ouch!
+
+To avoid that problem and allow existing applications in network namespaces
+to see the same interface that is currently presented in sysfs, this
+patch enables the tagging directory support in sysfs.
+
+By using the network namespace pointers as tags to separate out the
+the sysfs directory entries we ensure that we don't have conflicts
+in the directories and applications only see a limited set of
+the network devices.
 
 Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
 Acked-by: Benjamin Thery <benjamin.thery@bull.net>
 ---
- fs/sysfs/file.c |   53 +++++++++++++++++++++++++++++------------------------
- 1 file changed, 29 insertions(+), 24 deletions(-)
+ fs/sysfs/mount.c      |   36 ++++++++++++++++++++++++++++++++++++
+ include/linux/sysfs.h |    2 ++
+ net/Kconfig           |    2 +-
+ net/core/net-sysfs.c  |   20 ++++++++++++++++++++
+ 4 files changed, 59 insertions(+), 1 deletion(-)
 
-Index: linux-mm/fs/sysfs/file.c
+Index: linux-mm/fs/sysfs/mount.c
 ===================================================================
---- linux-mm.orig/fs/sysfs/file.c
-+++ linux-mm/fs/sysfs/file.c
-@@ -567,7 +567,8 @@ EXPORT_SYMBOL_GPL(sysfs_add_file_to_grou
- int sysfs_chmod_file(struct kobject *kobj, struct attribute *attr, mode_t mode)
- {
- 	struct sysfs_dirent *victim_sd = NULL;
--	struct dentry *victim = NULL;
-+	struct super_block *sb;
-+	struct dentry *victim;
- 	struct inode * inode;
- 	struct iattr newattrs;
- 	int rc;
-@@ -578,31 +579,35 @@ int sysfs_chmod_file(struct kobject *kob
- 		goto out;
+--- linux-mm.orig/fs/sysfs/mount.c
++++ linux-mm/fs/sysfs/mount.c
+@@ -16,6 +16,8 @@
+ #include <linux/mount.h>
+ #include <linux/pagemap.h>
+ #include <linux/init.h>
++#include <linux/nsproxy.h>
++#include <net/net_namespace.h>
  
- 	mutex_lock(&sysfs_rename_mutex);
--	victim = sysfs_get_dentry(sysfs_sb, victim_sd);
--	mutex_unlock(&sysfs_rename_mutex);
--	if (IS_ERR(victim)) {
--		rc = PTR_ERR(victim);
--		victim = NULL;
--		goto out;
--	}
--
--	inode = victim->d_inode;
-+	sysfs_grab_supers();
-+	list_for_each_entry(sb, &sysfs_fs_type.fs_supers, s_instances) {
-+		victim = sysfs_get_dentry(sb, victim_sd);
-+		if (victim == ERR_PTR(-EXDEV))
-+			continue;
-+		if (IS_ERR(victim)) {
-+			rc = PTR_ERR(victim);
-+			victim = NULL;
-+			goto out_unlock;
-+		}
+ #include "sysfs.h"
+ 
+@@ -78,6 +80,7 @@ static int sysfs_fill_super(struct super
+ 	root->d_sb = sb;
+ 	sb->s_root = root;
+ 	sb->s_fs_info = info;
++	info->tag.net_ns = hold_net(current->nsproxy->net_ns);
+ 	return 0;
+ 
+ out_err:
+@@ -95,6 +98,9 @@ static int sysfs_test_super(struct super
+ 	struct sysfs_super_info *info = sysfs_info(sb);
+ 	int found = 1;
+ 
++	if (task->nsproxy->net_ns != info->tag.net_ns)
++		found = 0;
 +
-+		inode = victim->d_inode;
-+		mutex_lock(&inode->i_mutex);
-+		newattrs.ia_mode = (mode & S_IALLUGO) | (inode->i_mode & ~S_IALLUGO);
-+		newattrs.ia_valid = ATTR_MODE | ATTR_CTIME;
-+		rc = notify_change(victim, &newattrs);
-+		if (rc == 0) {
-+			mutex_lock(&sysfs_mutex);
-+			victim_sd->s_mode = newattrs.ia_mode;
-+			mutex_unlock(&sysfs_mutex);
-+		}
-+		mutex_unlock(&inode->i_mutex);
+ 	return found;
+ }
  
--	mutex_lock(&inode->i_mutex);
--
--	newattrs.ia_mode = (mode & S_IALLUGO) | (inode->i_mode & ~S_IALLUGO);
--	newattrs.ia_valid = ATTR_MODE | ATTR_CTIME;
--	rc = notify_change(victim, &newattrs);
--
--	if (rc == 0) {
--		mutex_lock(&sysfs_mutex);
--		victim_sd->s_mode = newattrs.ia_mode;
--		mutex_unlock(&sysfs_mutex);
-+		dput(victim);
- 	}
--
--	mutex_unlock(&inode->i_mutex);
-- out:
--	dput(victim);
-+out_unlock:
+@@ -131,6 +137,8 @@ static void sysfs_kill_sb(struct super_b
+ 	struct sysfs_super_info *info = sysfs_info(sb);
+ 
+ 	kill_anon_super(sb);
++	if (info->tag.net_ns)
++		release_net(info->tag.net_ns);
+ 	kfree(info);
+ }
+ 
+@@ -181,6 +189,31 @@ restart:
+ 	spin_unlock(&sb_lock);
+ }
+ 
++#ifdef CONFIG_NET
++static void sysfs_net_exit(struct net *net)
++{
++	/* Allow the net namespace to go away while sysfs is still mounted. */
++	struct super_block *sb;
++	mutex_lock(&sysfs_rename_mutex);
++	sysfs_grab_supers();
++	mutex_lock(&sysfs_mutex);
++	list_for_each_entry(sb, &sysfs_fs_type.fs_supers, s_instances) {
++		struct sysfs_super_info *info = sysfs_info(sb);
++		if (info->tag.net_ns != net)
++			continue;
++		release_net(info->tag.net_ns);
++		info->tag.net_ns = NULL;
++	}
++	mutex_unlock(&sysfs_mutex);
 +	sysfs_release_supers();
 +	mutex_unlock(&sysfs_rename_mutex);
-+out:
- 	sysfs_put(victim_sd);
- 	return rc;
++}
++
++static struct pernet_operations sysfs_net_ops = {
++	.exit = sysfs_net_exit,
++};
++#endif
++
+ int __init sysfs_init(void)
+ {
+ 	int err = -ENOMEM;
+@@ -205,6 +238,9 @@ int __init sysfs_init(void)
+ 			unregister_filesystem(&sysfs_fs_type);
+ 			goto out_err;
+ 		}
++#ifdef CONFIG_NET
++		register_pernet_subsys(&sysfs_net_ops);
++#endif
+ 	} else
+ 		goto out_err;
+ out:
+Index: linux-mm/include/linux/sysfs.h
+===================================================================
+--- linux-mm.orig/include/linux/sysfs.h
++++ linux-mm/include/linux/sysfs.h
+@@ -19,6 +19,7 @@
+ 
+ struct kobject;
+ struct module;
++struct net;
+ 
+ /* FIXME
+  * The *owner field is no longer used, but leave around
+@@ -79,6 +80,7 @@ struct sysfs_ops {
+ };
+ 
+ struct sysfs_tag_info {
++	struct net *net_ns;
+ };
+ 
+ struct sysfs_tagged_dir_operations {
+Index: linux-mm/net/Kconfig
+===================================================================
+--- linux-mm.orig/net/Kconfig
++++ linux-mm/net/Kconfig
+@@ -30,7 +30,7 @@ menu "Networking options"
+ config NET_NS
+ 	bool "Network namespace support"
+ 	default n
+-	depends on EXPERIMENTAL && !SYSFS && NAMESPACES
++	depends on EXPERIMENTAL && NAMESPACES
+ 	help
+ 	  Allow user space to create what appear to be multiple instances
+ 	  of the network stack.
+Index: linux-mm/net/core/net-sysfs.c
+===================================================================
+--- linux-mm.orig/net/core/net-sysfs.c
++++ linux-mm/net/core/net-sysfs.c
+@@ -13,7 +13,9 @@
+ #include <linux/kernel.h>
+ #include <linux/netdevice.h>
+ #include <linux/if_arp.h>
++#include <linux/nsproxy.h>
+ #include <net/sock.h>
++#include <net/net_namespace.h>
+ #include <linux/rtnetlink.h>
+ #include <linux/wireless.h>
+ #include <net/iw_handler.h>
+@@ -419,6 +421,23 @@ static void netdev_release(struct device
+ 	kfree((char *)dev - dev->padded);
  }
+ 
++static const void *net_sb_tag(struct sysfs_tag_info *info)
++{
++	return info->net_ns;
++}
++
++static const void *net_kobject_tag(struct kobject *kobj)
++{
++	struct net_device *dev;
++	dev = container_of(kobj, struct net_device, dev.kobj);
++	return dev_net(dev);
++}
++
++static const struct sysfs_tagged_dir_operations net_tagged_dir_operations = {
++	.sb_tag = net_sb_tag,
++	.kobject_tag = net_kobject_tag,
++};
++
+ static struct class net_class = {
+ 	.name = "net",
+ 	.dev_release = netdev_release,
+@@ -428,6 +447,7 @@ static struct class net_class = {
+ #ifdef CONFIG_HOTPLUG
+ 	.dev_uevent = netdev_uevent,
+ #endif
++	.tag_ops = &net_tagged_dir_operations,
+ };
+ 
+ /* Delete sysfs entries but hold kobject reference until after all
 
 -- 
