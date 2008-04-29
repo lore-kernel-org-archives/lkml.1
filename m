@@ -1,80 +1,154 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933020AbYD2Pas@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933020AbYD2PbK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933020AbYD2Pas (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 11:30:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755487AbYD2Paj
+	id S933020AbYD2PbK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 11:31:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757840AbYD2Pat
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 11:30:39 -0400
-Received: from fg-out-1718.google.com ([72.14.220.159]:6095 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753257AbYD2Pai (ORCPT
+	Tue, 29 Apr 2008 11:30:49 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:11107 "EHLO
+	dwalker1.mvista.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S933013AbYD2Pas (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 11:30:38 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=tymVktdRFUDX3w4fUJyrYQTw+yCJ43m9p7uHOqy2BSLCYooZeF214+y3vjbQxbTAEnVAGo6Y1wfoDBmxFHWbpphH36PT1LYnfLqDOFFuMstAenuDbJqloKO98G2FCRm/pdtZovLHFpFUk9KkB6jv62f+i4Qj9VrIgYXkl5VjTgo=
-Date: Tue, 29 Apr 2008 19:29:47 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, David Woodhouse <dwmw2@infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: vm86 - hide X86_VM_MASK from userland programs v2
-Message-ID: <20080429152947.GB6837@cvg>
-References: <20080424144120.GA7717@cvg> <4810CC2F.3010600@zytor.com> <20080428182323.GD1685@elte.hu> <20080428192039.GA10267@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080428192039.GA10267@elte.hu>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Tue, 29 Apr 2008 11:30:48 -0400
+Message-Id: <20080429152728.897334323@mvista.com>
+User-Agent: quilt/0.46-1
+Date: Tue, 29 Apr 2008 08:27:28 -0700
+From: Daniel Walker <dwalker@mvista.com>
+To: akpm@linux-foundation.org
+Cc: paulus@samba.org, benh@kernel.crashing.org, mingo@elte.hu, matthew@wil.cx,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] machintosh: ADB driver: adb_handler_sem semaphore to mutex
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Ingo Molnar - Mon, Apr 28, 2008 at 09:20:39PM +0200]
-| 
-| Cyrill,
-| 
-| randconfig testing in x86.git found a build bug and i bisected it to 
-| your patch - output is below. Config attached. Looks like some config 
-| file dependency hell problem? The dependencies there definitely need a 
-| good look and a handful of cleanups as well.
-| 
-| 	Ingo
-| 
-| --------------------->
-| In file included from include/asm/vm86.h:139,
-|                  from include/asm/processor.h:11,
-|                  from include/asm/atomic_32.h:6,
-|                  from include/asm/atomic.h:3,
-|                  from include/linux/crypto.h:21,
-|                  from arch/x86/kernel/asm-offsets_32.c:8,
-|                  from arch/x86/kernel/asm-offsets.c:3:
-| include/asm/ptrace.h: In function 'user_mode_vm':
-| include/asm/ptrace.h:207: error: 'X86_VM_MASK' undeclared (first use in this function)
-| include/asm/ptrace.h:207: error: (Each undeclared identifier is reported only once
-| include/asm/ptrace.h:207: error: for each function it appears in.)
-| include/asm/ptrace.h: In function 'v8086_mode':
-| include/asm/ptrace.h:217: error: 'X86_VM_MASK' undeclared (first use in this function)
+Signed-off-by: Daniel Walker <dwalker@mvista.com>
 
-Argh! Ingo, it seems that the real problem was introdused by
+---
+ drivers/macintosh/adb.c |   29 +++++++++++++++--------------
+ 1 file changed, 15 insertions(+), 14 deletions(-)
 
-commit 8fc37f2c474b8ea61186fd77193324845432447b
-Author: Thomas Gleixner <tglx@linutronix.de>
-Date:   Tue Oct 23 22:37:24 2007 +0200
+Index: linux-2.6.25/drivers/macintosh/adb.c
+===================================================================
+--- linux-2.6.25.orig/drivers/macintosh/adb.c
++++ linux-2.6.25/drivers/macintosh/adb.c
+@@ -37,6 +37,7 @@
+ #include <linux/device.h>
+ #include <linux/kthread.h>
+ #include <linux/platform_device.h>
++#include <linux/mutex.h>
+ 
+ #include <asm/uaccess.h>
+ #include <asm/semaphore.h>
+@@ -102,7 +103,7 @@ static struct adb_handler {
+ } adb_handler[16];
+ 
+ /*
+- * The adb_handler_sem mutex protects all accesses to the original_address
++ * The adb_handler_mutex mutex protects all accesses to the original_address
+  * and handler_id fields of adb_handler[i] for all i, and changes to the
+  * handler field.
+  * Accesses to the handler field are protected by the adb_handler_lock
+@@ -110,7 +111,7 @@ static struct adb_handler {
+  * time adb_unregister returns, we know that the old handler isn't being
+  * called.
+  */
+-static DECLARE_MUTEX(adb_handler_sem);
++static DEFINE_MUTEX(adb_handler_mutex);
+ static DEFINE_RWLOCK(adb_handler_lock);
+ 
+ #if 0
+@@ -355,7 +356,7 @@ do_adb_reset_bus(void)
+ 		msleep(500);
+ 	}
+ 
+-	down(&adb_handler_sem);
++	mutex_lock(&adb_handler_mutex);
+ 	write_lock_irq(&adb_handler_lock);
+ 	memset(adb_handler, 0, sizeof(adb_handler));
+ 	write_unlock_irq(&adb_handler_lock);
+@@ -376,7 +377,7 @@ do_adb_reset_bus(void)
+ 		if (adb_controller->autopoll)
+ 			adb_controller->autopoll(autopoll_devs);
+ 	}
+-	up(&adb_handler_sem);
++	mutex_unlock(&adb_handler_mutex);
+ 
+ 	blocking_notifier_call_chain(&adb_client_list,
+ 		ADB_MSG_POST_RESET, NULL);
+@@ -454,7 +455,7 @@ adb_register(int default_id, int handler
+ {
+ 	int i;
+ 
+-	down(&adb_handler_sem);
++	mutex_lock(&adb_handler_mutex);
+ 	ids->nids = 0;
+ 	for (i = 1; i < 16; i++) {
+ 		if ((adb_handler[i].original_address == default_id) &&
+@@ -472,7 +473,7 @@ adb_register(int default_id, int handler
+ 			ids->id[ids->nids++] = i;
+ 		}
+ 	}
+-	up(&adb_handler_sem);
++	mutex_unlock(&adb_handler_mutex);
+ 	return ids->nids;
+ }
+ 
+@@ -481,7 +482,7 @@ adb_unregister(int index)
+ {
+ 	int ret = -ENODEV;
+ 
+-	down(&adb_handler_sem);
++	mutex_lock(&adb_handler_mutex);
+ 	write_lock_irq(&adb_handler_lock);
+ 	if (adb_handler[index].handler) {
+ 		while(adb_handler[index].busy) {
+@@ -493,7 +494,7 @@ adb_unregister(int index)
+ 		adb_handler[index].handler = NULL;
+ 	}
+ 	write_unlock_irq(&adb_handler_lock);
+-	up(&adb_handler_sem);
++	mutex_unlock(&adb_handler_mutex);
+ 	return ret;
+ }
+ 
+@@ -557,19 +558,19 @@ adb_try_handler_change(int address, int 
+ {
+ 	int ret;
+ 
+-	down(&adb_handler_sem);
++	mutex_lock(&adb_handler_mutex);
+ 	ret = try_handler_change(address, new_id);
+-	up(&adb_handler_sem);
++	mutex_unlock(&adb_handler_mutex);
+ 	return ret;
+ }
+ 
+ int
+ adb_get_infos(int address, int *original_address, int *handler_id)
+ {
+-	down(&adb_handler_sem);
++	mutex_lock(&adb_handler_mutex);
+ 	*original_address = adb_handler[address].original_address;
+ 	*handler_id = adb_handler[address].handler_id;
+-	up(&adb_handler_sem);
++	mutex_unlock(&adb_handler_mutex);
+ 
+ 	return (*original_address != 0);
+ }
+@@ -628,10 +629,10 @@ do_adb_query(struct adb_request *req)
+ 	case ADB_QUERY_GETDEVINFO:
+ 		if (req->nbytes < 3)
+ 			break;
+-		down(&adb_handler_sem);
++		mutex_lock(&adb_handler_mutex);
+ 		req->reply[0] = adb_handler[req->data[2]].original_address;
+ 		req->reply[1] = adb_handler[req->data[2]].handler_id;
+-		up(&adb_handler_sem);
++		mutex_unlock(&adb_handler_mutex);
+ 		req->complete = 1;
+ 		req->reply_len = 2;
+ 		adb_write_done(req);
+-- 
 
-    x86: merge ptrace_32/64.h
-        
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-
-with this patch we have <asm/vm86.h> included only
-if __i386__ defined *BUT* X86_VM_MASK is tried to be
-used *without* __386__ being checked (as example - ptrace.h:user_mode_vm).
-I'm not sure how to properly hanle this situation. But will take a look.
-
-So I suggest you drop my last patch (which moves X86_VM_MASK
-into __KERNEL__ section) for a while. I'll recheck all
-this stuff later (too busy now).
-
-		- Cyrill -
+-- 
