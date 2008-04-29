@@ -1,77 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757011AbYD2LaR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756619AbYD2Lc7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757011AbYD2LaR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 07:30:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753699AbYD2LaF
+	id S1756619AbYD2Lc7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 07:32:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753611AbYD2Lcv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 07:30:05 -0400
-Received: from ozlabs.org ([203.10.76.45]:37867 "EHLO ozlabs.org"
+	Tue, 29 Apr 2008 07:32:51 -0400
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:35660 "EHLO smtp6.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752726AbYD2LaD convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 07:30:03 -0400
+	id S1751585AbYD2Lcv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Apr 2008 07:32:51 -0400
+Date: Tue, 29 Apr 2008 14:32:14 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Willy Tarreau <w@1wt.eu>
+Cc: Helge Hafting <helge.hafting@aitel.hist.no>,
+       "H. Peter Anvin" <hpa@kernel.org>, linux-kernel@vger.kernel.org,
+       trivial@kernel.org
+Subject: Re: [2.6 patch] UTF-8 fixes in comments
+Message-ID: <20080429113214.GE19269@cs181133002.pp.htv.fi>
+References: <20080428230524.GK8474@1wt.eu> <48167A07.4000305@kernel.org> <20080429050605.GA27875@1wt.eu> <20080429072911.GA28059@cs181133002.pp.htv.fi> <20080429081423.GD30507@1wt.eu> <4816E4FD.5060605@aitel.hist.no> <20080429100934.GB1473@1wt.eu> <20080429104216.GC19269@cs181133002.pp.htv.fi> <20080429110638.GG1473@1wt.eu> <20080429112718.GD19269@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
-Message-ID: <18455.1713.268188.906051@cargo.ozlabs.ibm.com>
-Date: Tue, 29 Apr 2008 21:29:53 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: torvalds@linux-foundation.org
-CC: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: [git pull] Please pull powerpc.git master branch
-X-Mailer: VM 7.19 under Emacs 22.1.1
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20080429112718.GD19269@cs181133002.pp.htv.fi>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
+On Tue, Apr 29, 2008 at 02:27:18PM +0300, Adrian Bunk wrote:
+> 
+> You miss my point.
+> 
+> The point is:
+> A conversion "ASCII -> UTF-8" is a nop.
+> 
+> This means when changing the kernel from half a dozen charsets used in 
+> comments to UTF-8 we only had to change the few characters actually 
+> containing non UTF-8.
 
-Please do:
+"containing non-ASCII"
 
-git pull \
-git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git master
+> Going to something like UTF-32 as you suggest would have involved 
+> converting every single file in the kernel.
 
-There are 14 commits there that Andrew Morton sent to me to merge,
-from Badari Pulavarty (memory hot-remove stuff) and Zhang Wei (RapidIO
-patches).  Plus there are 5 other powerpc-related patches: a patch
-from me adding a fast endian-switch system call, a patch from Kumar
-Gala that lets 32-bit use separate stacks for hard and soft IRQs like
-64-bit already does, a build fix from Tony Breeds, a patch from me to
-make powerpc build OK if inline doesn't mean __always_inline, and a
-thermal driver for one of the last G5 powermac models.
+cu
+Adrian
 
-Thanks,
-Paul.
+-- 
 
-Badari Pulavarty (3):
-      [POWERPC] Hotplug memory remove notifications for powerpc
-      [POWERPC] Update lmb data structures for hotplug memory add/remove
-      [POWERPC] Provide walk_memory_resource() for powerpc
-
-Kumar Gala (1):
-      [POWERPC] Add IRQSTACKS support on ppc32
-
-Paul Mackerras (2):
-      [POWERPC] Add fast little-endian switch system call
-      [POWERPC] Use __always_inline for xchg* and cmpxchg*
-
-Tony Breeds (1):
-      [POWERPC] Fix building of pmac32 when CONFIG_NVRAM=m
-
-Zhang Wei (11):
-      [RAPIDIO] Change RIO function mpc85xx_ to fsl_
-      [RAPIDIO] Add RapidIO option to kernel configuration
-      [RAPIDIO] Move include/asm-ppc/rio.h to asm-powerpc
-      [RAPIDIO] Add RapidIO multi mport support
-      [RAPIDIO] Add OF-tree support to RapidIO controller driver
-      [RAPIDIO] Auto-probe the RapidIO system size
-      [RAPIDIO] Add RapidIO node into MPC8641HPCN dts file
-      [RAPIDIO] Add RapidIO node probing into MPC86xx_HPCN board id table
-      [RAPIDIO] Add serial RapidIO controller support, which includes MPC8548, MPC8641
-      [RAPIDIO] Add RapidIO connection info print out and re-training for broken connections
-      [RAPIDIO] Change RapidIO doorbell source and target ID field to 16-bit
-
-Étienne Bersac (1):
-      [POWERPC] windfarm: Add PowerMac 12,1 support
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
