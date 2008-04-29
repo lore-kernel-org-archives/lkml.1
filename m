@@ -1,61 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754745AbYD2Eo2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755592AbYD2EqW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754745AbYD2Eo2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 00:44:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751697AbYD2EoS
+	id S1755592AbYD2EqW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 00:46:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752403AbYD2EqJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 00:44:18 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:39227 "EHLO mx1.redhat.com"
+	Tue, 29 Apr 2008 00:46:09 -0400
+Received: from gate.crashing.org ([63.228.1.57]:40832 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751024AbYD2EoR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 00:44:17 -0400
-Date: Tue, 29 Apr 2008 00:44:05 -0400
-From: Rik van Riel <riel@redhat.com>
-To: David Miller <davem@davemloft.net>
-Cc: benh@kernel.crashing.org, roland@redhat.com, linux-kernel@vger.kernel.org
-Subject: Re: PTRACE_{READ,WRITE}{TEXT,DATA}
-Message-ID: <20080429004405.2c375723@bree.surriel.com>
-In-Reply-To: <20080428.213416.193699665.davem@davemloft.net>
-References: <1209441248.18023.124.camel@pasglop>
-	<20080428.213416.193699665.davem@davemloft.net>
-Organization: Red Hat, Inc.
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
+	id S1751542AbYD2EqG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Apr 2008 00:46:06 -0400
+Subject: Re: [PATCH 2/3] siimage: add sil_* I/O ops
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: Sergei Shtylyov <sshtylyov@ru.mvista.com>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <200804272148.29131.bzolnier@gmail.com>
+References: <200804092051.33163.bzolnier@gmail.com>
+	 <480A2926.6050404@ru.mvista.com>  <200804272148.29131.bzolnier@gmail.com>
+Content-Type: text/plain
+Date: Tue, 29 Apr 2008 14:45:51 +1000
+Message-Id: <1209444351.18023.126.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 28 Apr 2008 21:34:16 -0700 (PDT)
-David Miller <davem@davemloft.net> wrote:
+BTW. siimage crashes on boot here due to dma_ops being mostly full of
+NULL... This is with current linus.
 
-> From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Date: Tue, 29 Apr 2008 13:54:08 +1000
-> 
-> > I noticed kernel/ptrace.c has ptrace_readdata/writedata functions that
-> > are only used by sparc and sparc64 which implements the ptrace requests
-> > PTRACE_READ_DATA, PTRACE_WRITE_DATA (and _TEXT variants).
-> > 
-> > Any reason not to make everybody benefit from these and moving the sparc
-> > implementation to the generic ptrace_request (&compat) ?
-> > 
-> > It's more efficient than read/writing one word at a time... I thought
-> > about it in the light of some work Rik is doing to make
-> > access_process_vm useable on video ram mappings done by the X server...
-> 
-> It's kind of pointless because what gdb does these days on Linux is
-> use the procfs 'mem' file to directly read in parts of the inferior's
-> address space.
-> 
-> See linux_proc_xfer_partial() in gdb/linux-nat.c
+Ben.
 
-Strange, changing access_process_vm on Fedora 9 made gdb able to
-see video memory that the X server had mmapped.
 
-Are you sure gdb behaves as you suggest?  
-
-On x86 my patch seems to work as I expected...
-
--- 
-All rights reversed.
