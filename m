@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763530AbYD2NUl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763640AbYD2NVm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763530AbYD2NUl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 09:20:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760290AbYD2NUY
+	id S1763640AbYD2NVm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 09:21:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757559AbYD2NVc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 09:20:24 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:42061 "EHLO
+	Tue, 29 Apr 2008 09:21:32 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:42064 "EHLO
 	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757736AbYD2NUV (ORCPT
+	with ESMTP id S1755786AbYD2NVa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 09:20:21 -0400
-Date: Tue, 29 Apr 2008 14:12:49 +0100
+	Tue, 29 Apr 2008 09:21:30 -0400
+Date: Tue, 29 Apr 2008 14:14:00 +0100
 From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: linux-kernel@vger.kernel.org, akpm@osdl.org
-Subject: [PATCH] cyclades: Coding style work
-Message-ID: <20080429141249.6701403a@core>
+To: akpm@osdl.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] epca: coding style
+Message-ID: <20080429141400.3e36226b@core>
 X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
  Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
@@ -26,927 +26,858 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-- Fix coding style
-- Use ioremap_nocache for clarity as proposed
+Clean up the epca driver
 
 Signed-off-by: Alan Cox <alan@redhat.com>
 
-diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.25-mm1/drivers/char/cyclades.c linux-2.6.25-mm1/drivers/char/cyclades.c
---- linux.vanilla-2.6.25-mm1/drivers/char/cyclades.c	2008-04-28 11:36:48.000000000 +0100
-+++ linux-2.6.25-mm1/drivers/char/cyclades.c	2008-04-28 10:04:44.000000000 +0100
-@@ -21,7 +21,6 @@
-  *
-  * This version supports shared IRQ's (only for PCI boards).
-  *
-- * $Log: cyclades.c,v $
-  * Prevent users from opening non-existing Z ports.
-  *
-  * Revision 2.3.2.8   2000/07/06 18:14:16 ivan
-@@ -62,7 +61,7 @@
-  * Driver now makes sure that the constant SERIAL_XMIT_SIZE is defined;
-  *
-  * Revision 2.3.2.2   1999/10/01 11:27:43 ivan
-- * Fixed bug in cyz_poll that would make all ports but port 0 
-+ * Fixed bug in cyz_poll that would make all ports but port 0
-  * unable to transmit/receive data (Cyclades-Z only);
-  * Implemented logic to prevent the RX buffer from being stuck with data
-  * due to a driver / firmware race condition in interrupt op mode
-@@ -83,25 +82,25 @@
-  * Revision 2.3.1.1   1999/07/15 16:45:53 ivan
-  * Removed CY_PROC conditional compilation;
-  * Implemented SMP-awareness for the driver;
-- * Implemented a new ISA IRQ autoprobe that uses the irq_probe_[on|off] 
-+ * Implemented a new ISA IRQ autoprobe that uses the irq_probe_[on|off]
-  * functions;
-  * The driver now accepts memory addresses (maddr=0xMMMMM) and IRQs
-  * (irq=NN) as parameters (only for ISA boards);
-- * Fixed bug in set_line_char that would prevent the Cyclades-Z 
-+ * Fixed bug in set_line_char that would prevent the Cyclades-Z
-  * ports from being configured at speeds above 115.2Kbps;
-  * Fixed bug in cy_set_termios that would prevent XON/XOFF flow control
-  * switching from working properly;
-- * The driver now only prints IRQ info for the Cyclades-Z if it's 
-+ * The driver now only prints IRQ info for the Cyclades-Z if it's
-  * configured to work in interrupt mode;
-  *
-  * Revision 2.2.2.3   1999/06/28 11:13:29 ivan
-  * Added support for interrupt mode operation for the Z cards;
-  * Removed the driver inactivity control for the Z;
-- * Added a missing MOD_DEC_USE_COUNT in the cy_open function for when 
-+ * Added a missing MOD_DEC_USE_COUNT in the cy_open function for when
-  * the Z firmware is not loaded yet;
-- * Replaced the "manual" Z Tx flush buffer by a call to a FW command of 
-+ * Replaced the "manual" Z Tx flush buffer by a call to a FW command of
-  * same functionality;
-- * Implemented workaround for IRQ setting loss on the PCI configuration 
-+ * Implemented workaround for IRQ setting loss on the PCI configuration
-  * registers after a PCI bridge EEPROM reload (affects PLX9060 only);
-  *
-  * Revision 2.2.2.2  1999/05/14 17:18:15 ivan
-@@ -112,22 +111,22 @@
-  * BREAK implementation changed in order to make use of the 'break_ctl'
-  * TTY facility;
-  * Fixed typo in TTY structure field 'driver_name';
-- * Included a PCI bridge reset and EEPROM reload in the board 
-+ * Included a PCI bridge reset and EEPROM reload in the board
-  * initialization code (for both Y and Z series).
-  *
-  * Revision 2.2.2.1  1999/04/08 16:17:43 ivan
-- * Fixed a bug in cy_wait_until_sent that was preventing the port to be 
-+ * Fixed a bug in cy_wait_until_sent that was preventing the port to be
-  * closed properly after a SIGINT;
-  * Module usage counter scheme revisited;
-  * Added support to the upcoming Y PCI boards (i.e., support to additional
-  * PCI Device ID's).
-- * 
-+ *
-  * Revision 2.2.1.10 1999/01/20 16:14:29 ivan
-  * Removed all unnecessary page-alignement operations in ioremap calls
-  * (ioremap is currently safe for these operations).
-  *
-  * Revision 2.2.1.9  1998/12/30 18:18:30 ivan
-- * Changed access to PLX PCI bridge registers from I/O to MMIO, in 
-+ * Changed access to PLX PCI bridge registers from I/O to MMIO, in
-  * order to make PLX9050-based boards work with certain motherboards.
-  *
-  * Revision 2.2.1.8  1998/11/13 12:46:20 ivan
-@@ -148,7 +147,7 @@
-  * Fixed Cyclom-4Yo hardware detection bug.
-  *
-  * Revision 2.2.1.4  1998/08/04 11:02:50 ivan
-- * /proc/cyclades implementation with great collaboration of 
-+ * /proc/cyclades implementation with great collaboration of
-  * Marc Lewis <marc@blarg.net>;
-  * cyy_interrupt was changed to avoid occurrence of kernel oopses
-  * during PPP operation.
-@@ -157,7 +156,7 @@
-  * General code review in order to comply with 2.1 kernel standards;
-  * data loss prevention for slow devices revisited (cy_wait_until_sent
-  * was created);
-- * removed conditional compilation for new/old PCI structure support 
-+ * removed conditional compilation for new/old PCI structure support
-  * (now the driver only supports the new PCI structure).
-  *
-  * Revision 2.2.1.1  1998/03/19 16:43:12 ivan
-@@ -168,7 +167,7 @@
-  * cleaned up the data loss fix;
-  * fixed XON/XOFF handling once more (Cyclades-Z);
-  * general review of the driver routines;
-- * introduction of a mechanism to prevent data loss with slow 
-+ * introduction of a mechanism to prevent data loss with slow
-  * printers, by forcing a delay before closing the port.
-  *
-  * Revision 2.1.1.2  1998/02/17 16:50:00 ivan
-@@ -182,12 +181,12 @@
-  * Code review for the module cleanup routine;
-  * fixed RTS and DTR status report for new CD1400's in get_modem_info;
-  * includes anonymous changes regarding signal_pending.
-- * 
-+ *
-  * Revision 2.1  1997/11/01 17:42:41 ivan
-  * Changes in the driver to support Alpha systems (except 8Zo V_1);
-  * BREAK fix for the Cyclades-Z boards;
-  * driver inactivity control by FW implemented;
-- * introduction of flag that allows driver to take advantage of 
-+ * introduction of flag that allows driver to take advantage of
-  * a special CD1400 feature related to HW flow control;
-  * added support for the CD1400  rev. J (Cyclom-Y boards);
-  * introduction of ioctls to:
-@@ -196,17 +195,17 @@
-  *  - adjust the polling interval (Cyclades-Z);
-  *
-  * Revision 1.36.4.33  1997/06/27 19:00:00  ivan
-- * Fixes related to kernel version conditional 
-+ * Fixes related to kernel version conditional
-  * compilation.
-- *  
-+ *
-  * Revision 1.36.4.32  1997/06/14 19:30:00  ivan
-- * Compatibility issues between kernels 2.0.x and 
-+ * Compatibility issues between kernels 2.0.x and
-  * 2.1.x (mainly related to clear_bit function).
-- *  
-+ *
-  * Revision 1.36.4.31  1997/06/03 15:30:00  ivan
-- * Changes to define the memory window according to the 
-+ * Changes to define the memory window according to the
-  * board type.
-- *  
-+ *
-  * Revision 1.36.4.30  1997/05/16 15:30:00  daniel
-  * Changes to support new cycladesZ boards.
-  *
-@@ -624,7 +623,7 @@
- #undef	CY_PCI_DEBUG
- 
- /*
-- * Include section 
-+ * Include section
-  */
- #include <linux/module.h>
- #include <linux/errno.h>
-@@ -649,9 +648,9 @@
- #include <linux/firmware.h>
- 
- #include <asm/system.h>
--#include <asm/io.h>
-+#include <linux/io.h>
- #include <asm/irq.h>
+diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.25-mm1/drivers/char/epca.c linux-2.6.25-mm1/drivers/char/epca.c
+--- linux.vanilla-2.6.25-mm1/drivers/char/epca.c	2008-04-28 11:36:48.000000000 +0100
++++ linux-2.6.25-mm1/drivers/char/epca.c	2008-04-28 10:05:12.000000000 +0100
+@@ -38,8 +38,8 @@
+ #include <linux/slab.h>
+ #include <linux/ioport.h>
+ #include <linux/interrupt.h>
 -#include <asm/uaccess.h>
+-#include <asm/io.h>
 +#include <linux/uaccess.h>
- 
- #include <linux/kernel.h>
++#include <linux/io.h>
+ #include <linux/spinlock.h>
  #include <linux/pci.h>
-@@ -668,10 +667,10 @@
- 	((readl(&((struct RUNTIME_9060 __iomem *) \
- 		((card).ctl_addr))->init_ctrl) & (1<<17)) != 0)
- 
--#define ISZLOADED(card)	(((ZO_V1==readl(&((struct RUNTIME_9060 __iomem *) \
-+#define ISZLOADED(card)	(((ZO_V1 == readl(&((struct RUNTIME_9060 __iomem *) \
- 			((card).ctl_addr))->mail_box_0)) || \
- 			Z_FPGA_CHECK(card)) && \
--			(ZFIRM_ID==readl(&((struct FIRM_ID __iomem *) \
-+			(ZFIRM_ID == readl(&((struct FIRM_ID __iomem *) \
- 			((card).base_addr+ID_ADDRESS))->signature)))
- 
- #ifndef SERIAL_XMIT_SIZE
-@@ -809,12 +808,12 @@
- 
- /*
-  * The Cyclades driver implements HW flow control as any serial driver.
-- * The cyclades_port structure member rflow and the vector rflow_thr 
-- * allows us to take advantage of a special feature in the CD1400 to avoid 
-- * data loss even when the system interrupt latency is too high. These flags 
-- * are to be used only with very special applications. Setting these flags 
-- * requires the use of a special cable (DTR and RTS reversed). In the new 
-- * CD1400-based boards (rev. 6.00 or later), there is no need for special 
-+ * The cyclades_port structure member rflow and the vector rflow_thr
-+ * allows us to take advantage of a special feature in the CD1400 to avoid
-+ * data loss even when the system interrupt latency is too high. These flags
-+ * are to be used only with very special applications. Setting these flags
-+ * requires the use of a special cable (DTR and RTS reversed). In the new
-+ * CD1400-based boards (rev. 6.00 or later), there is no need for special
-  * cables.
+ #include "digiPCI.h"
+@@ -73,7 +73,8 @@
   */
+ static DEFINE_SPINLOCK(epca_lock);
  
-@@ -841,14 +840,22 @@
+-/* MAXBOARDS is typically 12, but ISA and EISA cards are restricted to 7 below. */
++/* MAXBOARDS is typically 12, but ISA and EISA cards are restricted
++   to 7 below. */
+ static struct board_info boards[MAXBOARDS];
  
- #ifdef CONFIG_PCI
- static struct pci_device_id cy_pci_dev_id[] __devinitdata = {
--	{ PCI_DEVICE(PCI_VENDOR_ID_CYCLADES, PCI_DEVICE_ID_CYCLOM_Y_Lo) },	/* PCI < 1Mb */
--	{ PCI_DEVICE(PCI_VENDOR_ID_CYCLADES, PCI_DEVICE_ID_CYCLOM_Y_Hi) },	/* PCI > 1Mb */
--	{ PCI_DEVICE(PCI_VENDOR_ID_CYCLADES, PCI_DEVICE_ID_CYCLOM_4Y_Lo) },	/* 4Y PCI < 1Mb */
--	{ PCI_DEVICE(PCI_VENDOR_ID_CYCLADES, PCI_DEVICE_ID_CYCLOM_4Y_Hi) },	/* 4Y PCI > 1Mb */
--	{ PCI_DEVICE(PCI_VENDOR_ID_CYCLADES, PCI_DEVICE_ID_CYCLOM_8Y_Lo) },	/* 8Y PCI < 1Mb */
--	{ PCI_DEVICE(PCI_VENDOR_ID_CYCLADES, PCI_DEVICE_ID_CYCLOM_8Y_Hi) },	/* 8Y PCI > 1Mb */
--	{ PCI_DEVICE(PCI_VENDOR_ID_CYCLADES, PCI_DEVICE_ID_CYCLOM_Z_Lo) },	/* Z PCI < 1Mb */
--	{ PCI_DEVICE(PCI_VENDOR_ID_CYCLADES, PCI_DEVICE_ID_CYCLOM_Z_Hi) },	/* Z PCI > 1Mb */
-+	/* PCI < 1Mb */
-+	{ PCI_DEVICE(PCI_VENDOR_ID_CYCLADES, PCI_DEVICE_ID_CYCLOM_Y_Lo) },
-+	/* PCI > 1Mb */
-+	{ PCI_DEVICE(PCI_VENDOR_ID_CYCLADES, PCI_DEVICE_ID_CYCLOM_Y_Hi) },
-+	/* 4Y PCI < 1Mb */
-+	{ PCI_DEVICE(PCI_VENDOR_ID_CYCLADES, PCI_DEVICE_ID_CYCLOM_4Y_Lo) },
-+	/* 4Y PCI > 1Mb */
-+	{ PCI_DEVICE(PCI_VENDOR_ID_CYCLADES, PCI_DEVICE_ID_CYCLOM_4Y_Hi) },
-+	/* 8Y PCI < 1Mb */
-+	{ PCI_DEVICE(PCI_VENDOR_ID_CYCLADES, PCI_DEVICE_ID_CYCLOM_8Y_Lo) },
-+	/* 8Y PCI > 1Mb */
-+	{ PCI_DEVICE(PCI_VENDOR_ID_CYCLADES, PCI_DEVICE_ID_CYCLOM_8Y_Hi) },
-+	/* Z PCI < 1Mb */
-+	{ PCI_DEVICE(PCI_VENDOR_ID_CYCLADES, PCI_DEVICE_ID_CYCLOM_Z_Lo) },
-+	/* Z PCI > 1Mb */
-+	{ PCI_DEVICE(PCI_VENDOR_ID_CYCLADES, PCI_DEVICE_ID_CYCLOM_Z_Hi) },
- 	{ }			/* end of table */
+ static struct tty_driver *pc_driver;
+@@ -162,7 +163,7 @@
+ static void pc_flush_buffer(struct tty_struct *);
+ static void pc_flush_chars(struct tty_struct *);
+ static int block_til_ready(struct tty_struct *, struct file *,
+-                           struct channel *);
++			struct channel *);
+ static int pc_open(struct tty_struct *, struct file *);
+ static void post_fep_init(unsigned int crd);
+ static void epcapoll(unsigned long);
+@@ -174,18 +175,18 @@
+ static void epcaparam(struct tty_struct *, struct channel *);
+ static void receive_data(struct channel *);
+ static int pc_ioctl(struct tty_struct *, struct file *,
+-                    unsigned int, unsigned long);
++			unsigned int, unsigned long);
+ static int info_ioctl(struct tty_struct *, struct file *,
+-                    unsigned int, unsigned long);
++			unsigned int, unsigned long);
+ static void pc_set_termios(struct tty_struct *, struct ktermios *);
+ static void do_softint(struct work_struct *work);
+ static void pc_stop(struct tty_struct *);
+ static void pc_start(struct tty_struct *);
+-static void pc_throttle(struct tty_struct * tty);
++static void pc_throttle(struct tty_struct *tty);
+ static void pc_unthrottle(struct tty_struct *tty);
+ static void digi_send_break(struct channel *ch, int msec);
+ static void setup_empty_event(struct tty_struct *tty, struct channel *ch);
+-void epca_setup(char *, int *);
++static void epca_setup(char *, int *);
+ 
+ static int pc_write(struct tty_struct *, const unsigned char *, int);
+ static int pc_init(void);
+@@ -242,7 +243,7 @@
+ /* PCXEM windowing is the same as that used in the PCXR and CX series cards. */
+ static void pcxem_memwinon(struct board_info *b, unsigned int win)
+ {
+-        outb_p(FEPWIN|win, b->port + 1);
++	outb_p(FEPWIN | win, b->port + 1);
+ }
+ 
+ static void pcxem_memwinoff(struct board_info *b, unsigned int win)
+@@ -252,7 +253,7 @@
+ 
+ static void pcxem_globalwinon(struct channel *ch)
+ {
+-	outb_p( FEPWIN, (int)ch->board->port + 1);
++	outb_p(FEPWIN, (int)ch->board->port + 1);
+ }
+ 
+ static void pcxem_rxwinon(struct channel *ch)
+@@ -393,7 +394,7 @@
+ 	 */
+ 	if (tty) {
+ 		struct channel *ch = (struct channel *)tty->driver_data;
+-		if ((ch >= &digi_channels[0]) && (ch < &digi_channels[nbdevs])) {
++		if (ch >= &digi_channels[0] && ch < &digi_channels[nbdevs]) {
+ 			if (ch->magic == EPCA_MAGIC)
+ 				return ch;
+ 		}
+@@ -413,7 +414,7 @@
+ 
+ static void epca_error(int line, char *msg)
+ {
+-	printk(KERN_ERR "epca_error (Digi): line = %d %s\n",line,msg);
++	printk(KERN_ERR "epca_error (Digi): line = %d %s\n", line, msg);
+ }
+ 
+ static void pc_close(struct tty_struct *tty, struct file *filp)
+@@ -424,7 +425,8 @@
+ 	 * verifyChannel returns the channel from the tty struct if it is
+ 	 * valid. This serves as a sanity check.
+ 	 */
+-	if ((ch = verifyChannel(tty)) != NULL) {
++	ch = verifyChannel(tty);
++	if (ch != NULL) {
+ 		spin_lock_irqsave(&epca_lock, flags);
+ 		if (tty_hung_up_p(filp)) {
+ 			spin_unlock_irqrestore(&epca_lock, flags);
+@@ -439,7 +441,6 @@
+ 			spin_unlock_irqrestore(&epca_lock, flags);
+ 			return;
+ 		}
+-
+ 		/* Port open only once go ahead with shutdown & reset */
+ 		BUG_ON(ch->count < 0);
+ 
+@@ -454,9 +455,11 @@
+ 		spin_unlock_irqrestore(&epca_lock, flags);
+ 
+ 		if (ch->asyncflags & ASYNC_INITIALIZED)  {
+-			/* Setup an event to indicate when the transmit buffer empties */
++			/* Setup an event to indicate when the
++			   transmit buffer empties */
+ 			setup_empty_event(tty, ch);
+-			tty_wait_until_sent(tty, 3000); /* 30 seconds timeout */
++			/* 30 seconds timeout */
++			tty_wait_until_sent(tty, 3000);
+ 		}
+ 		pc_flush_buffer(tty);
+ 
+@@ -475,7 +478,7 @@
+ 			wake_up_interruptible(&ch->open_wait);
+ 		}
+ 		ch->asyncflags &= ~(ASYNC_NORMAL_ACTIVE | ASYNC_INITIALIZED |
+-		                      ASYNC_CLOSING);
++					ASYNC_CLOSING);
+ 		wake_up_interruptible(&ch->close_wait);
+ 	}
+ }
+@@ -522,12 +525,12 @@
+ static void pc_hangup(struct tty_struct *tty)
+ {
+ 	struct channel *ch;
+-
+ 	/*
+ 	 * verifyChannel returns the channel from the tty struct if it is
+ 	 * valid. This serves as a sanity check.
+ 	 */
+-	if ((ch = verifyChannel(tty)) != NULL) {
++	ch = verifyChannel(tty);
++	if (ch != NULL) {
+ 		unsigned long flags;
+ 
+ 		pc_flush_buffer(tty);
+@@ -545,7 +548,7 @@
+ }
+ 
+ static int pc_write(struct tty_struct *tty,
+-                    const unsigned char *buf, int bytesAvailable)
++			const unsigned char *buf, int bytesAvailable)
+ {
+ 	unsigned int head, tail;
+ 	int dataLen;
+@@ -569,7 +572,8 @@
+ 	 * verifyChannel returns the channel from the tty struct if it is
+ 	 * valid. This serves as a sanity check.
+ 	 */
+-	if ((ch = verifyChannel(tty)) == NULL)
++	ch = verifyChannel(tty);
++	if (ch == NULL)
+ 		return 0;
+ 
+ 	/* Make a pointer to the channel data structure found on the board. */
+@@ -644,19 +648,17 @@
+ 
+ static int pc_write_room(struct tty_struct *tty)
+ {
+-	int remain;
++	int remain = 0;
+ 	struct channel *ch;
+ 	unsigned long flags;
+ 	unsigned int head, tail;
+ 	struct board_chan __iomem *bc;
+-
+-	remain = 0;
+-
+ 	/*
+ 	 * verifyChannel returns the channel from the tty struct if it is
+ 	 * valid. This serves as a sanity check.
+ 	 */
+-	if ((ch = verifyChannel(tty)) != NULL)  {
++	ch = verifyChannel(tty);
++	if (ch != NULL) {
+ 		spin_lock_irqsave(&epca_lock, flags);
+ 		globalwinon(ch);
+ 
+@@ -668,8 +670,8 @@
+ 			tail = readw(&bc->tout);
+ 		/* Wrap tail if necessary */
+ 		tail &= (ch->txbufsize - 1);
+-
+-		if ((remain = tail - head - 1) < 0 )
++		remain = tail - head - 1;
++		if (remain < 0)
+ 			remain += ch->txbufsize;
+ 
+ 		if (remain && (ch->statusflags & LOWWAIT) == 0) {
+@@ -691,12 +693,12 @@
+ 	unsigned long flags;
+ 	struct channel *ch;
+ 	struct board_chan __iomem *bc;
+-
+ 	/*
+ 	 * verifyChannel returns the channel from the tty struct if it is
+ 	 * valid. This serves as a sanity check.
+ 	 */
+-	if ((ch = verifyChannel(tty)) == NULL)
++	ch = verifyChannel(tty);
++	if (ch == NULL)
+ 		return 0;
+ 
+ 	spin_lock_irqsave(&epca_lock, flags);
+@@ -707,7 +709,8 @@
+ 	head = readw(&bc->tin);
+ 	ctail = readw(&ch->mailbox->cout);
+ 
+-	if (tail == head && readw(&ch->mailbox->cin) == ctail && readb(&bc->tbusy) == 0)
++	if (tail == head && readw(&ch->mailbox->cin) == ctail &&
++						readb(&bc->tbusy) == 0)
+ 		chars = 0;
+ 	else  { /* Begin if some space on the card has been used */
+ 		head = readw(&bc->tin) & (ch->txbufsize - 1);
+@@ -717,7 +720,8 @@
+ 		 * pc_write_room here we are finding the amount of bytes in the
+ 		 * buffer filled. Not the amount of bytes empty.
+ 		 */
+-		if ((remain = tail - head - 1) < 0 )
++		remain = tail - head - 1;
++		if (remain < 0)
+ 			remain += ch->txbufsize;
+ 		chars = (int)(ch->txbufsize - remain);
+ 		/*
+@@ -728,7 +732,7 @@
+ 		 * transmit buffer empties.
+ 		 */
+ 		if (!(ch->statusflags & EMPTYWAIT))
+-			setup_empty_event(tty,ch);
++			setup_empty_event(tty, ch);
+ 	} /* End if some space on the card has been used */
+ 	memoff(ch);
+ 	spin_unlock_irqrestore(&epca_lock, flags);
+@@ -746,7 +750,8 @@
+ 	 * verifyChannel returns the channel from the tty struct if it is
+ 	 * valid. This serves as a sanity check.
+ 	 */
+-	if ((ch = verifyChannel(tty)) == NULL)
++	ch = verifyChannel(tty);
++	if (ch == NULL)
+ 		return;
+ 
+ 	spin_lock_irqsave(&epca_lock, flags);
+@@ -767,23 +772,25 @@
+ 	 * verifyChannel returns the channel from the tty struct if it is
+ 	 * valid. This serves as a sanity check.
+ 	 */
+-	if ((ch = verifyChannel(tty)) != NULL) {
++	ch = verifyChannel(tty);
++	if (ch != NULL) {
+ 		unsigned long flags;
+ 		spin_lock_irqsave(&epca_lock, flags);
+ 		/*
+ 		 * If not already set and the transmitter is busy setup an
+ 		 * event to indicate when the transmit empties.
+ 		 */
+-		if ((ch->statusflags & TXBUSY) && !(ch->statusflags & EMPTYWAIT))
+-			setup_empty_event(tty,ch);
++		if ((ch->statusflags & TXBUSY) &&
++				!(ch->statusflags & EMPTYWAIT))
++			setup_empty_event(tty, ch);
+ 		spin_unlock_irqrestore(&epca_lock, flags);
+ 	}
+ }
+ 
+ static int block_til_ready(struct tty_struct *tty,
+-                           struct file *filp, struct channel *ch)
++				struct file *filp, struct channel *ch)
+ {
+-	DECLARE_WAITQUEUE(wait,current);
++	DECLARE_WAITQUEUE(wait, current);
+ 	int retval, do_clocal = 0;
+ 	unsigned long flags;
+ 
+@@ -831,8 +838,7 @@
+ 	while (1) {
+ 		set_current_state(TASK_INTERRUPTIBLE);
+ 		if (tty_hung_up_p(filp) ||
+-		    !(ch->asyncflags & ASYNC_INITIALIZED))
+-		{
++				!(ch->asyncflags & ASYNC_INITIALIZED)) {
+ 			if (ch->asyncflags & ASYNC_HUP_NOTIFY)
+ 				retval = -EAGAIN;
+ 			else
+@@ -872,7 +878,7 @@
+ 	return 0;
+ }
+ 
+-static int pc_open(struct tty_struct *tty, struct file * filp)
++static int pc_open(struct tty_struct *tty, struct file *filp)
+ {
+ 	struct channel *ch;
+ 	unsigned long flags;
+@@ -957,7 +963,7 @@
+ 	 * The below routine generally sets up parity, baud, flow control
+ 	 * issues, etc.... It effect both control flags and input flags.
+ 	 */
+-	epcaparam(tty,ch);
++	epcaparam(tty, ch);
+ 	ch->asyncflags |= ASYNC_INITIALIZED;
+ 	memoff(ch);
+ 	spin_unlock_irqrestore(&epca_lock, flags);
+@@ -995,8 +1001,8 @@
+ 
+ 	del_timer_sync(&epca_timer);
+ 
+-	if (tty_unregister_driver(pc_driver) || tty_unregister_driver(pc_info))
+-	{
++	if (tty_unregister_driver(pc_driver) ||
++				tty_unregister_driver(pc_info)) {
+ 		printk(KERN_WARNING "epca: cleanup_module failed to un-register tty driver\n");
+ 		return;
+ 	}
+@@ -1036,7 +1042,7 @@
+ 	.hangup = pc_hangup,
  };
- MODULE_DEVICE_TABLE(pci, cy_pci_dev_id);
-@@ -905,15 +912,14 @@
  
-    This function is only called from inside spinlock-protected code.
-  */
--static int cyy_issue_cmd(void __iomem * base_addr, u_char cmd, int index)
-+static int cyy_issue_cmd(void __iomem *base_addr, u_char cmd, int index)
+-static int info_open(struct tty_struct *tty, struct file * filp)
++static int info_open(struct tty_struct *tty, struct file *filp)
  {
- 	unsigned int i;
- 
- 	/* Check to see that the previous command has completed */
- 	for (i = 0; i < 100; i++) {
--		if (readb(base_addr + (CyCCR << index)) == 0) {
-+		if (readb(base_addr + (CyCCR << index)) == 0)
- 			break;
--		}
- 		udelay(10L);
- 	}
- 	/* if the CCR never cleared, the previous command
-@@ -929,7 +935,7 @@
- 
- #ifdef CONFIG_ISA
- /* ISA interrupt detection code */
--static unsigned detect_isa_irq(void __iomem * address)
-+static unsigned detect_isa_irq(void __iomem *address)
- {
- 	int irq;
- 	unsigned long irqs, flags;
-@@ -1038,7 +1044,7 @@
- 					if (info->flags & ASYNC_SAK)
- 						do_SAK(tty);
- 				} else if (data & CyFRAME) {
--					tty_insert_flip_char( tty,
-+					tty_insert_flip_char(tty,
- 						readb(base_addr + (CyRDSR <<
- 							index)), TTY_FRAME);
- 					info->icount.rx++;
-@@ -1320,7 +1326,8 @@
- 
- 	if (unlikely(cinfo == NULL)) {
- #ifdef CY_DEBUG_INTERRUPTS
--		printk(KERN_DEBUG "cyy_interrupt: spurious interrupt %d\n",irq);
-+		printk(KERN_DEBUG "cyy_interrupt: spurious interrupt %d\n",
-+				irq);
- #endif
- 		return IRQ_NONE;	/* spurious interrupt */
- 	}
-@@ -1375,12 +1382,12 @@
- 
- /***********************************************************/
- /********* End of block of Cyclom-Y specific code **********/
--/******** Start of block of Cyclades-Z specific code *********/
-+/******** Start of block of Cyclades-Z specific code *******/
- /***********************************************************/
- 
- static int
- cyz_fetch_msg(struct cyclades_card *cinfo,
--		__u32 * channel, __u8 * cmd, __u32 * param)
-+		__u32 *channel, __u8 *cmd, __u32 *param)
- {
- 	struct FIRM_ID __iomem *firm_id;
- 	struct ZFW_CTRL __iomem *zfw_ctrl;
-@@ -1388,9 +1395,8 @@
- 	unsigned long loc_doorbell;
- 
- 	firm_id = cinfo->base_addr + ID_ADDRESS;
--	if (!ISZLOADED(*cinfo)) {
-+	if (!ISZLOADED(*cinfo))
- 		return -1;
--	}
- 	zfw_ctrl = cinfo->base_addr + (readl(&firm_id->zfwctrl_addr) & 0xfffff);
- 	board_ctrl = &zfw_ctrl->board_ctrl;
- 
-@@ -1418,9 +1424,9 @@
- 	unsigned int index;
- 
- 	firm_id = cinfo->base_addr + ID_ADDRESS;
--	if (!ISZLOADED(*cinfo)) {
-+	if (!ISZLOADED(*cinfo))
- 		return -1;
--	}
-+
- 	zfw_ctrl = cinfo->base_addr + (readl(&firm_id->zfwctrl_addr) & 0xfffff);
- 	board_ctrl = &zfw_ctrl->board_ctrl;
- 
-@@ -1428,9 +1434,8 @@
- 	pci_doorbell =
- 	    &((struct RUNTIME_9060 __iomem *)(cinfo->ctl_addr))->pci_doorbell;
- 	while ((readl(pci_doorbell) & 0xff) != 0) {
--		if (index++ == 1000) {
-+		if (index++ == 1000)
- 			return (int)(readl(pci_doorbell) & 0xff);
--		}
- 		udelay(50L);
- 	}
- 	cy_writel(&board_ctrl->hcmd_channel, channel);
-@@ -1504,7 +1509,8 @@
- 			while (len--) {
- 				data = readb(cinfo->base_addr + rx_bufaddr +
- 						new_rx_get);
--				new_rx_get = (new_rx_get + 1)& (rx_bufsize - 1);
-+				new_rx_get = (new_rx_get + 1) &
-+							(rx_bufsize - 1);
- 				tty_insert_flip_char(tty, data, TTY_NORMAL);
- 				info->idle_stats.recv_bytes++;
- 				info->icount.rx++;
-@@ -1636,7 +1642,8 @@
- 		special_count = 0;
- 		delta_count = 0;
- 		info = &cinfo->ports[channel];
--		if ((tty = info->tty) == NULL)
-+		tty = info->tty;
-+		if (tty == NULL)
- 			continue;
- 
- 		ch_ctrl = &(zfw_ctrl->ch_ctrl[channel]);
-@@ -1732,7 +1739,8 @@
- 
- 	if (unlikely(cinfo == NULL)) {
- #ifdef CY_DEBUG_INTERRUPTS
--		printk(KERN_DEBUG "cyz_interrupt: spurious interrupt %d\n",irq);
-+		printk(KERN_DEBUG "cyz_interrupt: spurious interrupt %d\n",
-+									irq);
- #endif
- 		return IRQ_NONE;	/* spurious interrupt */
- 	}
-@@ -1851,9 +1859,8 @@
- 	}
- 
- 	if (!info->type) {
--		if (info->tty) {
-+		if (info->tty)
- 			set_bit(TTY_IO_ERROR, &info->tty->flags);
--		}
- 		free_page(page);
- 		goto errout;
- 	}
-@@ -1904,9 +1911,8 @@
- 			readb(base_addr + (CySRER << index)) | CyRxData);
- 		info->flags |= ASYNC_INITIALIZED;
- 
--		if (info->tty) {
-+		if (info->tty)
- 			clear_bit(TTY_IO_ERROR, &info->tty->flags);
--		}
- 		info->xmit_cnt = info->xmit_head = info->xmit_tail = 0;
- 		info->breakon = info->breakoff = 0;
- 		memset((char *)&info->idle_stats, 0, sizeof(info->idle_stats));
-@@ -1925,9 +1931,8 @@
- 		base_addr = card->base_addr;
- 
- 		firm_id = base_addr + ID_ADDRESS;
--		if (!ISZLOADED(*card)) {
-+		if (!ISZLOADED(*card))
- 			return -ENODEV;
--		}
- 
- 		zfw_ctrl = card->base_addr +
- 				(readl(&firm_id->zfwctrl_addr) & 0xfffff);
-@@ -1990,9 +1995,8 @@
- 		/* enable send, recv, modem !!! */
- 
- 		info->flags |= ASYNC_INITIALIZED;
--		if (info->tty) {
-+		if (info->tty)
- 			clear_bit(TTY_IO_ERROR, &info->tty->flags);
--		}
- 		info->xmit_cnt = info->xmit_head = info->xmit_tail = 0;
- 		info->breakon = info->breakoff = 0;
- 		memset((char *)&info->idle_stats, 0, sizeof(info->idle_stats));
-@@ -2061,9 +2065,8 @@
- 	void __iomem *base_addr;
- 	int chip, channel, index;
- 
--	if (!(info->flags & ASYNC_INITIALIZED)) {
-+	if (!(info->flags & ASYNC_INITIALIZED))
- 		return;
--	}
- 
- 	card = info->card;
- 	channel = info->line - card->first_line;
-@@ -2105,9 +2108,8 @@
- 		/* it may be appropriate to clear _XMIT at
- 		   some later date (after testing)!!! */
- 
--		if (info->tty) {
-+		if (info->tty)
- 			set_bit(TTY_IO_ERROR, &info->tty->flags);
--		}
- 		info->flags &= ~ASYNC_INITIALIZED;
- 		spin_unlock_irqrestore(&card->card_lock, flags);
- 	} else {
-@@ -2124,9 +2126,8 @@
- #endif
- 
- 		firm_id = base_addr + ID_ADDRESS;
--		if (!ISZLOADED(*card)) {
-+		if (!ISZLOADED(*card))
- 			return;
--		}
- 
- 		zfw_ctrl = card->base_addr +
- 				(readl(&firm_id->zfwctrl_addr) & 0xfffff);
-@@ -2157,9 +2158,8 @@
- #endif
- 		}
- 
--		if (info->tty) {
-+		if (info->tty)
- 			set_bit(TTY_IO_ERROR, &info->tty->flags);
--		}
- 		info->flags &= ~ASYNC_INITIALIZED;
- 
- 		spin_unlock_irqrestore(&card->card_lock, flags);
-@@ -2204,7 +2204,8 @@
- 	 * If non-blocking mode is set, then make the check up front
- 	 * and then exit.
+ 	return 0;
+ }
+@@ -1091,7 +1097,7 @@
+ 	 * Set up interrupt, we will worry about memory allocation in
+ 	 * post_fep_init.
  	 */
--	if ((filp->f_flags & O_NONBLOCK) || (tty->flags & (1 << TTY_IO_ERROR))) {
-+	if ((filp->f_flags & O_NONBLOCK) ||
-+					(tty->flags & (1 << TTY_IO_ERROR))) {
- 		info->flags |= ASYNC_NORMAL_ACTIVE;
- 		return 0;
+-	printk(KERN_INFO "DIGI epca driver version %s loaded.\n",VERSION);
++	printk(KERN_INFO "DIGI epca driver version %s loaded.\n", VERSION);
+ 
+ 	/*
+ 	 * NOTE : This code assumes that the number of ports found in the
+@@ -1244,7 +1250,7 @@
+ 				if ((board_id & 0x30) == 0x30)
+ 					bd->memory_seg = 0x8000;
+ 			} else
+-				printk(KERN_ERR "epca: Board at 0x%x doesn't appear to be an XI\n",(int)bd->port);
++				printk(KERN_ERR "epca: Board at 0x%x doesn't appear to be an XI\n", (int)bd->port);
+ 			break;
+ 		}
  	}
-@@ -2301,7 +2302,8 @@
- 			return -EINVAL;
+@@ -1318,12 +1324,12 @@
+ 		 */
+ 		/* PCI cards are already remapped at this point ISA are not */
+ 		bd->numports = readw(bd->re_map_membase + XEMPORTS);
+-		epcaassert(bd->numports <= 64,"PCI returned a invalid number of ports");
++		epcaassert(bd->numports <= 64, "PCI returned a invalid number of ports");
+ 		nbdevs += (bd->numports);
+ 	} else {
+ 		/* Fix up the mappings for ISA/EISA etc */
+ 		/* FIXME: 64K - can we be smarter ? */
+-		bd->re_map_membase = ioremap(bd->membase, 0x10000);
++		bd->re_map_membase = ioremap_nocache(bd->membase, 0x10000);
+ 	}
+ 
+ 	if (crd != 0)
+@@ -1354,7 +1360,8 @@
+ 	 * XEPORTS (address 0xc22) points at the number of channels the card
+ 	 * supports. (For 64XE, XI, XEM, and XR use 0xc02)
+ 	 */
+-	if ((bd->type == PCXEVE || bd->type == PCXE) && (readw(memaddr + XEPORTS) < 3))
++	if ((bd->type == PCXEVE || bd->type == PCXE) &&
++					(readw(memaddr + XEPORTS) < 3))
+ 		shrinkmem = 1;
+ 	if (bd->type < PCIXEM)
+ 		if (!request_region((int)bd->port, 4, board_desc[bd->type]))
+@@ -1453,10 +1460,12 @@
+ 
+ 		case PCXEVE:
+ 		case PCXE:
+-			ch->txptr = memaddr + (((tseg - bd->memory_seg) << 4) & 0x1fff);
++			ch->txptr = memaddr + (((tseg - bd->memory_seg) << 4)
++								& 0x1fff);
+ 			ch->txwin = FEPWIN | ((tseg - bd->memory_seg) >> 9);
+-			ch->rxptr = memaddr + (((rseg - bd->memory_seg) << 4) & 0x1fff);
+-			ch->rxwin = FEPWIN | ((rseg - bd->memory_seg) >>9 );
++			ch->rxptr = memaddr + (((rseg - bd->memory_seg) << 4)
++								& 0x1fff);
++			ch->rxwin = FEPWIN | ((rseg - bd->memory_seg) >> 9);
+ 			break;
+ 
+ 		case PCXI:
+@@ -1510,8 +1519,9 @@
+ 	}
+ 
+ 	printk(KERN_INFO
+-	        "Digi PC/Xx Driver V%s:  %s I/O = 0x%lx Mem = 0x%lx Ports = %d\n",
+-	        VERSION, board_desc[bd->type], (long)bd->port, (long)bd->membase, bd->numports);
++	"Digi PC/Xx Driver V%s:  %s I/O = 0x%lx Mem = 0x%lx Ports = %d\n",
++				VERSION, board_desc[bd->type], (long)bd->port,
++					(long)bd->membase, bd->numports);
+ 	memwinoff(bd, 0);
+ }
+ 
+@@ -1519,7 +1529,7 @@
+ {
+ 	unsigned long flags;
+ 	int crd;
+-	volatile unsigned int head, tail;
++	unsigned int head, tail;
+ 	struct channel *ch;
+ 	struct board_info *bd;
+ 
+@@ -1585,7 +1595,9 @@
+ 	chan0 = card_ptr[crd];
+ 	epcaassert(chan0 <= &digi_channels[nbdevs - 1], "ch out of range");
+ 	assertgwinon(chan0);
+-	while ((tail = readw(&chan0->mailbox->eout)) != (head = readw(&chan0->mailbox->ein))) { /* Begin while something in event queue */
++	while ((tail = readw(&chan0->mailbox->eout)) !=
++			(head = readw(&chan0->mailbox->ein))) {
++		/* Begin while something in event queue */
+ 		assertgwinon(chan0);
+ 		eventbuf = bd->re_map_membase + tail + ISTART;
+ 		/* Get the channel the event occurred on */
+@@ -1609,7 +1621,8 @@
+ 			goto next;
  		}
  
--		zfw_ctrl = base_addr + (readl(&firm_id->zfwctrl_addr)& 0xfffff);
-+		zfw_ctrl = base_addr + (readl(&firm_id->zfwctrl_addr)
-+								& 0xfffff);
- 		board_ctrl = &zfw_ctrl->board_ctrl;
- 		ch_ctrl = zfw_ctrl->ch_ctrl;
+-		if ((bc = ch->brdchan) == NULL)
++		bc = ch->brdchan;
++		if (bc == NULL)
+ 			goto next;
  
-@@ -2378,9 +2380,9 @@
+ 		if (event & DATA_IND)  { /* Begin DATA_IND */
+@@ -1621,10 +1634,11 @@
+ 			/* A modem signal change has been indicated */
+ 			ch->imodem = mstat;
+ 			if (ch->asyncflags & ASYNC_CHECK_CD) {
+-				if (mstat & ch->dcd)  /* We are now receiving dcd */
++				/* We are now receiving dcd */
++				if (mstat & ch->dcd)
+ 					wake_up_interruptible(&ch->open_wait);
+-				else
+-					pc_sched_event(ch, EPCA_EVENT_HANGUP); /* No dcd; hangup */
++				else	/* No dcd; hangup */
++					pc_sched_event(ch, EPCA_EVENT_HANGUP);
+ 			}
+ 		}
+ 		tty = ch->tty;
+@@ -1639,7 +1653,8 @@
+ 					tty_wakeup(tty);
+ 				}
+ 			} else if (event & EMPTYTX_IND) {
+-				/* This event is generated by setup_empty_event */
++				/* This event is generated by
++				   setup_empty_event */
+ 				ch->statusflags &= ~TXBUSY;
+ 				if (ch->statusflags & EMPTYWAIT) {
+ 					ch->statusflags &= ~EMPTYWAIT;
+@@ -1647,7 +1662,7 @@
+ 				}
+ 			}
+ 		}
+-	next:
++next:
+ 		globalwinon(ch);
+ 		BUG_ON(!bc);
+ 		writew(1, &bc->idata);
+@@ -1657,7 +1672,7 @@
+ }
+ 
+ static void fepcmd(struct channel *ch, int cmd, int word_or_byte,
+-                   int byte2, int ncmds, int bytecmd)
++					int byte2, int ncmds, int bytecmd)
+ {
+ 	unchar __iomem *memaddr;
+ 	unsigned int head, cmdTail, cmdStart, cmdMax;
+@@ -1682,8 +1697,10 @@
+ 	memaddr = ch->board->re_map_membase;
+ 
+ 	if (head >= (cmdMax - cmdStart) || (head & 03))  {
+-		printk(KERN_ERR "line %d: Out of range, cmd = %x, head = %x\n", __LINE__,  cmd, head);
+-		printk(KERN_ERR "line %d: Out of range, cmdMax = %x, cmdStart = %x\n", __LINE__,  cmdMax, cmdStart);
++		printk(KERN_ERR "line %d: Out of range, cmd = %x, head = %x\n",
++						__LINE__,  cmd, head);
++		printk(KERN_ERR "line %d: Out of range, cmdMax = %x, cmdStart = %x\n",
++						__LINE__,  cmdMax, cmdStart);
+ 		return;
+ 	}
+ 	if (bytecmd)  {
+@@ -1762,7 +1779,7 @@
+ static unsigned termios2digi_i(struct channel *ch, unsigned iflag)
+ {
+ 	unsigned res = iflag & (IGNBRK | BRKINT | IGNPAR | PARMRK |
+-	                        INPCK | ISTRIP|IXON|IXANY|IXOFF);
++					INPCK | ISTRIP | IXON | IXANY | IXOFF);
+ 	if (ch->digiext.digi_flags & DIGI_AIXON)
+ 		res |= IAIXON;
+ 	return res;
+@@ -1876,8 +1893,10 @@
+ 		 * Command sets channels iflag structure on the board. Such
+ 		 * things as input soft flow control, handling of parity
+ 		 * errors, and break handling are all set here.
++		 *
++		 * break handling, parity handling, input stripping,
++		 * flow control chars
+ 		 */
+-		/* break handling, parity handling, input stripping, flow control chars */
+ 		fepcmd(ch, SETIFLAGS, (unsigned int) ch->fepiflag, 0, 0, 0);
+ 	}
+ 	/*
+@@ -1973,7 +1992,7 @@
+ 		return;
+ 
+ 	/* If CREAD bit is off or device not open, set TX tail to head */
+-	if (!tty || !ts || !(ts->c_cflag & CREAD))  {
++	if (!tty || !ts || !(ts->c_cflag & CREAD)) {
+ 		writew(head, &bc->rout);
+ 		return;
+ 	}
+@@ -1983,18 +2002,21 @@
+ 
+ 	if (readb(&bc->orun)) {
+ 		writeb(0, &bc->orun);
+-		printk(KERN_WARNING "epca; overrun! DigiBoard device %s\n",tty->name);
++		printk(KERN_WARNING "epca; overrun! DigiBoard device %s\n",
++								tty->name);
+ 		tty_insert_flip_char(tty, 0, TTY_OVERRUN);
+ 	}
+ 	rxwinon(ch);
+-	while (bytesAvailable > 0)  { /* Begin while there is data on the card */
++	while (bytesAvailable > 0) {
++		/* Begin while there is data on the card */
+ 		wrapgap = (head >= tail) ? head - tail : ch->rxbufsize - tail;
+ 		/*
+ 		 * Even if head has wrapped around only report the amount of
+ 		 * data to be equal to the size - tail. Remember memcpy can't
+ 		 * automaticly wrap around the receive buffer.
+ 		 */
+-		dataToRead = (wrapgap < bytesAvailable) ? wrapgap : bytesAvailable;
++		dataToRead = (wrapgap < bytesAvailable) ? wrapgap
++							: bytesAvailable;
+ 		/* Make sure we don't overflow the buffer */
+ 		dataToRead = tty_prepare_flip_string(tty, &rptr, dataToRead);
+ 		if (dataToRead == 0)
+@@ -2145,14 +2167,14 @@
+ 	 * The below routine generally sets up parity, baud, flow control
+ 	 * issues, etc.... It effect both control flags and input flags.
+ 	 */
+-	epcaparam(tty,ch);
++	epcaparam(tty, ch);
+ 	memoff(ch);
+ 	spin_unlock_irqrestore(&epca_lock, flags);
+ 	return 0;
+ }
+ 
+-static int pc_ioctl(struct tty_struct *tty, struct file * file,
+-		    unsigned int cmd, unsigned long arg)
++static int pc_ioctl(struct tty_struct *tty, struct file *file,
++					unsigned int cmd, unsigned long arg)
+ {
+ 	digiflow_t dflow;
  	int retval;
+@@ -2167,7 +2189,6 @@
+ 		bc = ch->brdchan;
+ 	else
+ 		return -EINVAL;
+-
+ 	/*
+ 	 * For POSIX compliance we need to add more ioctls. See tty_ioctl.c in
+ 	 * /usr/src/linux/drivers/char for a good example. In particular think
+@@ -2178,9 +2199,10 @@
+ 		retval = tty_check_change(tty);
+ 		if (retval)
+ 			return retval;
+-		/* Setup an event to indicate when the transmit buffer empties */
++		/* Setup an event to indicate when the transmit
++		   buffer empties */
+ 		spin_lock_irqsave(&epca_lock, flags);
+-		setup_empty_event(tty,ch);
++		setup_empty_event(tty, ch);
+ 		spin_unlock_irqrestore(&epca_lock, flags);
+ 		tty_wait_until_sent(tty, 0);
+ 		if (!arg)
+@@ -2190,10 +2212,10 @@
+ 		retval = tty_check_change(tty);
+ 		if (retval)
+ 			return retval;
+-
+-		/* Setup an event to indicate when the transmit buffer empties */
++		/* Setup an event to indicate when the transmit buffer
++		   empties */
+ 		spin_lock_irqsave(&epca_lock, flags);
+-		setup_empty_event(tty,ch);
++		setup_empty_event(tty, ch);
+ 		spin_unlock_irqrestore(&epca_lock, flags);
+ 		tty_wait_until_sent(tty, 0);
+ 		digi_send_break(ch, arg ? arg*(HZ/10) : HZ/4);
+@@ -2232,9 +2254,10 @@
+ 	case DIGI_SETAF:
+ 		lock_kernel();
+ 		if (cmd == DIGI_SETAW) {
+-			/* Setup an event to indicate when the transmit buffer empties */
++			/* Setup an event to indicate when the transmit
++			   buffer empties */
+ 			spin_lock_irqsave(&epca_lock, flags);
+-			setup_empty_event(tty,ch);
++			setup_empty_event(tty, ch);
+ 			spin_unlock_irqrestore(&epca_lock, flags);
+ 			tty_wait_until_sent(tty, 0);
+ 		} else {
+@@ -2264,7 +2287,7 @@
+ 		 * control issues, etc.... It effect both control flags and
+ 		 * input flags.
+ 		 */
+-		epcaparam(tty,ch);
++		epcaparam(tty, ch);
+ 		memoff(ch);
+ 		spin_unlock_irqrestore(&epca_lock, flags);
+ 		break;
+@@ -2300,18 +2323,21 @@
+ 		if (copy_from_user(&dflow, argp, sizeof(dflow)))
+ 			return -EFAULT;
  
- 	line = tty->index;
--	if ((tty->index < 0) || (NR_PORTS <= line)) {
-+	if (tty->index < 0 || NR_PORTS <= line)
- 		return -ENODEV;
--	}
-+
- 	for (i = 0; i < NR_CARDS; i++)
- 		if (line < cy_card[i].first_line + cy_card[i].nports &&
- 				line >= cy_card[i].first_line)
-@@ -2388,9 +2390,8 @@
- 	if (i >= NR_CARDS)
- 		return -ENODEV;
- 	info = &cy_card[i].ports[line - cy_card[i].first_line];
--	if (info->line < 0) {
-+	if (info->line < 0)
- 		return -ENODEV;
--	}
+-		if (dflow.startc != startc || dflow.stopc != stopc) { /* Begin  if setflow toggled */
++		if (dflow.startc != startc || dflow.stopc != stopc) {
++			/* Begin  if setflow toggled */
+ 			spin_lock_irqsave(&epca_lock, flags);
+ 			globalwinon(ch);
  
- 	/* If the card's firmware hasn't been loaded,
- 	   treat it as absent from the system.  This
-@@ -2456,9 +2457,9 @@
- #endif
- 	tty->driver_data = info;
- 	info->tty = tty;
--	if (serial_paranoia_check(info, tty->name, "cy_open")) {
-+	if (serial_paranoia_check(info, tty->name, "cy_open"))
- 		return -ENODEV;
--	}
-+
- #ifdef CY_DEBUG_OPEN
- 	printk(KERN_DEBUG "cyc:cy_open ttyC%d, count = %d\n", info->line,
- 			info->count);
-@@ -2482,9 +2483,8 @@
- 	 * Start up serial port
+ 			if (cmd == DIGI_SETFLOW) {
+ 				ch->fepstartc = ch->startc = dflow.startc;
+ 				ch->fepstopc = ch->stopc = dflow.stopc;
+-				fepcmd(ch, SONOFFC, ch->fepstartc, ch->fepstopc, 0, 1);
++				fepcmd(ch, SONOFFC, ch->fepstartc,
++						ch->fepstopc, 0, 1);
+ 			} else {
+ 				ch->fepstartca = ch->startca = dflow.startc;
+ 				ch->fepstopca  = ch->stopca = dflow.stopc;
+-				fepcmd(ch, SAUXONOFFC, ch->fepstartca, ch->fepstopca, 0, 1);
++				fepcmd(ch, SAUXONOFFC, ch->fepstartca,
++						ch->fepstopca, 0, 1);
+ 			}
+ 
+ 			if (ch->statusflags & TXSTOPPED)
+@@ -2335,7 +2361,9 @@
+ 	 * verifyChannel returns the channel from the tty struct if it is
+ 	 * valid. This serves as a sanity check.
  	 */
- 	retval = startup(info);
--	if (retval) {
-+	if (retval)
- 		return retval;
--	}
+-	if ((ch = verifyChannel(tty)) != NULL)  { /* Begin if channel valid */
++	ch = verifyChannel(tty);
++
++	if (ch != NULL)  { /* Begin if channel valid */
+ 		spin_lock_irqsave(&epca_lock, flags);
+ 		globalwinon(ch);
+ 		epcaparam(tty, ch);
+@@ -2362,7 +2390,7 @@
  
- 	retval = block_til_ready(tty, filp, info);
- 	if (retval) {
-@@ -2628,9 +2628,8 @@
- 	printk(KERN_DEBUG "cyc:cy_close ttyC%d\n", info->line);
- #endif
- 
--	if (!info || serial_paranoia_check(info, tty->name, "cy_close")) {
-+	if (!info || serial_paranoia_check(info, tty->name, "cy_close"))
- 		return;
--	}
- 
- 	card = info->card;
- 
-@@ -2678,9 +2677,9 @@
+ 		if (tty && tty->driver_data) {
+ 			if (test_and_clear_bit(EPCA_EVENT_HANGUP, &ch->event)) {
+-				tty_hangup(tty);	/* FIXME: module removal race here - AKPM */
++				tty_hangup(tty);
+ 				wake_up_interruptible(&ch->open_wait);
+ 				ch->asyncflags &= ~ASYNC_NORMAL_ACTIVE;
+ 			}
+@@ -2382,9 +2410,11 @@
+ 	 * verifyChannel returns the channel from the tty struct if it is
+ 	 * valid. This serves as a sanity check.
  	 */
- 	tty->closing = 1;
- 	spin_unlock_irqrestore(&card->card_lock, flags);
--	if (info->closing_wait != CY_CLOSING_WAIT_NONE) {
-+	if (info->closing_wait != CY_CLOSING_WAIT_NONE)
- 		tty_wait_until_sent(tty, info->closing_wait);
--	}
-+
- 	spin_lock_irqsave(&card->card_lock, flags);
+-	if ((ch = verifyChannel(tty)) != NULL) {
++	ch = verifyChannel(tty);
++	if (ch != NULL) {
+ 		spin_lock_irqsave(&epca_lock, flags);
+-		if ((ch->statusflags & TXSTOPPED) == 0) { /* Begin if transmit stop requested */
++		if ((ch->statusflags & TXSTOPPED) == 0) {
++			/* Begin if transmit stop requested */
+ 			globalwinon(ch);
+ 			/* STOP transmitting now !! */
+ 			fepcmd(ch, PAUSETX, 0, 0, 0, 0);
+@@ -2402,11 +2432,14 @@
+ 	 * verifyChannel returns the channel from the tty struct if it is
+ 	 * valid. This serves as a sanity check.
+ 	 */
+-	if ((ch = verifyChannel(tty)) != NULL) {
++	ch = verifyChannel(tty);
++	if (ch != NULL) {
+ 		unsigned long flags;
+ 		spin_lock_irqsave(&epca_lock, flags);
+-		/* Just in case output was resumed because of a change in Digi-flow */
+-		if (ch->statusflags & TXSTOPPED)  { /* Begin transmit resume requested */
++		/* Just in case output was resumed because of a change
++		   in Digi-flow */
++		if (ch->statusflags & TXSTOPPED)  {
++			/* Begin transmit resume requested */
+ 			struct board_chan __iomem *bc;
+ 			globalwinon(ch);
+ 			bc = ch->brdchan;
+@@ -2436,7 +2469,8 @@
+ 	 * verifyChannel returns the channel from the tty struct if it is
+ 	 * valid. This serves as a sanity check.
+ 	 */
+-	if ((ch = verifyChannel(tty)) != NULL) {
++	ch = verifyChannel(tty);
++	if (ch != NULL) {
+ 		spin_lock_irqsave(&epca_lock, flags);
+ 		if ((ch->statusflags & RXSTOPPED) == 0) {
+ 			globalwinon(ch);
+@@ -2456,8 +2490,10 @@
+ 	 * verifyChannel returns the channel from the tty struct if it is
+ 	 * valid. This serves as a sanity check.
+ 	 */
+-	if ((ch = verifyChannel(tty)) != NULL) {
+-		/* Just in case output was resumed because of a change in Digi-flow */
++	ch = verifyChannel(tty);
++	if (ch != NULL) {
++		/* Just in case output was resumed because of a change
++		   in Digi-flow */
+ 		spin_lock_irqsave(&epca_lock, flags);
+ 		if (ch->statusflags & RXSTOPPED) {
+ 			globalwinon(ch);
+@@ -2502,7 +2538,7 @@
+ 	memoff(ch);
+ }
  
- 	if (!IS_CYC_Z(*card)) {
-@@ -2694,15 +2693,16 @@
- 		cy_writeb(base_addr + (CySRER << index),
- 			  readb(base_addr + (CySRER << index)) & ~CyRxData);
- 		if (info->flags & ASYNC_INITIALIZED) {
--			/* Waiting for on-board buffers to be empty before closing
--			   the port */
-+			/* Waiting for on-board buffers to be empty before
-+			   closing the port */
- 			spin_unlock_irqrestore(&card->card_lock, flags);
- 			cy_wait_until_sent(tty, info->timeout);
- 			spin_lock_irqsave(&card->card_lock, flags);
- 		}
- 	} else {
- #ifdef Z_WAKE
--		/* Waiting for on-board buffers to be empty before closing the port */
-+		/* Waiting for on-board buffers to be empty before closing
-+		   the port */
- 		void __iomem *base_addr = card->base_addr;
- 		struct FIRM_ID __iomem *firm_id = base_addr + ID_ADDRESS;
- 		struct ZFW_CTRL __iomem *zfw_ctrl =
-@@ -2774,9 +2774,8 @@
- 	printk(KERN_DEBUG "cyc:cy_write ttyC%d\n", info->line);
- #endif
- 
--	if (serial_paranoia_check(info, tty->name, "cy_write")) {
-+	if (serial_paranoia_check(info, tty->name, "cy_write"))
- 		return 0;
--	}
- 
- 	if (!info->xmit_buf)
- 		return 0;
-@@ -2802,9 +2801,9 @@
- 	info->idle_stats.xmit_bytes += ret;
- 	info->idle_stats.xmit_idle = jiffies;
- 
--	if (info->xmit_cnt && !tty->stopped && !tty->hw_stopped) {
-+	if (info->xmit_cnt && !tty->stopped && !tty->hw_stopped)
- 		start_xmit(info);
--	}
-+
- 	return ret;
- }				/* cy_write */
- 
-@@ -2847,7 +2846,7 @@
- 
- /*
-  * This routine is called by the kernel after it has written a
-- * series of characters to the tty device using put_char().  
-+ * series of characters to the tty device using put_char().
-  */
- static void cy_flush_chars(struct tty_struct *tty)
+-void epca_setup(char *str, int *ints)
++static void epca_setup(char *str, int *ints)
  {
-@@ -2989,12 +2988,12 @@
- 	int baud, baud_rate = 0;
- 	int i;
+ 	struct board_info board;
+ 	int               index, loop, last;
+@@ -2531,14 +2567,16 @@
+ 			 * instructing the driver to ignore epcaconfig.) For
+ 			 * this reason we check for 2.
+ 			 */
+-			if (board.status == 2) { /* Begin ignore epcaconfig as well as lilo cmd line */
++			if (board.status == 2) {
++			/* Begin ignore epcaconfig as well as lilo cmd line */
+ 				nbdevs = 0;
+ 				num_cards = 0;
+ 				return;
+ 			} /* End ignore epcaconfig as well as lilo cmd line */
  
--	if (!info->tty || !info->tty->termios) {
-+	if (!info->tty || !info->tty->termios)
- 		return;
--	}
--	if (info->line == -1) {
-+
-+	if (info->line == -1)
- 		return;
--	}
-+
- 	cflag = info->tty->termios->c_cflag;
- 	iflag = info->tty->termios->c_iflag;
+ 			if (board.status > 2) {
+-				printk(KERN_ERR "epca_setup: Invalid board status 0x%x\n", board.status);
++				printk(KERN_ERR "epca_setup: Invalid board status 0x%x\n",
++						board.status);
+ 				invalid_lilo_config = 1;
+ 				setup_error_code |= INVALID_BOARD_STATUS;
+ 				return;
+@@ -2592,7 +2630,8 @@
+ 		case 6:
+ 			board.membase = ints[index];
+ 			if (ints[index] <= 0) {
+-				printk(KERN_ERR "epca_setup: Invalid memory base 0x%x\n",(unsigned int)board.membase);
++				printk(KERN_ERR "epca_setup: Invalid memory base 0x%x\n",
++					(unsigned int)board.membase);
+ 				invalid_lilo_config = 1;
+ 				setup_error_code |= INVALID_MEM_BASE;
+ 				return;
+@@ -2723,7 +2762,7 @@
+ 				t2++;
  
-@@ -3033,13 +3032,11 @@
- 		}
- 		/* find the baud index */
- 		for (i = 0; i < 20; i++) {
--			if (baud == baud_table[i]) {
-+			if (baud == baud_table[i])
- 				break;
--			}
- 		}
--		if (i == 20) {
-+		if (i == 20)
- 			i = 19;	/* CD1400_MAX_SPEED */
--		}
+ 			if (*t2) {
+-				printk(KERN_ERR "epca_setup: Invalid memory base %s\n",str);
++				printk(KERN_ERR "epca_setup: Invalid memory base %s\n", str);
+ 				invalid_lilo_config = 1;
+ 				setup_error_code |= INVALID_MEM_BASE;
+ 				return;
+@@ -2745,7 +2784,7 @@
  
- 		if (baud == 38400 && (info->flags & ASYNC_SPD_MASK) ==
- 				ASYNC_SPD_CUST) {
-@@ -3098,18 +3095,16 @@
- 			info->cor1 = Cy_8_BITS;
- 			break;
- 		}
--		if (cflag & CSTOPB) {
-+		if (cflag & CSTOPB)
- 			info->cor1 |= Cy_2_STOP;
--		}
-+
- 		if (cflag & PARENB) {
--			if (cflag & PARODD) {
-+			if (cflag & PARODD)
- 				info->cor1 |= CyPARITY_O;
--			} else {
-+			else
- 				info->cor1 |= CyPARITY_E;
--			}
--		} else {
-+		} else
- 			info->cor1 |= CyPARITY_NONE;
--		}
+ 	/* I should REALLY validate the stuff here */
+ 	/* Copies our local copy of board into boards */
+-	memcpy((void *)&boards[num_cards],(void *)&board, sizeof(board));
++	memcpy((void *)&boards[num_cards], (void *)&board, sizeof(board));
+ 	/* Does this get called once per lilo arg are what ? */
+ 	printk(KERN_INFO "PC/Xx: Added board %i, %s %i ports at 0x%4.4X base 0x%6.6X\n",
+ 		num_cards, board_desc[board.type],
+@@ -2786,9 +2825,9 @@
+ 	if (board_idx >= MAXBOARDS)
+ 		goto err_out;
  
- 		/* CTS flow control flag */
- 		if (cflag & CRTSCTS) {
-@@ -3162,7 +3157,8 @@
- 		cyy_issue_cmd(base_addr, CyCOR_CHANGE | CyCOR1ch | CyCOR2ch |
- 				CyCOR3ch, index);
- 
--		cy_writeb(base_addr + (CyCAR << index), (u_char) channel);	/* !!! Is this needed? */
-+		/* !!! Is this needed? */
-+		cy_writeb(base_addr + (CyCAR << index), (u_char) channel);
- 		cy_writeb(base_addr + (CyRTPR << index),
- 			(info->default_timeout ? info->default_timeout : 0x02));
- 		/* 10ms rx timeout */
-@@ -3230,9 +3226,8 @@
- #endif
- 		}
- 
--		if (info->tty) {
-+		if (info->tty)
- 			clear_bit(TTY_IO_ERROR, &info->tty->flags);
--		}
- 		spin_unlock_irqrestore(&card->card_lock, flags);
- 
- 	} else {
-@@ -3245,9 +3240,8 @@
- 		int retval;
- 
- 		firm_id = card->base_addr + ID_ADDRESS;
--		if (!ISZLOADED(*card)) {
-+		if (!ISZLOADED(*card))
- 			return;
--		}
- 
- 		zfw_ctrl = card->base_addr +
- 			(readl(&firm_id->zfwctrl_addr) & 0xfffff);
-@@ -3307,14 +3301,12 @@
- 				  readl(&ch_ctrl->comm_data_l) | C_DL_1STOP);
- 		}
- 		if (cflag & PARENB) {
--			if (cflag & PARODD) {
-+			if (cflag & PARODD)
- 				cy_writel(&ch_ctrl->comm_parity, C_PR_ODD);
--			} else {
-+			else
- 				cy_writel(&ch_ctrl->comm_parity, C_PR_EVEN);
--			}
--		} else {
-+		} else
- 			cy_writel(&ch_ctrl->comm_parity, C_PR_NONE);
--		}
- 
- 		/* CTS flow control flag */
- 		if (cflag & CRTSCTS) {
-@@ -3344,11 +3336,10 @@
- 		}
- 
- 		/* CD sensitivity */
--		if (cflag & CLOCAL) {
-+		if (cflag & CLOCAL)
- 			info->flags &= ~ASYNC_CHECK_CD;
--		} else {
-+		else
- 			info->flags |= ASYNC_CHECK_CD;
--		}
- 
- 		if (baud == 0) {	/* baud rate is zero, turn off line */
- 			cy_writel(&ch_ctrl->rs_control,
-@@ -3364,21 +3355,20 @@
- #endif
- 		}
- 
--		retval = cyz_issue_cmd(card, channel, C_CM_IOCTLM,0L);
-+		retval = cyz_issue_cmd(card, channel, C_CM_IOCTLM, 0L);
- 		if (retval != 0) {
- 			printk(KERN_ERR "cyc:set_line_char(2) retval on ttyC%d "
- 				"was %x\n", info->line, retval);
- 		}
- 
--		if (info->tty) {
-+		if (info->tty)
- 			clear_bit(TTY_IO_ERROR, &info->tty->flags);
--		}
+-	addr = pci_resource_start (pdev, epca_info_tbl[info_idx].bar_idx);
++	addr = pci_resource_start(pdev, epca_info_tbl[info_idx].bar_idx);
+ 	if (!addr) {
+-		printk (KERN_ERR PFX "PCI region #%d not available (size 0)\n",
++		printk(KERN_ERR PFX "PCI region #%d not available (size 0)\n",
+ 			epca_info_tbl[info_idx].bar_idx);
+ 		goto err_out;
  	}
- }				/* set_line_char */
+@@ -2799,28 +2838,29 @@
+ 	boards[board_idx].port = addr + PCI_IO_OFFSET;
+ 	boards[board_idx].membase = addr;
  
- static int
- get_serial_info(struct cyclades_port *info,
--		struct serial_struct __user * retinfo)
-+		struct serial_struct __user *retinfo)
- {
- 	struct serial_struct tmp;
- 	struct cyclades_card *cinfo = info->card;
-@@ -3402,7 +3392,7 @@
- 
- static int
- set_serial_info(struct cyclades_port *info,
--		struct serial_struct __user * new_info)
-+		struct serial_struct __user *new_info)
- {
- 	struct serial_struct new_serial;
- 	struct cyclades_port old_info;
-@@ -3456,7 +3446,7 @@
-  *	    transmit holding register is empty.  This functionality
-  *	    allows an RS485 driver to be written in user space.
-  */
--static int get_lsr_info(struct cyclades_port *info, unsigned int __user * value)
-+static int get_lsr_info(struct cyclades_port *info, unsigned int __user *value)
- {
- 	struct cyclades_card *card;
- 	int chip, channel, index;
-@@ -3770,8 +3760,8 @@
- 	spin_unlock_irqrestore(&card->card_lock, flags);
- }				/* cy_break */
- 
--static int
--get_mon_info(struct cyclades_port *info, struct cyclades_monitor __user * mon)
-+static int get_mon_info(struct cyclades_port *info,
-+				struct cyclades_monitor __user *mon)
- {
- 
- 	if (copy_to_user(mon, &info->mon, sizeof(struct cyclades_monitor)))
-@@ -3810,8 +3800,8 @@
- 	return 0;
- }				/* set_threshold */
- 
--static int
--get_threshold(struct cyclades_port *info, unsigned long __user * value)
-+static int get_threshold(struct cyclades_port *info,
-+						unsigned long __user *value)
- {
- 	struct cyclades_card *card;
- 	void __iomem *base_addr;
-@@ -3832,15 +3822,15 @@
- 	return 0;
- }				/* get_threshold */
- 
--static int
--set_default_threshold(struct cyclades_port *info, unsigned long value)
-+static int set_default_threshold(struct cyclades_port *info,
-+							unsigned long value)
- {
- 	info->default_threshold = value & 0x0f;
- 	return 0;
- }				/* set_default_threshold */
- 
--static int
--get_default_threshold(struct cyclades_port *info, unsigned long __user * value)
-+static int get_default_threshold(struct cyclades_port *info,
-+						unsigned long __user *value)
- {
- 	return put_user(info->default_threshold, value);
- }				/* get_default_threshold */
-@@ -3867,7 +3857,8 @@
- 	return 0;
- }				/* set_timeout */
- 
--static int get_timeout(struct cyclades_port *info, unsigned long __user * value)
-+static int get_timeout(struct cyclades_port *info,
-+						unsigned long __user *value)
- {
- 	struct cyclades_card *card;
- 	void __iomem *base_addr;
-@@ -3894,8 +3885,8 @@
- 	return 0;
- }				/* set_default_timeout */
- 
--static int
--get_default_timeout(struct cyclades_port *info, unsigned long __user * value)
-+static int get_default_timeout(struct cyclades_port *info,
-+					unsigned long __user *value)
- {
- 	return put_user(info->default_timeout, value);
- }				/* get_default_timeout */
-@@ -3980,7 +3971,7 @@
- 		break;
- #endif				/* CONFIG_CYZ_INTR */
- 	case CYSETWAIT:
--		info->closing_wait = (unsigned short)arg *HZ / 100;
-+		info->closing_wait = (unsigned short)arg * HZ / 100;
- 		ret_val = 0;
- 		break;
- 	case CYGETWAIT:
-@@ -4157,9 +4148,8 @@
- 			tty->ldisc.chars_in_buffer(tty), info->line);
- #endif
- 
--	if (serial_paranoia_check(info, tty->name, "cy_throttle")) {
-+	if (serial_paranoia_check(info, tty->name, "cy_throttle"))
- 		return;
--	}
- 
- 	card = info->card;
- 
-@@ -4213,12 +4203,11 @@
- 	char buf[64];
- 
- 	printk(KERN_DEBUG "cyc:unthrottle %s: %ld...ttyC%d\n",
--		tty_name(tty, buf), tty->ldisc.chars_in_buffer(tty),info->line);
-+		tty_name(tty, buf), tty_chars_in_buffer(tty), info->line);
- #endif
- 
--	if (serial_paranoia_check(info, tty->name, "cy_unthrottle")) {
-+	if (serial_paranoia_check(info, tty->name, "cy_unthrottle"))
- 		return;
--	}
- 
- 	if (I_IXOFF(tty)) {
- 		if (info->x_char)
-@@ -4313,7 +4302,8 @@
- 		base_addr = cinfo->base_addr + (cy_chip_offset[chip] << index);
- 
- 		spin_lock_irqsave(&cinfo->card_lock, flags);
--		cy_writeb(base_addr + (CyCAR << index), (u_char) (channel & 0x0003));	/* index channel */
-+		cy_writeb(base_addr + (CyCAR << index),
-+			(u_char) (channel & 0x0003));	/* index channel */
- 		cy_writeb(base_addr + (CySRER << index),
- 			  readb(base_addr + (CySRER << index)) | CyTxRdy);
- 		spin_unlock_irqrestore(&cinfo->card_lock, flags);
-@@ -4416,10 +4406,11 @@
- 			info->cor3 = 0x08;	/* _very_ small rcv threshold */
- 
- 			chip_number = (port - cinfo->first_line) / 4;
--			if ((info->chip_rev = readb(cinfo->base_addr +
--				      (cy_chip_offset[chip_number] <<
--				       index) + (CyGFRCR << index))) >=
--			    CD1400_REV_J) {
-+			info->chip_rev = readb(cinfo->base_addr +
-+				      (cy_chip_offset[chip_number] << index) +
-+				      (CyGFRCR << index));
-+
-+			if (info->chip_rev >= CD1400_REV_J) {
- 				/* It is a CD1400 rev. J or later */
- 				info->tbpr = baud_bpr_60[13];	/* Tx BPR */
- 				info->tco = baud_co_60[13];	/* Tx CO */
-@@ -4464,7 +4455,8 @@
- 	/* Cy_ClrIntr is 0x1800 */
- 	udelay(500L);
- 
--	for (chip_number = 0; chip_number < CyMAX_CHIPS_PER_CARD; chip_number++) {
-+	for (chip_number = 0; chip_number < CyMAX_CHIPS_PER_CARD;
-+							chip_number++) {
- 		base_addr =
- 		    true_base_addr + (cy_chip_offset[chip_number] << index);
- 		mdelay(1);
-@@ -4565,12 +4557,11 @@
- 	/* scan the address table probing for Cyclom-Y/ISA boards */
- 	for (i = 0; i < NR_ISA_ADDRS; i++) {
- 		unsigned int isa_address = cy_isa_addresses[i];
--		if (isa_address == 0x0000) {
-+		if (isa_address == 0x0000)
- 			return nboard;
--		}
- 
- 		/* probe for CD1400... */
--		cy_isa_address = ioremap(isa_address, CyISA_Ywin);
-+		cy_isa_address = ioremap_nocache(isa_address, CyISA_Ywin);
- 		if (cy_isa_address == NULL) {
- 			printk(KERN_ERR "Cyclom-Y/ISA: can't remap base "
- 					"address\n");
-@@ -4857,12 +4848,10 @@
- 	if (mailbox != 0) {
- 		/* set window to last 512K of RAM */
- 		cy_writel(&ctl_addr->loc_addr_base, WIN_RAM + RAM_SIZE);
--		//sleep(1);
- 		for (tmp = base_addr; tmp < base_addr + RAM_SIZE; tmp++)
- 			cy_writeb(tmp, 255);
- 		/* set window to beginning of RAM */
- 		cy_writel(&ctl_addr->loc_addr_base, WIN_RAM);
--		//sleep(1);
+-	if (!request_mem_region (addr + PCI_IO_OFFSET, 0x200000, "epca")) {
+-		printk (KERN_ERR PFX "resource 0x%x @ 0x%lx unavailable\n",
++	if (!request_mem_region(addr + PCI_IO_OFFSET, 0x200000, "epca")) {
++		printk(KERN_ERR PFX "resource 0x%x @ 0x%lx unavailable\n",
+ 			0x200000, addr + PCI_IO_OFFSET);
+ 		goto err_out;
  	}
  
- 	retval = __cyz_load_fw(fw, "Cyclom-Z", mailbox, base_addr, NULL);
-@@ -5392,7 +5381,8 @@
- 	del_timer_sync(&cyz_timerlist);
- #endif /* CONFIG_CYZ_INTR */
+-	boards[board_idx].re_map_port = ioremap(addr + PCI_IO_OFFSET, 0x200000);
++	boards[board_idx].re_map_port = ioremap_nocache(addr + PCI_IO_OFFSET,
++								0x200000);
+ 	if (!boards[board_idx].re_map_port) {
+-		printk (KERN_ERR PFX "cannot map 0x%x @ 0x%lx\n",
++		printk(KERN_ERR PFX "cannot map 0x%x @ 0x%lx\n",
+ 			0x200000, addr + PCI_IO_OFFSET);
+ 		goto err_out_free_pciio;
+ 	}
  
--	if ((e1 = tty_unregister_driver(cy_serial_driver)))
-+	e1 = tty_unregister_driver(cy_serial_driver);
-+	if (e1)
- 		printk(KERN_ERR "failed to unregister Cyclades serial "
- 				"driver(%d)\n", e1);
+-	if (!request_mem_region (addr, 0x200000, "epca")) {
+-		printk (KERN_ERR PFX "resource 0x%x @ 0x%lx unavailable\n",
++	if (!request_mem_region(addr, 0x200000, "epca")) {
++		printk(KERN_ERR PFX "resource 0x%x @ 0x%lx unavailable\n",
+ 			0x200000, addr);
+ 		goto err_out_free_iounmap;
+ 	}
  
+-	boards[board_idx].re_map_membase = ioremap(addr, 0x200000);
++	boards[board_idx].re_map_membase = ioremap_nocache(addr, 0x200000);
+ 	if (!boards[board_idx].re_map_membase) {
+-		printk (KERN_ERR PFX "cannot map 0x%x @ 0x%lx\n",
++		printk(KERN_ERR PFX "cannot map 0x%x @ 0x%lx\n",
+ 			0x200000, addr + PCI_IO_OFFSET);
+ 		goto err_out_free_memregion;
+ 	}
+@@ -2837,11 +2877,11 @@
+ 	return 0;
+ 
+ err_out_free_memregion:
+-	release_mem_region (addr, 0x200000);
++	release_mem_region(addr, 0x200000);
+ err_out_free_iounmap:
+-	iounmap (boards[board_idx].re_map_port);
++	iounmap(boards[board_idx].re_map_port);
+ err_out_free_pciio:
+-	release_mem_region (addr + PCI_IO_OFFSET, 0x200000);
++	release_mem_region(addr + PCI_IO_OFFSET, 0x200000);
+ err_out:
+ 	return -ENODEV;
+ }
+@@ -2859,7 +2899,7 @@
+ 
+ static int __init init_PCI(void)
+ {
+-	memset (&epca_driver, 0, sizeof (epca_driver));
++	memset(&epca_driver, 0, sizeof(epca_driver));
+ 	epca_driver.name = "epca";
+ 	epca_driver.id_table = epca_pci_tbl;
+ 	epca_driver.probe = epca_init_one;
