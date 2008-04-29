@@ -1,56 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757184AbYD2OHx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758808AbYD2OIn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757184AbYD2OHx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 10:07:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752347AbYD2OHo
+	id S1758808AbYD2OIn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 10:08:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751764AbYD2OIe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 10:07:44 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:40725 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750837AbYD2OHn (ORCPT
+	Tue, 29 Apr 2008 10:08:34 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:29242 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750981AbYD2OId (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 10:07:43 -0400
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: julia@diku.dk (Julia Lawall)
-Subject: Re: [PATCH] crypto: Correct kzalloc error test
-Cc: herbert@gondor.apana.org.au, davem@davemloft.net,
-       linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Organization: Core
-In-Reply-To: <Pine.LNX.4.58.0804291536220.1185@pc-041.diku.dk>
-X-Newsgroups: apana.lists.os.linux.cryptoapi,apana.lists.os.linux.kernel
-User-Agent: tin/1.7.4-20040225 ("Benbecula") (UNIX) (Linux/2.6.17-rc4 (i686))
-Message-Id: <E1JqqUc-0005Rg-00@gondolin.me.apana.org.au>
-Date: Tue, 29 Apr 2008 22:07:38 +0800
+	Tue, 29 Apr 2008 10:08:33 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=NKMlKncs8MU7Ethk0OsZohHGINgsBUqhyoAfRtQHwHmQ9SWmmEreRfnTkMPvrxdjs
+	QoT8KCAHl1hModkwQUZ5Q==
+Message-ID: <d43160c70804290708t51bdc100j9cc42a8da512aee7@mail.gmail.com>
+Date: Tue, 29 Apr 2008 10:08:18 -0400
+From: "Ross Biro" <rossb@google.com>
+To: "Hugh Dickins" <hugh@veritas.com>
+Subject: Re: Page Faults slower in 2.6.25-rc9 than 2.6.23
+Cc: linux-mm@kvack.org, lkml <linux-kernel@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.64.0804291447040.5058@blonde.site>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <d43160c70804290610t2135a271hd9b907529e89e74e@mail.gmail.com>
+	 <Pine.LNX.4.64.0804291447040.5058@blonde.site>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Julia Lawall <julia@diku.dk> wrote:
-> From: Julia Lawall <julia@diku.dk>
-> 
-> Normally, kzalloc returns NULL or a valid pointer value, not a value to be
-> tested using IS_ERR.
+On Tue, Apr 29, 2008 at 9:57 AM, Hugh Dickins <hugh@veritas.com> wrote:
+>  Do you have CONFIG_CGROUP_MEM_RES_CTLR=y in 2.6.25?
+>  That added about 20% to my lmbench "Page Fault" tests (with
+>  adverse effect on several others e.g. the fork, exec, sh group).
 
-Ouch :)
+I don't have config cgroups set.  I do have fake numa on, but I'm
+pretty sure it was on for 2.6.23 as well.
 
-> diff -u -p  a/crypto/cryptd.c b/crypto/cryptd.c
-> --- a/crypto/cryptd.c   2008-04-16 13:27:56.000000000 +0200
-> +++ b/crypto/cryptd.c   2008-04-29 15:29:54.000000000 +0200
-> @@ -190,7 +190,7 @@ static struct crypto_instance *cryptd_al
->        int err;
-> 
->        inst = kzalloc(sizeof(*inst) + sizeof(*ctx), GFP_KERNEL);
-> -       if (IS_ERR(inst))
-> +       if (!inst)
->                goto out;
+# CONFIG_CGROUPS is not set
+CONFIG_GROUP_SCHED=y
+CONFIG_FAIR_GROUP_SCHED=y
+# CONFIG_RT_GROUP_SCHED is not set
+CONFIG_USER_SCHED=y
+# CONFIG_CGROUP_SCHED is not set
+C
 
-However, this function is expected to return an ERR_PTR so you'll
-need set it to ENOMEM first.
-
-Thanks,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+    Ross
