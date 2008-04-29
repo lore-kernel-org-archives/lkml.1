@@ -1,68 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936231AbYD2A3h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932783AbYD2AjW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936231AbYD2A3h (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 20:29:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935082AbYD2A3W
+	id S932783AbYD2AjW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 20:39:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753336AbYD2AjL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 20:29:22 -0400
-Received: from ra.tuxdriver.com ([70.61.120.52]:2620 "EHLO ra.tuxdriver.com"
+	Mon, 28 Apr 2008 20:39:11 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:41225 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935080AbYD2A3V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 20:29:21 -0400
-Date: Mon, 28 Apr 2008 19:45:48 -0400
-From: "John W. Linville" <linville@tuxdriver.com>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       reinette.chatre@intel.com, torvalds@linux-foundation.org,
-       yi.zhu@intel.com, linux-wireless@vger.kernel.org
-Subject: Re: [2.6 patch] iwlwifi: move the selects to the tristate drivers
-Message-ID: <20080428234548.GB3075@tuxdriver.com>
-References: <20080428054700.GA16177@Pilar.virtua.com.br> <20080427.233507.261574307.davem@davemloft.net> <20080428073212.GA7260@Pilar.virtua.com.br> <20080428131552.GI16379@cs181133002.pp.htv.fi> <20080428142129.GA5679@beyonder.ift.unesp.br> <20080428205849.GB2813@cs181133002.pp.htv.fi>
+	id S1751744AbYD2AjK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Apr 2008 20:39:10 -0400
+Message-ID: <48166CA1.1070000@redhat.com>
+Date: Mon, 28 Apr 2008 21:32:33 -0300
+From: Glauber Costa <gcosta@redhat.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080428205849.GB2813@cs181133002.pp.htv.fi>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: Sergio Luis <sergio@larces.uece.br>
+CC: Ken Moffat <zarniwhoop@ntlworld.com>,
+       Bart Van Assche <bart.vanassche@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: 2.6.25 slow boot/reboot
+References: <48141111.7010605@larces.uece.br>	 <e2e108260804270823t45611ec2t35da085833d82dfa@mail.gmail.com>	 <20080427235554.GA28344@deepthought> <48152747.4030107@larces.uece.br>	 <4815DCEF.3000602@redhat.com> <430c4fa50804280735o3d1c3b9cg687f7d374dafbdec@mail.gmail.com>
+In-Reply-To: <430c4fa50804280735o3d1c3b9cg687f7d374dafbdec@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 28, 2008 at 11:58:49PM +0300, Adrian Bunk wrote:
+Sergio Luis wrote:
+> On Mon, Apr 28, 2008 at 11:19 AM, Glauber Costa <gcosta@redhat.com> wrote:
+>> Sergio Luis wrote:
+>>
+>>> Ken Moffat wrote:
+>>>
+>>>> On Sun, Apr 27, 2008 at 05:23:57PM +0200, Bart Van Assche wrote:
+>>>>
+>>>>> On Sun, Apr 27, 2008 at 7:37 AM, Sergio Luis <sergio@larces.uece.br>
+>> wrote:
+>>>>>>  This weekend I got some time and decided to try out 2.6.25, but its
+>> booting process was _really_ slow in my laptop[1]. With 'old' 2.6.24.5 my
+>> machine would take about 48 secs until it gave me the login prompt. And it
+>> would take about 22 seconds to reboot.
 
-> This patch moves the following select's:
-> - RFKILL        : IWLWIFI_RFKILL -> IWLCORE
-> - RFKILL_INPUT  : IWLWIFI_RFKILL -> IWLCORE
-> - MAC80211_LEDS : IWL4965_LEDS   -> IWLCORE
-> - LEDS_CLASS    : IWL4965_LEDS   -> IWLCORE
-> - MAC80211_LEDS : IWL3945_LEDS   -> IWL3945
-> - LEDS_CLASS    : IWL3945_LEDS   -> IWL3945
-> 
-> The effects are:
-> - with IWLCORE=m and/or IWL3945=m RFKILL/RFKILL_INPUT/MAC80211_LEDS/LEDS_CLASS
->   are no longer wrongly forced to y
-> - fixes a build error with IWLCORE=y, IWL4965=m
->   might be a bug in kconfig causing it, but doing this change that is 
->   anyway the right thing fixes it
-> 
-> Reported-by: Carlos R. Mafra <crmafra2@gmail.com>
-> Signed-off-by: Adrian Bunk <bunk@kernel.org>
+Sergio,
 
-This seems sane to me -- I'm sorry I let so much Kconfig mess slip
-through on this driver in the first place!
+You said your system freezes. Does it happen after the last message you 
+see on dmesg, or during the kernel start up? It would help me to rule 
+out (or not), any issues in the cpu initialization process itself.
 
-> ---
-> 
-> BTW: There's no correlation between IWL3945_LEDS and IWLWIFI_LEDS.
->      That seems to be intended?
-
-Yes.  IWLWIFI_LEDS used to be IWL4965_LEDS, and I have the impression
-that eventually it will subsume IWL3945_LEDS as well.
-
-Dave, are you going to snarf this one too?  If not (and presuming no
-one points out yet another problem) I'll just include it in the next
-round of fix patches, probably on tomorrow.
-
-John
--- 
-John W. Linville
-linville@tuxdriver.com
+As for reboot, any suspicious message on your kernel log?
