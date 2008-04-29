@@ -1,154 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933020AbYD2PbK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758009AbYD2Pbl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933020AbYD2PbK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 11:31:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757840AbYD2Pat
+	id S1758009AbYD2Pbl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 11:31:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933090AbYD2Pa4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 11:30:49 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:11107 "EHLO
-	dwalker1.mvista.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S933013AbYD2Pas (ORCPT
+	Tue, 29 Apr 2008 11:30:56 -0400
+Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:41152
+	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932098AbYD2Paz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 11:30:48 -0400
-Message-Id: <20080429152728.897334323@mvista.com>
-User-Agent: quilt/0.46-1
-Date: Tue, 29 Apr 2008 08:27:28 -0700
-From: Daniel Walker <dwalker@mvista.com>
-To: akpm@linux-foundation.org
-Cc: paulus@samba.org, benh@kernel.crashing.org, mingo@elte.hu, matthew@wil.cx,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] machintosh: ADB driver: adb_handler_sem semaphore to mutex
+	Tue, 29 Apr 2008 11:30:55 -0400
+Date: Tue, 29 Apr 2008 17:30:52 +0200
+From: Andrea Arcangeli <andrea@qumranet.com>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Robin Holt <holt@sgi.com>, Jack Steiner <steiner@sgi.com>,
+       Nick Piggin <npiggin@suse.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       kvm-devel@lists.sourceforge.net, Kanoj Sarcar <kanojsarcar@yahoo.com>,
+       Roland Dreier <rdreier@cisco.com>,
+       Steve Wise <swise@opengridcomputing.com>, linux-kernel@vger.kernel.org,
+       Avi Kivity <avi@qumranet.com>, linux-mm@kvack.org,
+       general@lists.openfabrics.org, Hugh Dickins <hugh@veritas.com>,
+       akpm@linux-foundation.org, Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [PATCH 01 of 12] Core of mmu notifiers
+Message-ID: <20080429153052.GE8315@duo.random>
+References: <20080423221928.GV24536@duo.random> <20080424064753.GH24536@duo.random> <20080424095112.GC30298@sgi.com> <20080424153943.GJ24536@duo.random> <20080424174145.GM24536@duo.random> <20080426131734.GB19717@sgi.com> <20080427122727.GO9514@duo.random> <Pine.LNX.4.64.0804281332030.31163@schroedinger.engr.sgi.com> <20080429001052.GA8315@duo.random> <Pine.LNX.4.64.0804281819020.2502@schroedinger.engr.sgi.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0804281819020.2502@schroedinger.engr.sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Daniel Walker <dwalker@mvista.com>
+On Mon, Apr 28, 2008 at 06:28:06PM -0700, Christoph Lameter wrote:
+> On Tue, 29 Apr 2008, Andrea Arcangeli wrote:
+> 
+> > Frankly I've absolutely no idea why rcu is needed in all rmap code
+> > when walking the page->mapping. Definitely the PG_locked is taken so
+> > there's no way page->mapping could possibly go away under the rmap
+> > code, hence the anon_vma can't go away as it's queued in the vma, and
+> > the vma has to go away before the page is zapped out of the pte.
+> 
+> zap_pte_range can race with the rmap code and it does not take the page 
+> lock. The page may not go away since a refcount was taken but the mapping 
+> can go away. Without RCU you have no guarantee that the anon_vma is 
+> existing when you take the lock. 
 
----
- drivers/macintosh/adb.c |   29 +++++++++++++++--------------
- 1 file changed, 15 insertions(+), 14 deletions(-)
+There's some room for improvement, like using down_read_trylock, if
+that succeeds we don't need to increase the refcount and we can keep
+the rcu_read_lock held instead.
 
-Index: linux-2.6.25/drivers/macintosh/adb.c
-===================================================================
---- linux-2.6.25.orig/drivers/macintosh/adb.c
-+++ linux-2.6.25/drivers/macintosh/adb.c
-@@ -37,6 +37,7 @@
- #include <linux/device.h>
- #include <linux/kthread.h>
- #include <linux/platform_device.h>
-+#include <linux/mutex.h>
- 
- #include <asm/uaccess.h>
- #include <asm/semaphore.h>
-@@ -102,7 +103,7 @@ static struct adb_handler {
- } adb_handler[16];
- 
- /*
-- * The adb_handler_sem mutex protects all accesses to the original_address
-+ * The adb_handler_mutex mutex protects all accesses to the original_address
-  * and handler_id fields of adb_handler[i] for all i, and changes to the
-  * handler field.
-  * Accesses to the handler field are protected by the adb_handler_lock
-@@ -110,7 +111,7 @@ static struct adb_handler {
-  * time adb_unregister returns, we know that the old handler isn't being
-  * called.
-  */
--static DECLARE_MUTEX(adb_handler_sem);
-+static DEFINE_MUTEX(adb_handler_mutex);
- static DEFINE_RWLOCK(adb_handler_lock);
- 
- #if 0
-@@ -355,7 +356,7 @@ do_adb_reset_bus(void)
- 		msleep(500);
- 	}
- 
--	down(&adb_handler_sem);
-+	mutex_lock(&adb_handler_mutex);
- 	write_lock_irq(&adb_handler_lock);
- 	memset(adb_handler, 0, sizeof(adb_handler));
- 	write_unlock_irq(&adb_handler_lock);
-@@ -376,7 +377,7 @@ do_adb_reset_bus(void)
- 		if (adb_controller->autopoll)
- 			adb_controller->autopoll(autopoll_devs);
- 	}
--	up(&adb_handler_sem);
-+	mutex_unlock(&adb_handler_mutex);
- 
- 	blocking_notifier_call_chain(&adb_client_list,
- 		ADB_MSG_POST_RESET, NULL);
-@@ -454,7 +455,7 @@ adb_register(int default_id, int handler
- {
- 	int i;
- 
--	down(&adb_handler_sem);
-+	mutex_lock(&adb_handler_mutex);
- 	ids->nids = 0;
- 	for (i = 1; i < 16; i++) {
- 		if ((adb_handler[i].original_address == default_id) &&
-@@ -472,7 +473,7 @@ adb_register(int default_id, int handler
- 			ids->id[ids->nids++] = i;
- 		}
- 	}
--	up(&adb_handler_sem);
-+	mutex_unlock(&adb_handler_mutex);
- 	return ids->nids;
- }
- 
-@@ -481,7 +482,7 @@ adb_unregister(int index)
- {
- 	int ret = -ENODEV;
- 
--	down(&adb_handler_sem);
-+	mutex_lock(&adb_handler_mutex);
- 	write_lock_irq(&adb_handler_lock);
- 	if (adb_handler[index].handler) {
- 		while(adb_handler[index].busy) {
-@@ -493,7 +494,7 @@ adb_unregister(int index)
- 		adb_handler[index].handler = NULL;
- 	}
- 	write_unlock_irq(&adb_handler_lock);
--	up(&adb_handler_sem);
-+	mutex_unlock(&adb_handler_mutex);
- 	return ret;
- }
- 
-@@ -557,19 +558,19 @@ adb_try_handler_change(int address, int 
- {
- 	int ret;
- 
--	down(&adb_handler_sem);
-+	mutex_lock(&adb_handler_mutex);
- 	ret = try_handler_change(address, new_id);
--	up(&adb_handler_sem);
-+	mutex_unlock(&adb_handler_mutex);
- 	return ret;
- }
- 
- int
- adb_get_infos(int address, int *original_address, int *handler_id)
- {
--	down(&adb_handler_sem);
-+	mutex_lock(&adb_handler_mutex);
- 	*original_address = adb_handler[address].original_address;
- 	*handler_id = adb_handler[address].handler_id;
--	up(&adb_handler_sem);
-+	mutex_unlock(&adb_handler_mutex);
- 
- 	return (*original_address != 0);
- }
-@@ -628,10 +629,10 @@ do_adb_query(struct adb_request *req)
- 	case ADB_QUERY_GETDEVINFO:
- 		if (req->nbytes < 3)
- 			break;
--		down(&adb_handler_sem);
-+		mutex_lock(&adb_handler_mutex);
- 		req->reply[0] = adb_handler[req->data[2]].original_address;
- 		req->reply[1] = adb_handler[req->data[2]].handler_id;
--		up(&adb_handler_sem);
-+		mutex_unlock(&adb_handler_mutex);
- 		req->complete = 1;
- 		req->reply_len = 2;
- 		adb_write_done(req);
--- 
+Secondly we don't need to increase the refcount in fork() when we
+queue the vma-copy in the anon_vma. You should init the refcount to 1
+when the anon_vma is allocated, remove the atomic_inc from all code
+(except when down_read_trylock fails) and then change anon_vma_unlink
+to:
 
--- 
+        up_write(&anon_vma->sem);
+	if (empty)
+		put_anon_vma(anon_vma);
+
+While the down_read_trylock surely won't help in AIM, the second
+change will reduce a bit the overhead in the VM core fast paths by
+avoiding all refcounting changes by checking the list_empty the same
+way the current code does. I really like how I designed the garbage
+collection through list_empty and that's efficient and I'd like to
+keep it.
+
+I however doubt this will bring us back to the same performance of the
+current spinlock version, as the real overhead should come out of
+overscheduling in down_write ai anon_vma_link. Here an initially
+spinning lock would help but that's gray area, it greatly depends on
+timings, and on very large systems where a cacheline wait with many
+cpus forking at the same time takes more than scheduling a semaphore
+may not slowdown performance that much. So I think the only way is a
+configuration option to switch the locking at compile time, then XPMEM
+will depend on that option to be on, I don't see a big deal and this
+guarantees embedded isn't screwed up by totally unnecessary locks on UP.
