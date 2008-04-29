@@ -1,56 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762693AbYD3PTL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763283AbYD3PT1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762693AbYD3PTL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Apr 2008 11:19:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758661AbYD3PSy
+	id S1763283AbYD3PT1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Apr 2008 11:19:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758333AbYD3PTD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Apr 2008 11:18:54 -0400
-Received: from zone0.gcu-squad.org ([212.85.147.21]:42906 "EHLO
-	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757279AbYD3PSx convert rfc822-to-8bit (ORCPT
+	Wed, 30 Apr 2008 11:19:03 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:47592 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762387AbYD3PTB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Apr 2008 11:18:53 -0400
-Date: Wed, 30 Apr 2008 17:18:29 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Rudolf Marek <r.marek@assembler.cz>
-Cc: Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
-       Matthew <jackdachef@gmail.com>,
-       Maxim Levitsky <maximlevitsky@gmail.com>, trenn@suse.de,
-       Kasper Sandberg <lkml@metanurb.dk>, Len Brown <lenb@kernel.org>,
-       linux-acpi@vger.kernel.org, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org, "Zhang, Rui" <rui.zhang@intel.com>
-Subject: Re: Linux 2.6.25 (coretemp reads high temperatures)
-Message-ID: <20080430171829.41891b07@hyperion.delvare>
-In-Reply-To: <48188753.40305@assembler.cz>
-References: <e85b9d30804180837y39c52e26i588e4b67c87a5e9d@mail.gmail.com>
-	<200804182151.49021.lenb@kernel.org>
-	<200804231143.10875.maximlevitsky@gmail.com>
-	<1209406784.11608.15.camel@localhost>
-	<1209474423.1784.837.camel@queen.suse.de>
-	<20080429170824.09540206@hyperion.delvare>
-	<48179DB4.8040701@assembler.cz>
-	<e85b9d30804291558r4051f1bbm9256aa2af2d86b6c@mail.gmail.com>
-	<20080430081035.2e789a50@hyperion.delvare>
-	<20080430144655.GB3543@khazad-dum.debian.net>
-	<48188753.40305@assembler.cz>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
+	Wed, 30 Apr 2008 11:19:01 -0400
+Date: Tue, 29 Apr 2008 10:18:52 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Fabio De Francesco <fabiomdf@alice.it>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [x86_32] With 4GB installed, in which cases low mem total is
+ less than 896MB?
+Message-ID: <20080429101852.6719eb59@infradead.org>
+In-Reply-To: <200804301702.06019.fabiomdf@alice.it>
+References: <200804301702.06019.fabiomdf@alice.it>
+Organization: Intel
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 30 Apr 2008 16:50:59 +0200, Rudolf Marek wrote:
-> >>> but like lm_sensors's output states - it's not bad until  I / we're
-> >>> getting temperatures from 85°C (?) [in this particular case], ...
-> >> If I remember correctly, at 84°C your CPU will start to throttle, at
-> >> 100°C it will shut down. You still have 24°C before the former happens,
-> >> so it should be OK.
+On Wed, 30 Apr 2008 17:02:02 +0200
+Fabio De Francesco <fabiomdf@alice.it> wrote:
+
+> Hi all,
 > 
-> The high limit is when the all fans should go max. Throttle is at crit.
+> I've got a Linux box, Intel Core 2 T7700 with 4GB RAM installed, with
+> vanilla kernel 2.6.24 + TuxOnIce patch-set compiled for x86_32bit
+> (CONFIG_X86_32=y), whose /proc/meminfo shows "LowTotal 794MB".
 
-Ah, sorry then, I remembered incorrectly.
+I'm not an expert in this, but one thing is that the more memory the system has, the more overhead there is.
+(roughly 64 bytes per 4Kb of memory).
 
--- 
-Jean Delvare
+> 
+> A further issue is about the "MemTotal" value that only shows more or
+> less 3550MB with HIGHMEM4G selected, and it shows a  more satisfying
+> value of 4050MB with HIGHMEM64G + X86_PAE + RESOURCES_64BIT selected.
+> In both cases LowTotal is always less than 800MB.
+> 
+> Why is it needed to activate the PAE mechanism in order to see and
+> use the whole 4GB memory? Is it what it is expected to be done?
+
+yes this is expected.
+Let me explain: even though you have 4Gb of memory, it's spread out like this:
+
+0     - 3.5Gb	Memory
+3.5Gb - 4Gb  	Gap
+4Gb   - 4.5Gb   Memory
+
+This "gap" is needed for PCI. PCI devices have "memory" on them (technical term is "MMIO", memory mapped IO) and
+this needs to be in the first 4Gb of memory (traditionally). So the system leaves a 0.5Gb gap on your system
+for this purpose.
+Some other systems have 0.25Gb or 1Gb gaps; some systems even have a BIOS option for the size of this gap.
+But a gap.. all machines with >= 4Gb have that.
+
+Just enable PAE and be done with it. (And you get the non-executable stack security feature as well then)
