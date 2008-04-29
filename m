@@ -1,45 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754288AbYD2JxS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755171AbYD2J6d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754288AbYD2JxS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 05:53:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761253AbYD2JxA
+	id S1755171AbYD2J6d (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 05:58:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751535AbYD2J6Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 05:53:00 -0400
-Received: from boogie.lpds.sztaki.hu ([193.224.70.237]:56965 "EHLO
-	boogie.lpds.sztaki.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761241AbYD2Jw7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 05:52:59 -0400
-Date: Tue, 29 Apr 2008 11:53:01 +0200
-From: Gabor Gombas <gombasg@sztaki.hu>
-To: Bernhard Walle <bwalle@suse.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: Solid freezes with 2.6.25
-Message-ID: <20080429095301.GE16556@boogie.lpds.sztaki.hu>
-References: <20080428142935.GQ14074@boogie.lpds.sztaki.hu> <20080428092513.495378af.akpm@linux-foundation.org> <20080429115029.69a8059b@strauss.suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080429115029.69a8059b@strauss.suse.de>
-X-Copyright: Forwarding or publishing without permission is prohibited.
+	Tue, 29 Apr 2008 05:58:24 -0400
+Received: from styx.suse.cz ([82.119.242.94]:57233 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750991AbYD2J6X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Apr 2008 05:58:23 -0400
+From: Jan Kara <jack@suse.cz>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-ext4@vger.kernel.org,
+       gentuu@gmail.com, Jan Kara <jack@suse.cz>
+Subject: [PATCH] ext3: Fix synchronization of quota files in journal=data mode
+Date: Tue, 29 Apr 2008 11:58:21 +0200
+Message-Id: <12094631011110-git-send-email-jack@suse.cz>
+X-Mailer: git-send-email 1.5.2.4
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 29, 2008 at 11:50:29AM +0200, Bernhard Walle wrote:
+In journal=data mode, it is not enough to do write_inode_now as done in
+vfs_quota_on() to write all data to their final location (which is needed
+for quota_read to work correctly). Calling journal_flush() does its job.
 
-> So the problem goes away if CONFIG_HPET_EMULATE_RTC is not set? I'm
-> trying to come up with a debug patch ...
+Reported-by: Nick <gentuu@gmail.com>
+Signed-off-by: Jan Kara <jack@suse.cz>
+---
+ fs/ext3/super.c |   42 +++++++++++++++++++++++++++++-------------
+ 1 files changed, 29 insertions(+), 13 deletions(-)
 
-Not sure, did not try that so far. During the day I have to do some real
-work but I try to build a kernel with that option not set and boot it
-when I leave at the evening.
-
-Gabor
-
+diff --git a/fs/ext3/super.c b/fs/ext3/super.c
+index 77e9702..412c8c5 100644
+--- a/fs/ext3/super.c
++++ b/fs/ext3/super.c
+@@ -2756,23 +2756,39 @@ static int ext3_quota_on(struct super_block *sb, int type, int format_id,
+ 
+ 	if (!test_opt(sb, QUOTA))
+ 		return -EINVAL;
+-	/* Not journalling quota? */
+-	if (!EXT3_SB(sb)->s_qf_names[USRQUOTA] &&
+-	    !EXT3_SB(sb)->s_qf_names[GRPQUOTA])
+-		return vfs_quota_on(sb, type, format_id, path);
++
+ 	err = path_lookup(path, LOOKUP_FOLLOW, &nd);
+ 	if (err)
+ 		return err;
+-	/* Quotafile not on the same filesystem? */
+-	if (nd.path.mnt->mnt_sb != sb) {
+-		path_put(&nd.path);
+-		return -EXDEV;
++
++	/* Journaling quota? */
++	if (EXT3_SB(sb)->s_qf_names[type]) {
++		/* Quotafile not on the same filesystem? */
++		if (nd.path.mnt->mnt_sb != sb) {
++			path_put(&nd.path);
++			return -EXDEV;
++		}
++		/* Quotafile not of fs root? */
++		if (nd.path.dentry->d_parent->d_inode != sb->s_root->d_inode)
++			printk(KERN_WARNING
++				"EXT3-fs: Quota file not on filesystem root. "
++				"Journaled quota will not work.\n");
+ 	}
+-	/* Quotafile not of fs root? */
+-	if (nd.path.dentry->d_parent->d_inode != sb->s_root->d_inode)
+-		printk(KERN_WARNING
+-			"EXT3-fs: Quota file not on filesystem root. "
+-			"Journalled quota will not work.\n");
++
++	/*
++	 * When we journal data on quota file, we have to flush journal to see
++	 * all updates to the file when we bypass pagecache...
++	 */
++	if (ext3_should_journal_data(nd.path.dentry->d_inode)) {
++		/*
++		 * We don't need to lock updates but journal_flush() could
++		 * otherwise be livelocked...
++		 */
++		journal_lock_updates(EXT3_SB(sb)->s_journal);
++		journal_flush(EXT3_SB(sb)->s_journal);
++		journal_unlock_updates(EXT3_SB(sb)->s_journal);
++	}
++
+ 	path_put(&nd.path);
+ 	return vfs_quota_on(sb, type, format_id, path);
+ }
 -- 
-     ---------------------------------------------------------
-     MTA SZTAKI Computer and Automation Research Institute
-                Hungarian Academy of Sciences
-     ---------------------------------------------------------
+1.5.2.4
+
