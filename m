@@ -1,51 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757781AbYD2X62@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757953AbYD3AAU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757781AbYD2X62 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 19:58:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751102AbYD2X6U
+	id S1757953AbYD3AAU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 20:00:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752584AbYD3AAH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 19:58:20 -0400
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:40359 "EHLO smtp4.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751080AbYD2X6U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 19:58:20 -0400
-Date: Wed, 30 Apr 2008 02:57:40 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: dhowells@redhat.com, Harvey Harrison <harvey.harrison@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: [2.6 patch] fix arch/frv/mm/unaligned.o build error
-Message-ID: <20080429235740.GC15987@cs181133002.pp.htv.fi>
+	Tue, 29 Apr 2008 20:00:07 -0400
+Received: from simmts6-srv.bellnexxia.net ([206.47.199.164]:34232 "EHLO
+	simmts6-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751102AbYD3AAG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Apr 2008 20:00:06 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ar4BAF5TF0icIvo8/2dsb2JhbAAIimSiJQ
+Message-ID: <4817B67A.40308@gmail.com>
+Date: Tue, 29 Apr 2008 20:59:54 -0300
+From: Kevin Winchester <kjwinchester@gmail.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: Ingo Molnar <mingo@elte.hu>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: 2.6.25-git WARNING: at arch/x86/kernel/genapic_64.c:86 read_apic_id+0x2e/0x46()
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch fixes the following build error caused by
-commit 6510d41954dc6a9c8b1dbca7eaca0f23195ca727
-(kernel: Move arches to use common unaligned access):
 
-<--  snip  -->
+Hi Ingo,
 
-...
-make[2]: *** No rule to make target `arch/frv/mm/unaligned.o', needed by `arch/frv/mm/built-in.o'.  Stop.
-make[1]: *** [arch/frv/mm] Error 2
+I am getting the following in my dmesg on every boot.  It was reported before[1], so I figured someone was working on it.  However, I haven't seen it get fixed yet, so is there anything I can do to help?
 
-<--  snip  -->
 
-Signed-off-by: Adrian Bunk <bunk@kernel.org>
+[    0.071066] ------------[ cut here ]------------
+[    0.071098] WARNING: at arch/x86/kernel/genapic_64.c:86 read_apic_id+0x2e/0x46()
+[    0.071140] Pid: 1, comm: swapper Not tainted 2.6.25-06589-gc65a350 #18
+[    0.071169]
+[    0.071170] Call Trace:
+[    0.071216]  [<ffffffff8022bc88>] warn_on_slowpath+0x53/0x81
+[    0.071247]  [<ffffffff80246e8c>] ? save_trace+0x3f/0x95
+[    0.071996]  [<ffffffff80248610>] ? mark_lock+0x345/0x36d
+[    0.072025]  [<ffffffff80249384>] ? __lock_acquire+0x898/0x8b9
+[    0.072055]  [<ffffffff80241ab9>] ? atomic_notifier_chain_register+0x18/0x41
+[    0.072087]  [<ffffffff80241ad6>] ? atomic_notifier_chain_register+0x35/0x41
+[    0.072118]  [<ffffffff8021be64>] read_apic_id+0x2e/0x46
+[    0.072147]  [<ffffffff80611042>] verify_local_APIC+0xaa/0x16a
+[    0.072177]  [<ffffffff8061143a>] APIC_init_uniprocessor+0x54/0xf6
+[    0.072208]  [<ffffffff806161ed>] ? spawn_softlockup_task+0x56/0x5a
+[    0.072237]  [<ffffffff8060b7f4>] kernel_init+0x4c/0x1d6
+[    0.072267]  [<ffffffff804a70ea>] ? _spin_unlock_irq+0x50/0x5d
+[    0.072296]  [<ffffffff804a6697>] ? trace_hardirqs_on_thunk+0x35/0x3a
+[    0.072326]  [<ffffffff80248838>] ? trace_hardirqs_on+0xf8/0x122
+[    0.072357]  [<ffffffff8020bf28>] child_rip+0xa/0x12
+[    0.072385]  [<ffffffff8020bae3>] ? restore_args+0x0/0x30
+[    0.072414]  [<ffffffff8060b7a8>] ? kernel_init+0x0/0x1d6
+[    0.072442]  [<ffffffff8020bf1e>] ? child_rip+0x0/0x12
+[    0.072468]
+[    0.072521] ---[ end trace 4eaa2a86a8e2da22 ]---
+[    0.072549] ------------[ cut here ]------------
+[    0.072575] WARNING: at arch/x86/kernel/genapic_64.c:86 read_apic_id+0x2e/0x46()
+[    0.072616] Pid: 1, comm: swapper Tainted: G        W 2.6.25-06589-gc65a350 #18
+[    0.072655]
+[    0.072656] Call Trace:
+[    0.072701]  [<ffffffff8022bc88>] warn_on_slowpath+0x53/0x81
+[    0.072729]  [<ffffffff80246e8c>] ? save_trace+0x3f/0x95
+[    0.072757]  [<ffffffff80248610>] ? mark_lock+0x345/0x36d
+[    0.072786]  [<ffffffff80249384>] ? __lock_acquire+0x898/0x8b9
+[    0.072815]  [<ffffffff80241ab9>] ? atomic_notifier_chain_register+0x18/0x41
+[    0.072847]  [<ffffffff80241ad6>] ? atomic_notifier_chain_register+0x35/0x41
+[    0.072877]  [<ffffffff8021be64>] read_apic_id+0x2e/0x46
+[    0.072906]  [<ffffffff80611079>] verify_local_APIC+0xe1/0x16a
+[    0.072936]  [<ffffffff8061143a>] APIC_init_uniprocessor+0x54/0xf6
+[    0.072965]  [<ffffffff806161ed>] ? spawn_softlockup_task+0x56/0x5a
+[    0.072989]  [<ffffffff8060b7f4>] kernel_init+0x4c/0x1d6
+[    0.072989]  [<ffffffff804a70ea>] ? _spin_unlock_irq+0x50/0x5d
+[    0.072989]  [<ffffffff804a6697>] ? trace_hardirqs_on_thunk+0x35/0x3a
+[    0.072989]  [<ffffffff80248838>] ? trace_hardirqs_on+0xf8/0x122
+[    0.072989]  [<ffffffff8020bf28>] child_rip+0xa/0x12
+[    0.072989]  [<ffffffff8020bae3>] ? restore_args+0x0/0x30
+[    0.072989]  [<ffffffff8060b7a8>] ? kernel_init+0x0/0x1d6
+[    0.072989]  [<ffffffff8020bf1e>] ? child_rip+0x0/0x12
+[    0.072989]
+[    0.072989] ---[ end trace 4eaa2a86a8e2da22 ]---
 
----
-e3dae1fd99455187e952928f53f43b3bde6d0a08 diff --git a/arch/frv/mm/Makefile b/arch/frv/mm/Makefile
-index fb8b1d8..1bca5ab 100644
---- a/arch/frv/mm/Makefile
-+++ b/arch/frv/mm/Makefile
-@@ -6,4 +6,4 @@ obj-y := init.o kmap.o
- 
- obj-$(CONFIG_MMU) += \
- 	pgalloc.o highmem.o fault.o extable.o cache-page.o tlb-flush.o tlb-miss.o \
--	mmu-context.o dma-alloc.o unaligned.o elf-fdpic.o
-+	mmu-context.o dma-alloc.o elf-fdpic.o
 
+-- 
+Kevin Winchester
+
+
+[1] http://lkml.org/lkml/2008/4/18/333
