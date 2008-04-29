@@ -1,54 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759437AbYD2WK3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760034AbYD2WKq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759437AbYD2WK3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 18:10:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753749AbYD2WKN
+	id S1760034AbYD2WKq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 18:10:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758323AbYD2WKT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 18:10:13 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:59259 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752551AbYD2WKL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 18:10:11 -0400
-Date: Wed, 30 Apr 2008 00:09:53 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Gabriel C <nix.or.die@googlemail.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Mika Fischer <mika.fischer@zoopnet.de>
-Subject: Re: [PATCH] x86: mtrr cleanup for converting continuous to
-	discrete layout v5
-Message-ID: <20080429220953.GI2302@elte.hu>
-References: <200804272337.40130.yhlu.kernel@gmail.com> <200804281244.56938.yhlu.kernel@gmail.com> <200804281316.14168.yhlu.kernel@gmail.com> <200804281505.05764.yhlu.kernel@gmail.com> <m1wsmg32qk.fsf@frodo.ebiederm.org> <86802c440804291304r7ff169f6k9132f98761ecef42@mail.gmail.com> <m1abjcz9ow.fsf@frodo.ebiederm.org> <86802c440804291457k79099d84w53110fabf59e9e37@mail.gmail.com>
+	Tue, 29 Apr 2008 18:10:19 -0400
+Received: from smtp116.sbc.mail.sp1.yahoo.com ([69.147.64.89]:38777 "HELO
+	smtp116.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1755505AbYD2WKS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Apr 2008 18:10:18 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=KbpqT3qHBBz0mTOr9jVUHsws6T8P/QWFM24WAQYPJIkxKqSwynIuYVjK9PSlYvydoUTpwR+i8KKws0yWdqvord+62AYTd7ly+S8eBymi7r/F6XXCaN8DkTrlui1366DjS5Bl20KTrhClEq24KJ6GUTas6Jox4NCck6ZmgrSeN1k=  ;
+X-YMail-OSG: XkAbNmgVM1mqd5eoayA9yCGoFqK_GxG7JduSrbDFeAoiGRBGkHiiYw0UsihBvHsHy2y2HDPnadtMrTPr3zIntxHiYt3YKsKFKn9HBlMj8yMNCxLUj1fDyaK17A_bBligX0Q-
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Ben Nizette <bn@niasdigital.com>
+Subject: Re: [patch/rfc 2.6.25-git] gpio: sysfs interface
+Date: Tue, 29 Apr 2008 14:28:58 -0700
+User-Agent: KMail/1.9.6
+Cc: lkml <linux-kernel@vger.kernel.org>, Trent Piepho <tpiepho@freescale.com>,
+       hartleys <hartleys@visionengravers.com>,
+       Mike Frysinger <vapier.adi@gmail.com>, Bryan Wu <cooloney@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+References: <200804281239.51729.david-b@pacbell.net> <200804282044.00706.david-b@pacbell.net> <1209444464.311.25.camel@moss.renham>
+In-Reply-To: <1209444464.311.25.camel@moss.renham>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
 Content-Disposition: inline
-In-Reply-To: <86802c440804291457k79099d84w53110fabf59e9e37@mail.gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-Id: <200804291428.59329.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Yinghai Lu <yhlu.kernel@gmail.com> wrote:
-
-> agreed. so that feature is compiled in but disable by default.
+On Monday 28 April 2008, Ben Nizette wrote:
+> > > > 
+> > > > Sysfs attributes are supposed to be pollable.  I've not done it,
+> > > > but fs/sysfs/file.c::sysfs_notify() looks relevant ...
+> > > 
+> > > Right, that'll work.
+> > 
+> > OK.  In that case, I think I should plan to rename the "direction"
+> > attribute as "configuration" or something a bit broader ... so that
+> > writing "irq" (or maybe "rising", "falling", "bothedges", "poll")
+> > would eventually configure it as an input with an IRQ handler.
 > 
-> BTW: is any chance for OS to disable SMI etc? to verify is the 
-> unstatbility is caused by SMI?
+> Good plan, unless you'd prefer to see "direction" and "interrupt" config
+> separate.  I have no real preference but IMO
+>   echo "falling" > interrupt
+> makes more immediate sense than
+>   echo "falling" > configuration
 
-i dont think there's any documented way for that. SMI might be the 
-mechanism that ensures blue-smoke type of system reliability (CPU fan, 
-temperature, etc.) so it would be extremely dangerous to mess with it.
+OK, I'll leave it be then.  Given that not all GPIOs support
+interrupts, I used the "poll" example intentionally ... being
+able to poll every N seconds (milliseconds?) may be important.
 
-	Ingo
+
+> > 
+> > Whenever someone contributes such an async notification scheme,
+> > that is.  ;)
+> 
+> ;)
+
+
