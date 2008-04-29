@@ -1,78 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762673AbYD2VU1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763593AbYD2VVH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762673AbYD2VU1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 17:20:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751523AbYD2VUS
+	id S1763593AbYD2VVH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 17:21:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753891AbYD2VUw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 17:20:18 -0400
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:57435 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751505AbYD2VUR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 17:20:17 -0400
-Date: Tue, 29 Apr 2008 22:14:11 +0100
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Randy Dunlap <rdunlap@xenotime.net>
-Cc: Adrian Bunk <bunk@kernel.org>, "Denis V. Lunev" <den@openvz.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-pcmcia@lists.infradead.org, Alexey Dobriyan <adobriyan@gmail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: pcmcia_ioctl.c compile error
-Message-ID: <20080429211410.GD31311@flint.arm.linux.org.uk>
-Mail-Followup-To: Randy Dunlap <rdunlap@xenotime.net>,
-	Adrian Bunk <bunk@kernel.org>, "Denis V. Lunev" <den@openvz.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	linux-pcmcia@lists.infradead.org,
-	Alexey Dobriyan <adobriyan@gmail.com>, linux-kernel@vger.kernel.org
-References: <20080429182709.GB2898@cs181133002.pp.htv.fi> <20080429201704.GA31311@flint.arm.linux.org.uk> <20080429135902.504b6362.rdunlap@xenotime.net>
+	Tue, 29 Apr 2008 17:20:52 -0400
+Received: from mail.queued.net ([207.210.101.209]:2979 "EHLO mail.queued.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752857AbYD2VUv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Apr 2008 17:20:51 -0400
+Date: Tue, 29 Apr 2008 17:24:02 -0400
+From: Andres Salomon <dilinger@queued.net>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: linux-kbuild <linux-kbuild@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Dave Jones <davej@codemonkey.org.uk>,
+       Roland McGrath <roland@redhat.com>
+Subject: Re: Additional kconfig targets (cloneconfig, nonint_oldconfig etc)
+Message-ID: <20080429172402.14d7d40b@ephemeral>
+In-Reply-To: <20080429183531.GB19652@uranus.ravnborg.org>
+References: <20080429183531.GB19652@uranus.ravnborg.org>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.12.0; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080429135902.504b6362.rdunlap@xenotime.net>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 29, 2008 at 01:59:02PM -0700, Randy Dunlap wrote:
-> On Tue, 29 Apr 2008 21:17:04 +0100 Russell King wrote:
+On Tue, 29 Apr 2008 20:35:31 +0200
+Sam Ravnborg <sam@ravnborg.org> wrote:
+
+> Recently there has been request for a number of new
+> kconfig related targets.
 > 
-> > On Tue, Apr 29, 2008 at 09:27:10PM +0300, Adrian Bunk wrote:
-> > > Commit 9c37066d888bf6e1b96ad12304971b3ddeabbad0 (proc: remove proc_bus) 
-> > > came through -mm that contains a patch implementing the overdue removal 
-> > > of the PCMCIA control ioctl that did not yet make it into Linus' tree:
-> > 
-> > Okay, this means at least one of my platforms is now dead as far as
-> > building new kernels for it, and nothing I can do about that.  Ho hum.
+> In general it boils down to the following:
 > 
-> I don't get it.  Several of us had building problems for a few
-> days with some pasic driver.  We posted some bug reports and
-> some patches, but we put up with it for a few days...
+> We need to be flexible in what configuration
+> we start out from and how we apply it.
+> 
+> We need to be able to apply it in following ways:
+> 1) automated - select defaults for all new symbols
+>    => It is used for "make defconfig, make *_defconfig" today
+> 
+> 2) interactive - asking user for all new symbols
+>    and error out if stdin is redirected
+> 
+> 3) list unknown - list all new symbols and do not
+>    create a new config
+> 
+> With oldconfig today we have two modes:
+> -> One mode where we are very chatty and show
+>    all output.
+> -> And the 'silent' mode where we only start being
+>    chatty when we see a new symbol.
+> 
+> I plan to drop the 'very chatty' mode as I
+> do not see it usefull.
 
-What don't you get?
+I'd certainly agree with that.
 
-I've said each time the PCMCIA ioctl removal topic came up that it would
-give me this precise problem.  I've given details of _why_ it would cause
-me that problem.  It's gone ahead inspite of that.
+> So in essense 'make oldconfig' and 'make silentoldconfig'
+> become equal.
+> 
+> The commands we have today for kconfig is:
+> 
+> # Command line variants
+> make oldconfig
+> make silentoldconfig
+> make defconfig
+> make XXX_defconfig
+> 
+> (The other frontends are left out on purpose).
+> The challenge here is to come up with a syntax that
+> allows us to select between the three behaviours,
+> while keeping backward compatibility.
+> 
+> The best suggestion I have so far is to say that:
+> a) if defconfig is specified then we use method 1)
+> b) if oldconfig is specified then we use method 2)
+> c) if newconfig is specified then we use method 3)
+> 
 
-Concerning the pasic driver.  For fuck sake, why are you bringing that
-up.  I made it *perfectly* and *crystal* clear that I *WAS* *NOT* in a
-position to fix that thing - BECAUSE I WASN'T GOING TO BE IN FRONT OF A
-COMPUTER FOR VERY LONG ON THOSE DAYS.  Which I knew would be the case on
-Monday morning.  I _tried_ to stop the thing being merged, but Linus
-merged it anyway, and then told me he'd done that _AFTER_ I'd gone to
-bed on Monday.  I tried to ensure that I was in a position to cover
-_all_ eventualities (except the one which actually occurred.)
+'newconfig' sounds to me like you're creating a new config; the exact
+opposite of what it does.  I'd suggest 'listnewconfig' or some such thing.
+Then again, 'defconfig' and 'oldconfig' are primarily what I care about,
+as I haven't been in a situation where I would have found method 3) to
+be useful.
 
-So, between Monday midnight and Thursday morning, when do you expect me
-to sort the resulting mess out, given that I was not even able to be
-in front of a computer until about 10pm on Tuesday and Wednesday?
+> And we add support for a new 'commandline' parameter
+> 'K' so I can say:
+> 
+> make K=/proc/config.gz defconfig
+> make K=i386_defconfig  defconfig
+> make K=i386_defconfig  oldconfig
+> make K=/proc/config.gz newconfig
+> 
+> So K is used to specify what config file we use
+> to start out from.
 
-Oh, maybe you expect me to give up sleeping just for you?
+Sounds good, I highly prefer specifying the config via env variable
+rather than embedded in the target (ie, 'make olpc_defconfig').
 
-What do you want me to do?  Quit because of it?
-
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+> 
+> Care should be taken to keep the known good
+> targets working as before.
+> 
+> Andres Salomon already did some preparational work
+> for this but I need to find a good way to handle the K=
+> parameter.
+> Dave J also posted patches that is useful for 'newconfig'.
+> 
+> But I wanted to ask for opinions before diving into
+> implmenting this.
+> 
+> 	Sam
+> 
+> [Random notes..]
+> 
+> # Enviroment variables affecting kconfig
+> KCONFIG_ALLCONFIG
+> KCONFIG_NOSILENTUPDATE
+> KCONFIG_CONFIG
+> KCONFIG_OVERWRITECONFIG
+> KCONFIG_NOTIMESTAMP
+> KCONFIG_AUTOCONFIG
+> KCONFIG_AUTOHEADER
+> 
+> #input files (aparts from the mandatory ones)
+> all.config
+> allno.config
+> allmod.config
+> allyes.config
+> allrandom.config
+> 
