@@ -1,52 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759557AbYD2Hi6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759843AbYD2Hk1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759557AbYD2Hi6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 03:38:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752096AbYD2Hit
+	id S1759843AbYD2Hk1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 03:40:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752096AbYD2HkR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 03:38:49 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:57570 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751961AbYD2Hit (ORCPT
+	Tue, 29 Apr 2008 03:40:17 -0400
+Received: from mtagate1.de.ibm.com ([195.212.29.150]:61903 "EHLO
+	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751242AbYD2HkQ convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 03:38:49 -0400
-Date: Tue, 29 Apr 2008 00:37:47 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Gabor Gombas <gombasg@sztaki.hu>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, Bernhard Walle <bwalle@suse.de>,
-       Oliver Pinter <oliver.pntr@gmail.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Solid freezes with 2.6.25
-Message-Id: <20080429003747.6237a0ed.akpm@linux-foundation.org>
-In-Reply-To: <20080429072423.GB7902@boogie.lpds.sztaki.hu>
-References: <20080428142935.GQ14074@boogie.lpds.sztaki.hu>
-	<20080429072423.GB7902@boogie.lpds.sztaki.hu>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 29 Apr 2008 03:40:16 -0400
+From: Christian Borntraeger <borntraeger@de.ibm.com>
+To: Olof Johansson <olof@lixom.net>, Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH/resend] 2.6.25+: Fix cpu hotplug problem in softirq code
+Date: Tue, 29 Apr 2008 09:40:12 +0200
+User-Agent: KMail/1.9.9
+Cc: "David S. Miller" <davem@davemloft.net>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       linux-kernel@vger.kernel.org
+References: <200804242113.11602.borntraeger@de.ibm.com>
+In-Reply-To: <200804242113.11602.borntraeger@de.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200804290940.12838.borntraeger@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 29 Apr 2008 09:24:23 +0200 Gabor Gombas <gombasg@sztaki.hu> wrote:
+This is a resend of a patch, which fixes a bug in cpu hotplug introduced
+after 2.6.25. Andrew, Olof, any opinions on this patch?
 
-> On Mon, Apr 28, 2008 at 04:29:35PM +0200, Gabor Gombas wrote:
-> 
-> > More info about the machine is attached. I've also seen similar hangs with
-> > 2.6.25-rc6 on an nforce4/Athlon64 box but I'm reluctant to re-test there
-> > because RAID rebuild takes too long.
-> 
-> Well, I accidentally booted 2.6.25 on that machine and it locked within
-> 10 minutes. Machine details follow. On this machine however there are no
-> complaints about lost rtc interrupts.
-> 
-> More observations: on the Intel Core2 Duo box 2.6.25 feels much more
-> sluggish than 2.6.24.x. Under some I/O load I feel if I was typing
-> through a slow remote network link instead of sitting in front of the
-> console. Keys sometimes start to auto-repeat in gnome terminal even if I
-> just press them once. The AMD box does not feel so sluggish, but sound
-> playback sometimes becomes jerky a couple of seconds before the freeze.
+Christian
 
-I suspect you have two separate regressions here.
+
+--- old mail ---
+
+Hello Olof,
+
+currently cpu hotplug (unplug) seems broken on s390 and likely others. On cpu 
+unplug the system starts to behave very strange and hangs.
+
+I bisected the problem to the following commit:
+
+-----
+commit 48f20a9a9488c432fc86df1ff4b7f4fa895d1183
+Author: Olof Johansson <olof@lixom.net>
+Date:   Tue Mar 4 15:23:25 2008 -0800
+    tasklets: execute tasklets in the same order they were queued
+-----
+
+Reverting this patch seems to fix the problem. I looked into takeover_tasklet
+and it seems that there is a way to corrupt the tail pointer of the current 
+cpu. If the tasklet list of the frozen cpu is empty, the tail pointer of the
+current cpu points to the address of the head pointer of the stopped cpu and 
+not to the next pointer of a tasklet_struct.
+
+This patch avoids the list splice of the list is empty and cpu hotplug seems
+to work as the tail pointer is not corrupted.
+Olof, can you look into that patch and ACK/NACK it so Andrew can push this to
+Linus, if appropriate?
+Please note that some lines are longer than 80 chars, but line-wrapping looked
+worse that this version.
+
+Signed-off-by: Christian Borntraeger <borntraeger@de.ibm.com>
+---
+ kernel/softirq.c |   20 ++++++++++++--------
+ 1 file changed, 12 insertions(+), 8 deletions(-)
+
+Index: kvm/kernel/softirq.c
+===================================================================
+--- kvm.orig/kernel/softirq.c
++++ kvm/kernel/softirq.c
+@@ -589,16 +589,20 @@ static void takeover_tasklets(unsigned i
+ 	local_irq_disable();
+ 
+ 	/* Find end, append list for that CPU. */
+-	*__get_cpu_var(tasklet_vec).tail = per_cpu(tasklet_vec, cpu).head;
+-	__get_cpu_var(tasklet_vec).tail = per_cpu(tasklet_vec, cpu).tail;
+-	per_cpu(tasklet_vec, cpu).head = NULL;
+-	per_cpu(tasklet_vec, cpu).tail = &per_cpu(tasklet_vec, cpu).head;
++	if (&per_cpu(tasklet_vec, cpu).head != per_cpu(tasklet_vec, cpu).tail) {
++		*(__get_cpu_var(tasklet_vec).tail) = per_cpu(tasklet_vec, cpu).head;
++		__get_cpu_var(tasklet_vec).tail = per_cpu(tasklet_vec, cpu).tail;
++		per_cpu(tasklet_vec, cpu).head = NULL;
++		per_cpu(tasklet_vec, cpu).tail = &per_cpu(tasklet_vec, cpu).head;
++	}
+ 	raise_softirq_irqoff(TASKLET_SOFTIRQ);
+ 
+-	*__get_cpu_var(tasklet_hi_vec).tail = per_cpu(tasklet_hi_vec, cpu).head;
+-	__get_cpu_var(tasklet_hi_vec).tail = per_cpu(tasklet_hi_vec, cpu).tail;
+-	per_cpu(tasklet_hi_vec, cpu).head = NULL;
+-	per_cpu(tasklet_hi_vec, cpu).tail = &per_cpu(tasklet_hi_vec, cpu).head;
++	if (&per_cpu(tasklet_hi_vec, cpu).head != per_cpu(tasklet_hi_vec, cpu).tail) {
++		*__get_cpu_var(tasklet_hi_vec).tail = per_cpu(tasklet_hi_vec, cpu).head;
++		__get_cpu_var(tasklet_hi_vec).tail = per_cpu(tasklet_hi_vec, cpu).tail;
++		per_cpu(tasklet_hi_vec, cpu).head = NULL;
++		per_cpu(tasklet_hi_vec, cpu).tail = &per_cpu(tasklet_hi_vec, cpu).head;
++	}
+ 	raise_softirq_irqoff(HI_SOFTIRQ);
+ 
+ 	local_irq_enable();
