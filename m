@@ -1,50 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760789AbYD2NAM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761204AbYD2NAg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760789AbYD2NAM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 09:00:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754546AbYD2M76
+	id S1761204AbYD2NAg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 09:00:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757443AbYD2NAF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 08:59:58 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:54649 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754060AbYD2M75 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 08:59:57 -0400
-Date: Sun, 27 Apr 2008 22:47:24 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Gabriel C <crazy@frugalware.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fbdev-devel@lists.sourceforge.net,
-       "Antonino A. Daplas" <adaplas@gmail.com>,
-       Dave Airlie <airlied@linux.ie>, Wang Zhenyu <zhenyu.z.wang@intel.com>
-Subject: Re: intelfb and G33 / Q33 / Q35 chipsets support ?
-Message-ID: <20080427224724.18c11b94@infradead.org>
-In-Reply-To: <4815EEB4.2060509@frugalware.org>
-References: <4815EEB4.2060509@frugalware.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Tue, 29 Apr 2008 09:00:05 -0400
+Received: from twin.jikos.cz ([213.151.79.26]:44850 "EHLO twin.jikos.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757250AbYD2NAE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Apr 2008 09:00:04 -0400
+Date: Tue, 29 Apr 2008 14:43:12 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+X-X-Sender: jikos@twin.jikos.cz
+To: Peter Zijlstra <peterz@infradead.org>
+cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       Paul E McKenney <paulmck@linux.vnet.ibm.com>,
+       Oleg Nesterov <oleg@tv-sign.ru>, Nick Piggin <npiggin@suse.de>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: futex code and barriers
+In-Reply-To: <1209470236.13978.55.camel@twins>
+Message-ID: <Pine.LNX.4.64.0804291442050.22014@twin.jikos.cz>
+References: <1209470236.13978.55.camel@twins>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 28 Apr 2008 17:35:16 +0200
-Gabriel C <crazy@frugalware.org> wrote:
+On Tue, 29 Apr 2008, Peter Zijlstra wrote:
 
-> Hello ,
+> While looking through the futex code I stumbled upon the following bit:
+> kernel/futex.c:
+> 	/* add_wait_queue is the barrier after __set_current_state. */
+> 	__set_current_state(TASK_INTERRUPTIBLE);
+> 	add_wait_queue(&q.waiters, &wait);
+> However,
+> void add_wait_queue(wait_queue_head_t *q, wait_queue_t *wait)
+> {
+> 	unsigned long flags;
 > 
-> are there any plans to add G33 / Q33 / Q35 chipsets support for the
-> intelfb driver ? Is this driver still maintained ?
-> 
-> ( I'm not really sure who maintains this driver so I've add peoples
-> to CC I saw worked on it , I've also added Wang Zhenyu to CC while he
-> added this support for AGP )
-> 
-> 
+> 	wait->flags &= ~WQ_FLAG_EXCLUSIVE;
+> 	spin_lock_irqsave(&q->lock, flags);
+> 	__add_wait_queue(q, wait);
+> 	spin_unlock_irqrestore(&q->lock, flags);
+> }
+[ ... ]
+> Non of which implies a full barrier.
 
-the real answer is to not use intelfb, at least not until the modesetting work lands in the kernel.
-(and after that... do you really need it?)
+Well I am probably missing the point, but what about the lock and unlock 
+of the spinlock?
+
+-- 
+Jiri Kosina
+SUSE Labs
+
