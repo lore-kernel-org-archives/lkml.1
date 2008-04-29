@@ -1,41 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757943AbYD2F3W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756667AbYD2Fhm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757943AbYD2F3W (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 01:29:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753715AbYD2F3O
+	id S1756667AbYD2Fhm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 01:37:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753867AbYD2Fhb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 01:29:14 -0400
-Received: from mail.queued.net ([207.210.101.209]:3083 "EHLO mail.queued.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751133AbYD2F3O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 01:29:14 -0400
-Date: Tue, 29 Apr 2008 01:32:13 -0400
-From: Andres Salomon <dilinger@queued.net>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, jordan.crouse@amd.com
-Subject: [PATCH] x86: GEODE: cache results from geode_has_vsa2() and
- uninline
-Message-ID: <20080429013213.4084e892@ephemeral>
-In-Reply-To: <20080428200651.169f1db1.akpm@linux-foundation.org>
-References: <20080418014757.52fb4a4f.akpm@linux-foundation.org>
-	<20080419031024.GC3503@nineveh.local>
-	<20080418202925.b18452c5.akpm@linux-foundation.org>
-	<20080419092544.378664a8@ephemeral>
-	<20080419133909.5aa6b63e@ephemeral>
-	<86802c440804200334t5cdcd100rfc41e9b1bf379109@mail.gmail.com>
-	<480C0582.9010509@firmworks.com>
-	<86802c440804202015h2605eff7vc733874dd1f22261@mail.gmail.com>
-	<480C1286.3040307@firmworks.com>
-	<20080421102417.6de71391@ephemeral>
-	<1208793253.9212.507.camel@pmac.infradead.org>
-	<20080421130320.38b5f505@ephemeral>
-	<1208805491.9212.520.camel@pmac.infradead.org>
-	<20080421154618.2ed4978f@ephemeral>
-	<1208809517.9212.537.camel@pmac.infradead.org>
-	<20080421170230.2db18632@ephemeral>
-	<20080428200651.169f1db1.akpm@linux-foundation.org>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.12.0; i486-pc-linux-gnu)
+	Tue, 29 Apr 2008 01:37:31 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:38453 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753830AbYD2Fha (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Apr 2008 01:37:30 -0400
+Date: Tue, 29 Apr 2008 14:42:08 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: balbir@linux.vnet.ibm.com
+Cc: Andrew Morton <akpm@linux-foundation.org>, dhaval@linux.vnet.ibm.com,
+       linux-kernel@vger.kernel.org, containers@lists.osdl.org,
+       menage@google.com, Balaji Rao <balajirrao@gmail.com>
+Subject: Re: [RFC][-mm] [2/2] Simple stats for memory resource controller
+Message-Id: <20080429144208.396a8075.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <48161159.6010802@linux.vnet.ibm.com>
+References: <200804052340.02386.balajirrao@gmail.com>
+	<48036CB4.5050700@linux.vnet.ibm.com>
+	<200804282130.30188.balajirrao@gmail.com>
+	<20080428094026.bc78ccc7.akpm@linux-foundation.org>
+	<48161159.6010802@linux.vnet.ibm.com>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -43,85 +33,25 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 28 Apr 2008 20:06:51 -0700
-Andrew Morton <akpm@linux-foundation.org> wrote:
+On Mon, 28 Apr 2008 23:33:05 +0530
+Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
 
-> On Mon, 21 Apr 2008 17:02:30 -0400 Andres Salomon <dilinger@queued.net> wrote:
+> The statistics was added as a part of git commit
+> d52aa412d43827033a8e2ce4415ef6e8f8d53635. I'll go ahead and try to document
+> them. These patches piggy back on the statistics patches and add pagein/pageout
+> counts, which is a useful statistic for the memory controller.
 > 
-> > +	if (!is_geode() || geode_has_vsa2())
-> 
-> geode_has_vsa2() is a fairly expensive-looking function and afacit only
-> needs to be evaluated once per boot.  Perhaps we should cache it somewhere?
-> 
+I'm sorry for lack of documentation.
+BTW, when you adds documentation on this pagein/pageout, please make it clear
 
-How about this?
+1. pagein means a new page is newly acconted to this cgrop, doesn't means
+   a page is read from disk.
+2. pageout means a page is dropped from this cgroup, doesn't means a page
+   is written into disk.
 
-
-
-
+So, pagein/pageout is a bit ambiguous. I'm happy if you find better names.
 
 
-This moves geode_has_vsa2 into a .c file, caches the result we get from
-the VSA virtual registers, and causes the function to no longer be inline.
-
-Signed-off-by: Andres Salomon <dilinger@debian.org>
----
- arch/x86/kernel/geode_32.c |   19 +++++++++++++++++++
- include/asm-x86/geode.h    |   11 +----------
- 2 files changed, 20 insertions(+), 10 deletions(-)
-
-diff --git a/arch/x86/kernel/geode_32.c b/arch/x86/kernel/geode_32.c
-index 9dad6ca..1cb8225 100644
---- a/arch/x86/kernel/geode_32.c
-+++ b/arch/x86/kernel/geode_32.c
-@@ -161,6 +161,25 @@ void geode_gpio_setup_event(unsigned int gpio, int pair, int pme)
- }
- EXPORT_SYMBOL_GPL(geode_gpio_setup_event);
- 
-+static int has_vsa2 = -1;
-+
-+int geode_has_vsa2(void)
-+{
-+	if (has_vsa2 == -1) {
-+		/*
-+		 * The VSA has virtual registers that we can query for a
-+		 * signature.
-+		 */
-+		outw(VSA_VR_UNLOCK, VSA_VRC_INDEX);
-+		outw(VSA_VR_SIGNATURE, VSA_VRC_INDEX);
-+
-+		has_vsa2 = (inw(VSA_VRC_DATA) == VSA_SIG);
-+	}
-+
-+	return has_vsa2;
-+}
-+EXPORT_SYMBOL_GPL(geode_has_vsa2);
-+
- static int __init geode_southbridge_init(void)
- {
- 	if (!is_geode())
-diff --git a/include/asm-x86/geode.h b/include/asm-x86/geode.h
-index 7154dc4..8a53bc8 100644
---- a/include/asm-x86/geode.h
-+++ b/include/asm-x86/geode.h
-@@ -185,16 +185,7 @@ static inline int is_geode(void)
- 	return (is_geode_gx() || is_geode_lx());
- }
- 
--/*
-- * The VSA has virtual registers that we can query for a signature.
-- */
--static inline int geode_has_vsa2(void)
--{
--	outw(VSA_VR_UNLOCK, VSA_VRC_INDEX);
--	outw(VSA_VR_SIGNATURE, VSA_VRC_INDEX);
--
--	return (inw(VSA_VRC_DATA) == VSA_SIG);
--}
-+extern int geode_has_vsa2(void);
- 
- /* MFGPTs */
- 
--- 
-1.5.5
+Thanks,
+-Kame
 
