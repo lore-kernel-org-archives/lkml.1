@@ -1,35 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934277AbYD2AqX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965274AbYD2Aql@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934277AbYD2AqX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 20:46:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756165AbYD2AqM
+	id S965274AbYD2Aql (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 20:46:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762508AbYD2AqO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 20:46:12 -0400
-Received: from smtp119.sbc.mail.sp1.yahoo.com ([69.147.64.92]:22089 "HELO
+	Mon, 28 Apr 2008 20:46:14 -0400
+Received: from smtp119.sbc.mail.sp1.yahoo.com ([69.147.64.92]:22100 "HELO
 	smtp119.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753723AbYD2AqK (ORCPT
+	by vger.kernel.org with SMTP id S1755040AbYD2AqL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 20:46:10 -0400
+	Mon, 28 Apr 2008 20:46:11 -0400
 DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
   s=s1024; d=pacbell.net;
   h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Disposition:Message-Id:Content-Type:Content-Transfer-Encoding;
-  b=wmopuPuFbEfulKP3WQepgUcnyy3FSxIXSTnfLydyMeTp2r16fGYn5U4CZBb+E4DtxDBsOL4imc4IstveN3mqkYRi8i+H7V41akdyFi1XyENempwMSkwa2qXeYw2etfWCyVjbvZTo7ciPJskWdRWaMhpiaJzqTZE4w2yzSFoo0yY=  ;
-X-YMail-OSG: FBrBDkYVM1kqSGJttYRwPvHZixZRM7ejofVfW5mPT_m74XmQlqR2fbJTpCMoZFTo.L8q4kiBv8.8IM7gjjFTArZ4gNs8KBK4uV_h1ur4zu6DfqfGX9JCesQJo_D_BXp1ylU-
+  b=u3Sv6CjOfYDkUrkvytpCKjDAJXMfsIyORRs+99wT7p5FDLjosMF8C5iii1AH3LHefrtZjr138tdRYMyt+KEV7M2vBnHtzY+jxXtpYJWXhjdKr0nfdzaGUfPuY+jWPyf7lQPf5D66KtBTIRIf7FkRt9k2jeEJBCJuez43X9Hy4ZQ=  ;
+X-YMail-OSG: Tp1E4MsVM1lTAWbX7qBBNQksl50mSdPh1Y_7wJTt.je0Y1cPDK5z9gjV4mGTu7HXKoWNzYuUF4985oghg_znf9Dg4jtn4aRjLPa2i7_T6CXeyFz7a3mJYuuKvvW2f1YndaA-
 X-Yahoo-Newman-Property: ymail-3
 From: David Brownell <david-b@pacbell.net>
-To: Ben Nizette <bn@niasdigital.com>
+To: Trent Piepho <tpiepho@freescale.com>
 Subject: Re: [patch/rfc 2.6.25-git] gpio: sysfs interface
-Date: Mon, 28 Apr 2008 17:44:11 -0700
+Date: Mon, 28 Apr 2008 17:45:58 -0700
 User-Agent: KMail/1.9.6
-Cc: lkml <linux-kernel@vger.kernel.org>, Trent Piepho <tpiepho@freescale.com>,
+Cc: lkml <linux-kernel@vger.kernel.org>,
        hartleys <hartleys@visionengravers.com>,
-       Mike Frysinger <vapier.adi@gmail.com>, Bryan Wu <cooloney@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <200804281239.51729.david-b@pacbell.net> <1209423678.14631.27.camel@moss.renham>
-In-Reply-To: <1209423678.14631.27.camel@moss.renham>
+       Ben Nizette <bn@niasdigital.com>, Mike Frysinger <vapier.adi@gmail.com>,
+       Bryan Wu <cooloney@kernel.org>
+References: <200804281239.51729.david-b@pacbell.net> <Pine.LNX.4.64.0804281507160.6832@t2.domain.actdsltmp>
+In-Reply-To: <Pine.LNX.4.64.0804281507160.6832@t2.domain.actdsltmp>
 MIME-Version: 1.0
 Content-Disposition: inline
-Message-Id: <200804281744.11564.david-b@pacbell.net>
+Message-Id: <200804281745.59442.david-b@pacbell.net>
 Content-Type: text/plain;
   charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -37,114 +37,120 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 28 April 2008, Ben Nizette wrote:
-> 
-> On Mon, 2008-04-28 at 12:39 -0700, David Brownell wrote:
+On Monday 28 April 2008, Trent Piepho wrote:
+> On Mon, 28 Apr 2008, David Brownell wrote:
 > > Simple sysfs interface for GPIOs.
-> > 
-> >     /sys/class/gpio
-> >         /gpio-N ... for each exported GPIO #N
+> >
+> >    /sys/class/gpio
+> >        /gpio-N ... for each exported GPIO #N
+> 
+> I liked it better they way I had it, "label:N".
+
+Those labels may not be available though; or valid in pathnames.
+
+ 
+> When you have multiple GPIO sources, it's a lot easier to see where they are
+> comming from if they use the chip label.  Especially if support for dynamic
+> allocation of gpio numbers is written.
+
+I'd rather see such stuff in a "chip_label" attribute.  Easy enough to
+add such a thing.  (The dynamic allocation code is now kernel GIT...)
+
+ 
 > > 	    /value ... always readable, writes fail except for output GPIOs
 > > 	    /direction ... writable as: in, out (default low), high, low
-> >     	/control ... to request a GPIO be exported or unexported
-> > 
+> 
+> You took away the code for the label field?  That was one of the features of
+> my code that Ben Nizette mentioned as an advantage over a char-device
+> interface.
+
+Since it's not always available, I removed it.  Note that you're
+talking about the label passed to gpio_request() here, not the one
+applied to the gpio_chip.  I could restore this as a "gpio_label"
+attribute, that's not always present ... but I'd rather not have
+such "optional" stuff.
+
+ 
+> >    	/control ... to request a GPIO be exported or unexported
+> >
 > > GPIOs may be exported by kernel code using gpio_export(), which should
 > > be most useful for driver debugging.  Userspace may also ask that they
 > > be exported by writing to the sysfs control file, helping to cope with
 > > incomplete board support:
-> > 
-> >   echo "export 23" > /sys/class/gpio/control
-> > 	... will gpio_request(23, "sysfs") and gpio_export(23); use
-> > 	/sys/class/gpio/gpio-23/direction to configure it.
-> >   echo "unexport 23" > /sys/class/gpio/control
-> > 	... will gpio_free(23)
 > 
-> Righteo, so if the kernel explicitly gpio_export()s something, it won't
-> be gpio_request()ed allowing multiple "owners" making driver debugging 
-> easier. 
+> Why can't all gpios appear read-only in sysfs by default?
 
-The gpio_export() call requires someone (the caller!) to
-have requested the GPIO already.  The "one owner" rule is
-not being changed.
+Typical SOC based systems have up to a few hundred pins that could
+be used as GPIOs.  The number actually used as GPIOs is rarely more
+than a dozen or two, with other pins generally muxed to a peripheral
+function ... or not even connected.
 
-
-> Most of the time though we don't want to be able to clobber the 
-> kernel's gpios
-
-Right.  Not unless we're debugging the driver managing
-those GPIOs.
+There's no point in having a few hundred useless nodes in sysfs!
 
 
-> so the control file wizardry isn't so much to cope with 
-> incomplete board support, rather it's the way all regular (ie
-> non-driver-debugging) gpio access is started..?
+> > This adds a device pointer to "struct gpio_chip".  When GPIO providers
+> > initialize that, sysfs gpio class devices become children of that device
+> > instead of being "virtual" devices.  The (few) gpio_chip providers which
+> > have such a device node have been updated.  (Some also needed to update
+> > their module "owner" field ... for which missing kerneldoc was added.)
+> 
+> I don't see what's wrong with having devices add to gpiolib create a device
 
-Well, I wouldn't call that "regular"!  But then, I don't
-have this "use GPIOs from userspace" focus.  To me, that's
-the exception not the rule.
+It can't know where in the device tree to put such device nodes,
+or how to implement operations like suspend() and resume() for
+such nodes.  Creating such nodes, and their drivers, is NOT a role
+for generic code like gpiolib.
 
 
-> Or do you class any 
-> situation where userspace needs primary gpio control as a BSP omission
-> as there Should Be a formal in-kernel driver for it all?
+> for the gpio's to be the children of.  You said that some devices can't do
+> this, but I don't see the difficulty.
+> 
+> platform_device_register_simple("my-gpio", 0, NULL, 0);
+> 
+> How hard is that?
 
-I suppose I'd prefer to see a formal gpio_export() call from
-the kernel as part of the BSP, if that's the model for how that
-particular board stack should be used.  But I suspect there will
-be differing opinions on that point, especially from folk who
-avoid custom kernels for whatever reasons.  (Like, "that binary
-has been qualified, this one hasn't.")
+Most GPIOs come from platform code that doesn't create such a device
+today.  In cases like OMAP, GPIOs are usable even before memory
+allocations can work, so creating and using device nodes for GPIO
+controllers would involve updating code running VERY early in boot...
+
+You're free to write patches creating such device nodes, and work
+with the platform maintainers to convert their GPIO support to use
+standard driver model devices and drivers, then merge the results.
 
  
-> Also, gpio number discovery can be done through the debugfs interface
-> already in gpiolib
-
-... intended purely for debugging, not for use with production
-systems ...
-
-
-> but once you've got a userspace gpio interface which 
-> relies on gpio numbering like this that information ceases to be simple
-> debugging and becomes pretty mission-critical.  IMO it would make more
-> sense to shuffle it in to /sys/class/gpio with all this stuff or at
-> least offer a cut-down chip-to-range mapping in a file here.
-
-I don't follow what you're saying here.  GPIO numbering is deeply
-specific to the hardware; so I'd say the relevant hardware docs are
-what become mission-critical.  The kernel can't know when some
-field update has rewired a bunch of GPIOs, for example...
-
-Trent pointed out that dynamic range assignment can make trouble,
-so I can see some help might be needed here.  Were you suggesting
-something like a /sys/class/gpio/chips file with contents like
-
-	0-15	gpio
-	16-31	gpio
-	32-47	gpio
-	48-63	gpio
-	192-207	mpuio
-	208-213	tps65010
-
-(Matching a stock OMAP 5912 OSK board, for what it's worth.)
-
-
-> > The D-space footprint is negligible, except for the sysfs resources
-> > associated with each exported GPIO.  The additional I-space footprint
-> > is about half of the current size of gpiolib.  No /dev node creation
-> > involved, and no "udev" support is needed.
+> > Based on a patch from Trent Piepho <tpiepho@freescale.com>, and comments
+> > from various folk including Hartley Sweeten.
 > 
-> Which is good for simplicity but makes async notification kinda tricky.
+> I don't recall seeing those comments.  Where were they posted?
 
-Sysfs attributes are supposed to be pollable.  I've not done it,
-but fs/sysfs/file.c::sysfs_notify() looks relevant ...
+Some were on-list, some were off-list.  The comments have been
+coming off and on for a few years now, so I'm certain you would
+not have seen all of them.  (I wouldn't have, either!)
 
 
-> I would suggest that a lack of pin-change signalling is going to be a
-> problem for people who've become accustomed to having it in their
-> out-of-tree interfaces.  Probably not a showstopper here but certainly
-> something which will slow the uptake of this interface.
+> > +		status = gpio_export(gpio);
+> > +		if (status < 0)
+> > +			gpio_free(gpio);
+> > +		else
+> > +			set_bit(FLAG_SYSFS, &gpio_desc[gpio].flags);
+> > +
+> > +	} else if (strcmp(cmd, "unexport") == 0) {
+> > +		/* reject bogus commands (gpio_unexport ignores them) */
+> > +		if (!gpio_is_valid(gpio))
+> > +			goto fail;
+> > +		if (!test_and_clear_bit(FLAG_SYSFS, &gpio_desc[gpio].flags))
+> > +			goto fail;
+> > +
+> > +		gpio_free(gpio);
+> 
+> Maybe you could simplify the text parsing by having positive gpio numbers
+> export the gpio and negative numbers un-export the gpio?  Then there would not
+> be any need to parse a command with arguments.
 
-We accept patches.   Even patches on top of patches.  ;)
+I had that thought too.  Even though I think that solution
+is kind o fugly.  ;)
+
+If need be, that can be changed.
 
 - Dave
- 
