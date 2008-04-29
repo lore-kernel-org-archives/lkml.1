@@ -1,99 +1,216 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757572AbYD2Tjq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759319AbYD2Tld@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757572AbYD2Tjq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 15:39:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752582AbYD2Tjf
+	id S1759319AbYD2Tld (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 15:41:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754981AbYD2TlY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 15:39:35 -0400
-Received: from out02.mta.xmission.com ([166.70.13.232]:48442 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751083AbYD2Tje (ORCPT
+	Tue, 29 Apr 2008 15:41:24 -0400
+Received: from nf-out-0910.google.com ([64.233.182.186]:39565 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754469AbYD2TlX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 15:39:34 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Greg KH <gregkh@suse.de>
-Cc: "Serge E. Hallyn" <serue@us.ibm.com>,
-       Benjamin Thery <benjamin.thery@bull.net>, linux-kernel@vger.kernel.org,
-       Tejun Heo <htejun@gmail.com>, Daniel Lezcano <dlezcano@fr.ibm.com>,
-       Pavel Emelyanov <xemul@openvz.org>, netdev@vger.kernel.org
-References: <20080429171015.473938697@theryb.frec.bull.fr>
-	<20080429173621.GA16625@suse.de>
-	<20080429180445.GA18110@sergelap.austin.ibm.com>
-	<20080429184151.GA19794@suse.de>
-Date: Tue, 29 Apr 2008 12:35:28 -0700
-In-Reply-To: <20080429184151.GA19794@suse.de> (Greg KH's message of "Tue, 29
-	Apr 2008 11:41:51 -0700")
-Message-ID: <m1lk2w1mkf.fsf@frodo.ebiederm.org>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Tue, 29 Apr 2008 15:41:23 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=ZLuIvlVy9rnTWj+Ylw5RPn+hBjPVPoIkyL4mPNNrqxfN9WWRjmNI2th7ozef7Re1vn4XdqOvo1SDwwyWasREB613nVos60gVDTFytVNf3gEd9yVggQ3ikw+9ShOml5IMtDFIkLQA/XUxzFKCjqN8TNeCDcOatgme5sHKW/u+cDQ=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: queue_flag_clear warnings with the latest git tree
+Date: Tue, 29 Apr 2008 21:57:27 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org
+References: <200804292107.09770.bzolnier@gmail.com> <20080429192358.GA12774@kernel.dk>
+In-Reply-To: <20080429192358.GA12774@kernel.dk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-SA-Exim-Connect-IP: 24.130.11.59
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa01 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
-	*      [score: 0.0000]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa01 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-Subject: Re: [PATCH 00/10] sysfs tagged directories
-X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
-X-SA-Exim-Scanned: Yes (on mgr1.xmission.com)
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200804292157.28169.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH <gregkh@suse.de> writes:
+On Tuesday 29 April 2008, Jens Axboe wrote:
+> On Tue, Apr 29 2008, Bartlomiej Zolnierkiewicz wrote:
+> > 
+> > They happen both with IDE and SCSI/libata...
+> > 
+> > IDE:
+> > 
+> > Linux version 2.6.25-06476-gc9a3f6d-dirty (bzolnier@localhost.localdomain) (gcc version 4.1.2 20070925 (Red Hat 4.1.2-27)) #225 PREEMPT Tue Apr 29 20:53:53 CEST 2008
+> > BIOS-provided physical RAM map:
+> >  BIOS-e820: 0000000000000000 - 000000000009fc00 (usable)
+> >  BIOS-e820: 000000000009fc00 - 00000000000a0000 (reserved)
+> >  BIOS-e820: 00000000000e8000 - 0000000000100000 (reserved)
+> >  BIOS-e820: 0000000000100000 - 0000000007ff0000 (usable)
+> >  BIOS-e820: 0000000007ff0000 - 0000000008000000 (ACPI data)
+> >  BIOS-e820: 00000000fffc0000 - 0000000100000000 (reserved)
+> > 127MB LOWMEM available.
+> > Zone PFN ranges:
+> >   DMA             0 ->     4096
+> >   Normal       4096 ->    32752
+> > Movable zone start PFN for each node
+> > early_node_map[1] active PFN ranges
+> >     0:        0 ->    32752
+> > DMI not present or invalid.
+> > ACPI: RSDP 000FA5D0, 0014 (r0 QEMU  )
+> > ACPI: RSDT 07FF0000, 002C (r0 QEMU   QEMURSDT        1 QEMU        1)
+> > ACPI: FACP 07FF002C, 0074 (r0 QEMU   QEMUFACP        1 QEMU        1)
+> > ACPI: DSDT 07FF0100, 0832 (r1   BXPC   BXDSDT        1 INTL 20060912)
+> > ACPI: FACS 07FF00C0, 0040
+> > ACPI: APIC 07FF0938, 0040 (r0 QEMU   QEMUAPIC        1 QEMU        1)
+> > ACPI: PM-Timer IO Port: 0xb008
+> > ACPI: LAPIC (acpi_id[0x00] lapic_id[0x00] enabled)
+> > BIOS bug, APIC version is 0 for CPU#0! fixing up to 0x10. (tell your hw vendor)
+> > ACPI: IOAPIC (id[0x01] address[0xfec00000] gsi_base[0])
+> > IOAPIC[0]: apic_id 1, version 17, address 0xfec00000, GSI 0-23
+> > Enabling APIC mode:  Flat.  Using 1 I/O APICs
+> > Using ACPI (MADT) for SMP configuration information
+> > Allocating PCI resources starting at 10000000 (gap: 08000000:f7fc0000)
+> > Built 1 zonelists in Zone order, mobility grouping on.  Total pages: 32497
+> > Kernel command line: root=/dev/hda init=/bin/sh  console=ttyS0,115200
+> > Enabling fast FPU save and restore... done.
+> > Enabling unmasked SIMD FPU exception support... done.
+> > Initializing CPU#0
+> > CPU 0 irqstacks, hard=c03e1000 soft=c03e0000
+> > PID hash table entries: 512 (order: 9, 2048 bytes)
+> > Detected 1495.172 MHz processor.
+> > Console: colour VGA+ 80x25
+> > console [ttyS0] enabled
+> > Dentry cache hash table entries: 16384 (order: 4, 65536 bytes)
+> > Inode-cache hash table entries: 8192 (order: 3, 32768 bytes)
+> > Memory: 126096k/131008k available (1912k kernel code, 4432k reserved, 832k data, 180k init, 0k highmem)
+> > virtual kernel memory layout:
+> >     fixmap  : 0xfffb5000 - 0xfffff000   ( 296 kB)
+> >     vmalloc : 0xc8800000 - 0xfffb3000   ( 887 MB)
+> >     lowmem  : 0xc0000000 - 0xc7ff0000   ( 127 MB)
+> >       .init : 0xc03b0000 - 0xc03dd000   ( 180 kB)
+> >       .data : 0xc02de117 - 0xc03ae1e0   ( 832 kB)
+> >       .text : 0xc0100000 - 0xc02de117   (1912 kB)
+> > Checking if this processor honours the WP bit even in supervisor mode...Ok.
+> > Calibrating delay using timer specific routine.. 3012.98 BogoMIPS (lpj=6025962)
+> > Mount-cache hash table entries: 512
+> > CPU: L1 I cache: 8K
+> > CPU: L2 cache: 128K
+> > Compat vDSO mapped to ffffe000.
+> > CPU: Intel Pentium II (Klamath) stepping 03
+> > Checking 'hlt' instruction... OK.
+> > Freeing SMP alternatives: 0k freed
+> > ACPI: Core revision 20070126
+> > ENABLING IO-APIC IRQs
+> > ..TIMER: vector=0x31 apic1=0 pin1=0 apic2=-1 pin2=-1
+> > APIC calibration not consistent with PM Timer: 52ms instead of 100ms
+> > APIC delta adjusted to PM-Timer: 6250026 (3292476)
+> > net_namespace: 480 bytes
+> > NET: Registered protocol family 16
+> > No dock devices found.
+> > ACPI: bus type pci registered
+> > PCI: PCI BIOS revision 2.10 entry at 0xfa110, last bus=0
+> > PCI: Using configuration type 1 for base access
+> > Setting up standard PCI resources
+> > ACPI: Interpreter enabled
+> > ACPI: (supports S0 S5)
+> > ACPI: Using IOAPIC for interrupt routing
+> > ACPI: PCI Root Bridge [PCI0] (0000:00)
+> > * Found PM-Timer Bug on the chipset. Due to workarounds for a bug,
+> > * this clock source is slow. Consider trying other clock sources
+> > pci 0000:00:01.3: quirk: region b000-b03f claimed by PIIX4 ACPI
+> > pci 0000:00:01.3: quirk: region b100-b10f claimed by PIIX4 SMB
+> > ACPI: PCI Interrupt Link [LNKA] (IRQs 3 4 5 6 7 9 10 *11 12)
+> > ACPI: PCI Interrupt Link [LNKB] (IRQs 3 4 5 6 7 *9 10 11 12)
+> > ACPI: PCI Interrupt Link [LNKC] (IRQs 3 4 5 6 7 9 10 *11 12)
+> > ACPI: PCI Interrupt Link [LNKD] (IRQs 3 4 5 6 7 *9 10 11 12)
+> > Linux Plug and Play Support v0.97 (c) Adam Belay
+> > pnp: PnP ACPI init
+> > ACPI: bus type pnp registered
+> > pnp: PnP ACPI: found 6 devices
+> > ACPI: ACPI bus type pnp unregistered
+> > SCSI subsystem initialized
+> > usbcore: registered new interface driver usbfs
+> > usbcore: registered new interface driver hub
+> > usbcore: registered new device driver usb
+> > PCI: Using ACPI for IRQ routing
+> > NET: Registered protocol family 2
+> > IP route cache hash table entries: 1024 (order: 0, 4096 bytes)
+> > TCP established hash table entries: 4096 (order: 3, 32768 bytes)
+> > TCP bind hash table entries: 4096 (order: 2, 16384 bytes)
+> > TCP: Hash tables configured (established 4096 bind 4096)
+> > TCP reno registered
+> > NET: Registered protocol family 1
+> > audit: initializing netlink socket (disabled)
+> > type=2000 audit(1209495511.389:1): initialized
+> > Total HugeTLB memory allocated, 0
+> > fuse init (API version 7.9)
+> > msgmni has been set to 246 for ipc namespace c0394260
+> > io scheduler noop registered
+> > io scheduler anticipatory registered (default)
+> > io scheduler deadline registered
+> > io scheduler cfq registered
+> > pci 0000:00:00.0: Limiting direct PCI/PCI transfers
+> > pci 0000:00:01.0: PIIX3: Enabling Passive Release
+> > pci 0000:00:01.0: Activating ISA DMA hang workarounds
+> > isapnp: Scanning for PnP cards...
+> > isapnp: No Plug & Play device found
+> > Real Time Clock Driver v1.12ac
+> > Linux agpgart interface v0.103
+> > Serial: 8250/16550 driver $Revision: 1.90 $ 4 ports, IRQ sharing enabled
+> > Switched to NOHz mode on CPU #0
+> > ?serial8250: ttyS0 at I/O 0x3f8 (irq = 4) is a 16450
+> > 00:05: ttyS0 at I/O 0x3f8 (irq = 4) is a 16450
+> > Uniform Multi-Platform E-IDE driver
+> > PIIX3: IDE controller (0x8086:0x7010 rev 0x00) at  PCI slot 0000:00:01.1
+> > PIIX3: not 100% native mode: will probe irqs later
+> >     ide0: BM-DMA at 0xc000-0xc007
+> >     ide1: BM-DMA at 0xc008-0xc00f
+> > hda: QEMU HARDDISK, ATA DISK drive
+> > Clocksource tsc unstable (delta = -713139329 ns)
+> > hda: MWDMA2 mode selected
+> > hdc: QEMU CD-ROM, ATAPI CD/DVD-ROM drive
+> > hdc: MWDMA2 mode selected
+> > ide0 at 0x1f0-0x1f7,0x3f6 on irq 14
+> > ide1 at 0x170-0x177,0x376 on irq 15
+> > ide_generic: I/O resource 0x1F0-0x1F7 not free.
+> > ide_generic: I/O resource 0x170-0x177 not free.
+> > hda: max request size: 512KiB
+> > hda: 102400 sectors (52 MB) w/256KiB Cache, CHS=101/255/63
+> > hda: cache flushes supported
+> >  hda:<4>------------[ cut here ]------------
+> > WARNING: at include/linux/blkdev.h:439 queue_flag_clear+0x1e/0x3e()
+> > Modules linked in:
+> > Pid: 1, comm: swapper Not tainted 2.6.25-06476-gc9a3f6d-dirty #225
+> >  [<c011a21e>] warn_on_slowpath+0x40/0x67
+> >  [<c01b6ce3>] elv_rb_add+0x47/0x4f
+> >  [<c01bda3e>] as_add_request+0x92/0xbe
+> >  [<c01b6b8a>] elv_insert+0x11a/0x142
+> >  [<c01b8b30>] __make_request+0x24e/0x292
+> >  [<c01b8b53>] __make_request+0x271/0x292
+> >  [<c01b7cb0>] generic_make_request+0x163/0x190
+> 
+> Hmm, I'm guessing UP and spin_is_locked() doesn't work there? I was
+> pretty sure that was 'fixed' years ago. I lieu of a better fix,
+> something like this should suffice.
+> 
+> diff --git a/include/linux/blkdev.h b/include/linux/blkdev.h
+> index 669b65c..9e2e23b 100644
+> --- a/include/linux/blkdev.h
+> +++ b/include/linux/blkdev.h
+> @@ -418,8 +418,12 @@ struct request_queue
+>  
+>  static inline int queue_is_locked(struct request_queue *q)
+>  {
+> +#ifdef CONFIG_SMP
+>  	spinlock_t *lock = q->queue_lock;
+>  	return lock && spin_is_locked(lock);
+> +#else
+> +	return 1;
+> +#endif
+>  }
+>  
+>  static inline void queue_flag_set_unlocked(unsigned int flag,
 
-> See the thread from Al starting with:
-> 	Date: Mon, 7 Jan 2008 10:24:17 +0000
-> 	From: Al Viro <viro@ZenIV.linux.org.uk>
-> 	To: "Eric W. Biederman" <ebiederm@xmission.com>
-> 	Cc: linux-kernel@vger.kernel.org, htejun@gmail.com,
-> 	        linux-fsdevel@vger.kernel.org, gregkh@suse.de
-> 	Subject: [RFC] netns / sysfs interaction
-> 	Message-ID: <20080107072301.GW27894@ZenIV.linux.org.uk>
->
-> He had a lot of questions and objections to this way forward, and I
-> share those objections.
+Yeah, all warnings are gone.
 
-If either of you will take those objections and see how they actually
-apply to the patches I would be happy.
-
-We are quite successfully using multiple mounts in proc for the
-pid namespace with no large issues.
-
-Similarly for the network namespace we have the same set of files
-showing up in different places in /proc with no large coherency
-issues despite the same files being in multiple places in the
-dcache.
-
-The only piece of the puzzle new in sysfs is directory rename
-support.  Which takes a little work but seems sane.
-
-When I mentioned I was doing this Al said:
-> Excuse me, _what_?  Are you seriously suggesting going through all dentry
-> trees, doing d_move() in each?  I want to see your locking.  It's promising
-> to be worse than devfs had ever been.  Much worse.
-
-Odd I thought I sent Al a reply to that bold statement but it doesn't
-appear in the archive.
-
-At any rate I'm not afraid of more code review and testing.
-
-At the time Al made those statements his concerns about coherency
-and locking nightmares did not seem to apply to these patches and 
-they don't seem to apply now.
-
-I will happily admit the VFS does not like to work with filesystems
-where the state changes behind it's back.  That is the position we are
-in fundamentally with sysfs and proc, and the locking works today.
-Multiple superblocks for sysfs does not change that in any significant
-way.
-
-So bring on the tough code review and concrete objections.
-The code can take it and it can only get better for it.
-
-Eric
-
+Thanks,
+Bart
