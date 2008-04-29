@@ -1,67 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760621AbYD2SsS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759181AbYD2SuN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760621AbYD2SsS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 14:48:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756283AbYD2Sr5
+	id S1759181AbYD2SuN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 14:50:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757838AbYD2St4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 14:47:57 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:40843 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756224AbYD2Sr4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 14:47:56 -0400
-Date: Tue, 29 Apr 2008 11:41:51 -0700
-From: Greg KH <gregkh@suse.de>
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-Cc: Benjamin Thery <benjamin.thery@bull.net>, linux-kernel@vger.kernel.org,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Tejun Heo <htejun@gmail.com>, Daniel Lezcano <dlezcano@fr.ibm.com>,
-       Pavel Emelyanov <xemul@openvz.org>, netdev@vger.kernel.org
-Subject: Re: [PATCH 00/10] sysfs tagged directories
-Message-ID: <20080429184151.GA19794@suse.de>
-References: <20080429171015.473938697@theryb.frec.bull.fr> <20080429173621.GA16625@suse.de> <20080429180445.GA18110@sergelap.austin.ibm.com>
+	Tue, 29 Apr 2008 14:49:56 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:51129 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1756430AbYD2Stz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Apr 2008 14:49:55 -0400
+Date: Tue, 29 Apr 2008 11:49:54 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Arjan van de Ven <arjan@infradead.org>
+cc: Ingo Molnar <mingo@elte.hu>, akpm@linux-foundation.org, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [2/2] vmallocinfo: Add caller information
+In-Reply-To: <20080428124849.4959c419@infradead.org>
+Message-ID: <Pine.LNX.4.64.0804291143080.12128@schroedinger.engr.sgi.com>
+References: <20080318222701.788442216@sgi.com> <20080318222827.519656153@sgi.com>
+ <20080429084854.GA14913@elte.hu> <Pine.LNX.4.64.0804291001420.10847@schroedinger.engr.sgi.com>
+ <20080428124849.4959c419@infradead.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080429180445.GA18110@sergelap.austin.ibm.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 29, 2008 at 01:04:45PM -0500, Serge E. Hallyn wrote:
-> Quoting Greg KH (gregkh@suse.de):
-> > On Tue, Apr 29, 2008 at 07:10:15PM +0200, Benjamin Thery wrote:
-> > > Here is the announcement Eric wrote back in December to introduce his 
-> > > patchset:
+On Mon, 28 Apr 2008, Arjan van de Ven wrote:
+
+> > Sorry lost track of this issue. Adding stracktrace support is not a 
+> > trivial thing and will change the basic handling of vmallocinfo.
 > > 
-> > <snip>
-> > 
-> > Are the objections that Al Viro made to this patchset when it was last
-> > sent out addressed in this new series?
-> > 
-> > thanks,
-> > 
-> > greg k-h
+> > Not sure if stacktrace support can be enabled without a penalty on
+> > various platforms. Doesnt this require stackframes to be formatted in
+> > a certain way?
 > 
-> Which objections were those?  The last submission which I see by Eric
-> was http://lkml.org/lkml/2007/12/1/15 this past December.  I see no
-> response from Al and get the feeling you were ok with them.
-> 
-> So my hunch would be that Eric had addressed those before that last
-> submission, but if not I'm sorry, and please do set me straight.
+> it doesn't.
 
-See the thread from Al starting with:
-	Date: Mon, 7 Jan 2008 10:24:17 +0000
-	From: Al Viro <viro@ZenIV.linux.org.uk>
-	To: "Eric W. Biederman" <ebiederm@xmission.com>
-	Cc: linux-kernel@vger.kernel.org, htejun@gmail.com,
-	        linux-fsdevel@vger.kernel.org, gregkh@suse.de
-	Subject: [RFC] netns / sysfs interaction
-	Message-ID: <20080107072301.GW27894@ZenIV.linux.org.uk>
+Hmmm... Why do we have CONFIG_FRAMEPOINTER then?
 
-He had a lot of questions and objections to this way forward, and I
-share those objections.
+The current implementation of vmalloc_caller() follows what we have done 
+with kmalloc_track_caller. Its low overhead and always on.
 
-thanks,
+It would be great if we could have stacktrace support both for kmalloc and 
+vmalloc in the same way also with low overhead but I think following a 
+backtrace requires much more than simply storing the caller address. A 
+mechanism like that would require an explicit kernel CONFIG option. A 
+year or so ago we had patches to implement stacktraces in the slab 
+allocators but they were not merged due to various arch specific issues 
+with backtraces.
 
-greg k-h
+We could dump the offending x86_64 pieces. Some detail of what
+/proc/vmallocinfo would be lost then.
