@@ -1,96 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757698AbYD2RNL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756646AbYD2RSX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757698AbYD2RNL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 13:13:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756490AbYD2RMd
+	id S1756646AbYD2RSX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 13:18:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751397AbYD2RSP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 13:12:33 -0400
-Received: from outbound-mail-152.bluehost.com ([67.222.39.32]:51727 "HELO
-	outbound-mail-152.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1756351AbYD2RMb (ORCPT
+	Tue, 29 Apr 2008 13:18:15 -0400
+Received: from rv-out-0708.google.com ([209.85.198.240]:15221 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751416AbYD2RSO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 13:12:31 -0400
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [git pull] PCI updates for 2.6.26
-Date: Tue, 29 Apr 2008 10:12:21 -0700
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
-       Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+	Tue, 29 Apr 2008 13:18:14 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=ObZoUd1mLp7cWnr4Kk+/Y3nxuM78p8RZqTI379aZkDCUV/WgOsnu+0DSLG5rnD19uLk4GKBy/0/gEQvviWSmvGrRfQv3g7MoHd4NVqIXo83F/livNAd6SAbBeYXANYo3uUS8iOKT2kH1lUSwoA9U4T9vkRmHnYDJNyv1/iMQ9uE=
+Message-ID: <86802c440804291018v343939c7n8cef9c8bc330b2ff@mail.gmail.com>
+Date: Tue, 29 Apr 2008 10:18:11 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: [PATCH 2/2] x86: fix trimming e820 with MTRR holes.
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       "Thomas Gleixner" <tglx@linutronix.de>,
+       "Gabriel C" <nix.or.die@googlemail.com>,
+       "Mika Fischer" <mika.fischer@zoopnet.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080429113539.GA27617@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200804291012.21832.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
+References: <200804272337.40130.yhlu.kernel@gmail.com>
+	 <200804281505.05764.yhlu.kernel@gmail.com>
+	 <200804290157.30651.yhlu.kernel@gmail.com>
+	 <200804290159.49882.yhlu.kernel@gmail.com>
+	 <20080429113539.GA27617@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nothing really major here: some bug fixes, documentation fixes and some
-trivial stuff for 2.6.26.  Some of the more important changes are actually
-coming in through Ingo's "big box" tree, so the excitement (and risk) level
-here should be pretty low.
+On Tue, Apr 29, 2008 at 4:35 AM, Ingo Molnar <mingo@elte.hu> wrote:
+>
+>  * Yinghai Lu <yhlu.kernel.send@gmail.com> wrote:
+>
+>  > @@ -760,7 +762,10 @@ void __init update_memory_range(u64 star
+>  >                       continue;
+>  >               add_memory_region(final_start, final_end - final_start,
+>  >                                        new_type);
+>  > +             real_updated_size += find_end - final_start;
+>
+>  s/find_end/final_end
+>
+>  i hope it boots ;-)
 
-So please pull from
+thanks
 
-git pull git://git.kernel.org/pub/scm/linux/kernel/git/jbarnes/pci-2.6.git for-linus
+that report trimmed size. so it still boot. but report wrong trimmed
+size. it will upset Gabriel.
 
-I hope I got this tree right; I read through some of the earlier discussions
-about how trees should be run.  This branch hasn't seen any merges from your
-tree (I think you suggested this); hopefully there won't be any conflicts.
+it passed compiling, ..., that's funny.
 
-Thanks,
-Jesse
-
-Adrian Bunk (1):
-      make pciehp_acpi_get_hp_hw_control_from_firmware()
-
-Alek Du (1):
-      PCI: Add Intel SCH PCI IDs
-
-Jesper Juhl (1):
-      PCI Express ASPM support should default to 'No'
-
-Jesse Barnes (2):
-      Update MAINTAINERS with location of PCI tree
-      PCI: don't expose struct pci_vpd to userspace
-
-Kenji Kaneshige (11):
-      pciehp: fix slot name
-      pciehp: Fix interrupt event handlig
-      pciehp: Add missing memory barrier
-      pciehp: Fix wrong slot control register access
-      pciehp: Fix wrong slot capability check
-      pciehp: Remove useless hotplug interrupt enabling
-      pciehp: Mask hotplug interrupt at controller release
-      pciehp: Clean up pcie_init()
-      shpchp: fix slot name
-      pciehp: Fix command write
-      pciehp: fix error message about getting hotplug control
-
-Matti Linnanvuori (3):
-      Consistently use pdev as the variable of type struct pci_dev *.
-      doc: fix an incorrect suggestion to pass NULL for PCI like buses
-      doc: replace another dev with pdev for consistency in DMA-mapping.txt
-
-Yinghai Lu (2):
-      pci/irq: restore mask_bits in msi shutdown -v3
-      pci/irq: let pci_device_shutdown to call pci_msi_shutdown v2
-
- Documentation/DMA-mapping.txt     |   38 +-
- MAINTAINERS                       |    1
- drivers/pci/hotplug/pciehp.h      |   17 -
- drivers/pci/hotplug/pciehp_core.c |   19 -
- drivers/pci/hotplug/pciehp_ctrl.c |   46 +--
- drivers/pci/hotplug/pciehp_hpc.c  |  565 +++++++++++---------------------------
- drivers/pci/hotplug/shpchp_core.c |   11
- drivers/pci/msi.c                 |   56 ++-
- drivers/pci/pci-driver.c          |    2
- drivers/pci/pcie/Kconfig          |    2
- include/linux/msi.h               |    1
- include/linux/pci.h               |   10
- include/linux/pci_ids.h           |    2
- 13 files changed, 302 insertions(+), 468 deletions(-)
-
+YH
