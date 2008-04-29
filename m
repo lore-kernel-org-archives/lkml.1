@@ -1,72 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759952AbYD2RpA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761602AbYD2Rp2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759952AbYD2RpA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 13:45:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752304AbYD2Rot
+	id S1761602AbYD2Rp2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 13:45:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757359AbYD2RpG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 13:44:49 -0400
-Received: from avexch1.qlogic.com ([198.70.193.115]:21749 "EHLO
-	avexch1.qlogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752041AbYD2Ros (ORCPT
+	Tue, 29 Apr 2008 13:45:06 -0400
+Received: from fg-out-1718.google.com ([72.14.220.158]:26668 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754790AbYD2RpE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 13:44:48 -0400
-Date: Tue, 29 Apr 2008 10:44:47 -0700
-From: Andrew Vasquez <andrew.vasquez@qlogic.com>
-To: "Alan D. Brunelle" <Alan.Brunelle@hp.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Jens Axboe <jens.axboe@oracle.com>, linux-driver@qlogic.com,
-       linux-scsi@vger.kernel.org
-Subject: Re: Issue with qla2xxx_probe_one
-Message-ID: <20080429174447.GL67096@plap4.qlogic.org>
-References: <48175C3F.3000002@hp.com>
+	Tue, 29 Apr 2008 13:45:04 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=P0Wq8zH7MAxoPSglxX3nsWdfO29x2HIL0LCRQFlpdlC4saU61rardfSW9H4DC4TBj6DcaDcgBsTc9Po9SHGJgVP90vU16oANTsSTW+/dHhsis0kpVNymKS7vB70wOrk5YTzNMrILE/rhm2GfOFFR7c6I5EJve6nRHW06qAJddB8=
+Date: Tue, 29 Apr 2008 21:44:12 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Ingo Molnar <mingo@elte.hu>, David Woodhouse <dwmw2@infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH] x86: vm86 - hide X86_VM_MASK from userland programs v2
+Message-ID: <20080429174412.GF6837@cvg>
+References: <20080424144120.GA7717@cvg> <4810CC2F.3010600@zytor.com> <20080428182323.GD1685@elte.hu> <20080428192039.GA10267@elte.hu> <20080429152947.GB6837@cvg> <20080429154330.GC6837@cvg> <481742C1.5040709@zytor.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <48175C3F.3000002@hp.com>
-Organization: QLogic Corporation
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-OriginalArrivalTime: 29 Apr 2008 17:44:46.0590 (UTC) FILETIME=[B6FF01E0:01C8AA20]
+In-Reply-To: <481742C1.5040709@zytor.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 29 Apr 2008, Alan D. Brunelle wrote:
+[H. Peter Anvin - Tue, Apr 29, 2008 at 08:46:09AM -0700]
+> Cyrill Gorcunov wrote:
+>> | | with this patch we have <asm/vm86.h> included only
+>> | if __i386__ defined *BUT* X86_VM_MASK is tried to be
+>> | used *without* __386__ being checked (as example - 
+>> ptrace.h:user_mode_vm).
+>> | I'm not sure how to properly hanle this situation. But will take a look.
+>> | | So I suggest you drop my last patch (which moves X86_VM_MASK
+>> | into __KERNEL__ section) for a while. I'll recheck all
+>> | this stuff later (too busy now).
+>> | | 		- Cyrill -
+>> Thomas, could you take a look please - is my suspicious wrong?
+>> 		- Cyrill -
+>
+> X86_VM_MASK should be defined to zero on x86-64.  Part of the reason for 
+> this symbol is so we don't have to put #ifdef around its uses.
+>
+> 	-hpa
+>
 
-> I /think/ that there is an issue with this routine /if/ the firmware
-> images are not loaded properly - on a 16-way ia64 box I am starting to
-> see this with an up-stream kernel (Jens Axboe's origin/io-cpu-affinity
-> branch). In any event, it looks to me that :
-> 
->         if (qla2x00_initialize_adapter(ha)) {
->                 qla_printk(KERN_WARNING, ha,
->                     "Failed to initialize adapter\n");
-> 
->                 DEBUG2(printk("scsi(%ld): Failed to initialize adapter - "
->                     "Adapter flags %x.\n",
->                     ha->host_no, ha->device_flags));
-> 
->                 ret = -ENODEV;
->                 goto probe_failed;
->         }
-> 
-> skips around:
-> 
->         ret = scsi_add_host(host, &pdev->dev);
-> 
-> which is needed to properly initialize the freelist (via:
-> scsi_setup_command_freelist).
+Thanks Ingo for report - all just became clear - I've tried to define
+tese flags *after* ptrace.h inclusion - will fix ASAP.
 
-Wasn't something like this posted recently to linux-scsi:
-
-http://lkml.org/lkml/2008/4/27/333
-
-this is sitting in scsi-misc-2.6.git:
-
-[SCSI] bug fix for free list handling
-http://git.kernel.org/?p=linux/kernel/git/jejb/scsi-misc-2.6.git;a=commitdiff;h=a79cbe1aa5dd695f0ee012ecde1ff88b1192e326
-
-which I gather will be pushed soon...
-
-> When qla2xxx_probe_one ends up calling scsi_host_put in this error path
-> it eventually gets to scsi_destroy_command_freelist and we get the error
-> below.
+		- Cyrill -
