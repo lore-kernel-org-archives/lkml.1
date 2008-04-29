@@ -1,47 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764803AbYD2PWV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932261AbYD2PXW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764803AbYD2PWV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 11:22:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761996AbYD2PVz
+	id S932261AbYD2PXW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 11:23:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758451AbYD2PXK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 11:21:55 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:40323 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759907AbYD2PVy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 11:21:54 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=MJ2ufw84sp4gHvgVktCssYtUF1OwqWCbvJzU/SEnwLhgqzfA5AUp3hkuXNC7xZWXm
-	IoEELmHj8PGNIXqM6KHnw==
-Message-ID: <d43160c70804290821i2bb0bc17m21b0c5838631e0b8@mail.gmail.com>
-Date: Tue, 29 Apr 2008 11:21:40 -0400
-From: "Ross Biro" <rossb@google.com>
-To: "Balbir Singh" <balbir@linux.vnet.ibm.com>
-Subject: Re: Page Faults slower in 2.6.25-rc9 than 2.6.23
-Cc: "Hugh Dickins" <hugh@veritas.com>, linux-mm@kvack.org,
-       lkml <linux-kernel@vger.kernel.org>,
-       "Kamalesh Babulal" <kamalesh@linux.vnet.ibm.com>
-In-Reply-To: <661de9470804290752w1dc0cfb3k72e81d828a45765e@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <d43160c70804290610t2135a271hd9b907529e89e74e@mail.gmail.com>
-	 <Pine.LNX.4.64.0804291447040.5058@blonde.site>
-	 <661de9470804290752w1dc0cfb3k72e81d828a45765e@mail.gmail.com>
+	Tue, 29 Apr 2008 11:23:10 -0400
+Received: from main.gmane.org ([80.91.229.2]:51909 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754591AbYD2PXJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Apr 2008 11:23:09 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Niels <zorglub_olsen@hotmail.com>
+Subject: Re: Western Digital GreenPower drives and Linux
+Date: Tue, 29 Apr 2008 17:22:56 +0200
+Message-ID: <fv7egg$a76$1@ger.gmane.org>
+References: <256077993@web.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7Bit
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: 62.79.44.136.adsl.gl.tiscali.dk
+User-Agent: KNode/0.10.9
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 29, 2008 at 10:52 AM, Balbir Singh
-<balbir@linux.vnet.ibm.com> wrote:
->  Hmm.. strange.. I don't remember the overhead being so bad (I'll
->  relook at my old numbers). I'll try and git-bisect this one
+On Sunday 27 April 2008 19:45, devzero@web.de wrote:
 
-I'm checking 2.6.24 now.  A quick run of 2.6.25-rc9 without fake numa
-showed no real change.
+> on a second system , my wd drive shows this values:
+> 
+>   9 Power_On_Hours          0x0032   099   099   000    Old_age   Always  
+>       -       853
+> 193 Load_Cycle_Count        0x0032   170   170   000    Old_age   Always  
+>     -       90960
+> 
+> absolutely scary.....
+> 
+> meanwhile, i got wdidle3 from WD support and set it to 25secs (factory
+> support seems to be at 8 secs) - but still waiting for an answer if this
+> is a bug or not.
+> 
+> i`m really wondering why support is so quiet here....
+> anybody got a response from support about this?
+> 
+[snip]
 
-    Ross
+I contacted WD support, asking for wdidle. They asked about my drive, and
+warned me that this application was meant for a specific drive and could
+damage others. I replied with information about my drives and never heard
+back. I repeated my request, without result.
+
+This mess combined with disappointing performance from a couple of WD
+Mybooks will certainly make me think twice before buying or recommending WD
+for the foreseeable future.
+
+//Niels
+
