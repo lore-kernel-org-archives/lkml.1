@@ -1,50 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765849AbYD2QFa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765897AbYD2QHa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765849AbYD2QFa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 12:05:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752311AbYD2QFT
+	id S1765897AbYD2QHa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 12:07:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754092AbYD2QHS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 12:05:19 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:48028 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756751AbYD2QFS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 12:05:18 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=OXdO82Vb5z5lDJuD3D4uAlTBLGzbsNsrefc8XQdJ1ciUFP/vqWUFq4sFGQiMB0Piz
-	hdjgIgW1kCpOyqjetfOzQ==
-Message-ID: <d43160c70804290905m1e451435q2766f552f2b6767c@mail.gmail.com>
-Date: Tue, 29 Apr 2008 12:05:12 -0400
-From: "Ross Biro" <rossb@google.com>
-To: "Hugh Dickins" <hugh@veritas.com>
-Subject: Re: Page Faults slower in 2.6.25-rc9 than 2.6.23
-Cc: "Balbir Singh" <balbir@linux.vnet.ibm.com>, linux-mm@kvack.org,
-       lkml <linux-kernel@vger.kernel.org>,
-       "Kamalesh Babulal" <kamalesh@linux.vnet.ibm.com>
-In-Reply-To: <Pine.LNX.4.64.0804291629410.23101@blonde.site>
+	Tue, 29 Apr 2008 12:07:18 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:55584 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752311AbYD2QHR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Apr 2008 12:07:17 -0400
+Message-ID: <481747B3.4070903@sgi.com>
+Date: Tue, 29 Apr 2008 09:07:15 -0700
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/1] x86: fix remove cpu_pda table patch
+References: <20080428210906.348866000@polaris-admin.engr.sgi.com> <20080428214541.GA16153@elte.hu>
+In-Reply-To: <20080428214541.GA16153@elte.hu>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <d43160c70804290610t2135a271hd9b907529e89e74e@mail.gmail.com>
-	 <Pine.LNX.4.64.0804291447040.5058@blonde.site>
-	 <661de9470804290752w1dc0cfb3k72e81d828a45765e@mail.gmail.com>
-	 <d43160c70804290821i2bb0bc17m21b0c5838631e0b8@mail.gmail.com>
-	 <Pine.LNX.4.64.0804291629410.23101@blonde.site>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 29, 2008 at 11:32 AM, Hugh Dickins <hugh@veritas.com> wrote:
->> I'm checking 2.6.24 now.  A quick run of 2.6.25-rc9 without fake numa
->> showed no real change.
->
+Ingo Molnar wrote:
+> * Mike Travis <travis@sgi.com> wrote:
+> 
+>> [Ingo - please replace "PATCH 07/11" with this one.]
+>>
+>>     *	Remove 544k bytes from the kernel by removing the boot_cpu_pda
+>> 	array from the data section and allocating it during startup.
+>>
+>> 	Fixed panic in setup_per_cpu_areas when HOTPLUG_CPU not set.
+>>
+>> For inclusion into sched-devel/latest tree.
+> 
+> sched-devel.git randconfig testing found another crash with your queue:
+> 
+> [    0.111060] Brought up 1 CPUs
+> [    0.111986] Total of 1 processors activated (4022.73 BogoMIPS).
+> [    0.112987] Testing NMI watchdog ... <1>BUG: unable to handle kernel NULL pointer dereference at 0000000000000040
+> [    0.114982] IP: [<ffffffff8180d4a0>] check_nmi_watchdog+0xb0/0x210
+> [    0.114982] PGD 0
+> [    0.114982] Oops: 0000 [1] SMP
+> [    0.114982] CPU 0
+> [............]
+> 
+>  http://redhat.com/~mingo/misc/config-Mon_Apr_28_23_25_25_CEST_2008.bad
+>  http://redhat.com/~mingo/misc/log-Mon_Apr_28_23_25_25_CEST_2008.bad
+> 
+> 	Ingo
 
-2.6.24 is slower as well.  I can't say for sure it's the full 10%
-without more work than it's worth.  But it is definitely significantly
-slower than 2.6.23.
+Ouch! ;-) Ok, I'll check it out.
 
-    Ross
+Thanks,
+Mike
