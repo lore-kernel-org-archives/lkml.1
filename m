@@ -1,18 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764637AbYD2Rfo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759862AbYD2RgF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764637AbYD2Rfo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 13:35:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760951AbYD2RYr
+	id S1759862AbYD2RgF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 13:36:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755705AbYD2RY5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 13:24:47 -0400
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:47139 "EHLO
+	Tue, 29 Apr 2008 13:24:57 -0400
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:47165 "EHLO
 	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760927AbYD2RYq (ORCPT
+	with ESMTP id S1761016AbYD2RYz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 13:24:46 -0400
-Message-Id: <20080429171015.473938697@theryb.frec.bull.fr>
+	Tue, 29 Apr 2008 13:24:55 -0400
+Message-Id: <20080429171701.565879994@theryb.frec.bull.fr>
+References: <20080429171015.473938697@theryb.frec.bull.fr>
 User-Agent: quilt/0.46-1
-Date: Tue, 29 Apr 2008 19:10:15 +0200
+Date: Tue, 29 Apr 2008 19:10:25 +0200
 From: Benjamin Thery <benjamin.thery@bull.net>
 To: linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>
 Cc: Tejun Heo <htejun@gmail.com>, Greg Kroah-Hartman <gregkh@suse.de>,
@@ -20,53 +21,178 @@ Cc: Tejun Heo <htejun@gmail.com>, Greg Kroah-Hartman <gregkh@suse.de>,
        "Serge E. Hallyn" <serue@us.ibm.com>,
        Pavel Emelyanov <xemul@openvz.org>, netdev@vger.kernel.org,
        Benjamin Thery <benjamin.thery@bull.net>
-Subject: [PATCH 00/10] sysfs tagged directories
+Subject: [PATCH 01/10] sysfs: Support for preventing unmounts.
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a port to 2.6.25-mm1 of Eric Biederman's patchset to implement
-tagged directories in sysfs. This patchset was discussed a few months
-ago on lkml@.
+sysfs: Support for preventing unmounts.
 
-I re-post this patchset as most of network namespace work has been
-merged in net-2.6.26 and the issue is it is currently easy to test
-because of this missing piece.
-(today sysfs must be disabled to test netns).
+To support mounting multiple instances of sysfs occassionally I
+need to walk through all of the currently present sysfs super blocks.
 
+To allow this iteration this patch adds sysfs_grab_supers
+and sysfs_release_supers.  While a piece of code is in
+a section surrounded by these no more sysfs super blocks
+will be either created or destroyed.
 
-This feature is needed for network namespaces where we have to be able
-to have multiple network devices with the same name in different network
-namespaces. 
+Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
+Acked-by: Benjamin Thery <benjamin.thery@bull.net>
+---
+ fs/sysfs/mount.c |   79 +++++++++++++++++++++++++++++++++++++++++++++++++------
+ fs/sysfs/sysfs.h |   10 ++++++
+ 2 files changed, 81 insertions(+), 8 deletions(-)
 
-On top of that, the final patch from Serge Hallyn also implements 
-tagging for user namespaces.
-
-
-Here is the announcement Eric wrote back in December to introduce his 
-patchset:
-
-"
-Now that we have network namespace support merged it is time to
-revisit the sysfs support so we can remove the dependency on !SYSFS.
-
-[...]
-
-The bulk of the patches are the changes to allow multiple sysfs
-superblocks.
-
-Then comes the tagged directory sysfs support which uses information
-captured at mount time to decide which object with which tag will
-appear in a directory.
-
-Then the support for renaming and deleting objects where the source
-may be ambiguous because of tagging.
-
-Then finally the network namespace support so it is clear how all
-of this tied together.
-"
-
-Regards,
-Benjamin
+Index: linux-mm/fs/sysfs/mount.c
+===================================================================
+--- linux-mm.orig/fs/sysfs/mount.c
++++ linux-mm/fs/sysfs/mount.c
+@@ -41,47 +41,110 @@ struct sysfs_dirent sysfs_root = {
+ 
+ static int sysfs_fill_super(struct super_block *sb, void *data, int silent)
+ {
+-	struct inode *inode;
+-	struct dentry *root;
++	struct sysfs_super_info *info = NULL;
++	struct inode *inode = NULL;
++	struct dentry *root = NULL;
++	int error;
+ 
+ 	sb->s_blocksize = PAGE_CACHE_SIZE;
+ 	sb->s_blocksize_bits = PAGE_CACHE_SHIFT;
+ 	sb->s_magic = SYSFS_MAGIC;
+ 	sb->s_op = &sysfs_ops;
+ 	sb->s_time_gran = 1;
+-	sysfs_sb = sb;
++	if (!sysfs_sb)
++		sysfs_sb = sb;
++
++	error = -ENOMEM;
++	info = kzalloc(sizeof(*info), GFP_KERNEL);
++	if (!info)
++		goto out_err;
+ 
+ 	/* get root inode, initialize and unlock it */
++	error = -ENOMEM;
+ 	inode = sysfs_get_inode(&sysfs_root);
+ 	if (!inode) {
+ 		pr_debug("sysfs: could not get root inode\n");
+-		return -ENOMEM;
++		goto out_err;
+ 	}
+ 
+ 	/* instantiate and link root dentry */
++	error = -ENOMEM;
+ 	root = d_alloc_root(inode);
+ 	if (!root) {
+ 		pr_debug("%s: could not get root dentry!\n",__func__);
+-		iput(inode);
+-		return -ENOMEM;
++		goto out_err;
+ 	}
+ 	root->d_fsdata = &sysfs_root;
+ 	sb->s_root = root;
++	sb->s_fs_info = info;
+ 	return 0;
++
++out_err:
++	dput(root);
++	iput(inode);
++	kfree(info);
++	if (sysfs_sb == sb)
++		sysfs_sb = NULL;
++	return error;
+ }
+ 
+ static int sysfs_get_sb(struct file_system_type *fs_type,
+ 	int flags, const char *dev_name, void *data, struct vfsmount *mnt)
+ {
+-	return get_sb_single(fs_type, flags, data, sysfs_fill_super, mnt);
++	int rc;
++	mutex_lock(&sysfs_rename_mutex);
++	rc = get_sb_single(fs_type, flags, data, sysfs_fill_super, mnt);
++	mutex_unlock(&sysfs_rename_mutex);
++	return rc;
+ }
+ 
+-static struct file_system_type sysfs_fs_type = {
++struct file_system_type sysfs_fs_type = {
+ 	.name		= "sysfs",
+ 	.get_sb		= sysfs_get_sb,
+ 	.kill_sb	= kill_anon_super,
+ };
+ 
++void sysfs_grab_supers(void)
++{
++	/* must hold sysfs_rename_mutex */
++	struct super_block *sb;
++	/* Loop until I have taken s_umount on all sysfs superblocks */
++restart:
++	spin_lock(&sb_lock);
++	list_for_each_entry(sb, &sysfs_fs_type.fs_supers, s_instances) {
++		if (sysfs_info(sb)->grabbed)
++			continue;
++		/* Wait for unmount activity to complete. */
++		if (sb->s_count < S_BIAS) {
++			sb->s_count += 1;
++			spin_unlock(&sb_lock);
++			down_read(&sb->s_umount);
++			drop_super(sb);
++			goto restart;
++		}
++		atomic_inc(&sb->s_active);
++		sysfs_info(sb)->grabbed = 1;
++	}
++	spin_unlock(&sb_lock);
++}
++
++void sysfs_release_supers(void)
++{
++	/* must hold sysfs_rename_mutex */
++	struct super_block *sb;
++restart:
++	spin_lock(&sb_lock);
++	list_for_each_entry(sb, &sysfs_fs_type.fs_supers, s_instances) {
++		if (!sysfs_info(sb)->grabbed)
++			continue;
++		sysfs_info(sb)->grabbed = 0;
++		spin_unlock(&sb_lock);
++		deactivate_super(sb);
++		goto restart;
++	}
++	spin_unlock(&sb_lock);
++}
++
+ int __init sysfs_init(void)
+ {
+ 	int err = -ENOMEM;
+Index: linux-mm/fs/sysfs/sysfs.h
+===================================================================
+--- linux-mm.orig/fs/sysfs/sysfs.h
++++ linux-mm/fs/sysfs/sysfs.h
+@@ -85,6 +85,12 @@ struct sysfs_addrm_cxt {
+ 	int			cnt;
+ };
+ 
++struct sysfs_super_info {
++	int	grabbed;
++};
++
++#define sysfs_info(SB) ((struct sysfs_super_info *)(SB)->s_fs_info)
++
+ /*
+  * mount.c
+  */
+@@ -92,6 +98,10 @@ extern struct sysfs_dirent sysfs_root;
+ extern struct super_block *sysfs_sb;
+ extern struct kmem_cache *sysfs_dir_cachep;
+ extern struct vfsmount *sysfs_mount;
++extern struct file_system_type sysfs_fs_type;
++
++void sysfs_grab_supers(void);
++void sysfs_release_supers(void);
+ 
+ /*
+  * dir.c
 
 -- 
