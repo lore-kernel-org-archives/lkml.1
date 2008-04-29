@@ -1,71 +1,165 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756828AbYD2ICi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757923AbYD2ID3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756828AbYD2ICi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 04:02:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753640AbYD2ICX
+	id S1757923AbYD2ID3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 04:03:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752948AbYD2IDC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 04:02:23 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:39286
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753419AbYD2ICW (ORCPT
+	Tue, 29 Apr 2008 04:03:02 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:41815 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753419AbYD2IDA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 04:02:22 -0400
-Date: Tue, 29 Apr 2008 01:02:21 -0700 (PDT)
-Message-Id: <20080429.010221.268320653.davem@davemloft.net>
-To: linux-kernel@vger.kernel.org
-Subject: kgdb with sw single-step...
-From: David Miller <davem@davemloft.net>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Tue, 29 Apr 2008 04:03:00 -0400
+Subject: Re: [BUG-REPORT] hrtick_start_fair and CPU-Hotplug
+From: Peter Zijlstra <peterz@infradead.org>
+To: ego@in.ibm.com
+Cc: Ingo Molnar <mingo@elte.hu>, Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       Srivatsa Vaddagiri <vatsa@in.ibm.com>, Balbir Singh <balbir@in.ibm.com>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <1209452359.13978.26.camel@twins>
+References: <20080429065211.GB7859@in.ibm.com>
+	 <1209452359.13978.26.camel@twins>
+Content-Type: text/plain
+Date: Tue, 29 Apr 2008 10:02:46 +0200
+Message-Id: <1209456166.13978.30.camel@twins>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+X-Mailer: Evolution 2.22.0 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 2008-04-29 at 08:59 +0200, Peter Zijlstra wrote:
+> On Tue, 2008-04-29 at 12:22 +0530, Gautham R Shenoy wrote:
+> > Hello!
+> > 
+> > While running the usual CPU-Hotplug stress tests on linux-2.6.25,
+> > I noticed the following in the console logs.
+> > 
+> > This is a wee bit difficult to reproduce. In the past 10 runs I hit this
+> > only once.
+> > 
+> > ------------[ cut here ]------------
+> > 
+> > WARNING: at kernel/sched.c:962 hrtick+0x2e/0x65()
+> 
+> > I am not well versed with this part of the code, so just wondering if we
+> > are doing a good job at handling the cancellation of any per-cpu
+> > scheduler timers during CPU-Hotplug.
+> 
+> This looks like its not cancelled at all and migrates the it to another
+> cpu. I'll see what I can come up with.
 
-While working on the sparc port of the new kgdb code in the tree I ran
-across a fundamental issue with this stuff on cpus that do
-single-stepping in software.
 
-The short story is that since such sw single-stepping is using
-globally visible state (the temporary breakpoint used), it does not
-fare well in the presence of cpus other than the current one hitting
-the single-step breakpoint.
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+---
+ kernel/sched.c |   66 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 65 insertions(+), 1 deletion(-)
 
-This actually limits my ability to test using kgdbts fully, the
-parallel tests often fail because the sw single-step emulation
-in kgdbts runs into several issues including the one I'm
-mentioning here.
+Index: linux-2.6-2/kernel/sched.c
+===================================================================
+--- linux-2.6-2.orig/kernel/sched.c
++++ linux-2.6-2/kernel/sched.c
+@@ -1201,6 +1201,7 @@ static inline void resched_rq(struct rq 
+ enum {
+ 	HRTICK_SET,		/* re-programm hrtick_timer */
+ 	HRTICK_RESET,		/* not a new slice */
++	HRTICK_BLOCK,		/* stop hrtick operations */
+ };
+ 
+ /*
+@@ -1212,6 +1213,8 @@ static inline int hrtick_enabled(struct 
+ {
+ 	if (!sched_feat(HRTICK))
+ 		return 0;
++	if (unlikely(test_bit(HRTICK_BLOCK, &rq->hrtick_flags)))
++		return 0;
+ 	return hrtimer_is_hres_active(&rq->hrtick_timer);
+ }
+ 
+@@ -1294,7 +1297,63 @@ static enum hrtimer_restart hrtick(struc
+ 	return HRTIMER_NORESTART;
+ }
+ 
+-static inline void init_rq_hrtick(struct rq *rq)
++static void hotplug_hrtick_disable(int cpu)
++{
++	struct rq *rq = cpu_rq(cpu);
++	unsigned long flags;
++
++	spin_lock_irqsave(&rq->lock, flags);
++	rq->hrtick_flags = 0;
++	__set_bit(HRTICK_BLOCK, &rq->hrtick_flags);
++	spin_unlock_irqrestore(&rq->lock, flags);
++
++	hrtick_clear(rq);
++}
++
++static void hotplug_hrtick_enable(int cpu)
++{
++	struct rq *rq = cpu_rq(cpu);
++	unsigned long flags;
++
++	spin_lock_irqsave(&rq->lock, flags);
++	__clear_bit(HRTICK_BLOCK, &rq->hrtick_flags);
++	spin_unlock_irqrestore(&rq->lock, flags);
++}
++
++static int
++hotplug_hrtick(struct notifier_block *nfb, unsigned long action, void *hcpu)
++{
++	int cpu = (int)hcpu;
++
++	switch (action) {
++	case CPU_UP_CANCELED:
++	case CPU_UP_CANCELED_FROZEN:
++	case CPU_DOWN_PREPARE:
++	case CPU_DOWN_PREPARE_FROZEN:
++	case CPU_DEAD:
++	case CPU_DEAD_FROZEN:
++		hotplug_hrtick_disable(cpu);
++		return NOTIFY_OK;
++
++	case CPU_UP_PREPARE:
++	case CPU_UP_PREPARE_FROZEN:
++	case CPU_DOWN_FAILED:
++	case CPU_DOWN_FAILED_FROZEN:
++	case CPU_ONLINE:
++	case CPU_ONLINE_FROZEN:
++		hotplug_hrtick_enable(cpu);
++		return NOTIFY_OK;
++	}
++
++	return NOTIFY_DONE;
++}
++
++static void init_hrtick(void)
++{
++	hotcpu_notifier(hotplug_hrtick, 0);
++}
++
++static void init_rq_hrtick(struct rq *rq)
+ {
+ 	rq->hrtick_flags = 0;
+ 	hrtimer_init(&rq->hrtick_timer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
+@@ -1331,6 +1390,10 @@ static inline void init_rq_hrtick(struct
+ void hrtick_resched(void)
+ {
+ }
++
++static inline void init_hrtick(void)
++{
++}
+ #endif
+ 
+ /*
+@@ -7964,6 +8027,7 @@ void __init sched_init_smp(void)
+ 	put_online_cpus();
+ 	/* XXX: Theoretical race here - CPU may be hotplugged now */
+ 	hotcpu_notifier(update_sched_domains, 0);
++	init_hrtick();
+ 
+ 	/* Move init over to a non-isolated CPU */
+ 	if (set_cpus_allowed_ptr(current, &non_isolated_cpus) < 0)
 
-The good news is that there is a mostly working solution possible.
-
-When GDB is handling a normal threaded process, it handles other
-threads tripping over the temporary single-step breakpoint by simply
-holding them stopped until the thread that should have hit the
-breakpoint, does hit it.
-
-The kernel could do something similar, but this would require
-something like:
-
-1) The architecture kgdb support code implements the sw single
-   step breakpoint logic, this is necessary in order to
-   handle single stepping over branches, calls, and things
-   of this nature.  (this is something the single-step
-   emulation code in kgdbts doesn't even try to get right).
-
-2) The kgdb stub implements the single-stepping command using
-   the support code in #1.  When this happens, foreign cpus
-   which have been captured are kept captured until the
-   single-step breakpoint it hit by the primary kgdb cpu.
-
-Of course, this means we'll need changes to how gdb talks over the
-stub on these processors (mips, arm, sparc, etc.)  since currently gdb
-will do all of the sw single-step breakpoint work.
-
-Some architectures, like Alpha, do the single-stepping in the
-ptrace implementation.  Basically it's doing all of the sw
-single-step breakpoint work on the kernel side, instead of
-in gdb.  Platforms like Alpha would therefore be readily adaptable
-to the above scheme without any gdb changes.
 
