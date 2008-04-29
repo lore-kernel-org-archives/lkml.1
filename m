@@ -1,57 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756416AbYD2Euk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757185AbYD2Evi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756416AbYD2Euk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 00:50:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752046AbYD2Eua
+	id S1757185AbYD2Evi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 00:51:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752940AbYD2Eva
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 00:50:30 -0400
-Received: from gate.crashing.org ([63.228.1.57]:44478 "EHLO gate.crashing.org"
+	Tue, 29 Apr 2008 00:51:30 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:59285 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752154AbYD2Eu3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 00:50:29 -0400
-Subject: [PATCH] ide: fix crash at boot with siimage driver
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: Sergei Shtylyov <sshtylyov@ru.mvista.com>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       list linux-ide <linux-ide@vger.kernel.org>
-Content-Type: text/plain
-Date: Tue, 29 Apr 2008 14:49:36 +1000
-Message-Id: <1209444576.18023.128.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+	id S1752631AbYD2Ev3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Apr 2008 00:51:29 -0400
+From: Jarod Wilson <jwilson@redhat.com>
+Organization: Red Hat, Inc.
+To: linux1394-devel@lists.sourceforge.net
+Subject: Re: [PATCH] firewire: fw-sbp2: log scsi_target ID at release
+Date: Tue, 29 Apr 2008 00:51:08 -0400
+User-Agent: KMail/1.9.9
+Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>, linux-kernel@vger.kernel.org
+References: <tkrat.478a048cc4090b07@s5r6.in-berlin.de>
+In-Reply-To: <tkrat.478a048cc4090b07@s5r6.in-berlin.de>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200804290051.08242.jwilson@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Some change to the IDE layer are causing the siimage driver to crash
-at boot with a NULL dereference. This is due to the sil_dma_ops not
-containing all the necessary pointers. I suppose it used to just
-"override" the defaults while now, it needs to contain everything.
+On Thursday 24 April 2008 05:17:47 pm Stefan Richter wrote:
+> Makes the good-by message more informative.
+>
+> Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
+Signed-off-by: Jarod Wilson <jwilson@redhat.com>
 
-Index: linux-work/drivers/ide/pci/siimage.c
-===================================================================
---- linux-work.orig/drivers/ide/pci/siimage.c	2008-04-29 14:44:37.000000000 +1000
-+++ linux-work/drivers/ide/pci/siimage.c	2008-04-29 14:44:44.000000000 +1000
-@@ -780,7 +780,14 @@ static const struct ide_port_ops sil_sat
- };
- 
- static struct ide_dma_ops sil_dma_ops = {
-+	.dma_host_set		= ide_dma_host_set,
-+	.dma_setup		= ide_dma_setup,
-+	.dma_exec_cmd		= ide_dma_exec_cmd,
-+	.dma_start		= ide_dma_start,
-+	.dma_end		= __ide_dma_end,
- 	.dma_test_irq		= siimage_dma_test_irq,
-+	.dma_timeout		= ide_dma_timeout,
-+	.dma_lost_irq		= ide_dma_lost_irq,
- };
- 
- #define DECLARE_SII_DEV(name_str, p_ops)		\
-
-
+-- 
+Jarod Wilson
+jwilson@redhat.com
