@@ -1,56 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758203AbYD2Qn4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759198AbYD2Qoh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758203AbYD2Qn4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 12:43:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754241AbYD2Qns
+	id S1759198AbYD2Qoh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 12:44:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753629AbYD2Qo3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 12:43:48 -0400
-Received: from sj-iport-6.cisco.com ([171.71.176.117]:36122 "EHLO
-	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753629AbYD2Qnr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 12:43:47 -0400
-From: Roland Dreier <rdreier@cisco.com>
-To: Stefan Roscher <ossrosch@linux.vnet.ibm.com>
-Cc: "LinuxPPC-Dev" <linuxppc-dev@ozlabs.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "OF-General" <general@lists.openfabrics.org>,
-       Roland Dreier <rolandd@cisco.com>, "OF-EWG" <ewg@lists.openfabrics.org>,
-       hnguyen@de.ibm.com, raisch@de.ibm.com, fenkes@de.ibm.com
-Subject: Re: [PATCH] IB/ehca: Allocate event queue size depending on max number of CQs and QPs
-References: <200804291744.17235.ossrosch@linux.vnet.ibm.com>
-X-Message-Flag: Warning: May contain useful information
-Date: Tue, 29 Apr 2008 09:43:42 -0700
-In-Reply-To: <200804291744.17235.ossrosch@linux.vnet.ibm.com> (Stefan
-	Roscher's message of "Tue, 29 Apr 2008 17:44:15 +0200")
-Message-ID: <adafxt4y5kx.fsf@cisco.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
-MIME-Version: 1.0
+	Tue, 29 Apr 2008 12:44:29 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:57300 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752877AbYD2Qo2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Apr 2008 12:44:28 -0400
+Date: Tue, 29 Apr 2008 18:45:01 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Timur Tabi <timur@freescale.com>
+Cc: Roland Kuhn <rkuhn@e18.physik.tu-muenchen.de>,
+       linux-kernel@vger.kernel.org
+Subject: Re: cross-compiling on OS X, make menuconfig fails
+Message-ID: <20080429164501.GA18018@uranus.ravnborg.org>
+References: <481529B6.6030802@freescale.com> <8FEAC32C-868F-468C-B383-8450D400691C@e18.physik.tu-muenchen.de> <48173607.6080307@freescale.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 29 Apr 2008 16:43:42.0984 (UTC) FILETIME=[2F511880:01C8AA18]
-Authentication-Results: sj-dkim-2; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim2002 verified; ); 
+Content-Disposition: inline
+In-Reply-To: <48173607.6080307@freescale.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > 
- > Signed-off-by: Stefan Roscher <stefan.roscher at de.ibm.com>
+> 
+> I read in the latest Linux Journal magazine that someone noticed that even
+> though the kernel scripts say #!/bin/sh, many of them are really bash scripts.
+> This person went through the effort of changing the script to be true 'sh'
+> scripts.  Has that code been merged in?
 
-Kind of an inadequate changelog ;)
+I have no patches pending but I may have lost them.
+As I am 100% ignorant about what is bash and what is not bash specialities
+I will more or less be blind when I apply them so I hope they are well
+tested.
 
-Is this a fix or an enhancement or what?
-
- > +	if (atomic_read(&shca->num_cqs) >= ehca_max_cq) {
-
- > +	if (atomic_read(&shca->num_qps) >= ehca_max_qp) {
-
-These are racy in the sense that multiple simultaneous calls to
-create_cq/create_qp might end up exceeding the ehca_max_cq limit.  Is
-that an issue?
-
-You could close the race by using atomic_add_unless() and testing the
-return value (and being careful to do atomic_dec() on error paths after
-you bump num_cqs/num_qps).
-
- - R.
+	Sam
