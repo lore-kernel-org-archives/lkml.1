@@ -1,131 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754830AbYD2VeT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755141AbYD2VfP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754830AbYD2VeT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 17:34:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751282AbYD2VeE
+	id S1755141AbYD2VfP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 17:35:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752414AbYD2Ve7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 17:34:04 -0400
-Received: from zone0.gcu-squad.org ([212.85.147.21]:22509 "EHLO
-	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752596AbYD2VeA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 17:34:00 -0400
-Date: Tue, 29 Apr 2008 23:33:40 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux I2C <i2c@lm-sensors.org>, LKML <linux-kernel@vger.kernel.org>,
-       Ben Dooks <ben-linux@fluff.org>
-Subject: [GIT PULL] More i2c updates for 2.6.26
-Message-ID: <20080429233340.240399c6@hyperion.delvare>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
+	Tue, 29 Apr 2008 17:34:59 -0400
+Received: from pat.uio.no ([129.240.10.15]:50726 "EHLO pat.uio.no"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751261AbYD2Ve6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Apr 2008 17:34:58 -0400
+Subject: Re: [RFC][PATCH 2/5] introduce simple_set_mnt_no_get() helper for
+	NFS
+From: Trond Myklebust <trond.myklebust@fys.uio.no>
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       viro@zeniv.linux.org.uk, hch@infradead.org
+In-Reply-To: <20080429185945.8D7AD196@kernel>
+References: <20080429185943.3BA6A050@kernel>
+	 <20080429185945.8D7AD196@kernel>
+Content-Type: text/plain
+Date: Tue, 29 Apr 2008 14:34:53 -0700
+Message-Id: <1209504893.8321.2.camel@heimdal.trondhjem.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
+X-UiO-Resend: resent
+X-UiO-Spam-info: not spam, SpamAssassin (score=-5.0, required=5.0, autolearn=disabled, UIO_MAIL_IS_INTERNAL=-5)
+X-UiO-Scanned: AA0C76AC85E13529E77BC565B59B8936887FCC24
+X-UiO-SR-test: 8B9D36208A5E18B9794A57882A7447B0E5EAFC30
+X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: -49 maxlevel 200 minaction 2 bait 0 mail/h: 324 total 8155224 max/h 8345 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
 
-Please pull the i2c subsystem updates for Linux 2.6.26 from:
+On Tue, 2008-04-29 at 11:59 -0700, Dave Hansen wrote:
+> The next patch will introduce a list of all mounts for a given
+> superblock.  In order to keep the list, we need to make sure
+> all filesystems attaching a mount to a superblock get added
+> to this list.
+> 
+> NFS currently bypasses the simple_set_mnt() function, and sets
+> mnt_sb directly.  This patch makes it use a helper function,
+> instead.
+> 
+> Signed-off-by: Dave Hansen <dave@linux.vnet.ibm.com>
+> ---
+> 
+>  linux-2.6.git-dave/fs/namespace.c     |   11 +++++++++--
+>  linux-2.6.git-dave/fs/nfs/super.c     |   10 +++++-----
+>  linux-2.6.git-dave/include/linux/fs.h |    1 +
+>  3 files changed, 15 insertions(+), 7 deletions(-)
+> 
+> diff -puN fs/namespace.c~introduce_simple_set_mnt_no_get_helper_for_NFS fs/namespace.c
+> --- linux-2.6.git/fs/namespace.c~introduce_simple_set_mnt_no_get_helper_for_NFS	2008-04-29 11:56:39.000000000 -0700
+> +++ linux-2.6.git-dave/fs/namespace.c	2008-04-29 11:56:39.000000000 -0700
+> @@ -402,12 +402,19 @@ static void __mnt_unmake_readonly(struct
+>  	spin_unlock(&vfsmount_lock);
+>  }
+>  
+> -int simple_set_mnt(struct vfsmount *mnt, struct super_block *sb)
+> +int simple_set_mnt_no_get(struct vfsmount *mnt, struct super_block *sb)
+>  {
+>  	mnt->mnt_sb = sb;
+> -	mnt->mnt_root = dget(sb->s_root);
+> +	add_mount_to_sb_list(mnt, sb);
+>  	return 0;
+>  }
+> +EXPORT_SYMBOL(simple_set_mnt_no_get);
+> +
+> +int simple_set_mnt(struct vfsmount *mnt, struct super_block *sb)
+> +{
+> +	mnt->mnt_root = dget(sb->s_root);
+> +	return simple_set_mnt_no_get(mnt, sb);
+> +}
+>  
 
-git://jdelvare.pck.nerim.net/jdelvare-2.6 i2c-for-linus
+My only concern is the proliferation of 'simple_*' operations: in some
+cases in libfs.c we explicitly label those as being for in-memory/ramfs
+filesystems, whereas in other cases (such as this one) the name appears
+to be used for more generic functions.
 
-The biggest thing here is the long awaited conversion of the
-device/driver matching model of the i2c subsystem. All new-style gpio,
-hwmon and rtc i2c drivers are converted, as well as SoC video drivers.
-Remaining are the bulk of video drivers, including ivtv. I couldn't get
-them done in time so them will come later.
+Cheers
+  Trond
 
- Documentation/i2c/writing-clients          |    3 +-
- arch/arm/mach-at91/board-csb337.c          |    3 +-
- arch/arm/mach-at91/board-dk.c              |    3 +-
- arch/arm/mach-at91/board-eb9200.c          |    3 +-
- arch/arm/mach-iop32x/em7210.c              |    3 +-
- arch/arm/mach-iop32x/glantank.c            |    4 +-
- arch/arm/mach-iop32x/n2100.c               |    4 +-
- arch/arm/mach-ixp4xx/dsmg600-setup.c       |    2 +-
- arch/arm/mach-ixp4xx/nas100d-setup.c       |    2 +-
- arch/arm/mach-ixp4xx/nslu2-setup.c         |    2 +-
- arch/arm/mach-omap1/board-h2.c             |    2 -
- arch/arm/mach-omap1/board-h3.c             |    3 +-
- arch/arm/mach-omap1/board-osk.c            |    1 -
- arch/arm/mach-orion5x/db88f5281-setup.c    |    4 +-
- arch/arm/mach-orion5x/dns323-setup.c       |    7 +--
- arch/arm/mach-orion5x/kurobox_pro-setup.c  |    4 +-
- arch/arm/mach-orion5x/rd88f5182-setup.c    |    4 +-
- arch/arm/mach-orion5x/ts209-setup.c        |    3 +-
- arch/arm/mach-pxa/pcm990-baseboard.c       |    5 +--
- arch/blackfin/mach-bf533/boards/stamp.c    |    3 -
- arch/blackfin/mach-bf537/boards/stamp.c    |    3 -
- arch/blackfin/mach-bf548/boards/ezkit.c    |    2 -
- arch/powerpc/sysdev/fsl_soc.c              |   27 ++++-----
- arch/sh/boards/renesas/migor/setup.c       |    3 +-
- arch/sh/boards/renesas/r7780rp/setup.c     |    3 +-
- drivers/gpio/pca953x.c                     |   24 ++------
- drivers/gpio/pcf857x.c                     |   36 +++++++-----
- drivers/hwmon/f75375s.c                    |   29 ++++++----
- drivers/i2c/busses/i2c-amd756-s4882.c      |    5 +-
- drivers/i2c/busses/i2c-piix4.c             |   10 +---
- drivers/i2c/busses/i2c-sis5595.c           |   14 +----
- drivers/i2c/busses/i2c-sis630.c            |    2 +-
- drivers/i2c/busses/i2c-stub.c              |    2 +-
- drivers/i2c/busses/i2c-taos-evm.c          |    3 +-
- drivers/i2c/chips/ds1682.c                 |   10 +++-
- drivers/i2c/chips/menelaus.c               |   10 +++-
- drivers/i2c/chips/tps65010.c               |   34 +++++-------
- drivers/i2c/chips/tsl2550.c                |   10 +++-
- drivers/i2c/i2c-core.c                     |   51 ++++++++++++++---
- drivers/media/video/cs5345.c               |    3 +-
- drivers/media/video/cs53l32a.c             |    3 +-
- drivers/media/video/cx25840/cx25840-core.c |    3 +-
- drivers/media/video/m52790.c               |    3 +-
- drivers/media/video/msp3400-driver.c       |    2 +-
- drivers/media/video/mt9m001.c              |   10 +++-
- drivers/media/video/mt9v022.c              |   10 +++-
- drivers/media/video/saa7115.c              |    3 +-
- drivers/media/video/saa7127.c              |    3 +-
- drivers/media/video/saa717x.c              |    3 +-
- drivers/media/video/tcm825x.c              |    3 +-
- drivers/media/video/tlv320aic23b.c         |    3 +-
- drivers/media/video/tuner-core.c           |    3 +-
- drivers/media/video/tvaudio.c              |    2 +-
- drivers/media/video/upd64031a.c            |    3 +-
- drivers/media/video/upd64083.c             |    3 +-
- drivers/media/video/v4l2-common.c          |    5 +-
- drivers/media/video/vp27smpx.c             |    3 +-
- drivers/media/video/wm8739.c               |    3 +-
- drivers/media/video/wm8775.c               |    3 +-
- drivers/rtc/rtc-ds1307.c                   |   66 +++++++++-------------
- drivers/rtc/rtc-ds1374.c                   |   10 +++-
- drivers/rtc/rtc-isl1208.c                  |    9 +++-
- drivers/rtc/rtc-m41t80.c                   |   81 +++++++--------------------
- drivers/rtc/rtc-pcf8563.c                  |   10 +++-
- drivers/rtc/rtc-rs5c372.c                  |   27 +++++-----
- drivers/rtc/rtc-s35390a.c                  |   10 +++-
- drivers/rtc/rtc-x1205.c                    |   10 +++-
- include/linux/i2c-id.h                     |    3 -
- include/linux/i2c.h                        |   17 +++---
- include/linux/mod_devicetable.h            |   11 ++++
- include/media/v4l2-common.h                |    4 +-
- include/media/v4l2-i2c-drv-legacy.h        |    2 +-
- include/media/v4l2-i2c-drv.h               |    2 +-
- scripts/mod/file2alias.c                   |   13 +++++
- 74 files changed, 367 insertions(+), 325 deletions(-)
-
----------------
-
-Jean Delvare (9):
-      i2c-stub: No newline in parameter description
-      i2c: Spelling fix (successful)
-      i2c-piix4: Minor cleanups
-      i2c-sis5595: Minor cleanups in sis5595_access
-      i2c/tps65010: Add missing intialization of client data
-      i2c: Drop unused RTC driver IDs
-      i2c-amd756-s4882: Fix an error path
-      i2c: Add support for device alias names
-      i2c: Convert most new-style drivers to use module aliasing
-
-Thanks,
--- 
-Jean Delvare
