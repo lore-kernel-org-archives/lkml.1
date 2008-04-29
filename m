@@ -1,51 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759912AbYD2WfH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761290AbYD2WgH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759912AbYD2WfH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 18:35:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755116AbYD2Wey
+	id S1761290AbYD2WgH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 18:36:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753757AbYD2Wfz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 18:34:54 -0400
-Received: from outbound-mail-154.bluehost.com ([67.222.39.34]:42604 "HELO
-	outbound-mail-154.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753918AbYD2Wex (ORCPT
+	Tue, 29 Apr 2008 18:35:55 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:45837
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751710AbYD2Wfy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 18:34:53 -0400
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] x86/pci: remove flag in pci_cfg_space_size_ext
-Date: Tue, 29 Apr 2008 15:34:38 -0700
-User-Agent: KMail/1.9.9
-Cc: yhlu.kernel@gmail.com, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-References: <20080426185516.GA32364@elte.hu> <200804290914.16742.jbarnes@virtuousgeek.org> <20080429220529.GG2302@elte.hu>
-In-Reply-To: <20080429220529.GG2302@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Tue, 29 Apr 2008 18:35:54 -0400
+Date: Tue, 29 Apr 2008 15:35:53 -0700 (PDT)
+Message-Id: <20080429.153553.197741534.davem@davemloft.net>
+To: jason.wessel@windriver.com
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: kgdb with sw single-step...
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <48173852.8080107@windriver.com>
+References: <20080429.010221.268320653.davem@davemloft.net>
+	<48173852.8080107@windriver.com>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200804291534.39067.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, April 29, 2008 3:05 pm Ingo Molnar wrote:
-> * Jesse Barnes <jbarnes@virtuousgeek.org> wrote:
-> > On Monday, April 28, 2008 4:27 pm Yinghai Lu wrote:
-> > > so let pci_cfg_space_size call it directly without flag.
-> > >
-> > > Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
-> >
-> > Thanks Yinghai.
-> >
-> > Ingo, I assume you'll roll this in?
->
-> no, i sent the tested tree to Linus, which was unmodified from 3 days
-> ago. Could you queue up this cleanup into the PCI tree please?
+From: Jason Wessel <jason.wessel@windriver.com>
+Date: Tue, 29 Apr 2008 10:01:38 -0500
 
-Sure, np.  Applied.  Thanks Yinghai.
+> I don't think you have to actually change gdb, because for sparc64 gdb
+> is set to "set_gdbarch_software_single_step (gdbarch, NULL);" This
+> means it is always going to ask the stub to perform the single
+> stepping.
 
-Jesse
+You're reading the wrong code.
+
+The generic sparc stuff in sparc-tdep.c sets it to
+sparc_software_single_step.
+
+Only the Solaris specific sparc target code in sparc-sol2-tdep.c
+overrides this setting to NULL.
