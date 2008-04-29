@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760194AbYD2H04@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760274AbYD2H1Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760194AbYD2H04 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 03:26:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755907AbYD2HZt
+	id S1760274AbYD2H1Y (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 03:27:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756142AbYD2HZv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 03:25:49 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:17206 "EHLO kernel.dk"
+	Tue, 29 Apr 2008 03:25:51 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:17202 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752876AbYD2HZn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1750894AbYD2HZn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 29 Apr 2008 03:25:43 -0400
 From: Jens Axboe <jens.axboe@oracle.com>
 To: linux-kernel@vger.kernel.org
 Cc: peterz@infradead.org, npiggin@suse.de, linux-arch@vger.kernel.org,
        jeremy@goop.org, mingo@elte.hu, paulmck@linux.vnet.ibm.com,
        Jens Axboe <jens.axboe@oracle.com>
-Subject: [PATCH 5/10] alpha: convert to generic helpers for IPI function calls
-Date: Tue, 29 Apr 2008 09:26:25 +0200
-Message-Id: <1209453990-7735-6-git-send-email-jens.axboe@oracle.com>
+Subject: [PATCH 3/10] powerpc: convert to generic helpers for IPI function calls
+Date: Tue, 29 Apr 2008 09:26:23 +0200
+Message-Id: <1209453990-7735-4-git-send-email-jens.axboe@oracle.com>
 X-Mailer: git-send-email 1.5.5.1.57.g5909c
 In-Reply-To: <1209453990-7735-1-git-send-email-jens.axboe@oracle.com>
 References: <1209453990-7735-1-git-send-email-jens.axboe@oracle.com>
@@ -24,267 +24,384 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This converts alpha to use the new helpers for smp_call_function() and
+This converts ppc to use the new helpers for smp_call_function() and
 friends, and adds support for smp_call_function_single().
 
+ppc loses the timeout functionality of smp_call_function_mask() with
+this change, as the generic code does not provide that.
+
+Acked-by: Paul Mackerras <paulus@samba.org>
 Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
 ---
- arch/alpha/Kconfig              |    1 +
- arch/alpha/kernel/core_marvel.c |    6 +-
- arch/alpha/kernel/smp.c         |  170 +++------------------------------------
- include/asm-alpha/smp.h         |    2 -
- 4 files changed, 14 insertions(+), 165 deletions(-)
+ arch/powerpc/Kconfig                    |    1 +
+ arch/powerpc/kernel/smp.c               |  220 ++-----------------------------
+ arch/powerpc/platforms/cell/interrupt.c |    1 +
+ arch/powerpc/platforms/ps3/smp.c        |    7 +-
+ arch/powerpc/platforms/pseries/xics.c   |    6 +-
+ arch/powerpc/sysdev/mpic.c              |    2 +-
+ include/asm-powerpc/smp.h               |    5 +-
+ 7 files changed, 23 insertions(+), 219 deletions(-)
 
-diff --git a/arch/alpha/Kconfig b/arch/alpha/Kconfig
-index 729cdbd..dbe8c28 100644
---- a/arch/alpha/Kconfig
-+++ b/arch/alpha/Kconfig
-@@ -528,6 +528,7 @@ config ARCH_MAY_HAVE_PC_FDC
- config SMP
- 	bool "Symmetric multi-processing support"
- 	depends on ALPHA_SABLE || ALPHA_LYNX || ALPHA_RAWHIDE || ALPHA_DP264 || ALPHA_WILDFIRE || ALPHA_TITAN || ALPHA_GENERIC || ALPHA_SHARK || ALPHA_MARVEL
-+	select USE_GENERIC_SMP_HELPERS
- 	---help---
- 	  This enables support for systems with more than one CPU. If you have
- 	  a system with only one CPU, like most personal computers, say N. If
-diff --git a/arch/alpha/kernel/core_marvel.c b/arch/alpha/kernel/core_marvel.c
-index b04f1fe..ced4aae 100644
---- a/arch/alpha/kernel/core_marvel.c
-+++ b/arch/alpha/kernel/core_marvel.c
-@@ -660,9 +660,9 @@ __marvel_rtc_io(u8 b, unsigned long addr, int write)
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 4e40c12..60f4a2f 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -110,6 +110,7 @@ config PPC
+ 	select HAVE_KPROBES
+ 	select HAVE_KRETPROBES
+ 	select HAVE_LMB
++	select USE_GENERIC_SMP_HELPERS if SMP
  
- #ifdef CONFIG_SMP
- 		if (smp_processor_id() != boot_cpuid)
--			smp_call_function_on_cpu(__marvel_access_rtc,
--						 &rtc_access, 1, 1,
--						 cpumask_of_cpu(boot_cpuid));
-+			smp_call_function_single(boot_cpuid,
-+						 __marvel_access_rtc,
-+						 &rtc_access, 1, 1);
- 		else
- 			__marvel_access_rtc(&rtc_access);
- #else
-diff --git a/arch/alpha/kernel/smp.c b/arch/alpha/kernel/smp.c
-index 2525692..95c905b 100644
---- a/arch/alpha/kernel/smp.c
-+++ b/arch/alpha/kernel/smp.c
-@@ -62,6 +62,7 @@ static struct {
- enum ipi_message_type {
- 	IPI_RESCHEDULE,
- 	IPI_CALL_FUNC,
-+	IPI_CALL_FUNC_SINGLE,
- 	IPI_CPU_STOP,
- };
+ config EARLY_PRINTK
+ 	bool
+diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
+index be35ffa..facd49d 100644
+--- a/arch/powerpc/kernel/smp.c
++++ b/arch/powerpc/kernel/smp.c
+@@ -72,12 +72,8 @@ struct smp_ops_t *smp_ops;
  
-@@ -558,51 +559,6 @@ send_ipi_message(cpumask_t to_whom, enum ipi_message_type operation)
- 		wripir(i);
- }
+ static volatile unsigned int cpu_callin_map[NR_CPUS];
  
--/* Structure and data for smp_call_function.  This is designed to 
--   minimize static memory requirements.  Plus it looks cleaner.  */
+-void smp_call_function_interrupt(void);
 -
--struct smp_call_struct {
--	void (*func) (void *info);
--	void *info;
--	long wait;
--	atomic_t unstarted_count;
--	atomic_t unfinished_count;
--};
+ int smt_enabled_at_boot = 1;
+ 
+-static int ipi_fail_ok;
 -
--static struct smp_call_struct *smp_call_function_data;
--
--/* Atomicly drop data into a shared pointer.  The pointer is free if
--   it is initially locked.  If retry, spin until free.  */
--
--static int
--pointer_lock (void *lock, void *data, int retry)
--{
--	void *old, *tmp;
--
--	mb();
-- again:
--	/* Compare and swap with zero.  */
--	asm volatile (
--	"1:	ldq_l	%0,%1\n"
--	"	mov	%3,%2\n"
--	"	bne	%0,2f\n"
--	"	stq_c	%2,%1\n"
--	"	beq	%2,1b\n"
--	"2:"
--	: "=&r"(old), "=m"(*(void **)lock), "=&r"(tmp)
--	: "r"(data)
--	: "memory");
--
--	if (old == 0)
--		return 0;
--	if (! retry)
--		return -EBUSY;
--
--	while (*(void **)lock)
--		barrier();
--	goto again;
--}
--
- void
- handle_ipi(struct pt_regs *regs)
+ static void (*crash_ipi_function_ptr)(struct pt_regs *) = NULL;
+ 
+ #ifdef CONFIG_PPC64
+@@ -99,12 +95,15 @@ void smp_message_recv(int msg)
  {
-@@ -632,31 +588,12 @@ handle_ipi(struct pt_regs *regs)
- 			break;
- 
- 		case IPI_CALL_FUNC:
--		    {
--			struct smp_call_struct *data;
--			void (*func)(void *info);
--			void *info;
--			int wait;
--
--			data = smp_call_function_data;
--			func = data->func;
--			info = data->info;
--			wait = data->wait;
--
--			/* Notify the sending CPU that the data has been
--			   received, and execution is about to begin.  */
--			mb();
--			atomic_dec (&data->unstarted_count);
--
--			/* At this point the structure may be gone unless
--			   wait is true.  */
--			(*func)(info);
--
--			/* Notify the sending CPU that the task is done.  */
--			mb();
--			if (wait) atomic_dec (&data->unfinished_count);
-+			generic_smp_call_function_interrupt();
-+			break;
-+
-+		case IPI_CALL_FUNC_SINGLE:
-+			generic_smp_call_function_single_interrupt();
- 			break;
--		    }
- 
- 		case IPI_CPU_STOP:
- 			halt();
-@@ -700,102 +637,15 @@ smp_send_stop(void)
- 	send_ipi_message(to_whom, IPI_CPU_STOP);
+ 	switch(msg) {
+ 	case PPC_MSG_CALL_FUNCTION:
+-		smp_call_function_interrupt();
++		generic_smp_call_function_interrupt();
+ 		break;
+ 	case PPC_MSG_RESCHEDULE:
+ 		/* XXX Do we have to do this? */
+ 		set_need_resched();
+ 		break;
++	case PPC_MSG_CALL_FUNC_SINGLE:
++		generic_smp_call_function_single_interrupt();
++		break;
+ 	case PPC_MSG_DEBUGGER_BREAK:
+ 		if (crash_ipi_function_ptr) {
+ 			crash_ipi_function_ptr(get_irq_regs());
+@@ -154,215 +153,22 @@ static void stop_this_cpu(void *dummy)
+ 		;
  }
  
 -/*
-- * Run a function on all other CPUs.
-- *  <func>	The function to run. This must be fast and non-blocking.
-- *  <info>	An arbitrary pointer to pass to the function.
-- *  <retry>	If true, keep retrying until ready.
-- *  <wait>	If true, wait until function has completed on other CPUs.
-- *  [RETURNS]   0 on success, else a negative status code.
+- * Structure and data for smp_call_function(). This is designed to minimise
+- * static memory requirements. It also looks cleaner.
+- * Stolen from the i386 version.
+- */
+-static  __cacheline_aligned_in_smp DEFINE_SPINLOCK(call_lock);
+-
+-static struct call_data_struct {
+-	void (*func) (void *info);
+-	void *info;
+-	atomic_t started;
+-	atomic_t finished;
+-	int wait;
+-} *call_data;
+-
+-/* delay of at least 8 seconds */
+-#define SMP_CALL_TIMEOUT	8
+-
+-/*
+- * These functions send a 'generic call function' IPI to other online
+- * CPUS in the system.
 - *
-- * Does not return until remote CPUs are nearly ready to execute <func>
-- * or are or have executed.
+- * [SUMMARY] Run a function on other CPUs.
+- * <func> The function to run. This must be fast and non-blocking.
+- * <info> An arbitrary pointer to pass to the function.
+- * <nonatomic> currently unused.
+- * <wait> If true, wait (atomically) until function has completed on other CPUs.
+- * [RETURNS] 0 on success, else a negative status code. Does not return until
+- * remote CPUs are nearly ready to execute <<func>> or are or have executed.
+- * <map> is a cpu map of the cpus to send IPI to.
+- *
 - * You must not call this function with disabled interrupts or from a
 - * hardware interrupt handler or from a bottom half handler.
 - */
+-static int __smp_call_function_map(void (*func) (void *info), void *info,
+-				   int nonatomic, int wait, cpumask_t map)
+-{
+-	struct call_data_struct data;
+-	int ret = -1, num_cpus;
+-	int cpu;
+-	u64 timeout;
 -
--int
--smp_call_function_on_cpu (void (*func) (void *info), void *info, int retry,
--			  int wait, cpumask_t to_whom)
-+void arch_send_call_function_ipi(cpumask_t mask)
- {
--	struct smp_call_struct data;
--	unsigned long timeout;
--	int num_cpus_to_call;
--	
--	/* Can deadlock when called with interrupts disabled */
--	WARN_ON(irqs_disabled());
+-	if (unlikely(smp_ops == NULL))
+-		return ret;
 -
 -	data.func = func;
 -	data.info = info;
+-	atomic_set(&data.started, 0);
 -	data.wait = wait;
+-	if (wait)
+-		atomic_set(&data.finished, 0);
 -
--	cpu_clear(smp_processor_id(), to_whom);
--	num_cpus_to_call = cpus_weight(to_whom);
+-	/* remove 'self' from the map */
+-	if (cpu_isset(smp_processor_id(), map))
+-		cpu_clear(smp_processor_id(), map);
 -
--	atomic_set(&data.unstarted_count, num_cpus_to_call);
--	atomic_set(&data.unfinished_count, num_cpus_to_call);
+-	/* sanity check the map, remove any non-online processors. */
+-	cpus_and(map, map, cpu_online_map);
 -
--	/* Acquire the smp_call_function_data mutex.  */
--	if (pointer_lock(&smp_call_function_data, &data, retry))
--		return -EBUSY;
+-	num_cpus = cpus_weight(map);
+-	if (!num_cpus)
+-		goto done;
 -
--	/* Send a message to the requested CPUs.  */
--	send_ipi_message(to_whom, IPI_CALL_FUNC);
+-	call_data = &data;
+-	smp_wmb();
+-	/* Send a message to all CPUs in the map */
+-	for_each_cpu_mask(cpu, map)
+-		smp_ops->message_pass(cpu, PPC_MSG_CALL_FUNCTION);
 -
--	/* Wait for a minimal response.  */
--	timeout = jiffies + HZ;
--	while (atomic_read (&data.unstarted_count) > 0
--	       && time_before (jiffies, timeout))
--		barrier();
+-	timeout = get_tb() + (u64) SMP_CALL_TIMEOUT * tb_ticks_per_sec;
 -
--	/* If there's no response yet, log a message but allow a longer
--	 * timeout period -- if we get a response this time, log
--	 * a message saying when we got it.. 
--	 */
--	if (atomic_read(&data.unstarted_count) > 0) {
--		long start_time = jiffies;
--		printk(KERN_ERR "%s: initial timeout -- trying long wait\n",
--		       __func__);
--		timeout = jiffies + 30 * HZ;
--		while (atomic_read(&data.unstarted_count) > 0
--		       && time_before(jiffies, timeout))
--			barrier();
--		if (atomic_read(&data.unstarted_count) <= 0) {
--			long delta = jiffies - start_time;
--			printk(KERN_ERR 
--			       "%s: response %ld.%ld seconds into long wait\n",
--			       __func__, delta / HZ,
--			       (100 * (delta - ((delta / HZ) * HZ))) / HZ);
+-	/* Wait for indication that they have received the message */
+-	while (atomic_read(&data.started) != num_cpus) {
+-		HMT_low();
+-		if (get_tb() >= timeout) {
+-			printk("smp_call_function on cpu %d: other cpus not "
+-				"responding (%d)\n", smp_processor_id(),
+-				atomic_read(&data.started));
+-			if (!ipi_fail_ok)
+-				debugger(NULL);
+-			goto out;
 -		}
 -	}
 -
--	/* We either got one or timed out -- clear the lock. */
--	mb();
--	smp_call_function_data = NULL;
--
--	/* 
--	 * If after both the initial and long timeout periods we still don't
--	 * have a response, something is very wrong...
--	 */
--	BUG_ON(atomic_read (&data.unstarted_count) > 0);
--
--	/* Wait for a complete response, if needed.  */
+-	/* optionally wait for the CPUs to complete */
 -	if (wait) {
--		while (atomic_read (&data.unfinished_count) > 0)
--			barrier();
+-		while (atomic_read(&data.finished) != num_cpus) {
+-			HMT_low();
+-			if (get_tb() >= timeout) {
+-				printk("smp_call_function on cpu %d: other "
+-					"cpus not finishing (%d/%d)\n",
+-					smp_processor_id(),
+-					atomic_read(&data.finished),
+-					atomic_read(&data.started));
+-				debugger(NULL);
+-				goto out;
+-			}
+-		}
 -	}
 -
--	return 0;
-+	send_ipi_message(mask, IPI_CALL_FUNC);
- }
--EXPORT_SYMBOL(smp_call_function_on_cpu);
- 
--int
--smp_call_function (void (*func) (void *info), void *info, int retry, int wait)
+- done:
+-	ret = 0;
+-
+- out:
+-	call_data = NULL;
+-	HMT_medium();
+-	return ret;
+-}
+-
+-static int __smp_call_function(void (*func)(void *info), void *info,
+-			       int nonatomic, int wait)
 +void arch_send_call_function_single_ipi(int cpu)
  {
--	return smp_call_function_on_cpu (func, info, retry, wait,
--					 cpu_online_map);
-+	send_ipi_message(cpumask_of_cpu(cpu), IPI_CALL_FUNC_SINGLE);
+-	int ret;
+-	spin_lock(&call_lock);
+-	ret =__smp_call_function_map(func, info, nonatomic, wait,
+-				       cpu_online_map);
+-	spin_unlock(&call_lock);
+-	return ret;
+-}
+-
+-int smp_call_function(void (*func) (void *info), void *info, int nonatomic,
+-			int wait)
+-{
+-	/* Can deadlock when called with interrupts disabled */
+-	WARN_ON(irqs_disabled());
+-
+-	return __smp_call_function(func, info, nonatomic, wait);
++	smp_ops->message_pass(cpu, PPC_MSG_CALL_FUNC_SINGLE);
  }
 -EXPORT_SYMBOL(smp_call_function);
  
- static void
- ipi_imb(void *ignored)
-diff --git a/include/asm-alpha/smp.h b/include/asm-alpha/smp.h
-index 286e1d8..a9090b6 100644
---- a/include/asm-alpha/smp.h
-+++ b/include/asm-alpha/smp.h
-@@ -47,8 +47,6 @@ extern struct cpuinfo_alpha cpu_data[NR_CPUS];
- extern int smp_num_cpus;
- #define cpu_possible_map	cpu_present_map
- 
--int smp_call_function_on_cpu(void (*func) (void *info), void *info,int retry, int wait, cpumask_t cpu);
+-int smp_call_function_single(int cpu, void (*func) (void *info), void *info,
+-			     int nonatomic, int wait)
++void arch_send_call_function_ipi(cpumask_t mask)
+ {
+-	cpumask_t map = CPU_MASK_NONE;
+-	int ret = 0;
 -
- #else /* CONFIG_SMP */
+-	/* Can deadlock when called with interrupts disabled */
+-	WARN_ON(irqs_disabled());
+-
+-	if (!cpu_online(cpu))
+-		return -EINVAL;
++	unsigned int cpu;
  
- #define hard_smp_processor_id()		0
+-	cpu_set(cpu, map);
+-	if (cpu != get_cpu()) {
+-		spin_lock(&call_lock);
+-		ret = __smp_call_function_map(func, info, nonatomic, wait, map);
+-		spin_unlock(&call_lock);
+-	} else {
+-		local_irq_disable();
+-		func(info);
+-		local_irq_enable();
+-	}
+-	put_cpu();
+-	return ret;
++	for_each_cpu_mask(cpu, mask)
++		smp_ops->message_pass(cpu, PPC_MSG_CALL_FUNCTION);
+ }
+-EXPORT_SYMBOL(smp_call_function_single);
+ 
+ void smp_send_stop(void)
+ {
+-	int nolock;
+-
+-	/* It's OK to fail sending the IPI, since the alternative is to
+-	 * be stuck forever waiting on the other CPU to take the interrupt.
+-	 *
+-	 * It's better to at least continue and go through reboot, since this
+-	 * function is usually called at panic or reboot time in the first
+-	 * place.
+-	 */
+-	ipi_fail_ok = 1;
+-
+-	/* Don't deadlock in case we got called through panic */
+-	nolock = !spin_trylock(&call_lock);
+-	__smp_call_function_map(stop_this_cpu, NULL, 1, 0, cpu_online_map);
+-	if (!nolock)
+-		spin_unlock(&call_lock);
+-}
+-
+-void smp_call_function_interrupt(void)
+-{
+-	void (*func) (void *info);
+-	void *info;
+-	int wait;
+-
+-	/* call_data will be NULL if the sender timed out while
+-	 * waiting on us to receive the call.
+-	 */
+-	if (!call_data)
+-		return;
+-
+-	func = call_data->func;
+-	info = call_data->info;
+-	wait = call_data->wait;
+-
+-	if (!wait)
+-		smp_mb__before_atomic_inc();
+-
+-	/*
+-	 * Notify initiating CPU that I've grabbed the data and am
+-	 * about to execute the function
+-	 */
+-	atomic_inc(&call_data->started);
+-	/*
+-	 * At this point the info structure may be out of scope unless wait==1
+-	 */
+-	(*func)(info);
+-	if (wait) {
+-		smp_mb__before_atomic_inc();
+-		atomic_inc(&call_data->finished);
+-	}
++	smp_call_function(stop_this_cpu, NULL, 0, 0);
+ }
+ 
+ extern struct gettimeofday_struct do_gtod;
+@@ -594,9 +400,9 @@ int __devinit start_secondary(void *unused)
+ 
+ 	secondary_cpu_time_init();
+ 
+-	spin_lock(&call_lock);
++	spin_lock(&call_function_lock);
+ 	cpu_set(cpu, cpu_online_map);
+-	spin_unlock(&call_lock);
++	spin_unlock(&call_function_lock);
+ 
+ 	local_irq_enable();
+ 
+diff --git a/arch/powerpc/platforms/cell/interrupt.c b/arch/powerpc/platforms/cell/interrupt.c
+index 04f74f9..bc91ec5 100644
+--- a/arch/powerpc/platforms/cell/interrupt.c
++++ b/arch/powerpc/platforms/cell/interrupt.c
+@@ -217,6 +217,7 @@ void iic_request_IPIs(void)
+ {
+ 	iic_request_ipi(PPC_MSG_CALL_FUNCTION, "IPI-call");
+ 	iic_request_ipi(PPC_MSG_RESCHEDULE, "IPI-resched");
++	iic_request_ipi(PPC_MSG_CALL_FUNC_SINGLE, "IPI-call-single");
+ #ifdef CONFIG_DEBUGGER
+ 	iic_request_ipi(PPC_MSG_DEBUGGER_BREAK, "IPI-debug");
+ #endif /* CONFIG_DEBUGGER */
+diff --git a/arch/powerpc/platforms/ps3/smp.c b/arch/powerpc/platforms/ps3/smp.c
+index f0b12f2..a0927a3 100644
+--- a/arch/powerpc/platforms/ps3/smp.c
++++ b/arch/powerpc/platforms/ps3/smp.c
+@@ -105,9 +105,10 @@ static void __init ps3_smp_setup_cpu(int cpu)
+ 	 * to index needs to be setup.
+ 	 */
+ 
+-	BUILD_BUG_ON(PPC_MSG_CALL_FUNCTION  != 0);
+-	BUILD_BUG_ON(PPC_MSG_RESCHEDULE     != 1);
+-	BUILD_BUG_ON(PPC_MSG_DEBUGGER_BREAK != 3);
++	BUILD_BUG_ON(PPC_MSG_CALL_FUNCTION    != 0);
++	BUILD_BUG_ON(PPC_MSG_RESCHEDULE       != 1);
++	BUILD_BUG_ON(PPC_MSG_CALL_FUNC_SINGLE != 2);
++	BUILD_BUG_ON(PPC_MSG_DEBUGGER_BREAK   != 3);
+ 
+ 	for (i = 0; i < MSG_COUNT; i++) {
+ 		result = ps3_event_receive_port_setup(cpu, &virqs[i]);
+diff --git a/arch/powerpc/platforms/pseries/xics.c b/arch/powerpc/platforms/pseries/xics.c
+index ebebc28..0fc830f 100644
+--- a/arch/powerpc/platforms/pseries/xics.c
++++ b/arch/powerpc/platforms/pseries/xics.c
+@@ -383,13 +383,11 @@ static irqreturn_t xics_ipi_dispatch(int cpu)
+ 			mb();
+ 			smp_message_recv(PPC_MSG_RESCHEDULE);
+ 		}
+-#if 0
+-		if (test_and_clear_bit(PPC_MSG_MIGRATE_TASK,
++		if (test_and_clear_bit(PPC_MSG_CALL_FUNC_SINGLE,
+ 				       &xics_ipi_message[cpu].value)) {
+ 			mb();
+-			smp_message_recv(PPC_MSG_MIGRATE_TASK);
++			smp_message_recv(PPC_MSG_CALL_FUNC_SINGLE);
+ 		}
+-#endif
+ #if defined(CONFIG_DEBUGGER) || defined(CONFIG_KEXEC)
+ 		if (test_and_clear_bit(PPC_MSG_DEBUGGER_BREAK,
+ 				       &xics_ipi_message[cpu].value)) {
+diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
+index 8619f2a..bdc7b13 100644
+--- a/arch/powerpc/sysdev/mpic.c
++++ b/arch/powerpc/sysdev/mpic.c
+@@ -1508,7 +1508,7 @@ void mpic_request_ipis(void)
+ 	static char *ipi_names[] = {
+ 		"IPI0 (call function)",
+ 		"IPI1 (reschedule)",
+-		"IPI2 (unused)",
++		"IPI2 (call function single)",
+ 		"IPI3 (debugger break)",
+ 	};
+ 	BUG_ON(mpic == NULL);
+diff --git a/include/asm-powerpc/smp.h b/include/asm-powerpc/smp.h
+index 505f35b..78382f6 100644
+--- a/include/asm-powerpc/smp.h
++++ b/include/asm-powerpc/smp.h
+@@ -67,10 +67,7 @@ DECLARE_PER_CPU(cpumask_t, cpu_sibling_map);
+  * in /proc/interrupts will be wrong!!! --Troy */
+ #define PPC_MSG_CALL_FUNCTION   0
+ #define PPC_MSG_RESCHEDULE      1
+-/* This is unused now */
+-#if 0
+-#define PPC_MSG_MIGRATE_TASK    2
+-#endif
++#define PPC_MSG_CALL_FUNC_SINGLE	2
+ #define PPC_MSG_DEBUGGER_BREAK  3
+ 
+ void smp_init_iSeries(void);
 -- 
 1.5.5.1.57.g5909c
 
