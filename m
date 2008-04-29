@@ -1,105 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761878AbYD2Kn6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760769AbYD2Krv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761878AbYD2Kn6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 06:43:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761836AbYD2KnX
+	id S1760769AbYD2Krv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 06:47:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753726AbYD2Krn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 06:43:23 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:54514 "EHLO gir.skynet.ie"
+	Tue, 29 Apr 2008 06:47:43 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:56589 "EHLO pasmtpA.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759521AbYD2KnV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 06:43:21 -0400
-Date: Tue, 29 Apr 2008 11:43:19 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Shi Weihua <shiwh@cn.fujitsu.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] on memoryless node, /proc/pagetypeinfo is displayed slightly funny output.  take2
-Message-ID: <20080429104318.GA9622@csn.ul.ie>
-References: <20080429162859.3540.KOSAKI.MOTOHIRO@jp.fujitsu.com> <4816D881.8060005@cn.fujitsu.com> <20080429171457.3543.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+	id S1752370AbYD2Krm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Apr 2008 06:47:42 -0400
+Date: Tue, 29 Apr 2008 12:48:15 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>,
+       dsd@gentoo.org
+Subject: [PATCH] x86: use defconfigs from x86/configs/*
+Message-ID: <20080429104815.GA16753@uranus.ravnborg.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080429171457.3543.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (29/04/08 17:17), KOSAKI Motohiro didst pronounce:
-> > > Index: b/mm/vmstat.c
-> > > ===================================================================
-> > > --- a/mm/vmstat.c       2008-04-29 16:48:58.000000000 +0900
-> > > +++ b/mm/vmstat.c       2008-04-29 16:58:33.000000000 +0900
-> > > @@ -638,6 +638,10 @@ static int pagetypeinfo_show(struct seq_
-> > >  {
-> > >         pg_data_t *pgdat = (pg_data_t *)arg;
-> > > 
-> > > +       /* check memoryless ndoe*/
-> > 
-> > ndoe -> node ?
-> 
-> Agghhh!
-> you are right ;-)
-> 
-> fixed version is here.
-> 
+Daniel Drake <dsd@gentoo.org> reported:
 
-I see what you mean. The headers for a node with no populated zones looks
-a bit odd. I was briefly thrown by the check for N_HIGH_MEMORY wondering
-why it was not a check for N_NORMAL_MEMORY. A double-check showed that
-N_NORMAL_MEMORY only has meaning on CONFIG_HIGHMEM machines and a check for
-"any memory on the node" should use N_HIGH_MEMORY which is what you do.
+In 2.6.23, if you unpacked a kernel source tarball and then
+ran "make menuconfig" you'd be presented with this message:
+    # using defaults found in arch/i386/defconfig
 
-So, your patch looks correct but unfortunately it is whitespace-damaged
-and would not apply as-is. I included a whitespace-fixed version below for
-convenience with a slightly clearer leader which I have acked.
+and the default options would be set.
 
-Thanks
+The same thing in 2.6.24 does not give you any "using defaults" message, and
+the default config options within menuconfig are rather blank (e.g. no PCI
+support). You can work around this by explicitly running "make defconfig"
+before menuconfig, but it would be nice to have the behaviour the way it was
+for 2.6.23 (and the way it still is for other archs).
 
-==========
-On memoryless node, /proc/pagetypeinfo outputs headers for nodes with no
-populated zones. This is confusing as shown in the following example.
 
->>>
-Page block order: 14
-Pages per block:  16384
+Fixed by adding a x86 specific defconfig list to Kconfig.
 
-Free pages count per migrate type at order       0      1      2      3      4      5      6      7      8      9     10     11     12     13     14     15     16
-
-Number of blocks type     Unmovable  Reclaimable      Movable      Reserve      Isolate
-Page block order: 14
-Pages per block:  16384
-
-Free pages count per migrate type at order       0      1      2      3      4      5      6      7      8      9     10     11     12     13     14     15     16
-<SNIP>
-<<<
-
-Note the headers with no zone information. This patch checks if the node
-has any memory before outputting anything.
-
-Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-CC: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Acked-by: Mel Gorman <mel@csn.ul.ie>
+Fixes: http://bugzilla.kernel.org/show_bug.cgi?id=10470
+Tested-by: dsd@gentoo.org
+Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
 ---
- mm/vmstat.c |    4 ++++
- 1 file changed, 4 insertions(+)
-
-Index: b/mm/vmstat.c
-===================================================================
---- a/mm/vmstat.c       2008-04-29 16:48:58.000000000 +0900
-+++ b/mm/vmstat.c       2008-04-29 16:58:33.000000000 +0900
-@@ -638,6 +638,10 @@ static int pagetypeinfo_show(struct seq_
- {
- 	pg_data_t *pgdat = (pg_data_t *)arg;
-
-+	/* check memoryless node */
-+	if (!node_state(pgdat->node_id, N_HIGH_MEMORY))
-+		return 0;
+diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+index a12dbb2..91df357 100644
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -25,6 +25,18 @@ config X86
+ 	select HAVE_KVM if ((X86_32 && !X86_VOYAGER && !X86_VISWS && !X86_NUMAQ) || X86_64)
+ 	select HAVE_ARCH_KGDB if !X86_VOYAGER
+ 
++config DEFCONFIG_LIST
++        string
++	depends on X86_32
++        option defconfig_list
++        default "arch/x86/configs/i386_defconfig"
 +
- 	seq_printf(m, "Page block order: %d\n", pageblock_order);
- 	seq_printf(m, "Pages per block:  %lu\n", pageblock_nr_pages);
- 	seq_putc(m, '\n');
++config DEFCONFIG_LIST
++        string
++	depends on X86_64
++        option defconfig_list
++        default "arch/x86/configs/x86_64_defconfig"
++
+ 
+ config GENERIC_LOCKBREAK
+ 	def_bool n
 
