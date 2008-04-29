@@ -1,74 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759820AbYD2T0l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757762AbYD2T26@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759820AbYD2T0l (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 15:26:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751794AbYD2T01
+	id S1757762AbYD2T26 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 15:28:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754142AbYD2T2t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 15:26:27 -0400
-Received: from 41-052.adsl.zetnet.co.uk ([194.247.41.52]:49762 "EHLO
-	mail.esperi.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760027AbYD2T0Z convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 15:26:25 -0400
-X-Greylist: delayed 1902 seconds by postgrey-1.27 at vger.kernel.org; Tue, 29 Apr 2008 15:26:25 EDT
-To: Jeff Dike <jdike@addtoit.com>
-Cc: Andrew Morton <akpm@osdl.org>, LKML <linux-kernel@vger.kernel.org>,
-       uml-devel <user-mode-linux-devel@lists.sourceforge.net>
-Subject: Re: [PATCH 11/19] UML - Track and make up lost ticks
-References: <20080425175613.GA11192@c2.user-mode-linux.org>
-From: Nix <nix@esperi.org.uk>
-Emacs: because extension languages should come with the editor built in.
-Date: Tue, 29 Apr 2008 19:54:02 +0100
-In-Reply-To: <20080425175613.GA11192@c2.user-mode-linux.org> (Jeff Dike's message of "Fri, 25 Apr 2008 13:56:13 -0400")
-Message-ID: <877iegcx11.fsf@hades.wkstn.nix>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.5-b28 (linux)
+	Tue, 29 Apr 2008 15:28:49 -0400
+Received: from mail.AKNET.ru ([77.246.241.226]:51188 "EHLO mail.aknet.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754057AbYD2T2t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Apr 2008 15:28:49 -0400
+Message-ID: <481776EA.5010200@aknet.ru>
+Date: Tue, 29 Apr 2008 23:28:42 +0400
+From: Stas Sergeev <stsp@aknet.ru>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-7
-Content-Transfer-Encoding: 8BIT
-X-DCC-dcc.uncw.edu-Metrics: hades 1201; Body=4 Fuz1=4 Fuz2=4
+To: Takashi Iwai <tiwai@suse.de>
+CC: Greg KH <gregkh@suse.de>, Linux kernel <linux-kernel@vger.kernel.org>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Subject: Re: patch	driver-core-warn-about-duplicate-driver-names-on-the-same-bus.patch
+ added to gregkh-2.6 tree
+References: <12094266793898@kroah.org>	<4816A888.9000802@aknet.ru>	<20080429045849.GA6348@suse.de> <s5habjdvt6z.wl%tiwai@suse.de>
+In-Reply-To: <s5habjdvt6z.wl%tiwai@suse.de>
+X-Enigmail-Version: 0.95.2
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 25 Apr 2008, Jeff Dike stated, in part:
-> Index: linux-2.6-git/arch/um/os-Linux/time.c
-> ===================================================================
-> --- linux-2.6-git.orig/arch/um/os-Linux/time.c	2008-04-25 10:42:12.000000000 -0400
-> +++ linux-2.6-git/arch/um/os-Linux/time.c	2008-04-25 11:19:26.000000000 -0400
-> +	alarm_handler(SIGVTALRM, NULL);
-> +		alarm_handler(SIGVTALRM, NULL);
-> -extern void alarm_handler(int sig, struct sigcontext *sc);
-> -		alarm_handler(SIGVTALRM, NULL);
+Hello.
 
-Yet, in arch/um/include/process.h, we see, unchanged since the year dot, the
-obviously wrong prototype:
+Takashi Iwai wrote:
+> Though, I think the snd-pcsp driver could be better built on the top
+> of input pcspkr driver, or coexist with it.  Then we'll have no more
+> conflict about platform name space.
+I was trying this in the past.
+This never worked out very well.
+I disliked the dependancies.
+Either snd-pcsp was loading pcspkr,
+or there had to be the global variable
+to prevent the concurrent access, and
+that hurts modularity.
 
-extern void alarm_handler(int sig, struct sigcontext sc);
+> When you compare input pcspkr.c and sound pcsp_input.c, you can find
+> that most of codes are identical.
+Yep, its a copy/paste mainly.
+I wanted a complete replacement.
+Back then, I've been told that multiple
+drivers controlling the same device is
+never a good idea. But I won't be surprised
+if that have changed since. :)
 
-Hence:
-
-  CC      arch/um/os-Linux/time.o
-arch/um/os-Linux/time.c: In function ¡deliver_alarm¢:
-arch/um/os-Linux/time.c:119: error: incompatible type for argument 2 of ¡alarm_handler¢
-make[1]: *** [arch/um/os-Linux/time.o] Error 1
-make: *** [arch/um/os-Linux] Error 2
-
-Fix trivial:
-
-Signed-off-by: Nick Alcock <nix@esperi.org.uk>
--- 
-Index: linux/arch/um/include/process.h
-===================================================================
---- linux.orig/arch/um/include/process.h	2006-07-09 14:19:52.000000000 +0100
-+++ linux/arch/um/include/process.h	2008-04-29 19:49:49.000000000 +0100
-@@ -8,8 +8,8 @@
- 
- #include <signal.h>
- 
--extern void sig_handler(int sig, struct sigcontext sc);
--extern void alarm_handler(int sig, struct sigcontext sc);
-+extern void sig_handler(int sig, struct sigcontext *sc);
-+extern void alarm_handler(int sig, struct sigcontext *sc);
- 
- #endif
- 
+> What we'd need is a hook on
+> pcspkr.c that adds a dynamic check whether snd-pcsp (or any ohter)
+> is running.
+How?
+And also, with snd-pcsp you have a
+mixer control to disable the beeps,
+which I find sometimes even more
+usefull than the pcm sound itself. :)
