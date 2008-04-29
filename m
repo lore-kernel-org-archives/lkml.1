@@ -1,79 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755831AbYD2Vr3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756359AbYD2VsB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755831AbYD2Vr3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 17:47:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752524AbYD2VrU
+	id S1756359AbYD2VsB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 17:48:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753121AbYD2Vrt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 17:47:20 -0400
-Received: from wr-out-0506.google.com ([64.233.184.238]:47890 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751533AbYD2VrT (ORCPT
+	Tue, 29 Apr 2008 17:47:49 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:47356 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751624AbYD2Vrs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 17:47:19 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=WZYmfpdMLAseUsrquAzo80i+24jU4VNc4JLOviXrxBhvBf1hS2uSmvv9Cc/im56UDkYTAXhiAFlhAALbPmdbEn1KRXpjuuv8NzVQP/ZlY3jLJXPdkr2aBHFd1jEr0LcRlcpFzUmxkSANTehaBJzXf1TrAPRFHxgZTWAjrVri4NU=
-Message-ID: <7c86c4470804291447w713934a7o2b8a5a690fc9a535@mail.gmail.com>
-Date: Tue, 29 Apr 2008 23:47:17 +0200
-From: "stephane eranian" <eranian@googlemail.com>
-To: linux-kernel@vger.kernel.org
-Subject: 2.6.25 new perfmon kernel patch + libpfm + pfmon available
-Cc: ia64 <linux-ia64@vger.kernel.org>
-In-Reply-To: <7c86c4470804291446l4693b317ha7ee2382d00e99e6@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Tue, 29 Apr 2008 17:47:48 -0400
+Date: Tue, 29 Apr 2008 16:47:47 -0500
+From: Russ Anderson <rja@sgi.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org,
+       torvalds@linux-foundation.org, tony.luck@intel.com, clameter@sgi.com
+Subject: Re: [PATCH 1/2] mm: Avoid putting a bad page back on the LRU
+Message-ID: <20080429214747.GA11617@sgi.com>
+Reply-To: Russ Anderson <rja@sgi.com>
+References: <20080428192358.GB14629@sgi.com> <20080429143329.3a17ef91.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <7c86c4470804291446l4693b317ha7ee2382d00e99e6@mail.gmail.com>
+In-Reply-To: <20080429143329.3a17ef91.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Tue, Apr 29, 2008 at 02:33:29PM -0700, Andrew Morton wrote:
+> On Mon, 28 Apr 2008 14:23:58 -0500
+> Russ Anderson <rja@sgi.com> wrote:
+> 
+> > --- test.orig/include/linux/kernel.h	2008-04-25 15:22:07.640501421 -0500
+> > +++ test/include/linux/kernel.h	2008-04-25 15:42:02.826266036 -0500
+> > @@ -412,6 +412,7 @@ struct sysinfo {
+> >  	unsigned long totalhigh;	/* Total high memory size */
+> >  	unsigned long freehigh;		/* Available high memory size */
+> >  	unsigned int mem_unit;		/* Memory unit size in bytes */
+> > +	unsigned int badpages;		/* Number of bad (PG_memerror) pages */
+> >  	char _f[20-2*sizeof(long)-sizeof(int)];	/* Padding: libc5 uses this.. */
+> >  };
+> 
+> eek.  sys_sysinfo() copies this structure out to userspace verbatim. 
+> Increasing its size by four bytes will cause memory scribbles in userspace
+> applications.
+> 
+> That's fixable by suitably adjusting sysinfo._f, but given the lack of
+> version information in the sysinfo struct, I'm not sure how useful this
+> change really is.
 
- I have released the perfmon2 kernel patch for kernel v2.6.25. There is
- no major features. However, there were a major restructuring of the code
- to make it more readable, isolate features per module. The header files
- have also been restructured to separate user vs. kernel, and generic only
- vs. shared with arch. The restructuring of the interrupt handler yielded
- a nice 15% latency improvement on single counter sampling runs on X86.
- This new structure will make it easier to extract features and merge them
- with the mainline kernel.
+OK.  The only reason badpages was added was to print the number
+of page pages in /proc/meminfo.  I'll go with plan B, a badmem driver 
+for displaying bad page info. 
 
- In the time frame of 2.6.26, I will push a few bits and pieces to LKML
- for final review and integration.
-
- Here are some of the kernel changes:
-  - Cell updates (Carl Love, Takashi Yamamoto)
-  - new perfmon_debug boot option to enable debug (Robert Richter)
-  - several bugs fixes on Itanium, MIPS and generic hrtimer management
-  - Power locking updates (Corey Ashford)
-
- There is also a new release for libpfm, now at version 3.4.
- The changes include:
-  - AMD Phenom (a.k.a. Barcelona) IBS support (Robert Richter)
-  - Python bindings and examples (Arun Sharma)
-  - environment variable support to enable debugging
-  - auto-detection of syscall base number for 2.6.24 and 2.6.25
-  - new multi-threaded self-sampling example (Mark W. Krentel)
-  - man pages cleanups (Steve Kaufmann)
-
- Special thanks to Arun (Google). The Python bindings are a nice addition
- to libpfm especially for prototyping and writing testsuites.
-
- Finally, a new major version of pfmon, now at pfmon-3.4.
- Among the many changes:
-  - added support for dmalloc (Andrzej Nowak)
-  - updated support for Cell processor (Takashi Yamamoto)
-  - possibility to terminate pfmon cleanly with SIGTERM
-  - --follow-fork and derivatives fixed on Itanium and other platforms
-  - tracking of dlopen now works on mixed ABI environments
-  - lots of bugs fixes
-
- As usual all files and more detailed changelogs can be downloaded from our
- website at:
-
-        http://perfmon.sourceforge.net
-
- Enjoy,
+-- 
+Russ Anderson, OS RAS/Partitioning Project Lead  
+SGI - Silicon Graphics Inc          rja@sgi.com
