@@ -1,50 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759835AbYD3Br6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756881AbYD3CBt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759835AbYD3Br6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 21:47:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754056AbYD3Brt
+	id S1756881AbYD3CBt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 22:01:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753667AbYD3CBi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 21:47:49 -0400
-Received: from lixom.net ([66.141.50.11]:44538 "EHLO mail.lixom.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753357AbYD3Brs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 21:47:48 -0400
-Date: Tue, 29 Apr 2008 21:01:27 -0500
-From: Olof Johansson <olof@lixom.net>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Hitoshi Mitake <h.mitake@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
-       linux-next@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
+	Tue, 29 Apr 2008 22:01:38 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:39523 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751274AbYD3CBh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Apr 2008 22:01:37 -0400
+Date: Tue, 29 Apr 2008 15:26:58 -0700
+From: Greg KH <greg@kroah.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: pm list <linux-pm@lists.linux-foundation.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Alan Stern <stern@rowland.harvard.edu>, Len Brown <lenb@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Alexey Starikovskiy <astarikovskiy@suse.de>,
+       David Brownell <david-b@pacbell.net>, Pavel Machek <pavel@ucw.cz>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Oliver Neukum <oliver@neukum.org>,
+       Nigel Cunningham <ncunningham@crca.org.au>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
        Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: linux-next: upstream build failure: pasemi_edac
-Message-ID: <20080430020127.GB19958@lixom.net>
-References: <20080430111949.fc148fac.sfr@canb.auug.org.au>
+Subject: Re: PM: New suspend and hibernation callbacks for PCI bus type
+Message-ID: <20080429222658.GA5437@kroah.com>
+References: <200804131534.52548.rjw@sisk.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080430111949.fc148fac.sfr@canb.auug.org.au>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <200804131534.52548.rjw@sisk.pl>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 30, 2008 at 11:19:49AM +1000, Stephen Rothwell wrote:
-
-> Caused by commit c3c52bce6993c6d37af2c2de9b482a7013d646a7 ("edac: fix
-> module initialization on several modules 2nd time") which added a call to
-> opstate_init but did not include linux/edac.h that declares it.
-
-Grmbl. Thanks for finding it.
-
-> From: Stephen Rothwell <sfr@canb.auug.org.au>
-> Date: Wed, 30 Apr 2008 11:16:16 +1000
-> Subject: [PATCH] pasemi_edac needs to include linux/edac.h
+On Sun, Apr 13, 2008 at 03:34:51PM +0200, Rafael J. Wysocki wrote:
 > 
-> Commit c3c52bce6993c6d37af2c2de9b482a7013d646a7 ("edac: fix module
-> initialization on several modules 2nd time") added a call to opstate_init
-> but did not include linux/edac.h that declares it.
+> From: Rafael J. Wysocki <rjw@sisk.pl>
 > 
-> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+> Implement new suspend and hibernation callbacks for the PCI bus type.
+> 
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> Acked-by: Pavel Machek <pavel@ucw.cz>
+> Acked-by: Jesse Barnes <jbarnes@virtuousgeek.org>
+> Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
-Acked-by: Olof Johansson <olof@lixom.net>
+Changes in Linus's tree broke merging this one really badly, so much so
+that I can't see what should be done with a quick scan.
 
+I'll drop this from my tree for now, can you regenerate it?
+
+thanks,
+
+greg k-h
