@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933678AbYD2Pi3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933853AbYD2Pis@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933678AbYD2Pi3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 11:38:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762749AbYD2Ph4
+	id S933853AbYD2Pis (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 11:38:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763975AbYD2Ph5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 11:37:56 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:34256 "EHLO mx1.redhat.com"
+	Tue, 29 Apr 2008 11:37:57 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:34257 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761256AbYD2Phy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 11:37:54 -0400
-Date: Tue, 29 Apr 2008 11:33:48 -0400
+	id S1761332AbYD2Phz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Apr 2008 11:37:55 -0400
+Date: Tue, 29 Apr 2008 11:32:37 -0400
 From: Rik van Riel <riel@redhat.com>
 To: linux-kernel@vger.kernel.org
 Cc: akpm@linux-foundation.org, ajackson@redhat.com, airlied@redhat.com,
        benh@kernel.crashing.org
-Subject: [PATCH 2/3] powerpc ioremap_prot
-Message-ID: <20080429113348.3f132ebc@cuia.boston.redhat.com>
+Subject: [PATCH 1/3] make access_process_vm work on device memory
+Message-ID: <20080429113237.614f89a1@cuia.boston.redhat.com>
 Organization: Red Hat, Inc
 X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; i386-redhat-linux-gnu)
 Mime-Version: 1.0
@@ -25,215 +25,248 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This adds ioremap_prot and pte_pgprot() so that one can extract
-protection bits from a PTE and use them to ioremap_prot() (in
-order to support ptrace of VM_IO | VM_PFNMAP as per Rik's patch).
-
-This moves a couple of flag checks around in the ioremap
-implementations of arch/powerpc. There's a side effect of allowing
-non-cacheable and non-guarded mappings on ppc32 which before would
-always have _PAGE_GUARDED set whenever _PAGE_NO_CACHE is.
-
-(standard ioremap will still set _PAGE_GUARDED, but ioremap_prot
-will be capable of setting such a non guarded mapping).
+Make access_process_vm work on VM_IO or VM_PFNMAP VMAs.  This allows ptrace
+and /proc/pid/mem access to work on eg. video card memory mapped by the X
+server and lays the groundwork for gdb support for PPC Cell SPU memory.
 
 Signed-off-by: Rik van Riel <riel@redhat.com>
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
+Signed-off-by: Benjamin Herrensmidt <benh@kernel.crashing.org>
 
-Index: linux-work/arch/powerpc/mm/pgtable_32.c
+--- 
+
+ arch/x86/mm/ioremap.c   |    8 ++
+ include/asm-x86/io_32.h |    3 +
+ include/asm-x86/io_64.h |    3 +
+ include/linux/mm.h      |    6 ++
+ mm/memory.c             |  134 +++++++++++++++++++++++++++++++++++++++++-------
+ 5 files changed, 136 insertions(+), 18 deletions(-)
+
+Index: linux-2.6.25-mm1/mm/memory.c
 ===================================================================
---- linux-work.orig/arch/powerpc/mm/pgtable_32.c	2008-04-29 10:08:34.000000000 +1000
-+++ linux-work/arch/powerpc/mm/pgtable_32.c	2008-04-29 15:23:02.000000000 +1000
-@@ -145,13 +145,20 @@ void pte_free(struct mm_struct *mm, pgta
- void __iomem *
- ioremap(phys_addr_t addr, unsigned long size)
- {
--	return __ioremap(addr, size, _PAGE_NO_CACHE);
-+	return __ioremap(addr, size, _PAGE_NO_CACHE | _PAGE_GUARDED);
- }
- EXPORT_SYMBOL(ioremap);
+--- linux-2.6.25-mm1.orig/mm/memory.c	2008-04-27 11:06:04.000000000 -0400
++++ linux-2.6.25-mm1/mm/memory.c	2008-04-29 00:52:01.000000000 -0400
+@@ -2720,6 +2720,86 @@ int in_gate_area_no_task(unsigned long a
  
- void __iomem *
- ioremap_flags(phys_addr_t addr, unsigned long size, unsigned long flags)
- {
-+	/* writeable implies dirty for kernel addresses */
-+	if (flags & _PAGE_RW)
-+		flags |= _PAGE_DIRTY | _PAGE_HWWRITE;
-+
-+	/* we don't want to let _PAGE_USER and _PAGE_EXEC leak out */
-+	flags &= ~(_PAGE_USER | _PAGE_EXEC | _PAGE_HWEXEC);
-+
- 	return __ioremap(addr, size, flags);
- }
- EXPORT_SYMBOL(ioremap_flags);
-@@ -163,6 +170,14 @@ __ioremap(phys_addr_t addr, unsigned lon
- 	phys_addr_t p;
- 	int err;
+ #endif	/* __HAVE_ARCH_GATE_AREA */
  
-+	/* Make sure we have the base flags */
-+	if ((flags & _PAGE_PRESENT) == 0)
-+		flags |= _PAGE_KERNEL;
++#ifdef _HAVE_ARCH_IOREMAP_PROT
++static resource_size_t follow_phys(struct vm_area_struct *vma,
++			unsigned long address, unsigned int flags,
++			unsigned long *prot)
++{
++	pgd_t *pgd;
++	pud_t *pud;
++	pmd_t *pmd;
++	pte_t *ptep, pte;
++	spinlock_t *ptl;
++	resource_size_t phys_addr = 0;
++	struct mm_struct *mm = vma->vm_mm;
 +
-+	/* Non-cacheable page cannot be coherent */
-+	if (flags & _PAGE_NO_CACHE)
-+		flags &= ~_PAGE_COHERENT;
++	VM_BUG_ON(!(vma->vm_flags & (VM_IO | VM_PFNMAP)));
 +
- 	/*
- 	 * Choose an address to map it to.
- 	 * Once the vmalloc system is running, we use it.
-@@ -219,11 +234,6 @@ __ioremap(phys_addr_t addr, unsigned lon
- 		v = (ioremap_bot -= size);
- 	}
- 
--	if ((flags & _PAGE_PRESENT) == 0)
--		flags |= _PAGE_KERNEL;
--	if (flags & _PAGE_NO_CACHE)
--		flags |= _PAGE_GUARDED;
--
- 	/*
- 	 * Should check if it is a candidate for a BAT mapping
- 	 */
-Index: linux-work/arch/powerpc/mm/pgtable_64.c
-===================================================================
---- linux-work.orig/arch/powerpc/mm/pgtable_64.c	2008-03-03 11:58:41.000000000 +1100
-+++ linux-work/arch/powerpc/mm/pgtable_64.c	2008-04-29 15:24:18.000000000 +1000
-@@ -107,9 +107,18 @@ void __iomem * __ioremap_at(phys_addr_t 
- {
- 	unsigned long i;
- 
-+	/* Make sure we have the base flags */
- 	if ((flags & _PAGE_PRESENT) == 0)
- 		flags |= pgprot_val(PAGE_KERNEL);
- 
-+	/* Non-cacheable page cannot be coherent */
-+	if (flags & _PAGE_NO_CACHE)
-+		flags &= ~_PAGE_COHERENT;
++	pgd = pgd_offset(mm, address);
++	if (pgd_none(*pgd) || unlikely(pgd_bad(*pgd)))
++		goto no_page_table;
 +
-+	/* We don't support the 4K PFN hack with ioremap */
-+	if (flags & _PAGE_4K_PFN)
-+		return NULL;
++	pud = pud_offset(pgd, address);
++	if (pud_none(*pud) || unlikely(pud_bad(*pud)))
++		goto no_page_table;
 +
- 	WARN_ON(pa & ~PAGE_MASK);
- 	WARN_ON(((unsigned long)ea) & ~PAGE_MASK);
- 	WARN_ON(size & ~PAGE_MASK);
-@@ -190,6 +199,13 @@ void __iomem * ioremap(phys_addr_t addr,
- void __iomem * ioremap_flags(phys_addr_t addr, unsigned long size,
- 			     unsigned long flags)
- {
-+	/* writeable implies dirty for kernel addresses */
-+	if (flags & _PAGE_RW)
-+		flags |= _PAGE_DIRTY;
++	pmd = pmd_offset(pud, address);
++	if (pmd_none(*pmd) || unlikely(pmd_bad(*pmd)))
++		goto no_page_table;
 +
-+	/* we don't want to let _PAGE_USER and _PAGE_EXEC leak out */
-+	flags &= ~(_PAGE_USER | _PAGE_EXEC);
++	/* We cannot handle huge page PFN maps. Luckily they don't exist. */
++	if (pmd_huge(*pmd))
++		goto no_page_table;
 +
- 	if (ppc_md.ioremap)
- 		return ppc_md.ioremap(addr, size, flags);
- 	return __ioremap(addr, size, flags);
-Index: linux-work/include/asm-powerpc/io.h
-===================================================================
---- linux-work.orig/include/asm-powerpc/io.h	2008-04-29 10:08:39.000000000 +1000
-+++ linux-work/include/asm-powerpc/io.h	2008-04-29 13:21:00.000000000 +1000
-@@ -585,7 +585,8 @@ static inline void iosync(void)
-  *   and can be hooked by the platform via ppc_md
-  *
-  * * ioremap_flags allows to specify the page flags as an argument and can
-- *   also be hooked by the platform via ppc_md
-+ *   also be hooked by the platform via ppc_md. ioremap_prot is the exact
-+ *   same thing as ioremap_flags.
-  *
-  * * ioremap_nocache is identical to ioremap
-  *
-@@ -607,6 +608,9 @@ extern void __iomem *ioremap(phys_addr_t
- extern void __iomem *ioremap_flags(phys_addr_t address, unsigned long size,
- 				   unsigned long flags);
- #define ioremap_nocache(addr, size)	ioremap((addr), (size))
-+#define ioremap_prot(addr, size, prot)	ioremap_flags((addr), (size), (prot))
-+#define _HAVE_ARCH_IOREMAP_PROT		1
++	ptep = pte_offset_map_lock(mm, pmd, address, &ptl);
++	if (!ptep)
++		goto out;
 +
- extern void iounmap(volatile void __iomem *addr);
- 
- extern void __iomem *__ioremap(phys_addr_t, unsigned long size,
-Index: linux-work/include/asm-powerpc/pgtable-ppc32.h
-===================================================================
---- linux-work.orig/include/asm-powerpc/pgtable-ppc32.h	2008-04-29 10:08:39.000000000 +1000
-+++ linux-work/include/asm-powerpc/pgtable-ppc32.h	2008-04-29 13:04:03.000000000 +1000
-@@ -381,6 +381,12 @@ extern int icache_44x_need_flush;
- #ifndef _PAGE_EXEC
- #define _PAGE_EXEC	0
- #endif
-+#ifndef _PAGE_ENDIAN
-+#define _PAGE_ENDIAN	0
++	pte = *ptep;
++	if (!pte_present(pte))
++		goto unlock;
++	if ((flags & FOLL_WRITE) && !pte_write(pte))
++		goto unlock;
++	phys_addr = pte_pfn(pte);
++	phys_addr <<= PAGE_SHIFT; /* Shift here to avoid overflow on PAE? */
++
++	*prot = pgprot_val(pte_pgprot(pte));
++
++unlock:
++	pte_unmap_unlock(ptep, ptl);
++out:
++	return phys_addr;
++no_page_table:
++	return 0;
++}
++
++int generic_access_phys(struct vm_area_struct *vma, unsigned long addr,
++			void *buf, int len, int write)
++{
++	resource_size_t phys_addr;
++	unsigned long prot = 0;
++	void *maddr;
++	int offset = addr & (PAGE_SIZE-1);
++
++	if (!(vma->vm_flags & (VM_IO | VM_PFNMAP)))
++		return -EINVAL;
++
++	phys_addr = follow_phys(vma, addr, write, &prot);
++
++	if (!phys_addr)
++		return -EINVAL;
++
++	maddr = ioremap_prot(phys_addr, PAGE_SIZE, prot);
++	if (write)
++		memcpy_toio(maddr + offset, buf, len);
++	else
++		memcpy_fromio(buf, maddr + offset, len);
++	iounmap(maddr);
++
++	return len;
++}
 +#endif
-+#ifndef _PAGE_COHERENT
-+#define _PAGE_COHERENT	0
-+#endif
- #ifndef _PMD_PRESENT_MASK
- #define _PMD_PRESENT_MASK	_PMD_PRESENT
- #endif
-@@ -391,6 +397,12 @@ extern int icache_44x_need_flush;
- 
- #define _PAGE_CHG_MASK	(PAGE_MASK | _PAGE_ACCESSED | _PAGE_DIRTY)
- 
 +
-+#define PAGE_PROT_BITS	__pgprot(_PAGE_GUARDED | _PAGE_COHERENT | _PAGE_NO_CACHE | \
-+				 _PAGE_WRITETHRU | _PAGE_ENDIAN | \
-+				 _PAGE_USER | _PAGE_ACCESSED | \
-+				 _PAGE_RW | _PAGE_HWWRITE | _PAGE_DIRTY | \
-+				 _PAGE_EXEC | _PAGE_HWEXEC)
  /*
-  * Note: the _PAGE_COHERENT bit automatically gets set in the hardware
-  * PTE if CONFIG_SMP is defined (hash_page does this); there is no need
-@@ -524,6 +536,8 @@ static inline pte_t pte_mkyoung(pte_t pt
- 	pte_val(pte) |= _PAGE_ACCESSED; return pte; }
- static inline pte_t pte_mkspecial(pte_t pte) {
- 	return pte; }
-+static inline unsigned long pte_pgprot(pte_t pte) {
-+	return __pgprot(pte_val(pte)) & PAGE_PROT_BITS; }
- 
- static inline pte_t pte_modify(pte_t pte, pgprot_t newprot)
+  * Access another process' address space.
+  * Source/target buffer must be kernel space,
+@@ -2729,7 +2809,6 @@ int access_process_vm(struct task_struct
  {
-Index: linux-work/include/asm-powerpc/pgtable-ppc64.h
-===================================================================
---- linux-work.orig/include/asm-powerpc/pgtable-ppc64.h	2008-04-29 10:08:39.000000000 +1000
-+++ linux-work/include/asm-powerpc/pgtable-ppc64.h	2008-04-29 15:20:22.000000000 +1000
-@@ -115,6 +115,10 @@
- #define PAGE_AGP	__pgprot(_PAGE_BASE | _PAGE_WRENABLE | _PAGE_NO_CACHE)
- #define HAVE_PAGE_AGP
+ 	struct mm_struct *mm;
+ 	struct vm_area_struct *vma;
+-	struct page *page;
+ 	void *old_buf = buf;
  
-+#define PAGE_PROT_BITS	__pgprot(_PAGE_GUARDED | _PAGE_COHERENT | \
-+				 _PAGE_NO_CACHE | _PAGE_WRITETHRU | \
-+				 _PAGE_4K_PFN | _PAGE_RW | _PAGE_USER | \
-+ 				 _PAGE_ACCESSED | _PAGE_DIRTY | _PAGE_EXEC)
- /* PTEIDX nibble */
- #define _PTEIDX_SECONDARY	0x8
- #define _PTEIDX_GROUP_IX	0x7
-@@ -260,6 +264,8 @@ static inline pte_t pte_mkhuge(pte_t pte
- 	return pte; }
- static inline pte_t pte_mkspecial(pte_t pte) {
- 	return pte; }
-+static inline unsigned long pte_pgprot(pte_t pte) {
-+	return __pgprot(pte_val(pte)) & PAGE_PROT_BITS; }
+ 	mm = get_task_mm(tsk);
+@@ -2741,28 +2820,47 @@ int access_process_vm(struct task_struct
+ 	while (len) {
+ 		int bytes, ret, offset;
+ 		void *maddr;
++		struct page *page = NULL;
  
- /* Atomic PTE updates */
- static inline unsigned long pte_update(struct mm_struct *mm,
-Index: linux-work/include/asm-powerpc/pgtable-4k.h
-===================================================================
---- linux-work.orig/include/asm-powerpc/pgtable-4k.h	2008-04-29 15:19:34.000000000 +1000
-+++ linux-work/include/asm-powerpc/pgtable-4k.h	2008-04-29 15:19:51.000000000 +1000
-@@ -50,6 +50,9 @@
- #define _PAGE_HPTEFLAGS (_PAGE_BUSY | _PAGE_HASHPTE | \
- 			 _PAGE_SECONDARY | _PAGE_GROUP_IX)
- 
-+/* There is no 4K PFN hack on 4K pages */
-+#define _PAGE_4K_PFN	0
+ 		ret = get_user_pages(tsk, mm, addr, 1,
+ 				write, 1, &page, &vma);
+-		if (ret <= 0)
+-			break;
+-
+-		bytes = len;
+-		offset = addr & (PAGE_SIZE-1);
+-		if (bytes > PAGE_SIZE-offset)
+-			bytes = PAGE_SIZE-offset;
+-
+-		maddr = kmap(page);
+-		if (write) {
+-			copy_to_user_page(vma, page, addr,
+-					  maddr + offset, buf, bytes);
+-			set_page_dirty_lock(page);
++		if (ret <= 0) {
++			/*
++			 * Check if this is a VM_IO | VM_PFNMAP VMA, which
++			 * we can access using slightly different code.
++			 */
++#ifdef _HAVE_ARCH_IOREMAP_PROT
++			vma = find_vma(mm, addr);
++			if (!vma)
++				break;
++			if (vma->vm_ops && vma->vm_ops->access)
++				ret = vma->vm_ops->access(vma, addr, buf,
++							  len, write);
++			else
++				ret = generic_access_phys(vma, addr, buf,
++							  len, write);
++			if (ret <= 0)
++#endif
++				break;
++			bytes = ret;
+ 		} else {
+-			copy_from_user_page(vma, page, addr,
+-					    buf, maddr + offset, bytes);
++			bytes = len;
++			offset = addr & (PAGE_SIZE-1);
++			if (bytes > PAGE_SIZE-offset)
++				bytes = PAGE_SIZE-offset;
 +
- /* PAGE_MASK gives the right answer below, but only by accident */
- /* It should be preserving the high 48 bits and then specifically */
- /* preserving _PAGE_SECONDARY | _PAGE_GROUP_IX */
++			maddr = kmap(page);
++			if (write) {
++				copy_to_user_page(vma, page, addr,
++						  maddr + offset, buf, bytes);
++				set_page_dirty_lock(page);
++			} else {
++				copy_from_user_page(vma, page, addr,
++						    buf, maddr + offset, bytes);
++			}
++			kunmap(page);
++			page_cache_release(page);
+ 		}
+-		kunmap(page);
+-		page_cache_release(page);
+ 		len -= bytes;
+ 		buf += bytes;
+ 		addr += bytes;
+Index: linux-2.6.25-mm1/arch/x86/mm/ioremap.c
+===================================================================
+--- linux-2.6.25-mm1.orig/arch/x86/mm/ioremap.c	2008-04-22 10:33:42.000000000 -0400
++++ linux-2.6.25-mm1/arch/x86/mm/ioremap.c	2008-04-28 22:06:08.000000000 -0400
+@@ -287,6 +287,14 @@ void __iomem *ioremap_cache(resource_siz
+ }
+ EXPORT_SYMBOL(ioremap_cache);
+ 
++void __iomem *ioremap_prot(resource_size_t phys_addr, unsigned long size,
++				unsigned long prot_val)
++{
++	return __ioremap_caller(phys_addr, size, (prot_val & _PAGE_CACHE_MASK),
++				__builtin_return_address(0));
++}
++EXPORT_SYMBOL(ioremap_prot);
++
+ /**
+  * iounmap - Free a IO remapping
+  * @addr: virtual address from ioremap_*
+Index: linux-2.6.25-mm1/include/asm-x86/io_32.h
+===================================================================
+--- linux-2.6.25-mm1.orig/include/asm-x86/io_32.h	2008-04-22 10:33:44.000000000 -0400
++++ linux-2.6.25-mm1/include/asm-x86/io_32.h	2008-04-28 21:38:03.000000000 -0400
+@@ -110,6 +110,9 @@ static inline void *phys_to_virt(unsigne
+  */
+ extern void __iomem *ioremap_nocache(resource_size_t offset, unsigned long size);
+ extern void __iomem *ioremap_cache(resource_size_t offset, unsigned long size);
++extern void __iomem *ioremap_prot(resource_size_t offset, unsigned long size,
++				unsigned long prot_val);
++#define _HAVE_ARCH_IOREMAP_PROT
+ 
+ /*
+  * The default ioremap() behavior is non-cached:
+Index: linux-2.6.25-mm1/include/asm-x86/io_64.h
+===================================================================
+--- linux-2.6.25-mm1.orig/include/asm-x86/io_64.h	2008-04-22 10:33:44.000000000 -0400
++++ linux-2.6.25-mm1/include/asm-x86/io_64.h	2008-04-28 21:37:42.000000000 -0400
+@@ -175,6 +175,9 @@ extern void early_iounmap(void *addr, un
+  */
+ extern void __iomem *ioremap_nocache(resource_size_t offset, unsigned long size);
+ extern void __iomem *ioremap_cache(resource_size_t offset, unsigned long size);
++extern void __iomem *ioremap_prot(resource_size_t offset, unsigned long size,
++				unsigned long prot_val);
++#define _HAVE_ARCH_IOREMAP_PROT
+ 
+ /*
+  * The default ioremap() behavior is non-cached:
+Index: linux-2.6.25-mm1/include/linux/mm.h
+===================================================================
+--- linux-2.6.25-mm1.orig/include/linux/mm.h	2008-04-27 11:06:04.000000000 -0400
++++ linux-2.6.25-mm1/include/linux/mm.h	2008-04-28 22:01:26.000000000 -0400
+@@ -171,6 +171,12 @@ struct vm_operations_struct {
+ 	/* notification that a previously read-only page is about to become
+ 	 * writable, if an error is returned it will cause a SIGBUS */
+ 	int (*page_mkwrite)(struct vm_area_struct *vma, struct page *page);
++
++	/* called by access_process_vm when get_user_pages() fails, typically
++	 * for use by special VMAs that can switch between memory and hardware
++	 */
++	int (*access)(struct vm_area_struct *vma, unsigned long addr,
++		      void *buf, int len, int write);
+ #ifdef CONFIG_NUMA
+ 	/*
+ 	 * set_policy() op must add a reference to any non-NULL @new mempolicy
 
-
-
--- 
-All Rights Reversed
