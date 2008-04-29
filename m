@@ -1,70 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761602AbYD2Ujz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762740AbYD2UkR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761602AbYD2Ujz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 16:39:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756678AbYD2Ujo
+	id S1762740AbYD2UkR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 16:40:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762109AbYD2Uj5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 16:39:44 -0400
-Received: from email.gcom.com ([12.193.232.146]:37282 "EHLO email.gcom.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755934AbYD2Ujl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 16:39:41 -0400
-Message-Id: <7.0.1.0.2.20080429153715.04a109b0@gcom.com>
-Message-Id: <7.0.1.0.2.20080429142001.046b6c08@gcom.com>
-X-Mailer: QUALCOMM Windows Eudora Version 7.0.1.0
-Date: Tue, 29 Apr 2008 15:39:41 -0500
-To: linux-kernel@vger.kernel.org
-From: Dave Grothe <dave@gcom.com>
-Subject: profile_pc oops in 2.6.18
-Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="=====================_1908950890==_"; x-avg-checked=avg-ok-52272057
+	Tue, 29 Apr 2008 16:39:57 -0400
+Received: from out01.mta.xmission.com ([166.70.13.231]:46351 "EHLO
+	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761673AbYD2Ujz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Apr 2008 16:39:55 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: "Yinghai Lu" <yhlu.kernel@gmail.com>
+Cc: "Andrew Morton" <akpm@linux-foundation.org>, "Ingo Molnar" <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       "Thomas Gleixner" <tglx@linutronix.de>,
+       "Gabriel C" <nix.or.die@googlemail.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "Mika Fischer" <mika.fischer@zoopnet.de>
+References: <200804272337.40130.yhlu.kernel@gmail.com>
+	<200804281244.56938.yhlu.kernel@gmail.com>
+	<200804281316.14168.yhlu.kernel@gmail.com>
+	<200804281505.05764.yhlu.kernel@gmail.com>
+	<m1wsmg32qk.fsf@frodo.ebiederm.org>
+	<86802c440804291304r7ff169f6k9132f98761ecef42@mail.gmail.com>
+Date: Tue, 29 Apr 2008 13:29:35 -0700
+In-Reply-To: <86802c440804291304r7ff169f6k9132f98761ecef42@mail.gmail.com>
+	(Yinghai Lu's message of "Tue, 29 Apr 2008 13:04:36 -0700")
+Message-ID: <m1abjcz9ow.fsf@frodo.ebiederm.org>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-SA-Exim-Connect-IP: 24.130.11.59
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa04 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
+	*      [score: 0.0000]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa04 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+Subject: Re: [PATCH] x86: mtrr cleanup for converting continuous to discrete layout v5
+X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
+X-SA-Exim-Scanned: Yes (on mgr1.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---=====================_1908950890==_
-Content-Type: text/plain; charset=us-ascii; format=flowed; x-avg-checked=avg-ok-52272057
+"Yinghai Lu" <yhlu.kernel@gmail.com> writes:
 
-I have had a problem with a kernel oops in 2.6.18 with the kernel
-compiled with stack frame pointers and a loadable module compiled
-without stack frame pointers.
+> (less memory + fast X) or  (more 8M RAM + slow...)
 
-I have a patch that fixes the problem for 2.6.18.  It is attached to 
-this email.
+Yes. That is the basic question.  Not all X drivers need it and
+potentially the current kernel drm modules can use the
+PAT infrastructure that has been merged.
 
--- Dave  
---=====================_1908950890==_
-Content-Type: application/octet-stream; name=patch-time.c; x-avg-checked=avg-ok-52272057
-Content-Transfer-Encoding: base64
-Content-Disposition: attachment; filename="patch-time.c"
+Further a SMM monitor running 100 times or more slower may cause
+problems if SMM mode is entered frequently, slowing down the entire
+system not just X.
 
-VGhpcyBwYXRjaCBmaXhlcyBhIHByb2JsZW0gaW52b2x2aW5nIGEga2VybmVsIGNyYXNoLgoKSWYg
-dGhlIGtlcm5lbCBpcyBjb21waWxlZCB3aXRoIGZyYW1lIHBvaW50ZXJzIGFuZCBhIG1vZHVsZSB0
-aGF0IHdhcwpjb21waWxlZCB3aXRob3V0IGZyYW1lIHBvaW50ZXJzIGlzIGxvYWRlZCBhbmQgcnVu
-OyBhbmQgaWYgdGhlIAprZXJuZWwgcHJvZmlsZV9wYyByb3V0aW5lIGdldHMgY2FsbGVkIHdoaWxl
-IHRoYXQgbW9kdWxlIGlzIGluIGEKc3BpbiBsb2NrLCB0aGVuIHJlZ3MtPmVicCBkb2VzIG5vdCBj
-b250YWluIGEgdmFsaWQgZnJhbWUgcG9pbnRlcgphbmQgdGhlIGFjY2VzcyB0byAqKHJlZ3MtPmVi
-cCs0KSBwcm9kdWNlcyAodXN1YWxseSkgYW4gYWNjZXNzIHRvCmFuIGludmFsaWQgYWRkcmVzcy4K
-ClRoaXMgcGF0Y2ggaW1wbGVtZW50cyBhIGNoZWNrIHRvIHNlZSB0aGF0IHRoZSByZWdzLT5lYnAg
-dmFsdWUgbGllcwp3aXRoaW4gdGhlIHRocmVhZF9pbmZvIHJlZ2lvbiBmb3IgdGhlIGN1cnJlbnQg
-cHJvY2Vzcy4KClRoZSBwYXRjaCBpcyBmb3IgMi42LjE4LCBhcyBJIGFtIHRlc3Rpbmcgb24gQ2Vu
-dE9TLTUuICBIb3dldmVyLApsb29raW5nIGF0IDIuNi4yNSBpdCBzZWVtcyB0aGF0IGl0IHdvdWxk
-IGVhc2lseSBhcHBseSB0byB0aGF0Cmtlcm5lbCB2ZXJzaW9uIGFzIHdlbGwsIHdpdGgganVzdCBh
-IGxpdHRsZSBtYW51YWwgZml0dGluZy4KCkRhdmUgR3JvdGhlIDI5QXByMjAwOAoKLS0tIGFyY2gv
-aTM4Ni9rZXJuZWwvdGltZS5jLm9yaWcJMjAwOC0wNC0yOSAxMTowMjowMi4wMDAwMDAwMDAgLTA1
-MDAKKysrIGFyY2gvaTM4Ni9rZXJuZWwvdGltZS5jCTIwMDgtMDQtMjkgMTM6Mjg6MzUuMDAwMDAw
-MDAwIC0wNTAwCkBAIC0xMzYsNyArMTM2LDE0IEBACiAJdW5zaWduZWQgbG9uZyBwYyA9IGluc3Ry
-dWN0aW9uX3BvaW50ZXIocmVncyk7CiAKIAlpZiAoIXVzZXJfbW9kZV92bShyZWdzKSAmJiBpbl9s
-b2NrX2Z1bmN0aW9ucyhwYykpCi0JCXJldHVybiAqKHVuc2lnbmVkIGxvbmcgKikocmVncy0+ZWJw
-ICsgNCk7CisJewkJCS8qIGlzIGJwIGEgdmFsaWQgc3RhY2sgYWRkcmVzcz8gICAqLworCSAgICB1
-aW50MzJfdCB0aV9iYXNlID0gKHVpbnQzMl90KWN1cnJlbnRfdGhyZWFkX2luZm8oKSA7CisKKwkg
-ICAgaWYgKHJlZ3MtPmVicCA+PSB0aV9iYXNlICYmIHJlZ3MtPmVicCA8IHRpX2Jhc2UgKyBUSFJF
-QURfU0laRSkKKwkJcmV0dXJuICoodW5zaWduZWQgbG9uZyAqKShyZWdzLT5lYnAgKyA0KTsJLyog
-eWVzLCB1c2UgaXQqLworCSAgICBlbHNlCisJCXJldHVybiBwYyA7CisJfQogCiAJcmV0dXJuIHBj
-OwogfQo=
---=====================_1908950890==_
-Content-Type: text/plain; charset=us-ascii; format=flowed; x-avg-checked=avg-ok-52272057
+So if you don't have X or you have a crazy SMM monitor this can
+be an issue.
 
-
---=====================_1908950890==_--
-
+Eric
