@@ -1,66 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765507AbYD2QD5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765607AbYD2QEr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765507AbYD2QD5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 12:03:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751968AbYD2QDp
+	id S1765607AbYD2QEr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 12:04:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751968AbYD2QEf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 12:03:45 -0400
-Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:46023
-	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764923AbYD2QDm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 12:03:42 -0400
-Date: Tue, 29 Apr 2008 18:03:40 +0200
-From: Andrea Arcangeli <andrea@qumranet.com>
-To: Robin Holt <holt@sgi.com>
-Cc: Christoph Lameter <clameter@sgi.com>, Jack Steiner <steiner@sgi.com>,
-       Nick Piggin <npiggin@suse.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       kvm-devel@lists.sourceforge.net, Kanoj Sarcar <kanojsarcar@yahoo.com>,
-       Roland Dreier <rdreier@cisco.com>,
-       Steve Wise <swise@opengridcomputing.com>, linux-kernel@vger.kernel.org,
-       Avi Kivity <avi@qumranet.com>, linux-mm@kvack.org,
-       general@lists.openfabrics.org, Hugh Dickins <hugh@veritas.com>,
-       akpm@linux-foundation.org, Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [PATCH 01 of 12] Core of mmu notifiers
-Message-ID: <20080429160340.GG8315@duo.random>
-References: <20080424095112.GC30298@sgi.com> <20080424153943.GJ24536@duo.random> <20080424174145.GM24536@duo.random> <20080426131734.GB19717@sgi.com> <20080427122727.GO9514@duo.random> <Pine.LNX.4.64.0804281332030.31163@schroedinger.engr.sgi.com> <20080429001052.GA8315@duo.random> <Pine.LNX.4.64.0804281819020.2502@schroedinger.engr.sgi.com> <20080429153052.GE8315@duo.random> <20080429155030.GB28944@sgi.com>
-MIME-Version: 1.0
+	Tue, 29 Apr 2008 12:04:35 -0400
+Received: from mx1.suse.de ([195.135.220.2]:57026 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751572AbYD2QEe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Apr 2008 12:04:34 -0400
+Date: Tue, 29 Apr 2008 18:04:31 +0200
+From: Jan Blunck <jblunck@suse.de>
+To: bsn.0007@gmail.com
+Cc: libc-alpha@sourceware.org, Erez Zadok <ezk@cs.sunysb.edu>,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       viro@zeniv.linux.org.uk, Christoph Hellwig <hch@lst.de>,
+       Ulrich Drepper <drepper@redhat.com>, Mingming Cao <cmm@us.ibm.com>,
+       Dave Hansen <haveblue@us.ibm.com>,
+       Trond Myklebust <trond.myklebust@fys.uio.no>,
+       bharata@linux.vnet.ibm.com, David Woodhouse <dwmw2@infradead.org>
+Subject: Re: [RFC PATCH 0/2] Union Mount: Directory listing in glibc
+Message-ID: <20080429160431.GY30780@bolzano.suse.de>
+References: <20080429133201.GA9938@localhost.localdomain>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080429155030.GB28944@sgi.com>
+In-Reply-To: <20080429133201.GA9938@localhost.localdomain>
+Organization: SUSE LINUX Products GmbH, GF Markus Rex, HRB 16746 (AG Nuernberg)
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 29, 2008 at 10:50:30AM -0500, Robin Holt wrote:
-> You have said this continually about a CONFIG option.  I am unsure how
-> that could be achieved.  Could you provide a patch?
+On Tue, Apr 29, bsn.0007@gmail.com wrote:
 
-I'm busy with the reserved ram patch against 2.6.25 and latest kvm.git
-that is moving from pages to pfn for pci passthrough (that change will
-also remove the page pin with mmu notifiers).
+> The RFC discussed about the information glibc readdir needs to get about
+> union mounted directories and I have assumed the following information
+> to be available from the kernel for this implementation.
+> 
+> - Kernel would return all the dirents (including duplicates and whiteouts)
+> starting from the topmost directory of the union.
+> 
+> - Indication that this directory is a union mounted directory
+> 	I have assumed that kernel would return a "." whiteout as the first
+> directory entry of the union. This would tell glibc readdir(3) that it is
+> working with a union mounted directory and it needs to do duplicate
+> elimination and whiteout suppression. It starts building a dirent cache
+> for this purpose.
 
-Unfortunately reserved-ram bugs out again in the blk-settings.c on
-real hardware. The fix I pushed in .25 for it, works when booting kvm
-(that's how I tested it) but on real hardware sata b_pfn happens to be
-1 page less than the result of the min comparison and I'll have to
-figure out what happens (only .24 code works on real hardware..., at
-least my fix is surely better than the previous .25-pre code).
+IIRC the intention was to emit a "." whiteout when "changing" from one
+directory to the next. That means when the first directory is completely read
+the whiteout is emitted. After that glibc knows to start duplicate
+removal.
 
-I've other people waiting on that reserved-ram to be working, so once
-I've finished, I'll do the optimization to anon-vma (at least the
-removal of the unnecessary atomic_inc from fork) and add the config
-option.
+> Ulrich had suggested that we could use the fstat call to recognize union
+> mounts. But looking at the stat structure from stat(2), it was not obvious
+> as to which field in there could be used for this purpose. Hence for this
+> prototype implementation, I decided to go with what Al Viro suggested, which
+> is about using a "." whiteout.
+> 
+> - Indication that kernel is done with returning entries from the topmost
+> directory.
+> 	I have assumed that kernel would return a "." whiteout at the beginning
+> of each directory of the union. So when glibc gets a 2nd "." whiteout, it
+> will start performing duplicate elimination.
 
-Christoph if you've interest in evolving anon-vma-sem and i_mmap_sem
-yourself in this direction, you're very welcome to go ahead while I
-finish sorting out reserved-ram. If you do, please let me know so we
-don't duplicate effort, and it'd be absolutely great if the patches
-could be incremental with #v14 so I can merge them trivially later and
-upload a new patchset once you're finished (the only outstanding fix
-you have to apply on top of #v14 that is already integrated in my
-patchset, is the i_mmap_sem deadlock fix I posted and that I'm sure
-you've already applied on top of #v14 before doing any more
-development on it).
+See above
 
-Thanks!
+> - Whiteout indication
+> 	glibc will depend on dirent->d_type to be set to DT_WHT on a whiteout
+> file.
+
+Which makes the new filetype very much visible to the userspace but maybe that
+is the price we have to pay.
+
+> Compatibility issues
+> --------------------
+> There are many versions of dirent structure in glibc and I have tried my
+> best to take care of compatibility issues. But I have not really tested
+> readdir64 or old_readdir64. Also atleast one version of dirent structure
+> doesn't have d_type field and my whiteout suppression logic depends on it
+> and uses it in the generic __READDIR routine which gets used by various
+> version of readdir and I think this would break that readdir version which
+> uses dirent structure w/o d_type. I will be taking care of such compatibility
+> issues more cleanly/thoroughly in subsequent posts.
+
+We don't support union mounts on older kernels. Newer kernels return
+d_type. So I think we don't have a problem.
+
+Regards,
+	Jan
+
+-- 
+Jan Blunck <jblunck@suse.de>
