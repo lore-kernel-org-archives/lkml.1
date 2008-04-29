@@ -1,128 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764655AbYD2OTh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932585AbYD2OWk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764655AbYD2OTh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 10:19:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756902AbYD2OQF
+	id S932585AbYD2OWk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 10:22:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762226AbYD2OSO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 10:16:05 -0400
-Received: from mtagate8.de.ibm.com ([195.212.29.157]:59629 "EHLO
-	mtagate8.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754461AbYD2OPz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 10:15:55 -0400
-Message-Id: <20080429140250.553361834@de.ibm.com>
-References: <20080429140117.631962807@de.ibm.com>
-User-Agent: quilt/0.46-1
-Date: Tue, 29 Apr 2008 16:01:25 +0200
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
-Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
-Subject: [patch 08/15] Add topology_core_siblings to topology.h
-Content-Disposition: inline; filename=008-nodes-s390-siblings.diff
+	Tue, 29 Apr 2008 10:18:14 -0400
+Received: from mgw2.diku.dk ([130.225.96.92]:51559 "EHLO mgw2.diku.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758334AbYD2OSL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Apr 2008 10:18:11 -0400
+Date: Tue, 29 Apr 2008 16:18:08 +0200 (MEST)
+From: Julia Lawall <julia@diku.dk>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: davem@davemloft.net, linux-crypto@vger.kernel.org,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: Re: [revised PATCH] crypto: Correct kzalloc error test
+In-Reply-To: <E1JqqUc-0005Rg-00@gondolin.me.apana.org.au>
+Message-ID: <Pine.LNX.4.58.0804291617210.1185@pc-041.diku.dk>
+References: <E1JqqUc-0005Rg-00@gondolin.me.apana.org.au>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
+From: Julia Lawall <julia@diku.dk>
 
-This exposes the core siblings to user space via sysfs.
+Normally, kzalloc returns NULL or a valid pointer value, not a value to be
+tested using IS_ERR.
 
-Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
-
+Signed-off-by: Julia Lawall <julia@diku.dk>
 ---
+diff -u -p  a/crypto/cryptd.c b/crypto/cryptd.c
+--- a/crypto/cryptd.c	2008-04-16 13:27:56.000000000 +0200
++++ b/crypto/cryptd.c	2008-04-29 16:13:10.000000000 +0200
+@@ -190,8 +190,10 @@ static struct crypto_instance *cryptd_al
+ 	int err;
 
- arch/s390/kernel/topology.c |   21 ++++++++++++++++++---
- include/asm-s390/topology.h |    4 ++++
- 2 files changed, 22 insertions(+), 3 deletions(-)
+ 	inst = kzalloc(sizeof(*inst) + sizeof(*ctx), GFP_KERNEL);
+-	if (IS_ERR(inst))
++	if (!inst) {
++		inst = ERR_PTR(-ENOMEM);
+ 		goto out;
++	}
 
-Index: quilt-2.6/arch/s390/kernel/topology.c
-===================================================================
---- quilt-2.6.orig/arch/s390/kernel/topology.c
-+++ quilt-2.6/arch/s390/kernel/topology.c
-@@ -66,6 +66,8 @@ static struct timer_list topology_timer;
- static void set_topology_timer(void);
- static DECLARE_WORK(topology_work, topology_work_fn);
- 
-+cpumask_t cpu_core_map[NR_CPUS];
-+
- cpumask_t cpu_coregroup_map(unsigned int cpu)
- {
- 	struct core_info *core = &core_info;
-@@ -199,6 +201,14 @@ int topology_set_cpu_management(int fc)
- 	return rc;
- }
- 
-+static void update_cpu_core_map(void)
-+{
-+	int cpu;
-+
-+	for_each_present_cpu(cpu)
-+		cpu_core_map[cpu] = cpu_coregroup_map(cpu);
-+}
-+
- void arch_update_cpu_topology(void)
- {
- 	struct tl_info *info = tl_info;
-@@ -206,11 +216,13 @@ void arch_update_cpu_topology(void)
- 	int cpu;
- 
- 	if (!machine_has_topology) {
-+		update_cpu_core_map();
- 		topology_update_polarization_simple();
- 		return;
- 	}
- 	stsi(info, 15, 1, 2);
- 	tl_to_cores(info);
-+	update_cpu_core_map();
- 	for_each_online_cpu(cpu) {
- 		sysdev = get_cpu_sysdev(cpu);
- 		kobject_uevent(&sysdev->kobj, KOBJ_CHANGE);
-@@ -251,20 +263,23 @@ static int __init init_topology_update(v
- {
- 	int rc;
- 
-+	rc = 0;
- 	if (!machine_has_topology) {
- 		topology_update_polarization_simple();
--		return 0;
-+		goto out;
- 	}
- 	init_timer_deferrable(&topology_timer);
- 	if (machine_has_topology_irq) {
- 		rc = register_external_interrupt(0x2005, topology_interrupt);
- 		if (rc)
--			return rc;
-+			goto out;
- 		ctl_set_bit(0, 8);
- 	}
- 	else
- 		set_topology_timer();
--	return 0;
-+out:
-+	update_cpu_core_map();
-+	return rc;
- }
- __initcall(init_topology_update);
- 
-Index: quilt-2.6/include/asm-s390/topology.h
-===================================================================
---- quilt-2.6.orig/include/asm-s390/topology.h
-+++ quilt-2.6/include/asm-s390/topology.h
-@@ -7,6 +7,10 @@
- 
- cpumask_t cpu_coregroup_map(unsigned int cpu);
- 
-+extern cpumask_t cpu_core_map[NR_CPUS];
-+
-+#define topology_core_siblings(cpu)	(cpu_core_map[cpu])
-+
- int topology_set_cpu_management(int fc);
- void topology_schedule_update(void);
- 
-
--- 
-blue skies,
-   Martin.
-
-"Reality continues to ruin my life." - Calvin.
-
+ 	err = -ENAMETOOLONG;
+ 	if (snprintf(inst->alg.cra_driver_name, CRYPTO_MAX_ALG_NAME,
