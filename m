@@ -1,62 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762164AbYD2Ugk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761177AbYD2UiY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762164AbYD2Ugk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 16:36:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756077AbYD2UgL
+	id S1761177AbYD2UiY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 16:38:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755880AbYD2UiP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 16:36:11 -0400
-Received: from gw.goop.org ([64.81.55.164]:49859 "EHLO mail.goop.org"
+	Tue, 29 Apr 2008 16:38:15 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:53748 "EHLO pasmtpA.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755920AbYD2UgD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 16:36:03 -0400
-Message-ID: <481786A5.7010604@goop.org>
-Date: Tue, 29 Apr 2008 13:35:49 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080418)
-MIME-Version: 1.0
-To: Jens Axboe <jens.axboe@oracle.com>
-CC: linux-kernel@vger.kernel.org, peterz@infradead.org, npiggin@suse.de,
-       linux-arch@vger.kernel.org, mingo@elte.hu, paulmck@linux.vnet.ibm.com
-Subject: Re: [PATCH 2/10] x86: convert to generic helpers for IPI function
- calls
-References: <1209453990-7735-1-git-send-email-jens.axboe@oracle.com> <1209453990-7735-3-git-send-email-jens.axboe@oracle.com>
-In-Reply-To: <1209453990-7735-3-git-send-email-jens.axboe@oracle.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S1755490AbYD2UiP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Apr 2008 16:38:15 -0400
+Date: Tue, 29 Apr 2008 22:38:48 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: [PATCH] x86: fix section mismatch in pci_scan_bus
+Message-ID: <20080429203848.GA13741@uranus.ravnborg.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jens Axboe wrote:
-> -int xen_smp_call_function_mask(cpumask_t mask, void (*func)(void *),
-> -			       void *info, int wait)
->   
-[...]
-> -	/* Send a message to other CPUs and wait for them to respond */
-> -	xen_send_IPI_mask(mask, XEN_CALL_FUNCTION_VECTOR);
-> -
-> -	/* Make sure other vcpus get a chance to run if they need to. */
-> -	yield = false;
-> -	for_each_cpu_mask(cpu, mask)
-> -		if (xen_vcpu_stolen(cpu))
-> -			yield = true;
-> -
-> -	if (yield)
-> -		HYPERVISOR_sched_op(SCHEDOP_yield, 0);
->   
+Fix following section mismatch warning:
+WARNING: vmlinux.o(.text+0x275616): Section mismatch in reference from the function pci_scan_bus() to the function .devinit.text:pci_scan_bus_parented()
 
-I added this to deal with the case where you're sending an IPI to 
-another VCPU which isn't currently running on a real cpu.  In this case 
-you could end up spinning while the other VCPU is waiting for a real CPU 
-to run on.  (Basically the same problem that spinlocks have in a virtual 
-environment.)
+The warning was seen with a CONFIG_DEBUG_SECTION_MISMATCH=y build.
+The inline function pci_scan_bus refer to functions annotated
+__devinit - so annotate it __devinit too.
+This revealed a few x86 specific functions that were only
+used from __init or __devinit context.
+So annotate these __devinit and the warning was killed.
 
-However, this is at best a partial solution to the problem, and I never 
-benchmarked if it really makes a difference.  Since any other virtual 
-environment would have the same problem, its best if we can solve it 
-generically.  (Of course a synchronous single-target cross-cpu call is a 
-simple cross-cpu rpc, which could be implemented very efficiently in the 
-host/hypervisor by simply doing a vcpu context switch...)
+The added include in pci.h was not strictly required but
+added to avoid being dependent on indirect includes.
 
-    J
+Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
+---
+
+diff --git a/arch/x86/pci/common.c b/arch/x86/pci/common.c
+index 2a4d751..88b5416 100644
+--- a/arch/x86/pci/common.c
++++ b/arch/x86/pci/common.c
+@@ -489,7 +489,7 @@ void pcibios_disable_device (struct pci_dev *dev)
+ 		pcibios_disable_irq(dev);
+ }
+ 
+-struct pci_bus *pci_scan_bus_on_node(int busno, struct pci_ops *ops, int node)
++struct pci_bus * __devinit pci_scan_bus_on_node(int busno, struct pci_ops *ops, int node)
+ {
+ 	struct pci_bus *bus = NULL;
+ 	struct pci_sysdata *sd;
+@@ -512,7 +512,7 @@ struct pci_bus *pci_scan_bus_on_node(int busno, struct pci_ops *ops, int node)
+ 	return bus;
+ }
+ 
+-struct pci_bus *pci_scan_bus_with_sysdata(int busno)
++struct pci_bus * __devinit pci_scan_bus_with_sysdata(int busno)
+ {
+ 	return pci_scan_bus_on_node(busno, &pci_root_ops, -1);
+ }
+diff --git a/include/linux/pci.h b/include/linux/pci.h
+index 96acd0d..a59517b 100644
+--- a/include/linux/pci.h
++++ b/include/linux/pci.h
+@@ -44,6 +44,7 @@
+ #include <linux/mod_devicetable.h>
+ 
+ #include <linux/types.h>
++#include <linux/init.h>
+ #include <linux/ioport.h>
+ #include <linux/list.h>
+ #include <linux/compiler.h>
+@@ -474,7 +475,7 @@ extern struct pci_bus *pci_find_bus(int domain, int busnr);
+ void pci_bus_add_devices(struct pci_bus *bus);
+ struct pci_bus *pci_scan_bus_parented(struct device *parent, int bus,
+ 				      struct pci_ops *ops, void *sysdata);
+-static inline struct pci_bus *pci_scan_bus(int bus, struct pci_ops *ops,
++static inline struct pci_bus * __devinit pci_scan_bus(int bus, struct pci_ops *ops,
+ 					   void *sysdata)
+ {
+ 	struct pci_bus *root_bus;
