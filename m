@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760625AbYD2RYA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761219AbYD2RZQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760625AbYD2RYA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 13:24:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758069AbYD2RUk
+	id S1761219AbYD2RZQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 13:25:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758199AbYD2RUs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 13:20:40 -0400
-Received: from ns2.suse.de ([195.135.220.15]:43002 "EHLO mx2.suse.de"
+	Tue, 29 Apr 2008 13:20:48 -0400
+Received: from mx1.suse.de ([195.135.220.2]:51965 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758036AbYD2RUi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 13:20:38 -0400
-Date: Tue, 29 Apr 2008 10:18:21 -0700
+	id S1758187AbYD2RUr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Apr 2008 13:20:47 -0400
+Date: Tue, 29 Apr 2008 10:18:26 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -20,14 +20,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Alan Stern <stern@rowland.harvard.edu>,
-       David Brownell <david-b@pacbell.net>
-Subject: [11/37] USB: OHCI: fix bug in controller resume
-Message-ID: <20080429171821.GL14724@suse.de>
+       Li Zefan <lizf@cn.fujitsu.com>, Paul Menage <menage@google.com>
+Subject: [13/37] cgroup: fix a race condition in manipulating tsk->cg_list
+Message-ID: <20080429171826.GN14724@suse.de>
 References: <20080429171222.073929148@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="usb-ohci-fix-bug-in-controller-resume.patch"
+Content-Disposition: inline; filename="cgroup-fix-a-race-condition-in-manipulating-tsk-cg_list.patch"
 In-Reply-To: <20080429171730.GA14724@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -38,41 +37,79 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 know.
 
 ------------------
-From: Alan Stern <stern@rowland.harvard.edu>
+From: Li Zefan <lizf@cn.fujitsu.com>
 
-commit: 0d22f65515307c878ddd20b1305cce925ca9516c
+commit: 0e04388f0189fa1f6812a8e1cb6172136eada87e
 
-This patch (as1063) fixes a bug in the way ohci-hcd resumes its
-controllers.  It leaves the Master Interrupt Enable bit turned off.
+When I ran a test program to fork mass processes and at the same time
+'cat /cgroup/tasks', I got the following oops:
 
-If the root hub is resumed immediately this won't matter.  But if the
-root hub is suspended (say because no devices are plugged in), it won't
-ever wake up by itself.
+  ------------[ cut here ]------------
+  kernel BUG at lib/list_debug.c:72!
+  invalid opcode: 0000 [#1] SMP
+  Pid: 4178, comm: a.out Not tainted (2.6.25-rc9 #72)
+  ...
+  Call Trace:
+   [<c044a5f9>] ? cgroup_exit+0x55/0x94
+   [<c0427acf>] ? do_exit+0x217/0x5ba
+   [<c0427ed7>] ? do_group_exit+0.65/0x7c
+   [<c0427efd>] ? sys_exit_group+0xf/0x11
+   [<c0404842>] ? syscall_call+0x7/0xb
+   [<c05e0000>] ? init_cyrix+0x2fa/0x479
+  ...
+  EIP: [<c04df671>] list_del+0x35/0x53 SS:ESP 0068:ebc7df4
+  ---[ end trace caffb7332252612b ]---
+  Fixing recursive fault but reboot is needed!
 
-Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
-CC: David Brownell <david-b@pacbell.net>
+After digging into the code and debugging, I finlly found out a race
+situation:
+
+				do_exit()
+				  ->cgroup_exit()
+				    ->if (!list_empty(&tsk->cg_list))
+				        list_del(&tsk->cg_list);
+
+  cgroup_iter_start()
+    ->cgroup_enable_task_cg_list()
+      ->list_add(&tsk->cg_list, ..);
+
+In this case the list won't be deleted though the process has exited.
+
+We got two bug reports in the past, which seem to be the same bug as
+this one:
+	http://lkml.org/lkml/2008/3/5/332
+	http://lkml.org/lkml/2007/10/17/224
+
+Actually sometimes I got oops on list_del, sometimes oops on list_add.
+And I can change my test program a bit to trigger other oops.
+
+The patch has been tested both on x86_32 and x86_64.
+
+Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+Acked-by: Paul Menage <menage@google.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/usb/host/ohci-pci.c |    4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ kernel/cgroup.c |    7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
 
---- a/drivers/usb/host/ohci-pci.c
-+++ b/drivers/usb/host/ohci-pci.c
-@@ -312,11 +312,13 @@ static int ohci_pci_suspend (struct usb_
- 
- static int ohci_pci_resume (struct usb_hcd *hcd)
- {
-+	struct ohci_hcd	*ohci = hcd_to_ohci(hcd);
-+
- 	set_bit(HCD_FLAG_HW_ACCESSIBLE, &hcd->flags);
- 
- 	/* FIXME: we should try to detect loss of VBUS power here */
- 	prepare_for_handover(hcd);
--
-+	ohci_writel(ohci, OHCI_INTR_MIE, &ohci->regs->intrenable);
- 	return 0;
- }
- 
+--- a/kernel/cgroup.c
++++ b/kernel/cgroup.c
+@@ -1722,7 +1722,12 @@ void cgroup_enable_task_cg_lists(void)
+ 	use_task_css_set_links = 1;
+ 	do_each_thread(g, p) {
+ 		task_lock(p);
+-		if (list_empty(&p->cg_list))
++		/*
++		 * We should check if the process is exiting, otherwise
++		 * it will race with cgroup_exit() in that the list
++		 * entry won't be deleted though the process has exited.
++		 */
++		if (!(p->flags & PF_EXITING) && list_empty(&p->cg_list))
+ 			list_add(&p->cg_list, &p->cgroups->tasks);
+ 		task_unlock(p);
+ 	} while_each_thread(g, p);
 
 -- 
