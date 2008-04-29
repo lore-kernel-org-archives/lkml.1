@@ -1,55 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758201AbYD2PIS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754905AbYD2PIb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758201AbYD2PIS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 11:08:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754837AbYD2PH7
+	id S1754905AbYD2PIb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 11:08:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756670AbYD2PIL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 11:07:59 -0400
-Received: from mga02.intel.com ([134.134.136.20]:48876 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754592AbYD2PH5 convert rfc822-to-8bit (ORCPT
+	Tue, 29 Apr 2008 11:08:11 -0400
+Received: from de01egw02.freescale.net ([192.88.165.103]:49084 "EHLO
+	de01egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756183AbYD2PIK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 11:07:57 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,723,1199692800"; 
-   d="scan'208";a="378083516"
-x-mimeole: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Tue, 29 Apr 2008 11:08:10 -0400
+Message-ID: <481739BF.8010305@freescale.com>
+Date: Tue, 29 Apr 2008 10:07:43 -0500
+From: Timur Tabi <timur@freescale.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); en-US; rv:1.8.1.13) Gecko/20080313 SeaMonkey/1.1.9
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH] ARCH: Fix 32-bit x86 MSI-X allocation leakage
-Date: Tue, 29 Apr 2008 08:07:58 -0700
-Message-ID: <D5C1322C3E673F459512FB59E0DDC32904F9F13E@orsmsx414.amr.corp.intel.com>
-In-Reply-To: <20080429102107.GH23198@elte.hu>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] ARCH: Fix 32-bit x86 MSI-X allocation leakage
-Thread-Index: Acip4sS+1G786q3XSiyjAoJqCTV8BwAJ1TUQ
-References: <20080426005850.7098.77479.stgit@scrappy.jf.intel.com> <20080429102107.GH23198@elte.hu>
-From: "Waskiewicz Jr, Peter P" <peter.p.waskiewicz.jr@intel.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Cc: <torvalds@linux-foundation.org>, <linux-kernel@vger.kernel.org>,
-       <netdev@vger.kernel.org>
-X-OriginalArrivalTime: 29 Apr 2008 15:07:55.0871 (UTC) FILETIME=[CDC53EF0:01C8AA0A]
+To: Tony Breeds <tony@bakeyournoodle.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: cross-compiling on OS X, make menuconfig fails
+References: <481529B6.6030802@freescale.com> <20080428015151.GW20457@bakeyournoodle.com>
+In-Reply-To: <20080428015151.GW20457@bakeyournoodle.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> * PJ Waskiewicz <peter.p.waskiewicz.jr@intel.com> wrote:
-> 
-> > This bug was introduced in the 2.6.24 i386/x86_64 tree merge, [...]
-> 
-> that's wrong, that code was there in v2.6.23 too - and it 
-> wasnt touched in the unification. Why do you think it was 
-> introduced in the
-> i386/x86_64 tree merge?
+Tony Breeds wrote:
 
-2.6.23.17 didn't have the used_vectors bitmap.  The first time I could
-find it used was in 2.6.24.  Where was the code existing in 2.6.23?  The
-addition may have not been part of the merge, but it was definitely
-introduced in the same timeframe, meaning the 2.6.24 release timeframe.
+> On most linux systems echo supports c-syle escapes with "-e".  I'm
+> guessing which ever echo you're getting dosesn't do that.
 
-Cheers,
--PJ Waskiewicz
+Yes, that is my problem.
+
+> I think the best fix is to ensure you're getting bash as your shell.
+
+The script starts off with this line:
+
+#!/bin/sh
+
+Doesn't that mean that it should be interpreted by sh and not bash?
+
+> A nasty hack would be to make check-lxdialog.sh do something like:
+> (echo ' #include CURSES_LOC';echo 'main() {}') | gcc '-DCURSES_LOC=<ncurses.h>' -DLOCALE -DKBUILD_NO_NLS -lncurses -xc - -o .lxdialog.tmp
+
+This works.  Do you think if I posted a patch that makes this change, it will be
+accepted?
+
+-- 
+Timur Tabi
+Linux kernel developer at Freescale
