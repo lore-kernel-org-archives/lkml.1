@@ -1,48 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758852AbYD2HCW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759454AbYD2HF3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758852AbYD2HCW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 03:02:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754487AbYD2HCN
+	id S1759454AbYD2HF3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 03:05:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755669AbYD2HFS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 03:02:13 -0400
-Received: from mail.suse.de ([195.135.220.2]:42647 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754937AbYD2HCM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 03:02:12 -0400
-Date: Mon, 28 Apr 2008 23:51:33 -0700
-From: Greg KH <gregkh@suse.de>
-To: SL Baur <steve@xemacs.org>
-Cc: 12o3l@tiscali.nl, greg@kroah.com, linux-kernel@vger.kernel.org
-Subject: Re: patch
-	usb-mos7840-test-and-propagate-set_uart_reg-return-value.patch
-	added to gregkh-2.6 tree
-Message-ID: <20080429065133.GA8708@suse.de>
-References: <4806CF18.2050403@tiscali.nl> <12094267913945@kroah.org> <ed10ee420804282331x70acd75bv924767dc4cc1fdde@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <ed10ee420804282331x70acd75bv924767dc4cc1fdde@mail.gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Tue, 29 Apr 2008 03:05:18 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:47775 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751405AbYD2HFQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Apr 2008 03:05:16 -0400
+Date: Tue, 29 Apr 2008 00:04:11 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Richard <tuxbox.guru@gmail.com>
+Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Adam Belay <ambx1@neo.rr.com>, Adam M Belay <abelay@mit.edu>,
+       Li Shaohua <shaohua.li@intel.com>,
+       Matthieu Castet <castet.matthieu@free.fr>,
+       Thomas Renninger <trenn@suse.de>, Jaroslav Kysela <perex@perex.cz>
+Subject: Re: 2.6.25 pci=noacpi
+Message-Id: <20080429000411.ce73230f.akpm@linux-foundation.org>
+In-Reply-To: <4816C605.4000601@gmail.com>
+References: <20080425183807.366134771@ldl.fc.hp.com>
+	<20080425183934.516655076@ldl.fc.hp.com>
+	<4813B5AB.4060308@keyaccess.nl>
+	<200804281507.38309.bjorn.helgaas@hp.com>
+	<4816C605.4000601@gmail.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 28, 2008 at 11:31:07PM -0700, SL Baur wrote:
-> On 4/28/08, gregkh@suse.de <gregkh@suse.de> wrote:
-> >
-> >  This is a note to let you know that I've just added the patch titled
-> >
-> >      Subject: USB: mos7840: test and propagate set_uart_reg return value
-> >
-> >  to my gregkh-2.6 tree.  Its filename is
-> >
-> >      usb-mos7840-test-and-propagate-set_uart_reg-return-value.patch
+On Tue, 29 Apr 2008 07:53:57 +0100 Richard <tuxbox.guru@gmail.com> wrote:
+
+> Hi all,
 > 
-> NAK.  Reviewer's question was never answered.
+> Using an AMD Sempron notebook (HP Compaq 6715b) single processor 
+> machine,  It shuts down during bootup when ACPI is fully enabled.  I 
+> added pci=noacpi to the cmdline and it finally boots, but its extremely 
+> slow...  (kdm times out with error saying it took too long to load and 
+> disables graphical)
+> 
+> Dmesg doest show anything out of the ordinary, irq_stats only shows the 
+> timer interrupts being incremented. (noirq also works, but same 
+> behaviour) Can someone please offer me some pointers so I can fault find 
+> this problem.
+> 
 
-Does that mean that the original patch is invalid?  Or just that your
-question was never answered?
+Did any earlier kernels work OK?  If so, which versions?
 
-thanks,
-
-greg k-h
+Thanks.
