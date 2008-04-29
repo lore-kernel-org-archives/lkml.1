@@ -1,54 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756165AbYD2DH2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755570AbYD2Deh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756165AbYD2DH2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Apr 2008 23:07:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752415AbYD2DHQ
+	id S1755570AbYD2Deh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Apr 2008 23:34:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752872AbYD2De0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Apr 2008 23:07:16 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:53725 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752342AbYD2DHP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Apr 2008 23:07:15 -0400
-Date: Mon, 28 Apr 2008 20:06:51 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Andres Salomon <dilinger@queued.net>
-Cc: David Woodhouse <dwmw2@infradead.org>, Mitch Bradley <wmb@firmworks.com>,
-       Yinghai Lu <yhlu.kernel@gmail.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Ingo Molnar <mingo@elte.hu>, Joseph Fannin <jfannin@gmail.com>,
-       linux-kernel@vger.kernel.org, jordan.crouse@amd.com
-Subject: Re: [PATCH] OLPC: only check for OFW signature on VSA-less Geodes
-Message-Id: <20080428200651.169f1db1.akpm@linux-foundation.org>
-In-Reply-To: <20080421170230.2db18632@ephemeral>
-References: <20080418014757.52fb4a4f.akpm@linux-foundation.org>
-	<20080419031024.GC3503@nineveh.local>
-	<20080418202925.b18452c5.akpm@linux-foundation.org>
-	<20080419092544.378664a8@ephemeral>
-	<20080419133909.5aa6b63e@ephemeral>
-	<86802c440804200334t5cdcd100rfc41e9b1bf379109@mail.gmail.com>
-	<480C0582.9010509@firmworks.com>
-	<86802c440804202015h2605eff7vc733874dd1f22261@mail.gmail.com>
-	<480C1286.3040307@firmworks.com>
-	<20080421102417.6de71391@ephemeral>
-	<1208793253.9212.507.camel@pmac.infradead.org>
-	<20080421130320.38b5f505@ephemeral>
-	<1208805491.9212.520.camel@pmac.infradead.org>
-	<20080421154618.2ed4978f@ephemeral>
-	<1208809517.9212.537.camel@pmac.infradead.org>
-	<20080421170230.2db18632@ephemeral>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 28 Apr 2008 23:34:26 -0400
+Received: from ns1.suse.de ([195.135.220.2]:57575 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752797AbYD2DeZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Apr 2008 23:34:25 -0400
+From: NeilBrown <neilb@suse.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Date: Tue, 29 Apr 2008 13:34:38 +1000
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YDui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
+Cc: linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Bernd Schubert <bernd-schubert@gmx.de>
+Cc: Dan Williams <dan.j.williams@intel.com>
+Cc: stable@kernel.org
+Subject: [PATCH 000 of 9] md: Assorted patches for the 2.5.26 merge window
+Message-ID: <20080429133104.20146.patches@notabene>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 21 Apr 2008 17:02:30 -0400 Andres Salomon <dilinger@queued.net> wrote:
 
-> +	if (!is_geode() || geode_has_vsa2())
+Following 9 patches for md are suitable for 2.5.26.  
+Yes, I really should have submitted them to -mm earlier, but I've been
+on leave, sorry.
 
-geode_has_vsa2() is a fairly expensive-looking function and afacit only
-needs to be evaluated once per boot.  Perhaps we should cache it somewhere?
+First patch is a bug fix that should go in 2.6.25.stable. 
+It has been copied to stable@kernel.org. 
 
+Others are mostly related to "external" metadata support.  i.e. a userspace
+program does all the management of metadata, and needs to communicate
+with the kernel to do its job properly.
+
+NeilBrown
+
+
+ [PATCH 001 of 9] md: Fix use after free when removing rdev via sysfs
+ [PATCH 002 of 9] md: Skip all metadata update processing when using external metadata.
+ [PATCH 003 of 9] md: Reinitialise more mddev fields in do_md_stop.
+ [PATCH 004 of 9] md: Fix 'safemode' handling for external metadata.
+ [PATCH 005 of 9] md: Fix up switching md arrays between read-only and read-write
+ [PATCH 006 of 9] md: Remove a stray command from a copy and paste error in resync_start_store
+ [PATCH 007 of 9] md: prevent duplicates in bind_rdev_to_array
+ [PATCH 008 of 9] md: md: raid5 rate limit error printk
+ [PATCH 009 of 9] md: md: support blocking writes to an array on device failure
