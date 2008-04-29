@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756896AbYD2Rec@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932094AbYD2Rds@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756896AbYD2Rec (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 13:34:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755354AbYD2RW0
+	id S932094AbYD2Rds (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 13:33:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759457AbYD2RWS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 13:22:26 -0400
-Received: from cantor.suse.de ([195.135.220.2]:52706 "EHLO mx1.suse.de"
+	Tue, 29 Apr 2008 13:22:18 -0400
+Received: from ns.suse.de ([195.135.220.2]:52650 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758384AbYD2RWY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 13:22:24 -0400
-Date: Tue, 29 Apr 2008 10:19:23 -0700
+	id S1759447AbYD2RWQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Apr 2008 13:22:16 -0400
+Date: Tue, 29 Apr 2008 10:19:19 -0700
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -20,56 +20,54 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       netdev@vger.kernel.org,
-       Peter P Waskiewicz Jr <peter.p.waskiewicz.jr@intel.com>
-Subject: [36/37] x86: Fix 32-bit x86 MSI-X allocation leakage
-Message-ID: <20080429171923.GK14724@suse.de>
+       Andrew Vasquez <andrew.vasquez@qlogic.com>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>
+Subject: [34/37] SCSI: qla2xxx: Correct regression in relogin code.
+Message-ID: <20080429171919.GI14724@suse.de>
 References: <20080429171222.073929148@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="x86-fix-32-bit-x86-msi-x-allocation-leakage.patch"
+Content-Disposition: inline; filename="scsi-qla2xxx-correct-regression-in-relogin-code.patch"
 In-Reply-To: <20080429171730.GA14724@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+
 2.6.25-stable review patch.  If anyone has any objections, please let us
 know.
 
 ------------------
-From: PJ Waskiewicz <peter.p.waskiewicz.jr@intel.com>
+From: Andrew Vasquez <andrew.vasquez@qlogic.com>
 
-commit 9d9ad4b51d2b29b5bbeb4011f5e76f7538119cf9 upstream
+commit: 666301e673e192c87a40e07a8357d6996b57b70f upstream
 
-This bug was introduced in the 2.6.24 i386/x86_64 tree merge, where
-MSI-X vector allocation will eventually fail.  The cause is the new
-bit array tracking used vectors is not getting cleared properly on
-IRQ destruction on the 32-bit APIC code.
 
-This can be seen easily using the ixgbe 10 GbE driver on multi-core
-systems by simply loading and unloading the driver a few times.
-Depending on the number of available vectors on the host system, the
-MSI-X allocation will eventually fail, and the driver will only be
-able to use legacy interrupts.
+Commit 63a8651f2548c6bb5132c0b4e7dad4f57a9274db ([SCSI] qla2xxx:
+Correct infinite-login-retry issue.) introduced a small
+regression where a successful relogin would result in an fcport's
+loop_id to be incorrectly reset to FC_NO_LOOP_ID.  Only clear-out
+loopid, if retries have been 'truly' exhausted.
 
-Signed-off-by: Peter P Waskiewicz Jr <peter.p.waskiewicz.jr@intel.com>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Andrew Vasquez <andrew.vasquez@qlogic.com>
+Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/x86/kernel/io_apic_32.c |    1 +
- 1 file changed, 1 insertion(+)
+ drivers/scsi/qla2xxx/qla_os.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/arch/x86/kernel/io_apic_32.c
-+++ b/arch/x86/kernel/io_apic_32.c
-@@ -2477,6 +2477,7 @@ void destroy_irq(unsigned int irq)
- 	dynamic_irq_cleanup(irq);
- 
- 	spin_lock_irqsave(&vector_lock, flags);
-+	clear_bit(irq_vector[irq], used_vectors);
- 	irq_vector[irq] = 0;
- 	spin_unlock_irqrestore(&vector_lock, flags);
- }
+--- a/drivers/scsi/qla2xxx/qla_os.c
++++ b/drivers/scsi/qla2xxx/qla_os.c
+@@ -2357,7 +2357,7 @@ qla2x00_do_dpc(void *data)
+ 					} else {
+ 						fcport->login_retry = 0;
+ 					}
+-					if (fcport->login_retry == 0)
++					if (fcport->login_retry == 0 && status != QLA_SUCCESS)
+ 						fcport->loop_id = FC_NO_LOOP_ID;
+ 				}
+ 				if (test_bit(LOOP_RESYNC_NEEDED, &ha->dpc_flags))
 
 -- 
