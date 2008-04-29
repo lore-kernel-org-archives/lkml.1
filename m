@@ -1,46 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764042AbYD2N2p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761241AbYD2Nbx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764042AbYD2N2p (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 09:28:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756178AbYD2N2g
+	id S1761241AbYD2Nbx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 09:31:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755042AbYD2Nbp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 09:28:36 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:55992 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753085AbYD2N2g (ORCPT
+	Tue, 29 Apr 2008 09:31:45 -0400
+Received: from smtp-out04.alice-dsl.net ([88.44.63.6]:31901 "EHLO
+	smtp-out04.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754809AbYD2Nbo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 09:28:36 -0400
-Date: Tue, 29 Apr 2008 14:20:23 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: akpm@osdl.org, linux-kernel@vger.kernel.org, mingo@redhat.com
-Subject: [PATCH] toshiba: Use ioremap_cached
-Message-ID: <20080429142023.093bfba6@core>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 29 Apr 2008 09:31:44 -0400
+To: Amit Shah <amit.shah@qumranet.com>
+Cc: kvm-devel@lists.sourceforge.net, chrisw@redhat.com, allen.m.kay@intel.com,
+       linux-kernel@vger.kernel.org, gcosta@redhat.com, avi@qumranet.com,
+       virtualization@lists.linux-foundation.org, BENAMI@il.ibm.com
+Subject: Re: [PATCH] KVM PV Guest: Implement paravirtualized DMA
+From: Andi Kleen <andi@firstfloor.org>
+References: <1209465451-3758-1-git-send-email-amit.shah@qumranet.com>
+	<1209465451-3758-2-git-send-email-amit.shah@qumranet.com>
+	<1209465451-3758-3-git-send-email-amit.shah@qumranet.com>
+	<1209465451-3758-4-git-send-email-amit.shah@qumranet.com>
+Date: Tue, 29 Apr 2008 15:31:32 +0200
+In-Reply-To: <1209465451-3758-4-git-send-email-amit.shah@qumranet.com> (Amit Shah's message of "Tue, 29 Apr 2008 13:37:31 +0300")
+Message-ID: <87od7shjnv.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 29 Apr 2008 13:24:39.0401 (UTC) FILETIME=[6062F590:01C8A9FC]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The switch of ioremap to default to uncached doesn't break this driver
-but it does needlessly slow it down as BIOS space is cachable and this
-driver is quite happy scanning cached ROM space.
+Amit Shah <amit.shah@qumranet.com> writes:
+> +
+> +static struct page *page;
+> +static unsigned long page_gfn;
+Bad variable names
 
-Signed-off-by: Alan Cox <alan@redhat.com>
+> +
+> +const struct dma_mapping_ops *orig_dma_ops;
 
-diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.25-mm1/drivers/char/toshiba.c linux-2.6.25-mm1/drivers/char/toshiba.c
---- linux.vanilla-2.6.25-mm1/drivers/char/toshiba.c	2008-04-28 11:36:48.000000000 +0100
-+++ linux-2.6.25-mm1/drivers/char/toshiba.c	2008-04-28 11:51:54.000000000 +0100
-@@ -426,7 +426,7 @@
- 	int i,major,minor,day,year,month,flag;
- 	unsigned char signature[7] = { 0x54,0x4f,0x53,0x48,0x49,0x42,0x41 };
- 	SMMRegisters regs;
--	void __iomem *bios = ioremap(0xf0000, 0x10000);
-+	void __iomem *bios = ioremap_cache(0xf0000, 0x10000);
- 
- 	if (!bios)
- 		return -ENOMEM;
+I suspect real dma ops stacking will need some further thought than
+your simple hacks
+> +
+> +	match = find_matching_pt_dev(&pt_devs_head, &pv_pci_info);
+> +	if (match) {
+> +		r = match->is_pv;
+> +		goto out;
+> +	}
+> +
+> +	memcpy(page_address(page), &pv_pci_info, sizeof(pv_pci_info));
+
+Note that on 32bit page_address() might be not mapped.
+
+
+> +
+> +	npages = get_order(size) + 1;
+
+Are you sure that's correct? It looks quite bogus. order is a 2 logarithm,
+normally npages = 1 << order
+
+if you want  npages from order the correct  need 1 << order
+
+Haven't read further, but to be honest the code doesn't seem to be anywhere
+near merging quality.
+
+-Andi
+
