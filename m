@@ -1,54 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764415AbYD2O5n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764594AbYD2O7r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764415AbYD2O5n (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 10:57:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756274AbYD2O5f
+	id S1764594AbYD2O7r (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 10:59:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751668AbYD2O7k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 10:57:35 -0400
-Received: from viefep31-int.chello.at ([62.179.121.49]:51267 "EHLO
-	viefep31-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751565AbYD2O5e (ORCPT
+	Tue, 29 Apr 2008 10:59:40 -0400
+Received: from de01egw02.freescale.net ([192.88.165.103]:40701 "EHLO
+	de01egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752433AbYD2O7j (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 10:57:34 -0400
-Subject: Re: [PATCH 1/8] lockdep: fix recursive read lock validation
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Bart Van Assche <bart.vanassche@gmail.com>
-Cc: ego@in.ibm.com, linux-kernel@vger.kernel.org,
-       Zdenek Kabelac <zdenek.kabelac@gmail.com>,
-       Oleg Nesterov <oleg@tv-sign.ru>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Srivatsa Vaddagiri <vatsa@in.ibm.com>
-In-Reply-To: <e2e108260804290616l489ac8c2udcb2e80fc268b72b@mail.gmail.com>
-References: <20080429125659.GA23562@in.ibm.com>
-	 <20080429125750.GB23562@in.ibm.com>
-	 <e2e108260804290616l489ac8c2udcb2e80fc268b72b@mail.gmail.com>
-Content-Type: text/plain
-Date: Tue, 29 Apr 2008 16:57:30 +0200
-Message-Id: <1209481050.13978.72.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.0 
+	Tue, 29 Apr 2008 10:59:39 -0400
+Message-ID: <48173607.6080307@freescale.com>
+Date: Tue, 29 Apr 2008 09:51:51 -0500
+From: Timur Tabi <timur@freescale.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); en-US; rv:1.8.1.13) Gecko/20080313 SeaMonkey/1.1.9
+MIME-Version: 1.0
+To: Roland Kuhn <rkuhn@e18.physik.tu-muenchen.de>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: cross-compiling on OS X, make menuconfig fails
+References: <481529B6.6030802@freescale.com> <8FEAC32C-868F-468C-B383-8450D400691C@e18.physik.tu-muenchen.de>
+In-Reply-To: <8FEAC32C-868F-468C-B383-8450D400691C@e18.physik.tu-muenchen.de>
+Content-Type: text/plain; charset=windows-1252
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-04-29 at 15:16 +0200, Bart Van Assche wrote:
-> On Tue, Apr 29, 2008 at 2:57 PM, Gautham R Shenoy <ego@in.ibm.com> wrote:
-> > Subject: lockdep: fix recursive read lock validation
-> >  This means that the following sequence is now invalid, whereas previously
-> >  it was considered valid:
-> >
-> >   rlock(a); rlock(b); runlock(b); runlock(a)
-> >   rlock(b); rlock(a);
+Roland Kuhn wrote:
+
+> For some strange reason Apple decided to change 'echo':
 > 
-> Why are you marking this sequence as invalid ? Although it can be
-> debated whether it is good programming practice to be inconsistent
-> about the order of read-locking, the above sequence can't be involved
-> in a deadlock.
+> /bin/bash -c 'echo -e ...' does the right thing
+> /bin/sh -c 'echo -e ...' keeps the "-e" in the output but interprets  
+> the \n
+> /bin/echo -e ... does no interpretation and even keeps the \n
 
-Not for pure read locks, but when you add write locks to it, it does get
-deadlocky. Lockdep does not keep separate chains for read and write
-locks.
+Wow, that is messed up.  Especially since "/bin/sh --version" and "/bin/bash
+--version" give me the same output.
 
+Would you say that OS X is broken?  I'm having a hard time finding documentation
+for 'sh', so I can't find out what echo -e  is supposed to do in 'sh'.
+
+I read in the latest Linux Journal magazine that someone noticed that even
+though the kernel scripts say #!/bin/sh, many of them are really bash scripts.
+This person went through the effort of changing the script to be true 'sh'
+scripts.  Has that code been merged in?
+
+> I'd recommend installing the coreutils-default package from fink, then  
+> you get a sane /sw/bin/echo.
+
+But the scripts still reference /bin/sh, so I would need to change the scripts
+or symlink /bin/sh.  If I'm going to symlink /bin/sh, I'd rather just symlink it
+to /bin/bash.
+
+> Side-note on sanity: ISTR that POSIX defines echo in this (/bin/echo)  
+> strange way, urging people to use printf instead.
+
+But printf is bash, not sh.  I would need to change #!/bin/sh to #!/bin/bash.
+
+-- 
+Timur Tabi
+Linux kernel developer at Freescale
