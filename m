@@ -1,50 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758808AbYD2G7b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758852AbYD2HCW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758808AbYD2G7b (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 02:59:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753736AbYD2G7X
+	id S1758852AbYD2HCW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 03:02:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754487AbYD2HCN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 02:59:23 -0400
-Received: from viefep18-int.chello.at ([213.46.255.22]:53186 "EHLO
-	viefep19-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753685AbYD2G7X (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 02:59:23 -0400
-Subject: Re: [BUG-REPORT] hrtick_start_fair and CPU-Hotplug
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: ego@in.ibm.com
-Cc: Ingo Molnar <mingo@elte.hu>, Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Srivatsa Vaddagiri <vatsa@in.ibm.com>, Balbir Singh <balbir@in.ibm.com>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20080429065211.GB7859@in.ibm.com>
-References: <20080429065211.GB7859@in.ibm.com>
-Content-Type: text/plain
-Date: Tue, 29 Apr 2008 08:59:19 +0200
-Message-Id: <1209452359.13978.26.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.0 
-Content-Transfer-Encoding: 7bit
+	Tue, 29 Apr 2008 03:02:13 -0400
+Received: from mail.suse.de ([195.135.220.2]:42647 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754937AbYD2HCM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Apr 2008 03:02:12 -0400
+Date: Mon, 28 Apr 2008 23:51:33 -0700
+From: Greg KH <gregkh@suse.de>
+To: SL Baur <steve@xemacs.org>
+Cc: 12o3l@tiscali.nl, greg@kroah.com, linux-kernel@vger.kernel.org
+Subject: Re: patch
+	usb-mos7840-test-and-propagate-set_uart_reg-return-value.patch
+	added to gregkh-2.6 tree
+Message-ID: <20080429065133.GA8708@suse.de>
+References: <4806CF18.2050403@tiscali.nl> <12094267913945@kroah.org> <ed10ee420804282331x70acd75bv924767dc4cc1fdde@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <ed10ee420804282331x70acd75bv924767dc4cc1fdde@mail.gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-04-29 at 12:22 +0530, Gautham R Shenoy wrote:
-> Hello!
+On Mon, Apr 28, 2008 at 11:31:07PM -0700, SL Baur wrote:
+> On 4/28/08, gregkh@suse.de <gregkh@suse.de> wrote:
+> >
+> >  This is a note to let you know that I've just added the patch titled
+> >
+> >      Subject: USB: mos7840: test and propagate set_uart_reg return value
+> >
+> >  to my gregkh-2.6 tree.  Its filename is
+> >
+> >      usb-mos7840-test-and-propagate-set_uart_reg-return-value.patch
 > 
-> While running the usual CPU-Hotplug stress tests on linux-2.6.25,
-> I noticed the following in the console logs.
-> 
-> This is a wee bit difficult to reproduce. In the past 10 runs I hit this
-> only once.
-> 
-> ------------[ cut here ]------------
-> 
-> WARNING: at kernel/sched.c:962 hrtick+0x2e/0x65()
+> NAK.  Reviewer's question was never answered.
 
-> I am not well versed with this part of the code, so just wondering if we
-> are doing a good job at handling the cancellation of any per-cpu
-> scheduler timers during CPU-Hotplug.
+Does that mean that the original patch is invalid?  Or just that your
+question was never answered?
 
-This looks like its not cancelled at all and migrates the it to another
-cpu. I'll see what I can come up with.
+thanks,
 
+greg k-h
