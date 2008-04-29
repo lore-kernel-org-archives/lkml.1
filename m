@@ -1,54 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757579AbYD2IGS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758712AbYD2IH0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757579AbYD2IGS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 04:06:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752948AbYD2IGD
+	id S1758712AbYD2IH0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 04:07:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752948AbYD2IHL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 04:06:03 -0400
-Received: from rv-out-0708.google.com ([209.85.198.242]:6800 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751411AbYD2IGA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 04:06:00 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:x-x-sender:to:cc:subject:in-reply-to:message-id:references:user-agent:mime-version:content-type:from;
-        b=k7sYfNqY4EmXIlvCaH6aiFKdNetBdROY0piQLSZEMVG7/Vu7ZRt4HdrK7hsDNVSV3jVuGh0gpfPugYgeTkIE9ynJoineCwRsojPPb4LFHaQBQe4BwN3rUrDnBpIX4wLUF+IMu3nAnLCSorN4Db89PpOCZUBwNHf2+aUuMeH25j0=
-Date: Tue, 29 Apr 2008 16:04:56 +0800 (CST)
-X-X-Sender: wangcong@localhost.localdomain
-To: Jeff Dike <jdike@addtoit.com>
-cc: WANG Cong <xiyou.wangcong@gmail.com>, akpm@osdl.org,
-       linux-kernel@vger.kernel.org,
-       user-mode-linux-devel@lists.sourceforge.net
-Subject: Re: [PATCH 6/19] UML - hppfs fixes
-In-Reply-To: <20080428152940.GA7465@c2.user-mode-linux.org>
-Message-ID: <alpine.LFD.1.00.0804291604380.2548@localhost.localdomain>
-References: <20080425175608.GA11182@c2.user-mode-linux.org> <20080426.163132.194697674.xiyou.wangcong@gmail.com> <20080428152940.GA7465@c2.user-mode-linux.org>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+	Tue, 29 Apr 2008 04:07:11 -0400
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:50111 "EHLO smtp6.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751411AbYD2IHJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Apr 2008 04:07:09 -0400
+Date: Tue, 29 Apr 2008 11:06:31 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Alexander van Heukelum <heukelum@mailshack.com>, jdike@addtoit.com
+Subject: Re: [2.6 patch] fs/block_dev.c:I_BDEV() mustn't be inline
+Message-ID: <20080429080631.GB28059@cs181133002.pp.htv.fi>
+References: <20080424215739.GA32378@elte.hu> <alpine.LFD.1.10.0804241510420.2779@woody.linux-foundation.org> <20080426151516.GA27894@elte.hu> <alpine.LFD.1.10.0804260955300.2813@woody.linux-foundation.org> <20080426172222.GD17345@elte.hu> <20080428153831.GC2813@cs181133002.pp.htv.fi> <alpine.LFD.1.10.0804281736230.3119@woody.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
-From: WANG Cong <xiyou.wangcong@gmail.com>
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.1.10.0804281736230.3119@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 28 Apr 2008, Jeff Dike wrote:
+On Mon, Apr 28, 2008 at 05:41:11PM -0700, Linus Torvalds wrote:
+>...
+> > -inline struct block_device *I_BDEV(struct inode *inode)
+> > +struct block_device *I_BDEV(struct inode *inode)
+> >  {
+> >  	return &BDEV_I(inode)->bdev;
+> >  }
+> 
+> There is NO WAY IN HELL this function shouldn't be inlined,
+>...
 
-> On Sat, Apr 26, 2008 at 04:31:32PM +0800, WANG Cong wrote:
->> > +		rem = copy_to_user(buf, &data->contents[off], count);
->> > +		*ppos += count - rem;
->> > +		if (rem > 0)
->> > +			return -EFAULT;
->> 
->> Could you please explain why check 'rem' after using it here?
->
-> Actually, this isn't as wrong as it looks. copy_to_user returns what
-> hasn't been copied (rem == remaining).  So, I think the mistake is to
-> return -EFAULT here.  Returning the short count would be right, unless
-> rem == count, in which case we return -EFAULT.
+Then CONFIG_OPTIMIZE_INLINING already broke it in your tree.
 
-Yes, thanks.
+> 			Linus
 
---
-Hi, I'm a .signature virus, please copy/paste me to help me spread
-all over the world.
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
