@@ -1,50 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756430AbYD2Vxf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757052AbYD2Vyp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756430AbYD2Vxf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 17:53:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753021AbYD2VxZ
+	id S1757052AbYD2Vyp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 17:54:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752587AbYD2Vyg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 17:53:25 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:55102 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752920AbYD2VxY (ORCPT
+	Tue, 29 Apr 2008 17:54:36 -0400
+Received: from qb-out-0506.google.com ([72.14.204.233]:42797 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752266AbYD2Vyg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 17:53:24 -0400
-Date: Tue, 29 Apr 2008 22:43:50 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Ralf Hildebrandt <Ralf.Hildebrandt@charite.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: HP server and atto driver from hell
-Message-ID: <20080429224350.51006a5c@core>
-In-Reply-To: <20080429201727.GV8066@charite.de>
-References: <20080429201727.GV8066@charite.de>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 29 Apr 2008 17:54:36 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=G/TXU/ed3a8IGKDxh1PXcUQ9CKp5pjHSZJ6kGqtfi/GmvnstXPWL5lykulm4H2Pq6HIchyjSODbvbxl3uN1zuVYpX5+Qu5MGkCAB660LCdjxpshpkLREInPKsbI6TV6U5D2T5mOTKc5y0Tr5MhxwErBriUm69d9FkYqKxTvihto=
+Message-ID: <86802c440804291454n6b5940b4i73efbc89d72077b1@mail.gmail.com>
+Date: Tue, 29 Apr 2008 14:54:31 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Randy Dunlap" <randy.dunlap@oracle.com>
+Subject: Re: [PATCH 1/2] x86: mtrr cleanup for converting continuous to discrete layout v8
+Cc: "Yinghai Lu" <yhlu.kernel.send@gmail.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Ingo Molnar" <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       "Thomas Gleixner" <tglx@linutronix.de>,
+       "Gabriel C" <nix.or.die@googlemail.com>,
+       "Mika Fischer" <mika.fischer@zoopnet.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080429134617.1bc3b2d5.randy.dunlap@oracle.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200804272337.40130.yhlu.kernel@gmail.com>
+	 <200804281505.05764.yhlu.kernel@gmail.com>
+	 <200804290200.33459.yhlu.kernel@gmail.com>
+	 <200804290352.33543.yhlu.kernel@gmail.com>
+	 <20080429134617.1bc3b2d5.randy.dunlap@oracle.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 29 Apr 2008 22:17:27 +0200
-Ralf Hildebrandt <Ralf.Hildebrandt@charite.de> wrote:
+On Tue, Apr 29, 2008 at 1:46 PM, Randy Dunlap <randy.dunlap@oracle.com> wrote:
+> On Tue, 29 Apr 2008 03:52:33 -0700 Yinghai Lu wrote:
+>
+>  > Index: linux-2.6/Documentation/kernel-parameters.txt
+>  > ===================================================================
+>  > --- linux-2.6.orig/Documentation/kernel-parameters.txt
+>  > +++ linux-2.6/Documentation/kernel-parameters.txt
+>  > @@ -595,6 +595,20 @@ and is between 256 and 4096 characters.
+>  >                       See drivers/char/README.epca and
+>  >                       Documentation/digiepca.txt.
+>  >
+>  > +     disable_mtrr_cleanup [X86]
+>  > +     enable_mtrr_cleanup [X86]
+>  > +                     The kernel tries to adjust MTRR layout from continuous
+>  > +                     to discrete, to make X server driver able to add WB
+>  > +                     entry later. This parameter enables/disables that.
+>  > +
+>  > +     mtrr_chunk_size=nn[KMG] [X86]
+>  > +                     used for mtrr cleanup. It is largest continous chunk
+>  > +                     that could hold holes aka. UC entries.
+>  > +
+>  > +     mtrr_gran_size=nn[KMG] [X86]
+>  > +                     used for mtrr cleanup. It is granity of mtrr block.
+>
+>  s/granity/granularity/
+>  I think that's what you mean/want.
 
-> We thought HP would be a smart choice when it comes to Linux,..
-> Until now, because now we have to use a PCI Express SCSI card that
-> comes with a proprietary driver that won't even compile.
+thanks.
 
-I would suggest you take it up with the supplier, given EU law on product
-being fit for the purpose for which it was sold I would hope they jump.
+>
+>  How does someone know that size/granity/whatever of an mtrr block?
 
-Seriously it isn't going to be worth anyones time fighting binary crap
-when there are open alternatives available. Tell HP to replace it with a
-working card - also if you mail ordered it remember your EU wide 14 day
-return option ;)
+considering to auto test to find optimal value for mtrr_chunk_size and
+mtrr_gran_size...
 
-And please don't post pieces of proprietary driver code to the kernel
-list - I doubt you have permission to do so from HP.
-
-Alan
+YH
