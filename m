@@ -1,43 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758164AbYD2MlK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759363AbYD2Mlf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758164AbYD2MlK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 08:41:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751051AbYD2Mk5
+	id S1759363AbYD2Mlf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 08:41:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753950AbYD2MlY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 08:40:57 -0400
-Received: from mu-out-0910.google.com ([209.85.134.190]:44633 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751631AbYD2Mk4 (ORCPT
+	Tue, 29 Apr 2008 08:41:24 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:40412 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751631AbYD2MlX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 08:40:56 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=MbkBO7b7qLAJ6+Ky37n4Q7eo8/CSgAE7+cbie1gcs38fgOrF2yrXeN1owd3QPknbPiX5uWLEZ0A3nr8mnsTZJSpy/PVwGej8MDjrQtPSz7CGjnInM+HBUM9NpQNTJjwI7o8OqDsQ70vmnvMmJXxB9pSeqTtxzYAfEKmYWGFh3xM=
-Message-ID: <17896ec80804290540s492962a6ke0ab8790755337de@mail.gmail.com>
-Date: Tue, 29 Apr 2008 14:40:54 +0200
-From: "Mile Davidovic" <md4linux@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Network driver questions
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 29 Apr 2008 08:41:23 -0400
+Date: Tue, 29 Apr 2008 05:40:45 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Jesse Barnes <jesse.barnes@intel.com>,
+       Gabriel C <nix.or.die@googlemail.com>,
+       Yinghai Lu <yhlu.kernel@gmail.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Mika Fischer <mika.fischer@zoopnet.de>, balajirrao@gmail.com,
+       Andi Kleen <andi@firstfloor.org>, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH] x86_32: trim memory by updating e820 v3
+Message-Id: <20080429054045.09d8a911.akpm@linux-foundation.org>
+In-Reply-To: <20080429103741.GL23198@elte.hu>
+References: <200801192045.17291.yinghai.lu@sun.com>
+	<48159ECF.9020004@googlemail.com>
+	<20080428135351.GF3973@elte.hu>
+	<200804280909.06561.jesse.barnes@intel.com>
+	<20080429103741.GL23198@elte.hu>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
-We have some dedicated interface for connecting various external
-devices (NOR, ONENAND, SMSC network adapter), similar to PCI except
-one big difference/restriction:
-we can not work in atomic context because low lever drivers have such
-limitation.
+On Tue, 29 Apr 2008 12:37:41 +0200 Ingo Molnar <mingo@elte.hu> wrote:
 
-I would like to write network driver (for SMSC chip for example) with
-this restriction.
+> +static int pci_create_attr(struct pci_dev *pdev, int num, int write_combine)
+> +{
+> +	/* allocate attribute structure, piggyback attribute name */
+> +	int name_len = write_combine ? 13 : 10;
+> +	struct bin_attribute *res_attr;
+> +	int retval;
+> +
+> +	res_attr = kzalloc(sizeof(*res_attr) + name_len, GFP_ATOMIC);
 
-Do we have some network driver which also have suffer from similar restrictions?
+That (retained from current code) GFP_ATOMIC cannot be necessary.
 
-Thanks in advance
-Mile
+> +	if (res_attr) {
+> +		char *res_attr_name = (char *)(res_attr + 1);
+> +
+> +		if (write_combine) {
+> +			pdev->res_attr_wc[num] = res_attr;
+> +			sprintf(res_attr_name, "resource%d_wc", num);
+> +			res_attr->mmap = pci_mmap_resource_wc;
+> +		} else {
+> +			pdev->res_attr[num] = res_attr;
+> +			sprintf(res_attr_name, "resource%d", num);
+> +			res_attr->mmap = pci_mmap_resource_uc;
+> +		}
+> +		res_attr->attr.name = res_attr_name;
+> +		res_attr->attr.mode = S_IRUSR | S_IWUSR;
+> +		res_attr->size = pci_resource_len(pdev, num);
+> +		res_attr->private = &pdev->resource[num];
+> +		retval = sysfs_create_bin_file(&pdev->dev.kobj, res_attr);
+
+Because of this.
+
+> +	} else
+> +		retval = -ENOMEM;
+> +
+> +	return retval;
+> +}
