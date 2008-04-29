@@ -1,42 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756067AbYD2RmQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933546AbYD2Rme@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756067AbYD2RmQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 13:42:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760229AbYD2Rgp
+	id S933546AbYD2Rme (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 13:42:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760466AbYD2RiG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 13:36:45 -0400
-Received: from mx2.suse.de ([195.135.220.15]:47713 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932890AbYD2Rgn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 13:36:43 -0400
-Date: Tue, 29 Apr 2008 10:36:21 -0700
-From: Greg KH <gregkh@suse.de>
-To: Benjamin Thery <benjamin.thery@bull.net>
-Cc: linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>,
-       Tejun Heo <htejun@gmail.com>, Daniel Lezcano <dlezcano@fr.ibm.com>,
-       "Serge E. Hallyn" <serue@us.ibm.com>,
-       Pavel Emelyanov <xemul@openvz.org>, netdev@vger.kernel.org
-Subject: Re: [PATCH 00/10] sysfs tagged directories
-Message-ID: <20080429173621.GA16625@suse.de>
-References: <20080429171015.473938697@theryb.frec.bull.fr>
+	Tue, 29 Apr 2008 13:38:06 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:45079 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S933170AbYD2RiE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Apr 2008 13:38:04 -0400
+Message-ID: <48175CF8.4010105@sgi.com>
+Date: Tue, 29 Apr 2008 10:38:00 -0700
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080429171015.473938697@theryb.frec.bull.fr>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Ingo Molnar <mingo@elte.hu>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/1] x86: fix remove cpu_pda table patch
+References: <20080428210906.348866000@polaris-admin.engr.sgi.com> <20080428214541.GA16153@elte.hu>
+In-Reply-To: <20080428214541.GA16153@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 29, 2008 at 07:10:15PM +0200, Benjamin Thery wrote:
-> Here is the announcement Eric wrote back in December to introduce his 
-> patchset:
+Ingo Molnar wrote:
+> * Mike Travis <travis@sgi.com> wrote:
+> 
+>> [Ingo - please replace "PATCH 07/11" with this one.]
+>>
+>>     *	Remove 544k bytes from the kernel by removing the boot_cpu_pda
+>> 	array from the data section and allocating it during startup.
+>>
+>> 	Fixed panic in setup_per_cpu_areas when HOTPLUG_CPU not set.
+>>
+>> For inclusion into sched-devel/latest tree.
+> 
+> sched-devel.git randconfig testing found another crash with your queue:
+> 
+> [    0.111060] Brought up 1 CPUs
+> [    0.111986] Total of 1 processors activated (4022.73 BogoMIPS).
+> [    0.112987] Testing NMI watchdog ... <1>BUG: unable to handle kernel NULL pointer dereference at 0000000000000040
+> [    0.114982] IP: [<ffffffff8180d4a0>] check_nmi_watchdog+0xb0/0x210
+> [    0.114982] PGD 0
+> [    0.114982] Oops: 0000 [1] SMP
+> [    0.114982] CPU 0
+> [............]
+> 
+>  http://redhat.com/~mingo/misc/config-Mon_Apr_28_23_25_25_CEST_2008.bad
+>  http://redhat.com/~mingo/misc/log-Mon_Apr_28_23_25_25_CEST_2008.bad
+> 
+> 	Ingo
 
-<snip>
+Hi Ingo,
 
-Are the objections that Al Viro made to this patchset when it was last
-sent out addressed in this new series?
+I need a bit more information on your hardware configuration.  Building a
+kernel with the above config file started up fine on both the Intel and AMD
+boxes.
 
-thanks,
+Based on the above output it looks like it might be a UP machine?  
 
-greg k-h
+Thanks,
+Mike 
