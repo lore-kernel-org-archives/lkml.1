@@ -1,91 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757586AbYD2F0M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757943AbYD2F3W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757586AbYD2F0M (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 01:26:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753907AbYD2FZ5
+	id S1757943AbYD2F3W (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 01:29:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753715AbYD2F3O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 01:25:57 -0400
-Received: from nf-out-0910.google.com ([64.233.182.188]:36093 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753870AbYD2FZ4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 01:25:56 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=iEjwabNSZtBZdTaFdIzrRt+LUe6K7M/NJ9slvG9DvxFiSaXVy2ldiZ/3vZn0X/fan8fVlb0Zq10GkonJ1NKHem0QI8OlljEITWdtNk9SIvMR/e89flKS63hJFXRTc434fL5oFlip3zbCsMz5ITyThUjNb3i1AC2QAXeW2gGxrTg=
-Date: Tue, 29 Apr 2008 10:21:17 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.25-$sha1: RIP call_for_each_cic+0x25/0x50
-Message-ID: <20080429062116.GA5059@martell.zuzino.mipt.ru>
-References: <20080427225553.GA4848@martell.zuzino.mipt.ru> <20080428050145.af036c4f.akpm@linux-foundation.org> <20080428120412.GY12774@kernel.dk> <20080428195509.GA5247@martell.zuzino.mipt.ru>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080428195509.GA5247@martell.zuzino.mipt.ru>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Tue, 29 Apr 2008 01:29:14 -0400
+Received: from mail.queued.net ([207.210.101.209]:3083 "EHLO mail.queued.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751133AbYD2F3O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Apr 2008 01:29:14 -0400
+Date: Tue, 29 Apr 2008 01:32:13 -0400
+From: Andres Salomon <dilinger@queued.net>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, jordan.crouse@amd.com
+Subject: [PATCH] x86: GEODE: cache results from geode_has_vsa2() and
+ uninline
+Message-ID: <20080429013213.4084e892@ephemeral>
+In-Reply-To: <20080428200651.169f1db1.akpm@linux-foundation.org>
+References: <20080418014757.52fb4a4f.akpm@linux-foundation.org>
+	<20080419031024.GC3503@nineveh.local>
+	<20080418202925.b18452c5.akpm@linux-foundation.org>
+	<20080419092544.378664a8@ephemeral>
+	<20080419133909.5aa6b63e@ephemeral>
+	<86802c440804200334t5cdcd100rfc41e9b1bf379109@mail.gmail.com>
+	<480C0582.9010509@firmworks.com>
+	<86802c440804202015h2605eff7vc733874dd1f22261@mail.gmail.com>
+	<480C1286.3040307@firmworks.com>
+	<20080421102417.6de71391@ephemeral>
+	<1208793253.9212.507.camel@pmac.infradead.org>
+	<20080421130320.38b5f505@ephemeral>
+	<1208805491.9212.520.camel@pmac.infradead.org>
+	<20080421154618.2ed4978f@ephemeral>
+	<1208809517.9212.537.camel@pmac.infradead.org>
+	<20080421170230.2db18632@ephemeral>
+	<20080428200651.169f1db1.akpm@linux-foundation.org>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.12.0; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 28, 2008 at 11:55:09PM +0400, Alexey Dobriyan wrote:
-> On Mon, Apr 28, 2008 at 02:04:13PM +0200, Jens Axboe wrote:
-> > On Mon, Apr 28 2008, Andrew Morton wrote:
-> > > On Mon, 28 Apr 2008 02:55:53 +0400 Alexey Dobriyan <adobriyan@gmail.com> wrote:
-> > > 
-> > > > This happened while ~90 cross-compile jobs were running in parallel on
-> > > > ext2/noatime partition (slowly -- much debugging was on)
-> > > > 
-> > > > 
-> > > > general protection fault: 0000 [1] PREEMPT SMP DEBUG_PAGEALLOC
-> > > > CPU 0 
-> > > > Modules linked in: ext2 nf_conntrack_irc ipt_MASQUERADE iptable_nat nf_nat nf_conntrack_ipv4 xt_state nf_conntrack iptable_filter ip_tables x_tables usblp uhci_hcd ehci_hcd usbcore sr_mod cdrom
-> > > > Pid: 16483, comm: as Not tainted 2.6.25-c3bf9bc243092c53946fd6d8ebd6dc2f4e572d48 #1
-> > > > RIP: 0010:[<ffffffff80307525>]  [<ffffffff80307525>] call_for_each_cic+0x25/0x50
-> > > > RSP: 0018:ffff810170811e58  EFLAGS: 00010202
-> > > > RAX: 6b6b6b6b6b6b6b6b RBX: 6b6b6b6b6b6b6b6b RCX: 0000000000000000
-> > > > RDX: 0000000000000001 RSI: 0000000000000000 RDI: ffff81010ff92000
-> > > > RBP: ffff810170811e78 R08: 0000000000000001 R09: 0000000000000000
-> > > > R10: 0000000000000000 R11: ffff8100010069d8 R12: ffff810138ada300
-> > > > R13: ffffffff803075b0 R14: ffff81017fcd2000 R15: ffff81010ff92168
-> > > > FS:  00002ac3462426f0(0000) GS:ffffffff805d0000(0000) knlGS:0000000000000000
-> > > > CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
-> > > > CR2: 00002ab602550000 CR3: 000000013609d000 CR4: 0000000000000660
-> > > > DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-> > > > DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-> > > > Process as (pid: 16483, threadinfo ffff810170810000, task ffff81010ff92000)
-> > > > Stack:  ffff810170811e88 ffff810138ada300 0000000000000010 ffff81010ff92100
-> > > >  ffff810170811e88 ffffffff80307580 ffff810170811ea8 ffffffff80302a55
-> > > >  ffff81010ff92100 ffff810138ada300 ffff810170811ec8 ffffffff80302b1f
-> > > > Call Trace:
-> > > >  [<ffffffff80307580>] cfq_free_io_context+0x10/0x20
-> > > >  [<ffffffff80302a55>] put_io_context+0x85/0x90
-> > > >  [<ffffffff80302b1f>] exit_io_context+0x8f/0xb0
-> > > >  [<ffffffff80235d19>] do_exit+0x549/0x780
-> > > >  [<ffffffff80235f8e>] do_group_exit+0x3e/0xb0
-> > > >  [<ffffffff80236012>] sys_exit_group+0x12/0x20
-> > > >  [<ffffffff8020b6db>] system_call_after_swapgs+0x7b/0x80
-> > > > 
-> > > > 
-> > > > Code: 84 00 00 00 00 00 55 48 89 e5 41 55 49 89 f5 41 54 49 89 fc 53 48 83 ec 08 e8 18 e1 f5 ff 49 8b 44 24 68 48 85 c0 74 1e 48 89 c3 <48> 8b 03 48 8d 73 88 4c 89 e7 0f 18 08 41 ff d5 48 8b 03 48 85 
-> > > > RIP  [<ffffffff80307525>] call_for_each_cic+0x25/0x50
-> > > >  RSP <ffff810170811e58>
-> > > > ---[ end trace ca143223eefdc828 ]---
-> > > > Fixing recursive fault but reboot is needed!
-> > > cfq-iosched.c hasn't been altered (yet) so it might not be a regression.
+On Mon, 28 Apr 2008 20:06:51 -0700
+Andrew Morton <akpm@linux-foundation.org> wrote:
 
-
-> > It's not a regression, it's definitely in 2.6.25 as well. So that's a
-> > bit scary, I've been looking over this stuff this morning but haven't
-> > pin pointed anything yet.
-> > 
-> > Alexey, is this something that reproduces for you?
+> On Mon, 21 Apr 2008 17:02:30 -0400 Andres Salomon <dilinger@queued.net> wrote:
 > 
-> Not yet, second run of same workload went fine and I've never seen such
-> oopses before.
+> > +	if (!is_geode() || geode_has_vsa2())
+> 
+> geode_has_vsa2() is a fairly expensive-looking function and afacit only
+> needs to be evaluated once per boot.  Perhaps we should cache it somewhere?
+> 
 
-And it oopses the very same way on the third run. as(1) again.
-So if there are any debugging patches, let me know.
+How about this?
+
+
+
+
+
+
+This moves geode_has_vsa2 into a .c file, caches the result we get from
+the VSA virtual registers, and causes the function to no longer be inline.
+
+Signed-off-by: Andres Salomon <dilinger@debian.org>
+---
+ arch/x86/kernel/geode_32.c |   19 +++++++++++++++++++
+ include/asm-x86/geode.h    |   11 +----------
+ 2 files changed, 20 insertions(+), 10 deletions(-)
+
+diff --git a/arch/x86/kernel/geode_32.c b/arch/x86/kernel/geode_32.c
+index 9dad6ca..1cb8225 100644
+--- a/arch/x86/kernel/geode_32.c
++++ b/arch/x86/kernel/geode_32.c
+@@ -161,6 +161,25 @@ void geode_gpio_setup_event(unsigned int gpio, int pair, int pme)
+ }
+ EXPORT_SYMBOL_GPL(geode_gpio_setup_event);
+ 
++static int has_vsa2 = -1;
++
++int geode_has_vsa2(void)
++{
++	if (has_vsa2 == -1) {
++		/*
++		 * The VSA has virtual registers that we can query for a
++		 * signature.
++		 */
++		outw(VSA_VR_UNLOCK, VSA_VRC_INDEX);
++		outw(VSA_VR_SIGNATURE, VSA_VRC_INDEX);
++
++		has_vsa2 = (inw(VSA_VRC_DATA) == VSA_SIG);
++	}
++
++	return has_vsa2;
++}
++EXPORT_SYMBOL_GPL(geode_has_vsa2);
++
+ static int __init geode_southbridge_init(void)
+ {
+ 	if (!is_geode())
+diff --git a/include/asm-x86/geode.h b/include/asm-x86/geode.h
+index 7154dc4..8a53bc8 100644
+--- a/include/asm-x86/geode.h
++++ b/include/asm-x86/geode.h
+@@ -185,16 +185,7 @@ static inline int is_geode(void)
+ 	return (is_geode_gx() || is_geode_lx());
+ }
+ 
+-/*
+- * The VSA has virtual registers that we can query for a signature.
+- */
+-static inline int geode_has_vsa2(void)
+-{
+-	outw(VSA_VR_UNLOCK, VSA_VRC_INDEX);
+-	outw(VSA_VR_SIGNATURE, VSA_VRC_INDEX);
+-
+-	return (inw(VSA_VRC_DATA) == VSA_SIG);
+-}
++extern int geode_has_vsa2(void);
+ 
+ /* MFGPTs */
+ 
+-- 
+1.5.5
 
