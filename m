@@ -1,53 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760317AbYD2SmU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758179AbYD2SoR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760317AbYD2SmU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 14:42:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758155AbYD2Slw
+	id S1758179AbYD2SoR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 14:44:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755005AbYD2SoG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 14:41:52 -0400
-Received: from outbound-mail-30.bluehost.com ([69.89.17.212]:60018 "HELO
-	outbound-mail-30.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1757626AbYD2Slv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 14:41:51 -0400
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Greg KH <greg@kroah.com>
-Subject: Re: PCI tree info
-Date: Tue, 29 Apr 2008 11:41:43 -0700
-User-Agent: KMail/1.9.9
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-kernel@vger.kernel.org,
-       linux-pci@atrey.karlin.mff.cuni.cz,
-       Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-References: <200804291100.08622.jbarnes@virtuousgeek.org> <20080429182717.GA17500@kroah.com>
-In-Reply-To: <20080429182717.GA17500@kroah.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Tue, 29 Apr 2008 14:44:06 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:42449 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752534AbYD2SoE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Apr 2008 14:44:04 -0400
+Date: Tue, 29 Apr 2008 14:43:09 -0400
+From: Jason Baron <jbaron@redhat.com>
+To: akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org
+Subject: [patch 2/3] dyanmic_printk: compile fix
+Message-ID: <20080429184309.GC8717@redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200804291141.44023.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, April 29, 2008 11:27 am Greg KH wrote:
-> On Tue, Apr 29, 2008 at 11:00:08AM -0700, Jesse Barnes wrote:
-> > The PCI tree now lives in git:
-> > git://git.kernel.org/pub/scm/linux/kernel/git/jbarnes/pci-2.6.  There are
-> > a few branches:
-> >   for-linus - stuff headed to Linus in the next pull request
-> >   linux-next - patches targetted at the following release
-> >   master - unmodified Linus upstream branch
-> >
-> > I'll try to avoid re-basing, but since the main downstream tree is the
-> > PCI hotplug tree, and Kristen uses quilt, that probably won't be much of
-> > an issue.
->
-> You should send in a patch to MAINTAINERS to point to this new tree
-> there.
 
-Yep, already done.
+-make pptp_msg_name dependent on CONFIG_DYNAMIC_PRINTK
 
-Thanks,
-Jesse
+Signed-off-by: Jason Baron <jbaron@redhat.com>
+---
+
+ net/netfilter/nf_conntrack_pptp.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+
+diff --git a/net/netfilter/nf_conntrack_pptp.c b/net/netfilter/nf_conntrack_pptp.c
+index 97e54b0..9f2dfbd 100644
+--- a/net/netfilter/nf_conntrack_pptp.c
++++ b/net/netfilter/nf_conntrack_pptp.c
+@@ -65,7 +65,7 @@ void
+ 			     struct nf_conntrack_expect *exp) __read_mostly;
+ EXPORT_SYMBOL_GPL(nf_nat_pptp_hook_expectfn);
+ 
+-#ifdef DEBUG
++#if defined(DEBUG) || defined(CONFIG_DYNAMIC_PRINTK)
+ /* PptpControlMessageType names */
+ const char *const pptp_msg_name[] = {
+ 	"UNKNOWN_MESSAGE",
