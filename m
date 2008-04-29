@@ -1,66 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762740AbYD2UkR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763165AbYD2Ukn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762740AbYD2UkR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 16:40:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762109AbYD2Uj5
+	id S1763165AbYD2Ukn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 16:40:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757812AbYD2Uka
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 16:39:57 -0400
-Received: from out01.mta.xmission.com ([166.70.13.231]:46351 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761673AbYD2Ujz (ORCPT
+	Tue, 29 Apr 2008 16:40:30 -0400
+Received: from fg-out-1718.google.com ([72.14.220.152]:2939 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757492AbYD2Uk2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 16:39:55 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: "Yinghai Lu" <yhlu.kernel@gmail.com>
-Cc: "Andrew Morton" <akpm@linux-foundation.org>, "Ingo Molnar" <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       "Gabriel C" <nix.or.die@googlemail.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Mika Fischer" <mika.fischer@zoopnet.de>
-References: <200804272337.40130.yhlu.kernel@gmail.com>
-	<200804281244.56938.yhlu.kernel@gmail.com>
-	<200804281316.14168.yhlu.kernel@gmail.com>
-	<200804281505.05764.yhlu.kernel@gmail.com>
-	<m1wsmg32qk.fsf@frodo.ebiederm.org>
-	<86802c440804291304r7ff169f6k9132f98761ecef42@mail.gmail.com>
-Date: Tue, 29 Apr 2008 13:29:35 -0700
-In-Reply-To: <86802c440804291304r7ff169f6k9132f98761ecef42@mail.gmail.com>
-	(Yinghai Lu's message of "Tue, 29 Apr 2008 13:04:36 -0700")
-Message-ID: <m1abjcz9ow.fsf@frodo.ebiederm.org>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-SA-Exim-Connect-IP: 24.130.11.59
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa04 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
-	*      [score: 0.0000]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa04 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-Subject: Re: [PATCH] x86: mtrr cleanup for converting continuous to discrete layout v5
-X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
-X-SA-Exim-Scanned: Yes (on mgr1.xmission.com)
+	Tue, 29 Apr 2008 16:40:28 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer:mime-version:content-type:content-transfer-encoding:sender;
+        b=NACPOHmT9RL9B+LUQrcmUndy/AcpqN5ndNNTqaece39pGd5Qyfid9p1DU5kWNrAMD/9DqXDkkiOLQV2d3RSozpUUIkqQ4OoGfznEVHKkgFzRqlLWTLS25IYlebIVNB/8Ntpa90llvA9R3/+Rv5WDzu4WJ/3F9DM/3gNLPXpy2vo=
+Date: Tue, 29 Apr 2008 23:40:21 +0300
+From: Pekka Paalanen <pq@iki.fi>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Pekka Paalanen <pq@iki.fi>, linux-kernel@vger.kernel.org,
+       Christoph Hellwig <hch@infradead.org>,
+       Arjan van de Ven <arjan@infradead.org>, Pavel Roskin <proski@gnu.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [RFC 1/3] mmiotrace full patch, preview 3
+Message-ID: <20080429234021.071f7948@daedalus.pq.iki.fi>
+In-Reply-To: <20080428214504.5c359195@daedalus.pq.iki.fi>
+References: <20080428214504.5c359195@daedalus.pq.iki.fi>
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.8; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Yinghai Lu" <yhlu.kernel@gmail.com> writes:
+On Mon, 28 Apr 2008 21:45:04 +0300
+Pekka Paalanen <pq@iki.fi> wrote:
 
-> (less memory + fast X) or  (more 8M RAM + slow...)
+> The current state is that mmiotrace seems to work fine, also on SMP,
+> but on SMP there's a chance to miss events due to CPUs racing. At last
+> the log produced via ftrace framework is up-to-spec. Inserting user
+> comments (markers in mmiotrace-parlance) into the log is not yet
+> supported. All in all, after some more testing on my part, IMHO this
+> is in a mergeable state.
 
-Yes. That is the basic question.  Not all X drivers need it and
-potentially the current kernel drm modules can use the
-PAT infrastructure that has been merged.
+Ok, looks like I won't be able to do more testing than what I did today.
+The sched-devel/latest tree has changes that break the out-of-tree DRM,
+so I cannot test with Nouveau, and most likely the proprietary driver
+will not work either. A very nice test would be to enable mmiotracing
+as early in boot as convinient, but I don't know how to achieve that
+with the ftrace framework.
 
-Further a SMM monitor running 100 times or more slower may cause
-problems if SMM mode is entered frequently, slowing down the entire
-system not just X.
+I did notice two bugs in mmiotrace while looking at ioremap.c, so
+I will follow here with three patches.
 
-So if you don't have X or you have a crazy SMM monitor this can
-be an issue.
+Tested with the patches and sched-devel/latest of
+Tue, 29 Apr 2008 11:47:55 +0000
+using testmmiotrace.ko and things looked fine.
 
-Eric
+
+Thanks.
+
+-- 
+Pekka Paalanen
+http://www.iki.fi/pq/
