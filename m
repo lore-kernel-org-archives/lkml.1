@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752327AbYD2Rc3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765520AbYD2Rc7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752327AbYD2Rc3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 13:32:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759361AbYD2RWB
+	id S1765520AbYD2Rc7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 13:32:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759439AbYD2RWK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 13:22:01 -0400
-Received: from mail.suse.de ([195.135.220.2]:52555 "EHLO mx1.suse.de"
+	Tue, 29 Apr 2008 13:22:10 -0400
+Received: from mx2.suse.de ([195.135.220.15]:43649 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759395AbYD2RV7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 13:21:59 -0400
-Date: Tue, 29 Apr 2008 10:19:08 -0700
+	id S1759433AbYD2RWH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Apr 2008 13:22:07 -0400
+Date: Tue, 29 Apr 2008 10:19:14 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -20,16 +20,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Roel Kluin <12o3l@tiscali.nl>,
-       "Maciej W. Rozycki" <macro@linux-mips.org>,
-       Johannes Weiner <hannes@saeurebad.de>
-Subject: [30/37] dz: test after postfix decrement fails in
-	dz_console_putchar()
-Message-ID: <20080429171908.GE14724@suse.de>
+       Bodo Stroesser <bstroesser@fujitsu-siemens.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: [32/37] hrtimer: timeout too long when using HRTIMER_CB_SOFTIRQ
+Message-ID: <20080429171914.GG14724@suse.de>
 References: <20080429171222.073929148@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="dz-test-after-postfix-decrement-fails-in-dz_console_putchar.patch"
+Content-Disposition: inline; filename="hrtimer-timeout-too-long-when-using-hrtimer_cb_softirq.patch"
 In-Reply-To: <20080429171730.GA14724@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,34 +38,54 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 know.
 
 ------------------
-From: Roel Kluin <12o3l@tiscali.nl>
+From: Bodo Stroesser <bstroesser@fujitsu-siemens.com>
 
-commit 1ecf0d0cd28a4bfed3009f752061998e52d14db2 upstream
+commit d7b41a24bfb5d7fa02f7b49be1293d468814e424 upstream
 
-When loops reaches 0 the postfix decrement still subtracts, so the subsequent
-test fails.
+When using hrtimer with timer->cb_mode == HRTIMER_CB_SOFTIRQ
+in some cases the clockevent is not programmed.
+This happens, if:
+ - a timer is rearmed while it's state is HRTIMER_STATE_CALLBACK
+ - hrtimer_reprogram() returns -ETIME, when it is called after
+   CALLBACK is finished. This occurs if the new timer->expires
+   is in the past when CALLBACK is done.
+In this case, the timer needs to be removed from the tree and put
+onto the pending list again.
 
-Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
-Acked-by: Maciej W. Rozycki <macro@linux-mips.org>
-Cc: Johannes Weiner <hannes@saeurebad.de>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+The patch is against 2.6.22.5, but AFAICS, it is relevant
+for 2.6.25 also (in run_hrtimer_pending()).
+
+Signed-off-by: Bodo Stroesser <bstroesser@fujitsu-siemens.com>
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/serial/dz.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ kernel/hrtimer.c |   15 +++++++++++++--
+ 1 file changed, 13 insertions(+), 2 deletions(-)
 
---- a/drivers/serial/dz.c
-+++ b/drivers/serial/dz.c
-@@ -819,7 +819,7 @@ static void dz_console_putchar(struct ua
- 		dz_out(dport, DZ_TCR, mask);
- 		iob();
- 		udelay(2);
--	} while (loops--);
-+	} while (--loops);
- 
- 	if (loops)				/* Cannot send otherwise. */
- 		dz_out(dport, DZ_TDR, ch);
+--- a/kernel/hrtimer.c
++++ b/kernel/hrtimer.c
+@@ -1080,8 +1080,19 @@ static void run_hrtimer_pending(struct h
+ 			 * If the timer was rearmed on another CPU, reprogram
+ 			 * the event device.
+ 			 */
+-			if (timer->base->first == &timer->node)
+-				hrtimer_reprogram(timer, timer->base);
++			struct hrtimer_clock_base *base = timer->base;
++
++			if (base->first == &timer->node &&
++			    hrtimer_reprogram(timer, base)) {
++				/*
++				 * Timer is expired. Thus move it from tree to
++				 * pending list again.
++				 */
++				__remove_hrtimer(timer, base,
++						 HRTIMER_STATE_PENDING, 0);
++				list_add_tail(&timer->cb_entry,
++					      &base->cpu_base->cb_pending);
++			}
+ 		}
+ 	}
+ 	spin_unlock_irq(&cpu_base->lock);
 
 -- 
