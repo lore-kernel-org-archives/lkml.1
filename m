@@ -1,62 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756430AbYD2H6m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756828AbYD2ICi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756430AbYD2H6m (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 03:58:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753640AbYD2H6c
+	id S1756828AbYD2ICi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 04:02:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753640AbYD2ICX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 03:58:32 -0400
-Received: from hu-out-0506.google.com ([72.14.214.228]:49732 "EHLO
-	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753419AbYD2H6b (ORCPT
+	Tue, 29 Apr 2008 04:02:23 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:39286
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1753419AbYD2ICW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 03:58:31 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:x-x-sender:to:cc:subject:in-reply-to:message-id:references:user-agent:mime-version:content-type:from;
-        b=Y/z7L6T08UY5I3CsCAH5HBRgXQryIS5eLQ03gIegz0ZeDUcXwJ+qyEL6GRo0CFjtjSBaBHMeW3WzzfagM9jI5CVB3BNmqhCsHDggzBydtWiFo8KbYAyHuW92ReU1HeYjGWEoFQogVmdUh11BkRuJ9b3sZLVoAU0zaWCK1YESqVU=
-Date: Tue, 29 Apr 2008 15:57:24 +0800 (CST)
-X-X-Sender: wangcong@localhost.localdomain
-To: Jeff Dike <jdike@addtoit.com>
-cc: WANG Cong <xiyou.wangcong@gmail.com>, akpm@osdl.org,
-       linux-kernel@vger.kernel.org,
-       user-mode-linux-devel@lists.sourceforge.net
-Subject: Re: [PATCH 2/19] UML - Tidy stub management code
-In-Reply-To: <20080428154524.GE7334@c2.user-mode-linux.org>
-Message-ID: <alpine.LFD.1.00.0804291556550.2548@localhost.localdomain>
-References: <20080425175606.GA11174@c2.user-mode-linux.org> <20080426.180112.184545994.xiyou.wangcong@gmail.com> <20080428154524.GE7334@c2.user-mode-linux.org>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
-From: WANG Cong <xiyou.wangcong@gmail.com>
+	Tue, 29 Apr 2008 04:02:22 -0400
+Date: Tue, 29 Apr 2008 01:02:21 -0700 (PDT)
+Message-Id: <20080429.010221.268320653.davem@davemloft.net>
+To: linux-kernel@vger.kernel.org
+Subject: kgdb with sw single-step...
+From: David Miller <davem@davemloft.net>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 28 Apr 2008, Jeff Dike wrote:
 
-> On Sat, Apr 26, 2008 at 06:01:12PM +0800, WANG Cong wrote:
->> > +	/*
->> > +	 * When the stub stops, we find the following values on the
->> > +	 * beginning of the stack:
->> > +	 * (long) return_value
->> > +	 * (long) offset to failed sycall data (0 if no error)
->> > +	 */
->> > +	ret = *((unsigned long *) stack);
->> 
->> 
->> I am afraid the value will be truncated on 64bit machine, since
->> 'ret' is 'int' while 'stack' points to an 'unsigned long'.
->> 
->> Is this expected?
->
-> That's dubious, but I don't think it breaks anything.  On LE, *(int *)
-> and *(long *) will give you the same answer, and the value here is an
-> error code, which fits into 32 bits.
+While working on the sparc port of the new kgdb code in the tree I ran
+across a fundamental issue with this stuff on cpus that do
+single-stepping in software.
 
-So it's safe here.
+The short story is that since such sw single-stepping is using
+globally visible state (the temporary breakpoint used), it does not
+fare well in the presence of cpus other than the current one hitting
+the single-step breakpoint.
 
-OK. Thanks!
+This actually limits my ability to test using kgdbts fully, the
+parallel tests often fail because the sw single-step emulation
+in kgdbts runs into several issues including the one I'm
+mentioning here.
 
---
-Hi, I'm a .signature virus, please copy/paste me to help me spread
-all over the world.
+The good news is that there is a mostly working solution possible.
+
+When GDB is handling a normal threaded process, it handles other
+threads tripping over the temporary single-step breakpoint by simply
+holding them stopped until the thread that should have hit the
+breakpoint, does hit it.
+
+The kernel could do something similar, but this would require
+something like:
+
+1) The architecture kgdb support code implements the sw single
+   step breakpoint logic, this is necessary in order to
+   handle single stepping over branches, calls, and things
+   of this nature.  (this is something the single-step
+   emulation code in kgdbts doesn't even try to get right).
+
+2) The kgdb stub implements the single-stepping command using
+   the support code in #1.  When this happens, foreign cpus
+   which have been captured are kept captured until the
+   single-step breakpoint it hit by the primary kgdb cpu.
+
+Of course, this means we'll need changes to how gdb talks over the
+stub on these processors (mips, arm, sparc, etc.)  since currently gdb
+will do all of the sw single-step breakpoint work.
+
+Some architectures, like Alpha, do the single-stepping in the
+ptrace implementation.  Basically it's doing all of the sw
+single-step breakpoint work on the kernel side, instead of
+in gdb.  Platforms like Alpha would therefore be readily adaptable
+to the above scheme without any gdb changes.
+
