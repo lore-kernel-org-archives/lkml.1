@@ -1,55 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759621AbYD2ON1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758486AbYD2OQO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759621AbYD2ON1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 10:13:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752450AbYD2ONS
+	id S1758486AbYD2OQO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 10:16:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754223AbYD2OPy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 10:13:18 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:35297 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752270AbYD2ONR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 10:13:17 -0400
-Date: Tue, 29 Apr 2008 16:13:00 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Dimitri Sivanich <sivanich@sgi.com>
-Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [PATCH] disable softlockup detection at boottime
-Message-ID: <20080429141300.GA26461@elte.hu>
-References: <20080423201613.GA8546@sgi.com> <20080428165544.GE18210@elte.hu> <20080428185252.GC1167@sgi.com> <20080429123522.GK31271@elte.hu> <20080429124426.GA20775@sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080429124426.GA20775@sgi.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0019]
+	Tue, 29 Apr 2008 10:15:54 -0400
+Received: from mtagate8.de.ibm.com ([195.212.29.157]:59624 "EHLO
+	mtagate8.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752347AbYD2OPx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Apr 2008 10:15:53 -0400
+Message-Id: <20080429140117.631962807@de.ibm.com>
+User-Agent: quilt/0.46-1
+Date: Tue, 29 Apr 2008 16:01:17 +0200
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
+Subject: [patch 00/15] 2nd batch of s390 patches for 2.6.26
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+The usual fixes and one new feature. After Andrew has forwarded
+Gerald's hugetlbfs cleanup patches we can now add support for large
+pages. The second interesting patch (well at least for us :-) is
+Heiko's vmemmap sparsemem patch.
 
-* Dimitri Sivanich <sivanich@sgi.com> wrote:
+The shortlog:
 
-> > ah, sorry. But ... perhaps using threshold -1 would be the most 
-> > intuitive setting? (for 'infinite timeout' ==> softlockup detector 
-> > turned off) That way it all becomes configurable as part of the 
-> > threshold? No strong opinion though.
-> 
-> Having the ability to switch it off dynamically would be nice to have, 
-> but will need a little work yet.  Any solution should also minimize 
-> the amount of time spent in softlockup_tick.
-> 
-> Either '0' or '-1' seems OK to me, but if '-1' turns it off, do we 
-> allow a value of '0'?.
+Cornelia Huck (2):
+      [S390] cio: Use strict_strtoul() for attributes.
+      [S390] cio: Make isc handling more robust.
 
-i think <= 0 should be the condition for "off". That means both -1 and 0 
-would be OK.
+Gerald Schaefer (1):
+      [S390] System z large page support.
 
-	Ingo
+Heiko Carstens (11):
+      [S390] Move show_regs to traps.c.
+      [S390] Add missing ifndef/define to include/asm-s390/sysinfo.h.
+      [S390] smp: Fix locking order.
+      [S390] Automatically detect added cpus.
+      [S390] Add topology_core_siblings to topology.h
+      [S390] cpu topology: Fix possible deadlock.
+      [S390] uaccess_mvcos: #ifdef config dependent code.
+      [S390] Move stfl to system.h and delete duplicated version.
+      [S390] vmemmap: use clear_table to initialise page tables.
+      [S390] Convert machine feature detection code to C.
+      [S390] Convert to SPARSEMEM & SPARSEMEM_VMEMMAP
+
+Mathieu Desnoyers (1):
+      [S390] remove -traditional
+
+-- 
+blue skies,
+   Martin.
+
+"Reality continues to ruin my life." - Calvin.
