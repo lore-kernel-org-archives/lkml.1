@@ -1,89 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759561AbYD2POy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761463AbYD2PPb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759561AbYD2POy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 11:14:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757452AbYD2POi
+	id S1761463AbYD2PPb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 11:15:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760238AbYD2PPK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 11:14:38 -0400
-Received: from el-out-1112.google.com ([209.85.162.180]:23774 "EHLO
-	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757052AbYD2POf (ORCPT
+	Tue, 29 Apr 2008 11:15:10 -0400
+Received: from viefep18-int.chello.at ([213.46.255.22]:65285 "EHLO
+	viefep19-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757452AbYD2PPG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 11:14:35 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=PBfIJbiiL2lKKYEJldm3QAUVRq1Wyd8iFWKSJh2szETgTEmtO6fmZ/7VrD5XKMezHnEA9BQKoagR9UmQZkjHZNeJre5bK8PLQyLxMwFztldDX7pLuJIQHtuS9ceth6gGviNqY/FgqVgBoumeCA8+I5nd5n+O13haBzlUEEH1obM=
-Message-ID: <84144f020804290814o18f4868tf6536cc7f16cb8d7@mail.gmail.com>
-Date: Tue, 29 Apr 2008 18:14:33 +0300
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [PATCH] x86: endless page faults in mount_block_root for Linux 2.6
-Cc: "Henry Nestler" <Henry.Ne@arcor.de>, linux-kernel@vger.kernel.org,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       "Ingo Molnar" <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       "Alexander Viro" <viro@ftp.linux.org.uk>,
-       "Vegard Nossum" <vegard.nossum@gmail.com>
-In-Reply-To: <20080429143314.GG26461@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 29 Apr 2008 11:15:06 -0400
+Subject: Re: [PATCH 1/8] lockdep: fix recursive read lock validation
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Bart Van Assche <bart.vanassche@gmail.com>
+Cc: ego@in.ibm.com, linux-kernel@vger.kernel.org,
+       Zdenek Kabelac <zdenek.kabelac@gmail.com>,
+       Oleg Nesterov <oleg@tv-sign.ru>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Srivatsa Vaddagiri <vatsa@in.ibm.com>
+In-Reply-To: <e2e108260804290803u75764b56t1c475a6d186aca8d@mail.gmail.com>
+References: <20080429125659.GA23562@in.ibm.com>
+	 <20080429125750.GB23562@in.ibm.com>
+	 <e2e108260804290616l489ac8c2udcb2e80fc268b72b@mail.gmail.com>
+	 <1209481050.13978.72.camel@twins>
+	 <e2e108260804290803u75764b56t1c475a6d186aca8d@mail.gmail.com>
+Content-Type: text/plain
+Date: Tue, 29 Apr 2008 17:15:01 +0200
+Message-Id: <1209482101.13978.91.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.0 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <480E6BB4.5080902@henry.nestler.gmail.com>
-	 <480E8069.20502@henry.ne.arcor.de> <20080428164634.GC18210@elte.hu>
-	 <48164E29.4080409@henry.ne.arcor.de> <20080429143314.GG26461@elte.hu>
-X-Google-Sender-Auth: b2a880ca5a5bd00d
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 29, 2008 at 5:33 PM, Ingo Molnar <mingo@elte.hu> wrote:
->  btw., i have a kmemcheck-reported bug fixed in this same area with the
->  patch below. I dont remember the details anymore, but the root mount
->  code did something really, really weird here.
->
->  Subject: init: root mount fix
->  From: Ingo Molnar <mingo@elte.hu>
->  Date: Tue Apr 29 16:31:50 CEST 2008
->
->  Signed-off-by: Ingo Molnar <mingo@elte.hu>
->  ---
->   init/do_mounts.c |    8 ++++++--
->   1 file changed, 6 insertions(+), 2 deletions(-)
->
->  Index: linux/init/do_mounts.c
->  ===================================================================
->  --- linux.orig/init/do_mounts.c
->  +++ linux/init/do_mounts.c
->  @@ -201,9 +201,13 @@ static int __init do_mount_root(char *na
->         return 0;
->   }
->
->  +#if PAGE_SIZE < PATH_MAX
->  +# error increase the fs_names allocation size here
->  +#endif
->
-> +
->   void __init mount_block_root(char *name, int flags)
->   {
->  -       char *fs_names = __getname();
->  +       char *fs_names = (void *)__get_free_pages(GFP_KERNEL | __GFP_ZERO, 1);
->
->         char *p;
->   #ifdef CONFIG_BLOCK
->         char b[BDEVNAME_SIZE];
->  @@ -251,7 +255,7 @@ retry:
->
->  #endif
->         panic("VFS: Unable to mount root fs on %s", b);
->   out:
->  -       putname(fs_names);
->  +       free_pages((unsigned long)fs_names, 1);
->   }
->
->   #ifdef CONFIG_ROOT_NFS
+On Tue, 2008-04-29 at 17:03 +0200, Bart Van Assche wrote:
+> On Tue, Apr 29, 2008 at 4:57 PM, Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+> >
+> > On Tue, 2008-04-29 at 15:16 +0200, Bart Van Assche wrote:
+> >  > On Tue, Apr 29, 2008 at 2:57 PM, Gautham R Shenoy <ego@in.ibm.com> wrote:
+> >  > > Subject: lockdep: fix recursive read lock validation
+> >  > >  This means that the following sequence is now invalid, whereas previously
+> >  > >  it was considered valid:
+> >  > >
+> >  > >   rlock(a); rlock(b); runlock(b); runlock(a)
+> >  > >   rlock(b); rlock(a);
+> >  >
+> >  > Why are you marking this sequence as invalid ? Although it can be
+> >  > debated whether it is good programming practice to be inconsistent
+> >  > about the order of read-locking, the above sequence can't be involved
+> >  > in a deadlock.
+> >
+> >  Not for pure read locks, but when you add write locks to it, it does get
+> >  deadlocky. Lockdep does not keep separate chains for read and write
+> >  locks.
+> 
+> Nesting writer locks inside reader locks is always a bad idea. So
+> please come up with an example of how varying the reader lock nesting
+> order can trigger a deadlock (when no writer locks are nested inside
+> reader locks and nested writer locks are always nested in the same
+> order).
 
-It could have been a bug in early kmemcheck too. We don't check memory
-allocated with the page allocator, only slab, so this shouldn't
-trigger anything.
+It can't deadlock when only readers are involved, but lockdep will not
+be able to distinguish between the cases where only read locks are
+involved and a mix of readers and writers is involved.
+
+Hence disallow both.
+
+But hitting this requiers you do a series of rather unfortunate things:
+
+ 1) use recursive locking
+ 2) don't have strict lock order
+ 3) make it work by using read locks only
+
+Seriously, any code that triggers this might want to have its locking
+re-throught.
+
+
