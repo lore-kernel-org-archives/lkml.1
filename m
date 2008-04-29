@@ -1,84 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757013AbYD2JET@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756944AbYD2JGT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757013AbYD2JET (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 05:04:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754274AbYD2JEH
+	id S1756944AbYD2JGT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 05:06:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752479AbYD2JGK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 05:04:07 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:56937 "EHLO smtp5.pp.htv.fi"
+	Tue, 29 Apr 2008 05:06:10 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:21696 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753477AbYD2JEG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 05:04:06 -0400
-Date: Tue, 29 Apr 2008 12:03:27 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Alexander van Heukelum <heukelum@mailshack.com>, jdike@addtoit.com
-Subject: Re: [2.6 patch] fs/block_dev.c:I_BDEV() mustn't be inline
-Message-ID: <20080429090327.GA19269@cs181133002.pp.htv.fi>
-References: <20080424215739.GA32378@elte.hu> <alpine.LFD.1.10.0804241510420.2779@woody.linux-foundation.org> <20080426151516.GA27894@elte.hu> <alpine.LFD.1.10.0804260955300.2813@woody.linux-foundation.org> <20080426172222.GD17345@elte.hu> <20080428153831.GC2813@cs181133002.pp.htv.fi> <alpine.LFD.1.10.0804281736230.3119@woody.linux-foundation.org> <20080429080631.GB28059@cs181133002.pp.htv.fi> <20080429081705.GA3552@uranus.ravnborg.org>
+	id S1751523AbYD2JGJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Apr 2008 05:06:09 -0400
+Date: Tue, 29 Apr 2008 11:06:05 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.25-$sha1: RIP call_for_each_cic+0x25/0x50
+Message-ID: <20080429090604.GK12774@kernel.dk>
+References: <20080427225553.GA4848@martell.zuzino.mipt.ru> <20080428050145.af036c4f.akpm@linux-foundation.org> <20080428120412.GY12774@kernel.dk> <20080428195509.GA5247@martell.zuzino.mipt.ru> <20080429062116.GA5059@martell.zuzino.mipt.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080429081705.GA3552@uranus.ravnborg.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <20080429062116.GA5059@martell.zuzino.mipt.ru>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 29, 2008 at 10:17:05AM +0200, Sam Ravnborg wrote:
-> On Tue, Apr 29, 2008 at 11:06:31AM +0300, Adrian Bunk wrote:
-> > On Mon, Apr 28, 2008 at 05:41:11PM -0700, Linus Torvalds wrote:
-> > >...
-> > > > -inline struct block_device *I_BDEV(struct inode *inode)
-> > > > +struct block_device *I_BDEV(struct inode *inode)
-> > > >  {
-> > > >  	return &BDEV_I(inode)->bdev;
-> > > >  }
-> > > 
-> > > There is NO WAY IN HELL this function shouldn't be inlined,
-> > >...
-> > 
-> > Then CONFIG_OPTIMIZE_INLINING already broke it in your tree.
+On Tue, Apr 29 2008, Alexey Dobriyan wrote:
+> On Mon, Apr 28, 2008 at 11:55:09PM +0400, Alexey Dobriyan wrote:
+> > On Mon, Apr 28, 2008 at 02:04:13PM +0200, Jens Axboe wrote:
+> > > On Mon, Apr 28 2008, Andrew Morton wrote:
+> > > > On Mon, 28 Apr 2008 02:55:53 +0400 Alexey Dobriyan <adobriyan@gmail.com> wrote:
+> > > > 
+> > > > > This happened while ~90 cross-compile jobs were running in parallel on
+> > > > > ext2/noatime partition (slowly -- much debugging was on)
+> > > > > 
+> > > > > 
+> > > > > general protection fault: 0000 [1] PREEMPT SMP DEBUG_PAGEALLOC
+> > > > > CPU 0 
+> > > > > Modules linked in: ext2 nf_conntrack_irc ipt_MASQUERADE iptable_nat nf_nat nf_conntrack_ipv4 xt_state nf_conntrack iptable_filter ip_tables x_tables usblp uhci_hcd ehci_hcd usbcore sr_mod cdrom
+> > > > > Pid: 16483, comm: as Not tainted 2.6.25-c3bf9bc243092c53946fd6d8ebd6dc2f4e572d48 #1
+> > > > > RIP: 0010:[<ffffffff80307525>]  [<ffffffff80307525>] call_for_each_cic+0x25/0x50
+> > > > > RSP: 0018:ffff810170811e58  EFLAGS: 00010202
+> > > > > RAX: 6b6b6b6b6b6b6b6b RBX: 6b6b6b6b6b6b6b6b RCX: 0000000000000000
+> > > > > RDX: 0000000000000001 RSI: 0000000000000000 RDI: ffff81010ff92000
+> > > > > RBP: ffff810170811e78 R08: 0000000000000001 R09: 0000000000000000
+> > > > > R10: 0000000000000000 R11: ffff8100010069d8 R12: ffff810138ada300
+> > > > > R13: ffffffff803075b0 R14: ffff81017fcd2000 R15: ffff81010ff92168
+> > > > > FS:  00002ac3462426f0(0000) GS:ffffffff805d0000(0000) knlGS:0000000000000000
+> > > > > CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+> > > > > CR2: 00002ab602550000 CR3: 000000013609d000 CR4: 0000000000000660
+> > > > > DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+> > > > > DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+> > > > > Process as (pid: 16483, threadinfo ffff810170810000, task ffff81010ff92000)
+> > > > > Stack:  ffff810170811e88 ffff810138ada300 0000000000000010 ffff81010ff92100
+> > > > >  ffff810170811e88 ffffffff80307580 ffff810170811ea8 ffffffff80302a55
+> > > > >  ffff81010ff92100 ffff810138ada300 ffff810170811ec8 ffffffff80302b1f
+> > > > > Call Trace:
+> > > > >  [<ffffffff80307580>] cfq_free_io_context+0x10/0x20
+> > > > >  [<ffffffff80302a55>] put_io_context+0x85/0x90
+> > > > >  [<ffffffff80302b1f>] exit_io_context+0x8f/0xb0
+> > > > >  [<ffffffff80235d19>] do_exit+0x549/0x780
+> > > > >  [<ffffffff80235f8e>] do_group_exit+0x3e/0xb0
+> > > > >  [<ffffffff80236012>] sys_exit_group+0x12/0x20
+> > > > >  [<ffffffff8020b6db>] system_call_after_swapgs+0x7b/0x80
+> > > > > 
+> > > > > 
+> > > > > Code: 84 00 00 00 00 00 55 48 89 e5 41 55 49 89 f5 41 54 49 89 fc 53 48 83 ec 08 e8 18 e1 f5 ff 49 8b 44 24 68 48 85 c0 74 1e 48 89 c3 <48> 8b 03 48 8d 73 88 4c 89 e7 0f 18 08 41 ff d5 48 8b 03 48 85 
+> > > > > RIP  [<ffffffff80307525>] call_for_each_cic+0x25/0x50
+> > > > >  RSP <ffff810170811e58>
+> > > > > ---[ end trace ca143223eefdc828 ]---
+> > > > > Fixing recursive fault but reboot is needed!
+> > > > cfq-iosched.c hasn't been altered (yet) so it might not be a regression.
 > 
-> Can you please help me here.
-> Previously we said: gcc shall inline
-> Now we say: hi gcc - it is a good idea to inline this
+> 
+> > > It's not a regression, it's definitely in 2.6.25 as well. So that's a
+> > > bit scary, I've been looking over this stuff this morning but haven't
+> > > pin pointed anything yet.
+> > > 
+> > > Alexey, is this something that reproduces for you?
+> > 
+> > Not yet, second run of same workload went fine and I've never seen such
+> > oopses before.
+> 
+> And it oopses the very same way on the third run. as(1) again.
+> So if there are any debugging patches, let me know.
 
-Previosly we said:
-"inline" means "must inline"
+There seems to be a small race in the destructor path, can you see if
+this makes a difference?
 
-With CONFIG_OPTIMIZE_INLINING=y we say:
-"inline" means "try a bit harder to inline"
-
-> But even without any inline annotation we would expect gcc
-> to inline it based on normal heuristics simply due to the
-> small size/footprint of the function.
-
-gcc anyway has to emit one global copy of this function.
-
-And with the common CONFIG_CC_OPTIMIZE_FOR_SIZE=y we tell gcc to focus 
-on getting the smallest possible code.
-
-> So I cannot see how the CONFIG_OPTIMIZE_INLINING have any
-> effect here.
-> It all smells like a gcc bug to me.
-
-The compile error is a gcc bug.
-
-> 	Sam
-
-cu
-Adrian
+diff --git a/block/blk-ioc.c b/block/blk-ioc.c
+index e34df7c..012f065 100644
+--- a/block/blk-ioc.c
++++ b/block/blk-ioc.c
+@@ -41,8 +41,8 @@ int put_io_context(struct io_context *ioc)
+ 		rcu_read_lock();
+ 		if (ioc->aic && ioc->aic->dtor)
+ 			ioc->aic->dtor(ioc->aic);
+-		rcu_read_unlock();
+ 		cfq_dtor(ioc);
++		rcu_read_unlock();
+ 
+ 		kmem_cache_free(iocontext_cachep, ioc);
+ 		return 1;
 
 -- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+Jens Axboe
 
