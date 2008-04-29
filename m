@@ -1,55 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755582AbYD2JhI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751203AbYD2JjS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755582AbYD2JhI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 05:37:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751519AbYD2Jg5
+	id S1751203AbYD2JjS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 05:39:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751519AbYD2JjJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 05:36:57 -0400
-Received: from ppsw-6.csi.cam.ac.uk ([131.111.8.136]:45536 "EHLO
-	ppsw-6.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751203AbYD2Jg5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 05:36:57 -0400
-X-Greylist: delayed 1668 seconds by postgrey-1.27 at vger.kernel.org; Tue, 29 Apr 2008 05:36:56 EDT
-X-Cam-SpamDetails: Not scanned
-X-Cam-AntiVirus: No virus found
-X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
-Date: Tue, 29 Apr 2008 10:08:59 +0100
-From: David Simner <djs203@srcf.ucam.org>
-To: linux-kernel@vger.kernel.org
-Cc: mingo@elte.hu
-Subject: [patch] sched_info_switch not being called according to
-	documentation (10545)
-Message-ID: <20080429090859.GA16568@srcf.ucam.org>
+	Tue, 29 Apr 2008 05:39:09 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:47386 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751477AbYD2JjI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Apr 2008 05:39:08 -0400
+Date: Tue, 29 Apr 2008 10:39:05 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, bzolnier@gmail.com
+Subject: Re: 2.6.25-mm1: Failing to probe IDE interface
+Message-ID: <20080429093904.GA4503@csn.ul.ie>
+References: <20080417160331.b4729f0c.akpm@linux-foundation.org> <20080428164235.GA29229@csn.ul.ie> <20080428095924.3b7dfb96.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+In-Reply-To: <20080428095924.3b7dfb96.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On (28/04/08 09:59), Andrew Morton didst pronounce:
+> On Mon, 28 Apr 2008 17:42:36 +0100 Mel Gorman <mel@csn.ul.ie> wrote:
+> 
+> > An old T21 is failing to boot and the relevant message appears to be
+> > 
+> > [    1.929536] Probing IDE interface ide0...
+> > [   36.939317] ide0: Wait for ready failed before probe !
+> > [   37.502676] ide0: DISABLED, NO IRQ
+> > [   37.506356] ide0: failed to initialize IDE interface
+> > 
+> > The owner of ide-mm-ide-add-struct-ide_io_ports-take-2.patch with the
+> > "DISABLED, NO IRQ" message is cc'd. I've attached the config, full boot log
+> > and lspci -v for the machine in question. I'll start reverting some of the
+> > these patches to see if ide-mm-ide-add-struct-ide_io_ports-take-2.patch
+> > is really the culprit.
+> 
+> ide-mm-ide-add-struct-ide_io_ports-take-2.patch is now in mainline so a
+> quicky confirmation would be to test Linus's tree.
+> 
 
-http://bugzilla.kernel.org/show_bug.cgi?id=10545
+2.6.25 and latest git are both booting fine.
 
-sched_stats.h says that __sched_info_switch is "called when prev !=
-next" in the comment.  sched.c should therefore do that, see the patch
-below:
-
-David
-
---- linux-2.6.25-old/kernel/sched.c	2008-04-17 03:49:44.000000000 +0100
-+++ linux-2.6.25/kernel/sched.c	2008-04-29 10:54:11.000000000 +0100
-@@ -3944,9 +3944,9 @@
- 	prev->sched_class->put_prev_task(rq, prev);
- 	next = pick_next_task(rq, prev);
- 
--	sched_info_switch(prev, next);
--
- 	if (likely(prev != next)) {
-+		sched_info_switch(prev, next);
-+
- 		rq->nr_switches++;
- 		rq->curr = next;
- 		++*switch_count;
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
