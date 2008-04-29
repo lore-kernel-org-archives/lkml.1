@@ -1,123 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756688AbYD2FY4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757586AbYD2F0M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756688AbYD2FY4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 01:24:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753867AbYD2FYq
+	id S1757586AbYD2F0M (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 01:26:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753907AbYD2FZ5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 01:24:46 -0400
-Received: from wa-out-1112.google.com ([209.85.146.182]:25655 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753828AbYD2FYp (ORCPT
+	Tue, 29 Apr 2008 01:25:57 -0400
+Received: from nf-out-0910.google.com ([64.233.182.188]:36093 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753870AbYD2FZ4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 01:24:45 -0400
+	Tue, 29 Apr 2008 01:25:56 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=rQ3lPTL1M9FtMoto2tIsFN3wxKeqLTlsLgt308/cR69QgvwRjLyjQle1+tFoRMkWqKzaloRSzG+GF9SGjscqcYE13hHkHkN/VPRCD4zxbCI8tOU9/6oi/otbuXO6bXDCS/NAoE/HUdt7h1hvJ1XHkg+tpmVCPAp7JngUKQs5euw=
-Subject: [PATCH] lib: bitrev.c micro-optimization
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Mon, 28 Apr 2008 22:24:55 -0700
-Message-Id: <1209446696.24729.18.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=iEjwabNSZtBZdTaFdIzrRt+LUe6K7M/NJ9slvG9DvxFiSaXVy2ldiZ/3vZn0X/fan8fVlb0Zq10GkonJ1NKHem0QI8OlljEITWdtNk9SIvMR/e89flKS63hJFXRTc434fL5oFlip3zbCsMz5ITyThUjNb3i1AC2QAXeW2gGxrTg=
+Date: Tue, 29 Apr 2008 10:21:17 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.25-$sha1: RIP call_for_each_cic+0x25/0x50
+Message-ID: <20080429062116.GA5059@martell.zuzino.mipt.ru>
+References: <20080427225553.GA4848@martell.zuzino.mipt.ru> <20080428050145.af036c4f.akpm@linux-foundation.org> <20080428120412.GY12774@kernel.dk> <20080428195509.GA5247@martell.zuzino.mipt.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080428195509.GA5247@martell.zuzino.mipt.ru>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-X86_32 before:
-00000000 <bitrev32>:
-   0:	55                   	push   %ebp
-   1:	89 c1                	mov    %eax,%ecx
-   3:	89 e5                	mov    %esp,%ebp
-   5:	0f b6 cd             	movzbl %ch,%ecx
-   8:	53                   	push   %ebx
-   9:	89 c3                	mov    %eax,%ebx
-   b:	0f b6 c0             	movzbl %al,%eax
-   e:	0f b6 90 00 00 00 00 	movzbl 0x0(%eax),%edx
-  15:	c1 eb 10             	shr    $0x10,%ebx
-  18:	66 0f b6 81 00 00 00 	movzbw 0x0(%ecx),%ax
-  1f:	00
-  20:	c1 e2 08             	shl    $0x8,%edx
-  23:	09 d0                	or     %edx,%eax
-  25:	0f b6 d3             	movzbl %bl,%edx
-  28:	0f b6 8a 00 00 00 00 	movzbl 0x0(%edx),%ecx
-  2f:	0f b6 d7             	movzbl %bh,%edx
-  32:	66 0f b6 92 00 00 00 	movzbw 0x0(%edx),%dx
-  39:	00
-  3a:	c1 e0 10             	shl    $0x10,%eax
-  3d:	5b                   	pop    %ebx
-  3e:	5d                   	pop    %ebp
-  3f:	c1 e1 08             	shl    $0x8,%ecx
-  42:	09 ca                	or     %ecx,%edx
-  44:	0f b7 d2             	movzwl %dx,%edx
-  47:	09 d0                	or     %edx,%eax
-  49:	c3                   	ret
-
-X86_32 after:
-00000000 <bitrev32>:
-   0:   55                      push   %ebp
-   1:   89 e5                   mov    %esp,%ebp
-   3:   83 ec 08                sub    $0x8,%esp
-   6:   89 45 f8                mov    %eax,-0x8(%ebp)
-   9:   0f b6 45 f8             movzbl -0x8(%ebp),%eax
-   d:   8a 80 00 00 00 00       mov    0x0(%eax),%al
-  13:   88 45 ff                mov    %al,-0x1(%ebp)
-  16:   0f b6 45 f9             movzbl -0x7(%ebp),%eax
-  1a:   8a 80 00 00 00 00       mov    0x0(%eax),%al
-  20:   88 45 fe                mov    %al,-0x2(%ebp)
-  23:   0f b6 45 fa             movzbl -0x6(%ebp),%eax
-  27:   8a 80 00 00 00 00       mov    0x0(%eax),%al
-  2d:   88 45 fd                mov    %al,-0x3(%ebp)
-  30:   0f b6 45 fb             movzbl -0x5(%ebp),%eax
-  34:   8a 80 00 00 00 00       mov    0x0(%eax),%al
-  3a:   88 45 fc                mov    %al,-0x4(%ebp)
-  3d:   8b 45 fc                mov    -0x4(%ebp),%eax
-  40:   c9                      leave
-  41:   c3                      ret
-
-Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
----
- lib/bitrev.c |   15 +++++++++------
- 1 files changed, 9 insertions(+), 6 deletions(-)
-
-diff --git a/lib/bitrev.c b/lib/bitrev.c
-index 989aff7..8367b91 100644
---- a/lib/bitrev.c
-+++ b/lib/bitrev.c
-@@ -42,17 +42,20 @@ const u8 byte_rev_table[256] = {
- };
- EXPORT_SYMBOL_GPL(byte_rev_table);
- 
--static __always_inline u16 bitrev16(u16 x)
--{
--	return (bitrev8(x & 0xff) << 8) | bitrev8(x >> 8);
--}
--
- /**
-  * bitrev32 - reverse the order of bits in a u32 value
-  * @x: value to be bit-reversed
-  */
- u32 bitrev32(u32 x)
- {
--	return (bitrev16(x & 0xffff) << 16) | bitrev16(x >> 16);
-+	u32 y;
-+	u8 *yp = (u8 *)&y + 3;
-+	u8 *xp = (u8 *)&x;
-+
-+	*yp-- = byte_rev_table[*xp++];
-+	*yp-- = byte_rev_table[*xp++];
-+	*yp-- = byte_rev_table[*xp++];
-+	*yp-- = byte_rev_table[*xp++];
-+	return y;
- }
- EXPORT_SYMBOL(bitrev32);
--- 
-1.5.5.1.270.g89765
+On Mon, Apr 28, 2008 at 11:55:09PM +0400, Alexey Dobriyan wrote:
+> On Mon, Apr 28, 2008 at 02:04:13PM +0200, Jens Axboe wrote:
+> > On Mon, Apr 28 2008, Andrew Morton wrote:
+> > > On Mon, 28 Apr 2008 02:55:53 +0400 Alexey Dobriyan <adobriyan@gmail.com> wrote:
+> > > 
+> > > > This happened while ~90 cross-compile jobs were running in parallel on
+> > > > ext2/noatime partition (slowly -- much debugging was on)
+> > > > 
+> > > > 
+> > > > general protection fault: 0000 [1] PREEMPT SMP DEBUG_PAGEALLOC
+> > > > CPU 0 
+> > > > Modules linked in: ext2 nf_conntrack_irc ipt_MASQUERADE iptable_nat nf_nat nf_conntrack_ipv4 xt_state nf_conntrack iptable_filter ip_tables x_tables usblp uhci_hcd ehci_hcd usbcore sr_mod cdrom
+> > > > Pid: 16483, comm: as Not tainted 2.6.25-c3bf9bc243092c53946fd6d8ebd6dc2f4e572d48 #1
+> > > > RIP: 0010:[<ffffffff80307525>]  [<ffffffff80307525>] call_for_each_cic+0x25/0x50
+> > > > RSP: 0018:ffff810170811e58  EFLAGS: 00010202
+> > > > RAX: 6b6b6b6b6b6b6b6b RBX: 6b6b6b6b6b6b6b6b RCX: 0000000000000000
+> > > > RDX: 0000000000000001 RSI: 0000000000000000 RDI: ffff81010ff92000
+> > > > RBP: ffff810170811e78 R08: 0000000000000001 R09: 0000000000000000
+> > > > R10: 0000000000000000 R11: ffff8100010069d8 R12: ffff810138ada300
+> > > > R13: ffffffff803075b0 R14: ffff81017fcd2000 R15: ffff81010ff92168
+> > > > FS:  00002ac3462426f0(0000) GS:ffffffff805d0000(0000) knlGS:0000000000000000
+> > > > CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+> > > > CR2: 00002ab602550000 CR3: 000000013609d000 CR4: 0000000000000660
+> > > > DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+> > > > DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+> > > > Process as (pid: 16483, threadinfo ffff810170810000, task ffff81010ff92000)
+> > > > Stack:  ffff810170811e88 ffff810138ada300 0000000000000010 ffff81010ff92100
+> > > >  ffff810170811e88 ffffffff80307580 ffff810170811ea8 ffffffff80302a55
+> > > >  ffff81010ff92100 ffff810138ada300 ffff810170811ec8 ffffffff80302b1f
+> > > > Call Trace:
+> > > >  [<ffffffff80307580>] cfq_free_io_context+0x10/0x20
+> > > >  [<ffffffff80302a55>] put_io_context+0x85/0x90
+> > > >  [<ffffffff80302b1f>] exit_io_context+0x8f/0xb0
+> > > >  [<ffffffff80235d19>] do_exit+0x549/0x780
+> > > >  [<ffffffff80235f8e>] do_group_exit+0x3e/0xb0
+> > > >  [<ffffffff80236012>] sys_exit_group+0x12/0x20
+> > > >  [<ffffffff8020b6db>] system_call_after_swapgs+0x7b/0x80
+> > > > 
+> > > > 
+> > > > Code: 84 00 00 00 00 00 55 48 89 e5 41 55 49 89 f5 41 54 49 89 fc 53 48 83 ec 08 e8 18 e1 f5 ff 49 8b 44 24 68 48 85 c0 74 1e 48 89 c3 <48> 8b 03 48 8d 73 88 4c 89 e7 0f 18 08 41 ff d5 48 8b 03 48 85 
+> > > > RIP  [<ffffffff80307525>] call_for_each_cic+0x25/0x50
+> > > >  RSP <ffff810170811e58>
+> > > > ---[ end trace ca143223eefdc828 ]---
+> > > > Fixing recursive fault but reboot is needed!
+> > > cfq-iosched.c hasn't been altered (yet) so it might not be a regression.
 
 
+> > It's not a regression, it's definitely in 2.6.25 as well. So that's a
+> > bit scary, I've been looking over this stuff this morning but haven't
+> > pin pointed anything yet.
+> > 
+> > Alexey, is this something that reproduces for you?
+> 
+> Not yet, second run of same workload went fine and I've never seen such
+> oopses before.
+
+And it oopses the very same way on the third run. as(1) again.
+So if there are any debugging patches, let me know.
 
