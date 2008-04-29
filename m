@@ -1,68 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757167AbYD2XsB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754705AbYD2Xtr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757167AbYD2XsB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 19:48:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752065AbYD2Xrv
+	id S1754705AbYD2Xtr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 19:49:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754734AbYD2Xti
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 19:47:51 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:54957 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751892AbYD2Xru (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 19:47:50 -0400
-Date: Wed, 30 Apr 2008 09:47:42 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: linux-kernel@vger.kernel.org, linux-next@vger.kernel.org,
-       linux-pci@atrey.karlin.mff.cuni.cz,
-       Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-Subject: Re: PCI tree info
-Message-Id: <20080430094742.589add5a.sfr@canb.auug.org.au>
-In-Reply-To: <200804291100.08622.jbarnes@virtuousgeek.org>
-References: <200804291100.08622.jbarnes@virtuousgeek.org>
-X-Mailer: Sylpheed 2.5.0beta3 (GTK+ 2.12.9; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Wed__30_Apr_2008_09_47_42_+1000_+78W4cq8gQEjrlzC"
+	Tue, 29 Apr 2008 19:49:38 -0400
+Received: from yw-out-2324.google.com ([74.125.46.28]:27832 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752614AbYD2Xth (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Apr 2008 19:49:37 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=C14ZwggdPqrYpUREuGUfcI9MhWFku129cDCyU4nMpj1fIkCg/PCVcbcRNTBni3/gjl6UaK4C/jZ7uv+mvIMKQkz47ZeA+qIuQa1pvnsYRc3HLK3LH1Whv8ixMyP0l4Euue0B1EpWYQcpJrp4bWfZjeB02FrEXYr95F+1kFJ9H1M=
+Message-ID: <37219a840804291649q36638464ye2d57cf8184580a4@mail.gmail.com>
+Date: Tue, 29 Apr 2008 19:49:24 -0400
+From: "Michael Krufky" <mkrufky@linuxtv.org>
+To: "Mauro Carvalho Chehab" <mchehab@infradead.org>
+Subject: Re: [v4l-dvb-maintainer] [GIT PATCHES] V4L/DVB updates and fixes for 2.6.26
+Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
+       linux-dvb-maintainer@linuxtv.org,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       video4linux-list@redhat.com, linux-kernel@vger.kernel.org
+In-Reply-To: <20080429185009.716c3284@gaivota>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080429185009.716c3284@gaivota>
+X-Google-Sender-Auth: 9b9b175dcc70f550
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Wed__30_Apr_2008_09_47_42_+1000_+78W4cq8gQEjrlzC
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-Hi Jesse,
-
-On Tue, 29 Apr 2008 11:00:08 -0700 Jesse Barnes <jbarnes@virtuousgeek.org> =
-wrote:
+On Tue, Apr 29, 2008 at 5:50 PM, Mauro Carvalho Chehab
+<mchehab@infradead.org> wrote:
+> Linus,
 >
-> The PCI tree now lives in git: =20
-> git://git.kernel.org/pub/scm/linux/kernel/git/jbarnes/pci-2.6.  There are=
- a=20
-> few branches:
->   for-linus - stuff headed to Linus in the next pull request
->   linux-next - patches targetted at the following release
+>  Please pull from:
+>         ssh://master.kernel.org/pub/scm/linux/kernel/git/mchehab/v4l-dvb.git master
+>
+>  For the following:
+>
+>    - Fixes on mtm001, mtv022, pvrusb2, ivtv, cx88 and saa7134;
+>    - new board additions on saa7134 and ivtv;
+>    - load tuners only when needed;
+>    - reorganization of tuner drivers that are shared between DVB and V4L;
+>    - Addition of a new driver for Conexant CX23418 MPEG encoder chip (cx18).
 
-I have added both these to linux-next as "pci-current" and "pci"
-respectively.  These have just you as the contact - let me know if you
-want someone else as well (or even a mailing list).
+[snip]
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+>  Mauro Carvalho Chehab (9):
+>       Rename common tuner Kconfig names to use the same
+>
+>  Michael Krufky (4):
+>       V4L/DVB (7789): tuner: remove static dependencies on analog tuner sub-modules
 
---Signature=_Wed__30_Apr_2008_09_47_42_+1000_+78W4cq8gQEjrlzC
-Content-Type: application/pgp-signature
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+Linus has already merged the changes (thank you, Linus) ... However,
+there is a bug.
 
-iD8DBQFIF7OiTgG2atn1QN8RAvmZAJ4rvw6iCd4iLVMTRe+TnIqTm2HaLwCdG2v3
-BJDBJ/OqFg5J1QfpLTWDHEU=
-=VVIR
------END PGP SIGNATURE-----
+My "remove static dependencies on analog tuner sub-modules" patch was
+applied after Mauro's "Rename common tuner Kconfig names to use the
+same" patch.
 
---Signature=_Wed__30_Apr_2008_09_47_42_+1000_+78W4cq8gQEjrlzC--
+My patch has conditional behavior, based on CONFIG_DVB_CORE_ATTACH,
+which was renamed to CONFIG_MEDIA_ATTACH in Mauro's patch.
+
+To fix this, we need to do:
+
+sed -i s/"CONFIG_DVB_CORE_ATTACH"/"CONFIG_MEDIA_ATTACH"/1
+drivers/media/video/tuner-core.c
+
+The issue will cause invalid module use counts upon unloading analog
+tuner modules, if CONFIG_MEDIA_ATTACH is enabled.
+
+I would be happy to fix this myself, but Mauro's patch has not yet
+been backported into the linuxtv.org repository.
+
+Mauro, can you do the above fix and send it in to Linus?
+
+Thanks,
+
+Mike Krufky
