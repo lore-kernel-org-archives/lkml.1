@@ -1,82 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757176AbYD2N5U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758689AbYD2N6R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757176AbYD2N5U (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 09:57:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751613AbYD2N5M
+	id S1758689AbYD2N6R (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 09:58:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754636AbYD2N6D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 09:57:12 -0400
-Received: from extu-mxob-2.symantec.com ([216.10.194.135]:35107 "EHLO
-	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750981AbYD2N5M (ORCPT
+	Tue, 29 Apr 2008 09:58:03 -0400
+Received: from mis011-2.exch011.intermedia.net ([64.78.21.129]:3315 "EHLO
+	mis011-2.exch011.intermedia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750981AbYD2N6B (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 09:57:12 -0400
-Date: Tue, 29 Apr 2008 14:57:15 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.site
-To: Ross Biro <rossb@google.com>
-cc: linux-mm@kvack.org, lkml <linux-kernel@vger.kernel.org>
-Subject: Re: Page Faults slower in 2.6.25-rc9 than 2.6.23
-In-Reply-To: <d43160c70804290610t2135a271hd9b907529e89e74e@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0804291447040.5058@blonde.site>
-References: <d43160c70804290610t2135a271hd9b907529e89e74e@mail.gmail.com>
+	Tue, 29 Apr 2008 09:58:01 -0400
+From: Amit Shah <amit.shah@qumranet.com>
+Organization: Qumranet Inc.
+To: Andi Kleen <andi@firstfloor.org>
+Subject: Re: [PATCH] KVM PV Guest: Implement paravirtualized DMA
+Date: Tue, 29 Apr 2008 19:29:17 +0530
+User-Agent: KMail/1.9.9
+Cc: kvm-devel@lists.sourceforge.net, chrisw@redhat.com, allen.m.kay@intel.com,
+       linux-kernel@vger.kernel.org, gcosta@redhat.com, avi@qumranet.com,
+       virtualization@lists.linux-foundation.org, BENAMI@il.ibm.com,
+       "Muli Ben-Yehuda" <muli@il.ibm.com>
+References: <1209465451-3758-1-git-send-email-amit.shah@qumranet.com> <1209465451-3758-4-git-send-email-amit.shah@qumranet.com> <87od7shjnv.fsf@basil.nowhere.org>
+In-Reply-To: <87od7shjnv.fsf@basil.nowhere.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200804291929.18733.amit.shah@qumranet.com>
+X-OriginalArrivalTime: 29 Apr 2008 13:58:00.0314 (UTC) FILETIME=[09060DA0:01C8AA01]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 29 Apr 2008, Ross Biro wrote:
-> I don't know if this has been noticed before.  I was benchmarking my
-> page table relocation code and I noticed that on 2.6.25-rc9 page
-> faults take 10% more time than on 2.6.22.  This is using lmbench
-> running on an intel x86_64 system.  The good news is that the page
-> table relocation code now only adds a 1.6% slow down to page faults.
+On Tuesday 29 April 2008 19:01:32 Andi Kleen wrote:
+> Amit Shah <amit.shah@qumranet.com> writes:
 
-Do you have CONFIG_CGROUP_MEM_RES_CTLR=y in 2.6.25?
-That added about 20% to my lmbench "Page Fault" tests (with
-adverse effect on several others e.g. the fork, exec, sh group).
+> > +const struct dma_mapping_ops *orig_dma_ops;
+>
+> I suspect real dma ops stacking will need some further thought than
+> your simple hacks
 
-Try the same kernel with boot option "cgroup_disable=memory",
-that should recoup most (but not quite all) of the slowdown;
-or rebuild with n to CGROUP_MEM_RES_CTLR.
+Yes; that's something we're planning to do.
 
-But your "Mmap Latency" went up 425% ??
+> Haven't read further, but to be honest the code doesn't seem to be anywhere
+> near merging quality.
 
-Hugh
+I'm basically using these patches to test the PCI passthrough functionality 
+(by which we can assign host PCI devices to a guest OS via KVM). While other 
+methods of handling DMA operations are being worked on (1-1 mapping of the 
+guest in the host address space and virtualization-aware IOMMU translations), 
+this patchset provides a quick way to check if things indeed work.
 
-> 
->     Ross
-> 
-> 2.6.25-rc9:
-> 
-> File & VM system latencies in microseconds - smaller is better
-> -------------------------------------------------------------------------------
-> Host                 OS   0K File      10K File     Mmap    Prot   Page   100fd
->                         Create Delete Create Delete Latency Fault  Fault  selct
-> --------- ------------- ------ ------ ------ ------ ------- ----- ------- -----
-> ipnn2     Linux 2.6.25-   13.9 7.6111  103.4 9.7453   926.0 0.711 2.14250 2.552
-> ipnn2     Linux 2.6.25-   13.7 7.6243  310.7 9.6574   932.0 0.750 2.15970 2.555
-> ipnn2     Linux 2.6.25-   13.9 7.6831  192.5   10.0   927.0 0.760 2.21310 2.553
-> ipnn2     Linux 2.6.25-   13.9 7.5739   98.4 9.5330   927.0 0.703 2.17610 2.554
-> ipnn2     Linux 2.6.25-   14.6 7.6429   39.1   10.8   935.0 0.763 2.17250 2.552
-> ipnn2     Linux 2.6.25-   14.1 7.8777  129.8 9.9375   930.0 0.782 2.26460 2.559
-> ipnn2     Linux 2.6.25-   14.8 7.9639  623.8 8.2042   927.0 0.773 2.21510 2.557
-> ipnn2     Linux 2.6.25-   14.4 7.5842  622.3 8.3272   920.0 0.745 2.22210 2.558
-> ipnn2     Linux 2.6.25-   14.2 7.6339   45.7   10.2   935.0 0.675 2.23860 2.554
-> ipnn2     Linux 2.6.25-   14.1 7.7175  263.7   10.1   929.0 0.762 2.22350 2.556
-> ipnn2     Linux 2.6.25-   13.9 8.1230  378.2 9.4343   975.0 0.752 2.25920 2.554
-> 
-> 
-> 2.6.23:
-> File & VM system latencies in microseconds - smaller is better
-> -------------------------------------------------------------------------------
-> Host                 OS   0K File      10K File     Mmap    Prot   Page   100fd
->                         Create Delete Create Delete Latency Fault  Fault  selct
-> --------- ------------- ------ ------ ------ ------ ------- ----- ------- -----
-> ipnn2     Linux 2.6.23-                               218.0 0.912 1.94010 2.626
-> ipnn2     Linux 2.6.23-                               219.0 1.095 1.96400 2.597
-> ipnn2     Linux 2.6.23-                               219.0 0.774 1.96640 2.603
-> ipnn2     Linux 2.6.23-                               221.0 0.946 1.99950 2.601
-> ipnn2     Linux 2.6.23-                               219.0 0.902 1.99160 2.733
-> ipnn2     Linux 2.6.23-                               217.0 0.904 2.04790 2.601
-> ipnn2     Linux 2.6.23-                               225.0 0.893 1.99620 2.600
+However, if some version of this patch can be useful upstream, I'll be glad to 
+work on that. That said, as you point out, we need stackable dma ops as well 
+as getting rid of the is_pv_device() function in dma_ops and that's something 
+that can be done right away.
+
+Thanks for the review!
+
+Amit
