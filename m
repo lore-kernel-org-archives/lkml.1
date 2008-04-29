@@ -1,60 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932378AbYD2PPs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761509AbYD2PUS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932378AbYD2PPs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 11:15:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760240AbYD2PPL
+	id S1761509AbYD2PUS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 11:20:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754234AbYD2PUE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 11:15:11 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:47115 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752280AbYD2PPI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 11:15:08 -0400
-Date: Tue, 29 Apr 2008 08:14:08 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
-       mingo@redhat.com
-Subject: Re: [PATCH] toshiba: Use ioremap_cached
-Message-Id: <20080429081408.c9dc6b4f.akpm@linux-foundation.org>
-In-Reply-To: <20080429141559.GB26461@elte.hu>
-References: <20080429142023.093bfba6@core>
-	<20080429141559.GB26461@elte.hu>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 29 Apr 2008 11:20:04 -0400
+Received: from ns2.suse.de ([195.135.220.15]:36030 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752280AbYD2PUC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Apr 2008 11:20:02 -0400
+Date: Tue, 29 Apr 2008 08:14:36 -0700
+From: Greg KH <gregkh@suse.de>
+To: Takashi Iwai <tiwai@suse.de>
+Cc: Stas Sergeev <stsp@aknet.ru>, Linux kernel <linux-kernel@vger.kernel.org>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Subject: Re: patch
+	driver-core-warn-about-duplicate-driver-names-on-the-same-bus.patch
+	added to gregkh-2.6 tree
+Message-ID: <20080429151436.GB10587@suse.de>
+References: <12094266793898@kroah.org> <4816A888.9000802@aknet.ru> <20080429045849.GA6348@suse.de> <s5habjdvt6z.wl%tiwai@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <s5habjdvt6z.wl%tiwai@suse.de>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 29 Apr 2008 16:15:59 +0200 Ingo Molnar <mingo@elte.hu> wrote:
-
-> 
-> * Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
-> 
-> > The switch of ioremap to default to uncached doesn't break this driver
-> > but it does needlessly slow it down as BIOS space is cachable and this
-> > driver is quite happy scanning cached ROM space.
+On Tue, Apr 29, 2008 at 12:41:56PM +0200, Takashi Iwai wrote:
+> At Mon, 28 Apr 2008 21:58:49 -0700,
+> Greg KH wrote:
 > > 
-> > Signed-off-by: Alan Cox <alan@redhat.com>
+> > On Tue, Apr 29, 2008 at 08:48:08AM +0400, Stas Sergeev wrote:
+> > > Hello.
+> > > 
+> > > gregkh@suse.de wrote:
+> > > > This is a note to let you know that I've just added the patch titled
+> > > >      Subject: driver core: warn about duplicate driver names on the same bus
+> > > > to my gregkh-2.6 tree.  Its filename is
+> > > Thanks.
+> > > 
+> > > Takashi, do you think this fixes the
+> > > pcspkr/snd-pcsp conflict sufficienly
+> > > well? I think the Kconfig protection
+> > > is no longer needed. For the better
+> > > convinience the modprobe rule can be
+> > > created that will remove one driver
+> > > before inserting another. But this is
+> > > optional.
+> > 
+> > No, don't rely on the driver core warning and catching code errors like
+> > this, that's not a good idea at all.  I like the warning and your patch,
+> > but don't assume it's always going to be there.
 > 
-> Acked-by: Ingo Molnar <mingo@elte.hu>
-> 
-> i suspect this shouldnt go via x86.git but i've queued it up to track 
-> it.
+> But multiple drivers for the same device are allowed on other buses
+> like PCI.  I think this is no reason to prohibit the multiple platform
+> drivers for the same platform device.
 
-Please don't "queue things up to track them".  Just queue them up to merge
-them, or don't queue them at all.
+No, the driver core doesn't allow that at all right now (I'm working on
+fixing that though...)
 
-Because if you queue it up then I will not.  If you later for some reason
-unqueue it then volia, it is lost.  We should aim to avoid having multiple
-copies of a patch sitting around the place.
+What this patch did is just not allow you to have the same "name" for
+the driver on the same bus, which is reasonable as without the check,
+sysfs complains about trying to create a duplicate name in the same
+directory.
 
-I shall not merge this patch - it is yours.
+Different names is fine, and I'll continue to work on the ability to
+allow multiple drivers for the same device at the same time...
 
-> Is there an active maintainer for this file?
+thanks,
 
-drivers/char/*?  Very rarely maintained.  git-whatchanged tells the story
-on this one: no.
-
+greg k-h
