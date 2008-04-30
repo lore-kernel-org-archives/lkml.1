@@ -1,91 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762433AbYD3KxQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760023AbYD3LAT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762433AbYD3KxQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Apr 2008 06:53:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761897AbYD3Kwx
+	id S1760023AbYD3LAT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Apr 2008 07:00:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756416AbYD3LAF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Apr 2008 06:52:53 -0400
-Received: from saeurebad.de ([85.214.36.134]:54880 "EHLO saeurebad.de"
+	Wed, 30 Apr 2008 07:00:05 -0400
+Received: from mailhub.sw.ru ([195.214.232.25]:46034 "EHLO relay.sw.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762264AbYD3Kww (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Apr 2008 06:52:52 -0400
-From: Johannes Weiner <hannes@saeurebad.de>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Yinghai Lu <yinghai.lu@sun.com>, Yinghai Lu <yhlu.kernel@gmail.com>,
-       jbarnes@virtuousgeek.org
-Subject: Re: [patch] mm: node-setup agnostic free_bootmem()
-References: <20080426185516.GA32364@elte.hu>
-	<alpine.LFD.1.10.0804261205490.2813@woody.linux-foundation.org>
-	<20080426194143.GA8366@elte.hu> <87hcdmnccu.fsf@saeurebad.de>
-	<20080427234630.GC14338@elte.hu> <877iein859.fsf@saeurebad.de>
-	<20080428004046.GA16155@elte.hu> <87skx56i23.fsf@saeurebad.de>
-	<20080429142520.GE26461@elte.hu>
-Date: Wed, 30 Apr 2008 12:52:48 +0200
-In-Reply-To: <20080429142520.GE26461@elte.hu> (Ingo Molnar's message of "Tue,
-	29 Apr 2008 16:25:20 +0200")
-Message-ID: <87mynby5q7.fsf@saeurebad.de>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
+	id S1754380AbYD3LAE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Apr 2008 07:00:04 -0400
+Subject: Re: [PATCH -next 2/2] sysfs: sysfs_update_group stub for
+	CONFIG_SYSFS=n
+From: "Denis V. Lunev" <den@openvz.org>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: lkml <linux-kernel@vger.kernel.org>,
+       jejb <James.Bottomley@HansenPartnership.com>, gregkh <greg@kroah.com>,
+       akpm <akpm@linux-foundation.org>, sfr@canb.auug.org.au
+In-Reply-To: <20080423095622.25e29f45.randy.dunlap@oracle.com>
+References: <20080423095622.25e29f45.randy.dunlap@oracle.com>
+Content-Type: text/plain
+Organization: OpenVz kernel team
+Date: Wed, 30 Apr 2008 14:58:21 +0400
+Message-Id: <1209553101.7357.2.camel@iris.sw.ru>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Wed, 2008-04-23 at 09:56 -0700, Randy Dunlap wrote:
+> From: Randy Dunlap <randy.dunlap@oracle.com>
+> 
+> scsi_transport_spi uses sysfs_update_group() when CONFIG_SYSFS=n,
+> so provide a stub for it.
+> 
+> next-20080423/drivers/scsi/scsi_transport_spi.c:1467: error: implicit declaration of function 'sysfs_update_group'
+> make[3]: *** [drivers/scsi/scsi_transport_spi.o] Error 1
+> 
+> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
 
-Ingo Molnar <mingo@elte.hu> writes:
+This patch seems lost. Current Linus GIT tree is still affected.
 
-> * Johannes Weiner <hannes@saeurebad.de> wrote:
->
->> >  void __init free_bootmem(unsigned long addr, unsigned long size)
->> >  {
->> >  	bootmem_data_t *bdata;
->> > -	list_for_each_entry(bdata, &bdata_list, list)
->> > -		free_bootmem_core(bdata, addr, size);
->> > +	unsigned long pos = addr;
->> > +	unsigned long partsize = size;
->> > +
->> > +	list_for_each_entry(bdata, &bdata_list, list) {
->> > +		unsigned long remainder = 0;
->> > +
->> > +		if (pos < bdata->node_boot_start)
->> > +			continue;
->> > +
->> > +		if (PFN_DOWN(pos + partsize) > bdata->node_low_pfn) {
->> > +			remainder = PFN_DOWN(pos + partsize) - bdata->node_low_pfn;
->> > +			partsize -= remainder;
->> > +		}
->> > +
->> > +		free_bootmem_core(bdata, pos, partsize);
->> > +
->> > +		if (!remainder)
->> > +			return;
->> > +
->> > +		pos = PFN_PHYS(bdata->node_low_pfn + 1);
->> > +	}
->> > +	printk(KERN_ERR "free_bootmem: request: addr=%lx, size=%lx, "
->> > +			"state: pos=%lx, partsize=%lx\n", addr, size,
->> > +			pos, partsize);
->> > +	BUG();
->> >  }
->> >  
->> >  unsigned long __init free_all_bootmem(void)
->> 
->> Yes, looks good.  But needs explicit testing, I guess.
->
-> yep, but as Yinghai Lu has pointed it out, this removes a cross-node 
-> allocation fix. That fix has to be preserved in any cleanup, agreed?
+Regards,
+	Den
 
-Yes, if Yinghai is right, my patch should be dropped, of course.
-
-> in general bootmem should assume the weirdest of NUMA topologies and be 
-> defensive about them. Topologies will only become more complex, never 
-> less complex.
-
-Okay.
-
-	Hannes
