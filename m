@@ -1,78 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933936AbYD3VAx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934001AbYD3VBW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933936AbYD3VAx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Apr 2008 17:00:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933528AbYD3VAc
+	id S934001AbYD3VBW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Apr 2008 17:01:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933684AbYD3VAn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Apr 2008 17:00:32 -0400
-Received: from nf-out-0910.google.com ([64.233.182.191]:46518 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933522AbYD3VAa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Apr 2008 17:00:30 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=k6ixsa/k6949ZT4A+kCkk5LUix3qLe+NIQMkNnsjXG+CM/PJ+qIvDeMjkcu2L14CXQ6epDp5ihPNaiY/IC8s33CaUkR73qxPa+5rsu2R9kKZdX6iCJJ4P7OPGy6GigocPgmAq0bvfbwAHyKzi+uJ5v5r3MPJ1f33rZnlsNaBSys=
-Date: Wed, 30 Apr 2008 17:00:23 -0400
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Stephen Hemminger <shemminger@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Roman Zippel <zippel@linux-m68k.org>, Jan Engelhardt <jengelh@gmx.de>,
-       Richard Purdie <rpurdie@rpsys.net>
-Subject: Re: [patch, -git] input: CONFIG_INPUT_APANEL build fix
-Message-ID: <20080430163924.ZZRA012@mailhub.coreip.homeip.net>
-References: <20080430185345.GA27224@elte.hu> <20080430150021.ZZRA012@mailhub.coreip.homeip.net> <20080430202013.GB14164@elte.hu>
+	Wed, 30 Apr 2008 17:00:43 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:56473 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933157AbYD3VAl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Apr 2008 17:00:41 -0400
+Date: Wed, 30 Apr 2008 23:00:26 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Len Brown <lenb@kernel.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
+Subject: [patch] acpi: fix drivers/acpi/glue.c build error
+Message-ID: <20080430210026.GA24121@elte.hu>
+References: <200804301420.11696.lenb@kernel.org> <20080430205615.GA23694@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080430202013.GB14164@elte.hu>
+In-Reply-To: <20080430205615.GA23694@elte.hu>
 User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 30, 2008 at 10:20:13PM +0200, Ingo Molnar wrote:
-> 
-> * Dmitry Torokhov <dmitry.torokhov@gmail.com> wrote:
-> 
-> > On Wed, Apr 30, 2008 at 08:54:16PM +0200, Ingo Molnar wrote:
-> > > 
-> > > x86.git testing found this build failure in upstream -git:
-> > > 
-> > >  drivers/built-in.o: In function `apanel_detach_client':
-> > >  apanel.c:(.text+0x3027af): undefined reference to `led_classdev_unregister'
-> > >  drivers/built-in.o: In function `apanel_probe':
-> > >  apanel.c:(.text+0x302ac9): undefined reference to `led_classdev_register'
-> > > 
-> > > with this config:
-> > > 
-> > >  http://redhat.com/~mingo/misc/config-Wed_Apr_30_20_22_20_CEST_2008.bad
-> > > 
-> > > this driver has a missing CONFIG_NEW_LEDS dependency.
-> > 
-> > Thank you Ingo. Isn't this a Kconfig issue though? I know that Roman 
-> > is not willing to fix SELECT to evaluate the whole dependency chain, 
-> > but in this case it is "depens on" that does not evaluate properly...
-> 
-> yes and no. It can be fixed in Kconfig but i'm not going to flame yet 
-> another person about long-existing unfixed infrastructure bugs ;-)
-> 
-> The current (many years old) rule is to fix things up as much as we can 
-> and never expose build errors, because 1) randconfig testing is way too 
-> useful and because 2) users can stumble across that .config combination 
-> as well and get rightfully grumpy at us about breaking their build. Most 
-> of the thousands of drivers are fine - it's those with more complex 
-> Kconfig dependencies that have trouble.
-> 
 
-I thought the many years old rule for Linux kernel is to fix the
-issues properly and not turn kernel into patchwork of crappy code.
-If we want to fix the randconfi issue I'd rather revert commit
-66242f7ec531953fbc2f4040c5ffe1f1ffe6c5c9 for now (they only thing it
-did was beautify menuconfig look) and wait for Kconfig to be fixed.
-It is not driver's task to track through all dependencies.
+* Ingo Molnar <mingo@elte.hu> wrote:
 
--- 
-Dmitry
+> This batch is a proper super-set of the pull request I made a week 
+> ago. It will update the files shown below.
+
+another build bug triggered - fixed below.
+
+	Ingo
+
+------------------->
+Subject: acpi: fix drivers/acpi/glue.c build error
+From: Ingo Molnar <mingo@elte.hu>
+Date: Wed Apr 30 22:56:57 CEST 2008
+
+x86.git testing found the following build bug:
+
+  drivers/built-in.o: In function `acpi_rtc_init':
+  glue.c:(.init.text+0x16c3): undefined reference to `pnp_bus_type'
+
+this tries to use PNP bus infrastructure even in the !PNP case.
+
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ drivers/acpi/glue.c |    3 +++
+ 1 file changed, 3 insertions(+)
+
+Index: linux/drivers/acpi/glue.c
+===================================================================
+--- linux.orig/drivers/acpi/glue.c
++++ linux/drivers/acpi/glue.c
+@@ -299,6 +299,7 @@ static void rtc_wake_off(struct device *
+ 
+ static struct cmos_rtc_board_info rtc_info;
+ 
++#ifdef CONFIG_PNP
+ 
+ /* PNP devices are registered in a subsys_initcall();
+  * ACPI specifies the PNP IDs to use.
+@@ -360,4 +361,6 @@ static int __init acpi_rtc_init(void)
+ /* do this between RTC subsys_initcall() and rtc_cmos driver_initcall() */
+ fs_initcall(acpi_rtc_init);
+ 
++#endif /* CONFIG_PNP */
++
+ #endif
