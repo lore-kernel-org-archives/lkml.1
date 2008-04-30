@@ -1,64 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761874AbYD3SfZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763035AbYD3Sgr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761874AbYD3SfZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Apr 2008 14:35:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756935AbYD3SfM
+	id S1763035AbYD3Sgr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Apr 2008 14:36:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754021AbYD3Sgj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Apr 2008 14:35:12 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:53817 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756613AbYD3SfL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Apr 2008 14:35:11 -0400
-Date: Wed, 30 Apr 2008 11:35:00 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Randy.Dunlap" <rdunlap@xenotime.net>
-Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
-       mporter@kernel.crashing.org, Paul Mackerras <paulus@samba.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] docbook: fix fatal rapidio yet again (and more to come)
-Message-Id: <20080430113500.dfe21880.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0804292009000.18219@shark.he.net>
-References: <Pine.LNX.4.64.0804292009000.18219@shark.he.net>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 30 Apr 2008 14:36:39 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:41826 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756935AbYD3Sgi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Apr 2008 14:36:38 -0400
+Date: Wed, 30 Apr 2008 20:36:22 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Andres Salomon <dilinger@queued.net>
+Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86: ioremap ram check fix
+Message-ID: <20080430183622.GC3008@elte.hu>
+References: <20080430113024.43aa3935@ephemeral> <20080430181015.GB31726@elte.hu> <20080430141741.132b3a00@ephemeral>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080430141741.132b3a00@ephemeral>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 29 Apr 2008 20:10:55 -0700 (PDT)
-"Randy.Dunlap" <rdunlap@xenotime.net> wrote:
 
-> From: Randy Dunlap <randy.dunlap@oracle.com>
+* Andres Salomon <dilinger@queued.net> wrote:
+
+> > that breakage has been reported independently as well and the revert 
+> > has been pushed to Linus yesterday - it's not upstream yet. See this 
+> > commit in x86.git:
 > 
-> Don't refer to file that no longer exists:
-> docproc: linux-2.6.25-git14/arch/powerpc/kernel/rio.c: No such file or directory
-> 
-> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-> ---
->  Documentation/DocBook/rapidio.tmpl |    1 -
->  1 file changed, 1 deletion(-)
-> 
-> --- linux-2.6.25-git14.orig/Documentation/DocBook/rapidio.tmpl
-> +++ linux-2.6.25-git14/Documentation/DocBook/rapidio.tmpl
-> @@ -133,7 +133,6 @@
->  !Idrivers/rapidio/rio-sysfs.c
->       </sect1>
->       <sect1 id="PPC32_support"><title>PPC32 support</title>
-> -!Iarch/powerpc/kernel/rio.c
->  !Earch/powerpc/sysdev/fsl_rio.c
->  !Iarch/powerpc/sysdev/fsl_rio.c
->       </sect1>
+> Sure, either way.  FWIW, Vegard reported that the PAGE_MASK change 
+> made the 150s delay disappear.
 
-grumble.
+sorry, i forgot to mention that your fix is the right one [it actually 
+fixes the problem instead of reverting the change] so i've queued that 
+up too :-) Thanks for fixing this!
 
-This is a subset of rapidio-fix-docbook-references.patch, but I appear to
-be unable to interest anyone in merging/reviewing/accepting/anything-else
-that quite large set of patches.
-
-Guys, those patches were sent six weeks ago and it now looks like they will
-miss 2.6.26.  This is pretty slack of us.  Help?
-
+	Ingo
