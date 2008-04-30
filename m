@@ -1,144 +1,332 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762057AbYD3I32@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761841AbYD3IcB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762057AbYD3I32 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Apr 2008 04:29:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757381AbYD3I3P
+	id S1761841AbYD3IcB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Apr 2008 04:32:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757198AbYD3Ibn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Apr 2008 04:29:15 -0400
-Received: from e32.co.us.ibm.com ([32.97.110.150]:34424 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757461AbYD3I3M (ORCPT
+	Wed, 30 Apr 2008 04:31:43 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:53236
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1754916AbYD3Ibj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Apr 2008 04:29:12 -0400
-Subject: Re: [RFC][PATCH 5/5] Add a Signal Control Group Subsystem
-From: Matt Helsley <matthltc@us.ibm.com>
-To: Paul Menage <menage@google.com>
-Cc: Linux-Kernel <linux-kernel@vger.kernel.org>,
-       Cedric Le Goater <clg@fr.ibm.com>, Oren Laadan <orenl@cs.columbia.edu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Pavel Machek <pavel@ucw.cz>, linux-pm@lists.linux-foundation.org,
-       Linux Containers <containers@lists.linux-foundation.org>
-In-Reply-To: <6599ad830804242301s6a00dd75ye212a28f97072b68@mail.gmail.com>
-References: <20080424064756.643890130@us.ibm.com>
-	 <20080424064758.113999091@us.ibm.com>
-	 <6599ad830804242301s6a00dd75ye212a28f97072b68@mail.gmail.com>
-Content-Type: text/plain
-Organization: IBM Linux Technology Center
-Date: Wed, 30 Apr 2008 01:29:08 -0700
-Message-Id: <1209544149.6095.93.camel@localhost.localdomain>
+	Wed, 30 Apr 2008 04:31:39 -0400
+Date: Wed, 30 Apr 2008 01:31:38 -0700 (PDT)
+Message-Id: <20080430.013138.157977693.davem@davemloft.net>
+To: torvalds@linux-foundation.org
+CC: akpm@linux-foundation.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [GIT]: Networking
+From: David Miller <davem@davemloft.net>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.2 
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Thu, 2008-04-24 at 23:01 -0700, Paul Menage wrote:
-> I don't think you need cgroup_signal.h. It's only included in
-> cgroup_signal.c, and doesn't really contain any useful definitions
-> anyway. You should just use a cgroup_subsys_state object as your state
-> object, since you'll never need to do anything with it anyway.
-> 
-> >+static struct cgroup_subsys_state *signal_create(
-> >+	struct cgroup_subsys *ss, struct cgroup *cgroup)
-> >+{
-> >+	struct stateless *dummy;
-> >+
-> >+	if (!capable(CAP_SYS_ADMIN))
-> >+		return ERR_PTR(-EPERM);
-> 
-> This is unnecessary.
+Several cures and additions:
 
-OK, removed.
+1) TCP congestion window fixups in the presence of TSO, from John
+   Heffner, based upon some recent reports from google.
 
-> >+
-> +	dummy = kzalloc(sizeof(struct stateless), GFP_KERNEL);
-> +	if (!dummy)
-> +		return ERR_PTR(-ENOMEM);
-> +	return  &dummy->css;
-> +}
-> 
-> This function could be simplified to:
-> 
-> struct cgroup_subsys_state *css;
-> css = kzalloc(sizeof(*css), GFP_KERNEL);
-> return css ?: ERR_PTR(-ENOMEM);
+2) IPVS OOPS fix from Julian Anastasov.
 
-I kept the if() syntax but used cgroup_subsys_state as suggested. I kept
-the name "dummy" too to emphasize that except for following the
-currently-required form we don't really need the state information.
+3) IPSEC auditing fix from Yoshifuji HIDEAKI.
 
-As a side note, I don't think adding state (which signal was/to
-sent/send) or a fork handling function prevents races. I tend to agree
-that there are lots of races involving adding/removing tasks to the
-cgroup where we may not signal "everything". I think that from
-userspace's perspective we can't solve the races because there will
-always be a window between releasing whatever lock we use and returning
-to userspace where new tasks can be added.
+4) Various network driver updates from Jeff Garzik, and in particular
+   a new driver for Solarstorm SFC4000 chips, and one for
+   some IXP4xxx ethernet ports.
 
-IMHO the only way to prevent such races would be to allow userspace to
-"lock" a cgroup so that no new tasks may be added. That would block/fail
-new forks and prevent writing new pids to the tasks file. Otherwise
-userspace must always recheck the list to ensure it didn't get any new
-entries...
+5) More multicast socket option compat handling work from David
+   Stevens.
 
-> >+static int signal_can_attach(struct cgroup_subsys *ss,
-> >+			     struct cgroup *new_cgroup,
-> >+			     struct task_struct *task)
-> >+{
-> >+	return 0;
-> >+}
-> 
-> No need for a can_attach() method if it just returns 0 - that's the default.
+6) Hopefully the last of the iwlwifi build issues are cured thanks to
+   Adrian Bunk.
 
-Removed.
+7) SFQ scheduler shutdown should use dev_timer_sync(), from Jarek
+   Poplawski.
 
-> >+static int signal_kill(struct cgroup *cgroup, int signum)
-> >+{
-> >+	struct cgroup_iter it;
-> >+	struct task_struct *task;
-> >+	int retval = 0;
-> >+
-> >+	cgroup_iter_start(cgroup, &it);
-> >+	while ((task = cgroup_iter_next(cgroup, &it))) {
-> >+		retval = send_sig(signum, task, 1);
-> >+		if (retval)
-> >+			break;
-> >+	}
-> >+	cgroup_iter_end(cgroup, &it);
-> >+
-> >+	return retval;
-> >+}
-> 
-> cgroup_iter_start() takes a read lock - is send_sig() guaranteed not to sleep?
+8) Imporperly fragmented SKBs can get created by layers such as
+   sunrpc when sending to UFO capable devices.  Fix from
+   Kostya B, and reviewed by Herbert Xu.
 
-send_sig() -> send_sig_info() hold the tasklist_lock for read and the
-task's sighand->siglock spinlock.
+9) Netfilter connection tracking hash calculation bug on ARM, diagnosed
+   and fixed by Philip Craig.
 
-> >+static ssize_t signal_write(struct cgroup *cgroup,
-> >+			     struct cftype *cft,
-> >+			     struct file *file,
-> >+			     const char __user *userbuf,
-> >+			     size_t nbytes, loff_t *unused_ppos)
-> 
-> This should just be a write_u64() method - cgroups will handle the
-> copying/parsing for you. See e.g.
-> kernel/sched.c:cpu_shares_write_u64()
+10) Two bridge fixes from Bodo Stroesser and Volodymyr G Lukiianyk, via
+    Stephen Hemminger.
 
-Sure.
+Please pull, thanks a lot!
 
-> >+static struct cftype kill_file = {
-> >+	.name = "kill",
-> >+	.write = signal_write,
-> >+	.private = 0,
-> >+};
-> 
-> I agree with PaulJ that "signal.send" would be a nicer name for this
-> than "signal.kill"
+The following changes since commit 358c12953b88c5a06a57c33eb27c753b2e7934d1:
+  Jason Riedy (1):
+        iwlwifi: Allow building iwl3945 without iwl4965.
 
-OK.
+are available in the git repository at:
 
-Cheers,
-	-Matt Helsley
+  master.kernel.org:/pub/scm/linux/kernel/git/davem/net-2.6.git master
 
+Adrian Bunk (1):
+      iwlwifi: move the selects to the tristate drivers
+
+Arnaud Ebalard (1):
+      netfilter: {nfnetlink,ip,ip6}_queue: fix skb_over_panic when enlarging packets
+
+Ben Hutchings (1):
+      New driver "sfc" for Solarstorm SFC4000 controller.
+
+Bodo Stroesser (1):
+      bridge: kernel panic when unloading bridge module
+
+Bryan Wu (2):
+      Blackfin EMAC Driver: code cleanup
+      Blackfin EMAC Driver: Initial version of ethtool support
+
+Cornelia Huck (1):
+      netiucv: Fix missing driver attributes.
+
+Daniel Walker (1):
+      atm: ambassador: vcc_sf semaphore to mutex
+
+David L Stevens (2):
+      net: Several cleanups for the setsockopt compat support.
+      net: Add compat support for getsockopt (MCAST_MSFILTER)
+
+Francois Romieu (3):
+      sis190: Rx path update
+      sis190: remove needless MII reset
+      sis190: account for Tx errors
+
+Frank Blaschka (5):
+      qeth: layer 3 support vlan IPv6 on hiper socket
+      qeth: provide get ethtool settings
+      qeth: rework fast path
+      qeth: layer 3 add missing dev_open/close to ccwgroup handler
+      qeth: layer 2 allow ethtool to set TSO
+
+Harvey Harrison (1):
+      net: eepro autoport typo
+
+Ivan Vecera (1):
+      r8169: fix oops in r8169_get_mac_version
+
+Jarek Poplawski (1):
+      sch_sfq: use del_timer_sync() in sfq_destroy()
+
+Jeff Garzik (2):
+      Merge branch 'sis190' of git://git.kernel.org/.../romieu/netdev-2.6 into upstream
+      Merge branch 'upstream-jeff' of git://git.kernel.org/.../romieu/netdev-2.6 into upstream
+
+John Heffner (2):
+      tcp: Allow send-limited cwnd to grow up to max_burst when gso disabled
+      tcp: Limit cwnd growth when deferring for GSO
+
+Julian Anastasov (1):
+      ipvs: fix oops in backup for fwmark conn templates
+
+Klaus D. Wacker (1):
+      lcs: CCL-sequ. numbers required for protocol 802.2 only.
+
+Kostya B (1):
+      [IPv4] UFO: prevent generation of chained skb destined to UFO device
+
+Krzysztof Halasa (1):
+      Driver for IXP4xx built-in Ethernet ports
+
+Lachlan Andrew (1):
+      tcp: Overflow bug in Vegas
+
+Paul Gortmaker (1):
+      [netdrvr] gianfar: Determine TBIPA value dynamically
+
+Paulius Zaleckas (3):
+      3c505: use netstats in net_device structure
+      3c509: use netstats in net_device structure
+      3c515: use netstats in net_device structure
+
+Pavel Emelyanov (2):
+      netfilter: x_tables: fix net namespace leak when reading /proc/net/xxx_tables_names
+      MAINTAINERS: The socketcan-core list is subscribers-only.
+
+Peter Tiedemann (1):
+      qeth module size reduction.
+
+Philip Craig (1):
+      netfilter: nf_conntrack: padding breaks conntrack hash on ARM
+
+Randy Dunlap (1):
+      drivers/net/phy: fix kernel-doc notation
+
+Roel Kluin (3):
+      r8169: fix past rtl_chip_info array size for unknown chipsets
+      ARM: am79c961a: platform_get_irq() may return signed unnoticed
+      netfilter: xt_TCPOPTSTRIP: signed tcphoff for ipv6_skip_exthdr() retval
+
+Sam Ravnborg (1):
+      ipv4: annotate a few functions __init in ipconfig.c
+
+Sreenivasa Honnur (2):
+      S2io: Enable multi ring support
+      S2io: Version update for multi ring patches
+
+Stephen Hemminger (3):
+      sis190: use the allocated buffer as a status code in sis190_alloc_rx_skb
+      sis190: hard-code the alignment of tiny packets
+      sis190: use netdev_alloc_skb
+
+Steve Glendinning (2):
+      Rename SMSC phy functions to be more generic
+      Add support for SMSC LAN8187 and LAN8700 PHYs
+
+Timo Teras (1):
+      ipv4: Update MTU to all related cache entries in ip_rt_frag_needed()
+
+Ursula Braun (3):
+      netiucv: get rid of in_atomic() use
+      ccwgroup: Unify parsing for group attribute.
+      qeth: read number of ports from card
+
+Volodymyr G Lukiianyk (1):
+      bridge: fix error handling in br_add_if()
+
+ MAINTAINERS                                    |    9 +-
+ arch/arm/mach-ixp4xx/ixp4xx_npe.c              |    4 +
+ arch/arm/mach-ixp4xx/ixp4xx_qmgr.c             |    2 +
+ drivers/atm/ambassador.c                       |   19 +-
+ drivers/atm/ambassador.h                       |    2 +-
+ drivers/net/3c505.c                            |   30 +-
+ drivers/net/3c505.h                            |    1 -
+ drivers/net/3c509.c                            |   47 +-
+ drivers/net/3c515.c                            |   64 +-
+ drivers/net/Kconfig                            |    1 +
+ drivers/net/Makefile                           |    2 +
+ drivers/net/arm/Kconfig                        |    8 +
+ drivers/net/arm/Makefile                       |    1 +
+ drivers/net/arm/am79c961a.c                    |   10 +-
+ drivers/net/arm/ixp4xx_eth.c                   | 1265 +++++++++++
+ drivers/net/bfin_mac.c                         |  296 ++--
+ drivers/net/bfin_mac.h                         |    2 +-
+ drivers/net/eepro.c                            |    2 +-
+ drivers/net/gianfar.c                          |   27 +-
+ drivers/net/gianfar.h                          |    1 -
+ drivers/net/gianfar_mii.c                      |   38 +-
+ drivers/net/gianfar_mii.h                      |    3 +
+ drivers/net/phy/Kconfig                        |    2 +-
+ drivers/net/phy/phy_device.c                   |    2 +-
+ drivers/net/phy/smsc.c                         |   83 +-
+ drivers/net/r8169.c                            |    8 +-
+ drivers/net/s2io.c                             |  337 ++--
+ drivers/net/s2io.h                             |   82 +-
+ drivers/net/sfc/Kconfig                        |   12 +
+ drivers/net/sfc/Makefile                       |    5 +
+ drivers/net/sfc/bitfield.h                     |  508 +++++
+ drivers/net/sfc/boards.c                       |  167 ++
+ drivers/net/sfc/boards.h                       |   26 +
+ drivers/net/sfc/efx.c                          | 2208 +++++++++++++++++++
+ drivers/net/sfc/efx.h                          |   67 +
+ drivers/net/sfc/enum.h                         |   50 +
+ drivers/net/sfc/ethtool.c                      |  460 ++++
+ drivers/net/sfc/ethtool.h                      |   27 +
+ drivers/net/sfc/falcon.c                       | 2722 ++++++++++++++++++++++++
+ drivers/net/sfc/falcon.h                       |  130 ++
+ drivers/net/sfc/falcon_hwdefs.h                | 1135 ++++++++++
+ drivers/net/sfc/falcon_io.h                    |  243 +++
+ drivers/net/sfc/falcon_xmac.c                  |  585 +++++
+ drivers/net/sfc/gmii.h                         |  195 ++
+ drivers/net/sfc/i2c-direct.c                   |  381 ++++
+ drivers/net/sfc/i2c-direct.h                   |   91 +
+ drivers/net/sfc/mac.h                          |   33 +
+ drivers/net/sfc/mdio_10g.c                     |  282 +++
+ drivers/net/sfc/mdio_10g.h                     |  232 ++
+ drivers/net/sfc/net_driver.h                   |  883 ++++++++
+ drivers/net/sfc/phy.h                          |   48 +
+ drivers/net/sfc/rx.c                           |  875 ++++++++
+ drivers/net/sfc/rx.h                           |   29 +
+ drivers/net/sfc/sfe4001.c                      |  252 +++
+ drivers/net/sfc/spi.h                          |   71 +
+ drivers/net/sfc/tenxpress.c                    |  434 ++++
+ drivers/net/sfc/tx.c                           |  452 ++++
+ drivers/net/sfc/tx.h                           |   24 +
+ drivers/net/sfc/workarounds.h                  |   56 +
+ drivers/net/sfc/xenpack.h                      |   62 +
+ drivers/net/sfc/xfp_phy.c                      |  132 ++
+ drivers/net/sis190.c                           |  136 +-
+ drivers/net/wireless/iwlwifi/Kconfig           |   12 +-
+ drivers/s390/cio/ccwgroup.c                    |   96 +-
+ drivers/s390/net/cu3088.c                      |   20 +-
+ drivers/s390/net/lcs.c                         |    3 +-
+ drivers/s390/net/netiucv.c                     |    3 +-
+ drivers/s390/net/qeth_core.h                   |   50 +-
+ drivers/s390/net/qeth_core_main.c              |  200 +-
+ drivers/s390/net/qeth_l2_main.c                |   30 +-
+ drivers/s390/net/qeth_l3.h                     |    3 -
+ drivers/s390/net/qeth_l3_main.c                |   30 +-
+ include/asm-s390/ccwgroup.h                    |    7 +-
+ include/asm-s390/qdio.h                        |    1 +
+ include/net/compat.h                           |    3 +
+ include/net/ip_vs.h                            |    3 +-
+ include/net/netfilter/nf_conntrack_tuple.h     |   10 -
+ include/net/route.h                            |    2 +-
+ net/bridge/br.c                                |    2 +-
+ net/bridge/br_if.c                             |    5 +-
+ net/compat.c                                   |   90 +-
+ net/ipv4/icmp.c                                |    3 +-
+ net/ipv4/ip_output.c                           |   22 +-
+ net/ipv4/ip_sockglue.c                         |    9 +-
+ net/ipv4/ipconfig.c                            |    8 +-
+ net/ipv4/ipvs/ip_vs_proto.c                    |    2 +-
+ net/ipv4/ipvs/ip_vs_proto_ah.c                 |    1 +
+ net/ipv4/ipvs/ip_vs_proto_esp.c                |    1 +
+ net/ipv4/ipvs/ip_vs_proto_tcp.c                |    1 +
+ net/ipv4/ipvs/ip_vs_proto_udp.c                |    1 +
+ net/ipv4/ipvs/ip_vs_sync.c                     |   80 +-
+ net/ipv4/netfilter/ip_queue.c                  |    5 +-
+ net/ipv4/netfilter/nf_conntrack_l3proto_ipv4.c |    2 +-
+ net/ipv4/route.c                               |   40 +-
+ net/ipv4/tcp_cong.c                            |   12 +-
+ net/ipv4/tcp_vegas.c                           |   10 +-
+ net/ipv4/tcp_veno.c                            |    8 +-
+ net/ipv6/ipv6_sockglue.c                       |    4 +
+ net/ipv6/netfilter/ip6_queue.c                 |    5 +-
+ net/netfilter/nf_conntrack_core.c              |    4 +-
+ net/netfilter/nfnetlink_queue.c                |    5 +-
+ net/netfilter/x_tables.c                       |    2 +-
+ net/netfilter/xt_TCPOPTSTRIP.c                 |    2 +-
+ net/sched/sch_sfq.c                            |    3 +-
+ 104 files changed, 15349 insertions(+), 812 deletions(-)
+ create mode 100644 drivers/net/arm/ixp4xx_eth.c
+ create mode 100644 drivers/net/sfc/Kconfig
+ create mode 100644 drivers/net/sfc/Makefile
+ create mode 100644 drivers/net/sfc/bitfield.h
+ create mode 100644 drivers/net/sfc/boards.c
+ create mode 100644 drivers/net/sfc/boards.h
+ create mode 100644 drivers/net/sfc/efx.c
+ create mode 100644 drivers/net/sfc/efx.h
+ create mode 100644 drivers/net/sfc/enum.h
+ create mode 100644 drivers/net/sfc/ethtool.c
+ create mode 100644 drivers/net/sfc/ethtool.h
+ create mode 100644 drivers/net/sfc/falcon.c
+ create mode 100644 drivers/net/sfc/falcon.h
+ create mode 100644 drivers/net/sfc/falcon_hwdefs.h
+ create mode 100644 drivers/net/sfc/falcon_io.h
+ create mode 100644 drivers/net/sfc/falcon_xmac.c
+ create mode 100644 drivers/net/sfc/gmii.h
+ create mode 100644 drivers/net/sfc/i2c-direct.c
+ create mode 100644 drivers/net/sfc/i2c-direct.h
+ create mode 100644 drivers/net/sfc/mac.h
+ create mode 100644 drivers/net/sfc/mdio_10g.c
+ create mode 100644 drivers/net/sfc/mdio_10g.h
+ create mode 100644 drivers/net/sfc/net_driver.h
+ create mode 100644 drivers/net/sfc/phy.h
+ create mode 100644 drivers/net/sfc/rx.c
+ create mode 100644 drivers/net/sfc/rx.h
+ create mode 100644 drivers/net/sfc/sfe4001.c
+ create mode 100644 drivers/net/sfc/spi.h
+ create mode 100644 drivers/net/sfc/tenxpress.c
+ create mode 100644 drivers/net/sfc/tx.c
+ create mode 100644 drivers/net/sfc/tx.h
+ create mode 100644 drivers/net/sfc/workarounds.h
+ create mode 100644 drivers/net/sfc/xenpack.h
+ create mode 100644 drivers/net/sfc/xfp_phy.c
