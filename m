@@ -1,26 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759970AbYD3WFu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933703AbYD3WGR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759970AbYD3WFu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Apr 2008 18:05:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761746AbYD3WDd
+	id S933703AbYD3WGR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Apr 2008 18:06:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932870AbYD3WDe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Apr 2008 18:03:33 -0400
-Received: from el-out-1112.google.com ([209.85.162.180]:1024 "EHLO
-	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932434AbYD3WDb (ORCPT
+	Wed, 30 Apr 2008 18:03:34 -0400
+Received: from wa-out-1112.google.com ([209.85.146.179]:11309 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932624AbYD3WDc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Apr 2008 18:03:31 -0400
+	Wed, 30 Apr 2008 18:03:32 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=iMSHOQuN8vj4+EIogb837qmkhopreSA1epHQNKzgvHH+Zm82/+arcUyswL5AltJpEIrGKJfGElQyqKUk/MfrDhOyHmXVb6BlmmJdJ+8c4ErmjBzlIHzejsnELrlz8V2MD+ZNcUEMGlfaxIO73zQcJOc2+iwqNdH+mjU9DnWaP70=
-Subject: [PATCH 06/10] video: fix returning void-valued expression warnings
+        b=Vdzc1JTjX3L0r7uCm9XEAOBThWUaYicpZ5x6SGKIM1viBh/u5ES7JgUpQyrd/pFJbSf58Em7hkSd/EEDI7ECaBrZFqZ9q6KUZt705m2zrT9i3Txn1aUsTH+9cPQA/ZviEKNODsqSA5tmp8iit1bjvcErPCyqXJ8x4BiDt/2N3Xg=
+Subject: [PATCH 07/10] net: fix returning void-valued expression warnings
 From: Harvey Harrison <harvey.harrison@gmail.com>
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>
+Cc: David Miller <davem@davemloft.net>, Jeff Garzik <jeff@garzik.org>,
+       LKML <linux-kernel@vger.kernel.org>
 Content-Type: text/plain
-Date: Wed, 30 Apr 2008 15:03:42 -0700
-Message-Id: <1209593022.24729.116.camel@brick>
+Date: Wed, 30 Apr 2008 15:03:43 -0700
+Message-Id: <1209593023.24729.117.camel@brick>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
@@ -28,194 +29,131 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-drivers/video/nvidia/nv_accel.c:304:3: warning: returning void-valued expression
-drivers/video/nvidia/nv_accel.c:323:3: warning: returning void-valued expression
-drivers/video/pm3fb.c:543:3: warning: returning void-valued expression
-drivers/video/neofb.c:1526:4: warning: returning void-valued expression
-drivers/video/neofb.c:1534:3: warning: returning void-valued expression
-drivers/video/i810/i810_accel.c:305:3: warning: returning void-valued expression
-drivers/video/i810/i810_accel.c:331:3: warning: returning void-valued expression
-drivers/video/i810/i810_accel.c:370:3: warning: returning void-valued expression
-drivers/video/intelfb/intelfbdrv.c:1492:3: warning: returning void-valued expression
-drivers/video/intelfb/intelfbdrv.c:1520:3: warning: returning void-valued expression
-drivers/video/intelfb/intelfbdrv.c:1539:3: warning: returning void-valued expression
-drivers/video/intelfb/intelfbdrv.c:1553:3: warning: returning void-valued expression
+drivers/net/8390.c:37:2: warning: returning void-valued expression
+drivers/net/bnx2.c:1635:3: warning: returning void-valued expression
+drivers/net/xen-netfront.c:1806:2: warning: returning void-valued expression
+net/ipv4/tcp_hybla.c:105:3: warning: returning void-valued expression
+net/ipv4/tcp_vegas.c:171:3: warning: returning void-valued expression
+net/ipv4/tcp_veno.c:123:3: warning: returning void-valued expression
+net/sysctl_net.c:85:2: warning: returning void-valued expression
 
 Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
 ---
- drivers/video/i810/i810_accel.c    |   18 ++++++++++++------
- drivers/video/intelfb/intelfbdrv.c |   20 +++++++++++++-------
- drivers/video/neofb.c              |    6 ++++--
- drivers/video/nvidia/nv_accel.c    |   12 ++++++++----
- drivers/video/pm3fb.c              |    6 ++++--
- 5 files changed, 41 insertions(+), 21 deletions(-)
+ drivers/net/8390.c         |    2 +-
+ drivers/net/bnx2.c         |    6 ++++--
+ drivers/net/xen-netfront.c |    2 +-
+ net/ipv4/tcp_hybla.c       |    6 ++++--
+ net/ipv4/tcp_vegas.c       |    6 ++++--
+ net/ipv4/tcp_veno.c        |    6 ++++--
+ net/sysctl_net.c           |    2 +-
+ 7 files changed, 19 insertions(+), 11 deletions(-)
 
-diff --git a/drivers/video/i810/i810_accel.c b/drivers/video/i810/i810_accel.c
-index 76764ea..f5bedee 100644
---- a/drivers/video/i810/i810_accel.c
-+++ b/drivers/video/i810/i810_accel.c
-@@ -301,8 +301,10 @@ void i810fb_fillrect(struct fb_info *info, const struct fb_fillrect *rect)
- 	u32 dx, dy, width, height, dest, rop = 0, color = 0;
+diff --git a/drivers/net/8390.c b/drivers/net/8390.c
+index a499e86..dc5d258 100644
+--- a/drivers/net/8390.c
++++ b/drivers/net/8390.c
+@@ -34,7 +34,7 @@ struct net_device *__alloc_ei_netdev(int size)
  
- 	if (!info->var.accel_flags || par->dev_flags & LOCKUP ||
--	    par->depth == 4) 
--		return cfb_fillrect(info, rect);
-+	    par->depth == 4) {
-+		cfb_fillrect(info, rect);
-+		return;
-+	}
- 
- 	if (par->depth == 1) 
- 		color = rect->color;
-@@ -327,8 +329,10 @@ void i810fb_copyarea(struct fb_info *info, const struct fb_copyarea *region)
- 	u32 sx, sy, dx, dy, pitch, width, height, src, dest, xdir;
- 
- 	if (!info->var.accel_flags || par->dev_flags & LOCKUP ||
--	    par->depth == 4)
--		return cfb_copyarea(info, region);
-+	    par->depth == 4) {
-+		cfb_copyarea(info, region);
-+		return;
-+	}
- 
- 	dx = region->dx * par->depth;
- 	sx = region->sx * par->depth;
-@@ -366,8 +370,10 @@ void i810fb_imageblit(struct fb_info *info, const struct fb_image *image)
- 	u32 fg = 0, bg = 0, size, dst;
- 	
- 	if (!info->var.accel_flags || par->dev_flags & LOCKUP ||
--	    par->depth == 4 || image->depth != 1) 
--		return cfb_imageblit(info, image);
-+	    par->depth == 4 || image->depth != 1) {
-+		cfb_imageblit(info, image);
-+		return;
-+	}
- 
- 	switch (info->var.bits_per_pixel) {
- 	case 8:
-diff --git a/drivers/video/intelfb/intelfbdrv.c b/drivers/video/intelfb/intelfbdrv.c
-index e44303f..fc1dca2 100644
---- a/drivers/video/intelfb/intelfbdrv.c
-+++ b/drivers/video/intelfb/intelfbdrv.c
-@@ -1488,8 +1488,10 @@ static void intelfb_fillrect (struct fb_info *info,
- 	DBG_MSG("intelfb_fillrect\n");
- #endif
- 
--	if (!ACCEL(dinfo, info) || dinfo->depth == 4)
--		return cfb_fillrect(info, rect);
-+	if (!ACCEL(dinfo, info) || dinfo->depth == 4) {
-+		cfb_fillrect(info, rect);
-+		return;
-+	}
- 
- 	if (rect->rop == ROP_COPY)
- 		rop = PAT_ROP_GXCOPY;
-@@ -1516,8 +1518,10 @@ static void intelfb_copyarea(struct fb_info *info,
- 	DBG_MSG("intelfb_copyarea\n");
- #endif
- 
--	if (!ACCEL(dinfo, info) || dinfo->depth == 4)
--		return cfb_copyarea(info, region);
-+	if (!ACCEL(dinfo, info) || dinfo->depth == 4) {
-+		cfb_copyarea(info, region);
-+		return;
-+	}
- 
- 	intelfbhw_do_bitblt(dinfo, region->sx, region->sy, region->dx,
- 			    region->dy, region->width, region->height,
-@@ -1535,8 +1539,10 @@ static void intelfb_imageblit(struct fb_info *info,
- #endif
- 
- 	if (!ACCEL(dinfo, info) || dinfo->depth == 4
--	    || image->depth != 1)
--		return cfb_imageblit(info, image);
-+	    || image->depth != 1) {
-+		cfb_imageblit(info, image);
-+		return;
-+	}
- 
- 	if (dinfo->depth != 8) {
- 		fgcolor = dinfo->pseudo_palette[image->fg_color];
-@@ -1550,7 +1556,7 @@ static void intelfb_imageblit(struct fb_info *info,
- 				    image->height, image->data,
- 				    image->dx, image->dy,
- 				    dinfo->pitch, info->var.bits_per_pixel))
--		return cfb_imageblit(info, image);
-+		cfb_imageblit(info, image);
+ void NS8390_init(struct net_device *dev, int startp)
+ {
+-	return __NS8390_init(dev, startp);
++	__NS8390_init(dev, startp);
  }
  
- static int intelfb_cursor(struct fb_info *info, struct fb_cursor *cursor)
-diff --git a/drivers/video/neofb.c b/drivers/video/neofb.c
-index 5246b04..971e525 100644
---- a/drivers/video/neofb.c
-+++ b/drivers/video/neofb.c
-@@ -1523,7 +1523,8 @@ neo2200_imageblit(struct fb_info *info, const struct fb_image *image)
- 			 * is less than 16 bits wide. This is due to insufficient
- 			 * padding when writing the image. We need to adjust
- 			 * struct fb_pixmap. Not yet done. */
--			return cfb_imageblit(info, image);
-+			cfb_imageblit(info, image);
-+			return;
- 		}
- 		bltCntl_flags = NEO_BC0_SRC_MONO;
- 	} else if (image->depth == info->var.bits_per_pixel) {
-@@ -1531,7 +1532,8 @@ neo2200_imageblit(struct fb_info *info, const struct fb_image *image)
- 	} else {
- 		/* We don't currently support hardware acceleration if image
- 		 * depth is different from display */
--		return cfb_imageblit(info, image);
-+		cfb_imageblit(info, image);
+ EXPORT_SYMBOL(ei_open);
+diff --git a/drivers/net/bnx2.c b/drivers/net/bnx2.c
+index 15853be..8613879 100644
+--- a/drivers/net/bnx2.c
++++ b/drivers/net/bnx2.c
+@@ -1631,8 +1631,10 @@ bnx2_set_default_remote_link(struct bnx2 *bp)
+ static void
+ bnx2_set_default_link(struct bnx2 *bp)
+ {
+-	if (bp->phy_flags & BNX2_PHY_FLAG_REMOTE_PHY_CAP)
+-		return bnx2_set_default_remote_link(bp);
++	if (bp->phy_flags & BNX2_PHY_FLAG_REMOTE_PHY_CAP) {
++		bnx2_set_default_remote_link(bp);
 +		return;
- 	}
++	}
  
- 	switch (info->var.bits_per_pixel) {
-diff --git a/drivers/video/nvidia/nv_accel.c b/drivers/video/nvidia/nv_accel.c
-index fa4821c..ad6472a 100644
---- a/drivers/video/nvidia/nv_accel.c
-+++ b/drivers/video/nvidia/nv_accel.c
-@@ -300,8 +300,10 @@ void nvidiafb_copyarea(struct fb_info *info, const struct fb_copyarea *region)
- 	if (info->state != FBINFO_STATE_RUNNING)
+ 	bp->autoneg = AUTONEG_SPEED | AUTONEG_FLOW_CTRL;
+ 	bp->req_line_speed = 0;
+diff --git a/drivers/net/xen-netfront.c b/drivers/net/xen-netfront.c
+index e62018a..8bddff1 100644
+--- a/drivers/net/xen-netfront.c
++++ b/drivers/net/xen-netfront.c
+@@ -1803,7 +1803,7 @@ static void __exit netif_exit(void)
+ 	if (is_initial_xendomain())
  		return;
  
--	if (par->lockup)
--		return cfb_copyarea(info, region);
-+	if (par->lockup) {
-+		cfb_copyarea(info, region);
-+		return;
-+	}
+-	return xenbus_unregister_driver(&netfront);
++	xenbus_unregister_driver(&netfront);
+ }
+ module_exit(netif_exit);
  
- 	NVDmaStart(info, par, BLIT_POINT_SRC, 3);
- 	NVDmaNext(par, (region->sy << 16) | region->sx);
-@@ -319,8 +321,10 @@ void nvidiafb_fillrect(struct fb_info *info, const struct fb_fillrect *rect)
- 	if (info->state != FBINFO_STATE_RUNNING)
+diff --git a/net/ipv4/tcp_hybla.c b/net/ipv4/tcp_hybla.c
+index 44618b6..bfcbd14 100644
+--- a/net/ipv4/tcp_hybla.c
++++ b/net/ipv4/tcp_hybla.c
+@@ -101,8 +101,10 @@ static void hybla_cong_avoid(struct sock *sk, u32 ack, u32 in_flight)
+ 	if (!tcp_is_cwnd_limited(sk, in_flight))
  		return;
  
--	if (par->lockup)
--		return cfb_fillrect(info, rect);
-+	if (par->lockup) {
-+		cfb_fillrect(info, rect);
+-	if (!ca->hybla_en)
+-		return tcp_reno_cong_avoid(sk, ack, in_flight);
++	if (!ca->hybla_en) {
++		tcp_reno_cong_avoid(sk, ack, in_flight);
 +		return;
 +	}
  
- 	if (info->var.bits_per_pixel == 8)
- 		color = rect->color;
-diff --git a/drivers/video/pm3fb.c b/drivers/video/pm3fb.c
-index 68089d1..6666f45 100644
---- a/drivers/video/pm3fb.c
-+++ b/drivers/video/pm3fb.c
-@@ -539,8 +539,10 @@ static void pm3fb_imageblit(struct fb_info *info, const struct fb_image *image)
- 		bgx = par->palette[image->bg_color];
- 		break;
- 	}
--	if (image->depth != 1)
--		return cfb_imageblit(info, image);
-+	if (image->depth != 1) {
-+		cfb_imageblit(info, image);
+ 	if (ca->rho == 0)
+ 		hybla_recalc_param(sk);
+diff --git a/net/ipv4/tcp_vegas.c b/net/ipv4/tcp_vegas.c
+index 0e1a8c9..14504da 100644
+--- a/net/ipv4/tcp_vegas.c
++++ b/net/ipv4/tcp_vegas.c
+@@ -167,8 +167,10 @@ static void tcp_vegas_cong_avoid(struct sock *sk, u32 ack, u32 in_flight)
+ 	struct tcp_sock *tp = tcp_sk(sk);
+ 	struct vegas *vegas = inet_csk_ca(sk);
+ 
+-	if (!vegas->doing_vegas_now)
+-		return tcp_reno_cong_avoid(sk, ack, in_flight);
++	if (!vegas->doing_vegas_now) {
++		tcp_reno_cong_avoid(sk, ack, in_flight);
 +		return;
 +	}
  
- 	if (info->var.bits_per_pixel == 8) {
- 		fgx |= fgx << 8;
+ 	/* The key players are v_beg_snd_una and v_beg_snd_nxt.
+ 	 *
+diff --git a/net/ipv4/tcp_veno.c b/net/ipv4/tcp_veno.c
+index 2bf618a..d08b2e8 100644
+--- a/net/ipv4/tcp_veno.c
++++ b/net/ipv4/tcp_veno.c
+@@ -119,8 +119,10 @@ static void tcp_veno_cong_avoid(struct sock *sk, u32 ack, u32 in_flight)
+ 	struct tcp_sock *tp = tcp_sk(sk);
+ 	struct veno *veno = inet_csk_ca(sk);
+ 
+-	if (!veno->doing_veno_now)
+-		return tcp_reno_cong_avoid(sk, ack, in_flight);
++	if (!veno->doing_veno_now) {
++		tcp_reno_cong_avoid(sk, ack, in_flight);
++		return;
++	}
+ 
+ 	/* limited by applications */
+ 	if (!tcp_is_cwnd_limited(sk, in_flight))
+diff --git a/net/sysctl_net.c b/net/sysctl_net.c
+index 665e856..b4f0525 100644
+--- a/net/sysctl_net.c
++++ b/net/sysctl_net.c
+@@ -82,6 +82,6 @@ EXPORT_SYMBOL_GPL(register_net_sysctl_table);
+ 
+ void unregister_net_sysctl_table(struct ctl_table_header *header)
+ {
+-	return unregister_sysctl_table(header);
++	unregister_sysctl_table(header);
+ }
+ EXPORT_SYMBOL_GPL(unregister_net_sysctl_table);
 -- 
 1.5.5.1.305.g7c84
 
