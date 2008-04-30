@@ -1,70 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759506AbYD3D3S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760210AbYD3D3v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759506AbYD3D3S (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 23:29:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751277AbYD3D3H
+	id S1760210AbYD3D3v (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 23:29:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754193AbYD3D3m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 23:29:07 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:44470 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751505AbYD3D3H (ORCPT
+	Tue, 29 Apr 2008 23:29:42 -0400
+Received: from qb-out-0506.google.com ([72.14.204.231]:19934 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753981AbYD3D3l (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 23:29:07 -0400
-Date: Wed, 30 Apr 2008 00:27:46 -0300
-From: Mauro Carvalho Chehab <mchehab@infradead.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       linux-dvb-maintainer@linuxtv.org, video4linux-list@redhat.com,
-       linux-kernel@vger.kernel.org
-Subject: [GIT PATCHES] V4L/DVB fixes for 2.6.26
-Message-ID: <20080430002746.393e68e9@gaivota>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.9; x86_64-mandriva-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 29 Apr 2008 23:29:41 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=XRHO10fCAqfSW4tq+svPEL/e6a2P7J/NCTPuPt/WmKnHk+avRocP4NJKLHXyMAXH64S3ueuwmZ2CaRKFg5yww5Hc5eXBTXWXcTWZRzlL+JuIVsWWgbYzHY6Gg66KGAdtuPScuFdVwbiDdHzyG0X+8DkvLRsQSmm0wxJIC4Ldkl0=
+Message-ID: <86802c440804292029y4a22e322s54220923f32f283f@mail.gmail.com>
+Date: Tue, 29 Apr 2008 20:29:39 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Gabriel C" <nix.or.die@googlemail.com>
+Subject: Re: [PATCH 1/2] x86: mtrr cleanup for converting continuous to discrete layout v7
+Cc: "Andrew Morton" <akpm@linux-foundation.org>, "Ingo Molnar" <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       "Thomas Gleixner" <tglx@linutronix.de>,
+       "Mika Fischer" <mika.fischer@zoopnet.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <86802c440804292000j1b559bc2y8281fa1608d8e4af@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Disposition: inline
+References: <200804272337.40130.yhlu.kernel@gmail.com>
+	 <48170BDB.9000801@googlemail.com>
+	 <86802c440804291011g1cdd2c81h962f066dd7980282@mail.gmail.com>
+	 <48178434.90701@googlemail.com>
+	 <86802c440804291449y50f178a6x4e200c26840493a@mail.gmail.com>
+	 <4817B5B0.5090606@googlemail.com> <4817B811.9070707@googlemail.com>
+	 <86802c440804291738p401e339djda18d24bce324795@mail.gmail.com>
+	 <4817C52A.8000000@googlemail.com>
+	 <86802c440804292000j1b559bc2y8281fa1608d8e4af@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
+please try the patches
 
-Please pull from:
-        ssh://master.kernel.org/pub/scm/linux/kernel/git/mchehab/v4l-dvb.git master
+from
+http://lkml.org/lkml/2008/4/29/754
+http://lkml.org/lkml/2008/4/29/753
 
-For the following trivial fixes:
+in addtion to
 
-   - Fix merge conflicts on Kconfig items;
-   - two small fixes on ivtv;
-   - a warning fix at cx88;
-   - tuners/Kconfig: Change config name and help to reflect dynamic load for 
-     tuners.
+http://people.redhat.com/mingo/x86.git/README
+( it has v8 already)
 
-Cheers,
-Mauro.
+and try with mtrr_gran_size=128m
 
----
+Thanks
 
- drivers/media/common/tuners/Kconfig     |    9 +++++++--
- drivers/media/video/cx18/Kconfig        |    2 +-
- drivers/media/video/cx18/cx18-driver.c  |    2 +-
- drivers/media/video/cx88/cx88-i2c.c     |    1 -
- drivers/media/video/ivtv/ivtv-driver.c  |    6 +++---
- drivers/media/video/ivtv/ivtv-fileops.c |    4 +++-
- drivers/media/video/tuner-core.c        |    2 +-
- 7 files changed, 16 insertions(+), 10 deletions(-)
-
-Hans Verkuil (1):
-      V4L/DVB (7791): ivtv: POLLHUP must be returned on eof
-
-Mauro Carvalho Chehab (3):
-      V4L/DVB (7789b): Fix merge conflicts
-      V4L/DVB (7794): cx88: Fix a warning
-      V4L/DVB (7798): tuners/Kconfig: Change config name and help to reflect dynamic load for tuners
-
-Robert P. J. Day (1):
-      V4L/DVB (7792): ivtv: correct misspelled "HIMEM4G" to "HIGHMEM4G" in error message
-
----------------------------------------------------
-V4L/DVB development is hosted at http://linuxtv.org
+YH
