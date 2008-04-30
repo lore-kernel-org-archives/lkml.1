@@ -1,65 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759911AbYD3GLH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760233AbYD3GLj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759911AbYD3GLH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Apr 2008 02:11:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757461AbYD3GKw
+	id S1760233AbYD3GLj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Apr 2008 02:11:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751564AbYD3GL1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Apr 2008 02:10:52 -0400
-Received: from zone0.gcu-squad.org ([212.85.147.21]:47930 "EHLO
-	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757438AbYD3GKv convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Apr 2008 02:10:51 -0400
-Date: Wed, 30 Apr 2008 08:10:35 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Matthew <jackdachef@gmail.com>
-Cc: "Rudolf Marek" <r.marek@assembler.cz>,
-       "Maxim Levitsky" <maximlevitsky@gmail.com>, trenn@suse.de,
-       "Kasper Sandberg" <lkml@metanurb.dk>, "Len Brown" <lenb@kernel.org>,
-       linux-acpi@vger.kernel.org, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org, "Zhang, Rui" <rui.zhang@intel.com>
-Subject: Re: Linux 2.6.25 (coretemp reads high temperatures)
-Message-ID: <20080430081035.2e789a50@hyperion.delvare>
-In-Reply-To: <e85b9d30804291558r4051f1bbm9256aa2af2d86b6c@mail.gmail.com>
-References: <e85b9d30804180837y39c52e26i588e4b67c87a5e9d@mail.gmail.com>
-	<200804182151.49021.lenb@kernel.org>
-	<200804231143.10875.maximlevitsky@gmail.com>
-	<1209406784.11608.15.camel@localhost>
-	<1209474423.1784.837.camel@queen.suse.de>
-	<20080429170824.09540206@hyperion.delvare>
-	<48179DB4.8040701@assembler.cz>
-	<e85b9d30804291558r4051f1bbm9256aa2af2d86b6c@mail.gmail.com>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
+	Wed, 30 Apr 2008 02:11:27 -0400
+Received: from mx2.suse.de ([195.135.220.15]:45218 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757461AbYD3GL0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Apr 2008 02:11:26 -0400
+Date: Wed, 30 Apr 2008 08:11:25 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Mika =?iso-8859-1?Q?Penttil=E4?= <mika.penttila@kolumbus.fi>,
+       Tony Battersby <tonyb@cybernetics.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] more ZERO_PAGE handling ( was 2.6.24 regression: deadlock on coredump of big process)
+Message-ID: <20080430061125.GF27652@wotan.suse.de>
+References: <4815E932.1040903@cybernetics.com> <20080429100048.3e78b1ba.kamezawa.hiroyu@jp.fujitsu.com> <48172C72.1000501@cybernetics.com> <20080430132516.28f1ee0c.kamezawa.hiroyu@jp.fujitsu.com> <4817FDA5.1040702@kolumbus.fi> <20080430141738.e6b80d4b.kamezawa.hiroyu@jp.fujitsu.com> <20080430051932.GD27652@wotan.suse.de> <20080430143542.2dcf745a.kamezawa.hiroyu@jp.fujitsu.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080430143542.2dcf745a.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 30 Apr 2008 00:58:50 +0200, Matthew wrote:
-> so we were just too concerned all the time & even though the
-> temperatures seem too high there's nothing to worry ?
+On Wed, Apr 30, 2008 at 02:35:42PM +0900, KAMEZAWA Hiroyuki wrote:
+> On Wed, 30 Apr 2008 07:19:32 +0200
+> Nick Piggin <npiggin@suse.de> wrote:
+> 
+> > 
+> > Something like this should do:
+> > if (!pte_present(pte)) {
+> > 	if (pte_none(pte)) {
+> > 		pte_unmap_unlock
+> > 		goto null_or_zeropage;
+> > 	}
+> > 	goto unlock;
+> > }
+> > 
+> Sorry for broken work and thank you for advice.
+> updated.
 
-Yes.
+Don't be sorry. The most important thing is that you found this tricky
+problem. That's very good work IMO!
 
-> I'd be more tranquilized if I had the old temperatures ;)
+> 
+> Regards,
+> -Kame
+> ==
+> follow_page() returns ZERO_PAGE if a page table is not available.
+> but returns NULL if a page table exists. If NULL, handle_mm_fault()
+> allocates a new page.
+> 
+> This behavior increases page consumption at coredump, which tend
+> to do read-once-but-never-written page fault.  This patch is
+> for avoiding this.
+> 
+> Changelog:
+>   - fixed to check pte_present()/pte_none() in proper way.
+> 
+> 
+> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> 
+> Index: linux-2.6.25/mm/memory.c
+> ===================================================================
+> --- linux-2.6.25.orig/mm/memory.c
+> +++ linux-2.6.25/mm/memory.c
+> @@ -926,15 +926,15 @@ struct page *follow_page(struct vm_area_
+>  	page = NULL;
+>  	pgd = pgd_offset(mm, address);
+>  	if (pgd_none(*pgd) || unlikely(pgd_bad(*pgd)))
+> -		goto no_page_table;
+> +		goto null_or_zeropage;
+>  
+>  	pud = pud_offset(pgd, address);
+>  	if (pud_none(*pud) || unlikely(pud_bad(*pud)))
+> -		goto no_page_table;
+> +		goto null_or_zeropage;
+>  	
+>  	pmd = pmd_offset(pud, address);
+>  	if (pmd_none(*pmd) || unlikely(pmd_bad(*pmd)))
+> -		goto no_page_table;
+> +		goto null_or_zeropage;
+>  
+>  	if (pmd_huge(*pmd)) {
+>  		BUG_ON(flags & FOLL_GET);
+> @@ -947,8 +947,13 @@ struct page *follow_page(struct vm_area_
+>  		goto out;
+>  
+>  	pte = *ptep;
+> -	if (!pte_present(pte))
+> +	if (!pte_present(pte)) {
+> +		if (!(flags & FOLL_WRITE) && pte_none(pte)) {
+> +			pte_unmap_unlock(ptep, ptl);
+> +			goto null_or_zeropage;
+> +		}
+>  		goto unlock;
+> +	}
 
-Note that you can easily get them back by tweaking your sensors.conf
-file:
+Just a small nitpick: I guess you don't need this FOLL_WRITE test because
+null_or_zeropage will test FOLL_ANON which implies !FOLL_WRITE. It should give
+slightly smaller code.
 
-chip "coretemp-*"
+Otherwise, looks good to me:
 
-    compute temp1 @-15, @+15
+Acked-by: Nick Piggin <npiggin@suse.de>
 
-But I wouldn't do it, as it doesn't make much sense.
 
-> but like lm_sensors's output states - it's not bad until  I / we're
-> getting temperatures from 85°C (?) [in this particular case], ...
-
-If I remember correctly, at 84°C your CPU will start to throttle, at
-100°C it will shut down. You still have 24°C before the former happens,
-so it should be OK.
-
--- 
-Jean Delvare
+>  	if ((flags & FOLL_WRITE) && !pte_write(pte))
+>  		goto unlock;
+>  	page = vm_normal_page(vma, address, pte);
+> @@ -968,7 +973,7 @@ unlock:
+>  out:
+>  	return page;
+>  
+> -no_page_table:
+> +null_or_zeropage:
+>  	/*
+>  	 * When core dumping an enormous anonymous area that nobody
+>  	 * has touched so far, we don't want to allocate page tables.
