@@ -1,100 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765655AbYD3WDV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756432AbYD3WDm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765655AbYD3WDV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Apr 2008 18:03:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760603AbYD3WDF
+	id S1756432AbYD3WDm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Apr 2008 18:03:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762583AbYD3WD0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Apr 2008 18:03:05 -0400
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:44194 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760459AbYD3WDD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Apr 2008 18:03:03 -0400
-Subject: Re: [PATCH] ext3: Fix typos in messages and comments (journalled
-	-> journaled)
-From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Jan Kara <jack@suse.cz>,
-       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org
-In-Reply-To: <20080430212711.168bdcc0@core>
-References: <12095679813226-git-send-email-jack@suse.cz>
-	 <12095679812375-git-send-email-jack@suse.cz>
-	 <12095679812452-git-send-email-jack@suse.cz>
-	 <1209567981639-git-send-email-jack@suse.cz>
-	 <20080430104330.66c44d4f.akpm@linux-foundation.org>
-	 <20080430212711.168bdcc0@core>
+	Wed, 30 Apr 2008 18:03:26 -0400
+Received: from wa-out-1112.google.com ([209.85.146.179]:11309 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1765875AbYD3WDZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Apr 2008 18:03:25 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=NZViWeihb6tSjxnZEBX5duIkEtvuPTFzuSMng4wofVTT3kzDWLWmmyEUEwk/S054cGtu4GjIc7ZZd20pszmqZeHdBBiFqkHDosSaUdT3eI4IWRhImhZCj1sEdN3bWc0XjxwH8HS5apIJ9ivEGo0cHqnCIcaNaTyXCHfLglob0T0=
+Subject: [PATCH 01/10] acpi: fix integer as NULL pointer warnings
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: "Brown, Len" <len.brown@intel.com>, LKML <linux-kernel@vger.kernel.org>
 Content-Type: text/plain
-Date: Wed, 30 Apr 2008 17:02:53 -0500
-Message-Id: <1209592973.6113.23.camel@norville.austin.ibm.com>
+Date: Wed, 30 Apr 2008 15:03:40 -0700
+Message-Id: <1209593020.24729.111.camel@brick>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+drivers/acpi/dispatcher/dsmethod.c:568:50: warning: Using plain integer as NULL pointer
+drivers/acpi/executer/exmutex.c:329:30: warning: Using plain integer as NULL pointer
+drivers/acpi/executer/exmutex.c:466:31: warning: Using plain integer as NULL pointer
 
-On Wed, 2008-04-30 at 21:27 +0100, Alan Cox wrote:
-> On Wed, 30 Apr 2008 10:43:30 -0700
-> Andrew Morton <akpm@linux-foundation.org> wrote:
-> 
-> > On Wed, 30 Apr 2008 17:06:15 +0200
-> > Jan Kara <jack@suse.cz> wrote:
-> > 
-> > > -					"EXT3-fs: Cannot change journalled "
-> > > +					"EXT3-fs: Cannot change journaled "
-> > 
-> > hrm, who said?
-> 
-> This has come up several times before so I thought it might be time to
-> finally dig to the bottom of the pile and end it forever.
-> 
-> I put on my library hat and went for a dig: the verb is in fact "to
-> journalize", which according to the OED means
-> 
-> "enter (notes or information) in a journal"
-> 
-> Journal itself is strictly a noun. Thus in English it would be correct
-> for a file system to have a journal (from the latin diurnalis if anyone
-> cares) but it would appear that it is a journalizing file system.
-> 
-> The American dictionaries appear to agree with this viewpoint.
-> 
-> If we regard "journalizing" as incorrect then the natural way to end the
-> word would be -lled for British English and -led would certainly sound
-> and feel wrong. Indeed the search for the OED turns journalled into
-> journal when guessing near words but refuses to consider journaled. Our
-> existing policy is not to mess with US v UK v AU v CA v .. spelling
-> and that is probably wise. 
-> 
-> A search of the ACM literature finds "journalized", "journalled" and
-> "journaled" are all in use for this operation.
+Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+---
+ drivers/acpi/dispatcher/dsmethod.c |    2 +-
+ drivers/acpi/executer/exmutex.c    |    4 ++--
+ 2 files changed, 3 insertions(+), 3 deletions(-)
 
-I hate to get into these discussions, but I've used "journaled" a lot,
-so I feel I should chime in.
-
-Maybe it's different in the UK, but I've always understood that if the
-accent is not on the last syllable, then you do not double the final
-vowel: offer, offered.  So if we accept the use of "journal" as a verb,
-"journaled" would be correct.  
-
-Since it's not a real word, I'd be happy not to make a big deal out of
-it and accept either, so I think we're in agreement.
-
-> I would submit the correct patch is to change the words to journalizing
-> and journalized. That would put Linux in agreement with the dictionary,
-> avoid US v UK meaning differences and not pose a problem linguistically
-> as all forms are currently in use.
-
-That would probably be more correct, but the use of "journal" as a verb
-has really gotten ingrained in file system developers brains.  I
-personally haven't heard or used "journalized" and it would take some
-getting used to.
-
-Shaggy
-
-P.S. Evolution's spell-checker doesn't like "journalize" either, but I
-trust that it's correct.
+diff --git a/drivers/acpi/dispatcher/dsmethod.c b/drivers/acpi/dispatcher/dsmethod.c
+index e48a3ea..2509809 100644
+--- a/drivers/acpi/dispatcher/dsmethod.c
++++ b/drivers/acpi/dispatcher/dsmethod.c
+@@ -565,7 +565,7 @@ acpi_ds_terminate_control_method(union acpi_operand_object *method_desc,
+ 
+ 				acpi_os_release_mutex(method_desc->method.
+ 						      mutex->mutex.os_mutex);
+-				method_desc->method.mutex->mutex.thread_id = 0;
++				method_desc->method.mutex->mutex.thread_id = NULL;
+ 			}
+ 		}
+ 
+diff --git a/drivers/acpi/executer/exmutex.c b/drivers/acpi/executer/exmutex.c
+index c873ab4..a8bf3d7 100644
+--- a/drivers/acpi/executer/exmutex.c
++++ b/drivers/acpi/executer/exmutex.c
+@@ -326,7 +326,7 @@ acpi_status acpi_ex_release_mutex_object(union acpi_operand_object *obj_desc)
+ 
+ 	/* Clear mutex info */
+ 
+-	obj_desc->mutex.thread_id = 0;
++	obj_desc->mutex.thread_id = NULL;
+ 	return_ACPI_STATUS(status);
+ }
+ 
+@@ -463,7 +463,7 @@ void acpi_ex_release_all_mutexes(struct acpi_thread_state *thread)
+ 		/* Mark mutex unowned */
+ 
+ 		obj_desc->mutex.owner_thread = NULL;
+-		obj_desc->mutex.thread_id = 0;
++		obj_desc->mutex.thread_id = NULL;
+ 
+ 		/* Update Thread sync_level (Last mutex is the important one) */
+ 
 -- 
-David Kleikamp
-IBM Linux Technology Center
+1.5.5.1.305.g7c84
+
 
