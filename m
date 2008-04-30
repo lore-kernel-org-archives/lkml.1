@@ -1,48 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933804AbYD3Xkq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763184AbYD3XqR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933804AbYD3Xkq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Apr 2008 19:40:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759471AbYD3Xki
+	id S1763184AbYD3XqR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Apr 2008 19:46:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755390AbYD3XqD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Apr 2008 19:40:38 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:43466 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757574AbYD3Xkh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Apr 2008 19:40:37 -0400
-Date: Thu, 1 May 2008 00:32:51 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Harvey Harrison <harvey.harrison@gmail.com>
+	Wed, 30 Apr 2008 19:46:03 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:47271 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752364AbYD3XqB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Apr 2008 19:46:01 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: david@lang.hm
+Subject: Re: Slow DOWN, please!!!
+Date: Thu, 1 May 2008 01:45:38 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
 Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Al Viro <viro@ZenIV.linux.org.uk>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 4/4] drivers: atm, char fix integer as NULL pointer
- warnings
-Message-ID: <20080501003251.022fec3d@core>
-In-Reply-To: <1209417200.14173.103.camel@brick>
-References: <1209417200.14173.103.camel@brick>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+       David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jiri Slaby <jirislaby@gmail.com>
+References: <20080429.190352.137408408.davem@davemloft.net> <200805010023.32213.rjw@sisk.pl> <alpine.DEB.1.10.0804301528250.7807@asgard>
+In-Reply-To: <alpine.DEB.1.10.0804301528250.7807@asgard>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200805010145.39373.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> diff --git a/drivers/char/tty_io.c b/drivers/char/tty_io.c
-> index 4d3c701..98b65a2 100644
-> --- a/drivers/char/tty_io.c
-> +++ b/drivers/char/tty_io.c
-> @@ -1180,7 +1180,7 @@ struct tty_driver *tty_find_polling_driver(char *name, int *line)
->  		if (*str == ',')
->  			str++;
->  		if (*str == '\0')
-> -			str = 0;
-> +			str = NULL;
->  
->  		if (tty_line >= 0 && tty_line <= p->num && p->poll_init &&
->  				!p->poll_init(p, tty_line, str)) {
+On Thursday, 1 of May 2008, david@lang.hm wrote:
+> On Thu, 1 May 2008, Rafael J. Wysocki wrote:
+> 
+> > On Wednesday, 30 of April 2008, Linus Torvalds wrote:
+> >>
+> >> On Wed, 30 Apr 2008, Rafael J. Wysocki wrote:
+> >> So your "fewer commits over a unit of time" doesn't make sense.
+> >
+> > Oh, yes it does.  Equally well you could say that having brakes in a car
+> > didn't make sense, even if you could drive it as fast as the engine allowed
+> > you to. ;-)
+> >
+> >> We have those ten thousand commits. They need to go in. They cannot take
+> >> forever.
+> >
+> > But perhaps some of them can wait a bit longer.
+> 
+> not really, if patches are produced at a rate of 1000/week and you decide 
+> to only accept 2000 of them this month, a month later you have 6000 
+> patches to deal with.
 
-Acked-by: Alan Cox <alan@redhat.com>
+Well, I think you know how TCP works.  The sender can only send as much
+data as the receiver lets it, no matter how much data there are to send.
+I'm thinking about an analogous approach.
+
+If the developers who produce those patches know in advance about the rate
+limit and are promised to be treated fairly, they should be able to organize
+their work in a different way.
+
+> history has shown that developers do not stop developing if their patches are
+> not accepted, they just fork and go their own way.
+
+That's mostly when they feel that they are treated unfairly.
+
+OTOH, insisting that your patches should be merged at the same rate that you're
+able to develop them is unreasonable to me.
+
+Thanks,
+Rafael
