@@ -1,70 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762573AbYD3S1K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763978AbYD3S2f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762573AbYD3S1K (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Apr 2008 14:27:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759388AbYD3S05
+	id S1763978AbYD3S2f (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Apr 2008 14:28:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759293AbYD3S21
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Apr 2008 14:26:57 -0400
-Received: from py-out-1112.google.com ([64.233.166.179]:56061 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758524AbYD3S0z (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Apr 2008 14:26:55 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:reply-to:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding:sender;
-        b=vNZCNhCDdw+cIkM1dqHA9zxgRHyS37IKFp1KOE0jNBdsxbYojdhUVbQj1WxrYsXTGE55xlI1Xkj3ix7oZEJDfLvV06iQM83WEiz3FBhzhLGs/YtmrVwA6WeIio+I6R7oR6kZAfqICnS22UhwfxBzA6FcKyeXPQPfGsR+4bzElVo=
-Subject: Re: [PATCH 0/1] Embedded Maintainer(s), linux-embedded@vger list
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Reply-To: jwboyer@linux.vnet.ibm.com
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       Paul Gortmaker <paul.gortmaker@windriver.com>,
-       linux-embedded@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Tim Bird <tim.bird@am.sony.com>
-In-Reply-To: <1209577322.25560.402.camel@pmac.infradead.org>
-References: <1209577322.25560.402.camel@pmac.infradead.org>
-Content-Type: text/plain; charset=utf8
-Date: Wed, 30 Apr 2008 13:26:49 -0500
-Message-Id: <1209580009.2946.98.camel@vader.jdub.homelinux.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-1.fc9) 
-Content-Transfer-Encoding: 8bit
+	Wed, 30 Apr 2008 14:28:27 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:60577 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758495AbYD3S20 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Apr 2008 14:28:26 -0400
+Date: Wed, 30 Apr 2008 20:27:41 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Hugh Dickins <hugh@veritas.com>
+Cc: "J.A. Magall??n" <jamagallon@ono.com>, Glauber Costa <gcosta@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: Problems with -git14
+Message-ID: <20080430182741.GA5783@elte.hu>
+References: <20080430015655.5a42f63d@werewolf.home> <Pine.LNX.4.64.0804301516580.30549@blonde.site>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0804301516580.30549@blonde.site>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-04-30 at 18:42 +0100, David Woodhouse wrote:
-> Andrew Morton has been saying recently that we need an 'embedded
-> maintainer', to take responsibility for 'embedded issues' in the core
-> kernel, as well as trying to improve our relationship with those using
-> the Linux kernel for 'embedded' devices -- who have a reputation of
-> not working with us very closely; to their detriment as well as our
-> own.
-> 
-> Various people, including myself, have been doing that kind of thing
-> on and off over the years anyway, but Andrew is probably right that
-> it's worth having someone listed in the MAINTAINERS file who actually
-> considers it their responsibility, and as a point of contact for
-> people seeking advice, review, etc.
-> 
-> I've volunteered to take a more active rôle in this, and Wind River
-> has agreed to assign Paul Gortmaker to it, too.  The following patch
-> adds both of us to the MAINTAINERS file.
 
-Excellent news.
+* Hugh Dickins <hugh@veritas.com> wrote:
 
-> We have also set up a mailing list, linux-embedded@vger.kernel.org,
-> where development related to embedded stuff can happen in a slightly
-> less noisy environment than the main linux-kernel list. We'd like to
-> encourage anyone working on Linux in embedded devices to join the list.
+> One point worth noting - is it a worry?  Prior to that smpboot merge, 
+> my Xeon booted the two HT siblings on one physical first, then the two 
+> siblings on the other physical after - when i386, but alternated them 
+> when x86_64.  Since the merge, the x86_64 sequence is unchanged, but 
+> the i386 sequence is now like x86_64.  I prefer this consistency, and 
+> I prefer the new sequence: booting with maxcpus=2 then uses the 
+> independent physicals without HT sharing; but surprises in store?
 
-Do you see this list as a general embedded patch/issues discussion list,
-a help list, a list for vendors to interact with the community, or all
-of the above?
+yep - but right now our view is that such surprises are worth having in 
+this case. Basically we now did the more or less "mechanical" 
+unification of the two SMP boot codebases, while trying to keep the 
+stability track record of both, as much as possible.
 
-I ask because having the entry in MAINTAINERS is great, but I expect
-some to be a bit confused as to what that actually means.
+The 64-bit SMP boot code (the one which came from arch/x86_64) is 
+cleaner, so the plan is to slowly but surely gravitate towards the 
+cleaner code - such as with your fix - while not dropping quirks and 
+legacies.
 
-josh
+It's now possible to do that without impacting the stability (and 
+legacy) track record of the 32-bit code too much, because now the code 
+is placed next to each other and the differences are plain visible via 
+ugly #ifdefs. Whatever change we do is small and revertable.
 
+... but it's still not easy to modify the engine of a race car, in the 
+middle of the race - so please be on the lookout and any help is welcome 
+;-)
+
+	Ingo
