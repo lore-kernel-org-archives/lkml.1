@@ -1,40 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764623AbYD3SrB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932156AbYD3SsW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764623AbYD3SrB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Apr 2008 14:47:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758481AbYD3Sqw
+	id S932156AbYD3SsW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Apr 2008 14:48:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759587AbYD3SsN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Apr 2008 14:46:52 -0400
-Received: from eth7959.sa.adsl.internode.on.net ([150.101.82.22]:34897 "EHLO
-	hawking.rebel.net.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755476AbYD3Sqv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Apr 2008 14:46:51 -0400
-Message-ID: <4818BE97.7030307@davidnewall.com>
-Date: Thu, 01 May 2008 04:16:47 +0930
-From: David Newall <davidn@davidnewall.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
-MIME-Version: 1.0
-To: Soumyadip Das Mahapatra <dip_kernel@yahoo.co.in>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: Improved Swapping Method In sort.c
-References: <988568.21908.qm@web94102.mail.in2.yahoo.com>
-In-Reply-To: <988568.21908.qm@web94102.mail.in2.yahoo.com>
-Content-Type: text/plain; charset=UTF-8
+	Wed, 30 Apr 2008 14:48:13 -0400
+Received: from xenotime.net ([66.160.160.81]:44939 "HELO xenotime.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1750884AbYD3SsM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Apr 2008 14:48:12 -0400
+Date: Wed, 30 Apr 2008 11:48:08 -0700
+From: Randy Dunlap <rdunlap@xenotime.net>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
+       mporter@kernel.crashing.org, Paul Mackerras <paulus@samba.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] docbook: fix fatal rapidio yet again (and more to come)
+Message-Id: <20080430114808.64e2f40b.rdunlap@xenotime.net>
+In-Reply-To: <20080430113500.dfe21880.akpm@linux-foundation.org>
+References: <Pine.LNX.4.64.0804292009000.18219@shark.he.net>
+	<20080430113500.dfe21880.akpm@linux-foundation.org>
+Organization: YPO4
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Soumyadip Das Mahapatra wrote:
-> static void u32_swap(void *a, void *b)
-> {
->     *(u32 *)b ^= *(u32 *)a ^= *(u32 *)b ^= *(u32 *)a;
-> }
->   
+On Wed, 30 Apr 2008 11:35:00 -0700 Andrew Morton wrote:
 
-That was posted to comp.lang.c 20 years ago or more.  It's not something
-that the compiler is likely to be able to optimize (unlike the normal
-swap, using a temporary variable.)
+> On Tue, 29 Apr 2008 20:10:55 -0700 (PDT)
+> "Randy.Dunlap" <rdunlap@xenotime.net> wrote:
+> 
+> > From: Randy Dunlap <randy.dunlap@oracle.com>
+> > 
+> > Don't refer to file that no longer exists:
+> > docproc: linux-2.6.25-git14/arch/powerpc/kernel/rio.c: No such file or directory
+> > 
+> > Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+> > ---
+> >  Documentation/DocBook/rapidio.tmpl |    1 -
+> >  1 file changed, 1 deletion(-)
+> > 
+> > --- linux-2.6.25-git14.orig/Documentation/DocBook/rapidio.tmpl
+> > +++ linux-2.6.25-git14/Documentation/DocBook/rapidio.tmpl
+> > @@ -133,7 +133,6 @@
+> >  !Idrivers/rapidio/rio-sysfs.c
+> >       </sect1>
+> >       <sect1 id="PPC32_support"><title>PPC32 support</title>
+> > -!Iarch/powerpc/kernel/rio.c
+> >  !Earch/powerpc/sysdev/fsl_rio.c
+> >  !Iarch/powerpc/sysdev/fsl_rio.c
+> >       </sect1>
+> 
+> grumble.
+> 
+> This is a subset of rapidio-fix-docbook-references.patch, but I appear to
+> be unable to interest anyone in merging/reviewing/accepting/anything-else
+> that quite large set of patches.
+> 
+> Guys, those patches were sent six weeks ago and it now looks like they will
+> miss 2.6.26.  This is pretty slack of us.  Help?
 
-Another cute, temp-free swap, from the same era, is: b += a -= b; a = b - a.
+There's nothing there that can hurt.  (famous last words)
+
+Just merge it.
+
+---
+~Randy
