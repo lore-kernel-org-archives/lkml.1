@@ -1,54 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765386AbYD3U4T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765848AbYD3U5K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765386AbYD3U4T (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Apr 2008 16:56:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757858AbYD3U4H
+	id S1765848AbYD3U5K (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Apr 2008 16:57:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754853AbYD3U44
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Apr 2008 16:56:07 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:39046 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756231AbYD3U4F (ORCPT
+	Wed, 30 Apr 2008 16:56:56 -0400
+Received: from linux-m68k.xs4all.nl ([82.95.193.92]:41249 "EHLO
+	scrub.xs4all.nl" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753848AbYD3U4z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Apr 2008 16:56:05 -0400
-Date: Wed, 30 Apr 2008 13:54:46 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: linux-next@vger.kernel.org
-Cc: lkml <linux-kernel@vger.kernel.org>, mingo <mingo@redhat.com>,
-       hpa <hpa@zytor.com>, akpm <akpm@linux-foundation.org>
-Subject: [PATCH -next] x86: fix setup printk format warning
-Message-Id: <20080430135446.86c68516.randy.dunlap@oracle.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Wed, 30 Apr 2008 16:56:55 -0400
+Date: Wed, 30 Apr 2008 22:56:05 +0200 (CEST)
+From: Roman Zippel <zippel@linux-m68k.org>
+X-X-Sender: roman@scrub.home
+To: Ingo Molnar <mingo@elte.hu>
+cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [patch, -git] input: CONFIG_INPUT_APANEL build fix
+In-Reply-To: <20080430202013.GB14164@elte.hu>
+Message-ID: <Pine.LNX.4.64.0804302232060.30555@scrub.home>
+References: <20080430185345.GA27224@elte.hu> <20080430150021.ZZRA012@mailhub.coreip.homeip.net>
+ <20080430202013.GB14164@elte.hu>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+Hi,
 
-Fix x86 setup printk format warming:
+On Wed, 30 Apr 2008, Ingo Molnar wrote:
 
-next-20080430/arch/x86/kernel/setup.c:172: warning: format '%lu' expects type 'long unsigned int', but argument 2 has type 'ssize_t'
+> > Thank you Ingo. Isn't this a Kconfig issue though? I know that Roman 
+> > is not willing to fix SELECT to evaluate the whole dependency chain, 
+> > but in this case it is "depens on" that does not evaluate properly...
+> 
+> yes and no. It can be fixed in Kconfig but i'm not going to flame yet 
+> another person about long-existing unfixed infrastructure bugs ;-)
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- arch/x86/kernel/setup.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+You don't have to, because this simply is no infrastructure bug...
+Don't blame Kconfig for abusing select for something it was never 
+intendend for. There is no bug!
 
---- next-20080430.orig/arch/x86/kernel/setup.c
-+++ next-20080430/arch/x86/kernel/setup.c
-@@ -168,7 +168,7 @@ void __init setup_per_cpu_areas(void)
- 
- 	/* Copy section for each CPU (we discard the original) */
- 	size = PERCPU_ENOUGH_ROOM;
--	printk(KERN_INFO "PERCPU: Allocating %lu bytes of per cpu data\n",
-+	printk(KERN_INFO "PERCPU: Allocating %zd bytes of per cpu data\n",
- 			  size);
- 
- 	for_each_possible_cpu(cpu) {
+In this case there is now a mixture of depends and selects on leds. First 
+decide whether led support should be automatically included or the driver 
+is only available when led support is enabled. In the first case it's 
+probably better to create LEDS_SUPPORT, which then again selects 
+everything necessary.
+
+bye, Roman
