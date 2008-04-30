@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933425AbYD3WEu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933448AbYD3WFY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933425AbYD3WEu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Apr 2008 18:04:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932364AbYD3WDa
+	id S933448AbYD3WFY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Apr 2008 18:05:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932508AbYD3WDb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Apr 2008 18:03:30 -0400
-Received: from el-out-1112.google.com ([209.85.162.180]:1024 "EHLO
-	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765914AbYD3WD1 (ORCPT
+	Wed, 30 Apr 2008 18:03:31 -0400
+Received: from wa-out-1112.google.com ([209.85.146.180]:9632 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764595AbYD3WD2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Apr 2008 18:03:27 -0400
+	Wed, 30 Apr 2008 18:03:28 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=DKml2UmfuGeG9MzPRWQRpnQ09vEcKmJofsK3aAoTmcIIHWwL2DQ6eSwWyg2ErxHb5fc+/SDbY9Wik9wF04CsrAKZu7qwUdTpvnQwg8j+b9/0PqwamB7Tn3EAK7HDHiAeBL2K/Z4xE7V0W3h+6e0w1yuWoNyd810f5cAmGaA76NI=
-Subject: [PATCH 03/10] usb: fix integer as NULL pointer warnings
+        b=KnZ3+YBG/j0s8wIvaHQ6lOCR3L9SEWdFosQAZZBENsKzYuad/dvN19heFnfHqea36NIjwMUUqBrLy1ca8HZgRJB/bZjVJXNo5Hrq8lpYjFVjrvk4tIWS3ScuA2wKhEw4kuG+ypTY/sE1eUHjP8TPx2vjqo4grymJ6RBj7fn/hKw=
+Subject: [PATCH 05/10] misc: fix integer as NULL pointer warnings
 From: Harvey Harrison <harvey.harrison@gmail.com>
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>
 Content-Type: text/plain
-Date: Wed, 30 Apr 2008 15:03:41 -0700
-Message-Id: <1209593021.24729.113.camel@brick>
+Date: Wed, 30 Apr 2008 15:03:42 -0700
+Message-Id: <1209593022.24729.115.camel@brick>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
@@ -28,81 +28,56 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-drivers/usb/host/ohci-sm501.c:93:24: warning: Using plain integer as NULL pointer
-drivers/usb/gadget/amd5536udc.c:3254:9: warning: Using plain integer as NULL pointer
-drivers/usb/gadget/amd5536udc.c:3267:9: warning: Using plain integer as NULL pointer
-drivers/usb/gadget/amd5536udc.c:3277:9: warning: Using plain integer as NULL pointer
-drivers/usb/gadget/amd5536udc.c:3285:9: warning: Using plain integer as NULL pointer
-drivers/usb/gadget/amd5536udc.c:3293:9: warning: Using plain integer as NULL pointer
+drivers/md/raid10.c:889:17: warning: Using plain integer as NULL pointer
+drivers/media/video/cx18/cx18-driver.c:616:12: warning: Using plain integer as NULL pointer
+sound/oss/kahlua.c:70:12: warning: Using plain integer as NULL pointer
 
 Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
 ---
- drivers/usb/gadget/amd5536udc.c |   10 +++++-----
- drivers/usb/host/ohci-sm501.c   |    2 +-
- 2 files changed, 6 insertions(+), 6 deletions(-)
+ drivers/md/raid10.c                    |    2 +-
+ drivers/media/video/cx18/cx18-driver.c |    2 +-
+ sound/oss/kahlua.c                     |    2 +-
+ 3 files changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/usb/gadget/amd5536udc.c b/drivers/usb/gadget/amd5536udc.c
-index ce337cb..f261d2a 100644
---- a/drivers/usb/gadget/amd5536udc.c
-+++ b/drivers/usb/gadget/amd5536udc.c
-@@ -3251,7 +3251,7 @@ static int udc_pci_probe(
- 	/* pci setup */
- 	if (pci_enable_device(pdev) < 0) {
- 		kfree(dev);
--		dev = 0;
-+		dev = NULL;
- 		retval = -ENODEV;
- 		goto finished;
+diff --git a/drivers/md/raid10.c b/drivers/md/raid10.c
+index 5938fa9..faf3d89 100644
+--- a/drivers/md/raid10.c
++++ b/drivers/md/raid10.c
+@@ -886,7 +886,7 @@ static int make_request(struct request_queue *q, struct bio * bio)
+ 	 */
+ 	raid10_find_phys(conf, r10_bio);
+  retry_write:
+-	blocked_rdev = 0;
++	blocked_rdev = NULL;
+ 	rcu_read_lock();
+ 	for (i = 0;  i < conf->copies; i++) {
+ 		int d = r10_bio->devs[i].devnum;
+diff --git a/drivers/media/video/cx18/cx18-driver.c b/drivers/media/video/cx18/cx18-driver.c
+index 8f5ed9b..3f55d47 100644
+--- a/drivers/media/video/cx18/cx18-driver.c
++++ b/drivers/media/video/cx18/cx18-driver.c
+@@ -613,7 +613,7 @@ static int __devinit cx18_probe(struct pci_dev *dev,
  	}
-@@ -3264,7 +3264,7 @@ static int udc_pci_probe(
- 	if (!request_mem_region(resource, len, name)) {
- 		dev_dbg(&pdev->dev, "pci device used already\n");
- 		kfree(dev);
--		dev = 0;
-+		dev = NULL;
- 		retval = -EBUSY;
- 		goto finished;
- 	}
-@@ -3274,7 +3274,7 @@ static int udc_pci_probe(
- 	if (dev->virt_addr == NULL) {
- 		dev_dbg(&pdev->dev, "start address cannot be mapped\n");
- 		kfree(dev);
--		dev = 0;
-+		dev = NULL;
- 		retval = -EFAULT;
- 		goto finished;
- 	}
-@@ -3282,7 +3282,7 @@ static int udc_pci_probe(
- 	if (!pdev->irq) {
- 		dev_err(&dev->pdev->dev, "irq not set\n");
- 		kfree(dev);
--		dev = 0;
-+		dev = NULL;
- 		retval = -ENODEV;
- 		goto finished;
- 	}
-@@ -3290,7 +3290,7 @@ static int udc_pci_probe(
- 	if (request_irq(pdev->irq, udc_irq, IRQF_SHARED, name, dev) != 0) {
- 		dev_dbg(&dev->pdev->dev, "request_irq(%d) fail\n", pdev->irq);
- 		kfree(dev);
--		dev = 0;
-+		dev = NULL;
- 		retval = -EBUSY;
- 		goto finished;
- 	}
-diff --git a/drivers/usb/host/ohci-sm501.c b/drivers/usb/host/ohci-sm501.c
-index 77204f0..e899a77 100644
---- a/drivers/usb/host/ohci-sm501.c
-+++ b/drivers/usb/host/ohci-sm501.c
-@@ -90,7 +90,7 @@ static int ohci_hcd_sm501_drv_probe(struct platform_device *pdev)
- 	struct device *dev = &pdev->dev;
- 	struct resource	*res, *mem;
- 	int retval, irq;
--	struct usb_hcd *hcd = 0;
-+	struct usb_hcd *hcd = NULL;
  
- 	irq = retval = platform_get_irq(pdev, 0);
- 	if (retval < 0)
+ 	cx = kzalloc(sizeof(struct cx18), GFP_ATOMIC);
+-	if (cx == 0) {
++	if (!cx) {
+ 		spin_unlock(&cx18_cards_lock);
+ 		return -ENOMEM;
+ 	}
+diff --git a/sound/oss/kahlua.c b/sound/oss/kahlua.c
+index dfe670f..928b567 100644
+--- a/sound/oss/kahlua.c
++++ b/sound/oss/kahlua.c
+@@ -67,7 +67,7 @@ static int __devinit probe_one(struct pci_dev *pdev, const struct pci_device_id
+ 		return 1;
+ 	
+ 	mem = ioremap(base, 128);
+-	if(mem == 0UL)
++	if(!mem)
+ 		return 1;
+ 	map = readw(mem + 0x18);	/* Read the SMI enables */
+ 	iounmap(mem);
 -- 
 1.5.5.1.305.g7c84
 
