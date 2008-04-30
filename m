@@ -1,54 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759549AbYD3QyS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760205AbYD3RDB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759549AbYD3QyS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Apr 2008 12:54:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757323AbYD3QyD
+	id S1760205AbYD3RDB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Apr 2008 13:03:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758034AbYD3RCu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Apr 2008 12:54:03 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:33693 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755512AbYD3QyC (ORCPT
+	Wed, 30 Apr 2008 13:02:50 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:45629 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1758001AbYD3RCt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Apr 2008 12:54:02 -0400
-Date: Wed, 30 Apr 2008 09:39:51 -0700
-From: Greg KH <greg@kroah.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Greg KH <gregkh@suse.de>, "Theodore Ts'o" <tytso@mit.edu>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       Justin Forbes <jmforbes@linuxtx.org>, linux-kernel@vger.kernel.org,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Domenico Andreoli <cavokz@gmail.com>,
-       Randy Dunlap <rdunlap@xenotime.net>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Jeff Garzik <jgarzik@redhat.com>, Dave Jones <davej@redhat.com>,
-       akpm@linux-foundation.org, Chuck Wolber <chuckw@quantumlinux.com>,
-       stable@kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [stable] [27/37] tehuti: move ioctl perm check closer to
-	function start (CVE-2008-1675)
-Message-ID: <20080430163951.GD22558@kroah.com>
-References: <20080429171222.073929148@mini.kroah.org> <20080429171901.GB14724@suse.de> <20080429191310.203384eb@core> <20080429185543.GA24643@suse.de> <alpine.LFD.1.10.0804291200140.2997@woody.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.10.0804291200140.2997@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Wed, 30 Apr 2008 13:02:49 -0400
+Date: Wed, 30 Apr 2008 17:55:10 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Fabio De Francesco <fabiomdf@alice.it>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [x86_32] With 4GB installed, in which cases low mem total is
+ less than 896MB?
+Message-ID: <20080430175510.2ad08f61@core>
+In-Reply-To: <200804301702.06019.fabiomdf@alice.it>
+References: <200804301702.06019.fabiomdf@alice.it>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 29, 2008 at 12:02:14PM -0700, Linus Torvalds wrote:
+> Why is it needed to activate the PAE mechanism in order to see and use the whole 4GB memory? Is it what it is expected to be done?
 > 
-> 
-> On Tue, 29 Apr 2008, Greg KH wrote:
-> >
-> > Hm, that's the way it is in Linus's tree, we should change it there
-> > first.
-> 
-> Done. It will be commit 6203554207728f43cfb9fd48585cd6500da73d42 when I 
-> push out (but please point to the original commit that actually adds the 
-> check: 6203554 just changes from CAP_NET_ADMIN to CAP_SYS_RAWIO and is not 
-> as important as adding the check in the first place.
+> Thanks in advance to anyone who will reply.
 
-Thanks, I'll add this to the queue for 2.6.25-stable as well.
-
-greg k-h
+The PCI hole has to be below 4GB so the Intel chipset maps some RAM above
+4GB where PAE is needed to address it.
