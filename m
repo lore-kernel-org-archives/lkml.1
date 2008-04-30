@@ -1,74 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764074AbYD3TCI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764295AbYD3TDu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764074AbYD3TCI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Apr 2008 15:02:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758915AbYD3TBz
+	id S1764295AbYD3TDu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Apr 2008 15:03:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759855AbYD3TDm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Apr 2008 15:01:55 -0400
-Received: from gate.crashing.org ([63.228.1.57]:38891 "EHLO gate.crashing.org"
+	Wed, 30 Apr 2008 15:03:42 -0400
+Received: from mailhub.sw.ru ([195.214.232.25]:7222 "EHLO relay.sw.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758584AbYD3TBz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Apr 2008 15:01:55 -0400
-Cc: "Randy.Dunlap" <rdunlap@xenotime.net>, linux-kernel@vger.kernel.org,
-       torvalds@linux-foundation.org, mporter@kernel.crashing.org,
-       Paul Mackerras <paulus@samba.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       linuxppc-dev@ozlabs.org
-Message-Id: <51A34080-7981-4958-B225-4921FC95B84A@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
+	id S1759486AbYD3TDl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Apr 2008 15:03:41 -0400
+Subject: Re: [patch, -git] isdn: hysdn_procconf.c build fix
+From: "Denis V. Lunev" <den@openvz.org>
 To: Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20080430113500.dfe21880.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+In-Reply-To: <20080430114731.7e71f3d2.akpm@linux-foundation.org>
+References: <1207653508.7171.18.camel@iris.sw.ru>
+	 <1207653576-12640-25-git-send-email-den@openvz.org>
+	 <20080430175740.GA26612@elte.hu>
+	 <20080430111052.9c0c8974.akpm@linux-foundation.org>
+	 <20080430183051.GA3008@elte.hu>
+	 <20080430114731.7e71f3d2.akpm@linux-foundation.org>
+Content-Type: text/plain
+Organization: OpenVz kernel team
+Date: Wed, 30 Apr 2008 23:03:05 +0400
+Message-Id: <1209582185.4310.1.camel@iris.sw.ru>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 
 Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0 (Apple Message framework v919.2)
-Subject: Re: [PATCH] docbook: fix fatal rapidio yet again (and more to come)
-Date: Wed, 30 Apr 2008 14:01:12 -0500
-References: <Pine.LNX.4.64.0804292009000.18219@shark.he.net> <20080430113500.dfe21880.akpm@linux-foundation.org>
-X-Mailer: Apple Mail (2.919.2)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 2008-04-30 at 11:47 -0700, Andrew Morton wrote:
+> On Wed, 30 Apr 2008 20:30:51 +0200
+> Ingo Molnar <mingo@elte.hu> wrote:
+> 
+> > 
+> > * Andrew Morton <akpm@linux-foundation.org> wrote:
+> > 
+> > > On Wed, 30 Apr 2008 19:57:40 +0200
+> > > Ingo Molnar <mingo@elte.hu> wrote:
+> > > 
+> > > > Ob'grumpy: this file was not even build-tested by any of the parties 
+> > > > who turned it into upstream commit ac41cfd19b ("isdn: use non-racy 
+> > > > method for proc entries creation").
+> > > 
+> > > That's because this stupidity:
+> > > 
+> > > config HYSDN
+> > >         tristate "Hypercope HYSDN cards (Champ, Ergo, Metro) support (module only)"
+> > >         depends on m && PROC_FS && PCI && BROKEN_ON_SMP
+> > > 
+> > > breaks allmodconfig coverage testing.
+> > 
+> > yeah. There's a trick though that we use in the x86 tree (and which i'm 
+> > using in a script when queuing up new patches). The following command 
+> > will punch through any Kconfig black holes:
+> > 
+> >   make drivers/isdn/hysdn/hysdn_procconf.o
+> 
+> That's daft, sorry.  We shouldn't expect everyone to do stuff like that.
+> 
+> > (it wont always work as it needs a halfways reasonable .config, but it 
+> > works well enough to be part of my workflow.)
+> > 
+> > note that there's tons more stuff and dependencies that plain 
+> > allmodconfig does not catch - in this merge window alone i'm at around 
+> > 20 fixes so far.
+> 
+> allmodconfig is for one thing and one thing only: compilation coverage
+> testing.  If there is anything which is not compiled after `make
+> allmodconfig' then that's a bug.
+> 
+> But how to fix it?  Perhaps we need to add a CONFIG_ALLFOOCONFIG which can
+> be tested at the appropriate places.
 
-On Apr 30, 2008, at 1:35 PM, Andrew Morton wrote:
-> On Tue, 29 Apr 2008 20:10:55 -0700 (PDT)
-> "Randy.Dunlap" <rdunlap@xenotime.net> wrote:
->
->> From: Randy Dunlap <randy.dunlap@oracle.com>
->>
->> Don't refer to file that no longer exists:
->> docproc: linux-2.6.25-git14/arch/powerpc/kernel/rio.c: No such file  
->> or directory
->>
->> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
->> ---
->> Documentation/DocBook/rapidio.tmpl |    1 -
->> 1 file changed, 1 deletion(-)
->>
->> --- linux-2.6.25-git14.orig/Documentation/DocBook/rapidio.tmpl
->> +++ linux-2.6.25-git14/Documentation/DocBook/rapidio.tmpl
->> @@ -133,7 +133,6 @@
->> !Idrivers/rapidio/rio-sysfs.c
->>      </sect1>
->>      <sect1 id="PPC32_support"><title>PPC32 support</title>
->> -!Iarch/powerpc/kernel/rio.c
->> !Earch/powerpc/sysdev/fsl_rio.c
->> !Iarch/powerpc/sysdev/fsl_rio.c
->>      </sect1>
->
-> grumble.
->
-> This is a subset of rapidio-fix-docbook-references.patch, but I  
-> appear to
-> be unable to interest anyone in merging/reviewing/accepting/anything- 
-> else
-> that quite large set of patches.
->
-> Guys, those patches were sent six weeks ago and it now looks like  
-> they will
-> miss 2.6.26.  This is pretty slack of us.  Help?
+I think that the same should be applied to allyesconfig
 
-Odd.  I thought Paul had picked up a docbook RapidIO patch from you in  
-the latest merge round.
-
-- k
