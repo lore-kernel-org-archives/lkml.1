@@ -1,63 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932469AbYD3VVr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765009AbYD3VWz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932469AbYD3VVr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Apr 2008 17:21:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759834AbYD3VVj
+	id S1765009AbYD3VWz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Apr 2008 17:22:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761263AbYD3VWn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Apr 2008 17:21:39 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:49904
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753263AbYD3VVi (ORCPT
+	Wed, 30 Apr 2008 17:22:43 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:59579 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1759902AbYD3VWn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Apr 2008 17:21:38 -0400
-Date: Wed, 30 Apr 2008 14:21:37 -0700 (PDT)
-Message-Id: <20080430.142137.236846072.davem@davemloft.net>
-To: akpm@linux-foundation.org
-Cc: torvalds@linux-foundation.org, rjw@sisk.pl, linux-kernel@vger.kernel.org,
-       jirislaby@gmail.com
-Subject: Re: Slow DOWN, please!!!
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20080430135405.ddc42075.akpm@linux-foundation.org>
-References: <20080430131537.1f7a0914.akpm@linux-foundation.org>
-	<alpine.LFD.1.10.0804301325260.2980@woody.linux-foundation.org>
-	<20080430135405.ddc42075.akpm@linux-foundation.org>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Wed, 30 Apr 2008 17:22:43 -0400
+Date: Wed, 30 Apr 2008 22:14:58 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-mm@vger.kernel.org
+Subject: Re: [PATCH 1/2] mm: Fix overcommit overflow
+Message-ID: <20080430221458.258cbc66@core>
+In-Reply-To: <20080430140936.9a27facf.akpm@linux-foundation.org>
+References: <20080430214241.4313e9ca@core>
+	<20080430140936.9a27facf.akpm@linux-foundation.org>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Andrew Morton <akpm@linux-foundation.org>
-Date: Wed, 30 Apr 2008 13:54:05 -0700
+> >  	preempt_enable();
+> 
+> But afacit the existing atomic_long_t does exactly what you want?
 
-> linux-next does little to address our two largest (IMO) problems:
-> inadequate review and inadequate response to bug and regression reports. 
-> But those problems are harder to fix..
+We have a portable atomic_long_t .. oooh scratch that patch then...
 
-This is all about positive and negative reinforcement.
-
-The people who sit and git bisect their lives away to get the
-regressions fixed need more positive reinforcement.  And the people
-who stick these regressions into the tree need more negative
-reinforcement.
-
-The current way of dealing with folks who stick broken crud into the
-tree results in zero change in behvaior.
-
-People who insert the bum changes into the tree only really have one
-core thing that they are sensitive to, their reputation.  That's why
-there is an enormous reluctance to even suggest reverts, it looks bad
-for them and it also makes more work for them in the end.
-
-I guess what these folks are truly afraid of is that someone will
-start tracking reverts and post their results in some presentation
-at some big conference.  I say that would be a good thing.  To
-be honest, hitting the revert button more aggressively and putting
-the fear of being the "revert king" into everyone's minds might
-really help with this problem.
-
-Currently there is no sufficient negative pushback on people who
-insert broken crud into the tree.  So it should be no surprise that it
-continues.
+Alan
