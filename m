@@ -1,49 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762051AbYD3LQO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762486AbYD3LQh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762051AbYD3LQO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Apr 2008 07:16:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757241AbYD3LP6
+	id S1762486AbYD3LQh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Apr 2008 07:16:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757241AbYD3LQ0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Apr 2008 07:15:58 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:34951 "EHLO mx3.mail.elte.hu"
+	Wed, 30 Apr 2008 07:16:26 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:34475 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757043AbYD3LP5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Apr 2008 07:15:57 -0400
-Date: Wed, 30 Apr 2008 13:15:16 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Takashi Iwai <tiwai@suse.de>
-Cc: Mauro Carvalho Chehab <mchehab@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-dvb-maintainer@linuxtv.org, video4linux-list@redhat.com,
-       linux-kernel@vger.kernel.org, Mike Galbraith <efault@gmx.de>
-Subject: Re: [patch, -git] media/video/sound build fix, TEA5761/TEA5767
-Message-ID: <20080430111516.GA9954@elte.hu>
-References: <20080430110115.GA5633@elte.hu> <s5hiqxzwqak.wl%tiwai@suse.de>
+	id S1757233AbYD3LQZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Apr 2008 07:16:25 -0400
+Date: Wed, 30 Apr 2008 12:16:23 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: ink@jurassic.park.msu.ru, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org, gregkh@suse.de
+Subject: Re: 2.6.25-mm1: Failing to probe IDE interface
+Message-ID: <20080430111622.GB10831@csn.ul.ie>
+References: <20080417160331.b4729f0c.akpm@linux-foundation.org> <20080429154957.GA19148@csn.ul.ie> <20080429165840.GA24125@csn.ul.ie> <200804292337.57874.bzolnier@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-In-Reply-To: <s5hiqxzwqak.wl%tiwai@suse.de>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <200804292337.57874.bzolnier@gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Takashi Iwai <tiwai@suse.de> wrote:
-
-> IMO, it's the reverse selection from sound to V4L that makes things 
-> complicated.  I believe it's better to fix it as a normal dependency.
+On (29/04/08 23:37), Bartlomiej Zolnierkiewicz didst pronounce:
+> > <SNIP>
+> > 
+> > The third patch that needed reverting was
+> > gregkh-pci-pci-clean-up-resource-alignment-management.patch (owners added
+> > to cc). The relevant hint in the a diff between a broken and working bootlog was;
+> > 
+> >  system 00:09: ioport range 0x15e0-0x15ef has been reserved
+> > + PCI: bogus alignment of resource 7 [100:1ff] (flags 100) of 0000:00:02.0
+> > + PCI: bogus alignment of resource 8 [100:1ff] (flags 100) of 0000:00:02.0
+> > + PCI: bogus alignment of resource 9 [4000000:7ffffff] (flags 1200) of 0000:00:02.0
+> > + PCI: bogus alignment of resource 10 [4000000:7ffffff] (flags 200) of 0000:00:02.0
+> > + PCI: bogus alignment of resource 7 [100:1ff] (flags 100) of 0000:00:02.1
+> > + PCI: bogus alignment of resource 8 [100:1ff] (flags 100) of 0000:00:02.1
+> > + PCI: bogus alignment of resource 9 [4000000:7ffffff] (flags 1200) of 0000:00:02.1
+> > + PCI: bogus alignment of resource 10 [4000000:7ffffff] (flags 200) of 0000:00:02.1
+> > 
+> > With the resource alignment patch and the two IDE patches reverted, the
+> > laptop is able to boot.
 > 
-> How about the patch below?
+> Thanks for tracking it down.
+> 
+> Hmm, it seems that the above patch was merged a week ago:
+> 
+> commit bda0c0afa7a694bb1459fd023515aca681e4d79a
+> Merge: 904e0ab... af40b48...
+> Author: Linus Torvalds <torvalds@linux-foundation.org>
+> Date:   Mon Apr 21 15:58:35 2008 -0700
+> 
+>     Merge git://git.kernel.org/pub/scm/linux/kernel/git/gregkh/pci-2.6
+> ...
+>       PCI: clean up resource alignment management
+> ...
+> 
+> but it could be that the issue has been already fixed in git tree
+> (could you verify it please?).
+> 
 
-thanks, i've added it to the mix, instead of my patch.
+Latest git boots on the laptop so somewhere along the line, it got fixed.
 
-	Ingo
+> BTW according to lspci output you should be able to use piix driver
+> instead of ide_generic on this laptop.
+> 
+
+I know but the config is a bit minimal for faster building as it's only
+intended for sniff-testing patches.
+
+Thanks for the help.
+
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
