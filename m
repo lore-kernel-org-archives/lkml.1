@@ -1,97 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762790AbYD3X52@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933384AbYD3X6U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762790AbYD3X52 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Apr 2008 19:57:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757156AbYD3X5U
+	id S933384AbYD3X6U (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Apr 2008 19:58:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760780AbYD3X6H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Apr 2008 19:57:20 -0400
-Received: from mx2.suse.de ([195.135.220.15]:44412 "EHLO mx2.suse.de"
+	Wed, 30 Apr 2008 19:58:07 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:44498 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752837AbYD3X5T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Apr 2008 19:57:19 -0400
-Date: Wed, 30 Apr 2008 16:57:01 -0700
-From: Greg KH <gregkh@suse.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: [GIT PATCH] driver core patches against 2.6.25-git
-Message-ID: <20080430235701.GA20981@suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	id S1760358AbYD3X6E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Apr 2008 19:58:04 -0400
+From: Greg Kroah-Hartman <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org
+Cc: Ben Hutchings <bhutchings@solarflare.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 01/11] sysfs: Disallow truncation of files in sysfs
+Date: Wed, 30 Apr 2008 16:57:40 -0700
+Message-Id: <1209599870-22919-1-git-send-email-gregkh@suse.de>
+X-Mailer: git-send-email 1.5.5.1
+In-Reply-To: <20080430235701.GA20981@suse.de>
+References: <20080430235701.GA20981@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Here are a few remaining patches against your 2.6.25-git tree.
+From: Ben Hutchings <bhutchings@solarflare.com>
 
-They provide a few apis that Tejun needs for other trees, and the
-biggest of all is the removal of 'struct class_device' now that it is
-purged from your tree through all of the different subsytem merges.
+sysfs allows attribute files to be truncated, e.g. using ftruncate(), with the
+expected effect on their inode.   For most attributes, this doesn't change the
+"real" size of the file i.e. how much can be read from it.  However, the
+parameter validation for reading and writing binary attribute files is based
+on the inode size and not the size specified in the file's bin_attribute, so it
+can be broken by this. For example, if we try using dd to write to such a file:
 
-There's also a build fix in there from Randy and a few other minor
-things that people have posted problems with.
+# pwd
+/sys/bus/pci/devices/0000:08:00.0
+# ls -l config
+-rw-r--r--  1 root root 4096 Feb  1 17:35 config
+# dd if=/dev/zero of=config bs=4 count=1
+1+0 records in
+1+0 records out
+# ls -l config
+-rw-r--r--  1 root root 0 Feb  1 17:50 config
+# dd if=/dev/zero of=config bs=4 count=1 seek=128
+dd: writing `config': No space left on device
+1+0 records in
+0+0 records out
 
-All of these patches have been in -next for a while.
+Also, after truncation to 0, parameter validation for read and write is
+disabled.  Most bin_attribute read and write methods also validate the size and
+offset, but for some this will allow out-of-range access.  This may be a
+security issue, though access to such files is often limited to root.  In any
+case, the validation should remain for safety's sake!)
 
-Please pull from:
-	master.kernel.org:/pub/scm/linux/kernel/git/gregkh/driver-2.6.git/
+This was previously reported in Bugzilla as bug 9867.
 
-Patches will be sent as a follow-on to this message to lkml for people
-to see.
+sysfs should ignore size changes or else refuse them (by returning -EINVAL).
+This patch makes it ignore them.
 
-thanks,
+Signed-off-by: Ben Hutchings <bhutchings@solarflare.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+---
+ fs/sysfs/inode.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
-greg k-h
-
-------------
-
- drivers/base/base.h           |   11 -
- drivers/base/class.c          |  638 +----------------------------------------
- drivers/base/driver.c         |   10 +
- drivers/pcmcia/cs.c           |   13 +-
- drivers/pcmcia/cs_internal.h  |    3 +-
- drivers/pcmcia/socket_sysfs.c |   52 ++--
- fs/debugfs/file.c             |    2 +-
- fs/sysfs/inode.c              |    2 +
- include/linux/device.h        |   97 -------
- include/linux/io.h            |    4 +-
- include/linux/klist.h         |   40 ++-
- include/linux/sysfs.h         |    6 +
- lib/devres.c                  |    4 +-
- lib/klist.c                   |  235 ++++++++--------
- lib/kobject.c                 |   28 +--
- 15 files changed, 201 insertions(+), 944 deletions(-)
-
----------------
-
-Ben Hutchings (1):
-      sysfs: Disallow truncation of files in sysfs
-
-David Brownell (1):
-      pcmcia: remove pccard_sysfs_interface warnings
-
-Greg Kroah-Hartman (1):
-      klist: fix coding style errors in klist.h and klist.c
-
-Kay Sievers (2):
-      kobject: do not copy vargs, just pass them around
-      driver core: remove no longer used "struct class_device"
-
-Kumar Gala (1):
-      devres: support addresses greater than an unsigned long via dev_ioremap
-
-Randy Dunlap (1):
-      sysfs: sysfs_update_group stub for CONFIG_SYSFS=n
-
-Robert P. J. Day (1):
-      DEBUGFS: Correct location of debugfs API documentation.
-
-Stas Sergeev (1):
-      driver core: warn about duplicate driver names on the same bus
-
-Tejun Heo (2):
-      klist: implement KLIST_INIT() and DEFINE_KLIST()
-      klist: implement klist_add_{after|before}()
+diff --git a/fs/sysfs/inode.c b/fs/sysfs/inode.c
+index f8b82e7..eb53c63 100644
+--- a/fs/sysfs/inode.c
++++ b/fs/sysfs/inode.c
+@@ -59,6 +59,8 @@ int sysfs_setattr(struct dentry * dentry, struct iattr * iattr)
+ 	if (error)
+ 		return error;
+ 
++	iattr->ia_valid &= ~ATTR_SIZE; /* ignore size changes */
++
+ 	error = inode_setattr(inode, iattr);
+ 	if (error)
+ 		return error;
+-- 
+1.5.5.1
 
