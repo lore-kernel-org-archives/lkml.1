@@ -1,69 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758472AbYD3H26@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758499AbYD3HbH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758472AbYD3H26 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Apr 2008 03:28:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751232AbYD3H2u
+	id S1758499AbYD3HbH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Apr 2008 03:31:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755147AbYD3Haz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Apr 2008 03:28:50 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:34269 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751086AbYD3H2t (ORCPT
+	Wed, 30 Apr 2008 03:30:55 -0400
+Received: from mtagate4.de.ibm.com ([195.212.29.153]:7925 "EHLO
+	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755048AbYD3Hay (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Apr 2008 03:28:49 -0400
-Date: Wed, 30 Apr 2008 16:33:55 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: David Miller <davem@davemloft.net>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+	Wed, 30 Apr 2008 03:30:54 -0400
+Date: Wed, 30 Apr 2008 09:30:52 +0200
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
        y-goto@jp.fujitsu.com
 Subject: Re: sparc64 bootup regression...
-Message-Id: <20080430163355.4b4f23ec.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20080430.002530.189687792.davem@davemloft.net>
-References: <20080429.231241.221824292.davem@davemloft.net>
-	<20080429233832.168fb6ee.akpm@linux-foundation.org>
-	<20080430161540.bfff2c45.kamezawa.hiroyu@jp.fujitsu.com>
-	<20080430.002530.189687792.davem@davemloft.net>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Message-ID: <20080430073052.GA11015@osiris.boeblingen.de.ibm.com>
+References: <20080429.231241.221824292.davem@davemloft.net> <20080429233832.168fb6ee.akpm@linux-foundation.org> <20080430161540.bfff2c45.kamezawa.hiroyu@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080430161540.bfff2c45.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 30 Apr 2008 00:25:30 -0700 (PDT)
-David Miller <davem@davemloft.net> wrote:
+On Wed, Apr 30, 2008 at 04:15:40PM +0900, KAMEZAWA Hiroyuki wrote:
+> On Tue, 29 Apr 2008 23:38:32 -0700
+> Andrew Morton <akpm@linux-foundation.org> wrote:
+> > On Tue, 29 Apr 2008 23:12:41 -0700 (PDT) David Miller <davem@davemloft.net> wrote:
+> > > This commit causes bootup failures on sparc64:
+> > > 
+> > > commit 86f6dae1377523689bd8468fed2f2dd180fc0560
+> > > Author: Yasunori Goto <y-goto@jp.fujitsu.com>
+> > > Date:   Mon Apr 28 02:13:33 2008 -0700
+> > > 
+> > >     memory hotplug: allocate usemap on the section with pgdat
+> > Thanks.  Does a straightforward revert fix it?  If so, we could do that while heads
+> > are being scratched.
 
-> From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> Date: Wed, 30 Apr 2008 16:15:40 +0900
-> 
-> > How about this ? If this is messy (or doesn't work), Goto-san will rework
-> > his own patch by himself. (this patch is against -mm but I think no HUNK to
-> > git tree)
-> 
-> This makes the original change pointless.
-> 
-It seems the orignal change expects NODE_DATA() is allocated at boottime.
-not in .bss section.
+That patch broke the s390 port to SPARSEMEM (not upstream yet) as well.
+Reverting it does help.
+However increasing SECTION_SIZE_BITS to 25 (was: 20) does help too.
+But that doesn't seem to help on sparc64 where it is already 30, strange.
 
-> If the goal is to put the usemap in the same section as the memory
-> itself, in order to allow for it to be freed during memory hotplug,
-> this new change just makes the facility not work some of the time.
+> How about this ? If this is messy (or doesn't work), Goto-san will rework
+> his own patch by himself. (this patch is against -mm but I think no HUNK to
+> git tree)
 > 
-yes, at least, WARNING is necessary.
-
-> Now maybe sometimes it will work, maybe sometimes it will not.
+> ==
+> This kind of page allocation, which specifies the address range,
+> can fail easily.
 > 
-> It's not the end of the world if this change is reverted for a few
-> days while we work out what to do about this.
+> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiruyo@jp.fujitsu.com>
 > 
-yes ;)
-
-> Really, it does not reflect badly upon you or Goto-san, if the change
-> is reverted temporarily.
+> Index: mm-2.6.25-mm1/mm/sparse.c
+> ===================================================================
+> --- mm-2.6.25-mm1.orig/mm/sparse.c
+> +++ mm-2.6.25-mm1/mm/sparse.c
+> @@ -264,10 +264,16 @@ static unsigned long *__init sparse_earl
+>  	 * To solve above issue, this collects all usemap on the same section
+>  	 * which has pgdat.
+>  	 */
+> +#ifdef CONFIG_NUMA /* contig_page_data for !NUMA case is not good to do this */
+>  	section_nr = pfn_to_section_nr(__pa(pgdat) >> PAGE_SHIFT);
+>  	usemap = alloc_bootmem_section(usemap_size(), section_nr);
+>  	if (usemap)
+>  		return usemap;
+> +#endif
+> +	/* above allocation can fail. */
+> +	usemap = alloc_bootmem_node(NODE_DATA(nid), usemap_size());
+> +	if (usemap)
+> +		return usemap;
 > 
-Okay, I agree to revert it.
+>  	/* Stupid: suppress gcc warning for SPARSEMEM && !NUMA */
+>  	nid = 0;
 
-Thanks,
--Kame
-
+Fixes it on s390 at least.
