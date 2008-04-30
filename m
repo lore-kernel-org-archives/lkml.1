@@ -1,65 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762870AbYD3Lf6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762693AbYD3Liw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762870AbYD3Lf6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Apr 2008 07:35:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758055AbYD3Lfs
+	id S1762693AbYD3Liw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Apr 2008 07:38:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757913AbYD3Lin
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Apr 2008 07:35:48 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:5297 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757668AbYD3Lfq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Apr 2008 07:35:46 -0400
-Date: Wed, 30 Apr 2008 13:35:42 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: linux-kernel@vger.kernel.org, peterz@infradead.org, npiggin@suse.de,
-       linux-arch@vger.kernel.org, mingo@elte.hu, paulmck@linux.vnet.ibm.com
-Subject: Re: [PATCH 2/10] x86: convert to generic helpers for IPI function  calls
-Message-ID: <20080430113542.GZ12774@kernel.dk>
-References: <1209453990-7735-1-git-send-email-jens.axboe@oracle.com> <1209453990-7735-3-git-send-email-jens.axboe@oracle.com> <481786A5.7010604@goop.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <481786A5.7010604@goop.org>
+	Wed, 30 Apr 2008 07:38:43 -0400
+Received: from mtagate4.de.ibm.com ([195.212.29.153]:19796 "EHLO
+	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757855AbYD3Lim (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Apr 2008 07:38:42 -0400
+Subject: Re: [patch] s390: Remove self ptrace IEEE_IP hack.
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Reply-To: schwidefsky@de.ibm.com
+To: Christoph Hellwig <hch@infradead.org>
+Cc: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
+In-Reply-To: <20080430091900.GA13743@infradead.org>
+References: <1209546896.10954.28.camel@localhost>
+	 <20080430091900.GA13743@infradead.org>
+Content-Type: text/plain
+Organization: IBM Corporation
+Date: Wed, 30 Apr 2008 13:36:33 +0200
+Message-Id: <1209555393.10954.32.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 29 2008, Jeremy Fitzhardinge wrote:
-> Jens Axboe wrote:
-> >-int xen_smp_call_function_mask(cpumask_t mask, void (*func)(void *),
-> >-			       void *info, int wait)
-> >  
-> [...]
-> >-	/* Send a message to other CPUs and wait for them to respond */
-> >-	xen_send_IPI_mask(mask, XEN_CALL_FUNCTION_VECTOR);
-> >-
-> >-	/* Make sure other vcpus get a chance to run if they need to. */
-> >-	yield = false;
-> >-	for_each_cpu_mask(cpu, mask)
-> >-		if (xen_vcpu_stolen(cpu))
-> >-			yield = true;
-> >-
-> >-	if (yield)
-> >-		HYPERVISOR_sched_op(SCHEDOP_yield, 0);
-> >  
+On Wed, 2008-04-30 at 05:19 -0400, Christoph Hellwig wrote:
+> After this the switch to the generic sys_ptrace is trivial.  Care to
+> submit a patch for that aswell?
 > 
-> I added this to deal with the case where you're sending an IPI to 
-> another VCPU which isn't currently running on a real cpu.  In this case 
-> you could end up spinning while the other VCPU is waiting for a real CPU 
-> to run on.  (Basically the same problem that spinlocks have in a virtual 
-> environment.)
-> 
-> However, this is at best a partial solution to the problem, and I never 
-> benchmarked if it really makes a difference.  Since any other virtual 
-> environment would have the same problem, its best if we can solve it 
-> generically.  (Of course a synchronous single-target cross-cpu call is a 
-> simple cross-cpu rpc, which could be implemented very efficiently in the 
-> host/hypervisor by simply doing a vcpu context switch...)
 
-So, what would your advice be? Seems safe enough to ignore for now and
-attack it if it becomes a real problem.
+Here we go..
 
 -- 
-Jens Axboe
+blue skies,
+  Martin.
+
+"Reality continues to ruin my life." - Calvin.
+
+---
+Subject: [PATCH] s390: use generic sys_ptrace
+
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+
+After the PT_IEEE_IP hack has been removed s390 can now use
+the common code sys_ptrace function.
+
+Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
+---
+
+ arch/s390/kernel/ptrace.c |   37 +------------------------------------
+ include/asm-s390/ptrace.h |    2 --
+ 2 files changed, 1 insertion(+), 38 deletions(-)
+
+diff -urpN linux-2.6/arch/s390/kernel/ptrace.c linux-2.6-patched/arch/s390/kernel/ptrace.c
+--- linux-2.6/arch/s390/kernel/ptrace.c	2008-04-30 13:33:14.000000000 +0200
++++ linux-2.6-patched/arch/s390/kernel/ptrace.c	2008-04-30 13:33:14.000000000 +0200
+@@ -607,18 +607,8 @@ do_ptrace_emu31(struct task_struct *chil
+ }
+ #endif
+ 
+-static int
+-do_ptrace(struct task_struct *child, long request, long addr, long data)
++long arch_ptrace(struct task_struct *child, long request, long addr, long data)
+ {
+-	int ret;
+-
+-	if (request == PTRACE_ATTACH)
+-		return ptrace_attach(child);
+-
+-	ret = ptrace_check_attach(child, request == PTRACE_KILL);
+-	if (ret < 0)
+-		return ret;
+-
+ 	switch (request) {
+ 	case PTRACE_SYSCALL:
+ 		/* continue and stop at next (return from) syscall */
+@@ -673,31 +663,6 @@ do_ptrace(struct task_struct *child, lon
+ 	return -EIO;
+ }
+ 
+-asmlinkage long
+-sys_ptrace(long request, long pid, long addr, long data)
+-{
+-	struct task_struct *child;
+-	int ret;
+-
+-	lock_kernel();
+-	if (request == PTRACE_TRACEME) {
+-		 ret = ptrace_traceme();
+-		 goto out;
+-	}
+-
+-	child = ptrace_get_task_struct(pid);
+-	if (IS_ERR(child)) {
+-		ret = PTR_ERR(child);
+-		goto out;
+-	}
+-
+-	ret = do_ptrace(child, request, addr, data);
+-	put_task_struct(child);
+-out:
+-	unlock_kernel();
+-	return ret;
+-}
+-
+ asmlinkage void
+ syscall_trace(struct pt_regs *regs, int entryexit)
+ {
+diff -urpN linux-2.6/include/asm-s390/ptrace.h linux-2.6-patched/include/asm-s390/ptrace.h
+--- linux-2.6/include/asm-s390/ptrace.h	2008-04-17 04:49:44.000000000 +0200
++++ linux-2.6-patched/include/asm-s390/ptrace.h	2008-04-30 13:33:14.000000000 +0200
+@@ -463,8 +463,6 @@ struct user_regs_struct
+ };
+ 
+ #ifdef __KERNEL__
+-#define __ARCH_SYS_PTRACE	1
+-
+ /*
+  * These are defined as per linux/ptrace.h, which see.
+  */
+
 
