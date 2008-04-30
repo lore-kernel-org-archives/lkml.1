@@ -1,110 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759643AbYD3MR6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762977AbYD3MUG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759643AbYD3MR6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Apr 2008 08:17:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760028AbYD3MRp
+	id S1762977AbYD3MUG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Apr 2008 08:20:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757090AbYD3MTz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Apr 2008 08:17:45 -0400
-Received: from mail.gmx.net ([213.165.64.20]:43758 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1763398AbYD3MRn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Apr 2008 08:17:43 -0400
-X-Authenticated: #5039886
-X-Provags-ID: V01U2FsdGVkX1+RRZZcSJqRkXiwe1Mhu5q/f+8rCBigBgDjFF3MDm
-	FAM7jJ/kSNd9de
-Date: Wed, 30 Apr 2008 14:17:38 +0200
-From: =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Al Viro <viro@ZenIV.linux.org.uk>,
-       Harvey Harrison <harvey.harrison@gmail.com>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Subject: Re: [PATCH] x86: !x & y typo in mtrr code
-Message-ID: <20080430121738.GA4559@atjola.homenet>
-References: <1209268817.14173.43.camel@brick> <20080427042051.GL5882@ZenIV.linux.org.uk> <20080429210435.GA23008@elte.hu> <20080430064603.GA3602@atjola.homenet> <20080430093233.GD23528@elte.hu>
+	Wed, 30 Apr 2008 08:19:55 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:59279 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755985AbYD3MTz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Apr 2008 08:19:55 -0400
+Date: Wed, 30 Apr 2008 14:18:54 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: David Miller <davem@davemloft.net>, tiwai@suse.de, mchehab@infradead.org,
+       akpm@linux-foundation.org, linux-dvb-maintainer@linuxtv.org,
+       video4linux-list@redhat.com, linux-kernel@vger.kernel.org,
+       efault@gmx.de
+Subject: Re: [patch, -git] media/video/sound build fix, TEA5761/TEA5767
+Message-ID: <20080430121854.GC30735@elte.hu>
+References: <20080430110115.GA5633@elte.hu> <s5hiqxzwqak.wl%tiwai@suse.de> <20080430.041703.89847530.davem@davemloft.net> <20080430112959.GA32556@uranus.ravnborg.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20080430093233.GD23528@elte.hu>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-Y-GMX-Trusted: 0
+In-Reply-To: <20080430112959.GA32556@uranus.ravnborg.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2008.04.30 11:32:33 +0200, Ingo Molnar wrote:
-> Automating Sparse runs so that it can become part of our daily 
-> patch-flow is _not_ trivial and it's not just a matter of typing make 
-> C=1. Thomas is working on integrating Sparse delta analysis into our 
-> daily patch workflow nevertheless.
 
-Who said daily? More often can be better, but just before the pull
-request is still better than nothing. And even some very basic and
-stupid filtering can make the sparse output more feasible without losing
-"too much" information (my stupid approach here can fail for example
-when you remove an error of one class while introducing another one of
-the same class).
+* Sam Ravnborg <sam@ravnborg.org> wrote:
 
-Given the merge of x86.git that introduced this specific bug we have:
-9e9abecf - "merge x86.git"
+> [OT to the actual problem]
+> 
+> I have envisioned something like a "requires tag" that would list what 
+> a config symbols needs.
+> 
+> Like in this case it would have been:
+> 
+> 	requires V4L
+> 
+> This should in the frontends then if the user selects a symbol where 
+> the 'requires' are not satisfied with a window listing the menuentries 
+> for the symbol that the user needs to enable to satisfy what the 
+> original symbol requires.
+> 
+> This is the only way to do this in a way so the user is actually aware 
+> that enabling a webcam also enables USB. Or at least this is my best 
+> suggestion.
 
-Now we can get:
-$ git merge-base 9e9abecf^1 9e9abecf^2
-4b119e21d0c66c22e8ca03df05d9de623d0eb50f
+but auto-selecting USB is the obvious thing that most users expect...
 
-So you branched at 4b119e21... (your history is linear, that helps here)
+I.e. they expect a static hierarchy of 'every component' that exists and 
+that can be selected. [yes there are complications like multiple-choice, 
+but that's the minority]
 
-To get the same information before the merge happened upstream, in your
-local repo, you can do:
-git merge-base for-linus origin/master
-(or whatever your branches are called)
+Users want to browse the hierarchy and pick their things - and _at most_ 
+the tool should warn if there's side side-effects of a selection - users 
+will likely not mind that enabling a webcam also enables USB (in the 
+overwhelming majority of the cases they couldnt care less about that).
 
-# So we get the old upstream version:
-git checkout 4b119e21d0c
-# setup config, whatever
-make
-make C=2 2>old-sparse
+But otherwise it should all be automatic.
 
-# Then the state of your tree right before the merge:
-git checkout 9e9abecf^2
-make
-make C=2 2>new-sparse
+And i dont even think there should be any additional Kconfig 
+complication. Kconfig should be made _simpler_, not more complex. 
+Maintainers list dependencies and that's it. No "select" needed at all! 
+The stuff that needs to be selected automatically derives from the 
+"depends on" tree that we code.
 
-# And now some stupid sorting and cleaning:
-sort old-sparse | sed -e 's/^\([^:]*\):[^:]*:[^:]*:/\1:/' > old-sparsef
-sort new-sparse | sed -e 's/^\([^:]*\):[^:]*:[^:]*:/\1:/' > new-sparsef
+in fact even dependencies between modules of source code should be 
+auto-discovered most of the time.
 
-# How many old sparse warnings are gone now (approx.)?
-$ diff old-sparsef new-sparsef | grep -c '^< [^ ]*:'
-33
+The symbol dependency tree from an allyesconfig kernel could give a 99% 
+accurate map of all the dependencies that exist in the code. Why burden 
+humans with that? We've got better things to do than to figure out 
+dependencies between source code as the dependencies can be totally 
+non-obvious.
 
-# And how many new do we have (approx.)?
-$ diff old-sparsef new-sparsef | grep -c '^> [^ ]*:'
-36
+Humans might want to _optimize_ the dependencies after the fact and get 
+rid of unnecessary dependencies (so that the kernel gets smaller, etc.), 
+but there should be no correctness ramifications of it visible to 
+developers or users.
 
+So the whole thing is being thought about exactly upside down i believe.
 
-Depending on the order of the sed and sort commands, you get slightly
-different output, due to code moving around or whatever, of course to
-get that "mostly" right it takes more than the 5 minutes of thinking
-that I spent on it.
-
-In those cases in which there is more than 1 line per warning, the
-output is obivously messed up here, so the actual number of real
-warnings from sparse that are left is even lower than the number above
-(26 for gone and new warnings in this case). And you can also only use
-the filtered messages to navigate the original sparse log, because the
-line numbers are stripped and the messed up ordering of multi-line
-warnings, but well, shouldn't be too bad.
-
-Slap another level of filtering on it that can ignore warnings that are
-known to be bogus or in which you're simply not interested or whatever
-and you're down to a pretty manageable set of warnings I guess.
-
-Finally, yeah, I know, this approach is far from perfect, but in my
-nobody-should-care-about-it opinion, it's better than nothing and it's
-probably not too hard for you (or Thomas) to come up with a less stupid
-filtering strategy, that's less error-prone than my hack.
-
-Björn
+	Ingo
