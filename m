@@ -1,73 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759701AbYD3GEs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759911AbYD3GH2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759701AbYD3GEs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Apr 2008 02:04:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757369AbYD3GEh
+	id S1759911AbYD3GH2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Apr 2008 02:07:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757717AbYD3GHN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Apr 2008 02:04:37 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:40362 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757293AbYD3GEg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Apr 2008 02:04:36 -0400
-Date: Wed, 30 Apr 2008 08:04:17 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Mike Travis <travis@sgi.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/1] x86: fix remove cpu_pda table patch
-Message-ID: <20080430060417.GA2408@elte.hu>
-References: <20080428210906.348866000@polaris-admin.engr.sgi.com> <20080428214541.GA16153@elte.hu> <48175CF8.4010105@sgi.com> <48176EA6.8060506@sgi.com> <20080429214401.GB2302@elte.hu>
+	Wed, 30 Apr 2008 02:07:13 -0400
+Received: from fk-out-0910.google.com ([209.85.128.190]:37564 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757570AbYD3GHM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Apr 2008 02:07:12 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=v4ZTahqqPwPXUR6bhx+3gliUSN9BE73eHMH9w4bHjfvlLDXQXa4Zgp4hq/z2j1UCQ5fKDv2JEr0868fR3DZa7sgAobq9XP3uaKAiIly2FbMt2n32Dy1qeENyG8LNqAmEykdydbFdPpB0PLucz44kn/EUUc4+cZUs16XuoZTxHlM=
+Message-ID: <c810d5090804292307y2884b169t5c27b50fb7c94c30@mail.gmail.com>
+Date: Wed, 30 Apr 2008 11:37:10 +0530
+From: "NAGABHUSHAN BS" <bsn.0007@gmail.com>
+To: "Erez Zadok" <ezk@cs.sunysb.edu>
+Subject: Re: [RFC PATCH 0/2] Union Mount: Directory listing in glibc
+Cc: libc-alpha@sourceware.org, "Jan Blunck" <jblunck@suse.de>,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       viro@zeniv.linux.org.uk, "Christoph Hellwig" <hch@lst.de>,
+       "Ulrich Drepper" <drepper@redhat.com>, "Mingming Cao" <cmm@us.ibm.com>,
+       "Dave Hansen" <haveblue@us.ibm.com>,
+       "Trond Myklebust" <trond.myklebust@fys.uio.no>,
+       bharata@linux.vnet.ibm.com, "David Woodhouse" <dwmw2@infradead.org>
+In-Reply-To: <200804291549.m3TFnb3H024733@agora.fsl.cs.sunysb.edu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080429214401.GB2302@elte.hu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+References: <20080429133201.GA9938@localhost.localdomain>
+	 <200804291549.m3TFnb3H024733@agora.fsl.cs.sunysb.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Apr 29, 2008 at 9:19 PM, Erez Zadok <ezk@cs.sunysb.edu> wrote:
+> In message <20080429133201.GA9938@localhost.localdomain>, bsn.0007@gmail.com writes:
+>  > Hi,
+>  >
+>  > I went through Bharata's RFC post on glibc based Union Mount readdir solution
+>  > (http://lkml.org/lkml/2008/3/11/34) and have come up with patches
+>  > against glibc to implement the same.
+>  [...]
+>
+>  The last set of discussions on glibc support ended, as I understood it, with
+>  the glibc people objecting to such "special-purpose" code in glibc.  See
+>  <http://lkml.org/lkml/2008/3/11/66>.  So has anything changed behind the
+>  scenes, or is this idea unlikely to be merged into glibc any time soon, if
+>  ever.  (Personally I'd love to rip out the readdir-related code from unionfs
+>  if glibc supported the same.)
+>
+>
+>  > Patch 1. readdir support for union mounted directories.
+>  >       I am caching the dirent names in a list to aid duplicate elimination.
+>  > And this cache is stored in DIRP. For duplicate elimination I am using
+>  > strcmp(). I am not sure if this works universally with different types
+>  > of filesystems. Any suggestions here would be welcome.
+>  [...]
+>
+>  You might consider using a hash table instead of a list; it'll be faster in
+>  case where there are a lot of whiteouts/duplicates to process.
+>
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+Yes, hash table was one of the things i had considered  to use as a
+cache. But i am not completely sure how this would support seekdir.
+Any suggestions are greatly welcome.
 
-> * Mike Travis <travis@sgi.com> wrote:
-> 
-> > -	prev_nmi_count = kmalloc(NR_CPUS * sizeof(int), GFP_KERNEL);
-> > +	prev_nmi_count = kmalloc(nr_cpu_ids * sizeof(int), GFP_KERNEL);
-> 
-> yeah, that makes sense ... i'll reinstate your patches and check.
-
-they crashed after about 3 randconfig iterations with:
-
-  early res: 4 [8000-afff] PGTABLE
-  early res: 5 [b000-b87f] MEMNODEMAP
-PANIC: early exception 0e rip 10:ffffffff8077a150 error 2 cr2 37
-Pid: 0, comm: swapper Not tainted 2.6.25-sched-devel.git-x86-latest.git #14
-
-Call Trace:
- [<ffffffff81466196>] early_idt_handler+0x56/0x6a
- [<ffffffff8077a150>] ? numa_set_node+0x30/0x60
- [<ffffffff8077a129>] ? numa_set_node+0x9/0x60
- [<ffffffff8147a543>] numa_init_array+0x93/0xf0
- [<ffffffff8147b039>] acpi_scan_nodes+0x3b9/0x3f0
- [<ffffffff8147a496>] numa_initmem_init+0x136/0x150
- [<ffffffff8146da5f>] setup_arch+0x48f/0x700
- [<ffffffff802566ea>] ? clockevents_register_notifier+0x3a/0x50
- [<ffffffff81466a87>] start_kernel+0xd7/0x440
- [<ffffffff81466422>] x86_64_start_kernel+0x222/0x280
-
-RIP 0x10
-
-
- http://redhat.com/~mingo/misc/log-Wed_Apr_30_00_28_09_CEST_2008.bad
- http://redhat.com/~mingo/misc/config-Wed_Apr_30_00_28_09_CEST_2008.bad
-
-	Ingo
+Regards Nagabhushan
