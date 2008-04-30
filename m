@@ -1,93 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758660AbYD3ACS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758382AbYD3AHA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758660AbYD3ACS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 20:02:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754734AbYD3ACJ
+	id S1758382AbYD3AHA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 20:07:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755037AbYD3AGs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 20:02:09 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:43897 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754705AbYD3ACI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 20:02:08 -0400
-Date: Tue, 29 Apr 2008 21:00:03 -0300
-From: Mauro Carvalho Chehab <mchehab@infradead.org>
-To: "Michael Krufky" <mkrufky@linuxtv.org>
-Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
-       linux-dvb-maintainer@linuxtv.org,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       video4linux-list@redhat.com, linux-kernel@vger.kernel.org
-Subject: Re: [v4l-dvb-maintainer] [GIT PATCHES] V4L/DVB updates and fixes
- for 2.6.26
-Message-ID: <20080429210003.14f6c9c7@gaivota>
-In-Reply-To: <37219a840804291649q36638464ye2d57cf8184580a4@mail.gmail.com>
-References: <20080429185009.716c3284@gaivota>
-	<37219a840804291649q36638464ye2d57cf8184580a4@mail.gmail.com>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.9; x86_64-mandriva-linux-gnu)
+	Tue, 29 Apr 2008 20:06:48 -0400
+Received: from gate.crashing.org ([63.228.1.57]:36157 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752401AbYD3AGr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Apr 2008 20:06:47 -0400
+Subject: Re: PTRACE_{READ,WRITE}{TEXT,DATA}
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: Roland McGrath <roland@redhat.com>
+Cc: "David S. Miller" <davem@davemloft.net>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       Rik van Riel <riel@redhat.com>
+In-Reply-To: <20080429220733.B3FCC26FA24@magilla.localdomain>
+References: <1209441248.18023.124.camel@pasglop>
+	 <20080429220733.B3FCC26FA24@magilla.localdomain>
+Content-Type: text/plain
+Date: Wed, 30 Apr 2008 10:06:30 +1000
+Message-Id: <1209513990.18023.199.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 29 Apr 2008 19:49:24 -0400
-"Michael Krufky" <mkrufky@linuxtv.org> wrote:
 
-> On Tue, Apr 29, 2008 at 5:50 PM, Mauro Carvalho Chehab
-> <mchehab@infradead.org> wrote:
-> > Linus,
-> >
-> >  Please pull from:
-> >         ssh://master.kernel.org/pub/scm/linux/kernel/git/mchehab/v4l-dvb.git master
-> >
-> >  For the following:
-> >
-> >    - Fixes on mtm001, mtv022, pvrusb2, ivtv, cx88 and saa7134;
-> >    - new board additions on saa7134 and ivtv;
-> >    - load tuners only when needed;
-> >    - reorganization of tuner drivers that are shared between DVB and V4L;
-> >    - Addition of a new driver for Conexant CX23418 MPEG encoder chip (cx18).
-> 
-> [snip]
-> 
-> >  Mauro Carvalho Chehab (9):
-> >       Rename common tuner Kconfig names to use the same
-> >
-> >  Michael Krufky (4):
-> >       V4L/DVB (7789): tuner: remove static dependencies on analog tuner sub-modules
-> 
-> 
-> Linus has already merged the changes (thank you, Linus) ... However,
-> there is a bug.
-> 
-> My "remove static dependencies on analog tuner sub-modules" patch was
-> applied after Mauro's "Rename common tuner Kconfig names to use the
-> same" patch.
-> 
-> My patch has conditional behavior, based on CONFIG_DVB_CORE_ATTACH,
-> which was renamed to CONFIG_MEDIA_ATTACH in Mauro's patch.
-> 
-> To fix this, we need to do:
-> 
-> sed -i s/"CONFIG_DVB_CORE_ATTACH"/"CONFIG_MEDIA_ATTACH"/1
-> drivers/media/video/tuner-core.c
-> 
-> The issue will cause invalid module use counts upon unloading analog
-> tuner modules, if CONFIG_MEDIA_ATTACH is enabled.
-> 
-> I would be happy to fix this myself, but Mauro's patch has not yet
-> been backported into the linuxtv.org repository.
-> 
-> Mauro, can you do the above fix and send it in to Linus?
+On Tue, 2008-04-29 at 15:07 -0700, Roland McGrath wrote:
+> I don't see any sense in adding that.  Using /proc/pid/mem is already the
+> "efficient" API for this known to userland.  I don't think keeping the fd
+> around for that is any great burden, and if you do then the one pread64
+> call is just as efficient as one ptrace call to do the same thing.
 
-Sure. Merge conflicts... bah...
-
-I'll also double check if there aren't also other conflicts. It is just a
-matter or run the sed script again ;)
-
+Yup, I didn't know gdb used /proc/pid/mem to be honest ... as long as it
+goes through access_process_vm(), I'm fine anyway.
 
 Cheers,
-Mauro
+Ben.
+
