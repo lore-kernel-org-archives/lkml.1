@@ -1,61 +1,156 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933227AbYD3Vzf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764874AbYD3V6v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933227AbYD3Vzf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Apr 2008 17:55:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761776AbYD3Vz0
+	id S1764874AbYD3V6v (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Apr 2008 17:58:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759769AbYD3V6m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Apr 2008 17:55:26 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:41621 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759698AbYD3VzZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Apr 2008 17:55:25 -0400
-Date: Wed, 30 Apr 2008 14:55:15 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Andres Salomon <dilinger@queued.net>
-Cc: cbou@mail.ru, linux-kernel@vger.kernel.org, dwmw2@infradead.org
-Subject: Re: [PATCH 4/4] power_supply: bump EC version check that we refuse
- to run with in olpc_battery
-Message-Id: <20080430145515.bbee90d9.akpm@linux-foundation.org>
-In-Reply-To: <20080430163030.29e1ca9f@ephemeral>
-References: <20080430163030.29e1ca9f@ephemeral>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 30 Apr 2008 17:58:42 -0400
+Received: from gate.crashing.org ([63.228.1.57]:33568 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759933AbYD3V6m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Apr 2008 17:58:42 -0400
+Date: Wed, 30 Apr 2008 16:54:09 -0500 (CDT)
+From: Kumar Gala <galak@kernel.crashing.org>
+X-X-Sender: galak@blarg.am.freescale.net
+To: linuxppc-dev@ozlabs.org
+cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Greg KH <greg@kroah.com>, Andrew Morton <akpm@osdl.org>,
+       htejun@gmail.com, Jeff Garzik <jeff@garzik.org>,
+       linux-kernel@vger.kernel.org, Emilian.Medve@Freescale.com
+Subject: [PATCH v3] [POWERPC] devres: Add devm_ioremap_prot()
+Message-ID: <Pine.LNX.4.64.0804301653230.10570@blarg.am.freescale.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 30 Apr 2008 16:30:30 -0400
-Andres Salomon <dilinger@queued.net> wrote:
+From: Emil Medve <Emilian.Medve@Freescale.com>
 
-> 
-> Refuse to run with an EC < 0x44.  We're playing it safe, and this is
-> a pretty old EC version.
-> 
-> Also, add a comment about why we're checking the EC version.
+We provide an ioremap_flags so provide a corresponding devm_ioremap_prot.
+The slight name difference is at Ben Herrenschmidt request as he plans
+on changing ioremap_flags to ioremap_prot in the future.
 
-Sigh.  Presantly, the entirety of olpc_battery.c looks very nice
-in an 80-column display.
+Signed-off-by: Emil Medve <Emilian.Medve@Freescale.com>
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+---
 
-> 
-> diff --git a/drivers/power/olpc_battery.c b/drivers/power/olpc_battery.c
-> index cb45a67..086b146 100644
-> --- a/drivers/power/olpc_battery.c
-> +++ b/drivers/power/olpc_battery.c
-> @@ -398,7 +398,12 @@ static int __init olpc_bat_init(void)
->  
->  	if (!olpc_platform_info.ecver)
->  		return -ENXIO;
-> -	if (olpc_platform_info.ecver < 0x43) {
-> +
-> +	/*
-> +	 * We've seen a number of EC protocol changes; this driver requires
-> +	 * the latest EC protocol, supported by 0x44 and above.
-> +	 */
-> +	if (olpc_platform_info.ecver < 0x44) {
->  		printk(KERN_NOTICE "OLPC EC version 0x%02x too old for battery driver.\n", olpc_platform_info.ecver);
->  		return -ENXIO;
+Renamed at BenH's request to devm_ioremap_prot.
 
-Now it needs 0x80 :(
+ arch/powerpc/lib/Makefile |    1 +
+ arch/powerpc/lib/devres.c |   33 +++++++++++++++++++++++++++++++++
+ include/asm-powerpc/io.h  |    8 +++++++-
+ include/linux/io.h        |    1 +
+ lib/devres.c              |    2 +-
+ 5 files changed, 43 insertions(+), 2 deletions(-)
+ create mode 100644 arch/powerpc/lib/devres.c
+
+diff --git a/arch/powerpc/lib/Makefile b/arch/powerpc/lib/Makefile
+index 4bb023f..f1d2cdc 100644
+--- a/arch/powerpc/lib/Makefile
++++ b/arch/powerpc/lib/Makefile
+@@ -23,3 +23,4 @@ obj-$(CONFIG_SMP)	+= locks.o
+ endif
+
+ obj-$(CONFIG_PPC_LIB_RHEAP) += rheap.o
++obj-$(CONFIG_HAS_IOMEM)	+= devres.o
+diff --git a/arch/powerpc/lib/devres.c b/arch/powerpc/lib/devres.c
+new file mode 100644
+index 0000000..b290845
+--- /dev/null
++++ b/arch/powerpc/lib/devres.c
+@@ -0,0 +1,33 @@
++#include <linux/device.h>	/* devres_*(), devm_ioremap_release() */
++#include <linux/io.h>		/* ioremap_flags() */
++#include <linux/module.h>	/* EXPORT_SYMBOL() */
++
++/**
++ * devm_ioremap_prot - Managed ioremap_flags()
++ * @dev: Generic device to remap IO address for
++ * @offset: BUS offset to map
++ * @size: Size of map
++ * @flags: Page flags
++ *
++ * Managed ioremap_prot().  Map is automatically unmapped on driver
++ * detach.
++ */
++void __iomem *devm_ioremap_prot(struct device *dev, resource_size_t offset,
++				 size_t size, unsigned long flags)
++{
++	void __iomem **ptr, *addr;
++
++	ptr = devres_alloc(devm_ioremap_release, sizeof(*ptr), GFP_KERNEL);
++	if (!ptr)
++		return NULL;
++
++	addr = ioremap_flags(offset, size, flags);
++	if (addr) {
++		*ptr = addr;
++		devres_add(dev, ptr);
++	} else
++		devres_free(ptr);
++
++	return addr;
++}
++EXPORT_SYMBOL(devm_ioremap_prot);
+diff --git a/include/asm-powerpc/io.h b/include/asm-powerpc/io.h
+index afae069..e0062d7 100644
+--- a/include/asm-powerpc/io.h
++++ b/include/asm-powerpc/io.h
+@@ -2,7 +2,7 @@
+ #define _ASM_POWERPC_IO_H
+ #ifdef __KERNEL__
+
+-/*
++/*
+  * This program is free software; you can redistribute it and/or
+  * modify it under the terms of the GNU General Public License
+  * as published by the Free Software Foundation; either version
+@@ -18,6 +18,9 @@ extern int check_legacy_ioport(unsigned long base_port);
+ #define _PNPWRP		0xa79
+ #define PNPBIOS_BASE	0xf000
+
++#include <linux/device.h>
++#include <linux/io.h>
++
+ #include <linux/compiler.h>
+ #include <asm/page.h>
+ #include <asm/byteorder.h>
+@@ -744,6 +747,9 @@ static inline void * bus_to_virt(unsigned long address)
+
+ #define clrsetbits_8(addr, clear, set) clrsetbits(8, addr, clear, set)
+
++void __iomem *devm_ioremap_prot(struct device *dev, resource_size_t offset,
++				size_t size, unsigned long flags);
++
+ #endif /* __KERNEL__ */
+
+ #endif /* _ASM_POWERPC_IO_H */
+diff --git a/include/linux/io.h b/include/linux/io.h
+index 831f57c..7a390cf 100644
+--- a/include/linux/io.h
++++ b/include/linux/io.h
+@@ -58,6 +58,7 @@ static inline void devm_ioport_unmap(struct device *dev, void __iomem *addr)
+ }
+ #endif
+
++void devm_ioremap_release(struct device *dev, void *res);
+ void __iomem * devm_ioremap(struct device *dev, resource_size_t offset,
+ 			    unsigned long size);
+ void __iomem * devm_ioremap_nocache(struct device *dev, resource_size_t offset,
+diff --git a/lib/devres.c b/lib/devres.c
+index 26c87c4..72c8909 100644
+--- a/lib/devres.c
++++ b/lib/devres.c
+@@ -2,7 +2,7 @@
+ #include <linux/io.h>
+ #include <linux/module.h>
+
+-static void devm_ioremap_release(struct device *dev, void *res)
++void devm_ioremap_release(struct device *dev, void *res)
+ {
+ 	iounmap(*(void __iomem **)res);
+ }
+-- 
+1.5.4.1
+
