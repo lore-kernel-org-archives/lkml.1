@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761841AbYD3IcB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762045AbYD3Idn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761841AbYD3IcB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Apr 2008 04:32:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757198AbYD3Ibn
+	id S1762045AbYD3Idn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Apr 2008 04:33:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757297AbYD3IdY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Apr 2008 04:31:43 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:53236
+	Wed, 30 Apr 2008 04:33:24 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:53240
 	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1754916AbYD3Ibj (ORCPT
+	by vger.kernel.org with ESMTP id S1756725AbYD3IdW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Apr 2008 04:31:39 -0400
-Date: Wed, 30 Apr 2008 01:31:38 -0700 (PDT)
-Message-Id: <20080430.013138.157977693.davem@davemloft.net>
+	Wed, 30 Apr 2008 04:33:22 -0400
+Date: Wed, 30 Apr 2008 01:33:21 -0700 (PDT)
+Message-Id: <20080430.013321.112583347.davem@davemloft.net>
 To: torvalds@linux-foundation.org
-CC: akpm@linux-foundation.org, netdev@vger.kernel.org,
+CC: akpm@linux-foundation.org, sparclinux@vger.kernel.org,
        linux-kernel@vger.kernel.org
-Subject: [GIT]: Networking
+Subject: [GIT]: Sparc
 From: David Miller <davem@davemloft.net>
 X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
@@ -26,307 +26,79 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Several cures and additions:
-
-1) TCP congestion window fixups in the presence of TSO, from John
-   Heffner, based upon some recent reports from google.
-
-2) IPVS OOPS fix from Julian Anastasov.
-
-3) IPSEC auditing fix from Yoshifuji HIDEAKI.
-
-4) Various network driver updates from Jeff Garzik, and in particular
-   a new driver for Solarstorm SFC4000 chips, and one for
-   some IXP4xxx ethernet ports.
-
-5) More multicast socket option compat handling work from David
-   Stevens.
-
-6) Hopefully the last of the iwlwifi build issues are cured thanks to
-   Adrian Bunk.
-
-7) SFQ scheduler shutdown should use dev_timer_sync(), from Jarek
-   Poplawski.
-
-8) Imporperly fragmented SKBs can get created by layers such as
-   sunrpc when sending to UFO capable devices.  Fix from
-   Kostya B, and reviewed by Herbert Xu.
-
-9) Netfilter connection tracking hash calculation bug on ARM, diagnosed
-   and fixed by Philip Craig.
-
-10) Two bridge fixes from Bodo Stroesser and Volodymyr G Lukiianyk, via
-    Stephen Hemminger.
+The main bit here is kgdb support for sparc, but there are also some
+cleanups (mostly to facilitate the kgdb changes) and a dup include fix
+from Huang Weiyi.
 
 Please pull, thanks a lot!
 
-The following changes since commit 358c12953b88c5a06a57c33eb27c753b2e7934d1:
-  Jason Riedy (1):
-        iwlwifi: Allow building iwl3945 without iwl4965.
+The following changes since commit 194f1a68b93e959ede6ec363db4714e630bdbb6a:
+  Robert Reif (1):
+        sparc: video drivers: add facility level
 
 are available in the git repository at:
 
-  master.kernel.org:/pub/scm/linux/kernel/git/davem/net-2.6.git master
+  master.kernel.org:/pub/scm/linux/kernel/git/davem/sparc-2.6.git master
 
-Adrian Bunk (1):
-      iwlwifi: move the selects to the tristate drivers
+David S. Miller (5):
+      sparc64: Split entry.S up into seperate files.
+      sparc64: Kill PIL_RESERVED, unused.
+      sparc32: Kill smp_message_pass() and related code.
+      kgdbts: Sparc needs sstep emulation.
+      sparc: Add kgdb support.
 
-Arnaud Ebalard (1):
-      netfilter: {nfnetlink,ip,ip6}_queue: fix skb_over_panic when enlarging packets
+Huang Weiyi (1):
+      sparc64: remove duplicated include
 
-Ben Hutchings (1):
-      New driver "sfc" for Solarstorm SFC4000 controller.
-
-Bodo Stroesser (1):
-      bridge: kernel panic when unloading bridge module
-
-Bryan Wu (2):
-      Blackfin EMAC Driver: code cleanup
-      Blackfin EMAC Driver: Initial version of ethtool support
-
-Cornelia Huck (1):
-      netiucv: Fix missing driver attributes.
-
-Daniel Walker (1):
-      atm: ambassador: vcc_sf semaphore to mutex
-
-David L Stevens (2):
-      net: Several cleanups for the setsockopt compat support.
-      net: Add compat support for getsockopt (MCAST_MSFILTER)
-
-Francois Romieu (3):
-      sis190: Rx path update
-      sis190: remove needless MII reset
-      sis190: account for Tx errors
-
-Frank Blaschka (5):
-      qeth: layer 3 support vlan IPv6 on hiper socket
-      qeth: provide get ethtool settings
-      qeth: rework fast path
-      qeth: layer 3 add missing dev_open/close to ccwgroup handler
-      qeth: layer 2 allow ethtool to set TSO
-
-Harvey Harrison (1):
-      net: eepro autoport typo
-
-Ivan Vecera (1):
-      r8169: fix oops in r8169_get_mac_version
-
-Jarek Poplawski (1):
-      sch_sfq: use del_timer_sync() in sfq_destroy()
-
-Jeff Garzik (2):
-      Merge branch 'sis190' of git://git.kernel.org/.../romieu/netdev-2.6 into upstream
-      Merge branch 'upstream-jeff' of git://git.kernel.org/.../romieu/netdev-2.6 into upstream
-
-John Heffner (2):
-      tcp: Allow send-limited cwnd to grow up to max_burst when gso disabled
-      tcp: Limit cwnd growth when deferring for GSO
-
-Julian Anastasov (1):
-      ipvs: fix oops in backup for fwmark conn templates
-
-Klaus D. Wacker (1):
-      lcs: CCL-sequ. numbers required for protocol 802.2 only.
-
-Kostya B (1):
-      [IPv4] UFO: prevent generation of chained skb destined to UFO device
-
-Krzysztof Halasa (1):
-      Driver for IXP4xx built-in Ethernet ports
-
-Lachlan Andrew (1):
-      tcp: Overflow bug in Vegas
-
-Paul Gortmaker (1):
-      [netdrvr] gianfar: Determine TBIPA value dynamically
-
-Paulius Zaleckas (3):
-      3c505: use netstats in net_device structure
-      3c509: use netstats in net_device structure
-      3c515: use netstats in net_device structure
-
-Pavel Emelyanov (2):
-      netfilter: x_tables: fix net namespace leak when reading /proc/net/xxx_tables_names
-      MAINTAINERS: The socketcan-core list is subscribers-only.
-
-Peter Tiedemann (1):
-      qeth module size reduction.
-
-Philip Craig (1):
-      netfilter: nf_conntrack: padding breaks conntrack hash on ARM
-
-Randy Dunlap (1):
-      drivers/net/phy: fix kernel-doc notation
-
-Roel Kluin (3):
-      r8169: fix past rtl_chip_info array size for unknown chipsets
-      ARM: am79c961a: platform_get_irq() may return signed unnoticed
-      netfilter: xt_TCPOPTSTRIP: signed tcphoff for ipv6_skip_exthdr() retval
-
-Sam Ravnborg (1):
-      ipv4: annotate a few functions __init in ipconfig.c
-
-Sreenivasa Honnur (2):
-      S2io: Enable multi ring support
-      S2io: Version update for multi ring patches
-
-Stephen Hemminger (3):
-      sis190: use the allocated buffer as a status code in sis190_alloc_rx_skb
-      sis190: hard-code the alignment of tiny packets
-      sis190: use netdev_alloc_skb
-
-Steve Glendinning (2):
-      Rename SMSC phy functions to be more generic
-      Add support for SMSC LAN8187 and LAN8700 PHYs
-
-Timo Teras (1):
-      ipv4: Update MTU to all related cache entries in ip_rt_frag_needed()
-
-Ursula Braun (3):
-      netiucv: get rid of in_atomic() use
-      ccwgroup: Unify parsing for group attribute.
-      qeth: read number of ports from card
-
-Volodymyr G Lukiianyk (1):
-      bridge: fix error handling in br_add_if()
-
- MAINTAINERS                                    |    9 +-
- arch/arm/mach-ixp4xx/ixp4xx_npe.c              |    4 +
- arch/arm/mach-ixp4xx/ixp4xx_qmgr.c             |    2 +
- drivers/atm/ambassador.c                       |   19 +-
- drivers/atm/ambassador.h                       |    2 +-
- drivers/net/3c505.c                            |   30 +-
- drivers/net/3c505.h                            |    1 -
- drivers/net/3c509.c                            |   47 +-
- drivers/net/3c515.c                            |   64 +-
- drivers/net/Kconfig                            |    1 +
- drivers/net/Makefile                           |    2 +
- drivers/net/arm/Kconfig                        |    8 +
- drivers/net/arm/Makefile                       |    1 +
- drivers/net/arm/am79c961a.c                    |   10 +-
- drivers/net/arm/ixp4xx_eth.c                   | 1265 +++++++++++
- drivers/net/bfin_mac.c                         |  296 ++--
- drivers/net/bfin_mac.h                         |    2 +-
- drivers/net/eepro.c                            |    2 +-
- drivers/net/gianfar.c                          |   27 +-
- drivers/net/gianfar.h                          |    1 -
- drivers/net/gianfar_mii.c                      |   38 +-
- drivers/net/gianfar_mii.h                      |    3 +
- drivers/net/phy/Kconfig                        |    2 +-
- drivers/net/phy/phy_device.c                   |    2 +-
- drivers/net/phy/smsc.c                         |   83 +-
- drivers/net/r8169.c                            |    8 +-
- drivers/net/s2io.c                             |  337 ++--
- drivers/net/s2io.h                             |   82 +-
- drivers/net/sfc/Kconfig                        |   12 +
- drivers/net/sfc/Makefile                       |    5 +
- drivers/net/sfc/bitfield.h                     |  508 +++++
- drivers/net/sfc/boards.c                       |  167 ++
- drivers/net/sfc/boards.h                       |   26 +
- drivers/net/sfc/efx.c                          | 2208 +++++++++++++++++++
- drivers/net/sfc/efx.h                          |   67 +
- drivers/net/sfc/enum.h                         |   50 +
- drivers/net/sfc/ethtool.c                      |  460 ++++
- drivers/net/sfc/ethtool.h                      |   27 +
- drivers/net/sfc/falcon.c                       | 2722 ++++++++++++++++++++++++
- drivers/net/sfc/falcon.h                       |  130 ++
- drivers/net/sfc/falcon_hwdefs.h                | 1135 ++++++++++
- drivers/net/sfc/falcon_io.h                    |  243 +++
- drivers/net/sfc/falcon_xmac.c                  |  585 +++++
- drivers/net/sfc/gmii.h                         |  195 ++
- drivers/net/sfc/i2c-direct.c                   |  381 ++++
- drivers/net/sfc/i2c-direct.h                   |   91 +
- drivers/net/sfc/mac.h                          |   33 +
- drivers/net/sfc/mdio_10g.c                     |  282 +++
- drivers/net/sfc/mdio_10g.h                     |  232 ++
- drivers/net/sfc/net_driver.h                   |  883 ++++++++
- drivers/net/sfc/phy.h                          |   48 +
- drivers/net/sfc/rx.c                           |  875 ++++++++
- drivers/net/sfc/rx.h                           |   29 +
- drivers/net/sfc/sfe4001.c                      |  252 +++
- drivers/net/sfc/spi.h                          |   71 +
- drivers/net/sfc/tenxpress.c                    |  434 ++++
- drivers/net/sfc/tx.c                           |  452 ++++
- drivers/net/sfc/tx.h                           |   24 +
- drivers/net/sfc/workarounds.h                  |   56 +
- drivers/net/sfc/xenpack.h                      |   62 +
- drivers/net/sfc/xfp_phy.c                      |  132 ++
- drivers/net/sis190.c                           |  136 +-
- drivers/net/wireless/iwlwifi/Kconfig           |   12 +-
- drivers/s390/cio/ccwgroup.c                    |   96 +-
- drivers/s390/net/cu3088.c                      |   20 +-
- drivers/s390/net/lcs.c                         |    3 +-
- drivers/s390/net/netiucv.c                     |    3 +-
- drivers/s390/net/qeth_core.h                   |   50 +-
- drivers/s390/net/qeth_core_main.c              |  200 +-
- drivers/s390/net/qeth_l2_main.c                |   30 +-
- drivers/s390/net/qeth_l3.h                     |    3 -
- drivers/s390/net/qeth_l3_main.c                |   30 +-
- include/asm-s390/ccwgroup.h                    |    7 +-
- include/asm-s390/qdio.h                        |    1 +
- include/net/compat.h                           |    3 +
- include/net/ip_vs.h                            |    3 +-
- include/net/netfilter/nf_conntrack_tuple.h     |   10 -
- include/net/route.h                            |    2 +-
- net/bridge/br.c                                |    2 +-
- net/bridge/br_if.c                             |    5 +-
- net/compat.c                                   |   90 +-
- net/ipv4/icmp.c                                |    3 +-
- net/ipv4/ip_output.c                           |   22 +-
- net/ipv4/ip_sockglue.c                         |    9 +-
- net/ipv4/ipconfig.c                            |    8 +-
- net/ipv4/ipvs/ip_vs_proto.c                    |    2 +-
- net/ipv4/ipvs/ip_vs_proto_ah.c                 |    1 +
- net/ipv4/ipvs/ip_vs_proto_esp.c                |    1 +
- net/ipv4/ipvs/ip_vs_proto_tcp.c                |    1 +
- net/ipv4/ipvs/ip_vs_proto_udp.c                |    1 +
- net/ipv4/ipvs/ip_vs_sync.c                     |   80 +-
- net/ipv4/netfilter/ip_queue.c                  |    5 +-
- net/ipv4/netfilter/nf_conntrack_l3proto_ipv4.c |    2 +-
- net/ipv4/route.c                               |   40 +-
- net/ipv4/tcp_cong.c                            |   12 +-
- net/ipv4/tcp_vegas.c                           |   10 +-
- net/ipv4/tcp_veno.c                            |    8 +-
- net/ipv6/ipv6_sockglue.c                       |    4 +
- net/ipv6/netfilter/ip6_queue.c                 |    5 +-
- net/netfilter/nf_conntrack_core.c              |    4 +-
- net/netfilter/nfnetlink_queue.c                |    5 +-
- net/netfilter/x_tables.c                       |    2 +-
- net/netfilter/xt_TCPOPTSTRIP.c                 |    2 +-
- net/sched/sch_sfq.c                            |    3 +-
- 104 files changed, 15349 insertions(+), 812 deletions(-)
- create mode 100644 drivers/net/arm/ixp4xx_eth.c
- create mode 100644 drivers/net/sfc/Kconfig
- create mode 100644 drivers/net/sfc/Makefile
- create mode 100644 drivers/net/sfc/bitfield.h
- create mode 100644 drivers/net/sfc/boards.c
- create mode 100644 drivers/net/sfc/boards.h
- create mode 100644 drivers/net/sfc/efx.c
- create mode 100644 drivers/net/sfc/efx.h
- create mode 100644 drivers/net/sfc/enum.h
- create mode 100644 drivers/net/sfc/ethtool.c
- create mode 100644 drivers/net/sfc/ethtool.h
- create mode 100644 drivers/net/sfc/falcon.c
- create mode 100644 drivers/net/sfc/falcon.h
- create mode 100644 drivers/net/sfc/falcon_hwdefs.h
- create mode 100644 drivers/net/sfc/falcon_io.h
- create mode 100644 drivers/net/sfc/falcon_xmac.c
- create mode 100644 drivers/net/sfc/gmii.h
- create mode 100644 drivers/net/sfc/i2c-direct.c
- create mode 100644 drivers/net/sfc/i2c-direct.h
- create mode 100644 drivers/net/sfc/mac.h
- create mode 100644 drivers/net/sfc/mdio_10g.c
- create mode 100644 drivers/net/sfc/mdio_10g.h
- create mode 100644 drivers/net/sfc/net_driver.h
- create mode 100644 drivers/net/sfc/phy.h
- create mode 100644 drivers/net/sfc/rx.c
- create mode 100644 drivers/net/sfc/rx.h
- create mode 100644 drivers/net/sfc/sfe4001.c
- create mode 100644 drivers/net/sfc/spi.h
- create mode 100644 drivers/net/sfc/tenxpress.c
- create mode 100644 drivers/net/sfc/tx.c
- create mode 100644 drivers/net/sfc/tx.h
- create mode 100644 drivers/net/sfc/workarounds.h
- create mode 100644 drivers/net/sfc/xenpack.h
- create mode 100644 drivers/net/sfc/xfp_phy.c
+ arch/sparc/Kconfig              |    1 +
+ arch/sparc/defconfig            |  139 ++-
+ arch/sparc/kernel/Makefile      |    1 +
+ arch/sparc/kernel/entry.S       |  125 +--
+ arch/sparc/kernel/head.S        |    9 +-
+ arch/sparc/kernel/kgdb.c        |  164 +++
+ arch/sparc/kernel/sparc-stub.c  |  724 -----------
+ arch/sparc/kernel/sun4d_smp.c   |   32 -
+ arch/sparc/kernel/sun4m_smp.c   |   45 -
+ arch/sparc64/Kconfig            |    1 +
+ arch/sparc64/kernel/Makefile    |    1 +
+ arch/sparc64/kernel/cherrs.S    |  579 +++++++++
+ arch/sparc64/kernel/entry.S     | 2575 ---------------------------------------
+ arch/sparc64/kernel/fpu_traps.S |  384 ++++++
+ arch/sparc64/kernel/getsetcc.S  |   24 +
+ arch/sparc64/kernel/head.S      |   15 +-
+ arch/sparc64/kernel/helpers.S   |   63 +
+ arch/sparc64/kernel/hvcalls.S   |  886 ++++++++++++++
+ arch/sparc64/kernel/ivec.S      |   51 +
+ arch/sparc64/kernel/kgdb.c      |  186 +++
+ arch/sparc64/kernel/misctrap.S  |   97 ++
+ arch/sparc64/kernel/smp.c       |   11 +-
+ arch/sparc64/kernel/spiterrs.S  |  245 ++++
+ arch/sparc64/kernel/syscalls.S  |  279 +++++
+ arch/sparc64/kernel/ttable.S    |    2 +-
+ arch/sparc64/kernel/utrap.S     |   29 +
+ arch/sparc64/mm/ultra.S         |   27 +
+ drivers/misc/kgdbts.c           |    2 +-
+ include/asm-sparc/head.h        |   11 +
+ include/asm-sparc/kgdb.h        |  116 +--
+ include/asm-sparc/smp.h         |    2 -
+ include/asm-sparc/system.h      |    2 +
+ include/asm-sparc64/kgdb.h      |    1 +
+ include/asm-sparc64/pil.h       |    7 -
+ include/asm-sparc64/system.h    |    5 +-
+ include/asm-sparc64/ttable.h    |    6 +
+ 36 files changed, 3223 insertions(+), 3624 deletions(-)
+ create mode 100644 arch/sparc/kernel/kgdb.c
+ delete mode 100644 arch/sparc/kernel/sparc-stub.c
+ create mode 100644 arch/sparc64/kernel/cherrs.S
+ delete mode 100644 arch/sparc64/kernel/entry.S
+ create mode 100644 arch/sparc64/kernel/fpu_traps.S
+ create mode 100644 arch/sparc64/kernel/getsetcc.S
+ create mode 100644 arch/sparc64/kernel/helpers.S
+ create mode 100644 arch/sparc64/kernel/hvcalls.S
+ create mode 100644 arch/sparc64/kernel/ivec.S
+ create mode 100644 arch/sparc64/kernel/kgdb.c
+ create mode 100644 arch/sparc64/kernel/misctrap.S
+ create mode 100644 arch/sparc64/kernel/spiterrs.S
+ create mode 100644 arch/sparc64/kernel/syscalls.S
+ create mode 100644 arch/sparc64/kernel/utrap.S
+ create mode 100644 include/asm-sparc64/kgdb.h
