@@ -1,106 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755970AbYEAFER@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756505AbYEAF1q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755970AbYEAFER (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 May 2008 01:04:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750785AbYEAFEF
+	id S1756505AbYEAF1q (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 May 2008 01:27:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753357AbYEAF1g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 May 2008 01:04:05 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:36530 "EHLO
+	Thu, 1 May 2008 01:27:36 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:37758 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750712AbYEAFEE (ORCPT
+	with ESMTP id S1753013AbYEAF1g (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 May 2008 01:04:04 -0400
-Date: Wed, 30 Apr 2008 00:03:38 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, davem@davemloft.net,
-       linux-kernel@vger.kernel.org, jirislaby@gmail.com,
-       Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: RFC: starting a kernel-testers group for newbies
-Message-ID: <20080430000338.50548884@infradead.org>
-In-Reply-To: <20080501003125.GM29330@cs181133002.pp.htv.fi>
-References: <20080429.190352.137408408.davem@davemloft.net>
-	<200804302136.58005.rjw@sisk.pl>
-	<20080430131537.1f7a0914.akpm@linux-foundation.org>
-	<alpine.LFD.1.10.0804301325260.2980@woody.linux-foundation.org>
-	<20080501003125.GM29330@cs181133002.pp.htv.fi>
+	Thu, 1 May 2008 01:27:36 -0400
+Date: Wed, 30 Apr 2008 00:27:27 -0700
+From: Arjan van de Ven <arjan@linux.intel.com>
+To: Kevin Winchester <kjwinchester@gmail.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: linux-next: WARNING: at kernel/panic.c:375
+ __stack_chk_test+0x50/0x54()
+Message-ID: <20080430002727.00db8e63@linux.intel.com>
+In-Reply-To: <48190DBB.9020102@gmail.com>
+References: <4819078C.9080405@gmail.com>
+	<48190844.5080804@linux.intel.com>
+	<48190DBB.9020102@gmail.com>
 Organization: Intel
 X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; i386-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 1 May 2008 03:31:25 +0300
-Adrian Bunk <bunk@kernel.org> wrote:
+On Wed, 30 Apr 2008 21:24:27 -0300
+Kevin Winchester <kjwinchester@gmail.com> wrote:
 
-> On Wed, Apr 30, 2008 at 01:31:08PM -0700, Linus Torvalds wrote:
+> Arjan van de Ven wrote:
+> > Kevin Winchester wrote:
+> >> Hi Arjan,
+> >>
+> >> There doesn't seem to be an entry in MAINTAINERS for stack
+> >> protector, but your signoff was on the last stack protector
+> >> related commit I could find, so it's probably a good bet.
+> >>
+> >> I get the following in my dmesg after testing linux-next with the
+> >> stack protector turned on.  This is an x86-64 UP box if that
+> >> helps.  It appears to be related to the test for the feature (or
+> >> perhaps that is supposed to happen when the feature is tested, I'm
+> >> not sure...).  Config below.
+> >>
 > > 
+> > the important question is: exactly what gcc are you using? (and if
+> > you use a distro gcc, which distro)
 > > 
-> > On Wed, 30 Apr 2008, Andrew Morton wrote:
-> > > 
-> > > <jumps up and down>
-> > > 
-> > > There should be nothing in 2.6.x-rc1 which wasn't in 2.6.x-mm1!
+> > second question would be, what does the following command give?
 > > 
-> > The problem I see with both -mm and linux-next is that they tend to
-> > be better at finding the "physical conflict" kind of issues (ie the
-> > merge itself fails) than the "code looks ok but doesn't actually
-> > work" kind of issue.
+> > echo "int foo(void) { char X[200]; return 3; }" | $1 -S -xc -c -O0
+> > -mcmodel=kernel -fstack-protector - -o -
 > > 
-> > Why?
-> > 
-> > The tester base is simply too small.
-> > 
-> > Now, if *that* could be improved, that would be wonderful, but I'm
-> > not seeing it as very likely.
-> > 
-> > I think we have fairly good penetration these days with the regular
-> > -git tree, but I think that one is quite frankly a *lot* less scary
-> > than -mm or -next are, and there it has been an absolutely huge
-> > boon to get the kernel into the Fedora test-builds etc (and I
-> > _think_ Ubuntu and SuSE also started something like that).
-> > 
-> > So I'm very pessimistic about getting a lot of test coverage before
-> > -rc1.
-> > 
-> > Maybe too pessimistic, who knows?
+> > (this is the command from scripts/gcc-x86_64-has-stack-protector.sh
+> > that the kernel uses to test at compiletime if you have stack
+> > protector support)
 > 
-> First of all:
-> I 100% agree with Andrew that our biggest problems are in reviewing
-> code and resolving bugs, not in finding bugs (we already have far too
-> many unresolved bugs).
+> Ubuntu Hardy Heron
+> 
+> kevin@alekhine:~$ gcc --version
+> gcc (GCC) 4.2.3 (Ubuntu 4.2.3-2ubuntu7)
+> Copyright (C) 2007 Free Software Foundation, Inc.
+> This is free software; see the source for copying conditions.  There
+> is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A
+> PARTICULAR PURPOSE.
+> 
+> 
+> kevin@alekhine:~$ echo "int foo(void) { char X[200]; return 3; }" |
+> $1 -S -xc -c -O0 -mcmodel=kernel -fstack-protector - -o - bash: -S:
+> command not found
+> 
+> I assume that $1 was supposed to be gcc, so how about:
 
-I would argue instead that we don't know which bugs to fix first.
-We're never going to fix all bugs, and to be honest, that's ok.
-As long as we fix the important bugs, we're doing really well.
-And at least for the kerneloops.org reported issues, we're doing quite ok.
+eh woops yes
 
-For me, 'important' is a combination of effect of the bug and the number of people
-it'll hit. A compiler warning on parisc is less important than easy to trigger filesystem corruption
-in ext3 that way; more people will hit it and the effect is more grave.
-
-
-For oopses and WARN_ON()'s were getting to the hang of this now with kerneloops.org,
-at least for the oopses that aren't really hard fatal. One thing I learned at least is that
-lkml is a poor representation of what people actually hit; it's a very very selective
-audience. 
-oopses/warnons are only a subset of the bugs of course... but still.
-
-So there's a few things we (and you / janitors) can do over time to get better data on what issues
-people hit: 
-1) Get automated collection of issues more wide spread. The wider our net the better we know which
-   issues get hit a lot, and plain the more data we have on when things start, when they stop, etc etc.
-   Especially if you get a lot of testers in your project, I'd like them to install the client for easy reporting
-   of issues.
-2) We should add more WARN_ON()s on "known bad" conditions. If it WARN_ON()'s, we can learn about it via
-   the automated collection. And we can then do the statistics to figure out which ones happen a lot.
-3) We need to get persistent-across-reboot oops saving going; there's some venues for this
+> 
+> kevin@alekhine:~/linux/linux-2.6/scripts$ sh
+> gcc-x86_64-has-stack-protector.sh gcc something something
+> 
+> So I would assume that means I pass...
 
 
+I would rather really like to see the assembly output this thing spits; to see if your compiler behaves sanely.
+(Some distros tend to badly patch their gcc unfortunately and this may break the stack protector feature)
