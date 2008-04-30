@@ -1,94 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760746AbYD3Ool@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759870AbYD3OrR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760746AbYD3Ool (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Apr 2008 10:44:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756362AbYD3Ooc
+	id S1759870AbYD3OrR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Apr 2008 10:47:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756692AbYD3OrA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Apr 2008 10:44:32 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:46447 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752702AbYD3Oob (ORCPT
+	Wed, 30 Apr 2008 10:47:00 -0400
+Received: from out4.smtp.messagingengine.com ([66.111.4.28]:38981 "EHLO
+	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756465AbYD3Oq6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Apr 2008 10:44:31 -0400
-Date: Wed, 30 Apr 2008 16:44:30 +0200 (CEST)
-From: Jan Engelhardt <jengelh@medozas.de>
-To: Sam Ravnborg <sam@ravnborg.org>
-cc: linux-kbuild <linux-kbuild@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Dave Jones <davej@codemonkey.org.uk>,
-       Roland McGrath <roland@redhat.com>,
-       Andres Salomon <dilinger@queued.net>
-Subject: Re: Additional kconfig targets (cloneconfig, nonint_oldconfig etc)
-In-Reply-To: <20080429183531.GB19652@uranus.ravnborg.org>
-Message-ID: <alpine.LNX.1.10.0804301643140.5623@fbirervta.pbzchgretzou.qr>
-References: <20080429183531.GB19652@uranus.ravnborg.org>
-User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
+	Wed, 30 Apr 2008 10:46:58 -0400
+X-Sasl-enc: IcS4kw5hlh5+WwOG3zGHFM3fVvFyZEJ5S/9RSIhopRkp 1209566817
+Date: Wed, 30 Apr 2008 11:46:55 -0300
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Jean Delvare <khali@linux-fr.org>
+Cc: Matthew <jackdachef@gmail.com>, Rudolf Marek <r.marek@assembler.cz>,
+       Maxim Levitsky <maximlevitsky@gmail.com>, trenn@suse.de,
+       Kasper Sandberg <lkml@metanurb.dk>, Len Brown <lenb@kernel.org>,
+       linux-acpi@vger.kernel.org, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org, "Zhang, Rui" <rui.zhang@intel.com>
+Subject: Re: Linux 2.6.25 (coretemp reads high temperatures)
+Message-ID: <20080430144655.GB3543@khazad-dum.debian.net>
+References: <e85b9d30804180837y39c52e26i588e4b67c87a5e9d@mail.gmail.com> <200804182151.49021.lenb@kernel.org> <200804231143.10875.maximlevitsky@gmail.com> <1209406784.11608.15.camel@localhost> <1209474423.1784.837.camel@queen.suse.de> <20080429170824.09540206@hyperion.delvare> <48179DB4.8040701@assembler.cz> <e85b9d30804291558r4051f1bbm9256aa2af2d86b6c@mail.gmail.com> <20080430081035.2e789a50@hyperion.delvare>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20080430081035.2e789a50@hyperion.delvare>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
+	1CDB 0FE3
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 30 Apr 2008, Jean Delvare wrote:
+> On Wed, 30 Apr 2008 00:58:50 +0200, Matthew wrote:
+> > so we were just too concerned all the time & even though the
+> > temperatures seem too high there's nothing to worry ?
+> 
+> Yes.
 
-On Tuesday 2008-04-29 20:35, Sam Ravnborg wrote:
->
->I plan to drop the 'very chatty' mode as I
->do not see it usefull.
->So in essense 'make oldconfig' and 'make silentoldconfig'
->become equal.
+So the big deal here is that there is no "°C" anywhere in this
+measurement, it is in an arbitrary hardware scale?
 
-Sounds good.
+> > but like lm_sensors's output states - it's not bad until  I / we're
+> > getting temperatures from 85°C (?) [in this particular case], ...
+> 
+> If I remember correctly, at 84°C your CPU will start to throttle, at
+> 100°C it will shut down. You still have 24°C before the former happens,
+> so it should be OK.
 
+Better drop the °C from there.  It starts throttling at 84 ITUs and
+shuts down at 100 ITUs (Intel Thermal Units :p).
 
->The commands we have today for kconfig is:
->
-># Command line variants
->make oldconfig
->make silentoldconfig
->make defconfig
->make XXX_defconfig
->
->(The other frontends are left out on purpose).
->The challenge here is to come up with a syntax that
->allows us to select between the three behaviours,
->while keeping backward compatibility.
->
->The best suggestion I have so far is to say that:
->a) if defconfig is specified then we use method 1)
->b) if oldconfig is specified then we use method 2)
->c) if newconfig is specified then we use method 3)
-
-[Where is 1) defined?]
-
->And we add support for a new 'commandline' parameter
->'K' so I can say:
->
->make K=/proc/config.gz defconfig
->make K=i386_defconfig  defconfig
->make K=i386_defconfig  oldconfig
->make K=/proc/config.gz newconfig
->
->So K is used to specify what config file we use
->to start out from.
-
-Oh that's real good, even better than cloneconfig.
-
-># Enviroment variables affecting kconfig
->KCONFIG_ALLCONFIG
->KCONFIG_NOSILENTUPDATE
->KCONFIG_CONFIG
->KCONFIG_OVERWRITECONFIG
->KCONFIG_NOTIMESTAMP
->KCONFIG_AUTOCONFIG
->KCONFIG_AUTOHEADER
-
-Ok and these are doing .. what?
-
->#input files (aparts from the mandatory ones)
->all.config
->allno.config
->allmod.config
->allyes.config
->allrandom.config
-
-Used for..?
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
