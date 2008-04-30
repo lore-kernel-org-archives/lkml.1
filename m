@@ -1,102 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759589AbYD3HLT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759885AbYD3HLe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759589AbYD3HLT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Apr 2008 03:11:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754953AbYD3HLE
+	id S1759885AbYD3HLe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Apr 2008 03:11:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756725AbYD3HLN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Apr 2008 03:11:04 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:57952 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755064AbYD3HLD (ORCPT
+	Wed, 30 Apr 2008 03:11:13 -0400
+Received: from fk-out-0910.google.com ([209.85.128.191]:19056 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756105AbYD3HLK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Apr 2008 03:11:03 -0400
-Date: Wed, 30 Apr 2008 16:15:40 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       y-goto@jp.fujitsu.com
-Subject: Re: sparc64 bootup regression...
-Message-Id: <20080430161540.bfff2c45.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20080429233832.168fb6ee.akpm@linux-foundation.org>
-References: <20080429.231241.221824292.davem@davemloft.net>
-	<20080429233832.168fb6ee.akpm@linux-foundation.org>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 30 Apr 2008 03:11:10 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=tigUxWc1bhdHg2HGhxqsX05UZeURM5D9U28ahcvTJ5RDloO6Q0hxXUvpkJBMl1Z6lETJHFtQHvfyaSLr5wcQFDNIepqnul9+E7GePEMhux/3pcNnYDz5WGljbv1sB8BX6t4YvauJuyz1+P+pWGzaKQEKtEBWLeP+31e4gziSaNk=
+Message-ID: <461039140804300011v5454a169ldbd17ebefa2391d@mail.gmail.com>
+Date: Wed, 30 Apr 2008 08:11:08 +0100
+From: "Jaime Velasco" <jsagarribay@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: [patch] video: fix build bugs in drivers/media/video/stk-webcam.c
+Cc: "Mauro Carvalho Chehab" <mchehab@infradead.org>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20080429131824.GA4742@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080429131824.GA4742@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 29 Apr 2008 23:38:32 -0700
-Andrew Morton <akpm@linux-foundation.org> wrote:
+2008/4/29 Ingo Molnar <mingo@elte.hu>:
+>
+>  x86.git randconfig testing found these build bugs in current -git:
+>
+>   drivers/media/video/stk-webcam.c: In function 'stk_create_sysfs_files':
+>   drivers/media/video/stk-webcam.c:340: error: implicit declaration of function 'video_device_create_file'
+>   drivers/media/video/stk-webcam.c: In function 'stk_remove_sysfs_files':
+>   [...]
+>   drivers/media/video/stk-webcam.c: In function 'v4l_stk_mmap':
+>   drivers/media/video/stk-webcam.c:846: error: 'VM_WRITE' undeclared (first use in this function)
+>   [...]
+>
+>  config at:
+>
+>   http://redhat.com/~mingo/misc/config-Tue_Apr_29_15_00_47_CEST_2008.bad
+>
+>  the reason was a missing include file, and a dependency on a deprecated
+>  (but still in use) VIDEO_V4L1_COMPAT API.
+>
+>  Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
-> On Tue, 29 Apr 2008 23:12:41 -0700 (PDT) David Miller <davem@davemloft.net> wrote:
-> 
-> > 
-> > This commit causes bootup failures on sparc64:
-> > 
-> > commit 86f6dae1377523689bd8468fed2f2dd180fc0560
-> > Author: Yasunori Goto <y-goto@jp.fujitsu.com>
-> > Date:   Mon Apr 28 02:13:33 2008 -0700
-> > 
-> >     memory hotplug: allocate usemap on the section with pgdat
-> >     
-> >     Usemaps are allocated on the section which has pgdat by this.
-> >     
-> >     Because usemap size is very small, many other sections usemaps are allocated
-> >     on only one page.  If a section has usemap, it can't be removed until removing
-> >     other sections.  This dependency is not desirable for memory removing.
-> >     
-> >     Pgdat has similar feature.  When a section has pgdat area, it must be the last
-> >     section for removing on the node.  So, if section A has pgdat and section B
-> >     has usemap for section A, Both sections can't be removed due to dependency
-> >     each other.
-> >     
-> >     To solve this issue, this patch collects usemap on same section with pgdat.
-> >     If other sections doesn't have any dependency, this section will be able to be
-> >     removed finally.
-> 
-> Thanks.  Does a straightforward revert fix it?  If so, we could do that while heads
-> are being scratched.
+Acked-by: Jaime Velasco Juan <jsagarribay@gmail.com>
 
-How about this ? If this is messy (or doesn't work), Goto-san will rework
-his own patch by himself. (this patch is against -mm but I think no HUNK to
-git tree)
+For the record, this bug was found in march, but it seems
+I forgot to CC: the patch to Mauro, Sorry about that.
 
-==
-This kind of page allocation, which specifies the address range,
-can fail easily.
+http://marc.info/?l=linux-video&m=120594964524615&w=2
 
-Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiruyo@jp.fujitsu.com>
+Regards,
+Jaime
 
-Index: mm-2.6.25-mm1/mm/sparse.c
-===================================================================
---- mm-2.6.25-mm1.orig/mm/sparse.c
-+++ mm-2.6.25-mm1/mm/sparse.c
-@@ -264,10 +264,16 @@ static unsigned long *__init sparse_earl
- 	 * To solve above issue, this collects all usemap on the same section
- 	 * which has pgdat.
- 	 */
-+#ifdef CONFIG_NUMA /* contig_page_data for !NUMA case is not good to do this */
- 	section_nr = pfn_to_section_nr(__pa(pgdat) >> PAGE_SHIFT);
- 	usemap = alloc_bootmem_section(usemap_size(), section_nr);
- 	if (usemap)
- 		return usemap;
-+#endif
-+	/* above allocation can fail. */
-+	usemap = alloc_bootmem_node(NODE_DATA(nid), usemap_size());
-+	if (usemap)
-+		return usemap;
- 
- 	/* Stupid: suppress gcc warning for SPARSEMEM && !NUMA */
- 	nid = 0;
-
-
-
-
-
-
-
-
+>  ---
+>   drivers/media/video/Kconfig      |    1 +
+>   drivers/media/video/stk-webcam.c |    1 +
+>   2 files changed, 2 insertions(+)
+>
+>  Index: linux/drivers/media/video/Kconfig
+>  ===================================================================
+>  --- linux.orig/drivers/media/video/Kconfig
+>  +++ linux/drivers/media/video/Kconfig
+>  @@ -835,6 +835,7 @@ config USB_ZR364XX
+>   config USB_STKWEBCAM
+>         tristate "USB Syntek DC1125 Camera support"
+>         depends on VIDEO_V4L2 && EXPERIMENTAL
+>  +       select VIDEO_V4L1_COMPAT
+>         ---help---
+>           Say Y here if you want to use this type of camera.
+>           Supported devices are typically found in some Asus laptops,
+>  Index: linux/drivers/media/video/stk-webcam.c
+>  ===================================================================
+>  --- linux.orig/drivers/media/video/stk-webcam.c
+>  +++ linux/drivers/media/video/stk-webcam.c
+>  @@ -28,6 +28,7 @@
+>   #include <linux/errno.h>
+>   #include <linux/slab.h>
+>   #include <linux/kref.h>
+>  +#include <linux/mm.h>
+>
+>   #include <linux/usb.h>
+>   #include <linux/vmalloc.h>
+>
