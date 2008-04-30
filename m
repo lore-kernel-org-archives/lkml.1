@@ -1,98 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764664AbYD3T2R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932326AbYD3T3X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764664AbYD3T2R (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Apr 2008 15:28:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762571AbYD3T2C
+	id S932326AbYD3T3X (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Apr 2008 15:29:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762926AbYD3T3N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Apr 2008 15:28:02 -0400
-Received: from mx2.suse.de ([195.135.220.15]:50761 "EHLO mx2.suse.de"
+	Wed, 30 Apr 2008 15:29:13 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:49032 "EHLO smtp4.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759386AbYD3T2A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Apr 2008 15:28:00 -0400
-Subject: patch devres-support-addresses-greater-than-an-unsigned-long-via-dev_ioremap.patch added to gregkh-2.6 tree
-To: galak@kernel.crashing.org, akpm@osdl.org, gregkh@suse.de, greg@kroah.com,
-       htejun@gmail.com, jbarnes@virtuousgeek.org, jgarzik@pobox.com,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
-From: <gregkh@suse.de>
-Date: Wed, 30 Apr 2008 11:42:53 -0700
-In-Reply-To: <Pine.LNX.4.64.0804291025140.25102@blarg.am.freescale.net>
-Message-ID: <1209580973764@kroah.org>
+	id S1762571AbYD3T3N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Apr 2008 15:29:13 -0400
+Date: Wed, 30 Apr 2008 22:28:29 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Mauro Carvalho Chehab <mchehab@infradead.org>
+Cc: mkrufky@linuxtv.org, mingo@elte.hu, linux-kernel@vger.kernel.org
+Subject: Re: [patch] dvb: build failure fix
+Message-ID: <20080430192829.GF29330@cs181133002.pp.htv.fi>
+References: <20080428182501.5bb87058@gaivota> <481641CD.5030202@linuxtv.org> <20080430161712.50d1fc84@gaivota>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20080430161712.50d1fc84@gaivota>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Apr 30, 2008 at 04:17:12PM -0300, Mauro Carvalho Chehab wrote:
+> On Mon, 28 Apr 2008 17:29:49 -0400
+> mkrufky@linuxtv.org wrote:
+> 
+> > Mauro Carvalho Chehab wrote:
+> > > On Tue, 29 Apr 2008 00:01:22 +0300
+> > > Adrian Bunk <bunk@kernel.org> wrote:
+>...
+> > >> Mauro, where were we regarding this issue?
+> > >>
+> > >> What about:
+> > >>
+> > >> config TUNER_TDA8290
+> > >>         tristate "TDA 8290/8295 + 8275(a)/18271 tuner combo"
+> > >>         depends on I2C
+> > >> 	depends on DVB_CORE || DVB_CORE=n
+> > >>         select DVB_TDA827X if DVB_CORE
+> > >>         select DVB_TDA18271 if DVB_CORE
+> > >>         default m if VIDEO_TUNER_CUSTOMIZE
+> > >>         help
+> > >>           Say Y here to include support for Philips TDA8290+8275(a)
+> > tuner.
+> > >>
+> > >> Or is there some twist I'm missing?
+> > >>     
+> > >
+> > >
+> > > This will fix compilation, but some drivers will be broken, since tda8275
+> > is
+> > > needed even for some analog-only drivers.
+> > >
+> > > It would be better to do a "select DVB_CORE", although this is also ugly.
+> > >
+> > > I'm pinging Mkrufky. He is the one that touched a lot on those drivers.
+> > Maybe
+> > > he can come up with a better solution.
+> > 
+> > The fix for this issue will come "for free" after the tuner location 
+> > reorganization to the media/common/ folder.
+> 
+> Yes, but I think we should try do do something for 2.6.25 and 2.6.24.
 
-This is a note to let you know that I've just added the patch titled
+Toralf and Ingo only discovered it during randconfig testing.
 
-     Subject: devres: support addresses greater than an unsigned long via dev_ioremap
+Are there actually reports from users running into this problem?
 
-to my gregkh-2.6 tree.  Its filename is
+> Maybe, we
+> may just do:
+> obj-y += /dvb
+>...
 
-     devres-support-addresses-greater-than-an-unsigned-long-via-dev_ioremap.patch
+Do DVB_TDA827X/DVB_TDA18271 need anything from DVB_CORE?
 
-This tree can be found at 
-    http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/patches/
+If yes you'd only transform one build error into another.
 
+> Cheers,
+> Mauro
 
->From galak@kernel.crashing.org  Wed Apr 30 11:27:51 2008
-From: Kumar Gala <galak@kernel.crashing.org>
-Date: Tue, 29 Apr 2008 10:25:48 -0500 (CDT)
-Subject: devres: support addresses greater than an unsigned long via dev_ioremap
-To: Greg KH <greg@kroah.com>
-Cc: Tejun Heo <htejun@gmail.com>, Jeff Garzik <jgarzik@pobox.com>, Andrew Morton <akpm@osdl.org>, "linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>, lkml Mailing List <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>
-Message-ID: <Pine.LNX.4.64.0804291025140.25102@blarg.am.freescale.net>
+cu
+Adrian
 
+-- 
 
-Use a resource_size_t instead of unsigned long since some arch's are
-capable of having ioremap deal with addresses greater than the size of a
-unsigned long.
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
-Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
-Cc: Tejun Heo <htejun@gmail.com>
-Cc: Jeff Garzik <jgarzik@pobox.com>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
----
- include/linux/io.h |    4 ++--
- lib/devres.c       |    4 ++--
- 2 files changed, 4 insertions(+), 4 deletions(-)
-
---- a/include/linux/io.h
-+++ b/include/linux/io.h
-@@ -58,9 +58,9 @@ static inline void devm_ioport_unmap(str
- }
- #endif
- 
--void __iomem * devm_ioremap(struct device *dev, unsigned long offset,
-+void __iomem * devm_ioremap(struct device *dev, resource_size_t offset,
- 			    unsigned long size);
--void __iomem * devm_ioremap_nocache(struct device *dev, unsigned long offset,
-+void __iomem * devm_ioremap_nocache(struct device *dev, resource_size_t offset,
- 				    unsigned long size);
- void devm_iounmap(struct device *dev, void __iomem *addr);
- int check_signature(const volatile void __iomem *io_addr,
---- a/lib/devres.c
-+++ b/lib/devres.c
-@@ -20,7 +20,7 @@ static int devm_ioremap_match(struct dev
-  *
-  * Managed ioremap().  Map is automatically unmapped on driver detach.
-  */
--void __iomem *devm_ioremap(struct device *dev, unsigned long offset,
-+void __iomem *devm_ioremap(struct device *dev, resource_size_t offset,
- 			   unsigned long size)
- {
- 	void __iomem **ptr, *addr;
-@@ -49,7 +49,7 @@ EXPORT_SYMBOL(devm_ioremap);
-  * Managed ioremap_nocache().  Map is automatically unmapped on driver
-  * detach.
-  */
--void __iomem *devm_ioremap_nocache(struct device *dev, unsigned long offset,
-+void __iomem *devm_ioremap_nocache(struct device *dev, resource_size_t offset,
- 				   unsigned long size)
- {
- 	void __iomem **ptr, *addr;
-
-
-Patches currently in gregkh-2.6 which might be from galak@kernel.crashing.org are
-
-driver-core/devres-support-addresses-greater-than-an-unsigned-long-via-dev_ioremap.patch
