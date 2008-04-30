@@ -1,56 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762677AbYD3Wkg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934008AbYD3Wlx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762677AbYD3Wkg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Apr 2008 18:40:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934018AbYD3Wj2
+	id S934008AbYD3Wlx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Apr 2008 18:41:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757498AbYD3Wlm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Apr 2008 18:39:28 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:47009 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934025AbYD3WjX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Apr 2008 18:39:23 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: David Miller <davem@davemloft.net>
+	Wed, 30 Apr 2008 18:41:42 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:48222 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752097AbYD3Wll (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Apr 2008 18:41:41 -0400
+Date: Wed, 30 Apr 2008 15:41:24 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: rjw@sisk.pl, davem@davemloft.net, linux-kernel@vger.kernel.org,
+       jirislaby@gmail.com
 Subject: Re: Slow DOWN, please!!!
-Date: Thu, 1 May 2008 00:39:01 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: mingo@elte.hu, akpm@linux-foundation.org, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org, jirislaby@gmail.com
-References: <20080430135405.ddc42075.akpm@linux-foundation.org> <20080430221936.GA27292@elte.hu> <20080430.152227.23100100.davem@davemloft.net>
-In-Reply-To: <20080430.152227.23100100.davem@davemloft.net>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Message-Id: <20080430154124.7ec08dd4.akpm@linux-foundation.org>
+In-Reply-To: <alpine.LFD.1.10.0804301530360.2980@woody.linux-foundation.org>
+References: <20080429.190352.137408408.davem@davemloft.net>
+	<200804302245.50817.rjw@sisk.pl>
+	<alpine.LFD.1.10.0804301422350.2980@woody.linux-foundation.org>
+	<200805010023.32213.rjw@sisk.pl>
+	<alpine.LFD.1.10.0804301530360.2980@woody.linux-foundation.org>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200805010039.02451.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, 1 of May 2008, David Miller wrote:
-> From: Ingo Molnar <mingo@elte.hu>
-> Date: Thu, 1 May 2008 00:19:36 +0200
-> 
-> > The same goes in the other direction as well - you were just hit by 
-> > scheduler tree related regressions that were only triggered on your 
-> > 128-way sparc64, but not on our 64way x86 and smaller boxes.
-> 
-> You keep saying this over and over again, but the powerpc folks hit
-> this stuff too.
+On Wed, 30 Apr 2008 15:31:22 -0700 (PDT)
+Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-Well, I think that some changes need some wider testing anyway.
+> Any suggestions on how to convince people that their code is not worth 
+> merging?
 
-They may be correct from the author's point of view and even from the knowledge
-and point of view of the maintainer who takes them into his tree.  That's
-because no one knows everything and it'll always be like this.
+Raise the quality.  Then the volume will automatically decrease.
 
-Still, with the current process such "suspicious" changes go in as parts of
-large series of commits and need to be "rediscovered" by the affected testers
-with the help of bisection.  Moreover, many changes of this kind may go in from
-many different sources at the same time and that's really problematic.
+Which leads us to...  the volume isn't a problem per-se.  The problem is
+quality.  It's the fact that they vary inversely which makes us say "slow
+down".
 
-In fact, so many changes go in at a time during a merge window, that we often
-can't really say which of them causes the breakage observed by testers and
-bisection, that IMO should really be a last-resort tool, is used on the main
-debugging techinque.
+So David's Subject: should have been "Do Better, please".  Slowing down is
+just a side-effect.  And, we expect, a tool.
+
+
+We should be discussing how to raise the quality of our work.
