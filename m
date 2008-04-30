@@ -1,53 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761465AbYD3I0p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761845AbYD3I1d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761465AbYD3I0p (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Apr 2008 04:26:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756687AbYD3I03
+	id S1761845AbYD3I1d (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Apr 2008 04:27:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757107AbYD3I1S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Apr 2008 04:26:29 -0400
-Received: from mail-ausfall.charite.de ([193.175.70.131]:49336 "EHLO
-	mail-ausfall.charite.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756485AbYD3I01 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Apr 2008 04:26:27 -0400
-Date: Wed, 30 Apr 2008 10:26:25 +0200
-From: Ralf Hildebrandt <Ralf.Hildebrandt@charite.de>
-To: linux-kernel@vger.kernel.org
-Subject: Re: HP server and atto driver from hell
-Message-ID: <20080430082625.GC6721@charite.de>
-Mail-Followup-To: linux-kernel@vger.kernel.org
-References: <20080429201727.GV8066@charite.de> <20080429224350.51006a5c@core>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20080429224350.51006a5c@core>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Wed, 30 Apr 2008 04:27:18 -0400
+Received: from mail.gmx.net ([213.165.64.20]:51319 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752530AbYD3I1Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Apr 2008 04:27:16 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX1/M1VkidHnMCYOaGMXVWIigRQb/TWsbMTXALqKh4d
+	YaQn4LEUhtiRq4
+Subject: Re: [patch, -git] drivers/media build fix for modular builds
+From: Mike Galbraith <efault@gmx.de>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: David Miller <davem@davemloft.net>, mchehab@infradead.org,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       linux-dvb-maintainer@linuxtv.org, video4linux-list@redhat.com,
+       linux-kernel@vger.kernel.org, sfr@canb.auug.org.au,
+       Sam Ravnborg <sam@ravnborg.org>
+In-Reply-To: <20080430081345.GA16519@elte.hu>
+References: <20080429185009.716c3284@gaivota>
+	 <20080430074807.GA11224@elte.hu>
+	 <20080430.005212.46815036.davem@davemloft.net>
+	 <20080430081345.GA16519@elte.hu>
+Content-Type: text/plain
+Date: Wed, 30 Apr 2008 10:27:10 +0200
+Message-Id: <1209544030.30990.2.camel@marge.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Alan Cox <alan@lxorguk.ukuu.org.uk>:
 
-> I would suggest you take it up with the supplier, given EU law on product
-> being fit for the purpose for which it was sold I would hope they jump.
+On Wed, 2008-04-30 at 10:13 +0200, Ingo Molnar wrote:
+> * David Miller <davem@davemloft.net> wrote:
+> 
+> > From: Ingo Molnar <mingo@elte.hu>
+> > Date: Wed, 30 Apr 2008 09:48:07 +0200
+> > 
+> > > 
+> > > fix allmodconfig build bug introduced in latest -git by commit 
+> > > 7c91f0624a9 ("V4L/DVB(7767): Move tuners to common/tuners"):
+> > > 
+> > >   LD      kernel/built-in.o
+> > >   LD      drivers/built-in.o
+> > >   ld: drivers/media/built-in.o: No such file: No such file or directory
+> > > 
+> > > which happens if all media drivers are modular:
+> > 
+> > I was seeing this too, as I think was Stephen Rothwell.
+> 
+> i think any build which has the media drivers only as modules will 
+> trigger it, so it's rather widespread. My fix has held up fine for 10 
+> randconfigs so far so it should do the trick.
 
-Hah!
- 
-> Seriously it isn't going to be worth anyones time fighting binary crap
-> when there are open alternatives available. Tell HP to replace it with a
-> working card - also if you mail ordered it remember your EU wide 14 day
-> return option ;)
+You also have to make clean after today's pull or...
 
-Will ask the guy who bought it.
+Kernel: arch/x86/boot/bzImage is ready  (#3)
+ERROR: "tea5761_attach" [drivers/media/video/tuner.ko] undefined!
+ERROR: "tea5761_autodetection" [drivers/media/video/tuner.ko] undefined!
+ERROR: "microtune_attach" [drivers/media/video/tuner.ko] undefined!
+ERROR: "simple_tuner_attach" [drivers/media/video/tuner.ko] undefined!
+ERROR: "tda9887_attach" [drivers/media/video/tuner.ko] undefined!
+ERROR: "tea5767_autodetection" [drivers/media/video/tuner.ko] undefined!
+ERROR: "xc5000_attach" [drivers/media/video/tuner.ko] undefined!
+ERROR: "xc2028_attach" [drivers/media/video/tuner.ko] undefined!
+ERROR: "tda829x_probe" [drivers/media/video/tuner.ko] undefined!
+ERROR: "tda829x_attach" [drivers/media/video/tuner.ko] undefined!
+ERROR: "tea5767_attach" [drivers/media/video/tuner.ko] undefined!
+ERROR: "xc2028_attach" [drivers/media/video/saa7134/saa7134-dvb.ko] undefined!
+ERROR: "simple_tuner_attach" [drivers/media/video/saa7134/saa7134-dvb.ko] undefined!
+ERROR: "tda827x_attach" [drivers/media/video/saa7134/saa7134-dvb.ko] undefined!
 
-> And please don't post pieces of proprietary driver code to the kernel
-> list - I doubt you have permission to do so from HP.
 
-Sorry.
 
--- 
-Ralf Hildebrandt (i.A. des IT-Zentrums)         Ralf.Hildebrandt@charite.de
-Charite - Universitätsmedizin Berlin            Tel.  +49 (0)30-450 570-155
-Gemeinsame Einrichtung von FU- und HU-Berlin    Fax.  +49 (0)30-450 570-962
-IT-Zentrum Standort CBF                 send no mail to snickebo@charite.de
