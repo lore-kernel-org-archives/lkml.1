@@ -1,110 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932760AbYD3Uv0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765386AbYD3U4T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932760AbYD3Uv0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Apr 2008 16:51:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760849AbYD3Uuz
+	id S1765386AbYD3U4T (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Apr 2008 16:56:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757858AbYD3U4H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Apr 2008 16:50:55 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:44597 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758830AbYD3Uuy (ORCPT
+	Wed, 30 Apr 2008 16:56:07 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:39046 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756231AbYD3U4F (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Apr 2008 16:50:54 -0400
-Date: Wed, 30 Apr 2008 21:42:41 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: akpm@osdl.org, linux-kernel@vger.kernel.org, linux-mm@vger.kernel.org
-Subject: [PATCH 1/2] mm: Fix overcommit overflow
-Message-ID: <20080430214241.4313e9ca@core>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Wed, 30 Apr 2008 16:56:05 -0400
+Date: Wed, 30 Apr 2008 13:54:46 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: linux-next@vger.kernel.org
+Cc: lkml <linux-kernel@vger.kernel.org>, mingo <mingo@redhat.com>,
+       hpa <hpa@zytor.com>, akpm <akpm@linux-foundation.org>
+Subject: [PATCH -next] x86: fix setup printk format warning
+Message-Id: <20080430135446.86c68516.randy.dunlap@oracle.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sami Farin reported an overflow in the overcommit handling on 64bit boxes.
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-We use atomic_t for page counting which is fine on 32bit but on 64bit
-overflows. We can use atomic64_t but there is a problem - most heavy
-users of zero overcommit are embedded people whose 64bit atomics are
-really slow and expensive operations. Thus we use a few defines to flip
-32 or 64bit according to the size of a long
+Fix x86 setup printk format warming:
 
-(Split into two diffs to keep ownership correct)
+next-20080430/arch/x86/kernel/setup.c:172: warning: format '%lu' expects type 'long unsigned int', but argument 2 has type 'ssize_t'
 
-Signed-off-by: Alan Cox <alan@redhat.com>
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
+ arch/x86/kernel/setup.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.25-mm1/include/linux/mman.h linux-2.6.25-mm1/include/linux/mman.h
---- linux.vanilla-2.6.25-mm1/include/linux/mman.h	2008-04-28 11:35:21.000000000 +0100
-+++ linux-2.6.25-mm1/include/linux/mman.h	2008-04-30 11:21:10.000000000 +0100
-@@ -15,16 +15,31 @@
+--- next-20080430.orig/arch/x86/kernel/setup.c
++++ next-20080430/arch/x86/kernel/setup.c
+@@ -168,7 +168,7 @@ void __init setup_per_cpu_areas(void)
  
- #include <asm/atomic.h>
+ 	/* Copy section for each CPU (we discard the original) */
+ 	size = PERCPU_ENOUGH_ROOM;
+-	printk(KERN_INFO "PERCPU: Allocating %lu bytes of per cpu data\n",
++	printk(KERN_INFO "PERCPU: Allocating %zd bytes of per cpu data\n",
+ 			  size);
  
-+/* 32bit platforms have a virtual address space in pages we
-+   can fit into an atomic_t. We want to avoid atomic64_t on
-+   such boxes as it is often expensive and most strict overcommit
-+   users turn out to be embedded low power processors */
-+
-+#if (BITS_PER_LONG == 32)
-+#define vm_atomic_t atomic_t
-+#define vm_atomic_read atomic_read
-+#define vm_atomic_add atomic_add
-+#else
-+#define vm_atomic_t atomic64_t
-+#define vm_atomic_read atomic64_read
-+#define vm_atomic_add atomic64_add
-+#endif
-+
- extern int sysctl_overcommit_memory;
- extern int sysctl_overcommit_ratio;
--extern atomic_t vm_committed_space;
-+extern vm_atomic_t vm_committed_space;
- 
- #ifdef CONFIG_SMP
- extern void vm_acct_memory(long pages);
- #else
- static inline void vm_acct_memory(long pages)
- {
--	atomic_add(pages, &vm_committed_space);
-+	vm_atomic_add(pages, &vm_committed_space);
- }
- #endif
- 
-diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.25-mm1/mm/mmap.c linux-2.6.25-mm1/mm/mmap.c
---- linux.vanilla-2.6.25-mm1/mm/mmap.c	2008-04-28 11:36:52.000000000 +0100
-+++ linux-2.6.25-mm1/mm/mmap.c	2008-04-30 11:17:03.000000000 +0100
-@@ -80,7 +80,7 @@
- int sysctl_overcommit_memory = OVERCOMMIT_GUESS;  /* heuristic overcommit */
- int sysctl_overcommit_ratio = 50;	/* default is 50% */
- int sysctl_max_map_count __read_mostly = DEFAULT_MAX_MAP_COUNT;
--atomic_t vm_committed_space = ATOMIC_INIT(0);
-+vm_atomic_t vm_committed_space = ATOMIC_INIT(0);
- 
- /*
-  * Check that a process has enough memory to allocate a new virtual
-@@ -177,7 +177,7 @@
- 	 * cast `allowed' as a signed long because vm_committed_space
- 	 * sometimes has a negative value
- 	 */
--	if (atomic_read(&vm_committed_space) < (long)allowed)
-+	if (vm_atomic_read(&vm_committed_space) < (long)allowed)
- 		return 0;
- error:
- 	vm_unacct_memory(pages);
-diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.25-mm1/mm/swap.c linux-2.6.25-mm1/mm/swap.c
---- linux.vanilla-2.6.25-mm1/mm/swap.c	2008-04-28 11:36:52.000000000 +0100
-+++ linux-2.6.25-mm1/mm/swap.c	2008-04-30 11:18:05.000000000 +0100
-@@ -503,7 +503,7 @@
- 	local = &__get_cpu_var(committed_space);
- 	*local += pages;
- 	if (*local > ACCT_THRESHOLD || *local < -ACCT_THRESHOLD) {
--		atomic_add(*local, &vm_committed_space);
-+		vm_atomic_add(*local, &vm_committed_space);
- 		*local = 0;
- 	}
- 	preempt_enable();
+ 	for_each_possible_cpu(cpu) {
