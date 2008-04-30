@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933541AbYD3Vxb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933227AbYD3Vzf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933541AbYD3Vxb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Apr 2008 17:53:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760442AbYD3VxW
+	id S933227AbYD3Vzf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Apr 2008 17:55:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761776AbYD3Vz0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Apr 2008 17:53:22 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:38090 "EHLO
+	Wed, 30 Apr 2008 17:55:26 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:41621 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757024AbYD3VxW (ORCPT
+	by vger.kernel.org with ESMTP id S1759698AbYD3VzZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Apr 2008 17:53:22 -0400
-Date: Wed, 30 Apr 2008 14:53:11 -0700
+	Wed, 30 Apr 2008 17:55:25 -0400
+Date: Wed, 30 Apr 2008 14:55:15 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
 To: Andres Salomon <dilinger@queued.net>
 Cc: cbou@mail.ru, linux-kernel@vger.kernel.org, dwmw2@infradead.org
-Subject: Re: [PATCH 2/4] power_supply: add eeprom dump file to
- olpc_battery's sysfs
-Message-Id: <20080430145311.a6c35ed7.akpm@linux-foundation.org>
-In-Reply-To: <20080430163008.4be68cb3@ephemeral>
-References: <20080430163008.4be68cb3@ephemeral>
+Subject: Re: [PATCH 4/4] power_supply: bump EC version check that we refuse
+ to run with in olpc_battery
+Message-Id: <20080430145515.bbee90d9.akpm@linux-foundation.org>
+In-Reply-To: <20080430163030.29e1ca9f@ephemeral>
+References: <20080430163030.29e1ca9f@ephemeral>
 X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -27,62 +27,35 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 30 Apr 2008 16:30:08 -0400
+On Wed, 30 Apr 2008 16:30:30 -0400
 Andres Salomon <dilinger@queued.net> wrote:
 
 > 
-> This allows you to dump 0x60 bytes from the battery's EEPROM (starting
-> at address 0x20).  Note that it does an EC command for each byte, so
-> it's pretty slow.  OTOH, if you want to grab just a single byte from
-> somewhere in the EEPROM, you can do something like:
+> Refuse to run with an EC < 0x44.  We're playing it safe, and this is
+> a pretty old EC version.
 > 
-> dd bs=1 count=1 skip=16 if=/sys/class/power_supply/olpc-battery/eeprom | od -x
-> 
-> Userspace battery collection/logging information needs this.
-> 
-> Signed-off-by: Andres Salomon <dilinger@debian.org>
-> ---
->  drivers/power/olpc_battery.c |   49 ++++++++++++++++++++++++++++++++++++++++++
->  1 files changed, 49 insertions(+), 0 deletions(-)
+> Also, add a comment about why we're checking the EC version.
+
+Sigh.  Presantly, the entirety of olpc_battery.c looks very nice
+in an 80-column display.
+
 > 
 > diff --git a/drivers/power/olpc_battery.c b/drivers/power/olpc_battery.c
-> index 9d9dd09..e5ecf27 100644
+> index cb45a67..086b146 100644
 > --- a/drivers/power/olpc_battery.c
 > +++ b/drivers/power/olpc_battery.c
-> @@ -283,6 +283,48 @@ static enum power_supply_property olpc_bat_props[] = {
->  	POWER_SUPPLY_PROP_SERIAL_NUMBER,
->  };
+> @@ -398,7 +398,12 @@ static int __init olpc_bat_init(void)
 >  
-> +/* EEPROM reading goes completely around the power_supply API, sadly */
+>  	if (!olpc_platform_info.ecver)
+>  		return -ENXIO;
+> -	if (olpc_platform_info.ecver < 0x43) {
 > +
-> +#define EEPROM_START	0x20
-> +#define EEPROM_END	0x80
-> +#define EEPROM_SIZE	(EEPROM_END - EEPROM_START)
-> +
-> +static ssize_t olpc_bat_eeprom_read(struct kobject *kobj,
-> +		struct bin_attribute *attr, char *buf, loff_t off, size_t count)
-> +{
-> +	uint8_t ec_byte;
-> +	int ret, end;
-> +
-> +	if (off >= EEPROM_SIZE)
-> +		return 0;
+> +	/*
+> +	 * We've seen a number of EC protocol changes; this driver requires
+> +	 * the latest EC protocol, supported by 0x44 and above.
+> +	 */
+> +	if (olpc_platform_info.ecver < 0x44) {
+>  		printk(KERN_NOTICE "OLPC EC version 0x%02x too old for battery driver.\n", olpc_platform_info.ecver);
+>  		return -ENXIO;
 
-loff_t is signed.
-
-Happily, the VFS prevents negative loff_t's from being passed into read()
-handlers.
-
-> +	if (off + count > EEPROM_SIZE)
-> +		count = EEPROM_SIZE - off;
-
-But the vfs doesn't check for (offset+len) going negative (I think?)
-
-However you got lucky (or smart ;)) - size_t is unsigned so the comparison
-will dtrt.
-
-Plus the first `if' will prevent us getting here with huge-nearly-negative
-`off'.
-
-This stuff is harder than it should be :(
-
+Now it needs 0x80 :(
