@@ -1,67 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759923AbYD3BEb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760111AbYD3BFz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759923AbYD3BEb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 21:04:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751776AbYD3BEX
+	id S1760111AbYD3BFz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 21:05:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756215AbYD3BFq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 21:04:23 -0400
-Received: from smtp124.sbc.mail.sp1.yahoo.com ([69.147.64.97]:37272 "HELO
-	smtp124.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751502AbYD3BEV (ORCPT
+	Tue, 29 Apr 2008 21:05:46 -0400
+Received: from hs-out-0708.google.com ([64.233.178.242]:12573 "EHLO
+	hs-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756212AbYD3BFp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 21:04:21 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=5VhAk1ty41Stw25ZYk22TKnbvaTXQu3Lr4/42Oq+B7sEfVQHox+tt+gRB7ZNB1AB75TZDU41u7oj7vM4JtBXp9qC21B58rFtF4j8Yx8aPmdH5++WRdaDCrDIMv2AP2jAfQDG6BaenbvSV3VkZ52mbmG/Tx6YKzt4eMp5N4nAvBw=  ;
-X-YMail-OSG: 7WhYrEkVM1nyctZ3E131F_VOlKkzuX6XFvUhu_O6mxDiI6VD5HRKor02sWTwOSOpcgAIYTy4zRz_pRnEyHpZtjdyQr66.up4eFKgDTBfLGTk7O6Z6oBTBgbvDqaGXTkAuro-
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Ben Nizette <bn@niasdigital.com>
-Subject: Re: [patch/rfc 2.6.25-git] gpio: sysfs interface
-Date: Tue, 29 Apr 2008 18:04:19 -0700
-User-Agent: KMail/1.9.6
-Cc: Trent Piepho <tpiepho@freescale.com>, lkml <linux-kernel@vger.kernel.org>,
-       hartleys <hartleys@visionengravers.com>,
-       Mike Frysinger <vapier.adi@gmail.com>, Bryan Wu <cooloney@kernel.org>
-References: <200804281239.51729.david-b@pacbell.net> <200804291455.39674.david-b@pacbell.net> <1209511772.311.55.camel@moss.renham>
-In-Reply-To: <1209511772.311.55.camel@moss.renham>
+	Tue, 29 Apr 2008 21:05:45 -0400
+Message-ID: <4817C5C9.5030204@larces.uece.br>
+Date: Tue, 29 Apr 2008 22:05:13 -0300
+From: Sergio Luis <sergio@larces.uece.br>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
-Content-Disposition: inline
-Message-Id: <200804291804.19518.david-b@pacbell.net>
+To: Ingo Molnar <mingo@elte.hu>
+CC: Glauber Costa <gcosta@redhat.com>, Ken Moffat <zarniwhoop@ntlworld.com>,
+       Bart Van Assche <bart.vanassche@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.25 slow boot/reboot
+References: <48141111.7010605@larces.uece.br> <e2e108260804270823t45611ec2t35da085833d82dfa@mail.gmail.com> <20080427235554.GA28344@deepthought> <48152747.4030107@larces.uece.br> <4815DCEF.3000602@redhat.com> <430c4fa50804280735o3d1c3b9cg687f7d374dafbdec@mail.gmail.com> <48166CA1.1070000@redhat.com> <4816BDAD.3000906@larces.uece.br> <481713E3.1050007@redhat.com> <20080429142819.GF26461@elte.hu>
+In-Reply-To: <20080429142819.GF26461@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 29 April 2008, Ben Nizette wrote:
-> I guess one last option (which is made hard by chip label non-uniqueness
-> but I'll throw out anyway) would be
+Ingo Molnar wrote:
+> * Glauber Costa <gcosta@redhat.com> wrote:
 > 
-> /sys/class/gpio
->         /chipa
->                 /gpio-n
->                         /value
->                         /direction
->                 /control
->         /chipb
->                 :
->                 :
+>> [    1.375711] Serial: 8250/16550 driver $Revision: 1.90 $ 4 ports, IRQ 
+>> sharing enabled
+>> [    4.399907] floppy0: no floppy controllers found
+>>
+>> a 90-second delay is not what's happening, or at least, not what the 
+>> kernel is seeing. So my bet would be something clock-related. Probably 
+>> the system's clocksource is not running the time correctly, which is 
+>> causing system events to be delayed. I fail to see, however, how does 
+>> the patch you bisected to influences this. Ingo, do you have any idea?
+> 
+> the first thing to check, does latest x86.git work fine:
 > 
 
-Or maybe:
+nope, it doesn't work fine, but gives me the same issue (I had to apply 
+the scsi patch in http://lkml.org/lkml/2008/4/27/309 in order to make 
+it boot, though).
 
-  /sys/class/gpio
-	/gpiochip-X			<-- range X..(X+ngpio)
-		/device			<-- symlink, if it's known
-		/ngpio
-		/label
-		/start			<-- maybe; start == X
+>   http://people.redhat.com/mingo/x86.git/README
+> 
+> ? We've got fixes queued up - in particular one could result in 'slow' 
+> systems by virtue of denying an ioremap():
+> 
+>   Subject: revert: "x86: ioremap(), extend check to all RAM pages"
+> 
+> maybe the bisection went haywire.
+> 
 
-with the gpio-N links probably going where you showed.  That'd be
-best in terms of Purity Of Essence.
+I tried re-bisecting using now 2.6.25 as my initial good kernel, but in 
+the 2nd or 3r iteration I start having compilation problems like such as 
 
-- Dave
+--
+ld:fs:afs/cell.o: file format not recognized; treating as linker script
+ld:fs/afs/cell.o:1: syntax error
+
+The same problem happens with fs/autofs/inode.o and crypto/hmac.o
+--
+
+and it stopped the bisection process from going forward.
+
+
+I am using binutils 2.17.50.0.17 (slackware 12 here) and also tried the
+latest binutils cvs, but it gives me the same error there.
+
+Any suggestions?
+thanks,
+-sergio
+
+> Or the secondary core booted up in such a sucky way that it causes such 
+> massive slowdowns? Perhaps we are flooding the system with local APIC 
+> timer interrupts or other interrupts?
+> 
+> 	Ingo
 
