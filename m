@@ -1,78 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764994AbYD3TOv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763955AbYD3TPd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764994AbYD3TOv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Apr 2008 15:14:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762546AbYD3TOe
+	id S1763955AbYD3TPd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Apr 2008 15:15:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763744AbYD3TPN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Apr 2008 15:14:34 -0400
-Received: from fg-out-1718.google.com ([72.14.220.156]:43445 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764903AbYD3TOb (ORCPT
+	Wed, 30 Apr 2008 15:15:13 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:58717 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1762368AbYD3TPL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Apr 2008 15:14:31 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-disposition:message-id:content-type:content-transfer-encoding;
-        b=BY3xMDg+eMvoSDmNzege+s3+OwmIVJoeDqQ/KwifCPdFe06t0iRdmGLlwuq+ck2hlpBg4C3T6v3QYjAVb0hmA3cdYTgd4Cdt/e32FlU79FfYWdtRHcjffhR1gi3wquzQ5RsHn2rvT39/rQVTYllso3WTakmvf7dp9KQujRYOlE0=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: IDE probe failure in 2.6.25-mm1
-Date: Wed, 30 Apr 2008 21:30:44 +0200
-User-Agent: KMail/1.9.9
-Cc: Balaji Rao <balajirrao@gmail.com>, linux-kernel@vger.kernel.org
-References: <200804302343.14949.balajirrao@gmail.com> <20080430112028.ae20df4a.akpm@linux-foundation.org>
-In-Reply-To: <20080430112028.ae20df4a.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200804302130.44894.bzolnier@gmail.com>
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Wed, 30 Apr 2008 15:15:11 -0400
+Date: Wed, 30 Apr 2008 12:14:52 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Denis V. Lunev" <den@openvz.org>
+Cc: mingo@elte.hu, linux-kernel@vger.kernel.org
+Subject: Re: [patch, -git] isdn: hysdn_procconf.c build fix
+Message-Id: <20080430121452.f7735eea.akpm@linux-foundation.org>
+In-Reply-To: <1209582185.4310.1.camel@iris.sw.ru>
+References: <1207653508.7171.18.camel@iris.sw.ru>
+	<1207653576-12640-25-git-send-email-den@openvz.org>
+	<20080430175740.GA26612@elte.hu>
+	<20080430111052.9c0c8974.akpm@linux-foundation.org>
+	<20080430183051.GA3008@elte.hu>
+	<20080430114731.7e71f3d2.akpm@linux-foundation.org>
+	<1209582185.4310.1.camel@iris.sw.ru>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 30 April 2008, Andrew Morton wrote:
-> On Wed, 30 Apr 2008 23:43:14 +0530
-> Balaji Rao <balajirrao@gmail.com> wrote:
+On Wed, 30 Apr 2008 23:03:05 +0400
+"Denis V. Lunev" <den@openvz.org> wrote:
+
+> On Wed, 2008-04-30 at 11:47 -0700, Andrew Morton wrote:
+> > On Wed, 30 Apr 2008 20:30:51 +0200
+> > Ingo Molnar <mingo@elte.hu> wrote:
+> > 
+> > > 
+> > > * Andrew Morton <akpm@linux-foundation.org> wrote:
+> > > 
+> > > > On Wed, 30 Apr 2008 19:57:40 +0200
+> > > > Ingo Molnar <mingo@elte.hu> wrote:
+> > > > 
+> > > > > Ob'grumpy: this file was not even build-tested by any of the parties 
+> > > > > who turned it into upstream commit ac41cfd19b ("isdn: use non-racy 
+> > > > > method for proc entries creation").
+> > > > 
+> > > > That's because this stupidity:
+> > > > 
+> > > > config HYSDN
+> > > >         tristate "Hypercope HYSDN cards (Champ, Ergo, Metro) support (module only)"
+> > > >         depends on m && PROC_FS && PCI && BROKEN_ON_SMP
+> > > > 
+> > > > breaks allmodconfig coverage testing.
+> > > 
+> > > yeah. There's a trick though that we use in the x86 tree (and which i'm 
+> > > using in a script when queuing up new patches). The following command 
+> > > will punch through any Kconfig black holes:
+> > > 
+> > >   make drivers/isdn/hysdn/hysdn_procconf.o
+> > 
+> > That's daft, sorry.  We shouldn't expect everyone to do stuff like that.
+> > 
+> > > (it wont always work as it needs a halfways reasonable .config, but it 
+> > > works well enough to be part of my workflow.)
+> > > 
+> > > note that there's tons more stuff and dependencies that plain 
+> > > allmodconfig does not catch - in this merge window alone i'm at around 
+> > > 20 fixes so far.
+> > 
+> > allmodconfig is for one thing and one thing only: compilation coverage
+> > testing.  If there is anything which is not compiled after `make
+> > allmodconfig' then that's a bug.
+> > 
+> > But how to fix it?  Perhaps we need to add a CONFIG_ALLFOOCONFIG which can
+> > be tested at the appropriate places.
 > 
-> > Hi Andrew,
-> > 
-> > IDE probe fails in 2.6.25-mm1 on qemu.
-> > 
-> > [    0.664164] Uniform Multi-Platform E-IDE driver
-> > [    1.571508] ide0: DISABLED, NO IRQ
-> > [    1.572380] ide0: failed to initialize IDE interface
-> > 
-> > This is the output with linux-2.6.git
-> > 
-> > [    1.567368] ide0 at 0x1f0-0x1f7,0x3f6 on irq 14
-> > [    1.571430] hda: max request size: 512KiB
-> > [    1.574302] hda: 10485760 sectors (5368 MB) w/256KiB Cache, CHS=10402/255/63
-> > [    1.583896] hda: cache flushes supported
-> > [    1.585053]  hda: hda1
-> > 
-> > This is apparently due to the invasive changes in hwif_t's io_ports member.
-> > 
-> 
-> OK, thanks.
-> 
-> I _think_ Bart idenfitied a patch which caused this (or something like it)
-> and dropped it?
+> I think that the same should be applied to allyesconfig
 
-Yep.
+That's what ALLFOOCONFIG refers to ;)
 
-Two patches were dropped from IDE tree:
+There _might_ be a need to discriminate between allyesconfig and
+allmodconfig, but usually not, I expect.
 
-	ide-fix-hwif-s-initialization.patch
-	ide-make-ide_hwifs-static.patch
+Perhaps we should implement CONFIG_ALLYESCONFIG, CONFIG_ALLMODCONFIG and
+CONFIG_ALLFOOCONFIG, where
 
-there is also a hot-fix patch available: 
-
-	http://article.gmane.org/gmane.linux.ide/30860
-
-+ for qemu switching to using piix host driver (qemu emulates PIIX3) should
-also workaround the issue since it seems to happen only with ide_generic.
-
-Thanks,
-Bart
+	ALLFOOCONFIG = ALLYESCONFIG || ALLMODCONFIG
+	
+(where FOO is renamed to something sensible, but what?)
