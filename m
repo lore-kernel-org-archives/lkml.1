@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934685AbYEAACp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934740AbYEAADO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934685AbYEAACp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Apr 2008 20:02:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934033AbYD3X6u
+	id S934740AbYEAADO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Apr 2008 20:03:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934038AbYD3X6x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Apr 2008 19:58:50 -0400
-Received: from mx2.suse.de ([195.135.220.15]:44558 "EHLO mx2.suse.de"
+	Wed, 30 Apr 2008 19:58:53 -0400
+Received: from mx1.suse.de ([195.135.220.2]:47526 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933966AbYD3X6q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Apr 2008 19:58:46 -0400
+	id S1764156AbYD3X6v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Apr 2008 19:58:51 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Kay Sievers <kay.sievers@vrfy.org>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 10/11] driver core: remove no longer used "struct class_device"
-Date: Wed, 30 Apr 2008 16:57:49 -0700
-Message-Id: <1209599870-22919-10-git-send-email-gregkh@suse.de>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 11/11] klist: fix coding style errors in klist.h and klist.c
+Date: Wed, 30 Apr 2008 16:57:50 -0700
+Message-Id: <1209599870-22919-11-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.5.1
 In-Reply-To: <20080430235701.GA20981@suse.de>
 References: <20080430235701.GA20981@suse.de>
@@ -22,911 +22,440 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Kay Sievers <kay.sievers@vrfy.org>
+Finally clean up the odd spacing in these files.
 
-Signed-off-by: Kay Sievers <kay.sievers@vrfy.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/base/base.h    |   11 -
- drivers/base/class.c   |  638 +-----------------------------------------------
- include/linux/device.h |   97 --------
- 3 files changed, 1 insertions(+), 745 deletions(-)
+ include/linux/klist.h |   30 ++++----
+ lib/klist.c           |  206 ++++++++++++++++++++-----------------------------
+ 2 files changed, 100 insertions(+), 136 deletions(-)
 
-diff --git a/drivers/base/base.h b/drivers/base/base.h
-index c044414..2c9ae43 100644
---- a/drivers/base/base.h
-+++ b/drivers/base/base.h
-@@ -64,17 +64,6 @@ extern void sysdev_shutdown(void);
- extern int sysdev_suspend(pm_message_t state);
- extern int sysdev_resume(void);
+diff --git a/include/linux/klist.h b/include/linux/klist.h
+index b49385f..06c338e 100644
+--- a/include/linux/klist.h
++++ b/include/linux/klist.h
+@@ -34,38 +34,38 @@ struct klist {
+ #define DEFINE_KLIST(_name, _get, _put)					\
+ 	struct klist _name = KLIST_INIT(_name, _get, _put)
  
--static inline struct class_device *to_class_dev(struct kobject *obj)
--{
--	return container_of(obj, struct class_device, kobj);
--}
--
--static inline
--struct class_device_attribute *to_class_dev_attr(struct attribute *_attr)
--{
--	return container_of(_attr, struct class_device_attribute, attr);
--}
--
- extern char *make_class_name(const char *name, struct kobject *kobj);
+-extern void klist_init(struct klist * k, void (*get)(struct klist_node *),
++extern void klist_init(struct klist *k, void (*get)(struct klist_node *),
+ 		       void (*put)(struct klist_node *));
  
- extern int devres_release_all(struct device *dev);
-diff --git a/drivers/base/class.c b/drivers/base/class.c
-index b490179..0ef00e8 100644
---- a/drivers/base/class.c
-+++ b/drivers/base/class.c
-@@ -179,27 +179,13 @@ static void class_create_release(struct class *cls)
- 	kfree(cls);
- }
- 
--static void class_device_create_release(struct class_device *class_dev)
--{
--	pr_debug("%s called for %s\n", __func__, class_dev->class_id);
--	kfree(class_dev);
--}
--
--/* needed to allow these devices to have parent class devices */
--static int class_device_create_uevent(struct class_device *class_dev,
--				      struct kobj_uevent_env *env)
--{
--	pr_debug("%s called for %s\n", __func__, class_dev->class_id);
--	return 0;
--}
--
- /**
-  * class_create - create a struct class structure
-  * @owner: pointer to the module that is to "own" this struct class
-  * @name: pointer to a string for the name of this class.
-  *
-  * This is used to create a struct class pointer that can then be used
-- * in calls to class_device_create().
-+ * in calls to device_create().
-  *
-  * Note, the pointer created here is to be destroyed when finished by
-  * making a call to class_destroy().
-@@ -218,7 +204,6 @@ struct class *class_create(struct module *owner, const char *name)
- 	cls->name = name;
- 	cls->owner = owner;
- 	cls->class_release = class_create_release;
--	cls->release = class_device_create_release;
- 
- 	retval = class_register(cls);
- 	if (retval)
-@@ -246,113 +231,6 @@ void class_destroy(struct class *cls)
- 	class_unregister(cls);
- }
- 
--/* Class Device Stuff */
--
--int class_device_create_file(struct class_device *class_dev,
--			     const struct class_device_attribute *attr)
--{
--	int error = -EINVAL;
--	if (class_dev)
--		error = sysfs_create_file(&class_dev->kobj, &attr->attr);
--	return error;
--}
--
--void class_device_remove_file(struct class_device *class_dev,
--			      const struct class_device_attribute *attr)
--{
--	if (class_dev)
--		sysfs_remove_file(&class_dev->kobj, &attr->attr);
--}
--
--int class_device_create_bin_file(struct class_device *class_dev,
--				 struct bin_attribute *attr)
--{
--	int error = -EINVAL;
--	if (class_dev)
--		error = sysfs_create_bin_file(&class_dev->kobj, attr);
--	return error;
--}
--
--void class_device_remove_bin_file(struct class_device *class_dev,
--				  struct bin_attribute *attr)
--{
--	if (class_dev)
--		sysfs_remove_bin_file(&class_dev->kobj, attr);
--}
--
--static ssize_t class_device_attr_show(struct kobject *kobj,
--				      struct attribute *attr, char *buf)
--{
--	struct class_device_attribute *class_dev_attr = to_class_dev_attr(attr);
--	struct class_device *cd = to_class_dev(kobj);
--	ssize_t ret = 0;
--
--	if (class_dev_attr->show)
--		ret = class_dev_attr->show(cd, buf);
--	return ret;
--}
--
--static ssize_t class_device_attr_store(struct kobject *kobj,
--				       struct attribute *attr,
--				       const char *buf, size_t count)
--{
--	struct class_device_attribute *class_dev_attr = to_class_dev_attr(attr);
--	struct class_device *cd = to_class_dev(kobj);
--	ssize_t ret = 0;
--
--	if (class_dev_attr->store)
--		ret = class_dev_attr->store(cd, buf, count);
--	return ret;
--}
--
--static struct sysfs_ops class_dev_sysfs_ops = {
--	.show	= class_device_attr_show,
--	.store	= class_device_attr_store,
--};
--
--static void class_dev_release(struct kobject *kobj)
--{
--	struct class_device *cd = to_class_dev(kobj);
--	struct class *cls = cd->class;
--
--	pr_debug("device class '%s': release.\n", cd->class_id);
--
--	if (cd->release)
--		cd->release(cd);
--	else if (cls->release)
--		cls->release(cd);
--	else {
--		printk(KERN_ERR "Class Device '%s' does not have a release() "
--			"function, it is broken and must be fixed.\n",
--			cd->class_id);
--		WARN_ON(1);
--	}
--}
--
--static struct kobj_type class_device_ktype = {
--	.sysfs_ops	= &class_dev_sysfs_ops,
--	.release	= class_dev_release,
--};
--
--static int class_uevent_filter(struct kset *kset, struct kobject *kobj)
--{
--	struct kobj_type *ktype = get_ktype(kobj);
--
--	if (ktype == &class_device_ktype) {
--		struct class_device *class_dev = to_class_dev(kobj);
--		if (class_dev->class)
--			return 1;
--	}
--	return 0;
--}
--
--static const char *class_uevent_name(struct kset *kset, struct kobject *kobj)
--{
--	struct class_device *class_dev = to_class_dev(kobj);
--
--	return class_dev->class->name;
--}
--
- #ifdef CONFIG_SYSFS_DEPRECATED
- char *make_class_name(const char *name, struct kobject *kobj)
- {
-@@ -370,445 +248,8 @@ char *make_class_name(const char *name, struct kobject *kobj)
- 	strcat(class_name, kobject_name(kobj));
- 	return class_name;
- }
--
--static int make_deprecated_class_device_links(struct class_device *class_dev)
--{
--	char *class_name;
--	int error;
--
--	if (!class_dev->dev)
--		return 0;
--
--	class_name = make_class_name(class_dev->class->name, &class_dev->kobj);
--	if (class_name)
--		error = sysfs_create_link(&class_dev->dev->kobj,
--					  &class_dev->kobj, class_name);
--	else
--		error = -ENOMEM;
--	kfree(class_name);
--	return error;
--}
--
--static void remove_deprecated_class_device_links(struct class_device *class_dev)
--{
--	char *class_name;
--
--	if (!class_dev->dev)
--		return;
--
--	class_name = make_class_name(class_dev->class->name, &class_dev->kobj);
--	if (class_name)
--		sysfs_remove_link(&class_dev->dev->kobj, class_name);
--	kfree(class_name);
--}
--#else
--static inline int make_deprecated_class_device_links(struct class_device *cd)
--{ return 0; }
--static void remove_deprecated_class_device_links(struct class_device *cd)
--{ }
- #endif
- 
--static int class_uevent(struct kset *kset, struct kobject *kobj,
--			struct kobj_uevent_env *env)
--{
--	struct class_device *class_dev = to_class_dev(kobj);
--	struct device *dev = class_dev->dev;
--	int retval = 0;
--
--	pr_debug("%s - name = %s\n", __func__, class_dev->class_id);
--
--	if (MAJOR(class_dev->devt)) {
--		add_uevent_var(env, "MAJOR=%u", MAJOR(class_dev->devt));
--
--		add_uevent_var(env, "MINOR=%u", MINOR(class_dev->devt));
--	}
--
--	if (dev) {
--		const char *path = kobject_get_path(&dev->kobj, GFP_KERNEL);
--		if (path) {
--			add_uevent_var(env, "PHYSDEVPATH=%s", path);
--			kfree(path);
--		}
--
--		if (dev->bus)
--			add_uevent_var(env, "PHYSDEVBUS=%s", dev->bus->name);
--
--		if (dev->driver)
--			add_uevent_var(env, "PHYSDEVDRIVER=%s",
--				       dev->driver->name);
--	}
--
--	if (class_dev->uevent) {
--		/* have the class device specific function add its stuff */
--		retval = class_dev->uevent(class_dev, env);
--		if (retval)
--			pr_debug("class_dev->uevent() returned %d\n", retval);
--	} else if (class_dev->class->uevent) {
--		/* have the class specific function add its stuff */
--		retval = class_dev->class->uevent(class_dev, env);
--		if (retval)
--			pr_debug("class->uevent() returned %d\n", retval);
--	}
--
--	return retval;
--}
--
--static struct kset_uevent_ops class_uevent_ops = {
--	.filter =	class_uevent_filter,
--	.name =		class_uevent_name,
--	.uevent =	class_uevent,
--};
--
--/*
-- * DO NOT copy how this is created, kset_create_and_add() should be
-- * called, but this is a hold-over from the old-way and will be deleted
-- * entirely soon.
-- */
--static struct kset class_obj_subsys = {
--	.uevent_ops = &class_uevent_ops,
--};
--
--static int class_device_add_attrs(struct class_device *cd)
--{
--	int i;
--	int error = 0;
--	struct class *cls = cd->class;
--
--	if (cls->class_dev_attrs) {
--		for (i = 0; attr_name(cls->class_dev_attrs[i]); i++) {
--			error = class_device_create_file(cd,
--						&cls->class_dev_attrs[i]);
--			if (error)
--				goto err;
--		}
--	}
--done:
--	return error;
--err:
--	while (--i >= 0)
--		class_device_remove_file(cd, &cls->class_dev_attrs[i]);
--	goto done;
--}
--
--static void class_device_remove_attrs(struct class_device *cd)
--{
--	int i;
--	struct class *cls = cd->class;
--
--	if (cls->class_dev_attrs) {
--		for (i = 0; attr_name(cls->class_dev_attrs[i]); i++)
--			class_device_remove_file(cd, &cls->class_dev_attrs[i]);
--	}
--}
--
--static int class_device_add_groups(struct class_device *cd)
--{
--	int i;
--	int error = 0;
--
--	if (cd->groups) {
--		for (i = 0; cd->groups[i]; i++) {
--			error = sysfs_create_group(&cd->kobj, cd->groups[i]);
--			if (error) {
--				while (--i >= 0)
--					sysfs_remove_group(&cd->kobj,
--							   cd->groups[i]);
--				goto out;
--			}
--		}
--	}
--out:
--	return error;
--}
--
--static void class_device_remove_groups(struct class_device *cd)
--{
--	int i;
--	if (cd->groups)
--		for (i = 0; cd->groups[i]; i++)
--			sysfs_remove_group(&cd->kobj, cd->groups[i]);
--}
--
--static ssize_t show_dev(struct class_device *class_dev, char *buf)
--{
--	return print_dev_t(buf, class_dev->devt);
--}
--
--static struct class_device_attribute class_devt_attr =
--	__ATTR(dev, S_IRUGO, show_dev, NULL);
--
--static ssize_t store_uevent(struct class_device *class_dev,
--			    const char *buf, size_t count)
--{
--	kobject_uevent(&class_dev->kobj, KOBJ_ADD);
--	return count;
--}
--
--static struct class_device_attribute class_uevent_attr =
--	__ATTR(uevent, S_IWUSR, NULL, store_uevent);
--
--void class_device_initialize(struct class_device *class_dev)
--{
--	class_dev->kobj.kset = &class_obj_subsys;
--	kobject_init(&class_dev->kobj, &class_device_ktype);
--	INIT_LIST_HEAD(&class_dev->node);
--}
--
--int class_device_add(struct class_device *class_dev)
--{
--	struct class *parent_class = NULL;
--	struct class_device *parent_class_dev = NULL;
--	struct class_interface *class_intf;
--	int error = -EINVAL;
--
--	class_dev = class_device_get(class_dev);
--	if (!class_dev)
--		return -EINVAL;
--
--	if (!strlen(class_dev->class_id))
--		goto out1;
--
--	parent_class = class_get(class_dev->class);
--	if (!parent_class)
--		goto out1;
--
--	parent_class_dev = class_device_get(class_dev->parent);
--
--	pr_debug("CLASS: registering class device: ID = '%s'\n",
--		 class_dev->class_id);
--
--	/* first, register with generic layer. */
--	if (parent_class_dev)
--		class_dev->kobj.parent = &parent_class_dev->kobj;
--	else
--		class_dev->kobj.parent = &parent_class->subsys.kobj;
--
--	error = kobject_add(&class_dev->kobj, class_dev->kobj.parent,
--			    "%s", class_dev->class_id);
--	if (error)
--		goto out2;
--
--	/* add the needed attributes to this device */
--	error = sysfs_create_link(&class_dev->kobj,
--				  &parent_class->subsys.kobj, "subsystem");
--	if (error)
--		goto out3;
--
--	error = class_device_create_file(class_dev, &class_uevent_attr);
--	if (error)
--		goto out3;
--
--	if (MAJOR(class_dev->devt)) {
--		error = class_device_create_file(class_dev, &class_devt_attr);
--		if (error)
--			goto out4;
--	}
--
--	error = class_device_add_attrs(class_dev);
--	if (error)
--		goto out5;
--
--	if (class_dev->dev) {
--		error = sysfs_create_link(&class_dev->kobj,
--					  &class_dev->dev->kobj, "device");
--		if (error)
--			goto out6;
--	}
--
--	error = class_device_add_groups(class_dev);
--	if (error)
--		goto out7;
--
--	error = make_deprecated_class_device_links(class_dev);
--	if (error)
--		goto out8;
--
--	kobject_uevent(&class_dev->kobj, KOBJ_ADD);
--
--	/* notify any interfaces this device is now here */
--	down(&parent_class->sem);
--	list_add_tail(&class_dev->node, &parent_class->children);
--	list_for_each_entry(class_intf, &parent_class->interfaces, node) {
--		if (class_intf->add)
--			class_intf->add(class_dev, class_intf);
--	}
--	up(&parent_class->sem);
--
--	goto out1;
--
-- out8:
--	class_device_remove_groups(class_dev);
-- out7:
--	if (class_dev->dev)
--		sysfs_remove_link(&class_dev->kobj, "device");
-- out6:
--	class_device_remove_attrs(class_dev);
-- out5:
--	if (MAJOR(class_dev->devt))
--		class_device_remove_file(class_dev, &class_devt_attr);
-- out4:
--	class_device_remove_file(class_dev, &class_uevent_attr);
-- out3:
--	kobject_del(&class_dev->kobj);
-- out2:
--	if (parent_class_dev)
--		class_device_put(parent_class_dev);
--	class_put(parent_class);
-- out1:
--	class_device_put(class_dev);
--	return error;
--}
--
--int class_device_register(struct class_device *class_dev)
--{
--	class_device_initialize(class_dev);
--	return class_device_add(class_dev);
--}
--
--/**
-- * class_device_create - creates a class device and registers it with sysfs
-- * @cls: pointer to the struct class that this device should be registered to.
-- * @parent: pointer to the parent struct class_device of this new device, if
-- * any.
-- * @devt: the dev_t for the char device to be added.
-- * @device: a pointer to a struct device that is assiociated with this class
-- * device.
-- * @fmt: string for the class device's name
-- *
-- * This function can be used by char device classes.  A struct
-- * class_device will be created in sysfs, registered to the specified
-- * class.
-- * A "dev" file will be created, showing the dev_t for the device, if
-- * the dev_t is not 0,0.
-- * If a pointer to a parent struct class_device is passed in, the newly
-- * created struct class_device will be a child of that device in sysfs.
-- * The pointer to the struct class_device will be returned from the
-- * call.  Any further sysfs files that might be required can be created
-- * using this pointer.
-- *
-- * Note: the struct class passed to this function must have previously
-- * been created with a call to class_create().
-- */
--struct class_device *class_device_create(struct class *cls,
--					 struct class_device *parent,
--					 dev_t devt,
--					 struct device *device,
--					 const char *fmt, ...)
--{
--	va_list args;
--	struct class_device *class_dev = NULL;
--	int retval = -ENODEV;
--
--	if (cls == NULL || IS_ERR(cls))
--		goto error;
--
--	class_dev = kzalloc(sizeof(*class_dev), GFP_KERNEL);
--	if (!class_dev) {
--		retval = -ENOMEM;
--		goto error;
--	}
--
--	class_dev->devt = devt;
--	class_dev->dev = device;
--	class_dev->class = cls;
--	class_dev->parent = parent;
--	class_dev->release = class_device_create_release;
--	class_dev->uevent = class_device_create_uevent;
--
--	va_start(args, fmt);
--	vsnprintf(class_dev->class_id, BUS_ID_SIZE, fmt, args);
--	va_end(args);
--	retval = class_device_register(class_dev);
--	if (retval)
--		goto error;
--
--	return class_dev;
--
--error:
--	kfree(class_dev);
--	return ERR_PTR(retval);
--}
--
--void class_device_del(struct class_device *class_dev)
--{
--	struct class *parent_class = class_dev->class;
--	struct class_device *parent_device = class_dev->parent;
--	struct class_interface *class_intf;
--
--	if (parent_class) {
--		down(&parent_class->sem);
--		list_del_init(&class_dev->node);
--		list_for_each_entry(class_intf, &parent_class->interfaces, node)
--			if (class_intf->remove)
--				class_intf->remove(class_dev, class_intf);
--		up(&parent_class->sem);
--	}
--
--	if (class_dev->dev) {
--		remove_deprecated_class_device_links(class_dev);
--		sysfs_remove_link(&class_dev->kobj, "device");
--	}
--	sysfs_remove_link(&class_dev->kobj, "subsystem");
--	class_device_remove_file(class_dev, &class_uevent_attr);
--	if (MAJOR(class_dev->devt))
--		class_device_remove_file(class_dev, &class_devt_attr);
--	class_device_remove_attrs(class_dev);
--	class_device_remove_groups(class_dev);
--
--	kobject_uevent(&class_dev->kobj, KOBJ_REMOVE);
--	kobject_del(&class_dev->kobj);
--
--	class_device_put(parent_device);
--	class_put(parent_class);
--}
--
--void class_device_unregister(struct class_device *class_dev)
--{
--	pr_debug("CLASS: Unregistering class device. ID = '%s'\n",
--		 class_dev->class_id);
--	class_device_del(class_dev);
--	class_device_put(class_dev);
--}
--
--/**
-- * class_device_destroy - removes a class device that was created with class_device_create()
-- * @cls: the pointer to the struct class that this device was registered * with.
-- * @devt: the dev_t of the device that was previously registered.
-- *
-- * This call unregisters and cleans up a class device that was created with a
-- * call to class_device_create()
-- */
--void class_device_destroy(struct class *cls, dev_t devt)
--{
--	struct class_device *class_dev = NULL;
--	struct class_device *class_dev_tmp;
--
--	down(&cls->sem);
--	list_for_each_entry(class_dev_tmp, &cls->children, node) {
--		if (class_dev_tmp->devt == devt) {
--			class_dev = class_dev_tmp;
--			break;
--		}
--	}
--	up(&cls->sem);
--
--	if (class_dev)
--		class_device_unregister(class_dev);
--}
--
--struct class_device *class_device_get(struct class_device *class_dev)
--{
--	if (class_dev)
--		return to_class_dev(kobject_get(&class_dev->kobj));
--	return NULL;
--}
--
--void class_device_put(struct class_device *class_dev)
--{
--	if (class_dev)
--		kobject_put(&class_dev->kobj);
--}
--
- /**
-  * class_for_each_device - device iterator
-  * @class: the class we're iterating
-@@ -897,56 +338,9 @@ struct device *class_find_device(struct class *class, void *data,
- }
- EXPORT_SYMBOL_GPL(class_find_device);
- 
--/**
-- * class_find_child - device iterator for locating a particular class_device
-- * @class: the class we're iterating
-- * @data: data for the match function
-- * @match: function to check class_device
-- *
-- * This function returns a reference to a class_device that is 'found' for
-- * later use, as determined by the @match callback.
-- *
-- * The callback should return 0 if the class_device doesn't match and non-zero
-- * if it does.  If the callback returns non-zero, this function will
-- * return to the caller and not iterate over any more class_devices.
-- *
-- * Note, you will need to drop the reference with class_device_put() after use.
-- *
-- * We hold class->sem in this function, so it can not be
-- * re-acquired in @match, otherwise it will self-deadlocking. For
-- * example, calls to add or remove class members would be verboten.
-- */
--struct class_device *class_find_child(struct class *class, void *data,
--				   int (*match)(struct class_device *, void *))
--{
--	struct class_device *dev;
--	int found = 0;
--
--	if (!class)
--		return NULL;
--
--	down(&class->sem);
--	list_for_each_entry(dev, &class->children, node) {
--		dev = class_device_get(dev);
--		if (dev) {
--			if (match(dev, data)) {
--				found = 1;
--				break;
--			} else
--				class_device_put(dev);
--		} else
--			break;
--	}
--	up(&class->sem);
--
--	return found ? dev : NULL;
--}
--EXPORT_SYMBOL_GPL(class_find_child);
--
- int class_interface_register(struct class_interface *class_intf)
- {
- 	struct class *parent;
--	struct class_device *class_dev;
- 	struct device *dev;
- 
- 	if (!class_intf || !class_intf->class)
-@@ -958,10 +352,6 @@ int class_interface_register(struct class_interface *class_intf)
- 
- 	down(&parent->sem);
- 	list_add_tail(&class_intf->node, &parent->interfaces);
--	if (class_intf->add) {
--		list_for_each_entry(class_dev, &parent->children, node)
--			class_intf->add(class_dev, class_intf);
--	}
- 	if (class_intf->add_dev) {
- 		list_for_each_entry(dev, &parent->devices, node)
- 			class_intf->add_dev(dev, class_intf);
-@@ -974,7 +364,6 @@ int class_interface_register(struct class_interface *class_intf)
- void class_interface_unregister(struct class_interface *class_intf)
- {
- 	struct class *parent = class_intf->class;
--	struct class_device *class_dev;
- 	struct device *dev;
- 
- 	if (!parent)
-@@ -982,10 +371,6 @@ void class_interface_unregister(struct class_interface *class_intf)
- 
- 	down(&parent->sem);
- 	list_del_init(&class_intf->node);
--	if (class_intf->remove) {
--		list_for_each_entry(class_dev, &parent->children, node)
--			class_intf->remove(class_dev, class_intf);
--	}
- 	if (class_intf->remove_dev) {
- 		list_for_each_entry(dev, &parent->devices, node)
- 			class_intf->remove_dev(dev, class_intf);
-@@ -1000,13 +385,6 @@ int __init classes_init(void)
- 	class_kset = kset_create_and_add("class", NULL, NULL);
- 	if (!class_kset)
- 		return -ENOMEM;
--
--	/* ick, this is ugly, the things we go through to keep from showing up
--	 * in sysfs... */
--	kset_init(&class_obj_subsys);
--	kobject_set_name(&class_obj_subsys.kobj, "class_obj");
--	if (!class_obj_subsys.kobj.parent)
--		class_obj_subsys.kobj.parent = &class_obj_subsys.kobj;
- 	return 0;
- }
- 
-@@ -1017,19 +395,5 @@ EXPORT_SYMBOL_GPL(class_unregister);
- EXPORT_SYMBOL_GPL(class_create);
- EXPORT_SYMBOL_GPL(class_destroy);
- 
--EXPORT_SYMBOL_GPL(class_device_register);
--EXPORT_SYMBOL_GPL(class_device_unregister);
--EXPORT_SYMBOL_GPL(class_device_initialize);
--EXPORT_SYMBOL_GPL(class_device_add);
--EXPORT_SYMBOL_GPL(class_device_del);
--EXPORT_SYMBOL_GPL(class_device_get);
--EXPORT_SYMBOL_GPL(class_device_put);
--EXPORT_SYMBOL_GPL(class_device_create);
--EXPORT_SYMBOL_GPL(class_device_destroy);
--EXPORT_SYMBOL_GPL(class_device_create_file);
--EXPORT_SYMBOL_GPL(class_device_remove_file);
--EXPORT_SYMBOL_GPL(class_device_create_bin_file);
--EXPORT_SYMBOL_GPL(class_device_remove_bin_file);
--
- EXPORT_SYMBOL_GPL(class_interface_register);
- EXPORT_SYMBOL_GPL(class_interface_unregister);
-diff --git a/include/linux/device.h b/include/linux/device.h
-index 1a06026..832fb0e 100644
---- a/include/linux/device.h
-+++ b/include/linux/device.h
-@@ -35,7 +35,6 @@ struct device;
- struct device_driver;
- struct driver_private;
- struct class;
--struct class_device;
- struct bus_type;
- struct bus_type_private;
- 
-@@ -190,13 +189,10 @@ struct class {
- 	struct kset		class_dirs;
- 	struct semaphore	sem; /* locks children, devices, interfaces */
- 	struct class_attribute		*class_attrs;
--	struct class_device_attribute	*class_dev_attrs;
- 	struct device_attribute		*dev_attrs;
- 
--	int (*uevent)(struct class_device *dev, struct kobj_uevent_env *env);
- 	int (*dev_uevent)(struct device *dev, struct kobj_uevent_env *env);
- 
--	void (*release)(struct class_device *dev);
- 	void (*class_release)(struct class *class);
- 	void (*dev_release)(struct device *dev);
- 
-@@ -210,9 +206,6 @@ extern int class_for_each_device(struct class *class, void *data,
- 				 int (*fn)(struct device *dev, void *data));
- extern struct device *class_find_device(struct class *class, void *data,
- 					int (*match)(struct device *, void *));
--extern struct class_device *class_find_child(struct class *class, void *data,
--				   int (*match)(struct class_device *, void *));
--
- 
- struct class_attribute {
- 	struct attribute attr;
-@@ -228,92 +221,10 @@ extern int __must_check class_create_file(struct class *class,
- extern void class_remove_file(struct class *class,
- 			      const struct class_attribute *attr);
- 
--struct class_device_attribute {
--	struct attribute attr;
--	ssize_t (*show)(struct class_device *, char *buf);
--	ssize_t (*store)(struct class_device *, const char *buf, size_t count);
--};
--
--#define CLASS_DEVICE_ATTR(_name, _mode, _show, _store)		\
--struct class_device_attribute class_device_attr_##_name = 	\
--	__ATTR(_name, _mode, _show, _store)
--
--extern int __must_check class_device_create_file(struct class_device *,
--				    const struct class_device_attribute *);
--
--/**
-- * struct class_device - class devices
-- * @class: pointer to the parent class for this class device.  This is required.
-- * @devt: for internal use by the driver core only.
-- * @node: for internal use by the driver core only.
-- * @kobj: for internal use by the driver core only.
-- * @groups: optional additional groups to be created
-- * @dev: if set, a symlink to the struct device is created in the sysfs
-- * directory for this struct class device.
-- * @class_data: pointer to whatever you want to store here for this struct
-- * class_device.  Use class_get_devdata() and class_set_devdata() to get and
-- * set this pointer.
-- * @parent: pointer to a struct class_device that is the parent of this struct
-- * class_device.  If NULL, this class_device will show up at the root of the
-- * struct class in sysfs (which is probably what you want to have happen.)
-- * @release: pointer to a release function for this struct class_device.  If
-- * set, this will be called instead of the class specific release function.
-- * Only use this if you want to override the default release function, like
-- * when you are nesting class_device structures.
-- * @uevent: pointer to a uevent function for this struct class_device.  If
-- * set, this will be called instead of the class specific uevent function.
-- * Only use this if you want to override the default uevent function, like
-- * when you are nesting class_device structures.
-- */
--struct class_device {
--	struct list_head	node;
--
--	struct kobject		kobj;
--	struct class		*class;
--	dev_t			devt;
--	struct device		*dev;
--	void			*class_data;
--	struct class_device	*parent;
--	struct attribute_group  **groups;
--
--	void (*release)(struct class_device *dev);
--	int (*uevent)(struct class_device *dev, struct kobj_uevent_env *env);
--	char class_id[BUS_ID_SIZE];
--};
--
--static inline void *class_get_devdata(struct class_device *dev)
--{
--	return dev->class_data;
--}
--
--static inline void class_set_devdata(struct class_device *dev, void *data)
--{
--	dev->class_data = data;
--}
--
--
--extern int __must_check class_device_register(struct class_device *);
--extern void class_device_unregister(struct class_device *);
--extern void class_device_initialize(struct class_device *);
--extern int __must_check class_device_add(struct class_device *);
--extern void class_device_del(struct class_device *);
--
--extern struct class_device *class_device_get(struct class_device *);
--extern void class_device_put(struct class_device *);
--
--extern void class_device_remove_file(struct class_device *,
--				     const struct class_device_attribute *);
--extern int __must_check class_device_create_bin_file(struct class_device *,
--					struct bin_attribute *);
--extern void class_device_remove_bin_file(struct class_device *,
--					 struct bin_attribute *);
--
- struct class_interface {
- 	struct list_head	node;
- 	struct class		*class;
- 
--	int (*add)	(struct class_device *, struct class_interface *);
--	void (*remove)	(struct class_device *, struct class_interface *);
- 	int (*add_dev)		(struct device *, struct class_interface *);
- 	void (*remove_dev)	(struct device *, struct class_interface *);
+ struct klist_node {
+-	struct klist		* n_klist;
++	struct klist		*n_klist;
+ 	struct list_head	n_node;
+ 	struct kref		n_ref;
+ 	struct completion	n_removed;
  };
-@@ -323,13 +234,6 @@ extern void class_interface_unregister(struct class_interface *);
  
- extern struct class *class_create(struct module *owner, const char *name);
- extern void class_destroy(struct class *cls);
--extern struct class_device *class_device_create(struct class *cls,
--						struct class_device *parent,
--						dev_t devt,
--						struct device *device,
--						const char *fmt, ...)
--					__attribute__((format(printf, 5, 6)));
--extern void class_device_destroy(struct class *cls, dev_t devt);
+-extern void klist_add_tail(struct klist_node * n, struct klist * k);
+-extern void klist_add_head(struct klist_node * n, struct klist * k);
++extern void klist_add_tail(struct klist_node *n, struct klist *k);
++extern void klist_add_head(struct klist_node *n, struct klist *k);
+ extern void klist_add_after(struct klist_node *n, struct klist_node *pos);
+ extern void klist_add_before(struct klist_node *n, struct klist_node *pos);
  
+-extern void klist_del(struct klist_node * n);
+-extern void klist_remove(struct klist_node * n);
++extern void klist_del(struct klist_node *n);
++extern void klist_remove(struct klist_node *n);
+ 
+-extern int klist_node_attached(struct klist_node * n);
++extern int klist_node_attached(struct klist_node *n);
+ 
+ 
+ struct klist_iter {
+-	struct klist		* i_klist;
+-	struct list_head	* i_head;
+-	struct klist_node	* i_cur;
++	struct klist		*i_klist;
++	struct list_head	*i_head;
++	struct klist_node	*i_cur;
+ };
+ 
+ 
+-extern void klist_iter_init(struct klist * k, struct klist_iter * i);
+-extern void klist_iter_init_node(struct klist * k, struct klist_iter * i, 
+-				 struct klist_node * n);
+-extern void klist_iter_exit(struct klist_iter * i);
+-extern struct klist_node * klist_next(struct klist_iter * i);
++extern void klist_iter_init(struct klist *k, struct klist_iter *i);
++extern void klist_iter_init_node(struct klist *k, struct klist_iter *i,
++				 struct klist_node *n);
++extern void klist_iter_exit(struct klist_iter *i);
++extern struct klist_node *klist_next(struct klist_iter *i);
+ 
+ #endif
+diff --git a/lib/klist.c b/lib/klist.c
+index ebba948..cca37f9 100644
+--- a/lib/klist.c
++++ b/lib/klist.c
+@@ -1,38 +1,37 @@
  /*
-  * The type of device, "struct device" is embedded in. A class
-@@ -465,7 +369,6 @@ struct device {
- 	spinlock_t		devres_lock;
- 	struct list_head	devres_head;
+- *	klist.c - Routines for manipulating klists.
++ * klist.c - Routines for manipulating klists.
+  *
++ * Copyright (C) 2005 Patrick Mochel
+  *
+- *	This klist interface provides a couple of structures that wrap around 
+- *	struct list_head to provide explicit list "head" (struct klist) and 
+- *	list "node" (struct klist_node) objects. For struct klist, a spinlock
+- *	is included that protects access to the actual list itself. struct 
+- *	klist_node provides a pointer to the klist that owns it and a kref
+- *	reference count that indicates the number of current users of that node
+- *	in the list.
++ * This file is released under the GPL v2.
+  *
+- *	The entire point is to provide an interface for iterating over a list
+- *	that is safe and allows for modification of the list during the
+- *	iteration (e.g. insertion and removal), including modification of the
+- *	current node on the list.
++ * This klist interface provides a couple of structures that wrap around
++ * struct list_head to provide explicit list "head" (struct klist) and list
++ * "node" (struct klist_node) objects. For struct klist, a spinlock is
++ * included that protects access to the actual list itself. struct
++ * klist_node provides a pointer to the klist that owns it and a kref
++ * reference count that indicates the number of current users of that node
++ * in the list.
+  *
+- *	It works using a 3rd object type - struct klist_iter - that is declared
+- *	and initialized before an iteration. klist_next() is used to acquire the
+- *	next element in the list. It returns NULL if there are no more items.
+- *	Internally, that routine takes the klist's lock, decrements the reference
+- *	count of the previous klist_node and increments the count of the next
+- *	klist_node. It then drops the lock and returns.
++ * The entire point is to provide an interface for iterating over a list
++ * that is safe and allows for modification of the list during the
++ * iteration (e.g. insertion and removal), including modification of the
++ * current node on the list.
+  *
+- *	There are primitives for adding and removing nodes to/from a klist. 
+- *	When deleting, klist_del() will simply decrement the reference count. 
+- *	Only when the count goes to 0 is the node removed from the list. 
+- *	klist_remove() will try to delete the node from the list and block
+- *	until it is actually removed. This is useful for objects (like devices)
+- *	that have been removed from the system and must be freed (but must wait
+- *	until all accessors have finished).
++ * It works using a 3rd object type - struct klist_iter - that is declared
++ * and initialized before an iteration. klist_next() is used to acquire the
++ * next element in the list. It returns NULL if there are no more items.
++ * Internally, that routine takes the klist's lock, decrements the
++ * reference count of the previous klist_node and increments the count of
++ * the next klist_node. It then drops the lock and returns.
+  *
+- *	Copyright (C) 2005 Patrick Mochel
+- *
+- *	This file is released under the GPL v2.
++ * There are primitives for adding and removing nodes to/from a klist.
++ * When deleting, klist_del() will simply decrement the reference count.
++ * Only when the count goes to 0 is the node removed from the list.
++ * klist_remove() will try to delete the node from the list and block until
++ * it is actually removed. This is useful for objects (like devices) that
++ * have been removed from the system and must be freed (but must wait until
++ * all accessors have finished).
+  */
  
--	/* class_device migration path */
- 	struct list_head	node;
- 	struct class		*class;
- 	dev_t			devt;	/* dev_t, creates the sysfs "dev" */
+ #include <linux/klist.h>
+@@ -40,10 +39,10 @@
+ 
+ 
+ /**
+- *	klist_init - Initialize a klist structure. 
+- *	@k:	The klist we're initializing.
+- *	@get:	The get function for the embedding object (NULL if none)
+- *	@put:	The put function for the embedding object (NULL if none)
++ * klist_init - Initialize a klist structure.
++ * @k: The klist we're initializing.
++ * @get: The get function for the embedding object (NULL if none)
++ * @put: The put function for the embedding object (NULL if none)
+  *
+  * Initialises the klist structure.  If the klist_node structures are
+  * going to be embedded in refcounted objects (necessary for safe
+@@ -51,8 +50,7 @@
+  * functions that take and release references on the embedding
+  * objects.
+  */
+-
+-void klist_init(struct klist * k, void (*get)(struct klist_node *),
++void klist_init(struct klist *k, void (*get)(struct klist_node *),
+ 		void (*put)(struct klist_node *))
+ {
+ 	INIT_LIST_HEAD(&k->k_list);
+@@ -60,26 +58,23 @@ void klist_init(struct klist * k, void (*get)(struct klist_node *),
+ 	k->get = get;
+ 	k->put = put;
+ }
+-
+ EXPORT_SYMBOL_GPL(klist_init);
+ 
+-
+-static void add_head(struct klist * k, struct klist_node * n)
++static void add_head(struct klist *k, struct klist_node *n)
+ {
+ 	spin_lock(&k->k_lock);
+ 	list_add(&n->n_node, &k->k_list);
+ 	spin_unlock(&k->k_lock);
+ }
+ 
+-static void add_tail(struct klist * k, struct klist_node * n)
++static void add_tail(struct klist *k, struct klist_node *n)
+ {
+ 	spin_lock(&k->k_lock);
+ 	list_add_tail(&n->n_node, &k->k_list);
+ 	spin_unlock(&k->k_lock);
+ }
+ 
+-
+-static void klist_node_init(struct klist * k, struct klist_node * n)
++static void klist_node_init(struct klist *k, struct klist_node *n)
+ {
+ 	INIT_LIST_HEAD(&n->n_node);
+ 	init_completion(&n->n_removed);
+@@ -89,37 +84,30 @@ static void klist_node_init(struct klist * k, struct klist_node * n)
+ 		k->get(n);
+ }
+ 
+-
+ /**
+- *	klist_add_head - Initialize a klist_node and add it to front.
+- *	@n:	node we're adding.
+- *	@k:	klist it's going on.
++ * klist_add_head - Initialize a klist_node and add it to front.
++ * @n: node we're adding.
++ * @k: klist it's going on.
+  */
+-
+-void klist_add_head(struct klist_node * n, struct klist * k)
++void klist_add_head(struct klist_node *n, struct klist *k)
+ {
+ 	klist_node_init(k, n);
+ 	add_head(k, n);
+ }
+-
+ EXPORT_SYMBOL_GPL(klist_add_head);
+ 
+-
+ /**
+- *	klist_add_tail - Initialize a klist_node and add it to back.
+- *	@n:	node we're adding.
+- *	@k:	klist it's going on.
++ * klist_add_tail - Initialize a klist_node and add it to back.
++ * @n: node we're adding.
++ * @k: klist it's going on.
+  */
+-
+-void klist_add_tail(struct klist_node * n, struct klist * k)
++void klist_add_tail(struct klist_node *n, struct klist *k)
+ {
+ 	klist_node_init(k, n);
+ 	add_tail(k, n);
+ }
+-
+ EXPORT_SYMBOL_GPL(klist_add_tail);
+ 
+-
+ /**
+  * klist_add_after - Init a klist_node and add it after an existing node
+  * @n: node we're adding.
+@@ -152,30 +140,27 @@ void klist_add_before(struct klist_node *n, struct klist_node *pos)
+ }
+ EXPORT_SYMBOL_GPL(klist_add_before);
+ 
+-
+-static void klist_release(struct kref * kref)
++static void klist_release(struct kref *kref)
+ {
+-	struct klist_node * n = container_of(kref, struct klist_node, n_ref);
++	struct klist_node *n = container_of(kref, struct klist_node, n_ref);
+ 
+ 	list_del(&n->n_node);
+ 	complete(&n->n_removed);
+ 	n->n_klist = NULL;
+ }
+ 
+-static int klist_dec_and_del(struct klist_node * n)
++static int klist_dec_and_del(struct klist_node *n)
+ {
+ 	return kref_put(&n->n_ref, klist_release);
+ }
+ 
+-
+ /**
+- *	klist_del - Decrement the reference count of node and try to remove.
+- *	@n:	node we're deleting.
++ * klist_del - Decrement the reference count of node and try to remove.
++ * @n: node we're deleting.
+  */
+-
+-void klist_del(struct klist_node * n)
++void klist_del(struct klist_node *n)
+ {
+-	struct klist * k = n->n_klist;
++	struct klist *k = n->n_klist;
+ 	void (*put)(struct klist_node *) = k->put;
+ 
+ 	spin_lock(&k->k_lock);
+@@ -185,48 +170,40 @@ void klist_del(struct klist_node * n)
+ 	if (put)
+ 		put(n);
+ }
+-
+ EXPORT_SYMBOL_GPL(klist_del);
+ 
+-
+ /**
+- *	klist_remove - Decrement the refcount of node and wait for it to go away.
+- *	@n:	node we're removing.
++ * klist_remove - Decrement the refcount of node and wait for it to go away.
++ * @n: node we're removing.
+  */
+-
+-void klist_remove(struct klist_node * n)
++void klist_remove(struct klist_node *n)
+ {
+ 	klist_del(n);
+ 	wait_for_completion(&n->n_removed);
+ }
+-
+ EXPORT_SYMBOL_GPL(klist_remove);
+ 
+-
+ /**
+- *	klist_node_attached - Say whether a node is bound to a list or not.
+- *	@n:	Node that we're testing.
++ * klist_node_attached - Say whether a node is bound to a list or not.
++ * @n: Node that we're testing.
+  */
+-
+-int klist_node_attached(struct klist_node * n)
++int klist_node_attached(struct klist_node *n)
+ {
+ 	return (n->n_klist != NULL);
+ }
+-
+ EXPORT_SYMBOL_GPL(klist_node_attached);
+ 
+-
+ /**
+- *	klist_iter_init_node - Initialize a klist_iter structure.
+- *	@k:	klist we're iterating.
+- *	@i:	klist_iter we're filling.
+- *	@n:	node to start with.
++ * klist_iter_init_node - Initialize a klist_iter structure.
++ * @k: klist we're iterating.
++ * @i: klist_iter we're filling.
++ * @n: node to start with.
+  *
+- *	Similar to klist_iter_init(), but starts the action off with @n, 
+- *	instead of with the list head.
++ * Similar to klist_iter_init(), but starts the action off with @n,
++ * instead of with the list head.
+  */
+-
+-void klist_iter_init_node(struct klist * k, struct klist_iter * i, struct klist_node * n)
++void klist_iter_init_node(struct klist *k, struct klist_iter *i,
++			  struct klist_node *n)
+ {
+ 	i->i_klist = k;
+ 	i->i_head = &k->k_list;
+@@ -234,66 +211,56 @@ void klist_iter_init_node(struct klist * k, struct klist_iter * i, struct klist_
+ 	if (n)
+ 		kref_get(&n->n_ref);
+ }
+-
+ EXPORT_SYMBOL_GPL(klist_iter_init_node);
+ 
+-
+ /**
+- *	klist_iter_init - Iniitalize a klist_iter structure.
+- *	@k:	klist we're iterating.
+- *	@i:	klist_iter structure we're filling.
++ * klist_iter_init - Iniitalize a klist_iter structure.
++ * @k: klist we're iterating.
++ * @i: klist_iter structure we're filling.
+  *
+- *	Similar to klist_iter_init_node(), but start with the list head.
++ * Similar to klist_iter_init_node(), but start with the list head.
+  */
+-
+-void klist_iter_init(struct klist * k, struct klist_iter * i)
++void klist_iter_init(struct klist *k, struct klist_iter *i)
+ {
+ 	klist_iter_init_node(k, i, NULL);
+ }
+-
+ EXPORT_SYMBOL_GPL(klist_iter_init);
+ 
+-
+ /**
+- *	klist_iter_exit - Finish a list iteration.
+- *	@i:	Iterator structure.
++ * klist_iter_exit - Finish a list iteration.
++ * @i: Iterator structure.
+  *
+- *	Must be called when done iterating over list, as it decrements the 
+- *	refcount of the current node. Necessary in case iteration exited before
+- *	the end of the list was reached, and always good form.
++ * Must be called when done iterating over list, as it decrements the
++ * refcount of the current node. Necessary in case iteration exited before
++ * the end of the list was reached, and always good form.
+  */
+-
+-void klist_iter_exit(struct klist_iter * i)
++void klist_iter_exit(struct klist_iter *i)
+ {
+ 	if (i->i_cur) {
+ 		klist_del(i->i_cur);
+ 		i->i_cur = NULL;
+ 	}
+ }
+-
+ EXPORT_SYMBOL_GPL(klist_iter_exit);
+ 
+-
+-static struct klist_node * to_klist_node(struct list_head * n)
++static struct klist_node *to_klist_node(struct list_head *n)
+ {
+ 	return container_of(n, struct klist_node, n_node);
+ }
+ 
+-
+ /**
+- *	klist_next - Ante up next node in list.
+- *	@i:	Iterator structure.
++ * klist_next - Ante up next node in list.
++ * @i: Iterator structure.
+  *
+- *	First grab list lock. Decrement the reference count of the previous
+- *	node, if there was one. Grab the next node, increment its reference 
+- *	count, drop the lock, and return that next node.
++ * First grab list lock. Decrement the reference count of the previous
++ * node, if there was one. Grab the next node, increment its reference
++ * count, drop the lock, and return that next node.
+  */
+-
+-struct klist_node * klist_next(struct klist_iter * i)
++struct klist_node *klist_next(struct klist_iter *i)
+ {
+-	struct list_head * next;
+-	struct klist_node * lnode = i->i_cur;
+-	struct klist_node * knode = NULL;
++	struct list_head *next;
++	struct klist_node *lnode = i->i_cur;
++	struct klist_node *knode = NULL;
+ 	void (*put)(struct klist_node *) = i->i_klist->put;
+ 
+ 	spin_lock(&i->i_klist->k_lock);
+@@ -314,7 +281,4 @@ struct klist_node * klist_next(struct klist_iter * i)
+ 		put(lnode);
+ 	return knode;
+ }
+-
+ EXPORT_SYMBOL_GPL(klist_next);
+-
+-
 -- 
 1.5.5.1
 
