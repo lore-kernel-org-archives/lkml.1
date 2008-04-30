@@ -1,27 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932704AbYD3WEJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765301AbYD3WEe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932704AbYD3WEJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Apr 2008 18:04:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765986AbYD3WD1
+	id S1765301AbYD3WEe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Apr 2008 18:04:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764728AbYD3WD3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Apr 2008 18:03:27 -0400
-Received: from wa-out-1112.google.com ([209.85.146.180]:9632 "EHLO
+	Wed, 30 Apr 2008 18:03:29 -0400
+Received: from wa-out-1112.google.com ([209.85.146.179]:11309 "EHLO
 	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765872AbYD3WDZ (ORCPT
+	with ESMTP id S1765972AbYD3WD1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Apr 2008 18:03:25 -0400
+	Wed, 30 Apr 2008 18:03:27 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=vj+NtDn6zL62fw98uAUro6wAgMrPN7oyaMFCO5D1eBrJnXQPOC2zRuWvAoPwiKoAGciflOdK1umWW/Flp4a37eKmH18E3eiunVzcQJeWQUk63cC8XQD/zHgr2gQM2zB9GDOBKucjuSyHCBLUdJei9sb77aJQBp/7jIV7DCg41Gc=
-Subject: [PATCH 02/10] scsi: fix integer as NULL pointer warnings
+        b=EdEOZCP2P9XSwLhHxvTn6Wa7xTnk0WpZ11sBmD/xwLNQV/p9NoAOVs8MzkFFrWXzIosUe8r5KKpR2CVdY6IzD9aPlCmzW08UxmVqSF6UIqaRztjtikZZEeChsF/DnCvnVA174tPls/SjpZrRHx2dCCaOLSf+lGaO3Mj7t86jVjg=
+Subject: [PATCH 04/10] video: fix integer as NULL pointer warnings
 From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Andrew Morton <akpm@linux-foundation.org>
 Cc: LKML <linux-kernel@vger.kernel.org>
 Content-Type: text/plain
-Date: Wed, 30 Apr 2008 15:03:40 -0700
-Message-Id: <1209593020.24729.112.camel@brick>
+Date: Wed, 30 Apr 2008 15:03:41 -0700
+Message-Id: <1209593021.24729.114.camel@brick>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
@@ -29,186 +28,71 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-drivers/scsi/FlashPoint.c:906:9: warning: Using plain integer as NULL pointer
-drivers/scsi/FlashPoint.c:907:53: warning: Using plain integer as NULL pointer
-drivers/scsi/FlashPoint.c:922:1: warning: Using plain integer as NULL pointer
-drivers/scsi/aha152x.c:3585:60: warning: Using plain integer as NULL pointer
-drivers/scsi/aha152x.c:3845:56: warning: Using plain integer as NULL pointer
-drivers/scsi/qla1280.c:2814:37: warning: Using plain integer as NULL pointer
-drivers/scsi/atp870u.c:750:47: warning: Using plain integer as NULL pointer
-drivers/scsi/3w-9xxx.c:1281:36: warning: Using plain integer as NULL pointer
-drivers/scsi/3w-9xxx.c:1293:36: warning: Using plain integer as NULL pointer
-drivers/scsi/3w-9xxx.c:1301:35: warning: Using plain integer as NULL pointer
-drivers/scsi/hptiop.c:447:10: warning: Using plain integer as NULL pointer
-drivers/scsi/hptiop.c:457:10: warning: Using plain integer as NULL pointer
-drivers/scsi/hptiop.c:479:24: warning: Using plain integer as NULL pointer
-drivers/scsi/hptiop.c:483:22: warning: Using plain integer as NULL pointer
-drivers/scsi/hptiop.c:1213:23: warning: Using plain integer as NULL pointer
-drivers/scsi/hptiop.c:1214:23: warning: Using plain integer as NULL pointer
+drivers/video/aty/atyfb_base.c:3359:26: warning: Using plain integer as NULL pointer
+drivers/video/aty/radeon_base.c:2280:32: warning: Using plain integer as NULL pointer
+drivers/video/matrox/matroxfb_base.h:203:25: warning: Using plain integer as NULL pointer
+drivers/video/matrox/matroxfb_base.h:203:25: warning: Using plain integer as NULL pointer
 
 Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
 ---
-James, please look at the FlashPoint.c changes in particular.
+ drivers/video/aty/atyfb_base.c       |    2 +-
+ drivers/video/aty/radeon_base.c      |    2 +-
+ drivers/video/matrox/matroxfb_base.h |    2 +-
+ drivers/video/sis/sis_main.c         |    2 +-
+ 4 files changed, 4 insertions(+), 4 deletions(-)
 
- drivers/scsi/3w-9xxx.c    |    6 +++---
- drivers/scsi/FlashPoint.c |    7 +++----
- drivers/scsi/aha152x.c    |    4 ++--
- drivers/scsi/atp870u.c    |    2 +-
- drivers/scsi/hptiop.c     |   12 ++++++------
- drivers/scsi/qla1280.c    |    2 +-
- 6 files changed, 16 insertions(+), 17 deletions(-)
-
-diff --git a/drivers/scsi/3w-9xxx.c b/drivers/scsi/3w-9xxx.c
-index b31faec..626d6e1 100644
---- a/drivers/scsi/3w-9xxx.c
-+++ b/drivers/scsi/3w-9xxx.c
-@@ -1278,7 +1278,7 @@ static irqreturn_t twa_interrupt(int irq, void *dev_instance)
- 			error = 0;
- 			/* Check for command packet errors */
- 			if (full_command_packet->command.newcommand.status != 0) {
--				if (tw_dev->srb[request_id] != 0) {
-+				if (tw_dev->srb[request_id]) {
- 					error = twa_fill_sense(tw_dev, request_id, 1, 1);
- 				} else {
- 					/* Skip ioctl error prints */
-@@ -1290,7 +1290,7 @@ static irqreturn_t twa_interrupt(int irq, void *dev_instance)
+diff --git a/drivers/video/aty/atyfb_base.c b/drivers/video/aty/atyfb_base.c
+index e4bcf53..d051d3e 100644
+--- a/drivers/video/aty/atyfb_base.c
++++ b/drivers/video/aty/atyfb_base.c
+@@ -3356,7 +3356,7 @@ static int __devinit atyfb_setup_generic(struct pci_dev *pdev, struct fb_info *i
  
- 			/* Check for correct state */
- 			if (tw_dev->state[request_id] != TW_S_POSTED) {
--				if (tw_dev->srb[request_id] != 0) {
-+				if (tw_dev->srb[request_id]) {
- 					TW_PRINTK(tw_dev->host, TW_DRIVER, 0x1a, "Received a request id that wasn't posted");
- 					TW_CLEAR_ALL_INTERRUPTS(tw_dev);
- 					goto twa_interrupt_bail;
-@@ -1298,7 +1298,7 @@ static irqreturn_t twa_interrupt(int irq, void *dev_instance)
- 			}
+ 	info->fix.mmio_start = raddr;
+ 	par->ati_regbase = ioremap(info->fix.mmio_start, 0x1000);
+-	if (par->ati_regbase == 0)
++	if (!par->ati_regbase)
+ 		return -ENOMEM;
  
- 			/* Check for internal command completion */
--			if (tw_dev->srb[request_id] == 0) {
-+			if (tw_dev->srb[request_id]) {
- 				if (request_id != tw_dev->chrdev_request_id) {
- 					if (twa_aen_complete(tw_dev, request_id))
- 						TW_PRINTK(tw_dev->host, TW_DRIVER, 0x1b, "Error completing AEN during attention interrupt");
-diff --git a/drivers/scsi/FlashPoint.c b/drivers/scsi/FlashPoint.c
-index b898d38..b252ac5 100644
---- a/drivers/scsi/FlashPoint.c
-+++ b/drivers/scsi/FlashPoint.c
-@@ -903,8 +903,8 @@ static void FPT_autoCmdCmplt(unsigned long p_port, unsigned char p_card);
- static void FPT_autoLoadDefaultMap(unsigned long p_port);
+ 	info->fix.mmio_start += par->aux_start ? 0x400 : 0xc00;
+diff --git a/drivers/video/aty/radeon_base.c b/drivers/video/aty/radeon_base.c
+index 72cd0d2..cca6c84 100644
+--- a/drivers/video/aty/radeon_base.c
++++ b/drivers/video/aty/radeon_base.c
+@@ -2277,7 +2277,7 @@ static int __devinit radeonfb_pci_register (struct pci_dev *pdev,
+ 	do {
+ 		rinfo->fb_base = ioremap (rinfo->fb_base_phys,
+ 					  rinfo->mapped_vram);
+-	} while (   rinfo->fb_base == 0 &&
++	} while (!rinfo->fb_base &&
+ 		  ((rinfo->mapped_vram /=2) >= MIN_MAPPED_VRAM) );
  
- static struct sccb_mgr_tar_info FPT_sccbMgrTbl[MAX_CARDS][MAX_SCSI_TAR] =
--    { {{0}} };
--static struct sccb_card FPT_BL_Card[MAX_CARDS] = { {0} };
-+    { {{NULL}} };
-+static struct sccb_card FPT_BL_Card[MAX_CARDS] = { {NULL} };
- static SCCBSCAM_INFO FPT_scamInfo[MAX_SCSI_TAR] = { {{0}} };
- static struct nvram_info FPT_nvRamInfo[MAX_MB_CARDS] = { {0} };
- 
-@@ -918,8 +918,7 @@ static unsigned char FPT_scamHAString[] =
- 
- static unsigned short FPT_default_intena = 0;
- 
--static void (*FPT_s_PhaseTbl[8]) (unsigned long, unsigned char) = {
--0};
-+static void (*FPT_s_PhaseTbl[8]) (unsigned long, unsigned char) = {NULL};
- 
- /*---------------------------------------------------------------------
-  *
-diff --git a/drivers/scsi/aha152x.c b/drivers/scsi/aha152x.c
-index f5215fd..0c93a49 100644
---- a/drivers/scsi/aha152x.c
-+++ b/drivers/scsi/aha152x.c
-@@ -3582,7 +3582,7 @@ static int checksetup(struct aha152x_setup *setup)
- 	if (i == ARRAY_SIZE(ports))
- 		return 0;
- 
--	if ( request_region(setup->io_port, IO_RANGE, "aha152x")==0 ) {
-+	if (!request_region(setup->io_port, IO_RANGE, "aha152x")) {
- 		printk(KERN_ERR "aha152x: io port 0x%x busy.\n", setup->io_port);
- 		return 0;
- 	}
-@@ -3842,7 +3842,7 @@ static int __init aha152x_init(void)
- 			if ((setup_count == 1) && (setup[0].io_port == ports[i]))
- 				continue;
- 
--			if ( request_region(ports[i], IO_RANGE, "aha152x")==0 ) {
-+			if (!request_region(ports[i], IO_RANGE, "aha152x")) {
- 				printk(KERN_ERR "aha152x: io port 0x%x busy.\n", ports[i]);
- 				continue;
- 			}
-diff --git a/drivers/scsi/atp870u.c b/drivers/scsi/atp870u.c
-index db6de5e..571b43b 100644
---- a/drivers/scsi/atp870u.c
-+++ b/drivers/scsi/atp870u.c
-@@ -747,7 +747,7 @@ static void send_s870(struct atp_unit *dev,unsigned char c)
- 		dev->quhd[c] = 0;
- 	}
- 	workreq = dev->quereq[c][dev->quhd[c]];
--	if (dev->id[c][scmd_id(workreq)].curr_req == 0) {	
-+	if (!dev->id[c][scmd_id(workreq)].curr_req) {	
- 		dev->id[c][scmd_id(workreq)].curr_req = workreq;
- 		dev->last_cmd[c] = scmd_id(workreq);
- 		goto cmd_subp;
-diff --git a/drivers/scsi/hptiop.c b/drivers/scsi/hptiop.c
-index 5b7be1e..bc5fb5c 100644
---- a/drivers/scsi/hptiop.c
-+++ b/drivers/scsi/hptiop.c
-@@ -444,7 +444,7 @@ static void __iomem *hptiop_map_pci_bar(struct hptiop_hba *hba, int index)
- 	if (!(pci_resource_flags(pcidev, index) & IORESOURCE_MEM)) {
- 		printk(KERN_ERR "scsi%d: pci resource invalid\n",
- 				hba->host->host_no);
--		return 0;
-+		return NULL;
- 	}
- 
- 	mem_base_phy = pci_resource_start(pcidev, index);
-@@ -454,7 +454,7 @@ static void __iomem *hptiop_map_pci_bar(struct hptiop_hba *hba, int index)
- 	if (!mem_base_virt) {
- 		printk(KERN_ERR "scsi%d: Fail to ioremap memory space\n",
- 				hba->host->host_no);
--		return 0;
-+		return NULL;
- 	}
- 	return mem_base_virt;
+ 	if (rinfo->fb_base == NULL) {
+diff --git a/drivers/video/matrox/matroxfb_base.h b/drivers/video/matrox/matroxfb_base.h
+index f3107ad..9588323 100644
+--- a/drivers/video/matrox/matroxfb_base.h
++++ b/drivers/video/matrox/matroxfb_base.h
+@@ -200,7 +200,7 @@ static inline int mga_ioremap(unsigned long phys, unsigned long size, int flags,
+ 		virt->vaddr = ioremap_nocache(phys, size);
+ 	else
+ 		virt->vaddr = ioremap(phys, size);
+-	return (virt->vaddr == 0); /* 0, !0... 0, error_code in future */
++	return (virt->vaddr == NULL); /* 0, !0... 0, error_code in future */
  }
-@@ -476,11 +476,11 @@ static void hptiop_unmap_pci_bar_itl(struct hptiop_hba *hba)
- static int hptiop_map_pci_bar_mv(struct hptiop_hba *hba)
- {
- 	hba->u.mv.regs = hptiop_map_pci_bar(hba, 0);
--	if (hba->u.mv.regs == 0)
-+	if (!hba->u.mv.regs)
- 		return -1;
  
- 	hba->u.mv.mu = hptiop_map_pci_bar(hba, 2);
--	if (hba->u.mv.mu == 0) {
-+	if (!hba->u.mv.mu) {
- 		iounmap(hba->u.mv.regs);
- 		return -1;
+ static inline void mga_iounmap(vaddr_t va) {
+diff --git a/drivers/video/sis/sis_main.c b/drivers/video/sis/sis_main.c
+index 7380362..b934384 100644
+--- a/drivers/video/sis/sis_main.c
++++ b/drivers/video/sis/sis_main.c
+@@ -5787,7 +5787,7 @@ sisfb_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 	} else {
+ 		struct sis_video_info *countvideo = card_list;
+ 		ivideo->cardnumber = 1;
+-		while((countvideo = countvideo->next) != 0)
++		while((countvideo = countvideo->next) != NULL)
+ 			ivideo->cardnumber++;
  	}
-@@ -1210,8 +1210,8 @@ static void hptiop_remove(struct pci_dev *pcidev)
  
- static struct hptiop_adapter_ops hptiop_itl_ops = {
- 	.iop_wait_ready    = iop_wait_ready_itl,
--	.internal_memalloc = 0,
--	.internal_memfree  = 0,
-+	.internal_memalloc = NULL,
-+	.internal_memfree  = NULL,
- 	.map_pci_bar       = hptiop_map_pci_bar_itl,
- 	.unmap_pci_bar     = hptiop_unmap_pci_bar_itl,
- 	.enable_intr       = hptiop_enable_intr_itl,
-diff --git a/drivers/scsi/qla1280.c b/drivers/scsi/qla1280.c
-index 09ab3ea..d2bc60a 100644
---- a/drivers/scsi/qla1280.c
-+++ b/drivers/scsi/qla1280.c
-@@ -2811,7 +2811,7 @@ qla1280_64bit_start_scsi(struct scsi_qla_host *ha, struct srb * sp)
- 
- 	/* Check for room in outstanding command list. */
- 	for (cnt = 0; cnt < MAX_OUTSTANDING_COMMANDS &&
--		     ha->outstanding_cmds[cnt] != 0; cnt++);
-+		     ha->outstanding_cmds[cnt] != NULL; cnt++);
- 
- 	if (cnt >= MAX_OUTSTANDING_COMMANDS) {
- 		status = 1;
 -- 
 1.5.5.1.305.g7c84
 
