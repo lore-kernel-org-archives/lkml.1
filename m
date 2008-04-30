@@ -1,82 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759978AbYD3JP1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759632AbYD3JTS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759978AbYD3JP1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Apr 2008 05:15:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752796AbYD3JPM
+	id S1759632AbYD3JTS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Apr 2008 05:19:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756756AbYD3JTD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Apr 2008 05:15:12 -0400
-Received: from mtagate5.de.ibm.com ([195.212.29.154]:32495 "EHLO
-	mtagate5.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752071AbYD3JPK (ORCPT
+	Wed, 30 Apr 2008 05:19:03 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:51736 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755559AbYD3JTB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Apr 2008 05:15:10 -0400
-Subject: [patch] s390: Remove self ptrace IEEE_IP hack.
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Reply-To: schwidefsky@de.ibm.com
-To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
-Cc: Christoph Hellwig <hch@infradead.org>
-Content-Type: text/plain
-Organization: IBM Corporation
-Date: Wed, 30 Apr 2008 11:14:56 +0200
-Message-Id: <1209546896.10954.28.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 30 Apr 2008 05:19:01 -0400
+Date: Wed, 30 Apr 2008 05:19:00 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Cc: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
+       Christoph Hellwig <hch@infradead.org>
+Subject: Re: [patch] s390: Remove self ptrace IEEE_IP hack.
+Message-ID: <20080430091900.GA13743@infradead.org>
+References: <1209546896.10954.28.camel@localhost>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1209546896.10954.28.camel@localhost>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+On Wed, Apr 30, 2008 at 11:14:56AM +0200, Martin Schwidefsky wrote:
+> From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+> 
+> The self referential PT_IEEE_IP ptrace peek & poke calls have been
+> broken for that last 6 years. For peek the code always returns 0
+> instead of the last ieee fault and for poke the code does nothing.
+> Since nobody noticed the code seems to be superfluous. So lets
+> remove it.
 
-The self referential PT_IEEE_IP ptrace peek & poke calls have been
-broken for that last 6 years. For peek the code always returns 0
-instead of the last ieee fault and for poke the code does nothing.
-Since nobody noticed the code seems to be superfluous. So lets
-remove it.
-
-Cc: Christoph Hellwig <hch@infradead.org>
-Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
----
-
- arch/s390/kernel/ptrace.c |   20 --------------------
- 1 file changed, 20 deletions(-)
-
-diff -urpN linux-2.6/arch/s390/kernel/ptrace.c linux-2.6-patched/arch/s390/kernel/ptrace.c
---- linux-2.6/arch/s390/kernel/ptrace.c	2008-04-30 11:10:46.000000000 +0200
-+++ linux-2.6-patched/arch/s390/kernel/ptrace.c	2008-04-30 11:11:02.000000000 +0200
-@@ -607,8 +607,6 @@ do_ptrace_emu31(struct task_struct *chil
- }
- #endif
- 
--#define PT32_IEEE_IP 0x13c
--
- static int
- do_ptrace(struct task_struct *child, long request, long addr, long data)
- {
-@@ -617,24 +615,6 @@ do_ptrace(struct task_struct *child, lon
- 	if (request == PTRACE_ATTACH)
- 		return ptrace_attach(child);
- 
--	/*
--	 * Special cases to get/store the ieee instructions pointer.
--	 */
--	if (child == current) {
--		if (request == PTRACE_PEEKUSR && addr == PT_IEEE_IP)
--			return peek_user(child, addr, data);
--		if (request == PTRACE_POKEUSR && addr == PT_IEEE_IP)
--			return poke_user(child, addr, data);
--#ifdef CONFIG_COMPAT
--		if (request == PTRACE_PEEKUSR &&
--		    addr == PT32_IEEE_IP && test_thread_flag(TIF_31BIT))
--			return peek_user_emu31(child, addr, data);
--		if (request == PTRACE_POKEUSR &&
--		    addr == PT32_IEEE_IP && test_thread_flag(TIF_31BIT))
--			return poke_user_emu31(child, addr, data);
--#endif
--	}
--
- 	ret = ptrace_check_attach(child, request == PTRACE_KILL);
- 	if (ret < 0)
- 		return ret;
-
+After this the switch to the generic sys_ptrace is trivial.  Care to
+submit a patch for that aswell?
 
