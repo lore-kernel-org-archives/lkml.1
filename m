@@ -1,59 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763027AbYD3Nd6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760866AbYD3Nhw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763027AbYD3Nd6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Apr 2008 09:33:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756945AbYD3Ndq
+	id S1760866AbYD3Nhw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Apr 2008 09:37:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756255AbYD3Nhn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Apr 2008 09:33:46 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:57584 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756597AbYD3Ndp (ORCPT
+	Wed, 30 Apr 2008 09:37:43 -0400
+Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:33617 "EHLO
+	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756185AbYD3Nhm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Apr 2008 09:33:45 -0400
-Date: Tue, 29 Apr 2008 08:33:34 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: "stephane eranian" <eranian@googlemail.com>
-Cc: linux-kernel@vger.kernel.org, ia64 <linux-ia64@vger.kernel.org>
-Subject: Re: 2.6.25 new perfmon kernel patch + libpfm + pfmon available
-Message-ID: <20080429083334.1a019318@infradead.org>
-In-Reply-To: <7c86c4470804300611s7442fe11lba2b66f5a3a8ed88@mail.gmail.com>
-References: <7c86c4470804291446l4693b317ha7ee2382d00e99e6@mail.gmail.com>
-	<7c86c4470804291447w713934a7o2b8a5a690fc9a535@mail.gmail.com>
-	<20080429080853.48c66b29@infradead.org>
-	<7c86c4470804300611s7442fe11lba2b66f5a3a8ed88@mail.gmail.com>
-Organization: Intel
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 30 Apr 2008 09:37:42 -0400
+Message-ID: <481875E4.6040606@s5r6.in-berlin.de>
+Date: Wed, 30 Apr 2008 15:36:36 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.13) Gecko/20080313 SeaMonkey/1.1.9
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+Subject: Re: Hack to fix not working spindown over Firewire
+References: <20080429232606.GA14261@dose.home.local> <481874BD.5010807@s5r6.in-berlin.de>
+In-Reply-To: <481874BD.5010807@s5r6.in-berlin.de>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 30 Apr 2008 15:11:11 +0200
-"stephane eranian" <eranian@googlemail.com> wrote:
-
-> Sorry,
+I wrote:
+> Tino Keitel wrote:
+>> @@ -1788,8 +1788,16 @@ static int sd_start_stop_device(struct scsi_disk *sdkp, int start)
+>>  	struct scsi_device *sdp = sdkp->device;
+>>  	int res;
+>>  
+>> -	if (start)
+>> +	if (start) {
+>>  		cmd[4] |= 1;	/* START */
+>> +		if(!strncmp(sdp->vendor, "WDC WD32", 8)) {
+>> +			cmd[4] |= (1 << 4); /* power condition */
+>> +		}
+>> +	} else {
+>> +		if(!strncmp(sdp->vendor, "WDC WD32", 8)) {
+>> +			cmd[4] |= (2 << 4); /* power condition */
+>> +		}
+>> +	}
+>>  
+>>  	if (!scsi_device_online(sdp))
+>>  		return -ENODEV;
 > 
-> It's http://perfmon2.sf.net
+[...]
+> The traditional way to handle things like this is:
 > 
+>    - Implement this as a workaround in sd.
 > 
+>    - Make this workaround conditional on a quirks flag in
+>      struct scsi_device.
+> 
+>    - Switch this flag on in a place where it can be reliably
+>      detected that this device needs it.  There is an interface
+>      to do this in userspace.  But in this particular case, the
+>      best place is the sbp2 driver (ond firewire-sbp2 driver),
+>      because it can detect PL-3507 firmwares by means of firmware
+>      identifiers.
+[...]
+> On the other hand, perhaps we can enable the workaround unconditional
+> for all firewire disks (switch in the flag in sbp2 and firewire-sbp2
+> without looking at the device) or for all RBC disks (switch on the flag
+> in sd.c if sdev->type == TYPE_RBC).
 
-hummmmm, I wonder why perfmon wants to reimplement half of the PCI layer...
-
-+extern spinlock_t pci_config_lock;
-+
-+#define PCI_CONF1_ADDRESS(bus, devfn, reg) \
-+       (0x80000000 | ((reg & 0xF00) << 16) | ((bus & 0xFF) << 16) \
-+       | (devfn << 8) | (reg & 0xFC))
-+
-+#define is_ibs_pmc(x) (x == 4 || x == 5)
-+
-+static int pci_read(unsigned int seg, unsigned int bus,
-+                   unsigned int devfn, int reg, int len, u32 *value)
-+{
-+       unsigned long flags;
-
-especially since this doesn't seem to use the proper config space abstractions :(
+PS:
+If it works for all RBC devices (it should according to the spec...) &&
+your ICY Box exposes itself as RBC device (it should do so), then we
+don't need any changes to struct scsi_device and to sbp2/ firewire-sbp2.
+-- 
+Stefan Richter
+-=====-==--- -=-- ====-
+http://arcgraph.de/sr/
