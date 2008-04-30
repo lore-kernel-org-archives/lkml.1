@@ -1,120 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933020AbYD3UqT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764898AbYD3Uqg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933020AbYD3UqT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Apr 2008 16:46:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756441AbYD3UqJ
+	id S1764898AbYD3Uqg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Apr 2008 16:46:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933246AbYD3UqW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Apr 2008 16:46:09 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:46332 "EHLO ogre.sisk.pl"
+	Wed, 30 Apr 2008 16:46:22 -0400
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:55238 "EHLO smtp5.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756432AbYD3UqI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Apr 2008 16:46:08 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: Slow DOWN, please!!!
-Date: Wed, 30 Apr 2008 22:45:49 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jiri Slaby <jirislaby@gmail.com>
-References: <20080429.190352.137408408.davem@davemloft.net> <200804302136.58005.rjw@sisk.pl> <alpine.LFD.1.10.0804301253290.2980@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.1.10.0804301253290.2980@woody.linux-foundation.org>
+	id S933141AbYD3UqU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Apr 2008 16:46:20 -0400
+Date: Wed, 30 Apr 2008 23:45:36 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: David Howells <dhowells@redhat.com>
+Cc: Harvey Harrison <harvey.harrison@gmail.com>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [2.6 patch] fix arch/frv/mm/unaligned.o build error
+Message-ID: <20080430204536.GJ29330@cs181133002.pp.htv.fi>
+References: <1209514311.24729.34.camel@brick> <20080429235740.GC15987@cs181133002.pp.htv.fi> <20699.1209552001@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Message-Id: <200804302245.50817.rjw@sisk.pl>
+In-Reply-To: <20699.1209552001@redhat.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, 30 of April 2008, Linus Torvalds wrote:
+On Wed, Apr 30, 2008 at 11:40:01AM +0100, David Howells wrote:
 > 
-> On Wed, 30 Apr 2008, Rafael J. Wysocki wrote:
-> > 
-> > IMO, the merge window is way too short for actually testing anything.
+> Please use this patch instead.  I believe I sent it to you previously.
+
+You sent it to Harvey (from whom the unaligned patches are) two weeks ago.
+
+Sorry, I didn't search for that old patches before making my patch.
+
+> David
+> ---
+> [PATCH] FRV: Unbreak misalignment handling changes
 > 
-> That is largely on purpose.
+> From: David Howells <dhowells@redhat.com>
 > 
-> There's two choices:
-
-Oh well, I don't think it's really that simple.
-
->  - have a longer and calmer merge window, spread out the joy, and have 
->    people test and fix their things during the merge window too. In other 
->    words, less black-and-white.
+> Fix a reference in a arch/frv/mm/Makefile to unaligned.c which has now been
+> deleted.
 > 
->  - Really short merge window, and use the extra time *after* it to fix the 
->    issues.
+> Also revert the change to the guard macro name in include/asm-frv/unaligned.h.
 > 
-> and I've obviously gone for the latter. In fact, I'd personally like to 
-> make it even shorter, because the problem with the long merge window can 
-> be summed up very simply:
+> Signed-off-by: David Howells <dhowells@redhat.com>
+> ---
 > 
->    Long merge windows don't work - because rather than test more, it just 
->    means that people will use them to make more changes!
-
-And what do you think is happening _after_ the merge window closes, when
-we're supposed to be fixing bugs?  People work on new code.  And, in fact, they
-have to, if they want to be ready for the next merge window.
-
-> So one of the major things about the short merge window is that it's 
-> hopefully encouraging people to have things ready by the time the merge 
-> window opens, because it's too late to do anything later.
+>  arch/frv/mm/Makefile        |    2 +-
+>  include/asm-frv/unaligned.h |    6 +++---
+>  2 files changed, 4 insertions(+), 4 deletions(-)
 > 
-> And yes, we could have some other way of enforcing that - allow the merge 
-> window to be longer, but have some other mechanism to make sure that I 
-> only merge old code. 
-
-How about, instead, putting limits on the amount of stuff that's going to be
-merged during the next window?
-
-> In fact, I'd personally *love* to have a hard rule that says "I will only 
-> pull from trees that were already 'done' by the time the window opened", 
-> and we've been kind-of moving in that direction.
-
-Well, and when's the time for fixing bugs?  Surely not during the merge window
-and also not after that, because otherwise people won't be ready for the next
-merge window with the new code.
-
-> But that wish is counteracted by the fact that the merges themselves do 
-> need some development, so expecting everything to be ready before-hand is 
-> simply not realistic. 
 > 
-> Also, while I'd like trees to be ready when the window opens, at the same 
-> time I do think that it's good to spread out some of it, and get *some* 
-> basic testing - even if it's just a nightly build and a few tens of 
-> developers.
-> 
-> > I rebuild the kernel once or even twice a day and there's no way I can 
-> > really test it. I can only check if it breaks right away.
-> 
-> And really, that's all that we'd expect during the merge window. We want 
-> to find the *obvious* problems - build issues, and the things that hit 
-> everybody, but let's face it, the subtle ones will take time to find 
-> regardless.
+> diff --git a/arch/frv/mm/Makefile b/arch/frv/mm/Makefile
+> index fb8b1d8..1bca5ab 100644
+> --- a/arch/frv/mm/Makefile
+> +++ b/arch/frv/mm/Makefile
+> @@ -6,4 +6,4 @@ obj-y := init.o kmap.o
+>  
+>  obj-$(CONFIG_MMU) += \
+>  	pgalloc.o highmem.o fault.o extable.o cache-page.o tlb-flush.o tlb-miss.o \
+> -	mmu-context.o dma-alloc.o unaligned.o elf-fdpic.o
+> +	mmu-context.o dma-alloc.o elf-fdpic.o
+> diff --git a/include/asm-frv/unaligned.h b/include/asm-frv/unaligned.h
+> index 64ccc73..839a2fb 100644
+> --- a/include/asm-frv/unaligned.h
+> +++ b/include/asm-frv/unaligned.h
+> @@ -9,8 +9,8 @@
+>   * 2 of the License, or (at your option) any later version.
+>   */
+>  
+> -#ifndef _ASM_FRV_UNALIGNED_H
+> -#define _ASM_FRV_UNALIGNED_H
+> +#ifndef _ASM_UNALIGNED_H
+> +#define _ASM_UNALIGNED_H
+>  
+>  #include <linux/unaligned/le_byteshift.h>
+>  #include <linux/unaligned/be_byteshift.h>
+> @@ -19,4 +19,4 @@
+>  #define get_unaligned	__get_unaligned_be
+>  #define put_unaligned	__put_unaligned_be
+>  
+> -#endif /* _ASM_FRV_UNALIGNED_H */
+> +#endif /* _ASM_UNALIGNED_H */
 
-Exactly.  Moreover, the code is now being merged at a pace that makes it
-physically impossible to review it given the human resources we have.
- 
-> Then, the short merge window means that we have more time when we really 
-> don't have big changes going in to find the subtle ones.
+cu
+Adrian
 
-Sorry to say that, but I don't think this is realistic.  What happens after the merge
-window is people go and develop new stuff.  They look at the already merged
-code only if they have to.  Also, there are a _few_ people testing the kernel
-carefully enough to see the more subtle problems, let alone debugging and
-fixing them.
+-- 
 
-> (And making the release cycle longer would *not* help - that would just 
-> make the next merge window more painful, so while it can, and does, work 
-> for some individual release with particular problems, it's not a solution 
-> in the long run).
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
-My point is, given the width of the merge windown, there's too much stuff
-going in during it.  As far as I'm concerned, the window can be a week long
-or whatever, but let's make fewer commits over a unit of time.
-
-Thanks,
-Rafael
