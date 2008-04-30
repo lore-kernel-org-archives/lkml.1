@@ -1,80 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759632AbYD3HLv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761602AbYD3HMR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759632AbYD3HLv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Apr 2008 03:11:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755385AbYD3HLb
+	id S1761602AbYD3HMR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Apr 2008 03:12:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760512AbYD3HLv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Apr 2008 03:11:31 -0400
-Received: from mail.netone.net.tr ([193.192.98.182]:50692 "EHLO
-	mail.netone.net.tr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760797AbYD3HLa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Apr 2008 03:11:30 -0400
-Message-ID: <48181B9F.2040203@netone.net.tr>
-Date: Wed, 30 Apr 2008 10:11:27 +0300
-From: Tarkan Erimer <tarkan@netone.net.tr>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
-MIME-Version: 1.0
-To: David Newall <davidn@davidnewall.com>
-CC: David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: Slow DOWN, please!!!
-References: <20080429.190352.137408408.davem@davemloft.net> <4817EF91.4080800@davidnewall.com>
-In-Reply-To: <4817EF91.4080800@davidnewall.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 30 Apr 2008 07:09:15.0464 (UTC) FILETIME=[197CAC80:01C8AA91]
+	Wed, 30 Apr 2008 03:11:51 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:39895 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1760018AbYD3HLu (ORCPT
+	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
+	Wed, 30 Apr 2008 03:11:50 -0400
+Date: Wed, 30 Apr 2008 17:11:16 +1000
+From: David Chinner <dgc@sgi.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: David Chinner <dgc@sgi.com>, linux-next@vger.kernel.org,
+       xfs-masters@oss.sgi.com, Christoph Hellwig <hch@infradead.org>,
+       Lachlan McIlroy <lachlan@sgi.com>, LKML <linux-kernel@vger.kernel.org>,
+       Linus <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH, XFS] Fix random.h include for non-debug builds
+Message-ID: <20080430071116.GE108924158@sgi.com>
+References: <20080430140027.6cd83fd0.sfr@canb.auug.org.au> <20080430063544.GA108924158@sgi.com> <20080430164218.9c2bfb1c.sfr@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080430164218.9c2bfb1c.sfr@canb.auug.org.au>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Newall wrote:
-> Yes.  The Linux process is becoming unreliable.  Newly "stable" versions
-> have stability problems.  The development process looks childish. 
-> Seasoned developers say not to worry, that the process works.  I do
-> worry.  BSD seems more attractive, and it may even be worth the
-> considerable effort to switch my entire client-base.  Linux was lucky to
-> gain the foothold that it did: traditionally, BSD had a better system
-> with a less restrictive licence, so it is surprising that manufacturers
-> chose to go with Linux.  BSD still has a less restrictive licence and
-> when mainstream press becomes interested in Linux's quality problems
-> it's adoption will fall.  BSD is still a good, maybe even better, option.
->
-> Linus, this is your baby and so it's your problem.  Only you have the
-> influence to change things.
->   
-I completely disagree with your foolish and nonsense comments about the 
-Linux Kernel and the Linux OS. It's perfectly clear that you didn't 
-understand well enough how the linux development process works. If you 
-thought that the recently released kernels are not stable then, you have 
-to wait the 2.6.x.y series or you can use the distro kernels. All of 
-your comments are pointless and no base. You are free to choose BSD or 
-whatever you want to use. No one is putting a gun on your head to use 
-Linux :-)
+On Wed, Apr 30, 2008 at 04:42:18PM +1000, Stephen Rothwell wrote:
+> Hi David,
+> 
+> On Wed, 30 Apr 2008 16:35:44 +1000 David Chinner <dgc@sgi.com> wrote:
+> >
+> > Ah, I see the problem - a CONFIG_XFS_DEBUG build includes linux/random.h
+> > in a debug header file. That's probably why I didn't catch it (I need to
+> > check the .config on my build test tree).
+> > 
+> > I'll get it fixed properly, but in the mean time the include you've got
+> > there will suffice...
+> 
+> Could you make sure something gets sent to Linus pretty quickly as this
+> breaks a lot of the powerpc builds at the moment (see
+> http://kisskb.ellerman.id.au/kisskb/branch/3/).
 
-I can very easily say that,cause of my experiences , the Linux Kernel is 
-PERFECTLY STABLE! I work in an one of the largest ISP of my country and 
-I use Linux very intensively under very high loads and I NEVER NEVER 
-faced any problems because of the fault of the Linux Kernel on my 
-environments. For example, many of our mail servers run on Linux and all 
-the day they process hundred thousands emails without any downtime or 
-trouble!
+It should break anything that builds a non-debug XFS, not just powerpc.
 
-The manufactures mostly choose Linux instead of BSD flavors, simply 
-because of that Linux kernel, technically, more superior to BSDs or 
-others. When it comes to licenses: the BSD license is more and more 
-worse, if GPL is bad. GPL protects your freedom and openness of the 
-codes via forcing the changes to the source code must be return in open 
-form. For BSD, it is opposite. You are free to take someone else's code 
-and there is NO PROTECTION to prevent your code to become a closed 
-(proprietary) source. Can you imagine that one company (like Microsoft) 
-takes your whole kernel source code and creates a PROPRIETARY OS (Like 
-Windows!) as making a fool of you ? Why? Because; simply, BSD license 
-allows it! No need to return the code! Do you think really think that 
-BSD license is more free as making a fool of you ?
+> Or should I do my patch
+> up and sent it?
+
+No, the correct patch is below. Linus, can you please apply?
+
+Cheers,
+
+Dave.
+
+---
+Include linux/random.h in all builds, not just debug.
 
 
+Signed-off-by: Dave Chinner <dgc@sgi.com>
+---
+ fs/xfs/linux-2.6/xfs_linux.h |    1 +
+ fs/xfs/support/debug.h       |    2 --
+ 2 files changed, 1 insertion(+), 2 deletions(-)
 
-
-
-
+Index: 2.6.x-xfs-new/fs/xfs/linux-2.6/xfs_linux.h
+===================================================================
+--- 2.6.x-xfs-new.orig/fs/xfs/linux-2.6/xfs_linux.h	2008-04-22 15:06:11.000000000 +1000
++++ 2.6.x-xfs-new/fs/xfs/linux-2.6/xfs_linux.h	2008-04-30 16:38:38.754688626 +1000
+@@ -75,6 +75,7 @@
+ #include <linux/delay.h>
+ #include <linux/log2.h>
+ #include <linux/spinlock.h>
++#include <linux/random.h>
+ 
+ #include <asm/page.h>
+ #include <asm/div64.h>
+Index: 2.6.x-xfs-new/fs/xfs/support/debug.h
+===================================================================
+--- 2.6.x-xfs-new.orig/fs/xfs/support/debug.h	2007-08-02 22:13:10.000000000 +1000
++++ 2.6.x-xfs-new/fs/xfs/support/debug.h	2008-04-30 16:38:43.518080606 +1000
+@@ -49,8 +49,6 @@ extern void assfail(char *expr, char *f,
+ 
+ #else /* DEBUG */
+ 
+-#include <linux/random.h>
+-
+ #define ASSERT(expr)	\
+ 	(unlikely(expr) ? (void)0 : assfail(#expr, __FILE__, __LINE__))
+ 
