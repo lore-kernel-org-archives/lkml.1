@@ -1,52 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764503AbYD3Spj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764385AbYD3SqY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764503AbYD3Spj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Apr 2008 14:45:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759378AbYD3SpZ
+	id S1764385AbYD3SqY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Apr 2008 14:46:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759548AbYD3SqP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Apr 2008 14:45:25 -0400
-Received: from py-out-1112.google.com ([64.233.166.183]:27517 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755476AbYD3SpX (ORCPT
+	Wed, 30 Apr 2008 14:46:15 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:58406 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759632AbYD3SqO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Apr 2008 14:45:23 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:reply-to:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding:sender;
-        b=lY8j+kHwFIsTOT+/JeELwF7zmghkJvHYBGyU1FvLeuTk9uPLFIzUTLLKnSmtWuos/vh5S1AmkhEMavwbdrNKYFkBDrtP5AGPCPGSdxCYJHK/pw3T7yGUs+fXT60RlURZspa08xiUwSttciijBA+8ymddZB7rG72/QM7yT9nxI9s=
-Subject: Re: [PATCH 0/1] Embedded Maintainer(s), linux-embedded@vger list
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Reply-To: jwboyer@linux.vnet.ibm.com
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       Paul Gortmaker <paul.gortmaker@windriver.com>,
-       linux-embedded@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Tim Bird <tim.bird@am.sony.com>
-In-Reply-To: <1209581023.25560.436.camel@pmac.infradead.org>
-References: <1209577322.25560.402.camel@pmac.infradead.org>
-	 <1209580009.2946.98.camel@vader.jdub.homelinux.org>
-	 <1209581023.25560.436.camel@pmac.infradead.org>
+	Wed, 30 Apr 2008 14:46:14 -0400
+Subject: Re: [PATCH] sched: fix inv_weight calc
+From: Peter Zijlstra <peterz@infradead.org>
+To: Gregory Haskins <ghaskins@novell.com>
+Cc: Ingo Molnar <mingo@elte.hu>, David Bahi <dbahi@novell.com>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20080430171521.5454.91644.stgit@ghaskins-t60p.haskins.net>
+References: <20080430171521.5454.91644.stgit@ghaskins-t60p.haskins.net>
 Content-Type: text/plain
-Date: Wed, 30 Apr 2008 13:45:19 -0500
-Message-Id: <1209581119.2946.104.camel@vader.jdub.homelinux.org>
+Date: Wed, 30 Apr 2008 20:45:48 +0200
+Message-Id: <1209581148.6433.47.camel@lappy>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-1.fc9) 
+X-Mailer: Evolution 2.22.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-04-30 at 19:43 +0100, David Woodhouse wrote:
-> On Wed, 2008-04-30 at 13:26 -0500, Josh Boyer wrote:
-> > Do you see this list as a general embedded patch/issues discussion list,
-> > a help list, a list for vendors to interact with the community, or all
-> > of the above?
+On Wed, 2008-04-30 at 13:15 -0400, Gregory Haskins wrote:
+> We currently have a bug in sched-devel where the system will fail to
+> balance tasks if CONFIG_FAIR_GROUP_SCHED=n.  To reproduce, simply launch
+> a workload with multiple tasks and observe (either via top or
+> /proc/sched_debug) that the tasks do not distribute much (if at all)
+> around to all available cores. Instead, they tend to clump on one processor
+> while the other cores are idle.
 > 
-> All of the above -- although I dislike the phrase 'interact with the
-> community'. I want vendors to be _part_ of the community, not outsiders
-> who merely interact with it.
+> Bisecting, we found the culprit to be:
+> 
+> 	commit 1b9552e878a5db3388eba8660e8d8400020a07e9
+> 	Author: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> 	Date:   Tue Apr 29 13:47:36 2008 +0200
+> 	Subject: sched: higher granularity load on 64bit systems
+> 
+> Once we identified this patch as the problem, I studied what possible
+> effect it could have with FAIR_GROUP_SCHED=n vs y.  Most of the code in
+> 1b9552e8 would be compiled out if we disable group-scheduling, but there
+> is one particular logic change in calc_delta_mine() that affects both modes
+> that looked suspicious.  It changes the computation of the inverse-weight
+> from:
+> 
+>     inv_weight = (WMULT_CONST-weight/2)/(weight+1)
+> 
+> to
+> 
+>     inv_weight = 1+(WMULT_CONST-weight/2)/(weight+1)
+> 
+> This patch restores the algorithm to its original logic, and seems to solve
+> the regression for me.  I can't really wrap my head around the original
+> intent of the "+1" change, or whether reverting the change will cause a
+> ripple effect somewhere else.  All I can confirm is that the system will
+> once again balance load with this logic reverted to its previous form.
 
-Sure, agreed.  Have to start somewhere though.
+I didn't intend that change to sneak into this patch - but it was
+sort-of intentional. My rationale was, a normal rounding division does:
 
-josh
+  (x + y/2) / y
+
+Since our 'x' is at the upper end of our modulo space we can't add to it
+for it would wrap and end up small. Therefore we do:
+
+ (x - y/2) / y
+
+Which would result in 1 less than expected, hence I added that 1 back.
+
+Now I'm equally puzzled on its effect. Nor do I mind its removal, but I
+would like to understand why it has such drastic effects.
+
+> Thanks to my colleage, David Bahi, for doing all the legwork on the bisect.
+> And thanks to Peter Zijlstra for guiding me on all things CFS as I stuggle
+> to come up to speed on the non-RT portions of the scheduler.
+> 
+> Signed-off-by: Gregory Haskins <ghaskins@novell.com>
+> CC: David Bahi <dbahi@novell.com>
+> CC: Ingo Molnar <mingo@elte.hu>
+> CC: Peter Zijlstra <peterz@infradead.org>
+> ---
+> 
+>  kernel/sched.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/kernel/sched.c b/kernel/sched.c
+> index 32ef6c8..8326e20 100644
+> --- a/kernel/sched.c
+> +++ b/kernel/sched.c
+> @@ -1562,7 +1562,7 @@ calc_delta_mine(unsigned long delta_exec, unsigned long weight,
+>  	if (unlikely(!lw->inv_weight)) {
+>  		unsigned long inv_wls = inv_WLS(lw->weight);
+>  
+> -		lw->inv_weight = 1 + (WMULT_CONST-inv_wls/2) / (inv_wls+1);
+> +		lw->inv_weight = (WMULT_CONST-inv_wls/2) / (inv_wls+1);
+>  	}
+>  
+>  	tmp = inv_WLS((u64)delta_exec * weight);
+> 
 
