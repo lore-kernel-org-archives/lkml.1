@@ -1,41 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760608AbYD3GMW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760299AbYD3GND@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760608AbYD3GMW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Apr 2008 02:12:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758315AbYD3GL7
+	id S1760299AbYD3GND (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Apr 2008 02:13:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760690AbYD3GMb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Apr 2008 02:11:59 -0400
-Received: from www.tglx.de ([62.245.132.106]:57269 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758023AbYD3GL7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Apr 2008 02:11:59 -0400
-Date: Wed, 30 Apr 2008 08:11:39 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Kevin Winchester <kjwinchester@gmail.com>
-cc: Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.25-git WARNING: at arch/x86/kernel/genapic_64.c:86
- read_apic_id+0x2e/0x46()
-In-Reply-To: <4817B67A.40308@gmail.com>
-Message-ID: <alpine.LFD.1.10.0804300811140.6003@apollo.tec.linutronix.de>
-References: <4817B67A.40308@gmail.com>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 30 Apr 2008 02:12:31 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:47353 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1760589AbYD3GMV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Apr 2008 02:12:21 -0400
+Date: Tue, 29 Apr 2008 22:49:03 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: David Miller <davem@davemloft.net>
+Cc: greg@kroah.com, sfr@canb.auug.org.au, jbarnes@virtuousgeek.org,
+       linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: gregkh-02-pci tree is now gone
+Message-Id: <20080429224903.3c5f04f1.akpm@linux-foundation.org>
+In-Reply-To: <20080429.223854.24800777.davem@davemloft.net>
+References: <20080424225104.GA16529@kroah.com>
+	<20080429223412.0e8f135d.akpm@linux-foundation.org>
+	<20080429.223854.24800777.davem@davemloft.net>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 29 Apr 2008, Kevin Winchester wrote:
+On Tue, 29 Apr 2008 22:38:54 -0700 (PDT) David Miller <davem@davemloft.net> wrote:
 
+> From: Andrew Morton <akpm@linux-foundation.org>
+> Date: Tue, 29 Apr 2008 22:34:12 -0700
 > 
-> Hi Ingo,
+> > What is gregkh-03-ldp?
 > 
-> I am getting the following in my dmesg on every boot.  It was reported
-> before[1], so I figured someone was working on it.  However, I haven't seen it
-> get fixed yet, so is there anything I can do to help?
+> That's the special tree that breaks the linux-next build every day
+> in order to make sure Stephen is paying attention :-)
 
-Fix is queued for Linus to pull.
-
-Thanks,
-	tglx
+What's special about that?
