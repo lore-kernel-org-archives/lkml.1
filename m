@@ -1,222 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762771AbYD3WaO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934284AbYD3WbX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762771AbYD3WaO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Apr 2008 18:30:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964795AbYD3W3X
+	id S934284AbYD3WbX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Apr 2008 18:31:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763324AbYD3WbH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Apr 2008 18:29:23 -0400
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:50088 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S964780AbYD3W3V (ORCPT
+	Wed, 30 Apr 2008 18:31:07 -0400
+Received: from e36.co.us.ibm.com ([32.97.110.154]:60894 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764237AbYD3WbF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Apr 2008 18:29:21 -0400
-Subject: Re: [PATCH 02/10] scsi: fix integer as NULL pointer warnings
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Harvey Harrison <harvey.harrison@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>
-In-Reply-To: <1209593020.24729.112.camel@brick>
-References: <1209593020.24729.112.camel@brick>
+	Wed, 30 Apr 2008 18:31:05 -0400
+Subject: Re: [RFC][PATCH 3/5] Container Freezer: Implement freezer cgroup
+	subsystem
+From: Matt Helsley <matthltc@us.ibm.com>
+To: Linux-Kernel <linux-kernel@vger.kernel.org>
+Cc: Cedric Le Goater <clg@fr.ibm.com>, Paul Menage <menage@google.com>,
+       Oren Laadan <orenl@cs.columbia.edu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Pavel Machek <pavel@ucw.cz>, linux-pm@lists.linux-foundation.org,
+       Linux Containers <containers@lists.linux-foundation.org>
+In-Reply-To: <1209590905.29759.38.camel@localhost.localdomain>
+References: <20080424064756.643890130@us.ibm.com>
+	 <20080424064757.526468716@us.ibm.com>
+	 <1209590905.29759.38.camel@localhost.localdomain>
 Content-Type: text/plain
-Date: Wed, 30 Apr 2008 17:29:11 -0500
-Message-Id: <1209594551.3774.37.camel@localhost.localdomain>
+Organization: IBM Linux Technology Center
+Date: Wed, 30 Apr 2008 15:30:49 -0700
+Message-Id: <1209594649.29759.43.camel@localhost.localdomain>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-4.fc8) 
+X-Mailer: Evolution 2.12.2 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-04-30 at 15:03 -0700, Harvey Harrison wrote:
-> drivers/scsi/FlashPoint.c:906:9: warning: Using plain integer as NULL pointer
-> drivers/scsi/FlashPoint.c:907:53: warning: Using plain integer as NULL pointer
-> drivers/scsi/FlashPoint.c:922:1: warning: Using plain integer as NULL pointer
-> drivers/scsi/aha152x.c:3585:60: warning: Using plain integer as NULL pointer
-> drivers/scsi/aha152x.c:3845:56: warning: Using plain integer as NULL pointer
-> drivers/scsi/qla1280.c:2814:37: warning: Using plain integer as NULL pointer
-> drivers/scsi/atp870u.c:750:47: warning: Using plain integer as NULL pointer
-> drivers/scsi/3w-9xxx.c:1281:36: warning: Using plain integer as NULL pointer
-> drivers/scsi/3w-9xxx.c:1293:36: warning: Using plain integer as NULL pointer
-> drivers/scsi/3w-9xxx.c:1301:35: warning: Using plain integer as NULL pointer
-> drivers/scsi/hptiop.c:447:10: warning: Using plain integer as NULL pointer
-> drivers/scsi/hptiop.c:457:10: warning: Using plain integer as NULL pointer
-> drivers/scsi/hptiop.c:479:24: warning: Using plain integer as NULL pointer
-> drivers/scsi/hptiop.c:483:22: warning: Using plain integer as NULL pointer
-> drivers/scsi/hptiop.c:1213:23: warning: Using plain integer as NULL pointer
-> drivers/scsi/hptiop.c:1214:23: warning: Using plain integer as NULL pointer
+
+On Wed, 2008-04-30 at 14:28 -0700, Matt Helsley wrote:
+> On Wed, 2008-04-23 at 23:47 -0700, Matt Helsley wrote:
 > 
-> Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
-> ---
-> James, please look at the FlashPoint.c changes in particular.
+> <snip>
 
-Could you please Cc linux-scsi?  That way interested parties get to
-check their drivers.
-
-The flashpoint initialiser changes look wrong:  {0} is a conventional
-notation for zero initialise this structure.  Sparse should probably be
-taught to recognise that.
-
-James
-
-
->  drivers/scsi/3w-9xxx.c    |    6 +++---
->  drivers/scsi/FlashPoint.c |    7 +++----
->  drivers/scsi/aha152x.c    |    4 ++--
->  drivers/scsi/atp870u.c    |    2 +-
->  drivers/scsi/hptiop.c     |   12 ++++++------
->  drivers/scsi/qla1280.c    |    2 +-
->  6 files changed, 16 insertions(+), 17 deletions(-)
+> > +	cgroup_lock();
+> > +
+> > +	if (cgroup_is_removed(cgroup)) {
+> > +		retval = -ENODEV;
+> > +		goto unlock;
+> > +	}
 > 
-> diff --git a/drivers/scsi/3w-9xxx.c b/drivers/scsi/3w-9xxx.c
-> index b31faec..626d6e1 100644
-> --- a/drivers/scsi/3w-9xxx.c
-> +++ b/drivers/scsi/3w-9xxx.c
-> @@ -1278,7 +1278,7 @@ static irqreturn_t twa_interrupt(int irq, void *dev_instance)
->  			error = 0;
->  			/* Check for command packet errors */
->  			if (full_command_packet->command.newcommand.status != 0) {
-> -				if (tw_dev->srb[request_id] != 0) {
-> +				if (tw_dev->srb[request_id]) {
->  					error = twa_fill_sense(tw_dev, request_id, 1, 1);
->  				} else {
->  					/* Skip ioctl error prints */
-> @@ -1290,7 +1290,7 @@ static irqreturn_t twa_interrupt(int irq, void *dev_instance)
->  
->  			/* Check for correct state */
->  			if (tw_dev->state[request_id] != TW_S_POSTED) {
-> -				if (tw_dev->srb[request_id] != 0) {
-> +				if (tw_dev->srb[request_id]) {
->  					TW_PRINTK(tw_dev->host, TW_DRIVER, 0x1a, "Received a request id that wasn't posted");
->  					TW_CLEAR_ALL_INTERRUPTS(tw_dev);
->  					goto twa_interrupt_bail;
-> @@ -1298,7 +1298,7 @@ static irqreturn_t twa_interrupt(int irq, void *dev_instance)
->  			}
->  
->  			/* Check for internal command completion */
-> -			if (tw_dev->srb[request_id] == 0) {
-> +			if (tw_dev->srb[request_id]) {
->  				if (request_id != tw_dev->chrdev_request_id) {
->  					if (twa_aen_complete(tw_dev, request_id))
->  						TW_PRINTK(tw_dev->host, TW_DRIVER, 0x1b, "Error completing AEN during attention interrupt");
-> diff --git a/drivers/scsi/FlashPoint.c b/drivers/scsi/FlashPoint.c
-> index b898d38..b252ac5 100644
-> --- a/drivers/scsi/FlashPoint.c
-> +++ b/drivers/scsi/FlashPoint.c
-> @@ -903,8 +903,8 @@ static void FPT_autoCmdCmplt(unsigned long p_port, unsigned char p_card);
->  static void FPT_autoLoadDefaultMap(unsigned long p_port);
->  
->  static struct sccb_mgr_tar_info FPT_sccbMgrTbl[MAX_CARDS][MAX_SCSI_TAR] =
-> -    { {{0}} };
-> -static struct sccb_card FPT_BL_Card[MAX_CARDS] = { {0} };
-> +    { {{NULL}} };
-> +static struct sccb_card FPT_BL_Card[MAX_CARDS] = { {NULL} };
->  static SCCBSCAM_INFO FPT_scamInfo[MAX_SCSI_TAR] = { {{0}} };
->  static struct nvram_info FPT_nvRamInfo[MAX_MB_CARDS] = { {0} };
->  
-> @@ -918,8 +918,7 @@ static unsigned char FPT_scamHAString[] =
->  
->  static unsigned short FPT_default_intena = 0;
->  
-> -static void (*FPT_s_PhaseTbl[8]) (unsigned long, unsigned char) = {
-> -0};
-> +static void (*FPT_s_PhaseTbl[8]) (unsigned long, unsigned char) = {NULL};
->  
->  /*---------------------------------------------------------------------
->   *
-> diff --git a/drivers/scsi/aha152x.c b/drivers/scsi/aha152x.c
-> index f5215fd..0c93a49 100644
-> --- a/drivers/scsi/aha152x.c
-> +++ b/drivers/scsi/aha152x.c
-> @@ -3582,7 +3582,7 @@ static int checksetup(struct aha152x_setup *setup)
->  	if (i == ARRAY_SIZE(ports))
->  		return 0;
->  
-> -	if ( request_region(setup->io_port, IO_RANGE, "aha152x")==0 ) {
-> +	if (!request_region(setup->io_port, IO_RANGE, "aha152x")) {
->  		printk(KERN_ERR "aha152x: io port 0x%x busy.\n", setup->io_port);
->  		return 0;
->  	}
-> @@ -3842,7 +3842,7 @@ static int __init aha152x_init(void)
->  			if ((setup_count == 1) && (setup[0].io_port == ports[i]))
->  				continue;
->  
-> -			if ( request_region(ports[i], IO_RANGE, "aha152x")==0 ) {
-> +			if (!request_region(ports[i], IO_RANGE, "aha152x")) {
->  				printk(KERN_ERR "aha152x: io port 0x%x busy.\n", ports[i]);
->  				continue;
->  			}
-> diff --git a/drivers/scsi/atp870u.c b/drivers/scsi/atp870u.c
-> index db6de5e..571b43b 100644
-> --- a/drivers/scsi/atp870u.c
-> +++ b/drivers/scsi/atp870u.c
-> @@ -747,7 +747,7 @@ static void send_s870(struct atp_unit *dev,unsigned char c)
->  		dev->quhd[c] = 0;
->  	}
->  	workreq = dev->quereq[c][dev->quhd[c]];
-> -	if (dev->id[c][scmd_id(workreq)].curr_req == 0) {	
-> +	if (!dev->id[c][scmd_id(workreq)].curr_req) {	
->  		dev->id[c][scmd_id(workreq)].curr_req = workreq;
->  		dev->last_cmd[c] = scmd_id(workreq);
->  		goto cmd_subp;
-> diff --git a/drivers/scsi/hptiop.c b/drivers/scsi/hptiop.c
-> index 5b7be1e..bc5fb5c 100644
-> --- a/drivers/scsi/hptiop.c
-> +++ b/drivers/scsi/hptiop.c
-> @@ -444,7 +444,7 @@ static void __iomem *hptiop_map_pci_bar(struct hptiop_hba *hba, int index)
->  	if (!(pci_resource_flags(pcidev, index) & IORESOURCE_MEM)) {
->  		printk(KERN_ERR "scsi%d: pci resource invalid\n",
->  				hba->host->host_no);
-> -		return 0;
-> +		return NULL;
->  	}
->  
->  	mem_base_phy = pci_resource_start(pcidev, index);
-> @@ -454,7 +454,7 @@ static void __iomem *hptiop_map_pci_bar(struct hptiop_hba *hba, int index)
->  	if (!mem_base_virt) {
->  		printk(KERN_ERR "scsi%d: Fail to ioremap memory space\n",
->  				hba->host->host_no);
-> -		return 0;
-> +		return NULL;
->  	}
->  	return mem_base_virt;
->  }
-> @@ -476,11 +476,11 @@ static void hptiop_unmap_pci_bar_itl(struct hptiop_hba *hba)
->  static int hptiop_map_pci_bar_mv(struct hptiop_hba *hba)
->  {
->  	hba->u.mv.regs = hptiop_map_pci_bar(hba, 0);
-> -	if (hba->u.mv.regs == 0)
-> +	if (!hba->u.mv.regs)
->  		return -1;
->  
->  	hba->u.mv.mu = hptiop_map_pci_bar(hba, 2);
-> -	if (hba->u.mv.mu == 0) {
-> +	if (!hba->u.mv.mu) {
->  		iounmap(hba->u.mv.regs);
->  		return -1;
->  	}
-> @@ -1210,8 +1210,8 @@ static void hptiop_remove(struct pci_dev *pcidev)
->  
->  static struct hptiop_adapter_ops hptiop_itl_ops = {
->  	.iop_wait_ready    = iop_wait_ready_itl,
-> -	.internal_memalloc = 0,
-> -	.internal_memfree  = 0,
-> +	.internal_memalloc = NULL,
-> +	.internal_memfree  = NULL,
->  	.map_pci_bar       = hptiop_map_pci_bar_itl,
->  	.unmap_pci_bar     = hptiop_unmap_pci_bar_itl,
->  	.enable_intr       = hptiop_enable_intr_itl,
-> diff --git a/drivers/scsi/qla1280.c b/drivers/scsi/qla1280.c
-> index 09ab3ea..d2bc60a 100644
-> --- a/drivers/scsi/qla1280.c
-> +++ b/drivers/scsi/qla1280.c
-> @@ -2811,7 +2811,7 @@ qla1280_64bit_start_scsi(struct scsi_qla_host *ha, struct srb * sp)
->  
->  	/* Check for room in outstanding command list. */
->  	for (cnt = 0; cnt < MAX_OUTSTANDING_COMMANDS &&
-> -		     ha->outstanding_cmds[cnt] != 0; cnt++);
-> +		     ha->outstanding_cmds[cnt] != NULL; cnt++);
->  
->  	if (cnt >= MAX_OUTSTANDING_COMMANDS) {
->  		status = 1;
+> I think this was copy/paste'd from cgroup_common_file_write() which
+> modifies the cgroup hierarchy. However this function does not modify the
+> cgroup hierarchy and we're not getting the cgroup from the task. So I
+> don't think cgroup_lock()/unlock() are needed here. Paul, do you agree?
+
+Oops! I didn't track the call chain correctly. Sorry for the noise...
+
+Cheers,
+	-Matt Helsley
+
 
