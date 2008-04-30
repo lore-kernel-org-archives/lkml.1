@@ -1,83 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761190AbYD3QhV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758428AbYD3QiY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761190AbYD3QhV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Apr 2008 12:37:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757670AbYD3QhH
+	id S1758428AbYD3QiY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Apr 2008 12:38:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756383AbYD3QiE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Apr 2008 12:37:07 -0400
-Received: from rv-out-0708.google.com ([209.85.198.246]:23782 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757301AbYD3QhF (ORCPT
+	Wed, 30 Apr 2008 12:38:04 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:50003 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755342AbYD3QiC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Apr 2008 12:37:05 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=yH7WQuWFXABkKTJI6yrw2ugFRzUcAafTj1n0rs13bgK17uxJcbU/BoIvVYc75UMEhx/IONzVv/Y0oZmYEnc+JwWixit/fLSUo3HMayV3w+0xciGtabsee9wHk/3O3imO0/walnoYvK8GNruXnYbLP9zavZiRwabgUGnqvncMqNA=
-Message-ID: <19f34abd0804300937k637e0308r36d4fa20899ff6bc@mail.gmail.com>
-Date: Wed, 30 Apr 2008 18:37:03 +0200
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: "Roland Dreier" <rdreier@cisco.com>
-Subject: Re: [git pull] kmemcheck
-Cc: "Ingo Molnar" <mingo@elte.hu>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Pekka Enberg" <penberg@cs.helsinki.fi>,
-       "Christoph Lameter" <clameter@sgi.com>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "Thomas Gleixner" <tglx@linutronix.de>
-In-Reply-To: <adazlrb8fxq.fsf@cisco.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+	Wed, 30 Apr 2008 12:38:02 -0400
+Date: Wed, 30 Apr 2008 17:28:55 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Rodolfo Giometti <giometti@enneenne.com>
+Cc: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       David Woodhouse <dwmw2@infradead.org>, Dave Jones <davej@redhat.com>,
+       Sam Ravnborg <sam@ravnborg.org>, Greg KH <greg@kroah.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Kay Sievers <kay.sievers@vrfy.org>
+Subject: Re: [PATCH 5/7] PPS: serial clients support.
+Message-ID: <20080430172855.6d2e81a6@core>
+In-Reply-To: <20080430114107.GE3002@enneenne.com>
+References: <1207851751-25703-2-git-send-email-giometti@linux.it>
+	<1207851751-25703-3-git-send-email-giometti@linux.it>
+	<1207851751-25703-4-git-send-email-giometti@linux.it>
+	<1207851751-25703-5-git-send-email-giometti@linux.it>
+	<1207851751-25703-6-git-send-email-giometti@linux.it>
+	<20080410210918.3be98868@core>
+	<20080411075515.GH26777@enneenne.com>
+	<20080411092840.3cc4de67@core>
+	<20080411134724.GF2160@csclub.uwaterloo.ca>
+	<20080411154652.4852b6d4@core>
+	<20080430114107.GE3002@enneenne.com>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080429203446.GA18314@elte.hu> <adazlrb8fxq.fsf@cisco.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+> if I add a dedicated line discipline to register/unregister the PPS
+> source and I leave the pps_event management into
+> uart_handle_dcd_change() function, it can be acceptable?
 
-On Wed, Apr 30, 2008 at 6:29 PM, Roland Dreier <rdreier@cisco.com> wrote:
->  >       kmemcheck: enable in the x86 Kconfig
->
->  This patch does:
->
->
->   > +config KMEMCHECK
->   > +    bool "kmemcheck: trap use of uninitialized memory"
->   > +    depends on X86_32
->
->  So it's only possible to select kmemcheck on 32-bit builds, But you also
->  seem to have 64-bit stuff, eg
->
->
->   >       kmemcheck: support for 64-bit
->   >       kmemcheck: add missing pte_hidden() for x86-64
->
->  so is the Kconfig patch slightly out-of-date?
+Keep the two things apart.
 
-We don't officially support 64-bit yet, that is why it is disabled in
-the Kconfig. The 64-bit parts are preliminaries, and as with 32-bit,
-should have no impact when CONFIG_KMEMCHECK=n (as is the case for all
-64-bit builds as you pointed out). It is largely untested, but
-according to Pekka it at least boots in qemu with kmemcheck enabled
-even for 64-bit.
+uart_handle_dcd_change looks a good basis for the UART layer support for
+drivers serial
+an LDISC looks right for the top layer
 
-So the 64-bit parts we have is basically to make it _compile_ even if
-you force KMEMCHECK=y on a 64-bit build.
+We just need the bits in the middle right. I've added the serial layer
+pass through for the set_ldisc() interface so that bit is done. Probably
+the main thing we need is to add  tty->ldisc.dcd_change() for reporting
+DCD change back to the line discipline. We could queue it as a TTY_ event
+but I assume you need it immediately not queued ?
 
-(The main obstacle standing in the way of fully supporting 64-bit is
-the opcode decoding. I don't really know how the 64-bit registers
-works, so I will have to read about it first :-))
+> The uart_handle_dcd_change() is generic and I need the DCD status to
+> correctly manage the pps_event. The USB layer is not useful for PPS
+> stuff
 
-Thank you for looking over!
+Not every character driver uses drivers/serial or USB. That is fine. What
+I care about is that you *could* add PPS support to another serial driver
+cleanly, not that it is done immediately. What matters is the interface,
+the rest will follow.
 
-Vegard
-
--- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
+Alan
