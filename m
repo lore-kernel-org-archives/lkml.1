@@ -1,70 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765035AbYD3UP1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765363AbYD3UPy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765035AbYD3UP1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Apr 2008 16:15:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756441AbYD3UPS
+	id S1765363AbYD3UPy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Apr 2008 16:15:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763787AbYD3UPo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Apr 2008 16:15:18 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:49970 "EHLO
+	Wed, 30 Apr 2008 16:15:44 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:36456 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750708AbYD3UPR (ORCPT
+	by vger.kernel.org with ESMTP id S1756738AbYD3UPm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Apr 2008 16:15:17 -0400
-Date: Wed, 30 Apr 2008 13:14:39 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
+	Wed, 30 Apr 2008 16:15:42 -0400
+Date: Wed, 30 Apr 2008 13:15:37 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jiri Slaby <jirislaby@gmail.com>
+Cc: davem@davemloft.net, linux-kernel@vger.kernel.org,
+       torvalds@linux-foundation.org, jirislaby@gmail.com
 Subject: Re: Slow DOWN, please!!!
-In-Reply-To: <alpine.LFD.1.10.0804301253290.2980@woody.linux-foundation.org>
-Message-ID: <alpine.LFD.1.10.0804301307460.2980@woody.linux-foundation.org>
-References: <20080429.190352.137408408.davem@davemloft.net> <200804302136.58005.rjw@sisk.pl> <alpine.LFD.1.10.0804301253290.2980@woody.linux-foundation.org>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-Id: <20080430131537.1f7a0914.akpm@linux-foundation.org>
+In-Reply-To: <200804302136.58005.rjw@sisk.pl>
+References: <20080429.190352.137408408.davem@davemloft.net>
+	<200804302136.58005.rjw@sisk.pl>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 30 Apr 2008 21:36:57 +0200
+"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+
+> IMO, the merge window is way too short for actually testing anything.
+
+<jumps up and down>
+
+There should be nothing in 2.6.x-rc1 which wasn't in 2.6.x-mm1!
+
+_anything_ which appears in 2.6.x-rc1 and which wasn't in 2.6.x-mm1 was
+snuck in too late (OK, apart from trivia and bugfixes).
 
 
-On Wed, 30 Apr 2008, Linus Torvalds wrote:
-> 
-> In fact, I'd personally like to make it even shorter
+If we decide that we need to fix the oh-shit-lets-slam-this-in-and-hope
+problem then I expect we can do so, via fairly relible means.
 
-Just to clarify: I'd actually like to make the merge window be just a 
-week. If even that.
-
-With linux-next hopefully stepping up to be a place where the actual 
-_conflicts_ (which are usually not the big problem, they are just 
-inconvenient from a timing standpoint) can get found and handled early, a 
-shorter merge window should be technically possible.
-
-HOWEVER. Even now, at two weeks, we do have issues where timing just 
-doesn't fit some developer, because of conferences or vacations or just 
-random personal issues or whatever. There are always people who grumble 
-because the window didn't work for them.
-
-Of course, they should have had it all ready, but somehow that simply 
-doesn't happen. I think it's against most human nature to be quite _that_ 
-forward-looking.
-
-And maybe everything would be ok if we could also shorten the actual 
-release cycle, so that if you miss one merge window for some random 
-conference or other (or just a *really* bad hair-day and you didn't get 
-your act together), you wouldn't mind too much and you'd just hit the next 
-one instead.
-
-But that, in turn, is unrealistic because when bugs do happen, the latency 
-you get between testers and developers is long enough that I really don't 
-think we can shorten the after-merge-window thing much. Six weeks seems to 
-be already pushing it.
-
-And as mentioned, a longer after-merge-window-stabilization phase is just 
-going to aggravate the problem next time around.
-
-We could have staggered releases, but let's face it, that's what -mm and 
-linux-next and stable is all about.
-
-		Linus
+But the first attempt at solving it should be to ask people to not do that.
