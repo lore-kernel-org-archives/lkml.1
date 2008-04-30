@@ -1,25 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763716AbYD3XLX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764532AbYD3XMW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763716AbYD3XLX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Apr 2008 19:11:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756441AbYD3XLQ
+	id S1764532AbYD3XMW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Apr 2008 19:12:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758505AbYD3XMN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Apr 2008 19:11:16 -0400
-Received: from mail.queued.net ([207.210.101.209]:3846 "EHLO mail.queued.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755286AbYD3XLP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Apr 2008 19:11:15 -0400
-Date: Wed, 30 Apr 2008 19:14:38 -0400
-From: Andres Salomon <dilinger@queued.net>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: cbou@mail.ru, linux-kernel@vger.kernel.org, dwmw2@infradead.org
-Subject: Re: [PATCH 2/4] power_supply: add eeprom dump file to
- olpc_battery's sysfs
-Message-ID: <20080430191438.397747a2@ephemeral>
-In-Reply-To: <20080430145311.a6c35ed7.akpm@linux-foundation.org>
-References: <20080430163008.4be68cb3@ephemeral>
-	<20080430145311.a6c35ed7.akpm@linux-foundation.org>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.12.0; i486-pc-linux-gnu)
+	Wed, 30 Apr 2008 19:12:13 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:33238 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752076AbYD3XMM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Apr 2008 19:12:12 -0400
+Date: Wed, 30 Apr 2008 16:11:30 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+Cc: dpn@isomerica.net, torvalds@linux-foundation.org, rjw@sisk.pl,
+       davem@davemloft.net, linux-kernel@vger.kernel.org, jirislaby@gmail.com
+Subject: Re: Slow DOWN, please!!!
+Message-Id: <20080430161130.4328b830.akpm@linux-foundation.org>
+In-Reply-To: <200805010053.31894.m.kozlowski@tuxland.pl>
+References: <20080429.190352.137408408.davem@davemloft.net>
+	<4818DAC4.0@isomerica.net>
+	<20080430135938.82e46e67.akpm@linux-foundation.org>
+	<200805010053.31894.m.kozlowski@tuxland.pl>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -27,69 +30,40 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 30 Apr 2008 14:53:11 -0700
-Andrew Morton <akpm@linux-foundation.org> wrote:
+On Thu, 1 May 2008 00:53:31 +0200
+Mariusz Kozlowski <m.kozlowski@tuxland.pl> wrote:
 
-> On Wed, 30 Apr 2008 16:30:08 -0400
-> Andres Salomon <dilinger@queued.net> wrote:
+> Hello,
 > 
-> > 
-> > This allows you to dump 0x60 bytes from the battery's EEPROM (starting
-> > at address 0x20).  Note that it does an EC command for each byte, so
-> > it's pretty slow.  OTOH, if you want to grab just a single byte from
-> > somewhere in the EEPROM, you can do something like:
-> > 
-> > dd bs=1 count=1 skip=16 if=/sys/class/power_supply/olpc-battery/eeprom | od -x
-> > 
-> > Userspace battery collection/logging information needs this.
-> > 
-> > Signed-off-by: Andres Salomon <dilinger@debian.org>
-> > ---
-> >  drivers/power/olpc_battery.c |   49 ++++++++++++++++++++++++++++++++++++++++++
-> >  1 files changed, 49 insertions(+), 0 deletions(-)
-> > 
-> > diff --git a/drivers/power/olpc_battery.c b/drivers/power/olpc_battery.c
-> > index 9d9dd09..e5ecf27 100644
-> > --- a/drivers/power/olpc_battery.c
-> > +++ b/drivers/power/olpc_battery.c
-> > @@ -283,6 +283,48 @@ static enum power_supply_property olpc_bat_props[] = {
-> >  	POWER_SUPPLY_PROP_SERIAL_NUMBER,
-> >  };
-> >  
-> > +/* EEPROM reading goes completely around the power_supply API, sadly */
-> > +
-> > +#define EEPROM_START	0x20
-> > +#define EEPROM_END	0x80
-> > +#define EEPROM_SIZE	(EEPROM_END - EEPROM_START)
-> > +
-> > +static ssize_t olpc_bat_eeprom_read(struct kobject *kobj,
-> > +		struct bin_attribute *attr, char *buf, loff_t off, size_t count)
-> > +{
-> > +	uint8_t ec_byte;
-> > +	int ret, end;
-> > +
-> > +	if (off >= EEPROM_SIZE)
-> > +		return 0;
+> > > Perhaps we should be clear and simple about what potential testers 
+> > > should be running at any given point in time.  With -mm, linux-next, 
+> > > linux-2.6, etc, as a newcomer I find it difficult to know where my 
+> > > testing time and energy is best directed.
 > 
-> loff_t is signed.
-> 
-> Happily, the VFS prevents negative loff_t's from being passed into read()
-> handlers.
-> 
-> > +	if (off + count > EEPROM_SIZE)
-> > +		count = EEPROM_SIZE - off;
-> 
-> But the vfs doesn't check for (offset+len) going negative (I think?)
-> 
-> However you got lucky (or smart ;)) - size_t is unsigned so the comparison
-> will dtrt.
-> 
-> Plus the first `if' will prevent us getting here with huge-nearly-negative
-> `off'.
-> 
-> This stuff is harder than it should be :(
+> Speaking of energy and time of a tester. I'd like to know where these resources
+> should be directed from the arch point of view. Once I had a plan to buy as
+> many arches as I could get and run a farm of test boxes 8-) But that's hard
+> because of various reasons (money, time, room, energy). What arches need more
+> attention? Which are forgotten? Which are going away? For example does buying
+> an alphaserver DS 20 (hey - it's cheap) and running tests on it makes sense
+> these days?
 > 
 
-Agreed.  I actually tested it a bunch with of different i/o back in Feb
-in an attempt to break it.  I think it looks horrid; if there's a better
-interface for this, I'd be more than happy to switch.
+gee.
+
+I think to a large extent this problem solves itself - the "more important"
+architectures have more people using them, so they get more testing and
+more immediate testing.
+
+However there are gaps.  I'd say that arm is one of the more important
+architectures, but many people who are interested in arm tend to shy away
+from bleeding-edge kernels for various reasons.  Mainly because they have
+real products to get out the door, rather than dinking around with mainline
+kernel developement.  So testing bleeding-edge on some arm systems would be
+good, I expect.
+
+otoh, the platform we break most often is surely plain-old-PCs.  If it's
+bugs you're looking for, I expect that dumpster-diving for as many
+different PCs as you can and trying to get them to boot (let alone suspend
+and resume!) would keep you entertained ;)
+
