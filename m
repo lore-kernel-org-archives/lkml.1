@@ -1,60 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765770AbYD3Xay@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763774AbYD3Xf3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765770AbYD3Xay (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Apr 2008 19:30:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755892AbYD3Xaq
+	id S1763774AbYD3Xf3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Apr 2008 19:35:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756613AbYD3XfR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Apr 2008 19:30:46 -0400
-Received: from ozlabs.org ([203.10.76.45]:43515 "EHLO ozlabs.org"
+	Wed, 30 Apr 2008 19:35:17 -0400
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:35523 "EHLO smtp6.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752364AbYD3Xap (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Apr 2008 19:30:45 -0400
+	id S1756050AbYD3XfQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Apr 2008 19:35:16 -0400
+Date: Thu, 1 May 2008 02:34:31 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       Paul Gortmaker <paul.gortmaker@windriver.com>,
+       linux-embedded@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Tim Bird <tim.bird@am.sony.com>
+Subject: Re: [PATCH 0/1] Embedded Maintainer(s), linux-embedded@vger list
+Message-ID: <20080430233431.GL29330@cs181133002.pp.htv.fi>
+References: <1209577322.25560.402.camel@pmac.infradead.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18457.219.995207.136771@cargo.ozlabs.ibm.com>
-Date: Thu, 1 May 2008 09:29:31 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, David Miller <davem@davemloft.net>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Jiri Slaby <jirislaby@gmail.com>
-Subject: Re: Slow DOWN, please!!!
-In-Reply-To: <alpine.LFD.1.10.0804301253290.2980@woody.linux-foundation.org>
-References: <20080429.190352.137408408.davem@davemloft.net>
-	<200804302136.58005.rjw@sisk.pl>
-	<alpine.LFD.1.10.0804301253290.2980@woody.linux-foundation.org>
-X-Mailer: VM 7.19 under Emacs 22.1.1
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <1209577322.25560.402.camel@pmac.infradead.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds writes:
+On Wed, Apr 30, 2008 at 06:42:02PM +0100, David Woodhouse wrote:
+> Andrew Morton has been saying recently that we need an 'embedded
+> maintainer', to take responsibility for 'embedded issues' in the core
+> kernel, as well as trying to improve our relationship with those using
+> the Linux kernel for 'embedded' devices -- who have a reputation of
+> not working with us very closely; to their detriment as well as our
+> own.
+> 
+> Various people, including myself, have been doing that kind of thing
+> on and off over the years anyway, but Andrew is probably right that
+> it's worth having someone listed in the MAINTAINERS file who actually
+> considers it their responsibility, and as a point of contact for
+> people seeking advice, review, etc.
+>...
 
-> So one of the major things about the short merge window is that it's 
-> hopefully encouraging people to have things ready by the time the merge 
-> window opens, because it's too late to do anything later.
+MAINTAINERS is mostly for finding the right contact for bug reports and 
+patches.
 
-Having things ready by the time the merge window opens is difficult
-when you don't know when the merge window is going to open.  OK, after
-you release a -rc6 or -rc7, we know it's close, but it could still be
-three weeks off at that point.  Or it could be tomorrow.
+For what should I Cc you and for what should I Cc you not?
 
-That's mitigated at the moment by having the merge window be two weeks
-long.  So if you open the merge window at a point where I, or someone
-downstream of me, thought we still had two weeks to go, we can hurry
-up and try to get stuff finished within the first week and still get
-it merged.
+> dwmw2
 
-But if you made a really hard and fast rule that only stuff that is in
-linux-next at the point where the merge window opens can be merged,
-AND the point at which the merge window opens is unknown and
-unpredictable within a period of about 4 weeks, then that makes it
-really tough for those of us downstream of you to plan our work.
+cu
+Adrian
 
-By the way, if you do want to make that rule, then there's a really
-easy way to do it - just pull linux-next, and make that one pull be
-the entire merge window. :)  But please give us at least a week's
-notice that you're going to do that.
+-- 
 
-Paul.
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
