@@ -1,70 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763493AbYD3Qbn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761190AbYD3QhV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763493AbYD3Qbn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Apr 2008 12:31:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758357AbYD3Qbc
+	id S1761190AbYD3QhV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Apr 2008 12:37:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757670AbYD3QhH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Apr 2008 12:31:32 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:41886 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755913AbYD3Qbb (ORCPT
+	Wed, 30 Apr 2008 12:37:07 -0400
+Received: from rv-out-0708.google.com ([209.85.198.246]:23782 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757301AbYD3QhF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Apr 2008 12:31:31 -0400
-Subject: Re: AIO/DIO lockup/crash
-From: Peter Zijlstra <peterz@infradead.org>
-To: Jeff Moyer <jmoyer@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-aio <linux-aio@kvack.org>, Zach Brown <zach.brown@oracle.com>,
-       Clark Williams <williams@redhat.com>
-In-Reply-To: <x49tzhjcsdw.fsf@segfault.boston.devel.redhat.com>
-References: <1209385782.13978.17.camel@twins>
-	 <20080428090857.beb19a20.akpm@linux-foundation.org>
-	 <1209404909.13978.23.camel@twins>
-	 <x49tzhjcsdw.fsf@segfault.boston.devel.redhat.com>
-Content-Type: text/plain
-Date: Wed, 30 Apr 2008 18:31:09 +0200
-Message-Id: <1209573069.6433.41.camel@lappy>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 
+	Wed, 30 Apr 2008 12:37:05 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=yH7WQuWFXABkKTJI6yrw2ugFRzUcAafTj1n0rs13bgK17uxJcbU/BoIvVYc75UMEhx/IONzVv/Y0oZmYEnc+JwWixit/fLSUo3HMayV3w+0xciGtabsee9wHk/3O3imO0/walnoYvK8GNruXnYbLP9zavZiRwabgUGnqvncMqNA=
+Message-ID: <19f34abd0804300937k637e0308r36d4fa20899ff6bc@mail.gmail.com>
+Date: Wed, 30 Apr 2008 18:37:03 +0200
+From: "Vegard Nossum" <vegard.nossum@gmail.com>
+To: "Roland Dreier" <rdreier@cisco.com>
+Subject: Re: [git pull] kmemcheck
+Cc: "Ingo Molnar" <mingo@elte.hu>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Pekka Enberg" <penberg@cs.helsinki.fi>,
+       "Christoph Lameter" <clameter@sgi.com>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       "Thomas Gleixner" <tglx@linutronix.de>
+In-Reply-To: <adazlrb8fxq.fsf@cisco.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080429203446.GA18314@elte.hu> <adazlrb8fxq.fsf@cisco.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-04-30 at 10:46 -0400, Jeff Moyer wrote:
-> Peter Zijlstra <peterz@infradead.org> writes:
-> 
-> > On Mon, 2008-04-28 at 09:08 -0700, Andrew Morton wrote:
-> >
-> >> erk, that's dio->bio_lock, isn't it?
-> >
-> > Yep.
-> >
-> >> That lock is super-simple and hasn't changed in quite some time.  If there
-> >> has been major memory wreckage and we're simply grabbing at a "lock" in
-> >> random memory then I'd expect the bug to maninfest in different ways on
-> >> different runs?
-> >
-> > Looks like it.
-> >
-> >> I assume you have lots of runtime debugging options enabled.
-> >
-> > Not on this particular run. I'll start a -git run this evening with most
-> > of the debugging option enabled. It takes a few hours to reproduce, so I
-> > let it run over-night.
-> 
-> Peter, any update on this?
-> 
-> FWIW, I've been running the aio-dio-invalidate-failure test on a fedora
-> kernel (2.6.25-8.fc9.i686) for several days now without any problems.
-> However, I'm not sure I can reproduce the bugs at all.  I'll revert to a
-> 2.6.24 kernel and try.
+Hi,
 
-I've ran -git for 10+ hours without crashing, but I've also
-changed .config settings (enabled many debugging switches). I'm starting
-to work my way backwards to the previous setup that did crash, but since
-it takes so long to test each kernel its slow going.
+On Wed, Apr 30, 2008 at 6:29 PM, Roland Dreier <rdreier@cisco.com> wrote:
+>  >       kmemcheck: enable in the x86 Kconfig
+>
+>  This patch does:
+>
+>
+>   > +config KMEMCHECK
+>   > +    bool "kmemcheck: trap use of uninitialized memory"
+>   > +    depends on X86_32
+>
+>  So it's only possible to select kmemcheck on 32-bit builds, But you also
+>  seem to have 64-bit stuff, eg
+>
+>
+>   >       kmemcheck: support for 64-bit
+>   >       kmemcheck: add missing pte_hidden() for x86-64
+>
+>  so is the Kconfig patch slightly out-of-date?
 
+We don't officially support 64-bit yet, that is why it is disabled in
+the Kconfig. The 64-bit parts are preliminaries, and as with 32-bit,
+should have no impact when CONFIG_KMEMCHECK=n (as is the case for all
+64-bit builds as you pointed out). It is largely untested, but
+according to Pekka it at least boots in qemu with kmemcheck enabled
+even for 64-bit.
 
+So the 64-bit parts we have is basically to make it _compile_ even if
+you force KMEMCHECK=y on a 64-bit build.
 
+(The main obstacle standing in the way of fully supporting 64-bit is
+the opcode decoding. I don't really know how the 64-bit registers
+works, so I will have to read about it first :-))
+
+Thank you for looking over!
+
+Vegard
+
+-- 
+"The animistic metaphor of the bug that maliciously sneaked in while
+the programmer was not looking is intellectually dishonest as it
+disguises that the error is the programmer's own creation."
+	-- E. W. Dijkstra, EWD1036
