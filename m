@@ -1,59 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933447AbYD3WrY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763586AbYD3Wu6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933447AbYD3WrY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Apr 2008 18:47:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753204AbYD3WrI
+	id S1763586AbYD3Wu6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Apr 2008 18:50:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753936AbYD3Wuu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Apr 2008 18:47:08 -0400
-Received: from an-out-0708.google.com ([209.85.132.240]:48042 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756592AbYD3WrE (ORCPT
+	Wed, 30 Apr 2008 18:50:50 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:60883 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751594AbYD3Wut (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Apr 2008 18:47:04 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=hWUc2ldx0JY5aU3cz/eVvoqmZiRahgQaRys7CavhTLJb50vRwScdsNx+ldK5cY4r9IPtbHwzh1xqNGQYroU/clV3prQriS9BcA8x4DmRG8PX26kZJwzp3r4x52KR9iIkpy2IVwjfvUYz8a4pCBK2f6tR1XCSs9hHI4xK7VPGQQY=
-Date: Wed, 30 Apr 2008 18:47:01 -0400
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+	Wed, 30 Apr 2008 18:50:49 -0400
+Date: Wed, 30 Apr 2008 15:49:48 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
 To: Ingo Molnar <mingo@elte.hu>
-Cc: Stephen Hemminger <shemminger@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Roman Zippel <zippel@linux-m68k.org>, Jan Engelhardt <jengelh@gmx.de>,
-       Richard Purdie <rpurdie@rpsys.net>, Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: [patch, -git] input: CONFIG_INPUT_APANEL build fix
-Message-ID: <20080430224701.GC2629@anvil.corenet.prv>
-References: <20080430185345.GA27224@elte.hu> <20080430150021.ZZRA012@mailhub.coreip.homeip.net> <20080430202013.GB14164@elte.hu> <20080430163924.ZZRA012@mailhub.coreip.homeip.net> <20080430212029.GA28813@elte.hu> <20080430222645.GB2629@anvil.corenet.prv> <20080430223828.GA31878@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080430223828.GA31878@elte.hu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Cc: davem@davemloft.net, torvalds@linux-foundation.org, rjw@sisk.pl,
+       linux-kernel@vger.kernel.org, jirislaby@gmail.com, tglx@linutronix.de
+Subject: Re: Slow DOWN, please!!!
+Message-Id: <20080430154948.171686da.akpm@linux-foundation.org>
+In-Reply-To: <20080430223509.GA31547@elte.hu>
+References: <20080430131537.1f7a0914.akpm@linux-foundation.org>
+	<alpine.LFD.1.10.0804301325260.2980@woody.linux-foundation.org>
+	<20080430135405.ddc42075.akpm@linux-foundation.org>
+	<20080430.142137.236846072.davem@davemloft.net>
+	<20080430221936.GA27292@elte.hu>
+	<20080430223509.GA31547@elte.hu>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 01, 2008 at 12:38:29AM +0200, Ingo Molnar wrote:
-> 
-> * Dmitry Torokhov <dmitry.torokhov@gmail.com> wrote:
-> 
-> > > i'm not suggesting this is your fault in any way - but nevertheless 
-> > > many other subsystems have to deal with the same Kconfig issues and 
-> > > they manage to limp along.
-> > 
-> > I believe I see a steady stream of breakage for leds dependencies from 
-> > all subsystems.
-> 
-> they limp along by adding "depends on NEW_LEDS". 99% of the users will 
-> use some pre-cooked distro kernel where all these options are turned on, 
-> so the flattening and coupling of the dependencies is not a real issue 
-> in practice.
+On Thu, 1 May 2008 00:35:09 +0200
+Ingo Molnar <mingo@elte.hu> wrote:
 
-You still did not answer to the main question - do you think we should
-revert the commit that actually introduced breakage in the sense that
-anything depending on LEDS_CLASS should also add NEW_LEDS dependancy?
-That will take care of the problem (as far as LEDs are concerned) for
-_all_ subsystems and drivers at once.
+> git-revert _kind of_ makes that possible too, but people still feel too 
+> personal about reverts - they take it as intrusion into their subsystem 
+> and regard it as an attack against their competence as a maintainer.
 
--- 
-Dmitry
+I'd question this.  People often seem pretty happy to yank their stuff out
+of there - it relieves ongoing embarrassment and it relieves time pressure
+- they can have another go and get it right at their leisure.
+
+Of course, reverting is easy.  The hard part is often finding the thing
+which needs to be reverted.
+
