@@ -1,104 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762045AbYD3Idn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761700AbYD3IiT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762045AbYD3Idn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Apr 2008 04:33:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757297AbYD3IdY
+	id S1761700AbYD3IiT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Apr 2008 04:38:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755223AbYD3Ih5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Apr 2008 04:33:24 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:53240
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1756725AbYD3IdW (ORCPT
+	Wed, 30 Apr 2008 04:37:57 -0400
+Received: from bzq-179-150-194.static.bezeqint.net ([212.179.150.194]:12127
+	"EHLO il.qumranet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755143AbYD3Ihz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Apr 2008 04:33:22 -0400
-Date: Wed, 30 Apr 2008 01:33:21 -0700 (PDT)
-Message-Id: <20080430.013321.112583347.davem@davemloft.net>
-To: torvalds@linux-foundation.org
-CC: akpm@linux-foundation.org, sparclinux@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [GIT]: Sparc
-From: David Miller <davem@davemloft.net>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Wed, 30 Apr 2008 04:37:55 -0400
+Message-ID: <48182F7F.9000400@qumranet.com>
+Date: Wed, 30 Apr 2008 11:36:15 +0300
+From: Avi Kivity <avi@qumranet.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+MIME-Version: 1.0
+To: Christian Borntraeger <borntraeger@de.ibm.com>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       kvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       Carsten Otte <cotte@de.ibm.com>, git@vger.kernel.org
+Subject: Re: small author mixup 
+References: <1209310768-12322-1-git-send-email-avi@qumranet.com> <200804301012.05179.borntraeger@de.ibm.com>
+In-Reply-To: <200804301012.05179.borntraeger@de.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Christian Borntraeger wrote:
+> Am Sonntag, 27. April 2008 schrieb Avi Kivity:
+>   
+>> Carsten Otte (4):
+>>       s390: KVM preparation: provide hook to enable pgstes in user pagetable
+>>       KVM: s390: interrupt subsystem, cpu timer, waitpsw
+>>       KVM: s390: API documentation
+>>       s390: KVM guest: detect when running on kvm
+>>
+>> Christian Borntraeger (10):
+>>       KVM: kvm.h: __user requires compiler.h
+>>       s390: KVM preparation: host memory management changes for s390 kvm
+>>       s390: KVM preparation: address of the 64bit extint parm in lowcore
+>>       KVM: s390: sie intercept handling
+>>       KVM: s390: intercepts for privileged instructions
+>>       KVM: s390: interprocessor communication via sigp
+>>       KVM: s390: intercepts for diagnose instructions
+>>       KVM: s390: add kvm to kconfig on s390
+>>       KVM: s390: update maintainers
+>>       s390: KVM guest: virtio device support, and kvm hypercalls
+>>     
+>
+> Thats interesting, some of these patches should actually be credited to 
+> Carsten - and in fact on kvm.git master they are credited to Carsten.
+>
+> I think the problem is, that these patches contained multiple From lines. On 
+> kvm.git the first line (Carsten) was used. When you transferred these patches 
+> to the kvm.git-2.6.26-branch, git used the next From-line as the original one 
+> was already removed.
+>
+> While it is not a typical case, is there a better way of specifying multiple 
+> authors to avoid future confusion?
 
-The main bit here is kgdb support for sparc, but there are also some
-cleanups (mostly to facilitate the kgdb changes) and a dup include fix
-from Huang Weiyi.
+It's probably due to my heavy use of git cherry-pick, rebase, and rebase 
+-i.  I couldn't reproduce this with a test that mimics that workflow, so 
+either it has been fixed already, or it's a little more subtle.
 
-Please pull, thanks a lot!
+I don't think you should change anything to avoid this.  I'll keep an 
+eye open for this, and if it happens again I'll fix it locally and send 
+a proper bug report to the git mailing list.
 
-The following changes since commit 194f1a68b93e959ede6ec363db4714e630bdbb6a:
-  Robert Reif (1):
-        sparc: video drivers: add facility level
+-- 
+Any sufficiently difficult bug is indistinguishable from a feature.
 
-are available in the git repository at:
-
-  master.kernel.org:/pub/scm/linux/kernel/git/davem/sparc-2.6.git master
-
-David S. Miller (5):
-      sparc64: Split entry.S up into seperate files.
-      sparc64: Kill PIL_RESERVED, unused.
-      sparc32: Kill smp_message_pass() and related code.
-      kgdbts: Sparc needs sstep emulation.
-      sparc: Add kgdb support.
-
-Huang Weiyi (1):
-      sparc64: remove duplicated include
-
- arch/sparc/Kconfig              |    1 +
- arch/sparc/defconfig            |  139 ++-
- arch/sparc/kernel/Makefile      |    1 +
- arch/sparc/kernel/entry.S       |  125 +--
- arch/sparc/kernel/head.S        |    9 +-
- arch/sparc/kernel/kgdb.c        |  164 +++
- arch/sparc/kernel/sparc-stub.c  |  724 -----------
- arch/sparc/kernel/sun4d_smp.c   |   32 -
- arch/sparc/kernel/sun4m_smp.c   |   45 -
- arch/sparc64/Kconfig            |    1 +
- arch/sparc64/kernel/Makefile    |    1 +
- arch/sparc64/kernel/cherrs.S    |  579 +++++++++
- arch/sparc64/kernel/entry.S     | 2575 ---------------------------------------
- arch/sparc64/kernel/fpu_traps.S |  384 ++++++
- arch/sparc64/kernel/getsetcc.S  |   24 +
- arch/sparc64/kernel/head.S      |   15 +-
- arch/sparc64/kernel/helpers.S   |   63 +
- arch/sparc64/kernel/hvcalls.S   |  886 ++++++++++++++
- arch/sparc64/kernel/ivec.S      |   51 +
- arch/sparc64/kernel/kgdb.c      |  186 +++
- arch/sparc64/kernel/misctrap.S  |   97 ++
- arch/sparc64/kernel/smp.c       |   11 +-
- arch/sparc64/kernel/spiterrs.S  |  245 ++++
- arch/sparc64/kernel/syscalls.S  |  279 +++++
- arch/sparc64/kernel/ttable.S    |    2 +-
- arch/sparc64/kernel/utrap.S     |   29 +
- arch/sparc64/mm/ultra.S         |   27 +
- drivers/misc/kgdbts.c           |    2 +-
- include/asm-sparc/head.h        |   11 +
- include/asm-sparc/kgdb.h        |  116 +--
- include/asm-sparc/smp.h         |    2 -
- include/asm-sparc/system.h      |    2 +
- include/asm-sparc64/kgdb.h      |    1 +
- include/asm-sparc64/pil.h       |    7 -
- include/asm-sparc64/system.h    |    5 +-
- include/asm-sparc64/ttable.h    |    6 +
- 36 files changed, 3223 insertions(+), 3624 deletions(-)
- create mode 100644 arch/sparc/kernel/kgdb.c
- delete mode 100644 arch/sparc/kernel/sparc-stub.c
- create mode 100644 arch/sparc64/kernel/cherrs.S
- delete mode 100644 arch/sparc64/kernel/entry.S
- create mode 100644 arch/sparc64/kernel/fpu_traps.S
- create mode 100644 arch/sparc64/kernel/getsetcc.S
- create mode 100644 arch/sparc64/kernel/helpers.S
- create mode 100644 arch/sparc64/kernel/hvcalls.S
- create mode 100644 arch/sparc64/kernel/ivec.S
- create mode 100644 arch/sparc64/kernel/kgdb.c
- create mode 100644 arch/sparc64/kernel/misctrap.S
- create mode 100644 arch/sparc64/kernel/spiterrs.S
- create mode 100644 arch/sparc64/kernel/syscalls.S
- create mode 100644 arch/sparc64/kernel/utrap.S
- create mode 100644 include/asm-sparc64/kgdb.h
