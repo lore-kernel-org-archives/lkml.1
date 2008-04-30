@@ -1,50 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765772AbYD3WM2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933397AbYD3WNV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765772AbYD3WM2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Apr 2008 18:12:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758692AbYD3WMP
+	id S933397AbYD3WNV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Apr 2008 18:13:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754236AbYD3WNK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Apr 2008 18:12:15 -0400
-Received: from smtp116.sbc.mail.sp1.yahoo.com ([69.147.64.89]:47988 "HELO
-	smtp116.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754958AbYD3WMO (ORCPT
+	Wed, 30 Apr 2008 18:13:10 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:63889 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756498AbYD3WNJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Apr 2008 18:12:14 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=v2mkggOQLx0Qf8X6Z2PrngO+9py1w0CC0lmrPGZp1lD+QLMt6Kgqj3I+4XJ90XKAJdYYbhs6chRszSUJQFuRatkvj70kWDgzfk9mxxBgzcS/QwL9c0uzA7xzPELHlHuvTFs/WkOmNOMLqC8GiiJjVWa8Q0w9iaC/2KcCH1MUNPQ=  ;
-X-YMail-OSG: lhr.vdwVM1n2d6nuQ1QHkMwg.ME228qa7vqflpKKpf..vNnhHn25RZ2s3U016n4ziSyOQE7V9KTM.2SdqZ7yqfF2IljaphscZG8DfljOIwUCDW60MzrQNoey6tnqbIh_GF8-
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: spi-devel-general@lists.sourceforge.net
-Subject: Re: [spi-devel-general] [PATCH] spi_mpc83xx: test below 0 on unsigned irq in mpc83xx_spi_probe()
-Date: Wed, 30 Apr 2008 15:12:10 -0700
-User-Agent: KMail/1.9.6
-Cc: Kumar Gala <galak@kernel.crashing.org>, Roel Kluin <12o3l@tiscali.nl>,
-       "linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>,
-       lkml <linux-kernel@vger.kernel.org>
-References: <480F99D5.7070300@tiscali.nl> <7C711FFF-E1C5-4286-93A8-382055C6760C@kernel.crashing.org>
-In-Reply-To: <7C711FFF-E1C5-4286-93A8-382055C6760C@kernel.crashing.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+	Wed, 30 Apr 2008 18:13:09 -0400
+Date: Wed, 30 Apr 2008 15:11:49 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Paul Mackerras <paulus@samba.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Kumar Gala <galak@kernel.crashing.org>,
+       "\"Zhang Wei\" rdunlap@xenotime.net" <Wei.Zhang@freescale.com>,
+       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
+       mporter@kernel.crashing.org, benh@kernel.crashing.org,
+       linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] docbook: fix fatal rapidio yet again (and more to come)
+Message-Id: <20080430151149.063920cf.randy.dunlap@oracle.com>
+In-Reply-To: <18456.60948.463017.139935@cargo.ozlabs.ibm.com>
+References: <Pine.LNX.4.64.0804292009000.18219@shark.he.net>
+	<20080430113500.dfe21880.akpm@linux-foundation.org>
+	<51A34080-7981-4958-B225-4921FC95B84A@kernel.crashing.org>
+	<20080430121239.28492328.akpm@linux-foundation.org>
+	<18456.60948.463017.139935@cargo.ozlabs.ibm.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200804301512.11317.david-b@pacbell.net>
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 23 April 2008, Kumar Gala wrote:
+On Thu, 1 May 2008 08:09:24 +1000 Paul Mackerras wrote:
+
+> Andrew Morton writes:
 > 
-> On Apr 23, 2008, at 3:19 PM, Roel Kluin wrote:
-> > mpc83xx_spi->irq is unsigned, so the test fails
-> >
-> > Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
+> > > Odd.  I thought Paul had picked up a docbook RapidIO patch from you in  
+> > > the latest merge round.
+> > > 
+> > 
+> > Well it's more than "a" patch.  The six-week-old patch series is:
+> > 
+> > rapidio-add-memory-mapping-driver-to-rapidio.patch
+> > rapidio-add-rapidio-space-allocation-bitmap-arithmetic.patch
+> > rapidio-add-fsl-rapidio-controller-memory-ops-functions.patch
+> > rapidio-add-the-rapidio-master-port-maintance-and-doorbell-window-to-space-resources.patch
+> > rapidio-add-rapidio-proc-fs-for-memory-mapping-debugging.patch
+> > rapidio-add-the-memory-mapping-support-in-rionet-driver.patch
+> > rapidio-fix-docbook-references.patch
+> > rapidio-fix-kernel-doc-problems.patch
+> 
+> What happened is that you (Andrew) sent them on to me pretty much
+> unexamined.  I took a look at them and dropped one of them because it
+> created a new /proc file.  I asked Kumar to look at them and he had
+> issues with another three of the patches, and dropping those meant
+> that all the following ones (including the fix-kernel-doc one)
+> wouldn't apply, so I dropped them too.  I applied the rest and sent
+> them to Linus.
+> 
+> > (seems that I forgot to cc Jeff on the rionet change too).
+> 
+> Yeah.  I nearly dropped that one too.  I probably should have. :)
+> 
+> > Oh well.  If nobody puts their hand up in the next 24 hours or so I'll just
+> > send it all in to Linus.
+> 
+> Please don't.  At this stage I think the best thing is for Kumar to
+> talk to Zhang Wei (they both work for Freescale, so that should be
+> possible in theory :) and get him to rework the remaining patches as
+> required for inclusion in 2.6.27.
 
-Any reason to not just make mpc83xx_spi->irq be "int",
-following normal practice everywhere?  If not, I'll
-roll that into the patch from Joakim Tjernlund...
+Just to be clear, the docbook changes shouldn't wait for 2.6.27.
+There's no need for that.
 
-- Dave
+---
+~Randy
