@@ -1,46 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934188AbYD3W1m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765484AbYD3W2Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934188AbYD3W1m (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Apr 2008 18:27:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762696AbYD3W1e
+	id S1765484AbYD3W2Z (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Apr 2008 18:28:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761254AbYD3W2O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Apr 2008 18:27:34 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:59889 "EHLO
+	Wed, 30 Apr 2008 18:28:14 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:40842 "EHLO
 	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762604AbYD3W1d (ORCPT
+	with ESMTP id S1762228AbYD3W2N (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Apr 2008 18:27:33 -0400
-Message-ID: <4818EB1E.3090700@zytor.com>
-Date: Wed, 30 Apr 2008 14:56:46 -0700
+	Wed, 30 Apr 2008 18:28:13 -0400
+Message-ID: <4818EA2C.2040507@zytor.com>
+Date: Wed, 30 Apr 2008 14:52:44 -0700
 From: "H. Peter Anvin" <hpa@zytor.com>
 User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-To: Pavel Machek <pavel@ucw.cz>
-CC: dmitri.vorobiev@gmail.com, mingo@elte.hu, tglx@linutronix.de,
-       kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: remove NexGen support (fwd)
-References: <20080429081729.GA3921@ucw.cz> <20080430213457.GD18536@elf.ucw.cz> <4818E777.2070702@zytor.com> <20080430215133.GE18536@elf.ucw.cz>
-In-Reply-To: <20080430215133.GE18536@elf.ucw.cz>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, davem@davemloft.net,
+       linux-kernel@vger.kernel.org, jirislaby@gmail.com
+Subject: Re: Slow DOWN, please!!!
+References: <20080429.190352.137408408.davem@davemloft.net> <200804302136.58005.rjw@sisk.pl> <20080430131537.1f7a0914.akpm@linux-foundation.org> <alpine.LFD.1.10.0804301325260.2980@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.1.10.0804301325260.2980@woody.linux-foundation.org>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek wrote:
+Linus Torvalds wrote:
 > 
-> http://www.cpu-info.com/index2.php?mainid=Nx586&page=7
+> The tester base is simply too small.
 > 
-> I do not know how many were really shipped, and yes, they seem to be
-> pretty uncommon, but it sounds like more than samples. Actually, some
-> seem to be for sale on ebay ;-).
+> Now, if *that* could be improved, that would be wonderful, but I'm not 
+> seeing it as very likely.
 > 
 
-Cool.  If someone is willing to pick one up and maintain this fairly 
-trivial amount of code we can resurrect it; given that the code had been 
-broken for several releases seem to indicate noone really cares.
+One thing is that we keep fragmenting the tester base by adding new 
+confidence levels: we now have -mm, -next, mainline -git, mainline -rc, 
+mainline release, stable, distro testing, and distro release (and some 
+distros even have aggressive versus conservative tracks.)  Furthermore, 
+thanks to craniorectal immersion on the part of graphics vendors, a lot 
+of users have to run proprietary drivers on their "main work" systems, 
+which means they can't even test newer releases even if they would dare.
 
-(Also note that the removal will not prevent the kernel from actually 
-running on these chips; in fact, it might actually make them work.)
+This fragmentation is largely intentional, of course -- everyone can 
+pick a risk level appropriate for them -- but it does mean:
+
+a) The lag for a patch to ride through the pipeline is pretty long.
+b) The section of people who are going to use the more aggressive trees 
+for "real work" testing is going to be small.
 
 	-hpa
+
