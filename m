@@ -1,53 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760851AbYD3Sm4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764046AbYD3SoT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760851AbYD3Sm4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Apr 2008 14:42:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755476AbYD3Sms
+	id S1764046AbYD3SoT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Apr 2008 14:44:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758902AbYD3SoH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Apr 2008 14:42:48 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:51401 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750884AbYD3Smr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Apr 2008 14:42:47 -0400
-Date: Wed, 30 Apr 2008 20:42:35 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Johannes Weiner <hannes@saeurebad.de>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [patch 4/4] mm: Unexport __alloc_bootmem_core()
-Message-ID: <20080430184235.GD3008@elte.hu>
-References: <20080430170521.246745395@symbol.fehenstaub.lan> <20080430170840.176104554@symbol.fehenstaub.lan>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080430170840.176104554@symbol.fehenstaub.lan>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Wed, 30 Apr 2008 14:44:07 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:58367 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755419AbYD3SoE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Apr 2008 14:44:04 -0400
+Subject: Re: [PATCH 0/1] Embedded Maintainer(s), linux-embedded@vger list
+From: David Woodhouse <dwmw2@infradead.org>
+To: jwboyer@linux.vnet.ibm.com
+Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       Paul Gortmaker <paul.gortmaker@windriver.com>,
+       linux-embedded@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Tim Bird <tim.bird@am.sony.com>
+In-Reply-To: <1209580009.2946.98.camel@vader.jdub.homelinux.org>
+References: <1209577322.25560.402.camel@pmac.infradead.org>
+	 <1209580009.2946.98.camel@vader.jdub.homelinux.org>
+Content-Type: text/plain
+Date: Wed, 30 Apr 2008 19:43:43 +0100
+Message-Id: <1209581023.25560.436.camel@pmac.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 2008-04-30 at 13:26 -0500, Josh Boyer wrote:
+> Do you see this list as a general embedded patch/issues discussion list,
+> a help list, a list for vendors to interact with the community, or all
+> of the above?
 
-* Johannes Weiner <hannes@saeurebad.de> wrote:
+All of the above -- although I dislike the phrase 'interact with the
+community'. I want vendors to be _part_ of the community, not outsiders
+who merely interact with it.
 
-> This function has no external callers, so unexport it.  Also fix its
-> naming inconsistency.
-> 
-> Signed-off-by: Johannes Weiner <hannes@saeurebad.de>
-> CC: Ingo Molnar <mingo@elte.hu>
-> ---
-> 
-> It could be argued that all bootmem alloc function names begin with 
-> underscores.  But I chose to `no _core function names begin with 
-> underscores' :)
+-- 
+dwmw2
 
-lol :) The double underscores definitely prove it that this code was 
-originally written by me ;-)
-
-	Ingo
