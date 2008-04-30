@@ -1,81 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762486AbYD3LQh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762621AbYD3LRT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762486AbYD3LQh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Apr 2008 07:16:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757241AbYD3LQ0
+	id S1762621AbYD3LRT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Apr 2008 07:17:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757241AbYD3LRG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Apr 2008 07:16:26 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:34475 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757233AbYD3LQZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Apr 2008 07:16:25 -0400
-Date: Wed, 30 Apr 2008 12:16:23 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: ink@jurassic.park.msu.ru, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org, gregkh@suse.de
-Subject: Re: 2.6.25-mm1: Failing to probe IDE interface
-Message-ID: <20080430111622.GB10831@csn.ul.ie>
-References: <20080417160331.b4729f0c.akpm@linux-foundation.org> <20080429154957.GA19148@csn.ul.ie> <20080429165840.GA24125@csn.ul.ie> <200804292337.57874.bzolnier@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <200804292337.57874.bzolnier@gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Wed, 30 Apr 2008 07:17:06 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:45456
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1757206AbYD3LRF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Apr 2008 07:17:05 -0400
+Date: Wed, 30 Apr 2008 04:17:03 -0700 (PDT)
+Message-Id: <20080430.041703.89847530.davem@davemloft.net>
+To: tiwai@suse.de
+Cc: mingo@elte.hu, mchehab@infradead.org, akpm@linux-foundation.org,
+       linux-dvb-maintainer@linuxtv.org, video4linux-list@redhat.com,
+       linux-kernel@vger.kernel.org, efault@gmx.de
+Subject: Re: [patch, -git] media/video/sound build fix, TEA5761/TEA5767
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <s5hiqxzwqak.wl%tiwai@suse.de>
+References: <20080430110115.GA5633@elte.hu>
+	<s5hiqxzwqak.wl%tiwai@suse.de>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (29/04/08 23:37), Bartlomiej Zolnierkiewicz didst pronounce:
-> > <SNIP>
-> > 
-> > The third patch that needed reverting was
-> > gregkh-pci-pci-clean-up-resource-alignment-management.patch (owners added
-> > to cc). The relevant hint in the a diff between a broken and working bootlog was;
-> > 
-> >  system 00:09: ioport range 0x15e0-0x15ef has been reserved
-> > + PCI: bogus alignment of resource 7 [100:1ff] (flags 100) of 0000:00:02.0
-> > + PCI: bogus alignment of resource 8 [100:1ff] (flags 100) of 0000:00:02.0
-> > + PCI: bogus alignment of resource 9 [4000000:7ffffff] (flags 1200) of 0000:00:02.0
-> > + PCI: bogus alignment of resource 10 [4000000:7ffffff] (flags 200) of 0000:00:02.0
-> > + PCI: bogus alignment of resource 7 [100:1ff] (flags 100) of 0000:00:02.1
-> > + PCI: bogus alignment of resource 8 [100:1ff] (flags 100) of 0000:00:02.1
-> > + PCI: bogus alignment of resource 9 [4000000:7ffffff] (flags 1200) of 0000:00:02.1
-> > + PCI: bogus alignment of resource 10 [4000000:7ffffff] (flags 200) of 0000:00:02.1
-> > 
-> > With the resource alignment patch and the two IDE patches reverted, the
-> > laptop is able to boot.
-> 
-> Thanks for tracking it down.
-> 
-> Hmm, it seems that the above patch was merged a week ago:
-> 
-> commit bda0c0afa7a694bb1459fd023515aca681e4d79a
-> Merge: 904e0ab... af40b48...
-> Author: Linus Torvalds <torvalds@linux-foundation.org>
-> Date:   Mon Apr 21 15:58:35 2008 -0700
-> 
->     Merge git://git.kernel.org/pub/scm/linux/kernel/git/gregkh/pci-2.6
-> ...
->       PCI: clean up resource alignment management
-> ...
-> 
-> but it could be that the issue has been already fixed in git tree
-> (could you verify it please?).
-> 
+From: Takashi Iwai <tiwai@suse.de>
+Date: Wed, 30 Apr 2008 13:11:31 +0200
 
-Latest git boots on the laptop so somewhere along the line, it got fixed.
-
-> BTW according to lspci output you should be able to use piix driver
-> instead of ide_generic on this laptop.
+> IMO, it's the reverse selection from sound to V4L that makes things
+> complicated.  I believe it's better to fix it as a normal dependency.
 > 
+> How about the patch below?
 
-I know but the config is a bit minimal for faster building as it's only
-intended for sniff-testing patches.
+The question that remains is what does this mean for users?
 
-Thanks for the help.
+How does a user, who wants to enable this 'sound' driver,
+learn that they must enable the v4l subsystem in order to
+do so?
 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+This is typically why select constructs are used, to not bother the
+user with such messy details.
+
+But like we see in this case, it can cause serious implementation
+problems if not used properly. :(
