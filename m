@@ -1,71 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764691AbYD3XsS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764317AbYD3XwS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764691AbYD3XsS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Apr 2008 19:48:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756922AbYD3XsF
+	id S1764317AbYD3XwS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Apr 2008 19:52:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753331AbYD3XwG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Apr 2008 19:48:05 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:44218 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757574AbYD3XsE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Apr 2008 19:48:04 -0400
-Message-ID: <4819050C.9060800@zytor.com>
-Date: Wed, 30 Apr 2008 16:47:24 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Wed, 30 Apr 2008 19:52:06 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:47294 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752364AbYD3XwE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Apr 2008 19:52:04 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: david@lang.hm
+Subject: Re: Slow DOWN, please!!!
+Date: Thu, 1 May 2008 01:51:48 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>, davem@davemloft.net,
+       linux-kernel@vger.kernel.org, jirislaby@gmail.com
+References: <20080429.190352.137408408.davem@davemloft.net> <200805010123.58247.rjw@sisk.pl> <alpine.DEB.1.10.0804301640110.7807@asgard>
+In-Reply-To: <alpine.DEB.1.10.0804301640110.7807@asgard>
 MIME-Version: 1.0
-To: Oliver Hartkopp <oliver@hartkopp.net>
-CC: Linus Torvalds <torvalds@linux-foundation.org>, akpm@linux-foundation.org,
-       Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org
-Subject: Re: [RFC] Kernel naming convention in the merge phase
-References: <4818F093.3070105@hartkopp.net>
-In-Reply-To: <4818F093.3070105@hartkopp.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200805010151.49679.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oliver Hartkopp wrote:
-> Hi all,
+On Thursday, 1 of May 2008, david@lang.hm wrote:
+> On Thu, 1 May 2008, Rafael J. Wysocki wrote:
 > 
-> i wonder about the Kernel naming convention in the merge phase before
-> the -rc1 is officially tagged by Linus.
+> > On Thursday, 1 of May 2008, Andrew Morton wrote:
+> >> On Wed, 30 Apr 2008 15:31:22 -0700 (PDT)
+> >> Linus Torvalds <torvalds@linux-foundation.org> wrote:
+> >
+> > Also, the patches that were thoroughly discussed during their development
+> > should be regarded as more trustworthy than the ones that were not discussed
+> > at all.
 > 
-> Won't it be more precisely to name the current snapshot
-> 2.6.26-merge-git16 instead of 2.6.25-git16?
-> 
-> It is not that i would suggest to have a new git tag in this merge phase 
-> but only the Makefile should be changed at the beginning of this phase 
-> to identify the ongoing work for the 2.6.26:
-> 
-> ------
-> diff --git a/Makefile b/Makefile
-> index d3634cd..b8c85a4 100644
-> --- a/Makefile
-> +++ b/Makefile
-> @@ -1,8 +1,8 @@
-> VERSION = 2
-> PATCHLEVEL = 6
-> -SUBLEVEL = 25
-> -EXTRAVERSION =
-> -NAME = Funky Weasel is Jiggy wit it
-> +SUBLEVEL = 26
-> +EXTRAVERSION = -merge
-> +NAME = unnamed
-> 
-> # *DOCUMENTATION*
-> # To see a list of typical targets execute "make help"
-> ------
-> 
-> Introducing the new '-merge' version _that_ early helps to avoid the 
-> version confusion in /lib/modules and also allows people to work with 
-> kernel version depended stuff in a very early phase.
-> 
+> but you don't have any way of knowing how much discussion took place on 
+> any particular patch. that discussion could have taken place in many 
+> different places, and you don't have the ability to monitor them all.
 
-And it'll break all the robotic stuff again.
+Not at the moment, but there may be a way to do that if we think of it more
+thoroughly.
 
-Foo-gitX has always been a development snapshot which *follows* Foo.
+One idea may be add a "Commented-by:" tag in which to place people who
+provided valuable comments to the patch author and/or maintainer (as a comma
+separated list, for example, in analogy with the email Cc lists), especially if
+the patch has been changed as a result of the comments.
 
-	-hpa
+Thanks,
+Rafael
