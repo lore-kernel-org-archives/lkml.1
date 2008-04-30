@@ -1,111 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933736AbYD3VCt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934121AbYD3VDY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933736AbYD3VCt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Apr 2008 17:02:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760053AbYD3VCk
+	id S934121AbYD3VDY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Apr 2008 17:03:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760149AbYD3VDK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Apr 2008 17:02:40 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:51413 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753263AbYD3VCj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Apr 2008 17:02:39 -0400
-Date: Wed, 30 Apr 2008 17:01:50 -0400
-From: Jason Baron <jbaron@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Greg KH <greg@kroah.com>
+	Wed, 30 Apr 2008 17:03:10 -0400
+Received: from 136-022.dsl.labridge.com ([206.117.136.22]:1573 "EHLO
+	mail.perches.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1760053AbYD3VDJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Apr 2008 17:03:09 -0400
 Subject: Re: [patch 0/3] dynamic_printk: new feature
-Message-ID: <20080430210147.GA5616@redhat.com>
-References: <20080429183935.GA8717@redhat.com> <20080430124506.0dd2a473.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+From: Joe Perches <joe@perches.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Jason Baron <jbaron@redhat.com>, linux-kernel@vger.kernel.org,
+       Greg KH <greg@kroah.com>, Vegard Nossum <vegard.nossum@gmail.com>,
+       Jim Keniston <jkenisto@us.ibm.com>, Jaroslav Kysela <perex@perex.cz>
 In-Reply-To: <20080430124506.0dd2a473.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+References: <20080429183935.GA8717@redhat.com>
+	 <20080430124506.0dd2a473.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Wed, 30 Apr 2008 13:54:26 -0700
+Message-Id: <1209588866.5041.61.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3-1.2mdv2008.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 30, 2008 at 12:45:06PM -0700, Andrew Morton wrote:
-> We're now in the situation where numerous different subsystems have
-> implemented private mechnisms for tuning their printk verbosity levels.
-> 
+On Wed, 2008-04-30 at 12:45 -0700, Andrew Morton wrote: 
 > Have you taken a look across the tree with a view to converting some of
 > them?  If so, how sizeable/messy/feasible would that task be?
-> 
-> 
 
-i really only focused on pr_debug()/dev_dbg(), with an eye towards
-widening the scope as we go...but I agree that it would be nice to
-understand the scope for the start...i find ~5000 call sites to
-dprintk(), which would be ideal candidates for this type of
-infrastructure.
+I've done that.
+There have been many attempts at this.
 
-> 
-> The situation is far, far worse with compile-time debugging selection.  We
-> have over two hundred different implementations of dprintk!
-> 
-> Have you considered the feasibility of ploddingly converting each of those
-> drivers, one at a time over to the new infrastructure?  Because that's what
-> we should do, I'm afraid.
-> 
-> An implication of this is that once a dprintk-using driver has been
-> converted over to use your new infrastructure, it should still be possible
-> to fully disable the debugging at compile time.  Do you handle that?
-> 
+http://lkml.org/lkml/2007/9/22/110
+http://lkml.org/lkml/2007/9/27/274
 
-that's correct. the way i've handled this in the patch is:
+It's not particularly difficult.
+It's just a few scripts and some message massaging.
+It's also a lot of what some call unnecessary churn.
+I think it useful though.
 
-if DEBUG 
-	you get the current compiled in behavior per .c file
-elif DYNAMIC_PRINTK
-	you get the dynamic runtime configurable debugging
-else
-	its compiled out
+I also have scripts to remove file/function/line numbers
+from messages and use a generic method to integrate and
+optionally display them via pr_<level>.
 
-> > If this patch is accepted, i'd like to convert the myriad 'debug' printks -
-> > DEBUGP(), dprintk(), to a standard format, either pr_debug() or dev_dbg(), to
-> > hook into this mechanism.
-> 
-> ah, so you have looked.  How nasty will it be?
-> 
-> 
-> A couple of things:
-> 
+akin to:
+
+#define pr_info(fmt, arg...) \
+do { \
+	char prefix[MAX_PREFIX_LEN]; \
+	if (pr_enabled(prefix, sizeof(prefix), PR_INFO)) { \
+		printk("%s" fmt, prefix, ##arg); \
+	} \
+} while (0)
+
+where pr_enabled optionally formats KBUILD_MODNAME/__func__/__LINE__
+and of course <level> to prefix with appropriate
+CONFIG_PR_USE_MODNAME/FUNCTION/LINE controls for
+embedded size minimization when kallsyms is not
+available.
+
+pr_enabled can also be #defined to 0 to eliminate
+the strings and printk calls.
+
 > - Your design handles a boolean on/off control.  But some code implements
 >   a verbosity-level control.  Thoughts on this?
-> 
 
-right, i think though it could easily be extended to level control.
-Basically the patch associates the on/off per KBUILD_MODNAME, however we
-could also associate a level per KBUILD_MODNAME. This level could be set
-either by the generic debugfs interface, via module parameters at module
-load time, or in the the module __init sections as appropriate.
+It seems there is still resistance to even ethtool style
+msglevel.
 
+Extending Jason's approach to test a module message level
+seems simple enough and could/should be universal.
 
-> - I expect that other code implements a field-selector control, for the
->   lack of a better term: an greater-than-one number of separate boolean
->   controls.  How to handle this?
-> 
-> 
+I think that message rate limiting should also be done here.
+Also I think this facility would help in localization.
 
-hmmm...i think this is handled by having the driver call the conditions
-in its scope and then call out to the generic infrastructure if the
-conditions are met.
+> But we will need to design it carefully first.
 
-> Thanks for working on this.  If we can get this underway and get a decent
-> amount of conversion done, it will be a huuuuuuuuuuuuge cleanup to the
-> kernel.  But we will need to design it carefully first.
-> 
+Agreed.  The "useless churn!" cries need also to be ignored
+or at least damped down.
+
+I'd also like to consider including mechanisms to
+consolidate what are now consecutive calls to printk
+to print partial lines into block start/end calls.
+Perhaps pr_start, pr_cont, pr_end.
+
+These calls should never fail under memory pressure.
+
+Vegard Nossum had what I think is a good idea to
+include a pointer to a printk reassembly buffer
+in struct task_struct.
+
+That could remove the need to pass round a pointer
+when using block style printk calls.  
+
 > I guess one good testcase would be ALSA.  It has pretty fancy debugging
 > control (which I apparently have never been smart enough to understand). 
 > Did you take a look at what they're doing, with a view to
 > can-we-switch-ALSA-to-use-this?
-> 
-> 
 
-ok. i'll take a more detailed look at the pontentially wider scope of this change.
+If you're referring to include/sound/core.h, it seems simple enough.
 
-thanks,
-
--Jason
+Would it be accepted though?
 
