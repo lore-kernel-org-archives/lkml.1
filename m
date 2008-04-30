@@ -1,71 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755029AbYD3EAp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755668AbYD3EDl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755029AbYD3EAp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Apr 2008 00:00:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751069AbYD3EAf
+	id S1755668AbYD3EDl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Apr 2008 00:03:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751997AbYD3EDd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Apr 2008 00:00:35 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:39776 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750842AbYD3EAe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Apr 2008 00:00:34 -0400
-Date: Wed, 30 Apr 2008 14:00:27 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: David Chinner <dgc@sgi.com>
-Cc: linux-next@vger.kernel.org, xfs-masters@oss.sgi.com,
-       Christoph Hellwig <hch@infradead.org>,
-       Lachlan McIlroy <lachlan@sgi.com>, LKML <linux-kernel@vger.kernel.org>,
-       Linus <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: linux-next: xfs build failure
-Message-Id: <20080430140027.6cd83fd0.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.5.0beta3 (GTK+ 2.12.9; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Wed__30_Apr_2008_14_00_27_+1000_3VhS6R1lHf85y9YT"
+	Wed, 30 Apr 2008 00:03:33 -0400
+Received: from eth7959.sa.adsl.internode.on.net ([150.101.82.22]:34686 "EHLO
+	hawking.rebel.net.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751332AbYD3EDd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Apr 2008 00:03:33 -0400
+Message-ID: <4817EF91.4080800@davidnewall.com>
+Date: Wed, 30 Apr 2008 13:33:29 +0930
+From: David Newall <davidn@davidnewall.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
+MIME-Version: 1.0
+To: David Miller <davem@davemloft.net>
+CC: linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: Slow DOWN, please!!!
+References: <20080429.190352.137408408.davem@davemloft.net>
+In-Reply-To: <20080429.190352.137408408.davem@davemloft.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Wed__30_Apr_2008_14_00_27_+1000_3VhS6R1lHf85y9YT
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+David Miller wrote:
+> We need to slow down the merging, we need to review things
+> more, we need people to test their fucking changes!
 
-Hi all,
+Yes.  The Linux process is becoming unreliable.  Newly "stable" versions
+have stability problems.  The development process looks childish. 
+Seasoned developers say not to worry, that the process works.  I do
+worry.  BSD seems more attractive, and it may even be worth the
+considerable effort to switch my entire client-base.  Linux was lucky to
+gain the foothold that it did: traditionally, BSD had a better system
+with a less restrictive licence, so it is surprising that manufacturers
+chose to go with Linux.  BSD still has a less restrictive licence and
+when mainstream press becomes interested in Linux's quality problems
+it's adoption will fall.  BSD is still a good, maybe even better, option.
 
-Today's linux-next build (powerpc ppc64_defconfig) fails like this:
-
-fs/xfs/xfs_ialloc.c: In function 'xfs_ialloc_ag_alloc':
-fs/xfs/xfs_ialloc.c:301: error: implicit declaration of function 'random32'
-
-I added
-
-#include <linux/random.h>
-
-after the other includes in fs/xfs/xfs_ialloc.c, but there is probably a
-better fix.
-
-The commit that seems to have caused this
-6309a0720469beb77e0ab75f403a98a0aba4140c ("XFS] Don't initialise new
-inode generation numbers to zero") in the xfs tree that I have seems to
-have just gone into Linus' tree as commit
-359346a9655c8800408ed3ca44517ac7ea95c197.
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Wed__30_Apr_2008_14_00_27_+1000_3VhS6R1lHf85y9YT
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFIF+7fTgG2atn1QN8RApK6AJ9P8vULctuJEO3cHl8AZV7cjklLqwCgiTP4
-yLhTbYjTCF9Z6ZyAnyV3gIA=
-=WovH
------END PGP SIGNATURE-----
-
---Signature=_Wed__30_Apr_2008_14_00_27_+1000_3VhS6R1lHf85y9YT--
+Linus, this is your baby and so it's your problem.  Only you have the
+influence to change things.
