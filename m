@@ -1,59 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759104AbYD3E2n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756576AbYD3EqP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759104AbYD3E2n (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Apr 2008 00:28:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752827AbYD3E2e
+	id S1756576AbYD3EqP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Apr 2008 00:46:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752945AbYD3Ep5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Apr 2008 00:28:34 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:37385
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752714AbYD3E2e (ORCPT
+	Wed, 30 Apr 2008 00:45:57 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:34094 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753146AbYD3Ep5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Apr 2008 00:28:34 -0400
-Date: Tue, 29 Apr 2008 21:28:33 -0700 (PDT)
-Message-Id: <20080429.212833.192304794.davem@davemloft.net>
-To: venkatesh.pallipadi@intel.com
-Cc: mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] /dev/mem gcc weak function workaround
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20080430013108.GA18207@linux-os.sc.intel.com>
-References: <20080430013108.GA18207@linux-os.sc.intel.com>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Wed, 30 Apr 2008 00:45:57 -0400
+Date: Wed, 30 Apr 2008 13:50:35 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: "Ross Biro" <rossb@google.com>
+Cc: linux-mm@kvack.org, lkml <linux-kernel@vger.kernel.org>,
+       "hugh@veritas.com" <hugh@veritas.com>
+Subject: Re: Page Faults slower in 2.6.25-rc9 than 2.6.23
+Message-Id: <20080430135035.b0b02533.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <d43160c70804290610t2135a271hd9b907529e89e74e@mail.gmail.com>
+References: <d43160c70804290610t2135a271hd9b907529e89e74e@mail.gmail.com>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Venki Pallipadi <venkatesh.pallipadi@intel.com>
-Date: Tue, 29 Apr 2008 18:31:09 -0700
+On Tue, 29 Apr 2008 09:10:36 -0400
+"Ross Biro" <rossb@google.com> wrote:
 
-> Some flavors of gcc 4.1.0 and 4.1.1 seems to have trouble understanding
-> weak function definitions. Calls to function from the same file where it is
-> defined as weak _may_ get inlined, even when there is a non-weak definition of
-> the function elsewhere. I tried using attribute 'noinline' which does not
-> seem to help either.
+> I don't know if this has been noticed before.  I was benchmarking my
+> page table relocation code and I noticed that on 2.6.25-rc9 page
+> faults take 10% more time than on 2.6.22.  This is using lmbench
+> running on an intel x86_64 system.  The good news is that the page
+> table relocation code now only adds a 1.6% slow down to page faults.
 > 
-> One workaround for this is to have weak functions defined in different
-> file as below. Other possible way is to not use weak functions and go back
-> to ifdef logic.
+
+It seems lmbench's pagefault program uses 'page fault by READ'.
+Then, this patch affects. (this patch was added at 2.6.24-rc?.)
+==
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=557ed1fa2620dc119adb86b34c614e152a629a80
+==
+By it, ZERO_PAGE is not used for page fault in anonymous mapping.
+So it seems an expexted result.
+
+Thanks,
+-Kame
+
+>     Ross
 > 
-> There are few other usages in kernel that seem to depend on weak (and noinline)
-> working correctly, which can also potentially break and needs such workarounds.
-> Example -
-> mach_reboot_fixups() in arch/x86/kernel/reboot.c is one such call which
-> is getting inlined with a flavor of gcc 4.1.1.
+> 2.6.25-rc9:
 > 
-> Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-> Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
+> File & VM system latencies in microseconds - smaller is better
+> -------------------------------------------------------------------------------
+> Host                 OS   0K File      10K File     Mmap    Prot   Page   100fd
+>                         Create Delete Create Delete Latency Fault  Fault  selct
+> --------- ------------- ------ ------ ------ ------ ------- ----- ------- -----
+> ipnn2     Linux 2.6.25-   13.9 7.6111  103.4 9.7453   926.0 0.711 2.14250 2.552
+> ipnn2     Linux 2.6.25-   13.7 7.6243  310.7 9.6574   932.0 0.750 2.15970 2.555
+> ipnn2     Linux 2.6.25-   13.9 7.6831  192.5   10.0   927.0 0.760 2.21310 2.553
+> ipnn2     Linux 2.6.25-   13.9 7.5739   98.4 9.5330   927.0 0.703 2.17610 2.554
+> ipnn2     Linux 2.6.25-   14.6 7.6429   39.1   10.8   935.0 0.763 2.17250 2.552
+> ipnn2     Linux 2.6.25-   14.1 7.8777  129.8 9.9375   930.0 0.782 2.26460 2.559
+> ipnn2     Linux 2.6.25-   14.8 7.9639  623.8 8.2042   927.0 0.773 2.21510 2.557
+> ipnn2     Linux 2.6.25-   14.4 7.5842  622.3 8.3272   920.0 0.745 2.22210 2.558
+> ipnn2     Linux 2.6.25-   14.2 7.6339   45.7   10.2   935.0 0.675 2.23860 2.554
+> ipnn2     Linux 2.6.25-   14.1 7.7175  263.7   10.1   929.0 0.762 2.22350 2.556
+> ipnn2     Linux 2.6.25-   13.9 8.1230  378.2 9.4343   975.0 0.752 2.25920 2.554
+> 
+> 
+> 2.6.23:
+> File & VM system latencies in microseconds - smaller is better
+> -------------------------------------------------------------------------------
+> Host                 OS   0K File      10K File     Mmap    Prot   Page   100fd
+>                         Create Delete Create Delete Latency Fault  Fault  selct
+> --------- ------------- ------ ------ ------ ------ ------- ----- ------- -----
+> ipnn2     Linux 2.6.23-                               218.0 0.912 1.94010 2.626
+> ipnn2     Linux 2.6.23-                               219.0 1.095 1.96400 2.597
+> ipnn2     Linux 2.6.23-                               219.0 0.774 1.96640 2.603
+> ipnn2     Linux 2.6.23-                               221.0 0.946 1.99950 2.601
+> ipnn2     Linux 2.6.23-                               219.0 0.902 1.99160 2.733
+> ipnn2     Linux 2.6.23-                               217.0 0.904 2.04790 2.601
+> ipnn2     Linux 2.6.23-                               225.0 0.893 1.99620 2.600
+> 
+> --
+> To unsubscribe, send a message with 'unsubscribe linux-mm' in
+> the body to majordomo@kvack.org.  For more info on Linux MM,
+> see: http://www.linux-mm.org/ .
+> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
 
-This sounds like a bug.  And if gcc does multi-file compilation it
-can in theory do the same mistake even if you move it to another
-file.
-
-We need something more bulletproof here.
-
-Also, we have a macro for marking things weak "__weak" which should
-be used here.
