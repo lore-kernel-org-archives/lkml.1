@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762631AbYD3QGc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759708AbYD3QOA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762631AbYD3QGc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Apr 2008 12:06:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755686AbYD3QGX
+	id S1759708AbYD3QOA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Apr 2008 12:14:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755532AbYD3QNv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Apr 2008 12:06:23 -0400
-Received: from gate.crashing.org ([63.228.1.57]:40078 "EHLO gate.crashing.org"
+	Wed, 30 Apr 2008 12:13:51 -0400
+Received: from gate.crashing.org ([63.228.1.57]:49706 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755081AbYD3QGX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Apr 2008 12:06:23 -0400
-Date: Wed, 30 Apr 2008 11:01:24 -0500 (CDT)
+	id S1755342AbYD3QNu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Apr 2008 12:13:50 -0400
+Date: Wed, 30 Apr 2008 11:08:51 -0500 (CDT)
 From: Kumar Gala <galak@kernel.crashing.org>
 X-X-Sender: galak@blarg.am.freescale.net
 To: Greg KH <greg@kroah.com>
 cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
        Jeff Garzik <jeff@garzik.org>, Emilian.Medve@Freescale.com,
        htejun@gmail.com, Andrew Morton <akpm@osdl.org>
-Subject: [PATCH] [POWERPC] devres: Add devm_ioremap_flags()
-Message-ID: <Pine.LNX.4.64.0804301059430.22937@blarg.am.freescale.net>
+Subject: [PATCH v2] [POWERPC] devres: Add devm_ioremap_flags()
+Message-ID: <Pine.LNX.4.64.0804301106010.22992@blarg.am.freescale.net>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -32,13 +32,19 @@ Signed-off-by: Emil Medve <Emilian.Medve@Freescale.com>
 Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
 ---
 
+Forgot to commit the actual implemtation in arch/powerpc/lib/devres.c
+
 Which tree should this go through, powerpc.git?
 
+- k
+
  arch/powerpc/lib/Makefile |    1 +
+ arch/powerpc/lib/devres.c |   33 +++++++++++++++++++++++++++++++++
  include/asm-powerpc/io.h  |    8 +++++++-
  include/linux/io.h        |    1 +
  lib/devres.c              |    2 +-
- 4 files changed, 10 insertions(+), 2 deletions(-)
+ 5 files changed, 43 insertions(+), 2 deletions(-)
+ create mode 100644 arch/powerpc/lib/devres.c
 
 diff --git a/arch/powerpc/lib/Makefile b/arch/powerpc/lib/Makefile
 index 4bb023f..f1d2cdc 100644
@@ -49,6 +55,45 @@ index 4bb023f..f1d2cdc 100644
 
  obj-$(CONFIG_PPC_LIB_RHEAP) += rheap.o
 +obj-$(CONFIG_HAS_IOMEM)	+= devres.o
+diff --git a/arch/powerpc/lib/devres.c b/arch/powerpc/lib/devres.c
+new file mode 100644
+index 0000000..b73c64b
+--- /dev/null
++++ b/arch/powerpc/lib/devres.c
+@@ -0,0 +1,33 @@
++#include <linux/device.h>	/* devres_*(), devm_ioremap_release() */
++#include <linux/io.h>		/* ioremap_flags() */
++#include <linux/module.h>	/* EXPORT_SYMBOL() */
++
++/**
++ * devm_ioremap_flags - Managed ioremap_flags()
++ * @dev: Generic device to remap IO address for
++ * @offset: BUS offset to map
++ * @size: Size of map
++ * @flags: Page flags
++ *
++ * Managed ioremap_flags().  Map is automatically unmapped on driver
++ * detach.
++ */
++void __iomem *devm_ioremap_flags(struct device *dev, resource_size_t offset,
++				 size_t size, unsigned long flags)
++{
++	void __iomem **ptr, *addr;
++
++	ptr = devres_alloc(devm_ioremap_release, sizeof(*ptr), GFP_KERNEL);
++	if (!ptr)
++		return NULL;
++
++	addr = ioremap_flags(offset, size, flags);
++	if (addr) {
++		*ptr = addr;
++		devres_add(dev, ptr);
++	} else
++		devres_free(ptr);
++
++	return addr;
++}
++EXPORT_SYMBOL(devm_ioremap_flags);
 diff --git a/include/asm-powerpc/io.h b/include/asm-powerpc/io.h
 index afae069..3b8c334 100644
 --- a/include/asm-powerpc/io.h
