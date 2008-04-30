@@ -1,50 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764884AbYD3TO0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764994AbYD3TOv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764884AbYD3TO0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Apr 2008 15:14:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762404AbYD3TOK
+	id S1764994AbYD3TOv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Apr 2008 15:14:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762546AbYD3TOe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Apr 2008 15:14:10 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:37331 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1762300AbYD3TOJ (ORCPT
+	Wed, 30 Apr 2008 15:14:34 -0400
+Received: from fg-out-1718.google.com ([72.14.220.156]:43445 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764903AbYD3TOb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Apr 2008 15:14:09 -0400
-Date: Wed, 30 Apr 2008 12:13:58 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Chris Friesen <cfriesen@nortel.com>
-cc: David Newall <davidn@davidnewall.com>, David Miller <davem@davemloft.net>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Slow DOWN, please!!!
-In-Reply-To: <4818C336.5000800@nortel.com>
-Message-ID: <alpine.LFD.1.10.0804301211510.2980@woody.linux-foundation.org>
-References: <20080429.190352.137408408.davem@davemloft.net> <4817EF91.4080800@davidnewall.com> <20080429.211835.130816277.davem@davemloft.net> <48186E57.5070805@davidnewall.com> <alpine.LFD.1.10.0804300739350.2997@woody.linux-foundation.org>
- <4818B8A7.4000902@davidnewall.com> <alpine.LFD.1.10.0804301127020.2980@woody.linux-foundation.org> <4818C336.5000800@nortel.com>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Wed, 30 Apr 2008 15:14:31 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-disposition:message-id:content-type:content-transfer-encoding;
+        b=BY3xMDg+eMvoSDmNzege+s3+OwmIVJoeDqQ/KwifCPdFe06t0iRdmGLlwuq+ck2hlpBg4C3T6v3QYjAVb0hmA3cdYTgd4Cdt/e32FlU79FfYWdtRHcjffhR1gi3wquzQ5RsHn2rvT39/rQVTYllso3WTakmvf7dp9KQujRYOlE0=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: IDE probe failure in 2.6.25-mm1
+Date: Wed, 30 Apr 2008 21:30:44 +0200
+User-Agent: KMail/1.9.9
+Cc: Balaji Rao <balajirrao@gmail.com>, linux-kernel@vger.kernel.org
+References: <200804302343.14949.balajirrao@gmail.com> <20080430112028.ae20df4a.akpm@linux-foundation.org>
+In-Reply-To: <20080430112028.ae20df4a.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Disposition: inline
+Message-Id: <200804302130.44894.bzolnier@gmail.com>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Wed, 30 Apr 2008, Chris Friesen wrote:
+On Wednesday 30 April 2008, Andrew Morton wrote:
+> On Wed, 30 Apr 2008 23:43:14 +0530
+> Balaji Rao <balajirrao@gmail.com> wrote:
 > 
-> He did say that he was testing 2.6.25, and that suspend-to-disk was 
-> broken in 2.6.25.
+> > Hi Andrew,
+> > 
+> > IDE probe fails in 2.6.25-mm1 on qemu.
+> > 
+> > [    0.664164] Uniform Multi-Platform E-IDE driver
+> > [    1.571508] ide0: DISABLED, NO IRQ
+> > [    1.572380] ide0: failed to initialize IDE interface
+> > 
+> > This is the output with linux-2.6.git
+> > 
+> > [    1.567368] ide0 at 0x1f0-0x1f7,0x3f6 on irq 14
+> > [    1.571430] hda: max request size: 512KiB
+> > [    1.574302] hda: 10485760 sectors (5368 MB) w/256KiB Cache, CHS=10402/255/63
+> > [    1.583896] hda: cache flushes supported
+> > [    1.585053]  hda: hda1
+> > 
+> > This is apparently due to the invasive changes in hwif_t's io_ports member.
+> > 
+> 
+> OK, thanks.
+> 
+> I _think_ Bart idenfitied a patch which caused this (or something like it)
+> and dropped it?
 
-Neither of which had anything to do with the whole "slow down" argument.
+Yep.
 
-If you have a bug, make a bug report, and push it, and make people aware 
-of it. But don't make it an argument for development to slow down.
+Two patches were dropped from IDE tree:
 
-Should we all stand around with our thumbs up our *ss because somebody has 
-a bug? Should the other developers just stop, because suspend-to-disk is 
-broken for somebody? Should everything come to a standstill because David 
-Newall doesn't like how there are other things going on that are 
-independent of _his_ problems?
+	ide-fix-hwif-s-initialization.patch
+	ide-make-ide_hwifs-static.patch
 
-Do you really believe that?
+there is also a hot-fix patch available: 
 
-			Linus
+	http://article.gmane.org/gmane.linux.ide/30860
+
++ for qemu switching to using piix host driver (qemu emulates PIIX3) should
+also workaround the issue since it seems to happen only with ide_generic.
+
+Thanks,
+Bart
