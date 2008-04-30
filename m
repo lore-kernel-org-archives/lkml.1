@@ -1,105 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762541AbYD3PIL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763963AbYD3PIm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762541AbYD3PIL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Apr 2008 11:08:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762309AbYD3PGc
+	id S1763963AbYD3PIm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Apr 2008 11:08:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762474AbYD3PGh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Apr 2008 11:06:32 -0400
-Received: from styx.suse.cz ([82.119.242.94]:36432 "EHLO mail.suse.cz"
+	Wed, 30 Apr 2008 11:06:37 -0400
+Received: from styx.suse.cz ([82.119.242.94]:36443 "EHLO mail.suse.cz"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1762134AbYD3PGX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Apr 2008 11:06:23 -0400
+	id S1762177AbYD3PGY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Apr 2008 11:06:24 -0400
 From: Jan Kara <jack@suse.cz>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: LKML <linux-kernel@vger.kernel.org>, Jan Kara <jack@suse.cz>,
        linux-ext4@vger.kernel.org
-Subject: [PATCH] ext4: Fix typos in messages and comments (journalled -> journaled)
-Date: Wed, 30 Apr 2008 17:06:16 +0200
-Message-Id: <1209567981323-git-send-email-jack@suse.cz>
+Subject: [PATCH] ext4: Correct mount option parsing to detect when quota options can be changed
+Date: Wed, 30 Apr 2008 17:06:20 +0200
+Message-Id: <12095679822135-git-send-email-jack@suse.cz>
 X-Mailer: git-send-email 1.5.2.4
-In-Reply-To: <1209567981639-git-send-email-jack@suse.cz>
+In-Reply-To: <12095679822696-git-send-email-jack@suse.cz>
 References: y
  <12095679813226-git-send-email-jack@suse.cz>
  <12095679812375-git-send-email-jack@suse.cz>
  <12095679812452-git-send-email-jack@suse.cz>
  <1209567981639-git-send-email-jack@suse.cz>
+ <1209567981323-git-send-email-jack@suse.cz>
+ <12095679812717-git-send-email-jack@suse.cz>
+ <12095679824183-git-send-email-jack@suse.cz>
+ <12095679822696-git-send-email-jack@suse.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+We should not allow user to change quota mount options when quota is just
+suspended. I would make mount options and internal quota state inconsistent.
+Also we should not allow user to change quota format when quota is turned on.
+On the other hand we can just silently ignore when some option is set to the
+value it already has (mount does this on remount).
+
 Cc: linux-ext4@vger.kernel.org
 Signed-off-by: Jan Kara <jack@suse.cz>
 ---
- fs/ext4/super.c |   16 ++++++++--------
- 1 files changed, 8 insertions(+), 8 deletions(-)
+ fs/ext4/super.c |   26 ++++++++++++++++++++------
+ 1 files changed, 20 insertions(+), 6 deletions(-)
 
 diff --git a/fs/ext4/super.c b/fs/ext4/super.c
-index f6ab164..49099e4 100644
+index 49099e4..4f0588a 100644
 --- a/fs/ext4/super.c
 +++ b/fs/ext4/super.c
-@@ -1164,7 +1164,7 @@ static int parse_options (char *options, struct super_block *sb,
+@@ -979,7 +979,7 @@ static int parse_options (char *options, struct super_block *sb,
+ 	int data_opt = 0;
+ 	int option;
+ #ifdef CONFIG_QUOTA
+-	int qtype;
++	int qtype, qfmt;
+ 	char *qname;
+ #endif
+ 
+@@ -1162,7 +1162,9 @@ static int parse_options (char *options, struct super_block *sb,
+ 		case Opt_grpjquota:
+ 			qtype = GRPQUOTA;
  set_qf_name:
- 			if (sb_any_quota_enabled(sb)) {
+-			if (sb_any_quota_enabled(sb)) {
++			if ((sb_any_quota_enabled(sb) ||
++			     sb_any_quota_suspended(sb)) &&
++			    !sbi->s_qf_names[qtype]) {
  				printk(KERN_ERR
--					"EXT4-fs: Cannot change journalled "
-+					"EXT4-fs: Cannot change journaled "
+ 					"EXT4-fs: Cannot change journaled "
  					"quota options when quota turned on.\n");
- 				return 0;
- 			}
-@@ -1202,7 +1202,7 @@ set_qf_name:
+@@ -1200,7 +1202,9 @@ set_qf_name:
+ 		case Opt_offgrpjquota:
+ 			qtype = GRPQUOTA;
  clear_qf_name:
- 			if (sb_any_quota_enabled(sb)) {
+-			if (sb_any_quota_enabled(sb)) {
++			if ((sb_any_quota_enabled(sb) ||
++			     sb_any_quota_suspended(sb)) &&
++			    sbi->s_qf_names[qtype]) {
  				printk(KERN_ERR "EXT4-fs: Cannot change "
--					"journalled quota options when "
-+					"journaled quota options when "
+ 					"journaled quota options when "
  					"quota turned on.\n");
- 				return 0;
- 			}
-@@ -1248,7 +1248,7 @@ clear_qf_name:
- 		case Opt_jqfmt_vfsold:
- 		case Opt_jqfmt_vfsv0:
- 			printk(KERN_ERR
--				"EXT4-fs: journalled quota options not "
-+				"EXT4-fs: journaled quota options not "
- 				"supported.\n");
+@@ -1213,10 +1217,20 @@ clear_qf_name:
+ 			sbi->s_qf_names[qtype] = NULL;
  			break;
- 		case Opt_noquota:
-@@ -1333,14 +1333,14 @@ clear_qf_name:
- 		}
- 
- 		if (!sbi->s_jquota_fmt) {
--			printk(KERN_ERR "EXT4-fs: journalled quota format "
-+			printk(KERN_ERR "EXT4-fs: journaled quota format "
- 					"not specified.\n");
- 			return 0;
- 		}
- 	} else {
- 		if (sbi->s_jquota_fmt) {
--			printk(KERN_ERR "EXT4-fs: journalled quota format "
--					"specified with no journalling "
-+			printk(KERN_ERR "EXT4-fs: journaled quota format "
-+					"specified with no journaling "
- 					"enabled.\n");
- 			return 0;
- 		}
-@@ -1581,7 +1581,7 @@ static void ext4_orphan_cleanup (struct super_block * sb,
- 			int ret = ext4_quota_on_mount(sb, i);
- 			if (ret < 0)
- 				printk(KERN_ERR
--					"EXT4-fs: Cannot turn on journalled "
-+					"EXT4-fs: Cannot turn on journaled "
- 					"quota: error %d\n", ret);
- 		}
- 	}
-@@ -3106,7 +3106,7 @@ static int ext4_release_dquot(struct dquot *dquot)
- 
- static int ext4_mark_dquot_dirty(struct dquot *dquot)
- {
--	/* Are we journalling quotas? */
-+	/* Are we journaling quotas? */
- 	if (EXT4_SB(dquot->dq_sb)->s_qf_names[USRQUOTA] ||
- 	    EXT4_SB(dquot->dq_sb)->s_qf_names[GRPQUOTA]) {
- 		dquot_mark_dquot_dirty(dquot);
+ 		case Opt_jqfmt_vfsold:
+-			sbi->s_jquota_fmt = QFMT_VFS_OLD;
+-			break;
++			qfmt = QFMT_VFS_OLD;
++			goto set_qf_format;
+ 		case Opt_jqfmt_vfsv0:
+-			sbi->s_jquota_fmt = QFMT_VFS_V0;
++			qfmt = QFMT_VFS_V0;
++set_qf_format:
++			if ((sb_any_quota_enabled(sb) ||
++			     sb_any_quota_suspended(sb)) &&
++			    sbi->s_jquota_fmt != qfmt) {
++				printk(KERN_ERR "EXT4-fs: Cannot change "
++					"journaled quota options when "
++					"quota turned on.\n");
++				return 0;
++			}
++			sbi->s_jquota_fmt = qfmt;
+ 			break;
+ 		case Opt_quota:
+ 		case Opt_usrquota:
 -- 
 1.5.2.4
 
