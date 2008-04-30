@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762626AbYD3L6U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762543AbYD3MBR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762626AbYD3L6U (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Apr 2008 07:58:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758254AbYD3L6K
+	id S1762543AbYD3MBR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Apr 2008 08:01:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757990AbYD3MBF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Apr 2008 07:58:10 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:44888 "EHLO mx2.suse.de"
+	Wed, 30 Apr 2008 08:01:05 -0400
+Received: from mx2.suse.de ([195.135.220.15]:45487 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756544AbYD3L6J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Apr 2008 07:58:09 -0400
-Date: Wed, 30 Apr 2008 13:58:06 +0200
-Message-ID: <s5hej8nwo4x.wl%tiwai@suse.de>
+	id S1757963AbYD3MBE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Apr 2008 08:01:04 -0400
+Date: Wed, 30 Apr 2008 14:01:03 +0200
+Message-ID: <s5hd4o7wo00.wl%tiwai@suse.de>
 From: Takashi Iwai <tiwai@suse.de>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: Mauro Carvalho Chehab <mchehab@infradead.org>,
@@ -18,12 +18,11 @@ Cc: Mauro Carvalho Chehab <mchehab@infradead.org>,
        linux-dvb-maintainer@linuxtv.org, video4linux-list@redhat.com,
        linux-kernel@vger.kernel.org, Mike Galbraith <efault@gmx.de>
 Subject: Re: [patch, -git] media/video/sound build fix, TEA5761/TEA5767
-In-Reply-To: <20080430112138.GA11844@elte.hu>
+In-Reply-To: <20080430111803.GA11628@elte.hu>
 References: <20080430110115.GA5633@elte.hu>
 	<s5hiqxzwqak.wl%tiwai@suse.de>
 	<20080430111516.GA9954@elte.hu>
 	<20080430111803.GA11628@elte.hu>
-	<20080430112138.GA11844@elte.hu>
 User-Agent: Wanderlust/2.15.5 (Almost Unreal) SEMI/1.14.6 (Maruoka)
  FLIM/1.14.7 (=?ISO-8859-4?Q?Sanj=F2?=) APEL/10.6 MULE XEmacs/21.5 (beta28)
  (fuki) (+CVS-20070806) (i386-suse-linux)
@@ -33,44 +32,48 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-At Wed, 30 Apr 2008 13:21:38 +0200,
+At Wed, 30 Apr 2008 13:18:03 +0200,
 Ingo Molnar wrote:
 > 
-> Subject: sound/video: sound/i2c/other/tea575x-tuner.c build fix
-> From: Ingo Molnar <mingo@elte.hu>
-> Date: Tue Apr 29 22:40:31 CEST 2008
 > 
-> fix build failure triggered by this config:
+> * Ingo Molnar <mingo@elte.hu> wrote:
 > 
->  http://redhat.com/~mingo/misc/config-Tue_Apr_29_22_33_36_CEST_2008.bad
+> > > IMO, it's the reverse selection from sound to V4L that makes things 
+> > > complicated.  I believe it's better to fix it as a normal 
+> > > dependency.
+> > > 
+> > > How about the patch below?
+> > 
+> > thanks, i've added it to the mix, instead of my patch.
 > 
-> sound/i2c/other/tea575x-tuner.c: In function 'snd_tea575x_ioctl':
-> sound/i2c/other/tea575x-tuner.c:95: error: 'VIDIOCGCAP' undeclared (first use in this function)
-> sound/i2c/other/tea575x-tuner.c:95: error: (Each undeclared identifier is reported only once
-> sound/i2c/other/tea575x-tuner.c:95: error: for each function it appears in.)
-> sound/i2c/other/tea575x-tuner.c:97: error: storage size of 'v' isn't known
+> it now fails with another randconfig:
 > 
-> that code still depends on VIDEO_V4L1_COMPAT APIs.
-> 
-> Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> ---
->  sound/pci/Kconfig |    1 +
->  1 file changed, 1 insertion(+)
-> 
-> Index: linux/sound/pci/Kconfig
-> ===================================================================
-> --- linux.orig/sound/pci/Kconfig
-> +++ linux/sound/pci/Kconfig
-> @@ -527,6 +527,7 @@ config SND_FM801_TEA575X
->  	tristate
->  	depends on SND_FM801_TEA575X_BOOL
->  	default SND_FM801
-> +	select VIDEO_V4L1_COMPAT
->  
->  config SND_HDA_INTEL
->  	tristate "Intel HD Audio"
+>    http://redhat.com/~mingo/misc/config-Wed_Apr_30_13_13_26_CEST_2008.bad
 
-This one shouldn't be needed with my patch.
+What error did you get with this?
 
+> i've added back my hack to keep things rolling. (Note: i've got some 
+> media drivers hacks in this tree too so maybe one of them has a 
+> side-effect)
+
+Taking a quick look,
+
+	CONFIG_VIDEO_DEV=y
+	CONFIG_VIDEO_V4L2_COMMON=y
+	# CONFIG_VIDEO_ALLOW_V4L1 is not set
+	CONFIG_VIDEO_V4L1_COMPAT=y
+
+seems strange.  VIDEO_ALLOW_V4L1 should have been selected since
+drivers/media/video/Kconfig contains the following:
+
+	config VIDEO_V4L1
+		tristate
+		depends on VIDEO_DEV && VIDEO_V4L2_COMMON && VIDEO_ALLOW_V4L1
+		default VIDEO_DEV && VIDEO_V4L2_COMMON && VIDEO_ALLOW_V4L1
+
+I guess the remaining reverse-selection caused this.
+
+
+thanks,
 
 Takashi
