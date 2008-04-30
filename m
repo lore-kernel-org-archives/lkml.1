@@ -1,40 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762624AbYD3Ovj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762742AbYD3OwV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762624AbYD3Ovj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Apr 2008 10:51:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758108AbYD3OvP
+	id S1762742AbYD3OwV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Apr 2008 10:52:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759020AbYD3OwH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Apr 2008 10:51:15 -0400
-Received: from ms.trustica.cz ([82.208.32.68]:41345 "EHLO ms.trustica.cz"
+	Wed, 30 Apr 2008 10:52:07 -0400
+Received: from gw.goop.org ([64.81.55.164]:43832 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757105AbYD3OvN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Apr 2008 10:51:13 -0400
-Message-ID: <48188753.40305@assembler.cz>
-Date: Wed, 30 Apr 2008 16:50:59 +0200
-From: Rudolf Marek <r.marek@assembler.cz>
-User-Agent: Mozilla-Thunderbird 2.0.0.9 (X11/20080109)
+	id S1758743AbYD3OwF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Apr 2008 10:52:05 -0400
+Message-ID: <48188786.7020609@goop.org>
+Date: Wed, 30 Apr 2008 07:51:50 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080418)
 MIME-Version: 1.0
-To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-CC: Jean Delvare <khali@linux-fr.org>, Matthew <jackdachef@gmail.com>,
-       Maxim Levitsky <maximlevitsky@gmail.com>, trenn@suse.de,
-       Kasper Sandberg <lkml@metanurb.dk>, Len Brown <lenb@kernel.org>,
-       linux-acpi@vger.kernel.org, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org, "Zhang, Rui" <rui.zhang@intel.com>
-Subject: Re: Linux 2.6.25 (coretemp reads high temperatures)
-References: <e85b9d30804180837y39c52e26i588e4b67c87a5e9d@mail.gmail.com> <200804182151.49021.lenb@kernel.org> <200804231143.10875.maximlevitsky@gmail.com> <1209406784.11608.15.camel@localhost> <1209474423.1784.837.camel@queen.suse.de> <20080429170824.09540206@hyperion.delvare> <48179DB4.8040701@assembler.cz> <e85b9d30804291558r4051f1bbm9256aa2af2d86b6c@mail.gmail.com> <20080430081035.2e789a50@hyperion.delvare> <20080430144655.GB3543@khazad-dum.debian.net>
-In-Reply-To: <20080430144655.GB3543@khazad-dum.debian.net>
+To: Jens Axboe <jens.axboe@oracle.com>
+CC: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org, peterz@infradead.org, npiggin@suse.de,
+       linux-arch@vger.kernel.org, mingo@elte.hu
+Subject: Re: [PATCH 2/10] x86: convert to generic helpers for IPI function
+ calls
+References: <1209453990-7735-1-git-send-email-jens.axboe@oracle.com> <1209453990-7735-3-git-send-email-jens.axboe@oracle.com> <481786A5.7010604@goop.org> <20080430113542.GZ12774@kernel.dk> <20080430122001.GS11126@linux.vnet.ibm.com> <20080430123136.GB12774@kernel.dk>
+In-Reply-To: <20080430123136.GB12774@kernel.dk>
+X-Enigmail-Version: 0.95.6
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>> but like lm_sensors's output states - it's not bad until  I / we're
->>> getting temperatures from 85°C (?) [in this particular case], ...
->> If I remember correctly, at 84°C your CPU will start to throttle, at
->> 100°C it will shut down. You still have 24°C before the former happens,
->> so it should be OK.
+Jens Axboe wrote:
+> Xen could just stuff that bit into its arch_send_call_function_ipi(),
+> something like the below should be fine. My question to Jeremy was more
+> of the order of whether it should be kept or not, I guess it's safer to
+> just keep it and retain the existing behaviour (and let Jeremy/others
+> evaluate it at will later on). Note that I got rid of the yield bool and
+> break when we called the hypervisor.
+>   
 
-The high limit is when the all fans should go max. Throttle is at crit.
+Yes, it's a nice cleanup.
 
-Rudolf
+> Jeremy, shall I add this?
+>   
+
+Hold off for now.  Given that its effects are unmeasured, I'm not even 
+sure its the right thing to do.  For example, it will yield if you're 
+sending an IPI to a vcpu which wants to run but can't, but does nothing 
+for an idle vcpu.  And always yielding may be a performance problem if 
+the IPI doesn't involve any cpu contention.
+
+It's easy to add back if it turns out to be useful.
+
+    J
