@@ -1,73 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932888AbYD3Vjg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933053AbYD3Vke@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932888AbYD3Vjg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Apr 2008 17:39:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757855AbYD3Vj0
+	id S933053AbYD3Vke (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Apr 2008 17:40:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757068AbYD3VkX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Apr 2008 17:39:26 -0400
-Received: from gw.goop.org ([64.81.55.164]:38515 "EHLO mail.goop.org"
+	Wed, 30 Apr 2008 17:40:23 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:57709 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753263AbYD3VjZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Apr 2008 17:39:25 -0400
-Message-ID: <4818E6FE.50607@goop.org>
-Date: Wed, 30 Apr 2008 14:39:10 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080418)
+	id S1754659AbYD3VkV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Apr 2008 17:40:21 -0400
 MIME-Version: 1.0
-To: Jens Axboe <jens.axboe@oracle.com>
-CC: linux-kernel@vger.kernel.org, peterz@infradead.org, npiggin@suse.de,
-       linux-arch@vger.kernel.org, mingo@elte.hu, paulmck@linux.vnet.ibm.com
-Subject: Re: [PATCH 2/10] x86: convert to generic helpers for IPI function
- calls
-References: <1209453990-7735-1-git-send-email-jens.axboe@oracle.com> <1209453990-7735-3-git-send-email-jens.axboe@oracle.com>
-In-Reply-To: <1209453990-7735-3-git-send-email-jens.axboe@oracle.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: tony.luck@intel.com
+Cc: linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] ia64 TS_RESTORE_SIGMASK
+X-Fcc: ~/Mail/linus
+X-Zippy-Says: I'll clean your ROOM!!  I know some GOOD stories, too!!  All about
+    ROAD Island's, HUSH Puppies, and how LUKE finds GOLD on his LAND!!
+Message-Id: <20080430214014.7E2C426FA05@magilla.localdomain>
+Date: Wed, 30 Apr 2008 14:40:14 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jens Axboe wrote:
-> This converts x86, x86-64, and xen to use the new helpers for
-> smp_call_function() and friends, and adds support for
-> smp_call_function_single().
->   
-Seems to work fine with this:
+Replace TIF_RESTORE_SIGMASK with TS_RESTORE_SIGMASK and define
+our own set_restore_sigmask() function.  This saves the costly
+SMP-safe set_bit operation, which we do not need for the sigmask
+flag since TIF_SIGPENDING always has to be set too.
 
-Subject: xen: build fix for generic IPI stuff
-
-Not even one CONFIG_XEN test build?
-
-Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+Signed-off-by: Roland McGrath <roland@redhat.com>
 ---
- arch/x86/xen/smp.c           |    3 +--
- include/asm-x86/xen/events.h |    1 +
- 2 files changed, 2 insertions(+), 2 deletions(-)
+ arch/ia64/ia32/ia32_signal.c   |    2 +-
+ arch/ia64/kernel/signal.c      |   15 ++++++++-------
+ include/asm-ia64/thread_info.h |   13 +++++++++++--
+ 3 files changed, 20 insertions(+), 10 deletions(-)
 
-===================================================================
---- a/arch/x86/xen/smp.c
-+++ b/arch/x86/xen/smp.c
-@@ -43,8 +43,7 @@
- static DEFINE_PER_CPU(int, debug_irq) = -1;
+diff --git a/arch/ia64/ia32/ia32_signal.c b/arch/ia64/ia32/ia32_signal.c
+index 256a7fa..b763ca1 100644
+--- a/arch/ia64/ia32/ia32_signal.c
++++ b/arch/ia64/ia32/ia32_signal.c
+@@ -463,7 +463,7 @@ sys32_sigsuspend (int history0, int history1, old_sigset_t mask)
  
- static irqreturn_t xen_call_function_interrupt(int irq, void *dev_id);
--
--static struct call_data_struct *call_data;
-+static irqreturn_t xen_call_function_single_interrupt(int irq, void *dev_id);
+ 	current->state = TASK_INTERRUPTIBLE;
+ 	schedule();
+-	set_thread_flag(TIF_RESTORE_SIGMASK);
++	set_restore_sigmask();
+ 	return -ERESTARTNOHAND;
+ }
  
- /*
-  * Reschedule call back. Nothing to do,
-===================================================================
---- a/include/asm-x86/xen/events.h
-+++ b/include/asm-x86/xen/events.h
-@@ -4,6 +4,7 @@
- enum ipi_vector {
- 	XEN_RESCHEDULE_VECTOR,
- 	XEN_CALL_FUNCTION_VECTOR,
-+	XEN_CALL_FUNCTION_SINGLE_VECTOR,
+diff --git a/arch/ia64/kernel/signal.c b/arch/ia64/kernel/signal.c
+index 5740296..19c5a78 100644
+--- a/arch/ia64/kernel/signal.c
++++ b/arch/ia64/kernel/signal.c
+@@ -464,7 +464,7 @@ ia64_do_signal (struct sigscratch *scr, long in_syscall)
+ 	if (!user_mode(&scr->pt))
+ 		return;
  
- 	XEN_NR_IPIS,
- };
-
-
+-	if (test_thread_flag(TIF_RESTORE_SIGMASK))
++	if (current_thread_info()->status & TS_RESTORE_SIGMASK)
+ 		oldset = &current->saved_sigmask;
+ 	else
+ 		oldset = &current->blocked;
+@@ -530,12 +530,13 @@ ia64_do_signal (struct sigscratch *scr, long in_syscall)
+ 		 * continue to iterate in this loop so we can deliver the SIGSEGV...
+ 		 */
+ 		if (handle_signal(signr, &ka, &info, oldset, scr)) {
+-			/* a signal was successfully delivered; the saved
++			/*
++			 * A signal was successfully delivered; the saved
+ 			 * sigmask will have been stored in the signal frame,
+ 			 * and will be restored by sigreturn, so we can simply
+-			 * clear the TIF_RESTORE_SIGMASK flag */
+-			if (test_thread_flag(TIF_RESTORE_SIGMASK))
+-				clear_thread_flag(TIF_RESTORE_SIGMASK);
++			 * clear the TS_RESTORE_SIGMASK flag.
++			 */
++			current_thread_info()->status &= ~TS_RESTORE_SIGMASK;
+ 			return;
+ 		}
+ 	}
+@@ -566,8 +567,8 @@ ia64_do_signal (struct sigscratch *scr, long in_syscall)
+ 
+ 	/* if there's no signal to deliver, we just put the saved sigmask
+ 	 * back */
+-	if (test_thread_flag(TIF_RESTORE_SIGMASK)) {
+-		clear_thread_flag(TIF_RESTORE_SIGMASK);
++	if (current_thread_info()->status & TS_RESTORE_SIGMASK) {
++		current_thread_info()->status &= ~TS_RESTORE_SIGMASK;
+ 		sigprocmask(SIG_SETMASK, &current->saved_sigmask, NULL);
+ 	}
+ }
+diff --git a/include/asm-ia64/thread_info.h b/include/asm-ia64/thread_info.h
+index f30e055..2422ac6 100644
+--- a/include/asm-ia64/thread_info.h
++++ b/include/asm-ia64/thread_info.h
+@@ -108,13 +108,11 @@ extern void tsk_clear_notify_resume(struct task_struct *tsk);
+ #define TIF_DB_DISABLED		19	/* debug trap disabled for fsyscall */
+ #define TIF_FREEZE		20	/* is freezing for suspend */
+ #define TIF_RESTORE_RSE		21	/* user RBS is newer than kernel RBS */
+-#define TIF_RESTORE_SIGMASK	22	/* restore signal mask in do_signal() */
+ 
+ #define _TIF_SYSCALL_TRACE	(1 << TIF_SYSCALL_TRACE)
+ #define _TIF_SYSCALL_AUDIT	(1 << TIF_SYSCALL_AUDIT)
+ #define _TIF_SINGLESTEP		(1 << TIF_SINGLESTEP)
+ #define _TIF_SYSCALL_TRACEAUDIT	(_TIF_SYSCALL_TRACE|_TIF_SYSCALL_AUDIT|_TIF_SINGLESTEP)
+-#define _TIF_RESTORE_SIGMASK	(1 << TIF_RESTORE_SIGMASK)
+ #define _TIF_NOTIFY_RESUME	(1 << TIF_NOTIFY_RESUME)
+ #define _TIF_SIGPENDING		(1 << TIF_SIGPENDING)
+ #define _TIF_NEED_RESCHED	(1 << TIF_NEED_RESCHED)
+@@ -131,7 +129,18 @@ extern void tsk_clear_notify_resume(struct task_struct *tsk);
+ #define TIF_WORK_MASK		(TIF_ALLWORK_MASK&~(_TIF_SYSCALL_TRACE|_TIF_SYSCALL_AUDIT))
+ 
+ #define TS_POLLING		1 	/* true if in idle loop and not sleeping */
++#define TS_RESTORE_SIGMASK	2	/* restore signal mask in do_signal() */
+ 
+ #define tsk_is_polling(t) (task_thread_info(t)->status & TS_POLLING)
+ 
++#ifndef __ASSEMBLY__
++#define HAVE_SET_RESTORE_SIGMASK	1
++static inline void set_restore_sigmask(void)
++{
++	struct thread_info *ti = current_thread_info();
++	ti->status |= TS_RESTORE_SIGMASK;
++	set_bit(TIF_SIGPENDING, &ti->flags);
++}
++#endif	/* !__ASSEMBLY__ */
++
+ #endif /* _ASM_IA64_THREAD_INFO_H */
