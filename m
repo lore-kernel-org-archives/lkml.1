@@ -1,87 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764691AbYD3XWD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932857AbYD3XWx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764691AbYD3XWD (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Apr 2008 19:22:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756008AbYD3XVx
+	id S932857AbYD3XWx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Apr 2008 19:22:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756057AbYD3XWp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Apr 2008 19:21:53 -0400
-Received: from 1wt.eu ([62.212.114.60]:3649 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752364AbYD3XVw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Apr 2008 19:21:52 -0400
-Date: Thu, 1 May 2008 01:21:43 +0200
-From: Willy Tarreau <w@1wt.eu>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: torvalds@linux-foundation.org, rjw@sisk.pl, davem@davemloft.net,
-       linux-kernel@vger.kernel.org, jirislaby@gmail.com
-Subject: Re: Slow DOWN, please!!!
-Message-ID: <20080430232143.GN7501@1wt.eu>
-References: <20080429.190352.137408408.davem@davemloft.net> <200804302245.50817.rjw@sisk.pl> <alpine.LFD.1.10.0804301422350.2980@woody.linux-foundation.org> <200805010023.32213.rjw@sisk.pl> <alpine.LFD.1.10.0804301530360.2980@woody.linux-foundation.org> <20080430224610.GO8474@1wt.eu> <20080430155252.76469ead.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080430155252.76469ead.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.11
+	Wed, 30 Apr 2008 19:22:45 -0400
+Received: from rex.securecomputing.com ([203.24.151.4]:54283 "EHLO
+	cyberguard.com.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756008AbYD3XWo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Apr 2008 19:22:44 -0400
+X-Greylist: delayed 1244 seconds by postgrey-1.27 at vger.kernel.org; Wed, 30 Apr 2008 19:22:43 EDT
+Message-ID: <4818FA62.9020503@snapgear.com>
+Date: Thu, 01 May 2008 09:01:54 +1000
+From: Greg Ungerer <gerg@snapgear.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070301)
+MIME-Version: 1.0
+To: Sebastian Siewior <bigeasy@linutronix.de>
+CC: Greg Ungerer <gerg@uclinux.org>, uclinux-dev@uclinux.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] m68knommu: Add info about removing mcfserial
+References: <20080430201408.GA22731@Chamillionaire.breakpoint.cc>
+In-Reply-To: <20080430201408.GA22731@Chamillionaire.breakpoint.cc>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 30, 2008 at 03:52:52PM -0700, Andrew Morton wrote:
-> On Thu, 1 May 2008 00:46:10 +0200
-> Willy Tarreau <w@1wt.eu> wrote:
+
+Sebastian Siewior wrote:
+> From: Sebastian Siewior <bigeasy@linutronix.de>
 > 
-> > On Wed, Apr 30, 2008 at 03:31:22PM -0700, Linus Torvalds wrote:
-> > > 
-> > > 
-> > > On Thu, 1 May 2008, Rafael J. Wysocki wrote:
-> > > > 
-> > > > > And there's no way to avoid the fact that during the merge window, we will 
-> > > > > get something on the order of ten thousand commits (eg 2.6.24->25-rc1 was 
-> > > > > 9629 commits).
-> > > > 
-> > > > Well, do we _have_ _to_ take that much?  I know we _can_, but is this really
-> > > > necessary?
-> > > 
-> > > Do you want me to stop merging your code?
-> > > 
-> > > Do you think anybody else does?
-> > > 
-> > > Any suggestions on how to convince people that their code is not worth 
-> > > merging?
-> > 
-> > I think you're approaching a solution Linus. If developers take a refusal
-> > as a punishment, maybe you can use that for trees which have too many
-> > unresolved regressions. This would be really unfair to subsystem maintainers
-> > which themselves merge a lot of work, but recursively they may apply the
-> > same principle to their own developers, so that everybody knows that it's
-> > not worth working on next code past a point where too many regressions are
-> > reported.
-> > 
+> Schedule a removal for this driver. Alternative driver is
+> available for a while now.
 > 
-> Well.  If we were good enough at tracking bug reports and regressions we
-> could look at the status of subsytem X and say "no new features for you".
+> Signed-off-by: Sebastian Siewior <bigeasy@linutronix.de>
+> ---
+> Greg said [1] and I hope .28 is not too late.
+> [1] http://www.mail-archive.com/uclinux-dev@uclinux.org/msg04453.html
+
+.28 is ok with me.
+
+Regards
+Greg
+
+
+
+>  Documentation/feature-removal-schedule.txt |    8 ++++++++
+>  drivers/serial/Kconfig                     |    6 +++++-
+>  drivers/serial/mcfserial.c                 |    1 +
+>  3 files changed, 14 insertions(+), 1 deletions(-)
 > 
-> That would be a drastic step even if we had the information to do it (which
-> we don't).
+> diff --git a/Documentation/feature-removal-schedule.txt b/Documentation/feature-removal-schedule.txt
+> index 3c35d45..27c0056 100644
+> --- a/Documentation/feature-removal-schedule.txt
+> +++ b/Documentation/feature-removal-schedule.txt
+> @@ -304,3 +304,11 @@ When:	2.6.26
+>  Why:	Implementation became generic; users should now include
+>  	linux/semaphore.h instead.
+>  Who:	Matthew Wilcox <willy@linux.intel.com>
+> +
+> +---------------------------
+> +
+> +What:	old style serial driver for ColdFire (CONFIG_SERIAL_COLDFIRE)
+> +When:	2.6.28
+> +Why:	This driver still uses the old interface and has been replaced
+> +	by CONFIG_SERIAL_MCF.
+> +Who:	Sebastian Siewior <sebastian@breakpoint.cc>
+> diff --git a/drivers/serial/Kconfig b/drivers/serial/Kconfig
+> index 36acbcc..62e6eb1 100644
+> --- a/drivers/serial/Kconfig
+> +++ b/drivers/serial/Kconfig
+> @@ -976,11 +976,15 @@ config SERIAL_68328_RTS_CTS
+>  	depends on SERIAL_68328
+>  
+>  config SERIAL_COLDFIRE
+> -	bool "ColdFire serial support"
+> +	bool "ColdFire serial support (DEPRECATED)"
+>  	depends on COLDFIRE
+>  	help
+>  	  This driver supports the built-in serial ports of the Motorola ColdFire
+>  	  family of CPUs.
+> +	  This driver is deprecated because it supports only the old interface
+> +	  for serial drivers and features like magic keys are not working.
+> +	  Please switch to the new style driver because this driver will be
+> +	  removed soon.
+>  
+>  config SERIAL_MCF
+>  	bool "Coldfire serial support (new style driver)"
+> diff --git a/drivers/serial/mcfserial.c b/drivers/serial/mcfserial.c
+> index 43af40d..56007cc 100644
+> --- a/drivers/serial/mcfserial.c
+> +++ b/drivers/serial/mcfserial.c
+> @@ -1,3 +1,4 @@
+> +#warning This driver is deprecated. Check Kconfig for details.
+>  /*
+>   * mcfserial.c -- serial driver for ColdFire internal UARTS.
+>   *
 
-We already have some information, Rafael is tracking this info. But we need
-other developers to look at others' bugs. If we considered that for each
-release, the *worst* subsystem does not get any new features merged, maybe
-the ones who really want to get theirs merged will quickly take a look at
-their not-so-friend coworkers's work to try to get their score up and
-avoid getting spotted.
-
-After all, that's what we want to achieve : better cross-testing. For
-2.6.27, we would probably have Davem happy to report one hundred of
-bugs brought by Ingo and ban him from next merge. But if that's the
-only way to find 100 buts in one release cycle, hey that's quite
-efficient! And in turn, Ingo would have more time to fix (or deny)
-bugs assigned to him, then take a look at his accuser's code for next
-release.
-
-Not very moral, but the kernel team has evolved from a small team of
-buddies to a large enterprise. And to survive this evolution, we may
-need to apply the immoral principles found in big companies.
-
-Willy
-
+-- 
+------------------------------------------------------------------------
+Greg Ungerer  --  Chief Software Dude       EMAIL:     gerg@snapgear.com
+Secure Computing Corporation                PHONE:       +61 7 3435 2888
+825 Stanley St,                             FAX:         +61 7 3891 3630
+Woolloongabba, QLD, 4102, Australia         WEB: http://www.SnapGear.com
