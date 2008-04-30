@@ -1,116 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758177AbYD3Kcw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759831AbYD3KeB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758177AbYD3Kcw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Apr 2008 06:32:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755750AbYD3Kcm
+	id S1759831AbYD3KeB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Apr 2008 06:34:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756148AbYD3Kdw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Apr 2008 06:32:42 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:58603 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753350AbYD3Kcm (ORCPT
+	Wed, 30 Apr 2008 06:33:52 -0400
+Received: from outbound.icp-qv1-irony-out4.iinet.net.au ([203.59.1.150]:31864
+	"EHLO outbound.icp-qv1-irony-out4.iinet.net.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755750AbYD3Kdv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Apr 2008 06:32:42 -0400
-Date: Wed, 30 Apr 2008 11:24:53 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Sami Farin <safari-kernel@safari.iki.fi>
-Cc: Linux kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.24.4+mmap with overcommit >= 1
-Message-ID: <20080430112453.406b243a@core>
-In-Reply-To: <20080430011953.c5ftilonkabvwmkp@m.safari.iki.fi>
-References: <20080430011953.c5ftilonkabvwmkp@m.safari.iki.fi>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Wed, 30 Apr 2008 06:33:51 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Al4BAH/nF0h8qMj2/2dsb2JhbAAIrG8
+X-IronPort-AV: E=Sophos;i="4.25,727,1199631600"; 
+   d="scan'208";a="214130818"
+Subject: Re: [patch/rfc 2.6.25-git] gpio: sysfs interface
+From: Ben Nizette <bn@niasdigital.com>
+To: Trent Piepho <tpiepho@freescale.com>
+Cc: David Brownell <david-b@pacbell.net>, lkml <linux-kernel@vger.kernel.org>,
+       hartleys <hartleys@visionengravers.com>,
+       Mike Frysinger <vapier.adi@gmail.com>, Bryan Wu <cooloney@kernel.org>
+In-Reply-To: <Pine.LNX.4.64.0804292003440.24287@t2.domain.actdsltmp>
+References: <200804281239.51729.david-b@pacbell.net>
+	 <200804291455.39674.david-b@pacbell.net>
+	 <1209511772.311.55.camel@moss.renham>
+	 <200804291804.19518.david-b@pacbell.net>
+	 <1209521291.311.99.camel@moss.renham>
+	 <Pine.LNX.4.64.0804292003440.24287@t2.domain.actdsltmp>
+Content-Type: text/plain
+Organization: Nias Digital
+Date: Wed, 30 Apr 2008 20:33:47 +1000
+Message-Id: <1209551627.3641.12.camel@moss.renham>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.12.0 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 30 Apr 2008 04:19:54 +0300
-Sami Farin <safari-kernel@safari.iki.fi> wrote:
 
-> I have arch x86_64, glibc-2.7.90-7 from Fedora.
-> When I have vm.overcommit_memory == 1 or 2,
-> mmap succeeds for really huge values.
-> These ranges succeed (approximate):
->  8793870000000 - 17500387000000
-> 26390387000000 - 35180387000000
+On Tue, 2008-04-29 at 20:13 -0700, Trent Piepho wrote:
+> On Wed, 30 Apr 2008, Ben Nizette wrote:
+> >
+> > So you're suggesting that the gpio-N links and control file live inside
+> > the gpiochip-X folder along with info about the chip to which they're
+> > attached?  I don't mind this, sounds good.  Certainly feels most
+> > sysfsish.
+> >
+> > Scripting would be pretty simple assuming there's one control file per
+> > chip and the gpio number written to said control file is relative to
+> > that chip's base.  i.e. finding pcf9557:5 (assuming only one such
+> > device) would just be
+> >
+> > - find the gpiochip-X folder whose /label == pcf9557
+> > - echo "export 5" > <that_folder>/control
+> > - read/write <that_folder>/gpio-5/{value,direction}
+> 
+> I don't suppose you could actually write the code to do this?
+> 
+> I already wrote the code, and am using it, for the way I have it work.
+> 
+> cat /sys/class/gpio/pcf9557-0:5
+> 
+> But I guess this is too easy.  "We can't have any of that!!  The Earth will
+> turn in its grave!  And Slashdot will be decorated in Pink!  Teh End Daze
+> arrive!  :)"
+> 
 
-Fun fun fun
+I'm sure I could but I'd prefer to have us all come (as close as
+possible) to an agreed theoretical interface first :-)
 
-This should fix strict overcommit (== 2) I think
+What you've got working there is nice but it still downsides (unless you
+can set me straight).  First, we still have the problem of either 100s
+of unused files or an index to use in a request.  Also, if you've got
+many pcf9557s in a system you'll have a bunch of pcf9557-n; how do you
+know which is which?
 
+I think with the above solution we're coming very close to a sexy
+system.  We don't need an index file, we have all the information we
+need to find which device is which, there's no need to calculate any
+full gpio number, there's no files which aren't going to be used, it's
+safe, extensible, scriptable, sysfsish..  Am I missing anything?
 
-diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.25-mm1/include/linux/mman.h linux-2.6.25-mm1/include/linux/mman.h
---- linux.vanilla-2.6.25-mm1/include/linux/mman.h	2008-04-28 11:35:21.000000000 +0100
-+++ linux-2.6.25-mm1/include/linux/mman.h	2008-04-30 11:21:10.000000000 +0100
-@@ -15,16 +15,31 @@
- 
- #include <asm/atomic.h>
- 
-+/* 32bit platforms have a virtual address space in pages we
-+   can fit into an atomic_t. We want to avoid atomic64_t on
-+   such boxes as it is often expensive and most strict overcommit
-+   users turn out to be embedded low power processors */
-+
-+#if (BITS_PER_LONG == 32)
-+#define vm_atomic_t atomic_t
-+#define vm_atomic_read atomic_read
-+#define vm_atomic_add atomic_add
-+#else
-+#define vm_atomic_t atomic64_t
-+#define vm_atomic_read atomic64_read
-+#define vm_atomic_add atomic64_add
-+#endif
-+
- extern int sysctl_overcommit_memory;
- extern int sysctl_overcommit_ratio;
--extern atomic_t vm_committed_space;
-+extern vm_atomic_t vm_committed_space;
- 
- #ifdef CONFIG_SMP
- extern void vm_acct_memory(long pages);
- #else
- static inline void vm_acct_memory(long pages)
- {
--	atomic_add(pages, &vm_committed_space);
-+	vm_atomic_add(pages, &vm_committed_space);
- }
- #endif
- 
-diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.25-mm1/mm/mmap.c linux-2.6.25-mm1/mm/mmap.c
---- linux.vanilla-2.6.25-mm1/mm/mmap.c	2008-04-28 11:36:52.000000000 +0100
-+++ linux-2.6.25-mm1/mm/mmap.c	2008-04-30 11:17:03.000000000 +0100
-@@ -80,7 +80,7 @@
- int sysctl_overcommit_memory = OVERCOMMIT_GUESS;  /* heuristic overcommit */
- int sysctl_overcommit_ratio = 50;	/* default is 50% */
- int sysctl_max_map_count __read_mostly = DEFAULT_MAX_MAP_COUNT;
--atomic_t vm_committed_space = ATOMIC_INIT(0);
-+vm_atomic_t vm_committed_space = ATOMIC_INIT(0);
- 
- /*
-  * Check that a process has enough memory to allocate a new virtual
-@@ -177,7 +177,7 @@
- 	 * cast `allowed' as a signed long because vm_committed_space
- 	 * sometimes has a negative value
- 	 */
--	if (atomic_read(&vm_committed_space) < (long)allowed)
-+	if (vm_atomic_read(&vm_committed_space) < (long)allowed)
- 		return 0;
- error:
- 	vm_unacct_memory(pages);
-diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.25-mm1/mm/swap.c linux-2.6.25-mm1/mm/swap.c
---- linux.vanilla-2.6.25-mm1/mm/swap.c	2008-04-28 11:36:52.000000000 +0100
-+++ linux-2.6.25-mm1/mm/swap.c	2008-04-30 11:18:05.000000000 +0100
-@@ -503,7 +503,7 @@
- 	local = &__get_cpu_var(committed_space);
- 	*local += pages;
- 	if (*local > ACCT_THRESHOLD || *local < -ACCT_THRESHOLD) {
--		atomic_add(*local, &vm_committed_space);
-+		vm_atomic_add(*local, &vm_committed_space);
- 		*local = 0;
- 	}
- 	preempt_enable();
+--Ben
