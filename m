@@ -1,53 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763823AbYD3SGA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762573AbYD3SJm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763823AbYD3SGA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Apr 2008 14:06:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759544AbYD3SFc
+	id S1762573AbYD3SJm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Apr 2008 14:09:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757088AbYD3SJe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Apr 2008 14:05:32 -0400
-Received: from kirk.serum.com.pl ([213.77.9.205]:64379 "EHLO serum.com.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757656AbYD3SFa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Apr 2008 14:05:30 -0400
-Date: Wed, 30 Apr 2008 19:05:09 +0100 (BST)
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
-To: Timur Alperovich <timur.alperovich@gmail.com>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: APIC error 80(80) and 00(80)
-In-Reply-To: <52950c3f0804301018n7dd2a803h4abce71b0dcacf3d@mail.gmail.com>
-Message-ID: <Pine.LNX.4.55.0804301858240.31832@cliff.in.clinika.pl>
-References: <52950c3f0804301018n7dd2a803h4abce71b0dcacf3d@mail.gmail.com>
+	Wed, 30 Apr 2008 14:09:34 -0400
+Received: from n2a.bullet.mail.kr1.yahoo.com ([203.212.170.73]:35578 "HELO
+	n2a.bullet.mail.kr1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1757311AbYD3SJd convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Apr 2008 14:09:33 -0400
+X-Yahoo-Newman-Property: ymail-3
+X-Yahoo-Newman-Id: 387436.54373.bm@omp108.mail.in2.yahoo.com
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.co.in;
+  h=X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=iMsPTVrAUTTShyIGRW8vPws4CW/v80lMj+5fqpL3cX0MpyuR3WNT8g3pfb27nJvci5GChLSsbd2DKmIkryPuLDCsrsygKj6HaOI4kBYxGzntNRcNSiHwNTS/Nbu0GnkxTVxb5kkLHdKEZsHGAfZUihyr+S6oDY1ySvTyDwS1yCc=;
+X-YMail-OSG: jESJr6YVM1nb6kIpDmYBZGpEOtdBkAVe4O70O7R.alIpVRnc09Bo3IWANTY6QayvmPS6aMTaLR9kqia46WCGC7T7vQuURQTO4Q--
+X-Mailer: YahooMailRC/902.40 YahooMailWebService/0.7.185
+Date: Wed, 30 Apr 2008 23:39:09 +0530 (IST)
+From: Soumyadip Das Mahapatra <dip_kernel@yahoo.co.in>
+Subject: Improved Swaping Method In sort.c
+To: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8BIT
+Message-ID: <191572.86791.qm@web94110.mail.in2.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 30 Apr 2008, Timur Alperovich wrote:
+Thanks Jan,
+Actually it should be
+static void u32_swap(void *a, void *b)
+{
+    *(u32 *)b ^= *(u32 *)a;
+    *(u32 *)a ^= *(u32 *)b;
+    *(u32 *)b ^= *(u32 *)a;
+}
+But this code saves memory equaling two integers. What about that ?
 
-> I apologize if others have asked this question before, but I'm a bit
-> confused by the APIC error messages, i.e. I couldn't find what they
 
- It sounds strange -- the errors are explained in the source next to the 
-message you are seeing.
 
-> mean. After inserting a kernel module I wrote and trying to read the
-> device it created, I see the following in dmesg:
-> 
-> Losing some ticks... checking if CPU frequency changed.
-> warning: many lost ticks.
-> Your time source seems to be instable or some driver is hogging interupts
-> rip tg3_read32+0x9/0xa [tg3]
-> Falling back to HPET
-> APIC error on CPU3: 00(80)
-> APIC error on CPU3: 80(80)
-> 
-> where the last message was repeated 1600 times. Could anyone tell me
-> what it means or of a better place to ask about it?
 
- This is "Illegal register address", which means some piece of code tried
-to access an inexistent APIC register.  If you want to find out where the
-code is, then trigger an oops from where the message is printed.  Of
-course it looks like the tip of an iceberg anyway...
+      Meet people who discuss and share your passions. Go to http://in.promos.yahoo.com/groups/bestofyahoo/
 
-  Maciej
