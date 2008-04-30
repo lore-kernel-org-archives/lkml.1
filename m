@@ -1,55 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761948AbYD3I2R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762098AbYD3I2m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761948AbYD3I2R (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Apr 2008 04:28:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754935AbYD3I2B
+	id S1762098AbYD3I2m (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Apr 2008 04:28:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761716AbYD3I2M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Apr 2008 04:28:01 -0400
-Received: from mail-ausfall.charite.de ([193.175.70.131]:49566 "EHLO
-	mail-ausfall.charite.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756206AbYD3I2A (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Apr 2008 04:28:00 -0400
-Date: Wed, 30 Apr 2008 10:27:58 +0200
-From: Ralf Hildebrandt <Ralf.Hildebrandt@charite.de>
-To: Linux Kernel Maillist <linux-kernel@vger.kernel.org>
-Subject: Re: HP server and atto driver from hell
-Message-ID: <20080430082758.GD6721@charite.de>
-Mail-Followup-To: Linux Kernel Maillist <linux-kernel@vger.kernel.org>
-References: <20080429201727.GV8066@charite.de> <Pine.LNX.4.64.0804291425260.23575@filesrv1.baby-dragons.com>
+	Wed, 30 Apr 2008 04:28:12 -0400
+Received: from znsun1.ifh.de ([141.34.1.16]:47365 "EHLO znsun1.ifh.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758166AbYD3I2K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Apr 2008 04:28:10 -0400
+X-Greylist: delayed 1398 seconds by postgrey-1.27 at vger.kernel.org; Wed, 30 Apr 2008 04:28:07 EDT
+Date: Wed, 30 Apr 2008 10:02:43 +0200 (CEST)
+From: Patrick Boettcher <patrick.boettcher@desy.de>
+X-X-Sender: pboettch@pub4.ifh.de
+To: Mauro Carvalho Chehab <mchehab@infradead.org>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-dvb-maintainer@linuxtv.org,
+       Andrew Morton <akpm@linux-foundation.org>, video4linux-list@redhat.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [v4l-dvb-maintainer] [GIT PATCHES] V4L/DVB updates and fixes
+ for 2.6.26
+In-Reply-To: <20080429185009.716c3284@gaivota>
+Message-ID: <Pine.LNX.4.64.0804300953140.480@pub4.ifh.de>
+References: <20080429185009.716c3284@gaivota>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <Pine.LNX.4.64.0804291425260.23575@filesrv1.baby-dragons.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+X-Spam-Report: ALL_TRUSTED,AWL,BAYES_00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Mr. James W. Laferriere <babydr@baby-dragons.com>:
+Hi Mauro,
 
-> Hello Ralf , Fyi , the fusion/mpt driver supports some of the ATTO 
-> devices , if your lspci -v for the ATTO controllers looks simular to
-> this one it may just work with the fusion drivers . Hth , JimL
+sorry to say that now and not earlier, but:
 
-I will try.
+On Tue, 29 Apr 2008, Mauro Carvalho Chehab wrote:
+> .../{dvb/frontends => common/tuners}/mt2266.c      |    0
+> .../{dvb/frontends => common/tuners}/mt2266.h      |    4 +-
 
-> # lspci -v -s 0d:04.0
-> 0d:04.0 SCSI storage controller: Atto Technology Ultra320 SCSI Host Adapter (rev 08)
->         Subsystem: Atto Technology Unknown device 8027
->         Flags: bus master, 66MHz, medium devsel, latency 128, IRQ 16
->         I/O ports at 5000 [size=256]
->         Memory at d8640000 (64-bit, non-prefetchable) [size=256K]
->         Memory at d8600000 (64-bit, non-prefetchable) [size=256K]
->         Capabilities: [50] Power Management version 2
->         Capabilities: [58] Message Signalled Interrupts: 64bit+ Queue=0/0 Enable-
->         Capabilities: [68] PCI-X non-bridge device
+The mt2266 is a zero-IF (baseband) tuner. I think there is no analog 
+decoder for this kind of tuners.
 
-The device is 802F, not 8027, but I'll try.
+Maybe the move was not necessary, but maybe all tuners should go to 
+common.
 
--- 
-Ralf Hildebrandt (i.A. des IT-Zentrums)         Ralf.Hildebrandt@charite.de
-Charite - Universitätsmedizin Berlin            Tel.  +49 (0)30-450 570-155
-Gemeinsame Einrichtung von FU- und HU-Berlin    Fax.  +49 (0)30-450 570-962
-IT-Zentrum Standort CBF                 send no mail to snickebo@charite.de
+Patrick.
+
+--
+   Mail: patrick.boettcher@desy.de
+   WWW:  http://www.wi-bw.tfh-wildau.de/~pboettch/
