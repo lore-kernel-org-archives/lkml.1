@@ -1,69 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762864AbYD3Pbq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761002AbYD3Pf2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762864AbYD3Pbq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Apr 2008 11:31:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757710AbYD3Pbf
+	id S1761002AbYD3Pf2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Apr 2008 11:35:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752293AbYD3PfU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Apr 2008 11:31:35 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:53031 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753872AbYD3Pbe (ORCPT
+	Wed, 30 Apr 2008 11:35:20 -0400
+Received: from wa-out-1112.google.com ([209.85.146.176]:60791 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751493AbYD3PfS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Apr 2008 11:31:34 -0400
-Date: Wed, 30 Apr 2008 08:29:59 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Michael Krufky" <mkrufky@linuxtv.org>
-Cc: "Mike Galbraith" <efault@gmx.de>, sfr@canb.auug.org.au,
-       video4linux-list@redhat.com, "Sam Ravnborg" <sam@ravnborg.org>,
-       linux-kernel@vger.kernel.org, mchehab@infradead.org,
-       linux-dvb-maintainer@linuxtv.org, "Ingo Molnar" <mingo@elte.hu>,
-       torvalds@linux-foundation.org, "David Miller" <davem@davemloft.net>
-Subject: Re: [v4l-dvb-maintainer] [patch, -git] drivers/media build fix for
- modular builds
-Message-Id: <20080430082959.5982ef70.akpm@linux-foundation.org>
-In-Reply-To: <37219a840804300739t6bade9c0o2eeaeb0ef42dffee@mail.gmail.com>
-References: <20080429185009.716c3284@gaivota>
-	<20080430074807.GA11224@elte.hu>
-	<20080430.005212.46815036.davem@davemloft.net>
-	<20080430081345.GA16519@elte.hu>
-	<1209544030.30990.2.camel@marge.simson.net>
-	<1209544951.15609.3.camel@marge.simson.net>
-	<1209545784.31419.2.camel@marge.simson.net>
-	<1209547231.4898.2.camel@marge.simson.net>
-	<20080430044009.6c5bbc8d.akpm@linux-foundation.org>
-	<1209560592.5265.2.camel@marge.simson.net>
-	<37219a840804300739t6bade9c0o2eeaeb0ef42dffee@mail.gmail.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+	Wed, 30 Apr 2008 11:35:18 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=k2/n8+CPwcGdaElutkYOeJBrk26SB+Trdn/yfOQ+IL/CTZN0or02zMtJSuUa+zeyC3P2Ajzh8iCL+D7zXNPffaEiBL3iB/OADKLse5oNbSD2pZysdpTBxAHWrWPUooarBrtDC3VxzYaxJ1Qm0CpHUmpZ1c/IZ4ggOCd7WXNcK7A=
+Subject: Re: [PATCH] x86: !x & y typo in mtrr code
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: =?ISO-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>,
+       Al Viro <viro@ZenIV.linux.org.uk>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+In-Reply-To: <20080430123536.GD30735@elte.hu>
+References: <1209268817.14173.43.camel@brick>
+	 <20080427042051.GL5882@ZenIV.linux.org.uk> <20080429210435.GA23008@elte.hu>
+	 <20080430064603.GA3602@atjola.homenet> <20080430093233.GD23528@elte.hu>
+	 <20080430121738.GA4559@atjola.homenet>  <20080430123536.GD30735@elte.hu>
+Content-Type: text/plain
+Date: Wed, 30 Apr 2008 08:35:34 -0700
+Message-Id: <1209569734.24729.65.camel@brick>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 30 Apr 2008 10:39:31 -0400 "Michael Krufky" <mkrufky@linuxtv.org> wrote:
-
-> >  [   13.691175] DVB: Unable to find symbol tda9887_attach()
-> >  [   13.698968] BUG: unable to handle kernel NULL pointer dereference at 0000000000000000
-> >  [   13.709509] IP: [<ffffffff80302934>] strlcpy+0x11/0x36
-
-hm.
-
+On Wed, 2008-04-30 at 14:35 +0200, Ingo Molnar wrote:
+> We for one simply concentrate on the the things that we think makes it 
+> more likely to find bugs. For example we build and boot x86.git with 
+> many different configs before every pull request. In practice that 
+> catches far more tester-critical bugs than Sparse - and we know that 
+> simply from the fact because we use both methods and have a good 
+> comparison of the results. We also work on automating Sparse checks in 
+> the future but as i said it, it's not easy.
 > 
-> Andrew's patch should have fixed the issue.  His patch was correct, btw...
 
-They always are ;)  Watch this....
+That's precisely why I've been sending all of the sparse cleanup patches
+lately, to try and get the output down to something more managable.  You
+may want to upgrade your sparse to one that understands __cold though.
 
---- a/drivers/media/video/tuner-core.c~drivers-media-video-tuner-corec-tuner_probe-fix-error-check
-+++ a/drivers/media/video/tuner-core.c
-@@ -1181,7 +1181,7 @@ static int tuner_probe(struct i2c_client
- 		case 0x60:
- 			if (tuner_symbol_probe(tea5767_autodetection,
- 					       t->i2c->adapter, t->i2c->addr)
--					!= EINVAL) {
-+					!= -EINVAL) {
- 				t->type = TUNER_TEA5767;
- 				t->mode_mask = T_RADIO;
- 				t->mode = T_STANDBY;
-_
+Harvey
 
