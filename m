@@ -1,196 +1,207 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763114AbYD3Ruj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763534AbYD3Rwg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763114AbYD3Ruj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Apr 2008 13:50:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758718AbYD3Ru0
+	id S1763534AbYD3Rwg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Apr 2008 13:52:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758718AbYD3RwY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Apr 2008 13:50:26 -0400
-Received: from mail.fieldses.org ([66.93.2.214]:47571 "EHLO fieldses.org"
+	Wed, 30 Apr 2008 13:52:24 -0400
+Received: from saeurebad.de ([85.214.36.134]:60164 "EHLO saeurebad.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758423AbYD3RuY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Apr 2008 13:50:24 -0400
-Date: Wed, 30 Apr 2008 13:50:21 -0400
-To: "david m. richter" <richterd@citi.umich.edu>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Bryan Wu <cooloney@kernel.org>,
-       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
-       willy@debian.org, viro@zeniv.linux.org.uk,
-       uclinux-dist-devel@blackfin.uclinux.org
-Subject: Re: [LTP/VFS] fcntl SETLEASE fails on ramfs/tmpfs
-Message-ID: <20080430175021.GC20377@fieldses.org>
-References: <386072610804282042y2dda4b52h927683a8a938ce1f@mail.gmail.com> <20080429135454.efebec8f.akpm@linux-foundation.org> <20080429214231.GC26468@fieldses.org> <Pine.BSO.4.64.0804291821220.18333@citi.umich.edu>
+	id S1754256AbYD3RwW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Apr 2008 13:52:22 -0400
+From: Johannes Weiner <hannes@saeurebad.de>
+To: "Yinghai Lu" <yhlu.kernel@gmail.com>
+Cc: "Ingo Molnar" <mingo@elte.hu>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Thomas Gleixner" <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>, jbarnes@virtuousgeek.org,
+       "Siddha\, Suresh B" <suresh.b.siddha@intel.com>
+Subject: Re: [patch] mm: node-setup agnostic free_bootmem()
+References: <20080426185516.GA32364@elte.hu> <87hcdmnccu.fsf@saeurebad.de>
+	<20080427234630.GC14338@elte.hu> <877iein859.fsf@saeurebad.de>
+	<20080428004046.GA16155@elte.hu>
+	<86802c440804271848o5498eb9eu944f995cb9b8fc9a@mail.gmail.com>
+	<87od7t6hsx.fsf@saeurebad.de>
+	<86802c440804281211y3e512286k1d3f9f7e157b4957@mail.gmail.com>
+	<86802c440804281255n3926fe53r4015ff03c355d2d9@mail.gmail.com>
+	<87r6cny5u5.fsf@saeurebad.de>
+	<86802c440804300922l6f4371aayc99ba8b55646204a@mail.gmail.com>
+Date: Wed, 30 Apr 2008 19:52:17 +0200
+In-Reply-To: <86802c440804300922l6f4371aayc99ba8b55646204a@mail.gmail.com>
+	(Yinghai Lu's message of "Wed, 30 Apr 2008 09:22:26 -0700")
+Message-ID: <87mynbz0vi.fsf@saeurebad.de>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.BSO.4.64.0804291821220.18333@citi.umich.edu>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-From: "J. Bruce Fields" <bfields@fieldses.org>
+X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 29, 2008 at 07:21:02PM -0400, david m. richter wrote:
-> On Tue, 29 Apr 2008, J. Bruce Fields wrote:
-> 
-> > On Tue, Apr 29, 2008 at 01:54:54PM -0700, Andrew Morton wrote:
-> > > On Tue, 29 Apr 2008 11:42:48 +0800
-> > > "Bryan Wu" <cooloney@kernel.org> wrote:
-> > > 
-> > > > Hi folk,
-> > > > 
-> > > > This days I am digging into this LTP bug reported on our Blackfin test
-> > > > machine, but I think it is general for other system.
-> > > > https://blackfin.uclinux.org/gf/project/uclinux-dist/tracker/?action=TrackerItemEdit&tracker_id=141&tracker_item_id=3743
-> > > > 
-> > > > And I also found Kumar Gala reported this similar bug before.
-> > > > http://lkml.org/lkml/2007/11/14/388
-> > > > 
-> > > > 1, when opening and creating a new on ramfs/tmpfs, the dentry->d_count
-> > > > will be added one as below:
-> > > > --
-> > > > ramfs_mknod(struct inode *dir, struct dentry *dentry, int mode, dev_t dev)
-> > > > {
-> > > > |_______struct inode * inode = ramfs_get_inode(dir->i_sb, mode, dev);
-> > > > |_______int error = -ENOSPC;
-> > > > 
-> > > > |_______if (inode) {
-> > > > |_______|_______if (dir->i_mode & S_ISGID) {
-> > > > |_______|_______|_______inode->i_gid = dir->i_gid;
-> > > > |_______|_______|_______if (S_ISDIR(mode))
-> > > > |_______|_______|_______|_______inode->i_mode |= S_ISGID;
-> > > > |_______|_______}
-> > > > |_______|_______d_instantiate(dentry, inode);
-> > > > |_______|_______dget(dentry);|__/* Extra count - pin the dentry in core */
-> > > > |_______|_______error = 0;
-> > > > |_______|_______dir->i_mtime = dir->i_ctime = CURRENT_TIME;
-> > > > |_______}
-> > > > |_______return error;
-> > > > }
-> > > > --
-> > > > The dget(dentry) call introduces an extra count, why?
-> > > > it is the same in tmpfs.
-> > > 
-> > > Because those dentries have no backing store.  Their sole existance is in
-> > > the dentry cache which is normally reclaimable.  But we can't reclaim these
-> > > dentries because there is nowhere from where they can be reestablished.
-> > > 
-> > > > 2, when calling  fcntl(fd, F_SETLEASE,F_WRLCK), it will return -EAGAIN
-> > > > --
-> > > > |_______if ((arg == F_WRLCK)
-> > > > |_______    && ((atomic_read(&dentry->d_count) > 1)
-> > > > |_______|_______|| (atomic_read(&inode->i_count) > 1)))
-> > > > |_______|_______goto out;
-> > > > --
-> > > 
-> > > Sucky heuristic.
-> > 
-> > Yes.
-> > 
-> > > 
-> > > > because the dentry->d_count will be 2 not 1. I tested ext2 on Blackfin, it is 1.
-> > > > 
-> > > > 3, so I guess maybe the dget(dentry) of ramfs_mknod is useless. But
-> > > > after remove this dget(),
-> > > > the ramfs can not be mounted as rootfs at all.
-> > > 
-> > > Interesting.  Presumably it got reclaimed synchronously somehow.
-> > > 
-> > > > Is the bug in generic_setlease() or in the ramfs/tmpfs inode create function?
-> > > > 
-> > > > Of course, simply remove the test '((atomic_read(&dentry->d_count) >
-> > > > 1)' can workaround this issue.
-> > > 
-> > > I guess we should make the generic_setlease() heuristic smarter.
-> > > 
-> > > Of course the _reason_ for that heuristic is uncommented and lost in time. 
-> > > And one wonders what locking prevents it from being totally racy, and if
-> > > "none", what happens when the race hits.  Sigh.
-> 
-> 	i'm not sure which particular kernel version we're talking about, 
-> but i think the intent was to rely on the BKL.  i noticed a couple cases 
-> where this didn't actually hold -- e.g., bruce has a patch queued to move 
-> the kmalloc in generic_setlease() so that it precedes the 
-> d_count/i_writecount checks and covers the race he mentions below.  an 
-> earlier patch closed a similar thing with get_write_access() when handling 
-> a truncate, etc.
-> 
-> 	fyi (well, not you, bruce): relatedly, i have a set of patches to 
-> introduce per-inode lease enabling/disabling (so we can fully implement 
-> NFSv4.0 file delegations and v4.1 directory delegations) which expand the 
-> cases where leases are broken (e.g. unlink) and which make it somewhat 
-> more explicit when it's safe to lease/break.  perhaps the next merge 
-> window for the first set of them.
-> 
-> 
-> > Yes, I think the race is:
-> > 
-> > 	1. generic_setlease(., F_WRLCK, .) checks d_count and i_count,
-> > 	   both are 1.
-> > 
-> > 	2. a read open comes in, calls break_lease which finds no lease
-> > 	   and continues happily on.
-> > 
-> > 	3. generic_setlease() sets the write lease.
-> > 
-> > The most likely consequences are that a local reader gets out-of-date
-> > data for a file that a Samba client has modified.
-> >
-> > I suppose that re-checking the d_count and i_count after step 3 might
-> > close the race.
-> 
-> 	as things currently stand, i believe that race can only happen if 
-> the leaser is blocking on the kmalloc.
+Hi,
 
-Neither break_lease() (the shortcut inlined function, not the full
-__break_lease()) nor any of the open code that I can see is under the
-BKL, so unless I'm missing something, that code is racy.
+"Yinghai Lu" <yhlu.kernel@gmail.com> writes:
 
---b.
+> On Wed, Apr 30, 2008 at 3:50 AM, Johannes Weiner <hannes@saeurebad.de> wrote:
+>>
+>> Hi,
+>>
+>>  "Yinghai Lu" <yhlu.kernel@gmail.com> writes:
+>>
+>>  > On Mon, Apr 28, 2008 at 12:11 PM, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+>>  >>
+>>  >> On Mon, Apr 28, 2008 at 9:54 AM, Johannes Weiner <hannes@saeurebad.de> wrote:
+>>  >>  > Hi Yinghai,
+>>  >>  >
+>>  >>  >
+>>  >>  >
+>>  >>  >  "Yinghai Lu" <yhlu.kernel@gmail.com> writes:
+>>  >>  >
+>>  >>  >  > On Sun, Apr 27, 2008 at 5:40 PM, Ingo Molnar <mingo@elte.hu> wrote:
+>>  >>  >  >>
+>>  >>  >  >>  * Johannes Weiner <hannes@saeurebad.de> wrote:
+>>  >>  >  >>
+>>  >>  >  >>  > > so i very much agree that your changes are cleaner, i just wanted to
+>>  >>  >  >>  > > have one that has all the fixes included.
+>>  >>  >  >>  >
+>>  >>  >  >>  > I had planned this to be another patch because there are more then one
+>>  >>  >  >>  > boundary check I wanted to tighten.  I can merge them though if you
+>>  >>  >  >>  > like.
+>>  >>  >  >>
+>>  >>  >  >>  no, better to have them in separate patches.
+>>  >>  >  >>
+>>  >>  >  >>  > > Would you like to post a patch against current -git or should i
+>>  >>  >  >>  > > extract the cleaner reserve_bootmem() from your previous patch?
+>>  >>  >  >>  >
+>>  >>  >  >>  > I just moved and have only sporadic internet access and free time
+>>  >>  >  >>  > slots available.  Would be nice if you could do it!
+>>  >>  >  >>
+>>  >>  >  >>  sure, find the merged patch below, against latest -git, boot-tested on
+>>  >>  >  >>  x86. Is this what you had in mind?
+>>  >>  >  >>
+>>  >>  >  >>         Ingo
+>>  >>  >  >>
+>>  >>  >  >>  ---------------->
+>>  >>  >  >>  Subject: mm: node-setup agnostic free_bootmem()
+>>  >>  >  >>  From: Johannes Weiner <hannes@saeurebad.de>
+>>  >>  >  >>  Date: Wed, 16 Apr 2008 13:36:31 +0200
+>>  >>  >  >>
+>>  >>  >  >>  Make free_bootmem() look up the node holding the specified address
+>>  >>  >  >>  range which lets it work transparently on single-node and multi-node
+>>  >>  >  >>  configurations.
+>>  >>  >  >>
+>>  >>  >  >>  If the address range exceeds the node range, it well be marked free
+>>  >>  >  >>  across node boundaries, too.
+>>  >>  >  >>
+>>  >>  >  >>  Signed-off-by: Johannes Weiner <hannes@saeurebad.de>
+>>  >>  >  >>  CC: Andi Kleen <andi@firstfloor.org>
+>>  >>  >  >>  CC: Yinghai Lu <yhlu.kernel@gmail.com>
+>>  >>  >  >>  CC: Yasunori Goto <y-goto@jp.fujitsu.com>
+>>  >>  >  >>  CC: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+>>  >>  >  >>  CC: Christoph Lameter <clameter@sgi.com>
+>>  >>  >  >>  CC: Andrew Morton <akpm@linux-foundation.org>
+>>  >>  >  >>  Signed-off-by: Ingo Molnar <mingo@elte.hu>
+>>  >>  >  >>  ---
+>>  >>  >  >>   mm/bootmem.c |   27 +++++++++++++++++++++++++--
+>>  >>  >  >>   1 file changed, 25 insertions(+), 2 deletions(-)
+>>  >>  >  >>
+>>  >>  >  >>  Index: linux-x86.q/mm/bootmem.c
+>>  >>  >  >>  ===================================================================
+>>  >>  >  >>  --- linux-x86.q.orig/mm/bootmem.c
+>>  >>  >  >>  +++ linux-x86.q/mm/bootmem.c
+>>  >>  >  >>  @@ -493,8 +493,31 @@ int __init reserve_bootmem(unsigned long
+>>  >>  >  >>   void __init free_bootmem(unsigned long addr, unsigned long size)
+>>  >>  >  >>   {
+>>  >>  >  >>         bootmem_data_t *bdata;
+>>  >>  >  >>  -       list_for_each_entry(bdata, &bdata_list, list)
+>>  >>  >  >>  -               free_bootmem_core(bdata, addr, size);
+>>  >>  >  >>  +       unsigned long pos = addr;
+>>  >>  >  >>  +       unsigned long partsize = size;
+>>  >>  >  >>  +
+>>  >>  >  >>  +       list_for_each_entry(bdata, &bdata_list, list) {
+>>  >>  >  >>  +               unsigned long remainder = 0;
+>>  >>  >  >>  +
+>>  >>  >  >>  +               if (pos < bdata->node_boot_start)
+>>  >>  >  >>  +                       continue;
+>>  >>  >  >>  +
+>>  >>  >  >>  +               if (PFN_DOWN(pos + partsize) > bdata->node_low_pfn) {
+>>  >>  >  >>  +                       remainder = PFN_DOWN(pos + partsize) - bdata->node_low_pfn;
+>>  >>  >  >>  +                       partsize -= remainder;
+>>  >>  >  >>  +               }
+>>  >>  >  >>  +
+>>  >>  >  >>  +               free_bootmem_core(bdata, pos, partsize);
+>>  >>  >  >>  +
+>>  >>  >  >>  +               if (!remainder)
+>>  >>  >  >>  +                       return;
+>>  >>  >  >>  +
+>>  >>  >  >>  +               pos = PFN_PHYS(bdata->node_low_pfn + 1);
+>>  >>  >  >>  +       }
+>>  >>  >  >>  +       printk(KERN_ERR "free_bootmem: request: addr=%lx, size=%lx, "
+>>  >>  >  >>  +                       "state: pos=%lx, partsize=%lx\n", addr, size,
+>>  >>  >  >>  +                       pos, partsize);
+>>  >>  >  >>  +       BUG();
+>>  >>  >  >>   }
+>>  >>  >  >>
+>>  >>  >  >>   unsigned long __init free_all_bootmem(void)
+>>  >>  >  >>
+>>  >>  >  >
+>>  >>  >  > it will not work with cross nodes.
+>>  >>  >  >
+>>  >>  >  > for example: node 0: 0-2g, 4-6g, node1: 2-4g, 6-8g.
+>>  >>  >  > and if ramdisk sit cross 2G boundary. you will only free the range
+>>  >>  >  > before 2g.
+>>  >>  >
+>>  >>  >  Yes, you stated that several times but this is not a technical argument:
+>>  >>  >  These setups are afaik not yet supported by the kernel at all.  And you
+>>  >>  >  could not explain the node layout with the patch that implements support
+>>  >>  >  for these configurations.
+>>  >>
+>>  >>  I looked at Suresh's patch, and it still only has one bdata for one node.
+>>  >
+>>  > Suresh's patch already in the Linus tree.
+>>  > commit 6ec6e0d9f2fd7cb6ca6bc3bfab5ae7b5cdd8c36f
+>>  > Author: Suresh Siddha <suresh.b.siddha@intel.com>
+>>  > Date:   Tue Mar 25 10:14:35 2008 -0700
+>>  >
+>>  >     srat, x86: add support for nodes spanning other nodes
+>>  >
+>>  >     For example, If the physical address layout on a two node system with 8 GB
+>>  >     memory is something like:
+>>  >     node 0: 0-2GB, 4-6GB
+>>  >     node 1: 2-4GB, 6-8GB
+>>  >
+>>  >     Current kernels fail to boot/detect this NUMA topology.
+>>  >
+>>  >     ACPI SRAT tables can expose such a topology which needs to be supported.
+>>  >
+>>  >     Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
+>>  >     Signed-off-by: Ingo Molnar <mingo@elte.hu>
+>>  >     Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+>>
+>>  Okay, so we have one bdata for node 0 and one for node 1. Does that mean
+>>  that both have overlapping pfn ranges?
+>>
+>>  [1    |||||     ]
+>>      [2    |||||     ]
+>>
+>>  Like this?  How are the ||||| represented in the bootmem maps of each bdata?
+>
+> Yes.
 
-> but yeah, the d_count check is 
-> pretty frail anyway ...
-> 
-> 
-> > > I suppose a stupid fix would be to set (and later clear) a new flag in
-> > > dentry.d_flags which means
-> > > 
-> > >   this dentry is pinned by a ram-backed device, so d_count==2 means
-> > >   "unused""
-> > > 
-> > > But it would be better to work out exactly what generic_setlease() is
-> > > trying to do there, and do it in a better way.
-> > 
-> > Yes.  What it's supposed to do is provide exclusion between opens and
-> > write leases.
-> > 
-> > We already have a mechanism that provides exclusion between write opens
-> > and exec, using the i_writecount, so we're using that for read leases.
-> > I suppose it'd be possible to do something similar for write leases;
-> > would there be smp scalability problems associated with counting all the
-> > read opens of a given inode?  Other problems?
-> > 
-> > Even with this problem solved, I'm not convinced write leases are very
-> > useful as implemented.  Their only current user is Samba, which uses
-> > them to grant exclusive access to given files to allow clients to cache
-> > writes.
-> > 
-> > Samba knows when to revoke that exclusive access because the lease
-> > subsystem signals it on a read open of the file.  It doesn't revoke on
-> > stat, however.  This causes problem.  E.g., say Samba takes out a lease
-> > and tells some client it can now cache its writes indefinitely.
-> > Meanwhile a local application (say, make) is polling that file for
-> > changes using stat.  They never see those changes.
-> > 
-> > The NFSv2/v3 server for some reason has its own one-off hack that
-> > reports the ctime as now for on any write-leased file, which leads
-> > people to complain about spurious rebuilds:
-> > 
-> > 	http://bugzilla.kernel.org/show_bug.cgi?id=9454
-> > 
-> > The one thing I suspect is *not* a really serious problem here is the
-> > reported LTP failure, since probably the only user of this is Samba,
-> > which probably doesn't do a lot of tmpfs exports, and in any case it can
-> > probably soldier on (if with degraded performance--how badly I don't
-> > know) without getting the write lease it wants.
-> > 
-> > --b.
-> > 
+Okay.  So they share the same PFNs.  Now imagine the following scenario:
+
+node0: 0-2GB, 4-6GB
+node1: 2-4GB, 6-8GB
+
+/* Marks the range on node0 and node1 */
+free_bootmem(1.5G, 2G);
+
+/* Frees all bootmem on both nodes */
+free_all_bootmem_node(NODE_DATA(0));
+free_all_bootmem_node(NODE_DATA(1));
+
+Aren't the same page descriptors send to __free_bootmem_pages() twice?
+
+	Hannes
