@@ -1,75 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765136AbYD3V2g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932832AbYD3V2z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765136AbYD3V2g (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Apr 2008 17:28:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756661AbYD3V2Z
+	id S932832AbYD3V2z (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Apr 2008 17:28:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763206AbYD3V2c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Apr 2008 17:28:25 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:28299 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756487AbYD3V2Z (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Apr 2008 17:28:25 -0400
-Message-ID: <4818E3D3.7000907@oracle.com>
-Date: Wed, 30 Apr 2008 14:25:39 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-User-Agent: Thunderbird 1.5.0.5 (X11/20060719)
-MIME-Version: 1.0
-To: Joe Perches <joe@perches.com>
-CC: linux-next@vger.kernel.org, lkml <linux-kernel@vger.kernel.org>,
-       akpm <akpm@linux-foundation.org>
-Subject: Re: [PATCH -next] PNP: fix printk format warnings
-References: <20080430135608.8b6ee7e0.randy.dunlap@oracle.com> <1209589640.5041.67.camel@localhost>
-In-Reply-To: <1209589640.5041.67.camel@localhost>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 30 Apr 2008 17:28:32 -0400
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:41343 "EHLO e5.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762786AbYD3V2b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Apr 2008 17:28:31 -0400
+Subject: Re: [RFC][PATCH 3/5] Container Freezer: Implement freezer cgroup
+	subsystem
+From: Matt Helsley <matthltc@us.ibm.com>
+To: Linux-Kernel <linux-kernel@vger.kernel.org>
+Cc: Cedric Le Goater <clg@fr.ibm.com>, Paul Menage <menage@google.com>,
+       Oren Laadan <orenl@cs.columbia.edu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Pavel Machek <pavel@ucw.cz>, linux-pm@lists.linux-foundation.org,
+       Linux Containers <containers@lists.linux-foundation.org>
+In-Reply-To: <20080424064757.526468716@us.ibm.com>
+References: <20080424064756.643890130@us.ibm.com>
+	 <20080424064757.526468716@us.ibm.com>
+Content-Type: text/plain
+Organization: IBM Linux Technology Center
+Date: Wed, 30 Apr 2008 14:28:25 -0700
+Message-Id: <1209590905.29759.38.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.2 
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Joe Perches wrote:
-> On Wed, 2008-04-30 at 13:56 -0700, Randy Dunlap wrote:
->> From: Randy Dunlap <randy.dunlap@oracle.com>
->>
->> next-20080430/drivers/pnp/pnpbios/rsparser.c:594: warning: format '%d' expects type 'int', but argument 4 has type 'resource_size_t'
->> next-20080430/drivers/pnp/pnpbios/rsparser.c:605: warning: format '%d' expects type 'int', but argument 4 has type 'resource_size_t'
-> 
-> resource_size_t can be u64
 
-I know.
+On Wed, 2008-04-23 at 23:47 -0700, Matt Helsley wrote:
 
-> I think you need %llu/(unsigned long long)
+<snip>
 
-So the interrupt number or DMA channel may be astronomically huge?  OK.
-Whatever.
+> +static ssize_t freezer_write(struct cgroup *cgroup,
+> +			     struct cftype *cft,
+> +			     struct file *file,
+> +			     const char __user *userbuf,
+> +			     size_t nbytes, loff_t *unused_ppos)
+> +{
+> +	char *buffer;
+> +	int retval = 0;
+> +	enum freezer_state goal_state;
+> +
+> +	if (nbytes >= PATH_MAX)
+> +		return -E2BIG;
+> +
+> +	/* +1 for nul-terminator */
+> +	buffer = kmalloc(nbytes + 1, GFP_KERNEL);
+> +	if (buffer == NULL)
+> +		return -ENOMEM;
+> +
+> +	if (copy_from_user(buffer, userbuf, nbytes)) {
+> +		retval = -EFAULT;
+> +		goto free_buffer;
+> +	}
+> +	buffer[nbytes] = 0;	/* nul-terminate */
+> +	strstrip(buffer);
+> +	if (strcmp(buffer, "RUNNING") == 0)
+> +		goal_state = STATE_RUNNING;
+> +	else if (strcmp(buffer, "FROZEN") == 0)
+> +		goal_state = STATE_FROZEN;
+> +	else {
+> +		retval = -EIO;
+> +		goto free_buffer;
+> +	}
+> +
+> +	cgroup_lock();
+> +
+> +	if (cgroup_is_removed(cgroup)) {
+> +		retval = -ENODEV;
+> +		goto unlock;
+> +	}
 
-> --- next-20080430.orig/drivers/pnp/pnpbios/rsparser.c
-> +++ next-20080430/drivers/pnp/pnpbios/rsparser.c
-> @@ -591,7 +591,7 @@ static void pnpbios_encode_irq(struct pn
->  	p[1] = map & 0xff;
->  	p[2] = (map >> 8) & 0xff;
->  
-> -	dev_dbg(&dev->dev, "  encode irq %d\n", res->start);
-> +	dev_dbg(&dev->dev, "  encode irq %llu\n", (unsigned long long)res->start);
->  }
->  
->  static void pnpbios_encode_dma(struct pnp_dev *dev, unsigned char *p,
-> @@ -602,7 +602,7 @@ static void pnpbios_encode_dma(struct pn
->  	map = 1 << res->start;
->  	p[1] = map & 0xff;
->  
-> -	dev_dbg(&dev->dev, "  encode dma %d\n", res->start);
-> +	dev_dbg(&dev->dev, "  encode dma %llu\n", (unsigned long long)res->start);
->  }
->  
->  static void pnpbios_encode_port(struct pnp_dev *dev, unsigned char *p,
-> 
-> 
+I think this was copy/paste'd from cgroup_common_file_write() which
+modifies the cgroup hierarchy. However this function does not modify the
+cgroup hierarchy and we're not getting the cgroup from the task. So I
+don't think cgroup_lock()/unlock() are needed here. Paul, do you agree?
 
+> +	retval = freezer_freeze(cgroup, goal_state);
+> +	if (retval == 0)
+> +		retval = nbytes;
+> +unlock:
+> +	cgroup_unlock();
+> +free_buffer:
+> +	kfree(buffer);
+> +	return retval;
+> +}
 
--- 
-~Randy
+Cheers,
+	-Matt Helsley
+
