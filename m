@@ -1,46 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764046AbYD3SoT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764292AbYD3Soe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764046AbYD3SoT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Apr 2008 14:44:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758902AbYD3SoH
+	id S1764292AbYD3Soe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Apr 2008 14:44:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759390AbYD3SoI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Wed, 30 Apr 2008 14:44:08 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:39671 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758658AbYD3SoH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 30 Apr 2008 14:44:07 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:58367 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755419AbYD3SoE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Apr 2008 14:44:04 -0400
-Subject: Re: [PATCH 0/1] Embedded Maintainer(s), linux-embedded@vger list
-From: David Woodhouse <dwmw2@infradead.org>
-To: jwboyer@linux.vnet.ibm.com
-Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       Paul Gortmaker <paul.gortmaker@windriver.com>,
-       linux-embedded@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Tim Bird <tim.bird@am.sony.com>
-In-Reply-To: <1209580009.2946.98.camel@vader.jdub.homelinux.org>
-References: <1209577322.25560.402.camel@pmac.infradead.org>
-	 <1209580009.2946.98.camel@vader.jdub.homelinux.org>
-Content-Type: text/plain
-Date: Wed, 30 Apr 2008 19:43:43 +0100
-Message-Id: <1209581023.25560.436.camel@pmac.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+Date: Wed, 30 Apr 2008 20:43:52 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Johannes Weiner <hannes@saeurebad.de>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       Yinghai Lu <yhlu.kernel@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [patch 0/4] Bootmem cleanups
+Message-ID: <20080430184352.GE3008@elte.hu>
+References: <20080430170521.246745395@symbol.fehenstaub.lan>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080430170521.246745395@symbol.fehenstaub.lan>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-04-30 at 13:26 -0500, Josh Boyer wrote:
-> Do you see this list as a general embedded patch/issues discussion list,
-> a help list, a list for vendors to interact with the community, or all
-> of the above?
 
-All of the above -- although I dislike the phrase 'interact with the
-community'. I want vendors to be _part_ of the community, not outsiders
-who merely interact with it.
+* Johannes Weiner <hannes@saeurebad.de> wrote:
 
--- 
-dwmw2
+> Hi Ingo,
+> 
+> I now dropped the node-crossing patches from my bootmem series and 
+> here is what is left over.
+> 
+> They apply to Linus' current git 
+> (0ff5ce7f30b45cc2014cec465c0e96c16877116e).
+> 
+> Please note that all parts affecting !X86_32_BORING_UMA_BOX are 
+> untested!
+> 
+>  arch/alpha/mm/numa.c             |    8 ++--
+>  arch/arm/mm/discontig.c          |   34 ++++++++++-----------
+>  arch/ia64/mm/discontig.c         |   11 +++----
+>  arch/m32r/mm/discontig.c         |    4 +--
+>  arch/m68k/mm/init.c              |    4 +--
+>  arch/mips/sgi-ip27/ip27-memory.c |    3 +-
+>  arch/parisc/mm/init.c            |    3 +-
+>  arch/powerpc/mm/numa.c           |    3 +-
+>  arch/sh/mm/numa.c                |    5 +--
+>  arch/sparc64/mm/init.c           |    3 +-
+>  arch/x86/mm/discontig_32.c       |    3 +-
+>  arch/x86/mm/numa_64.c            |    6 +---
+>  include/linux/bootmem.h          |    7 +---
+>  mm/bootmem.c                     |   59 ++++++++++++++++++-------------------
+>  mm/page_alloc.c                  |    4 +--
+>  15 files changed, 67 insertions(+), 90 deletions(-)
 
+i've read them and the changes all look sane and well-structured - but 
+the impact is way too cross-arch for this to even touch x86.git i guess. 
+I suspect this is for -mm?
+
+Acked-by: Ingo Molnar <mingo@elte.hu>
+
+	Ingo
