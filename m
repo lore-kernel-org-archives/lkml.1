@@ -1,50 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934008AbYD3Wlx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765996AbYD3WnU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934008AbYD3Wlx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Apr 2008 18:41:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757498AbYD3Wlm
+	id S1765996AbYD3WnU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Apr 2008 18:43:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755935AbYD3WnK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Apr 2008 18:41:42 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:48222 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752097AbYD3Wll (ORCPT
+	Wed, 30 Apr 2008 18:43:10 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:58223 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755548AbYD3WnJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Apr 2008 18:41:41 -0400
-Date: Wed, 30 Apr 2008 15:41:24 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: rjw@sisk.pl, davem@davemloft.net, linux-kernel@vger.kernel.org,
-       jirislaby@gmail.com
-Subject: Re: Slow DOWN, please!!!
-Message-Id: <20080430154124.7ec08dd4.akpm@linux-foundation.org>
-In-Reply-To: <alpine.LFD.1.10.0804301530360.2980@woody.linux-foundation.org>
-References: <20080429.190352.137408408.davem@davemloft.net>
-	<200804302245.50817.rjw@sisk.pl>
-	<alpine.LFD.1.10.0804301422350.2980@woody.linux-foundation.org>
-	<200805010023.32213.rjw@sisk.pl>
-	<alpine.LFD.1.10.0804301530360.2980@woody.linux-foundation.org>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 30 Apr 2008 18:43:09 -0400
+Message-ID: <4818F513.4080006@zytor.com>
+Date: Wed, 30 Apr 2008 15:39:15 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+MIME-Version: 1.0
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+CC: Arjan van de Ven <arjan@infradead.org>, David Miller <davem@davemloft.net>,
+       jeff@garzik.org, mingo@elte.hu, tglx@linutronix.de,
+       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org
+Subject: Re: [patch] x86, voyager: fix ioremap_nocache()
+References: <20080427214837.GA11631@elte.hu>	 <1209335660.3801.79.camel@localhost.localdomain>	 <4815009C.2010809@garzik.org>	 <20080427.154620.177583216.davem@davemloft.net>	 <20080427160120.5788118f@laptopd505.fenrus.org> <1209591844.3774.30.camel@localhost.localdomain>
+In-Reply-To: <1209591844.3774.30.camel@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 30 Apr 2008 15:31:22 -0700 (PDT)
-Linus Torvalds <torvalds@linux-foundation.org> wrote:
+James Bottomley wrote:
+> 
+> OK, but look; this is why you broke me.
+> 
+> The former meaning of ioremap() was give me whatever caching the mtrrs
+> set up (assuming you actually have mtrrs.  For voyager, we don't so it
+> always meant give me cached memory).
+> 
 
-> Any suggestions on how to convince people that their code is not worth 
-> merging?
+Pre-686 generations of x86 had chipset logic (KEN logic) that did the 
+equivalent.  The only change in the 686 was moving this logic into the 
+CPU itself.  So no, it didn't always mean "give me cached memory".
 
-Raise the quality.  Then the volume will automatically decrease.
+> The change broke the QIC ioremap area because it absolutely *requires*
+> cached memory.   It drops performance on the Q720 SCSI cards because
+> caching was used essentially like write combining to reduce the
+> unbursted traffic across the MCA bus.
+> 
+> When the Voyagers were designed, the only way to get them better
+> performace with the slow bus technology was to do a massive amount of
+> caching, so they're optimised to the point where every element on the
+> voyager bus (sort of like the intel frontside bus) is a primary
+> participant in the caching algorithm, and this includes the MCA
+> controllers.  So for me, I want every invocation of ioremap to mean
+> ioremap_cached() otherwise I don't benefit from the added caches.
+> 
+> I can fully understand that bus technology has got worse in terms of
+> caching since the voyager heydays.  However, I'd rather not be penalised
+> for everyone else's hardware failings.  Since the old ioremap is only
+> used in the IORESOURCE_CACHABLE case for PCI, and since that used to
+> defer to the mtrr settings anyway, it probably does make sense to keep
+> it as ioremap_cache() as long as that still defers to the mtrr settings.
+> 
+> I suppose I could think about an ioremap platform override for voyager
+> since, by and large, ioremap_nocache() is the wrong thing on the
+> platform.
 
-Which leads us to...  the volume isn't a problem per-se.  The problem is
-quality.  It's the fact that they vary inversely which makes us say "slow
-down".
+Sounds like it, or you should just do a global replace of ioremap() with 
+ioremap_cache() for the Voyager drivers.
 
-So David's Subject: should have been "Do Better, please".  Slowing down is
-just a side-effect.  And, we expect, a tool.
-
-
-We should be discussing how to raise the quality of our work.
+	-hpa
