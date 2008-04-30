@@ -1,86 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934162AbYD3WUu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934187AbYD3WVR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934162AbYD3WUu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Apr 2008 18:20:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933503AbYD3WUM
+	id S934187AbYD3WVR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Apr 2008 18:21:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764784AbYD3WUh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Apr 2008 18:20:12 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:34295 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761886AbYD3WUI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Apr 2008 18:20:08 -0400
-Date: Thu, 1 May 2008 00:19:36 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: David Miller <davem@davemloft.net>
-Cc: akpm@linux-foundation.org, torvalds@linux-foundation.org, rjw@sisk.pl,
-       linux-kernel@vger.kernel.org, jirislaby@gmail.com
+	Wed, 30 Apr 2008 18:20:37 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:36157 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1765577AbYD3WUf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Apr 2008 18:20:35 -0400
+Date: Wed, 30 Apr 2008 15:19:44 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Dmitri Vorobiev <dmitri.vorobiev@gmail.com>, rjw@sisk.pl,
+       davem@davemloft.net, linux-kernel@vger.kernel.org, jirislaby@gmail.com,
+       mingo@elte.hu
 Subject: Re: Slow DOWN, please!!!
-Message-ID: <20080430221936.GA27292@elte.hu>
-References: <20080430131537.1f7a0914.akpm@linux-foundation.org> <alpine.LFD.1.10.0804301325260.2980@woody.linux-foundation.org> <20080430135405.ddc42075.akpm@linux-foundation.org> <20080430.142137.236846072.davem@davemloft.net>
+In-Reply-To: <20080430151007.0ace4fa2.akpm@linux-foundation.org>
+Message-ID: <alpine.LFD.1.10.0804301513350.2980@woody.linux-foundation.org>
+References: <20080429.190352.137408408.davem@davemloft.net> <200804302136.58005.rjw@sisk.pl> <20080430131537.1f7a0914.akpm@linux-foundation.org> <alpine.LFD.1.10.0804301325260.2980@woody.linux-foundation.org> <20080430135405.ddc42075.akpm@linux-foundation.org>
+ <4818E7E3.7080705@gmail.com> <20080430151007.0ace4fa2.akpm@linux-foundation.org>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080430.142137.236846072.davem@davemloft.net>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* David Miller <davem@davemloft.net> wrote:
 
-> > linux-next does little to address our two largest (IMO) problems: 
-> > inadequate review and inadequate response to bug and regression 
-> > reports. But those problems are harder to fix..
+On Wed, 30 Apr 2008, Andrew Morton wrote:
+> > For busy (or lazy) people like myself, the big problem with linux-next are
+> > the frequent merge breakages, when pulling the tree stops with "you are in
+> > the middle of a merge conflict".
 > 
-> This is all about positive and negative reinforcement.
-> 
-> The people who sit and git bisect their lives away to get the 
-> regressions fixed need more positive reinforcement.  And the people 
-> who stick these regressions into the tree need more negative 
-> reinforcement.
+> Really?  Doesn't Stephen handle all those problems?  It should be a clean
+> fetch each time?
 
-What we need is not 'negative reinforcement'. That is just nasty, open 
-warfare between isolated parties, expressed in a politically correct 
-way.
+It should indeed be a clean fetch, but I wonder if Dmitri perhaps does a 
+"git pull" - which will do the fetch, but then try to _merge_ that fetched 
+state into whatever the last base Dmitri happened to have.
 
-The core problem is that every maintainer has his own subjective, 
-assymetric view and experience about this matter: to him his own tree is 
-almost problem-free and most problems are very easy to fix, while other 
-problems in other trees are nuisance that should never have been put 
-upstream.
+Dmitry: you cannot just "git pull" on linux-next, because each version of 
+linux-next is independent of the next one. What you should do is basically
 
-Also, people get defensive when their regressions gets pointed out in 
-anything but the most respectful and casual manner.
+	# Set this up just once..
+	git remote add linux-next git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
 
-For example, how on earth do i tell you that during the v2.6.24 merge 
-window, half of all x86 test-machines for me and others were broken 
-because they had no networking, for more than a week in a row? Are you 
-surprised about this (true) experience we had? Do you feel insulted? Do 
-you feel unfairly handled and slandered?
+and then after that, you keep on just doing
 
-The same goes in the other direction as well - you were just hit by 
-scheduler tree related regressions that were only triggered on your 
-128-way sparc64, but not on our 64way x86 and smaller boxes.
+	git fetch linux-next
+	git checkout linux-next/master
 
-The thing is, what we really need is more cooperation and earlier 
-integration - more people actually testing linux-next occasionally to 
-see how things will look like in the next merge window.
+which will get you the actual objects and check out the state of that 
+remote (and then you'll normally never be on a local branch on that tree, 
+git will end up using a so-called "detached head" for this).
 
-linux-next doing build tests is fine, but the nasty regressions that 
-will hit your box can only be solved if _you_ boot linux-next at least 
-once before the merge window opens. The regressions that will hit my box 
-can only be avoided if i test your tree.
+IOW, you should never need to do any merges, because Stephen did all those 
+in linux-next already.
 
-hm? And can we please somehow talk about this without flaming each other 
-in the process?
-
-	Ingo
+			Linus
