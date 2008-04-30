@@ -1,80 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764201AbYD3WkA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762677AbYD3Wkg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764201AbYD3WkA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Apr 2008 18:40:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933982AbYD3WjM
+	id S1762677AbYD3Wkg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Apr 2008 18:40:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934018AbYD3Wj2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Apr 2008 18:39:12 -0400
-Received: from mail.hauppauge.com ([167.206.143.4]:2398 "EHLO
-	mail.hauppauge.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765220AbYD3WjK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Apr 2008 18:39:10 -0400
-Message-ID: <4818F4EE.8050004@linuxtv.org>
-From: mkrufky@linuxtv.org
-To: xyzzy@speakeasy.org
-Cc: akpm@linux-foundation.org, sfr@canb.auug.org.au,
-       video4linux-list@redhat.com, torvalds@linux-foundation.org,
-       efault@gmx.de, linux-kernel@vger.kernel.org, mchehab@infradead.org,
-       linux-dvb-maintainer@linuxtv.org, mingo@elte.hu, sam@ravnborg.org,
-       davem@davemloft.net
-Subject: Re: [v4l-dvb-maintainer] [patch, -git] drivers/media build fix fo
-	r modular builds
-Date: Wed, 30 Apr 2008 18:38:38 -0400
+	Wed, 30 Apr 2008 18:39:28 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:47009 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934025AbYD3WjX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Apr 2008 18:39:23 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: David Miller <davem@davemloft.net>
+Subject: Re: Slow DOWN, please!!!
+Date: Thu, 1 May 2008 00:39:01 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: mingo@elte.hu, akpm@linux-foundation.org, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org, jirislaby@gmail.com
+References: <20080430135405.ddc42075.akpm@linux-foundation.org> <20080430221936.GA27292@elte.hu> <20080430.152227.23100100.davem@davemloft.net>
+In-Reply-To: <20080430.152227.23100100.davem@davemloft.net>
 MIME-Version: 1.0
-X-Mailer: Internet Mail Service (5.5.2657.72)
-in-reply-to: <Pine.LNX.4.58.0804301442010.9894@shell4.speakeasy.net>
-x-originalarrivaltime: 30 Apr 2008 22:35:29.0057 (UTC) FILETIME=[7DEE0110:01C8AB12]
-user-agent: Thunderbird 2.0.0.12 (Windows/20080213)
 Content-Type: text/plain;
-	charset="iso-8859-1"
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200805010039.02451.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Trent Piepho wrote:
-> On Wed, 30 Apr 2008, Andrew Morton wrote:
->   
->> Does this make it feel better?
->>
->> --- a/drivers/media/video/tuner-core.c~a
->> +++ a/drivers/media/video/tuner-core.c
->> @@ -40,11 +40,11 @@
->>  	typeof(&FUNCTION) __a = symbol_request(FUNCTION); \
->>  	if (__a) { \
->>  		__r = (int) __a(ARGS); \
->> +		symbol_put(FUNCTION); \
->>  	} else { \
->>  		printk(KERN_ERR "TUNER: Unable to find " \
->>  				"symbol "#FUNCTION"()\n"); \
->>  	} \
->> -	symbol_put(FUNCTION); \
->>  	__r; \
->>  })
->>     
->
-> Should the symbol_put be done at all?  When I wrote the code this is based
-> on, it would check if FUNCTION failed or not.  If it failed, the symbol
-was
-> put.  But if it worked, then one was returned a handle into FUNCTION's
-> module, and so the symbol was not put.  If it was, the module's refcount
-> would be zero but the caller would have a handle into the module.
->
-> So if FUNCTION does anything that creates references to the module, and it
-> doesn't inc it's own refcount, then the symbol_put shouldn't be done.
->
->   
-Trent,
+On Thursday, 1 of May 2008, David Miller wrote:
+> From: Ingo Molnar <mingo@elte.hu>
+> Date: Thu, 1 May 2008 00:19:36 +0200
+> 
+> > The same goes in the other direction as well - you were just hit by 
+> > scheduler tree related regressions that were only triggered on your 
+> > 128-way sparc64, but not on our 64way x86 and smaller boxes.
+> 
+> You keep saying this over and over again, but the powerpc folks hit
+> this stuff too.
 
-The symbol_put is correct in this case.  This macro above is called 
-"tuner_symbol_probe" , used only within tuner-core.c
+Well, I think that some changes need some wider testing anyway.
 
-This macro is used to call the probe function of a tuner sub-module 
-(tea5761, tea5767, tda8290).  Regardless of whether the probe succeeds 
-or fails, we do the symbol_put.  If the probe succeeds, tuner-core will 
-proceed to dvb_attach(that_tuner_attach, params), which does the actual 
-module use count increase.
+They may be correct from the author's point of view and even from the knowledge
+and point of view of the maintainer who takes them into his tree.  That's
+because no one knows everything and it'll always be like this.
 
-Regards,
+Still, with the current process such "suspicious" changes go in as parts of
+large series of commits and need to be "rediscovered" by the affected testers
+with the help of bisection.  Moreover, many changes of this kind may go in from
+many different sources at the same time and that's really problematic.
 
-Mike
+In fact, so many changes go in at a time during a merge window, that we often
+can't really say which of them causes the breakage observed by testers and
+bisection, that IMO should really be a last-resort tool, is used on the main
+debugging techinque.
