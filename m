@@ -1,92 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758154AbYD3CIS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757925AbYD3CRI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758154AbYD3CIS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 22:08:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753454AbYD3CII
+	id S1757925AbYD3CRI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 22:17:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754398AbYD3CQy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 22:08:08 -0400
-Received: from outbound.icp-qv1-irony-out1.iinet.net.au ([203.59.1.108]:47404
-	"EHLO outbound.icp-qv1-irony-out1.iinet.net.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752825AbYD3CIH (ORCPT
+	Tue, 29 Apr 2008 22:16:54 -0400
+Received: from hu-out-0506.google.com ([72.14.214.239]:42909 "EHLO
+	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754298AbYD3CQx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 22:08:07 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ar4BANdxF0h8qMj2/2dsb2JhbAAIrHs
-X-IronPort-AV: E=Sophos;i="4.25,725,1199631600"; 
-   d="scan'208";a="322175735"
-Subject: Re: [patch/rfc 2.6.25-git] gpio: sysfs interface
-From: Ben Nizette <bn@niasdigital.com>
-To: David Brownell <david-b@pacbell.net>
-Cc: Trent Piepho <tpiepho@freescale.com>, lkml <linux-kernel@vger.kernel.org>,
-       hartleys <hartleys@visionengravers.com>,
-       Mike Frysinger <vapier.adi@gmail.com>, Bryan Wu <cooloney@kernel.org>
-In-Reply-To: <200804291804.19518.david-b@pacbell.net>
-References: <200804281239.51729.david-b@pacbell.net>
-	 <200804291455.39674.david-b@pacbell.net>
-	 <1209511772.311.55.camel@moss.renham>
-	 <200804291804.19518.david-b@pacbell.net>
-Content-Type: text/plain
-Organization: Nias Digital
-Date: Wed, 30 Apr 2008 12:08:11 +1000
-Message-Id: <1209521291.311.99.camel@moss.renham>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
+	Tue, 29 Apr 2008 22:16:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=dDlXHAHzV03yeKF0XqJLmN9wCO91rvmp72oTnq0Lwmco9exxsdLcwjFQKuQHonIzkcwH5f8NNxxyO4lx4JliuvDSqLydKyM9Q8tZd7HItgZ/twqU/QnbGpfA+sc1BjFSs9H+MIFgBrMMBKJ5FreSjbBeXzh+9h3VlX3kmR/f+5Y=
+Message-ID: <4817D687.8080201@googlemail.com>
+Date: Wed, 30 Apr 2008 04:16:39 +0200
+From: Gabriel C <nix.or.die@googlemail.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
+MIME-Version: 1.0
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+CC: Dave Airlie <airlied@linux.ie>, Gabriel C <crazy@frugalware.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fbdev-devel@lists.sourceforge.net,
+       "Antonino A. Daplas" <adaplas@gmail.com>,
+       Wang Zhenyu <zhenyu.z.wang@intel.com>
+Subject: Re: intelfb and G33 / Q33 / Q35 chipsets support ?
+References: <4815EEB4.2060509@frugalware.org> <alpine.DEB.0.82.0804282016440.5277@skynet.skynet.ie> <481678C6.7050400@googlemail.com> <200804291104.47687.jbarnes@virtuousgeek.org> <4817A9D3.1030309@googlemail.com>
+In-Reply-To: <4817A9D3.1030309@googlemail.com>
+Content-Type: text/plain; charset=iso-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Tue, 2008-04-29 at 18:04 -0700, David Brownell wrote:
-> On Tuesday 29 April 2008, Ben Nizette wrote:
-> > I guess one last option (which is made hard by chip label non-uniqueness
-> > but I'll throw out anyway) would be
-> > 
-> > /sys/class/gpio
-> >         /chipa
-> >                 /gpio-n
-> >                         /value
-> >                         /direction
-> >                 /control
-> >         /chipb
-> >                 :
-> >                 :
-> > 
+Gabriel C wrote:
+> Jesse Barnes wrote:
+>> On Monday, April 28, 2008 6:24 pm Gabriel C wrote:
+>>> Dave Airlie wrote:
+>>>> On Mon, 28 Apr 2008, Gabriel C wrote:
+>>>>> Hello ,
+>>>>>
+>>>>> are there any plans to add G33 / Q33 / Q35 chipsets support for the
+>>>>> intelfb driver ? Is this driver still maintained ?
+>>>>>
+>>>>> ( I'm not really sure who maintains this driver so I've add peoples to
+>>>>> CC I saw worked on it , I've also added Wang Zhenyu to CC while he added
+>>>>> this support for AGP )
+>>>> Intel fb is unmaintained (well I've done trivial fixes in the past), and
+>>>> I'd rather not add new chipset support to it.
+>>>>
+>>>> We are working (RH and Intel) on a new kernel modesetting layer which
+>>>> will allow fbs integrated with proper memory management and support all
+>>>> intel hw,
+>>> Good news :)
+>>>
+>>> Are there any patch(es) / git tree one could try out ?
+>> See the modesetting-101 branch of git://git.freedesktop.org/git/mesa/drm.  
+>> It's a bit rough in spots but the i915 driver should be pretty close to 
+>> feature parity with the Intel X driver at this point.
 > 
-> Or maybe:
+> Thx , I will try out the tree.
 > 
->   /sys/class/gpio
-> 	/gpiochip-X			<-- range X..(X+ngpio)
-> 		/device			<-- symlink, if it's known
-> 		/ngpio
-> 		/label
-> 		/start			<-- maybe; start == X
-> 
-> with the gpio-N links probably going where you showed.  That'd be
-> best in terms of Purity Of Essence.
 
-So you're suggesting that the gpio-N links and control file live inside
-the gpiochip-X folder along with info about the chip to which they're
-attached?  I don't mind this, sounds good.  Certainly feels most
-sysfsish.
+modesetting-101 does not compile on current git , NOPAGE_SIGBUS , nopage and friends gone.
 
-Scripting would be pretty simple assuming there's one control file per
-chip and the gpio number written to said control file is relative to
-that chip's base.  i.e. finding pcf9557:5 (assuming only one such
-device) would just be
 
-- find the gpiochip-X folder whose /label == pcf9557
-- echo "export 5" > <that_folder>/control
-- read/write <that_folder>/gpio-5/{value,direction}
-
-If you've got multiple pca9557s then you're always going to have a hard
-time distinguishing them but you've been given all the information
-available to allow you to discover which is which.
-
-In fact more than enough; if the base is dynamically allocated then you
-don't know what to expect /start to be, you know what /ngpio will be and
-you never need to find the full gpio number so those 2 files are
-redundant yeah?
-
---Ben.
-
+Gabriel 
