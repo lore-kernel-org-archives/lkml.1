@@ -1,94 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763955AbYD3TPd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932202AbYD3TQ1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763955AbYD3TPd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Apr 2008 15:15:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763744AbYD3TPN
+	id S932202AbYD3TQ1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Apr 2008 15:16:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763973AbYD3TQQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Apr 2008 15:15:13 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:58717 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1762368AbYD3TPL (ORCPT
+	Wed, 30 Apr 2008 15:16:16 -0400
+Received: from eth7959.sa.adsl.internode.on.net ([150.101.82.22]:34905 "EHLO
+	hawking.rebel.net.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1763401AbYD3TQP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Apr 2008 15:15:11 -0400
-Date: Wed, 30 Apr 2008 12:14:52 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Denis V. Lunev" <den@openvz.org>
-Cc: mingo@elte.hu, linux-kernel@vger.kernel.org
-Subject: Re: [patch, -git] isdn: hysdn_procconf.c build fix
-Message-Id: <20080430121452.f7735eea.akpm@linux-foundation.org>
-In-Reply-To: <1209582185.4310.1.camel@iris.sw.ru>
-References: <1207653508.7171.18.camel@iris.sw.ru>
-	<1207653576-12640-25-git-send-email-den@openvz.org>
-	<20080430175740.GA26612@elte.hu>
-	<20080430111052.9c0c8974.akpm@linux-foundation.org>
-	<20080430183051.GA3008@elte.hu>
-	<20080430114731.7e71f3d2.akpm@linux-foundation.org>
-	<1209582185.4310.1.camel@iris.sw.ru>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 30 Apr 2008 15:16:15 -0400
+Message-ID: <4818C571.8040609@davidnewall.com>
+Date: Thu, 01 May 2008 04:46:01 +0930
+From: David Newall <davidn@davidnewall.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
+MIME-Version: 1.0
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org
+Subject: Re: Slow DOWN, please!!!
+References: <20080429.190352.137408408.davem@davemloft.net> <4817EF91.4080800@davidnewall.com> <20080429.211835.130816277.davem@davemloft.net> <48186E57.5070805@davidnewall.com> <alpine.LFD.1.10.0804300739350.2997@woody.linux-foundation.org> <4818B8A7.4000902@davidnewall.com> <alpine.LFD.1.10.0804301127020.2980@woody.linux-foundation.org> <4818C0BF.5020002@davidnewall.com> <alpine.LFD.1.10.0804301202200.2980@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.1.10.0804301202200.2980@woody.linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 30 Apr 2008 23:03:05 +0400
-"Denis V. Lunev" <den@openvz.org> wrote:
+Linus Torvalds wrote:
+> On Thu, 1 May 2008, David Newall wrote:
+>   
+>> I just finished telling you that I'm currently trying 2.6.25.  But you
+>> couldn't have read that with any care at all, because I also just
+>> finished telling you that it's not the specifics of the problem I'm
+>> having that matters, it's the systemic problems in Linux's development
+>> process.
+>>     
+>
+> No. What you told us was nothing like that at all.
 
-> On Wed, 2008-04-30 at 11:47 -0700, Andrew Morton wrote:
-> > On Wed, 30 Apr 2008 20:30:51 +0200
-> > Ingo Molnar <mingo@elte.hu> wrote:
-> > 
-> > > 
-> > > * Andrew Morton <akpm@linux-foundation.org> wrote:
-> > > 
-> > > > On Wed, 30 Apr 2008 19:57:40 +0200
-> > > > Ingo Molnar <mingo@elte.hu> wrote:
-> > > > 
-> > > > > Ob'grumpy: this file was not even build-tested by any of the parties 
-> > > > > who turned it into upstream commit ac41cfd19b ("isdn: use non-racy 
-> > > > > method for proc entries creation").
-> > > > 
-> > > > That's because this stupidity:
-> > > > 
-> > > > config HYSDN
-> > > >         tristate "Hypercope HYSDN cards (Champ, Ergo, Metro) support (module only)"
-> > > >         depends on m && PROC_FS && PCI && BROKEN_ON_SMP
-> > > > 
-> > > > breaks allmodconfig coverage testing.
-> > > 
-> > > yeah. There's a trick though that we use in the x86 tree (and which i'm 
-> > > using in a script when queuing up new patches). The following command 
-> > > will punch through any Kconfig black holes:
-> > > 
-> > >   make drivers/isdn/hysdn/hysdn_procconf.o
-> > 
-> > That's daft, sorry.  We shouldn't expect everyone to do stuff like that.
-> > 
-> > > (it wont always work as it needs a halfways reasonable .config, but it 
-> > > works well enough to be part of my workflow.)
-> > > 
-> > > note that there's tons more stuff and dependencies that plain 
-> > > allmodconfig does not catch - in this merge window alone i'm at around 
-> > > 20 fixes so far.
-> > 
-> > allmodconfig is for one thing and one thing only: compilation coverage
-> > testing.  If there is anything which is not compiled after `make
-> > allmodconfig' then that's a bug.
-> > 
-> > But how to fix it?  Perhaps we need to add a CONFIG_ALLFOOCONFIG which can
-> > be tested at the appropriate places.
-> 
-> I think that the same should be applied to allyesconfig
-
-That's what ALLFOOCONFIG refers to ;)
-
-There _might_ be a need to discriminate between allyesconfig and
-allmodconfig, but usually not, I expect.
-
-Perhaps we should implement CONFIG_ALLYESCONFIG, CONFIG_ALLMODCONFIG and
-CONFIG_ALLFOOCONFIG, where
-
-	ALLFOOCONFIG = ALLYESCONFIG || ALLMODCONFIG
-	
-(where FOO is renamed to something sensible, but what?)
+Don't be foolish, Linus.  It was exactly like that, almost to the point
+of quoting myself.
