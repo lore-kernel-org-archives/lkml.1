@@ -1,116 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764201AbYD3PJs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761149AbYD3PP3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764201AbYD3PJs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Apr 2008 11:09:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759308AbYD3PGk
+	id S1761149AbYD3PP3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Apr 2008 11:15:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756323AbYD3PPO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Apr 2008 11:06:40 -0400
-Received: from styx.suse.cz ([82.119.242.94]:36444 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1762178AbYD3PGY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Apr 2008 11:06:24 -0400
-From: Jan Kara <jack@suse.cz>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Jan Kara <jack@suse.cz>,
-       linux-ext4@vger.kernel.org
-Subject: [PATCH] ext3: Correct mount option parsing to detect when quota options can be changed
-Date: Wed, 30 Apr 2008 17:06:19 +0200
-Message-Id: <12095679822696-git-send-email-jack@suse.cz>
-X-Mailer: git-send-email 1.5.2.4
-In-Reply-To: <12095679824183-git-send-email-jack@suse.cz>
-References: y
- <12095679813226-git-send-email-jack@suse.cz>
- <12095679812375-git-send-email-jack@suse.cz>
- <12095679812452-git-send-email-jack@suse.cz>
- <1209567981639-git-send-email-jack@suse.cz>
- <1209567981323-git-send-email-jack@suse.cz>
- <12095679812717-git-send-email-jack@suse.cz>
- <12095679824183-git-send-email-jack@suse.cz>
+	Wed, 30 Apr 2008 11:15:14 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:59124 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756100AbYD3PPN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Apr 2008 11:15:13 -0400
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: pupilla@hotmail.com (Marco Berizzi)
+Subject: Re: 2.6.25 crash: EIP: [<c02e2f14>] xfrm_output_resume+0x64/0x100 ss:esp 0068:c03a1e5c
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Organization: Core
+In-Reply-To: <BAY103-DAV11F874912A45144805FC26B2DE0@phx.gbl>
+X-Newsgroups: apana.lists.os.linux.kernel
+User-Agent: tin/1.7.4-20040225 ("Benbecula") (UNIX) (Linux/2.6.17-rc4 (i686))
+Message-Id: <E1JrE1V-00082Q-00@gondolin.me.apana.org.au>
+Date: Wed, 30 Apr 2008 23:15:09 +0800
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We should not allow user to change quota mount options when quota is just
-suspended. I would make mount options and internal quota state inconsistent.
-Also we should not allow user to change quota format when quota is turned on.
-On the other hand we can just silently ignore when some option is set to the
-value it already has (mount does this on remount).
+Marco Berizzi <pupilla@hotmail.com> wrote:
+> I know, it is pretty useless this report,
+> but I have nothing more than these bitmaps
+> and the message in the subject :-(
+> 
+> http://80.204.235.230/1.jpg
+> http://80.204.235.230/2.jpg
+> http://80.204.235.230/2.jpg
 
-Cc: linux-ext4@vger.kernel.org
-Signed-off-by: Jan Kara <jack@suse.cz>
----
- fs/ext3/super.c |   29 ++++++++++++++++++++++-------
- 1 files changed, 22 insertions(+), 7 deletions(-)
+Could you please take a better shot of this crash the next time
+it happens? As it is the right-hand-side of the code section is
+missing which makes it hard to determine where exactly it crashed.
 
-diff --git a/fs/ext3/super.c b/fs/ext3/super.c
-index 890e72f..0b6f924 100644
---- a/fs/ext3/super.c
-+++ b/fs/ext3/super.c
-@@ -842,7 +842,7 @@ static int parse_options (char *options, struct super_block *sb,
- 	int data_opt = 0;
- 	int option;
- #ifdef CONFIG_QUOTA
--	int qtype;
-+	int qtype, qfmt;
- 	char *qname;
- #endif
- 
-@@ -1018,7 +1018,9 @@ static int parse_options (char *options, struct super_block *sb,
- 		case Opt_grpjquota:
- 			qtype = GRPQUOTA;
- set_qf_name:
--			if (sb_any_quota_enabled(sb)) {
-+			if ((sb_any_quota_enabled(sb) ||
-+			     sb_any_quota_suspended(sb)) &&
-+			    !sbi->s_qf_names[qtype]) {
- 				printk(KERN_ERR
- 					"EXT3-fs: Cannot change journaled "
- 					"quota options when quota turned on.\n");
-@@ -1056,7 +1058,9 @@ set_qf_name:
- 		case Opt_offgrpjquota:
- 			qtype = GRPQUOTA;
- clear_qf_name:
--			if (sb_any_quota_enabled(sb)) {
-+			if ((sb_any_quota_enabled(sb) ||
-+			     sb_any_quota_suspended(sb)) &&
-+			    sbi->s_qf_names[qtype]) {
- 				printk(KERN_ERR "EXT3-fs: Cannot change "
- 					"journaled quota options when "
- 					"quota turned on.\n");
-@@ -1069,10 +1073,20 @@ clear_qf_name:
- 			sbi->s_qf_names[qtype] = NULL;
- 			break;
- 		case Opt_jqfmt_vfsold:
--			sbi->s_jquota_fmt = QFMT_VFS_OLD;
--			break;
-+			qfmt = QFMT_VFS_OLD;
-+			goto set_qf_format;
- 		case Opt_jqfmt_vfsv0:
--			sbi->s_jquota_fmt = QFMT_VFS_V0;
-+			qfmt = QFMT_VFS_V0;
-+set_qf_format:
-+			if ((sb_any_quota_enabled(sb) ||
-+			     sb_any_quota_suspended(sb)) &&
-+			    sbi->s_jquota_fmt != qfmt) {
-+				printk(KERN_ERR "EXT3-fs: Cannot change "
-+					"journaled quota options when "
-+					"quota turned on.\n");
-+				return 0;
-+			}
-+			sbi->s_jquota_fmt = qfmt;
- 			break;
- 		case Opt_quota:
- 		case Opt_usrquota:
-@@ -1084,7 +1098,8 @@ clear_qf_name:
- 			set_opt(sbi->s_mount_opt, GRPQUOTA);
- 			break;
- 		case Opt_noquota:
--			if (sb_any_quota_enabled(sb)) {
-+			if (sb_any_quota_enabled(sb) ||
-+			    sb_any_quota_suspended(sb)) {
- 				printk(KERN_ERR "EXT3-fs: Cannot change quota "
- 					"options when quota turned on.\n");
- 				return 0;
+Alternatively send me your xfrm_output.o file (or vmlinux).
+
+Thanks,
 -- 
-1.5.2.4
-
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
