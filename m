@@ -1,103 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762683AbYD3Ni1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763184AbYD3NjB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762683AbYD3Ni1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Apr 2008 09:38:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757526AbYD3NiS
+	id S1763184AbYD3NjB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Apr 2008 09:39:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757528AbYD3Niw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Apr 2008 09:38:18 -0400
-Received: from boogie.lpds.sztaki.hu ([193.224.70.237]:43124 "EHLO
-	boogie.lpds.sztaki.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756257AbYD3NiR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Apr 2008 09:38:17 -0400
-Date: Wed, 30 Apr 2008 15:38:24 +0200
-From: Gabor Gombas <gombasg@sztaki.hu>
-To: Bernhard Walle <bwalle@suse.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: Solid freezes with 2.6.25
-Message-ID: <20080430133824.GC18711@boogie.lpds.sztaki.hu>
-References: <20080428142935.GQ14074@boogie.lpds.sztaki.hu> <20080428092513.495378af.akpm@linux-foundation.org> <20080429175419.6c8a0ebf@strauss.suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080429175419.6c8a0ebf@strauss.suse.de>
-X-Copyright: Forwarding or publishing without permission is prohibited.
+	Wed, 30 Apr 2008 09:38:52 -0400
+Received: from mail.gmx.net ([213.165.64.20]:51018 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1757310AbYD3Niw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Apr 2008 09:38:52 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX18H0aBn0bgHadJ8F3N1s8VwR21WjEkWuS5Hl+EtI6
+	I7m+OYo5JYBaS9
+Subject: Re: Slow DOWN, please!!!
+From: Mike Galbraith <efault@gmx.de>
+To: David Newall <davidn@davidnewall.com>
+Cc: Tarkan Erimer <tarkan@netone.net.tr>, David Miller <davem@davemloft.net>,
+       linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>
+In-Reply-To: <48187400.8050401@davidnewall.com>
+References: <20080429.190352.137408408.davem@davemloft.net>
+	 <4817EF91.4080800@davidnewall.com> <48181B9F.2040203@netone.net.tr>
+	 <48187400.8050401@davidnewall.com>
+Content-Type: text/plain
+Date: Wed, 30 Apr 2008 15:38:48 +0200
+Message-Id: <1209562728.5568.7.camel@marge.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 29, 2008 at 05:54:19PM +0200, Bernhard Walle wrote:
 
-> Hm ..., can you mail /proc/interrupts of the affected system? According
-> to the HPET specification 
+On Wed, 2008-04-30 at 22:58 +0930, David Newall wrote:
 
-The Intel box:
+> Ignore the problem, even shoot the messenger, if you like;
 
-           CPU0       CPU1       
-  0:      27346      29145   IO-APIC-edge      timer
-  1:        842        819   IO-APIC-edge      i8042
-  4:          2          2   IO-APIC-edge    
-  6:          0          3   IO-APIC-edge      floppy
-  8:          2          3   IO-APIC-edge      rtc0
-  9:          0          0   IO-APIC-fasteoi   acpi
- 14:         36         36   IO-APIC-edge      ata_piix
- 15:          0          0   IO-APIC-edge      ata_piix
- 16:         71         71   IO-APIC-fasteoi   uhci_hcd:usb5, HDA Intel
- 17:      49357      47537   IO-APIC-fasteoi   ata_piix
- 18:          0          0   IO-APIC-fasteoi   uhci_hcd:usb4
- 19:          0          0   IO-APIC-fasteoi   uhci_hcd:usb3
- 21:          0          0   IO-APIC-fasteoi   rtl
- 23:         28         29   IO-APIC-fasteoi   ehci_hcd:usb1, uhci_hcd:usb2
-380:        332        338   PCI-MSI-edge      mobo
-NMI:        645        573   Non-maskable interrupts
-LOC:      58828      55631   Local timer interrupts
-RES:      78518      83802   Rescheduling interrupts
-CAL:        477        492   function call interrupts
-TLB:       1079       1084   TLB shootdowns
-TRM:          0          0   Thermal event interrupts
-THR:          0          0   Threshold APIC interrupts
-SPU:          0          0   Spurious interrupts
-ERR:          0
+BANG!
 
-The AMD box:
+#include <chicken_little_headstone.h>
 
-           CPU0       
-  0:         36   IO-APIC-edge      timer
-  1:          2   IO-APIC-edge      i8042
-  3:          3   IO-APIC-edge    
-  4:          2   IO-APIC-edge    
-  6:          3   IO-APIC-edge      floppy
-  7:          1   IO-APIC-edge      parport0
-  8:          1   IO-APIC-edge      rtc0
-  9:          0   IO-APIC-fasteoi   acpi
- 14:         53   IO-APIC-edge      pata_amd
- 15:         73   IO-APIC-edge      pata_amd
- 17:          0   IO-APIC-fasteoi   sata_sil
- 18:          3   IO-APIC-fasteoi   firewire_ohci
- 19:          0   IO-APIC-fasteoi   saa7134[0], saa7134[0]
- 20:        424   IO-APIC-fasteoi   ehci_hcd:usb2
- 21:        481   IO-APIC-fasteoi   ohci_hcd:usb1
- 22:      19744   IO-APIC-fasteoi   sata_nv, nvidia
- 23:      13590   IO-APIC-fasteoi   sata_nv, NVidia CK804
-283:          1   PCI-MSI-edge      marvel
-NMI:          0   Non-maskable interrupts
-LOC:      11801   Local timer interrupts
-TRM:          0   Thermal event interrupts
-THR:          0   Threshold APIC interrupts
-SPU:          0   Spurious interrupts
-ERR:          1
-
-> Can you try that patch and see if the IRQ handler is really called
-> repeatedly in that case?
-
-Unfortunately I won't have time today and will be traveling till the end
-of the week. I'll give it a shot next week.
-
-Gabor
-
--- 
-     ---------------------------------------------------------
-     MTA SZTAKI Computer and Automation Research Institute
-                Hungarian Academy of Sciences
-     ---------------------------------------------------------
