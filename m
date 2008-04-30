@@ -1,53 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764658AbYD3VKJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765135AbYD3VKk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764658AbYD3VKJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Apr 2008 17:10:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759471AbYD3VJ5
+	id S1765135AbYD3VKk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Apr 2008 17:10:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764760AbYD3VKP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Apr 2008 17:09:57 -0400
-Received: from yw-out-2324.google.com ([74.125.46.29]:31045 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756661AbYD3VJ4 (ORCPT
+	Wed, 30 Apr 2008 17:10:15 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:53299 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759471AbYD3VKO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Apr 2008 17:09:56 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:reply-to:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding:from;
-        b=P0j2ViKJew2l7K/tmN8zs7dk6hF8QH9vDa79+vqZad9tOWjn3412e8h0IuqD9edHHNbiCgQPmV03KUihlhStPE7x3T3FkZ40d2DuT1YepzI7MJIZCJeriZDPHeYvRt2qfK3kGqEMwfoMp5QaarCllJZAyEgE0IScq6M3b594lYg=
-Message-ID: <4818DE7D.9050900@bellsouth.net>
-Date: Wed, 30 Apr 2008 16:02:53 -0500
-Reply-To: jacliburn@bellsouth.net
-User-Agent: Thunderbird 2.0.0.12 (Macintosh/20080213)
-MIME-Version: 1.0
-To: jacliburn@bellsouth.net
-CC: Gabriel C <nix.or.die@googlemail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Len Brown <len.brown@intel.com>, linux-pm@lists.linux-foundation.org,
-       pavel@suse.cz, "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Some sort corruption of my Thermal Subsystem after suspend to
- ram
-References: <4818D9AB.3040402@googlemail.com> <4818DA98.4040001@bellsouth.net>
-In-Reply-To: <4818DA98.4040001@bellsouth.net>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+	Wed, 30 Apr 2008 17:10:14 -0400
+Date: Wed, 30 Apr 2008 14:09:36 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: linux-kernel@vger.kernel.org, linux-mm@vger.kernel.org
+Subject: Re: [PATCH 1/2] mm: Fix overcommit overflow
+Message-Id: <20080430140936.9a27facf.akpm@linux-foundation.org>
+In-Reply-To: <20080430214241.4313e9ca@core>
+References: <20080430214241.4313e9ca@core>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-From: Jay Cliburn <jcliburn@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jay Cliburn wrote:
-> Gabriel C wrote:
->> Hi all,
->>
->> I thought I've found all issue with that new box but I was wrong ;)
->>
->> On an ASUS P5E-VM DO , 4G RAM , Q9300 CPU after suspend to ram Thermal 
->> Subsystem gets corrupted in some way.
+On Wed, 30 Apr 2008 21:42:41 +0100
+Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+
+> Sami Farin reported an overflow in the overcommit handling on 64bit boxes.
 > 
-> Does this board contain an Attansic L1 NIC?
+> We use atomic_t for page counting which is fine on 32bit but on 64bit
+> overflows. We can use atomic64_t but there is a problem - most heavy
+> users of zero overcommit are embedded people whose 64bit atomics are
+> really slow and expensive operations. Thus we use a few defines to flip
+> 32 or 64bit according to the size of a long
+> 
+> (Split into two diffs to keep ownership correct)
+> 
+> Signed-off-by: Alan Cox <alan@redhat.com>
+> 
+> diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.25-mm1/include/linux/mman.h linux-2.6.25-mm1/include/linux/mman.h
+> --- linux.vanilla-2.6.25-mm1/include/linux/mman.h	2008-04-28 11:35:21.000000000 +0100
+> +++ linux-2.6.25-mm1/include/linux/mman.h	2008-04-30 11:21:10.000000000 +0100
+> @@ -15,16 +15,31 @@
+>  
+>  #include <asm/atomic.h>
+>  
+> +/* 32bit platforms have a virtual address space in pages we
+> +   can fit into an atomic_t. We want to avoid atomic64_t on
+> +   such boxes as it is often expensive and most strict overcommit
+> +   users turn out to be embedded low power processors */
+> +
+> +#if (BITS_PER_LONG == 32)
+> +#define vm_atomic_t atomic_t
+> +#define vm_atomic_read atomic_read
+> +#define vm_atomic_add atomic_add
+> +#else
+> +#define vm_atomic_t atomic64_t
+> +#define vm_atomic_read atomic64_read
+> +#define vm_atomic_add atomic64_add
+> +#endif
 
-Belay that.  I see it's an Intel NIC.
+ew.
 
-http://www.asus.com/products.aspx?modelmenu=2&model=1849&l1=3&l2=11&l3=571&l4=0
+>  extern int sysctl_overcommit_memory;
+>  extern int sysctl_overcommit_ratio;
+> -extern atomic_t vm_committed_space;
+> +extern vm_atomic_t vm_committed_space;
+>  
+>  #ifdef CONFIG_SMP
+>  extern void vm_acct_memory(long pages);
+>  #else
+>  static inline void vm_acct_memory(long pages)
+>  {
+> -	atomic_add(pages, &vm_committed_space);
+> +	vm_atomic_add(pages, &vm_committed_space);
+>  }
+>  #endif
+>  
+> diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.25-mm1/mm/mmap.c linux-2.6.25-mm1/mm/mmap.c
+> --- linux.vanilla-2.6.25-mm1/mm/mmap.c	2008-04-28 11:36:52.000000000 +0100
+> +++ linux-2.6.25-mm1/mm/mmap.c	2008-04-30 11:17:03.000000000 +0100
+> @@ -80,7 +80,7 @@
+>  int sysctl_overcommit_memory = OVERCOMMIT_GUESS;  /* heuristic overcommit */
+>  int sysctl_overcommit_ratio = 50;	/* default is 50% */
+>  int sysctl_max_map_count __read_mostly = DEFAULT_MAX_MAP_COUNT;
+> -atomic_t vm_committed_space = ATOMIC_INIT(0);
+> +vm_atomic_t vm_committed_space = ATOMIC_INIT(0);
 
-I should've looked first.  Sorry for the noise.
+That'll need to be ATOMIC64_INIT on 64-bit.
+
+>  
+>  /*
+>   * Check that a process has enough memory to allocate a new virtual
+> @@ -177,7 +177,7 @@
+>  	 * cast `allowed' as a signed long because vm_committed_space
+>  	 * sometimes has a negative value
+>  	 */
+> -	if (atomic_read(&vm_committed_space) < (long)allowed)
+> +	if (vm_atomic_read(&vm_committed_space) < (long)allowed)
+>  		return 0;
+>  error:
+>  	vm_unacct_memory(pages);
+> diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.25-mm1/mm/swap.c linux-2.6.25-mm1/mm/swap.c
+> --- linux.vanilla-2.6.25-mm1/mm/swap.c	2008-04-28 11:36:52.000000000 +0100
+> +++ linux-2.6.25-mm1/mm/swap.c	2008-04-30 11:18:05.000000000 +0100
+> @@ -503,7 +503,7 @@
+>  	local = &__get_cpu_var(committed_space);
+>  	*local += pages;
+>  	if (*local > ACCT_THRESHOLD || *local < -ACCT_THRESHOLD) {
+> -		atomic_add(*local, &vm_committed_space);
+> +		vm_atomic_add(*local, &vm_committed_space);
+>  		*local = 0;
+>  	}
+>  	preempt_enable();
+
+But afacit the existing atomic_long_t does exactly what you want?
+
