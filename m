@@ -1,52 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932926AbYD3TuB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933030AbYD3Tww@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932926AbYD3TuB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Apr 2008 15:50:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932828AbYD3Ttn
+	id S933030AbYD3Tww (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Apr 2008 15:52:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932521AbYD3Twi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Apr 2008 15:49:43 -0400
-Received: from 1wt.eu ([62.212.114.60]:3618 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932823AbYD3Ttm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Apr 2008 15:49:42 -0400
-Date: Wed, 30 Apr 2008 21:49:20 +0200
-From: Willy Tarreau <w@1wt.eu>
-To: Samuel Thibault <samuel.thibault@ens-lyon.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] UTF-8 fixes in comments
-Message-ID: <20080430194920.GD7501@1wt.eu>
-References: <20080430000851.GH4818@implementation>
+	Wed, 30 Apr 2008 15:52:38 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:48714 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932466AbYD3Twh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Apr 2008 15:52:37 -0400
+Date: Wed, 30 Apr 2008 16:52:14 -0300
+From: Mauro Carvalho Chehab <mchehab@infradead.org>
+To: mkrufky@linuxtv.org
+Cc: bunk@kernel.org, mingo@elte.hu, linux-kernel@vger.kernel.org
+Subject: Re: [patch] dvb: build failure fix
+Message-ID: <20080430165214.10b793b4@gaivota>
+In-Reply-To: <4818C91E.8070307@linuxtv.org>
+References: <20080430192829.GF29330@cs181133002.pp.htv.fi>
+	<4818C91E.8070307@linuxtv.org>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.9; x86_64-mandriva-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20080430000851.GH4818@implementation>
-User-Agent: Mutt/1.5.11
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 30, 2008 at 01:08:51AM +0100, Samuel Thibault wrote:
-> Willy Tarreau wrote:
-> > 3) if I enter Alt-196, I get a "Ä". Flushing the buffer shows that od
-> > got two bytes: c3 84.
-> 
-> Confirmed.
-> 
-> Try init=/bin/stty -a, that will show
-> 
-> -iutf8
-> 
-> So there is little wonder that canonical mode does not work as expected.
-> 
-> Try init=/bin/sh, from that shell run stty iutf8. Then things will work
-> fine.  The fix is thus just to make the VT's tty initial iutf8 setup
-> follow vt.default_utf8.
+On Wed, 30 Apr 2008 15:31:42 -0400
+mkrufky@linuxtv.org wrote:
 
-Will try that on a more recent install. Mine's stty does not support
-this option. Your analysis makes quite a lot of sense, and such a fix
-would wipe part of my annoyances/anger with this recent change.
+> > Are there actually reports from users running into this problem?
 
-Thanks,
-Willy
+No.
 
+Yet, the configuration may be valid. If you have a board with tda8290, it
+_will_ need another chip, like tda827x.
+
+In the past, both tda8290 and tda827x were handled by the same driver, and
+worked for analog only.
+
+So, IMO, this is a regression.
+
+> >> Maybe, we
+> >> may just do:
+> >> obj-y += /dvb
+> >> ...
+> >>       
+> >
+> > Do DVB_TDA827X/DVB_TDA18271 need anything from DVB_CORE?
+> >
+> > If yes you'd only transform one build error into another.  
+> 
+> DVB_TDA827X and DVB_TDA18271 do not need anything from DVB_CORE -- their 
+> only dependency is I2C_CORE.
+> 
+> I think Mauro renamed those Kconfig symbols to MEDIA_TUNER_TDAfoo now, btw.
+
+I can't foresee any issues with those drivers. The risk I can see is to compile
+some dvb core things that aren't needed, or whose Kconfig dependencies may be
+incomplete.
+
+I didn't make yet a deeper analysis to be sure that this won't cause any issues,
+but I suspect that this would be safe.
+
+I agree that we need to check the resulting dependencies.
+
+Cheers,
+Mauro
