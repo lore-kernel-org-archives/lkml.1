@@ -1,71 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762240AbYD3WHe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933897AbYD3WHy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762240AbYD3WHe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Apr 2008 18:07:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933090AbYD3WDi
+	id S933897AbYD3WHy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Apr 2008 18:07:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762670AbYD3WD5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Apr 2008 18:03:38 -0400
-Received: from wa-out-1112.google.com ([209.85.146.179]:11309 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932956AbYD3WDg (ORCPT
+	Wed, 30 Apr 2008 18:03:57 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:51861 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1765370AbYD3WD4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Apr 2008 18:03:36 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=e40n3t565sEaHII0di4iQwvucr8853x9oM5CfMOSNNdD0tEXEZxu10RtogL8yVuiUW/6tWA1iubWNAMHErCdJiUC8qvnfm321yzNZoaITsxV69FFMIHYp4HozgATv2qqWetVugJk1b4ihusViX4zvvCmKX0UbRzTcoquInWnZ3I=
-Subject: [PATCH 10/10] Make one-bit signed bitfields unsigned
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Wed, 30 Apr 2008 15:03:45 -0700
-Message-Id: <1209593025.24729.120.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 30 Apr 2008 18:03:56 -0400
+Date: Wed, 30 Apr 2008 15:03:15 -0700
+From: Greg KH <greg@kroah.com>
+To: David Miller <davem@davemloft.net>
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.25-git16 fails with "undefined reference to
+	`compat_mc_getsockopt'"
+Message-ID: <20080430220315.GA11136@kroah.com>
+References: <20080430204622.GA1663@kroah.com> <20080430.144906.105396672.davem@davemloft.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080430.144906.105396672.davem@davemloft.net>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Otherwise it can only take the values 0/-1 which doesn't seem to
-have been intended.
+On Wed, Apr 30, 2008 at 02:49:06PM -0700, David Miller wrote:
+> From: Greg KH <greg@kroah.com>
+> Date: Wed, 30 Apr 2008 13:46:22 -0700
+> 
+> > Don't know if you have seen this or not, but 2.6.25-gi16 seems to fail
+> > with:
+> > 	net/built-in.o: In function `ipv6_getsockopt':
+> > 	(.text+0x6829c): undefined reference to `compat_mc_getsockopt'
+> > 
+> > I've attached my .config below if that helps any.
+> 
+> Known problem and there is a fix pending, sit tight.
 
-drivers/input/tablet/wacom.h:108:12: error: dubious one-bit signed bitfield
-drivers/mmc/host/sdhci.h:190:20: error: dubious one-bit signed bitfield
+Great, thanks for letting me know and sending the patch to Linus, I
+appreciate it.
 
-Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
----
- drivers/input/tablet/wacom.h |    2 +-
- drivers/mmc/host/sdhci.h     |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/input/tablet/wacom.h b/drivers/input/tablet/wacom.h
-index 706619d..ca62ec6 100644
---- a/drivers/input/tablet/wacom.h
-+++ b/drivers/input/tablet/wacom.h
-@@ -105,7 +105,7 @@ struct wacom {
- 	struct urb *irq;
- 	struct wacom_wac * wacom_wac;
- 	struct mutex lock;
--	int open:1;
-+	unsigned int open:1;
- 	char phys[32];
- };
- 
-diff --git a/drivers/mmc/host/sdhci.h b/drivers/mmc/host/sdhci.h
-index 7fb02e1..299118d 100644
---- a/drivers/mmc/host/sdhci.h
-+++ b/drivers/mmc/host/sdhci.h
-@@ -187,7 +187,7 @@ struct sdhci_host {
- 	struct mmc_request	*mrq;		/* Current request */
- 	struct mmc_command	*cmd;		/* Current command */
- 	struct mmc_data		*data;		/* Current data request */
--	int			data_early:1;	/* Data finished before cmd */
-+	unsigned int		data_early:1;	/* Data finished before cmd */
- 
- 	struct scatterlist	*cur_sg;	/* We're working on this */
- 	int			num_sg;		/* Entries left */
--- 
-1.5.5.1.305.g7c84
-
+greg k-h
