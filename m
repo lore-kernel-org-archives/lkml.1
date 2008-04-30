@@ -1,68 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760690AbYD3GmT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761567AbYD3Gmi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760690AbYD3GmT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Apr 2008 02:42:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756944AbYD3GmI
+	id S1761567AbYD3Gmi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Apr 2008 02:42:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756953AbYD3Gm0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Apr 2008 02:42:08 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:60582 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756411AbYD3GmH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Apr 2008 02:42:07 -0400
-Date: Wed, 30 Apr 2008 15:46:41 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       y-goto@jp.fujitsu.com
-Subject: Re: sparc64 bootup regression...
-Message-Id: <20080430154641.c488aac8.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20080429233832.168fb6ee.akpm@linux-foundation.org>
-References: <20080429.231241.221824292.davem@davemloft.net>
-	<20080429233832.168fb6ee.akpm@linux-foundation.org>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
+	Wed, 30 Apr 2008 02:42:26 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:52639 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756738AbYD3GmZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Apr 2008 02:42:25 -0400
+Date: Wed, 30 Apr 2008 16:42:18 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: David Chinner <dgc@sgi.com>
+Cc: linux-next@vger.kernel.org, xfs-masters@oss.sgi.com,
+       Christoph Hellwig <hch@infradead.org>,
+       Lachlan McIlroy <lachlan@sgi.com>, LKML <linux-kernel@vger.kernel.org>,
+       Linus <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: linux-next: xfs build failure
+Message-Id: <20080430164218.9c2bfb1c.sfr@canb.auug.org.au>
+In-Reply-To: <20080430063544.GA108924158@sgi.com>
+References: <20080430140027.6cd83fd0.sfr@canb.auug.org.au>
+	<20080430063544.GA108924158@sgi.com>
+X-Mailer: Sylpheed 2.5.0beta3 (GTK+ 2.12.9; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Wed__30_Apr_2008_16_42_18_+1000_wxn3sCaITfTuMRqX"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 29 Apr 2008 23:38:32 -0700
-Andrew Morton <akpm@linux-foundation.org> wrote:
+--Signature=_Wed__30_Apr_2008_16_42_18_+1000_wxn3sCaITfTuMRqX
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> On Tue, 29 Apr 2008 23:12:41 -0700 (PDT) David Miller <davem@davemloft.net> wrote:
-> 
-> > 
-> > This commit causes bootup failures on sparc64:
-> > 
-> > commit 86f6dae1377523689bd8468fed2f2dd180fc0560
-> > Author: Yasunori Goto <y-goto@jp.fujitsu.com>
-> > Date:   Mon Apr 28 02:13:33 2008 -0700
-> > 
-> >     memory hotplug: allocate usemap on the section with pgdat
-> >     
-> >     Usemaps are allocated on the section which has pgdat by this.
-> >     
-> >     Because usemap size is very small, many other sections usemaps are allocated
-> >     on only one page.  If a section has usemap, it can't be removed until removing
-> >     other sections.  This dependency is not desirable for memory removing.
-> >     
-> >     Pgdat has similar feature.  When a section has pgdat area, it must be the last
-> >     section for removing on the node.  So, if section A has pgdat and section B
-> >     has usemap for section A, Both sections can't be removed due to dependency
-> >     each other.
-> >     
-> >     To solve this issue, this patch collects usemap on same section with pgdat.
-> >     If other sections doesn't have any dependency, this section will be able to be
-> >     removed finally.
-> 
-> Thanks.  Does a straightforward revert fix it?  If so, we could do that while heads
-> are being scratched.
+Hi David,
 
-I'm now digging. plz wait a bit.
+On Wed, 30 Apr 2008 16:35:44 +1000 David Chinner <dgc@sgi.com> wrote:
+>
+> Ah, I see the problem - a CONFIG_XFS_DEBUG build includes linux/random.h
+> in a debug header file. That's probably why I didn't catch it (I need to
+> check the .config on my build test tree).
+>=20
+> I'll get it fixed properly, but in the mean time the include you've got
+> there will suffice...
 
-Thanks,
--Kame
+Could you make sure something gets sent to Linus pretty quickly as this
+breaks a lot of the powerpc builds at the moment (see
+http://kisskb.ellerman.id.au/kisskb/branch/3/).  Or should I do my patch
+up and sent it?
 
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Wed__30_Apr_2008_16_42_18_+1000_wxn3sCaITfTuMRqX
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFIGBTOTgG2atn1QN8RAgP+AJ9CTYGuPxZOXJFiUc+78Ux6e4ilKQCgh6Fx
+Ptbkmw6vkQIC/4iRXTZEE+s=
+=J1Tr
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__30_Apr_2008_16_42_18_+1000_wxn3sCaITfTuMRqX--
