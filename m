@@ -1,52 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764447AbYD3WzB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763825AbYD3W5U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764447AbYD3WzB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Apr 2008 18:55:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759347AbYD3Wyo
+	id S1763825AbYD3W5U (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Apr 2008 18:57:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751290AbYD3W5E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Apr 2008 18:54:44 -0400
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:40134 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756592AbYD3Wym (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Apr 2008 18:54:42 -0400
-Subject: Re: [PATCH 02/10] scsi: fix integer as NULL pointer warnings
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Harvey Harrison <harvey.harrison@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>
-In-Reply-To: <1209594888.24729.130.camel@brick>
-References: <1209593020.24729.112.camel@brick>
-	 <1209594551.3774.37.camel@localhost.localdomain>
-	 <1209594888.24729.130.camel@brick>
-Content-Type: text/plain
-Date: Wed, 30 Apr 2008 17:54:38 -0500
-Message-Id: <1209596078.3774.38.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-4.fc8) 
+	Wed, 30 Apr 2008 18:57:04 -0400
+Received: from gw.goop.org ([64.81.55.164]:42908 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753936AbYD3W5D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Apr 2008 18:57:03 -0400
+Message-ID: <4818F92F.5030505@goop.org>
+Date: Wed, 30 Apr 2008 15:56:47 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080418)
+MIME-Version: 1.0
+To: Jens Axboe <jens.axboe@oracle.com>
+CC: linux-kernel@vger.kernel.org, peterz@infradead.org, npiggin@suse.de,
+       linux-arch@vger.kernel.org, mingo@elte.hu, paulmck@linux.vnet.ibm.com
+Subject: Re: [PATCH 1/10] Add generic helpers for arch IPI function calls
+References: <1209453990-7735-1-git-send-email-jens.axboe@oracle.com> <1209453990-7735-2-git-send-email-jens.axboe@oracle.com>
+In-Reply-To: <1209453990-7735-2-git-send-email-jens.axboe@oracle.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-04-30 at 15:34 -0700, Harvey Harrison wrote:
-> On Wed, 2008-04-30 at 17:29 -0500, James Bottomley wrote:
-> > On Wed, 2008-04-30 at 15:03 -0700, Harvey Harrison wrote:
-> > > drivers/scsi/FlashPoint.c:906:9: warning: Using plain integer as NULL pointer
-> > > drivers/scsi/FlashPoint.c:907:53: warning: Using plain integer as NULL pointer
-> > > drivers/scsi/FlashPoint.c:922:1: warning: Using plain integer as NULL pointer
-> 
-> > The flashpoint initialiser changes look wrong:  {0} is a conventional
-> > notation for zero initialise this structure.  Sparse should probably be
-> > taught to recognise that.
-> 
-> Actually, looking closer, should this be initialized at all?  Can we
-> just remove the initialization here and let them end up in .bss?
+Jens Axboe wrote:
+> +/*
+> + * smp_call_function_single - Run a function on a specific CPU
+> + * @func: The function to run. This must be fast and non-blocking.
+> + * @info: An arbitrary pointer to pass to the function.
+> + * @retry: Unused
+>   
 
-Yes, but the conventional initialiser doesn't change that (as in zero
-initialise a static and it ends up in bss anyway).
+I wonder if it isn't finally time to drop this parameter?  Now that 
+there aren't a zillion arch implementations of this to fix, we only need 
+to fix a dozen or so callers.
 
-James
+> + * @wait: If true, wait until function has completed on other CPUs.
+> + *
+> + * Returns 0 on success, else a negative status code.
+> + */
+> [...]
+> +/**
+> + * smp_call_function_mask(): Run a function on a set of other CPUs.
+> + * @mask: The set of cpus to run on.
+> + * @func: The function to run. This must be fast and non-blocking.
+> + * @info: An arbitrary pointer to pass to the function.
+> + * @wait: If true, wait (atomically) until function has completed on other CPUs.
+> + *
+> + * Returns 0 on success, else a negative status code.
+> + *
+> + * If @wait is true, then returns once @func has returned.
+> + *
+> + * You must not call this function with disabled interrupts or from a
+> + * hardware interrupt handler or from a bottom half handler.
+>   
 
+Mention preemption needs to be disabled?  Or allow preemption and take 
+appropriate precautions internally?  It's not obvious to me that all the 
+callers are calling with preemption disabled.
 
+> + */
+> +int smp_call_function_mask(cpumask_t mask, void (*func)(void *), void *info,
+> +			   int wait)
+> +{
+> +	struct call_function_data *data;
+> +	cpumask_t allbutself;
+> +	unsigned long flags;
+> +	int cpu, num_cpus;
+> +
+> +	/* Can deadlock when called with interrupts disabled */
+> +	WARN_ON(wait && irqs_disabled());
+>   
+WARN_ON(preemptible())?
+preempt_disable()?
+
+> +
+> +	cpu = smp_processor_id();
+> +	allbutself = cpu_online_map;
+> +	cpu_clear(cpu, allbutself);
+> +	cpus_and(mask, mask, allbutself);
+> +	num_cpus = cpus_weight(mask);
+>   
+    J
