@@ -1,53 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762021AbYD3Jdc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761484AbYD3Jf4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762021AbYD3Jdc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Apr 2008 05:33:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754537AbYD3JdV
+	id S1761484AbYD3Jf4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Apr 2008 05:35:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756883AbYD3Jfr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Apr 2008 05:33:21 -0400
-Received: from mtagate8.de.ibm.com ([195.212.29.157]:21723 "EHLO
-	mtagate8.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756725AbYD3JdU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Apr 2008 05:33:20 -0400
-Subject: Re: [patch] s390: Remove self ptrace IEEE_IP hack.
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Reply-To: schwidefsky@de.ibm.com
-To: Christoph Hellwig <hch@infradead.org>
-Cc: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
-In-Reply-To: <20080430091900.GA13743@infradead.org>
-References: <1209546896.10954.28.camel@localhost>
-	 <20080430091900.GA13743@infradead.org>
-Content-Type: text/plain
-Organization: IBM Corporation
-Date: Wed, 30 Apr 2008 11:33:05 +0200
-Message-Id: <1209547985.10954.29.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 30 Apr 2008 05:35:47 -0400
+Received: from mail.gmx.net ([213.165.64.20]:59666 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1756861AbYD3Jfq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Apr 2008 05:35:46 -0400
+X-Authenticated: #20450766
+X-Provags-ID: V01U2FsdGVkX1/1iK4aD9j1bGxS2PqYOOgslMRugPfJiyxU0PJRSC
+	TdC/EmcjFboUOX
+Date: Wed, 30 Apr 2008 11:35:53 +0200 (CEST)
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+To: Mauro Carvalho Chehab <mchehab@infradead.org>
+cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+Subject: Re: [patch] video: fix SOC_CAMERA_MT9M001 build bug
+In-Reply-To: <20080429170344.5a6d01bc@gaivota>
+Message-ID: <Pine.LNX.4.64.0804301130230.5099@axis700.grange>
+References: <20080428120032.GA23847@elte.hu> <Pine.LNX.4.64.0804281944100.10718@axis700.grange>
+ <20080428193130.GC9907@elte.hu> <Pine.LNX.4.64.0804282138000.11449@axis700.grange>
+ <20080428201105.GD15840@elte.hu> <Pine.LNX.4.64.0804291345050.5602@axis700.grange>
+ <20080429170344.5a6d01bc@gaivota>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-04-30 at 05:19 -0400, Christoph Hellwig wrote:
-> On Wed, Apr 30, 2008 at 11:14:56AM +0200, Martin Schwidefsky wrote:
-> > From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-> > 
-> > The self referential PT_IEEE_IP ptrace peek & poke calls have been
-> > broken for that last 6 years. For peek the code always returns 0
-> > instead of the last ieee fault and for poke the code does nothing.
-> > Since nobody noticed the code seems to be superfluous. So lets
-> > remove it.
-> 
-> After this the switch to the generic sys_ptrace is trivial.  Care to
-> submit a patch for that aswell?
+On Tue, 29 Apr 2008, Mauro Carvalho Chehab wrote:
 
-True, that makes sense. I'll do that right after lunch.
+> Send me a pull request with a patch reverting it and applying the proper one.
+> I'll drop it from my patch series at -git.
 
--- 
-blue skies,
-  Martin.
+Mauro, you should be able to get both fixes from
 
-"Reality continues to ruin my life." - Calvin.
+http://linuxtv.org/hg/~gliakhovetski/v4l-dvb
 
+now...
 
+Thanks
+Guennadi
+---
+Guennadi Liakhovetski
