@@ -1,161 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760202AbYD3Hps@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757393AbYD3HqU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760202AbYD3Hps (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Apr 2008 03:45:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756206AbYD3Hpk
+	id S1757393AbYD3HqU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Apr 2008 03:46:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756193AbYD3HqA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Apr 2008 03:45:40 -0400
-Received: from mta-out.inet.fi ([195.156.147.13]:59254 "EHLO
-	jenni2.rokki.sonera.fi" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756105AbYD3Hpj (ORCPT
+	Wed, 30 Apr 2008 03:46:00 -0400
+Received: from mtagate4.de.ibm.com ([195.212.29.153]:8600 "EHLO
+	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756434AbYD3Hp7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Apr 2008 03:45:39 -0400
-X-Greylist: delayed 9713 seconds by postgrey-1.27 at vger.kernel.org; Wed, 30 Apr 2008 03:45:38 EDT
-Message-ID: <4817FDA5.1040702@kolumbus.fi>
-Date: Wed, 30 Apr 2008 08:03:33 +0300
-From: =?ISO-8859-1?Q?Mika_Penttil=E4?= <mika.penttila@kolumbus.fi>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
-MIME-Version: 1.0
+	Wed, 30 Apr 2008 03:45:59 -0400
+Date: Wed, 30 Apr 2008 09:45:56 +0200
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
 To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-CC: Tony Battersby <tonyb@cybernetics.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, Nick Piggin <npiggin@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] more ZERO_PAGE handling ( was 2.6.24 regression: deadlock
- on coredump of big process)
-References: <4815E932.1040903@cybernetics.com>	<20080429100048.3e78b1ba.kamezawa.hiroyu@jp.fujitsu.com>	<48172C72.1000501@cybernetics.com> <20080430132516.28f1ee0c.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20080430132516.28f1ee0c.kamezawa.hiroyu@jp.fujitsu.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Content-Transfer-Encoding: 7bit
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
+       y-goto@jp.fujitsu.com
+Subject: Re: sparc64 bootup regression...
+Message-ID: <20080430074556.GA29363@osiris.boeblingen.de.ibm.com>
+References: <20080429.231241.221824292.davem@davemloft.net> <20080429233832.168fb6ee.akpm@linux-foundation.org> <20080430161540.bfff2c45.kamezawa.hiroyu@jp.fujitsu.com> <20080430073052.GA11015@osiris.boeblingen.de.ibm.com> <20080430164444.b5b5e6aa.kamezawa.hiroyu@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080430164444.b5b5e6aa.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-KAMEZAWA Hiroyuki wrote:
-> On Tue, 29 Apr 2008 10:10:58 -0400
-> Tony Battersby <tonyb@cybernetics.com> wrote:
->   
->> If I leave more memory free by changing the argument to
->> malloc_all_but_x_mb(), then I have to increase the number of threads
->> required to trigger the deadlock.  Changing the thread stack size via
->> setrlimit(RLIMIT_STACK) also changes the number of threads that are
->> required to trigger the deadlock.  For example, with
->> malloc_all_but_x_mb(16) and the default stack size of 8 MB, <= 5 threads
->> will coredump successfully, and >= 6 threads will deadlock.  With
->> malloc_all_but_x_mb(16) and a reduced stack size of 4096 bytes, <= 8
->> threads will coredump successfully, and >= 9 threads will deadlock.
->>
->> Also note that the "free" command reports 10 MB free memory while the
->> program is running before the segfault is triggered.
->>
->>     
-> Hmm, my idea is below.
->
-> Nick's remove ZERO_PAGE patch includes following change
->
-> ==
-> @@ -2252,39 +2158,24 @@ static int do_anonymous_page(struct mm_struct *mm, struct vm_area_struct *vma,
->         spinlock_t *ptl;
->  {
-> <snip>
-> -               page_add_new_anon_rmap(page, vma, address);
-> -       } else {
-> -               /* Map the ZERO_PAGE - vm_page_prot is readonly */
-> -               page = ZERO_PAGE(address);
-> -               page_cache_get(page);
-> -               entry = mk_pte(page, vma->vm_page_prot);
-> +       if (unlikely(anon_vma_prepare(vma)))
-> +               goto oom;
-> +       page = alloc_zeroed_user_highpage_movable(vma, address);
-> ==
->
-> above change is for avoiding to use ZERO_PAGE at read-page-fault to anonymous
-> vma. This is reasonable I think. But at coredump, tons of read-but-never-written 
-> pages can be allocated.
-> ==
-> coredump
->   -> get_user_pages()
->        -> follow_page() returns NULL
->             -> handle mm fault
->                  -> do_anonymous page.
-> ==
-> follow_page() returns ZERO_PAGE only when page table is not avaiable.
->
-> So, making follow_page() return ZERO_PAGE can be a fix of extra memory
-> consumpstion at core dump. (Maybe someone can think of other fix.)
->
-> how about this patch ? Could you try ?
->
-> (I'm sorry but I'll not be active for a week because my servers are powered off.)
->
-> -Kame
->
->   
+On Wed, Apr 30, 2008 at 04:44:44PM +0900, KAMEZAWA Hiroyuki wrote:
+> On Wed, 30 Apr 2008 09:30:52 +0200
+> Heiko Carstens <heiko.carstens@de.ibm.com> wrote:
+> > > +#endif
+> > > +	/* above allocation can fail. */
+> > > +	usemap = alloc_bootmem_node(NODE_DATA(nid), usemap_size());
+> > > +	if (usemap)
+> > > +		return usemap;
+> > > 
+> > >  	/* Stupid: suppress gcc warning for SPARSEMEM && !NUMA */
+> > >  	nid = 0;
+> > 
+> > Fixes it on s390 at least.
+> > 
+> Thanks, much help to understand what happens.
+> BTW, s390 is CONFIG_NUMA or not ?
 
-
-But sure we still have to handle the fault for instance swapped pages, 
-for other uses of get_user_pages();
-
---Mika
-
-
-
-> ==
-> follow_page() returns ZERO_PAGE if page table is not available.
-> but returns NULL pte is not presentl.
->
-> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
->
-> Index: linux-2.6.25/mm/memory.c
-> ===================================================================
-> --- linux-2.6.25.orig/mm/memory.c
-> +++ linux-2.6.25/mm/memory.c
-> @@ -926,15 +926,15 @@ struct page *follow_page(struct vm_area_
->  	page = NULL;
->  	pgd = pgd_offset(mm, address);
->  	if (pgd_none(*pgd) || unlikely(pgd_bad(*pgd)))
-> -		goto no_page_table;
-> +		goto null_or_zeropage;
->  
->  	pud = pud_offset(pgd, address);
->  	if (pud_none(*pud) || unlikely(pud_bad(*pud)))
-> -		goto no_page_table;
-> +		goto null_or_zeropage;
->  	
->  	pmd = pmd_offset(pud, address);
->  	if (pmd_none(*pmd) || unlikely(pmd_bad(*pmd)))
-> -		goto no_page_table;
-> +		goto null_or_zeropage;
->  
->  	if (pmd_huge(*pmd)) {
->  		BUG_ON(flags & FOLL_GET);
-> @@ -947,8 +947,10 @@ struct page *follow_page(struct vm_area_
->  		goto out;
->  
->  	pte = *ptep;
-> -	if (!pte_present(pte))
-> -		goto unlock;
-> +	if (!(flags & FOLL_WRITE) && !pte_present(pte)) {
-> +		pte_unmap_unlock(ptep, ptl);
-> +		goto null_or_zeropage;
-> +	}
->  	if ((flags & FOLL_WRITE) && !pte_write(pte))
->  		goto unlock;
->  	page = vm_normal_page(vma, address, pte);
-> @@ -968,7 +970,7 @@ unlock:
->  out:
->  	return page;
->  
-> -no_page_table:
-> +null_or_zeropage:
->  	/*
->  	 * When core dumping an enormous anonymous area that nobody
->  	 * has touched so far, we don't want to allocate page tables.
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
->   
-
+We don't set CONFIG_NUMA on s390.
