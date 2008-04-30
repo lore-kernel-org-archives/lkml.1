@@ -1,81 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759535AbYD3JIs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759978AbYD3JP1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759535AbYD3JIs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Apr 2008 05:08:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754953AbYD3JIi
+	id S1759978AbYD3JP1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Apr 2008 05:15:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752796AbYD3JPM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Apr 2008 05:08:38 -0400
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:48813 "EHLO e6.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755559AbYD3JIh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Apr 2008 05:08:37 -0400
-Subject: Re: [RFC][PATCH 2/5] Container Freezer: Make refrigerator always
-	available
-From: Matt Helsley <matthltc@us.ibm.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux-Kernel <linux-kernel@vger.kernel.org>,
-       Cedric Le Goater <clg@fr.ibm.com>, Paul Menage <menage@google.com>,
-       Oren Laadan <orenl@cs.columbia.edu>,
-       linux-pm@lists.linux-foundation.org,
-       Linux Containers <containers@lists.linux-foundation.org>
-In-Reply-To: <20080425110456.GF14903@elf.ucw.cz>
-References: <20080424064756.643890130@us.ibm.com>
-	 <20080424064757.227289200@us.ibm.com>  <20080425110456.GF14903@elf.ucw.cz>
+	Wed, 30 Apr 2008 05:15:12 -0400
+Received: from mtagate5.de.ibm.com ([195.212.29.154]:32495 "EHLO
+	mtagate5.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752071AbYD3JPK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Apr 2008 05:15:10 -0400
+Subject: [patch] s390: Remove self ptrace IEEE_IP hack.
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Reply-To: schwidefsky@de.ibm.com
+To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
+Cc: Christoph Hellwig <hch@infradead.org>
 Content-Type: text/plain
-Organization: IBM Linux Technology Center
-Date: Wed, 30 Apr 2008 02:08:29 -0700
-Message-Id: <1209546509.6095.133.camel@localhost.localdomain>
+Organization: IBM Corporation
+Date: Wed, 30 Apr 2008 11:14:56 +0200
+Message-Id: <1209546896.10954.28.camel@localhost>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.2 
+X-Mailer: Evolution 2.22.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
 
-On Fri, 2008-04-25 at 13:04 +0200, Pavel Machek wrote:
-> Hi!
-> 
-> > Now that the TIF_FREEZE flag is available in all architectures,
-> > extract the refrigerator() and freeze_task() from kernel/power/process.c
-> > and make it available to all.
-> > 
-> > The refrigerator() can now be used in a control group subsystem 
-> > implementing a control group freezer.
-> > 
-> > Signed-off-by: Cedric Le Goater <clg@fr.ibm.com>
-> > Signed-off-by: Matt Helsley <matthltc@us.ibm.com>
-> > Tested-by: Matt Helsley <matthltc@us.ibm.com>
-> 
-> There's no problem with doing this... but you should get some debate
-> (with Linus?) whether using freezer for cgroups is sane. When that is
+The self referential PT_IEEE_IP ptrace peek & poke calls have been
+broken for that last 6 years. For peek the code always returns 0
+instead of the last ieee fault and for poke the code does nothing.
+Since nobody noticed the code seems to be superfluous. So lets
+remove it.
 
-	OK, I've sent this reply directly to Linus. Hopefully this time he'll
-let us know...
+Cc: Christoph Hellwig <hch@infradead.org>
+Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
+---
 
-	One potential mitigating factor: I don't think we need the full freezer
-for checkpoint/restart. Right now, because it shares code with "power
-management" it's convenient to reuse the freezer. I'm hopeful that once
-the freezer is no longer necessary for power management some code paths
-can be simplified since I don't think checkpoint/restart requires
-freezing kernel threads.
+ arch/s390/kernel/ptrace.c |   20 --------------------
+ 1 file changed, 20 deletions(-)
 
-> done, there's no problem with this going in, probably through rafael's
-> patch queue.
+diff -urpN linux-2.6/arch/s390/kernel/ptrace.c linux-2.6-patched/arch/s390/kernel/ptrace.c
+--- linux-2.6/arch/s390/kernel/ptrace.c	2008-04-30 11:10:46.000000000 +0200
++++ linux-2.6-patched/arch/s390/kernel/ptrace.c	2008-04-30 11:11:02.000000000 +0200
+@@ -607,8 +607,6 @@ do_ptrace_emu31(struct task_struct *chil
+ }
+ #endif
+ 
+-#define PT32_IEEE_IP 0x13c
+-
+ static int
+ do_ptrace(struct task_struct *child, long request, long addr, long data)
+ {
+@@ -617,24 +615,6 @@ do_ptrace(struct task_struct *child, lon
+ 	if (request == PTRACE_ATTACH)
+ 		return ptrace_attach(child);
+ 
+-	/*
+-	 * Special cases to get/store the ieee instructions pointer.
+-	 */
+-	if (child == current) {
+-		if (request == PTRACE_PEEKUSR && addr == PT_IEEE_IP)
+-			return peek_user(child, addr, data);
+-		if (request == PTRACE_POKEUSR && addr == PT_IEEE_IP)
+-			return poke_user(child, addr, data);
+-#ifdef CONFIG_COMPAT
+-		if (request == PTRACE_PEEKUSR &&
+-		    addr == PT32_IEEE_IP && test_thread_flag(TIF_31BIT))
+-			return peek_user_emu31(child, addr, data);
+-		if (request == PTRACE_POKEUSR &&
+-		    addr == PT32_IEEE_IP && test_thread_flag(TIF_31BIT))
+-			return poke_user_emu31(child, addr, data);
+-#endif
+-	}
+-
+ 	ret = ptrace_check_attach(child, request == PTRACE_KILL);
+ 	if (ret < 0)
+ 		return ret;
 
-	OK, if all goes well then I'll send the next round to Rafael and Cc the
-rest. If anyone currently on Cc doesn't care to see that feel free to
-let me know.
-
-> (The first patch -- add freezer for all archs -- is probably
-> reasonably to go in ASAP, through akpm or something...)
-> 								Pavel
-
-	Well, that should only go in if the subsequent patches go in, correct?
-Also, since to the best of my knowledge this flag hasn't been in every
-arch, I'm wondering if I should Cc arch maintainers?
-
-Cheers,
-	-Matt Helsley
 
