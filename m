@@ -1,153 +1,288 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759741AbYD3AMy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760210AbYD3ANX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759741AbYD3AMy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 20:12:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755478AbYD3AMl
+	id S1760210AbYD3ANX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 20:13:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755555AbYD3ANG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 20:12:41 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:43036 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755467AbYD3AMj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 20:12:39 -0400
-Subject: Re: Linux 2.6.25 (coretemp reads high temperatures)
-From: Kasper Sandberg <lkml@metanurb.dk>
-To: Rudolf Marek <r.marek@assembler.cz>
-Cc: Jean Delvare <khali@linux-fr.org>,
-       Maxim Levitsky <maximlevitsky@gmail.com>, trenn@suse.de,
-       Len Brown <lenb@kernel.org>, Matthew <jackdachef@gmail.com>,
-       linux-acpi@vger.kernel.org, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org, "Zhang, Rui" <rui.zhang@intel.com>
-In-Reply-To: <48179DB4.8040701@assembler.cz>
-References: <e85b9d30804180837y39c52e26i588e4b67c87a5e9d@mail.gmail.com>
-	 <200804182151.49021.lenb@kernel.org>
-	 <200804231143.10875.maximlevitsky@gmail.com>
-	 <1209406784.11608.15.camel@localhost>
-	 <1209474423.1784.837.camel@queen.suse.de>
-	 <20080429170824.09540206@hyperion.delvare>  <48179DB4.8040701@assembler.cz>
-Content-Type: text/plain; charset=ISO-8859-15
-Date: Wed, 30 Apr 2008 02:11:14 +0200
-Message-Id: <1209514274.27499.12.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.4.0 
-Content-Transfer-Encoding: 8bit
+	Tue, 29 Apr 2008 20:13:06 -0400
+Received: from po-out-1718.google.com ([72.14.252.158]:20820 "EHLO
+	po-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759951AbYD3ANC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Apr 2008 20:13:02 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=ESP+wzDQaFQ6MxE0KqBrBT4B0GdJyOIqjCgRSeGsaOmzmsrnDc0k68WqwHiitHfkvQZYU1hSd3Qi6znZ4gHAeRgI/U6n1dYqoNHjeYwzKT66VA2cn/tjV8SMJJkNxS7iAeMglA6b3raCu/tjJw0aK0QovCjZnXfMclkNeNlVb0M=
+Message-ID: <86802c440804291713u7a1e03d8j8d46fffcbb55c61c@mail.gmail.com>
+Date: Tue, 29 Apr 2008 17:13:02 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Gabriel C" <nix.or.die@googlemail.com>
+Subject: Re: [PATCH 1/2] x86: mtrr cleanup for converting continuous to discrete layout v7
+Cc: "Andrew Morton" <akpm@linux-foundation.org>, "Ingo Molnar" <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       "Thomas Gleixner" <tglx@linutronix.de>,
+       "Mika Fischer" <mika.fischer@zoopnet.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <4817B5B0.5090606@googlemail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200804272337.40130.yhlu.kernel@gmail.com>
+	 <200804290200.33459.yhlu.kernel@gmail.com>
+	 <4816EEA1.6050804@googlemail.com>
+	 <86802c440804290330wd582daetb2a9c41a69f6e028@mail.gmail.com>
+	 <86802c440804290356l678d3a0cxedcbe21a1f7642d1@mail.gmail.com>
+	 <48170BDB.9000801@googlemail.com>
+	 <86802c440804291011g1cdd2c81h962f066dd7980282@mail.gmail.com>
+	 <48178434.90701@googlemail.com>
+	 <86802c440804291449y50f178a6x4e200c26840493a@mail.gmail.com>
+	 <4817B5B0.5090606@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-04-30 at 00:14 +0200, Rudolf Marek wrote:
-> -----BEGIN PGP SIGNED MESSAGE-----
-> Hash: SHA1
-> 
-> Hi all,
-> 
-> I already answered this thread while ago. I can just confirm what Jean told.
-> 
-> >>>> I confirm this.
-> >>>> I *know* that temperatures reported now are wrong.
-> > 
-> > And how do you know? The newly reported temperatures could be correct
-> > and the previous ones were incorrect (that's actually the case.) The
-> > thing is, the temperature is stored as a relative value in the CPU.
-> > Relative to what, depends on the CPU model, can be 85°C or 100°C. Up to
-> > kernel 2.6.24 we had a set of rules to find out, in 2.6.25 we have a
-> > presumably better heuristic. So some people have seen their CPU
-> > temperature climb by 15°C and others drop by 15°C, that's expected.
-> 
-> Yes exactly. I decided to move to 0-100C scale, and move the limit too.
-> Of course some users with too low jumped to better scale some like you seems to
-> complain now.
-> 
-> >>> i have watercooling, and well :P when i touch the "tube", its normal
-> >>> room temperature, and believe me, i would notice if it was 45.. this is
-> >>> with my cpu at idle - at full load on all 4 cores, temp2 says 35, and
-> >>> ~60 on coretemp, and THIS i would surely be able to notice over room
-> >>> temp :)
-> > 
-> > The coretemp driver reports the CPU _core_ temperature. That's not
-> > something you can touch, believe me (unless you are an electron.)
-> > 
-> > Also note that the CPU temperature reported by the IT8718F may or may
-> > not match the reality. To make sure, you'd need to know the type of
-> > thermal diode expected by the IT8718F, the type of thermal diode in
-> > your CPU, compute the correction factor if there is one. And you'd need
-> > to know where the thermal diode is exactly. It is most certainly built
-> > into the CPU, but some motherboard makers are doing weird things.
-> > 
-> > 22°C seems very low to me, even for water-cooling. Note that
-> > non-linearity of thermal diodes makes measurements inaccurate as they
-> > get away from the expected operating point. I guess that thermal diodes
-> > used in CPUs are calibrated for best results around the expected
-> > temperature when using air-cooling, rather than water-cooling.
-> > 
-> >>> any progress on this bug?
-> > 
-> > I still need to be convinced that there is a bug here.
-> 
-> It is not a bug, a max limit changed too, it is just matter how to scale it. The
-> temperature is non-physical so comparing it to physical temperature does not
-> make any sense. I'm sorry I did not invent this relative temp stuff - Complain
-> @intel. They have some calibration of TjMAX for mobiles, but this bit does not
-> work for desktops/servers. I tried really hard to get at LEAST some
-> documentation so the driver looks like it looks. And not
-> guessed/guessed/guessed/how it looked earlier.
-> 
-> > 
-> >>>> The reason is that bios did report same temperatures as coretemp in 2.6.24,
-> >>>> moreover some time ago I have run a cpu tool (don't remember its name) on windows
-> 
-> It was most likely coretemp - I'm in contact with the guy. We share infos.
-> 
-> >>>> temperature of both cores
-> >>>> (I had to run this on windows - intel haven't released 
-> >>>> drivers for their QST for temperature monitoring from bios - very sad)
-> >>>>
-> >>>> And the driver did say in kernel log that TJMAX is 85C
-> > 
-> > Which driver, which kernel? As I wrote above, the coretemp heuristic
-> > changed in kernel 2.6.25, so the fact that a previous kernel was
-> > reporting a different tjmax value is irrelevant. Unless you have
-> > additional documentation from Intel, I would tend to believe that the
-> > coretemp driver in 2.6.25 is correct. But feel free to report the exact
-> > CPU model you have (with CPUID info) to Rudolf, if he gets enough
-> > reports about a specific CPU model which most people believe gets the
-> > wrong tjmax, he can fix the driver.
-> 
-> Well again, I tried hard at Intel and I really could not get any info on some
-> calibration bit. The temperature is non-physical on arbitrary scale. I changed
-> that so for some people it jumped to 100C, for some it remained.
+On Tue, Apr 29, 2008 at 4:56 PM, Gabriel C <nix.or.die@googlemail.com> wrote:
+>
+> Yinghai Lu wrote:
+>  > On Tue, Apr 29, 2008 at 1:25 PM, Gabriel C <nix.or.die@googlemail.com> wrote:
+>  >> Yinghai Lu wrote:
+>  >>  > On Tue, Apr 29, 2008 at 4:51 AM, Gabriel C <nix.or.die@googlemail.com> wrote:
+>  >>  >> Yinghai Lu wrote:
+>  >>  >>  > On Tue, Apr 29, 2008 at 3:30 AM, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+>  >>  >>  >> On Tue, Apr 29, 2008 at 2:47 AM, Gabriel C <nix.or.die@googlemail.com> wrote:
+>  >>  >>  >>  > Yinghai Lu wrote:
+>  >>  >>  >>  >  > some BIOS like to use continus MTRR layout, and may X driver can not add
+>  >>  >>  >>  >  > WB entries for graphical cards when 4g or more RAM installed.
+>  >>  >>  >>  >  >
+>  >>  >>  >>  >  > the patch will change MTRR to discrete.
+>  >>  >>  >>  >  >
+>  >>  >>  >>  >  > mtrr_chunk_size= could be used to have smaller continuous block to hold holes.
+>  >>  >>  >>  >  > default is 256m, could be set according to size of graphics card memory.
+>  >>  >>  >>  >  >
+>  >>  >>  >>  >  > v2: fix -1 for UC checking
+>  >>  >>  >>  >  > v3: default to disable, and need use enable_mtrr_cleanup to enable this feature
+>  >>  >>  >>  >  >     skip the var state change warning.
+>  >>  >>  >>  >  >     remove next_basek in range_to_mtrr()
+>  >>  >>  >>  >  > v4: correct warning mask.
+>  >>  >>  >>  >  > v5: CONFIG_MTRR_SANITIZER
+>  >>  >>  >>  >  > v6: fix 1g, 2g, 512 aligment with extra hole
+>  >>  >>  >>  >  > v7: gran_sizek to prevent running out of MTRRs.
+>  >>  >>  >>  >  >
+>  >>  >>  >>  >
+>  >>  >>  >>  >  With this version ( and patch http://lkml.org/lkml/2008/4/29/97 ) applyed on latest linus git tree
+>  >>  >>  >>  >  the box OOPS'es early.
+>  >>  >>  >>  >
+>  >>  >>  >>  >  Sorry I don't have time right now to write down the part of the OOPS I can see on monitor , I can try to find
+>  >>  >>  >>  >  some time later.
+>  >>  >>  >>  >
+>  >>  >>  >>  >  In any way OOPS'es on __free_one_page+0x191/0x21e
+>  >>  >>  >>
+>  >>  >>  >>  thanks. found one problem with hole_basek ...
+>  >>  >>  >>
+>  >>  >>  >>  will send you v8, and hope it will be last version.
+>  >>  >>  >
+>  >>  >>  > please try v8, it should get rid of the 8m entry. it need patch
+>  >>  >>  > http://lkml.org/lkml/2008/4/29/97 too.
+>  >>  >>
+>  >>  >>  Box does boot with v8 but now I get that warning you fixed in v2 again =):
+>  >>  >>
+>  >>  >>  ....
+>  >>  >>  [    0.000000] Linux version 2.6.25-06058-ga01e035-dirty (crazy@thor) (gcc version 4.3.0 (Frugalware Linux) ) #805 SMP PREEMPT Tue Apr 29 13:04:49 CEST 2008
+>  >>  >>  [    0.000000] Command line: root=/dev/sdb1 ro debug vga=0x317
+>  >>  >>  [    0.000000] BIOS-provided physical RAM map:
+>  >>  >>  [    0.000000]  BIOS-e820: 0000000000000000 - 000000000009cc00 (usable)
+>  >>  >>  [    0.000000]  BIOS-e820: 000000000009cc00 - 00000000000a0000 (reserved)
+>  >>  >>  [    0.000000]  BIOS-e820: 00000000000e4000 - 0000000000100000 (reserved)
+>  >>  >>  [    0.000000]  BIOS-e820: 0000000000100000 - 00000000cf550000 (usable)
+>  >>  >>  [    0.000000]  BIOS-e820: 00000000cf550000 - 00000000cf55e000 (ACPI data)
+>  >>  >>  [    0.000000]  BIOS-e820: 00000000cf55e000 - 00000000cf5e0000 (ACPI NVS)
+>  >>  >>  [    0.000000]  BIOS-e820: 00000000cf5e0000 - 00000000cf600000 (reserved)
+>  >>  >>  [    0.000000]  BIOS-e820: 00000000fee00000 - 00000000fee01000 (reserved)
+>  >>  >>  [    0.000000]  BIOS-e820: 00000000ffc00000 - 0000000100000000 (reserved)
+>  >>  >>  [    0.000000]  BIOS-e820: 0000000100000000 - 000000012c000000 (usable)
+>  >>  >>  [    0.000000] Entering add_active_range(0, 0, 156) 0 entries of 256 used
+>  >>  >>  [    0.000000] Entering add_active_range(0, 256, 849232) 1 entries of 256 used
+>  >>  >>  [    0.000000] Entering add_active_range(0, 1048576, 1228800) 2 entries of 256 used
+>  >>  >>  [    0.000000] max_pfn_mapped = 1228800
+>  >>  >>  [    0.000000] x86 PAT enabled: cpu 0, old 0x7040600070406, new 0x7010600070106
+>  >>  >>  [    0.000000] After WB checking
+>  >>  >>  [    0.000000] MTRR MAP PFN: 0000000000000000 - 000000000012c000
+>  >>  >>  [    0.000000] After UC checking
+>  >>  >>  [    0.000000] MTRR MAP PFN: 0000000000000000 - 00000000000cf600
+>  >>  >>  [    0.000000] MTRR MAP PFN: 0000000000100000 - 000000000012c000
+>  >>  >>  [    0.000000] MTRR MAP PFN: 00000000000cf800 - 00000000000d0000
+>  >>  >>  [    0.000000] After sorting
+>  >>  >>  [    0.000000] MTRR MAP PFN: 0000000000000000 - 00000000000cf600
+>  >>  >>  [    0.000000] MTRR MAP PFN: 00000000000cf800 - 00000000000d0000
+>  >>  >>  [    0.000000] MTRR MAP PFN: 0000000000100000 - 000000000012c000
+>  >>  >>  [    0.000000] range0: 0000000000000000 - 00000000c0000000
+>  >>  >>  [    0.000000] Setting variable MTRR 0, base: 0MB, range: 2048MB, type WB
+>  >>  >>  [    0.000000] Setting variable MTRR 1, base: 2048MB, range: 1024MB, type WB
+>  >>  >>  [    0.000000] range: 00000000c0000000 - 00000000d0000000
+>  >>  >>  [    0.000000] Setting variable MTRR 2, base: 3072MB, range: 256MB, type WB
+>  >>  >>  [    0.000000] hole: 00000000cc000000 - 00000000d0000000
+>  >>  >>  [    0.000000] Setting variable MTRR 3, base: 3264MB, range: 64MB, type UC
+>  >>  >>  [    0.000000] rangeX: 00000000d0000000 - 00000000d0000000
+>  >>  >>  [    0.000000] range0: 0000000100000000 - 0000000120000000
+>  >>  >>  [    0.000000] Setting variable MTRR 4, base: 4096MB, range: 512MB, type WB
+>  >>  >>  [    0.000000] range: 0000000120000000 - 0000000130000000
+>  >>  >>  [    0.000000] Setting variable MTRR 5, base: 4608MB, range: 256MB, type WB
+>  >>  >>  [    0.000000] hole: 000000012c000000 - 0000000130000000
+>  >>  >>  [    0.000000] Setting variable MTRR 6, base: 4800MB, range: 64MB, type UC
+>  >>  >>  [    0.000000] DONE variable MTRRs
+>  >>  >>  [    0.000000] x86 PAT enabled: cpu 0, old 0x7010600070106, new 0x7010600070106
+>  >>  >>  [    0.000000] After WB checking
+>  >>  >>  [    0.000000] MTRR MAP PFN: 0000000000000000 - 00000000000d0000
+>  >>  >>  [    0.000000] MTRR MAP PFN: 0000000000100000 - 0000000000130000
+>  >>  >>  [    0.000000] After UC checking
+>  >>  >>  [    0.000000] MTRR MAP PFN: 0000000000000000 - 00000000000cc000
+>  >>  >>  [    0.000000] MTRR MAP PFN: 0000000000100000 - 000000000012c000
+>  >>  >>  [    0.000000] After sorting
+>  >>  >>  [    0.000000] MTRR MAP PFN: 0000000000000000 - 00000000000cc000
+>  >>  >>  [    0.000000] MTRR MAP PFN: 0000000000100000 - 000000000012c000
+>  >>  >>  [    0.000000] WARNING: BIOS bug: CPU MTRRs don't cover all of memory, losing 757MB of RAM.
+>  >>  >
+>  >>  > so
+>  >>  >>  [    0.000000] MTRR MAP PFN: 0000000000000000 - 00000000000cf600
+>  >>  >>  [    0.000000] MTRR MAP PFN: 00000000000cf800 - 00000000000d0000
+>  >>  >>  [    0.000000] MTRR MAP PFN: 0000000000100000 - 000000000012c000
+>  >>  > ===>
+>  >>  >>  [    0.000000] MTRR MAP PFN: 0000000000000000 - 00000000000cc000
+>  >>  >>  [    0.000000] MTRR MAP PFN: 0000000000100000 - 000000000012c000
+>  >>  >
+>  >>  > please try
+>  >>
+>  >>  Now I have 2 warnings
+>  >>
+>  >>
+>  >>  > mtrr_chunk_size=512m mtrr_gran_size=128m
+>  >>
+>  >>  ...
+>  >>
+>  >>  [    0.000000] Command line: root=/dev/sdb1 ro debug vga=0x317 mtrr_chunk_size=512m mtrr_gran_size=128m 3
+>  >>
+>  >>
+>  >> [    0.000000] BIOS-provided physical RAM map:
+>  >>  [    0.000000]  BIOS-e820: 0000000000000000 - 000000000009cc00 (usable)
+>  >>  [    0.000000]  BIOS-e820: 000000000009cc00 - 00000000000a0000 (reserved)
+>  >>  [    0.000000]  BIOS-e820: 00000000000e4000 - 0000000000100000 (reserved)
+>  >>  [    0.000000]  BIOS-e820: 0000000000100000 - 00000000cf550000 (usable)
+>  >>  [    0.000000]  BIOS-e820: 00000000cf550000 - 00000000cf55e000 (ACPI data)
+>  >>  [    0.000000]  BIOS-e820: 00000000cf55e000 - 00000000cf5e0000 (ACPI NVS)
+>  >>  [    0.000000]  BIOS-e820: 00000000cf5e0000 - 00000000cf600000 (reserved)
+>  >>  [    0.000000]  BIOS-e820: 00000000fee00000 - 00000000fee01000 (reserved)
+>  >>  [    0.000000]  BIOS-e820: 00000000ffc00000 - 0000000100000000 (reserved)
+>  >>  [    0.000000]  BIOS-e820: 0000000100000000 - 000000012c000000 (usable)
+>  >>  [    0.000000] Entering add_active_range(0, 0, 156) 0 entries of 256 used
+>  >>  [    0.000000] Entering add_active_range(0, 256, 849232) 1 entries of 256 used
+>  >>  [    0.000000] Entering add_active_range(0, 1048576, 1228800) 2 entries of 256 used
+>  >>  [    0.000000] max_pfn_mapped = 1228800
+>  >>  [    0.000000] x86 PAT enabled: cpu 0, old 0x7040600070406, new 0x7010600070106
+>  >>  [    0.000000] After WB checking
+>  >>  [    0.000000] MTRR MAP PFN: 0000000000000000 - 000000000012c000
+>  >>  [    0.000000] After UC checking
+>  >>  [    0.000000] MTRR MAP PFN: 0000000000000000 - 00000000000cf600
+>  >>  [    0.000000] MTRR MAP PFN: 0000000000100000 - 000000000012c000
+>  >>  [    0.000000] MTRR MAP PFN: 00000000000cf800 - 00000000000d0000
+>  >>  [    0.000000] After sorting
+>  >>  [    0.000000] MTRR MAP PFN: 0000000000000000 - 00000000000cf600
+>  >>  [    0.000000] MTRR MAP PFN: 00000000000cf800 - 00000000000d0000
+>  >>  [    0.000000] MTRR MAP PFN: 0000000000100000 - 000000000012c000
+>  >>  [    0.000000] range0: 0000000000000000 - 00000000c0000000
+>  >>  [    0.000000] Setting variable MTRR 0, base: 0MB, range: 2048MB, type WB
+>  >>  [    0.000000] Setting variable MTRR 1, base: 2048MB, range: 1024MB, type WB
+>  >>  [    0.000000] range: 00000000c0000000 - 00000000c8000000
+>  >>  [    0.000000] Setting variable MTRR 2, base: 3072MB, range: 128MB, type WB
+>  >>
+>  >> [    0.000000] rangeX: 00000000d0000000 - 00000000d0000000
+>  >>  [    0.000000] range0: 0000000100000000 - 0000000120000000
+>  >>  [    0.000000] Setting variable MTRR 3, base: 4096MB, range: 512MB, type WB
+>  >>  [    0.000000] range: 0000000120000000 - 0000000128000000
+>  >>  [    0.000000] Setting variable MTRR 4, base: 4608MB, range: 128MB, type WB
+>  >>
+>  >> [    0.000000] DONE variable MTRRs
+>  >>  [    0.000000] x86 PAT enabled: cpu 0, old 0x7010600070106, new 0x7010600070106
+>  >>  [    0.000000] After WB checking
+>  >>  [    0.000000] MTRR MAP PFN: 0000000000000000 - 00000000000c8000
+>  >>  [    0.000000] MTRR MAP PFN: 0000000000100000 - 0000000000128000
+>  >>
+>  >> [    0.000000] After UC checking
+>  >>  [    0.000000] MTRR MAP PFN: 0000000000000000 - 00000000000c8000
+>  >>  [    0.000000] MTRR MAP PFN: 0000000000100000 - 0000000000128000
+>  >>  [    0.000000] After sorting
+>  >>  [    0.000000] MTRR MAP PFN: 0000000000000000 - 00000000000c8000
+>  >>  [    0.000000] MTRR MAP PFN: 0000000000100000 - 0000000000128000
+>  >>  [    0.000000] WARNING: BIOS bug: CPU MTRRs don't cover all of memory, losing 64MB of RAM.
+>  >>  [    0.000000] ------------[ cut here ]------------
+>  >>  [    0.000000] WARNING: at arch/x86/kernel/cpu/mtrr/main.c:1206 mtrr_trim_uncached_memory+0x25b/0x35a()
+>  >>
+>  >> [    0.000000] Modules linked in:
+>  >>  [    0.000000] Pid: 0, comm: swapper Not tainted 2.6.25-06058-ga01e035-dirty #805
+>  >>  [    0.000000]
+>  >>  [    0.000000] Call Trace:
+>  >>  [    0.000000]  [<ffffffff8022d661>] warn_on_slowpath+0x51/0x78
+>  >>  [    0.000000]  [<ffffffff8067f0dc>] x86_get_mtrr_mem_range+0x241/0x25c
+>  >>  [    0.000000]  [<ffffffff8067d93e>] update_memory_range+0x95/0xb7
+>  >>  [    0.000000]  [<ffffffff8067fa51>] mtrr_trim_uncached_memory+0x25b/0x35a
+>  >>
+>  >> [    0.000000]  [<ffffffff8067ca43>] setup_arch+0x280/0x4a2
+>  >>  [    0.000000]  [<ffffffff80676aa6>] start_kernel+0x6e/0x308
+>  >>  [    0.000000]  [<ffffffff80676432>] x86_64_start_kernel+0x241/0x24a
+>  >>  [    0.000000]
+>  >>  [    0.000000] ---[ end trace ca143223eefdc828 ]---
+>  >>  [    0.000000] update e820 for mtrr -- end_pfn
+>  >>  [    0.000000] modified physical RAM map:
+>  >>  [    0.000000]  modified: 0000000000000000 - 000000000009cc00 (usable)
+>  >>  [    0.000000]  modified: 000000000009cc00 - 00000000000a0000 (reserved)
+>  >>  [    0.000000]  modified: 00000000000e4000 - 0000000000100000 (reserved)
+>  >>  [    0.000000]  modified: 0000000000100000 - 00000000cf550000 (usable)
+>  >>  [    0.000000]  modified: 00000000cf550000 - 00000000cf55e000 (ACPI data)
+>  >>  [    0.000000]  modified: 00000000cf55e000 - 00000000cf5e0000 (ACPI NVS)
+>  >>  [    0.000000]  modified: 00000000cf5e0000 - 00000000cf600000 (reserved)
+>  >>  [    0.000000]  modified: 00000000fee00000 - 00000000fee01000 (reserved)
+>  >>  [    0.000000]  modified: 00000000ffc00000 - 0000000100000000 (reserved)
+>  >>  [    0.000000]  modified: 0000000100000000 - 0000000128000000 (usable)
+>  >>  [    0.000000]  modified: 0000000128000000 - 000000012c000000 (reserved)
+>  >>
+>  >> [    0.000000] WARNING: BIOS bug: CPU MTRRs don't cover all of memory, losing 757MB of RAM.
+>  >>
+>  >> [    0.000000] ------------[ cut here ]------------
+>  >>  [    0.000000] WARNING: at arch/x86/kernel/cpu/mtrr/main.c:1227 mtrr_trim_uncached_memory+0x30c/0x35a()
+>  >>  [    0.000000] Modules linked in:
+>  >>  [    0.000000] Pid: 0, comm: swapper Not tainted 2.6.25-06058-ga01e035-dirty #805
+>  >>  [    0.000000]
+>  >>  [    0.000000] Call Trace:
+>  >>  [    0.000000]  [<ffffffff8022d661>] warn_on_slowpath+0x51/0x78
+>  >>  [    0.000000]  [<ffffffff8067f0dc>] x86_get_mtrr_mem_range+0x241/0x25c
+>  >>  [    0.000000]  [<ffffffff8067d93e>] update_memory_range+0x95/0xb7
+>  >>  [    0.000000]  [<ffffffff8067fb02>] mtrr_trim_uncached_memory+0x30c/0x35a
+>  >>  [    0.000000]  [<ffffffff8067ca43>] setup_arch+0x280/0x4a2
+>  >>  [    0.000000]  [<ffffffff80676aa6>] start_kernel+0x6e/0x308
+>  >>  [    0.000000]  [<ffffffff80676432>] x86_64_start_kernel+0x241/0x24a
+>  >>  [    0.000000]
+>  >>  [    0.000000] ---[ end trace ca143223eefdc828 ]---
+>  >>  [    0.000000] update e820 for mtrr -- holes
+>  >>  [    0.000000] modified physical RAM map:
+>  >>  [    0.000000]  modified: 0000000000000000 - 000000000009cc00 (usable)
+>  >>  [    0.000000]  modified: 000000000009cc00 - 00000000000a0000 (reserved)
+>  >>  [    0.000000]  modified: 00000000000e4000 - 0000000000100000 (reserved)
+>  >>  [    0.000000]  modified: 0000000000100000 - 00000000c8000000 (usable)
+>  >>  [    0.000000]  modified: 00000000c8000000 - 00000000cf550000 (reserved)
+>  >>  [    0.000000]  modified: 00000000cf550000 - 00000000cf55e000 (ACPI data)
+>  >>  [    0.000000]  modified: 00000000cf55e000 - 00000000cf5e0000 (ACPI NVS)
+>  >>  [    0.000000]  modified: 00000000cf5e0000 - 00000000cf600000 (reserved)
+>  >>  [    0.000000]  modified: 00000000fee00000 - 00000000fee01000 (reserved)
+>  >>  [    0.000000]  modified: 00000000ffc00000 - 000000012c000000 (reserved)
+>  >>
+>  >> [    0.000000] Entering add_active_range(0, 0, 156) 3 entries of 256 used
+>  >>  [    0.000000] Entering add_active_range(0, 256, 819200) 3 entries of 256 used
+>  >
+>  > please try attached trim_holes_fix.patch..., it will fix the trim hole problem.
+>
+>  Tested but warning is still there. I try to boot with mtrr_chunk_size / mtrr_gran_size and see what I get.
 
-So, im confused.. The reason for this is that the internal sensor is
-operating on some sort of weird scale, and thus when you interpolate it
-into "your" scale, it doesent quite come out in the actual degrees
-celcius the cpu temperature really is?
+warning is OK, we can remove that if we are using.
 
-so if i understand this correctly, the coretemp output does NOT
-represent the actual deg celcius temperature my cpu is?
-
-> 
-> >>>> Lets at least make a kernel option to override tjmax?
-> > 
-> > That's a possibility for sure, but what we would really need is to
-> > adjust the coretemp driver heuristics to always get it right - if
-> > that's not already the case, that is. I'll let Rudolf decide anyway.
-> 
-> Well again, Intel swears there is no way how to get the TjMAX for
-> desktops/servers. It sucks but this is not my fault.
-> 
-> Thanks,
-> Rudolf
-> 
-> 
-> 
-> 
-> 
-> 
-> -----BEGIN PGP SIGNATURE-----
-> Version: GnuPG v1.4.6 (GNU/Linux)
-> Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-> 
-> iD8DBQFIF5203J9wPJqZRNURAnFSAKC3GpafvkviWggGJPG2o71R4lel0wCgirnW
-> Cr2RidnTZEdKTAj8yEviR0U=
-> =lFMk
-> -----END PGP SIGNATURE-----
-
+YH
