@@ -1,50 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758028AbYD3CnQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759016AbYD3Cpo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758028AbYD3CnQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Apr 2008 22:43:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754262AbYD3CnG
+	id S1759016AbYD3Cpo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Apr 2008 22:45:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754834AbYD3Cpf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Apr 2008 22:43:06 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:52985 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752825AbYD3CnF (ORCPT
-	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
-	Tue, 29 Apr 2008 22:43:05 -0400
-Message-ID: <4817DCE2.4090706@sgi.com>
-Date: Wed, 30 Apr 2008 12:43:46 +1000
-From: Lachlan McIlroy <lachlan@sgi.com>
-Reply-To: lachlan@sgi.com
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
-MIME-Version: 1.0
+	Tue, 29 Apr 2008 22:45:35 -0400
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:40357 "EHLO
+	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754262AbYD3Cpe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Apr 2008 22:45:34 -0400
 To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org, xfs@oss.sgi.com, akpm@linux-foundation.org
-Subject: Re: [GIT PULL] XFS update for 2.6.26-rc1
-References: <20080429082031.A323B58C4C15@chook.melbourne.sgi.com> <alpine.LFD.1.10.0804290853250.3119@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.1.10.0804290853250.3119@woody.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [GIT PULL] ext4 update
+From: "Theodore Ts'o" <tytso@MIT.EDU>
+Phone: (781) 391-3464
+Message-Id: <E1Jr2Jq-0007F2-Ox@closure.thunk.org>
+Date: Tue, 29 Apr 2008 22:45:18 -0400
+X-Spam-Flag: NO
+X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yup, forgot to push.  Fixed now - could you please try again?
+Hi Linus,
 
-Linus Torvalds wrote:
-> 
-> On Tue, 29 Apr 2008, Lachlan McIlroy wrote:
->> Please pull from the for-linus branch:
->>     git pull git://oss.sgi.com:8090/xfs/xfs-2.6.git for-linus
-> 
-> Hmm..
-> 
-> 	"Already up-to-date."
-> 
-> Forgot to push?
-> 
-> 		Linus
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+Please pull from:
+
+        git://git.kernel.org/pub/scm/linux/kernel/git/tytso/ext4.git for_linus
+
+These are all cleanups and bug fixes for 2.6.26.
+
+Thanks,
+
+						- Ted
+
+Akinobu Mita (3):
+      ext4: use ext4_group_first_block_no()
+      ext4: use ext4_get_group_desc()
+      ext4: check ext4_journal_get_write_access() errors
+
+Andi Kleen (1):
+      Convert ext4 to use unlocked_ioctl
+
+Aneesh Kumar K.V (15):
+      ext4: Fix fallocate error path
+      ext4: Enable extent format for symlinks.
+      arm: Export empty_zero_page for ZERO_PAGE usage in modules.
+      m68k: Export empty_zero_page for ZERO_PAGE usage in modules.
+      sparc: Export symbols for ZERO_PAGE usage in modules.
+      ext4: ENOSPC error handling for writing to an uninitialized extent
+      ext4: zero out small extents when writing to prealloc area.
+      ext4: Fix race between migration and mmap write
+      ext4: Fix fallocate to update the file size in each transaction
+      ext4: make ext4_ext_get_blocks always return <= max_blocks
+      ext4: Return unwritten buffer head when trying to read from prealloc space.
+      ext4: Cache the correct extent length for uninit extents
+      ext4:  Convert list_for_each_rcu() to list_for_each_entry_rcu()
+      ext4: Don't do GFP_NOFS allocations after taking ext4_lock_group
+      ext4: mark inode dirty after initializing the extent tree
+
+Christoph Hellwig (1):
+      ext4: move headers out of include/linux
+
+Duane Griffin (4):
+      jbd2: tidy up revoke cache initialisation and destruction
+      jbd2: eliminate duplicated code in revocation table init/destroy functions
+      jbd2: replace potentially false assertion with if block
+      jbd2: only create debugfs and stats entries if init is successful
+
+Eric Sandeen (1):
+      ext4: reduce mballoc stack usage with noinline_for_stack
+
+Harvey Harrison (2):
+      ext4: replace remaining __FUNCTION__ occurrences
+      jdb2: replace remaining __FUNCTION__ occurrences
+
+Hisashi Hifumi (1):
+      ext4: fdatasync should skip metadata writeout when overwriting
+
+Jan Kara (2):
+      ext4: Fix update of mtime and ctime on rename
+      ext4: Fix hang on umount with quotas when journal is aborted
+
+Joe Perches (1):
+      ext4: remove duplicate include of ext4_fs_i.h header file
+
+Josef Bacik (6):
+      jbd2: fix the way the b_modified flag is cleared
+      jbd2: fix possible journal overflow issues
+      ext4:  check return of ext4_orphan_get properly
+      ext4: fix mount option parsing
+      ext4: fix wrong gfp type under transaction
+      ext4: don't use ext4_error in ext4_check_descriptors
+
+Marcin Slusarz (2):
+      ext4: le*_add_cpu conversion
+      ext4: convert byte order of constant instead of variable
+
+Mingming Cao (3):
+      ext4: remove extra define of ext4_new_blocks_old from mballoc.c
+      ext4: make ext4_xattr_list() static
+      ext4: Move mballoc headers/structures to a seperate header file mballoc.h
+
+Randy Dunlap (1):
+      jbd2: fix kernel-doc notation
+
+Roel Kluin (3):
+      ext3: fix test ext_generic_write_end() copied return value
+      ext4: fix test ext_generic_write_end() copied return value
+      ext4: fix hot spins in mballoc after err_freebuddy and err_freemeta
+
+Solofo Ramangalahy (2):
+      ext4: update ctime and mtime for truncate with extents.
+      ext4: cleanup for compiling mballoc with verification and debugging #defines
+
+
+
