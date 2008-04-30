@@ -1,124 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760233AbYD3GLj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760608AbYD3GMW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760233AbYD3GLj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Apr 2008 02:11:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751564AbYD3GL1
+	id S1760608AbYD3GMW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Apr 2008 02:12:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758315AbYD3GL7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Apr 2008 02:11:27 -0400
-Received: from mx2.suse.de ([195.135.220.15]:45218 "EHLO mx2.suse.de"
+	Wed, 30 Apr 2008 02:11:59 -0400
+Received: from www.tglx.de ([62.245.132.106]:57269 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757461AbYD3GL0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Apr 2008 02:11:26 -0400
-Date: Wed, 30 Apr 2008 08:11:25 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Mika =?iso-8859-1?Q?Penttil=E4?= <mika.penttila@kolumbus.fi>,
-       Tony Battersby <tonyb@cybernetics.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] more ZERO_PAGE handling ( was 2.6.24 regression: deadlock on coredump of big process)
-Message-ID: <20080430061125.GF27652@wotan.suse.de>
-References: <4815E932.1040903@cybernetics.com> <20080429100048.3e78b1ba.kamezawa.hiroyu@jp.fujitsu.com> <48172C72.1000501@cybernetics.com> <20080430132516.28f1ee0c.kamezawa.hiroyu@jp.fujitsu.com> <4817FDA5.1040702@kolumbus.fi> <20080430141738.e6b80d4b.kamezawa.hiroyu@jp.fujitsu.com> <20080430051932.GD27652@wotan.suse.de> <20080430143542.2dcf745a.kamezawa.hiroyu@jp.fujitsu.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080430143542.2dcf745a.kamezawa.hiroyu@jp.fujitsu.com>
-User-Agent: Mutt/1.5.9i
+	id S1758023AbYD3GL7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Apr 2008 02:11:59 -0400
+Date: Wed, 30 Apr 2008 08:11:39 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Kevin Winchester <kjwinchester@gmail.com>
+cc: Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.25-git WARNING: at arch/x86/kernel/genapic_64.c:86
+ read_apic_id+0x2e/0x46()
+In-Reply-To: <4817B67A.40308@gmail.com>
+Message-ID: <alpine.LFD.1.10.0804300811140.6003@apollo.tec.linutronix.de>
+References: <4817B67A.40308@gmail.com>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 30, 2008 at 02:35:42PM +0900, KAMEZAWA Hiroyuki wrote:
-> On Wed, 30 Apr 2008 07:19:32 +0200
-> Nick Piggin <npiggin@suse.de> wrote:
-> 
-> > 
-> > Something like this should do:
-> > if (!pte_present(pte)) {
-> > 	if (pte_none(pte)) {
-> > 		pte_unmap_unlock
-> > 		goto null_or_zeropage;
-> > 	}
-> > 	goto unlock;
-> > }
-> > 
-> Sorry for broken work and thank you for advice.
-> updated.
-
-Don't be sorry. The most important thing is that you found this tricky
-problem. That's very good work IMO!
+On Tue, 29 Apr 2008, Kevin Winchester wrote:
 
 > 
-> Regards,
-> -Kame
-> ==
-> follow_page() returns ZERO_PAGE if a page table is not available.
-> but returns NULL if a page table exists. If NULL, handle_mm_fault()
-> allocates a new page.
+> Hi Ingo,
 > 
-> This behavior increases page consumption at coredump, which tend
-> to do read-once-but-never-written page fault.  This patch is
-> for avoiding this.
-> 
-> Changelog:
->   - fixed to check pte_present()/pte_none() in proper way.
-> 
-> 
-> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> 
-> Index: linux-2.6.25/mm/memory.c
-> ===================================================================
-> --- linux-2.6.25.orig/mm/memory.c
-> +++ linux-2.6.25/mm/memory.c
-> @@ -926,15 +926,15 @@ struct page *follow_page(struct vm_area_
->  	page = NULL;
->  	pgd = pgd_offset(mm, address);
->  	if (pgd_none(*pgd) || unlikely(pgd_bad(*pgd)))
-> -		goto no_page_table;
-> +		goto null_or_zeropage;
->  
->  	pud = pud_offset(pgd, address);
->  	if (pud_none(*pud) || unlikely(pud_bad(*pud)))
-> -		goto no_page_table;
-> +		goto null_or_zeropage;
->  	
->  	pmd = pmd_offset(pud, address);
->  	if (pmd_none(*pmd) || unlikely(pmd_bad(*pmd)))
-> -		goto no_page_table;
-> +		goto null_or_zeropage;
->  
->  	if (pmd_huge(*pmd)) {
->  		BUG_ON(flags & FOLL_GET);
-> @@ -947,8 +947,13 @@ struct page *follow_page(struct vm_area_
->  		goto out;
->  
->  	pte = *ptep;
-> -	if (!pte_present(pte))
-> +	if (!pte_present(pte)) {
-> +		if (!(flags & FOLL_WRITE) && pte_none(pte)) {
-> +			pte_unmap_unlock(ptep, ptl);
-> +			goto null_or_zeropage;
-> +		}
->  		goto unlock;
-> +	}
+> I am getting the following in my dmesg on every boot.  It was reported
+> before[1], so I figured someone was working on it.  However, I haven't seen it
+> get fixed yet, so is there anything I can do to help?
 
-Just a small nitpick: I guess you don't need this FOLL_WRITE test because
-null_or_zeropage will test FOLL_ANON which implies !FOLL_WRITE. It should give
-slightly smaller code.
+Fix is queued for Linus to pull.
 
-Otherwise, looks good to me:
-
-Acked-by: Nick Piggin <npiggin@suse.de>
-
-
->  	if ((flags & FOLL_WRITE) && !pte_write(pte))
->  		goto unlock;
->  	page = vm_normal_page(vma, address, pte);
-> @@ -968,7 +973,7 @@ unlock:
->  out:
->  	return page;
->  
-> -no_page_table:
-> +null_or_zeropage:
->  	/*
->  	 * When core dumping an enormous anonymous area that nobody
->  	 * has touched so far, we don't want to allocate page tables.
+Thanks,
+	tglx
