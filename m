@@ -1,127 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762631AbYD3TBM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764074AbYD3TCI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762631AbYD3TBM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Apr 2008 15:01:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758584AbYD3TA5
+	id S1764074AbYD3TCI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Apr 2008 15:02:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758915AbYD3TBz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Apr 2008 15:00:57 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:45832 "EHLO ogre.sisk.pl"
+	Wed, 30 Apr 2008 15:01:55 -0400
+Received: from gate.crashing.org ([63.228.1.57]:38891 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758273AbYD3TA4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Apr 2008 15:00:56 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+	id S1758584AbYD3TBz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Apr 2008 15:01:55 -0400
+Cc: "Randy.Dunlap" <rdunlap@xenotime.net>, linux-kernel@vger.kernel.org,
+       torvalds@linux-foundation.org, mporter@kernel.crashing.org,
+       Paul Mackerras <paulus@samba.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       linuxppc-dev@ozlabs.org
+Message-Id: <51A34080-7981-4958-B225-4921FC95B84A@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
 To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [GIT PATCH] ACPI patches for 2.6.26-rc0
-Date: Wed, 30 Apr 2008 21:00:25 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Len Brown <lenb@kernel.org>, torvalds@linux-foundation.org,
-       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-pm@lists.linux-foundation.org
-References: <200804301420.11696.lenb@kernel.org> <20080430114348.9ffd8dfc.akpm@linux-foundation.org>
-In-Reply-To: <20080430114348.9ffd8dfc.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+In-Reply-To: <20080430113500.dfe21880.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200804302100.26294.rjw@sisk.pl>
+Mime-Version: 1.0 (Apple Message framework v919.2)
+Subject: Re: [PATCH] docbook: fix fatal rapidio yet again (and more to come)
+Date: Wed, 30 Apr 2008 14:01:12 -0500
+References: <Pine.LNX.4.64.0804292009000.18219@shark.he.net> <20080430113500.dfe21880.akpm@linux-foundation.org>
+X-Mailer: Apple Mail (2.919.2)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, 30 of April 2008, Andrew Morton wrote:
-> On Wed, 30 Apr 2008 14:20:11 -0400
-> Len Brown <lenb@kernel.org> wrote:
-> 
-> > Hi Linus,
-> > 
-> > please pull from: 
-> > 
-> > git://git.kernel.org/pub/scm/linux/kernel/git/lenb/linux-acpi-2.6.git release
-> > 
-> > This batch is a proper super-set of the pull request I made a week ago.
-> > It will update the files shown below.
-> > 
-> 
-> 
-> I have four acpi-related reports here from 2.6.25-rcX-mmY.  Can you please check
-> that they were addressed?  I don't recall seeing any feedback for any of
-> them.
-> 
-> Thanks.
-> 
-> 
-> 
-> 
-> 
-> From: "Miles Lane" <miles.lane@gmail.com>
-> To: "Andrew Morton" <akpm@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, len.brown@intel.com
-> Subject: 2.6.25-rc8-mm2 -- initcall acpi_init+0x0/0x216() returned with preemption imbalance
-> Date: Fri, 11 Apr 2008 15:41:17 -0400
-> 
-> Is this indicative of a kernel or hardware problem?
-> 
-> [    0.279606] ACPI: Using IOAPIC for interrupt routing
-> [    0.279789] initcall acpi_init+0x0/0x216() returned with preemption imbalance
-> [    0.330789] ACPI: PCI Root Bridge [PCI0] (0000:00)
-> 
-> 
-> 
-> From: "Dave Young" <hidave.darkstar@gmail.com>
-> To: "Andrew Morton" <akpm@linux-foundation.org>
-> Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, "Len Brown" <lenb@kernel.org>
-> Subject: Re: 2.6.25-rc5-mm1
-> Date: Wed, 12 Mar 2008 09:14:55 +0800
-> 
-> Hi, I got the following lockdep warning:
-> (add linux-acpi to cc)
-> 
-> [    0.097109] ACPI: Core revision 20070126
-> [    0.097282] INFO: trying to register non-static key.
-> [    0.097355] the code is fine but needs lockdep annotation.
-> [    0.097428] turning off the locking correctness validator.
-> [    0.097503] Pid: 0, comm: swapper Not tainted 2.6.25-rc5-mm1 #3
-> [    0.097578]  [<c0127bf8>] ? printk+0x18/0x20
-> [    0.097716]  [<c014b01c>] __lock_acquire+0x40c/0x760
-> [    0.097822]  [<c0181ba0>] ? alloc_debug_processing+0xb0/0x140
-> [    0.097959]  [<c014b969>] lock_acquire+0x79/0xb0
-> [    0.098063]  [<c0140204>] ? down_trylock+0x14/0x40
-> [    0.098197]  [<c03df9e8>] _spin_lock_irqsave+0x48/0xa0
-> [    0.098303]  [<c0140204>] ? down_trylock+0x14/0x40
-> [    0.098436]  [<c0140204>] down_trylock+0x14/0x40
-> [    0.098540]  [<c027c7ea>] acpi_os_wait_semaphore+0x3e/0xb9
-> [    0.098647]  [<c029263e>] acpi_ut_acquire_mutex+0x34/0x72
-> [    0.098753]  [<c0289ab1>] acpi_ns_root_initialize+0x19/0x250
-> [    0.098859]  [<c05453e6>] acpi_initialize_subsystem+0x42/0x64
-> [    0.098966]  [<c0545725>] acpi_early_init+0x50/0xef
-> [    0.099070]  [<c052b7f6>] start_kernel+0x1e6/0x250
-> [    0.099175]  [<c052b1a0>] ? unknown_bootoption+0x0/0x130
-> [    0.099310]  [<c052b008>] __init_begin+0x8/0x10
-> [    0.099414]  =======================
-> 
-> 
-> 
-> From: Randy Dunlap <randy.dunlap@oracle.com>
-> To: Andrew Morton <akpm@linux-foundation.org>
-> Cc: linux-kernel@vger.kernel.org, len.brown@intel.com
-> Subject: Re: 2.6.25-rc2-mm1 (build failure)
-> Date: Sat, 16 Feb 2008 21:32:25 -0800
-> Organization: Oracle Linux Eng.
-> X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-> 
-> On Sat, 16 Feb 2008 00:25:22 -0800 Andrew Morton wrote:
-> 
-> > 
-> > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.25-rc2/2.6.25-rc2-mm1/
-> 
-> When SMP=n, x86_64 build gets:
-> 
-> arch/x86/kernel/built-in.o: In function `acpi_save_state_mem':
-> (.text+0xfd7f): undefined reference to `setup_trampoline'
-> make[1]: *** [.tmp_vmlinux1] Error 1
 
-This code has already been merged via the x86 tree, with the problem fixed
-IIRC (at least it hasn't been reported against the mainline so far).
+On Apr 30, 2008, at 1:35 PM, Andrew Morton wrote:
+> On Tue, 29 Apr 2008 20:10:55 -0700 (PDT)
+> "Randy.Dunlap" <rdunlap@xenotime.net> wrote:
+>
+>> From: Randy Dunlap <randy.dunlap@oracle.com>
+>>
+>> Don't refer to file that no longer exists:
+>> docproc: linux-2.6.25-git14/arch/powerpc/kernel/rio.c: No such file  
+>> or directory
+>>
+>> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+>> ---
+>> Documentation/DocBook/rapidio.tmpl |    1 -
+>> 1 file changed, 1 deletion(-)
+>>
+>> --- linux-2.6.25-git14.orig/Documentation/DocBook/rapidio.tmpl
+>> +++ linux-2.6.25-git14/Documentation/DocBook/rapidio.tmpl
+>> @@ -133,7 +133,6 @@
+>> !Idrivers/rapidio/rio-sysfs.c
+>>      </sect1>
+>>      <sect1 id="PPC32_support"><title>PPC32 support</title>
+>> -!Iarch/powerpc/kernel/rio.c
+>> !Earch/powerpc/sysdev/fsl_rio.c
+>> !Iarch/powerpc/sysdev/fsl_rio.c
+>>      </sect1>
+>
+> grumble.
+>
+> This is a subset of rapidio-fix-docbook-references.patch, but I  
+> appear to
+> be unable to interest anyone in merging/reviewing/accepting/anything- 
+> else
+> that quite large set of patches.
+>
+> Guys, those patches were sent six weeks ago and it now looks like  
+> they will
+> miss 2.6.26.  This is pretty slack of us.  Help?
 
-Thanks,
-Rafael
+Odd.  I thought Paul had picked up a docbook RapidIO patch from you in  
+the latest merge round.
+
+- k
