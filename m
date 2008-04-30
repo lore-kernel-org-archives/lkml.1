@@ -1,78 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762323AbYD3LC1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762562AbYD3LC7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762323AbYD3LC1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Apr 2008 07:02:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757043AbYD3LCR
+	id S1762562AbYD3LC7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Apr 2008 07:02:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757233AbYD3LCr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Apr 2008 07:02:17 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:36117 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756909AbYD3LCQ (ORCPT
-	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
-	Wed, 30 Apr 2008 07:02:16 -0400
-Date: Wed, 30 Apr 2008 21:01:59 +1000
-From: David Chinner <dgc@sgi.com>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: David Chinner <dgc@sgi.com>, linux-kernel@vger.kernel.org,
-       Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: Announce: Semaphore-Removal tree
-Message-ID: <20080430110159.GN108924158@sgi.com>
-References: <20080425170021.GH14990@parisc-linux.org> <20080428051040.GH103491721@sgi.com> <20080428122004.GT14990@parisc-linux.org> <20080429000929.GF108924158@sgi.com> <20080430100612.GI14976@parisc-linux.org>
+	Wed, 30 Apr 2008 07:02:47 -0400
+Received: from e31.co.us.ibm.com ([32.97.110.149]:56835 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757060AbYD3LCr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Apr 2008 07:02:47 -0400
+Subject: Re: [PATCH] procfs task exe symlink
+From: Matt Helsley <matthltc@us.ibm.com>
+To: Al Viro <viro@ZenIV.linux.org.uk>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-mm <linux-mm@kvack.org>,
+       LKML <linux-kernel@vger.kernel.org>, Oleg Nesterov <oleg@tv-sign.ru>,
+       David Howells <dhowells@redhat.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Christoph Hellwig <chellwig@de.ibm.com>,
+       Hugh Dickins <hugh@veritas.com>
+In-Reply-To: <20080426162458.GJ5882@ZenIV.linux.org.uk>
+References: <1202348669.9062.271.camel@localhost.localdomain>
+	 <20080426091930.ffe4e6a8.akpm@linux-foundation.org>
+	 <20080426162458.GJ5882@ZenIV.linux.org.uk>
+Content-Type: text/plain
+Organization: IBM Linux Technology Center
+Date: Wed, 30 Apr 2008 04:02:38 -0700
+Message-Id: <1209553358.29759.24.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080430100612.GI14976@parisc-linux.org>
-User-Agent: Mutt/1.4.2.1i
+X-Mailer: Evolution 2.12.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 30, 2008 at 04:06:13AM -0600, Matthew Wilcox wrote:
-> On Tue, Apr 29, 2008 at 10:09:30AM +1000, David Chinner wrote:
-> > > 2. l_flushsema
-> > > 
-> > > This seems to be a completion.  ie you're using it to wait for the log
-> > > to be flushed.
-> > 
-> > Yes, that could probably be a completion. I'm assuming that a completion
-> > can handle several thousand waiting processes, right?
+
+On Sat, 2008-04-26 at 17:24 +0100, Al Viro wrote:
+> On Sat, Apr 26, 2008 at 09:19:30AM -0700, Andrew Morton wrote:
 > 
-> By the way ... is it common that you get several thousand waiting
-> processes?  I ask because you wake them all up, then the herd thunders
-> into the l_icloglock spinlock.  Or is this a worst-case scenario that
-> happens once in a blue moon?
+> > +	set_mm_exe_file(bprm->mm, bprm->file);
+> > +
+> >  	/*
+> >  	 * Release all of the old mmap stuff
+> >  	 */
+> > 
+> > However I'd ask that you conform that this is OK.  If set_mm_exe_file() is
+> > independent of unshare_files() then we're OK.  If however there is some
+> > ordering dependency then we'll need to confirm that the present ordering of the
+> > unshare_files() and set_mm_exe_file() is correct.
+> 
+> No, that's fine (unshare_files() had to go up for a lot of reasons, one
+> of them being that it can fail and de_thread() called just above is
+> very much irreversible).
 
-I'm thinking of a certain 2048p machine at NASA where they run
-MPI jobs that do synchronised exit() calls with about 6-7 open
-file descriptors that all run into ->release at the same time
-and try to do EOF truncation transcations all at the same time.
-
-We get the first 100-200 processes filling all the log buffers
-and forcing them to disk, and then the rest start waiting on
-the flush sema.
-
-Given that we're already pushing 4096p support for the next gen
-machines, this problem isn't going to get any better...
-
-> If l_flushsema does typically get more than one waiter, we can instead
-> wake the waiters one at a time.
-
-The current code does them one at a time, but in such a way that is
-not any better than a thundering herd. wake_up_all() is probably
-a more efficient thundering herd as it doesn't require picking up
-and dropping a spinlock for every task being woken.
-
-I think that we need to redesign this code to prevent the thundering
-herd problem - it's not problem solvable by just changing the wakeup
-call. Besides, the evidence points to the fact that a thundering
-herd on the flush sema is not the limiting factor in thoughput.
-There's still several layers of the onion to peel before
-we get to that point.
+They are independent. It just needs to be called before exec_mmap() --
+so your fix looks good.
 
 Cheers,
+	-Matt Helsley
 
-Dave.
--- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
