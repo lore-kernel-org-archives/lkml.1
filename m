@@ -1,42 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760341AbYD3IDz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760930AbYD3IHz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760341AbYD3IDz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Apr 2008 04:03:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757249AbYD3IDg
+	id S1760930AbYD3IHz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Apr 2008 04:07:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758095AbYD3IHl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Apr 2008 04:03:36 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:42611 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756993AbYD3IDf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Apr 2008 04:03:35 -0400
-Date: Wed, 30 Apr 2008 03:03:35 -0500
-From: Paul Jackson <pj@sgi.com>
+	Wed, 30 Apr 2008 04:07:41 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:37347 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757590AbYD3IHk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Apr 2008 04:07:40 -0400
+Date: Wed, 30 Apr 2008 10:08:14 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
 To: Bjorn Helgaas <bjorn.helgaas@hp.com>
 Cc: linux-kernel@vger.kernel.org
 Subject: Re: RFC: make MAINTAINERS email addresses easier to copy/paste
-Message-Id: <20080430030335.4d269a83.pj@sgi.com>
-In-Reply-To: <200804291500.39879.bjorn.helgaas@hp.com>
+Message-ID: <20080430080814.GA31040@uranus.ravnborg.org>
 References: <200804291459.56300.bjorn.helgaas@hp.com>
-	<200804291500.39879.bjorn.helgaas@hp.com>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200804291459.56300.bjorn.helgaas@hp.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch reminded me that I should update the CPUSETS maintainers,
-which I will be sending in a separate patch shortly.
+On Tue, Apr 29, 2008 at 02:59:56PM -0600, Bjorn Helgaas wrote:
+> I like to use display names for email addresses, e.g.,
+> "Bjorn Helgaas <bjorn.helgaas@hp.com>" instead of just
+> "bjorn.helgaas@hp.com".
+> 
+> The current MAINTAINERS file format makes it a nuisance to
+> copy both the display name and the actual address.  So
+> I propose that we fold together the current "P:" and "M:"
+> lines using something similar to the filter below.
 
-However, that in turn highlights one problem with updating several
-MAINTAINERS entries at once; it will almost surely collide with
-other ongoing updates to the MAINTAINERS file.  On that account,
-your proposal might not be worth the extra effort it would take to
-get merged ... I'm not sure.
+I would welcome this change as it makes is simpler
+to cc relevant people on patches - with their full name.
 
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.940.382.4214
+	Sam
