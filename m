@@ -1,63 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759043AbYD3IMY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757455AbYD3INH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759043AbYD3IMY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Apr 2008 04:12:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752530AbYD3IML
+	id S1757455AbYD3INH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Apr 2008 04:13:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755010AbYD3IMs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Apr 2008 04:12:11 -0400
-Received: from mtagate2.uk.ibm.com ([195.212.29.135]:13343 "EHLO
-	mtagate2.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754109AbYD3IMJ (ORCPT
+	Wed, 30 Apr 2008 04:12:48 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:58543 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754953AbYD3IMr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Apr 2008 04:12:09 -0400
-From: Christian Borntraeger <borntraeger@de.ibm.com>
-To: Avi Kivity <avi@qumranet.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: small author mixup  (was: git pull KVM updates for 2.6.26rc)
-Date: Wed, 30 Apr 2008 10:12:05 +0200
-User-Agent: KMail/1.9.9
-Cc: kvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       Carsten Otte <cotte@de.ibm.com>
-References: <1209310768-12322-1-git-send-email-avi@qumranet.com>
-In-Reply-To: <1209310768-12322-1-git-send-email-avi@qumranet.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200804301012.05179.borntraeger@de.ibm.com>
+	Wed, 30 Apr 2008 04:12:47 -0400
+From: Paul Jackson <pj@sgi.com>
+To: akpm@linux-foundation.org
+Cc: Simon Derr <simon.derr@bull.net>, Paul Menage <menage@google.com>,
+       Paul Jackson <pj@sgi.com>, linux-kernel@vger.kernel.org
+Date: Wed, 30 Apr 2008 01:12:44 -0700
+Message-Id: <20080430081244.187543.95612.sendpatchset@jackhammer.engr.sgi.com>
+Subject: [PATCH] cpusets: update maintainers
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Sonntag, 27. April 2008 schrieb Avi Kivity:
-> Carsten Otte (4):
->       s390: KVM preparation: provide hook to enable pgstes in user pagetable
->       KVM: s390: interrupt subsystem, cpu timer, waitpsw
->       KVM: s390: API documentation
->       s390: KVM guest: detect when running on kvm
-> 
-> Christian Borntraeger (10):
->       KVM: kvm.h: __user requires compiler.h
->       s390: KVM preparation: host memory management changes for s390 kvm
->       s390: KVM preparation: address of the 64bit extint parm in lowcore
->       KVM: s390: sie intercept handling
->       KVM: s390: intercepts for privileged instructions
->       KVM: s390: interprocessor communication via sigp
->       KVM: s390: intercepts for diagnose instructions
->       KVM: s390: add kvm to kconfig on s390
->       KVM: s390: update maintainers
->       s390: KVM guest: virtio device support, and kvm hypercalls
+From: Paul Jackson <pj@sgi.com>
 
-Thats interesting, some of these patches should actually be credited to 
-Carsten - and in fact on kvm.git master they are credited to Carsten.
+Update CPUSETS MAINTAINERS to reflect the more active
+role of Paul Menage (secondary to his work on cgroups)
+and the retirement of the original author of cpusets,
+Simon Derr.  Thanks, Simon!  Best of luck to you.
 
-I think the problem is, that these patches contained multiple From lines. On 
-kvm.git the first line (Carsten) was used. When you transferred these patches 
-to the kvm.git-2.6.26-branch, git used the next From-line as the original one 
-was already removed.
+Signed-off-by: Paul Jackson <pj@sgi.com>
+Acked-by: Paul Menage <menage@google.com>
+Acked-by: Simon Derr <simon.derr@bull.net>
 
-While it is not a typical case, is there a better way of specifying multiple 
-authors to avoid future confusion?
+---
+ MAINTAINERS |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-Christian
+--- 2.6.25-mm1-mmotm.orig/MAINTAINERS	2008-04-30 00:56:27.000000000 -0700
++++ 2.6.25-mm1-mmotm/MAINTAINERS	2008-04-30 01:05:09.425822939 -0700
+@@ -1199,9 +1199,9 @@ S:	Maintained
+ 
+ CPUSETS
+ P:	Paul Jackson
+-P:	Simon Derr
++P:	Paul Menage
+ M:	pj@sgi.com
+-M:	simon.derr@bull.net
++M:	menage@google.com
+ L:	linux-kernel@vger.kernel.org
+ W:	http://www.bullopensource.org/cpuset/
+ S:	Supported
+
+-- 
+                          I won't rest till it's the best ...
+                          Programmer, Linux Scalability
+                          Paul Jackson <pj@sgi.com> 1.650.933.1373
