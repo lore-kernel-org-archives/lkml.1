@@ -1,67 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934052AbYD3WU2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934162AbYD3WUu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934052AbYD3WU2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Apr 2008 18:20:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762156AbYD3WUJ
+	id S934162AbYD3WUu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Apr 2008 18:20:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933503AbYD3WUM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Apr 2008 18:20:09 -0400
-Received: from mo-p00-ob.rzone.de ([81.169.146.162]:19045 "EHLO
-	mo-p00-ob.rzone.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761704AbYD3WUG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Apr 2008 18:20:06 -0400
-X-RZG-CLASS-ID: mo00
-X-RZG-AUTH: jclyXLBJ10ZHTmMMskdeEV9K+qamm4K24+0GzTHYHnheuzKtvddXf0g7srZHO6w=
-Message-ID: <4818F093.3070105@hartkopp.net>
-Date: Thu, 01 May 2008 00:20:03 +0200
-From: Oliver Hartkopp <oliver@hartkopp.net>
-User-Agent: Mozilla-Thunderbird 2.0.0.9 (X11/20080110)
+	Wed, 30 Apr 2008 18:20:12 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:34295 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761886AbYD3WUI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Apr 2008 18:20:08 -0400
+Date: Thu, 1 May 2008 00:19:36 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: David Miller <davem@davemloft.net>
+Cc: akpm@linux-foundation.org, torvalds@linux-foundation.org, rjw@sisk.pl,
+       linux-kernel@vger.kernel.org, jirislaby@gmail.com
+Subject: Re: Slow DOWN, please!!!
+Message-ID: <20080430221936.GA27292@elte.hu>
+References: <20080430131537.1f7a0914.akpm@linux-foundation.org> <alpine.LFD.1.10.0804301325260.2980@woody.linux-foundation.org> <20080430135405.ddc42075.akpm@linux-foundation.org> <20080430.142137.236846072.davem@davemloft.net>
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>, akpm@linux-foundation.org,
-       Greg KH <greg@kroah.com>
-CC: linux-kernel@vger.kernel.org
-Subject: [RFC] Kernel naming convention in the merge phase
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080430.142137.236846072.davem@davemloft.net>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
 
-i wonder about the Kernel naming convention in the merge phase before
-the -rc1 is officially tagged by Linus.
+* David Miller <davem@davemloft.net> wrote:
 
-Won't it be more precisely to name the current snapshot
-2.6.26-merge-git16 instead of 2.6.25-git16?
+> > linux-next does little to address our two largest (IMO) problems: 
+> > inadequate review and inadequate response to bug and regression 
+> > reports. But those problems are harder to fix..
+> 
+> This is all about positive and negative reinforcement.
+> 
+> The people who sit and git bisect their lives away to get the 
+> regressions fixed need more positive reinforcement.  And the people 
+> who stick these regressions into the tree need more negative 
+> reinforcement.
 
-It is not that i would suggest to have a new git tag in this merge phase 
-but only the Makefile should be changed at the beginning of this phase 
-to identify the ongoing work for the 2.6.26:
+What we need is not 'negative reinforcement'. That is just nasty, open 
+warfare between isolated parties, expressed in a politically correct 
+way.
 
-------
-diff --git a/Makefile b/Makefile
-index d3634cd..b8c85a4 100644
---- a/Makefile
-+++ b/Makefile
-@@ -1,8 +1,8 @@
-VERSION = 2
-PATCHLEVEL = 6
--SUBLEVEL = 25
--EXTRAVERSION =
--NAME = Funky Weasel is Jiggy wit it
-+SUBLEVEL = 26
-+EXTRAVERSION = -merge
-+NAME = unnamed
+The core problem is that every maintainer has his own subjective, 
+assymetric view and experience about this matter: to him his own tree is 
+almost problem-free and most problems are very easy to fix, while other 
+problems in other trees are nuisance that should never have been put 
+upstream.
 
-# *DOCUMENTATION*
-# To see a list of typical targets execute "make help"
-------
+Also, people get defensive when their regressions gets pointed out in 
+anything but the most respectful and casual manner.
 
-Introducing the new '-merge' version _that_ early helps to avoid the 
-version confusion in /lib/modules and also allows people to work with 
-kernel version depended stuff in a very early phase.
+For example, how on earth do i tell you that during the v2.6.24 merge 
+window, half of all x86 test-machines for me and others were broken 
+because they had no networking, for more than a week in a row? Are you 
+surprised about this (true) experience we had? Do you feel insulted? Do 
+you feel unfairly handled and slandered?
 
-Regards,
-Oliver
+The same goes in the other direction as well - you were just hit by 
+scheduler tree related regressions that were only triggered on your 
+128-way sparc64, but not on our 64way x86 and smaller boxes.
 
+The thing is, what we really need is more cooperation and earlier 
+integration - more people actually testing linux-next occasionally to 
+see how things will look like in the next merge window.
+
+linux-next doing build tests is fine, but the nasty regressions that 
+will hit your box can only be solved if _you_ boot linux-next at least 
+once before the merge window opens. The regressions that will hit my box 
+can only be avoided if i test your tree.
+
+hm? And can we please somehow talk about this without flaming each other 
+in the process?
+
+	Ingo
