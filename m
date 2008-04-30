@@ -1,87 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764602AbYD3TEJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764717AbYD3TEj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764602AbYD3TEJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Apr 2008 15:04:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764338AbYD3TDw
+	id S1764717AbYD3TEj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Apr 2008 15:04:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763624AbYD3TE1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Apr 2008 15:03:52 -0400
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:47921 "EHLO smtp4.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764310AbYD3TDv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Apr 2008 15:03:51 -0400
-Date: Wed, 30 Apr 2008 22:03:07 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Ingo Molnar <mingo@elte.hu>
+	Wed, 30 Apr 2008 15:04:27 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:58972 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760851AbYD3TE0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Apr 2008 15:04:26 -0400
+Date: Wed, 30 Apr 2008 16:03:54 -0300
+From: Mauro Carvalho Chehab <mchehab@infradead.org>
+To: Patrick Boettcher <patrick.boettcher@desy.de>
 Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [patch] inlining: do not allow gcc below version 4 to optimize
-	inlining
-Message-ID: <20080430190307.GC29330@cs181133002.pp.htv.fi>
-References: <20080429221530.GA11398@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20080429221530.GA11398@elte.hu>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+       linux-dvb-maintainer@linuxtv.org,
+       Andrew Morton <akpm@linux-foundation.org>, video4linux-list@redhat.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [v4l-dvb-maintainer] [GIT PATCHES] V4L/DVB updates and fixes
+ for 2.6.26
+Message-ID: <20080430160354.29dfe255@gaivota>
+In-Reply-To: <Pine.LNX.4.64.0804300953140.480@pub4.ifh.de>
+References: <20080429185009.716c3284@gaivota>
+	<Pine.LNX.4.64.0804300953140.480@pub4.ifh.de>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.9; x86_64-mandriva-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 30, 2008 at 12:15:31AM +0200, Ingo Molnar wrote:
+Hi Patrick
+
+On Wed, 30 Apr 2008 10:02:43 +0200 (CEST)
+Patrick Boettcher <patrick.boettcher@desy.de> wrote:
+
+> Hi Mauro,
 > 
-> fix the condition to match intention: always use the old inlining 
-> behavior on all gcc versions below 4.
+> sorry to say that now and not earlier, but:
 > 
-> this should solve the UML build problem.
-
-You reported this problem.
-
-Does it fix the problem you reported or not?
-
-> Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> ---
->  include/linux/compiler-gcc.h |    5 +++--
->  1 file changed, 3 insertions(+), 2 deletions(-)
+> On Tue, 29 Apr 2008, Mauro Carvalho Chehab wrote:
+> > .../{dvb/frontends => common/tuners}/mt2266.c      |    0
+> > .../{dvb/frontends => common/tuners}/mt2266.h      |    4 +-
 > 
-> Index: linux-x86.q/include/linux/compiler-gcc.h
-> ===================================================================
-> --- linux-x86.q.orig/include/linux/compiler-gcc.h
-> +++ linux-x86.q/include/linux/compiler-gcc.h
-> @@ -29,10 +29,11 @@
->    BUILD_BUG_ON_ZERO(__builtin_types_compatible_p(typeof(a), typeof(&a[0])))
->  
->  /*
-> - * Force always-inline if the user requests it so via the .config:
-> + * Force always-inline if the user requests it so via the .config,
-> + * or if gcc is too old:
->   */
->  #if !defined(CONFIG_ARCH_SUPPORTS_OPTIMIZED_INLINING) || \
-> -    !defined(CONFIG_OPTIMIZE_INLINING) && (__GNUC__ >= 4)
+> The mt2266 is a zero-IF (baseband) tuner. I think there is no analog 
+> decoder for this kind of tuners.
 
-One moment.
+Ah, ok. I'm not 100% sure, but I think some chips, like cx88 could theoretically
+support a baseband tuner. But you're right: there's no known board using mt2266. 
 
-Let me try to understand what we currently have in the tree.
+> Maybe the move was not necessary, but maybe all tuners should go to 
+> common.
 
-This *always* enables the so called "optimized inlining" for the older 
-compilers we did *not* wanted to have this for.
+Good point. 
 
-Even with CONFIG_OPTIMIZE_INLINING=n .
+It seems easier to maintain if we should move all terrestrial/cable [1]
+(analog and/or digital) tuners into common/tuners. 
 
-How was this reviewed and tested?
+Cheers,
+Mauro
 
-> +    !defined(CONFIG_OPTIMIZE_INLINING) || (__GNUC__ < 4)
->  # define inline		inline		__attribute__((always_inline))
->  # define __inline__	__inline__	__attribute__((always_inline))
->  # define __inline	__inline	__attribute__((always_inline))
 
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+[1] I don't see any technical sense of moving satellite tuners, except for
+having just one place for all tuners, or if there are some tendency of hybrid
+satellite/terrestrial tuners.
