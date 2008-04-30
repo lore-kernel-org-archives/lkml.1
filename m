@@ -1,74 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759568AbYD3N2r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760285AbYD3Nc7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759568AbYD3N2r (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Apr 2008 09:28:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755935AbYD3N2h
+	id S1760285AbYD3Nc7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Apr 2008 09:32:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756597AbYD3Nct
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Apr 2008 09:28:37 -0400
-Received: from eth7959.sa.adsl.internode.on.net ([150.101.82.22]:34845 "EHLO
-	hawking.rebel.net.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755521AbYD3N2h (ORCPT
+	Wed, 30 Apr 2008 09:32:49 -0400
+Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:33609 "EHLO
+	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755521AbYD3Ncs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Apr 2008 09:28:37 -0400
-Message-ID: <48187400.8050401@davidnewall.com>
-Date: Wed, 30 Apr 2008 22:58:32 +0930
-From: David Newall <davidn@davidnewall.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
+	Wed, 30 Apr 2008 09:32:48 -0400
+Message-ID: <481874BD.5010807@s5r6.in-berlin.de>
+Date: Wed, 30 Apr 2008 15:31:41 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.13) Gecko/20080313 SeaMonkey/1.1.9
 MIME-Version: 1.0
-To: Tarkan Erimer <tarkan@netone.net.tr>
-CC: David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: Slow DOWN, please!!!
-References: <20080429.190352.137408408.davem@davemloft.net> <4817EF91.4080800@davidnewall.com> <48181B9F.2040203@netone.net.tr>
-In-Reply-To: <48181B9F.2040203@netone.net.tr>
+To: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+Subject: Re: Hack to fix not working spindown over Firewire
+References: <20080429232606.GA14261@dose.home.local>
+In-Reply-To: <20080429232606.GA14261@dose.home.local>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tarkan Erimer wrote:
-> I completely disagree with your foolish and nonsense comments about
-> the Linux Kernel and the Linux OS. It's perfectly clear that you
-> didn't understand well enough how the linux development process works.
-> If you thought that the recently released kernels are not stable then,
-> you have to wait the 2.6.x.y series or you can use the distro kernels.
-> All of your comments are pointless and no base. You are free to choose
-> BSD or whatever you want to use. No one is putting a gun on your head
-> to use Linux :-)
+Tino Keitel wrote:
+> I like the manage_start_stop feature of the SD driver to spin down the
+> hard disks (SATA and USB) during suspend. However, it didn't work with
+> my Firewire hard disk.
+> 
+> After some research I found out that I can spin down the disk with
+> sg_start --pc=2, and spin it up with sg_start --pc=1. I adopted this
+> into sd_start_stop_device() with the vendor name of the device
+> hardcoded (see the attached patch) and now my Firewire hard disk spins
+> down on suspend and spins up on resume.
+> 
+> Is there any chance to get this behaviour without such ugly changes to
+> the kernel? I had to make it conditional by checking the device as
+> otherwise the SATA disk reports an error.
+[...]
+> --- a/drivers/scsi/sd.c
+> +++ b/drivers/scsi/sd.c
+> @@ -1788,8 +1788,16 @@ static int sd_start_stop_device(struct scsi_disk *sdkp, int start)
+>  	struct scsi_device *sdp = sdkp->device;
+>  	int res;
+>  
+> -	if (start)
+> +	if (start) {
+>  		cmd[4] |= 1;	/* START */
+> +		if(!strncmp(sdp->vendor, "WDC WD32", 8)) {
+> +			cmd[4] |= (1 << 4); /* power condition */
+> +		}
+> +	} else {
+> +		if(!strncmp(sdp->vendor, "WDC WD32", 8)) {
+> +			cmd[4] |= (2 << 4); /* power condition */
+> +		}
+> +	}
+>  
+>  	if (!scsi_device_online(sdp))
+>  		return -ENODEV;
 
-The problem is not exactly faults in recently released kernels, rather
-that introduction of faults is common when it should be rare, and
-kernels are released as stable when they are fragile.  Ignoring a
-problem, and not caring if they migrate to BSD, is foolishness.  Of
-course you don't want people to migrate to BSD, so don't pretend that
-you don't care.
+For LKML:  There was previous discussion on linux1394-user and LSML.
+http://marc.info/?t=120720546800001
+The enclosure is a Raidsonic ICY Box.
 
-> Do you think really think that BSD license is more free as making a
-> fool of you ?
+Responsible for the spindown behavior is the IDE-to-FireWire bridge
+controller which is a Prolific PL-3507, and its firmware which is
+different from the USB firmware.  Also, there are different firmwares in
+the wild for PL-3507.
 
-It is a matter of transparent fact that BSD's licence is less
-restrictive than Linux's.  Whether that is desirable is not something
-that need be discussed at this juncture.  My point in raising BSD was
-that, from a commercial point of view, BSD is attractive in a way that
-Linux is not.  The many commercial vendors who have been taken to task
-for not honouring their GPL obligations are strong demonstrations of
-that.  Do not pretend that Linux is sacrosanct.  BSD would be an easy
-swap for vendors should Linux gain a reputation for poor quality (and it
-already runs Linux applications.)
+The sdp->vendor string is assembled by the firmware from data gathered
+from the IDE device.  It is therefore not suitable to detect affected
+devices.
 
-Reputations snowball.  By the time anybody notices that a good one has
-become tarnished it could be too late, and take too long, to rectify. 
-I'm sure somebody else observed approximately this just yesterday, so
-it's not just me, is it?
+The traditional way to handle things like this is:
 
-I won't champion this because it's unimportant to me.  Linux's quality
-problems are not my problems.  I do what I can to help Linux, but I'm
-not religious about operating systems and I know that good, free
-operating systems will continue to thrive, even if Linux's dies, just as
-they did before Linux was born.
+   - Implement this as a workaround in sd.
 
-Ignore the problem, even shoot the messenger, if you like; or be adult,
-consider the proposition dispassionately, and take steps from there.
+   - Make this workaround conditional on a quirks flag in
+     struct scsi_device.
 
-I've said my bit, in fact more than I wanted to, so I choose to stop here.
+   - Switch this flag on in a place where it can be reliably
+     detected that this device needs it.  There is an interface
+     to do this in userspace.  But in this particular case, the
+     best place is the sbp2 driver (ond firewire-sbp2 driver),
+     because it can detect PL-3507 firmwares by means of firmware
+     identifiers.
+
+Tino, to find the firmware marker you can for example:
+# echo 0x1000 > /sys/module/sbp2/parameters/workarounds
+Then plug in the disk and
+# dmesg | grep sbp2
+
+On the other hand, perhaps we can enable the workaround unconditional
+for all firewire disks (switch in the flag in sbp2 and firewire-sbp2
+without looking at the device) or for all RBC disks (switch on the flag
+in sd.c if sdev->type == TYPE_RBC).
+
+RBC clause 5.4.1 states that support of the following POWER CONDITION
+values in the START STOP UNIT cdb is mandatory:
+0 = No change in power condition
+1 = Place device in Active condition
+2 = Place device in Idle condition
+3 = Place device in Standby condition
+5 = Place device in Sleep condition
+There is also optional support for 7 = Device Control, which is
+uninteresting for our purposes.  According to the description of Active,
+Idle, Standby, Sleep in RBC, we do most certainly want code 1 on resume,
+and rather 3 than 2 on suspend. 5 instead of 3 or 2 might even be better
+from the POV of energy consumption but a "device reset may be required
+before access to the device is allowed" which I'd rather not deal with.
+
+Tino, does the scsi stack log the device as "Direct-Access-RBC" after it
+was plugged in?
+
+Note to self:  Test sg_start --pc={1,3} with all the various SBP-2
+bridges I have access to...
+-- 
+Stefan Richter
+-=====-==--- -=-- ====-
+http://arcgraph.de/sr/
