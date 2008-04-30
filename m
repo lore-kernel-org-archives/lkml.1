@@ -1,54 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934036AbYD3WIr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765260AbYD3WJY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934036AbYD3WIr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Apr 2008 18:08:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757897AbYD3WIe
+	id S1765260AbYD3WJY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Apr 2008 18:09:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756257AbYD3WJK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Apr 2008 18:08:34 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:53219
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753496AbYD3WId (ORCPT
+	Wed, 30 Apr 2008 18:09:10 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:58652 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752914AbYD3WJI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Apr 2008 18:08:33 -0400
-Date: Wed, 30 Apr 2008 15:08:32 -0700 (PDT)
-Message-Id: <20080430.150832.107441339.davem@davemloft.net>
-To: harvey.harrison@gmail.com
-Cc: akpm@linux-foundation.org, jeff@garzik.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 07/10] net: fix returning void-valued expression
- warnings
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1209593023.24729.117.camel@brick>
-References: <1209593023.24729.117.camel@brick>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Wed, 30 Apr 2008 18:09:08 -0400
+Date: Wed, 30 Apr 2008 15:08:26 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Andrew Morton <akpm@linux-foundation.org>, Dan Noe <dpn@isomerica.net>,
+       davem@davemloft.net, linux-kernel@vger.kernel.org, jirislaby@gmail.com,
+       Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: Slow DOWN, please!!!
+In-Reply-To: <200804302330.21743.rjw@sisk.pl>
+Message-ID: <alpine.LFD.1.10.0804301439330.2980@woody.linux-foundation.org>
+References: <20080429.190352.137408408.davem@davemloft.net> <4818DAC4.0@isomerica.net> <20080430135938.82e46e67.akpm@linux-foundation.org> <200804302330.21743.rjw@sisk.pl>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Harvey Harrison <harvey.harrison@gmail.com>
-Date: Wed, 30 Apr 2008 15:03:43 -0700
 
-> drivers/net/8390.c:37:2: warning: returning void-valued expression
-> drivers/net/bnx2.c:1635:3: warning: returning void-valued expression
-> drivers/net/xen-netfront.c:1806:2: warning: returning void-valued expression
-> net/ipv4/tcp_hybla.c:105:3: warning: returning void-valued expression
-> net/ipv4/tcp_vegas.c:171:3: warning: returning void-valued expression
-> net/ipv4/tcp_veno.c:123:3: warning: returning void-valued expression
-> net/sysctl_net.c:85:2: warning: returning void-valued expression
+
+On Wed, 30 Apr 2008, Rafael J. Wysocki wrote:
 > 
-> Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+> How bisectable is linux-next, BTW?
 
-I wish this weren't marked with a warning, what spits this out,
-sparse?
+Each _individual_ release will be entirely bisectable, since it's all git 
+trees, and at no point does anything collapse individual commits together 
+like -mm does.
 
-I know the kernel is written in C and not C++, but even Stroustrup
-mentions this case explicitly in his book:
+HOWEVER. 
 
-	 A void function cannot return a value.  However, a call of a
-	 void function doesn't yield a value, so a void function can
-	 use a call of a void function as the expression in a return
-	 statement.
+Due to the way linux-next works, each individual release will be basically 
+unrelated to the previous one, so it gets a bit more exciting indeed when 
+you say "the last linux-next version worked for me, but the current one 
+does not".
 
-And I see no reason why there's anything wrong with this construct.
+Git can actually do this - you can make the previous (good) linux-next 
+version be one branch, and the not-directly-related next linux-next build 
+be another, and then "git bisect" will _technically_ work, but:
+
+ - it will not necessarily be as efficient (because the linux-next trees 
+   will have re-done all the merges, so there will be new commits and 
+   patterns in between them)
+
+ - but much more distressingly, if the individual git trees that got 
+   merged into linux-next were also using rebasing etc, now even all the 
+   *base* commits will be different, and saying that the old release was 
+   good tells you almost nothing about the new release!
+
+   (The good news is that if only a couple of trees do that, the bisection 
+   information from the other trees that don't do it will still be valid 
+   and useful and help bisection)
+
+ - also, while it's very easy for somebody who knows and understands git 
+   branches, it's technically still quite a bit more challenging than just 
+   following a single tree that never rebases (ie mine) and just bisecting 
+   within that one.
+
+So yes, git bisect will work in linux-next, and the fundamental nature of 
+git-bisect will not change at all, but it's going to be a bit weaker 
+"between different versions" of linux-next than it would be for the normal 
+git tree that doesn't do the "merge different trees all over again" thing 
+that linux-next does.
+
+		Linus
