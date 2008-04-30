@@ -1,83 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764048AbYD3WCl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765655AbYD3WDV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764048AbYD3WCl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Apr 2008 18:02:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758301AbYD3WCc
+	id S1765655AbYD3WDV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Apr 2008 18:03:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760603AbYD3WDF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Apr 2008 18:02:32 -0400
-Received: from ug-out-1314.google.com ([66.249.92.169]:16876 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756185AbYD3WCb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Apr 2008 18:02:31 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:organization:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=QrMM8ItkjD+fsJ4VOCvwItWKMgoxe5XduuWeA/cy9vwRFV/Xu1skmMr1fa/TRNxDblFzlRaeYXmLP9l9eqrY31l5/gcv8LHAhIVttcuVauj4D/m+nlKIffsUwgDKMVryXVRuqTx4vQN+6hBJUXOQsqdT7gkEfyZODtWMmqNssnE=
-Message-ID: <4818EC70.90802@gmail.com>
-Date: Thu, 01 May 2008 02:02:24 +0400
-From: Dmitri Vorobiev <dmitri.vorobiev@gmail.com>
-Organization: DmVo Home
-User-Agent: Thunderbird 1.5.0.14ubu (X11/20080306)
-MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: akpm@linux-foundation.org, torvalds@linux-foundation.org, rjw@sisk.pl,
-       linux-kernel@vger.kernel.org, jirislaby@gmail.com,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: Slow DOWN, please!!!
-References: <20080430131537.1f7a0914.akpm@linux-foundation.org>	<alpine.LFD.1.10.0804301325260.2980@woody.linux-foundation.org>	<20080430135405.ddc42075.akpm@linux-foundation.org> <20080430.142137.236846072.davem@davemloft.net>
-In-Reply-To: <20080430.142137.236846072.davem@davemloft.net>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+	Wed, 30 Apr 2008 18:03:05 -0400
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:44194 "EHLO e2.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760459AbYD3WDD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Apr 2008 18:03:03 -0400
+Subject: Re: [PATCH] ext3: Fix typos in messages and comments (journalled
+	-> journaled)
+From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Jan Kara <jack@suse.cz>,
+       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org
+In-Reply-To: <20080430212711.168bdcc0@core>
+References: <12095679813226-git-send-email-jack@suse.cz>
+	 <12095679812375-git-send-email-jack@suse.cz>
+	 <12095679812452-git-send-email-jack@suse.cz>
+	 <1209567981639-git-send-email-jack@suse.cz>
+	 <20080430104330.66c44d4f.akpm@linux-foundation.org>
+	 <20080430212711.168bdcc0@core>
+Content-Type: text/plain
+Date: Wed, 30 Apr 2008 17:02:53 -0500
+Message-Id: <1209592973.6113.23.camel@norville.austin.ibm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller пишет:
-> From: Andrew Morton <akpm@linux-foundation.org>
-> Date: Wed, 30 Apr 2008 13:54:05 -0700
-> 
->> linux-next does little to address our two largest (IMO) problems:
->> inadequate review and inadequate response to bug and regression reports. 
->> But those problems are harder to fix..
-> 
-> This is all about positive and negative reinforcement.
-> 
-> The people who sit and git bisect their lives away to get the
-> regressions fixed need more positive reinforcement.  And the people
-> who stick these regressions into the tree need more negative
-> reinforcement.
-> 
-> The current way of dealing with folks who stick broken crud into the
-> tree results in zero change in behvaior.
-> 
-> People who insert the bum changes into the tree only really have one
-> core thing that they are sensitive to, their reputation.  That's why
-> there is an enormous reluctance to even suggest reverts, it looks bad
-> for them and it also makes more work for them in the end.
-> 
-> I guess what these folks are truly afraid of is that someone will
-> start tracking reverts and post their results in some presentation
-> at some big conference.  I say that would be a good thing.  To
-> be honest, hitting the revert button more aggressively and putting
-> the fear of being the "revert king" into everyone's minds might
-> really help with this problem.
-> 
-> Currently there is no sufficient negative pushback on people who
-> insert broken crud into the tree.  So it should be no surprise that it
-> continues.
 
-I'm not a frequent poster to this mailing list, but I do spend a good
-portion of my life reading it. Please excuse me for expressing my very
-personal opinion, but I thought you might probably be interested in a
-detached view of the situation.
+On Wed, 2008-04-30 at 21:27 +0100, Alan Cox wrote:
+> On Wed, 30 Apr 2008 10:43:30 -0700
+> Andrew Morton <akpm@linux-foundation.org> wrote:
+> 
+> > On Wed, 30 Apr 2008 17:06:15 +0200
+> > Jan Kara <jack@suse.cz> wrote:
+> > 
+> > > -					"EXT3-fs: Cannot change journalled "
+> > > +					"EXT3-fs: Cannot change journaled "
+> > 
+> > hrm, who said?
+> 
+> This has come up several times before so I thought it might be time to
+> finally dig to the bottom of the pile and end it forever.
+> 
+> I put on my library hat and went for a dig: the verb is in fact "to
+> journalize", which according to the OED means
+> 
+> "enter (notes or information) in a journal"
+> 
+> Journal itself is strictly a noun. Thus in English it would be correct
+> for a file system to have a journal (from the latin diurnalis if anyone
+> cares) but it would appear that it is a journalizing file system.
+> 
+> The American dictionaries appear to agree with this viewpoint.
+> 
+> If we regard "journalizing" as incorrect then the natural way to end the
+> word would be -lled for British English and -led would certainly sound
+> and feel wrong. Indeed the search for the OED turns journalled into
+> journal when guessing near words but refuses to consider journaled. Our
+> existing policy is not to mess with US v UK v AU v CA v .. spelling
+> and that is probably wise. 
+> 
+> A search of the ACM literature finds "journalized", "journalled" and
+> "journaled" are all in use for this operation.
 
-I think that many have guessed that I would like to talk about the attacks
-to Ingo and backwards. Believe me, this fight looks childish, as it becomes
-obvious that that went beyond purely technical disputes, which Linus is so
-keen of rightfully writing about.
+I hate to get into these discussions, but I've used "journaled" a lot,
+so I feel I should chime in.
 
-In no case am I implying any kind of offense, but I do believe that bad
-emotions do hinder the community from advancing with the technical things.
+Maybe it's different in the UK, but I've always understood that if the
+accent is not on the last syllable, then you do not double the final
+vowel: offer, offered.  So if we accept the use of "journal" as a verb,
+"journaled" would be correct.  
 
-Dmitri
+Since it's not a real word, I'd be happy not to make a big deal out of
+it and accept either, so I think we're in agreement.
+
+> I would submit the correct patch is to change the words to journalizing
+> and journalized. That would put Linux in agreement with the dictionary,
+> avoid US v UK meaning differences and not pose a problem linguistically
+> as all forms are currently in use.
+
+That would probably be more correct, but the use of "journal" as a verb
+has really gotten ingrained in file system developers brains.  I
+personally haven't heard or used "journalized" and it would take some
+getting used to.
+
+Shaggy
+
+P.S. Evolution's spell-checker doesn't like "journalize" either, but I
+trust that it's correct.
+-- 
+David Kleikamp
+IBM Linux Technology Center
+
