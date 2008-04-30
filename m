@@ -1,91 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763075AbYD3MnZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763544AbYD3MoT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763075AbYD3MnZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Apr 2008 08:43:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755985AbYD3MnS
+	id S1763544AbYD3MoT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Apr 2008 08:44:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758433AbYD3MoI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Apr 2008 08:43:18 -0400
-Received: from mga09.intel.com ([134.134.136.24]:7596 "EHLO mga09.intel.com"
+	Wed, 30 Apr 2008 08:44:08 -0400
+Received: from www.tglx.de ([62.245.132.106]:47582 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755023AbYD3MnR convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Apr 2008 08:43:17 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,728,1199692800"; 
-   d="scan'208";a="276451453"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	id S1758006AbYD3MoG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Apr 2008 08:44:06 -0400
+Date: Wed, 30 Apr 2008 14:43:05 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: =?ISO-8859-15?Q?Uwe_Kleine-K=F6nig?= <Uwe.Kleine-Koenig@digi.com>,
+       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] let setup_irq reenable a shared irq
+In-Reply-To: <20080430053814.06611928.akpm@linux-foundation.org>
+Message-ID: <alpine.LFD.1.10.0804301441510.6003@apollo.tec.linutronix.de>
+References: <1209557398-8228-1-git-send-email-Uwe.Kleine-Koenig@digi.com> <alpine.LFD.1.10.0804301432080.6003@apollo.tec.linutronix.de> <20080430053814.06611928.akpm@linux-foundation.org>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Subject: RE: [patch] x86, ptrace: in-kernel BTS interface
-Date: Wed, 30 Apr 2008 13:43:20 +0100
-Message-ID: <029E5BE7F699594398CA44E3DDF5544401CE20DA@swsmsx413.ger.corp.intel.com>
-In-Reply-To: <20080430052631.3d182670.akpm@linux-foundation.org>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [patch] x86, ptrace: in-kernel BTS interface
-Thread-Index: AciqvZQQwLYNR9I+Q0eJlxfKrfFdQQAAMAtw
-References: <20080430135440.A359@sedona.ch.intel.com> <20080430052631.3d182670.akpm@linux-foundation.org>
-From: "Metzger, Markus T" <markus.t.metzger@intel.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Cc: <andi-suse@firstfloor.org>, <hpa@zytor.com>,
-       <linux-kernel@vger.kernel.org>, <mingo@elte.hu>, <tglx@linutronix.de>,
-       <markus.t.metzger@gmail.com>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>, <roland@redhat.com>,
-       <mtk.manpages@gmail.com>, <eranian@googlemail.com>,
-       "Villacis, Juan" <juan.villacis@intel.com>
-X-OriginalArrivalTime: 30 Apr 2008 12:43:05.0991 (UTC) FILETIME=[BC9C8970:01C8AABF]
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+Content-Type: MULTIPART/MIXED; BOUNDARY="8323328-1473037258-1209559386=:6003"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->-----Original Message-----
->From: Andrew Morton [mailto:akpm@linux-foundation.org] 
->Sent: Mittwoch, 30. April 2008 14:27
->To: Metzger, Markus T
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
->> Provide an in-kernel interface to Branch Trace Store and 
->implement the
->> ptrace user interface on top of it.
->> 
->> Fix a few bugs that were detected during the perfmon2 adaptation to
->> the DS interface by Stephane Eranian.
->> 
->> The ptrace implementation becomes a rather thin layer that only
->> forwards requests.
->> 
->> The BTS interface may later be morphed into a utrace interface for
->> execution trace, or it may be used to implement such a utrace
->> interface on top of it.
->
->This appears to be against a version of x86-ptrace-pebs-support
->which I don't have.
->
->I dropped everything - let's start again.
+--8323328-1473037258-1209559386=:6003
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 
-That was against x86.git#latest.
+On Wed, 30 Apr 2008, Andrew Morton wrote:
 
-Do you want me to send patches against some other git? Which one?
+> On Wed, 30 Apr 2008 14:32:58 +0200 (CEST) Thomas Gleixner <tglx@linutronix.de> wrote:
+> 
+> > On Wed, 30 Apr 2008, Uwe Kleine-König wrote:
+> > > From: Thomas Gleixner <tglx@linutronix.de>
+> > 
+> > I have the fixed version already queued for linus since yesterday :)
+> > 
+> 
+> Where is it queued?
 
-You complained about the size of the patch. If we start over, I could
-split it into 3 pieces, one for each layer.
+In my crap pile which is in preparation for a git update of
+http://git.kernel.org/?p=linux/kernel/git/tglx/linux-2.6-genirq.git
+ 
+Thanks,
+	tglx
 
-
-regards,
-markus.
----------------------------------------------------------------------
-Intel GmbH
-Dornacher Strasse 1
-85622 Feldkirchen/Muenchen Germany
-Sitz der Gesellschaft: Feldkirchen bei Muenchen
-Geschaeftsfuehrer: Douglas Lusk, Peter Gleissner, Hannes Schwaderer
-Registergericht: Muenchen HRB 47456 Ust.-IdNr.
-VAT Registration No.: DE129385895
-Citibank Frankfurt (BLZ 502 109 00) 600119052
-
-This e-mail and any attachments may contain confidential material for
-the sole use of the intended recipient(s). Any review or distribution
-by others is strictly prohibited. If you are not the intended
-recipient, please contact the sender and delete all copies.
-
+--8323328-1473037258-1209559386=:6003--
