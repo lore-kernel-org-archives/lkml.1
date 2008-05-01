@@ -1,134 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762661AbYEAQLS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761504AbYEAQTL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762661AbYEAQLS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 May 2008 12:11:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755424AbYEAQLK
+	id S1761504AbYEAQTL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 May 2008 12:19:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753167AbYEAQS6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 May 2008 12:11:10 -0400
-Received: from fmmailgate04.web.de ([217.72.192.242]:45996 "EHLO
-	fmmailgate04.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753156AbYEAQLJ convert rfc822-to-8bit (ORCPT
+	Thu, 1 May 2008 12:18:58 -0400
+Received: from el-out-1112.google.com ([209.85.162.182]:54059 "EHLO
+	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751117AbYEAQS5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 May 2008 12:11:09 -0400
-Date: Thu, 01 May 2008 18:11:07 +0200
-Message-Id: <261643149@web.de>
+	Thu, 1 May 2008 12:18:57 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:reply-to:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=b/gnGpK+kJhAKILJIPXwgSoCaubGmJ9EjHAcXivuTM2g7A9FWajMXBzmj0BxjiPO2zUzghzuwckjs/TQOuJIYjHCyR2q1yyLGWR5vFmHq23P75wwUO8pGo8OmNWG6l9coTcZMuFs48dLG/2m1Je+f9lwGNTphc8xuJmqPZiOCTo=
+Message-ID: <c24352ca0805010918j395470d0o8f2088571c90183b@mail.gmail.com>
+Date: Thu, 1 May 2008 09:18:55 -0700
+From: "Jeff Schroeder" <jeffschroed@gmail.com>
+Reply-To: jeffschroeder@computer.org
+To: "Chris Mason" <chris.mason@oracle.com>
+Subject: Re: Btrfs v0.14 Released
+Cc: linux-kernel@vger.kernel.org, linux-btrfs@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+In-Reply-To: <200805011204.20847.chris.mason@oracle.com>
 MIME-Version: 1.0
-From: devzero@web.de
-To: linux-kernel@vger.kernel.org
-Subject: Re: RFC: starting a kernel-testers group for newbies
-Organization: http://freemail.web.de/
-X-Provags-Id: V01U2FsdGVkX1+RXnl9ou/QqP1b2cGrOqeHjARMGM56c1YX1oinbHp/2bgP6
- XHQfhO/wU+bEzqf6H9h7A3exdSZLAHLAslHY0ACWtB3hFCbsE0=
-Content-Type: text/plain; charset=iso-8859-15
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200804291601.32945.chris.mason@oracle.com>
+	 <200805011204.20847.chris.mason@oracle.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->I'll try to do this:
->- create some Wiki page
->- get a mailing list at vger
->- point newbies to this mailing list
->- tell people there which kernels to test
->- figure out and document stuff like how to bisect between -next kernels
->- help them to do whatever is required for a proper bug report
+On Thu, May 1, 2008 at 9:04 AM, Chris Mason <chris.mason@oracle.com> wrote:
+> On Tuesday 29 April 2008, Chris Mason wrote:
+>  > Hello everyone,
+>  >
+>  > Btrfs v0.14 is now available for download.  Please note the disk format has
+>  > changed, and it is not compatible with older versions of Btrfs.
+>  >
+>  > For downloads and documention, please see the Btrfs project page:
+>  >
+>  > http://btrfs.wiki.kernel.org
+>  >
+>
+>  Hello everyone,
+>
+>  I've rolled up some fixes for older kernels and fixed an uninitialized
+>  variables in btrfs-progs that could cause an oops on mount.  I'll wait a few
+>  days to see if other bug reports come in and cut a 0.15 with any other
+>  critical fixes.
+Well it oopses on writes everytime in Ubuntu 8.04 (Hardy). I'd planned
+on digging into
+it more before spending a bug report, but will send it tonight after
+getting to the affected
+machine.
 
-good idea :)
+With 1 volume on 1 disk, 2 volumes raid1 on 2 disks, or with 2 volumes
+raid0 on 2 disks.
+something like:
+echo omg > /mnt/btrfs/file
 
-one more:
-reported bugs sometimes get lost in lkml (or elsewhere) and may not get the attention they need.
+Would segfault, exit the current shell, and leave a nice stack trace
+in the kernel's ring buffer.
 
-maybe there are not enough people who put some steadiness into tracking bugs (i.e. put them in bugzilla and make sure they get tracked/resolved) ?
+The file gets created as 0 bytes. Unlinking the file works fine via
+rm, but any sort of write fails.
+Tried and reproduced the bug with stdout redirection, cp, and dd to a
+btrfs v0.14 volume.
 
-isn`t that something for kernel-testers, too ?
-
-i`m quite sure that there are people among them who have fun with helping tracking bugs, even if they lack proper programming skills.
-imho, it`s not only a matter of knowledge, but maybe manpower, too.
-  
-so, wouldn`t it be helpful if there were more people helping the kernel-developers saving time, e.g. by take over the easier tasks like asking bug-reporters for input, help collection of debug-data, help assigning bugs to the right people etc.....
-
-
-
+Will send the report later today.
 
 
 
-List:       linux-kernel
-Subject:    RFC: starting a kernel-testers group for newbies
-From:       Adrian Bunk <bunk () kernel ! org>
-Date:       2008-05-01 0:31:25
-Message-ID: 20080501003125.GM29330 () cs181133002 ! pp ! htv ! fi
-[Download message RAW]
+>
+>  Until then, you can find download information on the important fixes so far:
+>
+>  http://btrfs.wiki.kernel.org/index.php/Hot_Fixes
+>
+>
+>
+>  -chris
 
-On Wed, Apr 30, 2008 at 01:31:08PM -0700, Linus Torvalds wrote:
-> 
-> 
-> On Wed, 30 Apr 2008, Andrew Morton wrote:
-> > 
-> > <jumps up and down>
-> > 
-> > There should be nothing in 2.6.x-rc1 which wasn't in 2.6.x-mm1!
-> 
-> The problem I see with both -mm and linux-next is that they tend to be 
-> better at finding the "physical conflict" kind of issues (ie the merge 
-> itself fails) than the "code looks ok but doesn't actually work" kind of 
-> issue.
-> 
-> Why?
-> 
-> The tester base is simply too small.
-> 
-> Now, if *that* could be improved, that would be wonderful, but I'm not 
-> seeing it as very likely.
-> 
-> I think we have fairly good penetration these days with the regular -git 
-> tree, but I think that one is quite frankly a *lot* less scary than -mm or 
-> -next are, and there it has been an absolutely huge boon to get the kernel 
-> into the Fedora test-builds etc (and I _think_ Ubuntu and SuSE also 
-> started something like that).
-> 
-> So I'm very pessimistic about getting a lot of test coverage before -rc1.
-> 
-> Maybe too pessimistic, who knows?
-
-First of all:
-I 100% agree with Andrew that our biggest problems are in reviewing code 
-and resolving bugs, not in finding bugs (we already have far too many 
-unresolved bugs).
-
-But although testing mustn't replace code reviews it is a great help, 
-especially for identifying regressions early.
-
-Finding testers should actually be relatively easy since it doesn't 
-require much knowledge from the testers.
-
-And it could even solve a second problem:
-
-It could be a way for getting newbies into kernel development.
-
-We actually do only rarely have tasks suitable as janitor tasks for 
-newbies, and the results of people who do neither know the kernel
-nor know C running checkpatch on files in the kernel have already
-been discussed extensively...
-
-I'll try to do this:
-- create some Wiki page
-- get a mailing list at vger
-- point newbies to this mailing list
-- tell people there which kernels to test
-- figure out and document stuff like how to bisect between -next kernels
-- help them to do whatever is required for a proper bug report
-
-> 		Linus
-
-cu
-Adrian
 
 -- 
+Jeff Schroeder
 
-
-
-
-______________________________________________________
-Bis 50 MB Dateianhänge? Kein Problem!
-http://freemail.web.de/club/landingpage.htm/?mc=025556
-
+Don't drink and derive, alcohol and analysis don't mix.
+http://www.digitalprognosis.com
