@@ -1,41 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764040AbYEARKj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763005AbYEARMc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764040AbYEARKj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 May 2008 13:10:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763594AbYEARK0
+	id S1763005AbYEARMc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 May 2008 13:12:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756952AbYEARMX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 May 2008 13:10:26 -0400
-Received: from hu-out-0506.google.com ([72.14.214.227]:52468 "EHLO
-	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761194AbYEARKZ (ORCPT
+	Thu, 1 May 2008 13:12:23 -0400
+Received: from vs166246.vserver.de ([62.75.166.246]:38412 "EHLO
+	vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754134AbYEARMX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 May 2008 13:10:25 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=GvXS9OWPR/Nt4hcBx3uwAJUr4P7FpVnnoZR3pbFHkiAXDZ5OKkvxLTEcwlP7+d9dU7xI2TXVkWk1okfSwdXSjjMgPZ8nN7rKAzwTOUiC7rv9cK7QRS70KuibiC8M5M35MmZYkM00IJcSCpcCxDIwbO1biR9JfiEmtXd3DbsOt5w=
-Message-ID: <823e53bc0805011010n677d4403n390668b89477d68c@mail.gmail.com>
-Date: Fri, 2 May 2008 01:10:19 +0800
-From: "zhu sam" <a321b0d06@gmail.com>
-To: puki5260tw@hotmail.com, services@fclma.org,
-       debian-bugs-dist@lists.debian.org, tcctao@mars.seed.net.tw,
-       mobilenews-source@google.com, news-reportanissue@google.com,
-       samuelsanchez@genealogia.org.mx, linux-kernel@vger.kernel.org,
-       avbox@swarthmore.edu, help@swarthmore.edu, restech@swarthmore.edu,
-       nospam@nospam.mobhappy.com, askablogger@seedmediagroup.com,
-       webmaster@blogchinese.com, reiki3@iinet.net.au, a0915111128@hotmail.com
-Subject: =?BIG5?B?ofKh4iC4Z8DZpKO0uq7woUG+1qazs2+uTbNuxekg?= =?BIG5?B?oUGlacX9p0Gtq662tq+ttyCh8z+huqHuI6Hyoqg/?=
+	Thu, 1 May 2008 13:12:23 -0400
+From: Michael Buesch <mb@bu3sch.de>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH 1/3] Add dma_set_mask_weak() API
+Date: Thu, 1 May 2008 19:11:40 +0200
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
+       John Linville <linville@tuxdriver.com>,
+       Andi Kleen <andi@firstfloor.org>, David Miller <davem@davemloft.net>,
+       Ingo Molnar <mingo@elte.hu>, bcm43xx-dev@lists.berlios.de,
+       linux-wireless@vger.kernel.org,
+       "linux-kernel" <linux-kernel@vger.kernel.org>
+References: <200805011638.15910.mb@bu3sch.de> <200805011640.17281.mb@bu3sch.de> <20080501172045.35686f43@core>
+In-Reply-To: <20080501172045.35686f43@core>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=BIG5
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
+Message-Id: <200805011911.41388.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id m41HBLEB030161
 
-¡´¡¿<¢¨¡ô¢¨¡÷¢©¢¨¢©¡¹¡´¡î@<¡ð?¡ø¡Ñ¡¹
-~ ¨ì³B³£¬O°Ó¾÷ ~ºô¸ô½æ®a¤@©w­n¬Ýºô¸ô¦æ¾P¤£±o¤£ª¾ªº¦n³B~~~~¤@¤Ñ¤º°Ó«~¦æ¾P¥þ¥x=¨É¨ü«È¤á¦Û°Ê¤Wªùªº¼Öhappy  §Ú·Q¶RµoEDM ³nÅé   §Ú·Q¶R·j´M³nÅé¬¢¸ß±M½u: 0915111128
-´x´¤¥þ²yµo«H¨t²Î¼v­µ»¡©ú=====ideadroups.buyben.com.tw/bossco/front/bin/ptdetail.phtml?Part=0307-04&Category=110191¹q¶l¯«®·¤Î·j¥²¹F¼v­µ»¡©ú=====ideadroups.buyben.com.tw/bossco/front/bin/ptdetail.phtml?Part=0307-03&Category=110191
+On Thursday 01 May 2008 18:20:45 Alan Cox wrote:
+> On Thu, 1 May 2008 16:40:16 +0200
+> Michael Buesch <mb@bu3sch.de> wrote:
+> 
+> > This adds a new DMA subsystem API call for "weak" setting
+> > of the DMA mask
+> 
+> weak is an odd term - and we use weak for things like weak symbols so it
+> might be confusing. dma_request_mask() ?
 
-o?%¡ÑFSyvZ¡÷¢©#Q9 ht==¡ï¢¨>¡¿¢¨¡¹¡ò¡ñ¡¹#¡ø¢¨$~¡ñ¢©/<@?¢©/$~¡á¢©¡¹¡»¡ò¡ò¡¹¢¨¢©/ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éÝ¶¥Šwÿº{.nÇ+‰·¥Š{±þG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŽŠÝ¢j"ú¶m§ÿÿ¾«þG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
+Yeah, as a non-native english speaker I couldn't come up with a good
+name for it. But request seems pretty good to me.
+
+
+-- 
+Greetings Michael.
