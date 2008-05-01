@@ -1,60 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760192AbYEAMRq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759391AbYEAMYF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760192AbYEAMRq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 May 2008 08:17:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751899AbYEAMRh
+	id S1759391AbYEAMYF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 May 2008 08:24:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753835AbYEAMXz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 May 2008 08:17:37 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:39209 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751009AbYEAMRh (ORCPT
+	Thu, 1 May 2008 08:23:55 -0400
+Received: from emerald.lightlink.com ([205.232.34.14]:20624 "EHLO
+	emerald.lightlink.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753639AbYEAMXz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 May 2008 08:17:37 -0400
-Subject: Re: [PATCH 09/10] misc: fix returning void-valued expression
-	warnings
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Al Viro <viro@ZenIV.linux.org.uk>
-Cc: Boaz Harrosh <bharrosh@panasas.com>,
-       Harvey Harrison <harvey.harrison@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
+	Thu, 1 May 2008 08:23:55 -0400
+X-Greylist: delayed 1332 seconds by postgrey-1.27 at vger.kernel.org; Thu, 01 May 2008 08:23:54 EDT
+Date: Thu, 1 May 2008 07:58:12 -0400
+From: "Mark M. Hoffman" <mhoffman@lightlink.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       lm-sensors <lm-sensors@lm-sensors.org>,
        LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080501120016.GV5882@ZenIV.linux.org.uk>
-References: <1209593024.24729.119.camel@brick>
-	 <4819ACF6.9000403@panasas.com>  <20080501120016.GV5882@ZenIV.linux.org.uk>
-Content-Type: text/plain
-Date: Thu, 01 May 2008 14:17:06 +0200
-Message-Id: <1209644226.16449.11.camel@lappy>
+Subject: [GIT PATCH] hwmon update against v2.6.25
+Message-ID: <20080501115812.GJ6034@mars.solarsys.private>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-05-01 at 13:00 +0100, Al Viro wrote:
-> On Thu, May 01, 2008 at 02:43:50PM +0300, Boaz Harrosh wrote:
-> 
-> > I don't know who invented sparse, but I like this form of return.
-> > 1 - It saves me the curly brackets and extra return line. But mainly
-> > 2 - It is a programing statement that says: "Me here I'm an equivalent 
-> >   to that other call". So if in the future that inner function starts
-> >   to return, say, an error value, with the first style the compiler will
-> >   error. But with the second style the new error return will be silently
-> >   ignored. So these are not equivalent replacements. The former is a much
-> >   stronger bond between the caller and the callie.
-> 
-> 3.  6.8.6.4(1): A return statement with an expression shall not appear in
-> a function whose return type is void.
-> 
-> Write in C, please.
+Hi Linus:
 
-We use GNU99 all over the place, or are you going to clear up all the
-statement expressions and such other fancy gnu extensions to the
-language as well?
+Please pull from:
+	git://lm-sensors.org/kernel/mhoffman/hwmon-2.6.git release
 
-I'm really not seeing why this would be wrong, other than the standard
-saying it is, ie. I think the standard got it wrong here.
+You'll get a relatively small number of minor changes, all of which have been
+in -next for many weeks.
 
-Harvey can just use -Wno-return-void, or someone can modify sparse to
-have that default disabled for STANDARD_GNU[89]9.
+Also, there is a larger pile of changes queued in my email, most of which have
+been reviewed by other hwmon contributors even.  It is absolutely my fault for
+not getting through this pile by now.  To all hwmon contributors, I apologize.
+I have done a crappy job as maintainer this past month.
+
+Linus: I'll ask you to pull again between rc1 and rc2, in order to kill that
+backlog.  However, I understand if you choose to reject that request.
+
+Thanks & regards,
+
+ Documentation/hwmon/w83l785ts |    3 +-
+ drivers/hwmon/adt7473.c       |   45 +++++++++++++++++++++---------------------
+ drivers/hwmon/asb100.c        |    4 ---
+ drivers/hwmon/lm75.c          |    5 ----
+ drivers/hwmon/smsc47b397.c    |   17 +++++++++++++--
+ drivers/hwmon/w83793.c        |   26 +++++++++++++-----------
+ drivers/hwmon/w83l785ts.c     |    4 +--
+ 7 files changed, 56 insertions(+), 48 deletions(-)
+
+Craig Kelley (1):
+      hwmon: (smsc47b397) add a new chip id (0x8c)
+
+Jean Delvare (3):
+      hwmon: (w83l785ts) Don't ask the user to report failures
+      hwmon: (w83793) VID and VRM handling cleanups
+      hwmon: (lm75) Fix an incorrect comment
+
+Mark M. Hoffman (3):
+      hwmon: (asb100) Remove some dead code
+      hwmon: (adt7473) minor cleanup / refactoring
+      Merge branch 'smsc47b397-new-id' into release
+
+-- 
+Mark M. Hoffman
+mhoffman@lightlink.com
 
