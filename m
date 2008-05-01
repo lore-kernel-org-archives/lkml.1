@@ -1,162 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763784AbYEAXtV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765884AbYEAXuK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763784AbYEAXtV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 May 2008 19:49:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754076AbYEAXtO
+	id S1765884AbYEAXuK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 May 2008 19:50:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754165AbYEAXt5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 May 2008 19:49:14 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:55953 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752959AbYEAXtN (ORCPT
+	Thu, 1 May 2008 19:49:57 -0400
+Received: from fmmailgate03.web.de ([217.72.192.234]:44714 "EHLO
+	fmmailgate03.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754076AbYEAXt4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 May 2008 19:49:13 -0400
-Date: Thu, 1 May 2008 16:48:56 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Ryan Roth <ryanroth@sbcglobal.net>
-Cc: Ryan.Roth@CH2M.com, akpm@linux-foundation.org,
-       bugme-daemon@bugzilla.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [Bugme-new] [Bug 10586] New: High Number of Segfaults
- onMacBookStarting With 2.6.24.5 Kernel
-Message-Id: <20080501164856.f93ff909.randy.dunlap@oracle.com>
-In-Reply-To: <481A5276.4040607@sbcglobal.net>
-References: <bug-10586-10286@http.bugzilla.kernel.org/>
-	<20080501130444.cc5c63e8.akpm@linux-foundation.org>
-	<86A21F45FFA48B408A65E67054362EB6069DD742@CULEBRA.amr.ch2m.com>
-	<20080501133003.be723364.akpm@linux-foundation.org>
-	<86A21F45FFA48B408A65E67054362EB621C948@CULEBRA.amr.ch2m.com>
-	<481A5276.4040607@sbcglobal.net>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 1 May 2008 19:49:56 -0400
+Message-ID: <002c01c8abe6$0e62e890$6400a8c0@bui.materna.com>
+From: "Roland" <devzero@web.de>
+To: <linux-kernel@vger.kernel.org>
+Cc: <James.Bottomley@HansenPartnership.com>, <jeff@garzik.org>
+Subject: modprobe aha1542 oops with git17
+Date: Fri, 2 May 2008 01:49:54 +0200
+MIME-Version: 1.0
+Content-Type: text/plain;
+	format=flowed;
+	charset="iso-8859-1";
+	reply-type=original
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+X-Priority: 3
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook Express 6.00.2900.3138
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3198
+X-Provags-ID: V01U2FsdGVkX19a7oK+0wxIqX7MMZPNRwif3yHLFzSliL55Mnb6
+	Gd+E6Jk7Ez8Jr9cVktkTaww8kL2weF+O42i0bm95mXSZeRkvOt
+	UYe9mH3KA=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 01 May 2008 16:29:58 -0700 Ryan Roth wrote:
-
-> 
-> > -----Original Message-----
-> > From: Andrew Morton [mailto:akpm@linux-foundation.org]
-> > Sent: Thu 5/1/2008 1:30 PM
-> > To: Roth, Ryan/RDD
-> > Cc: bugme-daemon@bugzilla.kernel.org; linux-kernel@vger.kernel.org
-> > Subject: Re: [Bugme-new] [Bug 10586] New: High Number of Segfaults 
-> > onMacBookStarting With 2.6.24.5 Kernel
-> >
-> > On Thu, 1 May 2008 14:09:00 -0600
-> > <Ryan.Roth@CH2M.com> wrote:
-> > >
-> > > -----Original Message-----
-> > > > From: Andrew Morton [mailto:akpm@linux-foundation.org]
-> > > > Sent: Thursday, May 01, 2008 1:05 PM
-> > > > To: Roth, Ryan/RDD
-> > > > Cc: bugme-daemon@bugzilla.kernel.org; linux-kernel@vger.kernel.org
-> > > > Subject: Re: [Bugme-new] [Bug 10586] New: High Number of Segfaults
-> > > > onMacBook Starting With 2.6.24.5 Kernel
-> > > >
-> > > > (switched to email.  Please respond via emailed reply-to-all, not via
-> > > > the bugzilla web interface).
-> > > >
-> > > > On Thu,  1 May 2008 12:30:18 -0700 (PDT)
-> > > > bugme-daemon@bugzilla.kernel.org wrote:
-> > > >
-> > > > > http://bugzilla.kernel.org/show_bug.cgi?id=10586
-> > > > >
-> > > > >            Summary: High Number of Segfaults on MacBook Starting 
-> > With
-> > > > >                     2.6.24.5 Kernel
-> > > > >            Product: Memory Management
-> > > > >            Version: 2.5
-> > > > >      KernelVersion: 2.6.24.5
-> > > > >           Platform: All
-> > > > >         OS/Version: Linux
-> > > > >               Tree: Mainline
-> > > > >             Status: NEW
-> > > > >           Severity: normal
-> > > > >           Priority: P1
-> > > > >          Component: Other
-> > > > >         AssignedTo: akpm@osdl.org
-> > > > >         ReportedBy: ryan.roth@ch2m.com
-> > > > >
-> > > > >
-> > > > > Latest working kernel version:  2.6.23?
-> > > > > Earliest failing kernel version:  2.6.24.5
-> > > > > Distribution: Fedora 8 x86_64
-> > > > > Hardware Environment:  MacBook
-> > > > > Problem Description:  Extremely high number of segfaults.  Suspect
-> > > > > that this may have to do with some sort of change in memory 
-> > remapping
-> > > > > changes in the kernel.
-> > > >
-> > > > This report is a bit mysterious.  I assume you're referring to x86's
-> > > >
-> > > >     "%s%s[%d]: segfault at %lx ip %08lx sp %08lx error %lx"
-> > > >
-> > > > printk in the kernel logs?
-> > > >
-> > > > Can you please send some examples of the log output?
-> > > >
-> > > > Is there actually any observeable problem apart from the logs?  Are
-> > > > applications dying where they previously did not?
-> > > >
-> > >
-> > > Yes there is a issue with a lot of apps dying, especially the
-> > > gnome-power-* apps which means my power management fails to work
-> > > frequently.  I'm on Git-10 currently and I'm going to patch it up to
-> > > date right now because it looks like there have been some memory remap
-> > > patches lately.  I will update the list after I do so.
-> > >
-> >
-> > OK, worried.  This is a huge bug.  But afaik you're the only person 
-> > who has
-> > hit it, so there must be something special in your setup which is
-> > triggering it.  This could be hard.
-> >
-> 
-> OK here is what I get with the git16 kernel.  On boot I get this error:
-> 
-> PCI: Not using MMCONFIG
-> PCI: BIOS Bug: MCFG area at f0000000 is not reserved in ACPI motherboard 
-> resources
-> PCI: Not using MMCONFIG
-> 
-> Attached is a complete log after this boot
-
-Where are the segfaults?
-
-Do you mean these reports?  If so, then this is something
-other than segfaults.  And not quite as critical.
-Or are things not working for you with this kernel?
+2.6.25-git17-default on vmware - i`m getting oops when modprobe aha1542 (ok, 
+makes no sense in vmware, but i think this is a regression because it never 
+happend before. i did the same test with older kernels)
 
 
-May  1 16:15:01 kernel: proc_dir_entry 'info' already registered
-May  1 16:15:01 kernel: Pid: 1099, comm: modprobe Not tainted 2.6.25-git16 #3
-May  1 16:15:01 kernel: 
-May  1 16:15:01 kernel: Call Trace:
-May  1 16:15:01 kernel:  [<ffffffff81118269>] idr_get_new+0xb/0x28
-May  1 16:15:01 kernel:  [<ffffffff810d5e92>] proc_register+0xcb/0x14b
-May  1 16:15:01 kernel:  [<ffffffff810d5ec5>] proc_register+0xfe/0x14b
-May  1 16:15:01 kernel:  [<ffffffff810d5f96>] proc_create_data+0x84/0x9e
-May  1 16:15:01 kernel:  [<ffffffffa013dd37>]
-:video:acpi_video_bus_add+0x98f/0xc6d
-May  1 16:15:01 kernel:  [<ffffffff8115d4d9>] acpi_device_probe+0x43/0x91
-May  1 16:15:01 kernel:  [<ffffffff81192564>] driver_probe_device+0xd0/0x14d
-May  1 16:15:01 kernel:  [<ffffffff81192627>] __driver_attach+0x46/0x6d
-May  1 16:15:01 kernel:  [<ffffffff811925e1>] __driver_attach+0x0/0x6d
-May  1 16:15:01 kernel:  [<ffffffff81191f09>] bus_for_each_dev+0x44/0x6f
-May  1 16:15:01 kernel:  [<ffffffff8119186e>] bus_add_driver+0xb2/0x1ff
-May  1 16:15:01 kernel:  [<ffffffff81192846>] driver_register+0x59/0xcd
-May  1 16:15:01 kernel:  [<ffffffffa00d803c>] :video:acpi_video_init+0x3c/0x5e
-May  1 16:15:01 kernel:  [<ffffffff81052db2>] sys_init_module+0x171a/0x1896
-May  1 16:15:01 kernel:  [<ffffffff8115d812>] acpi_bus_register_driver+0x0/0x3e
-May  1 16:15:01 kernel:  [<ffffffff81098831>] vfs_read+0xa6/0xfe
-May  1 16:15:01 kernel:  [<ffffffff8100bf3b>]
-system_call_after_swapgs+0x7b/0x80
----
-~Randy
+BUG: unable to handle kernel NULL pointer dereference at 00000004
+IP: [<d0820766>] :scsi_mod:scsi_destroy_command_freelist+0xd/0x4f
+*pde = 00000000
+Oops: 0000 [#1] SMP
+Modules linked in: aha1542(+) iptable_filter ip_tables ip6table_filter 
+ip6_tables x_tables ipv6 af_packet microcode firmware_class fuse loop dm_mod 
+ide_cd_mod cdrom pata_acpi ata_piix ahci ata_generic libata dock 
+ide_pci_generic rtc_cmos shpchp rtc_core intel_agp piix parport_pc pcnet32 
+rtc_lib i2c_piix4 parport mii container agpgart ac pci_hotplug button 
+ide_core i2c_core uhci_hcd usbcore edd ext3 mbcache jbd fan mptsas 
+scsi_transport_sas mptfc scsi_transport_fc scsi_tgt mptspi mptscsih mptbase 
+scsi_transport_spi sd_mod sg scsi_mod thermal processor [last unloaded: 
+speedstep_lib]
+
+Pid: 2543, comm: modprobe Not tainted (2.6.25-git17-default #1)
+EIP: 0060:[<d0820766>] EFLAGS: 00010217 CPU: 0
+EIP is at scsi_destroy_command_freelist+0xd/0x4f [scsi_mod]
+EAX: c0c08800 EBX: 00000000 ECX: 00000000 EDX: fffffffc
+ESI: c0c08800 EDI: c0c08818 EBP: d0b4469c ESP: cf3c7e44
+ DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
+Process modprobe (pid: 2543, ti=cf3c6000 task=ce8e94a0 task.ti=cf3c6000)
+Stack: c0c08800 00000000 00000000 d0820e05 c0c08960 c037a7cc c0231479 
+c01cc33b
+       c0c08964 c01cc2fe 00000330 c01ccd5a ce1a5b40 d0a7a980 d08dd8ca 
+cda0d4e0
+       c01106a6 d0a7a8b8 00000000 c01106bc 00000000 c0c08800 00000000 
+c036c380
+Call Trace:
+ [<d0820e05>] scsi_host_dev_release+0x68/0x93 [scsi_mod]
+ [<c0231479>] device_release+0x34/0x56
+ [<c01cc33b>] kobject_release+0x3d/0x4f
+ [<c01cc2fe>] kobject_release+0x0/0x4f
+ [<c01ccd5a>] kref_put+0x36/0x40
+ [<d08dd8ca>] aha1542_detect+0x790/0x7b8 [aha1542]
+ [<c01106a6>] do_flush_tlb_all+0x0/0x3c
+ [<c01106bc>] do_flush_tlb_all+0x16/0x3c
+ [<d08dd0cc>] init_this_scsi_driver+0x56/0xc4 [aha1542]
+ [<c013db4c>] sys_init_module+0x1694/0x17a7
+ [<c0125fe7>] __request_region+0x0/0x74
+ [<c01079de>] sys_mmap2+0x62/0x77
+ [<c010491f>] sysenter_past_esp+0x78/0xb9
+ =======================
+Code: 08 75 0f 8b 06 e8 10 b2 94 ef 8b 46 04 e8 08 b2 94 ef 5b b8 90 1b 84 
+d0 5e e9 c1 13 aa ef 57 56 89 c6 53 8d 78 18 eb 1c 8d 53 fc <8b> 42 08 8b 4a 
+04 89 41 04 89 08 89 5a 08 89 5a 04 8b 46 10 e8
+EIP: [<d0820766>] scsi_destroy_command_freelist+0xd/0x4f [scsi_mod] SS:ESP 
+0068:cf3c7e44
+---[ end trace 3406cf5eaefbd6bf ]---
+
+
+
