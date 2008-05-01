@@ -1,60 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763574AbYEAU3w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765797AbYEAUa3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763574AbYEAU3w (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 May 2008 16:29:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756813AbYEAU3o
+	id S1765797AbYEAUa3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 May 2008 16:30:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757027AbYEAUaI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 May 2008 16:29:44 -0400
-Received: from outbound-mail-157.bluehost.com ([67.222.39.37]:49809 "HELO
-	outbound-mail-157.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1756312AbYEAU3n (ORCPT
+	Thu, 1 May 2008 16:30:08 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:60139 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756813AbYEAUaG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 May 2008 16:29:43 -0400
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: Why such a big difference in init-time PCI resource call-paths (x86 vs x86_64) ?
-Date: Thu, 1 May 2008 13:29:25 -0700
-User-Agent: KMail/1.9.9
-Cc: Andi Kleen <andi@firstfloor.org>, linux-pci@atrey.karlin.mff.cuni.cz,
-       TJ <linux@tjworld.net>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-References: <1209571638.25051.54.camel@hephaestion.lan.tjworld.net> <20080501201111.GO20451@one.firstfloor.org> <481A23DE.6070905@zytor.com>
-In-Reply-To: <481A23DE.6070905@zytor.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Thu, 1 May 2008 16:30:06 -0400
+Date: Thu, 1 May 2008 13:30:03 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: <Ryan.Roth@CH2M.com>
+Cc: bugme-daemon@bugzilla.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [Bugme-new] [Bug 10586] New: High Number of Segfaults onMacBook
+ Starting With 2.6.24.5 Kernel
+Message-Id: <20080501133003.be723364.akpm@linux-foundation.org>
+In-Reply-To: <86A21F45FFA48B408A65E67054362EB6069DD742@CULEBRA.amr.ch2m.com>
+References: <bug-10586-10286@http.bugzilla.kernel.org/>
+	<20080501130444.cc5c63e8.akpm@linux-foundation.org>
+	<86A21F45FFA48B408A65E67054362EB6069DD742@CULEBRA.amr.ch2m.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200805011329.25939.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, May 01, 2008 1:11 pm H. Peter Anvin wrote:
-> Andi Kleen wrote:
-> > On Thu, May 01, 2008 at 11:16:31AM -0700, Jesse Barnes wrote:
-> >> On Wednesday, April 30, 2008 9:07 am TJ wrote:
-> >>> In preparation for writing a Windows-style PCI resource allocation
-> >>> strategy
-> >>>
-> >>>  - use all e820 gaps for IOMEM resources; top-down allocation -
-> >>>
-> >>> and thus giving devices with large IOMEM requirements more chance of
-> >>> allocation in the 32-bit address space below 4GB (see bugzilla #10461),
-> >
-> > I tried that some time ago and it turned out that some systems have
-> > mappings in holes and don't boot anymore when you fill the holes too
-> > much. But that was only considering e820. if you do this it might work if
-> > you do it really like windows and consider all resources, including ACPI.
+On Thu, 1 May 2008 14:09:00 -0600
+<Ryan.Roth@CH2M.com> wrote:
 >
-> Yes, considering all possible reservation schemes is really critical
-> here (including the magic knowledge of the legacy region).
 
-Yeah, good point.  There's code to check for ACPI reserved regions when 
-verifying MCFG space, so at least we're starting to do this...
+Please don't top-post!
 
-Thanks,
-Jesse
+I fixed it..
+
+> -----Original Message-----
+> > From: Andrew Morton [mailto:akpm@linux-foundation.org] 
+> > Sent: Thursday, May 01, 2008 1:05 PM
+> > To: Roth, Ryan/RDD
+> > Cc: bugme-daemon@bugzilla.kernel.org; linux-kernel@vger.kernel.org
+> > Subject: Re: [Bugme-new] [Bug 10586] New: High Number of Segfaults
+> > onMacBook Starting With 2.6.24.5 Kernel
+> > 
+> > (switched to email.  Please respond via emailed reply-to-all, not via
+> > the bugzilla web interface).
+> > 
+> > On Thu,  1 May 2008 12:30:18 -0700 (PDT)
+> > bugme-daemon@bugzilla.kernel.org wrote:
+> > 
+> > > http://bugzilla.kernel.org/show_bug.cgi?id=10586
+> > > 
+> > >            Summary: High Number of Segfaults on MacBook Starting With
+> > >                     2.6.24.5 Kernel
+> > >            Product: Memory Management
+> > >            Version: 2.5
+> > >      KernelVersion: 2.6.24.5
+> > >           Platform: All
+> > >         OS/Version: Linux
+> > >               Tree: Mainline
+> > >             Status: NEW
+> > >           Severity: normal
+> > >           Priority: P1
+> > >          Component: Other
+> > >         AssignedTo: akpm@osdl.org
+> > >         ReportedBy: ryan.roth@ch2m.com
+> > > 
+> > > 
+> > > Latest working kernel version:  2.6.23?
+> > > Earliest failing kernel version:  2.6.24.5
+> > > Distribution: Fedora 8 x86_64
+> > > Hardware Environment:  MacBook
+> > > Problem Description:  Extremely high number of segfaults.  Suspect 
+> > > that this may have to do with some sort of change in memory remapping 
+> > > changes in the kernel.
+> > 
+> > This report is a bit mysterious.  I assume you're referring to x86's
+> > 
+> > 	"%s%s[%d]: segfault at %lx ip %08lx sp %08lx error %lx"
+> > 
+> > printk in the kernel logs?
+> > 
+> > Can you please send some examples of the log output?
+> > 
+> > Is there actually any observeable problem apart from the logs?  Are
+> > applications dying where they previously did not?
+> > 
+>
+> Yes there is a issue with a lot of apps dying, especially the
+> gnome-power-* apps which means my power management fails to work
+> frequently.  I'm on Git-10 currently and I'm going to patch it up to
+> date right now because it looks like there have been some memory remap
+> patches lately.  I will update the list after I do so.
+> 
+
+OK, worried.  This is a huge bug.  But afaik you're the only person who has
+hit it, so there must be something special in your setup which is
+triggering it.  This could be hard.
+
 
