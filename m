@@ -1,44 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933792AbYEAXLL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933915AbYEAXLc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933792AbYEAXLL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 May 2008 19:11:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933636AbYEAXH5
+	id S933915AbYEAXLc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 May 2008 19:11:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933667AbYEAXK2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 May 2008 19:07:57 -0400
-Received: from pythia.bakeyournoodle.com ([203.82.209.197]:42487 "EHLO
-	pythia.bakeyournoodle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933574AbYEAXH4 (ORCPT
+	Thu, 1 May 2008 19:10:28 -0400
+Received: from yw-out-2324.google.com ([74.125.46.31]:59337 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759069AbYEAXKZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 May 2008 19:07:56 -0400
-Date: Fri, 2 May 2008 09:07:53 +1000
-To: Badari Pulavarty <pbadari@gmail.com>
-Cc: David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       y-goto@jp.fujitsu.com, akpm@linux-foundation.org,
-       LinuxPPC-dev <linuxppc-dev@ozlabs.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Geoff Levand <geoffrey.levand@am.sony.com>
-Subject: Re: powerpc boot regression
-Message-ID: <20080501230753.GP20457@bakeyournoodle.com>
-References: <20080429.231241.221824292.davem@davemloft.net> <20080501051304.GM20457@bakeyournoodle.com> <1209653507.27240.7.camel@badari-desktop>
+	Thu, 1 May 2008 19:10:25 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=lAt65WwanOtOMrXp3HJbkLcC1nV1dQvBjgIjycosRqiCswcZBTxPK+EBUK8ttyujTpM1U39gvCUBgbhlpznHKMQkQ51o9AdSc4ZrcG3sPk0MiAuYpYxmtoQO/cl8c0l+vONE2s41Kiukn/xNnq0oIFASziMo7F/tv0OBv1upzMk=
+Message-ID: <86802c440805011610o2d3cd00cx1a4abb5d0967c712@mail.gmail.com>
+Date: Thu, 1 May 2008 16:10:14 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH] x86: mtrr cleanup for converting continuous to discrete - auto detect v2
+Cc: "Andrew Morton" <akpm@linux-foundation.org>, "Ingo Molnar" <mingo@elte.hu>,
+       "Thomas Gleixner" <tglx@linutronix.de>,
+       "Gabriel C" <nix.or.die@googlemail.com>,
+       "Mika Fischer" <mika.fischer@zoopnet.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <481A4ACA.10008@zytor.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1209653507.27240.7.camel@badari-desktop>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: tony@bakeyournoodle.com (Tony Breeds)
+References: <200804272337.40130.yhlu.kernel@gmail.com>
+	 <481A31E2.2020800@zytor.com>
+	 <86802c440805011420g78a6abberaae6b765663ed33b@mail.gmail.com>
+	 <481A356C.5090502@zytor.com>
+	 <86802c440805011431i88dec8aiadcb143b5f7648b@mail.gmail.com>
+	 <481A372C.5080808@zytor.com>
+	 <86802c440805011444i56611b1ave44a714da7988fa@mail.gmail.com>
+	 <481A3AD6.1040905@zytor.com>
+	 <86802c440805011552t213b9badv926baeb0b4bc5227@mail.gmail.com>
+	 <481A4ACA.10008@zytor.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 01, 2008 at 07:51:47AM -0700, Badari Pulavarty wrote:
- 
-> I don't see the problem on my power5 machine. Can you send the
-> config ? Is CONFIG_SPARSEMEM_VMEMMAP enabled ?
+On Thu, May 1, 2008 at 3:57 PM, H. Peter Anvin <hpa@zytor.com> wrote:
+> Yinghai Lu wrote:
+>
+> >
+> > only search 78
+> > 2g, 1g, ...1m, and half matrix 13 * 6..
+> >
+> > and don't need to search than 78.
+> >
+> >
+>
+>  Again, it's not clear to me why there is an inherent limit at 2 GB.
 
-Yes.  I'm just using ppc64_defconfig.
+above 2g, we will use 4g (chunk size, because if use 4g gran_size will
+trim too much RAM). it will get the continous layout like
+0-4g WB
+3.5g-4G UC
 
-Yours Tony
+instead of discrete that we want. (chunk_size=2g, gran_size=512M)
+0-2g WB
+2g-4g WB
+3.5g-4g UC
 
-  linux.conf.au    http://www.marchsouth.org/
-  Jan 19 - 24 2009 The Australian Linux Technical Conference!
-
+YH
