@@ -1,88 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760291AbYEADyB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758588AbYEAD7T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760291AbYEADyB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Apr 2008 23:54:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753268AbYEADxx
+	id S1758588AbYEAD7T (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Apr 2008 23:59:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754617AbYEAD7F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Apr 2008 23:53:53 -0400
-Received: from cpsmtpo-eml01.kpnxchange.com ([213.75.38.150]:14064 "EHLO
-	cpsmtpo-eml01.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752206AbYEADxw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Apr 2008 23:53:52 -0400
-From: Frans Pop <elendil@planet.nl>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: Slow DOWN, please!!!
-Date: Thu, 1 May 2008 05:53:48 +0200
-User-Agent: KMail/1.9.9
-Cc: rjw@sisk.pl, w@1wt.eu, davem@davemloft.net, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, jirislaby@gmail.com
-References: <20080429.190352.137408408.davem@davemloft.net> <20080430224610.GO8474@1wt.eu> <alpine.LFD.1.10.0804301555330.2980@woody.linux-foundation.org> <200805010242.36775.rjw@sisk.pl> <alpine.LFD.1.10.0804301811051.5994@woody.linux-foundation.org> <alpine.LFD.1.10.0804301811051.5994@woody.linux-foundation.org> <alpine.LFD.1.10.0804301831330.5994@woody.linux-foundation.org>
-In-reply-To: <alpine.LFD.1.10.0804301831330.5994@woody.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+	Wed, 30 Apr 2008 23:59:05 -0400
+Received: from gate.crashing.org ([63.228.1.57]:36269 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750936AbYEAD7C (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Apr 2008 23:59:02 -0400
+Cc: lkml <linux-kernel@vger.kernel.org>, Paul Mackerras <paulus@samba.org>,
+       Andrew Morton <akpm@linux-foundation.org>, <Wei.Zhang@freescale.com>,
+       torvalds@linux-foundation.org, mporter@kernel.crashing.org,
+       benh@kernel.crashing.org, linuxppc-dev@ozlabs.org
+Message-Id: <AC86E46C-F3D5-4197-9152-C1D257071B08@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+In-Reply-To: <20080430164558.03b5f517.randy.dunlap@oracle.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200805010553.50264.elendil@planet.nl>
-X-OriginalArrivalTime: 01 May 2008 03:53:50.0899 (UTC) FILETIME=[F783C830:01C8AB3E]
+Mime-Version: 1.0 (Apple Message framework v919.2)
+Subject: Re: [PATCH] rapidio: fix current kernel-doc notation
+Date: Wed, 30 Apr 2008 22:57:14 -0500
+References: <Pine.LNX.4.64.0804292009000.18219@shark.he.net> <20080430113500.dfe21880.akpm@linux-foundation.org> <51A34080-7981-4958-B225-4921FC95B84A@kernel.crashing.org> <20080430121239.28492328.akpm@linux-foundation.org> <18456.60948.463017.139935@cargo.ozlabs.ibm.com> <20080430151149.063920cf.randy.dunlap@oracle.com> <63DC9937-3C82-4744-8281-B9FDB941FEE1@kernel.crashing.org> <4818EFEC.4080003@oracle.com> <20080430164558.03b5f517.randy.dunlap@oracle.com>
+X-Mailer: Apple Mail (2.919.2)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
-> IOW, I argue that the high speed of merging very much is a big part of
-> what gives us quality in the end. It may result in bugs along the way, but
-> it also results in fixes, and lots of people looking at the result (and
-> looking at it in *context*, not just as a patch flying around).
 
-The main problem as I see it is with the huge number of hard, confirmed bugs 
-that are *not* getting fixed.
+On Apr 30, 2008, at 6:45 PM, Randy Dunlap wrote:
+> From: Randy Dunlap <randy.dunlap@oracle.com>
+>
+> Fix current (-git16) missing docbook/kernel-doc notation in RapidIO  
+> files.
+>
+> Warning(linux-2.6.25-git16//include/linux/rio.h:187): No description  
+> found for parameter 'sys_size'
+> Warning(linux-2.6.25-git16//include/linux/rio.h:187): No description  
+> found for parameter 'phy_type'
+>
+> Warning(linux-2.6.25-git16//arch/powerpc/sysdev/fsl_rio.c:188): No  
+> description found for parameter 'mport'
+> Warning(linux-2.6.25-git16//arch/powerpc/sysdev/fsl_rio.c:224): No  
+> description found for parameter 'mport'
+> Warning(linux-2.6.25-git16//arch/powerpc/sysdev/fsl_rio.c:245): No  
+> description found for parameter 'mport'
+> Warning(linux-2.6.25-git16//arch/powerpc/sysdev/fsl_rio.c:270): No  
+> description found for parameter 'mport'
+> Warning(linux-2.6.25-git16//arch/powerpc/sysdev/fsl_rio.c:311): No  
+> description found for parameter 'mport'
+> Warning(linux-2.6.25-git16//arch/powerpc/sysdev/fsl_rio.c:996): No  
+> description found for parameter 'dev'
+>
+> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+> ---
+> arch/powerpc/sysdev/fsl_rio.c |    9 +++++++--
+> include/linux/rio.h           |    2 ++
+> 2 files changed, 9 insertions(+), 2 deletions(-)
 
-With the current development model, developers only really care about 
-current regressions. In a large part this is due to the excellent work of 
-Rafael with his tracking of regressions since the previous release.
-But it does mean older regressions fall by the wayside, even if they've been 
-confirmed, bisected and the submitter is responsive.
-For a while Natalie Protasevich did some work on trying to get attention for 
-older regressions, but that effort seems to have died out.
+applied.
 
-Two concrete examples from my personal experience:
-- http://bugzilla.kernel.org/show_bug.cgi?id=9749; the error:
-  sysctl table check failed:
-  /dev/parport/parport0/devices/ppdev0/timeslice  Sysctl already exists
-  First reported for 2.6.24-rc5, just now confirmed with 2.6.25
-  Acknowledged by maintainer, but no follow-up [1].
-
-- http://bugzilla.kernel.org/show_bug.cgi?id=9310; the error:
-  completely blank console with FRAMEBUFFER_CONSOLE_DETECT_PRIMARY set when
-  framebuffer is active, but no VGA=xxx parameter is passed
-  First reported for 2.6.23, confirmed for 2.6.24-rc6, almost certainly
-  still present in 2.6.25
-  Acknowledged by maintainer, but no follow-up despite later pings.
-
-
-Another issue is that sometimes developers really are too eager to get their 
-changes into mainline even when there are known issues or when they know in 
-their heart that the changes have not received enough testing.
-
-Example is a a scheduler change [2] that causes a completely reproducible 
-regression (music skips and key repeats) on my box with one specific 
-workload. Ingo and Peter have been great doing debugging after I reported 
-it for 2.6.25-rc8 and it was reverted just before the release, but I was 
-very surprised to see the patch resubmitted for 2.6.26 without the 
-regression being resolved first.
-It is now confirmed to still be there and there has been additional effort 
-on it, but so far without result.
-
-This really is nothing against Ingo (in fact he is in my experience one of 
-the most responsive developers when issues are reported), but in this case 
-I personally do feel the patch should not have been reintroduced into 
-mainline before the regression had been sorted out.
-
-Cheers,
-FJP
-
-[1] Update: Eric just added a nice reply in Bugzilla.
-[2] http://bugzilla.kernel.org/show_bug.cgi?id=10428
-    http://lkml.org/lkml/2008/4/19/181
+- k
