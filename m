@@ -1,67 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760584AbYEADRz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759770AbYEADTf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760584AbYEADRz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Apr 2008 23:17:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759899AbYEADRj
+	id S1759770AbYEADTf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Apr 2008 23:19:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755774AbYEADT1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Apr 2008 23:17:39 -0400
-Received: from mx2.suse.de ([195.135.220.15]:48655 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756156AbYEADRM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Apr 2008 23:17:12 -0400
-Date: Wed, 30 Apr 2008 20:13:41 -0700
-From: Greg KH <gregkh@suse.de>
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-Cc: Benjamin Thery <benjamin.thery@bull.net>, linux-kernel@vger.kernel.org,
-       Al Viro <viro@ftp.linux.org.uk>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Tejun Heo <htejun@gmail.com>, Daniel Lezcano <dlezcano@fr.ibm.com>,
-       Pavel Emelyanov <xemul@openvz.org>, netdev@vger.kernel.org
-Subject: Re: [PATCH 00/10] sysfs tagged directories
-Message-ID: <20080501031341.GD4911@suse.de>
-References: <20080429171015.473938697@theryb.frec.bull.fr> <20080429173621.GA16625@suse.de> <20080429180445.GA18110@sergelap.austin.ibm.com> <20080429184151.GA19794@suse.de> <20080429193417.GA19282@sergelap.austin.ibm.com>
+	Wed, 30 Apr 2008 23:19:27 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:56874 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755685AbYEADT0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Apr 2008 23:19:26 -0400
+Date: Wed, 30 Apr 2008 20:19:16 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Harvey Harrison <harvey.harrison@gmail.com>
+cc: David Miller <davem@davemloft.net>, akpm@linux-foundation.org,
+       jeff@garzik.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 07/10] net: fix returning void-valued expression
+ warnings
+In-Reply-To: <1209594005.24729.127.camel@brick>
+Message-ID: <alpine.LFD.1.10.0804302016390.5994@woody.linux-foundation.org>
+References: <1209593023.24729.117.camel@brick>  <20080430.150832.107441339.davem@davemloft.net> <1209594005.24729.127.camel@brick>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080429193417.GA19282@sergelap.austin.ibm.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 29, 2008 at 02:34:17PM -0500, Serge E. Hallyn wrote:
-> Finally, to give an idea about how the trees end up looking, here is
-> what I just did on my test box;
-> 
-> /usr/sbin/ip link add type veth
-> mount --bind /mnt /mnt
-> mkdir /mnt/sys
-> mount --make-shared /mnt
-> ns_exec -cmn /bin/sh  # unshare netns and mounts ns
->  # At this point, I still see eth0 and friends under /sys/class/net etc
-> mount -t sysfs none /sys
->  # At this point, /sys/class/net has only lo0 and sit0, and
->  # /sys/devices/pci0000:00/0000:00:03.0/net:eth0 is a dead link
-> mount --bind /sys /mnt/sys
-> echo $$
-> 	3050
-> 
-> (back in another shell):
-> /usr/sbin/ip link set veth1 netns 3050
-> 
-> (back in container shell):
-> /usr/sbin/ip link set veth1 name eth0
->  # Now /sys/devices/pci0000:00/0000:00:03.0/net:eth0 is a live link to
->  # the /sys/class/net/eth0 which is really the original veth1
-> exit
-> 
-> ls /mnt/sys/class/net
->  # empty directory
 
-What does this all look like without CONFIG_SYSFS_DEPRECATED enabled,
-which is what all sane distros do these days.  That's going to change
-the look of the tree for stuff like this a lot I think...
 
-thanks,
+On Wed, 30 Apr 2008, Harvey Harrison wrote:
+> 
+> Well, in an X86_32 allyesconfig, this only trips 32 times...so it's not
+> exactly common.  I agree that there is nothing _wrong_ with this, I'll
+> just add Linus and see if we can just call it codingstyle ;)
 
-greg k-h
+I actually had a patch to sparse to _not_ complain about it, because I 
+think it's one of the sane C++ extensions. I must have lost the patch and 
+not sent it upstream.
+
+So in general, I don't mind the "return void_function()" in a void 
+function, I think it makes sense from a type standpoint, and sometimes 
+results in cleaner code. That said, I'm also not sure it's worth breaking 
+the C standard over, so I don't really mind it being fixed in the kernel 
+either (but would certainly also not complain if sparse were to be changed 
+to not complain)
+
+			Linus
