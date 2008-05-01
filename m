@@ -1,64 +1,154 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756577AbYEAFKi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756945AbYEAFNS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756577AbYEAFKi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 May 2008 01:10:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752733AbYEAFK0
+	id S1756945AbYEAFNS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 May 2008 01:13:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752907AbYEAFNK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 May 2008 01:10:26 -0400
-Received: from 1wt.eu ([62.212.114.60]:3657 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752727AbYEAFKZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 May 2008 01:10:25 -0400
-Date: Thu, 1 May 2008 07:09:52 +0200
-From: Willy Tarreau <w@1wt.eu>
-To: Chris Shoemaker <c.shoemaker@cox.net>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, David Miller <davem@davemloft.net>,
-       mingo@elte.hu, akpm@linux-foundation.org, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org, jirislaby@gmail.com
-Subject: Re: Slow DOWN, please!!!
-Message-ID: <20080501050952.GA18597@1wt.eu>
-References: <20080430135405.ddc42075.akpm@linux-foundation.org> <20080430221936.GA27292@elte.hu> <20080430.152227.23100100.davem@davemloft.net> <200805010039.02451.rjw@sisk.pl> <20080430231221.GP8474@1wt.eu> <20080501001500.GC1559@pe.Belkin>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 1 May 2008 01:13:10 -0400
+Received: from pythia.bakeyournoodle.com ([203.82.209.197]:54598 "EHLO
+	pythia.bakeyournoodle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752733AbYEAFNI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 May 2008 01:13:08 -0400
+Date: Thu, 1 May 2008 15:13:05 +1000
+To: David Miller <davem@davemloft.net>
+Cc: linux-kernel@vger.kernel.org, y-goto@jp.fujitsu.com,
+       akpm@linux-foundation.org, LinuxPPC-dev <linuxppc-dev@ozlabs.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Geoff Levand <geoffrey.levand@am.sony.com>
+Subject: powerpc boot regression
+Message-ID: <20080501051304.GM20457@bakeyournoodle.com>
+References: <20080429.231241.221824292.davem@davemloft.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20080501001500.GC1559@pe.Belkin>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <20080429.231241.221824292.davem@davemloft.net>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: tony@bakeyournoodle.com (Tony Breeds)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 30, 2008 at 08:15:00PM -0400, Chris Shoemaker wrote:
-> On Thu, May 01, 2008 at 01:12:21AM +0200, Willy Tarreau wrote:
-> > On Thu, May 01, 2008 at 12:39:01AM +0200, Rafael J. Wysocki wrote:
-> > > In fact, so many changes go in at a time during a merge window, that we often
-> > > can't really say which of them causes the breakage observed by testers and
-> > > bisection, that IMO should really be a last-resort tool, is used on the main
-> > > debugging techinque.
-> > 
-> > Maybe we could slightly improve the process by releasing more often, but
-> > based on topics. Small sets of minimally-overlapping topics would get
-> > merged in each release, and other topics would only be allowed to pull
-> > fixes. That way everybody still gets some work merged, everybody tests
-> > and problems are more easily spotted.
-> > 
-> > I know this is in part what Andrew tries to do when proposing to
-> > integrate trees, but maybe some approximate rules should be proposed
-> > in order for developers to organize their works. This would begin
-> > with announcing topics to be considered for next branch very early.
-> > This would also make it more natural for developers to have creation
-> > and bug-tracking phases.
+On Tue, Apr 29, 2008 at 11:12:41PM -0700, David Miller wrote:
 > 
-> What would this look like, notionally?  Say the releases were twice as
-> frequent with Stage A and Stage B.  How could the topic be grouped
-> into the stages?  Could bugfixes of any type be merged in either
-> window?  Would this only apply to "new" features, API changes, etc? or
-> would maintenance-type changes have to be assigned to a stage, too?
+> This commit causes bootup failures on sparc64:
+> 
+> commit 86f6dae1377523689bd8468fed2f2dd180fc0560
+> Author: Yasunori Goto <y-goto@jp.fujitsu.com>
+> Date:   Mon Apr 28 02:13:33 2008 -0700
+> 
+>     memory hotplug: allocate usemap on the section with pgdat
 
-bug fixes are of course always possible, just that we limit important
-changes, i.e. the ones which randomly break and that take a lot of time
-to track down because everyone has changed something.
 
-> -chris
+<snip>
 
-willy
+We're seeing a boot failure on powerpc.  git bisect points the problem
+at this commit.   However reverting just this one comitt doesn't fix the
+regression.  I also needed to revert
+04753278769f3b6c3b79a080edb52f21d83bf6e2 (memory hotplug: register
+section/node id to free")
+
+Problem seen on power4, power5 and ps3.
+
+If the fix isn't trivial, can we get that patch series reverted?
+
+FWIW a boot looks like:
+zImage starting: loaded at 0x00400000 (sp: 0x02f5fea0)
+Allocating 0xa2d4c8 bytes for kernel ...
+OF version = 'IBM,SF240_332'
+gunzipping (0x01400000 <- 0x00407000:0x0079aa5d)...done 0x9a8ee0 bytes
+
+Linux/PowerPC load: root=/dev/sdc3 ro
+Finalizing device tree... using OF tree (promptr=02039a68)
+OF stdout device is: /vdevice/vty@30000000
+Hypertas detected, assuming LPAR !
+command line: root=/dev/sdc3 ro
+memory layout at init:
+  alloc_bottom : 0000000001e32000
+  alloc_top    : 0000000008000000
+  alloc_top_hi : 0000000080000000
+  rmo_top      : 0000000008000000
+  ram_top      : 0000000080000000
+Looking for displays
+instantiating rtas at 0x00000000076a1000 ... done
+0000000000000000 : boot cpu     0000000000000000
+copying OF device tree ...
+Building dt strings...
+Building dt structure...
+Device tree strings 0x0000000001e33000 -> 0x0000000001e3417c
+Device tree struct  0x0000000001e35000 -> 0x0000000001e3d000
+Calling quiesce ...
+returning from prom_init
+Crash kernel location must be 0x2000000
+Reserving 0MB of memory at 32MB for crashkernel (System RAM: 2048MB)
+Using pSeries machine description
+console [udbg0] enabled
+Partition configured for 20 cpus.
+CPU maps initialized for 2 threads per core
+Starting Linux PPC64 #52 SMP Thu May 1 14:04:46 EST 2008
+-----------------------------------------------------
+ppc64_pft_size                = 0x19
+physicalMemorySize            = 0x80000000
+htab_hash_mask                = 0x3ffff
+-----------------------------------------------------
+Initializing cgroup subsys cpuset
+Linux version 2.6.25 (tony@Sprygo) (gcc version 4.0.4 20060507 (prerelease) (Debian 4.0.3-3)) #52 SMP Thu May 1 14:04:46 EST 2008
+[boot]0012 Setup Arch
+sparse_early_usemap_alloc: allocation failed
+<snip 127 more>
+EEH: No capable adapters found
+PPC64 nvram contains 7168 bytes
+Zone PFN ranges:
+  DMA             0 ->   524288
+  Normal     524288 ->   524288
+Movable zone start PFN for each node
+early_node_map[1] active PFN ranges
+    0:        0 ->   524288
+[boot]0015 Setup Done
+Built 1 zonelists in Zone order, mobility grouping on.  Total pages: 517120
+Kernel command line: root=/dev/sdc3 ro
+[boot]0020 XICS Init
+[boot]0021 XICS Done
+PID hash table entries: 4096 (order: 12, 32768 bytes)
+clocksource: timebase mult[1545815] shift[22] registered
+Console: colour dummy device 80x25
+console handover: boot [udbg0] -> real [hvc0]
+Dentry cache hash table entries: 262144 (order: 9, 2097152 bytes)
+Inode-cache hash table entries: 131072 (order: 8, 1048576 bytes)
+Unable to handle kernel paging request for data at address 0xcf00000000030858
+Faulting instruction address: 0xc0000000000c4530
+Oops: Kernel access of bad area, sig: 11 [#1]
+SMP NR_CPUS=32 pSeries
+Modules linked in:
+NIP: c0000000000c4530 LR: c0000000007e8790 CTR: 80000000001af404
+REGS: c000000000987ae0 TRAP: 0300   Not tainted  (2.6.25)
+MSR: 8000000000009032 <EE,ME,IR,DR>  CR: 24000088  XER: 20000002
+DAR: cf00000000030858, DSISR: 0000000040010000
+TASK = c000000000862650[0] 'swapper' THREAD: c000000000984000 CPU: 0
+GPR00: 0000000020000000 c000000000987d60 c000000000981f18 cf00000000030858 
+GPR04: 0000000000000000 0000000000000001 0000000000000000 c0000000009f2a68 
+GPR08: c0000000009f2a58 00000000000001b8 0000000000000000 cf00000000030858 
+GPR12: 0000000000004000 c0000000009ae400 0000000000000000 0000000000000000 
+GPR16: 0000000000000000 0000000000000000 0000000000000000 0000000000000001 
+GPR20: c00000007ffe8000 0000000000080000 0000000000000001 c0000000009f2848 
+GPR24: cf00000000030200 0000000040000000 0000000000000dc0 000000000000001d 
+GPR28: ffffffffe0000000 cf00000000030890 c0000000008e5088 0000000000000dde 
+NIP [c0000000000c4530] .__free_pages_bootmem+0xc/0xa8
+LR [c0000000007e8790] .free_all_bootmem_core+0x140/0x218
+Call Trace:
+[c000000000987d60] [0000000001c0a438] 0x1c0a438 (unreliable)
+[c000000000987e40] [c0000000007d29c8] .mem_init+0x68/0x1b0
+[c000000000987ed0] [c0000000007c091c] .start_kernel+0x34c/0x45c
+[c000000000987f90] [c00000000000859c] .start_here_common+0x4c/0xb0
+Instruction dump:
+780007c6 792907c6 7c630214 38000038 7863a302 7c6301d2 4d820020 7c634a14 
+4bffffa0 7c862379 7c6b1b78 40820028 <e8030000> 39200000 7800a842 78005800 
+---[ end trace 8640abe69a316dee ]---
+Kernel panic - not syncing: Attempted to kill the idle task!
+Rebooting in 180 seconds..
+
+Yours Tony
+
+  linux.conf.au    http://www.marchsouth.org/
+  Jan 19 - 24 2009 The Australian Linux Technical Conference!
 
