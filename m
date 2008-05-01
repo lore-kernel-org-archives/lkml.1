@@ -1,50 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762775AbYEAQ1i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762892AbYEAQ22@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762775AbYEAQ1i (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 May 2008 12:27:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761953AbYEAQ1M
+	id S1762892AbYEAQ22 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 May 2008 12:28:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753156AbYEAQ2G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 May 2008 12:27:12 -0400
-Received: from fg-out-1718.google.com ([72.14.220.152]:3218 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760890AbYEAQ1I convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 May 2008 12:27:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer:mime-version:content-type:content-transfer-encoding;
-        b=mEjmgRTeX9ole8dii/hRNg622E+qaSCPT6ygEFIcsZCZPRKmoi7Yblba76WPz1dGM2+IRCSnBG1JRP0+pQtpjd6xriDVEq5gExIMR73Z7VCZL4O80fNsWPGl2m6W+fc1IaYKRiHTwfu93tvtA6HzCbz6jgwqyozXEfLYqEvKXS8=
-Date: Thu, 1 May 2008 18:26:58 +0200
-From: Diego Calleja <diegocg@gmail.com>
-To: Dmitri Vorobiev <dmitri.vorobiev@gmail.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, rjw@sisk.pl,
-       davem@davemloft.net, linux-kernel@vger.kernel.org, jirislaby@gmail.com,
-       mingo@elte.hu, Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: Slow DOWN, please!!!
-Message-Id: <20080501182658.9bbf5d4a.diegocg@gmail.com>
-In-Reply-To: <4818F291.2050706@gmail.com>
-References: <20080429.190352.137408408.davem@davemloft.net>
-	<200804302136.58005.rjw@sisk.pl>
-	<20080430131537.1f7a0914.akpm@linux-foundation.org>
-	<alpine.LFD.1.10.0804301325260.2980@woody.linux-foundation.org>
-	<20080430135405.ddc42075.akpm@linux-foundation.org>
-	<4818E7E3.7080705@gmail.com>
-	<20080430151007.0ace4fa2.akpm@linux-foundation.org>
-	<alpine.LFD.1.10.0804301513350.2980@woody.linux-foundation.org>
-	<4818F291.2050706@gmail.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
+	Thu, 1 May 2008 12:28:06 -0400
+Received: from mga11.intel.com ([192.55.52.93]:41635 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753678AbYEAQ2F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 May 2008 12:28:05 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.27,422,1204531200"; 
+   d="scan'208";a="323455069"
+Message-ID: <4819EF53.6090808@intel.com>
+Date: Thu, 01 May 2008 09:26:59 -0700
+From: "Kok, Auke" <auke-jan.h.kok@intel.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080417)
+MIME-Version: 1.0
+To: devzero@web.de
+CC: linux-kernel@vger.kernel.org
+Subject: Re: RFC: starting a kernel-testers group for newbies
+References: <261643149@web.de>
+In-Reply-To: <261643149@web.de>
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 01 May 2008 16:28:02.0740 (UTC) FILETIME=[53B6BF40:01C8ABA8]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-El Thu, 01 May 2008 02:28:33 +0400, Dmitri Vorobiev <dmitri.vorobiev@gmail.com> escribió:
+devzero@web.de wrote:
+>> I'll try to do this:
+>> - create some Wiki page
+>> - get a mailing list at vger
+>> - point newbies to this mailing list
+>> - tell people there which kernels to test
+>> - figure out and document stuff like how to bisect between -next kernels
+>> - help them to do whatever is required for a proper bug report
+> 
+> good idea :)
+> 
+> one more:
+> reported bugs sometimes get lost in lkml (or elsewhere) and may not get the attention they need.
+> 
+> maybe there are not enough people who put some steadiness into tracking bugs (i.e. put them in bugzilla and make sure they get tracked/resolved) ?
 
-> Linus, thanks a lot for the detailed explanation. Indeed, it seems that I foolishly
-> tried to duplicate Stephen's work. In the future I'll do as you suggest here.
 
-That "howto" should probably be added to the linux-next announcements...
-(CC'ing Stephen)
+I would say that this should be one of the main goals - have a team of people who
+can consistently be assigned bugs for duplication and verification. Getting newly
+opened bugs reproduced can be half the solution (and a great way to learn the
+kernel on the side).
+
+often the reporter of the bug never confirms that the bug is fixed - another place
+where linux testers can help out...
+
+Auke
