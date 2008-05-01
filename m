@@ -1,70 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756945AbYEAFR5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756100AbYEAFfh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756945AbYEAFR5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 May 2008 01:17:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752784AbYEAFRu
+	id S1756100AbYEAFfh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 May 2008 01:35:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751814AbYEAFf1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 May 2008 01:17:50 -0400
-Received: from mail.lang.hm ([64.81.33.126]:57623 "EHLO bifrost.lang.hm"
+	Thu, 1 May 2008 01:35:27 -0400
+Received: from 1wt.eu ([62.212.114.60]:3665 "EHLO 1wt.eu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752727AbYEAFRt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 May 2008 01:17:49 -0400
-Date: Wed, 30 Apr 2008 22:19:25 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard
-To: Al Viro <viro@ZenIV.linux.org.uk>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Willy Tarreau <w@1wt.eu>,
-       David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
+	id S1751009AbYEAFf1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 May 2008 01:35:27 -0400
+Date: Thu, 1 May 2008 07:35:05 +0200
+From: Willy Tarreau <w@1wt.eu>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, David Miller <davem@davemloft.net>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
        Jiri Slaby <jirislaby@gmail.com>
 Subject: Re: Slow DOWN, please!!!
-In-Reply-To: <20080501022142.GP5882@ZenIV.linux.org.uk>
-Message-ID: <alpine.DEB.1.10.0804302216520.3013@asgard>
-References: <20080429.190352.137408408.davem@davemloft.net> <20080430224610.GO8474@1wt.eu> <alpine.LFD.1.10.0804301555330.2980@woody.linux-foundation.org> <200805010242.36775.rjw@sisk.pl> <alpine.LFD.1.10.0804301811051.5994@woody.linux-foundation.org>
- <alpine.LFD.1.10.0804301831330.5994@woody.linux-foundation.org> <20080501022142.GP5882@ZenIV.linux.org.uk>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Message-ID: <20080501053505.GB18597@1wt.eu>
+References: <20080429.190352.137408408.davem@davemloft.net> <200804302245.50817.rjw@sisk.pl> <alpine.LFD.1.10.0804301422350.2980@woody.linux-foundation.org> <200805010023.32213.rjw@sisk.pl> <alpine.LFD.1.10.0804301530360.2980@woody.linux-foundation.org> <20080430224610.GO8474@1wt.eu> <alpine.LFD.1.10.0804301555330.2980@woody.linux-foundation.org> <48191D43.5010305@goop.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48191D43.5010305@goop.org>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 1 May 2008, Al Viro wrote:
+On Wed, Apr 30, 2008 at 06:30:43PM -0700, Jeremy Fitzhardinge wrote:
+> Linus Torvalds wrote:
+> >  And I think publicly announced git trees and -mm and linux-next are 
+> >  great partly because they end up doing that same thing. I heartily 
+> >  encourage submaintainers to always Cc: linux-kernel when they send me a 
+> >  "please pull" request - I don't know if anybody else ever really pulls 
+> >  that tree, but I do think that it's very healthy to write that message 
+> >  and think of it as a publication event. ]
+> >  
+> 
+> And, ideally, they would have posted the changes as patches to the list 
+> for review anyway, so there shouldn't be anything surprising in that pull...
 
-> FWIW, after the last month's flamefests I decided to actually do something
-> about review density of code in the areas I'm theoretically responsible
-> for.  Namely, do systematic review of core data structure handling (starting
-> with the place where most of the codepaths get into VFS - descriptor tables
-> and struct file), doing both blow-by-blow writeup on how that sort of things
-> is done and documentation of the life cycle/locking rules/assertions made
-> by code/etc.  I made one bad mistake that held the things back for quite
-> a while - sending heads-up for one of the worse bugs found in process to
-> never-sufficiently-damned vendor-sec.  The last time I'm doing that, TYVM...
->
-> Anyway, I'm going to get the notes on that stuff in order and put them in
-> the open.  I really hope that other folks will join the fun afterwards.
-> The goal is to get a coherent braindump that would be sufficient for
-> people new to the area wanting to understand and review VFS-related code -
-> both in the tree and in new patches.
+yes, it's something which has been disappearing since use of bk then git.
+It would be impratical and useless to post everything during the merge
+window now, but if we can get everyone to pass through linux-next, the
+posts will be evenly distributed and it would make sense to require
+everyone to post their changes to the list at the same time. Right now,
+some developers already always post their changes. Jeff, Greg and
+Bartlomiej come to mind, and I must say that I'm always interested in
+performing a quick look, just in case something really obvious catches
+my attention (which never happens).
 
-thank you, the lack of good documentation on the intent of the code has 
-been a significant barrier for new people. it's (relativly) easy for a 
-good programmer to look at the code and figure out how it does things, a 
-bit harder to figure out what it does, but why it does it (and what it was 
-actually _intended_ to do) is very hard to track down
+Willy
 
-> files_struct/fdtable handling is mostly dealt with, struct file is only
-> partially done - unfortunately, struct file_lock has to be dealt with
-> before that and it's a (predictable) nightmare.  On the other end of
-> things, fs_struct is not really started, vfsmount review is partially
-> done, dentry/superblock/inode not even touched.
->
-> Even with what little had been covered... well, let's just say that it
-> caught quite a few fun turds.  With typical age around 3-4 years.  And
-> VFS is not the messiest part of the tree...
-
-it may not be the messiest part of the tree, but it's definantly one of 
-the hardest to figure out the intent of.
-
-David Lang
