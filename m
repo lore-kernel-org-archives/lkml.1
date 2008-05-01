@@ -1,121 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763612AbYEARlw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763446AbYEARpa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763612AbYEARlw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 May 2008 13:41:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755044AbYEARln
+	id S1763446AbYEARpa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 May 2008 13:45:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758015AbYEARpX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 May 2008 13:41:43 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:53967 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758015AbYEARlm (ORCPT
+	Thu, 1 May 2008 13:45:23 -0400
+Received: from fg-out-1718.google.com ([72.14.220.153]:33417 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755044AbYEARpW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 May 2008 13:41:42 -0400
-Date: Thu, 1 May 2008 10:41:21 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Andrew Morton <akpm@linux-foundation.org>, Willy Tarreau <w@1wt.eu>,
-       David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       Jiri Slaby <jirislaby@gmail.com>
-Subject: Re: Slow DOWN, please!!!
-In-Reply-To: <200805011909.40203.rjw@sisk.pl>
-Message-ID: <alpine.LFD.1.10.0805011022370.5994@woody.linux-foundation.org>
-References: <20080429.190352.137408408.davem@davemloft.net> <200805011259.47343.rjw@sisk.pl> <alpine.LFD.1.10.0805010816340.5994@woody.linux-foundation.org> <200805011909.40203.rjw@sisk.pl>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 1 May 2008 13:45:22 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer:mime-version:content-type:content-transfer-encoding:sender;
+        b=OYplNCKeiHum+eQ0lzeeFdU1OXEvj/Z1oVXkt02eD8erCVITIVzYO0RClOjcooW5/pMBT/G7c/eKbuBfQBCPN0mkWDj/NlVHaTBr0fk3X2JQDsn8s+YfVvyouLMgct/H+PPOVo5v0VJ5MiB3dGhENc0zcXkQm1XXSxIcf9bRdo4=
+Date: Thu, 1 May 2008 20:45:10 +0300
+From: Pekka Paalanen <pq@iki.fi>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Pekka Paalanen <pq@iki.fi>, linux-kernel@vger.kernel.org,
+       Christoph Hellwig <hch@infradead.org>,
+       Arjan van de Ven <arjan@infradead.org>, Pavel Roskin <proski@gnu.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [RFC 1/3] mmiotrace full patch, preview 3
+Message-ID: <20080501204510.5ecb69a2@daedalus.pq.iki.fi>
+In-Reply-To: <20080429234021.071f7948@daedalus.pq.iki.fi>
+References: <20080428214504.5c359195@daedalus.pq.iki.fi>
+	<20080429234021.071f7948@daedalus.pq.iki.fi>
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.8; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 29 Apr 2008 23:40:21 +0300
+Pekka Paalanen <pq@iki.fi> wrote:
 
-
-On Thu, 1 May 2008, Rafael J. Wysocki wrote:
+> On Mon, 28 Apr 2008 21:45:04 +0300
+> Pekka Paalanen <pq@iki.fi> wrote:
 > 
-> I obviously agree with that.  The question is, however, if we can decrease the
-> number of bugs introduced during merge windows and you seem to be saying
-> that no, we can't.  Which is disappointing.
+> > The current state is that mmiotrace seems to work fine, also on SMP,
+> > but on SMP there's a chance to miss events due to CPUs racing. At last
+> > the log produced via ftrace framework is up-to-spec. Inserting user
+> > comments (markers in mmiotrace-parlance) into the log is not yet
+> > supported. All in all, after some more testing on my part, IMHO this
+> > is in a mergeable state.
+> 
+> Ok, looks like I won't be able to do more testing than what I did today.
+...
+> 
+> Tested with the patches and sched-devel/latest of
+> Tue, 29 Apr 2008 11:47:55 +0000
+> using testmmiotrace.ko and things looked fine.
 
-No, that's not what I'm saying.
+Hi,
 
-What I *am* saying is that as long as you concentrate on "merge window" 
-and "lots of code", you're concentrating not on the problems, but on the 
-facts of life. You can't change facts, and even trying is pointless.
+I did get the nvidia blob to work, with some help, and tried mmiotrace
+on it. Worked perfectly. The machine is Thinkpad T61 with a Core 2 Duo.
+Mmiotrace disabled and enabled the extra core without a glitch, and did
+not even drop any events with the default ftrace buffer size. Previously
+while tracing Nouveau, I had to increase the buffer size, which worked
+well, too.
 
-What you should concentrate on is not how many patches there are during 
-the merge window (because we can't do anything about that) or the fact 
-that they all happen in a short timeframe, but about quality of patches 
-_regardless_ of merge window.
+I did a second trace run after doing
+echo 1 > /debug/tracing/trace_entries
+and as expected, it lost a lot of events, but showed no problems. Then
+I disabled mmiotrace while in X, the 2nd cpu core came back online, and
+everything was good. Losing events is logged into the kernel log once
+per mmiotrace activation, and into the trace whenever noticed.
 
-So if you can make an argument that does not even *try* to change the fact 
-that 
- - we have lots of patches
-and
- - we have a merge window
-and
- - merging patches causes bugs
+(On athlon64 3000+, x86_64:)
+Earlier I tried unaligned accesses with testmmiotrace.ko, by mapping
+from an odd start address and doing 8, 16 and 32 bit reads and writes.
+There were no crashes, and at a page boundary it resulted in a recursive
+probe hit, which was resolved by disarming the both pages. Only one page
+is re-armed, so the other page is left "blind", but did not seem to
+harm stability.
 
-but argues about quality from some other standpoint, then I can start to 
-believe that you have a point.
+Conclusion: green light from me!
 
-But as long as you argue about the fact that we merge a lot of stuff, and 
-that bugs come in during the merge window, I'm not interested. Arguing 
-about facts is totally non-productive.
 
-And as long as people keep saying "let's not merge broken patches" or "we 
-should never have bugs", I'll just ignore those kinds of idiotic 
-statements. They aren't even arguments, they are wishes, and they are 
-unrealistic. If we knew they were broken and had bugs, of course we 
-wouldn't merge them.
-
-In short - I'm simply not interested in what you _wish_ reality was. 
-People need to first acknowledge reality, and _then_ they may have 
-solutions.
-
-So the reality is:
- - we do have tons of patches, and they need to be merged (and furiously)
-
- - there *will* be bugs. And the number of bugs will inevitably be 
-   relative to the number of patches. There is no "perfect", and anybody 
-   who argues for a lower number of bugs by lowering the number of patches 
-   is an idiot in my book.
-
- - there *will* be releases, even in the presense of bugs, because holding 
-   everything up is simply not an option.
-
-Those are the things that we have to accept. Anything else is just 
-dreaming.
-
-Now, what part _can_ we improve and still be realistic?
-
-We can try to improve average quality - the number of bugs will *still* be 
-relative to the size of the changes (no getting away from that), but we 
-may be able to lower the absolute number of bugs. But not to zero!
-
-And that "not to zero" is IMPORTANT. If you think you can aim for zero 
-bugs, I'm simply not interested in discussing it with you. You live in a 
-different universe, and we're not talking about the same reality.
-
-And if you're not being realistic, then why the hell would I believe that 
-your solutions are realistic? I'd rather take some pills and talk to the 
-little purple man living under the deck in my back yard, because at least 
-he's amusing, even if he doesn't make much sense either.
-
-And I'm also not in the *least* interested in arguments like "We should 
-just improve our quality of patches".
-
-Of course everybody wishes for that. Again, it's not an argument, it's 
-just a unrealistic wish, unless you can actually give a suggestion of a 
-process or other thing that would actually seem to reach it (without 
-assuming other impossible things like "we need more time" or "we need 
-more people who just spend their day looking for bugs").
-
-Same goes for "we should all just spend time looking at each others 
-patches and trying to find bugs in them". That's not a solution, that's a 
-drug-induced dream you're living in. And again, if I want to discuss 
-dreams, I'd rather talk about my purple guy, and the bad things he does to 
-the hedgehog that lives next door.
-
-So do you have any productive *suggestions*? Some that involve more than 
-"let's write less code" or "let's just review each others patches more".
-
-		Linus
+-- 
+Pekka Paalanen
+http://www.iki.fi/pq/
