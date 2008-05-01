@@ -1,50 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759979AbYEACZs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759357AbYEAC2V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759979AbYEACZs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Apr 2008 22:25:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754362AbYEACZk
+	id S1759357AbYEAC2V (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Apr 2008 22:28:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754617AbYEAC2L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Apr 2008 22:25:40 -0400
-Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:21632 "EHLO
-	pd2mo3so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753897AbYEACZj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Apr 2008 22:25:39 -0400
-Date: Wed, 30 Apr 2008 20:25:28 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: APIC error 80(80) and 00(80)
-In-reply-to: <fa.eZiCdv20DPnWq2lstvMQhP+yqtg@ifi.uio.no>
-To: Timur Alperovich <timur.alperovich@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Message-id: <48192A18.2080502@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7bit
-References: <fa.eZiCdv20DPnWq2lstvMQhP+yqtg@ifi.uio.no>
-User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
+	Wed, 30 Apr 2008 22:28:11 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:55443 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754470AbYEAC2K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Apr 2008 22:28:10 -0400
+Subject: Re: [PATCH] ext3: Fix typos in messages and comments (journalled
+	-> journaled)
+From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Jan Kara <jack@suse.cz>,
+       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org
+In-Reply-To: <20080501002018.2729adcc@core>
+References: <12095679813226-git-send-email-jack@suse.cz>
+	 <12095679812375-git-send-email-jack@suse.cz>
+	 <12095679812452-git-send-email-jack@suse.cz>
+	 <1209567981639-git-send-email-jack@suse.cz>
+	 <20080430104330.66c44d4f.akpm@linux-foundation.org>
+	 <20080430212711.168bdcc0@core>
+	 <1209592973.6113.23.camel@norville.austin.ibm.com>
+	 <20080501002018.2729adcc@core>
+Content-Type: text/plain
+Date: Wed, 30 Apr 2008 21:28:07 -0500
+Message-Id: <1209608887.7650.6.camel@norville.austin.ibm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Timur Alperovich wrote:
-> Hi,
-> 
-> I apologize if others have asked this question before, but I'm a bit
-> confused by the APIC error messages, i.e. I couldn't find what they
-> mean. After inserting a kernel module I wrote and trying to read the
-> device it created, I see the following in dmesg:
-> 
-> Losing some ticks... checking if CPU frequency changed.
-> warning: many lost ticks.
-> Your time source seems to be instable or some driver is hogging interupts
-> rip tg3_read32+0x9/0xa [tg3]
-> Falling back to HPET
-> APIC error on CPU3: 00(80)
-> APIC error on CPU3: 80(80)
-> 
-> where the last message was repeated 1600 times. Could anyone tell me
-> what it means or of a better place to ask about it?
 
-Not sure exactly what that means, but sounds like something really wonky 
-happened.. I'd suspect your code somehow got stuck in a loop with 
-interrupts off on one CPU, or corrupted memory, or something.
+On Thu, 2008-05-01 at 00:20 +0100, Alan Cox wrote:
+> > > A search of the ACM literature finds "journalized", "journalled" and
+> > > "journaled" are all in use for this operation.
+> > 
+> > I hate to get into these discussions, but I've used "journaled" a lot,
+> > so I feel I should chime in.
+> 
+> I noticed and IBM cannot even agree internally 8)
+> 
+> "Tivoli Storage Manager Journal Based Backup troubleshooting techniques
+>  and solutions to common problems seen with journalized backups and the
+>  journal database. This is from a 2005_November_07 Support Technical
+>  Exchange Web seminar presented by TSM Support staff"
+> 
+> "IBM Journaled File System (JFS)"
+
+IBM's big.  What can I say?  :-)
+
+> > That would probably be more correct, but the use of "journal" as a verb
+> > has really gotten ingrained in file system developers brains.  I
+> > personally haven't heard or used "journalized" and it would take some
+> > getting used to.
+> 
+> Mandrake use Journalized File System in various press articles. Mac
+> people seem to like journalized too and google shows it used in various
+> reviews and articles.
+
+I guess it's more common that I thought.
+
+> I think I'm going to follow this up with the professional bodies and see
+> if there is an opinion because either the computing world needs to agree
+> on a proper English name, or they need to agree on a new one and talk to
+> the dictionary people about it.
+
+If there's some kind of consensus, I don't have strong feelings either
+way.
+-- 
+David Kleikamp
+IBM Linux Technology Center
+
