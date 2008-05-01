@@ -1,75 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765123AbYEATcH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765245AbYEATgS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765123AbYEATcH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 May 2008 15:32:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758838AbYEATb4
+	id S1765245AbYEATgS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 May 2008 15:36:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760726AbYEATgB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 May 2008 15:31:56 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:48350 "EHLO smtp5.pp.htv.fi"
+	Thu, 1 May 2008 15:36:01 -0400
+Received: from mail.tpi.com ([198.107.51.143]:3559 "EHLO mail.tpi.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753323AbYEATb4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 May 2008 15:31:56 -0400
-Date: Thu, 1 May 2008 22:31:07 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Andres Freund <andres@anarazel.de>
-Cc: linux-kernel@vger.kernel.org, apdim@grecian.net,
-       Mauro Carvalho Chehab <mchehab@infradead.org>
-Subject: Re: [PATCH] v4l/dvb: Add linux/version.h include as KERNEL_VERSION
-	macro is used.
-Message-ID: <20080501193107.GN29330@cs181133002.pp.htv.fi>
-References: <200805012005.42400.andres@anarazel.de>
+	id S1759960AbYEATgA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 May 2008 15:36:00 -0400
+Message-ID: <481A1BB9.8050109@canonical.com>
+Date: Thu, 01 May 2008 13:36:25 -0600
+From: Tim Gardner <tim.gardner@canonical.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <200805012005.42400.andres@anarazel.de>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: Chris Mason <chris.mason@oracle.com>
+CC: jeffschroeder@computer.org, linux-fsdevel@vger.kernel.org,
+       kernel-team@lists.ubuntu.com, linux-kernel@vger.kernel.org,
+       linux-btrfs@vger.kernel.org
+Subject: Re: Btrfs v0.14 Released
+References: <200804291601.32945.chris.mason@oracle.com> <c24352ca0805010939q31f743aev17cc7f98d2ad0c71@mail.gmail.com> <481A14BA.9090305@canonical.com> <200805011517.55698.chris.mason@oracle.com>
+In-Reply-To: <200805011517.55698.chris.mason@oracle.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 01, 2008 at 08:05:41PM +0200, Andres Freund wrote:
-> Whitout this build fails with unknown macro on 
-> e4c576b911e364737b1bf4f5bfdab1c440713f26
+Chris Mason wrote:
+> On Thursday 01 May 2008, Tim Gardner wrote:
 > 
-> Hopefully I did everything correct, as this is my first usage of git beside 
-> checking out. Also its my first patch on lk....
+> [ btrfs oops on ubuntu ]
 > 
-> Is an Signed-off-by already appropriate with such an trivial change?
-
-Yes.
-
-> Signed-off-by: Andres Freund <andres@anarazel.de>
-> ---
->  drivers/media/radio/radio-maxiradio.c |    1 +
->  1 files changed, 1 insertions(+), 0 deletions(-)
+>>>>  This is because ubuntu kernels ship with apparmor, you'll need this
+>>>> patch:
+>>>>
+>>>>  If there is a #ifdef IM_A_UBUNTU_KERNEL I can use, I'll do it.  Jeff
+>>>> Mahoney has a similar patch for SUSE that I've been meaning to merge,
+>>>> but I wanted to lookup some way to check for ubuntu as well.
+>>>>
+>>>>  -chris
+>>>>
+>>>>  diff -r e7da2489b19b file.c
+>>>>  --- a/file.c    Wed Apr 30 13:59:35 2008 -0400
+>>>>  +++ b/file.c    Thu May 01 12:25:11 2008 -0400
+>>>>  @@ -852,7 +852,7 @@ static ssize_t btrfs_file_write(struct f
+>>>>                 goto out_nolock;
+>>>>         if (count == 0)
+>>>>                 goto out_nolock;
+>>>>  -       err = remove_suid(fdentry(file));
+>>>>  +       err = remove_suid(&file->f_path);
+>>>>         if (err)
+>>>>                 goto out_nolock;
+>>>>         file_update_time(file);
+>> Couldn't you #ifdef based on CONFIG_SECURITY_APPARMOR ? This ought to
+>> work for Hardy. However the next development kernel (Intrepid) does not
+>> have the APPARMOR patches, so just knowing that its an UBUNTU kernel is
+>> not specific enough.
 > 
-> diff --git a/drivers/media/radio/radio-maxiradio.c 
-> b/drivers/media/radio/radio-maxiradio.c
-> index 0133ecf..e170fcd 100644
-> --- a/drivers/media/radio/radio-maxiradio.c
-> +++ b/drivers/media/radio/radio-maxiradio.c
-> @@ -34,6 +34,7 @@
->  
->  
->  #include <linux/module.h>
-> +#include <linux/version.h>
->  #include <linux/init.h>
->  #include <linux/ioport.h>
->  #include <linux/delay.h>
+> I've been assuming the apparmor patches change remove_suid even when they are 
+> not enabled in the config.
+> 
+> -chris
+> 
 
-The #include is already there a dozen lines below.
+Lets get Kees involved. He developed the patch set for Hardy. I would
+hope that if CONFIG_SECURITY_APPARMOR=n then the source would default to
+its normal state.
 
-It seems to be missing in another file.
-
-Can you send the error message and your .config?
-
-Thanks
-Adrian
-
+rtg
 -- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+Tim Gardner tim.gardner@ubuntu.com
