@@ -1,73 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756923AbYEACHb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758291AbYEACIS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756923AbYEACHb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Apr 2008 22:07:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753423AbYEACHV
+	id S1758291AbYEACIS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Apr 2008 22:08:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753989AbYEACIF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Apr 2008 22:07:21 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:35387 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750875AbYEACHU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Apr 2008 22:07:20 -0400
-Date: Thu, 1 May 2008 04:06:45 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-kernel@vger.kernel.org,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Florian Fainelli <florian.fainelli@telecomint.eu>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: Ingo, no more kconfig patches
-Message-ID: <20080501020645.GD27574@elte.hu>
-References: <20080430200340.GA13757@elte.hu> <20080430170125.ZZRA012@mailhub.coreip.homeip.net> <20080430211317.GA24633@elte.hu> <20080430230100.GK29330@cs181133002.pp.htv.fi> <20080501011703.GA27574@elte.hu> <20080501013739.GQ29330@cs181133002.pp.htv.fi>
+	Wed, 30 Apr 2008 22:08:05 -0400
+Received: from fk-out-0910.google.com ([209.85.128.185]:62095 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753423AbYEACID convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Apr 2008 22:08:03 -0400
+Message-ID: <ab3f9b940804301907y5a3e84e1l6cb41a339bc2241b@mail.gmail.com>
+Date: Wed, 30 Apr 2008 19:07:58 -0700
+From: "Tom May" <tom@tommay.com>
+To: "=?ISO-8859-1?Q?Daniel_Sp=E5ng?=" <daniel.spang@gmail.com>
+Subject: Re: [PATCH 0/8][for -mm] mem_notify v6
+Cc: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <cfd9edbf0804230127k33a56312i6582f926e00ea17@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <20080501013739.GQ29330@cs181133002.pp.htv.fi>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+References: <20080402154910.9588.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	 <ab3f9b940804141716x755787f5h8e0122c394922a83@mail.gmail.com>
+	 <20080417182121.A8CA.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	 <ab3f9b940804171223m722912bfy291a2c6d9d40b24a@mail.gmail.com>
+	 <cfd9edbf0804230127k33a56312i6582f926e00ea17@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Apr 23, 2008 at 1:27 AM, Daniel Spång <daniel.spang@gmail.com> wrote:
+> Hi Tom
+>
+>
+>  On 4/17/08, Tom May <tom@tommay.com> wrote:
+>  >
+>  >  Here is the start and end of the output from the test program.  At
+>  >  each /dev/mem_notify notification Cached decreases, then eventually
+>  >  Mapped decreases as well, which means the amount of time the program
+>  >  has to free memory gets smaller and smaller.  Finally the oom killer
+>  >  is invoked because the program can't react quickly enough to free
+>  >  memory, even though it can free at a faster rate than it can use
+>  >  memory.  My test is slow to free because it calls nanosleep, but this
+>  >  is just a simulation of my actual program that has to perform garbage
+>  >  collection before it can free memory.
+>
+>  I have also seen this behaviour in my static tests with low mem
+>  notification on swapless systems. It is a problem with small programs
+>  (typically static test programs) where the text segment is only a few
+>  pages. I have not seen this behaviour in larger programs which use a
+>  larger working set. As long as the system working set is bigger than
+>  the amount of memory that needs to be allocated, between every
+>  notification reaction opportunity, it seems to be ok.
 
-* Adrian Bunk <bunk@kernel.org> wrote:
+Hi Daniel,
 
-> The bug is in arch/x86/Kconfig .
-> 
-> Caused by commit 4cf31841762954ad2868156ccba94d798a16630f (x86: 
-> mach-rdc321x Kconfig fix).
+You're saying the program's in-core text pages serve as a reserve that
+the kernel can discard when it needs some memory, correct?  And that
+even if the kernel discards them, it will page them back in as a
+matter of course as the program runs, to maintain the reserve?  That
+certainly makes sense.
 
-ah, indeed - Florian Cc:-ed. Preliminary quick hack below.
+In my case of a Java virtual machine, where I originally saw the
+problem, most of the code is interpreted byte codes or jit-compiled
+native code, all of which resides not in the text segment but in
+anonymous pages that aren't backed by a file, and there is no swap
+space.  The actual text segment working set can be very small (memory
+allocation, garbage collection, synchronization, other random native
+code).  And, as KOSAKI Motohiro pointed out, it may be wise to mlock
+these areas.  So the text working set doesn't make an adequate
+reserve.
 
-	Ingo
+However, I can maintain a reserve of cached and/or mapped memory by
+touching pages in the text segment (or any mapped file) as the final
+step of low memory notification handling, if the cached page count is
+getting low.  For my purposes, this is nearly the same as having an
+additional threshold-based notification, since it forces notifications
+to occur while the kernel still has some memory to satisfy allocations
+while userspace code works to free memory.  And it's simple.
 
---------------->
-Subject: rdc: leds hack
-From: Ingo Molnar <mingo@elte.hu>
-Date: Thu May 01 03:46:22 CEST 2008
+Unfortunately, this is more expensive than it could be since the pages
+need to be read in from some device (mapping /dev/zero doesn't cause
+pages to be allocated). What I'm looking for now is a cheap way to
+populate the cache with pages that the kernel can throw away when it
+needs to reclaim memory.
 
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- arch/x86/Kconfig |    1 +
- 1 file changed, 1 insertion(+)
-
-Index: linux/arch/x86/Kconfig
-===================================================================
---- linux.orig/arch/x86/Kconfig
-+++ linux/arch/x86/Kconfig
-@@ -322,6 +322,7 @@ config X86_RDC321X
- 	select GENERIC_GPIO
- 	select LEDS_CLASS
- 	select LEDS_GPIO
-+	select NEW_LEDS
- 	help
- 	  This option is needed for RDC R-321x system-on-chip, also known
- 	  as R-8610-(G).
+Thanks,
+.tom
