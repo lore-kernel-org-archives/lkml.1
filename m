@@ -1,56 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762368AbYEAPIS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761549AbYEAPLP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762368AbYEAPIS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 May 2008 11:08:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756699AbYEAPIF
+	id S1761549AbYEAPLP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 May 2008 11:11:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754855AbYEAPK4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 May 2008 11:08:05 -0400
-Received: from fg-out-1718.google.com ([72.14.220.156]:39778 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753182AbYEAPIC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 May 2008 11:08:02 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=pbZb6BH3ZqVyOuT6OflbC2AP0iaZ4/y9L4GTMlZOP1faqFnCkpCJwwFx6wZxfll1q+naMPflZjTNy44q7/wEbgd2kcdJJptt1D3GutNg8k3E4XomvG2vlO+upMcWrdihTGdF7aiAnagujcU21Bamr/Qfn60OGOhD9ZWNgWfTwrY=
-Message-ID: <6101e8c40805010808pd2054cs450a427ba0a08f78@mail.gmail.com>
-Date: Thu, 1 May 2008 17:08:00 +0200
-From: "Oliver Pinter" <oliver.pntr@gmail.com>
-To: "Gabriel C" <nix.or.die@googlemail.com>
-Subject: Re: [OP] v2.6.22.22-op1
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <4819DB31.4060404@googlemail.com>
+	Thu, 1 May 2008 11:10:56 -0400
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:45145 "EHLO e6.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751452AbYEAPKz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 May 2008 11:10:55 -0400
+Date: Thu, 1 May 2008 10:10:51 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Greg KH <gregkh@suse.de>
+Cc: "Serge E. Hallyn" <serue@us.ibm.com>,
+       Benjamin Thery <benjamin.thery@bull.net>, linux-kernel@vger.kernel.org,
+       Al Viro <viro@ftp.linux.org.uk>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Tejun Heo <htejun@gmail.com>, Daniel Lezcano <dlezcano@fr.ibm.com>,
+       Pavel Emelyanov <xemul@openvz.org>, netdev@vger.kernel.org
+Subject: Re: [PATCH 00/10] sysfs tagged directories
+Message-ID: <20080501151051.GB16038@sergelap.austin.ibm.com>
+References: <20080429171015.473938697@theryb.frec.bull.fr> <20080429173621.GA16625@suse.de> <20080429180445.GA18110@sergelap.austin.ibm.com> <20080429184151.GA19794@suse.de> <20080429193417.GA19282@sergelap.austin.ibm.com> <20080501031341.GD4911@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <99c05af77b07c81ae5414978fb801bde@zipernowsky.hu>
-	 <4819DB31.4060404@googlemail.com>
+In-Reply-To: <20080501031341.GD4911@suse.de>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-yeah like 2.6.16.x
+Quoting Greg KH (gregkh@suse.de):
+> On Tue, Apr 29, 2008 at 02:34:17PM -0500, Serge E. Hallyn wrote:
+> > Finally, to give an idea about how the trees end up looking, here is
+> > what I just did on my test box;
+> > 
+> > /usr/sbin/ip link add type veth
+> > mount --bind /mnt /mnt
+> > mkdir /mnt/sys
+> > mount --make-shared /mnt
+> > ns_exec -cmn /bin/sh  # unshare netns and mounts ns
+> >  # At this point, I still see eth0 and friends under /sys/class/net etc
+> > mount -t sysfs none /sys
+> >  # At this point, /sys/class/net has only lo0 and sit0, and
+> >  # /sys/devices/pci0000:00/0000:00:03.0/net:eth0 is a dead link
+> > mount --bind /sys /mnt/sys
+> > echo $$
+> > 	3050
+> > 
+> > (back in another shell):
+> > /usr/sbin/ip link set veth1 netns 3050
+> > 
+> > (back in container shell):
+> > /usr/sbin/ip link set veth1 name eth0
+> >  # Now /sys/devices/pci0000:00/0000:00:03.0/net:eth0 is a live link to
+> >  # the /sys/class/net/eth0 which is really the original veth1
+> > exit
+> > 
+> > ls /mnt/sys/class/net
+> >  # empty directory
+> 
+> What does this all look like without CONFIG_SYSFS_DEPRECATED enabled,
+> which is what all sane distros do these days.  That's going to change
+> the look of the tree for stuff like this a lot I think...
+> 
+> thanks,
+> 
+> greg k-h
 
-I thougt as if make it,  not for me may necessary.
+Now before moving veth1 to the new netns, we have in the container:
+/sys/class/net:
+lo  sit0
 
-sorry for bad english
+/sys/devices/virtual/net:
+lo  sit0
 
-On 5/1/08, Gabriel C <nix.or.die@googlemail.com> wrote:
-> oliver@zipernowsky.hu wrote:
-> > I announced the v2.6.22.22-op1 "stable" kernel.
->
-> I'm sorry but the point of that being ?
->
-> Another nonsense so called 'stable' tree like 2.6.16.* ?
->
-> Regards ,
->
-> Gabriel
->
+and after moving veth1, we have in the container:
 
+/sys/class/net:
+lo  sit0  veth1
 
--- 
-Thanks,
-Oliver
+/sys/devices/virtual/net:
+lo  sit0
+
+In the parent network namespace, veth1 is removed from /sys/class/net
+but remains in /sys/devices/virtual/net.
+
+I'm not sure whether this is the renaming bug that Daniel Lezcano's
+patch addresses.  If not (as I suspect) then that clearly needs to be
+fixed.
+
+Benjamin can you play around with this and test it with Daniel's
+patch?
+
+thanks,
+-serge
