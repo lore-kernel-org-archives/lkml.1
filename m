@@ -1,69 +1,146 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762029AbYEAQfr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762639AbYEAQgy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762029AbYEAQfr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 May 2008 12:35:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753678AbYEAQfj
+	id S1762639AbYEAQgy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 May 2008 12:36:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756250AbYEAQgr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 May 2008 12:35:39 -0400
-Received: from rv-out-0708.google.com ([209.85.198.246]:19592 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753167AbYEAQfj (ORCPT
+	Thu, 1 May 2008 12:36:47 -0400
+Received: from fmmailgate04.web.de ([217.72.192.242]:53559 "EHLO
+	fmmailgate04.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753678AbYEAQgq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 May 2008 12:35:39 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=i+aVUebnHvPh5mLA0nZwEvgU8gjSzs7cfLbLGx3mkdaVeHWKXekFF7q/sC2IRT3Ffka0V+qiHvGbIeXK7RBU3BFcdSI8idKO+8lBTK0vI5GV/B0EnoWXXxVL2DaatOHs7mj81tTEHvK0KDRD+ANVl+Q1zeq6c3KTgRsqjg87Afg=
-Message-ID: <86802c440805010935w5a74f132l639d7b794804bb9e@mail.gmail.com>
-Date: Thu, 1 May 2008 09:35:38 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Mika Fischer" <mika.fischer@zoopnet.de>
-Subject: Re: [PATCH] x86: mtrr cleanup for converting continuous to discrete - auto detect
-Cc: "Andrew Morton" <akpm@linux-foundation.org>, "Ingo Molnar" <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       "Gabriel C" <nix.or.die@googlemail.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-In-Reply-To: <4819B2E0.406@zoopnet.de>
+	Thu, 1 May 2008 12:36:46 -0400
+Date: Thu, 01 May 2008 18:36:45 +0200
+Message-Id: <261683298@web.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+From: devzero@web.de
+To: linux-kernel@vger.kernel.org
+Cc: akpm@linux-foundation.org
+Subject: Re: RFC: starting a kernel-testers group for newbies
+Organization: http://freemail.web.de/
+X-Provags-Id: V01U2FsdGVkX19AxM8PxOYKUd0/aNyWI/AohBNXovMZfwS0iGSbSyKoQdnAf
+ DpgpQ3HiXZx3vTW9x6UYIBX7dEldegBsSIklt6QtQrhI5I5eVs=
+Content-Type: text/plain; charset=iso-8859-15
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200804272337.40130.yhlu.kernel@gmail.com>
-	 <200804290352.33543.yhlu.kernel@gmail.com>
-	 <200804292025.58268.yhlu.kernel@gmail.com>
-	 <200805010100.34751.yhlu.kernel@gmail.com> <4819B2E0.406@zoopnet.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 1, 2008 at 5:09 AM, Mika Fischer <mika.fischer@zoopnet.de> wrote:
-> Yinghai Lu schrieb:
+>And why can't they work on the bug?  Usually, because they found a
+>workaround.  People aren't going to spend months sitting in front of a
+>non-functional computer waiting for kernel developers to decide if their
+>machine is important enough to fix.  They will find a workaround.  They
+>will buy new hardware.  They will discover "noapic" (234000 google hits and
+>rising!).  They will swap it with a different machine.  They will switch to
+>a different distro which for some reason doesn't trigger the bug.  They
+>will use an older kernel.  They will switch to Solaris.  Etcetera.  People
+>are clever - they will find a way to get around it.
 >
-> > loop mtrr chunk_size and gran_size from 1M to 2G to find out optimal value.
->  >
->  > so user don't need to add mtrr_chunk_size and mtrr_gran_size,
->  >
->  > if optimal value is not found, print out all list to help select less optimal
->  > value.
->  >
->  > add mtrr_spare_reg_nr= so user could set 2 instead of 1, if the card need more entries.
->
->  On my system x86-latest + this patch and using no boot options gives me
->  this /proc/mtrr:
->  reg00: base=0x00000000 (   0MB), size=2048MB: write-back, count=1
->  reg01: base=0x80000000 (2048MB), size= 512MB: write-back, count=1
->  reg02: base=0xa0000000 (2560MB), size= 256MB: write-back, count=1
->  reg03: base=0xb0000000 (2816MB), size= 256MB: write-back, count=1
->  reg04: base=0xbf700000 (3063MB), size=   1MB: uncachable, count=1
->  reg05: base=0xbf800000 (3064MB), size=   8MB: uncachable, count=1
->  reg06: base=0x100000000 (4096MB), size=1024MB: write-back, count=1
->
->  Which is OK. It could probably collapse reg01-reg03 into one but that's
->  a minor issue (for me at least, there are probably cases where
->  collapsing them might save the user from having to specify the
->  mtrr_spare_reg_nr boot option).
+>I figure that after a bug is reported we have maybe 24 to 48 hours to send
+>a good response before our chances of _ever_ fixing it have begun to
+>decline sharply due to the clever minds at the other end.
 
-yes. please try mtrr_spare_reg_nr=3 or etc.
+yes, this is absolutely true !
 
-YH
+
+
+List:       linux-kernel
+Subject:    Re: RFC: starting a kernel-testers group for newbies
+From:       Andrew Morton <akpm () linux-foundation ! org>
+Date:       2008-05-01 15:49:19
+Message-ID: 20080501084919.8ac6dbdd.akpm () linux-foundation ! org
+[Download message RAW]
+
+On Thu, 1 May 2008 16:21:59 +0300 Adrian Bunk <bunk@kernel.org> wrote:
+
+> > > But our current status quo is not OK:
+> > > 
+> > > Check Rafael's regressions lists asking yourself
+> > > "How many regressions are older than two weeks?" 
+> > 
+> > "ext4 doesn't compile on m68k".
+> > YAWN.
+> >  
+> > Wrong question...
+> > "How many bugs that a sizable portion of users will hit in reality are there?"
+> > is the right question to ask...
+> >...
+> 
+> "Kernel oops while running kernbench and tbench on powerpc" took more 
+> than 2 months to get resolved, and we ship 2.6.25 with this regression.
+
+Precisely.  Cherry-picking a single example such as the 68k thing and then
+claiming that it reflects the general is known as a "fallacy".
+
+> Granted that compared to x86 there's not a sizable portion of users 
+> crazy enough to run Linux on powerpc machines...
+
+Another fallacy which Arjan is pushing (even though he doesn't appear to
+have realised it) is "all hardware is the same".
+
+Well, it isn't.  And most of our bugs are hardware-specific.  So, I'd
+venture, most of our bugs don't affect most people.  So, over time, by
+Arjan's "important to enough people" observation we just get more and more
+and more unfixed bugs.
+
+And I believe this effect has been occurring.
+
+And please stop regaling us with this kerneloops.org stuff.  It just isn't
+very interesting, useful or representative when considering the whole
+problem.  Very few kernel bugs result in a trace, and when they do they are
+usually easy to fix and, because of this, they will get fixed, often
+quickly.  I expect netdevwatchdogeth0transmittimedout.org would tell a
+different story.
+
+One thing which muddies all this up is that bug reporters vanish.  Over the
+years I have sent thousands and thousands of ping emails to people who have
+reported bugs via email, three to six months after the fact.  Some were
+solved - maybe a fifth.  About the same proportion of reporters reply and
+give some reason why they cannot work on the bug.  In the majorty of cases
+people don't reply at all and I suspect they're in the same category of
+cannot-work-on-the-bug.
+
+And why can't they work on the bug?  Usually, because they found a
+workaround.  People aren't going to spend months sitting in front of a
+non-functional computer waiting for kernel developers to decide if their
+machine is important enough to fix.  They will find a workaround.  They
+will buy new hardware.  They will discover "noapic" (234000 google hits and
+rising!).  They will swap it with a different machine.  They will switch to
+a different distro which for some reason doesn't trigger the bug.  They
+will use an older kernel.  They will switch to Solaris.  Etcetera.  People
+are clever - they will find a way to get around it.
+
+I figure that after a bug is reported we have maybe 24 to 48 hours to send
+a good response before our chances of _ever_ fixing it have begun to
+decline sharply due to the clever minds at the other end.
+
+Which leads us to Arjan's third fallacy:
+
+   "How many bugs that a sizable portion of users will hit in reality
+   are there?" is the right question to ask...
+
+well no, it isn't.  Because approximately zero of the hardware bugs affect
+a sizeable portion of users.  With this logic we will end up with more and
+more and more and more bugs each of which affect a tiny number of users. 
+Hundreds of different bugs.  You know where this process ends up.
+
+Arjan's fourth fallacy: "We don't make (effective) prioritization
+decisions." lol.  This implies that someone somewhere once sat down and
+wondered which bug he should most effectively work on.  Well, we don't do
+that.  We ignore _all_ the bugs in favour of busily writing new ones.
+
+--
+To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Please read the FAQ at  http://www.tux.org/lkml/
+[prev in list] [next in list] [prev in thread] [next in thread] 
+
+
+
+
+Configure | About | News | Donate | Add a list | Sponsors: 10East, KoreLogic, Terra-International 
+_____________________________________________________________________
+Der WEB.DE SmartSurfer hilft bis zu 70% Ihrer Onlinekosten zu sparen!
+http://smartsurfer.web.de/?mc=100071&distributionid=000000000066
+
