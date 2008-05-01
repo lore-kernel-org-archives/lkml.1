@@ -1,96 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764099AbYEAQjj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764144AbYEAQki@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764099AbYEAQjj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 May 2008 12:39:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759741AbYEAQja
+	id S1764144AbYEAQki (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 May 2008 12:40:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760676AbYEAQk0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 May 2008 12:39:30 -0400
-Received: from rn-out-0910.google.com ([64.233.170.188]:23250 "EHLO
-	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759985AbYEAQj3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 May 2008 12:39:29 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:reply-to:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=He3JISRMmFJfaUpbi+tbVze4dYLz1HRP3Zja8ggzOaRBLqs2ACCa5bf9tesugP/aZYvY4eiMkBH4Q6JlMOiNrlLp+pMIqbMYV61nC/XGFjl5VSC/fOKkAfOOTB34zo9AGxYY7JRPtpv5ouAXLl0lflCADO1XO5f/lY16mYlDFbU=
-Message-ID: <c24352ca0805010939q31f743aev17cc7f98d2ad0c71@mail.gmail.com>
-Date: Thu, 1 May 2008 09:39:26 -0700
-From: "Jeff Schroeder" <jeffschroed@gmail.com>
-Reply-To: jeffschroeder@computer.org
-To: "Chris Mason" <chris.mason@oracle.com>
-Subject: Re: Btrfs v0.14 Released
-Cc: linux-kernel@vger.kernel.org, linux-btrfs@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, kernel-team@lists.ubuntu.com
-In-Reply-To: <200805011226.56076.chris.mason@oracle.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 1 May 2008 12:40:26 -0400
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:37278 "EHLO e6.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760371AbYEAQkY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 May 2008 12:40:24 -0400
+Subject: Re: [patch 00/13] vfs: add helpers to check r/o bind mounts
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: viro@zeniv.linux.org.uk, akpm@linux-foundation.org,
+       torvalds@linux-foundation.org, ezk@cs.sunysb.edu, mhalcrow@us.ibm.com,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <E1JrTpy-0004mH-Gg@pomaz-ex.szeredi.hu>
+References: <20080424113950.818688067@szeredi.hu>
+	 <1209620457.4461.59.camel@nimitz.home.sr71.net>
+	 <E1JrTpy-0004mH-Gg@pomaz-ex.szeredi.hu>
+Content-Type: text/plain
+Date: Thu, 01 May 2008 09:40:18 -0700
+Message-Id: <1209660018.16729.3.camel@nimitz.home.sr71.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200804291601.32945.chris.mason@oracle.com>
-	 <200805011204.20847.chris.mason@oracle.com>
-	 <c24352ca0805010918j395470d0o8f2088571c90183b@mail.gmail.com>
-	 <200805011226.56076.chris.mason@oracle.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-adding the ubuntu kernel team. BenC or TimG, do you have any
-suggestions for Chris?
+On Thu, 2008-05-01 at 10:08 +0200, Miklos Szeredi wrote:
+> Sorry for the claptrap.  I'm going to resubmit this one more time
+> with some slight modifications and additions, and it'd be really nice
+> if you or other interested parties would provide comments and opinions
+> (either way), because I don't think me and Al have anything new to say
+> to each other.
 
-On Thu, May 1, 2008 at 9:26 AM, Chris Mason <chris.mason@oracle.com> wrote:
-> On Thursday 01 May 2008, Jeff Schroeder wrote:
->  > On Thu, May 1, 2008 at 9:04 AM, Chris Mason <chris.mason@oracle.com> wrote:
->  > > On Tuesday 29 April 2008, Chris Mason wrote:
->  > >  > Hello everyone,
->  > >  >
->  > >  > Btrfs v0.14 is now available for download.  Please note the disk
->  > >  > format has changed, and it is not compatible with older versions of
->  > >  > Btrfs.
->  > >  >
->  > >  > For downloads and documention, please see the Btrfs project page:
->  > >  >
->  > >  > http://btrfs.wiki.kernel.org
->  > >
->  > >  Hello everyone,
->  > >
->  > >  I've rolled up some fixes for older kernels and fixed an uninitialized
->  > >  variables in btrfs-progs that could cause an oops on mount.  I'll wait a
->  > > few days to see if other bug reports come in and cut a 0.15 with any
->  > > other critical fixes.
->  >
->  > Well it oopses on writes everytime in Ubuntu 8.04 (Hardy). I'd planned
->  > on digging into
->  > it more before spending a bug report, but will send it tonight after
->  > getting to the affected
->  > machine.
->
->  This is because ubuntu kernels ship with apparmor, you'll need this patch:
->
->  If there is a #ifdef IM_A_UBUNTU_KERNEL I can use, I'll do it.  Jeff Mahoney
->  has a similar patch for SUSE that I've been meaning to merge, but I wanted to
->  lookup some way to check for ubuntu as well.
->
->  -chris
->
->  diff -r e7da2489b19b file.c
->  --- a/file.c    Wed Apr 30 13:59:35 2008 -0400
->  +++ b/file.c    Thu May 01 12:25:11 2008 -0400
->  @@ -852,7 +852,7 @@ static ssize_t btrfs_file_write(struct f
->                 goto out_nolock;
->         if (count == 0)
->                 goto out_nolock;
->  -       err = remove_suid(fdentry(file));
->  +       err = remove_suid(&file->f_path);
->         if (err)
->                 goto out_nolock;
->         file_update_time(file);
->
+I was trying to stay out of it a bit, since you both have very good
+points. :)
 
+But, from a purely aesthetic point of view, I like the patches.  They do
+make r/o mount detection less error-prone in coding.  They also remove
+more code than they add.
 
+I also certainly understand Al's point about why it puts vfsmounts in a
+place where they probably shouldn't be exposed.
 
--- 
-Jeff Schroeder
+Is there a way we could pass around a vfs-internal object to these
+things?  Maybe something that is like an opaque token only known to the
+vfs?
 
-Don't drink and derive, alcohol and analysis don't mix.
-http://www.digitalprognosis.com
+linux/mount.h:
+
+	struct hidden_mount;
+
+fs/namespace.c:
+
+struct hidden_mount {
+	struct vfsmount *mnt;
+};
+
+int mnt_want_write(struct hidden_mount *hidmnt)
+{
+	return __mnt_want_write(hidmnt->mnt);
+}
+
+We could have *that* passed down the way that you're currently passing
+the vfsmount.
+
+-- Dave
+
