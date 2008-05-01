@@ -1,247 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761867AbYEAPD4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761567AbYEAPFu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761867AbYEAPD4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 May 2008 11:03:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755498AbYEAPDs
+	id S1761567AbYEAPFu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 May 2008 11:05:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756095AbYEAPFn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 May 2008 11:03:48 -0400
-Received: from gustav.zipernowsky.hu ([193.225.20.248]:33481 "EHLO
-	gustav.zipernowsky.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754855AbYEAPDr (ORCPT
+	Thu, 1 May 2008 11:05:43 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:53350 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755093AbYEAPFm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 May 2008 11:03:47 -0400
+	Thu, 1 May 2008 11:05:42 -0400
+Date: Fri, 02 May 2008 00:06:05 +0900
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: "Tom May" <tom@tommay.com>
+Subject: Re: [PATCH 0/8][for -mm] mem_notify v6
+Cc: kosaki.motohiro@jp.fujitsu.com,
+       =?ISO-2022-JP?B?IkRhbmllbCBTcBskQmlPGyhCZyI=?= 
+	<daniel.spang@gmail.com>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org
+In-Reply-To: <ab3f9b940804301907y5a3e84e1l6cb41a339bc2241b@mail.gmail.com>
+References: <cfd9edbf0804230127k33a56312i6582f926e00ea17@mail.gmail.com> <ab3f9b940804301907y5a3e84e1l6cb41a339bc2241b@mail.gmail.com>
+Message-Id: <20080501232431.F617.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
-Date: Thu, 01 May 2008 16:32:01 +0200
-From: <oliver@zipernowsky.hu>
-To: linux-kernel@vger.kernel.org
-Cc: Adrian Bunk <bunk@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
-       Badari Pulavarty <pbadari@us.ibm.com>,
-       Benjamin LaHaise <bcrl@kvack.org>, Chris Wright <chrisw@sous-sol.org>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       Grant Grundler <grundler@parisc-linux.org>,
-       Hugh Dickins <hugh@veritas.com>, James Morris <jmorris@namei.org>,
-       Jan Kara <jack@ucw.cz>, Jeff Garzik <jeff@garzik.org>,
-       Jeff Moyer <jmoyer@redhat.com>,
-       Jeff Roberson <jroberson@chesapeake.net>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Johann Felix Soden <johfel@users.sourceforge.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>, Patrick McHardy <kaber@trash.net>,
-       Robert Love <rlove@google.com>, Stephen Smalley <sds@tycho.nsa.gov>,
-       Suparna Bhattacharya <suparna@in.ibm.com>, Willy Tarreau <w@1wt.eu>,
-       Yan Zheng <yanzheng@21cn.com>, Zach Brown <zach.brown@oracle.com>
-Subject: [OP] v2.6.22.22-op1
-Reply-To: oliver.pntr@gmail.com
-Message-ID: <db9953cd52eb63e471f5fcdcb83b299b@zipernowsky.hu>
-User-Agent: RoundCube Webmail/0.1
-Content-Type: multipart/mixed;
-	boundary="=_7b16333d61e04b6ffdecf8c4469c2035"
+Content-Type: text/plain; charset="ISO-2022-JP"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.42 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---=_7b16333d61e04b6ffdecf8c4469c2035
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
+Hi Tom,
 
-I announced the v2.6.22.22-op1 "stable" kernel.
- 
-gitweb:          http://repo.or.cz/w/linux-2.6.22.y-op.git
-git-tree:        git://repo.or.cz/linux-2.6.22.y-op.git
-patches-gitweb : http://repo.or.cz/w/linux-2.6.22.y-op-patches.git
-tar-bz2:        
-http://students.zipernowsky.hu/~oliverp/kernel-stable/v2.6.22.22-op1.tar.bz2
-patch:          
-http://students.zipernowsky.hu/~oliverp/kernel-stable/patch-v2.6.22.22-op1.bz2
-incr-patch:     
-http://students.zipernowsky.hu/~oliverp/kernel-stable/incr/patch-v2.6.22.21-op1-v2.6.22.22-op1.bz2
-chlog:          
-http://students.zipernowsky.hu/~oliverp/kernel-stable/chlog-v2.6.22.22-op1
+> In my case of a Java virtual machine, where I originally saw the
+> problem, most of the code is interpreted byte codes or jit-compiled
+> native code, all of which resides not in the text segment but in
+> anonymous pages that aren't backed by a file, and there is no swap
+> space.  The actual text segment working set can be very small (memory
+> allocation, garbage collection, synchronization, other random native
+> code).  And, as KOSAKI Motohiro pointed out, it may be wise to mlock
+> these areas.  So the text working set doesn't make an adequate
+> reserve.
 
----
+your memnotify check routine is written by native or java?
+if native, my suggestion is right.
+but if java, it is wrong.
 
- Makefile                    |    2 +-
- drivers/net/tulip/de2104x.c |   10 +++++++---
- fs/aio.c                    |   23 ++++++++++++-----------
- fs/dcache.c                 |    3 ---
- fs/inotify.c                |   30 +++++++++++++++---------------
- fs/splice.c                 |   23 ++++++++++++++++++-----
- net/ipv4/tcp_output.c       |    2 +-
- 7 files changed, 54 insertions(+), 39 deletions(-)
+my point is "on swapless system, /dev/mem_notify checked routine should be mlocked".
 
----
 
-Davide Libenzi (1):
-      eventfd/kaio integration fix
+> However, I can maintain a reserve of cached and/or mapped memory by
+> touching pages in the text segment (or any mapped file) as the final
+> step of low memory notification handling, if the cached page count is
+> getting low.  For my purposes, this is nearly the same as having an
+> additional threshold-based notification, since it forces notifications
+> to occur while the kernel still has some memory to satisfy allocations
+> while userspace code works to free memory.  And it's simple.
+> 
+> Unfortunately, this is more expensive than it could be since the pages
+> need to be read in from some device (mapping /dev/zero doesn't cause
+> pages to be allocated). What I'm looking for now is a cheap way to
+> populate the cache with pages that the kernel can throw away when it
+> needs to reclaim memory.
 
-Grant Grundler (1):
-      2.6.25-rc4 de_stop_rxtx polling wrong
+I hope understand your requirement more.
+Can I ask your system more?
 
-Hugh Dickins (1):
-      splice: use mapping_gfp_mask
+I think all java text and data is mapped.
+When cached+mapped+free memory is happend?
+and at the time, What is used memory?
 
-James Morris (1):
-      security: revalidate rw permissions for sys_splice and sys_vmsplice
+Please don't think I have objection your proposal.
+merely, I don't understand your system yet.
 
-Jeff Moyer (1):
-      aio: account I/O wait time properly
+if I make new code before understand your requirement exactly, 
+It makes many bug.
 
-Jens Axboe (1):
-      splice: only return -EAGAIN if there's hope of more data
 
-Nick Piggin (2):
-      inotify: fix race
-      inotify: remove debug code
+IMHO threshold based notification has a problems.
+if low memory happend and application has no freeable memory,
+mem notification don't stop and increase CPU usage dramatically, but it is perfectly useless.
 
-Oliver Pinter (1):
-      v2.6.22.22-op1
+I don't thin embedded java is not important, but I don't hope
+desktop regression...
 
-Patrick McHardy (1):
-      TCP: Fix shrinking windows with window scaling
-
----
---=_7b16333d61e04b6ffdecf8c4469c2035
-Content-Transfer-Encoding: base64
-Content-Type: text/plain; name="patch-v2.6.22.21-op1-v2.6.22.22-op1"; charset="UTF-8"
-Content-Disposition: attachment; filename="patch-v2.6.22.21-op1-v2.6.22.22-op1"
-
-ZGlmZiAtLWdpdCBhL01ha2VmaWxlIGIvTWFrZWZpbGUKaW5kZXggYjVmMzJjZS4uNzIwMDE2MCAx
-MDA2NDQKLS0tIGEvTWFrZWZpbGUKKysrIGIvTWFrZWZpbGUKQEAgLTEsNyArMSw3IEBACiBWRVJT
-SU9OID0gMgogUEFUQ0hMRVZFTCA9IDYKIFNVQkxFVkVMID0gMjIKLUVYVFJBVkVSU0lPTiA9IC4y
-MS1vcDEKK0VYVFJBVkVSU0lPTiA9IC4yMi1vcDEKIE5BTUUgPSBIb2x5IERhbmNpbmcgTWFuYXRl
-ZXMsIEJhdG1hbiEKIAogIyAqRE9DVU1FTlRBVElPTioKZGlmZiAtLWdpdCBhL2RyaXZlcnMvbmV0
-L3R1bGlwL2RlMjEwNHguYyBiL2RyaXZlcnMvbmV0L3R1bGlwL2RlMjEwNHguYwppbmRleCA4NjE3
-Mjk4Li5lOGZjY2U3IDEwMDY0NAotLS0gYS9kcml2ZXJzL25ldC90dWxpcC9kZTIxMDR4LmMKKysr
-IGIvZHJpdmVycy9uZXQvdHVsaXAvZGUyMTA0eC5jCkBAIC04NDMsNyArODQzLDcgQEAgc3RhdGlj
-IGlubGluZSBpbnQgZGVfaXNfcnVubmluZyAoc3RydWN0IGRlX3ByaXZhdGUgKmRlKQogc3RhdGlj
-IHZvaWQgZGVfc3RvcF9yeHR4IChzdHJ1Y3QgZGVfcHJpdmF0ZSAqZGUpCiB7CiAJdTMyIG1hY21v
-ZGU7Ci0JdW5zaWduZWQgaW50IHdvcmsgPSAxMDAwOworCXVuc2lnbmVkIGludCBpID0gMTMwMC8x
-MDA7CiAKIAltYWNtb2RlID0gZHIzMihNYWNNb2RlKTsKIAlpZiAobWFjbW9kZSAmIFJ4VHgpIHsK
-QEAgLTg1MSwxMCArODUxLDE0IEBAIHN0YXRpYyB2b2lkIGRlX3N0b3Bfcnh0eCAoc3RydWN0IGRl
-X3ByaXZhdGUgKmRlKQogCQlkcjMyKE1hY01vZGUpOwogCX0KIAotCXdoaWxlICgtLXdvcmsgPiAw
-KSB7CisJLyogd2FpdCB1bnRpbCBpbi1mbGlnaHQgZnJhbWUgY29tcGxldGVzLgorCSAqIE1heCB0
-aW1lIEAgMTBCVDogMTUwMCo4Yi8xME1icHMgPT0gMTIwMHVzICgrIDEwMHVzIG1hcmdpbikKKwkg
-KiBUeXBpY2FsbHkgZXhwZWN0IHRoaXMgbG9vcCB0byBlbmQgaW4gPCA1MCB1cyBvbiAxMDBCVC4K
-KwkgKi8KKwl3aGlsZSAoLS1pKSB7CiAJCWlmICghZGVfaXNfcnVubmluZyhkZSkpCiAJCQlyZXR1
-cm47Ci0JCWNwdV9yZWxheCgpOworCQl1ZGVsYXkoMTAwKTsKIAl9CiAKIAlwcmludGsoS0VSTl9X
-QVJOSU5HICIlczogdGltZW91dCBleHBpcmVkIHN0b3BwaW5nIERNQVxuIiwgZGUtPmRldi0+bmFt
-ZSk7CmRpZmYgLS1naXQgYS9mcy9haW8uYyBiL2ZzL2Fpby5jCmluZGV4IGRiZTY5OWUuLmIzNDE5
-YzUgMTAwNjQ0Ci0tLSBhL2ZzL2Fpby5jCisrKyBiL2ZzL2Fpby5jCkBAIC0zMDMsNyArMzAzLDcg
-QEAgc3RhdGljIHZvaWQgd2FpdF9mb3JfYWxsX2Fpb3Moc3RydWN0IGtpb2N0eCAqY3R4KQogCXNl
-dF90YXNrX3N0YXRlKHRzaywgVEFTS19VTklOVEVSUlVQVElCTEUpOwogCXdoaWxlIChjdHgtPnJl
-cXNfYWN0aXZlKSB7CiAJCXNwaW5fdW5sb2NrX2lycSgmY3R4LT5jdHhfbG9jayk7Ci0JCXNjaGVk
-dWxlKCk7CisJCWlvX3NjaGVkdWxlKCk7CiAJCXNldF90YXNrX3N0YXRlKHRzaywgVEFTS19VTklO
-VEVSUlVQVElCTEUpOwogCQlzcGluX2xvY2tfaXJxKCZjdHgtPmN0eF9sb2NrKTsKIAl9CkBAIC0z
-MjMsNyArMzIzLDcgQEAgc3NpemVfdCBmYXN0Y2FsbCB3YWl0X29uX3N5bmNfa2lvY2Ioc3RydWN0
-IGtpb2NiICppb2NiKQogCQlzZXRfY3VycmVudF9zdGF0ZShUQVNLX1VOSU5URVJSVVBUSUJMRSk7
-CiAJCWlmICghaW9jYi0+a2lfdXNlcnMpCiAJCQlicmVhazsKLQkJc2NoZWR1bGUoKTsKKwkJaW9f
-c2NoZWR1bGUoKTsKIAl9CiAJX19zZXRfY3VycmVudF9zdGF0ZShUQVNLX1JVTk5JTkcpOwogCXJl
-dHVybiBpb2NiLT5raV91c2VyX2RhdGE7CkBAIC05NDYsMTQgKzk0Niw2IEBAIGludCBmYXN0Y2Fs
-bCBhaW9fY29tcGxldGUoc3RydWN0IGtpb2NiICppb2NiLCBsb25nIHJlcywgbG9uZyByZXMyKQog
-CQlyZXR1cm4gMTsKIAl9CiAKLQkvKgotCSAqIENoZWNrIGlmIHRoZSB1c2VyIGFza2VkIHVzIHRv
-IGRlbGl2ZXIgdGhlIHJlc3VsdCB0aHJvdWdoIGFuCi0JICogZXZlbnRmZC4gVGhlIGV2ZW50ZmRf
-c2lnbmFsKCkgZnVuY3Rpb24gaXMgc2FmZSB0byBiZSBjYWxsZWQKLQkgKiBmcm9tIElSUSBjb250
-ZXh0LgotCSAqLwotCWlmICghSVNfRVJSKGlvY2ItPmtpX2V2ZW50ZmQpKQotCQlldmVudGZkX3Np
-Z25hbChpb2NiLT5raV9ldmVudGZkLCAxKTsKLQogCWluZm8gPSAmY3R4LT5yaW5nX2luZm87CiAK
-IAkvKiBhZGQgYSBjb21wbGV0aW9uIGV2ZW50IHRvIHRoZSByaW5nIGJ1ZmZlci4KQEAgLTEwMDIs
-NiArOTk0LDE1IEBAIGludCBmYXN0Y2FsbCBhaW9fY29tcGxldGUoc3RydWN0IGtpb2NiICppb2Ni
-LCBsb25nIHJlcywgbG9uZyByZXMyKQogCWt1bm1hcF9hdG9taWMocmluZywgS01fSVJRMSk7CiAK
-IAlwcl9kZWJ1ZygiYWRkZWQgdG8gcmluZyAlcCBhdCBbJWx1XVxuIiwgaW9jYiwgdGFpbCk7CisK
-KwkvKgorCSAqIENoZWNrIGlmIHRoZSB1c2VyIGFza2VkIHVzIHRvIGRlbGl2ZXIgdGhlIHJlc3Vs
-dCB0aHJvdWdoIGFuCisJICogZXZlbnRmZC4gVGhlIGV2ZW50ZmRfc2lnbmFsKCkgZnVuY3Rpb24g
-aXMgc2FmZSB0byBiZSBjYWxsZWQKKwkgKiBmcm9tIElSUSBjb250ZXh0LgorCSAqLworCWlmICgh
-SVNfRVJSKGlvY2ItPmtpX2V2ZW50ZmQpKQorCQlldmVudGZkX3NpZ25hbChpb2NiLT5raV9ldmVu
-dGZkLCAxKTsKKwogcHV0X3JxOgogCS8qIGV2ZXJ5dGhpbmcgdHVybmVkIG91dCB3ZWxsLCBkaXNw
-b3NlIG9mIHRoZSBhaW9jYi4gKi8KIAlyZXQgPSBfX2Fpb19wdXRfcmVxKGN0eCwgaW9jYik7CkBA
-IC0xMTcwLDcgKzExNzEsNyBAQCByZXRyeToKIAkJCXJldCA9IDA7CiAJCQlpZiAodG8udGltZWRf
-b3V0KQkvKiBPbmx5IGNoZWNrIGFmdGVyIHJlYWQgZXZ0ICovCiAJCQkJYnJlYWs7Ci0JCQlzY2hl
-ZHVsZSgpOworCQkJaW9fc2NoZWR1bGUoKTsKIAkJCWlmIChzaWduYWxfcGVuZGluZyh0c2spKSB7
-CiAJCQkJcmV0ID0gLUVJTlRSOwogCQkJCWJyZWFrOwpkaWZmIC0tZ2l0IGEvZnMvZGNhY2hlLmMg
-Yi9mcy9kY2FjaGUuYwppbmRleCAwZTczYWEwLi5jNTRkYzUwIDEwMDY0NAotLS0gYS9mcy9kY2Fj
-aGUuYworKysgYi9mcy9kY2FjaGUuYwpAQCAtMTQwNyw5ICsxNDA3LDYgQEAgdm9pZCBkX2RlbGV0
-ZShzdHJ1Y3QgZGVudHJ5ICogZGVudHJ5KQogCWlmIChhdG9taWNfcmVhZCgmZGVudHJ5LT5kX2Nv
-dW50KSA9PSAxKSB7CiAJCWRlbnRyeV9pcHV0KGRlbnRyeSk7CiAJCWZzbm90aWZ5X25hbWVyZW1v
-dmUoZGVudHJ5LCBpc2Rpcik7Ci0KLQkJLyogcmVtb3ZlIHRoaXMgYW5kIG90aGVyIGlub3RpZnkg
-ZGVidWcgY2hlY2tzIGFmdGVyIDIuNi4xOCAqLwotCQlkZW50cnktPmRfZmxhZ3MgJj0gfkRDQUNI
-RV9JTk9USUZZX1BBUkVOVF9XQVRDSEVEOwogCQlyZXR1cm47CiAJfQogCmRpZmYgLS1naXQgYS9m
-cy9pbm90aWZ5LmMgYi9mcy9pbm90aWZ5LmMKaW5kZXggNzQ1NzUwMS4uOGVlMmI0MyAxMDA2NDQK
-LS0tIGEvZnMvaW5vdGlmeS5jCisrKyBiL2ZzL2lub3RpZnkuYwpAQCAtMTY4LDIwICsxNjgsMTQg
-QEAgc3RhdGljIHZvaWQgc2V0X2RlbnRyeV9jaGlsZF9mbGFncyhzdHJ1Y3QgaW5vZGUgKmlub2Rl
-LCBpbnQgd2F0Y2hlZCkKIAkJc3RydWN0IGRlbnRyeSAqY2hpbGQ7CiAKIAkJbGlzdF9mb3JfZWFj
-aF9lbnRyeShjaGlsZCwgJmFsaWFzLT5kX3N1YmRpcnMsIGRfdS5kX2NoaWxkKSB7Ci0JCQlpZiAo
-IWNoaWxkLT5kX2lub2RlKSB7Ci0JCQkJV0FSTl9PTihjaGlsZC0+ZF9mbGFncyAmIERDQUNIRV9J
-Tk9USUZZX1BBUkVOVF9XQVRDSEVEKTsKKwkJCWlmICghY2hpbGQtPmRfaW5vZGUpCiAJCQkJY29u
-dGludWU7Ci0JCQl9CisKIAkJCXNwaW5fbG9jaygmY2hpbGQtPmRfbG9jayk7Ci0JCQlpZiAod2F0
-Y2hlZCkgewotCQkJCVdBUk5fT04oY2hpbGQtPmRfZmxhZ3MgJgotCQkJCQkJRENBQ0hFX0lOT1RJ
-RllfUEFSRU5UX1dBVENIRUQpOworCQkJaWYgKHdhdGNoZWQpCiAJCQkJY2hpbGQtPmRfZmxhZ3Mg
-fD0gRENBQ0hFX0lOT1RJRllfUEFSRU5UX1dBVENIRUQ7Ci0JCQl9IGVsc2UgewotCQkJCVdBUk5f
-T04oIShjaGlsZC0+ZF9mbGFncyAmCi0JCQkJCURDQUNIRV9JTk9USUZZX1BBUkVOVF9XQVRDSEVE
-KSk7Ci0JCQkJY2hpbGQtPmRfZmxhZ3MmPX5EQ0FDSEVfSU5PVElGWV9QQVJFTlRfV0FUQ0hFRDsK
-LQkJCX0KKwkJCWVsc2UKKwkJCQljaGlsZC0+ZF9mbGFncyAmPX5EQ0FDSEVfSU5PVElGWV9QQVJF
-TlRfV0FUQ0hFRDsKIAkJCXNwaW5fdW5sb2NrKCZjaGlsZC0+ZF9sb2NrKTsKIAkJfQogCX0KQEAg
-LTI1Myw3ICsyNDcsNiBAQCB2b2lkIGlub3RpZnlfZF9pbnN0YW50aWF0ZShzdHJ1Y3QgZGVudHJ5
-ICplbnRyeSwgc3RydWN0IGlub2RlICppbm9kZSkKIAlpZiAoIWlub2RlKQogCQlyZXR1cm47CiAK
-LQlXQVJOX09OKGVudHJ5LT5kX2ZsYWdzICYgRENBQ0hFX0lOT1RJRllfUEFSRU5UX1dBVENIRUQp
-OwogCXNwaW5fbG9jaygmZW50cnktPmRfbG9jayk7CiAJcGFyZW50ID0gZW50cnktPmRfcGFyZW50
-OwogCWlmIChwYXJlbnQtPmRfaW5vZGUgJiYgaW5vdGlmeV9pbm9kZV93YXRjaGVkKHBhcmVudC0+
-ZF9pbm9kZSkpCkBAIC02MjcsNiArNjIwLDcgQEAgczMyIGlub3RpZnlfYWRkX3dhdGNoKHN0cnVj
-dCBpbm90aWZ5X2hhbmRsZSAqaWgsIHN0cnVjdCBpbm90aWZ5X3dhdGNoICp3YXRjaCwKIAkJICAg
-ICAgc3RydWN0IGlub2RlICppbm9kZSwgdTMyIG1hc2spCiB7CiAJaW50IHJldCA9IDA7CisJaW50
-IG5ld2x5X3dhdGNoZWQ7CiAKIAkvKiBkb24ndCBhbGxvdyBpbnZhbGlkIGJpdHM6IHdlIGRvbid0
-IHdhbnQgZmxhZ3Mgc2V0ICovCiAJbWFzayAmPSBJTl9BTExfRVZFTlRTIHwgSU5fT05FU0hPVDsK
-QEAgLTY1MywxMiArNjQ3LDE4IEBAIHMzMiBpbm90aWZ5X2FkZF93YXRjaChzdHJ1Y3QgaW5vdGlm
-eV9oYW5kbGUgKmloLCBzdHJ1Y3QgaW5vdGlmeV93YXRjaCAqd2F0Y2gsCiAJICovCiAJd2F0Y2gt
-Pmlub2RlID0gaWdyYWIoaW5vZGUpOwogCi0JaWYgKCFpbm90aWZ5X2lub2RlX3dhdGNoZWQoaW5v
-ZGUpKQotCQlzZXRfZGVudHJ5X2NoaWxkX2ZsYWdzKGlub2RlLCAxKTsKLQogCS8qIEFkZCB0aGUg
-d2F0Y2ggdG8gdGhlIGhhbmRsZSdzIGFuZCB0aGUgaW5vZGUncyBsaXN0ICovCisJbmV3bHlfd2F0
-Y2hlZCA9ICFpbm90aWZ5X2lub2RlX3dhdGNoZWQoaW5vZGUpOwogCWxpc3RfYWRkKCZ3YXRjaC0+
-aF9saXN0LCAmaWgtPndhdGNoZXMpOwogCWxpc3RfYWRkKCZ3YXRjaC0+aV9saXN0LCAmaW5vZGUt
-Pmlub3RpZnlfd2F0Y2hlcyk7CisJLyoKKwkgKiBTZXQgY2hpbGQgZmxhZ3MgX2FmdGVyXyBhZGRp
-bmcgdGhlIHdhdGNoLCBzbyB0aGVyZSBpcyBubyByYWNlCisJICogd2luZG93cyB3aGVyZSBuZXds
-eSBpbnN0YW50aWF0ZWQgY2hpbGRyZW4gY291bGQgbWlzcyB0aGVpciBwYXJlbnQncworCSAqIHdh
-dGNoZWQgZmxhZy4KKwkgKi8KKwlpZiAobmV3bHlfd2F0Y2hlZCkKKwkJc2V0X2RlbnRyeV9jaGls
-ZF9mbGFncyhpbm9kZSwgMSk7CisKIG91dDoKIAltdXRleF91bmxvY2soJmloLT5tdXRleCk7CiAJ
-bXV0ZXhfdW5sb2NrKCZpbm9kZS0+aW5vdGlmeV9tdXRleCk7CmRpZmYgLS1naXQgYS9mcy9zcGxp
-Y2UuYyBiL2ZzL3NwbGljZS5jCmluZGV4IGRiYmUyNjcuLjNkYTg3ZmUgMTAwNjQ0Ci0tLSBhL2Zz
-L3NwbGljZS5jCisrKyBiL2ZzL3NwbGljZS5jCkBAIC0yOCw2ICsyOCw3IEBACiAjaW5jbHVkZSA8
-bGludXgvbW9kdWxlLmg+CiAjaW5jbHVkZSA8bGludXgvc3lzY2FsbHMuaD4KICNpbmNsdWRlIDxs
-aW51eC91aW8uaD4KKyNpbmNsdWRlIDxsaW51eC9zZWN1cml0eS5oPgogCiBzdHJ1Y3QgcGFydGlh
-bF9wYWdlIHsKIAl1bnNpZ25lZCBpbnQgb2Zmc2V0OwpAQCAtMzMxLDcgKzMzMiw3IEBAIF9fZ2Vu
-ZXJpY19maWxlX3NwbGljZV9yZWFkKHN0cnVjdCBmaWxlICppbiwgbG9mZl90ICpwcG9zLAogCQkJ
-CWJyZWFrOwogCiAJCQllcnJvciA9IGFkZF90b19wYWdlX2NhY2hlX2xydShwYWdlLCBtYXBwaW5n
-LCBpbmRleCwKLQkJCQkJICAgICAgR0ZQX0tFUk5FTCk7CisJCQkJCQltYXBwaW5nX2dmcF9tYXNr
-KG1hcHBpbmcpKTsKIAkJCWlmICh1bmxpa2VseShlcnJvcikpIHsKIAkJCQlwYWdlX2NhY2hlX3Jl
-bGVhc2UocGFnZSk7CiAJCQkJaWYgKGVycm9yID09IC1FRVhJU1QpCkBAIC05MzIsNiArOTMzLDEw
-IEBAIHN0YXRpYyBsb25nIGRvX3NwbGljZV9mcm9tKHN0cnVjdCBwaXBlX2lub2RlX2luZm8gKnBp
-cGUsIHN0cnVjdCBmaWxlICpvdXQsCiAJaWYgKHVubGlrZWx5KHJldCA8IDApKQogCQlyZXR1cm4g
-cmV0OwogCisJcmV0ID0gc2VjdXJpdHlfZmlsZV9wZXJtaXNzaW9uKG91dCwgTUFZX1dSSVRFKTsK
-KwlpZiAodW5saWtlbHkocmV0IDwgMCkpCisJCXJldHVybiByZXQ7CisKIAlyZXR1cm4gb3V0LT5m
-X29wLT5zcGxpY2Vfd3JpdGUocGlwZSwgb3V0LCBwcG9zLCBsZW4sIGZsYWdzKTsKIH0KIApAQCAt
-OTU0LDYgKzk1OSwxMCBAQCBzdGF0aWMgbG9uZyBkb19zcGxpY2VfdG8oc3RydWN0IGZpbGUgKmlu
-LCBsb2ZmX3QgKnBwb3MsCiAJaWYgKHVubGlrZWx5KHJldCA8IDApKQogCQlyZXR1cm4gcmV0Owog
-CisJcmV0ID0gc2VjdXJpdHlfZmlsZV9wZXJtaXNzaW9uKGluLCBNQVlfUkVBRCk7CisJaWYgKHVu
-bGlrZWx5KHJldCA8IDApKQorCQlyZXR1cm4gcmV0OworCiAJcmV0dXJuIGluLT5mX29wLT5zcGxp
-Y2VfcmVhZChpbiwgcHBvcywgcGlwZSwgbGVuLCBmbGFncyk7CiB9CiAKQEAgLTE0ODksNiArMTQ5
-OCwxMyBAQCBzdGF0aWMgaW50IGxpbmtfcGlwZShzdHJ1Y3QgcGlwZV9pbm9kZV9pbmZvICppcGlw
-ZSwKIAkJaSsrOwogCX0gd2hpbGUgKGxlbik7CiAKKwkvKgorCSAqIHJldHVybiBFQUdBSU4gaWYg
-d2UgaGF2ZSB0aGUgcG90ZW50aWFsIG9mIHNvbWUgZGF0YSBpbiB0aGUKKwkgKiBmdXR1cmUsIG90
-aGVyd2lzZSBqdXN0IHJldHVybiAwCisJICovCisJaWYgKCFyZXQgJiYgaXBpcGUtPndhaXRpbmdf
-d3JpdGVycyAmJiAoZmxhZ3MgJiBTUExJQ0VfRl9OT05CTE9DSykpCisJCXJldCA9IC1FQUdBSU47
-CisKIAlpbm9kZV9kb3VibGVfdW5sb2NrKGlwaXBlLT5pbm9kZSwgb3BpcGUtPmlub2RlKTsKIAog
-CS8qCkBAIC0xNTI5LDExICsxNTQ1LDggQEAgc3RhdGljIGxvbmcgZG9fdGVlKHN0cnVjdCBmaWxl
-ICppbiwgc3RydWN0IGZpbGUgKm91dCwgc2l6ZV90IGxlbiwKIAkJcmV0ID0gbGlua19pcGlwZV9w
-cmVwKGlwaXBlLCBmbGFncyk7CiAJCWlmICghcmV0KSB7CiAJCQlyZXQgPSBsaW5rX29waXBlX3By
-ZXAob3BpcGUsIGZsYWdzKTsKLQkJCWlmICghcmV0KSB7CisJCQlpZiAoIXJldCkKIAkJCQlyZXQg
-PSBsaW5rX3BpcGUoaXBpcGUsIG9waXBlLCBsZW4sIGZsYWdzKTsKLQkJCQlpZiAoIXJldCAmJiAo
-ZmxhZ3MgJiBTUExJQ0VfRl9OT05CTE9DSykpCi0JCQkJCXJldCA9IC1FQUdBSU47Ci0JCQl9CiAJ
-CX0KIAl9CiAKZGlmZiAtLWdpdCBhL25ldC9pcHY0L3RjcF9vdXRwdXQuYyBiL25ldC9pcHY0L3Rj
-cF9vdXRwdXQuYwppbmRleCBlZWU1N2U2Li5kZTZlNWRmIDEwMDY0NAotLS0gYS9uZXQvaXB2NC90
-Y3Bfb3V0cHV0LmMKKysrIGIvbmV0L2lwdjQvdGNwX291dHB1dC5jCkBAIC0yNDYsNyArMjQ2LDcg
-QEAgc3RhdGljIHUxNiB0Y3Bfc2VsZWN0X3dpbmRvdyhzdHJ1Y3Qgc29jayAqc2spCiAJCSAqCiAJ
-CSAqIFJlbGF4IFdpbGwgUm9iaW5zb24uCiAJCSAqLwotCQluZXdfd2luID0gY3VyX3dpbjsKKwkJ
-bmV3X3dpbiA9IEFMSUdOKGN1cl93aW4sIDEgPDwgdHAtPnJ4X29wdC5yY3Zfd3NjYWxlKTsKIAl9
-CiAJdHAtPnJjdl93bmQgPSBuZXdfd2luOwogCXRwLT5yY3Zfd3VwID0gdHAtPnJjdl9ueHQ7Cg==
---=_7b16333d61e04b6ffdecf8c4469c2035--
 
 
