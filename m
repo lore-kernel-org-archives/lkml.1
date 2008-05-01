@@ -1,90 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756263AbYEAA4y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755915AbYEAA6V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756263AbYEAA4y (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Apr 2008 20:56:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751542AbYEAA4q
+	id S1755915AbYEAA6V (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Apr 2008 20:58:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751024AbYEAA6N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Apr 2008 20:56:46 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:47527 "EHLO ogre.sisk.pl"
+	Wed, 30 Apr 2008 20:58:13 -0400
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:34949 "EHLO smtp5.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750995AbYEAA4p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Apr 2008 20:56:45 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Adrian Bunk <bunk@kernel.org>
+	id S1750995AbYEAA6M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Apr 2008 20:58:12 -0400
+Date: Thu, 1 May 2008 03:57:27 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, rjw@sisk.pl,
+       davem@davemloft.net, linux-kernel@vger.kernel.org, jirislaby@gmail.com
 Subject: Re: Slow DOWN, please!!!
-Date: Thu, 1 May 2008 02:56:23 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: david@lang.hm, Linus Torvalds <torvalds@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jiri Slaby <jirislaby@gmail.com>
-References: <20080429.190352.137408408.davem@davemloft.net> <200805010145.39373.rjw@sisk.pl> <20080501003855.GN29330@cs181133002.pp.htv.fi>
-In-Reply-To: <20080501003855.GN29330@cs181133002.pp.htv.fi>
+Message-ID: <20080501005727.GO29330@cs181133002.pp.htv.fi>
+References: <20080429.190352.137408408.davem@davemloft.net> <200804302245.50817.rjw@sisk.pl> <alpine.LFD.1.10.0804301422350.2980@woody.linux-foundation.org> <200805010023.32213.rjw@sisk.pl> <alpine.LFD.1.10.0804301530360.2980@woody.linux-foundation.org> <20080430154124.7ec08dd4.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Message-Id: <200805010256.25018.rjw@sisk.pl>
+In-Reply-To: <20080430154124.7ec08dd4.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, 1 of May 2008, Adrian Bunk wrote:
-> On Thu, May 01, 2008 at 01:45:38AM +0200, Rafael J. Wysocki wrote:
-> > On Thursday, 1 of May 2008, david@lang.hm wrote:
-> > > On Thu, 1 May 2008, Rafael J. Wysocki wrote:
-> > > 
-> > > > On Wednesday, 30 of April 2008, Linus Torvalds wrote:
-> > > >>
-> > > >> On Wed, 30 Apr 2008, Rafael J. Wysocki wrote:
-> > > >> So your "fewer commits over a unit of time" doesn't make sense.
-> > > >
-> > > > Oh, yes it does.  Equally well you could say that having brakes in a car
-> > > > didn't make sense, even if you could drive it as fast as the engine allowed
-> > > > you to. ;-)
-> > > >
-> > > >> We have those ten thousand commits. They need to go in. They cannot take
-> > > >> forever.
-> > > >
-> > > > But perhaps some of them can wait a bit longer.
-> > > 
-> > > not really, if patches are produced at a rate of 1000/week and you decide 
-> > > to only accept 2000 of them this month, a month later you have 6000 
-> > > patches to deal with.
-> > 
-> > Well, I think you know how TCP works.  The sender can only send as much
-> > data as the receiver lets it, no matter how much data there are to send.
-> > I'm thinking about an analogous approach.
-> > 
-> > If the developers who produce those patches know in advance about the rate
-> > limit and are promised to be treated fairly, they should be able to organize
-> > their work in a different way.
-> >...
+On Wed, Apr 30, 2008 at 03:41:24PM -0700, Andrew Morton wrote:
+> On Wed, 30 Apr 2008 15:31:22 -0700 (PDT)
+> Linus Torvalds <torvalds@linux-foundation.org> wrote:
 > 
-> We cannot control who develops what.
-
-We don't need to.
-
-> When someone wants some feature or wants to get Linux running on his 
-> hardware he will always develop the code.
+> > Any suggestions on how to convince people that their code is not worth 
+> > merging?
 > 
-> We can only control what we merge.
+> Raise the quality.  Then the volume will automatically decrease.
 
-To be exact, we control what we merge and when.  There's no rule saying that
-every patch has to be merged as soon as it appears to be ready for merging,
-or during the nearest merge window, AFAICS.
+100% ACK to "Raise the quality" (no matter whether it influences the volume).
 
-> And the main rationale for the 2.6 development model was that we do no 
-> longer want distributions to ship kernels with insane amounts of 
-> patches.
+> Which leads us to...  the volume isn't a problem per-se.  The problem is
+> quality.  It's the fact that they vary inversely which makes us say "slow
+> down".
+> 
+> So David's Subject: should have been "Do Better, please".  Slowing down is
+> just a side-effect.  And, we expect, a tool.
+> 
+> 
+> We should be discussing how to raise the quality of our work.
 
-This was an argument agaist starting a separate development branch in analogy
-with 2.5, IIRC, and I agree with that.
+One big problem I see is Linus wanting to merge all drivers regardless 
+of the quality.
 
-Still, I think we don't need to merge patches at the current rate and it might
-help improve their overall quality if we didn't.  Of course, the latter is only
-a speculation, although it's based on my experience.
+Linus said in [1]:
+"I'd really rather have the driver merged, and then *other* people can 
+ send patches!"
 
-Thanks,
-Rafael
+The problem is that such "other people" do not exist (except perhaps Al) 
+for non-trivial stuff.
+
+My favorite gem from this driver we merged in 2.6.25 is:
+  grep -C4 volatile drivers/infiniband/hw/nes/nes_nic.c
+
+Fixing such stuff aren't "janitorial kind of things", and people are 
+actually more motivated to fix their code for getting it into the kernel 
+than to fix their code after it went into the kernel.
+
+I am not saying we shouldn't merge such a driver at all or set 
+unrealistic high quality goals - I'm for merging all code of good 
+quality that provides functionality not yet into the kernel.
+
+But we need some minimum quality level.
+
+cu
+Adrian
+
+[1] http://lkml.org/lkml/2008/2/21/334
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
