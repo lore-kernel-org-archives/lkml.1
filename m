@@ -1,52 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764858AbYEAW2S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765113AbYEAWbS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764858AbYEAW2S (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 May 2008 18:28:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758483AbYEAW2A
+	id S1765113AbYEAWbS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 May 2008 18:31:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754643AbYEAWbA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 May 2008 18:28:00 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:48460 "EHLO
+	Thu, 1 May 2008 18:31:00 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:59023 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751006AbYEAW2A (ORCPT
+	by vger.kernel.org with ESMTP id S1754460AbYEAWa7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 May 2008 18:28:00 -0400
-Date: Thu, 1 May 2008 15:27:26 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Adrian Bunk <bunk@kernel.org>, venkatesh.pallipadi@intel.com,
-       davem@davemloft.net, trini@kernel.crashing.org, mingo@elte.hu,
-       tglx@linutronix.de, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       suresh.b.siddha@intel.com
-Subject: Re: huge gcc 4.1.{0,1} __weak problem
-In-Reply-To: <20080501152051.4eb4bad3.akpm@linux-foundation.org>
-Message-ID: <alpine.LFD.1.10.0805011525460.5994@woody.linux-foundation.org>
-References: <20080430013108.GA18207@linux-os.sc.intel.com> <20080429.212833.192304794.davem@davemloft.net> <924EFEDD5F540B4284297C4DC59F3DEEF7D18E@orsmsx423.amr.corp.intel.com> <20080501215633.GU29330@cs181133002.pp.htv.fi>
- <20080501152051.4eb4bad3.akpm@linux-foundation.org>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 1 May 2008 18:30:59 -0400
+Date: Thu, 1 May 2008 15:30:48 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: jirislaby@gmail.com, megaraidlinux@lsi.com, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH #repost] SCSI: megaraid, fix suspend/resume sections
+Message-Id: <20080501153048.2a8d356f.akpm@linux-foundation.org>
+In-Reply-To: <1209679559.14864.33.camel@localhost.localdomain>
+References: <1209657362-20300-1-git-send-email-jirislaby@gmail.com>
+	<20080501142305.77433e50.akpm@linux-foundation.org>
+	<481A3781.8080100@gmail.com>
+	<1209679559.14864.33.camel@localhost.localdomain>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 01 May 2008 17:05:59 -0500
+James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
 
-
-On Thu, 1 May 2008, Andrew Morton wrote:
+> On Thu, 2008-05-01 at 23:34 +0200, Jiri Slaby wrote:
+> > On 05/01/2008 11:23 PM, Andrew Morton wrote:
+> > > On Thu,  1 May 2008 17:56:02 +0200
+> > > Jiri Slaby <jirislaby@gmail.com> wrote:
+> > > 
+> > >> megaraid_sas suspend and resume are inappropriatelly placed in
+> > >> __devinit section.
+> > > 
+> > > That's a box-killer, isn't it?
 > > 
-> > I see only the following choices:
-> > - remove __weak and replace all current usages
-> > - move all __weak functions into own files, and ensure that also happens
-> >   for future usages
-> > - #error for gcc 4.1.{0,1}
+> > I think so -- the non-CONFIG_HOTPLUG ones.
 > 
-> Can we detect the {0,1}?  __GNUC_EVEN_MORE_MINOR__?
+> CONFIG_HOTPLUG is only settable to 'n' if you're CONFIG_EMBEDDED which
+> has a zero set intersection with the users of megaraid, so in practical
+> terms, there's no actual box it could kill.
 
-It's __GNUC_PATCHLEVEL__, I believe.
+who suspends and resumes servers?
 
-So yes, we can distinguish 4.1.2 (good, and very common) from 4.1.{0,1} 
-(bad, and rather uncommon).
+> this whole 
+> 
+> #if CONFIG_PM
+> define suspend resume
+> #else
+> set suspend resume methods to null
+> #endif
+> 
+> Is completely analagous to what we used to do with CONFIG_HOTPLUG before
+> we had the __dev.* sectional annotations.  Since the expanding
+> bureacracy is determined to keep the _dev.* sections 
 
-And yes, considering that 4.1.1 (and even more so 4.1.0) should be rare to 
-begin with, I think it's better to just not support it.
+ooh, that makes us sound really bad!  ("since the server-obsessed
+embedded-hating bloatmonkeys..."?)
 
-			Linus
+> in spite of the pain,
+
+What pain?  Other people write the dang patches for you!  Their main
+problem is getting them merged.
+
+> could we not at least make the machinery do something vaguely
+> useful and expand it to confine the pm routines to sections which can be
+> discarded if CONFIG_PM is n?
+
+a) it would need to be discarded at link-time, ideally.
+
+b) worth investigating.  It might lead to lengthy chains of compilation
+   warnings though.
+
