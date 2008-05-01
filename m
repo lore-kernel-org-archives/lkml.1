@@ -1,85 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764400AbYEATZj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765050AbYEAT1f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764400AbYEATZj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 May 2008 15:25:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758293AbYEATZb
+	id S1765050AbYEAT1f (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 May 2008 15:27:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759309AbYEAT1Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 May 2008 15:25:31 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:39489 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753323AbYEATZa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 May 2008 15:25:30 -0400
-Date: Thu, 1 May 2008 21:25:11 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: kernel list <linux-kernel@vger.kernel.org>
-Subject: 2.6.26-rc0: pcmcia disk changed place, does not work after s2ram
-Message-ID: <20080501192432.GA1618@elf.ucw.cz>
+	Thu, 1 May 2008 15:27:25 -0400
+Received: from mail.suse.de ([195.135.220.2]:35497 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758293AbYEAT1Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 May 2008 15:27:24 -0400
+Message-ID: <481A1994.5020000@suse.com>
+Date: Thu, 01 May 2008 15:27:16 -0400
+From: Jeff Mahoney <jeffm@suse.com>
+Organization: SUSE Labs, Novell, Inc
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: Chris Mason <chris.mason@oracle.com>
+Cc: Tim Gardner <tim.gardner@canonical.com>, jeffschroeder@computer.org,
+       linux-fsdevel@vger.kernel.org, kernel-team@lists.ubuntu.com,
+       linux-kernel@vger.kernel.org, linux-btrfs@vger.kernel.org
+Subject: Re: Btrfs v0.14 Released
+References: <200804291601.32945.chris.mason@oracle.com> <c24352ca0805010939q31f743aev17cc7f98d2ad0c71@mail.gmail.com> <481A14BA.9090305@canonical.com> <200805011517.55698.chris.mason@oracle.com>
+In-Reply-To: <200805011517.55698.chris.mason@oracle.com>
+X-Enigmail-Version: 0.95.2
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-On thinkpad x60, pcmcia flashcard (CF in pcmcia slot) moved from hda
-to hdc. Moreover, it stops working after s2ram/resume.
+Chris Mason wrote:
+> On Thursday 01 May 2008, Tim Gardner wrote:
+> 
+> [ btrfs oops on ubuntu ]
+> 
+>>>>  This is because ubuntu kernels ship with apparmor, you'll need this
+>>>> patch:
+>>>>
+>>>>  If there is a #ifdef IM_A_UBUNTU_KERNEL I can use, I'll do it.  Jeff
+>>>> Mahoney has a similar patch for SUSE that I've been meaning to merge,
+>>>> but I wanted to lookup some way to check for ubuntu as well.
+>>>>
+>>>>  -chris
+>>>>
+>>>>  diff -r e7da2489b19b file.c
+>>>>  --- a/file.c    Wed Apr 30 13:59:35 2008 -0400
+>>>>  +++ b/file.c    Thu May 01 12:25:11 2008 -0400
+>>>>  @@ -852,7 +852,7 @@ static ssize_t btrfs_file_write(struct f
+>>>>                 goto out_nolock;
+>>>>         if (count == 0)
+>>>>                 goto out_nolock;
+>>>>  -       err = remove_suid(fdentry(file));
+>>>>  +       err = remove_suid(&file->f_path);
+>>>>         if (err)
+>>>>                 goto out_nolock;
+>>>>         file_update_time(file);
+>> Couldn't you #ifdef based on CONFIG_SECURITY_APPARMOR ? This ought to
+>> work for Hardy. However the next development kernel (Intrepid) does not
+>> have the APPARMOR patches, so just knowing that its an UBUNTU kernel is
+>> not specific enough.
+> 
+> I've been assuming the apparmor patches change remove_suid even when they are 
+> not enabled in the config.
 
-As a bonus, I now have this in the log after s2ram, but I believe
-that's known already.
+Yeah, unless Ubuntu is doing some magic with the function arguments
+(which sounds like the fix is worse than the problem), this is true.
 
-sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
-sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't
-support DPO or FUA
-PM: Writing back config space on device 0000:15:00.2 at offset 4 (was
-0, writing e4301800)
-PM: Writing back config space on device 0000:15:00.2 at offset 3 (was
-800000, writing 804000)
-PM: Writing back config space on device 0000:15:00.2 at offset 1 (was
-2100000, writing 2100006)
-sleepy: scsi_bus_resume start
-sleepy: scsi_bus_resume done
-mmc0: new SD card at address e624
-mmc mmc0:e624: parent mmc0 is sleeping
-------------[ cut here ]------------
-WARNING: at /data/l/linux/drivers/base/power/main.c:77
-device_pm_add+0x60/0xd0()
-Modules linked in:
-Pid: 293, comm: kmmcd Not tainted 2.6.25 #287
- [<c022a2af>] warn_on_slowpath+0x5f/0x90
- [<c0751dba>] _spin_lock_irqsave+0x3a/0x50
- [<c0241701>] up+0x11/0x40
- [<c022ac2e>] release_console_sem+0x19e/0x1d0
- [<c02bd705>] sysfs_addrm_finish+0x15/0x1e0
- [<c02bd110>] sysfs_ilookup_test+0x0/0x10
- [<c02bd3f1>] sysfs_find_dirent+0x21/0x30
- [<c07507cd>] mutex_lock_nested+0x12d/0x1e0
- [<c0428133>] device_pm_add+0x13/0xd0
- [<c022b23b>] printk+0x1b/0x20
- [<c0428180>] device_pm_add+0x60/0xd0
- [<c04233d8>] device_add+0x388/0x500
- [<c0595171>] mmc_add_card+0xa1/0x120
- [<c0596ce4>] mmc_attach_sd+0x1e4/0x840
- [<c0594db0>] mmc_rescan+0x0/0x180
- [<c0594ed4>] mmc_rescan+0x124/0x180
- [<c023a141>] run_workqueue+0x121/0x1d0
- [<c023a0ed>] run_workqueue+0xcd/0x1d0
- [<c023ab10>] worker_thread+0x0/0xf0
- [<c023abac>] worker_thread+0x9c/0xf0
- [<c023d820>] autoremove_wake_function+0x0/0x50
- [<c023ab10>] worker_thread+0x0/0xf0
- [<c023d522>] kthread+0x42/0x70
- [<c023d4e0>] kthread+0x0/0x70
- [<c02047cb>] kernel_thread_helper+0x7/0x1c
- =======================
----[ end trace 93797a55e35ccd7c ]---
-mmcblk0: mmc0:e624 SU128 123008KiB
+- -Jeff
 
-								Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+- --
+Jeff Mahoney
+SUSE Labs
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.4-svn0 (GNU/Linux)
+Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
+
+iD8DBQFIGhmULPWxlyuTD7IRAgJcAJ4zYYcgQ2V0eT6Fv6LstlwpnK9bUwCgpdBD
+XHUzfiFBd+HQLt5Tw5vHH0A=
+=KWIZ
+-----END PGP SIGNATURE-----
