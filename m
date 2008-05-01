@@ -1,281 +1,287 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932953AbYEAVur@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932335AbYEAVwQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932953AbYEAVur (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 May 2008 17:50:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761174AbYEAVuk
+	id S932335AbYEAVwQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 May 2008 17:52:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757440AbYEAVv7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 May 2008 17:50:40 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:34247 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751006AbYEAVuj (ORCPT
+	Thu, 1 May 2008 17:51:59 -0400
+Received: from extu-mxob-1.symantec.com ([216.10.194.28]:38111 "EHLO
+	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750903AbYEAVv5 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 May 2008 17:50:39 -0400
-Date: Thu, 1 May 2008 17:50:38 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Alexey Dobriyan <adobriyan@gmail.com>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, lucho@ionkov.net, ericvh@gmail.com,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] fix flags length in net 9p
-In-Reply-To: <20080501222950.GA16470@martell.zuzino.mipt.ru>
-Message-ID: <Pine.LNX.4.58.0805011748270.12785@gandalf.stny.rr.com>
-References: <Pine.LNX.4.58.0805011706070.12785@gandalf.stny.rr.com>
- <20080501141919.78b7dc4f.akpm@linux-foundation.org>
- <20080501222950.GA16470@martell.zuzino.mipt.ru>
+	Thu, 1 May 2008 17:51:57 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH 02/10] scsi: fix integer as NULL pointer warnings
+Date: Thu, 1 May 2008 14:50:48 -0700
+Message-ID: <B3E98EAC5926D5498DDD341AE4B7D21C03BCBACA@TUS1XCHCLUPIN06.enterprise.veritas.com>
+In-Reply-To: <1209594551.3774.37.camel@localhost.localdomain>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH 02/10] scsi: fix integer as NULL pointer warnings
+thread-index: AcirEiTQ9pM04DmrTie6WagedImX4gAwrMSg
+References: <1209593020.24729.112.camel@brick> <1209594551.3774.37.camel@localhost.localdomain>
+From: "Mark Harvey" <mark_harvey@symantec.com>
+To: "James Bottomley" <James.Bottomley@HansenPartnership.com>,
+       "Harvey Harrison" <harvey.harrison@gmail.com>
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       "LKML" <linux-kernel@vger.kernel.org>,
+       "linux-scsi" <linux-scsi@vger.kernel.org>
+X-OriginalArrivalTime: 01 May 2008 21:51:02.0385 (UTC) FILETIME=[72E1E610:01C8ABD5]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+-----Original Message-----
+From: linux-scsi-owner@vger.kernel.org
+[mailto:linux-scsi-owner@vger.kernel.org] On Behalf Of James Bottomley
+Sent: Thursday, May 01, 2008 8:29 AM
+To: Harvey Harrison
+Cc: Andrew Morton; LKML; linux-scsi
+Subject: Re: [PATCH 02/10] scsi: fix integer as NULL pointer warnings
+
+On Wed, 2008-04-30 at 15:03 -0700, Harvey Harrison wrote:
+> drivers/scsi/FlashPoint.c:906:9: warning: Using plain integer as NULL
+pointer
+> drivers/scsi/FlashPoint.c:907:53: warning: Using plain integer as NULL
+pointer
+> drivers/scsi/FlashPoint.c:922:1: warning: Using plain integer as NULL
+pointer
+> drivers/scsi/aha152x.c:3585:60: warning: Using plain integer as NULL
+pointer
+> drivers/scsi/aha152x.c:3845:56: warning: Using plain integer as NULL
+pointer
+> drivers/scsi/qla1280.c:2814:37: warning: Using plain integer as NULL
+pointer
+> drivers/scsi/atp870u.c:750:47: warning: Using plain integer as NULL
+pointer
+> drivers/scsi/3w-9xxx.c:1281:36: warning: Using plain integer as NULL
+pointer
+> drivers/scsi/3w-9xxx.c:1293:36: warning: Using plain integer as NULL
+pointer
+> drivers/scsi/3w-9xxx.c:1301:35: warning: Using plain integer as NULL
+pointer
+> drivers/scsi/hptiop.c:447:10: warning: Using plain integer as NULL
+pointer
+> drivers/scsi/hptiop.c:457:10: warning: Using plain integer as NULL
+pointer
+> drivers/scsi/hptiop.c:479:24: warning: Using plain integer as NULL
+pointer
+> drivers/scsi/hptiop.c:483:22: warning: Using plain integer as NULL
+pointer
+> drivers/scsi/hptiop.c:1213:23: warning: Using plain integer as NULL
+pointer
+> drivers/scsi/hptiop.c:1214:23: warning: Using plain integer as NULL
+pointer
+> 
+> Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+> ---
+> James, please look at the FlashPoint.c changes in particular.
+
+Could you please Cc linux-scsi?  That way interested parties get to
+check their drivers.
+
+The flashpoint initialiser changes look wrong:  {0} is a conventional
+notation for zero initialise this structure.  Sparse should probably be
+taught to recognise that.
+
+James
 
 
+>  drivers/scsi/3w-9xxx.c    |    6 +++---
+>  drivers/scsi/FlashPoint.c |    7 +++----
+>  drivers/scsi/aha152x.c    |    4 ++--
+>  drivers/scsi/atp870u.c    |    2 +-
+>  drivers/scsi/hptiop.c     |   12 ++++++------
+>  drivers/scsi/qla1280.c    |    2 +-
+>  6 files changed, 16 insertions(+), 17 deletions(-)
+> 
+> diff --git a/drivers/scsi/3w-9xxx.c b/drivers/scsi/3w-9xxx.c
+> index b31faec..626d6e1 100644
+> --- a/drivers/scsi/3w-9xxx.c
+> +++ b/drivers/scsi/3w-9xxx.c
+> @@ -1278,7 +1278,7 @@ static irqreturn_t twa_interrupt(int irq, void
+*dev_instance)
+>  			error = 0;
+>  			/* Check for command packet errors */
+>  			if
+(full_command_packet->command.newcommand.status != 0) {
+> -				if (tw_dev->srb[request_id] != 0) {
+> +				if (tw_dev->srb[request_id]) {
+>  					error = twa_fill_sense(tw_dev,
+request_id, 1, 1);
+>  				} else {
+>  					/* Skip ioctl error prints */
+> @@ -1290,7 +1290,7 @@ static irqreturn_t twa_interrupt(int irq, void
+*dev_instance)
+>  
+>  			/* Check for correct state */
+>  			if (tw_dev->state[request_id] != TW_S_POSTED) {
+> -				if (tw_dev->srb[request_id] != 0) {
+> +				if (tw_dev->srb[request_id]) {
+>  					TW_PRINTK(tw_dev->host,
+TW_DRIVER, 0x1a, "Received a request id that wasn't posted");
+>  					TW_CLEAR_ALL_INTERRUPTS(tw_dev);
+>  					goto twa_interrupt_bail;
+> @@ -1298,7 +1298,7 @@ static irqreturn_t twa_interrupt(int irq, void
+*dev_instance)
+>  			}
+>  
+>  			/* Check for internal command completion */
+> -			if (tw_dev->srb[request_id] == 0) {
+> +			if (tw_dev->srb[request_id]) {
 
-On Fri, 2 May 2008, Alexey Dobriyan wrote:
+Swapped the test from zero to non-zero ?
 
-> On Thu, May 01, 2008 at 02:19:19PM -0700, Andrew Morton wrote:
-> > On Thu, 1 May 2008 17:08:05 -0400 (EDT)
-> > Steven Rostedt <rostedt@goodmis.org> wrote:
-> >
-> > > Some files in the net/9p directory uses "int" for flags. This can
-> > > cause hard to find bugs on some architectures. This patch converts the
-> > > flags to use "long" instead.
-> >
-> > gargh.
-> >
-> > > This bug was discovered by doing an allyesconfig make on the -rt kernel
-> > > where checks are done to ensure all flags are of size sizeof(long).
-> >
-> > I was about to suggest that we do something like that...
-> >
-> > I wonder how messy it is.  I long ago lost the ability to follow the
-> > convolutions in include/linux/spinlock*.h :(  gotta patch?
+>  				if (request_id !=
+tw_dev->chrdev_request_id) {
+>  					if (twa_aen_complete(tw_dev,
+request_id))
+>  						TW_PRINTK(tw_dev->host,
+TW_DRIVER, 0x1b, "Error completing AEN during attention interrupt");
+> diff --git a/drivers/scsi/FlashPoint.c b/drivers/scsi/FlashPoint.c
+> index b898d38..b252ac5 100644
+> --- a/drivers/scsi/FlashPoint.c
+> +++ b/drivers/scsi/FlashPoint.c
+> @@ -903,8 +903,8 @@ static void FPT_autoCmdCmplt(unsigned long p_port,
+unsigned char p_card);
+>  static void FPT_autoLoadDefaultMap(unsigned long p_port);
+>  
+>  static struct sccb_mgr_tar_info
+FPT_sccbMgrTbl[MAX_CARDS][MAX_SCSI_TAR] =
+> -    { {{0}} };
+> -static struct sccb_card FPT_BL_Card[MAX_CARDS] = { {0} };
+> +    { {{NULL}} };
+> +static struct sccb_card FPT_BL_Card[MAX_CARDS] = { {NULL} };
+>  static SCCBSCAM_INFO FPT_scamInfo[MAX_SCSI_TAR] = { {{0}} };
+>  static struct nvram_info FPT_nvRamInfo[MAX_MB_CARDS] = { {0} };
+>  
+> @@ -918,8 +918,7 @@ static unsigned char FPT_scamHAString[] =
+>  
+>  static unsigned short FPT_default_intena = 0;
+>  
+> -static void (*FPT_s_PhaseTbl[8]) (unsigned long, unsigned char) = {
+> -0};
+> +static void (*FPT_s_PhaseTbl[8]) (unsigned long, unsigned char) =
+{NULL};
+>  
 >
-> Me, me, take me back!
->
->
-> commit ee3ce191e8eaa4cc15c51a28b34143b36404c4f5
-> Author: Alexey Dobriyan <adobriyan@gmail.com>
-> Date:   Sat Nov 25 11:09:36 2006 -0800
->
->     [PATCH] Enforce "unsigned long flags;" when spinlocking
->
->     Make it break or warn if you pass to spin_lock_irqsave() and friends
->     something different from "unsigned long flags;".  Suprisingly large amount
->     of these was caught by recent commit
->     c53421b18f205c5f97c604ae55c6a921f034b0f6 and others.
->
->     Idea is largely from FRV typechecking. Suggestions from Andrew Morton.
->     All stupid typos in first version fixed.
->
->     Passes allmodconfig on i386, x86_64, alpha, arm as well as my usual config.
->
->     Note #1: checking with sparse is still needed, because a driver can save
->     	 and pass around flags or something. So far patch is very intrusive.
->     Note #2: techically, we should break only if
->     		sizeof(flags) < sizeof(unsigned long),
->     	 however, the more pain for getting suspicious code into kernel,
->     	 the better.
->
->     Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
->     Cc: Ingo Molnar <mingo@elte.hu>
->     Signed-off-by: Andrew Morton <akpm@osdl.org>
->     Signed-off-by: Linus Torvalds <torvalds@osdl.org>
->
-> diff --git a/include/linux/irqflags.h b/include/linux/irqflags.h
-> index 412e025..4fe740b 100644
-> --- a/include/linux/irqflags.h
-> +++ b/include/linux/irqflags.h
-> @@ -11,6 +11,12 @@
->  #ifndef _LINUX_TRACE_IRQFLAGS_H
->  #define _LINUX_TRACE_IRQFLAGS_H
->
-> +#define BUILD_CHECK_IRQ_FLAGS(flags)					\
-> +	do {								\
-> +		BUILD_BUG_ON(sizeof(flags) != sizeof(unsigned long));	\
-> +		typecheck(unsigned long, flags);			\
-> +	} while (0)
-> +
->  #ifdef CONFIG_TRACE_IRQFLAGS
->    extern void trace_hardirqs_on(void);
->    extern void trace_hardirqs_off(void);
-> @@ -50,10 +56,15 @@
->  #define local_irq_disable() \
->  	do { raw_local_irq_disable(); trace_hardirqs_off(); } while (0)
->  #define local_irq_save(flags) \
-> -	do { raw_local_irq_save(flags); trace_hardirqs_off(); } while (0)
-> +	do {					\
-> +		BUILD_CHECK_IRQ_FLAGS(flags);	\
-> +		raw_local_irq_save(flags);	\
-> +		trace_hardirqs_off();		\
-> +	} while (0)
->
->  #define local_irq_restore(flags)				\
->  	do {							\
-> +		BUILD_CHECK_IRQ_FLAGS(flags);			\
->  		if (raw_irqs_disabled_flags(flags)) {		\
->  			raw_local_irq_restore(flags);		\
->  			trace_hardirqs_off();			\
-> @@ -69,8 +80,16 @@
->   */
->  # define raw_local_irq_disable()	local_irq_disable()
->  # define raw_local_irq_enable()		local_irq_enable()
-> -# define raw_local_irq_save(flags)	local_irq_save(flags)
-> -# define raw_local_irq_restore(flags)	local_irq_restore(flags)
-> +# define raw_local_irq_save(flags)		\
-> +	do {					\
-> +		BUILD_CHECK_IRQ_FLAGS(flags);	\
-> +		local_irq_save(flags);		\
-> +	} while (0)
-> +# define raw_local_irq_restore(flags)		\
-> +	do {					\
-> +		BUILD_CHECK_IRQ_FLAGS(flags);	\
-> +		local_irq_restore(flags);	\
-> +	} while (0)
->  #endif /* CONFIG_TRACE_IRQFLAGS_SUPPORT */
->
->  #ifdef CONFIG_TRACE_IRQFLAGS_SUPPORT
-> @@ -80,7 +99,11 @@
->  		raw_safe_halt();				\
->  	} while (0)
->
-> -#define local_save_flags(flags)		raw_local_save_flags(flags)
-> +#define local_save_flags(flags)			\
-> +	do {					\
-> +		BUILD_CHECK_IRQ_FLAGS(flags);	\
-> +		raw_local_save_flags(flags);	\
-> +	} while (0)
->
->  #define irqs_disabled()						\
->  ({								\
-> @@ -90,7 +113,11 @@
->  	raw_irqs_disabled_flags(flags);				\
->  })
->
-> -#define irqs_disabled_flags(flags)	raw_irqs_disabled_flags(flags)
-> +#define irqs_disabled_flags(flags)	\
-> +({					\
-> +	BUILD_CHECK_IRQ_FLAGS(flags);	\
-> +	raw_irqs_disabled_flags(flags);	\
-> +})
->  #endif		/* CONFIG_X86 */
->
->  #endif
-> diff --git a/include/linux/spinlock.h b/include/linux/spinlock.h
-> index b800d2d..54ad370 100644
-> --- a/include/linux/spinlock.h
-> +++ b/include/linux/spinlock.h
-> @@ -52,6 +52,7 @@
->  #include <linux/thread_info.h>
->  #include <linux/kernel.h>
->  #include <linux/stringify.h>
-> +#include <linux/irqflags.h>
->
->  #include <asm/system.h>
->
-> @@ -183,13 +184,37 @@ do {								\
->  #define read_lock(lock)			_read_lock(lock)
->
->  #if defined(CONFIG_SMP) || defined(CONFIG_DEBUG_SPINLOCK)
-> -#define spin_lock_irqsave(lock, flags)	flags = _spin_lock_irqsave(lock)
-> -#define read_lock_irqsave(lock, flags)	flags = _read_lock_irqsave(lock)
-> -#define write_lock_irqsave(lock, flags)	flags = _write_lock_irqsave(lock)
-> +#define spin_lock_irqsave(lock, flags)			\
-> +	do {						\
-> +		BUILD_CHECK_IRQ_FLAGS(flags);		\
-> +		flags = _spin_lock_irqsave(lock);	\
-> +	} while (0)
-> +#define read_lock_irqsave(lock, flags)			\
-> +	do {						\
-> +		BUILD_CHECK_IRQ_FLAGS(flags);		\
-> +		flags = _read_lock_irqsave(lock);	\
-> +	} while (0)
-> +#define write_lock_irqsave(lock, flags)			\
-> +	do {						\
-> +		BUILD_CHECK_IRQ_FLAGS(flags);		\
-> +		flags = _write_lock_irqsave(lock);	\
-> +	} while (0)
->  #else
-> -#define spin_lock_irqsave(lock, flags)	_spin_lock_irqsave(lock, flags)
-> -#define read_lock_irqsave(lock, flags)	_read_lock_irqsave(lock, flags)
-> -#define write_lock_irqsave(lock, flags)	_write_lock_irqsave(lock, flags)
-> +#define spin_lock_irqsave(lock, flags)			\
-> +	do {						\
-> +		BUILD_CHECK_IRQ_FLAGS(flags);		\
-> +		_spin_lock_irqsave(lock, flags);	\
-> +	} while (0)
-> +#define read_lock_irqsave(lock, flags)			\
-> +	do {						\
-> +		BUILD_CHECK_IRQ_FLAGS(flags);		\
-> +		_read_lock_irqsave(lock, flags);	\
-> +	} while (0)
-> +#define write_lock_irqsave(lock, flags)			\
-> +	do {						\
-> +		BUILD_CHECK_IRQ_FLAGS(flags);		\
-> +		_write_lock_irqsave(lock, flags);	\
-> +	} while (0)
->  #endif
->
->  #define spin_lock_irq(lock)		_spin_lock_irq(lock)
-> @@ -225,15 +250,24 @@ do {								\
->  #endif
->
->  #define spin_unlock_irqrestore(lock, flags) \
-> -					_spin_unlock_irqrestore(lock, flags)
-> +	do {						\
-> +		BUILD_CHECK_IRQ_FLAGS(flags);		\
-> +		_spin_unlock_irqrestore(lock, flags);	\
-> +	} while (0)
->  #define spin_unlock_bh(lock)		_spin_unlock_bh(lock)
->
->  #define read_unlock_irqrestore(lock, flags) \
-> -					_read_unlock_irqrestore(lock, flags)
-> +	do {						\
-> +		BUILD_CHECK_IRQ_FLAGS(flags);		\
-> +		_read_unlock_irqrestore(lock, flags);	\
-> +	} while (0)
->  #define read_unlock_bh(lock)		_read_unlock_bh(lock)
->
->  #define write_unlock_irqrestore(lock, flags) \
-> -					_write_unlock_irqrestore(lock, flags)
-> +	do {						\
-> +		BUILD_CHECK_IRQ_FLAGS(flags);		\
-> +		_write_unlock_irqrestore(lock, flags);	\
-> +	} while (0)
->  #define write_unlock_bh(lock)		_write_unlock_bh(lock)
->
->  #define spin_trylock_bh(lock)	__cond_lock(lock, _spin_trylock_bh(lock))
-> @@ -247,6 +281,7 @@ do {								\
->
->  #define spin_trylock_irqsave(lock, flags) \
->  ({ \
-> +	BUILD_CHECK_IRQ_FLAGS(flags); \
->  	local_irq_save(flags); \
->  	spin_trylock(lock) ? \
->  	1 : ({ local_irq_restore(flags); 0; }); \
->
->
->
-> Seriously, if people can suggest _good_ *** for the following idiom
->
-> 	flags = spin_lock_irq***(&lock);
-> 		...
-> 	spin_unlock_irqrestore(&lock, flags);
->
-> I can do tree-wide conversion with irq_flags_t and new locking
-> primitive.
+/*---------------------------------------------------------------------
+>   *
+> diff --git a/drivers/scsi/aha152x.c b/drivers/scsi/aha152x.c
+> index f5215fd..0c93a49 100644
+> --- a/drivers/scsi/aha152x.c
+> +++ b/drivers/scsi/aha152x.c
+> @@ -3582,7 +3582,7 @@ static int checksetup(struct aha152x_setup
+*setup)
+>  	if (i == ARRAY_SIZE(ports))
+>  		return 0;
+>  
+> -	if ( request_region(setup->io_port, IO_RANGE, "aha152x")==0 ) {
+> +	if (!request_region(setup->io_port, IO_RANGE, "aha152x")) {
+>  		printk(KERN_ERR "aha152x: io port 0x%x busy.\n",
+setup->io_port);
+>  		return 0;
+>  	}
+> @@ -3842,7 +3842,7 @@ static int __init aha152x_init(void)
+>  			if ((setup_count == 1) && (setup[0].io_port ==
+ports[i]))
+>  				continue;
+>  
+> -			if ( request_region(ports[i], IO_RANGE,
+"aha152x")==0 ) {
+> +			if (!request_region(ports[i], IO_RANGE,
+"aha152x")) {
+>  				printk(KERN_ERR "aha152x: io port 0x%x
+busy.\n", ports[i]);
+>  				continue;
+>  			}
+> diff --git a/drivers/scsi/atp870u.c b/drivers/scsi/atp870u.c
+> index db6de5e..571b43b 100644
+> --- a/drivers/scsi/atp870u.c
+> +++ b/drivers/scsi/atp870u.c
+> @@ -747,7 +747,7 @@ static void send_s870(struct atp_unit
+*dev,unsigned char c)
+>  		dev->quhd[c] = 0;
+>  	}
+>  	workreq = dev->quereq[c][dev->quhd[c]];
+> -	if (dev->id[c][scmd_id(workreq)].curr_req == 0) {	
+> +	if (!dev->id[c][scmd_id(workreq)].curr_req) {	
+>  		dev->id[c][scmd_id(workreq)].curr_req = workreq;
+>  		dev->last_cmd[c] = scmd_id(workreq);
+>  		goto cmd_subp;
+> diff --git a/drivers/scsi/hptiop.c b/drivers/scsi/hptiop.c
+> index 5b7be1e..bc5fb5c 100644
+> --- a/drivers/scsi/hptiop.c
+> +++ b/drivers/scsi/hptiop.c
+> @@ -444,7 +444,7 @@ static void __iomem *hptiop_map_pci_bar(struct
+hptiop_hba *hba, int index)
+>  	if (!(pci_resource_flags(pcidev, index) & IORESOURCE_MEM)) {
+>  		printk(KERN_ERR "scsi%d: pci resource invalid\n",
+>  				hba->host->host_no);
+> -		return 0;
+> +		return NULL;
+>  	}
+>  
+>  	mem_base_phy = pci_resource_start(pcidev, index);
+> @@ -454,7 +454,7 @@ static void __iomem *hptiop_map_pci_bar(struct
+hptiop_hba *hba, int index)
+>  	if (!mem_base_virt) {
+>  		printk(KERN_ERR "scsi%d: Fail to ioremap memory
+space\n",
+>  				hba->host->host_no);
+> -		return 0;
+> +		return NULL;
+>  	}
+>  	return mem_base_virt;
+>  }
+> @@ -476,11 +476,11 @@ static void hptiop_unmap_pci_bar_itl(struct
+hptiop_hba *hba)
+>  static int hptiop_map_pci_bar_mv(struct hptiop_hba *hba)
+>  {
+>  	hba->u.mv.regs = hptiop_map_pci_bar(hba, 0);
+> -	if (hba->u.mv.regs == 0)
+> +	if (!hba->u.mv.regs)
+>  		return -1;
+>  
+>  	hba->u.mv.mu = hptiop_map_pci_bar(hba, 2);
+> -	if (hba->u.mv.mu == 0) {
+> +	if (!hba->u.mv.mu) {
+>  		iounmap(hba->u.mv.regs);
+>  		return -1;
+>  	}
+> @@ -1210,8 +1210,8 @@ static void hptiop_remove(struct pci_dev
+*pcidev)
+>  
+>  static struct hptiop_adapter_ops hptiop_itl_ops = {
+>  	.iop_wait_ready    = iop_wait_ready_itl,
+> -	.internal_memalloc = 0,
+> -	.internal_memfree  = 0,
+> +	.internal_memalloc = NULL,
+> +	.internal_memfree  = NULL,
+>  	.map_pci_bar       = hptiop_map_pci_bar_itl,
+>  	.unmap_pci_bar     = hptiop_unmap_pci_bar_itl,
+>  	.enable_intr       = hptiop_enable_intr_itl,
+> diff --git a/drivers/scsi/qla1280.c b/drivers/scsi/qla1280.c
+> index 09ab3ea..d2bc60a 100644
+> --- a/drivers/scsi/qla1280.c
+> +++ b/drivers/scsi/qla1280.c
+> @@ -2811,7 +2811,7 @@ qla1280_64bit_start_scsi(struct scsi_qla_host
+*ha, struct srb * sp)
+>  
+>  	/* Check for room in outstanding command list. */
+>  	for (cnt = 0; cnt < MAX_OUTSTANDING_COMMANDS &&
+> -		     ha->outstanding_cmds[cnt] != 0; cnt++);
+> +		     ha->outstanding_cmds[cnt] != NULL; cnt++);
+>  
+>  	if (cnt >= MAX_OUTSTANDING_COMMANDS) {
+>  		status = 1;
 
-I don't think we need to have a new primitive.
-
->
-> If people can't, I can do just irq_flags_t conversion and enforce build
-> breakage if one use something other than irq_flags_t .
-
-We can simply have all users of flags use the new irqflags_t type, and
-just do a one time big patch (grant you, that would break all pending
-patches before that). But we can also write up a script that can convert
-patches as well.
-
--- Steve
-
+--
+To unsubscribe from this list: send the line "unsubscribe linux-scsi" in
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
