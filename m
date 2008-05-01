@@ -1,77 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759357AbYEAC2V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759938AbYEACaI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759357AbYEAC2V (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Apr 2008 22:28:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754617AbYEAC2L
+	id S1759938AbYEACaI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Apr 2008 22:30:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754629AbYEAC3z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Apr 2008 22:28:11 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:55443 "EHLO e4.ny.us.ibm.com"
+	Wed, 30 Apr 2008 22:29:55 -0400
+Received: from mail.crca.org.au ([67.207.131.56]:60861 "EHLO crca.org.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754470AbYEAC2K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Apr 2008 22:28:10 -0400
-Subject: Re: [PATCH] ext3: Fix typos in messages and comments (journalled
-	-> journaled)
-From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Jan Kara <jack@suse.cz>,
-       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org
-In-Reply-To: <20080501002018.2729adcc@core>
-References: <12095679813226-git-send-email-jack@suse.cz>
-	 <12095679812375-git-send-email-jack@suse.cz>
-	 <12095679812452-git-send-email-jack@suse.cz>
-	 <1209567981639-git-send-email-jack@suse.cz>
-	 <20080430104330.66c44d4f.akpm@linux-foundation.org>
-	 <20080430212711.168bdcc0@core>
-	 <1209592973.6113.23.camel@norville.austin.ibm.com>
-	 <20080501002018.2729adcc@core>
+	id S1753989AbYEAC3y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Apr 2008 22:29:54 -0400
+X-Bogosity: Ham, spamicity=0.000000
+Subject: Re: Slow DOWN, please!!!
+From: Nigel Cunningham <ncunningham@crca.org.au>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Willy Tarreau <w@1wt.eu>,
+       David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jiri Slaby <jirislaby@gmail.com>
+In-Reply-To: <alpine.LFD.1.10.0804301831330.5994@woody.linux-foundation.org>
+References: <20080429.190352.137408408.davem@davemloft.net>
+	 <20080430224610.GO8474@1wt.eu>
+	 <alpine.LFD.1.10.0804301555330.2980@woody.linux-foundation.org>
+	 <200805010242.36775.rjw@sisk.pl>
+	 <alpine.LFD.1.10.0804301811051.5994@woody.linux-foundation.org>
+	 <alpine.LFD.1.10.0804301831330.5994@woody.linux-foundation.org>
 Content-Type: text/plain
-Date: Wed, 30 Apr 2008 21:28:07 -0500
-Message-Id: <1209608887.7650.6.camel@norville.austin.ibm.com>
+Organization: Christian Reformed Churches of Australia
+Date: Thu, 01 May 2008 12:31:15 +1000
+Message-Id: <1209609075.1271.19.camel@nigel-laptop>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 
+X-Mailer: Evolution 2.22.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi.
 
-On Thu, 2008-05-01 at 00:20 +0100, Alan Cox wrote:
-> > > A search of the ACM literature finds "journalized", "journalled" and
-> > > "journaled" are all in use for this operation.
-> > 
-> > I hate to get into these discussions, but I've used "journaled" a lot,
-> > so I feel I should chime in.
-> 
-> I noticed and IBM cannot even agree internally 8)
-> 
-> "Tivoli Storage Manager Journal Based Backup troubleshooting techniques
->  and solutions to common problems seen with journalized backups and the
->  journal database. This is from a 2005_November_07 Support Technical
->  Exchange Web seminar presented by TSM Support staff"
-> 
-> "IBM Journaled File System (JFS)"
+On Wed, 2008-04-30 at 18:40 -0700, Linus Torvalds wrote:
+> The thing is, the quality of individual patches isn't what matters! What 
+> matters is the quality of the end result. And people are going to be a lot 
+> more involved in looking at, testing, and working with code that is 
+> merged, rather than code that isn't.
 
-IBM's big.  What can I say?  :-)
+No. People generally expect that code that has been merged does work, so
+they don't look at it unless they're forced to (by a bug or the desire
+to make further modifications in that code) and they don't explicitly
+seek to test it. They just seek to use it.
 
-> > That would probably be more correct, but the use of "journal" as a verb
-> > has really gotten ingrained in file system developers brains.  I
-> > personally haven't heard or used "journalized" and it would take some
-> > getting used to.
-> 
-> Mandrake use Journalized File System in various press articles. Mac
-> people seem to like journalized too and google shows it used in various
-> reviews and articles.
+When it doesn't work, some of us will go and seek to find the cause,
+others (most?) will simply roll back to whatever they last found to be
+reliable.
 
-I guess it's more common that I thought.
+Out of tree code has the same issues.
 
-> I think I'm going to follow this up with the professional bodies and see
-> if there is an opinion because either the computing world needs to agree
-> on a proper English name, or they need to agree on a new one and talk to
-> the dictionary people about it.
+The only time code really gets looked at and tested is when there's a
+problem, or when people are explicitly choosing to inspect it (pre-merge
+reviews, eg).
 
-If there's some kind of consensus, I don't have strong feelings either
-way.
--- 
-David Kleikamp
-IBM Linux Technology Center
+So my answer to the "how do we raise quality" question would be that
+when writing the code, we put time and effort into properly analysing
+the problem and developing a solution, we put time and effort into
+carefully testing the solution, and we put code in that will help the
+end-user help us to debug issues later (without them necessarily needing
+to git-bisect). After all, good software isn't the result of random (or
+semi-random), unconsidered modifications, but of planning, thought and
+attention to detail.
+
+In other words, I'm arguing that the speed of merging should be
+irrelevant. What's relevant is the quality of the work done in the first
+place.
+
+If you want better quality code, penalise the people who get buggy code
+merged. Give them a reason to get it in a better state before they try
+to merge. Of course Linus alone can't do that.
+
+Nigel
 
