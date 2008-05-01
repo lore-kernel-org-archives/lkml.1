@@ -1,41 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761261AbYEACUV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761415AbYEACUr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761261AbYEACUV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Apr 2008 22:20:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755026AbYEACRx
+	id S1761415AbYEACUr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Apr 2008 22:20:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759938AbYEACR5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Apr 2008 22:17:53 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:33847
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1757606AbYEACRw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Apr 2008 22:17:52 -0400
-Date: Wed, 30 Apr 2008 19:17:51 -0700 (PDT)
-Message-Id: <20080430.191751.170120541.davem@davemloft.net>
+	Wed, 30 Apr 2008 22:17:57 -0400
+Received: from rex.securecomputing.com ([203.24.151.4]:45766 "EHLO
+	snapgear.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1759881AbYEACR4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Apr 2008 22:17:56 -0400
+Date: Thu, 1 May 2008 12:17:21 +1000
+From: Greg Ungerer <gerg@snapgear.com>
+Message-Id: <200805010217.m412HLoj004138@goober>
 To: torvalds@linux-foundation.org
-Cc: rjw@sisk.pl, w@1wt.eu, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, jirislaby@gmail.com
-Subject: Re: Slow DOWN, please!!!
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <alpine.LFD.1.10.0804301855390.5994@woody.linux-foundation.org>
-References: <alpine.LFD.1.10.0804301831330.5994@woody.linux-foundation.org>
-	<20080430.185142.219463829.davem@davemloft.net>
-	<alpine.LFD.1.10.0804301855390.5994@woody.linux-foundation.org>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Subject: [PATCH] m68knommu: remove unused CONFIG_DISKtel
+Cc: akpm@linux-foundation.org, gerg@uclinux.org, linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Wed, 30 Apr 2008 19:01:12 -0700 (PDT)
+Remove unused CONFIG_DISKtel support.
+Missing config definition pointed out by
+Robert P. J. Day <rpjday@mindspring.com>
 
-> I'm not saying we should merge crap.
+Signed-off-by: Greg Ungerer <gerg@uclinux.org>
+---
 
-That's exactly what's been happening this merge window though.
 
-And throughout this, Andrew Morton has been the only person with the
-balls and lack of ego problems to revert regression causing changes he
-introduced.
+diff -Naurp linux-2.6.25/arch/m68knommu/platform/5307/config.c linux-2.6.25-uc0/arch/m68knommu/platform/5307/config.c
+--- linux-2.6.25/arch/m68knommu/platform/5307/config.c	2008-04-17 12:49:44.000000000 +1000
++++ linux-2.6.25-uc0/arch/m68knommu/platform/5307/config.c	2008-01-11 13:37:38.000000000 +1000
+@@ -124,8 +124,7 @@ void __init config_BSP(char *commandp, i
+ 	mcf_setimr(MCFSIM_IMR_MASKALL);
+ 
+ #if defined(CONFIG_NETtel) || defined(CONFIG_eLIA) || \
+-      defined(CONFIG_DISKtel) || defined(CONFIG_SECUREEDGEMP3) || \
+-      defined(CONFIG_CLEOPATRA)
++    defined(CONFIG_SECUREEDGEMP3) || defined(CONFIG_CLEOPATRA)
+ 	/* Copy command line from FLASH to local buffer... */
+ 	memcpy(commandp, (char *) 0xf0004000, size);
+ 	commandp[size-1] = 0;
