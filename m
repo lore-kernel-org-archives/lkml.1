@@ -1,64 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761947AbYEAUjF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761567AbYEAUp5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761947AbYEAUjF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 May 2008 16:39:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755738AbYEAUiy
+	id S1761567AbYEAUp5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 May 2008 16:45:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759005AbYEAUps
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 May 2008 16:38:54 -0400
-Received: from mail.anarazel.de ([217.115.131.40]:47972 "EHLO smtp.anarazel.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755547AbYEAUiy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 May 2008 16:38:54 -0400
-From: Andres Freund <andres@anarazel.de>
-To: Adrian Bunk <bunk@kernel.org>
-Subject: Re: [PATCH] v4l/dvb: Add linux/version.h include as KERNEL_VERSION macro is used.
-Date: Thu, 1 May 2008 22:38:39 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, apdim@grecian.net,
-       Mauro Carvalho Chehab <mchehab@infradead.org>
-References: <200805012005.42400.andres@anarazel.de> <200805012136.03569.andres@anarazel.de> <20080501194526.GP29330@cs181133002.pp.htv.fi>
-In-Reply-To: <20080501194526.GP29330@cs181133002.pp.htv.fi>
+	Thu, 1 May 2008 16:45:48 -0400
+Received: from e31.co.us.ibm.com ([32.97.110.149]:33194 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758686AbYEAUpr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 May 2008 16:45:47 -0400
+Message-ID: <481A2BF6.2070406@austin.ibm.com>
+Date: Thu, 01 May 2008 15:45:42 -0500
+From: Joel Schopp <jschopp@austin.ibm.com>
+User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart1771619.oArMhbuXEm";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+To: Ingo Molnar <mingo@elte.hu>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: questions on calc_delta_mine() in sched.c
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <200805012238.45090.andres@anarazel.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart1771619.oArMhbuXEm
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+Ingo,
 
-On Thursday 01 May 2008, Adrian Bunk wrote in "Re: [PATCH] v4l/dvb: Add=20
-linux/version.h include as KERNEL_VERSION macro is used.":
+I have a few questions regarding  this code in kernel/sched.c
 
-> > Hm. Strange.
-> > It fixed a build error for me. Will retest and report back.
-> It seems to be missing in another file.
-> Can you send the error message and your .config?
-Unfortunately no. I overwrote the .config with some other config and I coul=
-dnt=20
-reproduce the failure so far with a new config.
-Sorry
+static unsigned long
+calc_delta_mine(unsigned long delta_exec, unsigned long weight,
+         struct load_weight *lw)
+{
+     u64 tmp;
 
-Andres
+     if (unlikely(!lw->inv_weight))
+         lw->inv_weight = (WMULT_CONST-lw->weight/2) / (lw->weight+1);
 
---nextPart1771619.oArMhbuXEm
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+Q1) This code is hit often in scenarios I run, is this really unlikely for 
+others?
+Q2) The rest of the code in sched.c seems to make inv_weight == 
+WMULT_CONST/weight and I was wondering if you could explain why this 
+instance is different.
+Q3) That division is pretty expensive, could we sacrifice some accuracy and 
+do a precompute table?  Do you have another idea how we could get rid of 
+the divide?
 
-iD8DBQBIGipVporPraT14igRAo2eAKCBtoYEm63FquiJxeMUOi23cK5jawCgjCXX
-YUn/zqzDklx0suxD0A+tyCk=
-=S26l
------END PGP SIGNATURE-----
+-Joel Schopp
 
---nextPart1771619.oArMhbuXEm--
