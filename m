@@ -1,39 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761449AbYEAUhj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761947AbYEAUjF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761449AbYEAUhj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 May 2008 16:37:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756815AbYEAUh1
+	id S1761947AbYEAUjF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 May 2008 16:39:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755738AbYEAUiy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 May 2008 16:37:27 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:56135 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756310AbYEAUh0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 May 2008 16:37:26 -0400
-Date: Thu, 1 May 2008 23:37:25 +0300 (EEST)
-From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
-X-X-Sender: ijjarvin@wrl-59.cs.helsinki.fi
-To: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
-cc: David Miller <davem@davemloft.net>,
-       Andy Furniss <lists@andyfurniss.entadsl.com>,
-       Georgi Chorbadzhiyski <gf@unixsol.org>, Netdev <netdev@vger.kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Arjan van de Ven <arjan@infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] [TCP]: Fix fackets corruption during transitional state
-In-Reply-To: <Pine.LNX.4.64.0805012328570.29396@wrl-59.cs.helsinki.fi>
-Message-ID: <Pine.LNX.4.64.0805012335110.29396@wrl-59.cs.helsinki.fi>
-References: <Pine.LNX.4.64.0805012328570.29396@wrl-59.cs.helsinki.fi>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 1 May 2008 16:38:54 -0400
+Received: from mail.anarazel.de ([217.115.131.40]:47972 "EHLO smtp.anarazel.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755547AbYEAUiy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 May 2008 16:38:54 -0400
+From: Andres Freund <andres@anarazel.de>
+To: Adrian Bunk <bunk@kernel.org>
+Subject: Re: [PATCH] v4l/dvb: Add linux/version.h include as KERNEL_VERSION macro is used.
+Date: Thu, 1 May 2008 22:38:39 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, apdim@grecian.net,
+       Mauro Carvalho Chehab <mchehab@infradead.org>
+References: <200805012005.42400.andres@anarazel.de> <200805012136.03569.andres@anarazel.de> <20080501194526.GP29330@cs181133002.pp.htv.fi>
+In-Reply-To: <20080501194526.GP29330@cs181133002.pp.htv.fi>
+MIME-Version: 1.0
+Content-Type: multipart/signed;
+  boundary="nextPart1771619.oArMhbuXEm";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
-Content-ID: <Pine.LNX.4.64.0805012335112.29396@wrl-59.cs.helsinki.fi>
+Message-Id: <200805012238.45090.andres@anarazel.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Doh, on the second though, this won't fix anything (!tp->sacked_out is 
-already checked in tcp_adjust_fackets_out() :-/). Please don't apply.
+--nextPart1771619.oArMhbuXEm
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
---
- i.
+On Thursday 01 May 2008, Adrian Bunk wrote in "Re: [PATCH] v4l/dvb: Add=20
+linux/version.h include as KERNEL_VERSION macro is used.":
+
+> > Hm. Strange.
+> > It fixed a build error for me. Will retest and report back.
+> It seems to be missing in another file.
+> Can you send the error message and your .config?
+Unfortunately no. I overwrote the .config with some other config and I coul=
+dnt=20
+reproduce the failure so far with a new config.
+Sorry
+
+Andres
+
+--nextPart1771619.oArMhbuXEm
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBIGipVporPraT14igRAo2eAKCBtoYEm63FquiJxeMUOi23cK5jawCgjCXX
+YUn/zqzDklx0suxD0A+tyCk=
+=S26l
+-----END PGP SIGNATURE-----
+
+--nextPart1771619.oArMhbuXEm--
