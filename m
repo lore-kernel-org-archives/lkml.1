@@ -1,71 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765705AbYEAThh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765989AbYEATh4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765705AbYEAThh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 May 2008 15:37:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765733AbYEATgv
+	id S1765989AbYEATh4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 May 2008 15:37:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764376AbYEAThW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 May 2008 15:36:51 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:52452 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765717AbYEATgu (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Thu, 1 May 2008 15:36:50 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Willy Tarreau <w@1wt.eu>, Linus Torvalds <torvalds@linux-foundation.org>,
+	Thu, 1 May 2008 15:37:22 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:33785 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762238AbYEAThU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 May 2008 15:37:20 -0400
+Date: Thu, 1 May 2008 20:37:14 +0100
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andrew Morton <akpm@linux-foundation.org>, Willy Tarreau <w@1wt.eu>,
        David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
        Jiri Slaby <jirislaby@gmail.com>
 Subject: Re: Slow DOWN, please!!!
-In-Reply-To: Your message of "Thu, 01 May 2008 13:53:18 +0200."
-             <200805011353.19335.rjw@sisk.pl>
-From: Valdis.Kletnieks@vt.edu
-References: <20080429.190352.137408408.davem@davemloft.net> <alpine.LFD.1.10.0804301811051.5994@woody.linux-foundation.org> <20080501055045.GC18597@1wt.eu>
-            <200805011353.19335.rjw@sisk.pl>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1209670599_3191P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Thu, 01 May 2008 15:36:39 -0400
-Message-ID: <11481.1209670599@turing-police.cc.vt.edu>
+Message-ID: <20080501193714.GC5882@ZenIV.linux.org.uk>
+References: <20080429.190352.137408408.davem@davemloft.net> <200805011259.47343.rjw@sisk.pl> <alpine.LFD.1.10.0805010816340.5994@woody.linux-foundation.org> <200805011909.40203.rjw@sisk.pl> <alpine.LFD.1.10.0805011022370.5994@woody.linux-foundation.org> <20080501181157.GB5882@ZenIV.linux.org.uk> <alpine.LFD.1.10.0805011116060.5994@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.1.10.0805011116060.5994@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1209670599_3191P
-Content-Type: text/plain; charset=us-ascii
-
-On Thu, 01 May 2008 13:53:18 +0200, "Rafael J. Wysocki" said:
-
-> How about:
+On Thu, May 01, 2008 at 11:23:43AM -0700, Linus Torvalds wrote:
+> On Thu, 1 May 2008, Al Viro wrote:
+> > On Thu, May 01, 2008 at 10:41:21AM -0700, Linus Torvalds wrote:
+> > > 
+> > > Same goes for "we should all just spend time looking at each others 
+> > > patches and trying to find bugs in them". That's not a solution, that's a 
+> > > drug-induced dream you're living in.
+> > 
+> > As one of those obviously drug-addled freaks who _are_ looking for bugs...
+> > Thank you so fucking much ;-/
 > 
-> (1) Merge a couple of trees at a time (one tree at a time would be ideal, but
->     that's impossible due to the total number of trees).
-> (2) After (1) give testers some time to report problems introduced by the
->     merge.
-> (3) Wait until the most urgent problems are resolved.  Revert the offending
->     changes if there's no solution within given time.
-> (4) Repeat for another couple of trees.
-> (5) Arrange things so that every tree gets merged once every two months.
+> That's not what I meant, and I think you know it.
 
-You can't get there from here (at least not very easily).
+FWIW, the way I'd read that had been "face it, normal folks don't *do*
+that and if you hope for more people doing code review - put down your
+pipe, it's not even worth talking about".  Which managed to get under
+my skin, and that's not something that happens often...
 
-If you have 60 trees, and want a merge for each one every 2 months, you have to
-average 1 tree a day.  How big a delay you want in step (2) directly impacts
-how many trees you merge at once - if you want a week of cook time, you have to
-merge 7 trees every Monday, and so on...
+Anyway, I'm glad it had been a misparsing; my apologies for the reaction.
+ 
+> So when we're looking at improvement suggestions, they should be real 
+> suggestions that have realistic goals, not just wishes. And they 
+> shouldn't be the things we *already* do, because then they wouldn't 
+> be improvements.
+> 
+> In other words: do people have realistic ideas for how to make others 
+> spend _more_ time looking at patches? And not just _wishing_ people did 
+> that?
 
-
---==_Exmh_1209670599_3191P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFIGhvHcC3lWbTT17ARAktGAJ0fvS17+GOyptEy4RPRJsDgVZx96wCdFjrp
-5LMfJANw0oz05hXXG+/MdNU=
-=jOYK
------END PGP SIGNATURE-----
-
---==_Exmh_1209670599_3191P--
+The obvious answer: amount of areas where one _can_ do that depends on
+some things that can be changed.  Namely:
+	* one needs to understand enough of the area or know where/how
+to get the information needed for that.  I've got some experience with
+the latter and I suspect that most of the folks who do active reviews
+have their own set of tricks for getting into the unfamiliar area fast.
+Moreover, having such set of tricks is probably _the_ thing that makes
+us able to do that kind of work.
+	Sharing such (i.e. "here's how one wades through unfamiliar
+area and gets a sense of what's going on there; here's what one looks
+out for; here's how to deal with data structures; here are the signs
+of problematic lifetime logics; here's how one formulates hypothesis
+about refcounting rules; here's how one verifies such and looks for
+possible bugs in that area; etc.) is a Good Idea(tm).
+	Having the critical areas documented with easy to review in
+mind is another thing that would probably help.  And yes, it won't
+happen overnight, it won't happen for all areas and it won't be mandatory
+for maintainers, etc.  Previous part (i.e. which questions to ask
+about data structures, etc.) would help with that.
+	FWIW, I'm trying to do that - right now I'm flipping between
+wading through Cthulhu-damned fs/locks.c and its friends and getting
+the notes I've got from the last month work into edible form (which
+includes translation into something that resembles normal English,
+among other things - more than half of that is in... well, let's call
+it idiom-rich Russian).
+	* patches should be visible *when* *they* *can* *be* *changed*.
+If it's "Linus had pulled from linux-foo.git and that included a merge
+from linux-foobar.git, which is developed on foobar-wank@hell.knows.where",
+it's too late.  It's not just that you don't revert; it's that you _can't_
+realistically revert in such situation - not without very massive work.
+And I don't know what _can_ be done about that, other than making it
+socially discouraged.  To some extent it's OK, but my impression is that
+some areas are as bad as CVS-based "communities" had been and switch to
+git has simply hidden the obvious signs of trouble...
