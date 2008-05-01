@@ -1,118 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763074AbYEAPua@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763324AbYEAPv1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763074AbYEAPua (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 May 2008 11:50:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758283AbYEAPuU
+	id S1763324AbYEAPv1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 May 2008 11:51:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751117AbYEAPvU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 May 2008 11:50:20 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:53371 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752165AbYEAPuS (ORCPT
+	Thu, 1 May 2008 11:51:20 -0400
+Received: from gustav.zipernowsky.hu ([193.225.20.248]:45590 "EHLO
+	gustav.zipernowsky.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752065AbYEAPvT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 May 2008 11:50:18 -0400
-Date: Thu, 1 May 2008 08:49:19 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Arjan van de Ven <arjan@infradead.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, davem@davemloft.net,
-       linux-kernel@vger.kernel.org, jirislaby@gmail.com,
-       Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: RFC: starting a kernel-testers group for newbies
-Message-Id: <20080501084919.8ac6dbdd.akpm@linux-foundation.org>
-In-Reply-To: <20080501132159.GC29330@cs181133002.pp.htv.fi>
-References: <20080429.190352.137408408.davem@davemloft.net>
-	<200804302136.58005.rjw@sisk.pl>
-	<20080430131537.1f7a0914.akpm@linux-foundation.org>
-	<alpine.LFD.1.10.0804301325260.2980@woody.linux-foundation.org>
-	<20080501003125.GM29330@cs181133002.pp.htv.fi>
-	<20080430000338.50548884@infradead.org>
-	<20080501113038.GW29330@cs181133002.pp.htv.fi>
-	<20080430072013.7c3b30b1@infradead.org>
-	<20080501132159.GC29330@cs181133002.pp.htv.fi>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 1 May 2008 11:51:19 -0400
+MIME-Version: 1.0
+Date: Thu, 01 May 2008 17:51:12 +0200
+From: <oliver@zipernowsky.hu>
+To: linux-kernel@vger.kernel.org
+Subject: Re: [OP] v2.6.22.22-op2-rc1
+Reply-To: oliver.pntr@gmail.com
+In-Reply-To: <14a96e5f5f50a2822b7b2a223ad3288f@zipernowsky.hu>
+References: <14a96e5f5f50a2822b7b2a223ad3288f@zipernowsky.hu>
+Message-ID: <226b005fb03d548d31b4c941ec376866@zipernowsky.hu>
+User-Agent: RoundCube Webmail/0.1
+Content-Type: multipart/mixed;
+	boundary="=_e6bc2f2c8f345a83abf7c50036fe4843"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 1 May 2008 16:21:59 +0300 Adrian Bunk <bunk@kernel.org> wrote:
+--=_e6bc2f2c8f345a83abf7c50036fe4843
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 
-> > > But our current status quo is not OK:
-> > > 
-> > > Check Rafael's regressions lists asking yourself
-> > > "How many regressions are older than two weeks?" 
-> > 
-> > "ext4 doesn't compile on m68k".
-> > YAWN.
-> >  
-> > Wrong question...
-> > "How many bugs that a sizable portion of users will hit in reality are there?"
-> > is the right question to ask...
-> >...
-> 
-> "Kernel oops while running kernbench and tbench on powerpc" took more 
-> than 2 months to get resolved, and we ship 2.6.25 with this regression.
+and the forgotted patch:
+---
 
-Precisely.  Cherry-picking a single example such as the 68k thing and then
-claiming that it reflects the general is known as a "fallacy".
 
-> Granted that compared to x86 there's not a sizable portion of users 
-> crazy enough to run Linux on powerpc machines...
+--=_e6bc2f2c8f345a83abf7c50036fe4843
+Content-Transfer-Encoding: base64
+Content-Type: text/plain; name="patch-v2.6.22.22-op1-v2.6.22.22-op2-rc1"; charset="UTF-8"
+Content-Disposition: attachment; filename="patch-v2.6.22.22-op1-v2.6.22.22-op2-rc1"
 
-Another fallacy which Arjan is pushing (even though he doesn't appear to
-have realised it) is "all hardware is the same".
+ZGlmZiAtLWdpdCBhL01ha2VmaWxlIGIvTWFrZWZpbGUKaW5kZXggNzIwMDE2MC4uN2I3YTY2YyAx
+MDA2NDQKLS0tIGEvTWFrZWZpbGUKKysrIGIvTWFrZWZpbGUKQEAgLTEsNyArMSw3IEBACiBWRVJT
+SU9OID0gMgogUEFUQ0hMRVZFTCA9IDYKIFNVQkxFVkVMID0gMjIKLUVYVFJBVkVSU0lPTiA9IC4y
+Mi1vcDEKK0VYVFJBVkVSU0lPTiA9IC4yMi1vcDItcmMxCiBOQU1FID0gSG9seSBEYW5jaW5nIE1h
+bmF0ZWVzLCBCYXRtYW4hCiAKICMgKkRPQ1VNRU5UQVRJT04qCmRpZmYgLS1naXQgYS9mcy9haW8u
+YyBiL2ZzL2Fpby5jCmluZGV4IGIzNDE5YzUuLmU2ODNiOTEgMTAwNjQ0Ci0tLSBhL2ZzL2Fpby5j
+CisrKyBiL2ZzL2Fpby5jCkBAIC0xMTcxLDcgKzExNzEsMTIgQEAgcmV0cnk6CiAJCQlyZXQgPSAw
+OwogCQkJaWYgKHRvLnRpbWVkX291dCkJLyogT25seSBjaGVjayBhZnRlciByZWFkIGV2dCAqLwog
+CQkJCWJyZWFrOwotCQkJaW9fc2NoZWR1bGUoKTsKKwkJCS8qIFRyeSB0byBvbmx5IHNob3cgdXAg
+aW4gaW8gd2FpdCBpZiB0aGVyZSBhcmUgb3BzCisJCQkgKiAgaW4gZmxpZ2h0ICovCisJCQlpZiAo
+Y3R4LT5yZXFzX2FjdGl2ZSkKKwkJCQlpb19zY2hlZHVsZSgpOworCQkJZWxzZQorCQkJCXNjaGVk
+dWxlKCk7CiAJCQlpZiAoc2lnbmFsX3BlbmRpbmcodHNrKSkgewogCQkJCXJldCA9IC1FSU5UUjsK
+IAkJCQlicmVhazsK
+--=_e6bc2f2c8f345a83abf7c50036fe4843--
 
-Well, it isn't.  And most of our bugs are hardware-specific.  So, I'd
-venture, most of our bugs don't affect most people.  So, over time, by
-Arjan's "important to enough people" observation we just get more and more
-and more unfixed bugs.
-
-And I believe this effect has been occurring.
-
-And please stop regaling us with this kerneloops.org stuff.  It just isn't
-very interesting, useful or representative when considering the whole
-problem.  Very few kernel bugs result in a trace, and when they do they are
-usually easy to fix and, because of this, they will get fixed, often
-quickly.  I expect netdevwatchdogeth0transmittimedout.org would tell a
-different story.
-
-One thing which muddies all this up is that bug reporters vanish.  Over the
-years I have sent thousands and thousands of ping emails to people who have
-reported bugs via email, three to six months after the fact.  Some were
-solved - maybe a fifth.  About the same proportion of reporters reply and
-give some reason why they cannot work on the bug.  In the majorty of cases
-people don't reply at all and I suspect they're in the same category of
-cannot-work-on-the-bug.
-
-And why can't they work on the bug?  Usually, because they found a
-workaround.  People aren't going to spend months sitting in front of a
-non-functional computer waiting for kernel developers to decide if their
-machine is important enough to fix.  They will find a workaround.  They
-will buy new hardware.  They will discover "noapic" (234000 google hits and
-rising!).  They will swap it with a different machine.  They will switch to
-a different distro which for some reason doesn't trigger the bug.  They
-will use an older kernel.  They will switch to Solaris.  Etcetera.  People
-are clever - they will find a way to get around it.
-
-I figure that after a bug is reported we have maybe 24 to 48 hours to send
-a good response before our chances of _ever_ fixing it have begun to
-decline sharply due to the clever minds at the other end.
-
-Which leads us to Arjan's third fallacy:
-
-   "How many bugs that a sizable portion of users will hit in reality
-   are there?" is the right question to ask...
-
-well no, it isn't.  Because approximately zero of the hardware bugs affect
-a sizeable portion of users.  With this logic we will end up with more and
-more and more and more bugs each of which affect a tiny number of users. 
-Hundreds of different bugs.  You know where this process ends up.
-
-Arjan's fourth fallacy: "We don't make (effective) prioritization
-decisions." lol.  This implies that someone somewhere once sat down and
-wondered which bug he should most effectively work on.  Well, we don't do
-that.  We ignore _all_ the bugs in favour of busily writing new ones.
 
