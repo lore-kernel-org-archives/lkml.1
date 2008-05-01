@@ -1,120 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932816AbYEAWCl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933182AbYEAWDx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932816AbYEAWCl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 May 2008 18:02:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754876AbYEAWCd
+	id S933182AbYEAWDx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 May 2008 18:03:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757797AbYEAWDp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 May 2008 18:02:33 -0400
-Received: from fmmailgate03.web.de ([217.72.192.234]:49276 "EHLO
-	fmmailgate03.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756848AbYEAWCc (ORCPT
+	Thu, 1 May 2008 18:03:45 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:53695 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754876AbYEAWDo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 May 2008 18:02:32 -0400
-Message-ID: <002301c8abd7$0d8afcf0$6400a8c0@bui.materna.com>
-From: "Roland" <devzero@web.de>
-To: <nadejdalevitsky@gmail.com>
-Cc: <linux-kernel@vger.kernel.org>, <samuel.thibault@ens-lyon.org>,
-       <eric.moore@lsil.com>
-Subject: Re: This month's price for the most useless new Kconfig help text ...
-Date: Fri, 2 May 2008 00:02:30 +0200
+	Thu, 1 May 2008 18:03:44 -0400
+Date: Thu, 1 May 2008 18:03:41 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, akpm@osdl.org,
+       Latchesar Ionkov <lucho@ionkov.net>,
+       Eric Van Hensbergen <ericvh@gmail.com>
+Subject: Re: [PATCH] fix flags length in net 9p
+Message-ID: <20080501220341.GA31475@infradead.org>
+References: <Pine.LNX.4.58.0805011706070.12785@gandalf.stny.rr.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	format=flowed;
-	charset="iso-8859-1";
-	reply-type=original
-Content-Transfer-Encoding: 8bit
-X-Priority: 3
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook Express 6.00.2900.3138
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3198
-X-Provags-ID: V01U2FsdGVkX19MjokAxJAVXILpIcvOpcHeS0kJKBBYRXrHz6YK
-	QErhp3GxOav3CP+mQOqYzibHkxZHCKY0TCfdYmGIgYzY9+kVM6
-	h/hXgZ0PY=
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.58.0805011706070.12785@gandalf.stny.rr.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> (I agree that Kconfig helps like "CONFIG_FUSION: Say Y here to get to
->> see options for Fusion Message Passing Technology (MPT) drivers" do not
->> help much, I just didn't know that people were now actually caring about
->> having some real explanations beyond the usual "if you don't know what
->> it is, you don't need it, just say no")
->
->Speaking of which I remember how I was confused when I found out that this 
->driver
->is the linux driver for "SCI logic" SCSI vmware adapter :-)
+On Thu, May 01, 2008 at 05:08:05PM -0400, Steven Rostedt wrote:
+> 
+> Some files in the net/9p directory uses "int" for flags. This can
+> cause hard to find bugs on some architectures. This patch converts the
+> flags to use "long" instead.
+> 
+> This bug was discovered by doing an allyesconfig make on the -rt kernel
+> where checks are done to ensure all flags are of size sizeof(long).
 
-to be exact, it`s  CONFIG_FUSION_SPI and that makes mptspi build, which is
-a driver for LSI53C1030 type controller, which also exists in real world.
-vmware just emulates this hardware.
-
->menuconfig FUSION
->        bool "Fusion MPT device support"
->        depends on PCI
->        ---help---
->        Say Y here to get to see options for Fusion Message
->        Passing Technology (MPT) drivers.
->        This option alone does not add any kernel code.
-
-you are right, this is confiusing and confused me and others, too.
-
-not a single word that this is for LSILogic type controllers.
-
-Maybe that can/should be changed to "LSI Fusion MPT device support", "Say Y 
-here to get to see options for drivers
-based on LSI Fusion Message Passing Technology (MPT)"  !?
-
-regards
-roland
-
-
-
-
-
-
-List:       linux-kernel
-Subject:    Re: This month's price for the most useless new Kconfig help 
-text ...
-From:       Maxim Levitsky <nadejdalevitsky () gmail ! com>
-Date:       2008-05-01 17:04:42
-Message-ID: 200805012004.42706.maximlevitsky () gmail ! com
-[Download message RAW]
-
-On Thursday, 1 May 2008 19:01:29 Samuel Thibault wrote:
-> Christoph Hellwig, le Thu 01 May 2008 11:47:20 -0400, a écrit :
-> > On Thu, May 01, 2008 at 02:19:00PM +0100, Samuel Thibault wrote:
-> > > If the society was a bit more aware of accessibility troubles in 
-> > > general
-> > > (I mean in the street etc.), we wouldn't have to explain the word
-> >
-> > Blah, an agenda is not an excuse for bad option descriptions.
->
-> Sure, that's why I provided a patch :)
->
-> (I agree that Kconfig helps like "CONFIG_FUSION: Say Y here to get to
-> see options for Fusion Message Passing Technology (MPT) drivers" do not
-> help much, I just didn't know that people were now actually caring about
-> having some real explanations beyond the usual "if you don't know what
-> it is, you don't need it, just say no")
-Speaking of which I remember how I was confused when I found out that this 
-driver
-is the linux driver for "SCI logic" SCSI vmware adapter :-)
-
->
-> > And btw, the word accessibility in the sense used here doesn't translate
-> > at all into many foreign languages,
->
-> Right.
->
-> Samuel
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
-
-Regards,
- Maxim Levitsky
-
+We had checks like that in mainline aswell that caught a lot of errors
+like this one.  Probably got lost in one of the gazillions of spinlock
+rewrites..
 
