@@ -1,79 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932444AbYEAWS6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764326AbYEAWVm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932444AbYEAWS6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 May 2008 18:18:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762077AbYEAWSu
+	id S1764326AbYEAWVm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 May 2008 18:21:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755002AbYEAWVe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 May 2008 18:18:50 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:52605 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761947AbYEAWSu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 May 2008 18:18:50 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Willy Tarreau <w@1wt.eu>
-Subject: Re: Slow DOWN, please!!!
-Date: Fri, 2 May 2008 00:17:33 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       Jiri Slaby <jirislaby@gmail.com>
-References: <20080429.190352.137408408.davem@davemloft.net> <alpine.LFD.1.10.0805011022370.5994@woody.linux-foundation.org> <20080501185032.GA30883@1wt.eu>
-In-Reply-To: <20080501185032.GA30883@1wt.eu>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Thu, 1 May 2008 18:21:34 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:48150 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754716AbYEAWVd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 May 2008 18:21:33 -0400
+Date: Thu, 1 May 2008 15:20:51 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: venkatesh.pallipadi@intel.com, davem@davemloft.net,
+       trini@kernel.crashing.org, mingo@elte.hu, tglx@linutronix.de,
+       hpa@zytor.com, linux-kernel@vger.kernel.org, suresh.b.siddha@intel.com,
+       torvalds@linux-foundation.org
+Subject: Re: huge gcc 4.1.{0,1} __weak problem
+Message-Id: <20080501152051.4eb4bad3.akpm@linux-foundation.org>
+In-Reply-To: <20080501215633.GU29330@cs181133002.pp.htv.fi>
+References: <20080430013108.GA18207@linux-os.sc.intel.com>
+	<20080429.212833.192304794.davem@davemloft.net>
+	<924EFEDD5F540B4284297C4DC59F3DEEF7D18E@orsmsx423.amr.corp.intel.com>
+	<20080501215633.GU29330@cs181133002.pp.htv.fi>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200805020017.34782.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, 1 of May 2008, Willy Tarreau wrote:
-> On Thu, May 01, 2008 at 10:41:21AM -0700, Linus Torvalds wrote:
-> > Same goes for "we should all just spend time looking at each others 
-> > patches and trying to find bugs in them". That's not a solution, that's a 
-> > drug-induced dream you're living in.
-> 
-> "all" above is the wrong part. Encourage each other into reviewing code
-> will definitely *help* (and I did not say fix the problem, OK?). There
-> are persons who regularly spend some time to review code. I'm thinking
-> about Al, Andrew, Christoph, Arjan, and maybe many other ones I'm missing,
-> just that I regularly see them give advices to people who post their patches
-> on the list. And even if only for that, they deserve some respect, and their
-> efforts must not be dismissed.
-> 
-> Maybe they are more skilled than anyone else for this job. Maybe they're
-> so much used to do it that it just takes them a few minutes each time, I
-> don't know. I wish *more* people could be encouraged to do this work,
-> which is very likely painful but instructive. If the current reviewers
-> could give hints on how to save a lot of time to them, it may motivate
-> more to follow them. I suspect that insisting on developers to post their
-> less obvious work to the list(s) is a first step. Maybe at one point we're
-> all responsible when we see a mail entitled "[GIT] pull request for XXX",
-> we should all jump on it and ask "when and where was this code reviewed ?".
-> 
-> Once again, it's not a fix. It's just one small step towards a saner process.
-> 
-> > So do you have any productive *suggestions*? Some that involve more than 
-> > "let's write less code" or "let's just review each others patches more".
-> 
-> It's not much about reviewing each others' patches, it's about showing
-> one's work to others first. If our developers are encouraged to work
-> alone in a cave late at night with itching eyes, and send their work
-> at once every 2 months in a sealed envelope, we'll not solve anything.
-> 
-> I also proposed a more repressive method incitating the ones with really
-> bad scores to find crap in other's work in order to remain hidden behind
-> them. You explained why it would not work. Fine.
-> 
-> I also proposed to group merges by reduced overlapping areas, and to
-> shorten the merge window and make it (at least) twice as often. Rafael
-> also proposed to merge core first, then archs, which is a refined variation
-> on the same principle.
+On Fri, 2 May 2008 00:56:33 +0300
+Adrian Bunk <bunk@kernel.org> wrote:
 
-That wasn't me, but the idea is also worth considering IMO.
+> On Wed, Apr 30, 2008 at 05:49:46AM -0700, Pallipadi, Venkatesh wrote:
+> >  
+> > >-----Original Message----- From: David Miller 
+> > >From: Venki Pallipadi <venkatesh.pallipadi@intel.com> Date: Tue, 29 
+> > >Apr 2008 18:31:09 -0700
+> > >
+> > >> Some flavors of gcc 4.1.0 and 4.1.1 seems to have trouble 
+> > >understanding
+> > >> weak function definitions. Calls to function from the same 
+> > >file where it is
+> > >> defined as weak _may_ get inlined, even when there is a 
+> > >non-weak definition of
+> > >> the function elsewhere. I tried using attribute 'noinline' 
+> > >which does not
+> > >> seem to help either.
+> > >> 
+> > >> One workaround for this is to have weak functions defined in 
+> > >different
+> > >> file as below. Other possible way is to not use weak 
+> > >functions and go back
+> > >> to ifdef logic.
+> > >> 
+> > >> There are few other usages in kernel that seem to depend on 
+> > >weak (and noinline)
+> > >> working correctly, which can also potentially break and 
+> > >needs such workarounds.
+> > >> Example -
+> > >> mach_reboot_fixups() in arch/x86/kernel/reboot.c is one such 
+> > >call which
+> > >> is getting inlined with a flavor of gcc 4.1.1.
+> > >> 
+> > >> Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+> > >> Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
+> > >
+> > >This sounds like a bug.  And if gcc does multi-file compilation it
+> > >can in theory do the same mistake even if you move it to another
+> > >file.
+> > >
+> > >We need something more bulletproof here.
+> > >
+> > 
+> > The references here
+> > http://gcc.gnu.org/ml/gcc-bugs/2006-05/msg02801.html
+> > http://gcc.gnu.org/bugzilla/show_bug.cgi?id=27781
+> > 
+> > seem to suggest that the bug is only with weak definition in the same
+> > file.
+> > So, having them in a different file should be good enough workaround
+> > here.
+> >...
+> 
+> A workaround here is the wrong solution since this isn't the only place 
+> that suffers from this issue.
+> 
+> We currently give a #warning for 4.1.0.
+> But not for 4.1.1.
+> (Accordingto the bug >= 4.1.2 is fixed.)
+> 
+> And a #warning is not enough.
+> 
+> The huge problem is that "empty __weak function in the same file and 
+> non-weak arch function" has recently become a common pattern
 
-Thanks,
-Rafael
+Perhaps the commonest.  Certainly there will be more.
+
+> with 
+> several new usages added during this merge window alone.
+> 
+> And the breakages can be very subtle runtime breakages.
+> 
+> I see only the following choices:
+> - remove __weak and replace all current usages
+> - move all __weak functions into own files, and ensure that also happens
+>   for future usages
+> - #error for gcc 4.1.{0,1}
+
+Can we detect the {0,1}?  __GNUC_EVEN_MORE_MINOR__?
+
+Yes, I guess we should ban 4.1.x.  Ouch.
+
