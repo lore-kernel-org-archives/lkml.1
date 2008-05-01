@@ -1,88 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763446AbYEARpa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761743AbYEARt0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763446AbYEARpa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 May 2008 13:45:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758015AbYEARpX
+	id S1761743AbYEARt0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 May 2008 13:49:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752401AbYEARtS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 May 2008 13:45:23 -0400
-Received: from fg-out-1718.google.com ([72.14.220.153]:33417 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755044AbYEARpW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 May 2008 13:45:22 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer:mime-version:content-type:content-transfer-encoding:sender;
-        b=OYplNCKeiHum+eQ0lzeeFdU1OXEvj/Z1oVXkt02eD8erCVITIVzYO0RClOjcooW5/pMBT/G7c/eKbuBfQBCPN0mkWDj/NlVHaTBr0fk3X2JQDsn8s+YfVvyouLMgct/H+PPOVo5v0VJ5MiB3dGhENc0zcXkQm1XXSxIcf9bRdo4=
-Date: Thu, 1 May 2008 20:45:10 +0300
-From: Pekka Paalanen <pq@iki.fi>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Pekka Paalanen <pq@iki.fi>, linux-kernel@vger.kernel.org,
-       Christoph Hellwig <hch@infradead.org>,
-       Arjan van de Ven <arjan@infradead.org>, Pavel Roskin <proski@gnu.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [RFC 1/3] mmiotrace full patch, preview 3
-Message-ID: <20080501204510.5ecb69a2@daedalus.pq.iki.fi>
-In-Reply-To: <20080429234021.071f7948@daedalus.pq.iki.fi>
-References: <20080428214504.5c359195@daedalus.pq.iki.fi>
-	<20080429234021.071f7948@daedalus.pq.iki.fi>
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.8; x86_64-pc-linux-gnu)
+	Thu, 1 May 2008 13:49:18 -0400
+Received: from main.gmane.org ([80.91.229.2]:35318 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751601AbYEARtS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 May 2008 13:49:18 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Russ Dill <Russ.Dill@gmail.com>
+Subject: Re: Slow DOWN, please!!!
+Date: Thu, 1 May 2008 17:49:06 +0000 (UTC)
+Message-ID: <loom.20080501T174627-71@post.gmane.org>
+References: <20080429.190352.137408408.davem@davemloft.net>  <4817EF91.4080800@davidnewall.com>  <20080429.211835.130816277.davem@davemloft.net>  <48186E57.5070805@davidnewall.com>  <alpine.LFD.1.10.0804300739350.2997@woody.linux-foundation.org>  <4818B8A7.4000902@davidnewall.com>  <alpine.LFD.1.10.0804301127020.2980@woody.linux-foundation.org>  <4818C0BF.5020002@davidnewall.com>  <alpine.LFD.1.10.0804301202200.2980@woody.linux-foundation.org>  <4818C571.8040609@davidnewall.com>  <alpine.LFD.1.10.0804301223220.2980@woody.linux-foundation.org>  <481947AF.4090101@davidnewall.com> <1209655700.27499.28.camel@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: main.gmane.org
+User-Agent: Loom/3.14 (http://gmane.org/)
+X-Loom-IP: 70.190.167.62 (Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9b5) Gecko/2008041515 Firefox/3.0b5)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 29 Apr 2008 23:40:21 +0300
-Pekka Paalanen <pq@iki.fi> wrote:
 
-> On Mon, 28 Apr 2008 21:45:04 +0300
-> Pekka Paalanen <pq@iki.fi> wrote:
+> I Recently found a system with a 2.6.4 kernel, and when i upgraded to
+> 2.6.23, i saw memory usage increase from ~250mb to around 500. I
+> upgraded to .25 to see if it was some weird bug, but it is the same.
 > 
-> > The current state is that mmiotrace seems to work fine, also on SMP,
-> > but on SMP there's a chance to miss events due to CPUs racing. At last
-> > the log produced via ftrace framework is up-to-spec. Inserting user
-> > comments (markers in mmiotrace-parlance) into the log is not yet
-> > supported. All in all, after some more testing on my part, IMHO this
-> > is in a mergeable state.
+> Unfortunately i cannot investigate more, as i only had the box for a
+> very short time, but this is alot more concerning to me.
 > 
-> Ok, looks like I won't be able to do more testing than what I did today.
-...
-> 
-> Tested with the patches and sched-devel/latest of
-> Tue, 29 Apr 2008 11:47:55 +0000
-> using testmmiotrace.ko and things looked fine.
 
-Hi,
+Memory is not something that is difficult to track. Its likely one of two things:
 
-I did get the nvidia blob to work, with some help, and tried mmiotrace
-on it. Worked perfectly. The machine is Thinkpad T61 with a Core 2 Duo.
-Mmiotrace disabled and enabled the extra core without a glitch, and did
-not even drop any events with the default ftrace buffer size. Previously
-while tracing Nouveau, I had to increase the buffer size, which worked
-well, too.
+a) Your card now has 3d support, hooray! and X is mapping more regions, which
+isn't really additional RAM usage.
 
-I did a second trace run after doing
-echo 1 > /debug/tracing/trace_entries
-and as expected, it lost a lot of events, but showed no problems. Then
-I disabled mmiotrace while in X, the 2nd cpu core came back online, and
-everything was good. Losing events is logged into the kernel log once
-per mmiotrace activation, and into the trace whenever noticed.
+b) Linux is caching more things, hooray! I'm not saying that you are one of
+those people who just looks at the free number and doesn't think any further,
+but you might be.
 
-(On athlon64 3000+, x86_64:)
-Earlier I tried unaligned accesses with testmmiotrace.ko, by mapping
-from an odd start address and doing 8, 16 and 32 bit reads and writes.
-There were no crashes, and at a page boundary it resulted in a recursive
-probe hit, which was resolved by disarming the both pages. Only one page
-is re-armed, so the other page is left "blind", but did not seem to
-harm stability.
-
-Conclusion: green light from me!
+or c, the kernel has another 250MB is kernel data structures, seems unlikely.
 
 
--- 
-Pekka Paalanen
-http://www.iki.fi/pq/
