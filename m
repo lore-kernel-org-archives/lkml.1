@@ -1,87 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763351AbYEAVGJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764199AbYEAVIS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763351AbYEAVGJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 May 2008 17:06:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759134AbYEAVFx
+	id S1764199AbYEAVIS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 May 2008 17:08:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756835AbYEAVIK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 May 2008 17:05:53 -0400
-Received: from e34.co.us.ibm.com ([32.97.110.152]:56642 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758686AbYEAVFw (ORCPT
+	Thu, 1 May 2008 17:08:10 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:63506 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754458AbYEAVIJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 May 2008 17:05:52 -0400
-Date: Thu, 1 May 2008 16:05:50 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: "Serge E. Hallyn" <serue@us.ibm.com>, Greg KH <gregkh@suse.de>,
-       Benjamin Thery <benjamin.thery@bull.net>, linux-kernel@vger.kernel.org,
-       Al Viro <viro@ftp.linux.org.uk>, Tejun Heo <htejun@gmail.com>,
-       Daniel Lezcano <dlezcano@fr.ibm.com>,
-       Pavel Emelyanov <xemul@openvz.org>, netdev@vger.kernel.org
-Subject: Re: [PATCH 00/10] sysfs tagged directories
-Message-ID: <20080501210550.GA22534@sergelap.austin.ibm.com>
-References: <20080429171015.473938697@theryb.frec.bull.fr> <20080429173621.GA16625@suse.de> <20080429180445.GA18110@sergelap.austin.ibm.com> <20080429184151.GA19794@suse.de> <20080429193417.GA19282@sergelap.austin.ibm.com> <20080501031341.GD4911@suse.de> <20080501151051.GB16038@sergelap.austin.ibm.com> <m11w4lho08.fsf@frodo.ebiederm.org>
+	Thu, 1 May 2008 17:08:09 -0400
+Date: Thu, 1 May 2008 17:08:05 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: LKML <linux-kernel@vger.kernel.org>
+cc: akpm@osdl.org, Latchesar Ionkov <lucho@ionkov.net>,
+       Eric Van Hensbergen <ericvh@gmail.com>
+Subject: [PATCH] fix flags length in net 9p 
+Message-ID: <Pine.LNX.4.58.0805011706070.12785@gandalf.stny.rr.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <m11w4lho08.fsf@frodo.ebiederm.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Eric W. Biederman (ebiederm@xmission.com):
-> "Serge E. Hallyn" <serue@us.ibm.com> writes:
-> 
-> > Quoting Greg KH (gregkh@suse.de):
-> > Now before moving veth1 to the new netns, we have in the container:
-> > /sys/class/net:
-> > lo  sit0
-> >
-> > /sys/devices/virtual/net:
-> > lo  sit0
-> >
-> > and after moving veth1, we have in the container:
-> >
-> > /sys/class/net:
-> > lo  sit0  veth1
-> >
-> > /sys/devices/virtual/net:
-> > lo  sit0
-> >
-> > In the parent network namespace, veth1 is removed from /sys/class/net
-> > but remains in /sys/devices/virtual/net.
-> 
-> The symlink is gone by the real directory remains?
-> 
-> > I'm not sure whether this is the renaming bug that Daniel Lezcano's
-> > patch addresses.  If not (as I suspect) then that clearly needs to be
-> > fixed.
-> >
-> > Benjamin can you play around with this and test it with Daniel's
-> > patch?
-> 
-> Darn.  It appears we have a regression in this patchset.
-> That part used to work.
-> 
-> I was thinking of blaming sysfs_rename_link.  But it the
-> links are fine so it looks more likely that sysfs has morphed once
-> again and we have  a reference counting issue or something similar.
-> Yuck. d_move and the other moves should have worked.
-> 
-> >From a purely get the good less controversial parts of this
-> patchset in.  I suggest we look at patches 7/10 and 8/10 (without
-> the tag_ops).  And introduce and start using sysfs_delete_link
-> and sysfs_rename_link.  That code seems pretty stable and is
-> generally a code reduction all by itself by reducing a common
-> idiom into a single function.
-> 
-> Eric
 
-Ok as it turns out Benjamin Thery does in fact have a patch to fix this.
-Benjamin, please send your renaming patch out tomorrow if you can?
+Some files in the net/9p directory uses "int" for flags. This can
+cause hard to find bugs on some architectures. This patch converts the
+flags to use "long" instead.
 
-I guess this is why I didn't really see the problem Benjamin said there
-was - it just works with SYSFS_DEPRECATED  :)
+This bug was discovered by doing an allyesconfig make on the -rt kernel
+where checks are done to ensure all flags are of size sizeof(long).
 
--serge
+Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+---
+ net/9p/trans_virtio.c |    2 +-
+ net/9p/util.c         |    4 ++--
+ 2 files changed, 3 insertions(+), 3 deletions(-)
+
+Index: linux-compile.git/net/9p/trans_virtio.c
+===================================================================
+--- linux-compile.git.orig/net/9p/trans_virtio.c	2008-04-09 18:45:15.000000000 -0400
++++ linux-compile.git/net/9p/trans_virtio.c	2008-05-01 17:02:25.000000000 -0400
+@@ -134,7 +134,7 @@ static void p9_virtio_close(struct p9_tr
+ {
+ 	struct virtio_chan *chan = trans->priv;
+ 	int count;
+-	unsigned int flags;
++	unsigned long flags;
+
+ 	spin_lock_irqsave(&chan->lock, flags);
+ 	p9_idpool_destroy(chan->tagpool);
+Index: linux-compile.git/net/9p/util.c
+===================================================================
+--- linux-compile.git.orig/net/9p/util.c	2008-02-14 23:09:39.000000000 -0500
++++ linux-compile.git/net/9p/util.c	2008-05-01 17:02:35.000000000 -0400
+@@ -71,7 +71,7 @@ int p9_idpool_get(struct p9_idpool *p)
+ {
+ 	int i = 0;
+ 	int error;
+-	unsigned int flags;
++	unsigned long flags;
+
+ retry:
+ 	if (idr_pre_get(&p->pool, GFP_KERNEL) == 0)
+@@ -102,7 +102,7 @@ EXPORT_SYMBOL(p9_idpool_get);
+
+ void p9_idpool_put(int id, struct p9_idpool *p)
+ {
+-	unsigned int flags;
++	unsigned long flags;
+ 	spin_lock_irqsave(&p->lock, flags);
+ 	idr_remove(&p->pool, id);
+ 	spin_unlock_irqrestore(&p->lock, flags);
+
