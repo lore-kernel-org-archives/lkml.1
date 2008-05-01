@@ -1,78 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756143AbYEAJIU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757486AbYEAJQ3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756143AbYEAJIU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 May 2008 05:08:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754820AbYEAJIH
+	id S1757486AbYEAJQ3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 May 2008 05:16:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754925AbYEAJQT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 May 2008 05:08:07 -0400
-Received: from mo-p00-ob.rzone.de ([81.169.146.161]:22461 "EHLO
-	mo-p00-ob.rzone.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754825AbYEAJIG (ORCPT
+	Thu, 1 May 2008 05:16:19 -0400
+Received: from hpsmtp-eml16.kpnxchange.com ([213.75.38.116]:17881 "EHLO
+	hpsmtp-eml16.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754800AbYEAJQS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 May 2008 05:08:06 -0400
-X-RZG-CLASS-ID: mo00
-X-RZG-AUTH: jclyXLBJ10ZHTmMMskdeEV9K+qamm4K24+0GzTHYHnheuzKtvddXf0g46u47Uw==
-Message-ID: <48198873.7030503@hartkopp.net>
-Date: Thu, 01 May 2008 11:08:03 +0200
-From: Oliver Hartkopp <oliver@hartkopp.net>
-User-Agent: Mozilla-Thunderbird 2.0.0.9 (X11/20080110)
+	Thu, 1 May 2008 05:16:18 -0400
+From: Frans Pop <elendil@planet.nl>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: RFC: starting a kernel-testers group for newbies
+Date: Thu, 1 May 2008 11:16:11 +0200
+User-Agent: KMail/1.9.9
+Cc: arjan@infradead.org, bunk@kernel.org, torvalds@linux-foundation.org,
+       rjw@sisk.pl, davem@davemloft.net, linux-kernel@vger.kernel.org,
+       jirislaby@gmail.com, rostedt@goodmis.org
+References: <20080429.190352.137408408.davem@davemloft.net> <200804302136.58005.rjw@sisk.pl> <20080430131537.1f7a0914.akpm@linux-foundation.org> <alpine.LFD.1.10.0804301325260.2980@woody.linux-foundation.org> <20080501003125.GM29330@cs181133002.pp.htv.fi> <20080430000338.50548884@infradead.org> <20080430000338.50548884@infradead.org> <20080501011346.522f9846.akpm@linux-foundation.org>
+In-reply-To: <20080501011346.522f9846.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: Linus Torvalds <torvalds@linux-foundation.org>, akpm@linux-foundation.org,
-       Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org
-Subject: Re: [RFC] Kernel naming convention in the merge phase
-References: <4818F093.3070105@hartkopp.net> <4819050C.9060800@zytor.com>
-In-Reply-To: <4819050C.9060800@zytor.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200805011116.13645.elendil@planet.nl>
+X-OriginalArrivalTime: 01 May 2008 09:16:16.0009 (UTC) FILETIME=[02194F90:01C8AB6C]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin wrote:
-> Oliver Hartkopp wrote:
->> i wonder about the Kernel naming convention in the merge phase before
->> the -rc1 is officially tagged by Linus.
->>
->> Won't it be more precisely to name the current snapshot
->> 2.6.26-merge-git16 instead of 2.6.25-git16?
->>
->> It is not that i would suggest to have a new git tag in this merge 
->> phase but only the Makefile should be changed at the beginning of 
->> this phase to identify the ongoing work for the 2.6.26:
->>
->> (..)
->>
->> Introducing the new '-merge' version _that_ early helps to avoid the 
->> version confusion in /lib/modules and also allows people to work with 
->> kernel version depended stuff in a very early phase.
->>
->
-> And it'll break all the robotic stuff again.
->
-> Foo-gitX has always been a development snapshot which *follows* Foo.
+Andrew Morton wrote:
+> On Wed, 30 Apr 2008 00:03:38 -0700 Arjan van de Ven <arjan@infradead.org>
+> wrote:
+>> I would argue instead that we don't know which bugs to fix first.
+> 
+> How about "a bug which we just added"?
 
-Hm - if it breaks the robotic stuff, there could be a real 
-"v2.6.26-merge" git tag which shouldn't break like "v2.6.26-rc1".
+And leave unfixed all the regressions introduced in earlier kernel versions 
+and known at the time of the release of that version but still present in 
+the current version? Not to mention all the other bugs reported by users of 
+recent stable versions?
 
-It could look like this:
+> One which is repeatable. 
+> Repeatable by a tester who is prepared to work with us on resolving it.
 
-- tag v2.6.25
-- drink a beer
-- tag v2.6.26-merge
-- pull the new stuff from subsystem maintainers
-- tag v2.6.26-rc1
-- ...
+That can be true for not-so-recently introduced bugs too.
 
-For me a 2.6.25-gitX looks like a snapshot that leads to a 2.6.25.1 and 
-_not_ to a 2.6.26-rc1. The current 2.6.25-git16 is moch more a 2.6.26 
-than a 2.6.25. So v2.6.26-merge-git16 makes it much clearer what's going 
-on here.
+There are so many bugs out there and developers tend to focus on new ones 
+leaving a lot of others unattended, both important and not so important 
+ones.
 
-To tag Linus' tree with v2.6.26-merge before pulling all the new 2.6.26 
-stuff seems therefore reasonable to me. But maybe i don't have all the 
-dependencies on my radar.
-
-Regards,
-Oliver
-
+Which ones should someone focus on? Maybe on the ones that someone (helped) 
+introduce him/herself. Maybe that should even sometimes be prioritized over 
+introducing new bugs^W^W^Wdoing new development.
