@@ -1,79 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758224AbYEAElU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757023AbYEAEra@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758224AbYEAElU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 May 2008 00:41:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751692AbYEAElN
+	id S1757023AbYEAEra (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 May 2008 00:47:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752147AbYEAErV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 May 2008 00:41:13 -0400
-Received: from smtp-vbr8.xs4all.nl ([194.109.24.28]:2687 "EHLO
-	smtp-vbr8.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751614AbYEAElM (ORCPT
+	Thu, 1 May 2008 00:47:21 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:40123 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752128AbYEAErV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 May 2008 00:41:12 -0400
-From: Roman Zippel <zippel@linux-m68k.org>
-To: Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: Additional kconfig targets (cloneconfig, nonint_oldconfig etc)
-Date: Thu, 1 May 2008 06:40:29 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-kbuild <linux-kbuild@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Dave Jones <davej@codemonkey.org.uk>,
-       Roland McGrath <roland@redhat.com>,
-       Andres Salomon <dilinger@queued.net>
-References: <20080429183531.GB19652@uranus.ravnborg.org>
-In-Reply-To: <20080429183531.GB19652@uranus.ravnborg.org>
+	Thu, 1 May 2008 00:47:21 -0400
+Date: Wed, 30 Apr 2008 21:46:52 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Jeff Garzik <jeff@garzik.org>
+cc: Paul Mackerras <paulus@samba.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jiri Slaby <jirislaby@gmail.com>
+Subject: Re: Slow DOWN, please!!!
+In-Reply-To: <48194464.2000406@garzik.org>
+Message-ID: <alpine.LFD.1.10.0804302142570.5994@woody.linux-foundation.org>
+References: <20080429.190352.137408408.davem@davemloft.net> <200804302136.58005.rjw@sisk.pl> <alpine.LFD.1.10.0804301253290.2980@woody.linux-foundation.org> <18457.219.995207.136771@cargo.ozlabs.ibm.com> <alpine.LFD.1.10.0804302034180.5994@woody.linux-foundation.org>
+ <48194464.2000406@garzik.org>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200805010640.33973.zippel@linux-m68k.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-On Tuesday 29. April 2008, Sam Ravnborg wrote:
 
-> Recently there has been request for a number of new
-> kconfig related targets.
->
-> In general it boils down to the following:
->
-> We need to be flexible in what configuration
-> we start out from and how we apply it.
->
-> We need to be able to apply it in following ways:
-> 1) automated - select defaults for all new symbols
->    => It is used for "make defconfig, make *_defconfig" today
->
-> 2) interactive - asking user for all new symbols
->    and error out if stdin is redirected
->
-> 3) list unknown - list all new symbols and do not
->    create a new config
+On Thu, 1 May 2008, Jeff Garzik wrote:
+> 
+> linux-next is _supposed_ to be solely the stuff that is ready to be sent to
+> you upon window-open.
 
-A general comment about the intendend design:
-conf.c is primarily meant as interactive tool. defconfig isn't exactly 
-interactive, but is included for historical reasons as it produces the same 
-output.
-The patch I've seen for the last point put it into conf.c, which is the wrong 
-place for it. For this sort of thing we should create a small query tool, 
-which then can export all sorts of information.
+Yes, the "stuff" may be supposed to be stable. But the trees feeding it 
+certainly are not. People are rebasing them etc, and it doesn't matter 
+because I think linux-next starts largely from scratch next time around.
 
-If we silence the defconfig output (which IMO is a good thing, as I don't 
-think anyone looked at the output seriously for a long time and the current 
-behaviour has purely historical reasons), it would also open up the 
-possibility to separate it from conf.c.
-This also fits into an idea I'm playing with to extend the .config format like 
-this:
+> So, I think a 'next' branch from you would open cans o worms:
+> 
+> - one more tree to test, and judging from linux-next and -mm it's tough to get
+> developers to test more than just upstream
+> 
+> - is the value of holy penguin pee great enough to overcome this
+> another-tree-to-test obstacle?
+> 
+> - opens all the debates about running parallel branches, such as, would it be
+> better to /branch/ for 2.6.X-rc, and then keep going full steam on the trunk?
 
-%defaultmode: mod
-CONFIG_FOO=n
+I do agree. And maybe I should have made it clear that I think it's worth 
+it to me only if it then means that the merge window can shrink.
 
-Basically this could replace "make allmodconfig KCONFIG_ALLCONFIG=..." and the 
-current way to produce an allmodconfig would be replaced by a dedicated 
-function.
+If I'd have both a 'next' branch _and_ a full 2-week merge window, there's 
+no upside.
 
-bye, Roman
+Btw, it wouldn't be another tree to test, since it would presumaby be what 
+'linux-next' starts out from - so it would purely be something that 
+doesn't have the constant re-merging of the more wild-and-crazy 
+'linux-next' tree.
+
+			Linus
