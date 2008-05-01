@@ -1,50 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932344AbYEAVj7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933009AbYEAVkd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932344AbYEAVj7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 May 2008 17:39:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761482AbYEAVjv
+	id S933009AbYEAVkd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 May 2008 17:40:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762393AbYEAVkV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 May 2008 17:39:51 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:37252
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1757440AbYEAVju (ORCPT
+	Thu, 1 May 2008 17:40:21 -0400
+Received: from g1t0028.austin.hp.com ([15.216.28.35]:17799 "EHLO
+	g1t0028.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761482AbYEAVkT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 May 2008 17:39:50 -0400
-Date: Thu, 01 May 2008 14:39:49 -0700 (PDT)
-Message-Id: <20080501.143949.20091241.davem@davemloft.net>
-To: alan@lxorguk.ukuu.org.uk
-Cc: hch@infradead.org, mb@bu3sch.de, jbarnes@virtuousgeek.org,
-       linville@tuxdriver.com, andi@firstfloor.org, mingo@elte.hu,
-       bcm43xx-dev@lists.berlios.de, linux-wireless@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/3] Add API for weak DMA masks
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20080501172913.08975881@core>
-References: <200805011638.15910.mb@bu3sch.de>
-	<20080501153618.GA470@infradead.org>
-	<20080501172913.08975881@core>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Thu, 1 May 2008 17:40:19 -0400
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: Len Brown <lenb@kernel.org>
+Subject: PNP: set IRQ index in sysfs "set irq" interface
+Date: Thu, 1 May 2008 15:39:57 -0600
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Adam Belay <ambx1@neo.rr.com>, Adam M Belay <abelay@mit.edu>,
+       Li Shaohua <shaohua.li@intel.com>,
+       Matthieu Castet <castet.matthieu@free.fr>,
+       Thomas Renninger <trenn@suse.de>,
+       Rene Herman <rene.herman@keyaccess.nl>,
+       Jaroslav Kysela <perex@perex.cz>,
+       Andrew Morton <akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200805011539.58705.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Date: Thu, 1 May 2008 17:29:13 +0100
+We have to set the ISAPNP register index when setting an IRQ via
+the sysfs interface.  We already do it for IO, MEM, and DMA
+resources; I just missed the IRQ one.
 
-> We have tons of drivers that go
-> 
-> 	try and set 64bit 
-> 	oh failed
-> 	try and set 32 bit
-> 	oh worked
-> 
-> When what most actually want is "set it no more than this wide" - a
-> request or even a "pci_set_best_mask()" type idea.
-> 
-> Lots less code duplication.
+This needs to be in 2.6.26.
 
-Agreed, it's a templated construct and it belongs in one
-spot.
+Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
+
+Index: work10/drivers/pnp/interface.c
+===================================================================
+--- work10.orig/drivers/pnp/interface.c	2008-05-01 15:26:28.000000000 -0600
++++ work10/drivers/pnp/interface.c	2008-05-01 15:26:39.000000000 -0600
+@@ -424,7 +424,7 @@
+ 				start = simple_strtoul(buf, &buf, 0);
+ 				pnp_res = pnp_add_irq_resource(dev, start, 0);
+ 				if (pnp_res)
+-					nirq++;
++					pnp_res->index = nirq++;
+ 				continue;
+ 			}
+ 			if (!strnicmp(buf, "dma", 3)) {
