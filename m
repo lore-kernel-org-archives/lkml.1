@@ -1,93 +1,217 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763446AbYEARkt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764540AbYEARl2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763446AbYEARkt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 May 2008 13:40:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759552AbYEARkl
+	id S1764540AbYEARl2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 May 2008 13:41:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758015AbYEARlS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 May 2008 13:40:41 -0400
-Received: from rv-out-0708.google.com ([209.85.198.250]:47342 "EHLO
+	Thu, 1 May 2008 13:41:18 -0400
+Received: from rv-out-0708.google.com ([209.85.198.248]:47583 "EHLO
 	rv-out-0506.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756171AbYEARkk (ORCPT
+	with ESMTP id S1755093AbYEARlR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 May 2008 13:40:40 -0400
+	Thu, 1 May 2008 13:41:17 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=pkjZe00vnZ1mYWA4VEXD2Z2Vu94CGoaQU5/I0cm/wOHa2k9O/Bx9ge3KgBOOfV/n8rVSf4BqTaB+b9MrMFzjr0+fn++7kufAxuAuITi/3ktFMq8ePETU4baVp4RqWPIWiFjacuHc0vzbBmfPsH1NnVvGsayrvqWENBLwEhiM+3k=
-Message-ID: <86802c440805011040w40d57569ja461ed34296c011a@mail.gmail.com>
-Date: Thu, 1 May 2008 10:40:40 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Mika Fischer" <mika.fischer@zoopnet.de>
-Subject: Re: [PATCH] x86: mtrr cleanup for converting continuous to discrete - auto detect
-Cc: "Andrew Morton" <akpm@linux-foundation.org>, "Ingo Molnar" <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       "Gabriel C" <nix.or.die@googlemail.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-In-Reply-To: <4819F70C.6030305@zoopnet.de>
+        h=from:organization:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=lIVH7eWZqb9f5NyBc3ecW+cbYNbvqHLmtvKcckOA2zYBeycgeQ1f4UAXsWm02UyFmzwRVMwxFL/f0oCJnmu5hrcSkVSTrdk74KDqFzppmz9wU/2iB7tWKz7tV2vmcj2TECzN1u4TO4ioFFOvYbluT2X9wU7RdrVQ4wBgRZ6YTD8=
+From: Balaji Rao <balajirrao@gmail.com>
+Organization: National Institute of Technology Karnataka
+To: akpm@linux-foundation.org
+Subject: [RFC][-mm] Simple stats for cpu resource controller v3
+Date: Thu, 1 May 2008 23:11:06 +0530
+User-Agent: KMail/1.9.9
+Cc: Dhaval Giani <dhaval@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+       containers@lists.osdl.org, menage@google.com, balbir@in.ibm.com,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+References: <200804052339.46632.balajirrao@gmail.com> <200804102140.00078.balajirrao@gmail.com> <1207844711.7074.8.camel@twins>
+In-Reply-To: <1207844711.7074.8.camel@twins>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <200804272337.40130.yhlu.kernel@gmail.com>
-	 <200804290352.33543.yhlu.kernel@gmail.com>
-	 <200804292025.58268.yhlu.kernel@gmail.com>
-	 <200805010100.34751.yhlu.kernel@gmail.com> <4819B2E0.406@zoopnet.de>
-	 <86802c440805010935w5a74f132l639d7b794804bb9e@mail.gmail.com>
-	 <4819F70C.6030305@zoopnet.de>
+Message-Id: <200805012311.06797.balajirrao@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 1, 2008 at 9:59 AM, Mika Fischer <mika.fischer@zoopnet.de> wrote:
-> Yinghai Lu schrieb:
->
->
-> > On Thu, May 1, 2008 at 5:09 AM, Mika Fischer <mika.fischer@zoopnet.de> wrote:
->  >> Yinghai Lu schrieb:
->  >>
->  >>> loop mtrr chunk_size and gran_size from 1M to 2G to find out optimal value.
->  >>  >
->  >>  > so user don't need to add mtrr_chunk_size and mtrr_gran_size,
->  >>  >
->  >>  > if optimal value is not found, print out all list to help select less optimal
->  >>  > value.
->  >>  >
->  >>  > add mtrr_spare_reg_nr= so user could set 2 instead of 1, if the card need more entries.
->  >>
->  >>  On my system x86-latest + this patch and using no boot options gives me
->  >>  this /proc/mtrr:
->  >>  reg00: base=0x00000000 (   0MB), size=2048MB: write-back, count=1
->  >>  reg01: base=0x80000000 (2048MB), size= 512MB: write-back, count=1
->  >>  reg02: base=0xa0000000 (2560MB), size= 256MB: write-back, count=1
->  >>  reg03: base=0xb0000000 (2816MB), size= 256MB: write-back, count=1
->  >>  reg04: base=0xbf700000 (3063MB), size=   1MB: uncachable, count=1
->  >>  reg05: base=0xbf800000 (3064MB), size=   8MB: uncachable, count=1
->  >>  reg06: base=0x100000000 (4096MB), size=1024MB: write-back, count=1
->  >>
->  >>  Which is OK. It could probably collapse reg01-reg03 into one but that's
->  >>  a minor issue (for me at least, there are probably cases where
->  >>  collapsing them might save the user from having to specify the
->  >>  mtrr_spare_reg_nr boot option).
->  >
->  > yes. please try mtrr_spare_reg_nr=3 or etc.
->
->  Sure this works. But that was my point exactly. It should be possible to
->  figure out the better configuration automatically so that I *don't* have
->  to specify mtrr_spare_reg_nr=3.
->
->  Or in other words: If there are multiple equivalent configurations that
->  don't lose any RAM(!), the one with the most free MTRR regs should be
->  preferred.
->
->  AFAICT you loop over the chunk size and stop when you have found a
->  configuration that leaves the number of free MTRR registers requested
->  (default 1).
->
->  This will almost always result in a configuration where you have
->  *exactly* the number of requested free regs available, even if a more
->  efficient configuration was possible.
+This implements a couple of basic statistics for the CPU resource controller. 
 
-OK, will send another version out.
+v2->v3
+-------
+Proper locking while collecting stats. Thanks to Peter Zijlstra for suggesting
+the delta approach.
 
-YH
+This applies against 2.6.25-mm1
+---
+
+Signed-off-by: Balaji Rao <balajirrao@gmail.com>
+
+diff --git a/kernel/sched.c b/kernel/sched.c
+index bbdc32a..5bda75a 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -248,10 +248,51 @@ struct cfs_rq;
+ 
+ static LIST_HEAD(task_groups);
+ 
++#ifdef CONFIG_CGROUP_SCHED
++
++#define CPU_CGROUP_STAT_THRESHOLD 1 << 30
++
++enum cpu_cgroup_stat_index {
++	CPU_CGROUP_STAT_UTIME, /* Usertime of the task group */
++	CPU_CGROUP_STAT_STIME, /* Kerneltime of the task group */
++
++	CPU_CGROUP_STAT_NSTATS,
++};
++
++struct cpu_cgroup_stat_cpu {
++	s64 count[CPU_CGROUP_STAT_NSTATS];
++	u32 delta[CPU_CGROUP_STAT_NSTATS];
++} ____cacheline_aligned_in_smp;
++
++struct cpu_cgroup_stat {
++	struct cpu_cgroup_stat_cpu cpustat[NR_CPUS];
++	spinlock_t lock;
++};
++
++/* Called under irq disable. */
++static void __cpu_cgroup_stat_add(struct cpu_cgroup_stat *stat,
++		enum cpu_cgroup_stat_index idx, int val)
++{
++	int cpu = smp_processor_id();
++	unsigned long flags;
++
++	BUG_ON(!irqs_disabled());
++	stat->cpustat[cpu].delta[idx] += val;
++
++	if (stat->cpustat[cpu].delta[idx] > CPU_CGROUP_STAT_THRESHOLD) {
++		spin_lock_irqsave(&stat->lock, flags);
++		stat->cpustat[cpu].count[idx] += stat->cpustat[cpu].delta[idx];
++		stat->cpustat[cpu].delta[idx] = 0;
++		spin_unlock_irqrestore(&stat->lock, flags);
++	}
++}
++#endif
++
+ /* task group related information */
+ struct task_group {
+ #ifdef CONFIG_CGROUP_SCHED
+ 	struct cgroup_subsys_state css;
++	struct cpu_cgroup_stat stat;
+ #endif
+ 
+ #ifdef CONFIG_FAIR_GROUP_SCHED
+@@ -3837,6 +3878,16 @@ void account_user_time(struct task_struct *p, cputime_t cputime)
+ 		cpustat->nice = cputime64_add(cpustat->nice, tmp);
+ 	else
+ 		cpustat->user = cputime64_add(cpustat->user, tmp);
++
++	/* Charge the task's group */
++#ifdef CONFIG_CGROUP_SCHED
++	{
++		struct task_group *tg;
++		tg = task_group(p);
++		__cpu_cgroup_stat_add(&tg->stat, CPU_CGROUP_STAT_UTIME,
++				cputime_to_msecs(cputime));
++	}
++#endif
+ }
+ 
+ /*
+@@ -3900,6 +3951,15 @@ void account_system_time(struct task_struct *p, int hardirq_offset,
+ 		cpustat->idle = cputime64_add(cpustat->idle, tmp);
+ 	/* Account for system time used */
+ 	acct_update_integrals(p);
++
++#ifdef CONFIG_CGROUP_SCHED
++	{
++		struct task_group *tg;
++		tg = task_group(p);
++		__cpu_cgroup_stat_add(&tg->stat, CPU_CGROUP_STAT_STIME,
++				cputime_to_msecs(cputime));
++	}
++#endif
+ }
+ 
+ /*
+@@ -7838,7 +7898,9 @@ struct task_group *sched_create_group(void)
+ 	}
+ 	list_add_rcu(&tg->list, &task_groups);
+ 	spin_unlock_irqrestore(&task_group_lock, flags);
+-
++#ifdef CONFIG_CGROUP_SCHED
++	spin_lock_init(&tg->stat.lock);
++#endif
+ 	return tg;
+ 
+ err:
+@@ -8249,6 +8311,48 @@ static u64 cpu_shares_read_u64(struct cgroup *cgrp, struct cftype *cft)
+ 
+ 	return (u64) tg->shares;
+ }
++
++static s64 cpu_cgroup_read_stat(struct cpu_cgroup_stat *stat,
++		enum cpu_cgroup_stat_index idx)
++{
++	int cpu;
++	s64 ret = 0;
++	unsigned long flags;
++
++	spin_lock_irqsave(&stat->lock, flags);
++	for_each_possible_cpu(cpu) {
++		stat->cpustat[cpu].count[idx] += stat->cpustat[cpu].delta[idx];
++		stat->cpustat[cpu].delta[idx] = 0;
++		ret += stat->cpustat[cpu].count[idx];
++	}
++	spin_unlock_irqrestore(&stat->lock, flags);
++
++	return ret;
++}
++
++static const struct cpu_cgroup_stat_desc {
++	const char *msg;
++	u64 unit;
++} cpu_cgroup_stat_desc[] = {
++	[CPU_CGROUP_STAT_UTIME] = { "utime", 1, },
++	[CPU_CGROUP_STAT_STIME] = { "stime", 1, },
++};
++
++static int cpu_cgroup_stats_show(struct cgroup *cgrp, struct cftype *cft,
++				struct cgroup_map_cb *cb)
++{
++	struct task_group *tg = cgroup_tg(cgrp);
++	struct cpu_cgroup_stat *stat = &tg->stat;
++	int i;
++
++	for (i = 0; i < ARRAY_SIZE(stat->cpustat[0].count); i++) {
++		s64 val;
++		val = cpu_cgroup_read_stat(stat, i);
++		val *= cpu_cgroup_stat_desc[i].unit;
++		cb->fill(cb, cpu_cgroup_stat_desc[i].msg, val);
++	}
++	return 0;
++}
+ #endif
+ 
+ #ifdef CONFIG_RT_GROUP_SCHED
+@@ -8295,6 +8399,10 @@ static struct cftype cpu_files[] = {
+ 		.write_u64 = cpu_rt_period_write_uint,
+ 	},
+ #endif
++	{
++		.name = "stat",
++		.read_map = cpu_cgroup_stats_show,
++	},
+ };
+ 
+ static int cpu_cgroup_populate(struct cgroup_subsys *ss, struct cgroup *cont)
+
+-- 
+Warm Regards,
+
+Balaji Rao
+Dept. of Mechanical Engineering
+NITK
