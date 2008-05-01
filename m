@@ -1,205 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761864AbYEAAwm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756263AbYEAA4y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761864AbYEAAwm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Apr 2008 20:52:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754006AbYEAAwd
+	id S1756263AbYEAA4y (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Apr 2008 20:56:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751542AbYEAA4q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Apr 2008 20:52:33 -0400
-Received: from linux-m68k.xs4all.nl ([82.95.193.92]:48443 "EHLO
-	scrub.xs4all.nl" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753097AbYEAAwc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Apr 2008 20:52:32 -0400
-Date: Thu, 1 May 2008 02:51:47 +0200 (CEST)
-From: Roman Zippel <zippel@linux-m68k.org>
-X-X-Sender: roman@scrub.home
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-cc: Ingo Molnar <mingo@elte.hu>,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Jan Engelhardt <jengelh@gmx.de>, Richard Purdie <rpurdie@rpsys.net>,
-       Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: [patch, -git] input: CONFIG_INPUT_APANEL build fix
-In-Reply-To: <20080430224701.GC2629@anvil.corenet.prv>
-Message-ID: <Pine.LNX.4.64.0805010213530.30555@scrub.home>
-References: <20080430185345.GA27224@elte.hu> <20080430150021.ZZRA012@mailhub.coreip.homeip.net>
- <20080430202013.GB14164@elte.hu> <20080430163924.ZZRA012@mailhub.coreip.homeip.net>
- <20080430212029.GA28813@elte.hu> <20080430222645.GB2629@anvil.corenet.prv>
- <20080430223828.GA31878@elte.hu> <20080430224701.GC2629@anvil.corenet.prv>
+	Wed, 30 Apr 2008 20:56:46 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:47527 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750995AbYEAA4p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Apr 2008 20:56:45 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Adrian Bunk <bunk@kernel.org>
+Subject: Re: Slow DOWN, please!!!
+Date: Thu, 1 May 2008 02:56:23 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: david@lang.hm, Linus Torvalds <torvalds@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jiri Slaby <jirislaby@gmail.com>
+References: <20080429.190352.137408408.davem@davemloft.net> <200805010145.39373.rjw@sisk.pl> <20080501003855.GN29330@cs181133002.pp.htv.fi>
+In-Reply-To: <20080501003855.GN29330@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200805010256.25018.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Thursday, 1 of May 2008, Adrian Bunk wrote:
+> On Thu, May 01, 2008 at 01:45:38AM +0200, Rafael J. Wysocki wrote:
+> > On Thursday, 1 of May 2008, david@lang.hm wrote:
+> > > On Thu, 1 May 2008, Rafael J. Wysocki wrote:
+> > > 
+> > > > On Wednesday, 30 of April 2008, Linus Torvalds wrote:
+> > > >>
+> > > >> On Wed, 30 Apr 2008, Rafael J. Wysocki wrote:
+> > > >> So your "fewer commits over a unit of time" doesn't make sense.
+> > > >
+> > > > Oh, yes it does.  Equally well you could say that having brakes in a car
+> > > > didn't make sense, even if you could drive it as fast as the engine allowed
+> > > > you to. ;-)
+> > > >
+> > > >> We have those ten thousand commits. They need to go in. They cannot take
+> > > >> forever.
+> > > >
+> > > > But perhaps some of them can wait a bit longer.
+> > > 
+> > > not really, if patches are produced at a rate of 1000/week and you decide 
+> > > to only accept 2000 of them this month, a month later you have 6000 
+> > > patches to deal with.
+> > 
+> > Well, I think you know how TCP works.  The sender can only send as much
+> > data as the receiver lets it, no matter how much data there are to send.
+> > I'm thinking about an analogous approach.
+> > 
+> > If the developers who produce those patches know in advance about the rate
+> > limit and are promised to be treated fairly, they should be able to organize
+> > their work in a different way.
+> >...
+> 
+> We cannot control who develops what.
 
-On Wed, 30 Apr 2008, Dmitry Torokhov wrote:
+We don't need to.
 
-> You still did not answer to the main question - do you think we should
-> revert the commit that actually introduced breakage in the sense that
-> anything depending on LEDS_CLASS should also add NEW_LEDS dependancy?
-> That will take care of the problem (as far as LEDs are concerned) for
-> _all_ subsystems and drivers at once.
+> When someone wants some feature or wants to get Linux running on his 
+> hardware he will always develop the code.
+> 
+> We can only control what we merge.
 
-Well, that would mean reverting the complete led subsystem, since the 
-menuconfig patch you pointed at, isn't really the problem (did you 
-actually try to revert that patch?).
+To be exact, we control what we merge and when.  There's no rule saying that
+every patch has to be merged as soon as it appears to be ready for merging,
+or during the nearest merge window, AFAICS.
 
-Anyway, the actual issue are all the drivers that select LEDS_CLASS
-without selecting NEW_LEDS.
+> And the main rationale for the 2.6 development model was that we do no 
+> longer want distributions to ship kernels with insane amounts of 
+> patches.
 
-The patch below fixes the dependency problem without adding a lot of new 
-selects by using LEDS_CORE, which is selected by LEDS_CLASS/LEDS_TRIGGERS 
-as needed.
-I removed the comments as they were a little redundant and I removed the 
-selects of NEW_LEDS as these are not needed anymore.
+This was an argument agaist starting a separate development branch in analogy
+with 2.5, IIRC, and I agree with that.
 
-Signed-off-by: Roman Zippel <zippel@linux-m68k.org>
+Still, I think we don't need to merge patches at the current rate and it might
+help improve their overall quality if we didn't.  Of course, the latter is only
+a speculation, although it's based on my experience.
 
----
- drivers/hwmon/Kconfig      |    1 -
- drivers/input/misc/Kconfig |    1 -
- drivers/leds/Kconfig       |   16 +++++++---------
- drivers/leds/Makefile      |    2 +-
- drivers/macintosh/Kconfig  |    1 -
- drivers/misc/Kconfig       |    3 ---
- net/mac80211/Kconfig       |    1 -
- 7 files changed, 8 insertions(+), 17 deletions(-)
-
-Index: linux-2.6/drivers/leds/Kconfig
-===================================================================
---- linux-2.6.orig/drivers/leds/Kconfig
-+++ linux-2.6/drivers/leds/Kconfig
-@@ -1,3 +1,6 @@
-+config LEDS_CORE
-+	def_bool n
-+
- menuconfig NEW_LEDS
- 	bool "LED Support"
- 	help
-@@ -7,16 +10,13 @@ menuconfig NEW_LEDS
- 	  This is not related to standard keyboard LEDs which are controlled
- 	  via the input system.
- 
--if NEW_LEDS
--
- config LEDS_CLASS
--	tristate "LED Class Support"
-+	tristate "LED Driver Support" if NEW_LEDS
-+	select LEDS_CORE
- 	help
- 	  This option enables the led sysfs class in /sys/class/leds.  You'll
- 	  need this to do anything useful with LEDs.  If unsure, say N.
- 
--comment "LED drivers"
--
- config LEDS_ATMEL_PWM
- 	tristate "LED Support using Atmel PWM outputs"
- 	depends on LEDS_CLASS && ATMEL_PWM
-@@ -147,10 +147,9 @@ config LEDS_CLEVO_MAIL
- 	  To compile this driver as a module, choose M here: the
- 	  module will be called leds-clevo-mail.
- 
--comment "LED Triggers"
--
- config LEDS_TRIGGERS
--	bool "LED Trigger support"
-+	bool "LED Trigger support" if NEW_LEDS
-+	select LEDS_CORE
- 	help
- 	  This option enables trigger support for the leds class.
- 	  These triggers allow kernel events to drive the LEDs and can
-@@ -190,4 +189,3 @@ config LEDS_TRIGGER_DEFAULT_ON
- 	  This allows LEDs to be initialised in the ON state.
- 	  If unsure, say Y.
- 
--endif # NEW_LEDS
-Index: linux-2.6/drivers/leds/Makefile
-===================================================================
---- linux-2.6.orig/drivers/leds/Makefile
-+++ linux-2.6/drivers/leds/Makefile
-@@ -1,6 +1,6 @@
- 
- # LED Core
--obj-$(CONFIG_NEW_LEDS)			+= led-core.o
-+obj-$(CONFIG_LEDS_CORE)			+= led-core.o
- obj-$(CONFIG_LEDS_CLASS)		+= led-class.o
- obj-$(CONFIG_LEDS_TRIGGERS)		+= led-triggers.o
- 
-Index: linux-2.6/drivers/hwmon/Kconfig
-===================================================================
---- linux-2.6.orig/drivers/hwmon/Kconfig
-+++ linux-2.6/drivers/hwmon/Kconfig
-@@ -763,7 +763,6 @@ config SENSORS_HDAPS
- config SENSORS_APPLESMC
- 	tristate "Apple SMC (Motion sensor, light sensor, keyboard backlight)"
- 	depends on INPUT && X86
--	select NEW_LEDS
- 	select LEDS_CLASS
- 	select INPUT_POLLDEV
- 	default n
-Index: linux-2.6/drivers/input/misc/Kconfig
-===================================================================
---- linux-2.6.orig/drivers/input/misc/Kconfig
-+++ linux-2.6/drivers/input/misc/Kconfig
-@@ -81,7 +81,6 @@ config INPUT_WISTRON_BTNS
- 	tristate "x86 Wistron laptop button interface"
- 	depends on X86 && !X86_64
- 	select INPUT_POLLDEV
--	select NEW_LEDS
- 	select LEDS_CLASS
- 	select CHECK_SIGNATURE
- 	help
-Index: linux-2.6/drivers/macintosh/Kconfig
-===================================================================
---- linux-2.6.orig/drivers/macintosh/Kconfig
-+++ linux-2.6/drivers/macintosh/Kconfig
-@@ -90,7 +90,6 @@ config ADB_PMU
- config ADB_PMU_LED
- 	bool "Support for the Power/iBook front LED"
- 	depends on ADB_PMU
--	select NEW_LEDS
- 	select LEDS_CLASS
- 	help
- 	  Support the front LED on Power/iBooks as a generic LED that can
-Index: linux-2.6/drivers/misc/Kconfig
-===================================================================
---- linux-2.6.orig/drivers/misc/Kconfig
-+++ linux-2.6/drivers/misc/Kconfig
-@@ -140,7 +140,6 @@ config ACER_WMI
- 	depends on EXPERIMENTAL
- 	depends on ACPI
- 	depends on LEDS_CLASS
--	depends on NEW_LEDS
- 	depends on BACKLIGHT_CLASS_DEVICE
- 	depends on SERIO_I8042
- 	select ACPI_WMI
-@@ -161,7 +160,6 @@ config ASUS_LAPTOP
-         depends on ACPI
- 	depends on EXPERIMENTAL && !ACPI_ASUS
- 	depends on LEDS_CLASS
--	depends on NEW_LEDS
- 	depends on BACKLIGHT_CLASS_DEVICE
-         ---help---
- 	  This is the new Linux driver for Asus laptops. It may also support some
-@@ -248,7 +246,6 @@ config THINKPAD_ACPI
- 	select HWMON
- 	select NVRAM
- 	select INPUT
--	select NEW_LEDS
- 	select LEDS_CLASS
- 	---help---
- 	  This is a driver for the IBM and Lenovo ThinkPad laptops. It adds
-Index: linux-2.6/net/mac80211/Kconfig
-===================================================================
---- linux-2.6.orig/net/mac80211/Kconfig
-+++ linux-2.6/net/mac80211/Kconfig
-@@ -74,7 +74,6 @@ config MAC80211_MESH
- config MAC80211_LEDS
- 	bool "Enable LED triggers"
- 	depends on MAC80211
--	select NEW_LEDS
- 	select LEDS_TRIGGERS
- 	---help---
- 	  This option enables a few LED triggers for different
+Thanks,
+Rafael
