@@ -1,74 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761006AbYEANzn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761083AbYEAN5A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761006AbYEANzn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 May 2008 09:55:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754709AbYEANzh
+	id S1761083AbYEAN5A (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 May 2008 09:57:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757948AbYEAN4x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 May 2008 09:55:37 -0400
-Received: from fg-out-1718.google.com ([72.14.220.154]:32332 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752619AbYEANzg (ORCPT
+	Thu, 1 May 2008 09:56:53 -0400
+Received: from smtp.eu.citrix.com ([62.200.22.115]:53123 "EHLO
+	SMTP.EU.CITRIX.COM" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755498AbYEAN4w (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 May 2008 09:55:36 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:user-agent:mime-version:to:subject:references:in-reply-to:content-type:content-transfer-encoding:from;
-        b=OuliBcknkx0lAUtRBLt1Cd0UbLgRmDJAc+y9Om8xxSULE09xZKVU+Zx9LrpuGFyUZ485Yy9+XRe9h64I1Ilm0JMYKWKqeAfU49wGZ9RwZhkgCexwyUHogeUc7b4yx5ufo9Yzwn6UuBpGHCBKsgSDXzOXiA1hXS1DU7sBU19vkto=
-Message-ID: <4819CBB0.8010208@gmail.com>
-Date: Thu, 01 May 2008 15:54:56 +0200
-User-Agent: Mozilla-Thunderbird 2.0.0.9 (X11/20080109)
+	Thu, 1 May 2008 09:56:52 -0400
+X-IronPort-AV: E=Sophos;i="4.27,422,1204520400"; 
+   d="scan'208";a="14074503"
+Date: Thu, 1 May 2008 14:19:00 +0100
+From: Samuel Thibault <samuel.thibault@ens-lyon.org>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: linux-kernel@vger.kernel.org, akpm@osdl.org, torvalds@osdl.org
+Subject: Re: This month's price for the most useless new Kconfig help text ...
+Message-ID: <20080501131900.GL4797@implementation.uk.xensource.com>
+Mail-Followup-To: Samuel Thibault <samuel.thibault@ens-lyon.org>,
+	Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+	akpm@osdl.org, torvalds@osdl.org
+References: <20080501120959.GA16700@basil.nowhere.org>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Re:Re: kernel BUG at mm/rmap.c:669 (during localegen)
-References: <48199F05.507@gmail.com> <Pine.LNX.4.64.0805011325290.22839@blonde.site>
-In-Reply-To: <Pine.LNX.4.64.0805011325290.22839@blonde.site>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-From: =?UTF-8?B?UGF3ZcWC?= <anilatx@gmail.com>
+In-Reply-To: <20080501120959.GA16700@basil.nowhere.org>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-OriginalArrivalTime: 01 May 2008 13:56:48.0046 (UTC) FILETIME=[32C654E0:01C8AB93]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The problem is reproducible, as I wrote, also while booting through 
-init=/bin/bash parameter(and in init 1, but with hang instead of reboot) 
-so before loading any modules or nvidia drivers(but this case leaves no 
-logs becouse logging is down too)
-I mentioned first and last line as commented, just to ensure that it's 
-everything about this symptome(timestamps suggest that)
+Andi Kleen, le Thu 01 May 2008 14:09:59 +0200, a écrit :
+> <drumroll> ... gets CONFIG_ACCESSIBILITY
+> 
+> menuconfig ACCESSIBILITY
+>         bool "Accessibility support"
+>         ---help---
+>           Enable a submenu where accessibility items may be enabled.
+> 
+> Can the help text be improved please? It should explain that accessibility in 
+> this case means braille device drivers and possibly other similar devices.
 
-Hugh Dickins wrote:
-> On Thu, 1 May 2008, PaweÅ‚ wrote:
->   
->> Every time I try to generate locales computer reboots or hangs. To ensure
->> that's not matter of graphDrivers I checked also in runlevel 1 and
->> "init=/bin/bash".
->>
->> Linux debby 2.6.25 #1 PREEMPT Mon Apr 28 15:18:31 CEST 2008 x86_64 GNU/Linux
->> gcc (GCC) 4.2.3 (Debian 4.2.3-3)
->>
->> [kern.log:]
->> //May  1 11:20:09 debby kernel: NVRM: bad caching on address
->> 0xffff81003a910000: actual 0x173 != expected 0x17b
->>
->> May  1 11:25:44 debby kernel: Eeek! page_mapcount(page) went negative! (-1)
->> May  1 11:25:44 debby kernel:   page pfn = 257d2
->> May  1 11:25:44 debby kernel:   page->flags = 2200000000001c
->> May  1 11:25:44 debby kernel:   page->count = 0
->> May  1 11:25:44 debby kernel:   page->mapping = 0000000000000000
->> May  1 11:25:44 debby kernel:   vma->vm_ops = 0x0
->> May  1 11:25:44 debby kernel: ------------[ cut here ]------------
->> May  1 11:25:44 debby kernel: kernel BUG at mm/rmap.c:669!
->> May  1 11:25:44 debby kernel: invalid opcode: 0000 [1] PREEMPT
->> May  1 11:25:44 debby kernel: CPU 0
->> May  1 11:25:44 debby kernel: Modules linked in: nvidia(P) ...
->> May  1 11:25:44 debby kernel: Pid: 3007, comm: localedef Tainted: P
->> 2.6.25 #1
->> May  1 11:25:44 debby kernel: RIP: 0010:[<ffffffff80270c74>]
->> [<ffffffff80270c74>] page_remove_rmap+0x164/0x180
->>     
->
-> Sorry, you'll have to ask Nvidia to help you with this: we don't
-> know what their driver is up to, and don't have any "NVRM" errors in
-> 2.6.25 source; they should be grateful for your reproducible test case.
->
-> Hugh
+If the society was a bit more aware of accessibility troubles in general
+(I mean in the street etc.), we wouldn't have to explain the word
+</grin>.
+
+Samuel
+
+
+
+Add a small explanation of what accessibility is.
+
+Signed-off-by: Samuel Thibault <samuel.thibault@ens-lyon.org>
+
+--- linux/drivers/accessibility/Kconfig.orig	2008-05-01 14:13:03.000000000 +0100
++++ linux/drivers/accessibility/Kconfig	2008-05-01 14:12:50.000000000 +0100
+@@ -3,6 +3,13 @@
+ 	---help---
+ 	  Enable a submenu where accessibility items may be enabled.
+ 
++	  Accessibility handles all special kinds of hardware devices or
++	  software adapters which help people with disabilities (e.g.
++	  blindness) to use computers.
++
++	  That includes braille devices, speech synthesis, keyboard
++	  remapping, etc.
++
+ 	  If unsure, say N.
+ 
+ if ACCESSIBILITY
