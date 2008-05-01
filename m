@@ -1,94 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765233AbYEATGU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765424AbYEATGk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765233AbYEATGU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 May 2008 15:06:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763605AbYEATGL
+	id S1765424AbYEATGk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 May 2008 15:06:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765328AbYEATG3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 May 2008 15:06:11 -0400
-Received: from mail.tpi.com ([198.107.51.143]:1113 "EHLO mail.tpi.com"
+	Thu, 1 May 2008 15:06:29 -0400
+Received: from mail.lang.hm ([64.81.33.126]:45562 "EHLO bifrost.lang.hm"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763574AbYEATGK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 May 2008 15:06:10 -0400
-Message-ID: <481A14BA.9090305@canonical.com>
-Date: Thu, 01 May 2008 13:06:34 -0600
-From: Tim Gardner <tim.gardner@canonical.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
+	id S1763768AbYEATG2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 May 2008 15:06:28 -0400
+Date: Thu, 1 May 2008 12:07:53 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard
+To: Willy Tarreau <w@1wt.eu>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
+       Jiri Slaby <jirislaby@gmail.com>
+Subject: Re: Slow DOWN, please!!!
+In-Reply-To: <20080501185032.GA30883@1wt.eu>
+Message-ID: <alpine.DEB.1.10.0805011155520.9847@asgard>
+References: <20080429.190352.137408408.davem@davemloft.net> <200805011259.47343.rjw@sisk.pl> <alpine.LFD.1.10.0805010816340.5994@woody.linux-foundation.org> <200805011909.40203.rjw@sisk.pl> <alpine.LFD.1.10.0805011022370.5994@woody.linux-foundation.org>
+ <20080501185032.GA30883@1wt.eu>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-To: jeffschroeder@computer.org
-CC: Chris Mason <chris.mason@oracle.com>, linux-fsdevel@vger.kernel.org,
-       kernel-team@lists.ubuntu.com, linux-kernel@vger.kernel.org,
-       linux-btrfs@vger.kernel.org
-Subject: Re: Btrfs v0.14 Released
-References: <200804291601.32945.chris.mason@oracle.com>	<200805011204.20847.chris.mason@oracle.com>	<c24352ca0805010918j395470d0o8f2088571c90183b@mail.gmail.com>	<200805011226.56076.chris.mason@oracle.com> <c24352ca0805010939q31f743aev17cc7f98d2ad0c71@mail.gmail.com>
-In-Reply-To: <c24352ca0805010939q31f743aev17cc7f98d2ad0c71@mail.gmail.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Schroeder wrote:
-> adding the ubuntu kernel team. BenC or TimG, do you have any
-> suggestions for Chris?
-> 
-> On Thu, May 1, 2008 at 9:26 AM, Chris Mason <chris.mason@oracle.com> wrote:
->> On Thursday 01 May 2008, Jeff Schroeder wrote:
->>  > On Thu, May 1, 2008 at 9:04 AM, Chris Mason <chris.mason@oracle.com> wrote:
->>  > > On Tuesday 29 April 2008, Chris Mason wrote:
->>  > >  > Hello everyone,
->>  > >  >
->>  > >  > Btrfs v0.14 is now available for download.  Please note the disk
->>  > >  > format has changed, and it is not compatible with older versions of
->>  > >  > Btrfs.
->>  > >  >
->>  > >  > For downloads and documention, please see the Btrfs project page:
->>  > >  >
->>  > >  > http://btrfs.wiki.kernel.org
->>  > >
->>  > >  Hello everyone,
->>  > >
->>  > >  I've rolled up some fixes for older kernels and fixed an uninitialized
->>  > >  variables in btrfs-progs that could cause an oops on mount.  I'll wait a
->>  > > few days to see if other bug reports come in and cut a 0.15 with any
->>  > > other critical fixes.
->>  >
->>  > Well it oopses on writes everytime in Ubuntu 8.04 (Hardy). I'd planned
->>  > on digging into
->>  > it more before spending a bug report, but will send it tonight after
->>  > getting to the affected
->>  > machine.
->>
->>  This is because ubuntu kernels ship with apparmor, you'll need this patch:
->>
->>  If there is a #ifdef IM_A_UBUNTU_KERNEL I can use, I'll do it.  Jeff Mahoney
->>  has a similar patch for SUSE that I've been meaning to merge, but I wanted to
->>  lookup some way to check for ubuntu as well.
->>
->>  -chris
->>
->>  diff -r e7da2489b19b file.c
->>  --- a/file.c    Wed Apr 30 13:59:35 2008 -0400
->>  +++ b/file.c    Thu May 01 12:25:11 2008 -0400
->>  @@ -852,7 +852,7 @@ static ssize_t btrfs_file_write(struct f
->>                 goto out_nolock;
->>         if (count == 0)
->>                 goto out_nolock;
->>  -       err = remove_suid(fdentry(file));
->>  +       err = remove_suid(&file->f_path);
->>         if (err)
->>                 goto out_nolock;
->>         file_update_time(file);
->>
-> 
-> 
-> 
+On Thu, 1 May 2008, Willy Tarreau wrote:
 
-Couldn't you #ifdef based on CONFIG_SECURITY_APPARMOR ? This ought to
-work for Hardy. However the next development kernel (Intrepid) does not
-have the APPARMOR patches, so just knowing that its an UBUNTU kernel is
-not specific enough.
+> I also proposed to group merges by reduced overlapping areas, and to
+> shorten the merge window and make it (at least) twice as often. Rafael
+> also proposed to merge core first, then archs, which is a refined variation
+> on the same principle. I'm not sure I've seen your opinion on this.
 
-rtg
--- 
-Tim Gardner tim.gardner@ubuntu.com
+the problem with trying to make the cycle twice as fast is that it takes 
+time to hunt down the hard bugs, even when you have some idea where they 
+are.
+
+go back through the last few kernels and look at the bugs that were fixed 
+in the last couple of -rc releases (and in final), would they have really 
+been fixed faster if other changes hadn't taken place?
+
+I suspect that they would not have, and if I'm right the result of merging 
+half as much wouldn't be twice as many releases, but rather approximatly 
+the same release schedule with more piling up for the next release.
+
+even individual git trees that do get a fair bit of testing (like 
+networking for example) run into odd and hard to debug problems when 
+exposed to a wider set of hardware and loads. having the networking 
+changes go in every 4 months (with 4 months worth of changes) instead of 
+every 2 months (with 2 months worth of changes) will just mean that there 
+will be more problems in this area, and since they will be more 
+concentrated in that area it will be harder to fix them all fast as the 
+same group of people are needed for all of them.
+
+if several maintainers think that you are correct that doing a merge with 
+far fewer changes will be a lot faster, they can test this in the real 
+world by skipping one release. just send Linus a 'no changes this time' 
+instead of a pull request. If you are right the stable release will happen 
+significantly faster and they can say 'I told you so' and in the next 
+release have a fair chance of convincing other maintainers to skip a 
+release.
+
+it does worry me a bit that the release cycle seems to be slipping 
+slightly each release, but I don't see a good way to fix this.
+
+David Lang
