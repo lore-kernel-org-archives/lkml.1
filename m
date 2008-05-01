@@ -1,114 +1,187 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760270AbYEAMMW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759273AbYEAMNF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760270AbYEAMMW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 May 2008 08:12:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757233AbYEAMMO
+	id S1759273AbYEAMNF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 May 2008 08:13:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757316AbYEAMMy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 May 2008 08:12:14 -0400
-Received: from yw-out-2324.google.com ([74.125.46.28]:46284 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756627AbYEAMMN (ORCPT
+	Thu, 1 May 2008 08:12:54 -0400
+Received: from extu-mxob-1.symantec.com ([216.10.194.28]:58679 "EHLO
+	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756906AbYEAMMw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 May 2008 08:12:13 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=CYWZOurzNgoIS0RuiD/kWrOfg4nVkecyhmUuBLvmYnxdxtjI6bRPo+M13o3oHp3HIK89tMJCBsM1sq4+3eXoy5kjcyaKLcQa5Cx81yh/14JPVdm93c4o56ZLSZDKvI4+KRPRUh0ZwhGP1bgHitekYKvKS38L8P8Fc0UKSQ2Jx7w=
-Message-ID: <87a5b0800805010511r58438623j2241313684506248@mail.gmail.com>
-Date: Thu, 1 May 2008 13:11:58 +0100
-From: "Will Newton" <will.newton@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Slow DOWN, please!!!
-Cc: "Willy Tarreau" <w@1wt.eu>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "David Miller" <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Jiri Slaby" <jirislaby@gmail.com>
-In-Reply-To: <200805011353.19335.rjw@sisk.pl>
+	Thu, 1 May 2008 08:12:52 -0400
+Date: Thu, 1 May 2008 13:11:51 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.site
+To: "J.A. =?UTF-8?B?TWFnYWxsw7Nu?=" <jamagallon@ono.com>
+cc: Jens Axboe <jens.axboe@oracle.com>, Nick Piggin <npiggin@suse.de>,
+       Linux-Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Problems with -git14
+In-Reply-To: <20080501025043.5e8582f6@werewolf.home>
+Message-ID: <Pine.LNX.4.64.0805011304230.19626@blonde.site>
+References: <20080430015655.5a42f63d@werewolf.home>
+ <Pine.LNX.4.64.0804301516580.30549@blonde.site> <20080501025043.5e8582f6@werewolf.home>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080429.190352.137408408.davem@davemloft.net>
-	 <alpine.LFD.1.10.0804301811051.5994@woody.linux-foundation.org>
-	 <20080501055045.GC18597@1wt.eu> <200805011353.19335.rjw@sisk.pl>
+Content-Type: MULTIPART/MIXED; BOUNDARY="8323584-224145288-1209643911=:19626"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 1, 2008 at 12:53 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
->
-> On Thursday, 1 of May 2008, Willy Tarreau wrote:
->  > On Wed, Apr 30, 2008 at 06:19:56PM -0700, Linus Torvalds wrote:
->  > >
->  > >
->  > > On Thu, 1 May 2008, Rafael J. Wysocki wrote:
->  > > >
->  > > > > I do _not_ want to slow down development by setting some kind of "quality
->  > > > > bar" - but I do believe that we should keep our quality high, not because
->  > > > > of any hoops we need to jump through, but because we take pride in the
->  > > > > thing we do.
->  > > >
->  > > > Well, we certainly should, but do we always remeber about it?  Honest, guv?
->  > >
->  > > Hey, guv, do you _honestly_ believe that some kind of ISO-9000-like
->  > > process generates quality?
->  > >
->  > > And I dislike how people try to conflate "quality" and "merging speed" as
->  > > if there was any reason what-so-ever to believe that they are related.
->  > >
->  > > You (and Andrew) have tried to argue that slowing things down results in
->  > > better quality, and I simply don't for a moment believe that. I believe
->  > > the exact opposite.
->  >
->  > Note that I'm not necessarily arguing for slowing down, but for reduced
->  > functional conflicts (which slow down may help but it's not the only
->  > solution). I think that refining the time resolution might achieve the
->  > same goal. Instead of merging 10000 changes which each have 1% chance
->  > of breaking any other area, and have all developers try to hunt bugs
->  > caused by unrelated changes, I think we could do that in steps.
->  >
->  > To illustrate, instead of changing 100 areas with one of them causing
->  > breaking in the other ones, and having 100 victims try to hunt the
->  > bug in 99 other areas, then theirs, and finally insult the faulty
->  > author, we could merge 50 areas in version X and 50 in X+1 (or 3*33
->  > or 4*25, etc...). That way, we would only have 50 victims trying to
->  > find the bug in 49 other areas (or 32 or 24). Less people wasting
->  > their time will mean faster validation of changes, and possibly
->  > faster release cycle with better quality.
->  >
->  > People send you their crap every two months. If you accept half of
->  > it every month, they don't have to sleep on their code, and at the
->  > same time at most half of them are in trouble during half the time
->  > (since bugs are found faster).
->
->  Well, as far as I'm concerned, that will work too.
->
->
->  > > So if we can get the discussion *away* from the "let's slow things down",
->  > > then I'm interested. Because at that point we don't have to fight made-up
->  > > arguments about something irrelevant.
->  >
->  > well, is "let's split changes" ok ?
->
->  How about:
->
->  (1) Merge a couple of trees at a time (one tree at a time would be ideal, but
->     that's impossible due to the total number of trees).
->  (2) After (1) give testers some time to report problems introduced by the
->     merge.
->  (3) Wait until the most urgent problems are resolved.  Revert the offending
->     changes if there's no solution within given time.
->  (4) Repeat for another couple of trees.
->  (5) Arrange things so that every tree gets merged once every two months.
->
->  This would also give us an idea of which trees introduce more problems.
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-Perhaps it would make sense to split the merge window into 2 - first
-week kernel/net/mm/lib etc., second week arch/drivers/fs? Obviously
-some changes are going to span those two areas but it might help in
-pinpointing where breakage was introduced as well as quietening the
-thundering herd of pull requests at the start of a merge window and
-thereby allow review to happen over a longer period.
+--8323584-224145288-1209643911=:19626
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 
-Or I could just be dreaming...
+On Thu, 1 May 2008, J.A. Magall=C3=B3n wrote:
+> On Wed, 30 Apr 2008 16:17:46 +0100 (BST), Hugh Dickins <hugh@veritas.com>=
+ wrote:
+> > On Wed, 30 Apr 2008, J.A. Magall=C3=B3n wrote:
+> > >=20
+> > > I have a couple problems with latest git (-14):
+> > >=20
+> > > - It only recognises 2 processors out of 4 (dual Xeon HT)
+> > > - It oopses on the swapper process just on boot...
+> > >=20
+> > > Difference in dmesg is below. If full correct dmesg or config is
+> > > needed, please ask for them. The kernel was built copying old
+> > > 2.6.25 config to .config && make oldconfig. I filled the missing
+> > > gaps like PAT and others...
+=2E..
+> > > +WARNING: at include/linux/blkdev.h:427 blk_queue_init_tags+0x110/0x1=
+1f()
+> >=20
+> > I presume this warning and backtrace is what you report as an oops:
+> > I think you'll find Linus included a fix for this one overnight, and
+> > it should have gone away in 2.6.25-git15 (but I didn't see it myself).
+>=20
+> -git16 plus your patch gives me my 4 cpus again.
+
+I'm glad to hear this, thanks.
+
+> But I still get the warning:
+
+But sorry to hear this.  That warning has undergone several revisions
+already: I expect yours is another false positive not to worry about,
+but it still needs to be fixed.  I won't meddle in there, Cc'ed Jens
+and Nick who will know what's appropriate.
+
+Hugh
+
+>=20
+> scsi0 : Adaptec AIC79XX PCI-X SCSI HBA DRIVER, Rev 3.0
+>         <Adaptec 29320 Ultra320 SCSI adapter>
+>         aic7902: Ultra320 Wide Channel A, SCSI Id=3D7, PCI 33 or 66Mhz, 5=
+12 SCBs
+> ACPI: PCI Interrupt 0000:03:0a.1[B] -> GSI 23 (level, low) -> IRQ 23
+> scsi1 : Adaptec AIC79XX PCI-X SCSI HBA DRIVER, Rev 3.0
+>         <Adaptec 29320 Ultra320 SCSI adapter>
+>         aic7902: Ultra320 Wide Channel B, SCSI Id=3D7, PCI 33 or 66Mhz, 5=
+12 SCBs
+> scsi 1:0:0:0: Direct-Access     SEAGATE  ST336807LW       0C01 PQ: 0 ANSI=
+: 3
+> ------------[ cut here ]------------
+> WARNING: at include/linux/blkdev.h:431 blk_queue_init_tags+0x110/0x11f()
+> Modules linked in:
+> Pid: 1, comm: swapper Not tainted 2.6.25-jam03 #1
+>  [<c011e618>] warn_on_slowpath+0x4d/0x66
+>  [<c0132e68>] __atomic_notifier_call_chain+0x27/0x48
+>  [<c0132ea0>] atomic_notifier_call_chain+0x17/0x1b
+>  [<c024a7be>] notify_update+0x1f/0x23
+>  [<c024aa07>] vt_console_print+0x1dd/0x2ab
+>  [<c024a82a>] vt_console_print+0x0/0x2ab
+>  [<c0132a2e>] up+0x9/0x2b
+>  [<c01f314c>] init_tag_map+0x4e/0x95
+>  [<c01f3271>] __blk_queue_init_tags+0x27/0x4e
+>  [<c01f33a8>] blk_queue_init_tags+0x110/0x11f
+>  [<c0285b9b>] ahd_platform_set_tags+0x177/0x1a7
+>  [<c0286247>] ahd_linux_slave_configure+0xcd/0x131
+>  [<c025e89e>] scsi_probe_and_add_lun+0x706/0x964
+>  [<c025ecc7>] __scsi_scan_target+0xd9/0x5d9
+>  [<c019ce63>] sysfs_ilookup_test+0x0/0xd
+>  [<c019d8ea>] sysfs_addrm_finish+0x14/0x1c7
+>  [<c019d16d>] sysfs_find_dirent+0x1e/0x27
+>  [<c019d1b1>] sysfs_add_one+0x3b/0x8b
+>  [<c019ccfc>] sysfs_add_file_mode+0x4d/0x76
+>  [<c019e4cc>] internal_create_group+0xd7/0x196
+>  [<c032a1b2>] klist_next+0x53/0x90
+>  [<c025f23f>] scsi_scan_channel+0x78/0x8d
+>  [<c025f2fc>] scsi_scan_host_selected+0xa8/0xd1
+>  [<c025f38d>] do_scsi_scan_host+0x68/0x6a
+>  [<c028540c>] ahd_linux_register_host+0x267/0x2db
+>  [<c0287a6f>] ahd_pci_map_int+0x2c/0x50
+>  [<c0280d5a>] ahd_pci_config+0x533/0x824
+>  [<c01fce96>] kobject_get+0xf/0x13
+>  [<c0251635>] get_device+0xe/0x14
+>  [<c0208da9>] pci_dev_get+0xf/0x13
+>  [<c0287c36>] ahd_linux_pci_dev_probe+0x139/0x17f
+>  [<c019d8ea>] sysfs_addrm_finish+0x14/0x1c7
+>  [<c019d16d>] sysfs_find_dirent+0x1e/0x27
+>  [<c019d1b1>] sysfs_add_one+0x3b/0x8b
+>  [<c019de53>] sysfs_create_link+0x89/0x106
+>  [<c0209049>] pci_match_device+0x9c/0xad
+>  [<c02090b0>] pci_device_probe+0x40/0x60
+>  [<c0253b73>] driver_probe_device+0x76/0x152
+>  [<c0253ca5>] __driver_attach+0x56/0x58
+>  [<c02535ad>] bus_for_each_dev+0x39/0x57
+>  [<c0209070>] pci_device_probe+0x0/0x60
+>  [<c0253a36>] driver_attach+0x16/0x1a
+>  [<c0253c4f>] __driver_attach+0x0/0x58
+>  [<c02530ba>] bus_add_driver+0x19c/0x214
+>  [<c0208d64>] pci_device_remove+0x0/0x36
+>  [<c0209070>] pci_device_probe+0x0/0x60
+>  [<c0253dc4>] driver_register+0x3b/0xd3
+>  [<c0208f7b>] __pci_register_driver+0x32/0x64
+>  [<c041abff>] ahd_linux_init+0x53/0x6f
+>  [<c0406a36>] kernel_init+0x11d/0x287
+>  [<c01174c2>] finish_task_switch+0x1f/0x6d
+>  [<c0117711>] schedule_tail+0x16/0x44
+>  [<c0102c62>] ret_from_fork+0x6/0x1c
+>  [<c0406919>] kernel_init+0x0/0x287
+>  [<c0406919>] kernel_init+0x0/0x287
+>  [<c010393f>] kernel_thread_helper+0x7/0x18
+>  =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> ---[ end trace e7ca32af98aeff40 ]---
+> scsi target1:0:0: asynchronous
+> scsi1:A:0:0: Tagged Queuing enabled.  Depth 32
+> scsi target1:0:0: Beginning Domain Validation
+> scsi target1:0:0: wide asynchronous
+> scsi target1:0:0: FAST-160 WIDE SCSI 320.0 MB/s DT IU QAS RDSTRM WRFLOW P=
+COMP (6.25 ns, offset 63)
+> scsi target1:0:0: Ending Domain Validation
+> scsi 1:0:1:0: Direct-Access     SEAGATE  ST336807LW       0C01 PQ: 0 ANSI=
+: 3
+> scsi target1:0:1: asynchronous
+> scsi1:A:1:0: Tagged Queuing enabled.  Depth 32
+> scsi target1:0:1: Beginning Domain Validation
+> scsi target1:0:1: wide asynchronous
+> scsi target1:0:1: FAST-160 WIDE SCSI 320.0 MB/s DT IU QAS RDSTRM WRFLOW P=
+COMP (6.25 ns, offset 63)
+> scsi target1:0:1: Ending Domain Validation
+> Driver 'sd' needs updating - please use bus_type methods
+> sd 1:0:0:0: [sda] 71687372 512-byte hardware sectors (36704 MB)
+> sd 1:0:0:0: [sda] Write Protect is off
+> sd 1:0:0:0: [sda] Mode Sense: ab 00 10 08
+> sd 1:0:0:0: [sda] Write cache: enabled, read cache: enabled, supports DPO=
+ and FUA
+> sd 1:0:0:0: [sda] 71687372 512-byte hardware sectors (36704 MB)
+> sd 1:0:0:0: [sda] Write Protect is off
+> sd 1:0:0:0: [sda] Mode Sense: ab 00 10 08
+> sd 1:0:0:0: [sda] Write cache: enabled, read cache: enabled, supports DPO=
+ and FUA
+>  sda: sda1 sda2
+> sd 1:0:0:0: [sda] Attached SCSI disk
+> sd 1:0:1:0: [sdb] 71687372 512-byte hardware sectors (36704 MB)
+> sd 1:0:1:0: [sdb] Write Protect is off
+> sd 1:0:1:0: [sdb] Mode Sense: ab 00 10 08
+> sd 1:0:1:0: [sdb] Write cache: enabled, read cache: enabled, supports DPO=
+ and FUA
+> sd 1:0:1:0: [sdb] 71687372 512-byte hardware sectors (36704 MB)
+> sd 1:0:1:0: [sdb] Write Protect is off
+> sd 1:0:1:0: [sdb] Mode Sense: ab 00 10 08
+> sd 1:0:1:0: [sdb] Write cache: enabled, read cache: enabled, supports DPO=
+ and FUA
+>  sdb: sdb1
+> sd 1:0:1:0: [sdb] Attached SCSI disk
+--8323584-224145288-1209643911=:19626--
