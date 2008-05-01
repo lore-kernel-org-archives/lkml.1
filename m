@@ -1,82 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756263AbYEAFvH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757336AbYEAF4N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756263AbYEAFvH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 May 2008 01:51:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752148AbYEAFu4
+	id S1757336AbYEAF4N (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 May 2008 01:56:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753535AbYEAFzs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 May 2008 01:50:56 -0400
-Received: from 1wt.eu ([62.212.114.60]:3670 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751009AbYEAFuz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 May 2008 01:50:55 -0400
-Date: Thu, 1 May 2008 07:50:46 +0200
-From: Willy Tarreau <w@1wt.eu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, David Miller <davem@davemloft.net>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Jiri Slaby <jirislaby@gmail.com>
-Subject: Re: Slow DOWN, please!!!
-Message-ID: <20080501055045.GC18597@1wt.eu>
-References: <20080429.190352.137408408.davem@davemloft.net> <20080430224610.GO8474@1wt.eu> <alpine.LFD.1.10.0804301555330.2980@woody.linux-foundation.org> <200805010242.36775.rjw@sisk.pl> <alpine.LFD.1.10.0804301811051.5994@woody.linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.10.0804301811051.5994@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.11
+	Thu, 1 May 2008 01:55:48 -0400
+Received: from ms1.nttdata.co.jp ([163.135.193.232]:43351 "EHLO
+	ms1.nttdata.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752733AbYEAFzq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 May 2008 01:55:46 -0400
+Message-Id: <20080501055405.024390000@nttdata.co.jp>
+User-Agent: quilt/0.45-1
+Date: Thu, 01 May 2008 14:54:05 +0900
+From: Toshiharu Harada <haradats@nttdata.co.jp>
+To: akpm@linux-foundation.org, chrisw@sous-sol.org, viro@ZenIV.linux.org.uk
+Cc: linux-security-module@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [TOMOYO #8 (2.6.25-mm1) 0/7] TOMOYO Linux
+X-OriginalArrivalTime: 01 May 2008 05:55:43.0073 (UTC) FILETIME=[FDE8FD10:01C8AB4F]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 30, 2008 at 06:19:56PM -0700, Linus Torvalds wrote:
-> 
-> 
-> On Thu, 1 May 2008, Rafael J. Wysocki wrote:
-> > 
-> > > I do _not_ want to slow down development by setting some kind of "quality 
-> > > bar" - but I do believe that we should keep our quality high, not because 
-> > > of any hoops we need to jump through, but because we take pride in the 
-> > > thing we do.
-> > 
-> > Well, we certainly should, but do we always remeber about it?  Honest, guv?
-> 
-> Hey, guv, do you _honestly_ believe that some kind of ISO-9000-like 
-> process generates quality?
-> 
-> And I dislike how people try to conflate "quality" and "merging speed" as 
-> if there was any reason what-so-ever to believe that they are related.
-> 
-> You (and Andrew) have tried to argue that slowing things down results in 
-> better quality, and I simply don't for a moment believe that. I believe 
-> the exact opposite.
+This submission of the TOMOYO Linux security module is based
+against 2.6.25-mm1.
 
-Note that I'm not necessarily arguing for slowing down, but for reduced
-functional conflicts (which slow down may help but it's not the only
-solution). I think that refining the time resolution might achieve the
-same goal. Instead of merging 10000 changes which each have 1% chance
-of breaking any other area, and have all developers try to hunt bugs
-caused by unrelated changes, I think we could do that in steps.
+TOMOYO Linux is a pathname-based MAC extension (LSM module)
+for the Linux kernel. The patch files consist of two parts:
 
-To illustrate, instead of changing 100 areas with one of them causing
-breaking in the other ones, and having 100 victims try to hunt the
-bug in 99 other areas, then theirs, and finally insult the faulty
-author, we could merge 50 areas in version X and 50 in X+1 (or 3*33
-or 4*25, etc...). That way, we would only have 50 victims trying to
-find the bug in 49 other areas (or 32 or 24). Less people wasting
-their time will mean faster validation of changes, and possibly
-faster release cycle with better quality.
+1. New hooks for LSM
+2. TOMOYO Linux itself
 
-People send you their crap every two months. If you accept half of
-it every month, they don't have to sleep on their code, and at the
-same time at most half of them are in trouble during half the time
-(since bugs are found faster).
+The first part is needed because the vfsmount parameter which is
+required for TOMOYO Linux is not passed to (current version of) LSM.
+For that reason, AppArmor and TOMOYO Linux have been posting
+proposals to pass it via VFS code several times, but neither has been
+merged. In this posting, we have chosen a new, straightforward
+approach to add new hooks in the namespace code (that was suggested by
+Stephen Smalley of NSA. We thank him). What is good with this approach
+is it causes fewer impacts on VFS and filesystem code and no impacts
+on in-tree modules (SELinux and Smack).
 
-> So if we can get the discussion *away* from the "let's slow things down", 
-> then I'm interested. Because at that point we don't have to fight made-up 
-> arguments about something irrelevant.
+The heart of TOMOYO Linux patch is to store "process invocation
+history" for each process. Under TOMOYO Linux every process knows
+how it was executed, and TOMOYO Linux kernel automatically
+manage selecting processes that has the same "process invocation history"
+as same domains. Furthermore, administrators can gather
+access requests information for each domain on the fly.
+Our Ubuntu based LiveCD is the most convenient way to
+experience the above explanation.
 
-well, is "let's split changes" ok ?
+http://tomoyo.sourceforge.jp/wiki-e/?TomoyoLive
 
-> 			Linus
+Though we have a variety of MAC functionalities with the latest
+(local) version of TOMOYO Linux, we carefully extracted the MAC for
+file access, the most fundamental functionality to reduce
+the patches and reviewers' time.
 
-Willy
+There have been arguments on pathname-based MACs.
+TOMOYO Linux patch mainly resides in the namespace (so it's called
+pathname-based) while SELinux and current LSM reside in the inode
+space. From information flow control point of view, it is obvious
+that label based MAC is the way to go. So let me emphasize that
+I'm not claiming TOMOYO Linux as a better MAC than SELinux.
+
+Then you might ask why we are developing TOMOYO Linux.
+Because,
+
+- TOMOYO Linux gives human-friendly "context" information to
+  the processes. "Context" example can be viewed at
+    http://tomoyo.sourceforge.jp/cgi-bin/lxr/source/ubuntu-7.10-ccs-1.5.3/domain_policy.conf?v=policy-sample
+- There are cases where pathname-based MAC is needed.
+- At the very least, TOMOYO Linux is one of the most
+  useful tool to learn the Linux operating system.
+
+Some URLs.
+- http://elinux.org/TomoyoLinux
+- http://lwn.net/Articles/263179/ (our security goal)
+- http://tomoyo.sourceforge.jp/wiki-e/?WhatIs#comparison
+  (my version of Linux MAC comparison chart)
+- http://lwn.net/Articles/277833/ (Jonathan's great article on
+  history of pathname-based MAC)
+
+That's it and we are now ready to hear from the community and
+improve the code. Thanks in advance.  :) 
+
+Toshiharu Harada
+haradats@nttdata.co.jp
+NTT DATA CORPORATION
+
+--
 
