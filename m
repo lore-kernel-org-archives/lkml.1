@@ -1,53 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932358AbYEAVcQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764331AbYEAVe0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932358AbYEAVcQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 May 2008 17:32:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760631AbYEAVcB
+	id S1764331AbYEAVe0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 May 2008 17:34:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760234AbYEAVeS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 May 2008 17:32:01 -0400
-Received: from wa-out-1112.google.com ([209.85.146.183]:58634 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750903AbYEAVcA (ORCPT
+	Thu, 1 May 2008 17:34:18 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:39479 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759485AbYEAVeR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 May 2008 17:32:00 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=H9vTpUgP60ZdYcaOilUktkrplJNFTI9XCbn6c6KnYHSdpJc3BhYGpejHrrtD5/sQ8tBB1ghgA4x74wV7L92QdC0iIVu+PdWbn0TRMjBaE/TEcATbayMpYj5tmCUUYuzhI1DFrH4KN3P6gvf02vEzblALfIbhthprGRSpcw1LZfk=
-Subject: Re: [PATCH 1/4] lib: add ascii hex helper functions
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20080501141518.996edb65.akpm@linux-foundation.org>
-References: <1209675067.24729.165.camel@brick>
-	 <20080501141518.996edb65.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Thu, 01 May 2008 14:32:18 -0700
-Message-Id: <1209677538.24729.171.camel@brick>
+	Thu, 1 May 2008 17:34:17 -0400
+Date: Thu, 1 May 2008 14:33:36 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Greg Ungerer <gerg@snapgear.com>
+Cc: torvalds@linux-foundation.org, gerg@uclinux.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] m68knommu: ColdFire add support for kernel preemption
+Message-Id: <20080501143336.552e39e1.akpm@linux-foundation.org>
+In-Reply-To: <200805010216.m412GT6t004096@goober>
+References: <200805010216.m412GT6t004096@goober>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-05-01 at 14:15 -0700, Andrew Morton wrote:
-> On Thu, 01 May 2008 13:51:07 -0700
-> Harvey Harrison <harvey.harrison@gmail.com> wrote:
-> 
-> > Everyone rolls their own version around the tree, centralize
-> > in lib/hexdump.c
-> > 
-> > +extern const char hex_asc[];
-> > +const char hexasc[16] = "0123456789abcdef";
-> 
-> If I were a compiler I'd get upset about that.
-> 
-> Honest, 24 hours really doesn't matter here.  Do it carefully, do
-> it right.
+On Thu, 1 May 2008 12:16:29 +1000
+Greg Ungerer <gerg@snapgear.com> wrote:
 
-...insert something here about improving quality ;-)
+> Subject: [PATCH] m68knommu: ColdFire add support for kernel preemption
 
+Please find a way to get your patch queue into linux-next so that others
+get some visibility into what you're brewing earlier than
+last-day-of-the-merge-window?
 
-Harvey
+Also, when emailing patches like this I do think that it's best that they
+be sequence-numbered, even if they are all non-overlapping and unrelated. 
+Because it allows the recipient to check that none got lost.
 
+Thanks.
