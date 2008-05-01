@@ -1,65 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764635AbYEAUS5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765728AbYEAUTl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764635AbYEAUS5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 May 2008 16:18:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755731AbYEAUSr
+	id S1765728AbYEAUTl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 May 2008 16:19:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758334AbYEAUTb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 May 2008 16:18:47 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:58782 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753331AbYEAUSq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 May 2008 16:18:46 -0400
-Date: Thu, 1 May 2008 13:18:42 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Jiri Slaby <jirislaby@gmail.com>
-cc: linux-mm@kvack.org, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       pageexec@freemail.hu, Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       herbert@gondor.apana.org.au, penberg@cs.helsinki.fi,
-       akpm@linux-foundation.org, linux-ext4@vger.kernel.org,
-       paulmck@linux.vnet.ibm.com, rjw@sisk.pl, zdenek.kabelac@gmail.com,
-       David Miller <davem@davemloft.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Andi Kleen <andi@firstfloor.org>
-Subject: Re: [RFC 1/1] mm: add virt to phys debug
-In-Reply-To: <1209669740-10493-1-git-send-email-jirislaby@gmail.com>
-Message-ID: <Pine.LNX.4.64.0805011310390.9288@schroedinger.engr.sgi.com>
-References: <Pine.LNX.4.64.0804281322510.31163@schroedinger.engr.sgi.com>
- <1209669740-10493-1-git-send-email-jirislaby@gmail.com>
+	Thu, 1 May 2008 16:19:31 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:41605 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757328AbYEAUTb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 May 2008 16:19:31 -0400
+Message-ID: <481A2599.4080205@kernel.org>
+Date: Thu, 01 May 2008 13:18:33 -0700
+From: "H. Peter Anvin" <hpa@kernel.org>
+Organization: Linux Kernel Organization, Inc.
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Willy Tarreau <w@1wt.eu>
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Helge Hafting <helge.hafting@aitel.hist.no>,
+       Adrian Bunk <bunk@kernel.org>, linux-kernel@vger.kernel.org,
+       trivial@kernel.org
+Subject: Re: [2.6 patch] UTF-8 fixes in comments
+References: <20080429050605.GA27875@1wt.eu> <20080429072911.GA28059@cs181133002.pp.htv.fi> <20080429081423.GD30507@1wt.eu> <4816E4FD.5060605@aitel.hist.no> <20080429100934.GB1473@1wt.eu> <20080429111014.5a065b88@core> <20080429103335.GD1473@1wt.eu> <20080429113410.0971d071@core> <20080429221230.GA17360@1wt.eu> <20080429231554.69973c45@core> <20080429230511.GA18377@1wt.eu>
+In-Reply-To: <20080429230511.GA18377@1wt.eu>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 1 May 2008, Jiri Slaby wrote:
-
-> Christoph, was you able to compile this somehow? I had to move the code
-> into ioremap along 64-bit variant to allow the checking.
-
-The 64 bit piece works fine here and I used it for debugging the vmalloc 
-work. Not sure about the 32 bit piece.
-
-> A pacth which I created is attached, I've successfully tested it by this
-> module:
-
-Great! Someone else picks this up. You can probably do a more thorough 
-job than I can.
-
-> Add some (configurable) expensive sanity checking to catch wrong address
-> translations on x86.
+Willy Tarreau wrote:
+> On Tue, Apr 29, 2008 at 11:15:54PM +0100, Alan Cox wrote:
+>>> OK I could reproduce the case without ever involving either a shell or
+>>> readline or anything. Using "cat" as the init program exhibited the
+>>> anomaly, though it was not much easy to analyze. Then I switched to
+>>> "init=od -An -tx1 -".
+>> Did you put the console into utf-8 mode before the cat ?
 > 
-> - create linux/mmdebug.h file to be able include this file in
->   asm headers to not get unsolvable loops in header files
-> - __phys_addr on x86_32 became a function in ioremap.c since
->   PAGE_OFFSET and is_vmalloc_addr is undefined if declared in
->   page_32.h (again circular dependencies)
-> - add __phys_addr_const for initializing doublefault_tss.__cr3
+> I had not *explictly* disabled it, since as the doc suggests :
+> 
+>         vt.default_utf8=
+>                         [VT]
+>                         Format=<0|1>
+>                         Set system-wide default UTF-8 mode for all tty's.
+>                         Default is 1, i.e. UTF-8 mode is enabled for all
+>                         newly opened terminals.
+> 
+> And I know that I can fix the behaviour by explicitly setting it to zero.
+> Also, the fact that "od" shows me multi-byte characters on the input
+> indicates to me that everything is set to UTF-8. So unless I'm missing
+> something, my console is set by default to UTF-8 (I test this on 2.6.25).
+> 
 
-Hmmm.. We could use include/linux/bounds.h to make 
-VMALLOC_START/VMALLOC_END (or whatever you need for checking the memory 
-boundaries) a cpp constant which may allow the use in page_32.h without 
-circular dependencies.
+Yes, there is apparently a real bug here: this vt setting doesn't 
+propagate to the tty layer iutf8 flag.
 
-
+	-hpa
