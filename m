@@ -1,58 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760865AbYEAPzM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763969AbYEAP4l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760865AbYEAPzM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 May 2008 11:55:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762189AbYEAPy4
+	id S1763969AbYEAP4l (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 May 2008 11:56:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758366AbYEAP4c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 May 2008 11:54:56 -0400
-Received: from an-out-0708.google.com ([209.85.132.244]:49483 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761688AbYEAPyz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 May 2008 11:54:55 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=BKlJwwzxgasUiRtl5j7T/gWnN8ePeRnEasNtDYq/Gq4BhK3Jl2zHLGaATDXBa3wrTdNO65nKr8A+GJ/GkumMYcfKm63eVN+5/bM9nKwbcQbRCglkydC2v7bHvhG1JFNd1LVb92dacUEtOuaoAFE6mKEM1jhw9BjAEz+nGyZaOqU=
-Message-ID: <804dabb00805010854t7c593c1dl271f3634863d2137@mail.gmail.com>
-Date: Thu, 1 May 2008 23:54:54 +0800
-From: "Peter Teoh" <htmldeveloper@gmail.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: make[1]: *** [drivers/built-in.o] Error 1
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+	Thu, 1 May 2008 11:56:32 -0400
+Received: from smtp.wellnetcz.com ([212.24.148.102]:59293 "EHLO WNmonitoring"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1758071AbYEAP4b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 May 2008 11:56:31 -0400
+From: Jiri Slaby <jirislaby@gmail.com>
+To: megaraidlinux@lsi.com
+Cc: linux-scsi@vger.kernel.org, <James.Bottomley@HansenPartnership.com>,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       Jiri Slaby <jirislaby@gmail.com>
+Subject: [PATCH #repost] SCSI: megaraid, fix suspend/resume sections
+Date: Thu,  1 May 2008 17:56:02 +0200
+Message-Id: <1209657362-20300-1-git-send-email-jirislaby@gmail.com>
+X-Mailer: git-send-email 1.5.4.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Doing a make on the latest linus tree gives:
+megaraid_sas suspend and resume are inappropriatelly placed in
+__devinit section. Remove those placements and make the stuff
+dependent on CONFIG_PM.
 
-  CHK     include/linux/version.h
-  CHK     include/linux/utsrelease.h
-  CALL    scripts/checksyscalls.sh
-  CHK     include/linux/compile.h
-  LDS     arch/x86/kernel/acpi/realmode/wakeup.lds
-  LD      arch/x86/kernel/acpi/realmode/wakeup.elf
-ld: warning: dot moved backwards before `.text'
-ld: warning: dot moved backwards before `.text'
-ld: warning: dot moved backwards before `.text'
-  OBJCOPY arch/x86/kernel/acpi/realmode/wakeup.bin
-  AS      arch/x86/kernel/acpi/wakeup_rm.o
-  LD      arch/x86/kernel/acpi/built-in.o
-  LD      arch/x86/kernel/built-in.o
-  LD      drivers/built-in.o
-ld: drivers/media/built-in.o: No such file: No such file or directory
-make[1]: *** [drivers/built-in.o] Error 1
-make: *** [drivers] Error 2
+While at it, mark remove function as __devexit.
 
-a.   What is the cause of the error?
-b.   Is there a relationship between the ld-warning and the subsequent
-errors as shown above?
+Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+Cc: Neela Syam Kolli <megaraidlinux@lsi.com>
+---
+ drivers/scsi/megaraid/megaraid_sas.c |   11 ++++++++---
+ 1 files changed, 8 insertions(+), 3 deletions(-)
 
-Thanks.
-
+diff --git a/drivers/scsi/megaraid/megaraid_sas.c b/drivers/scsi/megaraid/megaraid_sas.c
+index b937e9c..a90944c 100644
+--- a/drivers/scsi/megaraid/megaraid_sas.c
++++ b/drivers/scsi/megaraid/megaraid_sas.c
+@@ -2650,12 +2650,13 @@ static void megasas_shutdown_controller(struct megasas_instance *instance,
+ 	return;
+ }
+ 
++#ifdef CONFIG_PM
+ /**
+  * megasas_suspend -	driver suspend entry point
+  * @pdev:		PCI device structure
+  * @state:		PCI power state to suspend routine
+  */
+-static int __devinit
++static int
+ megasas_suspend(struct pci_dev *pdev, pm_message_t state)
+ {
+ 	struct Scsi_Host *host;
+@@ -2687,7 +2688,7 @@ megasas_suspend(struct pci_dev *pdev, pm_message_t state)
+  * megasas_resume-      driver resume entry point
+  * @pdev:               PCI device structure
+  */
+-static int __devinit
++static int
+ megasas_resume(struct pci_dev *pdev)
+ {
+ 	int rval;
+@@ -2782,12 +2783,16 @@ fail_ready_state:
+ 
+ 	return -ENODEV;
+ }
++#else
++#define megasas_suspend	NULL
++#define megasas_resume	NULL
++#endif
+ 
+ /**
+  * megasas_detach_one -	PCI hot"un"plug entry point
+  * @pdev:		PCI device structure
+  */
+-static void megasas_detach_one(struct pci_dev *pdev)
++static void __devexit megasas_detach_one(struct pci_dev *pdev)
+ {
+ 	int i;
+ 	struct Scsi_Host *host;
 -- 
-Regards,
-Peter Teoh
+1.5.4.5
+
