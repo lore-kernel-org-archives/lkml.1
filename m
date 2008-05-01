@@ -1,120 +1,210 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765977AbYEATyp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932360AbYEATzm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765977AbYEATyp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 May 2008 15:54:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753331AbYEATyh
+	id S932360AbYEATzm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 May 2008 15:55:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753301AbYEATze
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 May 2008 15:54:37 -0400
-Received: from 1wt.eu ([62.212.114.60]:3712 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750903AbYEATyh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 May 2008 15:54:37 -0400
-Date: Thu, 1 May 2008 21:53:44 +0200
-From: Willy Tarreau <w@1wt.eu>
-To: david@lang.hm
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       Jiri Slaby <jirislaby@gmail.com>
-Subject: Re: Slow DOWN, please!!!
-Message-ID: <20080501195344.GB32322@1wt.eu>
-References: <20080429.190352.137408408.davem@davemloft.net> <200805011259.47343.rjw@sisk.pl> <alpine.LFD.1.10.0805010816340.5994@woody.linux-foundation.org> <200805011909.40203.rjw@sisk.pl> <alpine.LFD.1.10.0805011022370.5994@woody.linux-foundation.org> <20080501185032.GA30883@1wt.eu> <alpine.DEB.1.10.0805011155520.9847@asgard> <20080501192829.GQ8474@1wt.eu> <alpine.DEB.1.10.0805011239040.9847@asgard>
-Mime-Version: 1.0
+	Thu, 1 May 2008 15:55:34 -0400
+Received: from mec195e42.tmodns.net ([66.94.25.236]:43678 "EHLO
+	atmailx07.tmomail.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751877AbYEATzd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 May 2008 15:55:33 -0400
+X-Greylist: delayed 2034 seconds by postgrey-1.27 at vger.kernel.org; Thu, 01 May 2008 15:55:33 EDT
+Date: Thu, 1 May 2008 15:21:32 -0400
+From: Aristeu Sergio Rozanski Filho <aris@ruivo.org>
+To: linux-kernel@vger.kernel.org
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: [PATCH] RFC: vt: fix vcs* sysfs file creation race
+Message-ID: <20080501192131.GA4662@jake.ruivo.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0805011239040.9847@asgard>
-User-Agent: Mutt/1.5.11
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 spamscore=0 ipscore=0 phishscore=0 bulkscore=0 adultscore=0 classifier=spam adjust=0 reason=mlx engine=3.1.0-0804140000 definitions=main-0805010123
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 01, 2008 at 12:46:41PM -0700, david@lang.hm wrote:
-> On Thu, 1 May 2008, Willy Tarreau wrote:
-> 
-> >On Thu, May 01, 2008 at 12:07:53PM -0700, david@lang.hm wrote:
-> >>On Thu, 1 May 2008, Willy Tarreau wrote:
-> >>
-> >>I suspect that they would not have, and if I'm right the result of merging
-> >>half as much wouldn't be twice as many releases, but rather approximatly
-> >>the same release schedule with more piling up for the next release.
-> >
-> >no, this is exactly what *not* to do. Linus is right about the risk of
-> >getting more stuff at once. If we merge less things, we *must* be able
-> >to speed up the process. Half the patches to cross-check in half the
-> >time should be easier than all patches in full time. The time to fix
-> >a problem within N patches is O(N^2).
-> 
-> in general you are correct, however I don't think that it's the general 
-> bugs that end up delaying the releases, think it's the nasty, hard to 
-> identify and understand bugs that delay the releases, and I don't think 
-> that the debugging of those will speed up much.
+Currently there's a race on VT open/close path that can trigger messages
+like:
 
-Indirectly yes it should. Who do you think is chasing those nasty bugs ?
-More people than should be. While those people spend time on bugs caused
-revealed by associating several trees, they don't work on fixing their
-own bugs.
+kobject_add_internal failed for vcs7 with -EEXIST, don't try to register
+things with the same name in the same direc.
+Pid: 2967, comm: vcs_stress Not tainted 2.6.25 #10
+ [<c04e852e>] kobject_add_internal+0x137/0x149
+ [<c04e85d4>] kobject_add_varg+0x35/0x41
+ [<c04e8645>] kobject_add+0x43/0x49
+ [<c055e54f>] device_add+0x91/0x4b4
+ [<c055e984>] device_register+0x12/0x15
+ [<c055e9f6>] device_create+0x6f/0x95
+ [<c053e69b>] vcs_make_sysfs+0x23/0x4f
+ [<c0543aff>] con_open+0x74/0x82
+ [<c0538b64>] tty_open+0x188/0x287
+ [<c047b1c8>] chrdev_open+0x119/0x135
+ [<c04775d4>] __dentry_open+0xcf/0x185
+ [<c0477711>] nameidata_to_filp+0x1f/0x33
+ [<c047b0af>] ? chrdev_open+0x0/0x135
+ [<c0477753>] do_filp_open+0x2e/0x35
+ [<c0627da6>] ? _spin_unlock+0x1d/0x20
+ [<c04774ef>] ? get_unused_fd_flags+0xc9/0xd3
+ [<c047779a>] do_sys_open+0x40/0xb5
+ [<c0477851>] sys_open+0x1e/0x26
+ [<c0404962>] syscall_call+0x7/0xb
+ =======================
 
-> >>even individual git trees that do get a fair bit of testing (like
-> >>networking for example) run into odd and hard to debug problems when
-> >>exposed to a wider set of hardware and loads. having the networking
-> >>changes go in every 4 months (with 4 months worth of changes) instead of
-> >>every 2 months (with 2 months worth of changes) will just mean that there
-> >>will be more problems in this area, and since they will be more
-> >>concentrated in that area it will be harder to fix them all fast as the
-> >>same group of people are needed for all of them.
-> >
-> >You're perfectly right and that's exactly not what I'm proposing. BTW,
-> >having two halves will also get more of the merge job done the side of
-> >developers, where testing is being done before submission. So in the
-> >end, we should also get *less* regressions caused by each submission.
-> 
-> Ok, I guess I don't understand what you are proposing then.
-> 
-> I thought that you were proposing going from 2 week merge + 6 week 
-> stabilize = release to 1 week merge half + 3 week stabilize = release
-> 
-> it now sounds as if you are saying 1 week merge + x week stabilize + 1 
-> week merge + x week stabilize = release
-> 
-> can you clarify?
+this happens because con_release() releases acquire_console_sem(),
+con_open() acquires it, finds vc_cons[currcons] unused and calls
+vcs_make_sysfs() before con_release() is able to call
+vcs_remove_sysfs(). vcs_remove_sysfs() can sleep so calling it with
+console semaphore taken isn't a good idea.
 
-The later : 1 week merge for core, 2-4 weeks to stabilize depending on the
-amount of changes and complexity of some bugs, release or not at this point
-(probably not), then 1 week merge for the rest, and 2-4 weeks stabilize.
+But this isn't the only problem. Currently release_dev() checks for
+tty->count without holding any locks but BKL that is acquired on
+tty_release() and several tty drivers also check tty->count and some of
+them without even holding any locks. This leads to the case where two
+calls to release_dev()/tty->driver->close() can race and both find
+tty->count == 2 and don't release anything. I see two possibilities
+here:
+1) We get rid of tty->count usage on drivers by implementing internal
+counters. This solution would allow us to fix each driver before
+converting tty->count into a kref and only be used by tty layer.
+This proposed patch does eliminate tty->count usage on vt.
+2) We kill the current one open/close for each tty_open, only calling
+driver's open and close on the first open and last close. By looking on
+the tty drivers, none of them do anything important with multiple opens
+anyway (but I might be wrong on this).
 
-Drivers are different. Maybe we'll find it's better to merge them with the
-rest, maybe we'll find it wise to merge them all along, I don't know.
+So, before doing anything more intrusive, I'd to hear which option you
+find better.
 
-> >>if several maintainers think that you are correct that doing a merge with
-> >>far fewer changes will be a lot faster, they can test this in the real
-> >>world by skipping one release. just send Linus a 'no changes this time'
-> >>instead of a pull request. If you are right the stable release will happen
-> >>significantly faster and they can say 'I told you so' and in the next
-> >>release have a fair chance of convincing other maintainers to skip a
-> >>release.
-> >
-> >again, this cannot work because this would result in slowing them down,
-> >and it's not what I'm proposing.
-> 
-> if merging fewer catagoies of stuff doesn't speed up the release cycle 
-> then you are right, it would just slow things down. however I thought you 
-> were arguing that if we merged fewer catagories of stuff each cycle we 
-> could speed up the cycle. I'm saying that maintainers can choose to test 
-> this experimentally and see if it works. if it works we can shift to doing 
-> more of it, if it doesn't they only delay things by a couple of months one 
-> time.
+To reproduce this problem, I use a simple stress program available at
+	jake.ruivo.org / ~aris / vcs_stress.c
+with a simple script like
+	while [ 1 ]; do sleep $((RANDOM % 15)); killall Xorg; done
+running multiple vcs_stress sessions also helps
 
-we should not delay too much IMHO, especially for core changes. We risk to
-get huge piles of code which break a lot of other things. Also, core changes
-sometimes involve adjustments in every driver or so. So they should not get
-additional delay (unless we're really bore by the maintainer not respecting
-the process).
+This patch removes the use of tty->count and tty_mutex and replaces it
+by an internal kref and changes the code to only set vc_tty to NULL
+after the vcs_remove_sysfs() is done.
 
-> you would need to have several maintainers decide to participate in the 
-> experiment or the difference in cycle time may not be noticable.
+Signed-off-by: Aristeu Rozanski <arozansk@redhat.com>
 
-But it would require Linus to drive it first.
+---
+ drivers/char/vt.c              |   62 ++++++++++++++++++++++++-----------------
+ include/linux/console_struct.h |    2 +
+ 2 files changed, 39 insertions(+), 25 deletions(-)
 
-Willy
-
+--- a/drivers/char/vt.c	2008-04-30 13:10:36.000000000 -0400
++++ b/drivers/char/vt.c	2008-04-30 13:14:20.000000000 -0400
+@@ -2719,15 +2719,24 @@ static int con_open(struct tty_struct *t
+ {
+ 	unsigned int currcons = tty->index;
+ 	int ret = 0;
++	struct vc_data *vc;
+ 
+ 	acquire_console_sem();
+ 	if (tty->driver_data == NULL) {
+ 		ret = vc_allocate(currcons);
+ 		if (ret == 0) {
+-			struct vc_data *vc = vc_cons[currcons].d;
++			vc = vc_cons[currcons].d;
++
++			if (vc->vc_tty != NULL) {
++				/* we're still releasing this console entry */
++				release_console_sem();
++				return -EBUSY;
++			}
++
+ 			tty->driver_data = vc;
+ 			vc->vc_tty = tty;
+ 
++			kref_init(&vc->kref);
+ 			if (!tty->winsize.ws_row && !tty->winsize.ws_col) {
+ 				tty->winsize.ws_row = vc_cons[currcons].d->vc_rows;
+ 				tty->winsize.ws_col = vc_cons[currcons].d->vc_cols;
+@@ -2736,39 +2745,42 @@ static int con_open(struct tty_struct *t
+ 			vcs_make_sysfs(tty);
+ 			return ret;
+ 		}
++	} else {
++		vc = tty->driver_data;
++		kref_get(&vc->kref);
+ 	}
+ 	release_console_sem();
+ 	return ret;
+ }
+ 
+-/*
+- * We take tty_mutex in here to prevent another thread from coming in via init_dev
+- * and taking a ref against the tty while we're in the process of forgetting
+- * about it and cleaning things up.
+- *
+- * This is because vcs_remove_sysfs() can sleep and will drop the BKL.
+- */
+-static void con_close(struct tty_struct *tty, struct file *filp)
++static void con_release(struct kref *kref)
+ {
+-	mutex_lock(&tty_mutex);
++	struct vc_data *vc = container_of(kref, struct vc_data, kref);
++	struct tty_struct *tty = vc->vc_tty;
++
++	tty->driver_data = NULL;
++
++	/* we must release the semaphore here: vcs_remove_sysfs() may sleep */
++	release_console_sem();
++	vcs_remove_sysfs(tty);
+ 	acquire_console_sem();
+-	if (tty && tty->count == 1) {
+-		struct vc_data *vc = tty->driver_data;
+ 
+-		if (vc)
+-			vc->vc_tty = NULL;
+-		tty->driver_data = NULL;
+-		release_console_sem();
+-		vcs_remove_sysfs(tty);
+-		mutex_unlock(&tty_mutex);
+-		/*
+-		 * tty_mutex is released, but we still hold BKL, so there is
+-		 * still exclusion against init_dev()
+-		 */
+-		return;
+-	}
++	/* now this slot is officially free */
++	vc->vc_tty = NULL;
++}
++
++static void con_close(struct tty_struct *tty, struct file *filp)
++{
++	struct vc_data *vc = tty->driver_data;
++
++	acquire_console_sem();
++	/*
++	 * tty->driver_data can be NULL if con_open() fails because tty layer
++	 * will call us even if the first open wasn't successful.
++	 */
++	if (vc != NULL)
++		kref_put(&vc->kref, con_release);
+ 	release_console_sem();
+-	mutex_unlock(&tty_mutex);
+ }
+ 
+ static int default_italic_color    = 2; // green (ASCII)
+--- a/include/linux/console_struct.h	2008-04-30 13:11:03.000000000 -0400
++++ b/include/linux/console_struct.h	2008-04-30 13:14:20.000000000 -0400
+@@ -15,6 +15,7 @@
+ #include <linux/wait.h>
+ #include <linux/vt.h>
+ #include <linux/workqueue.h>
++#include <linux/kref.h>
+ 
+ struct vt_struct;
+ 
+@@ -108,6 +109,7 @@ struct vc_data {
+ 	unsigned long	vc_uni_pagedir;
+ 	unsigned long	*vc_uni_pagedir_loc;  /* [!] Location of uni_pagedir variable for this console */
+ 	/* additional information is in vt_kern.h */
++	struct kref	kref;
+ };
+ 
+ struct vc {
