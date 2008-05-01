@@ -1,78 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756548AbYEAHFe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756985AbYEAHId@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756548AbYEAHFe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 May 2008 03:05:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753859AbYEAHFY
+	id S1756985AbYEAHId (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 May 2008 03:08:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753388AbYEAHI0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 May 2008 03:05:24 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:56425 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753449AbYEAHFX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 May 2008 03:05:23 -0400
-Subject: Re: [PATCH 0/1] Embedded Maintainer(s), linux-embedded@vger list
-From: David Woodhouse <dwmw2@infradead.org>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       Paul Gortmaker <paul.gortmaker@windriver.com>,
-       linux-embedded@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Tim Bird <tim.bird@am.sony.com>
-In-Reply-To: <20080430233431.GL29330@cs181133002.pp.htv.fi>
-References: <1209577322.25560.402.camel@pmac.infradead.org>
-	 <20080430233431.GL29330@cs181133002.pp.htv.fi>
-Content-Type: text/plain; charset=UTF-8
-Date: Thu, 01 May 2008 08:04:55 +0100
-Message-Id: <1209625495.25560.466.camel@pmac.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-1.fc9) 
-Content-Transfer-Encoding: 8bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Thu, 1 May 2008 03:08:26 -0400
+Received: from mail.AKNET.ru ([77.246.241.226]:50281 "EHLO mail.aknet.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753003AbYEAHI0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 May 2008 03:08:26 -0400
+Message-ID: <48196C58.4030004@aknet.ru>
+Date: Thu, 01 May 2008 11:08:08 +0400
+From: Stas Sergeev <stsp@aknet.ru>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+MIME-Version: 1.0
+To: Michael Opdenacker <michael-lists@free-electrons.com>
+CC: Sam Ravnborg <sam@ravnborg.org>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Takashi Iwai <tiwai@suse.de>,
+       Linux kernel <linux-kernel@vger.kernel.org>,
+       Vojtech Pavlik <vojtech@suse.cz>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [patch] pcspkr: fix dependancies
+References: <4813476A.7000705@aknet.ru> <200804261918.14711.dtor-oss@comcast.net> <4813BD39.1080105@aknet.ru> <20080427042331.GB29127@anvil.corenet.prv> <481626B6.5040207@aknet.ru> <20080428155811.ZZRA012@mailhub.coreip.homeip.net> <20080428201225.GB18135@uranus.ravnborg.org> <48177D70.5010803@aknet.ru> <4818205B.7050202@free-electrons.com>
+In-Reply-To: <4818205B.7050202@free-electrons.com>
+X-Enigmail-Version: 0.95.2
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-05-01 at 02:34 +0300, Adrian Bunk wrote:
-> On Wed, Apr 30, 2008 at 06:42:02PM +0100, David Woodhouse wrote:
-> > Andrew Morton has been saying recently that we need an 'embedded
-> > maintainer', to take responsibility for 'embedded issues' in the core
-> > kernel, as well as trying to improve our relationship with those using
-> > the Linux kernel for 'embedded' devices -- who have a reputation of
-> > not working with us very closely; to their detriment as well as our
-> > own.
-> > 
-> > Various people, including myself, have been doing that kind of thing
-> > on and off over the years anyway, but Andrew is probably right that
-> > it's worth having someone listed in the MAINTAINERS file who actually
-> > considers it their responsibility, and as a point of contact for
-> > people seeking advice, review, etc.
-> >...
-> 
-> MAINTAINERS is mostly for finding the right contact for bug reports and 
-> patches.
-> 
-> For what should I Cc you and for what should I Cc you not?
+Guys, there really needs to be a
+few more replies to make a decision.
 
-The rôle of 'embedded maintainer' is a little different to other
-maintainers -- it's not about owning a certain part of the code. We need
-to keep an eye on changes throughout the kernel, for how they affect
-embedded systems. That's not just 'bloatwatch', but other things too --
-making sure that people don't keep assuming that "all the world's a PC",
-for sure, but also feature requests -- talking to those working on XIP
-for S390 block devices, and trying to ensure that the infrastructure
-work they do is useful for XIP from flash in embedded systems, to pick
-an example from the not-so-distant past.
+So far only Dmitry have clearly stated
+his opinion regarding both patches.
+And that opinion was: no need for the
+new config option, just get the 2.6.25
+patch reverted.
+Dmitry, after reading the older Michael's
+thread, would you perhaps reconsider?
 
-So I can't really give you a simple answer to the question. It's
-"anything which could have implications for embedded systems which
-normal people might not have thought of". But I'll continue to trawl
-linux-kernel with that mindset anyway, so I wouldn't worry _too_ much.
+Sam and Michael said that just revering
+may not be a good idea, but have not
+commented on the patch that adds a new
+option under "if EMBEDDED".
 
-I see the linux-embedded list being mostly useful in bringing developers
-"into the fold" from companies who have largely been resistant to being
-part of the community. Asking them to join linux-kernel is probably not
-a good idea; I see it as a kind of targeted kernelnewbies, in one sense.
+That puts me in a position where both
+patches are effectively blocked, and
+in a mean time snd-pcsp remains broken.
 
--- 
-dwmw2
-
+Guys, please, give your ACK or NACK on
+the two posted patches! :)
+Namely:
+http://lkml.org/lkml/2008/4/26/105
+http://lkml.org/lkml/2008/4/26/283
