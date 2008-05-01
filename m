@@ -1,91 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758291AbYEACIS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756804AbYEACNP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758291AbYEACIS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Apr 2008 22:08:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753989AbYEACIF
+	id S1756804AbYEACNP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Apr 2008 22:13:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754174AbYEACM6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Apr 2008 22:08:05 -0400
-Received: from fk-out-0910.google.com ([209.85.128.185]:62095 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753423AbYEACID convert rfc822-to-8bit (ORCPT
+	Wed, 30 Apr 2008 22:12:58 -0400
+Received: from smtp116.sbc.mail.sp1.yahoo.com ([69.147.64.89]:22970 "HELO
+	smtp116.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753882AbYEACM6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Apr 2008 22:08:03 -0400
-Message-ID: <ab3f9b940804301907y5a3e84e1l6cb41a339bc2241b@mail.gmail.com>
-Date: Wed, 30 Apr 2008 19:07:58 -0700
-From: "Tom May" <tom@tommay.com>
-To: "=?ISO-8859-1?Q?Daniel_Sp=E5ng?=" <daniel.spang@gmail.com>
-Subject: Re: [PATCH 0/8][for -mm] mem_notify v6
-Cc: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <cfd9edbf0804230127k33a56312i6582f926e00ea17@mail.gmail.com>
+	Wed, 30 Apr 2008 22:12:58 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=JIS+Ai3TSoa9JksOy2v6GvIYxb4A1fETghPcjPK9fbHHIYfKdQLMdqSlhf7Uopqiig5xlpxKgBws1hXdDX2w9TCum8JI6pRlPm1cTTuAxCwhOc8QXNzdNw9WKx/uKJUq+MpUh+f7oXdQKQrZzPEyRk55l+mlPk/b2iMIwoCx4SA=  ;
+X-YMail-OSG: tWRj958VM1kpBHkFupW0M1jJw38fb1S.o02PQPRwAFwD4x6HPCP3UWHNqc70nivD3cqaSJ090mg2BUDVdsA81G.WVz10LzcVepAQiNPX7k1ezhjUy4ugJSYKnkFrNglTaao-
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Trent Piepho <tpiepho@freescale.com>
+Subject: Re: [patch/rfc 2.6.25-git v2] gpio: sysfs interface
+Date: Wed, 30 Apr 2008 19:08:31 -0700
+User-Agent: KMail/1.9.6
+Cc: lkml <linux-kernel@vger.kernel.org>, Ben Nizette <bn@niasdigital.com>,
+       hartleys <hartleys@visionengravers.com>,
+       Mike Frysinger <vapier.adi@gmail.com>, Bryan Wu <cooloney@kernel.org>
+References: <200804281239.51729.david-b@pacbell.net> <200804301434.25211.david-b@pacbell.net> <Pine.LNX.4.64.0804301511120.1537@t2.domain.actdsltmp>
+In-Reply-To: <Pine.LNX.4.64.0804301511120.1537@t2.domain.actdsltmp>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20080402154910.9588.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-	 <ab3f9b940804141716x755787f5h8e0122c394922a83@mail.gmail.com>
-	 <20080417182121.A8CA.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-	 <ab3f9b940804171223m722912bfy291a2c6d9d40b24a@mail.gmail.com>
-	 <cfd9edbf0804230127k33a56312i6582f926e00ea17@mail.gmail.com>
+Message-Id: <200804301908.32346.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 23, 2008 at 1:27 AM, Daniel Spång <daniel.spang@gmail.com> wrote:
-> Hi Tom
->
->
->  On 4/17/08, Tom May <tom@tommay.com> wrote:
->  >
->  >  Here is the start and end of the output from the test program.  At
->  >  each /dev/mem_notify notification Cached decreases, then eventually
->  >  Mapped decreases as well, which means the amount of time the program
->  >  has to free memory gets smaller and smaller.  Finally the oom killer
->  >  is invoked because the program can't react quickly enough to free
->  >  memory, even though it can free at a faster rate than it can use
->  >  memory.  My test is slow to free because it calls nanosleep, but this
->  >  is just a simulation of my actual program that has to perform garbage
->  >  collection before it can free memory.
->
->  I have also seen this behaviour in my static tests with low mem
->  notification on swapless systems. It is a problem with small programs
->  (typically static test programs) where the text segment is only a few
->  pages. I have not seen this behaviour in larger programs which use a
->  larger working set. As long as the system working set is bigger than
->  the amount of memory that needs to be allocated, between every
->  notification reaction opportunity, it seems to be ok.
+On Wednesday 30 April 2008, Trent Piepho wrote:
+> On Wed, 30 Apr 2008, David Brownell wrote:
+> > Simple sysfs interface for GPIOs.
+> >
+> >    /sys/class/gpio
+> >    	...
+> 
+> "simple"?  What I had was a lot simpler.
 
-Hi Daniel,
+But it had some "must fix" problems, which I told you when you
+posted your first patch.  You didn't fix them.  And since then,
+your pushback seems to rely very heavily on ignoring issues I
+pointed out are "must fix" or "can't/doesn't work that way".
 
-You're saying the program's in-core text pages serve as a reserve that
-the kernel can discard when it needs some memory, correct?  And that
-even if the kernel discards them, it will page them back in as a
-matter of course as the program runs, to maintain the reserve?  That
-certainly makes sense.
+It's easy to be simple if you don't have to be correct or safe.
 
-In my case of a Java virtual machine, where I originally saw the
-problem, most of the code is interpreted byte codes or jit-compiled
-native code, all of which resides not in the text segment but in
-anonymous pages that aren't backed by a file, and there is no swap
-space.  The actual text segment working set can be very small (memory
-allocation, garbage collection, synchronization, other random native
-code).  And, as KOSAKI Motohiro pointed out, it may be wise to mlock
-these areas.  So the text working set doesn't make an adequate
-reserve.
 
-However, I can maintain a reserve of cached and/or mapped memory by
-touching pages in the text segment (or any mapped file) as the final
-step of low memory notification handling, if the cached page count is
-getting low.  For my purposes, this is nearly the same as having an
-additional threshold-based notification, since it forces notifications
-to occur while the kernel still has some memory to satisfy allocations
-while userspace code works to free memory.  And it's simple.
+> So, I want to set gpio 5 on a pcf9557 extender.
 
-Unfortunately, this is more expensive than it could be since the pages
-need to be read in from some device (mapping /dev/zero doesn't cause
-pages to be allocated). What I'm looking for now is a cheap way to
-populate the cache with pages that the kernel can throw away when it
-needs to reclaim memory.
+Which isn't exactly where most folk start.  If it's something
+done routinely, they'll likely have a script to run; either
+the native language type, or something for bash or Python.
 
-Thanks,
-.tom
+If it's a one-off, they probably start from schematics and
+are fully capable of adding 5 to the base number associated
+with the particular pcf chip in question (say, the third one
+on this card stack) ... and doing the same for other pins
+they need to diddle.  Note taking is always a good practice
+when sorting out such issues, but adding five is in your head
+is far from rocket science.
+
+
+> cat 1 > /sys/class/gpio/pcf9557-0:0
+> 
+> But now I can't do this anymore,
+
+"Any more"?  You never *could* do that before.  The original
+patch you sent didn't do that, and the last code snippet I
+saw from you didn't either.
+
+
+> it has to be harder.  So how do I do it?  It 
+> doesn't seem very considerate to ignore the real use cases
+
+I didn't ignore *use cases* at all.  You can certainly set
+the value of such a GPIO with the $SUBJECT interface.
+
+Just ... not using that syntax.  Use cases are several steps
+above solution details, such as a particular syntax.
+
+
+> of the person who wrote the code to begin with.
+
+I've seen at least half a dozen different userspace models for
+how to work with GPIOs.  You didn't write all of them.  Nor
+were yours the only use cases.
+
+
+> 	 What's the point of allowing
+> one to label gpio lines if it's not going to be easy to see?
+
+You can "cat /sys/kernel/debug/gpio" to see them...
+
+
+> >  echo "23" > /sys/class/gpio/control
+> > 	... will gpio_request(23, "sysfs") and gpio_export(23); use
+> 
+> So if a driver is already using gpio 23, then there is no way to see it in
+> sysfs, since the gpio_request() will fail?
+
+Right.  If that driver wanted to cope with userspace mucking
+around with its internal state (GPIOs) it would have explicitly
+enabled it by calling gpio_export().  If it's not prepared to
+cope with the various flavors of breakage that would facilitate,
+it doesn't call gpio_export() ... and is safe.
+
+
+> > 	/sys/class/gpio/gpio-23/direction to configure it.
+> >  echo "-23" > /sys/class/gpio/control
+> > 	... will gpio_free(23)
+> 
+> So if a driver was already using gpio 23 and you wanted to look at it from
+> userspace, you'll free it from both sysfs and the driver that was using it
+> when you're done?
+
+No, that was the one-line summary.  It's only freed if it was
+originally requested from userspace (by "echo 23 > control").
+As you can see in the code...
+
+- Dave
+
+
