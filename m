@@ -1,48 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764197AbYEATQz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764790AbYEATRq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764197AbYEATQz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 May 2008 15:16:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760726AbYEATQq
+	id S1764790AbYEATRq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 May 2008 15:17:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761194AbYEATRg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 May 2008 15:16:46 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:42682 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1760037AbYEATQp (ORCPT
+	Thu, 1 May 2008 15:17:36 -0400
+Received: from moutng.kundenserver.de ([212.227.126.186]:64784 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759077AbYEATRf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 May 2008 15:16:45 -0400
-Date: Thu, 1 May 2008 20:08:51 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Martin =?UTF-8?B?TU9LUkVKxaA=?= <mmokrejs@ribosome.natur.cuni.cz>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.23.17 & 2.6.24.5 and maybe earlier: pata_marvell: need to
- disable DMA to get rid of '(ATA bus error)', 'ata7.00: status: { DRDY ERR
- }', 'ata7.00: error: { ICRC ABRT }'
-Message-ID: <20080501200851.2e14d3b8@core>
-In-Reply-To: <4819FDAF.7050005@ribosome.natur.cuni.cz>
-References: <4819FDAF.7050005@ribosome.natur.cuni.cz>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 1 May 2008 15:17:35 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: John Williams <jwilliams@itee.uq.edu.au>
+Subject: Re: microblaze syscall list
+Date: Thu, 1 May 2008 21:17:10 +0200
+User-Agent: KMail/1.9.9
+Cc: monstr@seznam.cz, microblaze-uclinux@itee.uq.edu.au,
+       Matthew Wilcox <matthew@wil.cx>, Will Newton <will.newton@gmail.com>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       linux-arch@vger.kernel.org, git@xilinx.com,
+       John Williams <john.williams@petalogix.com>,
+       Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>,
+       John Linn <John.Linn@xilinx.com>
+References: <87a5b0800804220513t75690ceao938a288596b5ad0c@mail.gmail.com> <48151726.9000204@itee.uq.edu.au> <200804281431.26570.arnd@arndb.de>
+In-Reply-To: <200804281431.26570.arnd@arndb.de>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200805012117.12991.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1/b/6udfAdnWZebi4NYLL6mXClKvSn9qhYBgg1
+ 0rTJOT3al5t0MgFIWHCTmOPS5r3uUnnekR2K8uCfLxMA12rZkN
+ H7g3UjJYGRWwk8NwaUpow==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> To get rid of the errors, I can use libata.dma=0 kernel
-> command-line parameter. Unfortunately, this sets all libata
-> devices to PIO4 mode. How can I set just this one? I tried
-> 'libata.force=7.00:pio4' but it did not help.
+On Monday 28 April 2008, Arnd Bergmann wrote:
+> How about this strategy then:
+> * Change all the data types and syscall numbers in the -for-2.6.27
+> branch to only include the minimal set, and a modern ABI
+> * Add the old interfaces as an out-of-tree patch that adds source
+> level compatibility with the old libc, but does not modify any
+> of the new interfaces, so that a patched kernel can run all binaries
+> built for the upstream version.
+> * phase out the old source interface gradually, as all users update
+> their libc source code.
 
-libata.dma=3 will stop DMA being used for CF devices (except those that
-decide to pretend to be ATA classes). This one comes up a lot as many CF
-adapters are simply not adequate for UDMA.
+Any news on this from the microblaze people? Have you made up your mind
+on what route you want to go?
 
-> Where are the flags documented? linux/Documentation/ directory
-> contains almost nothing about pata_marvell. :(
-
-The flags are all common across drivers.
-
-Alan
+	Arnd <><
