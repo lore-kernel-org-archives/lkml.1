@@ -1,85 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763969AbYEAP4l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762687AbYEAQBp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763969AbYEAP4l (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 May 2008 11:56:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758366AbYEAP4c
+	id S1762687AbYEAQBp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 May 2008 12:01:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760133AbYEAQBh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 May 2008 11:56:32 -0400
-Received: from smtp.wellnetcz.com ([212.24.148.102]:59293 "EHLO WNmonitoring"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1758071AbYEAP4b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 May 2008 11:56:31 -0400
-From: Jiri Slaby <jirislaby@gmail.com>
-To: megaraidlinux@lsi.com
-Cc: linux-scsi@vger.kernel.org, <James.Bottomley@HansenPartnership.com>,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       Jiri Slaby <jirislaby@gmail.com>
-Subject: [PATCH #repost] SCSI: megaraid, fix suspend/resume sections
-Date: Thu,  1 May 2008 17:56:02 +0200
-Message-Id: <1209657362-20300-1-git-send-email-jirislaby@gmail.com>
-X-Mailer: git-send-email 1.5.4.5
+	Thu, 1 May 2008 12:01:37 -0400
+Received: from smtp.eu.citrix.com ([62.200.22.115]:25770 "EHLO
+	SMTP.EU.CITRIX.COM" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758350AbYEAQBg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 May 2008 12:01:36 -0400
+X-IronPort-AV: E=Sophos;i="4.27,422,1204520400"; 
+   d="scan'208";a="14076308"
+Date: Thu, 1 May 2008 17:01:29 +0100
+From: Samuel Thibault <samuel.thibault@ens-lyon.org>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       akpm@osdl.org, torvalds@osdl.org
+Subject: Re: This month's price for the most useless new Kconfig help text ...
+Message-ID: <20080501160129.GU4797@implementation.uk.xensource.com>
+Mail-Followup-To: Samuel Thibault <samuel.thibault@ens-lyon.org>,
+	Christoph Hellwig <hch@infradead.org>,
+	Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+	akpm@osdl.org, torvalds@osdl.org
+References: <20080501120959.GA16700@basil.nowhere.org> <20080501131900.GL4797@implementation.uk.xensource.com> <20080501154720.GA3476@infradead.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20080501154720.GA3476@infradead.org>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-OriginalArrivalTime: 01 May 2008 16:01:35.0307 (UTC) FILETIME=[A187B1B0:01C8ABA4]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-megaraid_sas suspend and resume are inappropriatelly placed in
-__devinit section. Remove those placements and make the stuff
-dependent on CONFIG_PM.
+Christoph Hellwig, le Thu 01 May 2008 11:47:20 -0400, a écrit :
+> On Thu, May 01, 2008 at 02:19:00PM +0100, Samuel Thibault wrote:
+> > If the society was a bit more aware of accessibility troubles in general
+> > (I mean in the street etc.), we wouldn't have to explain the word
+> 
+> Blah, an agenda is not an excuse for bad option descriptions.
 
-While at it, mark remove function as __devexit.
+Sure, that's why I provided a patch :)
 
-Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
-Cc: Neela Syam Kolli <megaraidlinux@lsi.com>
----
- drivers/scsi/megaraid/megaraid_sas.c |   11 ++++++++---
- 1 files changed, 8 insertions(+), 3 deletions(-)
+(I agree that Kconfig helps like "CONFIG_FUSION: Say Y here to get to
+see options for Fusion Message Passing Technology (MPT) drivers" do not
+help much, I just didn't know that people were now actually caring about
+having some real explanations beyond the usual "if you don't know what
+it is, you don't need it, just say no")
 
-diff --git a/drivers/scsi/megaraid/megaraid_sas.c b/drivers/scsi/megaraid/megaraid_sas.c
-index b937e9c..a90944c 100644
---- a/drivers/scsi/megaraid/megaraid_sas.c
-+++ b/drivers/scsi/megaraid/megaraid_sas.c
-@@ -2650,12 +2650,13 @@ static void megasas_shutdown_controller(struct megasas_instance *instance,
- 	return;
- }
- 
-+#ifdef CONFIG_PM
- /**
-  * megasas_suspend -	driver suspend entry point
-  * @pdev:		PCI device structure
-  * @state:		PCI power state to suspend routine
-  */
--static int __devinit
-+static int
- megasas_suspend(struct pci_dev *pdev, pm_message_t state)
- {
- 	struct Scsi_Host *host;
-@@ -2687,7 +2688,7 @@ megasas_suspend(struct pci_dev *pdev, pm_message_t state)
-  * megasas_resume-      driver resume entry point
-  * @pdev:               PCI device structure
-  */
--static int __devinit
-+static int
- megasas_resume(struct pci_dev *pdev)
- {
- 	int rval;
-@@ -2782,12 +2783,16 @@ fail_ready_state:
- 
- 	return -ENODEV;
- }
-+#else
-+#define megasas_suspend	NULL
-+#define megasas_resume	NULL
-+#endif
- 
- /**
-  * megasas_detach_one -	PCI hot"un"plug entry point
-  * @pdev:		PCI device structure
-  */
--static void megasas_detach_one(struct pci_dev *pdev)
-+static void __devexit megasas_detach_one(struct pci_dev *pdev)
- {
- 	int i;
- 	struct Scsi_Host *host;
--- 
-1.5.4.5
+> And btw, the word accessibility in the sense used here doesn't translate
+> at all into many foreign languages,
 
+Right.
+
+Samuel
