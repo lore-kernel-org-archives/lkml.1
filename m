@@ -1,102 +1,162 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763335AbYEAXpA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763784AbYEAXtV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763335AbYEAXpA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 May 2008 19:45:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752614AbYEAXou
+	id S1763784AbYEAXtV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 May 2008 19:49:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754076AbYEAXtO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 May 2008 19:44:50 -0400
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:53306 "EHLO
-	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750989AbYEAXot (ORCPT
+	Thu, 1 May 2008 19:49:14 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:55953 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752959AbYEAXtN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 May 2008 19:44:49 -0400
-Date: Thu, 1 May 2008 19:44:18 -0400
-Message-Id: <200805012344.m41NiImk013312@agora.fsl.cs.sunysb.edu>
-From: Erez Zadok <ezk@cs.sunysb.edu>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Erez Zadok <ezk@cs.sunysb.edu>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, viro@zeniv.linux.org.uk,
-       hch@infradead.org, mhalcrow@us.ibm.com, hugh@veritas.com
-Subject: Re: [2.6.26 PATCH, RESEND]: fs_stack/eCryptfs: fsstack_copy_* updates 
-In-reply-to: Your message of "Thu, 01 May 2008 12:21:36 PDT."
-             <20080501122136.bc2215c9.akpm@linux-foundation.org> 
-X-MailKey: Erez_Zadok
+	Thu, 1 May 2008 19:49:13 -0400
+Date: Thu, 1 May 2008 16:48:56 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Ryan Roth <ryanroth@sbcglobal.net>
+Cc: Ryan.Roth@CH2M.com, akpm@linux-foundation.org,
+       bugme-daemon@bugzilla.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [Bugme-new] [Bug 10586] New: High Number of Segfaults
+ onMacBookStarting With 2.6.24.5 Kernel
+Message-Id: <20080501164856.f93ff909.randy.dunlap@oracle.com>
+In-Reply-To: <481A5276.4040607@sbcglobal.net>
+References: <bug-10586-10286@http.bugzilla.kernel.org/>
+	<20080501130444.cc5c63e8.akpm@linux-foundation.org>
+	<86A21F45FFA48B408A65E67054362EB6069DD742@CULEBRA.amr.ch2m.com>
+	<20080501133003.be723364.akpm@linux-foundation.org>
+	<86A21F45FFA48B408A65E67054362EB621C948@CULEBRA.amr.ch2m.com>
+	<481A5276.4040607@sbcglobal.net>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In message <20080501122136.bc2215c9.akpm@linux-foundation.org>, Andrew Morton writes:
-> On Thu, 1 May 2008 13:18:09 -0400
-> Erez Zadok <ezk@cs.sunysb.edu> wrote:
+On Thu, 01 May 2008 16:29:58 -0700 Ryan Roth wrote:
+
 > 
-> > In message <20080430101704.9cbd6384.akpm@linux-foundation.org>, Andrew Morton writes:
-> > [...[
-> > > Can we avoid having to think?
-> > > 
-> > > void fsstack_copy_inode_size(struct inode *dst, const struct inode *src)
-> > > {
-> > > 	blkcnt_t i_blocks;
-> > > 	loff_t i_size;
-> > > 
-> > > 	i_size = i_size_read(src);
-> > > 	spin_lock_32bit(&src->i_lock);
-> > > 	i_blocks = src->i_blocks;
-> > > 	spin_unlock_32bit(&src->i_lock);
-> > > 
-> > > 	i_size_write(dst, i_size);
-> > > 	spin_lock_32bit(&dst->i_lock)
-> > > 	dst->i_blocks = i_blocks;
-> > > 	spin_unlock_32bit(&dst->i_lock)
-> > > }
-> > 
-> > I can't find spin_[um]lock_32bit anywhere (checkd latest mmotm and linus's
-> > tree).  I therefore assume this was just your way of saying I should:
-> > 
-> > #if BITS_PER_LONG == 32
-> > 	spin_unlock(&dst->i_lock);
-> > #endif
+> > -----Original Message-----
+> > From: Andrew Morton [mailto:akpm@linux-foundation.org]
+> > Sent: Thu 5/1/2008 1:30 PM
+> > To: Roth, Ryan/RDD
+> > Cc: bugme-daemon@bugzilla.kernel.org; linux-kernel@vger.kernel.org
+> > Subject: Re: [Bugme-new] [Bug 10586] New: High Number of Segfaults 
+> > onMacBookStarting With 2.6.24.5 Kernel
+> >
+> > On Thu, 1 May 2008 14:09:00 -0600
+> > <Ryan.Roth@CH2M.com> wrote:
+> > >
+> > > -----Original Message-----
+> > > > From: Andrew Morton [mailto:akpm@linux-foundation.org]
+> > > > Sent: Thursday, May 01, 2008 1:05 PM
+> > > > To: Roth, Ryan/RDD
+> > > > Cc: bugme-daemon@bugzilla.kernel.org; linux-kernel@vger.kernel.org
+> > > > Subject: Re: [Bugme-new] [Bug 10586] New: High Number of Segfaults
+> > > > onMacBook Starting With 2.6.24.5 Kernel
+> > > >
+> > > > (switched to email.  Please respond via emailed reply-to-all, not via
+> > > > the bugzilla web interface).
+> > > >
+> > > > On Thu,  1 May 2008 12:30:18 -0700 (PDT)
+> > > > bugme-daemon@bugzilla.kernel.org wrote:
+> > > >
+> > > > > http://bugzilla.kernel.org/show_bug.cgi?id=10586
+> > > > >
+> > > > >            Summary: High Number of Segfaults on MacBook Starting 
+> > With
+> > > > >                     2.6.24.5 Kernel
+> > > > >            Product: Memory Management
+> > > > >            Version: 2.5
+> > > > >      KernelVersion: 2.6.24.5
+> > > > >           Platform: All
+> > > > >         OS/Version: Linux
+> > > > >               Tree: Mainline
+> > > > >             Status: NEW
+> > > > >           Severity: normal
+> > > > >           Priority: P1
+> > > > >          Component: Other
+> > > > >         AssignedTo: akpm@osdl.org
+> > > > >         ReportedBy: ryan.roth@ch2m.com
+> > > > >
+> > > > >
+> > > > > Latest working kernel version:  2.6.23?
+> > > > > Earliest failing kernel version:  2.6.24.5
+> > > > > Distribution: Fedora 8 x86_64
+> > > > > Hardware Environment:  MacBook
+> > > > > Problem Description:  Extremely high number of segfaults.  Suspect
+> > > > > that this may have to do with some sort of change in memory 
+> > remapping
+> > > > > changes in the kernel.
+> > > >
+> > > > This report is a bit mysterious.  I assume you're referring to x86's
+> > > >
+> > > >     "%s%s[%d]: segfault at %lx ip %08lx sp %08lx error %lx"
+> > > >
+> > > > printk in the kernel logs?
+> > > >
+> > > > Can you please send some examples of the log output?
+> > > >
+> > > > Is there actually any observeable problem apart from the logs?  Are
+> > > > applications dying where they previously did not?
+> > > >
+> > >
+> > > Yes there is a issue with a lot of apps dying, especially the
+> > > gnome-power-* apps which means my power management fails to work
+> > > frequently.  I'm on Git-10 currently and I'm going to patch it up to
+> > > date right now because it looks like there have been some memory remap
+> > > patches lately.  I will update the list after I do so.
+> > >
+> >
+> > OK, worried.  This is a huge bug.  But afaik you're the only person 
+> > who has
+> > hit it, so there must be something special in your setup which is
+> > triggering it.  This could be hard.
+> >
 > 
-> Nope, it was my way of suggesting that you implement it ;)
-> include/linux/spinlock.h would be a good place.
+> OK here is what I get with the git16 kernel.  On boot I get this error:
+> 
+> PCI: Not using MMCONFIG
+> PCI: BIOS Bug: MCFG area at f0000000 is not reserved in ACPI motherboard 
+> resources
+> PCI: Not using MMCONFIG
+> 
+> Attached is a complete log after this boot
 
-Sure, I can implement it and submit a patch.  But I've got two questions
-first:
+Where are the segfaults?
 
-1. i_size_read has a tri-state behaviour:
-
-#if BITS_PER_LONG==32 && defined(CONFIG_SMP)
-	// play with seqcount
-#elif BITS_PER_LONG==32 && defined(CONFIG_PREEMPT)
-	// wrap in preempt_disable/enable
-#else
-	// just return value
-#endif
-
-Shouldn't the same be done for i_blocks, with matching i_blocks_read(),
-i_blocks_write(), and adding an inode->i_blocks_seqcount field?
+Do you mean these reports?  If so, then this is something
+other than segfaults.  And not quite as critical.
+Or are things not working for you with this kernel?
 
 
-2. I've rewritten your suggested code a bit to reduce stack use.  Modulo
-   having 32-bit spin_lock/unlock variants, do you see any problem with this
-   code below?  My testing of it so far on 32/64-bit SMP/UMP have all
-   passed.
-
-void fsstack_copy_inode_size(struct inode *dst, struct inode *src)
-{
-#if BITS_PER_LONG == 32
-	blkcnt_t i_blocks;
-
-	spin_lock(&src->i_lock);
-	i_blocks = src->i_blocks;
-	spin_unlock(&src->i_lock);
-	spin_lock(&dst->i_lock);
-	dst->i_blocks = i_blocks;
-	spin_unlock(&dst->i_lock);
-#else
-	dst->i_blocks = src->i_blocks;
-#endif
-	i_size_write(dst, i_size_read(src));
-}
-
-Thanks,
-Erez.
+May  1 16:15:01 kernel: proc_dir_entry 'info' already registered
+May  1 16:15:01 kernel: Pid: 1099, comm: modprobe Not tainted 2.6.25-git16 #3
+May  1 16:15:01 kernel: 
+May  1 16:15:01 kernel: Call Trace:
+May  1 16:15:01 kernel:  [<ffffffff81118269>] idr_get_new+0xb/0x28
+May  1 16:15:01 kernel:  [<ffffffff810d5e92>] proc_register+0xcb/0x14b
+May  1 16:15:01 kernel:  [<ffffffff810d5ec5>] proc_register+0xfe/0x14b
+May  1 16:15:01 kernel:  [<ffffffff810d5f96>] proc_create_data+0x84/0x9e
+May  1 16:15:01 kernel:  [<ffffffffa013dd37>]
+:video:acpi_video_bus_add+0x98f/0xc6d
+May  1 16:15:01 kernel:  [<ffffffff8115d4d9>] acpi_device_probe+0x43/0x91
+May  1 16:15:01 kernel:  [<ffffffff81192564>] driver_probe_device+0xd0/0x14d
+May  1 16:15:01 kernel:  [<ffffffff81192627>] __driver_attach+0x46/0x6d
+May  1 16:15:01 kernel:  [<ffffffff811925e1>] __driver_attach+0x0/0x6d
+May  1 16:15:01 kernel:  [<ffffffff81191f09>] bus_for_each_dev+0x44/0x6f
+May  1 16:15:01 kernel:  [<ffffffff8119186e>] bus_add_driver+0xb2/0x1ff
+May  1 16:15:01 kernel:  [<ffffffff81192846>] driver_register+0x59/0xcd
+May  1 16:15:01 kernel:  [<ffffffffa00d803c>] :video:acpi_video_init+0x3c/0x5e
+May  1 16:15:01 kernel:  [<ffffffff81052db2>] sys_init_module+0x171a/0x1896
+May  1 16:15:01 kernel:  [<ffffffff8115d812>] acpi_bus_register_driver+0x0/0x3e
+May  1 16:15:01 kernel:  [<ffffffff81098831>] vfs_read+0xa6/0xfe
+May  1 16:15:01 kernel:  [<ffffffff8100bf3b>]
+system_call_after_swapgs+0x7b/0x80
+---
+~Randy
