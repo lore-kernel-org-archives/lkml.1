@@ -1,53 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765437AbYEAVZE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765996AbYEAVZ6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765437AbYEAVZE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 May 2008 17:25:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760856AbYEAVYz
+	id S1765996AbYEAVZ6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 May 2008 17:25:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761249AbYEAVZu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 May 2008 17:24:55 -0400
-Received: from ribosome.natur.cuni.cz ([195.113.57.20]:46755 "EHLO
-	ribosome.natur.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754693AbYEAVYy (ORCPT
+	Thu, 1 May 2008 17:25:50 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:42628 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760856AbYEAVZu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 May 2008 17:24:54 -0400
-Message-ID: <481A3518.5030308@ribosome.natur.cuni.cz>
-Date: Thu, 01 May 2008 23:24:40 +0200
-From: =?UTF-8?B?TWFydGluIE1PS1JFSsWg?= <mmokrejs@ribosome.natur.cuni.cz>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.13) Gecko/20080328 SeaMonkey/1.1.9
+	Thu, 1 May 2008 17:25:50 -0400
+Date: Thu, 1 May 2008 17:25:48 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: LKML <linux-kernel@vger.kernel.org>, lucho@ionkov.net, ericvh@gmail.com,
+       mingo@goodmis.org
+Subject: Re: [PATCH] fix flags length in net 9p
+In-Reply-To: <20080501141919.78b7dc4f.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.58.0805011721150.12785@gandalf.stny.rr.com>
+References: <Pine.LNX.4.58.0805011706070.12785@gandalf.stny.rr.com>
+ <20080501141919.78b7dc4f.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.23.17 & 2.6.24.5 and maybe earlier: pata_marvell: need to
- disable DMA to get rid of '(ATA bus error)', 'ata7.00: status: { DRDY ERR
- }', 'ata7.00: error: { ICRC ABRT }'
-References: <4819FDAF.7050005@ribosome.natur.cuni.cz> <20080501200851.2e14d3b8@core>
-In-Reply-To: <20080501200851.2e14d3b8@core>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Alan,
+[ I added Ingo since I think he created the check ]
 
-Alan Cox wrote:
->> To get rid of the errors, I can use libata.dma=0 kernel
->> command-line parameter. Unfortunately, this sets all libata
->> devices to PIO4 mode. How can I set just this one? I tried
->> 'libata.force=7.00:pio4' but it did not help.
-> 
-> libata.dma=3 will stop DMA being used for CF devices (except those that
-> decide to pretend to be ATA classes). This one comes up a lot as many CF
-> adapters are simply not adequate for UDMA.
-> 
->> Where are the flags documented? linux/Documentation/ directory
->> contains almost nothing about pata_marvell. :(
-> 
-> The flags are all common across drivers.
+On Thu, 1 May 2008, Andrew Morton wrote:
 
-Oh, please tell me where can I read more. ;-) What does the number
-3 mean? How can I force certain parameters over ata7.00 device only?
+> On Thu, 1 May 2008 17:08:05 -0400 (EDT)
+> Steven Rostedt <rostedt@goodmis.org> wrote:
+>
+> > Some files in the net/9p directory uses "int" for flags. This can
+> > cause hard to find bugs on some architectures. This patch converts the
+> > flags to use "long" instead.
+>
+> gargh.
+>
+> > This bug was discovered by doing an allyesconfig make on the -rt kernel
+> > where checks are done to ensure all flags are of size sizeof(long).
+>
+> I was about to suggest that we do something like that...
+>
+> I wonder how messy it is.  I long ago lost the ability to follow the
+> convolutions in include/linux/spinlock*.h :(  gotta patch?
 
-Thanks!
-Maritn
+It's not messy at all, it's actually quite elegant. I can pull it out of
+the -rt tree, or perhaps Ingo can quickly whip one up as well.
+
+Ingo, you want me to pull it out?
+
+-- Steve
+
