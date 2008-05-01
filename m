@@ -1,148 +1,211 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757495AbYEADqc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759938AbYEADqp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757495AbYEADqc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Apr 2008 23:46:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753682AbYEADqW
+	id S1759938AbYEADqp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Apr 2008 23:46:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755658AbYEADq2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Apr 2008 23:46:22 -0400
-Received: from az33egw01.freescale.net ([192.88.158.102]:43817 "EHLO
-	az33egw01.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753589AbYEADqW (ORCPT
+	Wed, 30 Apr 2008 23:46:28 -0400
+Received: from sj-iport-2.cisco.com ([171.71.176.71]:14780 "EHLO
+	sj-iport-2.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755256AbYEADq0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Apr 2008 23:46:22 -0400
-Date: Wed, 30 Apr 2008 20:41:54 -0700 (PDT)
-From: Trent Piepho <tpiepho@freescale.com>
-X-X-Sender: xyzzy@t2.domain.actdsltmp
-To: David Brownell <david-b@pacbell.net>
-cc: lkml <linux-kernel@vger.kernel.org>, Ben Nizette <bn@niasdigital.com>,
-       hartleys <hartleys@visionengravers.com>,
-       Mike Frysinger <vapier.adi@gmail.com>, Bryan Wu <cooloney@kernel.org>
-Subject: Re: [patch/rfc 2.6.25-git v2] gpio: sysfs interface
-In-Reply-To: <200804301908.32346.david-b@pacbell.net>
-Message-ID: <Pine.LNX.4.64.0804301931030.1537@t2.domain.actdsltmp>
-References: <200804281239.51729.david-b@pacbell.net> <200804301434.25211.david-b@pacbell.net>
- <Pine.LNX.4.64.0804301511120.1537@t2.domain.actdsltmp>
- <200804301908.32346.david-b@pacbell.net>
+	Wed, 30 Apr 2008 23:46:26 -0400
+From: Roland Dreier <rdreier@cisco.com>
+To: torvalds@linux-foundation.org, akpm@linux-foundation.org
+Cc: general@lists.openfabrics.org, linux-kernel@vger.kernel.org
+Subject: [GIT PULL] please pull infiniband.git
+X-Message-Flag: Warning: May contain useful information
+Date: Wed, 30 Apr 2008 20:46:24 -0700
+Message-ID: <adamyna660f.fsf@cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 01 May 2008 03:46:24.0878 (UTC) FILETIME=[EDAA60E0:01C8AB3D]
+Authentication-Results: sj-dkim-1; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim1004 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 30 Apr 2008, David Brownell wrote:
-> On Wednesday 30 April 2008, Trent Piepho wrote:
->> On Wed, 30 Apr 2008, David Brownell wrote:
->>> Simple sysfs interface for GPIOs.
->>>
->>>    /sys/class/gpio
->>>    	...
->>
->> "simple"?  What I had was a lot simpler.
->
-> But it had some "must fix" problems, which I told you when you
-> posted your first patch.  You didn't fix them.  And since then,
-> your pushback seems to rely very heavily on ignoring issues I
-> pointed out are "must fix" or "can't/doesn't work that way".
+Linus, please pull from
 
-So what are these must fix problems?  You don't want all the gpios to appear
-in sysfs by default in case there are many.  So have them only appear when
-they are requested by something.  Problem solved.
+    master.kernel.org:/pub/scm/linux/kernel/git/roland/infiniband.git for-linus
 
-Someone might label the chip with a label using a '/'.  First of all, that's
-nothing but speculation on a problem that will probably never happen.  Do any
-existing chip labels use a '/'?  Is it really that hard to just not label the
-chip that way?  But suppose someone just can't avoid it, one line of code,
-that I posted, is all it takes to fix this.
+This tree is also available from kernel.org mirrors at:
 
-Multiple chips with the same label.  That's more annoying, but still
-easy to fix in a number of ways:
-1) If the label isn't unique, don't register that chip with sysfs.
-2) If the label isn't unique, appended a suffix to make it so.
-3) Always add a sequence number the end of the chip label.  This is quite
-common in fact.
+    git://git.kernel.org/pub/scm/linux/kernel/git/roland/infiniband.git for-linus
 
-The sysfs control interface won't be able to handle gpios named this way.  Or
-doing so will be "too hard".  Not true, I wrote and posted code that did it. 
-It was simpler than the initial code you wrote for the control interface, and
-much simpler than the latest with all the gpiochip stuff.  BTW, my code also
-worked for unexporting gpio 0....
+This will get a couple of fixes for medium-impact bugs.  If they can go
+into -rc1, great; otherwise the world won't end if they end up in -rc2.
 
-You say nothing in sysfs works this way, but I don't agree.  Take a look at
-/sys/class/net, you have names like "tap0", "eth0", "eth1", "lo", etc.  This
-is exactly what I'm saying to do.  The first "eth" gpio chip you register is
-appears as eth0 in sysfs, the second as eth1, and so on.
+Eli Cohen (1):
+      IB/ipoib: Fix transmit queue stalling forever
 
-The directories are not just named "netdev0", "netdev1", "netdev2", with some
-sort of mapping file telling you ethernet devices are using numbers 2-3.
+Roland Dreier (1):
+      IB/mlx4: Fix off-by-one errors in calls to mlx4_ib_free_cq_buf()
 
-Look at PCI, you have files like "/sys/bus/pci/devices/0000:01:05.0" and
-"/bus/pci/devices/0000:00:0d.2".  It's not "pci1", "pci2", "pci3", with a
-"bus0" directory telling you that the bus starts at device 3 and has 6
-devices.
+ drivers/infiniband/hw/mlx4/cq.c            |    4 +-
+ drivers/infiniband/ulp/ipoib/ipoib.h       |    2 +
+ drivers/infiniband/ulp/ipoib/ipoib_ib.c    |   47 +++++++++++++++++++++++++---
+ drivers/infiniband/ulp/ipoib/ipoib_verbs.c |    3 +-
+ 4 files changed, 48 insertions(+), 8 deletions(-)
 
-Look at ACPI, it's /sys/bus/acpi/devices/{LNXSLPBN:00,LNXPWRBN:00,LNXSYSTM:00}
-and "device:00", "device:01".  It uses useful names before the number when
-they exist, and just "device" when it doesn't.  This is what I'm saying to do
-for gpios.
 
-In fact, what you want - just naming gpios from each device sequentially as
-the are dynamically assigned, and then having another set of directories that
-allow one to calculate what which one belongs to a given chip - seems to be a
-lot harder to find an existing example of.
-
->> So, I want to set gpio 5 on a pcf9557 extender.
->
-> Which isn't exactly where most folk start.  If it's something
-
-It's where I started.  You say your system works for everything that matters
-and just dismiss the problems I'm solving as irrelevant with a wave of your
-hand.  That's very convenient for you, but where does it leave me?
-
-> done routinely, they'll likely have a script to run; either
-> the native language type, or something for bash or Python.
-
-Your worried about the memory usage of some extra sysfs files, but include
-python on your device?  IMHO, if you can't do this simple task in 5 minutes
-with just busybox, the system is making things too hard.
-
->> cat 1 > /sys/class/gpio/pcf9557-0:0
->>
->> But now I can't do this anymore,
->
-> "Any more"?  You never *could* do that before.  The original
-> patch you sent didn't do that, and the last code snippet I
-> saw from you didn't either.
-
-I seem to be doing it just fine.  I never posted the latest version of my
-code since you didn't respond to my April 7th email.
-
->> 	 What's the point of allowing
->> one to label gpio lines if it's not going to be easy to see?
->
-> You can "cat /sys/kernel/debug/gpio" to see them...
-
-What is the reason to not have the label with gpio in sysfs?
-
->>>  echo "23" > /sys/class/gpio/control
->>> 	... will gpio_request(23, "sysfs") and gpio_export(23); use
->>
->> So if a driver is already using gpio 23, then there is no way to see it in
->> sysfs, since the gpio_request() will fail?
->
-> Right.  If that driver wanted to cope with userspace mucking
-> around with its internal state (GPIOs) it would have explicitly
-> enabled it by calling gpio_export().  If it's not prepared to
-> cope with the various flavors of breakage that would facilitate,
-> it doesn't call gpio_export() ... and is safe.
-
-How does seeing the value, direction, and label of a gpio "muck around with
-its internal state?"
-
-Of course, one can still change a gpio via /dev/mem or i2c-dev, depending on
-the source.  How is being able to do this via sysfs any different?  Yes, the
-user could mess the driver up, if they don't know what they are doing.  Just
-like there are a hundred other ways to do this via raw device access,
-/dev/mem, i2c-dev, and so on.  I guess instead of looking down on everyone and
-assuming no one else knows what they are doing and must be protected, I prefer
-to assume users aren't idiots, and if they can be trusted with /dev/hda they
-can be trusted with gpios in sysfs.
+diff --git a/drivers/infiniband/hw/mlx4/cq.c b/drivers/infiniband/hw/mlx4/cq.c
+index 2f199c5..4521319 100644
+--- a/drivers/infiniband/hw/mlx4/cq.c
++++ b/drivers/infiniband/hw/mlx4/cq.c
+@@ -246,7 +246,7 @@ err_mtt:
+ 	if (context)
+ 		ib_umem_release(cq->umem);
+ 	else
+-		mlx4_ib_free_cq_buf(dev, &cq->buf, entries);
++		mlx4_ib_free_cq_buf(dev, &cq->buf, cq->ibcq.cqe);
+ 
+ err_db:
+ 	if (!context)
+@@ -434,7 +434,7 @@ int mlx4_ib_destroy_cq(struct ib_cq *cq)
+ 		mlx4_ib_db_unmap_user(to_mucontext(cq->uobject->context), &mcq->db);
+ 		ib_umem_release(mcq->umem);
+ 	} else {
+-		mlx4_ib_free_cq_buf(dev, &mcq->buf, cq->cqe + 1);
++		mlx4_ib_free_cq_buf(dev, &mcq->buf, cq->cqe);
+ 		mlx4_db_free(dev->dev, &mcq->db);
+ 	}
+ 
+diff --git a/drivers/infiniband/ulp/ipoib/ipoib.h b/drivers/infiniband/ulp/ipoib/ipoib.h
+index 9044f88..ca126fc 100644
+--- a/drivers/infiniband/ulp/ipoib/ipoib.h
++++ b/drivers/infiniband/ulp/ipoib/ipoib.h
+@@ -334,6 +334,7 @@ struct ipoib_dev_priv {
+ #endif
+ 	int	hca_caps;
+ 	struct ipoib_ethtool_st ethtool;
++	struct timer_list poll_timer;
+ };
+ 
+ struct ipoib_ah {
+@@ -404,6 +405,7 @@ extern struct workqueue_struct *ipoib_workqueue;
+ 
+ int ipoib_poll(struct napi_struct *napi, int budget);
+ void ipoib_ib_completion(struct ib_cq *cq, void *dev_ptr);
++void ipoib_send_comp_handler(struct ib_cq *cq, void *dev_ptr);
+ 
+ struct ipoib_ah *ipoib_create_ah(struct net_device *dev,
+ 				 struct ib_pd *pd, struct ib_ah_attr *attr);
+diff --git a/drivers/infiniband/ulp/ipoib/ipoib_ib.c b/drivers/infiniband/ulp/ipoib/ipoib_ib.c
+index 97b815c..f429bce 100644
+--- a/drivers/infiniband/ulp/ipoib/ipoib_ib.c
++++ b/drivers/infiniband/ulp/ipoib/ipoib_ib.c
+@@ -461,6 +461,26 @@ void ipoib_ib_completion(struct ib_cq *cq, void *dev_ptr)
+ 	netif_rx_schedule(dev, &priv->napi);
+ }
+ 
++static void drain_tx_cq(struct net_device *dev)
++{
++	struct ipoib_dev_priv *priv = netdev_priv(dev);
++	unsigned long flags;
++
++	spin_lock_irqsave(&priv->tx_lock, flags);
++	while (poll_tx(priv))
++		; /* nothing */
++
++	if (netif_queue_stopped(dev))
++		mod_timer(&priv->poll_timer, jiffies + 1);
++
++	spin_unlock_irqrestore(&priv->tx_lock, flags);
++}
++
++void ipoib_send_comp_handler(struct ib_cq *cq, void *dev_ptr)
++{
++	drain_tx_cq((struct net_device *)dev_ptr);
++}
++
+ static inline int post_send(struct ipoib_dev_priv *priv,
+ 			    unsigned int wr_id,
+ 			    struct ib_ah *address, u32 qpn,
+@@ -555,12 +575,22 @@ void ipoib_send(struct net_device *dev, struct sk_buff *skb,
+ 	else
+ 		priv->tx_wr.send_flags &= ~IB_SEND_IP_CSUM;
+ 
++	if (++priv->tx_outstanding == ipoib_sendq_size) {
++		ipoib_dbg(priv, "TX ring full, stopping kernel net queue\n");
++		if (ib_req_notify_cq(priv->send_cq, IB_CQ_NEXT_COMP))
++			ipoib_warn(priv, "request notify on send CQ failed\n");
++		netif_stop_queue(dev);
++	}
++
+ 	if (unlikely(post_send(priv, priv->tx_head & (ipoib_sendq_size - 1),
+ 			       address->ah, qpn, tx_req, phead, hlen))) {
+ 		ipoib_warn(priv, "post_send failed\n");
+ 		++dev->stats.tx_errors;
++		--priv->tx_outstanding;
+ 		ipoib_dma_unmap_tx(priv->ca, tx_req);
+ 		dev_kfree_skb_any(skb);
++		if (netif_queue_stopped(dev))
++			netif_wake_queue(dev);
+ 	} else {
+ 		dev->trans_start = jiffies;
+ 
+@@ -568,14 +598,11 @@ void ipoib_send(struct net_device *dev, struct sk_buff *skb,
+ 		++priv->tx_head;
+ 		skb_orphan(skb);
+ 
+-		if (++priv->tx_outstanding == ipoib_sendq_size) {
+-			ipoib_dbg(priv, "TX ring full, stopping kernel net queue\n");
+-			netif_stop_queue(dev);
+-		}
+ 	}
+ 
+ 	if (unlikely(priv->tx_outstanding > MAX_SEND_CQE))
+-		poll_tx(priv);
++		while (poll_tx(priv))
++			; /* nothing */
+ }
+ 
+ static void __ipoib_reap_ah(struct net_device *dev)
+@@ -609,6 +636,11 @@ void ipoib_reap_ah(struct work_struct *work)
+ 				   round_jiffies_relative(HZ));
+ }
+ 
++static void ipoib_ib_tx_timer_func(unsigned long ctx)
++{
++	drain_tx_cq((struct net_device *)ctx);
++}
++
+ int ipoib_ib_dev_open(struct net_device *dev)
+ {
+ 	struct ipoib_dev_priv *priv = netdev_priv(dev);
+@@ -645,6 +677,10 @@ int ipoib_ib_dev_open(struct net_device *dev)
+ 	queue_delayed_work(ipoib_workqueue, &priv->ah_reap_task,
+ 			   round_jiffies_relative(HZ));
+ 
++	init_timer(&priv->poll_timer);
++	priv->poll_timer.function = ipoib_ib_tx_timer_func;
++	priv->poll_timer.data = (unsigned long)dev;
++
+ 	set_bit(IPOIB_FLAG_INITIALIZED, &priv->flags);
+ 
+ 	return 0;
+@@ -810,6 +846,7 @@ int ipoib_ib_dev_stop(struct net_device *dev, int flush)
+ 	ipoib_dbg(priv, "All sends and receives done.\n");
+ 
+ timeout:
++	del_timer_sync(&priv->poll_timer);
+ 	qp_attr.qp_state = IB_QPS_RESET;
+ 	if (ib_modify_qp(priv->qp, &qp_attr, IB_QP_STATE))
+ 		ipoib_warn(priv, "Failed to modify QP to RESET state\n");
+diff --git a/drivers/infiniband/ulp/ipoib/ipoib_verbs.c b/drivers/infiniband/ulp/ipoib/ipoib_verbs.c
+index c1e7ece..8766d29 100644
+--- a/drivers/infiniband/ulp/ipoib/ipoib_verbs.c
++++ b/drivers/infiniband/ulp/ipoib/ipoib_verbs.c
+@@ -187,7 +187,8 @@ int ipoib_transport_dev_init(struct net_device *dev, struct ib_device *ca)
+ 		goto out_free_mr;
+ 	}
+ 
+-	priv->send_cq = ib_create_cq(priv->ca, NULL, NULL, dev, ipoib_sendq_size, 0);
++	priv->send_cq = ib_create_cq(priv->ca, ipoib_send_comp_handler, NULL,
++				     dev, ipoib_sendq_size, 0);
+ 	if (IS_ERR(priv->send_cq)) {
+ 		printk(KERN_WARNING "%s: failed to create send CQ\n", ca->name);
+ 		goto out_free_recv_cq;
