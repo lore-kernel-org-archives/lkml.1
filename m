@@ -1,48 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760122AbYEAMKs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760360AbYEAMLK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760122AbYEAMKs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 May 2008 08:10:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756627AbYEAMKk
+	id S1760360AbYEAMLK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 May 2008 08:11:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760176AbYEAMKz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 May 2008 08:10:40 -0400
-Received: from smtp-out04.alice-dsl.net ([88.44.63.6]:1656 "EHLO
-	smtp-out04.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756055AbYEAMKj (ORCPT
+	Thu, 1 May 2008 08:10:55 -0400
+Received: from hellhawk.shadowen.org ([80.68.90.175]:4916 "EHLO
+	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760150AbYEAMKy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 May 2008 08:10:39 -0400
-Date: Thu, 1 May 2008 14:09:59 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: linux-kernel@vger.kernel.org
-Cc: samuel.thibault@ens-lyon.org, akpm@osdl.org
-Subject: This month's price for the most useless new Kconfig help text ...
-Message-ID: <20080501120959.GA16700@basil.nowhere.org>
+	Thu, 1 May 2008 08:10:54 -0400
+Date: Thu, 1 May 2008 13:09:58 +0100
+From: Andy Whitcroft <apw@shadowen.org>
+To: Andrew Morton <akpm@osdl.org>
+Cc: Randy Dunlap <rdunlap@xenotime.net>, Joel Schopp <jschopp@austin.ibm.com>,
+       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] update checkpatch.pl to version 0.19
+Message-ID: <20080501120958.GB20475@shadowen.org>
+References: <1209639893.0@pinky>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <1209639893.0@pinky>
 User-Agent: Mutt/1.5.13 (2006-08-11)
-X-OriginalArrivalTime: 01 May 2008 12:03:11.0023 (UTC) FILETIME=[53832BF0:01C8AB83]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+>       return is not a function
 
-<drumroll> ... gets CONFIG_ACCESSIBILITY
+Bah, no matter how much testing you do something always slips through.
+This one is false triggering enough to warrent a fix.
 
-menuconfig ACCESSIBILITY
-        bool "Accessibility support"
-        ---help---
-          Enable a submenu where accessibility items may be enabled.
+Andrew, please suck this one up on top.
 
-One can only guess what is meant by accessbility when asked that 
-by oldconfig (don't explain, I know it now) and the help text has about 0% 
-additional information over the CONFIG name.
+-apw
 
-Can the help text be improved please? It should explain that accessibility in 
-this case means braille device drivers and possibly other similar devices.
+=== 8< ===
+return is not a function -- tighten test
 
-Thanks,
+Tighten the return is not a function test so that we only report it on
+the line it occurs.
 
--Andi
+Signed-off-by: Andy Whitcroft <apw@shadowen.org>
 
-
+---
+diff --git a/checkpatch.pl b/checkpatch.pl
+index cc9cd7c..66f060e 100755
+--- a/checkpatch.pl
++++ b/checkpatch.pl
+@@ -1665,7 +1665,7 @@ sub process {
+ 		}
+ 
+ # Return is not a function.
+-		if (defined($stat) && $stat =~ /\breturn(\s*)(\(.*);/s) {
++		if (defined($stat) && $stat =~ /^.\s*return(\s*)(\(.*);/s) {
+ 			my $spacing = $1;
+ 			my $value = $2;
+ 
 
