@@ -1,43 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758638AbYEAGZf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757814AbYEAGeB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758638AbYEAGZf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 May 2008 02:25:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753835AbYEAGZ0
+	id S1757814AbYEAGeB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 May 2008 02:34:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753835AbYEAGdw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 May 2008 02:25:26 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:58314 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753693AbYEAGZ0 (ORCPT
+	Thu, 1 May 2008 02:33:52 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:43685 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753784AbYEAGdv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 May 2008 02:25:26 -0400
-Date: Thu, 1 May 2008 08:25:24 +0200 (CEST)
-From: Jan Engelhardt <jengelh@medozas.de>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-cc: Roman Zippel <zippel@linux-m68k.org>, Ingo Molnar <mingo@elte.hu>,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Richard Purdie <rpurdie@rpsys.net>, Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: [patch, -git] input: CONFIG_INPUT_APANEL build fix
-In-Reply-To: <20080501023642.GA7063@anvil.corenet.prv>
-Message-ID: <alpine.LNX.1.10.0805010824090.5623@fbirervta.pbzchgretzou.qr>
-References: <20080430185345.GA27224@elte.hu> <20080430150021.ZZRA012@mailhub.coreip.homeip.net> <20080430202013.GB14164@elte.hu> <20080430163924.ZZRA012@mailhub.coreip.homeip.net> <20080430212029.GA28813@elte.hu> <20080430222645.GB2629@anvil.corenet.prv>
- <20080430223828.GA31878@elte.hu> <20080430224701.GC2629@anvil.corenet.prv> <Pine.LNX.4.64.0805010213530.30555@scrub.home> <20080501023642.GA7063@anvil.corenet.prv>
-User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
+	Thu, 1 May 2008 02:33:51 -0400
+Date: Thu, 1 May 2008 07:33:39 +0100
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Matthew Wilcox <matthew@wil.cx>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Bryan Wu <cooloney@kernel.org>,
+       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
+       willy@debian.org, uclinux-dist-devel@blackfin.uclinux.org,
+       "J. Bruce Fields" <bfields@fieldses.org>
+Subject: Re: [LTP/VFS] fcntl SETLEASE fails on ramfs/tmpfs
+Message-ID: <20080501063339.GU5882@ZenIV.linux.org.uk>
+References: <386072610804282042y2dda4b52h927683a8a938ce1f@mail.gmail.com> <20080429135454.efebec8f.akpm@linux-foundation.org> <20080429222141.GD14976@parisc-linux.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080429222141.GD14976@parisc-linux.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Apr 29, 2008 at 04:21:42PM -0600, Matthew Wilcox wrote:
+> On Tue, Apr 29, 2008 at 01:54:54PM -0700, Andrew Morton wrote:
+> > I guess we should make the generic_setlease() heuristic smarter.
+> > 
+> > Of course the _reason_ for that heuristic is uncommented and lost in time. 
+> > And one wonders what locking prevents it from being totally racy, and if
+> > "none", what happens when the race hits.  Sigh.
+> 
+> It's hardly "lost in time" when you can ask the original author.
+> 
+> If there are multiple processes with this file open, you can't place a
+> lease on it.
 
-On Thursday 2008-05-01 04:36, Dmitry Torokhov wrote:
->
->BTW, does this mean that all 'if'-guarded symbols should be converted to
->this style?
->
-No, because all symbols inside an "if FOO" block just means they
-have a "depends on FOO". So other than saving some typing, it
-does nothing. Well, perhaps it _ensures_ that all objects are
-properly put _into_ the menuconfig. Some people get this wrong
-and use "depends on FOO" inconsistently, leading to options
-"falling" out of the menu, i.e. reappear at the parent menu.
+... except that it has nofsckingthing in common with the checks in
+question.  Number of processes having a file open has has nothing to
+do dentry or inode refcounts; indeed, if you have opened file once
+it'd have only one struct file.  Moreover, e.g. stat(2) on its name
+will bump dentry refcount just fine.  Moreover, if you have two threads
+with common descriptor table, not even *file* refcount will help you.
+
+BTW, ->fl_owner in those suckers is fairly useless - open files, take
+leases, fork, have parent exit.  Voila - you've got a bunch of file_lock
+with ->fl_owner pointing to freed files_struct.  Fortunately it's never
+going to be dereferenced, but results of comparisons are unreliable as
+hell.
