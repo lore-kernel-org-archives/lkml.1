@@ -1,99 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763598AbYEAQGS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762718AbYEAQIT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763598AbYEAQGS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 May 2008 12:06:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756142AbYEAQGH
+	id S1762718AbYEAQIT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 May 2008 12:08:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753156AbYEAQIH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 May 2008 12:06:07 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:63524 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755728AbYEAQGG (ORCPT
+	Thu, 1 May 2008 12:08:07 -0400
+Received: from vs166246.vserver.de ([62.75.166.246]:60089 "EHLO
+	vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752065AbYEAQIG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 May 2008 12:06:06 -0400
-Date: Thu, 1 May 2008 08:09:27 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: yhlu.kernel@gmail.com
-Cc: Yinghai Lu <yhlu.kernel.send@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Gabriel C <nix.or.die@googlemail.com>,
-       Mika Fischer <mika.fischer@zoopnet.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: mtrr cleanup for converting continuous to discrete
- - auto detect
-Message-Id: <20080501080927.026b6243.randy.dunlap@oracle.com>
-In-Reply-To: <200805010100.34751.yhlu.kernel@gmail.com>
-References: <200804272337.40130.yhlu.kernel@gmail.com>
-	<200804290352.33543.yhlu.kernel@gmail.com>
-	<200804292025.58268.yhlu.kernel@gmail.com>
-	<200805010100.34751.yhlu.kernel@gmail.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 1 May 2008 12:08:06 -0400
+From: Michael Buesch <mb@bu3sch.de>
+To: Christoph Hellwig <hch@infradead.org>
+Subject: Re: [PATCH 0/3] Add API for weak DMA masks
+Date: Thu, 1 May 2008 18:07:25 +0200
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
+       John Linville <linville@tuxdriver.com>,
+       Andi Kleen <andi@firstfloor.org>, David Miller <davem@davemloft.net>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Ingo Molnar <mingo@elte.hu>,
+       bcm43xx-dev@lists.berlios.de, linux-wireless@vger.kernel.org,
+       linux-kernel <linux-kernel@vger.kernel.org>
+References: <200805011638.15910.mb@bu3sch.de> <200805011747.27469.mb@bu3sch.de> <20080501155826.GA11188@infradead.org>
+In-Reply-To: <20080501155826.GA11188@infradead.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Disposition: inline
+Message-Id: <200805011807.26036.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 1 May 2008 01:00:34 -0700 Yinghai Lu wrote:
-
+On Thursday 01 May 2008 17:58:26 Christoph Hellwig wrote:
+> On Thu, May 01, 2008 at 05:47:26PM +0200, Michael Buesch wrote:
+> > We've discussed that and this behaviour is not acceptable, as the driver
+> > must know about a possible fallback in case it can do 32bit DMA
+> > more efficiently than 64bit DMA, for example.
 > 
-> loop mtrr chunk_size and gran_size from 1M to 2G to find out optimal value.
+> That's what we have dma_get_required_mask() for.  See
+> Documentation/DMA-API.txt.
 
-What size step (increment) is used for these loops?
+So well. I'm still unsure about the advantage of having some opencoded
+probe loop in the driver, instead of implementing it in a common place
+and doing all of it with a single API call.
+We can still call dma_get_required_mask() and adjust the mask to that
+in dma_set_mask_weak(). That can _additionally_ be done there.
 
-> so user don't need to add mtrr_chunk_size and mtrr_gran_size, 
-> 
-> if optimal value is not found, print out all list to help select less optimal
-> value.
-> 
-> add mtrr_spare_reg_nr= so user could set 2 instead of 1, if the card need more entries.
-> 
-> Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
-> 
-
-> Index: linux-2.6/Documentation/kernel-parameters.txt
-> ===================================================================
-> --- linux-2.6.orig/Documentation/kernel-parameters.txt
-> +++ linux-2.6/Documentation/kernel-parameters.txt
-> @@ -613,9 +613,17 @@ and is between 256 and 4096 characters. 
->  			that could hold holes aka. UC entries.
->  
->  	mtrr_gran_size=nn[KMG] [X86]
-> -			used for mtrr cleanup. It is granity of mtrr block.
-> +			used for mtrr cleanup. It is granularity of mtrr block.
-> +			default is 1.
-
-                        Default
-
->  			Big value could prevent small alignment use up MTRRs.
-
-			Large value could prevent small alignment from
-			using up MTRRs.
-
->  
-> +	mtrr_spare_reg_nr=n [X86]
-> +			Format: <integer>
-> +			range: 0,7 : spare reg number
-> +			default : 1
-> +			used for mtrr cleanup. It is spare mtrr entries number.
-
-			Used
-
-> +			set to 2 or more if your graphical card need more.
-
-			Set                                     needs more.
-
-> +
->  	disable_mtrr_trim [X86, Intel and AMD only]
->  			By default the kernel will trim any uncacheable
->  			memory out of your available memory pool based on
-
-
----
-~Randy
+-- 
+Greetings Michael.
