@@ -1,146 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762639AbYEAQgy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763276AbYEAQhv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762639AbYEAQgy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 May 2008 12:36:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756250AbYEAQgr
+	id S1763276AbYEAQhv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 May 2008 12:37:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759806AbYEAQhm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 May 2008 12:36:47 -0400
-Received: from fmmailgate04.web.de ([217.72.192.242]:53559 "EHLO
-	fmmailgate04.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753678AbYEAQgq (ORCPT
+	Thu, 1 May 2008 12:37:42 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:32891 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1758930AbYEAQhl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 May 2008 12:36:46 -0400
-Date: Thu, 01 May 2008 18:36:45 +0200
-Message-Id: <261683298@web.de>
-MIME-Version: 1.0
-From: devzero@web.de
-To: linux-kernel@vger.kernel.org
-Cc: akpm@linux-foundation.org
-Subject: Re: RFC: starting a kernel-testers group for newbies
-Organization: http://freemail.web.de/
-X-Provags-Id: V01U2FsdGVkX19AxM8PxOYKUd0/aNyWI/AohBNXovMZfwS0iGSbSyKoQdnAf
- DpgpQ3HiXZx3vTW9x6UYIBX7dEldegBsSIklt6QtQrhI5I5eVs=
-Content-Type: text/plain; charset=iso-8859-15
+	Thu, 1 May 2008 12:37:41 -0400
+Date: Thu, 1 May 2008 17:29:13 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Michael Buesch <mb@bu3sch.de>, Jesse Barnes <jbarnes@virtuousgeek.org>,
+       John Linville <linville@tuxdriver.com>,
+       Andi Kleen <andi@firstfloor.org>, David Miller <davem@davemloft.net>,
+       Ingo Molnar <mingo@elte.hu>, bcm43xx-dev@lists.berlios.de,
+       linux-wireless@vger.kernel.org,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 0/3] Add API for weak DMA masks
+Message-ID: <20080501172913.08975881@core>
+In-Reply-To: <20080501153618.GA470@infradead.org>
+References: <200805011638.15910.mb@bu3sch.de>
+	<20080501153618.GA470@infradead.org>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->And why can't they work on the bug?  Usually, because they found a
->workaround.  People aren't going to spend months sitting in front of a
->non-functional computer waiting for kernel developers to decide if their
->machine is important enough to fix.  They will find a workaround.  They
->will buy new hardware.  They will discover "noapic" (234000 google hits and
->rising!).  They will swap it with a different machine.  They will switch to
->a different distro which for some reason doesn't trigger the bug.  They
->will use an older kernel.  They will switch to Solaris.  Etcetera.  People
->are clever - they will find a way to get around it.
->
->I figure that after a bug is reported we have maybe 24 to 48 hours to send
->a good response before our chances of _ever_ fixing it have begun to
->decline sharply due to the clever minds at the other end.
+> Why do we need it?  Is the call to set the 32bit mask when it fails
+> a too big burden for the driver author?
 
-yes, this is absolutely true !
+We have tons of drivers that go
 
+	try and set 64bit 
+	oh failed
+	try and set 32 bit
+	oh worked
 
+When what most actually want is "set it no more than this wide" - a
+request or even a "pci_set_best_mask()" type idea.
 
-List:       linux-kernel
-Subject:    Re: RFC: starting a kernel-testers group for newbies
-From:       Andrew Morton <akpm () linux-foundation ! org>
-Date:       2008-05-01 15:49:19
-Message-ID: 20080501084919.8ac6dbdd.akpm () linux-foundation ! org
-[Download message RAW]
-
-On Thu, 1 May 2008 16:21:59 +0300 Adrian Bunk <bunk@kernel.org> wrote:
-
-> > > But our current status quo is not OK:
-> > > 
-> > > Check Rafael's regressions lists asking yourself
-> > > "How many regressions are older than two weeks?" 
-> > 
-> > "ext4 doesn't compile on m68k".
-> > YAWN.
-> >  
-> > Wrong question...
-> > "How many bugs that a sizable portion of users will hit in reality are there?"
-> > is the right question to ask...
-> >...
-> 
-> "Kernel oops while running kernbench and tbench on powerpc" took more 
-> than 2 months to get resolved, and we ship 2.6.25 with this regression.
-
-Precisely.  Cherry-picking a single example such as the 68k thing and then
-claiming that it reflects the general is known as a "fallacy".
-
-> Granted that compared to x86 there's not a sizable portion of users 
-> crazy enough to run Linux on powerpc machines...
-
-Another fallacy which Arjan is pushing (even though he doesn't appear to
-have realised it) is "all hardware is the same".
-
-Well, it isn't.  And most of our bugs are hardware-specific.  So, I'd
-venture, most of our bugs don't affect most people.  So, over time, by
-Arjan's "important to enough people" observation we just get more and more
-and more unfixed bugs.
-
-And I believe this effect has been occurring.
-
-And please stop regaling us with this kerneloops.org stuff.  It just isn't
-very interesting, useful or representative when considering the whole
-problem.  Very few kernel bugs result in a trace, and when they do they are
-usually easy to fix and, because of this, they will get fixed, often
-quickly.  I expect netdevwatchdogeth0transmittimedout.org would tell a
-different story.
-
-One thing which muddies all this up is that bug reporters vanish.  Over the
-years I have sent thousands and thousands of ping emails to people who have
-reported bugs via email, three to six months after the fact.  Some were
-solved - maybe a fifth.  About the same proportion of reporters reply and
-give some reason why they cannot work on the bug.  In the majorty of cases
-people don't reply at all and I suspect they're in the same category of
-cannot-work-on-the-bug.
-
-And why can't they work on the bug?  Usually, because they found a
-workaround.  People aren't going to spend months sitting in front of a
-non-functional computer waiting for kernel developers to decide if their
-machine is important enough to fix.  They will find a workaround.  They
-will buy new hardware.  They will discover "noapic" (234000 google hits and
-rising!).  They will swap it with a different machine.  They will switch to
-a different distro which for some reason doesn't trigger the bug.  They
-will use an older kernel.  They will switch to Solaris.  Etcetera.  People
-are clever - they will find a way to get around it.
-
-I figure that after a bug is reported we have maybe 24 to 48 hours to send
-a good response before our chances of _ever_ fixing it have begun to
-decline sharply due to the clever minds at the other end.
-
-Which leads us to Arjan's third fallacy:
-
-   "How many bugs that a sizable portion of users will hit in reality
-   are there?" is the right question to ask...
-
-well no, it isn't.  Because approximately zero of the hardware bugs affect
-a sizeable portion of users.  With this logic we will end up with more and
-more and more and more bugs each of which affect a tiny number of users. 
-Hundreds of different bugs.  You know where this process ends up.
-
-Arjan's fourth fallacy: "We don't make (effective) prioritization
-decisions." lol.  This implies that someone somewhere once sat down and
-wondered which bug he should most effectively work on.  Well, we don't do
-that.  We ignore _all_ the bugs in favour of busily writing new ones.
-
---
-To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
-Please read the FAQ at  http://www.tux.org/lkml/
-[prev in list] [next in list] [prev in thread] [next in thread] 
-
-
-
-
-Configure | About | News | Donate | Add a list | Sponsors: 10East, KoreLogic, Terra-International 
-_____________________________________________________________________
-Der WEB.DE SmartSurfer hilft bis zu 70% Ihrer Onlinekosten zu sparen!
-http://smartsurfer.web.de/?mc=100071&distributionid=000000000066
-
+Lots less code duplication.
