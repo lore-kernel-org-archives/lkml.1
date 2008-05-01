@@ -1,46 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757324AbYEAF5L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758023AbYEAF5d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757324AbYEAF5L (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 May 2008 01:57:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754803AbYEAFz6
+	id S1758023AbYEAF5d (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 May 2008 01:57:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755622AbYEAF4E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 May 2008 01:55:58 -0400
-Received: from ms0.nttdata.co.jp ([163.135.193.231]:58184 "EHLO
-	ms0.nttdata.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753719AbYEAFzv (ORCPT
+	Thu, 1 May 2008 01:56:04 -0400
+Received: from ms1.nttdata.co.jp ([163.135.193.232]:43380 "EHLO
+	ms1.nttdata.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754179AbYEAFzx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 May 2008 01:55:51 -0400
-Message-Id: <20080501055545.645648000@nttdata.co.jp>
+	Thu, 1 May 2008 01:55:53 -0400
+Message-Id: <20080501055548.077648000@nttdata.co.jp>
 References: <20080501055405.024390000@nttdata.co.jp>
 User-Agent: quilt/0.45-1
-Date: Thu, 01 May 2008 14:54:07 +0900
+Date: Thu, 01 May 2008 14:54:08 +0900
 From: Toshiharu Harada <haradats@nttdata.co.jp>
 To: akpm@linux-foundation.org, chrisw@sous-sol.org, viro@ZenIV.linux.org.uk
 Cc: linux-security-module@vger.kernel.org, linux-fsdevel@vger.kernel.org,
        linux-kernel@vger.kernel.org, Kentaro Takeda <takedakn@nttdata.co.jp>,
        Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>,
        Toshiharu Harada <haradats@nttdata.co.jp>
-Subject: [TOMOYO #8 (2.6.25-mm1) 2/7] LSM adapter functions.
-X-OriginalArrivalTime: 01 May 2008 05:55:48.0370 (UTC) FILETIME=[01113F20:01C8AB50]
+Subject: [TOMOYO #8 (2.6.25-mm1) 3/7] Memory and pathname management functions.
+X-OriginalArrivalTime: 01 May 2008 05:55:51.0307 (UTC) FILETIME=[02D165B0:01C8AB50]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+
+TOMOYO Linux performs pathname based access control.
+To remove factors that make pathname based access control difficult
+(e.g. symbolic links, "..", "//" etc.), TOMOYO Linux derives realpath
+of requested pathname from "struct dentry" and "struct vfsmount".
+
+The maximum length of string data is limited to 4000 including trailing '\0'.
+Since TOMOYO Linux uses '\ooo' style representation for non ASCII printable
+characters, may be TOMOYO Linux should be able to support 16336 (which means
+(NAME_MAX * (PATH_MAX / (NAME_MAX + 1)) * 4 + (PATH_MAX / (NAME_MAX + 1)))
+including trailing '\0'), but I think 4000 is enough for practical use.
 
 Signed-off-by: Kentaro Takeda <takedakn@nttdata.co.jp>
 Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
 Signed-off-by: Toshiharu Harada <haradats@nttdata.co.jp>
 ---
- security/tomoyo/tomoyo.c |  279 +++++++++++++++++++++++++++++++++++++++++++++++
- security/tomoyo/tomoyo.h |  102 +++++++++++++++++
- 2 files changed, 381 insertions(+)
+ security/tomoyo/realpath.c |  655 +++++++++++++++++++++++++++++++++++++++++++++
+ security/tomoyo/realpath.h |   62 ++++
+ 2 files changed, 717 insertions(+)
 
 --- /dev/null
-+++ mm/security/tomoyo/tomoyo.h
-@@ -0,0 +1,102 @@
++++ mm/security/tomoyo/realpath.h
+@@ -0,0 +1,62 @@
 +/*
-+ * security/tomoyo/tomoyo.h
++ * security/tomoyo/realpath.h
 + *
-+ * Implementation of the Domain-Based Mandatory Access Control.
++ * Get the canonicalized absolute pathnames. The basis for TOMOYO.
 + *
 + * Copyright (C) 2005-2008  NTT DATA CORPORATION
 + *
@@ -48,379 +59,715 @@ Signed-off-by: Toshiharu Harada <haradats@nttdata.co.jp>
 + *
 + */
 +
-+#ifndef _LINUX_TOMOYO_H
-+#define _LINUX_TOMOYO_H
++#ifndef _LINUX_REALPATH_H
++#define _LINUX_REALPATH_H
 +
-+struct path_info;
 +struct dentry;
 +struct vfsmount;
-+struct inode;
-+struct linux_binprm;
-+struct pt_regs;
-+struct tmy_page_buffer;
++struct condition_list;
++struct path_info;
 +
-+char *sysctlpath_from_table(struct ctl_table *table);
-+int tmy_check_file_perm(const char *filename, const u8 perm,
-+			const char *operation);
-+int tmy_check_exec_perm(const struct path_info *filename,
-+			struct tmy_page_buffer *buf);
-+int tmy_check_open_permission(struct dentry *dentry, struct vfsmount *mnt,
-+			      const int flag);
-+int tmy_check_1path_perm(const u8 operation,
-+			 struct dentry *dentry,
-+			 struct vfsmount *mnt);
-+int tmy_check_2path_perm(const u8 operation,
-+			 struct dentry *dentry1,
-+			 struct vfsmount *mnt1,
-+			 struct dentry *dentry2,
-+			 struct vfsmount *mnt2);
-+int tmy_check_rewrite_permission(struct file *filp);
-+int tmy_find_next_domain(struct linux_binprm *bprm,
-+			 struct domain_info **next_domain);
-+
-+#define TMY_CHECK_READ_FOR_OPEN_EXEC 1
-+
-+/* Index numbers for Access Controls. */
-+
-+#define TYPE_SINGLE_PATH_ACL                 0
-+#define TYPE_DOUBLE_PATH_ACL                 1
-+
-+/* Index numbers for File Controls. */
++/* Returns realpath(3) of the given pathname but ignores chroot'ed root. */
++int tmy_realpath_from_dentry2(struct dentry *dentry, struct vfsmount *mnt,
++			      char *newname, int newname_len);
 +
 +/*
-+ * TYPE_READ_WRITE_ACL is special. TYPE_READ_WRITE_ACL is automatically set
-+ * if both TYPE_READ_ACL and TYPE_WRITE_ACL are set. Both TYPE_READ_ACL and
-+ * TYPE_WRITE_ACL are automatically set if TYPE_READ_WRITE_ACL is set.
-+ * TYPE_READ_WRITE_ACL is automatically cleared if either TYPE_READ_ACL or
-+ * TYPE_WRITE_ACL is cleared. Both TYPE_READ_ACL and TYPE_WRITE_ACL are
-+ * automatically cleared if TYPE_READ_WRITE_ACL is cleared.
++ * Returns realpath(3) of the given pathname but ignores chroot'ed root.
++ * These functions use tmy_alloc(), so caller must tmy_free()
++ * if these functions didn't return NULL.
 + */
++char *tmy_realpath(const char *pathname);
++/* Same with tmy_realpath() except that it doesn't follow the final symlink. */
++char *tmy_realpath_nofollow(const char *pathname);
++/* Same with tmy_realpath() except that the pathname is already solved. */
++char *tmy_realpath_from_dentry(struct dentry *dentry, struct vfsmount *mnt);
 +
-+#define TMY_TYPE_READ_WRITE_ACL        0
-+#define TMY_TYPE_EXECUTE_ACL           1
-+#define TMY_TYPE_READ_ACL              2
-+#define TMY_TYPE_WRITE_ACL             3
-+#define TMY_TYPE_CREATE_ACL            4
-+#define TMY_TYPE_UNLINK_ACL            5
-+#define TMY_TYPE_MKDIR_ACL             6
-+#define TMY_TYPE_RMDIR_ACL             7
-+#define TMY_TYPE_MKFIFO_ACL            8
-+#define TMY_TYPE_MKSOCK_ACL            9
-+#define TMY_TYPE_MKBLOCK_ACL          10
-+#define TMY_TYPE_MKCHAR_ACL           11
-+#define TMY_TYPE_TRUNCATE_ACL         12
-+#define TMY_TYPE_SYMLINK_ACL          13
-+#define TMY_TYPE_REWRITE_ACL          14
-+#define MAX_SINGLE_PATH_OPERATION 15
++/*
++ * Allocate memory for ACL entry.
++ * The RAM is chunked, so NEVER try to kfree() the returned pointer.
++ */
++void *tmy_alloc_element(const unsigned int size);
 +
-+#define TMY_TYPE_LINK_ACL             0
-+#define TMY_TYPE_RENAME_ACL           1
-+#define MAX_DOUBLE_PATH_OPERATION 2
++/* Get used RAM size for tmy_alloc_elements(). */
++unsigned int tmy_get_memory_used_for_elements(void);
 +
-+struct tmy_security {
-+	struct domain_info *domain;
-+	struct domain_info *prev_domain;
-+	u32 flags;
-+};
++/*
++ * Keep the given name on the RAM.
++ * The RAM is shared, so NEVER try to modify or kfree() the returned name.
++ */
++const struct path_info *tmy_save_name(const char *name);
 +
-+#define TMY_SECURITY ((struct tmy_security *) current->security)
++/* Get used RAM size for tmy_save_name(). */
++unsigned int tmy_get_memory_used_for_save_name(void);
 +
-+#define TMY_DOMAINPOLICY          0
-+#define TMY_EXCEPTIONPOLICY       1
-+#define TMY_DOMAIN_STATUS         2
-+#define TMY_PROCESS_STATUS        3
-+#define TMY_MEMINFO               4
-+#define TMY_SELFDOMAIN            5
-+#define TMY_VERSION               6
-+#define TMY_PROFILE               7
-+#define TMY_MANAGER               8
-+#define TMY_UPDATESCOUNTER        9
++/* Allocate memory for temporary use (e.g. permission checks). */
++void *tmy_alloc(const size_t size);
 +
-+extern struct domain_info KERNEL_DOMAIN;
++/* Get used RAM size for tmy_alloc(). */
++unsigned int tmy_get_memory_used_for_dynamic(void);
++
++/* Free memory allocated by tmy_alloc(). */
++void tmy_free(const void *p);
 +
 +#endif
 --- /dev/null
-+++ mm/security/tomoyo/tomoyo.c
-@@ -0,0 +1,279 @@
++++ mm/security/tomoyo/realpath.c
+@@ -0,0 +1,655 @@
 +/*
-+ * security/tomoyo/tomoyo.c
++ * security/tomoyo/realpath.c
 + *
-+ * LSM hooks for TOMOYO Linux.
++ * Get the canonicalized absolute pathnames. The basis for TOMOYO.
++ *
++ * Copyright (C) 2005-2008  NTT DATA CORPORATION
++ *
++ * Version: 2.2.0-pre   2008/04/30
++ *
 + */
 +
-+#include <linux/security.h>
++#include <linux/types.h>
++#include <linux/mount.h>
++#include <linux/magic.h>
++#include <linux/sysctl.h>
 +#include "common.h"
-+#include "tomoyo.h"
 +#include "realpath.h"
 +
-+static struct kmem_cache *tmy_cachep;
-+
-+static int tmy_task_alloc_security(struct task_struct *p)
++/**
++ * get_absolute_path - Get the path of a dentry but ignores chroot'ed root.
++ *
++ * @dentry: Pointer to "struct dentry".
++ * @vfsmnt: Pointer to "struct vfsmount".
++ * @buffer: Pointer to buffer to return value in.
++ * @buflen: Sizeof @buffer.
++ *
++ * Returns 0 on success, -ENOMEM otherwise.
++ *
++ * Caller holds the dcache_lock and vfsmount_lock.
++ * Based on __d_path() in fs/dcache.c
++ *
++ * If dentry is a directory, trailing '/' is appended.
++ * Characters out of 0x20 < c < 0x7F range are converted to
++ * \ooo style octal string.
++ * Character \ is converted to \\ string.
++ */
++static int get_absolute_path(struct dentry *dentry, struct vfsmount *vfsmnt,
++			     char *buffer, int buflen)
 +{
-+	struct tmy_security *ptr = kmem_cache_alloc(tmy_cachep, GFP_KERNEL);
++	/***** CRITICAL SECTION START *****/
++	char *start = buffer;
++	char *end = buffer + buflen;
++	bool is_dir = (dentry->d_inode && S_ISDIR(dentry->d_inode->i_mode));
 +
-+	if (!ptr)
-+		return -ENOMEM;
-+	memcpy(ptr, TMY_SECURITY, sizeof(*ptr));
-+	p->security = ptr;
-+	return 0;
-+}
-+
-+static void tmy_task_free_security(struct task_struct *p)
-+{
-+	kmem_cache_free(tmy_cachep, p->security);
-+}
-+
-+static int tmy_bprm_alloc_security(struct linux_binprm *bprm)
-+{
-+	TMY_SECURITY->prev_domain = TMY_SECURITY->domain;
-+	return 0;
-+}
-+
-+static int tmy_bprm_check_security(struct linux_binprm *bprm)
-+{
-+	struct domain_info *next_domain = NULL;
-+	int retval = 0;
-+
-+	tmy_load_policy(bprm->filename);
-+
-+	/*
-+	 * TMY_CHECK_READ_FOR_OPEN_EXEC bit indicates whether this function is
-+	 * called by do_execve() or not.
-+	 * If called by do_execve(), I do domain transition.
-+	 */
-+	if ((TMY_SECURITY->flags & TMY_CHECK_READ_FOR_OPEN_EXEC))
++	if (buflen < 256)
 +		goto out;
-+	retval = tmy_find_next_domain(bprm, &next_domain);
-+	if (retval)
-+		goto out;
-+	TMY_SECURITY->domain = next_domain;
-+	TMY_SECURITY->flags |= TMY_CHECK_READ_FOR_OPEN_EXEC;
++
++	*--end = '\0';
++	buflen--;
++
++	for (;;) {
++		struct dentry *parent;
++
++		if (dentry == vfsmnt->mnt_root || IS_ROOT(dentry)) {
++			/* Global root? */
++			if (vfsmnt->mnt_parent == vfsmnt)
++				break;
++			dentry = vfsmnt->mnt_mountpoint;
++			vfsmnt = vfsmnt->mnt_parent;
++			continue;
++		}
++		if (is_dir) {
++			is_dir = false;
++			*--end = '/';
++			buflen--;
++		}
++		parent = dentry->d_parent;
++		{
++			const char *sp = dentry->d_name.name;
++			const char *cp = sp + dentry->d_name.len - 1;
++			unsigned char c;
++
++			/*
++			 * Exception: Use /proc/self/ rather than
++			 * /proc/\$/ for current process.
++			 */
++			if (IS_ROOT(parent) && *sp > '0' && *sp <= '9' &&
++			    parent->d_sb &&
++			    parent->d_sb->s_magic == PROC_SUPER_MAGIC) {
++				char *ep;
++				const pid_t pid
++					= (pid_t) simple_strtoul(sp, &ep, 10);
++				if (!*ep && pid == current->tgid) {
++					sp = "self";
++					cp = sp + 3;
++				}
++			}
++
++			while (sp <= cp) {
++				c = *(unsigned char *) cp;
++				if (c == '\\') {
++					buflen -= 2;
++					if (buflen < 0)
++						goto out;
++					*--end = '\\';
++					*--end = '\\';
++				} else if (c > ' ' && c < 127) {
++					if (--buflen < 0)
++						goto out;
++					*--end = (char) c;
++				} else {
++					buflen -= 4;
++					if (buflen < 0)
++						goto out;
++					*--end = (c & 7) + '0';
++					*--end = ((c >> 3) & 7) + '0';
++					*--end = (c >> 6) + '0';
++					*--end = '\\';
++				}
++				cp--;
++			}
++			if (--buflen < 0)
++				goto out;
++			*--end = '/';
++		}
++		dentry = parent;
++	}
++	if (*end == '/') {
++		buflen++;
++		end++;
++	}
++	{
++		const char *sp = dentry->d_name.name;
++		const char *cp = sp + dentry->d_name.len - 1;
++		unsigned char c;
++		while (sp <= cp) {
++			c = *(unsigned char *) cp;
++			if (c == '\\') {
++				buflen -= 2;
++				if (buflen < 0)
++					goto out;
++				*--end = '\\';
++				*--end = '\\';
++			} else if (c > ' ' && c < 127) {
++				if (--buflen < 0)
++					goto out;
++				*--end = (char) c;
++			} else {
++				buflen -= 4;
++				if (buflen < 0)
++					goto out;
++				*--end = (c & 7) + '0';
++				*--end = ((c >> 3) & 7) + '0';
++				*--end = (c >> 6) + '0';
++				*--end = '\\';
++			}
++			cp--;
++		}
++	}
++	/* Move the pathname to the top of the buffer. */
++	memmove(start, end, strlen(end) + 1);
++	return 0;
 +out:
-+	return retval;
++	return -ENOMEM;
++	/***** CRITICAL SECTION END *****/
 +}
 +
-+static void tmy_bprm_post_apply_creds(struct linux_binprm *bprm)
-+{
-+	TMY_SECURITY->prev_domain = TMY_SECURITY->domain;
-+}
-+
-+static void tmy_bprm_free_security(struct linux_binprm *bprm)
-+{
-+	TMY_SECURITY->domain = TMY_SECURITY->prev_domain;
-+	TMY_SECURITY->flags &= ~TMY_CHECK_READ_FOR_OPEN_EXEC;
-+}
-+
-+static int tmy_sysctl(struct ctl_table *table, int op)
++/**
++ * tmy_realpath_from_dentry2 - Returns realpath(3) of the given dentry but ignores chroot'ed root.
++ *
++ * @dentry:      Pointer to "struct dentry".
++ * @mnt:         Pointer to "struct vfsmount".
++ * @newname:     Pointer to buffer to return value in.
++ * @newname_len: Size of @newname.
++ *
++ * Returns 0 on success, negative value otherwise.
++ */
++int tmy_realpath_from_dentry2(struct dentry *dentry, struct vfsmount *mnt,
++			      char *newname, int newname_len)
 +{
 +	int error;
-+	char *name;
-+
-+	if ((op & 6) == 0)
-+		return 0;
-+
-+	name = sysctlpath_from_table(table);
-+	if (!name)
-+		return -ENOMEM;
-+
-+	error = tmy_check_file_perm(name, op & 6, "sysctl");
-+	tmy_free(name);
-+
++	struct dentry *d_dentry;
++	struct vfsmount *d_mnt;
++	if (!dentry || !mnt || !newname || newname_len <= 0)
++		return -EINVAL;
++	d_dentry = dget(dentry);
++	d_mnt = mntget(mnt);
++	/***** CRITICAL SECTION START *****/
++	spin_lock(&dcache_lock);
++	spin_lock(&vfsmount_lock);
++	error = get_absolute_path(d_dentry, d_mnt, newname, newname_len);
++	spin_unlock(&vfsmount_lock);
++	spin_unlock(&dcache_lock);
++	/***** CRITICAL SECTION END *****/
++	dput(d_dentry);
++	mntput(d_mnt);
++	if (error)
++		printk(KERN_WARNING "tmy_realpath: Pathname too long.\n");
 +	return error;
 +}
 +
-+static int tmy_inode_permission(struct inode *inode, int mask,
-+				struct nameidata *nd)
++/**
++ * tmy_realpath_from_dentry - Returns realpath(3) of the given pathname but ignores chroot'ed root.
++ *
++ * @dentry: Pointer to "struct dentry".
++ * @mnt:    Pointer to "struct vfsmount".
++ *
++ * Returns the realpath of the given @dentry and @mnt on success,
++ * NULL otherwise.
++ *
++ * These functions use tmy_alloc(), so caller must tmy_free()
++ * if these functions didn't return NULL.
++ */
++char *tmy_realpath_from_dentry(struct dentry *dentry, struct vfsmount *mnt)
 +{
-+	if (S_ISDIR(inode->i_mode)) /* ignore because inode is directory */
-+		return 0;
-+	if (!nd || !nd->path.dentry || !nd->path.mnt)
-+		return 0;
-+
-+	/*
-+	 * If called by other than do_execve(), I check for read permission of
-+	 * interpreter.
-+	 * Unlike DAC, I don't check for read permission of pathname passed to
-+	 * do_execve().
-+	 * TOMOYO Linux checks for program's execute permission and
-+	 * interpreter's read permission.
-+	 */
-+	if ((mask != MAY_EXEC) ||
-+	    !(TMY_SECURITY->flags & TMY_CHECK_READ_FOR_OPEN_EXEC))
-+		return 0;
-+
-+	/* called from open_exec() other than do_execve() */;
-+	return tmy_check_open_permission(nd->path.dentry, nd->path.mnt,
-+					 O_RDONLY + 1);
++	char *buf = tmy_alloc(sizeof(struct tmy_page_buffer));
++	if (buf && tmy_realpath_from_dentry2(dentry, mnt, buf,
++					     TMY_MAX_PATHNAME_LEN - 1) == 0)
++		return buf;
++	tmy_free(buf);
++	return NULL;
 +}
 +
-+static int tmy_path_open(struct dentry *dentry, struct vfsmount *mnt, int flags)
++/**
++ * tmy_realpath - Get realpath of a pathname.
++ *
++ * @pathname: The pathname to solve.
++ *
++ * Returns the realpath of @pathname on success, NULL otherwise.
++ */
++char *tmy_realpath(const char *pathname)
 +{
-+	return tmy_check_open_permission(dentry, mnt, flags);
-+}
-+
-+static int tmy_path_truncate(struct path *path, loff_t length,
-+			     unsigned int time_attrs, struct file *filp)
-+{
-+	return tmy_check_1path_perm(TMY_TYPE_TRUNCATE_ACL, path->dentry,
-+				    path->mnt);
-+}
-+
-+static int tmy_path_create(struct inode *dir, struct dentry *dentry, int mode,
-+			   struct nameidata *nd)
-+{
-+	if (!nd || !nd->path.mnt)
-+		return 0;
-+	return tmy_check_1path_perm(TMY_TYPE_CREATE_ACL, dentry, nd->path.mnt);
-+}
-+
-+static int tmy_path_unlink(struct path *dir, struct dentry *dentry)
-+{
-+	const int err = pre_vfs_unlink(dir->dentry->d_inode, dentry);
-+	if (err)
-+		return err;
-+	return tmy_check_1path_perm(TMY_TYPE_UNLINK_ACL, dentry, dir->mnt);
-+}
-+
-+static int tmy_path_mkdir(struct path *dir, struct dentry *dentry, int mode)
-+{
-+	const int err = pre_vfs_mkdir(dir->dentry->d_inode, dentry);
-+	if (err)
-+		return err;
-+	return tmy_check_1path_perm(TMY_TYPE_MKDIR_ACL, dentry, dir->mnt);
-+}
-+
-+static int tmy_path_rmdir(struct path *dir, struct dentry *dentry)
-+{
-+	const int err = pre_vfs_rmdir(dir->dentry->d_inode, dentry);
-+	if (err)
-+		return err;
-+	return tmy_check_1path_perm(TMY_TYPE_RMDIR_ACL, dentry, dir->mnt);
-+}
-+
-+static int tmy_path_symlink(struct path *dir, struct dentry *dentry,
-+			    const char *old_name)
-+{
-+	const int err = pre_vfs_symlink(dir->dentry->d_inode, dentry);
-+	if (err)
-+		return err;
-+	return tmy_check_1path_perm(TMY_TYPE_SYMLINK_ACL, dentry, dir->mnt);
-+}
-+
-+static int tmy_path_mknod(struct path *dir, struct dentry *dentry, int mode,
-+			  unsigned int dev)
-+{
-+	struct vfsmount *mnt = dir->mnt;
-+	int err = 0;
-+	switch (mode & S_IFMT) {
-+	case S_IFCHR:
-+	case S_IFBLK:
-+	case S_IFIFO:
-+	case S_IFSOCK:
-+		break;
-+	default:
-+		return 0;
++	struct nameidata nd;
++	if (pathname && path_lookup(pathname, LOOKUP_FOLLOW, &nd) == 0) {
++		char *buf = tmy_realpath_from_dentry(nd.path.dentry,
++						     nd.path.mnt);
++		path_put(&nd.path);
++		return buf;
 +	}
-+	err = pre_vfs_mknod(dir->dentry->d_inode, dentry, mode);
-+	if (err)
-+		return err;
-+	if (S_ISCHR(mode))
-+		return tmy_check_1path_perm(TMY_TYPE_MKCHAR_ACL, dentry, mnt);
-+	if (S_ISBLK(mode))
-+		return tmy_check_1path_perm(TMY_TYPE_MKBLOCK_ACL, dentry, mnt);
-+	if (S_ISFIFO(mode))
-+		return tmy_check_1path_perm(TMY_TYPE_MKFIFO_ACL, dentry, mnt);
-+	if (S_ISSOCK(mode))
-+		return tmy_check_1path_perm(TMY_TYPE_MKSOCK_ACL, dentry, mnt);
-+	return 0;
++	return NULL;
 +}
 +
-+static int tmy_path_link(struct path *old_path, struct path *new_dir,
-+			 struct dentry *new_dentry)
++/**
++ * tmy_realpath_nofollow - Get realpath of a pathname.
++ *
++ * @pathname: The pathname to solve.
++ *
++ * Returns the realpath of @pathname on success, NULL otherwise.
++ */
++char *tmy_realpath_nofollow(const char *pathname)
 +{
-+	const int err = pre_vfs_link(old_path->dentry, new_dir->dentry->d_inode,
-+				     new_dentry);
-+	if (err)
-+		return err;
-+	return tmy_check_2path_perm(TMY_TYPE_LINK_ACL,
-+				    old_path->dentry, old_path->mnt,
-+				    new_dentry, new_dir->mnt);
++	struct nameidata nd;
++	if (pathname && path_lookup(pathname, 0, &nd) == 0) {
++		char *buf = tmy_realpath_from_dentry(nd.path.dentry,
++						     nd.path.mnt);
++		path_put(&nd.path);
++		return buf;
++	}
++	return NULL;
 +}
 +
-+static int tmy_path_rename(struct path *old_dir, struct dentry *old_dentry,
-+			   struct path *new_dir, struct dentry *new_dentry)
++/**
++ * round_up - Round up an integer so that the returned pointers are appropriately aligned.
++ *
++ * @size: Size in bytes.
++ *
++ * Returns rounded value of @size.
++ *
++ * FIXME: Are there more requirements that is needed for assigning value
++ * atomically?
++ */
++static inline unsigned int round_up(const unsigned int size)
 +{
-+	const int err = pre_vfs_rename(old_dir->dentry->d_inode, old_dentry,
-+				       new_dir->dentry->d_inode, new_dentry);
-+	if (err)
-+		return err;
-+	return tmy_check_2path_perm(TMY_TYPE_RENAME_ACL,
-+				    old_dentry, old_dir->mnt,
-+				    new_dentry, new_dir->mnt);
++	if (sizeof(void *) >= sizeof(long))
++		return ((size + sizeof(void *) - 1)
++			/ sizeof(void *)) * sizeof(void *);
++	else
++		return ((size + sizeof(long) - 1)
++			/ sizeof(long)) * sizeof(long);
 +}
 +
-+static int tmy_path_uselib(struct nameidata *nd)
++static unsigned int allocated_memory_for_elements;
++
++/**
++ * tmy_get_memory_used_for_elements - Get memory used for keeping ACL structures.
++ *
++ * Returns memory used for keeping ACL structures.
++ */
++unsigned int tmy_get_memory_used_for_elements(void)
 +{
-+	return tmy_check_open_permission(nd->path.dentry, nd->path.mnt,
-+					 O_RDONLY + 1);
++	return allocated_memory_for_elements;
 +}
 +
-+static int tmy_file_fcntl(struct file *file, unsigned int cmd,
-+			  unsigned long arg)
++/**
++ * tmy_alloc_element - Allocate permanent memory for structures.
++ *
++ * @size: Size in bytes.
++ *
++ * Returns pointer to allocated memory on success, NULL otherwise.
++ *
++ * The RAM is chunked, so NEVER try to kfree() the returned pointer.
++ */
++void *tmy_alloc_element(const unsigned int size)
 +{
-+	if (cmd == F_SETFL && ((arg ^ file->f_flags) & O_APPEND))
-+		return tmy_check_rewrite_permission(file);
-+	return 0;
++	static DEFINE_MUTEX(lock);
++	static char *buf;
++	static unsigned int buf_used_len = PAGE_SIZE;
++	char *ptr = NULL;
++	const unsigned int word_aligned_size = round_up(size);
++	if (word_aligned_size > PAGE_SIZE)
++		return NULL;
++	mutex_lock(&lock);
++	if (buf_used_len + word_aligned_size > PAGE_SIZE) {
++		ptr = kzalloc(PAGE_SIZE, GFP_KERNEL);
++		if (!ptr) {
++			printk(KERN_WARNING "ERROR: Out of memory "
++			       "for tmy_alloc_element().\n");
++			if (!sbin_init_started)
++				panic("MAC Initialization failed.\n");
++		} else {
++			buf = ptr;
++			allocated_memory_for_elements += PAGE_SIZE;
++			buf_used_len = word_aligned_size;
++			ptr = buf;
++		}
++	} else if (word_aligned_size) {
++		int i;
++		ptr = buf + buf_used_len;
++		buf_used_len += word_aligned_size;
++		for (i = 0; i < word_aligned_size; i++) {
++			if (!ptr[i])
++				continue;
++			printk(KERN_ERR "WARNING: Reserved memory was tainted! "
++			       "The system might go wrong.\n");
++			ptr[i] = '\0';
++		}
++	}
++	mutex_unlock(&lock);
++	return ptr;
 +}
 +
-+static struct security_operations tomoyo_security_ops = {
-+	.name                      = "tomoyo",
++static unsigned int allocated_memory_for_savename;
 +
-+	.task_alloc_security       = tmy_task_alloc_security,
-+	.task_free_security        = tmy_task_free_security,
-+	.bprm_alloc_security       = tmy_bprm_alloc_security,
-+	.bprm_check_security       = tmy_bprm_check_security,
-+	.bprm_post_apply_creds     = tmy_bprm_post_apply_creds,
-+	.bprm_free_security        = tmy_bprm_free_security,
-+	.sysctl                    = tmy_sysctl,
-+	.inode_permission          = tmy_inode_permission,
-+	.path_truncate             = tmy_path_truncate,
-+	.path_create               = tmy_path_create,
-+	.path_unlink               = tmy_path_unlink,
-+	.path_mkdir                = tmy_path_mkdir,
-+	.path_rmdir                = tmy_path_rmdir,
-+	.path_symlink              = tmy_path_symlink,
-+	.path_mknod                = tmy_path_mknod,
-+	.path_link                 = tmy_path_link,
-+	.path_rename               = tmy_path_rename,
-+	.path_open                 = tmy_path_open,
-+	.path_uselib               = tmy_path_uselib,
-+	.file_fcntl                = tmy_file_fcntl,
++/**
++ * tmy_get_memory_used_for_save_name - Get memory used for keeping string data.
++ *
++ * Returns memory used for keeping string data.
++ */
++unsigned int tmy_get_memory_used_for_save_name(void)
++{
++	return allocated_memory_for_savename;
++}
++
++#define MAX_HASH 256
++
++/* Structure for string data. */
++struct name_entry {
++	struct list1_head list;
++	struct path_info entry;
 +};
 +
-+static int __init tmy_init(void)
++/* Structure for available memory region. */
++struct free_memory_block_list {
++	struct list_head list;
++	char *ptr;             /* Pointer to a free area. */
++	int len;               /* Length of the area.     */
++};
++
++/* The list for "struct name_entry". */
++static struct list1_head name_list[MAX_HASH];
++
++/**
++ * tmy_save_name - Allocate permanent memory for string data.
++ *
++ * @name: The string to store into the permernent memory.
++ *
++ * Returns pointer to "struct path_info" on success, NULL otherwise.
++ *
++ * The RAM is shared, so NEVER try to modify or kfree() the returned name.
++ */
++const struct path_info *tmy_save_name(const char *name)
 +{
-+	struct tmy_security *tmy_security;
-+	if (!security_module_enable(&tomoyo_security_ops))
-+		return 0;
++	static LIST_HEAD(fmb_list);
++	static DEFINE_MUTEX(lock);
++	struct name_entry *ptr;
++	unsigned int hash;
++	struct free_memory_block_list *fmb;
++	int len;
++	char *cp;
++	if (!name)
++		return NULL;
++	len = strlen(name) + 1;
++	if (len > TMY_MAX_PATHNAME_LEN) {
++		printk(KERN_WARNING "ERROR: Name too long "
++		       "for tmy_save_name().\n");
++		return NULL;
++	}
++	hash = full_name_hash((const unsigned char *) name, len - 1);
++	mutex_lock(&lock);
++	list1_for_each_entry(ptr, &name_list[hash % MAX_HASH], list) {
++		if (hash == ptr->entry.hash && !strcmp(name, ptr->entry.name))
++			goto out;
++	}
++	list_for_each_entry(fmb, &fmb_list, list) {
++		if (len <= fmb->len)
++			goto ready;
++	}
++	cp = kzalloc(PAGE_SIZE, GFP_KERNEL);
++	fmb = kzalloc(sizeof(*fmb), GFP_KERNEL);
++	if (!cp || !fmb) {
++		kfree(cp);
++		kfree(fmb);
++		printk(KERN_WARNING "ERROR: Out of memory "
++		       "for tmy_save_name().\n");
++		if (!sbin_init_started)
++			panic("MAC Initialization failed.\n");
++		ptr = NULL;
++		goto out;
++	}
++	allocated_memory_for_savename += PAGE_SIZE;
++	list_add(&fmb->list, &fmb_list);
++	fmb->ptr = cp;
++	fmb->len = PAGE_SIZE;
++ready:
++	ptr = tmy_alloc_element(sizeof(*ptr));
++	if (!ptr)
++		goto out;
++	ptr->entry.name = fmb->ptr;
++	memmove(fmb->ptr, name, len);
++	tmy_fill_path_info(&ptr->entry);
++	fmb->ptr += len;
++	fmb->len -= len;
++	list1_add_tail_mb(&ptr->list, &name_list[hash % MAX_HASH]);
++	if (fmb->len == 0) {
++		list_del(&fmb->list);
++		kfree(fmb);
++	}
++out:
++	mutex_unlock(&lock);
++	return ptr ? &ptr->entry : NULL;
++}
 +
-+	/* register ourselves with the security framework */
-+	if (register_security(&tomoyo_security_ops))
-+		panic("Failure registering TOMOYO Linux");
++/* Structure for temporarily allocated memory. */
++struct cache_entry {
++	struct list_head list;
++	void *ptr;
++	int size;
++};
 +
-+	printk(KERN_INFO "TOMOYO Linux initialized\n");
-+	tmy_cachep = kmem_cache_create("tomoyo_security",
-+				       sizeof(struct tmy_security),
-+				       0, SLAB_PANIC, NULL);
-+	tmy_security = kmem_cache_alloc(tmy_cachep, GFP_KERNEL);
-+	BUG_ON(!tmy_security);
-+	memset(tmy_security, 0, sizeof(*tmy_security));
-+	tmy_security->domain = &KERNEL_DOMAIN;
-+	init_task.security = tmy_security;
++static struct kmem_cache *tmy_cachep;
++
++/**
++ * tmy_realpath_init - Initialize realpath related code.
++ *
++ * Returns 0.
++ */
++static int __init tmy_realpath_init(void)
++{
++	int i;
++	if (TMY_MAX_PATHNAME_LEN > PAGE_SIZE)
++		panic("Bad size.");
++	tmy_cachep = kmem_cache_create("tmy_cache", sizeof(struct cache_entry),
++				       0, 0, NULL);
++	if (!tmy_cachep)
++		panic("Can't create cache.\n");
++	for (i = 0; i < MAX_HASH; i++)
++		INIT_LIST1_HEAD(&name_list[i]);
++	INIT_LIST1_HEAD(&KERNEL_DOMAIN.acl_info_list);
++	KERNEL_DOMAIN.domainname = tmy_save_name(ROOT_NAME);
++	list1_add_tail_mb(&KERNEL_DOMAIN.list, &domain_list);
++	if (tmy_find_domain(ROOT_NAME) != &KERNEL_DOMAIN)
++		panic("Can't register KERNEL_DOMAIN");
 +	return 0;
 +}
 +
-+security_initcall(tmy_init);
++security_initcall(tmy_realpath_init);
++
++/* The list for "struct cache_entry". */
++static LIST_HEAD(cache_list);
++
++static DEFINE_SPINLOCK(cache_list_lock);
++
++static unsigned int dynamic_memory_size;
++
++/**
++ * tmy_get_memory_used_for_dynamic - Get memory used for temporal purpose.
++ *
++ * Returns memory used for temporal purpose.
++ */
++unsigned int tmy_get_memory_used_for_dynamic(void)
++{
++	return dynamic_memory_size;
++}
++
++/**
++ * tmy_alloc - Allocate memory for temporal purpose.
++ *
++ * @size: Size in bytes.
++ *
++ * Returns pointer to allocated memory on success, NULL otherwise.
++ */
++void *tmy_alloc(const size_t size)
++{
++	struct cache_entry *new_entry;
++	void *ret = kzalloc(size, GFP_KERNEL);
++	if (!ret)
++		goto out;
++	new_entry = kmem_cache_alloc(tmy_cachep, GFP_KERNEL);
++	if (!new_entry) {
++		kfree(ret);
++		ret = NULL;
++		goto out;
++	}
++	INIT_LIST_HEAD(&new_entry->list);
++	new_entry->ptr = ret;
++	new_entry->size = ksize(ret);
++	/***** CRITICAL SECTION START *****/
++	spin_lock(&cache_list_lock);
++	list_add_tail(&new_entry->list, &cache_list);
++	dynamic_memory_size += new_entry->size;
++	spin_unlock(&cache_list_lock);
++	/***** CRITICAL SECTION END *****/
++out:
++	return ret;
++}
++
++/**
++ * tmy_free - Release memory allocated by tmy_alloc().
++ *
++ * @p: Pointer returned by tmy_alloc(). May be NULL.
++ *
++ * Returns nothing.
++ */
++void tmy_free(const void *p)
++{
++	struct list_head *v;
++	struct cache_entry *entry = NULL;
++	if (!p)
++		return;
++	/***** CRITICAL SECTION START *****/
++	spin_lock(&cache_list_lock);
++	list_for_each(v, &cache_list) {
++		entry = list_entry(v, struct cache_entry, list);
++		if (entry->ptr != p) {
++			entry = NULL;
++			continue;
++		}
++		list_del(&entry->list);
++		dynamic_memory_size -= entry->size;
++		break;
++	}
++	spin_unlock(&cache_list_lock);
++	/***** CRITICAL SECTION END *****/
++	if (entry) {
++		kfree(p);
++		kmem_cache_free(tmy_cachep, entry);
++	} else {
++		printk(KERN_WARNING "BUG: tmy_free() with invalid pointer.\n");
++	}
++}
++
++static int tmy_print_ascii(const char *sp, const char *cp,
++			   int *buflen0, char **end0)
++{
++	int buflen = *buflen0;
++	char *end = *end0;
++
++	while (sp <= cp) {
++		unsigned char c;
++
++		c = *(unsigned char *) cp;
++		if (c == '\\') {
++			buflen -= 2;
++			if (buflen < 0)
++				goto out;
++			*--end = '\\';
++			*--end = '\\';
++		} else if (c > ' ' && c < 127) {
++			if (--buflen < 0)
++				goto out;
++			*--end = (char) c;
++		} else {
++			buflen -= 4;
++			if (buflen < 0)
++				goto out;
++			*--end = (c & 7) + '0';
++			*--end = ((c >> 3) & 7) + '0';
++			*--end = (c >> 6) + '0';
++			*--end = '\\';
++		}
++		cp--;
++	}
++
++	*buflen0 = buflen;
++	*end0 = end;
++
++	return 0;
++out:
++	return -ENOMEM;
++}
++
++
++/* tmy_get_absolute_path() for "struct ctl_table". */
++static int tmy_sysctl_path(struct ctl_table *table, char *buffer, int buflen)
++{
++	char *end = buffer + buflen;
++
++	if (buflen < 256)
++		goto out;
++
++	*--end = '\0';
++	buflen--;
++
++	buflen -= 9; /* for "/proc/sys" prefix */
++
++	while (table) {
++		char buf[32];
++		const char *sp = table->procname;
++		const char *cp;
++
++		if (!sp) {
++			memset(buf, 0, sizeof(buf));
++			snprintf(buf, sizeof(buf) - 1, "=%d=", table->ctl_name);
++			sp = buf;
++		}
++		cp = strchr(sp, '\0') - 1;
++
++		if (tmy_print_ascii(sp, cp, &buflen, &end))
++			goto out;
++
++		if (--buflen < 0)
++			goto out;
++
++		*--end = '/';
++		table = table->parent;
++	}
++
++	/* Move the pathname to the top of the buffer. */
++	memmove(buffer, "/proc/sys", 9);
++	memmove(buffer + 9, end, strlen(end) + 1);
++	return 0;
++out: ;
++	return -ENOMEM;
++}
++
++/**
++ * sysctlpath_from_table - return the realpath of a ctl_table.
++ * @table: pointer to "struct ctl_table".
++ *
++ * Returns realpath(3) of the @table on success.
++ * Returns NULL on failure.
++ *
++ * This function uses tmy_alloc(), so caller must call tmy_free()
++ * if this function didn't return NULL.
++ */
++char *sysctlpath_from_table(struct ctl_table *table)
++{
++	char *buf = tmy_alloc(TMY_MAX_PATHNAME_LEN);
++
++	if (buf && tmy_sysctl_path(table, buf, TMY_MAX_PATHNAME_LEN - 1) == 0)
++		return buf;
++
++	tmy_free(buf);
++	return NULL;
++}
 
 --
 
