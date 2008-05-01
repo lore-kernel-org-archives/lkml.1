@@ -1,57 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762892AbYEAQ22@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761223AbYEAP6x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762892AbYEAQ22 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 May 2008 12:28:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753156AbYEAQ2G
+	id S1761223AbYEAP6x (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 May 2008 11:58:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760133AbYEAP6p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 May 2008 12:28:06 -0400
-Received: from mga11.intel.com ([192.55.52.93]:41635 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753678AbYEAQ2F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 May 2008 12:28:05 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.27,422,1204531200"; 
-   d="scan'208";a="323455069"
-Message-ID: <4819EF53.6090808@intel.com>
-Date: Thu, 01 May 2008 09:26:59 -0700
-From: "Kok, Auke" <auke-jan.h.kok@intel.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080417)
+	Thu, 1 May 2008 11:58:45 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:38129 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751117AbYEAP6o (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 May 2008 11:58:44 -0400
+Date: Thu, 1 May 2008 11:58:26 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Michael Buesch <mb@bu3sch.de>
+Cc: Christoph Hellwig <hch@infradead.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       John Linville <linville@tuxdriver.com>,
+       Andi Kleen <andi@firstfloor.org>, David Miller <davem@davemloft.net>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Ingo Molnar <mingo@elte.hu>,
+       bcm43xx-dev@lists.berlios.de, linux-wireless@vger.kernel.org,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 0/3] Add API for weak DMA masks
+Message-ID: <20080501155826.GA11188@infradead.org>
+References: <200805011638.15910.mb@bu3sch.de> <200805011742.05302.mb@bu3sch.de> <20080501154358.GA3318@infradead.org> <200805011747.27469.mb@bu3sch.de>
 MIME-Version: 1.0
-To: devzero@web.de
-CC: linux-kernel@vger.kernel.org
-Subject: Re: RFC: starting a kernel-testers group for newbies
-References: <261643149@web.de>
-In-Reply-To: <261643149@web.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 01 May 2008 16:28:02.0740 (UTC) FILETIME=[53B6BF40:01C8ABA8]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200805011747.27469.mb@bu3sch.de>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-devzero@web.de wrote:
->> I'll try to do this:
->> - create some Wiki page
->> - get a mailing list at vger
->> - point newbies to this mailing list
->> - tell people there which kernels to test
->> - figure out and document stuff like how to bisect between -next kernels
->> - help them to do whatever is required for a proper bug report
-> 
-> good idea :)
-> 
-> one more:
-> reported bugs sometimes get lost in lkml (or elsewhere) and may not get the attention they need.
-> 
-> maybe there are not enough people who put some steadiness into tracking bugs (i.e. put them in bugzilla and make sure they get tracked/resolved) ?
+On Thu, May 01, 2008 at 05:47:26PM +0200, Michael Buesch wrote:
+> We've discussed that and this behaviour is not acceptable, as the driver
+> must know about a possible fallback in case it can do 32bit DMA
+> more efficiently than 64bit DMA, for example.
 
+That's what we have dma_get_required_mask() for.  See
+Documentation/DMA-API.txt.
 
-I would say that this should be one of the main goals - have a team of people who
-can consistently be assigned bugs for duplication and verification. Getting newly
-opened bugs reproduced can be half the solution (and a great way to learn the
-kernel on the side).
-
-often the reporter of the bug never confirms that the bug is fixed - another place
-where linux testers can help out...
-
-Auke
