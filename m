@@ -1,72 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759064AbYEADZC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757356AbYEADgp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759064AbYEADZC (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Apr 2008 23:25:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754244AbYEADYw
+	id S1757356AbYEADgp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Apr 2008 23:36:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754382AbYEADgg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Apr 2008 23:24:52 -0400
-Received: from gherkin.frus.com ([192.158.254.49]:33253 "EHLO gherkin.frus.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754006AbYEADYw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Apr 2008 23:24:52 -0400
-Subject: Re: Slow DOWN, please!!!
-In-Reply-To: <4818EA2C.2040507@zytor.com> "from H. Peter Anvin at Apr 30, 2008
- 02:52:44 pm"
-To: "H. Peter Anvin" <hpa@zytor.com>
-Date: Wed, 30 Apr 2008 22:24:40 -0500 (CDT)
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, davem@davemloft.net,
-       linux-kernel@vger.kernel.org, jirislaby@gmail.com
-X-Mailer: ELM [version 2.4ME+ PL82 (25)]
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset=US-ASCII
-Message-Id: <20080501032440.D8394DBA4@gherkin.frus.com>
-From: rct@frus.com (Bob Tracy)
+	Wed, 30 Apr 2008 23:36:36 -0400
+Received: from rex.securecomputing.com ([203.24.151.4]:38921 "EHLO
+	snapgear.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754274AbYEADgf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Apr 2008 23:36:35 -0400
+Date: Thu, 1 May 2008 13:35:34 +1000
+From: Greg Ungerer <gerg@snapgear.com>
+Message-Id: <200805010335.m413ZYTk004618@goober>
+To: torvalds@linux-foundation.org
+Subject: [PATCH] m68knommu: fix ColdFire 5272 fec driver hash registers
+Cc: akpm@linux-foundation.org, gerg@uclinux.org, linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin wrote:
-> Linus Torvalds wrote:
-> > 
-> > The tester base is simply too small.
-> > 
-> > Now, if *that* could be improved, that would be wonderful, but I'm not 
-> > seeing it as very likely.
-> > 
-> 
-> One thing is that we keep fragmenting the tester base by adding new 
-> confidence levels: we now have -mm, -next, mainline -git, mainline -rc, 
-> mainline release, stable, distro testing, and distro release (and some 
-> distros even have aggressive versus conservative tracks.)  Furthermore, 
-> thanks to craniorectal immersion on the part of graphics vendors, a lot 
-> of users have to run proprietary drivers on their "main work" systems, 
-> which means they can't even test newer releases even if they would dare.
+Renamed the 5272 hash_table registers to match the "grp" hash_table
+registers of the other ColdFire parts. They are actually a group hash.
+The makes for consistent setup across all ColdFire parts.
 
-Since I poke my head out of the foxhole every once in a while with a
-relatively late-breaking bug report, I thought I should chime in...
-Mr. Anvin has pretty much nailed it...
+Signed-off-by: Greg Ungerer <gerg@uclinux.org>
+---
 
-As the kernel development process has evolved, which "confidence level"
-I select has evolved as well.  The thing that *hasn't* changed through
-the years is, I tend to pick a "confidence level" that is appropriately
-close to "mainline" and has an update release schedule roughly compatible
-with my ability to keep up with it.  Specifically, if it takes me several
-hours to download a patch set, apply it, build the new kernel, and test
-on multiple platforms/architectures, then the update release schedule is
-probably going to have to be no more often than twice a week if I'm going
-to be at all interested in even trying to keep up with it.  In 2008, the
-"-rcX" updates are a good fit.  In the not-too-distant past, keeping up
-with 2.5.X.Y was no problem.
 
-Yes, I realize I don't *have* to test every revision level in every
-major tree, but I don't have to think about which one to pick for testing
-if I can keep up with the update release schedule :-).
-
--- 
-------------------------------------------------------------------------
-Bob Tracy          |  "I was a beta tester for dirt.  They never did
-rct@frus.com       |   get all the bugs out." - Steve McGrew on /.
-------------------------------------------------------------------------
+diff -Naurp linux-2.6.25/drivers/net/fec.h linux-2.6.25-uc0/drivers/net/fec.h
+--- linux-2.6.25/drivers/net/fec.h	2008-04-17 12:49:44.000000000 +1000
++++ linux-2.6.25-uc0/drivers/net/fec.h	2008-02-05 17:23:17.000000000 +1000
+@@ -88,8 +88,8 @@ typedef struct fec {
+ 	unsigned long	fec_reserved7[158];
+ 	unsigned long	fec_addr_low;		/* Low 32bits MAC address */
+ 	unsigned long	fec_addr_high;		/* High 16bits MAC address */
+-	unsigned long	fec_hash_table_high;	/* High 32bits hash table */
+-	unsigned long	fec_hash_table_low;	/* Low 32bits hash table */
++	unsigned long	fec_grp_hash_table_high;/* High 32bits hash table */
++	unsigned long	fec_grp_hash_table_low;	/* Low 32bits hash table */
+ 	unsigned long	fec_r_des_start;	/* Receive descriptor ring */
+ 	unsigned long	fec_x_des_start;	/* Transmit descriptor ring */
+ 	unsigned long	fec_r_buff_size;	/* Maximum receive buff size */
+diff -Naurp linux-2.6.25/drivers/net/fec.c linux-2.6.25-uc0/drivers/net/fec.c
+--- linux-2.6.25/drivers/net/fec.c	2008-04-17 12:49:44.000000000 +1000
++++ linux-2.6.25-uc0/drivers/net/fec.c	2008-05-01 13:30:39.000000000 +1000
+@@ -2243,13 +2243,13 @@ static void set_multicast_list(struct ne
+ 			/* Catch all multicast addresses, so set the
+ 			 * filter to all 1's.
+ 			 */
+-			ep->fec_hash_table_high = 0xffffffff;
+-			ep->fec_hash_table_low = 0xffffffff;
++			ep->fec_grp_hash_table_high = 0xffffffff;
++			ep->fec_grp_hash_table_low = 0xffffffff;
+ 		} else {
+ 			/* Clear filter and add the addresses in hash register.
+ 			*/
+-			ep->fec_hash_table_high = 0;
+-			ep->fec_hash_table_low = 0;
++			ep->fec_grp_hash_table_high = 0;
++			ep->fec_grp_hash_table_low = 0;
+ 
+ 			dmi = dev->mc_list;
+ 
+@@ -2280,9 +2280,9 @@ static void set_multicast_list(struct ne
+ 				hash = (crc >> (32 - HASH_BITS)) & 0x3f;
+ 
+ 				if (hash > 31)
+-					ep->fec_hash_table_high |= 1 << (hash - 32);
++					ep->fec_grp_hash_table_high |= 1 << (hash - 32);
+ 				else
+-					ep->fec_hash_table_low |= 1 << hash;
++					ep->fec_grp_hash_table_low |= 1 << hash;
+ 			}
+ 		}
+ 	}
+@@ -2430,11 +2430,15 @@ int __init fec_enet_init(struct net_devi
+ 	*/
+ 	fec_request_intrs(dev);
+ 
+-	fecp->fec_hash_table_high = 0;
+-	fecp->fec_hash_table_low = 0;
++	fecp->fec_grp_hash_table_high = 0;
++	fecp->fec_grp_hash_table_low = 0;
+ 	fecp->fec_r_buff_size = PKT_MAXBLR_SIZE;
+ 	fecp->fec_ecntrl = 2;
+ 	fecp->fec_r_des_active = 0;
++#ifndef CONFIG_M5272
++	fecp->fec_hash_table_high = 0;
++	fecp->fec_hash_table_low = 0;
++#endif
+ 
+ 	dev->base_addr = (unsigned long)fecp;
+ 
+@@ -2500,8 +2504,8 @@ fec_restart(struct net_device *dev, int 
+ 
+ 	/* Reset all multicast.
+ 	*/
+-	fecp->fec_hash_table_high = 0;
+-	fecp->fec_hash_table_low = 0;
++	fecp->fec_grp_hash_table_high = 0;
++	fecp->fec_grp_hash_table_low = 0;
+ 
+ 	/* Set maximum receive buffer size.
+ 	*/
