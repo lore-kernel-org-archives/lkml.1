@@ -1,118 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932760AbYEAWJW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933223AbYEAWLB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932760AbYEAWJW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 May 2008 18:09:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762958AbYEAWJH
+	id S933223AbYEAWLB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 May 2008 18:11:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754077AbYEAWKx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 May 2008 18:09:07 -0400
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:48237 "EHLO e1.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756478AbYEAWJF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 May 2008 18:09:05 -0400
-Subject: Re: [PATCH] jbd_commit_transaction() races with
-	journal_try_to_drop_buffers() causing DIO failures
-From: Mingming Cao <cmm@us.ibm.com>
-Reply-To: cmm@us.ibm.com
-To: Badari Pulavarty <pbadari@us.ibm.com>
-Cc: Jan Kara <jack@suse.cz>, akpm@linux-foundation.org,
-       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <1209654981.27240.19.camel@badari-desktop>
-References: <20080306174209.GA14193@duck.suse.cz>
-	 <1209166706.6040.20.camel@localhost.localdomain>
-	 <20080428122626.GC17054@duck.suse.cz>
-	 <1209402694.23575.5.camel@badari-desktop>
-	 <20080428180932.GI17054@duck.suse.cz>
-	 <1209409764.11872.6.camel@localhost.localdomain>
-	 <20080429124321.GD1987@duck.suse.cz>
-	 <1209654981.27240.19.camel@badari-desktop>
-Content-Type: text/plain
-Organization: IBM Linux Technology Center
-Date: Thu, 01 May 2008 15:08:56 -0700
-Message-Id: <1209679736.3693.15.camel@localhost.localdomain>
+	Thu, 1 May 2008 18:10:53 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:56678 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755891AbYEAWKw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 May 2008 18:10:52 -0400
+Date: Thu, 1 May 2008 15:07:37 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Daniel Walker <dwalker@mvista.com>
+Cc: rostedt@goodmis.org, linux-kernel@vger.kernel.org, lucho@ionkov.net,
+       ericvh@gmail.com
+Subject: Re: [PATCH] fix flags length in net 9p
+Message-Id: <20080501150737.3400dffb.akpm@linux-foundation.org>
+In-Reply-To: <1209677160.12461.267.camel@localhost.localdomain>
+References: <Pine.LNX.4.58.0805011706070.12785@gandalf.stny.rr.com>
+	<20080501141919.78b7dc4f.akpm@linux-foundation.org>
+	<1209677160.12461.267.camel@localhost.localdomain>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.0 (2.8.0-33.el5) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-05-01 at 08:16 -0700, Badari Pulavarty wrote:
-> Hi Andrew & Jan,
+On Thu, 01 May 2008 14:26:00 -0700
+Daniel Walker <dwalker@mvista.com> wrote:
+
 > 
-> I was able to reproduce the customer problem involving DIO
-> (invalidate_inode_pages2) problem by writing simple testcase
-> to keep writing to a file using buffered writes and DIO writes
-> forever in a loop. I see DIO writes fail with -EIO.
+> On Thu, 2008-05-01 at 14:19 -0700, Andrew Morton wrote:
+> > On Thu, 1 May 2008 17:08:05 -0400 (EDT)
+> > Steven Rostedt <rostedt@goodmis.org> wrote:
+> > 
+> > > Some files in the net/9p directory uses "int" for flags. This can
+> > > cause hard to find bugs on some architectures. This patch converts the
+> > > flags to use "long" instead.
+> > 
+> > gargh.
+> > 
+> > > This bug was discovered by doing an allyesconfig make on the -rt kernel
+> > > where checks are done to ensure all flags are of size sizeof(long).
+> > 
+> > I was about to suggest that we do something like that...
+> > 
+> > I wonder how messy it is.  I long ago lost the ability to follow the
+> > convolutions in include/linux/spinlock*.h :(  gotta patch?
 > 
-> After a long debug, found 2 cases how this could happen.
-> These are race conditions with 
-> and journal_commit_transaction().
-> 
-> 1) journal_submit_data_buffers() tries to get bh_state lock. If
-> try lock fails, it drops the j_list_lock and sleeps for
-> bh_state lock, while holding a reference on the buffer.
-> In the meanwhile, journal_try_to_free_buffers() can clean up the
-> journal head could call try_to_free_buffers(). try_to_free_buffers()
-> would fail due to the reference held by journal_submit_data_buffers()
-> - which in turn causes failues for DIO (invalidate_inode_pages2()).
-> 
-> 2) When the buffer is on t_locked_list waiting for IO to finish,
-> we hold a reference and give up the cpu, if we can't get
-> bh_state lock. This causes try_to_free_buffers() to fail.
+> The check that's in -rt for this uses BUILD_BUG_ON(), and it's extremely
+> cryptic when there is a failure .. Most people will be baffled why the
+> build stopped. If a check went into mainline it should at least give you
+> some sort of idea what's happening ..
 > 
 
-Besides these two, I think there are two more race conditions with
-journal_try_to_free_buffers() inside
-journal_commit_transaction()->journal_submit_data_buffers()
+I think a warning is good enough here.  There are all sorts of warnings if,
+which ignored, will crash your box.
 
-3) when journal_submit_data_buffers() saw the buffer is dirty but failed
-to lock the buffer bh1, journal_submit_data_buffers() released the
-j_list_lock and submit other buffers collected from previous check, with
-the reference to bh1 still hold. During this time
-journal_try_to_free_buffers() could clean up the journal head of bh1 and
-remove it from the t_syncdata_list. Then try_to_free_buffers() would
-fail because the reference held by journal_submit_data_buffers()
-
-...
-		if (buffer_dirty(bh)) {
-                       if (test_set_buffer_locked(bh)) {
-                                BUFFER_TRACE(bh, "needs blocking lock");
-                                spin_unlock(&journal->j_list_lock);
-					<-- here release the j_list_lock without put(bh)
-                                            journal_try_to_free_buffers() could come in and remove this bh from t_syncdata_list
-
-                                /* Write out all data to prevent deadlocks */
-                                journal_do_submit_data(wbuf, bufs);
-                                bufs = 0;
-                                lock_buffer(bh);
-                                spin_lock(&journal->j_list_lock);
-                                        <-- here continue the check without validate if the bh still on t_sycdata_list
-
-                        }
-                        locked = 1;
-                }
+And there is only one type which we use to hold processor flags and that is
+unsigned long.
 
 
-4) when journal_commit_transaction() go through the t_locked_list and
-wait for the buffer to be unlocked, it still holds the reference to the
-buffer, released the j_list_lock and gives the
-journal_try_to_free_buffers() a chance to come in remove this buffer
-from t_locked_list, but journal_commit_transaction() continues as if the
-buffer still on the locked list.
+So a plain old
 
-      while (commit_transaction->t_locked_list) {
-                struct buffer_head *bh;
+#define must_be_ulong(p)
+	do {
+		if (&p == (unsigned long *)0)
+			;
+	} while (0)
 
-                jh = commit_transaction->t_locked_list->b_tprev;
-                bh = jh2bh(jh);
-                get_bh(bh);
-                if (buffer_locked(bh)) {
-                        spin_unlock(&journal->j_list_lock);
-                        wait_on_buffer(bh);
-                        if (unlikely(!buffer_uptodate(bh)))
-                                err = -EIO;
-                        spin_lock(&journal->j_list_lock);
-                }
+(or whatever)
 
-Mingming
-
+should suffice.
