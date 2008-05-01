@@ -1,84 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765050AbYEAT1f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765408AbYEAT2N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765050AbYEAT1f (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 May 2008 15:27:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759309AbYEAT1Z
+	id S1765408AbYEAT2N (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 May 2008 15:28:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759780AbYEAT15
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 May 2008 15:27:25 -0400
-Received: from mail.suse.de ([195.135.220.2]:35497 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758293AbYEAT1Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 May 2008 15:27:24 -0400
-Message-ID: <481A1994.5020000@suse.com>
-Date: Thu, 01 May 2008 15:27:16 -0400
-From: Jeff Mahoney <jeffm@suse.com>
-Organization: SUSE Labs, Novell, Inc
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
-MIME-Version: 1.0
-To: Chris Mason <chris.mason@oracle.com>
-Cc: Tim Gardner <tim.gardner@canonical.com>, jeffschroeder@computer.org,
-       linux-fsdevel@vger.kernel.org, kernel-team@lists.ubuntu.com,
-       linux-kernel@vger.kernel.org, linux-btrfs@vger.kernel.org
-Subject: Re: Btrfs v0.14 Released
-References: <200804291601.32945.chris.mason@oracle.com> <c24352ca0805010939q31f743aev17cc7f98d2ad0c71@mail.gmail.com> <481A14BA.9090305@canonical.com> <200805011517.55698.chris.mason@oracle.com>
-In-Reply-To: <200805011517.55698.chris.mason@oracle.com>
-X-Enigmail-Version: 0.95.2
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 1 May 2008 15:27:57 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:57872 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759693AbYEAT14 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 May 2008 15:27:56 -0400
+Date: Thu, 1 May 2008 12:26:36 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Theodore Tso <tytso@MIT.EDU>
+Cc: bunk@kernel.org, arjan@infradead.org, torvalds@linux-foundation.org,
+       rjw@sisk.pl, davem@davemloft.net, linux-kernel@vger.kernel.org,
+       jirislaby@gmail.com, rostedt@goodmis.org
+Subject: Re: RFC: starting a kernel-testers group for newbies
+Message-Id: <20080501122636.152c80db.akpm@linux-foundation.org>
+In-Reply-To: <20080501172434.GB17365@mit.edu>
+References: <20080429.190352.137408408.davem@davemloft.net>
+	<200804302136.58005.rjw@sisk.pl>
+	<20080430131537.1f7a0914.akpm@linux-foundation.org>
+	<alpine.LFD.1.10.0804301325260.2980@woody.linux-foundation.org>
+	<20080501003125.GM29330@cs181133002.pp.htv.fi>
+	<20080430000338.50548884@infradead.org>
+	<20080501113038.GW29330@cs181133002.pp.htv.fi>
+	<20080430072013.7c3b30b1@infradead.org>
+	<20080501132159.GC29330@cs181133002.pp.htv.fi>
+	<20080501084919.8ac6dbdd.akpm@linux-foundation.org>
+	<20080501172434.GB17365@mit.edu>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+On Thu, 1 May 2008 13:24:34 -0400
+Theodore Tso <tytso@MIT.EDU> wrote:
 
-Chris Mason wrote:
-> On Thursday 01 May 2008, Tim Gardner wrote:
-> 
-> [ btrfs oops on ubuntu ]
-> 
->>>>  This is because ubuntu kernels ship with apparmor, you'll need this
->>>> patch:
->>>>
->>>>  If there is a #ifdef IM_A_UBUNTU_KERNEL I can use, I'll do it.  Jeff
->>>> Mahoney has a similar patch for SUSE that I've been meaning to merge,
->>>> but I wanted to lookup some way to check for ubuntu as well.
->>>>
->>>>  -chris
->>>>
->>>>  diff -r e7da2489b19b file.c
->>>>  --- a/file.c    Wed Apr 30 13:59:35 2008 -0400
->>>>  +++ b/file.c    Thu May 01 12:25:11 2008 -0400
->>>>  @@ -852,7 +852,7 @@ static ssize_t btrfs_file_write(struct f
->>>>                 goto out_nolock;
->>>>         if (count == 0)
->>>>                 goto out_nolock;
->>>>  -       err = remove_suid(fdentry(file));
->>>>  +       err = remove_suid(&file->f_path);
->>>>         if (err)
->>>>                 goto out_nolock;
->>>>         file_update_time(file);
->> Couldn't you #ifdef based on CONFIG_SECURITY_APPARMOR ? This ought to
->> work for Hardy. However the next development kernel (Intrepid) does not
->> have the APPARMOR patches, so just knowing that its an UBUNTU kernel is
->> not specific enough.
-> 
-> I've been assuming the apparmor patches change remove_suid even when they are 
-> not enabled in the config.
+> ... and maybe we can't solve hardware bugs. 
 
-Yeah, unless Ubuntu is doing some magic with the function arguments
-(which sounds like the fix is worse than the problem), this is true.
+Many, many of these are regressions.  If old-linux works on that
+hardware then new-linux can too.
 
-- -Jeff
+(still wants to know what we did 2-3 years ago which caused thousands of
+people to have to resort to using noapic and other apic-related boot option
+workarounds)
 
-- --
-Jeff Mahoney
-SUSE Labs
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.4-svn0 (GNU/Linux)
-Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
-
-iD8DBQFIGhmULPWxlyuTD7IRAgJcAJ4zYYcgQ2V0eT6Fv6LstlwpnK9bUwCgpdBD
-XHUzfiFBd+HQLt5Tw5vHH0A=
-=KWIZ
------END PGP SIGNATURE-----
