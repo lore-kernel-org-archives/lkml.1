@@ -1,63 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758787AbYEAGP2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757228AbYEAGYt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758787AbYEAGP2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 May 2008 02:15:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753835AbYEAGPU
+	id S1757228AbYEAGYt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 May 2008 02:24:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753693AbYEAGYj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 May 2008 02:15:20 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:35709 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753548AbYEAGPU (ORCPT
+	Thu, 1 May 2008 02:24:39 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:34257 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753597AbYEAGYj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 May 2008 02:15:20 -0400
-Date: Thu, 1 May 2008 08:15:18 +0200 (CEST)
-From: Jan Engelhardt <jengelh@medozas.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Dmitri Vorobiev <dmitri.vorobiev@gmail.com>, torvalds@linux-foundation.org,
-       rjw@sisk.pl, davem@davemloft.net, linux-kernel@vger.kernel.org,
-       jirislaby@gmail.com, mingo@elte.hu
-Subject: Re: Slow DOWN, please!!!
-In-Reply-To: <20080430151007.0ace4fa2.akpm@linux-foundation.org>
-Message-ID: <alpine.LNX.1.10.0805010812360.5623@fbirervta.pbzchgretzou.qr>
-References: <20080429.190352.137408408.davem@davemloft.net> <200804302136.58005.rjw@sisk.pl> <20080430131537.1f7a0914.akpm@linux-foundation.org> <alpine.LFD.1.10.0804301325260.2980@woody.linux-foundation.org> <20080430135405.ddc42075.akpm@linux-foundation.org>
- <4818E7E3.7080705@gmail.com> <20080430151007.0ace4fa2.akpm@linux-foundation.org>
-User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
+	Thu, 1 May 2008 02:24:39 -0400
+Date: Thu, 1 May 2008 07:24:32 +0100
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: "J. Bruce Fields" <bfields@fieldses.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Bryan Wu <cooloney@kernel.org>,
+       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
+       willy@debian.org, uclinux-dist-devel@blackfin.uclinux.org,
+       richterd@citi.umich.edu
+Subject: Re: [LTP/VFS] fcntl SETLEASE fails on ramfs/tmpfs
+Message-ID: <20080501062432.GT5882@ZenIV.linux.org.uk>
+References: <386072610804282042y2dda4b52h927683a8a938ce1f@mail.gmail.com> <20080429135454.efebec8f.akpm@linux-foundation.org> <20080429214231.GC26468@fieldses.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080429214231.GC26468@fieldses.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Apr 29, 2008 at 05:42:31PM -0400, J. Bruce Fields wrote:
+> The most likely consequences are that a local reader gets out-of-date
+> data for a file that a Samba client has modified.
+> 
+> I suppose that re-checking the d_count and i_count after step 3 might
+> close the race.
+ 
+The hell it might.  Leases are broken, plain and simple.  Not to mention
+anything else, a couple of threads with shared descriptor table will
+bypass these checks happily.
 
-On Thursday 2008-05-01 00:10, Andrew Morton wrote:
->> 
->> Andrew, the latter thing is a very good point. For me personally, the fact
->> that -mm is not available via git is the major obstacle for trying your
->> tree more frequently than just a few times per year.
->
->Every -mm release if available via git://, as described in the release
->announcements.
-[...]
->> How difficult it
->> would be to switch to git for you?
->
->Fatal, I expect.  A tool which manages source-code files is just the wrong
->paradigm.  I manage _changes_ against someone else's source files.
+FWIW, that's far from the worst problem in fs/locks.c, and not even the
+worst one with leases.
 
-Would you mind using stgit? That you way have the queue patch
-functionality, yet a simple git-push -f will send the whole
-patch stack over to a repo (without the stgit bits that is),
-leaving what looks like a regular tree with just lots of
-recent commits. Does not even need extra scripts to do a
-patchset->git conversion.
+That, BTW, is a fine demonstration of the reasons why application-specific
+kernel warts(tm) are bad.  Lease support is samba-only turd; so's dnotify,
+with its lovely problems.  And interfaces like that *suck*; they are
+developed with one application in mind and that leads to "we know how it
+will be used" mentality.  With obvious implications for quality of review
+they get from their developers...
 
->> For busy (or lazy) people like myself, the big problem with linux-next are
->> the frequent merge breakages, when pulling the tree stops with "you are in
->> the middle of a merge conflict".
->
->Really?  Doesn't Stephen handle all those problems?  It should be a clean
->fetch each time?
-
-Indeed, assuming the remote is set up and you have a local branch,
-`git reset --hard mm/master` after a fetch is the thing.
-But be sure not to have any changed files.
+Al, currently crawling through struct file_lock review and extremely annoyed
+by the amount of turds being found...
