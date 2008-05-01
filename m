@@ -1,97 +1,155 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762283AbYEAPGe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762009AbYEAPHh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762283AbYEAPGe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 May 2008 11:06:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760865AbYEAPGF
+	id S1762009AbYEAPHh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 May 2008 11:07:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753182AbYEAPH0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 May 2008 11:06:05 -0400
-Received: from mail1.webmaster.com ([216.152.64.169]:1790 "EHLO
-	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761990AbYEAPGD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 May 2008 11:06:03 -0400
-X-Greylist: delayed 364 seconds by postgrey-1.27 at vger.kernel.org; Thu, 01 May 2008 11:06:03 EDT
-From: "David Schwartz" <davids@webmaster.com>
-To: "pradeep singh rautela" <rautelap@gmail.com>, <hjk@linutronix.de>
-Cc: "Greg KH" <greg@kroah.com>, <linux-kernel@vger.kernel.org>
-Subject: RE: [Q]Can a file be dual licensed in upstream kernel?
-Date: Thu, 1 May 2008 07:59:54 -0700
-Message-ID: <MDEHLPKNGKAHNMBLJOLKKEBJMFAC.davids@webmaster.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-X-Priority: 3 (Normal)
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
-In-Reply-To: <20080429062627.GA3195@local>
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3198
-Importance: Normal
-X-Authenticated-Sender: joelkatz@webmaster.com
-X-Spam-Processed: mail1.webmaster.com, Thu, 01 May 2008 08:00:55 -0700
-	(not processed: message from trusted or authenticated source)
-X-MDRemoteIP: 206.171.168.138
-X-Return-Path: davids@webmaster.com
-X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
-Reply-To: davids@webmaster.com
-X-MDAV-Processed: mail1.webmaster.com, Thu, 01 May 2008 08:00:56 -0700
+	Thu, 1 May 2008 11:07:26 -0400
+Received: from wine.ocn.ne.jp ([122.1.235.145]:50263 "EHLO smtp.wine.ocn.ne.jp"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751542AbYEAPHY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 May 2008 11:07:24 -0400
+To: chrisw@sous-sol.org, viro@ZenIV.linux.org.uk
+Cc: akpm@linux-foundation.org, linux-security-module@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       takedakn@nttdata.co.jp, haradats@nttdata.co.jp
+Subject: Re: [TOMOYO #8 (2.6.25-mm1) 1/7] Introduce new LSM hooks.
+From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+References: <20080501055405.024390000@nttdata.co.jp>
+	<20080501055543.269648000@nttdata.co.jp>
+	<20080501080144.GJ30511@sequoia.sous-sol.org>
+In-Reply-To: <20080501080144.GJ30511@sequoia.sous-sol.org>
+Message-Id: <200805020007.HHC90622.OQSFOJtVOMFHFL@I-love.SAKURA.ne.jp>
+X-Mailer: Winbiff [Version 2.50 PL2]
+X-Accept-Language: ja,en
+Date: Fri, 2 May 2008 00:07:20 +0900
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello.
 
-> In my _personal_opinion_, dual licensing gives you the right to choose
-> between two licenses.
+Chris Wright wrote:
+> * Toshiharu Harada (haradats@nttdata.co.jp) wrote:
+> > This patch allows LSM to check permission using "struct vfsmount"
+> > without passing "struct vfsmount" to VFS helper functions.
+> 
+> This is simply duplicating many of the existing checks.
+> I don't see how this is an improvement.
+> 
+> > --- mm.orig/fs/namei.c
+> > +++ mm/fs/namei.c
+> > @@ -1595,6 +1595,9 @@ int vfs_create(struct inode *dir, struct
+> >  	error = security_inode_create(dir, dentry, mode);
+> >  	if (error)
+> >  		return error;
+> > +	error = security_path_create(dir, dentry, mode, nd);
+> > +	if (error)
+> > +		return error;
+> 
+> Pure duplication (of course adding nameidata, although I think you just
+> want path).
 
-Dual licensing gives every recipient both licenses from the original author.
-You can choose which license you will obtain rights from.
+Stephen Smalley advised me to add parameter to existing hook rather than
+introducing a new hook if the location of existing hook is appropriate.
+OK. I'd like to add "struct nameidata" to security_inode_create()
+rather than introducing security_path_create() in the next patch.
 
-> If a file is dual licensed BSD/GPLv2, anybody
-> (including yourself) is free to get rid of the BSD part and make it
-> GPLv2 only.
+> 
+> >  	DQUOT_INIT(dir);
+> >  	error = dir->i_op->create(dir, dentry, mode, nd);
+> >  	if (!error)
+> > @@ -1650,6 +1653,17 @@ int may_open(struct nameidata *nd, int a
+> 	...
+> 	error = vfs_permission(nd, acc_mode);
+> 	if (error)
+> 		return error;
+> 	...
+> >  			return -EPERM;
+> >  
+> >  	/*
+> > +	 * security_inode_permission() called from vfs_permission()
+> > +	 * can't know that the file is going to be truncated when
+> > +	 * open(filename, O_WRONLY | O_TRUNC | O_APPEND) is used.
+> > +	 * So, this hook checks O_APPEND and O_TRUNC flags as well
+> > +	 * as MAY_READ and MAY_WRITE flags.
+> > +	 */
+> > +	error = security_path_open(nd->path.dentry, nd->path.mnt, flag);
+> > +	if (error)
+> > +		return error;
+> 
+> Also duplication.  And why the unique flag handling, you don't seem to
+> ever check?
 
-Really? Which license or law gives you the right to change the licensing
-terms on code you didn't write? At least in the United States, you cannot
-change the licensing terms on someone else's code absent a written
-re-licensing agreement.
+The MAY_WRITE flag is not passed to security_inode_permission()
+if security_inode_permission() is called from __open_namei_create().
+Since TOMOYO Linux doesn't check MAY_READ/MAY_WRITE permissions for individual
+read()/write() requests, the permission checks at open() time (i.e. may_open())
+is the only chance to check MAY_WRITE flag. If I can't check MAY_WRITE flag
+here, TOMOYO Linux can't control open(O_WRONLY | O_CREATE | O_EXCL).
 
-Every recipient of dual-licensed creative works or elements of works can
-obtain rights from either license. You only need comply with the
-requirements of one of the licenses to obtain rights from it. If you
-redistribute the code, every recipient gets the same rights you got from the
-original authors of every creative element you redistribute.
+Also, the O_TRUNC flag is not passed to security_inode_permission() because
+vfs_permission() receives only MAY_READ/MAY_WRITE/MAY_APPEND flags, but
+I have to check O_TRUNC flag before do_truncate().
 
-The distributor can choose by which license he obtains the right to
-distribute, but this has no effect on the license his recipients get! (This
-should be common sense. If you buy a music CD from Amazon, do you think how
-Amazon got the right to sell you the CD should have an effect on what you
-can do with the CD?)
+So, I inserted a new hook here so that this hook can check all
+MAY_READ/MAY_WRITE/O_APPEND/O_TRUNC flags together in a single place.
 
-You can remove the BSD license notice, because the GPL gives you that right
-(it only requires you to retain notices that refer to "this License", the
-GPL, not other licenses). But removing a license *notice* does not change
-the license. (That should be common sense too.)
+> 
+> > +
+> > +	/*
+> >  	 * Ensure there are no outstanding leases on the file.
+> >  	 */
+> >  	error = break_lease(inode, flag);
+> > @@ -2021,7 +2035,12 @@ fail:
+> >  }
+> >  EXPORT_SYMBOL_GPL(lookup_create);
+> >  
+> > -int vfs_mknod(struct inode *dir, struct dentry *dentry, int mode, dev_t dev)
+> > +/*
+> > + * These pre_vfs_*() functions are separated from vfs_*() functions so that
+> > + * LSM's security_path_*() functions can do DAC checks before MAC checks
+> > + * without duplicating may_create()/may_delete() functions.
+> > + */
+> > +int pre_vfs_mknod(struct inode *dir, struct dentry *dentry, int mode)
+> >  {
+> >  	int error = may_create(dir, dentry, NULL);
+> >  
+> > @@ -2033,6 +2052,14 @@ int vfs_mknod(struct inode *dir, struct 
+> >  
+> >  	if (!dir->i_op || !dir->i_op->mknod)
+> >  		return -EPERM;
+> > +	return 0;
+> > +}
+> > +
+> > +int vfs_mknod(struct inode *dir, struct dentry *dentry, int mode, dev_t dev)
+> > +{
+> > +	int error = pre_vfs_mknod(dir, dentry, mode);
+> > +	if (error)
+> > +		return error;
+> 
+> More duplication, you'll get a call chain like:
+> 
+> sys_mknod
+>   security_path_mknod
+>     pre_vfs_mknod
+>   vfs_mknod
+>    pre_vfs_mknod
+>    security_inode_mknod
+> 
+This is an inevitable duplication since I want to do conventional checks
+(DAC checks and inode operation existence checks) before TOMOYO Linux's check.
 
-If you modify the code, of course, they only get the rights you choose to
-give them to anything you added (assuming it is sufficiently creative to
-warrant copyright protection). Nobody can grant other people rights to your
-code that you don't want to grant. But you cannot add or subtract licensing
-terms to code you did not write (at least, neither the GPL nor the BSD
-license give you this right). The license grant is direct from the original
-author to the ultimate recipient.
+By the way, Stephen Smalley thinks it is better to copy codes which is needed by
+pre_vfs_*() (i.e. may_create()/may_delete()/check_sticky()) into
+security/tomoyo/ directory and leave vfs_*() untouched rather than
+extract pre_vfs_*() from vfs_*() and call pre_vfs_*() from vfs_*().
+Question to Al Viro: Do you prefer "copying may_create()/may_delete()/
+check_sticky() functions into security/tomoyo/ directory and leaving vfs_*()
+untouched" to "extracting pre_vfs_*() and making them accessible from
+security/tomoyo/ directory"? If you prefer copying, I'd like to copy them and
+remove pre_vfs_*() in the next patch.
 
-The GPL makes this explicit in section 6, "Each time you redistribute the
-Program (or any work based on the Program), the recipient automatically
-receives a license from the
-original licensor to copy, distribute or modify the Program subject to these
-terms and conditions. You may not impose any further restrictions on the
-recipients' exercise of the rights granted herein."
-
-The BSD license does not make this explicit, but there is no other legal way
-it could work. The BSD license, of course, permits you to impose further
-restrictions on the recipients' exercise of rights to the modifications you
-made while the GPL does not.
-
-DS
-
-
+Regards.
