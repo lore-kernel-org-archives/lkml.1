@@ -1,91 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760726AbYEAUJb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764981AbYEAUKj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760726AbYEAUJb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 May 2008 16:09:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760684AbYEAUJI
+	id S1764981AbYEAUKj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 May 2008 16:10:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758575AbYEAUKa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 May 2008 16:09:08 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:52248 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760037AbYEAUJG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 May 2008 16:09:06 -0400
-Date: Thu, 1 May 2008 13:07:54 -0700
-From: Joel Becker <Joel.Becker@oracle.com>
-To: Al Viro <viro@ZenIV.linux.org.uk>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andrew Morton <akpm@linux-foundation.org>, Willy Tarreau <w@1wt.eu>,
-       David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       Jiri Slaby <jirislaby@gmail.com>
-Subject: Re: Slow DOWN, please!!!
-Message-ID: <20080501200754.GD19731@mail.oracle.com>
-Mail-Followup-To: Al Viro <viro@ZenIV.linux.org.uk>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	"Rafael J. Wysocki" <rjw@sisk.pl>,
-	Andrew Morton <akpm@linux-foundation.org>, Willy Tarreau <w@1wt.eu>,
-	David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-	Jiri Slaby <jirislaby@gmail.com>
-References: <20080429.190352.137408408.davem@davemloft.net> <200805011259.47343.rjw@sisk.pl> <alpine.LFD.1.10.0805010816340.5994@woody.linux-foundation.org> <200805011909.40203.rjw@sisk.pl> <alpine.LFD.1.10.0805011022370.5994@woody.linux-foundation.org> <20080501181157.GB5882@ZenIV.linux.org.uk> <alpine.LFD.1.10.0805011116060.5994@woody.linux-foundation.org> <20080501193714.GC5882@ZenIV.linux.org.uk>
+	Thu, 1 May 2008 16:10:30 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:54610 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750903AbYEAUK2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 May 2008 16:10:28 -0400
+Message-ID: <481A23AB.1020302@suse.com>
+Date: Thu, 01 May 2008 16:10:19 -0400
+From: Jeff Mahoney <jeffm@suse.com>
+Organization: SUSE Labs, Novell, Inc
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080501193714.GC5882@ZenIV.linux.org.uk>
-X-Burt-Line: Trees are cool.
-X-Red-Smith: Ninety feet between bases is perhaps as close as man has ever
-	come to perfection.
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+To: Tim Gardner <tim.gardner@canonical.com>
+Cc: Chris Mason <chris.mason@oracle.com>, jeffschroeder@computer.org,
+       linux-fsdevel@vger.kernel.org, kernel-team@lists.ubuntu.com,
+       linux-kernel@vger.kernel.org, linux-btrfs@vger.kernel.org,
+       John Johansen <jjohansen@suse.de>
+Subject: Re: Btrfs v0.14 Released
+References: <200804291601.32945.chris.mason@oracle.com> <c24352ca0805010939q31f743aev17cc7f98d2ad0c71@mail.gmail.com> <481A14BA.9090305@canonical.com> <200805011517.55698.chris.mason@oracle.com> <481A1BB9.8050109@canonical.com>
+In-Reply-To: <481A1BB9.8050109@canonical.com>
+X-Enigmail-Version: 0.95.2
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 01, 2008 at 08:37:14PM +0100, Al Viro wrote:
-> 	* one needs to understand enough of the area or know where/how
-> to get the information needed for that.  I've got some experience with
-> the latter and I suspect that most of the folks who do active reviews
-> have their own set of tricks for getting into the unfamiliar area fast.
-> Moreover, having such set of tricks is probably _the_ thing that makes
-> us able to do that kind of work.
-> 	Sharing such (i.e. "here's how one wades through unfamiliar
-> area and gets a sense of what's going on there; here's what one looks
-> out for; here's how to deal with data structures; here are the signs
-> of problematic lifetime logics; here's how one formulates hypothesis
-> about refcounting rules; here's how one verifies such and looks for
-> possible bugs in that area; etc.) is a Good Idea(tm).
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-<snip>
+Tim Gardner wrote:
+> Chris Mason wrote:
+>> On Thursday 01 May 2008, Tim Gardner wrote:
+>>
+>> [ btrfs oops on ubuntu ]
+>>
+>>>>>  This is because ubuntu kernels ship with apparmor, you'll need this
+>>>>> patch:
+>>>>>
+>>>>>  If there is a #ifdef IM_A_UBUNTU_KERNEL I can use, I'll do it.  Jeff
+>>>>> Mahoney has a similar patch for SUSE that I've been meaning to merge,
+>>>>> but I wanted to lookup some way to check for ubuntu as well.
+>>>>>
+>>>>>  -chris
+>>>>>
+>>>>>  diff -r e7da2489b19b file.c
+>>>>>  --- a/file.c    Wed Apr 30 13:59:35 2008 -0400
+>>>>>  +++ b/file.c    Thu May 01 12:25:11 2008 -0400
+>>>>>  @@ -852,7 +852,7 @@ static ssize_t btrfs_file_write(struct f
+>>>>>                 goto out_nolock;
+>>>>>         if (count == 0)
+>>>>>                 goto out_nolock;
+>>>>>  -       err = remove_suid(fdentry(file));
+>>>>>  +       err = remove_suid(&file->f_path);
+>>>>>         if (err)
+>>>>>                 goto out_nolock;
+>>>>>         file_update_time(file);
+>>> Couldn't you #ifdef based on CONFIG_SECURITY_APPARMOR ? This ought to
+>>> work for Hardy. However the next development kernel (Intrepid) does not
+>>> have the APPARMOR patches, so just knowing that its an UBUNTU kernel is
+>>> not specific enough.
+>> I've been assuming the apparmor patches change remove_suid even when they are 
+>> not enabled in the config.
+>>
+>> -chris
+>>
+> 
+> Lets get Kees involved. He developed the patch set for Hardy. I would
+> hope that if CONFIG_SECURITY_APPARMOR=n then the source would default to
+> its normal state.
 
-> 	FWIW, I'm trying to do that - right now I'm flipping between
-> wading through Cthulhu-damned fs/locks.c and its friends and getting
-> the notes I've got from the last month work into edible form (which
-> includes translation into something that resembles normal English,
-> among other things - more than half of that is in... well, let's call
-> it idiom-rich Russian).
+remove_suid() isn't the only change AppArmor makes to the VFS interface.
+It's pretty invasive and requires that dentries are passed with a
+companion vfsmount in most cases. Putting #ifdefs around all that code
+would make the problem worse, not better.
 
-	I think you've just nailed one of the tricks right there.  A
-long time ago, I just sat down and wrote up a "how the locking works in
-the vfs" document for myself and others.  Wrote up the structures, what
-each member is for, where the structure appears and disappears, and all
-the call chains for all of the locks.  When I was done, I had a pretty
-good idea of how everything interacted.
-	I think this is a great trick for ramping up on a section of the
-code - documentation is good, but you understand self-written
-documentation better.
+- -Jeff
 
-Joel
+- --
+Jeff Mahoney
+SUSE Labs
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.4-svn0 (GNU/Linux)
+Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
 
--- 
-
-Life's Little Instruction Book #452
-
-	"Never compromise your integrity."
-
-Joel Becker
-Principal Software Developer
-Oracle
-E-mail: joel.becker@oracle.com
-Phone: (650) 506-8127
+iD8DBQFIGiOrLPWxlyuTD7IRAh3jAKCFCrBa30G5WDwmJHI+Yb4fNAfu2QCfTUmq
+Q6Sf0MVug2X0ywRcSrGi4eY=
+=QwF9
+-----END PGP SIGNATURE-----
