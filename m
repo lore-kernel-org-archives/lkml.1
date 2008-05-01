@@ -1,57 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760234AbYEAMmj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757892AbYEAMnH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760234AbYEAMmj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 May 2008 08:42:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754506AbYEAMmb
+	id S1757892AbYEAMnH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 May 2008 08:43:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756627AbYEAMmz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 May 2008 08:42:31 -0400
-Received: from gw-colo-pa.panasas.com ([66.238.117.130]:17764 "EHLO
-	cassoulet.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754116AbYEAMma (ORCPT
+	Thu, 1 May 2008 08:42:55 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:53002 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753543AbYEAMmy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 May 2008 08:42:30 -0400
-Message-ID: <4819BAA6.9030105@panasas.com>
-Date: Thu, 01 May 2008 15:42:14 +0300
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
-MIME-Version: 1.0
-To: Al Viro <viro@ZenIV.linux.org.uk>
-CC: Harvey Harrison <harvey.harrison@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [PATCH 09/10] misc: fix returning void-valued expression	warnings
-References: <1209593024.24729.119.camel@brick> <4819ACF6.9000403@panasas.com> <20080501120016.GV5882@ZenIV.linux.org.uk>
-In-Reply-To: <20080501120016.GV5882@ZenIV.linux.org.uk>
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 1 May 2008 08:42:54 -0400
+Subject: Re: RFC: starting a kernel-testers group for newbies
+From: David Woodhouse <dwmw2@infradead.org>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Adrian Bunk <bunk@kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, davem@davemloft.net,
+       linux-kernel@vger.kernel.org, jirislaby@gmail.com,
+       Steven Rostedt <rostedt@goodmis.org>
+In-Reply-To: <20080430071526.1bce202c@infradead.org>
+References: <20080429.190352.137408408.davem@davemloft.net>
+	 <200804302136.58005.rjw@sisk.pl>
+	 <20080430131537.1f7a0914.akpm@linux-foundation.org>
+	 <alpine.LFD.1.10.0804301325260.2980@woody.linux-foundation.org>
+	 <20080501003125.GM29330@cs181133002.pp.htv.fi>
+	 <20080430000338.50548884@infradead.org>
+	 <20080501011346.522f9846.akpm@linux-foundation.org>
+	 <20080430071526.1bce202c@infradead.org>
+Content-Type: text/plain
+Date: Thu, 01 May 2008 13:42:44 +0100
+Message-Id: <1209645764.25560.547.camel@pmac.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-1.fc9) 
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 01 May 2008 12:42:17.0436 (UTC) FILETIME=[CA1561C0:01C8AB88]
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 01 2008 at 15:00 +0300, Al Viro <viro@ZenIV.linux.org.uk> wrote:
-> On Thu, May 01, 2008 at 02:43:50PM +0300, Boaz Harrosh wrote:
-> 
->> I don't know who invented sparse, but I like this form of return.
->> 1 - It saves me the curly brackets and extra return line. But mainly
->> 2 - It is a programing statement that says: "Me here I'm an equivalent 
->>   to that other call". So if in the future that inner function starts
->>   to return, say, an error value, with the first style the compiler will
->>   error. But with the second style the new error return will be silently
->>   ignored. So these are not equivalent replacements. The former is a much
->>   stronger bond between the caller and the callie.
-> 
-> 3.  6.8.6.4(1): A return statement with an expression shall not appear in
-> a function whose return type is void.
-> 
+On Wed, 2008-04-30 at 07:15 -0700, Arjan van de Ven wrote:
+> Maybe that's a "boggle" for you; but for me that's symptomatic of
+> where we are today: We don't make (effective) prioritization
+> decisions. Such decisions are hard, because it effectively means
+> telling people "I'm sorry but your bug is not yet important". 
 
-Please forgive my ignorance, where is this quote from?
+It's not that clear-cut, either. Something which manifests itself as a
+build failure or an immediate test failure on m68k alone, might actually
+turn out to cause subtle data corruption on other platforms.
 
-> Write in C, please.
+You can't always know that it isn't important, just because it only
+shows up in some esoteric circumstances. You only really know how
+important it was _after_ you've fixed it.
 
-I have used this style for ages. I thought it is C, and the compiler never
-complained. You must agree that the two statements are not equivalent. Is it
-a bad style? I saw it's merits, perhaps it's just me.
+That obviously doesn't help us to prioritise.
 
-Boaz
+-- 
+dwmw2
+
