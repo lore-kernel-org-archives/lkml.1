@@ -1,63 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932136AbYEAAY2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757108AbYEAAYr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932136AbYEAAY2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Apr 2008 20:24:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754936AbYEAAYT
+	id S1757108AbYEAAYr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Apr 2008 20:24:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932481AbYEAAYc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Apr 2008 20:24:19 -0400
-Received: from an-out-0708.google.com ([209.85.132.242]:63354 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751522AbYEAAYS (ORCPT
+	Wed, 30 Apr 2008 20:24:32 -0400
+Received: from simmts12-qfe0.srvr.bell.ca ([206.47.199.141]:41704 "EHLO
+	simmts12-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932365AbYEAAYa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Apr 2008 20:24:18 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=aOlDInNknojKkVhjGEbtiGhaBd+Yg4h9+DlvHsxS7cIiKfNEjxuyPJQp2cz7syFYYgwR21Gt3nyRDwh7f2oWct9WNpEC/wbCnZDsQQX5YVDfKO9Aqcn8vzg2lhjF+Bntj7PxClosb+5BJ7wejUygjNCvd7UmolhWV2Th1fi2lZA=
-Message-ID: <dd18b0c30804301724h2be338bfydba320b719190972@mail.gmail.com>
-Date: Thu, 1 May 2008 00:24:13 +0000
-From: "Justin Mattock" <justinmattock@gmail.com>
-To: "Linus Torvalds" <torvalds@linux-foundation.org>
-Subject: Re: ACPI vs proc_create_data() mismerge (was Re: proc_dir_entry 'info' already registered)
-Cc: "Alexey Dobriyan" <adobriyan@gmail.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <alpine.LFD.1.10.0804301706590.5947@woody.linux-foundation.org>
+	Wed, 30 Apr 2008 20:24:30 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AqEBALqqGEicIvo8/2dsb2JhbAAIimiibQ
+Message-ID: <48190DBB.9020102@gmail.com>
+Date: Wed, 30 Apr 2008 21:24:27 -0300
+From: Kevin Winchester <kjwinchester@gmail.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Arjan van de Ven <arjan@linux.intel.com>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: linux-next: WARNING: at kernel/panic.c:375 __stack_chk_test+0x50/0x54()
+References: <4819078C.9080405@gmail.com> <48190844.5080804@linux.intel.com>
+In-Reply-To: <48190844.5080804@linux.intel.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <dd18b0c30804301538o35d0caf0x4a7e1c503cae0d6b@mail.gmail.com>
-	 <20080501001002.GA4820@martell.zuzino.mipt.ru>
-	 <alpine.LFD.1.10.0804301706590.5947@woody.linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 1, 2008 at 12:07 AM, Linus Torvalds
-<torvalds@linux-foundation.org> wrote:
->
->
->  On Thu, 1 May 2008, Alexey Dobriyan wrote:
->  >
->
-> > acpi_device_dir() is NULL until all files are createst, so everyting is
->  > created in straight in /proc/ and creation code warns.
->
->  Ok, I tested this on a laptop, it works for me. Committed. Thanks again,
->
->                 Linus
->
+Arjan van de Ven wrote:
+> Kevin Winchester wrote:
+>> Hi Arjan,
+>>
+>> There doesn't seem to be an entry in MAINTAINERS for stack protector, 
+>> but your signoff was on the last stack protector related commit I could 
+>> find, so it's probably a good bet.
+>>
+>> I get the following in my dmesg after testing linux-next with the stack 
+>> protector turned on.  This is an x86-64 UP box if that helps.  It 
+>> appears to be related to the test for the feature (or perhaps that is 
+>> supposed to happen when the feature is tested, I'm not sure...).  Config 
+>> below.
+>>
+> 
+> the important question is: exactly what gcc are you using? (and if you use a distro gcc,
+> which distro)
+> 
+> second question would be, what does the following command give?
+> 
+> echo "int foo(void) { char X[200]; return 3; }" | $1 -S -xc -c -O0 -mcmodel=kernel -fstack-protector - -o -
+> 
+> (this is the command from scripts/gcc-x86_64-has-stack-protector.sh that the kernel uses to test at compiletime
+>   if you have stack protector support)
+
+Ubuntu Hardy Heron
+
+kevin@alekhine:~$ gcc --version
+gcc (GCC) 4.2.3 (Ubuntu 4.2.3-2ubuntu7)
+Copyright (C) 2007 Free Software Foundation, Inc.
+This is free software; see the source for copying conditions.  There is NO
+warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 
-Hello; I ran into a problem, for some reason with adding:
-acpi_device_dir(device) = device_dir;
-I received:
-acpi_video_device_aqdd_fs:   implicit declaration of function acpi_device
-lvalue required as left operand of assignment =  after these errors, as a test
-I went in and put /*acpi_device_dir(device); */ around that line then
-recompiled, compiling went o.k., then rebooting
-I'm not seeing any messages like before.
-regards;
+kevin@alekhine:~$ echo "int foo(void) { char X[200]; return 3; }" | $1 -S -xc -c -O0 -mcmodel=kernel -fstack-protector - -o -
+bash: -S: command not found
 
+I assume that $1 was supposed to be gcc, so how about:
+
+kevin@alekhine:~/linux/linux-2.6/scripts$ sh gcc-x86_64-has-stack-protector.sh gcc something
+something
+
+So I would assume that means I pass...
+
+Does that help at all?
 
 -- 
-Justin P. Mattock
+Kevin Winchester
+
+
+
+
