@@ -1,47 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760432AbYEAMv3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760657AbYEAMwP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760432AbYEAMv3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 May 2008 08:51:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756586AbYEAMvT
+	id S1760657AbYEAMwP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 May 2008 08:52:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756878AbYEAMv5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 May 2008 08:51:19 -0400
-Received: from mx1.ukfsn.org ([77.75.108.10]:43297 "EHLO mail.ukfsn.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753543AbYEAMvS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 May 2008 08:51:18 -0400
-Message-ID: <4819BCC4.8030504@dgreaves.com>
-Date: Thu, 01 May 2008 13:51:16 +0100
-From: David Greaves <david@dgreaves.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.12 (X11/20080406)
+	Thu, 1 May 2008 08:51:57 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:46629 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756429AbYEAMv4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 May 2008 08:51:56 -0400
+Date: Thu, 1 May 2008 13:51:43 +0100
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Boaz Harrosh <bharrosh@panasas.com>,
+       Harvey Harrison <harvey.harrison@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 09/10] misc: fix returning void-valued expression
+	warnings
+Message-ID: <20080501125143.GW5882@ZenIV.linux.org.uk>
+References: <1209593024.24729.119.camel@brick> <4819ACF6.9000403@panasas.com> <20080501120016.GV5882@ZenIV.linux.org.uk> <1209644226.16449.11.camel@lappy>
 MIME-Version: 1.0
-To: alex14641@yahoo.com
-CC: linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: Sharing disks amoung multiple software RAIDs
-References: <771640.4981.qm@web50209.mail.re2.yahoo.com>
-In-Reply-To: <771640.4981.qm@web50209.mail.re2.yahoo.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1209644226.16449.11.camel@lappy>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alex Davis wrote:
-> Is this a bad thing? I'm guessing that it is, but I want independent
-> confirmation before I spoke to someone I know who's doing this.
+On Thu, May 01, 2008 at 02:17:06PM +0200, Peter Zijlstra wrote:
+> > Write in C, please.
 > 
-> Thanks
-Depends what you're trying to do.
+> We use GNU99 all over the place, or are you going to clear up all the
+> statement expressions and such other fancy gnu extensions to the
+> language as well?
 
-It has the potential to increase i/o contention so it's not going to be a
-performance win. Many systems really don't need to worry about performance. But
-if you have 2x250 Gb drives and 1x500 Gb drive then your data is at less risk if
-you partition the 500Gb into 2x250Gb and then mirror each partition with a full
-250Gb disk. That would be a perfectly rational setup in many instances.
-
-Equally, md has a mechanism to share hot spares amongst multiple RAIDs - but I
-doubt that's what you meant.
-
-David
-
-
+Worthless ones - sure.  Statement expressions are not particulary
+nice one, but we can't avoid that shit (note that they are not even
+well-defined - you can easily make gcc fall over and die with those).
