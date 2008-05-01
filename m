@@ -1,127 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761249AbYEAF73@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761116AbYEAF67@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761249AbYEAF73 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 May 2008 01:59:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759607AbYEAF6d
+	id S1761116AbYEAF67 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 May 2008 01:58:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757689AbYEAF43
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 May 2008 01:58:33 -0400
-Received: from hera.kernel.org ([140.211.167.34]:48500 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759548AbYEAF63 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 May 2008 01:58:29 -0400
-From: Len Brown <lenb@kernel.org>
-Organization: Intel Open Source Technology Center
-To: Gabriel C <nix.or.die@googlemail.com>
-Subject: Re: Some sort corruption of my Thermal Subsystem after suspend to ram
-Date: Thu, 1 May 2008 01:57:58 -0400
-User-Agent: KMail/1.9.9
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-pm@lists.linux-foundation.org, pavel@suse.cz,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-References: <4818D9AB.3040402@googlemail.com>
-In-Reply-To: <4818D9AB.3040402@googlemail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200805010157.58607.lenb@kernel.org>
+	Thu, 1 May 2008 01:56:29 -0400
+Received: from ms1.nttdata.co.jp ([163.135.193.232]:43414 "EHLO
+	ms1.nttdata.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755599AbYEAF4H (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 May 2008 01:56:07 -0400
+Message-Id: <20080501055559.577648000@nttdata.co.jp>
+References: <20080501055405.024390000@nttdata.co.jp>
+User-Agent: quilt/0.45-1
+Date: Thu, 01 May 2008 14:54:12 +0900
+From: Toshiharu Harada <haradats@nttdata.co.jp>
+To: akpm@linux-foundation.org, chrisw@sous-sol.org, viro@ZenIV.linux.org.uk
+Cc: linux-security-module@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Kentaro Takeda <takedakn@nttdata.co.jp>,
+       Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+Subject: [TOMOYO #8 (2.6.25-mm1) 7/7] Kconfig and Makefile
+X-OriginalArrivalTime: 01 May 2008 05:56:01.0776 (UTC) FILETIME=[090ED700:01C8AB50]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The ICH9 apparently provides a pair of memory mapped on-die thermal sensors.
+Signed-off-by: Kentaro Takeda <takedakn@nttdata.co.jp>
+Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+---
+ security/Kconfig         |    1 +
+ security/Makefile        |    2 ++
+ security/tomoyo/Kconfig  |    9 +++++++++
+ security/tomoyo/Makefile |    1 +
+ 4 files changed, 13 insertions(+)
 
-The sensors basically shut off your hardware if it gets too hot.
+--- mm.orig/security/Kconfig
++++ mm/security/Kconfig
+@@ -124,6 +124,7 @@ config SECURITY_DEFAULT_MMAP_MIN_ADDR
+ 
+ source security/selinux/Kconfig
+ source security/smack/Kconfig
++source security/tomoyo/Kconfig
+ 
+ endmenu
+ 
+--- mm.orig/security/Makefile
++++ mm/security/Makefile
+@@ -5,6 +5,7 @@
+ obj-$(CONFIG_KEYS)			+= keys/
+ subdir-$(CONFIG_SECURITY_SELINUX)	+= selinux
+ subdir-$(CONFIG_SECURITY_SMACK)		+= smack
++subdir-$(CONFIG_SECURITY_TOMOYO)        += tomoyo
+ 
+ # if we don't select a security model, use the default capabilities
+ ifneq ($(CONFIG_SECURITY),y)
+@@ -16,6 +17,7 @@ obj-$(CONFIG_SECURITY)			+= security.o d
+ # Must precede capability.o in order to stack properly.
+ obj-$(CONFIG_SECURITY_SELINUX)		+= selinux/built-in.o
+ obj-$(CONFIG_SECURITY_SMACK)		+= commoncap.o smack/built-in.o
++obj-$(CONFIG_SECURITY_TOMOYO)		+= tomoyo/built-in.o
+ obj-$(CONFIG_SECURITY_CAPABILITIES)	+= commoncap.o capability.o
+ obj-$(CONFIG_SECURITY_ROOTPLUG)		+= commoncap.o root_plug.o
+ obj-$(CONFIG_CGROUP_DEVICE)		+= device_cgroup.o
+--- /dev/null
++++ mm/security/tomoyo/Kconfig
+@@ -0,0 +1,9 @@
++config SECURITY_TOMOYO
++	bool "TOMOYO Linux Support"
++	depends on SECURITY
++	default n
++	help
++	  This selects TOMOYO Linux, pathname-based access control.
++	  Required userspace tools and further information may be
++          found at <http://tomoyo.sourceforge.jp/>.
++	  If you are unsure how to answer this question, answer N.
+--- /dev/null
++++ mm/security/tomoyo/Makefile
+@@ -0,0 +1 @@
++obj-y = common.o realpath.o tomoyo.o domain.o file.o
 
-ICH9 exports the base address for the sensors via a PCI device -- D31:F6, aka Linux 00:1f.6
-
-I'm not aware of a native Linux device driver that talks to this device
-(nor can I think of a useful purpose for such a driver)
-So it seems what is in play here is any BIOS code that talks to this device,
-and Linux's standard PCI config space restore.
-
-My guess is that the BIOS is enabling the device on cold boot,
-but not enabling it after resume from S3.
-Is there a BIOS SETUP option that controls if the ICH9 thermal device is enabled or not?
-
--Len
-
-
-
-
-On Wednesday 30 April 2008, Gabriel C wrote:
-> Hi all,
-> 
-> I thought I've found all issue with that new box but I was wrong ;)
-> 
-> On an ASUS P5E-VM DO , 4G RAM , Q9300 CPU after suspend to ram Thermal 
-> Subsystem gets corrupted in some way.
-> 
-> I got some reboot , halt problems and was hunting the issue and noticed these problems only
-> occurred when I've suspend the box to ram , at least once.
-> 
-> I've tested 2.6.{24*,25,linus-git(before ACPI merge),x86-latest-git} and all got that problem.
-> 
-> Also on x86-latest-git I've tested with MTRR_SANITIZER on/off. It does not make any difference.
-> 
-> 
-> lspci output before s2r is :
-> 
-> ..
-> 
-> 
-> 00:1f.6 Signal processing controller [1180]: Intel Corporation 82801I (ICH9 Family) Thermal Subsystem [8086:2932] (rev 02)
->         Subsystem: ASUSTeK Computer Inc. Device [1043:8277]
->         Flags: fast devsel
->         Memory at fed08000 (64-bit, non-prefetchable) [size=4K]
->         Capabilities: [50] Power Management version 3                                                                                                       
-> 
-> ...
-> 
-> 
-> and after :
-> 
-> ...
-> 
-> 00:1f.6 Signal processing controller [1180]: Intel Corporation 82801I (ICH9 Family) Thermal Subsystem [8086:2932] (rev ff) (prog-if ff)
->         !!! Unknown header type 7f
-> 
-> ...
-> 
-> dmesg | grep 00:1f.6
-> [21520.103062] PM: Writing back config space on device 0000:00:1f.6 at offset f (was ffffffff, writing 300)
-> [21520.103066] PM: Writing back config space on device 0000:00:1f.6 at offset e (was ffffffff, writing 0)
-> [21520.103070] PM: Writing back config space on device 0000:00:1f.6 at offset d (was ffffffff, writing 50)
-> [21520.103074] PM: Writing back config space on device 0000:00:1f.6 at offset c (was ffffffff, writing 0)
-> [21520.103078] PM: Writing back config space on device 0000:00:1f.6 at offset b (was ffffffff, writing 82771043)
-> [21520.103083] PM: Writing back config space on device 0000:00:1f.6 at offset a (was ffffffff, writing 0)
-> [21520.103087] PM: Writing back config space on device 0000:00:1f.6 at offset 9 (was ffffffff, writing 0)
-> [21520.103091] PM: Writing back config space on device 0000:00:1f.6 at offset 8 (was ffffffff, writing 0)
-> [21520.103095] PM: Writing back config space on device 0000:00:1f.6 at offset 7 (was ffffffff, writing 0)
-> [21520.103099] PM: Writing back config space on device 0000:00:1f.6 at offset 6 (was ffffffff, writing 0)
-> [21520.103103] PM: Writing back config space on device 0000:00:1f.6 at offset 5 (was ffffffff, writing 0)
-> [21520.103107] PM: Writing back config space on device 0000:00:1f.6 at offset 4 (was ffffffff, writing fed08004)
-> [21520.103111] PM: Writing back config space on device 0000:00:1f.6 at offset 3 (was ffffffff, writing 0)
-> [21520.103115] PM: Writing back config space on device 0000:00:1f.6 at offset 2 (was ffffffff, writing 11800002)
-> [21520.103119] PM: Writing back config space on device 0000:00:1f.6 at offset 1 (was ffffffff, writing 100002)
-> [21520.103123] PM: Writing back config space on device 0000:00:1f.6 at offset 0 (was ffffffff, writing 29328086)
-> 
-> ..
-> 
-> 
-> Please let me know if you need my config , dmesg or any other informations.
-> 
-> 
-> Best Regards,
-> 
-> Gabriel C
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
-
+--
 
