@@ -1,60 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758046AbYEACBo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756923AbYEACHb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758046AbYEACBo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Apr 2008 22:01:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752585AbYEACBg
+	id S1756923AbYEACHb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Apr 2008 22:07:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753423AbYEACHV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Apr 2008 22:01:36 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:39403 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750875AbYEACBf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Apr 2008 22:01:35 -0400
-Date: Wed, 30 Apr 2008 19:01:12 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: David Miller <davem@davemloft.net>
-cc: rjw@sisk.pl, w@1wt.eu, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, jirislaby@gmail.com
-Subject: Re: Slow DOWN, please!!!
-In-Reply-To: <20080430.185142.219463829.davem@davemloft.net>
-Message-ID: <alpine.LFD.1.10.0804301855390.5994@woody.linux-foundation.org>
-References: <200805010242.36775.rjw@sisk.pl> <alpine.LFD.1.10.0804301811051.5994@woody.linux-foundation.org> <alpine.LFD.1.10.0804301831330.5994@woody.linux-foundation.org> <20080430.185142.219463829.davem@davemloft.net>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Wed, 30 Apr 2008 22:07:21 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:35387 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750875AbYEACHU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Apr 2008 22:07:20 -0400
+Date: Thu, 1 May 2008 04:06:45 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-kernel@vger.kernel.org,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Florian Fainelli <florian.fainelli@telecomint.eu>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: Ingo, no more kconfig patches
+Message-ID: <20080501020645.GD27574@elte.hu>
+References: <20080430200340.GA13757@elte.hu> <20080430170125.ZZRA012@mailhub.coreip.homeip.net> <20080430211317.GA24633@elte.hu> <20080430230100.GK29330@cs181133002.pp.htv.fi> <20080501011703.GA27574@elte.hu> <20080501013739.GQ29330@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080501013739.GQ29330@cs181133002.pp.htv.fi>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+* Adrian Bunk <bunk@kernel.org> wrote:
 
-On Wed, 30 Apr 2008, David Miller wrote:
-> From: Linus Torvalds <torvalds@linux-foundation.org>
-> Date: Wed, 30 Apr 2008 18:40:39 -0700 (PDT)
+> The bug is in arch/x86/Kconfig .
 > 
-> > IOW, I argue that the high speed of merging very much is a big part of 
-> > what gives us quality in the end. It may result in bugs along the way, but 
-> > it also results in fixes, and lots of people looking at the result (and 
-> > looking at it in *context*, not just as a patch flying around).
-> 
-> This is a huge burdon to put on people.
-> 
-> The more broken stuff you merge, the more people are forced to track
-> these problems down so that they can get their own work done.
+> Caused by commit 4cf31841762954ad2868156ccba94d798a16630f (x86: 
+> mach-rdc321x Kconfig fix).
 
-I'm not saying we should merge crap.
+ah, indeed - Florian Cc:-ed. Preliminary quick hack below.
 
-You can take any argument too far, and clearly it doesn't mean that we 
-should just accept *anything*, because it will magically be gilded by its 
-mere inclusion into the kernel. No, I'm not going to argue that.
+	Ingo
 
-But I do want to argue against the notion that the only way to raise 
-quality is to do it before it gets merged. It's often better to merge 
-early, and fix the issues the merge brings up early too!
+--------------->
+Subject: rdc: leds hack
+From: Ingo Molnar <mingo@elte.hu>
+Date: Thu May 01 03:46:22 CEST 2008
 
-Release early, release often. That was the watch-word early in Linux 
-kernel development, and there was a reason for it. And it _worked_. Did it 
-mean "release crap, release anything"? No. But it did mean that things got 
-lots more exposure - even if those "things" were sometimes bugs.
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ arch/x86/Kconfig |    1 +
+ 1 file changed, 1 insertion(+)
 
-			Linus
+Index: linux/arch/x86/Kconfig
+===================================================================
+--- linux.orig/arch/x86/Kconfig
++++ linux/arch/x86/Kconfig
+@@ -322,6 +322,7 @@ config X86_RDC321X
+ 	select GENERIC_GPIO
+ 	select LEDS_CLASS
+ 	select LEDS_GPIO
++	select NEW_LEDS
+ 	help
+ 	  This option is needed for RDC R-321x system-on-chip, also known
+ 	  as R-8610-(G).
