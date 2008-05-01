@@ -1,63 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764844AbYEAATi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761102AbYEAAXt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764844AbYEAATi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Apr 2008 20:19:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754683AbYEAATa
+	id S1761102AbYEAAXt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Apr 2008 20:23:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754936AbYEAAXk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Apr 2008 20:19:30 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:28291 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752837AbYEAAT3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Apr 2008 20:19:29 -0400
-Date: Wed, 30 Apr 2008 17:18:18 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Cc: akpm <akpm@linux-foundation.org>
-Subject: [PATCH] PNP: fix missing kernel-doc notation
-Message-Id: <20080430171818.65513bcf.randy.dunlap@oracle.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Wed, 30 Apr 2008 20:23:40 -0400
+Received: from vps1.tull.net ([66.180.172.116]:49730 "HELO vps1.tull.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751522AbYEAAXk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Apr 2008 20:23:40 -0400
+X-Spam-Check-By: mail.local.tull.net
+Date: Thu, 1 May 2008 10:23:29 +1000
+From: Nick Andrew <nick@nick-andrew.net>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Jason Baron <jbaron@redhat.com>, linux-kernel@vger.kernel.org,
+       Greg KH <greg@kroah.com>
+Subject: Re: [patch 0/3] dynamic_printk: new feature
+Message-ID: <20080501002329.GD3914@tull.net>
+References: <20080429183935.GA8717@redhat.com> <20080430124506.0dd2a473.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080430124506.0dd2a473.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-SMTPD: qpsmtpd/0.26, http://develooper.com/code/qpsmtpd/
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+On Wed, Apr 30, 2008 at 12:45:06PM -0700, Andrew Morton wrote:
+> > Add the ability to dynamically enable/disable pr_debug()/dev_dbg() in the
+> > kernel.
 
-Fix missing PNP kernel-doc notation:
+Yes, that's the kind of thing I've been thinking about adding myself.
 
-Warning(linux-2.6.25-git16//drivers/pnp/manager.c:261): No description found for parameter 'dev'
-Warning(linux-2.6.25-git16//drivers/pnp/manager.c:292): No description found for parameter 'dev'
+> > echo "add module_name" > /sys/kernel/debug/dynamic_printk/modules
+> > echo "remove module_name" > /sys/kernel/debug/dynamic_printk/modules
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- drivers/pnp/manager.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+How about not just debug messages but setting a loglevel for each module
+(and/or subsystem?); kernel messages emitted beneath the loglevel value
+to be discarded.
 
---- linux-2.6.25-git16.orig/drivers/pnp/manager.c
-+++ linux-2.6.25-git16/drivers/pnp/manager.c
-@@ -255,7 +255,7 @@ void pnp_init_resource(struct resource *
- 
- /**
-  * pnp_init_resources - Resets a resource table to default values.
-- * @table: pointer to the desired resource table
-+ * @dev: pointer to the owning &pnp_dev
-  */
- void pnp_init_resources(struct pnp_dev *dev)
- {
-@@ -286,7 +286,7 @@ void pnp_init_resources(struct pnp_dev *
- 
- /**
-  * pnp_clean_resources - clears resources that were not manually set
-- * @res: the resources to clean
-+ * @dev: &pnp_dev for the resources to clean
-  */
- static void pnp_clean_resource_table(struct pnp_dev *dev)
- {
+> We're now in the situation where numerous different subsystems have
+> implemented private mechnisms for tuning their printk verbosity levels.
+
+And it grows over time; just in the last week a patch came through to
+V4L ...
+
+	From: Andy Walls <awalls@radix.net>
+
+	Replace the unconditional printk() messages with printk() messages that are
+	enabled/disabled by a "debug" module parameter.
+
+	[...]
+	+#define dprintk(level, fmt, arg...)
+
+> Have you considered the feasibility of ploddingly converting each of those
+> drivers, one at a time over to the new infrastructure?  Because that's what
+> we should do, I'm afraid.
+
+I can help with that.
+
+Nick.
+-- 
+PGP Key ID = 0x418487E7                      http://www.nick-andrew.net/
+PGP Key fingerprint = B3ED 6894 8E49 1770 C24A  67E3 6266 6EB9 4184 87E7
