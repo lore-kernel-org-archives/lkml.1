@@ -1,120 +1,410 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758090AbYEAGE5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757827AbYEAGMW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758090AbYEAGE5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 May 2008 02:04:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753548AbYEAGEq
+	id S1757827AbYEAGMW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 May 2008 02:12:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753548AbYEAGML
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 May 2008 02:04:46 -0400
-Received: from ozlabs.org ([203.10.76.45]:51586 "EHLO ozlabs.org"
+	Thu, 1 May 2008 02:12:11 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:46805 "EHLO pasmtpA.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751009AbYEAGEp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 May 2008 02:04:45 -0400
-MIME-Version: 1.0
+	id S1751009AbYEAGMJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 May 2008 02:12:09 -0400
+Date: Thu, 1 May 2008 08:12:40 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Roman Zippel <zippel@linux-m68k.org>
+Cc: linux-kbuild <linux-kbuild@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Dave Jones <davej@codemonkey.org.uk>,
+       Roland McGrath <roland@redhat.com>,
+       Andres Salomon <dilinger@queued.net>
+Subject: Re: Additional kconfig targets (cloneconfig, nonint_oldconfig etc)
+Message-ID: <20080501061240.GA13544@uranus.ravnborg.org>
+References: <20080429183531.GB19652@uranus.ravnborg.org> <200805010640.33973.zippel@linux-m68k.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18457.23905.318625.552927@cargo.ozlabs.ibm.com>
-Date: Thu, 1 May 2008 16:04:17 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: linuxppc-dev@ozlabs.org
-CC: linux-kernel@vger.kernel.org
-Subject: [POWERPC] Bolt in SLB entry for kernel stack on secondary cpus
-X-Mailer: VM 7.19 under Emacs 22.1.1
+Content-Disposition: inline
+In-Reply-To: <200805010640.33973.zippel@linux-m68k.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This fixes a regression reported by Kamalesh Bulabel where a POWER4
-machine would crash because of an SLB miss at a point where the SLB
-miss exception was unrecoverable.  This regression is tracked at:
+On Thu, May 01, 2008 at 06:40:29AM +0200, Roman Zippel wrote:
+> Hi,
+> 
+> On Tuesday 29. April 2008, Sam Ravnborg wrote:
+> 
+> > Recently there has been request for a number of new
+> > kconfig related targets.
+> >
+> > In general it boils down to the following:
+> >
+> > We need to be flexible in what configuration
+> > we start out from and how we apply it.
+> >
+> > We need to be able to apply it in following ways:
+> > 1) automated - select defaults for all new symbols
+> >    => It is used for "make defconfig, make *_defconfig" today
+> >
+> > 2) interactive - asking user for all new symbols
+> >    and error out if stdin is redirected
+> >
+> > 3) list unknown - list all new symbols and do not
+> >    create a new config
+> 
+> A general comment about the intendend design:
+> conf.c is primarily meant as interactive tool. defconfig isn't exactly 
+> interactive, but is included for historical reasons as it produces the same 
+> output.
+> The patch I've seen for the last point put it into conf.c, which is the wrong 
+> place for it. For this sort of thing we should create a small query tool, 
+> which then can export all sorts of information.
 
-http://bugzilla.kernel.org/show_bug.cgi?id=10082
+Hi Roman.
+This is work in progress...
+I have created a new frontend: aconf.c that is a trimmed down version
+of conf.c. aconf.c are intended to take care of all the automated configurations
+such as: all*config, randconfig and the automated defconfig
 
-SLB misses at such points shouldn't happen because the kernel stack is
-the only memory accessed other than things in the first segment of the
-linear mapping (which is mapped at all times by entry 0 of the SLB).
-The context switch code ensures that SLB entry 2 covers the kernel
-stack, if it is not already covered by entry 0.  None of entries 0
-to 2 are ever replaced by the SLB miss handler.
+In this way we have conf.c for all the interactive targets and aconf for
+all the automated targets.
 
-Where this went wrong is that the context switch code assumes it
-doesn't have to write to SLB entry 2 if the new kernel stack is in the
-same segment as the old kernel stack, since entry 2 should already be
-correct.  However, when we start up a secondary cpu, it calls
-slb_initialize, which doesn't set up entry 2.  This is correct for
-the boot cpu, where we will be using a stack in the kernel BSS at this
-point (i.e. init_thread_union), but not necessarily for secondary
-cpus, whose initial stack can be allocated anywhere.  This doesn't
-cause any immediate problem since the SLB miss handler will just
-create an SLB entry somewhere else to cover the initial stack.
+This is not exactly what you suggest but I thik a step in the right direction.
 
-In fact it's possible for the cpu to go quite a long time without SLB
-entry 2 being valid.  Eventually, though, the entry created by the SLB
-miss handler will get overwritten by some other entry, and if the next
-access to the stack is at an unrecoverable point, we get the crash.
+Comments?
 
-This fixes the problem by making slb_initialize create a suitable
-entry for the kernel stack, if we are on a secondary cpu and the stack
-isn't covered by SLB entry 0.  This requires initializing the
-get_paca()->kstack field earlier, so I do that in smp_create_idle
-where the current field is initialized.  This also abstracts a bit of
-the computation that mk_esid_data in slb.c does so that it can be used
-in slb_initialize.
+	Sam
 
-Signed-off-by: Paul Mackerras <paulus@samba.org>
----
-diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
-index be35ffa..1457aa0 100644
---- a/arch/powerpc/kernel/smp.c
-+++ b/arch/powerpc/kernel/smp.c
-@@ -386,6 +386,8 @@ static void __init smp_create_idle(unsigned int cpu)
- 		panic("failed fork for CPU %u: %li", cpu, PTR_ERR(p));
- #ifdef CONFIG_PPC64
- 	paca[cpu].__current = p;
-+	paca[cpu].kstack = (unsigned long) task_thread_info(p)
-+		+ THREAD_SIZE - STACK_FRAME_OVERHEAD;
- #endif
- 	current_set[cpu] = task_thread_info(p);
- 	task_thread_info(p)->cpu = cpu;
-diff --git a/arch/powerpc/mm/slb.c b/arch/powerpc/mm/slb.c
-index 906daed..b2c43d0 100644
---- a/arch/powerpc/mm/slb.c
-+++ b/arch/powerpc/mm/slb.c
-@@ -44,13 +44,13 @@ static void slb_allocate(unsigned long ea)
- 	slb_allocate_realmode(ea);
- }
- 
-+#define slb_esid_mask(ssize)	\
-+	(((ssize) == MMU_SEGSIZE_256M)? ESID_MASK: ESID_MASK_1T)
-+
- static inline unsigned long mk_esid_data(unsigned long ea, int ssize,
- 					 unsigned long slot)
- {
--	unsigned long mask;
--
--	mask = (ssize == MMU_SEGSIZE_256M)? ESID_MASK: ESID_MASK_1T;
--	return (ea & mask) | SLB_ESID_V | slot;
-+	return (ea & slb_esid_mask(ssize)) | SLB_ESID_V | slot;
- }
- 
- #define slb_vsid_shift(ssize)	\
-@@ -301,11 +301,16 @@ void slb_initialize(void)
- 
- 	create_shadowed_slbe(VMALLOC_START, mmu_kernel_ssize, vflags, 1);
- 
-+	/* For the boot cpu, we're running on the stack in init_thread_union,
-+	 * which is in the first segment of the linear mapping, and also
-+	 * get_paca()->kstack hasn't been initialized yet.
-+	 * For secondary cpus, we need to bolt the kernel stack entry now.
-+	 */
- 	slb_shadow_clear(2);
-+	if (raw_smp_processor_id() > 0 &&
-+	    (get_paca()->kstack & slb_esid_mask(mmu_kernel_ssize)) > PAGE_OFFSET)
-+		create_shadowed_slbe(get_paca()->kstack,
-+				     mmu_kernel_ssize, lflags, 2);
- 
--	/* We don't bolt the stack for the time being - we're in boot,
--	 * so the stack is in the bolted segment.  By the time it goes
--	 * elsewhere, we'll call _switch() which will bolt in the new
--	 * one. */
- 	asm volatile("isync":::"memory");
- }
+/*
+ * Copyright (C) 2002 Roman Zippel <zippel@linux-m68k.org>
+ * Copyright (C) 2008 Sam Ravnborg <sam@ravnborg.org>
+ * Released under the terms of the GNU GPL v2.0.
+ */
+
+/*
+ * Generate the automated configs
+ */
+
+#include <locale.h>
+#include <ctype.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+#include <unistd.h>
+#include <sys/stat.h>
+
+#define LKC_DIRECT_LINK
+#include "lkc.h"
+
+static void check_conf(struct menu *menu);
+static void conf(struct menu *menu);
+
+enum {
+	set_default,
+	set_yes,
+	set_mod,
+	set_no,
+	set_random
+} input_mode;
+
+static char *defconfig_file;
+
+static int conf_cnt;
+static struct menu *rootEntry;
+
+/* Set strig value - it this a nop as it looks like? */
+static void conf_string(struct menu *menu)
+{
+	struct symbol *sym = menu->sym;
+	const char *def;
+
+
+	if (!sym_is_changable(sym))
+		return;
+
+	if (sym_has_value(sym) && (input_mode != set_default))
+		return;
+
+	def = sym_get_string_value(sym);
+	if (def)
+		sym_set_string_value(sym, def);
+}
+
+static void conf_sym(struct menu *menu)
+{
+	struct symbol *sym = menu->sym;
+	int type;
+	tristate val;
+
+	if (!sym_is_changable(sym))
+		return;
+
+	if (sym_has_value(sym) && (input_mode != set_default))
+		return;
+
+	type = sym_get_type(sym);
+	switch (input_mode) {
+	case set_yes:
+		if (sym_tristate_within_range(sym, yes)) {
+			sym_set_tristate_value(sym, yes);
+			break;
+		}
+	/* fallthrough */
+	case set_mod:
+		if (type == S_TRISTATE) {
+			if (sym_tristate_within_range(sym, mod)) {
+				sym_set_tristate_value(sym, mod);
+				break;
+			}
+		} else if (sym_tristate_within_range(sym, yes)) {
+			sym_set_tristate_value(sym, yes);
+			break;
+		}
+	/* fallthrough */
+	case set_no:
+		if (sym_tristate_within_range(sym, no)) {
+			sym_set_tristate_value(sym, no);
+			break;
+		}
+	/* fallthrough */
+	case set_random:
+		 do {
+			val = (tristate)(rand() % 3);
+		} while (!sym_tristate_within_range(sym, val));
+		switch (val) {
+		case no:  sym_set_tristate_value(sym, no); break;
+		case mod: sym_set_tristate_value(sym, mod); break;
+		case yes: sym_set_tristate_value(sym, yes); break;
+		}
+		break;
+	/* silence gcc warning */
+	case set_default:
+		sym_set_tristate_value(sym, sym_get_tristate_value(sym));
+		break;
+	}
+}
+
+static void conf_choice(struct menu *menu)
+{
+	struct symbol *sym, *def_sym;
+	struct menu *child;
+	int type;
+	bool is_new;
+	int cnt, def;
+
+	sym = menu->sym;
+	type = sym_get_type(sym);
+	is_new = !sym_has_value(sym);
+	if (sym_is_changable(sym)) {
+		conf_sym(menu);
+		sym_calc_value(sym);
+	}
+	if (sym_get_tristate_value(sym) != yes)
+		return;
+	def_sym = sym_get_choice_value(sym);
+	cnt = def = 0;
+	for (child = menu->list; child; child = child->next) {
+		if (!child->sym || !menu_is_visible(child))
+			continue;
+		cnt++;
+		if (child->sym == def_sym)
+			def = cnt;
+	}
+	if (cnt == 1)
+		goto conf_childs;
+
+	switch (input_mode) {
+	case set_random:
+		if (is_new)
+			def = (rand() % cnt) + 1;
+	/* fallthrough */
+	case set_default:
+	case set_yes:
+	case set_mod:
+	case set_no:
+		cnt = def;
+		break;
+	}
+
+conf_childs:
+	for (child = menu->list; child; child = child->next) {
+		if (!child->sym || !menu_is_visible(child))
+			continue;
+		if (!--cnt)
+			break;
+	}
+	sym_set_choice_value(sym, child->sym);
+	for (child = child->list; child; child = child->next)
+		conf(child);
+}
+
+
+static void conf(struct menu *menu)
+{
+	struct symbol *sym;
+	struct property *prop;
+	struct menu *child;
+
+	if (!menu_is_visible(menu))
+		return;
+
+	sym = menu->sym;
+	//if (sym)
+	//	printf("sym:%s\n", sym->name);
+	prop = menu->prompt;
+	if (prop && prop->type == P_MENU) {
+		if (menu != rootEntry) {
+			check_conf(menu);
+			return;
+		}
+	}
+
+	if (!sym)
+		goto conf_childs;
+
+	if (sym_is_choice(sym)) {
+		conf_choice(menu);
+		if (sym->curr.tri != mod)
+			return;
+		goto conf_childs;
+	}
+
+	switch (sym->type) {
+	case S_INT:
+	case S_HEX:
+	case S_STRING:
+		conf_string(menu);
+		break;
+	default:
+		conf_sym(menu);
+		break;
+	}
+
+conf_childs:
+	for (child = menu->list; child; child = child->next)
+		conf(child);
+}
+
+static void check_conf(struct menu *menu)
+{
+	struct symbol *sym;
+	struct menu *child;
+
+	if (!menu_is_visible(menu))
+		return;
+
+	sym = menu->sym;
+	if (sym && !sym_has_value(sym)) {
+		if (sym_is_changable(sym) ||
+		    (sym_is_choice(sym) && sym_get_tristate_value(sym) == yes)) {
+			conf_cnt++;
+			rootEntry = menu_get_parent_menu(menu);
+			conf(rootEntry);
+		}
+	}
+
+	for (child = menu->list; child; child = child->next)
+		check_conf(child);
+}
+
+int main(int ac, char **av)
+{
+	int opt;
+	const char *name;
+	struct stat tmpstat;
+
+	setlocale(LC_ALL, "");
+	bindtextdomain(PACKAGE, LOCALEDIR);
+	textdomain(PACKAGE);
+
+	while ((opt = getopt(ac, av, "dD:nmyrh")) != -1) {
+		switch (opt) {
+		case 'd':
+			input_mode = set_default;
+			break;
+		case 'D':
+			input_mode = set_default;
+			defconfig_file = optarg;
+			break;
+		case 'n':
+			input_mode = set_no;
+			break;
+		case 'm':
+			input_mode = set_mod;
+			break;
+		case 'y':
+			input_mode = set_yes;
+			break;
+		case 'r':
+			input_mode = set_random;
+			srand(time(NULL));
+			break;
+		case 'h':
+			printf(_("See README for usage info\n"));
+			exit(0);
+			break;
+		default:
+			fprintf(stderr, _("See README for usage info\n"));
+			exit(1);
+		}
+	}
+	if (ac == optind) {
+		printf(_("%s: Kconfig file missing\n"), av[0]);
+		exit(1);
+	}
+	name = av[optind];
+	conf_parse(name);
+	//zconfdump(stdout);
+	switch (input_mode) {
+	case set_default:
+		if (!defconfig_file)
+			defconfig_file = conf_get_default_confname();
+		if (conf_read(defconfig_file)) {
+			printf(_("***\n"
+				"*** Can't find default configuration \"%s\"!\n"
+				"***\n"), defconfig_file);
+			exit(1);
+		}
+		break;
+	case set_no:
+	case set_mod:
+	case set_yes:
+	case set_random:
+		name = getenv("KCONFIG_ALLCONFIG");
+		if (name && !stat(name, &tmpstat)) {
+			conf_read_simple(name, S_DEF_USER);
+			break;
+		}
+		switch (input_mode) {
+		case set_no:	 name = "allno.config"; break;
+		case set_mod:	 name = "allmod.config"; break;
+		case set_yes:	 name = "allyes.config"; break;
+		case set_random: name = "allrandom.config"; break;
+		default: break;
+		}
+		if (!stat(name, &tmpstat))
+			conf_read_simple(name, S_DEF_USER);
+		else if (!stat("all.config", &tmpstat))
+			conf_read_simple("all.config", S_DEF_USER);
+		break;
+	default:
+		break;
+	}
+
+	do {
+		conf_cnt = 0;
+		check_conf(&rootmenu);
+	} while (conf_cnt);
+	if (conf_write(NULL)) {
+		fprintf(stderr, _("\n*** Error during writing of the kernel configuration.\n\n"));
+		return 1;
+	}
+
+	if (conf_write_autoconf()) {
+		fprintf(stderr, _("\n*** Error during writing of the kernel configuration.\n\n"));
+		return 1;
+	}
+
+	return 0;
+}
