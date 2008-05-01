@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765084AbYEAUvf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760037AbYEAUvy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765084AbYEAUvf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 May 2008 16:51:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760133AbYEAUuv
+	id S1760037AbYEAUvy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 May 2008 16:51:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760247AbYEAUuw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 May 2008 16:50:51 -0400
-Received: from wa-out-1112.google.com ([209.85.146.181]:29401 "EHLO
+	Thu, 1 May 2008 16:50:52 -0400
+Received: from wa-out-1112.google.com ([209.85.146.182]:29458 "EHLO
 	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759539AbYEAUuu (ORCPT
+	with ESMTP id S1760106AbYEAUuv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 May 2008 16:50:50 -0400
+	Thu, 1 May 2008 16:50:51 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=DrXLJIGnFOf/gFpgJ3jfY2eKAxdXBIM4+2iJYJnyvbCwI1poqLfEpkITU2w8z51M3TiScfG6MpDXveYdJ/hKj5chd04Nvy+jl7SAbaaqgdVsEiT1kBHbL0WdfaazYH8gQ8GIM7nYoPvcSeBMmSrzb23Vtj5cqoYmWTHORNUQxJg=
-Subject: [PATCH 3/4] cris: use the common ascii hex helpers
+        b=f3xp8wFx343eJQNh+UC/Ywi1jSpN8KMDEu88pOIRpV2uTW9LcA2+Wl6TNeOG8iGh12LagjA1ce/4b4jMMKf+swKl6Au9DeFN/eK0FY72TtwU3TESCaRI3v+CZhM7f+hFpXuf9JaxUcsMSoMyPl+PKuVRdFkQb+TS+tWc4bwqbws=
+Subject: [PATCH 4/4] kgdb: use the common ascii hex helpers
 From: Harvey Harrison <harvey.harrison@gmail.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: LKML <linux-kernel@vger.kernel.org>
 Content-Type: text/plain
-Date: Thu, 01 May 2008 13:51:08 -0700
-Message-Id: <1209675068.24729.167.camel@brick>
+Date: Thu, 01 May 2008 13:51:09 -0700
+Message-Id: <1209675069.24729.168.camel@brick>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
@@ -30,427 +30,122 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
 ---
- arch/cris/arch-v10/kernel/kgdb.c |  103 +++++++++++---------------------------
- arch/cris/arch-v32/kernel/kgdb.c |   91 +++++++++------------------------
- 2 files changed, 54 insertions(+), 140 deletions(-)
+ drivers/misc/kgdbts.c |    5 ++---
+ kernel/kgdb.c         |   36 +++++++++++-------------------------
+ 2 files changed, 13 insertions(+), 28 deletions(-)
 
-diff --git a/arch/cris/arch-v10/kernel/kgdb.c b/arch/cris/arch-v10/kernel/kgdb.c
-index a3ca551..a40581f 100644
---- a/arch/cris/arch-v10/kernel/kgdb.c
-+++ b/arch/cris/arch-v10/kernel/kgdb.c
-@@ -278,17 +278,6 @@ void putDebugChar (int val);
+diff --git a/drivers/misc/kgdbts.c b/drivers/misc/kgdbts.c
+index 30a1af8..03d3549 100644
+--- a/drivers/misc/kgdbts.c
++++ b/drivers/misc/kgdbts.c
+@@ -118,7 +118,6 @@
+ 	} while (0)
+ #define MAX_CONFIG_LEN		40
  
- void enableDebugIRQ (void);
- 
--/* Returns the character equivalent of a nibble, bit 7, 6, 5, and 4 of a byte,
--   represented by int x. */
--static char highhex (int x);
--
--/* Returns the character equivalent of a nibble, bit 3, 2, 1, and 0 of a byte,
--   represented by int x. */
--static char lowhex (int x);
--
--/* Returns the integer equivalent of a hexadecimal character. */
--static int hex (char ch);
--
- /* Convert the memory, pointed to by mem into hexadecimal representation.
-    Put the result in buf, and return a pointer to the last character
-    in buf (null). */
-@@ -356,9 +345,6 @@ extern unsigned char executing_task;
- /* Run-length encoding maximum length. Send 64 at most. */
- #define RUNLENMAX 64
- 
--/* Definition of all valid hexadecimal characters */
 -static const char hexchars[] = "0123456789abcdef";
--
- /* The inbound/outbound buffers used in packet I/O */
- static char remcomInBuffer[BUFMAX];
- static char remcomOutBuffer[BUFMAX];
-@@ -499,8 +485,8 @@ gdb_cris_strtol (const char *s, char **endptr, int base)
- 	char *sd;
- 	int x = 0;
- 	
--	for (s1 = (char*)s; (sd = gdb_cris_memchr(hexchars, *s1, base)) != NULL; ++s1)
--		x = x * base + (sd - hexchars);
-+	for (s1 = (char*)s; (sd = gdb_cris_memchr(hex_asc, *s1, base)) != NULL; ++s1)
-+		x = x * base + (sd - hex_asc);
-         
-         if (endptr)
-         {
-@@ -670,35 +656,6 @@ read_register (char regno, unsigned int *valptr)
- }
- 
- /********************************** Packet I/O ******************************/
--/* Returns the character equivalent of a nibble, bit 7, 6, 5, and 4 of a byte,
--   represented by int x. */
--static inline char
--highhex(int x)
--{
--	return hexchars[(x >> 4) & 0xf];
--}
--
--/* Returns the character equivalent of a nibble, bit 3, 2, 1, and 0 of a byte,
--   represented by int x. */
--static inline char
--lowhex(int x)
--{
--	return hexchars[x & 0xf];
--}
--
--/* Returns the integer equivalent of a hexadecimal character. */
--static int
--hex (char ch)
--{
--	if ((ch >= 'a') && (ch <= 'f'))
--		return (ch - 'a' + 10);
--	if ((ch >= '0') && (ch <= '9'))
--		return (ch - '0');
--	if ((ch >= 'A') && (ch <= 'F'))
--		return (ch - 'A' + 10);
--	return (-1);
--}
--
- /* Convert the memory, pointed to by mem into hexadecimal representation.
-    Put the result in buf, and return a pointer to the last character
-    in buf (null). */
-@@ -721,8 +678,8 @@ mem2hex(char *buf, unsigned char *mem, int count)
-                 /* Valid mem address. */
-                 for (i = 0; i < count; i++) {
-                         ch = *mem++;
--                        *buf++ = highhex (ch);
--                        *buf++ = lowhex (ch);
-+                        *buf++ = hex_asc_hi(ch);
-+                        *buf++ = hex_asc_lo(ch);
-                 }
-         }
-         
-@@ -740,8 +697,8 @@ hex2mem (unsigned char *mem, char *buf, int count)
- 	int i;
- 	unsigned char ch;
- 	for (i = 0; i < count; i++) {
--		ch = hex (*buf++) << 4;
--		ch = ch + hex (*buf++);
-+		ch = hex_to_int(*buf++) << 4;
-+		ch = ch + hex_to_int(*buf++);
- 		*mem++ = ch;
+ static struct kgdb_io kgdbts_io_ops;
+ static char get_buf[BUFMAX];
+ static int get_buf_cnt;
+@@ -618,8 +617,8 @@ static void fill_get_buf(char *buf)
+ 		count++;
  	}
- 	return (mem);
-@@ -800,8 +757,8 @@ getpacket (char *buffer)
- 		buffer[count] = '\0';
- 		
- 		if (ch == '#') {
--			xmitcsum = hex (getDebugChar ()) << 4;
--			xmitcsum += hex (getDebugChar ());
-+			xmitcsum = hex_to_int(getDebugChar()) << 4;
-+			xmitcsum += hex_to_int(getDebugChar());
- 			if (checksum != xmitcsum) {
- 				/* Wrong checksum */
- 				putDebugChar ('-');
-@@ -857,9 +814,9 @@ putpacket(char *buffer)
- 				src++;
- 			}
- 		}
--		putDebugChar ('#');
--		putDebugChar (highhex (checksum));
--		putDebugChar (lowhex (checksum));
-+		putDebugChar('#');
-+		putDebugChar(hex_asc_hi(checksum));
-+		putDebugChar(hex_asc_lo(checksum));
- 	} while(kgdb_started && (getDebugChar() != '+'));
+ 	strcat(get_buf, "#");
+-	get_buf[count + 2] = hexchars[checksum >> 4];
+-	get_buf[count + 3] = hexchars[checksum & 0xf];
++	get_buf[count + 2] = hex_asc_hi(checksum);
++	get_buf[count + 3] = hex_asc_lo(checksum);
+ 	get_buf[count + 4] = '\0';
+ 	v2printk("get%i: %s\n", ts.idx, get_buf);
  }
- 
-@@ -896,8 +853,8 @@ stub_is_stopped(int sigval)
- 	/* Send trap type (converted to signal) */
- 
- 	*ptr++ = 'T';	
--	*ptr++ = highhex (sigval);
--	*ptr++ = lowhex (sigval);
-+	*ptr++ = hex_asc_hi(sigval);
-+	*ptr++ = hex_asc_lo(sigval);
- 
- 	/* Send register contents. We probably only need to send the
- 	 * PC, frame pointer and stack pointer here. Other registers will be
-@@ -911,8 +868,8 @@ stub_is_stopped(int sigval)
-                 
- 		if (status == SUCCESS) {
-                         
--                        *ptr++ = highhex (regno);
--                        *ptr++ = lowhex (regno);
-+                        *ptr++ = hex_asc_hi(regno);
-+                        *ptr++ = hex_asc_lo(regno);
-                         *ptr++ = ':';
- 
-                         ptr = mem2hex(ptr, (unsigned char *)&reg_cont,
-@@ -937,8 +894,8 @@ stub_is_stopped(int sigval)
- 	/* Store thread:r...; with the executing task TID. */
- 	gdb_cris_strcpy (&remcomOutBuffer[pos], "thread:");
- 	pos += gdb_cris_strlen ("thread:");
--	remcomOutBuffer[pos++] = highhex (executing_task);
--	remcomOutBuffer[pos++] = lowhex (executing_task);
-+	remcomOutBuffer[pos++] = hex_asc_hi(executing_task);
-+	remcomOutBuffer[pos++] = hex_asc_lo(executing_task);
- 	gdb_cris_strcpy (&remcomOutBuffer[pos], ";");
- #endif
- 
-@@ -1126,8 +1083,8 @@ handle_exception (int sigval)
- 				   Success: SAA, where AA is the signal number.
- 				   Failure: void. */
- 				remcomOutBuffer[0] = 'S';
--				remcomOutBuffer[1] = highhex (sigval);
--				remcomOutBuffer[2] = lowhex (sigval);
-+				remcomOutBuffer[1] = hex_asc_hi(sigval);
-+				remcomOutBuffer[2] = hex_asc_lo(sigval);
- 				remcomOutBuffer[3] = 0;
- 				break;
- 				
-@@ -1224,23 +1181,23 @@ handle_exception (int sigval)
- 						case 'C':
- 							/* Identify the remote current thread. */
- 							gdb_cris_strcpy (&remcomOutBuffer[0], "QC");
--							remcomOutBuffer[2] = highhex (current_thread_c);
--							remcomOutBuffer[3] = lowhex (current_thread_c);
-+							remcomOutBuffer[2] = hex_asc_hi(current_thread_c);
-+							remcomOutBuffer[3] = hex_asc_lo(current_thread_c);
- 							remcomOutBuffer[4] = '\0';
- 							break;
- 						case 'L':
- 							gdb_cris_strcpy (&remcomOutBuffer[0], "QM");
- 							/* Reply with number of threads. */
- 							if (os_is_started()) {
--								remcomOutBuffer[2] = highhex (number_of_tasks);
--								remcomOutBuffer[3] = lowhex (number_of_tasks);
-+								remcomOutBuffer[2] = hex_asc_hi(number_of_tasks);
-+								remcomOutBuffer[3] = hex_asc_lo(number_of_tasks);
- 							}
- 							else {
--								remcomOutBuffer[2] = highhex (0);
--								remcomOutBuffer[3] = lowhex (1);
-+								remcomOutBuffer[2] = hex_asc_hi(0);
-+								remcomOutBuffer[3] = hex_asc_lo(1);
- 							}
- 							/* Done with the reply. */
--							remcomOutBuffer[4] = lowhex (1);
-+							remcomOutBuffer[4] = hex_asc_lo(1);
- 							pos = 5;
- 							/* Expects the argument thread id. */
- 							for (; pos < (5 + HEXCHARS_IN_THREAD_ID); pos++)
-@@ -1251,16 +1208,16 @@ handle_exception (int sigval)
- 								for (thread_id = 0; thread_id < number_of_tasks; thread_id++) {
- 									nextpos = pos + HEXCHARS_IN_THREAD_ID - 1;
- 									for (; pos < nextpos; pos ++)
--										remcomOutBuffer[pos] = lowhex (0);
--									remcomOutBuffer[pos++] = lowhex (thread_id);
-+										remcomOutBuffer[pos] = hex_asc_lo(0);
-+									remcomOutBuffer[pos++] = hex_asc_lo(thread_id);
- 								}
- 							}
- 							else {
- 								/* Store the thread identifier of the boot task. */
- 								nextpos = pos + HEXCHARS_IN_THREAD_ID - 1;
- 								for (; pos < nextpos; pos ++)
--									remcomOutBuffer[pos] = lowhex (0);
--								remcomOutBuffer[pos++] = lowhex (current_thread_c);
-+									remcomOutBuffer[pos] = hex_asc_lo(0);
-+								remcomOutBuffer[pos++] = hex_asc_lo(current_thread_c);
- 							}
- 							remcomOutBuffer[pos] = '\0';
- 							break;
-diff --git a/arch/cris/arch-v32/kernel/kgdb.c b/arch/cris/arch-v32/kernel/kgdb.c
-index 4e2e2e2..8d0dae9 100644
---- a/arch/cris/arch-v32/kernel/kgdb.c
-+++ b/arch/cris/arch-v32/kernel/kgdb.c
-@@ -398,17 +398,6 @@ void putDebugChar(int val)
- }
- #endif
- 
--/* Returns the character equivalent of a nibble, bit 7, 6, 5, and 4 of a byte,
--   represented by int x. */
--static char highhex(int x);
+diff --git a/kernel/kgdb.c b/kernel/kgdb.c
+index 1bd0ec1..216c3dc 100644
+--- a/kernel/kgdb.c
++++ b/kernel/kgdb.c
+@@ -226,20 +226,6 @@ void __weak kgdb_disable_hw_debug(struct pt_regs *regs)
+ /*
+  * GDB remote protocol parser:
+  */
 -
--/* Returns the character equivalent of a nibble, bit 3, 2, 1, and 0 of a byte,
--   represented by int x. */
--static char lowhex(int x);
+-static const char	hexchars[] = "0123456789abcdef";
 -
--/* Returns the integer equivalent of a hexadecimal character. */
--static int hex(char ch);
--
- /* Convert the memory, pointed to by mem into hexadecimal representation.
-    Put the result in buf, and return a pointer to the last character
-    in buf (null). */
-@@ -464,9 +453,6 @@ void breakpoint(void);
- /* Run-length encoding maximum length. Send 64 at most. */
- #define RUNLENMAX 64
- 
--/* Definition of all valid hexadecimal characters */
--static const char hexchars[] = "0123456789abcdef";
--
- /* The inbound/outbound buffers used in packet I/O */
- static char input_buffer[BUFMAX];
- static char output_buffer[BUFMAX];
-@@ -550,8 +536,8 @@ gdb_cris_strtol(const char *s, char **endptr, int base)
- 	char *sd;
- 	int x = 0;
- 
--	for (s1 = (char*)s; (sd = gdb_cris_memchr(hexchars, *s1, base)) != NULL; ++s1)
--		x = x * base + (sd - hexchars);
-+	for (s1 = (char*)s; (sd = gdb_cris_memchr(hex_asc, *s1, base)) != NULL; ++s1)
-+		x = x * base + (sd - hex_asc);
- 
-         if (endptr) {
-                 /* Unconverted suffix is stored in endptr unless endptr is NULL. */
-@@ -655,35 +641,6 @@ read_register(char regno, unsigned int *valptr)
- }
- 
- /********************************** Packet I/O ******************************/
--/* Returns the character equivalent of a nibble, bit 7, 6, 5, and 4 of a byte,
--   represented by int x. */
--static inline char
--highhex(int x)
--{
--	return hexchars[(x >> 4) & 0xf];
--}
--
--/* Returns the character equivalent of a nibble, bit 3, 2, 1, and 0 of a byte,
--   represented by int x. */
--static inline char
--lowhex(int x)
--{
--	return hexchars[x & 0xf];
--}
--
--/* Returns the integer equivalent of a hexadecimal character. */
--static int
--hex(char ch)
+-static int hex(char ch)
 -{
 -	if ((ch >= 'a') && (ch <= 'f'))
--		return (ch - 'a' + 10);
+-		return ch - 'a' + 10;
 -	if ((ch >= '0') && (ch <= '9'))
--		return (ch - '0');
+-		return ch - '0';
 -	if ((ch >= 'A') && (ch <= 'F'))
--		return (ch - 'A' + 10);
+-		return ch - 'A' + 10;
 -	return -1;
 -}
 -
- /* Convert the memory, pointed to by mem into hexadecimal representation.
-    Put the result in buf, and return a pointer to the last character
-    in buf (null). */
-@@ -704,8 +661,8 @@ mem2hex(char *buf, unsigned char *mem, int count)
-                 /* Valid mem address. */
- 		for (i = 0; i < count; i++) {
- 			ch = *mem++;
--			*buf++ = highhex (ch);
--			*buf++ = lowhex (ch);
-+			*buf++ = hex_asc_hi(ch);
-+			*buf++ = hex_asc_lo(ch);
- 		}
-         }
-         /* Terminate properly. */
-@@ -723,8 +680,8 @@ mem2hex_nbo(char *buf, unsigned char *mem, int count)
- 	mem += count - 1;
- 	for (i = 0; i < count; i++) {
- 		ch = *mem--;
--		*buf++ = highhex (ch);
--		*buf++ = lowhex (ch);
-+		*buf++ = hex_asc_hi(ch);
-+		*buf++ = hex_asc_lo(ch);
-         }
- 
-         /* Terminate properly. */
-@@ -741,8 +698,8 @@ hex2mem(unsigned char *mem, char *buf, int count)
- 	int i;
- 	unsigned char ch;
- 	for (i = 0; i < count; i++) {
--		ch = hex (*buf++) << 4;
--		ch = ch + hex (*buf++);
-+		ch = hex_to_int(*buf++) << 4;
-+		ch = ch + hex_to_int(*buf++);
- 		*mem++ = ch;
- 	}
- 	return mem;
-@@ -806,8 +763,8 @@ getpacket(char *buffer)
+ /* scan for the sequence $<data>#<checksum> */
+ static void get_packet(char *buffer)
+ {
+@@ -276,8 +262,8 @@ static void get_packet(char *buffer)
  		buffer[count] = 0;
  
  		if (ch == '#') {
--			xmitcsum = hex(getDebugChar()) << 4;
--			xmitcsum += hex(getDebugChar());
-+			xmitcsum = hex_to_int(getDebugChar()) << 4;
-+			xmitcsum += hex_to_int(getDebugChar());
- 			if (checksum != xmitcsum) {
- 				/* Wrong checksum */
- 				putDebugChar('-');
-@@ -862,8 +819,8 @@ putpacket(char *buffer)
- 			}
+-			xmitcsum = hex(kgdb_io_ops->read_char()) << 4;
+-			xmitcsum += hex(kgdb_io_ops->read_char());
++			xmitcsum = hex_to_int(kgdb_io_ops->read_char()) << 4;
++			xmitcsum += hex_to_int(kgdb_io_ops->read_char());
+ 
+ 			if (checksum != xmitcsum)
+ 				/* failed checksum */
+@@ -316,8 +302,8 @@ static void put_packet(char *buffer)
  		}
- 		putDebugChar('#');
--		putDebugChar(highhex (checksum));
--		putDebugChar(lowhex (checksum));
-+		putDebugChar(hex_asc_hi(checksum));
-+		putDebugChar(hex_asc_lo(checksum));
- 	} while(kgdb_started && (getDebugChar() != '+'));
+ 
+ 		kgdb_io_ops->write_char('#');
+-		kgdb_io_ops->write_char(hexchars[checksum >> 4]);
+-		kgdb_io_ops->write_char(hexchars[checksum & 0xf]);
++		kgdb_io_ops->write_char(hex_asc_hi(checksum));
++		kgdb_io_ops->write_char(hex_asc_lo(checksum));
+ 		if (kgdb_io_ops->flush)
+ 			kgdb_io_ops->flush();
+ 
+@@ -348,8 +334,8 @@ static void put_packet(char *buffer)
+ 
+ static char *pack_hex_byte(char *pkt, u8 byte)
+ {
+-	*pkt++ = hexchars[byte >> 4];
+-	*pkt++ = hexchars[byte & 0xf];
++	*pkt++ = hex_asc_hi(byte);
++	*pkt++ = hex_asc_lo(byte);
+ 
+ 	return pkt;
  }
- 
-@@ -909,8 +866,8 @@ stub_is_stopped(int sigval)
- 	/* Send trap type (converted to signal) */
- 
- 	*ptr++ = 'T';
--	*ptr++ = highhex(sigval);
--	*ptr++ = lowhex(sigval);
-+	*ptr++ = hex_asc_hi(sigval);
-+	*ptr++ = hex_asc_lo(sigval);
- 
- 	if (((reg.exs & 0xff00) >> 8) == 0xc) {
- 
-@@ -1018,30 +975,30 @@ stub_is_stopped(int sigval)
+@@ -427,8 +413,8 @@ int kgdb_hex2mem(char *buf, char *mem, int count)
+ 	tmp_hex = tmp_raw - 1;
+ 	while (tmp_hex >= buf) {
+ 		tmp_raw--;
+-		*tmp_raw = hex(*tmp_hex--);
+-		*tmp_raw |= hex(*tmp_hex--) << 4;
++		*tmp_raw = hex_to_int(*tmp_hex--);
++		*tmp_raw |= hex_to_int(*tmp_hex--) << 4;
  	}
- 	/* Only send PC, frame and stack pointer. */
- 	read_register(PC, &reg_cont);
--	*ptr++ = highhex(PC);
--	*ptr++ = lowhex(PC);
-+	*ptr++ = hex_asc_hi(PC);
-+	*ptr++ = hex_asc_lo(PC);
- 	*ptr++ = ':';
- 	ptr = mem2hex(ptr, (unsigned char *)&reg_cont, register_size[PC]);
- 	*ptr++ = ';';
  
- 	read_register(R8, &reg_cont);
--	*ptr++ = highhex(R8);
--	*ptr++ = lowhex(R8);
-+	*ptr++ = hex_asc_hi(R8);
-+	*ptr++ = hex_asc_lo(R8);
- 	*ptr++ = ':';
- 	ptr = mem2hex(ptr, (unsigned char *)&reg_cont, register_size[R8]);
- 	*ptr++ = ';';
+ 	return probe_kernel_write(mem, tmp_raw, count);
+@@ -446,7 +432,7 @@ int kgdb_hex2long(char **ptr, long *long_val)
+ 	*long_val = 0;
  
- 	read_register(SP, &reg_cont);
--	*ptr++ = highhex(SP);
--	*ptr++ = lowhex(SP);
-+	*ptr++ = hex_asc_hi(SP);
-+	*ptr++ = hex_asc_lo(SP);
- 	*ptr++ = ':';
- 	ptr = mem2hex(ptr, (unsigned char *)&reg_cont, register_size[SP]);
- 	*ptr++ = ';';
+ 	while (**ptr) {
+-		hex_val = hex(**ptr);
++		hex_val = hex_to_int(**ptr);
+ 		if (hex_val < 0)
+ 			break;
  
- 	/* Send ERP as well; this will save us an entire register fetch in some cases. */
-         read_register(ERP, &reg_cont);
--        *ptr++ = highhex(ERP);
--        *ptr++ = lowhex(ERP);
-+        *ptr++ = hex_asc_hi(ERP);
-+        *ptr++ = hex_asc_lo(ERP);
-         *ptr++ = ':';
-         ptr = mem2hex(ptr, (unsigned char *)&reg_cont, register_size[ERP]);
-         *ptr++ = ';';
-@@ -1533,8 +1490,8 @@ handle_exception(int sigval)
- 				   Success: SAA, where AA is the signal number.
- 				   Failure: void. */
- 				output_buffer[0] = 'S';
--				output_buffer[1] = highhex(sigval);
--				output_buffer[2] = lowhex(sigval);
-+				output_buffer[1] = hex_asc_hi(sigval);
-+				output_buffer[2] = hex_asc_lo(sigval);
- 				output_buffer[3] = 0;
- 				break;
+@@ -486,8 +472,8 @@ static void error_packet(char *pkt, int error)
+ {
+ 	error = -error;
+ 	pkt[0] = 'E';
+-	pkt[1] = hexchars[(error / 10)];
+-	pkt[2] = hexchars[(error % 10)];
++	pkt[1] = hex_asc[(error / 10)];
++	pkt[2] = hex_asc[(error % 10)];
+ 	pkt[3] = '\0';
+ }
  
 -- 
 1.5.5.1.305.g7c84
-
 
