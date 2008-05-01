@@ -1,74 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765245AbYEATgS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765608AbYEATgd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765245AbYEATgS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 May 2008 15:36:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760726AbYEATgB
+	id S1765608AbYEATgd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 May 2008 15:36:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763870AbYEATgN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 May 2008 15:36:01 -0400
-Received: from mail.tpi.com ([198.107.51.143]:3559 "EHLO mail.tpi.com"
+	Thu, 1 May 2008 15:36:13 -0400
+Received: from mail.anarazel.de ([217.115.131.40]:60145 "EHLO smtp.anarazel.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759960AbYEATgA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 May 2008 15:36:00 -0400
-Message-ID: <481A1BB9.8050109@canonical.com>
-Date: Thu, 01 May 2008 13:36:25 -0600
-From: Tim Gardner <tim.gardner@canonical.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
+	id S1761934AbYEATgM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 May 2008 15:36:12 -0400
+From: Andres Freund <andres@anarazel.de>
+To: Adrian Bunk <bunk@kernel.org>
+Subject: Re: [PATCH] v4l/dvb: Add linux/version.h include as KERNEL_VERSION macro is used.
+Date: Thu, 1 May 2008 21:36:02 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, apdim@grecian.net,
+       Mauro Carvalho Chehab <mchehab@infradead.org>
+References: <200805012005.42400.andres@anarazel.de> <20080501193107.GN29330@cs181133002.pp.htv.fi>
+In-Reply-To: <20080501193107.GN29330@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
-To: Chris Mason <chris.mason@oracle.com>
-CC: jeffschroeder@computer.org, linux-fsdevel@vger.kernel.org,
-       kernel-team@lists.ubuntu.com, linux-kernel@vger.kernel.org,
-       linux-btrfs@vger.kernel.org
-Subject: Re: Btrfs v0.14 Released
-References: <200804291601.32945.chris.mason@oracle.com> <c24352ca0805010939q31f743aev17cc7f98d2ad0c71@mail.gmail.com> <481A14BA.9090305@canonical.com> <200805011517.55698.chris.mason@oracle.com>
-In-Reply-To: <200805011517.55698.chris.mason@oracle.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200805012136.03569.andres@anarazel.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chris Mason wrote:
-> On Thursday 01 May 2008, Tim Gardner wrote:
-> 
-> [ btrfs oops on ubuntu ]
-> 
->>>>  This is because ubuntu kernels ship with apparmor, you'll need this
->>>> patch:
->>>>
->>>>  If there is a #ifdef IM_A_UBUNTU_KERNEL I can use, I'll do it.  Jeff
->>>> Mahoney has a similar patch for SUSE that I've been meaning to merge,
->>>> but I wanted to lookup some way to check for ubuntu as well.
->>>>
->>>>  -chris
->>>>
->>>>  diff -r e7da2489b19b file.c
->>>>  --- a/file.c    Wed Apr 30 13:59:35 2008 -0400
->>>>  +++ b/file.c    Thu May 01 12:25:11 2008 -0400
->>>>  @@ -852,7 +852,7 @@ static ssize_t btrfs_file_write(struct f
->>>>                 goto out_nolock;
->>>>         if (count == 0)
->>>>                 goto out_nolock;
->>>>  -       err = remove_suid(fdentry(file));
->>>>  +       err = remove_suid(&file->f_path);
->>>>         if (err)
->>>>                 goto out_nolock;
->>>>         file_update_time(file);
->> Couldn't you #ifdef based on CONFIG_SECURITY_APPARMOR ? This ought to
->> work for Hardy. However the next development kernel (Intrepid) does not
->> have the APPARMOR patches, so just knowing that its an UBUNTU kernel is
->> not specific enough.
-> 
-> I've been assuming the apparmor patches change remove_suid even when they are 
-> not enabled in the config.
-> 
-> -chris
-> 
+On Thursday 01 May 2008, Adrian Bunk wrote in "Re: [PATCH] v4l/dvb: Add 
+linux/version.h include as KERNEL_VERSION macro is used.":
+> The #include is already there a dozen lines below.
+Hm. Strange.
+It fixed a build error for me. Will retest and report back.
 
-Lets get Kees involved. He developed the patch set for Hardy. I would
-hope that if CONFIG_SECURITY_APPARMOR=n then the source would default to
-its normal state.
-
-rtg
--- 
-Tim Gardner tim.gardner@ubuntu.com
+Andres
