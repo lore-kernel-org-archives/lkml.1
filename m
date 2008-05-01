@@ -1,49 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763859AbYEAQbs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762029AbYEAQfr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763859AbYEAQbs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 May 2008 12:31:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760147AbYEAQbj
+	id S1762029AbYEAQfr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 May 2008 12:35:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753678AbYEAQfj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 May 2008 12:31:39 -0400
-Received: from nf-out-0910.google.com ([64.233.182.189]:19199 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758003AbYEAQbi (ORCPT
+	Thu, 1 May 2008 12:35:39 -0400
+Received: from rv-out-0708.google.com ([209.85.198.246]:19592 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753167AbYEAQfj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 May 2008 12:31:38 -0400
+	Thu, 1 May 2008 12:35:39 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:organization:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=sivn1ihud18PvjGZemNhqjm8Bm9fqgdkBQ4xhIm4Vb2lUbjSOKWJ8Alpzb8WmKcQcoqmBPBvArF/ZrdoPJ9DXUFifHVkYZgCIiInouz4LqoQL0hXBOAyqvfOyiwHaN5G3PPRYfQ6bp5Df61E+z40CIUx3LO37HX5WNzvkIGNKtE=
-Message-ID: <4819F064.903@gmail.com>
-Date: Thu, 01 May 2008 20:31:32 +0400
-From: Dmitri Vorobiev <dmitri.vorobiev@gmail.com>
-Organization: DmVo Home
-User-Agent: Thunderbird 1.5.0.14ubu (X11/20080306)
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=i+aVUebnHvPh5mLA0nZwEvgU8gjSzs7cfLbLGx3mkdaVeHWKXekFF7q/sC2IRT3Ffka0V+qiHvGbIeXK7RBU3BFcdSI8idKO+8lBTK0vI5GV/B0EnoWXXxVL2DaatOHs7mj81tTEHvK0KDRD+ANVl+Q1zeq6c3KTgRsqjg87Afg=
+Message-ID: <86802c440805010935w5a74f132l639d7b794804bb9e@mail.gmail.com>
+Date: Thu, 1 May 2008 09:35:38 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Mika Fischer" <mika.fischer@zoopnet.de>
+Subject: Re: [PATCH] x86: mtrr cleanup for converting continuous to discrete - auto detect
+Cc: "Andrew Morton" <akpm@linux-foundation.org>, "Ingo Molnar" <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       "Thomas Gleixner" <tglx@linutronix.de>,
+       "Gabriel C" <nix.or.die@googlemail.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <4819B2E0.406@zoopnet.de>
 MIME-Version: 1.0
-To: Diego Calleja <diegocg@gmail.com>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, rjw@sisk.pl,
-       davem@davemloft.net, linux-kernel@vger.kernel.org, jirislaby@gmail.com,
-       mingo@elte.hu, Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: Slow DOWN, please!!!
-References: <20080429.190352.137408408.davem@davemloft.net>	<200804302136.58005.rjw@sisk.pl>	<20080430131537.1f7a0914.akpm@linux-foundation.org>	<alpine.LFD.1.10.0804301325260.2980@woody.linux-foundation.org>	<20080430135405.ddc42075.akpm@linux-foundation.org>	<4818E7E3.7080705@gmail.com>	<20080430151007.0ace4fa2.akpm@linux-foundation.org>	<alpine.LFD.1.10.0804301513350.2980@woody.linux-foundation.org>	<4818F291.2050706@gmail.com> <20080501182658.9bbf5d4a.diegocg@gmail.com>
-In-Reply-To: <20080501182658.9bbf5d4a.diegocg@gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200804272337.40130.yhlu.kernel@gmail.com>
+	 <200804290352.33543.yhlu.kernel@gmail.com>
+	 <200804292025.58268.yhlu.kernel@gmail.com>
+	 <200805010100.34751.yhlu.kernel@gmail.com> <4819B2E0.406@zoopnet.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Diego Calleja пишет:
-> El Thu, 01 May 2008 02:28:33 +0400, Dmitri Vorobiev <dmitri.vorobiev@gmail.com> escribió:
-> 
->> Linus, thanks a lot for the detailed explanation. Indeed, it seems that I foolishly
->> tried to duplicate Stephen's work. In the future I'll do as you suggest here.
-> 
-> That "howto" should probably be added to the linux-next announcements...
-> (CC'ing Stephen)
-> 
+On Thu, May 1, 2008 at 5:09 AM, Mika Fischer <mika.fischer@zoopnet.de> wrote:
+> Yinghai Lu schrieb:
+>
+> > loop mtrr chunk_size and gran_size from 1M to 2G to find out optimal value.
+>  >
+>  > so user don't need to add mtrr_chunk_size and mtrr_gran_size,
+>  >
+>  > if optimal value is not found, print out all list to help select less optimal
+>  > value.
+>  >
+>  > add mtrr_spare_reg_nr= so user could set 2 instead of 1, if the card need more entries.
+>
+>  On my system x86-latest + this patch and using no boot options gives me
+>  this /proc/mtrr:
+>  reg00: base=0x00000000 (   0MB), size=2048MB: write-back, count=1
+>  reg01: base=0x80000000 (2048MB), size= 512MB: write-back, count=1
+>  reg02: base=0xa0000000 (2560MB), size= 256MB: write-back, count=1
+>  reg03: base=0xb0000000 (2816MB), size= 256MB: write-back, count=1
+>  reg04: base=0xbf700000 (3063MB), size=   1MB: uncachable, count=1
+>  reg05: base=0xbf800000 (3064MB), size=   8MB: uncachable, count=1
+>  reg06: base=0x100000000 (4096MB), size=1024MB: write-back, count=1
+>
+>  Which is OK. It could probably collapse reg01-reg03 into one but that's
+>  a minor issue (for me at least, there are probably cases where
+>  collapsing them might save the user from having to specify the
+>  mtrr_spare_reg_nr boot option).
 
-Excellent idea. Thanks, Diego!
+yes. please try mtrr_spare_reg_nr=3 or etc.
 
-Dmitri
+YH
