@@ -1,109 +1,156 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759815AbYEALiz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759366AbYEALot@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759815AbYEALiz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 May 2008 07:38:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756424AbYEALir
+	id S1759366AbYEALot (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 May 2008 07:44:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756424AbYEALok
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 May 2008 07:38:47 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:49747 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756324AbYEALiq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 May 2008 07:38:46 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: Slow DOWN, please!!!
-Date: Thu, 1 May 2008 13:38:33 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Willy Tarreau <w@1wt.eu>, David Miller <davem@davemloft.net>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Jiri Slaby <jirislaby@gmail.com>
-References: <20080429.190352.137408408.davem@davemloft.net> <alpine.LFD.1.10.0804301811051.5994@woody.linux-foundation.org> <alpine.LFD.1.10.0804301831330.5994@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.1.10.0804301831330.5994@woody.linux-foundation.org>
+	Thu, 1 May 2008 07:44:40 -0400
+Received: from DSL212-235-53-3.bb.netvision.net.il ([212.235.53.3]:2405 "EHLO
+	bh-buildlin2.bhalevy.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754939AbYEALoj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 May 2008 07:44:39 -0400
+Message-ID: <4819ACF6.9000403@panasas.com>
+Date: Thu, 01 May 2008 14:43:50 +0300
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Harvey Harrison <harvey.harrison@gmail.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [PATCH 09/10] misc: fix returning void-valued expression warnings
+References: <1209593024.24729.119.camel@brick>
+In-Reply-To: <1209593024.24729.119.camel@brick>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200805011338.34735.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, 1 of May 2008, Linus Torvalds wrote:
+On Thu, May 01 2008 at 1:03 +0300, Harvey Harrison <harvey.harrison@gmail.com> wrote:
+> kernel/sched_fair.c:845:3: warning: returning void-valued expression
+> kernel/sched.c:4343:3: warning: returning void-valued expression
+> security/security.c:897:2: warning: returning void-valued expression
+> security/security.c:1014:2: warning: returning void-valued expression
+> security/security.c:1019:2: warning: returning void-valued expression
+> sound/sound_core.c:410:2: warning: returning void-valued expression
+> sound/sound_core.c:427:2: warning: returning void-valued expression
 > 
-> On Wed, 30 Apr 2008, Linus Torvalds wrote:
-> > 
-> > You (and Andrew) have tried to argue that slowing things down results in 
-> > better quality,
+> Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+> ---
+> Peter, I know you don't like this very much, but it would help reduce the
+> trivial noise somewhat in a sparse build.
 > 
-> Sorry, not Andrew. DavidN.
+>  kernel/sched.c      |    6 ++++--
+>  kernel/sched_fair.c |    6 ++++--
+>  security/security.c |    6 +++---
+>  sound/sound_core.c  |    4 ++--
+>  4 files changed, 13 insertions(+), 9 deletions(-)
 > 
-> Andrew argued the other way (quality->slower), which I also happen to not 
-> necessarily believe in, but that's a separate argument.
-> 
-> Nobody should ever argue against raising quality.
-> 
-> The question could be about "at what cost"? (although I think that's not 
-> necessarily a good argument, since I personally suspect that good quality 
-> code comes from _lowering_ costs, not raising them).
-> 
-> But what's really relevant is "how?"
-> 
-> Now, we do know that open-source code tends to be higher quality (along a 
-> number of metrics) than closed source code, and my argument is that it's 
-> not because of bike-shedding (aka code review), but simply because the 
-> code is out there and available and visible.
-> 
-> And as a result of that, my personal belief is that the best way to raise 
-> quality of code is to distribute it. Yes, as patches for discussion, but 
-> even more so as a part of a cohesive whole - as _merged_ patches!
-> 
-> The thing is, the quality of individual patches isn't what matters! What 
-> matters is the quality of the end result. And people are going to be a lot 
-> more involved in looking at, testing, and working with code that is 
-> merged, rather than code that isn't.
-> 
-> So _my_ answer to the "how do we raise quality" is actually the exact 
-> reverse of what you guys seem to be arguing.
-> 
-> IOW, I argue that the high speed of merging very much is a big part of 
-> what gives us quality in the end. It may result in bugs along the way, but 
-> it also results in fixes, and lots of people looking at the result (and 
-> looking at it in *context*, not just as a patch flying around).
+> diff --git a/kernel/sched.c b/kernel/sched.c
+> index e2f7f5a..864daf8 100644
+> --- a/kernel/sched.c
+> +++ b/kernel/sched.c
+> @@ -4339,8 +4339,10 @@ void account_system_time(struct task_struct *p, int hardirq_offset,
+>  	struct rq *rq = this_rq();
+>  	cputime64_t tmp;
+>  
+> -	if ((p->flags & PF_VCPU) && (irq_count() - hardirq_offset == 0))
+> -		return account_guest_time(p, cputime);
+> +	if ((p->flags & PF_VCPU) && (irq_count() - hardirq_offset == 0)) {
+> +		account_guest_time(p, cputime);
+> +		return;
+> +	}
 
-And we introduce bugs that nobody sees until they appear in a CERT advisory.
+I don't know who invented sparse, but I like this form of return.
+1 - It saves me the curly brackets and extra return line. But mainly
+2 - It is a programing statement that says: "Me here I'm an equivalent 
+  to that other call". So if in the future that inner function starts
+  to return, say, an error value, with the first style the compiler will
+  error. But with the second style the new error return will be silently
+  ignored. So these are not equivalent replacements. The former is a much
+  stronger bond between the caller and the callie.
 
-IMnsHO, the quick merging results in lots of code that nobody looked at,
-except for the author, nobody is looking at and nobody will _ever_ look at.
-Simply, because there's no time for looking at that code, since we're
-supposed to be working on preparing new code for the next merge window, testing
-the already merged code etc., around the clock.  Now, you may hope that this
-not-looked-at-by-anyone code is of high quality nevertheless, but I somehow
-doubt it.
+>  
+>  	p->stime = cputime_add(p->stime, cputime);
+>  
+> diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
+> index 89fa32b..0bd575e 100644
+> --- a/kernel/sched_fair.c
+> +++ b/kernel/sched_fair.c
+> @@ -841,8 +841,10 @@ entity_tick(struct cfs_rq *cfs_rq, struct sched_entity *curr, int queued)
+>  	 * queued ticks are scheduled to match the slice, so don't bother
+>  	 * validating it and just reschedule.
+>  	 */
+> -	if (queued)
+> -		return resched_task(rq_of(cfs_rq)->curr);
+> +	if (queued) {
+> +		resched_task(rq_of(cfs_rq)->curr);
+> +		return;
+> +	}
+>  	/*
+>  	 * don't let the period tick interfere with the hrtick preemption
+>  	 */
+> diff --git a/security/security.c b/security/security.c
+> index 59838a9..8073a1a 100644
+> --- a/security/security.c
+> +++ b/security/security.c
+> @@ -894,7 +894,7 @@ EXPORT_SYMBOL(security_secctx_to_secid);
+>  
+>  void security_release_secctx(char *secdata, u32 seclen)
+>  {
+> -	return security_ops->release_secctx(secdata, seclen);
+> +	security_ops->release_secctx(secdata, seclen);
+>  }
+>  EXPORT_SYMBOL(security_release_secctx);
+>  
+> @@ -1011,12 +1011,12 @@ int security_sk_alloc(struct sock *sk, int family, gfp_t priority)
+>  
+>  void security_sk_free(struct sock *sk)
+>  {
+> -	return security_ops->sk_free_security(sk);
+> +	security_ops->sk_free_security(sk);
+>  }
+>  
+>  void security_sk_clone(const struct sock *sk, struct sock *newsk)
+>  {
+> -	return security_ops->sk_clone_security(sk, newsk);
+> +	security_ops->sk_clone_security(sk, newsk);
+>  }
+>  
+>  void security_sk_classify_flow(struct sock *sk, struct flowi *fl)
+> diff --git a/sound/sound_core.c b/sound/sound_core.c
+> index 46daca1..b2538bf 100644
+> --- a/sound/sound_core.c
+> +++ b/sound/sound_core.c
+> @@ -407,7 +407,7 @@ EXPORT_SYMBOL(unregister_sound_mixer);
+>  
+>  void unregister_sound_midi(int unit)
+>  {
+> -	return sound_remove_unit(&chains[2], unit);
+> +	sound_remove_unit(&chains[2], unit);
+>  }
+>  
+>  EXPORT_SYMBOL(unregister_sound_midi);
+> @@ -424,7 +424,7 @@ EXPORT_SYMBOL(unregister_sound_midi);
+>  
+>  void unregister_sound_dsp(int unit)
+>  {
+> -	return sound_remove_unit(&chains[3], unit);
+> +	sound_remove_unit(&chains[3], unit);
+>  }
+>  
+> 
 
-[Note that it's not directly related to the issue at hand, which is the fact
-that people affected by regressions are heavily punished by our current
-process.  Never mind, though.]
+Even without the saving in the if case, I would say fix sparse, it is
+very very wrong. a return (void)do(); is not equal to do(); return;
 
-And that's not to mention bugs that appear in the code everybody looked at
-and happily reach the mainline because that code has not been tested well
-enough before merging.  Take SLUB as an example, if you wish.
+Code is not only high level assembly, it is also a low level English.
+In English the first form is telling what the future assembly should
+be.
 
-The fact is, we're merging stuff with minimal-to-no review and with minimal
-testing reasonably possible.  Is _that_ supposed to produce the high quality?
+big NACK from me (== $0.02)
 
-Also, I'm not buying the argument that the quality of code improves over time
-just because it's open and available to everyone.  That only happens to the
-code which is actually looked at by someone or attempted to modify.  This
-obviously doesn't apply to the whole kernel code.
+Boaz
 
-For this reason, IMO, we should do our best to ensure that the code being
-merged is of high quality already at the moment we merge it.  How to achieve
-that is a separate issue.
-
-BTW, we seem to underestimate testing in this discussion.  In fact, the vast
-majority of kernel bugs are discovered by testing, so perhaps the way to go
-is to make regular testing of the new code a part of the process.
-
-Thanks,
-Rafael
