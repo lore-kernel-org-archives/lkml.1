@@ -1,94 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764981AbYEAUKj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765701AbYEAULv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764981AbYEAUKj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 May 2008 16:10:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758575AbYEAUKa
+	id S1765701AbYEAULv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 May 2008 16:11:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758334AbYEAULo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 May 2008 16:10:30 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:54610 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750903AbYEAUK2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 May 2008 16:10:28 -0400
-Message-ID: <481A23AB.1020302@suse.com>
-Date: Thu, 01 May 2008 16:10:19 -0400
-From: Jeff Mahoney <jeffm@suse.com>
-Organization: SUSE Labs, Novell, Inc
+	Thu, 1 May 2008 16:11:44 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:37344 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754164AbYEAULn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 May 2008 16:11:43 -0400
+Message-ID: <481A23DE.6070905@zytor.com>
+Date: Thu, 01 May 2008 13:11:10 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
 User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-To: Tim Gardner <tim.gardner@canonical.com>
-Cc: Chris Mason <chris.mason@oracle.com>, jeffschroeder@computer.org,
-       linux-fsdevel@vger.kernel.org, kernel-team@lists.ubuntu.com,
-       linux-kernel@vger.kernel.org, linux-btrfs@vger.kernel.org,
-       John Johansen <jjohansen@suse.de>
-Subject: Re: Btrfs v0.14 Released
-References: <200804291601.32945.chris.mason@oracle.com> <c24352ca0805010939q31f743aev17cc7f98d2ad0c71@mail.gmail.com> <481A14BA.9090305@canonical.com> <200805011517.55698.chris.mason@oracle.com> <481A1BB9.8050109@canonical.com>
-In-Reply-To: <481A1BB9.8050109@canonical.com>
-X-Enigmail-Version: 0.95.2
-Content-Type: text/plain; charset=ISO-8859-1
+To: Andi Kleen <andi@firstfloor.org>
+CC: Jesse Barnes <jbarnes@virtuousgeek.org>,
+       linux-pci@atrey.karlin.mff.cuni.cz, TJ <linux@tjworld.net>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Why such a big difference in init-time PCI resource call-paths
+ (x86 vs x86_64) ?
+References: <1209571638.25051.54.camel@hephaestion.lan.tjworld.net> <200805011116.31782.jbarnes@virtuousgeek.org> <20080501201111.GO20451@one.firstfloor.org>
+In-Reply-To: <20080501201111.GO20451@one.firstfloor.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
-
-Tim Gardner wrote:
-> Chris Mason wrote:
->> On Thursday 01 May 2008, Tim Gardner wrote:
->>
->> [ btrfs oops on ubuntu ]
->>
->>>>>  This is because ubuntu kernels ship with apparmor, you'll need this
->>>>> patch:
->>>>>
->>>>>  If there is a #ifdef IM_A_UBUNTU_KERNEL I can use, I'll do it.  Jeff
->>>>> Mahoney has a similar patch for SUSE that I've been meaning to merge,
->>>>> but I wanted to lookup some way to check for ubuntu as well.
->>>>>
->>>>>  -chris
->>>>>
->>>>>  diff -r e7da2489b19b file.c
->>>>>  --- a/file.c    Wed Apr 30 13:59:35 2008 -0400
->>>>>  +++ b/file.c    Thu May 01 12:25:11 2008 -0400
->>>>>  @@ -852,7 +852,7 @@ static ssize_t btrfs_file_write(struct f
->>>>>                 goto out_nolock;
->>>>>         if (count == 0)
->>>>>                 goto out_nolock;
->>>>>  -       err = remove_suid(fdentry(file));
->>>>>  +       err = remove_suid(&file->f_path);
->>>>>         if (err)
->>>>>                 goto out_nolock;
->>>>>         file_update_time(file);
->>> Couldn't you #ifdef based on CONFIG_SECURITY_APPARMOR ? This ought to
->>> work for Hardy. However the next development kernel (Intrepid) does not
->>> have the APPARMOR patches, so just knowing that its an UBUNTU kernel is
->>> not specific enough.
->> I've been assuming the apparmor patches change remove_suid even when they are 
->> not enabled in the config.
->>
->> -chris
->>
+Andi Kleen wrote:
+> On Thu, May 01, 2008 at 11:16:31AM -0700, Jesse Barnes wrote:
+>> On Wednesday, April 30, 2008 9:07 am TJ wrote:
+>>> In preparation for writing a Windows-style PCI resource allocation
+>>> strategy
+>>>
+>>>  - use all e820 gaps for IOMEM resources; top-down allocation -
+>>>
+>>> and thus giving devices with large IOMEM requirements more chance of
+>>> allocation in the 32-bit address space below 4GB (see bugzilla #10461),
 > 
-> Lets get Kees involved. He developed the patch set for Hardy. I would
-> hope that if CONFIG_SECURITY_APPARMOR=n then the source would default to
-> its normal state.
+> I tried that some time ago and it turned out that some systems have
+> mappings in holes and don't boot anymore when you fill the holes too much. 
+> But that was only considering e820. if you do this it might work if you 
+> do it really like windows and consider all resources, including ACPI.
 
-remove_suid() isn't the only change AppArmor makes to the VFS interface.
-It's pretty invasive and requires that dentries are passed with a
-companion vfsmount in most cases. Putting #ifdefs around all that code
-would make the problem worse, not better.
+Yes, considering all possible reservation schemes is really critical 
+here (including the magic knowledge of the legacy region).
 
-- -Jeff
+>>> So, why the big difference in implementations?
+>>> What are the implications of each?
+>>> Is one preferable to the other?
+> 
+> I don't remember why it is different. Probably wasn't intentional.
+> But in general x86-64 is less fragile than i386 here because it has the e820
+> allocator and can deal better with conflicts.
 
-- --
-Jeff Mahoney
-SUSE Labs
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.4-svn0 (GNU/Linux)
-Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
+Yes, and that's definitely the model we want on both sides.  Working on 
+this is way high on my personal priority list at the moment.
 
-iD8DBQFIGiOrLPWxlyuTD7IRAh3jAKCFCrBa30G5WDwmJHI+Yb4fNAfu2QCfTUmq
-Q6Sf0MVug2X0ywRcSrGi4eY=
-=QwF9
------END PGP SIGNATURE-----
+	-hpa
+
