@@ -1,93 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757288AbYEAKtY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758253AbYEALA3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757288AbYEAKtY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 May 2008 06:49:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753722AbYEAKtQ
+	id S1758253AbYEALA3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 May 2008 07:00:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754825AbYEALAT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 May 2008 06:49:16 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:49527 "EHLO ogre.sisk.pl"
+	Thu, 1 May 2008 07:00:19 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:49564 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752563AbYEAKtP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 May 2008 06:49:15 -0400
+	id S1754811AbYEALAS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 May 2008 07:00:18 -0400
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Sam Ravnborg <sam@ravnborg.org>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] fix rebuild of wakeup.bin
-Date: Thu, 1 May 2008 12:48:52 +0200
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: Slow DOWN, please!!!
+Date: Thu, 1 May 2008 12:59:46 +0200
 User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Roland McGrath <roland@redhat.com>, Pavel Machek <pavel@suse.cz>,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>
-References: <20080501010516.DD2FE26FA05@magilla.localdomain> <20080501093107.GA2392@uranus.ravnborg.org>
-In-Reply-To: <20080501093107.GA2392@uranus.ravnborg.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Willy Tarreau <w@1wt.eu>,
+       David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
+       Jiri Slaby <jirislaby@gmail.com>
+References: <20080429.190352.137408408.davem@davemloft.net> <20080430183149.78d97597.akpm@linux-foundation.org> <alpine.LFD.1.10.0804301841290.5994@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.1.10.0804301841290.5994@woody.linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200805011248.53295.rjw@sisk.pl>
+Message-Id: <200805011259.47343.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, 1 of May 2008, Sam Ravnborg wrote:
-> In kernel/acpi/realmode/Makefile use the 'always'
-> variable to say that wakeup.bin should always
-> be made.
+On Thursday, 1 of May 2008, Linus Torvalds wrote:
 > 
-> In acpi/Makefile we then do not need to specify the
-> requested target and we avoid the message from make:
+> On Wed, 30 Apr 2008, Andrew Morton wrote:
+> > 
+> > eh?  I argued the opposite: that increasing quality will as a side-effect
+> > slow things down.
 > 
->    `arch/x86/kernel/acpi/realmode/wakeup.bin' is up to date.
+> Yes, my bad, I realized that when I read through my message and already 
+> sent out a fix for my buggy email ;)
 > 
-> Add wakeup.lds to list af targets to avoid rebuilding
-> wakeup.bin - from Roland McGrath.
+> > If we simply throttled things, people would spend more time watching the
+> > shopping channel while merging smaller amounts of the same old crap.
+> 
+> I agree totally. And although some of the time would probably _also_ be 
+> spent on the frustrating crap that was designed to do the throttling, that 
+> isn't much more productive than watching the shopping channel would be ...
 
-Thanks for fixing this!
+Okay, so what exactly are we going to do to address the issue that I described
+in the part of my last message that you skipped?
 
-Ingo, please merge.
-
-> Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
-> Cc: Rafael J. Wysocki <rjw@sisk.pl>
-> Cc: Pavel Machek <pavel@suse.cz>
-> Cc: Thomas Gleixner <tglx@linutronix.de> 
-> Cc: H. Peter Anvin <hpa@zytor.com>
-> Cc: Ingo Molnar <mingo@elte.hu>
-> Cc: Roland McGrath <roland@redhat.com>
-> ---
-> diff --git a/arch/x86/kernel/acpi/Makefile b/arch/x86/kernel/acpi/Makefile
-> index 7335959..fd5ca97 100644
-> --- a/arch/x86/kernel/acpi/Makefile
-> +++ b/arch/x86/kernel/acpi/Makefile
-> @@ -10,5 +10,5 @@ endif
->  $(obj)/wakeup_rm.o:    $(obj)/realmode/wakeup.bin
->  
->  $(obj)/realmode/wakeup.bin: FORCE
-> -	$(Q)$(MAKE) $(build)=$(obj)/realmode $@
-> +	$(Q)$(MAKE) $(build)=$(obj)/realmode
->  
-> diff --git a/arch/x86/kernel/acpi/realmode/Makefile b/arch/x86/kernel/acpi/realmode/Makefile
-> index 0929008..1c31cc0 100644
-> --- a/arch/x86/kernel/acpi/realmode/Makefile
-> +++ b/arch/x86/kernel/acpi/realmode/Makefile
-> @@ -6,7 +6,8 @@
->  # for more details.
->  #
->  
-> -targets		:= wakeup.bin wakeup.elf
-> +always		:= wakeup.bin
-> +targets		:= wakeup.elf wakeup.lds
->  
->  wakeup-y	+= wakeup.o wakemain.o video-mode.o copy.o
->  
-> @@ -48,7 +49,7 @@ LDFLAGS_wakeup.elf	:= -T
->  
->  CPPFLAGS_wakeup.lds += -P -C
->  
-> -$(obj)/wakeup.elf: $(src)/wakeup.lds $(WAKEUP_OBJS) FORCE
-> +$(obj)/wakeup.elf: $(obj)/wakeup.lds $(WAKEUP_OBJS) FORCE
->  	$(call if_changed,ld)
->  
->  OBJCOPYFLAGS_wakeup.bin	:= -O binary
-
-Thanks,
 Rafael
