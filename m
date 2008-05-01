@@ -1,303 +1,206 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933309AbYEAWGg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933249AbYEAWGy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933309AbYEAWGg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 May 2008 18:06:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763607AbYEAWGC
+	id S933249AbYEAWGy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 May 2008 18:06:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765535AbYEAWGH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 May 2008 18:06:02 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:40726 "EHLO
+	Thu, 1 May 2008 18:06:07 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:40731 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762716AbYEAWGA (ORCPT
+	with ESMTP id S1764022AbYEAWGD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 May 2008 18:06:00 -0400
-Date: Thu, 1 May 2008 15:04:15 -0700
+	Thu, 1 May 2008 18:06:03 -0400
+Date: Thu, 1 May 2008 15:05:21 -0700
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
        torvalds@linux-foundation.org, stable@kernel.org
-Subject: Re: Linux 2.6.24.6
-Message-ID: <20080501220415.GD28881@kroah.com>
-References: <20080501220335.GC28881@kroah.com>
+Subject: Linux 2.6.25.1
+Message-ID: <20080501220521.GE28881@kroah.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20080501220335.GC28881@kroah.com>
+Content-Transfer-Encoding: 8bit
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-diff --git a/Makefile b/Makefile
-index 822d1ba..f619bbc 100644
---- a/Makefile
-+++ b/Makefile
-@@ -1,7 +1,7 @@
- VERSION = 2
- PATCHLEVEL = 6
- SUBLEVEL = 24
--EXTRAVERSION = .5
-+EXTRAVERSION = .6
- NAME = Err Metey! A Heury Beelge-a Ret!
- 
- # *DOCUMENTATION*
-diff --git a/arch/x86/kernel/io_apic_32.c b/arch/x86/kernel/io_apic_32.c
-index 232fdeb..9994c52 100644
---- a/arch/x86/kernel/io_apic_32.c
-+++ b/arch/x86/kernel/io_apic_32.c
-@@ -2478,6 +2478,7 @@ void destroy_irq(unsigned int irq)
- 	dynamic_irq_cleanup(irq);
- 
- 	spin_lock_irqsave(&vector_lock, flags);
-+	clear_bit(irq_vector[irq], used_vectors);
- 	irq_vector[irq] = 0;
- 	spin_unlock_irqrestore(&vector_lock, flags);
- }
-diff --git a/drivers/isdn/capi/capidrv.c b/drivers/isdn/capi/capidrv.c
-index 48c1775..cb42b69 100644
---- a/drivers/isdn/capi/capidrv.c
-+++ b/drivers/isdn/capi/capidrv.c
-@@ -2332,13 +2332,14 @@ static int __init capidrv_init(void)
- 
- static void __exit capidrv_exit(void)
- {
--	char rev[10];
-+	char rev[32];
- 	char *p;
- 
- 	if ((p = strchr(revision, ':')) != 0) {
--		strcpy(rev, p + 1);
--		p = strchr(rev, '$');
--		*p = 0;
-+		strncpy(rev, p + 1, sizeof(rev));
-+		rev[sizeof(rev)-1] = 0;
-+		if ((p = strchr(rev, '$')) != 0)
-+			*p = 0;
- 	} else {
- 		strcpy(rev, " ??? ");
- 	}
-diff --git a/drivers/isdn/i4l/isdn_net.c b/drivers/isdn/i4l/isdn_net.c
-index ced83c2..ef1a300 100644
---- a/drivers/isdn/i4l/isdn_net.c
-+++ b/drivers/isdn/i4l/isdn_net.c
-@@ -2010,6 +2010,7 @@ isdn_net_init(struct net_device *ndev)
- 	ndev->flags = IFF_NOARP|IFF_POINTOPOINT;
- 	ndev->type = ARPHRD_ETHER;
- 	ndev->addr_len = ETH_ALEN;
-+	ndev->validate_addr = NULL;
- 
- 	/* for clients with MPPP maybe higher values better */
- 	ndev->tx_queue_len = 30;
-diff --git a/drivers/media/video/cx88/cx88-cards.c b/drivers/media/video/cx88/cx88-cards.c
-index a4eb6a8..0ff3e4c 100644
---- a/drivers/media/video/cx88/cx88-cards.c
-+++ b/drivers/media/video/cx88/cx88-cards.c
-@@ -1349,6 +1349,10 @@ static const struct cx88_board cx88_boards[] = {
- 		}},
- 		/* fixme: Add radio support */
- 		.mpeg           = CX88_MPEG_DVB | CX88_MPEG_BLACKBIRD,
-+		.radio = {
-+			.type   = CX88_RADIO,
-+			.gpio0	= 0xe780,
-+		},
- 	},
- 	[CX88_BOARD_ADSTECH_PTV_390] = {
- 		.name           = "ADS Tech Instant Video PCI",
-diff --git a/drivers/media/video/ivtv/ivtv-ioctl.c b/drivers/media/video/ivtv/ivtv-ioctl.c
-index fd6826f..da9a10e 100644
---- a/drivers/media/video/ivtv/ivtv-ioctl.c
-+++ b/drivers/media/video/ivtv/ivtv-ioctl.c
-@@ -727,7 +727,8 @@ int ivtv_v4l2_ioctls(struct ivtv *itv, struct file *filp, unsigned int cmd, void
- 
- 		memset(vcap, 0, sizeof(*vcap));
- 		strcpy(vcap->driver, IVTV_DRIVER_NAME);     /* driver name */
--		strcpy(vcap->card, itv->card_name); 	    /* card type */
-+		strncpy(vcap->card, itv->card_name,
-+				sizeof(vcap->card)-1); 	    /* card type */
- 		strcpy(vcap->bus_info, pci_name(itv->dev)); /* bus info... */
- 		vcap->version = IVTV_DRIVER_VERSION; 	    /* version */
- 		vcap->capabilities = itv->v4l2_cap; 	    /* capabilities */
-diff --git a/drivers/net/tehuti.c b/drivers/net/tehuti.c
-index 21230c9..fe5be1b 100644
---- a/drivers/net/tehuti.c
-+++ b/drivers/net/tehuti.c
-@@ -625,6 +625,12 @@ static void __init bdx_firmware_endianess(void)
- 		s_firmLoad[i] = CPU_CHIP_SWAP32(s_firmLoad[i]);
- }
- 
-+static int bdx_range_check(struct bdx_priv *priv, u32 offset)
-+{
-+	return (offset > (u32) (BDX_REGS_SIZE / priv->nic->port_num)) ?
-+		-EINVAL : 0;
-+}
-+
- static int bdx_ioctl_priv(struct net_device *ndev, struct ifreq *ifr, int cmd)
- {
- 	struct bdx_priv *priv = ndev->priv;
-@@ -643,9 +649,15 @@ static int bdx_ioctl_priv(struct net_device *ndev, struct ifreq *ifr, int cmd)
- 		DBG("%d 0x%x 0x%x\n", data[0], data[1], data[2]);
- 	}
- 
-+	if (!capable(CAP_NET_ADMIN))
-+		return -EPERM;
-+
- 	switch (data[0]) {
- 
- 	case BDX_OP_READ:
-+		error = bdx_range_check(priv, data[1]);
-+		if (error < 0)
-+			return error;
- 		data[2] = READ_REG(priv, data[1]);
- 		DBG("read_reg(0x%x)=0x%x (dec %d)\n", data[1], data[2],
- 		    data[2]);
-@@ -655,6 +667,9 @@ static int bdx_ioctl_priv(struct net_device *ndev, struct ifreq *ifr, int cmd)
- 		break;
- 
- 	case BDX_OP_WRITE:
-+		error = bdx_range_check(priv, data[1]);
-+		if (error < 0)
-+			return error;
- 		WRITE_REG(priv, data[1], data[2]);
- 		DBG("write_reg(0x%x, 0x%x)\n", data[1], data[2]);
- 		break;
-diff --git a/drivers/usb/gadget/ether.c b/drivers/usb/gadget/ether.c
-index 9e732bf..ba7935d 100644
---- a/drivers/usb/gadget/ether.c
-+++ b/drivers/usb/gadget/ether.c
-@@ -1561,6 +1561,7 @@ done_set_intf:
- 				memcpy(req->buf, buf, n);
- 				req->complete = rndis_response_complete;
- 				rndis_free_response(dev->rndis_config, buf);
-+				value = n;
- 			}
- 			/* else stalls ... spec says to avoid that */
- 		}
-diff --git a/drivers/usb/serial/usb-serial.c b/drivers/usb/serial/usb-serial.c
-index 497e29a..d7fae72 100644
---- a/drivers/usb/serial/usb-serial.c
-+++ b/drivers/usb/serial/usb-serial.c
-@@ -844,6 +844,7 @@ int usb_serial_probe(struct usb_interface *interface,
- 	serial->num_interrupt_in = num_interrupt_in;
- 	serial->num_interrupt_out = num_interrupt_out;
- 
-+#if 0
- 	/* check that the device meets the driver's requirements */
- 	if ((type->num_interrupt_in != NUM_DONT_CARE &&
- 				type->num_interrupt_in != num_interrupt_in)
-@@ -857,6 +858,7 @@ int usb_serial_probe(struct usb_interface *interface,
- 		kfree(serial);
- 		return -EIO;
- 	}
-+#endif
- 
- 	/* found all that we need */
- 	dev_info(&interface->dev, "%s converter detected\n",
-diff --git a/fs/dnotify.c b/fs/dnotify.c
-index 28d01ed..eaecc4c 100644
---- a/fs/dnotify.c
-+++ b/fs/dnotify.c
-@@ -20,6 +20,7 @@
- #include <linux/init.h>
- #include <linux/spinlock.h>
- #include <linux/slab.h>
-+#include <linux/file.h>
- 
- int dir_notify_enable __read_mostly = 1;
- 
-@@ -66,6 +67,7 @@ int fcntl_dirnotify(int fd, struct file *filp, unsigned long arg)
- 	struct dnotify_struct **prev;
- 	struct inode *inode;
- 	fl_owner_t id = current->files;
-+	struct file *f;
- 	int error = 0;
- 
- 	if ((arg & ~DN_MULTISHOT) == 0) {
-@@ -92,6 +94,15 @@ int fcntl_dirnotify(int fd, struct file *filp, unsigned long arg)
- 		prev = &odn->dn_next;
- 	}
- 
-+	rcu_read_lock();
-+	f = fcheck(fd);
-+	rcu_read_unlock();
-+	/* we'd lost the race with close(), sod off silently */
-+	/* note that inode->i_lock prevents reordering problems
-+	 * between accesses to descriptor table and ->i_dnotify */
-+	if (f != filp)
-+		goto out_free;
-+
- 	error = __f_setown(filp, task_pid(current), PIDTYPE_PID, 0);
- 	if (error)
- 		goto out_free;
-diff --git a/fs/jffs2/erase.c b/fs/jffs2/erase.c
-index a1db918..4c895f3 100644
---- a/fs/jffs2/erase.c
-+++ b/fs/jffs2/erase.c
-@@ -419,9 +419,6 @@ static void jffs2_mark_erased_block(struct jffs2_sb_info *c, struct jffs2_eraseb
- 			if (jffs2_write_nand_cleanmarker(c, jeb))
- 				goto filebad;
- 		}
--
--		/* Everything else got zeroed before the erase */
--		jeb->free_size = c->sector_size;
- 	} else {
- 
- 		struct kvec vecs[1];
-@@ -449,18 +446,19 @@ static void jffs2_mark_erased_block(struct jffs2_sb_info *c, struct jffs2_eraseb
- 
- 			goto filebad;
- 		}
--
--		/* Everything else got zeroed before the erase */
--		jeb->free_size = c->sector_size;
--		/* FIXME Special case for cleanmarker in empty block */
--		jffs2_link_node_ref(c, jeb, jeb->offset | REF_NORMAL, c->cleanmarker_size, NULL);
- 	}
-+	/* Everything else got zeroed before the erase */
-+	jeb->free_size = c->sector_size;
- 
- 	down(&c->erase_free_sem);
- 	spin_lock(&c->erase_completion_lock);
-+
- 	c->erasing_size -= c->sector_size;
--	c->free_size += jeb->free_size;
--	c->used_size += jeb->used_size;
-+	c->free_size += c->sector_size;
-+
-+	/* Account for cleanmarker now, if it's in-band */
-+	if (c->cleanmarker_size && !jffs2_cleanmarker_oob(c))
-+		jffs2_link_node_ref(c, jeb, jeb->offset | REF_NORMAL, c->cleanmarker_size, NULL);
- 
- 	jffs2_dbg_acct_sanity_check_nolock(c,jeb);
- 	jffs2_dbg_acct_paranoia_check_nolock(c, jeb);
-diff --git a/fs/splice.c b/fs/splice.c
-index e313478..109153c 100644
---- a/fs/splice.c
-+++ b/fs/splice.c
-@@ -314,7 +314,7 @@ __generic_file_splice_read(struct file *in, loff_t *ppos,
- 				break;
- 
- 			error = add_to_page_cache_lru(page, mapping, index,
--					      GFP_KERNEL);
-+						mapping_gfp_mask(mapping));
- 			if (unlikely(error)) {
- 				page_cache_release(page);
- 				if (error == -EEXIST)
-diff --git a/include/net/tcp.h b/include/net/tcp.h
-index cb5b033..fbc4959 100644
---- a/include/net/tcp.h
-+++ b/include/net/tcp.h
-@@ -775,11 +775,14 @@ extern void tcp_enter_cwr(struct sock *sk, const int set_ssthresh);
- extern __u32 tcp_init_cwnd(struct tcp_sock *tp, struct dst_entry *dst);
- 
- /* Slow start with delack produces 3 packets of burst, so that
-- * it is safe "de facto".
-+ * it is safe "de facto".  This will be the default - same as
-+ * the default reordering threshold - but if reordering increases,
-+ * we must be able to allow cwnd to burst at least this much in order
-+ * to not pull it back when holes are filled.
-  */
- static __inline__ __u32 tcp_max_burst(const struct tcp_sock *tp)
- {
--	return 3;
-+	return tp->reordering;
- }
- 
- /* RFC2861 Check whether we are limited by application or congestion window
+We (the -stable team) are announcing the release of the 2.6.25.1 kernel.
+
+If fixes a number of different bugs and some security issues so that all
+users of the 2.6.25 series of kernels are strongly encouraged to
+upgrade.
+
+I'll also be replying to this message with a copy of the patch between
+2.6.25 and 2.6.25.1
+
+The updated 2.6.25.y git tree can be found at:
+        git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.25.y.git
+and can be browsed at the normal kernel.org git web browser:
+        http://git.kernel.org/?p=linux/kernel/git/stable/linux-2.6.25.y.git;a=summary
+
+thanks,
+
+greg k-h
+
+--------
+
+ Makefile                              |    2 
+ arch/alpha/kernel/osf_sys.c           |    1 
+ arch/x86/kernel/io_apic_32.c          |    1 
+ arch/x86/pci/irq.c                    |   12 ++---
+ drivers/infiniband/hw/nes/nes.c       |    4 -
+ drivers/infiniband/hw/nes/nes_cm.c    |    6 +-
+ drivers/infiniband/hw/nes/nes_hw.c    |   20 ++++-----
+ drivers/md/dm-exception-store.c       |    2 
+ drivers/media/video/cx88/cx88-cards.c |    4 +
+ drivers/media/video/ivtv/ivtv-ioctl.c |    3 -
+ drivers/media/video/tea5761.c         |   15 ++++--
+ drivers/media/video/tuner-core.c      |    6 +-
+ drivers/net/s2io.c                    |    4 -
+ drivers/net/tehuti.c                  |   15 ++++++
+ drivers/net/tg3.c                     |   52 ++++++++++++++++++++++--
+ drivers/net/tg3.h                     |    1 
+ drivers/net/wireless/b43/dma.c        |   73 ++++++++++++++++++++++++----------
+ drivers/net/wireless/b43/main.c       |   28 ++++++++++++-
+ drivers/rtc/rtc-pcf8583.c             |    2 
+ drivers/scsi/qla2xxx/qla_os.c         |    2 
+ drivers/serial/dz.c                   |    2 
+ drivers/ssb/pci.c                     |    5 ++
+ drivers/usb/core/hub.c                |    1 
+ drivers/usb/host/ohci-pci.c           |    4 +
+ drivers/usb/serial/sierra.c           |    1 
+ fs/aio.c                              |   12 +++++
+ fs/dnotify.c                          |   11 +++++
+ fs/jffs2/erase.c                      |   18 +++-----
+ include/linux/rtnetlink.h             |    4 -
+ include/net/tcp.h                     |    7 ++-
+ include/net/xfrm.h                    |    3 +
+ kernel/cgroup.c                       |    7 ++-
+ kernel/hrtimer.c                      |   34 +++++++++++++--
+ mm/pagewalk.c                         |    8 ++-
+ net/can/raw.c                         |    3 -
+ net/core/rtnetlink.c                  |    6 ++
+ net/dccp/probe.c                      |    2 
+ net/ipv4/tcp_probe.c                  |    9 +---
+ net/key/af_key.c                      |    2 
+ net/rose/af_rose.c                    |    6 +-
+ net/tipc/socket.c                     |    4 -
+ net/xfrm/xfrm_policy.c                |    2 
+ net/xfrm/xfrm_user.c                  |    2 
+ security/selinux/hooks.c              |   15 +++++-
+ 44 files changed, 318 insertions(+), 103 deletions(-)
+
+
+Al Viro (1):
+      Fix dnotify/close race (CVE-2008-1375)
+
+Alan Cox (1):
+      V4L: Fix VIDIOCGAP corruption in ivtv
+
+Alan Stern (2):
+      USB: log an error message when USB enumeration fails
+      USB: OHCI: fix bug in controller resume
+
+Andrew Vasquez (1):
+      SCSI: qla2xxx: Correct regression in relogin code.
+
+Bernard Pidoux (1):
+      rose: Socket lock was not released before returning to user space
+
+Björn Steinbrink (1):
+      x86, pci: fix off-by-one errors in some pirq warnings
+
+Bodo Stroesser (1):
+      hrtimer: timeout too long when using HRTIMER_CB_SOFTIRQ
+
+Chien Tung (1):
+      RDMA/nes: Fix adapter reset after PXE boot
+
+David Brownell (1):
+      rtc-pcf8583 build fix
+
+David Woodhouse (1):
+      JFFS2: Fix free space leak with in-band cleanmarkers
+
+Eric Paris (1):
+      SELinux: no BUG_ON(!ss_initialized) in selinux_clone_mnt_opts
+
+Francois Romieu (1):
+      tehuti: check register size (CVE-2008-1675)
+
+Greg Kroah-Hartman (1):
+      Linux 2.6.25.1
+
+Herbert Xu (1):
+      IPSEC: Fix catch-22 with algorithm IDs above 31
+
+Ivan Kokshaysky (1):
+      alpha: unbreak OSF/1 (a.out) binaries
+
+Jeff Garzik (1):
+      tehuti: move ioctl perm check closer to function start (CVE-2008-1675)
+
+Jeff Moyer (1):
+      aio: io_getevents() should return if io_destroy() is invoked
+
+Johannes Weiner (1):
+      mm: fix possible off-by-one in walk_pte_range()
+
+John Heffner (1):
+      TCP: Increase the max_burst threshold from 3 to tp->reordering.
+
+Larry Finger (1):
+      ssb: Fix all-ones boardflags
+
+Li Zefan (1):
+      cgroup: fix a race condition in manipulating tsk->cg_list
+
+Linus Torvalds (1):
+      drivers/net/tehuti: use proper capability check for raw IO access
+
+Matt Carlson (1):
+      tg3: 5701 DMA corruption fix
+
+Mauro Carvalho Chehab (1):
+      V4L: tea5761: bugzilla #10462: tea5761 autodetection code were broken
+
+Michael Buesch (3):
+      b43: Workaround invalid bluetooth settings
+      b43: Add more btcoexist workarounds
+      b43: Workaround DMA quirks
+
+Mikulas Patocka (1):
+      dm snapshot: fix chunksize sector conversion
+
+PJ Waskiewicz (1):
+      x86: Fix 32-bit x86 MSI-X allocation leakage
+
+Patrick McHardy (1):
+      RTNETLINK: Fix bogus ASSERT_RTNL warning
+
+Pavel Emelyanov (1):
+      net: Fix wrong interpretation of some copy_to_user() results.
+
+Roel Kluin (1):
+      dz: test after postfix decrement fails in dz_console_putchar()
+
+Roland Dreier (1):
+      RDMA/nes: Free IRQ before killing tasklet
+
+Sreenivasa Honnur (2):
+      S2io: Fix memory leak during free_tx_buffers
+      S2io: Version update for memory leak fix during free_tx_buffers
+
+Stefan Seyfried (1):
+      USB: Add HP hs2300 Broadband Wireless Module to sierra.c
+
+Steven Toth (1):
+      V4L: cx88: enable radio GPIO correctly
+
+Thomas Gleixner (1):
+      hrtimer: raise softirq unlocked to avoid circular lock dependency
+
+Tom Quetchenbach (1):
+      tcp: tcp_probe buffer overflow and incorrect return value
+
