@@ -1,65 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764379AbYEASgR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764680AbYEASiN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764379AbYEASgR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 May 2008 14:36:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761127AbYEASgD
+	id S1764680AbYEASiN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 May 2008 14:38:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755407AbYEASh7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 May 2008 14:36:03 -0400
-Received: from e35.co.us.ibm.com ([32.97.110.153]:37865 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755002AbYEASgB (ORCPT
+	Thu, 1 May 2008 14:37:59 -0400
+Received: from mtaout03-winn.ispmail.ntl.com ([81.103.221.49]:58994 "EHLO
+	mtaout03-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753357AbYEASh6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 May 2008 14:36:01 -0400
-Date: Thu, 1 May 2008 13:35:59 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Cc: Andrew Morgan <morgan@kernel.org>, linux-security-module@vger.kernel.org,
-       Michael Kerrisk <mtk.manpages@gmail.com>
-Subject: [PATCH] capabilities: add bounding set to /proc/self/status
-Message-ID: <20080501183559.GA21279@sergelap.austin.ibm.com>
+	Thu, 1 May 2008 14:37:58 -0400
+Date: Thu, 1 May 2008 19:37:51 +0100
+From: Samuel Thibault <samuel.thibault@ens-lyon.org>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       akpm@osdl.org, torvalds@osdl.org
+Subject: Re: This month's price for the most useless new Kconfig help text ...
+Message-ID: <20080501183750.GA4785@implementation>
+Mail-Followup-To: Samuel Thibault <samuel.thibault@ens-lyon.org>,
+	Stefan Richter <stefanr@s5r6.in-berlin.de>,
+	Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+	akpm@osdl.org, torvalds@osdl.org
+References: <20080501120959.GA16700@basil.nowhere.org> <20080501131900.GL4797@implementation.uk.xensource.com> <4819FF99.6020504@s5r6.in-berlin.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <4819FF99.6020504@s5r6.in-berlin.de>
+User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There is currently no way to query the bounding set of another
-task.  As there appears to be no security reason not to, and
-as Michael Kerrisk points out the following valid reasons to do
-so exist:
+Stefan Richter, le Thu 01 May 2008 19:36:25 +0200, a écrit :
+> Samuel Thibault wrote:
+> >--- linux/drivers/accessibility/Kconfig.orig	2008-05-01 
+> >14:13:03.000000000 +0100
+> >+++ linux/drivers/accessibility/Kconfig	2008-05-01 
+> >14:12:50.000000000 +0100
+> >@@ -3,6 +3,13 @@
+> > 	---help---
+> > 	  Enable a submenu where accessibility items may be enabled.
+> > 
+> >+	  Accessibility handles all special kinds of hardware devices or
+> >+	  software adapters which help people with disabilities (e.g.
+> >+	  blindness) to use computers.
+> >+
+> >+	  That includes braille devices, speech synthesis, keyboard
+> >+	  remapping, etc.
+> >+
+> > 	  If unsure, say N.
+> 
+> Would you mind replacing also the first sentence by something which 
+> indicates whether this option alone already changes the kernel build?
 
-* consistency (I can see all of the other per-thread/process sets in
-/proc/.../status)
-* debugging -- I could imagine that it would make the job of debugging
-an application that uses capabilities a little simpler.
+Here it is.
 
-this patch adds the bounding set to /proc/self/status right after
-the effective set.
+Samuel
 
-If at all possible (and if acked by Andrew Morgan) it would be nice to
-get this into the 2.6.26 cycle.  But I realize it probably is too late
-for that.
 
-Signed-off-by: Serge E. Hallyn <serue@us.ibm.com>
-Acked-by: Michael Kerrisk <mtk.manpages@gmail.com>
----
- fs/proc/array.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
 
-diff --git a/fs/proc/array.c b/fs/proc/array.c
-index c135cbd..160dd4a 100644
---- a/fs/proc/array.c
-+++ b/fs/proc/array.c
-@@ -297,6 +297,7 @@ static inline void task_cap(struct seq_file *m, struct task_struct *p)
- 	render_cap_t(m, "CapInh:\t", &p->cap_inheritable);
- 	render_cap_t(m, "CapPrm:\t", &p->cap_permitted);
- 	render_cap_t(m, "CapEff:\t", &p->cap_effective);
-+	render_cap_t(m, "CapBnd:\t", &p->cap_bset);
- }
+Indicate that enabling just CONFIG_ACCESSIBILITY does not add code.
+
+Signed-off-by: Samuel Thibault <samuel.thibault@ens-lyon.org>
+
+--- linux/drivers/accessibility/Kconfig.orig	2008-05-01 19:34:11.000000000 +0100
++++ linux/drivers/accessibility/Kconfig	2008-05-01 19:35:56.000000000 +0100
+@@ -1,8 +1,6 @@
+ menuconfig ACCESSIBILITY
+ 	bool "Accessibility support"
+ 	---help---
+-	  Enable a submenu where accessibility items may be enabled.
+-
+ 	  Accessibility handles all special kinds of hardware devices or
+ 	  software adapters which help people with disabilities (e.g.
+ 	  blindness) to use computers.
+@@ -10,6 +8,11 @@
+ 	  That includes braille devices, speech synthesis, keyboard
+ 	  remapping, etc.
  
- static inline void task_context_switch_counts(struct seq_file *m,
--- 
-1.5.3.6
-
++	  Say Y here to get to see options for accessibility.
++	  This option alone does not add any kernel code.
++
++	  If you say N, all options in this submenu will be skipped and disabled.
++
+ 	  If unsure, say N.
+ 
+ if ACCESSIBILITY
