@@ -1,147 +1,154 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760839AbYEANFH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761105AbYEANFn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760839AbYEANFH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 May 2008 09:05:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756072AbYEANE4
+	id S1761105AbYEANFn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 May 2008 09:05:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757522AbYEANFf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 May 2008 09:04:56 -0400
-Received: from tomts36-srv.bellnexxia.net ([209.226.175.93]:38509 "EHLO
-	tomts36-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752485AbYEANEz (ORCPT
+	Thu, 1 May 2008 09:05:35 -0400
+Received: from fg-out-1718.google.com ([72.14.220.152]:54571 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755170AbYEANFe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 May 2008 09:04:55 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AkQFAGNcGUhMROPA/2dsb2JhbACBU6sN
-Date: Thu, 1 May 2008 09:04:53 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Luca Tettamanti <kronos.it@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [BUG] smp alternatives: sleeping function called from invalid
-	context
-Message-ID: <20080501130453.GA28965@Krystal>
-References: <20080430195110.GA28743@dreamland.darkstar.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Thu, 1 May 2008 09:05:34 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-disposition:message-id:content-type:content-transfer-encoding;
+        b=I31v0u70XH32tMYtvQeMY/m9GfmzUVxH7dfQ+Ygu8F3p58xiIQg1ughGWYSooqTIaHCxsHQQ2Z6Uaxic6UAUzxL2M2y0nrHAia3X4i2SrrWO780xzLMhHbpJZzVqiFpwUWRO/AofZEiiZlzGzLwYa2xVduphuhGpSIvYNVs56zQ=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: Slow DOWN, please!!!
+Date: Thu, 1 May 2008 15:16:42 +0200
+User-Agent: KMail/1.9.9
+Cc: Willy Tarreau <w@1wt.eu>, Linus Torvalds <torvalds@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jiri Slaby <jirislaby@gmail.com>
+References: <20080429.190352.137408408.davem@davemloft.net> <20080501055045.GC18597@1wt.eu> <200805011353.19335.rjw@sisk.pl>
+In-Reply-To: <200805011353.19335.rjw@sisk.pl>
+MIME-Version: 1.0
 Content-Disposition: inline
-In-Reply-To: <20080430195110.GA28743@dreamland.darkstar.lan>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 09:04:11 up 62 days,  9:15,  3 users,  load average: 0.29, 0.44,
-	0.44
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Message-Id: <200805011516.43159.bzolnier@gmail.com>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Luca Tettamanti (kronos.it@gmail.com) wrote:
-> Hello,
-> with git current I'm seeing these warnings when bringing CPUs down:
+On Thursday 01 May 2008, Rafael J. Wysocki wrote:
+> On Thursday, 1 of May 2008, Willy Tarreau wrote:
+> > On Wed, Apr 30, 2008 at 06:19:56PM -0700, Linus Torvalds wrote:
+> > > 
+> > > 
+> > > On Thu, 1 May 2008, Rafael J. Wysocki wrote:
+> > > > 
+> > > > > I do _not_ want to slow down development by setting some kind of "quality 
+> > > > > bar" - but I do believe that we should keep our quality high, not because 
+> > > > > of any hoops we need to jump through, but because we take pride in the 
+> > > > > thing we do.
+> > > > 
+> > > > Well, we certainly should, but do we always remeber about it?  Honest, guv?
+> > > 
+> > > Hey, guv, do you _honestly_ believe that some kind of ISO-9000-like 
+> > > process generates quality?
+> > > 
+> > > And I dislike how people try to conflate "quality" and "merging speed" as 
+> > > if there was any reason what-so-ever to believe that they are related.
+> > > 
+> > > You (and Andrew) have tried to argue that slowing things down results in 
+> > > better quality, and I simply don't for a moment believe that. I believe 
+> > > the exact opposite.
+> > 
+> > Note that I'm not necessarily arguing for slowing down, but for reduced
+> > functional conflicts (which slow down may help but it's not the only
+> > solution). I think that refining the time resolution might achieve the
+> > same goal. Instead of merging 10000 changes which each have 1% chance
+> > of breaking any other area, and have all developers try to hunt bugs
+> > caused by unrelated changes, I think we could do that in steps.
+> > 
+> > To illustrate, instead of changing 100 areas with one of them causing
+> > breaking in the other ones, and having 100 victims try to hunt the
+> > bug in 99 other areas, then theirs, and finally insult the faulty
+> > author, we could merge 50 areas in version X and 50 in X+1 (or 3*33
+> > or 4*25, etc...). That way, we would only have 50 victims trying to
+> > find the bug in 49 other areas (or 32 or 24). Less people wasting
+> > their time will mean faster validation of changes, and possibly
+> > faster release cycle with better quality.
+> > 
+> > People send you their crap every two months. If you accept half of
+> > it every month, they don't have to sleep on their code, and at the
+> > same time at most half of them are in trouble during half the time
+> > (since bugs are found faster).
 > 
+> Well, as far as I'm concerned, that will work too.
+> 
+> > > So if we can get the discussion *away* from the "let's slow things down", 
+> > > then I'm interested. Because at that point we don't have to fight made-up 
+> > > arguments about something irrelevant.
+> > 
+> > well, is "let's split changes" ok ?
+> 
+> How about:
+> 
+> (1) Merge a couple of trees at a time (one tree at a time would be ideal, but
+>     that's impossible due to the total number of trees).
+> (2) After (1) give testers some time to report problems introduced by the
+>     merge.
+> (3) Wait until the most urgent problems are resolved.  Revert the offending
+>     changes if there's no solution within given time.
+> (4) Repeat for another couple of trees.
+> (5) Arrange things so that every tree gets merged once every two months.
+> 
+> This would also give us an idea of which trees introduce more problems.
 
+...and what would you do with such information?
 
-Hi Luca,
+I'm not actually worried about my tree but if (theoretically) it happens to
+be amongst the "problematic" ones I would be a bit pissed by blame shifting,
+especially given that it is very difficult to compare different trees as
+they (usually) deal with quite different areas of the code (some are messy
+and problematic, yet critical while others can be more forgiving).
 
-Does your tree include the patch posted here ?
+Also slowing down things to focus on quality is really a bad idea.  You can
+trust me on this one, I've tried it once on the smaller scale and it was a
+big disaster cause people won't focus on quality just because you want them
+to.  They'll continue to operate in the usual way and try to workaround you
+instead (which in turn causes extra tensions which may become quiet warfare).
+In the end you will have a lot more problems to deal with...
 
-http://lkml.org/lkml/2008/4/19/139
+Same goes for any other kind of improvement by incorporating "punishment" as
+the part of the process.  You are much better helping people and trying them
+to understand that they should apply some changes to their way of work because
+it would be also beneficial for _them_, not only for _you_.
 
-Mathieu
+Now regarding the development model - I think that there is really no need
+for a revolution yet, instead we should focus on refining the current process
+(which works great IMO), just to summarize various ideas given by people:
 
-> [13794.108805] CPU0 attaching NULL sched-domain.
-> [13794.108815] CPU1 attaching NULL sched-domain.
-> [13794.124695] Broke affinity for irq 22
-> [13794.192376] CPU 1 is now offline
-> [13794.192381] lockdep: fixing up alternatives.
-> [13794.192389] SMP alternatives: switching to UP code
-> [13794.192395] BUG: sleeping function called from invalid context at /home/kronos/src/linux-2.6.git/mm/slab.c:3049
-> [13794.192398] in_atomic():1, irqs_disabled():0
-> [13794.192401] 4 locks held by bash/11413:
-> [13794.192404]  #0:  (&buffer->mutex){--..}, at: [<ffffffff802c638c>] sysfs_write_file+0x36/0x10c
-> [13794.192417]  #1:  (cpu_add_remove_lock){--..}, at: [<ffffffff80253479>] cpu_down+0x12/0x32
-> [13794.192427]  #2:  (&cpu_hotplug.lock){--..}, at: [<ffffffff80253024>] cpu_hotplug_begin+0x36/0xa6
-> [13794.192435]  #3:  (smp_alt){--..}, at: [<ffffffff8021182f>] alternatives_smp_switch+0x63/0x1a5
-> [13794.192446] Pid: 11413, comm: bash Not tainted 2.6.25-64-05976-ge31a94e-dirty #68
-> [13794.192449]
-> [13794.192450] Call Trace:
-> [13794.192681]  [<ffffffff80280f61>] __kmalloc+0x29/0x7d
-> [13794.192695]  [<ffffffff80276415>] __get_vm_area_node+0x9a/0x1b1
-> [13794.192703]  [<ffffffff80209391>] clear_ti_thread_flag+0xc/0x12
-> [13794.192709]  [<ffffffff80276585>] get_vm_area_caller+0x2b/0x2e
-> [13794.192715]  [<ffffffff8021159d>] text_poke+0xdd/0x156
-> [13794.192719]  [<ffffffff80276cc5>] vmap+0x2d/0x5a
-> [13794.192727]  [<ffffffff8021159d>] text_poke+0xdd/0x156
-> [13794.192736]  [<ffffffff80446f1b>] _etext+0x0/0x5
-> [13794.192742]  [<ffffffff80211666>] alternatives_smp_unlock+0x50/0x65
-> [13794.192752]  [<ffffffff80211934>] alternatives_smp_switch+0x168/0x1a5
-> [13794.192758]  [<ffffffff80219439>] __cpus_weight+0x3f/0x41
-> [13794.192767]  [<ffffffff802532b4>] _cpu_down+0x18f/0x264
-> [13794.192796]  [<ffffffff8025348b>] cpu_down+0x24/0x32
-> [13794.192805]  [<ffffffff8043259d>] store_online+0x29/0x67
-> [13794.192812]  [<ffffffff802c642b>] sysfs_write_file+0xd5/0x10c
-> [13794.192824]  [<ffffffff80283cba>] vfs_write+0xa5/0xde
-> [13794.192832]  [<ffffffff80283da5>] sys_write+0x45/0x6b
-> [13794.192842]  [<ffffffff80221ed2>] ia32_sysret+0x0/0xa
-> [13794.192857]
-> [13794.208799] CPU0 attaching NULL sched-domain.
-> 
-> ...and up:
-> 
-> [13803.369635] lockdep: fixing up alternatives.
-> [13803.369640] SMP alternatives: switching to SMP code
-> [13803.369645] BUG: sleeping function called from invalid context at /home/kronos/src/linux-2.6.git/mm/slab.c:3049
-> [13803.369648] in_atomic():1, irqs_disabled():0
-> [13803.369651] 4 locks held by bash/11413:
-> [13803.369654]  #0:  (&buffer->mutex){--..}, at: [<ffffffff802c638c>] sysfs_write_file+0x36/0x10c
-> [13803.369666]  #1:  (cpu_add_remove_lock){--..}, at: [<ffffffff8044115e>] cpu_up+0x40/0x64
-> [13803.369676]  #2:  (&cpu_hotplug.lock){--..}, at: [<ffffffff80253024>] cpu_hotplug_begin+0x36/0xa6
-> [13803.369686]  #3:  (smp_alt){--..}, at: [<ffffffff8021182f>] alternatives_smp_switch+0x63/0x1a5
-> [13803.369697] Pid: 11413, comm: bash Not tainted 2.6.25-64-05976-ge31a94e-dirty #68
-> [13803.369700]
-> [13803.369701] Call Trace:
-> [13803.369712]  [<ffffffff80280f61>] __kmalloc+0x29/0x7d
-> [13803.369721]  [<ffffffff80276415>] __get_vm_area_node+0x9a/0x1b1
-> [13803.369731]  [<ffffffff80209391>] clear_ti_thread_flag+0xc/0x12
-> [13803.369738]  [<ffffffff80446f1b>] _etext+0x0/0x5
-> [13803.369743]  [<ffffffff80276585>] get_vm_area_caller+0x2b/0x2e
-> [13803.369749]  [<ffffffff8021159d>] text_poke+0xdd/0x156
-> [13803.369753]  [<ffffffff80276cc5>] vmap+0x2d/0x5a
-> [13803.369763]  [<ffffffff8021159d>] text_poke+0xdd/0x156
-> [13803.369773]  [<ffffffff802118c5>] alternatives_smp_switch+0xf9/0x1a5
-> [13803.369795]  [<ffffffff8043f29e>] native_cpu_up+0x224/0x7fc
-> [13803.369804]  [<ffffffff8043ee95>] do_fork_idle+0x0/0x20
-> [13803.369833]  [<ffffffff80441098>] _cpu_up+0x91/0x117
-> [13803.369842]  [<ffffffff80441175>] cpu_up+0x57/0x64
-> [13803.369849]  [<ffffffff804325b7>] store_online+0x43/0x67
-> [13803.369856]  [<ffffffff802c642b>] sysfs_write_file+0xd5/0x10c
-> [13803.369867]  [<ffffffff80283cba>] vfs_write+0xa5/0xde
-> [13803.369875]  [<ffffffff80283da5>] sys_write+0x45/0x6b
-> [13803.369886]  [<ffffffff80221ed2>] ia32_sysret+0x0/0xa
-> [13803.369898]
-> [13803.380408] Booting processor 1/1 ip 6000
-> [13803.389154] Initializing CPU#1
-> [13803.389154] masked ExtINT on CPU#1
-> 
-> The bug has been introduced (assuming that I'm using git blame correctly) by this commit:
-> 
-> commit e587cadd8f47e202a30712e2906a65a0606d5865
-> Author: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-> Date:   Thu Mar 6 08:48:49 2008 -0500
-> 
->     x86: enhance DEBUG_RODATA support - alternatives
-> 
-> 
-> In both code paths - cpu_up() and cpud_down() - alternatives_smp_switch ends up
-> calling text_poke() (via alternatives_smp_{,un}lock) with smp_alt held;
-> then text_poke does a vmap which might sleep!
-> 
-> Luca
-> -- 
-> Windows NT crashed.
-> I'm the Blue Screen of Death.
-> No one hears your screams.
+- try to persuade few black sheeps that skipping linux-next completely for
+  whole patch series is a really bad idea and that they should try to spend
+  a bit more time on planning for merge instead of LastMinute assembly+push
+  (by doing it right they could spend more time after merge to prepare for
+  the next one or fixing old bugs instead of chasing new regressions, overall
+  they should have _more_ time for development by doing it right)
 
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+- encourage flatting of merges during the merge window so instead of 1-2 big
+  merges per tree at the beginning of the merge you have few smaller ones
+  (majority of maintainers do it this way already)
+
+- more testing for linux-next, distros may be of a great help here (-mm and
+  -next often catches bugs that you wouldn't have ever imagined in the first
+  place and they get fixed before the problem propagates into Linus' tree)
+
+- more documentation for lowering the entry barrier for people who would like
+  to review the code (what Al has mentioned in this thread is a great idea
+  so no need for me to repeat it here)
+
+- more co-operation between people from different areas of the code
+  (i.e. testing linux-next instead of your own tree)
+
+and just not to forget - changes happen by people actually putting the work
+into them not by endless discussions.
+
+Thanks,
+Bart
