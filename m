@@ -1,52 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760022AbYEAMuk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760432AbYEAMv3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760022AbYEAMuk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 May 2008 08:50:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754116AbYEAMu3
+	id S1760432AbYEAMv3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 May 2008 08:51:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756586AbYEAMvT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 May 2008 08:50:29 -0400
-Received: from lucidpixels.com ([75.144.35.66]:40734 "EHLO lucidpixels.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753340AbYEAMu2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 May 2008 08:50:28 -0400
-Date: Thu, 1 May 2008 08:50:27 -0400 (EDT)
-From: Justin Piszcz <jpiszcz@lucidpixels.com>
-To: Alex Davis <alex14641@yahoo.com>
-cc: linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: Sharing disks amoung multiple software RAIDs
-In-Reply-To: <771640.4981.qm@web50209.mail.re2.yahoo.com>
-Message-ID: <alpine.DEB.1.10.0805010849380.20043@p34.internal.lan>
-References: <771640.4981.qm@web50209.mail.re2.yahoo.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Thu, 1 May 2008 08:51:19 -0400
+Received: from mx1.ukfsn.org ([77.75.108.10]:43297 "EHLO mail.ukfsn.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753543AbYEAMvS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 May 2008 08:51:18 -0400
+Message-ID: <4819BCC4.8030504@dgreaves.com>
+Date: Thu, 01 May 2008 13:51:16 +0100
+From: David Greaves <david@dgreaves.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.12 (X11/20080406)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+To: alex14641@yahoo.com
+CC: linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: Sharing disks amoung multiple software RAIDs
+References: <771640.4981.qm@web50209.mail.re2.yahoo.com>
+In-Reply-To: <771640.4981.qm@web50209.mail.re2.yahoo.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Thu, 1 May 2008, Alex Davis wrote:
-
+Alex Davis wrote:
 > Is this a bad thing? I'm guessing that it is, but I want independent
 > confirmation before I spoke to someone I know who's doing this.
->
+> 
 > Thanks
->
->
->      ____________________________________________________________________________________
-> Be a better friend, newshound, and
-> know-it-all with Yahoo! Mobile.  Try it now.  http://mobile.yahoo.com/;_ylt=Ahu06i62sR8HDtDypao8Wcj9tAcJ
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-raid" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->
+Depends what you're trying to do.
 
-What is the use case, why would you want to do that?
-I have seen people on the list do it before, for example are you going to 
-be utilizing both raids at the same time?  If so, I would advise against 
-it.
+It has the potential to increase i/o contention so it's not going to be a
+performance win. Many systems really don't need to worry about performance. But
+if you have 2x250 Gb drives and 1x500 Gb drive then your data is at less risk if
+you partition the 500Gb into 2x250Gb and then mirror each partition with a full
+250Gb disk. That would be a perfectly rational setup in many instances.
 
-What is the reasoning?
+Equally, md has a mechanism to share hot spares amongst multiple RAIDs - but I
+doubt that's what you meant.
+
+David
+
 
