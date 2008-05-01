@@ -1,77 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763109AbYEASkR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764603AbYEASnp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763109AbYEASkR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 May 2008 14:40:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764769AbYEASjx
+	id S1764603AbYEASnp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 May 2008 14:43:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755093AbYEASni
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 May 2008 14:39:53 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:35931 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1764727AbYEASjv (ORCPT
+	Thu, 1 May 2008 14:43:38 -0400
+Received: from nic.NetDirect.CA ([216.16.235.2]:47190 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755326AbYEASnh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 May 2008 14:39:51 -0400
-Date: Thu, 1 May 2008 11:39:38 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: "Theodore Ts'o" <tytso@MIT.EDU>
-cc: Christoph Hellwig <hch@lst.de>, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org
-Subject: Re: [PATCH, RFC] ext3: move headers out of include/linux
-In-Reply-To: <E1JrZxd-0004c8-7E@closure.thunk.org>
-Message-ID: <alpine.LFD.1.10.0805011134520.5994@woody.linux-foundation.org>
-References: <E1JrZxd-0004c8-7E@closure.thunk.org>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 1 May 2008 14:43:37 -0400
+X-Greylist: delayed 451 seconds by postgrey-1.27 at vger.kernel.org; Thu, 01 May 2008 14:43:37 EDT
+X-Originating-Ip: 216.16.235.2
+Date: Thu, 1 May 2008 14:35:51 -0400
+From: Chris Frey <cdfrey@foursquare.net>
+To: linux-kernel@vger.kernel.org
+Subject: Re: Slow DOWN, please!!!
+Message-ID: <20080501183551.GA26149@foursquare.net>
+References: <20080429.190352.137408408.davem@davemloft.net> <20080430183149.78d97597.akpm@linux-foundation.org> <alpine.LFD.1.10.0804301841290.5994@woody.linux-foundation.org> <200805011259.47343.rjw@sisk.pl> <alpine.LFD.1.10.0805010816340.5994@woody.linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.1.10.0805010816340.5994@woody.linux-foundation.org>
+User-Agent: Mutt/1.4.1i
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam (whitelisted),
+	SpamAssassin (not cached, score=-16.457, required 5,
+	autolearn=not spam, ALL_TRUSTED -1.80, BAYES_00 -15.00,
+	PLING_PLING 0.34)
+X-Net-Direct-Inc-MailScanner-From: <cdfrey@netdirect.ca>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, May 01, 2008 at 08:26:27AM -0700, Linus Torvalds wrote:
+> So let me repeat:
+> 
+>  (1) we have new code. We always *will* have new code, hopefully. A few
+>      million lines pe year.
+
+Pardon this comment from an inexperienced kernel hacker, but it seems to
+me that one of the main problems is subsystems stomping on each other
+during the merge window, and a general confusion as to who is responsible
+for what bugs that appear.
+
+Perhaps a shorter merge window, using a round-robin approach, based on
+subsystem, would help alleviate these issues?
+
+This would:
+
+	- give people a "known" tree to base their subsystem patches on,
+		when their turn comes around
+
+	- give a rough schedule if the round-robin was always consistent
+		in order, or made known in advance
+
+	- a shorter window would keep people from waiting too long for
+		their turn
+
+	- give those responsible for the currently merged subsystem
+		motivation and clarity to fix bugs that do appear during
+		their merge window
 
 
-On Thu, 1 May 2008, Theodore Ts'o wrote:
->
->  fs/ext3/acl.c              |    4 +-
->  fs/ext3/balloc.c           |    5 +-
->  fs/ext3/bitmap.c           |    2 +-
->  fs/ext3/dir.c              |    3 +-
->  fs/ext3/ext3.h             |  897 ++++++++++++++++++++++++++++++++++++++++++++
->  fs/ext3/ext3_i.h           |  147 ++++++++
->  fs/ext3/ext3_jbd.c         |    7 +-
->  fs/ext3/ext3_jbd.h         |  225 +++++++++++
->  fs/ext3/ext3_sb.h          |   86 +++++
->  fs/ext3/file.c             |    5 +-
->  fs/ext3/fsync.c            |    5 +-
->  fs/ext3/hash.c             |    3 +-
->  fs/ext3/ialloc.c           |    5 +-
->  fs/ext3/inode.c            |    4 +-
->  fs/ext3/ioctl.c            |    5 +-
->  fs/ext3/namei.c            |    5 +-
->  fs/ext3/resize.c           |    6 +-
->  fs/ext3/super.c            |    5 +-
->  fs/ext3/symlink.c          |    3 +-
->  fs/ext3/xattr.c            |    4 +-
->  fs/ext3/xattr_security.c   |    4 +-
->  fs/ext3/xattr_trusted.c    |    4 +-
->  fs/ext3/xattr_user.c       |    5 +-
->  include/linux/ext3_fs.h    |  896 -------------------------------------------
->  include/linux/ext3_fs_i.h  |  147 --------
->  include/linux/ext3_fs_sb.h |   86 -----
->  include/linux/ext3_jbd.h   |  226 -----------
+Problems I see with this approach:
 
-I'd suggest not sending out patches like this.
+	- those at the end of the cycle get the shaft, if previous changes
+		affect their work
 
-If the patch is largely a rename one, and sent out for review, just use 
-"git diff -M -p --stat --summary", because it's going to be a *lot* more 
-reviewable that way.
+	- political issues with determining the order of the round-robin
+		schedule
 
-Yeah, it means that people need git to apply it, but by now we can 
-probably take that for granted - and more importantly, even if they don't 
-have git installed: when you send out of RFC, aren't you looking for 
-commentary more than people to apply and test it?
 
-And then the patch saying that it's a rename (with perhaps changes to the 
-guard #ifdef thing) would be a lot more clear. Nobody is going to read a 
-patch that is 2800 lines of mostly create/delete with presumably almost no 
-actual changes?
+If I'm overlooking something, I'm sure someone will correct me. :-)
 
-		Linus
+- Chris
+
