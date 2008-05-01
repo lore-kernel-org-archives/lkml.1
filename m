@@ -1,99 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765897AbYEATnn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765638AbYEATof@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765897AbYEATnn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 May 2008 15:43:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762338AbYEATnU
+	id S1765638AbYEATof (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 May 2008 15:44:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758293AbYEAToZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 May 2008 15:43:20 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:49639 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1761365AbYEATnT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 May 2008 15:43:19 -0400
-Date: Thu, 1 May 2008 12:43:17 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Harvey Harrison <harvey.harrison@gmail.com>
-Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] kernel: add helpers for ascii character conversion
-Message-Id: <20080501124317.089a0d02.akpm@linux-foundation.org>
-In-Reply-To: <1209669780.24729.151.camel@brick>
-References: <1209669780.24729.151.camel@brick>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 1 May 2008 15:44:25 -0400
+Received: from mail.lang.hm ([64.81.33.126]:42140 "EHLO bifrost.lang.hm"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753323AbYEAToY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 May 2008 15:44:24 -0400
+Date: Thu, 1 May 2008 12:46:41 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard
+To: Willy Tarreau <w@1wt.eu>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
+       Jiri Slaby <jirislaby@gmail.com>
+Subject: Re: Slow DOWN, please!!!
+In-Reply-To: <20080501192829.GQ8474@1wt.eu>
+Message-ID: <alpine.DEB.1.10.0805011239040.9847@asgard>
+References: <20080429.190352.137408408.davem@davemloft.net> <200805011259.47343.rjw@sisk.pl> <alpine.LFD.1.10.0805010816340.5994@woody.linux-foundation.org> <200805011909.40203.rjw@sisk.pl> <alpine.LFD.1.10.0805011022370.5994@woody.linux-foundation.org>
+ <20080501185032.GA30883@1wt.eu> <alpine.DEB.1.10.0805011155520.9847@asgard> <20080501192829.GQ8474@1wt.eu>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 01 May 2008 12:23:00 -0700
-Harvey Harrison <harvey.harrison@gmail.com> wrote:
+On Thu, 1 May 2008, Willy Tarreau wrote:
 
-> Add helpers for getting an ascii hex char for the high and low
-> nibble of a byte.  Also add a small helper to get an integer
-> value from a given hex char.
-> 
-> Included here are a few of the current places that roll their
-> own versions being moved to the common helper.
+> On Thu, May 01, 2008 at 12:07:53PM -0700, david@lang.hm wrote:
+>> On Thu, 1 May 2008, Willy Tarreau wrote:
+>>
+>> I suspect that they would not have, and if I'm right the result of merging
+>> half as much wouldn't be twice as many releases, but rather approximatly
+>> the same release schedule with more piling up for the next release.
+>
+> no, this is exactly what *not* to do. Linus is right about the risk of
+> getting more stuff at once. If we merge less things, we *must* be able
+> to speed up the process. Half the patches to cross-check in half the
+> time should be easier than all patches in full time. The time to fix
+> a problem within N patches is O(N^2).
 
-ahh, someone cares ;)
+in general you are correct, however I don't think that it's the general 
+bugs that end up delaying the releases, think it's the nasty, hard to 
+identify and understand bugs that delay the releases, and I don't think 
+that the debugging of those will speed up much.
 
-Does this mean that
+>> even individual git trees that do get a fair bit of testing (like
+>> networking for example) run into odd and hard to debug problems when
+>> exposed to a wider set of hardware and loads. having the networking
+>> changes go in every 4 months (with 4 months worth of changes) instead of
+>> every 2 months (with 2 months worth of changes) will just mean that there
+>> will be more problems in this area, and since they will be more
+>> concentrated in that area it will be harder to fix them all fast as the
+>> same group of people are needed for all of them.
+>
+> You're perfectly right and that's exactly not what I'm proposing. BTW,
+> having two halves will also get more of the merge job done the side of
+> developers, where testing is being done before submission. So in the
+> end, we should also get *less* regressions caused by each submission.
 
-y:/usr/src/linux-2.6.25> grep -ri '"0123456789abcdef"' . | wc -l
-40
+Ok, I guess I don't understand what you are proposing then.
 
-will decrease?
+I thought that you were proposing going from 2 week merge + 6 week 
+stabilize = release to 1 week merge half + 3 week stabilize = release
 
-> --- a/include/linux/kernel.h
-> +++ b/include/linux/kernel.h
-> @@ -277,6 +277,21 @@ extern void print_hex_dump(const char *level, const char *prefix_str,
->  extern void print_hex_dump_bytes(const char *prefix_str, int prefix_type,
->  			const void *buf, size_t len);
->  #define hex_asc(x)	"0123456789abcdef"[x]
-> +#define hex_asc_lo(x)	hex_asc(((x) & 0x0f))
-> +#define hex_asc_hi(x)	hex_asc(((x) & 0xf0) >> 4)
+it now sounds as if you are saying 1 week merge + x week stabilize + 1 
+week merge + x week stabilize = release
 
-umm, this might mean that each .c file which uses hex_asc_lo/hi gets
-its own copy of "0123456789abcdef".  I believe that gcc/ld are getting
-better at handling this, but I haven't checked, and I don't know which
-versions get it right nor in which way.  etc.
+can you clarify?
 
-So it might be better to give the kernel the One True Digitstring in
-lib/something.c and export that to modules.
+>> if several maintainers think that you are correct that doing a merge with
+>> far fewer changes will be a lot faster, they can test this in the real
+>> world by skipping one release. just send Linus a 'no changes this time'
+>> instead of a pull request. If you are right the stable release will happen
+>> significantly faster and they can say 'I told you so' and in the next
+>> release have a fair chance of convincing other maintainers to skip a
+>> release.
+>
+> again, this cannot work because this would result in slowing them down,
+> and it's not what I'm proposing.
 
-> +static inline u8 hex_to_int(char ch)
-> +{
-> +	/*
-> +	 * Make ch lower-case, works only for digits and letters
-> +	 */
-> +	ch |= 0x20;
-> +	if ((ch >= 'a') && (ch <= 'f'))
-> +		return (ch - 'a' + 10);
-> +	if ((ch >= '0') && (ch <= '9'))
-> +		return (ch - '0');
-> +	return (-1);
-> +}
+if merging fewer catagoies of stuff doesn't speed up the release cycle 
+then you are right, it would just slow things down. however I thought you 
+were arguing that if we merged fewer catagories of stuff each cycle we 
+could speed up the cycle. I'm saying that maintainers can choose to test 
+this experimentally and see if it works. if it works we can shift to doing 
+more of it, if it doesn't they only delay things by a couple of months one 
+time.
 
-probably should be uninlined.
+you would need to have several maintainers decide to participate in the 
+experiment or the difference in cycle time may not be noticable.
 
-return-is-not-a-function ;)
-
->  #define pr_emerg(fmt, arg...) \
->  	printk(KERN_EMERG fmt, ##arg)
-> diff --git a/lib/hexdump.c b/lib/hexdump.c
-> index 3435465..32b0bd7 100644
-> --- a/lib/hexdump.c
-> +++ b/lib/hexdump.c
-> @@ -93,8 +93,8 @@ void hex_dump_to_buffer(const void *buf, size_t len, int rowsize,
->  		for (j = 0; (j < rowsize) && (j < len) && (lx + 4) < linebuflen;
->  		     j++) {
->  			ch = ptr[j];
-> -			linebuf[lx++] = hex_asc(ch >> 4);
-> -			linebuf[lx++] = hex_asc(ch & 0x0f);
-> +			linebuf[lx++] = hex_asc_hi(ch);
-> +			linebuf[lx++] = hex_asc_lo(ch);
->  			linebuf[lx++] = ' ';
->  		}
->  		ascii_column = 3 * rowsize + 2;
-
+David Lang
