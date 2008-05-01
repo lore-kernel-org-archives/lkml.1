@@ -1,47 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759899AbYEAMAw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759503AbYEAMDR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759899AbYEAMAw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 May 2008 08:00:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757993AbYEAMAZ
+	id S1759503AbYEAMDR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 May 2008 08:03:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756484AbYEAMDB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 May 2008 08:00:25 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:42185 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757598AbYEAMAX (ORCPT
+	Thu, 1 May 2008 08:03:01 -0400
+Received: from nf-out-0910.google.com ([64.233.182.186]:25338 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756242AbYEAMDA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 May 2008 08:00:23 -0400
-Date: Thu, 1 May 2008 13:00:16 +0100
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Boaz Harrosh <bharrosh@panasas.com>
-Cc: Harvey Harrison <harvey.harrison@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [PATCH 09/10] misc: fix returning void-valued expression
-	warnings
-Message-ID: <20080501120016.GV5882@ZenIV.linux.org.uk>
-References: <1209593024.24729.119.camel@brick> <4819ACF6.9000403@panasas.com>
+	Thu, 1 May 2008 08:03:00 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=L9P0+lw95xADYp9LKl/LdCA+2z+LPhZMkIOQ/pAFEVw4SscDcA8qMoiuOOKzWUTMhB14dMvT+0I6iRV/kP5Wnc4v1XpP7kPros02dxyvb4TJ/ptbZ6rmE3uC4PJyFfBCwbZs0FZLUAHU16mwf3bXX9eDo8itsjknM9QUzqn0WzM=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: [git patches] IDE fixes
+Date: Thu, 1 May 2008 14:18:38 +0200
+User-Agent: KMail/1.9.9
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <4819ACF6.9000403@panasas.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Message-Id: <200805011418.39999.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 01, 2008 at 02:43:50PM +0300, Boaz Harrosh wrote:
 
-> I don't know who invented sparse, but I like this form of return.
-> 1 - It saves me the curly brackets and extra return line. But mainly
-> 2 - It is a programing statement that says: "Me here I'm an equivalent 
->   to that other call". So if in the future that inner function starts
->   to return, say, an error value, with the first style the compiler will
->   error. But with the second style the new error return will be silently
->   ignored. So these are not equivalent replacements. The former is a much
->   stronger bond between the caller and the callie.
+Regression fix for some host drivers using MMIO, i.e. siimage
+(big thanks to Jeremy Kerr for the detailed bug analysis).
 
-3.  6.8.6.4(1): A return statement with an expression shall not appear in
-a function whose return type is void.
 
-Write in C, please.
+Linus, please pull from:
+
+master.kernel.org:/pub/scm/linux/kernel/git/bart/ide-2.6.git/
+
+to receive the following updates:
+
+ drivers/ide/ide-probe.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
+
+
+Bartlomiej Zolnierkiewicz (1):
+      ide: fix early setup of hwif->host_flags
+
+
+diff --git a/drivers/ide/ide-probe.c b/drivers/ide/ide-probe.c
+index 099a0fe..591deda 100644
+--- a/drivers/ide/ide-probe.c
++++ b/drivers/ide/ide-probe.c
+@@ -1347,7 +1347,8 @@ static void ide_init_port(ide_hwif_t *hwif, unsigned int port,
+ 	    (d->host_flags & IDE_HFLAG_FORCE_LEGACY_IRQS))
+ 		hwif->irq = port ? 15 : 14;
+ 
+-	hwif->host_flags = d->host_flags;
++	/* ->host_flags may be set by ->init_iops (or even earlier...) */
++	hwif->host_flags |= d->host_flags;
+ 	hwif->pio_mask = d->pio_mask;
+ 
+ 	/* ->set_pio_mode for DTC2278 is currently limited to port 0 */
