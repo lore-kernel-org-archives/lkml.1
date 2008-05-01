@@ -1,77 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765391AbYEAVkv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932575AbYEAVmh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765391AbYEAVkv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 May 2008 17:40:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764365AbYEAVk0
+	id S932575AbYEAVmh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 May 2008 17:42:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761084AbYEAVm2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 May 2008 17:40:26 -0400
-Received: from smtp116.sbc.mail.sp1.yahoo.com ([69.147.64.89]:38398 "HELO
-	smtp116.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1763029AbYEAVkY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 May 2008 17:40:24 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=B88ra9PFCO4mPs+XYsSkDeXp4zZ2C1aB0VqoAS73JSusTZb1XxP5it+BxDZysWzm4DbKi9Em90xIN6aWj8A4zAj/3tZHFsBkIhXKpdXxi5cP3JWwUlYxegTyk9wzHxE+P2gs7xfNX9CAc/7LxAqa21ggkuzWheI9apwMT1+UhjU=  ;
-X-YMail-OSG: XUTqjo8VM1lJlUKFJnyT.mmgB1G4f1AvKSBIYSiAycGLVb20JeOJfBCUiilLZfYKlpvpjZTgaDdIHZvb1DvRvwzPFL6RuV3RlxjNS7HQOJ3CdB8YyEOqjUf25LlG1KAqXCA-
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Ben Nizette <bn@niasdigital.com>
-Subject: Re: [patch/rfc 2.6.25-git v2] gpio: sysfs interface
-Date: Thu, 1 May 2008 14:40:17 -0700
-User-Agent: KMail/1.9.6
-Cc: lkml <linux-kernel@vger.kernel.org>, Trent Piepho <tpiepho@freescale.com>,
-       hartleys <hartleys@visionengravers.com>,
-       Mike Frysinger <vapier.adi@gmail.com>, Bryan Wu <cooloney@kernel.org>
-References: <200804281239.51729.david-b@pacbell.net> <200804301434.25211.david-b@pacbell.net> <1209598093.3377.30.camel@moss.renham>
-In-Reply-To: <1209598093.3377.30.camel@moss.renham>
+	Thu, 1 May 2008 17:42:28 -0400
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:53405 "EHLO smtp5.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751299AbYEAVm1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 May 2008 17:42:27 -0400
+Date: Fri, 2 May 2008 00:41:38 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Daniel Walker <dwalker@mvista.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
+       lucho@ionkov.net, ericvh@gmail.com
+Subject: Re: [PATCH] fix flags length in net 9p
+Message-ID: <20080501214138.GT29330@cs181133002.pp.htv.fi>
+References: <Pine.LNX.4.58.0805011706070.12785@gandalf.stny.rr.com> <20080501141919.78b7dc4f.akpm@linux-foundation.org> <1209677160.12461.267.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Message-Id: <200805011440.18347.david-b@pacbell.net>
+In-Reply-To: <1209677160.12461.267.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 30 April 2008, Ben Nizette wrote:
+On Thu, May 01, 2008 at 02:26:00PM -0700, Daniel Walker wrote:
 > 
-> On Wed, 2008-04-30 at 14:34 -0700, David Brownell wrote:
-> > Simple sysfs interface for GPIOs.
+> On Thu, 2008-05-01 at 14:19 -0700, Andrew Morton wrote:
+> > On Thu, 1 May 2008 17:08:05 -0400 (EDT)
+> > Steven Rostedt <rostedt@goodmis.org> wrote:
 > > 
-> > /sys/class/gpio
-> >     /control ... to request a GPIO be imported or returned
-> >     /gpioN ... for each exported GPIO #N
-> > 	    /value ... always readable, writes fail for input GPIOs
-> > 	    /direction ... r/w as: in, out (default low); write high, low
-> > 	/gpiochipN ... for each gpiochip; #N is its first GPIO
-> > 	    /base ... (r/o) same as N
-> > 	    /label ... (r/o) descriptive, not necessarily unique
-> > 	    /ngpio ... (r/o) number of GPIOs; numbered N .. N+(ngpio - 1)
+> > > Some files in the net/9p directory uses "int" for flags. This can
+> > > cause hard to find bugs on some architectures. This patch converts the
+> > > flags to use "long" instead.
+> > 
+> > gargh.
+> > 
+> > > This bug was discovered by doing an allyesconfig make on the -rt kernel
+> > > where checks are done to ensure all flags are of size sizeof(long).
+> > 
+> > I was about to suggest that we do something like that...
+> > 
+> > I wonder how messy it is.  I long ago lost the ability to follow the
+> > convolutions in include/linux/spinlock*.h :(  gotta patch?
 > 
-> You dropped the 'device' symlink?  Sure it won't always be available but
-> I did quite like the idea of being able to walk back through sysfs and
-> discover, for example, the SPI chip select to which it's attached.
+> The check that's in -rt for this uses BUILD_BUG_ON(), and it's extremely
+> cryptic when there is a failure .. Most people will be baffled why the
+> build stopped. If a check went into mainline it should at least give you
+> some sort of idea what's happening ..
 
-Just didn't describe it in that summary ... like several other
-standard attributes, like "uevent" and "subsystem".  The only
-thing different about "device" is that when the gpio_chip doesn't
-say what device it uses, that will (necessarily) be missing.
-And again, that's just like all other class device nodes.
+A cryptic compile error is _much_ better than a hard to find runtime 
+error.
 
+> Daniel
 
-> > +/*
-> > + * /sys/class/gpio/control ... write-only
-> > + *	integer N:  non-negative == export; negative == unexport
-> > + */
-> > +static ssize_t control_store(struct class *class, const char *buf, size_t len)
-> 
-> Unexport gpio 0?
+cu
+Adrian
 
-Yeah, gotta fix that.  Unfortunately "-0" == "0" ... I'll have to
-handle any leading "-" by hand.  Trivial fix, in all.
+-- 
 
-- Dave
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
