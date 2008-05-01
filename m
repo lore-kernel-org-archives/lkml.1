@@ -1,91 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765884AbYEAXuK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761048AbYEAXvW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765884AbYEAXuK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 May 2008 19:50:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754165AbYEAXt5
+	id S1761048AbYEAXvW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 May 2008 19:51:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754165AbYEAXvO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 May 2008 19:49:57 -0400
-Received: from fmmailgate03.web.de ([217.72.192.234]:44714 "EHLO
-	fmmailgate03.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754076AbYEAXt4 (ORCPT
+	Thu, 1 May 2008 19:51:14 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:54703 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753910AbYEAXvO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 May 2008 19:49:56 -0400
-Message-ID: <002c01c8abe6$0e62e890$6400a8c0@bui.materna.com>
-From: "Roland" <devzero@web.de>
-To: <linux-kernel@vger.kernel.org>
-Cc: <James.Bottomley@HansenPartnership.com>, <jeff@garzik.org>
-Subject: modprobe aha1542 oops with git17
-Date: Fri, 2 May 2008 01:49:54 +0200
+	Thu, 1 May 2008 19:51:14 -0400
+Date: Fri, 2 May 2008 01:51:12 +0200 (CEST)
+From: Jan Engelhardt <jengelh@medozas.de>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+cc: =?UTF-8?Q?Martin_MOKREJ=C5=A0?= <mmokrejs@ribosome.natur.cuni.cz>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.23.17 & 2.6.24.5 and maybe earlier: pata_marvell: need to
+ disable DMA to get rid of '(ATA bus error)', 'ata7.00: status: { DRDY ERR
+ }', 'ata7.00: error: { ICRC ABRT }'
+In-Reply-To: <20080501200851.2e14d3b8@core>
+Message-ID: <alpine.LNX.1.10.0805020150460.6463@fbirervta.pbzchgretzou.qr>
+References: <4819FDAF.7050005@ribosome.natur.cuni.cz> <20080501200851.2e14d3b8@core>
+User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	format=flowed;
-	charset="iso-8859-1";
-	reply-type=original
-Content-Transfer-Encoding: 7bit
-X-Priority: 3
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook Express 6.00.2900.3138
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3198
-X-Provags-ID: V01U2FsdGVkX19a7oK+0wxIqX7MMZPNRwif3yHLFzSliL55Mnb6
-	Gd+E6Jk7Ez8Jr9cVktkTaww8kL2weF+O42i0bm95mXSZeRkvOt
-	UYe9mH3KA=
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2.6.25-git17-default on vmware - i`m getting oops when modprobe aha1542 (ok, 
-makes no sense in vmware, but i think this is a regression because it never 
-happend before. i did the same test with older kernels)
 
+On Thursday 2008-05-01 21:08, Alan Cox wrote:
 
-BUG: unable to handle kernel NULL pointer dereference at 00000004
-IP: [<d0820766>] :scsi_mod:scsi_destroy_command_freelist+0xd/0x4f
-*pde = 00000000
-Oops: 0000 [#1] SMP
-Modules linked in: aha1542(+) iptable_filter ip_tables ip6table_filter 
-ip6_tables x_tables ipv6 af_packet microcode firmware_class fuse loop dm_mod 
-ide_cd_mod cdrom pata_acpi ata_piix ahci ata_generic libata dock 
-ide_pci_generic rtc_cmos shpchp rtc_core intel_agp piix parport_pc pcnet32 
-rtc_lib i2c_piix4 parport mii container agpgart ac pci_hotplug button 
-ide_core i2c_core uhci_hcd usbcore edd ext3 mbcache jbd fan mptsas 
-scsi_transport_sas mptfc scsi_transport_fc scsi_tgt mptspi mptscsih mptbase 
-scsi_transport_spi sd_mod sg scsi_mod thermal processor [last unloaded: 
-speedstep_lib]
+>> To get rid of the errors, I can use libata.dma=0 kernel
+>> command-line parameter. Unfortunately, this sets all libata
+>> devices to PIO4 mode. How can I set just this one? I tried
+>> 'libata.force=7.00:pio4' but it did not help.
+>
+>libata.dma=3 will stop DMA being used for CF devices (except those that
+>decide to pretend to be ATA classes). This one comes up a lot as many CF
+>adapters are simply not adequate for UDMA.
 
-Pid: 2543, comm: modprobe Not tainted (2.6.25-git17-default #1)
-EIP: 0060:[<d0820766>] EFLAGS: 00010217 CPU: 0
-EIP is at scsi_destroy_command_freelist+0xd/0x4f [scsi_mod]
-EAX: c0c08800 EBX: 00000000 ECX: 00000000 EDX: fffffffc
-ESI: c0c08800 EDI: c0c08818 EBP: d0b4469c ESP: cf3c7e44
- DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
-Process modprobe (pid: 2543, ti=cf3c6000 task=ce8e94a0 task.ti=cf3c6000)
-Stack: c0c08800 00000000 00000000 d0820e05 c0c08960 c037a7cc c0231479 
-c01cc33b
-       c0c08964 c01cc2fe 00000330 c01ccd5a ce1a5b40 d0a7a980 d08dd8ca 
-cda0d4e0
-       c01106a6 d0a7a8b8 00000000 c01106bc 00000000 c0c08800 00000000 
-c036c380
-Call Trace:
- [<d0820e05>] scsi_host_dev_release+0x68/0x93 [scsi_mod]
- [<c0231479>] device_release+0x34/0x56
- [<c01cc33b>] kobject_release+0x3d/0x4f
- [<c01cc2fe>] kobject_release+0x0/0x4f
- [<c01ccd5a>] kref_put+0x36/0x40
- [<d08dd8ca>] aha1542_detect+0x790/0x7b8 [aha1542]
- [<c01106a6>] do_flush_tlb_all+0x0/0x3c
- [<c01106bc>] do_flush_tlb_all+0x16/0x3c
- [<d08dd0cc>] init_this_scsi_driver+0x56/0xc4 [aha1542]
- [<c013db4c>] sys_init_module+0x1694/0x17a7
- [<c0125fe7>] __request_region+0x0/0x74
- [<c01079de>] sys_mmap2+0x62/0x77
- [<c010491f>] sysenter_past_esp+0x78/0xb9
- =======================
-Code: 08 75 0f 8b 06 e8 10 b2 94 ef 8b 46 04 e8 08 b2 94 ef 5b b8 90 1b 84 
-d0 5e e9 c1 13 aa ef 57 56 89 c6 53 8d 78 18 eb 1c 8d 53 fc <8b> 42 08 8b 4a 
-04 89 41 04 89 08 89 5a 08 89 5a 04 8b 46 10 e8
-EIP: [<d0820766>] scsi_destroy_command_freelist+0xd/0x4f [scsi_mod] SS:ESP 
-0068:cf3c7e44
----[ end trace 3406cf5eaefbd6bf ]---
-
-
-
+Perhaps the kernel could do this automatically once it sees the
+status code?
