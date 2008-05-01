@@ -1,75 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762093AbYEARNU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763749AbYEAROx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762093AbYEARNU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 May 2008 13:13:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763477AbYEARMs
+	id S1763749AbYEAROx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 May 2008 13:14:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759410AbYEAROo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 May 2008 13:12:48 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:42041 "EHLO smtp5.pp.htv.fi"
+	Thu, 1 May 2008 13:14:44 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:51320 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762796AbYEARMr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 May 2008 13:12:47 -0400
-Date: Thu, 1 May 2008 20:12:00 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: "Kok, Auke" <auke-jan.h.kok@intel.com>
-Cc: devzero@web.de, linux-kernel@vger.kernel.org
-Subject: Re: RFC: starting a kernel-testers group for newbies
-Message-ID: <20080501171200.GH29330@cs181133002.pp.htv.fi>
-References: <261643149@web.de> <4819EF53.6090808@intel.com>
+	id S1758071AbYEAROn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 May 2008 13:14:43 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Subject: Re: Some sort corruption of my Thermal Subsystem after suspend to ram
+Date: Thu, 1 May 2008 19:14:37 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Len Brown <lenb@kernel.org>, Gabriel C <nix.or.die@googlemail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-pm@lists.linux-foundation.org, pavel@suse.cz
+References: <4818D9AB.3040402@googlemail.com> <200805011457.51238.rjw@sisk.pl> <20080501130612.GB19922@srcf.ucam.org>
+In-Reply-To: <20080501130612.GB19922@srcf.ucam.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <4819EF53.6090808@intel.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Message-Id: <200805011914.38511.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 01, 2008 at 09:26:59AM -0700, Kok, Auke wrote:
-> devzero@web.de wrote:
-> >> I'll try to do this:
-> >> - create some Wiki page
-> >> - get a mailing list at vger
-> >> - point newbies to this mailing list
-> >> - tell people there which kernels to test
-> >> - figure out and document stuff like how to bisect between -next kernels
-> >> - help them to do whatever is required for a proper bug report
+On Thursday, 1 of May 2008, Matthew Garrett wrote:
+> On Thu, May 01, 2008 at 02:57:49PM +0200, Rafael J. Wysocki wrote:
+> > On Thursday, 1 of May 2008, Matthew Garrett wrote:
+> > > Perhaps we should be more aggressive about restoring PCI config space if 
+> > > there's no driver bound to a device. The alternative in this case would 
+> > > seem to be to write a driver for this device that does nothing other 
+> > > than handle suspend/resume.
 > > 
-> > good idea :)
-> > 
-> > one more:
-> > reported bugs sometimes get lost in lkml (or elsewhere) and may not get the attention they need.
-> > 
-> > maybe there are not enough people who put some steadiness into tracking bugs (i.e. put them in bugzilla and make sure they get tracked/resolved) ?
+> > Well, we have default suspend/resume for PCI devices.  They are called for
+> > devices that have no drivers bound to them and execute
+> > pci_restore_state()/pci_restore_state(), among other things.  Isn't that
+> > sufficient?
 > 
-> I would say that this should be one of the main goals - have a team of people who
-> can consistently be assigned bugs for duplication and verification. Getting newly
-> opened bugs reproduced can be half the solution (and a great way to learn the
-> kernel on the side).
->...
+> That only saves the "standard" registers, not the rest of config space.
 
-That is already working in the kernel Bugzilla for years
-(with Andrew currently doing most of the work).
+Hm, in that case I'd probably opt for writing a special driver for this
+particular device.
 
-You might be in the lucky and unusual position that you have the 
-hardware for reproducing most bugs in the drivers you maintain,
-but that's nothing that's generally true.
-
-Bugs in e1000 have a good chance of being resolved, if you want a really
-bad example think of e.g. a bug in some unmaintained ISA network driver
-
-We already have 1350 open bugs in the kernel Bugzilla, and the real 
-problem is not how to track them but to find someone who resolves them.
-
-> Auke
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+Thanks,
+Rafael
