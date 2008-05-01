@@ -1,91 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933380AbYEAWwd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933488AbYEAWwy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933380AbYEAWwd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 May 2008 18:52:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932954AbYEAWwF
+	id S933488AbYEAWwy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 May 2008 18:52:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933211AbYEAWwH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 May 2008 18:52:05 -0400
-Received: from yw-out-2324.google.com ([74.125.46.31]:14281 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933081AbYEAWwC (ORCPT
+	Thu, 1 May 2008 18:52:07 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:56395 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762343AbYEAWwG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 May 2008 18:52:02 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=d8upyoCSSPPxnG0mnQUapvGcidOs7hDT8zhvhiUkrDOxkLbTeK2fqKkhWBIiv5WIeIAxvbXFPu0WuyqOzeIv9lv0YgnyqbTB1YwLqWGTgAM1UdsDQepn/bHAbpC2pVzh/XAeR29T0HtrpkuS/BR14R43ecAmbbag1YyC3npc9Vg=
-Message-ID: <86802c440805011552t213b9badv926baeb0b4bc5227@mail.gmail.com>
-Date: Thu, 1 May 2008 15:52:02 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH] x86: mtrr cleanup for converting continuous to discrete - auto detect v2
-Cc: "Andrew Morton" <akpm@linux-foundation.org>, "Ingo Molnar" <mingo@elte.hu>,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       "Gabriel C" <nix.or.die@googlemail.com>,
-       "Mika Fischer" <mika.fischer@zoopnet.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-In-Reply-To: <481A3AD6.1040905@zytor.com>
+	Thu, 1 May 2008 18:52:06 -0400
+Date: Thu, 1 May 2008 18:52:05 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: LKML <linux-kernel@vger.kernel.org>
+cc: akpm@osdl.org, Alain Degreffe <eczema@ecze.com>
+Subject: [PATCH] fix irq flags for iuu_phoenix.c
+Message-ID: <Pine.LNX.4.58.0805011851230.12785@gandalf.stny.rr.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200804272337.40130.yhlu.kernel@gmail.com>
-	 <481A1D3A.5040202@zytor.com>
-	 <86802c440805011402h1e452b57ma27ffa6ad7b50238@mail.gmail.com>
-	 <481A31E2.2020800@zytor.com>
-	 <86802c440805011420g78a6abberaae6b765663ed33b@mail.gmail.com>
-	 <481A356C.5090502@zytor.com>
-	 <86802c440805011431i88dec8aiadcb143b5f7648b@mail.gmail.com>
-	 <481A372C.5080808@zytor.com>
-	 <86802c440805011444i56611b1ave44a714da7988fa@mail.gmail.com>
-	 <481A3AD6.1040905@zytor.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 1, 2008 at 2:49 PM, H. Peter Anvin <hpa@zytor.com> wrote:
-> Yinghai Lu wrote:
->
-> >
-> > >
-> > > >
-> > > >
-> > >  That's not the point.  I understand you want to flatten the layout.
-> The
-> > > point is: why do you need manual tunables for the algorithm to do the
-> right
-> > > thing?
-> > >
-> >
-> > optimal result is not losing covering for ranges that is originally
-> > covered, and still keep as many of spare mtrr entries for X server
-> > driver.
-> > we only have 8 mtrrs, could lose some covering because of run out of mtrr
-> regs.
-> > So we need to search it according to chunk/gran with ram ranges that
-> > is defined by old mtrr layout.
-> >
->
->  Yes.  You have a search space of less than 1000 possible combinations
-> (64..20 bits), so it hardly is any reason to not search the entire universe
-> of possibilities, even if by exhaustive search.
 
-only search 78
-2g, 1g, ...1m, and half matrix 13 * 6..
+The file drivers/usb/serial/iuu_phoenix.c uses "int" for flags. This can
+cause hard to find bugs on some architectures. This patch converts the
+flags to use "long" instead.
 
-and don't need to search than 78.
+This bug was discovered by doing an allyesconfig make on the -rt kernel
+where checks are done to ensure all flags are of size sizeof(long).
 
-also if we don't need to get the more spare regs than
-mtrr_spare_reg_nr, we could search less... about 10 etc.
+Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+---
+ drivers/usb/serial/iuu_phoenix.c |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
->
->  Now, if even that searching can't come up with the optimal solution (if one
-> exists) in all cases, then the algorithm is broken.
+Index: linux-compile.git/drivers/usb/serial/iuu_phoenix.c
+===================================================================
+--- linux-compile.git.orig/drivers/usb/serial/iuu_phoenix.c	2008-05-01 16:58:50.000000000 -0400
++++ linux-compile.git/drivers/usb/serial/iuu_phoenix.c	2008-05-01 18:45:03.000000000 -0400
+@@ -643,7 +643,7 @@ static void read_buf_callback(struct urb
+ static int iuu_bulk_write(struct usb_serial_port *port)
+ {
+ 	struct iuu_private *priv = usb_get_serial_port_data(port);
+-	unsigned int flags;
++	unsigned long flags;
+ 	int result;
+ 	int i;
+ 	char *buf_ptr = port->write_urb->transfer_buffer;
+@@ -694,7 +694,7 @@ static void iuu_uart_read_callback(struc
+ {
+ 	struct usb_serial_port *port = urb->context;
+ 	struct iuu_private *priv = usb_get_serial_port_data(port);
+-	unsigned int flags;
++	unsigned long flags;
+ 	int status;
+ 	int error = 0;
+ 	int len = 0;
+@@ -759,7 +759,7 @@ static int iuu_uart_write(struct usb_ser
+ 			  int count)
+ {
+ 	struct iuu_private *priv = usb_get_serial_port_data(port);
+-	unsigned int flags;
++	unsigned long flags;
+ 	dbg("%s - enter", __func__);
 
-because we only have 8 mtrrs, and user may specify mtrr_spare_reg_nr =
-2 or 3 to get more entries for the graphics cards...
-then can not the optimal setting without losing any covering.
+ 	if (count > 256)
 
-so if the optimal is there (only need to search to 2g), it will catch it.
-
-YH
