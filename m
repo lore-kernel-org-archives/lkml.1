@@ -1,51 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760002AbYEAGMu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758787AbYEAGP2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760002AbYEAGMu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 May 2008 02:12:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758408AbYEAGMi
+	id S1758787AbYEAGP2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 May 2008 02:15:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753835AbYEAGPU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 May 2008 02:12:38 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:40735 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753597AbYEAGML (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 May 2008 02:12:11 -0400
-Message-ID: <48195E69.3030701@redhat.com>
-Date: Wed, 30 Apr 2008 23:08:41 -0700
-From: Ulrich Drepper <drepper@redhat.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080418)
+	Thu, 1 May 2008 02:15:20 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:35709 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753548AbYEAGPU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 May 2008 02:15:20 -0400
+Date: Thu, 1 May 2008 08:15:18 +0200 (CEST)
+From: Jan Engelhardt <jengelh@medozas.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Dmitri Vorobiev <dmitri.vorobiev@gmail.com>, torvalds@linux-foundation.org,
+       rjw@sisk.pl, davem@davemloft.net, linux-kernel@vger.kernel.org,
+       jirislaby@gmail.com, mingo@elte.hu
+Subject: Re: Slow DOWN, please!!!
+In-Reply-To: <20080430151007.0ace4fa2.akpm@linux-foundation.org>
+Message-ID: <alpine.LNX.1.10.0805010812360.5623@fbirervta.pbzchgretzou.qr>
+References: <20080429.190352.137408408.davem@davemloft.net> <200804302136.58005.rjw@sisk.pl> <20080430131537.1f7a0914.akpm@linux-foundation.org> <alpine.LFD.1.10.0804301325260.2980@woody.linux-foundation.org> <20080430135405.ddc42075.akpm@linux-foundation.org>
+ <4818E7E3.7080705@gmail.com> <20080430151007.0ace4fa2.akpm@linux-foundation.org>
+User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
 MIME-Version: 1.0
-To: bsn.0007@gmail.com
-CC: libc-alpha@sourceware.org, Jan Blunck <jblunck@suse.de>,
-       Erez Zadok <ezk@cs.sunysb.edu>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, viro@zeniv.linux.org.uk,
-       Christoph Hellwig <hch@lst.de>, Mingming Cao <cmm@us.ibm.com>,
-       Dave Hansen <haveblue@us.ibm.com>,
-       Trond Myklebust <trond.myklebust@fys.uio.no>,
-       bharata@linux.vnet.ibm.com, David Woodhouse <dwmw2@infradead.org>
-Subject: Re: [RFC PATCH 1/2] Union Mount: glibc readdir support
-References: <20080429133201.GA9938@localhost.localdomain> <20080429133346.GB9938@localhost.localdomain>
-In-Reply-To: <20080429133346.GB9938@localhost.localdomain>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
 
-Before anything further is discussed I need to know how you expect to
-handle NFS?  I don't see how, with a userlevel readdir implementation,
-you can support NFS.
+On Thursday 2008-05-01 00:10, Andrew Morton wrote:
+>> 
+>> Andrew, the latter thing is a very good point. For me personally, the fact
+>> that -mm is not available via git is the major obstacle for trying your
+>> tree more frequently than just a few times per year.
+>
+>Every -mm release if available via git://, as described in the release
+>announcements.
+[...]
+>> How difficult it
+>> would be to switch to git for you?
+>
+>Fatal, I expect.  A tool which manages source-code files is just the wrong
+>paradigm.  I manage _changes_ against someone else's source files.
 
-- --
-➧ Ulrich Drepper ➧ Red Hat, Inc. ➧ 444 Castro St ➧ Mountain View, CA ❖
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-Comment: Using GnuPG with Fedora - http://enigmail.mozdev.org
+Would you mind using stgit? That you way have the queue patch
+functionality, yet a simple git-push -f will send the whole
+patch stack over to a repo (without the stgit bits that is),
+leaving what looks like a regular tree with just lots of
+recent commits. Does not even need extra scripts to do a
+patchset->git conversion.
 
-iEYEARECAAYFAkgZXmkACgkQ2ijCOnn/RHSFfwCgj/8c4C267owRAcKw//OF7z5E
-kgkAn0chMraZqjmzFcWsQVgN4l4ZrD/X
-=VXir
------END PGP SIGNATURE-----
+>> For busy (or lazy) people like myself, the big problem with linux-next are
+>> the frequent merge breakages, when pulling the tree stops with "you are in
+>> the middle of a merge conflict".
+>
+>Really?  Doesn't Stephen handle all those problems?  It should be a clean
+>fetch each time?
+
+Indeed, assuming the remote is set up and you have a local branch,
+`git reset --hard mm/master` after a fetch is the thing.
+But be sure not to have any changed files.
