@@ -1,83 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761942AbYEAP32@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762043AbYEAPaY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761942AbYEAP32 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 May 2008 11:29:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760388AbYEAP3T
+	id S1762043AbYEAPaY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 May 2008 11:30:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757513AbYEAPaJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 May 2008 11:29:19 -0400
-Received: from rv-out-0708.google.com ([209.85.198.243]:53428 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755305AbYEAP3S (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 May 2008 11:29:18 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=eP2YqV+LlsbtMwF0kPGLVW+7tnkwUKvaDhaGxAqrQL/qLCCQtGfmhgFAwmuXLol/FxI5tJYPU/nCFeC0whCPx26HM3DCfABjXjobCmvJz7HfmGBIvNHEvGA7p9x8zmKz3qSTmE4SrQKjGL62B0fBz4QO5sGRDzKHtxX2nGifzis=
-Message-ID: <2c0942db0805010829r50ea361ja9e62a33991dc640@mail.gmail.com>
-Date: Thu, 1 May 2008 08:29:18 -0700
-From: "Ray Lee" <ray-lk@madrabbit.org>
-To: "Bartlomiej Zolnierkiewicz" <bzolnier@gmail.com>
+	Thu, 1 May 2008 11:30:09 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:35975 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757005AbYEAPaH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 May 2008 11:30:07 -0400
 Subject: Re: Slow DOWN, please!!!
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, "Willy Tarreau" <w@1wt.eu>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "David Miller" <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Jiri Slaby" <jirislaby@gmail.com>
-In-Reply-To: <200805011516.43159.bzolnier@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+From: Kasper Sandberg <lkml@metanurb.dk>
+To: David Newall <davidn@davidnewall.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org
+In-Reply-To: <481947AF.4090101@davidnewall.com>
 References: <20080429.190352.137408408.davem@davemloft.net>
-	 <20080501055045.GC18597@1wt.eu> <200805011353.19335.rjw@sisk.pl>
-	 <200805011516.43159.bzolnier@gmail.com>
-X-Google-Sender-Auth: 3d849cbb017b2a15
+	 <4817EF91.4080800@davidnewall.com>
+	 <20080429.211835.130816277.davem@davemloft.net>
+	 <48186E57.5070805@davidnewall.com>
+	 <alpine.LFD.1.10.0804300739350.2997@woody.linux-foundation.org>
+	 <4818B8A7.4000902@davidnewall.com>
+	 <alpine.LFD.1.10.0804301127020.2980@woody.linux-foundation.org>
+	 <4818C0BF.5020002@davidnewall.com>
+	 <alpine.LFD.1.10.0804301202200.2980@woody.linux-foundation.org>
+	 <4818C571.8040609@davidnewall.com>
+	 <alpine.LFD.1.10.0804301223220.2980@woody.linux-foundation.org>
+	 <481947AF.4090101@davidnewall.com>
+Content-Type: text/plain
+Date: Thu, 01 May 2008 17:28:20 +0200
+Message-Id: <1209655700.27499.28.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.4.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 1, 2008 at 6:16 AM, Bartlomiej Zolnierkiewicz
-<bzolnier@gmail.com> wrote:
->
-> On Thursday 01 May 2008, Rafael J. Wysocki wrote:
->  > How about:
->  >
->  > (1) Merge a couple of trees at a time (one tree at a time would be ideal, but
->  >     that's impossible due to the total number of trees).
->  > (2) After (1) give testers some time to report problems introduced by the
->  >     merge.
->  > (3) Wait until the most urgent problems are resolved.  Revert the offending
->  >     changes if there's no solution within given time.
->  > (4) Repeat for another couple of trees.
->  > (5) Arrange things so that every tree gets merged once every two months.
->  >
->  > This would also give us an idea of which trees introduce more problems.
->
->  ...and what would you do with such information?
-[...]
->  Same goes for any other kind of improvement by incorporating "punishment" as
->  the part of the process.
+On Thu, 2008-05-01 at 14:01 +0930, David Newall wrote:
+<snip>
+> 
+> Linus Torvalds also wrote:
+> > You complain how I don't release kernels that 
+> > are stable, but without any suggestions on what the issue might be
+> 
+> You do release kernels that are unstable, and you call them "stable",
+> but I'm sure I said that inadequate review and testing are causes, which
+> I think counts as a suggestion on what the issue might be. It's been a
+> repeating theme in this thread, and I'm talking about what everybody
+> else is saying, not what I'm saying, so again, you know that I'm not
+> making this up.
 
-When a teacher assigns grades in a class, it's not punishment, it's feedback.
+this is kindof bullshit, You can never be sure that something works
+perfectly for everyone, if there were to be so excessive testing that
+you would be willing to make such a bold claim, any "stable" kernel
+would be years in testing.. Linux stability also seems to be okay, and
+people who wants to lower risk of problems can simply choose to use
+slightly older versions.
 
-I don't think anyone *intends* to push crap into the tree. However,
-with the barrier to getting things into the tree so low, some may feel
-there's less incentive to try to get things right the first (or
-second) time. It would be nice to provide that incentive.
+What i find more of a problem is long term effects and problems of
+changes.
 
-Normally, it'd be peer-review of the uncommitted patches. We don't
-have a lot of that going on here, though. So,
-peer-review-after-the-fact, ie, who placed this massive turd in the
-tree, and everyone swivels an eye over there and asks what went wrong,
-and how do we prevent it in the future. Those conversations seem to be
-happening already, time to time.
+For instance, Linux has slowly and steadily been getting alot more
+sensitive to IO, and ALOT more memory hungry..
 
-And as a policy suggestion, if we're past rc1 and someone has
-identified a commit as the root of a regression/bug, then the policy
-should be just to revert it immediately, no questions asked. Let the
-original author work with the person who identified the problem and
-resend a fixed commit later. We lose testers in the meantime, and
-perhaps the extra effort involved in having the author work out the
-issues and redo the patch will help prevent drive-by patching in the
-future.
+I Recently found a system with a 2.6.4 kernel, and when i upgraded to
+2.6.23, i saw memory usage increase from ~250mb to around 500. I
+upgraded to .25 to see if it was some weird bug, but it is the same.
+
+Unfortunately i cannot investigate more, as i only had the box for a
+very short time, but this is alot more concerning to me.
+
+Unfortunately i dont think i can easily reproduce this as i am unsure
+how to actually get to test 2.6.0 through .24 easily..
+
+> 
+> Stop telling the world that 2.6.25 is ready for them when you know it's
+> not. It's now ready for beta testing, and no more. Is 2.6.24 ready for
+> the world yet? There are still problems being reported with it.
+> 
+> 
+
+Well.. its doing a quite nice job on my new workstation :)
+
+<snip>
+
