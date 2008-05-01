@@ -1,27 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933751AbYEAXIl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932990AbYEAXJT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933751AbYEAXIl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 May 2008 19:08:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933211AbYEAXFi
+	id S932990AbYEAXJT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 May 2008 19:09:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762815AbYEAXFk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 May 2008 19:05:38 -0400
-Received: from wr-out-0506.google.com ([64.233.184.234]:53694 "EHLO
+	Thu, 1 May 2008 19:05:40 -0400
+Received: from wr-out-0506.google.com ([64.233.184.229]:53914 "EHLO
 	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933165AbYEAXFg (ORCPT
+	with ESMTP id S932425AbYEAXFi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 May 2008 19:05:36 -0400
+	Thu, 1 May 2008 19:05:38 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=Gf11ad59CaZ0N27swpr5FzKc4kYqkECmYxCU0bwdwRvBHUlMzw16tpCOUi5z1SLBbd2qSiaVgYnvUT4EOypUjDvaXBbDE/60Wq1+E5jF2zH8wb32dS/nUPPhhm82VokiR5qiQUKMd5PCXjgahFWJH4sa6eeSl9wSLT7L3cdcYEw=
-Subject: [PATCH 8/9] sh: kgdb-stub.c, sh-sci.c use the common ascii hex
-	helpers
+        b=ERzt8TQh0Hu6hohR7MGeU0Pj1iidgjwin6ahNdL093JM1ms8ES7saGEc2MifHBHSPAgh5zL3qyBQiHsbC3tca3CdWFM35rX42PlDgCF+Khsya3MdKVC7mvq4LdgCQYfbiaIl4yzPhRMaDJY0PeSvh+tSZdjFR4yiE+0EDbKd2zQ=
+Subject: [PATCH 9/9] ppc: ppc-stub.c use the common ascii hex helpers
 From: Harvey Harrison <harvey.harrison@gmail.com>
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Paul Mundt <lethal@linux-sh.org>, LKML <linux-kernel@vger.kernel.org>
+Cc: Paul Mackerras <paulus@samba.org>, LKML <linux-kernel@vger.kernel.org>
 Content-Type: text/plain
-Date: Thu, 01 May 2008 16:05:38 -0700
-Message-Id: <1209683138.24729.210.camel@brick>
+Date: Thu, 01 May 2008 16:05:39 -0700
+Message-Id: <1209683139.24729.211.camel@brick>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
@@ -31,107 +30,110 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
 ---
- arch/sh/kernel/kgdb_stub.c |   16 ++++++++--------
- drivers/serial/sh-sci.c    |    8 ++++----
- include/asm-sh/kgdb.h      |   14 --------------
- 3 files changed, 12 insertions(+), 26 deletions(-)
+ arch/ppc/kernel/ppc-stub.c |   53 ++++++++++++++++++++------------------------
+ 1 files changed, 24 insertions(+), 29 deletions(-)
 
-diff --git a/arch/sh/kernel/kgdb_stub.c b/arch/sh/kernel/kgdb_stub.c
-index d453c3a..98cdb2b 100644
---- a/arch/sh/kernel/kgdb_stub.c
-+++ b/arch/sh/kernel/kgdb_stub.c
-@@ -274,8 +274,8 @@ static char *mem_to_hex(const char *mem, char *buf, const int count)
- 	}
- 	for (i = 0; i < count; i++) {
- 		ch = *mem++;
--		*buf++ = highhex(ch);
--		*buf++ = lowhex(ch);
-+		*buf++ = hex_asc_hi(ch);
-+		*buf++ = hex_asc_lo(ch);
- 	}
- 	*buf = 0;
- 	return (buf);
-@@ -333,8 +333,8 @@ static char *ebin_to_mem(const char *buf, char *mem, int count)
- /* Pack a hex byte */
- static char *pack_hex_byte(char *pkt, int byte)
- {
--	*pkt++ = hexchars[(byte >> 4) & 0xf];
--	*pkt++ = hexchars[(byte & 0xf)];
-+	*pkt++ = hex_asc_hi(byte);
-+	*pkt++ = hex_asc_lo(byte);
- 	return pkt;
- }
+diff --git a/arch/ppc/kernel/ppc-stub.c b/arch/ppc/kernel/ppc-stub.c
+index 5f9ee7b..2379f70 100644
+--- a/arch/ppc/kernel/ppc-stub.c
++++ b/arch/ppc/kernel/ppc-stub.c
+@@ -130,9 +130,6 @@ static int kgdb_started;
+ static u_int fault_jmp_buf[100];
+ static int kdebug;
  
-@@ -435,8 +435,8 @@ static void put_packet(char *buffer)
- 
- 		/* '#' Separator, put high and low components of checksum */
- 		put_debug_char('#');
--		put_debug_char(highhex(checksum));
--		put_debug_char(lowhex(checksum));
-+		put_debug_char(hex_asc_hi(checksum));
-+		put_debug_char(hex_asc_lo(checksum));
- 	}
- 	while ((get_debug_char()) != '+');	/* While no ack */
- }
-@@ -658,8 +658,8 @@ static void undo_single_step(void)
- static void send_signal_msg(const int signum)
- {
- 	out_buffer[0] = 'S';
--	out_buffer[1] = highhex(signum);
--	out_buffer[2] = lowhex(signum);
-+	out_buffer[1] = hex_asc_hi(signum);
-+	out_buffer[2] = hex_asc_lo(signum);
- 	out_buffer[3] = 0;
- 	put_packet(out_buffer);
- }
-diff --git a/drivers/serial/sh-sci.c b/drivers/serial/sh-sci.c
-index 9691061..6c1d3fc 100644
---- a/drivers/serial/sh-sci.c
-+++ b/drivers/serial/sh-sci.c
-@@ -186,15 +186,15 @@ static void put_string(struct sci_port *sci_port, const char *buffer, int count)
- 			int h, l;
- 
- 			c = *p++;
--			h = highhex(c);
--			l = lowhex(c);
-+			h = hex_asc_hi(c);
-+			l = hex_asc_lo(c);
- 			put_char(port, h);
- 			put_char(port, l);
- 			checksum += h + l;
+-
+-static const char hexchars[]="0123456789abcdef";
+-
+ /* Place where we save old trap entries for restoration - sparc*/
+ /* struct tt_entry kgdb_savettable[256]; */
+ /* typedef void (*trapfunc_t)(void); */
+@@ -205,28 +202,26 @@ mem2hex(const char *mem, char *buf, int count)
+ 		if ((count == 2) && (((long)mem & 1) == 0)) {
+ 			tmp_s = *(unsigned short *)mem;
+ 			mem += 2;
+-			*buf++ = hexchars[(tmp_s >> 12) & 0xf];
+-			*buf++ = hexchars[(tmp_s >> 8) & 0xf];
+-			*buf++ = hexchars[(tmp_s >> 4) & 0xf];
+-			*buf++ = hexchars[tmp_s & 0xf];
+-
++			*buf++ = hex_asc_hi(tmp_s >> 8);
++			*buf++ = hex_asc_lo(tmp_s >> 8);
++			*buf++ = hex_asc_hi(tmp_s);
++			*buf++ = hex_asc_lo(tmp_s);
+ 		} else if ((count == 4) && (((long)mem & 3) == 0)) {
+ 			tmp_l = *(unsigned int *)mem;
+ 			mem += 4;
+-			*buf++ = hexchars[(tmp_l >> 28) & 0xf];
+-			*buf++ = hexchars[(tmp_l >> 24) & 0xf];
+-			*buf++ = hexchars[(tmp_l >> 20) & 0xf];
+-			*buf++ = hexchars[(tmp_l >> 16) & 0xf];
+-			*buf++ = hexchars[(tmp_l >> 12) & 0xf];
+-			*buf++ = hexchars[(tmp_l >> 8) & 0xf];
+-			*buf++ = hexchars[(tmp_l >> 4) & 0xf];
+-			*buf++ = hexchars[tmp_l & 0xf];
+-
++			*buf++ = hex_asc_hi(tmp_l >> 24);
++			*buf++ = hex_asc_lo(tmp_l >> 24);
++			*buf++ = hex_asc_hi(tmp_l >> 16);
++			*buf++ = hex_asc_lo(tmp_l >> 16);
++			*buf++ = hex_asc_hi(tmp_l >> 8);
++			*buf++ = hex_asc_lo(tmp_l >> 8);
++			*buf++ = hex_asc_hi(tmp_l);
++			*buf++ = hex_asc_lo(tmp_l);
+ 		} else {
+ 			while (count-- > 0) {
+ 				ch = *mem++;
+-				*buf++ = hexchars[ch >> 4];
+-				*buf++ = hexchars[ch & 0xf];
++				*buf++ = hex_asc_hi(ch);
++				*buf++ = hex_asc_lo(ch);
+ 			}
  		}
- 		put_char(port, '#');
--		put_char(port, highhex(checksum));
--		put_char(port, lowhex(checksum));
-+		put_char(port, hex_asc_hi(checksum));
-+		put_char(port, hex_asc_lo(checksum));
- 	    } while  (get_char(port) != '+');
- 	} else
- #endif /* CONFIG_SH_STANDARD_BIOS || CONFIG_SH_KGDB */
-diff --git a/include/asm-sh/kgdb.h b/include/asm-sh/kgdb.h
-index 4bc8cb1..24e4207 100644
---- a/include/asm-sh/kgdb.h
-+++ b/include/asm-sh/kgdb.h
-@@ -66,18 +66,4 @@ extern int     setjmp(jmp_buf __jmpb);
- /* Forced breakpoint */
- #define breakpoint()	__asm__ __volatile__("trapa   #0x3c")
  
--/* Taken from sh-stub.c of GDB 4.18 */
--static const char hexchars[] = "0123456789abcdef";
--
--/* Get high hex bits */
--static inline char highhex(const int x)
--{
--	return hexchars[(x >> 4) & 0xf];
--}
--
--/* Get low hex bits */
--static inline char lowhex(const int x)
--{
--	return hexchars[x & 0xf];
--}
- #endif
+@@ -411,8 +406,8 @@ static void putpacket(unsigned char *buffer)
+ 		}
+ 
+ 		putDebugChar('#');
+-		putDebugChar(hexchars[checksum >> 4]);
+-		putDebugChar(hexchars[checksum & 0xf]);
++		putDebugChar(hex_asc_hi(checksum));
++		putDebugChar(hex_asc_lo(checksum));
+ 		recv = getDebugChar();
+ 	} while ((recv & 0x7f) != '+');
+ }
+@@ -602,15 +597,15 @@ handle_exception (struct pt_regs *regs)
+ 	ptr = remcomOutBuffer;
+ 
+ 	*ptr++ = 'T';
+-	*ptr++ = hexchars[sigval >> 4];
+-	*ptr++ = hexchars[sigval & 0xf];
+-	*ptr++ = hexchars[PC_REGNUM >> 4];
+-	*ptr++ = hexchars[PC_REGNUM & 0xf];
++	*ptr++ = hex_asc_hi(sigval);
++	*ptr++ = hex_asc_lo(sigval);
++	*ptr++ = hex_asc_hi(PC_REGNUM);
++	*ptr++ = hex_asc_lo(PC_REGNUM);
+ 	*ptr++ = ':';
+ 	ptr = mem2hex((char *)&regs->nip, ptr, 4);
+ 	*ptr++ = ';';
+-	*ptr++ = hexchars[SP_REGNUM >> 4];
+-	*ptr++ = hexchars[SP_REGNUM & 0xf];
++	*ptr++ = hex_asc_hi(SP_REGNUM);
++	*ptr++ = hex_asc_lo(SP_REGNUM);
+ 	*ptr++ = ':';
+ 	ptr = mem2hex(((char *)regs) + SP_REGNUM*4, ptr, 4);
+ 	*ptr++ = ';';
+@@ -632,8 +627,8 @@ handle_exception (struct pt_regs *regs)
+ 		switch (remcomInBuffer[0]) {
+ 		case '?': /* report most recent signal */
+ 			remcomOutBuffer[0] = 'S';
+-			remcomOutBuffer[1] = hexchars[sigval >> 4];
+-			remcomOutBuffer[2] = hexchars[sigval & 0xf];
++			remcomOutBuffer[1] = hex_asc_hi(sigval);
++			remcomOutBuffer[2] = hex_asc_lo(sigval);
+ 			remcomOutBuffer[3] = 0;
+ 			break;
+ #if 0
 -- 
 1.5.5.1.305.g7c84
-
 
