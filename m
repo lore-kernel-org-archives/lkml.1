@@ -1,96 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765446AbYEAX6l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765041AbYEBAAx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765446AbYEAX6l (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 May 2008 19:58:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754322AbYEAX6c
+	id S1765041AbYEBAAx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 May 2008 20:00:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754100AbYEBAAp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 May 2008 19:58:32 -0400
-Received: from fmmailgate03.web.de ([217.72.192.234]:48417 "EHLO
-	fmmailgate03.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753723AbYEAX6b (ORCPT
+	Thu, 1 May 2008 20:00:45 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:38765 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753676AbYEBAAp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 May 2008 19:58:31 -0400
-Message-ID: <002d01c8abe7$415ce060$6400a8c0@bui.materna.com>
-From: "Roland" <devzero@web.de>
-To: <linux-kernel@vger.kernel.org>
-Cc: <len.brown@intel.com>, <linux-acpi@vger.kernel.org>
-Subject: modprobe acpi-cpufreq - prints WARNING and taints kernel
-Date: Fri, 2 May 2008 01:58:29 +0200
-MIME-Version: 1.0
-Content-Type: text/plain;
-	format=flowed;
-	charset="iso-8859-1";
-	reply-type=original
+	Thu, 1 May 2008 20:00:45 -0400
+Date: Thu, 1 May 2008 16:59:45 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Tom Rini <trini@kernel.crashing.org>
+Cc: torvalds@linux-foundation.org, bunk@kernel.org,
+       venkatesh.pallipadi@intel.com, davem@davemloft.net, mingo@elte.hu,
+       tglx@linutronix.de, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       suresh.b.siddha@intel.com, vegard.nossum@gmail.com
+Subject: Re: huge gcc 4.1.{0,1} __weak problem
+Message-Id: <20080501165945.077d34f9.akpm@linux-foundation.org>
+In-Reply-To: <20080501232447.GF4354@smtp.west.cox.net>
+References: <20080430013108.GA18207@linux-os.sc.intel.com>
+	<20080429.212833.192304794.davem@davemloft.net>
+	<924EFEDD5F540B4284297C4DC59F3DEEF7D18E@orsmsx423.amr.corp.intel.com>
+	<20080501215633.GU29330@cs181133002.pp.htv.fi>
+	<20080501152051.4eb4bad3.akpm@linux-foundation.org>
+	<alpine.LFD.1.10.0805011525460.5994@woody.linux-foundation.org>
+	<20080501153349.f4537ec7.akpm@linux-foundation.org>
+	<20080501232447.GF4354@smtp.west.cox.net>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Priority: 3
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook Express 6.00.2900.3138
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3198
-X-Provags-ID: V01U2FsdGVkX1/u+eVU3PFLM0zLF5Uf5U2buii67ln3FqqM6EWg
-	Rww6R5FV/meKHpQK0aRQmNfiT6agsAz2YgNaK2x/eEZmjeZ9me
-	ZkMHhQ+Y4=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-git17 on vmware - modprobe acpi-cpufreq gives the warning below.
-that also didn`t happen with earlier kernels - so maybe it`s a regression, 
-too.
+On Thu, 1 May 2008 16:24:47 -0700
+Tom Rini <trini@kernel.crashing.org> wrote:
 
+> On Thu, May 01, 2008 at 03:33:49PM -0700, Andrew Morton wrote:
+> > On Thu, 1 May 2008 15:27:26 -0700 (PDT)
+> > Linus Torvalds <torvalds@linux-foundation.org> wrote:
+> > 
+> > > 
+> > > 
+> > > On Thu, 1 May 2008, Andrew Morton wrote:
+> > > > > 
+> > > > > I see only the following choices:
+> > > > > - remove __weak and replace all current usages
+> > > > > - move all __weak functions into own files, and ensure that also happens
+> > > > >   for future usages
+> > > > > - #error for gcc 4.1.{0,1}
+> > > > 
+> > > > Can we detect the {0,1}?  __GNUC_EVEN_MORE_MINOR__?
+> > > 
+> > > It's __GNUC_PATCHLEVEL__, I believe.
+> > > 
+> > > So yes, we can distinguish 4.1.2 (good, and very common) from 4.1.{0,1} 
+> > > (bad, and rather uncommon).
+> > > 
+> > > And yes, considering that 4.1.1 (and even more so 4.1.0) should be rare to 
+> > > begin with, I think it's better to just not support it.
+> > > 
+> > 
+> > Drat.  There go my alpha, i386, m68k, s390, sparc and powerpc
+> > cross-compilers.  Vagard, save me!
+> > 
+> > Meanwhile I guess I can locally unpatch that patch.
+> 
+> I know I'll come off as an ass, but you can't make new ones with 4.1.2?
+> It's not like we're talking about gcc 2.95/96 fun here :)
 
-May  2 01:40:21 opensuse103 kernel: ACPI: ACPI0007:00 is registered as 
-cooling_device0
-May  2 01:40:21 opensuse103 kernel: ACPI: Processor [CPU0] (supports 8 
-throttling states)
-May  2 01:40:24 opensuse103 kernel: sysdev: class cpu: driver (c037d1c0) has 
-already been registered to a class, something is wrong, but will forge on!
-May  2 01:40:24 opensuse103 kernel: ------------[ cut here ]------------
-May  2 01:40:24 opensuse103 kernel: WARNING: at drivers/base/sys.c:183 
-sysdev_driver_register+0x56/0xe9()
-May  2 01:40:24 opensuse103 kernel: Modules linked in: acpi_cpufreq(+) 
-processor zatm ovcamchip i2c_core via82cxxx vga16fb vgastate uPD98402 trm290 
-triflex michael_mic crc32c deflate zlib_deflate sha512_generic cts seed 
-camellia anubis khazad cast6 cast5 lrw gf128mul aes_i586 aes_generic serpent 
-blowfish sha256_generic md4 cbc des_generic sha1_generic md5 snd_seq_dummy 
-snd_seq snd_timer snd_seq_device snd soundcore slc90e66 sis5513 siimage 
-serverworks sctp libcrc32c sc1200 cfi_probe rz1000 fcrypt pcbc arc4 ecb 
-crypto_blkcipher pdc202xx_old pdc202xx_new parkbd opti621 ns87415 nls_cp932 
-jedec_probe gen_probe chipreg jmicron it821x it8213 ip2 ip2main ide_generic 
-ide_cd_mod cdrom hpt366 hpt34x eni suni atm decnet dccp_ipv6 dccp_ipv4 dccp 
-cy82c693 cs5535 cs5530 cs5520 cmd64x cmd640 capifs sunrpc atiixp ar7part mtd 
-amd74xx alim15x3 aec62xx a3d gameport 9pnet_fd 9pnet 8250_hub6 8250_fourport 
-8250_exar_st16c554 8250_boca 8250_accent ipv6 fuse ahci libata dock 
-ide_pci_generic piix parport_pc parport pcnet32 ide_core mii intel
-May  2 01:40:24 opensuse103 kernel: _agp agpgart ext3 mbcache jbd mptspi 
-mptscsih mptbase scsi_transport_spi sd_mod scsi_mod [last unloaded: usbcore]
-May  2 01:40:24 opensuse103 kernel: Pid: 13752, comm: modprobe Tainted: G 
-W 2.6.25-git17-default #1
-May  2 01:40:24 opensuse103 kernel:  [<c0121576>] warn_on_slowpath+0x40/0x67
-May  2 01:40:24 opensuse103 kernel:  [<c01258e9>] irq_exit+0x53/0x6a
-May  2 01:40:24 opensuse103 kernel:  [<c011142d>] 
-smp_apic_timer_interrupt+0x6b/0x76
-May  2 01:40:24 opensuse103 kernel:  [<c0105a18>] 
-apic_timer_interrupt+0x28/0x30
-May  2 01:40:24 opensuse103 kernel:  [<c0121e51>] vprintk+0x2b9/0x2cd
-May  2 01:40:24 opensuse103 kernel:  [<c01cb41e>] __next_cpu+0x12/0x1e
-May  2 01:40:24 opensuse103 kernel:  [<d0c55a48>] 
-acpi_processor_preregister_performance+0x504/0x510 [processor]
-May  2 01:40:24 opensuse103 kernel:  [<c01a662f>] sysfs_ilookup_test+0x0/0xd
-May  2 01:40:24 opensuse103 kernel:  [<c016cc78>] percpu_populate+0x32/0x39
-May  2 01:40:24 opensuse103 kernel:  [<c0121e79>] printk+0x14/0x18
-May  2 01:40:24 opensuse103 kernel:  [<c02321d3>] 
-sysdev_driver_register+0x56/0xe9
-May  2 01:40:24 opensuse103 kernel:  [<c0253da1>] 
-cpufreq_register_driver+0x7d/0xf9
-May  2 01:40:24 opensuse103 kernel:  [<c013db4c>] 
-sys_init_module+0x1694/0x17a7
-May  2 01:40:24 opensuse103 kernel:  [<c01079de>] sys_mmap2+0x62/0x77
-May  2 01:40:24 opensuse103 kernel:  [<c010491f>] 
-sysenter_past_esp+0x78/0xb9
-May  2 01:40:24 opensuse103 kernel:  =======================
-May  2 01:40:24 opensuse103 kernel: ---[ end trace 570d6a1488783306 ]---
+Honestly, I nearly died when I built all those cross-compilers.  Sooooooo
+many combinations of gcc/binutils/glibc refused to work for obscure
+reasons.  Compilation on x86_64 just didn't work at all and I ended up
+having to build everything on a slow i386 box, etc, etc.  The stream of
+email to Dan got increasingly strident ;)
 
+I think crosstool has become a lot better since then, judging from the ease
+with which Jens was able to spin up the powerpc compiler, but the trauma
+was a life-long thing.
 
-
-
+Vegard has been making noises about (finally!) preparing and maintaining a
+decent set of cross-compilers for us.  It would be a great service (begs).
 
