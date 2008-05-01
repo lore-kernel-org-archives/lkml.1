@@ -1,85 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761540AbYEAAjt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762522AbYEAAke@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761540AbYEAAjt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Apr 2008 20:39:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751966AbYEAAjl
+	id S1762522AbYEAAke (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Apr 2008 20:40:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752784AbYEAAkZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Apr 2008 20:39:41 -0400
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:37407 "EHLO smtp6.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751773AbYEAAjk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Apr 2008 20:39:40 -0400
-Date: Thu, 1 May 2008 03:38:55 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: david@lang.hm, Linus Torvalds <torvalds@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jiri Slaby <jirislaby@gmail.com>
-Subject: Re: Slow DOWN, please!!!
-Message-ID: <20080501003855.GN29330@cs181133002.pp.htv.fi>
-References: <20080429.190352.137408408.davem@davemloft.net> <200805010023.32213.rjw@sisk.pl> <alpine.DEB.1.10.0804301528250.7807@asgard> <200805010145.39373.rjw@sisk.pl>
+	Wed, 30 Apr 2008 20:40:25 -0400
+Received: from wa-out-1112.google.com ([209.85.146.180]:22075 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751966AbYEAAkY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Apr 2008 20:40:24 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=eGjDfQ7/4wGOB2DkWshPkQlzSwaxRqBXzmnnM2HYv4vcA5nBnmafmmos3w1fOIZTk30eM8cvxeMS2V+XqoZsqDnlVMjRtnUyogm37ceyPyumNmdFMDa7bKg+kPPzuN9pnPDvOXTIM4Ze7Iyjjyf8T6HCFWOODMHZ5bqyBuseadU=
+Message-ID: <48191170.60205@gmail.com>
+Date: Thu, 01 May 2008 09:40:16 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <200805010145.39373.rjw@sisk.pl>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: Kumar Gala <galak@kernel.crashing.org>
+CC: Greg KH <greg@kroah.com>, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org, Jeff Garzik <jeff@garzik.org>,
+       Emilian.Medve@Freescale.com, Andrew Morton <akpm@osdl.org>
+Subject: Re: [PATCH] [POWERPC] devres: Add devm_ioremap_flags()
+References: <Pine.LNX.4.64.0804301059430.22937@blarg.am.freescale.net>
+In-Reply-To: <Pine.LNX.4.64.0804301059430.22937@blarg.am.freescale.net>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 01, 2008 at 01:45:38AM +0200, Rafael J. Wysocki wrote:
-> On Thursday, 1 of May 2008, david@lang.hm wrote:
-> > On Thu, 1 May 2008, Rafael J. Wysocki wrote:
-> > 
-> > > On Wednesday, 30 of April 2008, Linus Torvalds wrote:
-> > >>
-> > >> On Wed, 30 Apr 2008, Rafael J. Wysocki wrote:
-> > >> So your "fewer commits over a unit of time" doesn't make sense.
-> > >
-> > > Oh, yes it does.  Equally well you could say that having brakes in a car
-> > > didn't make sense, even if you could drive it as fast as the engine allowed
-> > > you to. ;-)
-> > >
-> > >> We have those ten thousand commits. They need to go in. They cannot take
-> > >> forever.
-> > >
-> > > But perhaps some of them can wait a bit longer.
-> > 
-> > not really, if patches are produced at a rate of 1000/week and you decide 
-> > to only accept 2000 of them this month, a month later you have 6000 
-> > patches to deal with.
+Kumar Gala wrote:
+> From: Emil Medve <Emilian.Medve@Freescale.com>
 > 
-> Well, I think you know how TCP works.  The sender can only send as much
-> data as the receiver lets it, no matter how much data there are to send.
-> I'm thinking about an analogous approach.
+> We provide an ioremap_flags so provide a coresphonding devm_ioremap_flags.
 > 
-> If the developers who produce those patches know in advance about the rate
-> limit and are promised to be treated fairly, they should be able to organize
-> their work in a different way.
->...
+> Signed-off-by: Emil Medve <Emilian.Medve@Freescale.com>
+> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
 
-We cannot control who develops what.
-
-When someone wants some feature or wants to get Linux running on his 
-hardware he will always develop the code.
-
-We can only control what we merge.
-
-And the main rationale for the 2.6 development model was that we do no 
-longer want distributions to ship kernels with insane amounts of 
-patches.
-
-> Thanks,
-> Rafael
-
-cu
-Adrian
+Acked-by: Tejun Heo <htejun@gmail.com>
 
 -- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+tejun
