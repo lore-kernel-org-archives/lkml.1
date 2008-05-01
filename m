@@ -1,81 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760459AbYEANpS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752350AbYEANuH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760459AbYEANpS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 May 2008 09:45:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757423AbYEANpF
+	id S1752350AbYEANuH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 May 2008 09:50:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754006AbYEANt5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 May 2008 09:45:05 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:45924 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756868AbYEANpE (ORCPT
+	Thu, 1 May 2008 09:49:57 -0400
+Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:49010 "EHLO
+	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753457AbYEANt4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 May 2008 09:45:04 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <4819C941.6030209@s5r6.in-berlin.de>
-Date: Thu, 01 May 2008 15:44:33 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.13) Gecko/20080419 SeaMonkey/1.1.9
+	Thu, 1 May 2008 09:49:56 -0400
+Date: Thu, 1 May 2008 09:49:55 -0400
+To: David Newall <davidn@davidnewall.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org
+Subject: Re: Slow DOWN, please!!!
+Message-ID: <20080501134955.GA6957@csclub.uwaterloo.ca>
+References: <20080429.211835.130816277.davem@davemloft.net> <48186E57.5070805@davidnewall.com> <alpine.LFD.1.10.0804300739350.2997@woody.linux-foundation.org> <4818B8A7.4000902@davidnewall.com> <alpine.LFD.1.10.0804301127020.2980@woody.linux-foundation.org> <4818C0BF.5020002@davidnewall.com> <alpine.LFD.1.10.0804301202200.2980@woody.linux-foundation.org> <4818C571.8040609@davidnewall.com> <alpine.LFD.1.10.0804301223220.2980@woody.linux-foundation.org> <481947AF.4090101@davidnewall.com>
 MIME-Version: 1.0
-To: Miles Lane <miles.lane@gmail.com>
-CC: linux-kernel@vger.kernel.org, Kristian Hoegsberg <krh@redhat.com>,
-       linux1394-devel@lists.sourceforge.net
-Subject: Re: 2.6.25-git16 -- BUG: unable to handle kernel NULL pointer dereference
- at 00000000 -- IP: [<c02dd5d5>] fw_show_drv_device_ids+0xd9/0xee
-References: <a44ae5cd0804301729q77530ecerdbb65b4ed40eeba@mail.gmail.com>	 <tkrat.39b6a8e0dced1929@s5r6.in-berlin.de> <a44ae5cd0805010608n6c441082udd00c315e786de40@mail.gmail.com>
-In-Reply-To: <a44ae5cd0805010608n6c441082udd00c315e786de40@mail.gmail.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <481947AF.4090101@davidnewall.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Miles Lane wrote:
-> Hi Stefan.  Thanks for your patch.  It worked great.
+On Thu, May 01, 2008 at 02:01:43PM +0930, David Newall wrote:
+[snip]
+> Stop telling the world that 2.6.25 is ready for them when you know it's
+> not. It's now ready for beta testing, and no more. Is 2.6.24 ready for
+> the world yet? There are still problems being reported with it.
 
-Good, thanks for reporting and testing.
+If a kernel release works without problems on 9999 out of 10000
+machines, is it stable?  How few specific combinations of hardware are
+there allowed to be with any problems before you can call it stable?
+How do you know a problem you see wasn't tested by 500 people none of
+whom had any problems because none of them had the hardware you do?
 
-> Now I see this in the logs:
-> 
-> ohci1394: fw-host0: SelfID received outside of bus reset sequence
-> IEEE 1394 device has ROM CRC error
-> IEEE 1394 device has ROM CRC error
-> Program usplash tried to access /dev/mem between 0->8000000.
-> ieee1394: Node added: ID:BUS[0-00:1023]  GUID[00d0f54000000173]
-> ieee1394: Host added: ID:BUS[0-01:1023]  GUID[00e018000027d06c]
-> IEEE 1394 device has ROM CRC error
-> IEEE 1394 device has ROM CRC error
-> IEEE 1394 device has ROM CRC error
-> IEEE 1394 device has ROM CRC error
-> IEEE 1394 device has ROM CRC error
-> 
-> Also, "cat /sys/bus/ieee1394/drivers/raw1394/device_ids" no longer
-> causes an error.
-> 
-> Is it necessary for the code to spit out so many CRC errors for the
-> OrangeMicro iBot?
-
-I could look into keeping those messages down to only a single one per 
-attempt to fetch the so-called configuration ROM of an added node.
-
-> Also, are these errors indicating a significant
-> problem with the iBot?
-
-The config ROM is an area in the IEEE 1394 address space of a node which 
-contains information about the device functions.  It consists of a 
-header, a root directory, and subdirectories.  Each one of those has 
-CRCs as one safeguard (among others) against integrity issues with the 
-data read from the ROM.
-
-A few devices, especially older ones, got the CRC algorithm wrong. Hence 
-we don't reject those devices, we only warn about them as a starting 
-point for further diagnosis in case that more than this goes wrong when 
-using the device.
-
-(The ROM CRC error warning has been added in 2.6.22.  Before Linux 
-2.6.22, the ROM CRC errors were silently accepted.  The new alternative 
-firewire drivers also do not warn about ROM CRC errors... yet...)
 -- 
-Stefan Richter
--=====-==--- -=-= ----=
-http://arcgraph.de/sr/
+Len Sorensen
