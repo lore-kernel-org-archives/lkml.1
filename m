@@ -1,94 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762321AbYEARAS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762795AbYEARA7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762321AbYEARAS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 May 2008 13:00:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759876AbYEARAA
+	id S1762795AbYEARA7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 May 2008 13:00:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756261AbYEARAw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 May 2008 13:00:00 -0400
-Received: from trillian.zoopnet.de ([85.214.111.199]:35317 "EHLO
-	trillian.zoopnet.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758628AbYEAQ77 (ORCPT
+	Thu, 1 May 2008 13:00:52 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:33797 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754134AbYEARAv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 May 2008 12:59:59 -0400
-Message-ID: <4819F70C.6030305@zoopnet.de>
-Date: Thu, 01 May 2008 18:59:56 +0200
-From: Mika Fischer <mika.fischer@zoopnet.de>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
-MIME-Version: 1.0
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-CC: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Gabriel C <nix.or.die@googlemail.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: mtrr cleanup for converting continuous to discrete
- - auto detect
-References: <200804272337.40130.yhlu.kernel@gmail.com>	 <200804290352.33543.yhlu.kernel@gmail.com>	 <200804292025.58268.yhlu.kernel@gmail.com>	 <200805010100.34751.yhlu.kernel@gmail.com> <4819B2E0.406@zoopnet.de> <86802c440805010935w5a74f132l639d7b794804bb9e@mail.gmail.com>
-In-Reply-To: <86802c440805010935w5a74f132l639d7b794804bb9e@mail.gmail.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 1 May 2008 13:00:51 -0400
+Subject: Re: [PATCH] sched: fix inv_weight calc
+From: Peter Zijlstra <peterz@infradead.org>
+To: Gregory Haskins <ghaskins@novell.com>
+Cc: Ingo Molnar <mingo@elte.hu>, David Bahi <DBahi@novell.com>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <4819BDA3.BA47.005A.0@novell.com>
+References: <20080430171521.5454.91644.stgit@ghaskins-t60p.haskins.net>
+	 <1209581148.6433.47.camel@lappy>  <4819BDA3.BA47.005A.0@novell.com>
+Content-Type: text/plain
+Date: Thu, 01 May 2008 19:00:28 +0200
+Message-Id: <1209661228.6486.2.camel@lappy>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yinghai Lu schrieb:
-> On Thu, May 1, 2008 at 5:09 AM, Mika Fischer <mika.fischer@zoopnet.de> wrote:
->> Yinghai Lu schrieb:
->>
->>> loop mtrr chunk_size and gran_size from 1M to 2G to find out optimal value.
->>  >
->>  > so user don't need to add mtrr_chunk_size and mtrr_gran_size,
->>  >
->>  > if optimal value is not found, print out all list to help select less optimal
->>  > value.
->>  >
->>  > add mtrr_spare_reg_nr= so user could set 2 instead of 1, if the card need more entries.
->>
->>  On my system x86-latest + this patch and using no boot options gives me
->>  this /proc/mtrr:
->>  reg00: base=0x00000000 (   0MB), size=2048MB: write-back, count=1
->>  reg01: base=0x80000000 (2048MB), size= 512MB: write-back, count=1
->>  reg02: base=0xa0000000 (2560MB), size= 256MB: write-back, count=1
->>  reg03: base=0xb0000000 (2816MB), size= 256MB: write-back, count=1
->>  reg04: base=0xbf700000 (3063MB), size=   1MB: uncachable, count=1
->>  reg05: base=0xbf800000 (3064MB), size=   8MB: uncachable, count=1
->>  reg06: base=0x100000000 (4096MB), size=1024MB: write-back, count=1
->>
->>  Which is OK. It could probably collapse reg01-reg03 into one but that's
->>  a minor issue (for me at least, there are probably cases where
->>  collapsing them might save the user from having to specify the
->>  mtrr_spare_reg_nr boot option).
+On Thu, 2008-05-01 at 10:54 -0600, Gregory Haskins wrote:
+> (Peter and I have been discussing this on IRC, but thought we should
+> take some new findings to a wider audience)....
 > 
-> yes. please try mtrr_spare_reg_nr=3 or etc.
+> >>> On Wed, Apr 30, 2008 at  2:45 PM, in message <1209581148.6433.47.camel@lappy>,
+> Peter Zijlstra <peterz@infradead.org> wrote: 
+> > On Wed, 2008-04-30 at 13:15 -0400, Gregory Haskins wrote:
+> >> We currently have a bug in sched-devel where the system will fail to
+> >> balance tasks if CONFIG_FAIR_GROUP_SCHED=n.  To reproduce, simply launch
+> >> a workload with multiple tasks and observe (either via top or
+> >> /proc/sched_debug) that the tasks do not distribute much (if at all)
+> >> around to all available cores. Instead, they tend to clump on one processor
+> >> while the other cores are idle.
+> >> 
+> >> Bisecting, we found the culprit to be:
+> >> 
+> >> 	commit 1b9552e878a5db3388eba8660e8d8400020a07e9
+> >> 	Author: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> >> 	Date:   Tue Apr 29 13:47:36 2008 +0200
+> >> 	Subject: sched: higher granularity load on 64bit systems
+> >> 
+> >> Once we identified this patch as the problem, I studied what possible
+> >> effect it could have with FAIR_GROUP_SCHED=n vs y.  Most of the code in
+> >> 1b9552e8 would be compiled out if we disable group-scheduling, but there
+> >> is one particular logic change in calc_delta_mine() that affects both modes
+> >> that looked suspicious.  It changes the computation of the inverse-weight
+> >> from:
+> >> 
+> >>     inv_weight = (WMULT_CONST-weight/2)/(weight+1)
+> >> 
+> >> to
+> >> 
+> >>     inv_weight = 1+(WMULT_CONST-weight/2)/(weight+1)
+> >> 
+> >> This patch restores the algorithm to its original logic, and seems to solve
+> >> the regression for me.  I can't really wrap my head around the original
+> >> intent of the "+1" change, or whether reverting the change will cause a
+> >> ripple effect somewhere else.  All I can confirm is that the system will
+> >> once again balance load with this logic reverted to its previous form.
+> > 
+> > I didn't intend that change to sneak into this patch - but it was
+> > sort-of intentional. My rationale was, a normal rounding division does:
+> > 
+> >   (x + y/2) / y
+> > 
+> > Since our 'x' is at the upper end of our modulo space we can't add to it
+> > for it would wrap and end up small. Therefore we do:
+> > 
+> >  (x - y/2) / y
+> > 
+> > Which would result in 1 less than expected, hence I added that 1 back.
+> 
+> Ah, yes.  That makes sense.
+> 
+> > 
+> > Now I'm equally puzzled on its effect. Nor do I mind its removal, but I
+> > would like to understand why it has such drastic effects.
+> 
+> Nevermind my patch, its bogus.  I was mistaken earlier in thinking it
+> was better with the "+1" removed.  Subsequent testing has demonstrated
+> that the issue is still present, even with my "fix" applied.  The root
+> issue seems to be real, but I cant spy it in the code via visual
+> inspection.  Reverting the patch outright does seem to restore proper
+> balancer behavior.  (Note that the commit-id for Peter's patch has
+> since changed...probably due to a recent rebase in sched-devel).
+> Perhaps someone with a better understanding of the load calculation
+> will see it.
 
-Sure this works. But that was my point exactly. It should be possible to
-figure out the better configuration automatically so that I *don't* have
-to specify mtrr_spare_reg_nr=3.
 
-Or in other words: If there are multiple equivalent configurations that
-don't lose any RAM(!), the one with the most free MTRR regs should be
-preferred.
+Ingo, can you drop this patch for now? - it seems to cause grief to
+several people. I'll keep it around in my tree in the hope of figuring
+out why such a seemingly simple patch breaks so much.
 
-AFAICT you loop over the chunk size and stop when you have found a
-configuration that leaves the number of free MTRR registers requested
-(default 1).
-
-This will almost always result in a configuration where you have
-*exactly* the number of requested free regs available, even if a more
-efficient configuration was possible.
-
-What I'm suggesting is, that - in the case where no RAM is lost at this
-point - the loop should continue to try and free up more registers, as
-long as no RAM is lost.
-
-I.e. even if in my case chunk_size=256M gives adequate results and
-leaves me with 1 free reg, since I don't lose any RAM at this point the
-loop should continue as long as I do not lose any RAM. That way it would
-find the ideal chunk_size (1g) automatically.
-
-But again, this is non-critical. But I think it might help a few users
-who need more than 1 free reg, because they probably will have no idea
-about the kernel option...
-
-Regards,
- Mika
