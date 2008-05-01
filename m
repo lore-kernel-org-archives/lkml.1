@@ -1,60 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756340AbYEAB0f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757001AbYEAB0z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756340AbYEAB0f (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Apr 2008 21:26:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753500AbYEAB0K
+	id S1757001AbYEAB0z (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Apr 2008 21:26:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753252AbYEAB0k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Apr 2008 21:26:10 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:35675 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753236AbYEAB0J (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Apr 2008 21:26:09 -0400
-Date: Wed, 30 Apr 2008 18:25:50 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Adrian Bunk <bunk@kernel.org>
-cc: Andrew Morton <akpm@linux-foundation.org>, rjw@sisk.pl,
-       davem@davemloft.net, linux-kernel@vger.kernel.org, jirislaby@gmail.com
-Subject: Re: Slow DOWN, please!!!
-In-Reply-To: <20080501005727.GO29330@cs181133002.pp.htv.fi>
-Message-ID: <alpine.LFD.1.10.0804301821380.5994@woody.linux-foundation.org>
-References: <20080429.190352.137408408.davem@davemloft.net> <200804302245.50817.rjw@sisk.pl> <alpine.LFD.1.10.0804301422350.2980@woody.linux-foundation.org> <200805010023.32213.rjw@sisk.pl> <alpine.LFD.1.10.0804301530360.2980@woody.linux-foundation.org>
- <20080430154124.7ec08dd4.akpm@linux-foundation.org> <20080501005727.GO29330@cs181133002.pp.htv.fi>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 30 Apr 2008 21:26:40 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:34307 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756479AbYEAB0j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Apr 2008 21:26:39 -0400
+Date: Thu, 1 May 2008 11:26:32 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Daniel Hazelton <dhazelton@enter.net>
+Cc: "linux-kernel" <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next build error
+Message-Id: <20080501112632.077166f1.sfr@canb.auug.org.au>
+In-Reply-To: <200804302050.03950.dhazelton@enter.net>
+References: <200804302050.03950.dhazelton@enter.net>
+X-Mailer: Sylpheed 2.5.0beta3 (GTK+ 2.12.9; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Thu__1_May_2008_11_26_32_+1000_+6Nwyv2uSe4oM=Ts"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--Signature=_Thu__1_May_2008_11_26_32_+1000_+6Nwyv2uSe4oM=Ts
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
+Hi Daniel,
 
-On Thu, 1 May 2008, Adrian Bunk wrote:
-> 
-> One big problem I see is Linus wanting to merge all drivers regardless 
-> of the quality.
+Thanks for the report.
 
-That's not what I said.
+On Wed, 30 Apr 2008 20:50:03 -0400 Daniel Hazelton <dhazelton@enter.net> wr=
+ote:
+>
+> ld: drivers/media/built-in.o: No such file: No such file or directory
+> make[2]: *** [drivers/built-in.o] Error 1
+> make[1]: *** [drivers] Error 2
+> make[1]: Leaving directory `/home/madman/linux/linux-next'
+> make: *** [debian/stamp-build-kernel] Error 2
 
-What I said was that I think we get *better* quality by merging early.
+Known problem in Linus' tree - hopefully fixed today.
 
-In other words, you're turning the whole argument on its head, and 
-incorrectly so.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-I claim that you are the one that is arguing for *worse* quality, by 
-arguing for a process that is KNOWN to tend to generate bad code 
-(out-of-tree drivers) as opposed to one that tends to fix things over time 
-(and note the "tends" in both cases - there are counter-examples, but 
-the trend is so clear that anybody who disputes it would seem to be either 
-blind or lying).
+--Signature=_Thu__1_May_2008_11_26_32_+1000_+6Nwyv2uSe4oM=Ts
+Content-Type: application/pgp-signature
 
-So here's my challenge: give me *one* reason to believe that quality 
-improves more out-of-tree than it does in-tree, and then you'll have a 
-point. But you'd better be able to explain the ton of historical data we 
-have that proves otherwise.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
 
-Until you do that, your blathering is just that - total blathering. The 
-process I advocate is the one that has historical data on its side. Yours 
-is just a failed theory.
+iD8DBQFIGRxMTgG2atn1QN8RAmwzAJ9gKTGc48ed2Ajov9KC97A452YRJQCeI4ys
+/gn/ylCnNcbOPbGuApR5ewA=
+=waHb
+-----END PGP SIGNATURE-----
 
-			Linus
+--Signature=_Thu__1_May_2008_11_26_32_+1000_+6Nwyv2uSe4oM=Ts--
