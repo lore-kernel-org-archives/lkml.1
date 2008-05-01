@@ -1,135 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761219AbYEAMyn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760273AbYEAM6Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761219AbYEAMyn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 May 2008 08:54:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758140AbYEAMya
+	id S1760273AbYEAM6Q (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 May 2008 08:58:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755508AbYEAM6A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 May 2008 08:54:30 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:50113 "EHLO ogre.sisk.pl"
+	Thu, 1 May 2008 08:58:00 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:50143 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760880AbYEAMy2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 May 2008 08:54:28 -0400
+	id S1754506AbYEAM57 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 May 2008 08:57:59 -0400
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Arjan van de Ven <arjan@infradead.org>
-Subject: Re: RFC: starting a kernel-testers group for newbies
-Date: Thu, 1 May 2008 14:53:52 +0200
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Subject: Re: Some sort corruption of my Thermal Subsystem after suspend to ram
+Date: Thu, 1 May 2008 14:57:49 +0200
 User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Adrian Bunk <bunk@kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, davem@davemloft.net,
-       linux-kernel@vger.kernel.org, jirislaby@gmail.com,
-       Steven Rostedt <rostedt@goodmis.org>
-References: <20080429.190352.137408408.davem@davemloft.net> <20080501113038.GW29330@cs181133002.pp.htv.fi> <20080430072013.7c3b30b1@infradead.org>
-In-Reply-To: <20080430072013.7c3b30b1@infradead.org>
+Cc: Len Brown <lenb@kernel.org>, Gabriel C <nix.or.die@googlemail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-pm@lists.linux-foundation.org, pavel@suse.cz
+References: <4818D9AB.3040402@googlemail.com> <200805010157.58607.lenb@kernel.org> <20080501125348.GA19922@srcf.ucam.org>
+In-Reply-To: <20080501125348.GA19922@srcf.ucam.org>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200805011453.53382.rjw@sisk.pl>
+Message-Id: <200805011457.51238.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, 30 of April 2008, Arjan van de Ven wrote:
-> On Thu, 1 May 2008 14:30:38 +0300
-> Adrian Bunk <bunk@kernel.org> wrote:
+On Thursday, 1 of May 2008, Matthew Garrett wrote:
+> On Thu, May 01, 2008 at 01:57:58AM -0400, Len Brown wrote:
 > 
-> > On Wed, Apr 30, 2008 at 12:03:38AM -0700, Arjan van de Ven wrote:
-> > > On Thu, 1 May 2008 03:31:25 +0300
-> > > Adrian Bunk <bunk@kernel.org> wrote:
-> > > 
-> > > > On Wed, Apr 30, 2008 at 01:31:08PM -0700, Linus Torvalds wrote:
-> > > > > 
-> > > > > 
-> > > > > On Wed, 30 Apr 2008, Andrew Morton wrote:
-> > > > > > 
-> > > > > > <jumps up and down>
-> > > > > > 
-> > > > > > There should be nothing in 2.6.x-rc1 which wasn't in
-> > > > > > 2.6.x-mm1!
-> > > > > 
-> > > > > The problem I see with both -mm and linux-next is that they
-> > > > > tend to be better at finding the "physical conflict" kind of
-> > > > > issues (ie the merge itself fails) than the "code looks ok but
-> > > > > doesn't actually work" kind of issue.
-> > > > > 
-> > > > > Why?
-> > > > > 
-> > > > > The tester base is simply too small.
-> > > > > 
-> > > > > Now, if *that* could be improved, that would be wonderful, but
-> > > > > I'm not seeing it as very likely.
-> > > > > 
-> > > > > I think we have fairly good penetration these days with the
-> > > > > regular -git tree, but I think that one is quite frankly a
-> > > > > *lot* less scary than -mm or -next are, and there it has been
-> > > > > an absolutely huge boon to get the kernel into the Fedora
-> > > > > test-builds etc (and I _think_ Ubuntu and SuSE also started
-> > > > > something like that).
-> > > > > 
-> > > > > So I'm very pessimistic about getting a lot of test coverage
-> > > > > before -rc1.
-> > > > > 
-> > > > > Maybe too pessimistic, who knows?
-> > > > 
-> > > > First of all:
-> > > > I 100% agree with Andrew that our biggest problems are in
-> > > > reviewing code and resolving bugs, not in finding bugs (we
-> > > > already have far too many unresolved bugs).
-> > > 
-> > > I would argue instead that we don't know which bugs to fix first.
-> > > We're never going to fix all bugs, and to be honest, that's ok.
-> > >...
-> > 
-> > That might be OK.
-> > 
-> > But our current status quo is not OK:
-> > 
-> > Check Rafael's regressions lists asking yourself
-> > "How many regressions are older than two weeks?" 
+> > I'm not aware of a native Linux device driver that talks to this device
+> > (nor can I think of a useful purpose for such a driver)
+> > So it seems what is in play here is any BIOS code that talks to this device,
+> > and Linux's standard PCI config space restore.
 > 
-> "ext4 doesn't compile on m68k".
-> YAWN.
-> 
-> Wrong question...
-> "How many bugs that a sizable portion of users will hit in reality are there?"
-> is the right question to ask...
-> 
-> 
-> > 
-> > We have unmaintained and de facto unmaintained parts of the kernel
-> > where even issues that might be easy to fix don't get fixed.
-> 
-> And how many people are hitting those issues? If a part of the kernel is really
-> important to enough people, there tends to be someone who stands up to either fix
-> the issue or start de-facto maintaining that part.
-> And yes I know there's parts where that doesn't hold. But to be honest, there's
-> not that many of them that have active development (and thus get the biggest
-> share of regressions)
-> 
-> > 
-> > >...
-> > > So there's a few things we (and you / janitors) can do over time to
-> > > get better data on what issues people hit: 
-> > > 1) Get automated collection of issues more wide spread. The wider
-> > > our net the better we know which issues get hit a lot, and plain
-> > > the more data we have on when things start, when they stop, etc
-> > > etc. Especially if you get a lot of testers in your project, I'd
-> > > like them to install the client for easy reporting of issues. 2) We
-> > > should add more WARN_ON()s on "known bad" conditions. If it
-> > > WARN_ON()'s, we can learn about it via the automated collection.
-> > > And we can then do the statistics to figure out which ones happen a
-> > > lot. 3) We need to get persistent-across-reboot oops saving going;
-> > > there's some venues for this
-> > 
-> > No disagreement on this, its just a different issue than our bug
-> > fixing problem.
-> 
-> No it's not! Knowing earlier and better which bugs get hit is NOT different
-> to our bug fixing "problem", it's in fact an essential part to the solution of it!
+> Perhaps we should be more aggressive about restoring PCI config space if 
+> there's no driver bound to a device. The alternative in this case would 
+> seem to be to write a driver for this device that does nothing other 
+> than handle suspend/resume.
 
-Agreed.
+Well, we have default suspend/resume for PCI devices.  They are called for
+devices that have no drivers bound to them and execute
+pci_restore_state()/pci_restore_state(), among other things.  Isn't that
+sufficient?
 
-Thanks,
 Rafael
