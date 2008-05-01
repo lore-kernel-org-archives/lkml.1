@@ -1,62 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763369AbYEAQas@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763644AbYEAQbE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763369AbYEAQas (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 May 2008 12:30:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758003AbYEAQal
+	id S1763644AbYEAQbE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 May 2008 12:31:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758003AbYEAQax
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 May 2008 12:30:41 -0400
-Received: from outbound-mail-155.bluehost.com ([67.222.39.35]:38682 "HELO
-	outbound-mail-155.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753167AbYEAQak (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 May 2008 12:30:40 -0400
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Michael Buesch <mb@bu3sch.de>
-Subject: Re: [PATCH 0/3] Add API for weak DMA masks
-Date: Thu, 1 May 2008 09:30:04 -0700
-User-Agent: KMail/1.9.9
-Cc: Christoph Hellwig <hch@infradead.org>,
-       John Linville <linville@tuxdriver.com>,
-       Andi Kleen <andi@firstfloor.org>, David Miller <davem@davemloft.net>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Ingo Molnar <mingo@elte.hu>,
-       bcm43xx-dev@lists.berlios.de, linux-wireless@vger.kernel.org,
-       linux-kernel <linux-kernel@vger.kernel.org>
-References: <200805011638.15910.mb@bu3sch.de> <20080501155826.GA11188@infradead.org> <200805011807.26036.mb@bu3sch.de>
-In-Reply-To: <200805011807.26036.mb@bu3sch.de>
+	Thu, 1 May 2008 12:30:53 -0400
+Received: from 216-99-213-120.dsl.aracnet.com ([216.99.213.120]:48797 "EHLO
+	clueserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1763405AbYEAQaw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 May 2008 12:30:52 -0400
+Message-ID: <33216.75.164.221.130.1209659450.squirrel@clueserver.org>
+In-Reply-To: <20080501160946.GA26089@elf.ucw.cz>
+References: <4818D9AB.3040402@googlemail.com>
+    <200805010157.58607.lenb@kernel.org>
+    <20080501160946.GA26089@elf.ucw.cz>
+Date: Thu, 1 May 2008 09:30:50 -0700 (PDT)
+Subject: Re: Some sort corruption of my Thermal Subsystem after suspend to 
+     ram
+From: "Alan" <alan@clueserver.org>
+To: "Pavel Machek" <pavel@ucw.cz>
+Cc: "Len Brown" <lenb@kernel.org>, "Gabriel C" <nix.or.die@googlemail.com>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       linux-pm@lists.linux-foundation.org, "Rafael J. Wysocki" <rjw@sisk.pl>
+User-Agent: SquirrelMail/1.4.10a-1.fc6
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200805010930.04799.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, May 01, 2008 9:07 am Michael Buesch wrote:
-> On Thursday 01 May 2008 17:58:26 Christoph Hellwig wrote:
-> > On Thu, May 01, 2008 at 05:47:26PM +0200, Michael Buesch wrote:
-> > > We've discussed that and this behaviour is not acceptable, as the
-> > > driver must know about a possible fallback in case it can do 32bit DMA
-> > > more efficiently than 64bit DMA, for example.
-> >
-> > That's what we have dma_get_required_mask() for.  See
-> > Documentation/DMA-API.txt.
+> Hi!
 >
-> So well. I'm still unsure about the advantage of having some opencoded
-> probe loop in the driver, instead of implementing it in a common place
-> and doing all of it with a single API call.
-> We can still call dma_get_required_mask() and adjust the mask to that
-> in dma_set_mask_weak(). That can _additionally_ be done there.
+>> The ICH9 apparently provides a pair of memory mapped on-die thermal
+>> sensors.
+>>
+>> The sensors basically shut off your hardware if it gets too hot.
+>
+> Are the sensors driven by ACPI? Probably yes, otherwise they would be
+> unable to shut down the system.
+>
+>> ICH9 exports the base address for the sensors via a PCI device --
+>> D31:F6, aka Linux 00:1f.6
+>>
+>> I'm not aware of a native Linux device driver that talks to this device
+>> (nor can I think of a useful purpose for such a driver)
+>> So it seems what is in play here is any BIOS code that talks to this
+>> device,
+>> and Linux's standard PCI config space restore.
+>>
+>> My guess is that the BIOS is enabling the device on cold boot,
+>> but not enabling it after resume from S3.
+>
+> That sounds like a BIOS problem, right? If the piece of hardware is
+> driven by BIOS, Linux can't be responsible for saving/restoring it.
 
-So I think we're agreed that we want some core function to fall back to 
-different mask values, but yeah, making it take dma_get_required_mask into 
-account would also be good.
+I was having a similar problem on my old laptop. It seemed a lot more
+sensitive to the problem on later kernels.
 
-Most drivers just do the fallback themselves, right?  So it makes sense to 
-just update the current code to fallback, and update drivers wanting specific 
-mask values to check afterwards.  I hate to inflict that kind of driver wide 
-update on Michael though... :)
+What was actually happening is that the last time the laptop went in for
+repairs they did not seat the heat sink correctly.  It slowly worked
+itself loose.  After regreasing it with heat sink grease (not a heat sink
+pad, but actual silver grease) and reseating it and tightening it down,
+the machine worked fine.  (I also found some nasty tool marks in the soft
+metal next to the heat sink that shows that whoever did it slipped at
+least once.)
 
-Jesse
+Sometimes hardware problems increase slowly.
+
