@@ -1,55 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763341AbYEARTR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764206AbYEARUK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763341AbYEARTR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 May 2008 13:19:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757953AbYEARTC
+	id S1764206AbYEARUK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 May 2008 13:20:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759410AbYEART5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 May 2008 13:19:02 -0400
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:39397 "EHLO
-	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752206AbYEARTA (ORCPT
+	Thu, 1 May 2008 13:19:57 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:41743 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758761AbYEART4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 May 2008 13:19:00 -0400
-Date: Thu, 1 May 2008 13:18:09 -0400
-Message-Id: <200805011718.m41HI9Ex027053@agora.fsl.cs.sunysb.edu>
-From: Erez Zadok <ezk@cs.sunysb.edu>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Erez Zadok <ezk@cs.sunysb.edu>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, viro@zeniv.linux.org.uk,
-       hch@infradead.org, mhalcrow@us.ibm.com, hugh@veritas.com
-Subject: Re: [2.6.26 PATCH, RESEND]: fs_stack/eCryptfs: fsstack_copy_* updates 
-In-reply-to: Your message of "Wed, 30 Apr 2008 10:17:04 PDT."
-             <20080430101704.9cbd6384.akpm@linux-foundation.org> 
-X-MailKey: Erez_Zadok
+	Thu, 1 May 2008 13:19:56 -0400
+Date: Thu, 1 May 2008 10:18:26 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: bunk@kernel.org, arjan@infradead.org, torvalds@linux-foundation.org,
+       rjw@sisk.pl, davem@davemloft.net, linux-kernel@vger.kernel.org,
+       jirislaby@gmail.com
+Subject: Re: RFC: starting a kernel-testers group for newbies
+Message-Id: <20080501101826.6609dc85.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.58.0805011217200.11101@gandalf.stny.rr.com>
+References: <20080429.190352.137408408.davem@davemloft.net>
+	<200804302136.58005.rjw@sisk.pl>
+	<20080430131537.1f7a0914.akpm@linux-foundation.org>
+	<alpine.LFD.1.10.0804301325260.2980@woody.linux-foundation.org>
+	<20080501003125.GM29330@cs181133002.pp.htv.fi>
+	<20080430000338.50548884@infradead.org>
+	<20080501113038.GW29330@cs181133002.pp.htv.fi>
+	<20080430072013.7c3b30b1@infradead.org>
+	<20080501132159.GC29330@cs181133002.pp.htv.fi>
+	<20080501084919.8ac6dbdd.akpm@linux-foundation.org>
+	<Pine.LNX.4.58.0805011217200.11101@gandalf.stny.rr.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In message <20080430101704.9cbd6384.akpm@linux-foundation.org>, Andrew Morton writes:
-[...[
-> Can we avoid having to think?
-> 
-> void fsstack_copy_inode_size(struct inode *dst, const struct inode *src)
-> {
-> 	blkcnt_t i_blocks;
-> 	loff_t i_size;
-> 
-> 	i_size = i_size_read(src);
-> 	spin_lock_32bit(&src->i_lock);
-> 	i_blocks = src->i_blocks;
-> 	spin_unlock_32bit(&src->i_lock);
-> 
-> 	i_size_write(dst, i_size);
-> 	spin_lock_32bit(&dst->i_lock)
-> 	dst->i_blocks = i_blocks;
-> 	spin_unlock_32bit(&dst->i_lock)
-> }
+On Thu, 1 May 2008 12:38:23 -0400 (EDT)
+Steven Rostedt <rostedt@goodmis.org> wrote:
 
-I can't find spin_[um]lock_32bit anywhere (checkd latest mmotm and linus's
-tree).  I therefore assume this was just your way of saying I should:
+> People here mention differnt places to look at code, and besides the
+> kerneloops.org I really don't even know where to look for bugs, because I
+> haven't seen a URL to point me to.
 
-#if BITS_PER_LONG == 32
-	spin_unlock(&dst->i_lock);
-#endif
+bugzilla.kernel.org is, umm, improving.
 
-Erez.
+It would be an intersting exercise for someone to spend a few days seeing
+how many of the bugzilla reports they personally can reproduce.  I'd guess
+"zero".  There's a lesson in that.
+
+The problem with bugzilla will be that it will be hard to find reports
+where the reporter will be able to work with you on the fix - we've let
+them go cold.
+
+The most fruitful place to find fixable bugs is linux-kernel.  People who
+report bugs there are sufficiently motivated to have actually sent the
+email and the bug is still recent, so they probably haven't done the
+Solaris install yet.
+
