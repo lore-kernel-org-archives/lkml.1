@@ -1,56 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937324AbYEBXci@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937358AbYEBXez@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937324AbYEBXci (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 19:32:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932521AbYEBXc1
+	id S937358AbYEBXez (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 19:34:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936233AbYEBXer
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 19:32:27 -0400
-Received: from mail0.lsil.com ([147.145.40.20]:56562 "EHLO mail0.lsil.com"
+	Fri, 2 May 2008 19:34:47 -0400
+Received: from ozlabs.org ([203.10.76.45]:59590 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760103AbYEBXc0 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 19:32:26 -0400
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	id S936002AbYEBXeq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 May 2008 19:34:46 -0400
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: HELP: Is writeq an atomic operation??
-Date: Fri, 2 May 2008 17:31:50 -0600
-Message-ID: <0631C836DBF79F42B5A60C8C8D4E822901047B52@NAMAIL2.ad.lsil.com>
-In-Reply-To: <adaod7o2sxh.fsf@cisco.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: HELP: Is writeq an atomic operation??
-thread-index: Acisq1DWMeFtoTQkTEK0YVkgzmP/3wAAKjTg
-From: "Moore, Eric" <Eric.Moore@lsi.com>
-To: "Roland Dreier" <rdreier@cisco.com>
-Cc: "David Miller" <davem@davemloft.net>, <linux-scsi@vger.kernel.org>,
-       <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 02 May 2008 23:31:50.0682 (UTC) FILETIME=[B25C87A0:01C8ACAC]
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <18459.42256.729189.8744@cargo.ozlabs.ibm.com>
+Date: Sat, 3 May 2008 09:34:40 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [git pull] Please pull powerpc.git master branch
+In-Reply-To: <alpine.LFD.1.10.0805020818440.5994@woody.linux-foundation.org>
+References: <18458.44292.817770.800636@cargo.ozlabs.ibm.com>
+	<alpine.LFD.1.10.0805020818440.5994@woody.linux-foundation.org>
+X-Mailer: VM 7.19 under Emacs 22.1.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, May 02, 2008 5:22 PM,  Roland Dreier wrote:
->  > Yeah,  I forgot I have a #ifndef writeq, then defined the 
-> x86_64 version
->  > of that.   I've not tested on x86, so I'm not sure whether 
-> it works.
->  > How are you handling writeq when its not defined, as the 
-> case in x86?
-> 
-> Write two writel() inside a spinlock to avoid any transactions in the
-> middle (the HW I'm dealing with can deal with two 32-bit transactions,
-> as long as nothing comes in the middle).  If your hardware demands a
-> single 64-bit transaction, you may be in trouble, because I'm not sure
-> all 32-bit systems can generate such a PCIe transaction.
-> 
-> You can see include/linux/mlx4/doorbell.h for exactly what I did.
-> 
+Linus Torvalds writes:
 
-Thanks for the code sample.   Yes, I need to send a single atomic 64-bit
-transaction.
+> On Fri, 2 May 2008, Paul Mackerras wrote:
+> > 
+> > git pull \
+> > git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git master
+> 
+> "Already up-to-date."
+> 
+> Forgot to push?
 
-Eric
+Yep. :(
+
+Try again now.
+
+Thanks,
+Paul.
