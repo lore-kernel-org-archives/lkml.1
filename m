@@ -1,53 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935405AbYEBWCy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935937AbYEBWFT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935405AbYEBWCy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 18:02:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759386AbYEBWCp
+	id S935937AbYEBWFT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 18:05:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758710AbYEBWFE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 18:02:45 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:33086
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1758825AbYEBWCo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 18:02:44 -0400
-Date: Fri, 02 May 2008 15:02:43 -0700 (PDT)
-Message-Id: <20080502.150243.146424084.davem@davemloft.net>
-To: jeremy@goop.org
-Cc: suresh.b.siddha@intel.com, torvalds@linux-foundation.org,
-       venkatesh.pallipadi@intel.com, trini@kernel.crashing.org,
-       akpm@linux-foundation.org, bunk@kernel.org, mingo@elte.hu,
-       tglx@linutronix.de, hpa@zytor.com, linux-kernel@vger.kernel.org
-Subject: Re: huge gcc 4.1.{0,1} __weak problem
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <481B8376.4050206@goop.org>
-References: <alpine.LFD.1.10.0805011729540.5994@woody.linux-foundation.org>
-	<20080502003947.GB28173@linux-os.sc.intel.com>
-	<481B8376.4050206@goop.org>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Fri, 2 May 2008 18:05:04 -0400
+Received: from web50212.mail.re2.yahoo.com ([206.190.39.176]:36293 "HELO
+	web50212.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1755587AbYEBWFD convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 May 2008 18:05:03 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:X-Mailer:Date:From:Reply-To:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=ig7gxUCGItaoVjoKZqEGh0sn2VWhg4rx74RF8BijVkpZMg0FtwzW79e3WuMZDJ40VhpT/eBWtIGXfH2C07sR+hKLwwxy4Ay/3DV2/7yEOTVuPo+E4B+Pq80oJeYgfKOco10WSjJZdwXxHfVuecmbRFxetKrniJEGbxF8SU7Neyo=;
+X-YMail-OSG: WezsH.IVM1k4e4bgxCXqnErtbjR35Z39s69lZitLetCzJmJHE_R3Fi3UfXiB7jQ.sz.EJlyJkn5.o22RcXIqMAhUsNCeAy06wUWNkGIC5fzKm5isuDCljA--
+X-Mailer: YahooMailWebService/0.7.185
+Date: Fri, 2 May 2008 15:04:55 -0700 (PDT)
+From: Alex Davis <alex14641@yahoo.com>
+Reply-To: alex14641@yahoo.com
+Subject: Re: Sharing disks amoung multiple software RAIDs
+To: David Greaves <david@dgreaves.com>, Kasper Sandberg <lkml@metanurb.dk>
+Cc: David Rees <drees76@gmail.com>, David Lethe <david@santools.com>,
+       Justin Piszcz <jpiszcz@lucidpixels.com>, linux-raid@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <1209764630.7827.15.camel@localhost>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
+Message-ID: <977930.28629.qm@web50212.mail.re2.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-Date: Fri, 02 May 2008 14:11:18 -0700
+--- On Fri, 5/2/08, Kasper Sandberg <lkml@metanurb.dk> wrote:
 
-> Suresh Siddha wrote:
-> > On Thu, May 01, 2008 at 05:34:34PM -0700, Linus Torvalds wrote:
-> >   
-> >> Is it always about inlining? If so, can't we add a __noinline__ to the 
-> >> declaration of __weak?
-> >>     
-> >
-> > We tried that and it was still getting inlined.
+> From: Kasper Sandberg <lkml@metanurb.dk>
+> Subject: Re: Sharing disks amoung multiple software RAIDs
+> To: "David Greaves" <david@dgreaves.com>
+> Cc: "David Rees" <drees76@gmail.com>, "David Lethe" <david@santools.com>, alex14641@yahoo.com, "Justin Piszcz" <jpiszcz@lucidpixels.com>, linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org
+> Date: Friday, May 2, 2008, 5:43 PM
+> On Fri, 2008-05-02 at 09:25 +0100, David Greaves wrote:
+> > Kasper Sandberg wrote:
+> > > Im not treating it as a backup, what i want, is
+> to make sure that if 1
+> > > disk dies, the data is still intact and ill
+> hopefully be able to run
+> > > with 1 disk till the newly ordered one arrives
+> > Probably one of the main design objectives behind
+> RAID/md
 > 
-> That's a pity.  I've worked around this bug with noinline before.
+> Exactly, but once people start saying: "Look how many
+> problems people
+> post to the thread on
+> a weekly basis where people lose their data when md
+> rebuilds go bad with
+> non-shared disks" i begin to worry..
+> 
+> > 
+> > > So my question remains.. Is md raid1 not suited
+> for this need? would it
+> > > be safer to run in non-raid1 mode and daily(maybe
+> hourly) rsync
+> > > everything over to the second disk?
+> > 
+> > md is 100% guaranteed perfect or your money back...
+> > rsync is 100% guaranteed perfect or your money back...
+> > your backups are 100% guaranteed perfect or your money
+> back...
+> > your hard drives are 100% guaranteed perfect or your
+> money back...
+> > your CPU and RAM are 100% guaranteed perfect or your
+> money back...
+> > your CPU and PSU fans are 100% guaranteed perfect or
+> your money back...
+> > 
+> > Clearly if you want to panic over reliability you have
+> lots of choices :)
+> 
+> I do not wish to panic, i merely wished to know if linux MD
+> is believed
+> to work in most cases, or believed to do all sorts of weird
+> stuff when
+> resyncing :)
+> 
+> > 
+> > David
+> > PS, FWIW md has saved my data* countless times over
+> the past 'n' years in
+> > exactly the scenario you describe.
+> 
+> It has also been useful to people i know, i just wished to
+> be sure :)
+> and as Keld Jørn Simonsen and Helge Hafting's comments
+> seems to confirm,
+> linux md IS nice and stable :)
+> 
+> and as said, what im looking for isnt an in-box backup
+> solution, merely
+> safety in case one disk burns :)
+> 
+> > 
+> > *(or more accurately has saved me from having to
+> restore my data)
 
-It's "constness", as Jakub mentioned, not inlineability, that triggers
-this bug.
+Just to add another data point, I've been using md in RAID 5 configuration for ~3 years with dedicated USB and SATA disks 
+(not mixed) and have had disks go bad, and have yet to lose 
+any data. Given the 'quality' of high-capacity disks nowadays,
+RAIDing them is the right thing to do.
 
-That's why his workaround of using an empty asm("") to the function is
-an effective workaround, because the compiler can no longer internally
-decide that the function is "const".
+
+      ____________________________________________________________________________________
+Be a better friend, newshound, and 
+know-it-all with Yahoo! Mobile.  Try it now.  http://mobile.yahoo.com/;_ylt=Ahu06i62sR8HDtDypao8Wcj9tAcJ
