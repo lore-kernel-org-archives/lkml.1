@@ -1,74 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937010AbYEBVUo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936265AbYEBV13@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937010AbYEBVUo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 17:20:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932533AbYEBVUg
+	id S936265AbYEBV13 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 17:27:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756283AbYEBV1S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 17:20:36 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:60014 "EHLO smtp5.pp.htv.fi"
+	Fri, 2 May 2008 17:27:18 -0400
+Received: from mga02.intel.com ([134.134.136.20]:59472 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759607AbYEBVUg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 17:20:36 -0400
-Date: Sat, 3 May 2008 00:19:42 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       David Miller <davem@davemloft.net>, trini@kernel.crashing.org,
-       mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: huge gcc 4.1.{0,1} __weak problem
-Message-ID: <20080502211942.GE5838@cs181133002.pp.htv.fi>
-References: <20080430013108.GA18207@linux-os.sc.intel.com> <20080429.212833.192304794.davem@davemloft.net> <924EFEDD5F540B4284297C4DC59F3DEEF7D18E@orsmsx423.amr.corp.intel.com> <20080501215633.GU29330@cs181133002.pp.htv.fi> <481B8321.1000305@goop.org>
+	id S1758794AbYEBV1R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 May 2008 17:27:17 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.27,428,1204531200"; 
+   d="scan'208";a="379441214"
+From: Dan Williams <dan.j.williams@intel.com>
+Subject: [PATCH] md: fix raid5 'repair' operations
+To: akpm@linux-foundation.org
+Cc: neilb@suse.de, linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux@horizon.com
+Date: Fri, 02 May 2008 14:27:15 -0700
+Message-ID: <20080502212715.22922.79901.stgit@dwillia2-linux.ch.intel.com>
+User-Agent: StGIT/0.14.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <481B8321.1000305@goop.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 02, 2008 at 02:09:53PM -0700, Jeremy Fitzhardinge wrote:
-> Adrian Bunk wrote:
->> A workaround here is the wrong solution since this isn't the only place 
->> that suffers from this issue.
->>
->> We currently give a #warning for 4.1.0.
->> But not for 4.1.1.
->> (Accordingto the bug >= 4.1.2 is fixed.)
->>
->> And a #warning is not enough.
->>
->> The huge problem is that "empty __weak function in the same file and  
->> non-weak arch function" has recently become a common pattern with  
->> several new usages added during this merge window alone.
->>
->> And the breakages can be very subtle runtime breakages.
->>
->> I see only the following choices:
->> - remove __weak and replace all current usages
->> - move all __weak functions into own files, and ensure that also happens
->>   for future usages
->> - #error for gcc 4.1.{0,1}
->>   
->
-> - make __weak also include noinline.  I think that's sufficient (at  
-> least it was when I encountered a gcc bug with these symptoms last year  
-> or so).
+commit bd2ab67030e9116f1e4aae1289220255412b37fd "md: close a livelock
+window in handle_parity_checks5" introduced a bug in handling 'repair'
+operations.  After a repair operation completes we clear the state bits
+tracking this operation.  However, they are cleared too early and this
+results in the code deciding to re-run the parity check operation.  Since
+we have done the repair in memory the second check does not find a mismatch
+and thus does not do a writeback.
 
-I've tried it and it doesn't work.
+Test results:
+$ echo repair > /sys/block/md0/md/sync_action
+$ cat /sys/block/md0/md/mismatch_cnt
+51072
+$ echo repair > /sys/block/md0/md/sync_action
+$ cat /sys/block/md0/md/mismatch_cnt
+0
 
->    J
+(also fix incorrect indentation)
 
-cu
-Adrian
+Cc: <stable@kernel.org>
+Tested-by: George Spelvin <linux@horizon.com>
+Acked-by: NeilBrown <neilb@suse.de>
+Signed-off-by: Dan Williams <dan.j.williams@intel.com>
+---
 
--- 
+ drivers/md/raid5.c |   25 +++++++++++++------------
+ 1 files changed, 13 insertions(+), 12 deletions(-)
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+
+diff --git a/drivers/md/raid5.c b/drivers/md/raid5.c
+index 087eee0..ee0ea91 100644
+--- a/drivers/md/raid5.c
++++ b/drivers/md/raid5.c
+@@ -2369,8 +2369,8 @@ static void handle_parity_checks5(raid5_conf_t *conf, struct stripe_head *sh,
+ 
+ 	/* complete a check operation */
+ 	if (test_and_clear_bit(STRIPE_OP_CHECK, &sh->ops.complete)) {
+-	    clear_bit(STRIPE_OP_CHECK, &sh->ops.ack);
+-	    clear_bit(STRIPE_OP_CHECK, &sh->ops.pending);
++		clear_bit(STRIPE_OP_CHECK, &sh->ops.ack);
++		clear_bit(STRIPE_OP_CHECK, &sh->ops.pending);
+ 		if (s->failed == 0) {
+ 			if (sh->ops.zero_sum_result == 0)
+ 				/* parity is correct (on disc,
+@@ -2400,16 +2400,6 @@ static void handle_parity_checks5(raid5_conf_t *conf, struct stripe_head *sh,
+ 			canceled_check = 1; /* STRIPE_INSYNC is not set */
+ 	}
+ 
+-	/* check if we can clear a parity disk reconstruct */
+-	if (test_bit(STRIPE_OP_COMPUTE_BLK, &sh->ops.complete) &&
+-		test_bit(STRIPE_OP_MOD_REPAIR_PD, &sh->ops.pending)) {
+-
+-		clear_bit(STRIPE_OP_MOD_REPAIR_PD, &sh->ops.pending);
+-		clear_bit(STRIPE_OP_COMPUTE_BLK, &sh->ops.complete);
+-		clear_bit(STRIPE_OP_COMPUTE_BLK, &sh->ops.ack);
+-		clear_bit(STRIPE_OP_COMPUTE_BLK, &sh->ops.pending);
+-	}
+-
+ 	/* start a new check operation if there are no failures, the stripe is
+ 	 * not insync, and a repair is not in flight
+ 	 */
+@@ -2424,6 +2414,17 @@ static void handle_parity_checks5(raid5_conf_t *conf, struct stripe_head *sh,
+ 		}
+ 	}
+ 
++	/* check if we can clear a parity disk reconstruct */
++	if (test_bit(STRIPE_OP_COMPUTE_BLK, &sh->ops.complete) &&
++	    test_bit(STRIPE_OP_MOD_REPAIR_PD, &sh->ops.pending)) {
++
++		clear_bit(STRIPE_OP_MOD_REPAIR_PD, &sh->ops.pending);
++		clear_bit(STRIPE_OP_COMPUTE_BLK, &sh->ops.complete);
++		clear_bit(STRIPE_OP_COMPUTE_BLK, &sh->ops.ack);
++		clear_bit(STRIPE_OP_COMPUTE_BLK, &sh->ops.pending);
++	}
++
++
+ 	/* Wait for check parity and compute block operations to complete
+ 	 * before write-back.  If a failure occurred while the check operation
+ 	 * was in flight we need to cycle this stripe through handle_stripe
 
