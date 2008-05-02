@@ -1,81 +1,190 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935184AbYEBRkz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935388AbYEBRmm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935184AbYEBRkz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 13:40:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759416AbYEBRkq
+	id S935388AbYEBRmm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 13:42:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759740AbYEBRmc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 13:40:46 -0400
-Received: from smtp.enter.net ([216.193.128.24]:2855 "EHLO smtp.enter.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759369AbYEBRkq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 13:40:46 -0400
-From: Daniel Hazelton <dhazelton@enter.net>
-To: Andi Kleen <andi@firstfloor.org>
-Subject: Re: How to reduce the number of open kernel bugs
-Date: Fri, 2 May 2008 13:40:42 -0400
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: "Parag Warudkar" <parag.warudkar@gmail.com>,
-       "Adrian Bunk" <bunk@kernel.org>, LKML <linux-kernel@vger.kernel.org>
-References: <82e4877d0805020742l7d4a6ec9mc72e79aa3d242348@mail.gmail.com> <200805021229.47038.dhazelton@enter.net> <87od7ovcpj.fsf@basil.nowhere.org>
-In-Reply-To: <87od7ovcpj.fsf@basil.nowhere.org>
+	Fri, 2 May 2008 13:42:32 -0400
+Received: from e34.co.us.ibm.com ([32.97.110.152]:38205 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759416AbYEBRma (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 May 2008 13:42:30 -0400
+Date: Fri, 2 May 2008 12:42:22 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: "Serge E. Hallyn" <serue@us.ibm.com>, Greg KH <gregkh@suse.de>,
+       Benjamin Thery <benjamin.thery@bull.net>, linux-kernel@vger.kernel.org,
+       Al Viro <viro@ftp.linux.org.uk>, Tejun Heo <htejun@gmail.com>,
+       Daniel Lezcano <dlezcano@fr.ibm.com>,
+       Pavel Emelyanov <xemul@openvz.org>, netdev@vger.kernel.org
+Subject: Re: [PATCH 00/10] sysfs tagged directories
+Message-ID: <20080502174222.GA16493@sergelap.austin.ibm.com>
+References: <20080429171015.473938697@theryb.frec.bull.fr> <20080429173621.GA16625@suse.de> <20080429180445.GA18110@sergelap.austin.ibm.com> <20080429184151.GA19794@suse.de> <20080429193417.GA19282@sergelap.austin.ibm.com> <20080501031341.GD4911@suse.de> <20080501151051.GB16038@sergelap.austin.ibm.com> <m11w4lho08.fsf@frodo.ebiederm.org> <20080501210550.GA22534@sergelap.austin.ibm.com> <m1prs5fzzd.fsf@frodo.ebiederm.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200805021340.42508.dhazelton@enter.net>
+In-Reply-To: <m1prs5fzzd.fsf@frodo.ebiederm.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 02 May 2008 13:27:04 Andi Kleen wrote:
-> Daniel Hazelton <dhazelton@enter.net> writes:
-> >  If the hardware works
-> > perfectly in every other OS
->
-> It depends. There used to be the famous case (not longer true now) that
-> older Linux allocated memory from the top of the memory down and other OS
-> generally allocated it the from bottom to up and when some of your top
-> memory was broken Linux would often hit problems where other OS did not.
+Quoting Eric W. Biederman (ebiederm@xmission.com):
+> "Serge E. Hallyn" <serue@us.ibm.com> writes:
+> 
+> > Quoting Eric W. Biederman (ebiederm@xmission.com):
+> 
+> > Ok as it turns out Benjamin Thery does in fact have a patch to fix this.
+> > Benjamin, please send your renaming patch out tomorrow if you can?
+> >
+> > I guess this is why I didn't really see the problem Benjamin said there
+> > was - it just works with SYSFS_DEPRECATED  :)
+> 
+> It will be nice to see that patch.  I'm curious what the problem was.
+> 
+> Eric
 
-True.
+Here is the patch he had privately sent.  As the comments indicate he's
+still refining it so yell at me not him...   but this on top of the
+tagged dir patchset makes everything work for me.
 
-> Also there can be the case when some OS use hardware quite differently
-> or different hardware features than other. Standard case for example
-> used to be that there were a few platforms where the SMM code had 64bit
-> bugs and of course you would only hit them when running a 64bit OS which
-> was Linux.
+(I'd *really* like to see network namespaces be generally usable sometime
+in 2.6.26.)
 
-Sadly things like this will continue as long as there is a single OS that has 
-more than a 70% market share of the common desktop market.
+thanks,
+-serge
 
-> A modern OS is a very complicated system with tens of millions of code
-> lines and you can't assume they all program the hardware in the same way.
->
-> Simple truths are often wrong.
 
-Yes, but if the hardware *ISN'T* broken, then claiming it is and closing out a 
-bug is the wrong thing to do. The right thing to do would be to find out why 
-the hardware isn't working correctly for the OS/driver combination in 
-question and, if possible, fix the driver.
+[This is a proposal to fix the issue with network devices movement 
+ and sysfs not being updated correctly.
+ Please comment.
+ There is no locking in sysfs_tag_will_change(), this may be wrong.]
 
->  - and possibly even previous versions of Linux -
->
-> Now that is a more interesting case. But regressions are always taken
-> seriously by all maintainers I know.
->
 
-Look to the bug-report posted (cleaned of evidence that would incriminate any 
-single person) by (IIRC) Adrian. The guy says "It worked with X and works in 
-Windows, but it now fails with message Z."
+When a network device is moved between namespaces its sysfs entry isn't
+updated correctly because kobject_rename() fails before sysfs_rename_dir()
+is called. kobject_rename() prints a warning and returns when it detects 
+a kobject in the same kset already has the same name.
 
-Maintainer says "Your hardware is broken", closes the bug and then goes on to 
-say "If the hardware isn't broken, talk to the people in charge of A and B 
-because my code isn't buggy."
+When moving between namespaces the device keeps its name but the sysfs 
+tag associated with its sysfs_dirent should be updated to reflect the fact 
+it now belongs to another namespace. This is done in sysfs_rename_dir().
 
-That is idiotic and immature.
 
-DRH
+* The simplest change we can make to "fix" kobject_rename() is to allow 
+  a kobject to be renamed to the same name without complaining: we allow
+  dumb renaming. We only check the name is actually "owned" by it.
+
+(lib/kobject.c: kobject_rename())
+                temp_kobj = kset_find_obj(kobj->kset, new_name);
+                if (temp_kobj) {
+-                       printk(KERN_WARNING "kobject '%s' cannot be renamed "
+-                              "to '%s' as '%s' is already in existence.\n",
+-                              kobject_name(kobj), new_name, new_name);
++                       if (kobj != temp_kobj) {
++                               printk(KERN_WARNING "kobject '%s' cannot be renamed "
++                                      "to '%s' as '%s' is already in existence.\n",
++                                      kobject_name(kobj), new_name, new_name);
++                               kobject_put(temp_kobj);
++                               return -EINVAL;
++                       }
+                        kobject_put(temp_kobj);
+-                       return -EINVAL;
+                }
+
+* This patch goes a bit further, it allows a kobject to be renamed to
+  the same name only if the sysfs tag associated with it will change.
+
+This patch applies on 2.6.25-mm1 on top of the sysfs tagged directories
+patchset.
+
+Signed-off-by: Benjamin Thery <benjamin.thery@bull.net>
+---
+ fs/sysfs/dir.c        |   11 +++++++++++
+ include/linux/sysfs.h |    6 ++++++
+ lib/kobject.c         |   16 +++++++++++-----
+ 3 files changed, 28 insertions(+), 5 deletions(-)
+
+Index: linux-mm/fs/sysfs/dir.c
+===================================================================
+--- linux-mm.orig/fs/sysfs/dir.c
++++ linux-mm/fs/sysfs/dir.c
+@@ -909,6 +909,17 @@ err_out:
+ 	return error;
+ }
+
++int sysfs_tag_will_change(struct kobject * kobj)
++{
++	struct sysfs_dirent *sd = kobj->sd;
++	const void *old_tag, *tag;
++
++	old_tag = sysfs_dirent_tag(sd);
++	tag = sysfs_creation_tag(sd->s_parent, sd);
++
++	return old_tag != tag;
++}
++
+ int sysfs_rename_dir(struct kobject * kobj, const char *new_name)
+ {
+ 	struct sysfs_dirent *sd = kobj->sd;
+Index: linux-mm/include/linux/sysfs.h
+===================================================================
+--- linux-mm.orig/include/linux/sysfs.h
++++ linux-mm/include/linux/sysfs.h
+@@ -95,6 +95,7 @@ int sysfs_schedule_callback(struct kobje
+
+ int __must_check sysfs_create_dir(struct kobject *kobj);
+ void sysfs_remove_dir(struct kobject *kobj);
++int sysfs_tag_will_change(struct kobject *kobj);
+ int __must_check sysfs_rename_dir(struct kobject *kobj, const char *new_name);
+ int __must_check sysfs_move_dir(struct kobject *kobj,
+ 				struct kobject *new_parent_kobj);
+@@ -152,6 +153,11 @@ static inline void sysfs_remove_dir(stru
+ {
+ }
+
++static inline int sysfs_tag_will_change(struct kobject *kobj)
++{
++	return 0;
++}
++
+ static inline int sysfs_rename_dir(struct kobject *kobj, const char *new_name)
+ {
+ 	return 0;
+Index: linux-mm/lib/kobject.c
+===================================================================
+--- linux-mm.orig/lib/kobject.c
++++ linux-mm/lib/kobject.c
+@@ -466,11 +466,17 @@ int kobject_rename(struct kobject *kobj,
+ 		struct kobject *temp_kobj;
+ 		temp_kobj = kset_find_obj(kobj->kset, new_name);
+ 		if (temp_kobj) {
+-			printk(KERN_WARNING "kobject '%s' cannot be renamed "
+-			       "to '%s' as '%s' is already in existence.\n",
+-			       kobject_name(kobj), new_name, new_name);
+-			kobject_put(temp_kobj);
+-			return -EINVAL;
++			if (temp_kobj == kobj && sysfs_tag_will_change(kobj)) {
++				/* OK: Same name, but the sysfs tag will change */
++				kobject_put(temp_kobj);
++			} else {
++				/* Even sysfs tag won't change */
++				printk(KERN_WARNING "kobject '%s' cannot be renamed "
++				       "to '%s' as '%s' is already in existence.\n",
++				       kobject_name(kobj), new_name, new_name);
++				kobject_put(temp_kobj);
++				return -EINVAL;
++			}
+ 		}
+ 	}
+
 
 -- 
-Dialup is like pissing through a pipette. Slow and excruciatingly painful.
+
+--~--~---------~--~----~------------~-------~--~----~
+You received this message because you are subscribed to the Google Groups "lxc-dev" group.
+To post to this group, send email to lxc-dev@googlegroups.com
+To unsubscribe from this group, send email to lxc-dev-unsubscribe@googlegroups.com
+For more options, visit this group at http://groups.google.com/group/lxc-dev?hl=en
+-~----------~----~----~----~------~----~------~--~---
