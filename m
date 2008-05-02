@@ -1,69 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935439AbYEBSZ6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935721AbYEBS2Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935439AbYEBSZ6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 14:25:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763022AbYEBSZu
+	id S935721AbYEBS2Q (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 14:28:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756804AbYEBS2E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 14:25:50 -0400
-Received: from wf-out-1314.google.com ([209.85.200.168]:53955 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762533AbYEBSZt (ORCPT
+	Fri, 2 May 2008 14:28:04 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:43855 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756253AbYEBS2C (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 14:25:49 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=i6J1KLexatsUnXE5ghn7XuFj+kjmnRICgkREEx3iRbbWfCWBy1uJm3Op4ah0Uo8nBjwPP6etqa0DAotFZP8z+RfrP5gcQy802GX8Hzp9gBSydKLH7Pp8fhGDwtHa9NrtsunnL33Ia1dzf46Z4tmrbwNSkpqFbEOt3/QqcubhRR8=
-Message-ID: <82e4877d0805021125y1e11deb4qaa57ac493cf41aba@mail.gmail.com>
-Date: Fri, 2 May 2008 14:25:47 -0400
-From: "Parag Warudkar" <parag.warudkar@gmail.com>
-To: "Adrian Bunk" <bunk@kernel.org>
-Subject: Re: How to reduce the number of open kernel bugs
-Cc: "Daniel Hazelton" <dhazelton@enter.net>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080502180151.GD5838@cs181133002.pp.htv.fi>
+	Fri, 2 May 2008 14:28:02 -0400
+Date: Fri, 2 May 2008 12:27:46 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>
+Cc: linux-kernel@vger.kernel.org, Dave Jones <davej@redhat.com>
+Subject: [PATCH] Extend list debugging to cover hlists
+Message-ID: <20080502182745.GL14976@parisc-linux.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <82e4877d0805020742l7d4a6ec9mc72e79aa3d242348@mail.gmail.com>
-	 <200805021229.47038.dhazelton@enter.net>
-	 <82e4877d0805021030s793835a1le0032673b0f4c6c7@mail.gmail.com>
-	 <20080502180151.GD5838@cs181133002.pp.htv.fi>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 2, 2008 at 2:01 PM, Adrian Bunk <bunk@kernel.org> wrote:
-> On Fri, May 02, 2008 at 01:30:23PM -0400, Parag Warudkar wrote:
->  > I wasn't arguing that it is what should be happening - I was just
->  > pointing out that there are worse things than that routinely happen in
->  > distro bugzillas!
->
->  And the point is?
->
 
-Point being that no one can force anyone to do anything in the setting
-in which kernel developers work.
-Distros have been doing this since ever and people have no choice but
-to move on.
-(Everybody works out of their own (or employer's) interest and
-judgement - so telling some one to act otherwise will not be a whole
-lot productive.)
+We've seen a couple of recent reports which point to corrupt hlists.
+The DEBUG_LIST config option only checks regular lists, but it's not hard
+to cover hlists too.
 
->
->  You completely miss the point.
+Signed-off-by: Matthew Wilcox <willy@linux.intel.com>
 
-I am not - my point is that you can't do  much about it that will go
-long way in resolving the issue.
+diff --git a/include/linux/list.h b/include/linux/list.h
+index 08cf4f6..a325d9f 100644
+--- a/include/linux/list.h
++++ b/include/linux/list.h
+@@ -714,10 +714,17 @@ static inline int hlist_empty(const struct hlist_head *h)
+ 	return !h->first;
+ }
+ 
++#ifdef CONFIG_DEBUG_LIST
++extern void hlist_check(struct hlist_node *n);
++#else
++#define hlist_check(n)		do { } while (0)
++#endif
++
+ static inline void __hlist_del(struct hlist_node *n)
+ {
+ 	struct hlist_node *next = n->next;
+ 	struct hlist_node **pprev = n->pprev;
++	hlist_check(n);
+ 	*pprev = next;
+ 	if (next)
+ 		next->pprev = pprev;
+@@ -775,6 +782,7 @@ static inline void hlist_replace_rcu(struct hlist_node *old,
+ {
+ 	struct hlist_node *next = old->next;
+ 
++	hlist_check(old);
+ 	new->next = next;
+ 	new->pprev = old->pprev;
+ 	smp_wmb();
+@@ -830,6 +838,7 @@ static inline void hlist_add_head_rcu(struct hlist_node *n,
+ static inline void hlist_add_before(struct hlist_node *n,
+ 					struct hlist_node *next)
+ {
++	hlist_check(next);
+ 	n->pprev = next->pprev;
+ 	n->next = next;
+ 	next->pprev = &n->next;
+@@ -839,6 +848,7 @@ static inline void hlist_add_before(struct hlist_node *n,
+ static inline void hlist_add_after(struct hlist_node *n,
+ 					struct hlist_node *next)
+ {
++	hlist_check(next);
+ 	next->next = n->next;
+ 	n->next = next;
+ 	next->pprev = &n->next;
+@@ -868,6 +878,7 @@ static inline void hlist_add_after(struct hlist_node *n,
+ static inline void hlist_add_before_rcu(struct hlist_node *n,
+ 					struct hlist_node *next)
+ {
++	hlist_check(next);
+ 	n->pprev = next->pprev;
+ 	n->next = next;
+ 	smp_wmb();
+@@ -896,6 +907,7 @@ static inline void hlist_add_before_rcu(struct hlist_node *n,
+ static inline void hlist_add_after_rcu(struct hlist_node *prev,
+ 				       struct hlist_node *n)
+ {
++	hlist_check(prev);
+ 	n->next = prev->next;
+ 	n->pprev = &prev->next;
+ 	smp_wmb();
+diff --git a/lib/list_debug.c b/lib/list_debug.c
+index 4350ba9..00b56bf 100644
+--- a/lib/list_debug.c
++++ b/lib/list_debug.c
+@@ -1,5 +1,8 @@
+ /*
+  * Copyright 2006, Red Hat, Inc., Dave Jones
++ * Copyright 2008 Intel Corporation
++ * Author: Matthew Wilcox <willy@linux.intel.com>
++ *
+  * Released under the General Public License (GPL).
+  *
+  * This file contains the linked list implementations for
+@@ -76,3 +79,18 @@ void list_del(struct list_head *entry)
+ 	entry->prev = LIST_POISON2;
+ }
+ EXPORT_SYMBOL(list_del);
++
++void hlist_check(struct hlist_node *n)
++{
++	if (unlikely(*n->pprev != n)) {
++		printk(KERN_ERR "hlist corruption. *pprev should be %p, "
++				"but was %p\n", n, *n->pprev);
++		BUG();
++	}
++	if (unlikely(n->next != NULL && n->next->pprev != &n->next)) {
++		printk(KERN_ERR "hlist corruption. n->next->pprev should be"
++				"%p, but was %p\n", &n->next, n->next->pprev);
++		BUG();
++	}
++}
++EXPORT_SYMBOL(hlist_check);
 
->  And in any case, being more friendly to a bug submitter.
-
-Well again -  you can't force people to do something like that. In
-your example it would amount to the maintainer going against his/her
-own judgement - however wrong it is to you and me, to the person who
-can actually fix it - it's not a possibility. So you have to just
-accept it and reassign it to some one else who is interested/capable -
-for that I suggested tracking such bugs under a new STATUS.
-
-Parag
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
