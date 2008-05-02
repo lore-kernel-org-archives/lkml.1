@@ -1,82 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765601AbYEBImL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764521AbYEBIr6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765601AbYEBImL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 04:42:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758479AbYEBIl5
+	id S1764521AbYEBIr6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 04:47:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755508AbYEBIrt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 04:41:57 -0400
-Received: from gustav.zipernowsky.hu ([193.225.20.248]:48601 "EHLO
-	gustav.zipernowsky.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752461AbYEBIl5 (ORCPT
+	Fri, 2 May 2008 04:47:49 -0400
+Received: from fg-out-1718.google.com ([72.14.220.153]:4242 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752461AbYEBIrs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 04:41:57 -0400
+	Fri, 2 May 2008 04:47:48 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=pelfirTOWBB4pLGSLDmd/aHPELstC+ts5bPvFVrVmfMrBk3z1x7+vdG+t7V1Mqnswv0g1AC+jqDj973twi2XlCSuowB3yrGR8pWJTeJhYn3XADIdDU4RwjG1NYvIU2rO2waXikTY8Djo/z13YuIxIhFXt8sJua1ozUwiT7vp8Eg=
+Message-ID: <481AD528.1090809@gmail.com>
+Date: Fri, 02 May 2008 10:47:36 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
 MIME-Version: 1.0
-Date: Fri, 02 May 2008 10:41:53 +0200
-From: <oliver@zipernowsky.hu>
-To: John Heffner <jheffner@napa>
-Cc: John Heffner <jheffner@napa (none)>, linux-kernel@vger.kernel.org
-Subject: increase-the-max_burst-threshold-from-3-to-tp-reordering.patch added to
- queue-2.6.22.23-op1
-Reply-To: oliver.pntr@gmail.com
-Message-ID: <3b97f803bdd1adc618bb53aae1316043@zipernowsky.hu>
-User-Agent: RoundCube Webmail/0.1
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
+To: Andi Kleen <andi@firstfloor.org>
+CC: Ingo Molnar <mingo@elte.hu>, mingo@redhat.com,
+       linux-kernel@vger.kernel.org, tglx@linutronix.de, hpa@zytor.com
+Subject: Re: [PATCH 1/2] x86_64: fix mm.txt documentation
+References: <1209635899-23018-1-git-send-email-jirislaby@gmail.com> <20080502072226.GB713@elte.hu> <20080502083805.GR20451@one.firstfloor.org>
+In-Reply-To: <20080502083805.GR20451@one.firstfloor.org>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Your patch added to queue-2.6.22.23-op1.
-If anyone has any objections, please let us know.
+On 05/02/2008 10:38 AM, Andi Kleen wrote:
+>> yep, the image was in a 128 MB chunk from which 88 MB was left empty and 
+>> modules started at the next 128 MB boundary. The largest image i ever 
+>> had was around 44MB, so i doubt it's an issue in practice. Mind doing a 
+>> patch that reinstates it, by lowering the 512 image size limit to 508 
+>> MB? [4MB should be more than enough in practice]
+> 
+> Actually you could even limit to the exact know size of the kernel (rounded
+> up to 2MB) after early boot. Then the protection would be even better and less
+> aliasing to deal with for pageattr.c. Just invalidate the left over PMDs.
 
-http://repo.or.cz/w/linux-2.6.22.y-op-patches.git
-git://repo.or.cz/linux-2.6.22.y-op-patches.git
-
----
-
->From 3c0390e1a6d8a5d0cdae57959f0be37a236b474d Mon Sep 17 00:00:00 2001
-From: John Heffner <jheffner@napa.(none)>
-Date: Fri, 25 Apr 2008 01:43:57 -0700
-Subject: [PATCH] [TCP]: Increase the max_burst threshold from 3 to
-tp->reordering.
-
-From: John Heffner <jheffner@napa.(none)>
-
-[ Upstream commit: dd9e0dda66ba38a2ddd1405ac279894260dc5c36 ]
-
-This change is necessary to allow cwnd to grow during persistent
-reordering.  Cwnd moderation is applied when in the disorder state
-and an ack that fills the hole comes in.  If the hole was greater
-than 3 packets, but less than tp->reordering, cwnd will shrink when
-it should not have.
-
-Signed-off-by: John Heffner <jheffner@napa.(none)>
-Signed-off-by: David S. Miller <davem@davemloft.net>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
----
- include/net/tcp.h |    7 +++++--
- 1 file changed, 5 insertions(+), 2 deletions(-)
-
---- a/include/net/tcp.h
-+++ b/include/net/tcp.h
-@@ -775,11 +775,14 @@ extern void tcp_enter_cwr(struct sock *s
- extern __u32 tcp_init_cwnd(struct tcp_sock *tp, struct dst_entry *dst);
- 
- /* Slow start with delack produces 3 packets of burst, so that
-- * it is safe "de facto".
-+ * it is safe "de facto".  This will be the default - same as
-+ * the default reordering threshold - but if reordering increases,
-+ * we must be able to allow cwnd to burst at least this much in order
-+ * to not pull it back when holes are filled.
-  */
- static __inline__ __u32 tcp_max_burst(const struct tcp_sock *tp)
- {
--	return 3;
-+	return tp->reordering;
- }
- 
- /* RFC2861 Check whether we are limited by application or congestion
-window
-
-
+Doesn't cleanup_highmap() do that? ... so I guess we don't need the hole? Or do 
+we when we reach the limit to not go over to modules?
