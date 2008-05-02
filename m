@@ -1,149 +1,262 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937144AbYEBW7U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936679AbYEBXDV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937144AbYEBW7U (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 18:59:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934262AbYEBW7I
+	id S936679AbYEBXDV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 19:03:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933756AbYEBXDN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 18:59:08 -0400
-Received: from nf-out-0910.google.com ([64.233.182.188]:41887 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760412AbYEBW7F (ORCPT
+	Fri, 2 May 2008 19:03:13 -0400
+Received: from mail0.lsil.com ([147.145.40.20]:55175 "EHLO mail0.lsil.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756683AbYEBXDL convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 18:59:05 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:reply-to:references:mime-version:content-type:content-disposition:content-transfer-encoding:in-reply-to:user-agent;
-        b=K00X/SvauLe3CDnv8R7B1qw+t13UWKQaT7BE7JX/ajbz7qhVGe7kCuOVO70CE1dxBnPGipjV3115DCRzdYMg3xZs0P5gYeT7cTqIyOvwMa9ABJmoJzim6+Mawi/LKqXVQU2qB6CN8hJz3Llgy5xbdfOIpT8JbtZfjyrt3yBICc0=
-Date: Sat, 3 May 2008 02:58:49 +0400
-From: Anton Vorontsov <cbouatmailru@gmail.com>
-To: Andres Salomon <dilinger@queued.net>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       cbou@mail.ru, dwmw2@infradead.org
-Subject: Re: [PATCH 1/4] power_supply: Support serial number and ACR in
-	olpc_battery
-Message-ID: <20080502225849.GA26024@zarina>
-Reply-To: cbouatmailru@gmail.com
-References: <20080430163002.3c768ae0@ephemeral>
+	Fri, 2 May 2008 19:03:11 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20080430163002.3c768ae0@ephemeral>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: HELP:  Is writeq an atomic operation??
+Date: Fri, 2 May 2008 17:03:06 -0600
+Message-ID: <0631C836DBF79F42B5A60C8C8D4E822901047B42@NAMAIL2.ad.lsil.com>
+In-Reply-To: <87y76stj6j.fsf@basil.nowhere.org>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: HELP:  Is writeq an atomic operation??
+thread-index: Acispufoak/bLCWGT9iV5gjPT/h8WgAAXnLA
+From: "Moore, Eric" <Eric.Moore@lsi.com>
+To: "Andi Kleen" <andi@firstfloor.org>
+Cc: <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 02 May 2008 23:03:07.0184 (UTC) FILETIME=[AF139B00:01C8ACA8]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 30, 2008 at 04:30:02PM -0400, Andres Salomon wrote:
-> From: David Woodhouse <dwmw2@infradead.org>
+On Friday, May 02, 2008 4:50 PM, Andi Kleen wrote: 
 > 
-> This adds serial number and accumulated current support to the OLPC
-> battery driver.
-
-How PROP_ACCUM_CURRENT is different from PROP_CHARGE_NOW (uAh)?
-
-The DS2760 is already using the later to report its ACR register...
-
-> Signed-off-by: David Woodhouse <dwmw2@infradead.org>
-> Signed-off-by: Andres Salomon <dilinger@debian.org>
-> ---
->  drivers/power/olpc_battery.c       |   23 ++++++++++++++++++++++-
->  drivers/power/power_supply_sysfs.c |    1 +
->  include/linux/power_supply.h       |    1 +
->  3 files changed, 24 insertions(+), 1 deletions(-)
+> > Here is a trace from pci express analyzer.   I'm sending
 > 
-> diff --git a/drivers/power/olpc_battery.c b/drivers/power/olpc_battery.c
-> index ab1e828..9d9dd09 100644
-> --- a/drivers/power/olpc_battery.c
-> +++ b/drivers/power/olpc_battery.c
-> @@ -19,7 +19,7 @@
->  
->  #define EC_BAT_VOLTAGE	0x10	/* uint16_t,	*9.76/32,    mV   */
->  #define EC_BAT_CURRENT	0x11	/* int16_t,	*15.625/120, mA   */
-> -#define EC_BAT_ACR	0x12
-> +#define EC_BAT_ACR	0x12	/* int16_t,	*416.667,    µAh  */
->  #define EC_BAT_TEMP	0x13	/* uint16_t,	*100/256,   °C  */
->  #define EC_AMB_TEMP	0x14	/* uint16_t,	*100/256,   °C  */
->  #define EC_BAT_STATUS	0x15	/* uint8_t,	bitmask */
-> @@ -84,6 +84,8 @@ static struct power_supply olpc_ac = {
->  	.get_property = olpc_ac_get_prop,
->  };
->  
-> +static char bat_serial[17]; /* Ick */
-> +
->  /*********************************************************************
->   *		Battery properties
->   *********************************************************************/
-> @@ -94,6 +96,7 @@ static int olpc_bat_get_property(struct power_supply *psy,
->  	int ret = 0;
->  	int16_t ec_word;
->  	uint8_t ec_byte;
-> +	uint64_t ser_buf;
->  
->  	ret = olpc_ec_cmd(EC_BAT_STATUS, NULL, 0, &ec_byte, 1);
->  	if (ret)
-> @@ -241,6 +244,22 @@ static int olpc_bat_get_property(struct power_supply *psy,
->  		ec_word = be16_to_cpu(ec_word);
->  		val->intval = ec_word * 100 / 256;
->  		break;
-> +	case POWER_SUPPLY_PROP_ACCUM_CURRENT:
-> +		ret = olpc_ec_cmd(EC_BAT_ACR, NULL, 0, (void *)&ec_word, 2);
-> +		if (ret)
-> +			return ret;
-> +
-> +		ec_word = be16_to_cpu(ec_word);
-> +		val->intval = ec_word;
-> +		break;
-> +	case POWER_SUPPLY_PROP_SERIAL_NUMBER:
-> +		ret = olpc_ec_cmd(EC_BAT_SERIAL, NULL, 0, (void *)&ser_buf, 8);
-> +		if (ret)
-> +			return ret;
-> +
-> +		sprintf(bat_serial, "%016llx", (long long)be64_to_cpu(ser_buf));
-> +		val->strval = bat_serial;
-> +		break;
->  	default:
->  		ret = -EINVAL;
->  		break;
-> @@ -259,7 +278,9 @@ static enum power_supply_property olpc_bat_props[] = {
->  	POWER_SUPPLY_PROP_CAPACITY,
->  	POWER_SUPPLY_PROP_TEMP,
->  	POWER_SUPPLY_PROP_TEMP_AMBIENT,
-> +	POWER_SUPPLY_PROP_ACCUM_CURRENT,
->  	POWER_SUPPLY_PROP_MANUFACTURER,
-> +	POWER_SUPPLY_PROP_SERIAL_NUMBER,
->  };
->  
->  /*********************************************************************
-> diff --git a/drivers/power/power_supply_sysfs.c b/drivers/power/power_supply_sysfs.c
-> index c444d6b..756d4e1 100644
-> --- a/drivers/power/power_supply_sysfs.c
-> +++ b/drivers/power/power_supply_sysfs.c
-> @@ -112,6 +112,7 @@ static struct device_attribute power_supply_attrs[] = {
->  	POWER_SUPPLY_ATTR(time_to_empty_avg),
->  	POWER_SUPPLY_ATTR(time_to_full_now),
->  	POWER_SUPPLY_ATTR(time_to_full_avg),
-> +	POWER_SUPPLY_ATTR(accum_current),
->  	/* Properties of type `const char *' */
->  	POWER_SUPPLY_ATTR(model_name),
->  	POWER_SUPPLY_ATTR(manufacturer),
-> diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
-> index 68ed19c..a699ad2 100644
-> --- a/include/linux/power_supply.h
-> +++ b/include/linux/power_supply.h
-> @@ -91,6 +91,7 @@ enum power_supply_property {
->  	POWER_SUPPLY_PROP_TIME_TO_EMPTY_AVG,
->  	POWER_SUPPLY_PROP_TIME_TO_FULL_NOW,
->  	POWER_SUPPLY_PROP_TIME_TO_FULL_AVG,
-> +	POWER_SUPPLY_PROP_ACCUM_CURRENT,
->  	/* Properties of type `const char *' */
->  	POWER_SUPPLY_PROP_MODEL_NAME,
->  	POWER_SUPPLY_PROP_MANUFACTURER,
-> -- 
-> 1.5.5
+> With what CPU/chipset was that?
 > 
 
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+I'm developing sas driver for next generation controllers.  They should
+work at least on x86, x86_64, ia64, and ppc64.  The host I was using for
+gathering that trace was  x86_64 Intel Platform.  Here is the lspci
+output:
+
+00:00.0 Host bridge: Intel Corporation E7520 Memory Controller Hub (rev
+0c)
+	Subsystem: Super Micro Computer Inc Unknown device 5480
+	Flags: bus master, fast devsel, latency 0
+	Capabilities: [40] Vendor Specific Information
+
+00:00.1 Class ff00: Intel Corporation E7525/E7520 Error Reporting
+Registers (rev 0c)
+	Subsystem: Super Micro Computer Inc Unknown device 5480
+	Flags: fast devsel
+
+00:01.0 System peripheral: Intel Corporation E7520 DMA Controller (rev
+0c)
+	Subsystem: Super Micro Computer Inc Unknown device 5480
+	Flags: fast devsel, IRQ 5
+	Memory at dd000000 (32-bit, non-prefetchable) [size=4K]
+	Capabilities: [b0] Message Signalled Interrupts: Mask- 64bit-
+Queue=0/1 Enable-
+
+00:02.0 PCI bridge: Intel Corporation E7525/E7520/E7320 PCI Express Port
+A (rev 0c) (prog-if 00 [Normal decode])
+	Flags: bus master, fast devsel, latency 0
+	Bus: primary=00, secondary=01, subordinate=01, sec-latency=0
+	I/O behind bridge: 00002000-00002fff
+	Memory behind bridge: dd100000-dd1fffff
+	Prefetchable memory behind bridge:
+0000000088000000-00000000880fffff
+	Capabilities: [50] Power Management version 2
+	Capabilities: [58] Message Signalled Interrupts: Mask- 64bit-
+Queue=0/1 Enable-
+	Capabilities: [64] Express Root Port (Slot-) IRQ 0
+	Capabilities: [100] Advanced Error Reporting
+
+00:03.0 PCI bridge: Intel Corporation E7525/E7520/E7320 PCI Express Port
+A1 (rev 0c) (prog-if 00 [Normal decode])
+	Flags: bus master, fast devsel, latency 0
+	Bus: primary=00, secondary=02, subordinate=04, sec-latency=0
+	I/O behind bridge: 00003000-00003fff
+	Memory behind bridge: dd200000-dd3fffff
+	Capabilities: [50] Power Management version 2
+	Capabilities: [58] Message Signalled Interrupts: Mask- 64bit-
+Queue=0/1 Enable-
+	Capabilities: [64] Express Root Port (Slot-) IRQ 0
+	Capabilities: [100] Advanced Error Reporting
+
+00:04.0 PCI bridge: Intel Corporation E7525/E7520 PCI Express Port B
+(rev 0c) (prog-if 00 [Normal decode])
+	Flags: bus master, fast devsel, latency 0
+	Bus: primary=00, secondary=05, subordinate=05, sec-latency=0
+	Capabilities: [50] Power Management version 2
+	Capabilities: [58] Message Signalled Interrupts: Mask- 64bit-
+Queue=0/1 Enable-
+	Capabilities: [64] Express Root Port (Slot-) IRQ 0
+	Capabilities: [100] Advanced Error Reporting
+
+00:06.0 PCI bridge: Intel Corporation E7520 PCI Express Port C (rev 0c)
+(prog-if 00 [Normal decode])
+	Flags: bus master, fast devsel, latency 0
+	Bus: primary=00, secondary=06, subordinate=06, sec-latency=0
+	Capabilities: [50] Power Management version 2
+	Capabilities: [58] Message Signalled Interrupts: Mask- 64bit-
+Queue=0/1 Enable-
+	Capabilities: [64] Express Root Port (Slot-) IRQ 0
+	Capabilities: [100] Advanced Error Reporting
+
+00:1d.0 USB Controller: Intel Corporation 82801EB/ER (ICH5/ICH5R) USB
+UHCI Controller #1 (rev 02) (prog-if 00 [UHCI])
+	Subsystem: Super Micro Computer Inc Unknown device 5480
+	Flags: bus master, medium devsel, latency 0, IRQ 16
+	I/O ports at 1400 [size=32]
+
+00:1d.1 USB Controller: Intel Corporation 82801EB/ER (ICH5/ICH5R) USB
+UHCI Controller #2 (rev 02) (prog-if 00 [UHCI])
+	Subsystem: Super Micro Computer Inc Unknown device 5480
+	Flags: bus master, medium devsel, latency 0, IRQ 19
+	I/O ports at 1420 [size=32]
+
+00:1d.2 USB Controller: Intel Corporation 82801EB/ER (ICH5/ICH5R) USB
+UHCI Controller #3 (rev 02) (prog-if 00 [UHCI])
+	Subsystem: Super Micro Computer Inc Unknown device 5480
+	Flags: bus master, medium devsel, latency 0, IRQ 20
+	I/O ports at 1440 [size=32]
+
+00:1d.3 USB Controller: Intel Corporation 82801EB/ER (ICH5/ICH5R) USB
+UHCI Controller #4 (rev 02) (prog-if 00 [UHCI])
+	Subsystem: Super Micro Computer Inc Unknown device 5480
+	Flags: bus master, medium devsel, latency 0, IRQ 16
+	I/O ports at 1460 [size=32]
+
+00:1d.7 USB Controller: Intel Corporation 82801EB/ER (ICH5/ICH5R) USB2
+EHCI Controller (rev 02) (prog-if 20 [EHCI])
+	Subsystem: Super Micro Computer Inc Unknown device 5480
+	Flags: bus master, medium devsel, latency 0, IRQ 21
+	Memory at dd001000 (32-bit, non-prefetchable) [size=1K]
+	Capabilities: [50] Power Management version 2
+	Capabilities: [58] Debug port
+
+00:1e.0 PCI bridge: Intel Corporation 82801 PCI Bridge (rev c2) (prog-if
+00 [Normal decode])
+	Flags: bus master, fast devsel, latency 0
+	Bus: primary=00, secondary=07, subordinate=07, sec-latency=32
+	I/O behind bridge: 00004000-00004fff
+	Memory behind bridge: dd400000-deffffff
+	Prefetchable memory behind bridge: 88100000-881fffff
+
+00:1f.0 ISA bridge: Intel Corporation 82801EB/ER (ICH5/ICH5R) LPC
+Interface Bridge (rev 02)
+	Flags: bus master, medium devsel, latency 0
+
+00:1f.2 IDE interface: Intel Corporation 82801EB (ICH5) SATA Controller
+(rev 02) (prog-if 8a [Master SecP PriP])
+	Subsystem: Super Micro Computer Inc Unknown device 5480
+	Flags: bus master, 66MHz, medium devsel, latency 0, IRQ 20
+	I/O ports at 01f0 [size=8]
+	I/O ports at 03f4 [size=1]
+	I/O ports at 0170 [size=8]
+	I/O ports at 0374 [size=1]
+	I/O ports at 14b0 [size=16]
+
+00:1f.3 SMBus: Intel Corporation 82801EB/ER (ICH5/ICH5R) SMBus
+Controller (rev 02)
+	Subsystem: Super Micro Computer Inc Unknown device 5480
+	Flags: medium devsel, IRQ 22
+	I/O ports at 1100 [size=32]
+
+01:00.0 Mass storage controller [0108]: LSI Logic / Symbios Logic
+Unknown device 0077 (rev ff)
+	Subsystem: Compaq Computer Corporation Unknown device 40a0
+	Flags: bus master, fast devsel, latency 0, IRQ 5
+	I/O ports at 2000 [size=256]
+	Memory at dd140000 (64-bit, non-prefetchable) [size=16K]
+	[virtual] Expansion ROM at 88000000 [disabled] [size=64K]
+	Capabilities: [50] Power Management version 3
+	Capabilities: [68] Express Endpoint IRQ 0
+	Capabilities: [d0] Vital Product Data
+	Capabilities: [a8] Message Signalled Interrupts: Mask- 64bit+
+Queue=0/0 Enable-
+	Capabilities: [c0] MSI-X: Enable- Mask- TabSize=15
+	Capabilities: [100] Advanced Error Reporting
+	Capabilities: [138] Power Budgeting
+
+02:00.0 PCI bridge: Intel Corporation 6700PXH PCI Express-to-PCI Bridge
+A (rev 09) (prog-if 00 [Normal decode])
+	Flags: bus master, fast devsel, latency 0
+	Bus: primary=02, secondary=03, subordinate=03, sec-latency=64
+	Capabilities: [44] Express PCI/PCI-X Bridge IRQ 0
+	Capabilities: [5c] Message Signalled Interrupts: Mask- 64bit+
+Queue=0/0 Enable-
+	Capabilities: [6c] Power Management version 2
+	Capabilities: [d8] PCI-X bridge device
+	Capabilities: [100] Advanced Error Reporting
+	Capabilities: [300] Power Budgeting
+
+02:00.1 PIC: Intel Corporation 6700/6702PXH I/OxAPIC Interrupt
+Controller A (rev 09) (prog-if 20 [IO(X)-APIC])
+	Subsystem: Super Micro Computer Inc Unknown device 5480
+	Flags: bus master, fast devsel, latency 0
+	Memory at dd200000 (32-bit, non-prefetchable) [size=4K]
+	Capabilities: [44] Express Endpoint IRQ 0
+	Capabilities: [6c] Power Management version 2
+
+02:00.2 PCI bridge: Intel Corporation 6700PXH PCI Express-to-PCI Bridge
+B (rev 09) (prog-if 00 [Normal decode])
+	Flags: bus master, fast devsel, latency 0
+	Bus: primary=02, secondary=04, subordinate=04, sec-latency=64
+	I/O behind bridge: 00003000-00003fff
+	Memory behind bridge: dd300000-dd3fffff
+	Capabilities: [44] Express PCI/PCI-X Bridge IRQ 0
+	Capabilities: [5c] Message Signalled Interrupts: Mask- 64bit+
+Queue=0/0 Enable-
+	Capabilities: [6c] Power Management version 2
+	Capabilities: [d8] PCI-X bridge device
+	Capabilities: [100] Advanced Error Reporting
+	Capabilities: [300] Power Budgeting
+
+02:00.3 PIC: Intel Corporation 6700PXH I/OxAPIC Interrupt Controller B
+(rev 09) (prog-if 20 [IO(X)-APIC])
+	Subsystem: Super Micro Computer Inc Unknown device 5480
+	Flags: bus master, fast devsel, latency 0
+	Memory at dd201000 (32-bit, non-prefetchable) [size=4K]
+	Capabilities: [44] Express Endpoint IRQ 0
+	Capabilities: [6c] Power Management version 2
+
+04:02.0 Ethernet controller: Intel Corporation 82546GB Gigabit Ethernet
+Controller (rev 03)
+	Subsystem: Intel Corporation PRO/1000 MT Dual Port Server
+Adapter
+	Flags: bus master, 66MHz, medium devsel, latency 64, IRQ 17
+	Memory at dd300000 (64-bit, non-prefetchable) [size=128K]
+	I/O ports at 3000 [size=64]
+	Capabilities: [dc] Power Management version 2
+	Capabilities: [e4] PCI-X non-bridge device
+	Capabilities: [f0] Message Signalled Interrupts: Mask- 64bit+
+Queue=0/0 Enable-
+
+04:02.1 Ethernet controller: Intel Corporation 82546GB Gigabit Ethernet
+Controller (rev 03)
+	Subsystem: Intel Corporation PRO/1000 MT Dual Port Server
+Adapter
+	Flags: bus master, 66MHz, medium devsel, latency 64, IRQ 18
+	Memory at dd320000 (64-bit, non-prefetchable) [size=128K]
+	I/O ports at 3040 [size=64]
+	Capabilities: [dc] Power Management version 2
+	Capabilities: [e4] PCI-X non-bridge device
+	Capabilities: [f0] Message Signalled Interrupts: Mask- 64bit+
+Queue=0/0 Enable-
+
+07:01.0 VGA compatible controller: ATI Technologies Inc Rage XL (rev 27)
+(prog-if 00 [VGA])
+	Subsystem: Super Micro Computer Inc Unknown device 5480
+	Flags: bus master, stepping, medium devsel, latency 66, IRQ 10
+	Memory at de000000 (32-bit, non-prefetchable) [size=16M]
+	I/O ports at 4000 [size=256]
+	Memory at dd400000 (32-bit, non-prefetchable) [size=4K]
+	[virtual] Expansion ROM at 88100000 [disabled] [size=128K]
+	Capabilities: [5c] Power Management version 2
