@@ -1,69 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966007AbYEBP7Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966075AbYEBP7v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966007AbYEBP7Z (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 11:59:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934394AbYEBPzX
+	id S966075AbYEBP7v (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 11:59:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965778AbYEBP51
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 11:55:23 -0400
-Received: from 2605ds1-ynoe.1.fullrate.dk ([90.184.12.24]:54039 "EHLO
-	shrek.krogh.cc" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934286AbYEBPzV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 11:55:21 -0400
-Message-ID: <481B395E.5070505@krogh.cc>
-Date: Fri, 02 May 2008 17:55:10 +0200
-From: Jesper Krogh <jesper@krogh.cc>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
-MIME-Version: 1.0
-To: Ray Lee <ray-lk@madrabbit.org>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: Many open/close on same files yeilds "No such file or directory".
-References: <4819E316.7000607@krogh.cc>	 <20080501223938.921f7cd2.akpm@linux-foundation.org>	 <481ACEC4.2040205@krogh.cc> <481B3115.30705@krogh.cc> <2c0942db0805020847q2fdc0480m3eb892bf2bd0b3a@mail.gmail.com>
-In-Reply-To: <2c0942db0805020847q2fdc0480m3eb892bf2bd0b3a@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Fri, 2 May 2008 11:57:27 -0400
+Received: from nn7.de ([85.214.94.156]:53028 "EHLO nn7.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965531AbYEBP50 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 May 2008 11:57:26 -0400
+Subject: Re: 24rc8: unregister_netdevice: waiting for ... to become free
+From: Soeren Sonnenburg <kernel@nn7.de>
+To: Roland <devzero@web.de>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       "\"Andrew Morton\"" <akpm@linux-foundation.org>
+In-Reply-To: <005801c8ac37$55e3cb70$6400a8c0@bui.materna.com>
+References: <005801c8ac37$55e3cb70$6400a8c0@bui.materna.com>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
+Date: Fri, 02 May 2008 17:57:12 +0200
+Message-Id: <1209743832.22773.19.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ray Lee wrote:
-> On Fri, May 2, 2008 at 8:19 AM, Jesper Krogh <jesper@krogh.cc> wrote:
->> Jesper Krogh wrote:
->>
->>>> I'd suspect that after 1e8 loops your CPU got too hot and started to
->>>> misbehave.
->>>>
->>> Hardware is an Sun Fire X4600 (8xdual-core AMD64 processors). The
->>> problem seem to be tied to this filesystem. (I cannot havent been able
->>> to reproduce it on the /-mounted disk of the same system. So if a cpu
->>> problem.. then it shouldn't be tied to a specific filesystem?
->>>
->>> This is the only activity on the system .. so a load of 1 / 16cpus.
->>>
->>  I've tried to explore this suggestion (the best I could).
->>
->>  There are 2 ext3 filesystems locally mounted. / and this one. Running 16
->> parallel runs of this program on a file on the /-mounted filesystem cannot
->> reproduce the problem. If it was linked to hot hardware, I believe I should
->> be able to reproduce it this way. The servers are in a 17 degress
->> serverroom.
->>
->>  It changes alot when.. it actually happens. The "earliest ones" has been
->> from 200000 cycles.
+On Fri, 2008-05-02 at 11:31 +0200, Roland wrote:
+> >I am not exactly sure which kernel version Roland (?) is/was using but
+> >from what I can tell this bug is fixed since 2.6.24 (at least). Well I
+> >didn't see it with madwifi nor with the tun devices anymore on any of
+> >the 24.X or 25rc's/25 ...
 > 
-> Run 16 in parallel on /, and another 16 simultaneously on the trouble
-> filesystem? If you continue to get errors only on the 'trouble'
-> filesystem, and no errors start occurring on / coincident, then it
-> sounds pretty localized.
+> pardon,   2.6.25-git17 in vmware
 
-That test has been done. I can only reproduce it on this filesystem. But 
-I cannot really conclude that it is only present there.. since sometimes 
-my testprogram just goes on .. and dies past 1 billion cycles. But I 
-have never gotten errors from the / filesystem on the same installation.
+could you test if this happens with other drivers like tun etc too?
+Maybe the bug re-appeared (I didn't follow 2.6.26 development ...)
 
-> BTW, I may have missed this earlier, but does it happen *anywhere* on
-> the troublesome filesystem (ie, in a newly created subdirectory)?
+Soeren
 
-I'll run that test now.
-
--- 
-Jesper
+> >; <netdev@vger.kernel.org>;
+> List:       linux-kernel
+> Subject:    Re: 24rc8: unregister_netdevice: waiting for ... to become free.
+> From:       Soeren Sonnenburg <kernel () nn7 ! de>
+> Date:       2008-05-02 6:15:43
+> Message-ID: 1209708943.23075.52.camel () localhost
+> [Download message RAW]
+> 
+> On Thu, 2008-05-01 at 22:59 -0700, Andrew Morton wrote:
+> > On Fri, 2 May 2008 03:26:28 +0200 "Roland" <devzero@web.de> wrote:
+> >
+> > > i`m also seeing this one, but with pcnet32 - "modprobe -r pcnet32" never
+> > > returns and
+> > >
+> > > "unregister_netdevice: waiting for eth0 to become free. Usage count = 1"
+> > >
+> > > being printed over and over again
+> > >
+> > > lsmod |grep pcnet32 shows
+> > >
+> > > pcnet32            35828    0
+> > > mii                      9344    1    pcnet32
+> > >
+> > > i see stale ssh connection on port 22 and sshd for that session remains
+> > > unkillable process.
+> > >
+> >
+> > here a bug
+> >
+> > >
+> > >
+> > > List:       linux-kernel
+> > > Subject:    Re: 24rc8: unregister_netdevice: waiting for ... to become 
+> > > free.
+> > > From:       Soeren Sonnenburg <kernel () nn7 ! de>
+> > > Date:       2008-01-29 8:59:10
+> > > Message-ID: 1201597150.4973.10.camel () localhost
+> > > [Download message RAW]
+> > >
+> > > On Tue, 2008-01-22 at 22:44 -0800, David Miller wrote:
+> > > > From: Soeren Sonnenburg <kernel@nn7.de>
+> > > > Date: Wed, 23 Jan 2008 07:42:21 +0100
+> > > >
+> > > > > Dear all,
+> > > > >
+> > > > > since some 2.6.24rc version I suddenly experience such messages on
+> > > > > console when trying to shutdown a vpn connection:
+> > > > >
+> > > > > unregister_netdevice: waiting for tun0 to become free. Usage count = 
+> > > > > 1
+> > > > >
+> > > > > or when removing an usb wlan dongle (although it was ifconfig wlan0
+> > > > > down'd before)
+> > > >
+> > > > Current GIT already has a fix for this, attached below:
+> > >
+> > > hmmhhh, I am still seeing this problem on 2.6.24 with at least with the
+> > > madwifi driver...
+> > >
+> > > Soeren
+> >
+> > there a bug.
+> >
+> >
+> > Let's cc netdev@vger.kernel.org - linux-net is dead, afaik.
+> >
+> > Thanks for reporting all these bugs but please do take much mure care over
+> > the cc's.  Be sure to cc every party who was cc'ed on the email to which
+> > you're replying.  I restored Soeren.
+> 
+> I am not exactly sure which kernel version Roland (?) is/was using but
+> from what I can tell this bug is fixed since 2.6.24 (at least). Well I
+> didn't see it with madwifi nor with the tun devices anymore on any of
+> the 24.X or 25rc's/25 ...
+> 
+> Soeren
+> 
