@@ -1,62 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764591AbYEBAga@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933981AbYEBAi5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764591AbYEBAga (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 May 2008 20:36:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933513AbYEBAfk
+	id S933981AbYEBAi5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 May 2008 20:38:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758355AbYEBAir
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 May 2008 20:35:40 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:34355 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932699AbYEBAfj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 May 2008 20:35:39 -0400
-Date: Thu, 1 May 2008 17:34:34 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Venki Pallipadi <venkatesh.pallipadi@intel.com>
-cc: Tom Rini <trini@kernel.crashing.org>,
-       Andrew Morton <akpm@linux-foundation.org>, bunk@kernel.org,
-       davem@davemloft.net, mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com,
-       linux-kernel@vger.kernel.org, suresh.b.siddha@intel.com
-Subject: Re: huge gcc 4.1.{0,1} __weak problem
-In-Reply-To: <20080501233038.GA20601@linux-os.sc.intel.com>
-Message-ID: <alpine.LFD.1.10.0805011729540.5994@woody.linux-foundation.org>
-References: <20080430013108.GA18207@linux-os.sc.intel.com> <20080429.212833.192304794.davem@davemloft.net> <924EFEDD5F540B4284297C4DC59F3DEEF7D18E@orsmsx423.amr.corp.intel.com> <20080501215633.GU29330@cs181133002.pp.htv.fi> <20080501152051.4eb4bad3.akpm@linux-foundation.org>
- <alpine.LFD.1.10.0805011525460.5994@woody.linux-foundation.org> <20080501223515.GA11366@linux-os.sc.intel.com> <20080501154238.eccdb6ff.akpm@linux-foundation.org> <20080501232116.GD4354@smtp.west.cox.net> <20080501233038.GA20601@linux-os.sc.intel.com>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Thu, 1 May 2008 20:38:47 -0400
+Received: from sous-sol.org ([216.99.217.87]:56212 "EHLO sous-sol.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755513AbYEBAiq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 May 2008 20:38:46 -0400
+Date: Thu, 1 May 2008 17:38:45 -0700
+From: Chris Wright <chrisw@sous-sol.org>
+To: Yan <rottled@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Comprehensive list of kernel self-modifications?
+Message-ID: <20080502003842.GP30511@sequoia.sous-sol.org>
+References: <54b90fdf0805011246v64d28c7ao8eb848419890d20a@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <54b90fdf0805011246v64d28c7ao8eb848419890d20a@mail.gmail.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Thu, 1 May 2008, Venki Pallipadi wrote:
+* Yan (rottled@gmail.com) wrote:
+> I have been working on verifying kernel integrity and am trying to
+> differentiate
+> between vmlinux image on disk and the kernel loaded into memory. I understand
+>  that the kernel modifies itself (on x86 at least) during at least a few points:
 > 
-> __weak function with single return statement, did not get inlined when called
-> from say
+> 
+> 1. It applies alternative instructions with apply_alternatives() from
+> check_bugs().
+>     The locations of all alternatives are found between __alt_instructions and
+>     __alt_instructions__end.
 
-Is it always about inlining? If so, can't we add a __noinline__ to the 
-declaration of __weak?
+Similarly, there's apply_paravirt() for CONFIG_PARAVIRT kernels.
+(Also kprobes, or anything that calls text_poke(), but I doubt it's what
+you're looking for).
 
-Something like this oneliner?
+> 2. It also applies what looks to be relocation. I see the list of
+> reloc addresses at
+>     the end of vmlinux image and it appears that relocate_kernel in
+> relocate_kernel.S
+>     applies the relocations. I can't tell how it knows where the list
+> of addresses that
+>     need relocations is found. Nothing that I found points to that
+> area, and the on-
+>     disk data seems to live what gets mapped to as BSS when its running.
 
-		Linus
-
----
- include/linux/compiler-gcc.h |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/include/linux/compiler-gcc.h b/include/linux/compiler-gcc.h
-index 5c8351b..4061fc7 100644
---- a/include/linux/compiler-gcc.h
-+++ b/include/linux/compiler-gcc.h
-@@ -41,7 +41,7 @@
- 
- #define __deprecated			__attribute__((deprecated))
- #define __packed			__attribute__((packed))
--#define __weak				__attribute__((weak))
-+#define __weak				__attribute__((weak)) noinline
- #define __naked				__attribute__((naked))
- #define __noreturn			__attribute__((noreturn))
- 
+BSS?  It's not on disk outside of elf header and mapped and cleared at
+startup (see clear_bss, for example).
