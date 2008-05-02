@@ -1,111 +1,292 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762354AbYEBJBv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764441AbYEBJCs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762354AbYEBJBv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 05:01:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757726AbYEBJBl
+	id S1764441AbYEBJCs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 05:02:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758943AbYEBJCi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 05:01:41 -0400
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:55157 "EHLO smtp6.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757164AbYEBJBk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 05:01:40 -0400
-Date: Fri, 2 May 2008 12:00:49 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, davem@davemloft.net,
-       linux-kernel@vger.kernel.org, jirislaby@gmail.com,
-       Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: RFC: starting a kernel-testers group for newbies
-Message-ID: <20080502090049.GC2003@cs181133002.pp.htv.fi>
-References: <200804302136.58005.rjw@sisk.pl> <20080430131537.1f7a0914.akpm@linux-foundation.org> <alpine.LFD.1.10.0804301325260.2980@woody.linux-foundation.org> <20080501003125.GM29330@cs181133002.pp.htv.fi> <20080430000338.50548884@infradead.org> <20080501113038.GW29330@cs181133002.pp.htv.fi> <20080430072013.7c3b30b1@infradead.org> <20080501132159.GC29330@cs181133002.pp.htv.fi> <20080501084919.8ac6dbdd.akpm@linux-foundation.org> <20080430181338.6180a972@infradead.org>
+	Fri, 2 May 2008 05:02:38 -0400
+Received: from wf-out-1314.google.com ([209.85.200.175]:15930 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757726AbYEBJCg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 May 2008 05:02:36 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=gL0uhw85BNo5BoCYsRdhPkwus4rD6BCrG0Qh5DdjnnCAVRz7vMYCSGzUYH+b6B3obLa0qsNRVh3dkR6Y9XJwud/9UcaywCJQJanma6BFzjAUf44iR6vCsX+w0Di4fnWMyVeui2Ogb18xRCUCLgTpJtYzpno128+hJ0O8x0mvfW0=
+Message-ID: <3b2bc9d0805020202y52dd27b6l364d8192f7aa30ac@mail.gmail.com>
+Date: Fri, 2 May 2008 11:02:35 +0200
+From: "marco gaddoni" <marco.gaddoni@gmail.com>
+To: "Neil Brown" <neilb@suse.de>
+Subject: Re: oops in linear_mergeable_bvec
+Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-raid@vger.kernel.org, dm-devel@redhat.com
+In-Reply-To: <18458.42641.306621.469263@notabene.brown>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080430181338.6180a972@infradead.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+References: <3b2bc9d0804300352k76bdc2f1id7da040761bca427@mail.gmail.com>
+	 <20080501213157.e53535b7.akpm@linux-foundation.org>
+	 <18458.42641.306621.469263@notabene.brown>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 30, 2008 at 06:13:38PM -0700, Arjan van de Ven wrote:
-> On Thu, 1 May 2008 08:49:19 -0700
-> Andrew Morton <akpm@linux-foundation.org> wrote:
-> 
-> > > Granted that compared to x86 there's not a sizable portion of users 
-> > > crazy enough to run Linux on powerpc machines...
-> > 
-> > Another fallacy which Arjan is pushing (even though he doesn't appear
-> > to have realised it) is "all hardware is the same".
-> 
-> no I'm pushing "some classes of hardware are much more popular/relevant
-> than others".
+On Fri, May 2, 2008 at 7:28 AM, Neil Brown <neilb@suse.de> wrote:
+> On Thursday May 1, akpm@linux-foundation.org wrote:
+>
+>  > (cc dm-devel) (which often has no effect)
+>
+>  In this case it would be understandable - linux-raid is the correct
+>  list :-)
+>
+>  OK, I'll push this to the top of my stack.....
+>
+>
+>  > On Wed, 30 Apr 2008 12:52:38 +0200 "marco gaddoni" <marco.gaddoni@gmail.com> wrote:
+>  >
+>  > > Hello,
+>  > >
+>  > > i have this repeatable oops in linear_mergeable_bvec
+>  > >
+>  > > the kernel is the Debian testing as of this morning,
+>  > >
+>  > > i am trying to rsync some data from this box to my pc.
+>  > > the data is on a software raid 0 made of 2 ide disks
+>
+>  It is a 'linear', not a 'raid 0' by the way.
+>
 
-"popular/relevant" is hard to define.
+ok
 
-E.g. if we'd go after "popular" we should only keep architectures like 
-ARM and x86 and ditch architectures like ia64 and s390 that have puny 
-userbases.
+>
+>  > >
+>  > > the oops is triggered during the copy of a specific file,
+>  > > allways the same.
+>  > >
+>  > > what can be the problem?
+>  > >
+>  > > arianna:~# cat /proc/mdstat
+>  > > Personalities : [linear]
+>  > > md2 : active linear hda1[0] hdb1[1]
+>  > >       277321856 blocks 64k rounding
+>  > >
+>  > > unused devices: <none>
+>
+>  On decoding the Oops, it seems to in which_dev called from
+>  linear_mergeable_bvec.
+>  'hash' is NULL.  This is bads.
+>  'block' seems to be 42, which is maybe a little bit surprising...
+>
+>  What is really strange is that when I disassemble the Code: (see
+>  below), there is now "divl" instruction to match the "sector_div" in
+>  which_dev.
+>
+>  So I'm somewhat perplexed.
+>
+>  What, exactly, are the sizes of hda1 and hdb1.  Knowing that might
+>  help me see if anything else looks wrong.
+>
+>  NeilBrown
+>
 
-And how would you define "relevant"?
+arianna:~# sfdisk -l /dev/hda
 
-> > Well, it isn't.  And most of our bugs are hardware-specific.  So, I'd
-> > venture, most of our bugs don't affect most people.  So, over time, by
-> > Arjan's "important to enough people" observation we just get more and
-> > more and more unfixed bugs.
-> 
-> I did not say "most people". I believe "most people" aren't hitting
-> bugs right now (or there would be a lot more screaming).
-> What I do believe is that *within the bugs that hit*, even the hardware
-> specific ones, there's a clear prioritization by how many people hit
-> the bug (or have the hardware in general).
+Disk /dev/hda: 24792 cylinders, 255 heads, 63 sectors/track
+Units = cylinders of 8225280 bytes, blocks of 1024 bytes, counting from 0
 
-If your "or have the hardware in general" is meant seriously you have to
-convince people that ARM must become a very high priority.
+   Device Boot Start     End   #cyls    #blocks   Id  System
+/dev/hda1          0+  24791   24792- 199141708+  83  Linux
+/dev/hda2          0       -       0          0    0  Empty
+/dev/hda3          0       -       0          0    0  Empty
+/dev/hda4          0       -       0          0    0  Empty
+arianna:~# sfdisk -l /dev/hdb
 
-No matter whether one supports your "there's a clear prioritization" 
-view or not it anyway doesn't currently work since the areas covered by 
-people testing -rc kernels don't even remotely map the most popular 
-hardware in the field.
+Disk /dev/hdb: 9733 cylinders, 255 heads, 63 sectors/track
+Units = cylinders of 8225280 bytes, blocks of 1024 bytes, counting from 0
 
-> > And I believe this effect has been occurring.
-> 
-> > And please stop regaling us with this kerneloops.org stuff.  It just
-> > isn't very interesting, useful or representative when considering the
-> > whole problem.  Very few kernel bugs result in a trace, and when they
-> > do they are usually easy to fix and, because of this, they will get
-> > fixed, often quickly.  I expect
-> > netdevwatchdogeth0transmittimedout.org would tell a different story.
-> 
-> now that's a fallacy of your own.. if you care about that one, it's 1)
-> trivial to track and/or 2) could contain a WARN_ON_ONCE(), at which
-> point it's automatically tracked. (and more useful information I
-> suspect, since it suddenly has a full backtrace including driver info
-> in it)
-> By your argument we should work hard to make sure we're better at
-> creating traces for cases we detect something goes wrong.
-> (I would not argue against that fwiw)
->...
+   Device Boot Start     End   #cyls    #blocks   Id  System
+/dev/hdb1          0+   9732    9733-  78180291   83  Linux
+/dev/hdb2          0       -       0          0    0  Empty
+/dev/hdb3          0       -       0          0    0  Empty
+/dev/hdb4          0       -       0          0    0  Empty
 
-kerneloops.org catches the easiest to solve bugs (there's a trace) and 
-helps in getting them fixed.
+or, in raw form
 
-That's a very good thing.
+arianna:~# sfdisk -d /dev/hda
+# partition table of /dev/hda
+unit: sectors
 
-And if we get more bugs into this easy to resolve state that would be 
-even better.
+/dev/hda1 : start=       63, size=398283417, Id=83
+/dev/hda2 : start=        0, size=        0, Id= 0
+/dev/hda3 : start=        0, size=        0, Id= 0
+/dev/hda4 : start=        0, size=        0, Id= 0
+arianna:~# sfdisk -d /dev/hdb
+# partition table of /dev/hdb
+unit: sectors
 
-But it's only a small part of the complete picture of incoming bug 
-reports.
+/dev/hdb1 : start=       63, size=156360582, Id=83
+/dev/hdb2 : start=        0, size=        0, Id= 0
+/dev/hdb3 : start=        0, size=        0, Id= 0
+/dev/hdb4 : start=        0, size=        0, Id= 0
+arianna:~#
 
-cu
-Adrian
+i did try to remove the problematic file and
+i got the same oops during rsync;
+then i removed the whole drectory and the
+rsync proceeded to copy another 20G of files
+until it got the same oops in another place on
+the filesystem.
+
+the kernel version can be seen from
+
+http://packages.debian.org/source/testing/linux-2.6
+bottom of the page.
+it is a 2.6.24 with patches.
+
+>
+>  Disassembly of "Code:"
+>
+>  Code;  ffffffd5 <END_OF_CODE+3fc2bfd5/????>
+>  00000000 <_EIP>:
+>  Code;  ffffffd5 <END_OF_CODE+3fc2bfd5/????>
+>    0:   24 04                     and    $0x4,%al
+>  Code;  ffffffd7 <END_OF_CODE+3fc2bfd7/????>
+>    2:   89 d1                     mov    %edx,%ecx
+>  Code;  ffffffd9 <END_OF_CODE+3fc2bfd9/????>
+>    4:   31 d2                     xor    %edx,%edx
+>  Code;  ffffffdb <END_OF_CODE+3fc2bfdb/????>
+>    6:   85 c9                     test   %ecx,%ecx
+>  Code;  ffffffdd <END_OF_CODE+3fc2bfdd/????>
+>    8:   89 44 24 08               mov    %eax,0x8(%esp)
+>  Code;  ffffffe1 <END_OF_CODE+3fc2bfe1/????>
+>    c:   74 08                     je     16 <_EIP+0x16>
+>  Code;  ffffffe3 <END_OF_CODE+3fc2bfe3/????>
+>    e:   89 c8                     mov    %ecx,%eax
+>  Code;  ffffffe5 <END_OF_CODE+3fc2bfe5/????>
+>   10:   31 d2                     xor    %edx,%edx
+>  Code;  ffffffe7 <END_OF_CODE+3fc2bfe7/????>
+>   12:   f7 f3                     div    %ebx
+>  Code;  ffffffe9 <END_OF_CODE+3fc2bfe9/????>
+>   14:   89 c1                     mov    %eax,%ecx
+>  Code;  ffffffeb <END_OF_CODE+3fc2bfeb/????>
+>   16:   8b 44 24 08               mov    0x8(%esp),%eax
+>  Code;  ffffffef <END_OF_CODE+3fc2bfef/????>
+>   1a:   f7 f3                     div    %ebx
+>  Code;  fffffff1 <END_OF_CODE+3fc2bff1/????>
+>   1c:   89 ca                     mov    %ecx,%edx
+>  Code;  fffffff3 <END_OF_CODE+3fc2bff3/????>
+>   1e:   89 c2                     mov    %eax,%edx
+>  Code;  fffffff5 <END_OF_CODE+3fc2bff5/????>
+>   20:   8b 46 04                  mov    0x4(%esi),%eax
+>  Code;  fffffff8 <END_OF_CODE+3fc2bff8/????>
+>   23:   8b 1c 90                  mov    (%eax,%edx,4),%ebx this is conf->hash_table[block]???
+>  Code;  fffffffb <END_OF_CODE+3fc2bffb/????>
+>   26:   eb 03                     jmp    2b <_EIP+0x2b>
+>  Code;  fffffffd <END_OF_CODE+3fc2bffd/????>
+>   28:   83 c3 14                  add    $0x14,%ebx        This is "hash++;"
+>  Code;  00000000 Before first symbol
+>   2b:   8b 53 10                  mov    0x10(%ebx),%edx
+>  Code;  00000003 Before first symbol
+>   2e:   8b 43 0c                  mov    0xc(%ebx),%eax
+>  Code;  00000006 Before first symbol
+>   31:   8b 73 04                  mov    0x4(%ebx),%esi
+>  Code;  00000009 Before first symbol
+>   34:   8b 7b 08                  mov    0x8(%ebx),%edi
+>  Code;  0000000c Before first symbol
+>   37:   89 d1                     mov    %edx,%ecx
+>  Code;  0000000e Before first symbol
+>   39:   89 54 24 24               mov    %edx,0x24(%esp)
+>  Code;  00000012 Before first symbol
+>   3d:   89 c2                     mov    %eax,%edx
+>  Code;  00000014 Before first symbol
+>   3f:   01                        .byte 0x1
+>
+>
+>
+>
+>
+>
+>  > >
+>  > >
+>  > > BUG: unable to handle kernel NULL pointer dereference at virtual
+>  > > address 00000010
+>  > > printing eip: c881609a *pde = 00000000
+>  > > Oops: 0000 [#1] SMP
+>  > > Modules linked in: nf_nat_ftp nf_conntrack_ftp nfsd auth_rpcgss
+>  > > exportfs nfs lockd nfs_acl sunrpc ipt_MASQUERADE ipt_LOG
+>  > > ip6table_filter xt_state xt_NFQUEUE xt_hashlimit ip6_tables xt_tcpmss
+>  > > xt_tcpudp ipt_addrtype xt_pkttype iptable_raw xt_CLASSIFY xt_CONNMARK
+>  > > xt_MARK xt_comment ipt_REJECT xt_length xt_connmark ipt_owner
+>  > > ipt_recent ipt_iprange xt_physdev xt_policy xt_multiport xt_conntrack
+>  > > iptable_mangle iptable_nat nf_nat nf_conntrack_ipv4 nf_conntrack
+>  > > iptable_filter ip_tables x_tables ipv6 deflate zlib_deflate
+>  > > zlib_inflate twofish twofish_common camellia serpent blowfish
+>  > > des_generic cbc ecb aes_i586 aes_generic geode_aes blkcipher xcbc
+>  > > sha256_generic sha1_generic crypto_null af_key psmouse ide_generic
+>  > > snd_intel8x0 snd_ac97_codec parport_pc ac97_bus i2c_i801 parport
+>  > > snd_pcm i2c_core intel_rng snd_timer snd soundcore snd_page_alloc
+>  > > intel_agp agpgart pcspkr shpchp pci_hotplug iTCO_wdt rtc evdev ext3
+>  > > jbd mbcache linear md_mod ide_cd cdrom ide_disk ata_generic libata
+>  > > scsi_mod floppy e100 mii piix generic ide_core
+>  > >
+>  > > Pid: 5203, comm: rsync Not tainted (2.6.24-1-686 #1)
+>  > > EIP: 0060:[<c881609a>] EFLAGS: 00010246 CPU: 0
+>  > > EIP is at linear_mergeable_bvec+0x9a/0x10b [linear]
+>  > > EAX: c6595fc0 EBX: 00000000 ECX: 00000000 EDX: 0000002c
+>  > > ESI: c78a63c0 EDI: 00000000 EBP: 00000000 ESP: c16d5c68
+>  > >  DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
+>  > > Process rsync (pid: 5203, ti=c16d4000 task=c7b09250 task.ti=c16d4000)
+>  > > Stack: 0b3ed648 00000002 0b3ed648 c6747360 167dac90 00000004 0b3ed648 00000002
+>  > >        c16ce660 c0196e63 c6747360 c16ce660 c8816000 c642b8c8 c019718e c16ce660
+>  > >        c1011720 00000004 c16d5da0 c0197a3e 00001000 00000000 000000ff 00001000
+>  > > Call Trace:
+>  > >  [<c0196e63>] bio_alloc_bioset+0x9b/0xf3
+>  > >  [<c8816000>] linear_mergeable_bvec+0x0/0x10b [linear]
+>  > >  [<c019718e>] __bio_add_page+0xf0/0x162
+>  > >  [<c0197a3e>] bio_add_page+0x31/0x37
+>  > >  [<c019ab9c>] do_mpage_readpage+0x516/0x5d2
+>  > >  [<c891762b>] ext3_get_block+0x0/0xd0 [ext3]
+>  > >  [<c01e1499>] radix_tree_insert+0x4f/0x15e
+>  > >  [<c015acdd>] add_to_page_cache+0x67/0x80
+>  > >  [<c019adf3>] mpage_readpages+0x96/0xc3
+>  > >  [<c891762b>] ext3_get_block+0x0/0xd0 [ext3]
+>  > >  [<c015f343>] __alloc_pages+0x59/0x2d5
+>  > >  [<c8916c2f>] ext3_readpages+0x0/0x15 [ext3]
+>  > >  [<c0161101>] __do_page_cache_readahead+0x127/0x1a6
+>  > >  [<c891762b>] ext3_get_block+0x0/0xd0 [ext3]
+>  > >  [<c016147c>] page_cache_sync_readahead+0x2a/0x2f
+>  > >  [<c015afae>] do_generic_mapping_read+0xdd/0x3b2
+>  > >  [<c015a7c7>] file_read_actor+0x0/0xcc
+>  > >  [<c015c95c>] generic_file_aio_read+0x16b/0x1a6
+>  > >  [<c015a7c7>] file_read_actor+0x0/0xcc
+>  > >  [<c0178493>] do_sync_read+0xc7/0x10a
+>  > >  [<c01353f9>] autoremove_wake_function+0x0/0x35
+>  > >  [<c011bf41>] do_page_fault+0x1f7/0x592
+>  > >  [<c01783cc>] do_sync_read+0x0/0x10a
+>  > >  [<c0178d19>] vfs_read+0x9f/0x14b
+>  > >  [<c0179182>] sys_read+0x41/0x67
+>  > >  [<c0103e5e>] sysenter_past_esp+0x6b/0xa1
+>  > >  =======================
+>  > > Code: 24 04 89 d1 31 d2 85 c9 89 44 24 08 74 08 89 c8 31 d2 f7 f3 89
+>  > > c1 8b 44 24 08 f7 f3 89 ca 89 c2 8b 46 04 8b 1c 90 eb 03 83 c3 14 <8b>
+>  > > 53 10 8b 43 0c 8b 73 04 8b 7b 08 89 d1 89 54 24 24 89 c2 01
+>  > > EIP: [<c881609a>] linear_mergeable_bvec+0x9a/0x10b [linear] SS:ESP 0068:c16d5c68
+>  >
+>  > (cc dm-devel) (which often has no effect)
+>  >
+>  > I wonder which kernel.org kernel was used to generate 2.6.24-1-686.
+>  >
+>  >
+>  > --
+>  > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+>  > the body of a message to majordomo@vger.kernel.org
+>  > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>  > Please read the FAQ at  http://www.tux.org/lkml/
+>
+
+
 
 -- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+"Reality continues to ruin my life." - Calvin.
