@@ -1,80 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756409AbYEBBtg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758712AbYEBBu3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756409AbYEBBtg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 May 2008 21:49:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758106AbYEBBtE
+	id S1758712AbYEBBu3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 May 2008 21:50:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755795AbYEBBuS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 May 2008 21:49:04 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:49734 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756376AbYEBBtB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 May 2008 21:49:01 -0400
-Date: Fri, 2 May 2008 11:48:48 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Diego Calleja <diegocg@gmail.com>
-Cc: Dmitri Vorobiev <dmitri.vorobiev@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, rjw@sisk.pl,
-       davem@davemloft.net, linux-kernel@vger.kernel.org, jirislaby@gmail.com,
-       mingo@elte.hu
-Subject: Re: Slow DOWN, please!!!
-Message-Id: <20080502114848.000fd656.sfr@canb.auug.org.au>
-In-Reply-To: <20080501182658.9bbf5d4a.diegocg@gmail.com>
-References: <20080429.190352.137408408.davem@davemloft.net>
-	<200804302136.58005.rjw@sisk.pl>
-	<20080430131537.1f7a0914.akpm@linux-foundation.org>
-	<alpine.LFD.1.10.0804301325260.2980@woody.linux-foundation.org>
-	<20080430135405.ddc42075.akpm@linux-foundation.org>
-	<4818E7E3.7080705@gmail.com>
-	<20080430151007.0ace4fa2.akpm@linux-foundation.org>
-	<alpine.LFD.1.10.0804301513350.2980@woody.linux-foundation.org>
-	<4818F291.2050706@gmail.com>
-	<20080501182658.9bbf5d4a.diegocg@gmail.com>
-X-Mailer: Sylpheed 2.5.0beta3 (GTK+ 2.12.9; i486-pc-linux-gnu)
+	Thu, 1 May 2008 21:50:18 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:53547 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754370AbYEBBuQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 May 2008 21:50:16 -0400
+Date: Thu, 1 May 2008 18:49:05 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, peterz@infradead.org,
+       hch@infradead.org, adobriyan@gmail.com, bunk@kernel.org
+Subject: Re: [PATCH] add typecheck on irqsave and friends for correct flags
+Message-Id: <20080501184905.b7e0dade.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.58.0805012114180.31096@gandalf.stny.rr.com>
+References: <Pine.LNX.4.58.0805011946290.12785@gandalf.stny.rr.com>
+	<20080501172810.fa39dad6.akpm@linux-foundation.org>
+	<Pine.LNX.4.58.0805012114180.31096@gandalf.stny.rr.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Fri__2_May_2008_11_48_48_+1000_GBhnpParZz0=VlzR"
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Fri__2_May_2008_11_48_48_+1000_GBhnpParZz0=VlzR
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Thu, 1 May 2008 21:16:48 -0400 (EDT) Steven Rostedt <rostedt@goodmis.org> wrote:
 
-On Thu, 1 May 2008 18:26:58 +0200 Diego Calleja <diegocg@gmail.com> wrote:
->
-> El Thu, 01 May 2008 02:28:33 +0400, Dmitri Vorobiev <dmitri.vorobiev@gmai=
-l.com> escribi=C3=B3:
->=20
-> > Linus, thanks a lot for the detailed explanation. Indeed, it seems that=
- I foolishly
-> > tried to duplicate Stephen's work. In the future I'll do as you suggest=
- here.
->=20
-> That "howto" should probably be added to the linux-next announcements...
-> (CC'ing Stephen)
+> 
+> On Thu, 1 May 2008, Andrew Morton wrote:
+> > > This patch adds a typecheck inside the irqsave and restore functions
+> > > to flag these cases.
+> >
+> > hm, not exactly a thing of beauty, but it could have been worse.
+> 
+> Beauty is in the eye of the beholder.
+>  (a mother always thinks their kid is beautiful ;-).
 
-This is already mentioned in the linux-next wiki
-(http://linux.f-seidel.de/linux-next/pmwiki/) in the FAQ.  I will add a
-link to the wiki to the announcements.
+As long as your patch doesn't soil its diaper.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+> >
+> >
+> > If we had implemeted these things properly, as
+> >
+> > 	unsigned long spin_lock_irqsave(spinlock_t *lock);
+> 
+> Then we would have been forced to do the
+> 
+> 	irqflags_t spin_lock_irqsave(spinlock_t *lock);
+> 
+> trick. Which would probably be the better long term solution, but the
+> biggest PITA for you in the short term.
 
---Signature=_Fri__2_May_2008_11_48_48_+1000_GBhnpParZz0=VlzR
-Content-Type: application/pgp-signature
+We should have done that from day one.  If there's an architecture out
+there which cannot fit its interrupt state into its unsigned long (hard to
+believe) then it'll need to pull stunts with cookies and lookups or
+something.  And on 64-bit architectures we're using 4 more bytes of local
+storage than is needed.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+But I don't think we've had enough problems with this particular issue to
+justify a kernel-wide edit like that.  And this patch should settle the
+issue.
 
-iD8DBQFIGnMHTgG2atn1QN8RAlBhAJ9Wml0TIh4VdVGS3RPvlRTgTFKaQACePwno
-fT0tr54HWd4p9GvE3Dl1Pwo=
-=CXoR
------END PGP SIGNATURE-----
 
---Signature=_Fri__2_May_2008_11_48_48_+1000_GBhnpParZz0=VlzR--
