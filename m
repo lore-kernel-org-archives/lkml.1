@@ -1,53 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935249AbYEBSWL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935439AbYEBSZ6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935249AbYEBSWL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 14:22:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763275AbYEBSV4
+	id S935439AbYEBSZ6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 14:25:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763022AbYEBSZu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 14:21:56 -0400
-Received: from smtp-out01.alice-dsl.net ([88.44.60.11]:28650 "EHLO
-	smtp-out01.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759878AbYEBSV4 (ORCPT
+	Fri, 2 May 2008 14:25:50 -0400
+Received: from wf-out-1314.google.com ([209.85.200.168]:53955 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762533AbYEBSZt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 14:21:56 -0400
-To: "Lee Mathers (TCAFS)" <Lee.Mathers@tcafs.org>
-Cc: Russ Dill <russ.dill@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: Slow DOWN, please!!!
-From: Andi Kleen <andi@firstfloor.org>
-References: <20080429.190352.137408408.davem@davemloft.net>
-	<alpine.LFD.1.10.0804301127020.2980@woody.linux-foundation.org>
-	<4818C0BF.5020002@davidnewall.com>
-	<alpine.LFD.1.10.0804301202200.2980@woody.linux-foundation.org>
-	<4818C571.8040609@davidnewall.com>
-	<alpine.LFD.1.10.0804301223220.2980@woody.linux-foundation.org>
-	<481947AF.4090101@davidnewall.com>
-	<1209655700.27499.28.camel@localhost>
-	<loom.20080501T174627-71@post.gmane.org>
-	<1209692875.16523.10.camel@localhost>
-	<f9d2a5e10805011954l12b54802t63b9ce0957b6087b@mail.gmail.com>
-	<481B50B9.2080000@tcafs.org>
-Date: Fri, 02 May 2008 20:21:33 +0200
-In-Reply-To: <481B50B9.2080000@tcafs.org> (Lee Mathers's message of "Fri, 02 May 2008 13:34:49 -0400")
-Message-ID: <873ap0va6q.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
+	Fri, 2 May 2008 14:25:49 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=i6J1KLexatsUnXE5ghn7XuFj+kjmnRICgkREEx3iRbbWfCWBy1uJm3Op4ah0Uo8nBjwPP6etqa0DAotFZP8z+RfrP5gcQy802GX8Hzp9gBSydKLH7Pp8fhGDwtHa9NrtsunnL33Ia1dzf46Z4tmrbwNSkpqFbEOt3/QqcubhRR8=
+Message-ID: <82e4877d0805021125y1e11deb4qaa57ac493cf41aba@mail.gmail.com>
+Date: Fri, 2 May 2008 14:25:47 -0400
+From: "Parag Warudkar" <parag.warudkar@gmail.com>
+To: "Adrian Bunk" <bunk@kernel.org>
+Subject: Re: How to reduce the number of open kernel bugs
+Cc: "Daniel Hazelton" <dhazelton@enter.net>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080502180151.GD5838@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 02 May 2008 18:14:39.0168 (UTC) FILETIME=[62B1F400:01C8AC80]
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <82e4877d0805020742l7d4a6ec9mc72e79aa3d242348@mail.gmail.com>
+	 <200805021229.47038.dhazelton@enter.net>
+	 <82e4877d0805021030s793835a1le0032673b0f4c6c7@mail.gmail.com>
+	 <20080502180151.GD5838@cs181133002.pp.htv.fi>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Lee Mathers (TCAFS)" <Lee.Mathers@tcafs.org> writes:
+On Fri, May 2, 2008 at 2:01 PM, Adrian Bunk <bunk@kernel.org> wrote:
+> On Fri, May 02, 2008 at 01:30:23PM -0400, Parag Warudkar wrote:
+>  > I wasn't arguing that it is what should be happening - I was just
+>  > pointing out that there are worse things than that routinely happen in
+>  > distro bugzillas!
+>
+>  And the point is?
+>
 
-> to think about your posting before delivering it around the world.
-> Not to be rude but do you know how dumb you look right now.  There are
-> many programs that while provide detailed memory usage  reports.  That
-> would be a first step.
+Point being that no one can force anyone to do anything in the setting
+in which kernel developers work.
+Distros have been doing this since ever and people have no choice but
+to move on.
+(Everybody works out of their own (or employer's) interest and
+judgement - so telling some one to act otherwise will not be a whole
+lot productive.)
 
-To be fair detailed memory analysis of user space can be tricky,
-especially if you consider shared pages etc. And the standard tools for it 
-are actually not very good (would be a very interesting area for someone
-to work on I think) Still the poster could have done much
-more research before ranting, agreed.
+>
+>  You completely miss the point.
 
--Andi
+I am not - my point is that you can't do  much about it that will go
+long way in resolving the issue.
+
+>  And in any case, being more friendly to a bug submitter.
+
+Well again -  you can't force people to do something like that. In
+your example it would amount to the maintainer going against his/her
+own judgement - however wrong it is to you and me, to the person who
+can actually fix it - it's not a possibility. So you have to just
+accept it and reassign it to some one else who is interested/capable -
+for that I suggested tracking such bugs under a new STATUS.
+
+Parag
