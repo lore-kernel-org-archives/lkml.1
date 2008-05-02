@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965421AbYEBPzw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934705AbYEBP4S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965421AbYEBPzw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 11:55:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964938AbYEBPv6
+	id S934705AbYEBP4S (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 11:56:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964972AbYEBPv7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 11:51:58 -0400
-Received: from opensource.wolfsonmicro.com ([80.75.67.52]:38984 "EHLO
+	Fri, 2 May 2008 11:51:59 -0400
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:38987 "EHLO
 	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S964806AbYEBPvw (ORCPT
+	by vger.kernel.org with ESMTP id S964826AbYEBPvx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 11:51:52 -0400
-Subject: [PATCH 02/13] regulator: regulator driver interface
+	Fri, 2 May 2008 11:51:53 -0400
+Subject: [PATCH 03/13] regulator: machine driver interface
 From: Liam Girdwood <lg@opensource.wolfsonmicro.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: linux-kernel <linux-kernel@vger.kernel.org>,
        arm kernel <linux-arm-kernel@lists.arm.linux.org.uk>,
        Mark Brown <broonie@opensource.wolfsonmicro.com>
 Content-Type: text/plain
-Date: Fri, 02 May 2008 16:41:16 +0100
-Message-Id: <1209742876.12502.43.camel@odin>
+Date: Fri, 02 May 2008 16:41:37 +0100
+Message-Id: <1209742898.12502.44.camel@odin>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.1 
 Content-Transfer-Encoding: 7bit
@@ -26,25 +26,28 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This allows regulator drivers to register their regulators and provide
-operations to the core. It also has a notifier call chain for propagating
-regulator events to clients.
+This interface is for machine specific code and allows the creation of
+voltage/current domains (with constraints) for each regulator. It can
+provide regulator constraints that will prevent device damage through
+over voltage or over current caused by buggy client drivers. It also
+allows the creation of a regulator tree whereby some regulators are
+supplied by others (similar to a clock tree).
 
 Signed-off-by: Liam Girdwood <lg@opensource.wolfsonmicro.com>
 Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
 ---
- include/linux/regulator/driver.h |   86 ++++++++++++++++++++++++++++++++++++++
- 1 files changed, 86 insertions(+), 0 deletions(-)
- create mode 100644 include/linux/regulator/driver.h
+ include/linux/regulator/machine.h |   84 +++++++++++++++++++++++++++++++++++++
+ 1 files changed, 84 insertions(+), 0 deletions(-)
+ create mode 100644 include/linux/regulator/machine.h
 
-diff --git a/include/linux/regulator/driver.h b/include/linux/regulator/driver.h
+diff --git a/include/linux/regulator/machine.h b/include/linux/regulator/machine.h
 new file mode 100644
-index 0000000..1c02362
+index 0000000..69b492c
 --- /dev/null
-+++ b/include/linux/regulator/driver.h
-@@ -0,0 +1,86 @@
++++ b/include/linux/regulator/machine.h
+@@ -0,0 +1,84 @@
 +/*
-+ * driver.h -- SoC Regulator driver support.
++ * machine.h -- SoC Regulator support, machine/board driver API.
 + *
 + * Copyright (C) 2007, 2008 Wolfson Microelectronics PLC.
 + *
@@ -54,79 +57,77 @@ index 0000000..1c02362
 + * it under the terms of the GNU General Public License version 2 as
 + * published by the Free Software Foundation.
 + *
-+ * Regulator Driver Interface.
++ * Regulator Machine/Board Interface.
 + */
 +
-+#ifndef __LINUX_REGULATOR_DRIVER_H_
-+#define __LINUX_REGULATOR_DRIVER_H_
++#ifndef __LINUX_REGULATOR_MACHINE_H_
++#define __LINUX_REGULATOR_MACHINE_H_
 +
-+#include <linux/device.h>
 +#include <linux/regulator/consumer.h>
 +
-+struct regulator_constraints;
-+struct regulator_dev;
-+
-+/**
-+ * struct regulator_ops - regulator operations.
-+ *
-+ * This struct describes regulator operations.
-+ */
-+struct regulator_ops {
-+
-+	/* get/set regulator voltage */
-+	int (*set_voltage) (struct regulator_dev *, int min_uV, int max_uV);
-+	int (*get_voltage) (struct regulator_dev *);
-+
-+	/* get/set regulator current  */
-+	int (*set_current_limit) (struct regulator_dev *,
-+				 int min_uA, int max_uA);
-+	int (*get_current_limit) (struct regulator_dev *);
-+
-+	/* enable/disable regulator */
-+	int (*enable) (struct regulator_dev *);
-+	int (*disable) (struct regulator_dev *);
-+	int (*is_enabled) (struct regulator_dev *);
-+
-+	/* get/set regulator operating mode (defined in regulator.h) */
-+	int (*set_mode) (struct regulator_dev *, unsigned int mode);
-+	unsigned int (*get_mode) (struct regulator_dev *);
-+
-+	/* get most efficient regulator operating mode for load */
-+	unsigned int (*get_optimum_mode) (struct regulator_dev *, int input_uV,
-+					  int output_uV, int load_uA);
-+};
++struct regulator;
 +
 +/*
-+ * Regulators can either control voltage or current.
++ * Regulator operation constraint flags. These flags are used to enable
++ * certain regulator operations and can be OR'ed together.
++ *
++ * VOLTAGE:  Regulator output voltage can be changed by software on this
++ *           board/machine.
++ * CURRENT:  Regulator output current can be changed by software on this
++ *           board machine.
++ * MODE:     Regulator operating mode can be changed by software on this
++ *           board machine.
++ * STATUS:   Regulator can be enabled and disabled.
++ * DRMS:     Dynamic Regulator Mode Switching is enabled for this regulator.
 + */
-+enum regulator_type {
-+	REGULATOR_VOLTAGE,
-+	REGULATOR_CURRENT,
-+};
++
++#define REGULATOR_CHANGE_VOLTAGE	0x1
++#define REGULATOR_CHANGE_CURRENT	0x2
++#define REGULATOR_CHANGE_MODE		0x4
++#define REGULATOR_CHANGE_STATUS		0x8
++#define REGULATOR_CHANGE_DRMS		0x10
 +
 +/**
-+ * struct regulator_desc - Regulator descriptor
++ * struct regulation_constraints - regulator operating constraints.
 + *
++ * This struct describes regulator and board/machine specific constraints.
 + */
-+struct regulator_desc {
-+	const char *name;
-+	int id;
-+	struct regulator_ops *ops;
-+	int irq;
-+	enum regulator_type type;
-+	struct module *owner;
++struct regulation_constraints {
++
++	char *name;
++
++	/* voltage output range (inclusive) - for voltage control */
++	int min_uV;
++	int max_uV;
++
++	/* current output range (inclusive) - for current control */
++	int min_uA;
++	int max_uA;
++
++	/* valid regulator operating modes for this machine */
++	unsigned int valid_modes_mask;
++
++	/* valid operations for regulator on this machine */
++	unsigned int valid_ops_mask;
++
++	/* regulator input voltage - only if supply is another regulator */
++	int input_uV;
++
++	/* constriant flags */
++	u32 always_on:1;	/* regulator never off when system is on */
++	u32 boot_on:1;		/* bootloader/firmware enabled regulator */
++	u32 apply_uV:1;		/* apply uV constraint iff min == max */
 +};
 +
++int regulator_set_supply(const char *regulator, const char *regulator_supply);
 +
-+struct regulator_dev *regulator_register(struct regulator_desc *regulator_desc,
-+					  void *reg_data);
-+void regulator_unregister(struct regulator_dev *rdev);
++const char *regulator_get_supply(const char *regulator);
 +
-+int regulator_notifier_call_chain(struct regulator_dev *rdev,
-+				  unsigned long event, void *data);
++int regulator_set_machine_constraints(const char *regulator,
++	struct regulation_constraints *constraints);
 +
-+void *rdev_get_drvdata(struct regulator_dev *rdev);
-+int rdev_get_id(struct regulator_dev *rdev);
++int regulator_set_device_supply(const char *regulator, struct device *dev,
++				const char *supply);
 +
 +#endif
 -- 
