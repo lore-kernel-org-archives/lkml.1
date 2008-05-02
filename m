@@ -1,63 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754913AbYEBEKA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756966AbYEBETi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754913AbYEBEKA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 00:10:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750821AbYEBEJt
+	id S1756966AbYEBETi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 00:19:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750984AbYEBET1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 00:09:49 -0400
-Received: from ozlabs.org ([203.10.76.45]:57827 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750772AbYEBEJp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 00:09:45 -0400
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 2 May 2008 00:19:27 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:34782 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750821AbYEBET0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 May 2008 00:19:26 -0400
+Date: Thu, 1 May 2008 21:16:59 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Gerhard Mack <gmack@innerfire.net>
+Cc: linux-kernel@vger.kernel.org, James Smart <James.Smart@Emulex.Com>,
+       linux-scsi@vger.kernel.org
+Subject: Re: [2.6.25] lpfc driver problem
+Message-Id: <20080501211659.8a2e0686.akpm@linux-foundation.org>
+In-Reply-To: <alpine.DEB.1.10.0804291625330.31652@mtl.rackplans.net>
+References: <alpine.DEB.1.10.0804291625330.31652@mtl.rackplans.net>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-ID: <18458.37891.268060.691285@cargo.ozlabs.ibm.com>
-Date: Fri, 2 May 2008 14:09:39 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Josh Boyer <jwboyer@gmail.com>
-Cc: Adrian Bunk <bunk@kernel.org>, Arjan van de Ven <arjan@infradead.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, davem@davemloft.net,
-       linux-kernel@vger.kernel.org, jirislaby@gmail.com,
-       Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: RFC: starting a kernel-testers group for newbies
-In-Reply-To: <1209697815.2946.156.camel@vader.jdub.homelinux.org>
-References: <20080429.190352.137408408.davem@davemloft.net>
-	<200804302136.58005.rjw@sisk.pl>
-	<20080430131537.1f7a0914.akpm@linux-foundation.org>
-	<alpine.LFD.1.10.0804301325260.2980@woody.linux-foundation.org>
-	<20080501003125.GM29330@cs181133002.pp.htv.fi>
-	<20080430000338.50548884@infradead.org>
-	<20080501113038.GW29330@cs181133002.pp.htv.fi>
-	<20080430072013.7c3b30b1@infradead.org>
-	<20080501132159.GC29330@cs181133002.pp.htv.fi>
-	<18458.30641.838156.434563@cargo.ozlabs.ibm.com>
-	<1209697815.2946.156.camel@vader.jdub.homelinux.org>
-X-Mailer: VM 7.19 under Emacs 22.1.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Josh Boyer writes:
+On Tue, 29 Apr 2008 16:28:03 -0400 (EDT) Gerhard Mack <gmack@innerfire.net> wrote:
 
-> On Fri, 2008-05-02 at 12:08 +1000, Paul Mackerras wrote:
-> > Adrian Bunk writes:
-> > 
-> > > "Kernel oops while running kernbench and tbench on powerpc" took more 
-> > > than 2 months to get resolved, and we ship 2.6.25 with this regression.
-> > 
-> > That was a very subtle bug that only showed up on one particular
-> > powerpc machine.  I was not able to replicate it on any of the powerpc
-> > machines I have here.  Nevertheless, we found it and we have a fix for
-> > it.  I think that's an example of the process working. :)
+> hello
 > 
-> Was it even a regression in the classical sense of the word?  Seemed
-> more of a latent bug that was simply never triggered before.
+> I'm getting the following error when trying to load the lpfc driver.  This 
+> is a new install so I have no idea if this is a regression or not.
+> 
+> dmesg output:
+> Emulex LightPulse Fibre Channel SCSI driver 8.2.5
+> Copyright(c) 2004-2008 Emulex.  All rights reserved.
+> scsi2 :  on PCI bus 02 device 50 irq 24
+> lpfc 0000:02:0a.0: 0:0436 Adapter failed to init, timeout, status reg 
+> x400000, FW Data: A8 x0 AC x0
+> lpfc 0000:02:0a.0: 0:0436 Adapter failed to init, timeout, status reg 
+> x400000, FW Data: A8 x0 AC x0
+> 
+> Card is:
+> 02:0a.0 Fibre Channel: Emulex Corporation LP8000 Fibre Channel Host 
+> Adapter (rev 02)
+> 02:0a.0 0c04: 10df:f800 (rev 02)
 
-That's right.  The bug has been there basically forever (i.e. since
-before 2.6.12-rc2 ;) and no-one has been able to trigger it reliably
-before.
-
-Paul.
+(Cc's added)
