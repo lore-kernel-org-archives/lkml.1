@@ -1,62 +1,164 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760385AbYEBDKe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758413AbYEBDdU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760385AbYEBDKe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 May 2008 23:10:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751917AbYEBDK0
+	id S1758413AbYEBDdU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 May 2008 23:33:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754644AbYEBDdI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 May 2008 23:10:26 -0400
-Received: from py-out-1112.google.com ([64.233.166.177]:16582 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750903AbYEBDKZ (ORCPT
+	Thu, 1 May 2008 23:33:08 -0400
+Received: from server515a.exghost.com ([72.32.253.70]:3732 "EHLO
+	server515.appriver.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754462AbYEBDdH convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 May 2008 23:10:25 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=B6vEcjzfSh0k1X+SIpisnnf2ky8///WVs1MOIJ7kd1gEjuJ7+7HqlBkry6CuPqShuarQ8eXFToQbdENVztisBbiR0rrrwXU0PIJ6ILUMzw3jmTfQfA2mwyiJ9ex+NDY915BnP5hpzAT4QCDYtj8HMPt8SNqyDLMeE5vIBRzNj34=
-Subject: Re: RFC: starting a kernel-testers group for newbies
-From: Josh Boyer <jwboyer@gmail.com>
-To: Paul Mackerras <paulus@samba.org>
-Cc: Adrian Bunk <bunk@kernel.org>, Arjan van de Ven <arjan@infradead.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, davem@davemloft.net,
-       linux-kernel@vger.kernel.org, jirislaby@gmail.com,
-       Steven Rostedt <rostedt@goodmis.org>
-In-Reply-To: <18458.30641.838156.434563@cargo.ozlabs.ibm.com>
-References: <20080429.190352.137408408.davem@davemloft.net>
-	 <200804302136.58005.rjw@sisk.pl>
-	 <20080430131537.1f7a0914.akpm@linux-foundation.org>
-	 <alpine.LFD.1.10.0804301325260.2980@woody.linux-foundation.org>
-	 <20080501003125.GM29330@cs181133002.pp.htv.fi>
-	 <20080430000338.50548884@infradead.org>
-	 <20080501113038.GW29330@cs181133002.pp.htv.fi>
-	 <20080430072013.7c3b30b1@infradead.org>
-	 <20080501132159.GC29330@cs181133002.pp.htv.fi>
-	 <18458.30641.838156.434563@cargo.ozlabs.ibm.com>
-Content-Type: text/plain
-Date: Thu, 01 May 2008 22:10:15 -0500
-Message-Id: <1209697815.2946.156.camel@vader.jdub.homelinux.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
+	Thu, 1 May 2008 23:33:07 -0400
+X-Greylist: delayed 3601 seconds by postgrey-1.27 at vger.kernel.org; Thu, 01 May 2008 23:33:07 EDT
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: Sharing disks amoung multiple software RAIDs
+Date: Thu, 1 May 2008 21:31:07 -0500
+Message-ID: <A20315AE59B5C34585629E258D76A97C335477@34093-C3-EVS3.exchange.rackspace.com>
+In-Reply-To: <73000.21239.qm@web50212.mail.re2.yahoo.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: Sharing disks amoung multiple software RAIDs
+Thread-Index: Acir+BNXGn1SsWfjRV+HUnqo86X/YAAAKOPg
+References: <1209692359.16523.2.camel@localhost> <73000.21239.qm@web50212.mail.re2.yahoo.com>
+From: "David Lethe" <david@santools.com>
+To: <alex14641@yahoo.com>, "Justin Piszcz" <jpiszcz@lucidpixels.com>,
+       "Kasper Sandberg" <lkml@metanurb.dk>
+Cc: <linux-raid@vger.kernel.org>, <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 02 May 2008 02:33:02.0544 (UTC) FILETIME=[D8154500:01C8ABFC]
+X-Policy: GLOBAL
+X-Policy: GLOBAL
+X-Policy: GLOBAL
+X-Policy: GLOBAL
+X-Policy: GLOBAL
+X-Primary: david@santools.com
+X-Note: This Email was scanned by AppRiver SecureTide
+X-ALLOW: david@santools.com ALLOWED
+X-Virus-Scan: V-
+X-Note: Spam Tests Failed: 
+X-Country-Path: PRIVATE->UNITED STATES->UNITED STATES
+X-Note-Sending-IP: 72.32.49.6
+X-Note-Reverse-DNS: fe2.exchange.rackspace.com
+X-Note-WHTLIST: david@santools.com
+X-Note: User Rule Hits: 
+X-Note: Global Rule Hits: 92 93 139 
+X-Note: Mail Class: ALLOWEDSENDER
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-05-02 at 12:08 +1000, Paul Mackerras wrote:
-> Adrian Bunk writes:
-> 
-> > "Kernel oops while running kernbench and tbench on powerpc" took more 
-> > than 2 months to get resolved, and we ship 2.6.25 with this regression.
-> 
-> That was a very subtle bug that only showed up on one particular
-> powerpc machine.  I was not able to replicate it on any of the powerpc
-> machines I have here.  Nevertheless, we found it and we have a fix for
-> it.  I think that's an example of the process working. :)
+In a perfect world, my expectation is that sharing a disk is safe and
+even a reasonable thing to do. The shared disk is effectively a range of
+addressable blocks in the same way an individual disk or even a hardware
+RAID LUN is a range of blocks. From this limited perspective, the only
+penalty is performance related, assuming you don't mind having to
+explain yourself to an IT supervisor somewhere in your company.
 
-Was it even a regression in the classical sense of the word?  Seemed
-more of a latent bug that was simply never triggered before.
+However, consider what COULD happen in event of a drive failure, either
+with the shared or an unshared disk. What are the odds all of the
+failure scenarios have been tested for all ATA and SCSI command sets;
+with threaded I/Os pending; with dirty cache; bus resets when hardware
+dies; etc... ?
 
-josh
+The odds are zero.  Look how many problems people post to the thread on
+a weekly basis where people lose their data when md rebuilds go bad with
+non-shared disks.  Why make the problem worse?
+
+-----Original Message-----
+From: linux-raid-owner@vger.kernel.org
+[mailto:linux-raid-owner@vger.kernel.org] On Behalf Of Alex Davis
+Sent: Thursday, May 01, 2008 8:52 PM
+To: Justin Piszcz; Kasper Sandberg
+Cc: linux-raid@vger.kernel.org; linux-kernel@vger.kernel.org
+Subject: Re: Sharing disks amoung multiple software RAIDs
+
+--- On Thu, 5/1/08, Kasper Sandberg <lkml@metanurb.dk> wrote:
+
+> From: Kasper Sandberg <lkml@metanurb.dk>
+> Subject: Re: Sharing disks amoung multiple software RAIDs
+> To: "Justin Piszcz" <jpiszcz@lucidpixels.com>
+> Cc: "Alex Davis" <alex14641@yahoo.com>, linux-raid@vger.kernel.org,
+linux-kernel@vger.kernel.org
+> Date: Thursday, May 1, 2008, 9:39 PM
+> On Thu, 2008-05-01 at 08:50 -0400, Justin Piszcz wrote:
+> > 
+> > On Thu, 1 May 2008, Alex Davis wrote:
+> > 
+> > > Is this a bad thing? I'm guessing that it is,
+> but I want independent
+> > > confirmation before I spoke to someone I know
+> who's doing this.
+> > >
+> > > Thanks
+> > >
+> > >
+> > >     
+>
+________________________________________________________________________
+____________
+> > > Be a better friend, newshound, and
+> > > know-it-all with Yahoo! Mobile.  Try it now. 
+> http://mobile.yahoo.com/;_ylt=Ahu06i62sR8HDtDypao8Wcj9tAcJ
+> > > --
+> > > To unsubscribe from this list: send the line
+> "unsubscribe linux-raid" in
+> > > the body of a message to
+> majordomo@vger.kernel.org
+> > > More majordomo info at 
+> http://vger.kernel.org/majordomo-info.html
+> > >
+> > 
+> > What is the use case, why would you want to do that?
+> > I have seen people on the list do it before, for
+> example are you going to 
+> > be utilizing both raids at the same time?  If so, I
+> would advise against 
+> > it.
+> > 
+> > What is the reasoning?
+> 
+> I do this!
+> 
+> is this really bad? i would surely like a list of reasons
+> why..
+> 
+> I do it because.. well.. first off, it allows me to have
+> /boot on
+> different raidlevel than / or /home without extra disks.
+> secondly, it allows me to with the same disks use different
+> filesystems.. for instance, it allows me to have /home
+> encrypted with
+> dm-crypt, while still raided.. Not that i would mind
+> encrypting /
+> and /home as 1 partition, but it creates a whole slew of
+> issues with
+> having to create initrd and stuff..
+> 
+> I realize that performance probably suffers abit from this,
+> but well..
+> is there any stability or security wise risk? i mostly use
+> raid1 and
+> raid5 only..
+> 
+I would guess if the RAIDs are heavily used simultaneously it could
+cause the disk head actuators to jump around more, causing more wear
+and tear.
+
+
+ 
+________________________________________________________________________
+____________
+Be a better friend, newshound, and 
+know-it-all with Yahoo! Mobile.  Try it now.
+http://mobile.yahoo.com/;_ylt=Ahu06i62sR8HDtDypao8Wcj9tAcJ
+--
+To unsubscribe from this list: send the line "unsubscribe linux-raid" in
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
+
 
