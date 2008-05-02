@@ -1,72 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936447AbYEBTxv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936527AbYEBTy2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936447AbYEBTxv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 15:53:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936305AbYEBTx3
+	id S936527AbYEBTy2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 15:54:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934040AbYEBTyJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 15:53:29 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:45675 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S936297AbYEBTx2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 15:53:28 -0400
-Date: Fri, 2 May 2008 12:53:04 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Balaji Rao <balajirrao@gmail.com>
-Cc: dhaval@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
-       containers@lists.osdl.org, menage@google.com, balbir@in.ibm.com,
-       vatsa@linux.vnet.ibm.com, a.p.zijlstra@chello.nl
-Subject: Re: [RFC][-mm] Simple stats for cpu resource controller v3
-Message-Id: <20080502125304.77dd38ba.akpm@linux-foundation.org>
-In-Reply-To: <200805030110.29511.balajirrao@gmail.com>
-References: <200804052339.46632.balajirrao@gmail.com>
-	<200805012311.06797.balajirrao@gmail.com>
-	<20080501140026.6188065e.akpm@linux-foundation.org>
-	<200805030110.29511.balajirrao@gmail.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 2 May 2008 15:54:09 -0400
+Received: from 2605ds1-ynoe.1.fullrate.dk ([90.184.12.24]:52807 "EHLO
+	shrek.krogh.cc" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934791AbYEBTyH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 May 2008 15:54:07 -0400
+Message-ID: <481B714E.7050308@krogh.cc>
+Date: Fri, 02 May 2008 21:53:50 +0200
+From: Jesper Krogh <jesper@krogh.cc>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
+MIME-Version: 1.0
+To: Ray Lee <ray-lk@madrabbit.org>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: Many open/close on same files yeilds "No such file or directory".
+References: <4819E316.7000607@krogh.cc>	 <20080501223938.921f7cd2.akpm@linux-foundation.org>	 <481ACEC4.2040205@krogh.cc> <481B3115.30705@krogh.cc>	 <2c0942db0805020847q2fdc0480m3eb892bf2bd0b3a@mail.gmail.com>	 <481B395E.5070505@krogh.cc> <2c0942db0805020945i2f46a41dl28cdcec25c9e2ac3@mail.gmail.com>
+In-Reply-To: <2c0942db0805020945i2f46a41dl28cdcec25c9e2ac3@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 3 May 2008 01:10:28 +0530
-Balaji Rao <balajirrao@gmail.com> wrote:
+Ray Lee wrote:
+> Sorry for belaboring the point, but reading up-thread I see you ran
+> both / and /troublefs one after the other, but you're saying you also
+> ran them at the same time? If so, that would seem to conclusively rule
+> out hardware overheating.
 
-> On Friday 02 May 2008 02:30:26 am Andrew Morton wrote:
-> <snip>
-> 
-> Hi Andrew,
-> 
-> Thank you for the review.
-> >
-> > Did you consider using include/linux/percpu_counter.h?
-> >
-> > If so, what was wrong with it?
-> >
-> > Because it would be much better to fix per-cpu counters than to invent new
-> > stuff.
-> No, I hadn't consider using the percpu_counters infrastructure. But today when 
-> I tried using it, I got an early exception.I guess its because I tried 
-> calling percpu_counter_init from within sched_init, which I perhaps shouldn't 
-> do, because percpu_counter_init expects cpu hotplug code to be initialized by 
-> then. Right ? Correct me if I'm wrong.
+I've run up to 32 instances of the program at the same time. Both on the
+/ volumes and the "trouble" volume. Only programs from the trouble
+volume failed.
 
-I don't see any reason why we cannot run percpu_counter_init() prior to
-running percpu_counter_startup().  And it is desirable that we be able to
-start using the percpu-counters quite early.
-
-Can you debug it a bit please?  It's probably some silly little thing,
-perhaps fixable by calling percpu_counter_startup() earlier.
-
-> How about we start collecting statistics at a later stage i.e, after 
-> percpu_counter becomes usable ?
-
-It would be better to make the core infrastructure more robust, rather
-than working around problems it might have.
-
-
-It's rather nice that percpu_counters internally take care of
-cpu-hotplugging, and use cpu_online_map.  I was amazed at how easily that
-was added.  I still expect it to break somehow..
+Jesper
+-- 
+Jesper
