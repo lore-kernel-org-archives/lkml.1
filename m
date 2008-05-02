@@ -1,52 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765601AbYEBJJv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765106AbYEBJOc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765601AbYEBJJv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 05:09:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758389AbYEBJJo
+	id S1765106AbYEBJOc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 05:14:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752432AbYEBJOY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 05:09:44 -0400
-Received: from smtp-out01.alice-dsl.net ([88.44.60.11]:50004 "EHLO
-	smtp-out01.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757852AbYEBJJn (ORCPT
+	Fri, 2 May 2008 05:14:24 -0400
+Received: from e28smtp03.in.ibm.com ([59.145.155.3]:57683 "EHLO
+	e28smtp03.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752394AbYEBJOX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 05:09:43 -0400
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Tom Rini <trini@kernel.crashing.org>, torvalds@linux-foundation.org,
-       bunk@kernel.org, venkatesh.pallipadi@intel.com, davem@davemloft.net,
-       mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com,
-       linux-kernel@vger.kernel.org, suresh.b.siddha@intel.com,
-       vegard.nossum@gmail.com
-Subject: Re: huge gcc 4.1.{0,1} __weak problem
-From: Andi Kleen <andi@firstfloor.org>
-References: <20080430013108.GA18207@linux-os.sc.intel.com>
-	<20080429.212833.192304794.davem@davemloft.net>
-	<924EFEDD5F540B4284297C4DC59F3DEEF7D18E@orsmsx423.amr.corp.intel.com>
-	<20080501215633.GU29330@cs181133002.pp.htv.fi>
-	<20080501152051.4eb4bad3.akpm@linux-foundation.org>
-	<alpine.LFD.1.10.0805011525460.5994@woody.linux-foundation.org>
-	<20080501153349.f4537ec7.akpm@linux-foundation.org>
-	<20080501232447.GF4354@smtp.west.cox.net>
-	<20080501165945.077d34f9.akpm@linux-foundation.org>
-Date: Fri, 02 May 2008 11:09:23 +0200
-In-Reply-To: <20080501165945.077d34f9.akpm@linux-foundation.org> (Andrew Morton's message of "Thu, 1 May 2008 16:59:45 -0700")
-Message-ID: <87skx1f4xo.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
+	Fri, 2 May 2008 05:14:23 -0400
+Message-ID: <481ADB66.1010007@linux.vnet.ibm.com>
+Date: Fri, 02 May 2008 14:44:14 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 02 May 2008 09:02:29.0071 (UTC) FILETIME=[3F9E55F0:01C8AC33]
+To: Paul Menage <menage@google.com>
+CC: Dhaval Giani <dhaval@linux.vnet.ibm.com>, vivk@us.ibm.com,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Balbir Singh <balbir@in.ibm.com>,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+       lkml <linux-kernel@vger.kernel.org>,
+       libcg-devel <libcg-devel@lists.sourceforge.net>,
+       Balaji Rao <balajirrao@gmail.com>
+Subject: Re: [Libcg-devel] cgroupstats, plans?
+References: <20080429122019.GE9585@linux.vnet.ibm.com> <6599ad830805011852t7dc6de32qd4c105a51c2fee06@mail.gmail.com>
+In-Reply-To: <6599ad830805011852t7dc6de32qd4c105a51c2fee06@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton <akpm@linux-foundation.org> writes:
->
-> Honestly, I nearly died when I built all those cross-compilers.  Sooooooo
-> many combinations of gcc/binutils/glibc refused to work for obscure
-> reasons.  Compilation on x86_64 just didn't work at all and I ended up
-> having to build everything on a slow i386 box, etc, etc.  The stream of
-> email to Dan got increasingly strident ;)
+Paul Menage wrote:
+> On Tue, Apr 29, 2008 at 5:20 AM, Dhaval Giani <dhaval@linux.vnet.ibm.com> wrote:
+>> Hi Paul,
+>>
+>>  You had mentioned in http://lkml.org/lkml/2008/4/8/29 about cgroup
+>>  binary API for statistics. What is the status wrt to that?
+> 
+> I've not really had mmore time to work on that since then.
+> 
+> Assuming people are happy with the basic ideas in that post then I
+> guess the important questions to focus on would be:
+> 
+> - what form should the API description to userspace take? Something
+> like the cgroup.api file that I proposed a while ago?
+> 
+> - how would the user specify and retrieve a specific set of stats?
+> should we just dump all stats on each read request, or will that be
+> too expensive for some stats?
+> 
 
-This might be pointing out the obvious, but to just update the compiler
-from 4.1.0 to 4.1.2 (or other) you don't need to recompile binutils and glibc.
+I would prefer to select the controller from user stats and then dump the stats
+from the kernel for that controller using cgroupstats.
 
--Andi
+>>  We are looking to export statistics using libcg. One of the questions
+>>  that comes up is when is a file in the cgroup, a control file (one used
+>>  to control the parameters of the subsystem) and when is it a file which
+>>  is related to statistics.
+> 
+> I don't see why some of them can't be both. If a file has a numerical
+> value associated with it, is there any reason not to make it available
+> via the binary stats API, regardless of whether that value was
+> generated by userspace or the kernel?
+> 
+
+I agree. I think we need to start pushing the statistics so that we can have a
+good set of statistics. I am going to try and do some cgroupstats work and
+publish it soon.
+
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
