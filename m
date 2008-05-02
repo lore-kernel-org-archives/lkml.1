@@ -1,61 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764412AbYEBObj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765462AbYEBOev@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764412AbYEBObj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 10:31:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759404AbYEBOb0
+	id S1765462AbYEBOev (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 10:34:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760685AbYEBOek
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 10:31:26 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:48920 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755820AbYEBObY (ORCPT
+	Fri, 2 May 2008 10:34:40 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:55751 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760550AbYEBOej (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 10:31:24 -0400
-Date: Fri, 2 May 2008 16:31:23 +0200 (CEST)
-From: Jan Engelhardt <jengelh@medozas.de>
+	Fri, 2 May 2008 10:34:39 -0400
+From: Chris Mason <chris.mason@oracle.com>
 To: jeffschroeder@computer.org
-cc: Chris Mason <chris.mason@oracle.com>, Jeff Mahoney <jeffm@suse.com>,
-       Tim Gardner <tim.gardner@canonical.com>, linux-fsdevel@vger.kernel.org,
-       kernel-team@lists.ubuntu.com, linux-kernel@vger.kernel.org,
-       linux-btrfs@vger.kernel.org, John Johansen <jjohansen@suse.de>
 Subject: Re: Btrfs v0.14 Released
+Date: Fri, 2 May 2008 10:34:07 -0400
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: "Jan Engelhardt" <jengelh@medozas.de>, "Jeff Mahoney" <jeffm@suse.com>,
+       "Tim Gardner" <tim.gardner@canonical.com>,
+       linux-fsdevel@vger.kernel.org, kernel-team@lists.ubuntu.com,
+       linux-kernel@vger.kernel.org, linux-btrfs@vger.kernel.org,
+       "John Johansen" <jjohansen@suse.de>
+References: <200804291601.32945.chris.mason@oracle.com> <200805020852.51125.chris.mason@oracle.com> <c24352ca0805020715y46741317ve9897afd689d058f@mail.gmail.com>
 In-Reply-To: <c24352ca0805020715y46741317ve9897afd689d058f@mail.gmail.com>
-Message-ID: <alpine.LNX.1.10.0805021627460.6463@fbirervta.pbzchgretzou.qr>
-References: <200804291601.32945.chris.mason@oracle.com>  <481A23AB.1020302@suse.com>  <alpine.LNX.1.10.0805020837490.6463@fbirervta.pbzchgretzou.qr>  <200805020852.51125.chris.mason@oracle.com> <c24352ca0805020715y46741317ve9897afd689d058f@mail.gmail.com>
-User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200805021034.08358.chris.mason@oracle.com>
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Friday 02 May 2008, Jeff Schroeder wrote:
 
-On Friday 2008-05-02 16:15, Jeff Schroeder wrote:
+[ Btrfs oops with apparmor patched in ]
+
+> Make is not my forte, but here is a working test to see if apparmor
+> exists in Ubuntu 8.04.
+> Maybe have make apply a patch to the btrfs source if this test
+> succeeds? Does this work in SUSE?
 >
->Make is not my forte, but here is a working test to see if apparmor
->exists in Ubuntu 8.04.
->Maybe have make apply a patch to the btrfs source if this test
->succeeds? Does this work in SUSE?
+> http://www.digitalprognosis.com/opensource/patches/btrfs/lame_apparmor_test
+>_for_btrfs.patch
 >
->http://www.digitalprognosis.com/opensource/patches/btrfs/lame_apparmor_test_for_btrfs.patch
 
-Woah, you rely on autoconf.h. Uh no thanks, let the build system handle it.
+Thanks, but this uses CONFIG_SECURITY_APPARMOR which isn't enough to tell if 
+the kernel has the patch.  Lets go back to Jeff's suse patch:
 
-# -*- Makefile -*-
+/*
+ * Even if AppArmor isn't enabled, it still has different prototypes.
+ * Add more distro/version pairs here to declare which has AppArmor applied.
+ */
+#if defined(CONFIG_SUSE_KERNEL)
+# if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,22)
+# define REMOVE_SUID_PATH 1
+# endif
+#endif
 
-btrfs-objs := ...
-obj-m += btrfs.o and-so-on.o
+Could someone from Ubuntu please suggest a replacement for CONFIG_SUSE_KERNEL 
+and KERNEL_VERSION(2,6,22) that would correspond with ubuntu kernels shipped 
+with apparmor?  We don't need some define from the apparmor patch, just a 
+global flag that says it comes from ubuntu is enough.
 
-ifneq (${CONFIG_SECURITY_APPARMOR},)
-EXTRA_CFLAGS += -DI_HAZ_AN_APPARMOR
-endif
-
-all:
-	${MAKE} -C ${kdir} M=$PWD all;
-
-
-Best of all, you can override that from the command line too...
-
-	make CONFIG_SECURITY_APPARMOR=y
-
-(and if you don't, it takes its value from the appropriate .config,
-all without you having to care about autoconf.h)
+-chris
