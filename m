@@ -1,46 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763762AbYEBKGR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763095AbYEBKNY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763762AbYEBKGR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 06:06:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757956AbYEBKGB
+	id S1763095AbYEBKNY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 06:13:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754812AbYEBKNO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 06:06:01 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:46724 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757670AbYEBKGA (ORCPT
+	Fri, 2 May 2008 06:13:14 -0400
+Received: from rv-out-0506.google.com ([209.85.198.236]:40805 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755691AbYEBKNN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 06:06:00 -0400
-Date: Fri, 2 May 2008 10:57:49 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Jan Engelhardt <jengelh@medozas.de>
-Cc: Martin =?UTF-8?B?TU9LUkVKxaA=?= <mmokrejs@ribosome.natur.cuni.cz>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.23.17 & 2.6.24.5 and maybe earlier: pata_marvell: need to
- disable DMA to get rid of '(ATA bus error)', 'ata7.00: status: { DRDY ERR
- }', 'ata7.00: error: { ICRC ABRT }'
-Message-ID: <20080502105749.24b9229f@core>
-In-Reply-To: <alpine.LNX.1.10.0805020150460.6463@fbirervta.pbzchgretzou.qr>
-References: <4819FDAF.7050005@ribosome.natur.cuni.cz>
-	<20080501200851.2e14d3b8@core>
-	<alpine.LNX.1.10.0805020150460.6463@fbirervta.pbzchgretzou.qr>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 2 May 2008 06:13:13 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=sHXfOL4/GSFwIrwauU/wKiV6BjOMfgTy6Dbxefk3v+uWc8iS8Wl8NxBvgkIoY3qhqK0x1z/hTjUGueiDH+0FNNYhz8gPleCpYFyZzLFvYZ8jN40VFqHYsVIxfJ4FPk/L0QLYFSv35GF1L0XVvg9jPHIfEjRynr5sDegbpkSTtAM=
+Message-ID: <9a8748490805020313gb5f4d65obd7258d9bd9170d6@mail.gmail.com>
+Date: Fri, 2 May 2008 12:13:12 +0200
+From: "Jesper Juhl" <jesper.juhl@gmail.com>
+To: "FUJITA Tomonori" <fujita.tomonori@lab.ntt.co.jp>
+Subject: Re: scsi_scan: WARNING: at include/linux/blkdev.h:431 blk_queue_init_tags+0x107/0x120()
+Cc: jens.axboe@oracle.com, James.Bottomley@hansenpartnership.com,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+In-Reply-To: <20080502111652T.tomof@acm.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <alpine.LNX.1.00.0805020043130.1489@dragon.funnycrock.com>
+	 <20080502111652T.tomof@acm.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> >libata.dma=3 will stop DMA being used for CF devices (except those that
-> >decide to pretend to be ATA classes). This one comes up a lot as many CF
-> >adapters are simply not adequate for UDMA.
-> 
-> Perhaps the kernel could do this automatically once it sees the
-> status code?
+2008/5/2 FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>:
+>
+> On Fri, 2 May 2008 00:43:30 +0200 (CEST)
+>  Jesper Juhl <jesper.juhl@gmail.com> wrote:
+>
+>  > Hi,
+>  >
+>  > For your information;
+>  >
+>  > I just build and booted the tip of Linus' git tree (HEAD at
+>  > 886c35fbcf6fb2eee15687efc2d64d99b6ad9a4a) and got this in dmesg during
+>  > bootup :
+>  >
+>  > ------------[ cut here ]------------
+>  > WARNING: at include/linux/blkdev.h:431 blk_queue_init_tags+0x107/0x120()
+>  > Modules linked in:
+>  > Pid: 432, comm: scsi_scan_0 Not tainted 2.6.25-07351-g886c35f #1
+>  >  [<c0129684>] warn_on_slowpath+0x54/0x70
+>  >  [<c017a7c3>] ? check_object+0xe3/0x1f0
+>  >  [<c0200ae9>] ? init_tag_map+0x59/0xb0
+>  >  [<c014b1e7>] ? mark_held_locks+0x47/0x80
+>  >  [<c017cbeb>] ? __kmalloc+0x6b/0x100
+>  >  [<c014b379>] ? trace_hardirqs_on+0xb9/0x150
+>  >  [<c0200ae9>] ? init_tag_map+0x59/0xb0
+>  >  [<c0200ae9>] ? init_tag_map+0x59/0xb0
+>  >  [<c0200ae9>] ? init_tag_map+0x59/0xb0
+>  >  [<c0200c34>] ? __blk_queue_init_tags+0x24/0x70
+>  >  [<c0200c45>] ? __blk_queue_init_tags+0x35/0x70
+>  >  [<c0200e57>] blk_queue_init_tags+0x107/0x120
+>  >  [<c02b5a91>] ahc_platform_set_tags+0x191/0x1d0
+>  >  [<c02b5bd3>] ahc_linux_slave_configure+0x103/0x170
+>  >  [<c02a1f65>] scsi_probe_and_add_lun+0x6e5/0x920
+>  >  [<c02a2468>] __scsi_scan_target+0xe8/0x5d0
+>  >  [<c0108e17>] ? native_sched_clock+0x87/0xd0
+>  >  [<c0148c89>] ? get_lock_stats+0x29/0x50
+>  >  [<c0148cbd>] ? put_lock_stats+0xd/0x30
+>  >  [<c014b1e7>] ? mark_held_locks+0x47/0x80
+>  >  [<c035e247>] ? mutex_lock_nested+0x1b7/0x2a0
+>  >  [<c014b379>] ? trace_hardirqs_on+0xb9/0x150
+>  >  [<c035e23a>] ? mutex_lock_nested+0x1aa/0x2a0
+>  >  [<c02a2a1a>] ? scsi_scan_host_selected+0x3a/0xf0
+>  >  [<c02a29c0>] scsi_scan_channel+0x70/0x90
+>  >  [<c02a2a9d>] scsi_scan_host_selected+0xbd/0xf0
+>  >  [<c02a2b50>] ? do_scan_async+0x0/0x140
+>  >  [<c02a2b48>] do_scsi_scan_host+0x78/0x80
+>  >  [<c02a2b64>] do_scan_async+0x14/0x140
+>  >  [<c011f6e8>] ? complete+0x48/0x60
+>  >  [<c02a2b50>] ? do_scan_async+0x0/0x140
+>  >  [<c013c8d2>] kthread+0x42/0x70
+>  >  [<c013c890>] ? kthread+0x0/0x70
+>  >  [<c0103ceb>] kernel_thread_helper+0x7/0x1c
+>
+>  The problem is that the commit 75ad23b expects that we hold the queue
+>  lock for __blk_queue_free_tags, blk_queue_free_tags and
+>  blk_queue_init_tags but we haven't.
+>
+>  The simple fix is using queue_flag_set/clear_unlocked for them, then
+>  it should work as before. However, it would be better to hold the
+>  queue lock for blk_queue_free_tags and blk_queue_init_tags (we can
+>  hold the queue lock in scsi_activate_tcq and scsi_deactivate_tcq).
+>
+>
+>  diff --git a/block/blk-tag.c b/block/blk-tag.c
+>  index de64e04..d4e21cd 100644
+>  --- a/block/blk-tag.c
+>  +++ b/block/blk-tag.c
+>  @@ -70,7 +70,7 @@ void __blk_queue_free_tags(struct request_queue *q)
+>         __blk_free_tags(bqt);
+>
+>         q->queue_tags = NULL;
+>  -       queue_flag_clear(QUEUE_FLAG_QUEUED, q);
+>  +       queue_flag_clear_unlocked(QUEUE_FLAG_QUEUED, q);
+>   }
+>
+>   /**
+>  @@ -98,7 +98,7 @@ EXPORT_SYMBOL(blk_free_tags);
+>   **/
+>   void blk_queue_free_tags(struct request_queue *q)
+>   {
+>  -       queue_flag_clear(QUEUE_FLAG_QUEUED, q);
+>  +       queue_flag_clear_unlocked(QUEUE_FLAG_QUEUED, q);
+>   }
+>   EXPORT_SYMBOL(blk_queue_free_tags);
+>
+>  @@ -197,7 +197,7 @@ int blk_queue_init_tags(struct request_queue *q, int depth,
+>          * assign it, all done
+>          */
+>         q->queue_tags = tags;
+>  -       queue_flag_set(QUEUE_FLAG_QUEUED, q);
+>  +       queue_flag_set_unlocked(QUEUE_FLAG_QUEUED, q);
+>         INIT_LIST_HEAD(&q->tag_busy_list);
+>         return 0;
+>   fail:
+>
 
-We then hurt all the people with perfectly good working UDMA CF devices.
-The kernel will eventually fall back from UDMA to PIO but it favours
-working hardware by default.
+Thanks Fujita,
+
+Just tested this patch and it does make the WARNING and trace go away.
+If there's a better fix and you want me to test more patches, please
+just send them my way :-)
+
+
+-- 
+Jesper Juhl <jesper.juhl@gmail.com>
+Don't top-post http://www.catb.org/~esr/jargon/html/T/top-post.html
+Plain text mails only, please http://www.expita.com/nomime.html
