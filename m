@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936377AbYEBTDZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936470AbYEBTDu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936377AbYEBTDZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 15:03:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936210AbYEBTBo
+	id S936470AbYEBTDu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 15:03:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936216AbYEBTBp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 15:01:44 -0400
-Received: from el-out-1112.google.com ([209.85.162.180]:48598 "EHLO
-	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S936200AbYEBTBn (ORCPT
+	Fri, 2 May 2008 15:01:45 -0400
+Received: from wa-out-1112.google.com ([209.85.146.178]:30418 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S936207AbYEBTBo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 15:01:43 -0400
+	Fri, 2 May 2008 15:01:44 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=X3+tvDLVFLcznQLGTwtxSZXmsP/n9Zo5w+uZmKsomXEf1oucrWLtG3BDwtbo/v3+A+xcVVxK87Ky2JHO5UEgwXLsopVzUYC6svfZNzKTA1Uyvv91RKZ39yxmiCGKcVYOabYkiN6Y8xKJx2N1QFcWeEGkJ/+3EYnX84hNCc/Nq/E=
-Subject: [PATCH 05/12] frv: gdb-stub.c use the common ascii hex helpers
+        b=MqJ127Q1AaBoOpUImqWs3YRQYa3+3OFdYHo8oUXG9y86QVFHef1h5GnNbZZCqy+w3wFBB3f9kNxDYlTqFl9qziGR7cg9e9EwmmHU0vq4ZeNc5s1qOoywPOkhVHlpgsL9S0DtgTUjDdzluhhBup7+GsRC5XEyEG6LYx6t63klRqU=
+Subject: [PATCH 06/12] mn10300: gdb-stub.c use the common ascii hex helpers
 From: Harvey Harrison <harvey.harrison@gmail.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: LKML <linux-kernel@vger.kernel.org>
 Content-Type: text/plain
-Date: Fri, 02 May 2008 12:01:53 -0700
-Message-Id: <1209754913.26173.30.camel@brick>
+Date: Fri, 02 May 2008 12:01:54 -0700
+Message-Id: <1209754914.26173.31.camel@brick>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
@@ -30,30 +30,32 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
 ---
- arch/frv/kernel/gdb-stub.c |  163 ++++++++++++++++++++------------------------
- 1 files changed, 73 insertions(+), 90 deletions(-)
+ arch/mn10300/kernel/gdb-stub.c |  183 ++++++++++++++++++----------------------
+ 1 files changed, 83 insertions(+), 100 deletions(-)
 
-diff --git a/arch/frv/kernel/gdb-stub.c b/arch/frv/kernel/gdb-stub.c
-index 48a0393..5a369d7 100644
---- a/arch/frv/kernel/gdb-stub.c
-+++ b/arch/frv/kernel/gdb-stub.c
-@@ -182,8 +182,6 @@ extern volatile u32 __attribute__((section(".bss"))) gdbstub_trace_through_excep
- static char	input_buffer[BUFMAX];
+diff --git a/arch/mn10300/kernel/gdb-stub.c b/arch/mn10300/kernel/gdb-stub.c
+index 21891c7..2431571 100644
+--- a/arch/mn10300/kernel/gdb-stub.c
++++ b/arch/mn10300/kernel/gdb-stub.c
+@@ -163,8 +163,6 @@ static char	input_buffer[BUFMAX];
  static char	output_buffer[BUFMAX];
+ static char	trans_buffer[BUFMAX];
  
 -static const char hexchars[] = "0123456789abcdef";
 -
- static const char *regnames[] = {
- 	"PSR ", "ISR ", "CCR ", "CCCR",
- 	"LR  ", "LCR ", "PC  ", "_stt",
-@@ -214,25 +212,10 @@ static struct gdbstub_bkpt gdbstub_bkpts[256];
- static void gdbstub_recv_packet(char *buffer);
- static int gdbstub_send_packet(char *buffer);
- static int gdbstub_compute_signal(unsigned long tbr);
+ struct gdbstub_bkpt {
+ 	u8	*addr;		/* address of breakpoint */
+ 	u8	len;		/* size of breakpoint */
+@@ -179,27 +177,12 @@ static struct gdbstub_bkpt gdbstub_bkpts[256];
+ static void getpacket(char *buffer);
+ static int putpacket(char *buffer);
+ static int computeSignal(enum exception_code excep);
 -static int hex(unsigned char ch);
- static int hexToInt(char **ptr, unsigned long *intValue);
- static unsigned char *mem2hex(const void *mem, char *buf, int count, int may_fault);
- static char *hex2mem(const char *buf, void *_mem, int count);
+ static int hexToInt(char **ptr, int *intValue);
+ static unsigned char *mem2hex(const void *mem, char *buf, int count,
+ 			      int may_fault);
+ static const char *hex2mem(const char *buf, void *_mem, int count,
+ 			   int may_fault);
  
 -/*
 - * Convert ch from a hex digit to an int
@@ -61,25 +63,25 @@ index 48a0393..5a369d7 100644
 -static int hex(unsigned char ch)
 -{
 -	if (ch >= 'a' && ch <= 'f')
--		return ch-'a'+10;
+-		return ch - 'a' + 10;
 -	if (ch >= '0' && ch <= '9')
--		return ch-'0';
+-		return ch - '0';
 -	if (ch >= 'A' && ch <= 'F')
--		return ch-'A'+10;
+-		return ch - 'A' + 10;
 -	return -1;
 -}
 -
- void gdbstub_printk(const char *fmt, ...)
- {
- 	static char buf[1024];
-@@ -314,12 +297,12 @@ static void gdbstub_recv_packet(char *buffer)
- 		ret = gdbstub_rx_char(&ch, 0);
+ #ifdef CONFIG_GDBSTUB_DEBUGGING
+ 
+ void debug_to_serial(const char *p, int n)
+@@ -286,12 +269,12 @@ static void getpacket(char *buffer)
+ 		ret = gdbstub_io_rx_char(&ch, 0);
  		if (ret < 0)
  			error = ret;
 -		xmitcsum = hex(ch) << 4;
 +		xmitcsum = hex_to_int(ch) << 4;
  
- 		ret = gdbstub_rx_char(&ch, 0);
+ 		ret = gdbstub_io_rx_char(&ch, 0);
  		if (ret < 0)
  			error = ret;
 -		xmitcsum |= hex(ch);
@@ -87,30 +89,30 @@ index 48a0393..5a369d7 100644
  
  		if (error) {
  			if (error == -EIO)
-@@ -383,8 +366,8 @@ static int gdbstub_send_packet(char *buffer)
+@@ -363,8 +346,8 @@ static int putpacket(char *buffer)
  		}
  
- 		gdbstub_tx_char('#');
--		gdbstub_tx_char(hexchars[checksum >> 4]);
--		gdbstub_tx_char(hexchars[checksum & 0xf]);
-+		gdbstub_tx_char(hex_asc_hi(checksum));
-+		gdbstub_tx_char(hex_asc_lo(checksum));
+ 		gdbstub_io_tx_char('#');
+-		gdbstub_io_tx_char(hexchars[checksum >> 4]);
+-		gdbstub_io_tx_char(hexchars[checksum & 0xf]);
++		gdbstub_io_tx_char(hex_asc_hi(checksum));
++		gdbstub_io_tx_char(hex_asc_lo(checksum));
  
- 	} while (gdbstub_rx_char(&ch,0),
- #ifdef GDBSTUB_DEBUG_PROTOCOL
-@@ -413,7 +396,7 @@ static int hexToInt(char **ptr, unsigned long *_value)
+ 	} while (gdbstub_io_rx_char(&ch, 0),
+ 		 ch == '-' && (gdbstub_io("### GDB Rx NAK\n"), 0),
+@@ -394,7 +377,7 @@ static int hexToInt(char **ptr, int *intValue)
+ 	*intValue = 0;
  
- 	*_value = 0;
  	while (**ptr) {
--		ch = hex(**ptr);
-+		ch = hex_to_int(**ptr);
- 		if (ch < 0)
+-		hexValue = hex(**ptr);
++		hexValue = hex_to_int(**ptr);
+ 		if (hexValue < 0)
  			break;
  
-@@ -674,8 +657,8 @@ static unsigned char *mem2hex(const void *_mem, char *buf, int count, int may_fa
- 	if ((uint32_t)mem&1 && count>=1) {
- 		if (!gdbstub_read_byte(mem,ch))
- 			return NULL;
+@@ -822,8 +805,8 @@ unsigned char *mem2hex(const void *_mem, char *buf, int count, int may_fault)
+ 	if ((u32) mem & 1 && count >= 1) {
+ 		if (gdbstub_read_byte(mem, ch) != 0)
+ 			return 0;
 -		*buf++ = hexchars[ch[0] >> 4];
 -		*buf++ = hexchars[ch[0] & 0xf];
 +		*buf++ = hex_asc_hi(ch[0]);
@@ -118,10 +120,10 @@ index 48a0393..5a369d7 100644
  		mem++;
  		count--;
  	}
-@@ -683,10 +666,10 @@ static unsigned char *mem2hex(const void *_mem, char *buf, int count, int may_fa
- 	if ((uint32_t)mem&3 && count>=2) {
- 		if (!gdbstub_read_word(mem,(uint16_t *)ch))
- 			return NULL;
+@@ -831,10 +814,10 @@ unsigned char *mem2hex(const void *_mem, char *buf, int count, int may_fault)
+ 	if ((u32) mem & 3 && count >= 2) {
+ 		if (gdbstub_read_word(mem, ch) != 0)
+ 			return 0;
 -		*buf++ = hexchars[ch[0] >> 4];
 -		*buf++ = hexchars[ch[0] & 0xf];
 -		*buf++ = hexchars[ch[1] >> 4];
@@ -133,10 +135,10 @@ index 48a0393..5a369d7 100644
  		mem += 2;
  		count -= 2;
  	}
-@@ -694,14 +677,14 @@ static unsigned char *mem2hex(const void *_mem, char *buf, int count, int may_fa
- 	while (count>=4) {
- 		if (!gdbstub_read_dword(mem,(uint32_t *)ch))
- 			return NULL;
+@@ -842,14 +825,14 @@ unsigned char *mem2hex(const void *_mem, char *buf, int count, int may_fault)
+ 	while (count >= 4) {
+ 		if (gdbstub_read_dword(mem, ch) != 0)
+ 			return 0;
 -		*buf++ = hexchars[ch[0] >> 4];
 -		*buf++ = hexchars[ch[0] & 0xf];
 -		*buf++ = hexchars[ch[1] >> 4];
@@ -156,10 +158,10 @@ index 48a0393..5a369d7 100644
  		mem += 4;
  		count -= 4;
  	}
-@@ -709,10 +692,10 @@ static unsigned char *mem2hex(const void *_mem, char *buf, int count, int may_fa
- 	if (count>=2) {
- 		if (!gdbstub_read_word(mem,(uint16_t *)ch))
- 			return NULL;
+@@ -857,10 +840,10 @@ unsigned char *mem2hex(const void *_mem, char *buf, int count, int may_fault)
+ 	if (count >= 2) {
+ 		if (gdbstub_read_word(mem, ch) != 0)
+ 			return 0;
 -		*buf++ = hexchars[ch[0] >> 4];
 -		*buf++ = hexchars[ch[0] & 0xf];
 -		*buf++ = hexchars[ch[1] >> 4];
@@ -171,10 +173,10 @@ index 48a0393..5a369d7 100644
  		mem += 2;
  		count -= 2;
  	}
-@@ -720,8 +703,8 @@ static unsigned char *mem2hex(const void *_mem, char *buf, int count, int may_fa
- 	if (count>=1) {
- 		if (!gdbstub_read_byte(mem,ch))
- 			return NULL;
+@@ -868,8 +851,8 @@ unsigned char *mem2hex(const void *_mem, char *buf, int count, int may_fault)
+ 	if (count >= 1) {
+ 		if (gdbstub_read_byte(mem, ch) != 0)
+ 			return 0;
 -		*buf++ = hexchars[ch[0] >> 4];
 -		*buf++ = hexchars[ch[0] & 0xf];
 +		*buf++ = hex_asc_hi(ch[0]);
@@ -182,21 +184,21 @@ index 48a0393..5a369d7 100644
  	}
  
  	*buf = 0;
-@@ -744,8 +727,8 @@ static char *hex2mem(const char *buf, void *_mem, int count)
+@@ -892,8 +875,8 @@ const char *hex2mem(const char *buf, void *_mem, int count, int may_fault)
  	} ch;
  
- 	if ((u32)mem&1 && count>=1) {
+ 	if ((u32) mem & 1 && count >= 1) {
 -		ch.b[0]  = hex(*buf++) << 4;
 -		ch.b[0] |= hex(*buf++);
 +		ch.b[0]  = hex_to_int(*buf++) << 4;
 +		ch.b[0] |= hex_to_int(*buf++);
- 		if (!gdbstub_write_byte(mem,ch.b[0]))
- 			return NULL;
+ 		if (gdbstub_write_byte(ch.val, mem) != 0)
+ 			return 0;
  		mem++;
-@@ -753,10 +736,10 @@ static char *hex2mem(const char *buf, void *_mem, int count)
+@@ -901,10 +884,10 @@ const char *hex2mem(const char *buf, void *_mem, int count, int may_fault)
  	}
  
- 	if ((u32)mem&3 && count>=2) {
+ 	if ((u32) mem & 3 && count >= 2) {
 -		ch.b[0]  = hex(*buf++) << 4;
 -		ch.b[0] |= hex(*buf++);
 -		ch.b[1]  = hex(*buf++) << 4;
@@ -205,13 +207,13 @@ index 48a0393..5a369d7 100644
 +		ch.b[0] |= hex_to_int(*buf++);
 +		ch.b[1]  = hex_to_int(*buf++) << 4;
 +		ch.b[1] |= hex_to_int(*buf++);
- 		if (!gdbstub_write_word(mem,ch.w))
- 			return NULL;
+ 		if (gdbstub_write_word(ch.val, mem) != 0)
+ 			return 0;
  		mem += 2;
-@@ -764,14 +747,14 @@ static char *hex2mem(const char *buf, void *_mem, int count)
+@@ -912,14 +895,14 @@ const char *hex2mem(const char *buf, void *_mem, int count, int may_fault)
  	}
  
- 	while (count>=4) {
+ 	while (count >= 4) {
 -		ch.b[0]  = hex(*buf++) << 4;
 -		ch.b[0] |= hex(*buf++);
 -		ch.b[1]  = hex(*buf++) << 4;
@@ -228,13 +230,13 @@ index 48a0393..5a369d7 100644
 +		ch.b[2] |= hex_to_int(*buf++);
 +		ch.b[3]  = hex_to_int(*buf++) << 4;
 +		ch.b[3] |= hex_to_int(*buf++);
- 		if (!gdbstub_write_dword(mem,ch.l))
- 			return NULL;
+ 		if (gdbstub_write_dword(ch.val, mem) != 0)
+ 			return 0;
  		mem += 4;
-@@ -779,10 +762,10 @@ static char *hex2mem(const char *buf, void *_mem, int count)
+@@ -927,10 +910,10 @@ const char *hex2mem(const char *buf, void *_mem, int count, int may_fault)
  	}
  
- 	if (count>=2) {
+ 	if (count >= 2) {
 -		ch.b[0]  = hex(*buf++) << 4;
 -		ch.b[0] |= hex(*buf++);
 -		ch.b[1]  = hex(*buf++) << 4;
@@ -243,99 +245,124 @@ index 48a0393..5a369d7 100644
 +		ch.b[0] |= hex_to_int(*buf++);
 +		ch.b[1]  = hex_to_int(*buf++) << 4;
 +		ch.b[1] |= hex_to_int(*buf++);
- 		if (!gdbstub_write_word(mem,ch.w))
- 			return NULL;
+ 		if (gdbstub_write_word(ch.val, mem) != 0)
+ 			return 0;
  		mem += 2;
-@@ -790,8 +773,8 @@ static char *hex2mem(const char *buf, void *_mem, int count)
+@@ -938,8 +921,8 @@ const char *hex2mem(const char *buf, void *_mem, int count, int may_fault)
  	}
  
- 	if (count>=1) {
+ 	if (count >= 1) {
 -		ch.b[0]  = hex(*buf++) << 4;
 -		ch.b[0] |= hex(*buf++);
 +		ch.b[0]  = hex_to_int(*buf++) << 4;
 +		ch.b[0] |= hex_to_int(*buf++);
- 		if (!gdbstub_write_byte(mem,ch.b[0]))
- 			return NULL;
+ 		if (gdbstub_write_byte(ch.val, mem) != 0)
+ 			return 0;
  	}
-@@ -1471,22 +1454,22 @@ void gdbstub(int sigval)
+@@ -1304,14 +1287,14 @@ static int gdbstub(struct pt_regs *regs, enum exception_code excep)
  		*ptr++ = 'O';
- 		ptr = mem2hex(title, ptr, sizeof(title) - 1,0);
+ 		ptr = mem2hex(title, ptr, sizeof(title) - 1, 0);
  
--		hx = hexchars[(brr & 0xf0000000) >> 28];
+-		hx = hexchars[(excep & 0xf000) >> 12];
 -		*ptr++ = hexchars[hx >> 4];	*ptr++ = hexchars[hx & 0xf];
--		hx = hexchars[(brr & 0x0f000000) >> 24];
+-		hx = hexchars[(excep & 0x0f00) >> 8];
 -		*ptr++ = hexchars[hx >> 4];	*ptr++ = hexchars[hx & 0xf];
--		hx = hexchars[(brr & 0x00f00000) >> 20];
+-		hx = hexchars[(excep & 0x00f0) >> 4];
 -		*ptr++ = hexchars[hx >> 4];	*ptr++ = hexchars[hx & 0xf];
--		hx = hexchars[(brr & 0x000f0000) >> 16];
+-		hx = hexchars[(excep & 0x000f)];
 -		*ptr++ = hexchars[hx >> 4];	*ptr++ = hexchars[hx & 0xf];
--		hx = hexchars[(brr & 0x0000f000) >> 12];
--		*ptr++ = hexchars[hx >> 4];	*ptr++ = hexchars[hx & 0xf];
--		hx = hexchars[(brr & 0x00000f00) >> 8];
--		*ptr++ = hexchars[hx >> 4];	*ptr++ = hexchars[hx & 0xf];
--		hx = hexchars[(brr & 0x000000f0) >> 4];
--		*ptr++ = hexchars[hx >> 4];	*ptr++ = hexchars[hx & 0xf];
--		hx = hexchars[(brr & 0x0000000f)];
--		*ptr++ = hexchars[hx >> 4];	*ptr++ = hexchars[hx & 0xf];
-+		hx = hex_asc_hi(brr >> 24);
++		hx = hex_asc_hi(excep >> 8);
 +		*ptr++ = hex_asc_hi(hx);	*ptr++ = hex_asc_lo(hx);
-+		hx = hex_asc_lo(brr >> 24);
++		hx = hex_asc_lo(excep >> 8);
 +		*ptr++ = hex_asc_hi(hx);	*ptr++ = hex_asc_lo(hx);
-+		hx = hex_asc_hi(brr >> 16);
++		hx = hex_asc_hi(excep);
 +		*ptr++ = hex_asc_hi(hx);	*ptr++ = hex_asc_lo(hx);
-+		hx = hex_asc_lo(brr >> 16);
-+		*ptr++ = hex_asc_hi(hx);	*ptr++ = hex_asc_lo(hx);
-+		hx = hex_asc_hi(brr >> 8);
-+		*ptr++ = hex_asc_hi(hx);	*ptr++ = hex_asc_lo(hx);
-+		hx = hex_asc_lo(brr >> 8);
-+		*ptr++ = hex_asc_hi(hx);	*ptr++ = hex_asc_lo(hx);
-+		hx = hex_asc_hi(brr);
-+		*ptr++ = hex_asc_hi(hx);	*ptr++ = hex_asc_lo(hx);
-+		hx = hex_asc_lo(brr);
++		hx = hex_asc_lo(excep);
 +		*ptr++ = hex_asc_hi(hx);	*ptr++ = hex_asc_lo(hx);
  
  		ptr = mem2hex(crlf, ptr, sizeof(crlf) - 1, 0);
  		*ptr = 0;
-@@ -1500,12 +1483,12 @@ void gdbstub(int sigval)
+@@ -1322,22 +1305,22 @@ static int gdbstub(struct pt_regs *regs, enum exception_code excep)
+ 		*ptr++ = 'O';
+ 		ptr = mem2hex(tbcberr, ptr, sizeof(tbcberr) - 1, 0);
  
- 	/* Send trap type (converted to signal) */
+-		hx = hexchars[(bcberr & 0xf0000000) >> 28];
+-		*ptr++ = hexchars[hx >> 4];	*ptr++ = hexchars[hx & 0xf];
+-		hx = hexchars[(bcberr & 0x0f000000) >> 24];
+-		*ptr++ = hexchars[hx >> 4];	*ptr++ = hexchars[hx & 0xf];
+-		hx = hexchars[(bcberr & 0x00f00000) >> 20];
+-		*ptr++ = hexchars[hx >> 4];	*ptr++ = hexchars[hx & 0xf];
+-		hx = hexchars[(bcberr & 0x000f0000) >> 16];
+-		*ptr++ = hexchars[hx >> 4];	*ptr++ = hexchars[hx & 0xf];
+-		hx = hexchars[(bcberr & 0x0000f000) >> 12];
+-		*ptr++ = hexchars[hx >> 4];	*ptr++ = hexchars[hx & 0xf];
+-		hx = hexchars[(bcberr & 0x00000f00) >> 8];
+-		*ptr++ = hexchars[hx >> 4];	*ptr++ = hexchars[hx & 0xf];
+-		hx = hexchars[(bcberr & 0x000000f0) >> 4];
+-		*ptr++ = hexchars[hx >> 4];	*ptr++ = hexchars[hx & 0xf];
+-		hx = hexchars[(bcberr & 0x0000000f)];
+-		*ptr++ = hexchars[hx >> 4];	*ptr++ = hexchars[hx & 0xf];
++		hx = hex_asc_hi(bcberr >> 24);
++		*ptr++ = hex_asc_hi(hx);	*ptr++ = hex_asc_lo(hx);
++		hx = hex_asc_lo(bcberr >> 24);
++		*ptr++ = hex_asc_hi(hx);	*ptr++ = hex_asc_lo(hx);
++		hx = hex_asc_hi(bcberr >> 16);
++		*ptr++ = hex_asc_hi(hx);	*ptr++ = hex_asc_lo(hx);
++		hx = hex_asc_lo(bcberr >> 16);
++		*ptr++ = hex_asc_hi(hx);	*ptr++ = hex_asc_lo(hx);
++		hx = hex_asc_hi(bcberr >> 8);
++		*ptr++ = hex_asc_hi(hx);	*ptr++ = hex_asc_lo(hx);
++		hx = hex_asc_lo(bcberr >> 8);
++		*ptr++ = hex_asc_hi(hx);	*ptr++ = hex_asc_lo(hx);
++		hx = hex_asc_hi(bcberr);
++		*ptr++ = hex_asc_hi(hx);	*ptr++ = hex_asc_lo(hx);
++		hx = hex_asc_lo(bcberr);
++		*ptr++ = hex_asc_hi(hx);	*ptr++ = hex_asc_lo(hx);
+ 
+ 		ptr = mem2hex(crlf, ptr, sizeof(crlf) - 1, 0);
+ 		*ptr = 0;
+@@ -1353,14 +1336,14 @@ static int gdbstub(struct pt_regs *regs, enum exception_code excep)
+ 	 * Send trap type (converted to signal)
+ 	 */
  	*ptr++ = 'T';
 -	*ptr++ = hexchars[sigval >> 4];
 -	*ptr++ = hexchars[sigval & 0xf];
 +	*ptr++ = hex_asc_hi(sigval);
 +	*ptr++ = hex_asc_lo(sigval);
  
- 	/* Send Error PC */
--	*ptr++ = hexchars[GDB_REG_PC >> 4];
--	*ptr++ = hexchars[GDB_REG_PC & 0xf];
-+	*ptr++ = hex_asc_hi(GDB_REG_PC);
-+	*ptr++ = hex_asc_lo(GDB_REG_PC);
+ 	/*
+ 	 * Send Error PC
+ 	 */
+-	*ptr++ = hexchars[GDB_REGID_PC >> 4];
+-	*ptr++ = hexchars[GDB_REGID_PC & 0xf];
++	*ptr++ = hex_asc_hi(GDB_REGID_PC);
++	*ptr++ = hex_asc_lo(GDB_REGID_PC);
  	*ptr++ = ':';
- 	ptr = mem2hex(&__debug_frame->pc, ptr, 4, 0);
+ 	ptr = mem2hex(&regs->pc, ptr, 4, 0);
  	*ptr++ = ';';
-@@ -1513,8 +1496,8 @@ void gdbstub(int sigval)
+@@ -1368,8 +1351,8 @@ static int gdbstub(struct pt_regs *regs, enum exception_code excep)
  	/*
  	 * Send frame pointer
  	 */
--	*ptr++ = hexchars[GDB_REG_FP >> 4];
--	*ptr++ = hexchars[GDB_REG_FP & 0xf];
-+	*ptr++ = hex_asc_hi(GDB_REG_FP);
-+	*ptr++ = hex_asc_lo(GDB_REG_FP);
+-	*ptr++ = hexchars[GDB_REGID_FP >> 4];
+-	*ptr++ = hexchars[GDB_REGID_FP & 0xf];
++	*ptr++ = hex_asc_hi(GDB_REGID_FP);
++	*ptr++ = hex_asc_lo(GDB_REGID_FP);
  	*ptr++ = ':';
- 	ptr = mem2hex(&__debug_frame->fp, ptr, 4, 0);
+ 	ptr = mem2hex(&regs->a3, ptr, 4, 0);
  	*ptr++ = ';';
-@@ -1522,8 +1505,8 @@ void gdbstub(int sigval)
- 	/*
+@@ -1378,8 +1361,8 @@ static int gdbstub(struct pt_regs *regs, enum exception_code excep)
  	 * Send stack pointer
  	 */
--	*ptr++ = hexchars[GDB_REG_SP >> 4];
--	*ptr++ = hexchars[GDB_REG_SP & 0xf];
-+	*ptr++ = hex_asc_hi(GDB_REG_SP);
-+	*ptr++ = hex_asc_lo(GDB_REG_SP);
+ 	ssp = (unsigned long) (regs + 1);
+-	*ptr++ = hexchars[GDB_REGID_SP >> 4];
+-	*ptr++ = hexchars[GDB_REGID_SP & 0xf];
++	*ptr++ = hex_asc_hi(GDB_REGID_SP);
++	*ptr++ = hex_asc_lo(GDB_REGID_SP);
  	*ptr++ = ':';
- 	ptr = mem2hex(&__debug_frame->sp, ptr, 4, 0);
+ 	ptr = mem2hex(&ssp, ptr, 4, 0);
  	*ptr++ = ';';
-@@ -1548,8 +1531,8 @@ void gdbstub(int sigval)
+@@ -1399,8 +1382,8 @@ packet_waiting:
  			/* request repeat of last signal number */
  		case '?':
  			output_buffer[0] = 'S';
@@ -346,17 +373,28 @@ index 48a0393..5a369d7 100644
  			output_buffer[3] = 0;
  			break;
  
-@@ -2059,8 +2042,8 @@ void gdbstub_exit(int status)
+@@ -1838,8 +1821,8 @@ void gdbstub_exit(int status)
+ 
+ 	gdbstub_busy = 1;
+ 	output_buffer[0] = 'W';
+-	output_buffer[1] = hexchars[(status >> 4) & 0x0F];
+-	output_buffer[2] = hexchars[status & 0x0F];
++	output_buffer[1] = hex_asc_hi(status);
++	output_buffer[2] = hex_asc_lo(status);
+ 	output_buffer[3] = 0;
+ 
+ 	gdbstub_io_tx_char('$');
+@@ -1853,8 +1836,8 @@ void gdbstub_exit(int status)
  	}
  
- 	gdbstub_tx_char('#');
--	gdbstub_tx_char(hexchars[checksum >> 4]);
--	gdbstub_tx_char(hexchars[checksum & 0xf]);
-+	gdbstub_tx_char(hex_asc_hi(checksum));
-+	gdbstub_tx_char(hex_asc_lo(checksum));
+ 	gdbstub_io_tx_char('#');
+-	gdbstub_io_tx_char(hexchars[checksum >> 4]);
+-	gdbstub_io_tx_char(hexchars[checksum & 0xf]);
++	gdbstub_io_tx_char(hex_asc_hi(checksum));
++	gdbstub_io_tx_char(hex_asc_lo(checksum));
  
  	/* make sure the output is flushed, or else RedBoot might clobber it */
- 	gdbstub_tx_char('-');
+ 	gdbstub_io_tx_flush();
 -- 
 1.5.5.1.350.gbbbf
 
