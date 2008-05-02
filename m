@@ -1,120 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761542AbYEBGMV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762207AbYEBGNe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761542AbYEBGMV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 02:12:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757235AbYEBGME
+	id S1762207AbYEBGNe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 02:13:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757235AbYEBGNZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 02:12:04 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:41655 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757204AbYEBGMB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 02:12:01 -0400
-Date: Thu, 1 May 2008 23:11:30 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Erez Zadok <ezk@cs.sunysb.edu>
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       viro@zeniv.linux.org.uk, hch@infradead.org, mhalcrow@us.ibm.com,
-       hugh@veritas.com
-Subject: Re: [2.6.26 PATCH, RESEND]: fs_stack/eCryptfs: fsstack_copy_*
- updates
-Message-Id: <20080501231130.c3a2409d.akpm@linux-foundation.org>
-In-Reply-To: <200805020558.m425w5xN001504@agora.fsl.cs.sunysb.edu>
-References: <20080501170819.bdcb9035.akpm@linux-foundation.org>
-	<200805020558.m425w5xN001504@agora.fsl.cs.sunysb.edu>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 2 May 2008 02:13:25 -0400
+Received: from ozlabs.org ([203.10.76.45]:34842 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752224AbYEBGNY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 May 2008 02:13:24 -0400
+Date: Fri, 2 May 2008 15:56:48 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [POWERPC][v2] Bolt in SLB entry for kernel stack on secondary
+	cpus
+Message-ID: <20080502055648.GA28378@yookeroo.seuss>
+Mail-Followup-To: Paul Mackerras <paulus@samba.org>,
+	linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+References: <18458.39064.783013.268948@cargo.ozlabs.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <18458.39064.783013.268948@cargo.ozlabs.ibm.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2 May 2008 01:58:05 -0400 Erez Zadok <ezk@cs.sunysb.edu> wrote:
-
-> In message <20080501170819.bdcb9035.akpm@linux-foundation.org>, Andrew Morton writes:
-> > On Thu, 1 May 2008 19:44:18 -0400
-> > Erez Zadok <ezk@cs.sunysb.edu> wrote:
-> [...]
-> > i_size is much more important because glitches in there can result in
-> > incorrect data being returned from read() and things like that.  i_blocks
-> > is just a beancounting curiosity.
-> > 
-> > > 
-> > > 2. I've rewritten your suggested code a bit to reduce stack use.  Modulo
-> > >    having 32-bit spin_lock/unlock variants, do you see any problem with this
-> > >    code below?  My testing of it so far on 32/64-bit SMP/UMP have all
-> > >    passed.
-> > > 
-> > > void fsstack_copy_inode_size(struct inode *dst, struct inode *src)
-> > > {
-> > > #if BITS_PER_LONG == 32
-> > > 	blkcnt_t i_blocks;
-> > > 
-> > > 	spin_lock(&src->i_lock);
-> > > 	i_blocks = src->i_blocks;
-> > > 	spin_unlock(&src->i_lock);
-> > > 	spin_lock(&dst->i_lock);
-> > > 	dst->i_blocks = i_blocks;
-> > > 	spin_unlock(&dst->i_lock);
-> > > #else
-> > > 	dst->i_blocks = src->i_blocks;
-> > > #endif
-> > > 	i_size_write(dst, i_size_read(src));
-> > > }
-> > 
-> > That looks sane, as long as we don't care about i_size-vs-i_blocks
-> > coherency.
+On Fri, May 02, 2008 at 02:29:12PM +1000, Paul Mackerras wrote:
+> This fixes a regression reported by Kamalesh Bulabel where a POWER4
+> machine would crash because of an SLB miss at a point where the SLB
+> miss exception was unrecoverable.  This regression is tracked at:
 > 
-> > However I expect that approximately zero of the sites which modify i_blocks
-> > are taking i_lock to do so.
+> http://bugzilla.kernel.org/show_bug.cgi?id=10082
 > 
-> If i_blocks is indeed less important than i_size, then we can live with some
-> incoherency b/t i_size and i_blocks, for now.  Nevertheless, I propose
-> adding this to linux/fs.h:
+> SLB misses at such points shouldn't happen because the kernel stack is
+> the only memory accessed other than things in the first segment of the
+> linear mapping (which is mapped at all times by entry 0 of the SLB).
+> The context switch code ensures that SLB entry 2 covers the kernel
+> stack, if it is not already covered by entry 0.  None of entries 0
+> to 2 are ever replaced by the SLB miss handler.
 > 
-> static inline blkcnt_t i_blocks_read(const struct inode *inode)
-> {
-> #if BITS_PER_LONG == 32
-> 	blkcnt_t i_blocks;
-> 	spin_lock(&src->i_lock);
-> 	i_blocks = src->i_blocks;
-> 	spin_unlock(&src->i_lock);
-> 	return i_blocks;
-> #else
-> 	return src->i_blocks;
-> #endif
-> }
-
-We actually only need the spinlocked version if blkcnt_t is 64-bit.
-
-So #if BITS_PER_LONG == 32 && defined(CONFIG_LSF), plus explanatory comment.
-
-The spinlocked version will be too large for inlining, I expect.
-
-> and a matching i_blocks_write function.
-
-You'll also need i_blocks_mod() for things like
-
-fs/hpfs/dnode.c:        i->i_blocks += 4;
-
->  We can then gradually convert those
-> "unsafe" users of i_blocks to use the new i_blocks_read/write helpers.
+> Where this went wrong is that the context switch code assumes it
+> doesn't have to write to SLB entry 2 if the new kernel stack is in the
+> same segment as the old kernel stack, since entry 2 should already be
+> correct.  However, when we start up a secondary cpu, it calls
+> slb_initialize, which doesn't set up entry 2.  This is correct for
+> the boot cpu, where we will be using a stack in the kernel BSS at this
+> point (i.e. init_thread_union), but not necessarily for secondary
+> cpus, whose initial stack can be allocated anywhere.  This doesn't
+> cause any immediate problem since the SLB miss handler will just
+> create an SLB entry somewhere else to cover the initial stack.
 > 
-> The nice thing about these two helpers is fsstack_copy_inode_size becomes a
-> lot cleaner and more elegant:
+> In fact it's possible for the cpu to go quite a long time without SLB
+> entry 2 being valid.  Eventually, though, the entry created by the SLB
+> miss handler will get overwritten by some other entry, and if the next
+> access to the stack is at an unrecoverable point, we get the crash.
 > 
-> void fsstack_copy_inode_size(struct inode *dst, struct inode *src)
-> {
-> 	i_blocks_write(dst, i_blocks_read(src));
-> 	i_size_write(dst, i_size_read(src));
-> }
+> This fixes the problem by making slb_initialize create a suitable
+> entry for the kernel stack, if we are on a secondary cpu and the stack
+> isn't covered by SLB entry 0.  This requires initializing the
+> get_paca()->kstack field earlier, so I do that in smp_create_idle
+> where the current field is initialized.  This also abstracts a bit of
+> the computation that mk_esid_data in slb.c does so that it can be used
+> in slb_initialize.
 > 
-> And, if we ever wanted to ensure coherency b/t i_blocks and i_size, we'll
-> need to create helpers that merge the functionality of i_size_read/write and
-> i_blocks_read/write.
-> 
-> What do you think?
-> 
+> Signed-off-by: Paul Mackerras <paulus@samba.org>
+> ---
+> Michael Ellerman pointed out that I should be comparing
+> raw_smp_processor_id() with boot_cpuid rather than with 0.
 
+Do you even need the processor ID test at all?  The boot processor
+should always have its stack covered by SLB entry 0 when we come
+through here, shouldn't it?
 
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
