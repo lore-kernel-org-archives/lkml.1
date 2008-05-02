@@ -1,43 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936436AbYEBTOO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936973AbYEBTP2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936436AbYEBTOO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 15:14:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936598AbYEBTMO
+	id S936973AbYEBTP2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 15:15:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762285AbYEBTPE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 15:12:14 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:59230 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S936508AbYEBTMD (ORCPT
+	Fri, 2 May 2008 15:15:04 -0400
+Received: from wa-out-1112.google.com ([209.85.146.180]:60391 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753543AbYEBTPA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 15:12:03 -0400
-Date: Fri, 2 May 2008 11:56:48 -0700
-From: Greg KH <greg@kroah.com>
-To: Badari Pulavarty <pbadari@us.ibm.com>
-Cc: akpm@linux-foundation.org, Mel Gorman <mel@csn.ul.ie>,
-       "kamezawa.hiroyu" <kamezawa.hiroyu@jp.fujitsu.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Add sysfs removable attribute for hotplug memory remove
-Message-ID: <20080502185648.GA12991@kroah.com>
-References: <1209747376.16169.27.camel@badari-desktop>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1209747376.16169.27.camel@badari-desktop>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Fri, 2 May 2008 15:15:00 -0400
+Subject: Re: Preempt-RT patch for 2.6.25
+From: Sven-Thorsten Dietrich <sven@thebigcorporation.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Remy Bohmer <linux@bohmer.net>, LKML <linux-kernel@vger.kernel.org>,
+       RT <linux-rt-users@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Jon Masters <jonathan@jonmasters.org>, Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <Pine.LNX.4.58.0805021502040.10615@gandalf.stny.rr.com>
+References: <3efb10970805021102n4d87f55eue723786281b06fcb@mail.gmail.com>
+	 <1209753250.25628.34.camel@dd.thebigcorporation.com>
+	 <Pine.LNX.4.58.0805021441340.10615@gandalf.stny.rr.com>
+	 <1209754467.25628.42.camel@dd.thebigcorporation.com>
+	 <Pine.LNX.4.58.0805021502040.10615@gandalf.stny.rr.com>
+Content-Type: text/plain
+Organization: The Big Corporation
+Date: Fri, 02 May 2008 12:14:25 -0700
+Message-Id: <1209755665.25628.50.camel@dd.thebigcorporation.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 02, 2008 at 09:56:16AM -0700, Badari Pulavarty wrote:
-> Hi Andrew,
+
+On Fri, 2008-05-02 at 15:02 -0400, Steven Rostedt wrote:
+> On Fri, 2 May 2008, Sven-Thorsten Dietrich wrote:
+> >
+> > On Fri, 2008-05-02 at 14:45 -0400, Steven Rostedt wrote:
+> > > On Fri, 2 May 2008, Sven-Thorsten Dietrich wrote:
+> >
+> > >
+> > > As for 2.6.25-rt1, I'm currently working on it. I have the patch queue
+> > > ready, but it has some major bugs that I'm stil working out. I did a bit
+> > > of clean up in the per-cpu portion as well as some of the mutex code. Now
+> > > I need to debug all those changes.
+> >
+> > Pls post what you have asap, we will all help you debug it.
 > 
-> Here is the updated/commented version of the sysfs "removability"
-> attribute patch for hotplug memory remove (against 2.6.25-git18). 
-> Could you please consider this for inclusion ?
+> You'll have something today. I like to have a kernel that at least boots
+> ;-)
 
-Can you please add an entry in Documentation/ABI for this new attribute
-you are adding?
+Hey that's true for Linux always. Its more fun that way :)
 
-thanks,
+Lets definitely try and make it more bisectable:
 
-greg k-h
+I'll be pulling this into OpenSUSE 11 ASAP, so whatever I find I'll send
+over!
+
+Thanks !
+
+Sven
+
