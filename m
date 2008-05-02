@@ -1,59 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936610AbYEBWkO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937157AbYEBWk4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936610AbYEBWkO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 18:40:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760589AbYEBWj7
+	id S937157AbYEBWk4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 18:40:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932498AbYEBWkr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 18:39:59 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:57004 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758737AbYEBWj6 (ORCPT
+	Fri, 2 May 2008 18:40:47 -0400
+Received: from mail0.lsil.com ([147.145.40.20]:54178 "EHLO mail0.lsil.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759690AbYEBWkr convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 18:39:58 -0400
-Date: Fri, 2 May 2008 15:33:01 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: linux-next@vger.kernel.org, sfrench@us.ibm.com, swhiteho@redhat.com,
-       stefanr@s5r6.in-berlin.de, ralf@linux-mips.org, drzeus-list@drzeus.cx,
-       jack@ucw.cz, cbou@mail.ru, jens.axboe@oracle.com, ericvh@gmail.com,
-       wim@iguana.be, chris@zankel.net, nico@cam.org, penberg@cs.helsinki.fi,
-       clameter@sgi.com, ezk@cs.sunysb.edu, linux-kernel@vger.kernel.org
-Subject: Re: git trees which are not yet in linux-next
-Message-Id: <20080502153301.8b27ac31.akpm@linux-foundation.org>
-In-Reply-To: <481B93AA.7040000@garzik.org>
-References: <20080502151206.b40f77ea.akpm@linux-foundation.org>
-	<481B93AA.7040000@garzik.org>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 2 May 2008 18:40:47 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: HELP:  Is writeq an atomic operation??
+Date: Fri, 2 May 2008 16:40:40 -0600
+Message-ID: <0631C836DBF79F42B5A60C8C8D4E822901047B2F@NAMAIL2.ad.lsil.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: HELP:  Is writeq an atomic operation??
+thread-index: AcispYybFejKsZY7TdKOeQIP2NgymA==
+From: "Moore, Eric" <Eric.Moore@lsi.com>
+To: <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 02 May 2008 22:40:41.0288 (UTC) FILETIME=[8CDC2C80:01C8ACA5]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 02 May 2008 18:20:26 -0400
-Jeff Garzik <jeff@garzik.org> wrote:
+Is a 64bit write to MMIO registers an atomic operation when using the
+writeq API?  
 
-> Andrew Morton wrote:
-> > (Jeff, git-libata-all is a pretty important one)
-> 
-> 
-> libata-dev.git#NEXT is for linux-next, and libata-dev.git#ALL is for -mm
-> 
-> Already taken care of.
-> 
+My concern is when I send 64bit data via writeq, will it be sent out as
+two 32 bit writes?  If so, is it possible that another CPU be sending
+the data at the same time.  Meaning can I write the 1st 32bit data from
+CPU-A, meanwhile CPU-B is writing his 32bit data at the same time, and
+CPU-A didn't complete the full 64bit in one shot.  If this could occur,
+is there an API that I can use to make sure the entire data sent in one
+atomic operation?
 
-Oh.  Something seems to have gone wrong then.
 
-Next/Trees has:
+Here is a trace from pci express analyzer.   I'm sending
+0x0800010000000000 to the adress DD1400C0 using writeq.   Notice that in
+the TLP header it sent a 32bit Memory write with data length of two.
 
-libata          git     git://git.kernel.org/pub/scm/linux/kernel/git/jgarzik/libata-dev.git#NEXT
+Trace follows:
 
-but:
-
-y:/usr/src/25> diffstat patches/linux-next.patch | grep /ata/      
-y:/usr/src/25> 
-
-There's nothing there?
-
-(plans for git-jg-misc?)
+Link Tra(597) Downstream 2.5(x1) TLP(1992) Mem MWr(32)(10:00000) TC(0)
+TD(0) 
+_______| EP(0) Attributes(01) Length(2) RequesterID(000:02:0) Tag(8) 
+_______| Address(DD1400C0) 1st BE(1111) Last BE(1111) Data(08000100
+00000000) 
+_______| VC ID(0) Explicit ACK(Packet #1195) Metrics # Packets(2) 
+_______| Time Stamp(0003 . 120 181 840 s) 
