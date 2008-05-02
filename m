@@ -1,147 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759752AbYEBCnV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763763AbYEBCnz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759752AbYEBCnV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 May 2008 22:43:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756013AbYEBCnG
+	id S1763763AbYEBCnz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 May 2008 22:43:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755949AbYEBCnq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 May 2008 22:43:06 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:52672 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755259AbYEBCnF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 May 2008 22:43:05 -0400
-Subject: RE: Sharing disks amoung multiple software RAIDs
-From: Kasper Sandberg <lkml@metanurb.dk>
-To: David Lethe <david@santools.com>
-Cc: alex14641@yahoo.com, Justin Piszcz <jpiszcz@lucidpixels.com>,
-       linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <A20315AE59B5C34585629E258D76A97C335477@34093-C3-EVS3.exchange.rackspace.com>
-References: <1209692359.16523.2.camel@localhost>
-	 <73000.21239.qm@web50212.mail.re2.yahoo.com>
-	 <A20315AE59B5C34585629E258D76A97C335477@34093-C3-EVS3.exchange.rackspace.com>
-Content-Type: text/plain
-Date: Fri, 02 May 2008 04:42:59 +0200
-Message-Id: <1209696179.16523.13.camel@localhost>
+	Thu, 1 May 2008 22:43:46 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:40156 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755921AbYEBCno (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 May 2008 22:43:44 -0400
+Date: Thu, 1 May 2008 21:43:43 -0500
+From: Russ Anderson <rja@sgi.com>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Tony Luck <tony.luck@intel.com>
+Subject: Re: [PATCH 3/3] ia64: Call migration code on correctable errors v2
+Message-ID: <20080502024342.GB1591@sgi.com>
+Reply-To: Russ Anderson <rja@sgi.com>
+References: <20080502004425.GD12006@sgi.com> <Pine.LNX.4.64.0805011818100.13527@schroedinger.engr.sgi.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.4.0 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0805011818100.13527@schroedinger.engr.sgi.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-05-01 at 21:31 -0500, David Lethe wrote:
-> In a perfect world, my expectation is that sharing a disk is safe and
-> even a reasonable thing to do. The shared disk is effectively a range of
-> addressable blocks in the same way an individual disk or even a hardware
-> RAID LUN is a range of blocks. From this limited perspective, the only
-> penalty is performance related, assuming you don't mind having to
-> explain yourself to an IT supervisor somewhere in your company.
+On Thu, May 01, 2008 at 06:22:29PM -0700, Christoph Lameter wrote:
+> On Thu, 1 May 2008, Russ Anderson wrote:
 > 
-> However, consider what COULD happen in event of a drive failure, either
-> with the shared or an unshared disk. What are the odds all of the
-> failure scenarios have been tested for all ATA and SCSI command sets;
-> with threaded I/Os pending; with dirty cache; bus resets when hardware
-> dies; etc... ?
+> > +int
+> > +freeOneBadPage(unsigned long paddr)
+> > +{
+> > +	struct page *page, *page2, *target;
+> > +
+> > +	/*
+> > +	 * Verify page address
+> > +	 */
+> > +	target = phys_to_page(paddr);
+> > +	list_for_each_entry_safe(page, page2, &badpagelist, lru) {
+> > +		if (page != target)
+> > +			continue;
+> > +
+> > +		ClearPageMemError(page);        /* Mark the page as good */
+> > +		move_to_lru(page);
+> > +		list_del(&page->lru);
 > 
-> The odds are zero.  Look how many problems people post to the thread on
-> a weekly basis where people lose their data when md rebuilds go bad with
-> non-shared disks.  Why make the problem worse?
+> This is the wrong order. move_to_lru() uses the lru field. So do the 
+> list_del first then the move. Note that there is a function 
+> putback_lru_pages() that is used to put a list of pages back to the lru if 
+> migration has failed and we give up on them. Could you use 
+> putback_lru_pages() and then avoid the exporting of move_to_lru()?
 
-What? are you saying linux md is unreliable?! in other words, would i be
-safer to run rsync every day to my other disk, and run in non-raid
-mode?!
+I'll put the page on a different list and call putback_lru_pages().
 
+> > +
+> > +int
+> > +freeAllBadPages(void)
+> > +{
+> > +	struct page *page, *page2;
+> > +
+> > +	list_for_each_entry_safe(page, page2, &badpagelist, lru) {
+> > +		ClearPageMemError(page);        /* Mark the page as good */
+> > +		totalbad_pages--;
+> > +	}
+> > +	putback_lru_pages(&badpagelist);
+> > +	return 0;
+> > +}
 > 
-> -----Original Message-----
-> From: linux-raid-owner@vger.kernel.org
-> [mailto:linux-raid-owner@vger.kernel.org] On Behalf Of Alex Davis
-> Sent: Thursday, May 01, 2008 8:52 PM
-> To: Justin Piszcz; Kasper Sandberg
-> Cc: linux-raid@vger.kernel.org; linux-kernel@vger.kernel.org
-> Subject: Re: Sharing disks amoung multiple software RAIDs
-> 
-> --- On Thu, 5/1/08, Kasper Sandberg <lkml@metanurb.dk> wrote:
-> 
-> > From: Kasper Sandberg <lkml@metanurb.dk>
-> > Subject: Re: Sharing disks amoung multiple software RAIDs
-> > To: "Justin Piszcz" <jpiszcz@lucidpixels.com>
-> > Cc: "Alex Davis" <alex14641@yahoo.com>, linux-raid@vger.kernel.org,
-> linux-kernel@vger.kernel.org
-> > Date: Thursday, May 1, 2008, 9:39 PM
-> > On Thu, 2008-05-01 at 08:50 -0400, Justin Piszcz wrote:
-> > > 
-> > > On Thu, 1 May 2008, Alex Davis wrote:
-> > > 
-> > > > Is this a bad thing? I'm guessing that it is,
-> > but I want independent
-> > > > confirmation before I spoke to someone I know
-> > who's doing this.
-> > > >
-> > > > Thanks
-> > > >
-> > > >
-> > > >     
-> >
-> ________________________________________________________________________
-> ____________
-> > > > Be a better friend, newshound, and
-> > > > know-it-all with Yahoo! Mobile.  Try it now. 
-> > http://mobile.yahoo.com/;_ylt=Ahu06i62sR8HDtDypao8Wcj9tAcJ
-> > > > --
-> > > > To unsubscribe from this list: send the line
-> > "unsubscribe linux-raid" in
-> > > > the body of a message to
-> > majordomo@vger.kernel.org
-> > > > More majordomo info at 
-> > http://vger.kernel.org/majordomo-info.html
-> > > >
-> > > 
-> > > What is the use case, why would you want to do that?
-> > > I have seen people on the list do it before, for
-> > example are you going to 
-> > > be utilizing both raids at the same time?  If so, I
-> > would advise against 
-> > > it.
-> > > 
-> > > What is the reasoning?
-> > 
-> > I do this!
-> > 
-> > is this really bad? i would surely like a list of reasons
-> > why..
-> > 
-> > I do it because.. well.. first off, it allows me to have
-> > /boot on
-> > different raidlevel than / or /home without extra disks.
-> > secondly, it allows me to with the same disks use different
-> > filesystems.. for instance, it allows me to have /home
-> > encrypted with
-> > dm-crypt, while still raided.. Not that i would mind
-> > encrypting /
-> > and /home as 1 partition, but it creates a whole slew of
-> > issues with
-> > having to create initrd and stuff..
-> > 
-> > I realize that performance probably suffers abit from this,
-> > but well..
-> > is there any stability or security wise risk? i mostly use
-> > raid1 and
-> > raid5 only..
-> > 
-> I would guess if the RAIDs are heavily used simultaneously it could
-> cause the disk head actuators to jump around more, causing more wear
-> and tear.
-> 
-> 
->  
-> ________________________________________________________________________
-> ____________
-> Be a better friend, newshound, and 
-> know-it-all with Yahoo! Mobile.  Try it now.
-> http://mobile.yahoo.com/;_ylt=Ahu06i62sR8HDtDypao8Wcj9tAcJ
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-raid" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
-> 
+> Ahh.. Here you use it.
 
+This is when deleting all the pages on the list.
+
+> > Index: linus/include/asm-ia64/page.h
+> > ===================================================================
+> > --- linus.orig/include/asm-ia64/page.h	2008-05-01 19:36:40.000000000 -0500
+> > +++ linus/include/asm-ia64/page.h	2008-05-01 19:36:49.000000000 -0500
+> > @@ -122,6 +122,7 @@ extern unsigned long max_low_pfn;
+> >  #endif
+> >  
+> >  #define page_to_phys(page)	(page_to_pfn(page) << PAGE_SHIFT)
+> > +#define	phys_to_page(kaddr)	(pfn_to_page(kaddr >> PAGE_SHIFT))
+> 
+> #define phys_to_page virt_to_page ?
+
+I'm not sure what you are asking.
+
+#define phys_to_page(kaddr)     (pfn_to_page(kaddr >> PAGE_SHIFT))
+#define virt_to_page(kaddr)     pfn_to_page(__pa(kaddr) >> PAGE_SHIFT)
+
+Do you mean change virt_to_page() like this?
+
+#define virt_to_page(kaddr)     phys_to_page(__pa(kaddr))
+
+Thanks,
+-- 
+Russ Anderson, OS RAS/Partitioning Project Lead  
+SGI - Silicon Graphics Inc          rja@sgi.com
