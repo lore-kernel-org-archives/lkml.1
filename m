@@ -1,51 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934341AbYEBMCY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933758AbYEBMHJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934341AbYEBMCY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 08:02:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759985AbYEBMCP
+	id S933758AbYEBMHJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 08:07:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761551AbYEBMG5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 08:02:15 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:44321 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751452AbYEBMCO (ORCPT
+	Fri, 2 May 2008 08:06:57 -0400
+Received: from hpsmtp-eml14.kpnxchange.com ([213.75.38.114]:48685 "EHLO
+	hpsmtp-eml14.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759921AbYEBMG5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 08:02:14 -0400
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: pupilla@hotmail.com (Marco Berizzi)
-Subject: Re: 2.6.25 crash: EIP: [<c02e2f14>] xfrm_output_resume+0x64/0x100 ss:esp 0068:c03a1e5c
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org, davem@davemloft.net
-Organization: Core
-In-Reply-To: <BAY103-DAV12E9E0E5107A5FCEF3F473B2D90@phx.gbl>
-X-Newsgroups: apana.lists.os.linux.kernel,apana.lists.os.linux.netdev
-User-Agent: tin/1.7.4-20040225 ("Benbecula") (UNIX) (Linux/2.6.17-rc4 (i686))
-Message-Id: <E1Jrtxr-0004in-00@gondolin.me.apana.org.au>
-Date: Fri, 02 May 2008 20:02:11 +0800
+	Fri, 2 May 2008 08:06:57 -0400
+From: Frans Pop <elendil@planet.nl>
+To: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: Horrendous Audio Stutter - current git
+Date: Fri, 2 May 2008 14:06:54 +0200
+User-Agent: KMail/1.9.9
+Cc: Parag Warudkar <parag.warudkar@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>
+References: <82e4877d0805011714m35a47753q58cca706b7af6557@mail.gmail.com> <200805021337.10809.elendil@planet.nl> <1209728372.13978.147.camel@twins>
+In-Reply-To: <1209728372.13978.147.camel@twins>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200805021406.55038.elendil@planet.nl>
+X-OriginalArrivalTime: 02 May 2008 12:06:55.0914 (UTC) FILETIME=[03F890A0:01C8AC4D]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Marco Berizzi <pupilla@hotmail.com> wrote:
-> Just few minutes ago, another 2.6.25 crash
-> with this message:
-> 
-> EIP: [<c028000a>] netif_rx+0x6a/0xd0 SS:ESP 0068:c039f868
-> 
-> http://80.204.235.230/4.jpg
+On Friday 02 May 2008, Peter Zijlstra wrote:
+> On Fri, 2008-05-02 at 13:37 +0200, Frans Pop wrote:
+> > On Friday 02 May 2008, Peter Zijlstra wrote:
+> > > > Ok, that's _WAY_ too big, something went seriously wrong. Thanks!
+> > >
+> > > In fact, that is exactly 1024 time too large.
+> > >
+> > > How does this work for you:
+> >
+> > Changes nothing. Values of bonus_max are unchanged and still skips.
+>
+> Humm, I saw some bonus_max spikes on my laptop which were fixed by that
+> patchlet, ah well, the hunt goes on.
 
-OK, the xfrm_output_resume trail revealed nothing.  Combined
-with this crash however, it would appear that you've got a problem
-with live skbs being freed.  Unfortunately such problems are
-difficult to track down.
+Looks like you've got it after all! With the patch in the correct place 
+there are no more skips and I now get:
 
-Perhaps you could enable SLAB debugging to see if we can get
-closer to the culprit? Alternatively you could try a git bisection.
+/proc/5182/task/5182/sched:se.bonus_max  :        39.960966
+/proc/5182/task/5263/sched:se.bonus_max  :        39.960966
+/proc/5182/task/5267/sched:se.bonus_max  :        39.960966
+/proc/5182/task/5268/sched:se.bonus_max  :        39.960966
+/proc/5182/task/5269/sched:se.bonus_max  :        39.960966
+/proc/5182/task/5270/sched:se.bonus_max  :        19.990234
+/proc/5182/task/5661/sched:se.bonus_max  :        39.960966
 
-Unless we have a way of reproducing this there isn't a lot more
-that we can do I'm afraid.
+Note (mostly for Parag) that I had GROUP_SCHED disabled for these tests, but 
+for me that did make not any difference with my 2.6.25-rc tests for this 
+issue, nor with my tests using sched-devel earlier in the .26 merge window.
+
+Feel free to add my
+Tested-by: Frans Pop <elendil@planet.nl>
 
 Cheers,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+FJP
