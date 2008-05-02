@@ -1,185 +1,246 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936158AbYEBSgb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935992AbYEBShn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936158AbYEBSgb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 14:36:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935984AbYEBSfS
+	id S935992AbYEBShn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 14:37:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760878AbYEBShc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 14:35:18 -0400
-Received: from ns2.suse.de ([195.135.220.15]:56759 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935977AbYEBSfO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 14:35:14 -0400
-Date: Fri, 2 May 2008 11:35:10 -0700
-From: Mark Fasheh <mfasheh@suse.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, ocfs2-devel@oss.oracle.com,
-       Joel Becker <joel.becker@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [git patches] Ocfs2 fixes
-Message-ID: <20080502183510.GE15434@wotan.suse.de>
-Reply-To: Mark Fasheh <mfasheh@suse.com>
+	Fri, 2 May 2008 14:37:32 -0400
+Received: from zone0.gcu-squad.org ([212.85.147.21]:5526 "EHLO
+	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759612AbYEBShb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 May 2008 14:37:31 -0400
+Date: Fri, 2 May 2008 20:37:21 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: LKML <linux-kernel@vger.kernel.org>, Rusty Russell <rusty@rustcorp.com.au>
+Cc: Sam Ravnborg <sam@ravnborg.org>, Kay Sievers <kay.sievers@vrfy.org>,
+       Linux I2C <i2c@lm-sensors.org>
+Subject: [PATCH] modpost: i2c aliases need no trailing wildcard
+Message-ID: <20080502203721.70c5dc09@hyperion.delvare>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Organization: SUSE Labs, Novell, Inc
-User-Agent: Mutt/1.5.9i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Some fixes/cleanups that I pulled into ocfs2.git after we sent our feature merge.
-The /sys/o2cb fix in particular has been asked about a couple times.
-	--Mark
+Hi all,
 
-Please pull from 'upstream-linus' branch of
-git://git.kernel.org/pub/scm/linux/kernel/git/mfasheh/ocfs2.git upstream-linus
+[Once more with Sam's address fixed, sorry for the noise.]
 
-to receive the following updates:
+Not all device types need a wildcard at the end of their module
+aliases. In particular, for i2c module aliases, the trailing wildcard
+is not only unneeded, it could also cause the wrong driver to be
+loaded.
 
- fs/ocfs2/cluster/sys.c  |    2 +-
- fs/ocfs2/dlm/dlmdebug.c |    8 +++++---
- fs/ocfs2/file.c         |    4 ++++
- fs/ocfs2/localalloc.c   |    4 ++--
- fs/ocfs2/stack_o2cb.c   |    2 +-
- fs/ocfs2/stack_user.c   |    2 +-
- fs/ocfs2/symlink.c      |    2 ++
- 7 files changed, 16 insertions(+), 8 deletions(-)
+As I2C devices have no IDs, i2c module aliases are simple, arbitrary
+device names. For example:
 
-Adrian Bunk (3):
-      ocfs2: make struct ocfs2_control_device static
-      ocfs2: make struct o2cb_stack_ops static
-      ocfs2/dlm: dlmdebug.c: make 2 functions static
+$ /sbin/modinfo lm90
+filename:       /lib/modules/2.6.25-git18/kernel/drivers/hwmon/lm90.ko
+author:         Jean Delvare <khali@linux-fr.org>
+description:    LM90/ADM1032 driver
+license:        GPL
+vermagic:       2.6.25-git18 mod_unload
+depends:        hwmon
+alias:          i2c:lm90*
+alias:          i2c:adm1032*
+alias:          i2c:lm99*
+alias:          i2c:lm86*
+alias:          i2c:max6657*
+alias:          i2c:adt7461*
+alias:          i2c:max6680*
+$
 
-Joel Becker (1):
-      ocfs2: Correct merge of 52f7c21 (Move /sys/o2cb to /sys/fs/o2cb)
+This would cause trouble if one I2C chip name matches the beginning of
+another I2C chip name and both chips are supported by different
+drivers. For example, an i2c device named lm9042 would cause the lm90
+driver to be loaded, while it doesn't support that device. This case
+has yet to be seen in practice, but still, I'd like to fix it now. The
+cleanest fix is to remove the trailing wildcard from i2c module aliases.
 
-Sunil Mushran (2):
-      ocfs2: Allow uid/gid/perm changes of symlinks
-      ocfs2: Use GFP_NOFS in kmalloc during localalloc window move
+Here's a patch doing this. If nobody objects, I'll send it to Linus
+through my i2c tree next week.
 
-diff --git a/fs/ocfs2/cluster/sys.c b/fs/ocfs2/cluster/sys.c
-index 98429fd..bc702da 100644
---- a/fs/ocfs2/cluster/sys.c
-+++ b/fs/ocfs2/cluster/sys.c
-@@ -65,7 +65,7 @@ int o2cb_sys_init(void)
- {
- 	int ret;
+* * * * *
+
+Not all device type aliases need a trailing wildcard, in particular
+the i2c aliases don't. Don't add a wildcard by default in do_table(),
+instead let each device type handler add it if needed.
+
+Signed-off-by: Jean Delvare <khali@linux-fr.org>
+---
+I have tested types acpi, dmi, eisa, i2c, ide, ieee1394, input, pci,
+pcmcia, platform, pnp, scsi, serio, ssb and usb. Other types (ccw, of,
+vio, parisc, sdio and virtio) are untested.
+
+ scripts/mod/file2alias.c |   35 ++++++++++++++++++++++++++---------
+ 1 file changed, 26 insertions(+), 9 deletions(-)
+
+--- linux-2.6.26-rc0.orig/scripts/mod/file2alias.c	2008-05-02 18:37:38.000000000 +0200
++++ linux-2.6.26-rc0/scripts/mod/file2alias.c	2008-05-02 20:23:07.000000000 +0200
+@@ -51,6 +51,15 @@ do {                                    
+                 sprintf(str + strlen(str), "*");                \
+ } while(0)
  
--	o2cb_kset = kset_create_and_add("o2cb", NULL, NULL);
-+	o2cb_kset = kset_create_and_add("o2cb", NULL, fs_kobj);
- 	if (!o2cb_kset)
- 		return -ENOMEM;
- 
-diff --git a/fs/ocfs2/dlm/dlmdebug.c b/fs/ocfs2/dlm/dlmdebug.c
-index 5f6d858..1b81dcb 100644
---- a/fs/ocfs2/dlm/dlmdebug.c
-+++ b/fs/ocfs2/dlm/dlmdebug.c
-@@ -44,7 +44,8 @@
- #define MLOG_MASK_PREFIX ML_DLM
- #include "cluster/masklog.h"
- 
--int stringify_lockname(const char *lockname, int locklen, char *buf, int len);
-+static int stringify_lockname(const char *lockname, int locklen, char *buf,
-+			      int len);
- 
- void dlm_print_one_lock_resource(struct dlm_lock_resource *res)
- {
-@@ -251,7 +252,8 @@ EXPORT_SYMBOL_GPL(dlm_errname);
-  *
-  * For more on lockname formats, please refer to dlmglue.c and ocfs2_lockid.h.
-  */
--int stringify_lockname(const char *lockname, int locklen, char *buf, int len)
-+static int stringify_lockname(const char *lockname, int locklen, char *buf,
-+			      int len)
- {
- 	int out = 0;
- 	__be64 inode_blkno_be;
-@@ -368,7 +370,7 @@ static void dlm_debug_free(struct kref *kref)
- 	kfree(dc);
- }
- 
--void dlm_debug_put(struct dlm_debug_ctxt *dc)
-+static void dlm_debug_put(struct dlm_debug_ctxt *dc)
- {
- 	if (dc)
- 		kref_put(&dc->debug_refcnt, dlm_debug_free);
-diff --git a/fs/ocfs2/file.c b/fs/ocfs2/file.c
-index 9154c82..57e0d30 100644
---- a/fs/ocfs2/file.c
-+++ b/fs/ocfs2/file.c
-@@ -1048,6 +1048,10 @@ int ocfs2_setattr(struct dentry *dentry, struct iattr *attr)
- 	mlog_entry("(0x%p, '%.*s')\n", dentry,
- 	           dentry->d_name.len, dentry->d_name.name);
- 
-+	/* ensuring we don't even attempt to truncate a symlink */
-+	if (S_ISLNK(inode->i_mode))
-+		attr->ia_valid &= ~ATTR_SIZE;
++/* Always end in a wildcard, for future extension */
++static inline void add_wildcard(char *str)
++{
++	int len = strlen(str);
 +
- 	if (attr->ia_valid & ATTR_MODE)
- 		mlog(0, "mode change: %d\n", attr->ia_mode);
- 	if (attr->ia_valid & ATTR_UID)
-diff --git a/fs/ocfs2/localalloc.c b/fs/ocfs2/localalloc.c
-index ce0dc14..be774bd 100644
---- a/fs/ocfs2/localalloc.c
-+++ b/fs/ocfs2/localalloc.c
-@@ -260,7 +260,7 @@ void ocfs2_shutdown_local_alloc(struct ocfs2_super *osb)
- 	bh = osb->local_alloc_bh;
- 	alloc = (struct ocfs2_dinode *) bh->b_data;
++	if (str[len - 1] != '*')
++		strcat(str + len, "*");
++}
++
+ unsigned int cross_build = 0;
+ /**
+  * Check that sizeof(device_id type) are consistent with size of section
+@@ -133,9 +142,7 @@ static void do_usb_entry(struct usb_devi
+ 	    id->match_flags&USB_DEVICE_ID_MATCH_INT_PROTOCOL,
+ 	    id->bInterfaceProtocol);
  
--	alloc_copy = kmalloc(bh->b_size, GFP_KERNEL);
-+	alloc_copy = kmalloc(bh->b_size, GFP_NOFS);
- 	if (!alloc_copy) {
- 		status = -ENOMEM;
- 		goto out_commit;
-@@ -931,7 +931,7 @@ static int ocfs2_local_alloc_slide_window(struct ocfs2_super *osb,
- 	 * local alloc shutdown won't try to double free main bitmap
- 	 * bits. Make a copy so the sync function knows which bits to
- 	 * free. */
--	alloc_copy = kmalloc(osb->local_alloc_bh->b_size, GFP_KERNEL);
-+	alloc_copy = kmalloc(osb->local_alloc_bh->b_size, GFP_NOFS);
- 	if (!alloc_copy) {
- 		status = -ENOMEM;
- 		mlog_errno(status);
-diff --git a/fs/ocfs2/stack_o2cb.c b/fs/ocfs2/stack_o2cb.c
-index ac1d74c..bbd1667 100644
---- a/fs/ocfs2/stack_o2cb.c
-+++ b/fs/ocfs2/stack_o2cb.c
-@@ -385,7 +385,7 @@ static int o2cb_cluster_this_node(unsigned int *node)
- 	return 0;
+-	/* Always end in a wildcard, for future extension */
+-	if (alias[strlen(alias)-1] != '*')
+-		strcat(alias, "*");
++	add_wildcard(alias);
+ 	buf_printf(&mod->dev_table_buf,
+ 		   "MODULE_ALIAS(\"%s\");\n", alias);
+ }
+@@ -219,6 +226,7 @@ static int do_ieee1394_entry(const char 
+ 	ADD(alias, "ver", id->match_flags & IEEE1394_MATCH_VERSION,
+ 	    id->version);
+ 
++	add_wildcard(alias);
+ 	return 1;
  }
  
--struct ocfs2_stack_operations o2cb_stack_ops = {
-+static struct ocfs2_stack_operations o2cb_stack_ops = {
- 	.connect	= o2cb_cluster_connect,
- 	.disconnect	= o2cb_cluster_disconnect,
- 	.hangup		= o2cb_cluster_hangup,
-diff --git a/fs/ocfs2/stack_user.c b/fs/ocfs2/stack_user.c
-index 7428663..b503772 100644
---- a/fs/ocfs2/stack_user.c
-+++ b/fs/ocfs2/stack_user.c
-@@ -635,7 +635,7 @@ static const struct file_operations ocfs2_control_fops = {
- 	.owner   = THIS_MODULE,
- };
+@@ -261,6 +269,7 @@ static int do_pci_entry(const char *file
+ 	ADD(alias, "bc", baseclass_mask == 0xFF, baseclass);
+ 	ADD(alias, "sc", subclass_mask == 0xFF, subclass);
+ 	ADD(alias, "i", interface_mask == 0xFF, interface);
++	add_wildcard(alias);
+ 	return 1;
+ }
  
--struct miscdevice ocfs2_control_device = {
-+static struct miscdevice ocfs2_control_device = {
- 	.minor		= MISC_DYNAMIC_MINOR,
- 	.name		= "ocfs2_control",
- 	.fops		= &ocfs2_control_fops,
-diff --git a/fs/ocfs2/symlink.c b/fs/ocfs2/symlink.c
-index 7134007..ba9dbb5 100644
---- a/fs/ocfs2/symlink.c
-+++ b/fs/ocfs2/symlink.c
-@@ -167,9 +167,11 @@ const struct inode_operations ocfs2_symlink_inode_operations = {
- 	.readlink	= page_readlink,
- 	.follow_link	= ocfs2_follow_link,
- 	.getattr	= ocfs2_getattr,
-+	.setattr	= ocfs2_setattr,
- };
- const struct inode_operations ocfs2_fast_symlink_inode_operations = {
- 	.readlink	= ocfs2_readlink,
- 	.follow_link	= ocfs2_follow_link,
- 	.getattr	= ocfs2_getattr,
-+	.setattr	= ocfs2_setattr,
- };
+@@ -283,6 +292,7 @@ static int do_ccw_entry(const char *file
+ 	    id->dev_type);
+ 	ADD(alias, "dm", id->match_flags&CCW_DEVICE_ID_MATCH_DEVICE_MODEL,
+ 	    id->dev_model);
++	add_wildcard(alias);
+ 	return 1;
+ }
+ 
+@@ -290,7 +300,7 @@ static int do_ccw_entry(const char *file
+ static int do_ap_entry(const char *filename,
+ 		       struct ap_device_id *id, char *alias)
+ {
+-	sprintf(alias, "ap:t%02X", id->dev_type);
++	sprintf(alias, "ap:t%02X*", id->dev_type);
+ 	return 1;
+ }
+ 
+@@ -309,6 +319,7 @@ static int do_serio_entry(const char *fi
+ 	ADD(alias, "id", id->id != SERIO_ANY, id->id);
+ 	ADD(alias, "ex", id->extra != SERIO_ANY, id->extra);
+ 
++	add_wildcard(alias);
+ 	return 1;
+ }
+ 
+@@ -316,7 +327,7 @@ static int do_serio_entry(const char *fi
+ static int do_acpi_entry(const char *filename,
+ 			struct acpi_device_id *id, char *alias)
+ {
+-	sprintf(alias, "acpi*:%s:", id->id);
++	sprintf(alias, "acpi*:%s:*", id->id);
+ 	return 1;
+ }
+ 
+@@ -324,7 +335,7 @@ static int do_acpi_entry(const char *fil
+ static int do_pnp_entry(const char *filename,
+ 			struct pnp_device_id *id, char *alias)
+ {
+-	sprintf(alias, "pnp:d%s", id->id);
++	sprintf(alias, "pnp:d%s*", id->id);
+ 	return 1;
+ }
+ 
+@@ -409,6 +420,7 @@ static int do_pcmcia_entry(const char *f
+        ADD(alias, "pc", id->match_flags & PCMCIA_DEV_ID_MATCH_PROD_ID3, id->prod_id_hash[2]);
+        ADD(alias, "pd", id->match_flags & PCMCIA_DEV_ID_MATCH_PROD_ID4, id->prod_id_hash[3]);
+ 
++	add_wildcard(alias);
+        return 1;
+ }
+ 
+@@ -432,6 +444,7 @@ static int do_of_entry (const char *file
+         if (isspace (*tmp))
+             *tmp = '_';
+ 
++    add_wildcard(alias);
+     return 1;
+ }
+ 
+@@ -448,6 +461,7 @@ static int do_vio_entry(const char *file
+ 		if (isspace (*tmp))
+ 			*tmp = '_';
+ 
++	add_wildcard(alias);
+ 	return 1;
+ }
+ 
+@@ -511,6 +525,8 @@ static int do_eisa_entry(const char *fil
+ {
+ 	if (eisa->sig[0])
+ 		sprintf(alias, EISA_DEVICE_MODALIAS_FMT "*", eisa->sig);
++	else
++		strcat(alias, "*");
+ 	return 1;
+ }
+ 
+@@ -529,6 +545,7 @@ static int do_parisc_entry(const char *f
+ 	ADD(alias, "rev", id->hversion_rev != PA_HVERSION_REV_ANY_ID, id->hversion_rev);
+ 	ADD(alias, "sv", id->sversion != PA_SVERSION_ANY_ID, id->sversion);
+ 
++	add_wildcard(alias);
+ 	return 1;
+ }
+ 
+@@ -544,6 +561,7 @@ static int do_sdio_entry(const char *fil
+ 	ADD(alias, "c", id->class != (__u8)SDIO_ANY_ID, id->class);
+ 	ADD(alias, "v", id->vendor != (__u16)SDIO_ANY_ID, id->vendor);
+ 	ADD(alias, "d", id->device != (__u16)SDIO_ANY_ID, id->device);
++	add_wildcard(alias);
+ 	return 1;
+ }
+ 
+@@ -559,6 +577,7 @@ static int do_ssb_entry(const char *file
+ 	ADD(alias, "v", id->vendor != SSB_ANY_VENDOR, id->vendor);
+ 	ADD(alias, "id", id->coreid != SSB_ANY_ID, id->coreid);
+ 	ADD(alias, "rev", id->revision != SSB_ANY_REV, id->revision);
++	add_wildcard(alias);
+ 	return 1;
+ }
+ 
+@@ -573,6 +592,7 @@ static int do_virtio_entry(const char *f
+ 	ADD(alias, "d", 1, id->device);
+ 	ADD(alias, "v", id->vendor != VIRTIO_DEV_ANY_ID, id->vendor);
+ 
++	add_wildcard(alias);
+ 	return 1;
+ }
+ 
+@@ -612,9 +632,6 @@ static void do_table(void *symval, unsig
+ 
+ 	for (i = 0; i < size; i += id_size) {
+ 		if (do_entry(mod->name, symval+i, alias)) {
+-			/* Always end in a wildcard, for future extension */
+-			if (alias[strlen(alias)-1] != '*')
+-				strcat(alias, "*");
+ 			buf_printf(&mod->dev_table_buf,
+ 				   "MODULE_ALIAS(\"%s\");\n", alias);
+ 		}
 
+-- 
+Jean Delvare
