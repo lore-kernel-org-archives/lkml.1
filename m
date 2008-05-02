@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937566AbYEBXph@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937398AbYEBXqA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937566AbYEBXph (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 19:45:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937431AbYEBXpN
+	id S937398AbYEBXqA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 19:46:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935888AbYEBXpX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 19:45:13 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:55132 "EHLO
+	Fri, 2 May 2008 19:45:23 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:55173 "EHLO
 	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S937398AbYEBXpL (ORCPT
+	with ESMTP id S935723AbYEBXpV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 19:45:11 -0400
-Message-ID: <481BA784.5050908@ct.jp.nec.com>
-Date: Fri, 02 May 2008 16:45:08 -0700
+	Fri, 2 May 2008 19:45:21 -0400
+Message-ID: <481BA78F.50202@ct.jp.nec.com>
+Date: Fri, 02 May 2008 16:45:19 -0700
 From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
 User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
 MIME-Version: 1.0
 To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
        "H. Peter Anvin" <hpa@zytor.com>
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] x86_32: use per_cpu data
+Subject: [PATCH] x86_32: move do_nmi() to nmi_32.c
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
@@ -27,80 +27,126 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
 
-use per_cpu for per CPU data.
+on x86_64 do_nmi() is in nmi_64.c.
 
 Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
 ---
- arch/x86/kernel/nmi_32.c |   29 +++++++++++++++++------------
- 1 files changed, 17 insertions(+), 12 deletions(-)
+ arch/x86/kernel/nmi_32.c   |   30 ++++++++++++++++++++++++++++++
+ arch/x86/kernel/traps_32.c |   32 +-------------------------------
+ include/asm-x86/nmi.h      |    3 ++-
+ 3 files changed, 33 insertions(+), 32 deletions(-)
 
 diff --git a/arch/x86/kernel/nmi_32.c b/arch/x86/kernel/nmi_32.c
-index 11b14bb..69bdae5 100644
+index 69bdae5..641d2d9 100644
 --- a/arch/x86/kernel/nmi_32.c
 +++ b/arch/x86/kernel/nmi_32.c
-@@ -293,9 +293,9 @@ void stop_apic_nmi_watchdog(void *unused)
-  *  here too!]
-  */
+@@ -398,6 +398,36 @@ nmi_watchdog_tick(struct pt_regs *regs, unsigned reason)
+ 	return rc;
+ }
  
--static unsigned int
--	last_irq_sums [NR_CPUS],
--	alert_counter [NR_CPUS];
-+static DEFINE_PER_CPU(unsigned, last_irq_sum);
-+static DEFINE_PER_CPU(local_t, alert_counter);
-+static DEFINE_PER_CPU(int, nmi_touch);
++static unsigned ignore_nmis;
++
++notrace __kprobes void do_nmi(struct pt_regs *regs, long error_code)
++{
++	int cpu;
++
++	nmi_enter();
++
++	cpu = smp_processor_id();
++
++	++nmi_count(cpu);
++
++	if (!ignore_nmis)
++		default_do_nmi(regs);
++
++	nmi_exit();
++}
++
++void stop_nmi(void)
++{
++	acpi_nmi_disable();
++	ignore_nmis++;
++}
++
++void restart_nmi(void)
++{
++	ignore_nmis--;
++	acpi_nmi_enable();
++}
++
+ #ifdef CONFIG_SYSCTL
  
- void touch_nmi_watchdog(void)
+ static int unknown_nmi_panic_callback(struct pt_regs *regs, int cpu)
+diff --git a/arch/x86/kernel/traps_32.c b/arch/x86/kernel/traps_32.c
+index 7fad084..b1793ad 100644
+--- a/arch/x86/kernel/traps_32.c
++++ b/arch/x86/kernel/traps_32.c
+@@ -787,7 +787,7 @@ void notrace __kprobes die_nmi(struct pt_regs *regs, const char *msg)
+ 	do_exit(SIGSEGV);
+ }
+ 
+-static notrace __kprobes void default_do_nmi(struct pt_regs *regs)
++notrace __kprobes void default_do_nmi(struct pt_regs *regs)
  {
-@@ -303,12 +303,13 @@ void touch_nmi_watchdog(void)
- 		unsigned cpu;
+ 	unsigned char reason = 0;
  
- 		/*
--		 * Just reset the alert counters, (other CPUs might be
--		 * spinning on locks we hold):
-+		 * Tell other CPUs to reset their alert counters. We cannot
-+		 * do it ourselves because the alert count increase is not
-+		 * atomic.
- 		 */
- 		for_each_present_cpu(cpu) {
--			if (alert_counter[cpu])
--				alert_counter[cpu] = 0;
-+			if (per_cpu(nmi_touch, cpu) != 1)
-+				per_cpu(nmi_touch, cpu) = 1;
- 		}
- 	}
+@@ -827,36 +827,6 @@ static notrace __kprobes void default_do_nmi(struct pt_regs *regs)
+ 	reassert_nmi();
+ }
  
-@@ -358,22 +359,26 @@ nmi_watchdog_tick(struct pt_regs *regs, unsigned reason)
- 	 */
- 	sum = per_cpu(irq_stat, cpu).apic_timer_irqs +
- 		per_cpu(irq_stat, cpu).irq0_irqs;
-+	if (__get_cpu_var(nmi_touch)) {
-+		__get_cpu_var(nmi_touch) = 0;
-+		touched = 1;
-+	}
+-static int ignore_nmis;
+-
+-notrace __kprobes void do_nmi(struct pt_regs *regs, long error_code)
+-{
+-	int cpu;
+-
+-	nmi_enter();
+-
+-	cpu = smp_processor_id();
+-
+-	++nmi_count(cpu);
+-
+-	if (!ignore_nmis)
+-		default_do_nmi(regs);
+-
+-	nmi_exit();
+-}
+-
+-void stop_nmi(void)
+-{
+-	acpi_nmi_disable();
+-	ignore_nmis++;
+-}
+-
+-void restart_nmi(void)
+-{
+-	ignore_nmis--;
+-	acpi_nmi_enable();
+-}
+-
+ #ifdef CONFIG_KPROBES
+ void __kprobes do_int3(struct pt_regs *regs, long error_code)
+ {
+diff --git a/include/asm-x86/nmi.h b/include/asm-x86/nmi.h
+index 1e36302..9fd90b6 100644
+--- a/include/asm-x86/nmi.h
++++ b/include/asm-x86/nmi.h
+@@ -37,13 +37,14 @@ static inline void unset_nmi_pm_callback(struct pm_dev *dev)
+ #endif /* CONFIG_PM */
  
- 	/* if the none of the timers isn't firing, this cpu isn't doing much */
--	if (!touched && last_irq_sums[cpu] == sum) {
-+	if (!touched && __get_cpu_var(last_irq_sum) == sum) {
- 		/*
- 		 * Ayiee, looks like this CPU is stuck ...
- 		 * wait a few IRQs (5 seconds) before doing the oops ...
- 		 */
--		alert_counter[cpu]++;
--		if (alert_counter[cpu] == 5*nmi_hz)
-+		local_inc(&__get_cpu_var(alert_counter));
-+		if (local_read(&__get_cpu_var(alert_counter)) == 5*nmi_hz)
- 			/*
- 			 * die_nmi will return ONLY if NOTIFY_STOP happens..
- 			 */
- 			die_nmi(regs, "BUG: NMI Watchdog detected LOCKUP");
- 	} else {
--		last_irq_sums[cpu] = sum;
--		alert_counter[cpu] = 0;
-+		__get_cpu_var(last_irq_sum) = sum;
-+		local_set(&__get_cpu_var(alert_counter), 0);
- 	}
- 	/* see if the nmi watchdog went off */
- 	if (!__get_cpu_var(wd_enabled))
+ #ifdef CONFIG_X86_64
+-extern void default_do_nmi(struct pt_regs *);
+ extern void die_nmi(char *str, struct pt_regs *regs, int do_panic);
+ extern void nmi_watchdog_default(void);
+ #else
+ #define nmi_watchdog_default() do {} while (0)
+ #endif
+ 
++extern void default_do_nmi(struct pt_regs *);
++
+ extern int check_nmi_watchdog(void);
+ extern int nmi_watchdog_enabled;
+ extern int unknown_nmi_panic;
 -- 
 1.5.4.1
 
