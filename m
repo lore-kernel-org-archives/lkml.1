@@ -1,70 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936065AbYEBT2U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935413AbYEBTeP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936065AbYEBT2U (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 15:28:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757649AbYEBT2B
+	id S935413AbYEBTeP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 15:34:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758947AbYEBTd7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 15:28:01 -0400
-Received: from bipbip.grupopie.com ([195.23.16.24]:55930 "EHLO
-	bipbip.grupopie.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758947AbYEBT2A (ORCPT
+	Fri, 2 May 2008 15:33:59 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:36630 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757649AbYEBTd6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 15:28:00 -0400
-Message-ID: <481B6B3D.9060200@grupopie.com>
-Date: Fri, 02 May 2008 20:27:57 +0100
-From: Paulo Marques <pmarques@grupopie.com>
-Organization: Grupo PIE
-User-Agent: Thunderbird 1.5.0.14 (X11/20071210)
+	Fri, 2 May 2008 15:33:58 -0400
+Message-ID: <481B6CA2.8080006@firstfloor.org>
+Date: Fri, 02 May 2008 21:33:54 +0200
+From: Andi Kleen <andi@firstfloor.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
 MIME-Version: 1.0
-To: Greg Ungerer <gerg@snapgear.com>
-CC: torvalds@linux-foundation.org, akpm@linux-foundation.org, gerg@uclinux.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] m68knommu: add pretty back strace
-References: <200805010216.m412GcUQ004101@goober>
-In-Reply-To: <200805010216.m412GcUQ004101@goober>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Russ Anderson <rja@sgi.com>
+CC: linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Tony Luck <tony.luck@intel.com>, Christoph Lameter <clameter@sgi.com>
+Subject: Re: [PATCH 3/3] ia64: Call migration code on correctable errors v2
+References: <20080502004425.GD12006@sgi.com> <87fxt0vbu4.fsf@basil.nowhere.org> <20080502185030.GH7246@sgi.com>
+In-Reply-To: <20080502185030.GH7246@sgi.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg Ungerer wrote:
-> From: Sebastian Siewior <bigeasy@linutronix.de>
+Russ Anderson wrote:
+> On Fri, May 02, 2008 at 07:45:55PM +0200, Andi Kleen wrote:
+>> Russ Anderson <rja@sgi.com> writes:
+>>
+>>> Migrate data off pages with correctable memory errors.  This patch is the 
+>>> ia64 specific piece.  It connects the CPE handler to the page migration
+>>> code.  It is implemented as a kernel loadable module, similar to the mca
+>>> recovery code (mca_recovery.ko).  This allows the feature to be turned off
+>>> by uninstalling the module.  Creates /proc/badram to display bad page
+>>> information and free bad pages.
+>> How do you know what pages have excessive errors? And how is excessive defined?
+>> Surely you don't keep  a per page error count? It's unclear from your patch. 
 > 
-> With this patch and
->  CONFIG_FRAME_POINTER=y
->  CONFIG_KALLSYMS=y
-> The backtrace shows resolved function names and their numeric
-> address.
+> The code migrates on the first correctable error on a page, so "excessive"
+> is one.  Yes, keeping a per page count gets problematic, especially as
+> memories get larger.  The issue of the right metric for when to migrate
+> will always be debatable and the "right" answer likely will depend on
+> the physical memory technology.
 
-This is really not my area, but this patch reminds me of all the dwarf2 
-unwinder on x86 that caused so many problems in the beginning...
+That doesn't sound like a good metric. What happens for example if you
+have a flakey memory controller or DIMM socket that just occasionally
+adds bit errors on transfer without the DIMM actually being bad? I doubt
+such a simple heuristic is a good one.
 
-> [...]
-> +#ifdef CONFIG_FRAME_POINTER
-> +	printk(KERN_EMERG "Call Trace:\n");
-> +
-> +	last_stack = stack - 1;
-> +	while (stack <= endstack && stack > last_stack) {
-> +
-> +		addr = *(stack + 1);
-> +		printk(KERN_EMERG " [%08lx] ", addr);
-> +		print_symbol(KERN_CONT "%s\n", addr);
-> +
-> +		last_stack = stack;
-> +		stack = (unsigned long *)*stack;
->  	}
->  	printk("\n");
-> +#else
-> +	printk(KERN_EMERG "CONFIG_FRAME_POINTER disabled, no symbolic call trace\n");
+The x86-64 machine check design has a database connected to a user space
+program that can keep track of errors. I suspect something like this is
+a better solution.
 
-You could probably fall back to the old method in this case, no?
+> 
+>> Anyways I don't think this should be ia64 specific, but generic code.
+> 
+> The actual migration code is generic, in mm/migrate.c.
+> 
+> The ia64 kernel module piece is very arch specific.  It ties into the 
+> ia64 CPE handler.  It gets the page address from the CPE record, based
+> on the ia64 error handling spec.  Each arch will have a different way of
+> determining the physical address of the correctable error (for example).
 
-Also, if the stack is slightly corrupted on the top, the new method 
-might just bail out without giving any indication about the path that 
-lead there, when instead it could also fall back to the old method.
+Still at least part of the code should be generic.
 
--- 
-Paulo Marques - www.grupopie.com
+Also in general it's good that you finally realized that trying to write
+lockless machine check handlers was a bad idea and that to do any
+meaninful handling requires a proper process context. But I still wonder
+when you move the rest of the ia64 machine check handling to that too so
+that e.g. the sched.c hacks for lockless handling can be removed?
 
-"Feed the hungry, save the whales, free the mallocs!"
+
+>> I also have my doubts about making such small code subsystems modules. Modules
+>> always get rounded to pages so it ultimatively just wastes memory.
+> 
+> CONFIG_IA64_CPE_MIGRATE=m builds it as module.
+
+It's far too small for it.
+
+-Andi
