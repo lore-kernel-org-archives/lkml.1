@@ -1,69 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935558AbYEBPrV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935804AbYEBPrn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935558AbYEBPrV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 11:47:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932231AbYEBPrM
+	id S935804AbYEBPrn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 11:47:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934381AbYEBPrd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 11:47:12 -0400
-Received: from wr-out-0506.google.com ([64.233.184.234]:30428 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764227AbYEBPrL (ORCPT
+	Fri, 2 May 2008 11:47:33 -0400
+Received: from smtp-out03.alice-dsl.net ([88.44.63.5]:19587 "EHLO
+	smtp-out03.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932231AbYEBPrc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 11:47:11 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=xemfRSU2LCPYeCsEmTq+VXJQCcoLf95V4kuRwlsjIZVgImDUX2vVsY/CTJYmPYQF8Lkx2FYEA623gVh6EmI/IQEjSGBSkOE6insUtQOgx94Vw1udyhr3pBLAEt19GrJ8oqtH5dyRSiT6vyF1w2WKv2WqCJlaVipsvBThlxA4n2g=
-Message-ID: <2c0942db0805020847q2fdc0480m3eb892bf2bd0b3a@mail.gmail.com>
-Date: Fri, 2 May 2008 08:47:07 -0700
-From: "Ray Lee" <ray-lk@madrabbit.org>
-To: "Jesper Krogh" <jesper@krogh.cc>
-Subject: Re: Many open/close on same files yeilds "No such file or directory".
-Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <481B3115.30705@krogh.cc>
+	Fri, 2 May 2008 11:47:32 -0400
+To: Fabio De Francesco <fabiomdf@alice.it>
+Cc: Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [x86_32] With 4GB installed, in which cases low mem total is less than 896MB?
+From: Andi Kleen <andi@firstfloor.org>
+References: <200804301702.06019.fabiomdf@alice.it>
+	<20080429101852.6719eb59@infradead.org>
+	<200805021638.52540.fabiomdf@alice.it>
+Date: Fri, 02 May 2008 17:47:17 +0200
+In-Reply-To: <200805021638.52540.fabiomdf@alice.it> (Fabio De Francesco's message of "Fri, 2 May 2008 16:38:46 +0200")
+Message-ID: <87skx0vhbu.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <4819E316.7000607@krogh.cc>
-	 <20080501223938.921f7cd2.akpm@linux-foundation.org>
-	 <481ACEC4.2040205@krogh.cc> <481B3115.30705@krogh.cc>
-X-Google-Sender-Auth: 3e5f2500573a1064
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 02 May 2008 15:40:23.0199 (UTC) FILETIME=[D5B52AF0:01C8AC6A]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 2, 2008 at 8:19 AM, Jesper Krogh <jesper@krogh.cc> wrote:
-> Jesper Krogh wrote:
+Fabio De Francesco <fabiomdf@alice.it> writes:
 >
-> >
-> > > I'd suspect that after 1e8 loops your CPU got too hot and started to
-> > > misbehave.
-> > >
-> >
-> > Hardware is an Sun Fire X4600 (8xdual-core AMD64 processors). The
-> > problem seem to be tied to this filesystem. (I cannot havent been able
-> > to reproduce it on the /-mounted disk of the same system. So if a cpu
-> > problem.. then it shouldn't be tied to a specific filesystem?
-> >
-> > This is the only activity on the system .. so a load of 1 / 16cpus.
-> >
->
->  I've tried to explore this suggestion (the best I could).
->
->  There are 2 ext3 filesystems locally mounted. / and this one. Running 16
-> parallel runs of this program on a file on the /-mounted filesystem cannot
-> reproduce the problem. If it was linked to hot hardware, I believe I should
-> be able to reproduce it this way. The servers are in a 17 degress
-> serverroom.
->
->  It changes alot when.. it actually happens. The "earliest ones" has been
-> from 200000 cycles.
+> Unfortunetally my poor knowledge of Linux kernel mechanisms (and
+> code!) prevents me from understanding what could be the causes for
+> that overhead. Do you mean it is a hardware issue? Or is it a kernel
+> one? Anyway another machine of mine, that is equipped with 2GB RAM,
+> doesn't show any proportional reduction of low memory at all. So
+> this makes me think (oh, dear!).
 
-Run 16 in parallel on /, and another 16 simultaneously on the trouble
-filesystem? If you continue to get errors only on the 'trouble'
-filesystem, and no errors start occurring on / coincident, then it
-sounds pretty localized.
+You might want to read http://halobates.de/memorywaste.pdf, in
+particular 3.5.2. The numbers arjan quoted and in the paper
+are for 64bit kernels, on 32bit the overhead is ~32bytes/page. This
+mem_map overhead happens for both highmem and lowmem, but is always
+allocated in lowmem.
 
-BTW, I may have missed this earlier, but does it happen *anywhere* on
-the troublesome filesystem (ie, in a newly created subdirectory)?
+-Andi
