@@ -1,53 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934900AbYEBMXp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934902AbYEBMZY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934900AbYEBMXp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 08:23:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933366AbYEBMXi
+	id S934902AbYEBMZY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 08:25:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759892AbYEBMZI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 08:23:38 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:54698 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755794AbYEBMXh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 08:23:37 -0400
-Date: Fri, 2 May 2008 05:22:35 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Sebastian Siewior <lkml@ml.breakpoint.cc>
-Cc: Greg Ungerer <gerg@snapgear.com>, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] m68knommu: ColdFire add support for kernel preemption
-Message-Id: <20080502052235.eb9c336a.akpm@linux-foundation.org>
-In-Reply-To: <20080502083755.GA13973@Chamillionaire.breakpoint.cc>
-References: <200805010216.m412GT6t004096@goober>
-	<20080501143336.552e39e1.akpm@linux-foundation.org>
-	<481AC07A.6080707@snapgear.com>
-	<20080502083755.GA13973@Chamillionaire.breakpoint.cc>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
+	Fri, 2 May 2008 08:25:08 -0400
+Received: from bay0-omc2-s13.bay0.hotmail.com ([65.54.246.149]:56568 "EHLO
+	bay0-omc2-s13.bay0.hotmail.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756921AbYEBMZH convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 May 2008 08:25:07 -0400
+Message-ID: <BAY103-DAV594320AC93E33D7335927B2DA0@phx.gbl>
+X-Originating-IP: [88.35.96.158]
+X-Originating-Email: [pupilla@hotmail.com]
+From: "Marco Berizzi" <pupilla@hotmail.com>
+To: "Herbert Xu" <herbert@gondor.apana.org.au>
+Cc: <linux-kernel@vger.kernel.org>, <netdev@vger.kernel.org>,
+       <davem@davemloft.net>
+References: <E1Jrtxr-0004in-00@gondolin.me.apana.org.au>
+Subject: Re: 2.6.25 crash: EIP: [<c02e2f14>] xfrm_output_resume+0x64/0x100 ss:esp 0068:c03a1e5c
+Date: Fri, 2 May 2008 14:26:14 +0200
+MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook Express 6.00.2900.2180
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.2180
+X-OriginalArrivalTime: 02 May 2008 12:25:05.0865 (UTC) FILETIME=[8DA1E390:01C8AC4F]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2 May 2008 10:37:55 +0200 Sebastian Siewior <lkml@ml.breakpoint.cc> wrote:
+Herbert Xu wrote:
 
-> >>> Subject: [PATCH] m68knommu: ColdFire add support for kernel preemption
-> >> Please find a way to get your patch queue into linux-next so that others
-> >> get some visibility into what you're brewing earlier than
-> >> last-day-of-the-merge-window?
-> >
-> > Is a git tree the only way?
-> Others (Greg KH for instance, i2c) have quilt queues.
+> Marco Berizzi <pupilla@hotmail.com> wrote:
+>> Just few minutes ago, another 2.6.25 crash
+>> with this message:
+>> 
+>> EIP: [<c028000a>] netif_rx+0x6a/0xd0 SS:ESP 0068:c039f868
+>> 
+>> http://80.204.235.230/4.jpg
+> 
+> OK, the xfrm_output_resume trail revealed nothing.  Combined
+> with this crash however, it would appear that you've got a problem
+> with live skbs being freed.  Unfortunately such problems are
+> difficult to track down.
+> 
+> Perhaps you could enable SLAB debugging to see if we can get
+> closer to the culprit?
 
-Yup.  Examples:
+Yes indeed, I will try next monday.
 
-ftp://ftp.kernel.org/pub/linux/kernel/people/agk/patches/2.6/editing/
-http://ozlabs.org/~rusty/kernel/rr-latest
-http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/gregkh-02-usb
+> Alternatively you could try a git bisection.
 
-Note how you can publish subsets of your patchset by bracketing them with
-"# MM_PATCHES_START" and "# MM_PATCHES_END" for -mm, and "#
-NEXT_PATCHES_START" and "# NEXT_PATCHES_END" for linux-next.
+Yes, but it could take forever... :-((
+As I said, I have removed the sfq and htb modules,
+and I would like to wait one week to see if these
+boxes will crash. I have 8 linux boxes running 2.6.25
+with the same .config and only the two with htb/sfq
+qdisc are crashing. Just few minutes ago I have seen
+this message forwarded to netdev by David Miller:
 
+Re: PROBLEM: kernel lockup while changing TC rules
 
+it is talking about htb/sfq. Maybe it is related.
+ 
+> Unless we have a way of reproducing this there isn't a lot more
+> that we can do I'm afraid.
+
+thanks anyway Herbert.
