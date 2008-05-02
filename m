@@ -1,184 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934176AbYEBAm6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934277AbYEBAn1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934176AbYEBAm6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 May 2008 20:42:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756304AbYEBAmu
+	id S934277AbYEBAn1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 May 2008 20:43:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753676AbYEBAnR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 May 2008 20:42:50 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:38021 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754199AbYEBAmt (ORCPT
+	Thu, 1 May 2008 20:43:17 -0400
+Received: from fmmailgate03.web.de ([217.72.192.234]:40120 "EHLO
+	fmmailgate03.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756576AbYEBAnQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 May 2008 20:42:49 -0400
-Date: Thu, 1 May 2008 19:42:48 -0500
-From: Russ Anderson <rja@sgi.com>
-To: linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Tony Luck <tony.luck@intel.com>, Christoph Lameter <clameter@sgi.com>,
-       Russ Anderson <rja@sgi.com>
-Subject: [PATCH 2/3] mm: Avoid putting a bad page back on the LRU v2
-Message-ID: <20080502004248.GC12006@sgi.com>
-Reply-To: Russ Anderson <rja@sgi.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.9i
+	Thu, 1 May 2008 20:43:16 -0400
+Message-ID: <003a01c8abed$7ffe4bf0$6400a8c0@bui.materna.com>
+From: "Roland" <devzero@web.de>
+To: <linux-kernel@vger.kernel.org>
+Subject: modprobe ocfs2_stack_o2cb warning - duplicate filename o2cb in sysfs
+Date: Fri, 2 May 2008 02:11:55 +0200
+MIME-Version: 1.0
+Content-Type: text/plain;
+	format=flowed;
+	charset="iso-8859-1";
+	reply-type=original
+Content-Transfer-Encoding: 7bit
+X-Priority: 3
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook Express 6.00.2900.3138
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3198
+X-Provags-ID: V01U2FsdGVkX18yxxPTu2QX02SPulSbGaMjk4MfGJ94I5VEA85t
+	dBcLQBm/6fUtvLvaLPoEBiHdqJpn6S4s8H/IVugMshCbAVPMVl
+	mFm2QtL9I=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Prevent a page with a physical memory error from being placed back
-on the LRU.  A new page flag (PG_memerror) is added on 64 bit
-architectures.  
+git17 on vmware - just modprobe ocfs2_stack_o2cb after boot
 
-Signed-off-by: Russ Anderson <rja@sgi.com>
+May  2 02:10:46 opensuse103 kernel: OCFS2 Node Manager 1.5.0
+May  2 02:10:47 opensuse103 kernel: sysfs: duplicate filename 'o2cb' can not 
+be created
+May  2 02:10:47 opensuse103 kernel: ------------[ cut here ]------------
+May  2 02:10:47 opensuse103 kernel: WARNING: at fs/sysfs/dir.c:425 
+sysfs_add_one+0x31/0x7a()
+May  2 02:10:47 opensuse103 kernel: Modules linked in: ocfs2_nodemanager(+) 
+configfs ocfs2_stackglue iptable_filter ip_tables ip6table_filter ip6_tables 
+x_tables ipv6 af_packet microcode firmware_class fuse loop dm_mod ide_cd_mod 
+cdrom pata_acpi ata_piix ahci ata_generic libata dock ide_pci_generic 
+parport_pc pcnet32 i2c_piix4 shpchp rtc_cmos piix intel_agp container 
+parport mii ac button rtc_core agpgart i2c_core rtc_lib ide_core pci_hotplug 
+uhci_hcd usbcore edd ext3 mbcache jbd fan mptsas scsi_transport_sas mptfc 
+scsi_transport_fc scsi_tgt mptspi mptscsih mptbase scsi_transport_spi sd_mod 
+sg scsi_mod thermal processor [last unloaded: pcips2]
+May  2 02:10:47 opensuse103 kernel: Pid: 2651, comm: modprobe Not tainted 
+2.6.25-git17-default #1
+May  2 02:10:47 opensuse103 kernel:  [<c0121576>] warn_on_slowpath+0x40/0x67
+May  2 02:10:47 opensuse103 kernel:  [<c01258e9>] irq_exit+0x53/0x6a
+May  2 02:10:47 opensuse103 kernel:  [<c011142d>] 
+smp_apic_timer_interrupt+0x6b/0x76
+May  2 02:10:47 opensuse103 kernel:  [<c0105a18>] 
+apic_timer_interrupt+0x28/0x30
+May  2 02:10:47 opensuse103 kernel:  [<c0121e51>] vprintk+0x2b9/0x2cd
+May  2 02:10:47 opensuse103 kernel:  [<c01cbb5c>] 
+ida_get_new_above+0xe3/0x163
+May  2 02:10:47 opensuse103 kernel:  [<c017e2b0>] find_inode+0x1b/0x56
+May  2 02:10:47 opensuse103 kernel:  [<c01a662f>] sysfs_ilookup_test+0x0/0xd
+May  2 02:10:47 opensuse103 kernel:  [<c017e395>] ifind+0x22/0x73
+May  2 02:10:47 opensuse103 kernel:  [<c017e3a3>] ifind+0x30/0x73
+May  2 02:10:47 opensuse103 kernel:  [<c0121e79>] printk+0x14/0x18
+May  2 02:10:47 opensuse103 kernel:  [<c01a6865>] sysfs_add_one+0x31/0x7a
+May  2 02:10:47 opensuse103 kernel:  [<c01a73ea>] 
+sysfs_create_link+0x90/0xde
+May  2 02:10:47 opensuse103 kernel:  [<d0c1719c>] o2cb_sys_init+0x2c/0x68 
+[ocfs2_nodemanager]
+May  2 02:10:47 opensuse103 kernel:  [<d08f508c>] init_o2nm+0x8c/0xb4 
+[ocfs2_nodemanager]
+May  2 02:10:47 opensuse103 kernel:  [<c013db4c>] 
+sys_init_module+0x1694/0x17a7
+May  2 02:10:47 opensuse103 kernel:  [<c01ceb32>] simple_strtoull+0x0/0xec
+May  2 02:10:47 opensuse103 kernel:  [<c01079de>] sys_mmap2+0x62/0x77
+May  2 02:10:47 opensuse103 kernel:  [<c010491f>] 
+sysenter_past_esp+0x78/0xb9
+May  2 02:10:47 opensuse103 kernel:  =======================
+May  2 02:10:47 opensuse103 kernel: ---[ end trace 77c3881ff959c2ac ]---
+May  2 02:10:47 opensuse103 kernel: ocfs2_dlm: Unknown symbol mlog_and_bits
+May  2 02:10:47 opensuse103 kernel: ocfs2_dlm: Unknown symbol o2nm_this_node
+May  2 02:10:47 opensuse103 kernel: ocfs2_dlm: Unknown symbol 
+o2hb_check_node_heartbeating
+May  2 02:10:47 opensuse103 kernel: ocfs2_dlm: Unknown symbol mlog_not_bits
+May  2 02:10:47 opensuse103 kernel: ocfs2_dlm: Unknown symbol 
+o2hb_check_local_node_heartbeating
+May  2 02:10:47 opensuse103 kernel: ocfs2_dlm: Unknown symbol 
+o2hb_setup_callback
+May  2 02:10:47 opensuse103 kernel: ocfs2_dlm: Unknown symbol 
+o2net_send_message_vec
+May  2 02:10:47 opensuse103 kernel: ocfs2_dlm: Unknown symbol 
+o2hb_fill_node_map
+May  2 02:10:47 opensuse103 kernel: ocfs2_dlm: Unknown symbol 
+o2net_unregister_handler_list
+May  2 02:10:47 opensuse103 kernel: ocfs2_dlm: Unknown symbol 
+o2net_send_message
+May  2 02:10:47 opensuse103 kernel: ocfs2_dlm: Unknown symbol 
+o2net_register_handler
+May  2 02:10:47 opensuse103 kernel: ocfs2_dlm: Unknown symbol 
+o2hb_register_callback
+May  2 02:10:47 opensuse103 kernel: ocfs2_dlm: Unknown symbol 
+o2hb_unregister_callback
+May  2 02:10:47 opensuse103 kernel: ocfs2_stack_o2cb: Unknown symbol 
+dlm_print_one_lock
+May  2 02:10:47 opensuse103 kernel: ocfs2_stack_o2cb: Unknown symbol 
+mlog_and_bits
+May  2 02:10:47 opensuse103 kernel: ocfs2_stack_o2cb: Unknown symbol 
+o2nm_this_node
+May  2 02:10:47 opensuse103 kernel: ocfs2_stack_o2cb: Unknown symbol 
+mlog_not_bits
+May  2 02:10:47 opensuse103 kernel: ocfs2_stack_o2cb: Unknown symbol dlmlock
+May  2 02:10:47 opensuse103 kernel: ocfs2_stack_o2cb: Unknown symbol 
+o2nm_get_hb_ctl_path
+May  2 02:10:47 opensuse103 kernel: ocfs2_stack_o2cb: Unknown symbol 
+o2hb_check_local_node_heartbeating
+May  2 02:10:47 opensuse103 kernel: ocfs2_stack_o2cb: Unknown symbol 
+dlm_unregister_eviction_cb
+May  2 02:10:47 opensuse103 kernel: ocfs2_stack_o2cb: Unknown symbol 
+dlm_unregister_domain
+May  2 02:10:47 opensuse103 kernel: ocfs2_stack_o2cb: Unknown symbol 
+dlm_register_domain
+May  2 02:10:47 opensuse103 kernel: ocfs2_stack_o2cb: Unknown symbol 
+dlm_register_eviction_cb
+May  2 02:10:47 opensuse103 kernel: ocfs2_stack_o2cb: Unknown symbol 
+dlm_setup_eviction_cb
+May  2 02:10:47 opensuse103 kernel: ocfs2_stack_o2cb: Unknown symbol 
+dlmunlock
 
----
- include/linux/mm.h         |    8 +++++++-
- include/linux/page-flags.h |    8 ++++++++
- include/linux/swap.h       |    1 +
- mm/migrate.c               |    3 +++
- mm/page_alloc.c            |    9 +++++----
- mm/swap.c                  |    4 ++++
- 6 files changed, 28 insertions(+), 5 deletions(-)
 
-Index: linus/mm/page_alloc.c
-===================================================================
---- linus.orig/mm/page_alloc.c	2008-05-01 19:06:04.000000000 -0500
-+++ linus/mm/page_alloc.c	2008-05-01 19:06:15.000000000 -0500
-@@ -71,6 +71,7 @@ unsigned long totalram_pages __read_most
- unsigned long totalreserve_pages __read_mostly;
- long nr_swap_pages;
- int percpu_pagelist_fraction;
-+unsigned int totalbad_pages;
- 
- #ifdef CONFIG_HUGETLB_PAGE_SIZE_VARIABLE
- int pageblock_order __read_mostly;
-@@ -602,10 +603,10 @@ static int prep_new_page(struct page *pa
- 		bad_page(page);
- 
- 	/*
--	 * For now, we report if PG_reserved was found set, but do not
--	 * clear it, and do not allocate the page: as a safety net.
-+	 * For now, we report if PG_reserved or PG_memerror was found set, but
-+	 * do not clear it, and do not allocate the page: as a safety net.
- 	 */
--	if (PageReserved(page))
-+	if (PageReserved(page) || PageMemError(page))
- 		return 1;
- 
- 	page->flags &= ~(1 << PG_uptodate | 1 << PG_error | 1 << PG_reclaim |
-@@ -2474,7 +2475,7 @@ static void setup_zone_migrate_reserve(s
- 		page = pfn_to_page(pfn);
- 
- 		/* Blocks with reserved pages will never free, skip them. */
--		if (PageReserved(page))
-+		if (PageReserved(page) || PageMemError(page))
- 			continue;
- 
- 		block_migratetype = get_pageblock_migratetype(page);
-Index: linus/mm/swap.c
-===================================================================
---- linus.orig/mm/swap.c	2008-05-01 19:05:33.000000000 -0500
-+++ linus/mm/swap.c	2008-05-01 19:06:15.000000000 -0500
-@@ -195,6 +195,8 @@ void lru_cache_add(struct page *page)
- 	struct pagevec *pvec = &get_cpu_var(lru_add_pvecs);
- 
- 	page_cache_get(page);
-+	if (unlikely(PageMemError(page)))
-+		return;		/* Don't add bad pages to the page list */
- 	if (!pagevec_add(pvec, page))
- 		__pagevec_lru_add(pvec);
- 	put_cpu_var(lru_add_pvecs);
-@@ -205,6 +207,8 @@ void lru_cache_add_active(struct page *p
- 	struct pagevec *pvec = &get_cpu_var(lru_add_active_pvecs);
- 
- 	page_cache_get(page);
-+	if (unlikely(PageMemError(page)))
-+		return;		/* Don't add bad pages to the page list */
- 	if (!pagevec_add(pvec, page))
- 		__pagevec_lru_add_active(pvec);
- 	put_cpu_var(lru_add_active_pvecs);
-Index: linus/include/linux/swap.h
-===================================================================
---- linus.orig/include/linux/swap.h	2008-05-01 19:05:33.000000000 -0500
-+++ linus/include/linux/swap.h	2008-05-01 19:06:15.000000000 -0500
-@@ -165,6 +165,7 @@ extern unsigned long totalreserve_pages;
- extern long nr_swap_pages;
- extern unsigned int nr_free_buffer_pages(void);
- extern unsigned int nr_free_pagecache_pages(void);
-+extern unsigned int totalbad_pages;
- 
- /* Definition of global_page_state not available yet */
- #define nr_free_pages() global_page_state(NR_FREE_PAGES)
-Index: linus/mm/migrate.c
-===================================================================
---- linus.orig/mm/migrate.c	2008-05-01 19:05:33.000000000 -0500
-+++ linus/mm/migrate.c	2008-05-01 19:06:15.000000000 -0500
-@@ -380,6 +380,7 @@ static void migrate_page_copy(struct pag
- 		SetPageChecked(newpage);
- 	if (PageMappedToDisk(page))
- 		SetPageMappedToDisk(newpage);
-+	/* Do not migrate PG_memerror to the new page */
- 
- 	if (PageDirty(page)) {
- 		clear_page_dirty_for_io(page);
-@@ -721,6 +722,8 @@ unlock:
-  		 */
-  		list_del(&page->lru);
-  		move_to_lru(page);
-+		if (PageMemError(page))
-+			totalbad_pages++;
- 	}
- 
- move_newpage:
-Index: linus/include/linux/page-flags.h
-===================================================================
---- linus.orig/include/linux/page-flags.h	2008-05-01 19:05:33.000000000 -0500
-+++ linus/include/linux/page-flags.h	2008-05-01 19:06:15.000000000 -0500
-@@ -84,6 +84,7 @@ enum pageflags {
- 	PG_private,		/* If pagecache, has fs-private data */
- 	PG_writeback,		/* Page is under writeback */
- #ifdef CONFIG_PAGEFLAGS_EXTENDED
-+	PG_memerror,		/* Page has a physical memory error */
- 	PG_head,		/* A head page */
- 	PG_tail,		/* A tail page */
- #else
-@@ -306,5 +307,12 @@ static inline void __ClearPageTail(struc
- }
- 
- #endif /* !PAGEFLAGS_EXTENDED */
-+
-+#ifdef CONFIG_PAGEFLAGS_EXTENDED
-+PAGEFLAG(MemError, memerror)
-+#else
-+#define PageMemError(page)	0
-+#endif
-+
- #endif /* !__GENERATING_BOUNDS_H */
- #endif	/* PAGE_FLAGS_H */
-Index: linus/include/linux/mm.h
-===================================================================
---- linus.orig/include/linux/mm.h	2008-05-01 19:06:04.000000000 -0500
-+++ linus/include/linux/mm.h	2008-05-01 19:06:15.000000000 -0500
-@@ -210,9 +210,15 @@ struct inode;
-  */
- #include <linux/page-flags.h>
- 
--#define PAGE_FLAGS	(1 << PG_lru   | 1 << PG_private   | 1 << PG_locked | \
-+#define PAGE_FLAGS_BASE	(1 << PG_lru   | 1 << PG_private   | 1 << PG_locked | \
- 			 1 << PG_buddy | 1 << PG_writeback | \
- 			 1 << PG_slab  | 1 << PG_swapcache | 1 << PG_active)
-+
-+#ifdef CONFIG_PAGEFLAGS_EXTENDED
-+#define	PAGE_FLAGS	(PAGE_FLAGS_BASE | 1UL << PG_memerror)
-+#else
-+#define	PAGE_FLAGS	(PAGE_FLAGS_BASE)
-+#endif
- 
- #define PAGE_FLAGS_RECLAIM      (PAGE_FLAGS | 1 << PG_reclaim | 1 << PG_dirty)
- #define PAGE_FLAGS_RESERVE	(PAGE_FLAGS | 1 << PG_reserved)
--- 
-Russ Anderson, OS RAS/Partitioning Project Lead  
-SGI - Silicon Graphics Inc          rja@sgi.com
+
+
