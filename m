@@ -1,56 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1766010AbYEBR1g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964950AbYEBR1x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1766010AbYEBR1g (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 13:27:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764309AbYEBR10
+	id S964950AbYEBR1x (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 13:27:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934894AbYEBR1b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 13:27:26 -0400
-Received: from smtp-out04.alice-dsl.net ([88.44.63.6]:4635 "EHLO
-	smtp-out04.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752485AbYEBR10 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 13:27:26 -0400
-To: Daniel Hazelton <dhazelton@enter.net>
-Cc: "Parag Warudkar" <parag.warudkar@gmail.com>,
-       "Adrian Bunk" <bunk@kernel.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: How to reduce the number of open kernel bugs
-From: Andi Kleen <andi@firstfloor.org>
-References: <82e4877d0805020742l7d4a6ec9mc72e79aa3d242348@mail.gmail.com>
-	<200805021229.47038.dhazelton@enter.net>
-Date: Fri, 02 May 2008 19:27:04 +0200
-In-Reply-To: <200805021229.47038.dhazelton@enter.net> (Daniel Hazelton's message of "Fri, 2 May 2008 12:29:46 -0400")
-Message-ID: <87od7ovcpj.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 02 May 2008 17:20:09.0878 (UTC) FILETIME=[C60BE360:01C8AC78]
+	Fri, 2 May 2008 13:27:31 -0400
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:46566 "EHLO e3.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934675AbYEBR1a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 May 2008 13:27:30 -0400
+Subject: Re: [PATCH] Add sysfs removable attribute for hotplug memory remove
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: Badari Pulavarty <pbadari@us.ibm.com>
+Cc: akpm@linux-foundation.org, Mel Gorman <mel@csn.ul.ie>,
+       "kamezawa.hiroyu" <kamezawa.hiroyu@jp.fujitsu.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <1209747376.16169.27.camel@badari-desktop>
+References: <1209747376.16169.27.camel@badari-desktop>
+Content-Type: text/plain
+Date: Fri, 02 May 2008 10:27:21 -0700
+Message-Id: <1209749241.7763.44.camel@nimitz.home.sr71.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Daniel Hazelton <dhazelton@enter.net> writes:
->  If the hardware works 
-> perfectly in every other OS
 
-It depends. There used to be the famous case (not longer true now) that 
-older Linux allocated memory from the top of the memory down and other OS
-generally allocated it the from bottom to up and when some of your top
-memory was broken Linux would often hit problems where other OS did not.
+On Fri, 2008-05-02 at 09:56 -0700, Badari Pulavarty wrote:
+> 
+> +/* Return the start of the next active pageblock after a given page */
+> +static struct page *next_active_pageblock(struct page *page)
+> +{
+> +       /* Ensure the starting page is pageblock-aligned */
+> +       BUG_ON(page_to_pfn(page) & (pageblock_nr_pages - 1));
+> +
+> +       /* Move forward by at least 1 * pageblock_nr_pages */
+> +       int pageblocks_stride = 1;
+> +
+> +       /* If the entire pageblock is free, move to the end of free page */
+> +       if (pageblock_free(page))
+> +               pageblocks_stride += page_order(page) - pageblock_order;
+> +
+> +       return page + (pageblocks_stride * pageblock_nr_pages);
+> +}
 
-Also there can be the case when some OS use hardware quite differently
-or different hardware features than other. Standard case for example
-used to be that there were a few platforms where the SMM code had 64bit
-bugs and of course you would only hit them when running a 64bit OS which
-was Linux. 
+Do you really want that variable declared in the middle of the function?
 
-A modern OS is a very complicated system with tens of millions of code
-lines and you can't assume they all program the hardware in the same way.
+Otherwise looks fine to me.  I'm a bit worried about the whole "scan
+every page in the section" thing.  That could get expensive if people
+ever decided to poll this file.  Maybe we should tell our potential
+users about that.
 
-Simple truths are often wrong.
+-- Dave
 
- - and possibly even previous versions of Linux - 
-
-Now that is a more interesting case. But regressions are always taken
-seriously by all maintainers I know.
-
--Andi
