@@ -1,115 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935937AbYEBWFT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964894AbYEBWHl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935937AbYEBWFT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 18:05:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758710AbYEBWFE
+	id S964894AbYEBWHl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 18:07:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758710AbYEBWHe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 18:05:04 -0400
-Received: from web50212.mail.re2.yahoo.com ([206.190.39.176]:36293 "HELO
-	web50212.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1755587AbYEBWFD convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 18:05:03 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:X-Mailer:Date:From:Reply-To:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=ig7gxUCGItaoVjoKZqEGh0sn2VWhg4rx74RF8BijVkpZMg0FtwzW79e3WuMZDJ40VhpT/eBWtIGXfH2C07sR+hKLwwxy4Ay/3DV2/7yEOTVuPo+E4B+Pq80oJeYgfKOco10WSjJZdwXxHfVuecmbRFxetKrniJEGbxF8SU7Neyo=;
-X-YMail-OSG: WezsH.IVM1k4e4bgxCXqnErtbjR35Z39s69lZitLetCzJmJHE_R3Fi3UfXiB7jQ.sz.EJlyJkn5.o22RcXIqMAhUsNCeAy06wUWNkGIC5fzKm5isuDCljA--
-X-Mailer: YahooMailWebService/0.7.185
-Date: Fri, 2 May 2008 15:04:55 -0700 (PDT)
-From: Alex Davis <alex14641@yahoo.com>
-Reply-To: alex14641@yahoo.com
-Subject: Re: Sharing disks amoung multiple software RAIDs
-To: David Greaves <david@dgreaves.com>, Kasper Sandberg <lkml@metanurb.dk>
-Cc: David Rees <drees76@gmail.com>, David Lethe <david@santools.com>,
-       Justin Piszcz <jpiszcz@lucidpixels.com>, linux-raid@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <1209764630.7827.15.camel@localhost>
+	Fri, 2 May 2008 18:07:34 -0400
+Received: from mga02.intel.com ([134.134.136.20]:29740 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756039AbYEBWHd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 May 2008 18:07:33 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.27,428,1204531200"; 
+   d="scan'208";a="277363606"
+From: Jesse Barnes <jesse.barnes@intel.com>
+To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+Subject: Re: [git head] Should X86_PAT really default to yes?
+Date: Fri, 2 May 2008 15:07:28 -0700
+User-Agent: KMail/1.9.9
+Cc: "Frans Pop" <elendil@planet.nl>, linux-kernel@vger.kernel.org,
+       "Ingo Molnar" <mingo@elte.hu>,
+       "Packard, Keith" <keith.packard@intel.com>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>
+References: <200805022122.03576.elendil@planet.nl> <200805021340.24987.jesse.barnes@intel.com> <924EFEDD5F540B4284297C4DC59F3DEEFB8E83@orsmsx423.amr.corp.intel.com>
+In-Reply-To: <924EFEDD5F540B4284297C4DC59F3DEEFB8E83@orsmsx423.amr.corp.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
-Message-ID: <977930.28629.qm@web50212.mail.re2.yahoo.com>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200805021507.28728.jesse.barnes@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---- On Fri, 5/2/08, Kasper Sandberg <lkml@metanurb.dk> wrote:
+On Friday, May 02, 2008 2:55 pm Pallipadi, Venkatesh wrote:
+> >-----Original Message-----
+> >From: Barnes, Jesse
+> >Sent: Friday, May 02, 2008 1:40 PM
+> >To: Pallipadi, Venkatesh
+> >Cc: Frans Pop; linux-kernel@vger.kernel.org; Ingo Molnar;
+> >Packard, Keith
+> >Subject: Re: [git head] Should X86_PAT really default to yes?
+> >
+> >On Friday, May 02, 2008 12:37 pm Pallipadi, Venkatesh wrote:
+> >> >-----Original Message-----
+> >> >From: Frans Pop [mailto:elendil@planet.nl]
+> >> >Sent: Friday, May 02, 2008 12:22 PM
+> >> >To: linux-kernel@vger.kernel.org
+> >> >Cc: Pallipadi, Venkatesh; Ingo Molnar
+> >> >Subject: [git head] Should X86_PAT really default to yes?
+> >> >
+> >> >With X86_PAT enabled, when X is started I get about 40 lines
+> >> >(with varying
+> >> >addresses) like:
+> >> >kernel: Xorg:3358 /dev/mem expected mapping type write-back for
+> >> >807bf000-81000000, got uncached-minus
+> >
+> >These messages?  They're coming from the kernel it looks like,
+> >from the
+> >map_devmem routine in pat.c.  I'm not sure they're accurate
+> >though; for PCI
+> >regions /dev/mem is *supposed* to map with UC- and not WB, so
+> >maybe this
+> >function needs to be updated?
+>
+> Indeed.
+> I think these messages are due to X using the mprotect workaround to
+> change UC_MINUS to WB.
+> I don't see these error messages on my 965 here. May be I have different
+> x version.
 
-> From: Kasper Sandberg <lkml@metanurb.dk>
-> Subject: Re: Sharing disks amoung multiple software RAIDs
-> To: "David Greaves" <david@dgreaves.com>
-> Cc: "David Rees" <drees76@gmail.com>, "David Lethe" <david@santools.com>, alex14641@yahoo.com, "Justin Piszcz" <jpiszcz@lucidpixels.com>, linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org
-> Date: Friday, May 2, 2008, 5:43 PM
-> On Fri, 2008-05-02 at 09:25 +0100, David Greaves wrote:
-> > Kasper Sandberg wrote:
-> > > Im not treating it as a backup, what i want, is
-> to make sure that if 1
-> > > disk dies, the data is still intact and ill
-> hopefully be able to run
-> > > with 1 disk till the newly ordered one arrives
-> > Probably one of the main design objectives behind
-> RAID/md
-> 
-> Exactly, but once people start saying: "Look how many
-> problems people
-> post to the thread on
-> a weekly basis where people lose their data when md
-> rebuilds go bad with
-> non-shared disks" i begin to worry..
-> 
-> > 
-> > > So my question remains.. Is md raid1 not suited
-> for this need? would it
-> > > be safer to run in non-raid1 mode and daily(maybe
-> hourly) rsync
-> > > everything over to the second disk?
-> > 
-> > md is 100% guaranteed perfect or your money back...
-> > rsync is 100% guaranteed perfect or your money back...
-> > your backups are 100% guaranteed perfect or your money
-> back...
-> > your hard drives are 100% guaranteed perfect or your
-> money back...
-> > your CPU and RAM are 100% guaranteed perfect or your
-> money back...
-> > your CPU and PSU fans are 100% guaranteed perfect or
-> your money back...
-> > 
-> > Clearly if you want to panic over reliability you have
-> lots of choices :)
-> 
-> I do not wish to panic, i merely wished to know if linux MD
-> is believed
-> to work in most cases, or believed to do all sorts of weird
-> stuff when
-> resyncing :)
-> 
-> > 
-> > David
-> > PS, FWIW md has saved my data* countless times over
-> the past 'n' years in
-> > exactly the scenario you describe.
-> 
-> It has also been useful to people i know, i just wished to
-> be sure :)
-> and as Keld Jørn Simonsen and Helge Hafting's comments
-> seems to confirm,
-> linux md IS nice and stable :)
-> 
-> and as said, what im looking for isnt an in-box backup
-> solution, merely
-> safety in case one disk burns :)
-> 
-> > 
-> > *(or more accurately has saved me from having to
-> restore my data)
+Hm, yeah that could be.  strace would tell us.
 
-Just to add another data point, I've been using md in RAID 5 configuration for ~3 years with dedicated USB and SATA disks 
-(not mixed) and have had disks go bad, and have yet to lose 
-any data. Given the 'quality' of high-capacity disks nowadays,
-RAIDing them is the right thing to do.
+>
+> What may be happening:
+> 1) process A mmaps /dev/mem and gets UC_MINUS
+> 2) Changes the page table to make pg_prot WB
+> 3) Does a fork to create process B
+> 4) While copying the vma, we go through map_devmem request WB, but get
+> UC_MINUS back
+> 5) We are not changing vma pg_prot to new value at this point (we should
+> change this), so one more round of errors will be there when forked
+> process exits.
+>
+> Again, this should not have any side-effect like the band etc. It just a
+> "friendly warning". It should go away when X moves to using WC or does
+> not use the mprotect workaround to make pg_prot WB.
 
+More recent versions of X will use sysfs rather than /dev/mem (though we're 
+still using the mprotect hack there to give us UC-), so yeah this warning 
+should already be gone in more recent builds.
 
-      ____________________________________________________________________________________
-Be a better friend, newshound, and 
-know-it-all with Yahoo! Mobile.  Try it now.  http://mobile.yahoo.com/;_ylt=Ahu06i62sR8HDtDypao8Wcj9tAcJ
+Jesse
