@@ -1,315 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760473AbYEBFjV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757895AbYEBFkF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760473AbYEBFjV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 01:39:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752795AbYEBFjA
+	id S1757895AbYEBFkF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 01:40:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752795AbYEBFjy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 01:39:00 -0400
-Received: from py-out-1112.google.com ([64.233.166.179]:25616 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752592AbYEBFi6 (ORCPT
+	Fri, 2 May 2008 01:39:54 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:40525 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752461AbYEBFjx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 01:38:58 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:x-x-sender:to:cc:subject:in-reply-to:message-id:references:user-agent:mime-version:content-type:from;
-        b=nL+RW29HaP1urglTlsG+ISOwWRW92UyALtA+IZS3/O0PzzTOVHdH+Ga/ItM+guH6lo3ClWUHDc2krqErfOyQu7VgdveQlNyS35+sWX241rlKQ4OD210Z41f66zGIAkx6/2kaOIzCcTA6JDlqEGhO9gz1TJyvdbbTqnlg1ZKaCtU=
-Date: Fri, 2 May 2008 13:43:03 +0800 (CST)
-X-X-Sender: wangcong@localhost.localdomain
-To: Herbert Xu <herbert@gondor.apana.org.au>
-cc: WANG Cong <xiyou.wangcong@gmail.com>, linux-kernel@vger.kernel.org,
-       davem@davemloft.net, akpm@osdl.org, netdev@vger.kernel.org
-Subject: [Patch](Revised) net/xfrm/xfrm_state.c: replace timer with
- delayed_work
-In-Reply-To: <20080501011123.GA4060@gondor.apana.org.au>
-Message-ID: <alpine.LFD.1.10.0805021336530.3349@localhost.localdomain>
-References: <20080216.235534.237382205.xiyou.wangcong@gmail.com> <20080427011809.GA662@gondor.apana.org.au> <20080428.225312.58450957.xiyou.wangcong@gmail.com> <20080428151342.GA12007@gondor.apana.org.au> <alpine.LFD.1.10.0804302355120.2940@localhost.localdomain>
- <20080501011123.GA4060@gondor.apana.org.au>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
-From: WANG Cong <xiyou.wangcong@gmail.com>
+	Fri, 2 May 2008 01:39:53 -0400
+Date: Thu, 1 May 2008 22:39:38 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jesper Krogh <jesper@krogh.cc>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Many open/close on same files yeilds
+ "No such file or directory".
+Message-Id: <20080501223938.921f7cd2.akpm@linux-foundation.org>
+In-Reply-To: <4819E316.7000607@krogh.cc>
+References: <4819E316.7000607@krogh.cc>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 01 May 2008 17:34:46 +0200 Jesper Krogh <jesper@krogh.cc> wrote:
 
-Also suggested by Herbert Xu, using workqueue is better than timers
-for net/xfrm/xfrm_state.c, so replace them with delayed_work.
-And due to this change, we have to disable BH when trying to
-lock.
+> Hi list.
+> 
+> I have a "fairly" reproducible problem. When a program opens and closes
+> the same file many times, it eventually ends up with a "no such file or
+> directory". Test program that can reproduce the problem on my setup:
+> 
+> root@hest:~# cat test-file-c.c
+> #include <stdlib.h>
+> #include <stdio.h>
+> #include <fcntl.h>
+> #include <unistd.h>
+> 
+> int main(int argc, char *argv[]) {
+>     unsigned long i=0;
+>     int fh;
+>     char *filename;
+> 
+>     filename=argv[1];
+> 
+>     while(1) {
+>        fh=open(filename, O_RDONLY);
+>        if (fh==-1) {
+>           printf("Failed to open %s\n", filename);
+>           printf("Open number: %ld\n",i);
+>           exit(10);
+>        }
+>        close(fh);
+>        i++;
+>     }
+> 
+>     exit(0);
+> }
+> root@hest:~# ./test-file-c /z/bio/databases/online/index/index-by-accno
+> Failed to open /z/bio/databases/online/index/index-by-accno
+> Open number: 61785000
+> root@hest:~# ./test-file-c /z/bio/databases/online/index/index-by-accno
+> Failed to open /z/bio/databases/online/index/index-by-accno
+> Open number: 120929685
+> (The problem is not isolate to a single file on the filesystem).
+> 
 
-Note that, this patch is not fully tested. So should be
-in -mm first.
+What an amazing bug.
 
-Signed-off-by: WANG Cong <wangcong@zeuux.org>
-Cc: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: David Miller <davem@davemloft.net>
+> strace on the program reviel that the system indeed return a "No such
+> file or directory" to the program.
+> 
+> This is run on an Ubuntu Gutsy (vendor kernel): 2.6.22-14-server on an
+> 4.5TB ext3 filesystem on an LVM volume. The volume was created on a
+> dapper (2 releases back) and has just followed with during upgrades.
 
----
-diff --git a/include/net/xfrm.h b/include/net/xfrm.h
-index d1350bc..539dccd 100644
---- a/include/net/xfrm.h
-+++ b/include/net/xfrm.h
-@@ -189,14 +189,14 @@ struct xfrm_state
-  	u32			replay_maxage;
-  	u32			replay_maxdiff;
+The test program is (almost) all in RAM and won't care about the hardware.
 
--	/* Replay detection notification timer */
--	struct timer_list	rtimer;
-+	/* Replay detection notification delayed work */
-+	struct delayed_work	rwork;
+> I cannot reproduce it on other disks attached to the same server or on
+> other servers attached to similar disksystems.
 
-  	/* Statistics */
-  	struct xfrm_stats	stats;
+hmm.
 
-  	struct xfrm_lifetime_cur curlft;
--	struct timer_list	timer;
-+	struct delayed_work	work;
+I guess it would be interesting to remount that filesystem with `noatime'
+to eliminate the last bit of I/O and block-=realted code.
 
-  	/* Last used time */
-  	unsigned long		lastused;
-@@ -457,7 +457,7 @@ struct xfrm_policy
-  	/* This lock only affects elements except for entry. */
-  	rwlock_t		lock;
-  	atomic_t		refcnt;
--	struct timer_list	timer;
-+	struct delayed_work	work;
+> The filesystem was taken offline yesterday for a forced fsck and it was
+> found to be clean.
+> 
+> The diskarray is a quite old Fibrenetix FX1200 with 12xPATA disk
+> in raid5 (with hotspare) exposed to the OS as 3 SCSI-disks of
+> 2+2+0.5TB assembled with LVM afterwards. The SCSI-controller is a:
+> 05:08.0 SCSI storage controller: LSI Logic / Symbios Logic 53c1030 PCI-X 
+> Fusion-MPT Dual Ultra320 SCSI (rev c1)
+> 
+> What suggestions do you have to solve this problem?
+> 
+> I'm about to mkfs.ext3 the volume and spool it back in from the backup,
+> but somehow I'm not convinced that it will solve the problem at all.
+> It may just be a hardware problem, but dmesg doesnt tell anything.
+> 
+> We actually got the problem from a perl-script, but this seems to be the
+> minimal program that reproduces the problem.
 
-  	u32			priority;
-  	u32			index;
-diff --git a/net/xfrm/xfrm_policy.c b/net/xfrm/xfrm_policy.c
-index cae9fd8..2ed14e0 100644
---- a/net/xfrm/xfrm_policy.c
-+++ b/net/xfrm/xfrm_policy.c
-@@ -154,15 +154,16 @@ static inline unsigned long make_jiffies(long secs)
-  		return secs*HZ;
-  }
-
--static void xfrm_policy_timer(unsigned long data)
-+static void xfrm_policy_worker(struct work_struct *w)
-  {
--	struct xfrm_policy *xp = (struct xfrm_policy*)data;
-+	struct xfrm_policy *xp =
-+		container_of((struct delayed_work *)w, struct xfrm_policy, work);
-  	unsigned long now = get_seconds();
-  	long next = LONG_MAX;
-  	int warn = 0;
-  	int dir;
-
--	read_lock(&xp->lock);
-+	read_lock_bh(&xp->lock);
-
-  	if (xp->dead)
-  		goto out;
-@@ -209,16 +210,16 @@ static void xfrm_policy_timer(unsigned long data)
-  	if (warn)
-  		km_policy_expired(xp, dir, 0, 0);
-  	if (next != LONG_MAX &&
--	    !mod_timer(&xp->timer, jiffies + make_jiffies(next)))
-+	    !schedule_delayed_work(&xp->work, make_jiffies(next)))
-  		xfrm_pol_hold(xp);
-
-  out:
--	read_unlock(&xp->lock);
-+	read_unlock_bh(&xp->lock);
-  	xfrm_pol_put(xp);
-  	return;
-
-  expired:
--	read_unlock(&xp->lock);
-+	read_unlock_bh(&xp->lock);
-  	if (!xfrm_policy_delete(xp, dir))
-  		km_policy_expired(xp, dir, 1, 0);
-  	xfrm_pol_put(xp);
-@@ -236,13 +237,12 @@ struct xfrm_policy *xfrm_policy_alloc(gfp_t gfp)
-  	policy = kzalloc(sizeof(struct xfrm_policy), gfp);
-
-  	if (policy) {
-+		INIT_DELAYED_WORK(&policy->work, xfrm_policy_worker);
-  		INIT_LIST_HEAD(&policy->bytype);
-  		INIT_HLIST_NODE(&policy->bydst);
-  		INIT_HLIST_NODE(&policy->byidx);
-  		rwlock_init(&policy->lock);
-  		atomic_set(&policy->refcnt, 1);
--		setup_timer(&policy->timer, xfrm_policy_timer,
--				(unsigned long)policy);
-  	}
-  	return policy;
-  }
-@@ -256,7 +256,7 @@ void xfrm_policy_destroy(struct xfrm_policy *policy)
-
-  	BUG_ON(policy->bundles);
-
--	if (del_timer(&policy->timer))
-+	if (cancel_delayed_work(&policy->work))
-  		BUG();
-
-  	write_lock_bh(&xfrm_policy_lock);
-@@ -277,7 +277,7 @@ static void xfrm_policy_gc_kill(struct xfrm_policy *policy)
-  		dst_free(dst);
-  	}
-
--	if (del_timer(&policy->timer))
-+	if (cancel_delayed_work(&policy->work))
-  		atomic_dec(&policy->refcnt);
-
-  	if (atomic_read(&policy->refcnt) > 1)
-@@ -615,7 +615,7 @@ int xfrm_policy_insert(int dir, struct xfrm_policy *policy, int excl)
-  	hlist_add_head(&policy->byidx, xfrm_policy_byidx+idx_hash(policy->index));
-  	policy->curlft.add_time = get_seconds();
-  	policy->curlft.use_time = 0;
--	if (!mod_timer(&policy->timer, jiffies + HZ))
-+	if (!schedule_delayed_work(&policy->work, HZ))
-  		xfrm_pol_hold(policy);
-  	list_add_tail(&policy->bytype, &xfrm_policy_bytype[policy->type]);
-  	write_unlock_bh(&xfrm_policy_lock);
-diff --git a/net/xfrm/xfrm_state.c b/net/xfrm/xfrm_state.c
-index 72fddaf..b384d81 100644
---- a/net/xfrm/xfrm_state.c
-+++ b/net/xfrm/xfrm_state.c
-@@ -380,8 +380,8 @@ static void xfrm_put_mode(struct xfrm_mode *mode)
-
-  static void xfrm_state_gc_destroy(struct xfrm_state *x)
-  {
--	del_timer_sync(&x->timer);
--	del_timer_sync(&x->rtimer);
-+	cancel_delayed_work_sync(&x->work);
-+	cancel_delayed_work_sync(&x->rwork);
-  	kfree(x->aalg);
-  	kfree(x->ealg);
-  	kfree(x->calg);
-@@ -426,15 +426,16 @@ static inline unsigned long make_jiffies(long secs)
-  		return secs*HZ;
-  }
-
--static void xfrm_timer_handler(unsigned long data)
-+static void xfrm_work_handler(struct work_struct *w)
-  {
--	struct xfrm_state *x = (struct xfrm_state*)data;
-+	struct xfrm_state *x =
-+		container_of((struct delayed_work *)w, struct xfrm_state, work);
-  	unsigned long now = get_seconds();
-  	long next = LONG_MAX;
-  	int warn = 0;
-  	int err = 0;
-
--	spin_lock(&x->lock);
-+	spin_lock_bh(&x->lock);
-  	if (x->km.state == XFRM_STATE_DEAD)
-  		goto out;
-  	if (x->km.state == XFRM_STATE_EXPIRED)
-@@ -479,7 +480,7 @@ static void xfrm_timer_handler(unsigned long data)
-  		km_state_expired(x, 0, 0);
-  resched:
-  	if (next != LONG_MAX)
--		mod_timer(&x->timer, jiffies + make_jiffies(next));
-+		schedule_delayed_work(&x->work, make_jiffies(next));
-
-  	goto out;
-
-@@ -500,10 +501,10 @@ expired:
-  				audit_get_sessionid(current), 0);
-
-  out:
--	spin_unlock(&x->lock);
-+	spin_unlock_bh(&x->lock);
-  }
-
--static void xfrm_replay_timer_handler(unsigned long data);
-+static void xfrm_replay_work_handler(struct work_struct *);
-
-  struct xfrm_state *xfrm_state_alloc(void)
-  {
-@@ -518,9 +519,8 @@ struct xfrm_state *xfrm_state_alloc(void)
-  		INIT_HLIST_NODE(&x->bydst);
-  		INIT_HLIST_NODE(&x->bysrc);
-  		INIT_HLIST_NODE(&x->byspi);
--		setup_timer(&x->timer, xfrm_timer_handler, (unsigned long)x);
--		setup_timer(&x->rtimer, xfrm_replay_timer_handler,
--				(unsigned long)x);
-+		INIT_DELAYED_WORK(&x->work, xfrm_work_handler);
-+		INIT_DELAYED_WORK(&x->rwork, xfrm_replay_work_handler);
-  		x->curlft.add_time = get_seconds();
-  		x->lft.soft_byte_limit = XFRM_INF;
-  		x->lft.soft_packet_limit = XFRM_INF;
-@@ -864,8 +864,7 @@ xfrm_state_find(xfrm_address_t *daddr, xfrm_address_t *saddr,
-  				hlist_add_head(&x->byspi, xfrm_state_byspi+h);
-  			}
-  			x->lft.hard_add_expires_seconds = sysctl_xfrm_acq_expires;
--			x->timer.expires = jiffies + sysctl_xfrm_acq_expires*HZ;
--			add_timer(&x->timer);
-+			schedule_delayed_work(&x->work, sysctl_xfrm_acq_expires*HZ);
-  			xfrm_state_num++;
-  			xfrm_hash_grow_check(x->bydst.next != NULL);
-  		} else {
-@@ -938,9 +937,9 @@ static void __xfrm_state_insert(struct xfrm_state *x)
-  		hlist_add_head(&x->byspi, xfrm_state_byspi+h);
-  	}
-
--	mod_timer(&x->timer, jiffies + HZ);
-+	schedule_delayed_work(&x->work, HZ);
-  	if (x->replay_maxage)
--		mod_timer(&x->rtimer, jiffies + x->replay_maxage);
-+		schedule_delayed_work(&x->rwork, x->replay_maxage);
-
-  	wake_up(&km_waitq);
-
-@@ -1049,8 +1048,7 @@ static struct xfrm_state *__find_acq_core(unsigned short family, u8 mode, u32 re
-  		x->props.reqid = reqid;
-  		x->lft.hard_add_expires_seconds = sysctl_xfrm_acq_expires;
-  		xfrm_state_hold(x);
--		x->timer.expires = jiffies + sysctl_xfrm_acq_expires*HZ;
--		add_timer(&x->timer);
-+		schedule_delayed_work(&x->work, sysctl_xfrm_acq_expires*HZ);
-  		hlist_add_head(&x->bydst, xfrm_state_bydst+h);
-  		h = xfrm_src_hash(daddr, saddr, family);
-  		hlist_add_head(&x->bysrc, xfrm_state_bysrc+h);
-@@ -1317,7 +1315,7 @@ out:
-  		memcpy(&x1->lft, &x->lft, sizeof(x1->lft));
-  		x1->km.dying = 0;
-
--		mod_timer(&x1->timer, jiffies + HZ);
-+		schedule_delayed_work(&x1->work, HZ);
-  		if (x1->curlft.use_time)
-  			xfrm_state_check_expire(x1);
-
-@@ -1342,7 +1340,7 @@ int xfrm_state_check_expire(struct xfrm_state *x)
-  	if (x->curlft.bytes >= x->lft.hard_byte_limit ||
-  	    x->curlft.packets >= x->lft.hard_packet_limit) {
-  		x->km.state = XFRM_STATE_EXPIRED;
--		mod_timer(&x->timer, jiffies);
-+		schedule_delayed_work(&x->work, 0);
-  		return -EINVAL;
-  	}
-
-@@ -1622,15 +1620,16 @@ void xfrm_replay_notify(struct xfrm_state *x, int event)
-  	km_state_notify(x, &c);
-
-  	if (x->replay_maxage &&
--	    !mod_timer(&x->rtimer, jiffies + x->replay_maxage))
-+	    !schedule_delayed_work(&x->rwork, x->replay_maxage))
-  		x->xflags &= ~XFRM_TIME_DEFER;
-  }
-
--static void xfrm_replay_timer_handler(unsigned long data)
-+static void xfrm_replay_work_handler(struct work_struct *w)
-  {
--	struct xfrm_state *x = (struct xfrm_state*)data;
-+	struct xfrm_state *x =
-+		container_of((struct delayed_work *)w, struct xfrm_state, rwork);
-
--	spin_lock(&x->lock);
-+	spin_lock_bh(&x->lock);
-
-  	if (x->km.state == XFRM_STATE_VALID) {
-  		if (xfrm_aevent_is_on())
-@@ -1639,7 +1638,7 @@ static void xfrm_replay_timer_handler(unsigned long data)
-  			x->xflags |= XFRM_TIME_DEFER;
-  	}
-
--	spin_unlock(&x->lock);
-+	spin_unlock_bh(&x->lock);
-  }
-
-  int xfrm_replay_check(struct xfrm_state *x,
+I'd suspect that after 1e8 loops your CPU got too hot and started to
+misbehave.
