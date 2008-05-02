@@ -1,58 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936613AbYEBWdq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758278AbYEBWgF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936613AbYEBWdq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 18:33:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762619AbYEBWdj
+	id S1758278AbYEBWgF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 18:36:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756683AbYEBWfw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 18:33:39 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:45168 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758887AbYEBWdi (ORCPT
+	Fri, 2 May 2008 18:35:52 -0400
+Received: from lazybastard.de ([212.112.238.170]:50396 "EHLO
+	longford.logfs.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755532AbYEBWfw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 18:33:38 -0400
-Date: Fri, 2 May 2008 15:33:06 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: "H. Peter Anvin" <hpa@zytor.com>
-cc: "Carlos R. Mafra" <crmafra@ift.unesp.br>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] kernel/time.c: Silence gcc warning 'integer constant to
- large for long type'
-In-Reply-To: <alpine.LFD.1.10.0805021515120.5994@woody.linux-foundation.org>
-Message-ID: <alpine.LFD.1.10.0805021528080.5994@woody.linux-foundation.org>
-References: <200805021858.m42Iw4Lj025952@tazenda.hos.anvin.org> <alpine.LFD.1.10.0805021407030.5994@woody.linux-foundation.org> <481B888F.3070302@zytor.com> <alpine.LFD.1.10.0805021515120.5994@woody.linux-foundation.org>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Fri, 2 May 2008 18:35:52 -0400
+Date: Sat, 3 May 2008 00:35:39 +0200
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
+To: Eric Sandeen <sandeen@redhat.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       =?utf-8?B?SsO2cm4=?= Engel <joern@lazybastard.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] find dynamic stack allocations in checkstack.pl
+Message-ID: <20080502223539.GH24080@logfs.org>
+References: <481B4EC5.6060507@redhat.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <481B4EC5.6060507@redhat.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Fri, 2 May 2008, Linus Torvalds wrote:
+On Fri, 2 May 2008 12:26:29 -0500, Eric Sandeen wrote:
 > 
-> The thing is, if C code needs to do
-> 
-> 	U64_C(HZ_TO_USEC_MUL32)
-> 
-> to use the macro HZ_TO_USEC_MUL32, then that is a *bug* in the macro.
+> @@ -142,6 +148,22 @@ while (my $line = <STDIN>) {
+>  		next if ($size < 100);
+>  		push @stack, "$intro$size\n";
+>  	}
+> +	elsif (defined $dre && $line =~ m/$dre/) {
 
-Ok, it seems worse than that. I don't see the point of that U64_C thing at 
-all.
+These two could join a line.  Otherwise an excellent addition.
 
-Those macros are only used in C code. 
+Reviewed-By: Joern Engel <joern@logfs.org>
 
-The values should have the right C types already (ie "ull" at the end of 
-big constants to make sure we don't trigger warnings). And no, we do NOT 
-want to have 5 different macro names for five different versions of the 
-same macro. That's just insane.
+Jörn
 
-Make the timeconst.h file just contain sane macros. No preprocessor games 
-etc. Just make it say
-
-	#define USEC_TO_HZ_MUL32 ..correct-value-here..
-
-and not even generate macros with values that cannot be used (ie >64 
-bits).
-
-		Linus
+-- 
+"Translations are and will always be problematic. They inflict violence
+upon two languages." (translation from German)
