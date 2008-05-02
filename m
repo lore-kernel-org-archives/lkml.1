@@ -1,104 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932502AbYEBR0y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1766010AbYEBR1g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932502AbYEBR0y (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 13:26:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752485AbYEBR0p
+	id S1766010AbYEBR1g (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 13:27:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764309AbYEBR10
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 13:26:45 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:57735 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752331AbYEBR0o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 13:26:44 -0400
-Message-ID: <481B4EC5.6060507@redhat.com>
-Date: Fri, 02 May 2008 12:26:29 -0500
-From: Eric Sandeen <sandeen@redhat.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Fri, 2 May 2008 13:27:26 -0400
+Received: from smtp-out04.alice-dsl.net ([88.44.63.6]:4635 "EHLO
+	smtp-out04.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752485AbYEBR10 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 May 2008 13:27:26 -0400
+To: Daniel Hazelton <dhazelton@enter.net>
+Cc: "Parag Warudkar" <parag.warudkar@gmail.com>,
+       "Adrian Bunk" <bunk@kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: How to reduce the number of open kernel bugs
+From: Andi Kleen <andi@firstfloor.org>
+References: <82e4877d0805020742l7d4a6ec9mc72e79aa3d242348@mail.gmail.com>
+	<200805021229.47038.dhazelton@enter.net>
+Date: Fri, 02 May 2008 19:27:04 +0200
+In-Reply-To: <200805021229.47038.dhazelton@enter.net> (Daniel Hazelton's message of "Fri, 2 May 2008 12:29:46 -0400")
+Message-ID: <87od7ovcpj.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
 MIME-Version: 1.0
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-CC: =?ISO-8859-1?Q?J=F6rn_Engel?= <joern@lazybastard.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] find dynamic stack allocations in checkstack.pl
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 02 May 2008 17:20:09.0878 (UTC) FILETIME=[C60BE360:01C8AC78]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Currently, checkstack.pl only looks for fixed subtractions from the stack
-pointer.  However, things like this:
+Daniel Hazelton <dhazelton@enter.net> writes:
+>  If the hardware works 
+> perfectly in every other OS
 
-void function(int size)
-{
-        char stackbuster[size << 2];
-...
+It depends. There used to be the famous case (not longer true now) that 
+older Linux allocated memory from the top of the memory down and other OS
+generally allocated it the from bottom to up and when some of your top
+memory was broken Linux would often hit problems where other OS did not.
 
-are certainly worth pointing out, I think.
+Also there can be the case when some OS use hardware quite differently
+or different hardware features than other. Standard case for example
+used to be that there were a few platforms where the SMM code had 64bit
+bugs and of course you would only hit them when running a 64bit OS which
+was Linux. 
 
-This could perhaps be done more cleanly, and the following patch only
-adds "dynamic" REs for x86 and x86_64, but it works:
+A modern OS is a very complicated system with tens of millions of code
+lines and you can't assume they all program the hardware in the same way.
 
-0x00b0 crypto_cbc_decrypt_inplace [cbc]:                Dynamic (%rax)
-0x00ad crypto_pcbc_decrypt_inplace [pcbc]:              Dynamic (%rax)
-0x02f6 crypto_pcbc_encrypt_inplace [pcbc]:              Dynamic (%rax)
-0x036c _crypto_xcbc_digest_setkey [xcbc]:               Dynamic (%rax)
-...
+Simple truths are often wrong.
 
-(Inspired by Keith Owens' old stack-check script)
+ - and possibly even previous versions of Linux - 
 
-Signed-off-by: Eric Sandeen <sandeen@redhat.com>
----
+Now that is a more interesting case. But regressions are always taken
+seriously by all maintainers I know.
 
-Index: linux-2.6.25/scripts/checkstack.pl
-===================================================================
---- linux-2.6.25.orig/scripts/checkstack.pl	2008-05-02 12:18:15.426407528 -0500
-+++ linux-2.6.25/scripts/checkstack.pl	2008-05-02 12:18:25.989469552 -0500
-@@ -26,8 +26,12 @@
- # $& (whole re) matches the complete objdump line with the stack growth
- # $1 (first bracket) matches the size of the stack growth
- #
-+# $dre is similar, but for dynamic stack redutions:
-+# $& (whole re) matches the complete objdump line with the stack growth
-+# $1 (first bracket) matches the dynamic amount of the stack growth
-+#
- # use anything else and feel the pain  ;) 
--my (@stack, $re, $x, $xs);
-+my (@stack, $re, $dre, $x, $xs);
- {
- 	my $arch = shift;
- 	if ($arch eq "") {
-@@ -47,9 +51,11 @@ my (@stack, $re, $x, $xs);
- 	} elsif ($arch =~ /^i[3456]86$/) {
- 		#c0105234:       81 ec ac 05 00 00       sub    $0x5ac,%esp
- 		$re = qr/^.*[as][du][db]    \$(0x$x{1,8}),\%esp$/o;
-+		$dre = qr/^.*[as][du][db]    (%.*),\%esp$/o;
- 	} elsif ($arch eq 'x86_64') {
- 		#    2f60:	48 81 ec e8 05 00 00 	sub    $0x5e8,%rsp
- 		$re = qr/^.*[as][du][db]    \$(0x$x{1,8}),\%rsp$/o;
-+		$dre = qr/^.*[as][du][db]    (\%.*),\%rsp$/o;
- 	} elsif ($arch eq 'ia64') {
- 		#e0000000044011fc:       01 0f fc 8c     adds r12=-384,r12
- 		$re = qr/.*adds.*r12=-(([0-9]{2}|[3-9])[0-9]{2}),r12/o;
-@@ -142,6 +148,22 @@ while (my $line = <STDIN>) {
- 		next if ($size < 100);
- 		push @stack, "$intro$size\n";
- 	}
-+	elsif (defined $dre && $line =~ m/$dre/) {
-+		my $size = "Dynamic ($1)";
-+
-+		next if $line !~ m/^($xs*)/;
-+		my $addr = $1;
-+		$addr =~ s/ /0/g;
-+		$addr = "0x$addr";
-+
-+		my $intro = "$addr $func [$file]:";
-+		my $padlen = 56 - length($intro);
-+		while ($padlen > 0) {
-+			$intro .= '	';
-+			$padlen -= 8;
-+		}
-+		push @stack, "$intro$size\n";
-+	}
- }
- 
- print sort bysize @stack;
-
+-Andi
