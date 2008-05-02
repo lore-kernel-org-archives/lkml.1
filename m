@@ -1,67 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934641AbYEBN4i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935219AbYEBN4v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934641AbYEBN4i (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 09:56:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762207AbYEBN42
+	id S935219AbYEBN4v (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 09:56:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934567AbYEBN4h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 09:56:28 -0400
-Received: from embla.aitel.hist.no ([158.38.50.22]:52911 "EHLO
-	embla.aitel.hist.no" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760710AbYEBN41 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 09:56:27 -0400
-Message-ID: <481B1A7D.2020000@aitel.hist.no>
-Date: Fri, 02 May 2008 15:43:25 +0200
-From: Helge Hafting <helge.hafting@aitel.hist.no>
-User-Agent: Mozilla-Thunderbird 2.0.0.9 (X11/20080110)
-MIME-Version: 1.0
-To: Kasper Sandberg <lkml@metanurb.dk>
-CC: David Rees <drees76@gmail.com>, David Lethe <david@santools.com>,
-       alex14641@yahoo.com, Justin Piszcz <jpiszcz@lucidpixels.com>,
-       linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: Sharing disks amoung multiple software RAIDs
-References: <1209692359.16523.2.camel@localhost>	 <73000.21239.qm@web50212.mail.re2.yahoo.com>	 <A20315AE59B5C34585629E258D76A97C335477@34093-C3-EVS3.exchange.rackspace.com>	 <1209696179.16523.13.camel@localhost>	 <72dbd3150805020006p7f976a04o487389840f03b4a2@mail.gmail.com> <1209715763.7827.2.camel@localhost>
-In-Reply-To: <1209715763.7827.2.camel@localhost>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+	Fri, 2 May 2008 09:56:37 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:60658 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934255AbYEBN4g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 May 2008 09:56:36 -0400
+Date: Fri, 2 May 2008 15:57:08 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Alistair John Strachan <alistair@devzero.co.uk>
+Cc: Chris Knadle <Chris.Knadle@coredump.us>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Adrian Bunk <bunk@kernel.org>, venkatesh.pallipadi@intel.com,
+       davem@davemloft.net, trini@kernel.crashing.org, mingo@elte.hu,
+       tglx@linutronix.de, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       suresh.b.siddha@intel.com,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: huge gcc 4.1.{0,1} __weak problem
+Message-ID: <20080502135708.GA22929@uranus.ravnborg.org>
+References: <20080501235558.GA20637@orac.ofobscurity.com> <200805021055.10602.alistair@devzero.co.uk> <20080502104348.GC20741@uranus.ravnborg.org> <200805021248.56797.alistair@devzero.co.uk>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200805021248.56797.alistair@devzero.co.uk>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kasper Sandberg wrote:
-> On Fri, 2008-05-02 at 00:06 -0700, David Rees wrote:
->   
->> On Thu, May 1, 2008 at 7:42 PM, Kasper Sandberg <lkml@metanurb.dk> wrote:
->>     
->>>  in other words, would i be
->>>  safer to run rsync every day to my other disk, and run in non-raid
->>>  mode?!
->>>       
->> What would be safer is to run rsync every day from one redundant array
->> to another array - preferably on another machine that is located as
->> far away as possible from the one that you are backing up.
->>
->> RAID is not the same as a backup, though unfortunately, too many
->> people treat it as such.
->>     
-> Im not treating it as a backup, what i want, is to make sure that if 1
-> disk dies, the data is still intact and ill hopefully be able to run
-> with 1 disk till the newly ordered one arrives - and while i naturally
-> will keep offsite backups of most important data, it is certainly far
-> easier to simply rip out a faulty disk, and put in another, instead of
-> restoring from backup from scratch..
->
-> So my question remains.. Is md raid1 not suited for this need? would it
-> be safer to run in non-raid1 mode and daily(maybe hourly) rsync
-> everything over to the second disk?
->   
-Raid protects against disk failure. So your use  is fine.
+On Fri, May 02, 2008 at 12:48:55PM +0100, Alistair John Strachan wrote:
+> On Friday 02 May 2008 11:43:48 Sam Ravnborg wrote:
+> [snip]
+> > > > > It's __GNUC_PATCHLEVEL__, I believe.
+> > > > >
+> > > > > So yes, we can distinguish 4.1.2 (good, and very common) from
+> > > > > 4.1.{0,1} (bad, and rather uncommon).
+> > > > > And yes, considering that 4.1.1 (and even more so 4.1.0) should be
+> > > > > rare to begin with, I think it's better to just not support it.
+> > > > >
+> > > > >			Linus
+> > > >
+> > > >    Unfortunately Debian Stable (i.e. Etch), which is relatively popular
+> > > > for server use, is still using 4.1.1  :-(  (The current gcc package is
+> > > > gcc-4.1.1-21)
+> > > >
+> > > >    I have not looked to see if Debian Stable's gcc-4.1.1-21 has been
+> > > > patched for the currently discussed __weak bug.
+> > >
+> > > I checked and it has been patched in 4.1.1-21. This would make checking
+> > > for 4.1.1 via __GNUC_PATCHLEVEL__ potentially invalid, as patched distro
+> > > compilers may (and in this case do) have this fixed.
+> >
+> > Is it possible to cook up a small sample file we could build as part
+> > of the kernel build. If it fails => error out.
+> > If someone comes up with the code I shall try to integrate it
+> > in the build system.
+> 
+> The GCC PR has a test case for this regression which might be usable.
+> 
+> http://gcc.gnu.org/viewcvs/branches/gcc-4_1-branch/gcc/testsuite/gcc.dg/tree-ssa/pr27781.c?view=markup&pathrev=114852
 
-Backup also protects against user error and virus/worm/cracker damage.
-If you accidentally overwrite a file, or a virus/worm/cracker messes up 
-the filesystem,
-then RAID loose because the overwiting/messing happens on both disks.
-In that case you'll still be able to get stuff from a backup.
+OK, can anyone confirm that this fails to build which a
+buggy gcc:
 
 
-Helge Hafting
+void __attribute__((weak)) func(void)
+{
+    /* no code */
+}
+
+int main()
+{
+    func();
+    return 0;
+}
+
+
+
+	Sam
