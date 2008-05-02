@@ -1,206 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760968AbYEBFVU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760909AbYEBFX4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760968AbYEBFVU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 01:21:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759043AbYEBFTY
+	id S1760909AbYEBFX4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 01:23:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751806AbYEBFXr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 01:19:24 -0400
-Received: from wa-out-1112.google.com ([209.85.146.178]:32934 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757264AbYEBFTV (ORCPT
+	Fri, 2 May 2008 01:23:47 -0400
+Received: from utopia.booyaka.com ([72.9.107.138]:36920 "EHLO
+	utopia.booyaka.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750984AbYEBFXq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 01:19:21 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=DRqLCy7W7b3ejt/bW7icc9eUKzfH0km0/M0GSyBmvwuu2sx2nxKjBitRAH1sAoOtyn0hv1CvSCWtpTbuTVXrcWzluZAiWJIs2keOguB3Zgo8W3gKCfNYUOdSM7VxpV1++Jrgj7FpfbOyWqpvJEA2Qw4xSq2VVkXOI7qnjW/muAo=
-Subject: [PATCH 6/6] net: use get/put_unaligned_* helpers
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: David Miller <davem@davemloft.net>, linux-netdev <netdev@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Thu, 01 May 2008 22:19:34 -0700
-Message-Id: <1209705574.22362.43.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 2 May 2008 01:23:46 -0400
+Date: Thu, 1 May 2008 23:23:45 -0600 (MDT)
+From: Paul Walmsley <paul@pwsan.com>
+To: Dmitry <dbaryshkov@gmail.com>
+cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       Haavard Skinnemoen <haavard.skinnemoen@atmel.com>,
+       Russell King <rmk+lkml@arm.linux.org.uk>,
+       Paul Mundt <lethal@linux-sh.org>,
+       pHilipp Zabel <philipp.zabel@gmail.com>, Pavel Machek <pavel@ucw.cz>,
+       tony@atomide.com, David Brownell <david-b@pacbell.net>,
+       hiroshi.DOYU@nokia.com
+Subject: Re: [PATCH 0/5] Clocklib: generic clocks framework
+In-Reply-To: <bc64b4640804260147o70253917me32b0e35a1ce6ad8@mail.gmail.com>
+Message-ID: <alpine.DEB.1.00.0805012221220.7405@utopia.booyaka.com>
+References: <20080420082925.GA32739@doriath.ww600.siemens.net>  <alpine.DEB.1.00.0804210057000.17857@utopia.booyaka.com>  <bc64b4640804210148p2d1c2fe0qe469152fa1a9697e@mail.gmail.com>  <alpine.DEB.1.00.0804250221040.14755@utopia.booyaka.com>
+ <bc64b4640804260147o70253917me32b0e35a1ce6ad8@mail.gmail.com>
+User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
----
- net/bridge/br_stp_bpdu.c |    4 ++--
- net/core/filter.c        |    4 ++--
- net/ipv4/cipso_ipv4.c    |   18 ++++++++----------
- net/ipv4/tcp_input.c     |   18 +++++++++---------
- 4 files changed, 21 insertions(+), 23 deletions(-)
+Hello Dmitry,
 
-diff --git a/net/bridge/br_stp_bpdu.c b/net/bridge/br_stp_bpdu.c
-index 8deab64..ddeb6e5 100644
---- a/net/bridge/br_stp_bpdu.c
-+++ b/net/bridge/br_stp_bpdu.c
-@@ -58,12 +58,12 @@ static inline void br_set_ticks(unsigned char *dest, int j)
- {
- 	unsigned long ticks = (STP_HZ * j)/ HZ;
- 
--	put_unaligned(htons(ticks), (__be16 *)dest);
-+	put_unaligned_be16(ticks, dest);
- }
- 
- static inline int br_get_ticks(const unsigned char *src)
- {
--	unsigned long ticks = ntohs(get_unaligned((__be16 *)src));
-+	unsigned long ticks = get_unaligned_be16(src);
- 
- 	return DIV_ROUND_UP(ticks * HZ, STP_HZ);
- }
-diff --git a/net/core/filter.c b/net/core/filter.c
-index f5f3cf6..4f83697 100644
---- a/net/core/filter.c
-+++ b/net/core/filter.c
-@@ -213,7 +213,7 @@ unsigned int sk_run_filter(struct sk_buff *skb, struct sock_filter *filter, int
- load_w:
- 			ptr = load_pointer(skb, k, 4, &tmp);
- 			if (ptr != NULL) {
--				A = ntohl(get_unaligned((__be32 *)ptr));
-+				A = get_unaligned_be32(ptr);
- 				continue;
- 			}
- 			break;
-@@ -222,7 +222,7 @@ load_w:
- load_h:
- 			ptr = load_pointer(skb, k, 2, &tmp);
- 			if (ptr != NULL) {
--				A = ntohs(get_unaligned((__be16 *)ptr));
-+				A = get_unaligned_be16(ptr);
- 				continue;
- 			}
- 			break;
-diff --git a/net/ipv4/cipso_ipv4.c b/net/ipv4/cipso_ipv4.c
-index 4637ded..05afb57 100644
---- a/net/ipv4/cipso_ipv4.c
-+++ b/net/ipv4/cipso_ipv4.c
-@@ -983,7 +983,7 @@ static int cipso_v4_map_cat_enum_valid(const struct cipso_v4_doi *doi_def,
- 		return -EFAULT;
- 
- 	for (iter = 0; iter < enumcat_len; iter += 2) {
--		cat = ntohs(get_unaligned((__be16 *)&enumcat[iter]));
-+		cat = get_unaligned_be16(&enumcat[iter]);
- 		if (cat <= cat_prev)
- 			return -EFAULT;
- 		cat_prev = cat;
-@@ -1052,7 +1052,7 @@ static int cipso_v4_map_cat_enum_ntoh(const struct cipso_v4_doi *doi_def,
- 
- 	for (iter = 0; iter < net_cat_len; iter += 2) {
- 		ret_val = netlbl_secattr_catmap_setbit(secattr->attr.mls.cat,
--				ntohs(get_unaligned((__be16 *)&net_cat[iter])),
-+				get_unaligned_be16(&net_cat[iter]),
- 				GFP_ATOMIC);
- 		if (ret_val != 0)
- 			return ret_val;
-@@ -1086,10 +1086,9 @@ static int cipso_v4_map_cat_rng_valid(const struct cipso_v4_doi *doi_def,
- 		return -EFAULT;
- 
- 	for (iter = 0; iter < rngcat_len; iter += 4) {
--		cat_high = ntohs(get_unaligned((__be16 *)&rngcat[iter]));
-+		cat_high = get_unaligned_be16(&rngcat[iter]);
- 		if ((iter + 4) <= rngcat_len)
--			cat_low = ntohs(
--				get_unaligned((__be16 *)&rngcat[iter + 2]));
-+			cat_low = get_unaligned_be16(&rngcat[iter + 2]);
- 		else
- 			cat_low = 0;
- 
-@@ -1188,10 +1187,9 @@ static int cipso_v4_map_cat_rng_ntoh(const struct cipso_v4_doi *doi_def,
- 	u16 cat_high;
- 
- 	for (net_iter = 0; net_iter < net_cat_len; net_iter += 4) {
--		cat_high = ntohs(get_unaligned((__be16 *)&net_cat[net_iter]));
-+		cat_high = get_unaligned_be16(&net_cat[net_iter]);
- 		if ((net_iter + 4) <= net_cat_len)
--			cat_low = ntohs(
--			      get_unaligned((__be16 *)&net_cat[net_iter + 2]));
-+			cat_low = get_unaligned_be16(&net_cat[net_iter + 2]);
- 		else
- 			cat_low = 0;
- 
-@@ -1562,7 +1560,7 @@ int cipso_v4_validate(unsigned char **option)
- 	}
- 
- 	rcu_read_lock();
--	doi_def = cipso_v4_doi_search(ntohl(get_unaligned((__be32 *)&opt[2])));
-+	doi_def = cipso_v4_doi_search(get_unaligned_be32(&opt[2]));
- 	if (doi_def == NULL) {
- 		err_offset = 2;
- 		goto validate_return_locked;
-@@ -1843,7 +1841,7 @@ static int cipso_v4_getattr(const unsigned char *cipso,
- 	if (cipso_v4_cache_check(cipso, cipso[1], secattr) == 0)
- 		return 0;
- 
--	doi = ntohl(get_unaligned((__be32 *)&cipso[2]));
-+	doi = get_unaligned_be32(&cipso[2]);
- 	rcu_read_lock();
- 	doi_def = cipso_v4_doi_search(doi);
- 	if (doi_def == NULL)
-diff --git a/net/ipv4/tcp_input.c b/net/ipv4/tcp_input.c
-index 0298f80..eda4f4a 100644
---- a/net/ipv4/tcp_input.c
-+++ b/net/ipv4/tcp_input.c
-@@ -1172,8 +1172,8 @@ static int tcp_check_dsack(struct tcp_sock *tp, struct sk_buff *ack_skb,
- 			   struct tcp_sack_block_wire *sp, int num_sacks,
- 			   u32 prior_snd_una)
- {
--	u32 start_seq_0 = ntohl(get_unaligned(&sp[0].start_seq));
--	u32 end_seq_0 = ntohl(get_unaligned(&sp[0].end_seq));
-+	u32 start_seq_0 = get_unaligned_be32(&sp[0].start_seq);
-+	u32 end_seq_0 = get_unaligned_be32(&sp[0].end_seq);
- 	int dup_sack = 0;
- 
- 	if (before(start_seq_0, TCP_SKB_CB(ack_skb)->ack_seq)) {
-@@ -1181,8 +1181,8 @@ static int tcp_check_dsack(struct tcp_sock *tp, struct sk_buff *ack_skb,
- 		tcp_dsack_seen(tp);
- 		NET_INC_STATS_BH(LINUX_MIB_TCPDSACKRECV);
- 	} else if (num_sacks > 1) {
--		u32 end_seq_1 = ntohl(get_unaligned(&sp[1].end_seq));
--		u32 start_seq_1 = ntohl(get_unaligned(&sp[1].start_seq));
-+		u32 end_seq_1 = get_unaligned_be32(&sp[1].end_seq);
-+		u32 start_seq_1 = get_unaligned_be32(&sp[1].start_seq);
- 
- 		if (!after(end_seq_0, end_seq_1) &&
- 		    !before(start_seq_0, start_seq_1)) {
-@@ -1453,8 +1453,8 @@ tcp_sacktag_write_queue(struct sock *sk, struct sk_buff *ack_skb,
- 	for (i = 0; i < num_sacks; i++) {
- 		int dup_sack = !i && found_dup_sack;
- 
--		sp[used_sacks].start_seq = ntohl(get_unaligned(&sp_wire[i].start_seq));
--		sp[used_sacks].end_seq = ntohl(get_unaligned(&sp_wire[i].end_seq));
-+		sp[used_sacks].start_seq = get_unaligned_be32(&sp_wire[i].start_seq);
-+		sp[used_sacks].end_seq = get_unaligned_be32(&sp_wire[i].end_seq);
- 
- 		if (!tcp_is_sackblock_valid(tp, dup_sack,
- 					    sp[used_sacks].start_seq,
-@@ -3340,7 +3340,7 @@ void tcp_parse_options(struct sk_buff *skb, struct tcp_options_received *opt_rx,
- 			switch (opcode) {
- 			case TCPOPT_MSS:
- 				if (opsize == TCPOLEN_MSS && th->syn && !estab) {
--					u16 in_mss = ntohs(get_unaligned((__be16 *)ptr));
-+					u16 in_mss = get_unaligned_be16(ptr);
- 					if (in_mss) {
- 						if (opt_rx->user_mss &&
- 						    opt_rx->user_mss < in_mss)
-@@ -3369,8 +3369,8 @@ void tcp_parse_options(struct sk_buff *skb, struct tcp_options_received *opt_rx,
- 				    ((estab && opt_rx->tstamp_ok) ||
- 				     (!estab && sysctl_tcp_timestamps))) {
- 					opt_rx->saw_tstamp = 1;
--					opt_rx->rcv_tsval = ntohl(get_unaligned((__be32 *)ptr));
--					opt_rx->rcv_tsecr = ntohl(get_unaligned((__be32 *)(ptr+4)));
-+					opt_rx->rcv_tsval = get_unaligned_be32(ptr);
-+					opt_rx->rcv_tsecr = get_unaligned_be32(ptr + 4);
- 				}
- 				break;
- 			case TCPOPT_SACK_PERM:
--- 
-1.5.5.1.350.gbbbf
+On Sat, 26 Apr 2008, Dmitry wrote:
 
+> 2008/4/25, Paul Walmsley <paul@pwsan.com>:
+> >
+> > I wouldn't pretend to have a comprehensive list at this point.  But from a
+> >  brief look, your clk_round_rate() and clk_set_rate() implementations will
+> >  not work for the present OMAP clock tree.  In OMAP, many parent clocks do
+> >  not have the same rate as their children.
+> 
+> You can easily override any calculations in your clk->set_rate/clk->round_rate/
+> clk->get_rate functions.
+
+The problem is that parent clocks shouldn't be automatically set to the 
+same rate as child clocks.  We could probably hack around it in 
+clk->set_rate to ignore those spurious rate changes, but really they 
+shouldn't be done in the first place, at least on OMAP.  clk->set_rate 
+should handle parent rate changes if necessary.  Removing this from 
+clocklib looks trivial - involves deleting about ten lines of clocklib 
+code?
+
+> My first goals are:
+> 1) to have an infrastructure to plug in my clocks in a platform-independant way
+
+Doesn't the existing clock framework do this already?  Or are you really 
+referring to your clk_functions/multiple consumer additions?  If the 
+latter, then we all would be better served by discussing why the existing 
+clock interface doesn't meet your needs, and figuring out what to do about 
+it, rather than by merging code that initially appears to be common, but 
+with you having the ultimate intention of extending the common clock 
+interface to implement the features that you want.
+
+> 2) to drop lots of copies of nearly the same code.
+
+I don't really see much of a problem with the current situation, as long 
+as all of the implementations use the same interface.  Right now, 
+architectures are free to change their underlying code without having to 
+worry about breaking other architectures or dealing with new gatekeepers, 
+and that's a big plus for the status quo.  Russell is the person who 
+shoulders the burden here of multiple implementations, and when this 
+becomes a pressing problem, I would expect him to be doing most of the 
+advocacy for common code.
+
+> >  Assumptions that you make in clocklib may not work well for future chips.
+> >  Changing clocklib will affect many architectures.  For example, perhaps
+> >  someone may wish to implement clocks as an actual in-memory tree rather
+> >  than a list.  Or perhaps someone may need to handle clock usecounting
+> >  differently, for situations when multiple clocks might share the same
+> >  enable/disable code, but with different parents.
+> 
+> Sorry, but WTF? Do you prefer to keep a lot of code and disallow
+> merging a generification just because of some-that-may-even-not-exist
+> cases? That sounds
+> pretty... strange.
+> And your examples are really strange.
+
+Those examples are real; they have been discussed in the past or proposed 
+for the future for OMAP clock framework.  Regarding the second example, 
+that's a very real issue for us right now with our interface clocks, and 
+flexible usecounting is one of the ways that we've considered solving it.  
+As far as the tree example goes, we've got about 200 struct clks in the 
+latest OMAP clock framework, and this will probably increase by 50% over 
+the next year.  We have clock tree operations that have to move both up 
+and down the tree.  Right now we're doing sequential scans on a clock 
+list, but chances are quite high that we will be doing this very 
+differently a few months.
+
+I cited these examples not because I was interested in having you tell me 
+that my examples were unrealistic or "strange" or should be done 
+differently, but simply to reinforce the message that a top-down approach 
+to a generic clocklib is not likely to be appreciated much by maintainers.  
+I know you keep saying that your code is intended to be be strictly 
+optional.  If you want to prove it, why not consider a bottom-up approach 
+instead?  Right now you've got patches that convert two architectures to 
+use your clocklib.  Instead of using a common library, just duplicate your 
+clock code for each architecture.  There's not much to it.  Propose 
+patches to individual architecture maintainers, and persuade them to 
+replace their existing code with your own.  
+
+If you can get a large fraction to use your identical code, and agree that 
+it's at least as good as what they're using right now, then you'd have a 
+pretty strong case for creating some kind of common library.  If not, 
+well, those maintainers probably would not switch to your current common 
+clocklib either, so there's really no downside.
+
+
+- Paul
