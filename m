@@ -1,68 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765452AbYEBAEe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932224AbYEBAGJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765452AbYEBAEe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 May 2008 20:04:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754199AbYEBAE0
+	id S932224AbYEBAGJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 May 2008 20:06:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754847AbYEBAFz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 May 2008 20:04:26 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:41403 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753901AbYEBAE0 (ORCPT
+	Thu, 1 May 2008 20:05:55 -0400
+Received: from smtp121.sbc.mail.sp1.yahoo.com ([69.147.64.94]:43602 "HELO
+	smtp121.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754559AbYEBAFz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 May 2008 20:04:26 -0400
-Date: Thu, 1 May 2008 20:04:25 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: LKML <linux-kernel@vger.kernel.org>
-cc: akpm@goodmis.org, rbultje@ronald.bitfreak.net
-Subject: [PATCH] use unsigned long for zoran_driver
-Message-ID: <Pine.LNX.4.58.0805012003020.7954@gandalf.stny.rr.com>
+	Thu, 1 May 2008 20:05:55 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=sbcglobal.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:Message-ID:Date:From:User-Agent:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+  b=RQWhD8K5CTSkFAfjUeA3mtNU2XcXk4eqQbWth7fSHX3mYldIAekNnTmQ1WMxW3SZaKJNWJ36MNtxMHBZiQq0bpVFwypiz9LawRJl6OXA2hmMOk9FAHlFwxklOXuWM3lLfQI4WFUmA+RbhcRcXrhYnz8m+lxI63zs9Y6p7cDS49E=  ;
+X-YMail-OSG: 0NIr.nIVM1ngvGwRjO4qBlbE_Ug_8W5JA4_oqy4KqnsVQH.f95QNPEdr2mDHDEThWF3xJIEsIs4n9d3TF_L6ieOoaHL0WDWpOO5ht1SnFWHwRrnTFrQdOlL6hc0O28KSQyo-
+X-Yahoo-Newman-Property: ymail-3
+Message-ID: <481A5A94.2080400@sbcglobal.net>
+Date: Thu, 01 May 2008 17:04:36 -0700
+From: Ryan Roth <ryanroth@sbcglobal.net>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Ryan.Roth@CH2M.com, bugme-daemon@bugzilla.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [Bugme-new] [Bug 10586] New: High Number of Segfaults onMacBookStarting
+ With 2.6.24.5 Kernel
+References: <bug-10586-10286@http.bugzilla.kernel.org/>	<20080501130444.cc5c63e8.akpm@linux-foundation.org>	<86A21F45FFA48B408A65E67054362EB6069DD742@CULEBRA.amr.ch2m.com>	<20080501133003.be723364.akpm@linux-foundation.org>	<86A21F45FFA48B408A65E67054362EB621C948@CULEBRA.amr.ch2m.com>	<481A5276.4040607@sbcglobal.net> <20080501170239.9b740877.akpm@linux-foundation.org>
+In-Reply-To: <20080501170239.9b740877.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Andrew Morton wrote:
+> On Thu, 01 May 2008 16:29:58 -0700
+> Ryan Roth <ryanroth@sbcglobal.net> wrote:
+>
+>   
+>>> OK, worried.  This is a huge bug.  But afaik you're the only person 
+>>> who has
+>>> hit it, so there must be something special in your setup which is
+>>> triggering it.  This could be hard.
+>>>
+>>>       
+>> OK here is what I get with the git16 kernel.  On boot I get this error:
+>>
+>> PCI: Not using MMCONFIG
+>> PCI: BIOS Bug: MCFG area at f0000000 is not reserved in ACPI motherboard 
+>> resources
+>> PCI: Not using MMCONFIG
+>>     
+>
+> yeah, mmconfig is a problem.  It should be harmless.  Probably you're
+> better off with it disabled ;)
+>
+>   
+>> Attached is a complete log after this boot
+>>     
+>
+> I see no 'segfault' messages in there?
+>
+>   
+Since this last boot I have only got these:
 
-My typecheck flags patch flagged the zoran_driver.c as having an incompatible
-flags for spin_lock_irqsave. This isn't really true since "long" was used.
-But since the convention is to use "unsigned long" this is a clean up
-patch to make the zoran_driver conform to the rest of the kernel.
-
-Signed-off-by: Steven Rostedt <srostedt@redhat.com>
----
- drivers/media/video/zoran_driver.c |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
-
-Index: linux-compile.git/drivers/media/video/zoran_driver.c
-===================================================================
---- linux-compile.git.orig/drivers/media/video/zoran_driver.c	2008-05-01 16:58:39.000000000 -0400
-+++ linux-compile.git/drivers/media/video/zoran_driver.c	2008-05-01 19:58:19.000000000 -0400
-@@ -1167,7 +1167,7 @@ zoran_close_end_session (struct file *fi
-
- 	/* v4l capture */
- 	if (fh->v4l_buffers.active != ZORAN_FREE) {
--		long flags;
-+		unsigned long flags;
-
- 		spin_lock_irqsave(&zr->spinlock, flags);
- 		zr36057_set_memgrab(zr, 0);
-@@ -3436,7 +3436,7 @@ zoran_do_ioctl (struct inode *inode,
-
- 			/* unload capture */
- 			if (zr->v4l_memgrab_active) {
--				long flags;
-+				unsigned long flags;
-
- 				spin_lock_irqsave(&zr->spinlock, flags);
- 				zr36057_set_memgrab(zr, 0);
-@@ -4375,7 +4375,7 @@ zoran_vm_close (struct vm_area_struct *v
- 				mutex_lock(&zr->resource_lock);
-
- 				if (fh->v4l_buffers.active != ZORAN_FREE) {
--					long flags;
-+					unsigned long flags;
-
- 					spin_lock_irqsave(&zr->spinlock, flags);
- 					zr36057_set_memgrab(zr, 0);
+> May 1 16:26:25 kernel: gnome-power-man[3112]: segfault at 0 ip 410fda 
+> sp 7fff4712c870 error 4 in gnome-power-manager[400000+47000]
+> May 1 16:26:25 kernel: gnome-power-man[3116]: segfault at 0 ip 410fda 
+> sp 7fff2959cce0 error 4 in gnome-power-manager[400000+47000]
+> May 1 16:26:25 kernel: gnome-power-man[3119]: segfault at 0 ip 410fda 
+> sp 7fffc7671db0 error 4 in gnome-power-manager[400000+47000]
 
