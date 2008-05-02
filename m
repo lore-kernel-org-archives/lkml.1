@@ -1,72 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937063AbYEBWWW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936315AbYEBWZt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937063AbYEBWWW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 18:22:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932810AbYEBWWI
+	id S936315AbYEBWZt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 18:25:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757175AbYEBWZj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 18:22:08 -0400
-Received: from mail.fieldses.org ([66.93.2.214]:51359 "EHLO fieldses.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932809AbYEBWWG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 18:22:06 -0400
-Date: Fri, 2 May 2008 18:22:00 -0400
-To: Al Viro <viro@ZenIV.linux.org.uk>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Bryan Wu <cooloney@kernel.org>,
-       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
-       willy@debian.org, uclinux-dist-devel@blackfin.uclinux.org,
-       richterd@citi.umich.edu
-Subject: Re: [LTP/VFS] fcntl SETLEASE fails on ramfs/tmpfs
-Message-ID: <20080502222200.GQ21918@fieldses.org>
-References: <386072610804282042y2dda4b52h927683a8a938ce1f@mail.gmail.com> <20080429135454.efebec8f.akpm@linux-foundation.org> <20080429214231.GC26468@fieldses.org> <20080501062432.GT5882@ZenIV.linux.org.uk>
+	Fri, 2 May 2008 18:25:39 -0400
+Received: from server515i.exghost.com ([72.32.253.75]:1246 "EHLO
+	server515.appriver.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755780AbYEBWZi convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 May 2008 18:25:38 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080501062432.GT5882@ZenIV.linux.org.uk>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-From: "J. Bruce Fields" <bfields@fieldses.org>
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: Sharing disks amoung multiple software RAIDs
+Date: Fri, 2 May 2008 17:24:22 -0500
+Message-ID: <A20315AE59B5C34585629E258D76A97C335960@34093-C3-EVS3.exchange.rackspace.com>
+In-Reply-To: <1209764630.7827.15.camel@localhost>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: Sharing disks amoung multiple software RAIDs
+Thread-Index: AcisnaXkU6uk9DHZRxCM2vSQRIY1igAAPS6A
+References: <1209692359.16523.2.camel@localhost> <73000.21239.qm@web50212.mail.re2.yahoo.com> <A20315AE59B5C34585629E258D76A97C335477@34093-C3-EVS3.exchange.rackspace.com> <1209696179.16523.13.camel@localhost> <72dbd3150805020006p7f976a04o487389840f03b4a2@mail.gmail.com> <1209715763.7827.2.camel@localhost>  <481AD006.6050708@dgreaves.com> <1209764630.7827.15.camel@localhost>
+From: "David Lethe" <david@santools.com>
+To: "Kasper Sandberg" <lkml@metanurb.dk>, "David Greaves" <david@dgreaves.com>
+Cc: "David Rees" <drees76@gmail.com>, <alex14641@yahoo.com>,
+       "Justin Piszcz" <jpiszcz@lucidpixels.com>, <linux-raid@vger.kernel.org>,
+       <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 02 May 2008 22:25:17.0232 (UTC) FILETIME=[66146B00:01C8ACA3]
+X-Policy: GLOBAL
+X-Policy: GLOBAL
+X-Policy: GLOBAL
+X-Policy: GLOBAL
+X-Policy: GLOBAL
+X-Policy: GLOBAL
+X-Policy: GLOBAL
+X-Primary: david@santools.com
+X-Note: This Email was scanned by AppRiver SecureTide
+X-ALLOW: david@santools.com ALLOWED
+X-Virus-Scan: V-
+X-Note: Spam Tests Failed: 
+X-Country-Path: PRIVATE->UNITED STATES->UNITED STATES
+X-Note-Sending-IP: 72.32.49.6
+X-Note-Reverse-DNS: fe2.exchange.rackspace.com
+X-Note-WHTLIST: david@santools.com
+X-Note: User Rule Hits: 
+X-Note: Global Rule Hits: 92 93 139 
+X-Note: Mail Class: ALLOWEDSENDER
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 01, 2008 at 07:24:32AM +0100, Al Viro wrote:
-> On Tue, Apr 29, 2008 at 05:42:31PM -0400, J. Bruce Fields wrote:
-> > The most likely consequences are that a local reader gets out-of-date
-> > data for a file that a Samba client has modified.
-> > 
-> > I suppose that re-checking the d_count and i_count after step 3 might
-> > close the race.
->  
-> The hell it might.
 
-Yeah, looking back at the code, I suppose by the time we've added the
-new lease to the inode's lock list, we've already broken conflicting
-leases.  OK.
 
-> Leases are broken, plain and simple.  Not to mention
-> anything else, a couple of threads with shared descriptor table will
-> bypass these checks happily.
+-----Original Message-----
+From: Kasper Sandberg [mailto:lkml@metanurb.dk] 
+Sent: Friday, May 02, 2008 4:44 PM
+To: David Greaves
+Cc: David Rees; David Lethe; alex14641@yahoo.com; Justin Piszcz; linux-raid@vger.kernel.org; linux-kernel@vger.kernel.org
+Subject: Re: Sharing disks amoung multiple software RAIDs
 
-I lost you there.
+On Fri, 2008-05-02 at 09:25 +0100, David Greaves wrote:
+> Kasper Sandberg wrote:
+> > Im not treating it as a backup, what i want, is to make sure that if 1
+> > disk dies, the data is still intact and ill hopefully be able to run
+> > with 1 disk till the newly ordered one arrives
+> Probably one of the main design objectives behind RAID/md
+
+Exactly, but once people start saying: "Look how many problems people
+post to the thread on
+a weekly basis where people lose their data when md rebuilds go bad with
+non-shared disks" i begin to worry..
 
 > 
-> FWIW, that's far from the worst problem in fs/locks.c, and not even the
-> worst one with leases.
+> > So my question remains.. Is md raid1 not suited for this need? would it
+> > be safer to run in non-raid1 mode and daily(maybe hourly) rsync
+> > everything over to the second disk?
 > 
-> That, BTW, is a fine demonstration of the reasons why application-specific
-> kernel warts(tm) are bad.  Lease support is samba-only turd; so's dnotify,
-> with its lovely problems.  And interfaces like that *suck*; they are
-> developed with one application in mind and that leads to "we know how it
-> will be used" mentality.  With obvious implications for quality of review
-> they get from their developers...
+> md is 100% guaranteed perfect or your money back...
+> rsync is 100% guaranteed perfect or your money back...
+> your backups are 100% guaranteed perfect or your money back...
+> your hard drives are 100% guaranteed perfect or your money back...
+> your CPU and RAM are 100% guaranteed perfect or your money back...
+> your CPU and PSU fans are 100% guaranteed perfect or your money back...
+> 
+> Clearly if you want to panic over reliability you have lots of choices :)
 
-I honestly don't understand how exactly Samba uses leases; it'd be
-extremely useful to have a concise list of requirements from them.  I
-know that they don't really meet the nfsv4 server's requirements (any
-bugs aside).
+I do not wish to panic, i merely wished to know if linux MD is believed
+to work in most cases, or believed to do all sorts of weird stuff when
+resyncing :)
 
-> Al, currently crawling through struct file_lock review and extremely annoyed
-> by the amount of turds being found...
+> 
+> David
+> PS, FWIW md has saved my data* countless times over the past 'n' years in
+> exactly the scenario you describe.
 
-Thanks, it's been long in need of more attention--details welcomed.
+It has also been useful to people i know, i just wished to be sure :)
+and as Keld Jørn Simonsen and Helge Hafting's comments seems to confirm,
+linux md IS nice and stable :)
 
---b.
+and as said, what im looking for isnt an in-box backup solution, merely
+safety in case one disk burns :)
+
+> 
+> *(or more accurately has saved me from having to restore my data)
+=======================
+Since I am the person that wrote that "Look how many problems people
+post to the thread on a weekly basis where people lose their data when md rebuilds go bad with
+non-shared disks", I think need to clarify.
+ 
+I was being too literal. md is a good solution (I use it myself).  However, the OP wanted to "Make sure that if one disk dies, the data is still in tact".  
+
+Only way to do that is have a good offsite backup.
+
+Nothing can prevent opportunity for data loss.  I don't care what RAID level (with single redundancy) you use or whether you have software or hardware-based RAID .. rebuilds can not reconstruct data if you are in degraded mode and have an unrecoverable read error on surviving disks.  It is not md's job or design point to insure data consistency check/repairs are run 24x7.  As such, by definition, there is no way to insure that a md rebuild will always be successful.
+
+David
+---------
+
+
+
+
+
