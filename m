@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965185AbYEBTFv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965351AbYEBTGS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965185AbYEBTFv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 15:05:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965121AbYEBTB6
+	id S965351AbYEBTGS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 15:06:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965142AbYEBTCE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 15:01:58 -0400
-Received: from wa-out-1112.google.com ([209.85.146.178]:30418 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965098AbYEBTB5 (ORCPT
+	Fri, 2 May 2008 15:02:04 -0400
+Received: from el-out-1112.google.com ([209.85.162.180]:48598 "EHLO
+	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S935868AbYEBTCB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 15:01:57 -0400
+	Fri, 2 May 2008 15:02:01 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=oSHoIiaedmt4Nx0cY80I/a2rhcdb2m/rY/deID5xHUHNo/1bTOzwIetXlbZkdgjRKSccoa3EjLqNFRqzMt5vLX2gcFOCOVmQzJb2K8Rn55xb5QHyYgDFr0pbham87ZdGufgujMEyiBeqdb3U9Oh3NyJ/kn0QRGWFA1tvHtg+BAM=
-Subject: [PATCH 11/12] isdn: use the common ascii hex helpers
+        b=G5SSqSG4PwA4WODlmft86kY/AcJrbJc7IDJhHvWRYkAIlzOBDpMLX9prODH1AGiszL3FzGJ9Bs3FveKIGXJqjTykdoP8C9bAsRbtBMNkTe79YI7nDuHI2mCfLj4jBRy839IHzEzOPpHzosGzokzr5zUUcSqLR01acbxO30lmx9A=
+Subject: [PATCH 12/12] net: use the common ascii hex helpers
 From: Harvey Harrison <harvey.harrison@gmail.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: LKML <linux-kernel@vger.kernel.org>
 Content-Type: text/plain
 Date: Fri, 02 May 2008 12:01:56 -0700
-Message-Id: <1209754916.26173.37.camel@brick>
+Message-Id: <1209754916.26173.39.camel@brick>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
@@ -30,33 +30,66 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
 ---
- drivers/isdn/gigaset/isocdata.c |    5 ++---
- 1 files changed, 2 insertions(+), 3 deletions(-)
+ drivers/net/skfp/smt.c             |   13 ++++++-------
+ net/ipv4/netfilter/ipt_CLUSTERIP.c |    5 ++---
+ 2 files changed, 8 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/isdn/gigaset/isocdata.c b/drivers/isdn/gigaset/isocdata.c
-index e30a777..fbce522 100644
---- a/drivers/isdn/gigaset/isocdata.c
-+++ b/drivers/isdn/gigaset/isocdata.c
-@@ -247,7 +247,6 @@ static inline void dump_bytes(enum debuglevel level, const char *tag,
- #ifdef CONFIG_GIGASET_DEBUG
- 	unsigned char c;
- 	static char dbgline[3 * 32 + 1];
--	static const char hexdigit[] = "0123456789abcdef";
- 	int i = 0;
- 	while (count-- > 0) {
- 		if (i > sizeof(dbgline) - 4) {
-@@ -258,8 +257,8 @@ static inline void dump_bytes(enum debuglevel level, const char *tag,
- 		c = *bytes++;
- 		dbgline[i] = (i && !(i % 12)) ? '-' : ' ';
- 		i++;
--		dbgline[i++] = hexdigit[(c >> 4) & 0x0f];
--		dbgline[i++] = hexdigit[c & 0x0f];
-+		dbgline[i++] = hex_asc_hi(c);
-+		dbgline[i++] = hex_asc_lo(c);
+diff --git a/drivers/net/skfp/smt.c b/drivers/net/skfp/smt.c
+index ffbfb1b..805383b 100644
+--- a/drivers/net/skfp/smt.c
++++ b/drivers/net/skfp/smt.c
+@@ -19,6 +19,7 @@
+ #include "h/smc.h"
+ #include "h/smt_p.h"
+ #include <linux/bitrev.h>
++#include <linux/kernel.h>
+ 
+ #define KERNEL
+ #include "h/smtstate.h"
+@@ -1730,20 +1731,18 @@ void fddi_send_antc(struct s_smc *smc, struct fddi_addr *dest)
+ #endif
+ 
+ #ifdef	DEBUG
+-#define hextoasc(x)	"0123456789abcdef"[x]
+-
+ char *addr_to_string(struct fddi_addr *addr)
+ {
+ 	int	i ;
+ 	static char	string[6*3] = "****" ;
+ 
+ 	for (i = 0 ; i < 6 ; i++) {
+-		string[i*3] = hextoasc((addr->a[i]>>4)&0xf) ;
+-		string[i*3+1] = hextoasc((addr->a[i])&0xf) ;
+-		string[i*3+2] = ':' ;
++		string[i * 3] = hex_asc_hi(addr->a[i]);
++		string[i * 3 + 1] = hex_asc_lo(addr->a[i]);
++		string[i * 3 + 2] = ':';
  	}
- 	dbgline[i] = '\0';
- 	gig_dbg(level, "%s:%s", tag, dbgline);
+-	string[5*3+2] = 0 ;
+-	return(string) ;
++	string[5 * 3 + 2] = 0;
++	return(string);
+ }
+ #endif
+ 
+diff --git a/net/ipv4/netfilter/ipt_CLUSTERIP.c b/net/ipv4/netfilter/ipt_CLUSTERIP.c
+index 22d8e7c..30b11a7 100644
+--- a/net/ipv4/netfilter/ipt_CLUSTERIP.c
++++ b/net/ipv4/netfilter/ipt_CLUSTERIP.c
+@@ -475,11 +475,10 @@ static void arp_print(struct arp_payload *payload)
+ #define HBUFFERLEN 30
+ 	char hbuffer[HBUFFERLEN];
+ 	int j,k;
+-	const char hexbuf[]= "0123456789abcdef";
+ 
+ 	for (k=0, j=0; k < HBUFFERLEN-3 && j < ETH_ALEN; j++) {
+-		hbuffer[k++]=hexbuf[(payload->src_hw[j]>>4)&15];
+-		hbuffer[k++]=hexbuf[payload->src_hw[j]&15];
++		hbuffer[k++] = hex_asc_hi(payload->src_hw[j]);
++		hbuffer[k++] = hex_asc_lo(payload->src_hw[j]);
+ 		hbuffer[k++]=':';
+ 	}
+ 	hbuffer[--k]='\0';
 -- 
 1.5.5.1.350.gbbbf
-
 
