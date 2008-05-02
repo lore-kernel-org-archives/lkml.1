@@ -1,80 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761432AbYEBFmv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760306AbYEBF4i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761432AbYEBFmv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 01:42:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753565AbYEBFml
+	id S1760306AbYEBF4i (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 01:56:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752865AbYEBF42
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 01:42:41 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:47846 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753221AbYEBFmk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 01:42:40 -0400
-Date: Thu, 1 May 2008 22:42:33 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Gene Heskett <gene.heskett@gmail.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-ide@vger.kernel.org
-Subject: Re: dvd writing problem
-Message-Id: <20080501224233.c3e11762.akpm@linux-foundation.org>
-In-Reply-To: <200805011135.38556.gene.heskett@gmail.com>
-References: <200805011135.38556.gene.heskett@gmail.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 2 May 2008 01:56:28 -0400
+Received: from ozlabs.org ([203.10.76.45]:37434 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752795AbYEBF41 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 May 2008 01:56:27 -0400
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <18458.44292.817770.800636@cargo.ozlabs.ibm.com>
+Date: Fri, 2 May 2008 15:56:20 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: torvalds@linux-foundation.org
+CC: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: [git pull] Please pull powerpc.git master branch
+X-Mailer: VM 7.19 under Emacs 22.1.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 1 May 2008 11:35:38 -0400 Gene Heskett <gene.heskett@gmail.com> wrote:
+Linus,
 
-> Greetings all;
-> 
-> I'm going to describe the problem, and let you tell me where to report it.
+Please do:
 
-linux-ide
+git pull \
+git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git master
 
-> System is Biostart MB, XP-2800 cpu, gig of ram.
-> 
-> 1. burn dvd image using k3b, with write verify turned on.
-> 
-> 2. when disk is ejected at end of a successful burn, then pulled back in, a 
-> read error is reported long before the drive has recognized the disk, the 
-> disk is ejected again and k3b bails out of the verify phase.  This does not 
-> occur for a cd-r.
-> 
-> 3. manually close drive with the disc still in the tray.
-> 
-> 4. About 40 secs later, at about the time the drive would have accepted the 
-> disc as a valid disc, the system is frozen solidly, no drive leds on and the 
-> clock in the corner of the screen is stopped.  I have let it sit that way for 
-> as long as 2 minutes before tapping the hardware reset button.
-> 
-> 5. Eject the disc while its posting and reboot, to either 2.6.24.5 or 2.6.25, 
-> both do exactly the same actions.
-> 
-> 6. Once system is up again, re-insert disc, wait for drive to accept it, then 
-> do a verify by hand, disc is good, it can be mounted and read just fine.
-> 
-> 7. disc is a +RW disc, so it should be re-writable.  Pick a different .iso and 
-> start k3b again using it.  K3b goes through the motions, but 2 or 3 seconds 
-> after the real write starts with perhaps 30 megabytes *supposedly* written, 
-> k3b gets a write error and the burn bails out, ejecting the disc as it does. 
-> 
-> 8. insert disc and loop this sequence back to #3 above until tired of 
-> rebooting cuz the box is frozen.  Once rebooted, and the disc inspected, it 
-> is obvious the second write never touched the disc as the first write is 
-> still there and passes the sh1sum or md5sum test correctly.
-> 
-> Sebastian Truex and I have been discussing this for a while now, and I have 
-> even replaced the writer drive, a LITEON that I started with, with an HP, 
-> even faster drive, without changing a thing above.  It is 100% repeatable.
-> 
-> Where do I file the bug report?  There are no interesting entries in the 
-> messages log, no oops, nothing.
+With the exception of one commit from Grant Likely, these are all
+fixes for various bugs and compile problems, or documentation
+updates.  The one from Grant is something that has been around for a
+month or so and only affects MPC5200-based embedded platforms.
 
-It's unclear whether that drive is attached via stat, pata, ide, scsi or
-whatever.  The dmesg output would clear that up.
+Thanks,
+Paul.
 
-Thanks.
+ .../powerpc/mpc52xx-device-tree-bindings.txt       |   11 ++
+ arch/powerpc/boot/dts/mpc8610_hpcd.dts             |   23 +++
+ arch/powerpc/configs/ps3_defconfig                 |  132 +++++++++++++-------
+ arch/powerpc/kernel/smp.c                          |    2 
+ arch/powerpc/mm/slb.c                              |   27 ++--
+ arch/powerpc/platforms/ps3/interrupt.c             |    6 -
+ arch/powerpc/sysdev/fsl_rio.c                      |    9 +
+ arch/powerpc/sysdev/fsl_soc.c                      |    4 -
+ arch/powerpc/sysdev/xilinx_intc.c                  |    2 
+ drivers/char/xilinx_hwicap/xilinx_hwicap.c         |    6 -
+ drivers/net/fec_mpc52xx.c                          |   97 +++++++++++----
+ drivers/net/fec_mpc52xx.h                          |   19 ---
+ drivers/ps3/ps3-lpm.c                              |    1 
+ drivers/ps3/ps3-sys-manager.c                      |    7 -
+ drivers/serial/mpc52xx_uart.c                      |    2 
+ include/asm-powerpc/ps3.h                          |    3 
+ include/linux/rio.h                                |    2 
+ 17 files changed, 231 insertions(+), 122 deletions(-)
+
+Andrew Liu (1):
+      Fix a potential issue in mpc52xx uart driver
+
+Anton Vorontsov (1):
+      [POWERPC] 86xx: mpc8610_hpcd: add support for PCI Express x8 slot
+
+Becky Bruce (1):
+      [POWERPC] Squash build warning for print of resource_size_t in fsl_soc.c
+
+FUJITA Tomonori (1):
+      [POWERPC] PS3: Add time include to lpm
+
+Geert Uytterhoeven (1):
+      [POWERPC] PS3: Make ps3_virq_setup and ps3_virq_destroy static
+
+Geoff Levand (3):
+      [POWERPC] Fix slb.c compile warnings
+      [POWERPC] PS3: Remove unsupported wakeup sources
+      [POWERPC] PS3: Update ps3_defconfig
+
+Grant Likely (1):
+      [POWERPC] mpc5200: Allow for fixed speed MII configurations
+
+Jason Jin (1):
+      [POWERPC] 86xx: Fix the wrong serial1 interrupt for 8610 board
+
+Kumar Gala (1):
+      [POWERPC] Xilinx: Fix compile warnings
+
+Paul Mackerras (1):
+      [POWERPC] Bolt in SLB entry for kernel stack on secondary cpus
+
+Randy Dunlap (1):
+      [RAPIDIO] fix current kernel-doc notation
+
