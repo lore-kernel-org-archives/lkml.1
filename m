@@ -1,35 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937341AbYEBWuo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936939AbYEBWxm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937341AbYEBWuo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 18:50:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937271AbYEBWuX
+	id S936939AbYEBWxm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 18:53:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932140AbYEBWxb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 18:50:23 -0400
-Received: from smtp-out01.alice-dsl.net ([88.44.60.11]:48746 "EHLO
-	smtp-out01.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S936375AbYEBWuW (ORCPT
+	Fri, 2 May 2008 18:53:31 -0400
+Received: from sj-iport-2.cisco.com ([171.71.176.71]:46171 "EHLO
+	sj-iport-2.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759362AbYEBWxa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 18:50:22 -0400
-To: "Moore, Eric" <Eric.Moore@lsi.com>
-Cc: <linux-kernel@vger.kernel.org>
-Subject: Re: HELP:  Is writeq an atomic operation??
-From: Andi Kleen <andi@firstfloor.org>
-References: <0631C836DBF79F42B5A60C8C8D4E822901047B2F@NAMAIL2.ad.lsil.com>
-Date: Sat, 03 May 2008 00:50:12 +0200
-In-Reply-To: <0631C836DBF79F42B5A60C8C8D4E822901047B2F@NAMAIL2.ad.lsil.com> (Eric Moore's message of "Fri, 2 May 2008 16:40:40 -0600")
-Message-ID: <87y76stj6j.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
+	Fri, 2 May 2008 18:53:30 -0400
+From: Roland Dreier <rdreier@cisco.com>
+To: "Moore\, Eric" <Eric.Moore@lsi.com>
+Cc: "David Miller" <davem@davemloft.net>, <linux-scsi@vger.kernel.org>,
+       <linux-kernel@vger.kernel.org>
+Subject: Re: HELP: Is writeq an atomic operation??
+References: <0631C836DBF79F42B5A60C8C8D4E822901047B3A@NAMAIL2.ad.lsil.com>
+X-Message-Flag: Warning: May contain useful information
+Date: Fri, 02 May 2008 15:53:28 -0700
+In-Reply-To: <0631C836DBF79F42B5A60C8C8D4E822901047B3A@NAMAIL2.ad.lsil.com>
+	(Eric Moore's message of "Fri, 2 May 2008 16:49:55 -0600")
+Message-ID: <adawsmc2u8n.fsf@cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 02 May 2008 22:43:17.0730 (UTC) FILETIME=[EA1B5420:01C8ACA5]
+X-OriginalArrivalTime: 02 May 2008 22:53:29.0100 (UTC) FILETIME=[5682FCC0:01C8ACA7]
+Authentication-Results: sj-dkim-1; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim1004 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Moore, Eric" <Eric.Moore@lsi.com> writes:
+ > > Are there any 32-bit platforms with writeq()?  A quick grep 
+ > > suggests not.
+ > 
+ > I think writeq defined in include/asm-x86/io_64.h
 
-> Here is a trace from pci express analyzer.   I'm sending
+Umm... io_64.h is 64-bit only (look at asm-x86/io.h if you don't believe me ;)
 
-With what CPU/chipset was that?
-
--Andi
+ - R.
