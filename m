@@ -1,68 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760966AbYEBG4L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764275AbYEBHCK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760966AbYEBG4L (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 02:56:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760346AbYEBGzw
+	id S1764275AbYEBHCK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 03:02:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760897AbYEBHBy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 02:55:52 -0400
-Received: from ns1.suse.de ([195.135.220.2]:38051 "EHLO mx1.suse.de"
+	Fri, 2 May 2008 03:01:54 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:57421 "EHLO pasmtpA.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759254AbYEBGzv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 02:55:51 -0400
-From: "NeilBrown" <neilb@suse.de>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Date: Fri, 2 May 2008 16:55:43 +1000 (EST)
-Message-ID: <53722.192.168.1.70.1209711343.squirrel@neil.brown.name>
-In-Reply-To: <20080501215231.297e0d9d.akpm@linux-foundation.org>
-References: <18456.34604.472989.35082@ipc1.ka-ro>
-    <20080501215231.297e0d9d.akpm@linux-foundation.org>
-Subject: Re: linux-2.6.25: 'mkdir -p' does not work with rootdir as mount 
-     point inside a read only filesystem
-Cc: Lothar =?iso-8859-1?Q?Wa=DFmann?= <lw@karo-electronics.de>,
-       linux-kernel@vger.kernel.org
-User-Agent: SquirrelMail/1.4.13
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
+	id S1758099AbYEBHBw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 May 2008 03:01:52 -0400
+Subject: Re: Slow DOWN, please!!!
+From: Kasper Sandberg <lkml@metanurb.dk>
+To: Russ Dill <russ.dill@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <f9d2a5e10805011954l12b54802t63b9ce0957b6087b@mail.gmail.com>
+References: <20080429.190352.137408408.davem@davemloft.net>
+	 <alpine.LFD.1.10.0804301127020.2980@woody.linux-foundation.org>
+	 <4818C0BF.5020002@davidnewall.com>
+	 <alpine.LFD.1.10.0804301202200.2980@woody.linux-foundation.org>
+	 <4818C571.8040609@davidnewall.com>
+	 <alpine.LFD.1.10.0804301223220.2980@woody.linux-foundation.org>
+	 <481947AF.4090101@davidnewall.com> <1209655700.27499.28.camel@localhost>
+	 <loom.20080501T174627-71@post.gmane.org>
+	 <1209692875.16523.10.camel@localhost>
+	 <f9d2a5e10805011954l12b54802t63b9ce0957b6087b@mail.gmail.com>
+Content-Type: text/plain
+Date: Fri, 02 May 2008 09:01:47 +0200
+Message-Id: <1209711707.16523.15.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.4.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 2, 2008 2:52 pm, Andrew Morton wrote:
-> On Wed, 30 Apr 2008 16:50:20 +0200 Lothar Wa__mann
-> <LW@KARO-electronics.de> wrote:
->
->> Hi,
->
-> (y'know that ~4000 people read your email and hit 'n'?  Except for me?
-> That's one bug I'd like to get fixed)
+On Thu, 2008-05-01 at 19:54 -0700, Russ Dill wrote:
+> >  i can also say that i have noticed this on my own workstation, however
+> >  thats not really an as valid case, as i have also upgraded userspace and
+> >  such over time, but it used to be that my box wouldnt use more than
+> >  ~100mb to boot into X with kde open, and about ~300mb at browsing/mail
+> >  and such, but these days my workstation easily uses 1.5gb of ram for no
+> >  apparent reason..
+> >
+> >  something certainly is fishy around here, these days people just tend to
+> >  fix it by throwing 10 times more ram in than should really be necessary,
+> >  which i guess, is because the ram prices has dropped 10 times
+> >
+> 
+> So you aren't really contributing anything to the discussion. It could
+> be userspace, it could be different types of pages you are visiting,
+> it could be the kernel, you haven't really measured what is taking up
+> the memory. And of course, its all because developers are lazy. Thanks
+> for the input.
 
-Tricky....
+I think you didnt read read the first part of my message..
 
->
->> when trying to create a directory path with 'mkdir -p' with the root
->> being a mount point of a writeable filesystem that exists inside a
->> read-only file system, mkdir return -EROFS.
+And as i said, on my workstation i have no idea exactly WHAT has changed
+to cause it.. i just came with some information..
 
-My guess is that you have an old/buggy version of mkdir.
-
-What does
-    mkdir --version
-
-say?
-Mine says:
-mkdir (GNU coreutils) 6.10
-Copyright (C) 2008 Free Software Foundation, Inc.
-etc...
-
-What does
-
-   strace mkdir -p /dev/.udev/db
-
-show ???
-
-NeilBrown
-
+And of course, its all because the person writing the email forgets to
+include key details such as "however, thats not really an as valid
+case...". Thanks for the input..
 
