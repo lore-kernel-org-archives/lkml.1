@@ -1,88 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760366AbYEBGAK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759515AbYEBGCR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760366AbYEBGAK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 02:00:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752796AbYEBF7y
+	id S1759515AbYEBGCR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 02:02:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751535AbYEBGCB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 01:59:54 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:45417 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752704AbYEBF7x (ORCPT
+	Fri, 2 May 2008 02:02:01 -0400
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:41444 "EHLO
+	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751169AbYEBGCA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 01:59:53 -0400
-Date: Thu, 1 May 2008 22:59:48 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Roland" <devzero@web.de>
-Cc: <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
-       Soeren Sonnenburg <kernel@nn7.de>
-Subject: Re: 24rc8: unregister_netdevice: waiting for ... to become free.
-Message-Id: <20080501225948.f351eab9.akpm@linux-foundation.org>
-In-Reply-To: <004701c8abf4$4cefe820$6400a8c0@bui.materna.com>
-References: <004701c8abf4$4cefe820$6400a8c0@bui.materna.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 2 May 2008 02:02:00 -0400
+Date: Fri, 2 May 2008 01:58:05 -0400
+Message-Id: <200805020558.m425w5xN001504@agora.fsl.cs.sunysb.edu>
+From: Erez Zadok <ezk@cs.sunysb.edu>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Erez Zadok <ezk@cs.sunysb.edu>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, viro@zeniv.linux.org.uk,
+       hch@infradead.org, mhalcrow@us.ibm.com, hugh@veritas.com
+Subject: Re: [2.6.26 PATCH, RESEND]: fs_stack/eCryptfs: fsstack_copy_* updates 
+In-reply-to: Your message of "Thu, 01 May 2008 17:08:19 PDT."
+             <20080501170819.bdcb9035.akpm@linux-foundation.org> 
+X-MailKey: Erez_Zadok
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2 May 2008 03:26:28 +0200 "Roland" <devzero@web.de> wrote:
+In message <20080501170819.bdcb9035.akpm@linux-foundation.org>, Andrew Morton writes:
+> On Thu, 1 May 2008 19:44:18 -0400
+> Erez Zadok <ezk@cs.sunysb.edu> wrote:
+[...]
+> i_size is much more important because glitches in there can result in
+> incorrect data being returned from read() and things like that.  i_blocks
+> is just a beancounting curiosity.
+> 
+> > 
+> > 2. I've rewritten your suggested code a bit to reduce stack use.  Modulo
+> >    having 32-bit spin_lock/unlock variants, do you see any problem with this
+> >    code below?  My testing of it so far on 32/64-bit SMP/UMP have all
+> >    passed.
+> > 
+> > void fsstack_copy_inode_size(struct inode *dst, struct inode *src)
+> > {
+> > #if BITS_PER_LONG == 32
+> > 	blkcnt_t i_blocks;
+> > 
+> > 	spin_lock(&src->i_lock);
+> > 	i_blocks = src->i_blocks;
+> > 	spin_unlock(&src->i_lock);
+> > 	spin_lock(&dst->i_lock);
+> > 	dst->i_blocks = i_blocks;
+> > 	spin_unlock(&dst->i_lock);
+> > #else
+> > 	dst->i_blocks = src->i_blocks;
+> > #endif
+> > 	i_size_write(dst, i_size_read(src));
+> > }
+> 
+> That looks sane, as long as we don't care about i_size-vs-i_blocks
+> coherency.
 
-> i`m also seeing this one, but with pcnet32 - "modprobe -r pcnet32" never 
-> returns and
-> 
-> "unregister_netdevice: waiting for eth0 to become free. Usage count = 1"
-> 
-> being printed over and over again
-> 
-> lsmod |grep pcnet32 shows
-> 
-> pcnet32            35828    0
-> mii                      9344    1    pcnet32
-> 
-> i see stale ssh connection on port 22 and sshd for that session remains 
-> unkillable process.
-> 
+> However I expect that approximately zero of the sites which modify i_blocks
+> are taking i_lock to do so.
 
-here a bug
+If i_blocks is indeed less important than i_size, then we can live with some
+incoherency b/t i_size and i_blocks, for now.  Nevertheless, I propose
+adding this to linux/fs.h:
 
-> 
-> 
-> List:       linux-kernel
-> Subject:    Re: 24rc8: unregister_netdevice: waiting for ... to become free.
-> From:       Soeren Sonnenburg <kernel () nn7 ! de>
-> Date:       2008-01-29 8:59:10
-> Message-ID: 1201597150.4973.10.camel () localhost
-> [Download message RAW]
-> 
-> On Tue, 2008-01-22 at 22:44 -0800, David Miller wrote:
-> > From: Soeren Sonnenburg <kernel@nn7.de>
-> > Date: Wed, 23 Jan 2008 07:42:21 +0100
-> >
-> > > Dear all,
-> > >
-> > > since some 2.6.24rc version I suddenly experience such messages on
-> > > console when trying to shutdown a vpn connection:
-> > >
-> > > unregister_netdevice: waiting for tun0 to become free. Usage count = 1
-> > >
-> > > or when removing an usb wlan dongle (although it was ifconfig wlan0
-> > > down'd before)
-> >
-> > Current GIT already has a fix for this, attached below:
-> 
-> hmmhhh, I am still seeing this problem on 2.6.24 with at least with the
-> madwifi driver...
-> 
-> Soeren
+static inline blkcnt_t i_blocks_read(const struct inode *inode)
+{
+#if BITS_PER_LONG == 32
+	blkcnt_t i_blocks;
+	spin_lock(&src->i_lock);
+	i_blocks = src->i_blocks;
+	spin_unlock(&src->i_lock);
+	return i_blocks;
+#else
+	return src->i_blocks;
+#endif
+}
 
-there a bug.
+and a matching i_blocks_write function.  We can then gradually convert those
+"unsafe" users of i_blocks to use the new i_blocks_read/write helpers.
 
+The nice thing about these two helpers is fsstack_copy_inode_size becomes a
+lot cleaner and more elegant:
 
-Let's cc netdev@vger.kernel.org - linux-net is dead, afaik.
+void fsstack_copy_inode_size(struct inode *dst, struct inode *src)
+{
+	i_blocks_write(dst, i_blocks_read(src));
+	i_size_write(dst, i_size_read(src));
+}
 
-Thanks for reporting all these bugs but please do take much mure care over
-the cc's.  Be sure to cc every party who was cc'ed on the email to which
-you're replying.  I restored Soeren.
+And, if we ever wanted to ensure coherency b/t i_blocks and i_size, we'll
+need to create helpers that merge the functionality of i_size_read/write and
+i_blocks_read/write.
 
+What do you think?
+
+Erez.
