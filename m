@@ -1,82 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965110AbYEBVKw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936559AbYEBVL0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965110AbYEBVKw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 17:10:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935734AbYEBVKO
+	id S936559AbYEBVL0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 17:11:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965130AbYEBVKx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 17:10:14 -0400
-Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:47109 "EHLO
-	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S935285AbYEBVKN (ORCPT
+	Fri, 2 May 2008 17:10:53 -0400
+Received: from Chamillionaire.breakpoint.cc ([85.10.199.196]:57309 "EHLO
+	Chamillionaire.breakpoint.cc" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S965101AbYEBVKw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 17:10:13 -0400
-Date: Fri, 2 May 2008 23:09:59 +0200
-From: Rodolfo Giometti <giometti@enneenne.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       David Woodhouse <dwmw2@infradead.org>, Dave Jones <davej@redhat.com>,
-       Sam Ravnborg <sam@ravnborg.org>, Greg KH <greg@kroah.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Kay Sievers <kay.sievers@vrfy.org>
-Message-ID: <20080502210959.GB8502@enneenne.com>
-References: <20080411075515.GH26777@enneenne.com> <20080411092840.3cc4de67@core> <20080411134724.GF2160@csclub.uwaterloo.ca> <20080411154652.4852b6d4@core> <20080430114107.GE3002@enneenne.com> <20080430172855.6d2e81a6@core> <20080502073335.GK3002@enneenne.com> <20080502111837.588c15ae@core> <20080502104537.GW3002@enneenne.com> <20080502135618.7172af4a@core>
+	Fri, 2 May 2008 17:10:52 -0400
+Date: Fri, 2 May 2008 23:10:38 +0200
+From: Sebastian Siewior <lkml@ml.breakpoint.cc>
+To: Paulo Marques <pmarques@grupopie.com>
+Cc: Greg Ungerer <gerg@snapgear.com>, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, gerg@uclinux.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] m68knommu: add pretty back strace
+Message-ID: <20080502211038.GB22631@Chamillionaire.breakpoint.cc>
+References: <200805010216.m412GcUQ004101@goober> <481B6B3D.9060200@grupopie.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-In-Reply-To: <20080502135618.7172af4a@core>
-Organization: GNU/Linux Device Drivers, Embedded Systems and Courses
-X-PGP-Key: gpg --keyserver keyserver.linux.it --recv-keys D25A5633
-User-Agent: Mutt/1.5.16 (2007-06-11)
-X-SA-Exim-Connect-IP: 192.168.32.1
-X-SA-Exim-Mail-From: giometti@enneenne.com
-Subject: Re: [PATCH 5/7] PPS: serial clients support.
-X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
-X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
+In-Reply-To: <481B6B3D.9060200@grupopie.com>
+X-Key-Id: FE3F4706
+X-Key-Fingerprint: FFDA BBBB 3563 1B27 75C9  925B 98D5 5C1C FE3F 4706
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 02, 2008 at 01:56:18PM +0100, Alan Cox wrote:
-> > So I should rewrite the uart_handle_dcd_change() as follow?
-> > 
-> > static inline void
-> > uart_handle_dcd_change(struct uart_port *port, unsigned int status)
-> > {
-> >         struct uart_info *info = port->info;
-> > 	struct tty_struct *tty = info->tty;
-> >         struct tty_ldisc *ld;
-> > 
-> >         ld = tty_ldisc_ref(tty);
-> >         if (ld != NULL) {
-> >                 if (ld->dcd_change)
-> >                         (ld->dcd_change)(tty, port, status);
-> >                 tty_ldisc_deref(ld);
-> >         }
-> > 
-> >         port->icount.dcd++;
-> > 
-> > #ifdef CONFIG_HARD_PPS
-> >         if ((port->flags & UPF_HARDPPS_CD) && status)
-> >                 hardpps();
-> > #endif
-> 
-> The ifdef bit can go - it will be in your dcd_change callback ..
+* Paulo Marques | 2008-05-02 20:27:57 [+0100]:
 
-The "#ifdef CONFIG_HARD_PPS" is currently into kernel code, is *not*
-my modification at all. In fact you can find the flag UPF_HARDPPS_CD
-defined into include/linux/serial_core.h. It's a part of a very old
-PPS implemention (never merged into mainline) and it was used to
-enable the PPS layer for serial ports. That's why I didn't define an
-ldisc but implemented my PPS version using it. :)
+> Greg Ungerer wrote:
+>> From: Sebastian Siewior <bigeasy@linutronix.de>
+>> With this patch and
+>>  CONFIG_FRAME_POINTER=y
+>>  CONFIG_KALLSYMS=y
+>> The backtrace shows resolved function names and their numeric
+>> address.
+>
+> This is really not my area, but this patch reminds me of all the dwarf2 
+> unwinder on x86 that caused so many problems in the beginning...
+>
+>> [...]
+>> +#ifdef CONFIG_FRAME_POINTER
+>> +	printk(KERN_EMERG "Call Trace:\n");
+>> +
+>> +	last_stack = stack - 1;
+>> +	while (stack <= endstack && stack > last_stack) {
+>> +
+>> +		addr = *(stack + 1);
+>> +		printk(KERN_EMERG " [%08lx] ", addr);
+>> +		print_symbol(KERN_CONT "%s\n", addr);
+>> +
+>> +		last_stack = stack;
+>> +		stack = (unsigned long *)*stack;
+>>  	}
+>>  	printk("\n");
+>> +#else
+>> +	printk(KERN_EMERG "CONFIG_FRAME_POINTER disabled, no symbolic call 
+>> trace\n");
+>
+> You could probably fall back to the old method in this case, no?
+The old method printed every value from stack which was in the text
+range (you didn't get modules AFAIK). This might be the caller as well a
+function pointer as argument as well something else. I tried to find to
+find a pattern without frame pointers but I had no luck. I thing the
+caller fixed the stack frame or something.
+Greg did not complain about removing it. If you or others want the old
+method in case of no frame pointers I can send a patch.
 
-Ciao,
+> Also, if the stack is slightly corrupted on the top, the new method might 
+> just bail out without giving any indication about the path that lead there, 
+> when instead it could also fall back to the old method.
+You mean by slightly that the first caller ORed the address with
+something? In that case we don't return safely. I don't know how I could
+find out the right time for a fallback (in case of slightly corrupted
+stack).
 
-Rodolfo
-
--- 
-
-GNU/Linux Solutions                  e-mail:    giometti@enneenne.com
-Linux Device Driver                             giometti@linux.it
-Embedded Systems                     phone:	+39 349 2432127
-UNIX programming                     skype:     rodolfo.giometti
+> Paulo Marques - www.grupopie.com
+Sebastian
