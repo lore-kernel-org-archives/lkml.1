@@ -1,51 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965080AbYEBUjZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936527AbYEBUkr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965080AbYEBUjZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 16:39:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932770AbYEBUi7
+	id S936527AbYEBUkr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 16:40:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933542AbYEBUkg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 16:38:59 -0400
-Received: from ug-out-1314.google.com ([66.249.92.171]:27343 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764381AbYEBUi5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 16:38:57 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Ucgs6mhtbO6ckyaMmNZ68WKgHccP8BvuH1UgCD0lJ7vyLH1cZuiYcU3tp+e2qf6g3CkuAXw87eXOjukI8acY1QIXLgIMKDDfwqfAtSO9FrpRlpQf/rt3wcAN7Gab0hURqxz9aSFg3t6QvvG4Naj0NQlhzEeuOwhW5dpwRCXn514=
-Message-ID: <3d8471ca0805021338x7cde7d1fwbbb58a6c65a1349d@mail.gmail.com>
-Date: Fri, 2 May 2008 22:38:53 +0200
-From: "Guillaume Chazarain" <guichaz@gmail.com>
-To: "Peter Zijlstra" <a.p.zijlstra@chello.nl>
-Subject: Re: 'global' rq->clock (was Re: Horrendous Audio Stutter - current git)
-Cc: "Mike Galbraith" <efault@gmx.de>, "Frans Pop" <elendil@planet.nl>,
-       "Parag Warudkar" <parag.warudkar@gmail.com>,
-       "Ingo Molnar" <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       "Andi Kleen" <andi@firstfloor.org>
-In-Reply-To: <1209758186.6929.18.camel@lappy>
+	Fri, 2 May 2008 16:40:36 -0400
+Received: from mga03.intel.com ([143.182.124.21]:9400 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932948AbYEBUke (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 May 2008 16:40:34 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.27,428,1204531200"; 
+   d="scan'208";a="241290900"
+From: Jesse Barnes <jesse.barnes@intel.com>
+To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+Subject: Re: [git head] Should X86_PAT really default to yes?
+Date: Fri, 2 May 2008 13:40:24 -0700
+User-Agent: KMail/1.9.9
+Cc: "Frans Pop" <elendil@planet.nl>, linux-kernel@vger.kernel.org,
+       "Ingo Molnar" <mingo@elte.hu>,
+       "Packard, Keith" <keith.packard@intel.com>
+References: <200805022122.03576.elendil@planet.nl> <924EFEDD5F540B4284297C4DC59F3DEEFB8D3D@orsmsx423.amr.corp.intel.com>
+In-Reply-To: <924EFEDD5F540B4284297C4DC59F3DEEFB8D3D@orsmsx423.amr.corp.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <82e4877d0805011714m35a47753q58cca706b7af6557@mail.gmail.com>
-	 <1209740523.4776.1.camel@marge.simson.net>
-	 <200805021749.10205.elendil@planet.nl>
-	 <200805022053.24779.elendil@planet.nl>
-	 <1209756423.4693.8.camel@marge.simson.net>
-	 <1209758186.6929.18.camel@lappy>
+Message-Id: <200805021340.24987.jesse.barnes@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 2, 2008 at 9:56 PM, Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
->  Let me try and come up with something slightly less horrible
+On Friday, May 02, 2008 12:37 pm Pallipadi, Venkatesh wrote:
+> >-----Original Message-----
+> >From: Frans Pop [mailto:elendil@planet.nl]
+> >Sent: Friday, May 02, 2008 12:22 PM
+> >To: linux-kernel@vger.kernel.org
+> >Cc: Pallipadi, Venkatesh; Ingo Molnar
+> >Subject: [git head] Should X86_PAT really default to yes?
+> >
+> >With X86_PAT enabled, when X is started I get about 40 lines
+> >(with varying
+> >addresses) like:
+> >kernel: Xorg:3358 /dev/mem expected mapping type write-back for
+> >807bf000-81000000, got uncached-minus
 
-Does this obsolete Ingo's "sched: make cpu_clock() globally synchronous"?
+These messages?  They're coming from the kernel it looks like, from the 
+map_devmem routine in pat.c.  I'm not sure they're accurate though; for PCI 
+regions /dev/mem is *supposed* to map with UC- and not WB, so maybe this 
+function needs to be updated?
 
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=27ec4407790d075c325e1f4da0a19c56953cce23
+> >And when X exits I get a bunch of lines like:
+> >kernel: Xorg:3349 freeing invalid memtype 80020000-8002a000
+> >
+> >I also noticed artifacts (a band of about 2 cm high across the
+> >screen) after
+> >X goes to black but before the switch to VT1.
 
-My laptop is UP, so I cannot test this :-(
+This is just a transient issue during VT switch or server exit though, right?  
+X functionality isn't affected, and your VTs work fine?  If so, it might not 
+be a PAT issue but just a different memory layout or something (and therefore 
+it would really just be a cosmetic bug in the X driver).
 
--- 
-Guillaume
+I really think PAT should be on by default; if you're running into real 
+functional or performance problems we'd better get them fixed rather than 
+disabling PAT...
+
+Thanks,
+Jesse
+
