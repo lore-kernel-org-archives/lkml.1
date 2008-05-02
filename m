@@ -1,115 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936319AbYEBTxa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936447AbYEBTxv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936319AbYEBTxa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 15:53:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936171AbYEBTwq
+	id S936447AbYEBTxv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 15:53:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936305AbYEBTx3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 15:52:46 -0400
-Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:39959 "EHLO
-	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934791AbYEBTwo (ORCPT
+	Fri, 2 May 2008 15:53:29 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:45675 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S936297AbYEBTx2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 15:52:44 -0400
-Date: Fri, 2 May 2008 21:52:32 +0200
-From: Rodolfo Giometti <giometti@enneenne.com>
-To: Takashi Iwai <tiwai@suse.de>
-Cc: linux-kernel@vger.kernel.org, Jaroslav Kysela <perex@suse.cz>,
-       James Stafford <jstafford@ampltd.com>, Doug McLain <nostar@comcast.net>
-Message-ID: <20080502195232.GA8502@enneenne.com>
-References: <s5h8xamsuxd.wl%tiwai@suse.de> <1209547638-22570-1-git-send-email-giometti@linux.it> <s5h4p9jwmhr.wl%tiwai@suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <s5h4p9jwmhr.wl%tiwai@suse.de>
-Organization: GNU/Linux Device Drivers, Embedded Systems and Courses
-X-PGP-Key: gpg --keyserver keyserver.linux.it --recv-keys D25A5633
-User-Agent: Mutt/1.5.16 (2007-06-11)
-X-SA-Exim-Connect-IP: 192.168.32.1
-X-SA-Exim-Mail-From: giometti@enneenne.com
-Subject: Re: [PATCH] [ALSA] ice1724 - support for more that one codec.
-X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
-X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
+	Fri, 2 May 2008 15:53:28 -0400
+Date: Fri, 2 May 2008 12:53:04 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Balaji Rao <balajirrao@gmail.com>
+Cc: dhaval@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
+       containers@lists.osdl.org, menage@google.com, balbir@in.ibm.com,
+       vatsa@linux.vnet.ibm.com, a.p.zijlstra@chello.nl
+Subject: Re: [RFC][-mm] Simple stats for cpu resource controller v3
+Message-Id: <20080502125304.77dd38ba.akpm@linux-foundation.org>
+In-Reply-To: <200805030110.29511.balajirrao@gmail.com>
+References: <200804052339.46632.balajirrao@gmail.com>
+	<200805012311.06797.balajirrao@gmail.com>
+	<20080501140026.6188065e.akpm@linux-foundation.org>
+	<200805030110.29511.balajirrao@gmail.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 30, 2008 at 02:33:36PM +0200, Takashi Iwai wrote:
-> At Wed, 30 Apr 2008 11:27:18 +0200,
-> Rodolfo Giometti wrote:
-> > 
-> > Now it's possible to specify how many codes are present on the board by
-> > using a new filed as follow:
-> > 
-> > 	ice->ac97_codecs = 4;
-> > 
-> > For backward compatibility if "ice->ac97_codecs" is set to zero, the patch
-> > redefines it as "1".
-> > 
-> > Signed-off-by: Rodolfo Giometti <giometti@linux.it>
+On Sat, 3 May 2008 01:10:28 +0530
+Balaji Rao <balajirrao@gmail.com> wrote:
+
+> On Friday 02 May 2008 02:30:26 am Andrew Morton wrote:
+> <snip>
 > 
-> Thanks for the patch.  The change looks OK to me, but please fix the
-> issues reported by checkpatch.pl.
+> Hi Andrew,
+> 
+> Thank you for the review.
+> >
+> > Did you consider using include/linux/percpu_counter.h?
+> >
+> > If so, what was wrong with it?
+> >
+> > Because it would be much better to fix per-cpu counters than to invent new
+> > stuff.
+> No, I hadn't consider using the percpu_counters infrastructure. But today when 
+> I tried using it, I got an early exception.I guess its because I tried 
+> calling percpu_counter_init from within sched_init, which I perhaps shouldn't 
+> do, because percpu_counter_init expects cpu hotplug code to be initialized by 
+> then. Right ? Correct me if I'm wrong.
 
-Ok, I'll do it ASAP.
+I don't see any reason why we cannot run percpu_counter_init() prior to
+running percpu_counter_startup().  And it is desirable that we be able to
+start using the percpu-counters quite early.
 
-> And, which hardware has multiple AC97 codecs?  I'd like rather apply
-> it together.
+Can you debug it a bit please?  It's probably some silly little thing,
+perhaps fixable by calling percpu_counter_startup() earlier.
 
-I'm still working on it since I'd like to record from 4 channels at
-time but I can't... here my custom settings:
+> How about we start collecting statistics at a later stage i.e, after 
+> percpu_counter becomes usable ?
 
-static unsigned char int1410_eeprom[] __devinitdata = {
-        [ICE_EEP1_CODEC]        = 0x1f,
-        [ICE_EEP1_ACLINK]       = 0x00,
-        [ICE_EEP1_I2SID]        = 0x01,
-        [ICE_EEP1_SPDIF]        = 0x03,
-        [ICE_EEP1_GPIO_MASK]    = 0xff,
-        [ICE_EEP1_GPIO_STATE]   = 0xff,
-        [ICE_EEP1_GPIO_DIR]     = 0xff,
-};
+It would be better to make the core infrastructure more robust, rather
+than working around problems it might have.
 
-static int __devinit snd_ice1712_int1410_init(struct snd_ice1712 *ice)
-{
-        printk("%s\n", __FUNCTION__);
 
-        /* Set the pro AC97 codecs */
-        ice->ac97_codecs = 4;
-
-        /* Set the analog DACs/ADCs */
-        ice->num_total_dacs = 8;
-        ice->num_total_adcs = 8;
-
-        return 0;
-}
-
-/* entry point */
-struct snd_ice1712_card_info snd_ice1712_eurotech_cards[] __devinitdata =
-{
-        {
-                .subvendor      = ICE1712_SUBDEVICE_INT1410,    /* a dummy id */
-                .name           = "Eurotech INT 1410",
-                .model          = "int1410",
-                .chip_init      = snd_ice1712_int1410_init,
-                .build_controls = snd_ice1712_int1410_add_controls,
-                .no_mpu401      = 1,
-                .eeprom_size    = sizeof(int1410_eeprom),
-                .eeprom_data    = int1410_eeprom,
-                .driver         = "int1410",
-        },
-        { } /* terminator */
-};
-
-But I'm a bit confused regarding how to enable such feature. Again,
-should I use a multitrack audio recorder as ecasound or I can just use
-arecord with some magic options? :)
-
-Thanks,
-
-Rodolfo
-
--- 
-
-GNU/Linux Solutions                  e-mail:    giometti@enneenne.com
-Linux Device Driver                             giometti@linux.it
-Embedded Systems                     phone:	+39 349 2432127
-UNIX programming                     skype:     rodolfo.giometti
+It's rather nice that percpu_counters internally take care of
+cpu-hotplugging, and use cpu_online_map.  I was amazed at how easily that
+was added.  I still expect it to break somehow..
