@@ -1,39 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933964AbYEBJrj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933737AbYEBJtF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933964AbYEBJrj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 05:47:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764886AbYEBJrP
+	id S933737AbYEBJtF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 05:49:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760093AbYEBJsz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 05:47:15 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:47282
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1764156AbYEBJrO (ORCPT
+	Fri, 2 May 2008 05:48:55 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:45650 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759344AbYEBJsy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 05:47:14 -0400
-Date: Fri, 02 May 2008 02:47:14 -0700 (PDT)
-Message-Id: <20080502.024714.13345788.davem@davemloft.net>
-To: den@openvz.org
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       adobriyan@openvz.org, ebiederm@xmission.com, yoshfuji@linux-ipv6.org
-Subject: Re: [PATCH 4/12] ipv6: assign PDE->data before gluing PDE into
- /proc tree
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1209467602-20001-4-git-send-email-den@openvz.org>
-References: <1209467538.29647.11.camel@iris.sw.ru>
-	<1209467602-20001-4-git-send-email-den@openvz.org>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Fri, 2 May 2008 05:48:54 -0400
+Message-ID: <481AE382.4050708@firstfloor.org>
+Date: Fri, 02 May 2008 11:48:50 +0200
+From: Andi Kleen <andi@firstfloor.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
+MIME-Version: 1.0
+To: Jiri Slaby <jirislaby@gmail.com>
+CC: linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@linutronix.de,
+       sandeen@sandeen.net
+Subject: Re: [PATCH] i386: Execute stack overflow warning on interrupt stack
+References: <20080502091806.GA26062@basil.nowhere.org> <481AE2A1.7000201@gmail.com>
+In-Reply-To: <481AE2A1.7000201@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: "Denis V. Lunev" <den@openvz.org>
-Date: Tue, 29 Apr 2008 15:13:14 +0400
 
-> Simply replace proc_create and further data assigned with proc_create_data.
+>> +            : "memory", "cc", "ecx');
 > 
-> Signed-off-by: Denis V. Lunev <den@openvz.org>
+> Am I seeing wrong, or is it a ' after the ecx?
 
-Applied, thanks.
+No that was the unrefreshed version. I had the patch around for some
+time and then updated and noticed Jan's change that added the ecx
+clobber and added that one too but unfortunately with typo, which
+was then caught, but then forgot to quilt refresh before posting. I
+reposted with the correct version now.
+
+Thanks for looking.
+
+-Andi
+
