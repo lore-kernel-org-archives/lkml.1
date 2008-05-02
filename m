@@ -1,43 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758958AbYEBFIa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759266AbYEBFRi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758958AbYEBFIa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 01:08:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751561AbYEBFIX
+	id S1759266AbYEBFRi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 01:17:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752345AbYEBFR0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 01:08:23 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:53596 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750984AbYEBFIW (ORCPT
+	Fri, 2 May 2008 01:17:26 -0400
+Received: from rv-out-0506.google.com ([209.85.198.233]:44393 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752330AbYEBFRZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 01:08:22 -0400
-Message-ID: <481AA10C.9080705@zytor.com>
-Date: Thu, 01 May 2008 22:05:16 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Fri, 2 May 2008 01:17:25 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:x-x-sender:to:cc:subject:in-reply-to:message-id:references:user-agent:mime-version:content-type:from;
+        b=D9Zcoi3gxOGoKqPkWFhz9NIsKO+1sPSqOUXTJokjrZimjbm4BAydAvTyq1quXGglq0aRTneomOi9K8XNEL4rsoxBf9+MSXsnHiTfETFGaH7rYUXdEYv7NqGrW6U0GF9sZcyEH8mU0tF4Um9QxpppU2wFL5WmYZMWVZFtIY+yPEQ=
+Date: Fri, 2 May 2008 13:21:24 +0800 (CST)
+X-X-Sender: wangcong@localhost.localdomain
+To: Herbert Xu <herbert@gondor.apana.org.au>
+cc: WANG Cong <xiyou.wangcong@gmail.com>, linux-kernel@vger.kernel.org,
+       davem@davemloft.net, akpm@osdl.org, netdev@vger.kernel.org
+Subject: Re: [Patch]net/xfrm/xfrm_policy.c: replace timer with delayed_work
+In-Reply-To: <20080501011123.GA4060@gondor.apana.org.au>
+Message-ID: <alpine.LFD.1.10.0805021319200.3349@localhost.localdomain>
+References: <20080216.235534.237382205.xiyou.wangcong@gmail.com> <20080427011809.GA662@gondor.apana.org.au> <20080428.225312.58450957.xiyou.wangcong@gmail.com> <20080428151342.GA12007@gondor.apana.org.au> <alpine.LFD.1.10.0804302355120.2940@localhost.localdomain>
+ <20080501011123.GA4060@gondor.apana.org.au>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-To: Soumyadip Das Mahapatra <dip_kernel@yahoo.co.in>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: Improved Swapping Method In sort.c
-References: <988568.21908.qm@web94102.mail.in2.yahoo.com>
-In-Reply-To: <988568.21908.qm@web94102.mail.in2.yahoo.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+From: WANG Cong <xiyou.wangcong@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Soumyadip Das Mahapatra wrote:
-> Hello everybody,
-> The swapping method (in function void u32_swap() line no.. 14 to 16) in lib/sort.c can be improved by using the following code
-> *(u32 *)b ^= *(u32 *)a ^= *(u32 *)b ^= *(u32 *)a instead of the code given. This code
-> is not using third variable thus not consuming another memory. And I dont see any significance in
-> using *int size* argument. so the function should be
-> static void u32_swap(void *a, void *b)
-> {
->     *(u32 *)b ^= *(u32 *)a ^= *(u32 *)b ^= *(u32 *)a;
-> }
-> 
+On Thu, 1 May 2008, Herbert Xu wrote:
 
-Not only is this invalid C, but it produces massively worse code.
+> On Thu, May 01, 2008 at 12:06:55AM +0800, WANG Cong wrote:
+>> 
+>> Hi, Herbert.
+>> 
+>> I referenced the book Linux Device Drivers, it is said that
+>> the work function in workqueue can sleep, that is to say, it only
+>> works in process context, so we don't need the disable the lock
+>> in softirq, which is interrupt context, right?
+>
+> Because it can sleep, you must disable BH for locks that can
+> be taken on the softirq path as otherwise a softirq can come
+> in, try to take the lock again and dead-lock.
 
-	-hpa
+Yes, I was an idiot.
+
+I will resend the revised patches right now.
