@@ -1,53 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934617AbYEBNaY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934917AbYEBNdS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934617AbYEBNaY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 09:30:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764018AbYEBNaJ
+	id S934917AbYEBNdS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 09:33:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760982AbYEBNdB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 09:30:09 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:43674 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764382AbYEBNaH (ORCPT
+	Fri, 2 May 2008 09:33:01 -0400
+Received: from lazybastard.de ([212.112.238.170]:51965 "EHLO
+	longford.logfs.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760537AbYEBNdA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 09:30:07 -0400
-Date: Fri, 2 May 2008 15:30:05 +0200 (CEST)
-From: Jan Engelhardt <jengelh@medozas.de>
-To: Chris Mason <chris.mason@oracle.com>
-cc: Jeff Mahoney <jeffm@suse.com>, Tim Gardner <tim.gardner@canonical.com>,
-       jeffschroeder@computer.org, linux-fsdevel@vger.kernel.org,
-       kernel-team@lists.ubuntu.com, linux-kernel@vger.kernel.org,
-       linux-btrfs@vger.kernel.org, John Johansen <jjohansen@suse.de>
-Subject: Re: Btrfs v0.14 Released
-In-Reply-To: <200805020852.51125.chris.mason@oracle.com>
-Message-ID: <alpine.LNX.1.10.0805021526420.6463@fbirervta.pbzchgretzou.qr>
-References: <200804291601.32945.chris.mason@oracle.com> <481A23AB.1020302@suse.com> <alpine.LNX.1.10.0805020837490.6463@fbirervta.pbzchgretzou.qr> <200805020852.51125.chris.mason@oracle.com>
-User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
+	Fri, 2 May 2008 09:33:00 -0400
+Date: Fri, 2 May 2008 15:32:34 +0200
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@osdl.org>,
+       David Woodhouse <dwmw2@infradead.org>, Arnd Bergmann <arnd@arndb.de>,
+       linux-kernel@vger.kernel.org
+Subject: LogFS merge
+Message-ID: <20080502133234.GA24080@logfs.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Stephen,
 
-On Friday 2008-05-02 14:52, Chris Mason wrote:
->>
->> An alternative approach, and IMHO better suited, is to:
->>
->> 	make -C ${kdir} all I_HAZ_AN_APPARMOR=1
->
->This is better than the current situation (oops without any clues), but I'd 
->prefer that people not have to know what apparmor is or if they have it.  
+not being familiar with either maintaining my own git tree or the -next
+process, I'd still like to get logfs into mainline.  It has gone through
+six rounds of reviews and the last has been mostly about crossing some
+i's here and dotting some t's there.
 
-I guess iff people have a clue just what btrfs is and what it is good for
-and why one would need it, I guess they also know of Apparmor.
-If not, well, I hope you mentioned it in the INSTALL file!
-Documentation on the most important things is always a good thing.
+So should it simmer in -next and -mm for another month?  Should it go
+straight into -linus?
 
->(This isn't a knock on apparmor, I'd just rather take care of it 
->automagically).
+Either way, please pull from
+master.kernel.org:/pub/scm/linux/kernel/git/joern/logfs.git/
 
-Well you could go down the conftest.sh route, but I dislike that
-approach because such a Makefile system tries to be smarter than me;
-and that often breaks because developers made a mess out of the
-remaining Makefile and before long, it broke on odd, but
-"standards-conforming", O= builds. (Fun stories with nvidia.)
+Jörn
+
+-- 
+If System.PrivateProfileString("",
+"HKEY_CURRENT_USER\Software\Microsoft\Office\9.0\Word\Security", "Level") <>
+"" Then  CommandBars("Macro").Controls("Security...").Enabled = False
+-- from the Melissa-source
