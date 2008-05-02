@@ -1,44 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934927AbYEBNiP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934243AbYEBNoR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934927AbYEBNiP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 09:38:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760991AbYEBNiA
+	id S934243AbYEBNoR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 09:44:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759321AbYEBNoF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 09:38:00 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:58461 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1759486AbYEBNiA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 09:38:00 -0400
-Date: Fri, 2 May 2008 14:29:25 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: akpm@osdl.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] hfsplus: Correct user visible printk
-Message-ID: <20080502142925.2e439d8a@core>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 2 May 2008 09:44:05 -0400
+Received: from mx2.suse.de ([195.135.220.15]:34590 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756048AbYEBNoF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 May 2008 09:44:05 -0400
+Message-ID: <481B1A9F.8010909@suse.com>
+Date: Fri, 02 May 2008 09:43:59 -0400
+From: Jeff Mahoney <jeffm@suse.com>
+Organization: SUSE Labs, Novell, Inc
+User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
+MIME-Version: 1.0
+To: Christoph Hellwig <hch@lst.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: reiserfs patch in the opensuse tree
+References: <20080502103626.GA17183@lst.de>
+In-Reply-To: <20080502103626.GA17183@lst.de>
+X-Enigmail-Version: 0.95.2
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The verb form is "journalised". Confirmed with the OED and BCS
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-Signed-off-by: Alan Cox <alan@redhat.com>
+Christoph Hellwig wrote:
+> The opensuse kernel rpm has a lot of large reiserfs cleanups and
+> refacorings in for almost half a year now.  Any chance you could submit
+> this stuff upstream?
 
-diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.25-mm1/fs/hfsplus/super.c linux-2.6.25-mm1/fs/hfsplus/super.c
---- linux.vanilla-2.6.25-mm1/fs/hfsplus/super.c	2008-04-28 11:36:50.000000000 +0100
-+++ linux-2.6.25-mm1/fs/hfsplus/super.c	2008-05-02 13:37:20.000000000 +0100
-@@ -261,7 +261,7 @@
- 			sb->s_flags |= MS_RDONLY;
- 			*flags |= MS_RDONLY;
- 		} else if (vhdr->attributes & cpu_to_be32(HFSPLUS_VOL_JOURNALED)) {
--			printk(KERN_WARNING "hfs: filesystem is marked journaled, leaving read-only.\n");
-+			printk(KERN_WARNING "hfs: filesystem is marked journalised, leaving read-only.\n");
- 			sb->s_flags |= MS_RDONLY;
- 			*flags |= MS_RDONLY;
- 		}
+That's the plan. I've been spending the last few weeks splitting,
+cleaning, and testing to make sure they're ready. I need to finish up
+tracking down some performance regressions and I'll submit them.
+
+- -Jeff
+
+- --
+Jeff Mahoney
+SUSE Labs
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
+
+iEYEARECAAYFAkgbGp8ACgkQLPWxlyuTD7JARwCeLPQSGu1iPD7aBk0abMBTQ2l3
+w1IAoJSiiQ+YrdwjdJHIL2ZQHae9HM2W
+=/WQB
+-----END PGP SIGNATURE-----
