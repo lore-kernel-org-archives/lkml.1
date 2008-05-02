@@ -1,57 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761890AbYEBJRR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932452AbYEBJRg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761890AbYEBJRR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 05:17:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751510AbYEBJRF
+	id S932452AbYEBJRg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 05:17:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763758AbYEBJR0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 05:17:05 -0400
-Received: from wf-out-1314.google.com ([209.85.200.170]:29920 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750949AbYEBJRC convert rfc822-to-8bit (ORCPT
+	Fri, 2 May 2008 05:17:26 -0400
+Received: from rv-out-0506.google.com ([209.85.198.238]:17919 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763734AbYEBJRY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 05:17:02 -0400
+	Fri, 2 May 2008 05:17:24 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:date:x-priority:x-mailer:to:from:subject:content-type:content-transfer-encoding:message-id;
-        b=BMH6daNTQK3F7Hki9vUX+9tyA2BBexNbHB3dlniXASXLYd+x4hRoz6W6a5P26O/UvqGaTtaE/RYP1sErMve0OqcTBSe4A7ybnGPSrU7vTRlwBeJOg3lzFtJJSxqXOlu+KM5UGkHS9MT1srIpf4DJVUvo9tmESQbwv55JV7qacfE=
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=ZR+lol+uAj3hqIfoOssiFXIRQ6m9zHvZFSpPRw/5IYepns/pYvhNHPMH0ETtnUKlCfMF9zhnAoHRL0iOC96pmeYgFz4dKjmbGq8J2cJEXGsXMF8XtBjXavwsUJpnF5upBNC3NH1f4OybTeC5v4dh9psCg+TbTJmM478sFBBMFgk=
+Message-ID: <84144f020805020217x4d1cac41te8164006c72f96d1@mail.gmail.com>
+Date: Fri, 2 May 2008 12:17:20 +0300
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "Frans Pop" <elendil@planet.nl>
+Subject: Re: [sched-devel/latest] WARNING: at mm/slub.c:2443
+Cc: zaitcev@redhat.com, mingo@elte.hu, linux-kernel@vger.kernel.org,
+       linux-usb@vger.kernel.org, gregkh@suse.de, clameter@sgi.com
+In-Reply-To: <200804241613.26557.elendil@planet.nl>
 MIME-Version: 1.0
-Date: Fri, 02 May 2008 17:16:45 +0800
-X-Priority: 3 (Normal)
-X-Mailer: VodaMail Mailing Group
-To: linux-kernel@vger.kernel.org
-From: amrilsofea@gmail.com
-subject: Instant income
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <CHILKAT-MID-8d7081d3-a991-4fec-92bc-ef68a6907fdd@usercom8-1c078a>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200804212310.41729.elendil@planet.nl>
+	 <20080423101123.a69e4945.zaitcev@redhat.com>
+	 <84144f020804231035w3fdb10aax4b90dc4e0bc1957d@mail.gmail.com>
+	 <200804232015.27257.elendil@planet.nl>
+	 <200804241613.26557.elendil@planet.nl>
+X-Google-Sender-Auth: b12c0674dbb42c1d
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greetings,
-   
+On Thu, Apr 24, 2008 at 5:13 PM, Frans Pop <elendil@planet.nl> wrote:
+>  I've run with the same kernel for about 6 hours today but not seen the
+>  WARNING again, so the chance that I'll be able to provide additional info
+>  is close to zero :-(
+>  Maybe I'll have more "luck" later in the .26 cycle when I start using -rc
+>  releases on a daily basis.
 
-You received this email along with other million receivers by a single click through WangLebih.com technology. Every clicks I will receive 0.50cent. To join this program and doing start making money automatically you have to register once in a life time without any extra charge. 
-
-Please click my link below to know more about this automoney cash machine program and I will receive 0.50cent by your action.
-
-
-click >>> http://wanglebih.com/?ref=sofea_7
-
-
-If you are interested to make easy money automatically send billions of e-mail without spamming by a single click and each clicks you receive you?ll 0.50cents, please register through my link below:-
-
-click >>> http://wanglebih.com/?ref=sofea_7
-
-
-All is done automatically, for more information and success testimonies please visit our website :
-
-click >>> http://wanglebih.com/?ref=sofea_7
-
-
-Regards,
-
-? WangLebih.com?..Your Financial Gateway  ?
-
-
-PS : Please register and start your own automoney cash machine today.
+SLUB now dumps all the remaining objects in the cache when this
+happens so you probably want to have CONFIG_SLUB_DEBUG_ON enabled just
+in case you hit this again. Thanks.
