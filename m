@@ -1,60 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936361AbYEBWH7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936591AbYEBWJ2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936361AbYEBWH7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 18:07:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965015AbYEBWHr
+	id S936591AbYEBWJ2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 18:09:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757283AbYEBWJQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 18:07:47 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:51352 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965016AbYEBWHq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 18:07:46 -0400
-Subject: Re: 'global' rq->clock
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: David Miller <davem@davemloft.net>
-Cc: efault@gmx.de, elendil@planet.nl, parag.warudkar@gmail.com, mingo@elte.hu,
-       linux-kernel@vger.kernel.org, guichaz@yahoo.fr, andi@firstfloor.org
-In-Reply-To: <20080502.144827.158329188.davem@davemloft.net>
-References: <200805022053.24779.elendil@planet.nl>
-	 <1209756423.4693.8.camel@marge.simson.net> <1209758186.6929.18.camel@lappy>
-	 <20080502.144827.158329188.davem@davemloft.net>
-Content-Type: text/plain
-Date: Sat, 03 May 2008 00:07:34 +0200
-Message-Id: <1209766054.6929.29.camel@lappy>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 2 May 2008 18:09:16 -0400
+Received: from khc.piap.pl ([195.187.100.11]:36586 "EHLO khc.piap.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757175AbYEBWJP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 May 2008 18:09:15 -0400
+To: Jeff Garzik <jeff@garzik.org>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [PATCH] Driver for IXP4xx built-in Ethernet ports
+References: <m3r6d05ucg.fsf@maximus.localdomain> <4816B99F.7040102@garzik.org>
+From: Krzysztof Halasa <khc@pm.waw.pl>
+Date: Sat, 03 May 2008 00:09:12 +0200
+In-Reply-To: <4816B99F.7040102@garzik.org> (Jeff Garzik's message of "Tue\, 29 Apr 2008 02\:01\:03 -0400")
+Message-ID: <m3zlr8qrxz.fsf@maximus.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-05-02 at 14:48 -0700, David Miller wrote:
-> From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> Date: Fri, 02 May 2008 21:56:26 +0200
-> 
-> > Ok, the the below would need something that relates tick_timestamp's to
-> > one another.. probably sucks without it..
-> > 
-> > OTOH, Andi said he was working on a fastish global sched_clock() thingy,
-> > Andi got a link to that code?
-> 
-> While I'm fine with this kind of stuff being added to constantly cope
-> with x86's joke of a TSC register implementation, it's starting to
-> become an enormous burdon for platforms where the TICK source actually
-> works properly.
-> 
-> Heck, on my Niagara2 chips, all 64 cpus use the same physical register
-> for the TICK source, it physically can't get desynchronized :-)
-> 
-> So, a way to turn all of this muck off would be much appreciated.
-> I'm happy to test anything on sparc64, and I'm sure the powerpc
-> folks are as well.
-> 
-> And I also heard a rumor that Peter has access to a machine with a
-> stable tick source for testing :-)
+Jeff Garzik <jeff@garzik.org> writes:
 
-Yeah, I was thinking of a way for architectures to signify how much help
-they need building the various clocks. Sparc, power and s390 would not
-need any help.
+> the ifdefs are really ugly and want cleaning, but the rest seems
+> sane. applied
 
+Thanks.
+
+They (#ifdef __ARMEB__) are indeed very ugly but I don't know how to
+clean them, except by splitting the driver into two (which is worse).
+
+The most used things are #defined and then used without those
+__ARMEB__ checks.
+
+Duplicating those functions is effectively splitting into two :-(
+
+Well, perhaps Intel could give us firmware which could convert LE-BE
+on the fly while TX/RX, that would make the LE code go away.
+Binary-only :-(
+
+OTOH I could convert #if* DEBUG_*, I will look at it.
+-- 
+Krzysztof Halasa
