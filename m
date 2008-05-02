@@ -1,34 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965306AbYEBX0i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937132AbYEBXbl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965306AbYEBX0i (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 19:26:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936233AbYEBX0Y
+	id S937132AbYEBXbl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 19:31:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932521AbYEBXbe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 19:26:24 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:52127
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1760103AbYEBX0X (ORCPT
+	Fri, 2 May 2008 19:31:34 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:37202 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758427AbYEBXbe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 19:26:23 -0400
-Date: Fri, 02 May 2008 16:26:23 -0700 (PDT)
-Message-Id: <20080502.162623.44391911.davem@davemloft.net>
-To: harvey.harrison@gmail.com
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 14/14] net: use get/put_unaligned_* helpers
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1209755159.26173.81.camel@brick>
-References: <1209755159.26173.81.camel@brick>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Fri, 2 May 2008 19:31:34 -0400
+Date: Fri, 2 May 2008 16:31:31 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: David Miller <davem@davemloft.net>
+Cc: harvey.harrison@gmail.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 12/12] net: use the common ascii hex helpers
+Message-Id: <20080502163131.a13c0774.akpm@linux-foundation.org>
+In-Reply-To: <20080502.162515.14823435.davem@davemloft.net>
+References: <1209754916.26173.39.camel@brick>
+	<20080502.162515.14823435.davem@davemloft.net>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Harvey Harrison <harvey.harrison@gmail.com>
-Date: Fri, 02 May 2008 12:05:59 -0700
+On Fri, 02 May 2008 16:25:15 -0700 (PDT)
+David Miller <davem@davemloft.net> wrote:
 
-> Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+> From: Harvey Harrison <harvey.harrison@gmail.com>
+> Date: Fri, 02 May 2008 12:01:56 -0700
+> 
+> > Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+> 
+> Acked-by: David S. Miller <davem@davemloft.net>
+> 
+> This has to go in via who ever adds the first patch
+> with the actual helpers, so I won't apply this one.
 
-Applied.
+Yup.  After a bit of testing and tyre-kicking I'll probably slip
+lib-add-ascii-hex-helper-functions.patch into mainline so that we can
+trickle all the *-use-the-common-ascii-hex-helpers.patch patches out to the
+various maintainers.
+
+
+
