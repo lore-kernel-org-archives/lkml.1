@@ -1,82 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758806AbYEBBNE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757463AbYEBBN0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758806AbYEBBNE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 May 2008 21:13:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754992AbYEBBMw
+	id S1757463AbYEBBN0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 May 2008 21:13:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758802AbYEBBNE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 May 2008 21:12:52 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:59876 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754211AbYEBBMv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 May 2008 21:12:51 -0400
-Date: Thu, 1 May 2008 18:12:49 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Russ Anderson <rja@sgi.com>
-cc: linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Tony Luck <tony.luck@intel.com>
-Subject: Re: [PATCH 2/3] mm: Avoid putting a bad page back on the LRU v2
-In-Reply-To: <20080502004248.GC12006@sgi.com>
-Message-ID: <Pine.LNX.4.64.0805011810410.13527@schroedinger.engr.sgi.com>
-References: <20080502004248.GC12006@sgi.com>
+	Thu, 1 May 2008 21:13:04 -0400
+Received: from sous-sol.org ([216.99.217.87]:42103 "EHLO sous-sol.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758719AbYEBBND (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 May 2008 21:13:03 -0400
+Date: Thu, 1 May 2008 18:12:43 -0700
+From: Chris Wright <chrisw@sous-sol.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Josselin Mouette <joss@debian.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Increase the default RLIMIT_MEMLOCK
+Message-ID: <20080502011233.GB4018@sequoia.sous-sol.org>
+References: <1209324387.4203.22.camel@shizuru> <20080501175037.01d8d3dc.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080501175037.01d8d3dc.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 1 May 2008, Russ Anderson wrote:
+* Andrew Morton (akpm@linux-foundation.org) wrote:
+> > --- include/linux/resource.h.orig	2008-04-27 21:15:47.000000000 +0200
+> > +++ include/linux/resource.h	2008-04-27 21:23:06.000000000 +0200
+> > @@ -58,10 +58,11 @@
+> >  #define _STK_LIM	(8*1024*1024)
+> >  
+> >  /*
+> > - * GPG wants 32kB of mlocked memory, to make sure pass phrases
+> > - * and other sensitive information are never written to disk.
+> > + * The biggest widespread mlocked memory consumer is 
+> > + * gnome-keyring-manager. It needs 256kB to make sure SSH/GPG 
+> > + * passphrases and network passwords are never written to disk.
+> >   */
+> > -#define MLOCK_LIMIT	(8 * PAGE_SIZE)
+> > +#define MLOCK_LIMIT	(64 * PAGE_SIZE)
+> 
+> gee, it seems rather arbitrary.  Perhaps we should have set it to zero on
+> day one to _force_ distributors to set an appropriate RLIMIT_MEMLOCK in
+> init.
 
-> Index: linus/mm/migrate.c
-> ===================================================================
-> --- linus.orig/mm/migrate.c	2008-05-01 19:05:33.000000000 -0500
-> +++ linus/mm/migrate.c	2008-05-01 19:06:15.000000000 -0500
-> @@ -380,6 +380,7 @@ static void migrate_page_copy(struct pag
->  		SetPageChecked(newpage);
->  	if (PageMappedToDisk(page))
->  		SetPageMappedToDisk(newpage);
-> +	/* Do not migrate PG_memerror to the new page */
+Yes, it is fairly arbitrary.  The motivation was gpg, but in fact when
+the patchset started gpg had already changed from 1 page to 8 pages.
 
-Why is the comment here?
+http://thread.gmane.org/gmane.linux.kernel/222613/focus=222681
 
-  
->  	if (PageDirty(page)) {
->  		clear_page_dirty_for_io(page);
-> @@ -721,6 +722,8 @@ unlock:
->   		 */
->   		list_del(&page->lru);
->   		move_to_lru(page);
-> +		if (PageMemError(page))
-> +			totalbad_pages++;
+> We can do this of course, but does it actually help anything?  Perhaps it's
+> actually a bad thing, permitting userspace developers to rely upon kernel
+> defaults rather than setting things they way they should be set?
 
-Wouldnt this be taken care of by the lru handling?
+We don't want to keep changing at whim of random apps, agreed.  Feels
+like a distro issue, since kernel can't even know what apps might run,
+and using 8 pages was just a courtesy hint to distros.
 
-> +#ifdef CONFIG_PAGEFLAGS_EXTENDED
-> +PAGEFLAG(MemError, memerror)
-> +#else
-> +#define PageMemError(page)	0
-
-Use
-
-PAGEFLAG_FLAGS(MemError)
-
->  #include <linux/page-flags.h>
->  
-> -#define PAGE_FLAGS	(1 << PG_lru   | 1 << PG_private   | 1 << PG_locked | \
-> +#define PAGE_FLAGS_BASE	(1 << PG_lru   | 1 << PG_private   | 1 << PG_locked | \
->  			 1 << PG_buddy | 1 << PG_writeback | \
->  			 1 << PG_slab  | 1 << PG_swapcache | 1 << PG_active)
-> +
-> +#ifdef CONFIG_PAGEFLAGS_EXTENDED
-> +#define	PAGE_FLAGS	(PAGE_FLAGS_BASE | 1UL << PG_memerror)
-> +#else
-> +#define	PAGE_FLAGS	(PAGE_FLAGS_BASE)
-> +#endif
->  
->  #define PAGE_FLAGS_RECLAIM      (PAGE_FLAGS | 1 << PG_reclaim | 1 << PG_dirty)
->  #define PAGE_FLAGS_RESERVE	(PAGE_FLAGS | 1 << PG_reserved)
-
-The groups of page flags could also be put into page-flags.h.
-
+thanks,
+-chris
