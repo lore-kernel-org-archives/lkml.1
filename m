@@ -1,130 +1,185 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932374AbYEBSfg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936158AbYEBSgb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932374AbYEBSfg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 14:35:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935943AbYEBSen
+	id S936158AbYEBSgb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 14:36:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935984AbYEBSfS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 14:34:43 -0400
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:38488 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S935882AbYEBSel (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 14:34:41 -0400
-Subject: [GIT PATCH] final (hopefully) SCSI updates for 2.6.25
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-scsi <linux-scsi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Fri, 02 May 2008 13:34:38 -0500
-Message-Id: <1209753278.3121.53.camel@localhost.localdomain>
+	Fri, 2 May 2008 14:35:18 -0400
+Received: from ns2.suse.de ([195.135.220.15]:56759 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S935977AbYEBSfO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 May 2008 14:35:14 -0400
+Date: Fri, 2 May 2008 11:35:10 -0700
+From: Mark Fasheh <mfasheh@suse.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, ocfs2-devel@oss.oracle.com,
+       Joel Becker <joel.becker@oracle.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [git patches] Ocfs2 fixes
+Message-ID: <20080502183510.GE15434@wotan.suse.de>
+Reply-To: Mark Fasheh <mfasheh@suse.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-4.fc8) 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Organization: SUSE Labs, Novell, Inc
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Actually, all but four of these are really bug fixes and driver updates.
-The final feature is large command support in SCSI which we were waiting
-on the block changes that Jens just merged.
+Some fixes/cleanups that I pulled into ocfs2.git after we sent our feature merge.
+The /sys/o2cb fix in particular has been asked about a couple times.
+	--Mark
 
-The patches are available here:
+Please pull from 'upstream-linus' branch of
+git://git.kernel.org/pub/scm/linux/kernel/git/mfasheh/ocfs2.git upstream-linus
 
-master.kernel.org:/pub/scm/linux/kernel/git/jejb/scsi-misc-2.6.git
+to receive the following updates:
 
-The short changelog is:
+ fs/ocfs2/cluster/sys.c  |    2 +-
+ fs/ocfs2/dlm/dlmdebug.c |    8 +++++---
+ fs/ocfs2/file.c         |    4 ++++
+ fs/ocfs2/localalloc.c   |    4 ++--
+ fs/ocfs2/stack_o2cb.c   |    2 +-
+ fs/ocfs2/stack_user.c   |    2 +-
+ fs/ocfs2/symlink.c      |    2 ++
+ 7 files changed, 16 insertions(+), 8 deletions(-)
 
-Alan Cox (1):
-      u14-34f: Fix 32bit only problem
+Adrian Bunk (3):
+      ocfs2: make struct ocfs2_control_device static
+      ocfs2: make struct o2cb_stack_ops static
+      ocfs2/dlm: dlmdebug.c: make 2 functions static
 
-Alan D. Brunelle (1):
-      bug fix for free list handling
+Joel Becker (1):
+      ocfs2: Correct merge of 52f7c21 (Move /sys/o2cb to /sys/fs/o2cb)
 
-Boaz Harrosh (2):
-      add support for variable length extended commands
-      Let scsi_cmnd->cmnd use request->cmd buffer
+Sunil Mushran (2):
+      ocfs2: Allow uid/gid/perm changes of symlinks
+      ocfs2: Use GFP_NOFS in kmalloc during localalloc window move
 
-Brian King (2):
-      ibmvscsi: Handle non SCSI error status
-      ipr: Rename ipr's state scsi host attribute to prevent collisions
-
-FUJITA Tomonori (1):
-      bsg: add large command support
-
-Hannes Reinecke (1):
-      megaraid_mbox: fix Dell CERC firmware problem
-
-Jiri Slaby (1):
-      megaraid_sas: fix suspend/resume sections
-
-Mark Salyzyn (4):
-      aacraid: Add Power Management support
-      aacraid: Fix jbod operations scan issues
-      aacraid: Fix warning about macro side-effects
-      aacraid: Fix down_interruptible() to check the return value correctly
-
-Miquel van Smoorenburg (4):
-      dpt_i2o: sysfs code
-      dpt_i2o: 64 bit support
-      dpt_i2o: move from virt_to_bus/bus_to_virt to dma_alloc_coherent
-      dpt_i2o: use standard __init / __exit code
-
-Sam Ravnborg (1):
-      aic94xx: fix section mismatch
-
-bo yang (1):
-      megaraid_sas; Update the Version and Changelog
-
-
-And the diffstat:
-
- Documentation/scsi/ChangeLog.megaraid_sas |   22 +
- block/bsg.c                               |   12 
- block/scsi_ioctl.c                        |    5 
- drivers/firewire/fw-sbp2.c                |    2 
- drivers/s390/scsi/zfcp_dbf.c              |    2 
- drivers/s390/scsi/zfcp_fsf.c              |    2 
- drivers/scsi/53c700.c                     |    6 
- drivers/scsi/Kconfig                      |    3 
- drivers/scsi/a100u2w.c                    |    2 
- drivers/scsi/aacraid/aachba.c             |  133 +++++-
- drivers/scsi/aacraid/aacraid.h            |   28 +
- drivers/scsi/aacraid/comminit.c           |    2 
- drivers/scsi/aacraid/commsup.c            |   34 +
- drivers/scsi/aacraid/linit.c              |   22 -
- drivers/scsi/aic94xx/aic94xx_init.c       |    6 
- drivers/scsi/constants.c                  |   10 
- drivers/scsi/dpt/dpti_ioctl.h             |   16 
- drivers/scsi/dpt/dptsig.h                 |    8 
- drivers/scsi/dpt/sys_info.h               |    4 
- drivers/scsi/dpt_i2o.c                    |  640 ++++++++++++++++++++++--------
- drivers/scsi/dpti.h                       |   15 
- drivers/scsi/gdth.c                       |    2 
- drivers/scsi/hptiop.c                     |    6 
- drivers/scsi/ibmvscsi/ibmvscsi.c          |    7 
- drivers/scsi/ibmvscsi/viosrp.h            |    9 
- drivers/scsi/initio.c                     |    2 
- drivers/scsi/ipr.c                        |    2 
- drivers/scsi/megaraid/megaraid_mbox.c     |   17 
- drivers/scsi/megaraid/megaraid_mbox.h     |    1 
- drivers/scsi/megaraid/megaraid_sas.c      |   13 
- drivers/scsi/megaraid/megaraid_sas.h      |    6 
- drivers/scsi/qla1280.c                    |    4 
- drivers/scsi/scsi.c                       |   23 -
- drivers/scsi/scsi_error.c                 |   15 
- drivers/scsi/scsi_lib.c                   |    7 
- drivers/scsi/scsi_tgt_lib.c               |    2 
- drivers/scsi/u14-34f.c                    |    6 
- drivers/usb/storage/cypress_atacb.c       |    2 
- drivers/usb/storage/isd200.c              |    2 
- include/scsi/scsi.h                       |   40 +
- include/scsi/scsi_cmnd.h                  |   23 -
- include/scsi/scsi_eh.h                    |    4 
- include/scsi/scsi_host.h                  |    8 
- 43 files changed, 884 insertions(+), 291 deletions(-)
-
-James
-
+diff --git a/fs/ocfs2/cluster/sys.c b/fs/ocfs2/cluster/sys.c
+index 98429fd..bc702da 100644
+--- a/fs/ocfs2/cluster/sys.c
++++ b/fs/ocfs2/cluster/sys.c
+@@ -65,7 +65,7 @@ int o2cb_sys_init(void)
+ {
+ 	int ret;
+ 
+-	o2cb_kset = kset_create_and_add("o2cb", NULL, NULL);
++	o2cb_kset = kset_create_and_add("o2cb", NULL, fs_kobj);
+ 	if (!o2cb_kset)
+ 		return -ENOMEM;
+ 
+diff --git a/fs/ocfs2/dlm/dlmdebug.c b/fs/ocfs2/dlm/dlmdebug.c
+index 5f6d858..1b81dcb 100644
+--- a/fs/ocfs2/dlm/dlmdebug.c
++++ b/fs/ocfs2/dlm/dlmdebug.c
+@@ -44,7 +44,8 @@
+ #define MLOG_MASK_PREFIX ML_DLM
+ #include "cluster/masklog.h"
+ 
+-int stringify_lockname(const char *lockname, int locklen, char *buf, int len);
++static int stringify_lockname(const char *lockname, int locklen, char *buf,
++			      int len);
+ 
+ void dlm_print_one_lock_resource(struct dlm_lock_resource *res)
+ {
+@@ -251,7 +252,8 @@ EXPORT_SYMBOL_GPL(dlm_errname);
+  *
+  * For more on lockname formats, please refer to dlmglue.c and ocfs2_lockid.h.
+  */
+-int stringify_lockname(const char *lockname, int locklen, char *buf, int len)
++static int stringify_lockname(const char *lockname, int locklen, char *buf,
++			      int len)
+ {
+ 	int out = 0;
+ 	__be64 inode_blkno_be;
+@@ -368,7 +370,7 @@ static void dlm_debug_free(struct kref *kref)
+ 	kfree(dc);
+ }
+ 
+-void dlm_debug_put(struct dlm_debug_ctxt *dc)
++static void dlm_debug_put(struct dlm_debug_ctxt *dc)
+ {
+ 	if (dc)
+ 		kref_put(&dc->debug_refcnt, dlm_debug_free);
+diff --git a/fs/ocfs2/file.c b/fs/ocfs2/file.c
+index 9154c82..57e0d30 100644
+--- a/fs/ocfs2/file.c
++++ b/fs/ocfs2/file.c
+@@ -1048,6 +1048,10 @@ int ocfs2_setattr(struct dentry *dentry, struct iattr *attr)
+ 	mlog_entry("(0x%p, '%.*s')\n", dentry,
+ 	           dentry->d_name.len, dentry->d_name.name);
+ 
++	/* ensuring we don't even attempt to truncate a symlink */
++	if (S_ISLNK(inode->i_mode))
++		attr->ia_valid &= ~ATTR_SIZE;
++
+ 	if (attr->ia_valid & ATTR_MODE)
+ 		mlog(0, "mode change: %d\n", attr->ia_mode);
+ 	if (attr->ia_valid & ATTR_UID)
+diff --git a/fs/ocfs2/localalloc.c b/fs/ocfs2/localalloc.c
+index ce0dc14..be774bd 100644
+--- a/fs/ocfs2/localalloc.c
++++ b/fs/ocfs2/localalloc.c
+@@ -260,7 +260,7 @@ void ocfs2_shutdown_local_alloc(struct ocfs2_super *osb)
+ 	bh = osb->local_alloc_bh;
+ 	alloc = (struct ocfs2_dinode *) bh->b_data;
+ 
+-	alloc_copy = kmalloc(bh->b_size, GFP_KERNEL);
++	alloc_copy = kmalloc(bh->b_size, GFP_NOFS);
+ 	if (!alloc_copy) {
+ 		status = -ENOMEM;
+ 		goto out_commit;
+@@ -931,7 +931,7 @@ static int ocfs2_local_alloc_slide_window(struct ocfs2_super *osb,
+ 	 * local alloc shutdown won't try to double free main bitmap
+ 	 * bits. Make a copy so the sync function knows which bits to
+ 	 * free. */
+-	alloc_copy = kmalloc(osb->local_alloc_bh->b_size, GFP_KERNEL);
++	alloc_copy = kmalloc(osb->local_alloc_bh->b_size, GFP_NOFS);
+ 	if (!alloc_copy) {
+ 		status = -ENOMEM;
+ 		mlog_errno(status);
+diff --git a/fs/ocfs2/stack_o2cb.c b/fs/ocfs2/stack_o2cb.c
+index ac1d74c..bbd1667 100644
+--- a/fs/ocfs2/stack_o2cb.c
++++ b/fs/ocfs2/stack_o2cb.c
+@@ -385,7 +385,7 @@ static int o2cb_cluster_this_node(unsigned int *node)
+ 	return 0;
+ }
+ 
+-struct ocfs2_stack_operations o2cb_stack_ops = {
++static struct ocfs2_stack_operations o2cb_stack_ops = {
+ 	.connect	= o2cb_cluster_connect,
+ 	.disconnect	= o2cb_cluster_disconnect,
+ 	.hangup		= o2cb_cluster_hangup,
+diff --git a/fs/ocfs2/stack_user.c b/fs/ocfs2/stack_user.c
+index 7428663..b503772 100644
+--- a/fs/ocfs2/stack_user.c
++++ b/fs/ocfs2/stack_user.c
+@@ -635,7 +635,7 @@ static const struct file_operations ocfs2_control_fops = {
+ 	.owner   = THIS_MODULE,
+ };
+ 
+-struct miscdevice ocfs2_control_device = {
++static struct miscdevice ocfs2_control_device = {
+ 	.minor		= MISC_DYNAMIC_MINOR,
+ 	.name		= "ocfs2_control",
+ 	.fops		= &ocfs2_control_fops,
+diff --git a/fs/ocfs2/symlink.c b/fs/ocfs2/symlink.c
+index 7134007..ba9dbb5 100644
+--- a/fs/ocfs2/symlink.c
++++ b/fs/ocfs2/symlink.c
+@@ -167,9 +167,11 @@ const struct inode_operations ocfs2_symlink_inode_operations = {
+ 	.readlink	= page_readlink,
+ 	.follow_link	= ocfs2_follow_link,
+ 	.getattr	= ocfs2_getattr,
++	.setattr	= ocfs2_setattr,
+ };
+ const struct inode_operations ocfs2_fast_symlink_inode_operations = {
+ 	.readlink	= ocfs2_readlink,
+ 	.follow_link	= ocfs2_follow_link,
+ 	.getattr	= ocfs2_getattr,
++	.setattr	= ocfs2_setattr,
+ };
 
