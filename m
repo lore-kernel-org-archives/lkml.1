@@ -1,62 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935582AbYEBPeP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935130AbYEBPgV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935582AbYEBPeP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 11:34:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932327AbYEBPd5
+	id S935130AbYEBPgV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 11:36:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759942AbYEBPgO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 11:33:57 -0400
-Received: from web52010.mail.re2.yahoo.com ([206.190.48.26]:33903 "HELO
-	web52010.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1763658AbYEBPd4 (ORCPT
+	Fri, 2 May 2008 11:36:14 -0400
+Received: from mta1.srv.hcvlny.cv.net ([167.206.4.196]:42307 "EHLO
+	mta1.srv.hcvlny.cv.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756488AbYEBPgN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 11:33:56 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:Cc:MIME-Version:Content-Type:Message-ID;
-  b=1plWGxn5OAvzUB4kxKykUpZju2p5UmTx6IiHT31Tv1N7xJaL/IwB6vvOzaUYbHm75CxDe0PW7gGbAscHBwJQCOB3AC/CIBRcRFUpcQ8pvNJEQz6fzXfjIoTe5+Ukubdg2l7TANaf8DG+pgn4Pa3kNSjF9FcXjNTZRwt0k8vwnj8=;
-X-YMail-OSG: tQaPA30VM1nUKLaTpHrOgayxnTA91H5Iayd0Ju7I8nnZtHbhlxKkftGAT3iuagUc5XTWTe042uy58xgciOfKmbxkM85N5LniMcHtPuSY1QRxcxIHoOAI2pjqtw--
-X-Mailer: YahooMailRC/975.23 YahooMailWebService/0.7.185
-Date: Fri, 2 May 2008 08:33:50 -0700 (PDT)
-From: Matti Linnanvuori <mattilinnanvuori@yahoo.com>
-Subject: Re: [patch] fs: remove local variable copy of f_pos to enable thread-safe updates
-To: Al Viro <viro@ZenIV.linux.org.uk>
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <342069.46185.qm@web52010.mail.re2.yahoo.com>
+	Fri, 2 May 2008 11:36:13 -0400
+Date: Fri, 02 May 2008 11:36:05 -0400
+From: Steven Toth <stoth@linuxtv.org>
+Subject: Re: [v4l-dvb-maintainer] build bug - cx23885
+In-reply-to: <481B32AE.10606@linuxtv.org>
+To: mkrufky@linuxtv.org
+Cc: gorcunov@gmail.com, v4l-dvb-maintainer@linuxtv.org,
+       linux-kernel@vger.kernel.org, mchehab@infradead.org
+Message-id: <481B34E5.5010007@linuxtv.org>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7BIT
+References: <481B32AE.10606@linuxtv.org>
+User-Agent: Thunderbird 2.0.0.12 (Macintosh/20080213)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+mkrufky@linuxtv.org wrote:
+> Steven Toth wrote:
+>> Cyrill Gorcunov wrote:
+>>   
+>>> Not sure if it fixed recently - but from today morning sync'ed git
+>>>
+>>> Kernel: arch/x86/boot/bzImage is ready  (#61)
+>>> Building modules, stage 2.
+>>>  MODPOST 773 modules
+>>>  ERROR: "dib7000p_attach" [drivers/media/video/cx23885/cx23885.ko]
+> undefined!
+>>>  make[1]: *** [__modpost] Error 1
+>>>  make: *** [modules] Error 2
+>>>
+>>> .config attached
+>>>     
+>> Thanks Cyrill, I'll look into this.
+>>
+>> Regards,
+>>
+>> Steve
+> I fixed this already, the fix is already in Mauro's git tree, and he's 
+> already asked Linus to merge it (I don't think Linus merged it yet)
 
+Thanks, I don't think I saw that post.
 
------ Original Message ----
-> From: Al Viro <viro@ZenIV.linux.org.uk>
-> To: Matti Linnanvuori <mattilinnanvuori@yahoo.com>
-> Cc: linux-fsdevel@vger.kernel.org; linux-kernel@vger.kernel.org
-> Sent: Friday, May 2, 2008 12:33:02 PM
-> Subject: Re: [patch] fs: remove local variable copy of f_pos to enable thread-safe updates
-> 
-> On Fri, May 02, 2008 at 02:14:25AM -0700, Matti Linnanvuori wrote:
-> > From: Matti Linnanvuori 
-> > 
-> > Remove local variable copy of f_pos to enable thread-safe updates in
-> > implementation functions of system calls read, readv, write and writev.
-> 
-> ... and we are back to square one with racy instances of ->read() that
-> will use *pos twice, leaving a window for e.g. lseek() to invalidate
-> e.g. wraparound tests.  Not that deciding what to do at the end of
-> e.g. read() with lseek() happening in the middle would be fun anyway -
-> esp. since you don't remember the kind of seek it had been.
-
-File systems can be written so that implementations of read, lseek etc.
-acquire a lock before using *pos, which precludes races. That was the
-idea behind my patch. So, my patch does not necessarily cause races.
-read instances can be racy in Linux now because there is no lock to
-serialize read etc. system calls.
-
-
-
-      ____________________________________________________________________________________
-Be a better friend, newshound, and 
-know-it-all with Yahoo! Mobile.  Try it now.  http://mobile.yahoo.com/;_ylt=Ahu06i62sR8HDtDypao8Wcj9tAcJ
+- Steve
