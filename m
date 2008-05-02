@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965779AbYEBTIx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764309AbYEBTJX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965779AbYEBTIx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 15:08:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964997AbYEBTFn
+	id S1764309AbYEBTJX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 15:09:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965052AbYEBTFq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 15:05:43 -0400
-Received: from el-out-1112.google.com ([209.85.162.182]:53287 "EHLO
-	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964927AbYEBTFm (ORCPT
+	Fri, 2 May 2008 15:05:46 -0400
+Received: from wa-out-1112.google.com ([209.85.146.180]:38960 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965033AbYEBTFo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 15:05:42 -0400
+	Fri, 2 May 2008 15:05:44 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=XINvEi79eXQAvFSp5Ojci8iCUmuDXUfUXXdVQ6GmRra61YnQ8rj+dH6uuL9xsdYf3m4SesJ290En1PUwHce/GiF8RHmnw/YJnvIHStoiWHVp+QdRzqwj/UDoR/GmuR+hMVC/x6AQagy5AY5w5EeXb2l4q9nHuP4lZP/RMAPzM3E=
-Subject: [PATCH 04/14] scsi: use get_unaligned_* helpers
+        b=Ft2MGUzkqMEFYU6gveQEU+AcEVGAkN5QCb+PWhqDC1rnC7eRJZOU17bBqs+9AqctszmUHRBZEtA+CaYEGSpAX5PLvHTIT8iVvHZhOSoTW9QotVp8MilSpq4CCUYKLjFlkKrFR7M0YCxAIrkXaAWosRAjy45xIa2M/yHrOoTP6Fc=
+Subject: [PATCH 05/14] usb: use get_unaligned_* helpers
 From: Harvey Harrison <harvey.harrison@gmail.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: LKML <linux-kernel@vger.kernel.org>
 Content-Type: text/plain
-Date: Fri, 02 May 2008 12:05:55 -0700
-Message-Id: <1209755155.26173.70.camel@brick>
+Date: Fri, 02 May 2008 12:05:56 -0700
+Message-Id: <1209755156.26173.71.camel@brick>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
@@ -30,22 +30,22 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
 ---
- drivers/scsi/libiscsi.c |    2 +-
+ drivers/usb/serial/kl5kusb105.c |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/scsi/libiscsi.c b/drivers/scsi/libiscsi.c
-index 010c1b9..7646e86 100644
---- a/drivers/scsi/libiscsi.c
-+++ b/drivers/scsi/libiscsi.c
-@@ -508,7 +508,7 @@ invalid_datalen:
- 			goto out;
- 		}
+diff --git a/drivers/usb/serial/kl5kusb105.c b/drivers/usb/serial/kl5kusb105.c
+index f328948..79787ed 100644
+--- a/drivers/usb/serial/kl5kusb105.c
++++ b/drivers/usb/serial/kl5kusb105.c
+@@ -236,7 +236,7 @@ static int klsi_105_get_line_state(struct usb_serial_port *port,
+ 	if (rc < 0)
+ 		err("Reading line status failed (error = %d)", rc);
+ 	else {
+-		status = le16_to_cpu(get_unaligned((__le16 *)status_buf));
++		status = get_unaligned_le16(status_buf);
  
--		senselen = be16_to_cpu(get_unaligned((__be16 *) data));
-+		senselen = get_unaligned_be16(data);
- 		if (datalen < senselen)
- 			goto invalid_datalen;
- 
+ 		info("%s - read status %x %x", __func__,
+ 		     status_buf[0], status_buf[1]);
 -- 
 1.5.5.1.350.gbbbf
 
