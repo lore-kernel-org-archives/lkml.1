@@ -1,123 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933194AbYEBAJb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933381AbYEBAOS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933194AbYEBAJb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 May 2008 20:09:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759115AbYEBAJK
+	id S933381AbYEBAOS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 May 2008 20:14:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755208AbYEBAOI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 May 2008 20:09:10 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:59750 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756992AbYEBAJJ (ORCPT
+	Thu, 1 May 2008 20:14:08 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:49040 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753863AbYEBAOH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 May 2008 20:09:09 -0400
-Date: Thu, 1 May 2008 17:08:19 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Erez Zadok <ezk@cs.sunysb.edu>
-Cc: ezk@cs.sunysb.edu, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, viro@zeniv.linux.org.uk,
-       hch@infradead.org, mhalcrow@us.ibm.com, hugh@veritas.com
-Subject: Re: [2.6.26 PATCH, RESEND]: fs_stack/eCryptfs: fsstack_copy_*
- updates
-Message-Id: <20080501170819.bdcb9035.akpm@linux-foundation.org>
-In-Reply-To: <200805012344.m41NiImk013312@agora.fsl.cs.sunysb.edu>
-References: <20080501122136.bc2215c9.akpm@linux-foundation.org>
-	<200805012344.m41NiImk013312@agora.fsl.cs.sunysb.edu>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Thu, 1 May 2008 20:14:07 -0400
+Date: Thu, 1 May 2008 17:12:31 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Ryan Roth <ryanroth@sbcglobal.net>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Ryan.Roth@CH2M.com,
+       bugme-daemon@bugzilla.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [Bugme-new] [Bug 10586] New: High Number of Segfaults
+ onMacBookStarting With 2.6.24.5 Kernel
+Message-Id: <20080501171231.6248b7c0.randy.dunlap@oracle.com>
+In-Reply-To: <481A5A94.2080400@sbcglobal.net>
+References: <bug-10586-10286@http.bugzilla.kernel.org/>
+	<20080501130444.cc5c63e8.akpm@linux-foundation.org>
+	<86A21F45FFA48B408A65E67054362EB6069DD742@CULEBRA.amr.ch2m.com>
+	<20080501133003.be723364.akpm@linux-foundation.org>
+	<86A21F45FFA48B408A65E67054362EB621C948@CULEBRA.amr.ch2m.com>
+	<481A5276.4040607@sbcglobal.net>
+	<20080501170239.9b740877.akpm@linux-foundation.org>
+	<481A5A94.2080400@sbcglobal.net>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 1 May 2008 19:44:18 -0400
-Erez Zadok <ezk@cs.sunysb.edu> wrote:
+On Thu, 01 May 2008 17:04:36 -0700 Ryan Roth wrote:
 
-> In message <20080501122136.bc2215c9.akpm@linux-foundation.org>, Andrew Morton writes:
-> > On Thu, 1 May 2008 13:18:09 -0400
-> > Erez Zadok <ezk@cs.sunysb.edu> wrote:
-> > 
-> > > In message <20080430101704.9cbd6384.akpm@linux-foundation.org>, Andrew Morton writes:
-> > > [...[
-> > > > Can we avoid having to think?
-> > > > 
-> > > > void fsstack_copy_inode_size(struct inode *dst, const struct inode *src)
-> > > > {
-> > > > 	blkcnt_t i_blocks;
-> > > > 	loff_t i_size;
-> > > > 
-> > > > 	i_size = i_size_read(src);
-> > > > 	spin_lock_32bit(&src->i_lock);
-> > > > 	i_blocks = src->i_blocks;
-> > > > 	spin_unlock_32bit(&src->i_lock);
-> > > > 
-> > > > 	i_size_write(dst, i_size);
-> > > > 	spin_lock_32bit(&dst->i_lock)
-> > > > 	dst->i_blocks = i_blocks;
-> > > > 	spin_unlock_32bit(&dst->i_lock)
-> > > > }
-> > > 
-> > > I can't find spin_[um]lock_32bit anywhere (checkd latest mmotm and linus's
-> > > tree).  I therefore assume this was just your way of saying I should:
-> > > 
-> > > #if BITS_PER_LONG == 32
-> > > 	spin_unlock(&dst->i_lock);
-> > > #endif
-> > 
-> > Nope, it was my way of suggesting that you implement it ;)
-> > include/linux/spinlock.h would be a good place.
+> Andrew Morton wrote:
+> > On Thu, 01 May 2008 16:29:58 -0700
+> > Ryan Roth <ryanroth@sbcglobal.net> wrote:
+> >
+> >   
+> >>> OK, worried.  This is a huge bug.  But afaik you're the only person 
+> >>> who has
+> >>> hit it, so there must be something special in your setup which is
+> >>> triggering it.  This could be hard.
+> >>>
+> >>>       
+> >> OK here is what I get with the git16 kernel.  On boot I get this error:
+> >>
+> >> PCI: Not using MMCONFIG
+> >> PCI: BIOS Bug: MCFG area at f0000000 is not reserved in ACPI motherboard 
+> >> resources
+> >> PCI: Not using MMCONFIG
+> >>     
+> >
+> > yeah, mmconfig is a problem.  It should be harmless.  Probably you're
+> > better off with it disabled ;)
+> >
+> >   
+> >> Attached is a complete log after this boot
+> >>     
+> >
+> > I see no 'segfault' messages in there?
+> >
+> >   
+> Since this last boot I have only got these:
 > 
-> Sure, I can implement it and submit a patch.  But I've got two questions
-> first:
-> 
-> 1. i_size_read has a tri-state behaviour:
-> 
-> #if BITS_PER_LONG==32 && defined(CONFIG_SMP)
-> 	// play with seqcount
-> #elif BITS_PER_LONG==32 && defined(CONFIG_PREEMPT)
-> 	// wrap in preempt_disable/enable
-> #else
-> 	// just return value
-> #endif
-> 
-> Shouldn't the same be done for i_blocks, with matching i_blocks_read(),
-> i_blocks_write(), and adding an inode->i_blocks_seqcount field?
+> > May 1 16:26:25 kernel: gnome-power-man[3112]: segfault at 0 ip 410fda 
+> > sp 7fff4712c870 error 4 in gnome-power-manager[400000+47000]
+> > May 1 16:26:25 kernel: gnome-power-man[3116]: segfault at 0 ip 410fda 
+> > sp 7fff2959cce0 error 4 in gnome-power-manager[400000+47000]
+> > May 1 16:26:25 kernel: gnome-power-man[3119]: segfault at 0 ip 410fda 
+> > sp 7fffc7671db0 error 4 in gnome-power-manager[400000+47000]
 
-I guess so, yes.  Maybe there are other things too.  We just haven't cared
-enough to do all this fuss for i_blocks.  Even i_size was a bit marginal.
+Are you using stack protector?  How could we tell?
+I don't see it in the kernel log.
 
-i_size is much more important because glitches in there can result in
-incorrect data being returned from read() and things like that.  i_blocks
-is just a beancounting curiosity.
+Also, please post your kernel .config file.
 
-> 
-> 2. I've rewritten your suggested code a bit to reduce stack use.  Modulo
->    having 32-bit spin_lock/unlock variants, do you see any problem with this
->    code below?  My testing of it so far on 32/64-bit SMP/UMP have all
->    passed.
-> 
-> void fsstack_copy_inode_size(struct inode *dst, struct inode *src)
-> {
-> #if BITS_PER_LONG == 32
-> 	blkcnt_t i_blocks;
-> 
-> 	spin_lock(&src->i_lock);
-> 	i_blocks = src->i_blocks;
-> 	spin_unlock(&src->i_lock);
-> 	spin_lock(&dst->i_lock);
-> 	dst->i_blocks = i_blocks;
-> 	spin_unlock(&dst->i_lock);
-> #else
-> 	dst->i_blocks = src->i_blocks;
-> #endif
-> 	i_size_write(dst, i_size_read(src));
-> }
-
-That looks sane, as long as we don't care about i_size-vs-i_blocks
-coherency.
-
-However I expect that approximately zero of the sites which modify i_blocks
-are taking i_lock to do so.
-
-otoh, many of them _will_ accidentally have i_mutex coverage.  On the
-write() path at least.  What happened to that idea?
+---
+~Randy
