@@ -1,51 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933379AbYEBCJO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933937AbYEBCJs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933379AbYEBCJO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 May 2008 22:09:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754252AbYEBCI6
+	id S933937AbYEBCJs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 May 2008 22:09:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755554AbYEBCJi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 May 2008 22:08:58 -0400
-Received: from ozlabs.org ([203.10.76.45]:37987 "EHLO ozlabs.org"
+	Thu, 1 May 2008 22:09:38 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:58421 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751083AbYEBCI6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 May 2008 22:08:58 -0400
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18458.30641.838156.434563@cargo.ozlabs.ibm.com>
-Date: Fri, 2 May 2008 12:08:49 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Arjan van de Ven <arjan@infradead.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, davem@davemloft.net,
-       linux-kernel@vger.kernel.org, jirislaby@gmail.com,
-       Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: RFC: starting a kernel-testers group for newbies
-In-Reply-To: <20080501132159.GC29330@cs181133002.pp.htv.fi>
-References: <20080429.190352.137408408.davem@davemloft.net>
-	<200804302136.58005.rjw@sisk.pl>
-	<20080430131537.1f7a0914.akpm@linux-foundation.org>
-	<alpine.LFD.1.10.0804301325260.2980@woody.linux-foundation.org>
-	<20080501003125.GM29330@cs181133002.pp.htv.fi>
-	<20080430000338.50548884@infradead.org>
-	<20080501113038.GW29330@cs181133002.pp.htv.fi>
-	<20080430072013.7c3b30b1@infradead.org>
-	<20080501132159.GC29330@cs181133002.pp.htv.fi>
-X-Mailer: VM 7.19 under Emacs 22.1.1
+	id S1754253AbYEBCJi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 May 2008 22:09:38 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <1209683136.24729.207.camel@brick>
+References: <1209683136.24729.207.camel@brick>
+To: Harvey Harrison <harvey.harrison@gmail.com>
+Cc: dhowells@redhat.com, Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 5/9] frv: gdb-stub.c use the common ascii hex helpers
+X-Mailer: MH-E 8.0.3+cvs; nmh 1.2-20070115cvs; GNU Emacs 23.0.50
+Date: Fri, 02 May 2008 03:09:00 +0100
+Message-ID: <11442.1209694140@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk writes:
+Harvey Harrison <harvey.harrison@gmail.com> wrote:
 
-> "Kernel oops while running kernbench and tbench on powerpc" took more 
-> than 2 months to get resolved, and we ship 2.6.25 with this regression.
+>  arch/frv/kernel/gdb-stub.c |  163 ++++++++++++++++++++------------------------
+>  1 files changed, 73 insertions(+), 90 deletions(-)
 
-That was a very subtle bug that only showed up on one particular
-powerpc machine.  I was not able to replicate it on any of the powerpc
-machines I have here.  Nevertheless, we found it and we have a fix for
-it.  I think that's an example of the process working. :)
+Can you send me the base patch this is built on?  These functions you're using
+don't seem to be upstream.
 
-Paul.
+David
