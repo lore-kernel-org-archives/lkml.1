@@ -1,90 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764176AbYEBRK5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933347AbYEBRL3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764176AbYEBRK5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 13:10:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752451AbYEBRKr
+	id S933347AbYEBRL3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 13:11:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752451AbYEBRLR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 13:10:47 -0400
-Received: from hpsmtp-eml14.kpnxchange.com ([213.75.38.114]:3085 "EHLO
-	hpsmtp-eml14.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751691AbYEBRKr (ORCPT
+	Fri, 2 May 2008 13:11:17 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:27457 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754569AbYEBRLQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 13:10:47 -0400
-From: Frans Pop <elendil@planet.nl>
-To: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.25.1, stray noise in dmesg
-Date: Fri, 2 May 2008 19:10:44 +0200
-User-Agent: KMail/1.9.9
-Cc: Gene Heskett <gene.heskett@gmail.com>
-References: <200805021126.15225.gene.heskett@gmail.com>
-In-reply-To: <200805021126.15225.gene.heskett@gmail.com>
-MIME-Version: 1.0
-Content-Disposition: inline
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200805021910.45266.elendil@planet.nl>
-X-OriginalArrivalTime: 02 May 2008 17:10:46.0108 (UTC) FILETIME=[760369C0:01C8AC77]
+	Fri, 2 May 2008 13:11:16 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:subject:from:to:cc:in-reply-to:references:
+	content-type:organization:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+	b=Oa4oHrgUmmf4ErlP6UwOy2Jhsu6LjPlyOLM1DzFQYggXjuO7Vk5Eu9ax2dPucEv6D
+	mmv2y3KekxDKyZq5ifZIQ==
+Subject: Re: CPU POSIX timers livelock
+From: Frank Mayhar <fmayhar@google.com>
+To: Petr Tesarik <ptesarik@suse.cz>
+Cc: =?ISO-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>,
+       Thomas Gleixner <tglx@linutronix.de>, Oleg Nesterov <oleg@tv-sign.ru>,
+       linux-kernel@vger.kernel.org, Roland McGrath <roland@redhat.com>
+In-Reply-To: <1209744785.15210.52.camel@elijah.suse.cz>
+References: <1209740741.15210.49.camel@elijah.suse.cz>
+	 <20080502152126.GA3130@atjola.homenet>
+	 <1209744785.15210.52.camel@elijah.suse.cz>
+Content-Type: text/plain; charset=ISO-8859-1
+Organization: Google, Inc.
+Date: Fri, 02 May 2008 10:10:26 -0700
+Message-Id: <1209748226.13467.6.camel@bobble.smo.corp.google.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gene Heskett wrote:
-> I just rebooted to 2.6.25.1, and was momentarily panic'd by the messages
-> going by early in the boot, but on putting 2&2 together, found they were
-> just noise.
+On Fri, 2008-05-02 at 18:13 +0200, Petr Tesarik wrote: 
+> On Fri, 2008-05-02 at 17:21 +0200, Björn Steinbrink wrote:
+> > [Added Roland McGrath and Frank Mayhar to Cc:, as this sounds similar
+> > enough to what has been discussed here http://lkml.org/lkml/2008/2/6/505]
 > 
-> From dmesg:
-> [root@coyote ~]# dmesg|grep unable
-> [    2.093502] hub 1-0:1.0: unable to enumerate USB device on port 2
-> [    2.248475] hub 1-0:1.0: unable to enumerate USB device on port 5
-> [    2.454444] hub 1-0:1.0: unable to enumerate USB device on port 6
+> Yes, I've just now found the thread too, read it, and I think this is
+> just another case where the current implementation does not scale.
+> 
+> Was there any followup to the patch posted on the 7th of March? The
+> interesting discussion seems to be interrupted there. :(
 
-I'm seeing these too (hub 5-0):
-USB Universal Host Controller Interface driver v3.0
-uhci_hcd 0000:00:1d.0: new USB bus registered, assigned bus number 1
-usb usb1: configuration #1 chosen from 1 choice
-hub 1-0:1.0: USB hub found
-uhci_hcd 0000:00:1d.1: new USB bus registered, assigned bus number 2
-usb usb2: configuration #1 chosen from 1 choice
-hub 2-0:1.0: USB hub found
-uhci_hcd 0000:00:1d.2: new USB bus registered, assigned bus number 3
-usb usb3: configuration #1 chosen from 1 choice
-hub 3-0:1.0: USB hub found
-uhci_hcd 0000:00:1d.3: new USB bus registered, assigned bus number 4
-usb usb4: configuration #1 chosen from 1 choice
-hub 4-0:1.0: USB hub found
-ehci_hcd 0000:00:1d.7: new USB bus registered, assigned bus number 5
-ehci_hcd 0000:00:1d.7: USB 2.0 started, EHCI 1.00, driver 10 Dec 2004
-usb usb5: configuration #1 chosen from 1 choice
-hub 5-0:1.0: USB hub found
-hub 5-0:1.0: unable to enumerate USB device on port 5
-hub 5-0:1.0: unable to enumerate USB device on port 7
-usb 3-1: new low speed USB device using uhci_hcd and address 2
-usb 3-1: configuration #1 chosen from 1 choice
-usb 4-1: new low speed USB device using uhci_hcd and address 2
-usb 4-1: configuration #1 chosen from 1 choice
+Roland and I have continued the conversation but we took it off the LKML
+since it was really getting into the nitty-gritty details of the
+implementation and wasn't that interesting to someone not actually
+directly involved.
 
-With 2.6.25 the 2 "unable to enumerate" lines were not there.
-The changing order in which USB busses are detected makes comparison 
-awkward, but these seem to be the only new lines.
+The upshot is that I have a proposed patch that I have handed to Roland
+to review.  He's pretty busy, though, so he may not have gotten to it
+yet.  Perhaps this thread will give him further incentive. :-)
 
-$ lsusb # with 2.6.25-git
-Bus 005 Device 001: ID 1d6b:0002
-Bus 004 Device 002: ID 046d:c50d Logitech, Inc.
-Bus 004 Device 001: ID 1d6b:0001
-Bus 003 Device 002: ID 05a4:9841 Ortek Technology, Inc.
-Bus 003 Device 001: ID 1d6b:0001
-Bus 001 Device 001: ID 1d6b:0001
-Bus 002 Device 001: ID 1d6b:0001
+Petr's analysis pretty much matches mine, except that he went into a bit
+more detail in actually computing numbers and whatnot whereas I just
+reasoned that with a sufficiently large number of threads pretty much
+any process that uses POSIX timers can cause the system to livelock,
+simply because repeatedly running the thread group list in
+run_posix_cpu_timers() will at some point take as long as the timer tick
+itself.
 
-$ lsusb #with 2.6.25
-Bus 005 Device 002: ID 046d:c50d Logitech, Inc.
-Bus 005 Device 001: ID 1d6b:0001
-Bus 004 Device 002: ID 05a4:9841 Ortek Technology, Inc.
-Bus 004 Device 001: ID 1d6b:0001
-Bus 003 Device 001: ID 1d6b:0001
-Bus 002 Device 001: ID 1d6b:0002
+My proposed patch that Roland is reviewing corrects the implementation
+of run_posix_cpu_timers() to make it run in constant time for a
+particular machine by defining a couple of new structures and keeping
+the thread group timers in one of these.  It's way more complex than
+this and I have a README that goes into detail if anyone is interested.
 
-Comparing the two there is one "new" device. Strange that "Bus 001" is 
-missing in lsusb with 2.6.25 because dmesg does mention it as assigned.
+I've tested the patch with as many as 200,000 threads (all of which are
+running a prime number sieve and are therefore CPU bound) and it appears
+to work fine.  Before I post it again, though, I want Roland to sign off
+on it.
+-- 
+Frank Mayhar <fmayhar@google.com>
+Google, Inc.
+
