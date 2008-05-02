@@ -1,98 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935683AbYEBU14@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936026AbYEBUaz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935683AbYEBU14 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 16:27:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764663AbYEBU1r
+	id S936026AbYEBUaz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 16:30:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764158AbYEBUar
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 16:27:47 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:34679 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1762714AbYEBU1q (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 16:27:46 -0400
-Date: Fri, 2 May 2008 15:27:45 -0500
-From: Russ Anderson <rja@sgi.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Tony Luck <tony.luck@intel.com>, Christoph Lameter <clameter@sgi.com>
-Subject: Re: [PATCH 3/3] ia64: Call migration code on correctable errors v2
-Message-ID: <20080502202744.GA13285@sgi.com>
-Reply-To: Russ Anderson <rja@sgi.com>
-References: <20080502004425.GD12006@sgi.com> <87fxt0vbu4.fsf@basil.nowhere.org> <20080502185030.GH7246@sgi.com> <481B6CA2.8080006@firstfloor.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <481B6CA2.8080006@firstfloor.org>
-User-Agent: Mutt/1.5.9i
+	Fri, 2 May 2008 16:30:47 -0400
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:58913 "EHLO e1.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1765061AbYEBUaq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 May 2008 16:30:46 -0400
+Message-ID: <481B79EF.3090200@austin.ibm.com>
+Date: Fri, 02 May 2008 15:30:39 -0500
+From: Joel Schopp <jschopp@austin.ibm.com>
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+MIME-Version: 1.0
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+CC: Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Anton Blanchard <anton@au1.ibm.com>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: questions on calc_delta_mine() in sched.c
+References: <481A2BF6.2070406@austin.ibm.com> <1209730442.6508.3.camel@lappy>
+In-Reply-To: <1209730442.6508.3.camel@lappy>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 02, 2008 at 09:33:54PM +0200, Andi Kleen wrote:
-> Russ Anderson wrote:
-> > 
-> > The code migrates on the first correctable error on a page, so "excessive"
-> > is one.  Yes, keeping a per page count gets problematic, especially as
-> > memories get larger.  The issue of the right metric for when to migrate
-> > will always be debatable and the "right" answer likely will depend on
-> > the physical memory technology.
+>>      if (unlikely(!lw->inv_weight))
+>>          lw->inv_weight = (WMULT_CONST-lw->weight/2) / (lw->weight+1);
+>>
+>>
+>> Q1) This code is hit often in scenarios I run, is this really unlikely for 
+>> others?
 > 
-> That doesn't sound like a good metric. What happens for example if you
-> have a flakey memory controller or DIMM socket that just occasionally
-> adds bit errors on transfer without the DIMM actually being bad? I doubt
-> such a simple heuristic is a good one.
+> I think it became a lot more likely recently, perhaps removing that
+> unlikely is not such a bad idea.
 
-Then occasionally pages on that DIMM get marked bad and are no longer used.
-There have been cases where there only one or two correctable errors
-before it degrades to and uncorrectable.  The "right" answer likely will 
-depend on the physical memory technology.
+Especially if you remove the divide in the other locations, then this might 
+even be likely.
 
-Keep in mind the discarded pages can be later be freed.
-
-> The x86-64 machine check design has a database connected to a user space
-> program that can keep track of errors. I suspect something like this is
-> a better solution.
-
-I'll have to find out more.
-
-> >> Anyways I don't think this should be ia64 specific, but generic code.
-> > 
-> > The actual migration code is generic, in mm/migrate.c.
-> > 
-> > The ia64 kernel module piece is very arch specific.  It ties into the 
-> > ia64 CPE handler.  It gets the page address from the CPE record, based
-> > on the ia64 error handling spec.  Each arch will have a different way of
-> > determining the physical address of the correctable error (for example).
 > 
-> Still at least part of the code should be generic.
-
-Part is generic.  What other parts do you want generic?
-I'm not opposed to the idea, but things like parsing the
-CPE record is platform specific.
-
-> Also in general it's good that you finally realized that trying to write
-> lockless machine check handlers was a bad idea and that to do any
-> meaninful handling requires a proper process context. But I still wonder
-> when you move the rest of the ia64 machine check handling to that too so
-> that e.g. the sched.c hacks for lockless handling can be removed?
-
-Are you refereing to ia64 MCAs that can surface at any time?  That is
-an Intel CPU design issue far outside anything I can control.  CPEs 
-are regular interrupts, which is why they can be handled in a sane
-manner.
-
-> >> I also have my doubts about making such small code subsystems modules. Modules
-> >> always get rounded to pages so it ultimatively just wastes memory.
-> > 
-> > CONFIG_IA64_CPE_MIGRATE=m builds it as module.
+>> Q2) The rest of the code in sched.c seems to make inv_weight == 
+>> WMULT_CONST/weight and I was wondering if you could explain why this 
+>> instance is different.
 > 
-> It's far too small for it.
+> because the rest of the code is wrong, there are only 2 other sites, and
+> I have a patch that removes those div64_64() with =0;
+> 
+> The idea is to use rounding division: (x + y/2) / y
+> but we can't because 'x' is touching the limits of our modulo space,
+> hence we do: (x - y/2) / y
+> which comes in 1 short, that fixup has been lost along the way.
 
-Maybe I do not understand the issue.  Is the issue wasting part of one
-page?   Does building CONFIG_IA64_CPE_MIGRATE=y waste memory?
+Ah, that makes more sense, and the fact that it is broken explains why I 
+couldn't figure it out.
 
--- 
-Russ Anderson, OS RAS/Partitioning Project Lead  
-SGI - Silicon Graphics Inc          rja@sgi.com
