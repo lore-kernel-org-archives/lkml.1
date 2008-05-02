@@ -1,68 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932083AbYEBKPd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933449AbYEBKRK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932083AbYEBKPd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 06:15:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756891AbYEBKP0
+	id S933449AbYEBKRK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 06:17:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758681AbYEBKQ4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 06:15:26 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:40921 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754812AbYEBKP0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 06:15:26 -0400
-Date: Fri, 2 May 2008 06:15:02 -0400 (EDT)
-From: Mauro Carvalho Chehab <mchehab@infradead.org>
-To: Arjan van de Ven <arjan@infradead.org>
-cc: Andres Freund <andres@anarazel.de>, linux-kernel@vger.kernel.org,
-       apdim@grecian.net
-Subject: Re: [PATCH] v4l/dvb: Add linux/version.h include as KERNEL_VERSION
- macro is used.
-In-Reply-To: <20080501015003.4b7a9058@infradead.org>
-Message-ID: <Pine.LNX.4.64.0805020610430.24733@bombadil.infradead.org>
-References: <200805012005.42400.andres@anarazel.de> <20080501015003.4b7a9058@infradead.org>
+	Fri, 2 May 2008 06:16:56 -0400
+Received: from ozlabs.org ([203.10.76.45]:58710 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759296AbYEBKQ4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 May 2008 06:16:56 -0400
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
-X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <18458.55542.977597.204532@cargo.ozlabs.ibm.com>
+Date: Fri, 2 May 2008 19:03:50 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: David Gibson <david@gibson.dropbear.id.au>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [POWERPC][v2] Bolt in SLB entry for kernel stack on secondary
+	cpus
+In-Reply-To: <20080502055648.GA28378@yookeroo.seuss>
+References: <18458.39064.783013.268948@cargo.ozlabs.ibm.com>
+	<20080502055648.GA28378@yookeroo.seuss>
+X-Mailer: VM 7.19 under Emacs 22.1.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 1 May 2008, Arjan van de Ven wrote:
+David Gibson writes:
 
-> On Thu, 1 May 2008 20:05:41 +0200
-> Andres Freund <andres@anarazel.de> wrote:
->
->> Whitout this build fails with unknown macro on
->> e4c576b911e364737b1bf4f5bfdab1c440713f26
->>
->> Hopefully I did everything correct, as this is my first usage of git
->> beside checking out. Also its my first patch on lk....
->>
->> Is an Signed-off-by already appropriate with such an trivial change?
->>
->
-> Hi,
->
-> maybe the real fix is to remove the use of KERNEL_VERSION in this code??
+> Do you even need the processor ID test at all?  The boot processor
+> should always have its stack covered by SLB entry 0 when we come
+> through here, shouldn't it?
 
-This is one of the rare cases where the usage of KERNEL_VERSION is valid. 
-This is the code there:
+I was concerned that get_paca()->kstack wouldn't have been initialized
+by the time the boot cpu calls slb_initialize().  If that fear is
+unfounded then the check could go.
 
-#include <linux/version.h>      /* for KERNEL_VERSION MACRO     */
-#define RADIO_VERSION KERNEL_VERSION(0,7,7)
-
-This macro is required by V4L API to indicate the module version.
-
-One possible solution would be to fork KERNEL_VERSION into something like 
-V4L_VERSION, and replace it on drivers/media/video/* and 
-drivers/media/radio/*.
-
-Yet, I'm not sure if it would be nice to have two macros with the same 
-code.
-
--- 
-Cheers,
-Mauro Carvalho Chehab
-http://linuxtv.org
-mchehab@infradead.org
+Paul.
