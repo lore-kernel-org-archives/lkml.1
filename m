@@ -1,80 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935515AbYEBQGu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964840AbYEBQNV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935515AbYEBQGu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 12:06:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757619AbYEBQGm
+	id S964840AbYEBQNV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 12:13:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758351AbYEBQNK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 12:06:42 -0400
-Received: from mail.tpi.com ([198.107.51.143]:3715 "EHLO mail.tpi.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755490AbYEBQGl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 12:06:41 -0400
-Message-ID: <481B3C0E.502@tpi.com>
-Date: Fri, 02 May 2008 10:06:38 -0600
-From: Tim Gardner <timg@tpi.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
-MIME-Version: 1.0
-To: Chris Mason <chris.mason@oracle.com>
-CC: jeffschroeder@computer.org, Jan Engelhardt <jengelh@medozas.de>,
-       Jeff Mahoney <jeffm@suse.com>, Tim Gardner <tim.gardner@canonical.com>,
-       linux-fsdevel@vger.kernel.org, kernel-team@lists.ubuntu.com,
-       linux-kernel@vger.kernel.org, linux-btrfs@vger.kernel.org,
-       John Johansen <jjohansen@suse.de>
-Subject: Re: Btrfs v0.14 Released
-References: <200804291601.32945.chris.mason@oracle.com> <200805020852.51125.chris.mason@oracle.com> <c24352ca0805020715y46741317ve9897afd689d058f@mail.gmail.com> <200805021034.08358.chris.mason@oracle.com>
-In-Reply-To: <200805021034.08358.chris.mason@oracle.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Fri, 2 May 2008 12:13:10 -0400
+Received: from styx.suse.cz ([82.119.242.94]:53771 "EHLO elijah.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1757939AbYEBQNJ convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 May 2008 12:13:09 -0400
+Subject: Re: CPU POSIX timers livelock
+From: Petr Tesarik <ptesarik@suse.cz>
+To: =?ISO-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Oleg Nesterov <oleg@tv-sign.ru>,
+       linux-kernel@vger.kernel.org, Roland McGrath <roland@redhat.com>,
+       Frank Mayhar <fmayhar@google.com>
+In-Reply-To: <20080502152126.GA3130@atjola.homenet>
+References: <1209740741.15210.49.camel@elijah.suse.cz>
+	 <20080502152126.GA3130@atjola.homenet>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8BIT
+Organization: SuSE CR
+Date: Fri, 02 May 2008 18:13:05 +0200
+Message-Id: <1209744785.15210.52.camel@elijah.suse.cz>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.0 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chris Mason wrote:
-> On Friday 02 May 2008, Jeff Schroeder wrote:
-> 
-> [ Btrfs oops with apparmor patched in ]
-> 
->> Make is not my forte, but here is a working test to see if apparmor
->> exists in Ubuntu 8.04.
->> Maybe have make apply a patch to the btrfs source if this test
->> succeeds? Does this work in SUSE?
->>
->> http://www.digitalprognosis.com/opensource/patches/btrfs/lame_apparmor_test
->> _for_btrfs.patch
->>
-> 
-> Thanks, but this uses CONFIG_SECURITY_APPARMOR which isn't enough to tell if 
-> the kernel has the patch.  Lets go back to Jeff's suse patch:
-> 
-> /*
->  * Even if AppArmor isn't enabled, it still has different prototypes.
->  * Add more distro/version pairs here to declare which has AppArmor applied.
->  */
-> #if defined(CONFIG_SUSE_KERNEL)
-> # if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,22)
-> # define REMOVE_SUID_PATH 1
-> # endif
-> #endif
-> 
-> Could someone from Ubuntu please suggest a replacement for CONFIG_SUSE_KERNEL 
-> and KERNEL_VERSION(2,6,22) that would correspond with ubuntu kernels shipped 
-> with apparmor?  We don't need some define from the apparmor patch, just a 
-> global flag that says it comes from ubuntu is enough.
-> 
-> -chris
+On Fri, 2008-05-02 at 17:21 +0200, Björn Steinbrink wrote:
+> [Added Roland McGrath and Frank Mayhar to Cc:, as this sounds similar
+> enough to what has been discussed here http://lkml.org/lkml/2008/2/6/505]
+
+Yes, I've just now found the thread too, read it, and I think this is
+just another case where the current implementation does not scale.
+
+Was there any followup to the patch posted on the 7th of March? The
+interesting discussion seems to be interrupted there. :(
+
+Petr Tesarik
+
+> On 2008.05.02 17:05:41 +0200, Petr Tesarik wrote:
+> > Hello,
+> > 
+> > there seems to be a possible livelock in the CPU timers (actually, we've
+> > experienced it once already). The analysis lead to the conclusion that
+> > fixing this properly will be a bit harder.
+> > 
+> > Problem Statement
+> > 
+> >  1. Any process can set ITIMER_PROF as short as 1 timer tick
+> >  2. If the process is CPU-bound (e.g. a number-crunching application),
+> >     the timer will expire with every timer tick
+> >  3. If the process has N threads and each thread runs on its own
+> >     CPU, the timer will expire N times per timer tick
+> > 
+> > Now, this can become quite interesting on a larger system. For instance,
+> > with 128 CPUs and a (conservative) setting of HZ 300, any process can
+> > effectively ask to be sent a SIGPROF every 26 usec (1/300/128 s). Pretty
+> > fast, but it can get worse if you consider the pitfalls of a NUMA
+> > architecture.
+> > 
+> > Whenever the timer expires, a new expiration time must be computed for
+> > each thread in the thread group. The values are stored in task_struct of
+> > each thread, and IIRC those are kept local to the CPU where the thread
+> > is running (quite logically). Put in another way, walking all threads
+> > means touching remote memory except for the few task_struct which are
+> > local to the recomputing CPU. In the 128-CPU example, if each node has 2
+> > CPUs (think Altix), only 2 accesses are to the local node and 126
+> > accesses are to remote memory. These are already quite expensive, but it
+> > gets even worse. The timer interrupt is generated locally for each CPU,
+> > so if the process is spread over all of them (see above), all CPUs
+> > recompute the timer (hint: write access), thus constantly invalidating
+> > local caches of the remote memory.
+> > 
+> > And those computations cannot run in parallel, of course, because
+> > everything is serialized on sighand->siglock (see run_posix_cpu_timers).
+> > So, each time one CPU finishes walking the threads, there's already a
+> > queue of all the other CPUs waiting to do the same again. For this kind
+> > of load, those 26 usec (approx. 41600 CPU cycles on a 1.6 GHz CPU) may
+> > be well insufficient. Even more so, if somebody else occasionally takes
+> > write lock on tasklist_lock. It may so happen that the system spends all
+> > CPU cycles re-computing the profiling timers over and over again and
+> > never make any progress. Note this is partly caused by the fact that the
+> > time needed to handle the profiling timer is itself also counted to the
+> > profiling time.
+> > 
+> > This simply does not scale for large systems (and I was not even
+> > considering those really large 1024p ones).
+> > 
+> > Ideas
+> > 
+> > Any ideas for improvement? Obviously, storing per-process expiration
+> > times in one place instead of dividing the interval by the number of
+> > currently running threads would help here. But it would spoil the fast
+> > path (when there are no timers at all). Avoiding that multiple threads
+> > re-compute the same values might also help (although I've got no idea
+> > how to implement this).
+> > 
+> > Any more comments (before I start hacking something you'll NAK)?
+> > 
+> > BTW did POSIX really mean to allow an indefinitely small interval for
+> > the SIGPROF?
+> > 
+> > Petr Tesarik
 > --
 > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
 > the body of a message to majordomo@vger.kernel.org
 > More majordomo info at  http://vger.kernel.org/majordomo-info.html
 > Please read the FAQ at  http://www.tux.org/lkml/
-> 
-
-To the best of my knowledge, the AppArmor patches are arch and flavour
-independent. If CONFIG_SECURITY_APPARMOR exists, then the AA code is
-compiled. This is certainly the case for Hardy. Neither Kees or myself
-are aware of any reason why it won't also hold true for Intrepid.
-
-rtg
--- 
-Tim Gardner timg@tpi.com www.tpi.com
-OR 503-601-0234 x102 MT 406-443-5357
