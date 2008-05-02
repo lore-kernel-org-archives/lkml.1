@@ -1,84 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760107AbYEBJ6p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763762AbYEBKGR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760107AbYEBJ6p (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 05:58:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761478AbYEBJ6Y
+	id S1763762AbYEBKGR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 06:06:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757956AbYEBKGB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 05:58:24 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:50134 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760391AbYEBJ6X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 05:58:23 -0400
-Date: Fri, 2 May 2008 10:58:20 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: Ross Biro <rossb@google.com>
-Cc: Christoph Lameter <clameter@sgi.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, apm@shadoween.org
-Subject: Re: [PATCH 1/2] MM: Make page tables relocatable -- conditional flush (rc9)
-Message-ID: <20080502095819.GA24124@csn.ul.ie>
-References: <20080414163933.A9628DCA48@localhost> <20080414155702.ca7eb622.akpm@linux-foundation.org> <Pine.LNX.4.64.0804161221060.14718@schroedinger.engr.sgi.com> <d43160c70804290627g77a74e48k5a383dd441177293@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <d43160c70804290627g77a74e48k5a383dd441177293@mail.gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Fri, 2 May 2008 06:06:01 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:46724 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757670AbYEBKGA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 May 2008 06:06:00 -0400
+Date: Fri, 2 May 2008 10:57:49 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Jan Engelhardt <jengelh@medozas.de>
+Cc: Martin =?UTF-8?B?TU9LUkVKxaA=?= <mmokrejs@ribosome.natur.cuni.cz>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.23.17 & 2.6.24.5 and maybe earlier: pata_marvell: need to
+ disable DMA to get rid of '(ATA bus error)', 'ata7.00: status: { DRDY ERR
+ }', 'ata7.00: error: { ICRC ABRT }'
+Message-ID: <20080502105749.24b9229f@core>
+In-Reply-To: <alpine.LNX.1.10.0805020150460.6463@fbirervta.pbzchgretzou.qr>
+References: <4819FDAF.7050005@ribosome.natur.cuni.cz>
+	<20080501200851.2e14d3b8@core>
+	<alpine.LNX.1.10.0805020150460.6463@fbirervta.pbzchgretzou.qr>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (29/04/08 09:27), Ross Biro didst pronounce:
-> On Wed, Apr 16, 2008 at 3:22 PM, Christoph Lameter <clameter@sgi.com> wrote:
-> >  The patch is interesting because it would allow the moving of page table
-> >  pages into MOVABLE sections and reduce the size of the UNMOVABLE
-> >  allocations signficantly (Ross: We need some numbers here). This in turn
+> >libata.dma=3 will stop DMA being used for CF devices (except those that
+> >decide to pretend to be ATA classes). This one comes up a lot as many CF
+> >adapters are simply not adequate for UDMA.
 > 
-> Is there a standard test used to evaluate kernel memory fragmentation?
+> Perhaps the kernel could do this automatically once it sees the
+> status code?
 
-Not exactly, but the test I run most frequently for testing
-fragmentation-related problems is
-
-1. Kernbench building 2.6.14 - 5 iterations
-2. aim9
-3. bench-hugepagecapability.sh
-4. bench-stresshighalloc.sh
-
-the last two are from vmregress
-www.csn.ul.ie/~mel/projects/vmregress/vmregress-0.88-rc7.tar.gz which is a
-mess of undocumented tools. bench-stresshighalloc.sh needs to be built
-against the current running kernel
-
-./configure --with-linux=PATH_TO_KERNEL_SOURCE
-
-The parameters passed to the last two tests depend on the machine but
-generally -k $((PHYS_MEMORY_IN_MB/250)) for the number of kernels and
---mb-per-sec 16 are the most important ones.
-
-These tests are not suitable on machines with very large amounts of memory
-because too many kernels would be built at the same time and the machine
-just grinds. Originally, the tests reflected the most hostile load in terms
-of fragmentation, but it's showing it's age now as a suitable test.
-
-Particularly from your perspective, the test is not very pagetable-page
-intentensive. You could run the tests above and then start a long-lived
-test like sysbench tuned to consume most of memory and then trigger a
-relocation to see how effective it would be? Tuned to consume most of
-memory should mean there are a lot of pagetable-allocations as well.
-
-If you wanted to see what large page allocation was like at any time,
-you could use bench-plainhighalloc.sh from vmregress just to artifically
-allocate huge pages or attempt growing of the hugepage pool via proc as
-that would also give an indication of the fragmentation state of the
-system.
-
->  I'm sure I can rig up a test to create huge amounts of fragmentation
-> with about 1/2 the pages being page tables.  However, I doubt that it
-> would reflect any real loads.  Similarly, if I check the memory
-> fragmentation on my test system right after it's been booted, I won't
-> see much fragmentation and page tables won't be causing any trouble.
-> 
-
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+We then hurt all the people with perfectly good working UDMA CF devices.
+The kernel will eventually fall back from UDMA to PIO but it favours
+working hardware by default.
