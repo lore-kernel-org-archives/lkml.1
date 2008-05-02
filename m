@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760387AbYEBGcW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760903AbYEBGhW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760387AbYEBGcW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 02:32:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753221AbYEBGcM
+	id S1760903AbYEBGhW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 02:37:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757389AbYEBGhK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 02:32:12 -0400
-Received: from wa-out-1112.google.com ([209.85.146.182]:63749 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751169AbYEBGcL (ORCPT
+	Fri, 2 May 2008 02:37:10 -0400
+Received: from wf-out-1314.google.com ([209.85.200.170]:48302 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757204AbYEBGhJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 02:32:11 -0400
+	Fri, 2 May 2008 02:37:09 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=date:x-x-sender:to:cc:subject:message-id:user-agent:mime-version:content-type:from;
-        b=U8NTpKsS0vQAWaHkMZ/u8kDgCkbFTic3kXPB8nIUSJTbT+zJzJ2PKoEnk8urBuLAHw2Z5YfVKADSD0t01v/TZsjnPEQmpJmfeCqK7sC1IofuaQJjmw4HBJInvacGZ0a+UST/MPKHMnAb3sJL1zeYeG+pcHAVazJeV0PEvg5QlAs=
-Date: Fri, 2 May 2008 14:36:14 +0800 (CST)
+        b=hZdnLB873CCTnSCzeluD37yMKQNLlsUfJmeet6pjZGDuS8MSsbtqpz/1FgGPsqLTQ69lnEWoPH3VC4lRdFGCCd83Zh9slhdOiUQdF4aZT/bNaXJoLn/OCKWha21xHdtKjT0+Sjt7VUVDJyD6i9zCuqk5BJGuIdbVs6StXCo9rzs=
+Date: Fri, 2 May 2008 14:39:45 +0800 (CST)
 X-X-Sender: wangcong@localhost.localdomain
 To: linux-kernel@vger.kernel.org
 cc: akpm@osdl.org, jdike@addtoit.com,
        user-mode-linux-devel@lists.sourceforge.net
-Subject: [Patch] (Resend) arch/um/kernel/irq.c: clean up some functions
-Message-ID: <alpine.LFD.1.10.0805021430280.3349@localhost.localdomain>
+Subject: [Patch] (Resend) arch/um/kernel/mem.c: remove arch_validate()
+Message-ID: <alpine.LFD.1.10.0805021436300.3349@localhost.localdomain>
 User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
@@ -30,8 +30,9 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Make activate_fd() and free_irq_by_irq_and_dev() static.
-Remove init_aio_irq() since it has no users.
+Remove arch_validate(), because no one uses it.
+Remove useless macro HAVE_ARCH_VALIDATE.
+Make the variable 'empty_bad_page' static.
 
 Compile testing passed.
 
@@ -39,97 +40,87 @@ Cc: Jeff Dike <jdike@addtoit.com>
 Signed-off-by: WANG Cong <wangcong@zeuux.org>
 
 ---
-  arch/um/include/irq_kern.h |    2 --
-  arch/um/include/irq_user.h |    2 --
-  arch/um/kernel/irq.c       |   35 ++---------------------------------
-  3 files changed, 2 insertions(+), 37 deletions(-)
+  arch/um/kernel/ksyms.c |    1 -
+  arch/um/kernel/mem.c   |   33 +--------------------------------
+  include/asm-um/page.h  |    3 ---
+  3 files changed, 1 insertions(+), 36 deletions(-)
 
-diff --git a/arch/um/include/irq_kern.h b/arch/um/include/irq_kern.h
-index 4f77559..fba3895 100644
---- a/arch/um/include/irq_kern.h
-+++ b/arch/um/include/irq_kern.h
-@@ -13,8 +13,6 @@ extern int um_request_irq(unsigned int irq, int fd, int type,
-  			  irq_handler_t handler,
-  			  unsigned long irqflags,  const char * devname,
-  			  void *dev_id);
--extern int init_aio_irq(int irq, char *name,
--			irq_handler_t handler);
+diff --git a/arch/um/kernel/ksyms.c b/arch/um/kernel/ksyms.c
+index 66e2a30..cc1b5f1 100644
+--- a/arch/um/kernel/ksyms.c
++++ b/arch/um/kernel/ksyms.c
+@@ -18,7 +18,6 @@ EXPORT_SYMBOL(get_signals);
+  EXPORT_SYMBOL(kernel_thread);
+  EXPORT_SYMBOL(sys_waitpid);
+  EXPORT_SYMBOL(flush_tlb_range);
+-EXPORT_SYMBOL(arch_validate);
 
+  EXPORT_SYMBOL(high_physmem);
+  EXPORT_SYMBOL(empty_zero_page);
+diff --git a/arch/um/kernel/mem.c b/arch/um/kernel/mem.c
+index 2eea1ff..88fc1c8 100644
+--- a/arch/um/kernel/mem.c
++++ b/arch/um/kernel/mem.c
+@@ -21,7 +21,7 @@
+  /* allocated in paging_init, zeroed in mem_init, and unchanged thereafter */
+  unsigned long *empty_zero_page = NULL;
+  /* allocated in paging_init and unchanged thereafter */
+-unsigned long *empty_bad_page = NULL;
++static unsigned long *empty_bad_page = NULL;
+
+  /*
+   * Initialized during boot, and readonly for initializing page tables
+@@ -240,37 +240,6 @@ void __init paging_init(void)
   #endif
-
-diff --git a/arch/um/include/irq_user.h b/arch/um/include/irq_user.h
-index e60b318..c6c784d 100644
---- a/arch/um/include/irq_user.h
-+++ b/arch/um/include/irq_user.h
-@@ -21,8 +21,6 @@ struct irq_fd {
-  enum { IRQ_READ, IRQ_WRITE };
-
-  extern void sigio_handler(int sig, struct uml_pt_regs *regs);
--extern int activate_fd(int irq, int fd, int type, void *dev_id);
--extern void free_irq_by_irq_and_dev(unsigned int irq, void *dev_id);
-  extern void free_irq_by_fd(int fd);
-  extern void reactivate_fd(int fd, int irqnum);
-  extern void deactivate_fd(int fd, int irqnum);
-diff --git a/arch/um/kernel/irq.c b/arch/um/kernel/irq.c
-index 91587f8..3d7aad0 100644
---- a/arch/um/kernel/irq.c
-+++ b/arch/um/kernel/irq.c
-@@ -102,7 +102,7 @@ void sigio_handler(int sig, struct uml_pt_regs *regs)
-
-  static DEFINE_SPINLOCK(irq_lock);
-
--int activate_fd(int irq, int fd, int type, void *dev_id)
-+static int activate_fd(int irq, int fd, int type, void *dev_id)
-  {
-  	struct pollfd *tmp_pfd;
-  	struct irq_fd *new_fd, *irq_fd;
-@@ -216,7 +216,7 @@ static int same_irq_and_dev(struct irq_fd *irq, void *d)
-  	return ((irq->irq == data->irq) && (irq->id == data->dev));
   }
 
--void free_irq_by_irq_and_dev(unsigned int irq, void *dev)
-+static void free_irq_by_irq_and_dev(unsigned int irq, void *dev)
-  {
-  	struct irq_and_dev data = ((struct irq_and_dev) { .irq  = irq,
-  							  .dev  = dev });
-@@ -403,37 +403,6 @@ void __init init_IRQ(void)
-  	}
-  }
-
--int init_aio_irq(int irq, char *name, irq_handler_t handler)
+-struct page *arch_validate(struct page *page, gfp_t mask, int order)
 -{
--	int fds[2], err;
+-	unsigned long addr, zero = 0;
+-	int i;
 -
--	err = os_pipe(fds, 1, 1);
--	if (err) {
--		printk(KERN_ERR "init_aio_irq - os_pipe failed, err = %d\n",
--		       -err);
--		goto out;
+- again:
+-	if (page == NULL)
+-		return page;
+-	if (PageHighMem(page))
+-		return page;
+-
+-	addr = (unsigned long) page_address(page);
+-	for (i = 0; i < (1 << order); i++) {
+-		current->thread.fault_addr = (void *) addr;
+-		if (__do_copy_to_user((void __user *) addr, &zero,
+-				     sizeof(zero),
+-				     &current->thread.fault_addr,
+-				     &current->thread.fault_catcher)) {
+-			if (!(mask & __GFP_WAIT))
+-				return NULL;
+-			else break;
+-		}
+-		addr += PAGE_SIZE;
 -	}
 -
--	err = um_request_irq(irq, fds[0], IRQ_READ, handler,
--			     IRQF_DISABLED | IRQF_SAMPLE_RANDOM, name,
--			     (void *) (long) fds[0]);
--	if (err) {
--		printk(KERN_ERR "init_aio_irq - : um_request_irq failed, "
--		       "err = %d\n",
--		       err);
--		goto out_close;
--	}
--
--	err = fds[1];
--	goto out;
--
-- out_close:
--	os_close_file(fds[0]);
--	os_close_file(fds[1]);
-- out:
--	return err;
+-	if (i == (1 << order))
+-		return page;
+-	page = alloc_pages(mask, order);
+-	goto again;
 -}
 -
   /*
-   * IRQ stack entry and exit:
-   *
+   * This can't do anything because nothing in the kernel image can be freed
+   * since it's not in kernel physical memory.
+diff --git a/include/asm-um/page.h b/include/asm-um/page.h
+index 381f96b..4b489e3 100644
+--- a/include/asm-um/page.h
++++ b/include/asm-um/page.h
+@@ -114,9 +114,6 @@ extern unsigned long uml_physmem;
+  #define pfn_valid(pfn) ((pfn) < max_mapnr)
+  #define virt_addr_valid(v) pfn_valid(phys_to_pfn(__pa(v)))
+
+-extern struct page *arch_validate(struct page *page, gfp_t mask, int order);
+-#define HAVE_ARCH_VALIDATE
+-
+  #include <asm-generic/memory_model.h>
+  #include <asm-generic/page.h>
+
 -- 
 1.5.2.4
-
