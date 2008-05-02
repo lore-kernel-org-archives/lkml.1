@@ -1,50 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935400AbYEBR2U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935478AbYEBR3V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935400AbYEBR2U (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 13:28:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935136AbYEBR1g
+	id S935478AbYEBR3V (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 13:29:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761613AbYEBR3M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 13:27:36 -0400
-Received: from x346.tv-sign.ru ([89.108.83.215]:53837 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935048AbYEBR1f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 13:27:35 -0400
-Date: Fri, 2 May 2008 21:28:03 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Bj?rn Steinbrink <B.Steinbrink@gmx.de>
-Cc: Petr Tesarik <ptesarik@suse.cz>, Thomas Gleixner <tglx@linutronix.de>,
-       linux-kernel@vger.kernel.org, Roland McGrath <roland@redhat.com>,
-       Frank Mayhar <fmayhar@google.com>
-Subject: Re: CPU POSIX timers livelock
-Message-ID: <20080502172803.GA1541@tv-sign.ru>
-References: <1209740741.15210.49.camel@elijah.suse.cz> <20080502152126.GA3130@atjola.homenet> <1209744785.15210.52.camel@elijah.suse.cz> <20080502164334.GA3585@atjola.homenet>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080502164334.GA3585@atjola.homenet>
-User-Agent: Mutt/1.5.11
+	Fri, 2 May 2008 13:29:12 -0400
+Received: from smtp-out01.alice-dsl.net ([88.44.60.11]:24429 "EHLO
+	smtp-out01.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758135AbYEBR3L convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 May 2008 13:29:11 -0400
+To: =?utf-8?Q?J=C3=B6rn?= Engel <joern@logfs.org>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@osdl.org>,
+       David Woodhouse <dwmw2@infradead.org>, Arnd Bergmann <arnd@arndb.de>,
+       linux-kernel@vger.kernel.org
+Subject: Re: LogFS merge
+From: Andi Kleen <andi@firstfloor.org>
+References: <20080502133234.GA24080@logfs.org>
+Date: Fri, 02 May 2008 19:29:07 +0200
+In-Reply-To: <20080502133234.GA24080@logfs.org> (=?utf-8?Q?J=C3=B6rn?=
+ Engel's message of "Fri, 2 May 2008 15:32:34 +0200")
+Message-ID: <87k5icvcm4.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8BIT
+X-OriginalArrivalTime: 02 May 2008 17:22:13.0488 (UTC) FILETIME=[0FB94700:01C8AC79]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 05/02, Bj?rn Steinbrink wrote:
+Jörn Engel <joern@logfs.org> writes:
 >
-> Hm, I have some message in that thread from April they don't seem to be
-> on lkml.org nor in the bugzilla though. Oh well, I can send you an mbox
-> of that thread in a private mail, just let me know if you want that.
+> So should it simmer in -next and -mm for another month?  Should it go
+> straight into -linus?
 
-Me too please ;)
+The main criteria for it going to Linus should be if you would really
+trust your data to it now. Would you put your $HOME on it? Merging file 
+systems too early can quickly ruin their name and that taint is hard
+to ever get rid again then (e.g. happened to JFS) 
 
-Please note there is a related problem if we have a single thread but
-a lot of timers attached to this thread. If the signal is ignored, each
-timer should be re-armed, this all can consume >= 1/HZ CPU time.
-We have "maxfire = 20" in check_thread_timers/check_process_timers to
-prevent this, but it is just a workaround. And it is a bit silly to just
-waste the CPU if the signal is ignored, arm_timer() is heavy and doesn't
-scale well.
-
-However, I have already forgot this code, perhaps I missed something,
-and at least maxfire does help.
-
-Oleg.
-
+-Andi
