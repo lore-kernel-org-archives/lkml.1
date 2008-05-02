@@ -1,53 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934645AbYEBMWe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934900AbYEBMXp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934645AbYEBMWe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 08:22:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934830AbYEBMWG
+	id S934900AbYEBMXp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 08:23:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933366AbYEBMXi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 08:22:06 -0400
-Received: from wf-out-1314.google.com ([209.85.200.168]:29344 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934893AbYEBMWF (ORCPT
+	Fri, 2 May 2008 08:23:38 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:54698 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755794AbYEBMXh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 08:22:05 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=qQzTxq2VbXxLhqu1bTV7Y/1CsdmxR4pteP31P6G7Up1CXeO+I/KR3ciT/1O2hXWXARZPguyR8d06THfdQbqApRQemCZ8phO0IJRf0Abf+1UJUeNaZOXzzykdtGzNI4fBjgZhnY+OvXcCRRK6fX2p8EOganiCkkCPPsckAncPD+E=
-Message-ID: <82e4877d0805020522o278ab3f5i21fc820084f85b97@mail.gmail.com>
-Date: Fri, 2 May 2008 08:22:04 -0400
-From: "Parag Warudkar" <parag.warudkar@gmail.com>
-To: "Frans Pop" <elendil@planet.nl>
-Subject: Re: Horrendous Audio Stutter - current git
-Cc: "Peter Zijlstra" <peterz@infradead.org>, "Ingo Molnar" <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <200805021406.55038.elendil@planet.nl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+	Fri, 2 May 2008 08:23:37 -0400
+Date: Fri, 2 May 2008 05:22:35 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Sebastian Siewior <lkml@ml.breakpoint.cc>
+Cc: Greg Ungerer <gerg@snapgear.com>, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] m68knommu: ColdFire add support for kernel preemption
+Message-Id: <20080502052235.eb9c336a.akpm@linux-foundation.org>
+In-Reply-To: <20080502083755.GA13973@Chamillionaire.breakpoint.cc>
+References: <200805010216.m412GT6t004096@goober>
+	<20080501143336.552e39e1.akpm@linux-foundation.org>
+	<481AC07A.6080707@snapgear.com>
+	<20080502083755.GA13973@Chamillionaire.breakpoint.cc>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <82e4877d0805011714m35a47753q58cca706b7af6557@mail.gmail.com>
-	 <200805021337.10809.elendil@planet.nl>
-	 <1209728372.13978.147.camel@twins>
-	 <200805021406.55038.elendil@planet.nl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 2, 2008 at 8:06 AM, Frans Pop <elendil@planet.nl> wrote:
->  Note (mostly for Parag) that I had GROUP_SCHED disabled for these tests, but
->  for me that did make not any difference with my 2.6.25-rc tests for this
->  issue, nor with my tests using sched-devel earlier in the .26 merge window.
->
+On Fri, 2 May 2008 10:37:55 +0200 Sebastian Siewior <lkml@ml.breakpoint.cc> wrote:
 
-Strange - without the _enqueue patch from Peter, stutter is reduced to
-an almost acceptable level for me if I just disable GROUP_SCHED.
-With Peter's patch - I have tested multiple times and the stutter is
-completely eliminated. So +1 for Peter's patch.
+> >>> Subject: [PATCH] m68knommu: ColdFire add support for kernel preemption
+> >> Please find a way to get your patch queue into linux-next so that others
+> >> get some visibility into what you're brewing earlier than
+> >> last-day-of-the-merge-window?
+> >
+> > Is a git tree the only way?
+> Others (Greg KH for instance, i2c) have quilt queues.
 
-Mike recalls a regression that may be related - so it is possible you
-were running w/o the affecting change.
+Yup.  Examples:
 
-Anyway - all is well in sched-land for now. Rejoice!
+ftp://ftp.kernel.org/pub/linux/kernel/people/agk/patches/2.6/editing/
+http://ozlabs.org/~rusty/kernel/rr-latest
+http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/gregkh-02-usb
 
-Parag
+Note how you can publish subsets of your patchset by bracketing them with
+"# MM_PATCHES_START" and "# MM_PATCHES_END" for -mm, and "#
+NEXT_PATCHES_START" and "# NEXT_PATCHES_END" for linux-next.
+
+
