@@ -1,86 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933130AbYEBK4L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934033AbYEBK40@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933130AbYEBK4L (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 06:56:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760095AbYEBKz5
+	id S934033AbYEBK40 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 06:56:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763056AbYEBK4D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 06:55:57 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:35334 "EHLO pasmtpA.tele.dk"
+	Fri, 2 May 2008 06:56:03 -0400
+Received: from ozlabs.org ([203.10.76.45]:40060 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755137AbYEBKz4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 06:55:56 -0400
-Date: Fri, 2 May 2008 12:56:30 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Jan Engelhardt <jengelh@medozas.de>
-Cc: linux-kbuild <linux-kbuild@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Dave Jones <davej@codemonkey.org.uk>,
-       Roland McGrath <roland@redhat.com>,
-       Andres Salomon <dilinger@queued.net>
-Subject: Re: Additional kconfig targets (cloneconfig, nonint_oldconfig etc)
-Message-ID: <20080502105630.GA20955@uranus.ravnborg.org>
-References: <20080429183531.GB19652@uranus.ravnborg.org> <alpine.LNX.1.10.0804301643140.5623@fbirervta.pbzchgretzou.qr>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1762688AbYEBK4B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 May 2008 06:56:01 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Mark McLoughlin <markmc@redhat.com>
+Subject: Re: [PATCH] virtio_net: free transmit skbs in a timer
+Date: Fri, 2 May 2008 20:55:25 +1000
+User-Agent: KMail/1.9.9
+Cc: Anthony Liguori <aliguori@us.ibm.com>,
+       virtualization@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+References: <1209565906-9019-1-git-send-email-markmc@redhat.com>
+In-Reply-To: <1209565906-9019-1-git-send-email-markmc@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <alpine.LNX.1.10.0804301643140.5623@fbirervta.pbzchgretzou.qr>
-User-Agent: Mutt/1.4.2.1i
+Message-Id: <200805022055.25870.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> >(The other frontends are left out on purpose).
-> >The challenge here is to come up with a syntax that
-> >allows us to select between the three behaviours,
-> >while keeping backward compatibility.
-> >
-> >The best suggestion I have so far is to say that:
-> >a) if defconfig is specified then we use method 1)
-> >b) if oldconfig is specified then we use method 2)
-> >c) if newconfig is specified then we use method 3)
-> 
-> [Where is 1) defined?]
+On Thursday 01 May 2008 00:31:46 Mark McLoughlin wrote:
+> virtio_net currently only frees old transmit skbs just
+> before queueing new ones. If the queue is full, it then
+> enables interrupts and waits for notification that more
+> work has been performed.
 
-1) automated - select defaults for all new symbols
-   => It is used for "make defconfig, make *_defconfig" today
+Hi Mark,
 
-> Ok and these are doing .. what?
+   This patch is fine, but it's better to do it from skb_xmit_done().  Of 
+course, this is usually called from an interrupt handler, so it's not 
+entirely trivial: we can't free the skbs there.
 
-> ># Enviroment variables affecting kconfig
-> >KCONFIG_ALLCONFIG
+   A softirq is probably the answer here, but AFAICT that's old fashioned.  
+Not sure what the right way of doing this is now...
 
-Specify input file in .config format to adjust a all*config run
-
-> >KCONFIG_NOSILENTUPDATE
-If set then error out if .config is modified
-
-> >KCONFIG_CONFIG
-Provide alternative name for .config
-
-> >KCONFIG_OVERWRITECONFIG
-If you set KCONFIG_OVERWRITECONFIG in environment, Kconfig will not break
- symlinks when .config is a symlink to somewhere else
-
-> >KCONFIG_NOTIMESTAMP
-Do not put timestamp in .config
-
-> >KCONFIG_AUTOCONFIG
-Provide alternative name for: include/config/auto.conf
-
-> >KCONFIG_AUTOHEADER
-Provide alternative name for include/linux/autoconf.h 
-
-
-
-
-> Used for..?
-All used to hardcode specific values in all*config builds.
-
-> >#input files (aparts from the mandatory ones)
-> >all.config
-> >allno.config
-> >allmod.config
-> >allyes.config
-> >allrandom.config
-
-	Sam
+Rusty.
