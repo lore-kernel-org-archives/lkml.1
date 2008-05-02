@@ -1,52 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965478AbYEBTGk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936311AbYEBTH2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965478AbYEBTGk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 15:06:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936223AbYEBTCi
+	id S936311AbYEBTH2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 15:07:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936729AbYEBTFO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 15:02:38 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:43236 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S936227AbYEBTCg (ORCPT
+	Fri, 2 May 2008 15:05:14 -0400
+Received: from testure.choralone.org ([194.9.77.134]:59482 "EHLO
+	testure.choralone.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S936721AbYEBTFM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 15:02:36 -0400
-Date: Fri, 2 May 2008 15:02:34 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Sven-Thorsten Dietrich <sven@thebigcorporation.com>
-cc: Remy Bohmer <linux@bohmer.net>, LKML <linux-kernel@vger.kernel.org>,
-       RT <linux-rt-users@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Jon Masters <jonathan@jonmasters.org>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: Preempt-RT patch for 2.6.25
-In-Reply-To: <1209754467.25628.42.camel@dd.thebigcorporation.com>
-Message-ID: <Pine.LNX.4.58.0805021502040.10615@gandalf.stny.rr.com>
-References: <3efb10970805021102n4d87f55eue723786281b06fcb@mail.gmail.com> 
- <1209753250.25628.34.camel@dd.thebigcorporation.com> 
- <Pine.LNX.4.58.0805021441340.10615@gandalf.stny.rr.com>
- <1209754467.25628.42.camel@dd.thebigcorporation.com>
+	Fri, 2 May 2008 15:05:12 -0400
+Date: Fri, 2 May 2008 15:05:01 -0400
+From: Dave Jones <davej@codemonkey.org.uk>
+To: Matthew Wilcox <matthew@wil.cx>
+Cc: Arjan van de Ven <arjan@infradead.org>, Linus Torvalds <torvalds@osdl.org>,
+       Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Extend list debugging to cover hlists
+Message-ID: <20080502190501.GA31017@codemonkey.org.uk>
+Mail-Followup-To: Dave Jones <davej@codemonkey.org.uk>,
+	Matthew Wilcox <matthew@wil.cx>,
+	Arjan van de Ven <arjan@infradead.org>,
+	Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>,
+	linux-kernel@vger.kernel.org
+References: <20080502182745.GL14976@parisc-linux.org> <20080501133209.2c04dad0@infradead.org> <20080502184922.GM14976@parisc-linux.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080502184922.GM14976@parisc-linux.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, May 02, 2008 at 12:49:22PM -0600, Matthew Wilcox wrote:
+ > On Thu, May 01, 2008 at 01:32:09PM -0700, Arjan van de Ven wrote:
+ > > I like the concept of the patch; however...
+ > > BUG() is a tad on the rude side... how about WARN_ON(1) ?
+ > 
+ > I'm just copying the conventions of the code above.  If those should be
+ > WARN_ON(1) then that should be a followup patch.
 
-On Fri, 2 May 2008, Sven-Thorsten Dietrich wrote:
->
-> On Fri, 2008-05-02 at 14:45 -0400, Steven Rostedt wrote:
-> > On Fri, 2 May 2008, Sven-Thorsten Dietrich wrote:
->
-> >
-> > As for 2.6.25-rt1, I'm currently working on it. I have the patch queue
-> > ready, but it has some major bugs that I'm stil working out. I did a bit
-> > of clean up in the per-cpu portion as well as some of the mutex code. Now
-> > I need to debug all those changes.
->
-> Pls post what you have asap, we will all help you debug it.
+No objections from me either way.  I chose to BUG originally because
+the bug I was chasing was corrupting memory in such a way that we'd
+die horribly shortly afterwards anyway.
 
-You'll have something today. I like to have a kernel that at least boots
-;-)
+	Dave
 
--- Steve
-
+-- 
+http://www.codemonkey.org.uk
