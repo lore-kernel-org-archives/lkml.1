@@ -1,84 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935056AbYEBQ6A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764176AbYEBRK5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935056AbYEBQ6A (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 12:58:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758971AbYEBQ5t
+	id S1764176AbYEBRK5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 13:10:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752451AbYEBRKr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 12:57:49 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:41668 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754372AbYEBQ5s (ORCPT
+	Fri, 2 May 2008 13:10:47 -0400
+Received: from hpsmtp-eml14.kpnxchange.com ([213.75.38.114]:3085 "EHLO
+	hpsmtp-eml14.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751691AbYEBRKr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 12:57:48 -0400
-Date: Fri, 2 May 2008 19:57:44 +0300 (EEST)
-From: Pekka J Enberg <penberg@cs.helsinki.fi>
-To: Russ Anderson <rja@sgi.com>
-cc: linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Tony Luck <tony.luck@intel.com>, Christoph Lameter <clameter@sgi.com>,
-       gregkh@suse.de
-Subject: Re: [PATCH 3/3] ia64: Call migration code on correctable errors v2
-In-Reply-To: <20080502164044.GB7246@sgi.com>
-Message-ID: <Pine.LNX.4.64.0805021945001.3341@sbz-30.cs.Helsinki.FI>
-References: <20080502004425.GD12006@sgi.com>
- <84144f020805020258x56d4f915u5d826d8f19294d62@mail.gmail.com>
- <20080502164044.GB7246@sgi.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 2 May 2008 13:10:47 -0400
+From: Frans Pop <elendil@planet.nl>
+To: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.25.1, stray noise in dmesg
+Date: Fri, 2 May 2008 19:10:44 +0200
+User-Agent: KMail/1.9.9
+Cc: Gene Heskett <gene.heskett@gmail.com>
+References: <200805021126.15225.gene.heskett@gmail.com>
+In-reply-To: <200805021126.15225.gene.heskett@gmail.com>
+MIME-Version: 1.0
+Content-Disposition: inline
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200805021910.45266.elendil@planet.nl>
+X-OriginalArrivalTime: 02 May 2008 17:10:46.0108 (UTC) FILETIME=[760369C0:01C8AC77]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Russ,
-
-On Fri, 2 May 2008, Russ Anderson wrote:
-> > I think sparse and checkpatch would have caught most of these but here goes:
+Gene Heskett wrote:
+> I just rebooted to 2.6.25.1, and was momentarily panic'd by the messages
+> going by early in the boot, but on putting 2&2 together, found they were
+> just noise.
 > 
-> I did run checkpatch.pl.  The two warnings were a false positive and
-> the other I let slide.  I'll make the rest of your suggested changes.
-> 
-> WARNING: consider using strict_strtoul in preference to simple_strtoul
-> #340: FILE: arch/ia64/kernel/cpe_migrate.c:301:
-> +       opt = simple_strtoul(optstr, NULL, 0);
+> From dmesg:
+> [root@coyote ~]# dmesg|grep unable
+> [    2.093502] hub 1-0:1.0: unable to enumerate USB device on port 2
+> [    2.248475] hub 1-0:1.0: unable to enumerate USB device on port 5
+> [    2.454444] hub 1-0:1.0: unable to enumerate USB device on port 6
 
-Why do you think this is a false positive? We just converted SLUB over to 
-use strict_stroul() as suggested by Andrew.
+I'm seeing these too (hub 5-0):
+USB Universal Host Controller Interface driver v3.0
+uhci_hcd 0000:00:1d.0: new USB bus registered, assigned bus number 1
+usb usb1: configuration #1 chosen from 1 choice
+hub 1-0:1.0: USB hub found
+uhci_hcd 0000:00:1d.1: new USB bus registered, assigned bus number 2
+usb usb2: configuration #1 chosen from 1 choice
+hub 2-0:1.0: USB hub found
+uhci_hcd 0000:00:1d.2: new USB bus registered, assigned bus number 3
+usb usb3: configuration #1 chosen from 1 choice
+hub 3-0:1.0: USB hub found
+uhci_hcd 0000:00:1d.3: new USB bus registered, assigned bus number 4
+usb usb4: configuration #1 chosen from 1 choice
+hub 4-0:1.0: USB hub found
+ehci_hcd 0000:00:1d.7: new USB bus registered, assigned bus number 5
+ehci_hcd 0000:00:1d.7: USB 2.0 started, EHCI 1.00, driver 10 Dec 2004
+usb usb5: configuration #1 chosen from 1 choice
+hub 5-0:1.0: USB hub found
+hub 5-0:1.0: unable to enumerate USB device on port 5
+hub 5-0:1.0: unable to enumerate USB device on port 7
+usb 3-1: new low speed USB device using uhci_hcd and address 2
+usb 3-1: configuration #1 chosen from 1 choice
+usb 4-1: new low speed USB device using uhci_hcd and address 2
+usb 4-1: configuration #1 chosen from 1 choice
 
-> > >  +       if (cpe_paddr[cpe_head] == 0) {
-> > >  +               cpe_paddr[cpe_head] = paddr;
-> > >  +               cpe_node[cpe_head] = node;
-> > >  +
-> > >  +               if (++cpe_head >= CE_HISTORY_LENGTH)
-> > >  +                       cpe_head = 0;
-> > >  +       }
-> > >  +
-> > >  +       if (!work_scheduled) {
-> > >  +               work_scheduled = 1;
-> > >  +               schedule_work(&cpe_enable_work);
-> > 
-> > So you must not schedule cpe_enable_work if it's already in progress. Why?
-> 
-> If there is already a worker thread scheduled, it will process all
-> the addresses on the queue, including new entries.  So all ce_setup_migrate()
-> needs to do is add the new entry to the queue.  The CPE interrupt can come in faster
-> than the worker thread can migrate the pages.  Scheduling another worker 
-> thread on each CPE interrupt when there is already one scheduled/running
-> would be overkill.
+With 2.6.25 the 2 "unable to enumerate" lines were not there.
+The changing order in which USB busses are detected makes comparison 
+awkward, but these seem to be the only new lines.
 
-Okay. Maybe a kthread would be cleaner here then (which sleeps when the 
-buffer is empty)? I didn't notice any locking for cpe_paddr and cpe_node. 
-Why is that?
+$ lsusb # with 2.6.25-git
+Bus 005 Device 001: ID 1d6b:0002
+Bus 004 Device 002: ID 046d:c50d Logitech, Inc.
+Bus 004 Device 001: ID 1d6b:0001
+Bus 003 Device 002: ID 05a4:9841 Ortek Technology, Inc.
+Bus 003 Device 001: ID 1d6b:0001
+Bus 001 Device 001: ID 1d6b:0001
+Bus 002 Device 001: ID 1d6b:0001
 
-> > >  +       proc_badpage = create_proc_entry(BADRAM_BASENAME, 0644, NULL);
-> > 
-> > Why is this file not in sysfs?
-> 
-> /proc seemed like a appropriate place.  Where would you suggest in sysfs?
+$ lsusb #with 2.6.25
+Bus 005 Device 002: ID 046d:c50d Logitech, Inc.
+Bus 005 Device 001: ID 1d6b:0001
+Bus 004 Device 002: ID 05a4:9841 Ortek Technology, Inc.
+Bus 004 Device 001: ID 1d6b:0001
+Bus 003 Device 001: ID 1d6b:0001
+Bus 002 Device 001: ID 1d6b:0002
 
-Oh, /proc is for _process specific_ files although historically it has 
-been (ab)used for other files as well. I think something like 
-/sys/kernel/badram would be appropriate. Christoph, Greg?
-
-			Pekka
+Comparing the two there is one "new" device. Strange that "Bus 001" is 
+missing in lsusb with 2.6.25 because dmesg does mention it as assigned.
