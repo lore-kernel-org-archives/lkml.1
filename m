@@ -1,84 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934580AbYEBPGW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934381AbYEBPH6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934580AbYEBPGW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 11:06:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761186AbYEBPGN
+	id S934381AbYEBPH6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 11:07:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761186AbYEBPHr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 11:06:13 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:45631 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759341AbYEBPGM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 11:06:12 -0400
-Date: Fri, 2 May 2008 17:06:45 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: David Miller <davem@davemloft.net>, tiwai@suse.de, mchehab@infradead.org,
-       akpm@linux-foundation.org, linux-dvb-maintainer@linuxtv.org,
-       video4linux-list@redhat.com, linux-kernel@vger.kernel.org,
-       efault@gmx.de
-Subject: Re: [patch, -git] media/video/sound build fix, TEA5761/TEA5767
-Message-ID: <20080502150645.GA23481@uranus.ravnborg.org>
-References: <20080430110115.GA5633@elte.hu> <s5hiqxzwqak.wl%tiwai@suse.de> <20080430.041703.89847530.davem@davemloft.net> <20080430112959.GA32556@uranus.ravnborg.org> <20080430121854.GC30735@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080430121854.GC30735@elte.hu>
-User-Agent: Mutt/1.4.2.1i
+	Fri, 2 May 2008 11:07:47 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:44268 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758104AbYEBPHq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 May 2008 11:07:46 -0400
+Date: Fri, 2 May 2008 17:07:45 +0200 (CEST)
+From: Jan Engelhardt <jengelh@medozas.de>
+To: Matthew Wilcox <matthew@wil.cx>
+cc: Chris Mason <chris.mason@oracle.com>, jeffschroeder@computer.org,
+       Jeff Mahoney <jeffm@suse.com>, Tim Gardner <tim.gardner@canonical.com>,
+       linux-fsdevel@vger.kernel.org, kernel-team@lists.ubuntu.com,
+       linux-kernel@vger.kernel.org, linux-btrfs@vger.kernel.org,
+       John Johansen <jjohansen@suse.de>
+Subject: Re: Btrfs v0.14 Released
+In-Reply-To: <20080502143811.GC14976@parisc-linux.org>
+Message-ID: <alpine.LNX.1.10.0805021706580.6463@fbirervta.pbzchgretzou.qr>
+References: <200804291601.32945.chris.mason@oracle.com> <200805020852.51125.chris.mason@oracle.com> <c24352ca0805020715y46741317ve9897afd689d058f@mail.gmail.com> <200805021034.08358.chris.mason@oracle.com> <20080502143811.GC14976@parisc-linux.org>
+User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 30, 2008 at 02:18:54PM +0200, Ingo Molnar wrote:
-> 
-> * Sam Ravnborg <sam@ravnborg.org> wrote:
-> 
-> > [OT to the actual problem]
-> > 
-> > I have envisioned something like a "requires tag" that would list what 
-> > a config symbols needs.
-> > 
-> > Like in this case it would have been:
-> > 
-> > 	requires V4L
-> > 
-> > This should in the frontends then if the user selects a symbol where 
-> > the 'requires' are not satisfied with a window listing the menuentries 
-> > for the symbol that the user needs to enable to satisfy what the 
-> > original symbol requires.
-> > 
-> > This is the only way to do this in a way so the user is actually aware 
-> > that enabling a webcam also enables USB. Or at least this is my best 
-> > suggestion.
-> 
-> but auto-selecting USB is the obvious thing that most users expect...
-> 
-> I.e. they expect a static hierarchy of 'every component' that exists and 
-> that can be selected. [yes there are complications like multiple-choice, 
-> but that's the minority]
-> 
-> Users want to browse the hierarchy and pick their things - and _at most_ 
-> the tool should warn if there's side side-effects of a selection - users 
-> will likely not mind that enabling a webcam also enables USB (in the 
-> overwhelming majority of the cases they couldnt care less about that).
 
-Which is exactly what my "require SYMBOL2 would give us.
-A webcam would not depends on USB, but would "require USB".
-If the decide to include the webcam she will optionally be prompted
-so she can decide if it is OK to include USB support too.
+On Friday 2008-05-02 16:38, Matthew Wilcox wrote:
+>On Fri, May 02, 2008 at 10:34:07AM -0400, Chris Mason wrote:
+>> Thanks, but this uses CONFIG_SECURITY_APPARMOR which isn't enough to tell if 
+>> the kernel has the patch.  Lets go back to Jeff's suse patch:
+>
+>Do we really need to support kernels compiled with the apparmour patch
+>applied but not enabled?  That would be a custom kernel build, and I get
+>the impression that people Just Don't Do That -- if they want a newer
+>kernel, they fetch one from kernel.org.  Maybe I'm wrong though.
 
-But again - have not thought this to the end.
-
-> 
-> But otherwise it should all be automatic.
-> 
-> And i dont even think there should be any additional Kconfig 
-> complication. Kconfig should be made _simpler_, not more complex. 
-> Maintainers list dependencies and that's it. No "select" needed at all! 
-> The stuff that needs to be selected automatically derives from the 
-> "depends on" tree that we code.
-> 
-> in fact even dependencies between modules of source code should be 
-> auto-discovered most of the time.
-Would be nice.
-
-	Sam
+I think so too. Corollary: if there is a distro that has apparmor
+patched into its kernel, then there is [hopefully] a suitable rpm
+nearby.
