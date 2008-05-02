@@ -1,57 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765155AbYEBACw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765452AbYEBAEe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765155AbYEBACw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 May 2008 20:02:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753901AbYEBACp
+	id S1765452AbYEBAEe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 May 2008 20:04:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754199AbYEBAE0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 May 2008 20:02:45 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:53766 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750950AbYEBACp (ORCPT
+	Thu, 1 May 2008 20:04:26 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:41403 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753901AbYEBAE0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 May 2008 20:02:45 -0400
-Date: Thu, 1 May 2008 17:02:39 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Ryan Roth <ryanroth@sbcglobal.net>
-Cc: Ryan.Roth@CH2M.com, bugme-daemon@bugzilla.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [Bugme-new] [Bug 10586] New: High Number of Segfaults
- onMacBookStarting With 2.6.24.5 Kernel
-Message-Id: <20080501170239.9b740877.akpm@linux-foundation.org>
-In-Reply-To: <481A5276.4040607@sbcglobal.net>
-References: <bug-10586-10286@http.bugzilla.kernel.org/>
-	<20080501130444.cc5c63e8.akpm@linux-foundation.org>
-	<86A21F45FFA48B408A65E67054362EB6069DD742@CULEBRA.amr.ch2m.com>
-	<20080501133003.be723364.akpm@linux-foundation.org>
-	<86A21F45FFA48B408A65E67054362EB621C948@CULEBRA.amr.ch2m.com>
-	<481A5276.4040607@sbcglobal.net>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 1 May 2008 20:04:26 -0400
+Date: Thu, 1 May 2008 20:04:25 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: LKML <linux-kernel@vger.kernel.org>
+cc: akpm@goodmis.org, rbultje@ronald.bitfreak.net
+Subject: [PATCH] use unsigned long for zoran_driver
+Message-ID: <Pine.LNX.4.58.0805012003020.7954@gandalf.stny.rr.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 01 May 2008 16:29:58 -0700
-Ryan Roth <ryanroth@sbcglobal.net> wrote:
 
-> > OK, worried.  This is a huge bug.  But afaik you're the only person 
-> > who has
-> > hit it, so there must be something special in your setup which is
-> > triggering it.  This could be hard.
-> >
-> 
-> OK here is what I get with the git16 kernel.  On boot I get this error:
-> 
-> PCI: Not using MMCONFIG
-> PCI: BIOS Bug: MCFG area at f0000000 is not reserved in ACPI motherboard 
-> resources
-> PCI: Not using MMCONFIG
+My typecheck flags patch flagged the zoran_driver.c as having an incompatible
+flags for spin_lock_irqsave. This isn't really true since "long" was used.
+But since the convention is to use "unsigned long" this is a clean up
+patch to make the zoran_driver conform to the rest of the kernel.
 
-yeah, mmconfig is a problem.  It should be harmless.  Probably you're
-better off with it disabled ;)
+Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+---
+ drivers/media/video/zoran_driver.c |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-> Attached is a complete log after this boot
+Index: linux-compile.git/drivers/media/video/zoran_driver.c
+===================================================================
+--- linux-compile.git.orig/drivers/media/video/zoran_driver.c	2008-05-01 16:58:39.000000000 -0400
++++ linux-compile.git/drivers/media/video/zoran_driver.c	2008-05-01 19:58:19.000000000 -0400
+@@ -1167,7 +1167,7 @@ zoran_close_end_session (struct file *fi
 
-I see no 'segfault' messages in there?
+ 	/* v4l capture */
+ 	if (fh->v4l_buffers.active != ZORAN_FREE) {
+-		long flags;
++		unsigned long flags;
+
+ 		spin_lock_irqsave(&zr->spinlock, flags);
+ 		zr36057_set_memgrab(zr, 0);
+@@ -3436,7 +3436,7 @@ zoran_do_ioctl (struct inode *inode,
+
+ 			/* unload capture */
+ 			if (zr->v4l_memgrab_active) {
+-				long flags;
++				unsigned long flags;
+
+ 				spin_lock_irqsave(&zr->spinlock, flags);
+ 				zr36057_set_memgrab(zr, 0);
+@@ -4375,7 +4375,7 @@ zoran_vm_close (struct vm_area_struct *v
+ 				mutex_lock(&zr->resource_lock);
+
+ 				if (fh->v4l_buffers.active != ZORAN_FREE) {
+-					long flags;
++					unsigned long flags;
+
+ 					spin_lock_irqsave(&zr->spinlock, flags);
+ 					zr36057_set_memgrab(zr, 0);
+
