@@ -1,44 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935359AbYEBPXP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935455AbYEBPXf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935359AbYEBPXP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 11:23:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760500AbYEBPW7
+	id S935455AbYEBPXf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 11:23:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935110AbYEBPXT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 11:22:59 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:35945 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756488AbYEBPW5 (ORCPT
+	Fri, 2 May 2008 11:23:19 -0400
+Received: from wf-out-1314.google.com ([209.85.200.168]:36937 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934188AbYEBPXR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 11:22:57 -0400
-Date: Fri, 2 May 2008 08:22:15 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Hirokazu Takata <takata@linux-m32r.org>
-cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Cyrill Gorcunov <gorcunov@gmail.com>, Adrian Bunk <bunk@kernel.org>
-Subject: Re: [GIT PULL] m32r: updates for 2.6.25
-In-Reply-To: <swf63twoqnl.wl%takata@linux-m32r.org>
-Message-ID: <alpine.LFD.1.10.0805020820340.5994@woody.linux-foundation.org>
-References: <swf63twoqnl.wl%takata@linux-m32r.org>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Fri, 2 May 2008 11:23:17 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=DTlAaMVu3GLrXiH7ndKvtlk1dN4oVuGvOZ/TX23+Nxk9AIrLjd2dzkM41Svt0vl1JOoszyQEckxga0WJ4xeQ1gENcHrIyZmcG5Mxhk331AEKapV7H9MYTD4qM3thd75hPNxTKYj4Q7Sw6Jn3XpPQoZDtYMJUyODxopBew5yBOZs=
+Message-ID: <3d00e6dc0805020823o267c6af8ve6a723b80ad04131@mail.gmail.com>
+Date: Fri, 2 May 2008 11:23:16 -0400
+From: "Khoa Nguyen" <khoa.coffee@gmail.com>
+To: Roland <devzero@web.de>
+Subject: Re: 24rc8: unregister_netdevice: waiting for ... to become free.
+Cc: linux-kernel@vger.kernel.org, linux-net@vger.kernel.org
+In-Reply-To: <004701c8abf4$4cefe820$6400a8c0@bui.materna.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <004701c8abf4$4cefe820$6400a8c0@bui.materna.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+I am also seeing the same thing with my vlan interface over bond
+interface (2.6.24 kernel):
 
+"unregister_netdevice: waiting for bond0.20 to become free. Usage count = 1"
 
-On Fri, 2 May 2008, Hirokazu Takata wrote:
-> 
-> Please pull from the "for-linus" branch of
->   git://www.linux-m32r.org/git/takata/linux-2.6_dev.git
+This happens when "vconfig rem bond0.20" is called.
 
-Please put the branch name at the end of the line of thigns to pull, so 
-that I can just cut-and-paste the whole line rather than potentially miss 
-the fact that you named a specific branch.
+Khoa
 
-And no, I've never been careless enough to miss it _yet_ (at least not 
-without noticing that the end result was unexpected), but I don't want to 
-even worry about it.
+On Thu, May 1, 2008 at 9:26 PM, Roland <devzero@web.de> wrote:
 
-		Linus
+> i`m also seeing this one, but with pcnet32 - "modprobe -r pcnet32" never
+> returns and
+>
+>  "unregister_netdevice: waiting for eth0 to become free. Usage count = 1"
+>
+>  being printed over and over again
+>
+>  lsmod |grep pcnet32 shows
+>
+>  pcnet32            35828    0
+>  mii                      9344    1    pcnet32
+>
+>  i see stale ssh connection on port 22 and sshd for that session remains
+> unkillable process.
+>
+>  roland
+>
+>
+>
+>  List:       linux-kernel
+>  Subject:    Re: 24rc8: unregister_netdevice: waiting for ... to become
+> free.
+>  From:       Soeren Sonnenburg <kernel () nn7 ! de>
+>  Date:       2008-01-29 8:59:10
+>  Message-ID: 1201597150.4973.10.camel () localhost
+>  [Download message RAW]
+>
+>  On Tue, 2008-01-22 at 22:44 -0800, David Miller wrote:
+>
+> > From: Soeren Sonnenburg <kernel@nn7.de>
+> > Date: Wed, 23 Jan 2008 07:42:21 +0100
+> >
+> > > Dear all,
+> > >
+> > > since some 2.6.24rc version I suddenly experience such messages on
+> > > console when trying to shutdown a vpn connection:
+> > >
+> > > unregister_netdevice: waiting for tun0 to become free. Usage count = 1
+> > >
+> > > or when removing an usb wlan dongle (although it was ifconfig wlan0
+> > > down'd before)
+> >
+> > Current GIT already has a fix for this, attached below:
+> >
+>
+>  hmmhhh, I am still seeing this problem on 2.6.24 with at least with the
+>  madwifi driver...
+>
+>  Soeren
+>
+>
+>  --
+>  To unsubscribe from this list: send the line "unsubscribe linux-net" in
+>  the body of a message to majordomo@vger.kernel.org
+>  More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>
