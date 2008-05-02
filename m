@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757895AbYEBFkF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761432AbYEBFmv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757895AbYEBFkF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 01:40:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752795AbYEBFjy
+	id S1761432AbYEBFmv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 01:42:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753565AbYEBFml
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 01:39:54 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:40525 "EHLO
+	Fri, 2 May 2008 01:42:41 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:47846 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752461AbYEBFjx (ORCPT
+	by vger.kernel.org with ESMTP id S1753221AbYEBFmk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 01:39:53 -0400
-Date: Thu, 1 May 2008 22:39:38 -0700
+	Fri, 2 May 2008 01:42:40 -0400
+Date: Thu, 1 May 2008 22:42:33 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Jesper Krogh <jesper@krogh.cc>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Many open/close on same files yeilds
- "No such file or directory".
-Message-Id: <20080501223938.921f7cd2.akpm@linux-foundation.org>
-In-Reply-To: <4819E316.7000607@krogh.cc>
-References: <4819E316.7000607@krogh.cc>
+To: Gene Heskett <gene.heskett@gmail.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-ide@vger.kernel.org
+Subject: Re: dvd writing problem
+Message-Id: <20080501224233.c3e11762.akpm@linux-foundation.org>
+In-Reply-To: <200805011135.38556.gene.heskett@gmail.com>
+References: <200805011135.38556.gene.heskett@gmail.com>
 X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -27,85 +27,54 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 01 May 2008 17:34:46 +0200 Jesper Krogh <jesper@krogh.cc> wrote:
+On Thu, 1 May 2008 11:35:38 -0400 Gene Heskett <gene.heskett@gmail.com> wrote:
 
-> Hi list.
+> Greetings all;
 > 
-> I have a "fairly" reproducible problem. When a program opens and closes
-> the same file many times, it eventually ends up with a "no such file or
-> directory". Test program that can reproduce the problem on my setup:
-> 
-> root@hest:~# cat test-file-c.c
-> #include <stdlib.h>
-> #include <stdio.h>
-> #include <fcntl.h>
-> #include <unistd.h>
-> 
-> int main(int argc, char *argv[]) {
->     unsigned long i=0;
->     int fh;
->     char *filename;
-> 
->     filename=argv[1];
-> 
->     while(1) {
->        fh=open(filename, O_RDONLY);
->        if (fh==-1) {
->           printf("Failed to open %s\n", filename);
->           printf("Open number: %ld\n",i);
->           exit(10);
->        }
->        close(fh);
->        i++;
->     }
-> 
->     exit(0);
-> }
-> root@hest:~# ./test-file-c /z/bio/databases/online/index/index-by-accno
-> Failed to open /z/bio/databases/online/index/index-by-accno
-> Open number: 61785000
-> root@hest:~# ./test-file-c /z/bio/databases/online/index/index-by-accno
-> Failed to open /z/bio/databases/online/index/index-by-accno
-> Open number: 120929685
-> (The problem is not isolate to a single file on the filesystem).
-> 
+> I'm going to describe the problem, and let you tell me where to report it.
 
-What an amazing bug.
+linux-ide
 
-> strace on the program reviel that the system indeed return a "No such
-> file or directory" to the program.
+> System is Biostart MB, XP-2800 cpu, gig of ram.
 > 
-> This is run on an Ubuntu Gutsy (vendor kernel): 2.6.22-14-server on an
-> 4.5TB ext3 filesystem on an LVM volume. The volume was created on a
-> dapper (2 releases back) and has just followed with during upgrades.
-
-The test program is (almost) all in RAM and won't care about the hardware.
-
-> I cannot reproduce it on other disks attached to the same server or on
-> other servers attached to similar disksystems.
-
-hmm.
-
-I guess it would be interesting to remount that filesystem with `noatime'
-to eliminate the last bit of I/O and block-=realted code.
-
-> The filesystem was taken offline yesterday for a forced fsck and it was
-> found to be clean.
+> 1. burn dvd image using k3b, with write verify turned on.
 > 
-> The diskarray is a quite old Fibrenetix FX1200 with 12xPATA disk
-> in raid5 (with hotspare) exposed to the OS as 3 SCSI-disks of
-> 2+2+0.5TB assembled with LVM afterwards. The SCSI-controller is a:
-> 05:08.0 SCSI storage controller: LSI Logic / Symbios Logic 53c1030 PCI-X 
-> Fusion-MPT Dual Ultra320 SCSI (rev c1)
+> 2. when disk is ejected at end of a successful burn, then pulled back in, a 
+> read error is reported long before the drive has recognized the disk, the 
+> disk is ejected again and k3b bails out of the verify phase.  This does not 
+> occur for a cd-r.
 > 
-> What suggestions do you have to solve this problem?
+> 3. manually close drive with the disc still in the tray.
 > 
-> I'm about to mkfs.ext3 the volume and spool it back in from the backup,
-> but somehow I'm not convinced that it will solve the problem at all.
-> It may just be a hardware problem, but dmesg doesnt tell anything.
+> 4. About 40 secs later, at about the time the drive would have accepted the 
+> disc as a valid disc, the system is frozen solidly, no drive leds on and the 
+> clock in the corner of the screen is stopped.  I have let it sit that way for 
+> as long as 2 minutes before tapping the hardware reset button.
 > 
-> We actually got the problem from a perl-script, but this seems to be the
-> minimal program that reproduces the problem.
+> 5. Eject the disc while its posting and reboot, to either 2.6.24.5 or 2.6.25, 
+> both do exactly the same actions.
+> 
+> 6. Once system is up again, re-insert disc, wait for drive to accept it, then 
+> do a verify by hand, disc is good, it can be mounted and read just fine.
+> 
+> 7. disc is a +RW disc, so it should be re-writable.  Pick a different .iso and 
+> start k3b again using it.  K3b goes through the motions, but 2 or 3 seconds 
+> after the real write starts with perhaps 30 megabytes *supposedly* written, 
+> k3b gets a write error and the burn bails out, ejecting the disc as it does. 
+> 
+> 8. insert disc and loop this sequence back to #3 above until tired of 
+> rebooting cuz the box is frozen.  Once rebooted, and the disc inspected, it 
+> is obvious the second write never touched the disc as the first write is 
+> still there and passes the sh1sum or md5sum test correctly.
+> 
+> Sebastian Truex and I have been discussing this for a while now, and I have 
+> even replaced the writer drive, a LITEON that I started with, with an HP, 
+> even faster drive, without changing a thing above.  It is 100% repeatable.
+> 
+> Where do I file the bug report?  There are no interesting entries in the 
+> messages log, no oops, nothing.
 
-I'd suspect that after 1e8 loops your CPU got too hot and started to
-misbehave.
+It's unclear whether that drive is attached via stat, pata, ide, scsi or
+whatever.  The dmesg output would clear that up.
+
+Thanks.
