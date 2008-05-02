@@ -1,89 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932084AbYEBKp7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932083AbYEBKry@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932084AbYEBKp7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 06:45:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758053AbYEBKpw
+	id S932083AbYEBKry (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 06:47:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758230AbYEBKrr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 06:45:52 -0400
-Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:49839 "EHLO
-	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757401AbYEBKpv (ORCPT
+	Fri, 2 May 2008 06:47:47 -0400
+Received: from 213.237.47.228.adsl.vbr.worldonline.dk ([213.237.47.228]:19997
+	"EHLO rap.rap.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757705AbYEBKrr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 06:45:51 -0400
-Date: Fri, 2 May 2008 12:45:38 +0200
-From: Rodolfo Giometti <giometti@enneenne.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       David Woodhouse <dwmw2@infradead.org>, Dave Jones <davej@redhat.com>,
-       Sam Ravnborg <sam@ravnborg.org>, Greg KH <greg@kroah.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Kay Sievers <kay.sievers@vrfy.org>
-Message-ID: <20080502104537.GW3002@enneenne.com>
-References: <1207851751-25703-6-git-send-email-giometti@linux.it> <20080410210918.3be98868@core> <20080411075515.GH26777@enneenne.com> <20080411092840.3cc4de67@core> <20080411134724.GF2160@csclub.uwaterloo.ca> <20080411154652.4852b6d4@core> <20080430114107.GE3002@enneenne.com> <20080430172855.6d2e81a6@core> <20080502073335.GK3002@enneenne.com> <20080502111837.588c15ae@core>
-MIME-Version: 1.0
+	Fri, 2 May 2008 06:47:47 -0400
+X-Greylist: delayed 1360 seconds by postgrey-1.27 at vger.kernel.org; Fri, 02 May 2008 06:47:46 EDT
+Date: Fri, 2 May 2008 12:25:00 +0200
+From: Keld =?iso-8859-1?Q?J=F8rn?= Simonsen <keld@dkuug.dk>
+To: Kasper Sandberg <lkml@metanurb.dk>
+Cc: David Rees <drees76@gmail.com>, David Lethe <david@santools.com>,
+       alex14641@yahoo.com, Justin Piszcz <jpiszcz@lucidpixels.com>,
+       linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: Sharing disks amoung multiple software RAIDs
+Message-ID: <20080502102500.GB16198@rap.rap.dk>
+References: <1209692359.16523.2.camel@localhost> <73000.21239.qm@web50212.mail.re2.yahoo.com> <A20315AE59B5C34585629E258D76A97C335477@34093-C3-EVS3.exchange.rackspace.com> <1209696179.16523.13.camel@localhost> <72dbd3150805020006p7f976a04o487389840f03b4a2@mail.gmail.com> <1209715763.7827.2.camel@localhost>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080502111837.588c15ae@core>
-Organization: GNU/Linux Device Drivers, Embedded Systems and Courses
-X-PGP-Key: gpg --keyserver keyserver.linux.it --recv-keys D25A5633
-User-Agent: Mutt/1.5.16 (2007-06-11)
-X-SA-Exim-Connect-IP: 192.168.32.1
-X-SA-Exim-Mail-From: giometti@enneenne.com
-Subject: Re: [PATCH 5/7] PPS: serial clients support.
-X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
-X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
+In-Reply-To: <1209715763.7827.2.camel@localhost>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 02, 2008 at 11:18:37AM +0100, Alan Cox wrote:
-> > I see. So what do you suggest to do? Should I add an ldisc to
-> > register/unregister serial PPS sources and adding function
-> > tty->ldisc.dcd_change() to manage the events?
+On Fri, May 02, 2008 at 10:09:23AM +0200, Kasper Sandberg wrote:
+> On Fri, 2008-05-02 at 00:06 -0700, David Rees wrote:
+> > On Thu, May 1, 2008 at 7:42 PM, Kasper Sandberg <lkml@metanurb.dk> wrote:
+> > >  in other words, would i be
+> > >  safer to run rsync every day to my other disk, and run in non-raid
+> > >  mode?!
+> > 
+> > What would be safer is to run rsync every day from one redundant array
+> > to another array - preferably on another machine that is located as
+> > far away as possible from the one that you are backing up.
+> > 
+> > RAID is not the same as a backup, though unfortunately, too many
+> > people treat it as such.
+> Im not treating it as a backup, what i want, is to make sure that if 1
+> disk dies, the data is still intact and ill hopefully be able to run
+> with 1 disk till the newly ordered one arrives - and while i naturally
+> will keep offsite backups of most important data, it is certainly far
+> easier to simply rip out a faulty disk, and put in another, instead of
+> restoring from backup from scratch..
 > 
-> I think so. To me that sounds the ideal solution.
+> So my question remains.. Is md raid1 not suited for this need? would it
+> be safer to run in non-raid1 mode and daily(maybe hourly) rsync
+> everything over to the second disk?
 
-So I should rewrite the uart_handle_dcd_change() as follow?
+I join in on this question. I have written a howto on our linux raid
+page, that exactly advocates a way to with 2 drives use these 2 drives
+for multiple partitions, of different types of RAID. The partitions
+include /boot / /home and swap - which are actually all allocated 
+as RAID partitions on the same 2 drives. See
+http://linux-raid.osdl.org/index.php/Preventing_against_a_failing_disk
 
-static inline void
-uart_handle_dcd_change(struct uart_port *port, unsigned int status)
-{
-        struct uart_info *info = port->info;
-	struct tty_struct *tty = info->tty;
-        struct tty_ldisc *ld;
+I am trying to advocate that this be a recommended setup for normal
+workstations, to for the price of one extra harddisk get additional
+safety and performance.
 
-        ld = tty_ldisc_ref(tty);
-        if (ld != NULL) {
-                if (ld->dcd_change)
-                        (ld->dcd_change)(tty, port, status);
-                tty_ldisc_deref(ld);
-        }
+My take is that Linux RAID code is so stable, including in the degarded
+mode, that this is robust and stable. However, there are still bugs to
+be found, so you can never be 100 % sure. 
 
-        port->icount.dcd++;
-
-#ifdef CONFIG_HARD_PPS
-        if ((port->flags & UPF_HARDPPS_CD) && status)
-                hardpps();
-#endif
-
-        if (info->flags & UIF_CHECK_CD) {
-                if (status)
-                        wake_up_interruptible(&info->open_wait);
-                else if (tty)
-                        tty_hangup(tty);
-        }
-}
-
-Is that right?
-
-Thanks a lot,
-
-Rodolfo
-
--- 
-
-GNU/Linux Solutions                  e-mail:    giometti@enneenne.com
-Linux Device Driver                             giometti@linux.it
-Embedded Systems                     phone:	+39 349 2432127
-UNIX programming                     skype:     rodolfo.giometti
+Best regards
+keld
