@@ -1,45 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935652AbYEBSar@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935804AbYEBScQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935652AbYEBSar (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 14:30:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762533AbYEBSaj
+	id S935804AbYEBScQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 14:32:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763984AbYEBScA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 14:30:39 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:46414 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756617AbYEBSaj (ORCPT
+	Fri, 2 May 2008 14:32:00 -0400
+Received: from e31.co.us.ibm.com ([32.97.110.149]:57697 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763916AbYEBSb7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 14:30:39 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <481B5DBF.7020604@s5r6.in-berlin.de>
-Date: Fri, 02 May 2008 20:30:23 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.13) Gecko/20080419 SeaMonkey/1.1.9
-MIME-Version: 1.0
-To: linux1394-devel@lists.sourceforge.net
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] firewire: fw-ohci: blacklist dualbuffer for TSB43AB22A
- on ASUS boards
-References: <tkrat.f5c7b5be9496fcdd@s5r6.in-berlin.de>
-In-Reply-To: <tkrat.f5c7b5be9496fcdd@s5r6.in-berlin.de>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 2 May 2008 14:31:59 -0400
+Subject: Re: [PATCH] clocksource: Fix permissions for available_clocksource
+From: john stultz <johnstul@us.ibm.com>
+To: Heiko Carstens <heiko.carstens@de.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
+In-Reply-To: <20080502104940.GA4426@osiris.boeblingen.de.ibm.com>
+References: <20080502104940.GA4426@osiris.boeblingen.de.ibm.com>
+Content-Type: text/plain
+Date: Fri, 02 May 2008 11:31:53 -0700
+Message-Id: <1209753113.6176.4.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I wrote:
-> According to https://bugzilla.redhat.com/show_bug.cgi?id=435550 the
-> TI TSB43AB22A on an ASUSTeK M2NPV-VM motherboard does not work in
-> dual-buffer mode with dvgrab, but does so in packet-per-buffer mode.
-...
-> (subject to retesting by the reporter)
 
-The reporter found that dual-buffer actually works if memory is reduced 
-to 2GB.  So there is a DMA mapping/ IOMMU related problem between kernel 
-and board somewhere.  Patch withdrawn.
--- 
-Stefan Richter
--=====-==--- -=-= ---=-
-http://arcgraph.de/sr/
+On Fri, 2008-05-02 at 12:49 +0200, Heiko Carstens wrote:
+> From: Heiko Carstens <heiko.carstens@de.ibm.com>
+> 
+> File permissions for
+> /sys/devices/system/clocksource/clocksource0/available_clocksource
+> are 600 which allows write access. But this is in fact a read only
+> file. So change permissions to 400.
+> 
+> Cc: John Stultz <johnstul@us.ibm.com>
+> Cc: Thomas Gleixner <tglx@linutronix.de>
+> Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
+
+Ah, good catch. 
+
+Acked-by: John Stultz <johnstul@us.ibm.com>
+
+
+> ---
+>  kernel/time/clocksource.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> Index: linux-2.6/kernel/time/clocksource.c
+> ===================================================================
+> --- linux-2.6.orig/kernel/time/clocksource.c
+> +++ linux-2.6/kernel/time/clocksource.c
+> @@ -474,7 +474,7 @@ sysfs_show_available_clocksources(struct
+>  static SYSDEV_ATTR(current_clocksource, 0600, sysfs_show_current_clocksources,
+>  		   sysfs_override_clocksource);
+> 
+> -static SYSDEV_ATTR(available_clocksource, 0600,
+> +static SYSDEV_ATTR(available_clocksource, 0400,
+>  		   sysfs_show_available_clocksources, NULL);
+> 
+>  static struct sysdev_class clocksource_sysclass = {
+
