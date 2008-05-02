@@ -1,54 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933558AbYEBAu0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934092AbYEBAvA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933558AbYEBAu0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 May 2008 20:50:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754141AbYEBAuP
+	id S934092AbYEBAvA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 May 2008 20:51:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754730AbYEBAut
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 May 2008 20:50:15 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:12630 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753893AbYEBAuO (ORCPT
+	Thu, 1 May 2008 20:50:49 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:46902 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754141AbYEBAus (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 May 2008 20:50:14 -0400
-Date: Thu, 1 May 2008 17:50:09 -0700
-From: Joel Becker <Joel.Becker@oracle.com>
-To: Roland <devzero@web.de>
+	Thu, 1 May 2008 20:50:48 -0400
+Date: Thu, 1 May 2008 17:50:37 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Josselin Mouette <joss@debian.org>
 Cc: linux-kernel@vger.kernel.org
-Subject: Re: modprobe ocfs2_stack_o2cb warning - duplicate filename o2cb in
-	sysfs
-Message-ID: <20080502005009.GH19731@mail.oracle.com>
-Mail-Followup-To: Roland <devzero@web.de>, linux-kernel@vger.kernel.org
-References: <003a01c8abed$7ffe4bf0$6400a8c0@bui.materna.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <003a01c8abed$7ffe4bf0$6400a8c0@bui.materna.com>
-X-Burt-Line: Trees are cool.
-X-Red-Smith: Ninety feet between bases is perhaps as close as man has ever
-	come to perfection.
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Subject: Re: [PATCH] Increase the default RLIMIT_MEMLOCK
+Message-Id: <20080501175037.01d8d3dc.akpm@linux-foundation.org>
+In-Reply-To: <1209324387.4203.22.camel@shizuru>
+References: <1209324387.4203.22.camel@shizuru>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hey Roland,
-	Thanks for sending this along.  The fix is already queued; it
-pretty much blows up for everyone!
-http://git.kernel.org/?p=linux/kernel/git/mfasheh/ocfs2.git;a=commit;h=9d80f7539a91c0154e40fc9e4ae5e818dd8f102e
+On Sun, 27 Apr 2008 21:26:27 +0200
+Josselin Mouette <joss@debian.org> wrote:
 
-Joel
+> Currently, the default value for RLIMIT_MEMLOCK (defined in
+> include/linux/resource.h) is 32 KiB, because this value is enough for
+> GnuPG.
+> 
+> However this value is not enough for gnome-keyring-daemon, which will
+> store both SSH and GnuPG keys, plus user passwords for various kinds of
+> resources. Upstream authors recommend to provide a limit of at least 256
+> KiB for RLIMIT_MEMLOCK for the keys to remain securely in memory.
+> 
+> Given the amount of memory in current machines, I think 256 KiB is still
+> a very reasonable value. What do you think of increasing this default
+> value in the kernel?
+> 
+> Cheers,
+> -- 
+>  .''`.
+> : :' :      We are debian.org. Lower your prices, surrender your code.
+> `. `'       We will add your hardware and software distinctiveness to
+>   `-        our own. Resistance is futile.
+> 
+> 
+> [linux_mlock_256k.patch  text/x-patch (668B)]
+> --- include/linux/resource.h.orig	2008-04-27 21:15:47.000000000 +0200
+> +++ include/linux/resource.h	2008-04-27 21:23:06.000000000 +0200
+> @@ -58,10 +58,11 @@
+>  #define _STK_LIM	(8*1024*1024)
+>  
+>  /*
+> - * GPG wants 32kB of mlocked memory, to make sure pass phrases
+> - * and other sensitive information are never written to disk.
+> + * The biggest widespread mlocked memory consumer is 
+> + * gnome-keyring-manager. It needs 256kB to make sure SSH/GPG 
+> + * passphrases and network passwords are never written to disk.
+>   */
+> -#define MLOCK_LIMIT	(8 * PAGE_SIZE)
+> +#define MLOCK_LIMIT	(64 * PAGE_SIZE)
 
--- 
+gee, it seems rather arbitrary.  Perhaps we should have set it to zero on
+day one to _force_ distributors to set an appropriate RLIMIT_MEMLOCK in
+init.
 
-"Reality is merely an illusion, albeit a very persistent one."
-        - Albert Einstien
+We can do this of course, but does it actually help anything?  Perhaps it's
+actually a bad thing, permitting userspace developers to rely upon kernel
+defaults rather than setting things they way they should be set?
 
-Joel Becker
-Principal Software Developer
-Oracle
-E-mail: joel.becker@oracle.com
-Phone: (650) 506-8127
