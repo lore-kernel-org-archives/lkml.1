@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935498AbYEBPOz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934952AbYEBPPa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935498AbYEBPOz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 11:14:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934683AbYEBPNJ
+	id S934952AbYEBPPa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 11:15:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934734AbYEBPNK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 11:13:09 -0400
-Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:48665
+	Fri, 2 May 2008 11:13:10 -0400
+Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:48725
 	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934128AbYEBPNE (ORCPT
+	with ESMTP id S934399AbYEBPNE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 2 May 2008 11:13:04 -0400
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Subject: [PATCH 05 of 11] unmap vmas tlb flushing
-X-Mercurial-Node: a8ac53b928dfcea0ccb326fb7d71f908f0df85f4
-Message-Id: <a8ac53b928dfcea0ccb3.1209740708@duo.random>
+Subject: [PATCH 06 of 11] rwsem contended
+X-Mercurial-Node: 74b873f3ea07012e2fc864f203edf1179865feb1
+Message-Id: <74b873f3ea07012e2fc8.1209740709@duo.random>
 In-Reply-To: <patchbomb.1209740703@duo.random>
-Date: Fri, 02 May 2008 17:05:08 +0200
+Date: Fri, 02 May 2008 17:05:09 +0200
 From: Andrea Arcangeli <andrea@qumranet.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Christoph Lameter <clameter@sgi.com>, Jack Steiner <steiner@sgi.com>,
@@ -39,175 +39,89 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 # HG changeset patch
 # User Andrea Arcangeli <andrea@qumranet.com>
 # Date 1209740186 -7200
-# Node ID a8ac53b928dfcea0ccb326fb7d71f908f0df85f4
-# Parent  14e9f5a12bb1657fa6756e18d5dac71d4ad1a55e
-unmap vmas tlb flushing
+# Node ID 74b873f3ea07012e2fc864f203edf1179865feb1
+# Parent  a8ac53b928dfcea0ccb326fb7d71f908f0df85f4
+rwsem contended
 
-Move the tlb flushing inside of unmap vmas. This saves us from passing
-a pointer to the TLB structure around and simplifies the callers.
+Add a function to rw_semaphores to check if there are any processes
+waiting for the semaphore. Add rwsem_needbreak to sched.h that works
+in the same way as spinlock_needbreak().
 
 Signed-off-by: Christoph Lameter <clameter@sgi.com>
 Signed-off-by: Andrea Arcangeli <andrea@qumranet.com>
 
-diff --git a/include/linux/mm.h b/include/linux/mm.h
---- a/include/linux/mm.h
-+++ b/include/linux/mm.h
-@@ -744,8 +744,7 @@ struct page *vm_normal_page(struct vm_ar
- 
- unsigned long zap_page_range(struct vm_area_struct *vma, unsigned long address,
- 		unsigned long size, struct zap_details *);
--unsigned long unmap_vmas(struct mmu_gather **tlb,
--		struct vm_area_struct *start_vma, unsigned long start_addr,
-+unsigned long unmap_vmas(struct vm_area_struct *start_vma, unsigned long start_addr,
- 		unsigned long end_addr, unsigned long *nr_accounted,
- 		struct zap_details *);
- 
-diff --git a/mm/memory.c b/mm/memory.c
---- a/mm/memory.c
-+++ b/mm/memory.c
-@@ -849,7 +849,6 @@ static unsigned long unmap_page_range(st
- 
- /**
-  * unmap_vmas - unmap a range of memory covered by a list of vma's
-- * @tlbp: address of the caller's struct mmu_gather
-  * @vma: the starting vma
-  * @start_addr: virtual address at which to start unmapping
-  * @end_addr: virtual address at which to end unmapping
-@@ -861,20 +860,13 @@ static unsigned long unmap_page_range(st
-  * Unmap all pages in the vma list.
-  *
-  * We aim to not hold locks for too long (for scheduling latency reasons).
-- * So zap pages in ZAP_BLOCK_SIZE bytecounts.  This means we need to
-- * return the ending mmu_gather to the caller.
-+ * So zap pages in ZAP_BLOCK_SIZE bytecounts.
-  *
-  * Only addresses between `start' and `end' will be unmapped.
-  *
-  * The VMA list must be sorted in ascending virtual address order.
-- *
-- * unmap_vmas() assumes that the caller will flush the whole unmapped address
-- * range after unmap_vmas() returns.  So the only responsibility here is to
-- * ensure that any thus-far unmapped pages are flushed before unmap_vmas()
-- * drops the lock and schedules.
+diff --git a/include/linux/rwsem.h b/include/linux/rwsem.h
+--- a/include/linux/rwsem.h
++++ b/include/linux/rwsem.h
+@@ -57,6 +57,8 @@ extern void up_write(struct rw_semaphore
   */
--unsigned long unmap_vmas(struct mmu_gather **tlbp,
--		struct vm_area_struct *vma, unsigned long start_addr,
-+unsigned long unmap_vmas(struct vm_area_struct *vma, unsigned long start_addr,
- 		unsigned long end_addr, unsigned long *nr_accounted,
- 		struct zap_details *details)
- {
-@@ -883,9 +875,14 @@ unsigned long unmap_vmas(struct mmu_gath
- 	int tlb_start_valid = 0;
- 	unsigned long start = start_addr;
- 	spinlock_t *i_mmap_lock = details? details->i_mmap_lock: NULL;
--	int fullmm = (*tlbp)->fullmm;
-+	int fullmm;
-+	struct mmu_gather *tlb;
- 	struct mm_struct *mm = vma->vm_mm;
+ extern void downgrade_write(struct rw_semaphore *sem);
  
-+	lru_add_drain();
-+	tlb = tlb_gather_mmu(mm, 0);
-+	update_hiwater_rss(mm);
-+	fullmm = tlb->fullmm;
- 	mmu_notifier_invalidate_range_start(mm, start_addr, end_addr);
- 	for ( ; vma && vma->vm_start < end_addr; vma = vma->vm_next) {
- 		unsigned long end;
-@@ -912,7 +909,7 @@ unsigned long unmap_vmas(struct mmu_gath
- 						(HPAGE_SIZE / PAGE_SIZE);
- 				start = end;
- 			} else
--				start = unmap_page_range(*tlbp, vma,
-+				start = unmap_page_range(tlb, vma,
- 						start, end, &zap_work, details);
- 
- 			if (zap_work > 0) {
-@@ -920,22 +917,23 @@ unsigned long unmap_vmas(struct mmu_gath
- 				break;
- 			}
- 
--			tlb_finish_mmu(*tlbp, tlb_start, start);
-+			tlb_finish_mmu(tlb, tlb_start, start);
- 
- 			if (need_resched() ||
- 				(i_mmap_lock && spin_needbreak(i_mmap_lock))) {
- 				if (i_mmap_lock) {
--					*tlbp = NULL;
-+					tlb = NULL;
- 					goto out;
- 				}
- 				cond_resched();
- 			}
- 
--			*tlbp = tlb_gather_mmu(vma->vm_mm, fullmm);
-+			tlb = tlb_gather_mmu(vma->vm_mm, fullmm);
- 			tlb_start_valid = 0;
- 			zap_work = ZAP_BLOCK_SIZE;
- 		}
- 	}
-+	tlb_finish_mmu(tlb, start_addr, end_addr);
- out:
- 	mmu_notifier_invalidate_range_end(mm, start_addr, end_addr);
- 	return start;	/* which is now the end (or restart) address */
-@@ -951,18 +949,10 @@ unsigned long zap_page_range(struct vm_a
- unsigned long zap_page_range(struct vm_area_struct *vma, unsigned long address,
- 		unsigned long size, struct zap_details *details)
- {
--	struct mm_struct *mm = vma->vm_mm;
--	struct mmu_gather *tlb;
- 	unsigned long end = address + size;
- 	unsigned long nr_accounted = 0;
- 
--	lru_add_drain();
--	tlb = tlb_gather_mmu(mm, 0);
--	update_hiwater_rss(mm);
--	end = unmap_vmas(&tlb, vma, address, end, &nr_accounted, details);
--	if (tlb)
--		tlb_finish_mmu(tlb, address, end);
--	return end;
-+	return unmap_vmas(vma, address, end, &nr_accounted, details);
- }
- 
- /*
-diff --git a/mm/mmap.c b/mm/mmap.c
---- a/mm/mmap.c
-+++ b/mm/mmap.c
-@@ -1751,15 +1751,10 @@ static void unmap_region(struct mm_struc
- 		unsigned long start, unsigned long end)
- {
- 	struct vm_area_struct *next = prev? prev->vm_next: mm->mmap;
--	struct mmu_gather *tlb;
- 	unsigned long nr_accounted = 0;
- 
--	lru_add_drain();
--	tlb = tlb_gather_mmu(mm, 0);
--	update_hiwater_rss(mm);
--	unmap_vmas(&tlb, vma, start, end, &nr_accounted, NULL);
-+	unmap_vmas(vma, start, end, &nr_accounted, NULL);
- 	vm_unacct_memory(nr_accounted);
--	tlb_finish_mmu(tlb, start, end);
- 	free_pgtables(vma, prev? prev->vm_end: FIRST_USER_ADDRESS,
- 				 next? next->vm_start: 0);
- }
-@@ -2044,7 +2039,6 @@ EXPORT_SYMBOL(do_brk);
- /* Release all mmaps. */
- void exit_mmap(struct mm_struct *mm)
- {
--	struct mmu_gather *tlb;
- 	struct vm_area_struct *vma = mm->mmap;
- 	unsigned long nr_accounted = 0;
- 	unsigned long end;
-@@ -2055,12 +2049,11 @@ void exit_mmap(struct mm_struct *mm)
- 
- 	lru_add_drain();
- 	flush_cache_mm(mm);
--	tlb = tlb_gather_mmu(mm, 1);
++extern int rwsem_is_contended(struct rw_semaphore *sem);
 +
- 	/* Don't update_hiwater_rss(mm) here, do_exit already did */
- 	/* Use -1 here to ensure all VMAs in the mm are unmapped */
--	end = unmap_vmas(&tlb, vma, 0, -1, &nr_accounted, NULL);
-+	end = unmap_vmas(vma, 0, -1, &nr_accounted, NULL);
- 	vm_unacct_memory(nr_accounted);
--	tlb_finish_mmu(tlb, 0, end);
- 	free_pgtables(vma, FIRST_USER_ADDRESS, 0);
+ #ifdef CONFIG_DEBUG_LOCK_ALLOC
+ /*
+  * nested locking. NOTE: rwsems are not allowed to recurse
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -2030,6 +2030,15 @@ static inline int spin_needbreak(spinloc
+ #endif
+ }
  
- 	/*
++static inline int rwsem_needbreak(struct rw_semaphore *sem)
++{
++#ifdef CONFIG_PREEMPT
++	return rwsem_is_contended(sem);
++#else
++	return 0;
++#endif
++}
++
+ /*
+  * Reevaluate whether the task has signals pending delivery.
+  * Wake the task if so.
+diff --git a/lib/rwsem-spinlock.c b/lib/rwsem-spinlock.c
+--- a/lib/rwsem-spinlock.c
++++ b/lib/rwsem-spinlock.c
+@@ -305,6 +305,18 @@ void __downgrade_write(struct rw_semapho
+ 	spin_unlock_irqrestore(&sem->wait_lock, flags);
+ }
+ 
++int rwsem_is_contended(struct rw_semaphore *sem)
++{
++	/*
++	 * Racy check for an empty list. False positives or negatives
++	 * would be okay. False positive may cause a useless dropping of
++	 * locks. False negatives may cause locks to be held a bit
++	 * longer until the next check.
++	 */
++	return !list_empty(&sem->wait_list);
++}
++
++EXPORT_SYMBOL(rwsem_is_contended);
+ EXPORT_SYMBOL(__init_rwsem);
+ EXPORT_SYMBOL(__down_read);
+ EXPORT_SYMBOL(__down_read_trylock);
+diff --git a/lib/rwsem.c b/lib/rwsem.c
+--- a/lib/rwsem.c
++++ b/lib/rwsem.c
+@@ -251,6 +251,18 @@ asmregparm struct rw_semaphore *rwsem_do
+ 	return sem;
+ }
+ 
++int rwsem_is_contended(struct rw_semaphore *sem)
++{
++	/*
++	 * Racy check for an empty list. False positives or negatives
++	 * would be okay. False positive may cause a useless dropping of
++	 * locks. False negatives may cause locks to be held a bit
++	 * longer until the next check.
++	 */
++	return !list_empty(&sem->wait_list);
++}
++
++EXPORT_SYMBOL(rwsem_is_contended);
+ EXPORT_SYMBOL(rwsem_down_read_failed);
+ EXPORT_SYMBOL(rwsem_down_write_failed);
+ EXPORT_SYMBOL(rwsem_wake);
