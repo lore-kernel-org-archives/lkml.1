@@ -1,90 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937357AbYEBXw3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937440AbYEBXxa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937357AbYEBXw3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 19:52:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764497AbYEBXwT
+	id S937440AbYEBXxa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 19:53:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764497AbYEBXxX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 19:52:19 -0400
-Received: from wa-out-1112.google.com ([209.85.146.179]:44915 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762179AbYEBXwT (ORCPT
+	Fri, 2 May 2008 19:53:23 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:56875 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1763477AbYEBXxW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 19:52:19 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=Ur5aajA4cP87+0oC0EIqZeui0GMDdGwYmNDqh1yGnzbNGS9L7Md7lfzkAhYW08ikIoVcSSp4/EdGopc9j1umwJu2PC1ok7UxuwGaJjm1i3ksiZPsPVv2RJ1loVoOERm+VyFURFz78aPxLJYbTic8q1z9DkgezFVD64yJo8hvclw=
-Subject: Re: [PATCH 12/12] net: use the common ascii hex helpers
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org
-In-Reply-To: <20080502163131.a13c0774.akpm@linux-foundation.org>
-References: <1209754916.26173.39.camel@brick>
-	 <20080502.162515.14823435.davem@davemloft.net>
-	 <20080502163131.a13c0774.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Fri, 02 May 2008 16:52:43 -0700
-Message-Id: <1209772363.26173.101.camel@brick>
+	Fri, 2 May 2008 19:53:22 -0400
+Date: Fri, 2 May 2008 16:52:48 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Liam Girdwood <lg@opensource.wolfsonmicro.com>
+Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
+       broonie@opensource.wolfsonmicro.com
+Subject: Re: [PATCH 0/13] Updated V4  - Regulator Framework
+Message-Id: <20080502165248.dba934e9.akpm@linux-foundation.org>
+In-Reply-To: <1209742841.12502.40.camel@odin>
+References: <1209742841.12502.40.camel@odin>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-05-02 at 16:31 -0700, Andrew Morton wrote:
-> On Fri, 02 May 2008 16:25:15 -0700 (PDT)
-> David Miller <davem@davemloft.net> wrote:
+On Fri, 02 May 2008 16:40:41 +0100
+Liam Girdwood <lg@opensource.wolfsonmicro.com> wrote:
+
+> This is an updated version of the kernel voltage & current regulator
+> framework based on comments received from version 3 of the patch series.
 > 
-> > From: Harvey Harrison <harvey.harrison@gmail.com>
-> > Date: Fri, 02 May 2008 12:01:56 -0700
-> > 
-> > > Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
-> > 
-> > Acked-by: David S. Miller <davem@davemloft.net>
-> > 
-> > This has to go in via who ever adds the first patch
-> > with the actual helpers, so I won't apply this one.
+> The regulator framework is designed to provide a standard kernel
+> interface to control voltage and current regulators on SoC based
+> systems.
 > 
-> Yup.  After a bit of testing and tyre-kicking I'll probably slip
-> lib-add-ascii-hex-helper-functions.patch into mainline so that we can
-> trickle all the *-use-the-common-ascii-hex-helpers.patch patches out to the
-> various maintainers.
+> The intention is to allow systems to dynamically control regulator power
+> output in order to save power and prolong battery life. This applies to
+> both voltage regulators (where voltage output is controllable) and
+> current sinks (where current limit is controllable).
 > 
 
-I suppose the hex_asc array and hex_to_int could also use
-EXPORT_SYMBOL().
+oh gee.
 
-Also, As I've looked further around the tree, there seem to be a lot
-of hex_to_int/long variants around the tree, so what I'm thinking is
-the current hex_to_int becomes hex_to_u8 and I'll add a:
+I (and others) reviewed and commented on all this code last month.  Now
+here it is again and, although I'm sure it is delightful code, nobody wants
+to have to read it all again ;)
 
-/**
- * hex_to_u32 - read a u32 from a char buffer
- * @buf: buffer to read ascii chars from
- * @val: where to put the u32
- *
- * Read hex-ascii chars into a u32.  Return the number of chars read.
- * A maximum of 8 chars will be read, if a char not in [a-f][A-F][0-9]
- * is encountered, the function returns.
- */
-int hex_to_u32(const char *buf, u32 *val)
-
-Similar to the above, but a max of 16 chars will be read.
-int hex_to_u64(const char *buf, u64 *val)
-
-If this api is better, I suppose:
-
-int hex_to_u8 - max of two chars
-int hex_to_u16 - max of 4
-int hex_to_u32 - max of 8
-int hex_to_u64 - max of 16
-
-Could be added around a common function that takes the max length as
-an additional arg.
-
-Thoughts?
-
-Harvey
+The one-month gap between v3 and v4 is unfortunate.  It means that everyone
+has forgotten everything.
 
 
+Was all the review feedback satisfactorily handled to the reviewers'
+satisfaction?
+
+Is there any new material in here which would require a re-review?
