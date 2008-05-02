@@ -1,45 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936945AbYEBWh1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937092AbYEBWin@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936945AbYEBWh1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 18:37:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932369AbYEBWhQ
+	id S937092AbYEBWin (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 18:38:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932397AbYEBWie
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 18:37:16 -0400
-Received: from lazybastard.de ([212.112.238.170]:60394 "EHLO
-	longford.logfs.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756683AbYEBWhO (ORCPT
+	Fri, 2 May 2008 18:38:34 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:49440 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757019AbYEBWid (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 18:37:14 -0400
-Date: Sat, 3 May 2008 00:37:03 +0200
-From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
-To: Eric Sandeen <sandeen@redhat.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       =?utf-8?B?SsO2cm4=?= Engel <joern@lazybastard.org>,
-       Andrew Morton <akpm@osdl.org>
-Subject: Re: [PATCH] fix checkstack.pl arch detection
-Message-ID: <20080502223702.GI24080@logfs.org>
-References: <481B4D75.9060305@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <481B4D75.9060305@redhat.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Fri, 2 May 2008 18:38:33 -0400
+Date: Fri, 2 May 2008 23:29:55 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Frans Pop <elendil@planet.nl>, akpm@osdl.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] hfsplus: Correct user visible printk
+Message-ID: <20080502232955.02b1d818@core>
+In-Reply-To: <481B851D.90905@goop.org>
+References: <20080502142925.2e439d8a@core>
+	<200805021600.42610.elendil@planet.nl>
+	<20080502150439.76beaf27@core>
+	<200805021742.50509.elendil@planet.nl>
+	<20080502164414.63615eb5@core>
+	<481B851D.90905@goop.org>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2 May 2008 12:20:53 -0500, Eric Sandeen wrote:
-> 
-> uname -m was leaving a newline in $arch, and not passing the tests.
-> 
-> Also, printing the unknown arch on failure is probably helpful.
-> 
-> Signed-off-by: Eric Sandeen <sandeen@redhat.com>
-Reviewed-By: Joern Engel <joern@logfs.org>
+> Prescriptive arguments from authority don't really carry much weight.  
+> In this case it's particularly weak since Apple refer to hfs as a 
+> "journaled" or "journaling" filesystem[1].
 
-Jörn
+Indeed.
 
--- 
-Premature optimization is the root of all evil.
--- Donald Knuth
+> And now I've been staring at it for so long that its just turned into a 
+> weird word...
+
+Rotfl - it's not that important so lets forget about it if it upsets
+people so much
