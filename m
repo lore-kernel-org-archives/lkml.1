@@ -1,83 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933347AbYEBBcK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755141AbYEBBje@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933347AbYEBBcK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 May 2008 21:32:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756152AbYEBBbz
+	id S1755141AbYEBBje (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 May 2008 21:39:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756955AbYEBBjX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 May 2008 21:31:55 -0400
-Received: from fmmailgate01.web.de ([217.72.192.221]:54442 "EHLO
-	fmmailgate01.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754936AbYEBBby (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 May 2008 21:31:54 -0400
-Message-ID: <004701c8abf4$4cefe820$6400a8c0@bui.materna.com>
-From: "Roland" <devzero@web.de>
-To: <linux-kernel@vger.kernel.org>
-Cc: <linux-net@vger.kernel.org>
-Subject: Re: 24rc8: unregister_netdevice: waiting for ... to become free.
-Date: Fri, 2 May 2008 03:26:28 +0200
-MIME-Version: 1.0
-Content-Type: text/plain;
-	format=flowed;
-	charset="iso-8859-1";
-	reply-type=original
+	Thu, 1 May 2008 21:39:23 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:50010 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753676AbYEBBjW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 May 2008 21:39:22 -0400
+Subject: Re: Sharing disks amoung multiple software RAIDs
+From: Kasper Sandberg <lkml@metanurb.dk>
+To: Justin Piszcz <jpiszcz@lucidpixels.com>
+Cc: Alex Davis <alex14641@yahoo.com>, linux-raid@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <alpine.DEB.1.10.0805010849380.20043@p34.internal.lan>
+References: <771640.4981.qm@web50209.mail.re2.yahoo.com>
+	 <alpine.DEB.1.10.0805010849380.20043@p34.internal.lan>
+Content-Type: text/plain
+Date: Fri, 02 May 2008 03:39:19 +0200
+Message-Id: <1209692359.16523.2.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.4.0 
 Content-Transfer-Encoding: 7bit
-X-Priority: 3
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook Express 6.00.2900.3138
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3198
-X-Provags-ID: V01U2FsdGVkX1+DMj3kaP/u5MjZtPjWpCKDveP9kOBSwgyLcVjq
-	mAWE56kzKTwuqUDsWyhLC+6OWU8NFrsr75vekzXdqLkpoOig0O
-	5h1Lr7WAc=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-i`m also seeing this one, but with pcnet32 - "modprobe -r pcnet32" never 
-returns and
-
-"unregister_netdevice: waiting for eth0 to become free. Usage count = 1"
-
-being printed over and over again
-
-lsmod |grep pcnet32 shows
-
-pcnet32            35828    0
-mii                      9344    1    pcnet32
-
-i see stale ssh connection on port 22 and sshd for that session remains 
-unkillable process.
-
-roland
-
-
-
-List:       linux-kernel
-Subject:    Re: 24rc8: unregister_netdevice: waiting for ... to become free.
-From:       Soeren Sonnenburg <kernel () nn7 ! de>
-Date:       2008-01-29 8:59:10
-Message-ID: 1201597150.4973.10.camel () localhost
-[Download message RAW]
-
-On Tue, 2008-01-22 at 22:44 -0800, David Miller wrote:
-> From: Soeren Sonnenburg <kernel@nn7.de>
-> Date: Wed, 23 Jan 2008 07:42:21 +0100
->
-> > Dear all,
+On Thu, 2008-05-01 at 08:50 -0400, Justin Piszcz wrote:
+> 
+> On Thu, 1 May 2008, Alex Davis wrote:
+> 
+> > Is this a bad thing? I'm guessing that it is, but I want independent
+> > confirmation before I spoke to someone I know who's doing this.
 > >
-> > since some 2.6.24rc version I suddenly experience such messages on
-> > console when trying to shutdown a vpn connection:
+> > Thanks
 > >
-> > unregister_netdevice: waiting for tun0 to become free. Usage count = 1
 > >
-> > or when removing an usb wlan dongle (although it was ifconfig wlan0
-> > down'd before)
->
-> Current GIT already has a fix for this, attached below:
+> >      ____________________________________________________________________________________
+> > Be a better friend, newshound, and
+> > know-it-all with Yahoo! Mobile.  Try it now.  http://mobile.yahoo.com/;_ylt=Ahu06i62sR8HDtDypao8Wcj9tAcJ
+> > --
+> > To unsubscribe from this list: send the line "unsubscribe linux-raid" in
+> > the body of a message to majordomo@vger.kernel.org
+> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> >
+> 
+> What is the use case, why would you want to do that?
+> I have seen people on the list do it before, for example are you going to 
+> be utilizing both raids at the same time?  If so, I would advise against 
+> it.
+> 
+> What is the reasoning?
 
-hmmhhh, I am still seeing this problem on 2.6.24 with at least with the
-madwifi driver...
+I do this!
 
-Soeren
+is this really bad? i would surely like a list of reasons why..
 
+I do it because.. well.. first off, it allows me to have /boot on
+different raidlevel than / or /home without extra disks.
+secondly, it allows me to with the same disks use different
+filesystems.. for instance, it allows me to have /home encrypted with
+dm-crypt, while still raided.. Not that i would mind encrypting /
+and /home as 1 partition, but it creates a whole slew of issues with
+having to create initrd and stuff..
+
+I realize that performance probably suffers abit from this, but well..
+is there any stability or security wise risk? i mostly use raid1 and
+raid5 only..
+
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
