@@ -1,44 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933700AbYEBKVt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933123AbYEBKYS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933700AbYEBKVt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 06:21:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759296AbYEBKVi
+	id S933123AbYEBKYS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 06:24:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758303AbYEBKYL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 06:21:38 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:33192 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1762513AbYEBKVh (ORCPT
+	Fri, 2 May 2008 06:24:11 -0400
+Received: from smtp-out04.alice-dsl.net ([88.44.63.6]:35760 "EHLO
+	smtp-out04.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758246AbYEBKYK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 06:21:37 -0400
-Date: Fri, 2 May 2008 11:12:33 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: WANG Cong <xiyou.wangcong@gmail.com>
-Cc: linux-kernel@vger.kernel.org, jdike@addtoit.com,
-       user-mode-linux-devel@lists.sourceforge.net, akpm@linux-foundation.org
-Subject: Re: [Patch] UML: Fix inconsistence due to tty_operation change
-Message-ID: <20080502111233.66ea9428@core>
-In-Reply-To: <alpine.LFD.1.10.0805021450260.3349@localhost.localdomain>
-References: <alpine.LFD.1.10.0805021450260.3349@localhost.localdomain>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 2 May 2008 06:24:10 -0400
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Theodore Tso <tytso@MIT.EDU>, bunk@kernel.org, arjan@infradead.org,
+       torvalds@linux-foundation.org, rjw@sisk.pl, davem@davemloft.net,
+       linux-kernel@vger.kernel.org, jirislaby@gmail.com, rostedt@goodmis.org
+Subject: Re: RFC: starting a kernel-testers group for newbies
+From: Andi Kleen <andi@firstfloor.org>
+References: <20080429.190352.137408408.davem@davemloft.net>
+	<200804302136.58005.rjw@sisk.pl>
+	<20080430131537.1f7a0914.akpm@linux-foundation.org>
+	<alpine.LFD.1.10.0804301325260.2980@woody.linux-foundation.org>
+	<20080501003125.GM29330@cs181133002.pp.htv.fi>
+	<20080430000338.50548884@infradead.org>
+	<20080501113038.GW29330@cs181133002.pp.htv.fi>
+	<20080430072013.7c3b30b1@infradead.org>
+	<20080501132159.GC29330@cs181133002.pp.htv.fi>
+	<20080501084919.8ac6dbdd.akpm@linux-foundation.org>
+	<20080501172434.GB17365@mit.edu>
+	<20080501122636.152c80db.akpm@linux-foundation.org>
+Date: Fri, 02 May 2008 12:23:25 +0200
+In-Reply-To: <20080501122636.152c80db.akpm@linux-foundation.org> (Andrew Morton's message of "Thu, 1 May 2008 12:26:36 -0700")
+Message-ID: <87k5idf1ia.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 02 May 2008 10:16:30.0933 (UTC) FILETIME=[972CB050:01C8AC3D]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2 May 2008 14:59:46 +0800 (CST)
-WANG Cong <xiyou.wangcong@gmail.com> wrote:
+Andrew Morton <akpm@linux-foundation.org> writes:
+>
+> (still wants to know what we did 2-3 years ago which caused thousands of
+> people to have to resort to using noapic and other apic-related boot option
+> workarounds)
 
-> 
-> 'put_char' of 'struct tty_operations' has changed from 'void' into 'int'.
-> This can also shut up comipler warnings.
-> 
-> Cc: Jeff Dike <jdike@addtoit.com>
-> Signed-off-by: WANG Cong <wangcong@zeuux.org>
+Forcing APIC even when the BIOS didn't support them.
 
-Acked-by: Alan Cox <alan@redhat.com>
+-Andi
+
 
