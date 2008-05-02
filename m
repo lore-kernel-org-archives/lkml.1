@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937478AbYEBXk3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936792AbYEBXnn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937478AbYEBXk3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 19:40:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765132AbYEBXkP
+	id S936792AbYEBXnn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 19:43:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932498AbYEBXnf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 19:40:15 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:53117 "EHLO
+	Fri, 2 May 2008 19:43:35 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:59811 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1763477AbYEBXkN (ORCPT
+	by vger.kernel.org with ESMTP id S1765928AbYEBXne (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 19:40:13 -0400
-Date: Fri, 2 May 2008 16:39:41 -0700
+	Fri, 2 May 2008 19:43:34 -0400
+Date: Fri, 2 May 2008 16:43:04 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       davej@redhat.com
-Subject: Re: [PATCH] Extend list debugging to cover hlists
-Message-Id: <20080502163941.e2afd851.akpm@linux-foundation.org>
-In-Reply-To: <20080502231727.GQ14976@parisc-linux.org>
-References: <20080502182745.GL14976@parisc-linux.org>
-	<20080502161403.fe596cca.akpm@linux-foundation.org>
-	<20080502231727.GQ14976@parisc-linux.org>
+To: David Miller <davem@davemloft.net>
+Cc: harvey.harrison@gmail.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 12/12] net: use the common ascii hex helpers
+Message-Id: <20080502164304.a79db618.akpm@linux-foundation.org>
+In-Reply-To: <20080502.163944.140090564.davem@davemloft.net>
+References: <1209754916.26173.39.camel@brick>
+	<20080502.162515.14823435.davem@davemloft.net>
+	<20080502163131.a13c0774.akpm@linux-foundation.org>
+	<20080502.163944.140090564.davem@davemloft.net>
 X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -29,42 +29,33 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2 May 2008 17:17:27 -0600
-Matthew Wilcox <matthew@wil.cx> wrote:
+On Fri, 02 May 2008 16:39:44 -0700 (PDT)
+David Miller <davem@davemloft.net> wrote:
 
-> On Fri, May 02, 2008 at 04:14:03PM -0700, Andrew Morton wrote:
-> > linux-next is a better tree against which to prepare 2.6.x+1 patches.
+> From: Andrew Morton <akpm@linux-foundation.org>
+> Date: Fri, 2 May 2008 16:31:31 -0700
 > 
-> Is there a reason to wait for 2.6.x+1?  People are having problems today
-> with corrupt hlists.
+> > On Fri, 02 May 2008 16:25:15 -0700 (PDT)
+> > David Miller <davem@davemloft.net> wrote:
+> > 
+> > > From: Harvey Harrison <harvey.harrison@gmail.com>
+> > > Date: Fri, 02 May 2008 12:01:56 -0700
+> > > 
+> > > > Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+> > > 
+> > > Acked-by: David S. Miller <davem@davemloft.net>
+> > > 
+> > > This has to go in via who ever adds the first patch
+> > > with the actual helpers, so I won't apply this one.
+> > 
+> > Yup.  After a bit of testing and tyre-kicking I'll probably slip
+> > lib-add-ascii-hex-helper-functions.patch into mainline so that we can
+> > trickle all the *-use-the-common-ascii-hex-helpers.patch patches out to the
+> > various maintainers.
+> 
+> Please just slurp this networking one in with that, if you
+> would be so kind.
 
-dunno, really.  Merging it would bust git-sched and linux-next, which is of
-course solveable, but a hassle.  If there are bugs in there then linux-next
-and -mm testing will pick up some of them.  Mainline testing would pick up
-more.  Is that delta worth it?  dunno, really.
-
-Experience tells us that decent testing of new debug infrastructure
-(especially that which goes BUG) before it goes mainline is a good idea.
-
-<looks at the patch>
-
-diff --git a/include/linux/list.h b/include/linux/list.h
-> index 08cf4f6..a325d9f 100644
-> --- a/include/linux/list.h
-> +++ b/include/linux/list.h
-> @@ -714,10 +714,17 @@ static inline int hlist_empty(const struct hlist_head *h)
->  	return !h->first;
->  }
->  
-> +#ifdef CONFIG_DEBUG_LIST
-> +extern void hlist_check(struct hlist_node *n);
-> +#else
-> +#define hlist_check(n)		do { } while (0)
-
-a static inline would be better.
-
-- It matches the other version, which is aesthetically pleasing
-
-- It provides type-checking when CONFIG_DEBUG_LIST=n
-
+No probs.  Always happy to do that - more people should tell me "stop being
+an ass and just merge it" ;)
 
