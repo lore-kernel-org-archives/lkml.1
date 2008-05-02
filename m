@@ -1,76 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763583AbYEBOtE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932265AbYEBOtw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763583AbYEBOtE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 10:49:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752896AbYEBOsw
+	id S932265AbYEBOtw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 10:49:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757342AbYEBOtl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 10:48:52 -0400
-Received: from wf-out-1314.google.com ([209.85.200.168]:63150 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752218AbYEBOsw (ORCPT
+	Fri, 2 May 2008 10:49:41 -0400
+Received: from py-out-1112.google.com ([64.233.166.182]:39103 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752218AbYEBOtk convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 10:48:52 -0400
+	Fri, 2 May 2008 10:49:40 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=bk8/v25FB81e76lmPDNI5giNtjLrfQ1cXRf5MUiQ2xgBsWeAyox4d6O9dvdWoSdj2TAxX7LCqF3DEMP8Es2NhKzi3tFilIe8r5m/qbSOaCUbebW7P83v+Ho49dOOysaN+NsEacUp3XuWw2Ter6/IIq4Kakcw8kIQ5ZZjdf6184g=
-Message-ID: <82e4877d0805020742l7d4a6ec9mc72e79aa3d242348@mail.gmail.com>
-Date: Fri, 2 May 2008 10:42:21 -0400
-From: "Parag Warudkar" <parag.warudkar@gmail.com>
-To: "Adrian Bunk" <bunk@kernel.org>
-Subject: Re: How to reduce the number of open kernel bugs
-Cc: LKML <linux-kernel@vger.kernel.org>
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=upqzhhGRunmuFR2qpBpGrI81d5ff/t2hjH6rqviX5pD2OjDUSSLxqe26sIisMNDSxcqbK99LH+AfcnrVaVzzuKAQnFPO+0ljsTCr0wbPJGnGgHFhtK19YTkGttzUR6RrsZG2q3CkKvdEWqeFBMT2x4KHhth/q4uFHOhUqGglaWU=
+Message-ID: <84144f020805020749r55d5bd3eta82b5cdadb5fffea@mail.gmail.com>
+Date: Fri, 2 May 2008 17:49:38 +0300
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "=?ISO-8859-1?Q?J=F6rn_Engel?=" <joern@logfs.org>
+Subject: Re: LogFS merge
+Cc: "Stephen Rothwell" <sfr@canb.auug.org.au>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Linus Torvalds" <torvalds@osdl.org>,
+       "David Woodhouse" <dwmw2@infradead.org>,
+       "Arnd Bergmann" <arnd@arndb.de>, linux-kernel@vger.kernel.org,
+       "Christoph Hellwig" <hch@lst.de>, "Al Viro" <viro@zeniv.linux.org.uk>,
+       linux-fsdevel@vger.kernel.org
+In-Reply-To: <20080502133234.GA24080@logfs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
+References: <20080502133234.GA24080@logfs.org>
+X-Google-Sender-Auth: 4bfc6862bfa6474b
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk <bunk <at> kernel.org> writes:
+Hi Jörn,
 
-> Maintainer:
+On Fri, May 2, 2008 at 4:32 PM, Jörn Engel <joern@logfs.org> wrote:
+>  not being familiar with either maintaining my own git tree or the -next
+>  process, I'd still like to get logfs into mainline.  It has gone through
+>  six rounds of reviews and the last has been mostly about crossing some
+>  i's here and dotting some t's there.
 >
-> Yeah, in any case. I cannot fix it, since it's not a bug in the fobar
-> code. Please reopen a new bug and CC the architecture or PCI maintainer
-> or whatever person related to the bus, chipset or CPU, if you think the
-> foobar device still works. If the foobar hardware got corrupted, you
-> already know what to do...
->
-> I am well aware that loud flames are often the only working way of
-> communication in Linux kernel development, but we mustn't communicate
-> this way with bug submitters.
->
+>  So should it simmer in -next and -mm for another month?  Should it go
+>  straight into -linus?
 
-Actually this way of _communication_ is better because the maintainer has -
-
-a) at least seen the bug
-b) made it clear upfront that he/she is not in a position to fix it and
-c) not inflicted a huge amount of follow up work for the reporter
-while giving no hope that it will be fixed.
-
-There is not much you can do if the maintainer feels he/she can't do
-anything - apart from fixing it yourself which has its limits.
-So the best that can be done is to communicate it clearly - that
-happens in this case.
-
-Compare the above to -
-
-* Reporter reports a bug.
-
-* People in position to fix it  have no care for it and they show it
-(By not even looking at it).
-
-* Significant amount of time passes with no activity.
-
-* Reporter receives a automated mail (bonus insult) - New release is
-available, please retest with new release and open a new bug if the
-problem still exists.
-
-* Bug is closed
-
-* Bug still exists in next release - reporter knows only when he/she
-gets a chance to upgrade to next release (not always easy/possible).
-
-Parag
+You probably want an ACK from the VFS maintainers before aiming at
+mainline. But it surely makes sense to ask Andrew to pull it in -mm
+now.
