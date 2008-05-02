@@ -1,65 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934464AbYEBML5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934529AbYEBMO0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934464AbYEBML5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 08:11:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761432AbYEBMLu
+	id S934529AbYEBMO0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 08:14:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763451AbYEBMOT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 08:11:50 -0400
-Received: from web30106.mail.mud.yahoo.com ([209.191.69.38]:33098 "HELO
-	web30106.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1757684AbYEBMLt (ORCPT
+	Fri, 2 May 2008 08:14:19 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:43236 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750976AbYEBMOS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 08:11:49 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:X-Mailer:Date:From:Reply-To:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Message-ID;
-  b=eaBIqZHbiSVfYzrARCB4fR/YwHkDOkhsHPqhPslwleEw4AFt+dq/FRTiGTUyu4Cc1HZWTtkRrjttJnaY03LKz+f5RQZQXsoxFxQRaDYaQKLosbJFiWAt0kCIj1GHxz3FfEPM+QxDX0FBCx1LB13INOkaQ2zUaBZ/fDkAimAh4K0=;
-X-YMail-OSG: Qua1G6oVM1lek7NKADntkMM6UZQKYWG7mjBuedjcMcInHLDfvjhYP3j9OM2FOJvvMA--
-X-Mailer: YahooMailWebService/0.7.185
-Date: Fri, 2 May 2008 05:11:48 -0700 (PDT)
-From: Parav Pandit <paravpandit@yahoo.com>
-Reply-To: paravpandit@yahoo.com
-Subject: Re: motive for sending Ethernet packets in soft-irq context
-To: David Miller <davem@davemloft.net>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20080502.042805.53512374.davem@davemloft.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <764276.45441.qm@web30106.mail.mud.yahoo.com>
+	Fri, 2 May 2008 08:14:18 -0400
+Subject: Re: questions on calc_delta_mine() in sched.c
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Joel Schopp <jschopp@austin.ibm.com>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <481A2BF6.2070406@austin.ibm.com>
+References: <481A2BF6.2070406@austin.ibm.com>
+Content-Type: text/plain
+Date: Fri, 02 May 2008 14:14:01 +0200
+Message-Id: <1209730442.6508.3.camel@lappy>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sorry for the mistake.
-First time I was not subscribed, so it didn't come to my mailbox and sent again.
-I'll take care henceforth.
-
-Regards,
-Parav Pandit
-
-
-
---- On Fri, 5/2/08, David Miller <davem@davemloft.net> wrote:
-
-> From: David Miller <davem@davemloft.net>
-> Subject: Re: motive for sending Ethernet packets in soft-irq context
-> To: paravpandit@yahoo.com
-> Cc: linux-kernel@vger.kernel.org
-> Date: Friday, May 2, 2008, 4:58 PM
-> You did not have to posting this question a second
-> time, we saw your first posting.  Every time you post
-> to this list, several thousand people get another email.
+On Thu, 2008-05-01 at 15:45 -0500, Joel Schopp wrote:
+> Ingo,
 > 
-> Thank you.
-> --
-> To unsubscribe from this list: send the line
-> "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at 
-> http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> I have a few questions regarding  this code in kernel/sched.c
+> 
+> static unsigned long
+> calc_delta_mine(unsigned long delta_exec, unsigned long weight,
+>          struct load_weight *lw)
+> {
+>      u64 tmp;
+> 
+>      if (unlikely(!lw->inv_weight))
+>          lw->inv_weight = (WMULT_CONST-lw->weight/2) / (lw->weight+1);
+> 
+> 
+> Q1) This code is hit often in scenarios I run, is this really unlikely for 
+> others?
 
+I think it became a lot more likely recently, perhaps removing that
+unlikely is not such a bad idea.
 
-      ____________________________________________________________________________________
-Be a better friend, newshound, and 
-know-it-all with Yahoo! Mobile.  Try it now.  http://mobile.yahoo.com/;_ylt=Ahu06i62sR8HDtDypao8Wcj9tAcJ
+> Q2) The rest of the code in sched.c seems to make inv_weight == 
+> WMULT_CONST/weight and I was wondering if you could explain why this 
+> instance is different.
+
+because the rest of the code is wrong, there are only 2 other sites, and
+I have a patch that removes those div64_64() with =0;
+
+The idea is to use rounding division: (x + y/2) / y
+but we can't because 'x' is touching the limits of our modulo space,
+hence we do: (x - y/2) / y
+which comes in 1 short, that fixup has been lost along the way.
+
+> Q3) That division is pretty expensive, could we sacrifice some accuracy and 
+> do a precompute table?  Do you have another idea how we could get rid of 
+> the divide?
+
+Is a full memory miss not more expensive on most modern machines?
+
+And, no sadly I have no ideas on how to get rid of it ;-/
+
