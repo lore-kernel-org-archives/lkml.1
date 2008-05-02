@@ -1,100 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760183AbYEBCdV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759752AbYEBCnV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760183AbYEBCdV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 May 2008 22:33:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756019AbYEBCdM
+	id S1759752AbYEBCnV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 May 2008 22:43:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756013AbYEBCnG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 May 2008 22:33:12 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:39949 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751564AbYEBCdL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 May 2008 22:33:11 -0400
-Date: Thu, 1 May 2008 21:33:08 -0500
-From: Russ Anderson <rja@sgi.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Tony Luck <tony.luck@intel.com>
-Subject: Re: [PATCH 2/3] mm: Avoid putting a bad page back on the LRU v2
-Message-ID: <20080502023307.GA1591@sgi.com>
-Reply-To: Russ Anderson <rja@sgi.com>
-References: <20080502004248.GC12006@sgi.com> <Pine.LNX.4.64.0805011810410.13527@schroedinger.engr.sgi.com>
+	Thu, 1 May 2008 22:43:06 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:52672 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755259AbYEBCnF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 May 2008 22:43:05 -0400
+Subject: RE: Sharing disks amoung multiple software RAIDs
+From: Kasper Sandberg <lkml@metanurb.dk>
+To: David Lethe <david@santools.com>
+Cc: alex14641@yahoo.com, Justin Piszcz <jpiszcz@lucidpixels.com>,
+       linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <A20315AE59B5C34585629E258D76A97C335477@34093-C3-EVS3.exchange.rackspace.com>
+References: <1209692359.16523.2.camel@localhost>
+	 <73000.21239.qm@web50212.mail.re2.yahoo.com>
+	 <A20315AE59B5C34585629E258D76A97C335477@34093-C3-EVS3.exchange.rackspace.com>
+Content-Type: text/plain
+Date: Fri, 02 May 2008 04:42:59 +0200
+Message-Id: <1209696179.16523.13.camel@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0805011810410.13527@schroedinger.engr.sgi.com>
-User-Agent: Mutt/1.5.9i
+X-Mailer: Evolution 2.4.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 01, 2008 at 06:12:49PM -0700, Christoph Lameter wrote:
-> On Thu, 1 May 2008, Russ Anderson wrote:
+On Thu, 2008-05-01 at 21:31 -0500, David Lethe wrote:
+> In a perfect world, my expectation is that sharing a disk is safe and
+> even a reasonable thing to do. The shared disk is effectively a range of
+> addressable blocks in the same way an individual disk or even a hardware
+> RAID LUN is a range of blocks. From this limited perspective, the only
+> penalty is performance related, assuming you don't mind having to
+> explain yourself to an IT supervisor somewhere in your company.
 > 
-> > Index: linus/mm/migrate.c
-> > ===================================================================
-> > --- linus.orig/mm/migrate.c	2008-05-01 19:05:33.000000000 -0500
-> > +++ linus/mm/migrate.c	2008-05-01 19:06:15.000000000 -0500
-> > @@ -380,6 +380,7 @@ static void migrate_page_copy(struct pag
-> >  		SetPageChecked(newpage);
-> >  	if (PageMappedToDisk(page))
-> >  		SetPageMappedToDisk(newpage);
-> > +	/* Do not migrate PG_memerror to the new page */
+> However, consider what COULD happen in event of a drive failure, either
+> with the shared or an unshared disk. What are the odds all of the
+> failure scenarios have been tested for all ATA and SCSI command sets;
+> with threaded I/Os pending; with dirty cache; bus resets when hardware
+> dies; etc... ?
 > 
-> Why is the comment here?
+> The odds are zero.  Look how many problems people post to the thread on
+> a weekly basis where people lose their data when md rebuilds go bad with
+> non-shared disks.  Why make the problem worse?
 
-To let anyone that may think PG_memerror should get copied to 
-the new page that it should not.  I can remove the comment.
-  
-> >  	if (PageDirty(page)) {
-> >  		clear_page_dirty_for_io(page);
-> > @@ -721,6 +722,8 @@ unlock:
-> >   		 */
-> >   		list_del(&page->lru);
-> >   		move_to_lru(page);
-> > +		if (PageMemError(page))
-> > +			totalbad_pages++;
+What? are you saying linux md is unreliable?! in other words, would i be
+safer to run rsync every day to my other disk, and run in non-raid
+mode?!
+
 > 
-> Wouldnt this be taken care of by the lru handling?
-
-It is only for accounting purposes, keeping a count
-of the bad pages.
-
-> > +#ifdef CONFIG_PAGEFLAGS_EXTENDED
-> > +PAGEFLAG(MemError, memerror)
-> > +#else
-> > +#define PageMemError(page)	0
+> -----Original Message-----
+> From: linux-raid-owner@vger.kernel.org
+> [mailto:linux-raid-owner@vger.kernel.org] On Behalf Of Alex Davis
+> Sent: Thursday, May 01, 2008 8:52 PM
+> To: Justin Piszcz; Kasper Sandberg
+> Cc: linux-raid@vger.kernel.org; linux-kernel@vger.kernel.org
+> Subject: Re: Sharing disks amoung multiple software RAIDs
 > 
-> Use
+> --- On Thu, 5/1/08, Kasper Sandberg <lkml@metanurb.dk> wrote:
 > 
-> PAGEFLAG_FLAGS(MemError)
-
-OK.
-
-> >  #include <linux/page-flags.h>
-> >  
-> > -#define PAGE_FLAGS	(1 << PG_lru   | 1 << PG_private   | 1 << PG_locked | \
-> > +#define PAGE_FLAGS_BASE	(1 << PG_lru   | 1 << PG_private   | 1 << PG_locked | \
-> >  			 1 << PG_buddy | 1 << PG_writeback | \
-> >  			 1 << PG_slab  | 1 << PG_swapcache | 1 << PG_active)
-> > +
-> > +#ifdef CONFIG_PAGEFLAGS_EXTENDED
-> > +#define	PAGE_FLAGS	(PAGE_FLAGS_BASE | 1UL << PG_memerror)
-> > +#else
-> > +#define	PAGE_FLAGS	(PAGE_FLAGS_BASE)
-> > +#endif
-> >  
-> >  #define PAGE_FLAGS_RECLAIM      (PAGE_FLAGS | 1 << PG_reclaim | 1 << PG_dirty)
-> >  #define PAGE_FLAGS_RESERVE	(PAGE_FLAGS | 1 << PG_reserved)
+> > From: Kasper Sandberg <lkml@metanurb.dk>
+> > Subject: Re: Sharing disks amoung multiple software RAIDs
+> > To: "Justin Piszcz" <jpiszcz@lucidpixels.com>
+> > Cc: "Alex Davis" <alex14641@yahoo.com>, linux-raid@vger.kernel.org,
+> linux-kernel@vger.kernel.org
+> > Date: Thursday, May 1, 2008, 9:39 PM
+> > On Thu, 2008-05-01 at 08:50 -0400, Justin Piszcz wrote:
+> > > 
+> > > On Thu, 1 May 2008, Alex Davis wrote:
+> > > 
+> > > > Is this a bad thing? I'm guessing that it is,
+> > but I want independent
+> > > > confirmation before I spoke to someone I know
+> > who's doing this.
+> > > >
+> > > > Thanks
+> > > >
+> > > >
+> > > >     
+> >
+> ________________________________________________________________________
+> ____________
+> > > > Be a better friend, newshound, and
+> > > > know-it-all with Yahoo! Mobile.  Try it now. 
+> > http://mobile.yahoo.com/;_ylt=Ahu06i62sR8HDtDypao8Wcj9tAcJ
+> > > > --
+> > > > To unsubscribe from this list: send the line
+> > "unsubscribe linux-raid" in
+> > > > the body of a message to
+> > majordomo@vger.kernel.org
+> > > > More majordomo info at 
+> > http://vger.kernel.org/majordomo-info.html
+> > > >
+> > > 
+> > > What is the use case, why would you want to do that?
+> > > I have seen people on the list do it before, for
+> > example are you going to 
+> > > be utilizing both raids at the same time?  If so, I
+> > would advise against 
+> > > it.
+> > > 
+> > > What is the reasoning?
+> > 
+> > I do this!
+> > 
+> > is this really bad? i would surely like a list of reasons
+> > why..
+> > 
+> > I do it because.. well.. first off, it allows me to have
+> > /boot on
+> > different raidlevel than / or /home without extra disks.
+> > secondly, it allows me to with the same disks use different
+> > filesystems.. for instance, it allows me to have /home
+> > encrypted with
+> > dm-crypt, while still raided.. Not that i would mind
+> > encrypting /
+> > and /home as 1 partition, but it creates a whole slew of
+> > issues with
+> > having to create initrd and stuff..
+> > 
+> > I realize that performance probably suffers abit from this,
+> > but well..
+> > is there any stability or security wise risk? i mostly use
+> > raid1 and
+> > raid5 only..
+> > 
+> I would guess if the RAIDs are heavily used simultaneously it could
+> cause the disk head actuators to jump around more, causing more wear
+> and tear.
 > 
-> The groups of page flags could also be put into page-flags.h.
+> 
+>  
+> ________________________________________________________________________
+> ____________
+> Be a better friend, newshound, and 
+> know-it-all with Yahoo! Mobile.  Try it now.
+> http://mobile.yahoo.com/;_ylt=Ahu06i62sR8HDtDypao8Wcj9tAcJ
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-raid" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
+> 
 
-page-flags.h is where I originally put them.  Since they are only used in 
-mm/page_alloc.c, I thought mm.h would be a more appropriate place.  
-I can put them in page-flags.h.
-
--- 
-Russ Anderson, OS RAS/Partitioning Project Lead  
-SGI - Silicon Graphics Inc          rja@sgi.com
