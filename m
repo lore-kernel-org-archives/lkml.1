@@ -1,78 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935960AbYEBSes@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932374AbYEBSfg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935960AbYEBSes (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 14:34:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933736AbYEBSeU
+	id S932374AbYEBSfg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 14:35:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935943AbYEBSen
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 14:34:20 -0400
-Received: from rn-out-0910.google.com ([64.233.170.185]:25020 "EHLO
-	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762956AbYEBSeT (ORCPT
+	Fri, 2 May 2008 14:34:43 -0400
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:38488 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S935882AbYEBSel (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 14:34:19 -0400
-Subject: Re: Preempt-RT patch for 2.6.25
-From: Sven-Thorsten Dietrich <sven@thebigcorporation.com>
-To: Remy Bohmer <linux@bohmer.net>
-Cc: Steven Rostedt <rostedt@goodmis.org>, LKML <linux-kernel@vger.kernel.org>,
-       RT <linux-rt-users@vger.kernel.org>
-In-Reply-To: <3efb10970805021102n4d87f55eue723786281b06fcb@mail.gmail.com>
-References: <3efb10970805021102n4d87f55eue723786281b06fcb@mail.gmail.com>
+	Fri, 2 May 2008 14:34:41 -0400
+Subject: [GIT PATCH] final (hopefully) SCSI updates for 2.6.25
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
 Content-Type: text/plain
-Organization: The Big Corporation
-Date: Fri, 02 May 2008 11:34:10 -0700
-Message-Id: <1209753250.25628.34.camel@dd.thebigcorporation.com>
+Date: Fri, 02 May 2008 13:34:38 -0500
+Message-Id: <1209753278.3121.53.camel@localhost.localdomain>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
+X-Mailer: Evolution 2.12.3 (2.12.3-4.fc8) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Actually, all but four of these are really bug fixes and driver updates.
+The final feature is large command support in SCSI which we were waiting
+on the block changes that Jens just merged.
 
-On Fri, 2008-05-02 at 20:02 +0200, Remy Bohmer wrote:
-> Hello Steven,
-> 
-> I was wondering: Is there a preempt-RT-patch planned for 2.6.25?
-> I haven't seen one either for any of the 2.6.25-rc kernels at the
-> usual place (http://www.kernel.org/pub/linux/kernel/projects/rt/),
-> first time in history...
-> Am I missing something?
+The patches are available here:
+
+master.kernel.org:/pub/scm/linux/kernel/git/jejb/scsi-misc-2.6.git
+
+The short changelog is:
+
+Alan Cox (1):
+      u14-34f: Fix 32bit only problem
+
+Alan D. Brunelle (1):
+      bug fix for free list handling
+
+Boaz Harrosh (2):
+      add support for variable length extended commands
+      Let scsi_cmnd->cmnd use request->cmd buffer
+
+Brian King (2):
+      ibmvscsi: Handle non SCSI error status
+      ipr: Rename ipr's state scsi host attribute to prevent collisions
+
+FUJITA Tomonori (1):
+      bsg: add large command support
+
+Hannes Reinecke (1):
+      megaraid_mbox: fix Dell CERC firmware problem
+
+Jiri Slaby (1):
+      megaraid_sas: fix suspend/resume sections
+
+Mark Salyzyn (4):
+      aacraid: Add Power Management support
+      aacraid: Fix jbod operations scan issues
+      aacraid: Fix warning about macro side-effects
+      aacraid: Fix down_interruptible() to check the return value correctly
+
+Miquel van Smoorenburg (4):
+      dpt_i2o: sysfs code
+      dpt_i2o: 64 bit support
+      dpt_i2o: move from virt_to_bus/bus_to_virt to dma_alloc_coherent
+      dpt_i2o: use standard __init / __exit code
+
+Sam Ravnborg (1):
+      aic94xx: fix section mismatch
+
+bo yang (1):
+      megaraid_sas; Update the Version and Changelog
 
 
-Daniel has done a port, but I think it dropped some archs so its not
-complete.
+And the diffstat:
 
+ Documentation/scsi/ChangeLog.megaraid_sas |   22 +
+ block/bsg.c                               |   12 
+ block/scsi_ioctl.c                        |    5 
+ drivers/firewire/fw-sbp2.c                |    2 
+ drivers/s390/scsi/zfcp_dbf.c              |    2 
+ drivers/s390/scsi/zfcp_fsf.c              |    2 
+ drivers/scsi/53c700.c                     |    6 
+ drivers/scsi/Kconfig                      |    3 
+ drivers/scsi/a100u2w.c                    |    2 
+ drivers/scsi/aacraid/aachba.c             |  133 +++++-
+ drivers/scsi/aacraid/aacraid.h            |   28 +
+ drivers/scsi/aacraid/comminit.c           |    2 
+ drivers/scsi/aacraid/commsup.c            |   34 +
+ drivers/scsi/aacraid/linit.c              |   22 -
+ drivers/scsi/aic94xx/aic94xx_init.c       |    6 
+ drivers/scsi/constants.c                  |   10 
+ drivers/scsi/dpt/dpti_ioctl.h             |   16 
+ drivers/scsi/dpt/dptsig.h                 |    8 
+ drivers/scsi/dpt/sys_info.h               |    4 
+ drivers/scsi/dpt_i2o.c                    |  640 ++++++++++++++++++++++--------
+ drivers/scsi/dpti.h                       |   15 
+ drivers/scsi/gdth.c                       |    2 
+ drivers/scsi/hptiop.c                     |    6 
+ drivers/scsi/ibmvscsi/ibmvscsi.c          |    7 
+ drivers/scsi/ibmvscsi/viosrp.h            |    9 
+ drivers/scsi/initio.c                     |    2 
+ drivers/scsi/ipr.c                        |    2 
+ drivers/scsi/megaraid/megaraid_mbox.c     |   17 
+ drivers/scsi/megaraid/megaraid_mbox.h     |    1 
+ drivers/scsi/megaraid/megaraid_sas.c      |   13 
+ drivers/scsi/megaraid/megaraid_sas.h      |    6 
+ drivers/scsi/qla1280.c                    |    4 
+ drivers/scsi/scsi.c                       |   23 -
+ drivers/scsi/scsi_error.c                 |   15 
+ drivers/scsi/scsi_lib.c                   |    7 
+ drivers/scsi/scsi_tgt_lib.c               |    2 
+ drivers/scsi/u14-34f.c                    |    6 
+ drivers/usb/storage/cypress_atacb.c       |    2 
+ drivers/usb/storage/isd200.c              |    2 
+ include/scsi/scsi.h                       |   40 +
+ include/scsi/scsi_cmnd.h                  |   23 -
+ include/scsi/scsi_eh.h                    |    4 
+ include/scsi/scsi_host.h                  |    8 
+ 43 files changed, 884 insertions(+), 291 deletions(-)
 
-ftp://source.mvista.com/pub/dwalker/rt/patch-2.6.25-rc9-dw1-broken-out.tar.bz2
-
-and updates, possibly:
-
-ftp://source.mvista.com/pub/dwalker/rt/
-
-
-His bi-sectability changes are pretty key, and I would like to see those
-reviewed and incorporated, even if they apply only to x86.
-
-The RT patch queue generally is a mess today. 
-Lots of stuff needs to be folded down into the core patches.
-
-The ins and outs of the softirq code need major clean-up.
-
-There are big issues around apic / hardirq threads that we need to
-tackle at multiple levels.
-
-(we are seeing the semis acknowledge the IRQ thread model, where IRQs
-may stay masked longer than usual)
-
-per-device irq threads, as Jon Masters has mentioned in his blog, may be
-one work-around to get past the legacy stuff in x86.
-
-and with the x86 merge, all this should become easier, so that hopefully
-we can extricate the IRQ threads changes in a bisectable way, so we can
-address the technical issues that stand in the way of upstream, apart
-from PREEMPT_RT.
-
-Sven
-
+James
 
 
