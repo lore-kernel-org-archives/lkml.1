@@ -1,57 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934337AbYEBLmS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934265AbYEBLp1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934337AbYEBLmS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 07:42:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762705AbYEBLmA
+	id S934265AbYEBLp1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 07:45:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761379AbYEBLpU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 07:42:00 -0400
-Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:39094 "EHLO
-	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762620AbYEBLl7 (ORCPT
+	Fri, 2 May 2008 07:45:20 -0400
+Received: from hpsmtp-eml18.kpnxchange.com ([213.75.38.118]:23612 "EHLO
+	hpsmtp-eml18.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1760249AbYEBLpT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 07:41:59 -0400
-Message-ID: <481AFDC2.7030807@s5r6.in-berlin.de>
-Date: Fri, 02 May 2008 13:40:50 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.13) Gecko/20080313 SeaMonkey/1.1.9
-MIME-Version: 1.0
-To: Harvey Harrison <harvey.harrison@gmail.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
+	Fri, 2 May 2008 07:45:19 -0400
+From: Frans Pop <elendil@planet.nl>
+To: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: Horrendous Audio Stutter - current git
+Date: Fri, 2 May 2008 13:45:16 +0200
+User-Agent: KMail/1.9.9
+Cc: Parag Warudkar <parag.warudkar@gmail.com>, Ingo Molnar <mingo@elte.hu>,
        LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 7/8] fs: use get_unaligned_* helpers
-References: <1209700378.22362.23.camel@brick>
-In-Reply-To: <1209700378.22362.23.camel@brick>
-Content-Type: text/plain; charset=ISO-8859-1
+References: <82e4877d0805011714m35a47753q58cca706b7af6557@mail.gmail.com> <200805021337.10809.elendil@planet.nl> <1209728372.13978.147.camel@twins>
+In-Reply-To: <1209728372.13978.147.camel@twins>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200805021345.17179.elendil@planet.nl>
+X-OriginalArrivalTime: 02 May 2008 11:45:17.0831 (UTC) FILETIME=[FE40D170:01C8AC49]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Harvey Harrison wrote:
->  fs/partitions/ldm.h |    6 +++---
->  1 files changed, 3 insertions(+), 3 deletions(-)
-> 
-> diff --git a/fs/partitions/ldm.h b/fs/partitions/ldm.h
-...
->  /* Most numbers we deal with are big-endian and won't be aligned. */
-> -#define BE16(x)			((u16)be16_to_cpu(get_unaligned((__be16*)(x))))
-> -#define BE32(x)			((u32)be32_to_cpu(get_unaligned((__be32*)(x))))
-> -#define BE64(x)			((u64)be64_to_cpu(get_unaligned((__be64*)(x))))
-> +#define BE16(x)		get_unaligned_be16((x))
-> +#define BE32(x)		get_unaligned_be32((x))
-> +#define BE64(x)		get_unaligned_be64((x))
+On Friday 02 May 2008, Peter Zijlstra wrote:
+> On Fri, 2008-05-02 at 13:37 +0200, Frans Pop wrote:
+> > On Friday 02 May 2008, Peter Zijlstra wrote:
+> > > > Ok, that's _WAY_ too big, something went seriously wrong. Thanks!
+> > >
+> > > In fact, that is exactly 1024 time too large.
+> > >
+> > > How does this work for you:
+> >
+> > Changes nothing. Values of bonus_max are unchanged and still skips.
+>
+> Humm, I saw some bonus_max spikes on my laptop which were fixed by that
+> patchlet, ah well, the hunt goes on.
 
-Why the double parentheses?
+Oh! Hang on. I just checked and saw that I made the change in 
+dequeue_entity() instead of enqueue_entity(). Let me try again.
 
-More importantly, I would say ldm.c should rather use
-get_unaligned_be*() directly.  No need to hide what these macros are
-about by using a local alias.
+For code symmetry I guess both should probably be changed?
 
-After that, ldm.c should be inspected for whether really all of the
-accesses are unaligned.  If there are any which are guaranteed to be
-aligned, they should of course be turned into be*_to_cpu().  But
-separately from this conversion to get_unaligned_be*().
--- 
-Stefan Richter
--=====-==--- -=-= ---=-
-http://arcgraph.de/sr/
+Sorry for the mistake.
