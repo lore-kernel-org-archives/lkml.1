@@ -1,55 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935345AbYEBPkX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935587AbYEBPlT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935345AbYEBPkX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 11:40:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763658AbYEBPkL
+	id S935587AbYEBPlT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 11:41:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765553AbYEBPlD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 11:40:11 -0400
-Received: from www.tglx.de ([62.245.132.106]:38029 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759250AbYEBPkK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 11:40:10 -0400
-Date: Fri, 2 May 2008 17:34:06 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Heiko Carstens <heiko.carstens@de.ibm.com>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       John Stultz <johnstul@us.ibm.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] clocksource: Fix permissions for available_clocksource
-In-Reply-To: <20080502152730.GA5220@osiris.boeblingen.de.ibm.com>
-Message-ID: <alpine.LFD.1.10.0805021731550.6003@apollo.tec.linutronix.de>
-References: <20080502104940.GA4426@osiris.boeblingen.de.ibm.com> <alpine.LFD.1.10.0805021635030.6003@apollo.tec.linutronix.de> <20080502152730.GA5220@osiris.boeblingen.de.ibm.com>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Fri, 2 May 2008 11:41:03 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:38694 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759401AbYEBPlB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 May 2008 11:41:01 -0400
+Date: Fri, 2 May 2008 16:41:00 +0100
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Matti Linnanvuori <mattilinnanvuori@yahoo.com>
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [patch] fs: remove local variable copy of f_pos to enable
+	thread-safe updates
+Message-ID: <20080502154100.GF5882@ZenIV.linux.org.uk>
+References: <342069.46185.qm@web52010.mail.re2.yahoo.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <342069.46185.qm@web52010.mail.re2.yahoo.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2 May 2008, Heiko Carstens wrote:
-> On Fri, May 02, 2008 at 04:36:37PM +0200, Thomas Gleixner wrote:
-> > On Fri, 2 May 2008, Heiko Carstens wrote:
-> > > From: Heiko Carstens <heiko.carstens@de.ibm.com>
-> > > 
-> > > File permissions for
-> > > /sys/devices/system/clocksource/clocksource0/available_clocksource
-> > > are 600 which allows write access. But this is in fact a read only
-> > > file. So change permissions to 400.
-> > 
-> > Indeed. The question is whether we should make this 444. There is no
-> > harm, when users can read the info. Same applies for the
-> > current_clocksource entry, making it 644 should be fine.
-> 
-> Sure, I can send an on-top patch for this.
+On Fri, May 02, 2008 at 08:33:50AM -0700, Matti Linnanvuori wrote:
 
-Yes, please.
- 
-> Btw. did you recently try writing "jiffies" to current_clocksource?
-> That seems to be a trick to stop the clock...
+> File systems can be written so that implementations of read, lseek etc.
+> acquire a lock before using *pos, which precludes races. That was the
+> idea behind my patch. So, my patch does not necessarily cause races.
+> read instances can be racy in Linux now because there is no lock to
+> serialize read etc. system calls.
 
-Hmm, that's after the kernel switched to highres and/or nohz, right ?
-This came up earlier, but it got dropped from my to todo list. :(
-Will have a look.
+Oh, yes it does - current tree guarantees that variable passed to ->read()
+will not change under it, so any code that relied on that got broken.
 
-Thanks,
-
-	tglx
+And no, modifying every driver's ->read() is not going to be fun - it's
+not just filesystems.
