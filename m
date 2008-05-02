@@ -1,89 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765595AbYEBPFy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934580AbYEBPGW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765595AbYEBPFy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 11:05:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753406AbYEBPFr
+	id S934580AbYEBPGW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 11:06:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761186AbYEBPGN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 11:05:47 -0400
-Received: from styx.suse.cz ([82.119.242.94]:32782 "EHLO elijah.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751614AbYEBPFq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 11:05:46 -0400
-Subject: CPU POSIX timers livelock
-From: Petr Tesarik <ptesarik@suse.cz>
-To: Thomas Gleixner <tglx@linutronix.de>, Oleg Nesterov <oleg@tv-sign.ru>
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Organization: SuSE CR
-Date: Fri, 02 May 2008 17:05:41 +0200
-Message-Id: <1209740741.15210.49.camel@elijah.suse.cz>
+	Fri, 2 May 2008 11:06:13 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:45631 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759341AbYEBPGM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 May 2008 11:06:12 -0400
+Date: Fri, 2 May 2008 17:06:45 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: David Miller <davem@davemloft.net>, tiwai@suse.de, mchehab@infradead.org,
+       akpm@linux-foundation.org, linux-dvb-maintainer@linuxtv.org,
+       video4linux-list@redhat.com, linux-kernel@vger.kernel.org,
+       efault@gmx.de
+Subject: Re: [patch, -git] media/video/sound build fix, TEA5761/TEA5767
+Message-ID: <20080502150645.GA23481@uranus.ravnborg.org>
+References: <20080430110115.GA5633@elte.hu> <s5hiqxzwqak.wl%tiwai@suse.de> <20080430.041703.89847530.davem@davemloft.net> <20080430112959.GA32556@uranus.ravnborg.org> <20080430121854.GC30735@elte.hu>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.6.0 
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080430121854.GC30735@elte.hu>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Wed, Apr 30, 2008 at 02:18:54PM +0200, Ingo Molnar wrote:
+> 
+> * Sam Ravnborg <sam@ravnborg.org> wrote:
+> 
+> > [OT to the actual problem]
+> > 
+> > I have envisioned something like a "requires tag" that would list what 
+> > a config symbols needs.
+> > 
+> > Like in this case it would have been:
+> > 
+> > 	requires V4L
+> > 
+> > This should in the frontends then if the user selects a symbol where 
+> > the 'requires' are not satisfied with a window listing the menuentries 
+> > for the symbol that the user needs to enable to satisfy what the 
+> > original symbol requires.
+> > 
+> > This is the only way to do this in a way so the user is actually aware 
+> > that enabling a webcam also enables USB. Or at least this is my best 
+> > suggestion.
+> 
+> but auto-selecting USB is the obvious thing that most users expect...
+> 
+> I.e. they expect a static hierarchy of 'every component' that exists and 
+> that can be selected. [yes there are complications like multiple-choice, 
+> but that's the minority]
+> 
+> Users want to browse the hierarchy and pick their things - and _at most_ 
+> the tool should warn if there's side side-effects of a selection - users 
+> will likely not mind that enabling a webcam also enables USB (in the 
+> overwhelming majority of the cases they couldnt care less about that).
 
-there seems to be a possible livelock in the CPU timers (actually, we've
-experienced it once already). The analysis lead to the conclusion that
-fixing this properly will be a bit harder.
+Which is exactly what my "require SYMBOL2 would give us.
+A webcam would not depends on USB, but would "require USB".
+If the decide to include the webcam she will optionally be prompted
+so she can decide if it is OK to include USB support too.
 
-Problem Statement
+But again - have not thought this to the end.
 
- 1. Any process can set ITIMER_PROF as short as 1 timer tick
- 2. If the process is CPU-bound (e.g. a number-crunching application),
-    the timer will expire with every timer tick
- 3. If the process has N threads and each thread runs on its own
-    CPU, the timer will expire N times per timer tick
+> 
+> But otherwise it should all be automatic.
+> 
+> And i dont even think there should be any additional Kconfig 
+> complication. Kconfig should be made _simpler_, not more complex. 
+> Maintainers list dependencies and that's it. No "select" needed at all! 
+> The stuff that needs to be selected automatically derives from the 
+> "depends on" tree that we code.
+> 
+> in fact even dependencies between modules of source code should be 
+> auto-discovered most of the time.
+Would be nice.
 
-Now, this can become quite interesting on a larger system. For instance,
-with 128 CPUs and a (conservative) setting of HZ 300, any process can
-effectively ask to be sent a SIGPROF every 26 usec (1/300/128 s). Pretty
-fast, but it can get worse if you consider the pitfalls of a NUMA
-architecture.
-
-Whenever the timer expires, a new expiration time must be computed for
-each thread in the thread group. The values are stored in task_struct of
-each thread, and IIRC those are kept local to the CPU where the thread
-is running (quite logically). Put in another way, walking all threads
-means touching remote memory except for the few task_struct which are
-local to the recomputing CPU. In the 128-CPU example, if each node has 2
-CPUs (think Altix), only 2 accesses are to the local node and 126
-accesses are to remote memory. These are already quite expensive, but it
-gets even worse. The timer interrupt is generated locally for each CPU,
-so if the process is spread over all of them (see above), all CPUs
-recompute the timer (hint: write access), thus constantly invalidating
-local caches of the remote memory.
-
-And those computations cannot run in parallel, of course, because
-everything is serialized on sighand->siglock (see run_posix_cpu_timers).
-So, each time one CPU finishes walking the threads, there's already a
-queue of all the other CPUs waiting to do the same again. For this kind
-of load, those 26 usec (approx. 41600 CPU cycles on a 1.6 GHz CPU) may
-be well insufficient. Even more so, if somebody else occasionally takes
-write lock on tasklist_lock. It may so happen that the system spends all
-CPU cycles re-computing the profiling timers over and over again and
-never make any progress. Note this is partly caused by the fact that the
-time needed to handle the profiling timer is itself also counted to the
-profiling time.
-
-This simply does not scale for large systems (and I was not even
-considering those really large 1024p ones).
-
-Ideas
-
-Any ideas for improvement? Obviously, storing per-process expiration
-times in one place instead of dividing the interval by the number of
-currently running threads would help here. But it would spoil the fast
-path (when there are no timers at all). Avoiding that multiple threads
-re-compute the same values might also help (although I've got no idea
-how to implement this).
-
-Any more comments (before I start hacking something you'll NAK)?
-
-BTW did POSIX really mean to allow an indefinitely small interval for
-the SIGPROF?
-
-Petr Tesarik
+	Sam
