@@ -1,61 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932875AbYEBAZt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932725AbYEBA3V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932875AbYEBAZt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 May 2008 20:25:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754847AbYEBAZl
+	id S932725AbYEBA3V (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 May 2008 20:29:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757864AbYEBA3M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 May 2008 20:25:41 -0400
-Received: from ool-603879e4.static.optonline.net ([96.56.121.228]:60857 "EHLO
-	orac.ofobscurity.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1754750AbYEBAZk (ORCPT
+	Thu, 1 May 2008 20:29:12 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:43655 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757064AbYEBA3K (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 May 2008 20:25:40 -0400
-X-Greylist: delayed 1746 seconds by postgrey-1.27 at vger.kernel.org; Thu, 01 May 2008 20:25:40 EDT
-Date: Thu, 1 May 2008 19:55:58 -0400
-From: Chris Knadle <Chris.Knadle@coredump.us>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Adrian Bunk <bunk@kernel.org>, venkatesh.pallipadi@intel.com,
-       davem@davemloft.net, trini@kernel.crashing.org, mingo@elte.hu,
-       tglx@linutronix.de, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       suresh.b.siddha@intel.com
-Subject: Re: huge gcc 4.1.{0,1} __weak problem
-Message-ID: <20080501235558.GA20637@orac.ofobscurity.com>
-Reply-To: alpine.LFD.1.10.0805011525460.5994@woody.linux-foundation.org
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Thu, 1 May 2008 20:29:10 -0400
+Date: Thu, 1 May 2008 17:28:10 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, peterz@infradead.org,
+       hch@infradead.org, adobriyan@gmail.com, bunk@kernel.org
+Subject: Re: [PATCH] add typecheck on irqsave and friends for correct flags
+Message-Id: <20080501172810.fa39dad6.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.58.0805011946290.12785@gandalf.stny.rr.com>
+References: <Pine.LNX.4.58.0805011946290.12785@gandalf.stny.rr.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 1 May 2008, Linus Torvalds wrote:
-> On Thu, 1 May 2008, Andrew Morton wrote:
-> > > 
-> > > I see only the following choices:
-> > > - remove __weak and replace all current usages
-> > > - move all __weak functions into own files, and ensure that also happens
-> > >   for future usages
-> > > - #error for gcc 4.1.{0,1}
-> > 
-> > Can we detect the {0,1}?  __GNUC_EVEN_MORE_MINOR__?
->
-> It's __GNUC_PATCHLEVEL__, I believe.
->
-> So yes, we can distinguish 4.1.2 (good, and very common) from 4.1.{0,1} 
-> (bad, and rather uncommon).
-> And yes, considering that 4.1.1 (and even more so 4.1.0) should be rare to 
-> begin with, I think it's better to just not support it.
->
->			Linus
+On Thu, 1 May 2008 19:51:18 -0400 (EDT)
+Steven Rostedt <rostedt@goodmis.org> wrote:
 
-   Unfortunately Debian Stable (i.e. Etch), which is relatively popular for server 
-use, is still using 4.1.1  :-(  (The current gcc package is gcc-4.1.1-21)
+> There has been several areas in the kernel where an int has been used
+> for flags in local_irq_save and friends instead of a long. This can
+> cause some hard to debug problems on some architectures.
+> 
+> This patch adds a typecheck inside the irqsave and restore functions
+> to flag these cases.
 
-   I have not looked to see if Debian Stable's gcc-4.1.1-21 has been patched for 
-the currently discussed __weak bug.
+hm, not exactly a thing of beauty, but it could have been worse.
 
-   -- Chris
 
-Chris Knadle
-Chris.Knadle@coredump.us
+If we had implemeted these things properly, as
+
+	unsigned long spin_lock_irqsave(spinlock_t *lock);
+
+then we wouldn't be able to do this at all.
+
+Oh well, thanks, I'll toss it in there.  Maybe this should go into
+git-sched (aka git-omnibus)?
+
