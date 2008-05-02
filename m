@@ -1,67 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765484AbYEBSG2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933286AbYEBSIi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765484AbYEBSG2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 14:06:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758824AbYEBSGV
+	id S933286AbYEBSIi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 14:08:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758824AbYEBSIb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 14:06:21 -0400
-Received: from floppyfw.timiskamingchildren.org ([209.226.88.42]:61555 "EHLO
-	pennylane.tcafs.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758737AbYEBSGU (ORCPT
+	Fri, 2 May 2008 14:08:31 -0400
+Received: from yw-out-2324.google.com ([74.125.46.30]:30167 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758693AbYEBSIa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 14:06:20 -0400
-X-Greylist: delayed 1886 seconds by postgrey-1.27 at vger.kernel.org; Fri, 02 May 2008 14:06:20 EDT
-Message-ID: <481B50B9.2080000@tcafs.org>
-Date: Fri, 02 May 2008 13:34:49 -0400
-From: "Lee Mathers (TCAFS)" <Lee.Mathers@tcafs.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
+	Fri, 2 May 2008 14:08:30 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition:x-google-sender-auth;
+        b=aoF25rCjbPVp8/kRgpT1b2I46AFcPQ67D9lj7hKq/vUzoPHG7aaJTdp7Gkv0HCDy5ZH4aNhIfm84Bb8wrM4wx2M0wakzFiyTfO5CABBSsczBnB5sl98Gr6nQ9+g3K/sngTpJLuIIYdAYtL0mMay2feoU3ATAu75C5/DifN76iP4=
+Message-ID: <3efb10970805021102n4d87f55eue723786281b06fcb@mail.gmail.com>
+Date: Fri, 2 May 2008 20:02:26 +0200
+From: "Remy Bohmer" <linux@bohmer.net>
+To: "Steven Rostedt" <rostedt@goodmis.org>
+Subject: Preempt-RT patch for 2.6.25
+Cc: LKML <linux-kernel@vger.kernel.org>, RT <linux-rt-users@vger.kernel.org>
 MIME-Version: 1.0
-To: Russ Dill <russ.dill@gmail.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: Slow DOWN, please!!!
-References: <20080429.190352.137408408.davem@davemloft.net>	 <alpine.LFD.1.10.0804301127020.2980@woody.linux-foundation.org>	 <4818C0BF.5020002@davidnewall.com>	 <alpine.LFD.1.10.0804301202200.2980@woody.linux-foundation.org>	 <4818C571.8040609@davidnewall.com>	 <alpine.LFD.1.10.0804301223220.2980@woody.linux-foundation.org>	 <481947AF.4090101@davidnewall.com>	 <1209655700.27499.28.camel@localhost>	 <loom.20080501T174627-71@post.gmane.org>	 <1209692875.16523.10.camel@localhost> <f9d2a5e10805011954l12b54802t63b9ce0957b6087b@mail.gmail.com>
-In-Reply-To: <f9d2a5e10805011954l12b54802t63b9ce0957b6087b@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+X-Google-Sender-Auth: c6b8ed74300eb6b6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Russ Dill wrote:
->>  i can also say that i have noticed this on my own workstation, however
->>  thats not really an as valid case, as i have also upgraded userspace and
->>  such over time, but it used to be that my box wouldnt use more than
->>  ~100mb to boot into X with kde open, and about ~300mb at browsing/mail
->>  and such, but these days my workstation easily uses 1.5gb of ram for no
->>  apparent reason..
->>
->>  something certainly is fishy around here, these days people just tend to
->>  fix it by throwing 10 times more ram in than should really be necessary,
->>  which i guess, is because the ram prices has dropped 10 times
->>
->>     
->
-> So you aren't really contributing anything to the discussion. It could
-> be userspace, it could be different types of pages you are visiting,
-> it could be the kernel, you haven't really measured what is taking up
-> the memory. And of course, its all because developers are lazy. Thanks
-> for the input.
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-If your subscribing and reading this list at least have the courtesy to 
-think about your posting before delivering it around the world.  Not to 
-be rude but do you know how dumb you look right now.  There are many 
-programs that while provide detailed memory usage  reports.  That would 
-be a first step.  
+Hello Steven,
 
+I was wondering: Is there a preempt-RT-patch planned for 2.6.25?
+I haven't seen one either for any of the 2.6.25-rc kernels at the
+usual place (http://www.kernel.org/pub/linux/kernel/projects/rt/),
+first time in history...
+Am I missing something?
 
-By "cc" to the list...
+Kind Regards,
 
-*WTF*!!  For someone that's been lurking on the kernel lists on and off 
-since the mid 90's this has been one of the most stupid discussions and 
-largest timesink to date..  Is this really the LKML or the #linux 
-channel on irc?
-
+Remy
