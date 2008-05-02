@@ -1,45 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761360AbYEBHIH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764848AbYEBHIm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761360AbYEBHIH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 03:08:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758528AbYEBHH4
+	id S1764848AbYEBHIm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 03:08:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758709AbYEBHId
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 03:07:56 -0400
-Received: from wa-out-1112.google.com ([209.85.146.178]:8171 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758460AbYEBHHz (ORCPT
+	Fri, 2 May 2008 03:08:33 -0400
+Received: from gum.itee.uq.edu.au ([130.102.66.1]:60982 "EHLO
+	gum.itee.uq.edu.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758528AbYEBHIc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 03:07:55 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=h775p3Gt8m+IYexGfgAQJMbxEBuIvLK5A5ogOvvIN89X4IYLvDYCNKXaNlKxT3XHxU6NyTV1sQDuR88Ex6bAzUeaGIT1sZISsPnDHAyU1SAUM6TxlSR1xIEclwFuqr/P6pvZsGQVc8ImJwIl8wsrbX8uZwkG0JdVZ8CKG/n+eFw=
-Message-ID: <ed10ee420805020007x6e001a44o49f486a18ce3e554@mail.gmail.com>
-Date: Fri, 2 May 2008 00:07:54 -0700
-From: "SL Baur" <steve@xemacs.org>
-To: "Greg Kroah-Hartman" <gregkh@suse.de>
-Subject: Re: [PATCH 07/11] kobject: do not copy vargs, just pass them around
-Cc: linux-kernel@vger.kernel.org, "Kay Sievers" <kay.sievers@vrfy.org>
-In-Reply-To: <1209599870-22919-7-git-send-email-gregkh@suse.de>
+	Fri, 2 May 2008 03:08:32 -0400
+X-Greylist: delayed 5389 seconds by postgrey-1.27 at vger.kernel.org; Fri, 02 May 2008 03:08:31 EDT
+Message-ID: <481AA8CC.10405@petalogix.com>
+Date: Fri, 02 May 2008 15:38:20 +1000
+From: John Williams <john.williams@petalogix.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.13) Gecko/20060418 Red Hat/1.7.13-1.1.3.1.centos3
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Arnd Bergmann <arnd@arndb.de>
+CC: John Williams <jwilliams@itee.uq.edu.au>, monstr@seznam.cz,
+       Matthew Wilcox <matthew@wil.cx>, Will Newton <will.newton@gmail.com>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       linux-arch@vger.kernel.org, git@xilinx.com,
+       Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>,
+       John Linn <John.Linn@xilinx.com>
+Subject: Re: microblaze syscall list
+References: <87a5b0800804220513t75690ceao938a288596b5ad0c@mail.gmail.com> <48151726.9000204@itee.uq.edu.au> <200804281431.26570.arnd@arndb.de> <200805012117.12991.arnd@arndb.de>
+In-Reply-To: <200805012117.12991.arnd@arndb.de>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080430235701.GA20981@suse.de>
-	 <1209599870-22919-7-git-send-email-gregkh@suse.de>
-X-Google-Sender-Auth: 2573f8ec04b4cd65
+X-Spam-Checked: This message probably not SPAM
+X-Spam-Score: -1.305
+X-Spam-Tests: ALL_TRUSTED,AWL,TW_LN
+X-Spam-Report: -1.3 points, 8.0 required;
+	-1.4 ALL_TRUSTED            Passed through trusted hosts only via SMTP
+	 0.1 TW_LN                  BODY: Odd Letter Triples with LN
+	 0.1 AWL                    AWL: From: address is in the auto white-list
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 4/30/08, Greg Kroah-Hartman <gregkh@suse.de> wrote:
-> From: Kay Sievers <kay.sievers@vrfy.org>
->
->  This prevents a few unneeded copies.
+Arnd Bergmann wrote:
+> On Monday 28 April 2008, Arnd Bergmann wrote:
+> 
+>>How about this strategy then:
+>>* Change all the data types and syscall numbers in the -for-2.6.27
+>>branch to only include the minimal set, and a modern ABI
+>>* Add the old interfaces as an out-of-tree patch that adds source
+>>level compatibility with the old libc, but does not modify any
+>>of the new interfaces, so that a patched kernel can run all binaries
+>>built for the upstream version.
+>>* phase out the old source interface gradually, as all users update
+>>their libc source code.
+> 
+> 
+> Any news on this from the microblaze people? Have you made up your mind
+> on what route you want to go?
 
-That's a horrible title for what this obviously correct patch does, but I
-suppose it's way too late now.
+I think we're still digesting it.  I need to sync up with Michal and the 
+Xilinx people.  The libc and kernel API changes have to happen in 
+tandem, otherwise Michal can't properly test the kernel he's pushing.
 
-s/just pass them around/just use them/
+I am the defacto MicroBlaze uClibc and toolchain "builder" but somewhat 
+reluctantly - am trying to convince Xilnx to hand that over to someone 
+who is expert at it.
 
--sb
+Michal, John L, any thoughts?
+
+John
+
+
