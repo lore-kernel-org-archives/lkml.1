@@ -1,52 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937318AbYEBXN1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937383AbYEBXNz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937318AbYEBXN1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 19:13:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932513AbYEBXNQ
+	id S937383AbYEBXNz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 19:13:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932513AbYEBXNq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 19:13:16 -0400
-Received: from mail0.lsil.com ([147.145.40.20]:55683 "EHLO mail0.lsil.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932393AbYEBXNP convert rfc822-to-8bit (ORCPT
+	Fri, 2 May 2008 19:13:46 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:43444 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S935042AbYEBXNq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 19:13:15 -0400
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Fri, 2 May 2008 19:13:46 -0400
+Message-ID: <481BA025.8020804@firstfloor.org>
+Date: Sat, 03 May 2008 01:13:41 +0200
+From: Andi Kleen <andi@firstfloor.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: HELP: Is writeq an atomic operation??
-Date: Fri, 2 May 2008 17:13:08 -0600
-Message-ID: <0631C836DBF79F42B5A60C8C8D4E822901047B4A@NAMAIL2.ad.lsil.com>
-In-Reply-To: <adawsmc2u8n.fsf@cisco.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: HELP: Is writeq an atomic operation??
-thread-index: Acisp1whQrUdKCwCRPO+NeJUGNvO2wAAVyQQ
-From: "Moore, Eric" <Eric.Moore@lsi.com>
-To: "Roland Dreier" <rdreier@cisco.com>
-Cc: "David Miller" <davem@davemloft.net>, <linux-scsi@vger.kernel.org>,
-       <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 02 May 2008 23:13:08.0798 (UTC) FILETIME=[15AA9DE0:01C8ACAA]
+To: "Moore, Eric" <Eric.Moore@lsi.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: HELP:  Is writeq an atomic operation??
+References: <0631C836DBF79F42B5A60C8C8D4E822901047B42@NAMAIL2.ad.lsil.com>
+In-Reply-To: <0631C836DBF79F42B5A60C8C8D4E822901047B42@NAMAIL2.ad.lsil.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, May 02, 2008 4:53 PM, Roland Dreier wrote: 
+Moore, Eric wrote:
+> On Friday, May 02, 2008 4:50 PM, Andi Kleen wrote: 
+>>> Here is a trace from pci express analyzer.   I'm sending
+>> With what CPU/chipset was that?
+>>
 > 
->  > > Are there any 32-bit platforms with writeq()?  A quick grep 
->  > > suggests not.
->  > 
->  > I think writeq defined in include/asm-x86/io_64.h
-> 
-> Umm... io_64.h is 64-bit only (look at asm-x86/io.h if you 
-> don't believe me ;)
-> 
+> I'm developing sas driver for next generation controllers.  They should
+> work at least on x86, x86_64, ia64, and ppc64.  The host I was using for
+> gathering that trace was  x86_64 Intel Platform.  Here is the lspci
+> output:
 
-Yeah,  I forgot I have a #ifndef writeq, then defined the x86_64 version
-of that.   I've not tested on x86, so I'm not sure whether it works.
-How are you handling writeq when its not defined, as the case in x86?
+I doubt the CPU was to blame. Probably the chipset split it up for some
+reason. Did you check the data sheets?
 
-Eric
+At the CPU level writeq is simply a 64bit store on x86-64 Linux.
 
+-Andi
