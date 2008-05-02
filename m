@@ -1,61 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934703AbYEBMR3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934768AbYEBMS0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934703AbYEBMR3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 08:17:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764173AbYEBMRU
+	id S934768AbYEBMS0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 08:18:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763509AbYEBMSS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 08:17:20 -0400
-Received: from s15216962.onlinehome-server.info ([217.160.22.205]:48009 "EHLO
-	s15216962.onlinehome-server.info" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756636AbYEBMRU (ORCPT
+	Fri, 2 May 2008 08:18:18 -0400
+Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:39154 "EHLO
+	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755794AbYEBMSS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 08:17:20 -0400
-Date: Fri, 2 May 2008 14:16:42 +0200
-From: Enrico Weigelt <weigelt@metux.de>
-To: linux kernel list <linux-kernel@vger.kernel.org>
-Subject: API for changing UIDs of other processes
-Message-ID: <20080502121641.GB7997@nibiru.local>
-Reply-To: weigelt@metux.de
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.1i
-X-Terror: bin laden, kill bush, Briefbombe, Massenvernichtung, KZ, 
-X-Nazi: Weisse Rasse, Hitlers Wiederauferstehung, 42, 
-X-Antichrist: weg mit schaeuble, ausrotten, heiliger krieg, al quaida, 
-X-Killer: 23, endloesung, Weltuntergang, 
-X-Doof: wer das liest ist doof
+	Fri, 2 May 2008 08:18:18 -0400
+Message-ID: <481B0646.7090107@s5r6.in-berlin.de>
+Date: Fri, 02 May 2008 14:17:10 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.13) Gecko/20080313 SeaMonkey/1.1.9
+MIME-Version: 1.0
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Willy Tarreau <w@1wt.eu>,
+       David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
+       Jiri Slaby <jirislaby@gmail.com>
+Subject: Re: Slow DOWN, please!!!
+References: <20080429.190352.137408408.davem@davemloft.net> <200805011909.40203.rjw@sisk.pl> <alpine.LFD.1.10.0805011022370.5994@woody.linux-foundation.org> <200805012359.41544.rjw@sisk.pl>
+In-Reply-To: <200805012359.41544.rjw@sisk.pl>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Rafael J. Wysocki wrote:
+> A general rule that the trees people want you to pull during a merge window
+> should be tested in linux-next before, with no additional last minute changes,
+> may help.
+> 
+> For this to work, though, the people will have to know in advance when the
+> merge window will start.  Which may be helpful anyway.
 
-Hi folks,
+If I only release into my tree's for-next branch what I would release
+into my tree's for-linus if I was to send a merge request to Linus right
+in this moment, then I won't need advance notice of a merge window.
 
+IOW, treat -next everyday as if the merge window was open right now.
 
-I'd like to build some authentication daemon which alters the
-privileges of another process (like factotum does on plan9).
-But I couldn't find any interface for that (setuid() and friends
-only operate on the current process). So I'm now going to create
-my own interface.
-
-As a little learning example I just added a few files to the
-per-pid dirs: uid, euid, suid, fsuid. This was trivial :)
-
-Now I'd like to add an write capability to these files: 
-simply writing another number changes the (|s|fs)uid.
-
-But this doesnt seem that trivial. Perhaps someone could give
-me some advice ?
-
-
-cu
+I'm sure it is not that easy for the larger subsystems or the
+infrastructure trees.  However, Linus' late -rc announcements are plenty
+of advance notice, at least for a merge period as long as two weeks.
 -- 
----------------------------------------------------------------------
- Enrico Weigelt    ==   metux IT service - http://www.metux.de/
----------------------------------------------------------------------
- Please visit the OpenSource QM Taskforce:
- 	http://wiki.metux.de/public/OpenSource_QM_Taskforce
- Patches / Fixes for a lot dozens of packages in dozens of versions:
-	http://patches.metux.de/
----------------------------------------------------------------------
+Stefan Richter
+-=====-==--- -=-= ---=-
+http://arcgraph.de/sr/
