@@ -1,26 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764735AbYEBDx5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763947AbYEBDy2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764735AbYEBDx5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 May 2008 23:53:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757420AbYEBDwx
+	id S1763947AbYEBDy2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 May 2008 23:54:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757349AbYEBDwx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Thu, 1 May 2008 23:52:53 -0400
-Received: from wa-out-1112.google.com ([209.85.146.183]:48822 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756750AbYEBDwl (ORCPT
+Received: from wx-out-0506.google.com ([66.249.82.228]:62619 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756477AbYEBDwi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 May 2008 23:52:41 -0400
+	Thu, 1 May 2008 23:52:38 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=S30Bjc9r+SOpGBPfoZBK8UlWO8CUL12eBXnjxRPYPZx5wUMUDLHMnE+tuH1XbQ9f46yWWETyYptIHsLkL1V10bOPxT0TjX3E7MIo6YUCLBZi/2oZgUw+ya8eiVvX7nxsLqUAEXoFqU7m0r1sQsPT+t3Om9TkKMHPRLaX7FLk6iM=
-Subject: [PATCH 6/8] xfs: use get_unaligned_* helpers
+        b=lZZ4sl314ZBllMSWWmhA8DH46yHOEw7kR9h/6PRpIwjYmooOu4UQzwul5o4HtWikE+119L3huatFwEBcx+IG3ZOodVAMN7TbVUtVSoixpTiDIgMd9APiAObC0bHz9u77rl4I+qr4ts/M5sqVr/DV0zOC2ebSTfiEIvMkxxAQSpE=
+Subject: [PATCH 3/8] media: use get_unaligned_* helpers
 From: Harvey Harrison <harvey.harrison@gmail.com>
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: David Chinner <dgc@sgi.com>, LKML <linux-kernel@vger.kernel.org>
+Cc: Mauro Carvalho Chehab <mchehab@infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>
 Content-Type: text/plain
-Date: Thu, 01 May 2008 20:52:57 -0700
-Message-Id: <1209700377.22362.21.camel@brick>
+Date: Thu, 01 May 2008 20:52:56 -0700
+Message-Id: <1209700376.22362.18.camel@brick>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
@@ -30,24 +31,47 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
 ---
- fs/xfs/xfs_inode.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ drivers/media/radio/radio-si470x.c |   13 +++++--------
+ 1 files changed, 5 insertions(+), 8 deletions(-)
 
-diff --git a/fs/xfs/xfs_inode.c b/fs/xfs/xfs_inode.c
-index cf0bb9c..c6327c4 100644
---- a/fs/xfs/xfs_inode.c
-+++ b/fs/xfs/xfs_inode.c
-@@ -580,8 +580,8 @@ xfs_iformat_extents(
- 		xfs_validate_extents(ifp, nex, XFS_EXTFMT_INODE(ip));
- 		for (i = 0; i < nex; i++, dp++) {
- 			xfs_bmbt_rec_host_t *ep = xfs_iext_get_ext(ifp, i);
--			ep->l0 = be64_to_cpu(get_unaligned(&dp->l0));
--			ep->l1 = be64_to_cpu(get_unaligned(&dp->l1));
-+			ep->l0 = get_unaligned_be64(&dp->l0);
-+			ep->l1 = get_unaligned_be64(&dp->l1);
- 		}
- 		XFS_BMAP_TRACE_EXLIST(ip, nex, whichfork);
- 		if (whichfork != XFS_DATA_FORK ||
+diff --git a/drivers/media/radio/radio-si470x.c b/drivers/media/radio/radio-si470x.c
+index 77354ca..637e39f 100644
+--- a/drivers/media/radio/radio-si470x.c
++++ b/drivers/media/radio/radio-si470x.c
+@@ -521,8 +521,7 @@ static int si470x_get_register(struct si470x_device *radio, int regnr)
+ 	retval = si470x_get_report(radio, (void *) &buf, sizeof(buf));
+ 
+ 	if (retval >= 0)
+-		radio->registers[regnr] = be16_to_cpu(get_unaligned(
+-			(unsigned short *) &buf[1]));
++		radio->registers[regnr] = get_unaligned_be16(&buf[1]);
+ 
+ 	return (retval < 0) ? -EINVAL : 0;
+ }
+@@ -561,9 +560,8 @@ static int si470x_get_all_registers(struct si470x_device *radio)
+ 
+ 	if (retval >= 0)
+ 		for (regnr = 0; regnr < RADIO_REGISTER_NUM; regnr++)
+-			radio->registers[regnr] = be16_to_cpu(get_unaligned(
+-				(unsigned short *)
+-				&buf[regnr * RADIO_REGISTER_SIZE + 1]));
++			radio->registers[regnr] = get_unaligned_be16(
++				&buf[regnr * RADIO_REGISTER_SIZE + 1]);
+ 
+ 	return (retval < 0) ? -EINVAL : 0;
+ }
+@@ -593,9 +591,8 @@ static int si470x_get_rds_registers(struct si470x_device *radio)
+ 
+ 	if (retval >= 0)
+ 		for (regnr = 0; regnr < RDS_REGISTER_NUM; regnr++)
+-			radio->registers[STATUSRSSI + regnr] =
+-				be16_to_cpu(get_unaligned((unsigned short *)
+-				&buf[regnr * RADIO_REGISTER_SIZE + 1]));
++			radio->registers[STATUSRSSI + regnr] = get_unaligned_be16(
++				&buf[regnr * RADIO_REGISTER_SIZE + 1]);
+ 
+ 	return (retval < 0) ? -EINVAL : 0;
+ }
 -- 
 1.5.5.1.350.gbbbf
 
