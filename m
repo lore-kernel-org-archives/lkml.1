@@ -1,83 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935219AbYEBN4v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935307AbYEBN5U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935219AbYEBN4v (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 09:56:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934567AbYEBN4h
+	id S935307AbYEBN5U (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 09:57:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935204AbYEBN4t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 09:56:37 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:60658 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934255AbYEBN4g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 09:56:36 -0400
-Date: Fri, 2 May 2008 15:57:08 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Alistair John Strachan <alistair@devzero.co.uk>
-Cc: Chris Knadle <Chris.Knadle@coredump.us>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Adrian Bunk <bunk@kernel.org>, venkatesh.pallipadi@intel.com,
-       davem@davemloft.net, trini@kernel.crashing.org, mingo@elte.hu,
-       tglx@linutronix.de, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       suresh.b.siddha@intel.com,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: huge gcc 4.1.{0,1} __weak problem
-Message-ID: <20080502135708.GA22929@uranus.ravnborg.org>
-References: <20080501235558.GA20637@orac.ofobscurity.com> <200805021055.10602.alistair@devzero.co.uk> <20080502104348.GC20741@uranus.ravnborg.org> <200805021248.56797.alistair@devzero.co.uk>
+	Fri, 2 May 2008 09:56:49 -0400
+Received: from ausxipps301.us.dell.com ([143.166.148.223]:61463 "EHLO
+	ausxipps301.us.dell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S935190AbYEBN4s (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 May 2008 09:56:48 -0400
+DomainKey-Signature: s=smtpout; d=dell.com; c=nofws; q=dns;
+  h=X-IronPort-AV:Date:From:To:Cc:Subject:Message-ID:
+   References:Mime-Version:Content-Type:Content-Disposition:
+   In-Reply-To:User-Agent;
+  b=HBsEs5/ZTC6wBIVSxXU/lbLeDZDGBhbqN+6aMNEWup8IfOMzY0KtX7un
+   Xc1pMZW7HQkwRtzUDT0F3KSgZiM9VZShZJnxNahnCId0gJddDs/tU76Jo
+   7xZuJM5cLpUSjbW;
+X-IronPort-AV: E=Sophos;i="4.27,426,1204524000"; 
+   d="scan'208";a="34938171"
+Date: Fri, 2 May 2008 08:56:30 -0500
+From: Matt Domsch <Matt_Domsch@dell.com>
+To: Yinghai Lu <yhlu.kernel@gmail.com>, Ingo Molnar <mingo@elte.hu>
+Cc: akpm@linux-foundation.org, jgarzik@pobox.com, muli@il.ibm.com,
+       davej@redhat.com, tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com,
+       bunk@kernel.org, linux-bugs@dell.com, linux-kernel@vger.kernel.org,
+       greg@kroah.com, Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Michal Schmidt <mschmidt@redhat.com>, andy@greyhouse.net,
+       john.cagle@hp.com
+Subject: Re: [PATCH] fix x86 DMI checks for PCI quirks
+Message-ID: <20080502135630.GB15645@auslistsprd01.us.dell.com>
+References: <20080502025427.GA23757@auslistsprd01.us.dell.com> <20080502074432.GA1372@elte.hu> <86802c440805020219t73a8ae52ue7b15cfa36ac64de@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200805021248.56797.alistair@devzero.co.uk>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <86802c440805020219t73a8ae52ue7b15cfa36ac64de@mail.gmail.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 02, 2008 at 12:48:55PM +0100, Alistair John Strachan wrote:
-> On Friday 02 May 2008 11:43:48 Sam Ravnborg wrote:
-> [snip]
-> > > > > It's __GNUC_PATCHLEVEL__, I believe.
-> > > > >
-> > > > > So yes, we can distinguish 4.1.2 (good, and very common) from
-> > > > > 4.1.{0,1} (bad, and rather uncommon).
-> > > > > And yes, considering that 4.1.1 (and even more so 4.1.0) should be
-> > > > > rare to begin with, I think it's better to just not support it.
-> > > > >
-> > > > >			Linus
-> > > >
-> > > >    Unfortunately Debian Stable (i.e. Etch), which is relatively popular
-> > > > for server use, is still using 4.1.1  :-(  (The current gcc package is
-> > > > gcc-4.1.1-21)
-> > > >
-> > > >    I have not looked to see if Debian Stable's gcc-4.1.1-21 has been
-> > > > patched for the currently discussed __weak bug.
-> > >
-> > > I checked and it has been patched in 4.1.1-21. This would make checking
-> > > for 4.1.1 via __GNUC_PATCHLEVEL__ potentially invalid, as patched distro
-> > > compilers may (and in this case do) have this fixed.
+On Fri, May 02, 2008 at 02:19:34AM -0700, Yinghai Lu wrote:
+> On Fri, May 2, 2008 at 12:44 AM, Ingo Molnar <mingo@elte.hu> wrote:
+> >  * Matt Domsch <Matt_Domsch@dell.com> wrote:
 > >
-> > Is it possible to cook up a small sample file we could build as part
-> > of the kernel build. If it fails => error out.
-> > If someone comes up with the code I shall try to integrate it
-> > in the build system.
+> >  > fix x86 DMI checks for PCI quirks
+> >  >
+> >  > http://bugzilla.kernel.org/show_bug.cgi?id=10583
+> >  > https://bugzilla.redhat.com/show_bug.cgi?id=444791
+> >  >
+> >  > Since git commit 08f1c192c3c32797068bfe97738babb3295bbf42 (between
+> >  > kernels 2.6.22 and 2.6.23), arch/x86/pci/acpi.c has not called
+> >  > pcibios_scan_root(), which would have called
+> >  > arch/x86/pci/common.c:dmi_check_system().  This has prevented the
+> >  > quirks listed in pciprobe_dmi_table[] from being checked and
+> >  > appropriate action taken.
+> >
+> >  ugh ...
+> >
+> >
+> >  > This manifests itself in several Dell and HP servers not automatically
+> >  > having the pci=bfsort option be applied, as well as Samsung X20 and
+> >  > Compaq EVO N800c systems needing pci=assign-all-busses was no longer
+> >  > automatically applied.
+> >
+> >  Jesse Barnes (new PCI maintainer) Cc:-ed.
 > 
-> The GCC PR has a test case for this regression which might be usable.
+> please check the patch in x86.git, it should do the same thing, but
+> put the call in pci_access_init...
 > 
-> http://gcc.gnu.org/viewcvs/branches/gcc-4_1-branch/gcc/testsuite/gcc.dg/tree-ssa/pr27781.c?view=markup&pathrev=114852
+> commit 9817aa147000086bc11b571620ecc1c73a4a614b
+> Author: Yinghai Lu <yhlu.kernel@gmail.com>
+> Date:   Mon Apr 14 15:40:37 2008 -0700
 
-OK, can anyone confirm that this fails to build which a
-buggy gcc:
+Indeed it does (boot tested on one of the affected systems), and is a
+simpler patch.  I'd be quite happy with this.  Bonus that it's already
+in the x86.git tree. :-)
 
+Ingo, is this ready to go to Linus?
 
-void __attribute__((weak)) func(void)
-{
-    /* no code */
-}
+Now to get it backported to -stable...
 
-int main()
-{
-    func();
-    return 0;
-}
+Adding the folks from HP who have lots of systems listed.
 
+Thanks,
+Matt
 
-
-	Sam
+-- 
+Matt Domsch
+Linux Technology Strategist, Dell Office of the CTO
+linux.dell.com & www.dell.com/linux
