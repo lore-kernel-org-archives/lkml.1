@@ -1,40 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763763AbYEBH5c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760897AbYEBIJk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763763AbYEBH5c (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 03:57:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756581AbYEBH5Z
+	id S1760897AbYEBIJk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 04:09:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752460AbYEBIJ1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 03:57:25 -0400
-Received: from fg-out-1718.google.com ([72.14.220.156]:31920 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754016AbYEBH5Y (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 03:57:24 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=pI8EKXAqSFd35mulFSE8r24JONmTHDh99JIzXL9hN/aIxiartIhBs8V688Z8164VF1VjC9X/nPXbb5fi2OsPDMoL2SjS07i8acp5eaWUdAzkFNcljkrgy7tpdA1xOihmB3d5aqQBEqkoGXiWy3IwTD3kyQU98PVkpXlbFgTkGr8=
-Message-ID: <481AC957.5000908@gmail.com>
-Date: Fri, 02 May 2008 09:57:11 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: mingo@redhat.com, linux-kernel@vger.kernel.org,
-       Andi Kleen <andi@firstfloor.org>, tglx@linutronix.de, hpa@zytor.com
-Subject: Re: [PATCH 1/2] x86_64: fix mm.txt documentation
-References: <1209635899-23018-1-git-send-email-jirislaby@gmail.com> <20080502072226.GB713@elte.hu>
-In-Reply-To: <20080502072226.GB713@elte.hu>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 2 May 2008 04:09:27 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:34846 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751836AbYEBIJZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 May 2008 04:09:25 -0400
+Subject: Re: Sharing disks amoung multiple software RAIDs
+From: Kasper Sandberg <lkml@metanurb.dk>
+To: David Rees <drees76@gmail.com>
+Cc: David Lethe <david@santools.com>, alex14641@yahoo.com,
+       Justin Piszcz <jpiszcz@lucidpixels.com>, linux-raid@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <72dbd3150805020006p7f976a04o487389840f03b4a2@mail.gmail.com>
+References: <1209692359.16523.2.camel@localhost>
+	 <73000.21239.qm@web50212.mail.re2.yahoo.com>
+	 <A20315AE59B5C34585629E258D76A97C335477@34093-C3-EVS3.exchange.rackspace.com>
+	 <1209696179.16523.13.camel@localhost>
+	 <72dbd3150805020006p7f976a04o487389840f03b4a2@mail.gmail.com>
+Content-Type: text/plain
+Date: Fri, 02 May 2008 10:09:23 +0200
+Message-Id: <1209715763.7827.2.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.4.0 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 05/02/2008 09:22 AM, Ingo Molnar wrote:
-> Mind doing a 
-> patch that reinstates it, by lowering the 512 image size limit to 508 
-> MB?
+On Fri, 2008-05-02 at 00:06 -0700, David Rees wrote:
+> On Thu, May 1, 2008 at 7:42 PM, Kasper Sandberg <lkml@metanurb.dk> wrote:
+> >  in other words, would i be
+> >  safer to run rsync every day to my other disk, and run in non-raid
+> >  mode?!
+> 
+> What would be safer is to run rsync every day from one redundant array
+> to another array - preferably on another machine that is located as
+> far away as possible from the one that you are backing up.
+> 
+> RAID is not the same as a backup, though unfortunately, too many
+> people treat it as such.
+Im not treating it as a backup, what i want, is to make sure that if 1
+disk dies, the data is still intact and ill hopefully be able to run
+with 1 disk till the newly ordered one arrives - and while i naturally
+will keep offsite backups of most important data, it is certainly far
+easier to simply rip out a faulty disk, and put in another, instead of
+restoring from backup from scratch..
 
-Yup, I will.
+So my question remains.. Is md raid1 not suited for this need? would it
+be safer to run in non-raid1 mode and daily(maybe hourly) rsync
+everything over to the second disk?
+
+> 
+> -Dave
+
