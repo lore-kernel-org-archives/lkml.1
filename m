@@ -1,80 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934482AbYEBM4F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935073AbYEBM5A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934482AbYEBM4F (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 08:56:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760331AbYEBMzw
+	id S935073AbYEBM5A (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 08:57:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764363AbYEBM4u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 08:55:52 -0400
-Received: from ug-out-1314.google.com ([66.249.92.170]:5670 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760048AbYEBMzv convert rfc822-to-8bit (ORCPT
+	Fri, 2 May 2008 08:56:50 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:50093 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1761650AbYEBM4q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 08:55:51 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:to:cc:subject:message-id:in-reply-to:references:organization:x-mailer:mime-version:content-type:content-transfer-encoding:from;
-        b=HJpkfednRBGwptnlXvB/vGQsJvgeuS5B7Y4eyYXO8JE+nUa87qwX8WYTx0XEv00H2KDz4ho7qfyfK+7BV8mLR1Q9T4J9F2UAUz5fvJTHLI7+vEn8jlGynOHJy3TWEPAfpI1K3skqGnKoTvQXIsegqArL4wuVLrOkGjvSsmW3ec4=
-Date: Fri, 2 May 2008 13:58:12 +0200
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       Paul Gortmaker <paul.gortmaker@windriver.com>,
-       linux-embedded@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Tim Bird <tim.bird@am.sony.com>
-Subject: Re: [PATCH 0/1] Embedded Maintainer(s), linux-embedded@vger list
-Message-Id: <20080502135812.b9544959.Kristoffer.Ericson@Gmail.com>
-In-Reply-To: <1209577322.25560.402.camel@pmac.infradead.org>
-References: <1209577322.25560.402.camel@pmac.infradead.org>
-Organization: JLime
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-From: Kristoffer Ericson <kristoffer.ericson@gmail.com>
+	Fri, 2 May 2008 08:56:46 -0400
+Date: Fri, 2 May 2008 07:56:44 -0500
+From: Dimitri Sivanich <sivanich@sgi.com>
+To: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+Cc: Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: [PATCH] Fix softlockup_thresh unaligned access and disable detection at runtime
+Message-ID: <20080502125644.GA31059@sgi.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 30 Apr 2008 18:42:02 +0100
-David Woodhouse <dwmw2@infradead.org> wrote:
+Fix unaligned access errors when setting softlockup_thresh on
+64 bit platforms.
 
-> Andrew Morton has been saying recently that we need an 'embedded
-> maintainer', to take responsibility for 'embedded issues' in the core
-> kernel, as well as trying to improve our relationship with those using
-> the Linux kernel for 'embedded' devices -- who have a reputation of
-> not working with us very closely; to their detriment as well as our
-> own.
+Allow softlockup detection to be disabled by setting
+softlockup_thresh <= 0.
 
-Sounds like a good idea. I doubt it will change much concerning development
-but it would be good to have some "representation" for embedded stuff.
+Detect that boot time softlockup detection has been disabled
+earlier in softlockup_tick.
 
-> 
-> Various people, including myself, have been doing that kind of thing
-> on and off over the years anyway, but Andrew is probably right that
-> it's worth having someone listed in the MAINTAINERS file who actually
-> considers it their responsibility, and as a point of contact for
-> people seeking advice, review, etc.
-> 
-
-Agreed.
-
-> I've volunteered to take a more active rôle in this, and Wind River
-> has agreed to assign Paul Gortmaker to it, too.  The following patch
-> adds both of us to the MAINTAINERS file.
-> 
-> We have also set up a mailing list, linux-embedded@vger.kernel.org,
-> where development related to embedded stuff can happen in a slightly
-> less noisy environment than the main linux-kernel list. We'd like to
-> encourage anyone working on Linux in embedded devices to join the list.
-> 
-> -- 
-> dwmw2
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+Signed-off-by: Dimitri Sivanich <sivanich@sgi.com>
 
 
+---
+ include/linux/sched.h |    2 +-
+ kernel/softlockup.c   |   12 ++++++++++--
+ kernel/sysctl.c       |    9 +++++----
+ 3 files changed, 16 insertions(+), 7 deletions(-)
+
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index 03c2380..d61e9b7 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -292,10 +292,10 @@ extern void softlockup_tick(void);
+ extern void spawn_softlockup_task(void);
+ extern void touch_softlockup_watchdog(void);
+ extern void touch_all_softlockup_watchdogs(void);
+-extern unsigned long  softlockup_thresh;
+ extern unsigned long sysctl_hung_task_check_count;
+ extern unsigned long sysctl_hung_task_timeout_secs;
+ extern unsigned long sysctl_hung_task_warnings;
++extern int softlockup_thresh;
+ #else
+ static inline void softlockup_tick(void)
+ {
+diff --git a/kernel/softlockup.c b/kernel/softlockup.c
+index 01b6522..ef60e7c 100644
+--- a/kernel/softlockup.c
++++ b/kernel/softlockup.c
+@@ -25,7 +25,7 @@ static DEFINE_PER_CPU(unsigned long, print_timestamp);
+ static DEFINE_PER_CPU(struct task_struct *, watchdog_task);
+ 
+ static int __read_mostly did_panic;
+-unsigned long __read_mostly softlockup_thresh = 60;
++int __read_mostly softlockup_thresh = 60;
+ 
+ static int
+ softlock_panic(struct notifier_block *this, unsigned long event, void *ptr)
+@@ -79,6 +79,14 @@ void softlockup_tick(void)
+ 	struct pt_regs *regs = get_irq_regs();
+ 	unsigned long now;
+ 
++	/* Is detection switched off? */
++	if (!per_cpu(watchdog_task, this_cpu) || softlockup_thresh <= 0) {
++		/* Be sure we don't false trigger if switched back on */
++		if (touch_timestamp)
++			per_cpu(touch_timestamp, this_cpu) = 0;
++		return;
++	}
++
+ 	if (touch_timestamp == 0) {
+ 		touch_softlockup_watchdog();
+ 		return;
+@@ -89,7 +97,7 @@ void softlockup_tick(void)
+ 	/* report at most once a second */
+ 	if ((print_timestamp >= touch_timestamp &&
+ 			print_timestamp < (touch_timestamp + 1)) ||
+-			did_panic || !per_cpu(watchdog_task, this_cpu)) {
++			did_panic) {
+ 		return;
+ 	}
+ 
+diff --git a/kernel/sysctl.c b/kernel/sysctl.c
+index d7ffdc5..d68c77a 100644
+--- a/kernel/sysctl.c
++++ b/kernel/sysctl.c
+@@ -83,12 +83,13 @@ extern int sysctl_stat_interval;
+ extern int latencytop_enabled;
+ 
+ /* Constants used for minimum and  maximum */
+-#if defined(CONFIG_DETECT_SOFTLOCKUP) || defined(CONFIG_HIGHMEM)
++#ifdef CONFIG_HIGHMEM
+ static int one = 1;
+ #endif
+ 
+ #ifdef CONFIG_DETECT_SOFTLOCKUP
+ static int sixty = 60;
++static int neg_one = -1;
+ #endif
+ 
+ #ifdef CONFIG_MMU
+@@ -730,11 +731,11 @@ static struct ctl_table kern_table[] = {
+ 		.ctl_name	= CTL_UNNUMBERED,
+ 		.procname	= "softlockup_thresh",
+ 		.data		= &softlockup_thresh,
+-		.maxlen		= sizeof(unsigned long),
++		.maxlen		= sizeof(int),
+ 		.mode		= 0644,
+-		.proc_handler	= &proc_doulongvec_minmax,
++		.proc_handler	= &proc_dointvec_minmax,
+ 		.strategy	= &sysctl_intvec,
+-		.extra1		= &one,
++		.extra1		= &neg_one,
+ 		.extra2		= &sixty,
+ 	},
+ 	{
 -- 
-Kristoffer Ericson <Kristoffer.Ericson@Gmail.com>
+1.5.4.rc3
+
