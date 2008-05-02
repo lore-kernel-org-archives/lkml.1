@@ -1,79 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933845AbYEBLyn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934368AbYEBL4p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933845AbYEBLyn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 07:54:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757684AbYEBLyg
+	id S934368AbYEBL4p (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 07:56:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759985AbYEBL4i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 07:54:36 -0400
-Received: from ozlabs.org ([203.10.76.45]:45880 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756243AbYEBLyf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 07:54:35 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [PULL] virtio & lguest changes for 2.6.26
-Date: Fri, 2 May 2008 21:54:17 +1000
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, Ryan Harper <ryanh@us.ibm.com>,
-       Christian Borntraeger <borntraeger@de.ibm.com>,
-       Harvey Harrison <harvey.harrison@gmail.com>,
-       Marcelo Tosatti <marcelo@kvack.org>,
-       virtualization@lists.linux-foundation.org, lguest <lguest@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+	Fri, 2 May 2008 07:56:38 -0400
+Received: from ausxipps301.us.dell.com ([143.166.148.223]:14761 "EHLO
+	ausxipps301.us.dell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757724AbYEBL4h (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 May 2008 07:56:37 -0400
+DomainKey-Signature: s=smtpout; d=dell.com; c=nofws; q=dns;
+  h=X-IronPort-AV:Date:From:To:Cc:Subject:Message-ID:
+   References:Mime-Version:Content-Type:Content-Disposition:
+   In-Reply-To:User-Agent;
+  b=jH47B70FDin4U8jfs63R5jesKcDhX00+eroddahKxPTzZVFt8QdRO+9w
+   DcGzTguYMrH4eZuc6Omnx/Z5i/T7s/vOiv5T/ZZDI6NC4RdTXiJCLLEi8
+   MMEKhi4eAXjwaGB;
+X-IronPort-AV: E=Sophos;i="4.27,426,1204524000"; 
+   d="scan'208";a="34890643"
+Date: Fri, 2 May 2008 06:56:11 -0500
+From: Matt Domsch <Matt_Domsch@dell.com>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: akpm@linux-foundation.org, jgarzik@pobox.com, muli@il.ibm.com,
+       davej@redhat.com, tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com,
+       bunk@kernel.org, linux-bugs@dell.com, linux-kernel@vger.kernel.org,
+       greg@kroah.com
+Subject: Re: [PATCH] fix x86 DMI checks for PCI quirks
+Message-ID: <20080502115611.GA15645@auslistsprd01.us.dell.com>
+References: <20080502025427.GA23757@auslistsprd01.us.dell.com> <20080501042313.4ce14c0d@infradead.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200805022154.18177.rusty@rustcorp.com.au>
+In-Reply-To: <20080501042313.4ce14c0d@infradead.org>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The following changes since commit 886c35fbcf6fb2eee15687efc2d64d99b6ad9a4a:
-  Linus Torvalds (1):
-        Merge branch 'for-linus' of git://git.kernel.org/.../ieee1394/linux1394-2.6
+On Thu, May 01, 2008 at 04:23:13AM -0700, Arjan van de Ven wrote:
+> On Thu, 1 May 2008 21:54:27 -0500
+> Matt Domsch <Matt_Domsch@dell.com> wrote:
+> > 
+> > This patch moves the DMI tests into its own file, arch/x86/pci/dmi.c,
+> > and invokes them via subsys_initcall() before pci_acpi_init(),
+> > pci_legacy_init(), and pcibios_init() are called, which may rely upon
+> > these tests having been executed.
+> 
+> 
+> Hi,
+> 
+> can we name this file something with "quirks" in it (dmi_quirks.c or
+> so)? At least I tend to look for files named like that when searching
+> for places that do specific hardware/machine based workarounds... 
 
-are available in the git repository at:
+sure, the file name matters not much to me in this regard, and I can
+see your point.
 
-  ssh://master.kernel.org/pub/scm/linux/kernel/git/rusty/linux-2.6-for-linus.git master
-
-Christian Borntraeger (1):
-      virtio: export more headers to userspace
-
-Harvey Harrison (1):
-      virtio: fix sparse return void-valued expression warnings
-
-Marcelo Tosatti (1):
-      virtio-blk: fix remove oops
-
-Rusty Russell (11):
-      virtio: ignore corrupted virtqueues rather than spinning.
-      virtio: fix tx_ stats in virtio_net
-      virtio: de-structify virtio_block status byte
-      virtio: fix scatterlist sizing in net driver.
-      virtio: wean net driver off NETDEV_TX_BUSY
-      virtio: finer-grained features for virtio_net
-      virtio: change config to guest endian.
-      virtio: explicit advertisement of driver features
-      lguest: avoid using NR_CPUS as a bounds check.
-      lguest: remove bogus NULL cpu check
-      lguest: make Launcher see device status updates
-
-Ryan Harper (1):
-      virtio: add virtio disk geometry feature
-
- Documentation/lguest/lguest.c   |   62 +++++++++++++++++---------
- drivers/block/virtio_blk.c      |   44 +++++++++++++-----
- drivers/lguest/lguest_device.c  |   68 +++++++++++++++++-----------
- drivers/lguest/lguest_user.c    |    4 +-
- drivers/net/virtio_net.c        |   96 +++++++++++++++++++++++++++-----------
- drivers/virtio/virtio.c         |   38 +++++++++++++++-
- drivers/virtio/virtio_balloon.c |   12 +++--
- drivers/virtio/virtio_pci.c     |   34 +++++++-------
- drivers/virtio/virtio_ring.c    |    5 ++
- include/linux/Kbuild            |    5 ++
- include/linux/virtio.h          |    7 +++
- include/linux/virtio_blk.h      |   14 +++---
- include/linux/virtio_config.h   |   81 ++++++++++++++++++---------------
- include/linux/virtio_net.h      |   13 +++++-
- 14 files changed, 324 insertions(+), 159 deletions(-)
+-- 
+Matt Domsch
+Linux Technology Strategist, Dell Office of the CTO
+linux.dell.com & www.dell.com/linux
