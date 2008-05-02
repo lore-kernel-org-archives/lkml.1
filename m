@@ -1,50 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935059AbYEBONl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759724AbYEBOON@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935059AbYEBONl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 10:13:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762885AbYEBONR
+	id S1759724AbYEBOON (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 10:14:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762885AbYEBONr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 10:13:17 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:53270 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758962AbYEBONR (ORCPT
+	Fri, 2 May 2008 10:13:47 -0400
+Received: from web50210.mail.re2.yahoo.com ([206.190.38.51]:22648 "HELO
+	web50210.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S935163AbYEBONq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 10:13:17 -0400
-Date: Fri, 2 May 2008 15:04:39 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Frans Pop <elendil@planet.nl>
-Cc: akpm@osdl.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] hfsplus: Correct user visible printk
-Message-ID: <20080502150439.76beaf27@core>
-In-Reply-To: <200805021600.42610.elendil@planet.nl>
-References: <20080502142925.2e439d8a@core>
-	<200805021600.42610.elendil@planet.nl>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 2 May 2008 10:13:46 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Message-ID;
+  b=sgxfKzK0yYiUOHbFIQYpBap9rrlsxu5XyDkCsJJ+VXQxkxf8jD1GC8bBZwV925PoPOBeNXBO6jZnxrZNUGaL2N5eoGHuiTvwp5lF9+smwJIUN0YxJ8tnkBcOIGS4gZRvFGYq6gZqbOk3tm3IrOV/cnDOZGAAXIEdNp0IvYeZxxs=;
+X-YMail-OSG: 8RtBAI8VM1nsbY8Od7RE3KR7Ub94TE_apjhhIYzCd_N9ZT7__LgPSBw.aUalaJxgInJi1469BcGkbrjhe1jH6iJEz4WW4QQ6_a9TKV.LSj8ggp4mJZYKH7AgXQ--
+X-Mailer: YahooMailWebService/0.7.185
+Date: Fri, 2 May 2008 07:13:45 -0700 (PDT)
+From: Alex Davis <alex14641@yahoo.com>
+Subject: Re: Sharing disks amoung multiple software RAIDs
+To: Richard Michael <rmichael-raid@edgeofthenet.org>,
+       Kasper Sandberg <lkml@metanurb.dk>,
+       Helge Hafting <helge.hafting@aitel.hist.no>
+Cc: linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <481B1A7D.2020000@aitel.hist.no>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <271684.86609.qm@web50210.mail.re2.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> BTW, what is common spelling in the kernel British or American English?
+> > > Can you explain what you mean, exactly?
+> > As an example, you have disks /dev/sd[abc]. /dev/md0 would be made 
+> > from /dev/sda1, /dev/sdb1, and /dev/sdc1; /dev/md1 would be made
+> > from /dev/sda2, /dev/sdb2, and /dev/sdc2.
 
-It varies. The fs journal code uses both at random sometimes mixed in the
-same paragraph. Fortunately "to journalise" is valid in both US and UK
-English.
+> I've been watching this thread with interest, because I wanted
+> clarification on what the OP meant.
 
-> journaled:     134,000 hits ( 8.7% of above total)
+> If by "sharing disks", the OP meant the above, I'm surprised (and
+>  concerned) there's any question at all.  How is this anything other    > than the definition of "mirror"? 
+md0 and md1 are both RAID 5 arrays, not mirrors.
 
-Almost entirely caused by Linux.
 
-> I don't see this as an improvement.
 
-Actually using proper language is most definitely an improvement. Right
-now we are using incorrect made up words. Not only that we are using
-incorrect made up words when the computing professional bodies also say
-that our choice is wrong.
-
-Alan
+      ____________________________________________________________________________________
+Be a better friend, newshound, and 
+know-it-all with Yahoo! Mobile.  Try it now.  http://mobile.yahoo.com/;_ylt=Ahu06i62sR8HDtDypao8Wcj9tAcJ
