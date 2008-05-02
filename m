@@ -1,96 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934900AbYEBVxh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934213AbYEBV66@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934900AbYEBVxh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 17:53:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758135AbYEBVx2
+	id S934213AbYEBV66 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 17:58:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759386AbYEBV6t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 17:53:28 -0400
-Received: from mga09.intel.com ([134.134.136.24]:51111 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758690AbYEBVx1 convert rfc822-to-8bit (ORCPT
+	Fri, 2 May 2008 17:58:49 -0400
+Received: from lazybastard.de ([212.112.238.170]:58025 "EHLO
+	longford.logfs.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758825AbYEBV6s (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 17:53:27 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.27,428,1204531200"; 
-   d="scan'208";a="323956427"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Fri, 2 May 2008 17:58:48 -0400
+Date: Fri, 2 May 2008 23:58:33 +0200
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Woodhouse <dwmw2@infradead.org>, Arnd Bergmann <arnd@arndb.de>,
+       linux-kernel@vger.kernel.org
+Subject: Re: LogFS merge
+Message-ID: <20080502215833.GG24080@logfs.org>
+References: <20080502133234.GA24080@logfs.org> <alpine.LFD.1.10.0805021010040.5994@woody.linux-foundation.org> <20080502202151.GB24080@logfs.org> <alpine.LFD.1.10.0805021328200.5994@woody.linux-foundation.org> <20080502213146.GD24080@logfs.org> <alpine.LFD.1.10.0805021438180.5994@woody.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [git head] Should X86_PAT really default to yes?
-Date: Fri, 2 May 2008 14:55:57 -0700
-Message-ID: <924EFEDD5F540B4284297C4DC59F3DEEFB8E83@orsmsx423.amr.corp.intel.com>
-In-Reply-To: <200805021340.24987.jesse.barnes@intel.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [git head] Should X86_PAT really default to yes?
-Thread-Index: AcislMUIaeR7PhitTBeG7Sx/anVwKwACUgAg
-References: <200805022122.03576.elendil@planet.nl> <924EFEDD5F540B4284297C4DC59F3DEEFB8D3D@orsmsx423.amr.corp.intel.com> <200805021340.24987.jesse.barnes@intel.com>
-From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-To: "Barnes, Jesse" <jesse.barnes@intel.com>
-Cc: "Frans Pop" <elendil@planet.nl>, <linux-kernel@vger.kernel.org>,
-       "Ingo Molnar" <mingo@elte.hu>,
-       "Packard, Keith" <keith.packard@intel.com>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>
-X-OriginalArrivalTime: 02 May 2008 21:53:23.0454 (UTC) FILETIME=[F16111E0:01C8AC9E]
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <alpine.LFD.1.10.0805021438180.5994@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- 
+On Fri, 2 May 2008 14:39:23 -0700, Linus Torvalds wrote:
+> 
+> Quite frankly, if that's the case, I'd *much* rather see that worked on 
+> first, so that there aren't any format changes that are already known to 
+> be pending before it even gets merged.
+> 
+> Would it be at all possible to try to do that, or is it just "too far 
+> out"?
 
->-----Original Message-----
->From: Barnes, Jesse 
->Sent: Friday, May 02, 2008 1:40 PM
->To: Pallipadi, Venkatesh
->Cc: Frans Pop; linux-kernel@vger.kernel.org; Ingo Molnar; 
->Packard, Keith
->Subject: Re: [git head] Should X86_PAT really default to yes?
->
->On Friday, May 02, 2008 12:37 pm Pallipadi, Venkatesh wrote:
->> >-----Original Message-----
->> >From: Frans Pop [mailto:elendil@planet.nl]
->> >Sent: Friday, May 02, 2008 12:22 PM
->> >To: linux-kernel@vger.kernel.org
->> >Cc: Pallipadi, Venkatesh; Ingo Molnar
->> >Subject: [git head] Should X86_PAT really default to yes?
->> >
->> >With X86_PAT enabled, when X is started I get about 40 lines
->> >(with varying
->> >addresses) like:
->> >kernel: Xorg:3358 /dev/mem expected mapping type write-back for
->> >807bf000-81000000, got uncached-minus
->
->These messages?  They're coming from the kernel it looks like, 
->from the 
->map_devmem routine in pat.c.  I'm not sure they're accurate 
->though; for PCI 
->regions /dev/mem is *supposed* to map with UC- and not WB, so 
->maybe this 
->function needs to be updated?
->
+Definitely possible.  The last similar change happened in December and
+took until March until I ran out of stupid regressions from it.  Most
+likely there are still some I just haven't found yet.
 
-Indeed.
-I think these messages are due to X using the mprotect workaround to
-change UC_MINUS to WB.
-I don't see these error messages on my 965 here. May be I have different
-x version.
+The question is when to draw the line and say "This is useful as-is for
+a sufficient number of users."  I don't have a good answer to it.  I
+certainly expect more changes in the future, including format changes.
+And if we wait for them all to happen, it won't get merged this decade.
 
-What may be happening:
-1) process A mmaps /dev/mem and gets UC_MINUS
-2) Changes the page table to make pg_prot WB
-3) Does a fork to create process B
-4) While copying the vma, we go through map_devmem request WB, but get
-UC_MINUS back
-5) We are not changing vma pg_prot to new value at this point (we should
-change this), so one more round of errors will be there when forked
-process exits.
+Not sure.
 
-Again, this should not have any side-effect like the band etc. It just a
-"friendly warning". It should go away when X moves to using WC or does
-not use the mprotect workaround to make pg_prot WB.
+Jörn
 
-Thanks,
-Venki
+-- 
+The only good bug is a dead bug.
+-- Starship Troopers
