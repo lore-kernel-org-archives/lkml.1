@@ -1,59 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936766AbYEBVEa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936234AbYEBVKT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936766AbYEBVEa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 17:04:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763028AbYEBVES
+	id S936234AbYEBVKT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 17:10:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756283AbYEBVKF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 17:04:18 -0400
-Received: from smtp.dkm.cz ([62.24.64.34]:59544 "HELO slimak.dkm.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1762115AbYEBVER (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 17:04:17 -0400
-Date: Fri, 2 May 2008 22:57:35 +0200
-From: Ondrej Zajicek <santiago@crfreenet.org>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Ondrej Zajicek <santiago@crfreenet.org>, Jiri Slaby <jirislaby@gmail.com>,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, rl@hellgate.ch
-Subject: Re: [PATCH] via-rhine: suspend/resume bugfix
-Message-ID: <20080502205734.GA5988@localhost.localdomain>
-References: <20080427071351.GA20561@localhost.localdomain> <4814406B.8000907@gmail.com> <20080427095843.GA28784@localhost.localdomain> <20080503002655.GA3956@ucw.cz>
+	Fri, 2 May 2008 17:10:05 -0400
+Received: from gw.goop.org ([64.81.55.164]:50619 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754423AbYEBVKD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 May 2008 17:10:03 -0400
+Message-ID: <481B8321.1000305@goop.org>
+Date: Fri, 02 May 2008 14:09:53 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080503002655.GA3956@ucw.cz>
-X-Operating-System: Debian GNU/Linux 4.0 (Etch)
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Adrian Bunk <bunk@kernel.org>
+CC: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       David Miller <davem@davemloft.net>, trini@kernel.crashing.org,
+       mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: huge gcc 4.1.{0,1} __weak problem
+References: <20080430013108.GA18207@linux-os.sc.intel.com> <20080429.212833.192304794.davem@davemloft.net> <924EFEDD5F540B4284297C4DC59F3DEEF7D18E@orsmsx423.amr.corp.intel.com> <20080501215633.GU29330@cs181133002.pp.htv.fi>
+In-Reply-To: <20080501215633.GU29330@cs181133002.pp.htv.fi>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 02, 2008 at 10:32:46PM +0200, Pavel Machek wrote:
-> > Hmm, i will fix it. And i found that the patch might break
-> > wakeup-on-LAN. So please discard it.
-> 
-> IRQ line should not be neccessary for WoL...?
+Adrian Bunk wrote:
+> On Wed, Apr 30, 2008 at 05:49:46AM -0700, Pallipadi, Venkatesh wrote:
+>   
+>>  
+>>     
+>>> -----Original Message----- From: David Miller 
+>>> From: Venki Pallipadi <venkatesh.pallipadi@intel.com> Date: Tue, 29 
+>>> Apr 2008 18:31:09 -0700
+>>>
+>>>       
+>>>> Some flavors of gcc 4.1.0 and 4.1.1 seems to have trouble 
+>>>>         
+>>> understanding
+>>>       
+>>>> weak function definitions. Calls to function from the same 
+>>>>         
+>>> file where it is
+>>>       
+>>>> defined as weak _may_ get inlined, even when there is a 
+>>>>         
+>>> non-weak definition of
+>>>       
+>>>> the function elsewhere. I tried using attribute 'noinline' 
+>>>>         
+>>> which does not
+>>>       
+>>>> seem to help either.
+>>>>
+>>>> One workaround for this is to have weak functions defined in 
+>>>>         
+>>> different
+>>>       
+>>>> file as below. Other possible way is to not use weak 
+>>>>         
+>>> functions and go back
+>>>       
+>>>> to ifdef logic.
+>>>>
+>>>> There are few other usages in kernel that seem to depend on 
+>>>>         
+>>> weak (and noinline)
+>>>       
+>>>> working correctly, which can also potentially break and 
+>>>>         
+>>> needs such workarounds.
+>>>       
+>>>> Example -
+>>>> mach_reboot_fixups() in arch/x86/kernel/reboot.c is one such 
+>>>>         
+>>> call which
+>>>       
+>>>> is getting inlined with a flavor of gcc 4.1.1.
+>>>>
+>>>> Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+>>>> Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
+>>>>         
+>>> This sounds like a bug.  And if gcc does multi-file compilation it
+>>> can in theory do the same mistake even if you move it to another
+>>> file.
+>>>
+>>> We need something more bulletproof here.
+>>>
+>>>       
+>> The references here
+>> http://gcc.gnu.org/ml/gcc-bugs/2006-05/msg02801.html
+>> http://gcc.gnu.org/bugzilla/show_bug.cgi?id=27781
+>>
+>> seem to suggest that the bug is only with weak definition in the same
+>> file.
+>> So, having them in a different file should be good enough workaround
+>> here.
+>> ...
+>>     
+>
+> A workaround here is the wrong solution since this isn't the only place 
+> that suffers from this issue.
+>
+> We currently give a #warning for 4.1.0.
+> But not for 4.1.1.
+> (Accordingto the bug >= 4.1.2 is fixed.)
+>
+> And a #warning is not enough.
+>
+> The huge problem is that "empty __weak function in the same file and 
+> non-weak arch function" has recently become a common pattern with 
+> several new usages added during this merge window alone.
+>
+> And the breakages can be very subtle runtime breakages.
+>
+> I see only the following choices:
+> - remove __weak and replace all current usages
+> - move all __weak functions into own files, and ensure that also happens
+>   for future usages
+> - #error for gcc 4.1.{0,1}
+>   
 
-IRQ line is not neccessary (i hope), but the patch puts this to
-suspend path:
+- make __weak also include noinline.  I think that's sufficient (at 
+least it was when I encountered a gcc bug with these symptoms last year 
+or so).
 
-/* Switch to loopback mode to avoid hardware races. */
-iowrite8(rp->tx_thresh | 0x02, ioaddr + TxConfig);
-
-/* Disable interrupts by clearing the interrupt mask. */
-iowrite16(0x0000, ioaddr + IntrEnable);
-
-/* Stop the chip's Tx and Rx processes. */
-iowrite16(CmdStop, ioaddr + ChipCmd);
-
-(this was copied from shutdown path of the driver)
-
-I suppose that the first one might break WoL. Unfortunately
-on my hardware the WoL don't work even without the patch.
-
--- 
-Elen sila lumenn' omentielvo
-
-Ondrej 'SanTiago' Zajicek (email: santiago@crfreenet.org)
-OpenPGP encrypted e-mails preferred (KeyID 0x11DEADC3, wwwkeys.pgp.net)
-"To err is human -- to blame it on a computer is even more so."
+    J
