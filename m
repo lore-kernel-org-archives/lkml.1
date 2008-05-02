@@ -1,68 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763211AbYEBJa1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763734AbYEBJb5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763211AbYEBJa1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 05:30:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751493AbYEBJaO
+	id S1763734AbYEBJb5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 05:31:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752432AbYEBJbr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 05:30:14 -0400
-Received: from smtp-vbr9.xs4all.nl ([194.109.24.29]:3243 "EHLO
-	smtp-vbr9.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751114AbYEBJaN (ORCPT
+	Fri, 2 May 2008 05:31:47 -0400
+Received: from fmmailgate03.web.de ([217.72.192.234]:59887 "EHLO
+	fmmailgate03.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750949AbYEBJbq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 05:30:13 -0400
-X-Greylist: delayed 625 seconds by postgrey-1.27 at vger.kernel.org; Fri, 02 May 2008 05:30:12 EDT
-Subject: Re: huge gcc 4.1.{0,1} __weak problem
-From: Miquel van Smoorenburg <miquels@cistron.nl>
-To: Chris Knadle <Chris.Knadle@coredump.us>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Adrian Bunk <bunk@kernel.org>,
-       venkatesh.pallipadi@intel.com, davem@davemloft.net,
-       trini@kernel.crashing.org, mingo@elte.hu, tglx@linutronix.de,
-       hpa@zytor.com, linux-kernel@vger.kernel.org, suresh.b.siddha@intel.com
-In-Reply-To: <20080501235558.GA20637@orac.ofobscurity.com>
-References: <20080501235558.GA20637@orac.ofobscurity.com>
-Content-Type: text/plain
-Date: Fri, 02 May 2008 11:19:19 +0200
-Message-Id: <1209719959.11360.47.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+	Fri, 2 May 2008 05:31:46 -0400
+Message-ID: <005801c8ac37$55e3cb70$6400a8c0@bui.materna.com>
+From: "Roland" <devzero@web.de>
+To: "\"Soeren Sonnenburg\"" <kernel@nn7.de>
+Cc: <linux-kernel@vger.kernel.org>, <netdev@vger.kernel.org>,
+       "\"Andrew Morton\"" <akpm@linux-foundation.org>
+Subject: Re: 24rc8: unregister_netdevice: waiting for ... to become free
+Date: Fri, 2 May 2008 11:31:44 +0200
+MIME-Version: 1.0
+Content-Type: text/plain;
+	format=flowed;
+	charset="iso-8859-1";
+	reply-type=original
 Content-Transfer-Encoding: 7bit
+X-Priority: 3
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook Express 6.00.2900.3138
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3198
+X-Provags-ID: V01U2FsdGVkX1/yOEp7YwmD+3QFm6ar9BK9Pv8XD9vvoYE9kGgc
+	wir9DVot8cz5NrRn8MjQk4zTLriyuFb7o0+FUY6ers5PajcmpX
+	BeZiPUcN4=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-05-01 at 19:55 -0400, Chris Knadle wrote:
-> On Thu, 1 May 2008, Linus Torvalds wrote:
-> > On Thu, 1 May 2008, Andrew Morton wrote:
-> > > > 
-> > > > I see only the following choices:
-> > > > - remove __weak and replace all current usages
-> > > > - move all __weak functions into own files, and ensure that also happens
-> > > >   for future usages
-> > > > - #error for gcc 4.1.{0,1}
-> > > 
-> > > Can we detect the {0,1}?  __GNUC_EVEN_MORE_MINOR__?
+>I am not exactly sure which kernel version Roland (?) is/was using but
+>from what I can tell this bug is fixed since 2.6.24 (at least). Well I
+>didn't see it with madwifi nor with the tun devices anymore on any of
+>the 24.X or 25rc's/25 ...
+
+pardon,   2.6.25-git17 in vmware
+
+
+>; <netdev@vger.kernel.org>;
+List:       linux-kernel
+Subject:    Re: 24rc8: unregister_netdevice: waiting for ... to become free.
+From:       Soeren Sonnenburg <kernel () nn7 ! de>
+Date:       2008-05-02 6:15:43
+Message-ID: 1209708943.23075.52.camel () localhost
+[Download message RAW]
+
+On Thu, 2008-05-01 at 22:59 -0700, Andrew Morton wrote:
+> On Fri, 2 May 2008 03:26:28 +0200 "Roland" <devzero@web.de> wrote:
+>
+> > i`m also seeing this one, but with pcnet32 - "modprobe -r pcnet32" never
+> > returns and
 > >
-> > It's __GNUC_PATCHLEVEL__, I believe.
+> > "unregister_netdevice: waiting for eth0 to become free. Usage count = 1"
 > >
-> > So yes, we can distinguish 4.1.2 (good, and very common) from 4.1.{0,1} 
-> > (bad, and rather uncommon).
-> > And yes, considering that 4.1.1 (and even more so 4.1.0) should be rare to 
-> > begin with, I think it's better to just not support it.
+> > being printed over and over again
+> >
+> > lsmod |grep pcnet32 shows
+> >
+> > pcnet32            35828    0
+> > mii                      9344    1    pcnet32
+> >
+> > i see stale ssh connection on port 22 and sshd for that session remains
+> > unkillable process.
+> >
+>
+> here a bug
+>
+> >
+> >
+> > List:       linux-kernel
+> > Subject:    Re: 24rc8: unregister_netdevice: waiting for ... to become 
+> > free.
+> > From:       Soeren Sonnenburg <kernel () nn7 ! de>
+> > Date:       2008-01-29 8:59:10
+> > Message-ID: 1201597150.4973.10.camel () localhost
+> > [Download message RAW]
+> >
+> > On Tue, 2008-01-22 at 22:44 -0800, David Miller wrote:
+> > > From: Soeren Sonnenburg <kernel@nn7.de>
+> > > Date: Wed, 23 Jan 2008 07:42:21 +0100
+> > >
+> > > > Dear all,
+> > > >
+> > > > since some 2.6.24rc version I suddenly experience such messages on
+> > > > console when trying to shutdown a vpn connection:
+> > > >
+> > > > unregister_netdevice: waiting for tun0 to become free. Usage count = 
+> > > > 1
+> > > >
+> > > > or when removing an usb wlan dongle (although it was ifconfig wlan0
+> > > > down'd before)
+> > >
+> > > Current GIT already has a fix for this, attached below:
+> >
+> > hmmhhh, I am still seeing this problem on 2.6.24 with at least with the
+> > madwifi driver...
+> >
+> > Soeren
+>
+> there a bug.
+>
+>
+> Let's cc netdev@vger.kernel.org - linux-net is dead, afaik.
+>
+> Thanks for reporting all these bugs but please do take much mure care over
+> the cc's.  Be sure to cc every party who was cc'ed on the email to which
+> you're replying.  I restored Soeren.
 
->    Unfortunately Debian Stable (i.e. Etch), which is relatively popular for server 
-> use, is still using 4.1.1  :-(  (The current gcc package is gcc-4.1.1-21)
+I am not exactly sure which kernel version Roland (?) is/was using but
+from what I can tell this bug is fixed since 2.6.24 (at least). Well I
+didn't see it with madwifi nor with the tun devices anymore on any of
+the 24.X or 25rc's/25 ...
 
-Well the package version string is 4.1.1, but the compiler thinks it's
-4.1.2, at least on i386, amd64 and ia64:
-
-$ cc -v
-gcc version 4.1.2 20061115 (prerelease) (Debian 4.1.1-21)
-
-A small test program agrees:
-
-        printf("%d\n", __GNUC_PATCHLEVEL__);
-$ ./a.out 
-2
-
-Mike.
+Soeren
 
