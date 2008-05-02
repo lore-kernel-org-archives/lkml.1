@@ -1,95 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934375AbYEBRL6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932404AbYEBRPy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934375AbYEBRL6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 13:11:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752574AbYEBRLr
+	id S932404AbYEBRPy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 13:15:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752485AbYEBRPq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 13:11:47 -0400
-Received: from outbound-sin.frontbridge.com ([207.46.51.80]:54034 "EHLO
-	outbound2-sin-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752451AbYEBRLq convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 13:11:46 -0400
-X-BigFish: VP
-X-MS-Exchange-Organization-Antispam-Report: OrigIP: 149.199.60.83;Service: EHS
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [2.6 patch] char/xilinx_hwicap/ section fix
-Date: Fri, 2 May 2008 09:50:05 -0700
-In-reply-to: <20080423095138.GA28933@cs181133002.pp.htv.fi>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [2.6 patch] char/xilinx_hwicap/ section fix
-Thread-Index: AcilJ72mZi5+WogRTZyYc6WtqJ1CxgHTJc0g
-References: <20080423095138.GA28933@cs181133002.pp.htv.fi>
-From: "Stephen Neuendorffer" <stephen.neuendorffer@xilinx.com>
-To: "Adrian Bunk" <bunk@kernel.org>,
-       "Grant Likely" <grant.likely@secretlab.ca>, <paulus@samba.org>
-Cc: <linuxppc-dev@ozlabs.org>, <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 02 May 2008 16:50:06.0993 (UTC) FILETIME=[93717810:01C8AC74]
-Message-Id: <20080502165007.16B3F170006C@mail22-sin.bigfish.com>
+	Fri, 2 May 2008 13:15:46 -0400
+Received: from threatwall.zlynx.org ([199.45.143.218]:34083 "EHLO zlynx.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752521AbYEBRPp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 May 2008 13:15:45 -0400
+Subject: Re: [PATCH #repost] SCSI: megaraid, fix suspend/resume sections
+From: Zan Lynx <zlynx@acm.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
+       jirislaby@gmail.com, megaraidlinux@lsi.com, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20080501153048.2a8d356f.akpm@linux-foundation.org>
+References: <1209657362-20300-1-git-send-email-jirislaby@gmail.com>
+	 <20080501142305.77433e50.akpm@linux-foundation.org>
+	 <481A3781.8080100@gmail.com>
+	 <1209679559.14864.33.camel@localhost.localdomain>
+	 <20080501153048.2a8d356f.akpm@linux-foundation.org>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-/8A+6Yta2xd3JkPmWYma"
+Date: Fri, 02 May 2008 11:15:33 -0600
+Message-Id: <1209748533.239501.10.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 
+X-Envelope-From: zlynx@acm.org
+X-Spam-Id: 20080502/1Jryr8-0006Xs-8w-linux-kernel@vger.kernel.org:zlynx@acm.org:199.45.143.218
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Acked-by: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
+--=-/8A+6Yta2xd3JkPmWYma
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Grant, please pick this up.
+On Thu, 2008-05-01 at 15:30 -0700, Andrew Morton wrote:
+[cut]=20
+> > CONFIG_HOTPLUG is only settable to 'n' if you're CONFIG_EMBEDDED which
+> > has a zero set intersection with the users of megaraid, so in practical
+> > terms, there's no actual box it could kill.
+>=20
+> who suspends and resumes servers?
 
-Steve
+I read an article not long ago about a guy running an AMD renderfarm.
+He was working on power management techniques, including suspending
+systems that weren't in use.  It made a huge difference in power costs,
+apparently.
 
-> -----Original Message-----
-> From: Adrian Bunk [mailto:bunk@kernel.org]
-> Sent: Wednesday, April 23, 2008 2:52 AM
-> To: Stephen Neuendorffer; Grant Likely; paulus@samba.org
-> Cc: linuxppc-dev@ozlabs.org; linux-kernel@vger.kernel.org
-> Subject: [2.6 patch] char/xilinx_hwicap/ section fix
-> 
-> This patch fixes the following build error:
-> 
-> <--  snip  -->
-> 
-> ...
->   CC [M]  drivers/char/xilinx_hwicap/xilinx_hwicap.o
-> ...
->
-/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/char/xilinx_hwicap/xil
-inx_hwicap.c:806: error:
-> hwicap_of_match causes a section type conflict
->
-/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/char/xilinx_hwicap/xil
-inx_hwicap.c:806: error:
-> hwicap_of_match causes a section type conflict
-> make[4]: *** [drivers/char/xilinx_hwicap/xilinx_hwicap.o] Error 1
-> 
-> <--  snip  -->
-> 
-> Signed-off-by: Adrian Bunk <bunk@kernel.org>
-> 
-> ---
-> 2f0f31d8aa696ca6cc45ab865ec8c68b90cd0e46 diff --git
-a/drivers/char/xilinx_hwicap/xilinx_hwicap.c
-> b/drivers/char/xilinx_hwicap/xilinx_hwicap.c
-> index 016f905..dfe6907 100644
-> --- a/drivers/char/xilinx_hwicap/xilinx_hwicap.c
-> +++ b/drivers/char/xilinx_hwicap/xilinx_hwicap.c
-> @@ -803,7 +803,7 @@ static int __devexit hwicap_of_remove(struct
-of_device *op)
->  }
-> 
->  /* Match table for of_platform binding */
-> -static const struct of_device_id __devinit hwicap_of_match[] = {
-> +static const struct of_device_id __devinitconst hwicap_of_match[] = {
->  	{ .compatible = "xlnx,opb-hwicap-1.00.b", .data =
-&buffer_icap_config},
->  	{ .compatible = "xlnx,xps-hwicap-1.00.a", .data =
-&fifo_icap_config},
->  	{},
-> 
+I believe suspend is also used in some virtual server farms where
+physical systems are resumed and virtuals are migrated to satisfy higher
+CPU demands.
 
+I could also see using it combined with a load balancer or proxy to
+bring up backup web or database servers.
+
+Compared to using networked/USB power bars or management controllers to
+bring systems up and down, suspend/resume provides a faster response.
+--=20
+Zan Lynx <zlynx@acm.org>
+
+--=-/8A+6Yta2xd3JkPmWYma
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+
+iEYEABECAAYFAkgbTDUACgkQolqWs/Y4NLwaEACfWnrTZ3AybWOj/gfBkSje0+uJ
+ah4AoKKomNwEs/DB7TOcDFenIccDTcd2
+=Q2ui
+-----END PGP SIGNATURE-----
+
+--=-/8A+6Yta2xd3JkPmWYma--
 
