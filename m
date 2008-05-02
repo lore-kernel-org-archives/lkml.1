@@ -1,44 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937525AbYEBXVm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937508AbYEBXWU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937525AbYEBXVm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 19:21:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937461AbYEBXVU
+	id S937508AbYEBXWU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 19:22:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936982AbYEBXVt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 19:21:20 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:36092
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S937453AbYEBXVS (ORCPT
+	Fri, 2 May 2008 19:21:49 -0400
+Received: from sj-iport-6.cisco.com ([171.71.176.117]:42902 "EHLO
+	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S937548AbYEBXVr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 19:21:18 -0400
-Date: Fri, 02 May 2008 16:21:18 -0700 (PDT)
-Message-Id: <20080502.162118.113930840.davem@davemloft.net>
-To: arjan@infradead.org
-Cc: netdev@vger.kernel.org, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] net: Add a WARN_ON_ONCE() to the transmit timeout
- function
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20080501133424.678be79a@infradead.org>
-References: <20080501133424.678be79a@infradead.org>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Fri, 2 May 2008 19:21:47 -0400
+From: Roland Dreier <rdreier@cisco.com>
+To: "Moore\, Eric" <Eric.Moore@lsi.com>
+Cc: "David Miller" <davem@davemloft.net>, <linux-scsi@vger.kernel.org>,
+       <linux-kernel@vger.kernel.org>
+Subject: Re: HELP: Is writeq an atomic operation??
+References: <0631C836DBF79F42B5A60C8C8D4E822901047B4A@NAMAIL2.ad.lsil.com>
+X-Message-Flag: Warning: May contain useful information
+Date: Fri, 02 May 2008 16:21:46 -0700
+In-Reply-To: <0631C836DBF79F42B5A60C8C8D4E822901047B4A@NAMAIL2.ad.lsil.com>
+	(Eric Moore's message of "Fri, 2 May 2008 17:13:08 -0600")
+Message-ID: <adaod7o2sxh.fsf@cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 02 May 2008 23:21:47.0088 (UTC) FILETIME=[4A976500:01C8ACAB]
+Authentication-Results: sj-dkim-1; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim1004 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Arjan van de Ven <arjan@infradead.org>
-Date: Thu, 1 May 2008 13:34:24 -0700
+ > Yeah,  I forgot I have a #ifndef writeq, then defined the x86_64 version
+ > of that.   I've not tested on x86, so I'm not sure whether it works.
+ > How are you handling writeq when its not defined, as the case in x86?
 
-> WARN_ON_ONCE() gives a stack trace including the full module list.
-> Having this in the kernel dump for the timeout case in the
-> generic netdev watchdog will help us see quicker which driver
-> is involved. It also allows us to collect statistics 
-> and patterns in terms of which drivers have this event occuring.
-> 
-> Suggested by Andrew Morton
-> 
-> Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
+Write two writel() inside a spinlock to avoid any transactions in the
+middle (the HW I'm dealing with can deal with two 32-bit transactions,
+as long as nothing comes in the middle).  If your hardware demands a
+single 64-bit transaction, you may be in trouble, because I'm not sure
+all 32-bit systems can generate such a PCIe transaction.
 
-Looks good, applied.
+You can see include/linux/mlx4/doorbell.h for exactly what I did.
+
+ - R.
