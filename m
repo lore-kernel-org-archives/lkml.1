@@ -1,138 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763258AbYEBHYW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760812AbYEBHeK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763258AbYEBHYW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 03:24:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758279AbYEBHYB
+	id S1760812AbYEBHeK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 03:34:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752311AbYEBHd6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 03:24:01 -0400
-Received: from araneidae.co.uk ([62.3.233.233]:1149 "EHLO mail.araneidae.co.uk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754768AbYEBHX7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 03:23:59 -0400
-Date: Fri, 2 May 2008 07:23:53 +0000 (GMT)
-From: Michael Abbott <michael@araneidae.co.uk>
-To: Ben Dooks <ben-linux@fluff.org>
-cc: linux-net@vger.kernel.org, linux-kernel@vger.kernel.org,
-       netdev@gver.kernel.org
-Subject: Re: [PATCH] DM9000: Restore MII physical polling timer.
-In-Reply-To: <20080428151411.GF16284@fluff.org.uk>
-Message-ID: <20080501063432.E18144@saturn.araneidae.co.uk>
-References: <20080424095217.P51356@saturn.araneidae.co.uk>
- <20080428151411.GF16284@fluff.org.uk>
+	Fri, 2 May 2008 03:33:58 -0400
+Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:58624 "EHLO
+	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750938AbYEBHd4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 May 2008 03:33:56 -0400
+Date: Fri, 2 May 2008 09:33:35 +0200
+From: Rodolfo Giometti <giometti@enneenne.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       David Woodhouse <dwmw2@infradead.org>, Dave Jones <davej@redhat.com>,
+       Sam Ravnborg <sam@ravnborg.org>, Greg KH <greg@kroah.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Kay Sievers <kay.sievers@vrfy.org>
+Message-ID: <20080502073335.GK3002@enneenne.com>
+References: <1207851751-25703-4-git-send-email-giometti@linux.it> <1207851751-25703-5-git-send-email-giometti@linux.it> <1207851751-25703-6-git-send-email-giometti@linux.it> <20080410210918.3be98868@core> <20080411075515.GH26777@enneenne.com> <20080411092840.3cc4de67@core> <20080411134724.GF2160@csclub.uwaterloo.ca> <20080411154652.4852b6d4@core> <20080430114107.GE3002@enneenne.com> <20080430172855.6d2e81a6@core>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080430172855.6d2e81a6@core>
+Organization: GNU/Linux Device Drivers, Embedded Systems and Courses
+X-PGP-Key: gpg --keyserver keyserver.linux.it --recv-keys D25A5633
+User-Agent: Mutt/1.5.16 (2007-06-11)
+X-SA-Exim-Connect-IP: 192.168.32.1
+X-SA-Exim-Mail-From: giometti@enneenne.com
+Subject: Re: [PATCH 5/7] PPS: serial clients support.
+X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
+X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 28 Apr 2008, Ben Dooks wrote:
-> On Thu, Apr 24, 2008 at 10:12:59AM +0000, Michael Abbott wrote:
->> From: Michael Abbott <michael.abbott@diamond.ac.uk>
->>
->> DM9000: Restore MII physical polling timer.
->>
->> In commit fcfa81aa3e8d885356139122fcb281487b983468 the timer for polling the
->> MII physical layer was removed because of conflicts with newly added mutexes.
->> Unfortunately a side effect of this change is that the corresponding ethernet
->> layer is permanently reported as down: there is no other way to read the link
->> status.
->>
->> This commit restores the timer, but uses the default work queue for polling.
->
-> I've already submitted a similar patch to netdev@vger.kernel.org
+On Wed, Apr 30, 2008 at 05:28:55PM +0100, Alan Cox wrote:
+> > if I add a dedicated line discipline to register/unregister the PPS
+> > source and I leave the pps_event management into
+> > uart_handle_dcd_change() function, it can be acceptable?
+> 
+> Keep the two things apart.
+> 
+> uart_handle_dcd_change looks a good basis for the UART layer support for
+> drivers serial
+> an LDISC looks right for the top layer
+> 
+> We just need the bits in the middle right. I've added the serial layer
+> pass through for the set_ldisc() interface so that bit is done. Probably
+> the main thing we need is to add  tty->ldisc.dcd_change() for reporting
+> DCD change back to the line discipline. We could queue it as a TTY_ event
+> but I assume you need it immediately not queued ?
 
-I presume you mean the patch at
- 	http://marc.info/?l=linux-netdev&m=120818415110509&w=2
-?
+Yes, you are right. PPS events should be registered as soon as they
+arrive, that's why I'd like to put events registration (or at least
+IRQ timestamps) into do_IRQ() as follow:
 
-If so, I think there's something not quite right with your timer 
-cancellation -- as far as I can tell (the workqueue code seems to have 
-been under quite a bit of flux, and the comments are sparse) we should be 
-using cancel_delayed_work_sync() -- this appears to be the correct routine 
-for cancelling a self retriggering workqueue timer.
+   fastcall unsigned int do_IRQ(struct pt_regs *regs)
+   {
+           struct pt_regs *old_regs;
+           /* high bit used in ret_from_ code */
+           int irq = ~regs->orig_eax;
+           struct irq_desc *desc = irq_desc + irq;
+   #ifdef CONFIG_4KSTACKS
+           union irq_ctx *curctx, *irqctx;
+           u32 *isp;
+   #endif
 
-If this change is made (and the corresponding simplifications made -- for 
-example, it also appears to be defined that container_of can be used 
-directly on the work_struct*, since delayed_work is defined to place the 
-work_struct at the start -- then your patch becomes effectively identical 
-to my patch below.
+           if (unlikely((unsigned)irq >= NR_IRQS)) {
+                   printk(KERN_EMERG "%s: cannot handle IRQ %d\n",
+                                           __FUNCTION__, irq);
+                   BUG();
+           }
 
+           pps_irq_event_register(irq);
 
->
->> Signed-off-by: Michael Abbott <michael.abbott@diamond.ac.uk>
->> ---
->>  drivers/net/dm9000.c |   21 +++++++++++++++++++++
->>  1 files changed, 21 insertions(+), 0 deletions(-)
->>
->> This patch is against 2.6.25, and has been tested with the Colibri PXA270
->> board (patch follows separately).
->>
->> diff --git a/drivers/net/dm9000.c b/drivers/net/dm9000.c
->> index d63cc93..9ad9499 100644
->> --- a/drivers/net/dm9000.c
->> +++ b/drivers/net/dm9000.c
->> @@ -43,6 +43,7 @@
->>  /* Board/System/Debug information/definition ---------------- */
->>
->>  #define DM9000_PHY		0x40	/* PHY address 0x01 */
->> +#define DM9000_TIMER_WUT	(HZ*2)	/* timer wakeup time : 2 second */
->>
->>  #define CARDNAME "dm9000"
->>  #define PFX CARDNAME ": "
->> @@ -117,6 +118,8 @@ typedef struct board_info {
->>
->>  	struct mutex	 addr_lock;	/* phy and eeprom access lock */
->>
->> +	struct delayed_work timer;	/* Interface status timer. */
->> +
->>  	spinlock_t lock;
->>
->>  	struct mii_if_info mii;
->> @@ -144,6 +147,7 @@ static int dm9000_start_xmit(struct sk_buff *, struct net_device *);
->>  static int dm9000_stop(struct net_device *);
->>  static int dm9000_ioctl(struct net_device *dev, struct ifreq *req, int cmd);
->>
->> +static void dm9000_timer(struct work_struct * work);
->>  static void dm9000_init_dm9000(struct net_device *);
->>
->>  static irqreturn_t dm9000_interrupt(int, void *);
->> @@ -762,6 +766,10 @@ dm9000_open(struct net_device *dev)
->>  	mii_check_media(&db->mii, netif_msg_link(db), 1);
->>  	netif_start_queue(dev);
->>
->> +	/* Start the media status timer running. */
->> +	INIT_DELAYED_WORK(&db->timer, dm9000_timer);
->> +	schedule_delayed_work(&db->timer, DM9000_TIMER_WUT);
->> +
->>  	return 0;
->>  }
->>
->> @@ -876,6 +884,9 @@ dm9000_stop(struct net_device *ndev)
->>  {
->>  	board_info_t *db = (board_info_t *) ndev->priv;
->>
->> +	/* Delete the timer and make sure it's not running right now! */
->> +	cancel_delayed_work_sync(&db->timer);
->> +
->>  	if (netif_msg_ifdown(db))
->>  		dev_dbg(db->dev, "shutting down %s\n", ndev->name);
->>
->> @@ -965,6 +976,16 @@ dm9000_interrupt(int irq, void *dev_id)
->>  	return IRQ_HANDLED;
->>  }
->>
->> +
->> +/* Two second timer to poll the media status -- the DM9000 doesn't provide a
->> + * status interrupt, so this has to be polled. */
->> +static void dm9000_timer(struct work_struct * work)
->> +{
->> +	board_info_t *db = container_of(work, board_info_t, timer);
->> +	mii_check_media(&db->mii, netif_msg_link(db), 0);
->> +	schedule_delayed_work(&db->timer, DM9000_TIMER_WUT);
->> +}
->> +
->>  struct dm9000_rxhdr {
->>  	u8	RxPktReady;
->>  	u8	RxStatus;
->> --
->> 1.5.5
+           old_regs = set_irq_regs(regs);
+           irq_enter();
+
+but this solution arises two drawbacks:
+
+1) the PPS echo functions should be executed by
+pps_irq_event_register() into do_IRQ(). Brrrr... :)
+
+2) the shared IRQ line may cause "false" PPS events.
+
+The latter drawback can be solved simply not using the shared IRQs for
+PPS sources but the former is not an easy task... so I suppose we
+should delay the echo function call at "safer" time, maybe using the
+function tty->ldisc.dcd_change().
+
+> > The uart_handle_dcd_change() is generic and I need the DCD status to
+> > correctly manage the pps_event. The USB layer is not useful for PPS
+> > stuff
+> 
+> Not every character driver uses drivers/serial or USB. That is fine. What
+> I care about is that you *could* add PPS support to another serial driver
+> cleanly, not that it is done immediately. What matters is the interface,
+> the rest will follow.
+
+I see. So what do you suggest to do? Should I add an ldisc to
+register/unregister serial PPS sources and adding function
+tty->ldisc.dcd_change() to manage the events?
+
+Thanks for your suggestions,
+
+Rodolfo
+
+-- 
+
+GNU/Linux Solutions                  e-mail:    giometti@enneenne.com
+Linux Device Driver                             giometti@linux.it
+Embedded Systems                     phone:	+39 349 2432127
+UNIX programming                     skype:     rodolfo.giometti
