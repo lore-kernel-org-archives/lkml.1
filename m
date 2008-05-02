@@ -1,49 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935985AbYEBWn4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937194AbYEBWoZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935985AbYEBWn4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 18:43:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758278AbYEBWnq
+	id S937194AbYEBWoZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 18:44:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759308AbYEBWoN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 18:43:46 -0400
-Received: from sj-iport-6.cisco.com ([171.71.176.117]:51530 "EHLO
-	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755532AbYEBWnp (ORCPT
+	Fri, 2 May 2008 18:44:13 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:36130 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758278AbYEBWoM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 18:43:45 -0400
-From: Roland Dreier <rdreier@cisco.com>
-To: David Miller <davem@davemloft.net>
-Cc: Eric.Moore@lsi.com, linux-scsi@vger.kernel.org,
+	Fri, 2 May 2008 18:44:12 -0400
+Date: Fri, 2 May 2008 15:42:00 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: linux-next@vger.kernel.org, sfrench@us.ibm.com, swhiteho@redhat.com,
+       stefanr@s5r6.in-berlin.de, jeff@garzik.org, ralf@linux-mips.org,
+       drzeus-list@drzeus.cx, jack@ucw.cz, cbou@mail.ru, jens.axboe@oracle.com,
+       ericvh@gmail.com, wim@iguana.be, chris@zankel.net, nico@cam.org,
+       penberg@cs.helsinki.fi, clameter@sgi.com, ezk@cs.sunysb.edu,
        linux-kernel@vger.kernel.org
-Subject: Re: HELP: Is writeq an atomic operation??
-References: <0631C836DBF79F42B5A60C8C8D4E822901047B1D@NAMAIL2.ad.lsil.com>
-	<20080502.153210.122414532.davem@davemloft.net>
-X-Message-Flag: Warning: May contain useful information
-Date: Fri, 02 May 2008 15:43:32 -0700
-In-Reply-To: <20080502.153210.122414532.davem@davemloft.net> (David Miller's
-	message of "Fri, 02 May 2008 15:32:10 -0700 (PDT)")
-Message-ID: <adaabj8499n.fsf@cisco.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 02 May 2008 22:43:32.0870 (UTC) FILETIME=[F3218260:01C8ACA5]
-Authentication-Results: sj-dkim-2; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim2002 verified; ); 
+Subject: Re: git trees which are not yet in linux-next
+Message-Id: <20080502154200.a6d8c43a.akpm@linux-foundation.org>
+In-Reply-To: <20080502151206.b40f77ea.akpm@linux-foundation.org>
+References: <20080502151206.b40f77ea.akpm@linux-foundation.org>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > > Is a 64bit write to MMIO registers an atomic operation when using the
- > > writeq API?  
- > 
- > The answer to this question this is platform dependent.
- > 
- > On most 64-bit platforms, it is.  On some 32-bit ones, it is not.
+On Fri, 2 May 2008 15:12:06 -0700
+Andrew Morton <akpm@linux-foundation.org> wrote:
 
-Are there any 32-bit platforms with writeq()?  A quick grep suggests not.
+> The first
+> problem is working out "how the heck did that patch get into linux-next"? 
+> That would be much easier if the signoff trail was complete for git-based
+> patches, but it often is not.
 
-Are there any 64-bit platforms where writeq() allows the MMIO to be
-split into multiple cycles from the target device's view?  I've been
-coding assuming that at least no other MMIO writes will reach the device
-in the middle of a writeq().
+doh.  I'm pulling linux-next's constituent trees independently, so if I
+spot a turd in linux-next I can just grep the various git trees to find out
+where it came from.
 
- - R.
+It seems wrong though...
