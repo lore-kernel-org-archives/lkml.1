@@ -1,136 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932514AbYEBJST@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932306AbYEBJTn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932514AbYEBJST (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 05:18:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751114AbYEBJSL
+	id S932306AbYEBJTn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 05:19:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753942AbYEBJTg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 05:18:11 -0400
-Received: from smtp-out04.alice-dsl.net ([88.44.63.6]:29959 "EHLO
-	smtp-out04.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752157AbYEBJSJ (ORCPT
+	Fri, 2 May 2008 05:19:36 -0400
+Received: from rv-out-0506.google.com ([209.85.198.232]:18761 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753590AbYEBJTf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 05:18:09 -0400
-Date: Fri, 2 May 2008 11:18:06 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@linutronix.de,
-       sandeen@sandeen.net
-Subject: [PATCH] i386: Execute stack overflow warning on interrupt stack
-Message-ID: <20080502091806.GA26062@basil.nowhere.org>
+	Fri, 2 May 2008 05:19:35 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=eLCYA9R8oc0LYNRJmCsFSZTBApdMP4w0Ai0EssXrBYMsuAD7Cwmrc7bqL5uefvLxTEJesDlx2mBabHXiNTkggCjWCQvCZmRg5TG6Y/YSjRMdeBC91ObtdEhZKmgUAdWq8IPWAtRdA/b5qHmx3z9KTAl8lopeirDqjuR7c+7hE9s=
+Message-ID: <86802c440805020219t73a8ae52ue7b15cfa36ac64de@mail.gmail.com>
+Date: Fri, 2 May 2008 02:19:34 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: [PATCH] fix x86 DMI checks for PCI quirks
+Cc: "Matt Domsch" <Matt_Domsch@dell.com>, akpm@linux-foundation.org,
+       jgarzik@pobox.com, muli@il.ibm.com, davej@redhat.com,
+       tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com, bunk@kernel.org,
+       linux-bugs@dell.com, linux-kernel@vger.kernel.org, greg@kroah.com,
+       "Jesse Barnes" <jbarnes@virtuousgeek.org>
+In-Reply-To: <20080502074432.GA1372@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-OriginalArrivalTime: 02 May 2008 09:11:11.0925 (UTC) FILETIME=[77438650:01C8AC34]
+References: <20080502025427.GA23757@auslistsprd01.us.dell.com>
+	 <20080502074432.GA1372@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-i386: Execute stack overflow warning on interrupt stack
+On Fri, May 2, 2008 at 12:44 AM, Ingo Molnar <mingo@elte.hu> wrote:
+>
+>  * Matt Domsch <Matt_Domsch@dell.com> wrote:
+>
+>  > fix x86 DMI checks for PCI quirks
+>  >
+>  > http://bugzilla.kernel.org/show_bug.cgi?id=10583
+>  > https://bugzilla.redhat.com/show_bug.cgi?id=444791
+>  >
+>  > Since git commit 08f1c192c3c32797068bfe97738babb3295bbf42 (between
+>  > kernels 2.6.22 and 2.6.23), arch/x86/pci/acpi.c has not called
+>  > pcibios_scan_root(), which would have called
+>  > arch/x86/pci/common.c:dmi_check_system().  This has prevented the
+>  > quirks listed in pciprobe_dmi_table[] from being checked and
+>  > appropriate action taken.
+>
+>  ugh ...
+>
+>
+>  > This manifests itself in several Dell and HP servers not automatically
+>  > having the pci=bfsort option be applied, as well as Samsung X20 and
+>  > Compaq EVO N800c systems needing pci=assign-all-busses was no longer
+>  > automatically applied.
+>  >
+>  > This patch moves the DMI tests into its own file, arch/x86/pci/dmi.c,
+>  > and invokes them via subsys_initcall() before pci_acpi_init(),
+>  > pci_legacy_init(), and pcibios_init() are called, which may rely upon
+>  > these tests having been executed.
+>
+>  Jesse Barnes (new PCI maintainer) Cc:-ed.
+>
+>  i'm wondering how we could avoid such mishaps in the future. This was
+>  broken from 2.6.23 through 2.6.25 - way too long. Perhaps we should
+>  create a known signature of the device tree in user-space, and somehow
+>  warn if the kernel changes it? Could this somehow be put into the
+>  kernel?
+>
 
-[Repost. This was posted deep in the 4K flame war some time ago. Probably
-very few people read it completely, so the patch was missed.]
+please check the patch in x86.git, it should do the same thing, but
+put the call in pci_access_init...
 
-Previously the reporting printk would run on the process stack, which risks 
-overflow an already low stack. Instead execute it on the interrupt stack.
-This makes it more likely for the printk to make it actually out.
+commit 9817aa147000086bc11b571620ecc1c73a4a614b
+Author: Yinghai Lu <yhlu.kernel@gmail.com>
+Date:   Mon Apr 14 15:40:37 2008 -0700
 
-It adds one not taken test/branch more to the interrupt path when
-stack overflow checking is enabled. We could avoid that by duplicating
-more code, but that seemed not worth it.
+    x86 PCI: call dmi_check_pciprobe()
 
-Based on an observation by Eric Sandeen.
+    this change:
 
-Signed-off-by: Andi Kleen <andi@firstfloor.org>
+    | commit 08f1c192c3c32797068bfe97738babb3295bbf42
+    | Author: Muli Ben-Yehuda <muli@il.ibm.com>
+    | Date:   Sun Jul 22 00:23:39 2007 +0300
+    |
+    |    x86-64: introduce struct pci_sysdata to facilitate sharing of ->sysdata
+    |
+    |    This patch introduces struct pci_sysdata to x86 and x86-64, and
+    |    converts the existing two users (NUMA, Calgary) to use it.
+    |
+    |    This lays the groundwork for having other users of sysdata, such as
+    |    the PCI domains work.
+    |
+    |    The Calgary bits are tested, the NUMA bits just look ok.
 
-Index: linux/arch/x86/kernel/irq_32.c
-===================================================================
---- linux.orig/arch/x86/kernel/irq_32.c
-+++ linux/arch/x86/kernel/irq_32.c
-@@ -61,6 +61,26 @@ static union irq_ctx *hardirq_ctx[NR_CPU
- static union irq_ctx *softirq_ctx[NR_CPUS] __read_mostly;
- #endif
- 
-+static void stack_overflow(void)
-+{
-+	printk("low stack detected by irq handler\n");
-+	dump_stack();
-+}
-+
-+static inline void call_on_stack2(void *func, unsigned long stack,
-+			   unsigned long arg1, unsigned long arg2)
-+{
-+	unsigned long bx;
-+	asm volatile(
-+			"       xchgl  %%ebx,%%esp    \n"
-+			"       call   *%%edi         \n"
-+			"       movl   %%ebx,%%esp    \n"
-+			: "=a" (arg1), "=d" (arg2), "=b" (bx)
-+			:  "0" (arg1),   "1" (arg2),  "2" (stack),
-+			   "D" (func)
-+			: "memory", "cc", "ecx');
-+}
-+
- /*
-  * do_IRQ handles all normal device IRQ's (the special
-  * SMP cross-CPU interrupts have their own specific
-@@ -76,6 +96,7 @@ unsigned int do_IRQ(struct pt_regs *regs
- 	union irq_ctx *curctx, *irqctx;
- 	u32 *isp;
- #endif
-+	int overflow = 0;
- 
- 	if (unlikely((unsigned)irq >= NR_IRQS)) {
- 		printk(KERN_EMERG "%s: cannot handle IRQ %d\n",
-@@ -92,11 +113,8 @@ unsigned int do_IRQ(struct pt_regs *regs
- 
- 		__asm__ __volatile__("andl %%esp,%0" :
- 					"=r" (sp) : "0" (THREAD_SIZE - 1));
--		if (unlikely(sp < (sizeof(struct thread_info) + STACK_WARN))) {
--			printk("do_IRQ: stack overflow: %ld\n",
--				sp - sizeof(struct thread_info));
--			dump_stack();
--		}
-+		if (unlikely(sp < (sizeof(struct thread_info) + STACK_WARN)))
-+			overflow = 1;
- 	}
- #endif
- 
-@@ -112,8 +130,6 @@ unsigned int do_IRQ(struct pt_regs *regs
- 	 * current stack (which is the irq stack already after all)
- 	 */
- 	if (curctx != irqctx) {
--		int arg1, arg2, bx;
--
- 		/* build the stack frame on the IRQ stack */
- 		isp = (u32*) ((char*)irqctx + sizeof(*irqctx));
- 		irqctx->tinfo.task = curctx->tinfo.task;
-@@ -127,18 +143,19 @@ unsigned int do_IRQ(struct pt_regs *regs
- 			(irqctx->tinfo.preempt_count & ~SOFTIRQ_MASK) |
- 			(curctx->tinfo.preempt_count & SOFTIRQ_MASK);
- 
--		asm volatile(
--			"       xchgl  %%ebx,%%esp    \n"
--			"       call   *%%edi         \n"
--			"       movl   %%ebx,%%esp    \n"
--			: "=a" (arg1), "=d" (arg2), "=b" (bx)
--			:  "0" (irq),   "1" (desc),  "2" (isp),
--			   "D" (desc->handle_irq)
--			: "memory", "cc", "ecx"
--		);
-+		/* Execute warning on interrupt stack */
-+		if (unlikely(overflow))
-+			call_on_stack2(stack_overflow, isp, 0, 0);
-+
-+		call_on_stack2(desc->handle_irq, isp, irq, desc);
- 	} else
- #endif
--		desc->handle_irq(irq, desc);
-+	{
-+		/* AK: Slightly bogus here. Just return? */
-+		if (overflow)
-+			stack_overflow();
-+ 		desc->handle_irq(irq, desc);
-+	}
- 
- 	irq_exit();
- 	set_irq_regs(old_regs);
+    replaces pcibios_scan_root with pci_scan_bus_parented...
+
+    but in pcibios_scan_root we have a DMI check:
+
+        dmi_check_system(pciprobe_dmi_table);
+
+    when when have several peer root buses this could be called multiple
+    times (which is bad), so move that call to pci_access_init().
+
+    Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+    Signed-off-by: Ingo Molnar <mingo@elte.hu>
+    Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
