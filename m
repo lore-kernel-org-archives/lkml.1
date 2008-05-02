@@ -1,69 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934189AbYEBBw2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932713AbYEBBzr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934189AbYEBBw2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 May 2008 21:52:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750975AbYEBBwS
+	id S932713AbYEBBzr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 May 2008 21:55:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754716AbYEBBzj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 May 2008 21:52:18 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:15283 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933810AbYEBBwQ (ORCPT
+	Thu, 1 May 2008 21:55:39 -0400
+Received: from py-out-1112.google.com ([64.233.166.176]:10105 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753063AbYEBBzi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 May 2008 21:52:16 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=rWkN4qFTXDy/wS6/AXh1s2+5xcKU4KLZLbRPVurfiy6kZfvs/dbfjdrVhz+pA9mzf
-	nOhAuiSHtpKqXWndKInhg==
-Message-ID: <6599ad830805011852t7dc6de32qd4c105a51c2fee06@mail.gmail.com>
-Date: Thu, 1 May 2008 18:52:02 -0700
-From: "Paul Menage" <menage@google.com>
-To: "Dhaval Giani" <dhaval@linux.vnet.ibm.com>
-Subject: Re: cgroupstats, plans?
-Cc: "Balbir Singh" <balbir@in.ibm.com>, lkml <linux-kernel@vger.kernel.org>,
-       libcg-devel <libcg-devel@lists.sourceforge.net>,
-       "Balaji Rao" <balajirrao@gmail.com>,
-       "Sudhir Kumar" <skumar@linux.vnet.ibm.com>,
-       "Srivatsa Vaddagiri" <vatsa@linux.vnet.ibm.com>,
-       "Peter Zijlstra" <a.p.zijlstra@chello.nl>, vivk@us.ibm.com
-In-Reply-To: <20080429122019.GE9585@linux.vnet.ibm.com>
+	Thu, 1 May 2008 21:55:38 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=xwp4ex1HLtSUBJpYNnmyLc4jDDochWzjzzNKc9WE95fWcO16N+QJryY16ee9gTCVyzJ+eQpI2y8LGy5Bz5rwuITyv6+zm5ojedu7hV6y989tnNnh+DNyWUkXP5eOQ5Zp4bHbRXKkDjh4Y0FyplYiyR6/DMn5BT1ugE50qS1oOLk=
+Message-ID: <86802c440805011855m2e5783d9tf60c868716a932e0@mail.gmail.com>
+Date: Thu, 1 May 2008 18:55:37 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Gabriel C" <nix.or.die@googlemail.com>
+Subject: Re: [PATCH] x86: mtrr cleanup for converting continuous to discrete - auto detect
+Cc: "Andrew Morton" <akpm@linux-foundation.org>, "Ingo Molnar" <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       "Thomas Gleixner" <tglx@linutronix.de>,
+       "Mika Fischer" <mika.fischer@zoopnet.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <481A6BEE.5020705@googlemail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20080429122019.GE9585@linux.vnet.ibm.com>
+References: <200804272337.40130.yhlu.kernel@gmail.com>
+	 <200804290352.33543.yhlu.kernel@gmail.com>
+	 <200804292025.58268.yhlu.kernel@gmail.com>
+	 <200805010100.34751.yhlu.kernel@gmail.com>
+	 <4819AD44.4040200@googlemail.com>
+	 <86802c440805011706m51f4840dye0191c7e853d5aa@mail.gmail.com>
+	 <481A6080.8090307@googlemail.com>
+	 <86802c440805011735u147860eatd259b3db2fcb93f3@mail.gmail.com>
+	 <481A6BEE.5020705@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 29, 2008 at 5:20 AM, Dhaval Giani <dhaval@linux.vnet.ibm.com> wrote:
-> Hi Paul,
+On Thu, May 1, 2008 at 6:18 PM, Gabriel C <nix.or.die@googlemail.com> wrote:
 >
->  You had mentioned in http://lkml.org/lkml/2008/4/8/29 about cgroup
->  binary API for statistics. What is the status wrt to that?
-
-I've not really had mmore time to work on that since then.
-
-Assuming people are happy with the basic ideas in that post then I
-guess the important questions to focus on would be:
-
-- what form should the API description to userspace take? Something
-like the cgroup.api file that I proposed a while ago?
-
-- how would the user specify and retrieve a specific set of stats?
-should we just dump all stats on each read request, or will that be
-too expensive for some stats?
-
+> Yinghai Lu wrote:
+>  > On Thu, May 1, 2008 at 5:29 PM, Gabriel C <nix.or.die@googlemail.com> wrote:
+>  >> Yinghai Lu wrote:
+>  >>  > On Thu, May 1, 2008 at 4:45 AM, Gabriel C <nix.or.die@googlemail.com> wrote:
+>  >>  >> Yinghai Lu wrote:
+>  >>  >>  > loop mtrr chunk_size and gran_size from 1M to 2G to find out optimal value.
+>  >>  >>  >
+>  >>  >>  > so user don't need to add mtrr_chunk_size and mtrr_gran_size,
+>  >>  >>  >
+>  >>  >>  > if optimal value is not found, print out all list to help select less optimal
+>  >>  >>  > value.
+>  >>  >>  >
+>  >>  >>  > add mtrr_spare_reg_nr= so user could set 2 instead of 1, if the card need more entries.
+>  >>  >>
+>  >>  >>  WOW :)
+>  >>  >>
+>  >>  >>  With this patch all is working fine , no RAM is lost , X is fast ,
+>  >>  >>  so far everything else seems to work fine. \o/
+>  >>  >>
+>  >>  >>  I will test on 32bit tomorrow and stress the box later on today to be sure everything works fine.
+>  >>  >>
+>  >>  >>  There is my dmesg , meminfo , mtrr output with this patch on top x86-latest :
+>  >>  >>
+>  >>  >>  http://frugalware.org/~crazy/mtrr_x86-latest/
+>  >>  >
+>  >>  > while look at that you boot log, it seems there is one bug about hole
+>  >>  > position. but I look that code, it should already be handled.
+>  >>  >
+>  >>  > Can you send out boot msg and /proc/mtrr when using
+>  >>  > disable_mtrr_cleanup command line?
+>  >>
+>  >>  Sure , there it is :
+>  >>
+>  >>  http://frugalware.org/~crazy/mtrr_x86-latest/dmesg2
+>  >>  http://frugalware.org/~crazy/mtrr_x86-latest/proc_mtrr2
+>  >>
+>  >>  I'm still using this version of your patch , didn't got any time to update to v2.
+>  >>  If you want me to try v2 tell me , I have some free time in about 30 minutes.
+>  >>
+>  > original
+>  >
+>  > reg00: base=0xd0000000 (3328MB), size= 256MB: uncachable, count=1
+>  > reg01: base=0xe0000000 (3584MB), size= 512MB: uncachable, count=1
+>  > reg02: base=0x00000000 (   0MB), size=4096MB: write-back, count=1
+>  > reg03: base=0x100000000 (4096MB), size= 512MB: write-back, count=1
+>  > reg04: base=0x120000000 (4608MB), size= 128MB: write-back, count=1
+>  > reg05: base=0x128000000 (4736MB), size=  64MB: write-back, count=1
+>  > reg06: base=0xcf600000 (3318MB), size=   2MB: uncachable, count=1
+>  >
+>  > after clean up
+>  >
+>  > reg00: base=0x00000000 (   0MB), size=2048MB: write-back, count=1
+>  > reg01: base=0x80000000 (2048MB), size=1024MB: write-back, count=1
+>  > reg02: base=0xc0000000 (3072MB), size= 256MB: write-back, count=1
+>  > reg03: base=0xcfe00000 (3326MB), size=   2MB: uncachable, count=1
+>  > reg04: base=0x100000000 (4096MB), size= 512MB: write-back, count=1
+>  > reg05: base=0x120000000 (4608MB), size= 256MB: write-back, count=1
+>  > reg06: base=0x12c000000 (4800MB), size=  64MB: uncachable, count=1
+>  >
+>  > so the hole base is not right, it should be at 3318MB instead of 3326MB.
+>  > please hold to test v3 ...
 >
->  We are looking to export statistics using libcg. One of the questions
->  that comes up is when is a file in the cgroup, a control file (one used
->  to control the parameters of the subsystem) and when is it a file which
->  is related to statistics.
+>  All is still fine here after an quick test ( BTW that version is really chatty :P )
 
-I don't see why some of them can't be both. If a file has a numerical
-value associated with it, is there any reason not to make it available
-via the binary stats API, regardless of whether that value was
-generated by userspace or the kernel?
+thanks. yeah, but can you remove debug in command line to see if it
+still talks too much.
 
-Paul
+YH
