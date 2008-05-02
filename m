@@ -1,57 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933449AbYEBBtR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756409AbYEBBtg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933449AbYEBBtR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 May 2008 21:49:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756061AbYEBBtA
+	id S1756409AbYEBBtg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 May 2008 21:49:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758106AbYEBBtE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 May 2008 21:49:00 -0400
-Received: from ns1.suse.de ([195.135.220.2]:56210 "EHLO mx1.suse.de"
+	Thu, 1 May 2008 21:49:04 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:49734 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756009AbYEBBtA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 May 2008 21:49:00 -0400
-Date: Fri, 2 May 2008 03:48:59 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: "Ahmed S. Darwish" <darwish.07@gmail.com>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [patch] SLQB v2
-Message-ID: <20080502014858.GB11844@wotan.suse.de>
-References: <20080410193137.GB9482@wotan.suse.de> <20080415034407.GA9120@ubuntu> <20080501015418.GC15179@wotan.suse.de> <Pine.LNX.4.64.0805011226410.8738@schroedinger.engr.sgi.com> <20080502004325.GA30768@wotan.suse.de> <Pine.LNX.4.64.0805011813180.13527@schroedinger.engr.sgi.com> <20080502012321.GE30768@wotan.suse.de> <Pine.LNX.4.64.0805011825420.13697@schroedinger.engr.sgi.com>
+	id S1756376AbYEBBtB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 May 2008 21:49:01 -0400
+Date: Fri, 2 May 2008 11:48:48 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Diego Calleja <diegocg@gmail.com>
+Cc: Dmitri Vorobiev <dmitri.vorobiev@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, rjw@sisk.pl,
+       davem@davemloft.net, linux-kernel@vger.kernel.org, jirislaby@gmail.com,
+       mingo@elte.hu
+Subject: Re: Slow DOWN, please!!!
+Message-Id: <20080502114848.000fd656.sfr@canb.auug.org.au>
+In-Reply-To: <20080501182658.9bbf5d4a.diegocg@gmail.com>
+References: <20080429.190352.137408408.davem@davemloft.net>
+	<200804302136.58005.rjw@sisk.pl>
+	<20080430131537.1f7a0914.akpm@linux-foundation.org>
+	<alpine.LFD.1.10.0804301325260.2980@woody.linux-foundation.org>
+	<20080430135405.ddc42075.akpm@linux-foundation.org>
+	<4818E7E3.7080705@gmail.com>
+	<20080430151007.0ace4fa2.akpm@linux-foundation.org>
+	<alpine.LFD.1.10.0804301513350.2980@woody.linux-foundation.org>
+	<4818F291.2050706@gmail.com>
+	<20080501182658.9bbf5d4a.diegocg@gmail.com>
+X-Mailer: Sylpheed 2.5.0beta3 (GTK+ 2.12.9; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0805011825420.13697@schroedinger.engr.sgi.com>
-User-Agent: Mutt/1.5.9i
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Fri__2_May_2008_11_48_48_+1000_GBhnpParZz0=VlzR"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 01, 2008 at 06:28:57PM -0700, Christoph Lameter wrote:
-> On Fri, 2 May 2008, Nick Piggin wrote:
-> 
-> > But overloading struct page values happens in other places too. Putting
-> > everything into struct page is not scalable. We could also make kmalloc
-> 
-> Well lets at least attempt to catch the biggest users.
+--Signature=_Fri__2_May_2008_11_48_48_+1000_GBhnpParZz0=VlzR
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-You want to also put slab and slob in there? What about page allocator?
-It is ridiculous for the sake of "being easy to inspect with debuggers".
-How hard is (struct slub_page *) to type?
+On Thu, 1 May 2008 18:26:58 +0200 Diego Calleja <diegocg@gmail.com> wrote:
+>
+> El Thu, 01 May 2008 02:28:33 +0400, Dmitri Vorobiev <dmitri.vorobiev@gmai=
+l.com> escribi=C3=B3:
+>=20
+> > Linus, thanks a lot for the detailed explanation. Indeed, it seems that=
+ I foolishly
+> > tried to duplicate Stephen's work. In the future I'll do as you suggest=
+ here.
+>=20
+> That "howto" should probably be added to the linux-next announcements...
+> (CC'ing Stephen)
 
-Here is a real benefit you get with clearly defined types for struct
-page: type checking.
+This is already mentioned in the linux-next wiki
+(http://linux.f-seidel.de/linux-next/pmwiki/) in the FAQ.  I will add a
+link to the wiki to the announcements.
 
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-> Also makes code 
-> clearer if you f.e. use page->first_page instead of page->private for 
-> compound pages.
+--Signature=_Fri__2_May_2008_11_48_48_+1000_GBhnpParZz0=VlzR
+Content-Type: application/pgp-signature
 
-compound_page_head() is fine too.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
 
- 
-> kmalloc is intended to return an arbitrary type. struct page has a defined 
-> format that needs to be respected.
+iD8DBQFIGnMHTgG2atn1QN8RAlBhAJ9Wml0TIh4VdVGS3RPvlRTgTFKaQACePwno
+fT0tr54HWd4p9GvE3Dl1Pwo=
+=CXoR
+-----END PGP SIGNATURE-----
 
-So does kmalloc if you take the union of all types it might possibly
-be used as.
+--Signature=_Fri__2_May_2008_11_48_48_+1000_GBhnpParZz0=VlzR--
