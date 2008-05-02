@@ -1,117 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765553AbYEBOmY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763583AbYEBOtE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765553AbYEBOmY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 10:42:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758011AbYEBOmR
+	id S1763583AbYEBOtE (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 10:49:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752896AbYEBOsw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 10:42:17 -0400
-Received: from smtp-out114.alice.it ([85.37.17.114]:4358 "EHLO
-	smtp-out114.alice.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757342AbYEBOmQ (ORCPT
+	Fri, 2 May 2008 10:48:52 -0400
+Received: from wf-out-1314.google.com ([209.85.200.168]:63150 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752218AbYEBOsw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 10:42:16 -0400
-X-Greylist: delayed 915 seconds by postgrey-1.27 at vger.kernel.org; Fri, 02 May 2008 10:42:16 EDT
-From: Fabio De Francesco <fabiomdf@alice.it>
-To: Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [x86_32] With 4GB installed, in which cases low mem total is less than 896MB?
-Date: Fri, 2 May 2008 16:38:46 +0200
-User-Agent: KMail/1.9.9
-References: <200804301702.06019.fabiomdf@alice.it> <20080429101852.6719eb59@infradead.org>
-In-Reply-To: <20080429101852.6719eb59@infradead.org>
-Cc: linux-kernel@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>
+	Fri, 2 May 2008 10:48:52 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=bk8/v25FB81e76lmPDNI5giNtjLrfQ1cXRf5MUiQ2xgBsWeAyox4d6O9dvdWoSdj2TAxX7LCqF3DEMP8Es2NhKzi3tFilIe8r5m/qbSOaCUbebW7P83v+Ho49dOOysaN+NsEacUp3XuWw2Ter6/IIq4Kakcw8kIQ5ZZjdf6184g=
+Message-ID: <82e4877d0805020742l7d4a6ec9mc72e79aa3d242348@mail.gmail.com>
+Date: Fri, 2 May 2008 10:42:21 -0400
+From: "Parag Warudkar" <parag.warudkar@gmail.com>
+To: "Adrian Bunk" <bunk@kernel.org>
+Subject: Re: How to reduce the number of open kernel bugs
+Cc: LKML <linux-kernel@vger.kernel.org>
 MIME-Version: 1.0
-Content-Disposition: inline
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Message-Id: <200805021638.52540.fabiomdf@alice.it>
-X-OriginalArrivalTime: 02 May 2008 14:26:59.0812 (UTC) FILETIME=[9515A240:01C8AC60]
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 29 April 2008 19:18:52 Arjan van de Ven wrote:
->On Wed, 30 Apr 2008 17:02:02 +0200
->Fabio De Francesco <fabiomdf@alice.it> wrote:
+Adrian Bunk <bunk <at> kernel.org> writes:
+
+> Maintainer:
 >
->> Hi all,
->> 
->> I've got a Linux box, Intel Core 2 T7700 with 4GB RAM installed, with
->> vanilla kernel 2.6.24 + TuxOnIce patch-set compiled for x86_32bit
->> (CONFIG_X86_32=y), whose /proc/meminfo shows "LowTotal 794MB".
+> Yeah, in any case. I cannot fix it, since it's not a bug in the fobar
+> code. Please reopen a new bug and CC the architecture or PCI maintainer
+> or whatever person related to the bus, chipset or CPU, if you think the
+> foobar device still works. If the foobar hardware got corrupted, you
+> already know what to do...
 >
->I'm not an expert in this, but one thing is that the more memory the system has, the more overhead there is.
->(roughly 64 bytes per 4Kb of memory).
+> I am well aware that loud flames are often the only working way of
+> communication in Linux kernel development, but we mustn't communicate
+> this way with bug submitters.
 >
 
-Arjan,
+Actually this way of _communication_ is better because the maintainer has -
 
-Unfortunetally my poor knowledge of Linux kernel mechanisms (and code!) prevents me from understanding what could be the causes for that overhead. Do you mean it is a hardware issue? Or is it a kernel one? Anyway another machine of mine, that is equipped with 2GB RAM, doesn't show any proportional reduction of low memory at all. So this makes me think (oh, dear!).
+a) at least seen the bug
+b) made it clear upfront that he/she is not in a position to fix it and
+c) not inflicted a huge amount of follow up work for the reporter
+while giving no hope that it will be fixed.
 
-Anyway I started a little research (eh?) in Linux code in order to understand how the low memory mapping is done, just in case... Please be patient if what I've done shows nothing relevant for this subject.  
+There is not much you can do if the maintainer feels he/she can't do
+anything - apart from fixing it yourself which has its limits.
+So the best that can be done is to communicate it clearly - that
+happens in this case.
 
-I've just read arch/x86/mm/init_32.c where, if I understand well(?) the mapping happens. I started from pagetable_init() following the flow to kernel_physical_mapping_init() where the hard work is done. Comments before this last function say that "maps the physical memory to kernel virtual address space, a total of max_low_pfn pages, by creating page tables starting from address PAGE_OFFSET".
+Compare the above to -
 
-Ok, then... max_low_pfn is set upon what the BIOS had provided in arch/x86/kernel/setup_32.c, by function find_max_low_pfn().
+* Reporter reports a bug.
 
-After having inserted a couple of printk() showing the value of max_low_pfn and pfn (a local variable of kernel_physical_mapping_init() that is incremented in a for() at each iteration, and which counts how many pages have really been mapped) in the relevant(?) sections/functions, this is the first part of dmesg:
+* People in position to fix it  have no care for it and they show it
+(By not even looking at it).
 
-[    0.000000] Linux version 2.6.24-tuxonice-r6-080430 (root@host11) (gcc version 4.2.3 (Gentoo 4.2.3 p1.0)) #5 SMP PREEMPT Thu May 1 22:24:26 CEST 2008
-[    0.000000] BIOS-provided physical RAM map:
-[    0.000000]  BIOS-e820: 0000000000000000 - 000000000009f000 (usable)
-[    0.000000]  BIOS-e820: 000000000009f000 - 00000000000a0000 (reserved)
-[    0.000000]  BIOS-e820: 0000000000100000 - 00000000dfe72000 (usable)
-[    0.000000]  BIOS-e820: 00000000dfe72000 - 00000000e0000000 (reserved)
-[    0.000000]  BIOS-e820: 00000000f4000000 - 00000000f8000000 (reserved)
-[    0.000000]  BIOS-e820: 00000000fec00000 - 00000000fec10000 (reserved)
-[    0.000000]  BIOS-e820: 00000000fed18000 - 00000000fed1c000 (reserved)
-[    0.000000]  BIOS-e820: 00000000fed20000 - 00000000fed90000 (reserved)
-[    0.000000]  BIOS-e820: 00000000feda0000 - 00000000feda6000 (reserved)
-[    0.000000]  BIOS-e820: 00000000fee00000 - 00000000fee10000 (reserved)
-[    0.000000]  BIOS-e820: 00000000ffe00000 - 0000000100000000 (reserved)
-[    0.000000]  BIOS-e820: 0000000100000000 - 0000000120000000 (usable)
-[    0.000000] ---> find_max_lox_pfn() returns max_low_pfn value of 229376 <---
-[    0.000000] 3712MB HIGHMEM available.
-[    0.000000] 896MB LOWMEM available.
-[    0.000000] NX (Execute Disable) protection: active
-[    0.000000] ---> In kernel_physical_mapping_init(), max_low_pfn value is 229376 <---
-[    0.000000] ---> In kernel_physical_mapping_init(), after mapping, max_low_pfn and pfn values are 229376 and 229376 <---
-[    0.000000] Entering add_active_range(0, 0, 1179648) 0 entries of 256 used
-[    0.000000] Zone PFN ranges:
-[    0.000000]   DMA             0 ->     4096
-[    0.000000]   Normal       4096 ->   229376
-[    0.000000]   HighMem    229376 ->  1179648
-[    0.000000] Movable zone start PFN for each node
-[    0.000000] early_node_map[1] active PFN ranges
-[    0.000000]     0:        0 ->  1179648
-[    0.000000] On node 0 totalpages: 1179648
-[    0.000000]   DMA zone: 32 pages used for memmap
-[    0.000000]   DMA zone: 0 pages reserved
-[    0.000000]   DMA zone: 4064 pages, LIFO batch:0
-[    0.000000]   Normal zone: 1760 pages used for memmap
-[    0.000000]   Normal zone: 223520 pages, LIFO batch:31
-[    0.000000]   HighMem zone: 7424 pages used for memmap
-[    0.000000]   HighMem zone: 942848 pages, LIFO batch:31
-[    0.000000]   Movable zone: 0 pages used for memmap
-...skip...
-Memory: 4068032k/4718592k available (4030k kernel code, 123504k reserved, 1642k data, 264k init, 3275208k highmem)
-[   10.657852] virtual kernel memory layout:
-[   10.657852]     fixmap  : 0xfff9b000 - 0xfffff000   ( 400 kB)
-[   10.657853]     pkmap   : 0xffc00000 - 0xffe00000   (2048 kB)
-[   10.657854]     vmalloc : 0xf8800000 - 0xffbfe000   ( 115 MB)
-[   10.657855]     lowmem  : 0xc0000000 - 0xf8000000   ( 896 MB)
-[   10.657856]       .init : 0xc0691000 - 0xc06d3000   ( 264 kB)
-[   10.657856]       .data : 0xc04ef916 - 0xc068a154   (1642 kB)
-[   10.657857]       .text : 0xc0100000 - 0xc04ef916   (4030 kB)
+* Significant amount of time passes with no activity.
 
-I think it only remains to me to understand which policy /proc/meminfo uses in calculation of total low memory.
+* Reporter receives a automated mail (bonus insult) - New release is
+available, please retest with new release and open a new bug if the
+problem still exists.
 
-As for it is concerned with my other question, I understand yours and Alan replies on the PCI hole.
+* Bug is closed
 
-Thank you.
+* Bug still exists in next release - reporter knows only when he/she
+gets a chance to upgrade to next release (not always easy/possible).
 
--- 
-Best Regards,
-
-fabio de francesco
-metanix.org
+Parag
