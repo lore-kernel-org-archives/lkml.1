@@ -1,95 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762109AbYEBGQI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760387AbYEBGcW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762109AbYEBGQI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 02:16:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756474AbYEBGPy
+	id S1760387AbYEBGcW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 02:32:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753221AbYEBGcM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 02:15:54 -0400
-Received: from nn7.de ([85.214.94.156]:37229 "EHLO nn7.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756221AbYEBGPx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 02:15:53 -0400
-Subject: Re: 24rc8: unregister_netdevice: waiting for ... to become free.
-From: Soeren Sonnenburg <kernel@nn7.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Roland <devzero@web.de>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-In-Reply-To: <20080501225948.f351eab9.akpm@linux-foundation.org>
-References: <004701c8abf4$4cefe820$6400a8c0@bui.materna.com>
-	 <20080501225948.f351eab9.akpm@linux-foundation.org>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Fri, 02 May 2008 08:15:43 +0200
-Message-Id: <1209708943.23075.52.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 
+	Fri, 2 May 2008 02:32:12 -0400
+Received: from wa-out-1112.google.com ([209.85.146.182]:63749 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751169AbYEBGcL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 May 2008 02:32:11 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:x-x-sender:to:cc:subject:message-id:user-agent:mime-version:content-type:from;
+        b=U8NTpKsS0vQAWaHkMZ/u8kDgCkbFTic3kXPB8nIUSJTbT+zJzJ2PKoEnk8urBuLAHw2Z5YfVKADSD0t01v/TZsjnPEQmpJmfeCqK7sC1IofuaQJjmw4HBJInvacGZ0a+UST/MPKHMnAb3sJL1zeYeG+pcHAVazJeV0PEvg5QlAs=
+Date: Fri, 2 May 2008 14:36:14 +0800 (CST)
+X-X-Sender: wangcong@localhost.localdomain
+To: linux-kernel@vger.kernel.org
+cc: akpm@osdl.org, jdike@addtoit.com,
+       user-mode-linux-devel@lists.sourceforge.net
+Subject: [Patch] (Resend) arch/um/kernel/irq.c: clean up some functions
+Message-ID: <alpine.LFD.1.10.0805021430280.3349@localhost.localdomain>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
+From: WANG Cong <xiyou.wangcong@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-05-01 at 22:59 -0700, Andrew Morton wrote:
-> On Fri, 2 May 2008 03:26:28 +0200 "Roland" <devzero@web.de> wrote:
-> 
-> > i`m also seeing this one, but with pcnet32 - "modprobe -r pcnet32" never 
-> > returns and
-> > 
-> > "unregister_netdevice: waiting for eth0 to become free. Usage count = 1"
-> > 
-> > being printed over and over again
-> > 
-> > lsmod |grep pcnet32 shows
-> > 
-> > pcnet32            35828    0
-> > mii                      9344    1    pcnet32
-> > 
-> > i see stale ssh connection on port 22 and sshd for that session remains 
-> > unkillable process.
-> > 
-> 
-> here a bug
-> 
-> > 
-> > 
-> > List:       linux-kernel
-> > Subject:    Re: 24rc8: unregister_netdevice: waiting for ... to become free.
-> > From:       Soeren Sonnenburg <kernel () nn7 ! de>
-> > Date:       2008-01-29 8:59:10
-> > Message-ID: 1201597150.4973.10.camel () localhost
-> > [Download message RAW]
-> > 
-> > On Tue, 2008-01-22 at 22:44 -0800, David Miller wrote:
-> > > From: Soeren Sonnenburg <kernel@nn7.de>
-> > > Date: Wed, 23 Jan 2008 07:42:21 +0100
-> > >
-> > > > Dear all,
-> > > >
-> > > > since some 2.6.24rc version I suddenly experience such messages on
-> > > > console when trying to shutdown a vpn connection:
-> > > >
-> > > > unregister_netdevice: waiting for tun0 to become free. Usage count = 1
-> > > >
-> > > > or when removing an usb wlan dongle (although it was ifconfig wlan0
-> > > > down'd before)
-> > >
-> > > Current GIT already has a fix for this, attached below:
-> > 
-> > hmmhhh, I am still seeing this problem on 2.6.24 with at least with the
-> > madwifi driver...
-> > 
-> > Soeren
-> 
-> there a bug.
-> 
-> 
-> Let's cc netdev@vger.kernel.org - linux-net is dead, afaik.
-> 
-> Thanks for reporting all these bugs but please do take much mure care over
-> the cc's.  Be sure to cc every party who was cc'ed on the email to which
-> you're replying.  I restored Soeren.
 
-I am not exactly sure which kernel version Roland (?) is/was using but
-from what I can tell this bug is fixed since 2.6.24 (at least). Well I
-didn't see it with madwifi nor with the tun devices anymore on any of
-the 24.X or 25rc's/25 ...
+Make activate_fd() and free_irq_by_irq_and_dev() static.
+Remove init_aio_irq() since it has no users.
 
-Soeren
+Compile testing passed.
+
+Cc: Jeff Dike <jdike@addtoit.com>
+Signed-off-by: WANG Cong <wangcong@zeuux.org>
+
+---
+  arch/um/include/irq_kern.h |    2 --
+  arch/um/include/irq_user.h |    2 --
+  arch/um/kernel/irq.c       |   35 ++---------------------------------
+  3 files changed, 2 insertions(+), 37 deletions(-)
+
+diff --git a/arch/um/include/irq_kern.h b/arch/um/include/irq_kern.h
+index 4f77559..fba3895 100644
+--- a/arch/um/include/irq_kern.h
++++ b/arch/um/include/irq_kern.h
+@@ -13,8 +13,6 @@ extern int um_request_irq(unsigned int irq, int fd, int type,
+  			  irq_handler_t handler,
+  			  unsigned long irqflags,  const char * devname,
+  			  void *dev_id);
+-extern int init_aio_irq(int irq, char *name,
+-			irq_handler_t handler);
+
+  #endif
+
+diff --git a/arch/um/include/irq_user.h b/arch/um/include/irq_user.h
+index e60b318..c6c784d 100644
+--- a/arch/um/include/irq_user.h
++++ b/arch/um/include/irq_user.h
+@@ -21,8 +21,6 @@ struct irq_fd {
+  enum { IRQ_READ, IRQ_WRITE };
+
+  extern void sigio_handler(int sig, struct uml_pt_regs *regs);
+-extern int activate_fd(int irq, int fd, int type, void *dev_id);
+-extern void free_irq_by_irq_and_dev(unsigned int irq, void *dev_id);
+  extern void free_irq_by_fd(int fd);
+  extern void reactivate_fd(int fd, int irqnum);
+  extern void deactivate_fd(int fd, int irqnum);
+diff --git a/arch/um/kernel/irq.c b/arch/um/kernel/irq.c
+index 91587f8..3d7aad0 100644
+--- a/arch/um/kernel/irq.c
++++ b/arch/um/kernel/irq.c
+@@ -102,7 +102,7 @@ void sigio_handler(int sig, struct uml_pt_regs *regs)
+
+  static DEFINE_SPINLOCK(irq_lock);
+
+-int activate_fd(int irq, int fd, int type, void *dev_id)
++static int activate_fd(int irq, int fd, int type, void *dev_id)
+  {
+  	struct pollfd *tmp_pfd;
+  	struct irq_fd *new_fd, *irq_fd;
+@@ -216,7 +216,7 @@ static int same_irq_and_dev(struct irq_fd *irq, void *d)
+  	return ((irq->irq == data->irq) && (irq->id == data->dev));
+  }
+
+-void free_irq_by_irq_and_dev(unsigned int irq, void *dev)
++static void free_irq_by_irq_and_dev(unsigned int irq, void *dev)
+  {
+  	struct irq_and_dev data = ((struct irq_and_dev) { .irq  = irq,
+  							  .dev  = dev });
+@@ -403,37 +403,6 @@ void __init init_IRQ(void)
+  	}
+  }
+
+-int init_aio_irq(int irq, char *name, irq_handler_t handler)
+-{
+-	int fds[2], err;
+-
+-	err = os_pipe(fds, 1, 1);
+-	if (err) {
+-		printk(KERN_ERR "init_aio_irq - os_pipe failed, err = %d\n",
+-		       -err);
+-		goto out;
+-	}
+-
+-	err = um_request_irq(irq, fds[0], IRQ_READ, handler,
+-			     IRQF_DISABLED | IRQF_SAMPLE_RANDOM, name,
+-			     (void *) (long) fds[0]);
+-	if (err) {
+-		printk(KERN_ERR "init_aio_irq - : um_request_irq failed, "
+-		       "err = %d\n",
+-		       err);
+-		goto out_close;
+-	}
+-
+-	err = fds[1];
+-	goto out;
+-
+- out_close:
+-	os_close_file(fds[0]);
+-	os_close_file(fds[1]);
+- out:
+-	return err;
+-}
+-
+  /*
+   * IRQ stack entry and exit:
+   *
+-- 
+1.5.2.4
+
