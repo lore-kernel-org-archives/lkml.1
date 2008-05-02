@@ -1,33 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765041AbYEBAAx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765155AbYEBACw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765041AbYEBAAx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 May 2008 20:00:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754100AbYEBAAp
+	id S1765155AbYEBACw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 May 2008 20:02:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753901AbYEBACp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 May 2008 20:00:45 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:38765 "EHLO
+	Thu, 1 May 2008 20:02:45 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:53766 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753676AbYEBAAp (ORCPT
+	by vger.kernel.org with ESMTP id S1750950AbYEBACp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 May 2008 20:00:45 -0400
-Date: Thu, 1 May 2008 16:59:45 -0700
+	Thu, 1 May 2008 20:02:45 -0400
+Date: Thu, 1 May 2008 17:02:39 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Tom Rini <trini@kernel.crashing.org>
-Cc: torvalds@linux-foundation.org, bunk@kernel.org,
-       venkatesh.pallipadi@intel.com, davem@davemloft.net, mingo@elte.hu,
-       tglx@linutronix.de, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       suresh.b.siddha@intel.com, vegard.nossum@gmail.com
-Subject: Re: huge gcc 4.1.{0,1} __weak problem
-Message-Id: <20080501165945.077d34f9.akpm@linux-foundation.org>
-In-Reply-To: <20080501232447.GF4354@smtp.west.cox.net>
-References: <20080430013108.GA18207@linux-os.sc.intel.com>
-	<20080429.212833.192304794.davem@davemloft.net>
-	<924EFEDD5F540B4284297C4DC59F3DEEF7D18E@orsmsx423.amr.corp.intel.com>
-	<20080501215633.GU29330@cs181133002.pp.htv.fi>
-	<20080501152051.4eb4bad3.akpm@linux-foundation.org>
-	<alpine.LFD.1.10.0805011525460.5994@woody.linux-foundation.org>
-	<20080501153349.f4537ec7.akpm@linux-foundation.org>
-	<20080501232447.GF4354@smtp.west.cox.net>
+To: Ryan Roth <ryanroth@sbcglobal.net>
+Cc: Ryan.Roth@CH2M.com, bugme-daemon@bugzilla.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [Bugme-new] [Bug 10586] New: High Number of Segfaults
+ onMacBookStarting With 2.6.24.5 Kernel
+Message-Id: <20080501170239.9b740877.akpm@linux-foundation.org>
+In-Reply-To: <481A5276.4040607@sbcglobal.net>
+References: <bug-10586-10286@http.bugzilla.kernel.org/>
+	<20080501130444.cc5c63e8.akpm@linux-foundation.org>
+	<86A21F45FFA48B408A65E67054362EB6069DD742@CULEBRA.amr.ch2m.com>
+	<20080501133003.be723364.akpm@linux-foundation.org>
+	<86A21F45FFA48B408A65E67054362EB621C948@CULEBRA.amr.ch2m.com>
+	<481A5276.4040607@sbcglobal.net>
 X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -36,52 +33,25 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 1 May 2008 16:24:47 -0700
-Tom Rini <trini@kernel.crashing.org> wrote:
+On Thu, 01 May 2008 16:29:58 -0700
+Ryan Roth <ryanroth@sbcglobal.net> wrote:
 
-> On Thu, May 01, 2008 at 03:33:49PM -0700, Andrew Morton wrote:
-> > On Thu, 1 May 2008 15:27:26 -0700 (PDT)
-> > Linus Torvalds <torvalds@linux-foundation.org> wrote:
-> > 
-> > > 
-> > > 
-> > > On Thu, 1 May 2008, Andrew Morton wrote:
-> > > > > 
-> > > > > I see only the following choices:
-> > > > > - remove __weak and replace all current usages
-> > > > > - move all __weak functions into own files, and ensure that also happens
-> > > > >   for future usages
-> > > > > - #error for gcc 4.1.{0,1}
-> > > > 
-> > > > Can we detect the {0,1}?  __GNUC_EVEN_MORE_MINOR__?
-> > > 
-> > > It's __GNUC_PATCHLEVEL__, I believe.
-> > > 
-> > > So yes, we can distinguish 4.1.2 (good, and very common) from 4.1.{0,1} 
-> > > (bad, and rather uncommon).
-> > > 
-> > > And yes, considering that 4.1.1 (and even more so 4.1.0) should be rare to 
-> > > begin with, I think it's better to just not support it.
-> > > 
-> > 
-> > Drat.  There go my alpha, i386, m68k, s390, sparc and powerpc
-> > cross-compilers.  Vagard, save me!
-> > 
-> > Meanwhile I guess I can locally unpatch that patch.
+> > OK, worried.  This is a huge bug.  But afaik you're the only person 
+> > who has
+> > hit it, so there must be something special in your setup which is
+> > triggering it.  This could be hard.
+> >
 > 
-> I know I'll come off as an ass, but you can't make new ones with 4.1.2?
-> It's not like we're talking about gcc 2.95/96 fun here :)
+> OK here is what I get with the git16 kernel.  On boot I get this error:
+> 
+> PCI: Not using MMCONFIG
+> PCI: BIOS Bug: MCFG area at f0000000 is not reserved in ACPI motherboard 
+> resources
+> PCI: Not using MMCONFIG
 
-Honestly, I nearly died when I built all those cross-compilers.  Sooooooo
-many combinations of gcc/binutils/glibc refused to work for obscure
-reasons.  Compilation on x86_64 just didn't work at all and I ended up
-having to build everything on a slow i386 box, etc, etc.  The stream of
-email to Dan got increasingly strident ;)
+yeah, mmconfig is a problem.  It should be harmless.  Probably you're
+better off with it disabled ;)
 
-I think crosstool has become a lot better since then, judging from the ease
-with which Jens was able to spin up the powerpc compiler, but the trauma
-was a life-long thing.
+> Attached is a complete log after this boot
 
-Vegard has been making noises about (finally!) preparing and maintaining a
-decent set of cross-compilers for us.  It would be a great service (begs).
-
+I see no 'segfault' messages in there?
