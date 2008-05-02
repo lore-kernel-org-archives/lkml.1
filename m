@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937320AbYEBXpG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937566AbYEBXph@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937320AbYEBXpG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 19:45:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932782AbYEBXoz
+	id S937566AbYEBXph (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 19:45:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937431AbYEBXpN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 19:44:55 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:55014 "EHLO
+	Fri, 2 May 2008 19:45:13 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:55132 "EHLO
 	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932498AbYEBXoy (ORCPT
+	with ESMTP id S937398AbYEBXpL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 19:44:54 -0400
-Message-ID: <481BA774.5090004@ct.jp.nec.com>
-Date: Fri, 02 May 2008 16:44:52 -0700
+	Fri, 2 May 2008 19:45:11 -0400
+Message-ID: <481BA784.5050908@ct.jp.nec.com>
+Date: Fri, 02 May 2008 16:45:08 -0700
 From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
 User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
 MIME-Version: 1.0
 To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
        "H. Peter Anvin" <hpa@zytor.com>
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] x86_64: nmi and irq counters are unsigned
+Subject: [PATCH] x86_32: use per_cpu data
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
@@ -27,35 +27,80 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
 
-__nmi_count, apic_timer_irqs and irq0_irqs are unsigned.
+use per_cpu for per CPU data.
 
 Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
 ---
- arch/x86/kernel/nmi_64.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ arch/x86/kernel/nmi_32.c |   29 +++++++++++++++++------------
+ 1 files changed, 17 insertions(+), 12 deletions(-)
 
-diff --git a/arch/x86/kernel/nmi_64.c b/arch/x86/kernel/nmi_64.c
-index 5a29ded..33cb8ec 100644
---- a/arch/x86/kernel/nmi_64.c
-+++ b/arch/x86/kernel/nmi_64.c
-@@ -79,7 +79,7 @@ static __init void nmi_cpu_busy(void *data)
+diff --git a/arch/x86/kernel/nmi_32.c b/arch/x86/kernel/nmi_32.c
+index 11b14bb..69bdae5 100644
+--- a/arch/x86/kernel/nmi_32.c
++++ b/arch/x86/kernel/nmi_32.c
+@@ -293,9 +293,9 @@ void stop_apic_nmi_watchdog(void *unused)
+  *  here too!]
+  */
  
- int __init check_nmi_watchdog(void)
- {
--	int *prev_nmi_count;
-+	unsigned int *prev_nmi_count;
- 	int cpu;
+-static unsigned int
+-	last_irq_sums [NR_CPUS],
+-	alert_counter [NR_CPUS];
++static DEFINE_PER_CPU(unsigned, last_irq_sum);
++static DEFINE_PER_CPU(local_t, alert_counter);
++static DEFINE_PER_CPU(int, nmi_touch);
  
- 	if ((nmi_watchdog == NMI_NONE) || (nmi_watchdog == NMI_DISABLED))
-@@ -316,7 +316,7 @@ EXPORT_SYMBOL(touch_nmi_watchdog);
- notrace __kprobes int
- nmi_watchdog_tick(struct pt_regs *regs, unsigned reason)
+ void touch_nmi_watchdog(void)
  {
--	int sum;
-+	unsigned int sum;
- 	int touched = 0;
- 	int cpu = smp_processor_id();
- 	int rc = 0;
+@@ -303,12 +303,13 @@ void touch_nmi_watchdog(void)
+ 		unsigned cpu;
+ 
+ 		/*
+-		 * Just reset the alert counters, (other CPUs might be
+-		 * spinning on locks we hold):
++		 * Tell other CPUs to reset their alert counters. We cannot
++		 * do it ourselves because the alert count increase is not
++		 * atomic.
+ 		 */
+ 		for_each_present_cpu(cpu) {
+-			if (alert_counter[cpu])
+-				alert_counter[cpu] = 0;
++			if (per_cpu(nmi_touch, cpu) != 1)
++				per_cpu(nmi_touch, cpu) = 1;
+ 		}
+ 	}
+ 
+@@ -358,22 +359,26 @@ nmi_watchdog_tick(struct pt_regs *regs, unsigned reason)
+ 	 */
+ 	sum = per_cpu(irq_stat, cpu).apic_timer_irqs +
+ 		per_cpu(irq_stat, cpu).irq0_irqs;
++	if (__get_cpu_var(nmi_touch)) {
++		__get_cpu_var(nmi_touch) = 0;
++		touched = 1;
++	}
+ 
+ 	/* if the none of the timers isn't firing, this cpu isn't doing much */
+-	if (!touched && last_irq_sums[cpu] == sum) {
++	if (!touched && __get_cpu_var(last_irq_sum) == sum) {
+ 		/*
+ 		 * Ayiee, looks like this CPU is stuck ...
+ 		 * wait a few IRQs (5 seconds) before doing the oops ...
+ 		 */
+-		alert_counter[cpu]++;
+-		if (alert_counter[cpu] == 5*nmi_hz)
++		local_inc(&__get_cpu_var(alert_counter));
++		if (local_read(&__get_cpu_var(alert_counter)) == 5*nmi_hz)
+ 			/*
+ 			 * die_nmi will return ONLY if NOTIFY_STOP happens..
+ 			 */
+ 			die_nmi(regs, "BUG: NMI Watchdog detected LOCKUP");
+ 	} else {
+-		last_irq_sums[cpu] = sum;
+-		alert_counter[cpu] = 0;
++		__get_cpu_var(last_irq_sum) = sum;
++		local_set(&__get_cpu_var(alert_counter), 0);
+ 	}
+ 	/* see if the nmi watchdog went off */
+ 	if (!__get_cpu_var(wd_enabled))
 -- 
 1.5.4.1
 
