@@ -1,60 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764441AbYEBJG1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765601AbYEBJJv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764441AbYEBJG1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 05:06:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758389AbYEBJGU
+	id S1765601AbYEBJJv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 05:09:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758389AbYEBJJo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 05:06:20 -0400
-Received: from smtp-out03.alice-dsl.net ([88.44.63.5]:29374 "EHLO
-	smtp-out03.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757852AbYEBJGT (ORCPT
+	Fri, 2 May 2008 05:09:44 -0400
+Received: from smtp-out01.alice-dsl.net ([88.44.60.11]:50004 "EHLO
+	smtp-out01.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757852AbYEBJJn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 05:06:19 -0400
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       mingo@redhat.com, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: x86: 8K stacks by default
+	Fri, 2 May 2008 05:09:43 -0400
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Tom Rini <trini@kernel.crashing.org>, torvalds@linux-foundation.org,
+       bunk@kernel.org, venkatesh.pallipadi@intel.com, davem@davemloft.net,
+       mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com,
+       linux-kernel@vger.kernel.org, suresh.b.siddha@intel.com,
+       vegard.nossum@gmail.com
+Subject: Re: huge gcc 4.1.{0,1} __weak problem
 From: Andi Kleen <andi@firstfloor.org>
-References: <200805010359.m413xWBV014593@hera.kernel.org>
-	<20080501101956.695c5b34@core> <20080502071542.GA713@elte.hu>
-Date: Fri, 02 May 2008 11:05:16 +0200
-In-Reply-To: <20080502071542.GA713@elte.hu> (Ingo Molnar's message of "Fri, 2 May 2008 09:15:42 +0200")
-Message-ID: <87wsmdf54j.fsf@basil.nowhere.org>
+References: <20080430013108.GA18207@linux-os.sc.intel.com>
+	<20080429.212833.192304794.davem@davemloft.net>
+	<924EFEDD5F540B4284297C4DC59F3DEEF7D18E@orsmsx423.amr.corp.intel.com>
+	<20080501215633.GU29330@cs181133002.pp.htv.fi>
+	<20080501152051.4eb4bad3.akpm@linux-foundation.org>
+	<alpine.LFD.1.10.0805011525460.5994@woody.linux-foundation.org>
+	<20080501153349.f4537ec7.akpm@linux-foundation.org>
+	<20080501232447.GF4354@smtp.west.cox.net>
+	<20080501165945.077d34f9.akpm@linux-foundation.org>
+Date: Fri, 02 May 2008 11:09:23 +0200
+In-Reply-To: <20080501165945.077d34f9.akpm@linux-foundation.org> (Andrew Morton's message of "Thu, 1 May 2008 16:59:45 -0700")
+Message-ID: <87skx1f4xo.fsf@basil.nowhere.org>
 User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 02 May 2008 08:58:22.0545 (UTC) FILETIME=[ACAD7410:01C8AC32]
+X-OriginalArrivalTime: 02 May 2008 09:02:29.0071 (UTC) FILETIME=[3F9E55F0:01C8AC33]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar <mingo@elte.hu> writes:
+Andrew Morton <akpm@linux-foundation.org> writes:
 >
-> The plan is to remove "this overflows my stack here and now" technical 
-> argument: we'll add the stack-footprint measurement tracing plugin from 
-> -rt to ftrace and get that upstream. In -rt's tracer we can measure, 
-> track and trace the exact worst-case stack footprint of a system, since 
-> bootup. It relies on the function tracer which looks at the current 
-> stack footprint at every given moment. It's not a statistical sample, it 
-> tracks the true worst-case stack footprint.
+> Honestly, I nearly died when I built all those cross-compilers.  Sooooooo
+> many combinations of gcc/binutils/glibc refused to work for obscure
+> reasons.  Compilation on x86_64 just didn't work at all and I ended up
+> having to build everything on a slow i386 box, etc, etc.  The stream of
+> email to Dan got increasingly strident ;)
 
-I had such a measurement patch a long time ago for 2.4 x86-64
-(ftp://ftp.x86-64.org/pub/linux-x86_64/debug/stackcheck-1)
-
-But the problem today is the same as it was back then: you can't
-really get the production users with the nasty workloads who actually
-trigger the difficult overflows to run something like this which has
-quite high runtime overhead.
-
-> _Then_ there can be no real technical argument about making the more 
-> robust 4K stacks the default.
-
-You typoed: s/more/less/
+This might be pointing out the obvious, but to just update the compiler
+from 4.1.0 to 4.1.2 (or other) you don't need to recompile binutils and glibc.
 
 -Andi
-
-P.S. I agree with Alan that the interrupt stacks should be always enabled even 
-with 8k stacks.
