@@ -1,46 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937358AbYEBXez@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937083AbYEBXjw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937358AbYEBXez (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 19:34:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936233AbYEBXer
+	id S937083AbYEBXjw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 19:39:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763562AbYEBXjp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 19:34:47 -0400
-Received: from ozlabs.org ([203.10.76.45]:59590 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S936002AbYEBXeq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 19:34:46 -0400
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 2 May 2008 19:39:45 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:40175
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1758427AbYEBXjo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 May 2008 19:39:44 -0400
+Date: Fri, 02 May 2008 16:39:44 -0700 (PDT)
+Message-Id: <20080502.163944.140090564.davem@davemloft.net>
+To: akpm@linux-foundation.org
+Cc: harvey.harrison@gmail.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 12/12] net: use the common ascii hex helpers
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20080502163131.a13c0774.akpm@linux-foundation.org>
+References: <1209754916.26173.39.camel@brick>
+	<20080502.162515.14823435.davem@davemloft.net>
+	<20080502163131.a13c0774.akpm@linux-foundation.org>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Message-ID: <18459.42256.729189.8744@cargo.ozlabs.ibm.com>
-Date: Sat, 3 May 2008 09:34:40 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [git pull] Please pull powerpc.git master branch
-In-Reply-To: <alpine.LFD.1.10.0805020818440.5994@woody.linux-foundation.org>
-References: <18458.44292.817770.800636@cargo.ozlabs.ibm.com>
-	<alpine.LFD.1.10.0805020818440.5994@woody.linux-foundation.org>
-X-Mailer: VM 7.19 under Emacs 22.1.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds writes:
+From: Andrew Morton <akpm@linux-foundation.org>
+Date: Fri, 2 May 2008 16:31:31 -0700
 
-> On Fri, 2 May 2008, Paul Mackerras wrote:
+> On Fri, 02 May 2008 16:25:15 -0700 (PDT)
+> David Miller <davem@davemloft.net> wrote:
+> 
+> > From: Harvey Harrison <harvey.harrison@gmail.com>
+> > Date: Fri, 02 May 2008 12:01:56 -0700
 > > 
-> > git pull \
-> > git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git master
+> > > Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+> > 
+> > Acked-by: David S. Miller <davem@davemloft.net>
+> > 
+> > This has to go in via who ever adds the first patch
+> > with the actual helpers, so I won't apply this one.
 > 
-> "Already up-to-date."
-> 
-> Forgot to push?
+> Yup.  After a bit of testing and tyre-kicking I'll probably slip
+> lib-add-ascii-hex-helper-functions.patch into mainline so that we can
+> trickle all the *-use-the-common-ascii-hex-helpers.patch patches out to the
+> various maintainers.
 
-Yep. :(
+Please just slurp this networking one in with that, if you
+would be so kind.
 
-Try again now.
-
-Thanks,
-Paul.
