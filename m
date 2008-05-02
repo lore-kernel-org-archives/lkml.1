@@ -1,46 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934033AbYEBK40@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765720AbYEBLDk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934033AbYEBK40 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 06:56:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763056AbYEBK4D
+	id S1765720AbYEBLDk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 07:03:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759662AbYEBLDb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 06:56:03 -0400
-Received: from ozlabs.org ([203.10.76.45]:40060 "EHLO ozlabs.org"
+	Fri, 2 May 2008 07:03:31 -0400
+Received: from main.gmane.org ([80.91.229.2]:49048 "EHLO ciao.gmane.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762688AbYEBK4B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 06:56:01 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Mark McLoughlin <markmc@redhat.com>
-Subject: Re: [PATCH] virtio_net: free transmit skbs in a timer
-Date: Fri, 2 May 2008 20:55:25 +1000
-User-Agent: KMail/1.9.9
-Cc: Anthony Liguori <aliguori@us.ibm.com>,
-       virtualization@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-References: <1209565906-9019-1-git-send-email-markmc@redhat.com>
-In-Reply-To: <1209565906-9019-1-git-send-email-markmc@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+	id S1759549AbYEBLDa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 May 2008 07:03:30 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Jesper Krogh <jesper@krogh.cc>
+Subject: Re: Many open/close on same files yeilds 
+Date: Fri, 2 May 2008 11:03:16 +0000 (UTC)
+Message-ID: <loom.20080502T110150-114@post.gmane.org>
+References: <4819E316.7000607@krogh.cc> <20080501223938.921f7cd2.akpm@linux-foundation.org> <481ACEC4.2040205@krogh.cc> <20080501051548.08bbbec1@infradead.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200805022055.25870.rusty@rustcorp.com.au>
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: main.gmane.org
+User-Agent: Loom/3.14 (http://gmane.org/)
+X-Loom-IP: 90.184.13.46 (Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.14) Gecko/20080418 Ubuntu/7.10 (gutsy) Firefox/2.0.0.14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 01 May 2008 00:31:46 Mark McLoughlin wrote:
-> virtio_net currently only frees old transmit skbs just
-> before queueing new ones. If the queue is full, it then
-> enables interrupts and waits for notification that more
-> work has been performed.
+Arjan van de Ven <arjan <at> infradead.org> writes:
+> On Fri, 02 May 2008 10:20:20 +0200
+> Jesper Krogh <jesper <at> krogh.cc> wrote:
+> > This is the only activity on the system .. so a load of 1 / 16cpus.
+> 
+> have you run fsck on the filesystem?
 
-Hi Mark,
+Yes.. the first thing i did was a forced fsck .. and it was clean. 
 
-   This patch is fine, but it's better to do it from skb_xmit_done().  Of 
-course, this is usually called from an interrupt handler, so it's not 
-entirely trivial: we can't free the skbs there.
+> (and it might be interesting to use dump the metadata to a file first
+> to save the broken state for later analysis)
 
-   A softirq is probably the answer here, but AFAICT that's old fashioned.  
-Not sure what the right way of doing this is now...
+All 4.5TB? 
 
-Rusty.
+-- 
+Jesper
+
+
+
+
