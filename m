@@ -1,97 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934413AbYEBLhr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934287AbYEBLjr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934413AbYEBLhr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 07:37:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751452AbYEBLhe
+	id S934287AbYEBLjr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 07:39:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758864AbYEBLjj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 07:37:34 -0400
-Received: from wa-out-1112.google.com ([209.85.146.177]:19273 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934221AbYEBLhd (ORCPT
+	Fri, 2 May 2008 07:39:39 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:52811 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757017AbYEBLjj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 07:37:33 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type;
-        b=RpFWR6kcv34Np9FdGQ6kqy+Ba1gmQ5seqFEOwr91tFnQ3RblR9GUv7EdOS+EqubzXUvJWhIeUlqsULGY7yRjCGAQle6WnY9SOg8Q1isNc0QJAoEgi9K7kImRDBv2PxnC5BD0q9z3SlWQ4mE/QcZDEjPV8J+HqMGZvhAww0Jq4QM=
-Message-ID: <8dacd7b30805020437k2390d844ldd8909ebe11e9d56@mail.gmail.com>
-Date: Fri, 2 May 2008 13:37:32 +0200
-From: "Jan Niklas Hasse" <jhasse@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: libata - DMA problems ICH7 rev 02
-MIME-Version: 1.0
-Content-Type: multipart/mixed; 
-	boundary="----=_Part_20482_7827797.1209728252371"
+	Fri, 2 May 2008 07:39:39 -0400
+Subject: Re: Horrendous Audio Stutter - current git
+From: Peter Zijlstra <peterz@infradead.org>
+To: Frans Pop <elendil@planet.nl>
+Cc: Parag Warudkar <parag.warudkar@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <200805021337.10809.elendil@planet.nl>
+References: <82e4877d0805011714m35a47753q58cca706b7af6557@mail.gmail.com>
+	 <1209724553.13978.143.camel@twins> <1209726499.13978.146.camel@twins>
+	 <200805021337.10809.elendil@planet.nl>
+Content-Type: text/plain
+Date: Fri, 02 May 2008 13:39:32 +0200
+Message-Id: <1209728372.13978.147.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------=_Part_20482_7827797.1209728252371
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+On Fri, 2008-05-02 at 13:37 +0200, Frans Pop wrote:
+> On Friday 02 May 2008, Peter Zijlstra wrote:
+> > > Ok, that's _WAY_ too big, something went seriously wrong. Thanks!
+> >
+> > In fact, that is exactly 1024 time too large.
+> >
+> > How does this work for you:
+> 
+> Changes nothing. Values of bonus_max are unchanged and still skips.
 
-Hi everyone,
+Humm, I saw some bonus_max spikes on my laptop which were fixed by that
+patchlet, ah well, the hunt goes on.
 
-I don't have DMA on my notebook, I think it's this problem:
-http://ata.wiki.kernel.org/index.php/Libata_FAQ#Intel_combined_mode
-I tried all steps mention there (the first one wasn't possible because
-my BIOS didn't support it), but none of them worked (every time my
-harddisk is loading my CPU is spammed with IOWait).
+Thanks!
 
-Output of uname -a and lspci is attached.
-
-I hope you can help me, very hard to work without DMA. Sorry if there
-are some English mistakes.
-
-Jan
-
-------=_Part_20482_7827797.1209728252371
-Content-Type: text/plain; name=lspci.txt
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_ffqoxw500
-Content-Disposition: attachment; filename=lspci.txt
-
-amhhc3NlQHVidW50dTp+JCB1bmFtZSAtYQpMaW51eCB1YnVudHUgMi42LjI0LTE2LWdlbmVyaWMg
-IzEgU01QIFRodSBBcHIgMTAgMTI6NDc6NDUgVVRDIDIwMDggeDg2XzY0IEdOVS9MaW51eApqaGFz
-c2VAdWJ1bnR1On4kIGxzcGNpCjAwOjAwLjAgSG9zdCBicmlkZ2U6IEludGVsIENvcnBvcmF0aW9u
-IE1vYmlsZSA5NDVHTS9QTS9HTVMsIDk0My85NDBHTUwgYW5kIDk0NUdUIEV4cHJlc3MgTWVtb3J5
-IENvbnRyb2xsZXIgSHViIChyZXYgMDMpCjAwOjAyLjAgVkdBIGNvbXBhdGlibGUgY29udHJvbGxl
-cjogSW50ZWwgQ29ycG9yYXRpb24gTW9iaWxlIDk0NUdNL0dNUywgOTQzLzk0MEdNTCBFeHByZXNz
-IEludGVncmF0ZWQgR3JhcGhpY3MgQ29udHJvbGxlciAocmV2IDAzKQowMDowMi4xIERpc3BsYXkg
-Y29udHJvbGxlcjogSW50ZWwgQ29ycG9yYXRpb24gTW9iaWxlIDk0NUdNL0dNUy9HTUUsIDk0My85
-NDBHTUwgRXhwcmVzcyBJbnRlZ3JhdGVkIEdyYXBoaWNzIENvbnRyb2xsZXIgKHJldiAwMykKMDA6
-MWIuMCBBdWRpbyBkZXZpY2U6IEludGVsIENvcnBvcmF0aW9uIDgyODAxRyAoSUNINyBGYW1pbHkp
-IEhpZ2ggRGVmaW5pdGlvbiBBdWRpbyBDb250cm9sbGVyIChyZXYgMDIpCjAwOjFjLjAgUENJIGJy
-aWRnZTogSW50ZWwgQ29ycG9yYXRpb24gODI4MDFHIChJQ0g3IEZhbWlseSkgUENJIEV4cHJlc3Mg
-UG9ydCAxIChyZXYgMDIpCjAwOjFjLjEgUENJIGJyaWRnZTogSW50ZWwgQ29ycG9yYXRpb24gODI4
-MDFHIChJQ0g3IEZhbWlseSkgUENJIEV4cHJlc3MgUG9ydCAyIChyZXYgMDIpCjAwOjFjLjIgUENJ
-IGJyaWRnZTogSW50ZWwgQ29ycG9yYXRpb24gODI4MDFHIChJQ0g3IEZhbWlseSkgUENJIEV4cHJl
-c3MgUG9ydCAzIChyZXYgMDIpCjAwOjFjLjMgUENJIGJyaWRnZTogSW50ZWwgQ29ycG9yYXRpb24g
-ODI4MDFHIChJQ0g3IEZhbWlseSkgUENJIEV4cHJlc3MgUG9ydCA0IChyZXYgMDIpCjAwOjFkLjAg
-VVNCIENvbnRyb2xsZXI6IEludGVsIENvcnBvcmF0aW9uIDgyODAxRyAoSUNINyBGYW1pbHkpIFVT
-QiBVSENJIENvbnRyb2xsZXIgIzEgKHJldiAwMikKMDA6MWQuMSBVU0IgQ29udHJvbGxlcjogSW50
-ZWwgQ29ycG9yYXRpb24gODI4MDFHIChJQ0g3IEZhbWlseSkgVVNCIFVIQ0kgQ29udHJvbGxlciAj
-MiAocmV2IDAyKQowMDoxZC4yIFVTQiBDb250cm9sbGVyOiBJbnRlbCBDb3Jwb3JhdGlvbiA4Mjgw
-MUcgKElDSDcgRmFtaWx5KSBVU0IgVUhDSSBDb250cm9sbGVyICMzIChyZXYgMDIpCjAwOjFkLjMg
-VVNCIENvbnRyb2xsZXI6IEludGVsIENvcnBvcmF0aW9uIDgyODAxRyAoSUNINyBGYW1pbHkpIFVT
-QiBVSENJIENvbnRyb2xsZXIgIzQgKHJldiAwMikKMDA6MWQuNyBVU0IgQ29udHJvbGxlcjogSW50
-ZWwgQ29ycG9yYXRpb24gODI4MDFHIChJQ0g3IEZhbWlseSkgVVNCMiBFSENJIENvbnRyb2xsZXIg
-KHJldiAwMikKMDA6MWUuMCBQQ0kgYnJpZGdlOiBJbnRlbCBDb3Jwb3JhdGlvbiA4MjgwMSBNb2Jp
-bGUgUENJIEJyaWRnZSAocmV2IGUyKQowMDoxZi4wIElTQSBicmlkZ2U6IEludGVsIENvcnBvcmF0
-aW9uIDgyODAxR0JNIChJQ0g3LU0pIExQQyBJbnRlcmZhY2UgQnJpZGdlIChyZXYgMDIpCjAwOjFm
-LjEgSURFIGludGVyZmFjZTogSW50ZWwgQ29ycG9yYXRpb24gODI4MDFHIChJQ0g3IEZhbWlseSkg
-SURFIENvbnRyb2xsZXIgKHJldiAwMikKMDA6MWYuMyBTTUJ1czogSW50ZWwgQ29ycG9yYXRpb24g
-ODI4MDFHIChJQ0g3IEZhbWlseSkgU01CdXMgQ29udHJvbGxlciAocmV2IDAyKQowMzowMC4wIE5l
-dHdvcmsgY29udHJvbGxlcjogSW50ZWwgQ29ycG9yYXRpb24gUFJPL1dpcmVsZXNzIDM5NDVBQkcg
-TmV0d29yayBDb25uZWN0aW9uIChyZXYgMDIpCjA4OjA1LjAgRXRoZXJuZXQgY29udHJvbGxlcjog
-QnJvYWRjb20gQ29ycG9yYXRpb24gQkNNNDQwMS1CMCAxMDBCYXNlLVRYIChyZXYgMDIpCjA4OjA5
-LjAgQ2FyZEJ1cyBicmlkZ2U6IFJpY29oIENvIEx0ZCBSTDVjNDc2IElJIChyZXYgYjQpCjA4OjA5
-LjEgRmlyZVdpcmUgKElFRUUgMTM5NCk6IFJpY29oIENvIEx0ZCBSNUM1NTIgSUVFRSAxMzk0IENv
-bnRyb2xsZXIgKHJldiAwOSkKMDg6MDkuMiBTRCBIb3N0IGNvbnRyb2xsZXI6IFJpY29oIENvIEx0
-ZCBSNUM4MjIgU0QvU0RJTy9NTUMvTVMvTVNQcm8gSG9zdCBBZGFwdGVyIChyZXYgMTgpCjA4OjA5
-LjMgU3lzdGVtIHBlcmlwaGVyYWw6IFJpY29oIENvIEx0ZCBSNUM4NDMgTU1DIEhvc3QgQ29udHJv
-bGxlcgowODowOS40IFN5c3RlbSBwZXJpcGhlcmFsOiBSaWNvaCBDbyBMdGQgUjVDNTkyIE1lbW9y
-eSBTdGljayBCdXMgSG9zdCBBZGFwdGVyIChyZXYgMDkpCjA4OjA5LjUgU3lzdGVtIHBlcmlwaGVy
-YWw6IFJpY29oIENvIEx0ZCB4RC1QaWN0dXJlIENhcmQgQ29udHJvbGxlciAocmV2IDA0KQo=
-------=_Part_20482_7827797.1209728252371--
