@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935649AbYEBPQa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935716AbYEBPQ4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935649AbYEBPQa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 11:16:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934858AbYEBPNP
+	id S935716AbYEBPQ4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 11:16:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934883AbYEBPNR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 11:13:15 -0400
-Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:48725
+	Fri, 2 May 2008 11:13:17 -0400
+Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:48776
 	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934531AbYEBPNG (ORCPT
+	with ESMTP id S1764048AbYEBPNI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 11:13:06 -0400
+	Fri, 2 May 2008 11:13:08 -0400
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Subject: [PATCH 08 of 11] anon-vma-rwsem
-X-Mercurial-Node: 0be678c52e540d5f5d5fd9af549b57b9bb018d32
-Message-Id: <0be678c52e540d5f5d5f.1209740711@duo.random>
+Subject: [PATCH 09 of 11] mm_lock-rwsem
+X-Mercurial-Node: 721c3787cd42043734331e54a42eb20c51766f71
+Message-Id: <721c3787cd4204373433.1209740712@duo.random>
 In-Reply-To: <patchbomb.1209740703@duo.random>
-Date: Fri, 02 May 2008 17:05:11 +0200
+Date: Fri, 02 May 2008 17:05:12 +0200
 From: Andrea Arcangeli <andrea@qumranet.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Christoph Lameter <clameter@sgi.com>, Jack Steiner <steiner@sgi.com>,
@@ -38,324 +38,239 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 # HG changeset patch
 # User Andrea Arcangeli <andrea@qumranet.com>
-# Date 1209740186 -7200
-# Node ID 0be678c52e540d5f5d5fd9af549b57b9bb018d32
-# Parent  de28c85baef11b90c993047ca851a2f52c85a5be
-anon-vma-rwsem
+# Date 1209740226 -7200
+# Node ID 721c3787cd42043734331e54a42eb20c51766f71
+# Parent  0be678c52e540d5f5d5fd9af549b57b9bb018d32
+mm_lock-rwsem
 
-Convert the anon_vma spinlock to a rw semaphore. This allows concurrent
-traversal of reverse maps for try_to_unmap() and page_mkclean(). It also
-allows the calling of sleeping functions from reverse map traversal as
-needed for the notifier callbacks. It includes possible concurrency.
+Convert mm_lock to use semaphores after i_mmap_lock and anon_vma_lock
+conversion.
 
-Rcu is used in some context to guarantee the presence of the anon_vma
-(try_to_unmap) while we acquire the anon_vma lock. We cannot take a
-semaphore within an rcu critical section. Add a refcount to the anon_vma
-structure which allow us to give an existence guarantee for the anon_vma
-structure independent of the spinlock or the list contents.
-
-The refcount can then be taken within the RCU section. If it has been
-taken successfully then the refcount guarantees the existence of the
-anon_vma. The refcount in anon_vma also allows us to fix a nasty
-issue in page migration where we fudged by using rcu for a long code
-path to guarantee the existence of the anon_vma. I think this is a bug
-because the anon_vma may become empty and get scheduled to be freed
-but then we increase the refcount again when the migration entries are
-removed.
-
-The refcount in general allows a shortening of RCU critical sections since
-we can do a rcu_unlock after taking the refcount. This is particularly
-relevant if the anon_vma chains contain hundreds of entries.
-
-However:
-- Atomic overhead increases in situations where a new reference
-  to the anon_vma has to be established or removed. Overhead also increases
-  when a speculative reference is used (try_to_unmap,
-  page_mkclean, page migration).
-- There is the potential for more frequent processor change due to up_xxx
-  letting waiting tasks run first. This results in f.e. the Aim9 brk
-  performance test to got down by 10-15%.
-
-Signed-off-by: Christoph Lameter <clameter@sgi.com>
 Signed-off-by: Andrea Arcangeli <andrea@qumranet.com>
 
-diff --git a/include/linux/rmap.h b/include/linux/rmap.h
---- a/include/linux/rmap.h
-+++ b/include/linux/rmap.h
-@@ -25,7 +25,8 @@
-  * pointing to this anon_vma once its vma list is empty.
-  */
- struct anon_vma {
--	spinlock_t lock;	/* Serialize access to vma list */
-+	atomic_t refcount;	/* vmas on the list */
-+	struct rw_semaphore sem;/* Serialize access to vma list */
- 	struct list_head head;	/* List of private "related" vmas */
+diff --git a/include/linux/mm.h b/include/linux/mm.h
+--- a/include/linux/mm.h
++++ b/include/linux/mm.h
+@@ -1084,10 +1084,10 @@ extern int install_special_mapping(struc
+ 				   unsigned long flags, struct page **pages);
+ 
+ struct mm_lock_data {
+-	spinlock_t **i_mmap_locks;
+-	spinlock_t **anon_vma_locks;
+-	size_t nr_i_mmap_locks;
+-	size_t nr_anon_vma_locks;
++	struct rw_semaphore **i_mmap_sems;
++	struct rw_semaphore **anon_vma_sems;
++	size_t nr_i_mmap_sems;
++	size_t nr_anon_vma_sems;
  };
- 
-@@ -43,18 +44,31 @@ static inline void anon_vma_free(struct 
- 	kmem_cache_free(anon_vma_cachep, anon_vma);
- }
- 
-+struct anon_vma *grab_anon_vma(struct page *page);
-+
-+static inline void get_anon_vma(struct anon_vma *anon_vma)
-+{
-+	atomic_inc(&anon_vma->refcount);
-+}
-+
-+static inline void put_anon_vma(struct anon_vma *anon_vma)
-+{
-+	if (atomic_dec_and_test(&anon_vma->refcount))
-+		anon_vma_free(anon_vma);
-+}
-+
- static inline void anon_vma_lock(struct vm_area_struct *vma)
- {
- 	struct anon_vma *anon_vma = vma->anon_vma;
- 	if (anon_vma)
--		spin_lock(&anon_vma->lock);
-+		down_write(&anon_vma->sem);
- }
- 
- static inline void anon_vma_unlock(struct vm_area_struct *vma)
- {
- 	struct anon_vma *anon_vma = vma->anon_vma;
- 	if (anon_vma)
--		spin_unlock(&anon_vma->lock);
-+		up_write(&anon_vma->sem);
- }
- 
- /*
-diff --git a/mm/migrate.c b/mm/migrate.c
---- a/mm/migrate.c
-+++ b/mm/migrate.c
-@@ -235,15 +235,16 @@ static void remove_anon_migration_ptes(s
- 		return;
- 
- 	/*
--	 * We hold the mmap_sem lock. So no need to call page_lock_anon_vma.
-+	 * We hold either the mmap_sem lock or a reference on the
-+	 * anon_vma. So no need to call page_lock_anon_vma.
- 	 */
- 	anon_vma = (struct anon_vma *) (mapping - PAGE_MAPPING_ANON);
--	spin_lock(&anon_vma->lock);
-+	down_read(&anon_vma->sem);
- 
- 	list_for_each_entry(vma, &anon_vma->head, anon_vma_node)
- 		remove_migration_pte(vma, old, new);
- 
--	spin_unlock(&anon_vma->lock);
-+	up_read(&anon_vma->sem);
- }
- 
- /*
-@@ -630,7 +631,7 @@ static int unmap_and_move(new_page_t get
- 	int rc = 0;
- 	int *result = NULL;
- 	struct page *newpage = get_new_page(page, private, &result);
--	int rcu_locked = 0;
-+	struct anon_vma *anon_vma = NULL;
- 	int charge = 0;
- 
- 	if (!newpage)
-@@ -654,16 +655,14 @@ static int unmap_and_move(new_page_t get
- 	}
- 	/*
- 	 * By try_to_unmap(), page->mapcount goes down to 0 here. In this case,
--	 * we cannot notice that anon_vma is freed while we migrates a page.
-+	 * we cannot notice that anon_vma is freed while we migrate a page.
- 	 * This rcu_read_lock() delays freeing anon_vma pointer until the end
- 	 * of migration. File cache pages are no problem because of page_lock()
- 	 * File Caches may use write_page() or lock_page() in migration, then,
- 	 * just care Anon page here.
- 	 */
--	if (PageAnon(page)) {
--		rcu_read_lock();
--		rcu_locked = 1;
--	}
-+	if (PageAnon(page))
-+		anon_vma = grab_anon_vma(page);
- 
- 	/*
- 	 * Corner case handling:
-@@ -681,10 +680,7 @@ static int unmap_and_move(new_page_t get
- 		if (!PageAnon(page) && PagePrivate(page)) {
- 			/*
- 			 * Go direct to try_to_free_buffers() here because
--			 * a) that's what try_to_release_page() would do anyway
--			 * b) we may be under rcu_read_lock() here, so we can't
--			 *    use GFP_KERNEL which is what try_to_release_page()
--			 *    needs to be effective.
-+			 * that's what try_to_release_page() would do anyway
- 			 */
- 			try_to_free_buffers(page);
- 		}
-@@ -705,8 +701,8 @@ static int unmap_and_move(new_page_t get
- 	} else if (charge)
-  		mem_cgroup_end_migration(newpage);
- rcu_unlock:
--	if (rcu_locked)
--		rcu_read_unlock();
-+	if (anon_vma)
-+		put_anon_vma(anon_vma);
- 
- unlock:
- 
+ extern int mm_lock(struct mm_struct *mm, struct mm_lock_data *data);
+ extern void mm_unlock(struct mm_struct *mm, struct mm_lock_data *data);
 diff --git a/mm/mmap.c b/mm/mmap.c
 --- a/mm/mmap.c
 +++ b/mm/mmap.c
-@@ -570,7 +570,7 @@ again:			remove_next = 1 + (end > next->
- 	if (vma->anon_vma)
- 		anon_vma = vma->anon_vma;
- 	if (anon_vma) {
--		spin_lock(&anon_vma->lock);
-+		down_write(&anon_vma->sem);
- 		/*
- 		 * Easily overlooked: when mprotect shifts the boundary,
- 		 * make sure the expanding vma has anon_vma set if the
-@@ -624,7 +624,7 @@ again:			remove_next = 1 + (end > next->
- 	}
+@@ -2255,8 +2255,8 @@ int install_special_mapping(struct mm_st
  
- 	if (anon_vma)
--		spin_unlock(&anon_vma->lock);
-+		up_write(&anon_vma->sem);
- 	if (mapping)
- 		up_write(&mapping->i_mmap_sem);
+ static int mm_lock_cmp(const void *a, const void *b)
+ {
+-	unsigned long _a = (unsigned long)*(spinlock_t **)a;
+-	unsigned long _b = (unsigned long)*(spinlock_t **)b;
++	unsigned long _a = (unsigned long)*(struct rw_semaphore **)a;
++	unsigned long _b = (unsigned long)*(struct rw_semaphore **)b;
  
-diff --git a/mm/rmap.c b/mm/rmap.c
---- a/mm/rmap.c
-+++ b/mm/rmap.c
-@@ -69,7 +69,7 @@ int anon_vma_prepare(struct vm_area_stru
- 		if (anon_vma) {
- 			allocated = NULL;
- 			locked = anon_vma;
--			spin_lock(&locked->lock);
-+			down_write(&locked->sem);
+ 	cond_resched();
+ 	if (_a < _b)
+@@ -2266,7 +2266,7 @@ static int mm_lock_cmp(const void *a, co
+ 	return 0;
+ }
+ 
+-static unsigned long mm_lock_sort(struct mm_struct *mm, spinlock_t **locks,
++static unsigned long mm_lock_sort(struct mm_struct *mm, struct rw_semaphore **sems,
+ 				  int anon)
+ {
+ 	struct vm_area_struct *vma;
+@@ -2275,59 +2275,59 @@ static unsigned long mm_lock_sort(struct
+ 	for (vma = mm->mmap; vma; vma = vma->vm_next) {
+ 		if (anon) {
+ 			if (vma->anon_vma)
+-				locks[i++] = &vma->anon_vma->lock;
++				sems[i++] = &vma->anon_vma->sem;
  		} else {
- 			anon_vma = anon_vma_alloc();
- 			if (unlikely(!anon_vma))
-@@ -81,6 +81,7 @@ int anon_vma_prepare(struct vm_area_stru
- 		/* page_table_lock to protect against threads */
- 		spin_lock(&mm->page_table_lock);
- 		if (likely(!vma->anon_vma)) {
-+			get_anon_vma(anon_vma);
- 			vma->anon_vma = anon_vma;
- 			list_add_tail(&vma->anon_vma_node, &anon_vma->head);
- 			allocated = NULL;
-@@ -88,7 +89,7 @@ int anon_vma_prepare(struct vm_area_stru
- 		spin_unlock(&mm->page_table_lock);
- 
- 		if (locked)
--			spin_unlock(&locked->lock);
-+			up_write(&locked->sem);
- 		if (unlikely(allocated))
- 			anon_vma_free(allocated);
+ 			if (vma->vm_file && vma->vm_file->f_mapping)
+-				locks[i++] = &vma->vm_file->f_mapping->i_mmap_lock;
++				sems[i++] = &vma->vm_file->f_mapping->i_mmap_sem;
+ 		}
  	}
-@@ -99,14 +100,17 @@ void __anon_vma_merge(struct vm_area_str
- {
- 	BUG_ON(vma->anon_vma != next->anon_vma);
- 	list_del(&next->anon_vma_node);
-+	put_anon_vma(vma->anon_vma);
- }
  
- void __anon_vma_link(struct vm_area_struct *vma)
- {
- 	struct anon_vma *anon_vma = vma->anon_vma;
- 
--	if (anon_vma)
-+	if (anon_vma) {
-+		get_anon_vma(anon_vma);
- 		list_add_tail(&vma->anon_vma_node, &anon_vma->head);
-+	}
- }
- 
- void anon_vma_link(struct vm_area_struct *vma)
-@@ -114,36 +118,32 @@ void anon_vma_link(struct vm_area_struct
- 	struct anon_vma *anon_vma = vma->anon_vma;
- 
- 	if (anon_vma) {
--		spin_lock(&anon_vma->lock);
-+		get_anon_vma(anon_vma);
-+		down_write(&anon_vma->sem);
- 		list_add_tail(&vma->anon_vma_node, &anon_vma->head);
--		spin_unlock(&anon_vma->lock);
-+		up_write(&anon_vma->sem);
- 	}
- }
- 
- void anon_vma_unlink(struct vm_area_struct *vma)
- {
- 	struct anon_vma *anon_vma = vma->anon_vma;
--	int empty;
- 
- 	if (!anon_vma)
- 		return;
- 
--	spin_lock(&anon_vma->lock);
-+	down_write(&anon_vma->sem);
- 	list_del(&vma->anon_vma_node);
--
--	/* We must garbage collect the anon_vma if it's empty */
--	empty = list_empty(&anon_vma->head);
--	spin_unlock(&anon_vma->lock);
--
--	if (empty)
--		anon_vma_free(anon_vma);
-+	up_write(&anon_vma->sem);
-+	put_anon_vma(anon_vma);
- }
- 
- static void anon_vma_ctor(struct kmem_cache *cachep, void *data)
- {
- 	struct anon_vma *anon_vma = data;
- 
--	spin_lock_init(&anon_vma->lock);
-+	init_rwsem(&anon_vma->sem);
-+	atomic_set(&anon_vma->refcount, 0);
- 	INIT_LIST_HEAD(&anon_vma->head);
- }
- 
-@@ -157,9 +157,9 @@ void __init anon_vma_init(void)
-  * Getting a lock on a stable anon_vma from a page off the LRU is
-  * tricky: page_lock_anon_vma rely on RCU to guard against the races.
-  */
--static struct anon_vma *page_lock_anon_vma(struct page *page)
-+struct anon_vma *grab_anon_vma(struct page *page)
- {
--	struct anon_vma *anon_vma;
-+	struct anon_vma *anon_vma = NULL;
- 	unsigned long anon_mapping;
- 
- 	rcu_read_lock();
-@@ -170,17 +170,26 @@ static struct anon_vma *page_lock_anon_v
+ 	if (!i)
  		goto out;
  
- 	anon_vma = (struct anon_vma *) (anon_mapping - PAGE_MAPPING_ANON);
--	spin_lock(&anon_vma->lock);
--	return anon_vma;
-+	if (!atomic_inc_not_zero(&anon_vma->refcount))
-+		anon_vma = NULL;
+-	sort(locks, i, sizeof(spinlock_t *), mm_lock_cmp, NULL);
++	sort(sems, i, sizeof(struct rw_semaphore *), mm_lock_cmp, NULL);
+ 
  out:
- 	rcu_read_unlock();
--	return NULL;
-+	return anon_vma;
-+}
-+
-+static struct anon_vma *page_lock_anon_vma(struct page *page)
-+{
-+	struct anon_vma *anon_vma = grab_anon_vma(page);
-+
-+	if (anon_vma)
-+		down_read(&anon_vma->sem);
-+	return anon_vma;
+ 	return i;
  }
  
- static void page_unlock_anon_vma(struct anon_vma *anon_vma)
+ static inline unsigned long mm_lock_sort_anon_vma(struct mm_struct *mm,
+-						  spinlock_t **locks)
++						  struct rw_semaphore **sems)
  {
--	spin_unlock(&anon_vma->lock);
--	rcu_read_unlock();
-+	up_read(&anon_vma->sem);
-+	put_anon_vma(anon_vma);
+-	return mm_lock_sort(mm, locks, 1);
++	return mm_lock_sort(mm, sems, 1);
+ }
+ 
+ static inline unsigned long mm_lock_sort_i_mmap(struct mm_struct *mm,
+-						spinlock_t **locks)
++						struct rw_semaphore **sems)
+ {
+-	return mm_lock_sort(mm, locks, 0);
++	return mm_lock_sort(mm, sems, 0);
+ }
+ 
+-static void mm_lock_unlock(spinlock_t **locks, size_t nr, int lock)
++static void mm_lock_unlock(struct rw_semaphore **sems, size_t nr, int lock)
+ {
+-	spinlock_t *last = NULL;
++	struct rw_semaphore *last = NULL;
+ 	size_t i;
+ 
+ 	for (i = 0; i < nr; i++)
+ 		/*  Multiple vmas may use the same lock. */
+-		if (locks[i] != last) {
+-			BUG_ON((unsigned long) last > (unsigned long) locks[i]);
+-			last = locks[i];
++		if (sems[i] != last) {
++			BUG_ON((unsigned long) last > (unsigned long) sems[i]);
++			last = sems[i];
+ 			if (lock)
+-				spin_lock(last);
++				down_write(last);
+ 			else
+-				spin_unlock(last);
++				up_write(last);
+ 		}
+ }
+ 
+-static inline void __mm_lock(spinlock_t **locks, size_t nr)
++static inline void __mm_lock(struct rw_semaphore **sems, size_t nr)
+ {
+-	mm_lock_unlock(locks, nr, 1);
++	mm_lock_unlock(sems, nr, 1);
+ }
+ 
+-static inline void __mm_unlock(spinlock_t **locks, size_t nr)
++static inline void __mm_unlock(struct rw_semaphore **sems, size_t nr)
+ {
+-	mm_lock_unlock(locks, nr, 0);
++	mm_lock_unlock(sems, nr, 0);
  }
  
  /*
+@@ -2351,10 +2351,10 @@ static inline void __mm_unlock(spinlock_
+  * of vmas is defined in /proc/sys/vm/max_map_count.
+  *
+  * mm_lock() can fail if memory allocation fails. The worst case
+- * vmalloc allocation required is 2*max_map_count*sizeof(spinlock_t *),
+- * so around 1Mbyte, but in practice it'll be much less because
+- * normally there won't be max_map_count vmas allocated in the task
+- * that runs mm_lock().
++ * vmalloc allocation required is 2*max_map_count*sizeof(struct
++ * rw_semaphore *), so around 1Mbyte, but in practice it'll be much
++ * less because normally there won't be max_map_count vmas allocated
++ * in the task that runs mm_lock().
+  *
+  * The vmalloc memory allocated by mm_lock is stored in the
+  * mm_lock_data structure that must be allocated by the caller and it
+@@ -2368,20 +2368,20 @@ static inline void __mm_unlock(spinlock_
+  */
+ int mm_lock(struct mm_struct *mm, struct mm_lock_data *data)
+ {
+-	spinlock_t **anon_vma_locks, **i_mmap_locks;
++	struct rw_semaphore **anon_vma_sems, **i_mmap_sems;
+ 
+ 	down_write(&mm->mmap_sem);
+ 	if (mm->map_count) {
+-		anon_vma_locks = vmalloc(sizeof(spinlock_t *) * mm->map_count);
+-		if (unlikely(!anon_vma_locks)) {
++		anon_vma_sems = vmalloc(sizeof(struct rw_semaphore *) * mm->map_count);
++		if (unlikely(!anon_vma_sems)) {
+ 			up_write(&mm->mmap_sem);
+ 			return -ENOMEM;
+ 		}
+ 
+-		i_mmap_locks = vmalloc(sizeof(spinlock_t *) * mm->map_count);
+-		if (unlikely(!i_mmap_locks)) {
++		i_mmap_sems = vmalloc(sizeof(struct rw_semaphore *) * mm->map_count);
++		if (unlikely(!i_mmap_sems)) {
+ 			up_write(&mm->mmap_sem);
+-			vfree(anon_vma_locks);
++			vfree(anon_vma_sems);
+ 			return -ENOMEM;
+ 		}
+ 
+@@ -2389,31 +2389,31 @@ int mm_lock(struct mm_struct *mm, struct
+ 		 * When mm_lock_sort_anon_vma/i_mmap returns zero it
+ 		 * means there's no lock to take and so we can free
+ 		 * the array here without waiting mm_unlock. mm_unlock
+-		 * will do nothing if nr_i_mmap/anon_vma_locks is
++		 * will do nothing if nr_i_mmap/anon_vma_sems is
+ 		 * zero.
+ 		 */
+-		data->nr_anon_vma_locks = mm_lock_sort_anon_vma(mm, anon_vma_locks);
+-		data->nr_i_mmap_locks = mm_lock_sort_i_mmap(mm, i_mmap_locks);
++		data->nr_anon_vma_sems = mm_lock_sort_anon_vma(mm, anon_vma_sems);
++		data->nr_i_mmap_sems = mm_lock_sort_i_mmap(mm, i_mmap_sems);
+ 
+-		if (data->nr_anon_vma_locks) {
+-			__mm_lock(anon_vma_locks, data->nr_anon_vma_locks);
+-			data->anon_vma_locks = anon_vma_locks;
++		if (data->nr_anon_vma_sems) {
++			__mm_lock(anon_vma_sems, data->nr_anon_vma_sems);
++			data->anon_vma_sems = anon_vma_sems;
+ 		} else
+-			vfree(anon_vma_locks);
++			vfree(anon_vma_sems);
+ 
+-		if (data->nr_i_mmap_locks) {
+-			__mm_lock(i_mmap_locks, data->nr_i_mmap_locks);
+-			data->i_mmap_locks = i_mmap_locks;
++		if (data->nr_i_mmap_sems) {
++			__mm_lock(i_mmap_sems, data->nr_i_mmap_sems);
++			data->i_mmap_sems = i_mmap_sems;
+ 		} else
+-			vfree(i_mmap_locks);
++			vfree(i_mmap_sems);
+ 	}
+ 	return 0;
+ }
+ 
+-static void mm_unlock_vfree(spinlock_t **locks, size_t nr)
++static void mm_unlock_vfree(struct rw_semaphore **sems, size_t nr)
+ {
+-	__mm_unlock(locks, nr);
+-	vfree(locks);
++	__mm_unlock(sems, nr);
++	vfree(sems);
+ }
+ 
+ /*
+@@ -2430,12 +2430,12 @@ void mm_unlock(struct mm_struct *mm, str
+ void mm_unlock(struct mm_struct *mm, struct mm_lock_data *data)
+ {
+ 	if (mm->map_count) {
+-		if (data->nr_anon_vma_locks)
+-			mm_unlock_vfree(data->anon_vma_locks,
+-					data->nr_anon_vma_locks);
+-		if (data->nr_i_mmap_locks)
+-			mm_unlock_vfree(data->i_mmap_locks,
+-					data->nr_i_mmap_locks);
++		if (data->nr_anon_vma_sems)
++			mm_unlock_vfree(data->anon_vma_sems,
++					data->nr_anon_vma_sems);
++		if (data->nr_i_mmap_sems)
++			mm_unlock_vfree(data->i_mmap_sems,
++					data->nr_i_mmap_sems);
+ 	}
+ 	up_write(&mm->mmap_sem);
+ }
