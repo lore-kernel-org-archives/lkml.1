@@ -1,57 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757824AbYEBEez@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758457AbYEBEgq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757824AbYEBEez (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 00:34:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750984AbYEBEes
+	id S1758457AbYEBEgq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 00:36:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751209AbYEBEgj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 00:34:48 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:48270 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750821AbYEBEer (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 00:34:47 -0400
-Message-ID: <481A992D.4070807@zytor.com>
-Date: Thu, 01 May 2008 21:31:41 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Fri, 2 May 2008 00:36:39 -0400
+Received: from ozlabs.org ([203.10.76.45]:43326 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750772AbYEBEgi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 May 2008 00:36:38 -0400
 MIME-Version: 1.0
-To: hpa@zytor.com, linux-kernel@vger.kernel.org
-Subject: Re: kernel/time.c: integer constant is too large for long type
-References: <20080502024636.GA31465@beyonder.ift.unesp.br>
-In-Reply-To: <20080502024636.GA31465@beyonder.ift.unesp.br>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <18458.39064.783013.268948@cargo.ozlabs.ibm.com>
+Date: Fri, 2 May 2008 14:29:12 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: linuxppc-dev@ozlabs.org
+CC: linux-kernel@vger.kernel.org
+Subject: [POWERPC][v2] Bolt in SLB entry for kernel stack on secondary cpus
+X-Mailer: VM 7.19 under Emacs 22.1.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Carlos R. Mafra wrote:
-> Hi Peter,
-> 
-> I would like to report a gcc warning which caught my attention today:
-> 
-> kernel/time.c: In function msecs_to_jiffies:
-> kernel/time.c:479: warning: integer constant is too large for long type
-> kernel/time.c: In function usecs_to_jiffies:
-> kernel/time.c:494: warning: integer constant is too large for long type
-> 
-> and ask you if this is something I should worry about (and propose
-> a patch if this warning is harmless).
-> 
-> I ask this because this warning was introduced via commit 
-> bdc807871d58285737d50dc6163d0feb72cb0dc2 ("avoid overflows in kernel/time.c")
-> and (naively) for me it looks like the above gcc warning is some kind of 
-> overflow.
-> 
+This fixes a regression reported by Kamalesh Bulabel where a POWER4
+machine would crash because of an SLB miss at a point where the SLB
+miss exception was unrecoverable.  This regression is tracked at:
 
-Hi there,
+http://bugzilla.kernel.org/show_bug.cgi?id=10082
 
-The code is correct if a bit subtle.  I have put a fix of it as part of 
-a larger patch series at:
+SLB misses at such points shouldn't happen because the kernel stack is
+the only memory accessed other than things in the first segment of the
+linear mapping (which is mapped at all times by entry 0 of the SLB).
+The context switch code ensures that SLB entry 2 covers the kernel
+stack, if it is not already covered by entry 0.  None of entries 0
+to 2 are ever replaced by the SLB miss handler.
 
-git://git.kernel.org/pub/scm/linux/kernel/git/hpa/linux-2.6-inttypes.git
+Where this went wrong is that the context switch code assumes it
+doesn't have to write to SLB entry 2 if the new kernel stack is in the
+same segment as the old kernel stack, since entry 2 should already be
+correct.  However, when we start up a secondary cpu, it calls
+slb_initialize, which doesn't set up entry 2.  This is correct for
+the boot cpu, where we will be using a stack in the kernel BSS at this
+point (i.e. init_thread_union), but not necessarily for secondary
+cpus, whose initial stack can be allocated anywhere.  This doesn't
+cause any immediate problem since the SLB miss handler will just
+create an SLB entry somewhere else to cover the initial stack.
 
-Your patch is simpler, so if Linus doesn't take the patch series this 
-window we should push your patch after the window closes.
+In fact it's possible for the cpu to go quite a long time without SLB
+entry 2 being valid.  Eventually, though, the entry created by the SLB
+miss handler will get overwritten by some other entry, and if the next
+access to the stack is at an unrecoverable point, we get the crash.
 
-	-hpa
+This fixes the problem by making slb_initialize create a suitable
+entry for the kernel stack, if we are on a secondary cpu and the stack
+isn't covered by SLB entry 0.  This requires initializing the
+get_paca()->kstack field earlier, so I do that in smp_create_idle
+where the current field is initialized.  This also abstracts a bit of
+the computation that mk_esid_data in slb.c does so that it can be used
+in slb_initialize.
+
+Signed-off-by: Paul Mackerras <paulus@samba.org>
+---
+Michael Ellerman pointed out that I should be comparing
+raw_smp_processor_id() with boot_cpuid rather than with 0.
+
+diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
+index be35ffa..1457aa0 100644
+--- a/arch/powerpc/kernel/smp.c
++++ b/arch/powerpc/kernel/smp.c
+@@ -386,6 +386,8 @@ static void __init smp_create_idle(unsigned int cpu)
+ 		panic("failed fork for CPU %u: %li", cpu, PTR_ERR(p));
+ #ifdef CONFIG_PPC64
+ 	paca[cpu].__current = p;
++	paca[cpu].kstack = (unsigned long) task_thread_info(p)
++		+ THREAD_SIZE - STACK_FRAME_OVERHEAD;
+ #endif
+ 	current_set[cpu] = task_thread_info(p);
+ 	task_thread_info(p)->cpu = cpu;
+diff --git a/arch/powerpc/mm/slb.c b/arch/powerpc/mm/slb.c
+index 906daed..b2c43d0 100644
+--- a/arch/powerpc/mm/slb.c
++++ b/arch/powerpc/mm/slb.c
+@@ -44,13 +44,13 @@ static void slb_allocate(unsigned long ea)
+ 	slb_allocate_realmode(ea);
+ }
+ 
++#define slb_esid_mask(ssize)	\
++	(((ssize) == MMU_SEGSIZE_256M)? ESID_MASK: ESID_MASK_1T)
++
+ static inline unsigned long mk_esid_data(unsigned long ea, int ssize,
+ 					 unsigned long slot)
+ {
+-	unsigned long mask;
+-
+-	mask = (ssize == MMU_SEGSIZE_256M)? ESID_MASK: ESID_MASK_1T;
+-	return (ea & mask) | SLB_ESID_V | slot;
++	return (ea & slb_esid_mask(ssize)) | SLB_ESID_V | slot;
+ }
+ 
+ #define slb_vsid_shift(ssize)	\
+@@ -301,11 +301,16 @@ void slb_initialize(void)
+ 
+ 	create_shadowed_slbe(VMALLOC_START, mmu_kernel_ssize, vflags, 1);
+ 
++	/* For the boot cpu, we're running on the stack in init_thread_union,
++	 * which is in the first segment of the linear mapping, and also
++	 * get_paca()->kstack hasn't been initialized yet.
++	 * For secondary cpus, we need to bolt the kernel stack entry now.
++	 */
+ 	slb_shadow_clear(2);
++	if (raw_smp_processor_id() != boot_cpuid &&
++	    (get_paca()->kstack & slb_esid_mask(mmu_kernel_ssize)) > PAGE_OFFSET)
++		create_shadowed_slbe(get_paca()->kstack,
++				     mmu_kernel_ssize, lflags, 2);
+ 
+-	/* We don't bolt the stack for the time being - we're in boot,
+-	 * so the stack is in the bolted segment.  By the time it goes
+-	 * elsewhere, we'll call _switch() which will bolt in the new
+-	 * one. */
+ 	asm volatile("isync":::"memory");
+ }
