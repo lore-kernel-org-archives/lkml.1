@@ -1,121 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763734AbYEBJb5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762765AbYEBJcx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763734AbYEBJb5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 05:31:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752432AbYEBJbr
+	id S1762765AbYEBJcx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 05:32:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756786AbYEBJcp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 05:31:47 -0400
-Received: from fmmailgate03.web.de ([217.72.192.234]:59887 "EHLO
-	fmmailgate03.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750949AbYEBJbq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 05:31:46 -0400
-Message-ID: <005801c8ac37$55e3cb70$6400a8c0@bui.materna.com>
-From: "Roland" <devzero@web.de>
-To: "\"Soeren Sonnenburg\"" <kernel@nn7.de>
-Cc: <linux-kernel@vger.kernel.org>, <netdev@vger.kernel.org>,
-       "\"Andrew Morton\"" <akpm@linux-foundation.org>
-Subject: Re: 24rc8: unregister_netdevice: waiting for ... to become free
-Date: Fri, 2 May 2008 11:31:44 +0200
+	Fri, 2 May 2008 05:32:45 -0400
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:52199 "EHLO smtp5.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755049AbYEBJco (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 May 2008 05:32:44 -0400
+Date: Fri, 2 May 2008 12:31:52 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: WANG Cong <xiyou.wangcong@gmail.com>
+Cc: linux-kernel@vger.kernel.org, jdike@addtoit.com,
+       user-mode-linux-devel@lists.sourceforge.net, akpm@linux-foundation.org,
+       Alan Cox <alan@redhat.com>
+Subject: Re: [Patch] UML: Fix inconsistence due to tty_operation change
+Message-ID: <20080502093152.GA4090@cs181133002.pp.htv.fi>
+References: <alpine.LFD.1.10.0805021450260.3349@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	format=flowed;
-	charset="iso-8859-1";
-	reply-type=original
-Content-Transfer-Encoding: 7bit
-X-Priority: 3
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook Express 6.00.2900.3138
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3198
-X-Provags-ID: V01U2FsdGVkX1/yOEp7YwmD+3QFm6ar9BK9Pv8XD9vvoYE9kGgc
-	wir9DVot8cz5NrRn8MjQk4zTLriyuFb7o0+FUY6ers5PajcmpX
-	BeZiPUcN4=
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.1.10.0805021450260.3349@localhost.localdomain>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->I am not exactly sure which kernel version Roland (?) is/was using but
->from what I can tell this bug is fixed since 2.6.24 (at least). Well I
->didn't see it with madwifi nor with the tun devices anymore on any of
->the 24.X or 25rc's/25 ...
+[ Alan as tty maintainer added to Cc ]
 
-pardon,   2.6.25-git17 in vmware
+On Fri, May 02, 2008 at 02:59:46PM +0800, WANG Cong wrote:
+>
+> 'put_char' of 'struct tty_operations' has changed from 'void' into 'int'.
+> This can also shut up comipler warnings.
 
+Not only, this could also be a runtime error.
 
->; <netdev@vger.kernel.org>;
-List:       linux-kernel
-Subject:    Re: 24rc8: unregister_netdevice: waiting for ... to become free.
-From:       Soeren Sonnenburg <kernel () nn7 ! de>
-Date:       2008-05-02 6:15:43
-Message-ID: 1209708943.23075.52.camel () localhost
-[Download message RAW]
+> Cc: Jeff Dike <jdike@addtoit.com>
+> Signed-off-by: WANG Cong <wangcong@zeuux.org>
+>
+> ---
+>
+> diff --git a/arch/um/drivers/line.c b/arch/um/drivers/line.c
+> index 10b86e1..5047490 100644
+> --- a/arch/um/drivers/line.c
+> +++ b/arch/um/drivers/line.c
+> @@ -191,9 +191,9 @@ void line_flush_chars(struct tty_struct *tty)
+>  	line_flush_buffer(tty);
+>  }
+>
+> -void line_put_char(struct tty_struct *tty, unsigned char ch)
+> +int line_put_char(struct tty_struct *tty, unsigned char ch)
+>  {
+> -	line_write(tty, &ch, sizeof(ch));
+> +	return line_write(tty, &ch, sizeof(ch));
+>  }
+>
+>  int line_write(struct tty_struct *tty, const unsigned char *buf, int len)
+> diff --git a/arch/um/include/line.h b/arch/um/include/line.h
+> index 1223f2c..979b73e 100644
+> --- a/arch/um/include/line.h
+> +++ b/arch/um/include/line.h
+> @@ -71,7 +71,7 @@ extern int line_setup(struct line *lines, unsigned int sizeof_lines,
+>  		      char *init, char **error_out);
+>  extern int line_write(struct tty_struct *tty, const unsigned char *buf,
+>  		      int len);
+> -extern void line_put_char(struct tty_struct *tty, unsigned char ch);
+> +extern int line_put_char(struct tty_struct *tty, unsigned char ch);
+>  extern void line_set_termios(struct tty_struct *tty, struct ktermios * old);
+>  extern int line_chars_in_buffer(struct tty_struct *tty);
+>  extern void line_flush_buffer(struct tty_struct *tty);
 
-On Thu, 2008-05-01 at 22:59 -0700, Andrew Morton wrote:
-> On Fri, 2 May 2008 03:26:28 +0200 "Roland" <devzero@web.de> wrote:
->
-> > i`m also seeing this one, but with pcnet32 - "modprobe -r pcnet32" never
-> > returns and
-> >
-> > "unregister_netdevice: waiting for eth0 to become free. Usage count = 1"
-> >
-> > being printed over and over again
-> >
-> > lsmod |grep pcnet32 shows
-> >
-> > pcnet32            35828    0
-> > mii                      9344    1    pcnet32
-> >
-> > i see stale ssh connection on port 22 and sshd for that session remains
-> > unkillable process.
-> >
->
-> here a bug
->
-> >
-> >
-> > List:       linux-kernel
-> > Subject:    Re: 24rc8: unregister_netdevice: waiting for ... to become 
-> > free.
-> > From:       Soeren Sonnenburg <kernel () nn7 ! de>
-> > Date:       2008-01-29 8:59:10
-> > Message-ID: 1201597150.4973.10.camel () localhost
-> > [Download message RAW]
-> >
-> > On Tue, 2008-01-22 at 22:44 -0800, David Miller wrote:
-> > > From: Soeren Sonnenburg <kernel@nn7.de>
-> > > Date: Wed, 23 Jan 2008 07:42:21 +0100
-> > >
-> > > > Dear all,
-> > > >
-> > > > since some 2.6.24rc version I suddenly experience such messages on
-> > > > console when trying to shutdown a vpn connection:
-> > > >
-> > > > unregister_netdevice: waiting for tun0 to become free. Usage count = 
-> > > > 1
-> > > >
-> > > > or when removing an usb wlan dongle (although it was ifconfig wlan0
-> > > > down'd before)
-> > >
-> > > Current GIT already has a fix for this, attached below:
-> >
-> > hmmhhh, I am still seeing this problem on 2.6.24 with at least with the
-> > madwifi driver...
-> >
-> > Soeren
->
-> there a bug.
->
->
-> Let's cc netdev@vger.kernel.org - linux-net is dead, afaik.
->
-> Thanks for reporting all these bugs but please do take much mure care over
-> the cc's.  Be sure to cc every party who was cc'ed on the email to which
-> you're replying.  I restored Soeren.
+cu
+Adrian
 
-I am not exactly sure which kernel version Roland (?) is/was using but
-from what I can tell this bug is fixed since 2.6.24 (at least). Well I
-didn't see it with madwifi nor with the tun devices anymore on any of
-the 24.X or 25rc's/25 ...
+-- 
 
-Soeren
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
