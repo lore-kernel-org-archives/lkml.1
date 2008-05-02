@@ -1,205 +1,496 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936879AbYEBTN0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965544AbYEBTNn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936879AbYEBTN0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 15:13:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965304AbYEBTGI
+	id S965544AbYEBTNn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 15:13:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965786AbYEBTJU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 15:06:08 -0400
-Received: from el-out-1112.google.com ([209.85.162.182]:53287 "EHLO
-	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965279AbYEBTGF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 15:06:05 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=jr/2ZNWOR7mNEmTwmK7iIG06QZqvn1kW/tJ9HDjGnCN8HCGkoGtvNX+2rwyw9ZwJljUNpnCQ3wQDcNC9yldHgYJ3zwShXup3tpGpgxa14T/ip/yVhMICqjclApJAqg0yx14vccDfStkktlIfL5N1IwL0SeprAAKtBeI+02f9JKw=
-Subject: [PATCH 14/14] net: use get/put_unaligned_* helpers
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Fri, 02 May 2008 12:05:59 -0700
-Message-Id: <1209755159.26173.81.camel@brick>
+	Fri, 2 May 2008 15:09:20 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:38764 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1764309AbYEBTJP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 May 2008 15:09:15 -0400
+Date: Fri, 2 May 2008 21:09:49 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: linux-kbuild <linux-kbuild@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Cc: Dave Jones <davej@codemonkey.org.uk>, Roland McGrath <roland@redhat.com>,
+       Andres Salomon <dilinger@queued.net>,
+       Roman Zippel <zippel@linux-m68k.org>
+Subject: Re: Additional kconfig targets (cloneconfig, nonint_oldconfig etc)
+Message-ID: <20080502190949.GA30270@uranus.ravnborg.org>
+References: <20080429183531.GB19652@uranus.ravnborg.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080429183531.GB19652@uranus.ravnborg.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
----
- net/bridge/br_stp_bpdu.c |    4 ++--
- net/core/filter.c        |    4 ++--
- net/ipv4/cipso_ipv4.c    |   18 ++++++++----------
- net/ipv4/tcp_input.c     |   18 +++++++++---------
- 4 files changed, 21 insertions(+), 23 deletions(-)
+With the attached patch you can do:
 
-diff --git a/net/bridge/br_stp_bpdu.c b/net/bridge/br_stp_bpdu.c
-index 8deab64..ddeb6e5 100644
---- a/net/bridge/br_stp_bpdu.c
-+++ b/net/bridge/br_stp_bpdu.c
-@@ -58,12 +58,12 @@ static inline void br_set_ticks(unsigned char *dest, int j)
- {
- 	unsigned long ticks = (STP_HZ * j)/ HZ;
- 
--	put_unaligned(htons(ticks), (__be16 *)dest);
-+	put_unaligned_be16(ticks, dest);
- }
- 
- static inline int br_get_ticks(const unsigned char *src)
- {
--	unsigned long ticks = ntohs(get_unaligned((__be16 *)src));
-+	unsigned long ticks = get_unaligned_be16(src);
- 
- 	return DIV_ROUND_UP(ticks * HZ, STP_HZ);
- }
-diff --git a/net/core/filter.c b/net/core/filter.c
-index f5f3cf6..4f83697 100644
---- a/net/core/filter.c
-+++ b/net/core/filter.c
-@@ -213,7 +213,7 @@ unsigned int sk_run_filter(struct sk_buff *skb, struct sock_filter *filter, int
- load_w:
- 			ptr = load_pointer(skb, k, 4, &tmp);
- 			if (ptr != NULL) {
--				A = ntohl(get_unaligned((__be32 *)ptr));
-+				A = get_unaligned_be32(ptr);
- 				continue;
- 			}
- 			break;
-@@ -222,7 +222,7 @@ load_w:
- load_h:
- 			ptr = load_pointer(skb, k, 2, &tmp);
- 			if (ptr != NULL) {
--				A = ntohs(get_unaligned((__be16 *)ptr));
-+				A = get_unaligned_be16(ptr);
- 				continue;
- 			}
- 			break;
-diff --git a/net/ipv4/cipso_ipv4.c b/net/ipv4/cipso_ipv4.c
-index 4637ded..05afb57 100644
---- a/net/ipv4/cipso_ipv4.c
-+++ b/net/ipv4/cipso_ipv4.c
-@@ -983,7 +983,7 @@ static int cipso_v4_map_cat_enum_valid(const struct cipso_v4_doi *doi_def,
- 		return -EFAULT;
- 
- 	for (iter = 0; iter < enumcat_len; iter += 2) {
--		cat = ntohs(get_unaligned((__be16 *)&enumcat[iter]));
-+		cat = get_unaligned_be16(&enumcat[iter]);
- 		if (cat <= cat_prev)
- 			return -EFAULT;
- 		cat_prev = cat;
-@@ -1052,7 +1052,7 @@ static int cipso_v4_map_cat_enum_ntoh(const struct cipso_v4_doi *doi_def,
- 
- 	for (iter = 0; iter < net_cat_len; iter += 2) {
- 		ret_val = netlbl_secattr_catmap_setbit(secattr->attr.mls.cat,
--				ntohs(get_unaligned((__be16 *)&net_cat[iter])),
-+				get_unaligned_be16(&net_cat[iter]),
- 				GFP_ATOMIC);
- 		if (ret_val != 0)
- 			return ret_val;
-@@ -1086,10 +1086,9 @@ static int cipso_v4_map_cat_rng_valid(const struct cipso_v4_doi *doi_def,
- 		return -EFAULT;
- 
- 	for (iter = 0; iter < rngcat_len; iter += 4) {
--		cat_high = ntohs(get_unaligned((__be16 *)&rngcat[iter]));
-+		cat_high = get_unaligned_be16(&rngcat[iter]);
- 		if ((iter + 4) <= rngcat_len)
--			cat_low = ntohs(
--				get_unaligned((__be16 *)&rngcat[iter + 2]));
-+			cat_low = get_unaligned_be16(&rngcat[iter + 2]);
- 		else
- 			cat_low = 0;
- 
-@@ -1188,10 +1187,9 @@ static int cipso_v4_map_cat_rng_ntoh(const struct cipso_v4_doi *doi_def,
- 	u16 cat_high;
- 
- 	for (net_iter = 0; net_iter < net_cat_len; net_iter += 4) {
--		cat_high = ntohs(get_unaligned((__be16 *)&net_cat[net_iter]));
-+		cat_high = get_unaligned_be16(&net_cat[net_iter]);
- 		if ((net_iter + 4) <= net_cat_len)
--			cat_low = ntohs(
--			      get_unaligned((__be16 *)&net_cat[net_iter + 2]));
-+			cat_low = get_unaligned_be16(&net_cat[net_iter + 2]);
- 		else
- 			cat_low = 0;
- 
-@@ -1562,7 +1560,7 @@ int cipso_v4_validate(unsigned char **option)
- 	}
- 
- 	rcu_read_lock();
--	doi_def = cipso_v4_doi_search(ntohl(get_unaligned((__be32 *)&opt[2])));
-+	doi_def = cipso_v4_doi_search(get_unaligned_be32(&opt[2]));
- 	if (doi_def == NULL) {
- 		err_offset = 2;
- 		goto validate_return_locked;
-@@ -1843,7 +1841,7 @@ static int cipso_v4_getattr(const unsigned char *cipso,
- 	if (cipso_v4_cache_check(cipso, cipso[1], secattr) == 0)
- 		return 0;
- 
--	doi = ntohl(get_unaligned((__be32 *)&cipso[2]));
-+	doi = get_unaligned_be32(&cipso[2]);
- 	rcu_read_lock();
- 	doi_def = cipso_v4_doi_search(doi);
- 	if (doi_def == NULL)
-diff --git a/net/ipv4/tcp_input.c b/net/ipv4/tcp_input.c
-index 0298f80..eda4f4a 100644
---- a/net/ipv4/tcp_input.c
-+++ b/net/ipv4/tcp_input.c
-@@ -1172,8 +1172,8 @@ static int tcp_check_dsack(struct tcp_sock *tp, struct sk_buff *ack_skb,
- 			   struct tcp_sack_block_wire *sp, int num_sacks,
- 			   u32 prior_snd_una)
- {
--	u32 start_seq_0 = ntohl(get_unaligned(&sp[0].start_seq));
--	u32 end_seq_0 = ntohl(get_unaligned(&sp[0].end_seq));
-+	u32 start_seq_0 = get_unaligned_be32(&sp[0].start_seq);
-+	u32 end_seq_0 = get_unaligned_be32(&sp[0].end_seq);
- 	int dup_sack = 0;
- 
- 	if (before(start_seq_0, TCP_SKB_CB(ack_skb)->ack_seq)) {
-@@ -1181,8 +1181,8 @@ static int tcp_check_dsack(struct tcp_sock *tp, struct sk_buff *ack_skb,
- 		tcp_dsack_seen(tp);
- 		NET_INC_STATS_BH(LINUX_MIB_TCPDSACKRECV);
- 	} else if (num_sacks > 1) {
--		u32 end_seq_1 = ntohl(get_unaligned(&sp[1].end_seq));
--		u32 start_seq_1 = ntohl(get_unaligned(&sp[1].start_seq));
-+		u32 end_seq_1 = get_unaligned_be32(&sp[1].end_seq);
-+		u32 start_seq_1 = get_unaligned_be32(&sp[1].start_seq);
- 
- 		if (!after(end_seq_0, end_seq_1) &&
- 		    !before(start_seq_0, start_seq_1)) {
-@@ -1453,8 +1453,8 @@ tcp_sacktag_write_queue(struct sock *sk, struct sk_buff *ack_skb,
- 	for (i = 0; i < num_sacks; i++) {
- 		int dup_sack = !i && found_dup_sack;
- 
--		sp[used_sacks].start_seq = ntohl(get_unaligned(&sp_wire[i].start_seq));
--		sp[used_sacks].end_seq = ntohl(get_unaligned(&sp_wire[i].end_seq));
-+		sp[used_sacks].start_seq = get_unaligned_be32(&sp_wire[i].start_seq);
-+		sp[used_sacks].end_seq = get_unaligned_be32(&sp_wire[i].end_seq);
- 
- 		if (!tcp_is_sackblock_valid(tp, dup_sack,
- 					    sp[used_sacks].start_seq,
-@@ -3340,7 +3340,7 @@ void tcp_parse_options(struct sk_buff *skb, struct tcp_options_received *opt_rx,
- 			switch (opcode) {
- 			case TCPOPT_MSS:
- 				if (opsize == TCPOLEN_MSS && th->syn && !estab) {
--					u16 in_mss = ntohs(get_unaligned((__be16 *)ptr));
-+					u16 in_mss = get_unaligned_be16(ptr);
- 					if (in_mss) {
- 						if (opt_rx->user_mss &&
- 						    opt_rx->user_mss < in_mss)
-@@ -3369,8 +3369,8 @@ void tcp_parse_options(struct sk_buff *skb, struct tcp_options_received *opt_rx,
- 				    ((estab && opt_rx->tstamp_ok) ||
- 				     (!estab && sysctl_tcp_timestamps))) {
- 					opt_rx->saw_tstamp = 1;
--					opt_rx->rcv_tsval = ntohl(get_unaligned((__be32 *)ptr));
--					opt_rx->rcv_tsecr = ntohl(get_unaligned((__be32 *)(ptr+4)));
-+					opt_rx->rcv_tsval = get_unaligned_be32(ptr);
-+					opt_rx->rcv_tsecr = get_unaligned_be32(ptr + 4);
- 				}
- 				break;
- 			case TCPOPT_SACK_PERM:
--- 
-1.5.5.1.350.gbbbf
+make K=my_favourite_config defconfig
 
+kconfig will read all config values form 'my_favourite_config'
+and set all other symbols to their default value.
+The output is now dense like this:
+# configuration is based on 'my_favourite_config'
+#
+# configuration written to .config
+#
+
+
+The K= notations works for the usual suspects:
+allnoconfig, allyesconfig, allmodconfig, randconfig and defconfig
+
+alldefconfig with no parameters create a kernel konfiguration
+with all parameters set to default.
+
+The difference between alldefconfig and defconfig is that if
+no K= parameter is specified the defconfig will try to load
+one of the files specified in the defconfig list from
+init/Kconfig (see DEFCONFIG_LIST)
+
+I decided to create a new .c file to support this.
+It was not strictly necessary but this allows us to
+simplify conf.c a lot. I did not do so yet.
+
+What is missing:
+1) No support for .gz input file
+   But aconf.sh should be easy to adjust to this
+
+2) We hardcode that files name *_defconfig are found
+   in arch/$ARCH/configs/*
+
+3) Implement newsymbolsconfig (any better name?)
+   Shall list all new symbols and shall not write
+   any config
+
+	Sam
+
+diff --git a/scripts/kconfig/Makefile b/scripts/kconfig/Makefile
+index fa1a7d5..3e560a4 100644
+--- a/scripts/kconfig/Makefile
++++ b/scripts/kconfig/Makefile
+@@ -47,30 +47,25 @@ update-po-config: $(obj)/kxgettext $(obj)/gconf.glade.h
+ 	$(Q)rm -f arch/um/Kconfig.arch
+ 	$(Q)rm -f $(obj)/config.pot
+ 
+-PHONY += randconfig allyesconfig allnoconfig allmodconfig defconfig
++aconf-targets := allnoconfig allyesconfig allmodconfig alldefconfig randconfig
++PHONY += $(aconf-targets) defconfig
+ 
+-randconfig: $(obj)/conf
+-	$< -r $(Kconfig)
++$(aconf-targets): $(src)/aconf.sh $(obj)/aconf
++	$(Q)$(CONFIG_SHELL) $< $@ $(Kconfig)
+ 
+-allyesconfig: $(obj)/conf
+-	$< -y $(Kconfig)
++%_defconfig: $(src)/aconf.sh $(obj)/aconf
++	$(Q)K=arch/$(SRCARCH)/configs/$@ \
++	$(CONFIG_SHELL) $< alldefconfig $(Kconfig)
+ 
+-allnoconfig: $(obj)/conf
+-	$< -n $(Kconfig)
+-
+-allmodconfig: $(obj)/conf
+-	$< -m $(Kconfig)
+-
+-defconfig: $(obj)/conf
+ ifeq ($(KBUILD_DEFCONFIG),)
++defconfig: $(obj)/conf
+ 	$< -d $(Kconfig)
+ else
+-	@echo "*** Default configuration is based on '$(KBUILD_DEFCONFIG)'"
+-	$(Q)$< -D arch/$(SRCARCH)/configs/$(KBUILD_DEFCONFIG) $(Kconfig)
++defconfig: $(src)/aconf.sh $(obj)/aconf
++	$(Q)K=arch/$(SRCARCH)/configs/$(KBUILD_DEFCONFIG) \
++	$(CONFIG_SHELL) $< alldefconfig $(Kconfig)
+ endif
+ 
+-%_defconfig: $(obj)/conf
+-	$(Q)$< -D arch/$(SRCARCH)/configs/$@ $(Kconfig)
+ 
+ # Help text used by make help
+ help:
+@@ -100,6 +95,7 @@ HOST_EXTRACFLAGS += -DLOCALE
+ # ===========================================================================
+ # Shared Makefile for the various kconfig executables:
+ # conf:	  Used for defconfig, oldconfig and related targets
++# aconf:  Generate simple configurations (all*config, etc)
+ # mconf:  Used for the mconfig target.
+ #         Utilizes the lxdialog package
+ # qconf:  Used for the xconfig target
+@@ -112,10 +108,11 @@ lxdialog := lxdialog/checklist.o lxdialog/util.o lxdialog/inputbox.o
+ lxdialog += lxdialog/textbox.o lxdialog/yesno.o lxdialog/menubox.o
+ 
+ conf-objs	:= conf.o  zconf.tab.o
++aconf-objs	:= aconf.o zconf.tab.o
+ mconf-objs	:= mconf.o zconf.tab.o $(lxdialog)
+ kxgettext-objs	:= kxgettext.o zconf.tab.o
+ 
+-hostprogs-y := conf qconf gconf kxgettext
++hostprogs-y := conf aconf qconf gconf kxgettext
+ 
+ ifeq ($(MAKECMDGOALS),menuconfig)
+ 	hostprogs-y += mconf
+diff --git a/scripts/kconfig/aconf.c b/scripts/kconfig/aconf.c
+new file mode 100644
+index 0000000..db3df0f
+--- /dev/null
++++ b/scripts/kconfig/aconf.c
+@@ -0,0 +1,316 @@
++/*
++ * Copyright (C) 2002 Roman Zippel <zippel@linux-m68k.org>
++ * Copyright (C) 2008 Sam Ravnborg <sam@ravnborg.org>
++ * Released under the terms of the GNU GPL v2.0.
++ */
++
++/*
++ * Generate the automated configs
++ */
++
++#include <locale.h>
++#include <ctype.h>
++#include <stdio.h>
++#include <stdlib.h>
++#include <string.h>
++#include <time.h>
++#include <unistd.h>
++#include <sys/stat.h>
++
++#define LKC_DIRECT_LINK
++#include "lkc.h"
++
++static void check_conf(struct menu *menu);
++static void conf(struct menu *menu);
++
++enum {
++	set_unknown,
++	set_default,
++	set_yes,
++	set_mod,
++	set_no,
++	set_random
++} default_value = set_unknown;
++
++
++static int conf_cnt;
++static struct menu *rootEntry;
++
++/* Set strig value - it this a nop as it looks like? */
++static void conf_string(struct menu *menu)
++{
++	struct symbol *sym = menu->sym;
++	const char *def;
++
++
++	if (!sym_is_changable(sym))
++		return;
++
++	if (sym_has_value(sym) && (default_value != set_default))
++		return;
++
++	def = sym_get_string_value(sym);
++	if (def)
++		sym_set_string_value(sym, def);
++}
++
++static void conf_sym(struct menu *menu)
++{
++	struct symbol *sym = menu->sym;
++	int type;
++	tristate val;
++
++	if (!sym_is_changable(sym))
++		return;
++
++	if (sym_has_value(sym) && (default_value != set_default))
++		return;
++
++	type = sym_get_type(sym);
++	switch (default_value) {
++	case set_yes:
++		if (sym_tristate_within_range(sym, yes)) {
++			sym_set_tristate_value(sym, yes);
++			break;
++		}
++	/* fallthrough */
++	case set_mod:
++		if (type == S_TRISTATE) {
++			if (sym_tristate_within_range(sym, mod)) {
++				sym_set_tristate_value(sym, mod);
++				break;
++			}
++		} else if (sym_tristate_within_range(sym, yes)) {
++			sym_set_tristate_value(sym, yes);
++			break;
++		}
++	/* fallthrough */
++	case set_no:
++		if (sym_tristate_within_range(sym, no)) {
++			sym_set_tristate_value(sym, no);
++			break;
++		}
++	/* fallthrough */
++	case set_random:
++		 do {
++			val = (tristate)(rand() % 3);
++		} while (!sym_tristate_within_range(sym, val));
++		switch (val) {
++		case no:  sym_set_tristate_value(sym, no); break;
++		case mod: sym_set_tristate_value(sym, mod); break;
++		case yes: sym_set_tristate_value(sym, yes); break;
++		}
++		break;
++	case set_default:
++		sym_set_tristate_value(sym, sym_get_tristate_value(sym));
++		break;
++	/* silence gcc warning */
++	case set_unknown:
++		break;
++	}
++}
++
++static void conf_choice(struct menu *menu)
++{
++	struct symbol *sym, *def_sym;
++	struct menu *child;
++	int type;
++	bool is_new;
++	int cnt, def;
++
++	sym = menu->sym;
++	type = sym_get_type(sym);
++	is_new = !sym_has_value(sym);
++	if (sym_is_changable(sym)) {
++		conf_sym(menu);
++		sym_calc_value(sym);
++	}
++	if (sym_get_tristate_value(sym) != yes)
++		return;
++	def_sym = sym_get_choice_value(sym);
++	cnt = def = 0;
++	for (child = menu->list; child; child = child->next) {
++		if (!child->sym || !menu_is_visible(child))
++			continue;
++		cnt++;
++		if (child->sym == def_sym)
++			def = cnt;
++	}
++	if (cnt == 1)
++		goto conf_childs;
++
++	switch (default_value) {
++	case set_random:
++		if (is_new)
++			def = (rand() % cnt) + 1;
++	/* fallthrough */
++	case set_default:
++	case set_yes:
++	case set_mod:
++	case set_no:
++		cnt = def;
++		break;
++	/* silence gcc warning */
++	case set_unknown:
++		break;
++	}
++
++conf_childs:
++	for (child = menu->list; child; child = child->next) {
++		if (!child->sym || !menu_is_visible(child))
++			continue;
++		if (!--cnt)
++			break;
++	}
++	sym_set_choice_value(sym, child->sym);
++	for (child = child->list; child; child = child->next)
++		conf(child);
++}
++
++
++static void conf(struct menu *menu)
++{
++	struct symbol *sym;
++	struct property *prop;
++	struct menu *child;
++
++	if (!menu_is_visible(menu))
++		return;
++
++	sym = menu->sym;
++	prop = menu->prompt;
++	if (prop && prop->type == P_MENU) {
++		if (menu != rootEntry) {
++			check_conf(menu);
++			return;
++		}
++	}
++
++	if (!sym)
++		goto conf_childs;
++
++	if (sym_is_choice(sym)) {
++		conf_choice(menu);
++		if (sym->curr.tri != mod)
++			return;
++		goto conf_childs;
++	}
++
++	switch (sym->type) {
++	case S_INT:
++	case S_HEX:
++	case S_STRING:
++		conf_string(menu);
++		break;
++	default:
++		conf_sym(menu);
++		break;
++	}
++
++conf_childs:
++	for (child = menu->list; child; child = child->next)
++		conf(child);
++}
++
++static void check_conf(struct menu *menu)
++{
++	struct symbol *sym;
++	struct menu *child;
++
++	if (!menu_is_visible(menu))
++		return;
++
++	sym = menu->sym;
++	if (sym && !sym_has_value(sym)) {
++		if (sym_is_changable(sym) ||
++		    (sym_is_choice(sym) &&
++		     sym_get_tristate_value(sym) == yes)) {
++			conf_cnt++;
++			rootEntry = menu_get_parent_menu(menu);
++			conf(rootEntry);
++		}
++	}
++
++	for (child = menu->list; child; child = child->next)
++		check_conf(child);
++}
++
++int main(int ac, char **av)
++{
++	int opt;
++	char *config_file = NULL;
++	struct stat tmpstat;
++
++	setlocale(LC_ALL, "");
++	bindtextdomain(PACKAGE, LOCALEDIR);
++	textdomain(PACKAGE);
++
++	while ((opt = getopt(ac, av, "dnmyrhi:")) != -1) {
++		switch (opt) {
++		case 'd':
++			default_value = set_default;
++			break;
++		case 'n':
++			default_value = set_no;
++			break;
++		case 'm':
++			default_value = set_mod;
++			break;
++		case 'y':
++			default_value = set_yes;
++			break;
++		case 'r':
++			default_value = set_random;
++			srand(time(NULL));
++			break;
++		case 'i':
++			config_file = optarg;
++			break;
++		case 'h':
++			printf(_("See README for usage info\n"));
++			exit(0);
++			break;
++		default:
++			fprintf(stderr, _("See README for usage info\n"));
++			exit(1);
++		}
++	}
++	if (ac == optind) {
++		fprintf(stderr, _("%s: Kconfig file missing\n"), av[0]);
++		exit(1);
++	}
++	if (default_value == set_unknown) {
++		fprintf(stderr,
++		        _("%s: default value missing. "
++		        "You must use one of: -{d,n,m,y,r}\n"), av[0]);
++		exit(1);
++	}
++	conf_parse(av[optind]);
++	/* debug: zconfdump(stdout); */
++	if (config_file && stat(config_file, &tmpstat)) {
++		fprintf(stderr, _("%s: failed to open %s\n"),
++		        av[0], config_file);
++		exit(1);
++	}
++	if (config_file && conf_read_simple(config_file, S_DEF_USER)) {
++		fprintf(stderr, _("%s: failed to read %s\n"),
++		        av[0], config_file);
++		exit(1);
++	}
++	if (config_file) {
++		printf(_("# configuration is based on '%s'\n"), config_file);
++	}
++	/* generate the config */
++	do {
++		conf_cnt = 0;
++		check_conf(&rootmenu);
++	} while (conf_cnt);
++	/* write out the config */
++	if (conf_write(NULL) || conf_write_autoconf()) {
++		fprintf(stderr,
++		        _("%s: error during write of the configuration.\n"),
++		        av[0]);
++		exit(1);
++	}
++	return 0;
++}
+diff --git a/scripts/kconfig/aconf.sh b/scripts/kconfig/aconf.sh
+new file mode 100755
+index 0000000..c46a868
+--- /dev/null
++++ b/scripts/kconfig/aconf.sh
+@@ -0,0 +1,30 @@
++#!/bin/sh
++set -e
++aconf=scripts/kconfig/aconf
++# Find input file
++if [ ! -z $K ]; then
++	config_file="-i $K";
++fi
++
++case "$1" in
++	"allnoconfig")
++		$aconf -n $config_file $2
++		;;
++	"allyesconfig")
++		$aconf -y $config_file $2
++		;;
++	"allmodconfig")
++		$aconf -m $config_file $2
++		;;
++	"alldefconfig")
++		$aconf -d $config_file $2
++		;;
++	"randconfig")
++		$aconf -r $config_file $2
++		;;
++	*)
++		echo "$0: unknow command $1"
++		exit 1
++	;;
++esac
++
