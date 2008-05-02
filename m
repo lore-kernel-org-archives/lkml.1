@@ -1,44 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934366AbYEBLNT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934242AbYEBLOs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934366AbYEBLNT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 07:13:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758283AbYEBLNA
+	id S934242AbYEBLOs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 07:14:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758003AbYEBLOk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 07:13:00 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:37703
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1755424AbYEBLM7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 07:12:59 -0400
-Date: Fri, 02 May 2008 04:12:58 -0700 (PDT)
-Message-Id: <20080502.041258.45260088.davem@davemloft.net>
-To: den@openvz.org
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       adobriyan@openvz.org, ebiederm@xmission.com
-Subject: Re: [PATCH 12/12] netns: assign PDE->data before gluing entry into
- /proc tree
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1209467602-20001-12-git-send-email-den@openvz.org>
-References: <1209467538.29647.11.camel@iris.sw.ru>
-	<1209467602-20001-12-git-send-email-den@openvz.org>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Fri, 2 May 2008 07:14:40 -0400
+Received: from ozlabs.org ([203.10.76.45]:51502 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757812AbYEBLOk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 May 2008 07:14:40 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: [PATCH] x86: fix up bootparam.h for userspace inclusion
+Date: Fri, 2 May 2008 21:14:20 +1000
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, Huang Ying <ying.huang@intel.com>
+MIME-Version: 1.0
+Content-Disposition: inline
+Message-Id: <200805022114.20672.rusty@rustcorp.com.au>
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: "Denis V. Lunev" <den@openvz.org>
-Date: Tue, 29 Apr 2008 15:13:22 +0400
+commit 8b664aa66e824a0ddf4ec56d41fa0cf7bb374de6 (x86, boot: add linked
+list of struct setup_data) put a new struct in bootparam.h, but didn't
+use the userspace-safe types.
 
-> In this unfortunate case, proc_mkdir_mode wrapper can't be used anymore and
-> this is no way to reuse proc_create_data due to nlinks assignment. So,
-> copy the code from proc_mkdir and assign PDE->data at the appropriate
-> moment.
-> 
-> Signed-off-by: Denis V. Lunev <den@openvz.org>
+CC: Huang, Ying <ying.huang@intel.com>
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
 
-Oh well, the cost of correctness sometimes :-)
-
-Applied, thanks.
+diff -r 3b015cd747e0 include/asm-x86/bootparam.h
+--- a/include/asm-x86/bootparam.h	Fri May 02 09:32:30 2008 +1000
++++ b/include/asm-x86/bootparam.h	Fri May 02 18:35:11 2008 +1000
+@@ -14,10 +14,10 @@
+ 
+ /* extensible setup data list node */
+ struct setup_data {
+-	u64 next;
+-	u32 type;
+-	u32 len;
+-	u8 data[0];
++	__u64 next;
++	__u32 type;
++	__u32 len;
++	__u8 data[0];
+ };
+ 
+ struct setup_header {
