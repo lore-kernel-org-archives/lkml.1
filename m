@@ -1,92 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935129AbYEBNWd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934617AbYEBNaY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935129AbYEBNWd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 09:22:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762293AbYEBNWZ
+	id S934617AbYEBNaY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 09:30:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764018AbYEBNaJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 09:22:25 -0400
-Received: from s15216962.onlinehome-server.info ([217.160.22.205]:59242 "EHLO
-	s15216962.onlinehome-server.info" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759321AbYEBNWY (ORCPT
+	Fri, 2 May 2008 09:30:09 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:43674 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764382AbYEBNaH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 09:22:24 -0400
-Date: Fri, 2 May 2008 15:22:07 +0200
-From: Enrico Weigelt <weigelt@metux.de>
-To: linux kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: Slow DOWN, please!!!
-Message-ID: <20080502132207.GC7997@nibiru.local>
-Reply-To: weigelt@metux.de
-References: <20080429.190352.137408408.davem@davemloft.net> <20080430183149.78d97597.akpm@linux-foundation.org> <alpine.LFD.1.10.0804301841290.5994@woody.linux-foundation.org> <200805011259.47343.rjw@sisk.pl> <alpine.LFD.1.10.0805010816340.5994@woody.linux-foundation.org> <20080501183551.GA26149@foursquare.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080501183551.GA26149@foursquare.net>
-User-Agent: Mutt/1.4.1i
-X-Terror: bin laden, kill bush, Briefbombe, Massenvernichtung, KZ, 
-X-Nazi: Weisse Rasse, Hitlers Wiederauferstehung, 42, 
-X-Antichrist: weg mit schaeuble, ausrotten, heiliger krieg, al quaida, 
-X-Killer: 23, endloesung, Weltuntergang, 
-X-Doof: wer das liest ist doof
+	Fri, 2 May 2008 09:30:07 -0400
+Date: Fri, 2 May 2008 15:30:05 +0200 (CEST)
+From: Jan Engelhardt <jengelh@medozas.de>
+To: Chris Mason <chris.mason@oracle.com>
+cc: Jeff Mahoney <jeffm@suse.com>, Tim Gardner <tim.gardner@canonical.com>,
+       jeffschroeder@computer.org, linux-fsdevel@vger.kernel.org,
+       kernel-team@lists.ubuntu.com, linux-kernel@vger.kernel.org,
+       linux-btrfs@vger.kernel.org, John Johansen <jjohansen@suse.de>
+Subject: Re: Btrfs v0.14 Released
+In-Reply-To: <200805020852.51125.chris.mason@oracle.com>
+Message-ID: <alpine.LNX.1.10.0805021526420.6463@fbirervta.pbzchgretzou.qr>
+References: <200804291601.32945.chris.mason@oracle.com> <481A23AB.1020302@suse.com> <alpine.LNX.1.10.0805020837490.6463@fbirervta.pbzchgretzou.qr> <200805020852.51125.chris.mason@oracle.com>
+User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Hi folks,
+On Friday 2008-05-02 14:52, Chris Mason wrote:
+>>
+>> An alternative approach, and IMHO better suited, is to:
+>>
+>> 	make -C ${kdir} all I_HAZ_AN_APPARMOR=1
+>
+>This is better than the current situation (oops without any clues), but I'd 
+>prefer that people not have to know what apparmor is or if they have it.  
 
+I guess iff people have a clue just what btrfs is and what it is good for
+and why one would need it, I guess they also know of Apparmor.
+If not, well, I hope you mentioned it in the INSTALL file!
+Documentation on the most important things is always a good thing.
 
-<big_snip>
+>(This isn't a knock on apparmor, I'd just rather take care of it 
+>automagically).
 
-Just a few naive thoughts:
-
-a) What about reducing code size ?
-
-Some parts, IMHO, doen't necessarily need to be in the kernel,
-eg. certain filesystems. Less code, less patches to review, less
-chance of kernel bugs. Of course this might also cause other 
-impacts (eg. performance), so those decisions require great care.
-
-b) Mutli-tier trees / patchlines
-
-IMHO, a major problem are conflicting patches (eg. a core change
-causes some driver to break). In measurement instrumentation 
-(eg. timesync), there's typically one primary reference point 
-(eg. atomic clock) as tier-0, where (a limited set of) tier-1's 
-are synchronized against, tier-2 syncs against tier-1 and so on.
-
-So for the linux kernel, we perhaps could have something like:
-
-* tier-0: core
-* tier-1: arch
-* tier-2: hw drivers
-* tier-3: sw drivers
-* tier-4: userland interfaces
-
-If a change from a lower tier wants to it's upper tier, it first
-MUST fit it's current mainline and carefully checked. Of course
-this introduces longer times for an individual change to go to
-into release (since it has to pass several tiers), but IMHO the
-chance of new bugs in release should be reduced this way.
-
-Of course there might be chances in a lower tier, which obviously 
-won't affect several intermediate tiers. Those could skip some tiers.
-
-For example, I'm currently working on an /proc interface for 
-changing process privileges. In my model, this had to be settled
-in #4, but shouldn't touch drivers (#2,#3), but maybe arch (#1).
-So these changes could be kicked directly to #2. 
-
-
-What do you think about this ?
-
-
-cu
--- 
----------------------------------------------------------------------
- Enrico Weigelt    ==   metux IT service - http://www.metux.de/
----------------------------------------------------------------------
- Please visit the OpenSource QM Taskforce:
- 	http://wiki.metux.de/public/OpenSource_QM_Taskforce
- Patches / Fixes for a lot dozens of packages in dozens of versions:
-	http://patches.metux.de/
----------------------------------------------------------------------
+Well you could go down the conftest.sh route, but I dislike that
+approach because such a Makefile system tries to be smarter than me;
+and that often breaks because developers made a mess out of the
+remaining Makefile and before long, it broke on odd, but
+"standards-conforming", O= builds. (Fun stories with nvidia.)
