@@ -1,61 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761452AbYEBPCT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933823AbYEBPD6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761452AbYEBPCT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 11:02:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756561AbYEBPCJ
+	id S933823AbYEBPD6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 11:03:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756561AbYEBPDt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 11:02:09 -0400
-Received: from mail.gmx.net ([213.165.64.20]:60744 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1753406AbYEBPCI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 11:02:08 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1/xCgB5cPfxBovC5QeVFU66pKjYCZgowZ9ywBJKTK
-	evurhNh7hRZshs
-Subject: Re: Horrendous Audio Stutter - current git
-From: Mike Galbraith <efault@gmx.de>
-To: Parag Warudkar <parag.warudkar@gmail.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>, Frans Pop <elendil@planet.nl>
-In-Reply-To: <1209731822.25271.4.camel@marge.simson.net>
-References: <82e4877d0805011714m35a47753q58cca706b7af6557@mail.gmail.com>
-	 <1209717278.13978.136.camel@twins>
-	 <82e4877d0805020410u78c6f03fr8e8e53d5a19f6846@mail.gmail.com>
-	 <1209730185.18055.21.camel@marge.simson.net>
-	 <82e4877d0805020521t696cc4fbu6ffd182f84ae1a2e@mail.gmail.com>
-	 <1209731822.25271.4.camel@marge.simson.net>
+	Fri, 2 May 2008 11:03:49 -0400
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:56072 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756289AbYEBPDs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 May 2008 11:03:48 -0400
+Subject: Re: [PATCH #repost] SCSI: megaraid, fix suspend/resume sections
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, megaraidlinux@lsi.com,
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <481B2CB8.2000307@gmail.com>
+References: <1209657362-20300-1-git-send-email-jirislaby@gmail.com>
+	 <20080501142305.77433e50.akpm@linux-foundation.org>
+	 <481A3781.8080100@gmail.com>
+	 <1209679559.14864.33.camel@localhost.localdomain>
+	 <20080501153048.2a8d356f.akpm@linux-foundation.org>
+	 <1209740170.3121.24.camel@localhost.localdomain>
+	 <481B2CB8.2000307@gmail.com>
 Content-Type: text/plain
-Date: Fri, 02 May 2008 17:02:03 +0200
-Message-Id: <1209740523.4776.1.camel@marge.simson.net>
+Date: Fri, 02 May 2008 10:03:45 -0500
+Message-Id: <1209740625.3121.27.camel@localhost.localdomain>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
+X-Mailer: Evolution 2.12.3 (2.12.3-4.fc8) 
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Fri, 2008-05-02 at 14:37 +0200, Mike Galbraith wrote:
-> On Fri, 2008-05-02 at 08:21 -0400, Parag Warudkar wrote:
-> > On Fri, May 2, 2008 at 8:09 AM, Mike Galbraith <efault@gmx.de> wrote:
-> > >  Hm.  I've stumbled across a regression that may be related.  Can you
-> > >  please try the attached with group scheduling enabled in current git?
+On Fri, 2008-05-02 at 17:01 +0200, Jiri Slaby wrote:
+> James Bottomley napsal(a):
+> >>> could we not at least make the machinery do something vaguely
+> >>> useful and expand it to confine the pm routines to sections which can be
+> >>> discarded if CONFIG_PM is n?
+> >> a) it would need to be discarded at link-time, ideally.
 > > 
-> > In file included from kernel/sched.c:1902:
-> > kernel/sched_fair.c: In function 'print_cfs_rq_tasks':
-> > kernel/sched_fair.c:1602: error: implicit declaration of function
-> > 'calc_delta_weight'
-> > kernel/sched_fair.c:1603: warning: format '%lu' expects type 'long
-> > unsigned int', but argument 5 has type 'int'
-> > make[1]: *** [kernel/sched.o] Error 1
-> > make: *** [kernel] Error 2
-> > 
-> > 'calc_delta_weight' or a replacement not found easily to fix it up!
+> > Yes, the same way the exit sections are: as linker discards.  We also
+> > have the mechanics for runtime discards which is useful for modules
 > 
-> Oops, I have an unrelated patch in my tree which you also need.
+> No it doesn't, exits are discarded at runtime only. At least on x86.
 
-I see that Peter has a fix, so don't bother.
+No what doesn't?  I said we have the mechanics to discard both at link
+and at run time.
 
-	-Mike
+I think you'll find that .exitcall.exit is link time discarded on x86
+and the others are runtime discarded.
+
+James
+
 
