@@ -1,63 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936729AbYEBUhk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965080AbYEBUjZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936729AbYEBUhk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 16:37:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936843AbYEBUg5
+	id S965080AbYEBUjZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 16:39:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932770AbYEBUi7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 16:36:57 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:46281 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S936839AbYEBUgz (ORCPT
+	Fri, 2 May 2008 16:38:59 -0400
+Received: from ug-out-1314.google.com ([66.249.92.171]:27343 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764381AbYEBUi5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 16:36:55 -0400
-Date: Fri, 2 May 2008 22:36:38 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: David Brownell <david-b@pacbell.net>, lkml <linux-kernel@vger.kernel.org>,
-       Trent Piepho <tpiepho@freescale.com>,
-       hartleys <hartleys@visionengravers.com>,
-       Ben Nizette <bn@niasdigital.com>, Mike Frysinger <vapier.adi@gmail.com>,
-       Bryan Wu <cooloney@kernel.org>
-Subject: Re: [patch/rfc 2.6.25-git] gpio: sysfs interface
-Message-ID: <20080502203637.GG3956@ucw.cz>
-References: <200804281239.51729.david-b@pacbell.net> <20080428134649.44cf239c.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 2 May 2008 16:38:57 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Ucgs6mhtbO6ckyaMmNZ68WKgHccP8BvuH1UgCD0lJ7vyLH1cZuiYcU3tp+e2qf6g3CkuAXw87eXOjukI8acY1QIXLgIMKDDfwqfAtSO9FrpRlpQf/rt3wcAN7Gab0hURqxz9aSFg3t6QvvG4Naj0NQlhzEeuOwhW5dpwRCXn514=
+Message-ID: <3d8471ca0805021338x7cde7d1fwbbb58a6c65a1349d@mail.gmail.com>
+Date: Fri, 2 May 2008 22:38:53 +0200
+From: "Guillaume Chazarain" <guichaz@gmail.com>
+To: "Peter Zijlstra" <a.p.zijlstra@chello.nl>
+Subject: Re: 'global' rq->clock (was Re: Horrendous Audio Stutter - current git)
+Cc: "Mike Galbraith" <efault@gmx.de>, "Frans Pop" <elendil@planet.nl>,
+       "Parag Warudkar" <parag.warudkar@gmail.com>,
+       "Ingo Molnar" <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       "Andi Kleen" <andi@firstfloor.org>
+In-Reply-To: <1209758186.6929.18.camel@lappy>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080428134649.44cf239c.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.9i
+References: <82e4877d0805011714m35a47753q58cca706b7af6557@mail.gmail.com>
+	 <1209740523.4776.1.camel@marge.simson.net>
+	 <200805021749.10205.elendil@planet.nl>
+	 <200805022053.24779.elendil@planet.nl>
+	 <1209756423.4693.8.camel@marge.simson.net>
+	 <1209758186.6929.18.camel@lappy>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Fri, May 2, 2008 at 9:56 PM, Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+>  Let me try and come up with something slightly less horrible
 
-> > Simple sysfs interface for GPIOs.
-> > 
-> >     /sys/class/gpio
-> >         /gpio-N ... for each exported GPIO #N
-> > 	    /value ... always readable, writes fail except for output GPIOs
-> > 	    /direction ... writable as: in, out (default low), high, low
-> >     	/control ... to request a GPIO be exported or unexported
-> > 
-> > GPIOs may be exported by kernel code using gpio_export(), which should
-> > be most useful for driver debugging.  Userspace may also ask that they
-> > be exported by writing to the sysfs control file, helping to cope with
-> > incomplete board support:
-> > 
-> >   echo "export 23" > /sys/class/gpio/control
-> > 	... will gpio_request(23, "sysfs") and gpio_export(23); use
-> > 	/sys/class/gpio/gpio-23/direction to configure it.
-> >   echo "unexport 23" > /sys/class/gpio/control
-> > 	... will gpio_free(23)
-> 
-> hm, does ths sysfs one-value-per-file rule apply to writes?
+Does this obsolete Ingo's "sched: make cpu_clock() globally synchronous"?
 
-Having seen ibm acpi interface... yes, that rule should be aplied for
-writes, too.
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=27ec4407790d075c325e1f4da0a19c56953cce23
 
-What about mkdir gpio-N to export it?
+My laptop is UP, so I cannot test this :-(
 
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Guillaume
