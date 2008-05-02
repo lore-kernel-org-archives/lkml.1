@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965710AbYEBP4l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965405AbYEBP5A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965710AbYEBP4l (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 11:56:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965005AbYEBPv7
+	id S965405AbYEBP5A (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 11:57:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965010AbYEBPwA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 11:51:59 -0400
-Received: from opensource.wolfsonmicro.com ([80.75.67.52]:38988 "EHLO
+	Fri, 2 May 2008 11:52:00 -0400
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:38986 "EHLO
 	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1765698AbYEBPvx (ORCPT
+	by vger.kernel.org with ESMTP id S964829AbYEBPvx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 2 May 2008 11:51:53 -0400
-Subject: [PATCH 12/13] regulator: documentation - machine
+Subject: [PATCH 04/13] regulator: fixed regulator interface
 From: Liam Girdwood <lg@opensource.wolfsonmicro.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: linux-kernel <linux-kernel@vger.kernel.org>,
        arm kernel <linux-arm-kernel@lists.arm.linux.org.uk>,
        Mark Brown <broonie@opensource.wolfsonmicro.com>
 Content-Type: text/plain
-Date: Fri, 02 May 2008 16:44:17 +0100
-Message-Id: <1209743057.12502.56.camel@odin>
+Date: Fri, 02 May 2008 16:41:54 +0100
+Message-Id: <1209742914.12502.45.camel@odin>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.1 
 Content-Transfer-Encoding: 7bit
@@ -26,121 +26,45 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This adds documentation describing the regulator machine interface.
+This patch adds support for fixed regulators. This class of regulator is
+not software controllable but can coexist on machines with software
+controllable regulators.
 
+Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
 Signed-off-by: Liam Girdwood <lg@opensource.wolfsonmicro.com>
 ---
- Documentation/power/regulator/machine.txt |  101 +++++++++++++++++++++++++++++
- 1 files changed, 101 insertions(+), 0 deletions(-)
- create mode 100644 Documentation/power/regulator/machine.txt
+ include/linux/regulator/fixed.h |   22 ++++++++++++++++++++++
+ 1 files changed, 22 insertions(+), 0 deletions(-)
+ create mode 100644 include/linux/regulator/fixed.h
 
-diff --git a/Documentation/power/regulator/machine.txt b/Documentation/power/regulator/machine.txt
+diff --git a/include/linux/regulator/fixed.h b/include/linux/regulator/fixed.h
 new file mode 100644
-index 0000000..c9a3566
+index 0000000..1387a5d
 --- /dev/null
-+++ b/Documentation/power/regulator/machine.txt
-@@ -0,0 +1,101 @@
-+Regulator Machine Driver Interface
-+===================================
++++ b/include/linux/regulator/fixed.h
+@@ -0,0 +1,22 @@
++/*
++ * fixed.h
++ *
++ * Copyright 2008 Wolfson Microelectronics PLC.
++ *
++ * Author: Mark Brown <broonie@opensource.wolfsonmicro.com>
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License as
++ * published by the Free Software Foundation; either version 2 of the
++ * License, or (at your option) any later version.
++ */
 +
-+The regulator machine driver interface is intended for board/machine specific
-+initialisation code to configure the regulator subsystem. Typical things that
-+machine drivers would do are :-
++#ifndef __REGULATOR_FIXED_H
++#define __REGULATOR_FIXED_H
 +
-+ 1. Regulator -> Device mapping.
-+ 2. Regulator supply configuration.
-+ 3. Power Domain constraint setting.
-+
-+
-+
-+1. Regulator -> device mapping
-+==============================
-+Consider the following machine :-
-+
-+  Regulator-1 -+-> Regulator-2 --> [Consumer A @ 1.8 - 2.0V]
-+               |
-+               +-> [Consumer B @ 3.3V]
-+
-+The drivers for consumers A & B must be mapped to the correct regulator in
-+order to control their power supply. This mapping can be achieved in machine
-+initialisation code by calling :-
-+
-+int regulator_set_device_supply(const char *regulator, struct device *dev,
-+				const char *supply);
-+
-+and is shown with the following code :-
-+
-+regulator_set_device_supply("Regulator-1", devB, "Vcc");
-+regulator_set_device_supply("Regulator-2", devA, "Vcc");
-+
-+This maps Regulator-1 to the 'Vcc' supply for Consumer B and maps Regulator-2
-+to the 'Vcc' supply for Consumer A.
-+
-+
-+2. Regulator supply configuration.
-+==================================
-+Consider the following machine (again) :-
-+
-+  Regulator-1 -+-> Regulator-2 --> [Consumer A @ 1.8 - 2.0V]
-+               |
-+               +-> [Consumer B @ 3.3V]
-+
-+Regulator-1 supplies power to Regulator-2. This relationship must be registered
-+with the core so that Regulator-1 is also enabled when Consumer A enables it's
-+supply (Regulator-2).
-+
-+This relationship can be register with the core via :-
-+
-+int regulator_set_supply(const char *regulator, const char *regulator_supply);
-+
-+In this example we would use the following code :-
-+
-+regulator_set_supply("Regulator-2", "Regulator-1");
-+
-+Relationships can be queried by calling :-
-+
-+const char *regulator_get_supply(const char *regulator);
-+
-+
-+3. Power Domain constraint setting.
-+===================================
-+Each power domain within a system has physical constraints on voltage and
-+current. This must be defined in software so that the power domain is always
-+operated within specifications.
-+
-+Consider the following machine (again) :-
-+
-+  Regulator-1 -+-> Regulator-2 --> [Consumer A @ 1.8 - 2.0V]
-+               |
-+               +-> [Consumer B @ 3.3V]
-+
-+This gives us two regulators and two power domains:
-+
-+                   Domain 1: Regulator-2, Consumer B.
-+                   Domain 2: Consumer A.
-+
-+Constraints can be registered by calling :-
-+
-+int regulator_set_platform_constraints(const char *regulator,
-+	struct regulation_constraints *constraints);
-+
-+The example is defined as follows :-
-+
-+struct regulation_constraints domain_1 = {
-+	.min_uV = 3300000,
-+	.max_uV = 3300000,
-+	.valid_modes_mask = REGULATOR_MODE_NORMAL,
++struct fixed_voltage_config {
++	const char *supply_name;
++	int microvolts;
 +};
 +
-+struct regulation_constraints domain_2 = {
-+	.min_uV = 1800000,
-+	.max_uV = 2000000,
-+	.valid_ops_mask = REGULATOR_CHANGE_VOLTAGE,
-+	.valid_modes_mask = REGULATOR_MODE_NORMAL,
-+};
-+
-+regulator_set_platform_constraints("Regulator-1", &domain_1);
-+regulator_set_platform_constraints("Regulator-2", &domain_2);
++#endif
 -- 
 1.5.4.3
 
