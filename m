@@ -1,56 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933823AbYEBPD6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765595AbYEBPFy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933823AbYEBPD6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 11:03:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756561AbYEBPDt
+	id S1765595AbYEBPFy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 11:05:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753406AbYEBPFr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 11:03:49 -0400
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:56072 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756289AbYEBPDs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 11:03:48 -0400
-Subject: Re: [PATCH #repost] SCSI: megaraid, fix suspend/resume sections
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, megaraidlinux@lsi.com,
-       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <481B2CB8.2000307@gmail.com>
-References: <1209657362-20300-1-git-send-email-jirislaby@gmail.com>
-	 <20080501142305.77433e50.akpm@linux-foundation.org>
-	 <481A3781.8080100@gmail.com>
-	 <1209679559.14864.33.camel@localhost.localdomain>
-	 <20080501153048.2a8d356f.akpm@linux-foundation.org>
-	 <1209740170.3121.24.camel@localhost.localdomain>
-	 <481B2CB8.2000307@gmail.com>
+	Fri, 2 May 2008 11:05:47 -0400
+Received: from styx.suse.cz ([82.119.242.94]:32782 "EHLO elijah.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751614AbYEBPFq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 May 2008 11:05:46 -0400
+Subject: CPU POSIX timers livelock
+From: Petr Tesarik <ptesarik@suse.cz>
+To: Thomas Gleixner <tglx@linutronix.de>, Oleg Nesterov <oleg@tv-sign.ru>
+Cc: linux-kernel@vger.kernel.org
 Content-Type: text/plain
-Date: Fri, 02 May 2008 10:03:45 -0500
-Message-Id: <1209740625.3121.27.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-4.fc8) 
 Content-Transfer-Encoding: 7bit
+Organization: SuSE CR
+Date: Fri, 02 May 2008 17:05:41 +0200
+Message-Id: <1209740741.15210.49.camel@elijah.suse.cz>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.0 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-05-02 at 17:01 +0200, Jiri Slaby wrote:
-> James Bottomley napsal(a):
-> >>> could we not at least make the machinery do something vaguely
-> >>> useful and expand it to confine the pm routines to sections which can be
-> >>> discarded if CONFIG_PM is n?
-> >> a) it would need to be discarded at link-time, ideally.
-> > 
-> > Yes, the same way the exit sections are: as linker discards.  We also
-> > have the mechanics for runtime discards which is useful for modules
-> 
-> No it doesn't, exits are discarded at runtime only. At least on x86.
+Hello,
 
-No what doesn't?  I said we have the mechanics to discard both at link
-and at run time.
+there seems to be a possible livelock in the CPU timers (actually, we've
+experienced it once already). The analysis lead to the conclusion that
+fixing this properly will be a bit harder.
 
-I think you'll find that .exitcall.exit is link time discarded on x86
-and the others are runtime discarded.
+Problem Statement
 
-James
+ 1. Any process can set ITIMER_PROF as short as 1 timer tick
+ 2. If the process is CPU-bound (e.g. a number-crunching application),
+    the timer will expire with every timer tick
+ 3. If the process has N threads and each thread runs on its own
+    CPU, the timer will expire N times per timer tick
 
+Now, this can become quite interesting on a larger system. For instance,
+with 128 CPUs and a (conservative) setting of HZ 300, any process can
+effectively ask to be sent a SIGPROF every 26 usec (1/300/128 s). Pretty
+fast, but it can get worse if you consider the pitfalls of a NUMA
+architecture.
 
+Whenever the timer expires, a new expiration time must be computed for
+each thread in the thread group. The values are stored in task_struct of
+each thread, and IIRC those are kept local to the CPU where the thread
+is running (quite logically). Put in another way, walking all threads
+means touching remote memory except for the few task_struct which are
+local to the recomputing CPU. In the 128-CPU example, if each node has 2
+CPUs (think Altix), only 2 accesses are to the local node and 126
+accesses are to remote memory. These are already quite expensive, but it
+gets even worse. The timer interrupt is generated locally for each CPU,
+so if the process is spread over all of them (see above), all CPUs
+recompute the timer (hint: write access), thus constantly invalidating
+local caches of the remote memory.
+
+And those computations cannot run in parallel, of course, because
+everything is serialized on sighand->siglock (see run_posix_cpu_timers).
+So, each time one CPU finishes walking the threads, there's already a
+queue of all the other CPUs waiting to do the same again. For this kind
+of load, those 26 usec (approx. 41600 CPU cycles on a 1.6 GHz CPU) may
+be well insufficient. Even more so, if somebody else occasionally takes
+write lock on tasklist_lock. It may so happen that the system spends all
+CPU cycles re-computing the profiling timers over and over again and
+never make any progress. Note this is partly caused by the fact that the
+time needed to handle the profiling timer is itself also counted to the
+profiling time.
+
+This simply does not scale for large systems (and I was not even
+considering those really large 1024p ones).
+
+Ideas
+
+Any ideas for improvement? Obviously, storing per-process expiration
+times in one place instead of dividing the interval by the number of
+currently running threads would help here. But it would spoil the fast
+path (when there are no timers at all). Avoiding that multiple threads
+re-compute the same values might also help (although I've got no idea
+how to implement this).
+
+Any more comments (before I start hacking something you'll NAK)?
+
+BTW did POSIX really mean to allow an indefinitely small interval for
+the SIGPROF?
+
+Petr Tesarik
