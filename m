@@ -1,59 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937440AbYEBXxa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937534AbYEBXzN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937440AbYEBXxa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 19:53:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764497AbYEBXxX
+	id S937534AbYEBXzN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 19:55:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764864AbYEBXy4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 19:53:23 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:56875 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1763477AbYEBXxW (ORCPT
+	Fri, 2 May 2008 19:54:56 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:55870
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1758419AbYEBXyz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 19:53:22 -0400
-Date: Fri, 2 May 2008 16:52:48 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Liam Girdwood <lg@opensource.wolfsonmicro.com>
-Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
-       broonie@opensource.wolfsonmicro.com
-Subject: Re: [PATCH 0/13] Updated V4  - Regulator Framework
-Message-Id: <20080502165248.dba934e9.akpm@linux-foundation.org>
-In-Reply-To: <1209742841.12502.40.camel@odin>
-References: <1209742841.12502.40.camel@odin>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Fri, 2 May 2008 19:54:55 -0400
+Date: Fri, 02 May 2008 16:54:55 -0700 (PDT)
+Message-Id: <20080502.165455.24687234.davem@davemloft.net>
+To: xiyou.wangcong@gmail.com
+Cc: herbert@gondor.apana.org.au, linux-kernel@vger.kernel.org, akpm@osdl.org,
+       netdev@vger.kernel.org
+Subject: Re: [Patch] (revised) net/xfrm/xfrm_policy.c: replace timer with
+ delayed_work
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <alpine.LFD.1.10.0805021323470.3349@localhost.localdomain>
+References: <alpine.LFD.1.10.0804302355120.2940@localhost.localdomain>
+	<20080501011123.GA4060@gondor.apana.org.au>
+	<alpine.LFD.1.10.0805021323470.3349@localhost.localdomain>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 02 May 2008 16:40:41 +0100
-Liam Girdwood <lg@opensource.wolfsonmicro.com> wrote:
+From: WANG Cong <xiyou.wangcong@gmail.com>
+Date: Fri, 2 May 2008 13:35:55 +0800 (CST)
 
-> This is an updated version of the kernel voltage & current regulator
-> framework based on comments received from version 3 of the patch series.
 > 
-> The regulator framework is designed to provide a standard kernel
-> interface to control voltage and current regulators on SoC based
-> systems.
+> As suggested by Herbert Xu, using workqueue is better than timer
+> for net/xfrm/xfrm_policy.c, so replace them with delayed_work.
+> And due to this change, we have to disable BH when trying to
+> lock.
 > 
-> The intention is to allow systems to dynamically control regulator power
-> output in order to save power and prolong battery life. This applies to
-> both voltage regulators (where voltage output is controllable) and
-> current sinks (where current limit is controllable).
+> Note that, this patch is not fully tested, so should be
+> in -mm first.
 > 
+> Signed-off-by: WANG Cong <wangcong@zeuux.org>
 
-oh gee.
-
-I (and others) reviewed and commented on all this code last month.  Now
-here it is again and, although I'm sure it is delightful code, nobody wants
-to have to read it all again ;)
-
-The one-month gap between v3 and v4 is unfortunate.  It means that everyone
-has forgotten everything.
-
-
-Was all the review feedback satisfactorily handled to the reviewers'
-satisfaction?
-
-Is there any new material in here which would require a re-review?
+Please let me know when these two patches have gotten some
+good testing.
