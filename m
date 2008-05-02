@@ -1,103 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763763AbYEBCnz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760615AbYEBCsU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763763AbYEBCnz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 May 2008 22:43:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755949AbYEBCnq
+	id S1760615AbYEBCsU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 May 2008 22:48:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754477AbYEBCsF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 May 2008 22:43:46 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:40156 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755921AbYEBCno (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 May 2008 22:43:44 -0400
-Date: Thu, 1 May 2008 21:43:43 -0500
-From: Russ Anderson <rja@sgi.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Tony Luck <tony.luck@intel.com>
-Subject: Re: [PATCH 3/3] ia64: Call migration code on correctable errors v2
-Message-ID: <20080502024342.GB1591@sgi.com>
-Reply-To: Russ Anderson <rja@sgi.com>
-References: <20080502004425.GD12006@sgi.com> <Pine.LNX.4.64.0805011818100.13527@schroedinger.engr.sgi.com>
-Mime-Version: 1.0
+	Thu, 1 May 2008 22:48:05 -0400
+Received: from mail.ift.unesp.br ([200.145.46.3]:40446 "EHLO mail.ift.unesp.br"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751564AbYEBCsE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 May 2008 22:48:04 -0400
+Date: Thu, 1 May 2008 23:46:36 -0300
+From: "Carlos R. Mafra" <crmafra2@gmail.com>
+To: hpa@zytor.com
+Cc: linux-kernel@vger.kernel.org
+Subject: kernel/time.c: integer constant is too large for long type
+Message-ID: <20080502024636.GA31465@beyonder.ift.unesp.br>
+Mail-Followup-To: hpa@zytor.com, linux-kernel@vger.kernel.org
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0805011818100.13527@schroedinger.engr.sgi.com>
-User-Agent: Mutt/1.5.9i
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 01, 2008 at 06:22:29PM -0700, Christoph Lameter wrote:
-> On Thu, 1 May 2008, Russ Anderson wrote:
-> 
-> > +int
-> > +freeOneBadPage(unsigned long paddr)
-> > +{
-> > +	struct page *page, *page2, *target;
-> > +
-> > +	/*
-> > +	 * Verify page address
-> > +	 */
-> > +	target = phys_to_page(paddr);
-> > +	list_for_each_entry_safe(page, page2, &badpagelist, lru) {
-> > +		if (page != target)
-> > +			continue;
-> > +
-> > +		ClearPageMemError(page);        /* Mark the page as good */
-> > +		move_to_lru(page);
-> > +		list_del(&page->lru);
-> 
-> This is the wrong order. move_to_lru() uses the lru field. So do the 
-> list_del first then the move. Note that there is a function 
-> putback_lru_pages() that is used to put a list of pages back to the lru if 
-> migration has failed and we give up on them. Could you use 
-> putback_lru_pages() and then avoid the exporting of move_to_lru()?
+Hi Peter,
 
-I'll put the page on a different list and call putback_lru_pages().
+I would like to report a gcc warning which caught my attention today:
 
-> > +
-> > +int
-> > +freeAllBadPages(void)
-> > +{
-> > +	struct page *page, *page2;
-> > +
-> > +	list_for_each_entry_safe(page, page2, &badpagelist, lru) {
-> > +		ClearPageMemError(page);        /* Mark the page as good */
-> > +		totalbad_pages--;
-> > +	}
-> > +	putback_lru_pages(&badpagelist);
-> > +	return 0;
-> > +}
-> 
-> Ahh.. Here you use it.
+kernel/time.c: In function msecs_to_jiffies:
+kernel/time.c:479: warning: integer constant is too large for long type
+kernel/time.c: In function usecs_to_jiffies:
+kernel/time.c:494: warning: integer constant is too large for long type
 
-This is when deleting all the pages on the list.
+and ask you if this is something I should worry about (and propose
+a patch if this warning is harmless).
 
-> > Index: linus/include/asm-ia64/page.h
-> > ===================================================================
-> > --- linus.orig/include/asm-ia64/page.h	2008-05-01 19:36:40.000000000 -0500
-> > +++ linus/include/asm-ia64/page.h	2008-05-01 19:36:49.000000000 -0500
-> > @@ -122,6 +122,7 @@ extern unsigned long max_low_pfn;
-> >  #endif
-> >  
-> >  #define page_to_phys(page)	(page_to_pfn(page) << PAGE_SHIFT)
-> > +#define	phys_to_page(kaddr)	(pfn_to_page(kaddr >> PAGE_SHIFT))
-> 
-> #define phys_to_page virt_to_page ?
+I ask this because this warning was introduced via commit 
+bdc807871d58285737d50dc6163d0feb72cb0dc2 ("avoid overflows in kernel/time.c")
+and (naively) for me it looks like the above gcc warning is some kind of 
+overflow.
 
-I'm not sure what you are asking.
+I looked in the code for the first warning:
 
-#define phys_to_page(kaddr)     (pfn_to_page(kaddr >> PAGE_SHIFT))
-#define virt_to_page(kaddr)     pfn_to_page(__pa(kaddr) >> PAGE_SHIFT)
+return ((u64)MSEC_TO_HZ_MUL32 * m + MSEC_TO_HZ_ADJ32)
+		>> MSEC_TO_HZ_SHR32;
 
-Do you mean change virt_to_page() like this?
+and noticed that the warning is due to
 
-#define virt_to_page(kaddr)     phys_to_page(__pa(kaddr))
+#define MSEC_TO_HZ_ADJ32        0x1cccccccc
 
-Thanks,
+in kernel/timeconst.h
+
+Just for fun I converted it to binary 
+111001100110011001100110011001100
+and noticed that there are 33 bits in it.
+
+I also noticed that if I cast it to (u64)MSEC_TO_HZ_ADJ32 the warning
+is gone, but it appears to be an ugly thing to do. I can understand
+the first cast to u64 in the return written above because of the 
+multiplication by 'm'. But it looks strange to do that to MSEC_TO_HZ_ADJ32 
+alone.
+
+Shouldn't MSEC_TO_HZ_ADJ32 have at most 32 bits?
+
+Well, just in case there is no problem about it being 33 bits despite
+its name, please consider the patch below, which silences these
+warnings.
+
+
+>From b9781ceb0a635384423ceeee9030135cccddaad8 Mon Sep 17 00:00:00 2001
+From: Carlos R. Mafra <crmafra@ift.unesp.br>
+Date: Thu, 1 May 2008 23:30:49 -0300
+Subject: [PATCH] kernel/time.c: Silence gcc warning 'integer constant to large for long type'
+
+This patch remove the gcc warnings:
+
+kernel/time.c: In function msecs_to_jiffies:
+kernel/time.c:479: warning: integer constant is too large for long type
+kernel/time.c: In function usecs_to_jiffies:
+kernel/time.c:494: warning: integer constant is too large for long type
+
+by casting MSEC_TO_HZ_ADJ32 and USEC_TO_HZ_ADJ32 to u64.
+
+Signed-off-by: Carlos R. Mafra <crmafra@ift.unesp.br>
+---
+ kernel/time.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/kernel/time.c b/kernel/time.c
+index cbe0d5a..76dcc0f 100644
+--- a/kernel/time.c
++++ b/kernel/time.c
+@@ -476,7 +476,7 @@ unsigned long msecs_to_jiffies(const unsigned int m)
+ 	if (HZ > MSEC_PER_SEC && m > jiffies_to_msecs(MAX_JIFFY_OFFSET))
+ 		return MAX_JIFFY_OFFSET;
+ 
+-	return ((u64)MSEC_TO_HZ_MUL32 * m + MSEC_TO_HZ_ADJ32)
++	return ((u64)MSEC_TO_HZ_MUL32 * m + (u64)MSEC_TO_HZ_ADJ32)
+ 		>> MSEC_TO_HZ_SHR32;
+ #endif
+ }
+@@ -491,7 +491,7 @@ unsigned long usecs_to_jiffies(const unsigned int u)
+ #elif HZ > USEC_PER_SEC && !(HZ % USEC_PER_SEC)
+ 	return u * (HZ / USEC_PER_SEC);
+ #else
+-	return ((u64)USEC_TO_HZ_MUL32 * u + USEC_TO_HZ_ADJ32)
++	return ((u64)USEC_TO_HZ_MUL32 * u + (u64)USEC_TO_HZ_ADJ32)
+ 		>> USEC_TO_HZ_SHR32;
+ #endif
+ }
 -- 
-Russ Anderson, OS RAS/Partitioning Project Lead  
-SGI - Silicon Graphics Inc          rja@sgi.com
+1.5.4.3
+
+
+
+
+
+
+
+
+
