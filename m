@@ -1,55 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759484AbYEBC3V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760183AbYEBCdV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759484AbYEBC3V (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 May 2008 22:29:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753063AbYEBC3M
+	id S1760183AbYEBCdV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 May 2008 22:33:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756019AbYEBCdM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 May 2008 22:29:12 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:52304 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751564AbYEBC3L (ORCPT
+	Thu, 1 May 2008 22:33:12 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:39949 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751564AbYEBCdL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 May 2008 22:29:11 -0400
-Date: Thu, 1 May 2008 19:28:38 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Phil Oester <kernel@linuxace.com>
-Cc: Ryan Roth <ryanroth@sbcglobal.net>, Ryan.Roth@CH2M.com,
-       bugme-daemon@bugzilla.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [Bugme-new] [Bug 10586] New: High Number of Segfaults
- onMacBookStarting With 2.6.24.5 Kernel
-Message-Id: <20080501192838.8ecb81c2.akpm@linux-foundation.org>
-In-Reply-To: <20080502020815.GA5155@linuxace.com>
-References: <bug-10586-10286@http.bugzilla.kernel.org/>
-	<20080501130444.cc5c63e8.akpm@linux-foundation.org>
-	<86A21F45FFA48B408A65E67054362EB6069DD742@CULEBRA.amr.ch2m.com>
-	<20080501133003.be723364.akpm@linux-foundation.org>
-	<86A21F45FFA48B408A65E67054362EB621C948@CULEBRA.amr.ch2m.com>
-	<481A5276.4040607@sbcglobal.net>
-	<20080501170239.9b740877.akpm@linux-foundation.org>
-	<481A5A94.2080400@sbcglobal.net>
-	<20080501173408.384b4fc3.akpm@linux-foundation.org>
-	<20080502020815.GA5155@linuxace.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+	Thu, 1 May 2008 22:33:11 -0400
+Date: Thu, 1 May 2008 21:33:08 -0500
+From: Russ Anderson <rja@sgi.com>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Tony Luck <tony.luck@intel.com>
+Subject: Re: [PATCH 2/3] mm: Avoid putting a bad page back on the LRU v2
+Message-ID: <20080502023307.GA1591@sgi.com>
+Reply-To: Russ Anderson <rja@sgi.com>
+References: <20080502004248.GC12006@sgi.com> <Pine.LNX.4.64.0805011810410.13527@schroedinger.engr.sgi.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0805011810410.13527@schroedinger.engr.sgi.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 1 May 2008 19:08:15 -0700 Phil Oester <kernel@linuxace.com> wrote:
-
-> FWIW, I recently upgraded some boxes to 2.6.24.x, and started seeing tons of
-> qmail segfaults, which look remarkably similar to the above problem.  2.6.21
-> did not exhibit this issue.
+On Thu, May 01, 2008 at 06:12:49PM -0700, Christoph Lameter wrote:
+> On Thu, 1 May 2008, Russ Anderson wrote:
 > 
-> May  1 22:06:03 mail80 kernel: qmail-smtpd[5319]: segfault at 0 ip 4884b473 sp fffeec1c error 4 in libc-2.6.so[487dd000+14e000]
-> May  1 22:06:03 mail80 kernel: qmail-smtpd[5491]: segfault at 0 ip 4884b473 sp ffb7179c error 4 in libc-2.6.so[487dd000+14e000]
-> May  1 22:06:03 mail80 kernel: qmail-smtpd[4669]: segfault at 0 ip 4884b473 sp fff3135c error 4 in libc-2.6.so[487dd000+14e000]
-> May  1 22:06:05 mail80 kernel: qmail-smtpd[5906]: segfault at 0 ip 4884b473 sp ffe1b24c error 4 in libc-2.6.so[487dd000+14e000]
-> May  1 22:06:07 mail80 kernel: qmail-smtpd[5898]: segfault at 0 ip 4884b473 sp ffe4e27c error 4 in libc-2.6.so[487dd000+14e000]
-> May  1 22:06:11 mail80 kernel: qmail-smtpd[5840]: segfault at 0 ip 4884b473 sp ffe04a2c error 4 in libc-2.6.so[487dd000+14e000]
+> > Index: linus/mm/migrate.c
+> > ===================================================================
+> > --- linus.orig/mm/migrate.c	2008-05-01 19:05:33.000000000 -0500
+> > +++ linus/mm/migrate.c	2008-05-01 19:06:15.000000000 -0500
+> > @@ -380,6 +380,7 @@ static void migrate_page_copy(struct pag
+> >  		SetPageChecked(newpage);
+> >  	if (PageMappedToDisk(page))
+> >  		SetPageMappedToDisk(newpage);
+> > +	/* Do not migrate PG_memerror to the new page */
 > 
+> Why is the comment here?
 
-Can you try fiddling with the norandmaps boot option and
-/proc/sys/kernel/randomize_va_space?
+To let anyone that may think PG_memerror should get copied to 
+the new page that it should not.  I can remove the comment.
+  
+> >  	if (PageDirty(page)) {
+> >  		clear_page_dirty_for_io(page);
+> > @@ -721,6 +722,8 @@ unlock:
+> >   		 */
+> >   		list_del(&page->lru);
+> >   		move_to_lru(page);
+> > +		if (PageMemError(page))
+> > +			totalbad_pages++;
+> 
+> Wouldnt this be taken care of by the lru handling?
+
+It is only for accounting purposes, keeping a count
+of the bad pages.
+
+> > +#ifdef CONFIG_PAGEFLAGS_EXTENDED
+> > +PAGEFLAG(MemError, memerror)
+> > +#else
+> > +#define PageMemError(page)	0
+> 
+> Use
+> 
+> PAGEFLAG_FLAGS(MemError)
+
+OK.
+
+> >  #include <linux/page-flags.h>
+> >  
+> > -#define PAGE_FLAGS	(1 << PG_lru   | 1 << PG_private   | 1 << PG_locked | \
+> > +#define PAGE_FLAGS_BASE	(1 << PG_lru   | 1 << PG_private   | 1 << PG_locked | \
+> >  			 1 << PG_buddy | 1 << PG_writeback | \
+> >  			 1 << PG_slab  | 1 << PG_swapcache | 1 << PG_active)
+> > +
+> > +#ifdef CONFIG_PAGEFLAGS_EXTENDED
+> > +#define	PAGE_FLAGS	(PAGE_FLAGS_BASE | 1UL << PG_memerror)
+> > +#else
+> > +#define	PAGE_FLAGS	(PAGE_FLAGS_BASE)
+> > +#endif
+> >  
+> >  #define PAGE_FLAGS_RECLAIM      (PAGE_FLAGS | 1 << PG_reclaim | 1 << PG_dirty)
+> >  #define PAGE_FLAGS_RESERVE	(PAGE_FLAGS | 1 << PG_reserved)
+> 
+> The groups of page flags could also be put into page-flags.h.
+
+page-flags.h is where I originally put them.  Since they are only used in 
+mm/page_alloc.c, I thought mm.h would be a more appropriate place.  
+I can put them in page-flags.h.
+
+-- 
+Russ Anderson, OS RAS/Partitioning Project Lead  
+SGI - Silicon Graphics Inc          rja@sgi.com
