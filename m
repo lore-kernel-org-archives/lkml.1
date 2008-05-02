@@ -1,50 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933957AbYEBKwz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933130AbYEBK4L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933957AbYEBKwz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 06:52:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760922AbYEBKwm
+	id S933130AbYEBK4L (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 06:56:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760095AbYEBKz5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 06:52:42 -0400
-Received: from web30101.mail.mud.yahoo.com ([209.191.69.33]:31680 "HELO
-	web30101.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1759066AbYEBKwm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 06:52:42 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:X-Mailer:Date:From:Reply-To:Subject:To:MIME-Version:Content-Type:Message-ID;
-  b=PfNhdsGtI3l5UFDoFnkA5FAVr5rkRfIwYpujduaKX9jX2Z1b5KBGfU8qs7VCZgXmUVH7cU02HXEFwiOkOH926VAECS5pBSM+qIYy4a5f40mXtzavdQfVNfknrtiV5msLm6tzee7HNEQpYJkXBGYbc5xQRpr25s2/kO1EyN6W2zk=;
-X-YMail-OSG: BoUpPoQVM1ka5dbSziVU5iZdPdo72TvAvrdIb5WZUrb1UzHKPCR54Qj7eO4CRSW_9hVq2dUW5d8oqZnC3oQ4crufgp5BeSz_zxZT6d5vvM6b2bdXROQQG2CCpg--
-X-Mailer: YahooMailWebService/0.7.185
-Date: Fri, 2 May 2008 03:52:40 -0700 (PDT)
-From: Parav Pandit <paravpandit@yahoo.com>
-Reply-To: paravpandit@yahoo.com
-Subject: motive for sending Ethernet packets in soft-irq context
-To: Linux kernel <linux-kernel@vger.kernel.org>
-MIME-Version: 1.0
+	Fri, 2 May 2008 06:55:57 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:35334 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755137AbYEBKz4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 May 2008 06:55:56 -0400
+Date: Fri, 2 May 2008 12:56:30 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Jan Engelhardt <jengelh@medozas.de>
+Cc: linux-kbuild <linux-kbuild@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Dave Jones <davej@codemonkey.org.uk>,
+       Roland McGrath <roland@redhat.com>,
+       Andres Salomon <dilinger@queued.net>
+Subject: Re: Additional kconfig targets (cloneconfig, nonint_oldconfig etc)
+Message-ID: <20080502105630.GA20955@uranus.ravnborg.org>
+References: <20080429183531.GB19652@uranus.ravnborg.org> <alpine.LNX.1.10.0804301643140.5623@fbirervta.pbzchgretzou.qr>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <95309.72215.qm@web30101.mail.mud.yahoo.com>
+Content-Disposition: inline
+In-Reply-To: <alpine.LNX.1.10.0804301643140.5623@fbirervta.pbzchgretzou.qr>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+> >(The other frontends are left out on purpose).
+> >The challenge here is to come up with a syntax that
+> >allows us to select between the three behaviours,
+> >while keeping backward compatibility.
+> >
+> >The best suggestion I have so far is to say that:
+> >a) if defconfig is specified then we use method 1)
+> >b) if oldconfig is specified then we use method 2)
+> >c) if newconfig is specified then we use method 3)
+> 
+> [Where is 1) defined?]
 
-What is the motive behind sending Ethernet packets to the NIC driver by invoking hard_xmit() in the soft-irq context?
+1) automated - select defaults for all new symbols
+   => It is used for "make defconfig, make *_defconfig" today
 
-What I understand is,
-It is not done into the process context of send() system call beacause,
-1. Calling it in soft-irq context eliminates any delays incurred by the process switching, lower task priorities etc.
+> Ok and these are doing .. what?
 
-Can't it be done by raising the process priority to highest until the NIC driver hand over the packet to the hardware?
-This will avoid time incurred in process to soft-irq switching time.
+> ># Enviroment variables affecting kconfig
+> >KCONFIG_ALLCONFIG
 
-Are there any other performance, security reasons?
+Specify input file in .config format to adjust a all*config run
 
-Regards,
-Parav Pandit
+> >KCONFIG_NOSILENTUPDATE
+If set then error out if .config is modified
+
+> >KCONFIG_CONFIG
+Provide alternative name for .config
+
+> >KCONFIG_OVERWRITECONFIG
+If you set KCONFIG_OVERWRITECONFIG in environment, Kconfig will not break
+ symlinks when .config is a symlink to somewhere else
+
+> >KCONFIG_NOTIMESTAMP
+Do not put timestamp in .config
+
+> >KCONFIG_AUTOCONFIG
+Provide alternative name for: include/config/auto.conf
+
+> >KCONFIG_AUTOHEADER
+Provide alternative name for include/linux/autoconf.h 
 
 
-      ____________________________________________________________________________________
-Be a better friend, newshound, and 
-know-it-all with Yahoo! Mobile.  Try it now.  http://mobile.yahoo.com/;_ylt=Ahu06i62sR8HDtDypao8Wcj9tAcJ
+
+
+> Used for..?
+All used to hardcode specific values in all*config builds.
+
+> >#input files (aparts from the mandatory ones)
+> >all.config
+> >allno.config
+> >allmod.config
+> >allyes.config
+> >allrandom.config
+
+	Sam
