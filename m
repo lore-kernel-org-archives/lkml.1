@@ -1,71 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933295AbYEBAGd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933194AbYEBAJb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933295AbYEBAGd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 May 2008 20:06:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761564AbYEBAGS
+	id S933194AbYEBAJb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 May 2008 20:09:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759115AbYEBAJK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 May 2008 20:06:18 -0400
-Received: from rv-out-0708.google.com ([209.85.198.250]:29082 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932872AbYEBAGM (ORCPT
+	Thu, 1 May 2008 20:09:10 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:59750 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756992AbYEBAJJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 May 2008 20:06:12 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Iw/edh6tKaneeOGkMjaPFQOb5oeSE6PO4+Fbq1uX3kqhG/0Zjbi/EdxbjrxZnhD9k7Jl23DHRgBQRcl3f/ZoQUnIdJ30stzJVti27D4IlfQg+zb8E7376hL8wgfRzIC0PT0fCdQRWrWbzRuMyO4wTJxMjTREUQ/PJHwehMbu7Vc=
-Message-ID: <86802c440805011706m51f4840dye0191c7e853d5aa@mail.gmail.com>
-Date: Thu, 1 May 2008 17:06:10 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Gabriel C" <nix.or.die@googlemail.com>
-Subject: Re: [PATCH] x86: mtrr cleanup for converting continuous to discrete - auto detect
-Cc: "Andrew Morton" <akpm@linux-foundation.org>, "Ingo Molnar" <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       "Mika Fischer" <mika.fischer@zoopnet.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-In-Reply-To: <4819AD44.4040200@googlemail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 1 May 2008 20:09:09 -0400
+Date: Thu, 1 May 2008 17:08:19 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Erez Zadok <ezk@cs.sunysb.edu>
+Cc: ezk@cs.sunysb.edu, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, viro@zeniv.linux.org.uk,
+       hch@infradead.org, mhalcrow@us.ibm.com, hugh@veritas.com
+Subject: Re: [2.6.26 PATCH, RESEND]: fs_stack/eCryptfs: fsstack_copy_*
+ updates
+Message-Id: <20080501170819.bdcb9035.akpm@linux-foundation.org>
+In-Reply-To: <200805012344.m41NiImk013312@agora.fsl.cs.sunysb.edu>
+References: <20080501122136.bc2215c9.akpm@linux-foundation.org>
+	<200805012344.m41NiImk013312@agora.fsl.cs.sunysb.edu>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200804272337.40130.yhlu.kernel@gmail.com>
-	 <200804290352.33543.yhlu.kernel@gmail.com>
-	 <200804292025.58268.yhlu.kernel@gmail.com>
-	 <200805010100.34751.yhlu.kernel@gmail.com>
-	 <4819AD44.4040200@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 1, 2008 at 4:45 AM, Gabriel C <nix.or.die@googlemail.com> wrote:
-> Yinghai Lu wrote:
->  > loop mtrr chunk_size and gran_size from 1M to 2G to find out optimal value.
->  >
->  > so user don't need to add mtrr_chunk_size and mtrr_gran_size,
->  >
->  > if optimal value is not found, print out all list to help select less optimal
->  > value.
->  >
->  > add mtrr_spare_reg_nr= so user could set 2 instead of 1, if the card need more entries.
->
->  WOW :)
->
->  With this patch all is working fine , no RAM is lost , X is fast ,
->  so far everything else seems to work fine. \o/
->
->  I will test on 32bit tomorrow and stress the box later on today to be sure everything works fine.
->
->  There is my dmesg , meminfo , mtrr output with this patch on top x86-latest :
->
->  http://frugalware.org/~crazy/mtrr_x86-latest/
+On Thu, 1 May 2008 19:44:18 -0400
+Erez Zadok <ezk@cs.sunysb.edu> wrote:
 
-while look at that you boot log, it seems there is one bug about hole
-position. but I look that code, it should already be handled.
+> In message <20080501122136.bc2215c9.akpm@linux-foundation.org>, Andrew Morton writes:
+> > On Thu, 1 May 2008 13:18:09 -0400
+> > Erez Zadok <ezk@cs.sunysb.edu> wrote:
+> > 
+> > > In message <20080430101704.9cbd6384.akpm@linux-foundation.org>, Andrew Morton writes:
+> > > [...[
+> > > > Can we avoid having to think?
+> > > > 
+> > > > void fsstack_copy_inode_size(struct inode *dst, const struct inode *src)
+> > > > {
+> > > > 	blkcnt_t i_blocks;
+> > > > 	loff_t i_size;
+> > > > 
+> > > > 	i_size = i_size_read(src);
+> > > > 	spin_lock_32bit(&src->i_lock);
+> > > > 	i_blocks = src->i_blocks;
+> > > > 	spin_unlock_32bit(&src->i_lock);
+> > > > 
+> > > > 	i_size_write(dst, i_size);
+> > > > 	spin_lock_32bit(&dst->i_lock)
+> > > > 	dst->i_blocks = i_blocks;
+> > > > 	spin_unlock_32bit(&dst->i_lock)
+> > > > }
+> > > 
+> > > I can't find spin_[um]lock_32bit anywhere (checkd latest mmotm and linus's
+> > > tree).  I therefore assume this was just your way of saying I should:
+> > > 
+> > > #if BITS_PER_LONG == 32
+> > > 	spin_unlock(&dst->i_lock);
+> > > #endif
+> > 
+> > Nope, it was my way of suggesting that you implement it ;)
+> > include/linux/spinlock.h would be a good place.
+> 
+> Sure, I can implement it and submit a patch.  But I've got two questions
+> first:
+> 
+> 1. i_size_read has a tri-state behaviour:
+> 
+> #if BITS_PER_LONG==32 && defined(CONFIG_SMP)
+> 	// play with seqcount
+> #elif BITS_PER_LONG==32 && defined(CONFIG_PREEMPT)
+> 	// wrap in preempt_disable/enable
+> #else
+> 	// just return value
+> #endif
+> 
+> Shouldn't the same be done for i_blocks, with matching i_blocks_read(),
+> i_blocks_write(), and adding an inode->i_blocks_seqcount field?
 
-Can you send out boot msg and /proc/mtrr when using
-disable_mtrr_cleanup command line?
+I guess so, yes.  Maybe there are other things too.  We just haven't cared
+enough to do all this fuss for i_blocks.  Even i_size was a bit marginal.
 
-Thanks
+i_size is much more important because glitches in there can result in
+incorrect data being returned from read() and things like that.  i_blocks
+is just a beancounting curiosity.
 
-Yinghai Lu
+> 
+> 2. I've rewritten your suggested code a bit to reduce stack use.  Modulo
+>    having 32-bit spin_lock/unlock variants, do you see any problem with this
+>    code below?  My testing of it so far on 32/64-bit SMP/UMP have all
+>    passed.
+> 
+> void fsstack_copy_inode_size(struct inode *dst, struct inode *src)
+> {
+> #if BITS_PER_LONG == 32
+> 	blkcnt_t i_blocks;
+> 
+> 	spin_lock(&src->i_lock);
+> 	i_blocks = src->i_blocks;
+> 	spin_unlock(&src->i_lock);
+> 	spin_lock(&dst->i_lock);
+> 	dst->i_blocks = i_blocks;
+> 	spin_unlock(&dst->i_lock);
+> #else
+> 	dst->i_blocks = src->i_blocks;
+> #endif
+> 	i_size_write(dst, i_size_read(src));
+> }
+
+That looks sane, as long as we don't care about i_size-vs-i_blocks
+coherency.
+
+However I expect that approximately zero of the sites which modify i_blocks
+are taking i_lock to do so.
+
+otoh, many of them _will_ accidentally have i_mutex coverage.  On the
+write() path at least.  What happened to that idea?
