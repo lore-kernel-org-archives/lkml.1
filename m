@@ -1,65 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764106AbYEBCFf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764106AbYEBCI1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764106AbYEBCFf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 May 2008 22:05:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754370AbYEBCF1
+	id S1764106AbYEBCI1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 May 2008 22:08:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756735AbYEBCIT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 May 2008 22:05:27 -0400
-Received: from wa-out-1112.google.com ([209.85.146.176]:15218 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752311AbYEBCF0 (ORCPT
+	Thu, 1 May 2008 22:08:19 -0400
+Received: from adsl-67-120-171-161.dsl.lsan03.pacbell.net ([67.120.171.161]:47154
+	"HELO linuxace.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1756019AbYEBCIS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 May 2008 22:05:26 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=bpZuypQTjEm9SS6iJCpVVM4AgLiT9giSJQ9djMa/ohmnYbhpRDG+bG6SpyGDcdMrLvfkayR/HmtKxeOU5R/JjS7hgH/l7kAcV4gDGs9bJaLwBqSXWUE8LS1v0dvAzDVeT6RMOoxCgUSmdi+Vz/hGCZcogA9xiuag65EVPWeJRFY=
-Subject: [PATCH] kgdb: use put_unaligned_be32 helper
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Jason Wessel <jason.wessel@windriver.com>, Ingo Molnar <mingo@elte.hu>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Thu, 01 May 2008 19:05:47 -0700
-Message-Id: <1209693947.24729.221.camel@brick>
+	Thu, 1 May 2008 22:08:18 -0400
+Date: Thu, 1 May 2008 19:08:15 -0700
+From: Phil Oester <kernel@linuxace.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Ryan Roth <ryanroth@sbcglobal.net>, Ryan.Roth@CH2M.com,
+       bugme-daemon@bugzilla.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [Bugme-new] [Bug 10586] New: High Number of Segfaults onMacBookStarting With 2.6.24.5 Kernel
+Message-ID: <20080502020815.GA5155@linuxace.com>
+References: <bug-10586-10286@http.bugzilla.kernel.org/> <20080501130444.cc5c63e8.akpm@linux-foundation.org> <86A21F45FFA48B408A65E67054362EB6069DD742@CULEBRA.amr.ch2m.com> <20080501133003.be723364.akpm@linux-foundation.org> <86A21F45FFA48B408A65E67054362EB621C948@CULEBRA.amr.ch2m.com> <481A5276.4040607@sbcglobal.net> <20080501170239.9b740877.akpm@linux-foundation.org> <481A5A94.2080400@sbcglobal.net> <20080501173408.384b4fc3.akpm@linux-foundation.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080501173408.384b4fc3.akpm@linux-foundation.org>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
----
- kernel/kgdb.c |    6 ++----
- 1 files changed, 2 insertions(+), 4 deletions(-)
+On Thu, May 01, 2008 at 05:34:08PM -0700, Andrew Morton wrote:
+> On Thu, 01 May 2008 17:04:36 -0700
+> Ryan Roth <ryanroth@sbcglobal.net> wrote:
+> 
+> > Since this last boot I have only got these:
+> > 
+> > > May 1 16:26:25 kernel: gnome-power-man[3112]: segfault at 0 ip 410fda 
+> > > sp 7fff4712c870 error 4 in gnome-power-manager[400000+47000]
+> > > May 1 16:26:25 kernel: gnome-power-man[3116]: segfault at 0 ip 410fda 
+> > > sp 7fff2959cce0 error 4 in gnome-power-manager[400000+47000]
+> > > May 1 16:26:25 kernel: gnome-power-man[3119]: segfault at 0 ip 410fda 
+> > > sp 7fffc7671db0 error 4 in gnome-power-manager[400000+47000]
+> 
+> OK.
+> 
+> Well I don't know what the heck to do about that.  It could be that we've
+> gone and changed the contents of (say) an acpi /proc file, and this happens
+> to cause your particular version of gnome-power-manager to take a different
+> (and buggy) codepath, so it crashes.  Or something like this.
+> 
+> I hate to do this to you, but our best hope for getting to the bottom of
+> this is for you to run a git bisection search to find out what we did which
+> triggered this.  http://www.kernel.org/doc/local/git-quick.html has some
+> instructions.
+> 
+> Or you could go the other route and work out where and why
+> gnome-power-manager is crashing.
+> 
+> You could try upgrading (or downgrading) your gnome-power-manager version,
+> see if that affects things.
+> 
+> Does the problem affect only gnome-power-manager?
 
-diff --git a/kernel/kgdb.c b/kernel/kgdb.c
-index 216c3dc..04e1ff4 100644
---- a/kernel/kgdb.c
-+++ b/kernel/kgdb.c
-@@ -52,6 +52,7 @@
- #include <asm/byteorder.h>
- #include <asm/atomic.h>
- #include <asm/system.h>
-+#include <asm/unaligned.h>
- 
- static int kgdb_break_asap;
- 
-@@ -504,10 +505,7 @@ static void int_to_threadref(unsigned char *id, int value)
- 	scan = (unsigned char *)id;
- 	while (i--)
- 		*scan++ = 0;
--	*scan++ = (value >> 24) & 0xff;
--	*scan++ = (value >> 16) & 0xff;
--	*scan++ = (value >> 8) & 0xff;
--	*scan++ = (value & 0xff);
-+	put_unaligned_be32(value, scan);
- }
- 
- static struct task_struct *getthread(struct pt_regs *regs, int tid)
--- 
-1.5.5.1.350.gbbbf
+FWIW, I recently upgraded some boxes to 2.6.24.x, and started seeing tons of
+qmail segfaults, which look remarkably similar to the above problem.  2.6.21
+did not exhibit this issue.
 
+May  1 22:06:03 mail80 kernel: qmail-smtpd[5319]: segfault at 0 ip 4884b473 sp fffeec1c error 4 in libc-2.6.so[487dd000+14e000]
+May  1 22:06:03 mail80 kernel: qmail-smtpd[5491]: segfault at 0 ip 4884b473 sp ffb7179c error 4 in libc-2.6.so[487dd000+14e000]
+May  1 22:06:03 mail80 kernel: qmail-smtpd[4669]: segfault at 0 ip 4884b473 sp fff3135c error 4 in libc-2.6.so[487dd000+14e000]
+May  1 22:06:05 mail80 kernel: qmail-smtpd[5906]: segfault at 0 ip 4884b473 sp ffe1b24c error 4 in libc-2.6.so[487dd000+14e000]
+May  1 22:06:07 mail80 kernel: qmail-smtpd[5898]: segfault at 0 ip 4884b473 sp ffe4e27c error 4 in libc-2.6.so[487dd000+14e000]
+May  1 22:06:11 mail80 kernel: qmail-smtpd[5840]: segfault at 0 ip 4884b473 sp ffe04a2c error 4 in libc-2.6.so[487dd000+14e000]
 
-
+Phil
