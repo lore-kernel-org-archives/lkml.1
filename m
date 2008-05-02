@@ -1,77 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932920AbYEBONX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935059AbYEBONl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932920AbYEBONX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 10:13:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756815AbYEBONP
+	id S935059AbYEBONl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 10:13:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762885AbYEBONR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 10:13:15 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:43571 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754806AbYEBONO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 10:13:14 -0400
-Date: Fri, 2 May 2008 10:11:32 -0400
-From: Jakub Jelinek <jakub@redhat.com>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Alistair John Strachan <alistair@devzero.co.uk>,
-       Chris Knadle <Chris.Knadle@coredump.us>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Adrian Bunk <bunk@kernel.org>, venkatesh.pallipadi@intel.com,
-       davem@davemloft.net, trini@kernel.crashing.org, mingo@elte.hu,
-       tglx@linutronix.de, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       suresh.b.siddha@intel.com,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: huge gcc 4.1.{0,1} __weak problem
-Message-ID: <20080502141132.GN2255@devserv.devel.redhat.com>
-Reply-To: Jakub Jelinek <jakub@redhat.com>
-References: <20080501235558.GA20637@orac.ofobscurity.com> <200805021055.10602.alistair@devzero.co.uk> <20080502104348.GC20741@uranus.ravnborg.org> <200805021248.56797.alistair@devzero.co.uk> <20080502135708.GA22929@uranus.ravnborg.org>
+	Fri, 2 May 2008 10:13:17 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:53270 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1758962AbYEBONR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 May 2008 10:13:17 -0400
+Date: Fri, 2 May 2008 15:04:39 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Frans Pop <elendil@planet.nl>
+Cc: akpm@osdl.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] hfsplus: Correct user visible printk
+Message-ID: <20080502150439.76beaf27@core>
+In-Reply-To: <200805021600.42610.elendil@planet.nl>
+References: <20080502142925.2e439d8a@core>
+	<200805021600.42610.elendil@planet.nl>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080502135708.GA22929@uranus.ravnborg.org>
-User-Agent: Mutt/1.4.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 02, 2008 at 03:57:08PM +0200, Sam Ravnborg wrote:
-> OK, can anyone confirm that this fails to build which a
-> buggy gcc:
-> 
-> 
-> void __attribute__((weak)) func(void)
-> {
->     /* no code */
-> }
-> 
-> int main()
-> {
->     func();
->     return 0;
-> }
+> BTW, what is common spelling in the kernel British or American English?
 
-Of course it doesn't fail to build.  With buggy gcc it will be optimized
-to
-void __attribute__((weak)) func (void)
-{
-}
+It varies. The fs journal code uses both at random sometimes mixed in the
+same paragraph. Fortunately "to journalise" is valid in both US and UK
+English.
 
-int main ()
-{
-  return 0;
-}
+> journaled:     134,000 hits ( 8.7% of above total)
 
-(similarly how all recent gccs optimize this without the weak attribute)
-while non-buggy gcc keeps the func call.
-So, you either need to grep the assembly (that's what e.g. the GCC testcase
-does), or you can e.g. use a runtime testcase:
-extern void abort (void);
-void __attribute__((weak)) func (void) { }
-int main () { func (); abort (); }
-in one compilation unit and
-extern void exit (int);
-void func (void) { exit (0); }
-in another one.  I doubt a runtime testcase is acceptable though for the
-kernel, as the cross compiler used to build the kernel might not be able to
-create userland executables (missing C library, etc.).
+Almost entirely caused by Linux.
 
-	Jakub
+> I don't see this as an improvement.
+
+Actually using proper language is most definitely an improvement. Right
+now we are using incorrect made up words. Not only that we are using
+incorrect made up words when the computing professional bodies also say
+that our choice is wrong.
+
+Alan
