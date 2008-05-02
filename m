@@ -1,60 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934476AbYEBLk2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934337AbYEBLmS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934476AbYEBLk2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 07:40:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762501AbYEBLkQ
+	id S934337AbYEBLmS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 07:42:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762705AbYEBLmA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 07:40:16 -0400
-Received: from s15216962.onlinehome-server.info ([217.160.22.205]:41564 "EHLO
-	s15216962.onlinehome-server.info" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1762448AbYEBLkO (ORCPT
+	Fri, 2 May 2008 07:42:00 -0400
+Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:39094 "EHLO
+	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762620AbYEBLl7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 07:40:14 -0400
-Date: Fri, 2 May 2008 13:39:23 +0200
-From: Enrico Weigelt <weigelt@metux.de>
-To: linux kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] fix flags length in net 9p
-Message-ID: <20080502113923.GA7997@nibiru.local>
-Reply-To: weigelt@metux.de
-References: <Pine.LNX.4.58.0805011706070.12785@gandalf.stny.rr.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.58.0805011706070.12785@gandalf.stny.rr.com>
-User-Agent: Mutt/1.4.1i
-X-Terror: bin laden, kill bush, Briefbombe, Massenvernichtung, KZ, 
-X-Nazi: Weisse Rasse, Hitlers Wiederauferstehung, 42, 
-X-Antichrist: weg mit schaeuble, ausrotten, heiliger krieg, al quaida, 
-X-Killer: 23, endloesung, Weltuntergang, 
-X-Doof: wer das liest ist doof
+	Fri, 2 May 2008 07:41:59 -0400
+Message-ID: <481AFDC2.7030807@s5r6.in-berlin.de>
+Date: Fri, 02 May 2008 13:40:50 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.13) Gecko/20080313 SeaMonkey/1.1.9
+MIME-Version: 1.0
+To: Harvey Harrison <harvey.harrison@gmail.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 7/8] fs: use get_unaligned_* helpers
+References: <1209700378.22362.23.camel@brick>
+In-Reply-To: <1209700378.22362.23.camel@brick>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Steven Rostedt <rostedt@goodmis.org> wrote:
+Harvey Harrison wrote:
+>  fs/partitions/ldm.h |    6 +++---
+>  1 files changed, 3 insertions(+), 3 deletions(-)
 > 
-> Some files in the net/9p directory uses "int" for flags. This can
-> cause hard to find bugs on some architectures. This patch converts the
-> flags to use "long" instead.
+> diff --git a/fs/partitions/ldm.h b/fs/partitions/ldm.h
+...
+>  /* Most numbers we deal with are big-endian and won't be aligned. */
+> -#define BE16(x)			((u16)be16_to_cpu(get_unaligned((__be16*)(x))))
+> -#define BE32(x)			((u32)be32_to_cpu(get_unaligned((__be32*)(x))))
+> -#define BE64(x)			((u64)be64_to_cpu(get_unaligned((__be64*)(x))))
+> +#define BE16(x)		get_unaligned_be16((x))
+> +#define BE32(x)		get_unaligned_be32((x))
+> +#define BE64(x)		get_unaligned_be64((x))
 
-IMHO it would be more consequent and clean to introduce an separate 
-type for this and only use specific macros for manipulation. Of course
-this introduced some typing overhead, but enforces the coder to think
-more carefully about his code. For critical things like kernel stuff,
-I really prefer this way.
+Why the double parentheses?
 
+More importantly, I would say ldm.c should rather use
+get_unaligned_be*() directly.  No need to hide what these macros are
+about by using a local alias.
 
-BTW: I just wondered a bit how the 9p driver finds out the numeric
-user ID's for 9P user names.
-
-
-cu
+After that, ldm.c should be inspected for whether really all of the
+accesses are unaligned.  If there are any which are guaranteed to be
+aligned, they should of course be turned into be*_to_cpu().  But
+separately from this conversion to get_unaligned_be*().
 -- 
----------------------------------------------------------------------
- Enrico Weigelt    ==   metux IT service - http://www.metux.de/
----------------------------------------------------------------------
- Please visit the OpenSource QM Taskforce:
- 	http://wiki.metux.de/public/OpenSource_QM_Taskforce
- Patches / Fixes for a lot dozens of packages in dozens of versions:
-	http://patches.metux.de/
----------------------------------------------------------------------
+Stefan Richter
+-=====-==--- -=-= ---=-
+http://arcgraph.de/sr/
