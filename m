@@ -1,122 +1,221 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760909AbYEBFX4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760411AbYEBF3P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760909AbYEBFX4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 01:23:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751806AbYEBFXr
+	id S1760411AbYEBF3P (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 01:29:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752186AbYEBF3B
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 01:23:47 -0400
-Received: from utopia.booyaka.com ([72.9.107.138]:36920 "EHLO
-	utopia.booyaka.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750984AbYEBFXq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 01:23:46 -0400
-Date: Thu, 1 May 2008 23:23:45 -0600 (MDT)
-From: Paul Walmsley <paul@pwsan.com>
-To: Dmitry <dbaryshkov@gmail.com>
-cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       Haavard Skinnemoen <haavard.skinnemoen@atmel.com>,
-       Russell King <rmk+lkml@arm.linux.org.uk>,
-       Paul Mundt <lethal@linux-sh.org>,
-       pHilipp Zabel <philipp.zabel@gmail.com>, Pavel Machek <pavel@ucw.cz>,
-       tony@atomide.com, David Brownell <david-b@pacbell.net>,
-       hiroshi.DOYU@nokia.com
-Subject: Re: [PATCH 0/5] Clocklib: generic clocks framework
-In-Reply-To: <bc64b4640804260147o70253917me32b0e35a1ce6ad8@mail.gmail.com>
-Message-ID: <alpine.DEB.1.00.0805012221220.7405@utopia.booyaka.com>
-References: <20080420082925.GA32739@doriath.ww600.siemens.net>  <alpine.DEB.1.00.0804210057000.17857@utopia.booyaka.com>  <bc64b4640804210148p2d1c2fe0qe469152fa1a9697e@mail.gmail.com>  <alpine.DEB.1.00.0804250221040.14755@utopia.booyaka.com>
- <bc64b4640804260147o70253917me32b0e35a1ce6ad8@mail.gmail.com>
-User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
+	Fri, 2 May 2008 01:29:01 -0400
+Received: from ns2.suse.de ([195.135.220.15]:56012 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751806AbYEBF27 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 May 2008 01:28:59 -0400
+From: Neil Brown <neilb@suse.de>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       "marco gaddoni" <marco.gaddoni@gmail.com>
+Date: Fri, 2 May 2008 15:28:49 +1000
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <18458.42641.306621.469263@notabene.brown>
+Cc: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org,
+       dm-devel@redhat.com
+Subject: Re: oops in linear_mergeable_bvec
+In-Reply-To: message from Andrew Morton on Thursday May 1
+References: <3b2bc9d0804300352k76bdc2f1id7da040761bca427@mail.gmail.com>
+	<20080501213157.e53535b7.akpm@linux-foundation.org>
+X-Mailer: VM 7.19 under Emacs 21.4.1
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Dmitry,
+On Thursday May 1, akpm@linux-foundation.org wrote:
 
-On Sat, 26 Apr 2008, Dmitry wrote:
+> (cc dm-devel) (which often has no effect)
 
-> 2008/4/25, Paul Walmsley <paul@pwsan.com>:
-> >
-> > I wouldn't pretend to have a comprehensive list at this point.  But from a
-> >  brief look, your clk_round_rate() and clk_set_rate() implementations will
-> >  not work for the present OMAP clock tree.  In OMAP, many parent clocks do
-> >  not have the same rate as their children.
+In this case it would be understandable - linux-raid is the correct
+list :-)
+
+OK, I'll push this to the top of my stack.....
+
+> On Wed, 30 Apr 2008 12:52:38 +0200 "marco gaddoni" <marco.gaddoni@gmail.com> wrote:
 > 
-> You can easily override any calculations in your clk->set_rate/clk->round_rate/
-> clk->get_rate functions.
+> > Hello,
+> > 
+> > i have this repeatable oops in linear_mergeable_bvec
+> > 
+> > the kernel is the Debian testing as of this morning,
+> > 
+> > i am trying to rsync some data from this box to my pc.
+> > the data is on a software raid 0 made of 2 ide disks
 
-The problem is that parent clocks shouldn't be automatically set to the 
-same rate as child clocks.  We could probably hack around it in 
-clk->set_rate to ignore those spurious rate changes, but really they 
-shouldn't be done in the first place, at least on OMAP.  clk->set_rate 
-should handle parent rate changes if necessary.  Removing this from 
-clocklib looks trivial - involves deleting about ten lines of clocklib 
-code?
+It is a 'linear', not a 'raid 0' by the way.
 
-> My first goals are:
-> 1) to have an infrastructure to plug in my clocks in a platform-independant way
+> > 
+> > the oops is triggered during the copy of a specific file,
+> > allways the same.
+> > 
+> > what can be the problem?
+> > 
+> > arianna:~# cat /proc/mdstat
+> > Personalities : [linear]
+> > md2 : active linear hda1[0] hdb1[1]
+> >       277321856 blocks 64k rounding
+> > 
+> > unused devices: <none>
 
-Doesn't the existing clock framework do this already?  Or are you really 
-referring to your clk_functions/multiple consumer additions?  If the 
-latter, then we all would be better served by discussing why the existing 
-clock interface doesn't meet your needs, and figuring out what to do about 
-it, rather than by merging code that initially appears to be common, but 
-with you having the ultimate intention of extending the common clock 
-interface to implement the features that you want.
+On decoding the Oops, it seems to in which_dev called from
+linear_mergeable_bvec. 
+'hash' is NULL.  This is bads.
+'block' seems to be 42, which is maybe a little bit surprising...
 
-> 2) to drop lots of copies of nearly the same code.
+What is really strange is that when I disassemble the Code: (see
+below), there is now "divl" instruction to match the "sector_div" in
+which_dev.
 
-I don't really see much of a problem with the current situation, as long 
-as all of the implementations use the same interface.  Right now, 
-architectures are free to change their underlying code without having to 
-worry about breaking other architectures or dealing with new gatekeepers, 
-and that's a big plus for the status quo.  Russell is the person who 
-shoulders the burden here of multiple implementations, and when this 
-becomes a pressing problem, I would expect him to be doing most of the 
-advocacy for common code.
+So I'm somewhat perplexed.
 
-> >  Assumptions that you make in clocklib may not work well for future chips.
-> >  Changing clocklib will affect many architectures.  For example, perhaps
-> >  someone may wish to implement clocks as an actual in-memory tree rather
-> >  than a list.  Or perhaps someone may need to handle clock usecounting
-> >  differently, for situations when multiple clocks might share the same
-> >  enable/disable code, but with different parents.
+What, exactly, are the sizes of hda1 and hdb1.  Knowing that might
+help me see if anything else looks wrong.
+
+NeilBrown
+
+
+Disassembly of "Code:"
+
+Code;  ffffffd5 <END_OF_CODE+3fc2bfd5/????>
+00000000 <_EIP>:
+Code;  ffffffd5 <END_OF_CODE+3fc2bfd5/????>
+   0:   24 04                     and    $0x4,%al
+Code;  ffffffd7 <END_OF_CODE+3fc2bfd7/????>
+   2:   89 d1                     mov    %edx,%ecx
+Code;  ffffffd9 <END_OF_CODE+3fc2bfd9/????>
+   4:   31 d2                     xor    %edx,%edx
+Code;  ffffffdb <END_OF_CODE+3fc2bfdb/????>
+   6:   85 c9                     test   %ecx,%ecx
+Code;  ffffffdd <END_OF_CODE+3fc2bfdd/????>
+   8:   89 44 24 08               mov    %eax,0x8(%esp)
+Code;  ffffffe1 <END_OF_CODE+3fc2bfe1/????>
+   c:   74 08                     je     16 <_EIP+0x16>
+Code;  ffffffe3 <END_OF_CODE+3fc2bfe3/????>
+   e:   89 c8                     mov    %ecx,%eax
+Code;  ffffffe5 <END_OF_CODE+3fc2bfe5/????>
+  10:   31 d2                     xor    %edx,%edx
+Code;  ffffffe7 <END_OF_CODE+3fc2bfe7/????>
+  12:   f7 f3                     div    %ebx
+Code;  ffffffe9 <END_OF_CODE+3fc2bfe9/????>
+  14:   89 c1                     mov    %eax,%ecx
+Code;  ffffffeb <END_OF_CODE+3fc2bfeb/????>
+  16:   8b 44 24 08               mov    0x8(%esp),%eax
+Code;  ffffffef <END_OF_CODE+3fc2bfef/????>
+  1a:   f7 f3                     div    %ebx
+Code;  fffffff1 <END_OF_CODE+3fc2bff1/????>
+  1c:   89 ca                     mov    %ecx,%edx
+Code;  fffffff3 <END_OF_CODE+3fc2bff3/????>
+  1e:   89 c2                     mov    %eax,%edx
+Code;  fffffff5 <END_OF_CODE+3fc2bff5/????>
+  20:   8b 46 04                  mov    0x4(%esi),%eax
+Code;  fffffff8 <END_OF_CODE+3fc2bff8/????>
+  23:   8b 1c 90                  mov    (%eax,%edx,4),%ebx this is conf->hash_table[block]???
+Code;  fffffffb <END_OF_CODE+3fc2bffb/????>
+  26:   eb 03                     jmp    2b <_EIP+0x2b>
+Code;  fffffffd <END_OF_CODE+3fc2bffd/????>
+  28:   83 c3 14                  add    $0x14,%ebx        This is "hash++;"
+Code;  00000000 Before first symbol
+  2b:   8b 53 10                  mov    0x10(%ebx),%edx
+Code;  00000003 Before first symbol
+  2e:   8b 43 0c                  mov    0xc(%ebx),%eax
+Code;  00000006 Before first symbol
+  31:   8b 73 04                  mov    0x4(%ebx),%esi
+Code;  00000009 Before first symbol
+  34:   8b 7b 08                  mov    0x8(%ebx),%edi
+Code;  0000000c Before first symbol
+  37:   89 d1                     mov    %edx,%ecx
+Code;  0000000e Before first symbol
+  39:   89 54 24 24               mov    %edx,0x24(%esp)
+Code;  00000012 Before first symbol
+  3d:   89 c2                     mov    %eax,%edx
+Code;  00000014 Before first symbol
+  3f:   01                        .byte 0x1
+
+
+
+
+> > 
+> > 
+> > BUG: unable to handle kernel NULL pointer dereference at virtual
+> > address 00000010
+> > printing eip: c881609a *pde = 00000000
+> > Oops: 0000 [#1] SMP
+> > Modules linked in: nf_nat_ftp nf_conntrack_ftp nfsd auth_rpcgss
+> > exportfs nfs lockd nfs_acl sunrpc ipt_MASQUERADE ipt_LOG
+> > ip6table_filter xt_state xt_NFQUEUE xt_hashlimit ip6_tables xt_tcpmss
+> > xt_tcpudp ipt_addrtype xt_pkttype iptable_raw xt_CLASSIFY xt_CONNMARK
+> > xt_MARK xt_comment ipt_REJECT xt_length xt_connmark ipt_owner
+> > ipt_recent ipt_iprange xt_physdev xt_policy xt_multiport xt_conntrack
+> > iptable_mangle iptable_nat nf_nat nf_conntrack_ipv4 nf_conntrack
+> > iptable_filter ip_tables x_tables ipv6 deflate zlib_deflate
+> > zlib_inflate twofish twofish_common camellia serpent blowfish
+> > des_generic cbc ecb aes_i586 aes_generic geode_aes blkcipher xcbc
+> > sha256_generic sha1_generic crypto_null af_key psmouse ide_generic
+> > snd_intel8x0 snd_ac97_codec parport_pc ac97_bus i2c_i801 parport
+> > snd_pcm i2c_core intel_rng snd_timer snd soundcore snd_page_alloc
+> > intel_agp agpgart pcspkr shpchp pci_hotplug iTCO_wdt rtc evdev ext3
+> > jbd mbcache linear md_mod ide_cd cdrom ide_disk ata_generic libata
+> > scsi_mod floppy e100 mii piix generic ide_core
+> > 
+> > Pid: 5203, comm: rsync Not tainted (2.6.24-1-686 #1)
+> > EIP: 0060:[<c881609a>] EFLAGS: 00010246 CPU: 0
+> > EIP is at linear_mergeable_bvec+0x9a/0x10b [linear]
+> > EAX: c6595fc0 EBX: 00000000 ECX: 00000000 EDX: 0000002c
+> > ESI: c78a63c0 EDI: 00000000 EBP: 00000000 ESP: c16d5c68
+> >  DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
+> > Process rsync (pid: 5203, ti=c16d4000 task=c7b09250 task.ti=c16d4000)
+> > Stack: 0b3ed648 00000002 0b3ed648 c6747360 167dac90 00000004 0b3ed648 00000002
+> >        c16ce660 c0196e63 c6747360 c16ce660 c8816000 c642b8c8 c019718e c16ce660
+> >        c1011720 00000004 c16d5da0 c0197a3e 00001000 00000000 000000ff 00001000
+> > Call Trace:
+> >  [<c0196e63>] bio_alloc_bioset+0x9b/0xf3
+> >  [<c8816000>] linear_mergeable_bvec+0x0/0x10b [linear]
+> >  [<c019718e>] __bio_add_page+0xf0/0x162
+> >  [<c0197a3e>] bio_add_page+0x31/0x37
+> >  [<c019ab9c>] do_mpage_readpage+0x516/0x5d2
+> >  [<c891762b>] ext3_get_block+0x0/0xd0 [ext3]
+> >  [<c01e1499>] radix_tree_insert+0x4f/0x15e
+> >  [<c015acdd>] add_to_page_cache+0x67/0x80
+> >  [<c019adf3>] mpage_readpages+0x96/0xc3
+> >  [<c891762b>] ext3_get_block+0x0/0xd0 [ext3]
+> >  [<c015f343>] __alloc_pages+0x59/0x2d5
+> >  [<c8916c2f>] ext3_readpages+0x0/0x15 [ext3]
+> >  [<c0161101>] __do_page_cache_readahead+0x127/0x1a6
+> >  [<c891762b>] ext3_get_block+0x0/0xd0 [ext3]
+> >  [<c016147c>] page_cache_sync_readahead+0x2a/0x2f
+> >  [<c015afae>] do_generic_mapping_read+0xdd/0x3b2
+> >  [<c015a7c7>] file_read_actor+0x0/0xcc
+> >  [<c015c95c>] generic_file_aio_read+0x16b/0x1a6
+> >  [<c015a7c7>] file_read_actor+0x0/0xcc
+> >  [<c0178493>] do_sync_read+0xc7/0x10a
+> >  [<c01353f9>] autoremove_wake_function+0x0/0x35
+> >  [<c011bf41>] do_page_fault+0x1f7/0x592
+> >  [<c01783cc>] do_sync_read+0x0/0x10a
+> >  [<c0178d19>] vfs_read+0x9f/0x14b
+> >  [<c0179182>] sys_read+0x41/0x67
+> >  [<c0103e5e>] sysenter_past_esp+0x6b/0xa1
+> >  =======================
+> > Code: 24 04 89 d1 31 d2 85 c9 89 44 24 08 74 08 89 c8 31 d2 f7 f3 89
+> > c1 8b 44 24 08 f7 f3 89 ca 89 c2 8b 46 04 8b 1c 90 eb 03 83 c3 14 <8b>
+> > 53 10 8b 43 0c 8b 73 04 8b 7b 08 89 d1 89 54 24 24 89 c2 01
+> > EIP: [<c881609a>] linear_mergeable_bvec+0x9a/0x10b [linear] SS:ESP 0068:c16d5c68
 > 
-> Sorry, but WTF? Do you prefer to keep a lot of code and disallow
-> merging a generification just because of some-that-may-even-not-exist
-> cases? That sounds
-> pretty... strange.
-> And your examples are really strange.
-
-Those examples are real; they have been discussed in the past or proposed 
-for the future for OMAP clock framework.  Regarding the second example, 
-that's a very real issue for us right now with our interface clocks, and 
-flexible usecounting is one of the ways that we've considered solving it.  
-As far as the tree example goes, we've got about 200 struct clks in the 
-latest OMAP clock framework, and this will probably increase by 50% over 
-the next year.  We have clock tree operations that have to move both up 
-and down the tree.  Right now we're doing sequential scans on a clock 
-list, but chances are quite high that we will be doing this very 
-differently a few months.
-
-I cited these examples not because I was interested in having you tell me 
-that my examples were unrealistic or "strange" or should be done 
-differently, but simply to reinforce the message that a top-down approach 
-to a generic clocklib is not likely to be appreciated much by maintainers.  
-I know you keep saying that your code is intended to be be strictly 
-optional.  If you want to prove it, why not consider a bottom-up approach 
-instead?  Right now you've got patches that convert two architectures to 
-use your clocklib.  Instead of using a common library, just duplicate your 
-clock code for each architecture.  There's not much to it.  Propose 
-patches to individual architecture maintainers, and persuade them to 
-replace their existing code with your own.  
-
-If you can get a large fraction to use your identical code, and agree that 
-it's at least as good as what they're using right now, then you'd have a 
-pretty strong case for creating some kind of common library.  If not, 
-well, those maintainers probably would not switch to your current common 
-clocklib either, so there's really no downside.
-
-
-- Paul
+> (cc dm-devel) (which often has no effect)
+> 
+> I wonder which kernel.org kernel was used to generate 2.6.24-1-686.
+> 
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
