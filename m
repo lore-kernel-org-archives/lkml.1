@@ -1,42 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933879AbYEBBYB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764285AbYEBB3L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933879AbYEBBYB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 May 2008 21:24:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758021AbYEBBXt
+	id S1764285AbYEBB3L (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 May 2008 21:29:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754785AbYEBB26
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 May 2008 21:23:49 -0400
-Received: from vps1.tull.net ([66.180.172.116]:40671 "HELO vps1.tull.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1758789AbYEBBXr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 May 2008 21:23:47 -0400
-X-Spam-Check-By: mail.local.tull.net
-Date: Fri, 2 May 2008 11:23:37 +1000
-From: Nick Andrew <nick@nick-andrew.net>
-To: Alex Davis <alex14641@yahoo.com>
-Cc: linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: Sharing disks amoung multiple software RAIDs
-Message-ID: <20080502012337.GD13463@tull.net>
-References: <771640.4981.qm@web50209.mail.re2.yahoo.com>
+	Thu, 1 May 2008 21:28:58 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:51504 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750963AbYEBB25 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 May 2008 21:28:57 -0400
+Date: Thu, 1 May 2008 18:28:57 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Nick Piggin <npiggin@suse.de>
+cc: "Ahmed S. Darwish" <darwish.07@gmail.com>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [patch] SLQB v2
+In-Reply-To: <20080502012321.GE30768@wotan.suse.de>
+Message-ID: <Pine.LNX.4.64.0805011825420.13697@schroedinger.engr.sgi.com>
+References: <20080410193137.GB9482@wotan.suse.de> <20080415034407.GA9120@ubuntu>
+ <20080501015418.GC15179@wotan.suse.de> <Pine.LNX.4.64.0805011226410.8738@schroedinger.engr.sgi.com>
+ <20080502004325.GA30768@wotan.suse.de> <Pine.LNX.4.64.0805011813180.13527@schroedinger.engr.sgi.com>
+ <20080502012321.GE30768@wotan.suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <771640.4981.qm@web50209.mail.re2.yahoo.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-SMTPD: qpsmtpd/0.26, http://develooper.com/code/qpsmtpd/
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 01, 2008 at 04:35:07AM -0700, Alex Davis wrote:
-> Is this a bad thing? I'm guessing that it is, but I want independent
-> confirmation before I spoke to someone I know who's doing this.
+On Fri, 2 May 2008, Nick Piggin wrote:
 
-I use it to ensure that multiple partitions are RAIDed. I have a /boot
-partition which is ext3 and a large LVM partition. Both of them are
-RAID-1 onto a second drive (md0 and md1) for redundancy. The second
-drive has an identical partition table to the first drive.
+> But overloading struct page values happens in other places too. Putting
+> everything into struct page is not scalable. We could also make kmalloc
 
-Nick.
--- 
-PGP Key ID = 0x418487E7                      http://www.nick-andrew.net/
-PGP Key fingerprint = B3ED 6894 8E49 1770 C24A  67E3 6266 6EB9 4184 87E7
+Well lets at least attempt to catch the biggest users. Also makes code 
+clearer if you f.e. use page->first_page instead of page->private for 
+compound pages.
+
+kmalloc is intended to return an arbitrary type. struct page has a defined 
+format that needs to be respected.
+
