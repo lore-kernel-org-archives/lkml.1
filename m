@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755181AbYECWjU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756351AbYECWkr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755181AbYECWjU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 May 2008 18:39:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753105AbYECWjF
+	id S1756351AbYECWkr (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 May 2008 18:40:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752468AbYECWki
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 May 2008 18:39:05 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:55933 "EHLO mx3.mail.elte.hu"
+	Sat, 3 May 2008 18:40:38 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:39383 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753201AbYECWjE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 May 2008 18:39:04 -0400
-Date: Sun, 4 May 2008 00:38:44 +0200
+	id S1751916AbYECWkh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 May 2008 18:40:37 -0400
+Date: Sun, 4 May 2008 00:40:18 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: David Miller <davem@davemloft.net>, a.p.zijlstra@chello.nl, efault@gmx.de,
-       elendil@planet.nl, parag.warudkar@gmail.com,
-       linux-kernel@vger.kernel.org, guichaz@yahoo.fr, andi@firstfloor.org
-Subject: Re: 'global' rq->clock
-Message-ID: <20080503223844.GA18344@elte.hu>
-References: <20080503082849.GA29605@elte.hu> <20080503.020502.226847930.davem@davemloft.net> <20080503101016.GA18801@elte.hu> <20080503.122734.01023096.davem@davemloft.net> <1209853855.26383.28.camel@pasglop>
+To: Daniel Hazelton <dhazelton@enter.net>
+Cc: Sam Ravnborg <sam@ravnborg.org>, Stephen Rothwell <sfr@canb.auug.org.au>,
+       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@suse.cz>,
+       linux-next@vger.kernel.org
+Subject: Re: Strange linux-next build error
+Message-ID: <20080503224018.GB18344@elte.hu>
+References: <200805030121.39831.dhazelton@enter.net> <20080503155252.0dc9c4d7.sfr@canb.auug.org.au> <20080503064057.GA12546@uranus.ravnborg.org> <200805031825.50914.dhazelton@enter.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1209853855.26383.28.camel@pasglop>
+In-Reply-To: <200805031825.50914.dhazelton@enter.net>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -36,38 +36,28 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+* Daniel Hazelton <dhazelton@enter.net> wrote:
 
+> > Can you try to do a:
+> > make V=1 and post the output a few screen fulls before and until
+> > the bug triggers.
+> > They I will see if I can work out what is happening.
+> >
+> > Thanks,
+> > 	Sam
 > 
-> On Sat, 2008-05-03 at 12:27 -0700, David Miller wrote:
-> > > ( although please note that the growing generalization that goes on
-> > >   _did_ find a subtle nohz problem on sparc64 early in the merge
-> > window,
-> > >   so it's not like these changes are totally useless to you. )
-> > 
-> > Note that this bug theoretically exists on every platform, even x86, 
-> > and only sparc64 is fixed at the moment by adding the 
-> > irq_{entry,exit}() guards around all of it's IPI handlers.
+> I've been unable to trigger it with "make V=1 bzImage" - does the 
+> verbosity change, somehow, the default number of makes that get run ?
 > 
-> What is the bug ?
-> 
-> IPIs on power are normal interrupts, so they do happen in 
-> irq_entry/exit blocks but I'm curious to know what the root bug is :-)
+> If it does, I could try adding -j2 or similar to see if that causes it 
+> to trigger.
 
-on nohz we still keep jiffies uptodate - despite there not being an 
-explicit 'keep jiffies uptodate' tick interrupt anymore. So on every 
-irq_enter() we roll jiffies forward - if needed - and thus emulate 
-jiffies behavior to drivers and core kernel code, etc.
+try something like:
 
-if an IPI on Power does not do an irq_enter() then you might miss out on 
-updated jiffies. That might not matter for most jiffies, but you might 
-also miss out on the 'touch the softlockup watchdog because we just woke 
-from idle' action. This is what triggered the false positive warnings on 
-Sparc64.
+   make -j2 V=1 bzImage >log.txt 2>&1
 
-the same bug existed on x86 too: that too does a few IPIs without 
-irq_enter/irq_exit. We now removed the softlockup dependency so it 
-should not be required to do an irq_enter()/exit anymore - unless the 
-code that the IPI uses accesses jiffies. (but that would be unusual)
+and see whether the error shows up in log.txt. Console output caused by 
+the increased verbosity (especially if it's a slower console like an 
+xterm) can hide build races.
 
 	Ingo
