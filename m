@@ -1,75 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761591AbYECLHj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762290AbYECLJU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761591AbYECLHj (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 May 2008 07:07:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753887AbYECLH2
+	id S1762290AbYECLJU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 May 2008 07:09:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755233AbYECLJK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 May 2008 07:07:28 -0400
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:34848 "EHLO smtp6.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752733AbYECLH2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 May 2008 07:07:28 -0400
-Date: Sat, 3 May 2008 14:06:31 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Willy Tarreau <w@1wt.eu>, =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Woodhouse <dwmw2@infradead.org>, Arnd Bergmann <arnd@arndb.de>,
-       linux-kernel@vger.kernel.org
-Subject: Re: LogFS merge
-Message-ID: <20080503110631.GJ5838@cs181133002.pp.htv.fi>
-References: <20080502133234.GA24080@logfs.org> <alpine.LFD.1.10.0805021010040.5994@woody.linux-foundation.org> <20080502202151.GB24080@logfs.org> <alpine.LFD.1.10.0805021328200.5994@woody.linux-foundation.org> <20080502213146.GD24080@logfs.org> <alpine.LFD.1.10.0805021438180.5994@woody.linux-foundation.org> <20080502215833.GG24080@logfs.org> <20080503070318.GR8474@1wt.eu> <20080503091111.GH5838@cs181133002.pp.htv.fi> <84144f020805030244y44313fdl17cee6fa38bfd690@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+	Sat, 3 May 2008 07:09:10 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:56119 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755198AbYECLJI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 May 2008 07:09:08 -0400
+Date: Sat, 3 May 2008 06:09:04 -0500
+From: Jack Steiner <steiner@sgi.com>
+To: Andrea Arcangeli <andrea@qumranet.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Lameter <clameter@sgi.com>, Robin Holt <holt@sgi.com>,
+       Nick Piggin <npiggin@suse.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       kvm-devel@lists.sourceforge.net, Kanoj Sarcar <kanojsarcar@yahoo.com>,
+       Roland Dreier <rdreier@cisco.com>,
+       Steve Wise <swise@opengridcomputing.com>, linux-kernel@vger.kernel.org,
+       Avi Kivity <avi@qumranet.com>, linux-mm@kvack.org,
+       general@lists.openfabrics.org, Hugh Dickins <hugh@veritas.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Anthony Liguori <aliguori@us.ibm.com>, Chris Wright <chrisw@redhat.com>,
+       Marcelo Tosatti <marcelo@kvack.org>, Eric Dumazet <dada1@cosmosbay.com>,
+       "Paul E. McKenney" <paulmck@us.ibm.com>
+Subject: Re: [PATCH 00 of 11] mmu notifier #v15
+Message-ID: <20080503110904.GA19688@sgi.com>
+References: <patchbomb.1209740703@duo.random>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <84144f020805030244y44313fdl17cee6fa38bfd690@mail.gmail.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <patchbomb.1209740703@duo.random>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, May 03, 2008 at 12:44:12PM +0300, Pekka Enberg wrote:
-> Hi Adrian,
+On Fri, May 02, 2008 at 05:05:03PM +0200, Andrea Arcangeli wrote:
+> Hello everyone,
 > 
-> On Sat, May 3, 2008 at 12:11 PM, Adrian Bunk <bunk@kernel.org> wrote:
-> > > Why not merge it and mark it experimental then ? In fact, this is about
-> > > what you're looking for : reduced merge hassle and more testers.
-> >
-> >  Andi already answered that one:
-> >
-> > "Merging file systems too early can quickly ruin their name and that
-> >   taint is hard to ever get rid again then (e.g. happened to JFS)"
-> >
-> >  And a stable kernel shouldn't be something for getting "more testers",
-> >  it should be for tested code ready to be used in production.
-> >  What you call "more testers" would be people who try it in production
-> >  (e.g. to overcome shortcomings of JFFS2) thinking it was stable.
-> >
-> >  And no, EXPERIMENTAL in the kernel is not usable for keeping people from
-> >  trying known-whacky code.
+> 1/11 is the latest version of the mmu-notifier-core patch.
 > 
-> I think ext4 already set the precedent that you _can_ do development
-> within the 2.6 series, no?
+> As usual all later 2-11/11 patches follows but those aren't meant for 2.6.26.
+> 
 
-I'd call the ext4 case a mistake we shouldn't repeat.
+Not sure why -mm is different, but I get compile errors w/o the following...
 
-It's available in the kernel since 2006.
+--- jack
 
-I've seen people using ext4 on their computers running with a corrupted 
-filesystem since fsck was at that point not yet capable of fixing 
-whatever was corrupted.
 
-At least one distribution already has ext4 enabled in their kernels.
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+Index: linux/mm/mmu_notifier.c
+===================================================================
+--- linux.orig/mm/mmu_notifier.c	2008-05-02 16:54:52.780576831 -0500
++++ linux/mm/mmu_notifier.c	2008-05-02 16:56:38.817719509 -0500
+@@ -16,6 +16,7 @@
+ #include <linux/srcu.h>
+ #include <linux/rcupdate.h>
+ #include <linux/sched.h>
++#include <linux/rculist.h>
+ 
+ /*
+  * This function can't run concurrently against mmu_notifier_register
