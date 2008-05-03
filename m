@@ -1,89 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762649AbYECKKi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763113AbYECKNU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762649AbYECKKi (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 May 2008 06:10:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754722AbYECKKb
+	id S1763113AbYECKNU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 May 2008 06:13:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755233AbYECKNJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 May 2008 06:10:31 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:46392 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754617AbYECKKa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 May 2008 06:10:30 -0400
-Date: Sat, 3 May 2008 12:10:16 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: David Miller <davem@davemloft.net>
-Cc: a.p.zijlstra@chello.nl, efault@gmx.de, elendil@planet.nl,
-       parag.warudkar@gmail.com, linux-kernel@vger.kernel.org,
-       guichaz@yahoo.fr, andi@firstfloor.org
-Subject: Re: 'global' rq->clock
-Message-ID: <20080503101016.GA18801@elte.hu>
-References: <20080502.144827.158329188.davem@davemloft.net> <1209766054.6929.29.camel@lappy> <20080503082849.GA29605@elte.hu> <20080503.020502.226847930.davem@davemloft.net>
-MIME-Version: 1.0
+	Sat, 3 May 2008 06:13:09 -0400
+Received: from 213.237.47.228.adsl.vbr.worldonline.dk ([213.237.47.228]:23546
+	"EHLO rap.rap.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755372AbYECKNH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 May 2008 06:13:07 -0400
+Date: Sat, 3 May 2008 12:13:02 +0200
+From: Keld =?iso-8859-1?Q?J=F8rn?= Simonsen <keld@dkuug.dk>
+To: Alex Davis <alex14641@yahoo.com>
+Cc: Kasper Sandberg <lkml@metanurb.dk>, David Greaves <david@dgreaves.com>,
+       David Lethe <david@santools.com>, David Rees <drees76@gmail.com>,
+       Justin Piszcz <jpiszcz@lucidpixels.com>, linux-raid@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: Sharing disks amoung multiple software RAIDs
+Message-ID: <20080503101302.GB10819@rap.rap.dk>
+References: <A20315AE59B5C34585629E258D76A97C335960@34093-C3-EVS3.exchange.rackspace.com> <824925.21830.qm@web50201.mail.re2.yahoo.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080503.020502.226847930.davem@davemloft.net>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <824925.21830.qm@web50201.mail.re2.yahoo.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* David Miller <davem@davemloft.net> wrote:
-
-> > there's already such a mechanism in sched-devel.git (and has been 
-> > there for a week or two): an architecture can set time_sync_thresh 
-> > to -1LL during early bootup and essentially disable all the 
-> > synchronization logic.
+On Fri, May 02, 2008 at 05:44:18PM -0700, Alex Davis wrote:
 > 
-> Does it remove all of the code too? :-)
 > 
-> Please give us a config boolean.  The only platform for which a 
-> run-time knob is even necessary is x86.
+> I code, therefore I am
+> 
+> 
+> --- On Fri, 5/2/08, David Lethe <david@santools.com> wrote:
+> [snipped]
+> > I was being too literal. md is a good solution (I use it
+> > myself).  However, the OP wanted to "Make sure that if
+> > one disk dies, the data is still in tact".  
+> I was also concerned about performance. It seems that if the RAIDs will 
+> be used heavily and independent of each other, and performance is a 
+> concern, then dedicated disks (and possibly dedicated controllers)
+> are the better option.
 
-yeah, will try something like that too.
+My understanding of having multiple, possibly differnet types of RAID
+partitions say on two drives, are that performance-wise this are the
+same considerations as for a single drive. You can worry about head
+movement and seek times and transfer rates, but the problems are the
+same for raid and non-raid. IMHO architecturally multiple RAIDs on same disks
+do not introduce additional performance issues compared with single disk
+solutions, nor with one-raid-per-set-of-drives solutions.
 
-the thing is, core kernel folks have to resist such pressures 
-_somewhat_.
+The above statement on having separate disks per raid is more or less the
+same as saying that the more disks you have, the better.
 
-Architecture maintainers will put pressure on us from two directions: if 
-a particular generic feature only helps _another_ architecture, they 
-find it a nuisance and want it to be gone as much as possible.
+If performance is an issue, then I am recommending my pet
+raid10,f2 layout, which has a 30 - 80 % increased performance over
+traditional RAID1, because it uses only the outer faster tracks on the
+disk, and it has reduced seek time only searching on half of the disk
+(and this the again the outer part, so that the head movement is reduced
+to about 1/3). 
 
-If a particular feature helps them, they want it supported and 
-default-enabled as much as possible. In fact, complaints come if a 
-generic-looking feature shows up in one architecture only. (recent 
-example: inlining optimizations ;-)
-
-And you are totally right about sched_clock() being dead on accurate an 
-globally synchronous on sparc64 - and you are right to find _any_ issue 
-about it a nuisance. I totally envy you that sparc64's sched_clock() is 
-so simple - it should have been like that on x86 years ago, if hw 
-designers werent so impotent about it.
-
-( although please note that the growing generalization that goes on
-  _did_ find a subtle nohz problem on sparc64 early in the merge window,
-  so it's not like these changes are totally useless to you. )
-
-but it all goes in the other direction as well: many folks find 
-endianness problems a nuisance on x86, many folks find TLB and explicit 
-cache coherence complications a nuisance on x86 as well. The bus-to-phys 
-complication which is an identity on x86. Etc. etc.
-
-But the core kernel is a conscious and intelligent union of all 
-architecture's needs, and often we maintain complications even if they 
-make no sense on the most popular platform. I think it makes strategic 
-sense because it keep the kernel truly generic and truly clean. It also 
-keeps architectures honest: even today the x86 architecture is still not 
-as clean as sparc64 for example.
-
-so please be patient, we are working on it :)
-
-	Ingo
+Best regards
+keld
