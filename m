@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936711AbYECALo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965433AbYECAPi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936711AbYECALo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 20:11:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764994AbYECALe
+	id S965433AbYECAPi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 20:15:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762179AbYECAPb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 20:11:34 -0400
-Received: from wa-out-1112.google.com ([209.85.146.179]:24452 "EHLO
+	Fri, 2 May 2008 20:15:31 -0400
+Received: from wa-out-1112.google.com ([209.85.146.179]:33379 "EHLO
 	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764968AbYECALd (ORCPT
+	with ESMTP id S1759164AbYECAPa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 20:11:33 -0400
+	Fri, 2 May 2008 20:15:30 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=IKPoW+VuDcyjoD5UDkcbOgP36Jg1owPXtXcjLoh3nclm9xNf9v6pa+47G+Q3NpoS/91VO+TZ10khhlWJffZ4ane9pBYyp9Yw0wLnlnDKFSIsw2CAygzKKE2genac1xGB5z9xSO4k3vyu68Op8G+siECSh03Mo2B+9LaQlPhcrjA=
+        b=XAHCOzQTzKw1BclDurpIasKvcL4aI7ZokwIRT0D2EPPZU+czBRhrB3Qz0OTyrin8hRgWitgi7Li5WskO5oT/6zBEdAOpg/4eUW3xRG04xhhnzbjf3zc3N267SI8FMn6EL9Wd7kaamGQzvlmHXReURTgbDWvbsbbL1Luyax9fPf0=
 Subject: Re: [PATCH 12/12] net: use the common ascii hex helpers
 From: Harvey Harrison <harvey.harrison@gmail.com>
 To: Andrew Morton <akpm@linux-foundation.org>
@@ -25,8 +25,8 @@ References: <1209754916.26173.39.camel@brick>
 	 <1209772363.26173.101.camel@brick>
 	 <20080502170802.456493a5.akpm@linux-foundation.org>
 Content-Type: text/plain
-Date: Fri, 02 May 2008 17:11:56 -0700
-Message-Id: <1209773516.26173.108.camel@brick>
+Date: Fri, 02 May 2008 17:15:55 -0700
+Message-Id: <1209773755.26173.114.camel@brick>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
@@ -35,23 +35,6 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 On Fri, 2008-05-02 at 17:08 -0700, Andrew Morton wrote:
-> On Fri, 02 May 2008 16:52:43 -0700
-> Harvey Harrison <harvey.harrison@gmail.com> wrote:
-> 
-> > On Fri, 2008-05-02 at 16:31 -0700, Andrew Morton wrote:
-> > > On Fri, 02 May 2008 16:25:15 -0700 (PDT)
-> > > David Miller <davem@davemloft.net> wrote:
-> > > 
-> > > > From: Harvey Harrison <harvey.harrison@gmail.com>
-> > > > Date: Fri, 02 May 2008 12:01:56 -0700
-> > > > 
-> > > > > Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
-> > > > 
-> > > > Acked-by: David S. Miller <davem@davemloft.net>
-> > > > 
-> > > > This has to go in via who ever adds the first patch
-> > > > with the actual helpers, so I won't apply this one.
-> > > 
 > > > Yup.  After a bit of testing and tyre-kicking I'll probably slip
 > > > lib-add-ascii-hex-helper-functions.patch into mainline so that we can
 > > > trickle all the *-use-the-common-ascii-hex-helpers.patch patches out to the
@@ -64,10 +47,10 @@ On Fri, 2008-05-02 at 17:08 -0700, Andrew Morton wrote:
 > gack.  How could you do all those patches without discovering this?  Please
 > go give your QA staff a wedgie.
 
+Sorry about the fat-fingered send, as before:
+
 allyesconfig :(
 
-> > 
-> 
 > yes, hex_to_u8() is more specific and better defined than hex_to_int().
 > 
 > Although anally it should perhaps be two_digit_hex_to_ulong,
@@ -75,14 +58,21 @@ allyesconfig :(
 > 
 > ho hum, I'll drop them all.
 
-My apologies, how about:
-
 int hex_char_to_int(char ch)
-int hex_char_to_int(char ch)
-int hex_char_to_int(char ch)
+{
+	return -1 if not [a-fA-F0-9]
+}
 
-EXPORT_SYMBOL(hex_dump_to_buffer);
+int hex_to_u8(const char *buf, u8 *val)
+int hex_to_u16(const char *buf, u16 *val)
+int hex_to_u32(const char *buf, u32 *val)
+int hex_to_u64(const char *buf, u64 *val)
 
+Which return the number of chars read and reads up to a maximum of
+2,4,8,16 chars respectively and returns early if a non-hex char
+is encountered.
 
+Thoughts?
 
+Harvey
 
