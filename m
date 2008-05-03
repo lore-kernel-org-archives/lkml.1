@@ -1,367 +1,732 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760148AbYECDu3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753347AbYECEEE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760148AbYECDu3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 23:50:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756257AbYECDuT
+	id S1753347AbYECEEE (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 May 2008 00:04:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750745AbYECEDw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 23:50:19 -0400
-Received: from uki.us.mooball.net ([66.98.178.13]:36867 "EHLO
-	uki.us.mooball.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756185AbYECDuS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 23:50:18 -0400
-X-ClientAddr: 220.233.82.121
-Message-ID: <481BE0E4.7010904@petalogix.com>
-Date: Sat, 03 May 2008 13:49:56 +1000
-From: John Williams <john.williams@petalogix.com>
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
-MIME-Version: 1.0
-To: monstr@seznam.cz
-CC: Arnd Bergmann <arnd@arndb.de>, Matthew Wilcox <matthew@wil.cx>,
-       Will Newton <will.newton@gmail.com>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       linux-arch@vger.kernel.org, git@xilinx.com,
-       Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>,
-       John Linn <John.Linn@xilinx.com>
-Subject: Re: microblaze syscall list
-References: <87a5b0800804220513t75690ceao938a288596b5ad0c@mail.gmail.com> <48151726.9000204@itee.uq.edu.au> <200804281431.26570.arnd@arndb.de> <200805012117.12991.arnd@arndb.de> <481AA8CC.10405@petalogix.com> <481ACE51.80202@seznam.cz>
-In-Reply-To: <481ACE51.80202@seznam.cz>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Mooball.com-MailScanner-Information: Please contact the ISP for more information
-X-Mooball.com-MailScanner: Not scanned: please contact your Internet E-Mail Service Provider for details
-X-MailScanner-From: john.williams@petalogix.com
+	Sat, 3 May 2008 00:03:52 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:39556 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750715AbYECEDu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 May 2008 00:03:50 -0400
+Date: Sat, 3 May 2008 00:03:45 -0400
+From: Ulrich Drepper <drepper@redhat.com>
+Message-Id: <200805030403.m4343j5u014868@devserv.devel.redhat.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] unify sys_pipe implementation
+Cc: akpm@linux-foundation.org, torvalds@linux-foundation.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michal, Arnd et al,
+In preparation for adding pipe2, the variant with a flag parameter, this
+is a patch which unifies the implementation of the majority of the
+architectures.  There is a difference in the way sys_pipe is implemented
+for some architectures.  This is why so far each architecture defined
+its own copy in arch/*/kernel/sys*.c.  Most of the time these are
+exact copies.  To avoid this fs/pipe.c now contains this common code
+and the architecture's unistd.h file defines if necessary the macro
+__ARCH_WANT_SYS_PIPE.
 
-Michal Simek wrote:
+A few architectures still have their own sys_pipe files.  In a few
+cases I can imagine this not to be necessary.  I leave this to the
+arch maintainers.
 
->>>> How about this strategy then:
->>>> * Change all the data types and syscall numbers in the -for-2.6.27
->>>> branch to only include the minimal set, and a modern ABI
->>>> * Add the old interfaces as an out-of-tree patch that adds source
->>>> level compatibility with the old libc, but does not modify any
->>>> of the new interfaces, so that a patched kernel can run all binaries
->>>> built for the upstream version.
->>>> * phase out the old source interface gradually, as all users update
->>>> their libc source code.
->>>
->>> Any news on this from the microblaze people? Have you made up your mind
->>> on what route you want to go?
->> I think we're still digesting it.  I need to sync up with Michal and the
->> Xilinx people.  The libc and kernel API changes have to happen in
->> tandem, otherwise Michal can't properly test the kernel he's pushing.
->>
->> I am the defacto MicroBlaze uClibc and toolchain "builder" but somewhat
->> reluctantly - am trying to convince Xilnx to hand that over to someone
->> who is expert at it.
->>
->> Michal, John L, any thoughts?
->>
->> John
-> 
-> I am convinced we need to change syscall table. I don't want to maintain old
-> syscalls. It will be easier to test smaller amount of syscalls. I would like to
-> talk about with you (John W) via Skype. (Can you send me private email where you
-> have time?) I talked with Steve about this week. After that I will publish our
-> proposed way.
-
-As a first pass at assessing the C library impact on a completely 
-renovated syscall list, I took Michal's proposed new unistd.h and used 
-it to grep over both the uClibc implementation that (almost) every 
-existing microblaze user uses (!MMU), plus the glibc (cough cough) 
-implementation that is our default with the emerging MMU support.
-
-To test the implementation / reference of a syscall number, I grepped 
-the entire source trees for
-
-   __NR_xxx
-
-or
-
-   _system[0-9](.*xxxx    (stripped leading __NR_X)
-
-to try and find any mention at all of a particular syscall in that C 
-library implementation.
-
-The results are interesting, and verbose.  In fact, the lists are so 
-long I'm almost certain I've missed some other obscure way that uClibc 
-or glibc can access a __NR_ macro.  Please let me know if this is the case.
-
-Certainly there are many implemented in neither, such as as splice and 
-friends.
-
-Also interesting is e.g. openat() - it is implemented/referenced by 
-neither!  So, surely it would be premature to phase out open() in favour 
-of openat() when the latter is not in any viable MicroBlaze C library yet.
-
-I guess we need some help to find the other critical ones.
-
-What's also curious is that uClibc not-implemented list is shorter than 
-glibc's.  Does this just mean glibc uses fewer of the legacy APIs?  I 
-really don't know, but I'm sure someone else does.
-
-If there's a cleaner analysis I can do, please let me know and I'll repeat.
-
-Here goes - uClibc first, then glibc
-
-** Not implemented/referenced in uClibc 0.9.27 12 January 2005
-__NR_add_key
-__NR_clock_getres
-__NR_clock_gettime
-__NR_clock_nanosleep
-__NR_clock_settime
-__NR_creat
-__NR_epoll_pwait
-__NR_eventfd
-__NR__exit
-__NR_exit_group
-__NR_faccessat
-__NR_fadvise64_64
-__NR_fallocate
-__NR_fchmodat
-__NR_fchownat
-__NR_fstatat64
-__NR_fstatfs64
-__NR_futex
-__NR_futimesat
-__NR_getcpu
-__NR_get_robust_list
-__NR_gettid
-__NR_inotify_add_watch
-__NR_inotify_init
-__NR_inotify_rm_watch
-__NR_io_cancel
-__NR_io_destroy
-__NR_io_getevents
-__NR_ioprio_get
-__NR_ioprio_set
-__NR_io_setup
-__NR_io_submit
-__NR_kexec_load
-__NR_keyctl
-__NR_linkat
-__NR_lookup_dcookie
-__NR_mkdirat
-__NR_mknodat
-__NR_newfstat
-__NR_newlstat
-__NR_newstat
-__NR_newuname
-__NR_nfsservctl
-__NR_openat
-__NR_ppoll
-__NR_pselect7
-__NR_readahead
-__NR_readlinkat
-__NR_removexattrs
-__NR_renameat
-__NR_request_key
-__NR_restart_syscall
-__NR_rt_sigqueueinfo
-__NR_sched_getaffinity
-__NR_sched_setaffinity
-__NR_semtimedop
-__NR_set_robust_list
-__NR_set_tid_address
-__NR_sgetmask
-__NR_signal
-__NR_signalfd
-__NR_splice
-__NR_ssetmask
-__NR_statfs64
-__NR_symlinkat
-__NR_sync_file_range
-__NR_syscalls
-__NR_tee
-__NR_tgkill
-__NR_timerfd_create
-__NR_timerfd_gettime
-__NR_timerfd_settime
-__NR_tkill
-__NR_unlinkat
-__NR_unshare
-__NR_utimensat
-__NR_vmsplice
-__NR_waitid
+The net result is that we have 230 lines less.
 
 
-
-** Not implemented/referenced in glibc
-__NR_add_key
-__NR_adjtimex
-__NR_alarm
-__NR_capget
-__NR_capset
-__NR_chdir
-__NR_chown
-__NR_chroot
-__NR_close
-__NR_creat
-__NR_delete_module
-__NR_dup
-__NR_dup2
-__NR_epoll_create
-__NR_epoll_ctl
-__NR_epoll_pwait
-__NR_eventfd
-__NR_execve
-__NR_faccessat
-__NR_fallocate
-__NR_fchdir
-__NR_fchmod
-__NR_fchmodat
-__NR_fchown
-__NR_fchownat
-__NR_fdatasync
-__NR_fgetxattr
-__NR_flistxattr
-__NR_flock
-__NR_fremovexattr
-__NR_fsetxattr
-__NR_fstatat64
-__NR_fsync
-__NR_futimesat
-__NR_getcpu
-__NR_getegid
-__NR_geteuid
-__NR_getgroups
-__NR_getitimer
-__NR_getpgid
-__NR_getpgrp
-__NR_getppid
-__NR_getpriority
-__NR_getrlimit
-__NR_get_robust_list
-__NR_getrusage
-__NR_getsid
-__NR_gettid
-__NR_getxattr
-__NR_init_module
-__NR_inotify_add_watch
-__NR_inotify_init
-__NR_inotify_rm_watch
-__NR_io_cancel
-__NR_io_destroy
-__NR_io_getevents
-__NR_ioprio_get
-__NR_ioprio_set
-__NR_io_setup
-__NR_io_submit
-__NR_kexec_load
-__NR_keyctl
-__NR_kill
-__NR_lgetxattr
-__NR_link
-__NR_linkat
-__NR_listxattr
-__NR_llistxattr
-__NR_lookup_dcookie
-__NR_lremovexattr
-__NR_lseek
-__NR_lsetxattr
-__NR_mkdirat
-__NR_mknodat
-__NR_mount
-__NR_msgctl
-__NR_msgget
-__NR_msgrcv
-__NR_msgsnd
-__NR_munmap
-__NR_nanosleep
-__NR_newfstat
-__NR_newlstat
-__NR_newstat
-__NR_newuname
-__NR_nfsservctl
-__NR_nice
-__NR_openat
-__NR_pause
-__NR_personality
-__NR_pivot_root
-__NR_ppoll
-__NR_prctl
-__NR_pselect7
-__NR_ptrace
-__NR_quotactl
-__NR_read
-__NR_readlinkat
-__NR_readv
-__NR_reboot
-__NR_removexattrs
-__NR_renameat
-__NR_request_key
-__NR_restart_syscall
-__NR_sched_getparam
-__NR_sched_get_priority_max
-__NR_sched_get_priority_min
-__NR_sched_getscheduler
-__NR_sched_rr_get_interval
-__NR_sched_setparam
-__NR_sched_setscheduler
-__NR_sched_yield
-__NR_semctl
-__NR_semget
-__NR_semop
-__NR_sendfile64
-__NR_setdomainname
-__NR_setgid
-__NR_setgroups
-__NR_sethostname
-__NR_setitimer
-__NR_setpgid
-__NR_setpriority
-__NR_setregid
-__NR_setreuid
-__NR_setrlimit
-__NR_set_robust_list
-__NR_setsid
-__NR_settimeofday
-__NR_setuid
-__NR_setxattr
-__NR_sgetmask
-__NR_shmat
-__NR_shmctl
-__NR_shmdt
-__NR_shmget
-__NR_signal
-__NR_signalfd
-__NR_splice
-__NR_ssetmask
-__NR_stime
-__NR_swapoff
-__NR_swapon
-__NR_symlinkat
-__NR_sync
-__NR_sync_file_range
-__NR_syscalls
-__NR_sysinfo
-__NR_syslog
-__NR_tee
-__NR_time
-__NR_timerfd_create
-__NR_timerfd_gettime
-__NR_timerfd_settime
-__NR_times
-__NR_umask
-__NR_umount
-__NR_unlink
-__NR_unlinkat
-__NR_unshare
-__NR_uselib
-__NR_utimensat
-__NR_vhangup
-__NR_vmsplice
-__NR_write
-__NR_writev
+ arch/arm/kernel/sys_arm.c         |   17 -----------------
+ arch/avr32/kernel/sys_avr32.c     |   13 -------------
+ arch/blackfin/kernel/sys_bfin.c   |   17 -----------------
+ arch/frv/kernel/sys_frv.c         |   17 -----------------
+ arch/h8300/kernel/sys_h8300.c     |   17 -----------------
+ arch/m68k/kernel/sys_m68k.c       |   17 -----------------
+ arch/m68knommu/kernel/sys_m68k.c  |   17 -----------------
+ arch/mn10300/kernel/sys_mn10300.c |   17 -----------------
+ arch/parisc/kernel/sys_parisc.c   |   13 -------------
+ arch/powerpc/kernel/syscalls.c    |   17 -----------------
+ arch/s390/kernel/sys_s390.c       |   17 -----------------
+ arch/sh/kernel/sys_sh64.c         |   17 -----------------
+ arch/um/kernel/syscall.c          |   17 -----------------
+ arch/v850/kernel/syscalls.c       |   17 -----------------
+ arch/x86/kernel/sys_i386_32.c     |   17 -----------------
+ arch/x86/kernel/sys_x86_64.c      |   17 -----------------
+ fs/pipe.c                         |   20 ++++++++++++++++++++
+ include/asm-arm/unistd.h          |    1 +
+ include/asm-avr32/unistd.h        |    1 +
+ include/asm-blackfin/unistd.h     |    1 +
+ include/asm-frv/unistd.h          |    1 +
+ include/asm-h8300/unistd.h        |    1 +
+ include/asm-m68k/unistd.h         |    1 +
+ include/asm-m68knommu/unistd.h    |    1 +
+ include/asm-mn10300/unistd.h      |    1 +
+ include/asm-parisc/unistd.h       |    1 +
+ include/asm-powerpc/unistd.h      |    1 +
+ include/asm-s390/unistd.h         |    1 +
+ include/asm-sh/unistd_64.h        |    1 +
+ include/asm-v850/unistd.h         |    1 +
+ include/asm-x86/unistd_32.h       |    1 +
+ include/asm-x86/unistd_64.h       |    1 +
+ 32 files changed, 35 insertions(+), 264 deletions(-)
 
 
-> 
-> Michal
-> 
-> 
-> 
+Signed-off-by: Ulrich Drepper <drepper@redhat.com>
 
+diff --git a/arch/arm/kernel/sys_arm.c b/arch/arm/kernel/sys_arm.c
+index 9bd1870..0128687 100644
+--- a/arch/arm/kernel/sys_arm.c
++++ b/arch/arm/kernel/sys_arm.c
+@@ -34,23 +34,6 @@ extern unsigned long do_mremap(unsigned long addr, unsigned long old_len,
+ 			       unsigned long new_len, unsigned long flags,
+ 			       unsigned long new_addr);
+ 
+-/*
+- * sys_pipe() is the normal C calling standard for creating
+- * a pipe. It's not the way unix traditionally does this, though.
+- */
+-asmlinkage int sys_pipe(unsigned long __user *fildes)
+-{
+-	int fd[2];
+-	int error;
+-
+-	error = do_pipe(fd);
+-	if (!error) {
+-		if (copy_to_user(fildes, fd, 2*sizeof(int)))
+-			error = -EFAULT;
+-	}
+-	return error;
+-}
+-
+ /* common code for old and new mmaps */
+ inline long do_mmap2(
+ 	unsigned long addr, unsigned long len,
+diff --git a/arch/avr32/kernel/sys_avr32.c b/arch/avr32/kernel/sys_avr32.c
+index 8deb600..8e8911e 100644
+--- a/arch/avr32/kernel/sys_avr32.c
++++ b/arch/avr32/kernel/sys_avr32.c
+@@ -14,19 +14,6 @@
+ #include <asm/mman.h>
+ #include <asm/uaccess.h>
+ 
+-asmlinkage int sys_pipe(unsigned long __user *filedes)
+-{
+-	int fd[2];
+-	int error;
+-
+-	error = do_pipe(fd);
+-	if (!error) {
+-		if (copy_to_user(filedes, fd, sizeof(fd)))
+-			error = -EFAULT;
+-	}
+-	return error;
+-}
+-
+ asmlinkage long sys_mmap2(unsigned long addr, unsigned long len,
+ 			  unsigned long prot, unsigned long flags,
+ 			  unsigned long fd, off_t offset)
+diff --git a/arch/blackfin/kernel/sys_bfin.c b/arch/blackfin/kernel/sys_bfin.c
+index efb7b25..fce49d7 100644
+--- a/arch/blackfin/kernel/sys_bfin.c
++++ b/arch/blackfin/kernel/sys_bfin.c
+@@ -45,23 +45,6 @@
+ #include <asm/cacheflush.h>
+ #include <asm/dma.h>
+ 
+-/*
+- * sys_pipe() is the normal C calling standard for creating
+- * a pipe. It's not the way unix traditionally does this, though.
+- */
+-asmlinkage int sys_pipe(unsigned long __user *fildes)
+-{
+-	int fd[2];
+-	int error;
+-
+-	error = do_pipe(fd);
+-	if (!error) {
+-		if (copy_to_user(fildes, fd, 2 * sizeof(int)))
+-			error = -EFAULT;
+-	}
+-	return error;
+-}
+-
+ /* common code for old and new mmaps */
+ static inline long
+ do_mmap2(unsigned long addr, unsigned long len,
+diff --git a/arch/frv/kernel/sys_frv.c b/arch/frv/kernel/sys_frv.c
+index 04c6b16..49b2cf2 100644
+--- a/arch/frv/kernel/sys_frv.c
++++ b/arch/frv/kernel/sys_frv.c
+@@ -28,23 +28,6 @@
+ #include <asm/setup.h>
+ #include <asm/uaccess.h>
+ 
+-/*
+- * sys_pipe() is the normal C calling standard for creating
+- * a pipe. It's not the way unix traditionally does this, though.
+- */
+-asmlinkage long sys_pipe(unsigned long __user * fildes)
+-{
+-	int fd[2];
+-	int error;
+-
+-	error = do_pipe(fd);
+-	if (!error) {
+-		if (copy_to_user(fildes, fd, 2*sizeof(int)))
+-			error = -EFAULT;
+-	}
+-	return error;
+-}
+-
+ asmlinkage long sys_mmap2(unsigned long addr, unsigned long len,
+ 			  unsigned long prot, unsigned long flags,
+ 			  unsigned long fd, unsigned long pgoff)
+diff --git a/arch/h8300/kernel/sys_h8300.c b/arch/h8300/kernel/sys_h8300.c
+index 00608be..2745656 100644
+--- a/arch/h8300/kernel/sys_h8300.c
++++ b/arch/h8300/kernel/sys_h8300.c
+@@ -27,23 +27,6 @@
+ #include <asm/traps.h>
+ #include <asm/unistd.h>
+ 
+-/*
+- * sys_pipe() is the normal C calling standard for creating
+- * a pipe. It's not the way unix traditionally does this, though.
+- */
+-asmlinkage int sys_pipe(unsigned long * fildes)
+-{
+-	int fd[2];
+-	int error;
+-
+-	error = do_pipe(fd);
+-	if (!error) {
+-		if (copy_to_user(fildes, fd, 2*sizeof(int)))
+-			error = -EFAULT;
+-	}
+-	return error;
+-}
+-
+ /* common code for old and new mmaps */
+ static inline long do_mmap2(
+ 	unsigned long addr, unsigned long len,
+diff --git a/arch/m68k/kernel/sys_m68k.c b/arch/m68k/kernel/sys_m68k.c
+index e892f17..7f54efa 100644
+--- a/arch/m68k/kernel/sys_m68k.c
++++ b/arch/m68k/kernel/sys_m68k.c
+@@ -30,23 +30,6 @@
+ #include <asm/page.h>
+ #include <asm/unistd.h>
+ 
+-/*
+- * sys_pipe() is the normal C calling standard for creating
+- * a pipe. It's not the way unix traditionally does this, though.
+- */
+-asmlinkage int sys_pipe(unsigned long __user * fildes)
+-{
+-	int fd[2];
+-	int error;
+-
+-	error = do_pipe(fd);
+-	if (!error) {
+-		if (copy_to_user(fildes, fd, 2*sizeof(int)))
+-			error = -EFAULT;
+-	}
+-	return error;
+-}
+-
+ /* common code for old and new mmaps */
+ static inline long do_mmap2(
+ 	unsigned long addr, unsigned long len,
+diff --git a/arch/m68knommu/kernel/sys_m68k.c b/arch/m68knommu/kernel/sys_m68k.c
+index 65f7a95..7002816 100644
+--- a/arch/m68knommu/kernel/sys_m68k.c
++++ b/arch/m68knommu/kernel/sys_m68k.c
+@@ -28,23 +28,6 @@
+ #include <asm/cacheflush.h>
+ #include <asm/unistd.h>
+ 
+-/*
+- * sys_pipe() is the normal C calling standard for creating
+- * a pipe. It's not the way unix traditionally does this, though.
+- */
+-asmlinkage int sys_pipe(unsigned long * fildes)
+-{
+-	int fd[2];
+-	int error;
+-
+-	error = do_pipe(fd);
+-	if (!error) {
+-		if (copy_to_user(fildes, fd, 2*sizeof(int)))
+-			error = -EFAULT;
+-	}
+-	return error;
+-}
+-
+ /* common code for old and new mmaps */
+ static inline long do_mmap2(
+ 	unsigned long addr, unsigned long len,
+diff --git a/arch/mn10300/kernel/sys_mn10300.c b/arch/mn10300/kernel/sys_mn10300.c
+index 5f17a1e..bca5a84 100644
+--- a/arch/mn10300/kernel/sys_mn10300.c
++++ b/arch/mn10300/kernel/sys_mn10300.c
+@@ -29,23 +29,6 @@
+ #define MIN_MAP_ADDR	PAGE_SIZE	/* minimum fixed mmap address */
+ 
+ /*
+- * sys_pipe() is the normal C calling standard for creating
+- * a pipe. It's not the way Unix traditionally does this, though.
+- */
+-asmlinkage long sys_pipe(unsigned long __user *fildes)
+-{
+-	int fd[2];
+-	int error;
+-
+-	error = do_pipe(fd);
+-	if (!error) {
+-		if (copy_to_user(fildes, fd, 2 * sizeof(int)))
+-			error = -EFAULT;
+-	}
+-	return error;
+-}
+-
+-/*
+  * memory mapping syscall
+  */
+ asmlinkage long sys_mmap2(unsigned long addr, unsigned long len,
+diff --git a/arch/parisc/kernel/sys_parisc.c b/arch/parisc/kernel/sys_parisc.c
+index 4f58921..71b3195 100644
+--- a/arch/parisc/kernel/sys_parisc.c
++++ b/arch/parisc/kernel/sys_parisc.c
+@@ -33,19 +33,6 @@
+ #include <linux/utsname.h>
+ #include <linux/personality.h>
+ 
+-int sys_pipe(int __user *fildes)
+-{
+-	int fd[2];
+-	int error;
+-
+-	error = do_pipe(fd);
+-	if (!error) {
+-		if (copy_to_user(fildes, fd, 2*sizeof(int)))
+-			error = -EFAULT;
+-	}
+-	return error;
+-}
+-
+ static unsigned long get_unshared_area(unsigned long addr, unsigned long len)
+ {
+ 	struct vm_area_struct *vma;
+diff --git a/arch/powerpc/kernel/syscalls.c b/arch/powerpc/kernel/syscalls.c
+index e722a4e..4fe69ca 100644
+--- a/arch/powerpc/kernel/syscalls.c
++++ b/arch/powerpc/kernel/syscalls.c
+@@ -136,23 +136,6 @@ int sys_ipc(uint call, int first, unsigned long second, long third,
+ 	return ret;
+ }
+ 
+-/*
+- * sys_pipe() is the normal C calling standard for creating
+- * a pipe. It's not the way unix traditionally does this, though.
+- */
+-int sys_pipe(int __user *fildes)
+-{
+-	int fd[2];
+-	int error;
+-
+-	error = do_pipe(fd);
+-	if (!error) {
+-		if (copy_to_user(fildes, fd, 2*sizeof(int)))
+-			error = -EFAULT;
+-	}
+-	return error;
+-}
+-
+ static inline unsigned long do_mmap2(unsigned long addr, size_t len,
+ 			unsigned long prot, unsigned long flags,
+ 			unsigned long fd, unsigned long off, int shift)
+diff --git a/arch/s390/kernel/sys_s390.c b/arch/s390/kernel/sys_s390.c
+index 988d0d6..5fdb799 100644
+--- a/arch/s390/kernel/sys_s390.c
++++ b/arch/s390/kernel/sys_s390.c
+@@ -32,23 +32,6 @@
+ #include <asm/uaccess.h>
+ #include "entry.h"
+ 
+-/*
+- * sys_pipe() is the normal C calling standard for creating
+- * a pipe. It's not the way Unix traditionally does this, though.
+- */
+-asmlinkage long sys_pipe(unsigned long __user *fildes)
+-{
+-	int fd[2];
+-	int error;
+-
+-	error = do_pipe(fd);
+-	if (!error) {
+-		if (copy_to_user(fildes, fd, 2*sizeof(int)))
+-			error = -EFAULT;
+-	}
+-	return error;
+-}
+-
+ /* common code for old and new mmaps */
+ static inline long do_mmap2(
+ 	unsigned long addr, unsigned long len,
+diff --git a/arch/sh/kernel/sys_sh64.c b/arch/sh/kernel/sys_sh64.c
+index 578004d..91fb844 100644
+--- a/arch/sh/kernel/sys_sh64.c
++++ b/arch/sh/kernel/sys_sh64.c
+@@ -31,23 +31,6 @@
+ #include <asm/unistd.h>
+ 
+ /*
+- * sys_pipe() is the normal C calling standard for creating
+- * a pipe. It's not the way Unix traditionally does this, though.
+- */
+-asmlinkage int sys_pipe(unsigned long * fildes)
+-{
+-        int fd[2];
+-        int error;
+-
+-        error = do_pipe(fd);
+-        if (!error) {
+-                if (copy_to_user(fildes, fd, 2*sizeof(int)))
+-                        error = -EFAULT;
+-        }
+-        return error;
+-}
+-
+-/*
+  * Do a system call from kernel instead of calling sys_execve so we
+  * end up with proper pt_regs.
+  */
+diff --git a/arch/um/kernel/syscall.c b/arch/um/kernel/syscall.c
+index 9cffc62..128ee85 100644
+--- a/arch/um/kernel/syscall.c
++++ b/arch/um/kernel/syscall.c
+@@ -73,23 +73,6 @@ long old_mmap(unsigned long addr, unsigned long len,
+  out:
+ 	return err;
+ }
+-/*
+- * sys_pipe() is the normal C calling standard for creating
+- * a pipe. It's not the way unix traditionally does this, though.
+- */
+-long sys_pipe(unsigned long __user * fildes)
+-{
+-	int fd[2];
+-	long error;
+-
+-	error = do_pipe(fd);
+-	if (!error) {
+-		if (copy_to_user(fildes, fd, sizeof(fd)))
+-			error = -EFAULT;
+-	}
+-	return error;
+-}
+-
+ 
+ long sys_uname(struct old_utsname __user * name)
+ {
+diff --git a/arch/v850/kernel/syscalls.c b/arch/v850/kernel/syscalls.c
+index 003db9c..1a83daf 100644
+--- a/arch/v850/kernel/syscalls.c
++++ b/arch/v850/kernel/syscalls.c
+@@ -132,23 +132,6 @@ sys_ipc (uint call, int first, int second, int third, void *ptr, long fifth)
+ 	return ret;
+ }
+ 
+-/*
+- * sys_pipe() is the normal C calling standard for creating
+- * a pipe. It's not the way unix traditionally does this, though.
+- */
+-int sys_pipe (int *fildes)
+-{
+-	int fd[2];
+-	int error;
+-
+-	error = do_pipe (fd);
+-	if (!error) {
+-		if (copy_to_user (fildes, fd, 2*sizeof (int)))
+-			error = -EFAULT;
+-	}
+-	return error;
+-}
+-
+ static inline unsigned long
+ do_mmap2 (unsigned long addr, size_t len,
+ 	 unsigned long prot, unsigned long flags,
+diff --git a/arch/x86/kernel/sys_i386_32.c b/arch/x86/kernel/sys_i386_32.c
+index a86d26f..d2ab52c 100644
+--- a/arch/x86/kernel/sys_i386_32.c
++++ b/arch/x86/kernel/sys_i386_32.c
+@@ -22,23 +22,6 @@
+ #include <asm/uaccess.h>
+ #include <asm/unistd.h>
+ 
+-/*
+- * sys_pipe() is the normal C calling standard for creating
+- * a pipe. It's not the way Unix traditionally does this, though.
+- */
+-asmlinkage int sys_pipe(unsigned long __user * fildes)
+-{
+-	int fd[2];
+-	int error;
+-
+-	error = do_pipe(fd);
+-	if (!error) {
+-		if (copy_to_user(fildes, fd, 2*sizeof(int)))
+-			error = -EFAULT;
+-	}
+-	return error;
+-}
+-
+ asmlinkage long sys_mmap2(unsigned long addr, unsigned long len,
+ 			  unsigned long prot, unsigned long flags,
+ 			  unsigned long fd, unsigned long pgoff)
+diff --git a/arch/x86/kernel/sys_x86_64.c b/arch/x86/kernel/sys_x86_64.c
+index bd802a5..3b360ef 100644
+--- a/arch/x86/kernel/sys_x86_64.c
++++ b/arch/x86/kernel/sys_x86_64.c
+@@ -17,23 +17,6 @@
+ #include <asm/uaccess.h>
+ #include <asm/ia32.h>
+ 
+-/*
+- * sys_pipe() is the normal C calling standard for creating
+- * a pipe. It's not the way Unix traditionally does this, though.
+- */
+-asmlinkage long sys_pipe(int __user *fildes)
+-{
+-	int fd[2];
+-	int error;
+-
+-	error = do_pipe(fd);
+-	if (!error) {
+-		if (copy_to_user(fildes, fd, 2*sizeof(int)))
+-			error = -EFAULT;
+-	}
+-	return error;
+-}
+-
+ asmlinkage long sys_mmap(unsigned long addr, unsigned long len, unsigned long prot, unsigned long flags,
+ 	unsigned long fd, unsigned long off)
+ {
+diff --git a/fs/pipe.c b/fs/pipe.c
+index f73492b..f082ba5 100644
+--- a/fs/pipe.c
++++ b/fs/pipe.c
+@@ -20,6 +20,7 @@
+ 
+ #include <asm/uaccess.h>
+ #include <asm/ioctls.h>
++#include <asm/unistd.h>
+ 
+ /*
+  * We use a start+len construction, which provides full use of the 
+@@ -1075,6 +1076,25 @@ int do_pipe(int *fd)
+ 	return error;
+ }
+ 
++#ifdef __ARCH_WANT_SYS_PIPE
++/*
++ * sys_pipe() is the normal C calling standard for creating
++ * a pipe. It's not the way Unix traditionally does this, though.
++ */
++asmlinkage long sys_pipe(unsigned long __user *fildes)
++{
++	int fd[2];
++	int error;
++
++	error = do_pipe(fd);
++	if (!error) {
++		if (copy_to_user(fildes, fd, sizeof(fd)))
++			error = -EFAULT;
++	}
++	return error;
++}
++#endif
++
+ /*
+  * pipefs should _never_ be mounted by userland - too much of security hassle,
+  * no real gain from having the whole whorehouse mounted. So we don't need
+diff --git a/include/asm-arm/unistd.h b/include/asm-arm/unistd.h
+index 7c57008..541d10a 100644
+--- a/include/asm-arm/unistd.h
++++ b/include/asm-arm/unistd.h
+@@ -422,6 +422,7 @@
+ #define __ARCH_WANT_SYS_SIGPENDING
+ #define __ARCH_WANT_SYS_SIGPROCMASK
+ #define __ARCH_WANT_SYS_RT_SIGACTION
++#define __ARCH_WANT_SYS_PIPE
+ 
+ #if !defined(CONFIG_AEABI) || defined(CONFIG_OABI_COMPAT)
+ #define __ARCH_WANT_SYS_TIME
+diff --git a/include/asm-avr32/unistd.h b/include/asm-avr32/unistd.h
+index 89861a2..6ef20ac 100644
+--- a/include/asm-avr32/unistd.h
++++ b/include/asm-avr32/unistd.h
+@@ -331,6 +331,7 @@
+ #define __ARCH_WANT_SYS_GETPGRP
+ #define __ARCH_WANT_SYS_RT_SIGACTION
+ #define __ARCH_WANT_SYS_RT_SIGSUSPEND
++#define __ARCH_WANT_SYS_PIPE
+ 
+ /*
+  * "Conditional" syscalls
+diff --git a/include/asm-blackfin/unistd.h b/include/asm-blackfin/unistd.h
+index 42955d0..fa0320f 100644
+--- a/include/asm-blackfin/unistd.h
++++ b/include/asm-blackfin/unistd.h
+@@ -418,6 +418,7 @@
+ #define __ARCH_WANT_SYS_NICE
+ #define __ARCH_WANT_SYS_RT_SIGACTION
+ #define __ARCH_WANT_SYS_RT_SIGSUSPEND
++#define __ARCH_WANT_SYS_PIPE
+ 
+ /*
+  * "Conditional" syscalls
+diff --git a/include/asm-frv/unistd.h b/include/asm-frv/unistd.h
+index f184eb8..d739a8c 100644
+--- a/include/asm-frv/unistd.h
++++ b/include/asm-frv/unistd.h
+@@ -361,6 +361,7 @@
+ #define __ARCH_WANT_SYS_SIGPROCMASK
+ #define __ARCH_WANT_SYS_RT_SIGACTION
+ #define __ARCH_WANT_SYS_RT_SIGSUSPEND
++#define __ARCH_WANT_SYS_PIPE
+ 
+ /*
+  * "Conditional" syscalls
+diff --git a/include/asm-h8300/unistd.h b/include/asm-h8300/unistd.h
+index 99f3c35..56f9c38 100644
+--- a/include/asm-h8300/unistd.h
++++ b/include/asm-h8300/unistd.h
+@@ -352,6 +352,7 @@
+ #define __ARCH_WANT_SYS_SIGPENDING
+ #define __ARCH_WANT_SYS_SIGPROCMASK
+ #define __ARCH_WANT_SYS_RT_SIGACTION
++#define __ARCH_WANT_SYS_PIPE
+ 
+ /*
+  * "Conditional" syscalls
+diff --git a/include/asm-m68k/unistd.h b/include/asm-m68k/unistd.h
+index e72ba56..871265c 100644
+--- a/include/asm-m68k/unistd.h
++++ b/include/asm-m68k/unistd.h
+@@ -352,6 +352,7 @@
+ #define __ARCH_WANT_SYS_SIGPENDING
+ #define __ARCH_WANT_SYS_SIGPROCMASK
+ #define __ARCH_WANT_SYS_RT_SIGACTION
++#define __ARCH_WANT_SYS_PIPE
+ 
+ /* whitelist for checksyscalls */
+ #define __IGNORE_restart_syscall
+diff --git a/include/asm-m68knommu/unistd.h b/include/asm-m68knommu/unistd.h
+index 4ba98b9..734cc86 100644
+--- a/include/asm-m68knommu/unistd.h
++++ b/include/asm-m68knommu/unistd.h
+@@ -353,6 +353,7 @@
+ #define __ARCH_WANT_SYS_SIGPENDING
+ #define __ARCH_WANT_SYS_SIGPROCMASK
+ #define __ARCH_WANT_SYS_RT_SIGACTION
++#define __ARCH_WANT_SYS_PIPE
+ 
+ /*
+  * "Conditional" syscalls
+diff --git a/include/asm-mn10300/unistd.h b/include/asm-mn10300/unistd.h
+index 3721aa9..e08149e 100644
+--- a/include/asm-mn10300/unistd.h
++++ b/include/asm-mn10300/unistd.h
+@@ -369,6 +369,7 @@
+ #define __ARCH_WANT_SYS_SIGPROCMASK
+ #define __ARCH_WANT_SYS_RT_SIGACTION
+ #define __ARCH_WANT_SYS_RT_SIGSUSPEND
++#define __ARCH_WANT_SYS_PIPE
+ 
+ /*
+  * "Conditional" syscalls
+diff --git a/include/asm-parisc/unistd.h b/include/asm-parisc/unistd.h
+index a7d857f..cc5aa18 100644
+--- a/include/asm-parisc/unistd.h
++++ b/include/asm-parisc/unistd.h
+@@ -974,6 +974,7 @@ type name(type1 arg1, type2 arg2, type3 arg3, type4 arg4, type5 arg5)	\
+ #define __ARCH_WANT_SYS_RT_SIGACTION
+ #define __ARCH_WANT_SYS_RT_SIGSUSPEND
+ #define __ARCH_WANT_COMPAT_SYS_RT_SIGSUSPEND
++#define __ARCH_WANT_SYS_PIPE
+ 
+ #endif /* __ASSEMBLY__ */
+ 
+diff --git a/include/asm-powerpc/unistd.h b/include/asm-powerpc/unistd.h
+index ce91bb6..09d8947 100644
+--- a/include/asm-powerpc/unistd.h
++++ b/include/asm-powerpc/unistd.h
+@@ -371,6 +371,7 @@
+ #define __ARCH_WANT_SYS_SIGPROCMASK
+ #define __ARCH_WANT_SYS_RT_SIGACTION
+ #define __ARCH_WANT_SYS_RT_SIGSUSPEND
++#define __ARCH_WANT_SYS_PIPE
+ #ifdef CONFIG_PPC32
+ #define __ARCH_WANT_OLD_STAT
+ #endif
+diff --git a/include/asm-s390/unistd.h b/include/asm-s390/unistd.h
+index 583da80..2c5a3b0 100644
+--- a/include/asm-s390/unistd.h
++++ b/include/asm-s390/unistd.h
+@@ -383,6 +383,7 @@
+ #define __ARCH_WANT_SYS_SIGPENDING
+ #define __ARCH_WANT_SYS_SIGPROCMASK
+ #define __ARCH_WANT_SYS_RT_SIGACTION
++#define __ARCH_WANT_SYS_PIPE
+ #define __ARCH_WANT_SYS_RT_SIGSUSPEND
+ # ifndef CONFIG_64BIT
+ #   define __ARCH_WANT_STAT64
+diff --git a/include/asm-sh/unistd_64.h b/include/asm-sh/unistd_64.h
+index 9d21eab..ee56c3e 100644
+--- a/include/asm-sh/unistd_64.h
++++ b/include/asm-sh/unistd_64.h
+@@ -402,6 +402,7 @@
+ #define __ARCH_WANT_SYS_SIGPENDING
+ #define __ARCH_WANT_SYS_SIGPROCMASK
+ #define __ARCH_WANT_SYS_RT_SIGACTION
++#define __ARCH_WANT_SYS_PIPE
+ 
+ /*
+  * "Conditional" syscalls
+diff --git a/include/asm-v850/unistd.h b/include/asm-v850/unistd.h
+index 2241ed4..61cbb7d 100644
+--- a/include/asm-v850/unistd.h
++++ b/include/asm-v850/unistd.h
+@@ -226,6 +226,7 @@
+ #define __ARCH_WANT_SYS_SIGPENDING
+ #define __ARCH_WANT_SYS_SIGPROCMASK
+ #define __ARCH_WANT_SYS_RT_SIGACTION
++#define __ARCH_WANT_SYS_PIPE
+ 
+ /*
+  * "Conditional" syscalls
+diff --git a/include/asm-x86/unistd_32.h b/include/asm-x86/unistd_32.h
+index 8317d94..8e37dbd 100644
+--- a/include/asm-x86/unistd_32.h
++++ b/include/asm-x86/unistd_32.h
+@@ -358,6 +358,7 @@
+ #define __ARCH_WANT_SYS_SIGPROCMASK
+ #define __ARCH_WANT_SYS_RT_SIGACTION
+ #define __ARCH_WANT_SYS_RT_SIGSUSPEND
++#define __ARCH_WANT_SYS_PIPE
+ 
+ /*
+  * "Conditional" syscalls
+diff --git a/include/asm-x86/unistd_64.h b/include/asm-x86/unistd_64.h
+index fe26e36..f73c873 100644
+--- a/include/asm-x86/unistd_64.h
++++ b/include/asm-x86/unistd_64.h
+@@ -665,6 +665,7 @@ __SYSCALL(__NR_timerfd_gettime, sys_timerfd_gettime)
+ #define __ARCH_WANT_SYS_TIME
+ #define __ARCH_WANT_COMPAT_SYS_TIME
+ #endif	/* __NO_STUBS */
++#define __ARCH_WANT_SYS_PIPE
+ 
+ #ifdef __KERNEL__
+ /*
