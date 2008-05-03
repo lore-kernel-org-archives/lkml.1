@@ -1,85 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760875AbYECHqR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760899AbYECIBa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760875AbYECHqR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 May 2008 03:46:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751812AbYECHqG
+	id S1760899AbYECIBa (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 May 2008 04:01:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754391AbYECIBT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 May 2008 03:46:06 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:47629 "EHLO smtps.tip.net.au"
+	Sat, 3 May 2008 04:01:19 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:35160 "EHLO pasmtpA.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751623AbYECHqF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 May 2008 03:46:05 -0400
-Date: Sat, 3 May 2008 17:45:57 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       Linus <torvalds@linux-foundation.org>
-Subject: Re: linux-next: Requirements and process
-Message-Id: <20080503174557.faf67525.sfr@canb.auug.org.au>
-In-Reply-To: <20080502233519.a988b552.akpm@linux-foundation.org>
-References: <20080503154542.18807e59.sfr@canb.auug.org.au>
-	<20080502233519.a988b552.akpm@linux-foundation.org>
-X-Mailer: Sylpheed 2.5.0beta3 (GTK+ 2.12.9; i486-pc-linux-gnu)
+	id S1753524AbYECIBT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 May 2008 04:01:19 -0400
+Date: Sat, 3 May 2008 10:01:53 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: SL Baur <steve@xemacs.org>
+Cc: Al Viro <viro@zeniv.linux.org.uk>, Timur Tabi <timur@freescale.com>,
+       Tony Breeds <tony@bakeyournoodle.com>, linux-kernel@vger.kernel.org
+Subject: Re: cross-compiling on OS X, make menuconfig fails
+Message-ID: <20080503080153.GA12970@uranus.ravnborg.org>
+References: <481529B6.6030802@freescale.com> <20080428015151.GW20457@bakeyournoodle.com> <481739BF.8010305@freescale.com> <20080429164535.GB18018@uranus.ravnborg.org> <20080429172057.GN5882@ZenIV.linux.org.uk> <20080429180601.GA19652@uranus.ravnborg.org> <ed10ee420805022355j4e783fa1qce38d37ab8c4841f@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Sat__3_May_2008_17_45_57_+1000_nTQAOwtezoV8Y43q"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <ed10ee420805022355j4e783fa1qce38d37ab8c4841f@mail.gmail.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Sat__3_May_2008_17_45_57_+1000_nTQAOwtezoV8Y43q
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> 
+> This looks O.K.  As a note, whatever behavior is being described here
+> is system dependent, because on my installation of that other OS, `echo -e'
+> works fine whether it is invoked as /bin/bash or /bin/sh which appears to be
+> a strict copy of /bin/bash.
+> 
+> $ uname -v
+> Darwin Kernel Version 8.11.1: Wed Oct 10 18:23:28 PDT 2007;
+> root:xnu792.25.20~1/RELEASE_I386
+> 
+> Reviewed-by: SL Baur <steve@xemacs.org>
 
-On Fri, 2 May 2008 23:35:19 -0700 Andrew Morton <akpm@linux-foundation.org>=
- wrote:
->
-> On Sat, 3 May 2008 15:45:42 +1000 Stephen Rothwell <sfr@canb.auug.org.au>=
- wrote:
->=20
-> > The following architectures are not in linux-next (and should be):
-> >=20
-> > alpha		cris		frv
-> > h8300		m32r		m68knommu
-> > mips		mn10300		parisc
-> > um		v850		xtensa
->=20
-> mips, m32r, parisc and xtensa do have git trees.  The rest are mastered as
-> discrete patches in -mm.
+Thanks for your feedback.
+The patch is already upstream so I unfortunately 
+cannot add your Reviewed-by: tag.
 
-So, I was wondering if it would be worth while having subsections to a
-series file like:
-
-# NEXT_PATCHES_START [<label> [<base>]]
-
-# NEXT_PATCHES_END
-
-With <label> sections being logically separate enough that we can talk
-about them/drop them/merge them at different places etc.
-
-Or am I over engineering? :-)
-
-> Except for m68knommu, which pops unexpectedly out of the woodwork during
-> the merge window.  I've asked that this be altered ;)
-
-Yeah, I saw that, thanks.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Sat__3_May_2008_17_45_57_+1000_nTQAOwtezoV8Y43q
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFIHBg6TgG2atn1QN8RAtXZAJ9OkwicH3DoDCYCBUBaME9E/ez1OgCfdcpr
-QLnGzt7tlRVt2NsOnu4J9y8=
-=HFFl
------END PGP SIGNATURE-----
-
---Signature=_Sat__3_May_2008_17_45_57_+1000_nTQAOwtezoV8Y43q--
+	Sam
