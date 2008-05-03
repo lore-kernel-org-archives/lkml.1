@@ -1,46 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761996AbYECKNv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762706AbYECKbq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761996AbYECKNv (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 May 2008 06:13:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763578AbYECKNX
+	id S1762706AbYECKbq (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 May 2008 06:31:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755442AbYECKbh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 May 2008 06:13:23 -0400
-Received: from wa-out-1112.google.com ([209.85.146.183]:16686 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763415AbYECKNV (ORCPT
+	Sat, 3 May 2008 06:31:37 -0400
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:50106 "EHLO
+	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1755198AbYECKbg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 May 2008 06:13:21 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=MlfNm4nMuQ9jG8ttMyYwwjdYY7I4ME2hQha5loh8vEhav98mPQTxq63K8M6kh9O3yW+scbqCtRu/KlF3NLEQwxZifwxbxeDwa+pI469fW9sQa0+rIZyf0wX3eeY8sseE5wiPFVt89uMnE3P48r2R2LO6wLpl3hFfbOJXIM1LILE=
-Message-ID: <ed10ee420805030313r457d8cdfjdbcb346ae928c125@mail.gmail.com>
-Date: Sat, 3 May 2008 03:13:21 -0700
-From: "SL Baur" <steve@xemacs.org>
-To: "Adrian Bunk" <bunk@kernel.org>
-Subject: Re: How to reduce the number of open kernel bugs
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20080502124210.GB5838@cs181133002.pp.htv.fi>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Sat, 3 May 2008 06:31:36 -0400
+Subject: Re: [PATCH 0/13] Updated V4  - Regulator Framework
+From: Liam Girdwood <lg@opensource.wolfsonmicro.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
+       broonie@opensource.wolfsonmicro.com
+In-Reply-To: <20080502165248.dba934e9.akpm@linux-foundation.org>
+References: <1209742841.12502.40.camel@odin>
+	 <20080502165248.dba934e9.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Sat, 03 May 2008 11:31:32 +0100
+Message-Id: <1209810693.12502.97.camel@odin>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080502124210.GB5838@cs181133002.pp.htv.fi>
-X-Google-Sender-Auth: baca44ab830dd73c
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/2/08, Adrian Bunk <bunk@kernel.org> wrote:
-> Just seen in the kernel Bugzilla (driver anonymized to foobar):
+On Fri, 2008-05-02 at 16:52 -0700, Andrew Morton wrote:
+> On Fri, 02 May 2008 16:40:41 +0100
+> Liam Girdwood <lg@opensource.wolfsonmicro.com> wrote:
+> 
+> > This is an updated version of the kernel voltage & current regulator
+> > framework based on comments received from version 3 of the patch series.
+> > 
+> > The regulator framework is designed to provide a standard kernel
+> > interface to control voltage and current regulators on SoC based
+> > systems.
+> > 
+> > The intention is to allow systems to dynamically control regulator power
+> > output in order to save power and prolong battery life. This applies to
+> > both voltage regulators (where voltage output is controllable) and
+> > current sinks (where current limit is controllable).
+> > 
+> 
+> oh gee.
+> 
+> I (and others) reviewed and commented on all this code last month.  Now
+> here it is again and, although I'm sure it is delightful code, nobody wants
+> to have to read it all again ;)
+> 
+> The one-month gap between v3 and v4 is unfortunate.  It means that everyone
+> has forgotten everything.
+> 
 
- ... An all too common sequence
+Sorry about this. It really couldn't be helped as I've been on the road
+a lot lately. I was even in the audience for your talk at CELF ;)
 
-This is the kind of stuff that naturally happens when you tie performance
-to the progression of bug reports through bug tracking systems.  It's
-human nature.
+> 
+> Was all the review feedback satisfactorily handled to the reviewers'
+> satisfaction?
+> 
 
-It's not good, but it's human nature.  This situation is *not* unique to Linux.
+Summary of changes re V3 comments :-
 
--sb (My day job is the care and feeding of a Fortune 50 company's internal bug
-tracking system)
+ o Added lots of documentation.
+ o Added ABI documentation.
+ o Changed debug option Kconfig style.
+ o Regulator no longer a class device.
+ o sysfs naming changes, ie. now uses microvolts and microamps.
+ o sysfs entries only export one value.
+ o get_current() macro undef removed.
+ o set_voltage(), set_current_limit() now take a lower and upper
+acceptable value.
+ o Fixed a locking issue.
+ o Made 'compiled out' interface all static inline instead of macros.
+ o Removed dynamic voltage control where the voltage would be
+dynamically managed to be the lowest for all consumers (no known users
+of this code atm - although spoke with someone at CELF who was
+interested in this feature for the future).
+ o Checkpatch fixes.
+ o Removed comments describing some functions from the headers - now all
+such comments are in the c files.
+
+> Is there any new material in here which would require a re-review?
+
+Yes. Other additions :-
+
+ o Test harness added to aid developers with testing regulator drivers
+(virtual.c - patch 07/13).
+ o Support for fixed output regulators. i.e. regulators that cannot be
+controlled by software but coexist on systems with software controllable
+regulators (fixed.h, fixed.c - patches 04/13 and 06/13)
+ o Bulk operations for consumers that may have multiple regulator
+supplies (consumer.h, core.c - patches 01/13 and 05/13)
+ o Changed core file and header names to be more meaningful. i.e
+reg-core.c -> core.c, regulator/regulator.h -> regulator/consumer.h,
+etc.
+
+Lastly, I've forgotten the MAINTAINERS patch but this can be added
+later.
+
+Liam
+
