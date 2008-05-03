@@ -1,78 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932320AbYECSPb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932900AbYECSRY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932320AbYECSPb (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 May 2008 14:15:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766014AbYECSPH
+	id S932900AbYECSRY (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 May 2008 14:17:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759573AbYECSRQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 May 2008 14:15:07 -0400
-Received: from mail.gmx.net ([213.165.64.20]:54714 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1760855AbYECSPG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 May 2008 14:15:06 -0400
-X-Authenticated: #20450766
-X-Provags-ID: V01U2FsdGVkX19gxixHp+VggglfhMZRHwWLEPe8r0Ev5fp+flSpNn
-	HBOM5wPDDiCQQH
-Date: Sat, 3 May 2008 20:15:20 +0200 (CEST)
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-To: Ingo Molnar <mingo@elte.hu>
-cc: linux-kernel@vger.kernel.org,
-       Mauro Carvalho Chehab <mchehab@infradead.org>,
-       Jean Delvare <khali@linux-fr.org>
-Subject: Re: [patch] video: build fix for drivers/media/video/mt9v022.c
-In-Reply-To: <20080503175807.GC5292@elte.hu>
-Message-ID: <Pine.LNX.4.64.0805032004130.5182@axis700.grange>
-References: <20080503163058.GA15272@elte.hu> <Pine.LNX.4.64.0805031853180.5182@axis700.grange>
- <20080503175807.GC5292@elte.hu>
+	Sat, 3 May 2008 14:17:16 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:53802 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758673AbYECSRP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 May 2008 14:17:15 -0400
+Date: Sat, 3 May 2008 20:16:57 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Mike Travis <travis@sgi.com>
+Cc: Dmitri Vorobiev <dmitri.vorobiev@gmail.com>, sfr@canb.auug.org.au,
+       Linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: x86_64 does not boot in Qemu
+Message-ID: <20080503181657.GE5292@elte.hu>
+References: <48191E75.70305@gmail.com> <4819AB03.3030808@sgi.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Y-GMX-Trusted: 0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4819AB03.3030808@sgi.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 3 May 2008, Ingo Molnar wrote:
 
-> * Guennadi Liakhovetski <g.liakhovetski@gmx.de> wrote:
-> 
-> > > with this config:
-> > > 
-> > >    http://redhat.com/~mingo/misc/config-Sat_May__3_16_08_39_CEST_2008.bad
-> > > 
-> > > the bug was that the driver uses GPIO functionality but only 
-> > > includes the GPIO interface definitions for the 
-> > > CONFIG_MT9M001_PCA9536_SWITCH case, which was not set in this 
-> > > config.
-> > 
-> > Ok, once again a good catch and a wrong fix, sorry :-) The bug is that 
-> > not CONFIG_MT9M001_PCA9536_SWITCH but CONFIG_MT9V022_PCA9536_SWITCH 
-> > shall be checked for, of course. Copy-paste:-( I'll prepare a correct 
-> > patch and submit it. As for the "cleanup" side - don't know. Would it 
-> > be better to unconditionally include it? It won't hurt of course, 
-> > looks better, but is unneeded when the GPIO is not used. And, although 
-> > grep reports most drivers including asm/gpio.h, including linux/gpio.h 
-> > seems indeed better.
-> 
-> No. If you look at the core kernel you wont see it sprinkled with things 
-> like:
-> 
->  #ifdef CONFIG_LOCKDEP
->  #include <linux/lockdep.h>
->  #endif
-> 
-> why? Because we have put all such things into the include file 
-> themselves and do not want to sprinkle .c files with ugly #ifdefs. This 
-> is a basic cleanliness issue.
+* Mike Travis <travis@sgi.com> wrote:
 
-Ok, right, sorry, the patch was indeed correct, just the reason for the 
-compilation breakage was not quite what you suggested. So, I'll apply your 
-putch, but please fix mt9m001.c in the same patch too - it also includes 
-gpio.h conditionally. Although, it does test the correct macro.
+> Hi Dmitri,
+> 
+> There are 3 "fix" patches after this one (sorry about that).
+> 
+> 	http://marc.info/?l=linux-kernel&m=120941725114635&w=4
+> 	http://marc.info/?l=linux-kernel&m=120949583029044&w=4
+> 	http://marc.info/?l=linux-kernel&m=120956778620842&w=4
+> 
+> Checking out the "latest" sched/latest it appears though that the 
+> entire patchset has been removed.  I'll wait for Ingo's feedback on 
+> what's up.
 
-Actually, this CONFIG option might disappear completely in the future, if 
-we decide to switch to a module parameter instead. So that one kernel can 
-be used on systems with and without the GPIO.
+yep - i found boot regressions and pulled the changes and notified you. 
+I'll merge your last fix for it and reactivate.
 
-Thanks
-Guennadi
----
-Guennadi Liakhovetski
+	Ingo
