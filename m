@@ -1,67 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762666AbYECJoV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762779AbYECJqT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762666AbYECJoV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 May 2008 05:44:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759231AbYECJoO
+	id S1762779AbYECJqT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 May 2008 05:46:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759911AbYECJqM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 May 2008 05:44:14 -0400
-Received: from rv-out-0506.google.com ([209.85.198.227]:20342 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758923AbYECJoN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 May 2008 05:44:13 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=qZeXqtAd5lPaL8xxSmPHlbrWpQPH5HxQ8NHGk2AI4LZrXnrQlkCQbnoU+HaG8t4b1fa3cEEuRTq0Ijl2HIAw7QjycSRSgLcueIH1mTbiV0QBf2Xm7h0Swl48smC8WiV9+fwTFfNqSPOmtSgLhagvP/g+U6Rbwyswn/Sac8Cg58g=
-Message-ID: <84144f020805030244y44313fdl17cee6fa38bfd690@mail.gmail.com>
-Date: Sat, 3 May 2008 12:44:12 +0300
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Adrian Bunk" <bunk@kernel.org>
-Subject: Re: LogFS merge
-Cc: "Willy Tarreau" <w@1wt.eu>,
-       "=?ISO-8859-1?Q?J=F6rn_Engel?=" <joern@logfs.org>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Stephen Rothwell" <sfr@canb.auug.org.au>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "David Woodhouse" <dwmw2@infradead.org>,
-       "Arnd Bergmann" <arnd@arndb.de>, linux-kernel@vger.kernel.org
-In-Reply-To: <20080503091111.GH5838@cs181133002.pp.htv.fi>
+	Sat, 3 May 2008 05:46:12 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:40381 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759910AbYECJqL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 May 2008 05:46:11 -0400
+Date: Sat, 3 May 2008 11:45:51 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Adrian Bunk <bunk@kernel.org>, "H. Peter Anvin" <hpa@zytor.com>,
+       Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: x86 git acpi issue?
+Message-ID: <20080503094551.GA10805@elte.hu>
+References: <481BAC6F.5090509@ct.jp.nec.com> <481BACEC.8080902@zytor.com> <20080503071332.GF5838@cs181133002.pp.htv.fi> <alpine.LFD.1.10.0805031123420.6003@apollo.tec.linutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20080502133234.GA24080@logfs.org>
-	 <alpine.LFD.1.10.0805021010040.5994@woody.linux-foundation.org>
-	 <20080502202151.GB24080@logfs.org>
-	 <alpine.LFD.1.10.0805021328200.5994@woody.linux-foundation.org>
-	 <20080502213146.GD24080@logfs.org>
-	 <alpine.LFD.1.10.0805021438180.5994@woody.linux-foundation.org>
-	 <20080502215833.GG24080@logfs.org> <20080503070318.GR8474@1wt.eu>
-	 <20080503091111.GH5838@cs181133002.pp.htv.fi>
-X-Google-Sender-Auth: c572d658bb07e6c0
+In-Reply-To: <alpine.LFD.1.10.0805031123420.6003@apollo.tec.linutronix.de>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Adrian,
 
-On Sat, May 3, 2008 at 12:11 PM, Adrian Bunk <bunk@kernel.org> wrote:
-> > Why not merge it and mark it experimental then ? In fact, this is about
-> > what you're looking for : reduced merge hassle and more testers.
->
->  Andi already answered that one:
->
-> "Merging file systems too early can quickly ruin their name and that
->   taint is hard to ever get rid again then (e.g. happened to JFS)"
->
->  And a stable kernel shouldn't be something for getting "more testers",
->  it should be for tested code ready to be used in production.
->  What you call "more testers" would be people who try it in production
->  (e.g. to overcome shortcomings of JFFS2) thinking it was stable.
->
->  And no, EXPERIMENTAL in the kernel is not usable for keeping people from
->  trying known-whacky code.
+* Thomas Gleixner <tglx@linutronix.de> wrote:
 
-I think ext4 already set the precedent that you _can_ do development
-within the 2.6 series, no?
+> On Sat, 3 May 2008, Adrian Bunk wrote:
+> > Commit afcab879e4044f952b7a031d5fd504e0feb7df41 is the commit where Ingo 
+> > both _reverts_ his patch you describe in the x86 tree and additionally 
+> > moves pci-$(CONFIG_ACPI) in exactly the way that causes this breakage.
+> > 
+> > In the 4 hours between Ingo doing the += change and Ingo reverting his 
+> > own patch in the x86 tree it was in a pull request to Linus, so the
+> > "queued up" patch is in Linus' tree but reverted in the x86 tree.
+> > 
+> > I saw neither the patch changing the :='s to += on linux-kernel nor does 
+> > "do not override the existing pci-y rule when adding visws or numaq 
+> > rules." in the commit description give any indication what the actual 
+> > problem was.
+> > 
+> > It's also not obvious why the revert with the subject "visws: build fix" 
+> > also moved the pci-$(CONFIG_ACPI) causing this bug here.
+> 
+> Right. This Makefile is a nasty trap. I looked into it and the fix for 
+> now is below. Long term this Makefile trickery needs to be cleaned up 
+> to avoid trapping into this again.
+
+Thanks Thomas, i messed up that commit - i should have known that the 
+NUMAQ build fix looked _too_ easy ;-)
+
+	Ingo
