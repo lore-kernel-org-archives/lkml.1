@@ -1,61 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763674AbYECMmu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764278AbYECMnW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763674AbYECMmu (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 May 2008 08:42:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761726AbYECMmc
+	id S1764278AbYECMnW (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 May 2008 08:43:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755339AbYECMnA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 May 2008 08:42:32 -0400
-Received: from rv-out-0506.google.com ([209.85.198.226]:51032 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761276AbYECMm3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 May 2008 08:42:29 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
-        b=Iuzd9awjm7mMY1yI9oUi65Mg+639oAw3fQt1IyAx5RJgT8b8XinsRXg/Sg8fy/hTNk+7zBoQYHnVbkMUJZ6PQ3aaW1FHmhzEtT7dadzfNsXWWL3UsdO9w+VzQ4vK/yT3iTJy2GJA1rQ8OFAx54/pyokOlJsWyd3K9KAbmL+kTGo=
-Date: Sat, 3 May 2008 20:46:18 +0800
-From: WANG Cong <xiyou.wangcong@gmail.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Eric Youngdale <ericy@cais.com>, viro@zeniv.linux.org.uk,
-       linux-fsdevel@vger.kernel.org, Andrew Morton <akpm@osdl.org>
-Subject: [Patch] fs/binfmt_elf.c: fix a wrong free
-Message-ID: <20080503124610.GA3986@hack>
+	Sat, 3 May 2008 08:43:00 -0400
+Received: from mail0.scram.de ([78.47.204.202]:35230 "EHLO mail.scram.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757668AbYECMm7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 May 2008 08:42:59 -0400
+X-Spam-Score: -4.086
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+ * -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
+ *      [score: 0.0000]
+ *  0.3 AWL AWL: From: address is in the auto white-list
+Message-ID: <481C5DD0.5090503@scram.de>
+Date: Sat, 03 May 2008 14:42:56 +0200
+From: Jochen Friedrich <jochen@scram.de>
+User-Agent: Mozilla-Thunderbird 2.0.0.12 (X11/20080420)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: Kumar Gala <galak@kernel.crashing.org>
+CC: Jean Delvare <khali@linux-fr.org>, Scott Wood <scottwood@freescale.com>,
+       "Kernel, Linux" <linux-kernel@vger.kernel.org>,
+       linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+       Linux I2C <i2c@lm-sensors.org>, Jon Smirl <jonsmirl@gmail.com>,
+       Laurent Pinchart <laurentp@cse-semaphore.com>,
+       David Miller <davem@davemloft.net>, Paul Mackerras <paulus@samba.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: [PATCH] [POWERPC] Fix of_i2c include for module compilation
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Now that of_i2c may be compiled as module, the header must be
+exported for module compilation, as well.
 
-Fix a wrong free in fs/binfmt_elf.c::elf_core_dump().
-
-Signed-off-by: WANG Cong <wangcong@zeuux.org>
-Cc: Alexander Viro <viro@zeniv.linux.org.uk>
-Cc: Eric Youngdale <ericy@cais.com>
-
+Signed-off-by: Jochen Friedrich <jochen@scram.de>
 ---
- fs/binfmt_elf.c |    2 +-
+ include/linux/of_i2c.h |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/fs/binfmt_elf.c b/fs/binfmt_elf.c
-index b25707f..43254e3 100644
---- a/fs/binfmt_elf.c
-+++ b/fs/binfmt_elf.c
-@@ -2032,10 +2032,10 @@ static int elf_core_dump(long signr, struct pt_regs *regs, struct file *file, un
+diff --git a/include/linux/of_i2c.h b/include/linux/of_i2c.h
+index 2e5a967..dca6013 100644
+--- a/include/linux/of_i2c.h
++++ b/include/linux/of_i2c.h
+@@ -14,7 +14,7 @@
  
- end_coredump:
- 	set_fs(fs);
-+	free_note_info(&info);
+ #include <linux/i2c.h>
  
- cleanup:
- 	kfree(elf);
--	free_note_info(&info);
- 	return has_dumped;
- }
+-#ifdef CONFIG_OF_I2C
++#if defined(CONFIG_OF_I2C) || defined(CONFIG_OF_I2C_MODULE)
  
+ void of_register_i2c_devices(struct i2c_adapter *adap,
+ 			     struct device_node *adap_node);
 -- 
-1.5.4.1
+1.5.5.1
 
