@@ -1,82 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756440AbYECVkM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755345AbYECVqY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756440AbYECVkM (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 May 2008 17:40:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755041AbYECVit
+	id S1755345AbYECVqY (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 May 2008 17:46:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753074AbYECVqP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 May 2008 17:38:49 -0400
-Received: from e34.co.us.ibm.com ([32.97.110.152]:48821 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755862AbYECVis (ORCPT
+	Sat, 3 May 2008 17:46:15 -0400
+Received: from hs-out-0708.google.com ([64.233.178.242]:38916 "EHLO
+	hs-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752879AbYECVqO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 May 2008 17:38:48 -0400
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: linux-mm@kvack.org
-Cc: Sudhir Kumar <skumar@linux.vnet.ibm.com>,
-       YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
-       Paul Menage <menage@google.com>, lizf@cn.fujitsu.com,
-       linux-kernel@vger.kernel.org, David Rientjes <rientjes@google.com>,
-       Pavel Emelianov <xemul@openvz.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Date: Sun, 04 May 2008 03:08:25 +0530
-Message-Id: <20080503213825.3140.4328.sendpatchset@localhost.localdomain>
-In-Reply-To: <20080503213726.3140.68845.sendpatchset@localhost.localdomain>
-References: <20080503213726.3140.68845.sendpatchset@localhost.localdomain>
-Subject: [-mm][PATCH 4/4] Add rlimit controller documentation
+	Sat, 3 May 2008 17:46:14 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:reply-to:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding:sender;
+        b=VNve6YhEg1ryHJXoP2GSBgO4DvoiyxdZx9joDovvE/IpuDCpRMToVl11I4DHrXzeYDLHTVhKRfZDjC+y583WqAHBC7vOEGJbAkjBfKPqnhQopJqYom+uQhnkPakTJFd+VTfkJg0wCGP3/D6eUJTqJ4oIMHle/BtGwOUjwMLztOk=
+Subject: Re: i387/FPU init issues...
+From: jamal <hadi@cyberus.ca>
+Reply-To: hadi@cyberus.ca
+To: "Maciej W. Rozycki" <macro@linux-mips.org>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Suresh Siddha <suresh.b.siddha@intel.com>,
+       Arjan van de Ven <arjan@linux.intel.com>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>, Jan Beulich <jbeulich@novell.com>
+In-Reply-To: <Pine.LNX.4.55.0805032209480.20206@cliff.in.clinika.pl>
+References: <1209810775.6972.37.camel@localhost>
+	 <alpine.LFD.1.10.0805031650120.6003@apollo.tec.linutronix.de>
+	 <481CA40A.7040906@zytor.com>
+	 <Pine.LNX.4.55.0805032016560.20206@cliff.in.clinika.pl>
+	 <481CC5CD.8060205@zytor.com>
+	 <Pine.LNX.4.55.0805032209480.20206@cliff.in.clinika.pl>
+Content-Type: text/plain
+Date: Sat, 03 May 2008 17:46:10 -0400
+Message-Id: <1209851170.6972.64.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, 2008-03-05 at 22:17 +0100, Maciej W. Rozycki wrote:
 
+>  True, but people do make mistakes from time to time. :)  If I had a
+> choice between a piece of silicon and a piece of documentation to trust, I
+> would choose the former.
+> 
+>  Obviously this specific case has turned out to be an issue with Qemu, so
+> it is somewhat irrelevant and given how the opcodes were added to the
+> architecture I would consider the emulator excused.
 
-This is the documentation patch. It describes the rlimit controller and how
-to build and use it.
+Sorry folks - had to run some errands. Wow, thanks for all the
+responses.
 
-Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
----
+Yes, the posting i just did (as pointed in my first email) was on
+qemu (so was the /proc/cpuinfo). I moved to qemu because it was less
+painful to do the git bisecting on my laptop; i used the same .config.
+I should also note that qemu seems to have worked fine in the past.
+In any case I will try to rerun on the older hardware which i can access
+next week again. I am begining to doubt myself if it is the same issue;
+i know even there it was pointing to FPU.
+So is the correct fix then to go patch qemu then? I should point i am
+running a slightly older version of qemu that has a few patches (nothing
+to do with x86 emulation).
 
- Documentation/controllers/rlimit.txt |   29 +++++++++++++++++++++++++++++
- 1 file changed, 29 insertions(+)
+hpa, results from running on qemu (not the hardware) are:
+-----
+mambo:~# ./hpa
+Test 0: ok
+Test 1: ok
+Test 2: ok
+Test 3: err
+Test 4: err
+Test 5: err
+Test 6: err
+Test 7: err
+Test 8: err
+----------------
 
-diff -puN /dev/null Documentation/controllers/rlimit.txt
---- /dev/null	2008-05-03 22:12:13.033285313 +0530
-+++ linux-2.6.25-balbir/Documentation/controllers/rlimit.txt	2008-05-04 03:06:06.000000000 +0530
-@@ -0,0 +1,29 @@
-+This controller is enabled by the CONFIG_CGROUP_RLIMIT_CTLR option. Prior
-+to reading this documentation please read Documentation/cgroups.txt and
-+Documentation/controllers/memory.txt. Several of the principles of this
-+controller are similar to the memory resource controller.
-+
-+This controller framework is designed to be extensible to control any
-+resource limit (memory related) with little effort.
-+
-+This new controller, controls the address space expansion of the tasks
-+belonging to a cgroup. Address space control is provided along the same lines as
-+RLIMIT_AS control, which is available via getrlimit(2)/setrlimit(2).
-+The interface for controlling address space is provided through
-+"rlimit.limit_in_bytes". The file is similar to "limit_in_bytes" w.r.t. the user
-+interface. Please see section 3 of the memory resource controller documentation
-+for more details on how to use the user interface to get and set values.
-+
-+The "rlimit.usage_in_bytes" file provides information about the total address
-+space usage of the tasks in the cgroup, in bytes.
-+
-+Advantages of providing this feature
-+
-+1. Control over virtual address space allows for a cgroup to fail gracefully
-+   i.e., via a malloc or mmap failure as compared to OOM kill when no
-+   pages can be reclaimed.
-+2. It provides better control over how many pages can be swapped out when
-+   the cgroup goes over its limit. A badly setup cgroup can cause excessive
-+   swapping. Providing control over the address space allocations ensures
-+   that the system administrator has control over the total swapping that
-+   can take place.
-_
+cheers,
+jamal
 
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
