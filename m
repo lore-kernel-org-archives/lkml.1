@@ -1,44 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763981AbYECMGv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762220AbYECMVg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763981AbYECMGv (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 May 2008 08:06:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763055AbYECMGk
+	id S1762220AbYECMVg (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 May 2008 08:21:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752742AbYECMV1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 May 2008 08:06:40 -0400
-Received: from hpsmtp-eml12.kpnxchange.com ([213.75.38.112]:6859 "EHLO
-	hpsmtp-eml12.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1763035AbYECMGj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 May 2008 08:06:39 -0400
-From: Frans Pop <elendil@planet.nl>
-To: "SL Baur" <steve@xemacs.org>
-Subject: Re: [PATCH] hfsplus: Correct user visible printk
-Date: Sat, 3 May 2008 14:06:35 +0200
-User-Agent: KMail/1.9.9
-Cc: "Alan Cox" <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
-References: <20080502142925.2e439d8a@core> <20080502150439.76beaf27@core> <ed10ee420805030449h67374410l568295093e01185@mail.gmail.com>
-In-Reply-To: <ed10ee420805030449h67374410l568295093e01185@mail.gmail.com>
+	Sat, 3 May 2008 08:21:27 -0400
+Received: from mail0.scram.de ([78.47.204.202]:39906 "EHLO mail.scram.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751980AbYECMV0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 May 2008 08:21:26 -0400
+X-Spam-Score: -4.077
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+ * -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
+ *      [score: 0.0000]
+ *  0.3 AWL AWL: From: address is in the auto white-list
+Message-ID: <481C58C0.4040107@scram.de>
+Date: Sat, 03 May 2008 14:21:20 +0200
+From: Jochen Friedrich <jochen@scram.de>
+User-Agent: Mozilla-Thunderbird 2.0.0.12 (X11/20080420)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Jean Delvare <khali@linux-fr.org>
+CC: LKML <linux-kernel@vger.kernel.org>, Rusty Russell <rusty@rustcorp.com.au>,
+       Kay Sievers <kay.sievers@vrfy.org>, Sam Ravnborg <sam@ravnborg.org>,
+       Linux I2C <i2c@lm-sensors.org>
+Subject: Re: [i2c] [PATCH] modpost: i2c aliases need no trailing wildcard
+References: <20080502203721.70c5dc09@hyperion.delvare>
+In-Reply-To: <20080502203721.70c5dc09@hyperion.delvare>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200805031406.36164.elendil@planet.nl>
-X-OriginalArrivalTime: 03 May 2008 12:06:36.0980 (UTC) FILETIME=[23193740:01C8AD16]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 03 May 2008, SL Baur wrote:
-> (Although I do hope and pray that "propogate" never becomes an accepted
-> spelling).
+Hi Jean,
 
-A fellow Debian Installer developer has been know to use "propigate" :-)
+> Here's a patch doing this. If nobody objects, I'll send it to Linus
+> through my i2c tree next week.
 
-With 21,000 google hits (adding to that now!), it's admittedly a lot less 
-popular than "propogate" (with 283,000; even has a wiktionary entry).
+looks good to me:
 
-I share your prayers though, for both.
+#cat modules.alias 
+# Aliases extracted from modules themselves.
+alias i2c:dbox2-fp dbox2_fp
+alias of:N*T*Cfsl,cpm-i2c* i2c_cpm
+alias i2c:dummy i2c_core
+alias i2c:saa7129 saa7127
+alias i2c:saa7128 saa7127
+alias i2c:saa7127 saa7127
+alias i2c:saa7126 saa7127
 
-Cheers,
-FJP
+Thanks,
+Jochen
