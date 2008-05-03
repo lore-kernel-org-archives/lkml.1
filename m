@@ -1,102 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755506AbYECWEk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756072AbYECWFc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755506AbYECWEk (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 May 2008 18:04:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754337AbYECWEa
+	id S1756072AbYECWFc (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 May 2008 18:05:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754526AbYECWFY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 May 2008 18:04:30 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:54148 "EHLO smtp5.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754176AbYECWEa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 May 2008 18:04:30 -0400
-Date: Sun, 4 May 2008 01:03:30 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Adrian Bunk <bunk@kernel.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Ingo, no more kconfig patches
-Message-ID: <20080503220330.GV5838@cs181133002.pp.htv.fi>
-References: <20080430170125.ZZRA012@mailhub.coreip.homeip.net> <20080430211317.GA24633@elte.hu> <20080430230100.GK29330@cs181133002.pp.htv.fi> <20080501025234.GE27574@elte.hu> <20080501115923.GX29330@cs181133002.pp.htv.fi> <20080503191445.GF5292@elte.hu> <20080503202416.GR5838@cs181133002.pp.htv.fi> <20080503210300.GA10979@elte.hu> <20080503212429.GT5838@cs181133002.pp.htv.fi> <20080503215214.GA18407@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20080503215214.GA18407@elte.hu>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Sat, 3 May 2008 18:05:24 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:51309 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754315AbYECWFX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 May 2008 18:05:23 -0400
+Subject: Re: preempt-rt, need old style rwlocks for systemtap
+From: "Peter W. Morreale" <pmorreale@novell.com>
+To: "Frank Ch. Eigler" <fche@redhat.com>
+Cc: Clark Williams <williams@redhat.com>, linux-kernel@vger.kernel.org,
+       linux-rt-users@vger.kernel.org
+In-Reply-To: <20080503171627.GC23961@redhat.com>
+References: <20080503132327.GA28881@redhat.com>
+	 <481C77E8.8050002@redhat.com>  <20080503171627.GC23961@redhat.com>
+Content-Type: text/plain
+Organization: Linux Solutions Group
+Date: Sat, 03 May 2008 16:05:07 -0600
+Message-Id: <1209852307.5433.5.camel@hermosa.morrealenet>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, May 03, 2008 at 11:52:14PM +0200, Ingo Molnar wrote:
+On Sat, 2008-05-03 at 13:16 -0400, Frank Ch. Eigler wrote:
+> Hi -
 > 
-> * Adrian Bunk <bunk@kernel.org> wrote:
+> On Sat, May 03, 2008 at 09:34:16AM -0500, Clark Williams wrote:
+> > [...]
+> > > It has come to my attention that the preempt-rt patch suite
+> > > deliberately defeats the potential concurrency intended by systemtap's
+> > > use of rwlocks to permit concurrent readers [...]
 > 
-> > > at minimum a warning needs to be emitted by the kconfig tool if such 
-> > > incomplete selects are used. I've stopped counting the number of 
-> > > times such issues have broken the build and have held up kernel 
-> > > development.
-> > 
-> > It might held up your randconfig compiles.
-> > 
-> > Actual kernel development isn't much affected.
+> > The reason it "defeats" the concurrent behavior is that it's really
+> > complicated to have concurrent readers with Priority Inheritance, so
+> > the initial cut of rtmutexes serialized all lock accesses. [...]
 > 
-> uhm, you are quite wrong - countless times have people been bitten by 
-> select's breakages in the past, and not via randconfig. That's the main 
-> reason why select use in Kconfig was not encouraged for a long time.
-
-But it has not "held up kernel development".
-
-Send a bug report to linux-kernel or with a Cc to me and I'll look at 
-the bug.
-
-I've done this for years.
-
-> Select does make sense in some situations but it's a double-edged sword: 
-> kconfig does not warn at all about the situations where it's "unsafe" to 
-> use it - while it has all the information in the Kconfig files to emit 
-> that warning. Instead we get build breakages not visible when an 
-> incorrect select is added, but much later, if someone happens to stumble 
-> on the wrong kind of .config. That is obviously harmful.
-
-And how would a warning help?
-
->From an UI perspective we often want to select options that have 
-dependencies.
-
-> My larger point is that this kconfig tool bug breeds a constant stream 
-> of avoidable breakages, which causes lost manpower and causes a stream 
-> of trivial patches hindering maintainers all around the tree. Because 
-> every such trivial patch has to be reviewed, tested, it clogs the commit 
-> logs, etc.
+> Do you believe priority inheritance to be an essential property of
+> every use of these primitives, regardless of the nature of the
+> specifical critical sections being protected?  Is there no way & need
+> to opt out of the extra machinery?
 > 
-> So the more trivial patches we _avoid_ having to do in the future, the 
-> better. I'm not sure why you are even arguing against this this rather 
-> simple point - your arguments are rather hard to understand. Wouldnt you 
-> be happier if a whole category of trivial breakages was avoided and if 
-> you didnt have to deal with and waste your time on that category of 
-> trivial patches anymore?
-> 
-> Most of the time reoccuring trivial patches are an indicator of some 
-> deeper structural problem - as in this case.
+> - FChE
 
-Your conclusions are based on an assumption that isn't true.
+Yes, for (at least) two reasons. And No.
 
-"trivial patches" are the patches you send.
+Without PI the best case is indeterminate latencies.  The worst case is
+deadlock.  Please read Steven's excellent description of the issues in
+the Documentation directory of a kernel tree.   
 
-But they are often bogus.
 
-Fixing these issues properly often requires a deeper understanding of 
-both kconfig and the dependencies of the underlying code.
+Best,
+-PWM
 
-> 	Ingo
 
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-rt-users" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
