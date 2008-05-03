@@ -1,78 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759911AbYECDCa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760065AbYECDMK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759911AbYECDCa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 23:02:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756864AbYECDCU
+	id S1760065AbYECDMK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 23:12:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757024AbYECDL5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 23:02:20 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:37969
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1756685AbYECDCT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 23:02:19 -0400
-Date: Fri, 02 May 2008 20:02:19 -0700 (PDT)
-Message-Id: <20080502.200219.71669676.davem@davemloft.net>
-To: torvalds@linux-foundation.org
-CC: akpm@linux-foundation.org, sparclinux@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [GIT]: Sparc
-From: David Miller <davem@davemloft.net>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Fri, 2 May 2008 23:11:57 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:48272 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756864AbYECDL4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 May 2008 23:11:56 -0400
+Subject: RE: Sharing disks amoung multiple software RAIDs
+From: Kasper Sandberg <lkml@metanurb.dk>
+To: David Lethe <david@santools.com>
+Cc: David Greaves <david@dgreaves.com>, David Rees <drees76@gmail.com>,
+       alex14641@yahoo.com, Justin Piszcz <jpiszcz@lucidpixels.com>,
+       linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <A20315AE59B5C34585629E258D76A97C335960@34093-C3-EVS3.exchange.rackspace.com>
+References: <1209692359.16523.2.camel@localhost>
+	 <73000.21239.qm@web50212.mail.re2.yahoo.com>
+	 <A20315AE59B5C34585629E258D76A97C335477@34093-C3-EVS3.exchange.rackspace.com>
+	 <1209696179.16523.13.camel@localhost>
+	 <72dbd3150805020006p7f976a04o487389840f03b4a2@mail.gmail.com>
+	 <1209715763.7827.2.camel@localhost>  <481AD006.6050708@dgreaves.com>
+	 <1209764630.7827.15.camel@localhost>
+	 <A20315AE59B5C34585629E258D76A97C335960@34093-C3-EVS3.exchange.rackspace.com>
+Content-Type: text/plain
+Date: Sat, 03 May 2008 05:11:40 +0200
+Message-Id: <1209784300.7827.19.camel@localhost>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+X-Mailer: Evolution 2.4.0 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 2008-05-02 at 17:24 -0500, David Lethe wrote:
+> 
+> -----Original Message-----
+<snip>
+> > *(or more accurately has saved me from having to restore my data)
+> =======================
+> Since I am the person that wrote that "Look how many problems people
+> post to the thread on a weekly basis where people lose their data when md rebuilds go bad with
+> non-shared disks", I think need to clarify.
+>  
+> I was being too literal. md is a good solution (I use it myself).  However, the OP wanted to "Make sure that if one disk dies, the data is still in tact".  
+> 
+> Only way to do that is have a good offsite backup.
+> 
+> Nothing can prevent opportunity for data loss.  I don't care what RAID level (with single redundancy) you use or whether you have software or hardware-based RAID .. rebuilds can not reconstruct data if you are in degraded mode and have an unrecoverable read error on surviving disks.  It is not md's job or design point to insure data consistency check/repairs are run 24x7.  As such, by definition, there is no way to insure that a md rebuild will always be successful.
+I realize this, but the original wording really sounded like more like
+"well, there is a CHANCE your reconstruct will work good", rather than
+"well, there is a CHANCE your reconstruct will fail", if you get what i
+mean :)
 
-Some sparc32 cleanups triggered by some gcc-4.3 warnings
-I saw there.
+Naturally there can always be errors or bugs, but the whole point (for
+me) in doing the raid1, is that i will have much lower chance of loosing
+my data, since a disk can suddenly die, and hopefully in this case, the
+other will not. and well, an extra disk doesent really cost so much.
 
-More fixes to syscall restart handling, I think I have it
-right now and I haven't seen any weird behavior for a few
-days.
+Thanks for the clarification :)
+> 
+> David
+> ---------
+> 
+> 
+> 
+> 
+> 
 
-All the sparc serial drivers were using the same driver
-name string, resulting in all kinds of problems which
-the kernel now duly warns about.
-
-Similarly wrt. sparc64 PCI host controller registry.
-Just don't try to make the dummy root host controller
-and all the problems go away.
-
-Please pull, thanks a lot!
-
-The following changes since commit 886c35fbcf6fb2eee15687efc2d64d99b6ad9a4a:
-  Linus Torvalds (1):
-        Merge branch 'for-linus' of git://git.kernel.org/.../ieee1394/linux1394-2.6
-
-are available in the git repository at:
-
-  master.kernel.org:/pub/scm/linux/kernel/git/davem/sparc-2.6.git master
-
-David S. Miller (6):
-      sparc64: Stop creating dummy root PCI host controller devices.
-      serial: Fix sparc driver name strings.
-      sparc64: Fix syscall restart, for real...
-      sparc32: Kill totally unused memory information tables.
-      sparc32: More memory probing consolidation.
-      sparc32: Delete prom_stdin and prom_stdout.
-
- arch/sparc/kernel/setup.c        |    5 +-
- arch/sparc/mm/fault.c            |   61 +---------
- arch/sparc/prom/init.c           |    7 -
- arch/sparc/prom/memory.c         |  235 ++++++++++----------------------------
- arch/sparc64/kernel/pci.c        |  130 ++++++----------------
- arch/sparc64/kernel/pci_common.c |    6 -
- arch/sparc64/kernel/pci_impl.h   |    9 --
- arch/sparc64/kernel/process.c    |    6 -
- arch/sparc64/kernel/signal.c     |    6 +-
- arch/sparc64/kernel/signal32.c   |    6 +
- drivers/serial/sunhv.c           |    2 +-
- drivers/serial/sunsab.c          |    2 +-
- drivers/serial/sunsu.c           |    2 +-
- drivers/serial/sunzilog.c        |    2 +-
- include/asm-sparc/oplib.h        |   17 ---
- include/asm-sparc/page.h         |    5 +-
- 16 files changed, 117 insertions(+), 384 deletions(-)
