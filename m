@@ -1,50 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761386AbYECJIR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761464AbYECJMT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761386AbYECJIR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 May 2008 05:08:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757403AbYECJIH
+	id S1761464AbYECJMT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 May 2008 05:12:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757125AbYECJMJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 May 2008 05:08:07 -0400
-Received: from nf-out-0910.google.com ([64.233.182.185]:57879 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757125AbYECJIF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 May 2008 05:08:05 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
-        b=nqNCkSoQ9MdA8bra3sVbLeubpKoyuJdPPqGVdpJjxKBO/XL2yum9nQR+sviXrYQRmZW33DiCKKkJ6CRU+TzzDy8RLve1xJVvp+7fRe58Vd8OmP6XLz+6bBQQ7yDOaWdYFV9jGwkrez5Db9Y4cNv377Eq0JPkHrWJXCLa1okgCfM=
-Date: Sat, 3 May 2008 14:03:18 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: akpm@osdl.org, rmk@arm.linux.org.uk
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] arm-lubbock: fix compilation
-Message-ID: <20080503100318.GA5007@martell.zuzino.mipt.ru>
+	Sat, 3 May 2008 05:12:09 -0400
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:58840 "EHLO smtp6.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756088AbYECJMH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 May 2008 05:12:07 -0400
+Date: Sat, 3 May 2008 12:11:11 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Willy Tarreau <w@1wt.eu>
+Cc: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Woodhouse <dwmw2@infradead.org>, Arnd Bergmann <arnd@arndb.de>,
+       linux-kernel@vger.kernel.org
+Subject: Re: LogFS merge
+Message-ID: <20080503091111.GH5838@cs181133002.pp.htv.fi>
+References: <20080502133234.GA24080@logfs.org> <alpine.LFD.1.10.0805021010040.5994@woody.linux-foundation.org> <20080502202151.GB24080@logfs.org> <alpine.LFD.1.10.0805021328200.5994@woody.linux-foundation.org> <20080502213146.GD24080@logfs.org> <alpine.LFD.1.10.0805021438180.5994@woody.linux-foundation.org> <20080502215833.GG24080@logfs.org> <20080503070318.GR8474@1wt.eu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20080503070318.GR8474@1wt.eu>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-arch/arm/mach-pxa/lubbock.c:399: error: expected '}' before ';' token
+On Sat, May 03, 2008 at 09:03:18AM +0200, Willy Tarreau wrote:
+> On Fri, May 02, 2008 at 11:58:33PM +0200, Jörn Engel wrote:
+> > On Fri, 2 May 2008 14:39:23 -0700, Linus Torvalds wrote:
+> > > 
+> > > Quite frankly, if that's the case, I'd *much* rather see that worked on 
+> > > first, so that there aren't any format changes that are already known to 
+> > > be pending before it even gets merged.
+> > > 
+> > > Would it be at all possible to try to do that, or is it just "too far 
+> > > out"?
+> > 
+> > Definitely possible.  The last similar change happened in December and
+> > took until March until I ran out of stupid regressions from it.  Most
+> > likely there are still some I just haven't found yet.
+> > 
+> > The question is when to draw the line and say "This is useful as-is for
+> > a sufficient number of users."  I don't have a good answer to it.  I
+> > certainly expect more changes in the future, including format changes.
+> > And if we wait for them all to happen, it won't get merged this decade.
+> 
+> Why not merge it and mark it experimental then ? In fact, this is about
+> what you're looking for : reduced merge hassle and more testers.
 
-Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
----
+Andi already answered that one:
+"Merging file systems too early can quickly ruin their name and that 
+ taint is hard to ever get rid again then (e.g. happened to JFS)"
 
- arch/arm/mach-pxa/lubbock.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/arch/arm/mach-pxa/lubbock.c
-+++ b/arch/arm/mach-pxa/lubbock.c
-@@ -396,7 +396,7 @@ static struct pxafb_mach_info sharp_lm8v31 = {
- 	.cmap_inverse	= 0,
- 	.cmap_static	= 0,
- 	.lcd_conn	= LCD_COLOR_DSTN_16BPP | LCD_PCLK_EDGE_FALL |
--			  LCD_AC_BIAS_FREQ(255);
-+			  LCD_AC_BIAS_FREQ(255),
- };
- 
- #define	MMC_POLL_RATE		msecs_to_jiffies(1000)
+And a stable kernel shouldn't be something for getting "more testers", 
+it should be for tested code ready to be used in production.
+What you call "more testers" would be people who try it in production
+(e.g. to overcome shortcomings of JFFS2) thinking it was stable.
+
+And no, EXPERIMENTAL in the kernel is not usable for keeping people from 
+trying known-whacky code.
+
+
+> Willy
+
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
