@@ -1,63 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756351AbYECWkr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756294AbYECWnu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756351AbYECWkr (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 May 2008 18:40:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752468AbYECWki
+	id S1756294AbYECWnu (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 May 2008 18:43:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753883AbYECWnk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 May 2008 18:40:38 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:39383 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751916AbYECWkh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 May 2008 18:40:37 -0400
-Date: Sun, 4 May 2008 00:40:18 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Daniel Hazelton <dhazelton@enter.net>
-Cc: Sam Ravnborg <sam@ravnborg.org>, Stephen Rothwell <sfr@canb.auug.org.au>,
-       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@suse.cz>,
-       linux-next@vger.kernel.org
-Subject: Re: Strange linux-next build error
-Message-ID: <20080503224018.GB18344@elte.hu>
-References: <200805030121.39831.dhazelton@enter.net> <20080503155252.0dc9c4d7.sfr@canb.auug.org.au> <20080503064057.GA12546@uranus.ravnborg.org> <200805031825.50914.dhazelton@enter.net>
+	Sat, 3 May 2008 18:43:40 -0400
+Received: from ug-out-1314.google.com ([66.249.92.171]:10572 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753331AbYECWnj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 May 2008 18:43:39 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
+        b=AOMZpqBPgIh1lbnDr08DuSrAlSL5X3nk8L8xncTpH7weGS5uxi3+JQ/9r6X6dIOnGfgTo8dey2i4BaY7bwViwYiEQlRNa2G3OMnLleZsUKMHzSuc9yswGDabdCBEDdVClYG/Dpy2WNPYOgfKXONhX6POVKBKExZFsHAx5hr4usI=
+Date: Sun, 4 May 2008 00:42:46 +0200
+From: Marcin Slusarz <marcin.slusarz@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: eparis@redhat.com, viro@zeniv.linux.org.uk
+Subject: [PATCH] xfrm: convert empty xfrm_audit_* macros to functions
+Message-ID: <20080503224130.GA6120@joi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200805031825.50914.dhazelton@enter.net>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+it removes these warnings when CONFIG_AUDITSYSCALL is unset:
 
-* Daniel Hazelton <dhazelton@enter.net> wrote:
+net/xfrm/xfrm_user.c: In function 'xfrm_add_sa':
+net/xfrm/xfrm_user.c:412: warning: unused variable 'sid'
+net/xfrm/xfrm_user.c:411: warning: unused variable 'sessionid'
+net/xfrm/xfrm_user.c:410: warning: unused variable 'loginuid'
+net/xfrm/xfrm_user.c: In function 'xfrm_del_sa':
+net/xfrm/xfrm_user.c:485: warning: unused variable 'sid'
+net/xfrm/xfrm_user.c:484: warning: unused variable 'sessionid'
+net/xfrm/xfrm_user.c:483: warning: unused variable 'loginuid'
+net/xfrm/xfrm_user.c: In function 'xfrm_add_policy':
+net/xfrm/xfrm_user.c:1132: warning: unused variable 'sid'
+net/xfrm/xfrm_user.c:1131: warning: unused variable 'sessionid'
+net/xfrm/xfrm_user.c:1130: warning: unused variable 'loginuid'
+net/xfrm/xfrm_user.c: In function 'xfrm_get_policy':
+net/xfrm/xfrm_user.c:1382: warning: unused variable 'sid'
+net/xfrm/xfrm_user.c:1381: warning: unused variable 'sessionid'
+net/xfrm/xfrm_user.c:1380: warning: unused variable 'loginuid'
+net/xfrm/xfrm_user.c: In function 'xfrm_add_pol_expire':
+net/xfrm/xfrm_user.c:1620: warning: unused variable 'sid'
+net/xfrm/xfrm_user.c:1619: warning: unused variable 'sessionid'
+net/xfrm/xfrm_user.c:1618: warning: unused variable 'loginuid'
+net/xfrm/xfrm_user.c: In function 'xfrm_add_sa_expire':
+net/xfrm/xfrm_user.c:1658: warning: unused variable 'sid'
+net/xfrm/xfrm_user.c:1657: warning: unused variable 'sessionid'
+net/xfrm/xfrm_user.c:1656: warning: unused variable 'loginuid'
 
-> > Can you try to do a:
-> > make V=1 and post the output a few screen fulls before and until
-> > the bug triggers.
-> > They I will see if I can work out what is happening.
-> >
-> > Thanks,
-> > 	Sam
-> 
-> I've been unable to trigger it with "make V=1 bzImage" - does the 
-> verbosity change, somehow, the default number of makes that get run ?
-> 
-> If it does, I could try adding -j2 or similar to see if that causes it 
-> to trigger.
+Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
+---
+ xfrm.h |   48 ++++++++++++++++++++++++++++++++++++++++--------
+ 1 file changed, 40 insertions(+), 8 deletions(-)
 
-try something like:
-
-   make -j2 V=1 bzImage >log.txt 2>&1
-
-and see whether the error shows up in log.txt. Console output caused by 
-the increased verbosity (especially if it's a slower console like an 
-xterm) can hide build races.
-
-	Ingo
+diff --git a/include/net/xfrm.h b/include/net/xfrm.h
+index d1350bc..2933d74 100644
+--- a/include/net/xfrm.h
++++ b/include/net/xfrm.h
+@@ -648,14 +648,46 @@ extern void xfrm_audit_state_notfound(struct sk_buff *skb, u16 family,
+ extern void xfrm_audit_state_icvfail(struct xfrm_state *x,
+ 				     struct sk_buff *skb, u8 proto);
+ #else
+-#define xfrm_audit_policy_add(x, r, a, se, s)	do { ; } while (0)
+-#define xfrm_audit_policy_delete(x, r, a, se, s)	do { ; } while (0)
+-#define xfrm_audit_state_add(x, r, a, se, s)	do { ; } while (0)
+-#define xfrm_audit_state_delete(x, r, a, se, s)	do { ; } while (0)
+-#define xfrm_audit_state_replay_overflow(x, s)	do { ; } while (0)
+-#define xfrm_audit_state_notfound_simple(s, f)	do { ; } while (0)
+-#define xfrm_audit_state_notfound(s, f, sp, sq)	do { ; } while (0)
+-#define xfrm_audit_state_icvfail(x, s, p)	do { ; } while (0)
++
++static inline void xfrm_audit_policy_add(struct xfrm_policy *xp, int result,
++				  u32 auid, u32 ses, u32 secid)
++{
++}
++
++static inline void xfrm_audit_policy_delete(struct xfrm_policy *xp, int result,
++				  u32 auid, u32 ses, u32 secid)
++{
++}
++
++static inline void xfrm_audit_state_add(struct xfrm_state *x, int result,
++				 u32 auid, u32 ses, u32 secid)
++{
++}
++
++static inline void xfrm_audit_state_delete(struct xfrm_state *x, int result,
++				    u32 auid, u32 ses, u32 secid)
++{
++}
++
++static inline void xfrm_audit_state_replay_overflow(struct xfrm_state *x,
++					     struct sk_buff *skb)
++{
++}
++
++static inline void xfrm_audit_state_notfound_simple(struct sk_buff *skb,
++				      u16 family)
++{
++}
++
++static inline void xfrm_audit_state_notfound(struct sk_buff *skb, u16 family,
++				      __be32 net_spi, __be32 net_seq)
++{
++}
++
++static inline void xfrm_audit_state_icvfail(struct xfrm_state *x,
++				     struct sk_buff *skb, u8 proto)
++{
++}
+ #endif /* CONFIG_AUDITSYSCALL */
+ 
+ static inline void xfrm_pol_hold(struct xfrm_policy *policy)
