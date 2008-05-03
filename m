@@ -1,106 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762706AbYECKbq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763532AbYECKdQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762706AbYECKbq (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 May 2008 06:31:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755442AbYECKbh
+	id S1763532AbYECKdQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 May 2008 06:33:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758237AbYECKc7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 May 2008 06:31:37 -0400
-Received: from opensource.wolfsonmicro.com ([80.75.67.52]:50106 "EHLO
-	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1755198AbYECKbg (ORCPT
+	Sat, 3 May 2008 06:32:59 -0400
+Received: from fg-out-1718.google.com ([72.14.220.154]:57236 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755442AbYECKc6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 May 2008 06:31:36 -0400
-Subject: Re: [PATCH 0/13] Updated V4  - Regulator Framework
-From: Liam Girdwood <lg@opensource.wolfsonmicro.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
-       broonie@opensource.wolfsonmicro.com
-In-Reply-To: <20080502165248.dba934e9.akpm@linux-foundation.org>
-References: <1209742841.12502.40.camel@odin>
-	 <20080502165248.dba934e9.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Sat, 03 May 2008 11:31:32 +0100
-Message-Id: <1209810693.12502.97.camel@odin>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 
-Content-Transfer-Encoding: 7bit
+	Sat, 3 May 2008 06:32:58 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=references:user-agent:date:from:to:cc:subject:content-disposition:message-id;
+        b=W7bWUfVklwV5xgfq9S95GTmt8nxbHtMpdkL1wbUohqvcNJ2gzQ3Qi55ZaiGemRoWHxKx/L3RQFFhy64SuG4up+UK/pqyu8Rh3Vfd2l/oSdFT8CnWvbwqgycomr7jlNHJ9YIIZFZRpuWa1FKT1QVN2uXv/Sz7gi2jNlUFHiBZcG0=
+References: <20080503101800.417039810@gmail.com>>
+User-Agent: quilt/0.46-1
+Date: Sat, 03 May 2008 14:18:02 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: akpm@linux-foundation.org, hpa@zytor.com, mingo@elte.hu,
+       ralf@linux-mips.org
+Cc: linux-kernel@vger.kernel.org, gorcunov@gmail.com
+Subject: [patch 2/4] module loading ELF handling - use SELFMAG instead of numeric constant
+Content-Disposition: inline; filename=elf-kernel-module
+Message-ID: <481c3f58.0305560a.104c.ffffc432@mx.google.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-05-02 at 16:52 -0700, Andrew Morton wrote:
-> On Fri, 02 May 2008 16:40:41 +0100
-> Liam Girdwood <lg@opensource.wolfsonmicro.com> wrote:
-> 
-> > This is an updated version of the kernel voltage & current regulator
-> > framework based on comments received from version 3 of the patch series.
-> > 
-> > The regulator framework is designed to provide a standard kernel
-> > interface to control voltage and current regulators on SoC based
-> > systems.
-> > 
-> > The intention is to allow systems to dynamically control regulator power
-> > output in order to save power and prolong battery life. This applies to
-> > both voltage regulators (where voltage output is controllable) and
-> > current sinks (where current limit is controllable).
-> > 
-> 
-> oh gee.
-> 
-> I (and others) reviewed and commented on all this code last month.  Now
-> here it is again and, although I'm sure it is delightful code, nobody wants
-> to have to read it all again ;)
-> 
-> The one-month gap between v3 and v4 is unfortunate.  It means that everyone
-> has forgotten everything.
-> 
+Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
+---
 
-Sorry about this. It really couldn't be helped as I've been on the road
-a lot lately. I was even in the audience for your talk at CELF ;)
+Index: linux-2.6.git/kernel/module.c
+===================================================================
+--- linux-2.6.git.orig/kernel/module.c	2008-05-02 09:12:55.000000000 +0400
++++ linux-2.6.git/kernel/module.c	2008-05-02 21:36:51.000000000 +0400
+@@ -1758,7 +1758,7 @@ static struct module *load_module(void _
+ 
+ 	/* Sanity checks against insmoding binaries or wrong arch,
+            weird elf version */
+-	if (memcmp(hdr->e_ident, ELFMAG, 4) != 0
++	if (memcmp(hdr->e_ident, ELFMAG, SELFMAG) != 0
+ 	    || hdr->e_type != ET_REL
+ 	    || !elf_check_arch(hdr)
+ 	    || hdr->e_shentsize != sizeof(*sechdrs)) {
 
-> 
-> Was all the review feedback satisfactorily handled to the reviewers'
-> satisfaction?
-> 
-
-Summary of changes re V3 comments :-
-
- o Added lots of documentation.
- o Added ABI documentation.
- o Changed debug option Kconfig style.
- o Regulator no longer a class device.
- o sysfs naming changes, ie. now uses microvolts and microamps.
- o sysfs entries only export one value.
- o get_current() macro undef removed.
- o set_voltage(), set_current_limit() now take a lower and upper
-acceptable value.
- o Fixed a locking issue.
- o Made 'compiled out' interface all static inline instead of macros.
- o Removed dynamic voltage control where the voltage would be
-dynamically managed to be the lowest for all consumers (no known users
-of this code atm - although spoke with someone at CELF who was
-interested in this feature for the future).
- o Checkpatch fixes.
- o Removed comments describing some functions from the headers - now all
-such comments are in the c files.
-
-> Is there any new material in here which would require a re-review?
-
-Yes. Other additions :-
-
- o Test harness added to aid developers with testing regulator drivers
-(virtual.c - patch 07/13).
- o Support for fixed output regulators. i.e. regulators that cannot be
-controlled by software but coexist on systems with software controllable
-regulators (fixed.h, fixed.c - patches 04/13 and 06/13)
- o Bulk operations for consumers that may have multiple regulator
-supplies (consumer.h, core.c - patches 01/13 and 05/13)
- o Changed core file and header names to be more meaningful. i.e
-reg-core.c -> core.c, regulator/regulator.h -> regulator/consumer.h,
-etc.
-
-Lastly, I've forgotten the MAINTAINERS patch but this can be added
-later.
-
-Liam
-
+-- 
