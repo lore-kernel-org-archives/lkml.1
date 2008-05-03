@@ -1,88 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760901AbYECJe3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762142AbYECJiY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760901AbYECJe3 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 May 2008 05:34:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758635AbYECJeW
+	id S1762142AbYECJiY (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 May 2008 05:38:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758237AbYECJiL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 May 2008 05:34:22 -0400
-Received: from wa-out-1112.google.com ([209.85.146.182]:52318 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758074AbYECJeV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 May 2008 05:34:21 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=xzLTTu2zWNIwnsFqw10+kWyx0kqE1oddbcLaAuw6NUriXX+FqCF4+VQyCq063QBBLmaAtriOS/x3+7Yzhz5wgKU6aYFGIyzEeJPwWSkn7d/1cIaU0SdvwDTKJaLdced+PQFxmrcmuP+3oXti5oj/HMK4Je+DD91KFvt73aGOZZI=
-Message-ID: <ed10ee420805030234o39141933v8c26d7895ed3f9a@mail.gmail.com>
-Date: Sat, 3 May 2008 02:34:20 -0700
-From: "SL Baur" <steve@xemacs.org>
-To: "Roland Kuhn" <rkuhn@e18.physik.tu-muenchen.de>
-Subject: Re: cross-compiling on OS X, make menuconfig fails
-Cc: "Sam Ravnborg" <sam@ravnborg.org>, "Al Viro" <viro@zeniv.linux.org.uk>,
-       "Timur Tabi" <timur@freescale.com>,
-       "Tony Breeds" <tony@bakeyournoodle.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <5460B94D-5B3B-4174-9432-C45521A9C247@e18.physik.tu-muenchen.de>
+	Sat, 3 May 2008 05:38:11 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:36330 "EHLO smtp4.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756636AbYECJiK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 May 2008 05:38:10 -0400
+Date: Sat, 3 May 2008 12:37:14 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Willy Tarreau <w@1wt.eu>
+Cc: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Woodhouse <dwmw2@infradead.org>, Arnd Bergmann <arnd@arndb.de>,
+       linux-kernel@vger.kernel.org
+Subject: Re: LogFS merge
+Message-ID: <20080503093714.GI5838@cs181133002.pp.htv.fi>
+References: <20080502133234.GA24080@logfs.org> <alpine.LFD.1.10.0805021010040.5994@woody.linux-foundation.org> <20080502202151.GB24080@logfs.org> <alpine.LFD.1.10.0805021328200.5994@woody.linux-foundation.org> <20080502213146.GD24080@logfs.org> <alpine.LFD.1.10.0805021438180.5994@woody.linux-foundation.org> <20080502215833.GG24080@logfs.org> <20080503070318.GR8474@1wt.eu> <20080503091111.GH5838@cs181133002.pp.htv.fi> <20080503091813.GA1829@1wt.eu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-References: <481529B6.6030802@freescale.com>
-	 <20080428015151.GW20457@bakeyournoodle.com>
-	 <481739BF.8010305@freescale.com>
-	 <20080429164535.GB18018@uranus.ravnborg.org>
-	 <20080429172057.GN5882@ZenIV.linux.org.uk>
-	 <20080429180601.GA19652@uranus.ravnborg.org>
-	 <ed10ee420805022355j4e783fa1qce38d37ab8c4841f@mail.gmail.com>
-	 <5460B94D-5B3B-4174-9432-C45521A9C247@e18.physik.tu-muenchen.de>
-X-Google-Sender-Auth: fcdcd1a3a1d2739b
+In-Reply-To: <20080503091813.GA1829@1wt.eu>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/3/08, Roland Kuhn <rkuhn@e18.physik.tu-muenchen.de> wrote:
-> Hi Steve!
->
->
->  On 3 May 2008, at 08:55, SL Baur wrote:
+On Sat, May 03, 2008 at 11:18:13AM +0200, Willy Tarreau wrote:
+> On Sat, May 03, 2008 at 12:11:11PM +0300, Adrian Bunk wrote:
+>...
+> > What you call "more testers" would be people who try it in production
+> > (e.g. to overcome shortcomings of JFFS2) thinking it was stable.
+> 
+> No, it is just to gain more exposure by easing tester's job. People
+> packaging distros for embedded systems do a lot of R&D, and having
+> new features to experiment with is very important to them. And no,
+> that does not mean they'll immediately use it in production.
 
-> > $ uname -v
-> > Darwin Kernel Version 8.11.1: Wed Oct 10 18:23:28 PDT 2007;
-> > root:xnu792.25.20~1/RELEASE_I386
-> >
-> >
->  Yes, they changed that between Tiger and Leopard, where I have
->
->  ---
->  $ uname -v
->  Darwin Kernel Version 9.2.2: Tue Mar  4 21:17:34 PST 2008;
-> root:xnu-1228.4.31~1/RELEASE_I386
->  $ /bin/bash -c 'echo -e "buh\n"'
->  buh
->
->  $ /bin/sh -c 'echo -e "buh\n"'
->  -e buh
->
->  $ /bin/echo -e "buh\n"
->  -e buh\n
->  ---
->
->  The second one is POSIX+XSI, the third one plain POSIX. The first one is
-> what people are used to ;-)
+If it's in the kernel it will end in distribution kernels.
 
-Check.
+And people will then use it.
 
-$ /bin/bash -c 'echo -e "buh\n"'
-buh
+You might be right, they might not immediately use it in production. 
+They might use the current version one year later in the then one year 
+old kernel they will then be using. Or the one year old version plus 
+some random set of vendor patches.
 
-$ /bin/sh -c 'echo -e "buh\n"'
-buh
+> And
+> even if some did, they would know why they did it and it's their
+> problem.
 
-$ /bin/echo -e "buh\n"
--e buh\n
+You want to put experimental code into stable kernels and then blame 
+people using it that they shouldn't have used it?
 
-Of all the things to "standardize" on, why something like bash
-which has no standards?  pdksh, ash, dash or POSIX mode zsh,
-would have been better...
+> Willy
 
--sb
+cu
+Adrian
+
+BTW: This is not meant against the LogFS merge.
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
