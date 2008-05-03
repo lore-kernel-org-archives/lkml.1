@@ -1,58 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757711AbYECFJg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758874AbYECFV4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757711AbYECFJg (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 May 2008 01:09:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752006AbYECFJ0
+	id S1758874AbYECFV4 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 May 2008 01:21:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752698AbYECFVr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 May 2008 01:09:26 -0400
-Received: from fg-out-1718.google.com ([72.14.220.158]:16360 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751360AbYECFJZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 May 2008 01:09:25 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=SvzgRPH20Kl04EEGBnyHqIlMTubottA/44E/yw7yPproECBJZe5YSBpyAEHhThPcpZrXmstwUmyb4+BFATYgD22RDYf+D/UFoKHbXg/98XuacMgceTwb34R7JBksWP+USQrG/2FktSMIKHtOcXEPGIYrXBMdya193DoT9aRX5Sc=
-Message-ID: <f24d23310805022209l58e3f227t2ced788a4115139e@mail.gmail.com>
-Date: Sat, 3 May 2008 10:39:23 +0530
-From: "debian developer" <debiandev@gmail.com>
-To: LKML <linux-kernel@vger.kernel.org>, kernelnewbies@nl.linux.org,
-       kernel-janitors@vger.kernel.org
-Subject: Resend: [Patch 1/1] kernel/time/ntp.c : fix warning
-Cc: dmitri.vorobiev@gmail.com
+	Sat, 3 May 2008 01:21:47 -0400
+Received: from smtp.enter.net ([216.193.128.24]:1282 "EHLO smtp.enter.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751537AbYECFVq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 May 2008 01:21:46 -0400
+From: Daniel Hazelton <dhazelton@enter.net>
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: Strange linux-next build error
+Date: Sat, 3 May 2008 01:21:38 -0400
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
+Message-Id: <200805030121.39831.dhazelton@enter.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mailer spoilt the previous send... just realized that copy does'nt
-work, sorry for that
-Hello,
+After updating my local tree to the latest linux-next and starting a clean 
+build I see this error *ONLY* the first time I start a "make bzImage"
 
-On compiling on a Xeon machine i get the following warning
+  CC      arch/x86/kernel/acpi/sleep.o
+  LDS     arch/x86/kernel/acpi/realmode/wakeup.lds
+cc1: fatal error: opening output file 
+arch/x86/kernel/acpi/realmode/wakeup.lds: Permission denied
+compilation terminated.
+make[4]: *** [arch/x86/kernel/acpi/realmode/wakeup.lds] Error 1
+make[3]: *** [arch/x86/kernel/acpi/realmode/wakeup.bin] Error 2
+make[2]: *** [arch/x86/kernel/acpi] Error 2
+make[1]: *** [arch/x86/kernel] Error 2
+make: *** [bzImage] Error 2
 
-kernel/time/ntp.c: In function `do_adjtimex':
-kernel/time/ntp.c:328: warning: comparison of distinct pointer types
-lacks a cast
-kernel/time/ntp.c:329: warning: comparison of distinct pointer types
-lacks a cast
+Restarting the build brings it through to completion. I've checked and there 
+is no reason that this error should occur.
 
-This is with gcc version 3.4.3. The following patch fixes this...
+madman@strider:~/linux/linux-git/Documentation$ gcc --version
+gcc (GCC) 4.1.3 20070929 (prerelease) (Ubuntu 4.1.2-16ubuntu2)
+Copyright (C) 2006 Free Software Foundation, Inc.
+This is free software; see the source for copying conditions.  There is NO
+warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
---- linux-2.6.25/kernel/time/ntp.c.orig	2008-05-03 04:27:20.000000000 +0530
-+++ linux-2.6.25/kernel/time/ntp.c	2008-05-03 04:45:06.000000000 +0530
-@@ -325,8 +325,8 @@ int do_adjtimex(struct timex *txc)
- 		     * Scale the phase adjustment and
- 		     * clamp to the operating range.
- 		     */
--		    time_offset = min(time_offset, (s64)MAXPHASE * NSEC_PER_USEC);
--		    time_offset = max(time_offset, (s64)-MAXPHASE * NSEC_PER_USEC);
-+		    time_offset = min(time_offset, (s64)(MAXPHASE * NSEC_PER_USEC));
-+		    time_offset = max(time_offset, (s64)(-MAXPHASE * NSEC_PER_USEC));
+(I'll be booting this kernel tomorrow to test it - previous -next kernels have 
+all faulted during boot)
 
- 		    /*
- 		     * Select whether the frequency is to be controlled
+DRH
+
+-- 
+Dialup is like pissing through a pipette. Slow and excruciatingly painful.
