@@ -1,145 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761570AbYECIkf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759984AbYECIsG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761570AbYECIkf (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 May 2008 04:40:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756088AbYECIk1
+	id S1759984AbYECIsG (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 May 2008 04:48:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751623AbYECIry
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 May 2008 04:40:27 -0400
-Received: from rk.rkuhn.info ([88.198.164.84]:39475 "EHLO mailhost.rkuhn.info"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755503AbYECIkZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 May 2008 04:40:25 -0400
-From: Roland Kuhn <rkuhn@e18.physik.tu-muenchen.de>
-To: SL Baur <steve@xemacs.org>
-In-Reply-To: <ed10ee420805022355j4e783fa1qce38d37ab8c4841f@mail.gmail.com>
-Subject: Re: cross-compiling on OS X, make menuconfig fails
-References: <481529B6.6030802@freescale.com> <20080428015151.GW20457@bakeyournoodle.com> <481739BF.8010305@freescale.com> <20080429164535.GB18018@uranus.ravnborg.org> <20080429172057.GN5882@ZenIV.linux.org.uk> <20080429180601.GA19652@uranus.ravnborg.org> <ed10ee420805022355j4e783fa1qce38d37ab8c4841f@mail.gmail.com>
-Message-Id: <5460B94D-5B3B-4174-9432-C45521A9C247@e18.physik.tu-muenchen.de>
-Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=pgp-sha1; boundary="Apple-Mail-1--431419538"
+	Sat, 3 May 2008 04:47:54 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:54169 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751384AbYECIrx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 May 2008 04:47:53 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <481C266F.9080003@s5r6.in-berlin.de>
+Date: Sat, 03 May 2008 10:46:39 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.13) Gecko/20080419 SeaMonkey/1.1.9
+MIME-Version: 1.0
+To: Jeff Garzik <jeff@garzik.org>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-next@vger.kernel.org,
+       sfrench@us.ibm.com, swhiteho@redhat.com, ralf@linux-mips.org,
+       drzeus-list@drzeus.cx, jack@ucw.cz, cbou@mail.ru, jens.axboe@oracle.com,
+       ericvh@gmail.com, wim@iguana.be, chris@zankel.net, nico@cam.org,
+       penberg@cs.helsinki.fi, clameter@sgi.com, ezk@cs.sunysb.edu,
+       linux-kernel@vger.kernel.org
+Subject: Re: git trees which are not yet in linux-next
+References: <20080502151206.b40f77ea.akpm@linux-foundation.org>	<20080502154200.a6d8c43a.akpm@linux-foundation.org>	<481BBD84.10904@s5r6.in-berlin.de> <20080502183403.3d9f2d9f.akpm@linux-foundation.org> <481BEF7A.1060300@garzik.org>
+In-Reply-To: <481BEF7A.1060300@garzik.org>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0 (Apple Message framework v919.2)
-Date: Sat, 3 May 2008 10:40:14 +0200
-Cc: "Sam Ravnborg" <sam@ravnborg.org>, "Al Viro" <viro@zeniv.linux.org.uk>,
-       "Timur Tabi" <timur@freescale.com>,
-       "Tony Breeds" <tony@bakeyournoodle.com>, linux-kernel@vger.kernel.org
-X-Pgp-Agent: GPGMail d51 (Leopard)
-X-Mailer: Apple Mail (2.919.2)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---Apple-Mail-1--431419538
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Content-Transfer-Encoding: 7bit
+Jeff Garzik wrote:
+>>> Andrew Morton wrote:
+>>>> On Fri, 2 May 2008 15:12:06 -0700
+>>>> Andrew Morton <akpm@linux-foundation.org> wrote:
+>>>>
+>>>>> The first
+>>>>> problem is working out "how the heck did that patch get into 
+>>>>> linux-next"? That would be much easier if the signoff trail was 
+>>>>> complete for git-based
+>>>>> patches, but it often is not.
+>>>> doh.  I'm pulling linux-next's constituent trees independently, so if I
+>>>> spot a turd in linux-next I can just grep the various git trees to 
+>>>> find out
+>>>> where it came from.
+...
+> Poke through the man pages, particularly git-log, and tell it to spit 
+> out the committer info, then.  It's in there.
+> 
+> For example,
+> 
+>     git log --pretty=full
+...
 
-Hi Steve!
+Of course some committers have more than one tree in -next.  So if 
+Andrew wants to know the actual tree, the laziest method which I know of is
+$ gitk <commit_id>
 
-On 3 May 2008, at 08:55, SL Baur wrote:
-
-> On 4/29/08, Sam Ravnborg <sam@ravnborg.org> wrote:
->>>
->>> Good grief, folks...
->>
->> Thanks Al.
->> I've queued up the following patch.
->>
->>        Sam
->>
->> commit c99cc32e0d92f5fdbdd39a7f42cfff869062fff5
->> Author: Sam Ravnborg <sam@uranus.ravnborg.org>
->> Date:   Tue Apr 29 20:02:44 2008 +0200
->>
->>    kconfig: made check-lxdialog more portable
->>
->>    OS-X shell did not like 'echo -e' so implement
->>    suggestion from Al Viro to use a more portable construct.
->>
->>    Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
->>    Cc: Al Viro <viro@ZenIV.linux.org.uk>
->>
->> diff --git a/scripts/kconfig/lxdialog/check-lxdialog.sh b/scripts/ 
->> kconfig/lxdialog/check-lxdialog.sh
->> index 62e1e02..5552154 100644
->> --- a/scripts/kconfig/lxdialog/check-lxdialog.sh
->> +++ b/scripts/kconfig/lxdialog/check-lxdialog.sh
->> @@ -36,8 +36,10 @@ trap "rm -f $tmp" 0 1 2 3 15
->>
->>  # Check if we can link to ncurses
->>  check() {
->> -       echo -e " #include CURSES_LOC \n main() {}" |
->> -           $cc -xc - -o $tmp 2> /dev/null
->> +        $cc -xc - -o $tmp 2>/dev/null <<'EOF'
->>
->> +#include CURSES_LOC
->> +main() {}
->> +EOF
->>
->>        if [ $? != 0 ]; then
->>            echo " *** Unable to find the ncurses libraries or  
->> the"       1>&2
->>            echo " *** required header  
->> files."                            1>&2
->
-> This looks O.K.  As a note, whatever behavior is being described here
-> is system dependent, because on my installation of that other OS,  
-> `echo -e'
-> works fine whether it is invoked as /bin/bash or /bin/sh which  
-> appears to be
-> a strict copy of /bin/bash.
->
-> $ uname -v
-> Darwin Kernel Version 8.11.1: Wed Oct 10 18:23:28 PDT 2007;
-> root:xnu792.25.20~1/RELEASE_I386
->
-Yes, they changed that between Tiger and Leopard, where I have
-
----
-$ uname -v
-Darwin Kernel Version 9.2.2: Tue Mar  4 21:17:34 PST 2008;  
-root:xnu-1228.4.31~1/RELEASE_I386
-$ /bin/bash -c 'echo -e "buh\n"'
-buh
-
-$ /bin/sh -c 'echo -e "buh\n"'
--e buh
-
-$ /bin/echo -e "buh\n"
--e buh\n
----
-
-The second one is POSIX+XSI, the third one plain POSIX. The first one  
-is what people are used to ;-)
-
-Ciao,
-                     Roland
-
---
-Any society that would give up a little liberty to gain a little
-security will deserve neither and lose both.  - Benjamin Franklin
------BEGIN GEEK CODE BLOCK-----
-Version: 3.12
-GS/CS/M/MU d-(++) s:+ a-> C+++ UL++++ P+++ L+++ E(+) W+ !N K- w--- M+ ! 
-V Y+
-PGP++ t+(++) 5 R+ tv-- b+ DI++ e++++ h---- y+++
-------END GEEK CODE BLOCK------
-
-
-
-
---Apple-Mail-1--431419538
-content-type: application/pgp-signature; x-mac-type=70674453;
-	name=PGP.sig
-content-description: This is a digitally signed message part
-content-disposition: inline; filename=PGP.sig
-content-transfer-encoding: 7bit
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.8 (Darwin)
-
-iEYEARECAAYFAkgcJO4ACgkQI4MWO8QIRP0cWgCeP5PYuy7G/M2pX82TLrb1MOUK
-VMwAn0bHipCAEy//XtCeB0Fe9oXmmCal
-=jsf4
------END PGP SIGNATURE-----
-
---Apple-Mail-1--431419538--
+Among else, gitk shows which branches contain the commit.  (How to do 
+this without X GUI?)
+-- 
+Stefan Richter
+-=====-==--- -=-= ---==
+http://arcgraph.de/sr/
