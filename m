@@ -1,53 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937087AbYECAoe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964943AbYECBPp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937087AbYECAoe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 20:44:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765206AbYECAoY
+	id S964943AbYECBPp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 21:15:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763080AbYECBPf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 20:44:24 -0400
-Received: from web50201.mail.re2.yahoo.com ([206.190.38.42]:23319 "HELO
-	web50201.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1764994AbYECAoX (ORCPT
+	Fri, 2 May 2008 21:15:35 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:51467 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761426AbYECBPe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 20:44:23 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:X-Mailer:Date:From:Reply-To:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Message-ID;
-  b=tAbJyyFGTCp319e5mosw8ch31goaaUCrT8Qwz4iA8SlH+NNoS2a/XmC+f2z/NxTHompD8sV7c2SXkhhoIt0Fpdy+OkGjjiPykUrlv06qD6EYdpPbm6h30L2Twdisoakg2EsUPdIKAlIrMuTb2SCTycFI3in+s4JymqjoQRM68PM=;
-X-YMail-OSG: bLQ_XCYVM1mjlWUElGY9G9DXR_q_2_rEJK2Ht5hkbsPoELGIlDAEISYv8Ptq9UXiOFvitROay9zgGrdR._9kVz4T5LkjgVkpm8mHh.B_C6XBUfUQgBcNrw--
-X-Mailer: YahooMailWebService/0.7.185
-Date: Fri, 2 May 2008 17:44:18 -0700 (PDT)
-From: Alex Davis <alex14641@yahoo.com>
-Reply-To: alex14641@yahoo.com
-Subject: RE: Sharing disks amoung multiple software RAIDs
-To: Kasper Sandberg <lkml@metanurb.dk>, David Greaves <david@dgreaves.com>,
-       David Lethe <david@santools.com>
-Cc: David Rees <drees76@gmail.com>, Justin Piszcz <jpiszcz@lucidpixels.com>,
-       linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <A20315AE59B5C34585629E258D76A97C335960@34093-C3-EVS3.exchange.rackspace.com>
+	Fri, 2 May 2008 21:15:34 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <481BBBBD.9060709@s5r6.in-berlin.de>
+Date: Sat, 03 May 2008 03:11:25 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.13) Gecko/20080419 SeaMonkey/1.1.9
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <824925.21830.qm@web50201.mail.re2.yahoo.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-next@vger.kernel.org, Steven French <sfrench@us.ibm.com>,
+       Steven Whitehouse <swhiteho@redhat.com>, Jeff Garzik <jeff@garzik.org>,
+       Ralf Baechle <ralf@linux-mips.org>,
+       Pierre Ossman <drzeus-list@drzeus.cx>, Jan Kara <jack@ucw.cz>,
+       Anton Vorontsov <cbou@mail.ru>, Jens Axboe <jens.axboe@oracle.com>,
+       Eric Van Hensbergen <ericvh@gmail.com>,
+       Wim Van Sebroeck <wim@iguana.be>, Christian Zankel <chris@zankel.net>,
+       Nicolas Pitre <nico@cam.org>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       Christoph Lameter <clameter@sgi.com>, Erez Zadok <ezk@cs.sunysb.edu>,
+       linux-kernel@vger.kernel.org
+Subject: Re: git trees which are not yet in linux-next
+References: <20080502151206.b40f77ea.akpm@linux-foundation.org>
+In-Reply-To: <20080502151206.b40f77ea.akpm@linux-foundation.org>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Andrew Morton wrote:
+> git-ieee1394: git+ssh://master.kernel.org/pub/scm/linux/kernel/git/ieee1394/linux1394-2.6.git#for-mm
 
+Stephen pulls linux1394-2.6.git#for-next.
 
-I code, therefore I am
+> Guys, could you please prepare a tree for Stephen and send the details
+> over to him?  Please Cc me also.
+> 
+> Once this has happened, there should be no need to run a separate for-mm
+> branch.  I'll just switch over to using whatever branch linux-next is
+> using.
 
-
---- On Fri, 5/2/08, David Lethe <david@santools.com> wrote:
-[snipped]
-> I was being too literal. md is a good solution (I use it
-> myself).  However, the OP wanted to "Make sure that if
-> one disk dies, the data is still in tact".  
-I was also concerned about performance. It seems that if the RAIDs will 
-be used heavily and independent of each other, and performance is a 
-concern, then dedicated disks (and possibly dedicated controllers)
-are the better option.
-
-
-      ____________________________________________________________________________________
-Be a better friend, newshound, and 
-know-it-all with Yahoo! Mobile.  Try it now.  http://mobile.yahoo.com/;_ylt=Ahu06i62sR8HDtDypao8Wcj9tAcJ
+-mm is going to become identical in content to -next?
+-- 
+Stefan Richter
+-=====-==--- -=-= ---==
+http://arcgraph.de/sr/
