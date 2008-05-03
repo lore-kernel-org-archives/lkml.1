@@ -1,93 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762072AbYECMA3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763267AbYECMBN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762072AbYECMA3 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 May 2008 08:00:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754835AbYECMAT
+	id S1763267AbYECMBN (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 May 2008 08:01:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758237AbYECMA6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 May 2008 08:00:19 -0400
-Received: from lazybastard.de ([212.112.238.170]:53960 "EHLO
-	longford.logfs.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754792AbYECMAS (ORCPT
+	Sat, 3 May 2008 08:00:58 -0400
+Received: from wa-out-1112.google.com ([209.85.146.176]:58229 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754835AbYECMA5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 May 2008 08:00:18 -0400
-Date: Sat, 3 May 2008 14:00:05 +0200
-From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
-To: matthieu castet <castet.matthieu@free.fr>
-Cc: Linux Kernel list <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@osdl.org>, linux-mtd@lists.infradead.org
-Subject: Re: LogFS merge
-Message-ID: <20080503120005.GA32608@logfs.org>
-References: <481C3087.8020501@free.fr>
+	Sat, 3 May 2008 08:00:57 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=GdeE9mV+JANVO/8L2cw+k7HZgtbBnCcSm/muYgevKNjH8UryFw18ackyM+59auiDxSkdJBagtJxbyVdzsCDSgfr1JVb4SgLVs0u8RyZm+UFHhqae3oyZnrKqnrFBGiyQ7A52a8yq8vG2krhaF89QcoeylSy2ziN0XBgAEOv/kFM=
+Message-ID: <ed10ee420805030500s39af3174v5d313f232dd7eb42@mail.gmail.com>
+Date: Sat, 3 May 2008 05:00:56 -0700
+From: "SL Baur" <steve@xemacs.org>
+To: "Adrian Bunk" <bunk@kernel.org>
+Subject: Re: How to reduce the number of open kernel bugs
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20080503112118.GK5838@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <481C3087.8020501@free.fr>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+References: <20080502124210.GB5838@cs181133002.pp.htv.fi>
+	 <ed10ee420805030313r457d8cdfjdbcb346ae928c125@mail.gmail.com>
+	 <20080503112118.GK5838@cs181133002.pp.htv.fi>
+X-Google-Sender-Auth: 39558ac8031fc524
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 3 May 2008 11:29:43 +0200, matthieu castet wrote:
+On 5/3/08, Adrian Bunk <bunk@kernel.org> wrote:
+
+> That's a problem elsewhere, but not the problem here.
 >
-> Shouldn't this get review by mtd guys first ?
+>  As far as I know this maintainer developed and maintaines this driver as
+>  a hobby.
 
-They were on Cc: on most of the review rounds.
+I'm not sure what point you're trying to make.  The point I was
+trying to make was against the folks who were suggesting
+adding certain metrics to Linux kernel patching.  The biggest
+number of reversions script that was just posted pointed at
+Linus and Andrew as the biggest villains, or that's how I read
+it and that is clearly bogus.
 
-> Also for info, there have been some issue raised by the ubifs developer [1].
+I have had similar experiences with people *paid* to handle
+bug reports, requests, etc. and had eerily similar dialogs.  Why
+should a volunteer working in his spare time behave any
+differently?
 
-I am aware of them.  When ignoring FUD and personal things (Artem and I
-have a history), it should come down to roughly this:
+What am I missing?
 
-1.
-Ubifs takes the easy approach and uses ubi for wear leveling, bad block
-handling, ets.  Saves a ton of work, gives quick results and is limited
-by ubi scan time, which is O(n).
-
-Logfs ignores ubi and does wear leveling, bad block handling, etc.
-itself.  Bad block handling in particular is not too robust yet.  If you
-expect blocks to rot away after mkfs time, logfs is a bad choice.
-
-2.
-Logfs still scans the medium.  It currently does not store free space
-maps and has to search for free space the hard way.  I still have a
-patch to keep the map in-memory, which will avoid any rescans.  But the
-real deal is to store it in a file with some additional tricks to make
-things work in a log-structured fashion.  Not done yet.
-
-Ubifs has a seperate region to store its free space map, which has its
-own GC.  Wear leveling is dealt with through ubi.  Again, ubi makes life
-easier.
-
-3. Code size.
-
-4. Mount time.  I don't see any numbers I could quote, but I believe
-ubifs is somewhere close to a second.  Does anyone know?  Logfs is in
-the 10-60ms range.
-
-5.
-Ubifs has write-back caching for file data.  Their benchmarks blow jffs2
-or logfs out of the water, which isn't surprising when comparing DRAM to
-flash.
-
-Logfs has write-back caching for metadata (indirect blocks, etc.) but
-immediatly writes normal data.  Some embedded folks actually prefer this
-approach, as it is more deterministic.  For most uses it simply throws
-away some performance.  Extending caching to normal data isn't too hard
-and fairly high on my list.
-
-6.
-"Logfs isn't finished yet."
-My usual answer to that is that Linux isn't finished yet either.  We're
-still improving performance, adding hardware support and fixing bugs
-some 15 years after people started using it.  The question is not
-whether there are improvements left, but whether it is good enough
-already.
-
-Jörn
-
--- 
-I've never met a human being who would want to read 17,000 pages of
-documentation, and if there was, I'd kill him to get him out of the
-gene pool.
--- Joseph Costello
+-sb
