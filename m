@@ -1,111 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754511AbYECEs4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757259AbYECEwc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754511AbYECEs4 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 May 2008 00:48:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751537AbYECEsp
+	id S1757259AbYECEwc (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 May 2008 00:52:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751537AbYECEwY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 May 2008 00:48:45 -0400
-Received: from e35.co.us.ibm.com ([32.97.110.153]:38508 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751360AbYECEso (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 May 2008 00:48:44 -0400
-Date: Fri, 2 May 2008 19:30:06 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Nick Piggin <npiggin@suse.de>, Jens Axboe <jens.axboe@oracle.com>,
-       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-       jeremy@goop.org, mingo@elte.hu
-Subject: Re: [PATCH 1/10] Add generic helpers for arch IPI function calls
-Message-ID: <20080503023006.GA586@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20080430112934.GA23203@linux.vnet.ibm.com> <20080430113456.GY12774@kernel.dk> <20080430121712.GR11126@linux.vnet.ibm.com> <20080430123717.GC12774@kernel.dk> <20080502020241.GA26088@linux.vnet.ibm.com> <20080502021233.GC11844@wotan.suse.de> <20080502122955.GB15522@linux.vnet.ibm.com> <20080502124205.GA23680@linux.vnet.ibm.com> <1209733169.13978.157.camel@twins> <20080502142139.GA7599@linux.vnet.ibm.com>
+	Sat, 3 May 2008 00:52:24 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:32846 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750845AbYECEwX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 May 2008 00:52:23 -0400
+Message-ID: <481BEF7A.1060300@garzik.org>
+Date: Sat, 03 May 2008 00:52:10 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080502142139.GA7599@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Stefan Richter <stefanr@s5r6.in-berlin.de>, linux-next@vger.kernel.org,
+       sfrench@us.ibm.com, swhiteho@redhat.com, ralf@linux-mips.org,
+       drzeus-list@drzeus.cx, jack@ucw.cz, cbou@mail.ru, jens.axboe@oracle.com,
+       ericvh@gmail.com, wim@iguana.be, chris@zankel.net, nico@cam.org,
+       penberg@cs.helsinki.fi, clameter@sgi.com, ezk@cs.sunysb.edu,
+       linux-kernel@vger.kernel.org
+Subject: Re: git trees which are not yet in linux-next
+References: <20080502151206.b40f77ea.akpm@linux-foundation.org>	<20080502154200.a6d8c43a.akpm@linux-foundation.org>	<481BBD84.10904@s5r6.in-berlin.de> <20080502183403.3d9f2d9f.akpm@linux-foundation.org>
+In-Reply-To: <20080502183403.3d9f2d9f.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 02, 2008 at 07:21:39AM -0700, Paul E. McKenney wrote:
-> On Fri, May 02, 2008 at 02:59:29PM +0200, Peter Zijlstra wrote:
-> > On Fri, 2008-05-02 at 05:42 -0700, Paul E. McKenney wrote:
-> > 
-> > > And here is one scenario that makes me doubt that my imagination is
-> > > faulty:
-> > > 
-> > > 1.	CPU 0 disables irqs.
-> > > 
-> > > 2.	CPU 1 disables irqs.
-> > > 
-> > > 3.	CPU 0 invokes smp_call_function().  But CPU 1 will never respond
-> > > 	because its irqs are disabled.
-> > > 
-> > > 4.	CPU 1 invokes smp_call_function().  But CPU 0 will never respond
-> > > 	because its irqs are disabled.
-> > > 
-> > > Looks like inherent deadlock to me, requiring that smp_call_function()
-> > > be invoked with irqs enabled.
-> > > 
-> > > So, what am I missing here?
-> > 
-> > The wish to do it anyway ;-)
-> > 
-> > I can imagine some situations where I'd like to try anyway and fall back
-> > to a slower path when failing.
-> > 
-> > With the initial design we would simply allocate data, stick it on the
-> > queue and call the ipi (when needed).
-> > 
-> > This is perfectly deadlock free when wait=0 and it just returns -ENOMEM
-> > on allocation failure.
-> > 
-> > It it doesn't return -ENOMEM I know its been queued and will be
-> > processed at some point, if it does fail, I can deal with it in another
-> > way.
-> > 
-> > I know I'd like to do that and I suspect Nick has a few use cases up his
-> > sleeve as well.
+Andrew Morton wrote:
+> On Sat, 03 May 2008 03:19:00 +0200 Stefan Richter <stefanr@s5r6.in-berlin.de> wrote:
 > 
-> OK, so one approach would be to check for irqs being disabled,
-> perhaps as follows, on top of my previous patch:
+>> Andrew Morton wrote:
+>>> On Fri, 2 May 2008 15:12:06 -0700
+>>> Andrew Morton <akpm@linux-foundation.org> wrote:
+>>>
+>>>> The first
+>>>> problem is working out "how the heck did that patch get into linux-next"? 
+>>>> That would be much easier if the signoff trail was complete for git-based
+>>>> patches, but it often is not.
+>>> doh.  I'm pulling linux-next's constituent trees independently, so if I
+>>> spot a turd in linux-next I can just grep the various git trees to find out
+>>> where it came from.
+>>>
+>>> It seems wrong though...
+>> What about the committer info?  Well, I suppose a nobody@localhost slips 
+>> in, but more often I expect it to be something more telling than that.
 > 
-> 		struct call_single_data *data = NULL;
+> Beats me.  To pick one example:
 > 
-> 		if (!wait) {
-> 			data = kmalloc(sizeof(*data), GFP_ATOMIC);
-> 			if (data)
-> 				data->flags = CSD_FLAG_ALLOC;
-> 		}
-> 		if (!data) {
-> 			if (unlikely(irqs_disabled())) {
-> 				put_cpu();
-> 				return -ENOMEM;
-> 			}
-> 			data = &d;
-> 			data->flags = CSD_FLAG_WAIT;
-> 		}
+> commit 1a72963d3af38eb17a939fc19b322735da1c0aad
+> Author: Matthew Wilcox <matthew@wil.cx>
+> Date:   Fri Apr 25 12:38:41 2008 -0400
 > 
-> 		data->func = func;
-> 		data->info = info;
-> 		generic_exec_single(cpu, data);
+>     Convert board-nokia770 from semaphore to spinlock
+>     
+>     None of the operations done under the semaphore could sleep, so a spinlock
+>     is more appropriate to this case.
+>     
+> Signed-off-by: Matthew Wilcox <willy@linux.intel.com>
 > 
-> That would prevent -ENOMEM unless you invoked the function with irqs
-> disabled.  So normal callers would still see the current failure-free
-> semantics -- you really don't want to be inflicting failure when not
-> necessary, right?
-> 
-> There could only be one irq-disabled caller at a time, which could be
-> handled using a trylock, returning -EBUSY if the lock is already held.
-> Otherwise, you end up with the scenario called out above (which Keith
-> Ownens pointed out some years ago).
-> 
-> Does this approach make sense?
+> There's no sign how that got there.  A bit of forensics shows up:
 
-Actually, no...  The irq-disabled callers would need to acquire the
-spinlock -before- disabling irqs, otherwise we end up right back in
-the deadlock scenario.
+Poke through the man pages, particularly git-log, and tell it to spit 
+out the committer info, then.  It's in there.
 
-						Thanx, Paul
+For example,
+
+	git log --pretty=full
+
+produces
+
+	commit c4d0f8cbca3a97900f85b082064a63c7a5928bd7
+	Author: Alan Cox <alan@lxorguk.ukuu.org.uk>
+	Commit: Greg Kroah-Hartman <gregkh@suse.de>
+
+	    usb_serial: some coding style fixes
+
+	    Signed-off-by: Alan Cox <alan@redhat.com>
+	    Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
+Regards,
+
+	Jeff
+
+
+
