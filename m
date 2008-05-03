@@ -1,54 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762220AbYECMVg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763431AbYECMWd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762220AbYECMVg (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 May 2008 08:21:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752742AbYECMV1
+	id S1763431AbYECMWd (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 May 2008 08:22:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755254AbYECMWZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 May 2008 08:21:27 -0400
-Received: from mail0.scram.de ([78.47.204.202]:39906 "EHLO mail.scram.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751980AbYECMV0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 May 2008 08:21:26 -0400
-X-Spam-Score: -4.077
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
- * -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
- *      [score: 0.0000]
- *  0.3 AWL AWL: From: address is in the auto white-list
-Message-ID: <481C58C0.4040107@scram.de>
-Date: Sat, 03 May 2008 14:21:20 +0200
-From: Jochen Friedrich <jochen@scram.de>
-User-Agent: Mozilla-Thunderbird 2.0.0.12 (X11/20080420)
+	Sat, 3 May 2008 08:22:25 -0400
+Received: from gustav.zipernowsky.hu ([193.225.20.248]:41256 "EHLO
+	gustav.zipernowsky.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752742AbYECMWY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 May 2008 08:22:24 -0400
 MIME-Version: 1.0
-To: Jean Delvare <khali@linux-fr.org>
-CC: LKML <linux-kernel@vger.kernel.org>, Rusty Russell <rusty@rustcorp.com.au>,
-       Kay Sievers <kay.sievers@vrfy.org>, Sam Ravnborg <sam@ravnborg.org>,
-       Linux I2C <i2c@lm-sensors.org>
-Subject: Re: [i2c] [PATCH] modpost: i2c aliases need no trailing wildcard
-References: <20080502203721.70c5dc09@hyperion.delvare>
-In-Reply-To: <20080502203721.70c5dc09@hyperion.delvare>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Date: Sat, 03 May 2008 14:22:17 +0200
+From: Oliver Pinter <oliver@zipernowsky.hu>
+To: Miklos Szeredi <mszeredi@suse.cz>
+Cc: linux-kernel@vger.kernel.org, Ulrich Drepper <drepper@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: [OP] 01-vfs-check-nanoseconds-in-utimensat.patch added  to
+ queue-2.6.22.23-op1
+Reply-To: oliver.pntr@gmail.com
+Message-ID: <360d0e9809dec86d69bbe425374de813@zipernowsky.hu>
+User-Agent: RoundCube Webmail/0.1
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jean,
+Your patch added to queue-2.6.22.23-op1.
+If anyone has any objections, please let us know.
 
-> Here's a patch doing this. If nobody objects, I'll send it to Linus
-> through my i2c tree next week.
+http://repo.or.cz/w/linux-2.6.22.y-op-patches.git
+git://repo.or.cz/linux-2.6.22.y-op-patches.git
 
-looks good to me:
+---
 
-#cat modules.alias 
-# Aliases extracted from modules themselves.
-alias i2c:dbox2-fp dbox2_fp
-alias of:N*T*Cfsl,cpm-i2c* i2c_cpm
-alias i2c:dummy i2c_core
-alias i2c:saa7129 saa7127
-alias i2c:saa7128 saa7127
-alias i2c:saa7127 saa7127
-alias i2c:saa7126 saa7127
+>From 043f46f6151df2c518988b5e41376e42491257b5 Mon Sep 17 00:00:00 2001
+From: Miklos Szeredi <mszeredi@suse.cz>
+Date: Tue, 16 Oct 2007 23:27:07 -0700
+Subject: [PATCH] VFS: check nanoseconds in utimensat
 
-Thanks,
-Jochen
+utimensat() (and possibly other callers of do_utimes()) didn't check if the
+nanosecond value was within the allowed range.
+
+Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
+Cc: Ulrich Drepper <drepper@redhat.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+
+diff --git a/fs/utimes.c b/fs/utimes.c
+index 682eb63..b9912ec 100644
+--- a/fs/utimes.c
++++ b/fs/utimes.c
+@@ -38,6 +38,14 @@ asmlinkage long sys_utime(char __user *filename, struct
+utimbuf __user *times)
+ 
+ #endif
+ 
++static bool nsec_valid(long nsec)
++{
++	if (nsec == UTIME_OMIT || nsec == UTIME_NOW)
++		return true;
++
++	return nsec >= 0 && nsec <= 999999999;
++}
++
+ /* If times==NULL, set access and modification to current time,
+  * must be owner or have write permission.
+  * Else, update from *times, must be owner or super user.
+@@ -52,6 +60,11 @@ long do_utimes(int dfd, char __user *filename, struct
+timespec *times, int flags
+ 	struct file *f = NULL;
+ 
+ 	error = -EINVAL;
++	if (times && (!nsec_valid(times[0].tv_nsec) ||
++		      !nsec_valid(times[1].tv_nsec))) {
++		goto out;
++	}
++
+ 	if (flags & ~AT_SYMLINK_NOFOLLOW)
+ 		goto out;
+ 
+
+
