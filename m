@@ -1,78 +1,150 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758570AbYECEy1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758858AbYECEz6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758570AbYECEy1 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 May 2008 00:54:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752250AbYECEyT
+	id S1758858AbYECEz6 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 May 2008 00:55:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751982AbYECEzv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 May 2008 00:54:19 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:60458 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751982AbYECEyS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 May 2008 00:54:18 -0400
-Message-ID: <481BEFF7.507@garzik.org>
-Date: Sat, 03 May 2008 00:54:15 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Sat, 3 May 2008 00:55:51 -0400
+Received: from e32.co.us.ibm.com ([32.97.110.150]:32863 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751360AbYECEzu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 May 2008 00:55:50 -0400
+Date: Fri, 2 May 2008 21:55:59 -0700
+From: "Darrick J. Wong" <djwong@us.ibm.com>
+To: linux-kernel <linux-kernel@vger.kernel.org>,
+       lm-sensors <lm-sensors@lm-sensors.org>,
+       "Mark M. Hoffman" <mhoffman@lightlink.com>
+Subject: [PATCH] i5k_amb: Support Intel 5400 chipset
+Message-ID: <20080503045558.GJ16078@tree.beaverton.ibm.com>
+Reply-To: djwong@us.ibm.com
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-next@vger.kernel.org, sfrench@us.ibm.com, swhiteho@redhat.com,
-       stefanr@s5r6.in-berlin.de, ralf@linux-mips.org, drzeus-list@drzeus.cx,
-       jack@ucw.cz, cbou@mail.ru, jens.axboe@oracle.com, ericvh@gmail.com,
-       wim@iguana.be, chris@zankel.net, nico@cam.org, penberg@cs.helsinki.fi,
-       clameter@sgi.com, ezk@cs.sunysb.edu, linux-kernel@vger.kernel.org
-Subject: Re: git trees which are not yet in linux-next
-References: <20080502151206.b40f77ea.akpm@linux-foundation.org>	<481B93AA.7040000@garzik.org> <20080502153301.8b27ac31.akpm@linux-foundation.org>
-In-Reply-To: <20080502153301.8b27ac31.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Fri, 02 May 2008 18:20:26 -0400
-> Jeff Garzik <jeff@garzik.org> wrote:
-> 
->> Andrew Morton wrote:
->>> (Jeff, git-libata-all is a pretty important one)
->>
->> libata-dev.git#NEXT is for linux-next, and libata-dev.git#ALL is for -mm
->>
->> Already taken care of.
->>
-> 
-> Oh.  Something seems to have gone wrong then.
-> 
-> Next/Trees has:
-> 
-> libata          git     git://git.kernel.org/pub/scm/linux/kernel/git/jgarzik/libata-dev.git#NEXT
-> 
-> but:
-> 
-> y:/usr/src/25> diffstat patches/linux-next.patch | grep /ata/      
-> y:/usr/src/25> 
-> 
-> There's nothing there?
+Minor rework to support the Intel 5400 chipset.
 
-Correct.  There is presently nothing waiting for linux-next.
+Signed-off-by: Darrick J. Wong <djwong@us.ibm.com>
+---
 
+ drivers/hwmon/i5k_amb.c |   39 ++++++++++++++++++++++++++++++++++-----
+ include/linux/pci_ids.h |    3 +++
+ 2 files changed, 37 insertions(+), 5 deletions(-)
 
-> (plans for git-jg-misc?)
-
-That's an ever-present bucket with ever-changing contents.  I put stuff 
-in there when I have things for -mm testing, and hopefully, eventually 
-upstream.
-
-Sometimes jgarzik/misc-2.6.git#ALL might be empty (like libata-dev#NEXT 
-is now), sometimes not.
-
-The general point is to make sure both you and Stephen are pulling the 
-right branches, which is sounds like you are.
-
-	Jeff
-
-
-
+diff --git a/drivers/hwmon/i5k_amb.c b/drivers/hwmon/i5k_amb.c
+index 6ac5c6f..f9e2ed6 100644
+--- a/drivers/hwmon/i5k_amb.c
++++ b/drivers/hwmon/i5k_amb.c
+@@ -111,6 +111,7 @@ struct i5k_amb_data {
+ 	void __iomem *amb_mmio;
+ 	struct i5k_device_attribute *attrs;
+ 	unsigned int num_attrs;
++	unsigned long chipset_id;
+ };
+ 
+ static ssize_t show_name(struct device *dev, struct device_attribute *devattr,
+@@ -382,7 +383,8 @@ err:
+ 	return res;
+ }
+ 
+-static int __devinit i5k_find_amb_registers(struct i5k_amb_data *data)
++static int __devinit i5k_find_amb_registers(struct i5k_amb_data *data,
++					    unsigned long devid)
+ {
+ 	struct pci_dev *pcidev;
+ 	u32 val32;
+@@ -390,7 +392,7 @@ static int __devinit i5k_find_amb_registers(struct i5k_amb_data *data)
+ 
+ 	/* Find AMB register memory space */
+ 	pcidev = pci_get_device(PCI_VENDOR_ID_INTEL,
+-				PCI_DEVICE_ID_INTEL_5000_ERR,
++				devid,
+ 				NULL);
+ 	if (!pcidev)
+ 		return -ENODEV;
+@@ -409,6 +411,8 @@ static int __devinit i5k_find_amb_registers(struct i5k_amb_data *data)
+ 		goto out;
+ 	}
+ 
++	data->chipset_id = devid;
++
+ 	res = 0;
+ out:
+ 	pci_dev_put(pcidev);
+@@ -441,10 +445,30 @@ out:
+ 	return res;
+ }
+ 
++static unsigned long i5k_channel_pci_id(struct i5k_amb_data *data,
++					unsigned long channel)
++{
++	switch (data->chipset_id) {
++	case PCI_DEVICE_ID_INTEL_5000_ERR:
++		return PCI_DEVICE_ID_INTEL_5000_FBD0 + channel;
++	case PCI_DEVICE_ID_INTEL_5400_ERR:
++		return PCI_DEVICE_ID_INTEL_5400_FBD0 + channel;
++	default:
++		BUG();
++	}
++}
++
++static unsigned long chipset_ids[] = {
++	PCI_DEVICE_ID_INTEL_5000_ERR,
++	PCI_DEVICE_ID_INTEL_5400_ERR,
++	0
++};
++
+ static int __devinit i5k_amb_probe(struct platform_device *pdev)
+ {
+ 	struct i5k_amb_data *data;
+ 	struct resource *reso;
++	int i;
+ 	int res = -ENODEV;
+ 
+ 	data = kzalloc(sizeof(*data), GFP_KERNEL);
+@@ -452,19 +476,24 @@ static int __devinit i5k_amb_probe(struct platform_device *pdev)
+ 		return -ENOMEM;
+ 
+ 	/* Figure out where the AMB registers live */
+-	res = i5k_find_amb_registers(data);
++	i = 0;
++	do {
++		res = i5k_find_amb_registers(data, chipset_ids[i]);
++		i++;
++	} while (res && chipset_ids[i]);
++
+ 	if (res)
+ 		goto err;
+ 
+ 	/* Copy the DIMM presence map for the first two channels */
+ 	res = i5k_channel_probe(&data->amb_present[0],
+-				PCI_DEVICE_ID_INTEL_5000_FBD0);
++				i5k_channel_pci_id(data, 0));
+ 	if (res)
+ 		goto err;
+ 
+ 	/* Copy the DIMM presence map for the optional second two channels */
+ 	i5k_channel_probe(&data->amb_present[2],
+-			  PCI_DEVICE_ID_INTEL_5000_FBD1);
++			  i5k_channel_pci_id(data, 1));
+ 
+ 	/* Set up resource regions */
+ 	reso = request_mem_region(data->amb_base, data->amb_len, DRVNAME);
+diff --git a/include/linux/pci_ids.h b/include/linux/pci_ids.h
+index 70eb3c8..bb6e5e2 100644
+--- a/include/linux/pci_ids.h
++++ b/include/linux/pci_ids.h
+@@ -2382,6 +2382,9 @@
+ #define PCI_DEVICE_ID_INTEL_ICH10_4	0x3a30
+ #define PCI_DEVICE_ID_INTEL_ICH10_5	0x3a60
+ #define PCI_DEVICE_ID_INTEL_IOAT_SNB	0x402f
++#define PCI_DEVICE_ID_INTEL_5400_ERR	0x4030
++#define PCI_DEVICE_ID_INTEL_5400_FBD0	0x4035
++#define PCI_DEVICE_ID_INTEL_5400_FBD1	0x4036
+ #define PCI_DEVICE_ID_INTEL_IOAT_SCNB	0x65ff
+ #define PCI_DEVICE_ID_INTEL_TOLAPAI_0	0x5031
+ #define PCI_DEVICE_ID_INTEL_TOLAPAI_1	0x5032
