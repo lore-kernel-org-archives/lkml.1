@@ -1,110 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753369AbYECTcq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753170AbYECTe0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753369AbYECTcq (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 May 2008 15:32:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750894AbYECTci
+	id S1753170AbYECTe0 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 May 2008 15:34:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750894AbYECTeR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 May 2008 15:32:38 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:34182 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750763AbYECTch (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 May 2008 15:32:37 -0400
-Date: Sat, 3 May 2008 21:32:23 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: linux-kernel@vger.kernel.org
-Cc: samuel@sortiz.org, Dmitry Torokhov <dtor_core@ameritech.net>
-Subject: [patch] irda: fix !PNP support in drivers/net/irda/nsc-ircc.c
-Message-ID: <20080503193222.GA23373@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Sat, 3 May 2008 15:34:17 -0400
+Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:37327 "EHLO
+	pd3mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750763AbYECTeQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 May 2008 15:34:16 -0400
+Date: Sat, 03 May 2008 13:34:14 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: Remove Asus EEE UDMA/33 limitation.
+In-reply-to: <fa.ulFofhLJhFFkP/xiWxdfjwM8XDA@ifi.uio.no>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>,
+       Dave Jones <davej@codemonkey.org.uk>, linux-ide@vger.kernel.org,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Message-id: <481CBE36.6040007@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa.tsKjLRZd5ILFUSCwKgwjuJUvN+Y@ifi.uio.no>
+ <fa.l6LkASoBXPmhrri16ok+xTRwEUY@ifi.uio.no>
+ <fa.ulFofhLJhFFkP/xiWxdfjwM8XDA@ifi.uio.no>
+User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Alan Cox wrote:
+> On Sat, 3 May 2008 10:58:17 +0100
+> Matthew Garrett <mjg59@srcf.ucam.org> wrote:
+> 
+>> On Fri, May 02, 2008 at 11:44:58AM -0400, Dave Jones wrote:
+>>
+>>>  static const struct ich_laptop ich_laptop[] = {
+>>>  	/* devid, subvendor, subdev */
+>>> +	{ 0x2653, 0x1043, 0x82d8 },	/* ICH6M on Asus Eee PC */
+>>>  	{ 0x27DF, 0x0005, 0x0280 },	/* ICH7 on Acer 5602WLMi */
+>>>  	{ 0x27DF, 0x1025, 0x0102 },	/* ICH7 on Acer 5602aWLMi */
+>>>  	{ 0x27DF, 0x1025, 0x0110 },	/* ICH7 on Acer 3682WLMi */
+>> Don't the ACPI timing methods let us work this out without requiring 
+>> machine specific knowledge? 
+> 
+> We don't currently sniff the ACPI timing data on Intel boxes - we can do
+> so and there is a library routine but I'd be worried about the usual
+> standard of BIOS code. Right now we only do it for chipsets which are so
+> braindamaged we have no other choice or where the vendor specifically
+> implemented and intended the ACPI data to be used for this (eg Nvidia)
 
-x86.git testing found the following build failure in latest -git:
-
- drivers/built-in.o: In function `nsc_ircc_pnp_probe':
- nsc-ircc.c:(.text+0xdf1b6): undefined reference to `pnp_get_resource'
- nsc-ircc.c:(.text+0xdf1d4): undefined reference to `pnp_get_resource'
- nsc-ircc.c:(.text+0xdf1ee): undefined reference to `pnp_get_resource'
- nsc-ircc.c:(.text+0xdf237): undefined reference to `pnp_get_resource'
- nsc-ircc.c:(.text+0xdf24c): undefined reference to `pnp_get_resource'
- drivers/built-in.o:nsc-ircc.c:(.text+0xdf266): more undefined references to `pnp_get_resource' follow
- make: *** [.tmp_vmlinux1] Error 1
-
-triggered via this config:
-
-  http://redhat.com/~mingo/misc/config-Sat_May__3_20_53_13_CEST_2008.bad
-
-while generally most users will have PNP enabled, drivers can support
-non-PNP build mode too - and most drivers implement it. That is typically
-done by providing a dummy pnp_driver structure that will not probe anything.
-
-The fallback routines in the driver will handle this dumber mode of
-operation too.
-
-This patch implements that. I have not tested whether this actually
-works on real hardware so take care. It does resolve the build bug.
-
-[ Another solution that is used by a few drivers is to exclude the driver
-  in the Kconfig if PNP is disabled, via "depends on PNP", but this would
-  limit the availability of the driver needlessly. ]
-
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- drivers/net/irda/nsc-ircc.c |    6 ++++++
- 1 file changed, 6 insertions(+)
-
-Index: linux/drivers/net/irda/nsc-ircc.c
-===================================================================
---- linux.orig/drivers/net/irda/nsc-ircc.c
-+++ linux/drivers/net/irda/nsc-ircc.c
-@@ -100,7 +100,9 @@ static int nsc_ircc_probe_39x(nsc_chip_t
- static int nsc_ircc_init_108(nsc_chip_t *chip, chipio_t *info);
- static int nsc_ircc_init_338(nsc_chip_t *chip, chipio_t *info);
- static int nsc_ircc_init_39x(nsc_chip_t *chip, chipio_t *info);
-+#ifdef CONFIG_PNP
- static int nsc_ircc_pnp_probe(struct pnp_dev *dev, const struct pnp_device_id *id);
-+#endif
- 
- /* These are the known NSC chips */
- static nsc_chip_t chips[] = {
-@@ -156,9 +158,11 @@ static const struct pnp_device_id nsc_ir
- MODULE_DEVICE_TABLE(pnp, nsc_ircc_pnp_table);
- 
- static struct pnp_driver nsc_ircc_pnp_driver = {
-+#ifdef CONFIG_PNP
- 	.name = "nsc-ircc",
- 	.id_table = nsc_ircc_pnp_table,
- 	.probe = nsc_ircc_pnp_probe,
-+#endif
- };
- 
- /* Some prototypes */
-@@ -916,6 +920,7 @@ static int nsc_ircc_probe_39x(nsc_chip_t
- 	return 0;
- }
- 
-+#ifdef CONFIG_PNP
- /* PNP probing */
- static int nsc_ircc_pnp_probe(struct pnp_dev *dev, const struct pnp_device_id *id)
- {
-@@ -952,6 +957,7 @@ static int nsc_ircc_pnp_probe(struct pnp
- 
- 	return 0;
- }
-+#endif
- 
- /*
-  * Function nsc_ircc_setup (info)
+Given that the bootup ACPI _GTM results will be used by Windows to 
+determine the DMA mode setting with the standard Microsoft atapi.sys 
+driver which PATA controllers would typically use, and Windows is what 
+the majority of this hardware was designed to run, I think it should be 
+quite trustworthy..
