@@ -1,49 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763170AbYECJzY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763016AbYECJ6j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763170AbYECJzY (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 May 2008 05:55:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760314AbYECJzJ
+	id S1763016AbYECJ6j (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 May 2008 05:58:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759769AbYECJ6a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 May 2008 05:55:09 -0400
-Received: from rv-out-0506.google.com ([209.85.198.239]:26284 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759911AbYECJzG (ORCPT
+	Sat, 3 May 2008 05:58:30 -0400
+Received: from mjg.x.mythic-beasts.com ([93.93.128.6]:59708 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1759125AbYECJ63 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 May 2008 05:55:06 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=jjTo61pjB1GNqzgMJQn4C38OJJYgBLj6emPnSNcDqrVrYOGMahfn1Mx/BmLofd4h+vJZrGQMdTlZHJ2bMlDP2JlN5eVYTjfekktvpHUpXDVrgrYoxl0KugPm9xkTkxcd+GpdfHdkyO30bYjQQq7WPDVu9kPRDSQkhjWGlW8RKss=
-Message-ID: <5681ec900805030255n629d9cdbl1769c6812c8df928@mail.gmail.com>
-Date: Sat, 3 May 2008 15:25:05 +0530
-From: "Sanjeev Aditya Naga" <sanjeev.kernel@gmail.com>
-To: trenn@suse.de
-Subject: Re: [>=2.6.23][BUG] Oops on power disconnection
-Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-acpi@vger.kernel.org,
-       "Venkatesh Pallipadi" <venkatesh.pallipadi@intel.com>,
-       "Li, Shaohua" <shaohua.li@intel.com>
-In-Reply-To: <5681ec900804050615y59bca042g648df348914b6062@mail.gmail.com>
+	Sat, 3 May 2008 05:58:29 -0400
+Date: Sat, 3 May 2008 10:58:17 +0100
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Dave Jones <davej@codemonkey.org.uk>, linux-ide@vger.kernel.org,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Message-ID: <20080503095817.GA22208@srcf.ucam.org>
+References: <20080502154458.GA10567@codemonkey.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <5681ec900803300645l5369cda4g119957a4b7f05d17@mail.gmail.com>
-	 <5681ec900803300651m6e5f38deke1b7746236e5bb9@mail.gmail.com>
-	 <20080402001418.aad6eed2.akpm@linux-foundation.org>
-	 <5681ec900804020608o62be52c4ted172e18daf24f5b@mail.gmail.com>
-	 <1207147729.30061.9.camel@hammer1.suse.de>
-	 <5681ec900804020913t4adc38b1r2e424fa8bbdda241@mail.gmail.com>
-	 <1207159974.4700.6.camel@queen.suse.de>
-	 <5681ec900804030915w720f3ccfp74e5d501ca3d6b56@mail.gmail.com>
-	 <1207256678.6024.90.camel@linux-2bdv.site>
-	 <5681ec900804050615y59bca042g648df348914b6062@mail.gmail.com>
+In-Reply-To: <20080502154458.GA10567@codemonkey.org.uk>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+Subject: Re: Remove Asus EEE UDMA/33 limitation.
+X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
+X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id m439tTEB003342
 
-Hello Thomas, Andrew,
-The recent patch given by Venkatesh athttp://bugzilla.kernel.org/show_bug.cgi?id=10394has fixed the problem. Thank you all for the supportextended regarding the same.
-Kind Regards,Sanjeev
-On Sat, Apr 5, 2008 at 6:45 PM, Sanjeev Aditya Naga<sanjeev.kernel@gmail.com> wrote:> Hello Thomas,>>>>  On Fri, Apr 4, 2008 at 2:34 AM, Thomas Renninger <trenn@suse.de> wrote:>  >>  >>  >  On Thu, 2008-04-03 at 21:45 +0530, Sanjeev Aditya Naga wrote:>  >  > Hello Thomas,>  >  >>  >  > On Wed, Apr 2, 2008 at 11:42 PM, Thomas Renninger <trenn@suse.de> wrote:>  >  > >>  >  > > On Wed, 2008-04-02 at 21:43 +0530, Sanjeev Aditya Naga wrote:>  >  > >  > Hello Thomas,>  >  > >  >>  >  > >  > > Hi,>  >  > >  > >>  >  > >  > >>  >  > >  > >  On Wed, 2008-04-02 at 18:38 +0530, Sanjeev Aditya Naga wrote:>  >  > >  > >  > Hello Andrew Morton,>  >  > >  > >  >>  >  > >  > >  > Greetings!>  >  > >  > >  >>  >  > >  > >  > Thank you for the update. Is there anything I can do>  >  > >  > >  > from my side?>  >  > >  > >  >>  >  > >  > >  > I thought it was a acpi (dsdt) problem. And based on>  >  > >  > >  > a tutorial, I have tried to extract, fix, recompile the dsdt>  >  > >  > >  > and use it with the kernel. But still I have the same problem.>  >  > >  > >  > Let me know if I shall attach the dsdt (original) decompiled>  >  > >  > >  > code, if that helps.>  >  > >  > >>  >  > >  > >  this could be due a general memory corruption problem through ACPICA.>  >  > >  > >  If you get different backtraces on reboots even you only modified things>  >  > >  > >  that do not have to do with the problem, it's probably that and related>  >  > >  > >  to:>  >  > >  > >  ï»¿http://bugzilla.kernel.org/show_bug.cgi?id=10339>  >  > >  > >>  >  > >  > >  You might want to try the latest kernel or the patch posted there.>  >  > >  >>  >  > >  > Thank you for the update.>  >  > >  > I have checked the bug and unfortunately its not the>  >  > >  > same issue. Things work absolutely fine, when I'm>  >  > >  > running on AC power. It even displays the exact>  >  > >  > battery (and charging) status to me. It messes up>  >  > >  > when suddenly AC power gets disconnected and>  >  > >  > switches to battery mode (The time when I get Oops).>  >  > >  > The system is still usable after switching to battery>  >  > >  > mode and I still get correct battery stats until its>  >  > >  > completely discharged. However most of the commands>  >  > >  > like kill, poweroff, java doesn't work after the Oops.>  >  > >  The bug is not related to battery, but to AML parsing and can therefore>  >  > >  affect anything which is ACPI related.>  >  > >>  >  > >>  >  > >  > BTW there is one similarity with the referenced bug.>  >  > >  > If I boot the computer without AC Power, it gives the>  >  > >  > same Oops and stops during booting itself.>  >  > >  >>  >  > >  > I shall try the latest kernel once and shall update you.>  >  > >  That would be great.>  >  > >  If it works, please give the patch there a try, IMO this one should see>  >  > >  2.6.2[34].X stable kernels soon.>  >  >>  >  > I have got the lastest kernel 2.6.25-rc8 today. I observed that>  >  > the referenced patch is already in the kernel. However this didn't>  >  > solve the problem in question. I get the same Oops on this kernel>  >  > as well. Find the latest dmesg along with the Oops:>  >  Ok.>  >  Maybe best is you document the backtraces/oopses with kernel versions at>  >  bugzilla.kernel.org and add dmesg and acpidump.>  >  It seems your machine notifies OS that the C-state table changed.>  >  AFAIK this is rare and there might be a general bug in the cpuidle layer>  >  which I do not know well.>  >  Best you add Venkatesh and Shaohua Li <shaohua.li@intel.com> to CC of>  >  the bug.>  >  While the backtrace shows a lot, cpuidle IMO is missing a general debug>  >  option like in the cpufreq layer.>  >  I couldn't find a single printk in the whole cpuidle/{cpuidle,sysfs}.c>  >  files, even on error paths. ï»¿Also in the cpuidle specific parts of>  >  drivers/acpi/processor_idle.c some debug printks may help for future bug>  >  reports. It is very hard to guess what happened...>>  Thank you for the update:>>  I have just registered a bug at>  http://bugzilla.kernel.org/show_bug.cgi?id=10394>  as directed by you.>>  Kind Regards,>  Sanjeev>ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éÝ¶¥Šwÿº{.nÇ+‰·¥Š{±þG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŽŠÝ¢j"ú¶m§ÿÿ¾«þG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
+On Fri, May 02, 2008 at 11:44:58AM -0400, Dave Jones wrote:
+
+>  static const struct ich_laptop ich_laptop[] = {
+>  	/* devid, subvendor, subdev */
+> +	{ 0x2653, 0x1043, 0x82d8 },	/* ICH6M on Asus Eee PC */
+>  	{ 0x27DF, 0x0005, 0x0280 },	/* ICH7 on Acer 5602WLMi */
+>  	{ 0x27DF, 0x1025, 0x0102 },	/* ICH7 on Acer 5602aWLMi */
+>  	{ 0x27DF, 0x1025, 0x0110 },	/* ICH7 on Acer 3682WLMi */
+
+Don't the ACPI timing methods let us work this out without requiring 
+machine specific knowledge? Or is the concern that some firmware will 
+let us program high modes even if the cabling isn't up to it?
+
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
