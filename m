@@ -1,146 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756288AbYECXgS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756553AbYECXh5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756288AbYECXgS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 May 2008 19:36:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753068AbYECXgD
+	id S1756553AbYECXh5 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 May 2008 19:37:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754573AbYECXhu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 May 2008 19:36:03 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:36083
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752931AbYECXgB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 May 2008 19:36:01 -0400
-Date: Sat, 03 May 2008 16:36:00 -0700 (PDT)
-Message-Id: <20080503.163600.93588714.davem@davemloft.net>
-To: mingo@elte.hu
-Cc: benh@kernel.crashing.org, a.p.zijlstra@chello.nl, efault@gmx.de,
-       elendil@planet.nl, parag.warudkar@gmail.com,
-       linux-kernel@vger.kernel.org, guichaz@yahoo.fr, andi@firstfloor.org
-Subject: Re: 'global' rq->clock
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20080503.160408.238581868.davem@davemloft.net>
-References: <1209853855.26383.28.camel@pasglop>
-	<20080503223844.GA18344@elte.hu>
-	<20080503.160408.238581868.davem@davemloft.net>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Sat, 3 May 2008 19:37:50 -0400
+Received: from khc.piap.pl ([195.187.100.11]:59656 "EHLO khc.piap.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753068AbYECXht (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 May 2008 19:37:49 -0400
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Ingo, no more kconfig patches
+References: <20080430170125.ZZRA012@mailhub.coreip.homeip.net>
+	<20080430211317.GA24633@elte.hu>
+	<20080430230100.GK29330@cs181133002.pp.htv.fi>
+	<20080501025234.GE27574@elte.hu>
+	<20080501115923.GX29330@cs181133002.pp.htv.fi>
+	<20080503191445.GF5292@elte.hu>
+	<20080503202416.GR5838@cs181133002.pp.htv.fi>
+	<m37ieb84ve.fsf@maximus.localdomain>
+	<20080503214750.GU5838@cs181133002.pp.htv.fi>
+	<m3wsmb6np2.fsf@maximus.localdomain>
+	<20080503222943.GX5838@cs181133002.pp.htv.fi>
+From: Krzysztof Halasa <khc@pm.waw.pl>
+Date: Sun, 04 May 2008 01:37:47 +0200
+In-Reply-To: <20080503222943.GX5838@cs181133002.pp.htv.fi> (Adrian Bunk's message of "Sun\, 4 May 2008 01\:29\:43 +0300")
+Message-ID: <m3r6cj5584.fsf@maximus.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: David Miller <davem@davemloft.net>
-Date: Sat, 03 May 2008 16:04:08 -0700 (PDT)
+Adrian Bunk <bunk@kernel.org> writes:
 
-> From: Ingo Molnar <mingo@elte.hu>
-> Date: Sun, 4 May 2008 00:38:44 +0200
-> 
-> > the same bug existed on x86 too: that too does a few IPIs without 
-> > irq_enter/irq_exit. We now removed the softlockup dependency so it 
-> > should not be required to do an irq_enter()/exit anymore - unless the 
-> > code that the IPI uses accesses jiffies. (but that would be unusual)
-> 
-> That move doesn't solve the problem, I'm strongly certain
-> arch's still need to add the irq_{enter,exit}().
-> 
-> I'll revert the irq_{enter,exit}() changes on one of my
-> sparc64 boxes to validate this later today.
+> FB_SGIVW requires X86_VISWS and it's selected automatically.
+>
+> (which is not good if you want a kernel that runs on a PC)
 
-False alarm, which is good news, thanks Ingo.  I can revert
-the following it seems:
+Not sure what do you mean, it currently seem to "depend" on X86_VISWS:
 
-commit 2664ef44cf5053d2b7dff01cecac70bc601a5f68
-Author: David S. Miller <davem@davemloft.net>
-Date:   Fri Apr 25 03:11:37 2008 -0700
+config FB_SGIVW
+        tristate "SGI Visual Workstation framebuffer support"
+        depends on FB && X86_VISWS
+        select FB_CFB_FILLRECT
+        select FB_CFB_COPYAREA
+        select FB_CFB_IMAGEBLIT
 
-    [SPARC64]: Wrap SMP IPIs with irq_enter()/irq_exit().
-    
-    Otherwise all sorts of bad things can happen, including
-    spurious softlockup reports.
-    
-    Other platforms have this same bug, in one form or
-    another, just don't see the issue because they
-    don't sleep as long as sparc64 can in NOHZ.
-    
-    Thanks to some brilliant debugging by Peter Zijlstra.
-    
-    Signed-off-by: David S. Miller <davem@davemloft.net>
+> Why do we have to bother users with the MII option at all?
+>
+> "E1000E=m and TULIP=m but MII=y" works, but it doesn't really make 
+> sense.
 
-diff --git a/arch/sparc64/kernel/smp.c b/arch/sparc64/kernel/smp.c
-index 524b889..409dd71 100644
---- a/arch/sparc64/kernel/smp.c
-+++ b/arch/sparc64/kernel/smp.c
-@@ -866,14 +866,21 @@ void smp_call_function_client(int irq, struct pt_regs *regs)
- 	void *info = call_data->info;
- 
- 	clear_softint(1 << irq);
-+
-+	irq_enter();
-+
-+	if (!call_data->wait) {
-+		/* let initiator proceed after getting data */
-+		atomic_inc(&call_data->finished);
-+	}
-+
-+	func(info);
-+
-+	irq_exit();
-+
- 	if (call_data->wait) {
- 		/* let initiator proceed only after completion */
--		func(info);
- 		atomic_inc(&call_data->finished);
--	} else {
--		/* let initiator proceed after getting data */
--		atomic_inc(&call_data->finished);
--		func(info);
- 	}
- }
- 
-@@ -1032,7 +1039,9 @@ void smp_receive_signal(int cpu)
- 
- void smp_receive_signal_client(int irq, struct pt_regs *regs)
- {
-+	irq_enter();
- 	clear_softint(1 << irq);
-+	irq_exit();
- }
- 
- void smp_new_mmu_context_version_client(int irq, struct pt_regs *regs)
-@@ -1040,6 +1049,8 @@ void smp_new_mmu_context_version_client(int irq, struct pt_regs *regs)
- 	struct mm_struct *mm;
- 	unsigned long flags;
- 
-+	irq_enter();
-+
- 	clear_softint(1 << irq);
- 
- 	/* See if we need to allocate a new TLB context because
-@@ -1059,6 +1070,8 @@ void smp_new_mmu_context_version_client(int irq, struct pt_regs *regs)
- 	load_secondary_context(mm);
- 	__flush_tlb_mm(CTX_HWBITS(mm->context),
- 		       SECONDARY_CONTEXT);
-+
-+	irq_exit();
- }
- 
- void smp_new_mmu_context_version(void)
-@@ -1217,6 +1230,8 @@ void smp_penguin_jailcell(int irq, struct pt_regs *regs)
- {
- 	clear_softint(1 << irq);
- 
-+	irq_enter();
-+
- 	preempt_disable();
- 
- 	__asm__ __volatile__("flushw");
-@@ -1229,6 +1244,8 @@ void smp_penguin_jailcell(int irq, struct pt_regs *regs)
- 	prom_world(0);
- 
- 	preempt_enable();
-+
-+	irq_exit();
- }
- 
- /* /proc/profile writes can call this, don't __init it please. */
+(Obviously it assumes both TULIP and E1000E required MII which is not
+exactly the case)
+
+But it makes a perfect sense, I can have modular drivers for (few)
+hardware devices (just in case I want to rmmod etc) but most of the
+kernel may be not modular. It would be nice if the Kconfig ask me if
+I want to "select" the dependency Y or M, even if there is only one
+way to make "select" dependencies happy (not counting "Y vs "M").
+-- 
+Krzysztof Halasa
