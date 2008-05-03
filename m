@@ -1,86 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763431AbYECMWd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763666AbYECMXo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763431AbYECMWd (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 May 2008 08:22:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755254AbYECMWZ
+	id S1763666AbYECMXo (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 May 2008 08:23:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755254AbYECMXh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 May 2008 08:22:25 -0400
-Received: from gustav.zipernowsky.hu ([193.225.20.248]:41256 "EHLO
-	gustav.zipernowsky.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752742AbYECMWY (ORCPT
+	Sat, 3 May 2008 08:23:37 -0400
+Received: from mtagate8.de.ibm.com ([195.212.29.157]:45408 "EHLO
+	mtagate8.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755284AbYECMXg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 May 2008 08:22:24 -0400
+	Sat, 3 May 2008 08:23:36 -0400
+Date: Sat, 3 May 2008 14:23:14 +0200
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       John Stultz <johnstul@us.ibm.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] clocksource: Fix permissions for available_clocksource
+Message-ID: <20080503122314.GA5996@osiris.boeblingen.de.ibm.com>
+References: <20080502104940.GA4426@osiris.boeblingen.de.ibm.com> <alpine.LFD.1.10.0805021635030.6003@apollo.tec.linutronix.de> <20080502152730.GA5220@osiris.boeblingen.de.ibm.com> <alpine.LFD.1.10.0805021731550.6003@apollo.tec.linutronix.de>
 MIME-Version: 1.0
-Date: Sat, 03 May 2008 14:22:17 +0200
-From: Oliver Pinter <oliver@zipernowsky.hu>
-To: Miklos Szeredi <mszeredi@suse.cz>
-Cc: linux-kernel@vger.kernel.org, Ulrich Drepper <drepper@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [OP] 01-vfs-check-nanoseconds-in-utimensat.patch added  to
- queue-2.6.22.23-op1
-Reply-To: oliver.pntr@gmail.com
-Message-ID: <360d0e9809dec86d69bbe425374de813@zipernowsky.hu>
-User-Agent: RoundCube Webmail/0.1
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.1.10.0805021731550.6003@apollo.tec.linutronix.de>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Your patch added to queue-2.6.22.23-op1.
-If anyone has any objections, please let us know.
+On Fri, May 02, 2008 at 05:34:06PM +0200, Thomas Gleixner wrote:
+> On Fri, 2 May 2008, Heiko Carstens wrote:
+> > On Fri, May 02, 2008 at 04:36:37PM +0200, Thomas Gleixner wrote:
+> > > On Fri, 2 May 2008, Heiko Carstens wrote:
+> > > > From: Heiko Carstens <heiko.carstens@de.ibm.com>
+> > > > 
+> > > > File permissions for
+> > > > /sys/devices/system/clocksource/clocksource0/available_clocksource
+> > > > are 600 which allows write access. But this is in fact a read only
+> > > > file. So change permissions to 400.
+> > > 
+> > > Indeed. The question is whether we should make this 444. There is no
+> > > harm, when users can read the info. Same applies for the
+> > > current_clocksource entry, making it 644 should be fine.
+> > 
+> > Sure, I can send an on-top patch for this.
+> 
+> Yes, please.
 
-http://repo.or.cz/w/linux-2.6.22.y-op-patches.git
-git://repo.or.cz/linux-2.6.22.y-op-patches.git
-
+Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
 ---
+ kernel/time/clocksource.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
->From 043f46f6151df2c518988b5e41376e42491257b5 Mon Sep 17 00:00:00 2001
-From: Miklos Szeredi <mszeredi@suse.cz>
-Date: Tue, 16 Oct 2007 23:27:07 -0700
-Subject: [PATCH] VFS: check nanoseconds in utimensat
-
-utimensat() (and possibly other callers of do_utimes()) didn't check if the
-nanosecond value was within the allowed range.
-
-Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
-Cc: Ulrich Drepper <drepper@redhat.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
-
-diff --git a/fs/utimes.c b/fs/utimes.c
-index 682eb63..b9912ec 100644
---- a/fs/utimes.c
-+++ b/fs/utimes.c
-@@ -38,6 +38,14 @@ asmlinkage long sys_utime(char __user *filename, struct
-utimbuf __user *times)
+Index: linux-2.6/kernel/time/clocksource.c
+===================================================================
+--- linux-2.6.orig/kernel/time/clocksource.c
++++ linux-2.6/kernel/time/clocksource.c
+@@ -471,10 +471,10 @@ sysfs_show_available_clocksources(struct
+ /*
+  * Sysfs setup bits:
+  */
+-static SYSDEV_ATTR(current_clocksource, 0600, sysfs_show_current_clocksources,
++static SYSDEV_ATTR(current_clocksource, 0644, sysfs_show_current_clocksources,
+ 		   sysfs_override_clocksource);
  
- #endif
+-static SYSDEV_ATTR(available_clocksource, 0400,
++static SYSDEV_ATTR(available_clocksource, 0444,
+ 		   sysfs_show_available_clocksources, NULL);
  
-+static bool nsec_valid(long nsec)
-+{
-+	if (nsec == UTIME_OMIT || nsec == UTIME_NOW)
-+		return true;
-+
-+	return nsec >= 0 && nsec <= 999999999;
-+}
-+
- /* If times==NULL, set access and modification to current time,
-  * must be owner or have write permission.
-  * Else, update from *times, must be owner or super user.
-@@ -52,6 +60,11 @@ long do_utimes(int dfd, char __user *filename, struct
-timespec *times, int flags
- 	struct file *f = NULL;
- 
- 	error = -EINVAL;
-+	if (times && (!nsec_valid(times[0].tv_nsec) ||
-+		      !nsec_valid(times[1].tv_nsec))) {
-+		goto out;
-+	}
-+
- 	if (flags & ~AT_SYMLINK_NOFOLLOW)
- 		goto out;
- 
-
-
+ static struct sysdev_class clocksource_sysclass = {
