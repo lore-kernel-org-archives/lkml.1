@@ -1,60 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760136AbYECCpQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760136AbYECCwN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760136AbYECCpQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 22:45:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756864AbYECCpB
+	id S1760136AbYECCwN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 22:52:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756874AbYECCwA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 22:45:01 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:53440 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755568AbYECCpA (ORCPT
+	Fri, 2 May 2008 22:52:00 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:50848 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756864AbYECCv7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 22:45:00 -0400
-Date: Fri, 2 May 2008 22:44:57 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Sven-Thorsten Dietrich <sven@thebigcorporation.com>
-cc: Remy Bohmer <linux@bohmer.net>, LKML <linux-kernel@vger.kernel.org>,
-       RT <linux-rt-users@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Jon Masters <jonathan@jonmasters.org>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: Preempt-RT patch for 2.6.25
-In-Reply-To: <1209755665.25628.50.camel@dd.thebigcorporation.com>
-Message-ID: <Pine.LNX.4.58.0805022244220.24994@gandalf.stny.rr.com>
-References: <3efb10970805021102n4d87f55eue723786281b06fcb@mail.gmail.com> 
- <1209753250.25628.34.camel@dd.thebigcorporation.com> 
- <Pine.LNX.4.58.0805021441340.10615@gandalf.stny.rr.com> 
- <1209754467.25628.42.camel@dd.thebigcorporation.com> 
- <Pine.LNX.4.58.0805021502040.10615@gandalf.stny.rr.com>
- <1209755665.25628.50.camel@dd.thebigcorporation.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 2 May 2008 22:51:59 -0400
+Date: Fri, 2 May 2008 19:51:18 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Eric Sandeen <sandeen@redhat.com>
+Cc: =?ISO-8859-1?Q?J=F6rn?= Engel <joern@logfs.org>,
+       linux-kernel@vger.kernel.org, joern@lazybastard.org,
+       Andy Whitcroft <apw@shadowen.org>
+Subject: Re: [PATCH] fix checkstack.pl arch detection
+Message-Id: <20080502195118.39a3fc99.akpm@linux-foundation.org>
+In-Reply-To: <481BD097.9010201@redhat.com>
+References: <481B4D75.9060305@redhat.com>
+	<20080502223702.GI24080@logfs.org>
+	<20080502164458.b703acf7.akpm@linux-foundation.org>
+	<481BCC00.1030508@redhat.com>
+	<20080502193128.5e1de100.akpm@linux-foundation.org>
+	<481BD097.9010201@redhat.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 02 May 2008 21:40:23 -0500 Eric Sandeen <sandeen@redhat.com> wrote:
 
-On Fri, 2 May 2008, Sven-Thorsten Dietrich wrote:
-> On Fri, 2008-05-02 at 15:02 -0400, Steven Rostedt wrote:
-> > On Fri, 2 May 2008, Sven-Thorsten Dietrich wrote:
-> > >
-> > > On Fri, 2008-05-02 at 14:45 -0400, Steven Rostedt wrote:
-> > > > On Fri, 2 May 2008, Sven-Thorsten Dietrich wrote:
-> > >
-> > > >
-> > > > As for 2.6.25-rt1, I'm currently working on it. I have the patch queue
-> > > > ready, but it has some major bugs that I'm stil working out. I did a bit
-> > > > of clean up in the per-cpu portion as well as some of the mutex code. Now
-> > > > I need to debug all those changes.
-> > >
-> > > Pls post what you have asap, we will all help you debug it.
-> >
-> > You'll have something today. I like to have a kernel that at least boots
-> > ;-)
->
-> Hey that's true for Linux always. Its more fun that way :)
+> Andrew Morton wrote:
+> 
+> >>> please cc apw on checkpatch changes.
+> >>>
+> >>> This patch needs some help to merge against the forthcoming
+> >>> checkpatch-0.19.  I sent your patches apw-wards.
+> >>>
+> >> Um, checkpatch or checkstack? :)
+> >>
+> > 
+> > bah.
+> > 
+> > hm, I wonder why one of them got a reject.  `patch -l' was needed.  Mailer
+> > munchies, perhaps?
+> > 
+> > Please check that what I applied is still correct.
+> 
+> They look fine... sorry, didn't generate against -mm but didn't expect
+> differences.  I'll update an -mm tree and give it a functional check too...
+> 
 
-I'm fixing quite a bit of paper bag bugs. I'm going to call it a night and
-work more on it tomorrow night.
+There are no changes since 2.6.25.
 
--- Steve
+"find dynamic stack allocations in checkstack.pl" just doesn't apply.  Hunk
+1 assumes that "fix checkstack.pl arch detection" is present, but when "fix
+checkstack.pl arch detection" is applied, hunks 1 and 2 don't apply.
+
