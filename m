@@ -1,67 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764654AbYECQtD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764654AbYECQzs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764654AbYECQtD (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 May 2008 12:49:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754763AbYECQsw
+	id S1764654AbYECQzs (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 May 2008 12:55:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760128AbYECQzi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 May 2008 12:48:52 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:42389 "EHLO smtp5.pp.htv.fi"
+	Sat, 3 May 2008 12:55:38 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:47110 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751542AbYECQsw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 May 2008 12:48:52 -0400
-Date: Sat, 3 May 2008 19:47:54 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, "David S. Miller" <davem@davemloft.net>,
-       Ivo van Doorn <ivdoorn@gmail.com>
-Subject: Re: [patch/bugreport] rt2x00: build fix
-Message-ID: <20080503164754.GL5838@cs181133002.pp.htv.fi>
-References: <20080503124711.GA18244@elte.hu>
+	id S1760060AbYECQzh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 May 2008 12:55:37 -0400
+Date: Sat, 3 May 2008 18:55:11 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Thomas Gleixner <tglx@linutronix.de>, David Miller <davem@davemloft.net>,
+       Guillaume Chazarain <guichaz@gmail.com>,
+       Andi Kleen <andi@firstfloor.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-arch <linux-arch@vger.kernel.org>, Mike Galbraith <efault@gmx.de>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>
+Subject: Re: [RFC][PATCH] sched_clock_cpu()
+Message-ID: <20080503165511.GA21967@elte.hu>
+References: <1209832169.6929.42.camel@lappy>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080503124711.GA18244@elte.hu>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <1209832169.6929.42.camel@lappy>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, May 03, 2008 at 02:47:11PM +0200, Ingo Molnar wrote:
-> 
-> x86.git testing found the following build failure on latest -git:
-> 
->    Building modules, stage 2.
->    MODPOST 332 modules
->  ERROR: "led_classdev_unregister" [drivers/net/wireless/rt2x00/rt2x00lib.ko] undefined!
->  ERROR: "led_classdev_resume" [drivers/net/wireless/rt2x00/rt2x00lib.ko] undefined!
->  ERROR: "led_classdev_register" [drivers/net/wireless/rt2x00/rt2x00lib.ko] undefined!
->  ERROR: "led_classdev_suspend" [drivers/net/wireless/rt2x00/rt2x00lib.ko] undefined!
->  make[1]: *** [__modpost] Error 1
->  make: *** [modules] Error 2
-> 
-> config can be found at:
-> 
->   http://redhat.com/~mingo/misc/config-Sat_May__3_13_24_19_CEST_2008.bad
-> 
-> the patch here is just a quick workaround for now for my test-setup, it 
-> makes the leds features in this driver depend on NEW_LEDS. Have not 
-> checked how far away this is from the real fix. Hm, and i think think i 
-> sent another patch for a similar build failure a week ago already - did 
-> i miss some patch to try?
 
-You missed Roman's patch two days ago, that was in response to a similar 
-report you sent, and that will also fix this issue.
+* Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
 
-> 	Ingo
->...
+> it _DOESN'T_ boot ;-/ [...]
 
-cu
-Adrian
+FYI, the merged version against sched-devel.git does boot fine here and 
+the clock does seem to advance as expected.
 
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+	Ingo
