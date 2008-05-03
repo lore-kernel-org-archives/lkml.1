@@ -1,63 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756294AbYECVjf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756440AbYECVkM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756294AbYECVjf (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 May 2008 17:39:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755636AbYECVin
+	id S1756440AbYECVkM (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 May 2008 17:40:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755041AbYECVit
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 May 2008 17:38:43 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:53109 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755542AbYECVia (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 May 2008 17:38:30 -0400
-Date: Sat, 3 May 2008 23:38:22 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Ingo, no more kconfig patches
-Message-ID: <20080503213822.GA24283@uranus.ravnborg.org>
-References: <20080430200340.GA13757@elte.hu> <20080430170125.ZZRA012@mailhub.coreip.homeip.net> <20080430211317.GA24633@elte.hu> <20080430230100.GK29330@cs181133002.pp.htv.fi> <20080501025234.GE27574@elte.hu> <20080501115923.GX29330@cs181133002.pp.htv.fi> <20080503191445.GF5292@elte.hu> <20080503202416.GR5838@cs181133002.pp.htv.fi> <20080503210300.GA10979@elte.hu> <20080503212429.GT5838@cs181133002.pp.htv.fi>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080503212429.GT5838@cs181133002.pp.htv.fi>
-User-Agent: Mutt/1.4.2.1i
+	Sat, 3 May 2008 17:38:49 -0400
+Received: from e34.co.us.ibm.com ([32.97.110.152]:48821 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755862AbYECVis (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 May 2008 17:38:48 -0400
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: linux-mm@kvack.org
+Cc: Sudhir Kumar <skumar@linux.vnet.ibm.com>,
+       YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
+       Paul Menage <menage@google.com>, lizf@cn.fujitsu.com,
+       linux-kernel@vger.kernel.org, David Rientjes <rientjes@google.com>,
+       Pavel Emelianov <xemul@openvz.org>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Date: Sun, 04 May 2008 03:08:25 +0530
+Message-Id: <20080503213825.3140.4328.sendpatchset@localhost.localdomain>
+In-Reply-To: <20080503213726.3140.68845.sendpatchset@localhost.localdomain>
+References: <20080503213726.3140.68845.sendpatchset@localhost.localdomain>
+Subject: [-mm][PATCH 4/4] Add rlimit controller documentation
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, May 04, 2008 at 12:24:29AM +0300, Adrian Bunk wrote:
-> On Sat, May 03, 2008 at 11:03:00PM +0200, Ingo Molnar wrote:
-> > 
-> > * Adrian Bunk <bunk@kernel.org> wrote:
-> >...
-> > > > As Sam said it, fixing that Kconfig design bug would be "nice" - but 
-> > > > unfortunately the Kconfig subsystem is not actively developed 
-> > > > anymore.
-> > > 
-> > > Roman is still active.
-> > 
-> > great, does this mean we'll see fixes for select's misbehavior, along 
-> > the lines of Sam's suggestions?
-> 
-> In the case of the problem here it would have turned one problem into 
-> another, and Roman's patch is the correct solution no matter whether 
-> you change the semantics of select or not.
 
-Hi Adrian 
-It would be nice to know what was wrong with my suggestion.
-You have done your share of kconfig patches so you have a good grip
-on the problems we face.
-So any input on how we can improve kconfig so we can actually provide
-what people often expects or requests or need would be nice.
 
-I have so far not done any hacking on the core of the backend of
-kconfig but if I one day find more than one hour in row where I can do
-some kernel stuff I may actually try it out.
-And then it would be nice to have a sketch ready how to solve the issues.
+This is the documentation patch. It describes the rlimit controller and how
+to build and use it.
 
-I would though request you to start a new mail thread for this and
-include both linux-kbuild@vger.kernel.org and Roman Zippel in the loop.
+Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+---
 
-	Sam
+ Documentation/controllers/rlimit.txt |   29 +++++++++++++++++++++++++++++
+ 1 file changed, 29 insertions(+)
+
+diff -puN /dev/null Documentation/controllers/rlimit.txt
+--- /dev/null	2008-05-03 22:12:13.033285313 +0530
++++ linux-2.6.25-balbir/Documentation/controllers/rlimit.txt	2008-05-04 03:06:06.000000000 +0530
+@@ -0,0 +1,29 @@
++This controller is enabled by the CONFIG_CGROUP_RLIMIT_CTLR option. Prior
++to reading this documentation please read Documentation/cgroups.txt and
++Documentation/controllers/memory.txt. Several of the principles of this
++controller are similar to the memory resource controller.
++
++This controller framework is designed to be extensible to control any
++resource limit (memory related) with little effort.
++
++This new controller, controls the address space expansion of the tasks
++belonging to a cgroup. Address space control is provided along the same lines as
++RLIMIT_AS control, which is available via getrlimit(2)/setrlimit(2).
++The interface for controlling address space is provided through
++"rlimit.limit_in_bytes". The file is similar to "limit_in_bytes" w.r.t. the user
++interface. Please see section 3 of the memory resource controller documentation
++for more details on how to use the user interface to get and set values.
++
++The "rlimit.usage_in_bytes" file provides information about the total address
++space usage of the tasks in the cgroup, in bytes.
++
++Advantages of providing this feature
++
++1. Control over virtual address space allows for a cgroup to fail gracefully
++   i.e., via a malloc or mmap failure as compared to OOM kill when no
++   pages can be reclaimed.
++2. It provides better control over how many pages can be swapped out when
++   the cgroup goes over its limit. A badly setup cgroup can cause excessive
++   swapping. Providing control over the address space allocations ensures
++   that the system administrator has control over the total swapping that
++   can take place.
+_
+
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
