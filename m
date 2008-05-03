@@ -1,63 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965112AbYECAJR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965448AbYECAKg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965112AbYECAJR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 20:09:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964955AbYECAIj
+	id S965448AbYECAKg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 20:10:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764992AbYECAK2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 20:08:39 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:33489 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S935633AbYECAIi (ORCPT
+	Fri, 2 May 2008 20:10:28 -0400
+Received: from sj-iport-5.cisco.com ([171.68.10.87]:16225 "EHLO
+	sj-iport-5.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759381AbYECAK1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 20:08:38 -0400
-Message-ID: <481BACEC.8080902@zytor.com>
-Date: Fri, 02 May 2008 17:08:12 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Fri, 2 May 2008 20:10:27 -0400
+X-IronPort-AV: E=Sophos;i="4.27,429,1204531200"; 
+   d="scan'208";a="25065008"
+From: Roland Dreier <rdreier@cisco.com>
+To: "Moore\, Eric" <Eric.Moore@lsi.com>
+Cc: <linux-kernel@vger.kernel.org>
+Subject: Re: HELP:  Is writeq an atomic operation??
+References: <0631C836DBF79F42B5A60C8C8D4E822901047B4C@NAMAIL2.ad.lsil.com>
+X-Message-Flag: Warning: May contain useful information
+Date: Fri, 02 May 2008 17:10:25 -0700
+In-Reply-To: <0631C836DBF79F42B5A60C8C8D4E822901047B4C@NAMAIL2.ad.lsil.com>
+	(Eric Moore's message of "Fri, 2 May 2008 17:20:58 -0600")
+Message-ID: <adak5ic2qoe.fsf@cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
-To: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       linux-kernel@vger.kernel.org
-Subject: Re: x86 git acpi issue?
-References: <481BAC6F.5090509@ct.jp.nec.com>
-In-Reply-To: <481BAC6F.5090509@ct.jp.nec.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 03 May 2008 00:10:25.0315 (UTC) FILETIME=[15FD7F30:01C8ACB2]
+Authentication-Results: sj-dkim-4; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim4002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hiroshi Shimamoto wrote:
-> Hi,
-> 
-> commit: afcab879e4044f952b7a031d5fd504e0feb7df41
-> visws: build fix
-> 
-> breaks something around acpi on 32bit.
-> In my test box scsi driver complains and the kernel doesn't boot.
-> 
-> I'm not sure, but when moving the acpi.o before legacy.o, it works.
-> --- a/arch/x86/pci/Makefile_32
-> +++ b/arch/x86/pci/Makefile_32
-> @@ -6,11 +6,11 @@ obj-$(CONFIG_PCI_DIRECT)	+= direct.o
->  obj-$(CONFIG_PCI_OLPC)		+= olpc.o
->  
->  pci-y				:= fixup.o
-> +pci-$(CONFIG_ACPI)		+= acpi.o
->  pci-y				+= legacy.o irq.o
->  
->  pci-$(CONFIG_X86_VISWS)		:= visws.o fixup.o
->  pci-$(CONFIG_X86_NUMAQ)		:= numa.o irq.o
-> -pci-$(CONFIG_ACPI)		+= acpi.o
->  pci-$(CONFIG_NUMA)		+= mp_bus_to_node.o
->  
->  obj-y				+= $(pci-y) common.o early.o
-> 
-> of cause this isn't correct patch, it's just a workaround for me.
-> 
+ > Under platforms where writeq is not defined, what should I do?
 
-The problem is that := should be += for the VISWS and NUMAQ lines. 
-There is already a patch queued up to fix that.
+Umm... is it too late to change your chip design?
 
-	-hpa
+Seriously, for example on PowerPC 440SPe (which has a PCIe bus on a
+32-bit PowerPC core), I don't know any way you can generate a 64-bit PCI
+transaction.  Even on 32-bit x86 I think you're stuck using something
+ugly like MMX to do it.
 
+Basically it's going to be architecture-dependent at best.
+
+ - R.
