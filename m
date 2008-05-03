@@ -1,88 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758010AbYECN0Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758078AbYECN25@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758010AbYECN0Y (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 May 2008 09:26:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754891AbYECN0P
+	id S1758078AbYECN25 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 May 2008 09:28:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755057AbYECN2s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 May 2008 09:26:15 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:45479 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754351AbYECN0O (ORCPT
+	Sat, 3 May 2008 09:28:48 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:50158 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752638AbYECN2r (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 May 2008 09:26:14 -0400
-Date: Sat, 3 May 2008 16:26:11 +0300 (EEST)
-From: Pekka J Enberg <penberg@cs.helsinki.fi>
-To: WANG Cong <xiyou.wangcong@gmail.com>
-cc: LKML <linux-kernel@vger.kernel.org>, Eric Youngdale <ericy@cais.com>,
-       viro@zeniv.linux.org.uk, linux-fsdevel@vger.kernel.org,
-       Andrew Morton <akpm@osdl.org>
-Subject: Re: [Patch] fs/binfmt_elf.c: fix a wrong free
-In-Reply-To: <20080503124610.GA3986@hack>
-Message-ID: <Pine.LNX.4.64.0805031625150.20470@sbz-30.cs.Helsinki.FI>
-References: <20080503124610.GA3986@hack>
-Mime-Version: 1.0
+	Sat, 3 May 2008 09:28:47 -0400
+Date: Sat, 3 May 2008 07:28:46 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Bart Van Assche <bart.vanassche@gmail.com>
+Cc: FUJITA Tomonori <tomof@acm.org>,
+       James Bottomley <James.Bottomley@hansenpartnership.com>,
+       Christoph Hellwig <hch@infradead.org>, linux-scsi@vger.kernel.org,
+       scst-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       Vladislav Bolkhovitin <vst@vlnb.net>
+Subject: Re: SCSI target subsystem
+Message-ID: <20080503132846.GA14976@parisc-linux.org>
+References: <200805021638.42972.bart.vanassche@gmail.com> <20080502153306.GB7376@infradead.org> <e2e108260805020853r4c21fb98y3d4434a7fc95989c@mail.gmail.com> <20080502155525.GA16353@infradead.org> <e2e108260805020906w7f5e92bev46b8d0f96aa7b4d6@mail.gmail.com> <1209745084.3121.39.camel@localhost.localdomain> <481B5AB8.5030108@vlnb.net> <e2e108260805030241w216363dbt4b5f6b2105ad267b@mail.gmail.com> <20080503095314.GX14976@parisc-linux.org> <e2e108260805030339q4fcaedf7t34e737c14801e788@mail.gmail.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <e2e108260805030339q4fcaedf7t34e737c14801e788@mail.gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 3 May 2008, WANG Cong wrote:
-> Fix a wrong free in fs/binfmt_elf.c::elf_core_dump().
-> 
-> Signed-off-by: WANG Cong <wangcong@zeuux.org>
-> Cc: Alexander Viro <viro@zeniv.linux.org.uk>
-> Cc: Eric Youngdale <ericy@cais.com>
-> 
-> ---
->  fs/binfmt_elf.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/fs/binfmt_elf.c b/fs/binfmt_elf.c
-> index b25707f..43254e3 100644
-> --- a/fs/binfmt_elf.c
-> +++ b/fs/binfmt_elf.c
-> @@ -2032,10 +2032,10 @@ static int elf_core_dump(long signr, struct pt_regs *regs, struct file *file, un
->  
->  end_coredump:
->  	set_fs(fs);
-> +	free_note_info(&info);
->  
->  cleanup:
->  	kfree(elf);
-> -	free_note_info(&info);
->  	return has_dumped;
->  }
+On Sat, May 03, 2008 at 12:39:19PM +0200, Bart Van Assche wrote:
+> To answer your question: as you noticed, I did not yet contribute any
+> code to the SCST project. I'm an iSCSI/iSER/SRP user. I'd like to have
+> a SCSI target framework available on Linux that is as fast as
+> possible, as reliable as possible, as standards compliant as possible,
+> well maintained and for which all kernel code is integrated in the
+> mainstream Linux kernel. I'm probably sharing this desire with all
+> STGT, IET, SCST and LIO users. Do you consider the opinion of SCSI
+> target framework users irrelevant in this discussion ?
 
-Looks like fill_note_info() requires that you call free_note_info() if it 
-fails; otherwise we'll leak memory. So perhaps something like the 
-following totally untested patch?
+Yes.
 
-		Pekka
+Once Vladislav is ready for his project to be merged, let him approach
+us and ask.  I don't know if he considers his project ready for merging.
+Did he ask you for his help?  It's generally considered rather rude to
+merge someone else's code without their consent.  The way you tried to
+get it merged was unhelpful and, if Vladislav were less skillful a
+communicator, could have actively hindered getting it merged.
 
-diff --git a/fs/binfmt_elf.c b/fs/binfmt_elf.c
-index b25707f..febd208 100644
---- a/fs/binfmt_elf.c
-+++ b/fs/binfmt_elf.c
-@@ -1917,7 +1917,7 @@ static int elf_core_dump(long signr, struct pt_regs *regs, struct file *file, un
- 	 */
- 	if (!fill_note_info(elf, segs + 1, /* including notes section */
- 			    &info, signr, regs))
--		goto cleanup;
-+		goto cleanup_note;
- 
- 	has_dumped = 1;
- 	current->flags |= PF_DUMPCORE;
-@@ -2033,9 +2033,11 @@ static int elf_core_dump(long signr, struct pt_regs *regs, struct file *file, un
- end_coredump:
- 	set_fs(fs);
- 
-+cleanup_note:
-+	free_note_info(&info);
-+
- cleanup:
- 	kfree(elf);
--	free_note_info(&info);
- 	return has_dumped;
- }
- 
+The correct way to have done this would have been to start a thread on
+the scst mailing list asking whether the developers felt it ready to
+merge.  Then *leave it to them*.
+
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
