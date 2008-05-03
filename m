@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932082AbYECRg2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764629AbYECRgx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932082AbYECRg2 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 May 2008 13:36:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763204AbYECRgN
+	id S1764629AbYECRgx (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 May 2008 13:36:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763545AbYECRgO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 May 2008 13:36:13 -0400
-Received: from x346.tv-sign.ru ([89.108.83.215]:47519 "EHLO mail.screens.ru"
+	Sat, 3 May 2008 13:36:14 -0400
+Received: from x346.tv-sign.ru ([89.108.83.215]:47529 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762243AbYECRgK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 May 2008 13:36:10 -0400
-Date: Sat, 3 May 2008 21:35:52 +0400
+	id S1762493AbYECRgL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 May 2008 13:36:11 -0400
+Date: Sat, 3 May 2008 21:35:53 +0400
 From: Oleg Nesterov <oleg@tv-sign.ru>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Austin Clements <amdragon+kernelbugzilla@mit.edu>,
@@ -18,8 +18,8 @@ Cc: Austin Clements <amdragon+kernelbugzilla@mit.edu>,
        Michael Kerrisk <mtk.manpages@googlemail.com>,
        Roland McGrath <roland@redhat.com>,
        Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
-Subject: [PATCH 1/4] posix timers: fix sigqueue_free() vs __exit_signal() race
-Message-ID: <20080503173552.GA8103@tv-sign.ru>
+Subject: [PATCH 2/4] posix timers: sigqueue_free: don't free sigqueue if it is queued
+Message-ID: <20080503173553.GA8106@tv-sign.ru>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -28,54 +28,48 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-__exit_signal() does flush_sigqueue(tsk->pending) outside of ->siglock.
-This can race with another thread doing sigqueue_free(), we can free
-the same SIGQUEUE_PREALLOC sigqueue twice or corrupt the pending->list.
+Currently sigqueue_free() removes sigqueue from list, but doesn't cancel the
+pending signal. This is not consistent, the task should either receive the
+"full" signal along with siginfo_t, or it shouldn't see the signal at all.
 
-Note that even sys_exit_group() can trigger this race, not only
-sys_timer_delete().
+Change sigqueue_free() to clear SIGQUEUE_PREALLOC but leave sigqueue on list
+if it is queued.
 
-Move the callsite of flush_sigqueue(tsk->pending) under ->siglock.
-
-This patch doesn't touch flush_sigqueue(->shared_pending) below, it is
-called when there are no other threads which can play with signals,
-and sigqueue_free() can't be used outside of our thread group.
+Note: I am not sure we shouldn't do the opposite, free sigqueue + cancel the
+pending signal, but this needs some ugly changes. Perhaps we should reconsider
+this change later. See also http://bugzilla.kernel.org/show_bug.cgi?id=10460
 
 Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
 
---- 25/kernel/exit.c~1_SF_EX_RACE	2008-03-20 18:25:11.000000000 +0300
-+++ 25/kernel/exit.c	2008-05-03 18:21:34.000000000 +0400
-@@ -125,6 +125,12 @@ static void __exit_signal(struct task_st
+--- 25/kernel/signal.c~2_SF_DONT_REMOVE	2008-05-03 18:27:03.000000000 +0400
++++ 25/kernel/signal.c	2008-05-03 19:12:36.000000000 +0400
+@@ -1240,18 +1240,22 @@ void sigqueue_free(struct sigqueue *q)
  
- 	__unhash_process(tsk);
- 
-+	/*
-+	 * Do this under ->siglock, we can race with another thread
-+	 * doing sigqueue_free() if we have SIGQUEUE_PREALLOC signals.
-+	 */
-+	flush_sigqueue(&tsk->pending);
-+
- 	tsk->signal = NULL;
- 	tsk->sighand = NULL;
- 	spin_unlock(&sighand->siglock);
-@@ -132,7 +138,6 @@ static void __exit_signal(struct task_st
- 
- 	__cleanup_sighand(sighand);
- 	clear_tsk_thread_flag(tsk,TIF_SIGPENDING);
--	flush_sigqueue(&tsk->pending);
- 	if (sig) {
- 		flush_sigqueue(&sig->shared_pending);
- 		taskstats_tgid_free(sig);
---- 25/kernel/signal.c~1_SF_EX_RACE	2008-05-03 17:47:01.000000000 +0400
-+++ 25/kernel/signal.c	2008-05-03 18:27:03.000000000 +0400
-@@ -1242,7 +1242,8 @@ void sigqueue_free(struct sigqueue *q)
+ 	BUG_ON(!(q->flags & SIGQUEUE_PREALLOC));
  	/*
- 	 * If the signal is still pending remove it from the
- 	 * pending queue. We must hold ->siglock while testing
--	 * q->list to serialize with collect_signal().
-+	 * q->list to serialize with collect_signal() or with
-+	 * __exit_signal()->flush_sigqueue().
+-	 * If the signal is still pending remove it from the
+-	 * pending queue. We must hold ->siglock while testing
+-	 * q->list to serialize with collect_signal() or with
++	 * We must hold ->siglock while testing q->list
++	 * to serialize with collect_signal() or with
+ 	 * __exit_signal()->flush_sigqueue().
  	 */
  	spin_lock_irqsave(lock, flags);
++	/*
++	 * If it is queued it will be freed when dequeued,
++	 * like the "regular" sigqueue.
++	 */
++	q->flags &= ~SIGQUEUE_PREALLOC;
  	if (!list_empty(&q->list))
+-		list_del_init(&q->list);
++		q = NULL;
+ 	spin_unlock_irqrestore(lock, flags);
+ 
+-	q->flags &= ~SIGQUEUE_PREALLOC;
+-	__sigqueue_free(q);
++	if (q)
++		__sigqueue_free(q);
+ }
+ 
+ int send_sigqueue(struct sigqueue *q, struct task_struct *t, int group)
 
