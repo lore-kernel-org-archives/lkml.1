@@ -1,45 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764161AbYECRlV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765675AbYECRnT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764161AbYECRlV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 May 2008 13:41:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764943AbYECRkt
+	id S1765675AbYECRnT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 May 2008 13:43:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751270AbYECRnM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 May 2008 13:40:49 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:53991 "EHLO
+	Sat, 3 May 2008 13:43:12 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:54048 "EHLO
 	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764350AbYECRkr (ORCPT
+	with ESMTP id S1751232AbYECRnK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 May 2008 13:40:47 -0400
-Message-ID: <481CA392.2080602@zytor.com>
-Date: Sat, 03 May 2008 10:40:34 -0700
+	Sat, 3 May 2008 13:43:10 -0400
+Message-ID: <481CA40A.7040906@zytor.com>
+Date: Sat, 03 May 2008 10:42:34 -0700
 From: "H. Peter Anvin" <hpa@zytor.com>
 User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: Roland Dreier <rdreier@cisco.com>, "Moore\, Eric" <Eric.Moore@lsi.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: HELP:  Is writeq an atomic operation??
-References: <0631C836DBF79F42B5A60C8C8D4E822901047B2F@NAMAIL2.ad.lsil.com>	<ada63tw494z.fsf@cisco.com>	<481BB512.6030101@zytor.com> <20080503153521.1d6705cd@core>
-In-Reply-To: <20080503153521.1d6705cd@core>
+To: Thomas Gleixner <tglx@linutronix.de>
+CC: jamal <hadi@cyberus.ca>, Suresh Siddha <suresh.b.siddha@intel.com>,
+       Arjan van de Ven <arjan@linux.intel.com>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>, Jan Beulich <jbeulich@novell.com>
+Subject: Re: i387/FPU init issues...
+References: <1209810775.6972.37.camel@localhost> <alpine.LFD.1.10.0805031650120.6003@apollo.tec.linutronix.de>
+In-Reply-To: <alpine.LFD.1.10.0805031650120.6003@apollo.tec.linutronix.de>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
->>> I don't have an authoritative answer, but I can say that I coded
->>> drivers/infiniband/hw/mthca and .../mlx4 assuming that writeq() is
->>> atomic in the sense that you say, and no one has reported any problems.
->>>
->> If you're not under lock you're screwed on a 32-bit platform.
+Thomas Gleixner wrote:
 > 
-> So what cycles does an MMX, SSE or double float store generate on the
-> bus ?
+> Jan, are you sure that P3 knows the P6 NOPs ? AFAICT its P4, but I
+> have to dig up the manuals.
 > 
 
-Those do generate 64-bit stores; it's just *really* expensive to do it 
-in the kernel.  I have used that trick to test 64-bit hardware in a 
-32-bit only system, though.
+Pentium III is the P6 core, so it will.
+
+Intel explicitly documents "all processors with family 6 or F."
 
 	-hpa
