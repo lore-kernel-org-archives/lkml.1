@@ -1,69 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762416AbYECRC0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765753AbYECRCp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762416AbYECRC0 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 May 2008 13:02:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762886AbYECRB4
+	id S1765753AbYECRCp (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 May 2008 13:02:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762154AbYECRCT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 May 2008 13:01:56 -0400
-Received: from mail.gmx.net ([213.165.64.20]:55560 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1761093AbYECRBz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 May 2008 13:01:55 -0400
-X-Authenticated: #20450766
-X-Provags-ID: V01U2FsdGVkX1+xrXBAFCGxlaBvaYda/rGOiYviV76N78Ishh7+UJ
-	2CEirj/rIt94Vz
-Date: Sat, 3 May 2008 19:02:08 +0200 (CEST)
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-To: Ingo Molnar <mingo@elte.hu>
-cc: linux-kernel@vger.kernel.org,
-       Mauro Carvalho Chehab <mchehab@infradead.org>,
-       Jean Delvare <khali@linux-fr.org>
-Subject: Re: [patch] video: build fix for drivers/media/video/mt9v022.c
-In-Reply-To: <20080503163058.GA15272@elte.hu>
-Message-ID: <Pine.LNX.4.64.0805031853180.5182@axis700.grange>
-References: <20080503163058.GA15272@elte.hu>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Y-GMX-Trusted: 0
+	Sat, 3 May 2008 13:02:19 -0400
+Received: from wa-out-1112.google.com ([209.85.146.177]:12204 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761372AbYECRCR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 May 2008 13:02:17 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:reply-to:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding:sender;
+        b=nYE1eLckVS+vkqswF5zLBkOAc5tLPU+Ywo9RfNepfo6+PPziE7H6VNpFe6NZo+4ueQg7wrXym6CD7oqt5K74XMYEi+xgWM1piLnjM2P341FvM4Gmsp1kRaYzh/R0JjwzYRAABSi5HQmsEgoEqVvZQ5aWtMG4QNhduwhWCw5q/kY=
+Subject: Re: i387/FPU init issues...
+From: jamal <hadi@cyberus.ca>
+Reply-To: hadi@cyberus.ca
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Suresh Siddha <suresh.b.siddha@intel.com>,
+       Arjan van de Ven <arjan@linux.intel.com>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>, "H. Peter Anvin" <hpa@zytor.com>,
+       Jan Beulich <jbeulich@novell.com>
+In-Reply-To: <alpine.LFD.1.10.0805031650120.6003@apollo.tec.linutronix.de>
+References: <1209810775.6972.37.camel@localhost>
+	 <alpine.LFD.1.10.0805031650120.6003@apollo.tec.linutronix.de>
+Content-Type: text/plain
+Date: Sat, 03 May 2008 13:02:03 -0400
+Message-Id: <1209834123.6972.48.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 3 May 2008, Ingo Molnar wrote:
+On Sat, 2008-03-05 at 17:31 +0200, Thomas Gleixner wrote:
+> On Sat, 3 May 2008, jamal wrote:
+> >  =======================
+> > Code: 8d 74 26 00 8d bc 27 00 00 00 00 55 89 c2 8b 40 04 89 e5 f6 40 0c
+> > 01 74 32 8b 82 60 02 00 00 0f ae 00 0f ba 60 02 07 73 02 db e2 <0f> 1f
+> > 00 90 8d b4 26 00 00 00 00 89 f6 8b 42 04 83 60 0c fe 0f
+> 
+> This looks bad.
+> 
+>   0f ae 00		fxsave (%eax)
+>   0f ba 60 02 07       	btl    $0x7,0x2(%eax)
+>   73 02                	jae    (skip fnclex)
+>   db e2                	fnclex 
+>   0f 1f 00             	nopl   (%eax)
+> 
+>  ^^^^ This is a P4+ instruction. So it's not surprising that the P2
+>  chokes. The question is where this comes from.
+> 
+> we have:
+> #define P6_NOP3 ".byte 0x0f,0x1f,0x00\n"
 
-> 
-> x86.git testing found the following build bug on latest -git:
-> 
->   CC [M]  drivers/media/video/mt9v022.o
->   drivers/media/video/mt9v022.c: In function 'bus_switch_request':
->   drivers/media/video/mt9v022.c:199: error: implicit declaration of function 'gpio_is_valid'
->   drivers/media/video/mt9v022.c:201: error: implicit declaration of function 'gpio_request'
->   drivers/media/video/mt9v022.c:207: error: implicit declaration of function 'gpio_direction_output'
->   drivers/media/video/mt9v022.c:211: error: implicit declaration of function 'gpio_free'
->   drivers/media/video/mt9v022.c: In function 'bus_switch_act':
->   drivers/media/video/mt9v022.c:237: error: implicit declaration of function 'gpio_set_value_cansleep'
->   make[2]: *** [drivers/media/video] Error 2
->   make[1]: *** [drivers/media] Error 2
->   make[1]: *** Waiting for unfinished jobs....
->   make: *** [drivers] Error 2
-> 
-> with this config:
-> 
->    http://redhat.com/~mingo/misc/config-Sat_May__3_16_08_39_CEST_2008.bad
-> 
-> the bug was that the driver uses GPIO functionality but only includes 
-> the GPIO interface definitions for the CONFIG_MT9M001_PCA9536_SWITCH 
-> case, which was not set in this config.
+Dang - I feel i should have saved myself all that git bisecting
+and just posted the oops ;->
 
-Ok, once again a good catch and a wrong fix, sorry:-) The bug is that not 
-CONFIG_MT9M001_PCA9536_SWITCH but CONFIG_MT9V022_PCA9536_SWITCH shall be 
-checked for, of course. Copy-paste:-( I'll prepare a correct patch and 
-submit it. As for the "cleanup" side - don't know. Would it be better to 
-unconditionally include it? It won't hurt of course, looks better, but is 
-unneeded when the GPIO is not used. And, although grep reports most 
-drivers including asm/gpio.h, including linux/gpio.h seems indeed better.
+> So the alternatives code applies the wrong nop padding for your
+> CPU. This was probably introduced with commit
+> 32c464f5d9701db45bc1673288594e664065388e. 
+> 
+> Jan, are you sure that P3 knows the P6 NOPs ? AFAICT its P4, but I
+> have to dig up the manuals.
+> 
+> Jamal, does the following patch solve your problem ? 
 
-Thanks
-Guennadi
----
-Guennadi Liakhovetski
+
+Indeed it does - thanks.
+
+> Please provide
+> also output of /proc/cpuinfo.
+
+mambo:~# cat /proc/cpuinfo
+processor       : 0
+vendor_id       : GenuineIntel
+cpu family      : 6
+model           : 3
+model name      : Pentium II (Klamath)
+stepping        : 3
+cpu MHz         : 1063.771
+cache size      : 128 KB
+fdiv_bug        : no
+hlt_bug         : no
+f00f_bug        : no
+coma_bug        : no
+fpu             : yes
+fpu_exception   : yes
+cpuid level     : 2
+wp              : yes
+flags           : fpu de pse tsc msr pae mce cx8 sep pge cmov mmx fxsr
+sse sse2
+bogomips        : 2160.92
+clflush size    : 32
+power management:
+
+cheers,
+jamal
+
