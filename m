@@ -1,55 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765336AbYECRsX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765576AbYECRvO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765336AbYECRsX (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 May 2008 13:48:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755439AbYECRsP
+	id S1765576AbYECRvO (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 May 2008 13:51:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755439AbYECRu6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 May 2008 13:48:15 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:44804 "EHLO smtp5.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754741AbYECRsO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 May 2008 13:48:14 -0400
-Date: Sat, 3 May 2008 20:47:17 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Christian Borntraeger <borntraeger@de.ibm.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Carsten Otte <cotte@de.ibm.com>, Avi Kivity <avi@qumranet.com>,
-       Rusty Russell <rusty@rustcorp.com.au>
-Cc: kvm-devel@lists.sourceforge.net, linux-s390@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: s390 kvm_virtio.c build error
-Message-ID: <20080503174716.GM5838@cs181133002.pp.htv.fi>
+	Sat, 3 May 2008 13:50:58 -0400
+Received: from anchor-post-37.mail.demon.net ([194.217.242.87]:34504 "EHLO
+	anchor-post-37.mail.demon.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752189AbYECRu5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 May 2008 13:50:57 -0400
+Message-ID: <481CA5FC.6020004@superbug.co.uk>
+Date: Sat, 03 May 2008 18:50:52 +0100
+From: James Courtier-Dutton <James@superbug.co.uk>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: Thomas Gleixner <tglx@linutronix.de>, jamal <hadi@cyberus.ca>,
+       Suresh Siddha <suresh.b.siddha@intel.com>,
+       Arjan van de Ven <arjan@linux.intel.com>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>, Jan Beulich <jbeulich@novell.com>
+Subject: Re: i387/FPU init issues...
+References: <1209810775.6972.37.camel@localhost> <alpine.LFD.1.10.0805031650120.6003@apollo.tec.linutronix.de> <481CA40A.7040906@zytor.com>
+In-Reply-To: <481CA40A.7040906@zytor.com>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit c45a6816c19dee67b8f725e6646d428901a6dc24
-(virtio: explicit advertisement of driver features)
-and commit e976a2b997fc4ad70ccc53acfe62811c4aaec851
-(s390: KVM guest: virtio device support, and kvm hypercalls)
-don't like each other:
+H. Peter Anvin wrote:
+> Thomas Gleixner wrote:
+>>
+>> Jan, are you sure that P3 knows the P6 NOPs ? AFAICT its P4, but I
+>> have to dig up the manuals.
+>>
+>
+> Pentium III is the P6 core, so it will.
+>
+> Intel explicitly documents "all processors with family 6 or F."
+>
+> -hpa
 
-<--  snip  -->
+ From the intel manual
 
-...
-  CC      drivers/s390/kvm/kvm_virtio.o
-/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/s390/kvm/kvm_virtio.c:224: error: unknown field 'feature' specified in initializer
-/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/s390/kvm/kvm_virtio.c:224: warning: initialization from incompatible pointer type
-make[3]: *** [drivers/s390/kvm/kvm_virtio.o] Error 1
+0F 1F /0 NOP
+The multi-byte form of NOP is available on processors with model encoding:
+• CPUID.01H.EAX[Bytes 11:8] = 0110B or 1111B
+The multi-byte NOP instruction does not alter the content of a register 
+and will not
+issue a memory operation. The instruction’s operation is the same in 
+non-64-bit
+modes and 64-bit mode.
 
-<--  snip  -->
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
 
