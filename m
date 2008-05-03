@@ -1,89 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754037AbYECEeC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754511AbYECEs4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754037AbYECEeC (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 May 2008 00:34:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751336AbYECEdv
+	id S1754511AbYECEs4 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 May 2008 00:48:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751537AbYECEsp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 May 2008 00:33:51 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:58531 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751210AbYECEdu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 May 2008 00:33:50 -0400
-Date: Sat, 3 May 2008 14:33:35 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Jeff Garzik <jeff@garzik.org>, linux-next@vger.kernel.org,
-       sfrench@us.ibm.com, swhiteho@redhat.com, stefanr@s5r6.in-berlin.de,
-       ralf@linux-mips.org, drzeus-list@drzeus.cx, jack@ucw.cz, cbou@mail.ru,
-       jens.axboe@oracle.com, ericvh@gmail.com, wim@iguana.be,
-       chris@zankel.net, nico@cam.org, penberg@cs.helsinki.fi,
-       clameter@sgi.com, ezk@cs.sunysb.edu, linux-kernel@vger.kernel.org
-Subject: Re: git trees which are not yet in linux-next
-Message-Id: <20080503143335.01b956f3.sfr@canb.auug.org.au>
-In-Reply-To: <20080502153301.8b27ac31.akpm@linux-foundation.org>
-References: <20080502151206.b40f77ea.akpm@linux-foundation.org>
-	<481B93AA.7040000@garzik.org>
-	<20080502153301.8b27ac31.akpm@linux-foundation.org>
-X-Mailer: Sylpheed 2.5.0beta3 (GTK+ 2.12.9; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Sat__3_May_2008_14_33_35_+1000_W0a0jCvt0UfHV5hZ"
+	Sat, 3 May 2008 00:48:45 -0400
+Received: from e35.co.us.ibm.com ([32.97.110.153]:38508 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751360AbYECEso (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 May 2008 00:48:44 -0400
+Date: Fri, 2 May 2008 19:30:06 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Nick Piggin <npiggin@suse.de>, Jens Axboe <jens.axboe@oracle.com>,
+       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
+       jeremy@goop.org, mingo@elte.hu
+Subject: Re: [PATCH 1/10] Add generic helpers for arch IPI function calls
+Message-ID: <20080503023006.GA586@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20080430112934.GA23203@linux.vnet.ibm.com> <20080430113456.GY12774@kernel.dk> <20080430121712.GR11126@linux.vnet.ibm.com> <20080430123717.GC12774@kernel.dk> <20080502020241.GA26088@linux.vnet.ibm.com> <20080502021233.GC11844@wotan.suse.de> <20080502122955.GB15522@linux.vnet.ibm.com> <20080502124205.GA23680@linux.vnet.ibm.com> <1209733169.13978.157.camel@twins> <20080502142139.GA7599@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080502142139.GA7599@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Sat__3_May_2008_14_33_35_+1000_W0a0jCvt0UfHV5hZ
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Fri, May 02, 2008 at 07:21:39AM -0700, Paul E. McKenney wrote:
+> On Fri, May 02, 2008 at 02:59:29PM +0200, Peter Zijlstra wrote:
+> > On Fri, 2008-05-02 at 05:42 -0700, Paul E. McKenney wrote:
+> > 
+> > > And here is one scenario that makes me doubt that my imagination is
+> > > faulty:
+> > > 
+> > > 1.	CPU 0 disables irqs.
+> > > 
+> > > 2.	CPU 1 disables irqs.
+> > > 
+> > > 3.	CPU 0 invokes smp_call_function().  But CPU 1 will never respond
+> > > 	because its irqs are disabled.
+> > > 
+> > > 4.	CPU 1 invokes smp_call_function().  But CPU 0 will never respond
+> > > 	because its irqs are disabled.
+> > > 
+> > > Looks like inherent deadlock to me, requiring that smp_call_function()
+> > > be invoked with irqs enabled.
+> > > 
+> > > So, what am I missing here?
+> > 
+> > The wish to do it anyway ;-)
+> > 
+> > I can imagine some situations where I'd like to try anyway and fall back
+> > to a slower path when failing.
+> > 
+> > With the initial design we would simply allocate data, stick it on the
+> > queue and call the ipi (when needed).
+> > 
+> > This is perfectly deadlock free when wait=0 and it just returns -ENOMEM
+> > on allocation failure.
+> > 
+> > It it doesn't return -ENOMEM I know its been queued and will be
+> > processed at some point, if it does fail, I can deal with it in another
+> > way.
+> > 
+> > I know I'd like to do that and I suspect Nick has a few use cases up his
+> > sleeve as well.
+> 
+> OK, so one approach would be to check for irqs being disabled,
+> perhaps as follows, on top of my previous patch:
+> 
+> 		struct call_single_data *data = NULL;
+> 
+> 		if (!wait) {
+> 			data = kmalloc(sizeof(*data), GFP_ATOMIC);
+> 			if (data)
+> 				data->flags = CSD_FLAG_ALLOC;
+> 		}
+> 		if (!data) {
+> 			if (unlikely(irqs_disabled())) {
+> 				put_cpu();
+> 				return -ENOMEM;
+> 			}
+> 			data = &d;
+> 			data->flags = CSD_FLAG_WAIT;
+> 		}
+> 
+> 		data->func = func;
+> 		data->info = info;
+> 		generic_exec_single(cpu, data);
+> 
+> That would prevent -ENOMEM unless you invoked the function with irqs
+> disabled.  So normal callers would still see the current failure-free
+> semantics -- you really don't want to be inflicting failure when not
+> necessary, right?
+> 
+> There could only be one irq-disabled caller at a time, which could be
+> handled using a trylock, returning -EBUSY if the lock is already held.
+> Otherwise, you end up with the scenario called out above (which Keith
+> Ownens pointed out some years ago).
+> 
+> Does this approach make sense?
 
-Hi Andrew,
+Actually, no...  The irq-disabled callers would need to acquire the
+spinlock -before- disabling irqs, otherwise we end up right back in
+the deadlock scenario.
 
-On Fri, 2 May 2008 15:33:01 -0700 Andrew Morton <akpm@linux-foundation.org>=
- wrote:
->
-> On Fri, 02 May 2008 18:20:26 -0400
-> Jeff Garzik <jeff@garzik.org> wrote:
->=20
-> > Andrew Morton wrote:
-> > > (Jeff, git-libata-all is a pretty important one)
-> >=20
-> > libata-dev.git#NEXT is for linux-next, and libata-dev.git#ALL is for -mm
-> >=20
-> > Already taken care of.
->=20
-> Oh.  Something seems to have gone wrong then.
->=20
-> Next/Trees has:
->=20
-> libata          git     git://git.kernel.org/pub/scm/linux/kernel/git/jga=
-rzik/libata-dev.git#NEXT
->=20
-> but:
->=20
-> y:/usr/src/25> diffstat patches/linux-next.patch | grep /ata/     =20
->=20
-> There's nothing there?
-
-This just means that everything that Jeff expected to go into 2.6.26 is
-not in Linus' tree, right?  And he hasn't moved his 2.6.27 expectations
-into linux-next yet (after all we are still in the 2.6.26 merge window).
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Sat__3_May_2008_14_33_35_+1000_W0a0jCvt0UfHV5hZ
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFIG+skTgG2atn1QN8RAvJPAJwOVFM2tjWz4WAdyEWa731u2J5bgACffuZb
-rIvXLn5zUy49pVhAOjht92E=
-=z87C
------END PGP SIGNATURE-----
-
---Signature=_Sat__3_May_2008_14_33_35_+1000_W0a0jCvt0UfHV5hZ--
+						Thanx, Paul
