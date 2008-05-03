@@ -1,58 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762477AbYECJxl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763170AbYECJzY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762477AbYECJxl (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 May 2008 05:53:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757237AbYECJxb
+	id S1763170AbYECJzY (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 May 2008 05:55:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760314AbYECJzJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 May 2008 05:53:31 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:43591 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752886AbYECJxb (ORCPT
+	Sat, 3 May 2008 05:55:09 -0400
+Received: from rv-out-0506.google.com ([209.85.198.239]:26284 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759911AbYECJzG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 May 2008 05:53:31 -0400
-Date: Sat, 3 May 2008 03:53:14 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Bart Van Assche <bart.vanassche@gmail.com>
-Cc: FUJITA Tomonori <tomof@acm.org>,
-       James Bottomley <James.Bottomley@hansenpartnership.com>,
-       Christoph Hellwig <hch@infradead.org>, linux-scsi@vger.kernel.org,
-       scst-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       Vladislav Bolkhovitin <vst@vlnb.net>
-Subject: Re: SCSI target subsystem
-Message-ID: <20080503095314.GX14976@parisc-linux.org>
-References: <200805021638.42972.bart.vanassche@gmail.com> <20080502153306.GB7376@infradead.org> <e2e108260805020853r4c21fb98y3d4434a7fc95989c@mail.gmail.com> <20080502155525.GA16353@infradead.org> <e2e108260805020906w7f5e92bev46b8d0f96aa7b4d6@mail.gmail.com> <1209745084.3121.39.camel@localhost.localdomain> <481B5AB8.5030108@vlnb.net> <e2e108260805030241w216363dbt4b5f6b2105ad267b@mail.gmail.com>
+	Sat, 3 May 2008 05:55:06 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=jjTo61pjB1GNqzgMJQn4C38OJJYgBLj6emPnSNcDqrVrYOGMahfn1Mx/BmLofd4h+vJZrGQMdTlZHJ2bMlDP2JlN5eVYTjfekktvpHUpXDVrgrYoxl0KugPm9xkTkxcd+GpdfHdkyO30bYjQQq7WPDVu9kPRDSQkhjWGlW8RKss=
+Message-ID: <5681ec900805030255n629d9cdbl1769c6812c8df928@mail.gmail.com>
+Date: Sat, 3 May 2008 15:25:05 +0530
+From: "Sanjeev Aditya Naga" <sanjeev.kernel@gmail.com>
+To: trenn@suse.de
+Subject: Re: [>=2.6.23][BUG] Oops on power disconnection
+Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-acpi@vger.kernel.org,
+       "Venkatesh Pallipadi" <venkatesh.pallipadi@intel.com>,
+       "Li, Shaohua" <shaohua.li@intel.com>
+In-Reply-To: <5681ec900804050615y59bca042g648df348914b6062@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <e2e108260805030241w216363dbt4b5f6b2105ad267b@mail.gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+References: <5681ec900803300645l5369cda4g119957a4b7f05d17@mail.gmail.com>
+	 <5681ec900803300651m6e5f38deke1b7746236e5bb9@mail.gmail.com>
+	 <20080402001418.aad6eed2.akpm@linux-foundation.org>
+	 <5681ec900804020608o62be52c4ted172e18daf24f5b@mail.gmail.com>
+	 <1207147729.30061.9.camel@hammer1.suse.de>
+	 <5681ec900804020913t4adc38b1r2e424fa8bbdda241@mail.gmail.com>
+	 <1207159974.4700.6.camel@queen.suse.de>
+	 <5681ec900804030915w720f3ccfp74e5d501ca3d6b56@mail.gmail.com>
+	 <1207256678.6024.90.camel@linux-2bdv.site>
+	 <5681ec900804050615y59bca042g648df348914b6062@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id m439tTEB003342
 
-On Sat, May 03, 2008 at 11:41:41AM +0200, Bart Van Assche wrote:
-> On Fri, May 2, 2008 at 8:17 PM, Vladislav Bolkhovitin <vst@vlnb.net> wrote:
-> > I wrote all above to support my at first glance shocking conclusion that
-> > SCSI target subsystem is completely new subsystem of the kernel and it
-> > should live on its own with its own maintainer! This is the same as with the
-> > current interaction between SCSI and block subsystems in the kernel: SCSI
-> > uses block's functionality, but that doesn't mean that block and SCSI are
-> > the same subsystem.
-> 
-> Hello Tomo,
-> 
-> Due to the IET and STGT projects you have a lot of experience with
-> implementing SCSI target frameworks. What is your opinion about how a
-> kernel space SCSI target framework should fit in the Linux kernel ?
-
-Bart, what is your role in the SCST project?  You don't seem to have
-contributed any code to it (going by the SVN logs on sourceforge), and
-your questions and suggestions seem to be those of someone not familiar
-with the code.  If you're not a developer, it might be more helpful for
-you to step back and let Vladislav handle this.
-
--- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+Hello Thomas, Andrew,
+The recent patch given by Venkatesh athttp://bugzilla.kernel.org/show_bug.cgi?id=10394has fixed the problem. Thank you all for the supportextended regarding the same.
+Kind Regards,Sanjeev
+On Sat, Apr 5, 2008 at 6:45 PM, Sanjeev Aditya Naga<sanjeev.kernel@gmail.com> wrote:> Hello Thomas,>>>>  On Fri, Apr 4, 2008 at 2:34 AM, Thomas Renninger <trenn@suse.de> wrote:>  >>  >>  >  On Thu, 2008-04-03 at 21:45 +0530, Sanjeev Aditya Naga wrote:>  >  > Hello Thomas,>  >  >>  >  > On Wed, Apr 2, 2008 at 11:42 PM, Thomas Renninger <trenn@suse.de> wrote:>  >  > >>  >  > > On Wed, 2008-04-02 at 21:43 +0530, Sanjeev Aditya Naga wrote:>  >  > >  > Hello Thomas,>  >  > >  >>  >  > >  > > Hi,>  >  > >  > >>  >  > >  > >>  >  > >  > >  On Wed, 2008-04-02 at 18:38 +0530, Sanjeev Aditya Naga wrote:>  >  > >  > >  > Hello Andrew Morton,>  >  > >  > >  >>  >  > >  > >  > Greetings!>  >  > >  > >  >>  >  > >  > >  > Thank you for the update. Is there anything I can do>  >  > >  > >  > from my side?>  >  > >  > >  >>  >  > >  > >  > I thought it was a acpi (dsdt) problem. And based on>  >  > >  > >  > a tutorial, I have tried to extract, fix, recompile the dsdt>  >  > >  > >  > and use it with the kernel. But still I have the same problem.>  >  > >  > >  > Let me know if I shall attach the dsdt (original) decompiled>  >  > >  > >  > code, if that helps.>  >  > >  > >>  >  > >  > >  this could be due a general memory corruption problem through ACPICA.>  >  > >  > >  If you get different backtraces on reboots even you only modified things>  >  > >  > >  that do not have to do with the problem, it's probably that and related>  >  > >  > >  to:>  >  > >  > >  ï»¿http://bugzilla.kernel.org/show_bug.cgi?id=10339>  >  > >  > >>  >  > >  > >  You might want to try the latest kernel or the patch posted there.>  >  > >  >>  >  > >  > Thank you for the update.>  >  > >  > I have checked the bug and unfortunately its not the>  >  > >  > same issue. Things work absolutely fine, when I'm>  >  > >  > running on AC power. It even displays the exact>  >  > >  > battery (and charging) status to me. It messes up>  >  > >  > when suddenly AC power gets disconnected and>  >  > >  > switches to battery mode (The time when I get Oops).>  >  > >  > The system is still usable after switching to battery>  >  > >  > mode and I still get correct battery stats until its>  >  > >  > completely discharged. However most of the commands>  >  > >  > like kill, poweroff, java doesn't work after the Oops.>  >  > >  The bug is not related to battery, but to AML parsing and can therefore>  >  > >  affect anything which is ACPI related.>  >  > >>  >  > >>  >  > >  > BTW there is one similarity with the referenced bug.>  >  > >  > If I boot the computer without AC Power, it gives the>  >  > >  > same Oops and stops during booting itself.>  >  > >  >>  >  > >  > I shall try the latest kernel once and shall update you.>  >  > >  That would be great.>  >  > >  If it works, please give the patch there a try, IMO this one should see>  >  > >  2.6.2[34].X stable kernels soon.>  >  >>  >  > I have got the lastest kernel 2.6.25-rc8 today. I observed that>  >  > the referenced patch is already in the kernel. However this didn't>  >  > solve the problem in question. I get the same Oops on this kernel>  >  > as well. Find the latest dmesg along with the Oops:>  >  Ok.>  >  Maybe best is you document the backtraces/oopses with kernel versions at>  >  bugzilla.kernel.org and add dmesg and acpidump.>  >  It seems your machine notifies OS that the C-state table changed.>  >  AFAIK this is rare and there might be a general bug in the cpuidle layer>  >  which I do not know well.>  >  Best you add Venkatesh and Shaohua Li <shaohua.li@intel.com> to CC of>  >  the bug.>  >  While the backtrace shows a lot, cpuidle IMO is missing a general debug>  >  option like in the cpufreq layer.>  >  I couldn't find a single printk in the whole cpuidle/{cpuidle,sysfs}.c>  >  files, even on error paths. ï»¿Also in the cpuidle specific parts of>  >  drivers/acpi/processor_idle.c some debug printks may help for future bug>  >  reports. It is very hard to guess what happened...>>  Thank you for the update:>>  I have just registered a bug at>  http://bugzilla.kernel.org/show_bug.cgi?id=10394>  as directed by you.>>  Kind Regards,>  Sanjeev>ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
