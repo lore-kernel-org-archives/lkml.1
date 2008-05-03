@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752532AbYECTGz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752696AbYECTJJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752532AbYECTGz (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 May 2008 15:06:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751174AbYECTGp
+	id S1752696AbYECTJJ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 May 2008 15:09:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751718AbYECTI5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 May 2008 15:06:45 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:60713 "EHLO
+	Sat, 3 May 2008 15:08:57 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:47037 "EHLO
 	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751024AbYECTGp (ORCPT
+	with ESMTP id S1751174AbYECTI4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 May 2008 15:06:45 -0400
-Message-ID: <481CB6E5.7010009@zytor.com>
-Date: Sat, 03 May 2008 12:03:01 -0700
+	Sat, 3 May 2008 15:08:56 -0400
+Message-ID: <481CB82D.60404@zytor.com>
+Date: Sat, 03 May 2008 12:08:29 -0700
 From: "H. Peter Anvin" <hpa@zytor.com>
 User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
@@ -31,18 +31,13 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Mikael Pettersson wrote:
 > 
-> Are you absolutely sure it's this 3-byte NOP that oopses?
-> 
 > I also noticed that jamal's /proc/cpuinfo contains
 >> cpu MHz         : 1063.771
 > which is either wrong or indicates serious overclocking.
 > The PIIs maxed out at about 400/450MHz.
 > 
 
-Good spotting, and yes, the roof for Pentium II was 450 MHz.  Pentium II 
-had a TSC, so it shouldn't be wrong unless there wasn't a bigger 
-timekeeping error on this platform.
-
-Jamal, can you clarify?
+It's worse than that... it's claiming to be a *Klamath*, which topped 
+out at 300 MHz.
 
 	-hpa
