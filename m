@@ -1,127 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754242AbYECVDr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753299AbYECVE1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754242AbYECVDr (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 May 2008 17:03:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752244AbYECVDh
+	id S1753299AbYECVE1 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 May 2008 17:04:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752711AbYECVER
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 May 2008 17:03:37 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:60310 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750898AbYECVDh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 May 2008 17:03:37 -0400
-Date: Sat, 3 May 2008 23:03:00 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-kernel@vger.kernel.org,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Ingo, no more kconfig patches
-Message-ID: <20080503210300.GA10979@elte.hu>
-References: <20080430200340.GA13757@elte.hu> <20080430170125.ZZRA012@mailhub.coreip.homeip.net> <20080430211317.GA24633@elte.hu> <20080430230100.GK29330@cs181133002.pp.htv.fi> <20080501025234.GE27574@elte.hu> <20080501115923.GX29330@cs181133002.pp.htv.fi> <20080503191445.GF5292@elte.hu> <20080503202416.GR5838@cs181133002.pp.htv.fi>
+	Sat, 3 May 2008 17:04:17 -0400
+Received: from t03.superonline.com ([212.252.122.150]:46595 "EHLO
+	t03.superonline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752244AbYECVEQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 May 2008 17:04:16 -0400
+X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Sat, 03 May 2008 17:04:16 EDT
+Message-ID: <481CD1B9.3020601@superonline.com>
+Date: Sat, 03 May 2008 23:57:29 +0300
+From: Vefa Bicakci <bicave@superonline.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.12 (X11/20080420)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080503202416.GR5838@cs181133002.pp.htv.fi>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: linux-kernel@vger.kernel.org
+CC: tiwai@suse.de
+Subject: [Bisected Regression] snd-intel-hda no longer produces sound on Toshiba
+ Satellite A100
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello,
 
-* Adrian Bunk <bunk@kernel.org> wrote:
+I am using Debian Sid on a Toshiba Satellite A100 series laptop.
+This laptop has an Intel HDA sound card. It uses the Realtec codecs.
+After modprobe'ing snd-intel-hda, the following appears in dmesg:
+"hda_codec: Unknown model for ALC861, trying auto-probe from BIOS..."
 
-> > > You wrongly (and loudly) blamed Dmitry for something you broke 
-> > > yourself.
-> > 
-> > i didnt. Read what i wrote:
-> > 
-> > || no, you are wrong, read the current Kconfig rules again. If the user 
-> > || can create a .config that does not build, it is driver breakage. It 
-> > || always was, and has been in the past 15 years.
-> > ||
-> > || Kconfig might be extended to make dependencies easier to manage for 
-> > || developers but until that is implemented you have to craft your 
-> > || driver's dependencies with the current tools in a way that doesnt 
-> > || break the build.
-> > 
-> > and that's exactly what happens with Roman's patch: a Kconfig subsystem 
-> > design bug (its inability to properly propagate the dependencies of 
-> > select's) is worked around in the driver space: by the LEDS_CORE driver 
-> > config introduction and no user-visible.
-> > 
-> > Roman's patch is obviously cleaner than my hack (i just fixed a single 
-> > instantiation of the problem, while he changed the LEDS driver 
-> > dependency structure), but it's still a workaround for a Kconfig 
-> > subsystem bug and the same problem could reoccur elsewhere. It could hit 
-> > anytime dual dependencies are introduced in a driver accidentally.
-> 
-> Ingo, perhaps it helps if I put it in caps:
-> 
-> YOU TRIED TO PUSH AN INPUT PATCH FOR AN X86 BUG.
+The sound output used to work fine with 2.6.24.x and 2.6.25. In an
+unrelated move, I decided to give 2.6.25-gitX series a try; however,
+I was very sad to notice that sound output became disabled. Programs
+such as ogg123 or Amarok seem to play, but there is no sound output,
+only silence. I have checked multiple times that no new mixer settings
+appeared because of a possible snd-hda-intel update...
 
-Adrian, your tone is getting more and more abusive, and while i can 
-easily ignore your abuse you are not just doing it towards me but 
-towards other kernel developers as well. You need to stop that.
+I bisected the differences between 2.6.25 and HEAD (as of 28th of
+April) to find the problematic git commit. The git commit with the
+following ID and description disables the sound output completely:
 
-Yes, the incomplete (and buggy) select came from an x86 Kconfig file but 
-you missed the real argument. Half a dozen other times similar bugs came 
-from other portions of the tree so it's a reoccuring pattern of bugs.
+--- 8< ---
+commit f6c7e5461e9046445d50c5c7a9a4587824239623
+[ALSA] hda-codec - Fix auto-configuration of Realtek codecs
+--- >8 ---
 
-And had you read the exchange more carefully you'd notice that the 
-discussion was about the Kconfig subsystem bug which is causing all 
-these other bugs - which Kconfig subsystem bug is still unfixed. In the 
-discussion Dmitry assumed the obvious: that a select on a component will 
-also select the sub-components. The problem is - select does not do 
-that.
+I believe that this is an important regression, and I would like
+to debug this problem. Trying out patches is no problem for me.
 
-> Roman's patch is better than adding a select, but your patch would 
-> have added the select in the completely wrong subsystem.
+Since the mentioned commit was made by Takashi Iwai, I am CC'ing him
+too.
 
-sure, and that's exactly what i said above: "Roman's patch is obviously 
-cleaner than my hack". It avoids this problem by creating a single 
-target to select for.
+Regards,
 
-A wrong/buggy select _somewhere_ (this time the bug indeed was in an x86 
-subarch Kconfig - but often it was just in a driver that tried to enable 
-LEDS support) breaks the build - instead of propagating dependencies or 
-at least warning about the problem. That's a Kconfig subsystem design 
-bug and it has been known for years.
+Vefa Bicakci
 
-it's now worked around by Roman's patch by making the LEDS Kconfig 
-structure simpler so there's just a single select target. But the root 
-cause was not fixed and similar issues could hit the kernel anytime in 
-the future. So it's not a real fix - it just prolonges the real fix some 
-more.
+Note: For the record, here is the "git bisect log" output:
 
-> Why can't you admit the patch you tried to push was wrong?
+--- 8< ---
+git-bisect start
+# good: [4b119e21d0c66c22e8ca03df05d9de623d0eb50f] Linux 2.6.25
+git-bisect good 4b119e21d0c66c22e8ca03df05d9de623d0eb50f
+# bad: [064922a805ec7aadfafdd27aa6b4908d737c3c1d] Merge git://git.kernel.org/pub/scm/linux/kernel/git/jejb/scsi-misc-2.6
+git-bisect bad 064922a805ec7aadfafdd27aa6b4908d737c3c1d
+# good: [4a1fd556c1f1fbd6d9d6739efec042324732b697] [ARM] fix 48d7927bdf071d05cf5d15b816cf06b0937cb84f
+git-bisect good 4a1fd556c1f1fbd6d9d6739efec042324732b697
+# good: [b0166ab3a6ae6d7af8d9a21a7836154963c69a11] V4L/DVB (7731): tuner-xc2028: fix signal strength calculus
+git-bisect good b0166ab3a6ae6d7af8d9a21a7836154963c69a11
+# bad: [4b7227ca321ccf447cdc04538687c895db8b77f5] Merge branch 'for-linus' of
+git://git.kernel.org/pub/scm/linux/kernel/git/x86/linux-2.6-xen-next
+git-bisect bad 4b7227ca321ccf447cdc04538687c895db8b77f5
+# bad: [346ad4b7fe392571f19314f153db9151dbc1d82b] Merge branch 'for-linus' of
+git://git.kernel.org/pub/scm/linux/kernel/git/cooloney/blackfin-2.6
+git-bisect bad 346ad4b7fe392571f19314f153db9151dbc1d82b
+# bad: [87b57fe2d3fb1ce33671b944db9a4cbe0cd065ea] [ALSA] wm9713: Don't control touch screen power on suspend
+git-bisect bad 87b57fe2d3fb1ce33671b944db9a4cbe0cd065ea
+# bad: [fd2499f0ed765de3ab11c7fd6f37f9fbfaf059ec] [ALSA] aw2 - Remove endian dependency
+git-bisect bad fd2499f0ed765de3ab11c7fd6f37f9fbfaf059ec
+# bad: [34b6757dc7ce0e9d5d3930b29d53a7bcb0fde047] [ALSA] aw2 - Add missing module parameters
+git-bisect bad 34b6757dc7ce0e9d5d3930b29d53a7bcb0fde047
+# good: [e1406348129dc2db60ccad079c3d014200590557] [ALSA] hda-codec - Clean up capture source selection of Realtek codecs
+git-bisect good e1406348129dc2db60ccad079c3d014200590557
+# bad: [310355c111dbae005269fe3fc39afdd60779bf5d] [ALSA] Davinci ASoC support
+git-bisect bad 310355c111dbae005269fe3fc39afdd60779bf5d
+# bad: [d260cdf65657382c4cde366a1c7d4ddce669a427] [ALSA] hda-codec - Fix breakage of resume in auto-config of realtek codecs
+git-bisect bad d260cdf65657382c4cde366a1c7d4ddce669a427
+# bad: [f6c7e5461e9046445d50c5c7a9a4587824239623] [ALSA] hda-codec - Fix auto-configuration of Realtek codecs
+git-bisect bad f6c7e5461e9046445d50c5c7a9a4587824239623
+# good: [5832fcf8b55cfdbd7d8511f747d15fd20ed4703d] [ALSA] hda-codec - More fix-up for auto-configuration
+git-bisect good 5832fcf8b55cfdbd7d8511f747d15fd20ed4703d
+--- >8 ---
 
-how many times do i have to repeat it that yes it was a hack and that it 
-was wrong?
 
-> > As Sam said it, fixing that Kconfig design bug would be "nice" - but 
-> > unfortunately the Kconfig subsystem is not actively developed 
-> > anymore.
-> 
-> Roman is still active.
-
-great, does this mean we'll see fixes for select's misbehavior, along 
-the lines of Sam's suggestions?
-
-at minimum a warning needs to be emitted by the kconfig tool if such 
-incomplete selects are used. I've stopped counting the number of times 
-such issues have broken the build and have held up kernel development. 
-
-All the information is already in the Kconfig files for the kconfig 
-tool/subsystem to make an intelligent decision. It's just not fully 
-used, and the burden of fixing these problems is pushed back to the 
-developers who create the Kconfig files.
-
-	Ingo
