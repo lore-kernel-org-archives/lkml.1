@@ -1,56 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760194AbYECHkD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760875AbYECHqR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760194AbYECHkD (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 May 2008 03:40:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751623AbYECHjw
+	id S1760875AbYECHqR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 May 2008 03:46:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751812AbYECHqG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 May 2008 03:39:52 -0400
-Received: from mail.gmx.net ([213.165.64.20]:53532 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1750771AbYECHjw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 May 2008 03:39:52 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX19Hgqlg3alHYp5lqMoPC/wOw3dB5vbMo4dHRj69Qk
-	KBhrf/OitfrSCB
-Subject: Re: Horrendous Audio Stutter - current git
-From: Mike Galbraith <efault@gmx.de>
-To: Frans Pop <elendil@planet.nl>
-Cc: Parag Warudkar <parag.warudkar@gmail.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <200805030913.55124.elendil@planet.nl>
-References: <82e4877d0805011714m35a47753q58cca706b7af6557@mail.gmail.com>
-	 <82e4877d0805020521t696cc4fbu6ffd182f84ae1a2e@mail.gmail.com>
-	 <1209731822.25271.4.camel@marge.simson.net>
-	 <200805030913.55124.elendil@planet.nl>
-Content-Type: text/plain
-Date: Sat, 03 May 2008 09:39:48 +0200
-Message-Id: <1209800388.14307.2.camel@marge.simson.net>
+	Sat, 3 May 2008 03:46:06 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:47629 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751623AbYECHqF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 May 2008 03:46:05 -0400
+Date: Sat, 3 May 2008 17:45:57 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       Linus <torvalds@linux-foundation.org>
+Subject: Re: linux-next: Requirements and process
+Message-Id: <20080503174557.faf67525.sfr@canb.auug.org.au>
+In-Reply-To: <20080502233519.a988b552.akpm@linux-foundation.org>
+References: <20080503154542.18807e59.sfr@canb.auug.org.au>
+	<20080502233519.a988b552.akpm@linux-foundation.org>
+X-Mailer: Sylpheed 2.5.0beta3 (GTK+ 2.12.9; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Sat__3_May_2008_17_45_57_+1000_nTQAOwtezoV8Y43q"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--Signature=_Sat__3_May_2008_17_45_57_+1000_nTQAOwtezoV8Y43q
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On Sat, 2008-05-03 at 09:13 +0200, Frans Pop wrote:
+On Fri, 2 May 2008 23:35:19 -0700 Andrew Morton <akpm@linux-foundation.org>=
+ wrote:
+>
+> On Sat, 3 May 2008 15:45:42 +1000 Stephen Rothwell <sfr@canb.auug.org.au>=
+ wrote:
+>=20
+> > The following architectures are not in linux-next (and should be):
+> >=20
+> > alpha		cris		frv
+> > h8300		m32r		m68knommu
+> > mips		mn10300		parisc
+> > um		v850		xtensa
+>=20
+> mips, m32r, parisc and xtensa do have git trees.  The rest are mastered as
+> discrete patches in -mm.
 
-> Based on Mike's mails I have quickly tried reverting the following two 
-> commits to see if that would fix the GROUP_SCHED related regression, but I 
-> still get a merge error with the second one in sched_fair.c:
-> $ git revert 7ba2e74ab5
-> $ git revert 8f1bc385cf
-> 
-> I don't feel comfortable solving the conflict myself as I'd have absolutely 
-> no idea what I'd be doing and it all seems to require a lot of precision.
-> 
-> As other suggested patches don't seem ready for testing yet, I'll just wait 
-> for further instructions :-)
+So, I was wondering if it would be worth while having subsections to a
+series file like:
 
-You probably shouldn't bother.  GROUP_SCHED needs Peter's EEVDF help
-regardless of whether 8f1bc385cf is playing a significant role or not.
+# NEXT_PATCHES_START [<label> [<base>]]
 
-	-Mike
+# NEXT_PATCHES_END
 
+With <label> sections being logically separate enough that we can talk
+about them/drop them/merge them at different places etc.
+
+Or am I over engineering? :-)
+
+> Except for m68knommu, which pops unexpectedly out of the woodwork during
+> the merge window.  I've asked that this be altered ;)
+
+Yeah, I saw that, thanks.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Sat__3_May_2008_17_45_57_+1000_nTQAOwtezoV8Y43q
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFIHBg6TgG2atn1QN8RAtXZAJ9OkwicH3DoDCYCBUBaME9E/ez1OgCfdcpr
+QLnGzt7tlRVt2NsOnu4J9y8=
+=HFFl
+-----END PGP SIGNATURE-----
+
+--Signature=_Sat__3_May_2008_17_45_57_+1000_nTQAOwtezoV8Y43q--
