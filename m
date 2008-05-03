@@ -1,67 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758857AbYECOsW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758208AbYECPA0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758857AbYECOsW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 May 2008 10:48:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755825AbYECOsM
+	id S1758208AbYECPA0 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 May 2008 11:00:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755709AbYECPAM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 May 2008 10:48:12 -0400
-Received: from fg-out-1718.google.com ([72.14.220.159]:57319 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755054AbYECOsK (ORCPT
+	Sat, 3 May 2008 11:00:12 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:37041 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752961AbYECPAL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 May 2008 10:48:10 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=MEqSIQWnLr4MLUkeX5nU1KkvliBW+sjyqOy3A5kwEoiRSOh96ODjMHOOsFfitqeBBAqPL7P7+4DE6TDnISNbyi48g0fJfhwPj+JcTm9oMCx2pz5JhalUaocNdzTNgszXytubDFCVRjWjW86XH1wZlurpvIW1wHPQ6kuaRpQWoQc=
-Message-ID: <e2e108260805030748yea75e79xf421b70fc4a625e1@mail.gmail.com>
-Date: Sat, 3 May 2008 16:48:08 +0200
-From: "Bart Van Assche" <bart.vanassche@gmail.com>
-To: "Matthew Wilcox" <matthew@wil.cx>
-Subject: Re: SCSI target subsystem
-Cc: "FUJITA Tomonori" <tomof@acm.org>,
-       "James Bottomley" <James.Bottomley@hansenpartnership.com>,
-       "Christoph Hellwig" <hch@infradead.org>, linux-scsi@vger.kernel.org,
-       scst-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       "Vladislav Bolkhovitin" <vst@vlnb.net>
-In-Reply-To: <20080503132846.GA14976@parisc-linux.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Sat, 3 May 2008 11:00:11 -0400
+Date: Sat, 3 May 2008 15:51:24 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: Dave Jones <davej@codemonkey.org.uk>, linux-ide@vger.kernel.org,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Remove Asus EEE UDMA/33 limitation.
+Message-ID: <20080503155124.004e27a7@core>
+In-Reply-To: <20080503095817.GA22208@srcf.ucam.org>
+References: <20080502154458.GA10567@codemonkey.org.uk>
+	<20080503095817.GA22208@srcf.ucam.org>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200805021638.42972.bart.vanassche@gmail.com>
-	 <e2e108260805020853r4c21fb98y3d4434a7fc95989c@mail.gmail.com>
-	 <20080502155525.GA16353@infradead.org>
-	 <e2e108260805020906w7f5e92bev46b8d0f96aa7b4d6@mail.gmail.com>
-	 <1209745084.3121.39.camel@localhost.localdomain>
-	 <481B5AB8.5030108@vlnb.net>
-	 <e2e108260805030241w216363dbt4b5f6b2105ad267b@mail.gmail.com>
-	 <20080503095314.GX14976@parisc-linux.org>
-	 <e2e108260805030339q4fcaedf7t34e737c14801e788@mail.gmail.com>
-	 <20080503132846.GA14976@parisc-linux.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, May 3, 2008 at 3:28 PM, Matthew Wilcox <matthew@wil.cx> wrote:
-> Once Vladislav is ready for his project to be merged, let him approach
-> us and ask.  I don't know if he considers his project ready for merging.
-> Did he ask you for his help?  It's generally considered rather rude to
-> merge someone else's code without their consent.  The way you tried to
-> get it merged was unhelpful and, if Vladislav were less skillful a
-> communicator, could have actively hindered getting it merged.
+On Sat, 3 May 2008 10:58:17 +0100
+Matthew Garrett <mjg59@srcf.ucam.org> wrote:
 
-You'd better verify your assumptions before you take them for truth. I
-asked Vladislav for permission by private e-mail before I posted the
-scsi_execute_async_fifo() patch. Did try I to merge this code without
-Vladislav's consent ? No. Anyone can see that I kept Vladislav and the
-scst-devel mailing list in CC.
+> On Fri, May 02, 2008 at 11:44:58AM -0400, Dave Jones wrote:
+> 
+> >  static const struct ich_laptop ich_laptop[] = {
+> >  	/* devid, subvendor, subdev */
+> > +	{ 0x2653, 0x1043, 0x82d8 },	/* ICH6M on Asus Eee PC */
+> >  	{ 0x27DF, 0x0005, 0x0280 },	/* ICH7 on Acer 5602WLMi */
+> >  	{ 0x27DF, 0x1025, 0x0102 },	/* ICH7 on Acer 5602aWLMi */
+> >  	{ 0x27DF, 0x1025, 0x0110 },	/* ICH7 on Acer 3682WLMi */
+> 
+> Don't the ACPI timing methods let us work this out without requiring 
+> machine specific knowledge? 
 
-Let us return to the actual topic of this thread. Does the above mean
-that you agree with inclusion of SCST in the mainline kernel ? It
-still has to be decided who will maintain the mainline kernel SCSI
-target code. In the past James wrote that he does not really have the
-time for this. Until now the only one who volunteered to maintain such
-a subsystem is Vladislav.
-
-Bart.
+We don't currently sniff the ACPI timing data on Intel boxes - we can do
+so and there is a library routine but I'd be worried about the usual
+standard of BIOS code. Right now we only do it for chipsets which are so
+braindamaged we have no other choice or where the vendor specifically
+implemented and intended the ACPI data to be used for this (eg Nvidia)
