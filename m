@@ -1,48 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757283AbYECNTJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757458AbYECNYa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757283AbYECNTJ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 May 2008 09:19:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752331AbYECNSz
+	id S1757458AbYECNYa (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 May 2008 09:24:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754800AbYECNYV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 May 2008 09:18:55 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:49196 "EHLO mail.dvmed.net"
+	Sat, 3 May 2008 09:24:21 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:47183 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751034AbYECNSy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 May 2008 09:18:54 -0400
-Message-ID: <481C6632.8070506@garzik.org>
-Date: Sat, 03 May 2008 09:18:42 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
-MIME-Version: 1.0
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-CC: Stephen Rothwell <sfr@canb.auug.org.au>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: charter for -next
-References: <481C3AA2.6020809@s5r6.in-berlin.de>
-In-Reply-To: <481C3AA2.6020809@s5r6.in-berlin.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+	id S1752582AbYECNYU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 May 2008 09:24:20 -0400
+Date: Sat, 3 May 2008 09:23:27 -0400
+From: "Frank Ch. Eigler" <fche@redhat.com>
+To: linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org
+Subject: preempt-rt, need old style rwlocks for systemtap
+Message-ID: <20080503132327.GA28881@redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stefan Richter wrote:
-> What should I ask myself before I commit something to the branch which 
-> Stephen pulls into -next?
-> 
->     Is this ready to be pulled by Linus right now if he had a merge
->     window open today?
+Hi -
 
-I was under the impression it was the above -- anything in linux-next 
-should be ready to be pulled by Linus.  The maintainer considers those 
-changes "ready for next merge window."
+It has come to my attention that the preempt-rt patch suite
+deliberately defeats the potential concurrency intended by systemtap's
+use of rwlocks to permit concurrent readers of various data
+structures.  Since systemtap's probe handlers are all atomic,
+nonblocking, nonpreemptable, it does not seem like there is any
+real-time-oriented benefit in this.  What can we do to work around
+this and permit reader concurrency again in preempt-rt?
 
-	Jeff
-
-
-
-
+- FChE
