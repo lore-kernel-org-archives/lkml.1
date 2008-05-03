@@ -1,68 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765576AbYECRe3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932082AbYECRg2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765576AbYECRe3 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 May 2008 13:34:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760162AbYECReX
+	id S932082AbYECRg2 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 May 2008 13:36:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763204AbYECRgN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 May 2008 13:34:23 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:39713 "EHLO mx3.mail.elte.hu"
+	Sat, 3 May 2008 13:36:13 -0400
+Received: from x346.tv-sign.ru ([89.108.83.215]:47519 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758366AbYECReW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 May 2008 13:34:22 -0400
-Date: Sat, 3 May 2008 19:34:02 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: jamal <hadi@cyberus.ca>
-Cc: Thomas Gleixner <tglx@linutronix.de>,
-       Suresh Siddha <suresh.b.siddha@intel.com>,
-       Arjan van de Ven <arjan@linux.intel.com>,
-       LKML <linux-kernel@vger.kernel.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       Jan Beulich <jbeulich@novell.com>
-Subject: Re: i387/FPU init issues...
-Message-ID: <20080503173402.GA5292@elte.hu>
-References: <1209810775.6972.37.camel@localhost> <alpine.LFD.1.10.0805031650120.6003@apollo.tec.linutronix.de> <1209834123.6972.48.camel@localhost>
-MIME-Version: 1.0
+	id S1762243AbYECRgK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 May 2008 13:36:10 -0400
+Date: Sat, 3 May 2008 21:35:52 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Austin Clements <amdragon+kernelbugzilla@mit.edu>,
+       Ingo Molnar <mingo@elte.hu>, john stultz <johnstul@us.ibm.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Michael Kerrisk <mtk.manpages@googlemail.com>,
+       Roland McGrath <roland@redhat.com>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
+Subject: [PATCH 1/4] posix timers: fix sigqueue_free() vs __exit_signal() race
+Message-ID: <20080503173552.GA8103@tv-sign.ru>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1209834123.6972.48.camel@localhost>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+__exit_signal() does flush_sigqueue(tsk->pending) outside of ->siglock.
+This can race with another thread doing sigqueue_free(), we can free
+the same SIGQUEUE_PREALLOC sigqueue twice or corrupt the pending->list.
 
-* jamal <hadi@cyberus.ca> wrote:
+Note that even sys_exit_group() can trigger this race, not only
+sys_timer_delete().
 
-> > we have:
-> > #define P6_NOP3 ".byte 0x0f,0x1f,0x00\n"
-> 
-> Dang - I feel i should have saved myself all that git bisecting
-> and just posted the oops ;->
+Move the callsite of flush_sigqueue(tsk->pending) under ->siglock.
 
-your bisection was still very useful - it pinpointed the NOPs - the 
-assembly code around the NOP changed so a different length NOP was 
-patched in => which did not work on your CPU. So thanks for that! The 
-fix is already in x86.git (we'll update the commit log).
+This patch doesn't touch flush_sigqueue(->shared_pending) below, it is
+called when there are no other threads which can play with signals,
+and sigqueue_free() can't be used outside of our thread group.
 
-> > So the alternatives code applies the wrong nop padding for your CPU. 
-> > This was probably introduced with commit 
-> > 32c464f5d9701db45bc1673288594e664065388e.
-> > 
-> > Jan, are you sure that P3 knows the P6 NOPs ? AFAICT its P4, but I 
-> > have to dig up the manuals.
-> > 
-> > Jamal, does the following patch solve your problem ?
-> 
-> Indeed it does - thanks.
+Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
 
-great. So this NOP is indeed not generally known to all "P6 and later" 
-CPUs. (the PII)
+--- 25/kernel/exit.c~1_SF_EX_RACE	2008-03-20 18:25:11.000000000 +0300
++++ 25/kernel/exit.c	2008-05-03 18:21:34.000000000 +0400
+@@ -125,6 +125,12 @@ static void __exit_signal(struct task_st
+ 
+ 	__unhash_process(tsk);
+ 
++	/*
++	 * Do this under ->siglock, we can race with another thread
++	 * doing sigqueue_free() if we have SIGQUEUE_PREALLOC signals.
++	 */
++	flush_sigqueue(&tsk->pending);
++
+ 	tsk->signal = NULL;
+ 	tsk->sighand = NULL;
+ 	spin_unlock(&sighand->siglock);
+@@ -132,7 +138,6 @@ static void __exit_signal(struct task_st
+ 
+ 	__cleanup_sighand(sighand);
+ 	clear_tsk_thread_flag(tsk,TIF_SIGPENDING);
+-	flush_sigqueue(&tsk->pending);
+ 	if (sig) {
+ 		flush_sigqueue(&sig->shared_pending);
+ 		taskstats_tgid_free(sig);
+--- 25/kernel/signal.c~1_SF_EX_RACE	2008-05-03 17:47:01.000000000 +0400
++++ 25/kernel/signal.c	2008-05-03 18:27:03.000000000 +0400
+@@ -1242,7 +1242,8 @@ void sigqueue_free(struct sigqueue *q)
+ 	/*
+ 	 * If the signal is still pending remove it from the
+ 	 * pending queue. We must hold ->siglock while testing
+-	 * q->list to serialize with collect_signal().
++	 * q->list to serialize with collect_signal() or with
++	 * __exit_signal()->flush_sigqueue().
+ 	 */
+ 	spin_lock_irqsave(lock, flags);
+ 	if (!list_empty(&q->list))
 
-	Ingo
