@@ -1,78 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754512AbYECW0I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754804AbYECW1P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754512AbYECW0I (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 May 2008 18:26:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751016AbYECWZ4
+	id S1754804AbYECW1P (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 May 2008 18:27:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751790AbYECW07
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 May 2008 18:25:56 -0400
-Received: from smtp.enter.net ([216.193.128.24]:1392 "EHLO smtp.enter.net"
+	Sat, 3 May 2008 18:26:59 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:49671 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751385AbYECWZz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 May 2008 18:25:55 -0400
-From: Daniel Hazelton <dhazelton@enter.net>
-To: Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: Strange linux-next build error
-Date: Sat, 3 May 2008 18:25:48 -0400
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Pavel Machek <pavel@suse.cz>, linux-next@vger.kernel.org
-References: <200805030121.39831.dhazelton@enter.net> <20080503155252.0dc9c4d7.sfr@canb.auug.org.au> <20080503064057.GA12546@uranus.ravnborg.org>
-In-Reply-To: <20080503064057.GA12546@uranus.ravnborg.org>
+	id S1751016AbYECW06 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 May 2008 18:26:58 -0400
+Date: Sun, 4 May 2008 00:26:46 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: linux-kernel@vger.kernel.org
+Cc: Dmitry Torokhov <dtor_core@ameritech.net>,
+       Bjorn Helgaas <bjorn.helgaas@hp.com>
+Subject: [patch] irda: fix !PNP support for drivers/net/irda/smsc-ircc2.c
+Message-ID: <20080503222646.GA13814@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200805031825.50914.dhazelton@enter.net>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 03 May 2008 02:40:57 Sam Ravnborg wrote:
-> On Sat, May 03, 2008 at 03:52:52PM +1000, Stephen Rothwell wrote:
-> > Just adding some cc's ... it is worth cc'ing linux-next for bugs in
-> > linux-next (instead, or as well, as me personally) since people who are
-> > interested are probably subscribed there.
-> >
-> > On Sat, 3 May 2008 01:21:38 -0400 Daniel Hazelton <dhazelton@enter.net> 
-wrote:
-> > > After updating my local tree to the latest linux-next and starting a
-> > > clean build I see this error *ONLY* the first time I start a "make
-> > > bzImage"
-> > >
-> > >   CC      arch/x86/kernel/acpi/sleep.o
-> > >   LDS     arch/x86/kernel/acpi/realmode/wakeup.lds
-> > > cc1: fatal error: opening output file
-> > > arch/x86/kernel/acpi/realmode/wakeup.lds: Permission denied
-> > > compilation terminated.
-> > > make[4]: *** [arch/x86/kernel/acpi/realmode/wakeup.lds] Error 1
-> > > make[3]: *** [arch/x86/kernel/acpi/realmode/wakeup.bin] Error 2
-> > > make[2]: *** [arch/x86/kernel/acpi] Error 2
-> > > make[1]: *** [arch/x86/kernel] Error 2
-> > > make: *** [bzImage] Error 2
->
-> Hi Daniel.
->
-> It looks like we visit arch/x86/kernel/acpi/realmode/Makefile
-> twice in parallel as we have both make[4] and make[3] in play here.
-> Or maybe we have a dependency bug in the Makefile.
->
-> Can you try to do a:
-> make V=1 and post the output a few screen fulls before and until
-> the bug triggers.
-> They I will see if I can work out what is happening.
->
-> Thanks,
-> 	Sam
+x86.git testing found this build bug on v2.6.26-rc1:
 
-I've been unable to trigger it with "make V=1 bzImage" - does the verbosity 
-change, somehow, the default number of makes that get run ?
+  ERROR: "pnp_get_resource" [drivers/net/irda/smsc-ircc2.ko] undefined!
+  make[1]: *** [__modpost] Error 1
+  make: *** [modules] Error 2
 
-If it does, I could try adding -j2 or similar  to see if that causes it to 
-trigger.
+the driver did not anticipate the case of !CONFIG_PNP which is rare but 
+still possible. Instead of restricting the driver to PNP-only in the 
+Kconfig space, add the (trivial) dummy struct pnp_driver - this is that 
+other drivers use in the !PNP case too.
 
-DRH
+The driver itself can in theory be initialized on !PNP too in certain 
+cases, via smsc_ircc_legacy_probe().
 
--- 
-Dialup is like pissing through a pipette. Slow and excruciatingly painful.
+Patch only minimally build tested, i dont have this hardware.
+
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ drivers/net/irda/smsc-ircc2.c |    5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+Index: linux/drivers/net/irda/smsc-ircc2.c
+===================================================================
+--- linux.orig/drivers/net/irda/smsc-ircc2.c
++++ linux/drivers/net/irda/smsc-ircc2.c
+@@ -376,6 +376,7 @@ MODULE_DEVICE_TABLE(pnp, smsc_ircc_pnp_t
+ 
+ static int pnp_driver_registered;
+ 
++#ifdef CONFIG_PNP
+ static int __init smsc_ircc_pnp_probe(struct pnp_dev *dev,
+ 				      const struct pnp_device_id *dev_id)
+ {
+@@ -402,7 +403,9 @@ static struct pnp_driver smsc_ircc_pnp_d
+ 	.id_table	= smsc_ircc_pnp_table,
+ 	.probe		= smsc_ircc_pnp_probe,
+ };
+-
++#else /* CONFIG_PNP */
++static struct pnp_driver smsc_ircc_pnp_driver;
++#endif
+ 
+ /*******************************************************************************
+  *
