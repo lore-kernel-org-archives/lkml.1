@@ -1,108 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752472AbYECTSF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753954AbYECTSe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752472AbYECTSF (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 May 2008 15:18:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752715AbYECTRn
+	id S1753954AbYECTSe (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 May 2008 15:18:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752560AbYECTSQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 May 2008 15:17:43 -0400
-Received: from mtl.rackplans.net ([69.90.0.18]:57015 "EHLO mtl.rackplans.net"
+	Sat, 3 May 2008 15:18:16 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:53642 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752530AbYECTRl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 May 2008 15:17:41 -0400
-Date: Sat, 3 May 2008 15:17:40 -0400 (EDT)
-From: Gerhard Mack <gmack@innerfire.net>
-X-X-Sender: gmack@mtl.rackplans.net
-To: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [2.6.25.1] qla2xxx can't see more than 4 drives
-Message-ID: <alpine.DEB.1.10.0805031458050.2330@mtl.rackplans.net>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	id S1751868AbYECTSP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 May 2008 15:18:15 -0400
+Date: Sat, 3 May 2008 21:17:44 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Adrian Bunk <bunk@stusta.de>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-kernel@vger.kernel.org,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Ingo, no more kconfig patches
+Message-ID: <20080503191744.GA22990@elte.hu>
+References: <20080430200340.GA13757@elte.hu> <20080430170125.ZZRA012@mailhub.coreip.homeip.net> <20080430211317.GA24633@elte.hu> <20080430230100.GK29330@cs181133002.pp.htv.fi> <20080501025234.GE27574@elte.hu> <20080501115923.GX29330@cs181133002.pp.htv.fi> <20080503191445.GF5292@elte.hu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080503191445.GF5292@elte.hu>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I have an array witjh 6 drives in it and if use the card's utilities on 
-boot it sees all of them but for some reason Linux only sees 4 drives.
 
-Am I running into a limit?  I can see both drives if I remove other drives 
-from the array.
+* Ingo Molnar <mingo@elte.hu> wrote:
 
-[0:0:0:0]    disk    MAXTOR   ATLAS10K4_36SCA  DFM0  /dev/sda
-[0:0:1:0]    disk    MAXTOR   ATLAS10K4_36SCA  DFM0  /dev/sdb
-[0:0:2:0]    disk    MAXTOR   ATLAS10K4_36SCA  DFM0  /dev/sdc
-[0:0:6:0]    process PE/PV    1x3 SCSI BP      0.28  -
-fiber channel drives:
-[2:0:0:0]    disk    SEAGATE  ST314680 CLAR146 7A0A  /dev/sdd
-[2:0:1:0]    disk    SEAGATE  ST314680 CLAR146 7A04  /dev/sde
-[2:0:2:0]    disk    SEAGATE  ST314680 CLAR146 7A0A  /dev/sdf
-[2:0:3:0]    disk    SEAGATE  ST314680 CLAR146 7A04  /dev/sdg
+> || Kconfig might be extended to make dependencies easier to manage for 
+> || developers but until that is implemented you have to craft your 
+> || driver's dependencies with the current tools in a way that doesnt 
+> || break the build.
+> 
+> and that's exactly what happens with Roman's patch: a Kconfig 
+> subsystem design bug (its inability to properly propagate the 
+> dependencies of select's) is worked around in the driver space: by the 
+> LEDS_CORE driver config introduction and no user-visible.
+                                       breakage remains --^
 
-QLogic Fibre Channel HBA Driver
-qla2xxx 0000:02:0a.0: Found an ISP2312, irq 24, iobase 0xf88cc000
-qla2xxx 0000:02:0a.0: Configuring PCI space...
-qla2xxx 0000:02:0a.0: Configure NVRAM parameters...
-qla2xxx 0000:02:0a.0: Verifying loaded RISC code...
-qla2xxx 0000:02:0a.0: Allocated (412 KB) for firmware dump...
-scsi3 : qla2xxx
-qla2xxx 0000:02:0a.0: LIP reset occured (f8f7).
-qla2xxx 0000:02:0a.0: LIP occured (f8f7).
-qla2xxx 0000:02:0a.0: LOOP UP detected (1 Gbps).
-scsi 3:0:0:0: Direct-Access     SEAGATE  ST314680 CLAR146 7A0A PQ: 0 ANSI: 3
-sd 3:0:0:0: [sdd] 286749476 512-byte hardware sectors (146816 MB)
-sd 3:0:0:0: [sdd] Write Protect is off
-sd 3:0:0:0: [sdd] Mode Sense: a7 00 10 08
-sd 3:0:0:0: [sdd] Write cache: enabled, read cache: enabled, supports DPO and FUA
-sd 3:0:0:0: [sdd] 286749476 512-byte hardware sectors (146816 MB)
-sd 3:0:0:0: [sdd] Write Protect is off
-sd 3:0:0:0: [sdd] Mode Sense: a7 00 10 08
-sd 3:0:0:0: [sdd] Write cache: enabled, read cache: enabled, supports DPO and FUA
- sdd:<6>qla2xxx 0000:02:0a.0: 
- QLogic Fibre Channel HBA Driver: 8.02.00-k9
-  QLogic QLA2340 - 133MHz PCI-X to 2Gb FC, Single Channel
-  ISP2312: PCI (66 MHz) @ 0000:02:0a.0 hdma-, host#=3, fw=3.03.20 IPX
- unknown partition table
-sd 3:0:0:0: [sdd] Attached SCSI disk
-sd 3:0:0:0: Attached scsi generic sg4 type 0
-sd 3:0:0:0: Embedded Enclosure Device
-sd 3:0:0:0: Failed to get diagnostic page 0x6000000
-sd 3:0:0:0: Failed to bind enclosure -19
-scsi 3:0:1:0: Direct-Access     SEAGATE  ST314680 CLAR146 7A04 PQ: 0 ANSI: 3
-sd 3:0:1:0: [sde] 286749476 512-byte hardware sectors (146816 MB)
-sd 3:0:1:0: [sde] Write Protect is off
-sd 3:0:1:0: [sde] Mode Sense: a7 00 10 08
-sd 3:0:1:0: [sde] Write cache: disabled, read cache: enabled, supports DPO and FUA
-sd 3:0:1:0: [sde] 286749476 512-byte hardware sectors (146816 MB)
-sd 3:0:1:0: [sde] Write Protect is off
-sd 3:0:1:0: [sde] Mode Sense: a7 00 10 08
-sd 3:0:1:0: [sde] Write cache: disabled, read cache: enabled, supports DPO and FUA
- sde: unknown partition table
-sd 3:0:1:0: [sde] Attached SCSI disk
-sd 3:0:1:0: Attached scsi generic sg5 type 0
-sd 3:0:1:0: Embedded Enclosure Device
-sd 3:0:1:0: Failed to get diagnostic page 0x6000000
-sd 3:0:1:0: Failed to bind enclosure -19
-scsi 3:0:2:0: Direct-Access     SEAGATE  ST314680 CLAR146 7A0A PQ: 0 ANSI: 3
-sd 3:0:2:0: [sdf] 286749476 512-byte hardware sectors (146816 MB)
-sd 3:0:2:0: [sdf] Write Protect is off
-sd 3:0:2:0: [sdf] Mode Sense: a7 00 10 08
-sd 3:0:2:0: [sdf] Write cache: disabled, read cache: enabled, supports DPO and FUA
-sd 3:0:2:0: [sdf] 286749476 512-byte hardware sectors (146816 MB)
-sd 3:0:2:0: [sdf] Write Protect is off
-sd 3:0:2:0: [sdf] Mode Sense: a7 00 10 08
-sd 3:0:2:0: [sdf] Write cache: disabled, read cache: enabled, supports DPO and FUA
- sdf: unknown partition table
-sd 3:0:2:0: [sdf] Attached SCSI disk
-sd 3:0:2:0: Attached scsi generic sg6 type 0
-sd 3:0:2:0: Embedded Enclosure Device
-qla2xxx 0000:02:0a.0: scsi(3:2:0): Abort command issued -- 1 62 2002.
-qla2xxx 0000:02:0a.0: scsi(3:2:0): Abort command issued -- 1 6d 2002.
-
-
-
---
-Gerhard Mack
-
-gmack@innerfire.net
-
-<>< As a computer I find your faith in technology amusing.
