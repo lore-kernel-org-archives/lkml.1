@@ -1,95 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760194AbYECGHm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760366AbYECGU6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760194AbYECGHm (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 May 2008 02:07:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753414AbYECGHd
+	id S1760366AbYECGU6 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 May 2008 02:20:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754080AbYECGUs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 May 2008 02:07:33 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:32936 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753011AbYECGHc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 May 2008 02:07:32 -0400
-Date: Sat, 3 May 2008 16:07:24 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: linux-next@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus <torvalds@linux-foundation.org>
-Subject: Re: linux-next: Requirements and process
-Message-Id: <20080503160724.6c3e0392.sfr@canb.auug.org.au>
-In-Reply-To: <20080503154542.18807e59.sfr@canb.auug.org.au>
-References: <20080503154542.18807e59.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.5.0beta3 (GTK+ 2.12.9; i486-pc-linux-gnu)
+	Sat, 3 May 2008 02:20:48 -0400
+Received: from mail.gmx.net ([213.165.64.20]:43149 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1754053AbYECGUr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 May 2008 02:20:47 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX1+4A2oWAPO4x1n12bKdu2XsKsD2e7LF0x98R957EA
+	KqUQyyGYUDmsK6
+Subject: Re: 'global' rq->clock (was Re: Horrendous Audio Stutter - current
+	git)
+From: Mike Galbraith <efault@gmx.de>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Frans Pop <elendil@planet.nl>, Parag Warudkar <parag.warudkar@gmail.com>,
+       Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Guillaume Chazarain <guichaz@yahoo.fr>,
+       Andi Kleen <andi@firstfloor.org>
+In-Reply-To: <1209758186.6929.18.camel@lappy>
+References: <82e4877d0805011714m35a47753q58cca706b7af6557@mail.gmail.com>
+	 <1209740523.4776.1.camel@marge.simson.net>
+	 <200805021749.10205.elendil@planet.nl>
+	 <200805022053.24779.elendil@planet.nl>
+	 <1209756423.4693.8.camel@marge.simson.net> <1209758186.6929.18.camel@lappy>
+Content-Type: text/plain
+Date: Sat, 03 May 2008 08:20:43 +0200
+Message-Id: <1209795643.4847.12.camel@marge.simson.net>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Sat__3_May_2008_16_07_24_+1000_F5R8plUrJzn9MMQA"
+X-Mailer: Evolution 2.12.0 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Sat__3_May_2008_16_07_24_+1000_F5R8plUrJzn9MMQA
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-On Sat, 3 May 2008 15:45:42 +1000 Stephen Rothwell <sfr@canb.auug.org.au> w=
-rote:
->
-> The following architectures are not in linux-next (and should be):
->=20
-> alpha		cris		frv
-> h8300		m32r		m68knommu
-> mips		mn10300		parisc
-> um		v850		xtensa
->=20
-> See Andrew's mail for a list of other subsystems.
+On Fri, 2008-05-02 at 21:56 +0200, Peter Zijlstra wrote:
+> On Fri, 2008-05-02 at 21:27 +0200, Mike Galbraith wrote:
+> 
+> That's a quite horrible patch for some of us, but I think I know why you
+> did that, and I think your fancy Q6600 has a stable enough TSC to pull
+> it off.
 
-In case it isn't clear, I need to be told where I can get a particular
-tree from and who should be contacted in case of problems (I do not troll
-through the MAINTAINERS file).  I can currently handle git trees and
-quilt series.  I am willing to consider other formats/scms.  I also do
-not mind having multiple trees (or branches or series files) for a single
-subsystem/maintainer.
+Oh, yeah, that's right.  Bah, let them eat cake ;-) 
 
-Series files must be annotated with an indication of the place in Linus'
-tree that they are based on using the following format:
+	-Mike
 
-# BASE <some identification of a place in Linus' tree>
-
-This base can be a SHA1 or a release tag or one of the ...-git<n> or the
-output from "git describe".  Alternatively, you can be based on another
-tree in linux-next by using:
-
-# NEXT_BASE <name of a tree in linux-next>
-
-The names are in the Next/Trees file in each release and normally do not
-change.
-
-Also you may (if you like) delimit the parts of the series you want in
-linux-next by using:
-
-# NEXT_PATCHES_START
-.
-.
-# NEXT_PATCHES_END
-
-There can be multiple such sections.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Sat__3_May_2008_16_07_24_+1000_F5R8plUrJzn9MMQA
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFIHAEiTgG2atn1QN8RAiFqAJ4kHu19HFoe+2P4BRkVH3YmksyCMgCfZf2H
-O/m258Vnrhb5moeibmadu3c=
-=jini
------END PGP SIGNATURE-----
-
---Signature=_Sat__3_May_2008_16_07_24_+1000_F5R8plUrJzn9MMQA--
