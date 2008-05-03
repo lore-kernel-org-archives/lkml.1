@@ -1,70 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763666AbYECMXo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760412AbYECMYD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763666AbYECMXo (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 May 2008 08:23:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755254AbYECMXh
+	id S1760412AbYECMYD (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 May 2008 08:24:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764003AbYECMXv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 May 2008 08:23:37 -0400
-Received: from mtagate8.de.ibm.com ([195.212.29.157]:45408 "EHLO
-	mtagate8.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755284AbYECMXg (ORCPT
+	Sat, 3 May 2008 08:23:51 -0400
+Received: from gustav.zipernowsky.hu ([193.225.20.248]:41281 "EHLO
+	gustav.zipernowsky.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763989AbYECMXu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 May 2008 08:23:36 -0400
-Date: Sat, 3 May 2008 14:23:14 +0200
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       John Stultz <johnstul@us.ibm.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] clocksource: Fix permissions for available_clocksource
-Message-ID: <20080503122314.GA5996@osiris.boeblingen.de.ibm.com>
-References: <20080502104940.GA4426@osiris.boeblingen.de.ibm.com> <alpine.LFD.1.10.0805021635030.6003@apollo.tec.linutronix.de> <20080502152730.GA5220@osiris.boeblingen.de.ibm.com> <alpine.LFD.1.10.0805021731550.6003@apollo.tec.linutronix.de>
+	Sat, 3 May 2008 08:23:50 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.10.0805021731550.6003@apollo.tec.linutronix.de>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Date: Sat, 03 May 2008 14:23:45 +0200
+From: Oliver Pinter <oliver@zipernowsky.hu>
+To: Satyam Sharma <ssatyam@cse.iitk.ac.in>
+Cc: linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: [OP] 02-vfs-utimes-Honour-CAP_FOWNER-when-times-NULL.patch added to
+ queue-2.6.22.23-op1
+Reply-To: oliver.pntr@gmail.com
+Message-ID: <977557808d0b0654e508d292edd47c48@zipernowsky.hu>
+User-Agent: RoundCube Webmail/0.1
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 02, 2008 at 05:34:06PM +0200, Thomas Gleixner wrote:
-> On Fri, 2 May 2008, Heiko Carstens wrote:
-> > On Fri, May 02, 2008 at 04:36:37PM +0200, Thomas Gleixner wrote:
-> > > On Fri, 2 May 2008, Heiko Carstens wrote:
-> > > > From: Heiko Carstens <heiko.carstens@de.ibm.com>
-> > > > 
-> > > > File permissions for
-> > > > /sys/devices/system/clocksource/clocksource0/available_clocksource
-> > > > are 600 which allows write access. But this is in fact a read only
-> > > > file. So change permissions to 400.
-> > > 
-> > > Indeed. The question is whether we should make this 444. There is no
-> > > harm, when users can read the info. Same applies for the
-> > > current_clocksource entry, making it 644 should be fine.
-> > 
-> > Sure, I can send an on-top patch for this.
-> 
-> Yes, please.
+Your patch added to queue-2.6.22.23-op1.
+If anyone has any objections, please let us know.
 
-Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
+http://repo.or.cz/w/linux-2.6.22.y-op-patches.git
+git://repo.or.cz/linux-2.6.22.y-op-patches.git
+
 ---
- kernel/time/clocksource.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
 
-Index: linux-2.6/kernel/time/clocksource.c
-===================================================================
---- linux-2.6.orig/kernel/time/clocksource.c
-+++ linux-2.6/kernel/time/clocksource.c
-@@ -471,10 +471,10 @@ sysfs_show_available_clocksources(struct
- /*
-  * Sysfs setup bits:
-  */
--static SYSDEV_ATTR(current_clocksource, 0600, sysfs_show_current_clocksources,
-+static SYSDEV_ATTR(current_clocksource, 0644, sysfs_show_current_clocksources,
- 		   sysfs_override_clocksource);
+>From 5b37696fda07b8acf37beba3853f83106397ccdf Mon Sep 17 00:00:00 2001
+From: Satyam Sharma <ssatyam@cse.iitk.ac.in>
+Date: Tue, 17 Jul 2007 00:24:23 +0530
+Subject: [PATCH] utime(s): Honour CAP_FOWNER when times==NULL
+
+do_utimes() does not honour CAP_FOWNER when times==NULL.
+Trivial and obvious one-line fix.
+
+Signed-off-by: Satyam Sharma <ssatyam@cse.iitk.ac.in>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+
+diff --git a/fs/utimes.c b/fs/utimes.c
+index b3c8895..83a7e69 100644
+--- a/fs/utimes.c
++++ b/fs/utimes.c
+@@ -106,7 +106,7 @@ long do_utimes(int dfd, char __user *filename, struct
+timespec *times, int flags
+                 if (IS_IMMUTABLE(inode))
+                         goto dput_and_out;
  
--static SYSDEV_ATTR(available_clocksource, 0400,
-+static SYSDEV_ATTR(available_clocksource, 0444,
- 		   sysfs_show_available_clocksources, NULL);
- 
- static struct sysdev_class clocksource_sysclass = {
+-		if (current->fsuid != inode->i_uid) {
++		if ((current->fsuid != inode->i_uid) && !capable(CAP_FOWNER)) {
+ 			if (f) {
+ 				if (!(f->f_mode & FMODE_WRITE))
+ 					goto dput_and_out;
+
+
