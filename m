@@ -1,61 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759314AbYECCiU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759506AbYECCkl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759314AbYECCiU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 22:38:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755568AbYECCiN
+	id S1759506AbYECCkl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 22:40:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754999AbYECCkc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 22:38:13 -0400
-Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:9137 "EHLO
-	pd4mo3so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754234AbYECCiM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 22:38:12 -0400
-Date: Fri, 02 May 2008 20:38:06 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: libata - DMA problems ICH7 rev 02
-In-reply-to: <fa.h4D6h2c4Yz08K7snVTVtewbsziM@ifi.uio.no>
-To: Jan Niklas Hasse <jhasse@gmail.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
-Message-id: <481BD00E.7050302@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=UTF-8; format=flowed
-Content-transfer-encoding: 7bit
-References: <fa.6VoLd5Q2gfHHZZfYneNkQcGjXKk@ifi.uio.no>
- <fa.kzdMLVO0bqLAbXEBqWrKyBntgxc@ifi.uio.no>
- <fa.h4D6h2c4Yz08K7snVTVtewbsziM@ifi.uio.no>
-User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
+	Fri, 2 May 2008 22:40:32 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:48682 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750794AbYECCkc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 May 2008 22:40:32 -0400
+Message-ID: <481BD097.9010201@redhat.com>
+Date: Fri, 02 May 2008 21:40:23 -0500
+From: Eric Sandeen <sandeen@redhat.com>
+User-Agent: Thunderbird 2.0.0.14 (Macintosh/20080421)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: =?ISO-8859-1?Q?J=F6rn_Engel?= <joern@logfs.org>,
+       linux-kernel@vger.kernel.org, joern@lazybastard.org,
+       Andy Whitcroft <apw@shadowen.org>
+Subject: Re: [PATCH] fix checkstack.pl arch detection
+References: <481B4D75.9060305@redhat.com>	<20080502223702.GI24080@logfs.org>	<20080502164458.b703acf7.akpm@linux-foundation.org>	<481BCC00.1030508@redhat.com> <20080502193128.5e1de100.akpm@linux-foundation.org>
+In-Reply-To: <20080502193128.5e1de100.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Niklas Hasse wrote:
-> On Fri, May 2, 2008 at 2:58 PM, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
->>> my BIOS didn't support it), but none of them worked (every time my
->>  > harddisk is loading my CPU is spammed with IOWait).
+Andrew Morton wrote:
+
+>>> please cc apw on checkpatch changes.
+>>>
+>>> This patch needs some help to merge against the forthcoming
+>>> checkpatch-0.19.  I sent your patches apw-wards.
+>>>
+>> Um, checkpatch or checkstack? :)
 >>
->>  Then you must have a different problem ?
 > 
-> Maybe, but it seems as DMA isn't used. Everytime my hard disk is
-> reading/writing my system gets very slow. Here's the line when i run
-> top:
+> bah.
 > 
-> Cpu(s): 12.6%us,  5.4%sy,  0.0%ni,  6.5%id, 74.2%wa,  0.5%hi,  0.8%si,  0.0%st
+> hm, I wonder why one of them got a reject.  `patch -l' was needed.  Mailer
+> munchies, perhaps?
 > 
-> The thing I mean is "wa".
+> Please check that what I applied is still correct.
 
-This is expected. IOWait just means the system is blocked waiting for IO 
-  and has nothing else to do. It does not mean that DMA is not working.
+They look fine... sorry, didn't generate against -mm but didn't expect
+differences.  I'll update an -mm tree and give it a functional check too...
 
-> 
->>  > Output of uname -a and lspci is attached.
->>  >
->>  > I hope you can help me, very hard to work without DMA.
->>
->>  Please send the output of "dmesg" after boot
-> 
-> Okay, I pasted it here: http://rafb.net/p/KiWhqE72.html
+Thanks Andrew,
 
-Looks like you are using DMA:
-
-ata1.00: configured for UDMA/100
-ata1.01: configured for UDMA/33
+-Eric
