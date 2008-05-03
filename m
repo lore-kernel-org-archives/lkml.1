@@ -1,71 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760065AbYECDMK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759661AbYECD3X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760065AbYECDMK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 23:12:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757024AbYECDL5
+	id S1759661AbYECD3X (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 23:29:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757540AbYECD3M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 23:11:57 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:48272 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756864AbYECDL4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 23:11:56 -0400
-Subject: RE: Sharing disks amoung multiple software RAIDs
-From: Kasper Sandberg <lkml@metanurb.dk>
-To: David Lethe <david@santools.com>
-Cc: David Greaves <david@dgreaves.com>, David Rees <drees76@gmail.com>,
-       alex14641@yahoo.com, Justin Piszcz <jpiszcz@lucidpixels.com>,
-       linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <A20315AE59B5C34585629E258D76A97C335960@34093-C3-EVS3.exchange.rackspace.com>
-References: <1209692359.16523.2.camel@localhost>
-	 <73000.21239.qm@web50212.mail.re2.yahoo.com>
-	 <A20315AE59B5C34585629E258D76A97C335477@34093-C3-EVS3.exchange.rackspace.com>
-	 <1209696179.16523.13.camel@localhost>
-	 <72dbd3150805020006p7f976a04o487389840f03b4a2@mail.gmail.com>
-	 <1209715763.7827.2.camel@localhost>  <481AD006.6050708@dgreaves.com>
-	 <1209764630.7827.15.camel@localhost>
-	 <A20315AE59B5C34585629E258D76A97C335960@34093-C3-EVS3.exchange.rackspace.com>
-Content-Type: text/plain
-Date: Sat, 03 May 2008 05:11:40 +0200
-Message-Id: <1209784300.7827.19.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.4.0 
+	Fri, 2 May 2008 23:29:12 -0400
+Received: from smtp109.sbc.mail.re2.yahoo.com ([68.142.229.96]:35928 "HELO
+	smtp109.sbc.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1756715AbYECD3M (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 May 2008 23:29:12 -0400
+X-Greylist: delayed 401 seconds by postgrey-1.27 at vger.kernel.org; Fri, 02 May 2008 23:29:11 EDT
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Disposition:Message-Id:Content-Type:Content-Transfer-Encoding;
+  b=VTi4KhEgoso40DNytMFImeGah6HWStRLrEKVU80i2P61zCB3tux3XXhKaIbYwddQch+RrZLcGvQIupRdrO39faoS7wg2BFItllY57ViJ+edOf0Ym9MpjwY1Y74EoRPexXzqXrF9HqUg6K7McsTLYa/DVXOmxCDrfL+vtq/CvnOc=  ;
+X-YMail-OSG: ztTjME0VM1nF7_.z3W58EJPHt2JqrH.0x_CMexaJbXjivhswSwMPGQIItLVkVTVuDc8c2041cCvUeUTjdJ0Mod4wwYGK7tD816ED9nRBGTd6dHureROxO_GaQ9D3upO5eaM-
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Trent Piepho <tpiepho@freescale.com>
+Subject: Re: [patch/rfc 2.6.25-git v2] gpio: sysfs interface
+Date: Fri, 2 May 2008 20:05:19 -0700
+User-Agent: KMail/1.9.6
+Cc: lkml <linux-kernel@vger.kernel.org>, Ben Nizette <bn@niasdigital.com>,
+       hartleys <hartleys@visionengravers.com>,
+       Mike Frysinger <vapier.adi@gmail.com>, Bryan Wu <cooloney@kernel.org>
+References: <200804281239.51729.david-b@pacbell.net> <200804302135.56529.david-b@pacbell.net> <Pine.LNX.4.64.0805011249500.18441@t2.domain.actdsltmp>
+In-Reply-To: <Pine.LNX.4.64.0805011249500.18441@t2.domain.actdsltmp>
+MIME-Version: 1.0
+Content-Disposition: inline
+Message-Id: <200805022005.20015.david-b@pacbell.net>
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-05-02 at 17:24 -0500, David Lethe wrote:
-> 
-> -----Original Message-----
-<snip>
-> > *(or more accurately has saved me from having to restore my data)
-> =======================
-> Since I am the person that wrote that "Look how many problems people
-> post to the thread on a weekly basis where people lose their data when md rebuilds go bad with
-> non-shared disks", I think need to clarify.
->  
-> I was being too literal. md is a good solution (I use it myself).  However, the OP wanted to "Make sure that if one disk dies, the data is still in tact".  
-> 
-> Only way to do that is have a good offsite backup.
-> 
-> Nothing can prevent opportunity for data loss.  I don't care what RAID level (with single redundancy) you use or whether you have software or hardware-based RAID .. rebuilds can not reconstruct data if you are in degraded mode and have an unrecoverable read error on surviving disks.  It is not md's job or design point to insure data consistency check/repairs are run 24x7.  As such, by definition, there is no way to insure that a md rebuild will always be successful.
-I realize this, but the original wording really sounded like more like
-"well, there is a CHANCE your reconstruct will work good", rather than
-"well, there is a CHANCE your reconstruct will fail", if you get what i
-mean :)
+On Thursday 01 May 2008, Trent Piepho wrote:
+> I've proposed many times that gpios that have been
+> requested by anything be exported READ-ONLY automatically.  
 
-Naturally there can always be errors or bugs, but the whole point (for
-me) in doing the raid1, is that i will have much lower chance of loosing
-my data, since a disk can suddenly die, and hopefully in this case, the
-other will not. and well, an extra disk doesent really cost so much.
+Hmm, maybe that was buried in the volume of other stuff you
+posted ... this is the first time I recall your mentioning
+read-only exports.  Or limiting exports like that.  Certainly
+no code I've seen from you worked like that.
 
-Thanks for the clarification :)
-> 
-> David
-> ---------
-> 
-> 
-> 
-> 
-> 
+What I recall was your original approach of exporting absolutely
+everything -- hundreds of (potential) GPIOs, even pins that
+were configured for other purposes.
 
+I don't have any particular objection to exporting things
+readonly.  Maybe you noticed the comment in my patches that
+suggesting such an export mode might be useful.  But I'd
+rather not export things that don't need exporting, and
+bias things towards low per-gpio costs.
+
+It's easy to add features later, if they turn out to be needed.
+But removing interfaces is very hard ... which is another reason
+I'm not very receptive to all those bells'n'whistles you propose.
