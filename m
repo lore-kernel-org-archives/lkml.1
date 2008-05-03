@@ -1,75 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753280AbYECTvU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754646AbYECTvv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753280AbYECTvU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 May 2008 15:51:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751711AbYECTvJ
+	id S1754646AbYECTvv (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 May 2008 15:51:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751747AbYECTvk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 May 2008 15:51:09 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:57472 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751232AbYECTvI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 May 2008 15:51:08 -0400
-Date: Sat, 3 May 2008 21:50:54 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Cc: linux-kernel@vger.kernel.org,
-       Mauro Carvalho Chehab <mchehab@infradead.org>,
-       Jean Delvare <khali@linux-fr.org>
-Subject: Re: [patch] video: build fix for drivers/media/video/mt9v022.c
-Message-ID: <20080503195054.GD25097@elte.hu>
-References: <20080503163058.GA15272@elte.hu> <Pine.LNX.4.64.0805031853180.5182@axis700.grange> <20080503175807.GC5292@elte.hu> <Pine.LNX.4.64.0805032004130.5182@axis700.grange>
+	Sat, 3 May 2008 15:51:40 -0400
+Received: from kirk.serum.com.pl ([213.77.9.205]:63438 "EHLO serum.com.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751711AbYECTvj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 May 2008 15:51:39 -0400
+Date: Sat, 3 May 2008 20:49:40 +0100 (BST)
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+To: "H. Peter Anvin" <hpa@zytor.com>
+cc: Thomas Gleixner <tglx@linutronix.de>, jamal <hadi@cyberus.ca>,
+       Suresh Siddha <suresh.b.siddha@intel.com>,
+       Arjan van de Ven <arjan@linux.intel.com>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>, Jan Beulich <jbeulich@novell.com>
+Subject: Re: i387/FPU init issues...
+In-Reply-To: <481CA40A.7040906@zytor.com>
+Message-ID: <Pine.LNX.4.55.0805032016560.20206@cliff.in.clinika.pl>
+References: <1209810775.6972.37.camel@localhost>
+ <alpine.LFD.1.10.0805031650120.6003@apollo.tec.linutronix.de>
+ <481CA40A.7040906@zytor.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0805032004130.5182@axis700.grange>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, 3 May 2008, H. Peter Anvin wrote:
 
-* Guennadi Liakhovetski <g.liakhovetski@gmx.de> wrote:
+> Intel explicitly documents "all processors with family 6 or F."
 
-> Ok, right, sorry, the patch was indeed correct, just the reason for 
-> the compilation breakage was not quite what you suggested. So, I'll 
-> apply your putch, but please fix mt9m001.c in the same patch too - it 
-> also includes gpio.h conditionally. Although, it does test the correct 
-> macro.
-> 
-> Actually, this CONFIG option might disappear completely in the future, 
-> if we decide to switch to a module parameter instead. So that one 
-> kernel can be used on systems with and without the GPIO.
+ It depends (as usually with Intel) on what document you are looking at.  
+Based on my short research, the instruction has been retroactively added
+to the list of supported opcodes.  Even my somewhat dated P4 manual does
+not list it, never mind its predecessors.  It could have been accidentally
+omitted or even buggy in some early members of the P6 family and this
+could have been the reason for not documenting it from the beginning (the
+case of FFREEP comes to mind).
 
-ok - untested patch for mt9m001.c attached.
-
-	Ingo
-
-Index: linux/drivers/media/video/mt9m001.c
-===================================================================
---- linux.orig/drivers/media/video/mt9m001.c
-+++ linux/drivers/media/video/mt9m001.c
-@@ -12,15 +12,12 @@
- #include <linux/slab.h>
- #include <linux/i2c.h>
- #include <linux/log2.h>
-+#include <linux/gpio.h>
- 
- #include <media/v4l2-common.h>
- #include <media/v4l2-chip-ident.h>
- #include <media/soc_camera.h>
- 
--#ifdef CONFIG_MT9M001_PCA9536_SWITCH
--#include <asm/gpio.h>
--#endif
--
- /* mt9m001 i2c address 0x5d
-  * The platform has to define i2c_board_info
-  * and call i2c_register_board_info() */
+  Maciej
