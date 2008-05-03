@@ -1,90 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756893AbYECXur@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756553AbYECX5m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756893AbYECXur (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 May 2008 19:50:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753307AbYECXuk
+	id S1756553AbYECX5m (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 May 2008 19:57:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753068AbYECX5c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 May 2008 19:50:40 -0400
-Received: from mtaout03-winn.ispmail.ntl.com ([81.103.221.49]:24750 "EHLO
-	mtaout03-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753354AbYECXuj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 May 2008 19:50:39 -0400
-Date: Sun, 4 May 2008 00:50:28 +0100
-From: Samuel Thibault <samuel.thibault@ens-lyon.org>
-To: Willy Tarreau <w@1wt.eu>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: [2.6 patch] UTF-8 fixes in comments
-Message-ID: <20080503235027.GO8032@implementation>
-Mail-Followup-To: Samuel Thibault <samuel.thibault@ens-lyon.org>,
-	Willy Tarreau <w@1wt.eu>, linux-kernel@vger.kernel.org,
-	akpm@linux-foundation.org
-References: <20080430000851.GH4818@implementation> <20080430194920.GD7501@1wt.eu>
+	Sat, 3 May 2008 19:57:32 -0400
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:36400 "EHLO smtp6.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751916AbYECX5c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 May 2008 19:57:32 -0400
+Date: Sun, 4 May 2008 02:56:33 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Justin Mattock <justinmattock@gmail.com>
+Cc: npiggin@suse.de, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: nopage mm.h
+Message-ID: <20080503235633.GA5838@cs181133002.pp.htv.fi>
+References: <dd18b0c30805031629x5f570b97q43f110b228054a28@mail.gmail.com> <20080503233818.GZ5838@cs181133002.pp.htv.fi> <dd18b0c30805031648x562beaabwff47e721acddc0e9@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20080430194920.GD7501@1wt.eu>
-User-Agent: Mutt/1.5.12-2006-07-14
+In-Reply-To: <dd18b0c30805031648x562beaabwff47e721acddc0e9@mail.gmail.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Sat, May 03, 2008 at 11:48:35PM +0000, Justin Mattock wrote:
+> On Sat, May 3, 2008 at 11:38 PM, Adrian Bunk <bunk@kernel.org> wrote:
+> >
+> > On Sat, May 03, 2008 at 11:29:20PM +0000, Justin Mattock wrote:
+> >  > Hello; I have a question about the nopage function that was removed in
+> >  > the kernel.
+> >  > What would be the best way for me to build a module that has a nopage
+> >  > funtion in it?
+> >  > Right now I went and undid what you had done to the kernel,to atleast
+> >  > have the module not give me errors,
+> >  > but, am wondering if I should try to take the module and remove the
+> >  > nopage function in it , and add the functions that is relevent.
+> >  > to keep the module up-to date.
+> >
+> >  Where can we find the source code of your module?
+> >
+> >  > regards;
+> >
+> >  cu
+> >  Adrian
+> >
+> >
+> The module is fglrx.
 
-Willy Tarreau, le Wed 30 Apr 2008 21:49:20 +0200, a écrit :
-> On Wed, Apr 30, 2008 at 01:08:51AM +0100, Samuel Thibault wrote:
-> > Willy Tarreau wrote:
-> > > 3) if I enter Alt-196, I get a "Ä". Flushing the buffer shows that od
-> > > got two bytes: c3 84.
-> > 
-> > Confirmed.
-> > 
-> > Try init=/bin/stty -a, that will show
-> > 
-> > -iutf8
-> > 
-> > So there is little wonder that canonical mode does not work as expected.
-> > 
-> > Try init=/bin/sh, from that shell run stty iutf8. Then things will work
-> > fine.  The fix is thus just to make the VT's tty initial iutf8 setup
-> > follow vt.default_utf8.
-> 
-> Will try that on a more recent install. Mine's stty does not support
-> this option. Your analysis makes quite a lot of sense, and such a fix
-> would wipe part of my annoyances/anger with this recent change.
+Please ask AMD for support with your problem.
 
-Can you give the patch below a try?
-Dynamic per-VT utf-8 switch should also work, provided that you reopen
-the VT (i.e. log out).
+I do not want to taint myself by looking at their code.
 
-Samuel
+> regards;
 
+cu
+Adrian
 
+-- 
 
-Set IUTF8 as appropriate on VT tty open.
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
-Signed-off-by: Samuel Thibault <samuel.thibault@ens-lyon.org>
-
---- linux/drivers/char/vt.c.orig	2008-05-04 00:37:50.000000000 +0100
-+++ linux/drivers/char/vt.c	2008-05-04 00:47:39.000000000 +0100
-@@ -2723,6 +2723,10 @@ static int con_open(struct tty_struct *t
- 				tty->winsize.ws_row = vc_cons[currcons].d->vc_rows;
- 				tty->winsize.ws_col = vc_cons[currcons].d->vc_cols;
- 			}
-+			if (vc->vc_utf)
-+				tty->termios->c_iflag |= IUTF8;
-+			else
-+				tty->termios->c_iflag &= ~IUTF8;
- 			release_console_sem();
- 			vcs_make_sysfs(tty);
- 			return ret;
-@@ -2899,6 +2903,8 @@ int __init vty_init(void)
- 	console_driver->minor_start = 1;
- 	console_driver->type = TTY_DRIVER_TYPE_CONSOLE;
- 	console_driver->init_termios = tty_std_termios;
-+	if (default_utf8)
-+		console_driver->init_termios.c_iflag |= IUTF8;
- 	console_driver->flags = TTY_DRIVER_REAL_RAW | TTY_DRIVER_RESET_TERMIOS;
- 	tty_set_operations(console_driver, &con_ops);
- 	if (tty_register_driver(console_driver))
