@@ -1,87 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764689AbYECQhi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765116AbYECQia@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764689AbYECQhi (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 May 2008 12:37:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758721AbYECQh2
+	id S1765116AbYECQia (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 May 2008 12:38:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759440AbYECQiV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 May 2008 12:37:28 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:49063 "EHLO mx3.mail.elte.hu"
+	Sat, 3 May 2008 12:38:21 -0400
+Received: from saeurebad.de ([85.214.36.134]:38294 "EHLO saeurebad.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756868AbYECQh1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 May 2008 12:37:27 -0400
-Date: Sat, 3 May 2008 18:37:07 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Thomas Gleixner <tglx@linutronix.de>, David Miller <davem@davemloft.net>,
-       Guillaume Chazarain <guichaz@gmail.com>,
-       Andi Kleen <andi@firstfloor.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-arch <linux-arch@vger.kernel.org>, Mike Galbraith <efault@gmx.de>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>
-Subject: Re: [RFC][PATCH] sched_clock_cpu()
-Message-ID: <20080503163707.GA16644@elte.hu>
-References: <1209832169.6929.42.camel@lappy>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1209832169.6929.42.camel@lappy>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1759075AbYECQiT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 May 2008 12:38:19 -0400
+X-Mailbox-Line: From hannes@symbol.fehenstaub.lan Sat May  3 17:28:00 2008
+Message-Id: <20080503152502.191599824@symbol.fehenstaub.lan>
+User-Agent: quilt/0.46-1
+Date: Sat, 03 May 2008 17:25:02 +0200
+From: Johannes Weiner <hannes@saeurebad.de>
+To: linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Cc: Ingo Molnar <mingo@elte.hu>, Andi Kleen <andi@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: [RFC 0/2] Rootmem: boot-time memory allocator
+X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
-* Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+I was spending some time and work on the bootmem allocator the last
+few weeks and came to the conclusion that its current design is not
+appropriate anymore.
 
-> Hi,
-> 
-> This is my current proposal to replace the rq->clock stuff (and 
-> possibly cpu_clock()).
-> 
-> it _DOESN'T_ boot ;-/ and I seem to have caught a flu that makes my 
-> whole body hurt like hell, so I'm not getting anything done.
+As Ingo said in another email, NUMA technologies will become weirder,
+nodes whose PFNs span other nodes for example and it makes bootmem
+code become an unreadable mess.
 
-ouch - getter better soon!
+So I sat down two days ago and rewrote the allocator, here is the
+result: rootmem!
 
-> Brain dump before I crash:
-> 
->  - architectures that have a 'perfect' hardware clock can set
->      CONFIG_HAVE_STABLE_CLOCK
+The biggest difference to the old design is that there is only one
+bitmap for all PFNs of all nodes together, so the overlapping PFN
+problems simply dissolve and fun like allocations crossing node
+boundaries work implicitely.  The new API requires every node used by
+the allocator to be registered and after that the bitmap gets
+allocated and the allocator enabled.
 
-ok.
+I chose to add a new allocator rather than replacing bootmem at once
+because that would have required all callsites to switch in one go,
+which would be a lot.  The new allocator can be adopted more slowly
+and I added a compatibility API for everything besides actually
+setting up the allocator.  When the last user dies, bootmem can be
+dropped completely (including pgdat->bdata, whee..)
 
->  - the 'jiffie' window might be superfulous when we update tick_gtod
->    before the __update_sched_clock() call in sched_clock_tick()
-> 
->  - cpu_clock() might be implemented as:
-> 
->      sched_clock_cpu(smp_processor_id())
-> 
->    if the accuracy proves good enough - how far can TSC drift in a
->    single jiffie when considering the filtering and idle hooks?
+The main ideas from bootmem have been stolen^W preserved but the new
+design allowed me to shrink the code a lot and express things more
+simple and clear:
 
-it 'can' be very bad - so we have to assume it's random and fall back to 
-jiffies quality in that case. In practice on most x86 CPUs it wont drift 
-that far - even drifting TSCs drift minimally (there are AMD 
-Athlon64/Opteron CPUs where a CPU in HLT will cause the clock and the 
-TSC to drift a bit) - and stopping TSCs will just stop.
+$ sloc.awk < mm/bootmem.c
+455 lines of code, 65 lines of comments (520 lines total)
 
-But in terms of BIOSes trying to fix things up and in terms of cpufreq 
-artifacts (the CPU's clock itself going through transients) anything can 
-happen and the code must be robust.
- 
->  - what other architectures besides x86 would need this?
+$ sloc.awk < mm/rootmem.c
+243 lines of code, 96 lines of comments (339 lines total)
 
-we rarely get any interactivity reports from anything non-x86 so i doubt 
-it truly matters on anything but x86. If it _breaks_ in terms of 
-crashing or locking we do hear from other architectures ;-)
+The first patch contains rootmem itself while the second one is a
+quick hack to get it working on my 32bit x86 box.
 
-	Ingo
+Sparsemem support and some convenience functions are still missing,
+but the core should be more or less complete.
+
+Migration on arch-code is not that exciting, see the second patch.
+The main difference is that you first register all nodes and then pass
+rootmem_setup() a pfn where the bitmap should be placed.
+
+I can not test on anything but 32bit uma x86, so node specific code
+works only theoretically.
+
+I can not garuantee uncorrupted memory either :)
+
+Applies to Linus' head.
+
+	Hannes
+
