@@ -1,52 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760218AbYECJFV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761386AbYECJIR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760218AbYECJFV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 May 2008 05:05:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757125AbYECJFH
+	id S1761386AbYECJIR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 May 2008 05:08:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757403AbYECJIH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 May 2008 05:05:07 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:55420
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1756088AbYECJFF (ORCPT
+	Sat, 3 May 2008 05:08:07 -0400
+Received: from nf-out-0910.google.com ([64.233.182.185]:57879 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757125AbYECJIF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 May 2008 05:05:05 -0400
-Date: Sat, 03 May 2008 02:05:02 -0700 (PDT)
-Message-Id: <20080503.020502.226847930.davem@davemloft.net>
-To: mingo@elte.hu
-Cc: a.p.zijlstra@chello.nl, efault@gmx.de, elendil@planet.nl,
-       parag.warudkar@gmail.com, linux-kernel@vger.kernel.org,
-       guichaz@yahoo.fr, andi@firstfloor.org
-Subject: Re: 'global' rq->clock
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20080503082849.GA29605@elte.hu>
-References: <20080502.144827.158329188.davem@davemloft.net>
-	<1209766054.6929.29.camel@lappy>
-	<20080503082849.GA29605@elte.hu>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Sat, 3 May 2008 05:08:05 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
+        b=nqNCkSoQ9MdA8bra3sVbLeubpKoyuJdPPqGVdpJjxKBO/XL2yum9nQR+sviXrYQRmZW33DiCKKkJ6CRU+TzzDy8RLve1xJVvp+7fRe58Vd8OmP6XLz+6bBQQ7yDOaWdYFV9jGwkrez5Db9Y4cNv377Eq0JPkHrWJXCLa1okgCfM=
+Date: Sat, 3 May 2008 14:03:18 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: akpm@osdl.org, rmk@arm.linux.org.uk
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] arm-lubbock: fix compilation
+Message-ID: <20080503100318.GA5007@martell.zuzino.mipt.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Ingo Molnar <mingo@elte.hu>
-Date: Sat, 3 May 2008 10:28:50 +0200
+arch/arm/mach-pxa/lubbock.c:399: error: expected '}' before ';' token
 
-> * Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
-> 
-> > Yeah, I was thinking of a way for architectures to signify how much 
-> > help they need building the various clocks. Sparc, power and s390 
-> > would not need any help.
-> 
-> there's already such a mechanism in sched-devel.git (and has been there 
-> for a week or two): an architecture can set time_sync_thresh to -1LL 
-> during early bootup and essentially disable all the synchronization 
-> logic.
+Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
+---
 
-Does it remove all of the code too? :-)
+ arch/arm/mach-pxa/lubbock.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Please give us a config boolean.  The only platform for which
-a run-time knob is even necessary is x86.
+--- a/arch/arm/mach-pxa/lubbock.c
++++ b/arch/arm/mach-pxa/lubbock.c
+@@ -396,7 +396,7 @@ static struct pxafb_mach_info sharp_lm8v31 = {
+ 	.cmap_inverse	= 0,
+ 	.cmap_static	= 0,
+ 	.lcd_conn	= LCD_COLOR_DSTN_16BPP | LCD_PCLK_EDGE_FALL |
+-			  LCD_AC_BIAS_FREQ(255);
++			  LCD_AC_BIAS_FREQ(255),
+ };
+ 
+ #define	MMC_POLL_RATE		msecs_to_jiffies(1000)
 
-Thanks.
