@@ -1,40 +1,46 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934488AbYEBSNw (ORCPT <rfc822;ralf@linux-mips.org>);
-	Fri, 2 May 2008 14:13:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755476AbYEBSNm
+	id S1764161AbYECQ3x (ORCPT <rfc822;ralf@linux-mips.org>);
+	Sat, 3 May 2008 12:29:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758437AbYECQ3m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 14:13:42 -0400
-Received: from qb-out-0506.google.com ([72.14.204.227]:22303 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753322AbYEBSNl convert rfc822-to-8bit (ORCPT
+	Sat, 3 May 2008 12:29:42 -0400
+Received: from venus.datacenterbrasil.org ([74.53.137.2]:19296 "EHLO
+	venus.datacenterbrasil.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757605AbYECQ3l (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 14:13:41 -0400
+	Sat, 3 May 2008 12:29:41 -0400
+Subject: congratulations winner,
+From: "James Johnson" <euro@portal360graus.net>
 MIME-Version: 1.0
-Date: Sat, 03 May 2008 02:14:28 -0700
-X-Priority: 3 (Normal)
-X-Mailer: VodaMail Mailing Group
-To: linux-kernel@vger.kernel.org
-From: "E-BOOK!!!" <cimbdreams@gmail.com>
-subject: FREE E-BOOK!!! LIMITED!!! EBOOK PERCUMA!!!
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <CHILKAT-MID-625d3abd-18a4-4474-b968-c9e595edc576@vira-PC>
+Content-Type: multipart/mixed; BOUNDARY="6XG-6XG07-SXGSXGSXG=:-sxgsxg"
+X-Mailer: b1gMail (www.b1g.de)
+Message-Id: <E1JsKaA-0008Vt-AU@venus.datacenterbrasil.org>
+Date: Sat, 03 May 2008 13:27:30 -0300
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - venus.datacenterbrasil.org
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [99 99] / [47 12]
+X-AntiAbuse: Sender Address Domain - venus.datacenterbrasil.org
+To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S934488AbYEBSNw@vger.kernel.org>
-
-DAPATKAN EBOOK SECARA PERCUMA TERHAD KEPADA 88ORANG SAHAJA!!!
-EBOOK BERKUALITI BAGII MENJANA WANG SECARA ONLINE!!!
-DAPATKANNYA SEKARANG!!!
-
-KLIK >>>  http://wanglebih.com?ref=epays2u  <<<KLIK
-KLIK >>>  http://wanglebih.com?ref=epays2u  <<<KLIK
+Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1764161AbYECQ3x@vger.kernel.org>
 
 
-GET YOUR E-BOOK HOW TO GENERATE INCOME USING ONLINE & OFFLINE FOR FREE!!!
-LIMITED FOR 88PERSON ONLY!!!
-GET IT NOW!!!
 
-CLICK >>>  http://wanglebih.com?ref=epays2u  <<< CLICK
-CLICK >>>  http://wanglebih.com?ref=epays2u  <<< CLICK
+--6XG-6XG07-SXGSXGSXG=:-sxgsxg
+Content-Type: text/plain ; CHARSET=iso-8859-1
+Content-Transfer-Encoding: quoted-printable
+
+congratulations winner,
+Your e-mail address have just won six hundred & fifty five thousand Euro(=
+=80655,000.00) for more details contact Dr.PAUL ANDERSON with email:(claims=
+p@yahoo.pl).
+
+_________________________________________________________________
+Powered by WebMail Portal360Graus.Net
+
+--6XG-6XG07-SXGSXGSXG=:-sxgsxg--
+
+
