@@ -1,78 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965433AbYECAPi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936440AbYECAU5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965433AbYECAPi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 May 2008 20:15:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762179AbYECAPb
+	id S936440AbYECAU5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 May 2008 20:20:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932665AbYECAUr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 May 2008 20:15:31 -0400
-Received: from wa-out-1112.google.com ([209.85.146.179]:33379 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759164AbYECAPa (ORCPT
+	Fri, 2 May 2008 20:20:47 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:38293 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932630AbYECAUq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 May 2008 20:15:30 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=XAHCOzQTzKw1BclDurpIasKvcL4aI7ZokwIRT0D2EPPZU+czBRhrB3Qz0OTyrin8hRgWitgi7Li5WskO5oT/6zBEdAOpg/4eUW3xRG04xhhnzbjf3zc3N267SI8FMn6EL9Wd7kaamGQzvlmHXReURTgbDWvbsbbL1Luyax9fPf0=
-Subject: Re: [PATCH 12/12] net: use the common ascii hex helpers
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: davem@davemloft.net, linux-kernel@vger.kernel.org
-In-Reply-To: <20080502170802.456493a5.akpm@linux-foundation.org>
-References: <1209754916.26173.39.camel@brick>
-	 <20080502.162515.14823435.davem@davemloft.net>
-	 <20080502163131.a13c0774.akpm@linux-foundation.org>
-	 <1209772363.26173.101.camel@brick>
-	 <20080502170802.456493a5.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Fri, 02 May 2008 17:15:55 -0700
-Message-Id: <1209773755.26173.114.camel@brick>
+	Fri, 2 May 2008 20:20:46 -0400
+Date: Fri, 2 May 2008 17:19:38 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Balaji Rao <balajirrao@gmail.com>
+Cc: dhaval@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
+       containers@lists.osdl.org, menage@google.com, balbir@in.ibm.com,
+       vatsa@linux.vnet.ibm.com, a.p.zijlstra@chello.nl,
+       Eric Dumazet <dada1@cosmosbay.com>
+Subject: Re: [RFC][-mm] Simple stats for cpu resource controller v3
+Message-Id: <20080502171938.bcb27121.akpm@linux-foundation.org>
+In-Reply-To: <200805030526.46750.balajirrao@gmail.com>
+References: <200804052339.46632.balajirrao@gmail.com>
+	<200805030457.54073.balajirrao@gmail.com>
+	<20080502164133.9025a02c.akpm@linux-foundation.org>
+	<200805030526.46750.balajirrao@gmail.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-05-02 at 17:08 -0700, Andrew Morton wrote:
-> > > Yup.  After a bit of testing and tyre-kicking I'll probably slip
-> > > lib-add-ascii-hex-helper-functions.patch into mainline so that we can
-> > > trickle all the *-use-the-common-ascii-hex-helpers.patch patches out to the
-> > > various maintainers.
-> > > 
-> > 
-> > I suppose the hex_asc array and hex_to_int could also use
-> > EXPORT_SYMBOL().
+On Sat, 3 May 2008 05:26:46 +0530
+Balaji Rao <balajirrao@gmail.com> wrote:
+
+> > yes, that would be good.
+> OK, so when does account_system_time get called for the first time ? after 
+> IRQs are set up, is it ? So, where do we place the hook ?
+
+Don't know - I'd need to dive in and work that out, and it's probably
+better than you do this..
+
+> Here's the patch.
 > 
-> gack.  How could you do all those patches without discovering this?  Please
-> go give your QA staff a wedgie.
+> diff --git a/include/linux/percpu_counter.h b/include/linux/percpu_counter.h
+> index 9007ccd..8a1b756 100644
+> --- a/include/linux/percpu_counter.h
+> +++ b/include/linux/percpu_counter.h
+> @@ -21,7 +21,7 @@ struct percpu_counter {
+>  #ifdef CONFIG_HOTPLUG_CPU
+>  	struct list_head list;	/* All percpu_counters are on a list */
+>  #endif
+> -	s32 *counters;
+> +	s32 counters[NR_CPUS];
+>  };
 
-Sorry about the fat-fingered send, as before:
+Please, no.  That's a 4092-byte increase in sizeof(struct percpu_counter). 
+Hence a 12 kbyte increase in sizeof(struct ext3_sb_info).  Let's just sort
+out the cgroup startup ordering.
 
-allyesconfig :(
 
-> yes, hex_to_u8() is more specific and better defined than hex_to_int().
-> 
-> Although anally it should perhaps be two_digit_hex_to_ulong,
-> four_digit_hex_to_ulong, etc.
-> 
-> ho hum, I'll drop them all.
 
-int hex_char_to_int(char ch)
-{
-	return -1 if not [a-fA-F0-9]
-}
+<looks at __percpu_alloc_mask>
+<wanders off-topic>
 
-int hex_to_u8(const char *buf, u8 *val)
-int hex_to_u16(const char *buf, u16 *val)
-int hex_to_u32(const char *buf, u32 *val)
-int hex_to_u64(const char *buf, u64 *val)
+Eric, is that optimal?  alloc_percpu() will pass down cpu_possible_map in
+`mask', and we only need to allocate enough slots to cover the
+highest-set-bit in cpu_possible_map.  However the implementation ignores
+`mask' and does 
 
-Which return the number of chars read and reads up to a maximum of
-2,4,8,16 chars respectively and returns early if a non-hex char
-is encountered.
+        size_t sz = roundup(nr_cpu_ids * sizeof(void *), cache_line_size());
+        void *pdata = kzalloc(sz, gfp);
 
-Thoughts?
+Now, if the highest-set-bit in cpu_possible_map is always equal to
+(1<<nr_cpu_ids) then it doesn't matter.  But is that the case?
 
-Harvey
+(If someone calls __percpu_alloc_mask with something that has less bits set
+than cpu_possible_map then it surely is wasteful, but that sounds
+unlikely).
 
