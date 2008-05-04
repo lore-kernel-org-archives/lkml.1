@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755923AbYEEMR6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756442AbYEEMTv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755923AbYEEMR6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 08:17:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752077AbYEEMRt
+	id S1756442AbYEEMTv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 08:19:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752314AbYEEMTl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 08:17:49 -0400
-Received: from 178-47-31-89.wifiinternet.cz ([89.31.47.178]:55215 "EHLO
+	Mon, 5 May 2008 08:19:41 -0400
+Received: from 178-47-31-89.wifiinternet.cz ([89.31.47.178]:55220 "EHLO
 	monstr.eu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751536AbYEEMRr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 08:17:47 -0400
+	id S1752142AbYEEMTk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 May 2008 08:19:40 -0400
 From: monstr@seznam.cz
 To: linux-kernel@vger.kernel.org
 Cc: arnd@arndb.de, linux-arch@vger.kernel.org, stephen.neuendorffer@xilinx.com,
@@ -16,11 +16,11 @@ Cc: arnd@arndb.de, linux-arch@vger.kernel.org, stephen.neuendorffer@xilinx.com,
        will.newton@gmail.com, drepper@redhat.com,
        microblaze-uclinux@itee.uq.edu.au, grant.likely@secretlab.ca,
        Michal Simek <monstr@monstr.eu>
-Subject: [PATCH 48/56] microblaze_v2: pool.h socket.h
-Date: Sun,  4 May 2008 13:41:37 +0200
-Message-Id: <643084ee3819dd169cad3c4e3565c5ff20dd3429.1209897267.git.monstr@monstr.eu>
+Subject: [PATCH 19/56] microblaze_v2: uaccess files
+Date: Sun,  4 May 2008 13:41:08 +0200
+Message-Id: <eadcc6f4754df78b69d6d54c404624d0390c8558.1209897266.git.monstr@monstr.eu>
 X-Mailer: git-send-email 1.5.4.GIT
-In-Reply-To: <eff9f144fc70b87a9ff6767e9ab92d3d55eebbae.1209897267.git.monstr@monstr.eu>
+In-Reply-To: <378157891bac535dbc55e658d5f03fdd332e85cf.1209897266.git.monstr@monstr.eu>
 References: <1209901305-6404-1-git-send-email-monstr@seznam.cz>
  <a4a778e34c66d126f5c4bf1ca423cf32950ea5ab.1209897266.git.monstr@monstr.eu>
  <c805caeb1dd7f6d1349c4a463cb88a5342a170d2.1209897266.git.monstr@monstr.eu>
@@ -40,35 +40,6 @@ References: <1209901305-6404-1-git-send-email-monstr@seznam.cz>
  <625ef466cf121d655539eedc919dd39166087e0c.1209897266.git.monstr@monstr.eu>
  <b5067a1846075ddd1035966ea1edc908579e2e88.1209897266.git.monstr@monstr.eu>
  <378157891bac535dbc55e658d5f03fdd332e85cf.1209897266.git.monstr@monstr.eu>
- <eadcc6f4754df78b69d6d54c404624d0390c8558.1209897266.git.monstr@monstr.eu>
- <4df4022e06b9056202cc2fdf0b99deb01563a0fa.1209897266.git.monstr@monstr.eu>
- <6b0c9864dc80776ae48d6488a6892e5d698751b7.1209897266.git.monstr@monstr.eu>
- <ea5cbbca49c38c506960fddba29cbd8cb24e1a8d.1209897266.git.monstr@monstr.eu>
- <4f4d6ed3fce9b21cdd6dcacb2d72fff7e9830628.1209897266.git.monstr@monstr.eu>
- <35e662a81eb86c7ffb2aaa6141ca38a07789f382.1209897266.git.monstr@monstr.eu>
- <b41fcf3dd830f4ba82692a9bec2406ed0c290e7e.1209897266.git.monstr@monstr.eu>
- <14acb31da2794d2d5916da3db3d75fe2285ac055.1209897266.git.monstr@monstr.eu>
- <598221ce2159046614d7b158ea62d5af51907af3.1209897266.git.monstr@monstr.eu>
- <41c1f410eaafd875246362d10ef9866d8cc2a934.1209897266.git.monstr@monstr.eu>
- <09ce2baf0c8308d3fbca98e7eb36a6aab59112a7.1209897266.git.monstr@monstr.eu>
- <c9418c683be99ae12abb89575c362d586c026bad.1209897266.git.monstr@monstr.eu>
- <cfde3796e95bdd17c32e4fd7762d0aee55967707.1209897266.git.monstr@monstr.eu>
- <8aba2d82c85cd1d5b56de328c1fd080ee51f0211.1209897266.git.monstr@monstr.eu>
- <c4000ff625bd217f9bb683e3bf8c7193a82bd744.1209897266.git.monstr@monstr.eu>
- <491f823fac6c03cc36834ec569a45d30a03a72cf.1209897266.git.monstr@monstr.eu>
- <96f2004535c34a0c762bf2012c299cbf9f89ab32.1209897266.git.monstr@monstr.eu>
- <92cd3a27b393bb394d48902594152351a92c59bb.1209897266.git.monstr@monstr.eu>
- <4e20213f5f296268a24955df8c951f7fba279816.1209897266.git.monstr@monstr.eu>
- <49eccf3408b90a5ebb42635493bbeef3b584acb9.1209897266.git.monstr@monstr.eu>
- <d1e4a572d2add458e1dc7c4f5a3039ae4faa2c04.1209897266.git.monstr@monstr.eu>
- <27d6acda14c492aae35d8bb1343a122624560418.1209897266.git.monstr@monstr.eu>
- <64e6fc7378cd5c714fcceef7d4965c1fb3d1b288.1209897266.git.monstr@monstr.eu>
- <9cc0d54a98f25748dc3f16fc3250524d7cd00877.1209897266.git.monstr@monstr.eu>
- <5d240127ee05c28d5156bfbf305329f9540f6c14.1209897267.git.monstr@monstr.eu>
- <59b5238f7a259dcac4c9ca6513756a188625462e.1209897267.git.monstr@monstr.eu>
- <8e1d421649250f7a3f638cd552bc46e5f5845890.1209897267.git.monstr@monstr.eu>
- <5b1319d426b1f55e08402790b4bc16a33ec7c00c.1209897267.git.monstr@monstr.eu>
- <eff9f144fc70b87a9ff6767e9ab92d3d55eebbae.1209897267.git.monstr@monstr.eu>
 In-Reply-To: <a4a778e34c66d126f5c4bf1ca423cf32950ea5ab.1209897266.git.monstr@monstr.eu>
 References: <a4a778e34c66d126f5c4bf1ca423cf32950ea5ab.1209897266.git.monstr@monstr.eu>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -80,20 +51,69 @@ From: Michal Simek <monstr@monstr.eu>
 
 Signed-off-by: Michal Simek <monstr@monstr.eu>
 ---
- include/asm-microblaze/poll.h   |   37 +++++++++++++++++++++
- include/asm-microblaze/socket.h |   68 +++++++++++++++++++++++++++++++++++++++
- 2 files changed, 105 insertions(+), 0 deletions(-)
- create mode 100644 include/asm-microblaze/poll.h
- create mode 100644 include/asm-microblaze/socket.h
+ arch/microblaze/lib/uaccess.c    |   43 +++++++++++++
+ include/asm-microblaze/uaccess.h |  126 ++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 169 insertions(+), 0 deletions(-)
+ create mode 100644 arch/microblaze/lib/uaccess.c
+ create mode 100644 include/asm-microblaze/uaccess.h
 
-diff --git a/include/asm-microblaze/poll.h b/include/asm-microblaze/poll.h
+diff --git a/arch/microblaze/lib/uaccess.c b/arch/microblaze/lib/uaccess.c
 new file mode 100644
-index 0000000..4b33ac7
+index 0000000..9a36778
 --- /dev/null
-+++ b/include/asm-microblaze/poll.h
-@@ -0,0 +1,37 @@
++++ b/arch/microblaze/lib/uaccess.c
+@@ -0,0 +1,43 @@
 +/*
-+ * include/asm-microblaze/poll.h
++ * arch/microblaze/lib/uaccess.c
++ *
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License.  See the file "COPYING" in the main directory of this archive
++ * for more details.
++ *
++ * Copyright (C) 2006 Atmark Techno, Inc.
++ */
++
++#include <linux/string.h>
++#include <asm/uaccess.h>
++
++#include <asm/bug.h>
++
++long strnlen_user(const char __user *s, long n)
++{
++	return strlen(s) + 1;
++}
++
++#define __do_strncpy_from_user(dst, src, count, res)			\
++	do {								\
++		char *tmp;						\
++		strncpy(dst, src, count);				\
++		for (tmp = dst; *tmp && count > 0; tmp++, count--)	\
++			;						\
++		res = (tmp - dst);					\
++	} while (0)
++
++long __strncpy_from_user(char *dst, const char __user *src, long count)
++{
++	long res;
++	__do_strncpy_from_user(dst, src, count, res);
++	return res;
++}
++
++long strncpy_from_user(char *dst, const char *src, long count)
++{
++	long res = -EFAULT;
++	if (access_ok(VERIFY_READ, src, 1))
++		__do_strncpy_from_user(dst, src, count, res);
++	return res;
++}
+diff --git a/include/asm-microblaze/uaccess.h b/include/asm-microblaze/uaccess.h
+new file mode 100644
+index 0000000..e6adda3
+--- /dev/null
++++ b/include/asm-microblaze/uaccess.h
+@@ -0,0 +1,126 @@
++/*
++ * include/asm-microblaze/uaccess.h
 + *
 + * This file is subject to the terms and conditions of the GNU General Public
 + * License. See the file "COPYING" in the main directory of this archive
@@ -102,107 +122,122 @@ index 0000000..4b33ac7
 + * Copyright (C) 2006 Atmark Techno, Inc.
 + */
 +
-+#ifndef _ASM_MICROBLAZE_POLL_H
-+#define _ASM_MICROBLAZE_POLL_H
++#ifndef _ASM_MICROBLAZE_UACCESS_H
++#define _ASM_MICROBLAZE_UACCESS_H
 +
-+#define POLLIN		0x0001
-+#define POLLPRI		0x0002
-+#define POLLOUT		0x0004
++#include <linux/kernel.h>
++#include <linux/errno.h>
++#include <asm/segment.h>
++#include <asm/string.h>
 +
-+#define POLLERR		0x0008
-+#define POLLHUP		0x0010
-+#define POLLNVAL	0x0020
++#include <linux/sched.h> /* RLIMIT_FSIZE */
++/* #include <linux/errno.h> */
 +
-+#define POLLRDNORM	0x0040
-+#define POLLRDBAND	0x0080
-+#define POLLWRNORM	POLLOUT
-+#define POLLWRBAND	0x0100
++#define VERIFY_READ	0
++#define VERIFY_WRITE	1
 +
-+#define POLLMSG		0x0400
-+#define POLLREMOVE	0x0800
-+#define POLLRDHUP	0x2000
++extern int ___range_ok(unsigned long addr, unsigned long size);
 +
-+struct pollfd {
-+	int fd;
-+	short events;
-+	short revents;
++#define __range_ok(addr, size) \
++		___range_ok((unsigned long)(addr), (unsigned long)(size))
++
++#define access_ok(type, addr, size) (__range_ok((addr), (size)) == 0)
++#define __access_ok(add, size) (__range_ok((addr), (size)) == 0)
++
++extern inline int bad_user_access_length(void)
++{
++	return 0;
++}
++
++#define __get_user(var, ptr)						\
++	({								\
++		int __gu_err = 0;					\
++		switch (sizeof(*(ptr))) {				\
++		case 1:						\
++		case 2:						\
++		case 4:						\
++			(var) = *(ptr);				\
++			break;					\
++		case 8:						\
++			memcpy((void *) &(var), (ptr), 8);	\
++			break;					\
++		default:					\
++			(var) = 0;				\
++			__gu_err = __get_user_bad();		\
++			break;					\
++		}							\
++		__gu_err;						\
++	})
++
++#define __get_user_bad()	(bad_user_access_length(), (-EFAULT))
++
++#define __put_user(var, ptr)						\
++	({								\
++		int __pu_err = 0;					\
++		switch (sizeof(*(ptr))) {				\
++		case 1:						\
++		case 2:						\
++		case 4:						\
++			*(ptr) = (var);				\
++			break;					\
++		case 8: {					\
++			typeof(*(ptr)) __pu_val = var;		\
++			memcpy(ptr, &__pu_val, sizeof(__pu_val));\
++			}					\
++			break;					\
++		default:					\
++			__pu_err = __put_user_bad();		\
++			break;					\
++		}							\
++		__pu_err;						\
++	})
++
++#define __put_user_bad()	(bad_user_access_length(), (-EFAULT))
++
++#define put_user(x, ptr)	__put_user(x, ptr)
++#define get_user(x, ptr)	__get_user(x, ptr)
++
++#define copy_to_user(to, from, n)		(memcpy(to, from, n), 0)
++#define copy_from_user(to, from, n)		(memcpy(to, from, n), 0)
++
++#define __copy_to_user(to, from, n)		(copy_to_user(to, from, n))
++#define __copy_from_user(to, from, n)		(copy_from_user(to, from, n))
++#define __copy_to_user_inatomic(to, from, n)	(__copy_to_user(to, from, n))
++#define __copy_from_user_inatomic(to, from, n)	(__copy_from_user(to, from, n))
++
++#define __clear_user(addr, n)	(memset((void *)addr, 0, n), 0)
++
++/*
++ * The exception table consists of pairs of addresses: the first is the
++ * address of an instruction that is allowed to fault, and the second is
++ * the address at which the program should continue. No registers are
++ * modified, so it is entirely up to the continuation code to figure out
++ * what to do.
++ *
++ * All the routines below use bits of fixup code that are out of line
++ * with the main instruction path. This means when everything is well,
++ * we don't even have to jump over them. Further, they do not intrude
++ * on our cache or tlb entries.
++ */
++struct exception_table_entry {
++	unsigned long insn, fixup;
 +};
 +
-+#endif /* _ASM_MICROBLAZE_POLL_H */
-diff --git a/include/asm-microblaze/socket.h b/include/asm-microblaze/socket.h
-new file mode 100644
-index 0000000..58d6e01
---- /dev/null
-+++ b/include/asm-microblaze/socket.h
-@@ -0,0 +1,68 @@
-+/*
-+ * include/asm-microblaze/socket.h
-+ *
-+ * This file is subject to the terms and conditions of the GNU General Public
-+ * License. See the file "COPYING" in the main directory of this archive
-+ * for more details.
-+ *
-+ * Copyright (C) 2006 Atmark Techno, Inc.
-+ */
++static inline unsigned long clear_user(void *addr, unsigned long size)
++{
++	if (access_ok(VERIFY_WRITE, addr, size))
++		size = __clear_user(addr, size);
++	return size;
++}
 +
-+#ifndef _ASM_MICROBLAZE_SOCKET_H
-+#define _ASM_MICROBLAZE_SOCKET_H
++/* Returns 0 if exception not found and fixup otherwise. */
++extern unsigned long search_exception_table(unsigned long);
 +
-+#include <asm/sockios.h>
++extern long strncpy_from_user(char *dst, const char *src, long count);
++extern long strnlen_user(const char *src, long count);
++extern long __strncpy_from_user(char *dst, const char *src, long count);
 +
-+/* For setsockoptions(2) */
-+#define SOL_SOCKET	1
-+
-+#define SO_DEBUG	1
-+#define SO_REUSEADDR	2
-+#define SO_TYPE		3
-+#define SO_ERROR	4
-+#define SO_DONTROUTE	5
-+#define SO_BROADCAST	6
-+#define SO_SNDBUF	7
-+#define SO_RCVBUF	8
-+#define SO_SNDBUFFORCE	32
-+#define SO_RCVBUFFORCE	33
-+#define SO_KEEPALIVE	9
-+#define SO_OOBINLINE	10
-+#define SO_NO_CHECK	11
-+#define SO_PRIORITY	12
-+#define SO_LINGER	13
-+#define SO_BSDCOMPAT	14
-+/* To add :#define SO_REUSEPORT 15 */
-+#define SO_PASSCRED	16
-+#define SO_PEERCRED	17
-+#define SO_RCVLOWAT	18
-+#define SO_SNDLOWAT	19
-+#define SO_RCVTIMEO	20
-+#define SO_SNDTIMEO	21
-+
-+/* Security levels - as per NRL IPv6 - don't actually do anything */
-+#define SO_SECURITY_AUTHENTICATION		22
-+#define SO_SECURITY_ENCRYPTION_TRANSPORT	23
-+#define SO_SECURITY_ENCRYPTION_NETWORK		24
-+
-+#define SO_BINDTODEVICE	25
-+
-+/* Socket filtering */
-+#define SO_ATTACH_FILTER	26
-+#define SO_DETACH_FILTER	27
-+
-+#define SO_PEERNAME		28
-+#define SO_TIMESTAMP		29
-+#define SCM_TIMESTAMP		SO_TIMESTAMP
-+
-+#define SO_ACCEPTCONN		30
-+
-+#define SO_PEERSEC		31
-+#define SO_PASSSEC		34
-+
-+#define SO_TIMESTAMPNS		35
-+#define SCM_TIMESTAMPNS		SO_TIMESTAMPNS
-+
-+#define SO_MARK			36
-+
-+#endif /* _ASM_MICROBLAZE_SOCKET_H */
++#endif /* _ASM_MICROBLAZE_UACCESS_H */
 -- 
 1.5.4.GIT
 
