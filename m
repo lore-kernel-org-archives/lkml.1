@@ -1,101 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754982AbYEDQd6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755963AbYEDQe4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754982AbYEDQd6 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 May 2008 12:33:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752225AbYEDQdt
+	id S1755963AbYEDQe4 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 May 2008 12:34:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753333AbYEDQer
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 May 2008 12:33:49 -0400
-Received: from smtp1.betherenow.co.uk ([87.194.0.68]:36289 "HELO
-	smtp1.betherenow.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752140AbYEDQds (ORCPT
+	Sun, 4 May 2008 12:34:47 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:51298 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752225AbYEDQeq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 May 2008 12:33:48 -0400
-From: Alistair John Strachan <alistair@devzero.co.uk>
-To: Robin Holt <holt@sgi.com>
-Subject: Re: Linux 2.6.26-rc1
-Date: Sun, 4 May 2008 17:33:43 +0100
-User-Agent: KMail/1.9.9
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Mauro Carvalho Chehab <mchehab@infradead.org>
-References: <alpine.LFD.1.10.0805031205330.2971@woody.linux-foundation.org> <200805041456.14415.alistair@devzero.co.uk> <20080504160904.GF19717@sgi.com>
-In-Reply-To: <20080504160904.GF19717@sgi.com>
+	Sun, 4 May 2008 12:34:46 -0400
+Message-ID: <481DE1D2.4080704@zytor.com>
+Date: Sun, 04 May 2008 09:18:26 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: Jeremy Fitzhardinge <jeremy@goop.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
+       Jiri Slaby <jirislaby@gmail.com>, David Miller <davem@davemloft.net>,
+       zdenek.kabelac@gmail.com, rjw@sisk.pl, paulmck@linux.vnet.ibm.com,
+       akpm@linux-foundation.org, linux-ext4@vger.kernel.org,
+       herbert@gondor.apana.org.au, penberg@cs.helsinki.fi, clameter@sgi.com,
+       linux-kernel@vger.kernel.org, pageexec@freemail.hu
+Subject: Re: [PATCH 1/1] x86: fix text_poke
+References: <481241DC.3070601@zytor.com> <alpine.LFD.1.10.0804251349510.2779@woody.linux-foundation.org> <20080425211205.GC25950@Krystal> <481249FB.8070204@zytor.com> <20080425214704.GD25950@Krystal> <48125635.3060303@zytor.com> <20080425223015.GB31226@Krystal> <alpine.LFD.1.10.0804251534420.2779@woody.linux-foundation.org> <20080428204342.GD27154@Krystal> <48163B50.8010608@goop.org> <20080504150353.GB23137@Krystal>
+In-Reply-To: <20080504150353.GB23137@Krystal>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200805041733.43775.alistair@devzero.co.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 04 May 2008 17:09:04 Robin Holt wrote:
-> On Sun, May 04, 2008 at 02:56:14PM +0100, Alistair John Strachan wrote:
-> > On Sunday 04 May 2008 13:30:08 Robin Holt wrote:
-> > > On Sat, May 03, 2008 at 10:53:22PM +0100, Alistair John Strachan wrote:
-> > > > On Saturday 03 May 2008 22:47:38 Alistair John Strachan wrote:
-> > > > > On Saturday 03 May 2008 20:38:20 Linus Torvalds wrote:
-> > > > > > So go out and test it.
-> > > >
-> > > > [snip]
-> > > >
-> > > > > Why is this option acting like CONFIG_EMBEDDED and not like
-> > > > > basically every other subsystem where I can turn ON support for
-> > > > > hardware, but by default it's OFF? (Obviously in my hasty oldconfig
-> > > > > run I just went with the default.)
-> > > >
-> > > > Amazingly, even if I say Y to this option and disable all tuners, it
-> > > > still tries (and fails) to compile this file. What is pulling in this
-> > > > tuner-core dependency?
-> > >
-> > > What if you change CONFIG_MEDIA_TUNER to a 'n'
-> >
-> > This isn't a menu-visible option. Your hint does explain why it turns
-> > itself on, however:
-> >
-> > config MEDIA_TUNER
-> >         tristate
-> >         default DVB_CORE || VIDEO_DEV
-> >         depends on DVB_CORE || VIDEO_DEV
-> >
-> > I have DVB_CORE=n and VIDEO_DEV=y. VIDEO_DEV is:
-> >
-> > config VIDEO_DEV
-> >         tristate "Video For Linux"
-> >
-> > So if you enable Video For Linux, the tuner-core is automatically built,
-> > even if no tuners are selected? Surely that's wrong..
->
-> That is probably correct.  Video For Linux is used for capturing video
-> streams.  The fact that you can get this invalid config to fail to build
-> should be reported to the v4l folks and let them fix it up.
+Mathieu Desnoyers wrote:
+> 
+> I am not saying that the standard marker will have to inhibit
+> optimizations. Actually, it's the contrary : a well-thought marker
+> should _not_ modify that kind of optimization, and we should put markers
+> in code locations less likely to inhibit gcc optimizations. However, in
+> the case where we happen to be interested in information otherwise
+> optimized away by GCC, it makes sense to inhibit this optimization in
+> order to have the information available for tracing.
+> 
+> I expect this to happen rarely, but I think we must deal with
+> optimizations to make sure we never trace garbage due to some unexpected
+> gcc optimization. I think it's a small (e.g. undetectable at the
+> macrobenchmark level) price to pay to get correct tracing information.
+> 
 
-a) He's already on CC
-b) No config I have posted was invalid
-c) There are two (possibly three) entirely separate issues
+That's a pretty flippant reply... liveness causes register pressure 
+which can cause rapid degradation in code quality on a register-starved 
+architecture like x86.
 
-You've got the wrong end of the stick here. I'm not saying V4L isn't required 
-for MEDIA_TUNER, but MEDIA_TUNER should not be a dependency of V4L and so 
-should NOT be unconditionally enabled.
-
-The first issue is obviously the build error, which can be resolved by adding 
-a dep on I2C to MEDIA_TUNER, but given the recent churn there I'll leave that 
-to Mauro.
-
-The second issue is the fact that the MEDIA_TUNER option is transparent and 
-not user selectable, building code that is probably not required in some 
-kernel configurations (tuner code depends on V4L, but surely not the other 
-way around.. MEDIA_TUNER should be able to be n when VIDEO_DEV is y).
-
-The final issue is more of a matter of personal taste, which refers to the 
-MEDIA_TUNER_CUSTOMIZE option, something that I think should be inverted and 
-turned into a menu like most other device driver sections. So rather than 
-MEDIA_TUNER_CUSTOMIZE, why not just have MEDIA_TUNER be visible to the user, 
-and if Y, let them select tuners, and if N, no tuners are built.
-
--- 
-Cheers,
-Alistair.
-
-137/1 Warrender Park Road, Edinburgh, UK.
+	-hpa
