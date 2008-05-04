@@ -1,68 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755104AbYEDJhA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755399AbYEDJlW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755104AbYEDJhA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 May 2008 05:37:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752189AbYEDJgx
+	id S1755399AbYEDJlW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 May 2008 05:41:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753568AbYEDJlP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 May 2008 05:36:53 -0400
-Received: from nf-out-0910.google.com ([64.233.182.191]:58500 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752713AbYEDJgw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 May 2008 05:36:52 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:reply-to:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=IHK3pa0h7S313Azj3I62tOR0G0/dJglDWyh9X9oo1vFhiwPyYSoZENrGuxADhchMSHLBRVtJB4q+wZEbxuRNIwuzezG4hg/NQzbo/46TiPC86BbACAr+I9957TcDvBUrcgtKRuvacVGJYOkQTjzG5c7LLo3VSXyIYdor6VcYa4o=
-Date: Sun, 4 May 2008 13:36:27 +0400
-From: Anton Vorontsov <cbouatmailru@gmail.com>
-To: Andres Salomon <dilinger@queued.net>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       cbou@mail.ru, dwmw2@infradead.org
-Subject: Re: [PATCH 1/4] power_supply: Support serial number and ACR in
-	olpc_battery
-Message-ID: <20080504093627.GA27950@zarina>
-Reply-To: cbouatmailru@gmail.com
-References: <20080430163002.3c768ae0@ephemeral> <20080502225849.GA26024@zarina> <20080504013142.03c8ad0b@ephemeral>
+	Sun, 4 May 2008 05:41:15 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:59223 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752447AbYEDJlO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 May 2008 05:41:14 -0400
+Date: Sun, 4 May 2008 11:40:58 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86_32: move do_nmi() to nmi_32.c
+Message-ID: <20080504094058.GA17566@elte.hu>
+References: <481BA78F.50202@ct.jp.nec.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080504013142.03c8ad0b@ephemeral>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <481BA78F.50202@ct.jp.nec.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, May 04, 2008 at 01:31:42AM -0400, Andres Salomon wrote:
-> On Sat, 3 May 2008 02:58:49 +0400
-> Anton Vorontsov <cbouatmailru@gmail.com> wrote:
+
+* Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com> wrote:
+
+> From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
 > 
-> > On Wed, Apr 30, 2008 at 04:30:02PM -0400, Andres Salomon wrote:
-> > > From: David Woodhouse <dwmw2@infradead.org>
-> > > 
-> > > This adds serial number and accumulated current support to the OLPC
-> > > battery driver.
-> > 
-> > How PROP_ACCUM_CURRENT is different from PROP_CHARGE_NOW (uAh)?
-> > 
-> > The DS2760 is already using the later to report its ACR register...
-> > 
-> 
-> Hm, I can change that.  In the meantime, I've stripped out the
-> ACR stuff.  Can you please use the following patch instead?  The change
-> doesn't conflict with the other 3 patches.
+> on x86_64 do_nmi() is in nmi_64.c.
 
-Thanks, applied to battery-2.6.git. Please see if everything is okay.
+this patch caused build failure on x86.git+sched-devel.git:
 
-Do you want to see these patches in 2.6.26? I think it's a bit late
-(-rc1 is already released), but I also believe these patches are quite
-useful for OLPC and actually they do not touch anything but single
-driver...
+arch/x86/kernel/built-in.o: In function `nmi_stack_correct':
+arch/x86/kernel/entry_32.S:(.kprobes.text+0x117): undefined reference to `do_nmi'
+arch/x86/kernel/built-in.o: In function `nmi_espfix_stack':
+arch/x86/kernel/entry_32.S:(.kprobes.text+0x1c3): undefined reference to `do_nmi'
+arch/x86/kernel/built-in.o: In function `alternative_instructions':
+: undefined reference to `stop_nmi'
+arch/x86/kernel/built-in.o: In function `alternative_instructions':
+: undefined reference to `restart_nmi'
 
+with this config:
 
-Thanks,
+ http://redhat.com/~mingo/misc/config-Sun_May__4_11_25_21_CEST_2008.bad
 
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+	Ingo
