@@ -1,61 +1,608 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758482AbYEEIcr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758602AbYEEIdw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758482AbYEEIcr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 04:32:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754643AbYEEIck
+	id S1758602AbYEEIdw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 04:33:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754643AbYEEIdm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 04:32:40 -0400
-Received: from rv-out-0506.google.com ([209.85.198.238]:59982 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751260AbYEEIcj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 04:32:39 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=iV5UdrRFqdYqzNgQSo9jvPQRXAPV8aCDacESwgvdi9RZqvGBQO8tgD3YfG9nWkrIDzD5tAOHWUbiVDc6e0hNP1lLdyAbdi0sfuQLkQ1zzi6oFFDl1cSfHKnrL3ppiHjs3rqCtM6hJugnlUw+A9fkSFDw/ynKaKOfoXe4VU9dgBE=
-Message-ID: <44c63dc40805050132s602874eci66d60eaf9bbe9d57@mail.gmail.com>
-Date: Mon, 5 May 2008 17:32:38 +0900
-From: "minchan Kim" <barrioskmc@gmail.com>
-To: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>
-Subject: Re: [-mm][PATCH 4/5] core of reclaim throttle
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>
-In-Reply-To: <2f11576a0805050124q5b91ff3dm70918f80017cb936@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080504201343.8F52.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-	 <20080504215819.8F5E.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-	 <20080504221043.8F64.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-	 <44c63dc40805042221s4eb347acu6e7d86310696825f@mail.gmail.com>
-	 <2f11576a0805050124q5b91ff3dm70918f80017cb936@mail.gmail.com>
+	Mon, 5 May 2008 04:33:42 -0400
+Received: from 178-47-31-89.wifiinternet.cz ([89.31.47.178]:47409 "EHLO
+	monstr.eu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752728AbYEEIdj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 May 2008 04:33:39 -0400
+From: monstr@seznam.cz
+To: linux-kernel@vger.kernel.org
+Cc: arnd@arndb.de, linux-arch@vger.kernel.org, stephen.neuendorffer@xilinx.com,
+       John.Linn@xilinx.com, john.williams@petalogix.com, matthew@wil.cx,
+       will.newton@gmail.com, drepper@redhat.com,
+       microblaze-uclinux@itee.uq.edu.au, grant.likely@secretlab.ca,
+       Michal Simek <monstr@monstr.eu>
+Subject: [PATCH 06/56] microblaze_v2: exception handling
+Date: Sun,  4 May 2008 13:40:55 +0200
+Message-Id: <0674b1f7abb9a3d564b68c95bc28adc2c2fe9551.1209897266.git.monstr@monstr.eu>
+X-Mailer: git-send-email 1.5.4.GIT
+In-Reply-To: <ed3695121faf485d491cecdd96d5d4dcc498411d.1209897266.git.monstr@monstr.eu>
+References: <1209901305-6404-1-git-send-email-monstr@seznam.cz>
+ <a4a778e34c66d126f5c4bf1ca423cf32950ea5ab.1209897266.git.monstr@monstr.eu>
+ <c805caeb1dd7f6d1349c4a463cb88a5342a170d2.1209897266.git.monstr@monstr.eu>
+ <f120ababf2bade9aab7199bffb3014aa606e5a1c.1209897266.git.monstr@monstr.eu>
+ <684c36e5ad3f598e5079e88ec195545c4a7150c2.1209897266.git.monstr@monstr.eu>
+ <ed3695121faf485d491cecdd96d5d4dcc498411d.1209897266.git.monstr@monstr.eu>
+In-Reply-To: <a4a778e34c66d126f5c4bf1ca423cf32950ea5ab.1209897266.git.monstr@monstr.eu>
+References: <a4a778e34c66d126f5c4bf1ca423cf32950ea5ab.1209897266.git.monstr@monstr.eu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I see.
-
-My gmail client hide that contents.
-I am sorry :-)
-
-On Mon, May 5, 2008 at 5:24 PM, KOSAKI Motohiro
-<kosaki.motohiro@jp.fujitsu.com> wrote:
-> >  >  +       /* in some situation (e.g. hibernation), shrink processing shouldn't be
-> >  >  +          cut off even though large memory freeded.  */
-> >  >  +       if (!sc->may_cut_off)
-> >  >  +               goto shrinking;
-> >  >  +
-> >
-> >  where do you initialize may_cut_off ?
-> >  Current Implementation, may_cut_off is always "0" so always goto shrinking
->
-> please see try_to_free_pages :)
->
+From: Michal Simek <monstr@monstr.eu>
 
 
+Signed-off-by: Michal Simek <monstr@monstr.eu>
+---
+ arch/microblaze/kernel/exceptions.c           |   78 +++++
+ arch/microblaze/kernel/hw_exception_handler.S |  395 +++++++++++++++++++++++++
+ include/asm-microblaze/exceptions.h           |   66 ++++
+ 3 files changed, 539 insertions(+), 0 deletions(-)
+ create mode 100644 arch/microblaze/kernel/exceptions.c
+ create mode 100644 arch/microblaze/kernel/hw_exception_handler.S
+ create mode 100644 include/asm-microblaze/exceptions.h
 
+diff --git a/arch/microblaze/kernel/exceptions.c b/arch/microblaze/kernel/exceptions.c
+new file mode 100644
+index 0000000..9b92e56
+--- /dev/null
++++ b/arch/microblaze/kernel/exceptions.c
+@@ -0,0 +1,78 @@
++/*
++ * arch/microblaze/kernel/exceptions.c - HW exception handling
++ *
++ * Copyright (C) 2007 Xilinx, Inc.
++ *
++ * This file is subject to the terms and conditions of the GNU General
++ * Public License. See the file COPYING in the main directory of this
++ * archive for more details.
++ *
++ */
++
++#include <linux/kernel.h>
++#include <linux/signal.h>
++#include <linux/sched.h>
++#include <asm/exceptions.h>
++#include <asm/entry.h>		/* For KM CPU var */
++
++/* Initialize_exception_handlers() - called from setup.c/trap_init() */
++void initialize_exception_handlers(void)
++{
++}
++
++#define MICROBLAZE_ILL_OPCODE_EXCEPTION	0x02
++#define MICROBLAZE_IOPB_BUS_EXCEPTION	0x03
++#define MICROBLAZE_DOPB_BUS_EXCEPTION	0x04
++#define MICROBLAZE_DIV_ZERO_EXCEPTION	0x05
++#define MICROBLAZE_FPU_EXCEPTION	0x06
++
++static void handle_unexpected_exception(unsigned int esr,
++				unsigned int kernel_mode, unsigned int addr)
++{
++	printk(KERN_WARNING "Unexpected exception %02x in %s mode, PC=%08x\n",
++		esr, kernel_mode ? "kernel" : "user", addr);
++}
++
++static void handle_exception(const char *message, int signal,
++				unsigned int kernel_mode, unsigned int addr)
++{
++	if (kernel_mode)
++		panic("%s in the kernel mode, PC=%08x\n", message, addr);
++	else
++		force_sig(signal, current);
++}
++
++asmlinkage void other_exception_handler(unsigned int esr, unsigned int addr)
++{
++	unsigned int kernel_mode = per_cpu(KM, 0);
++
++	switch (esr) {
++
++	case MICROBLAZE_ILL_OPCODE_EXCEPTION:
++		handle_exception("Illegal instruction", SIGILL,
++						kernel_mode, addr);
++		break;
++
++	case MICROBLAZE_IOPB_BUS_EXCEPTION:
++		handle_exception("Instruction bus error", SIGBUS,
++						kernel_mode, addr);
++		break;
++
++	case MICROBLAZE_DOPB_BUS_EXCEPTION:
++		handle_exception("Data bus error", SIGBUS, kernel_mode, addr);
++		break;
++
++	case MICROBLAZE_DIV_ZERO_EXCEPTION:
++		handle_exception("Divide by zero", SIGILL, kernel_mode, addr);
++		break;
++
++	case MICROBLAZE_FPU_EXCEPTION:
++		handle_exception("FPU error", SIGFPE, kernel_mode, addr);
++		break;
++
++	default:
++		handle_unexpected_exception(esr, kernel_mode, addr);
++	}
++
++	return;
++}
+diff --git a/arch/microblaze/kernel/hw_exception_handler.S b/arch/microblaze/kernel/hw_exception_handler.S
+new file mode 100644
+index 0000000..4c3b41b
+--- /dev/null
++++ b/arch/microblaze/kernel/hw_exception_handler.S
+@@ -0,0 +1,395 @@
++/*
++ *
++ * arch/microblaze/kernel/hw_exception_handler.S
++ *
++ * Unaligned exception handling for Microblaze
++ *
++ * cleanup code (C) 2007 Michal Simek <monstr@monstr.eu>
++ * uClinux customisation (C) 2005 John Williams
++ *
++ * Original code
++ * Copyright (C) 2004 Xilinx, Inc. All rights reserved.
++ *
++ * Xilinx, Inc.
++ * XILINX IS PROVIDING THIS DESIGN, CODE, OR INFORMATION "AS IS" AS A
++ * COURTESY TO YOU. BY PROVIDING THIS DESIGN, CODE, OR INFORMATION AS
++ * ONE POSSIBLE IMPLEMENTATION OF THIS FEATURE, APPLICATION OR
++ * STANDARD, XILINX IS MAKING NO REPRESENTATION THAT THIS IMPLEMENTATION
++ * IS FREE FROM ANY CLAIMS OF INFRINGEMENT, AND YOU ARE RESPONSIBLE
++ * FOR OBTAINING ANY RIGHTS YOU MAY REQUIRE FOR YOUR IMPLEMENTATION.
++ * XILINX EXPRESSLY DISCLAIMS ANY WARRANTY WHATSOEVER WITH RESPECT TO
++ * THE ADEQUACY OF THE IMPLEMENTATION, INCLUDING BUT NOT LIMITED TO
++ * ANY WARRANTIES OR REPRESENTATIONS THAT THIS IMPLEMENTATION IS FREE
++ * FROM CLAIMS OF INFRINGEMENT, IMPLIED WARRANTIES OF MERCHANTABILITY
++ * AND FITNESS FOR A PARTICULAR PURPOSE.
++ *
++ * $Id: hw_exception_handler.S,v 1.1.2.1 2007/03/16 16:09:57 imanuilov Exp $
++ *
++ */
++
++/*
++ * Microblaze HW Exception Handler
++ * - Non self-modifying exception handler for the following exception conditions
++ * - Unalignment
++ * - Instruction bus error
++ * - Data bus error
++ * - Illegal instruction opcode
++ * - Divide-by-zero
++ *
++ * Note we disable interrupts during exception handling, otherwise we will
++ * possibly get multiple re-entrancy if interrupt handles themselves cause
++ * exceptions. JW
++ */
++
++#include <linux/autoconf.h>
++#include <asm/exceptions.h>
++#include <asm/unistd.h>
++
++/* Helpful Macros */
++#define EX_HANDLER_STACK_SIZ	(4*19)
++#define RMSR_OFFSET		0
++#define REG_OFFSET(regnum)	(4*regnum)
++#define NUM_TO_REG(num)		r ## num
++
++#define R3_TO_STACK(regnum)	swi	r3, r1, REG_OFFSET(regnum)
++#define R3_FROM_STACK(regnum)	lwi	r3, r1, REG_OFFSET(regnum)
++
++#define PUSH_REG(regnum)	swi NUM_TO_REG(regnum), r1, REG_OFFSET(regnum)
++#define POP_REG(regnum)		lwi NUM_TO_REG(regnum), r1, REG_OFFSET(regnum)
++
++/* Uses r5 */
++#define PUSH_MSR					\
++	mfs	r5, rmsr;				\
++	swi	r5, r1, RMSR_OFFSET;
++
++#define PUSH_MSR_AND_ENABLE_EXC				\
++	mfs	r5, rmsr;				\
++	swi	r5, r1, RMSR_OFFSET;			\
++	ori	r5, r5, 0x100; /* Turn ON the EE bit */	\
++	andi	r5, r5, ~2; /* Disable interrupts */	\
++	mts	rmsr, r5;
++
++/* Uses r5 */
++#define POP_MSR						\
++	lwi	r5, r1, RMSR_OFFSET;			\
++	mts	rmsr, r5;
++
++#define LWREG_NOP					\
++	bri	ex_handler_unhandled;			\
++	nop;
++
++#define SWREG_NOP					\
++	bri	ex_handler_unhandled;			\
++	nop;
++
++/* r3 is the source */
++#define R3_TO_LWREG_V(regnum)				\
++	R3_TO_STACK(regnum);				\
++	bri	ex_handler_done;
++
++/* r3 is the source */
++#define R3_TO_LWREG(regnum)				\
++	or	NUM_TO_REG (regnum), r0, r3;		\
++	bri	ex_handler_done;
++
++/* r3 is the target */
++#define SWREG_TO_R3_V(regnum)				\
++	R3_FROM_STACK (regnum);				\
++	bri	ex_sw_tail;
++
++/* r3 is the target */
++#define SWREG_TO_R3(regnum)				\
++	or	r3, r0, NUM_TO_REG (regnum);		\
++	bri	ex_sw_tail;
++
++.extern other_exception_handler /* Defined in exception.c */
++
++/*
++ * hw_exception_handler - Handler for unaligned exceptions
++ * Exception handler notes:
++ * - Does not handle exceptions other than unaligned exceptions
++ * - Does not handle exceptions during load into r17, r1, r0.
++ * - Does not handle exceptions during store from r17 (cannot be done)
++ *	and r1 (slows down common case)
++ *
++ * Relevant register structures
++ *
++ * EAR	- |----|----|----|----|----|----|----|----|
++ *	- <  ##   32 bit faulting address     ##  >
++ *
++ * ESR	- |----|----|----|----|----| - | - |-----|-----|
++ *	-			     W   S   REG   EXC
++ *
++ *
++ * STACK FRAME STRUCTURE
++ * ---------------------
++ *
++ *	+-------------+		+ 0
++ *	|     MSR     |
++ *	+-------------+		+ 4
++ *	|     r1      |
++ *	|      .      |
++ *	|      .      |
++ *	|      .      |
++ *	|      .      |
++ *	|     r18     |
++ *	+-------------+		+ 76
++ *	|      .      |
++ *	|      .      |
++ */
++
++.global _hw_exception_handler
++.section .text
++.align 4
++.ent _hw_exception_handler
++_hw_exception_handler:
++	addik	r1, r1, -(EX_HANDLER_STACK_SIZ); /* Create stack frame */
++	PUSH_REG(3);
++	PUSH_REG(4);
++	PUSH_REG(5);
++	PUSH_REG(6);
++	mfs	r3, resr;
++
++	andi	r5, r3, 0x1000;
++	beqi	r5, not_in_delay_slot;
++	mfs	r17, rbtr;
++not_in_delay_slot:
++
++	PUSH_REG(17);
++	/* Exceptions enabled here. This will allow nested exceptions */
++	PUSH_MSR_AND_ENABLE_EXC;
++
++	andi	r5, r3, 0x1F; /* Extract ESR[EXC] */
++
++	xori	r6, r5, 1; /* 00001 = Unaligned Exception */
++	/* Jump to unalignment exception handler */
++	beqi	r6, handle_unaligned_ex;
++
++handle_other_ex: /* Handle Other exceptions here */
++	/* Save other volatiles before we make procedure calls below */
++	PUSH_REG(7);
++	PUSH_REG(8);
++	PUSH_REG(9);
++	PUSH_REG(10);
++	PUSH_REG(11);
++	PUSH_REG(12);
++	PUSH_REG(14);
++	PUSH_REG(15);
++	PUSH_REG(18);
++
++	andi	r5, r3, 0x1F; /* Load ESR[EC] */
++	addk	r6, r17, r0; /* Load exception address */
++	bralid	r15, other_exception_handler; /* Branch to the handler */
++	nop;
++
++	/*
++	* Trigger execution of the signal handler by enabling
++	* interrupts and calling an invalid syscall.
++	*/
++	mfs	r5, rmsr;
++	ori	r5, r5, 2;
++	mts	rmsr, r5;
++	addi	r12, r0, NR_syscalls;
++	brki	r14, 0x08;
++	mfs	r5, rmsr;
++	andi	r5, r5, ~2;
++	mts	rmsr, r5;
++
++	POP_REG(7); /* Restore other volatiles */
++	POP_REG(8);
++	POP_REG(9);
++	POP_REG(10);
++	POP_REG(11);
++	POP_REG(12);
++	POP_REG(14);
++	POP_REG(15);
++	POP_REG(18);
++
++	bri	ex_handler_done; /* Complete exception handling */
++handle_unaligned_ex:
++	andi	r6, r3, 0x3E0; /* Mask and extract the register operand */
++	srl	r6, r6; /* r6 >> 5 */
++	srl	r6, r6;
++	srl	r6, r6;
++	srl	r6, r6;
++	srl	r6, r6;
++	/* Store the register operand in a temporary location */
++	sbi	r6, r0, ex_reg_op;
++	mfs	r4, rear;
++	andi	r6, r3, 0x400; /* Extract ESR[S] */
++	bnei	r6, ex_sw;
++ex_lw:
++	andi	r6, r3, 0x800; /* Extract ESR[W] */
++	beqi	r6, ex_lhw;
++	lbui	r5, r4, 0; /* Exception address in r4 */
++	/* Load a word, byte-by-byte from destination address
++		and save it in tmp space */
++	sbi	r5, r0, ex_tmp_data_loc_0;
++	lbui	r5, r4, 1;
++	sbi	r5, r0, ex_tmp_data_loc_1;
++	lbui	r5, r4, 2;
++	sbi	r5, r0, ex_tmp_data_loc_2;
++	lbui	r5, r4, 3;
++	sbi	r5, r0, ex_tmp_data_loc_3;
++	/* Get the destination register value into r3 */
++	lwi	r3, r0, ex_tmp_data_loc_0;
++	bri	ex_lw_tail;
++ex_lhw:
++	lbui	r5, r4, 0; /* Exception address in r4 */
++	/* Load a half-word, byte-by-byte from destination
++		address and save it in tmp space */
++	sbi	r5, r0, ex_tmp_data_loc_0;
++	lbui	r5, r4, 1;
++	sbi	r5, r0, ex_tmp_data_loc_1;
++	/* Get the destination register value into r3 */
++	lhui	r3, r0, ex_tmp_data_loc_0;
++ex_lw_tail:
++	/* Get the destination register number into r5 */
++	lbui	r5, r0, ex_reg_op;
++	/* Form load_word jump table offset (lw_table + (8 * regnum)) */
++	la	r6, r0, lw_table;
++	addk	r5, r5, r5;
++	addk	r5, r5, r5;
++	addk	r5, r5, r5;
++	addk	r5, r5, r6;
++	bra	r5;
++ex_lw_end: /* Exception handling of load word, ends */
++ex_sw:
++	/* Get the destination register number into r5 */
++	lbui	r5, r0, ex_reg_op;
++	/* Form store_word jump table offset (sw_table + (8 * regnum)) */
++	la	r6, r0, sw_table;
++	add	r5, r5, r5;
++	add	r5, r5, r5;
++	add	r5, r5, r5;
++	add	r5, r5, r6;
++	bra	r5;
++ex_sw_tail:
++	mfs	r6, resr;
++	andi	r6, r6, 0x800; /* Extract ESR[W] */
++	beqi	r6, ex_shw;
++	swi	r3, r0, ex_tmp_data_loc_0;
++	/* Store the word, byte-by-byte into destination address */
++	lbui	r3, r0, ex_tmp_data_loc_0;
++	sbi	r3, r4, 0;
++	lbui	r3, r0, ex_tmp_data_loc_1;
++	sbi	r3, r4, 1;
++	lbui	r3, r0, ex_tmp_data_loc_2;
++	sbi	r3, r4, 2;
++	lbui	r3, r0, ex_tmp_data_loc_3;
++	sbi	r3, r4, 3;
++	bri	ex_handler_done;
++ex_shw:
++	/* Store the lower half-word, byte-by-byte into destination address */
++	swi	r3, r0, ex_tmp_data_loc_0;
++	lbui	r3, r0, ex_tmp_data_loc_2;
++	sbi	r3, r4, 0;
++	lbui	r3, r0, ex_tmp_data_loc_3;
++	sbi	r3, r4, 1;
++ex_sw_end: /* Exception handling of store word, ends. */
++
++ex_handler_done:
++	POP_MSR;
++	POP_REG(3);
++	POP_REG(4);
++	POP_REG(5);
++	POP_REG(6);
++	POP_REG(17);
++	rted	r17, 0
++	addik	r1, r1, (EX_HANDLER_STACK_SIZ); /* Restore stack frame */
++ex_handler_unhandled:
++	bri 0 /* UNHANDLED. TRAP HERE */
++.end _hw_exception_handler
++
++/*
++* hw_exception_handler Jump Table
++* - Contains code snippets for each register that caused the unaligned exception
++* - Hence exception handler is NOT self-modifying
++* - Separate table for load exceptions and store exceptions.
++* - Each table is of size: (8 * 32) = 256 bytes
++*/
++
++.section .text
++.align 4
++lw_table:
++lw_r0:	R3_TO_LWREG	(0);
++lw_r1:	LWREG_NOP;
++lw_r2:	R3_TO_LWREG	(2);
++lw_r3:	R3_TO_LWREG_V	(3);
++lw_r4:	R3_TO_LWREG_V	(4);
++lw_r5:	R3_TO_LWREG_V	(5);
++lw_r6:	R3_TO_LWREG_V	(6);
++lw_r7:	R3_TO_LWREG	(7);
++lw_r8:	R3_TO_LWREG	(8);
++lw_r9:	R3_TO_LWREG	(9);
++lw_r10:	R3_TO_LWREG	(10);
++lw_r11:	R3_TO_LWREG	(11);
++lw_r12:	R3_TO_LWREG	(12);
++lw_r13:	R3_TO_LWREG	(13);
++lw_r14:	R3_TO_LWREG	(14);
++lw_r15:	R3_TO_LWREG	(15);
++lw_r16:	R3_TO_LWREG	(16);
++lw_r17:	LWREG_NOP;
++lw_r18:	R3_TO_LWREG	(18);
++lw_r19:	R3_TO_LWREG	(19);
++lw_r20:	R3_TO_LWREG	(20);
++lw_r21:	R3_TO_LWREG	(21);
++lw_r22:	R3_TO_LWREG	(22);
++lw_r23:	R3_TO_LWREG	(23);
++lw_r24:	R3_TO_LWREG	(24);
++lw_r25:	R3_TO_LWREG	(25);
++lw_r26:	R3_TO_LWREG	(26);
++lw_r27:	R3_TO_LWREG	(27);
++lw_r28:	R3_TO_LWREG	(28);
++lw_r29:	R3_TO_LWREG	(29);
++lw_r30:	R3_TO_LWREG	(30);
++lw_r31:	R3_TO_LWREG	(31);
++
++sw_table:
++sw_r0:	SWREG_TO_R3	(0);
++sw_r1:	SWREG_NOP;
++sw_r2:	SWREG_TO_R3	(2);
++sw_r3:	SWREG_TO_R3_V	(3);
++sw_r4:	SWREG_TO_R3_V	(4);
++sw_r5:	SWREG_TO_R3_V	(5);
++sw_r6:	SWREG_TO_R3_V	(6);
++sw_r7:	SWREG_TO_R3	(7);
++sw_r8:	SWREG_TO_R3	(8);
++sw_r9:	SWREG_TO_R3	(9);
++sw_r10:	SWREG_TO_R3	(10);
++sw_r11:	SWREG_TO_R3	(11);
++sw_r12:	SWREG_TO_R3	(12);
++sw_r13:	SWREG_TO_R3	(13);
++sw_r14:	SWREG_TO_R3	(14);
++sw_r15:	SWREG_TO_R3	(15);
++sw_r16:	SWREG_TO_R3	(16);
++sw_r17:	SWREG_NOP;
++sw_r18:	SWREG_TO_R3	(18);
++sw_r19:	SWREG_TO_R3	(19);
++sw_r20:	SWREG_TO_R3	(20);
++sw_r21:	SWREG_TO_R3	(21);
++sw_r22:	SWREG_TO_R3	(22);
++sw_r23:	SWREG_TO_R3	(23);
++sw_r24:	SWREG_TO_R3	(24);
++sw_r25:	SWREG_TO_R3	(25);
++sw_r26:	SWREG_TO_R3	(26);
++sw_r27:	SWREG_TO_R3	(27);
++sw_r28:	SWREG_TO_R3	(28);
++sw_r29:	SWREG_TO_R3	(29);
++sw_r30:	SWREG_TO_R3	(30);
++sw_r31:	SWREG_TO_R3	(31);
++
++/* Temporary data structures used in the handler */
++.section .data
++.align 4
++ex_tmp_data_loc_0:
++	.byte 0
++ex_tmp_data_loc_1:
++	.byte 0
++ex_tmp_data_loc_2:
++	.byte 0
++ex_tmp_data_loc_3:
++	.byte 0
++ex_reg_op:
++	.byte 0
++
+diff --git a/include/asm-microblaze/exceptions.h b/include/asm-microblaze/exceptions.h
+new file mode 100644
+index 0000000..02dc186
+--- /dev/null
++++ b/include/asm-microblaze/exceptions.h
+@@ -0,0 +1,66 @@
++/*
++ * include/asm-microblaze/exceptions.h
++ *
++ * Preliminary support for HW exception handing for Microblaze
++ *
++ * Copyright (C) 2005 John Williams <jwilliams@itee.uq.edu.au>
++ *
++ * This file is subject to the terms and conditions of the GNU General
++ * Public License. See the file COPYING in the main directory of this
++ * archive for more details.
++ *
++ */
++
++#ifndef _ASM_MICROBLAZE_EXCEPTIONS_H
++#define _ASM_MICROBLAZE_EXCEPTIONS_H
++
++#include <linux/autoconf.h>
++
++#ifndef __ASSEMBLY__
++
++void initialize_exception_handlers(void);
++asmlinkage void other_exception_handler(unsigned int esr, unsigned int addr);
++
++/* Macros to enable and disable HW exceptions in the MSR */
++/* Define MSR enable bit for HW exceptions */
++#define HWEX_MSR_BIT (1 << 8)
++
++#if CONFIG_XILINX_MICROBLAZE0_USE_MSR_INSTR
++#define __enable_hw_exceptions()					\
++	__asm__ __volatile__ ("	msrset	r0, %0;				\
++				nop; "					\
++				:					\
++				: "i" (HWEX_MSR_BIT)			\
++				: "memory")
++
++#define __disable_hw_exceptions()					\
++	__asm__ __volatile__ ("	msrclr r0, %0;				\
++				nop; "					\
++				:					\
++				: "i" (HWEX_MSR_BIT)			\
++				: "memory")
++#else /* !CONFIG_XILINX_MICROBLAZE0_USE_MSR_INSTR */
++#define __enable_hw_exceptions()					\
++	__asm__ __volatile__ ("						\
++				mfs	r12, rmsr;			\
++				ori	r12, r12, %0;			\
++				mts	rmsr, r12;			\
++				nop; "					\
++				:					\
++				: "i" (HWEX_MSR_BIT)			\
++				: "memory", "r12")
++
++#define __disable_hw_exceptions()					\
++	__asm__ __volatile__ ("						\
++				mfs	r12, rmsr;			\
++				andi	r12, r12, ~%0;			\
++				mts	rmsr, r12;			\
++				nop; "					\
++				:					\
++				: "i" (HWEX_MSR_BIT)			\
++				: "memory", "r12")
++#endif /* CONFIG_XILINX_MICROBLAZE0_USE_MSR_INSTR */
++
++#endif /*__ASSEMBLY__ */
++
++#endif /* _ASM_MICROBLAZE_EXCEPTIONS_H */
 -- 
-Thanks,
-barrios
+1.5.4.GIT
+
