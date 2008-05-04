@@ -1,87 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757158AbYEDM5g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757262AbYEDM5x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757158AbYEDM5g (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 May 2008 08:57:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752450AbYEDM5P
+	id S1757262AbYEDM5x (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 May 2008 08:57:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752054AbYEDM5l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 May 2008 08:57:15 -0400
-Received: from brmea-mail-3.Sun.COM ([192.18.98.34]:39104 "EHLO
-	brmea-mail-3.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751962AbYEDM5L (ORCPT
+	Sun, 4 May 2008 08:57:41 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:37658 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752450AbYEDM5k (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 May 2008 08:57:11 -0400
-Date: Sun, 04 May 2008 08:55:12 -0400
-From: David Collier-Brown <davecb@sun.com>
-Subject: Re: kconfig - a suggestion how to fix the select issue
-In-reply-to: <20080504071041.GA15315@uranus.ravnborg.org>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Roman Zippel <zippel@linux-m68k.org>,
-       linux-kbuild <linux-kbuild@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Reply-to: davecb@sun.com
-Message-id: <481DB230.30907@sun.com>
-MIME-version: 1.0
-Content-type: text/plain; format=flowed; charset=us-ascii
-Content-transfer-encoding: 7BIT
-X-Accept-Language: en-us, en
-References: <20080504071041.GA15315@uranus.ravnborg.org>
-User-Agent: Mozilla/5.0 (X11; U; SunOS sun4u; en-US; rv:1.7) Gecko/20041221
+	Sun, 4 May 2008 08:57:40 -0400
+Date: Sun, 04 May 2008 21:57:14 +0900
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [-mm][PATCH 2/5] introduce get_vm_event()
+Cc: kosaki.motohiro@jp.fujitsu.com
+In-Reply-To: <20080504201343.8F52.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+References: <20080504201343.8F52.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+Message-Id: <20080504215602.8F58.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.42 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sam Ravnborg wrote:
-[Snipped]
-> The suggestion is to introduce a "require" term used
-> like this:
-> 
-> config A
->         bool "a"
-> 
-> config B
->         bool "b"
->         depends on A
-> 
-> config C
->         bool "c"
->         require B
-> 
-> The require dependency will have impact on visibility.
-> C shall only be visible if all symbols it require are
-> visible. Note that visible does not imply 'chosen'.
-> In this case C would be visible when A is chosen.
-> 
-> When the user then choose C and B is not chosen 
-> then the user is prompted to choose B.
-> 
-> So user has to chose B in order to have C chosen.
-> 
-> This would make it visible for the user that choosing
-> a camera had the side-effect that USB had to be enabled too.
-> But if we have some general option that prevents the
-> visibility of USB we would not be offered the camara
-> in the first place
+introduce get_vm_event() new function for easy use vm statics.
 
-In the example you suggest, the user would not see the
-option of choosing the camera at C unless they selected
-USB at A, and would wonder where the camera disappeared
-to...
 
-I speculate that having two ways to express a dependency,
-and the addtition of visibility control makes the
-dependency tree-walk into a problem which is no longer
-solvable in trivial logic. That in turn makes my head 
-explode (;-))
+Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
 
-I wonder if one could simplify back into a flat set of
-selections without visibility rules and a backwards-
-chaining "you need to select these too" message emitter,
-and if that would be worthwhile.
+---
+ include/linux/vmstat.h |    7 ++++++-
+ mm/vmstat.c            |   14 ++++++++++++++
+ 2 files changed, 20 insertions(+), 1 deletion(-)
 
---dave (who used to do formal logics) c-b
--- 
-David Collier-Brown            | Always do right. This will gratify
-Sun Microsystems, Toronto      | some people and astonish the rest
-davecb@sun.com                 |                      -- Mark Twain
-(905) 943-1983, cell: (647) 833-9377, (800) 555-9786 x56583
-bridge: (877) 385-4099 code: 506 9191#
+Index: b/include/linux/vmstat.h
+===================================================================
+--- a/include/linux/vmstat.h	2008-05-02 23:40:39.000000000 +0900
++++ b/include/linux/vmstat.h	2008-05-03 00:23:17.000000000 +0900
+@@ -92,6 +92,8 @@ static inline void vm_events_fold_cpu(in
+ }
+ #endif
+ 
++unsigned long get_vm_event(enum vm_event_item event_type);
++
+ #else
+ 
+ /* Disable counters */
+@@ -113,7 +115,10 @@ static inline void all_vm_events(unsigne
+ static inline void vm_events_fold_cpu(int cpu)
+ {
+ }
+-
++static inline unsigned long get_vm_event(enum vm_event_item event_type)
++{
++	return 0;
++}
+ #endif /* CONFIG_VM_EVENT_COUNTERS */
+ 
+ #define __count_zone_vm_events(item, zone, delta) \
+Index: b/mm/vmstat.c
+===================================================================
+--- a/mm/vmstat.c	2008-05-02 23:40:39.000000000 +0900
++++ b/mm/vmstat.c	2008-05-02 23:43:28.000000000 +0900
+@@ -46,6 +46,20 @@ void all_vm_events(unsigned long *ret)
+ }
+ EXPORT_SYMBOL_GPL(all_vm_events);
+ 
++unsigned long get_vm_event(enum vm_event_item event_type)
++{
++	int cpu;
++	unsigned long ret = 0;
++
++	for_each_cpu_mask(cpu, cpu_online_map) {
++		struct vm_event_state *this = &per_cpu(vm_event_states, cpu);
++
++		ret += this->event[event_type];
++	}
++
++	return ret;
++}
++
+ #ifdef CONFIG_HOTPLUG
+ /*
+  * Fold the foreign cpu events into our own.
+
+
