@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753547AbYEEMZF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757746AbYEEMZe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753547AbYEEMZF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 08:25:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753925AbYEEMYl
+	id S1757746AbYEEMZe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 08:25:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755880AbYEEMYo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 08:24:41 -0400
+	Mon, 5 May 2008 08:24:44 -0400
 Received: from 178-47-31-89.wifiinternet.cz ([89.31.47.178]:59580 "EHLO
 	monstr.eu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752749AbYEEMYi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 08:24:38 -0400
+	id S1754436AbYEEMYm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 May 2008 08:24:42 -0400
 From: monstr@seznam.cz
 To: linux-kernel@vger.kernel.org
 Cc: arnd@arndb.de, linux-arch@vger.kernel.org, stephen.neuendorffer@xilinx.com,
@@ -16,42 +16,12 @@ Cc: arnd@arndb.de, linux-arch@vger.kernel.org, stephen.neuendorffer@xilinx.com,
        will.newton@gmail.com, drepper@redhat.com,
        microblaze-uclinux@itee.uq.edu.au, grant.likely@secretlab.ca,
        Michal Simek <monstr@monstr.eu>
-Subject: [PATCH 29/56] microblaze_v2: page.h, segment.h, unaligned.h
-Date: Sun,  4 May 2008 13:41:18 +0200
-Message-Id: <09ce2baf0c8308d3fbca98e7eb36a6aab59112a7.1209897266.git.monstr@monstr.eu>
+Subject: [PATCH 01/56] microblaze_v2: Kconfig patches
+Date: Sun,  4 May 2008 13:40:50 +0200
+Message-Id: <a4a778e34c66d126f5c4bf1ca423cf32950ea5ab.1209897266.git.monstr@monstr.eu>
 X-Mailer: git-send-email 1.5.4.GIT
-In-Reply-To: <41c1f410eaafd875246362d10ef9866d8cc2a934.1209897266.git.monstr@monstr.eu>
+In-Reply-To: <1209901305-6404-1-git-send-email-monstr@seznam.cz>
 References: <1209901305-6404-1-git-send-email-monstr@seznam.cz>
- <a4a778e34c66d126f5c4bf1ca423cf32950ea5ab.1209897266.git.monstr@monstr.eu>
- <c805caeb1dd7f6d1349c4a463cb88a5342a170d2.1209897266.git.monstr@monstr.eu>
- <f120ababf2bade9aab7199bffb3014aa606e5a1c.1209897266.git.monstr@monstr.eu>
- <684c36e5ad3f598e5079e88ec195545c4a7150c2.1209897266.git.monstr@monstr.eu>
- <ed3695121faf485d491cecdd96d5d4dcc498411d.1209897266.git.monstr@monstr.eu>
- <0674b1f7abb9a3d564b68c95bc28adc2c2fe9551.1209897266.git.monstr@monstr.eu>
- <9a7c6646e5dd9724c1cf34767adec181481fa3ef.1209897266.git.monstr@monstr.eu>
- <932956128c9c655a218a940eaf02017a5dd0bdf9.1209897266.git.monstr@monstr.eu>
- <2f801c33caee22e112af51ae927c264ce99ead01.1209897266.git.monstr@monstr.eu>
- <2391e49379fb6639f57d9d6e5811f3d49a4c6fda.1209897266.git.monstr@monstr.eu>
- <0873f3a1f3b72591735c6461b51964693cac52e5.1209897266.git.monstr@monstr.eu>
- <0ba1f259d3c17eba54e334622493577493f5065f.1209897266.git.monstr@monstr.eu>
- <694451053534fea7b78fb9d618b53a2b5ebeb602.1209897266.git.monstr@monstr.eu>
- <f0c837df4106a31c1a81917596603918f722ea7b.1209897266.git.monstr@monstr.eu>
- <d883a8d8da812d77fefd47730d28d0bdb7b504e0.1209897266.git.monstr@monstr.eu>
- <625ef466cf121d655539eedc919dd39166087e0c.1209897266.git.monstr@monstr.eu>
- <b5067a1846075ddd1035966ea1edc908579e2e88.1209897266.git.monstr@monstr.eu>
- <378157891bac535dbc55e658d5f03fdd332e85cf.1209897266.git.monstr@monstr.eu>
- <eadcc6f4754df78b69d6d54c404624d0390c8558.1209897266.git.monstr@monstr.eu>
- <4df4022e06b9056202cc2fdf0b99deb01563a0fa.1209897266.git.monstr@monstr.eu>
- <6b0c9864dc80776ae48d6488a6892e5d698751b7.1209897266.git.monstr@monstr.eu>
- <ea5cbbca49c38c506960fddba29cbd8cb24e1a8d.1209897266.git.monstr@monstr.eu>
- <4f4d6ed3fce9b21cdd6dcacb2d72fff7e9830628.1209897266.git.monstr@monstr.eu>
- <35e662a81eb86c7ffb2aaa6141ca38a07789f382.1209897266.git.monstr@monstr.eu>
- <b41fcf3dd830f4ba82692a9bec2406ed0c290e7e.1209897266.git.monstr@monstr.eu>
- <14acb31da2794d2d5916da3db3d75fe2285ac055.1209897266.git.monstr@monstr.eu>
- <598221ce2159046614d7b158ea62d5af51907af3.1209897266.git.monstr@monstr.eu>
- <41c1f410eaafd875246362d10ef9866d8cc2a934.1209897266.git.monstr@monstr.eu>
-In-Reply-To: <a4a778e34c66d126f5c4bf1ca423cf32950ea5ab.1209897266.git.monstr@monstr.eu>
-References: <a4a778e34c66d126f5c4bf1ca423cf32950ea5ab.1209897266.git.monstr@monstr.eu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -61,209 +31,339 @@ From: Michal Simek <monstr@monstr.eu>
 
 Signed-off-by: Michal Simek <monstr@monstr.eu>
 ---
- include/asm-microblaze/page.h      |  119 ++++++++++++++++++++++++++++++++++++
- include/asm-microblaze/segment.h   |   42 +++++++++++++
- include/asm-microblaze/unaligned.h |   16 +++++
- 3 files changed, 177 insertions(+), 0 deletions(-)
- create mode 100644 include/asm-microblaze/page.h
- create mode 100644 include/asm-microblaze/segment.h
- create mode 100644 include/asm-microblaze/unaligned.h
+ arch/microblaze/Kconfig                       |  149 +++++++++++++++++++++++++
+ arch/microblaze/Kconfig.debug                 |   35 ++++++
+ arch/microblaze/platform/Kconfig.platform     |   63 +++++++++++
+ arch/microblaze/platform/generic/Kconfig.auto |   52 +++++++++
+ 4 files changed, 299 insertions(+), 0 deletions(-)
+ create mode 100644 arch/microblaze/Kconfig
+ create mode 100644 arch/microblaze/Kconfig.debug
+ create mode 100644 arch/microblaze/platform/Kconfig.platform
+ create mode 100644 arch/microblaze/platform/generic/Kconfig.auto
 
-diff --git a/include/asm-microblaze/page.h b/include/asm-microblaze/page.h
+diff --git a/arch/microblaze/Kconfig b/arch/microblaze/Kconfig
 new file mode 100644
-index 0000000..5c7c262
+index 0000000..49767d1
 --- /dev/null
-+++ b/include/asm-microblaze/page.h
-@@ -0,0 +1,119 @@
-+/*
-+ * include/asm-microblaze/page.h
-+ *
-+ * This file is subject to the terms and conditions of the GNU General Public
-+ * License. See the file "COPYING" in the main directory of this archive
-+ * for more details.
-+ *
-+ * Copyright (C) 2006 Atmark Techno, Inc.
-+ */
++++ b/arch/microblaze/Kconfig
+@@ -0,0 +1,149 @@
++# For a description of the syntax of this configuration file,
++# see Documentation/kbuild/kconfig-language.txt.
 +
-+#ifndef _ASM_MICROBLAZE_PAGE_H
-+#define _ASM_MICROBLAZE_PAGE_H
++mainmenu "Linux/Microblaze Kernel Configuration"
 +
-+#include <linux/autoconf.h>
-+#include <linux/pfn.h>
++config MICROBLAZE
++	def_bool y
++	select HAVE_LMB
 +
-+/* PAGE_SHIFT determines the page size */
++config MMU
++	def_bool n
 +
-+#define PAGE_SHIFT	(12)
-+#define PAGE_SIZE	(1UL << PAGE_SHIFT)
-+#define PAGE_MASK	(~(PAGE_SIZE-1))
++config SWAP
++	def_bool n
 +
-+#ifdef __KERNEL__
++config RWSEM_GENERIC_SPINLOCK
++	def_bool y
 +
-+#include <asm/setup.h>
++config RWSEM_XCHGADD_ALGORITHM
++	bool
 +
-+#ifndef __ASSEMBLY__
++config ARCH_HAS_ILOG2_U32
++	def_bool n
 +
-+#define get_user_page(vaddr)			__get_free_page(GFP_KERNEL)
-+#define free_user_page(page, addr)		free_page(addr)
++config ARCH_HAS_ILOG2_U64
++	def_bool n
 +
-+#define clear_page(pgaddr)			memset((pgaddr), 0, PAGE_SIZE)
-+#define copy_page(to, from)			memcpy((to), (from), PAGE_SIZE)
++config GENERIC_FIND_NEXT_BIT
++	def_bool y
 +
-+#define clear_user_page(pgaddr, vaddr, page)	memset((pgaddr), 0, PAGE_SIZE)
-+#define copy_user_page(vto, vfrom, vaddr, topg) \
-+			memcpy((vto), (vfrom), PAGE_SIZE)
++config GENERIC_HWEIGHT
++	def_bool y
 +
-+/*
-+ * These are used to make use of C type-checking..
-+ */
-+typedef struct { unsigned long	pte; }		pte_t;
-+typedef struct { unsigned long	ste[64]; }	pmd_t;
-+typedef struct { pmd_t		pue[1]; }	pud_t;
-+typedef struct { pud_t		pge[1]; }	pgd_t;
-+typedef struct { unsigned long	pgprot; }	pgprot_t;
-+typedef struct page *pgtable_t;
++config GENERIC_HARDIRQS
++	def_bool y
 +
-+#define pte_val(x)	((x).pte)
-+#define pmd_val(x)	((x).ste[0])
-+#define pud_val(x)	((x).pue[0])
-+#define pgd_val(x)	((x).pge[0])
-+#define pgprot_val(x)	((x).pgprot)
++config GENERIC_IRQ_PROBE
++	def_bool y
 +
-+#define __pte(x)	((pte_t) { (x) })
-+#define __pmd(x)	((pmd_t) { (x) })
-+#define __pgd(x)	((pgd_t) { (x) })
-+#define __pgprot(x)	((pgprot_t) { (x) })
++config GENERIC_CALIBRATE_DELAY
++	def_bool y
 +
-+/* align addr on a size boundary - adjust address up/down if needed */
-+#define _ALIGN_UP(addr, size)	(((addr)+((size)-1))&(~((size)-1)))
-+#define _ALIGN_DOWN(addr, size)	((addr)&(~((size)-1)))
++config PCI
++	def_bool n
 +
-+/* align addr on a size boundary - adjust address up if needed */
-+#define _ALIGN(addr, size)	_ALIGN_UP(addr, size)
++config NO_DMA
++	def_bool y
 +
-+/* to align the pointer to the (next) page boundary */
-+#define PAGE_ALIGN(addr)	(((addr) + PAGE_SIZE - 1) & PAGE_MASK)
++config UID16
++	def_bool y
 +
-+extern unsigned int __page_offset;
-+#define PAGE_OFFSET __page_offset
++config HZ
++	int
++	default 100
 +
-+/**
-+ * Conversions for virtual address, physical address, pfn, and struct
-+ * page are defined in the following files.
-+ *
-+ * virt -+
-+ *	 | asm-microblaze/page.h
-+ * phys -+
-+ *	 | linux/pfn.h
-+ *  pfn -+
-+ *	 | asm-generic/memory_model.h
-+ * page -+
-+ *
-+ */
++config DEFCONFIG_LIST
++	string
++	default "arch/$ARCH/defconfig"
 +
-+extern unsigned long max_low_pfn;
-+extern unsigned long min_low_pfn;
-+extern unsigned long max_pfn;
++source "init/Kconfig"
 +
-+#define __pa(vaddr)		((unsigned long) (vaddr))
-+#define __va(paddr)		((void *) (paddr))
++source "arch/microblaze/platform/Kconfig.platform"
 +
-+#define phys_to_pfn(phys)	(PFN_DOWN(phys))
-+#define pfn_to_phys(pfn)	(PFN_PHYS(pfn))
++menu "Processor type and features"
 +
-+#define virt_to_pfn(vaddr)	(phys_to_pfn((__pa(vaddr))))
-+#define pfn_to_virt(pfn)	__va(pfn_to_phys((pfn)))
++config PREEMPT
++	bool "Preemptible Kernel"
++	help
++	  This option reduces the latency of the kernel when reacting to
++	  real-time or interactive events by allowing a low priority process to
++	  be preempted even if it is in kernel mode executing a system call.
++	  This allows applications to run more reliably even when the system is
++	  under load.
 +
-+#define virt_to_page(vaddr)	(pfn_to_page(virt_to_pfn(vaddr)))
-+#define page_to_virt(page)	(pfn_to_virt(page_to_pfn(page)))
++	  Say Y here if you are building a kernel for a desktop, embedded
++	  or real-time system.  Say N if you are unsure.
 +
-+#define page_to_phys(page)	(pfn_to_phys(page_to_pfn(page)))
-+#define page_to_bus(page)	(page_to_phys(page))
-+#define phys_to_page(paddr)	(pfn_to_page(phys_to_pfn(paddr)))
++config PREEMPT_TIMES
++	bool "Collect preemption latency times"
++	depends on PREEMPT
++	help
++	  Allow collection for preemption latency times.
 +
-+#define pfn_valid(pfn)		((pfn) >= min_low_pfn && (pfn) < max_mapnr)
-+#define	virt_addr_valid(vaddr)	(pfn_valid(virt_to_pfn(vaddr)))
++config XILINX_UNCACHED_SHADOW
++	bool "Are you using uncached shadow for RAM ?"
++	depends on MICROBLAZE
++	default y
++	help
++	  This is needed to be able to allocate uncachable memory regions.
++	  The feature requires the design to define the RAM memory controller window
++	  to be twice as large as the actual physical memory.
 +
-+#define ARCH_PFN_OFFSET		(PAGE_OFFSET >> PAGE_SHIFT)
++config LARGE_ALLOCS
++	bool "Allow allocating large blocks (> 1MB) of memory"
++	help
++	  Allow the slab memory allocator to keep chains for very large
++	  memory sizes - up to 32MB. You may need this if your system has
++	  a lot of RAM, and you need to able to allocate very large
++	  contiguous chunks. If unsure, say N.
 +
-+#endif /* __ASSEMBLY__ */
++comment "Boot options"
 +
-+#endif /* __KERNEL__ */
++config CMDLINE
++	string "Default kernel command string"
++	default ""
++	help
++	  On some architectures there is currently no way for the boot loader
++	  to pass arguments to the kernel. For these architectures, you should
++	  supply some command-line options at build time by entering them
++	  here.
 +
-+#include <asm-generic/memory_model.h>
-+#include <asm-generic/page.h>
++config CMDLINE_FORCE
++	bool "Force default kernel command string"
++	help
++	  Set this to have arguments from the default kernel command string
++	  override those passed by the boot loader.
 +
-+#endif /* _ASM_MICROBLAZE_PAGE_H */
-diff --git a/include/asm-microblaze/segment.h b/include/asm-microblaze/segment.h
++config OF
++	def_bool y
++
++config OF_DEVICE
++	def_bool y
++
++endmenu
++
++config APM_EMULATION
++	bool
++
++source "mm/Kconfig"
++
++menu "Exectuable file formats"
++
++source "fs/Kconfig.binfmt"
++
++endmenu
++
++source "net/Kconfig"
++
++source "drivers/Kconfig"
++
++source "fs/Kconfig"
++
++source "arch/microblaze/Kconfig.debug"
++
++source "security/Kconfig"
++
++source "crypto/Kconfig"
++
++source "lib/Kconfig"
+diff --git a/arch/microblaze/Kconfig.debug b/arch/microblaze/Kconfig.debug
 new file mode 100644
-index 0000000..af0ddf0
+index 0000000..d15f8b0
 --- /dev/null
-+++ b/include/asm-microblaze/segment.h
-@@ -0,0 +1,42 @@
-+/*
-+ * include/asm-microblaze/segment.h
-+ *
-+ * This file is subject to the terms and conditions of the GNU General Public
-+ * License. See the file "COPYING" in the main directory of this archive
-+ * for more details.
-+ *
-+ * Copyright (C) 2006 Atmark Techno, Inc.
-+ *
-+ */
++++ b/arch/microblaze/Kconfig.debug
+@@ -0,0 +1,35 @@
++# For a description of the syntax of this configuration file,
++# see Documentation/kbuild/kconfig-language.txt.
 +
-+#ifndef _ASM_MICROBLAZE_SEGMENT_H
-+#define _ASM_MICROBLAZE_SEGMENT_H
++menu "Kernel hacking"
 +
-+#ifndef __ASSEMBLY__
++source "lib/Kconfig.debug"
 +
-+typedef struct {
-+	unsigned long seg;
-+} mm_segment_t;
++config EARLY_PRINTK
++	def_bool y
 +
-+/*
-+ * The fs value determines whether argument validity checking should be
-+ * performed or not. If get_fs() == USER_DS, checking is performed, with
-+ * get_fs() == KERNEL_DS, checking is bypassed.
-+ *
-+ * For historical reasons, these macros are grossly misnamed.
-+ *
-+ * For non-MMU arch like Microblaze, KERNEL_DS and USER_DS is equal.
-+ */
-+#define KERNEL_DS	((mm_segment_t){0})
-+#define USER_DS		KERNEL_DS
++config EARLY_PRINTK_UARTLITE_ADDRESS
++	hex "Physical address where UART Lite for early printk is mapped"
++	depends on EARLY_PRINTK
++	default "0x40100000"
++	help
++	  Please enter physical address where your uart lite is mapped.
 +
-+#define get_ds()	(KERNEL_DS)
-+#define get_fs()	(current_thread_info()->addr_limit)
-+#define set_fs(x) \
-+		do { current_thread_info()->addr_limit = (x); } while (0)
++config HEART_BEAT
++	bool "Heart beat function for kernel"
++	help
++	  This option turns on/off heart beat kernel functionality on selected
++	  GPIO address.
 +
-+#define segment_eq(a, b)		((a).seg == (b).seg)
++config HEART_BEAT_ADDRESS
++	hex "Physical address for heart beat LED"
++	depends on HEART_BEAT
++	default "0x40600000"
++	help
++	  Please enter physical address GPIO LED.
 +
-+#endif /* __ASSEMBLY__ */
++config DEBUG_BOOTMEM
++	depends on DEBUG_KERNEL
++	bool "Debug BOOTMEM initialization"
 +
-+#endif /* _ASM_MICROBLAZE_SEGMENT_H */
-diff --git a/include/asm-microblaze/unaligned.h b/include/asm-microblaze/unaligned.h
++endmenu
+diff --git a/arch/microblaze/platform/Kconfig.platform b/arch/microblaze/platform/Kconfig.platform
 new file mode 100644
-index 0000000..aff800d
+index 0000000..64cbb80
 --- /dev/null
-+++ b/include/asm-microblaze/unaligned.h
-@@ -0,0 +1,16 @@
-+/*
-+ * include/asm-microblaze/unaligned.h
-+ *
-+ * This file is subject to the terms and conditions of the GNU General Public
-+ * License. See the file "COPYING" in the main directory of this archive
-+ * for more details.
-+ *
-+ * Copyright (C) 2006 Atmark Techno, Inc.
-+ */
++++ b/arch/microblaze/platform/Kconfig.platform
+@@ -0,0 +1,63 @@
++# For a description of the syntax of this configuration file,
++# see Documentation/kbuild/kconfig-language.txt.
++#
++# Platform selection Kconfig menu for MicroBlaze targets
++#
 +
-+#ifndef _ASM_MICROBLAZE_UNALIGNED_H
-+#define _ASM_MICROBLAZE_UNALIGNED_H
++menu "Platform options"
++choice
++	prompt "Platform"
++	default PLATFORM_MICROBLAZE_AUTO
++	help
++	  Choose which hardware board/platform you are targeting.
 +
-+#include <asm-generic/unaligned.h>
++config PLATFORM_GENERIC
++	bool "Generic"
++	help
++	  Choose this option for the Generic platform.
 +
-+#endif /* _ASM_MICROBLAZE_UNALIGNED_H */
++endchoice
++
++config HACK
++	bool "Increase performance"
++	default y
++
++config OPT_LIB_FUNCTION
++	bool "Optimalized lib function"
++	default y
++	help
++	  Allows turn on optimalized library function (memcpy and memmove).
++	  They are optimized by using unsigned alignment. This will work
++	  fine if both source and destination are aligned on the same
++	  boundary. However, if they are aligned on different boundaries
++	  shifts will be necessary. This might result in bad performance
++	  on MicroBlaze systems without a barrel shifter.
++
++# This is still a bit broken - disabling for now JW 20070504
++config ALLOW_EDIT_AUTO
++	bool "Permit Display/edit of Kconfig.auto platform settings"
++	default n
++	help
++	  Allows the editing of auto-generated platform settings from
++	  the Kconfig.auto file. Obviously this does not change the
++	  underlying hardware, so be very careful if you go editing
++	  these settings.
++
++	  Also, if you enable this, and edit various Kconfig.auto
++	  settings, YOUR CHANGES WILL BE LOST if you then disable it
++	  again. You have been warned!
++
++	  If unsure, say no.
++
++# Ok, the platform is chosen. Source the kconfig.auto to get all of the
++# system settings.
++# If user selected CONFIG_EDIT_AUTO, these will be rendered in gory detail
++# and be able to be edited
++comment "Automatic platform settings from Kconfig.auto"
++	depends on ALLOW_EDIT_AUTO
++
++if PLATFORM_GENERIC=y
++	source "arch/microblaze/platform/generic/Kconfig.auto"
++endif
++
++endmenu
+diff --git a/arch/microblaze/platform/generic/Kconfig.auto b/arch/microblaze/platform/generic/Kconfig.auto
+new file mode 100644
+index 0000000..5dc8c15
+--- /dev/null
++++ b/arch/microblaze/platform/generic/Kconfig.auto
+@@ -0,0 +1,52 @@
++# For a description of the syntax of this configuration file,
++# see Documentation/kbuild/kconfig-language.txt.
++#
++# Platform Kconfig menu for Microblaze generic board
++#
++
++comment "Definitions for MICROBLAZE0"
++	depends on ALLOW_EDIT_AUTO
++
++config KERNEL_BASE_ADDR
++	hex "Physical address where Linux Kernel is"
++	default "0x20000000"
++	help
++	  BASE Address for kernel
++
++config XILINX_ERAM_SIZE
++	hex "Memory size of XILINX_RAM"
++	depends on XILINX_UNCACHED_SHADOW
++	default 0x02000000
++
++config XILINX_MICROBLAZE0_FAMILY
++	string "Targetted FPGA family" if ALLOW_EDIT_AUTO
++	default spartan3e
++
++config XILINX_MICROBLAZE0_HW_VER
++	string "Core version number" if ALLOW_EDIT_AUTO
++	default 5.00.c
++
++config XILINX_MICROBLAZE0_USE_MSR_INSTR
++	int "USE_MSR_INSTR" if ALLOW_EDIT_AUTO
++	default 1
++	range 0 1
++
++config XILINX_MICROBLAZE0_USE_BARREL
++	int "USE_BARREL" if ALLOW_EDIT_AUTO
++	default 1
++	range 0 1
++
++config XILINX_MICROBLAZE0_USE_DIV
++	int "USE_DIV" if ALLOW_EDIT_AUTO
++	default 1
++	range 0 1
++
++config XILINX_MICROBLAZE0_USE_HW_MUL
++	int "USE_HW_MUL" if ALLOW_EDIT_AUTO
++	default 1
++	range 0 2
++
++config XILINX_MICROBLAZE0_USE_FPU
++	int "USE_FPU" if ALLOW_EDIT_AUTO
++	default 0
++	range 0 1
 -- 
 1.5.4.GIT
 
