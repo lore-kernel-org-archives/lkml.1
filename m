@@ -1,118 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754636AbYEDHcR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755146AbYEDHcs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754636AbYEDHcR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 May 2008 03:32:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751795AbYEDHcG
+	id S1755146AbYEDHcs (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 May 2008 03:32:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752038AbYEDHcj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 May 2008 03:32:06 -0400
-Received: from web52003.mail.re2.yahoo.com ([206.190.49.250]:38013 "HELO
-	web52003.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751722AbYEDHcE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 May 2008 03:32:04 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:Cc:MIME-Version:Content-Type:Message-ID;
-  b=Fmb39AMLJLAUZuWlK5fJb453H/Z1RW1BKGxdMoOj+2RO6E7KEOhcoVw2Vu8DN+hdn36oU/R8ALYgoXWbZoixwGHbgUjWDktqdQZ8NqJ67tDlX4g8Rb18Mcpfk05LNil22UmUDdOgePsSIaXlXhsTOHRjEIB2ZvBiCMlmo/1phoE=;
-X-YMail-OSG: sFPwT8cVM1lcRFXiR_mSQVD11In0VXkxhSkqVYqx.JJ6Ps9DTiLOfjEOBEuTUYnfzUxRJT.M50g7hV325Q5DeFrITru6DOfiKeGrRSOUZNNTkJ_s_e4FD3E_5Q--
-X-Mailer: YahooMailRC/975.23 YahooMailWebService/0.7.185
-Date: Sun, 4 May 2008 00:32:02 -0700 (PDT)
-From: Matti Linnanvuori <mattilinnanvuori@yahoo.com>
-Subject: [patch] doc: add a chapter about trylock functions [Bug 9011]
-To: bugme-daemon@kernel-bugs.osdl.org
+	Sun, 4 May 2008 03:32:39 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:42490 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751795AbYEDHci (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 May 2008 03:32:38 -0400
+Date: Sun, 4 May 2008 09:33:13 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Timur Tabi <timur@tabi.org>
 Cc: linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <352345.60081.qm@web52003.mail.re2.yahoo.com>
+Subject: Re: mconf.c and bindtextdomain() -- warnings while cross-compiling on OS X
+Message-ID: <20080504073313.GA16259@uranus.ravnborg.org>
+References: <481D344C.9080904@tabi.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <481D344C.9080904@tabi.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Matti Linnanvuori <mattilinnanvuori@yahoo.com>
- 
-Add a chapter about trylock functions.
-http://bugzilla.kernel.org/show_bug.cgi?id=9011
- 
-Signed-off-by: Matti Linnanvuori <mattilinnanvuori@yahoo.com>
- 
----
- 
---- 
-linux-2.6/Documentation/DocBook/kernel-locking.tmpl 2008-05-04 
-09:22:20.782075500 +0300
-+++ 
-linux/Documentation/DocBook/kernel-locking.tmpl 2008-05-04 10:13:16.168549500 
-+0300
-@@ -702,6 +702,38 
-@@
- 
- </sect1>
- </chapter>
-+<chapter 
-id="trylock-functions">
-+ <title>The trylock 
-Functions</title>
-+  <para>
-+   There are functions that try 
-to acquire a lock only once and immediately
-+   return a value telling about 
-success or failure to acquire the lock.
-+   They can be used if you need no 
-access to the data protected with the lock
-+   when some other thread is 
-holding the lock. You should acquire the lock
-+   later if you then need 
-access to the data protected with the lock.
-+  </para>
-+
-+  
-<para>
-+    <function>spin_trylock()</function> does not 
-spin but returns non-zero if
-+    it acquires the spinlock on the first try 
-or 0 if not. This function can
-+    be used in all contexts like 
-<function>spin_lock</function>: you must have
-+    disabled the 
-contexts that might interrupt you and acquire the spin lock.
-+  
-</para>
-+
-+  <para>
-+    
-<function>mutex_trylock()</function> does not suspend your 
-task
-+    but returns non-zero if it could lock the mutex on the first 
-try
-+    or 0 if not. This function cannot be safely used in hardware or 
-software 
-+    interrupt contexts despite not sleeping.
-+  
-</para>
-+
-+  <para>
-+    
-<function>down_trylock()</function> does not suspend your 
-task
-+    but returns 0 if it could get the semaphore on the first try 
-or
-+    non-zero if not. The return value is the inverse of that of
-+    
-<function>spin_trylock()</function> and 
-<function>mutex_trylock()
-+    </function>. 
-<function>down_trylock</function> can be used in all contexts.
-+  
-</para>
-+</chapter>
- 
-   <chapter 
-id="Examples">
-    <title>Common 
-Examples</title>
+On Sat, May 03, 2008 at 10:58:04PM -0500, Timur Tabi wrote:
+> I'm cross-compiling the kernel on an OS X system, and when I run "make 
+> menuconfig", I get this warning:
+> 
+>   HOSTCC  scripts/kconfig/mconf.o
+> scripts/kconfig/mconf.c: In function ‘main’:
+> scripts/kconfig/mconf.c:871: warning: statement with no effect
+> scripts/kconfig/mconf.c:872: warning: statement with no effect
+> 
+> Here is the code in question:
+> 
+> int main(int ac, char **av)
+> {
+> 	int saved_x, saved_y;
+> 	char *mode;
+> 	int res;
+> 
+> 	setlocale(LC_ALL, "");
+> 	bindtextdomain(PACKAGE, LOCALEDIR);  <--- line 871
+> 	textdomain(PACKAGE);
+> 
+> I believe the warnings are from this code in lkc.h:
+> 
+> #ifndef KBUILD_NO_NLS
+> # include <libintl.h>
+> #else
+> # define gettext(Msgid) ((const char *) (Msgid))
+> # define textdomain(Domainname) ((const char *) (Domainname))
+> # define bindtextdomain(Domainname, Dirname) ((const char *) (Dirname))
+> #endif
+> 
+> Can someone explain to me why this macros are defined in this way? Every 
+> place where textdomain() and bindtext() are used, they are used like this:
+> 
+> 	bindtextdomain(PACKAGE, LOCALEDIR);
+> 	textdomain(PACKAGE);
+> 
+> In other words, the return value from these macros is never used, so the 
+> warning is inevitable.
+> 
+> I think the code in lkc.h should be changed to:
+> 
+> # define textdomain(Domainname) do {} while(0)
+> # define bindtextdomain(Domainname, Dirname) do {} while(0)
+> 
+> I can't say for certain whether this is a good idea, though, because I'm 
+> not at all familiar with this code.
 
+I have queued up following patch. It is obviously correct and builds without
+warnings here. Can you give it a try on your box.
 
+	Sam
 
-      ____________________________________________________________________________________
-Be a better friend, newshound, and 
-know-it-all with Yahoo! Mobile.  Try it now.  http://mobile.yahoo.com/;_ylt=Ahu06i62sR8HDtDypao8Wcj9tAcJ
+diff --git a/scripts/kconfig/lkc.h b/scripts/kconfig/lkc.h
+index 4bc68f2..1a728fc 100644
+--- a/scripts/kconfig/lkc.h
++++ b/scripts/kconfig/lkc.h
+@@ -11,9 +11,9 @@
+ #ifndef KBUILD_NO_NLS
+ # include <libintl.h>
+ #else
+-# define gettext(Msgid) ((const char *) (Msgid))
+-# define textdomain(Domainname) ((const char *) (Domainname))
+-# define bindtextdomain(Domainname, Dirname) ((const char *) (Dirname))
++static inline void const char *gettext(const char *txt) { return txt; }
++static inline void textdomain(const char *domainname) {}
++static inline void bindtextdomain(const char *name, const char *dir) {}
+ #endif
+ 
+ #ifdef __cplusplus
