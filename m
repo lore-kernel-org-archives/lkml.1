@@ -1,166 +1,196 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757288AbYEDM6W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757190AbYEDM7a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757288AbYEDM6W (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 May 2008 08:58:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752759AbYEDM6K
+	id S1757190AbYEDM7a (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 May 2008 08:59:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752691AbYEDM7V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 May 2008 08:58:10 -0400
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:42333 "EHLO smtp4.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752054AbYEDM6H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 May 2008 08:58:07 -0400
-Date: Sun, 4 May 2008 15:57:05 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Roman Zippel <zippel@linux-m68k.org>,
-       linux-kbuild <linux-kbuild@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: kconfig - a suggestion how to fix the select issue
-Message-ID: <20080504125705.GL5838@cs181133002.pp.htv.fi>
-References: <20080504071041.GA15315@uranus.ravnborg.org> <20080504081145.GG5838@cs181133002.pp.htv.fi> <20080504082732.GB17276@uranus.ravnborg.org> <20080504090429.GH5838@cs181133002.pp.htv.fi> <20080504103848.GC17276@uranus.ravnborg.org> <20080504115504.GI5838@cs181133002.pp.htv.fi> <20080504121747.GA19236@uranus.ravnborg.org>
+	Sun, 4 May 2008 08:59:21 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:38280 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751542AbYEDM7U (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 May 2008 08:59:20 -0400
+Date: Sun, 04 May 2008 21:59:31 +0900
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [-mm][PATCH 4/5] core of reclaim throttle
+Cc: kosaki.motohiro@jp.fujitsu.com
+In-Reply-To: <20080504201343.8F52.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+References: <20080504201343.8F52.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+Message-Id: <20080504215819.8F5E.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20080504121747.GA19236@uranus.ravnborg.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.42 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, May 04, 2008 at 02:17:47PM +0200, Sam Ravnborg wrote:
-> > > > > > 
-> > > > > > config A
-> > > > > > 	tristate "a"
-> > > > > > 
-> > > > > > config B
-> > > > > > 	tristate "b"
-> > > > > > 	depends on A
-> > > > > > 
-> > > > > > config C
-> > > > > > 	bool "c"
-> > > > > > 	require B
-> > > > > > 
-> > > > > > CONFIG_A=m
-> > > > > > 
-> > > > > > 
-> > > > > > Will C be visible?
-> > > > > If you followed my description then you would see
-> > > > > that the visibility of C are determineded by the dependencies
-> > > > > of C (none in this case) and the dependencies of the symbol
-> > > > > it requires. In this case B. B dpens on A and A equals m so B is
-> > > > > visible thus C is visible.
-> > > > 
-> > > > *shudder*
-> > > So let me explain it with some other words:
-> > > B is visible because A=m
-> > > C is visible because B is visible.
-> > > Simple.
-> > 
-> > I understand what you are saying.
-> > 
-> > The problem is that with A=m, C=y built-in code enabled by C cannot 
-> > access the code enabled by A which can result in a build error.
-> 
-> That is a different type of issue which would most likely
-> be solved by a "depends on A == y"
+add throttle to shrink_zone() for performance improvement and prevent incorrect oom.
 
-So feature C in driver B won't be enabled in allmodconfig or 
-distribution kernels?
 
-> > > > But OK, here's some fun with bools:
-> > > > 
-> > > > config X86
-> > > > 	def_bool y
-> > > > 
-> > > > config A
-> > > > 	bool "a"
-> > > > 
-> > > > config B
-> > > > 	bool "b"
-> > > > 	depends on A
-> > > > 
-> > > > config D
-> > > > 	bool "d"
-> > > > 	depends on !B if X86
-> > > > 
-> > > > config E
-> > > > 	bool "e"
-> > > > 
-> > > > config C
-> > > > 	bool "c"
-> > > > 	depends on D || E
-> > > > 	requires B
-> > > > 
-> > > > Given:
-> > > > - CONFIG_A=y
-> > > > - CONFIG_B=n
-> > > > - CONFIG_D=y
-> > > > - CONFIG_E=n
-> > > > 
-> > > > Will C be visible?
-> > > The above has a syntax error. A 'depends on' cannot have an
-> > > if caluse.
-> > 
-> > I know I'm bad at the syntax when I'm not trying stuff myself.
-> > 	depends on !B || !X86
-> > is the same and should be the correct syntax.
-> > 
-> > Or make it just
-> > 	depends on !B
-> > 
-> > The problem is not the syntax, the problem is whether C should be 
-> > visible, and what happens if the user enables it.
-> OK - lets analyse this.
-> B is visible (because A is y)
-> D is visible (because B is n)
-> E is visible
-> 
-> So per the definition C is visible.
-> If user choose 'C' then user will be prompted to choose B
-> due to the "require B".
-> User now set B equal to 'y' and we have following situation:
-> B is visible (because A is y)
-> D is invisible (because B is y)
-> E is visible
-> So per definiton C is still visible.
-> So user is now prompted to chose C.
-> 
-> 
-> On the other hand had we had a:
-> config C
-> 	bool "c"
-> 	depends on D
-> 	requires B
-> 
-> Then when user set B equal 'y' user no longer
-> are offered the possibility to chose 'C' as it is no
-> longer visible.
+Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
 
-Do you want in this case show the user the option C that can never be
-enabled on this architecture or do you want to implement logic that can
-prove whether any combination of values exists that allows C to be 
-enabled?
+---
+ include/linux/mmzone.h |    2 +
+ include/linux/sched.h  |    1 
+ mm/Kconfig             |   10 +++++++++
+ mm/page_alloc.c        |    4 +++
+ mm/vmscan.c            |   52 ++++++++++++++++++++++++++++++++++++++++++++++++-
+ 5 files changed, 68 insertions(+), 1 deletion(-)
 
-> > > Are you trying to say that we cannot improve kconfig to better
-> > > express the dependencies or what is your point?
-> > 
-> > My point is that all this "select follows depenencies" is easily said, 
-> > but doing it in a way that it's better than what we have today is 
-> > nontrivial.
-> Which is exactly why I try to involve you in the discussion
-> of a potential solution.
+Index: b/include/linux/mmzone.h
+===================================================================
+--- a/include/linux/mmzone.h	2008-05-03 00:39:44.000000000 +0900
++++ b/include/linux/mmzone.h	2008-05-03 00:44:12.000000000 +0900
+@@ -328,6 +328,8 @@ struct zone {
+ 	unsigned long		spanned_pages;	/* total size, including holes */
+ 	unsigned long		present_pages;	/* amount of memory (excluding holes) */
+ 
++	atomic_t		nr_reclaimers;
++	wait_queue_head_t	reclaim_throttle_waitq;
+ 	/*
+ 	 * rarely used fields:
+ 	 */
+Index: b/mm/page_alloc.c
+===================================================================
+--- a/mm/page_alloc.c	2008-05-03 00:39:44.000000000 +0900
++++ b/mm/page_alloc.c	2008-05-03 00:44:12.000000000 +0900
+@@ -3502,6 +3502,10 @@ static void __paginginit free_area_init_
+ 		zone->nr_scan_inactive = 0;
+ 		zap_zone_vm_stats(zone);
+ 		zone->flags = 0;
++
++		zone->nr_reclaimers = ATOMIC_INIT(0);
++		init_waitqueue_head(&zone->reclaim_throttle_waitq);
++
+ 		if (!size)
+ 			continue;
+ 
+Index: b/mm/vmscan.c
+===================================================================
+--- a/mm/vmscan.c	2008-05-03 00:43:48.000000000 +0900
++++ b/mm/vmscan.c	2008-05-04 20:56:01.000000000 +0900
+@@ -74,6 +74,11 @@ struct scan_control {
+ 
+ 	int order;
+ 
++	/* Can shrink be cutted off if other task freeded enough page. */
++	int may_cut_off;
++
++	unsigned long was_freed;
++
+ 	/* Which cgroup do we reclaim from */
+ 	struct mem_cgroup *mem_cgroup;
+ 
+@@ -120,6 +125,7 @@ struct scan_control {
+ int vm_swappiness = 60;
+ long vm_total_pages;	/* The total number of pages which the VM controls */
+ 
++#define MAX_RECLAIM_TASKS CONFIG_NR_MAX_RECLAIM_TASKS_PER_ZONE
+ static LIST_HEAD(shrinker_list);
+ static DECLARE_RWSEM(shrinker_rwsem);
+ 
+@@ -1187,7 +1193,42 @@ static int shrink_zone(int priority, str
+ 	unsigned long nr_inactive;
+ 	unsigned long nr_to_scan;
+ 	unsigned long nr_reclaimed = 0;
++	int ret = 0;
++	int throttle_on = 0;
++	unsigned long freed;
++
++	/* avoid recursing wait_evnet */
++	if (current->flags & PF_RECLAIMING)
++		goto shrinking;
++
++	throttle_on = 1;
++	current->flags |= PF_RECLAIMING;
++	wait_event(zone->reclaim_throttle_waitq,
++		 atomic_add_unless(&zone->nr_reclaimers, 1, MAX_RECLAIM_TASKS));
++
++	/* in some situation (e.g. hibernation), shrink processing shouldn't be
++	   cut off even though large memory freeded.  */
++	if (!sc->may_cut_off)
++		goto shrinking;
++
++	/* kswapd is no related for user latency experience. */
++	if (current->flags & PF_KSWAPD)
++		goto shrinking;
++
++	/* reclaim still necessary? */
++	freed = get_vm_event(PGFREE);
++	if (scan_global_lru(sc) &&
++	    ((freed - sc->was_freed) >= (zone->pages_high*4))) {
++		sc->was_freed = freed;
++
++		if (zone_watermark_ok(zone, sc->order, zone->pages_high,
++				      gfp_zone(sc->gfp_mask), 0)) {
++			ret = -EAGAIN;
++			goto out;
++		}
++	}
+ 
++shrinking:
+ 	if (scan_global_lru(sc)) {
+ 		/*
+ 		 * Add one to nr_to_scan just to make sure that the kernel
+@@ -1239,9 +1280,16 @@ static int shrink_zone(int priority, str
+ 		}
+ 	}
+ 
++out:
++	if (throttle_on) {
++		current->flags &= ~PF_RECLAIMING;
++		atomic_dec(&zone->nr_reclaimers);
++		wake_up(&zone->reclaim_throttle_waitq);
++	}
++
+ 	sc->nr_reclaimed += nr_reclaimed;
+ 	throttle_vm_writeout(sc->gfp_mask);
+-	return 0;
++	return ret;
+ }
+ 
+ /*
+@@ -1438,6 +1486,8 @@ unsigned long try_to_free_pages(struct z
+ 		.order = order,
+ 		.mem_cgroup = NULL,
+ 		.isolate_pages = isolate_pages_global,
++		.may_cut_off = 1,
++		.was_freed = get_vm_event(PGFREE),
+ 	};
+ 
+ 	return do_try_to_free_pages(zonelist, &sc);
+Index: b/mm/Kconfig
+===================================================================
+--- a/mm/Kconfig	2008-05-03 00:39:44.000000000 +0900
++++ b/mm/Kconfig	2008-05-03 00:44:12.000000000 +0900
+@@ -205,3 +205,13 @@ config NR_QUICK
+ config VIRT_TO_BUS
+ 	def_bool y
+ 	depends on !ARCH_NO_VIRT_TO_BUS
++
++config NR_MAX_RECLAIM_TASKS_PER_ZONE
++	int "maximum number of reclaiming tasks at the same time"
++	default 3
++	help
++	  This value determines the number of threads which can do page reclaim
++	  in a zone simultaneously. If this is too big, performance under heavy memory
++	  pressure will decrease.
++	  If unsure, use default.
++
+Index: b/include/linux/sched.h
+===================================================================
+--- a/include/linux/sched.h	2008-05-03 00:39:44.000000000 +0900
++++ b/include/linux/sched.h	2008-05-03 00:44:12.000000000 +0900
+@@ -1484,6 +1484,7 @@ static inline void put_task_struct(struc
+ #define PF_MEMPOLICY	0x10000000	/* Non-default NUMA mempolicy */
+ #define PF_MUTEX_TESTER	0x20000000	/* Thread belongs to the rt mutex tester */
+ #define PF_FREEZER_SKIP	0x40000000	/* Freezer should not count it as freezeable */
++#define PF_RECLAIMING   0x80000000      /* The task have page reclaim throttling ticket */
+ 
+ /*
+  * Only the _current_ task can read/write to tsk->flags, but other
 
-And pointing you at the possible problems is exactly what I'm doing.
-
-> 	Sam
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
 
