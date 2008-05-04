@@ -1,55 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754806AbYEDXf3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755088AbYEDXic@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754806AbYEDXf3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 May 2008 19:35:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752635AbYEDXfV
+	id S1755088AbYEDXic (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 May 2008 19:38:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752537AbYEDXiZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 May 2008 19:35:21 -0400
-Received: from mtiwmhc13.worldnet.att.net ([204.127.131.117]:58125 "EHLO
-	mtiwmhc13.worldnet.att.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752627AbYEDXfU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 May 2008 19:35:20 -0400
-Message-ID: <481E4833.3050304@lwfinger.net>
-Date: Sun, 04 May 2008 18:35:15 -0500
-From: Larry Finger <Larry.Finger@lwfinger.net>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Sun, 4 May 2008 19:38:25 -0400
+Received: from ozlabs.org ([203.10.76.45]:42152 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752635AbYEDXiY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 May 2008 19:38:24 -0400
 MIME-Version: 1.0
-To: markknecht@gmail.com
-CC: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.24.4 Sonics Silicon Backplane problems in dmesg
-References: <481E4657.3080707@lwfinger.net>
-In-Reply-To: <481E4657.3080707@lwfinger.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <18462.18666.311902.814778@cargo.ozlabs.ibm.com>
+Date: Mon, 5 May 2008 09:38:18 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Kumar Gala <galak@kernel.crashing.org>, sam@ravnborg.org,
+       lkml List <linux-kernel@vger.kernel.org>,
+       "linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>
+Subject: Re: How to link a .o with all modules
+In-Reply-To: <481E4655.7040000@zytor.com>
+References: <6C8AB345-2DA0-460D-B7C8-262463247DDE@kernel.crashing.org>
+	<481E4655.7040000@zytor.com>
+X-Mailer: VM 7.19 under Emacs 22.1.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Larry Finger wrote:
-> I'm attempting to bring up a Compaq F752US laptop running Gentoo. The
-> kernel.org 2.6.24.4, Gentoo Vanilla-sources and 2.6.24-gentoo-r4
-> kernels all fail to boot without selecting the 'noapic' option on the
-> kernel command line. If I add noapic irqpoll the machine does boot but
-> I see this problem for all 3 kernels:
-> 
-> Is this possibly caused by having to choose the noapic irqpoll options?
-> 
-> <SNIP>
-> WARNING: at drivers/ssb/main.c:883 ssb_tmslow_reject_bitmask()
-> Pid: 1, comm: swapper Not tainted 2.6.24-gentoo-r4 #4
-> [<c0375e3f>] ssb_tmslow_reject_bitmask+0x4b/0x56
-> [<c0376504>] ssb_device_is_enabled+0x9/0x2d
+H. Peter Anvin writes:
 
-The warning above is caused by the configuration of the device below. I found
-and fixed this problem several months ago, but after the 2.6.24 window closed.
+> Why is having them as an EXPORT_SYMBOL() counterproductive?  It sounds 
+> like *exactly* what you need -- and then having the kernel provide the 
+> same code to modules, instead of replication...?
 
-> 03:00.0 Network controller: Broadcom Corporation BCM94311MCG wlan
-> mini-PCI (rev 02)
+It means we would go through a trampoline just to call little things
+like __ucmpdi2, which seems a bit unnecessary.
 
-The problem is fixed in the wireless-testing.git tree, and in mainline 
-2.6.25. It is unlikely that it is causing the boot problem; however that 
-could be checked by trying 2.6.25.
-
-
-Larry
+Paul.
