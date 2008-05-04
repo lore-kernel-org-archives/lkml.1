@@ -1,137 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757504AbYEDOQ3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757655AbYEDOR0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757504AbYEDOQ3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 May 2008 10:16:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756605AbYEDOQV
+	id S1757655AbYEDOR0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 May 2008 10:17:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751644AbYEDORT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 May 2008 10:16:21 -0400
-Received: from 178-47-31-89.wifiinternet.cz ([89.31.47.178]:43070 "EHLO
-	seznam.cz" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756577AbYEDOQT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 May 2008 10:16:19 -0400
-From: monstr@seznam.cz
-To: linux-kernel@vger.kernel.org
-Cc: arnd@arndb.de, linux-arch@vger.kernel.org, stephen.neuendorffer@xilinx.com,
-       John.Linn@xilinx.com, john.williams@petalogix.com, matthew@wil.cx,
-       will.newton@gmail.com, drepper@redhat.com,
-       microblaze-uclinux@itee.uq.edu.au, grant.likely@secretlab.ca,
-       Michal Simek <monstr@monstr.eu>
-Subject: [PATCH 44/56] microblaze_v2: sigcontext.h siginfo.h
-Date: Sun,  4 May 2008 13:41:33 +0200
-Message-Id: <59b5238f7a259dcac4c9ca6513756a188625462e.1209897267.git.monstr@monstr.eu>
-X-Mailer: git-send-email 1.5.4.GIT
-In-Reply-To: <5d240127ee05c28d5156bfbf305329f9540f6c14.1209897267.git.monstr@monstr.eu>
-References: <1209901305-6404-1-git-send-email-monstr@seznam.cz>
- <a4a778e34c66d126f5c4bf1ca423cf32950ea5ab.1209897266.git.monstr@monstr.eu>
- <c805caeb1dd7f6d1349c4a463cb88a5342a170d2.1209897266.git.monstr@monstr.eu>
- <f120ababf2bade9aab7199bffb3014aa606e5a1c.1209897266.git.monstr@monstr.eu>
- <684c36e5ad3f598e5079e88ec195545c4a7150c2.1209897266.git.monstr@monstr.eu>
- <ed3695121faf485d491cecdd96d5d4dcc498411d.1209897266.git.monstr@monstr.eu>
- <0674b1f7abb9a3d564b68c95bc28adc2c2fe9551.1209897266.git.monstr@monstr.eu>
- <9a7c6646e5dd9724c1cf34767adec181481fa3ef.1209897266.git.monstr@monstr.eu>
- <932956128c9c655a218a940eaf02017a5dd0bdf9.1209897266.git.monstr@monstr.eu>
- <2f801c33caee22e112af51ae927c264ce99ead01.1209897266.git.monstr@monstr.eu>
- <2391e49379fb6639f57d9d6e5811f3d49a4c6fda.1209897266.git.monstr@monstr.eu>
- <0873f3a1f3b72591735c6461b51964693cac52e5.1209897266.git.monstr@monstr.eu>
- <0ba1f259d3c17eba54e334622493577493f5065f.1209897266.git.monstr@monstr.eu>
- <694451053534fea7b78fb9d618b53a2b5ebeb602.1209897266.git.monstr@monstr.eu>
- <f0c837df4106a31c1a81917596603918f722ea7b.1209897266.git.monstr@monstr.eu>
- <d883a8d8da812d77fefd47730d28d0bdb7b504e0.1209897266.git.monstr@monstr.eu>
- <625ef466cf121d655539eedc919dd39166087e0c.1209897266.git.monstr@monstr.eu>
- <b5067a1846075ddd1035966ea1edc908579e2e88.1209897266.git.monstr@monstr.eu>
- <378157891bac535dbc55e658d5f03fdd332e85cf.1209897266.git.monstr@monstr.eu>
- <eadcc6f4754df78b69d6d54c404624d0390c8558.1209897266.git.monstr@monstr.eu>
- <4df4022e06b9056202cc2fdf0b99deb01563a0fa.1209897266.git.monstr@monstr.eu>
- <6b0c9864dc80776ae48d6488a6892e5d698751b7.1209897266.git.monstr@monstr.eu>
- <ea5cbbca49c38c506960fddba29cbd8cb24e1a8d.1209897266.git.monstr@monstr.eu>
- <4f4d6ed3fce9b21cdd6dcacb2d72fff7e9830628.1209897266.git.monstr@monstr.eu>
- <35e662a81eb86c7ffb2aaa6141ca38a07789f382.1209897266.git.monstr@monstr.eu>
- <b41fcf3dd830f4ba82692a9bec2406ed0c290e7e.1209897266.git.monstr@monstr.eu>
- <14acb31da2794d2d5916da3db3d75fe2285ac055.1209897266.git.monstr@monstr.eu>
- <598221ce2159046614d7b158ea62d5af51907af3.1209897266.git.monstr@monstr.eu>
- <41c1f410eaafd875246362d10ef9866d8cc2a934.1209897266.git.monstr@monstr.eu>
- <09ce2baf0c8308d3fbca98e7eb36a6aab59112a7.1209897266.git.monstr@monstr.eu>
- <c9418c683be99ae12abb89575c362d586c026bad.1209897266.git.monstr@monstr.eu>
- <cfde3796e95bdd17c32e4fd7762d0aee55967707.1209897266.git.monstr@monstr.eu>
- <8aba2d82c85cd1d5b56de328c1fd080ee51f0211.1209897266.git.monstr@monstr.eu>
- <c4000ff625bd217f9bb683e3bf8c7193a82bd744.1209897266.git.monstr@monstr.eu>
- <491f823fac6c03cc36834ec569a45d30a03a72cf.1209897266.git.monstr@monstr.eu>
- <96f2004535c34a0c762bf2012c299cbf9f89ab32.1209897266.git.monstr@monstr.eu>
- <92cd3a27b393bb394d48902594152351a92c59bb.1209897266.git.monstr@monstr.eu>
- <4e20213f5f296268a24955df8c951f7fba279816.1209897266.git.monstr@monstr.eu>
- <49eccf3408b90a5ebb42635493bbeef3b584acb9.1209897266.git.monstr@monstr.eu>
- <d1e4a572d2add458e1dc7c4f5a3039ae4faa2c04.1209897266.git.monstr@monstr.eu>
- <27d6acda14c492aae35d8bb1343a122624560418.1209897266.git.monstr@monstr.eu>
- <64e6fc7378cd5c714fcceef7d4965c1fb3d1b288.1209897266.git.monstr@monstr.eu>
- <9cc0d54a98f25748dc3f16fc3250524d7cd00877.1209897266.git.monstr@monstr.eu>
- <5d240127ee05c28d5156bfbf305329f9540f6c14.1209897267.git.monstr@monstr.eu>
-In-Reply-To: <a4a778e34c66d126f5c4bf1ca423cf32950ea5ab.1209897266.git.monstr@monstr.eu>
-References: <a4a778e34c66d126f5c4bf1ca423cf32950ea5ab.1209897266.git.monstr@monstr.eu>
+	Sun, 4 May 2008 10:17:19 -0400
+Received: from saeurebad.de ([85.214.36.134]:48761 "EHLO saeurebad.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751087AbYEDORS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 May 2008 10:17:18 -0400
+From: Johannes Weiner <hannes@saeurebad.de>
+To: "Yinghai Lu" <yhlu.kernel@gmail.com>
+Cc: "Ingo Molnar" <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, "Andi Kleen" <andi@firstfloor.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>
+Subject: Re: [RFC 0/2] Rootmem: boot-time memory allocator
+References: <20080503152502.191599824@symbol.fehenstaub.lan>
+	<20080503175426.GB5292@elte.hu>
+	<86802c440805032106t4d020838v39aaf93309003cdb@mail.gmail.com>
+	<87hcdev448.fsf@saeurebad.de>
+Date: Sun, 04 May 2008 16:17:11 +0200
+In-Reply-To: <87hcdev448.fsf@saeurebad.de> (Johannes Weiner's message of "Sun,
+	04 May 2008 10:57:11 +0200")
+Message-ID: <87r6citaqg.fsf@saeurebad.de>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Michal Simek <monstr@monstr.eu>
+Hi Yinghai,
 
+Johannes Weiner <hannes@saeurebad.de> writes:
 
-Signed-off-by: Michal Simek <monstr@monstr.eu>
----
- include/asm-microblaze/sigcontext.h |   21 +++++++++++++++++++++
- include/asm-microblaze/siginfo.h    |   17 +++++++++++++++++
- 2 files changed, 38 insertions(+), 0 deletions(-)
- create mode 100644 include/asm-microblaze/sigcontext.h
- create mode 100644 include/asm-microblaze/siginfo.h
+> Hi,
+>
+> "Yinghai Lu" <yhlu.kernel@gmail.com> writes:
+>
+>> On Sat, May 3, 2008 at 10:54 AM, Ingo Molnar <mingo@elte.hu> wrote:
+>>>
+>>>  * Johannes Weiner <hannes@saeurebad.de> wrote:
+>>>
+>>>  > I was spending some time and work on the bootmem allocator the last
+>>>  > few weeks and came to the conclusion that its current design is not
+>>>  > appropriate anymore.
+>>>  >
+>>>  > As Ingo said in another email, NUMA technologies will become weirder,
+>>>  > nodes whose PFNs span other nodes for example and it makes bootmem
+>>>  > code become an unreadable mess.
+>>>  >
+>>>  > So I sat down two days ago and rewrote the allocator, here is the
+>>>  > result: rootmem!
+>>>
+>>>  hehe :-)
+>>>
+>>>
+>>>  > The biggest difference to the old design is that there is only one
+>>>  > bitmap for all PFNs of all nodes together, so the overlapping PFN
+>>>  > problems simply dissolve and fun like allocations crossing node
+>>>  > boundaries work implicitely.  The new API requires every node used by
+>>>  > the allocator to be registered and after that the bitmap gets
+>>>  > allocated and the allocator enabled.
+>>>  >
+>>>  > I chose to add a new allocator rather than replacing bootmem at once
+>>>  > because that would have required all callsites to switch in one go,
+>>>  > which would be a lot.  The new allocator can be adopted more slowly
+>>>  > and I added a compatibility API for everything besides actually
+>>>  > setting up the allocator.  When the last user dies, bootmem can be
+>>>  > dropped completely (including pgdat->bdata, whee..)
+>>>  >
+>>>  > The main ideas from bootmem have been stolen^W preserved but the new
+>>>  > design allowed me to shrink the code a lot and express things more
+>>>  > simple and clear:
+>>>  >
+>>>  > $ sloc.awk < mm/bootmem.c
+>>>  > 455 lines of code, 65 lines of comments (520 lines total)
+>>>  >
+>>>  > $ sloc.awk < mm/rootmem.c
+>>>  > 243 lines of code, 96 lines of comments (339 lines total)
+>>>
+>>>  amazing!
+>>>
+>>>  i'd still suggest to keep it all named bootmem though :-/ How about
+>>>  bootmem2.c and then renaming it back to bootmem.c, once the last user is
+>>>  gone? That would save people from having to rename whole chapters in
+>>>  entire books ;-)
+>>
+>> for spanning support node0:0-2g, 4-6g; node1: 2-4g, 6-8g, could have
+>> some problem.
+>
+> Could you eleborate on that?
+>
+>> +/*
+>> + * rootmem_register_node - register a node to rootmem
+>> + * @nid: node id
+>> + * @start: first pfn on the node
+>> + * @end: first pfn after the node
+>> + *
+>> + * This function must not be called anymore if the allocator
+>> + * is already up and running (rootmem_setup() has been called).
+>> + */
+>> +void __init rootmem_register_node(int nid, unsigned long start,
+>> +                       unsigned long end)
+>> +{
+>> +       BUG_ON(rootmem_functional);
+>> +
+>> +       if (start < rootmem_min_pfn)
+>> +               rootmem_min_pfn = start;
+>> +       if (end > rootmem_max_pfn)
+>> +               rootmem_max_pfn = end;
+>> +
+>> +       rootmem_node_pages[nid] = end - start;
+>> +       rootmem_node_offsets[nid] = start;
+>> +       rootmem_nr_nodes++;
+>> +}
+>>
+>> could change rootmem_node_pages/offsets to be struct array with
+>> offset, pages, and nid. and every node could several struct. and whole
+>> array should be sorted with nid.
+>
+> The whole point is to be agnostic about weird NUMA configs.  Right now,
+> I am pretty proud of the simple data structures and I would avoid
+> blowing them up again unless there is a hard reason to do so.
 
-diff --git a/include/asm-microblaze/sigcontext.h b/include/asm-microblaze/sigcontext.h
-new file mode 100644
-index 0000000..b35dd88
---- /dev/null
-+++ b/include/asm-microblaze/sigcontext.h
-@@ -0,0 +1,21 @@
-+/*
-+ * include/asm-microblaze/sigcontext.h
-+ *
-+ * This file is subject to the terms and conditions of the GNU General Public
-+ * License. See the file "COPYING" in the main directory of this archive
-+ * for more details.
-+ *
-+ * Copyright (C) 2006 Atmark Techno, Inc.
-+ */
-+
-+#ifndef _ASM_MICROBLAZE_SIGCONTEXT_H
-+#define _ASM_MICROBLAZE_SIGCONTEXT_H
-+
-+#include <asm/ptrace.h>
-+
-+struct sigcontext {
-+	struct pt_regs regs;
-+	unsigned long oldmask;
-+};
-+
-+#endif /* _ASM_MICROBLAZE_SIGCONTEXT_H */
-diff --git a/include/asm-microblaze/siginfo.h b/include/asm-microblaze/siginfo.h
-new file mode 100644
-index 0000000..ef15636
---- /dev/null
-+++ b/include/asm-microblaze/siginfo.h
-@@ -0,0 +1,17 @@
-+/*
-+ * include/asm-microblaze/siginfo.h
-+ *
-+ * This file is subject to the terms and conditions of the GNU General Public
-+ * License. See the file "COPYING" in the main directory of this archive
-+ * for more details.
-+ *
-+ * Copyright (C) 2006 Atmark Techno, Inc.
-+ */
-+
-+#ifndef _ASM_MICROBLAZE_SIGINFO_H
-+#define _ASM_MICROBLAZE_SIGINFO_H
-+
-+#include <linux/types.h>
-+#include <asm-generic/siginfo.h>
-+
-+#endif /* _ASM_MICROBLAZE_SIGINFO_H */
--- 
-1.5.4.GIT
+One thing I have found is that __rootmem_alloc_node can not garuantee
+that the memory it returns is on the requested node right now.
 
+I will include the fix in the next version.
+
+	Hannes
