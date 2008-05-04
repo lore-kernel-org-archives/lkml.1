@@ -1,79 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756675AbYEDMQV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756763AbYEDMRV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756675AbYEDMQV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 May 2008 08:16:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751806AbYEDMQN
+	id S1756763AbYEDMRV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 May 2008 08:17:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755364AbYEDMRN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 May 2008 08:16:13 -0400
-Received: from barikada.upol.cz ([158.194.242.200]:59510 "EHLO
-	barikada.upol.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750820AbYEDMQN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 May 2008 08:16:13 -0400
-Date: Sun, 4 May 2008 14:37:10 +0200
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Adrian Bunk <bunk@kernel.org>, Roman Zippel <zippel@linux-m68k.org>,
+	Sun, 4 May 2008 08:17:13 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:35708 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755155AbYEDMRM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 May 2008 08:17:12 -0400
+Date: Sun, 4 May 2008 14:17:47 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Roman Zippel <zippel@linux-m68k.org>,
        linux-kbuild <linux-kbuild@vger.kernel.org>,
        LKML <linux-kernel@vger.kernel.org>
 Subject: Re: kconfig - a suggestion how to fix the select issue
-Message-ID: <20080504123710.GA24008@flower.upol.cz>
-References: <20080504071041.GA15315@uranus.ravnborg.org> <20080504081145.GG5838@cs181133002.pp.htv.fi> <20080504082732.GB17276@uranus.ravnborg.org> <20080504090429.GH5838@cs181133002.pp.htv.fi> <20080504103848.GC17276@uranus.ravnborg.org>
-MIME-Version: 1.0
+Message-ID: <20080504121747.GA19236@uranus.ravnborg.org>
+References: <20080504071041.GA15315@uranus.ravnborg.org> <20080504081145.GG5838@cs181133002.pp.htv.fi> <20080504082732.GB17276@uranus.ravnborg.org> <20080504090429.GH5838@cs181133002.pp.htv.fi> <20080504103848.GC17276@uranus.ravnborg.org> <20080504115504.GI5838@cs181133002.pp.htv.fi>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080504103848.GC17276@uranus.ravnborg.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: Oleg Verych <olecom@flower.upol.cz>
-Organization: Palacky University in Olomouc, experimental physics department
-X-OS: x86_64-pc-linux-glibc-debian
+In-Reply-To: <20080504115504.GI5838@cs181133002.pp.htv.fi>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sam,
-
-> > Given:
-> > - CONFIG_A=y
-> > - CONFIG_B=n
-> > - CONFIG_D=y
-> > - CONFIG_E=n
-> > 
-> > Will C be visible?
-> The above has a syntax error. A 'depends on' cannot have an
-> if caluse.
-
-would you please write logic rules with more neutral language, like
-
-(A || B) && C
-
-or similar. Depencies (forward or backward) can be described as
-
-SYM_FOO <- { # depencies/value
-
-  ($SYM_DEP1 || !$SYM_DEP2) && $SYM_DEP3=xx
-  # implicit or
-  $SYM_DEP4 || $SYM_DEP5
-
-} -> { # selects
-
-  SYM_2SELECT1 = $SYM_BAR ? foo_bar : bar_for
-  SYM_2SELECT2 = bar; SYM_BA; SYM_ZZ
-
-# SYM_BA && SYM_ZZ will have value of SYM_FOO
-}
-
-or something.
-
-> And I did not get your point either.
-
-I try to design TUI now for better multidimensional walking/selecting on
-the web of symbols and decencies, and i don't get those kconfig
-constructs.
-
-> Are you trying to say that we cannot improve kconfig to better
-> express the dependencies or what is your point?
+> > > > > 
+> > > > > config A
+> > > > > 	tristate "a"
+> > > > > 
+> > > > > config B
+> > > > > 	tristate "b"
+> > > > > 	depends on A
+> > > > > 
+> > > > > config C
+> > > > > 	bool "c"
+> > > > > 	require B
+> > > > > 
+> > > > > CONFIG_A=m
+> > > > > 
+> > > > > 
+> > > > > Will C be visible?
+> > > > If you followed my description then you would see
+> > > > that the visibility of C are determineded by the dependencies
+> > > > of C (none in this case) and the dependencies of the symbol
+> > > > it requires. In this case B. B dpens on A and A equals m so B is
+> > > > visible thus C is visible.
+> > > 
+> > > *shudder*
+> > So let me explain it with some other words:
+> > B is visible because A=m
+> > C is visible because B is visible.
+> > Simple.
 > 
-> Puzzeled...
+> I understand what you are saying.
+> 
+> The problem is that with A=m, C=y built-in code enabled by C cannot 
+> access the code enabled by A which can result in a build error.
 
-Thanks.
-____
+That is a different type of issue which would most likely
+be solved by a "depends on A == y"
+
+> > > But OK, here's some fun with bools:
+> > > 
+> > > config X86
+> > > 	def_bool y
+> > > 
+> > > config A
+> > > 	bool "a"
+> > > 
+> > > config B
+> > > 	bool "b"
+> > > 	depends on A
+> > > 
+> > > config D
+> > > 	bool "d"
+> > > 	depends on !B if X86
+> > > 
+> > > config E
+> > > 	bool "e"
+> > > 
+> > > config C
+> > > 	bool "c"
+> > > 	depends on D || E
+> > > 	requires B
+> > > 
+> > > Given:
+> > > - CONFIG_A=y
+> > > - CONFIG_B=n
+> > > - CONFIG_D=y
+> > > - CONFIG_E=n
+> > > 
+> > > Will C be visible?
+> > The above has a syntax error. A 'depends on' cannot have an
+> > if caluse.
+> 
+> I know I'm bad at the syntax when I'm not trying stuff myself.
+> 	depends on !B || !X86
+> is the same and should be the correct syntax.
+> 
+> Or make it just
+> 	depends on !B
+> 
+> The problem is not the syntax, the problem is whether C should be 
+> visible, and what happens if the user enables it.
+OK - lets analyse this.
+B is visible (because A is y)
+D is visible (because B is n)
+E is visible
+
+So per the definition C is visible.
+If user choose 'C' then user will be prompted to choose B
+due to the "require B".
+User now set B equal to 'y' and we have following situation:
+B is visible (because A is y)
+D is invisible (because B is y)
+E is visible
+So per definiton C is still visible.
+So user is now prompted to chose C.
+
+
+On the other hand had we had a:
+config C
+	bool "c"
+	depends on D
+	requires B
+
+Then when user set B equal 'y' user no longer
+are offered the possibility to chose 'C' as it is no
+longer visible.
+
+> > 
+> > Are you trying to say that we cannot improve kconfig to better
+> > express the dependencies or what is your point?
+> 
+> My point is that all this "select follows depenencies" is easily said, 
+> but doing it in a way that it's better than what we have today is 
+> nontrivial.
+Which is exactly why I try to involve you in the discussion
+of a potential solution.
+
+	Sam
