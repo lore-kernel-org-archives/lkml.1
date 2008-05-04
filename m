@@ -1,69 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755259AbYEDHum@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754948AbYEDHyq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755259AbYEDHum (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 May 2008 03:50:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752517AbYEDHuf
+	id S1754948AbYEDHyq (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 May 2008 03:54:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752224AbYEDHyg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 May 2008 03:50:35 -0400
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:56460 "EHLO smtp4.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752357AbYEDHue (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 May 2008 03:50:34 -0400
-Date: Sun, 4 May 2008 10:49:34 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Ingo, no more kconfig patches
-Message-ID: <20080504074934.GE5838@cs181133002.pp.htv.fi>
-References: <20080430230100.GK29330@cs181133002.pp.htv.fi> <20080501025234.GE27574@elte.hu> <20080501115923.GX29330@cs181133002.pp.htv.fi> <20080503191445.GF5292@elte.hu> <20080503202416.GR5838@cs181133002.pp.htv.fi> <20080503210300.GA10979@elte.hu> <20080503212429.GT5838@cs181133002.pp.htv.fi> <20080503213822.GA24283@uranus.ravnborg.org> <20080503220752.GW5838@cs181133002.pp.htv.fi> <20080504073614.GA16289@uranus.ravnborg.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20080504073614.GA16289@uranus.ravnborg.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Sun, 4 May 2008 03:54:36 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:35023
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751795AbYEDHyf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 May 2008 03:54:35 -0400
+Date: Sun, 04 May 2008 00:54:33 -0700 (PDT)
+Message-Id: <20080504.005433.98511912.davem@davemloft.net>
+To: hidave.darkstar@gmail.com
+Cc: akpm@linux-foundation.org, paulmck@us.ibm.com, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH -mm] __ratelimit rewrite
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20080504070738.GA11832@darkstar.te-china.tietoenator.com>
+References: <20080504070738.GA11832@darkstar.te-china.tietoenator.com>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, May 04, 2008 at 09:36:14AM +0200, Sam Ravnborg wrote:
-> > > Hi Adrian 
-> > > It would be nice to know what was wrong with my suggestion.
-> > > You have done your share of kconfig patches so you have a good grip
-> > > on the problems we face.
-> > > So any input on how we can improve kconfig so we can actually provide
-> > > what people often expects or requests or need would be nice.
-> > > 
-> > > I have so far not done any hacking on the core of the backend of
-> > > kconfig but if I one day find more than one hour in row where I can do
-> > > some kernel stuff I may actually try it out.
-> > > And then it would be nice to have a sketch ready how to solve the issues.
-> > > 
-> > > I would though request you to start a new mail thread for this and
-> > > include both linux-kbuild@vger.kernel.org and Roman Zippel in the loop.
-> > 
-> > If you've sent a suggestion that included a description of the exact 
-> > semantics you want to implement I must have missed it.
-> > 
-> > Can you send me a pointer or a description of the semantics?
-> > I'll then have a look.
-> 
-> I took the original idea and added a few more details.
-> Please see mail named "http://lkml.org/lkml/2008/5/4/18"
-> http://lkml.org/lkml/2008/5/4/18
+From: Dave Young <hidave.darkstar@gmail.com>
+Date: Sun, 4 May 2008 15:07:38 +0800
 
-Thanks, I'll answer there.
+Hi Dave,
 
-> 	Sam
+> @@ -76,8 +76,8 @@ extern void warn_on_slowpath(const char 
+>  	unlikely(__ret_warn_once);				\
+>  })
+>  
+> -#define WARN_ON_SECS(condition, state, secs)			\
+> -		WARN_ON((condition) && __ratelimit(state))
+> +#define WARN_ON_RATELIMIT(condition, state)			\
+> +		WARN_ON((condition) && __ratelimit(state));
+>  
+>  #ifdef CONFIG_SMP
+>  # define WARN_ON_SMP(x)			WARN_ON(x)
 
-cu
-Adrian
+Are you sure you want that new semicolon there?
 
--- 
+	if (foo)
+		WARN_ON_RATELIMIT(...);
+	else
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+will result in a compile error.
