@@ -1,57 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755935AbYEDSEo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753321AbYEDSHH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755935AbYEDSEo (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 May 2008 14:04:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753201AbYEDSEh
+	id S1753321AbYEDSHH (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 May 2008 14:07:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753201AbYEDSG4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 May 2008 14:04:37 -0400
-Received: from py-out-1112.google.com ([64.233.166.178]:53053 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753026AbYEDSEg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 May 2008 14:04:36 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer:mime-version:content-type:content-transfer-encoding;
-        b=xMv0HDImFaLcBFQWJuKBYMS5oKbc8NSO2/bRFe/pf1CQzXUXc09hRJlHksbRawXwZz8TLZbXc32jX1pdbUR5p3xMHoCm1/FABnIPfuQYjjRI7cwOC7cx3kQ2svEflT6yFtqCJeDL5JkT0BE0aej6vmYxMnYwrJgeYGGBnicNicQ=
-Date: Sun, 4 May 2008 13:04:27 -0500
-From: Josh Boyer <jwboyer@gmail.com>
-To: =?ISO-8859-1?B?SvZybg==?= Engel <joern@logfs.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>,
-       matthieu castet <castet.matthieu@free.fr>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@osdl.org>, linux-mtd@lists.infradead.org
-Subject: Re: LogFS merge
-Message-ID: <20080504130427.583d563c@vader.jdub.homelinux.org>
-In-Reply-To: <alpine.LFD.1.10.0805041809370.3318@apollo.tec.linutronix.de>
-References: <481C3087.8020501@free.fr>
-	<20080503120005.GA32608@logfs.org>
-	<alpine.LFD.1.10.0805041809370.3318@apollo.tec.linutronix.de>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 4 May 2008 14:06:56 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:38028 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752641AbYEDSG4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 May 2008 14:06:56 -0400
+Date: Sun, 4 May 2008 20:06:42 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Cyrill Gorcunov <gorcunov@gmail.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Andi Kleen <ak@suse.de>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC] x86: x86-64defconfig remake
+Message-ID: <20080504180642.GA19184@elte.hu>
+References: <20080504155719.GA6842@cvg>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080504155719.GA6842@cvg>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0001]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 4 May 2008 18:20:23 +0200 (CEST)
-Thomas Gleixner <tglx@linutronix.de> wrote:
 
-> > Logfs ignores ubi and does wear leveling, bad block handling, etc.
-> > itself.  Bad block handling in particular is not too robust yet.  If you
-> > expect blocks to rot away after mkfs time, logfs is a bad choice.
-> 
-> It's a matter of fact that especially on NAND flash blocks become bad
-> over time, i.e. after mkfs. So that's a pretty crucial feature which
-> needs to be complete and robust before it's declared to be usable on
-> such devices.
+* Cyrill Gorcunov <gorcunov@gmail.com> wrote:
 
-I agree.  LogFS seems quite impressive in its performance, however I'm
-wondering how much redesign and rewrite would be needed in the code to
-fix the bad block handling.  Maybe it's not so much and I'm overly
-paranoid, but having at least some idea of what it would take might
-help.  You could add it to Documentation/filesystems/LogFS.txt as a
-TODO.
+> The current x86_64_defconfig contains a number of nonexistent
+> symbols. Lets fix it.
 
-josh
+thanks Cyrill, applied. I also fixed up the 32-bit defconfig and did a 
+few more updates to both of them as well, to make it more generally 
+useful.
+
+	Ingo
