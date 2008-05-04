@@ -1,153 +1,288 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754345AbYEDTLt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757716AbYEDTNS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754345AbYEDTLt (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 May 2008 15:11:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754213AbYEDTLm
+	id S1757716AbYEDTNS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 May 2008 15:13:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754795AbYEDTNG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 May 2008 15:11:42 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:3507 "EHLO kernel.dk"
+	Sun, 4 May 2008 15:13:06 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:55951 "EHLO pasmtpA.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754071AbYEDTLk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 May 2008 15:11:40 -0400
-Date: Sun, 4 May 2008 21:11:33 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Mikulas Patocka <mpatocka@redhat.com>
-Cc: Mike Anderson <andmike@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
-       Alasdair Graeme Kergon <agk@redhat.com>
-Subject: Re: [PATCH] Optimize lock in queue unplugging
-Message-ID: <20080504191132.GQ12774@kernel.dk>
-References: <Pine.LNX.4.64.0804291459030.17110@engineering.redhat.com> <20080429192556.GB12774@kernel.dk> <20080429202928.GB10641@linux.vnet.ibm.com> <20080430071415.GM12774@kernel.dk> <Pine.LNX.4.64.0804300944440.23408@engineering.redhat.com>
-MIME-Version: 1.0
+	id S1754373AbYEDTND (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 May 2008 15:13:03 -0400
+Date: Sun, 4 May 2008 21:13:37 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kbuild <linux-kbuild@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Cc: Adrian Bunk <bunk@kernel.org>, Randy Dunlap <randy.dunlap@oracle.com>,
+       Timur Tabi <timur@freescale.com>, Jean Delvare <khali@linux-fr.org>,
+       Jochen Friedrich <jochen@scram.de>
+Subject: [GIT PULL] kbuild fixes
+Message-ID: <20080504191337.GA23186@uranus.ravnborg.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0804300944440.23408@engineering.redhat.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 30 2008, Mikulas Patocka wrote:
-> 
-> 
-> On Wed, 30 Apr 2008, Jens Axboe wrote:
-> 
-> >On Tue, Apr 29 2008, Mike Anderson wrote:
-> >>Jens Axboe <jens.axboe@oracle.com> wrote:
-> >>>On Tue, Apr 29 2008, Mikulas Patocka wrote:
-> >>>>Hi
-> >>>>
-> >>>>Mike Anderson was doing an OLTP benchmark on a computer with 48 physical
-> >>>>disks mapped to one logical device via device mapper.
-> >>>>
-> >>>>He found that there was a slowdown on request_queue->lock in function
-> >>>>generic_unplug_device. The slowdown is caused by the fact that when some
-> >>>>code calls unplug on the device mapper, device mapper calls unplug on 
-> >>>>all
-> >>>>physical disks. These unplug calls take the lock, find that the queue is
-> >>>>already unplugged, release the lock and exit.
-> >>>>
-> >>>>With the below patch, performance of the benchmark was increased by 18%
-> >>>>(the whole OLTP application, not just block layer microbenchmarks).
-> >>>>
-> >>>>So I'm submitting this patch for upstream. I think the patch is correct,
-> >>>>because when more threads call simultaneously plug and unplug, it is
-> >>>>unspecified, if the queue is or isn't plugged (so the patch can't make
-> >>>>this worse). And the caller that plugged the queue should unplug it
-> >>>>anyway. (if it doesn't, there's 3ms timeout).
-> >>>
-> >>>Where were these unplug calls coming from? The block layer will
-> >>>generally only unplug when it is already unplugged, so if you are seeing
-> >>>so many unplug calls that the patch redues overhead by as much
-> >>>described, perhaps the callsite is buggy?
-> >>
-> >>I do not have direct access the the benchmark setup, but here is the data
-> >>I have received.
-> >>
-> >>The oprofile data was showing ll_rw_blk::generic_unplug_device() as a top
-> >>routine at 13% of the samples. Annotation of the samples shows hits on
-> >>spin_lock_irq(q->queue_lock).
-> >>
-> >>Here are some sample call traces:
-> >>
-> >>Call trace #1
-> >>
-> >>kernel:  [<ffffffff80058c6c>] generic_unplug_device+0x5d/0xc6
-> >>kernel:  [<ffffffff8820ea3e>] :dm_mod:dm_table_unplug_all+0x33/0x41
-> >>kernel:  [<ffffffff8820cc85>] :dm_mod:dm_unplug_all+0x1d/0x28
-> >>kernel:  [<ffffffff8005a78a>] blk_backing_dev_unplug+0x56/0x5b
-> >>kernel:  [<ffffffff80014cdc>] sync_buffer+0x36/0x3f
-> >>kernel:  [<ffffffff800629a4>] __wait_on_bit+0x40/0x6f
-> >>kernel:  [<ffffffff80014ca6>] sync_buffer+0x0/0x3f
-> >>kernel:  [<ffffffff80062a3f>] out_of_line_wait_on_bit+0x6c/0x78
-> >>kernel:  [<ffffffff8009c474>] wake_bit_function+0x0/0x23
-> >>kernel:  [<ffffffff88034c85>] :jbd:journal_commit_transaction+0x91f/0x1086
-> >>kernel:  [<ffffffff8003d038>] lock_timer_base+0x1b/0x3c
-> >>kernel:  [<ffffffff8803840e>] :jbd:kjournald+0xc1/0x213
-> >>kernel:  [<ffffffff8009c446>] autoremove_wake_function+0x0/0x2e
-> >>kernel:  [<ffffffff8009c283>] keventd_create_kthread+0x0/0x61
-> >>kernel:  [<ffffffff8803834d>] :jbd:kjournald+0x0/0x213
-> >>kernel:  [<ffffffff8009c283>] keventd_create_kthread+0x0/0x61
-> >>kernel:  [<ffffffff800321d5>] kthread+0xfe/0x132
-> >>kernel:  [<ffffffff8005cfb1>] child_rip+0xa/0x11
-> >>kernel:  [<ffffffff8009c283>] keventd_create_kthread+0x0/0x61
-> >>kernel:  [<ffffffff800320d7>] kthread+0x0/0x132
-> >>kernel:  [<ffffffff8005cfa7>] child_rip+0x0/0x11
-> >>
-> >>Call trace #2
-> >>kernel:  [<ffffffff80058c6c>] generic_unplug_device+0x5d/0xc6
-> >>kernel:  [<ffffffff8820ea3e>] :dm_mod:dm_table_unplug_all+0x33/0x41
-> >>kernel:  [<ffffffff8820cc85>] :dm_mod:dm_unplug_all+0x1d/0x28
-> >>kernel:  [<ffffffff8005a78a>] blk_backing_dev_unplug+0x56/0x5b
-> >>kernel:  [<ffffffff800e8bfe>] __blockdev_direct_IO+0x889/0xaa2
-> >>kernel:  [<ffffffff88050800>] :ext3:ext3_direct_IO+0xf3/0x18b
-> >>kernel:  [<ffffffff8804ec84>] :ext3:ext3_get_block+0x0/0xe3
-> >>kernel:  [<ffffffff800be6bb>] generic_file_direct_IO+0xbd/0xfb
-> >>kernel:  [<ffffffff8001e637>] generic_file_direct_write+0x60/0xf2
-> >>kernel:  [<ffffffff80015cfd>] __generic_file_aio_write_nolock+0x2b7/0x3b8
-> >>kernel:  [<ffffffff8002134f>] generic_file_aio_write+0x65/0xc1
-> >>kernel:  [<ffffffff8804c192>] :ext3:ext3_file_write+0x16/0x91
-> >>kernel:  [<ffffffff80017944>] do_sync_write+0xc7/0x104
-> >>kernel:  [<ffffffff8009c446>] autoremove_wake_function+0x0/0x2e
-> >>kernel:  [<ffffffff80111400>] free_msg+0x22/0x3c
-> >>kernel:  [<ffffffff800161c4>] vfs_write+0xce/0x174
-> >>kernel:  [<ffffffff8004194c>] sys_pwrite64+0x50/0x70
-> >>kernel:  [<ffffffff8005cde9>] error_exit+0x0/0x84
-> >>kernel:  [<ffffffff8005c116>] system_call+0x7e/0x83
-> >
-> >So it's basically dm calling into blk_unplug() all the time, which
-> >doesn't check if the queue is plugged. The reason why I didn't like the
-> >initial patch is that ->unplug_fn() really should not be called unless
-> >the queue IS plugged. So how about this instead:
-> >
-> >http://git.kernel.dk/?p=linux-2.6-block.git;a=commit;h=c44993018887e82abd49023e92e8d8b6000e03ed
-> >
-> >That's a lot more appropriate, imho.
-> >
-> >-- 
-> >Jens Axboe
-> 
-> This doesn't seem correct to me. The difference between blk_unplug and 
-> generic_unplug_device is that blk_unplug is called on every type of device 
-> and generic_unplug_device (pointed to by q->unplug_fn) is a method that is 
-> called on low-level disk devices.
-> 
-> dm and md redefine q->unplug_fn to point to their own method. On dm and 
-> md, blk_unplug is called, but generic_unplug_device is not.
-> 
-> So if you have this setup
-> dm-linear(unplugged) -> disk(plugged)
-> 
-> then, with your patch, a call to blk_unplug(dm-linear) will not unplug the 
-> disk. With my patch, a call to blk_unplug(dm-linear) will unplug the disk 
-> --- it calls q->unplug_fn that points to dm_unplug_all, that calls 
-> blk_unplug again on the disk and that calls generic_unplug_device on disk 
-> queue.
+Hi Linus.
 
-That is because the md/dm don't set the plugged flag which I think they
-should. So we fix that instead so that plugging works the same from the
-block core or from a driver instead of adding work-arounds in the block
-unplug handler. Adding a check for plugged in the plug handler is a
-hack, I don't see how you can argue against that.
+Please pull the following kbuild fixes from:
 
--- 
-Jens Axboe
+   ssh://master.kernel.org/pub/scm/linux/kernel/git/sam/kbuild-fixes.git
 
+Adrian Bunk (1):
+      kconfig-language.txt: remove bogus hint
+
+Jean Delvare (1):
+      modpost: i2c aliases need no trailing wildcard
+
+Sam Ravnborg (1):
+      kconfig: fix MAC OS X warnings in menuconfig
+
+
+	Sam
+
+
+ Documentation/kbuild/kconfig-language.txt |   24 -------------------
+ scripts/kconfig/lkc.h                     |    6 ++--
+ scripts/kconfig/mconf.c                   |    3 +-
+ scripts/mod/file2alias.c                  |   35 +++++++++++++++++++++-------
+ 4 files changed, 31 insertions(+), 37 deletions(-)
+
+
+
+diff --git a/Documentation/kbuild/kconfig-language.txt b/Documentation/kbuild/kconfig-language.txt
+index 00b950d..c412c24 100644
+--- a/Documentation/kbuild/kconfig-language.txt
++++ b/Documentation/kbuild/kconfig-language.txt
+@@ -377,27 +377,3 @@ config FOO
+ 
+ limits FOO to module (=m) or disabled (=n).
+ 
+-
+-Build limited by a third config symbol which may be =y or =m
+-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+-A common idiom that we see (and sometimes have problems with) is this:
+-
+-When option C in B (module or subsystem) uses interfaces from A (module
+-or subsystem), and both A and B are tristate (could be =y or =m if they
+-were independent of each other, but they aren't), then we need to limit
+-C such that it cannot be built statically if A is built as a loadable
+-module.  (C already depends on B, so there is no dependency issue to
+-take care of here.)
+-
+-If A is linked statically into the kernel image, C can be built
+-statically or as loadable module(s).  However, if A is built as loadable
+-module(s), then C must be restricted to loadable module(s) also.  This
+-can be expressed in kconfig language as:
+-
+-config C
+-	depends on A = y || A = B
+-
+-or for real examples, use this command in a kernel tree:
+-
+-$ find . -name Kconfig\* | xargs grep -ns "depends on.*=.*||.*=" | grep -v orig
+-
+diff --git a/scripts/kconfig/lkc.h b/scripts/kconfig/lkc.h
+index 4bc68f2..96521cb 100644
+--- a/scripts/kconfig/lkc.h
++++ b/scripts/kconfig/lkc.h
+@@ -11,9 +11,9 @@
+ #ifndef KBUILD_NO_NLS
+ # include <libintl.h>
+ #else
+-# define gettext(Msgid) ((const char *) (Msgid))
+-# define textdomain(Domainname) ((const char *) (Domainname))
+-# define bindtextdomain(Domainname, Dirname) ((const char *) (Dirname))
++static inline const char *gettext(const char *txt) { return txt; }
++static inline void textdomain(const char *domainname) {}
++static inline void bindtextdomain(const char *name, const char *dir) {}
+ #endif
+ 
+ #ifdef __cplusplus
+diff --git a/scripts/kconfig/mconf.c b/scripts/kconfig/mconf.c
+index 734cf4f..6841e95 100644
+--- a/scripts/kconfig/mconf.c
++++ b/scripts/kconfig/mconf.c
+@@ -773,7 +773,7 @@ static void conf_string(struct menu *menu)
+ 
+ 	while (1) {
+ 		int res;
+-		char *heading;
++		const char *heading;
+ 
+ 		switch (sym_get_type(menu->sym)) {
+ 		case S_INT:
+@@ -925,3 +925,4 @@ int main(int ac, char **av)
+ 
+ 	return 0;
+ }
++
+diff --git a/scripts/mod/file2alias.c b/scripts/mod/file2alias.c
+index e04c421..cea4a79 100644
+--- a/scripts/mod/file2alias.c
++++ b/scripts/mod/file2alias.c
+@@ -51,6 +51,15 @@ do {                                                            \
+                 sprintf(str + strlen(str), "*");                \
+ } while(0)
+ 
++/* Always end in a wildcard, for future extension */
++static inline void add_wildcard(char *str)
++{
++	int len = strlen(str);
++
++	if (str[len - 1] != '*')
++		strcat(str + len, "*");
++}
++
+ unsigned int cross_build = 0;
+ /**
+  * Check that sizeof(device_id type) are consistent with size of section
+@@ -133,9 +142,7 @@ static void do_usb_entry(struct usb_device_id *id,
+ 	    id->match_flags&USB_DEVICE_ID_MATCH_INT_PROTOCOL,
+ 	    id->bInterfaceProtocol);
+ 
+-	/* Always end in a wildcard, for future extension */
+-	if (alias[strlen(alias)-1] != '*')
+-		strcat(alias, "*");
++	add_wildcard(alias);
+ 	buf_printf(&mod->dev_table_buf,
+ 		   "MODULE_ALIAS(\"%s\");\n", alias);
+ }
+@@ -219,6 +226,7 @@ static int do_ieee1394_entry(const char *filename,
+ 	ADD(alias, "ver", id->match_flags & IEEE1394_MATCH_VERSION,
+ 	    id->version);
+ 
++	add_wildcard(alias);
+ 	return 1;
+ }
+ 
+@@ -261,6 +269,7 @@ static int do_pci_entry(const char *filename,
+ 	ADD(alias, "bc", baseclass_mask == 0xFF, baseclass);
+ 	ADD(alias, "sc", subclass_mask == 0xFF, subclass);
+ 	ADD(alias, "i", interface_mask == 0xFF, interface);
++	add_wildcard(alias);
+ 	return 1;
+ }
+ 
+@@ -283,6 +292,7 @@ static int do_ccw_entry(const char *filename,
+ 	    id->dev_type);
+ 	ADD(alias, "dm", id->match_flags&CCW_DEVICE_ID_MATCH_DEVICE_MODEL,
+ 	    id->dev_model);
++	add_wildcard(alias);
+ 	return 1;
+ }
+ 
+@@ -290,7 +300,7 @@ static int do_ccw_entry(const char *filename,
+ static int do_ap_entry(const char *filename,
+ 		       struct ap_device_id *id, char *alias)
+ {
+-	sprintf(alias, "ap:t%02X", id->dev_type);
++	sprintf(alias, "ap:t%02X*", id->dev_type);
+ 	return 1;
+ }
+ 
+@@ -309,6 +319,7 @@ static int do_serio_entry(const char *filename,
+ 	ADD(alias, "id", id->id != SERIO_ANY, id->id);
+ 	ADD(alias, "ex", id->extra != SERIO_ANY, id->extra);
+ 
++	add_wildcard(alias);
+ 	return 1;
+ }
+ 
+@@ -316,7 +327,7 @@ static int do_serio_entry(const char *filename,
+ static int do_acpi_entry(const char *filename,
+ 			struct acpi_device_id *id, char *alias)
+ {
+-	sprintf(alias, "acpi*:%s:", id->id);
++	sprintf(alias, "acpi*:%s:*", id->id);
+ 	return 1;
+ }
+ 
+@@ -324,7 +335,7 @@ static int do_acpi_entry(const char *filename,
+ static int do_pnp_entry(const char *filename,
+ 			struct pnp_device_id *id, char *alias)
+ {
+-	sprintf(alias, "pnp:d%s", id->id);
++	sprintf(alias, "pnp:d%s*", id->id);
+ 	return 1;
+ }
+ 
+@@ -409,6 +420,7 @@ static int do_pcmcia_entry(const char *filename,
+        ADD(alias, "pc", id->match_flags & PCMCIA_DEV_ID_MATCH_PROD_ID3, id->prod_id_hash[2]);
+        ADD(alias, "pd", id->match_flags & PCMCIA_DEV_ID_MATCH_PROD_ID4, id->prod_id_hash[3]);
+ 
++	add_wildcard(alias);
+        return 1;
+ }
+ 
+@@ -432,6 +444,7 @@ static int do_of_entry (const char *filename, struct of_device_id *of, char *ali
+         if (isspace (*tmp))
+             *tmp = '_';
+ 
++    add_wildcard(alias);
+     return 1;
+ }
+ 
+@@ -448,6 +461,7 @@ static int do_vio_entry(const char *filename, struct vio_device_id *vio,
+ 		if (isspace (*tmp))
+ 			*tmp = '_';
+ 
++	add_wildcard(alias);
+ 	return 1;
+ }
+ 
+@@ -511,6 +525,8 @@ static int do_eisa_entry(const char *filename, struct eisa_device_id *eisa,
+ {
+ 	if (eisa->sig[0])
+ 		sprintf(alias, EISA_DEVICE_MODALIAS_FMT "*", eisa->sig);
++	else
++		strcat(alias, "*");
+ 	return 1;
+ }
+ 
+@@ -529,6 +545,7 @@ static int do_parisc_entry(const char *filename, struct parisc_device_id *id,
+ 	ADD(alias, "rev", id->hversion_rev != PA_HVERSION_REV_ANY_ID, id->hversion_rev);
+ 	ADD(alias, "sv", id->sversion != PA_SVERSION_ANY_ID, id->sversion);
+ 
++	add_wildcard(alias);
+ 	return 1;
+ }
+ 
+@@ -544,6 +561,7 @@ static int do_sdio_entry(const char *filename,
+ 	ADD(alias, "c", id->class != (__u8)SDIO_ANY_ID, id->class);
+ 	ADD(alias, "v", id->vendor != (__u16)SDIO_ANY_ID, id->vendor);
+ 	ADD(alias, "d", id->device != (__u16)SDIO_ANY_ID, id->device);
++	add_wildcard(alias);
+ 	return 1;
+ }
+ 
+@@ -559,6 +577,7 @@ static int do_ssb_entry(const char *filename,
+ 	ADD(alias, "v", id->vendor != SSB_ANY_VENDOR, id->vendor);
+ 	ADD(alias, "id", id->coreid != SSB_ANY_ID, id->coreid);
+ 	ADD(alias, "rev", id->revision != SSB_ANY_REV, id->revision);
++	add_wildcard(alias);
+ 	return 1;
+ }
+ 
+@@ -573,6 +592,7 @@ static int do_virtio_entry(const char *filename, struct virtio_device_id *id,
+ 	ADD(alias, "d", 1, id->device);
+ 	ADD(alias, "v", id->vendor != VIRTIO_DEV_ANY_ID, id->vendor);
+ 
++	add_wildcard(alias);
+ 	return 1;
+ }
+ 
+@@ -612,9 +632,6 @@ static void do_table(void *symval, unsigned long size,
+ 
+ 	for (i = 0; i < size; i += id_size) {
+ 		if (do_entry(mod->name, symval+i, alias)) {
+-			/* Always end in a wildcard, for future extension */
+-			if (alias[strlen(alias)-1] != '*')
+-				strcat(alias, "*");
+ 			buf_printf(&mod->dev_table_buf,
+ 				   "MODULE_ALIAS(\"%s\");\n", alias);
+ 		}
