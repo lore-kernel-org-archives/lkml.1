@@ -1,26 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758194AbYEDT0U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758265AbYEDT0f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758194AbYEDT0U (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 May 2008 15:26:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758122AbYEDTZw
+	id S1758265AbYEDT0f (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 May 2008 15:26:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756648AbYEDTZz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 May 2008 15:25:52 -0400
-Received: from mx1.riseup.net ([204.13.164.18]:39005 "EHLO mx1.riseup.net"
+	Sun, 4 May 2008 15:25:55 -0400
+Received: from mx1.riseup.net ([204.13.164.18]:39007 "EHLO mx1.riseup.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758109AbYEDTZu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 May 2008 15:25:50 -0400
-Message-Id: <20080504184559.243525572@kaehlcke.net>
+	id S1758109AbYEDTZw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 May 2008 15:25:52 -0400
+Message-Id: <20080504184600.184485929@kaehlcke.net>
+References: <20080504184559.243525572@kaehlcke.net>
 User-Agent: quilt/0.46-1
-Date: Sun, 04 May 2008 20:45:59 +0200
+Date: Sun, 04 May 2008 20:46:00 +0200
 From: matthias@kaehlcke.net
 To: linux-driver@qlogic.com, linux-scsi@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: [patch 0/2] QLA2xxx: Convert semaphores to mutexes
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       Matthias Kaehlcke <matthias@kaehlcke.net>
+Subject: [patch 1/2] QLA2xxx: Convert qla_fw_lock in a mutex
+Content-Disposition: inline; filename=scsi-qla2xxx-qla_fw_lock-to-mutex.diff
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-QLA2XXX driver: The semaphores qla_fw_lock and vport_sem are used as mutexes. Convert them to the muxex API
+QLA2XXX driver: The semaphore qla_fw_lock is used as a mutex. 
+Convert it to the mutex API
+
+Signed-off-by: Matthias Kaehlcke <matthias@kaehlcke.net>
+
+Index: linux-2.6/drivers/scsi/qla2xxx/qla_os.c
+===================================================================
+--- linux-2.6.orig/drivers/scsi/qla2xxx/qla_os.c	2008-05-04 20:17:57.000000000 +0200
++++ linux-2.6/drivers/scsi/qla2xxx/qla_os.c	2008-05-04 20:18:04.000000000 +0200
+@@ -2640,7 +2640,7 @@
+ #define FW_FILE_ISP24XX	"ql2400_fw.bin"
+ #define FW_FILE_ISP25XX	"ql2500_fw.bin"
+ 
+-static DECLARE_MUTEX(qla_fw_lock);
++static DEFINE_MUTEX(qla_fw_lock);
+ 
+ static struct fw_blob qla_fw_blobs[FW_BLOBS] = {
+ 	{ .name = FW_FILE_ISP21XX, .segs = { 0x1000, 0 }, },
+@@ -2671,7 +2671,7 @@
+ 		blob = &qla_fw_blobs[FW_ISP25XX];
+ 	}
+ 
+-	down(&qla_fw_lock);
++	mutex_lock(&qla_fw_lock);
+ 	if (blob->fw)
+ 		goto out;
+ 
+@@ -2684,7 +2684,7 @@
+ 	}
+ 
+ out:
+-	up(&qla_fw_lock);
++	mutex_unlock(&qla_fw_lock);
+ 	return blob;
+ }
+ 
+@@ -2693,11 +2693,11 @@
+ {
+ 	int idx;
+ 
+-	down(&qla_fw_lock);
++	mutex_lock(&qla_fw_lock);
+ 	for (idx = 0; idx < FW_BLOBS; idx++)
+ 		if (qla_fw_blobs[idx].fw)
+ 			release_firmware(qla_fw_blobs[idx].fw);
+-	up(&qla_fw_lock);
++	mutex_unlock(&qla_fw_lock);
+ }
+ 
+ static pci_ers_result_t
 
 -- 
 Matthias Kaehlcke
