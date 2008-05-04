@@ -1,70 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758290AbYEDWJU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758046AbYEDWTs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758290AbYEDWJU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 May 2008 18:09:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756667AbYEDWJH
+	id S1758046AbYEDWTs (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 May 2008 18:19:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755591AbYEDWTi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 May 2008 18:09:07 -0400
-Received: from ug-out-1314.google.com ([66.249.92.174]:15615 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756285AbYEDWJG (ORCPT
+	Sun, 4 May 2008 18:19:38 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:55811 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751590AbYEDWTh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 May 2008 18:09:06 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:organization:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=qmzmYnbWVF2U18/uwH5HQ7X9IemGfHfDBhYFCu7VazktUxJypHxOtDDHxlTvRbq8G1+JJptfuPGtNemhA6941/tmMYA5aUPcV12Rw1z/PoXb9iVqpQG9brIr18h3f1aogeSOmX7NSNcSNKNtzkpu6XkqaovZm8fhnhuUOVi+J4Y=
-Message-ID: <481E33FA.2060905@gmail.com>
-Date: Mon, 05 May 2008 02:08:58 +0400
-From: Dmitri Vorobiev <dmitri.vorobiev@gmail.com>
-Organization: DmVo Home
-User-Agent: Thunderbird 1.5.0.14ubu (X11/20080306)
+	Sun, 4 May 2008 18:19:37 -0400
+Message-ID: <481E3433.2030408@zytor.com>
+Date: Sun, 04 May 2008 15:09:55 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-To: Dmitri Vorobiev <dmitri.vorobiev@gmail.com>
-CC: gregkh@suse.de, linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH 1/1] remove duplicate definition of sysfs_update_group()
-References: <1209910666-7918-1-git-send-email-dmitri.vorobiev@gmail.com>
-In-Reply-To: <1209910666-7918-1-git-send-email-dmitri.vorobiev@gmail.com>
-Content-Type: text/plain; charset=KOI8-R
-Content-Transfer-Encoding: 8bit
+To: monstr@seznam.cz
+CC: Arnd Bergmann <arnd@arndb.de>, microblaze-uclinux@itee.uq.edu.au,
+       Matthew Wilcox <matthew@wil.cx>, Will Newton <will.newton@gmail.com>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       linux-arch@vger.kernel.org, git@xilinx.com,
+       John Williams <john.williams@petalogix.com>,
+       Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>,
+       John Linn <John.Linn@xilinx.com>
+Subject: Re: microblaze syscall list
+References: <87a5b0800804220513t75690ceao938a288596b5ad0c@mail.gmail.com> <4813DF3E.6080800@itee.uq.edu.au> <4814A153.3040600@seznam.cz> <200805032357.41043.arnd@arndb.de> <481D7DF7.3000909@seznam.cz>
+In-Reply-To: <481D7DF7.3000909@seznam.cz>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dmitri Vorobiev пишет:
-> The stub version of the sysfs_update_group() function is erroneously
-> provided twice. This patch removes the redundant definition.
+Michal Simek wrote:
+> /* fs/select.c */
+> 	.long sys_select /* obsolete -> sys_pselect6 */
+> ok	.long sys_pselect7
+> 	.long sys_pselect6 /* obsolete -> sys_pselect7 */
+
+I thought there was some semantic differences between select() and 
+pselect()... perhaps those changes have been removed?
+
+> 
+> /* kernel/sys_ni.c */
+> 	.long sys_ni_syscall /*  :-)  */
 > 
 
-Oops! I did not notice Ingo's fix when I was sending my patch:
+There is a school of thought that it's useful to reserve a system call 
+number (usually zero) as a system call that is *guaranteed* to have no 
+effect.
 
-http://lkml.org/lkml/2008/5/4/21
+> /* arch - microblaze specific */
+> /* arch/microblaze/kernel/signal.c */
+> 	.long sys_sigreturn /* obsolete -> sys_rt_sigreturn */
+> ok	.long sys_rt_sigreturn_wrapper /*.long sys_rt_sigreturn*/
+> 	.long sys_sigaction /* obsolete -> rt_sigaction */
+> 	.long sys_sigsuspend /* obsolete -> rt_sigsuspend */
 
-In Ingo's version, the changelog entry is much better than mine. Sorry
-for the noise.
+Btw, please implement rt_sigreturn sanely; on x86, for example, one has 
+to pop a word off the stack before one can invoke the system call, when 
+used as sa_restorer...
 
-Dmitri
-
-> Signed-off-by: Dmitri Vorobiev <dmitri.vorobiev@gmail.com>
-> ---
->  include/linux/sysfs.h |    6 ------
->  1 files changed, 0 insertions(+), 6 deletions(-)
-> 
-> diff --git a/include/linux/sysfs.h b/include/linux/sysfs.h
-> index 27bad59..7858eac 100644
-> --- a/include/linux/sysfs.h
-> +++ b/include/linux/sysfs.h
-> @@ -196,12 +196,6 @@ static inline int sysfs_update_group(struct kobject *kobj,
->  	return 0;
->  }
->  
-> -static inline int sysfs_update_group(struct kobject *kobj,
-> -				const struct attribute_group *grp)
-> -{
-> -	return 0;
-> -}
-> -
->  static inline void sysfs_remove_group(struct kobject *kobj,
->  				      const struct attribute_group *grp)
->  {
+	-hpa
 
