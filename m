@@ -1,124 +1,164 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756712AbYEDMyR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752052AbYEDM41@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756712AbYEDMyR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 May 2008 08:54:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755977AbYEDMyA
+	id S1752052AbYEDM41 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 May 2008 08:56:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751045AbYEDM4R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 May 2008 08:54:00 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:37601 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755963AbYEDMx7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 May 2008 08:53:59 -0400
-Date: Sun, 04 May 2008 21:53:16 +0900
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [-mm][PATCH 0/5] mm: page reclaim throttle v6
-Cc: kosaki.motohiro@jp.fujitsu.com
-Message-Id: <20080504201343.8F52.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	Sun, 4 May 2008 08:56:17 -0400
+Received: from cantor.suse.de ([195.135.220.2]:53518 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750881AbYEDM4Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 May 2008 08:56:16 -0400
+From: Neil Brown <neilb@suse.de>
+To: Joao Luis Meloni Assirati <assirati@nonada.if.usp.br>,
+       Kay Sievers <kay.sievers@vrfy.org>, Greg Kroah-Hartman <gregkh@suse.de>
+Date: Sun, 4 May 2008 22:56:03 +1000
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
+Message-ID: <18461.45667.588613.443564@notabene.brown>
+Cc: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org
+Subject: Re: Software RAID partitions not detected at boot time with linux 2.6.25.1.
+In-Reply-To: message from Joao Luis Meloni Assirati on Saturday May 3
+References: <200805032245.57084.assirati@nonada.if.usp.br>
+X-Mailer: VM 7.19 under Emacs 21.4.1
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Against: 2.6.25-mm1
+On Saturday May 3, assirati@nonada.if.usp.br wrote:
+> Let's try again, this this time with a proper e-mail subject.
+> 
+> Hello,
+> 
+> The problem I reported in
+> http://marc.info/?l=linux-kernel&m=120804001406787&w=2
+> still persists at 2.6.25.1. (sorry for the repeated messages there; that was 
+> my mail client's fault).
+> 
+> In my previous bug repor, I was using raid1; now, I am using raid5, as 
+> follows.
+> 
+> I have three partitions /dev/sda2, /dev/sdb2 and /dev/sdc2 marked as raid 
+> autodetect (FD). They are assembled as a partitionable raid 5 array, and my 
+> root is in /dev/md_d0p1. With a 2.6.24.2 kernel with sata, ext3 and raid5 
+> compiled in (I don't use initrd), the system boots fine. In fact, the raid 
+> array and partitions are detected as show with dmesg:
+> 
+> md: Autodetecting RAID arrays.
+> md: Scanned 3 and added 3 devices.
+> md: autorun ...
+> md: considering sdc2 ...
+> md:  adding sdc2 ...
+> md:  adding sdb2 ...
+> md:  adding sda2 ...
+> md: created md_d0
+> md: bind<sda2>
+> md: bind<sdb2>
+> md: bind<sdc2>
+> md: running: <sdc2><sdb2><sda2>
+> raid5: device sdc2 operational as raid disk 2
+> raid5: device sdb2 operational as raid disk 1
+> raid5: device sda2 operational as raid disk 0
+> raid5: allocated 3226kB for md_d0
+> raid5: raid level 5 set md_d0 active with 3 out of 3 devices, algorithm 2
+> RAID5 conf printout:
+>  --- rd:3 wd:3
+>  disk 0, o:1, dev:sda2
+>  disk 1, o:1, dev:sdb2
+>  disk 2, o:1, dev:sdc2
+> md: ... autorun DONE.
+>  md_d0: p1 p2 p3 p4 < p5 p6 p7 >
+> 
+> The last line shows my raid partitions are detected.
+> 
+> However, when I try kernel 2.6.25.1, again with sata, ext3 and raid5 compiled 
+> in and no initrd, the kernel does not recognize the raid partitions at boot 
+> time, nonetheless the array is dected. The output of dmesg is the same  until:
+> 
+> raid5: allocated 3224kB for md_d0
+> raid5: raid level 5 set md_d0 active with 3 out of 3 devices, algorithm 2
+> RAID5 conf printout:
+>  --- rd:3 wd:3
+>  disk 0, o:1, dev:sda2
+>  disk 1, o:1, dev:sdb2
+>  disk 2, o:1, dev:sdc2
+> md: ... autorun DONE.
+> VFS: Cannot open root device "md_d0p1" or unknown-block(0,0)
+> Please append a coorect "root=" boot option; here are the available partitions:
+> 0800  312571224 sda driver:sd
+>   0801      96358 sda1
+>   0802  312472282 sda2
+> 0810  312571224 sdb driver:sd
+>   0811      96358 sdb1
+>   0812  312472282 sdb2
+> 0820  312571224 sdc driver:sd
+>   0821      96358 sdc1
+>   0822  312472282 sdc2
+> fe00  624944384 md_d0 (driver?)
+> Kernel panic - not syncing: VFS: Unable to mount root fs on unknown-block(0,0)
+> 
+> Note the absence of the line
+>  md_d0: p1 p2 p3 p4 < p5 p6 p7 >
+> showing partition detection.
+> 
 
-changelog
-========================================
-  v5 -> v6
-     o rebase to 2.6.25-mm1
-     o use PGFREE statics instead wall time.
-     o separate function type change patch and introduce throttle patch.
+It appears this regression was introduced by commit
+   edfaa7c36574f1bf09c65ad602412db9da5f96bf
+   Driver core: convert block from raw kobjects to core devices
 
-  v4 -> v5
-     o rebase to 2.6.25-rc8-mm1
+Previously, the device name "md_d0p1" would be parsed out as "md_d0"
+and partition 1.
+md_d0 would be found and the device number of the first partition
+could then be deduced even though the partition table hadn't been
+processed at this point, so 'p1' wasn't actually known.
+The kernel would attempt to open 'p1', this would trigger a read of
+the partition table and the open would be successful.
 
-  v3 -> v4:
-     o fixed recursive shrink_zone problem.
-     o add last_checked variable in shrink_zone for 
-       prevent corner case regression.
+The new code is 'simpler'.  It doesn't try to parse the device name at
+all.  It just compares the device name against the names of all known
+devices.  As the partitions are not known at this time, md_d0p1 is not
+found.
 
-  v2 -> v3:
-     o use wake_up() instead wake_up_all()
-     o max reclaimers can be changed Kconfig option and sysctl.
-     o some cleanups
+There seem to be two ways this could be fixed:
+1/ restore the old behaviour of parsing out the partition information.
+   This would be least likely to leave other regressions waiting to be
+   found, but might be seen as somewhat ugly.
 
-  v1 -> v2:
-     o make per zone throttle 
+2/ Get md_d0 to read it's partition table earlier.  I've tried this
+   before without much luck.
+   There are three times that the partition table can be parsed.
+   a/ When the device is opened if bd_invalidated is set.
+   b/ When the device is first registered.  register_disk calls
+      blkdev_get which effectively opens the device, thus triggering
+      'a' above.
+   c/ When the BLKRRPART ioctl is made on the device.
 
+   When an md device is first registered, there are no disks attached
+   to it, so no partition table can be read.  The way md devices get
+   set up, they are registered as empty devices, the component devices
+   are attached, then the array is 'started'.  Only at this point can
+   data, such as the partition table, be read.  But this it too late
+   for case 'b' above.  Case 'a' is the one that usually causes
+   partitions to be read.  'mdadm' explicitly opens devices after
+   creating them to trigger this.
 
+   We could conceivably put a BLKRRPART call in at the end of
+   autorun_array where the array has just been started, but that would
+   be rather ugly.  We would need to open the device, and doing that
+   inside the kernel is never clean.  The code in 'init/*.c' for that
+   sort of thing creates nodes in /dev in a temporary root filesystem.
+   We cannot do that for autorun_array as it can be call long after
+   boot time (but the RAID_AUTODETECT ioctl) so there may not be 
+   a temporary filesystem to play with.
 
-background
-=====================================
-current VM implementation doesn't has limit of # of parallel reclaim.
-when heavy workload, it bring to 2 bad things
-  - heavy lock contention
-  - unnecessary swap out
+So I currently think that restoring the old behaviour of not requiring
+partitions to exist before trying to open them would be best.
 
-The end of last year, KAMEZAWA Hiroyuki proposed the patch of page 
-reclaim throttle and explain it improve reclaim time.
-	http://marc.info/?l=linux-mm&m=119667465917215&w=2
-
-but unfortunately it works only memcgroup reclaim.
-Today, I implement it again for support global reclaim and mesure it.
-
-
-benefit
-=====================================
-<<1. fix the bug of incorrect OOM killer>>
-
-if do following commanc, sometimes OOM killer happened.
-(OOM happend about 10%)
-
- $ ./hackbench 125 process 1000
-
-because following bad scenario happend.
-
-   1. memory shortage happend.
-   2. many task call shrink_zone at the same time.
-   3. all page are isolated from LRU at the same time.
-   4. the last task can't isolate any page from LRU.
-   5. it cause reclaim failure.
-   6. it cause OOM killer.
-
-my patch is directly solution for that problem.
+Kay?
 
 
-<<2. performance improvement>>
-I mesure various parameter of hackbench.
-
-result number mean seconds (i.e. smaller is better)
-
-    num_group       vanilla      with throttle   
-   --------------------------------------------
-      80              26.22           24.97    
-      85              27.31           25.94    
-      90              29.23           26.77
-      95              30.73           28.40
-     100              32.02           30.62
-     105              33.97           31.93
-     110              35.37           33.19
-     115              36.96           33.68
-     120              74.05           36.25
-     125              41.07           39.30
-     130              86.92           45.74
-     135             234.62           45.99
-     140             291.95           57.82
-     145             425.35           70.31
-     150             766.92          113.28
-
-
-Why this patch imrove performance?
-
-vanilla kernel get unstable performance at swap happend.
-this patch doesn't improvement best case, but be able to prevent worst case.
-thus, The average performance of hackbench increase largely.
-
-
-
-
-
+NeilBrown
