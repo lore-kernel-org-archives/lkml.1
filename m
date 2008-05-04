@@ -1,60 +1,154 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757271AbYEDPbS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755859AbYEDPeo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757271AbYEDPbS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 May 2008 11:31:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752291AbYEDPbF
+	id S1755859AbYEDPeo (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 May 2008 11:34:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751720AbYEDPeh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 May 2008 11:31:05 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:47650 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751835AbYEDPbB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 May 2008 11:31:01 -0400
-Date: Sun, 4 May 2008 16:30:56 +0100
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Bryan Wu <cooloney@kernel.org>
-Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/1] [vfs/proc] task_nommu: fix compile failing bug
-	because of spilt file.h
-Message-ID: <20080504153056.GJ5882@ZenIV.linux.org.uk>
-References: <1209913975-19242-1-git-send-email-cooloney@kernel.org>
+	Sun, 4 May 2008 11:34:37 -0400
+Received: from saeurebad.de ([85.214.36.134]:49296 "EHLO saeurebad.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752206AbYEDPeg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 May 2008 11:34:36 -0400
+From: Johannes Weiner <hannes@saeurebad.de>
+To: "Yinghai Lu" <yhlu.kernel@gmail.com>
+Cc: "Ingo Molnar" <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, "Andi Kleen" <andi@firstfloor.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>
+Subject: Re: [RFC 0/2] Rootmem: boot-time memory allocator
+References: <20080503152502.191599824@symbol.fehenstaub.lan>
+	<20080503175426.GB5292@elte.hu>
+	<86802c440805032106t4d020838v39aaf93309003cdb@mail.gmail.com>
+	<87hcdev448.fsf@saeurebad.de> <87r6citaqg.fsf@saeurebad.de>
+Date: Sun, 04 May 2008 17:34:29 +0200
+In-Reply-To: <87r6citaqg.fsf@saeurebad.de> (Johannes Weiner's message of "Sun,
+	04 May 2008 16:17:11 +0200")
+Message-ID: <87lk2qt75m.fsf@saeurebad.de>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1209913975-19242-1-git-send-email-cooloney@kernel.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, May 04, 2008 at 11:12:55PM +0800, Bryan Wu wrote:
-> diff --git a/fs/proc/task_nommu.c b/fs/proc/task_nommu.c
-> index 6cba820..987bc69 100644
-> --- a/fs/proc/task_nommu.c
-> +++ b/fs/proc/task_nommu.c
-> @@ -1,6 +1,7 @@
->  
->  #include <linux/mm.h>
->  #include <linux/file.h>
-> +#include <linux/fdtable.h>
->  #include <linux/mount.h>
->  #include <linux/ptrace.h>
->  #include <linux/seq_file.h>
+Hi,
 
-Well...  I see what it's trying to do, but it's a bullshit.  Look: it's from
-        if (current->files && atomic_read(&current->files->count) > 1)
-                sbytes += kobjsize(current->files);
-        else
-                bytes += kobjsize(current->files);
-Now, what we really have is size of current->files (fixed and not too large)
-+ if descriptor table is too large to be embedded,
-	size of current->files->fdt
-	size of current->files->fdt->fd
-	size of current->files->fdt->open_fds/->close_on_exec
-And the second term there can be *large*, so if we are really serious about
-taking descriptor table footprint into account, we'd better take care of
-that too.  I'm not sure that we want to, though - note that we do that only
-on nommu targets...
+Johannes Weiner <hannes@saeurebad.de> writes:
 
-So what's that code really trying to achieve?
+> Hi Yinghai,
+>
+> Johannes Weiner <hannes@saeurebad.de> writes:
+>
+>> Hi,
+>>
+>> "Yinghai Lu" <yhlu.kernel@gmail.com> writes:
+>>
+>>> On Sat, May 3, 2008 at 10:54 AM, Ingo Molnar <mingo@elte.hu> wrote:
+>>>>
+>>>>  * Johannes Weiner <hannes@saeurebad.de> wrote:
+>>>>
+>>>>  > I was spending some time and work on the bootmem allocator the last
+>>>>  > few weeks and came to the conclusion that its current design is not
+>>>>  > appropriate anymore.
+>>>>  >
+>>>>  > As Ingo said in another email, NUMA technologies will become weirder,
+>>>>  > nodes whose PFNs span other nodes for example and it makes bootmem
+>>>>  > code become an unreadable mess.
+>>>>  >
+>>>>  > So I sat down two days ago and rewrote the allocator, here is the
+>>>>  > result: rootmem!
+>>>>
+>>>>  hehe :-)
+>>>>
+>>>>
+>>>>  > The biggest difference to the old design is that there is only one
+>>>>  > bitmap for all PFNs of all nodes together, so the overlapping PFN
+>>>>  > problems simply dissolve and fun like allocations crossing node
+>>>>  > boundaries work implicitely.  The new API requires every node used by
+>>>>  > the allocator to be registered and after that the bitmap gets
+>>>>  > allocated and the allocator enabled.
+>>>>  >
+>>>>  > I chose to add a new allocator rather than replacing bootmem at once
+>>>>  > because that would have required all callsites to switch in one go,
+>>>>  > which would be a lot.  The new allocator can be adopted more slowly
+>>>>  > and I added a compatibility API for everything besides actually
+>>>>  > setting up the allocator.  When the last user dies, bootmem can be
+>>>>  > dropped completely (including pgdat->bdata, whee..)
+>>>>  >
+>>>>  > The main ideas from bootmem have been stolen^W preserved but the new
+>>>>  > design allowed me to shrink the code a lot and express things more
+>>>>  > simple and clear:
+>>>>  >
+>>>>  > $ sloc.awk < mm/bootmem.c
+>>>>  > 455 lines of code, 65 lines of comments (520 lines total)
+>>>>  >
+>>>>  > $ sloc.awk < mm/rootmem.c
+>>>>  > 243 lines of code, 96 lines of comments (339 lines total)
+>>>>
+>>>>  amazing!
+>>>>
+>>>>  i'd still suggest to keep it all named bootmem though :-/ How about
+>>>>  bootmem2.c and then renaming it back to bootmem.c, once the last user is
+>>>>  gone? That would save people from having to rename whole chapters in
+>>>>  entire books ;-)
+>>>
+>>> for spanning support node0:0-2g, 4-6g; node1: 2-4g, 6-8g, could have
+>>> some problem.
+>>
+>> Could you eleborate on that?
+>>
+>>> +/*
+>>> + * rootmem_register_node - register a node to rootmem
+>>> + * @nid: node id
+>>> + * @start: first pfn on the node
+>>> + * @end: first pfn after the node
+>>> + *
+>>> + * This function must not be called anymore if the allocator
+>>> + * is already up and running (rootmem_setup() has been called).
+>>> + */
+>>> +void __init rootmem_register_node(int nid, unsigned long start,
+>>> +                       unsigned long end)
+>>> +{
+>>> +       BUG_ON(rootmem_functional);
+>>> +
+>>> +       if (start < rootmem_min_pfn)
+>>> +               rootmem_min_pfn = start;
+>>> +       if (end > rootmem_max_pfn)
+>>> +               rootmem_max_pfn = end;
+>>> +
+>>> +       rootmem_node_pages[nid] = end - start;
+>>> +       rootmem_node_offsets[nid] = start;
+>>> +       rootmem_nr_nodes++;
+>>> +}
+>>>
+>>> could change rootmem_node_pages/offsets to be struct array with
+>>> offset, pages, and nid. and every node could several struct. and whole
+>>> array should be sorted with nid.
+
+In the long term, this would have to be implemented no matter if
+rootmem/bootmem2 gets merged or not, because bootmem suffers the same
+problem, right?
+
+>> The whole point is to be agnostic about weird NUMA configs.  Right now,
+>> I am pretty proud of the simple data structures and I would avoid
+>> blowing them up again unless there is a hard reason to do so.
+
+This is non-helping crap, please excuse me.
+
+> One thing I have found is that __rootmem_alloc_node can not garuantee
+> that the memory it returns is on the requested node right now.
+
+Hm, we have two choices: Either we introduce a new API that requests the
+arch code to register not only node ranges but also subranges on that
+node, or we won't garuantee that you get all memory on the node you
+specified.  Correct?
+
+The first option would be what you have proposed, I think.
+
+> I will include the fix in the next version.
+
+Wow, I took my mouth too full.  Right now, I have no idea what the
+correct solution would be.
+
+	Hannes
