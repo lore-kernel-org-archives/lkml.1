@@ -1,44 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758040AbYEDVbR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757931AbYEDVfs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758040AbYEDVbR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 May 2008 17:31:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754345AbYEDVbD
+	id S1757931AbYEDVfs (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 May 2008 17:35:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753947AbYEDVfk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 May 2008 17:31:03 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:37543 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753128AbYEDVbC (ORCPT
+	Sun, 4 May 2008 17:35:40 -0400
+Received: from tur.go2.pl ([193.17.41.50]:35372 "EHLO tur.go2.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753867AbYEDVfk convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 May 2008 17:31:02 -0400
-Date: Sun, 4 May 2008 23:31:00 +0200 (CEST)
-From: Jan Engelhardt <jengelh@medozas.de>
-To: Thomas Gleixner <tglx@linutronix.de>
-cc: Ingo Molnar <mingo@elte.hu>, jamal <hadi@cyberus.ca>,
-       Suresh Siddha <suresh.b.siddha@intel.com>,
-       Arjan van de Ven <arjan@linux.intel.com>,
-       LKML <linux-kernel@vger.kernel.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       Jan Beulich <jbeulich@novell.com>
-Subject: Re: i387/FPU init issues...
-In-Reply-To: <alpine.LFD.1.10.0805031936510.6003@apollo.tec.linutronix.de>
-Message-ID: <alpine.LNX.1.10.0805042326340.11757@fbirervta.pbzchgretzou.qr>
-References: <1209810775.6972.37.camel@localhost> <alpine.LFD.1.10.0805031650120.6003@apollo.tec.linutronix.de> <1209834123.6972.48.camel@localhost> <20080503173402.GA5292@elte.hu> <alpine.LFD.1.10.0805031936510.6003@apollo.tec.linutronix.de>
-User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
+	Sun, 4 May 2008 17:35:40 -0400
+From: tockar <tockar@o2.pl>
+To: linux-kernel@vger.kernel.org
+Subject: Problem with sensors on linux 2.6.25
+Date: Sun, 4 May 2008 23:34:03 +0200
+User-Agent: KMail/1.9.9
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200805042334.03574.tockar@o2.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello,
+I've strange problem with Linux 2.6.25 and later (I've compiled 2.6.26-rc1 and 
+I have same problem). In 'sensors' command result, I get ALARMs. 
+Here's 'sensors' result on Linux 2.6.24:
 
-On Saturday 2008-05-03 19:39, Thomas Gleixner wrote:
->> great. So this NOP is indeed not generally known to all "P6 and later" 
->> CPUs. (the PII)
->
->Looks like. My analysis was wrong, as I got the P6 vs. PII/PIII
->confused :) Damn unintutive numbering, I thought ARM is worse but I'm
->not so sure anymore.
+it87-isa-0290
+Adapter: ISA adapter
+VCore 1:     +1,71 V  (min =  +3,97 V, max =  +1,95 V)
+VCore 2:     +3,09 V  (min =  +3,82 V, max =  +1,01 V)
++3.3V:       +3,07 V  (min =  +3,82 V, max =  +3,06 V)
++5V:         +5,59 V  (min =  +4,27 V, max =  +5,11 V)
++12V:       +13,31 V  (min = +15,62 V, max =  +7,74 V)
+-12V:        -2,69 V  (min =  -0,61 V, max =  +3,44 V)
+-5V:         -9,14 V  (min =  +3,82 V, max =  -2,62 V)
+Stdby:       +0,00 V  (min =  +6,37 V, max =  +5,03 V)
+VBat:        +3,25 V
+fan1:       5152 RPM  (min =    0 RPM, div = 2)
+fan2:          0 RPM  (min =    0 RPM, div = 2)
+M/B Temp:    +34,0°C  (low  =  -7,0°C, high = -11,0°C)  sensor = transistor
+CPU Temp:    +33,0°C  (low  = -66,0°C, high = +127,0°C)  sensor = transistor
+Temp3:       +31,0°C  (low  = -33,0°C, high = -101,0°C)  sensor = transistor
 
-Guess that Intel named it Pentium II either because Hexium
-("5"86:Pentium, "6"86:Hexium) would have been a strange name, or the
-successor to the Pentium/586 was not that great an improvement.
-Or something else? Always kept me wondering.
+Two minutes later, on Linux 2.6.25:
+
+it87-isa-0290
+Adapter: ISA adapter
+VCore 1:     +1,71 V  (min =  +3,97 V, max =  +1,95 V)   ALARM
+VCore 2:     +3,09 V  (min =  +3,82 V, max =  +1,01 V)   ALARM
++3.3V:       +3,07 V  (min =  +3,82 V, max =  +3,06 V)   ALARM
++5V:         +5,59 V  (min =  +4,27 V, max =  +5,11 V)   ALARM
++12V:       +13,31 V  (min = +15,62 V, max =  +7,74 V)   ALARM
+-12V:        -2,69 V  (min =  -0,61 V, max =  +3,44 V)   ALARM
+-5V:         -9,14 V  (min =  +3,82 V, max =  -2,62 V)   ALARM
+Stdby:       +0,00 V  (min =  +6,37 V, max =  +5,03 V)   ALARM
+VBat:        +3,25 V
+fan1:       5152 RPM  (min =    0 RPM, div = 2)
+fan2:          0 RPM  (min =    0 RPM, div = 2)
+M/B Temp:    +35,0°C  (low  =  -7,0°C, high = -11,0°C)  sensor = transistor
+CPU Temp:    +33,0°C  (low  = -66,0°C, high = +127,0°C)  sensor = transistor
+Temp3:       +32,0°C  (low  = -33,0°C, high = -101,0°C)  sensor = transistor
+
+Results are almost identical, but I get those ALARMs. I've Pentium4 1,4Ghz 
+processor, module for my mainboard is BLK_DEV_VIA82CXXX. Is that a bug? Can I 
+safely use Linux 2.6.25 or later?
