@@ -1,82 +1,169 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752613AbYEDOun@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753213AbYEDOwd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752613AbYEDOun (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 May 2008 10:50:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750854AbYEDOud
+	id S1753213AbYEDOwd (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 May 2008 10:52:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751117AbYEDOwZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 May 2008 10:50:33 -0400
-Received: from mu-out-0910.google.com ([209.85.134.190]:1243 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750733AbYEDOuc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 May 2008 10:50:32 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:date:user-agent:cc:mime-version:content-disposition:message-id:subject:content-type:content-transfer-encoding;
-        b=TTiMcO5nDyeOZPNgtcVFnG08uxJNYfHjBz8MsOZFtP98d5RLsOfnHQWavKPLCuFHpfgWCNH9x/5XyiAm14z3cF9u0Mz2EF2Id3pinDcQWrHLPvo985noX8irBUNb1Yg5y8aQWU/muniCvJniAkXIkj4/ggwPQwbk33El0H9H5WQ=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Sun, 4 May 2008 17:05:52 +0200
-User-Agent: KMail/1.9.9
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200805041705.53129.bzolnier@gmail.com>
-Subject: [git patches] IDE fixes
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Sun, 4 May 2008 10:52:25 -0400
+Received: from 178-47-31-89.wifiinternet.cz ([89.31.47.178]:50173 "EHLO
+	seznam.cz" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751025AbYEDOwX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 May 2008 10:52:23 -0400
+From: monstr@seznam.cz
+To: linux-kernel@vger.kernel.org
+Cc: arnd@arndb.de, linux-arch@vger.kernel.org, stephen.neuendorffer@xilinx.com,
+       John.Linn@xilinx.com, john.williams@petalogix.com, matthew@wil.cx,
+       will.newton@gmail.com, drepper@redhat.com,
+       microblaze-uclinux@itee.uq.edu.au, grant.likely@secretlab.ca,
+       Michal Simek <monstr@monstr.eu>
+Subject: [PATCH 37/56] microblaze_v2: headers for irq
+Date: Sun,  4 May 2008 13:41:26 +0200
+Message-Id: <4e20213f5f296268a24955df8c951f7fba279816.1209897266.git.monstr@monstr.eu>
+X-Mailer: git-send-email 1.5.4.GIT
+In-Reply-To: <92cd3a27b393bb394d48902594152351a92c59bb.1209897266.git.monstr@monstr.eu>
+References: <1209901305-6404-1-git-send-email-monstr@seznam.cz>
+ <a4a778e34c66d126f5c4bf1ca423cf32950ea5ab.1209897266.git.monstr@monstr.eu>
+ <c805caeb1dd7f6d1349c4a463cb88a5342a170d2.1209897266.git.monstr@monstr.eu>
+ <f120ababf2bade9aab7199bffb3014aa606e5a1c.1209897266.git.monstr@monstr.eu>
+ <684c36e5ad3f598e5079e88ec195545c4a7150c2.1209897266.git.monstr@monstr.eu>
+ <ed3695121faf485d491cecdd96d5d4dcc498411d.1209897266.git.monstr@monstr.eu>
+ <0674b1f7abb9a3d564b68c95bc28adc2c2fe9551.1209897266.git.monstr@monstr.eu>
+ <9a7c6646e5dd9724c1cf34767adec181481fa3ef.1209897266.git.monstr@monstr.eu>
+ <932956128c9c655a218a940eaf02017a5dd0bdf9.1209897266.git.monstr@monstr.eu>
+ <2f801c33caee22e112af51ae927c264ce99ead01.1209897266.git.monstr@monstr.eu>
+ <2391e49379fb6639f57d9d6e5811f3d49a4c6fda.1209897266.git.monstr@monstr.eu>
+ <0873f3a1f3b72591735c6461b51964693cac52e5.1209897266.git.monstr@monstr.eu>
+ <0ba1f259d3c17eba54e334622493577493f5065f.1209897266.git.monstr@monstr.eu>
+ <694451053534fea7b78fb9d618b53a2b5ebeb602.1209897266.git.monstr@monstr.eu>
+ <f0c837df4106a31c1a81917596603918f722ea7b.1209897266.git.monstr@monstr.eu>
+ <d883a8d8da812d77fefd47730d28d0bdb7b504e0.1209897266.git.monstr@monstr.eu>
+ <625ef466cf121d655539eedc919dd39166087e0c.1209897266.git.monstr@monstr.eu>
+ <b5067a1846075ddd1035966ea1edc908579e2e88.1209897266.git.monstr@monstr.eu>
+ <378157891bac535dbc55e658d5f03fdd332e85cf.1209897266.git.monstr@monstr.eu>
+ <eadcc6f4754df78b69d6d54c404624d0390c8558.1209897266.git.monstr@monstr.eu>
+ <4df4022e06b9056202cc2fdf0b99deb01563a0fa.1209897266.git.monstr@monstr.eu>
+ <6b0c9864dc80776ae48d6488a6892e5d698751b7.1209897266.git.monstr@monstr.eu>
+ <ea5cbbca49c38c506960fddba29cbd8cb24e1a8d.1209897266.git.monstr@monstr.eu>
+ <4f4d6ed3fce9b21cdd6dcacb2d72fff7e9830628.1209897266.git.monstr@monstr.eu>
+ <35e662a81eb86c7ffb2aaa6141ca38a07789f382.1209897266.git.monstr@monstr.eu>
+ <b41fcf3dd830f4ba82692a9bec2406ed0c290e7e.1209897266.git.monstr@monstr.eu>
+ <14acb31da2794d2d5916da3db3d75fe2285ac055.1209897266.git.monstr@monstr.eu>
+ <598221ce2159046614d7b158ea62d5af51907af3.1209897266.git.monstr@monstr.eu>
+ <41c1f410eaafd875246362d10ef9866d8cc2a934.1209897266.git.monstr@monstr.eu>
+ <09ce2baf0c8308d3fbca98e7eb36a6aab59112a7.1209897266.git.monstr@monstr.eu>
+ <c9418c683be99ae12abb89575c362d586c026bad.1209897266.git.monstr@monstr.eu>
+ <cfde3796e95bdd17c32e4fd7762d0aee55967707.1209897266.git.monstr@monstr.eu>
+ <8aba2d82c85cd1d5b56de328c1fd080ee51f0211.1209897266.git.monstr@monstr.eu>
+ <c4000ff625bd217f9bb683e3bf8c7193a82bd744.1209897266.git.monstr@monstr.eu>
+ <491f823fac6c03cc36834ec569a45d30a03a72cf.1209897266.git.monstr@monstr.eu>
+ <96f2004535c34a0c762bf2012c299cbf9f89ab32.1209897266.git.monstr@monstr.eu>
+ <92cd3a27b393bb394d48902594152351a92c59bb.1209897266.git.monstr@monstr.eu>
+In-Reply-To: <a4a778e34c66d126f5c4bf1ca423cf32950ea5ab.1209897266.git.monstr@monstr.eu>
+References: <a4a778e34c66d126f5c4bf1ca423cf32950ea5ab.1209897266.git.monstr@monstr.eu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-Fix regression affecting SL82C105 host driver.
-
-
-Linus, please pull from:
-
-master.kernel.org:/pub/scm/linux/kernel/git/bart/ide-2.6.git/
-
-to receive the following updates:
-
- drivers/ide/ide-probe.c |   12 ++++++------
- 1 files changed, 6 insertions(+), 6 deletions(-)
+From: Michal Simek <monstr@monstr.eu>
 
 
-Bartlomiej Zolnierkiewicz (1):
-      ide: IDE_HFLAG_SERIALIZE_DMA bugfix
+Signed-off-by: Michal Simek <monstr@monstr.eu>
+---
+ include/asm-microblaze/hardirq.h  |   31 +++++++++++++++++++++++++++++++
+ include/asm-microblaze/hw_irq.h   |   19 +++++++++++++++++++
+ include/asm-microblaze/irq_regs.h |   19 +++++++++++++++++++
+ 3 files changed, 69 insertions(+), 0 deletions(-)
+ create mode 100644 include/asm-microblaze/hardirq.h
+ create mode 100644 include/asm-microblaze/hw_irq.h
+ create mode 100644 include/asm-microblaze/irq_regs.h
 
-
-diff --git a/drivers/ide/ide-probe.c b/drivers/ide/ide-probe.c
-index 591deda..34b0d4f 100644
---- a/drivers/ide/ide-probe.c
-+++ b/drivers/ide/ide-probe.c
-@@ -1355,12 +1355,6 @@ static void ide_init_port(ide_hwif_t *hwif, unsigned int port,
- 	if (hwif->chipset != ide_dtc2278 || hwif->channel == 0)
- 		hwif->port_ops = d->port_ops;
- 
--	if ((d->host_flags & IDE_HFLAG_SERIALIZE) ||
--	    ((d->host_flags & IDE_HFLAG_SERIALIZE_DMA) && hwif->dma_base)) {
--		if (hwif->mate)
--			hwif->mate->serialized = hwif->serialized = 1;
--	}
--
- 	hwif->swdma_mask = d->swdma_mask;
- 	hwif->mwdma_mask = d->mwdma_mask;
- 	hwif->ultra_mask = d->udma_mask;
-@@ -1382,6 +1376,12 @@ static void ide_init_port(ide_hwif_t *hwif, unsigned int port,
- 			hwif->dma_ops = d->dma_ops;
- 	}
- 
-+	if ((d->host_flags & IDE_HFLAG_SERIALIZE) ||
-+	    ((d->host_flags & IDE_HFLAG_SERIALIZE_DMA) && hwif->dma_base)) {
-+		if (hwif->mate)
-+			hwif->mate->serialized = hwif->serialized = 1;
-+	}
+diff --git a/include/asm-microblaze/hardirq.h b/include/asm-microblaze/hardirq.h
+new file mode 100644
+index 0000000..8a143fa
+--- /dev/null
++++ b/include/asm-microblaze/hardirq.h
+@@ -0,0 +1,31 @@
++/*
++ * include/asm-microblaze/hardirq.h
++ *
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License. See the file "COPYING" in the main directory of this archive
++ * for more details.
++ *
++ * Copyright (C) 2006 Atmark Techno, Inc.
++ */
 +
- 	if (d->host_flags & IDE_HFLAG_RQSIZE_256)
- 		hwif->rqsize = 256;
- 
++#ifndef _ASM_MICROBLAZE_HARDIRQ_H
++#define _ASM_MICROBLAZE_HARDIRQ_H
++
++#include <linux/cache.h>
++#include <linux/irq.h>
++#include <asm/irq.h>
++#include <asm/current.h>
++#include <asm/ptrace.h>
++
++/* should be defined in each interrupt controller driver */
++extern unsigned int get_irq(struct pt_regs *regs);
++
++typedef struct {
++	unsigned int __softirq_pending;
++} ____cacheline_aligned irq_cpustat_t;
++
++void ack_bad_irq(unsigned int irq);
++
++#include <linux/irq_cpustat.h> /* Standard mappings for irq_cpustat_t above */
++
++#endif /* _ASM_MICROBLAZE_HARDIRQ_H */
+diff --git a/include/asm-microblaze/hw_irq.h b/include/asm-microblaze/hw_irq.h
+new file mode 100644
+index 0000000..467fa26
+--- /dev/null
++++ b/include/asm-microblaze/hw_irq.h
+@@ -0,0 +1,19 @@
++/*
++ * include/asm-microblaze/hw_irq.h
++ *
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License. See the file "COPYING" in the main directory of this archive
++ * for more details.
++ *
++ * Copyright (C) 2006 Atmark Techno, Inc.
++ */
++
++#ifndef _ASM_MICROBLAZE_HW_IRQ_H
++#define _ASM_MICROBLAZE_HW_IRQ_H
++
++static inline void hw_resend_irq(struct hw_interrupt_type *h, unsigned int i)
++{
++	/* Nothing to do */
++}
++
++#endif /* _ASM_MICROBLAZE_HW_IRQ_H */
+diff --git a/include/asm-microblaze/irq_regs.h b/include/asm-microblaze/irq_regs.h
+new file mode 100644
+index 0000000..0876847
+--- /dev/null
++++ b/include/asm-microblaze/irq_regs.h
+@@ -0,0 +1,19 @@
++/*
++ * include/asm-microblaze/irq_regs.h
++ *
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License. See the file "COPYING" in the main directory of this archive
++ * for more details.
++ *
++ * Copyright (C) 2006 Atmark Techno, Inc.
++ */
++
++#ifndef _ASM_MICROBLAZE_IRQ_REGS_H
++#define _ASM_MICROBLAZE_IRQ_REGS_H
++
++#include <asm-generic/irq_regs.h>
++
++#endif /* _ASM_MICROBLAZE_IRQ_REGS_H */
++
++
++
+-- 
+1.5.4.GIT
+
