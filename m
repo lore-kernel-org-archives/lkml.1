@@ -1,90 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756908AbYEDNH2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756795AbYEDNKL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756908AbYEDNH2 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 May 2008 09:07:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751441AbYEDNHU
+	id S1756795AbYEDNKL (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 May 2008 09:10:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752461AbYEDNJ7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 May 2008 09:07:20 -0400
-Received: from fg-out-1718.google.com ([72.14.220.152]:49416 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751087AbYEDNHS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 May 2008 09:07:18 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=nAIAHXieVCuEzE5vbgvuBoyCQ+0CgyAjm3nAFNq6L9phWF/u1Chyq86sX2YYRlLDNOJiUJEhBnDa+sck5WQhA3w3J2bRryAwAvF3S20IG2x/qoJVzZ6MKBCS1rV3CsqnAlgGW6VCrVkJGtz363XyMGPmfmiCyOw0OkMOwBqAwNQ=
-Message-ID: <481DB3F3.5080102@gmail.com>
-Date: Sun, 04 May 2008 15:02:43 +0200
-From: Jacek Luczak <difrost.kernel@gmail.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Sun, 4 May 2008 09:09:59 -0400
+Received: from mail.gmx.net ([213.165.64.20]:44808 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752052AbYEDNJ6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 May 2008 09:09:58 -0400
+X-Authenticated: #310364
+X-Provags-ID: V01U2FsdGVkX19+YmQt0wR+JnXXgEguvVHBtYHm8jx81Tltaqdcir
+	owgFXLK0DliNkP
+Message-ID: <004701c8ade8$266832c0$0201a8c0@zeug>
+From: "Sebastian Herbszt" <herbszt@gmx.de>
+To: <hadi@cyberus.ca>, "Maciej W. Rozycki" <macro@linux-mips.org>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, "Thomas Gleixner" <tglx@linutronix.de>,
+       "Suresh Siddha" <suresh.b.siddha@intel.com>,
+       "Arjan van de Ven" <arjan@linux.intel.com>,
+       "Ingo Molnar" <mingo@elte.hu>, "LKML" <linux-kernel@vger.kernel.org>,
+       <jbeulich@novell.com>
+References: <1209810775.6972.37.camel@localhost>  <alpine.LFD.1.10.0805031650120.6003@apollo.tec.linutronix.de>  <481CA40A.7040906@zytor.com>  <Pine.LNX.4.55.0805032016560.20206@cliff.in.clinika.pl>  <481CC5CD.8060205@zytor.com>  <Pine.LNX.4.55.0805032209480.20206@c <1209851170.6972.64.camel@localhost>
+Subject: Re: i387/FPU init issues...
+Date: Sun, 4 May 2008 15:08:57 +0200
 MIME-Version: 1.0
-To: Prakash Punnoor <prakash@punnoor.de>
-CC: Linux Kernel list <linux-kernel@vger.kernel.org>,
-       Jens Axboe <jens.axboe@oracle.com>, neilb@suse.de
-Subject: Re: WARNING in 2.6.25-07422-gb66e1f1
-References: <200805031151.44287.prakash@punnoor.de>
-In-Reply-To: <200805031151.44287.prakash@punnoor.de>
-Content-Type: text/plain; charset=ISO-8859-2
+Content-Type: text/plain;
+	format=flowed;
+	charset="iso-8859-1";
+	reply-type=original
 Content-Transfer-Encoding: 7bit
+X-Priority: 3
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook Express 6.00.2900.3138
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3198
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+jamal,
 
-I've CC:-ed few guys which may help.
-
-Prakash Punnoor pisze:
-> Hi, I got this on boot:
->
-> usb 2-1.3: new full speed USB device using ehci_hcd and address 3
-> usb 2-1.3: configuration #1 chosen from 1 choice
-> Clocksource tsc unstable (delta = -117343945 ns)
-> ------------[ cut here ]------------
-> WARNING: at include/linux/blkdev.h:443 blk_remove_plug+0x7d/0x90()
-> Modules linked in: kvm_amd kvm powernow_k8 ehci_hcd ohci_hcd usbcore forcedeth
-> Pid: 1681, comm: fsck.ext3 Not tainted 2.6.25-07422-gb66e1f1-dirty #74
+> Sorry folks - had to run some errands. Wow, thanks for all the
+> responses.
 > 
-> Call Trace:
->  [<ffffffff80236354>] warn_on_slowpath+0x64/0xa0
->  [<ffffffff803b6a04>] generic_make_request+0x194/0x250
->  [<ffffffff803b82e7>] submit_bio+0x97/0x140
->  [<ffffffff803b756d>] blk_remove_plug+0x7d/0x90
->  [<ffffffff8049d4d4>] raid5_unplug_device+0x44/0x110
->  [<ffffffff802666ce>] sync_page+0x2e/0x50
->  [<ffffffff805a0985>] __wait_on_bit+0x65/0x90
->  [<ffffffff802669c8>] wait_on_page_bit+0x78/0x80
->  [<ffffffff8024bb70>] wake_bit_function+0x0/0x40
->  [<ffffffff8026f1ba>] pagevec_lookup_tag+0x1a/0x30
->  [<ffffffff80266fbd>] wait_on_page_writeback_range+0xbd/0x130
->  [<ffffffff8026d5e0>] do_writepages+0x20/0x40
->  [<ffffffff802670a2>] __filemap_fdatawrite_range+0x52/0x60
->  [<ffffffff80267334>] filemap_write_and_wait+0x44/0x50
->  [<ffffffff802bd968>] __blkdev_put+0x148/0x1b0
->  [<ffffffff80293441>] __fput+0xb1/0x1c0
->  [<ffffffff80290178>] filp_close+0x48/0x80
->  [<ffffffff80291a1f>] sys_close+0x9f/0x110
->  [<ffffffff8020c42b>] system_call_after_swapgs+0x7b/0x80
+> Yes, the posting i just did (as pointed in my first email) was on
+> qemu (so was the /proc/cpuinfo). I moved to qemu because it was less
+> painful to do the git bisecting on my laptop; i used the same .config.
+> I should also note that qemu seems to have worked fine in the past.
+> In any case I will try to rerun on the older hardware which i can access
+> next week again. I am begining to doubt myself if it is the same issue;
+> i know even there it was pointing to FPU.
+> So is the correct fix then to go patch qemu then? I should point i am
+> running a slightly older version of qemu that has a few patches (nothing
+> to do with x86 emulation).
 > 
-> ---[ end trace 94c0787a2e4d19eb ]---
-> EXT3 FS on md1, internal journal
-> kjournald starting.  Commit interval 5 seconds
-> EXT3 FS on md2, internal journal
-> EXT3-fs: mounted filesystem with writeback data mode.
-> kjournald starting.  Commit interval 5 seconds
-> EXT3 FS on md3, internal journal
-> EXT3-fs: mounted filesystem with writeback data mode.
-> eth0: no link during initialization.
-> r8169: eth1: link up
-> r8169: eth1: link up
-> NFSD: Using /var/lib/nfs/v4recovery as the NFSv4 state recovery directory
-> NFSD: starting 90-second grace period
+> hpa, results from running on qemu (not the hardware) are:
+> -----
+> mambo:~# ./hpa
+> Test 0: ok
+> Test 1: ok
+> Test 2: ok
+> Test 3: err
+> Test 4: err
+> Test 5: err
+> Test 6: err
+> Test 7: err
+> Test 8: err
+> ----------------
 
-Is this problem reproducible?
+this is the same result i get with qemu 0.8.2. With version 0.9.0 and
+later it is:
 
-Trace is printed by last change from Jens on Apr-29 (commit:
-7663c1e2792a9662b23dec6e19bfcd3d55360b8f, Improve queue_is_locked()), but it
-looks like raid5_unplug_device() is called during EXT3 check on md0 [why?].
+debian:~# ./hpa
+Test 0: ok
+Test 1: ok
+Test 2: ok
+Test 3: ok
+Test 4: ok
+Test 5: ok
+Test 6: ok
+Test 7: ok
+Test 8: ok
 
--Jacek
+> cheers,
+> jamal
+ 
+-  Sebastian
+
