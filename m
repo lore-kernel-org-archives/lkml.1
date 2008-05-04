@@ -1,71 +1,795 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758881AbYEEMqc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759110AbYEEMqv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758881AbYEEMqc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 08:46:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755567AbYEEMqY
+	id S1759110AbYEEMqv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 08:46:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758913AbYEEMqg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 08:46:24 -0400
-Received: from g1t0029.austin.hp.com ([15.216.28.36]:22859 "EHLO
-	g1t0029.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752142AbYEEMqX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 08:46:23 -0400
-Message-ID: <481F0192.9080705@hp.com>
-Date: Mon, 05 May 2008 08:46:10 -0400
-From: "Alan D. Brunelle" <Alan.Brunelle@hp.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
-MIME-Version: 1.0
-To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Cc: Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: More io-cpu-affinity results: queue_affinity + rq_affinity
-References: <481B38D8.7080905@hp.com>
-In-Reply-To: <481B38D8.7080905@hp.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Mon, 5 May 2008 08:46:36 -0400
+Received: from 178-47-31-89.wifiinternet.cz ([89.31.47.178]:56206 "EHLO
+	monstr.eu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1758866AbYEEMqd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 May 2008 08:46:33 -0400
+From: monstr@seznam.cz
+To: linux-kernel@vger.kernel.org
+Cc: arnd@arndb.de, linux-arch@vger.kernel.org, stephen.neuendorffer@xilinx.com,
+       John.Linn@xilinx.com, john.williams@petalogix.com, matthew@wil.cx,
+       will.newton@gmail.com, drepper@redhat.com,
+       microblaze-uclinux@itee.uq.edu.au, grant.likely@secretlab.ca,
+       Michal Simek <monstr@monstr.eu>
+Subject: [PATCH 07/56] microblaze_v2: Signal support
+Date: Sun,  4 May 2008 13:40:56 +0200
+Message-Id: <9a7c6646e5dd9724c1cf34767adec181481fa3ef.1209897266.git.monstr@monstr.eu>
+X-Mailer: git-send-email 1.5.4.GIT
+In-Reply-To: <0674b1f7abb9a3d564b68c95bc28adc2c2fe9551.1209897266.git.monstr@monstr.eu>
+References: <1209901305-6404-1-git-send-email-monstr@seznam.cz>
+ <a4a778e34c66d126f5c4bf1ca423cf32950ea5ab.1209897266.git.monstr@monstr.eu>
+ <c805caeb1dd7f6d1349c4a463cb88a5342a170d2.1209897266.git.monstr@monstr.eu>
+ <f120ababf2bade9aab7199bffb3014aa606e5a1c.1209897266.git.monstr@monstr.eu>
+ <684c36e5ad3f598e5079e88ec195545c4a7150c2.1209897266.git.monstr@monstr.eu>
+ <ed3695121faf485d491cecdd96d5d4dcc498411d.1209897266.git.monstr@monstr.eu>
+ <0674b1f7abb9a3d564b68c95bc28adc2c2fe9551.1209897266.git.monstr@monstr.eu>
+In-Reply-To: <a4a778e34c66d126f5c4bf1ca423cf32950ea5ab.1209897266.git.monstr@monstr.eu>
+References: <a4a778e34c66d126f5c4bf1ca423cf32950ea5ab.1209897266.git.monstr@monstr.eu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan D. Brunelle wrote:
-> Continuing to evaluate the potential benefits of the various I/O & CPU
-> affinity options proposed in Jens' origin/io-cpu-affinity branch...
-> 
-> Executive summary (due to the rather long-winded nature of this post):
-> 
-> We again see rq_affinity has positive potential, but not (yet) able to
-> see much benefit to adjusting queue_affinity.
-> 
-> ========================================================
-> 
-<snip>
-> 
-> =====================================================
-> 
-> As noted above, I'm going to do a series of runs to make sure this data
-> holds over a larger data set (in particular the case where I/O is far -
-> looking at QAF on & far to see if the 0.56% is truly representative).
-> Suggestions for other tests to try and show/determine queue_affinity
-> benefits are very welcome.
+From: Michal Simek <monstr@monstr.eu>
 
 
-The averages (+ min/max error bars) for the reads/second & p_system
-values when taken over 50 runs of the test can be seen at:
+Signed-off-by: Michal Simek <monstr@monstr.eu>
+---
+ arch/microblaze/kernel/signal.c |  534 +++++++++++++++++++++++++++++++++++++++
+ include/asm-microblaze/signal.h |  199 +++++++++++++++
+ 2 files changed, 733 insertions(+), 0 deletions(-)
+ create mode 100644 arch/microblaze/kernel/signal.c
+ create mode 100644 include/asm-microblaze/signal.h
 
-http://free.linux.hp.com/~adb/jens/r_s_50.png
+diff --git a/arch/microblaze/kernel/signal.c b/arch/microblaze/kernel/signal.c
+new file mode 100644
+index 0000000..dc9f273
+--- /dev/null
++++ b/arch/microblaze/kernel/signal.c
+@@ -0,0 +1,534 @@
++/*
++ * arch/microblaze/kernel/signal.c -- Signal handling
++ *
++ * Copyright (C) 2003,2004 John Williams <jwilliams@itee.uq.edu.au>
++ * Copyright (C) 2001 NEC Corporation
++ * Copyright (C) 2001 Miles Bader <miles@gnu.org>
++ * Copyright (C) 1999,2000 Niibe Yutaka & Kaz Kojima
++ * Copyright (C) 1991,1992 Linus Torvalds
++ *
++ * This file is subject to the terms and conditions of the GNU General
++ * Public License. See the file COPYING in the main directory of this
++ * archive for more details.
++ *
++ * 1997-11-28 Modified for POSIX.1b signals by Richard Henderson
++ *
++ * This file was was derived from the sh version, arch/sh/kernel/signal.c
++ */
++
++#include <linux/sched.h>
++#include <linux/mm.h>
++#include <linux/smp.h>
++#include <linux/smp_lock.h>
++#include <linux/kernel.h>
++#include <linux/signal.h>
++#include <linux/errno.h>
++#include <linux/wait.h>
++#include <linux/ptrace.h>
++#include <linux/unistd.h>
++#include <linux/stddef.h>
++#include <linux/personality.h>
++#include <linux/percpu.h>
++#include <asm/entry.h>
++#include <asm/ucontext.h>
++#include <asm/uaccess.h>
++#include <asm/pgtable.h>
++#include <asm/pgalloc.h>
++#include <asm/signal.h>
++
++#define _BLOCKABLE (~(sigmask(SIGKILL) | sigmask(SIGSTOP)))
++
++asmlinkage int do_signal(struct pt_regs *regs, sigset_t *oldset, int in_sycall);
++
++/*
++ * Atomically swap in the new signal mask, and wait for a signal.
++ */
++asmlinkage int
++sys_sigsuspend(old_sigset_t mask, struct pt_regs *regs)
++{
++	sigset_t saveset;
++
++	mask &= _BLOCKABLE;
++	spin_lock_irq(&current->sighand->siglock);
++	saveset = current->blocked;
++	siginitset(&current->blocked, mask);
++	recalc_sigpending();
++	spin_unlock_irq(&current->sighand->siglock);
++
++	regs->r3 = -EINTR;
++	while (1) {
++		current->state = TASK_INTERRUPTIBLE;
++		schedule();
++		if (do_signal(regs, &saveset, 1))
++			return -EINTR;
++	}
++}
++
++asmlinkage int
++sys_rt_sigsuspend(sigset_t *unewset, size_t sigsetsize,
++		struct pt_regs *regs)
++{
++	sigset_t saveset, newset;
++
++	/* XXX: Don't preclude handling different sized sigset_t's. */
++	if (sigsetsize != sizeof(sigset_t))
++		return -EINVAL;
++
++	if (copy_from_user(&newset, unewset, sizeof(newset)))
++		return -EFAULT;
++	sigdelsetmask(&newset, ~_BLOCKABLE);
++	spin_lock_irq(&current->sighand->siglock);
++	saveset = current->blocked;
++	current->blocked = newset;
++	recalc_sigpending();
++	spin_unlock_irq(&current->sighand->siglock);
++
++	regs->r3 = -EINTR;
++	while (1) {
++		current->state = TASK_INTERRUPTIBLE;
++		schedule();
++		if (do_signal(regs, &saveset, 1))
++			return -EINTR;
++	}
++}
++
++asmlinkage int
++sys_sigaction(int sig, const struct old_sigaction *act,
++		struct old_sigaction *oact)
++{
++	struct k_sigaction new_ka, old_ka;
++	int ret;
++
++	if (act) {
++		old_sigset_t mask;
++		if (!access_ok(VERIFY_READ, act, sizeof(*act)) ||
++			__get_user(new_ka.sa.sa_handler, &act->sa_handler) ||
++			__get_user(new_ka.sa.sa_restorer, &act->sa_restorer))
++			return -EFAULT;
++		__get_user(new_ka.sa.sa_flags, &act->sa_flags);
++		__get_user(mask, &act->sa_mask);
++		siginitset(&new_ka.sa.sa_mask, mask);
++	}
++
++	ret = do_sigaction(sig, act ? &new_ka : NULL, oact ? &old_ka : NULL);
++
++	if (!ret && oact) {
++		if (!access_ok(VERIFY_WRITE, oact, sizeof(*oact)) ||
++			__put_user(old_ka.sa.sa_handler, &oact->sa_handler) ||
++			__put_user(old_ka.sa.sa_restorer, &oact->sa_restorer))
++			return -EFAULT;
++		__put_user(old_ka.sa.sa_flags, &oact->sa_flags);
++		__put_user(old_ka.sa.sa_mask.sig[0], &oact->sa_mask);
++	}
++
++	return ret;
++}
++
++asmlinkage int
++sys_sigaltstack(const stack_t __user *uss, stack_t __user *uoss,
++		struct pt_regs *regs)
++{
++	return do_sigaltstack(uss, uoss, regs->r1);
++}
++
++/*
++ * Do a signal return; undo the signal stack.
++ */
++
++struct sigframe {
++	struct sigcontext sc;
++	unsigned long extramask[_NSIG_WORDS-1];
++	unsigned long tramp[2];	/* signal trampoline */
++};
++
++struct rt_sigframe {
++	struct siginfo info;
++	struct ucontext uc;
++	unsigned long tramp[2];	/* signal trampoline */
++};
++
++static int
++restore_sigcontext(struct pt_regs *regs, struct sigcontext *sc, int *rval_p)
++{
++	unsigned int err = 0;
++
++#define COPY(x)		err |= __get_user(regs->x, &sc->regs.x)
++	COPY(r0);	COPY(r1);
++	COPY(r2);	COPY(r3);	COPY(r4);	COPY(r5);
++	COPY(r6);	COPY(r7);	COPY(r8);	COPY(r9);
++	COPY(r10);	COPY(r11);	COPY(r12);	COPY(r13);
++	COPY(r14);	COPY(r15);	COPY(r16);	COPY(r17);
++	COPY(r18);	COPY(r19);	COPY(r20);	COPY(r21);
++	COPY(r22);	COPY(r23);	COPY(r24);	COPY(r25);
++	COPY(r26);	COPY(r27);	COPY(r28);	COPY(r29);
++	COPY(r30);	COPY(r31);
++	COPY(pc);	COPY(ear);	COPY(esr);	COPY(fsr);
++#undef COPY
++
++	*rval_p = regs->r3;
++
++	return err;
++}
++
++asmlinkage int sys_sigreturn(struct pt_regs *regs)
++{
++	struct sigframe *frame = (struct sigframe *)regs->r1;
++	sigset_t set;
++	int rval;
++
++	if (!access_ok(VERIFY_READ, frame, sizeof(*frame)))
++		goto badframe;
++
++	if (__get_user(set.sig[0], &frame->sc.oldmask)
++		|| (_NSIG_WORDS > 1
++		&& __copy_from_user(&set.sig[1], &frame->extramask,
++					sizeof(frame->extramask))))
++		goto badframe;
++
++	sigdelsetmask(&set, ~_BLOCKABLE);
++
++	spin_lock_irq(&current->sighand->siglock);
++	current->blocked = set;
++	recalc_sigpending();
++	spin_unlock_irq(&current->sighand->siglock);
++
++	if (restore_sigcontext(regs, &frame->sc, &rval))
++		goto badframe;
++	return rval;
++
++badframe:
++	force_sig(SIGSEGV, current);
++	return 0;
++}
++
++asmlinkage int sys_rt_sigreturn(struct pt_regs *regs)
++{
++	struct rt_sigframe *frame = (struct rt_sigframe *)regs->r1;
++	sigset_t set;
++	stack_t st;
++	int rval;
++
++	if (!access_ok(VERIFY_READ, frame, sizeof(*frame)))
++		goto badframe;
++
++	if (__copy_from_user(&set, &frame->uc.uc_sigmask, sizeof(set)))
++		goto badframe;
++
++	sigdelsetmask(&set, ~_BLOCKABLE);
++	spin_lock_irq(&current->sighand->siglock);
++	current->blocked = set;
++	recalc_sigpending();
++	spin_unlock_irq(&current->sighand->siglock);
++
++	if (restore_sigcontext(regs, &frame->uc.uc_mcontext, &rval))
++		goto badframe;
++
++	if (__copy_from_user((void *)&st, &frame->uc.uc_stack, sizeof(st)))
++		goto badframe;
++	/* It is more difficult to avoid calling this function than to
++	 call it and ignore errors. */
++	do_sigaltstack(&st, NULL, regs->r1);
++
++	return rval;
++
++badframe:
++	force_sig(SIGSEGV, current);
++	return 0;
++}
++
++/*
++ * Set up a signal frame.
++ */
++
++static int
++setup_sigcontext(struct sigcontext *sc, struct pt_regs *regs,
++		unsigned long mask)
++{
++	int err = 0;
++
++#define COPY(x)		err |= __put_user(regs->x, &sc->regs.x)
++	COPY(r0);	COPY(r1);
++	COPY(r2);	COPY(r3);	COPY(r4);	COPY(r5);
++	COPY(r6);	COPY(r7);	COPY(r8);	COPY(r9);
++	COPY(r10);	COPY(r11);	COPY(r12);	COPY(r13);
++	COPY(r14);	COPY(r15);	COPY(r16);	COPY(r17);
++	COPY(r18);	COPY(r19);	COPY(r20);	COPY(r21);
++	COPY(r22);	COPY(r23);	COPY(r24);	COPY(r25);
++	COPY(r26);	COPY(r27);	COPY(r28);	COPY(r29);
++	COPY(r30);	COPY(r31);
++	COPY(pc);	COPY(ear);	COPY(esr);	COPY(fsr);
++#undef COPY
++
++	err |= __put_user(mask, &sc->oldmask);
++
++	return err;
++}
++
++/*
++ * Determine which stack to use..
++ */
++static inline void *
++get_sigframe(struct k_sigaction *ka, struct pt_regs *regs, size_t frame_size)
++{
++	/* Default to using normal stack */
++	unsigned long sp = regs->r1;
++
++	if ((ka->sa.sa_flags & SA_ONSTACK) != 0 && !on_sig_stack(sp))
++		sp = current->sas_ss_sp + current->sas_ss_size;
++
++	return (void *)((sp - frame_size) & -8UL);
++}
++
++static void setup_frame(int sig, struct k_sigaction *ka,
++			sigset_t *set, struct pt_regs *regs)
++{
++	struct sigframe *frame;
++	int err = 0;
++	int signal;
++
++	frame = get_sigframe(ka, regs, sizeof(*frame));
++
++	if (!access_ok(VERIFY_WRITE, frame, sizeof(*frame)))
++		goto give_sigsegv;
++
++	signal = current_thread_info()->exec_domain
++		&& current_thread_info()->exec_domain->signal_invmap
++		&& sig < 32
++		? current_thread_info()->exec_domain->signal_invmap[sig]
++		: sig;
++
++	err |= setup_sigcontext(&frame->sc, regs, set->sig[0]);
++
++	if (_NSIG_WORDS > 1) {
++		err |= __copy_to_user(frame->extramask, &set->sig[1],
++					sizeof(frame->extramask));
++	}
++
++	/* Set up to return from userspace. If provided, use a stub
++	 already in userspace. */
++	/* minus 8 is offset to cater for "rtsd r15,8" offset */
++	if (ka->sa.sa_flags & SA_RESTORER) {
++		regs->r15 = ((unsigned long)ka->sa.sa_restorer)-8;
++	} else {
++		/* Note, these encodings are _big endian_! */
++
++		/* addi r12, r0, __NR_sigreturn */
++		err |= __put_user(0x31800000 | __NR_sigreturn ,
++				frame->tramp + 0);
++		/* brki r14, 0x8 */
++		err |= __put_user(0xb9cc0008, frame->tramp + 1);
++
++		/* Return from sighandler will jump to the tramp.
++		 Negative 8 offset because return is rtsd r15, 8 */
++		regs->r15 = ((unsigned long)frame->tramp)-8;
++
++#if 0
++		flush_cache_sigtramp((unsigned long)frame->tramp);
++#endif
++	}
++
++	if (err)
++		goto give_sigsegv;
++
++	/* Set up registers for signal handler */
++	regs->r1 = (unsigned long) frame;
++	/* Signal handler args: */
++	regs->r5 = signal; /* Arg 0: signum */
++	regs->r6 = (unsigned long) &frame->sc; /* arg 1: sigcontext */
++
++	/* Offset of 4 to handle microblaze rtid r14, 0 */
++	regs->pc = (unsigned long)ka->sa.sa_handler;
++
++	set_fs(USER_DS);
++
++#ifdef DEBUG_SIG
++	printk(KERN_INFO "SIG deliver (%s:%d): sp=%p pc=%08lx\n",
++		current->comm, current->pid, frame, regs->pc);
++#endif
++
++	return;
++
++give_sigsegv:
++	if (sig == SIGSEGV)
++		ka->sa.sa_handler = SIG_DFL;
++	force_sig(SIGSEGV, current);
++}
++
++static void setup_rt_frame(int sig, struct k_sigaction *ka, siginfo_t *info,
++			sigset_t *set, struct pt_regs *regs)
++{
++	struct rt_sigframe *frame;
++	int err = 0;
++	int signal;
++
++	frame = get_sigframe(ka, regs, sizeof(*frame));
++
++	if (!access_ok(VERIFY_WRITE, frame, sizeof(*frame)))
++		goto give_sigsegv;
++
++	signal = current_thread_info()->exec_domain
++		&& current_thread_info()->exec_domain->signal_invmap
++		&& sig < 32
++		? current_thread_info()->exec_domain->signal_invmap[sig]
++		: sig;
++
++	err |= copy_siginfo_to_user(&frame->info, info);
++
++	/* Create the ucontext. */
++	err |= __put_user(0, &frame->uc.uc_flags);
++	err |= __put_user(0, &frame->uc.uc_link);
++	err |= __put_user((void *)current->sas_ss_sp,
++			&frame->uc.uc_stack.ss_sp);
++	err |= __put_user(sas_ss_flags(regs->r1),
++			&frame->uc.uc_stack.ss_flags);
++	err |= __put_user(current->sas_ss_size, &frame->uc.uc_stack.ss_size);
++	err |= setup_sigcontext(&frame->uc.uc_mcontext,
++			regs, set->sig[0]);
++	err |= __copy_to_user(&frame->uc.uc_sigmask, set, sizeof(*set));
++
++	/* Set up to return from userspace. If provided, use a stub
++	 already in userspace. */
++	/* minus 8 is offset to cater for "rtsd r15,8" */
++	if (ka->sa.sa_flags & SA_RESTORER) {
++		regs->r15 = ((unsigned long)ka->sa.sa_restorer)-8;
++	} else {
++		/* addi r12, r0, __NR_sigreturn */
++		err |= __put_user(0x31800000 | __NR_rt_sigreturn ,
++				frame->tramp + 0);
++		/* brki r14, 0x8 */
++		err |= __put_user(0xb9cc0008, frame->tramp + 1);
++
++		/* Return from sighandler will jump to the tramp.
++		 Negative 8 offset because return is rtsd r15, 8 */
++		regs->r15 = ((unsigned long)frame->tramp)-8;
++
++#if 0
++		flush_cache_sigtramp((unsigned long)frame->tramp);
++#endif
++	}
++
++	if (err)
++		goto give_sigsegv;
++
++	/* Set up registers for signal handler */
++	regs->r1 = (unsigned long) frame;
++	/* Signal handler args: */
++	regs->r5 = signal; /* arg 0: signum */
++	regs->r6 = (unsigned long) &frame->info; /* arg 1: siginfo */
++	regs->r7 = (unsigned long) &frame->uc; /* arg2: ucontext */
++	/* Offset to handle microblaze rtid r14, 0 */
++	regs->pc = (unsigned long)ka->sa.sa_handler;
++
++	set_fs(USER_DS);
++
++#ifdef DEBUG_SIG
++	printk(KERN_INFO "SIG deliver (%s:%d): sp=%p pc=%08lx\n",
++		current->comm, current->pid, frame, regs->pc);
++#endif
++
++	return;
++
++give_sigsegv:
++	if (sig == SIGSEGV)
++		ka->sa.sa_handler = SIG_DFL;
++	force_sig(SIGSEGV, current);
++}
++
++/* Handle restarting system calls */
++static inline void
++handle_restart(struct pt_regs *regs, struct k_sigaction *ka, int has_handler)
++{
++	switch (regs->r3) {
++	case -ERESTART_RESTARTBLOCK:
++	case -ERESTARTNOHAND:
++		if (!has_handler)
++			goto do_restart;
++		regs->r3 = -EINTR;
++		break;
++	case -ERESTARTSYS:
++		if (has_handler && !(ka->sa.sa_flags & SA_RESTART)) {
++			regs->r3 = -EINTR;
++			break;
++	}
++	/* fallthrough */
++	case -ERESTARTNOINTR:
++do_restart:
++		/* offset of 4 bytes to re-execute trap (brki) instruction */
++		regs->pc -= 4;
++		break;
++	}
++}
++
++/*
++ * OK, we're invoking a handler
++ */
++
++static void
++handle_signal(unsigned long sig, struct k_sigaction *ka,
++		siginfo_t *info, sigset_t *oldset, struct pt_regs *regs)
++{
++	/* Set up the stack frame */
++	if (ka->sa.sa_flags & SA_SIGINFO)
++		setup_rt_frame(sig, ka, info, oldset, regs);
++	else
++		setup_frame(sig, ka, oldset, regs);
++
++	if (ka->sa.sa_flags & SA_ONESHOT)
++		ka->sa.sa_handler = SIG_DFL;
++
++	if (!(ka->sa.sa_flags & SA_NODEFER)) {
++		spin_lock_irq(&current->sighand->siglock);
++		sigorsets(&current->blocked,
++				&current->blocked, &ka->sa.sa_mask);
++		sigaddset(&current->blocked, sig);
++		recalc_sigpending();
++		spin_unlock_irq(&current->sighand->siglock);
++	}
++}
++
++/*
++ * Note that 'init' is a special process: it doesn't get signals it doesn't
++ * want to handle. Thus you cannot kill init even with a SIGKILL even by
++ * mistake.
++ *
++ * Note that we go through the signals twice: once to check the signals that
++ * the kernel can handle, and then we build all the user-level signal handling
++ * stack-frames in one go after that.
++ */
++int do_signal(struct pt_regs *regs, sigset_t *oldset, int in_syscall)
++{
++	siginfo_t info;
++	int signr;
++	struct k_sigaction ka;
++#ifdef DEBUG_SIG
++	printk(KERN_INFO "do signal: %p %p %d\n", regs, oldset, in_syscall);
++	printk(KERN_INFO "do signal2: %lx %lx %ld [%lx]\n", regs->pc, regs->r1,
++			regs->r12, current_thread_info()->flags);
++#endif
++	/*
++	 * We want the common case to go fast, which
++	 * is why we may in certain cases get here from
++	 * kernel mode. Just return without doing anything
++	 * if so.
++	 */
++	if (!user_mode(regs))
++		return 1;
++
++	if (!oldset)
++		oldset = &current->blocked;
++
++	signr = get_signal_to_deliver(&info, &ka, regs, NULL);
++	if (signr > 0) {
++		/* Whee! Actually deliver the signal. */
++		if (in_syscall)
++			handle_restart(regs, &ka, 1);
++		handle_signal(signr, &ka, &info, oldset, regs);
++		return 1;
++	}
++
++	if (in_syscall)
++		handle_restart(regs, NULL, 0);
++
++	/* Did we come from a system call? */
++	return 0;
++}
+diff --git a/include/asm-microblaze/signal.h b/include/asm-microblaze/signal.h
+new file mode 100644
+index 0000000..9121389
+--- /dev/null
++++ b/include/asm-microblaze/signal.h
+@@ -0,0 +1,199 @@
++/*
++ * include/asm-microblaze/signal.h
++ *
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License. See the file "COPYING" in the main directory of this archive
++ * for more details.
++ *
++ * Copyright (C) 2006 Atmark Techno, Inc.
++ *
++ * Authors:
++ * Yasushi SHOJI <yashi@atmark-techno.com>
++ * Tetsuya OHKAWA <tetsuya@atmark-techno.com>
++ */
++
++#ifndef _ASM_MICROBLAZE_SIGNAL_H
++#define _ASM_MICROBLAZE_SIGNAL_H
++
++#ifndef __ASSEMBLY__
++#include <linux/types.h>
++#include <linux/linkage.h>
++
++/* Avoid too many header ordering problems. */
++struct siginfo;
++
++#ifdef __KERNEL__
++
++/* Most things should be clean enough to redefine this at will, if care
++ is taken to make libc match. */
++#define _NSIG		64
++#define _NSIG_BPW	32
++#define _NSIG_WORDS	(_NSIG / _NSIG_BPW)
++
++typedef unsigned long old_sigset_t; /* at least 32 bits */
++
++typedef struct {
++	unsigned long sig[_NSIG_WORDS];
++} sigset_t;
++
++#else /* !__KERNEL__ */
++
++/* Here we must cater to libcs that poke about in kernel headers. */
++
++#define NSIG		32
++typedef unsigned long sigset_t;
++
++#endif /* __KERNEL__ */
++
++#endif /* __ASSEMBLY__ */
++
++#define SIGHUP		1
++#define SIGINT		2
++#define SIGQUIT		3
++#define SIGILL		4
++#define SIGTRAP		5
++#define SIGABRT		6
++#define SIGIOT		6
++#define SIGBUS		7
++#define SIGFPE		8
++#define SIGKILL		9
++#define SIGUSR1		10
++#define SIGSEGV		11
++#define SIGUSR2		12
++#define SIGPIPE		13
++#define SIGALRM		14
++#define SIGTERM		15
++#define SIGSTKFLT	16
++#define SIGCHLD		17
++#define SIGCONT		18
++#define SIGSTOP		19
++#define SIGTSTP		20
++#define SIGTTIN		21
++#define SIGTTOU		22
++#define SIGURG		23
++#define SIGXCPU		24
++#define SIGXFSZ		25
++#define SIGVTALRM	26
++#define SIGPROF		27
++#define SIGWINCH	28
++#define SIGIO		29
++#define SIGPOLL		SIGIO
++/*
++#define SIGLOST		29
++*/
++#define SIGPWR		30
++#define SIGSYS		31
++#define	SIGUNUSED	31
++
++/* These should not be considered constants from userland. */
++#define SIGRTMIN	32
++#define SIGRTMAX	_NSIG
++
++/*
++ * SA_FLAGS values:
++ *
++ * SA_ONSTACK indicates that a registered stack_t will be used.
++ * SA_RESTART flag to get restarting signals (which were the default long ago)
++ * SA_NOCLDSTOP flag to turn off SIGCHLD when children stop.
++ * SA_RESETHAND clears the handler when the signal is delivered.
++ * SA_NOCLDWAIT flag on SIGCHLD to inhibit zombies.
++ * SA_NODEFER prevents the current signal from being masked in the handler.
++ *
++ * SA_ONESHOT and SA_NOMASK are the historical Linux names for the Single
++ * Unix names RESETHAND and NODEFER respectively.
++ */
++#define SA_NOCLDSTOP	0x00000001
++#define SA_NOCLDWAIT	0x00000002
++#define SA_SIGINFO	0x00000004
++#define SA_ONSTACK	0x08000000
++#define SA_RESTART	0x10000000
++#define SA_NODEFER	0x40000000
++#define SA_RESETHAND	0x80000000
++
++#define SA_NOMASK	SA_NODEFER
++#define SA_ONESHOT	SA_RESETHAND
++
++#define SA_RESTORER	0x04000000
++
++/*
++ * sigaltstack controls
++ */
++#define SS_ONSTACK	1
++#define SS_DISABLE	2
++
++#define MINSIGSTKSZ	2048
++#define SIGSTKSZ	8192
++
++#ifndef __ASSEMBLY__
++#include <asm-generic/signal.h>
++
++#ifdef __KERNEL__
++
++struct old_sigaction {
++	__sighandler_t sa_handler;
++	old_sigset_t sa_mask;
++	unsigned long sa_flags;
++	void (*sa_restorer)(void);
++};
++
++struct sigaction {
++	__sighandler_t sa_handler;
++	unsigned long sa_flags;
++	void (*sa_restorer)(void);
++	sigset_t sa_mask; /* mask last for extensibility */
++};
++
++struct k_sigaction {
++	struct sigaction sa;
++};
++
++#else /* !__KERNEL__ */
++
++/* Here we must cater to libcs that poke about in kernel headers. */
++
++struct sigaction {
++	union {
++	__sighandler_t _sa_handler;
++	void (*_sa_sigaction)(int, struct siginfo *, void *);
++	} _u;
++	sigset_t sa_mask;
++	unsigned long sa_flags;
++	void (*sa_restorer)(void);
++};
++
++#define sa_handler	_u._sa_handler
++#define sa_sigaction	_u._sa_sigaction
++
++#endif /* __KERNEL__ */
++
++
++typedef struct sigaltstack {
++	void *ss_sp;
++	int ss_flags;
++	size_t ss_size;
++} stack_t;
++
++#ifdef __KERNEL__
++
++#include <asm/sigcontext.h>
++#undef __HAVE_ARCH_SIG_BITOPS
++
++#define ptrace_signal_deliver(regs, cookie) do { } while (0)
++
++#endif /* __KERNEL__ */
++
++asmlinkage int sys_sigsuspend(old_sigset_t mask, struct pt_regs *regs);
++asmlinkage int sys_rt_sigsuspend(sigset_t *unewset, size_t sigsetsize,
++					struct pt_regs *regs);
++asmlinkage int sys_sigaction(int sig, const struct old_sigaction *act,
++					struct old_sigaction *oact);
++asmlinkage int sys_sigaltstack(const stack_t __user *uss, stack_t __user *uoss,
++					struct pt_regs *regs);
++asmlinkage int sys_sigreturn(struct pt_regs *regs);
++asmlinkage int sys_rt_sigreturn(struct pt_regs *regs);
++
++
++
++#endif /* __ASSEMBLY__ */
++
++#endif /* _ASM_MICROBLAZE_SIGNAL_H */
+-- 
+1.5.4.GIT
 
-and
-
-http://free.linux.hp.com/~adb/jens/p_system_50.png
-
-respectively. Still shows a potential big win w/ rq_affinity set to 1,
-not much difference at all w/ queue_affinity settings (in fact, not
-seeing any real movement at all when rq_affinity=1).
-
-
-
-I'd still be willing to try other test scenarios to show how
-queue_affinity can really help, but as for now, I'd suggest removing
-that functionality for the present - getting rid of some code until such
-time as we can prove its worth.
-
-Alan
