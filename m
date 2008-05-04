@@ -1,103 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754195AbYEDEW4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754547AbYEDE0Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754195AbYEDEW4 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 May 2008 00:22:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751249AbYEDEWs
+	id S1754547AbYEDE0Y (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 May 2008 00:26:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750850AbYEDE0P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 May 2008 00:22:48 -0400
-Received: from mail.AKNET.ru ([77.246.241.226]:53084 "EHLO mail.aknet.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751004AbYEDEWr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 May 2008 00:22:47 -0400
-Message-ID: <481D3A08.2040500@aknet.ru>
-Date: Sun, 04 May 2008 08:22:32 +0400
-From: Stas Sergeev <stsp@aknet.ru>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
-MIME-Version: 1.0
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-CC: Takashi Iwai <tiwai@suse.de>, Linux kernel <linux-kernel@vger.kernel.org>,
-       Vojtech Pavlik <vojtech@suse.cz>,
-       Michael Opdenacker <michael-lists@free-electrons.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: [patch][resend] pcspkr: fix dependancies
-X-Enigmail-Version: 0.95.2
-Content-Type: multipart/mixed;
- boundary="------------090305030108000300000500"
+	Sun, 4 May 2008 00:26:15 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:46432
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1750790AbYEDE0O (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 May 2008 00:26:14 -0400
+Date: Sat, 03 May 2008 21:26:07 -0700 (PDT)
+Message-Id: <20080503.212607.157994166.davem@davemloft.net>
+To: mingo@elte.hu
+Cc: a.p.zijlstra@chello.nl, tglx@linutronix.de, guichaz@gmail.com,
+       andi@firstfloor.org, linux-kernel@vger.kernel.org,
+       linux-arch@vger.kernel.org, efault@gmx.de, dhaval@linux.vnet.ibm.com
+Subject: Re: [RFC][PATCH] sched_clock_cpu()
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20080503170130.GB21967@elte.hu>
+References: <1209832169.6929.42.camel@lappy>
+	<20080503170130.GB21967@elte.hu>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------090305030108000300000500
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+From: Ingo Molnar <mingo@elte.hu>
+Date: Sat, 3 May 2008 19:01:30 +0200
 
-Thomas Gleixner wrote:
-> The input changes need to go via Dimitry, the x86 part can go in the
-> same commit.
-> Acked-by: Thomas Gleixner <tglx@linutronix.de>
-Dmitry, would you mind applying this one?
-If not, then I see no way to get either
-fix applied...
+> 
+> * Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+> 
+> > it _DOESN'T_ boot ;-/ and I seem to have caught a flu that makes my
+> > whole body hurt like hell, so I'm not getting anything done.
+> 
+> i think i see where your boot problem comes from:
+> 
+> > +struct sched_clock_data {
+> > +	spinlock_t lock;
+> 
+> that wont work very well when sched_clock() is called from within 
+> CONFIG_LOCK_STAT instrumentation. Does the patch below solve the boot 
+> problems for you?
 
----
-fix pcspkr dependancies: make the pcspkr platform
-drivers to depend on a platform device, and
-not the other way around.
+Also, no platform can set HAVE_STABLE_CLOCK until we instantiate it in
+a Kconfig somewhere.  I've choosen to do it in kernel/Kconfig.hz and
+here are the sparc/sparc64 bits as well, I've booted this up with
+Peter's patch on my 64-cpu niagara2 box and done some basic testing.
 
-Signed-off-by: Stas Sergeev <stsp@aknet.ru>
-Acked-by: Thomas Gleixner <tglx@linutronix.de>
-CC: Vojtech Pavlik <vojtech@suse.cz>
-CC: Michael Opdenacker <michael-lists@free-electrons.com>
-CC: Takashi Iwai <tiwai@suse.de>
+It would be nice if a powerpc person could test the trivial
+powerpc Kconfig patch.
 
+Possibly this should be HAVE_UNSTABLE_CLOCK, then only one platform
+needs to set it :-)
 
---------------090305030108000300000500
-Content-Type: text/x-patch;
- name="pcsp_dep2.diff"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="pcsp_dep2.diff"
+sparc: Instantiate and set HAVE_STABLE_CLOCK
 
---- a/init/Kconfig	2008-04-26 13:40:20.000000000 +0400
-+++ b/init/Kconfig	2008-04-26 18:20:40.000000000 +0400
-@@ -624,6 +624,14 @@
- 	help
- 	  Enable support for generating core dumps. Disabling saves about 4k.
+Signed-off-by: David S. Miller <davem@davemloft.net>
+
+diff --git a/arch/sparc/Kconfig b/arch/sparc/Kconfig
+index d211fdb..c60f5d4 100644
+--- a/arch/sparc/Kconfig
++++ b/arch/sparc/Kconfig
+@@ -69,6 +69,7 @@ config SPARC
+ 	select HAVE_IDE
+ 	select HAVE_OPROFILE
+ 	select HAVE_ARCH_KGDB if !SMP
++	select HAVE_STABLE_CLOCK
  
-+config PCSPKR_PLATFORM
-+	bool "Enable PC-Speaker support" if EMBEDDED
-+	depends on ALPHA || X86 || MIPS || PPC_PREP || PPC_CHRP || PPC_PSERIES
-+	default y
-+	help
-+          This option allows to disable the internal PC-Speaker
-+          support, saving some memory.
+ # Identify this as a Sparc32 build
+ config SPARC32
+diff --git a/arch/sparc64/Kconfig b/arch/sparc64/Kconfig
+index eb36f3b..711d4b1 100644
+--- a/arch/sparc64/Kconfig
++++ b/arch/sparc64/Kconfig
+@@ -14,6 +14,7 @@ config SPARC64
+ 	select HAVE_IDE
+ 	select HAVE_LMB
+ 	select HAVE_ARCH_KGDB
++	select HAVE_STABLE_CLOCK
+ 
+ config GENERIC_TIME
+ 	bool
+diff --git a/kernel/Kconfig.hz b/kernel/Kconfig.hz
+index 526128a..b88c82a 100644
+--- a/kernel/Kconfig.hz
++++ b/kernel/Kconfig.hz
+@@ -56,3 +56,6 @@ config HZ
+ 
+ config SCHED_HRTICK
+ 	def_bool HIGH_RES_TIMERS && X86
 +
- config COMPAT_BRK
- 	bool "Disable heap randomization"
- 	default y
---- a/arch/x86/kernel/Makefile	2008-04-26 13:40:06.000000000 +0400
-+++ b/arch/x86/kernel/Makefile	2008-04-26 18:22:49.000000000 +0400
-@@ -83,7 +83,7 @@
- obj-$(CONFIG_VMI)		+= vmi_32.o vmiclock_32.o
- obj-$(CONFIG_PARAVIRT)		+= paravirt.o paravirt_patch_$(BITS).o
- 
--ifdef CONFIG_INPUT_PCSPKR
-+ifdef CONFIG_PCSPKR_PLATFORM
- obj-y				+= pcspeaker.o
- endif
- 
---- a/drivers/input/misc/Kconfig	2008-04-22 20:50:41.000000000 +0400
-+++ b/drivers/input/misc/Kconfig	2008-04-26 18:23:32.000000000 +0400
-@@ -14,7 +14,7 @@
- 
- config INPUT_PCSPKR
- 	tristate "PC Speaker support"
--	depends on ALPHA || X86 || MIPS || PPC_PREP || PPC_CHRP || PPC_PSERIES
-+	depends on PCSPKR_PLATFORM
- 	help
- 	  Say Y here if you want the standard PC Speaker to be used for
- 	  bells and whistles.
-
-
---------------090305030108000300000500--
++config HAVE_STABLE_CLOCK
++	boolean
