@@ -1,54 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758020AbYEDTcP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757825AbYEDThj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758020AbYEDTcP (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 May 2008 15:32:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754873AbYEDTcA
+	id S1757825AbYEDThj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 May 2008 15:37:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754891AbYEDTh1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 May 2008 15:32:00 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:47211 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754602AbYEDTb7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 May 2008 15:31:59 -0400
-Date: Sun, 4 May 2008 21:32:34 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Rene Herman <rene.herman@gmail.com>
-Cc: Roman Zippel <zippel@linux-m68k.org>,
-       linux-kbuild <linux-kbuild@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: kconfig - a suggestion how to fix the select issue
-Message-ID: <20080504193234.GB23846@uranus.ravnborg.org>
-References: <20080504071041.GA15315@uranus.ravnborg.org> <481E0E76.3060900@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sun, 4 May 2008 15:37:27 -0400
+Received: from moutng.kundenserver.de ([212.227.126.179]:56098 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754520AbYEDTh0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 May 2008 15:37:26 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: monstr@seznam.cz
+Subject: Re: microblaze syscall list
+Date: Sun, 4 May 2008 21:37:13 +0200
+User-Agent: KMail/1.9.9
+Cc: microblaze-uclinux@itee.uq.edu.au, Matthew Wilcox <matthew@wil.cx>,
+       Will Newton <will.newton@gmail.com>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       linux-arch@vger.kernel.org, git@xilinx.com,
+       John Williams <john.williams@petalogix.com>,
+       Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>,
+       John Linn <John.Linn@xilinx.com>
+References: <87a5b0800804220513t75690ceao938a288596b5ad0c@mail.gmail.com> <200805032357.41043.arnd@arndb.de> <481D7DF7.3000909@seznam.cz>
+In-Reply-To: <481D7DF7.3000909@seznam.cz>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <481E0E76.3060900@gmail.com>
-User-Agent: Mutt/1.4.2.1i
+Message-Id: <200805042137.17383.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX18MFGyi4pdOez0rI21a62lOzWlQZ/U40ZT2d+B
+ 2tI3AGSjdvfsakIV+n+lz8Y+5YNs5p4D3kiorKbmzbqL7b0yDi
+ BeEognSfC7HNmgZbsqIXg==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, May 04, 2008 at 09:28:54PM +0200, Rene Herman wrote:
-> On 04-05-08 09:10, Sam Ravnborg wrote:
+On Sunday 04 May 2008, Michal Simek wrote:
+
+> > mremap is a duplicate, you only need it once ;-)
 > 
-> >Today we have two ways to express/solve dependencies.
-> >
-> >Top-down we have "depends on"
-> >and bottom up we have "select".
-> >
-> >The "depends on" dependencies at the same
-> >time impact the visibility of a symbol.
-> >A symbol with "depends on" not satisfied are not
-> >visible and thus not shown in menuconfig.
+> There are mixed mmu and nommu version - brk, munmap, mrepap are in both version
+> but they take from different files.
+
+That doesn't matter as the kernel is only ever built with one of the
+two files. My point was just that you should have only one entry
+in the syscall table if you generate it from your list.
+ 
+> > right. sys_pipe and sys_mmap2 should probably go to fs/pipe.c and mm/mmap.c, but
+> > that does not need to be your worry right now, it's not part of the ABI.
 > 
-> I've always really disliked the visibility thing. I believe it's not really 
-> the core issue here but regardless of anything else, could we not "grey 
-> out" non-selectable options with its helpt text still available? That's 
-> much more the standard UI paradigm.
+> YES. sys_pipe was remove from all arch today. Patches from Uli. I'll remove
+> sys_pipe from our sys_microblaze.c.
 
-Works in xconfig - but last I tried I failed to enable it in menuconfig.
-It should be doable I just failed to see how.
+Ah, cool. I guess this leaves sys_mmap2, which we'll take care of eventually.
+ 
+> Here is updated syscall table.
 
-And as my linux time-share for this month is already almost consumed
-I will not find time to look at it :-(
+Thanks, looks good. I'd love to get a second opinion on the list though,
+it's quite likely that I made a mistake somewhere.
 
-	Sam
+Just three more calls I found:
+
+> ok	.long sys_unlinkat
+> ok	.long sys_unlink
+
+> ok	.long sys_linkat
+> ok	.long sys_link
+
+> ok	.long sys_chown
+> ok	.long sys_fchownat
+
+For all of these, you only need the *at variant, afaict.
+
+	Arnd <><
