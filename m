@@ -1,91 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756725AbYEDAmo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755138AbYEDAuw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756725AbYEDAmo (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 May 2008 20:42:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755249AbYEDAmf
+	id S1755138AbYEDAuw (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 May 2008 20:50:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750885AbYEDAun
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 May 2008 20:42:35 -0400
-Received: from wf-out-1314.google.com ([209.85.200.175]:32611 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750950AbYEDAme (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 May 2008 20:42:34 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:mime-version:content-type;
-        b=j32NQzF5TR5ppWEnVmQ1EdH0K1Q6kpbr0ByS8JQkK0hnQ7CqTu7lJn3J/WnM2sBmsUWEaBXLT2p4tL1ztIPW7WCRrfZtfXjK16M0Ez8wMJ6p7v/Po2LLzg2ITzitbAGyfLF8UkHZamEDvPW34QQH8ySRu6c4PssGRf9V+PPE1n8=
-Message-ID: <82e4877d0805031742o464dd581wd93173d79705ce0d@mail.gmail.com>
-Date: Sat, 3 May 2008 20:42:34 -0400
-From: "Parag Warudkar" <parag.warudkar@gmail.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] default to n for GROUP_SCHED and FAIR_GROUP_SCHED
-Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "akpm@osdl.org" <akpm@osdl.org>, "Ingo Molnar" <mingo@elte.hu>,
-       "Peter Zijlstra" <peterz@infradead.org>
+	Sat, 3 May 2008 20:50:43 -0400
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:58572 "EHLO smtp5.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750698AbYEDAum (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 May 2008 20:50:42 -0400
+Date: Sun, 4 May 2008 03:49:43 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Krzysztof Halasa <khc@pm.waw.pl>
+Cc: Ingo Molnar <mingo@elte.hu>, Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Ingo, no more kconfig patches
+Message-ID: <20080504004943.GC5838@cs181133002.pp.htv.fi>
+References: <20080430230100.GK29330@cs181133002.pp.htv.fi> <20080501025234.GE27574@elte.hu> <20080501115923.GX29330@cs181133002.pp.htv.fi> <20080503191445.GF5292@elte.hu> <20080503202416.GR5838@cs181133002.pp.htv.fi> <m37ieb84ve.fsf@maximus.localdomain> <20080503214750.GU5838@cs181133002.pp.htv.fi> <m3wsmb6np2.fsf@maximus.localdomain> <20080503222943.GX5838@cs181133002.pp.htv.fi> <m3r6cj5584.fsf@maximus.localdomain>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; 
-	boundary="----=_Part_13654_4952093.1209861754332"
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <m3r6cj5584.fsf@maximus.localdomain>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------=_Part_13654_4952093.1209861754332
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+On Sun, May 04, 2008 at 01:37:47AM +0200, Krzysztof Halasa wrote:
+> Adrian Bunk <bunk@kernel.org> writes:
+> 
+> > FB_SGIVW requires X86_VISWS and it's selected automatically.
+> >
+> > (which is not good if you want a kernel that runs on a PC)
+> 
+> Not sure what do you mean, it currently seem to "depend" on X86_VISWS:
+> 
+> config FB_SGIVW
+>         tristate "SGI Visual Workstation framebuffer support"
+>         depends on FB && X86_VISWS
+>         select FB_CFB_FILLRECT
+>         select FB_CFB_COPYAREA
+>         select FB_CFB_IMAGEBLIT
 
-GROUP_SCHED is confirmed to cause unacceptable latencies -
-http://lkml.org/lkml/2008/5/2/370.
+Unless I misunderstand your proposal you want to resolve dependencies 
+reversely.
 
-Besides there is no reason for it to be on by default.
+And if you want to only do this for select's: FB_SGIVW could also be 
+select'ed.
 
-Mark it EXPERIMENTAL and default to no.
+> > Why do we have to bother users with the MII option at all?
+> >
+> > "E1000E=m and TULIP=m but MII=y" works, but it doesn't really make 
+> > sense.
+> 
+> (Obviously it assumes both TULIP and E1000E required MII which is not
+> exactly the case)
+> 
+> But it makes a perfect sense, I can have modular drivers for (few)
+> hardware devices (just in case I want to rmmod etc) but most of the
+> kernel may be not modular. It would be nice if the Kconfig ask me if
+> I want to "select" the dependency Y or M, even if there is only one
+> way to make "select" dependencies happy (not counting "Y vs "M").
 
-Patch also attached.
+Getting the cases that really matter working would already be hard 
+enough...
 
-Signed-off-by: Parag Warudkar <parag.warudkar@gmail.com>
+> Krzysztof Halasa
 
---- linux-2.6/init/Kconfig.orig	2008-05-03 20:14:41.000000000 -0400
-+++ linux-2.6/init/Kconfig	2008-05-03 20:29:06.000000000 -0400
-@@ -318,7 +318,8 @@
+cu
+Adrian
 
- config GROUP_SCHED
- 	bool "Group CPU scheduler"
--	default y
-+	depends on EXPERIMENTAL
-+	default n
- 	help
- 	  This feature lets CPU scheduler recognize task groups and control CPU
- 	  bandwidth allocation to such task groups.
-@@ -326,7 +327,7 @@
- config FAIR_GROUP_SCHED
- 	bool "Group scheduling for SCHED_OTHER"
- 	depends on GROUP_SCHED
--	default y
-+	default GROUP_SCHED
+-- 
 
- config RT_GROUP_SCHED
- 	bool "Group scheduling for SCHED_RR/FIFO"
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
-------=_Part_13654_4952093.1209861754332
-Content-Type: text/x-diff; name=init_kconfig.patch
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_ffswfif60
-Content-Disposition: attachment; filename=init_kconfig.patch
-
-R1JPVVBfU0NIRUQgaXMgY29uZmlybWVkIHRvIGNhdXNlIHVuYWNjZXB0YWJsZSBsYXRlbmNpZXMg
-LQpodHRwOi8vbGttbC5vcmcvbGttbC8yMDA4LzUvMi8zNzAuIAoKQmVzaWRlcyB0aGVyZSBpcyBu
-byByZWFzb24gZm9yIGl0IHRvIGJlIG9uIGJ5IGRlZmF1bHQuCgpNYXJrIGl0IEVYUEVSSU1FTlRB
-TCBhbmQgZGVmYXVsdCB0byBuby4KClNpZ25lZC1vZmYtYnk6IFBhcmFnIFdhcnVka2FyIDxwYXJh
-Zy53YXJ1ZGthckBnbWFpbC5jb20+CgotLS0gbGludXgtMi42L2luaXQvS2NvbmZpZy5vcmlnCTIw
-MDgtMDUtMDMgMjA6MTQ6NDEuMDAwMDAwMDAwIC0wNDAwCisrKyBsaW51eC0yLjYvaW5pdC9LY29u
-ZmlnCTIwMDgtMDUtMDMgMjA6Mjk6MDYuMDAwMDAwMDAwIC0wNDAwCkBAIC0zMTgsNyArMzE4LDgg
-QEAKIAogY29uZmlnIEdST1VQX1NDSEVECiAJYm9vbCAiR3JvdXAgQ1BVIHNjaGVkdWxlciIKLQlk
-ZWZhdWx0IHkKKwlkZXBlbmRzIG9uIEVYUEVSSU1FTlRBTAorCWRlZmF1bHQgbgogCWhlbHAKIAkg
-IFRoaXMgZmVhdHVyZSBsZXRzIENQVSBzY2hlZHVsZXIgcmVjb2duaXplIHRhc2sgZ3JvdXBzIGFu
-ZCBjb250cm9sIENQVQogCSAgYmFuZHdpZHRoIGFsbG9jYXRpb24gdG8gc3VjaCB0YXNrIGdyb3Vw
-cy4KQEAgLTMyNiw3ICszMjcsNyBAQAogY29uZmlnIEZBSVJfR1JPVVBfU0NIRUQKIAlib29sICJH
-cm91cCBzY2hlZHVsaW5nIGZvciBTQ0hFRF9PVEhFUiIKIAlkZXBlbmRzIG9uIEdST1VQX1NDSEVE
-Ci0JZGVmYXVsdCB5CisJZGVmYXVsdCBHUk9VUF9TQ0hFRAogCiBjb25maWcgUlRfR1JPVVBfU0NI
-RUQKIAlib29sICJHcm91cCBzY2hlZHVsaW5nIGZvciBTQ0hFRF9SUi9GSUZPIgo=
-------=_Part_13654_4952093.1209861754332--
