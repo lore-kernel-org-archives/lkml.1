@@ -1,89 +1,207 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756795AbYEDNKL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757014AbYEDNMd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756795AbYEDNKL (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 May 2008 09:10:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752461AbYEDNJ7
+	id S1757014AbYEDNMd (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 May 2008 09:12:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751644AbYEDNMY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 May 2008 09:09:59 -0400
-Received: from mail.gmx.net ([213.165.64.20]:44808 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752052AbYEDNJ6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 May 2008 09:09:58 -0400
-X-Authenticated: #310364
-X-Provags-ID: V01U2FsdGVkX19+YmQt0wR+JnXXgEguvVHBtYHm8jx81Tltaqdcir
-	owgFXLK0DliNkP
-Message-ID: <004701c8ade8$266832c0$0201a8c0@zeug>
-From: "Sebastian Herbszt" <herbszt@gmx.de>
-To: <hadi@cyberus.ca>, "Maciej W. Rozycki" <macro@linux-mips.org>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, "Thomas Gleixner" <tglx@linutronix.de>,
-       "Suresh Siddha" <suresh.b.siddha@intel.com>,
-       "Arjan van de Ven" <arjan@linux.intel.com>,
-       "Ingo Molnar" <mingo@elte.hu>, "LKML" <linux-kernel@vger.kernel.org>,
-       <jbeulich@novell.com>
-References: <1209810775.6972.37.camel@localhost>  <alpine.LFD.1.10.0805031650120.6003@apollo.tec.linutronix.de>  <481CA40A.7040906@zytor.com>  <Pine.LNX.4.55.0805032016560.20206@cliff.in.clinika.pl>  <481CC5CD.8060205@zytor.com>  <Pine.LNX.4.55.0805032209480.20206@c <1209851170.6972.64.camel@localhost>
-Subject: Re: i387/FPU init issues...
-Date: Sun, 4 May 2008 15:08:57 +0200
+	Sun, 4 May 2008 09:12:24 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:54645 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751087AbYEDNMY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 May 2008 09:12:24 -0400
+Date: Sun, 04 May 2008 22:12:12 +0900
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [-mm][PATCH 4/5] core of reclaim throttle
+Cc: kosaki.motohiro@jp.fujitsu.com
+In-Reply-To: <20080504215819.8F5E.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+References: <20080504201343.8F52.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20080504215819.8F5E.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+Message-Id: <20080504221043.8F64.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	format=flowed;
-	charset="iso-8859-1";
-	reply-type=original
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
-X-Priority: 3
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook Express 6.00.2900.3138
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3198
-X-Y-GMX-Trusted: 0
+X-Mailer: Becky! ver. 2.42 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-jamal,
+Agghh!
+I attached old version at last mail, please drop it.
 
-> Sorry folks - had to run some errands. Wow, thanks for all the
-> responses.
-> 
-> Yes, the posting i just did (as pointed in my first email) was on
-> qemu (so was the /proc/cpuinfo). I moved to qemu because it was less
-> painful to do the git bisecting on my laptop; i used the same .config.
-> I should also note that qemu seems to have worked fine in the past.
-> In any case I will try to rerun on the older hardware which i can access
-> next week again. I am begining to doubt myself if it is the same issue;
-> i know even there it was pointing to FPU.
-> So is the correct fix then to go patch qemu then? I should point i am
-> running a slightly older version of qemu that has a few patches (nothing
-> to do with x86 emulation).
-> 
-> hpa, results from running on qemu (not the hardware) are:
-> -----
-> mambo:~# ./hpa
-> Test 0: ok
-> Test 1: ok
-> Test 2: ok
-> Test 3: err
-> Test 4: err
-> Test 5: err
-> Test 6: err
-> Test 7: err
-> Test 8: err
-> ----------------
+right patch is here.
 
-this is the same result i get with qemu 0.8.2. With version 0.9.0 and
-later it is:
 
-debian:~# ./hpa
-Test 0: ok
-Test 1: ok
-Test 2: ok
-Test 3: ok
-Test 4: ok
-Test 5: ok
-Test 6: ok
-Test 7: ok
-Test 8: ok
+------------------------------------------------------------------------
+add throttle to shrink_zone() for performance improvement and prevent incorrect oom.
 
-> cheers,
-> jamal
+
+Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+
+---
+ include/linux/mmzone.h |    2 +
+ include/linux/sched.h  |    1 
+ mm/Kconfig             |   10 ++++++++
+ mm/page_alloc.c        |    4 +++
+ mm/vmscan.c            |   56 ++++++++++++++++++++++++++++++++++++++++++++++++-
+ 5 files changed, 72 insertions(+), 1 deletion(-)
+
+Index: b/include/linux/mmzone.h
+===================================================================
+--- a/include/linux/mmzone.h	2008-05-03 00:39:44.000000000 +0900
++++ b/include/linux/mmzone.h	2008-05-03 00:44:12.000000000 +0900
+@@ -328,6 +328,8 @@ struct zone {
+ 	unsigned long		spanned_pages;	/* total size, including holes */
+ 	unsigned long		present_pages;	/* amount of memory (excluding holes) */
  
--  Sebastian
++	atomic_t		nr_reclaimers;
++	wait_queue_head_t	reclaim_throttle_waitq;
+ 	/*
+ 	 * rarely used fields:
+ 	 */
+Index: b/mm/page_alloc.c
+===================================================================
+--- a/mm/page_alloc.c	2008-05-03 00:39:44.000000000 +0900
++++ b/mm/page_alloc.c	2008-05-03 00:44:12.000000000 +0900
+@@ -3502,6 +3502,10 @@ static void __paginginit free_area_init_
+ 		zone->nr_scan_inactive = 0;
+ 		zap_zone_vm_stats(zone);
+ 		zone->flags = 0;
++
++		zone->nr_reclaimers = ATOMIC_INIT(0);
++		init_waitqueue_head(&zone->reclaim_throttle_waitq);
++
+ 		if (!size)
+ 			continue;
+ 
+Index: b/mm/vmscan.c
+===================================================================
+--- a/mm/vmscan.c	2008-05-03 00:43:48.000000000 +0900
++++ b/mm/vmscan.c	2008-05-04 22:47:49.000000000 +0900
+@@ -74,6 +74,11 @@ struct scan_control {
+ 
+ 	int order;
+ 
++	/* Can shrink be cutted off if other task freeded enough page. */
++	int may_cut_off;
++
++	unsigned long was_freed;
++
+ 	/* Which cgroup do we reclaim from */
+ 	struct mem_cgroup *mem_cgroup;
+ 
+@@ -120,6 +125,7 @@ struct scan_control {
+ int vm_swappiness = 60;
+ long vm_total_pages;	/* The total number of pages which the VM controls */
+ 
++#define MAX_RECLAIM_TASKS CONFIG_NR_MAX_RECLAIM_TASKS_PER_ZONE
+ static LIST_HEAD(shrinker_list);
+ static DECLARE_RWSEM(shrinker_rwsem);
+ 
+@@ -1187,7 +1193,46 @@ static int shrink_zone(int priority, str
+ 	unsigned long nr_inactive;
+ 	unsigned long nr_to_scan;
+ 	unsigned long nr_reclaimed = 0;
++	int ret = 0;
++	int throttle_on = 0;
++	unsigned long freed;
++	unsigned long threshold;
++
++	/* avoid recursing wait_evnet */
++	if (current->flags & PF_RECLAIMING)
++		goto shrinking;
++
++	throttle_on = 1;
++	current->flags |= PF_RECLAIMING;
++	wait_event(zone->reclaim_throttle_waitq,
++		 atomic_add_unless(&zone->nr_reclaimers, 1, MAX_RECLAIM_TASKS));
++
++	/* in some situation (e.g. hibernation), shrink processing shouldn't be
++	   cut off even though large memory freeded.  */
++	if (!sc->may_cut_off)
++		goto shrinking;
++
++	/* kswapd is no related for user latency experience. */
++	if (current->flags & PF_KSWAPD)
++		goto shrinking;
++
++	/* x4 ratio mean we want rarely check.
++	   because frequently check decrease performance. */
++	threshold = ((1 << sc->order) + zone->pages_high) * 4;
++	freed = get_vm_event(PGFREE);
++
++	/* reclaim still necessary? */
++	if (scan_global_lru(sc) &&
++	    freed - sc->was_freed >= threshold) {
++		if (zone_watermark_ok(zone, sc->order, zone->pages_high,
++				      gfp_zone(sc->gfp_mask), 0)) {
++			ret = -EAGAIN;
++			goto out;
++		}
++		sc->was_freed = freed;
++	}
+ 
++shrinking:
+ 	if (scan_global_lru(sc)) {
+ 		/*
+ 		 * Add one to nr_to_scan just to make sure that the kernel
+@@ -1239,9 +1284,16 @@ static int shrink_zone(int priority, str
+ 		}
+ 	}
+ 
++out:
++	if (throttle_on) {
++		current->flags &= ~PF_RECLAIMING;
++		atomic_dec(&zone->nr_reclaimers);
++		wake_up(&zone->reclaim_throttle_waitq);
++	}
++
+ 	sc->nr_reclaimed += nr_reclaimed;
+ 	throttle_vm_writeout(sc->gfp_mask);
+-	return 0;
++	return ret;
+ }
+ 
+ /*
+@@ -1438,6 +1490,8 @@ unsigned long try_to_free_pages(struct z
+ 		.order = order,
+ 		.mem_cgroup = NULL,
+ 		.isolate_pages = isolate_pages_global,
++		.may_cut_off = 1,
++		.was_freed = get_vm_event(PGFREE),
+ 	};
+ 
+ 	return do_try_to_free_pages(zonelist, &sc);
+Index: b/mm/Kconfig
+===================================================================
+--- a/mm/Kconfig	2008-05-03 00:39:44.000000000 +0900
++++ b/mm/Kconfig	2008-05-03 00:44:12.000000000 +0900
+@@ -205,3 +205,13 @@ config NR_QUICK
+ config VIRT_TO_BUS
+ 	def_bool y
+ 	depends on !ARCH_NO_VIRT_TO_BUS
++
++config NR_MAX_RECLAIM_TASKS_PER_ZONE
++	int "maximum number of reclaiming tasks at the same time"
++	default 3
++	help
++	  This value determines the number of threads which can do page reclaim
++	  in a zone simultaneously. If this is too big, performance under heavy memory
++	  pressure will decrease.
++	  If unsure, use default.
++
+Index: b/include/linux/sched.h
+===================================================================
+--- a/include/linux/sched.h	2008-05-03 00:39:44.000000000 +0900
++++ b/include/linux/sched.h	2008-05-03 00:44:12.000000000 +0900
+@@ -1484,6 +1484,7 @@ static inline void put_task_struct(struc
+ #define PF_MEMPOLICY	0x10000000	/* Non-default NUMA mempolicy */
+ #define PF_MUTEX_TESTER	0x20000000	/* Thread belongs to the rt mutex tester */
+ #define PF_FREEZER_SKIP	0x40000000	/* Freezer should not count it as freezeable */
++#define PF_RECLAIMING   0x80000000      /* The task have page reclaim throttling ticket */
+ 
+ /*
+  * Only the _current_ task can read/write to tsk->flags, but other
+
 
