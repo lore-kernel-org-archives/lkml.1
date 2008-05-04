@@ -1,53 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757156AbYEDOZD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757271AbYEDO01@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757156AbYEDOZD (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 May 2008 10:25:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751084AbYEDOYw
+	id S1757271AbYEDO01 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 May 2008 10:26:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752299AbYEDO0R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 May 2008 10:24:52 -0400
-Received: from fg-out-1718.google.com ([72.14.220.158]:62274 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751113AbYEDOYv (ORCPT
+	Sun, 4 May 2008 10:26:17 -0400
+Received: from wf-out-1314.google.com ([209.85.200.174]:40705 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751084AbYEDO0Q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 May 2008 10:24:51 -0400
+	Sun, 4 May 2008 10:26:16 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=CFIYwUl2eQoTrUApSgyMGMJa1h8ohzRLgPfO2brlVVO/a/o8tI6E+Os7GI7R0qrupz5XYCxoBKV3kQl1iMi1JGu6wrm/qWPM7ihN4TTTaL45qWU4Tn3f/eVBmXdmZc4QcUM3zkFmom0sWra9Bv/P8N8g/DJPxHqs+PGjMivnkVE=
-Message-ID: <481DC731.5090303@gmail.com>
-Date: Sun, 04 May 2008 16:24:49 +0200
-From: Jarek Poplawski <jarkao2@gmail.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.9 (X11/20080110)
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=gxIDnTnS3UnmDygLwcxiMRplPENJXdpaeoDTt1h+kV9+QIx4oeIIrF54AnWQ9r/AlxHqH/7j0wPXgcGa6KhA5Qn2/ofEd7v8EeaqwHjo6uK4PqezqgtXiqPQ4woZhalkmBtULvN5TzkHP18/XAsmYQ3+hHkCgylrEQ4PJubYutM=
+Date: Sun, 4 May 2008 22:30:11 +0800
+From: WANG Cong <xiyou.wangcong@gmail.com>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: WANG Cong <xiyou.wangcong@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
+       Eric Youngdale <ericy@cais.com>, viro@zeniv.linux.org.uk,
+       linux-fsdevel@vger.kernel.org, Andrew Morton <akpm@osdl.org>
+Subject: Re: [Patch] fs/binfmt_elf.c: fix a wrong free
+Message-ID: <20080504143011.GB3720@hack>
+References: <20080503124610.GA3986@hack> <Pine.LNX.4.64.0805031625150.20470@sbz-30.cs.Helsinki.FI> <20080503143942.GE3986@hack> <481D9247.4010804@cs.helsinki.fi>
 MIME-Version: 1.0
-To: Jay Cliburn <jacliburn@bellsouth.net>
-CC: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       Chris Snook <csnook@redhat.com>
-Subject: Re: Need help debugging memory corruption
-References: <20080503130951.091392ba@osprey.hogchain.net>
-In-Reply-To: <20080503130951.091392ba@osprey.hogchain.net>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <481D9247.4010804@cs.helsinki.fi>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jay Cliburn wrote, On 05/03/2008 08:09 PM:
-...
+On Sun, May 04, 2008 at 01:39:03PM +0300, Pekka Enberg wrote:
 
-> Here is the relevant console output when the bug is hit.  I note that
-> the apparent corrupting data beginning at address 0xffff81010fcff402 is
-> actually a received ethernet frame.  (The value 00:17:31:4e:9d:41 is
-> the MAC address of the local host, corresponding to the destination
-> address of a received frame.)
-> 
-> Can someone with more experience than me please take a look and give me
-> some advice or explain what might be happening here?  (What may be
-> obvious to you is probably not obvious to me.)
+> Looks good although 'ret' is usually reserved for the variable that 
+> contains the return value so you might want to consider using the more 
+> idiomatic 'out' as the label name.
+>
 
-I'm definitely with less experience, so I wonder why it can't be
-a simple race between atl1_clean_rx_ring() and something (maybe even
-pending atl1_intr_rx()) on the other cpu writing skb while kfreeing?
+Thanks. Done.
 
-Regards,
-Jarek P.
-
+---
+diff --git a/fs/binfmt_elf.c b/fs/binfmt_elf.c
+index f6d5a9d..357b503 100644
+--- a/fs/binfmt_elf.c
++++ b/fs/binfmt_elf.c
+@@ -1900,7 +1900,7 @@ static int elf_core_dump(long signr, struct pt_regs *regs, struct file *file, un
+ 	/* alloc memory for large data structures: too large to be on stack */
+ 	elf = kmalloc(sizeof(*elf), GFP_KERNEL);
+ 	if (!elf)
+-		goto cleanup;
++		goto out;
+ 	
+ 	segs = current->mm->map_count;
+ #ifdef ELF_CORE_EXTRA_PHDRS
+@@ -2034,8 +2034,9 @@ end_coredump:
+ 	set_fs(fs);
+ 
+ cleanup:
+-	kfree(elf);
+ 	free_note_info(&info);
++	kfree(elf);
++out:
+ 	return has_dumped;
+ }
+ 
