@@ -1,70 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757247AbYEDTHr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757773AbYEDTI3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757247AbYEDTHr (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 May 2008 15:07:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754230AbYEDTHg
+	id S1757773AbYEDTI3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 May 2008 15:08:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754230AbYEDTIU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 May 2008 15:07:36 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:52064 "EHLO pasmtpA.tele.dk"
+	Sun, 4 May 2008 15:08:20 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:21799 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754213AbYEDTH0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 May 2008 15:07:26 -0400
-Date: Sun, 4 May 2008 21:08:00 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Timur Tabi <timur@freescale.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: mconf.c and bindtextdomain() -- warnings while cross-compiling on OS X
-Message-ID: <20080504190800.GA23619@uranus.ravnborg.org>
-References: <481D344C.9080904@tabi.org> <20080504073313.GA16259@uranus.ravnborg.org> <481E039A.9090605@freescale.com>
-Mime-Version: 1.0
+	id S1754071AbYEDTIT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 May 2008 15:08:19 -0400
+Date: Sun, 4 May 2008 21:08:11 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.25-$sha1: RIP call_for_each_cic+0x25/0x50
+Message-ID: <20080504190811.GP12774@kernel.dk>
+References: <20080427225553.GA4848@martell.zuzino.mipt.ru> <20080428050145.af036c4f.akpm@linux-foundation.org> <20080428120412.GY12774@kernel.dk> <20080428195509.GA5247@martell.zuzino.mipt.ru> <20080429062116.GA5059@martell.zuzino.mipt.ru> <20080429090604.GK12774@kernel.dk> <20080430221250.GA10150@martell.zuzino.mipt.ru>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <481E039A.9090605@freescale.com>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20080430221250.GA10150@martell.zuzino.mipt.ru>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, May 04, 2008 at 01:42:34PM -0500, Timur Tabi wrote:
-> Sam Ravnborg wrote:
+On Thu, May 01 2008, Alexey Dobriyan wrote:
+> On Tue, Apr 29, 2008 at 11:06:05AM +0200, Jens Axboe wrote:
+> > On Tue, Apr 29 2008, Alexey Dobriyan wrote:
+> > > On Mon, Apr 28, 2008 at 11:55:09PM +0400, Alexey Dobriyan wrote:
+> > > > On Mon, Apr 28, 2008 at 02:04:13PM +0200, Jens Axboe wrote:
+> > > > > On Mon, Apr 28 2008, Andrew Morton wrote:
+> > > > > > On Mon, 28 Apr 2008 02:55:53 +0400 Alexey Dobriyan <adobriyan@gmail.com> wrote:
+> > > > > > 
+> > > > > > > This happened while ~90 cross-compile jobs were running in parallel on
+> > > > > > > ext2/noatime partition (slowly -- much debugging was on)
+> > > > > > > 
+> > > > > > > 
+> > > > > > > general protection fault: 0000 [1] PREEMPT SMP DEBUG_PAGEALLOC
+> > > > > > > CPU 0 
+> > > > > > > Modules linked in: ext2 nf_conntrack_irc ipt_MASQUERADE iptable_nat nf_nat nf_conntrack_ipv4 xt_state nf_conntrack iptable_filter ip_tables x_tables usblp uhci_hcd ehci_hcd usbcore sr_mod cdrom
+> > > > > > > Pid: 16483, comm: as Not tainted 2.6.25-c3bf9bc243092c53946fd6d8ebd6dc2f4e572d48 #1
+> > > > > > > RIP: 0010:[<ffffffff80307525>]  [<ffffffff80307525>] call_for_each_cic+0x25/0x50
+> > > > > > > RSP: 0018:ffff810170811e58  EFLAGS: 00010202
+> > > > > > > RAX: 6b6b6b6b6b6b6b6b RBX: 6b6b6b6b6b6b6b6b RCX: 0000000000000000
+> > > > > > > RDX: 0000000000000001 RSI: 0000000000000000 RDI: ffff81010ff92000
+> > > > > > > RBP: ffff810170811e78 R08: 0000000000000001 R09: 0000000000000000
+> > > > > > > R10: 0000000000000000 R11: ffff8100010069d8 R12: ffff810138ada300
+> > > > > > > R13: ffffffff803075b0 R14: ffff81017fcd2000 R15: ffff81010ff92168
+> > > > > > > FS:  00002ac3462426f0(0000) GS:ffffffff805d0000(0000) knlGS:0000000000000000
+> > > > > > > CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+> > > > > > > CR2: 00002ab602550000 CR3: 000000013609d000 CR4: 0000000000000660
+> > > > > > > DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+> > > > > > > DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+> > > > > > > Process as (pid: 16483, threadinfo ffff810170810000, task ffff81010ff92000)
+> > > > > > > Stack:  ffff810170811e88 ffff810138ada300 0000000000000010 ffff81010ff92100
+> > > > > > >  ffff810170811e88 ffffffff80307580 ffff810170811ea8 ffffffff80302a55
+> > > > > > >  ffff81010ff92100 ffff810138ada300 ffff810170811ec8 ffffffff80302b1f
+> > > > > > > Call Trace:
+> > > > > > >  [<ffffffff80307580>] cfq_free_io_context+0x10/0x20
+> > > > > > >  [<ffffffff80302a55>] put_io_context+0x85/0x90
+> > > > > > >  [<ffffffff80302b1f>] exit_io_context+0x8f/0xb0
+> > > > > > >  [<ffffffff80235d19>] do_exit+0x549/0x780
+> > > > > > >  [<ffffffff80235f8e>] do_group_exit+0x3e/0xb0
+> > > > > > >  [<ffffffff80236012>] sys_exit_group+0x12/0x20
+> > > > > > >  [<ffffffff8020b6db>] system_call_after_swapgs+0x7b/0x80
+> > > > > > > 
+> > > > > > > 
+> > > > > > > Code: 84 00 00 00 00 00 55 48 89 e5 41 55 49 89 f5 41 54 49 89 fc 53 48 83 ec 08 e8 18 e1 f5 ff 49 8b 44 24 68 48 85 c0 74 1e 48 89 c3 <48> 8b 03 48 8d 73 88 4c 89 e7 0f 18 08 41 ff d5 48 8b 03 48 85 
+> > > > > > > RIP  [<ffffffff80307525>] call_for_each_cic+0x25/0x50
+> > > > > > >  RSP <ffff810170811e58>
+> > > > > > > ---[ end trace ca143223eefdc828 ]---
+> > > > > > > Fixing recursive fault but reboot is needed!
+> > > > > > cfq-iosched.c hasn't been altered (yet) so it might not be a regression.
+> > > 
+> > > 
+> > > > > It's not a regression, it's definitely in 2.6.25 as well. So that's a
+> > > > > bit scary, I've been looking over this stuff this morning but haven't
+> > > > > pin pointed anything yet.
+> > > > > 
+> > > > > Alexey, is this something that reproduces for you?
+> > > > 
+> > > > Not yet, second run of same workload went fine and I've never seen such
+> > > > oopses before.
+> > > 
+> > > And it oopses the very same way on the third run. as(1) again.
+> > > So if there are any debugging patches, let me know.
+> > 
+> > There seems to be a small race in the destructor path, can you see if
+> > this makes a difference?
+> > 
+> > diff --git a/block/blk-ioc.c b/block/blk-ioc.c
+> > index e34df7c..012f065 100644
+> > --- a/block/blk-ioc.c
+> > +++ b/block/blk-ioc.c
+> > @@ -41,8 +41,8 @@ int put_io_context(struct io_context *ioc)
+> >  		rcu_read_lock();
+> >  		if (ioc->aic && ioc->aic->dtor)
+> >  			ioc->aic->dtor(ioc->aic);
+> > -		rcu_read_unlock();
+> >  		cfq_dtor(ioc);
+> > +		rcu_read_unlock();
+> >  
+> >  		kmem_cache_free(iocontext_cachep, ioc);
+> >  		return 1;
 > 
-> >I have queued up following patch. It is obviously correct and builds 
-> >without
-> >warnings here. Can you give it a try on your box.
-> 
-> ...
-> 
-> >+static inline void const char *gettext(const char *txt) { return txt; }
-> 
-> Drop the "void" on this line and this patch works.
-> 
-> While you're at it, you'll also need this change:
-> 
-> --- a/scripts/kconfig/mconf.c
-> +++ b/scripts/kconfig/mconf.c
-> @@ -773,7 +773,7 @@ static void conf_string(struct menu *menu)
-> 
->         while (1) {
->                 int res;
-> -               char *heading;
-> +               const char *heading;
-> 
-> On a side note, git-diff gives me this error in mconf.c:
-> 
-> @@ -924,4 +924,4 @@ int main(int ac, char **av)
->         }
-> 
->         return 0;
-> -}
-> +}
-> \ No newline at end of file
-> 
-> I've never seen it before so I don't know if this is specific to OS X or 
-> maybe it's my editor.
+> This helps in sense that 3 times bulk cross-compiles finish to the end.
+> You'll hear me if another such oops will resurface.
 
-I did your suggested changes and applied the patch.
-Will be pushed out in a minute.
+Still looking good?
 
-	Sam
-
+-- 
+Jens Axboe
 
