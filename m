@@ -1,69 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756347AbYEDPwT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757264AbYEDPxo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756347AbYEDPwT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 May 2008 11:52:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752665AbYEDPwJ
+	id S1757264AbYEDPxo (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 May 2008 11:53:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753041AbYEDPxf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 May 2008 11:52:09 -0400
-Received: from fk-out-0910.google.com ([209.85.128.191]:43288 "EHLO
+	Sun, 4 May 2008 11:53:35 -0400
+Received: from fk-out-0910.google.com ([209.85.128.186]:43748 "EHLO
 	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751614AbYEDPwI (ORCPT
+	with ESMTP id S1752914AbYEDPxe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 May 2008 11:52:08 -0400
+	Sun, 4 May 2008 11:53:34 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=j1jAaK05r0cr2zashuEGyKj6nVuV0AN6QS962BDIuqwZwltBu7BjKk9KKYFd3p0FmUiGoZlzJnHOxh3sSXNBhm1H0qGIU9mT20TZWI2ualxS8WAYcSN9Nga1bHMl5NPzJCvhgEtDn2LufKhnK++8Sgk36xq2Fq9VtxZHLKc64l0=
-Message-ID: <481DDB99.2090209@gmail.com>
-Date: Sun, 04 May 2008 17:51:53 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=QFGM1c3OMuKt09TZRagZq+IBjUpl2iIq8s2/QNFCGdZkJ/Qy2TtLgBvHPRdnTZinK1NeSqh5zLpJFWLjqTzVL4Z0bnZTw4ROMUzbBOr9KJ5Nrw9q1igzNLu0HTf6Hg4hix2/HtvZQsXe8RVcwkgQ/wjW1rNq2HkG37vBEgwOp5s=
+Message-ID: <e2e108260805040853r2dbd0b3bu297408c0c77819c5@mail.gmail.com>
+Date: Sun, 4 May 2008 17:53:32 +0200
+From: "Bart Van Assche" <bart.vanassche@gmail.com>
+To: "Matthew Wilcox" <matthew@wil.cx>
+Subject: Re: SCSI target subsystem
+Cc: "FUJITA Tomonori" <tomof@acm.org>,
+       "James Bottomley" <James.Bottomley@hansenpartnership.com>,
+       "Christoph Hellwig" <hch@infradead.org>, linux-scsi@vger.kernel.org,
+       scst-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       "Vladislav Bolkhovitin" <vst@vlnb.net>
+In-Reply-To: <e2e108260805030339q4fcaedf7t34e737c14801e788@mail.gmail.com>
 MIME-Version: 1.0
-To: monstr@seznam.cz
-CC: Joe Perches <joe@perches.com>, paulus@samba.org, arnd@arndb.de,
-       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
-Subject: Re: [PATCH 1/2] OF: clean coding style - prom_parse.c
-References: <monstr@seznam.cz>	 <1209827626-8562-1-git-send-email-monstr@seznam.cz>	 <c382f7ff87d1502c20423742ad738e50a118cf62.1209827449.git.monstr@monstr.eu> <1209835583.16966.10.camel@localhost> <481D711E.6000003@seznam.cz>
-In-Reply-To: <481D711E.6000003@seznam.cz>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-2; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200805021638.42972.bart.vanassche@gmail.com>
+	 <20080502153306.GB7376@infradead.org>
+	 <e2e108260805020853r4c21fb98y3d4434a7fc95989c@mail.gmail.com>
+	 <20080502155525.GA16353@infradead.org>
+	 <e2e108260805020906w7f5e92bev46b8d0f96aa7b4d6@mail.gmail.com>
+	 <1209745084.3121.39.camel@localhost.localdomain>
+	 <481B5AB8.5030108@vlnb.net>
+	 <e2e108260805030241w216363dbt4b5f6b2105ad267b@mail.gmail.com>
+	 <20080503095314.GX14976@parisc-linux.org>
+	 <e2e108260805030339q4fcaedf7t34e737c14801e788@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 05/04/2008 10:17 AM, Michal Simek wrote:
-> Hi All,
-> 
-> I fixed only part of coding style violation. Not all of them.
+On Sat, May 3, 2008 at 12:39 PM, Bart Van Assche
+<bart.vanassche@gmail.com> wrote:
+> To answer your question: as you noticed, I did not yet contribute any
+> code to the SCST project. I'm an iSCSI/iSER/SRP user. I'd like to have
+> a SCSI target framework available on Linux that is as fast as
+> possible, as reliable as possible, as standards compliant as possible,
+> well maintained and for which all kernel code is integrated in the
+> mainstream Linux kernel. I'm probably sharing this desire with all
+> STGT, IET, SCST and LIO users.
 
-Actually, you introduced a bug. See:
-http://lkml.org/lkml/2008/5/3/141
+Hello Matthew,
 
-You should have used KERN_CONT, or even better sprintf and friends to be atomic 
-in logs.
+To be complete I should have mentioned that there already exists an
+FCoE target implementation for SCST. I'm still learning about FCoE.
+What I read about it is that FCoE has more to offer with regard to
+storage management than iSCSI/iSER/SRP ?
 
-> But you are right KERN_<level> is necessary.
-> 
-> For me is especially important to move these files from arch/powerpc to drivers/of.
-> 
-> M
-> 
->>>  /* Debug utility */
->>>  #ifdef DEBUG
->>>  static void of_dump_addr(const char *s, const u32 *addr, int na)
->>>  {
->>> -	printk("%s", s);
->>> -	while(na--)
->>> -		printk(" %08x", *(addr++));
->>> -	printk("\n");
->>> +	printk(KERN_INFO "%s", s);
->>> +	while (na--)
->>> +		printk(KERN_INFO " %08x", *(addr++));
->>> +	printk(KERN_INFO "\n");
->>>  }
->> You've prefixed KERN_INFO before every address block.
->>
->> How about:
->>
->> print_hex_dump(KERN_<level>, s, DUMP_PREFIX_NONE, 4, addr, na, false);
+See also: http://www.open-fcoe.org/openfc/wiki/index.php/Quickstart
+
+Bart.
