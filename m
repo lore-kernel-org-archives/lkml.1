@@ -1,47 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754883AbYEDXCy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753914AbYEDXOS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754883AbYEDXCy (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 May 2008 19:02:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751887AbYEDXCo
+	id S1753914AbYEDXOS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 May 2008 19:14:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751156AbYEDXOE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 May 2008 19:02:44 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:59007 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750840AbYEDXCn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 May 2008 19:02:43 -0400
-Message-ID: <481E3E53.6050008@zytor.com>
-Date: Sun, 04 May 2008 15:53:07 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
-MIME-Version: 1.0
-To: Arnd Bergmann <arnd@arndb.de>
-CC: monstr@seznam.cz, microblaze-uclinux@itee.uq.edu.au,
-       Matthew Wilcox <matthew@wil.cx>, Will Newton <will.newton@gmail.com>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       linux-arch@vger.kernel.org, git@xilinx.com,
-       John Williams <john.williams@petalogix.com>,
-       Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>,
-       John Linn <John.Linn@xilinx.com>
-Subject: Re: microblaze syscall list
-References: <87a5b0800804220513t75690ceao938a288596b5ad0c@mail.gmail.com> <481D7DF7.3000909@seznam.cz> <481E3433.2030408@zytor.com> <200805050054.20903.arnd@arndb.de>
-In-Reply-To: <200805050054.20903.arnd@arndb.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Sun, 4 May 2008 19:14:04 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:53036 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751114AbYEDXOD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 May 2008 19:14:03 -0400
+Date: Sun, 4 May 2008 18:13:59 -0500
+From: Paul Jackson <pj@sgi.com>
+To: Cyrill Gorcunov <gorcunov@gmail.com>
+Cc: hpa@zytor.com, tglx@linutronix.de, mingo@elte.hu, ak@suse.de,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC] x86: x86-64defconfig remake
+Message-Id: <20080504181359.a39d766b.pj@sgi.com>
+In-Reply-To: <20080504155719.GA6842@cvg>
+References: <20080504155719.GA6842@cvg>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arnd Bergmann wrote:
-> 
-> * POSIX pselect does not update the timeout argument, but linux pselect7
-> does, so it's easy to implement both pselect and select based on it.
-> * pselect also has a timespec arguement, not timeval as select, but that's
-> trivial to convert.
-> * pselect obviously takes an extra argument, but if that's NULL, it will
-> behave like select (aside from the timeout handling).
-> 
+Cyrill wrote:
+> The current x86_64_defconfig contains a number of nonexistent
+> symbols.
 
-Fair enough.
+These symbols don't exist in what context?
 
-	-hpa
+The one I notice:
+
+-# CONFIG_CPUSETS is not set
+
+certainly exists, in init/Kconfig:
+
+    config CPUSETS
+	bool "Cpuset support"
+	depends on SMP && CGROUPS
+
+and is enabled by default in some configs:
+
+    arch/ia64/configs/sn2_defconfig
+    arch/mips/configs/ip27_defconfig
+    arch/mips/configs/sb1250-swarm_defconfig
+    arch/powerpc/configs/cell_defconfig
+    arch/powerpc/configs/ppc64_defconfig
+    arch/powerpc/configspseries_defconfig
+
+I could be tempted to enable cpusets by default in x86_64
+as well, however I don't understand the tradeoffs of such
+a change well enough to know if I should propose that.
+
+-- 
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.940.382.4214
