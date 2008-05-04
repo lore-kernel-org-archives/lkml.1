@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757443AbYEDOEc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757315AbYEDOMd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757443AbYEDOEc (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 May 2008 10:04:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753524AbYEDOEX
+	id S1757315AbYEDOMd (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 May 2008 10:12:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752665AbYEDOMW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 May 2008 10:04:23 -0400
-Received: from 178-47-31-89.wifiinternet.cz ([89.31.47.178]:36072 "EHLO
+	Sun, 4 May 2008 10:12:22 -0400
+Received: from 178-47-31-89.wifiinternet.cz ([89.31.47.178]:46655 "EHLO
 	seznam.cz" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751441AbYEDOEW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 May 2008 10:04:22 -0400
+	id S1751847AbYEDOMV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 May 2008 10:12:21 -0400
 From: monstr@seznam.cz
 To: linux-kernel@vger.kernel.org
 Cc: arnd@arndb.de, linux-arch@vger.kernel.org, stephen.neuendorffer@xilinx.com,
@@ -16,11 +16,11 @@ Cc: arnd@arndb.de, linux-arch@vger.kernel.org, stephen.neuendorffer@xilinx.com,
        will.newton@gmail.com, drepper@redhat.com,
        microblaze-uclinux@itee.uq.edu.au, grant.likely@secretlab.ca,
        Michal Simek <monstr@monstr.eu>
-Subject: [PATCH 18/56] microblaze_v2: early_printk support
-Date: Sun,  4 May 2008 13:41:07 +0200
-Message-Id: <378157891bac535dbc55e658d5f03fdd332e85cf.1209897266.git.monstr@monstr.eu>
+Subject: [PATCH 51/56] microblaze_v2: Kbuild file
+Date: Sun,  4 May 2008 13:41:40 +0200
+Message-Id: <affa82887bee64b05420fdd5f723cca920acad90.1209897267.git.monstr@monstr.eu>
 X-Mailer: git-send-email 1.5.4.GIT
-In-Reply-To: <b5067a1846075ddd1035966ea1edc908579e2e88.1209897266.git.monstr@monstr.eu>
+In-Reply-To: <53e5b22838d017b7cf7f44c4bafe5f7e253732ce.1209897267.git.monstr@monstr.eu>
 References: <1209901305-6404-1-git-send-email-monstr@seznam.cz>
  <a4a778e34c66d126f5c4bf1ca423cf32950ea5ab.1209897266.git.monstr@monstr.eu>
  <c805caeb1dd7f6d1349c4a463cb88a5342a170d2.1209897266.git.monstr@monstr.eu>
@@ -39,6 +39,39 @@ References: <1209901305-6404-1-git-send-email-monstr@seznam.cz>
  <d883a8d8da812d77fefd47730d28d0bdb7b504e0.1209897266.git.monstr@monstr.eu>
  <625ef466cf121d655539eedc919dd39166087e0c.1209897266.git.monstr@monstr.eu>
  <b5067a1846075ddd1035966ea1edc908579e2e88.1209897266.git.monstr@monstr.eu>
+ <378157891bac535dbc55e658d5f03fdd332e85cf.1209897266.git.monstr@monstr.eu>
+ <eadcc6f4754df78b69d6d54c404624d0390c8558.1209897266.git.monstr@monstr.eu>
+ <4df4022e06b9056202cc2fdf0b99deb01563a0fa.1209897266.git.monstr@monstr.eu>
+ <6b0c9864dc80776ae48d6488a6892e5d698751b7.1209897266.git.monstr@monstr.eu>
+ <ea5cbbca49c38c506960fddba29cbd8cb24e1a8d.1209897266.git.monstr@monstr.eu>
+ <4f4d6ed3fce9b21cdd6dcacb2d72fff7e9830628.1209897266.git.monstr@monstr.eu>
+ <35e662a81eb86c7ffb2aaa6141ca38a07789f382.1209897266.git.monstr@monstr.eu>
+ <b41fcf3dd830f4ba82692a9bec2406ed0c290e7e.1209897266.git.monstr@monstr.eu>
+ <14acb31da2794d2d5916da3db3d75fe2285ac055.1209897266.git.monstr@monstr.eu>
+ <598221ce2159046614d7b158ea62d5af51907af3.1209897266.git.monstr@monstr.eu>
+ <41c1f410eaafd875246362d10ef9866d8cc2a934.1209897266.git.monstr@monstr.eu>
+ <09ce2baf0c8308d3fbca98e7eb36a6aab59112a7.1209897266.git.monstr@monstr.eu>
+ <c9418c683be99ae12abb89575c362d586c026bad.1209897266.git.monstr@monstr.eu>
+ <cfde3796e95bdd17c32e4fd7762d0aee55967707.1209897266.git.monstr@monstr.eu>
+ <8aba2d82c85cd1d5b56de328c1fd080ee51f0211.1209897266.git.monstr@monstr.eu>
+ <c4000ff625bd217f9bb683e3bf8c7193a82bd744.1209897266.git.monstr@monstr.eu>
+ <491f823fac6c03cc36834ec569a45d30a03a72cf.1209897266.git.monstr@monstr.eu>
+ <96f2004535c34a0c762bf2012c299cbf9f89ab32.1209897266.git.monstr@monstr.eu>
+ <92cd3a27b393bb394d48902594152351a92c59bb.1209897266.git.monstr@monstr.eu>
+ <4e20213f5f296268a24955df8c951f7fba279816.1209897266.git.monstr@monstr.eu>
+ <49eccf3408b90a5ebb42635493bbeef3b584acb9.1209897266.git.monstr@monstr.eu>
+ <d1e4a572d2add458e1dc7c4f5a3039ae4faa2c04.1209897266.git.monstr@monstr.eu>
+ <27d6acda14c492aae35d8bb1343a122624560418.1209897266.git.monstr@monstr.eu>
+ <64e6fc7378cd5c714fcceef7d4965c1fb3d1b288.1209897266.git.monstr@monstr.eu>
+ <9cc0d54a98f25748dc3f16fc3250524d7cd00877.1209897266.git.monstr@monstr.eu>
+ <5d240127ee05c28d5156bfbf305329f9540f6c14.1209897267.git.monstr@monstr.eu>
+ <59b5238f7a259dcac4c9ca6513756a188625462e.1209897267.git.monstr@monstr.eu>
+ <8e1d421649250f7a3f638cd552bc46e5f5845890.1209897267.git.monstr@monstr.eu>
+ <5b1319d426b1f55e08402790b4bc16a33ec7c00c.1209897267.git.monstr@monstr.eu>
+ <eff9f144fc70b87a9ff6767e9ab92d3d55eebbae.1209897267.git.monstr@monstr.eu>
+ <643084ee3819dd169cad3c4e3565c5ff20dd3429.1209897267.git.monstr@monstr.eu>
+ <231ae415bf52de25c69f727fd13c50d201f8ecd8.1209897267.git.monstr@monstr.eu>
+ <53e5b22838d017b7cf7f44c4bafe5f7e253732ce.1209897267.git.monstr@monstr.eu>
 In-Reply-To: <a4a778e34c66d126f5c4bf1ca423cf32950ea5ab.1209897266.git.monstr@monstr.eu>
 References: <a4a778e34c66d126f5c4bf1ca423cf32950ea5ab.1209897266.git.monstr@monstr.eu>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -50,131 +83,40 @@ From: Michal Simek <monstr@monstr.eu>
 
 Signed-off-by: Michal Simek <monstr@monstr.eu>
 ---
- arch/microblaze/kernel/early_printk.c |  115 +++++++++++++++++++++++++++++++++
- 1 files changed, 115 insertions(+), 0 deletions(-)
- create mode 100644 arch/microblaze/kernel/early_printk.c
+ include/asm-microblaze/Kbuild |   24 ++++++++++++++++++++++++
+ 1 files changed, 24 insertions(+), 0 deletions(-)
+ create mode 100644 include/asm-microblaze/Kbuild
 
-diff --git a/arch/microblaze/kernel/early_printk.c b/arch/microblaze/kernel/early_printk.c
+diff --git a/include/asm-microblaze/Kbuild b/include/asm-microblaze/Kbuild
 new file mode 100644
-index 0000000..0f533ff
+index 0000000..783296d
 --- /dev/null
-+++ b/arch/microblaze/kernel/early_printk.c
-@@ -0,0 +1,115 @@
-+/*
-+ * arch/microblaze/kernel/early_printk.c
-+ *
-+ * Copyright (C) 2007 Michal Simek <monstr@monstr.eu>
-+ * Copyright (C) 2003-2006 Yasushi SHOJI <yashi@atmark-techno.com>
-+ *
-+ * Early printk support for Microblaze.
-+ *
-+ * Once we got some system without uart light, we need to refactor.
-+ */
++++ b/include/asm-microblaze/Kbuild
+@@ -0,0 +1,24 @@
++include include/asm-generic/Kbuild.asm
 +
-+#include <linux/console.h>
-+#include <linux/kernel.h>
-+#include <linux/init.h>
-+#include <linux/string.h>
-+#include <linux/tty.h>
-+#include <asm/io.h>
-+#include <asm/processor.h>
-+#include <asm/fcntl.h>
-+#include <asm/setup.h>
-+
-+#ifdef CONFIG_EARLY_PRINTK
-+#define BASE_ADDR ((unsigned char *)CONFIG_EARLY_PRINTK_UARTLITE_ADDRESS)
-+
-+#define RX_FIFO	BASE_ADDR
-+#define TX_FIFO	((unsigned long *)(BASE_ADDR + 4))
-+#define STATUS	((unsigned long *)(BASE_ADDR + 8))
-+#define CONTROL	((unsigned long *)(BASE_ADDR + 12))
-+
-+static void early_printk_putc(char c)
-+{
-+	while (ioread32(STATUS) & (1<<3));
-+	iowrite32((c & 0xff), TX_FIFO);
-+}
-+
-+static void early_printk_write(struct console *unused,
-+					const char *s, unsigned n)
-+{
-+	while (*s && n-- > 0) {
-+		early_printk_putc(*s);
-+		if (*s == '\n')
-+			early_printk_putc('\r');
-+		s++;
-+	}
-+}
-+
-+static struct console early_serial_console = {
-+	.name = "earlyser",
-+	.write = early_printk_write,
-+	.flags = CON_PRINTBUFFER,
-+	.index = -1,
-+};
-+
-+/* Direct interface for emergencies */
-+static struct console *early_console = &early_serial_console;
-+static int early_console_initialized;
-+
-+void early_printk(const char *fmt, ...)
-+{
-+	char buf[512];
-+	int n;
-+	va_list ap;
-+
-+	if (early_console_initialized) {
-+		va_start(ap, fmt);
-+		n = vscnprintf(buf, 512, fmt, ap);
-+		early_console->write(early_console, buf, n);
-+		va_end(ap);
-+	}
-+}
-+
-+static int __initdata keep_early;
-+
-+int __init setup_early_printk(char *opt)
-+{
-+	char *space;
-+	char buf[256];
-+
-+	if (early_console_initialized)
-+		return 1;
-+
-+	strlcpy(buf, opt, sizeof(buf));
-+	space = strchr(buf, ' ');
-+	if (space)
-+		*space = 0;
-+
-+	if (strstr(buf, "keep"))
-+		keep_early = 1;
-+
-+	early_console = &early_serial_console;
-+	early_console_initialized = 1;
-+	register_console(early_console);
-+	return 0;
-+}
-+#if 0
-+static void __init disable_early_printk(void)
-+{
-+	if (!early_console_initialized || !early_console)
-+		return;
-+	if (!keep_early) {
-+		printk(KERN_INFO "disabling early console\n");
-+		unregister_console(early_console);
-+		early_console_initialized = 0;
-+	} else
-+		printk(KERN_INFO "keeping early console\n");
-+}
-+#endif
-+
-+__setup("earlyprintk=", setup_early_printk);
-+
-+#else
-+void early_printk(const char *fmt, ...)
-+{
-+}
-+#endif
++header-y += auxvec.h
++header-y += cpuinfo.h
++header-y += errno.h
++header-y += fcntl.h
++header-y += ioctl.h
++header-y += ioctls.h
++header-y += ipcbuf.h
++header-y += linkage.h
++header-y += mman.h
++header-y += msgbuf.h
++header-y += poll.h
++header-y += resource.h
++header-y += sembuf.h
++header-y += shmbuf.h
++header-y += sigcontext.h
++header-y += siginfo.h
++header-y += socket.h
++header-y += sockios.h
++header-y += statfs.h
++header-y += stat.h
++header-y += termbits.h
++header-y += ucontext.h
 -- 
 1.5.4.GIT
 
