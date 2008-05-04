@@ -1,71 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754180AbYEDPW2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756696AbYEDPW6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754180AbYEDPW2 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 May 2008 11:22:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751614AbYEDPWU
+	id S1756696AbYEDPW6 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 May 2008 11:22:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751736AbYEDPWs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 May 2008 11:22:20 -0400
-Received: from mail.gmx.net ([213.165.64.20]:54795 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751379AbYEDPWT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 May 2008 11:22:19 -0400
-X-Authenticated: #310364
-X-Provags-ID: V01U2FsdGVkX1/M3ltzXJ/M4vWBTjkfqACYiVHCOSAxNl6roqRcb6
-	EFfnljOdmM4Lo1
-Message-ID: <01ae01c8adfa$a36f51b0$0201a8c0@zeug>
-From: "Sebastian Herbszt" <herbszt@gmx.de>
-To: <hadi@cyberus.ca>
-Cc: "Maciej W. Rozycki" <macro@linux-mips.org>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       "Suresh Siddha" <suresh.b.siddha@intel.com>,
-       "Arjan van de Ven" <arjan@linux.intel.com>,
-       "Ingo Molnar" <mingo@elte.hu>, "LKML" <linux-kernel@vger.kernel.org>,
-       <jbeulich@novell.com>
-References: <1209810775.6972.37.camel@localhost> <alpine.LFD.1.10.0805031650120.6003@apollo.tec.linutronix.de> <481CA40A.7040906@zytor.com> <Pine.LNX.4.55.0805032016560.20206@cliff.in.clinika.pl> <481CC5CD.8060205@zytor.com> <Pine.LNX.4.55.0805032209480.20206@c <1209851170.6972.64.camel@localhost> <004701c8ade8$266832c0$0201a8c0@zeug> <1209913612.6972.89.camel@localhost>
-Subject: Re: i387/FPU init issues...
-Date: Sun, 4 May 2008 17:21:05 +0200
+	Sun, 4 May 2008 11:22:48 -0400
+Received: from mail-relay-01.mailcluster.net ([77.221.130.213]:35709 "EHLO
+	mail-relay-01.mailcluster.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751654AbYEDPWq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 May 2008 11:22:46 -0400
+Message-ID: <481DD4DA.9080404@vlnb.net>
+Date: Sun, 04 May 2008 19:23:06 +0400
+From: Vladislav Bolkhovitin <vst@vlnb.net>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	format=flowed;
-	charset="iso-8859-1";
-	reply-type=original
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+CC: Bart Van Assche <bart.vanassche@gmail.com>,
+       Christoph Hellwig <hch@infradead.org>, linux-scsi@vger.kernel.org,
+       scst-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: SCSI target subsystem
+References: <200805021638.42972.bart.vanassche@gmail.com>	 <20080502153306.GB7376@infradead.org>	 <e2e108260805020853r4c21fb98y3d4434a7fc95989c@mail.gmail.com>	 <20080502155525.GA16353@infradead.org>	 <e2e108260805020906w7f5e92bev46b8d0f96aa7b4d6@mail.gmail.com> <1209745084.3121.39.camel@localhost.localdomain> <481B5AB8.5030108@vlnb.net>
+In-Reply-To: <481B5AB8.5030108@vlnb.net>
+Content-Type: text/plain; charset=KOI8-R; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Priority: 3
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook Express 6.00.2900.3138
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3198
-X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> this is the same result i get with qemu 0.8.2. 
+Vladislav Bolkhovitin wrote:
+> James Bottomley wrote:
+>> On Fri, 2008-05-02 at 18:06 +0200, Bart Van Assche wrote:
+>>> James Bottomley clearly expressed in that thread that he doesn't want
+>>> to maintain two SCSI target frameworks. So what I propose is that SCST
+>>> is included in the mainline and afterwards that it is evaluated
+>>> whether or not it is desirable to keep other target code in the
+>>> mainline kernel.
+>> That's hardly sufficient.  STGT is already in use.  Their either has to
+>> be a migration path or, the preferred option, take the pieces of SCST
+>> that are actual improvements and embed them in STGT.
 > 
-> Thanks for validating. 
-> I am embarassed to say I am still running version 0.7.0 - problem is i
-> have patched it semi-substantially to add features which i didnt get
-> much luck in pushing in; so i cant upgrade overnight.
+> Actually, between SCSI initiator and target subsystems there is almost 
+> *nothing* in common. This claim, at first glance, looks pretty wrong, 
+> because both serve SCSI, so they must have a lot common. But look deeper 
+> and you quickly find out that the majority of functionality as well as 
+> data they use are dedicated for each subsystem, not shared.
 > 
->> With version 0.9.0 and
->> later it is:
+> Just look at SCST/qla2x00t/(changes done in the initiator qla2xxx driver 
+> to support target mode, patch attached): 90% of changes is adding 
+> callbacks for external target add-on, the rest is support for older, 
+> than 2.6.17, kernels and sysfs magic. Note, no data are common between 
+> initiator and target parts in the meaning that they both use them.
+
+Perhaps, I should elaborate more on this to eliminate possible 
+misunderstanding. Of course, both main initiator driver and target 
+add-on driver directly use the same hardware, so they share all internal 
+hardware-related data, e.g. hardware_lock, but this doesn't matter for 
+our topic, because this sharing is on the different level. All such data 
+are hardware specific, hence different hardware have different sets of 
+such data, hence it is impractical to find something common in them to 
+expose as a common interface, which all initiator drivers should expose 
+to its target add-ons: the interface would be more complicated than 
+direct implementation in each particular case.
+
+> Then look at SCST (http://scst.sf.net). It implements complete 
+> pass-through SCSI support and look how it interacts with initiator SCSI 
+> subsystem. It calls only 2 functions: FIFO version of 
+> scsi_execute_async() (original scsi_execute_async() provides 
+> unacceptable LIFO commands order) and scsi_reset_provider() for task 
+> management. And there is only one common variable: struct scsi_device. 
+> That's all! In other storage modes (FILEIO/BLOCKIO) there is nothing 
+> common with SCSI initiator subsystem at all.
 > 
-> Ok, maybe it is time to invest time to forward port my patches. I dont
-> see anything in the release notes between 0.8.2 and 0.9.0 which says
-> this problem was known and fixed in some specific version. Any pointers?
-
->From http://fabrice.bellard.free.fr/qemu/changelog.html
-version 0.9.0:
-...
-- several x86 and x86_64 emulation fixes
-
-Revision 2145 introduced "multi byte nop support".
-See http://svn.savannah.nongnu.org/viewvc/trunk/target-i386/translate.c
-
-> Thanks again - you saved me a lot of time.
+> Finally, try to find out in SCST any duplicated functionality.
 > 
-> cheers,
-> jamal
-
-- Sebastian
+> Now, let's look how SCSI target/initiator integration currently done in 
+> the kernel. For me it looks pretty artificial. For example, if I make a 
+> general purpose kernel, for which 1% of users would run target mode, I 
+> would have to enable as module "SCSI target support" as well as SCSI 
+> target support for transport attributes. Now 99% of users of my kernel, 
+> who don't need SCSI target, but need SCSI initiator drivers, would have 
+> to have scsi_tgt loaded, because transport attribute drivers would 
+> depend on it:
+> 
+> # lsmod
+> Module                  Size  Used by
+> qla2xxx               130844  0
+> firmware_class          8064  1 qla2xxx
+> scsi_transport_fc      40900  1 qla2xxx
+> scsi_tgt               12196  1 scsi_transport_fc
+> brd                     6924  0
+> xfs                   511280  1
+> dm_mirror              24368  0
+> dm_mod                 51148  1 dm_mirror
+> uhci_hcd               21400  0
+> sg                     31784  0
+> e1000                 114536  0
+> pcspkr                  3328  0
+> 
+> No target functionality needed, but target mode subsystem is needed. Is 
+> it a good design?
+> 
+> I wrote all above to support my at first glance shocking conclusion that 
+> SCSI target subsystem is completely new subsystem of the kernel and it 
+> should live on its own with its own maintainer! This is the same as with 
+> the current interaction between SCSI and block subsystems in the kernel: 
+> SCSI uses block's functionality, but that doesn't mean that block and 
+> SCSI are the same subsystem.
+> 
+> Thus, how IMHO initiator and target drivers should be written:
+> 
+>   - All initiator drivers should live in the SCSI initiator subsystem 
+> (aka current SCSI subsystem) only, the same as today.
+> 
+>   - All target drivers should live in the SCSI target subsystem only and 
+> be either add-ons to initiator drivers, like, e.g., qla2x00t, or be a 
+> complete driver, like, e.g., iSCSI-SCST.
+> 
+> Vlad
+> 
 
