@@ -1,73 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757386AbYEDS0k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757502AbYEDS1f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757386AbYEDS0k (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 May 2008 14:26:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754010AbYEDS0b
+	id S1757502AbYEDS1f (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 May 2008 14:27:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754010AbYEDS11
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 May 2008 14:26:31 -0400
-Received: from enyo.dsw2k3.info ([195.71.86.239]:46474 "EHLO enyo.dsw2k3.info"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750950AbYEDS0a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 May 2008 14:26:30 -0400
-X-Greylist: delayed 1628 seconds by postgrey-1.27 at vger.kernel.org; Sun, 04 May 2008 14:26:30 EDT
-Date: Sun, 4 May 2008 19:59:13 +0200
-From: Matthias Schniedermeyer <ms@citd.de>
-To: Bernd Petrovitsch <bernd@firmix.at>
-Cc: Sam Ravnborg <sam@ravnborg.org>, Roman Zippel <zippel@linux-m68k.org>,
-       linux-kbuild <linux-kbuild@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: kconfig - a suggestion how to fix the select issue
-Message-ID: <20080504175913.GA28072@citd.de>
-References: <20080504071041.GA15315@uranus.ravnborg.org> <1209895922.4114.21.camel@gimli.at.home>
+	Sun, 4 May 2008 14:27:27 -0400
+Received: from ug-out-1314.google.com ([66.249.92.168]:45870 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754054AbYEDS10 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 May 2008 14:27:26 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=BWsy5epdrYNJGMuKhL2LRZJieYbN1Nt9bYNlArSvG0q813BId/Yp2XUoCZoaICo5BmgvgxYlZm4x1AI7/TuUAn1DchK4ia/R8AksMFgikvyRsEo5aKSTT1V9lpVcKfO2/Y4DfLLIaTAZWPzO3O+ktt0bhpyMT4sugqdSbhNUD20=
+From: Alon Bar-Lev <alon.barlev@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: [OOPS] fs/buffer.c:1183 mark_buffer_dirty+0x5b/0x80()
+Date: Sun, 4 May 2008 21:27:18 +0300
+User-Agent: KMail/1.9.9
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <1209895922.4114.21.camel@gimli.at.home>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Message-Id: <200805042127.19784.alon.barlev@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 04.05.2008 12:12, Bernd Petrovitsch wrote:
-> On Sun, 2008-05-04 at 09:10 +0200, Sam Ravnborg wrote:
-> > Today we have two ways to express/solve dependencies.
-> > 
-> > Top-down we have "depends on"
-> > and bottom up we have "select".
-> > 
-> > The "depends on" dependencies at the same
-> > time impact the visibility of a symbol.
-> > A symbol with "depends on" not satisfied are not
-> > visible and thus not shown in menuconfig.
-> 
-> Perhaps this is problem: The menu item shouldn't be selectable for sure
-> but it may well be visible (and I'm purposely ignoring details of "how
-> to grey out" for the different user interfaces).
-> If it's visible (but not selectable) the user interface can provide the
-> auto-generated requirements (derived from the "depends on" chains) as
-> part of the "help" or where ever it seems useful. And the user at least
-> knows where to look further.
 
-I always wondered why there is no "grey out", at least optionaly.
+Hello,
 
-My "favourite"(tm) example of a sub-marine is: Wireless drivers (mac80211).
+I may mess the usb disk, but I don't think oops is expected outcome... :)
 
-The config-option to switch on the visibility of the mac80211 drivers 
-("CONFIG_MAC80211") is conveniently located on the other side of the 
-milky way.
-(3 menus down, a sitestep and 2 up again. At least in menuconfig)
+Alon.
 
+---
 
-
-
-
-
-
-Bis denn
-
--- 
-Real Programmers consider "what you see is what you get" to be just as 
-bad a concept in Text Editors as it is in women. No, the Real Programmer
-wants a "you asked for it, you got it" text editor -- complicated, 
-cryptic, powerful, unforgiving, dangerous.
+May  4 21:16:02 alon1 automount[31406]: >> mount: you must specify the filesystem type
+May  4 21:16:02 alon1 automount[31406]: mount(generic): failed to mount /dev/cdrom (type auto) on /mnt/auto/cdrom
+May  4 21:16:02 alon1 automount[31406]: failed to mount /mnt/auto/cdrom
+May  4 21:16:02 alon1 automount[31412]: failed to mount /mnt/auto/.directory
+May  4 21:16:57 alon1 ------------[ cut here ]------------
+May  4 21:16:57 alon1 WARNING: at fs/buffer.c:1183 mark_buffer_dirty+0x5b/0x80()
+May  4 21:16:57 alon1 Modules linked in: nls_cp437 vfat fat usb_storage aes_generic crypto_algapi ieee80211_crypt_ccmp ppp_deflate zlib_deflate zlib_inflate bsd_comp ppp_async radeon drm vmnet(P) vmmon(P) ipv6 tun autofs4 nf_nat_irc nf_nat_ftp nf_conntrack_irc nf_conntrack_ftp ipt_MASQUERADE iptable_nat nf_nat ipt_REJECT xt_tcpudp ipt_LOG xt_limit xt_state nf_conntrack_ipv4 nf_conntrack rfcomm l2cap iptable_filter ip_tables x_tables snd_pcm_oss snd_mixer_oss snd_seq_dummy snd_seq_oss snd_seq_midi_event snd_seq snd_seq_device ppp_generic slhc ioatdma dca cfq_iosched cpufreq_powersave cpufreq_ondemand cpufreq_conservative acpi_cpufreq freq_table uinput fan af_packet nls_cp1255 nls_iso8859_1 nls_utf8 nls_base pcmcia hci_usb bluetooth snd_intel8x0 snd_ac97_codec ac97_bus ipw2200 nsc_ircc snd_pcm thinkpad_acpi irda snd_timer ieee80211 yenta_socket snd psmouse ehci_hcd rsrc_nonstatic hwmon pcspkr i2c_i801 ieee80211_crypt e1000 uhci_hcd crc_ccitt soundcore pcmcia_core intel_agp nvram rtc snd_page_alloc thermal firmware_class sr_mod agpgart sg processor cdrom battery ac button unix usbcore evdev ext3 jbd ext2 mbcache loop ata_piix libata dock sd_mod scsi_mod [last unloaded: uhci_hcd]
+May  4 21:16:57 alon1 Pid: 7035, comm: bash Tainted: P         2.6.25-gentoo-r2 #3
+May  4 21:16:57 alon1 [<c011baaf>] warn_on_slowpath+0x5f/0x90
+May  4 21:16:57 alon1 [<c015329f>] find_get_pages_tag+0x2f/0x90
+May  4 21:16:57 alon1 [<c0134191>] getnstimeofday+0x31/0xc0
+May  4 21:16:57 alon1 [<c013247d>] ktime_get_ts+0x1d/0x50
+May  4 21:16:57 alon1 [<c01d03f1>] rb_insert_color+0x91/0xc0
+May  4 21:16:57 alon1 [<c0131ae2>] enqueue_hrtimer+0x72/0xf0
+May  4 21:16:57 alon1 [<c0117a7b>] hrtick_set+0x7b/0x120
+May  4 21:16:57 alon1 [<c02c0145>] schedule+0x185/0x310
+May  4 21:16:57 alon1 [<c019727b>] mark_buffer_dirty+0x5b/0x80
+May  4 21:16:57 alon1 [<f9e4fd9f>] journal_update_superblock+0x5f/0xd0 [jbd]
+May  4 21:16:57 alon1 [<f9e51046>] journal_destroy+0x196/0x220 [jbd]
+May  4 21:16:57 alon1 [<c0188fe7>] destroy_inode+0x27/0x40
+May  4 21:16:57 alon1 [<f9e84b12>] ext3_put_super+0x22/0x1a0 [ext3]
+May  4 21:16:57 alon1 [<c0189aa7>] invalidate_inodes+0xc7/0xe0
+May  4 21:16:57 alon1 [<c0176b65>] generic_shutdown_super+0x55/0x110
+May  4 21:16:57 alon1 [<c018b9f0>] mntput_no_expire+0x40/0x90
+May  4 21:16:57 alon1 [<c0176c2c>] kill_block_super+0xc/0x20
+May  4 21:16:57 alon1 [<c0176cf4>] deactivate_super+0x54/0x80
+May  4 21:16:57 alon1 [<c018b33d>] set_fs_pwd+0x4d/0x60
+May  4 21:16:57 alon1 [<c0174309>] sys_chdir+0x69/0x70
+May  4 21:16:57 alon1 [<c014ad05>] audit_syscall_entry+0x105/0x130
+May  4 21:16:57 alon1 [<c010a77b>] do_syscall_trace+0x1ab/0x1d0
+May  4 21:16:57 alon1 [<c0103f7a>] syscall_call+0x7/0xb
+May  4 21:16:57 alon1 =======================
+May  4 21:16:57 alon1 ---[ end trace d8c92486a2ccffd4 ]---
+May  4 21:16:57 alon1 Buffer I/O error on device sdb1, logical block 1575
+May  4 21:16:57 alon1 lost page write due to I/O error on sdb1
 
