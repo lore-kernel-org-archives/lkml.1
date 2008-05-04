@@ -1,88 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755588AbYEDIzE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755867AbYEDIzi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755588AbYEDIzE (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 May 2008 04:55:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752981AbYEDIyy
+	id S1755867AbYEDIzi (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 May 2008 04:55:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752089AbYEDIz2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 May 2008 04:54:54 -0400
-Received: from saeurebad.de ([85.214.36.134]:46131 "EHLO saeurebad.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752858AbYEDIyx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 May 2008 04:54:53 -0400
-From: Johannes Weiner <hannes@saeurebad.de>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [RFC 0/2] Rootmem: boot-time memory allocator
-References: <20080503152502.191599824@symbol.fehenstaub.lan>
-	<20080503175426.GB5292@elte.hu>
-Date: Sun, 04 May 2008 10:54:45 +0200
-In-Reply-To: <20080503175426.GB5292@elte.hu> (Ingo Molnar's message of "Sat, 3
-	May 2008 19:54:26 +0200")
-Message-ID: <87lk2qv48a.fsf@saeurebad.de>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+	Sun, 4 May 2008 04:55:28 -0400
+Received: from smtp1.wifiinternet.cz ([89.31.47.1]:61722 "EHLO
+	bor.wifiinternet.cz" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753109AbYEDIz1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 May 2008 04:55:27 -0400
+X-Greylist: delayed 1656 seconds by postgrey-1.27 at vger.kernel.org; Sun, 04 May 2008 04:55:27 EDT
+Message-ID: <481D73B0.8020705@monstr.eu>
+Date: Sun, 04 May 2008 10:28:32 +0200
+From: Michal Simek <monstr@monstr.eu>
+Reply-To: monstr@seznam.cz
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
+To: Arnd Bergmann <arnd@arndb.de>
+CC: monstr@seznam.cz, paulus@samba.org, linux-kernel@vger.kernel.org,
+       linux-arch@vger.kernel.org
+Subject: Re: [PATCH 1/1] DEBUGFS: Fixing name for debug fs
+References: <monstr@seznam.cz> <1209825314-8048-1-git-send-email-monstr@seznam.cz> <c65b09261996cf3500b6faee201e2dd6c152973e.1209825194.git.monstr@monstr.eu> <200805032307.04352.arnd@arndb.de>
+In-Reply-To: <200805032307.04352.arnd@arndb.de>
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Hi Arnd,
 
-Ingo Molnar <mingo@elte.hu> writes:
+This is question up to PowerPC guys not to me.
+of_debugfs_root sounds good.
 
-> * Johannes Weiner <hannes@saeurebad.de> wrote:
->
->> I was spending some time and work on the bootmem allocator the last 
->> few weeks and came to the conclusion that its current design is not 
->> appropriate anymore.
->> 
->> As Ingo said in another email, NUMA technologies will become weirder, 
->> nodes whose PFNs span other nodes for example and it makes bootmem 
->> code become an unreadable mess.
->> 
->> So I sat down two days ago and rewrote the allocator, here is the 
->> result: rootmem!
->
-> hehe :-)
->
->> The biggest difference to the old design is that there is only one 
->> bitmap for all PFNs of all nodes together, so the overlapping PFN 
->> problems simply dissolve and fun like allocations crossing node 
->> boundaries work implicitely.  The new API requires every node used by 
->> the allocator to be registered and after that the bitmap gets 
->> allocated and the allocator enabled.
->> 
->> I chose to add a new allocator rather than replacing bootmem at once 
->> because that would have required all callsites to switch in one go, 
->> which would be a lot.  The new allocator can be adopted more slowly 
->> and I added a compatibility API for everything besides actually 
->> setting up the allocator.  When the last user dies, bootmem can be 
->> dropped completely (including pgdat->bdata, whee..)
->> 
->> The main ideas from bootmem have been stolen^W preserved but the new 
->> design allowed me to shrink the code a lot and express things more 
->> simple and clear:
->> 
->> $ sloc.awk < mm/bootmem.c
->> 455 lines of code, 65 lines of comments (520 lines total)
->> 
->> $ sloc.awk < mm/rootmem.c
->> 243 lines of code, 96 lines of comments (339 lines total)
->
-> amazing!
->
-> i'd still suggest to keep it all named bootmem though :-/ How about 
-> bootmem2.c and then renaming it back to bootmem.c, once the last user is 
-> gone? That would save people from having to rename whole chapters in 
-> entire books ;-)
+M
 
-Hehe, I still have bootmem2.c flying around...  I was not sure if the
-migration is easier with the same name or with a different name but the
-API is mostly compatible in the end, so staying with bootmem should be
-possible and it sounds way better...
 
-	Hannes
+>> This change is made because powerpc_debugfs_root is arch
+>> specific name.
+> ...
+>>  
+>>  static int powerpc_debugfs_init(void)
+>>  {
+>> -       powerpc_debugfs_root = debugfs_create_dir("powerpc", NULL);
+>> +       debugfs_root = debugfs_create_dir("powerpc", NULL);
+>>  
+> 
+> You left the name as "powerpc", which sort of defeats the purpose of your
+> patch. Files in debugfs are by definition not part of the ABI, so it's
+> actually possible to change this as well. How about making this "of"
+> instead of "powerpc"?
+> 
+> 	Arnd <><
+> 
+
