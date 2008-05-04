@@ -1,207 +1,481 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757014AbYEDNMd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756937AbYEDNPj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757014AbYEDNMd (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 May 2008 09:12:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751644AbYEDNMY
+	id S1756937AbYEDNPj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 May 2008 09:15:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751644AbYEDNP3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 May 2008 09:12:24 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:54645 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751087AbYEDNMY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 May 2008 09:12:24 -0400
-Date: Sun, 04 May 2008 22:12:12 +0900
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [-mm][PATCH 4/5] core of reclaim throttle
-Cc: kosaki.motohiro@jp.fujitsu.com
-In-Reply-To: <20080504215819.8F5E.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-References: <20080504201343.8F52.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20080504215819.8F5E.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-Message-Id: <20080504221043.8F64.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
+	Sun, 4 May 2008 09:15:29 -0400
+Received: from 178-47-31-89.wifiinternet.cz ([89.31.47.178]:42326 "EHLO
+	seznam.cz" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751077AbYEDNP1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 May 2008 09:15:27 -0400
+From: monstr@seznam.cz
+To: linux-kernel@vger.kernel.org
+Cc: arnd@arndb.de, linux-arch@vger.kernel.org, stephen.neuendorffer@xilinx.com,
+       John.Linn@xilinx.com, john.williams@petalogix.com, matthew@wil.cx,
+       will.newton@gmail.com, drepper@redhat.com,
+       microblaze-uclinux@itee.uq.edu.au, grant.likely@secretlab.ca,
+       Michal Simek <monstr@monstr.eu>
+Subject: [PATCH 03/56] microblaze_v2: Cpuinfo handling
+Date: Sun,  4 May 2008 13:40:52 +0200
+Message-Id: <f120ababf2bade9aab7199bffb3014aa606e5a1c.1209897266.git.monstr@monstr.eu>
+X-Mailer: git-send-email 1.5.4.GIT
+In-Reply-To: <c805caeb1dd7f6d1349c4a463cb88a5342a170d2.1209897266.git.monstr@monstr.eu>
+References: <1209901305-6404-1-git-send-email-monstr@seznam.cz>
+ <a4a778e34c66d126f5c4bf1ca423cf32950ea5ab.1209897266.git.monstr@monstr.eu>
+ <c805caeb1dd7f6d1349c4a463cb88a5342a170d2.1209897266.git.monstr@monstr.eu>
+In-Reply-To: <a4a778e34c66d126f5c4bf1ca423cf32950ea5ab.1209897266.git.monstr@monstr.eu>
+References: <a4a778e34c66d126f5c4bf1ca423cf32950ea5ab.1209897266.git.monstr@monstr.eu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Agghh!
-I attached old version at last mail, please drop it.
-
-right patch is here.
+From: Michal Simek <monstr@monstr.eu>
 
 
-------------------------------------------------------------------------
-add throttle to shrink_zone() for performance improvement and prevent incorrect oom.
-
-
-Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-
+Signed-off-by: Michal Simek <monstr@monstr.eu>
 ---
- include/linux/mmzone.h |    2 +
- include/linux/sched.h  |    1 
- mm/Kconfig             |   10 ++++++++
- mm/page_alloc.c        |    4 +++
- mm/vmscan.c            |   56 ++++++++++++++++++++++++++++++++++++++++++++++++-
- 5 files changed, 72 insertions(+), 1 deletion(-)
+ arch/microblaze/kernel/cpu/cpuinfo-pvr-full.c |   83 +++++++++++++++++
+ arch/microblaze/kernel/cpu/cpuinfo-static.c   |  117 +++++++++++++++++++++++++
+ arch/microblaze/kernel/cpu/cpuinfo.c          |   91 +++++++++++++++++++
+ include/asm-microblaze/cpuinfo.h              |  116 ++++++++++++++++++++++++
+ 4 files changed, 407 insertions(+), 0 deletions(-)
+ create mode 100644 arch/microblaze/kernel/cpu/cpuinfo-pvr-full.c
+ create mode 100644 arch/microblaze/kernel/cpu/cpuinfo-static.c
+ create mode 100644 arch/microblaze/kernel/cpu/cpuinfo.c
+ create mode 100644 include/asm-microblaze/cpuinfo.h
 
-Index: b/include/linux/mmzone.h
-===================================================================
---- a/include/linux/mmzone.h	2008-05-03 00:39:44.000000000 +0900
-+++ b/include/linux/mmzone.h	2008-05-03 00:44:12.000000000 +0900
-@@ -328,6 +328,8 @@ struct zone {
- 	unsigned long		spanned_pages;	/* total size, including holes */
- 	unsigned long		present_pages;	/* amount of memory (excluding holes) */
- 
-+	atomic_t		nr_reclaimers;
-+	wait_queue_head_t	reclaim_throttle_waitq;
- 	/*
- 	 * rarely used fields:
- 	 */
-Index: b/mm/page_alloc.c
-===================================================================
---- a/mm/page_alloc.c	2008-05-03 00:39:44.000000000 +0900
-+++ b/mm/page_alloc.c	2008-05-03 00:44:12.000000000 +0900
-@@ -3502,6 +3502,10 @@ static void __paginginit free_area_init_
- 		zone->nr_scan_inactive = 0;
- 		zap_zone_vm_stats(zone);
- 		zone->flags = 0;
+diff --git a/arch/microblaze/kernel/cpu/cpuinfo-pvr-full.c b/arch/microblaze/kernel/cpu/cpuinfo-pvr-full.c
+new file mode 100644
+index 0000000..fa061a3
+--- /dev/null
++++ b/arch/microblaze/kernel/cpu/cpuinfo-pvr-full.c
+@@ -0,0 +1,83 @@
++/*
++ * arch/microblaze/kernel/cpu/cpuinfo-pvr-full.c
++ *
++ * Support for MicroBlaze PVR (processor version register)
++ *
++ * Copyright (C) 2007 John Williams <john.williams@petalogix.com>
++ * Copyright (C) 2007 PetaLogix
++ *
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License. See the file "COPYING" in the main directory of this archive
++ * for more details.
++ *
++ */
 +
-+		zone->nr_reclaimers = ATOMIC_INIT(0);
-+		init_waitqueue_head(&zone->reclaim_throttle_waitq);
++#include <linux/init.h>
++#include <linux/string.h>
++#include <linux/autoconf.h>
++#include <asm/pvr.h>
++#include <asm/cpuinfo.h>
 +
- 		if (!size)
- 			continue;
- 
-Index: b/mm/vmscan.c
-===================================================================
---- a/mm/vmscan.c	2008-05-03 00:43:48.000000000 +0900
-+++ b/mm/vmscan.c	2008-05-04 22:47:49.000000000 +0900
-@@ -74,6 +74,11 @@ struct scan_control {
- 
- 	int order;
- 
-+	/* Can shrink be cutted off if other task freeded enough page. */
-+	int may_cut_off;
++/*
++ * Helper macro to map between fields in our struct cpuinfo, and
++ * the PVR macros in pvr.h.
++ */
 +
-+	unsigned long was_freed;
++#define CI(c, p) ci->c = PVR_##p(pvr)
 +
- 	/* Which cgroup do we reclaim from */
- 	struct mem_cgroup *mem_cgroup;
- 
-@@ -120,6 +125,7 @@ struct scan_control {
- int vm_swappiness = 60;
- long vm_total_pages;	/* The total number of pages which the VM controls */
- 
-+#define MAX_RECLAIM_TASKS CONFIG_NR_MAX_RECLAIM_TASKS_PER_ZONE
- static LIST_HEAD(shrinker_list);
- static DECLARE_RWSEM(shrinker_rwsem);
- 
-@@ -1187,7 +1193,46 @@ static int shrink_zone(int priority, str
- 	unsigned long nr_inactive;
- 	unsigned long nr_to_scan;
- 	unsigned long nr_reclaimed = 0;
-+	int ret = 0;
-+	int throttle_on = 0;
-+	unsigned long freed;
-+	unsigned long threshold;
++void set_cpuinfo_pvr_full(struct cpuinfo *ci)
++{
++	struct pvr_s pvr;
++	get_pvr(&pvr);
 +
-+	/* avoid recursing wait_evnet */
-+	if (current->flags & PF_RECLAIMING)
-+		goto shrinking;
++	CI(use_barrel, USE_BARREL);
++	CI(use_divider, USE_DIV);
++	CI(use_mult, USE_HW_MUL);
++	CI(use_fpu, USE_FPU);
 +
-+	throttle_on = 1;
-+	current->flags |= PF_RECLAIMING;
-+	wait_event(zone->reclaim_throttle_waitq,
-+		 atomic_add_unless(&zone->nr_reclaimers, 1, MAX_RECLAIM_TASKS));
++	CI(use_mul_64, USE_MUL64);
++	CI(use_msr_instr, USE_MSR_INSTR);
++	CI(use_pcmp_instr, USE_PCMP_INSTR);
++	CI(ver_code, VERSION);
 +
-+	/* in some situation (e.g. hibernation), shrink processing shouldn't be
-+	   cut off even though large memory freeded.  */
-+	if (!sc->may_cut_off)
-+		goto shrinking;
++	CI(use_icache, USE_ICACHE);
++	CI(icache_tagbits, ICACHE_ADDR_TAG_BITS);
++	CI(icache_write, ICACHE_ALLOW_WR);
++	CI(icache_line, ICACHE_LINE_LEN);
++	CI(icache_size, ICACHE_BYTE_SIZE);
++	CI(icache_base, ICACHE_BASEADDR);
++	CI(icache_high, ICACHE_HIGHADDR);
 +
-+	/* kswapd is no related for user latency experience. */
-+	if (current->flags & PF_KSWAPD)
-+		goto shrinking;
++	CI(use_dcache, USE_DCACHE);
++	CI(dcache_tagbits, DCACHE_ADDR_TAG_BITS);
++	CI(dcache_write, DCACHE_ALLOW_WR);
++	CI(dcache_line, DCACHE_LINE_LEN);
++	CI(dcache_size, DCACHE_BYTE_SIZE);
++	CI(dcache_base, DCACHE_BASEADDR);
++	CI(dcache_high, DCACHE_HIGHADDR);
 +
-+	/* x4 ratio mean we want rarely check.
-+	   because frequently check decrease performance. */
-+	threshold = ((1 << sc->order) + zone->pages_high) * 4;
-+	freed = get_vm_event(PGFREE);
++	CI(use_dopb, D_OPB);
++	CI(use_iopb, I_OPB);
++	CI(use_dlmb, D_LMB);
++	CI(use_ilmb, I_LMB);
++	CI(num_fsl, FSL_LINKS);
 +
-+	/* reclaim still necessary? */
-+	if (scan_global_lru(sc) &&
-+	    freed - sc->was_freed >= threshold) {
-+		if (zone_watermark_ok(zone, sc->order, zone->pages_high,
-+				      gfp_zone(sc->gfp_mask), 0)) {
-+			ret = -EAGAIN;
-+			goto out;
-+		}
-+		sc->was_freed = freed;
++	CI(irq_edge, INTERRUPT_IS_EDGE);
++	CI(irq_positive, EDGE_IS_POSITIVE);
++
++	CI(area_optimised, AREA_OPTIMISED);
++	CI(opcode_0_illegal, OPCODE_0x0_ILLEGAL);
++	CI(exc_unaligned, UNALIGNED_EXCEPTION);
++	CI(exc_ill_opcode, ILL_OPCODE_EXCEPTION);
++	CI(exc_iopb, IOPB_BUS_EXCEPTION);
++	CI(exc_dopb, DOPB_BUS_EXCEPTION);
++	CI(exc_div_zero, DIV_ZERO_EXCEPTION);
++	CI(exc_fpu, FPU_EXCEPTION);
++
++	CI(hw_debug, DEBUG_ENABLED);
++	CI(num_pc_brk, NUMBER_OF_PC_BRK);
++	CI(num_rd_brk, NUMBER_OF_RD_ADDR_BRK);
++	CI(num_wr_brk, NUMBER_OF_WR_ADDR_BRK);
++
++	CI(fpga_family_code, TARGET_FAMILY);
++}
+diff --git a/arch/microblaze/kernel/cpu/cpuinfo-static.c b/arch/microblaze/kernel/cpu/cpuinfo-static.c
+new file mode 100644
+index 0000000..054260a
+--- /dev/null
++++ b/arch/microblaze/kernel/cpu/cpuinfo-static.c
+@@ -0,0 +1,117 @@
++/*
++ * arch/microblaze/kernel/cpu/cpuinfo-static.c
++ *
++ * Copyright (C) 2007-2008 Michal Simek <monstr@monstr.eu>
++ * Copyright (C) 2007 John Williams <john.williams@petalogix.com>
++ * Copyright (C) 2007 PetaLogix
++ *
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License. See the file "COPYING" in the main directory of this archive
++ * for more details.
++ *
++ */
++
++#include <linux/kernel.h>
++#include <linux/init.h>
++#include <linux/string.h>
++#include <linux/autoconf.h>
++#include <asm/cpuinfo.h>
++
++const static char family_string[] = CONFIG_XILINX_MICROBLAZE0_FAMILY;
++const static char cpu_ver_string[] = CONFIG_XILINX_MICROBLAZE0_HW_VER;
++
++void __init set_cpuinfo_static(struct cpuinfo *ci, struct device_node *cpu)
++{
++	int i;
++
++	ci->use_barrel = fcpu(cpu, "xlnx,use-barrel");
++	ci->use_divider = fcpu(cpu, "xlnx,use-div");
++	ci->use_mult = fcpu(cpu, "xlnx,use-hw-mul");
++	ci->use_fpu = fcpu(cpu, "xlnx,use-fpu");
++	ci->use_mul_64 = (ci->use_mult == 2 ? 1 : 0);
++	ci->use_msr_instr = fcpu(cpu, "xlnx,use-msr-instr");
++	ci->use_pcmp_instr = fcpu(cpu, "xlnx,use-pcmp-instr");
++
++	ci->use_exception = fcpu(cpu, "xlnx,unaligned-exceptions") ||
++			fcpu(cpu, "xlnx,ill-opcode-exception") ||
++			fcpu(cpu, "xlnx,iopb-bus-exception") ||
++			fcpu(cpu, "xlnx,dopb-bus-exception") ||
++			fcpu(cpu, "xlnx,div-zero-exception") ||
++			fcpu(cpu, "xlnx,fpu-exception");
++
++	ci->exc_unaligned = fcpu(cpu, "xlnx,unaligned-exceptions");
++	ci->exc_unaligned = fcpu(cpu, "xlnx,ill-opcode-exception");
++	ci->exc_iopb = fcpu(cpu, "xlnx,iopb-bus-exception");
++	ci->exc_dopb = fcpu(cpu, "xlnx,dopb-bus-exception");
++	ci->exc_fpu = fcpu(cpu, "xlnx,fpu-exception");
++	ci->exc_div_zero = fcpu(cpu, "xlnx,div-zero-exception");
++	ci->opcode_0_illegal = fcpu(cpu, "xlnx,opcode-0x0-illegal");
++
++	ci->use_icache = fcpu(cpu, "xlnx,use-icache");
++	ci->icache_tagbits = fcpu(cpu, "xlnx,addr-tag-bits");
++	ci->icache_write = fcpu(cpu, "xlnx,allow-icache-wr");
++	ci->icache_line = fcpu(cpu, "xlnx,icache-line-len") << 2;
++	if (!ci->icache_line) {
++		if (fcpu(cpu, "xlnx,icache-use-fsl"))
++			ci->icache_line = 4 << 2;
++		else
++			ci->icache_line = 1 << 2;
 +	}
- 
-+shrinking:
- 	if (scan_global_lru(sc)) {
- 		/*
- 		 * Add one to nr_to_scan just to make sure that the kernel
-@@ -1239,9 +1284,16 @@ static int shrink_zone(int priority, str
- 		}
- 	}
- 
-+out:
-+	if (throttle_on) {
-+		current->flags &= ~PF_RECLAIMING;
-+		atomic_dec(&zone->nr_reclaimers);
-+		wake_up(&zone->reclaim_throttle_waitq);
++	ci->icache_size = fcpu(cpu, "i-cache-size");
++	ci->icache_base = fcpu(cpu, "i-cache-baseaddr");
++	ci->icache_high = fcpu(cpu, "i-cache-highaddr");
++
++	ci->use_dcache = fcpu(cpu, "xlnx,use-dcache");
++	ci->dcache_tagbits = fcpu(cpu, "xlnx,dcache-addr-tag");
++	ci->dcache_write = fcpu(cpu, "xlnx,allow-dcache-wr");
++	ci->dcache_line = fcpu(cpu, "xlnx,dcache-line-len") << 2;
++	if (!ci->dcache_line) {
++		if (fcpu(cpu, "xlnx,dcache-use-fsl"))
++			ci->dcache_line = 4 << 2;
++		else
++			ci->dcache_line = 1 << 2;
++	}
++	ci->dcache_size = fcpu(cpu, "d-cache-size");
++	ci->dcache_base = fcpu(cpu, "d-cache-baseaddr");
++	ci->dcache_high = fcpu(cpu, "d-cache-highaddr");
++
++	ci->use_dopb = fcpu(cpu, "xlnx,d-opb");
++	ci->use_iopb = fcpu(cpu, "xlnx,i-opb");
++	ci->use_dlmb = fcpu(cpu, "xlnx,d-lmb");
++	ci->use_ilmb = fcpu(cpu, "xlnx,i-lmb");
++
++	ci->num_fsl = fcpu(cpu, "xlnx,fsl-links");
++	ci->irq_edge = fcpu(cpu, "xlnx,interrupt-is-edge");
++	ci->irq_positive = fcpu(cpu, "xlnx,edge-is-positive");
++	ci->area_optimised = 0;
++
++	ci->hw_debug = fcpu(cpu, "xlnx,debug-enabled");
++	ci->num_pc_brk = fcpu(cpu, "xlnx,number-of-pc-brk");
++	ci->num_rd_brk = fcpu(cpu, "xlnx,number-of-rd-addr-brk");
++	ci->num_wr_brk = fcpu(cpu, "xlnx,number-of-wr-addr-brk");
++
++	ci->cpu_clock_freq = fcpu(cpu, "timebase-frequency");
++
++	ci->ver_code = 0;
++	ci->fpga_family_code = 0;
++
++	/* Do various fixups based on CPU version and FPGA family strings */
++
++	/* Resolved the CPU version code */
++	for (i = 0; cpu_ver_lookup[i].s != NULL; i++) {
++		if (strcmp(cpu_ver_lookup[i].s, cpu_ver_string) == 0)
++			ci->ver_code = cpu_ver_lookup[i].k;
 +	}
 +
- 	sc->nr_reclaimed += nr_reclaimed;
- 	throttle_vm_writeout(sc->gfp_mask);
--	return 0;
-+	return ret;
- }
- 
- /*
-@@ -1438,6 +1490,8 @@ unsigned long try_to_free_pages(struct z
- 		.order = order,
- 		.mem_cgroup = NULL,
- 		.isolate_pages = isolate_pages_global,
-+		.may_cut_off = 1,
-+		.was_freed = get_vm_event(PGFREE),
- 	};
- 
- 	return do_try_to_free_pages(zonelist, &sc);
-Index: b/mm/Kconfig
-===================================================================
---- a/mm/Kconfig	2008-05-03 00:39:44.000000000 +0900
-+++ b/mm/Kconfig	2008-05-03 00:44:12.000000000 +0900
-@@ -205,3 +205,13 @@ config NR_QUICK
- config VIRT_TO_BUS
- 	def_bool y
- 	depends on !ARCH_NO_VIRT_TO_BUS
++	/* Resolved the fpga family code */
++	for (i = 0; family_string_lookup[i].s != NULL; i++) {
++		if (strcmp(family_string_lookup[i].s, family_string) == 0)
++			ci->fpga_family_code = family_string_lookup[i].k;
++	}
 +
-+config NR_MAX_RECLAIM_TASKS_PER_ZONE
-+	int "maximum number of reclaiming tasks at the same time"
-+	default 3
-+	help
-+	  This value determines the number of threads which can do page reclaim
-+	  in a zone simultaneously. If this is too big, performance under heavy memory
-+	  pressure will decrease.
-+	  If unsure, use default.
++	/* FIXME - mb3 and spartan2 do not exist in PVR */
++	/* This is mb3 and on a non Spartan2 */
++	if (ci->ver_code == 0x20 && ci->fpga_family_code != 0xf0)
++		/* Hardware Multiplier in use */
++		ci->use_mult = 1;
++}
+diff --git a/arch/microblaze/kernel/cpu/cpuinfo.c b/arch/microblaze/kernel/cpu/cpuinfo.c
+new file mode 100644
+index 0000000..2b2bc68
+--- /dev/null
++++ b/arch/microblaze/kernel/cpu/cpuinfo.c
+@@ -0,0 +1,91 @@
++/*
++ * arch/microblaze/kernel/cpu/cpuinfo.c
++ *
++ * Copyright (C) 2007-2008 Michal Simek <monstr@monstr.eu>
++ * Copyright (C) 2007 John Williams <john.williams@petalogix.com>
++ * Copyright (C) 2007 PetaLogix
++ *
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License. See the file "COPYING" in the main directory of this archive
++ * for more details.
++ *
++ */
 +
-Index: b/include/linux/sched.h
-===================================================================
---- a/include/linux/sched.h	2008-05-03 00:39:44.000000000 +0900
-+++ b/include/linux/sched.h	2008-05-03 00:44:12.000000000 +0900
-@@ -1484,6 +1484,7 @@ static inline void put_task_struct(struc
- #define PF_MEMPOLICY	0x10000000	/* Non-default NUMA mempolicy */
- #define PF_MUTEX_TESTER	0x20000000	/* Thread belongs to the rt mutex tester */
- #define PF_FREEZER_SKIP	0x40000000	/* Freezer should not count it as freezeable */
-+#define PF_RECLAIMING   0x80000000      /* The task have page reclaim throttling ticket */
- 
- /*
-  * Only the _current_ task can read/write to tsk->flags, but other
-
++#include <linux/init.h>
++#include <linux/slab.h>
++#include <linux/autoconf.h>
++#include <asm/cpuinfo.h>
++#include <asm/pvr.h>
++
++const struct cpu_ver_key cpu_ver_lookup[] = {
++	/* These key value are as per MBV field in PVR0 */
++	{"5.00.a", 0x01},
++	{"5.00.b", 0x02},
++	{"5.00.c", 0x03},
++	{"6.00.a", 0x04},
++	{"6.00.b", 0x06},
++	{"7.00.a", 0x05},
++	{"7.00.b", 0x07},
++	{"7.10.a", 0x08},
++	/* FIXME There is no keycode defined in MBV for these versions */
++	{"2.10.a", 0x10},
++	{"3.00.a", 0x20},
++	{"4.00.a", 0x30},
++	{"4.00.b", 0x40},
++	{NULL, 0},
++};
++
++/*
++ * FIXME Not sure if the actual key is defined by Xilinx in the PVR
++ */
++const struct family_string_key family_string_lookup[] = {
++	{"virtex2", 0x4},
++	{"virtex2pro", 0x5},
++	{"spartan3", 0x6},
++	{"virtex4", 0x7},
++	{"virtex5", 0x8},
++	{"spartan3e", 0x9},
++	{"spartan3a", 0xa},
++	{"spartan3an", 0xb},
++	{"spartan3adsp", 0xc},
++	/* FIXME There is no key code defined for spartan2 */
++	{"spartan2", 0xf0},
++	{NULL, 0},
++};
++
++struct cpuinfo cpuinfo;
++
++void __init setup_cpuinfo(void)
++{
++	struct device_node *cpu = NULL;
++
++	cpu = (struct device_node *) of_find_node_by_type(NULL, "cpu");
++	if (!cpu)
++		printk(KERN_ERR "You don't have cpu!!!\n");
++
++	printk(KERN_INFO "%s: initialising\n", __func__);
++
++	switch (cpu_has_pvr()) {
++	case 0:
++		printk(KERN_WARNING
++			"%s: No PVR support. Using static CPU info from FDT\n",
++			__func__);
++			set_cpuinfo_static(&cpuinfo, cpu);
++		break;
++#if 0
++	case 1:
++		set_cpuinfo_pvr_partial(cpuinfo);
++		break;
++/* FIXME I found weird behavior with MB 7 */
++#endif
++	case 2:
++		printk(KERN_INFO "%s: Using full CPU PVR support\n",
++			__func__);
++		set_cpuinfo_pvr_full(&cpuinfo);
++		cpuinfo.cpu_clock_freq = fcpu(cpu, "timebase-frequency");
++		break;
++	default:
++		WARN_ON(1);
++		set_cpuinfo_static(&cpuinfo, cpu);
++	}
++}
+diff --git a/include/asm-microblaze/cpuinfo.h b/include/asm-microblaze/cpuinfo.h
+new file mode 100644
+index 0000000..885a945
+--- /dev/null
++++ b/include/asm-microblaze/cpuinfo.h
+@@ -0,0 +1,116 @@
++/*
++ * include/asm-microblaze/cpuinfo.h
++ *
++ * Generic support for queying CPU info
++ *
++ * Copyright (C) 2007-2008 Michal Simek <monstr@monstr.eu>
++ * Copyright (C) 2007 John Williams <john.williams@petalogix.com>
++ * Copyright (C) 2007 PetaLogix
++ *
++ * This file is subject to the terms and conditions of the GNU General
++ * Public License. See the file COPYING in the main directory of this
++ * archive for more details.
++ *
++ */
++
++#ifndef _ASM_MICROBLAZE_CPUINFO_H
++#define _ASM_MICROBLAZE_CPUINFO_H
++
++#include <asm/prom.h>
++
++extern unsigned long loops_per_jiffy;
++
++/* CPU Version and FPGA Family code conversion table type */
++struct cpu_ver_key {
++	const char *s;
++	const unsigned k;
++};
++
++extern const struct cpu_ver_key cpu_ver_lookup[];
++
++struct family_string_key {
++	const char *s;
++	const unsigned k;
++};
++
++extern const struct family_string_key family_string_lookup[];
++
++struct cpuinfo {
++	/* Core CPU configuration */
++	int use_barrel;
++	int use_divider;
++	int use_mult;
++	int use_fpu;
++	int use_exception;
++	int use_mul_64;
++	int use_msr_instr;
++	int use_pcmp_instr;
++
++	int ver_code;
++
++	/* CPU caches */
++	int use_icache;
++	int icache_tagbits;
++	int icache_write;
++	int icache_line;
++	int icache_size;
++	unsigned long icache_base;
++	unsigned long icache_high;
++
++	int use_dcache;
++	int dcache_tagbits;
++	int dcache_write;
++	int dcache_line;
++	int dcache_size;
++	unsigned long dcache_base;
++	unsigned long dcache_high;
++
++	/* Bus connections */
++	int use_dopb;
++	int use_iopb;
++	int use_dlmb;
++	int use_ilmb;
++	int num_fsl;
++
++	/* CPU interrupt line info */
++	int irq_edge;
++	int irq_positive;
++
++	int area_optimised;
++
++	/* HW support for CPU exceptions */
++	int opcode_0_illegal;
++	int exc_unaligned;
++	int exc_ill_opcode;
++	int exc_iopb;
++	int exc_dopb;
++	int exc_div_zero;
++	int exc_fpu;
++
++	/* HW debug support */
++	int hw_debug;
++	int num_pc_brk;
++	int num_rd_brk;
++	int num_wr_brk;
++	int cpu_clock_freq;
++
++	/* FPGA family */
++	int fpga_family_code;
++};
++
++extern struct cpuinfo cpuinfo;
++
++/* fwd declarations of the various CPUinfo populators */
++void setup_cpuinfo(void);
++
++void set_cpuinfo_static(struct cpuinfo *ci, struct device_node *cpu);
++void set_cpuinfo_pvr_partial(struct cpuinfo *ci);
++void set_cpuinfo_pvr_full(struct cpuinfo *ci);
++
++static inline unsigned int fcpu(struct device_node *cpu, char *n)
++{
++	int *val;
++	return ((val = (int *) of_get_property(cpu, n, NULL)) ? *val : 0);
++}
++
++#endif /* _ASM_MICROBLAZE_CPUINFO_H */
+-- 
+1.5.4.GIT
 
