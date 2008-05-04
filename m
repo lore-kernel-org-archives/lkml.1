@@ -1,75 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755354AbYEDH4k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753852AbYEDIM6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755354AbYEDH4k (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 May 2008 03:56:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752934AbYEDH4c
+	id S1753852AbYEDIM6 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 May 2008 04:12:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752012AbYEDIMq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 May 2008 03:56:32 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:40811 "EHLO smtps.tip.net.au"
+	Sun, 4 May 2008 04:12:46 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:57427 "EHLO smtp4.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752517AbYEDH4b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 May 2008 03:56:31 -0400
-Date: Sun, 4 May 2008 17:56:12 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: charter for -next
-Message-Id: <20080504175612.07b0b0a0.sfr@canb.auug.org.au>
-In-Reply-To: <481C3AA2.6020809@s5r6.in-berlin.de>
-References: <481C3AA2.6020809@s5r6.in-berlin.de>
-X-Mailer: Sylpheed 2.5.0beta3 (GTK+ 2.12.9; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Sun__4_May_2008_17_56_12_+1000_NNAy0qpOKurYAEDO"
+	id S1751231AbYEDIMp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 May 2008 04:12:45 -0400
+Date: Sun, 4 May 2008 11:11:45 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Roman Zippel <zippel@linux-m68k.org>,
+       linux-kbuild <linux-kbuild@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: kconfig - a suggestion how to fix the select issue
+Message-ID: <20080504081145.GG5838@cs181133002.pp.htv.fi>
+References: <20080504071041.GA15315@uranus.ravnborg.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20080504071041.GA15315@uranus.ravnborg.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Sun__4_May_2008_17_56_12_+1000_NNAy0qpOKurYAEDO
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Sun, May 04, 2008 at 09:10:41AM +0200, Sam Ravnborg wrote:
+>...
+> 
+> config A
+>         bool "a"
+> 
+> config B
+>         bool "b"
+>         depends on A
+> 
+> config C
+>         bool "c"
+>         require B
+> 
+> The require dependency will have impact on visibility.
+> C shall only be visible if all symbols it require are
+> visible. Note that visible does not imply 'chosen'.
+> In this case C would be visible when A is chosen.
+> 
+> When the user then choose C and B is not chosen 
+> then the user is prompted to choose B.
+> 
+> So user has to chose B in order to have C chosen.
+>...
+> Comments?
 
-Hi Stefan,
 
-On Sat, 03 May 2008 12:12:50 +0200 Stefan Richter <stefanr@s5r6.in-berlin.d=
-e> wrote:
->
-> What should I ask myself before I commit something to the branch which=20
-> Stephen pulls into -next?
->=20
->      Is this ready to be pulled by Linus right now if he had a merge
->      window open today?
+Given:
 
-This is what I want ideally.  So as stuff stabilises in subsystem trees,
-it can be incorporated into linux-next and we can then figure out the
-problems introduced by interactions with other subsystems.
+config A
+	tristate "a"
 
->      Is it likely that I will let Linus pull this when he opens his next
->      merge window?  (Assuming I can roughly predict when this will be,
->      and what other work will likely be done until then, e.g. pending
->      reviewer feedback, or patches for related functionality which should
->      be bundled with the work in question...)
+config B
+	tristate "b"
+	depends on A
 
-I suspect that this is what I got in some cases during the last
-cycle :-) :-(
+config C
+	bool "c"
+	require B
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+CONFIG_A=m
 
---Signature=_Sun__4_May_2008_17_56_12_+1000_NNAy0qpOKurYAEDO
-Content-Type: application/pgp-signature
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+Will C be visible?
 
-iD8DBQFIHWwoTgG2atn1QN8RAs88AJoD3GOnvWPbyJIvdt5sOcF5ogjfVQCdGljx
-3mUcDgcMUVP+0+zREixD9wk=
-=2D+q
------END PGP SIGNATURE-----
 
---Signature=_Sun__4_May_2008_17_56_12_+1000_NNAy0qpOKurYAEDO--
+The underlying problem is that we use bool for two different cases:
+- non-modular driver (answer would be "no")
+- enable feature in driver (answer would be "depends on the value of D")
+
+
+> 	Sam
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
