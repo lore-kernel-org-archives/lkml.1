@@ -1,162 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757511AbYEDSot@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756777AbYEDS5S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757511AbYEDSot (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 May 2008 14:44:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754515AbYEDSol
+	id S1756777AbYEDS5S (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 May 2008 14:57:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754027AbYEDS5G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 May 2008 14:44:41 -0400
-Received: from rv-out-0506.google.com ([209.85.198.225]:33391 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754439AbYEDSok (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 May 2008 14:44:40 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=NmF9oLUeRfxD5+244Ol/fu09kpzEwHT7LI2y9IIg6sWi6gIslwOZiMC9iib0O64zSrCZCqG8hn4/hvnaDe+sgILPrNc6q+fJVfoMJ4SEiLryl/gQIzQLpYGQLL5ktlYphKWpd+ppqWWKawk57EB3lzQH3aAsb1IWBLsxeWifPQ0=
-Message-ID: <86802c440805041144n6fd17b06k23d1e5d53122e21c@mail.gmail.com>
-Date: Sun, 4 May 2008 11:44:39 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Johannes Weiner" <hannes@saeurebad.de>
-Subject: Re: [RFC 0/2] Rootmem: boot-time memory allocator
-Cc: "Ingo Molnar" <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, "Andi Kleen" <andi@firstfloor.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>
-In-Reply-To: <87lk2qt75m.fsf@saeurebad.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Sun, 4 May 2008 14:57:06 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:35780 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753913AbYEDS5F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 May 2008 14:57:05 -0400
+Date: Sun, 4 May 2008 20:57:37 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: linux-kbuild <linux-kbuild@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Roman Zippel <zippel@linux-m68k.org>
+Subject: Re: kconfig frontend updates
+Message-ID: <20080504185737.GA23063@uranus.ravnborg.org>
+References: <20080502204729.GA6534@uranus.ravnborg.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20080503152502.191599824@symbol.fehenstaub.lan>
-	 <20080503175426.GB5292@elte.hu>
-	 <86802c440805032106t4d020838v39aaf93309003cdb@mail.gmail.com>
-	 <87hcdev448.fsf@saeurebad.de> <87r6citaqg.fsf@saeurebad.de>
-	 <87lk2qt75m.fsf@saeurebad.de>
+In-Reply-To: <20080502204729.GA6534@uranus.ravnborg.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, May 4, 2008 at 8:34 AM, Johannes Weiner <hannes@saeurebad.de> wrote:
->
-> Hi,
->
->  Johannes Weiner <hannes@saeurebad.de> writes:
->
->  > Hi Yinghai,
->  >
->  > Johannes Weiner <hannes@saeurebad.de> writes:
->  >
->  >> Hi,
->  >>
->  >> "Yinghai Lu" <yhlu.kernel@gmail.com> writes:
->  >>
->  >>> On Sat, May 3, 2008 at 10:54 AM, Ingo Molnar <mingo@elte.hu> wrote:
->  >>>>
->  >>>>  * Johannes Weiner <hannes@saeurebad.de> wrote:
->  >>>>
->  >>>>  > I was spending some time and work on the bootmem allocator the last
->  >>>>  > few weeks and came to the conclusion that its current design is not
->  >>>>  > appropriate anymore.
->  >>>>  >
->  >>>>  > As Ingo said in another email, NUMA technologies will become weirder,
->  >>>>  > nodes whose PFNs span other nodes for example and it makes bootmem
->  >>>>  > code become an unreadable mess.
->  >>>>  >
->  >>>>  > So I sat down two days ago and rewrote the allocator, here is the
->  >>>>  > result: rootmem!
->  >>>>
->  >>>>  hehe :-)
->  >>>>
->  >>>>
->  >>>>  > The biggest difference to the old design is that there is only one
->  >>>>  > bitmap for all PFNs of all nodes together, so the overlapping PFN
->  >>>>  > problems simply dissolve and fun like allocations crossing node
->  >>>>  > boundaries work implicitely.  The new API requires every node used by
->  >>>>  > the allocator to be registered and after that the bitmap gets
->  >>>>  > allocated and the allocator enabled.
->  >>>>  >
->  >>>>  > I chose to add a new allocator rather than replacing bootmem at once
->  >>>>  > because that would have required all callsites to switch in one go,
->  >>>>  > which would be a lot.  The new allocator can be adopted more slowly
->  >>>>  > and I added a compatibility API for everything besides actually
->  >>>>  > setting up the allocator.  When the last user dies, bootmem can be
->  >>>>  > dropped completely (including pgdat->bdata, whee..)
->  >>>>  >
->  >>>>  > The main ideas from bootmem have been stolen^W preserved but the new
->  >>>>  > design allowed me to shrink the code a lot and express things more
->  >>>>  > simple and clear:
->  >>>>  >
->  >>>>  > $ sloc.awk < mm/bootmem.c
->  >>>>  > 455 lines of code, 65 lines of comments (520 lines total)
->  >>>>  >
->  >>>>  > $ sloc.awk < mm/rootmem.c
->  >>>>  > 243 lines of code, 96 lines of comments (339 lines total)
->  >>>>
->  >>>>  amazing!
->  >>>>
->  >>>>  i'd still suggest to keep it all named bootmem though :-/ How about
->  >>>>  bootmem2.c and then renaming it back to bootmem.c, once the last user is
->  >>>>  gone? That would save people from having to rename whole chapters in
->  >>>>  entire books ;-)
->  >>>
->  >>> for spanning support node0:0-2g, 4-6g; node1: 2-4g, 6-8g, could have
->  >>> some problem.
->  >>
->  >> Could you eleborate on that?
->  >>
->  >>> +/*
->  >>> + * rootmem_register_node - register a node to rootmem
->  >>> + * @nid: node id
->  >>> + * @start: first pfn on the node
->  >>> + * @end: first pfn after the node
->  >>> + *
->  >>> + * This function must not be called anymore if the allocator
->  >>> + * is already up and running (rootmem_setup() has been called).
->  >>> + */
->  >>> +void __init rootmem_register_node(int nid, unsigned long start,
->  >>> +                       unsigned long end)
->  >>> +{
->  >>> +       BUG_ON(rootmem_functional);
->  >>> +
->  >>> +       if (start < rootmem_min_pfn)
->  >>> +               rootmem_min_pfn = start;
->  >>> +       if (end > rootmem_max_pfn)
->  >>> +               rootmem_max_pfn = end;
->  >>> +
->  >>> +       rootmem_node_pages[nid] = end - start;
->  >>> +       rootmem_node_offsets[nid] = start;
->  >>> +       rootmem_nr_nodes++;
->  >>> +}
->  >>>
->  >>> could change rootmem_node_pages/offsets to be struct array with
->  >>> offset, pages, and nid. and every node could several struct. and whole
->  >>> array should be sorted with nid.
->
->  In the long term, this would have to be implemented no matter if
->  rootmem/bootmem2 gets merged or not, because bootmem suffers the same
->  problem, right?
->
->
->  >> The whole point is to be agnostic about weird NUMA configs.  Right now,
->  >> I am pretty proud of the simple data structures and I would avoid
->  >> blowing them up again unless there is a hard reason to do so.
->
->  This is non-helping crap, please excuse me.
->
->
->  > One thing I have found is that __rootmem_alloc_node can not garuantee
->  > that the memory it returns is on the requested node right now.
->
->  Hm, we have two choices: Either we introduce a new API that requests the
->  arch code to register not only node ranges but also subranges on that
->  node, or we won't garuantee that you get all memory on the node you
->  specified.  Correct?
->
->  The first option would be what you have proposed, I think.
+On Fri, May 02, 2008 at 10:47:29PM +0200, Sam Ravnborg wrote:
+> The following patchset implments the following:
+> 
+> o Inputfiles to all*config can be specified with K=
+> o less chatty oldconfig mode
+> o Drop useless warnings
+> 
+> This is work-in-progress aimed for next mergewindow.
+> Posted here mainly to get some feedback and a
+> bit of review.
 
-1. current bootmem, add not_used_map to bdata.
-2. or in bootmem2, use pages_offset struct for every range... so one
-node could have several ranges.
+New set of patches (2) will follow.
+The warning "trying to assign nonexistent symbol" remains for now.
+I do not want to mix the two things.
 
-YH
+The patches are also pushed to kbuild.git so they
+will appear in -next and -mm.
+Let's see how many scripts will break due to this ;-)
+
+Comments /testing welcome.
+
+	Sam
