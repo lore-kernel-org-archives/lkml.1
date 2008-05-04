@@ -1,64 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756378AbYEDM5V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757158AbYEDM5g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756378AbYEDM5V (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 May 2008 08:57:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751077AbYEDM5H
+	id S1757158AbYEDM5g (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 May 2008 08:57:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752450AbYEDM5P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 May 2008 08:57:07 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:54502 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750995AbYEDM5G (ORCPT
+	Sun, 4 May 2008 08:57:15 -0400
+Received: from brmea-mail-3.Sun.COM ([192.18.98.34]:39104 "EHLO
+	brmea-mail-3.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751962AbYEDM5L (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 May 2008 08:57:06 -0400
-Date: Sun, 04 May 2008 21:55:57 +0900
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Nishanth Aravamudan <nacc@us.ibm.com>
-Subject: [-mm][PATCH 1/5] fix overflow problem of do_try_to_free_page()
-Cc: kosaki.motohiro@jp.fujitsu.com
-In-Reply-To: <20080504201343.8F52.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-References: <20080504201343.8F52.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-Message-Id: <20080504215331.8F55.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
+	Sun, 4 May 2008 08:57:11 -0400
+Date: Sun, 04 May 2008 08:55:12 -0400
+From: David Collier-Brown <davecb@sun.com>
+Subject: Re: kconfig - a suggestion how to fix the select issue
+In-reply-to: <20080504071041.GA15315@uranus.ravnborg.org>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Roman Zippel <zippel@linux-m68k.org>,
+       linux-kbuild <linux-kbuild@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Reply-to: davecb@sun.com
+Message-id: <481DB230.30907@sun.com>
+MIME-version: 1.0
+Content-type: text/plain; format=flowed; charset=us-ascii
+Content-transfer-encoding: 7BIT
+X-Accept-Language: en-us, en
+References: <20080504071041.GA15315@uranus.ravnborg.org>
+User-Agent: Mozilla/5.0 (X11; U; SunOS sun4u; en-US; rv:1.7) Gecko/20041221
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-this patch is not part of reclaim throttle series.
-it is merely hotfixs.
+Sam Ravnborg wrote:
+[Snipped]
+> The suggestion is to introduce a "require" term used
+> like this:
+> 
+> config A
+>         bool "a"
+> 
+> config B
+>         bool "b"
+>         depends on A
+> 
+> config C
+>         bool "c"
+>         require B
+> 
+> The require dependency will have impact on visibility.
+> C shall only be visible if all symbols it require are
+> visible. Note that visible does not imply 'chosen'.
+> In this case C would be visible when A is chosen.
+> 
+> When the user then choose C and B is not chosen 
+> then the user is prompted to choose B.
+> 
+> So user has to chose B in order to have C chosen.
+> 
+> This would make it visible for the user that choosing
+> a camera had the side-effect that USB had to be enabled too.
+> But if we have some general option that prevents the
+> visibility of USB we would not be offered the camara
+> in the first place
 
----------------------------------------
-"Smarter retry of costly-order allocations" patch series change 
-behaver of do_try_to_free_pages().
-but unfortunately ret variable type unchanged.
+In the example you suggest, the user would not see the
+option of choosing the camera at C unless they selected
+USB at A, and would wonder where the camera disappeared
+to...
 
-thus, overflow problem is possible.
+I speculate that having two ways to express a dependency,
+and the addtition of visibility control makes the
+dependency tree-walk into a problem which is no longer
+solvable in trivial logic. That in turn makes my head 
+explode (;-))
 
+I wonder if one could simplify back into a flat set of
+selections without visibility rules and a backwards-
+chaining "you need to select these too" message emitter,
+and if that would be worthwhile.
 
-
-Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-CC: Nishanth Aravamudan <nacc@us.ibm.com>
-
----
- mm/vmscan.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-Index: b/mm/vmscan.c
-===================================================================
---- a/mm/vmscan.c	2008-05-03 00:02:52.000000000 +0900
-+++ b/mm/vmscan.c	2008-05-03 00:05:08.000000000 +0900
-@@ -1317,7 +1317,7 @@ static unsigned long do_try_to_free_page
- 					struct scan_control *sc)
- {
- 	int priority;
--	int ret = 0;
-+	unsigned long ret = 0;
- 	unsigned long total_scanned = 0;
- 	unsigned long nr_reclaimed = 0;
- 	struct reclaim_state *reclaim_state = current->reclaim_state;
-
-
+--dave (who used to do formal logics) c-b
+-- 
+David Collier-Brown            | Always do right. This will gratify
+Sun Microsystems, Toronto      | some people and astonish the rest
+davecb@sun.com                 |                      -- Mark Twain
+(905) 943-1983, cell: (647) 833-9377, (800) 555-9786 x56583
+bridge: (877) 385-4099 code: 506 9191#
