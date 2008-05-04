@@ -1,35 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757682AbYEDUPE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757900AbYEDUUM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757682AbYEDUPE (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 May 2008 16:15:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754655AbYEDUOx
+	id S1757900AbYEDUUM (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 May 2008 16:20:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755452AbYEDUT4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 May 2008 16:14:53 -0400
-Received: from quechua.inka.de ([193.197.184.2]:58501 "EHLO mail.inka.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752679AbYEDUOw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 May 2008 16:14:52 -0400
-From: Bernd Eckenfels <ecki@lina.inka.de>
-To: linux-kernel@vger.kernel.org
-Subject: Re: kconfig - a suggestion how to fix the select issue
-Organization: Private Site running Debian GNU/Linux
-In-Reply-To: <481E0E76.3060900@gmail.com>
-X-Newsgroups: ka.lists.linux.kernel
-User-Agent: tin/1.7.8-20050315 ("Scalpay") (UNIX) (Linux/2.6.13.4 (i686))
-Message-Id: <E1Jskbi-00058h-00@calista.eckenfels.net>
-Date: Sun, 04 May 2008 22:14:50 +0200
+	Sun, 4 May 2008 16:19:56 -0400
+Received: from nf-out-0910.google.com ([64.233.182.191]:55685 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755289AbYEDUTz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 May 2008 16:19:55 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=FtvXXD3ZkrJ9urqd1YmagwzJDOXFdhV5TgDAfN/OTitGIiXzx+Vey6QxMU7WpRv2Pv0/UPC47eohz/ziPKKPDAhNu0Qv6hnZh5h5VwECEwo9WkmNjhZPDgdg+Skjr9xMzYTU3cm1SMbWwbF2IeHCiROZmDLFuo1Q7dUSiK/sEgk=
+Date: Mon, 5 May 2008 01:15:07 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Jay Cliburn <jacliburn@bellsouth.net>
+Cc: Luca Tettamanti <kronos.it@gmail.com>, Chris Snook <csnook@redhat.com>,
+       Jeff Garzik <jeff@garzik.org>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, Christoph Lameter <clameter@sgi.com>,
+       torvalds@osdl.org
+Subject: Re: atl1 64-bit => 32-bit DMA borkage (reproducible, bisected)
+Message-ID: <20080504211507.GC1040@martell.zuzino.mipt.ru>
+References: <20080419111719.GA6724@martell.zuzino.mipt.ru> <20080419144535.GA4814@martell.zuzino.mipt.ru> <20080419215444.2d4623f5@osprey.hogchain.net> <20080420111453.GA4902@martell.zuzino.mipt.ru> <20080420060607.2b1be48b@osprey.hogchain.net> <20080420122631.GA4761@martell.zuzino.mipt.ru> <20080420133704.63f5cc10@osprey.hogchain.net> <20080420205500.GA4762@martell.zuzino.mipt.ru> <20080421210821.28053a92@osprey.hogchain.net> <20080425195743.2bfe66ee@osprey.hogchain.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080425195743.2bfe66ee@osprey.hogchain.net>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In article <481E0E76.3060900@gmail.com> you wrote:
-> I've always really disliked the visibility thing. I believe it's not really 
-> the core issue here but regardless of anything else, could we not "grey out" 
-> non-selectable options with its helpt text still available? That's much more 
-> the standard UI paradigm.
+Looking at how other netdevice drivers:
 
-And beside that nothing stops us from verifying the dependencies of the
-options after select is applied and refusing to save the (broken) config.
+8139too and others checks netif_running() in interrupt handler.
 
-Gruss
-Bernd
+r8169 has scary "50k$" question comment re irqs disabled after
+interacting with hardware.
+
+But the r8169 case should be fixed by atlx_irq_disable()?
+
+Writes to REG_IMR, REG_ISR are commented in atl1_reset_hw(), why?
+(I'll test that soon)
+
+Do we have a theory why changing from 64-bit DMA mask to 32-bit mask
+resurrects the bug? NIC here never showed any sort of corruption
+described in commit which banned 64-bit DMA.
+
