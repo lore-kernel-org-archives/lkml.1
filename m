@@ -1,25 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752707AbYEDELX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752801AbYEDERI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752707AbYEDELX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 May 2008 00:11:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750790AbYEDELL
+	id S1752801AbYEDERI (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 May 2008 00:17:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750840AbYEDEQy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 May 2008 00:11:11 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:48571
+	Sun, 4 May 2008 00:16:54 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:38539
 	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1750696AbYEDELK (ORCPT
+	by vger.kernel.org with ESMTP id S1750711AbYEDEQy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 May 2008 00:11:10 -0400
-Date: Sat, 03 May 2008 21:11:09 -0700 (PDT)
-Message-Id: <20080503.211109.71037948.davem@davemloft.net>
-To: devzero@web.de
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, g4klx@g4klx.demon.co.uk
-Subject: Re: 24rc8: unregister_netdevice: waiting for ... to become free
+	Sun, 4 May 2008 00:16:54 -0400
+Date: Sat, 03 May 2008 21:16:46 -0700 (PDT)
+Message-Id: <20080503.211646.250661233.davem@davemloft.net>
+To: dhaval@linux.vnet.ibm.com
+Cc: mingo@elte.hu, a.p.zijlstra@chello.nl, tglx@linutronix.de,
+       guichaz@gmail.com, andi@firstfloor.org, linux-kernel@vger.kernel.org,
+       linux-arch@vger.kernel.org, efault@gmx.de
+Subject: Re: [RFC][PATCH] sched_clock_cpu()
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <20080502.054536.109642865.davem@davemloft.net>
-References: <008f01c8ac51$83dbd5d0$6400a8c0@bui.materna.com>
-	<20080502.054536.109642865.davem@davemloft.net>
+In-Reply-To: <20080503173023.GA2394@linux.vnet.ibm.com>
+References: <1209832169.6929.42.camel@lappy>
+	<20080503165511.GA21967@elte.hu>
+	<20080503173023.GA2394@linux.vnet.ibm.com>
 X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
@@ -28,49 +30,22 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: David Miller <davem@davemloft.net>
-Date: Fri, 02 May 2008 05:45:36 -0700 (PDT)
+From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+Date: Sat, 3 May 2008 23:00:23 +0530
 
-> From: "Roland" <devzero@web.de>
-> Date: Fri, 2 May 2008 14:38:36 +0200
-> 
-> > it seems it`s lapbether driver
+> On Sat, May 03, 2008 at 06:55:11PM +0200, Ingo Molnar wrote:
 > > 
-> > reproduce:
+> > * Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
 > > 
-> > on system with pcnet32 (vmware) do
+> > > it _DOESN'T_ boot ;-/ [...]
 > > 
-> > modprobe pcnet32
-> > modprobe lapbether
-> > modprobe -r lapbether
-> > modprobe -r pcnet32 -> hang -> unregister_netdevice: waiting for eth0 to 
-> > become free
+> > FYI, the merged version against sched-devel.git does boot fine here and 
+> > the clock does seem to advance as expected.
+> > 
 > 
-> lapbeth_cleanup_driver() unregisters the netdevice, but does not
-> release the reference to lapbeth->ethdev in those device instances.
-> 
-> Once this happens, and the lapbeth_dev_notifier is unregistered,
-> these references will leak forever.
+> boots here against linus as well.
 
-Roland, does this fix your bug?
-
-lapbeth: Release ->ethdev when unregistering device.
-
-Otherwise it leaks forever.
-
-Based upon a report by Roland <devzero@web.de>
-
-Signed-off-by: David S. Miller <davem@davemloft.net>
-
-diff --git a/drivers/net/wan/lapbether.c b/drivers/net/wan/lapbether.c
-index b5860b9..24fd613 100644
---- a/drivers/net/wan/lapbether.c
-+++ b/drivers/net/wan/lapbether.c
-@@ -459,6 +459,7 @@ static void __exit lapbeth_cleanup_driver(void)
- 	list_for_each_safe(entry, tmp, &lapbeth_devices) {
- 		lapbeth = list_entry(entry, struct lapbethdev, node);
- 
-+		dev_put(lapbeth->ethdev);
- 		unregister_netdevice(lapbeth->axdev);
- 	}
- 	rtnl_unlock();
+If you tested on powerpc (just guessing), did you set
+HAVE_STABLE_CLOCK in arch/powerpc/Kconfig?  That's
+what you'll need to do to take advantage of the
+new code.
