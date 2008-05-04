@@ -1,129 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758008AbYEDUWS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758123AbYEDUXA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758008AbYEDUWS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 May 2008 16:22:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756153AbYEDUWL
+	id S1758123AbYEDUXA (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 May 2008 16:23:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756153AbYEDUWw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 May 2008 16:22:11 -0400
-Received: from nf-out-0910.google.com ([64.233.182.184]:57541 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752679AbYEDUWJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 May 2008 16:22:09 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=cVcDPPioMShodpozl1QBcuBRoLUgbm/MWi57sIOckNDH5JV3Y4vonxlHvGZAbSny+URMvMiMG/pOC2eo4yjuzBCdgoG/qfE9Rgvd65sOjcw+06z4iGK2XJY3ftsEjAK6m322OsxKVve7tK9xFCnQkQQYk6GF7Ozjq29C12YsI8k=
-Date: Mon, 5 May 2008 01:17:21 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.25-$sha1: RIP call_for_each_cic+0x25/0x50
-Message-ID: <20080504211721.GA26611@martell.zuzino.mipt.ru>
-References: <20080427225553.GA4848@martell.zuzino.mipt.ru> <20080428050145.af036c4f.akpm@linux-foundation.org> <20080428120412.GY12774@kernel.dk> <20080428195509.GA5247@martell.zuzino.mipt.ru> <20080429062116.GA5059@martell.zuzino.mipt.ru> <20080429090604.GK12774@kernel.dk> <20080430221250.GA10150@martell.zuzino.mipt.ru> <20080504190811.GP12774@kernel.dk> <20080504201542.GA1040@martell.zuzino.mipt.ru> <20080504192500.GR12774@kernel.dk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080504192500.GR12774@kernel.dk>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Sun, 4 May 2008 16:22:52 -0400
+Received: from mail.gmx.net ([213.165.64.20]:40752 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1756103AbYEDUWv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 May 2008 16:22:51 -0400
+X-Authenticated: #815327
+X-Provags-ID: V01U2FsdGVkX19oU5F2jKxoewgUMtY0XBBN3XV2117eiPXKW/2fva
+	nHOI9o+etwdqbe
+Date: Sun, 4 May 2008 22:22:46 +0200
+From: Malte =?UTF-8?B?U2NocsO2ZGVy?= <maltesch@gmx.de>
+To: Jan Engelhardt <jengelh@medozas.de>
+Cc: Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org
+Subject: Re: Hard lockup with kernel 2.6.25 and 2.6.25.1
+Message-ID: <20080504222246.50dc6f5b@highlander.home.lan>
+In-Reply-To: <alpine.LNX.1.10.0805042155530.11757@fbirervta.pbzchgretzou.qr>
+References: <20080504005209.13af2b2c@highlander.home.lan>
+	<20080503231813.GA18248@kroah.com>
+	<20080504115108.7b5a8e3f@highlander.home.lan>
+	<alpine.LNX.1.10.0805042155530.11757@fbirervta.pbzchgretzou.qr>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="Sig_/UQojl6.Jb94t/j=VrL.t+EN";
+ protocol="application/pgp-signature"; micalg=PGP-SHA1
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, May 04, 2008 at 09:25:00PM +0200, Jens Axboe wrote:
-> On Mon, May 05 2008, Alexey Dobriyan wrote:
-> > On Sun, May 04, 2008 at 09:08:11PM +0200, Jens Axboe wrote:
-> > > On Thu, May 01 2008, Alexey Dobriyan wrote:
-> > > > On Tue, Apr 29, 2008 at 11:06:05AM +0200, Jens Axboe wrote:
-> > > > > On Tue, Apr 29 2008, Alexey Dobriyan wrote:
-> > > > > > On Mon, Apr 28, 2008 at 11:55:09PM +0400, Alexey Dobriyan wrote:
-> > > > > > > On Mon, Apr 28, 2008 at 02:04:13PM +0200, Jens Axboe wrote:
-> > > > > > > > On Mon, Apr 28 2008, Andrew Morton wrote:
-> > > > > > > > > On Mon, 28 Apr 2008 02:55:53 +0400 Alexey Dobriyan <adobriyan@gmail.com> wrote:
-> > > > > > > > > 
-> > > > > > > > > > This happened while ~90 cross-compile jobs were running in parallel on
-> > > > > > > > > > ext2/noatime partition (slowly -- much debugging was on)
-> > > > > > > > > > 
-> > > > > > > > > > 
-> > > > > > > > > > general protection fault: 0000 [1] PREEMPT SMP DEBUG_PAGEALLOC
-> > > > > > > > > > CPU 0 
-> > > > > > > > > > Modules linked in: ext2 nf_conntrack_irc ipt_MASQUERADE iptable_nat nf_nat nf_conntrack_ipv4 xt_state nf_conntrack iptable_filter ip_tables x_tables usblp uhci_hcd ehci_hcd usbcore sr_mod cdrom
-> > > > > > > > > > Pid: 16483, comm: as Not tainted 2.6.25-c3bf9bc243092c53946fd6d8ebd6dc2f4e572d48 #1
-> > > > > > > > > > RIP: 0010:[<ffffffff80307525>]  [<ffffffff80307525>] call_for_each_cic+0x25/0x50
-> > > > > > > > > > RSP: 0018:ffff810170811e58  EFLAGS: 00010202
-> > > > > > > > > > RAX: 6b6b6b6b6b6b6b6b RBX: 6b6b6b6b6b6b6b6b RCX: 0000000000000000
-> > > > > > > > > > RDX: 0000000000000001 RSI: 0000000000000000 RDI: ffff81010ff92000
-> > > > > > > > > > RBP: ffff810170811e78 R08: 0000000000000001 R09: 0000000000000000
-> > > > > > > > > > R10: 0000000000000000 R11: ffff8100010069d8 R12: ffff810138ada300
-> > > > > > > > > > R13: ffffffff803075b0 R14: ffff81017fcd2000 R15: ffff81010ff92168
-> > > > > > > > > > FS:  00002ac3462426f0(0000) GS:ffffffff805d0000(0000) knlGS:0000000000000000
-> > > > > > > > > > CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
-> > > > > > > > > > CR2: 00002ab602550000 CR3: 000000013609d000 CR4: 0000000000000660
-> > > > > > > > > > DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-> > > > > > > > > > DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-> > > > > > > > > > Process as (pid: 16483, threadinfo ffff810170810000, task ffff81010ff92000)
-> > > > > > > > > > Stack:  ffff810170811e88 ffff810138ada300 0000000000000010 ffff81010ff92100
-> > > > > > > > > >  ffff810170811e88 ffffffff80307580 ffff810170811ea8 ffffffff80302a55
-> > > > > > > > > >  ffff81010ff92100 ffff810138ada300 ffff810170811ec8 ffffffff80302b1f
-> > > > > > > > > > Call Trace:
-> > > > > > > > > >  [<ffffffff80307580>] cfq_free_io_context+0x10/0x20
-> > > > > > > > > >  [<ffffffff80302a55>] put_io_context+0x85/0x90
-> > > > > > > > > >  [<ffffffff80302b1f>] exit_io_context+0x8f/0xb0
-> > > > > > > > > >  [<ffffffff80235d19>] do_exit+0x549/0x780
-> > > > > > > > > >  [<ffffffff80235f8e>] do_group_exit+0x3e/0xb0
-> > > > > > > > > >  [<ffffffff80236012>] sys_exit_group+0x12/0x20
-> > > > > > > > > >  [<ffffffff8020b6db>] system_call_after_swapgs+0x7b/0x80
-> > > > > > > > > > 
-> > > > > > > > > > 
-> > > > > > > > > > Code: 84 00 00 00 00 00 55 48 89 e5 41 55 49 89 f5 41 54 49 89 fc 53 48 83 ec 08 e8 18 e1 f5 ff 49 8b 44 24 68 48 85 c0 74 1e 48 89 c3 <48> 8b 03 48 8d 73 88 4c 89 e7 0f 18 08 41 ff d5 48 8b 03 48 85 
-> > > > > > > > > > RIP  [<ffffffff80307525>] call_for_each_cic+0x25/0x50
-> > > > > > > > > >  RSP <ffff810170811e58>
-> > > > > > > > > > ---[ end trace ca143223eefdc828 ]---
-> > > > > > > > > > Fixing recursive fault but reboot is needed!
-> > > > > > > > > cfq-iosched.c hasn't been altered (yet) so it might not be a regression.
-> > > > > > 
-> > > > > > 
-> > > > > > > > It's not a regression, it's definitely in 2.6.25 as well. So that's a
-> > > > > > > > bit scary, I've been looking over this stuff this morning but haven't
-> > > > > > > > pin pointed anything yet.
-> > > > > > > > 
-> > > > > > > > Alexey, is this something that reproduces for you?
-> > > > > > > 
-> > > > > > > Not yet, second run of same workload went fine and I've never seen such
-> > > > > > > oopses before.
-> > > > > > 
-> > > > > > And it oopses the very same way on the third run. as(1) again.
-> > > > > > So if there are any debugging patches, let me know.
-> > > > > 
-> > > > > There seems to be a small race in the destructor path, can you see if
-> > > > > this makes a difference?
-> > > > > 
-> > > > > diff --git a/block/blk-ioc.c b/block/blk-ioc.c
-> > > > > index e34df7c..012f065 100644
-> > > > > --- a/block/blk-ioc.c
-> > > > > +++ b/block/blk-ioc.c
-> > > > > @@ -41,8 +41,8 @@ int put_io_context(struct io_context *ioc)
-> > > > >  		rcu_read_lock();
-> > > > >  		if (ioc->aic && ioc->aic->dtor)
-> > > > >  			ioc->aic->dtor(ioc->aic);
-> > > > > -		rcu_read_unlock();
-> > > > >  		cfq_dtor(ioc);
-> > > > > +		rcu_read_unlock();
-> > > > >  
-> > > > >  		kmem_cache_free(iocontext_cachep, ioc);
-> > > > >  		return 1;
-> > > > 
-> > > > This helps in sense that 3 times bulk cross-compiles finish to the end.
-> > > > You'll hear me if another such oops will resurface.
-> > > 
-> > > Still looking good?
-> > 
-> > Yup!
-> 
-> Great! I'll clean the path up and submit a patch for 2.6.26-rc1 as well
-> as 2.6.25.stable. Thanks a lot for reporting and testing.
+--Sig_/UQojl6.Jb94t/j=VrL.t+EN
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-And please include side-by-side diagram in changelog :^!
+On Sun, 4 May 2008 21:56:26 +0200 (CEST)
+Jan Engelhardt <jengelh@medozas.de> wrote:
 
-	Alexey, who still doesn't quite got it.
+>=20
+> On Sunday 2008-05-04 11:51, Malte Schr=C3=B6der wrote:
+> >>=20
+> >> If it's repeatable, it would be interesting if you are able to do a
+> >> git-bisect to try to narrow the issue down...
+> >
+> >Hmm, that's about the only box of mine where bisecting a kernel really
+> >hurts. It's my central VoIP, internet, mail and other stuff gateway and
+> >it takes ages to boot (it's the box where my old hardware ends up).
+>=20
+> You can compile the tree elsewhere (without nfs) and then run the
+> appropriate install mechanisms with an NFS mount.
+>=20
 
+Oh, that's not the problem, I use the debian's kernel-package
+build-system
+. The problem is that the affected box is about the only box
+where I really don't like downtime because it handles my
+internet connection, email and telephony.
+Besides from that I am currently trying to find the last working
+kernel-version, since 2.6.24.6 shows the same problem.
+I am currently running 2.6.24.5 again. Let's see if that runs stable.
+When I have found a stable kernel I think I will bisect it, but I am
+quite busy currently so it could take a while. Who knows, maybe it's
+not the kernel's fault at all but some strange kind of hardware failure.
+
+Regards
+--=20
+---------------------------------------
+Malte Schr=C3=B6der
+MalteSch@gmx.de
+ICQ# 68121508
+---------------------------------------
+
+
+--Sig_/UQojl6.Jb94t/j=VrL.t+EN
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Disposition: attachment; filename=signature.asc
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFIHhsZ4q3E2oMjYtURAnsBAKDGwEKqsXt2AEwdnwBFZnrgG9Dq6QCfaqVk
+5XutwNXRYsJUYiApw/Zxro8=
+=e1r7
+-----END PGP SIGNATURE-----
+
+--Sig_/UQojl6.Jb94t/j=VrL.t+EN--
