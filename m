@@ -1,255 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753864AbYEDPAo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754148AbYEDPDS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753864AbYEDPAo (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 May 2008 11:00:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751452AbYEDPAd
+	id S1754148AbYEDPDS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 May 2008 11:03:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751477AbYEDPDC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 May 2008 11:00:33 -0400
-Received: from 178-47-31-89.wifiinternet.cz ([89.31.47.178]:32994 "EHLO
-	seznam.cz" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750713AbYEDPAb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 May 2008 11:00:31 -0400
-From: monstr@seznam.cz
-To: linux-kernel@vger.kernel.org
-Cc: arnd@arndb.de, linux-arch@vger.kernel.org, stephen.neuendorffer@xilinx.com,
-       John.Linn@xilinx.com, john.williams@petalogix.com, matthew@wil.cx,
-       will.newton@gmail.com, drepper@redhat.com,
-       microblaze-uclinux@itee.uq.edu.au, grant.likely@secretlab.ca,
-       Michal Simek <monstr@monstr.eu>
-Subject: [PATCH 15/56] microblaze_v2: head.S + linker script
-Date: Sun,  4 May 2008 13:41:04 +0200
-Message-Id: <d883a8d8da812d77fefd47730d28d0bdb7b504e0.1209897266.git.monstr@monstr.eu>
-X-Mailer: git-send-email 1.5.4.GIT
-In-Reply-To: <f0c837df4106a31c1a81917596603918f722ea7b.1209897266.git.monstr@monstr.eu>
-References: <1209901305-6404-1-git-send-email-monstr@seznam.cz>
- <a4a778e34c66d126f5c4bf1ca423cf32950ea5ab.1209897266.git.monstr@monstr.eu>
- <c805caeb1dd7f6d1349c4a463cb88a5342a170d2.1209897266.git.monstr@monstr.eu>
- <f120ababf2bade9aab7199bffb3014aa606e5a1c.1209897266.git.monstr@monstr.eu>
- <684c36e5ad3f598e5079e88ec195545c4a7150c2.1209897266.git.monstr@monstr.eu>
- <ed3695121faf485d491cecdd96d5d4dcc498411d.1209897266.git.monstr@monstr.eu>
- <0674b1f7abb9a3d564b68c95bc28adc2c2fe9551.1209897266.git.monstr@monstr.eu>
- <9a7c6646e5dd9724c1cf34767adec181481fa3ef.1209897266.git.monstr@monstr.eu>
- <932956128c9c655a218a940eaf02017a5dd0bdf9.1209897266.git.monstr@monstr.eu>
- <2f801c33caee22e112af51ae927c264ce99ead01.1209897266.git.monstr@monstr.eu>
- <2391e49379fb6639f57d9d6e5811f3d49a4c6fda.1209897266.git.monstr@monstr.eu>
- <0873f3a1f3b72591735c6461b51964693cac52e5.1209897266.git.monstr@monstr.eu>
- <0ba1f259d3c17eba54e334622493577493f5065f.1209897266.git.monstr@monstr.eu>
- <694451053534fea7b78fb9d618b53a2b5ebeb602.1209897266.git.monstr@monstr.eu>
- <f0c837df4106a31c1a81917596603918f722ea7b.1209897266.git.monstr@monstr.eu>
-In-Reply-To: <a4a778e34c66d126f5c4bf1ca423cf32950ea5ab.1209897266.git.monstr@monstr.eu>
-References: <a4a778e34c66d126f5c4bf1ca423cf32950ea5ab.1209897266.git.monstr@monstr.eu>
+	Sun, 4 May 2008 11:03:02 -0400
+Received: from fg-out-1718.google.com ([72.14.220.156]:4357 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751117AbYEDPDA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 May 2008 11:03:00 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=CTRkHE1QYzq3j3vBHFSrw7w4u6SZS8iBwVi6sTVEE4xQj52HzH73TYUad9V73D+NcOGRBTbKH+FnL/8383qUaDz6EfVL3f8QTmajsD+3w8jNzcvykamhDWkKaTJ88FrKaxhVLH5uGltNB/Ob5WP1ddMhDNVo48RDnaX76YSFUys=
+Message-ID: <e2e108260805040802l4b2bb9dfjce898903fe746a1c@mail.gmail.com>
+Date: Sun, 4 May 2008 17:02:59 +0200
+From: "Bart Van Assche" <bart.vanassche@gmail.com>
+To: "Jay Cliburn" <jacliburn@bellsouth.net>
+Subject: Re: Need help debugging memory corruption
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       "Chris Snook" <csnook@redhat.com>
+In-Reply-To: <20080503130951.091392ba@osprey.hogchain.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080503130951.091392ba@osprey.hogchain.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Michal Simek <monstr@monstr.eu>
+On Sat, May 3, 2008 at 8:09 PM, Jay Cliburn <jacliburn@bellsouth.net> wrote:
+> Can someone with more experience than me please take a look and give me
+> some advice or explain what might be happening here?  (What may be
+> obvious to you is probably not obvious to me.)
 
+Are you familiar with the kernel command-line option slub_debug=FZPU ?
+If this was not yet enabled, recompiling your kernel with
+CONFIG_SLUB=y and CONFIG_SLUB_DEBUG=y enabled and specifying
+slub_debug=FZPU on the kernel command line will probably provide more
+detailed information about the cause of the memory corruption.
 
-Signed-off-by: Michal Simek <monstr@monstr.eu>
----
- arch/microblaze/kernel/head.S        |   40 +++++++++
- arch/microblaze/kernel/vmlinux.lds.S |  145 ++++++++++++++++++++++++++++++++++
- 2 files changed, 185 insertions(+), 0 deletions(-)
- create mode 100644 arch/microblaze/kernel/head.S
- create mode 100644 arch/microblaze/kernel/vmlinux.lds.S
-
-diff --git a/arch/microblaze/kernel/head.S b/arch/microblaze/kernel/head.S
-new file mode 100644
-index 0000000..8ca148b
---- /dev/null
-+++ b/arch/microblaze/kernel/head.S
-@@ -0,0 +1,40 @@
-+/*
-+ * arch/microblaze/kernel/head.S
-+ *
-+ * This file is subject to the terms and conditions of the GNU General Public
-+ * License. See the file "COPYING" in the main directory of this archive
-+ * for more details.
-+ *
-+ * Copyright (C) 2007 Michal Simek <monstr@monstr.eu>
-+ * Copyright (C) 2006 Atmark Techno, Inc.
-+ */
-+
-+#include <linux/linkage.h>
-+#include <asm/thread_info.h>
-+
-+	.text
-+ENTRY(_start)
-+	mfs	r1, rmsr
-+	andi	r1, r1, ~2
-+	mts	rmsr, r1
-+
-+	/* Initialize small data anchors */
-+	la	r13, r0, _KERNEL_SDA_BASE_
-+	la	r2, r0, _KERNEL_SDA2_BASE_
-+
-+	/* Initialize stack pointer */
-+	la	r1, r0, init_thread_union + THREAD_SIZE - 4
-+
-+	/* Initialize r31 with current task address */
-+	la	r31, r0, init_task
-+
-+	/* Call platform dependent initialize function.
-+	 * Please see $(ARCH)/mach-$(SUBARCH)/setup.c for
-+	 * the function. */
-+	la	r8, r0, machine_early_init
-+	brald	r15, r8
-+	nop
-+
-+	la	r15, r0, machine_halt
-+	braid	start_kernel
-+	nop
-diff --git a/arch/microblaze/kernel/vmlinux.lds.S b/arch/microblaze/kernel/vmlinux.lds.S
-new file mode 100644
-index 0000000..8940f1f
---- /dev/null
-+++ b/arch/microblaze/kernel/vmlinux.lds.S
-@@ -0,0 +1,145 @@
-+/*
-+ * arch/microblaze/kernel/vmlinux.lds.S
-+ *
-+ * This file is subject to the terms and conditions of the GNU General Public
-+ * License. See the file "COPYING" in the main directory of this archive
-+ * for more details.
-+ *
-+ * Copyright (C) 2006 Atmark Techno, Inc.
-+ */
-+
-+OUTPUT_FORMAT("elf32-microblaze", "elf32-microblaze", "elf32-microblaze")
-+OUTPUT_ARCH(microblaze)
-+ENTRY(_start)
-+
-+#include <linux/autoconf.h>
-+#include <asm-generic/vmlinux.lds.h>
-+
-+jiffies = jiffies_64 + 4;
-+
-+SECTIONS {
-+	. = CONFIG_KERNEL_BASE_ADDR;
-+
-+	.text : {
-+		_text = . ;
-+		_stext = . ;
-+		TEXT_TEXT
-+		SCHED_TEXT
-+		LOCK_TEXT
-+		. = ALIGN (4) ;
-+		_etext = . ;
-+	}
-+
-+	. = ALIGN(16);
-+	RODATA
-+
-+	/* sdata2 section can go anywhere, but must be word aligned
-+	 and SDA2_BASE must point to the middle of it */
-+	.sdata2 : {
-+		_ssrw = .;
-+		. = ALIGN(0x8);
-+		*(.sdata2)
-+	. = ALIGN(8);
-+	_essrw = .;
-+	_ssrw_size = _essrw - _ssrw;
-+	_KERNEL_SDA2_BASE_ = _ssrw + (_ssrw_size / 2);
-+	}
-+
-+	_sdata = . ;
-+	.data ALIGN (0x4) : {
-+		DATA_DATA
-+	}
-+	. = ALIGN(32);
-+	.data.cacheline_aligned : { *(.data.cacheline_aligned) }
-+	_edata = . ;
-+
-+	/* The initial task */
-+	. = ALIGN(8192);
-+	.data.init_task : { *(.data.init_task) }
-+
-+	/* Under the microblaze ABI, .sdata and .sbss must be contiguous */
-+	. = ALIGN(8);
-+	.sdata : {
-+		_ssro = .;
-+		*(.sdata)
-+	}
-+
-+	.sbss :	{
-+		_ssbss = .;
-+		*(.sbss)
-+		_esbss = .;
-+		_essro = .;
-+		_ssro_size = _essro - _ssro ;
-+		_KERNEL_SDA_BASE_ = _ssro + (_ssro_size / 2) ;
-+	}
-+
-+	. = ALIGN(16);
-+	__start___ex_table = .;
-+	__ex_table : { *(__ex_table) }
-+	__stop___ex_table = .;
-+
-+	__init_begin = .;
-+
-+	. = ALIGN(4096);
-+	.init.text : {
-+		_sinittext = . ;
-+		*(.init.text)
-+		*(.exit.text)
-+		*(.exit.data)
-+		_einittext = .;
-+	}
-+
-+	.init.data : { *(.init.data) }
-+
-+	. = ALIGN(4);
-+	.init.ivt : {
-+		__ivt_start = .;
-+		*(.init.ivt)
-+		__ivt_end = .;
-+	}
-+
-+	.init.setup : {
-+		__setup_start = .;
-+		*(.init.setup)
-+		__setup_end = .;
-+	}
-+
-+	.initcall.init : {
-+		__initcall_start = .;
-+		INITCALLS
-+		__initcall_end = .;
-+	}
-+
-+	.con_initcall.init : {
-+		__con_initcall_start = .;
-+		*(.con_initcall.init)
-+		__con_initcall_end = .;
-+	}
-+
-+	__init_end_before_initramfs = .;
-+
-+	.init.ramfs ALIGN(4096) : {
-+		__initramfs_start = .;
-+		*(.init.ramfs)
-+		__initramfs_end = .;
-+		. = ALIGN(4);
-+		LONG(0);
-+		. = ALIGN(4096);/* Pad init.ramfs up to page boundary, so
-+				that __init_end == __bss_start. This will
-+				make image.elf consistent with the image.bin */
-+	}
-+
-+	__init_end = .;
-+
-+	.bss ALIGN (4096) : {
-+		__bss_start = . ;
-+			*(.bss*)
-+			*(COMMON)
-+		. = ALIGN (4) ;
-+		__bss_stop = . ;
-+		_ebss = . ;
-+	}
-+	. = ALIGN(4096);
-+	_end = .;
-+}
-+
--- 
-1.5.4.GIT
-
+Bart.
