@@ -1,261 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757800AbYEDQWd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754982AbYEDQd6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757800AbYEDQWd (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 May 2008 12:22:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753584AbYEDQWY
+	id S1754982AbYEDQd6 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 May 2008 12:33:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752225AbYEDQdt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 May 2008 12:22:24 -0400
-Received: from 178-47-31-89.wifiinternet.cz ([89.31.47.178]:59084 "EHLO
-	seznam.cz" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753506AbYEDQWX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 May 2008 12:22:23 -0400
-From: monstr@seznam.cz
-To: linux-kernel@vger.kernel.org
-Cc: arnd@arndb.de, linux-arch@vger.kernel.org, stephen.neuendorffer@xilinx.com,
-       John.Linn@xilinx.com, john.williams@petalogix.com, matthew@wil.cx,
-       will.newton@gmail.com, drepper@redhat.com,
-       microblaze-uclinux@itee.uq.edu.au, grant.likely@secretlab.ca,
-       Michal Simek <monstr@monstr.eu>
-Subject: [PATCH 38/56] microblaze_v2: atomic.h bitops.h byteorder.h
-Date: Sun,  4 May 2008 13:41:27 +0200
-Message-Id: <49eccf3408b90a5ebb42635493bbeef3b584acb9.1209897266.git.monstr@monstr.eu>
-X-Mailer: git-send-email 1.5.4.GIT
-In-Reply-To: <4e20213f5f296268a24955df8c951f7fba279816.1209897266.git.monstr@monstr.eu>
-References: <1209901305-6404-1-git-send-email-monstr@seznam.cz>
- <a4a778e34c66d126f5c4bf1ca423cf32950ea5ab.1209897266.git.monstr@monstr.eu>
- <c805caeb1dd7f6d1349c4a463cb88a5342a170d2.1209897266.git.monstr@monstr.eu>
- <f120ababf2bade9aab7199bffb3014aa606e5a1c.1209897266.git.monstr@monstr.eu>
- <684c36e5ad3f598e5079e88ec195545c4a7150c2.1209897266.git.monstr@monstr.eu>
- <ed3695121faf485d491cecdd96d5d4dcc498411d.1209897266.git.monstr@monstr.eu>
- <0674b1f7abb9a3d564b68c95bc28adc2c2fe9551.1209897266.git.monstr@monstr.eu>
- <9a7c6646e5dd9724c1cf34767adec181481fa3ef.1209897266.git.monstr@monstr.eu>
- <932956128c9c655a218a940eaf02017a5dd0bdf9.1209897266.git.monstr@monstr.eu>
- <2f801c33caee22e112af51ae927c264ce99ead01.1209897266.git.monstr@monstr.eu>
- <2391e49379fb6639f57d9d6e5811f3d49a4c6fda.1209897266.git.monstr@monstr.eu>
- <0873f3a1f3b72591735c6461b51964693cac52e5.1209897266.git.monstr@monstr.eu>
- <0ba1f259d3c17eba54e334622493577493f5065f.1209897266.git.monstr@monstr.eu>
- <694451053534fea7b78fb9d618b53a2b5ebeb602.1209897266.git.monstr@monstr.eu>
- <f0c837df4106a31c1a81917596603918f722ea7b.1209897266.git.monstr@monstr.eu>
- <d883a8d8da812d77fefd47730d28d0bdb7b504e0.1209897266.git.monstr@monstr.eu>
- <625ef466cf121d655539eedc919dd39166087e0c.1209897266.git.monstr@monstr.eu>
- <b5067a1846075ddd1035966ea1edc908579e2e88.1209897266.git.monstr@monstr.eu>
- <378157891bac535dbc55e658d5f03fdd332e85cf.1209897266.git.monstr@monstr.eu>
- <eadcc6f4754df78b69d6d54c404624d0390c8558.1209897266.git.monstr@monstr.eu>
- <4df4022e06b9056202cc2fdf0b99deb01563a0fa.1209897266.git.monstr@monstr.eu>
- <6b0c9864dc80776ae48d6488a6892e5d698751b7.1209897266.git.monstr@monstr.eu>
- <ea5cbbca49c38c506960fddba29cbd8cb24e1a8d.1209897266.git.monstr@monstr.eu>
- <4f4d6ed3fce9b21cdd6dcacb2d72fff7e9830628.1209897266.git.monstr@monstr.eu>
- <35e662a81eb86c7ffb2aaa6141ca38a07789f382.1209897266.git.monstr@monstr.eu>
- <b41fcf3dd830f4ba82692a9bec2406ed0c290e7e.1209897266.git.monstr@monstr.eu>
- <14acb31da2794d2d5916da3db3d75fe2285ac055.1209897266.git.monstr@monstr.eu>
- <598221ce2159046614d7b158ea62d5af51907af3.1209897266.git.monstr@monstr.eu>
- <41c1f410eaafd875246362d10ef9866d8cc2a934.1209897266.git.monstr@monstr.eu>
- <09ce2baf0c8308d3fbca98e7eb36a6aab59112a7.1209897266.git.monstr@monstr.eu>
- <c9418c683be99ae12abb89575c362d586c026bad.1209897266.git.monstr@monstr.eu>
- <cfde3796e95bdd17c32e4fd7762d0aee55967707.1209897266.git.monstr@monstr.eu>
- <8aba2d82c85cd1d5b56de328c1fd080ee51f0211.1209897266.git.monstr@monstr.eu>
- <c4000ff625bd217f9bb683e3bf8c7193a82bd744.1209897266.git.monstr@monstr.eu>
- <491f823fac6c03cc36834ec569a45d30a03a72cf.1209897266.git.monstr@monstr.eu>
- <96f2004535c34a0c762bf2012c299cbf9f89ab32.1209897266.git.monstr@monstr.eu>
- <92cd3a27b393bb394d48902594152351a92c59bb.1209897266.git.monstr@monstr.eu>
- <4e20213f5f296268a24955df8c951f7fba279816.1209897266.git.monstr@monstr.eu>
-In-Reply-To: <a4a778e34c66d126f5c4bf1ca423cf32950ea5ab.1209897266.git.monstr@monstr.eu>
-References: <a4a778e34c66d126f5c4bf1ca423cf32950ea5ab.1209897266.git.monstr@monstr.eu>
+	Sun, 4 May 2008 12:33:49 -0400
+Received: from smtp1.betherenow.co.uk ([87.194.0.68]:36289 "HELO
+	smtp1.betherenow.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752140AbYEDQds (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 May 2008 12:33:48 -0400
+From: Alistair John Strachan <alistair@devzero.co.uk>
+To: Robin Holt <holt@sgi.com>
+Subject: Re: Linux 2.6.26-rc1
+Date: Sun, 4 May 2008 17:33:43 +0100
+User-Agent: KMail/1.9.9
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Mauro Carvalho Chehab <mchehab@infradead.org>
+References: <alpine.LFD.1.10.0805031205330.2971@woody.linux-foundation.org> <200805041456.14415.alistair@devzero.co.uk> <20080504160904.GF19717@sgi.com>
+In-Reply-To: <20080504160904.GF19717@sgi.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200805041733.43775.alistair@devzero.co.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Michal Simek <monstr@monstr.eu>
+On Sunday 04 May 2008 17:09:04 Robin Holt wrote:
+> On Sun, May 04, 2008 at 02:56:14PM +0100, Alistair John Strachan wrote:
+> > On Sunday 04 May 2008 13:30:08 Robin Holt wrote:
+> > > On Sat, May 03, 2008 at 10:53:22PM +0100, Alistair John Strachan wrote:
+> > > > On Saturday 03 May 2008 22:47:38 Alistair John Strachan wrote:
+> > > > > On Saturday 03 May 2008 20:38:20 Linus Torvalds wrote:
+> > > > > > So go out and test it.
+> > > >
+> > > > [snip]
+> > > >
+> > > > > Why is this option acting like CONFIG_EMBEDDED and not like
+> > > > > basically every other subsystem where I can turn ON support for
+> > > > > hardware, but by default it's OFF? (Obviously in my hasty oldconfig
+> > > > > run I just went with the default.)
+> > > >
+> > > > Amazingly, even if I say Y to this option and disable all tuners, it
+> > > > still tries (and fails) to compile this file. What is pulling in this
+> > > > tuner-core dependency?
+> > >
+> > > What if you change CONFIG_MEDIA_TUNER to a 'n'
+> >
+> > This isn't a menu-visible option. Your hint does explain why it turns
+> > itself on, however:
+> >
+> > config MEDIA_TUNER
+> >         tristate
+> >         default DVB_CORE || VIDEO_DEV
+> >         depends on DVB_CORE || VIDEO_DEV
+> >
+> > I have DVB_CORE=n and VIDEO_DEV=y. VIDEO_DEV is:
+> >
+> > config VIDEO_DEV
+> >         tristate "Video For Linux"
+> >
+> > So if you enable Video For Linux, the tuner-core is automatically built,
+> > even if no tuners are selected? Surely that's wrong..
+>
+> That is probably correct.  Video For Linux is used for capturing video
+> streams.  The fact that you can get this invalid config to fail to build
+> should be reported to the v4l folks and let them fix it up.
 
+a) He's already on CC
+b) No config I have posted was invalid
+c) There are two (possibly three) entirely separate issues
 
-Signed-off-by: Michal Simek <monstr@monstr.eu>
----
- include/asm-microblaze/atomic.h    |  108 ++++++++++++++++++++++++++++++++++++
- include/asm-microblaze/bitops.h    |   29 ++++++++++
- include/asm-microblaze/byteorder.h |   23 ++++++++
- 3 files changed, 160 insertions(+), 0 deletions(-)
- create mode 100644 include/asm-microblaze/atomic.h
- create mode 100644 include/asm-microblaze/bitops.h
- create mode 100644 include/asm-microblaze/byteorder.h
+You've got the wrong end of the stick here. I'm not saying V4L isn't required 
+for MEDIA_TUNER, but MEDIA_TUNER should not be a dependency of V4L and so 
+should NOT be unconditionally enabled.
 
-diff --git a/include/asm-microblaze/atomic.h b/include/asm-microblaze/atomic.h
-new file mode 100644
-index 0000000..d0afdc5
---- /dev/null
-+++ b/include/asm-microblaze/atomic.h
-@@ -0,0 +1,108 @@
-+/*
-+ * include/asm-microblaze/atomic.h
-+ *
-+ * This file is subject to the terms and conditions of the GNU General Public
-+ * License. See the file "COPYING" in the main directory of this archive
-+ * for more details.
-+ *
-+ * Copyright (C) 2006 Atmark Techno, Inc.
-+ */
-+
-+#ifndef _ASM_MICROBLAZE_ATOMIC_H
-+#define _ASM_MICROBLAZE_ATOMIC_H
-+
-+#include <linux/compiler.h> /* likely */
-+#include <asm/system.h> /* local_irq_XXX and friends */
-+
-+typedef struct { volatile int counter; } atomic_t;
-+
-+#define ATOMIC_INIT(i)		{ (i) }
-+#define atomic_read(v)		((v)->counter)
-+#define atomic_set(v, i)	(((v)->counter) = (i))
-+
-+#define atomic_inc(v)		(atomic_add_return(1, (v)))
-+#define atomic_dec(v)		(atomic_sub_return(1, (v)))
-+
-+#define atomic_add(i, v)	(atomic_add_return(i, (v)))
-+#define atomic_sub(i, v)	(atomic_sub_return(i, (v)))
-+
-+#define atomic_inc_return(v)	(atomic_add_return(1, (v)))
-+#define atomic_dec_return(v)	(atomic_sub_return(1, (v)))
-+
-+#define atomic_inc_and_test(v)	(atomic_add_return(1, (v)) == 0)
-+#define atomic_dec_and_test(v)	(atomic_sub_return(1, (v)) == 0)
-+
-+#define atomic_inc_not_zero(v)	(atomic_add_unless((v), 1, 0))
-+
-+#define atomic_sub_and_test(i, v) (atomic_sub_return((i), (v)) == 0)
-+
-+static inline int atomic_cmpxchg(atomic_t *v, int old, int new)
-+{
-+	int ret;
-+	unsigned long flags;
-+
-+	local_irq_save(flags);
-+	ret = v->counter;
-+	if (likely(ret == old))
-+		v->counter = new;
-+	local_irq_restore(flags);
-+
-+	return ret;
-+}
-+
-+static inline int atomic_add_unless(atomic_t *v, int a, int u)
-+{
-+	int c, old;
-+
-+	c = atomic_read(v);
-+	while (c != u && (old = atomic_cmpxchg((v), c, c + a)) != c)
-+		c = old;
-+	return c != u;
-+}
-+
-+static inline void atomic_clear_mask(unsigned long mask, unsigned long *addr)
-+{
-+	unsigned long flags;
-+
-+	local_irq_save(flags);
-+	*addr &= ~mask;
-+	local_irq_restore(flags);
-+}
-+
-+/**
-+ * atomic_add_return - add and return
-+ * @i: integer value to add
-+ * @v: pointer of type atomic_t
-+ *
-+ * Atomically adds @i to @v and returns @i + @v
-+ */
-+static inline int atomic_add_return(int i, atomic_t *v)
-+{
-+	unsigned long flags;
-+	int val;
-+
-+	local_irq_save(flags);
-+	val = v->counter;
-+	v->counter = val += i;
-+	local_irq_restore(flags);
-+
-+	return val;
-+}
-+
-+static inline int atomic_sub_return(int i, atomic_t *v)
-+{
-+	return atomic_add_return(-i, v);
-+}
-+
-+#define atomic_add_negative(a, v)	(atomic_add_return((a), (v)) < 0)
-+#define atomic_xchg(v, new) (xchg(&((v)->counter), new))
-+
-+/* Atomic operations are already serializing */
-+#define smp_mb__before_atomic_dec()	barrier()
-+#define smp_mb__after_atomic_dec()	barrier()
-+#define smp_mb__before_atomic_inc()	barrier()
-+#define smp_mb__after_atomic_inc()	barrier()
-+
-+#include <asm-generic/atomic.h>
-+
-+#endif /* _ASM_MICROBLAZE_ATOMIC_H */
-diff --git a/include/asm-microblaze/bitops.h b/include/asm-microblaze/bitops.h
-new file mode 100644
-index 0000000..6665561
---- /dev/null
-+++ b/include/asm-microblaze/bitops.h
-@@ -0,0 +1,29 @@
-+/*
-+ * include/asm-microblaze/bitops.h
-+ *
-+ * This file is subject to the terms and conditions of the GNU General Public
-+ * License. See the file "COPYING" in the main directory of this archive
-+ * for more details.
-+ *
-+ * Copyright (C) 2006 Atmark Techno, Inc.
-+ */
-+
-+#ifndef _ASM_MICROBLAZE_BITOPS_H
-+#define _ASM_MICROBLAZE_BITOPS_H
-+
-+/*
-+ * Copyright 1992, Linus Torvalds.
-+ */
-+
-+#include <linux/autoconf.h>
-+#include <asm/byteorder.h> /* swab32 */
-+#include <asm/system.h> /* save_flags */
-+
-+/*
-+ * clear_bit() doesn't provide any barrier for the compiler.
-+ */
-+#define smp_mb__before_clear_bit()	barrier()
-+#define smp_mb__after_clear_bit()	barrier()
-+#include <asm-generic/bitops.h>
-+
-+#endif /* _ASM_MICROBLAZE_BITOPS_H */
-diff --git a/include/asm-microblaze/byteorder.h b/include/asm-microblaze/byteorder.h
-new file mode 100644
-index 0000000..83ce88a
---- /dev/null
-+++ b/include/asm-microblaze/byteorder.h
-@@ -0,0 +1,23 @@
-+/*
-+ * include/asm-microblaze/byteorder.h
-+ *
-+ * This file is subject to the terms and conditions of the GNU General Public
-+ * License. See the file "COPYING" in the main directory of this archive
-+ * for more details.
-+ *
-+ * Copyright (C) 2006 Atmark Techno, Inc.
-+ */
-+
-+#ifndef _ASM_MICROBLAZE_BYTEORDER_H
-+#define _ASM_MICROBLAZE_BYTEORDER_H
-+
-+#include <asm/types.h>
-+
-+#if defined(__GNUC__) && !defined(__STRICT_ANSI__) || defined(__KERNEL__)
-+#define __BYTEORDER_HAS_U64__
-+#define __SWAB_64_THRU_32__
-+#endif
-+
-+#include <linux/byteorder/big_endian.h>
-+
-+#endif /* _ASM_MICROBLAZE_BYTEORDER_H */
+The first issue is obviously the build error, which can be resolved by adding 
+a dep on I2C to MEDIA_TUNER, but given the recent churn there I'll leave that 
+to Mauro.
+
+The second issue is the fact that the MEDIA_TUNER option is transparent and 
+not user selectable, building code that is probably not required in some 
+kernel configurations (tuner code depends on V4L, but surely not the other 
+way around.. MEDIA_TUNER should be able to be n when VIDEO_DEV is y).
+
+The final issue is more of a matter of personal taste, which refers to the 
+MEDIA_TUNER_CUSTOMIZE option, something that I think should be inverted and 
+turned into a menu like most other device driver sections. So rather than 
+MEDIA_TUNER_CUSTOMIZE, why not just have MEDIA_TUNER be visible to the user, 
+and if Y, let them select tuners, and if N, no tuners are built.
+
 -- 
-1.5.4.GIT
+Cheers,
+Alistair.
 
+137/1 Warrender Park Road, Edinburgh, UK.
