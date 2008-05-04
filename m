@@ -1,57 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756249AbYEDPMq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756816AbYEDPNU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756249AbYEDPMq (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 May 2008 11:12:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752035AbYEDPMi
+	id S1756816AbYEDPNU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 May 2008 11:13:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752403AbYEDPNG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 May 2008 11:12:38 -0400
-Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:64774 "EHLO
-	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750847AbYEDPMh (ORCPT
+	Sun, 4 May 2008 11:13:06 -0400
+Received: from wf-out-1314.google.com ([209.85.200.170]:40944 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752035AbYEDPNE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 May 2008 11:12:37 -0400
-Message-Id: <481DD247.70807@ct.jp.nec.com>
-Date: Sun, 04 May 2008 08:12:07 -0700
-From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+	Sun, 4 May 2008 11:13:04 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer:mime-version:content-type:content-transfer-encoding:sender;
+        b=dwF5fY+jehIQt39SiUQlm4IiCgkJmZqnT8yDwJvz0khXmc1XGLge87ubpu3VPHrGD8DxwNZXfXMix+CsHcx2fBqGKwWAakxypuNWSGL2KeKlmK58DH7KgILc1ddG2t7oGj78ONpqAui7U2VTV2WPuYwdITSlbPvvwn0xK9/9rnU=
+From: Bryan Wu <cooloney@kernel.org>
+To: viro@zeniv.linux.org.uk, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Cc: Bryan Wu <cooloney@kernel.org>
+Subject: [PATCH 1/1] [vfs/proc] task_nommu: fix compile failing bug because of spilt file.h
+Date: Sun,  4 May 2008 23:12:55 +0800
+Message-Id: <1209913975-19242-1-git-send-email-cooloney@kernel.org>
+X-Mailer: git-send-email 1.5.5
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86_32: move do_nmi() to nmi_32.c
-References: <481BA78F.50202@ct.jp.nec.com> <20080504094058.GA17566@elte.hu>
-In-Reply-To: <20080504094058.GA17566@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com> wrote:
-> 
->> From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
->>
->> on x86_64 do_nmi() is in nmi_64.c.
-> 
-> this patch caused build failure on x86.git+sched-devel.git:
-> 
-> arch/x86/kernel/built-in.o: In function `nmi_stack_correct':
-> arch/x86/kernel/entry_32.S:(.kprobes.text+0x117): undefined reference to `do_nmi'
-> arch/x86/kernel/built-in.o: In function `nmi_espfix_stack':
-> arch/x86/kernel/entry_32.S:(.kprobes.text+0x1c3): undefined reference to `do_nmi'
-> arch/x86/kernel/built-in.o: In function `alternative_instructions':
-> : undefined reference to `stop_nmi'
-> arch/x86/kernel/built-in.o: In function `alternative_instructions':
-> : undefined reference to `restart_nmi'
-> 
-> with this config:
-> 
->  http://redhat.com/~mingo/misc/config-Sun_May__4_11_25_21_CEST_2008.bad
+  CC      fs/proc/task_nommu.o
+fs/proc/task_nommu.c: In function ‘task_mem’:
+fs/proc/task_nommu.c:55: error: dereferencing pointer to incomplete type
+make[2]: *** [fs/proc/task_nommu.o] Error 1
+make[1]: *** [fs/proc] Error 2
+make: *** [fs] Error 2
 
-Oops, I've missed something.
+Signed-off-by: Bryan Wu <cooloney@kernel.org>
+---
+ fs/proc/task_nommu.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-Will work. If you don't want it soon, please remove it from the queue.
+diff --git a/fs/proc/task_nommu.c b/fs/proc/task_nommu.c
+index 6cba820..987bc69 100644
+--- a/fs/proc/task_nommu.c
++++ b/fs/proc/task_nommu.c
+@@ -1,6 +1,7 @@
+ 
+ #include <linux/mm.h>
+ #include <linux/file.h>
++#include <linux/fdtable.h>
+ #include <linux/mount.h>
+ #include <linux/ptrace.h>
+ #include <linux/seq_file.h>
+-- 
+1.5.5
 
-thanks,
-Hiroshi Shimamoto
