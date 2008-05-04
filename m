@@ -1,65 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756513AbYEDLBf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755988AbYEDLE1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756513AbYEDLBf (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 May 2008 07:01:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752715AbYEDLB1
+	id S1755988AbYEDLE1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 May 2008 07:04:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752447AbYEDLET
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 May 2008 07:01:27 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:42344 "EHLO pasmtpB.tele.dk"
+	Sun, 4 May 2008 07:04:19 -0400
+Received: from 1wt.eu ([62.212.114.60]:4099 "EHLO 1wt.eu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752139AbYEDLB0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 May 2008 07:01:26 -0400
-Date: Sun, 4 May 2008 13:02:01 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Toralf =?iso-8859-1?Q?F=F6rster?= <toralf.foerster@gmx.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: build issue #479 for v2.6.26-rc1-6-gafa26be :redefinition of 'sysfs_update_group'
-Message-ID: <20080504110201.GE17276@uranus.ravnborg.org>
-References: <200805041053.43284.toralf.foerster@gmx.de> <20080504104127.GD17276@uranus.ravnborg.org>
+	id S1752189AbYEDLET (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 May 2008 07:04:19 -0400
+Date: Sun, 4 May 2008 13:03:48 +0200
+From: Willy Tarreau <w@1wt.eu>
+To: Samuel Thibault <samuel.thibault@ens-lyon.org>,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       stable@kernel.org
+Subject: Re: Fix VT canonical input in UTF-8 mode [Was: UTF-8 fixes in comments]
+Message-ID: <20080504110348.GA3334@1wt.eu>
+References: <20080430000851.GH4818@implementation> <20080430194920.GD7501@1wt.eu> <20080503235027.GO8032@implementation> <20080504085514.GA27263@1wt.eu> <20080430000851.GH4818@implementation> <20080430194920.GD7501@1wt.eu> <20080503235027.GO8032@implementation> <20080504102554.GA4729@implementation>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <20080504104127.GD17276@uranus.ravnborg.org>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20080504102554.GA4729@implementation>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, May 04, 2008 at 12:41:27PM +0200, Sam Ravnborg wrote:
-> On Sun, May 04, 2008 at 10:53:40AM +0200, Toralf Förster wrote:
-> > Hello,
-> > 
-> > the build (.config attached) failed, make ends with :
-> > ...
-> > scripts/kconfig/conf -s arch/x86/Kconfig
-> >   CHK     include/linux/version.h
-> >   UPD     include/linux/version.h
-> >   CHK     include/linux/utsrelease.h
-> >   UPD     include/linux/utsrelease.h
-> >   SYMLINK include/asm -> include/asm-x86
-> >   CC      kernel/bounds.s
-> >   GEN     include/linux/bounds.h
-> >   CC      arch/x86/kernel/asm-offsets.s
-> > In file included from include/linux/kobject.h:21,
-> >                  from include/linux/module.h:16,
-> >                  from include/linux/crypto.h:21,
-> >                  from arch/x86/kernel/asm-offsets_32.c:7,
-> >                  from arch/x86/kernel/asm-offsets.c:2:
-> > include/linux/sysfs.h:201: error: redefinition of 'sysfs_update_group'
-> > include/linux/sysfs.h:195: error: previous definition of 'sysfs_update_group' was here
-> > make[1]: *** [arch/x86/kernel/asm-offsets.s] Error 1
-> > make: *** [prepare0] Error 2
-> > 
-> > The build was made with :
-> > $> make mrproper && make randconfig && make
+On Sun, May 04, 2008 at 11:25:54AM +0100, Samuel Thibault wrote:
+> Willy Tarreau, le Sun 04 May 2008 10:55:14 +0200, a écrit :
+> > I confirm that your patch works perfectly for me. Now backspace correctly
+> > removes multi-byte characters. My bash is still fooled though but as Alan
+> > explained it, it's readline which has to be upgraded now.
 > 
-> Why do you need the "make mrproper" in the first place?
+> I guess this is suitable for the stable trees of 2.6.24 and 2.6.25
+> (where UTF-8 is by default now).
 
-Hi Toralf.
-Just to make it clear...
+agreed.
 
-If you know of some kbuild shortcomings I would like to know
-of them so I can either fix it or document it.
+> Set IUTF8 as appropriate on VT tty open.
+> 
+> Signed-off-by: Samuel Thibault <samuel.thibault@ens-lyon.org>
 
-	Sam
+You should have added:  CC: stable@kernel.org here so that the stable
+team automatically gets notified when it's merged into mainline.
+
+Thanks!
+Willy
+
