@@ -1,150 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757205AbYEDSYT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757386AbYEDS0k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757205AbYEDSYT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 May 2008 14:24:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753977AbYEDSYE
+	id S1757386AbYEDS0k (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 May 2008 14:26:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754010AbYEDS0b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 May 2008 14:24:04 -0400
-Received: from mx1.riseup.net ([204.13.164.18]:57228 "EHLO mx1.riseup.net"
+	Sun, 4 May 2008 14:26:31 -0400
+Received: from enyo.dsw2k3.info ([195.71.86.239]:46474 "EHLO enyo.dsw2k3.info"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753854AbYEDSYB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 May 2008 14:24:01 -0400
-X-Greylist: delayed 1083 seconds by postgrey-1.27 at vger.kernel.org; Sun, 04 May 2008 14:24:01 EDT
-Date: Sun, 4 May 2008 20:05:44 +0200
-From: Matthias Kaehlcke <matthias@kaehlcke.net>
-To: Eric.Moore@lsi.com, support@lsi.com, DL-MPTFusionLinux@lsi.com,
-       linux-scsi@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: [PATCH] Fusion MPT: Convert inactive_list_mutex in a mutex
-Message-ID: <20080504180544.GN20036@traven>
-Mail-Followup-To: Matthias Kaehlcke <matthias@kaehlcke.net>,
-	Eric.Moore@lsi.com, support@lsi.com, DL-MPTFusionLinux@lsi.com,
-	linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
-	akpm@linux-foundation.org
+	id S1750950AbYEDS0a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 May 2008 14:26:30 -0400
+X-Greylist: delayed 1628 seconds by postgrey-1.27 at vger.kernel.org; Sun, 04 May 2008 14:26:30 EDT
+Date: Sun, 4 May 2008 19:59:13 +0200
+From: Matthias Schniedermeyer <ms@citd.de>
+To: Bernd Petrovitsch <bernd@firmix.at>
+Cc: Sam Ravnborg <sam@ravnborg.org>, Roman Zippel <zippel@linux-m68k.org>,
+       linux-kbuild <linux-kbuild@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: kconfig - a suggestion how to fix the select issue
+Message-ID: <20080504175913.GA28072@citd.de>
+References: <20080504071041.GA15315@uranus.ravnborg.org> <1209895922.4114.21.camel@gimli.at.home>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <1209895922.4114.21.camel@gimli.at.home>
 User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-MPT Fusion: The semaphore inactive_list_mutex is used as a
-mutex. Convert it to the mutex API
+On 04.05.2008 12:12, Bernd Petrovitsch wrote:
+> On Sun, 2008-05-04 at 09:10 +0200, Sam Ravnborg wrote:
+> > Today we have two ways to express/solve dependencies.
+> > 
+> > Top-down we have "depends on"
+> > and bottom up we have "select".
+> > 
+> > The "depends on" dependencies at the same
+> > time impact the visibility of a symbol.
+> > A symbol with "depends on" not satisfied are not
+> > visible and thus not shown in menuconfig.
+> 
+> Perhaps this is problem: The menu item shouldn't be selectable for sure
+> but it may well be visible (and I'm purposely ignoring details of "how
+> to grey out" for the different user interfaces).
+> If it's visible (but not selectable) the user interface can provide the
+> auto-generated requirements (derived from the "depends on" chains) as
+> part of the "help" or where ever it seems useful. And the user at least
+> knows where to look further.
 
-Signed-off-by: Matthias Kaehlcke <matthias@kaehlcke.net>
+I always wondered why there is no "grey out", at least optionaly.
 
---
+My "favourite"(tm) example of a sub-marine is: Wireless drivers (mac80211).
 
-diff --git a/drivers/message/fusion/mptbase.c b/drivers/message/fusion/mptbase.c
-index 0c303c8..06557f2 100644
---- a/drivers/message/fusion/mptbase.c
-+++ b/drivers/message/fusion/mptbase.c
-@@ -2136,7 +2136,7 @@ mpt_do_ioc_recovery(MPT_ADAPTER *ioc, u32 reason, int sleepFlag)
- 		/*
- 		 * Initalize link list for inactive raid volumes.
- 		 */
--		init_MUTEX(&ioc->raid_data.inactive_list_mutex);
-+		mutex_init(&ioc->raid_data.inactive_list_mutex);
- 		INIT_LIST_HEAD(&ioc->raid_data.inactive_list);
- 
- 		if (ioc->bus_type == SAS) {
-@@ -5122,13 +5122,13 @@ mpt_inactive_raid_list_free(MPT_ADAPTER *ioc)
- 	if (list_empty(&ioc->raid_data.inactive_list))
- 		return;
- 
--	down(&ioc->raid_data.inactive_list_mutex);
-+	mutex_lock(&ioc->raid_data.inactive_list_mutex);
- 	list_for_each_entry_safe(component_info, pNext,
- 	    &ioc->raid_data.inactive_list, list) {
- 		list_del(&component_info->list);
- 		kfree(component_info);
- 	}
--	up(&ioc->raid_data.inactive_list_mutex);
-+	mutex_unlock(&ioc->raid_data.inactive_list_mutex);
- }
- 
- /**
-@@ -5187,7 +5187,7 @@ mpt_inactive_raid_volumes(MPT_ADAPTER *ioc, u8 channel, u8 id)
- 	if (!handle_inactive_volumes)
- 		goto out;
- 
--	down(&ioc->raid_data.inactive_list_mutex);
-+	mutex_lock(&ioc->raid_data.inactive_list_mutex);
- 	for (i = 0; i < buffer->NumPhysDisks; i++) {
- 		if(mpt_raid_phys_disk_pg0(ioc,
- 		    buffer->PhysDisk[i].PhysDiskNum, &phys_disk) != 0)
-@@ -5207,7 +5207,7 @@ mpt_inactive_raid_volumes(MPT_ADAPTER *ioc, u8 channel, u8 id)
- 		list_add_tail(&component_info->list,
- 		    &ioc->raid_data.inactive_list);
- 	}
--	up(&ioc->raid_data.inactive_list_mutex);
-+	mutex_unlock(&ioc->raid_data.inactive_list_mutex);
- 
-  out:
- 	if (buffer)
-diff --git a/drivers/message/fusion/mptbase.h b/drivers/message/fusion/mptbase.h
-index caadc68..4190e88 100644
---- a/drivers/message/fusion/mptbase.h
-+++ b/drivers/message/fusion/mptbase.h
-@@ -531,7 +531,7 @@ struct inactive_raid_component_info {
- typedef	struct _RaidCfgData {
- 	IOCPage2_t	*pIocPg2;		/* table of Raid Volumes */
- 	IOCPage3_t	*pIocPg3;		/* table of physical disks */
--	struct semaphore	inactive_list_mutex;
-+	struct mutex	inactive_list_mutex;
- 	struct list_head	inactive_list; /* link list for physical
- 						disk that belong in
- 						inactive volumes */
-diff --git a/drivers/message/fusion/mptscsih.c b/drivers/message/fusion/mptscsih.c
-index af1de0c..4e70ef4 100644
---- a/drivers/message/fusion/mptscsih.c
-+++ b/drivers/message/fusion/mptscsih.c
-@@ -2295,14 +2295,14 @@ mptscsih_is_phys_disk(MPT_ADAPTER *ioc, u8 channel, u8 id)
- 	if (list_empty(&ioc->raid_data.inactive_list))
- 		goto out;
- 
--	down(&ioc->raid_data.inactive_list_mutex);
-+	mutex_lock(&ioc->raid_data.inactive_list_mutex);
- 	list_for_each_entry(component_info, &ioc->raid_data.inactive_list,
- 	    list) {
- 		if ((component_info->d.PhysDiskID == id) &&
- 		    (component_info->d.PhysDiskBus == channel))
- 			rc = 1;
- 	}
--	up(&ioc->raid_data.inactive_list_mutex);
-+	mutex_unlock(&ioc->raid_data.inactive_list_mutex);
- 
-  out:
- 	return rc;
-@@ -2332,14 +2332,14 @@ mptscsih_raid_id_to_num(MPT_ADAPTER *ioc, u8 channel, u8 id)
- 	if (list_empty(&ioc->raid_data.inactive_list))
- 		goto out;
- 
--	down(&ioc->raid_data.inactive_list_mutex);
-+	mutex_lock(&ioc->raid_data.inactive_list_mutex);
- 	list_for_each_entry(component_info, &ioc->raid_data.inactive_list,
- 	    list) {
- 		if ((component_info->d.PhysDiskID == id) &&
- 		    (component_info->d.PhysDiskBus == channel))
- 			rc = component_info->d.PhysDiskNum;
- 	}
--	up(&ioc->raid_data.inactive_list_mutex);
-+	mutex_unlock(&ioc->raid_data.inactive_list_mutex);
- 
-  out:
- 	return rc;
+The config-option to switch on the visibility of the mac80211 drivers 
+("CONFIG_MAC80211") is conveniently located on the other side of the 
+milky way.
+(3 menus down, a sitestep and 2 up again. At least in menuconfig)
+
+
+
+
+
+
+
+Bis denn
 
 -- 
-Matthias Kaehlcke
-Embedded Linux Engineer
-Barcelona
+Real Programmers consider "what you see is what you get" to be just as 
+bad a concept in Text Editors as it is in women. No, the Real Programmer
+wants a "you asked for it, you got it" text editor -- complicated, 
+cryptic, powerful, unforgiving, dangerous.
 
-
-   Usually when people are sad, they don't do anything. They just cry over
-     their condition. But when they get angry, they bring about a change
-                              (Malcolm X)
-                                                                 .''`.
-    using free software / Debian GNU/Linux | http://debian.org  : :'  :
-                                                                `. `'`
-gpg --keyserver pgp.mit.edu --recv-keys 47D8E5D4                  `-
