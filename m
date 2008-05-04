@@ -1,20 +1,19 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756737AbYEDNy4 (ORCPT <rfc822;ralf@linux-mips.org>);
-	Sun, 4 May 2008 09:54:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757500AbYEDNyl
+	id S1757669AbYEDNzl (ORCPT <rfc822;ralf@linux-mips.org>);
+	Sun, 4 May 2008 09:55:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756441AbYEDNzb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 May 2008 09:54:41 -0400
-Received: from smtp4.clear.net.nz ([203.97.37.64]:54094 "EHLO
+	Sun, 4 May 2008 09:55:31 -0400
+Received: from smtp4.clear.net.nz ([203.97.37.64]:54305 "EHLO
 	smtp4.clear.net.nz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757485AbYEDNyj (ORCPT
+	with ESMTP id S1756276AbYEDNzb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 May 2008 09:54:39 -0400
-X-Greylist: delayed 900 seconds by postgrey-1.27 at vger.kernel.org; Sun, 04 May 2008 09:54:39 EDT
-Date: Mon, 05 May 2008 01:38:55 +1200 (New Zealand Standard Time)
+	Sun, 4 May 2008 09:55:31 -0400
+Date: Mon, 05 May 2008 01:39:50 +1200 (New Zealand Standard Time)
 From: BRITISH LOTTERY BOARD <BRITISHLOTTERY@REGENT.AC.NZ>
 Subject: Winner Come For Your Urgent Claims
 Reply-to: joe.morrison_claims@live.com
-Message-id: <39037.213.255.195.244.1209908335.squirrel@webmail.regent.ac.nz>
+Message-id: <39118.213.255.195.244.1209908390.squirrel@webmail.regent.ac.nz>
 MIME-version: 1.0
 Content-Type: text/plain; charset=iso-8859-1
 Content-Transfer-Encoding: QUOTED-PRINTABLE
@@ -25,7 +24,7 @@ To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1756737AbYEDNy4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1757669AbYEDNzl@vger.kernel.org>
 
 You are a lucky winner of (=A3 1,000,000.00. POUNDS) in the British Onl=
 ine
