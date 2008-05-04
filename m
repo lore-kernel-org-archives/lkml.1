@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756643AbYEDQhg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755705AbYEDQoj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756643AbYEDQhg (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 May 2008 12:37:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752365AbYEDQh1
+	id S1755705AbYEDQoj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 May 2008 12:44:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753867AbYEDQo3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 May 2008 12:37:27 -0400
-Received: from 178-47-31-89.wifiinternet.cz ([89.31.47.178]:52743 "EHLO
+	Sun, 4 May 2008 12:44:29 -0400
+Received: from 178-47-31-89.wifiinternet.cz ([89.31.47.178]:60010 "EHLO
 	seznam.cz" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752140AbYEDQhZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 May 2008 12:37:25 -0400
+	id S1753845AbYEDQo1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 May 2008 12:44:27 -0400
 From: monstr@seznam.cz
 To: linux-kernel@vger.kernel.org
 Cc: arnd@arndb.de, linux-arch@vger.kernel.org, stephen.neuendorffer@xilinx.com,
@@ -16,11 +16,11 @@ Cc: arnd@arndb.de, linux-arch@vger.kernel.org, stephen.neuendorffer@xilinx.com,
        will.newton@gmail.com, drepper@redhat.com,
        microblaze-uclinux@itee.uq.edu.au, grant.likely@secretlab.ca,
        Michal Simek <monstr@monstr.eu>
-Subject: [PATCH 17/56] microblaze_v2: checksum support
-Date: Sun,  4 May 2008 13:41:06 +0200
-Message-Id: <b5067a1846075ddd1035966ea1edc908579e2e88.1209897266.git.monstr@monstr.eu>
+Subject: [PATCH 25/56] microblaze_v2: ptrace support
+Date: Sun,  4 May 2008 13:41:14 +0200
+Message-Id: <b41fcf3dd830f4ba82692a9bec2406ed0c290e7e.1209897266.git.monstr@monstr.eu>
 X-Mailer: git-send-email 1.5.4.GIT
-In-Reply-To: <625ef466cf121d655539eedc919dd39166087e0c.1209897266.git.monstr@monstr.eu>
+In-Reply-To: <35e662a81eb86c7ffb2aaa6141ca38a07789f382.1209897266.git.monstr@monstr.eu>
 References: <1209901305-6404-1-git-send-email-monstr@seznam.cz>
  <a4a778e34c66d126f5c4bf1ca423cf32950ea5ab.1209897266.git.monstr@monstr.eu>
  <c805caeb1dd7f6d1349c4a463cb88a5342a170d2.1209897266.git.monstr@monstr.eu>
@@ -38,6 +38,14 @@ References: <1209901305-6404-1-git-send-email-monstr@seznam.cz>
  <f0c837df4106a31c1a81917596603918f722ea7b.1209897266.git.monstr@monstr.eu>
  <d883a8d8da812d77fefd47730d28d0bdb7b504e0.1209897266.git.monstr@monstr.eu>
  <625ef466cf121d655539eedc919dd39166087e0c.1209897266.git.monstr@monstr.eu>
+ <b5067a1846075ddd1035966ea1edc908579e2e88.1209897266.git.monstr@monstr.eu>
+ <378157891bac535dbc55e658d5f03fdd332e85cf.1209897266.git.monstr@monstr.eu>
+ <eadcc6f4754df78b69d6d54c404624d0390c8558.1209897266.git.monstr@monstr.eu>
+ <4df4022e06b9056202cc2fdf0b99deb01563a0fa.1209897266.git.monstr@monstr.eu>
+ <6b0c9864dc80776ae48d6488a6892e5d698751b7.1209897266.git.monstr@monstr.eu>
+ <ea5cbbca49c38c506960fddba29cbd8cb24e1a8d.1209897266.git.monstr@monstr.eu>
+ <4f4d6ed3fce9b21cdd6dcacb2d72fff7e9830628.1209897266.git.monstr@monstr.eu>
+ <35e662a81eb86c7ffb2aaa6141ca38a07789f382.1209897266.git.monstr@monstr.eu>
 In-Reply-To: <a4a778e34c66d126f5c4bf1ca423cf32950ea5ab.1209897266.git.monstr@monstr.eu>
 References: <a4a778e34c66d126f5c4bf1ca423cf32950ea5ab.1209897266.git.monstr@monstr.eu>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -49,192 +57,232 @@ From: Michal Simek <monstr@monstr.eu>
 
 Signed-off-by: Michal Simek <monstr@monstr.eu>
 ---
- arch/microblaze/lib/checksum.c    |  166 +++++++++++++++++++++++++++++++++++++
- include/asm-microblaze/checksum.h |  101 ++++++++++++++++++++++
- 2 files changed, 267 insertions(+), 0 deletions(-)
- create mode 100644 arch/microblaze/lib/checksum.c
- create mode 100644 include/asm-microblaze/checksum.h
+ arch/microblaze/kernel/ptrace.c |  206 +++++++++++++++++++++++++++++++++++++++
+ include/asm-microblaze/ptrace.h |   70 +++++++++++++
+ 2 files changed, 276 insertions(+), 0 deletions(-)
+ create mode 100644 arch/microblaze/kernel/ptrace.c
+ create mode 100644 include/asm-microblaze/ptrace.h
 
-diff --git a/arch/microblaze/lib/checksum.c b/arch/microblaze/lib/checksum.c
+diff --git a/arch/microblaze/kernel/ptrace.c b/arch/microblaze/kernel/ptrace.c
 new file mode 100644
-index 0000000..1f4646f
+index 0000000..958f076
 --- /dev/null
-+++ b/arch/microblaze/lib/checksum.c
-@@ -0,0 +1,166 @@
++++ b/arch/microblaze/kernel/ptrace.c
+@@ -0,0 +1,206 @@
 +/*
-+ * arch/microblaze/lib/checksum.c
++ * arch/microblaze/kernel/ptrace.c -- `ptrace' system call
 + *
 + * Copyright (C) 2008 Michal Simek <monstr@monstr.eu>
++ * Copyright (C) 2007 PetaLogix
++ * Copyright (C) 2004-07 John Williams <john.williams@petalogix.com>
 + *
-+ * INET		An implementation of the TCP/IP protocol suite for the LINUX
-+ *		operating system.  INET is implemented using the  BSD Socket
-+ *		interface as the means of communication with the user level.
++ * derived from arch/v850/kernel/ptrace.c
 + *
-+ *		IP/TCP/UDP checksumming routines
++ * Copyright (C) 2002,03 NEC Electronics Corporation
++ * Copyright (C) 2002,03 Miles Bader <miles@gnu.org>
 + *
-+ * Authors:	Jorge Cwik, <jorge@laser.satlink.net>
-+ *		Arnt Gulbrandsen, <agulbra@nvg.unit.no>
-+ *		Tom May, <ftom@netcom.com>
-+ *		Andreas Schwab, <schwab@issan.informatik.uni-dortmund.de>
-+ *		Lots of code moved from tcp.c and ip.c; see those files
-+ *		for more names.
++ * Derived from arch/mips/kernel/ptrace.c:
 + *
-+ * 03/02/96	Jes Sorensen, Andreas Schwab, Roman Hodek:
-+ *		Fixed some nasty bugs, causing some horrible crashes.
-+ *		A: At some points, the sum (%0) was used as
-+ *		length-counter instead of the length counter
-+ *		(%1). Thanks to Roman Hodek for pointing this out.
-+ *		B: GCC seems to mess up if one uses too many
-+ *		data-registers to hold input values and one tries to
-+ *		specify d0 and d1 as scratch registers. Letting gcc choose these
-+ *      registers itself solves the problem.
++ * Copyright (C) 1992 Ross Biro
++ * Copyright (C) Linus Torvalds
++ * Copyright (C) 1994, 95, 96, 97, 98, 2000 Ralf Baechle
++ * Copyright (C) 1996 David S. Miller
++ * Kevin D. Kissell, kevink@mips.com and Carsten Langgaard, carstenl@mips.com
++ * Copyright (C) 1999 MIPS Technologies, Inc.
 + *
-+ *		This program is free software; you can redistribute it and/or
-+ *		modify it under the terms of the GNU General Public License
-+ *		as published by the Free Software Foundation; either version
-+ *		2 of the License, or (at your option) any later version.
++ * This file is subject to the terms and conditions of the GNU General
++ * Public License. See the file COPYING in the main directory of this
++ * archive for more details.
 + */
 +
-+/* Revised by Kenneth Albanowski for m68knommu. Basic problem: unaligned access
-+ kills, so most of the assembly has to go. */
++#include <linux/kernel.h>
++#include <linux/mm.h>
++#include <linux/sched.h>
++#include <linux/smp_lock.h>
++#include <linux/ptrace.h>
++#include <linux/signal.h>
 +
-+#include <net/checksum.h>
-+#include <asm/checksum.h>
-+#include <linux/module.h>
++#include <asm/errno.h>
++#include <asm/ptrace.h>
++#include <asm/processor.h>
++#include <asm/uaccess.h>
++#include <asm/asm-offsets.h>
 +
-+static inline unsigned short from32to16(unsigned long x)
++/* Returns the address where the register at REG_OFFS in P is stashed away. */
++static microblaze_reg_t *reg_save_addr(unsigned reg_offs,
++					struct task_struct *t)
 +{
-+	/* add up 16-bit and 16-bit for 16+c bit */
-+	x = (x & 0xffff) + (x >> 16);
-+	/* add up carry.. */
-+	x = (x & 0xffff) + (x >> 16);
-+	return x;
++	struct pt_regs *regs;
++
++	/*
++	 * Three basic cases:
++	 *
++	 * (1)	A register normally saved before calling the scheduler, is
++	 *	available in the kernel entry pt_regs structure at the top
++	 *	of the kernel stack. The kernel trap/irq exit path takes
++	 *	care to save/restore almost all registers for ptrace'd
++	 *	processes.
++	 *
++	 * (2)	A call-clobbered register, where the process P entered the
++	 *	kernel via [syscall] trap, is not stored anywhere; that's
++	 *	OK, because such registers are not expected to be preserved
++	 *	when the trap returns anyway (so we don't actually bother to
++	 *	test for this case).
++	 *
++	 * (3)	A few registers not used at all by the kernel, and so
++	 *	normally never saved except by context-switches, are in the
++	 *	context switch state.
++	 */
++
++	/* Register saved during kernel entry (or not available). */
++	regs = task_pt_regs(t);
++
++	return (microblaze_reg_t *)((char *)regs + reg_offs);
 +}
 +
-+static unsigned long do_csum(const unsigned char *buff, int len)
++long arch_ptrace(struct task_struct *child, long request, long addr, long data)
 +{
-+	int odd, count;
-+	unsigned long result = 0;
++	int rval;
 +
-+	if (len <= 0)
++	switch (request) {
++		unsigned long val, copied;
++
++	case PTRACE_PEEKTEXT: /* read word at location addr. */
++	case PTRACE_PEEKDATA:
++		pr_debug("PEEKTEXT/PEEKDATA at %08lX\n", addr);
++		copied = access_process_vm(child, addr, &val, sizeof(val), 0);
++		rval = -EIO;
++		if (copied != sizeof(val))
++			break;
++		rval = put_user(val, (unsigned long *)data);
 +		goto out;
-+	odd = 1 & (unsigned long) buff;
-+	if (odd) {
-+		result = *buff;
-+		len--;
-+		buff++;
++
++	case PTRACE_POKETEXT: /* write the word at location addr. */
++	case PTRACE_POKEDATA:
++		pr_debug("POKETEXT/POKEDATA to %08lX\n", addr);
++		rval = 0;
++		if (access_process_vm(child, addr, &data, sizeof(data), 1)
++			== sizeof(data))
++			break;
++		rval = -EIO;
++		goto out;
++
++	/* Read/write the word at location ADDR in the registers. */
++	case PTRACE_PEEKUSR:
++	case PTRACE_POKEUSR:
++		pr_debug("PEEKUSR/POKEUSR : 0x%08lx\n", addr);
++		rval = 0;
++		if (addr >= PT_SIZE && request == PTRACE_PEEKUSR) {
++			/* Special requests that don't actually correspond
++			 to offsets in struct pt_regs. */
++			if (addr == PT_TEXT_ADDR) {
++				val = child->mm->start_code;
++			} else if (addr == PT_DATA_ADDR) {
++				val = child->mm->start_data;
++			} else if (addr == PT_TEXT_LEN) {
++				val = child->mm->end_code
++					- child->mm->start_code;
++			} else {
++				rval = -EIO;
++			}
++		} else if (addr >= 0 && addr < PT_SIZE && (addr & 0x3) == 0) {
++			microblaze_reg_t *reg_addr = reg_save_addr(addr, child);
++			if (request == PTRACE_PEEKUSR)
++				val = *reg_addr;
++			else
++				*reg_addr = data;
++		} else
++			rval = -EIO;
++
++		if (rval == 0 && request == PTRACE_PEEKUSR)
++			rval = put_user(val, (unsigned long *)data);
++		goto out;
++
++	/* Continue and stop at next (return from) syscall */
++	case PTRACE_SYSCALL:
++		pr_debug("PTRACE_SYSCALL\n");
++	case PTRACE_SINGLESTEP:
++		pr_debug("PTRACE_SINGLESTEP\n");
++	/* Restart after a signal. */
++	case PTRACE_CONT:
++		pr_debug("PTRACE_CONT\n");
++		rval = -EIO;
++		if (!valid_signal(data))
++			break;
++
++		if (request == PTRACE_SYSCALL)
++			set_tsk_thread_flag(child, TIF_SYSCALL_TRACE);
++		else
++			clear_tsk_thread_flag(child, TIF_SYSCALL_TRACE);
++
++		child->exit_code = data;
++		pr_debug("wakeup_process\n");
++		wake_up_process(child);
++		rval = 0;
++		break;
++
++	/*
++	 * make the child exit. Best I can do is send it a sigkill.
++	 * perhaps it should be put in the status that it wants to
++	 * exit.
++	 */
++	case PTRACE_KILL:
++		pr_debug("PTRACE_KILL\n");
++		rval = 0;
++		if (child->exit_state == EXIT_ZOMBIE)	/* already dead */
++			break;
++		child->exit_code = SIGKILL;
++		wake_up_process(child);
++		break;
++
++	case PTRACE_DETACH: /* detach a process that was attached. */
++		pr_debug("PTRACE_DETACH\n");
++		rval = ptrace_detach(child, data);
++		break;
++
++	default:
++		rval = -EIO;
++		goto out;
 +	}
-+	count = len >> 1;		/* nr of 16-bit words.. */
-+	if (count) {
-+		if (2 & (unsigned long) buff) {
-+			result += *(unsigned short *) buff;
-+			count--;
-+			len -= 2;
-+			buff += 2;
-+		}
-+		count >>= 1;		/* nr of 32-bit words.. */
-+		if (count) {
-+			unsigned long carry = 0;
-+			do {
-+				unsigned long w = *(unsigned long *) buff;
-+				count--;
-+				buff += 4;
-+				result += carry;
-+				result += w;
-+				carry = (w > result);
-+			} while (count);
-+			result += carry;
-+			result = (result & 0xffff) + (result >> 16);
-+		}
-+		if (len & 2) {
-+			result += *(unsigned short *) buff;
-+			buff += 2;
-+		}
++ out:
++	return rval;
++}
++
++#if 0
++static asmlinkage void syscall_trace(void)
++{
++	if (!test_thread_flag(TIF_SYSCALL_TRACE))
++		return;
++	if (!(current->ptrace & PT_PTRACED))
++		return;
++	/* The 0x80 provides a way for the tracing parent to distinguish
++	 between a syscall stop and SIGTRAP delivery */
++	ptrace_notify(SIGTRAP | ((current->ptrace & PT_TRACESYSGOOD)
++				? 0x80 : 0));
++	/*
++	 * this isn't the same as continuing with a signal, but it will do
++	 * for normal use. strace only continues with a signal if the
++	 * stopping signal is not SIGTRAP. -brl
++	 */
++	if (current->exit_code) {
++		send_sig(current->exit_code, current, 1);
++		current->exit_code = 0;
 +	}
-+	if (len & 1)
-+		result += (*buff << 8);
-+	result = from32to16(result);
-+	if (odd)
-+		result = ((result >> 8) & 0xff) | ((result & 0xff) << 8);
-+out:
-+	return result;
 +}
++#endif
 +
-+/*
-+ *	This is a version of ip_compute_csum() optimized for IP headers,
-+ *	which always checksum on 4 octet boundaries.
-+ */
-+unsigned short ip_fast_csum(unsigned char *iph, unsigned int ihl)
++void ptrace_disable(struct task_struct *child)
 +{
-+	return ~do_csum(iph, ihl*4);
++	/* nothing to do */
 +}
-+
-+/*
-+ * computes the checksum of a memory block at buff, length len,
-+ * and adds in "sum" (32-bit)
-+ *
-+ * returns a 32-bit number suitable for feeding into itself
-+ * or csum_tcpudp_magic
-+ *
-+ * this function must be called with even lengths, except
-+ * for the last fragment, which may be odd
-+ *
-+ * it's best to have buff aligned on a 32-bit boundary
-+ */
-+unsigned int csum_partial(const unsigned char *buff, int len, unsigned int sum)
-+{
-+	unsigned int result = do_csum(buff, len);
-+
-+	/* add in old sum, and carry.. */
-+	result += sum;
-+	if (sum > result)
-+		result += 1;
-+	return result;
-+}
-+EXPORT_SYMBOL(csum_partial);
-+
-+/*
-+ * this routine is used for miscellaneous IP-like checksums, mainly
-+ * in icmp.c
-+ */
-+unsigned short ip_compute_csum(const unsigned char *buff, int len)
-+{
-+	return ~do_csum(buff, len);
-+}
-+EXPORT_SYMBOL(ip_compute_csum);
-+
-+/*
-+ * copy from fs while checksumming, otherwise like csum_partial
-+ */
-+unsigned int
-+csum_partial_copy_from_user(const char __user *src, char *dst, int len,
-+						int sum, int *csum_err)
-+{
-+	if (csum_err)
-+		*csum_err = 0;
-+	memcpy(dst, src, len);
-+	return csum_partial(dst, len, sum);
-+}
-+EXPORT_SYMBOL(csum_partial_copy_from_user);
-+
-+/*
-+ * copy from ds while checksumming, otherwise like csum_partial
-+ */
-+unsigned int
-+csum_partial_copy(const char *src, char *dst, int len, int sum)
-+{
-+	memcpy(dst, src, len);
-+	return csum_partial(dst, len, sum);
-+}
-+EXPORT_SYMBOL(csum_partial_copy);
-diff --git a/include/asm-microblaze/checksum.h b/include/asm-microblaze/checksum.h
+diff --git a/include/asm-microblaze/ptrace.h b/include/asm-microblaze/ptrace.h
 new file mode 100644
-index 0000000..fc05cca
+index 0000000..f7ba49c
 --- /dev/null
-+++ b/include/asm-microblaze/checksum.h
-@@ -0,0 +1,101 @@
++++ b/include/asm-microblaze/ptrace.h
+@@ -0,0 +1,70 @@
 +/*
-+ * include/asm-microblaze/checksum.h
++ * include/asm-microblaze/ptrace.h
 + *
 + * This file is subject to the terms and conditions of the GNU General Public
 + * License. See the file "COPYING" in the main directory of this archive
@@ -243,97 +291,66 @@ index 0000000..fc05cca
 + * Copyright (C) 2006 Atmark Techno, Inc.
 + */
 +
-+#ifndef _ASM_MICROBLAZE_CHECKSUM_H
-+#define _ASM_MICROBLAZE_CHECKSUM_H
++#ifndef _ASM_MICROBLAZE_PTRACE_H
++#define _ASM_MICROBLAZE_PTRACE_H
 +
-+#include <linux/in6.h>
++#ifndef __ASSEMBLY__
++#include <asm/types.h>
 +
-+/*
-+ * computes the checksum of a memory block at buff, length len,
-+ * and adds in "sum" (32-bit)
-+ *
-+ * returns a 32-bit number suitable for feeding into itself
-+ * or csum_tcpudp_magic
-+ *
-+ * this function must be called with even lengths, except
-+ * for the last fragment, which may be odd
-+ *
-+ * it's best to have buff aligned on a 32-bit boundary
-+ */
-+unsigned int csum_partial(const unsigned char *buff, int len,
-+						unsigned int sum);
++typedef unsigned long microblaze_reg_t;
 +
-+/*
-+ * the same as csum_partial, but copies from src while it
-+ * checksums
-+ *
-+ * here even more important to align src and dst on a 32-bit (or even
-+ * better 64-bit) boundary
-+ */
-+unsigned int csum_partial_copy(const char *src, char *dst, int len, int sum);
++struct pt_regs {
++	microblaze_reg_t r0;
++	microblaze_reg_t r1;
++	microblaze_reg_t r2;
++	microblaze_reg_t r3;
++	microblaze_reg_t r4;
++	microblaze_reg_t r5;
++	microblaze_reg_t r6;
++	microblaze_reg_t r7;
++	microblaze_reg_t r8;
++	microblaze_reg_t r9;
++	microblaze_reg_t r10;
++	microblaze_reg_t r11;
++	microblaze_reg_t r12;
++	microblaze_reg_t r13;
++	microblaze_reg_t r14;
++	microblaze_reg_t r15;
++	microblaze_reg_t r16;
++	microblaze_reg_t r17;
++	microblaze_reg_t r18;
++	microblaze_reg_t r19;
++	microblaze_reg_t r20;
++	microblaze_reg_t r21;
++	microblaze_reg_t r22;
++	microblaze_reg_t r23;
++	microblaze_reg_t r24;
++	microblaze_reg_t r25;
++	microblaze_reg_t r26;
++	microblaze_reg_t r27;
++	microblaze_reg_t r28;
++	microblaze_reg_t r29;
++	microblaze_reg_t r30;
++	microblaze_reg_t r31;
++	microblaze_reg_t pc;
++	microblaze_reg_t msr;
++	microblaze_reg_t ear;
++	microblaze_reg_t esr;
++	microblaze_reg_t fsr;
++	int kernel_mode;
++};
 +
-+/*
-+ * the same as csum_partial_copy, but copies from user space.
-+ *
-+ * here even more important to align src and dst on a 32-bit (or even
-+ * better 64-bit) boundary
-+ */
-+extern unsigned int csum_partial_copy_from_user(const char *src, char *dst,
-+					int len, int sum, int *csum_err);
++#define kernel_mode(regs)		((regs)->kernel_mode)
++#define user_mode(regs)			(!kernel_mode(regs))
 +
-+#define csum_partial_copy_nocheck(src, dst, len, sum)	\
-+	csum_partial_copy((src), (dst), (len), (sum))
++#define instruction_pointer(regs)	((regs)->pc)
++#define profile_pc(regs)		instruction_pointer(regs)
 +
-+/*
-+ *	This is a version of ip_compute_csum() optimized for IP headers,
-+ *	which always checksum on 4 octet boundaries.
-+ *
-+ */
-+extern unsigned short ip_fast_csum(unsigned char *iph, unsigned int ihl);
++extern void show_regs(struct pt_regs *);
 +
-+/*
-+ *	Fold a partial checksum
-+ */
-+static inline unsigned int csum_fold(unsigned int sum)
-+{
-+	sum = (sum & 0xffff) + (sum >> 16);
-+	sum = (sum & 0xffff) + (sum >> 16);
-+	return ~sum;
-+}
++#endif /* __ASSEMBLY__ */
 +
-+/*
-+ * computes the checksum of the TCP/UDP pseudo-header
-+ * returns a 16-bit checksum, already complemented
-+ */
-+static inline unsigned int
-+csum_tcpudp_nofold(unsigned long saddr, unsigned long daddr, unsigned short len,
-+		unsigned short proto, unsigned int sum)
-+{
-+	__asm__("add %0, %4, %1\n\t"
-+		"addc %0, %4, %2\n\t"
-+		"addc %0, %4, %3\n\t"
-+		"addc %0, %4, r0\n\t"
-+		: "=d" (sum)
-+		: "d" (saddr), "d" (daddr), "d" (len + proto),
-+		"0"(sum));
-+
-+	return sum;
-+}
-+
-+static inline unsigned short int
-+csum_tcpudp_magic(unsigned long saddr, unsigned long daddr, unsigned short len,
-+		unsigned short proto, unsigned int sum)
-+{
-+	return csum_fold(csum_tcpudp_nofold(saddr, daddr, len, proto, sum));
-+}
-+
-+/*
-+ * this routine is used for miscellaneous IP-like checksums, mainly
-+ * in icmp.c
-+ */
-+extern unsigned short ip_compute_csum(const unsigned char *buff, int len);
-+
-+#endif /* _ASM_MICROBLAZE_CHECKSUM_H */
++#endif /* _ASM_MICROBLAZE_PTRACE_H */
 -- 
 1.5.4.GIT
 
