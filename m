@@ -1,48 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757779AbYEDOTZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757156AbYEDOZD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757779AbYEDOTZ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 May 2008 10:19:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751749AbYEDOTP
+	id S1757156AbYEDOZD (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 May 2008 10:25:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751084AbYEDOYw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 May 2008 10:19:15 -0400
-Received: from smtpq1.groni1.gr.home.nl ([213.51.130.200]:35842 "EHLO
-	smtpq1.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752635AbYEDOTO (ORCPT
+	Sun, 4 May 2008 10:24:52 -0400
+Received: from fg-out-1718.google.com ([72.14.220.158]:62274 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751113AbYEDOYv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 May 2008 10:19:14 -0400
-Message-ID: <481DC60A.7090307@keyaccess.nl>
-Date: Sun, 04 May 2008 16:19:54 +0200
-From: Rene Herman <rene.herman@keyaccess.nl>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
+	Sun, 4 May 2008 10:24:51 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=CFIYwUl2eQoTrUApSgyMGMJa1h8ohzRLgPfO2brlVVO/a/o8tI6E+Os7GI7R0qrupz5XYCxoBKV3kQl1iMi1JGu6wrm/qWPM7ihN4TTTaL45qWU4Tn3f/eVBmXdmZc4QcUM3zkFmom0sWra9Bv/P8N8g/DJPxHqs+PGjMivnkVE=
+Message-ID: <481DC731.5090303@gmail.com>
+Date: Sun, 04 May 2008 16:24:49 +0200
+From: Jarek Poplawski <jarkao2@gmail.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.9 (X11/20080110)
 MIME-Version: 1.0
-To: Bjorn Helgaas <bjorn.helgaas@hp.com>
-CC: Rene Herman <rene.herman@gmail.com>, Len Brown <lenb@kernel.org>,
-       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Adam Belay <ambx1@neo.rr.com>, Li Shaohua <shaohua.li@intel.com>,
-       Matthieu Castet <castet.matthieu@free.fr>,
-       Thomas Renninger <trenn@suse.de>, Jaroslav Kysela <perex@perex.cz>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [patch 00/37] PNP resource_table cleanups, v2
-References: <20080401151634.730901933@ldl.fc.hp.com> <200804021535.22011.bjorn.helgaas@hp.com> <47F4FDCB.2000803@keyaccess.nl> <200805011447.38234.bjorn.helgaas@hp.com> <481DC4E2.7060803@keyaccess.nl>
-In-Reply-To: <481DC4E2.7060803@keyaccess.nl>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+To: Jay Cliburn <jacliburn@bellsouth.net>
+CC: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       Chris Snook <csnook@redhat.com>
+Subject: Re: Need help debugging memory corruption
+References: <20080503130951.091392ba@osprey.hogchain.net>
+In-Reply-To: <20080503130951.091392ba@osprey.hogchain.net>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -1.0 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 04-05-08 16:14, Rene Herman wrote:
+Jay Cliburn wrote, On 05/03/2008 08:09 PM:
+...
 
-> In trying to come up with problems I'm only finding a difference in an 
-> added failure mode with respect to the static array if we run out of 
-> memory at a bad time and this is quite unserious.
+> Here is the relevant console output when the bug is hit.  I note that
+> the apparent corrupting data beginning at address 0xffff81010fcff402 is
+> actually a received ethernet frame.  (The value 00:17:31:4e:9d:41 is
+> the MAC address of the local host, corresponding to the destination
+> address of a received frame.)
+> 
+> Can someone with more experience than me please take a look and give me
+> some advice or explain what might be happening here?  (What may be
+> obvious to you is probably not obvious to me.)
 
-I mean, this would be an added mode when just releasing and rbuilding teh 
-list as opposed to teh reusing, it's not a diffeerence with respect to the 
-.index setup.
+I'm definitely with less experience, so I wonder why it can't be
+a simple race between atl1_clean_rx_ring() and something (maybe even
+pending atl1_intr_rx()) on the other cpu writing skb while kfreeing?
 
-So, going to completely slash struct pnp_resource again? :) Would improve 
-things...
+Regards,
+Jarek P.
 
-Rene.
