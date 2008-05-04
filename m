@@ -1,156 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757489AbYEDOkn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756605AbYEDOmo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757489AbYEDOkn (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 May 2008 10:40:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752077AbYEDOke
+	id S1756605AbYEDOmo (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 May 2008 10:42:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751103AbYEDOmf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 May 2008 10:40:34 -0400
-Received: from barikada.upol.cz ([158.194.242.200]:60885 "EHLO
-	barikada.upol.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751049AbYEDOkc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 May 2008 10:40:32 -0400
-Date: Sun, 4 May 2008 17:01:30 +0200
-To: David Collier-Brown <davecb@sun.com>
-Cc: Sam Ravnborg <sam@ravnborg.org>, Roman Zippel <zippel@linux-m68k.org>,
-       linux-kbuild <linux-kbuild@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: kconfig - a suggestion how to fix the select issue
-Message-ID: <20080504150130.GB24008@flower.upol.cz>
-References: <20080504071041.GA15315@uranus.ravnborg.org> <481DB230.30907@sun.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <481DB230.30907@sun.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: Oleg Verych <olecom@flower.upol.cz>
-Organization: Palacky University in Olomouc, experimental physics department
-X-OS: x86_64-pc-linux-glibc-debian
+	Sun, 4 May 2008 10:42:35 -0400
+Received: from 178-47-31-89.wifiinternet.cz ([89.31.47.178]:40996 "EHLO
+	seznam.cz" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750893AbYEDOme (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 May 2008 10:42:34 -0400
+From: monstr@seznam.cz
+To: linux-kernel@vger.kernel.org
+Cc: arnd@arndb.de, linux-arch@vger.kernel.org, stephen.neuendorffer@xilinx.com,
+       John.Linn@xilinx.com, john.williams@petalogix.com, matthew@wil.cx,
+       will.newton@gmail.com, drepper@redhat.com,
+       microblaze-uclinux@itee.uq.edu.au, grant.likely@secretlab.ca,
+       Michal Simek <monstr@monstr.eu>
+Subject: [PATCH 52/56] microblaze_v2: pci headers
+Date: Sun,  4 May 2008 13:41:41 +0200
+Message-Id: <c709de3e3767d1be8b23ce73255389c525737c36.1209897267.git.monstr@monstr.eu>
+X-Mailer: git-send-email 1.5.4.GIT
+In-Reply-To: <affa82887bee64b05420fdd5f723cca920acad90.1209897267.git.monstr@monstr.eu>
+References: <1209901305-6404-1-git-send-email-monstr@seznam.cz>
+ <a4a778e34c66d126f5c4bf1ca423cf32950ea5ab.1209897266.git.monstr@monstr.eu>
+ <c805caeb1dd7f6d1349c4a463cb88a5342a170d2.1209897266.git.monstr@monstr.eu>
+ <f120ababf2bade9aab7199bffb3014aa606e5a1c.1209897266.git.monstr@monstr.eu>
+ <684c36e5ad3f598e5079e88ec195545c4a7150c2.1209897266.git.monstr@monstr.eu>
+ <ed3695121faf485d491cecdd96d5d4dcc498411d.1209897266.git.monstr@monstr.eu>
+ <0674b1f7abb9a3d564b68c95bc28adc2c2fe9551.1209897266.git.monstr@monstr.eu>
+ <9a7c6646e5dd9724c1cf34767adec181481fa3ef.1209897266.git.monstr@monstr.eu>
+ <932956128c9c655a218a940eaf02017a5dd0bdf9.1209897266.git.monstr@monstr.eu>
+ <2f801c33caee22e112af51ae927c264ce99ead01.1209897266.git.monstr@monstr.eu>
+ <2391e49379fb6639f57d9d6e5811f3d49a4c6fda.1209897266.git.monstr@monstr.eu>
+ <0873f3a1f3b72591735c6461b51964693cac52e5.1209897266.git.monstr@monstr.eu>
+ <0ba1f259d3c17eba54e334622493577493f5065f.1209897266.git.monstr@monstr.eu>
+ <694451053534fea7b78fb9d618b53a2b5ebeb602.1209897266.git.monstr@monstr.eu>
+ <f0c837df4106a31c1a81917596603918f722ea7b.1209897266.git.monstr@monstr.eu>
+ <d883a8d8da812d77fefd47730d28d0bdb7b504e0.1209897266.git.monstr@monstr.eu>
+ <625ef466cf121d655539eedc919dd39166087e0c.1209897266.git.monstr@monstr.eu>
+ <b5067a1846075ddd1035966ea1edc908579e2e88.1209897266.git.monstr@monstr.eu>
+ <378157891bac535dbc55e658d5f03fdd332e85cf.1209897266.git.monstr@monstr.eu>
+ <eadcc6f4754df78b69d6d54c404624d0390c8558.1209897266.git.monstr@monstr.eu>
+ <4df4022e06b9056202cc2fdf0b99deb01563a0fa.1209897266.git.monstr@monstr.eu>
+ <6b0c9864dc80776ae48d6488a6892e5d698751b7.1209897266.git.monstr@monstr.eu>
+ <ea5cbbca49c38c506960fddba29cbd8cb24e1a8d.1209897266.git.monstr@monstr.eu>
+ <4f4d6ed3fce9b21cdd6dcacb2d72fff7e9830628.1209897266.git.monstr@monstr.eu>
+ <35e662a81eb86c7ffb2aaa6141ca38a07789f382.1209897266.git.monstr@monstr.eu>
+ <b41fcf3dd830f4ba82692a9bec2406ed0c290e7e.1209897266.git.monstr@monstr.eu>
+ <14acb31da2794d2d5916da3db3d75fe2285ac055.1209897266.git.monstr@monstr.eu>
+ <598221ce2159046614d7b158ea62d5af51907af3.1209897266.git.monstr@monstr.eu>
+ <41c1f410eaafd875246362d10ef9866d8cc2a934.1209897266.git.monstr@monstr.eu>
+ <09ce2baf0c8308d3fbca98e7eb36a6aab59112a7.1209897266.git.monstr@monstr.eu>
+ <c9418c683be99ae12abb89575c362d586c026bad.1209897266.git.monstr@monstr.eu>
+ <cfde3796e95bdd17c32e4fd7762d0aee55967707.1209897266.git.monstr@monstr.eu>
+ <8aba2d82c85cd1d5b56de328c1fd080ee51f0211.1209897266.git.monstr@monstr.eu>
+ <c4000ff625bd217f9bb683e3bf8c7193a82bd744.1209897266.git.monstr@monstr.eu>
+ <491f823fac6c03cc36834ec569a45d30a03a72cf.1209897266.git.monstr@monstr.eu>
+ <96f2004535c34a0c762bf2012c299cbf9f89ab32.1209897266.git.monstr@monstr.eu>
+ <92cd3a27b393bb394d48902594152351a92c59bb.1209897266.git.monstr@monstr.eu>
+ <4e20213f5f296268a24955df8c951f7fba279816.1209897266.git.monstr@monstr.eu>
+ <49eccf3408b90a5ebb42635493bbeef3b584acb9.1209897266.git.monstr@monstr.eu>
+ <d1e4a572d2add458e1dc7c4f5a3039ae4faa2c04.1209897266.git.monstr@monstr.eu>
+ <27d6acda14c492aae35d8bb1343a122624560418.1209897266.git.monstr@monstr.eu>
+ <64e6fc7378cd5c714fcceef7d4965c1fb3d1b288.1209897266.git.monstr@monstr.eu>
+ <9cc0d54a98f25748dc3f16fc3250524d7cd00877.1209897266.git.monstr@monstr.eu>
+ <5d240127ee05c28d5156bfbf305329f9540f6c14.1209897267.git.monstr@monstr.eu>
+ <59b5238f7a259dcac4c9ca6513756a188625462e.1209897267.git.monstr@monstr.eu>
+ <8e1d421649250f7a3f638cd552bc46e5f5845890.1209897267.git.monstr@monstr.eu>
+ <5b1319d426b1f55e08402790b4bc16a33ec7c00c.1209897267.git.monstr@monstr.eu>
+ <eff9f144fc70b87a9ff6767e9ab92d3d55eebbae.1209897267.git.monstr@monstr.eu>
+ <643084ee3819dd169cad3c4e3565c5ff20dd3429.1209897267.git.monstr@monstr.eu>
+ <231ae415bf52de25c69f727fd13c50d201f8ecd8.1209897267.git.monstr@monstr.eu>
+ <53e5b22838d017b7cf7f44c4bafe5f7e253732ce.1209897267.git.monstr@monstr.eu>
+ <affa82887bee64b05420fdd5f723cca920acad90.1209897267.git.monstr@monstr.eu>
+In-Reply-To: <a4a778e34c66d126f5c4bf1ca423cf32950ea5ab.1209897266.git.monstr@monstr.eu>
+References: <a4a778e34c66d126f5c4bf1ca423cf32950ea5ab.1209897266.git.monstr@monstr.eu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Collier-Brown @ Sun, May 04, 2008 at 08:55:12AM -0400:
-[]
-> I speculate that having two ways to express a dependency,
-> and the addtition of visibility control makes the
-> dependency tree-walk into a problem which is no longer
-> solvable in trivial logic. That in turn makes my head
-> explode (;-))
+From: Michal Simek <monstr@monstr.eu>
 
-In short:
-mixing all together and applying resolving and UI heuristics on top.
 
-> I wonder if one could simplify back into a flat set of
-> selections without visibility rules and a backwards-
-> chaining "you need to select these too" message emitter,
-> and if that would be worthwhile.
+Signed-off-by: Michal Simek <monstr@monstr.eu>
+---
+ include/asm-microblaze/pci-bridge.h |   17 +++++++++++++++++
+ include/asm-microblaze/pci.h        |   19 +++++++++++++++++++
+ 2 files changed, 36 insertions(+), 0 deletions(-)
+ create mode 100644 include/asm-microblaze/pci-bridge.h
+ create mode 100644 include/asm-microblaze/pci.h
 
-No need to hide anything and invent complexity. Flexible and
-human-friendly interface. (Batch things like def_condig are done by
-humans, randconfig -- useless if there's no heuristics, allyes - simple.)
+diff --git a/include/asm-microblaze/pci-bridge.h b/include/asm-microblaze/pci-bridge.h
+new file mode 100644
+index 0000000..3a74fd4
+--- /dev/null
++++ b/include/asm-microblaze/pci-bridge.h
+@@ -0,0 +1,17 @@
++/*
++ * include/asm-microblaze/pci-bridge.h
++ *
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License. See the file "COPYING" in the main directory of this archive
++ * for more details.
++ *
++ * Copyright (C) 2008 Michal Simek <monstr@monstr.eu>
++ * Copyright (C) 2006 Atmark Techno, Inc.
++ */
++
++#ifndef _ASM_PCI_BRIDGE_H
++#define _ASM_PCI_BRIDGE_H
++
++#include <linux/pci.h>
++
++#endif /* _ASM_PCI_BRIDGE_H */
+diff --git a/include/asm-microblaze/pci.h b/include/asm-microblaze/pci.h
+new file mode 100644
+index 0000000..89bec79
+--- /dev/null
++++ b/include/asm-microblaze/pci.h
+@@ -0,0 +1,19 @@
++/*
++ * include/asm-microblaze/pci.h
++ *
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License. See the file "COPYING" in the main directory of this archive
++ * for more details.
++ *
++ * Copyright (C) 2008 Michal Simek <monstr@monstr.eu>
++ * Copyright (C) 2006 Atmark Techno, Inc.
++ */
++
++#ifndef _ASM_MICROBLAZE_PCI_H
++#define _ASM_MICROBLAZE_PCI_H
++
++#ifdef __KERNEL__
++#include <asm/io.h>
++#endif
++
++#endif /* _ASM_MICROBLAZE_PCI_H */
+-- 
+1.5.4.GIT
 
-Just UI part for now. Automation of selection can be applied only, after
-one can see whole picture. Say, you have [ UCcamers ] which depends on
-USB, Video, etc.
-
-+-- Navigation ---------------------------------------------------+
-|  ...            [ arch     ]      [ atm ]     [ w-less speaker] |
-|  [ kernel ] --> [ drivers  ]  --> [ fun ] --> [ camerass      ] |
-|  [ klibc  ]     [ file sys ]      [ mtd ]     [ manual DMA    ] |
-|  ...            ...               ...         ...               |
-+-----------------------------------------------------------------+
-+--     needs     ------+  +-- configure -----+  +--  options  ---+
-| ++Universal S bus++++ |  |  ...             |  | build: y [m] n |
-| --Video capture---    |<-+-[* UCcamera    ]-+->| RGB support y  |
-| --sysfs kernel for u- |  |  * LPTcamera     |  | YUV support y  |
-|                       |  |  * RS232camera   |  | HSB support y  |
-+-----------------------+  +------------------+  +----------------+
-+-- command line/text editor -- olecom@kit[configure] ------------+
-$ build = m \n
-$ go <
-
-+--  walk tags  ---------+ +------------- Description ------------+
-| intro, kernel, drivers,| | USB camera with foo bar features     |
-| fun, [camerass]        | | with dual-core toaster and coffee    |
-|                        | | machine inside                       |
-|                        | |                                      |
-|                        | | Options:                             |
-|                        | | * RGB enables RGB                    |
-|                        | | ....                                 |
-+------------------------+ +--------------------------------------+
-
-So, after 'go <' command (visually or command-lineually) we will be in
-[--Video capture--] which isn't configured/enabled yet (due to --)
-
-Now,
-
-+-- Navigation ---------------------------------------------------+
-|  ...            [ arch     ]      [ atm ]     [ w-less speaker] |
-|  [ kernel ] --> [ drivers  ]  --> [*fun*] --> [ camerass      ] |
-|  [ klibc  ]     [ file sys ]      [ mtd ]     [ manual DMA    ] |
-|  ...            ...               ...         ...               |
-+-----------------------------------------------------------------+
-+--     needs     ------+  +-- configure -----+  +--  options  ---+
-| ++Universal S bus++++ |  |  ...             |  | build: y [m] n |
-| [-Video capture--]    |<-+-[* UCcamera    ]-+->| RGB support y  |
-| --sysfs kernel for u- |  |  * LPTcamera     |  | YUV support y  |
-|                       |  |  * RS232camera   |  | HSB support y  |
-+-----------------------+  +------------------+  +----------------+
-+-- command line/text editor -- olecom@kit[ needs   ] ------------+
-$ build = m \n
-$ go < \n
-$ we are here, hitting enter on needs/video
-+--  walk tags  ---------+ +------------- Description ------------+
-| intro, kernel, drivers,| | Video processing for everyone        |
-| fun, cameras, [videoP] | | all is supported all works with no   |
-|                        | | OOP and shaman drums                 |
-|                        | |                                      |
-|                        | | Inside MMA:                          |
-|                        | | * conf: DEBUG                        |
-|                        | | * build: chip1...                    |
-+------------------------+ +--------------------------------------+
-
-we will have:
-
-+-- Navigation ---------------------------------------------------+
-|  [ arch     ]    [ mtd   ]    [ radio ]    [ bt8xx    ]         |
-|  [ drivers  ] -> [ media ] -> [*video*] -> [ cpia2    ]         |
-|  [ file sys ]    [ ps3   ]    [ common]    [ usbvideo ]         |
-|  ...            ...               ...         ...               |
-+-----------------------------------------------------------------+
-+--     needs     ------+  +-- configure -----+  +--  options  ---+
-| --V4L1--              |  |  ...             |  | menu:          |
-| --V4L2--              |<-+-[*Video capture]-+->| * DEBUG_FOO    |
-| --V4W7--              |  |  * Video decode  |  | * bt8xx        |
-|                       |  |  * Video improve |  | ...            |
-+-----------------------+  +------------------+  +----------------+
-+-- command line/text editor -- olecom@kit[configure] ------------+
-$ go < \n
-$ we are here, hitting enter on needs/video
-$
-+--  walk tags  ---------+ +------------- Description ------------+
-| intro, kernel, drivers,| | Video processing for everyone        |
-| fun, cameras, [video]  | | all is supported all works with no   |
-|                        | | OOP and shaman drums                 |
-|                        | |                                      |
-|                        | | Inside MMA:                          |
-|                        | | * this is menu                       |
-|                        | |                                      |
-+------------------------+ +--------------------------------------+
-
-== [ rant ] ==
-
-Can some of those PS3 or KDE teams design proper "Konfigure Linux"
-game for kernel hackers? I try to do this with TERM=linux, `sh`, and
-`sed`. Patching paper work isn't for such tasks.
-
-On collecting CONFIG_ info by gcc in sources, thus generating symbol
-dependency automatically, was told to shut up. Let's see what will
-happen next. Don't forget to use cultural skills, imagination and
-creativity.
---
-sed 'sed && sh + olecom = love' << ''
--o--=O`C
- #oo'L O
-<___=E M
