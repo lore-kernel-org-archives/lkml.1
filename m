@@ -1,349 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754948AbYEDPJu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754457AbYEDPKa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754948AbYEDPJu (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 May 2008 11:09:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751038AbYEDPJj
+	id S1754457AbYEDPKa (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 May 2008 11:10:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751038AbYEDPKT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 May 2008 11:09:39 -0400
-Received: from 136-022.dsl.labridge.com ([206.117.136.22]:2468 "EHLO
-	mail.perches.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1750733AbYEDPJi (ORCPT
+	Sun, 4 May 2008 11:10:19 -0400
+Received: from fg-out-1718.google.com ([72.14.220.155]:17822 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751270AbYEDPKR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 May 2008 11:09:38 -0400
-Subject: Re: [PATCH -mm] __ratelimit rewrite
-From: Joe Perches <joe@perches.com>
-To: Dave Young <hidave.darkstar@gmail.com>
-Cc: akpm@linux-foundation.org, paulmck@us.ibm.com, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20080504070738.GA11832@darkstar.te-china.tietoenator.com>
-References: <20080504070738.GA11832@darkstar.te-china.tietoenator.com>
-Content-Type: text/plain
-Date: Sun, 04 May 2008 07:47:27 -0700
-Message-Id: <1209912447.16966.42.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3-1.2mdv2008.0 
+	Sun, 4 May 2008 11:10:17 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=CJNSZ1myWKcx3FzoPe3BZBNZCydolho2qofDd1AVeEzfIJ4PAUosdFxdgdKGMcQHzegAPUgdqh6JvyRrXextRTonDmAiBzWGSAW1lQiqZKBU4eRj2wJGHa900YOo7WBwerNAGuAgAg0c9HARa49cCoVUtyznw9BjTOqYqRoXsRA=
+Message-ID: <481DD0C5.4060005@gmail.com>
+Date: Sun, 04 May 2008 17:05:41 +0200
+From: Jacek Luczak <difrost.kernel@gmail.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+MIME-Version: 1.0
+To: Krzysztof Halasa <khc@pm.waw.pl>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Jeff Garzik <jeff@garzik.org>, Paul Mackerras <paulus@samba.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, David Miller <davem@davemloft.net>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Jiri Slaby <jirislaby@gmail.com>
+Subject: Re: Slow DOWN, please!!!
+References: <20080429.190352.137408408.davem@davemloft.net>	<200804302136.58005.rjw@sisk.pl>	<alpine.LFD.1.10.0804301253290.2980@woody.linux-foundation.org>	<18457.219.995207.136771@cargo.ozlabs.ibm.com>	<alpine.LFD.1.10.0804302034180.5994@woody.linux-foundation.org>	<48194464.2000406@garzik.org>	<alpine.LFD.1.10.0804302142570.5994@woody.linux-foundation.org> <m3skwyxjte.fsf@maximus.localdomain>
+In-Reply-To: <m3skwyxjte.fsf@maximus.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2008-05-04 at 15:07 +0800, Dave Young wrote:
-> diff -uprN linux/include/linux/kernel.h linux.new/include/linux/kernel.h
-> --- linux/include/linux/kernel.h	2008-04-30 17:33:59.000000000 +0800
-> +++ linux.new/include/linux/kernel.h	2008-04-30 17:33:52.000000000 +0800
-> @@ -14,6 +14,7 @@
->  #include <linux/compiler.h>
->  #include <linux/bitops.h>
->  #include <linux/log2.h>
-> +#include <linux/ratelimit.h>
->  #include <asm/byteorder.h>
->  #include <asm/bug.h> 
+Krzysztof Halasa pisze:
+> Personally I think the current process works reasonably well, though
+> as we should always try to improve it further...
+> 
+> Linus Torvalds <torvalds@linux-foundation.org> writes:
+> 
+>> On Thu, 1 May 2008, Jeff Garzik wrote:
+>>> - opens all the debates about running parallel branches, such as, would it be
+>>> better to /branch/ for 2.6.X-rc, and then keep going full steam on
+>>> the trunk?
+> 
+> I think you could branch at ~ rc3 (strictly critical fixes only from
+> this point). This way 'next' wouldn't be low-maintenance but the
+> release branch would be.
+> 
+> I.e., the merge window would open at ~ rc3. At 'final', the merge window
+> would probably be already closed :-)
+> 
+> Something like:
+> - 2.6.26-rc3: 2.6.27 merge window opens, 2.6.26 - fixes only
+> - 1 week later: no core changes for 2.6.27 except fixes (drivers only?)
 
-Good idea.
+Yep, that sounds pretty interesting. But It would be better to start something
+like ,,slow merge window'' (explained below) around -rc4 where things really
+slow down (or used to).
 
-I think #include <linux/printk.h>
-and a reorganization of all the printk related
-elements from kernel.h to printk.h would be better
-and should be done first.
+The idea of ,,slow merge window'' would look like:
+	- merge only *obvious* (long awaiting) changes;
+	- merge stuff (fixes) which comes to -rc releases;
+	- merge non-core changes from -mm;
 
-I think your changes should then be done in
-printk.h not creating a new ratelimit.h.
+After releasing stable kernel the old style merge window opens.
 
-Signed-off-by: Joe Perches <joe@perches.com>
----
- include/linux/kernel.h |  113 +---------------------------------------
- include/linux/printk.h |  137 ++++++++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 138 insertions(+), 112 deletions(-)
+> 2.6.26* would receive backports from 2.6.27 (cherry-picking? applying
+> on 2.6.26 and merging?).
+> The "no open regressions" rule would make sense certainly - unless in
+> a specific case agreed otherwise.
+> 
+> Perhaps if needed you could let other people do the final release
+> ("stable" extension) and concentrate on the trunk.
+> 
+>> If I'd have both a 'next' branch _and_ a full 2-week merge window, there's 
+>> no upside.
+> 
+> Shorter cycle is the big upside.
+> 
+> Perhaps we could start branching later at first - say at 2.6.26-rc5,
+> and see how does it work.
 
-diff --git a/include/linux/kernel.h b/include/linux/kernel.h
-index 4d46e29..51ae259 100644
---- a/include/linux/kernel.h
-+++ b/include/linux/kernel.h
-@@ -14,6 +14,7 @@
- #include <linux/compiler.h>
- #include <linux/bitops.h>
- #include <linux/log2.h>
-+#include <linux/printk.h>
- #include <asm/byteorder.h>
- #include <asm/bug.h>
- 
-@@ -70,29 +71,6 @@ extern const char linux_proc_banner[];
-  */
- #define upper_32_bits(n) ((u32)(((n) >> 16) >> 16))
- 
--#define	KERN_EMERG	"<0>"	/* system is unusable			*/
--#define	KERN_ALERT	"<1>"	/* action must be taken immediately	*/
--#define	KERN_CRIT	"<2>"	/* critical conditions			*/
--#define	KERN_ERR	"<3>"	/* error conditions			*/
--#define	KERN_WARNING	"<4>"	/* warning conditions			*/
--#define	KERN_NOTICE	"<5>"	/* normal but significant condition	*/
--#define	KERN_INFO	"<6>"	/* informational			*/
--#define	KERN_DEBUG	"<7>"	/* debug-level messages			*/
--
--/*
-- * Annotation for a "continued" line of log printout (only done after a
-- * line that had no enclosing \n). Only to be used by core/arch code
-- * during early bootup (a continued line is not SMP-safe otherwise).
-- */
--#define	KERN_CONT	""
--
--extern int console_printk[];
--
--#define console_loglevel (console_printk[0])
--#define default_message_loglevel (console_printk[1])
--#define minimum_console_loglevel (console_printk[2])
--#define default_console_loglevel (console_printk[3])
--
- struct completion;
- struct pt_regs;
- struct user;
-@@ -179,56 +157,8 @@ extern int kernel_text_address(unsigned long addr);
- struct pid;
- extern struct pid *session_of_pgrp(struct pid *pgrp);
- 
--#ifdef CONFIG_PRINTK
--asmlinkage int vprintk(const char *fmt, va_list args)
--	__attribute__ ((format (printf, 1, 0)));
--asmlinkage int printk(const char * fmt, ...)
--	__attribute__ ((format (printf, 1, 2))) __cold;
--extern int log_buf_get_len(void);
--extern int log_buf_read(int idx);
--extern int log_buf_copy(char *dest, int idx, int len);
--
--extern int printk_ratelimit_jiffies;
--extern int printk_ratelimit_burst;
--extern int printk_ratelimit(void);
--extern int __ratelimit(int ratelimit_jiffies, int ratelimit_burst);
--extern int __printk_ratelimit(int ratelimit_jiffies, int ratelimit_burst);
--extern bool printk_timed_ratelimit(unsigned long *caller_jiffies,
--				   unsigned int interval_msec);
--#else
--static inline int vprintk(const char *s, va_list args)
--	__attribute__ ((format (printf, 1, 0)));
--static inline int vprintk(const char *s, va_list args) { return 0; }
--static inline int printk(const char *s, ...)
--	__attribute__ ((format (printf, 1, 2)));
--static inline int __cold printk(const char *s, ...) { return 0; }
--static inline int log_buf_get_len(void) { return 0; }
--static inline int log_buf_read(int idx) { return 0; }
--static inline int log_buf_copy(char *dest, int idx, int len) { return 0; }
--static inline int printk_ratelimit(void) { return 0; }
--static inline int __printk_ratelimit(int ratelimit_jiffies, \
--				     int ratelimit_burst) { return 0; }
--static inline bool printk_timed_ratelimit(unsigned long *caller_jiffies, \
--					  unsigned int interval_msec)	\
--		{ return false; }
--#endif
--
--extern void __attribute__((format(printf, 1, 2)))
--	early_printk(const char *fmt, ...);
--
- unsigned long int_sqrt(unsigned long);
- 
--static inline void console_silent(void)
--{
--	console_loglevel = 0;
--}
--
--static inline void console_verbose(void)
--{
--	if (console_loglevel)
--		console_loglevel = 15;
--}
--
- extern void bust_spinlocks(int yes);
- extern void wake_up_klogd(void);
- extern int oops_in_progress;		/* If set, an oops, panic(), BUG() or die() is in progress */
-@@ -261,47 +191,6 @@ extern enum system_states {
- #define TAINT_OVERRIDDEN_ACPI_TABLE	(1<<8)
- #define TAINT_WARN			(1<<9)
- 
--extern void dump_stack(void) __cold;
--
--enum {
--	DUMP_PREFIX_NONE,
--	DUMP_PREFIX_ADDRESS,
--	DUMP_PREFIX_OFFSET
--};
--extern void hex_dump_to_buffer(const void *buf, size_t len,
--				int rowsize, int groupsize,
--				char *linebuf, size_t linebuflen, bool ascii);
--extern void print_hex_dump(const char *level, const char *prefix_str,
--				int prefix_type, int rowsize, int groupsize,
--				const void *buf, size_t len, bool ascii);
--extern void print_hex_dump_bytes(const char *prefix_str, int prefix_type,
--			const void *buf, size_t len);
--#define hex_asc(x)	"0123456789abcdef"[x]
--
--#define pr_emerg(fmt, arg...) \
--	printk(KERN_EMERG fmt, ##arg)
--#define pr_alert(fmt, arg...) \
--	printk(KERN_ALERT fmt, ##arg)
--#define pr_crit(fmt, arg...) \
--	printk(KERN_CRIT fmt, ##arg)
--#define pr_err(fmt, arg...) \
--	printk(KERN_ERR fmt, ##arg)
--#define pr_warning(fmt, arg...) \
--	printk(KERN_WARNING fmt, ##arg)
--#define pr_notice(fmt, arg...) \
--	printk(KERN_NOTICE fmt, ##arg)
--#define pr_info(fmt, arg...) \
--	printk(KERN_INFO fmt, ##arg)
--
--#ifdef DEBUG
--/* If you are writing a driver, please use dev_dbg instead */
--#define pr_debug(fmt, arg...) \
--	printk(KERN_DEBUG fmt, ##arg)
--#else
--#define pr_debug(fmt, arg...) \
--	({ if (0) printk(KERN_DEBUG fmt, ##arg); 0; })
--#endif
--
- /*
-  *      Display an IP address in readable format.
-  */
-diff --git a/include/linux/printk.h b/include/linux/printk.h
-new file mode 100644
-index 0000000..732ee9c
---- /dev/null
-+++ b/include/linux/printk.h
-@@ -0,0 +1,137 @@
-+#ifndef _LINUX_PRINTK_H
-+#define _LINUX_PRINTK_H
-+
-+#define	KERN_EMERG	"<0>"	/* system is unusable			*/
-+#define	KERN_ALERT	"<1>"	/* action must be taken immediately	*/
-+#define	KERN_CRIT	"<2>"	/* critical conditions			*/
-+#define	KERN_ERR	"<3>"	/* error conditions			*/
-+#define	KERN_WARNING	"<4>"	/* warning conditions			*/
-+#define	KERN_NOTICE	"<5>"	/* normal but significant condition	*/
-+#define	KERN_INFO	"<6>"	/* informational			*/
-+#define	KERN_DEBUG	"<7>"	/* debug-level messages			*/
-+
-+/*
-+ * Annotation for a "continued" line of log printout (only done after a
-+ * line that had no enclosing \n). Only to be used by core/arch code
-+ * during early bootup (a continued line is not SMP-safe otherwise).
-+ */
-+#define	KERN_CONT	""
-+
-+extern int console_printk[];
-+
-+#define console_loglevel (console_printk[0])
-+#define default_message_loglevel (console_printk[1])
-+#define minimum_console_loglevel (console_printk[2])
-+#define default_console_loglevel (console_printk[3])
-+
-+#ifdef CONFIG_PRINTK
-+asmlinkage int vprintk(const char *fmt, va_list args)
-+	__attribute__ ((format (printf, 1, 0)));
-+asmlinkage int printk(const char *fmt, ...)
-+	__attribute__ ((format (printf, 1, 2))) __cold;
-+extern int log_buf_get_len(void);
-+extern int log_buf_read(int idx);
-+extern int log_buf_copy(char *dest, int idx, int len);
-+
-+extern int printk_ratelimit_jiffies;
-+extern int printk_ratelimit_burst;
-+extern int printk_ratelimit(void);
-+extern int __ratelimit(int ratelimit_jiffies, int ratelimit_burst);
-+extern int __printk_ratelimit(int ratelimit_jiffies, int ratelimit_burst);
-+extern bool printk_timed_ratelimit(unsigned long *caller_jiffies,
-+				   unsigned int interval_msec);
-+#else
-+static inline int __attribute__ ((format (printf, 1, 0)))
-+vprintk(const char *s, va_list args)
-+{
-+	return 0;
-+}
-+static inline int __attribute__ ((format (printf, 1, 2))) __cold
-+printk(const char *s, ...)
-+{
-+	return 0;
-+}
-+static inline int log_buf_get_len(void)
-+{
-+	return 0;
-+}
-+static inline int log_buf_read(int idx)
-+{
-+	return 0;
-+}
-+static inline int log_buf_copy(char *dest, int idx, int len)
-+{
-+	return 0;
-+}
-+static inline int printk_ratelimit(void)
-+{
-+	return 0;
-+}
-+static inline int __printk_ratelimit(int ratelimit_jiffies,
-+				     int ratelimit_burst)
-+{
-+	return 0;
-+}
-+static inline bool printk_timed_ratelimit(unsigned long *caller_jiffies,
-+					  unsigned int interval_msec)
-+{
-+	return false;
-+}
-+#endif
-+
-+extern void __attribute__((format(printf, 1, 2)))
-+	early_printk(const char *fmt, ...);
-+
-+static inline void console_silent(void)
-+{
-+	console_loglevel = 0;
-+}
-+
-+static inline void console_verbose(void)
-+{
-+	if (console_loglevel)
-+		console_loglevel = 15;
-+}
-+
-+extern void dump_stack(void) __cold;
-+
-+enum {
-+	DUMP_PREFIX_NONE,
-+	DUMP_PREFIX_ADDRESS,
-+	DUMP_PREFIX_OFFSET
-+};
-+extern void hex_dump_to_buffer(const void *buf, size_t len,
-+			       int rowsize, int groupsize,
-+			       char *linebuf, size_t linebuflen, bool ascii);
-+extern void print_hex_dump(const char *level, const char *prefix_str,
-+			   int prefix_type, int rowsize, int groupsize,
-+			   const void *buf, size_t len, bool ascii);
-+extern void print_hex_dump_bytes(const char *prefix_str, int prefix_type,
-+				 const void *buf, size_t len);
-+#define hex_asc(x)	"0123456789abcdef"[x]
-+
-+#define pr_emerg(fmt, arg...) \
-+	printk(KERN_EMERG fmt, ##arg)
-+#define pr_alert(fmt, arg...) \
-+	printk(KERN_ALERT fmt, ##arg)
-+#define pr_crit(fmt, arg...) \
-+	printk(KERN_CRIT fmt, ##arg)
-+#define pr_err(fmt, arg...) \
-+	printk(KERN_ERR fmt, ##arg)
-+#define pr_warning(fmt, arg...) \
-+	printk(KERN_WARNING fmt, ##arg)
-+#define pr_notice(fmt, arg...) \
-+	printk(KERN_NOTICE fmt, ##arg)
-+#define pr_info(fmt, arg...) \
-+	printk(KERN_INFO fmt, ##arg)
-+
-+#ifdef DEBUG
-+/* If you are writing a driver, please use dev_dbg instead */
-+#define pr_debug(fmt, arg...) \
-+	printk(KERN_DEBUG fmt, ##arg)
-+#else
-+#define pr_debug(fmt, arg...) \
-+	({ if (0) printk(KERN_DEBUG fmt, ##arg); 0; })
-+#endif
-+
-+#endif
-
-
+-Jacek
