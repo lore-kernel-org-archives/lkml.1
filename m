@@ -1,113 +1,152 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757773AbYEDTI3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754345AbYEDTLt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757773AbYEDTI3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 May 2008 15:08:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754230AbYEDTIU
+	id S1754345AbYEDTLt (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 May 2008 15:11:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754213AbYEDTLm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 May 2008 15:08:20 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:21799 "EHLO kernel.dk"
+	Sun, 4 May 2008 15:11:42 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:3507 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754071AbYEDTIT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 May 2008 15:08:19 -0400
-Date: Sun, 4 May 2008 21:08:11 +0200
+	id S1754071AbYEDTLk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 May 2008 15:11:40 -0400
+Date: Sun, 4 May 2008 21:11:33 +0200
 From: Jens Axboe <jens.axboe@oracle.com>
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.25-$sha1: RIP call_for_each_cic+0x25/0x50
-Message-ID: <20080504190811.GP12774@kernel.dk>
-References: <20080427225553.GA4848@martell.zuzino.mipt.ru> <20080428050145.af036c4f.akpm@linux-foundation.org> <20080428120412.GY12774@kernel.dk> <20080428195509.GA5247@martell.zuzino.mipt.ru> <20080429062116.GA5059@martell.zuzino.mipt.ru> <20080429090604.GK12774@kernel.dk> <20080430221250.GA10150@martell.zuzino.mipt.ru>
+To: Mikulas Patocka <mpatocka@redhat.com>
+Cc: Mike Anderson <andmike@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+       Alasdair Graeme Kergon <agk@redhat.com>
+Subject: Re: [PATCH] Optimize lock in queue unplugging
+Message-ID: <20080504191132.GQ12774@kernel.dk>
+References: <Pine.LNX.4.64.0804291459030.17110@engineering.redhat.com> <20080429192556.GB12774@kernel.dk> <20080429202928.GB10641@linux.vnet.ibm.com> <20080430071415.GM12774@kernel.dk> <Pine.LNX.4.64.0804300944440.23408@engineering.redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080430221250.GA10150@martell.zuzino.mipt.ru>
+In-Reply-To: <Pine.LNX.4.64.0804300944440.23408@engineering.redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 01 2008, Alexey Dobriyan wrote:
-> On Tue, Apr 29, 2008 at 11:06:05AM +0200, Jens Axboe wrote:
-> > On Tue, Apr 29 2008, Alexey Dobriyan wrote:
-> > > On Mon, Apr 28, 2008 at 11:55:09PM +0400, Alexey Dobriyan wrote:
-> > > > On Mon, Apr 28, 2008 at 02:04:13PM +0200, Jens Axboe wrote:
-> > > > > On Mon, Apr 28 2008, Andrew Morton wrote:
-> > > > > > On Mon, 28 Apr 2008 02:55:53 +0400 Alexey Dobriyan <adobriyan@gmail.com> wrote:
-> > > > > > 
-> > > > > > > This happened while ~90 cross-compile jobs were running in parallel on
-> > > > > > > ext2/noatime partition (slowly -- much debugging was on)
-> > > > > > > 
-> > > > > > > 
-> > > > > > > general protection fault: 0000 [1] PREEMPT SMP DEBUG_PAGEALLOC
-> > > > > > > CPU 0 
-> > > > > > > Modules linked in: ext2 nf_conntrack_irc ipt_MASQUERADE iptable_nat nf_nat nf_conntrack_ipv4 xt_state nf_conntrack iptable_filter ip_tables x_tables usblp uhci_hcd ehci_hcd usbcore sr_mod cdrom
-> > > > > > > Pid: 16483, comm: as Not tainted 2.6.25-c3bf9bc243092c53946fd6d8ebd6dc2f4e572d48 #1
-> > > > > > > RIP: 0010:[<ffffffff80307525>]  [<ffffffff80307525>] call_for_each_cic+0x25/0x50
-> > > > > > > RSP: 0018:ffff810170811e58  EFLAGS: 00010202
-> > > > > > > RAX: 6b6b6b6b6b6b6b6b RBX: 6b6b6b6b6b6b6b6b RCX: 0000000000000000
-> > > > > > > RDX: 0000000000000001 RSI: 0000000000000000 RDI: ffff81010ff92000
-> > > > > > > RBP: ffff810170811e78 R08: 0000000000000001 R09: 0000000000000000
-> > > > > > > R10: 0000000000000000 R11: ffff8100010069d8 R12: ffff810138ada300
-> > > > > > > R13: ffffffff803075b0 R14: ffff81017fcd2000 R15: ffff81010ff92168
-> > > > > > > FS:  00002ac3462426f0(0000) GS:ffffffff805d0000(0000) knlGS:0000000000000000
-> > > > > > > CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
-> > > > > > > CR2: 00002ab602550000 CR3: 000000013609d000 CR4: 0000000000000660
-> > > > > > > DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-> > > > > > > DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-> > > > > > > Process as (pid: 16483, threadinfo ffff810170810000, task ffff81010ff92000)
-> > > > > > > Stack:  ffff810170811e88 ffff810138ada300 0000000000000010 ffff81010ff92100
-> > > > > > >  ffff810170811e88 ffffffff80307580 ffff810170811ea8 ffffffff80302a55
-> > > > > > >  ffff81010ff92100 ffff810138ada300 ffff810170811ec8 ffffffff80302b1f
-> > > > > > > Call Trace:
-> > > > > > >  [<ffffffff80307580>] cfq_free_io_context+0x10/0x20
-> > > > > > >  [<ffffffff80302a55>] put_io_context+0x85/0x90
-> > > > > > >  [<ffffffff80302b1f>] exit_io_context+0x8f/0xb0
-> > > > > > >  [<ffffffff80235d19>] do_exit+0x549/0x780
-> > > > > > >  [<ffffffff80235f8e>] do_group_exit+0x3e/0xb0
-> > > > > > >  [<ffffffff80236012>] sys_exit_group+0x12/0x20
-> > > > > > >  [<ffffffff8020b6db>] system_call_after_swapgs+0x7b/0x80
-> > > > > > > 
-> > > > > > > 
-> > > > > > > Code: 84 00 00 00 00 00 55 48 89 e5 41 55 49 89 f5 41 54 49 89 fc 53 48 83 ec 08 e8 18 e1 f5 ff 49 8b 44 24 68 48 85 c0 74 1e 48 89 c3 <48> 8b 03 48 8d 73 88 4c 89 e7 0f 18 08 41 ff d5 48 8b 03 48 85 
-> > > > > > > RIP  [<ffffffff80307525>] call_for_each_cic+0x25/0x50
-> > > > > > >  RSP <ffff810170811e58>
-> > > > > > > ---[ end trace ca143223eefdc828 ]---
-> > > > > > > Fixing recursive fault but reboot is needed!
-> > > > > > cfq-iosched.c hasn't been altered (yet) so it might not be a regression.
-> > > 
-> > > 
-> > > > > It's not a regression, it's definitely in 2.6.25 as well. So that's a
-> > > > > bit scary, I've been looking over this stuff this morning but haven't
-> > > > > pin pointed anything yet.
-> > > > > 
-> > > > > Alexey, is this something that reproduces for you?
-> > > > 
-> > > > Not yet, second run of same workload went fine and I've never seen such
-> > > > oopses before.
-> > > 
-> > > And it oopses the very same way on the third run. as(1) again.
-> > > So if there are any debugging patches, let me know.
-> > 
-> > There seems to be a small race in the destructor path, can you see if
-> > this makes a difference?
-> > 
-> > diff --git a/block/blk-ioc.c b/block/blk-ioc.c
-> > index e34df7c..012f065 100644
-> > --- a/block/blk-ioc.c
-> > +++ b/block/blk-ioc.c
-> > @@ -41,8 +41,8 @@ int put_io_context(struct io_context *ioc)
-> >  		rcu_read_lock();
-> >  		if (ioc->aic && ioc->aic->dtor)
-> >  			ioc->aic->dtor(ioc->aic);
-> > -		rcu_read_unlock();
-> >  		cfq_dtor(ioc);
-> > +		rcu_read_unlock();
-> >  
-> >  		kmem_cache_free(iocontext_cachep, ioc);
-> >  		return 1;
+On Wed, Apr 30 2008, Mikulas Patocka wrote:
 > 
-> This helps in sense that 3 times bulk cross-compiles finish to the end.
-> You'll hear me if another such oops will resurface.
+> 
+> On Wed, 30 Apr 2008, Jens Axboe wrote:
+> 
+> >On Tue, Apr 29 2008, Mike Anderson wrote:
+> >>Jens Axboe <jens.axboe@oracle.com> wrote:
+> >>>On Tue, Apr 29 2008, Mikulas Patocka wrote:
+> >>>>Hi
+> >>>>
+> >>>>Mike Anderson was doing an OLTP benchmark on a computer with 48 physical
+> >>>>disks mapped to one logical device via device mapper.
+> >>>>
+> >>>>He found that there was a slowdown on request_queue->lock in function
+> >>>>generic_unplug_device. The slowdown is caused by the fact that when some
+> >>>>code calls unplug on the device mapper, device mapper calls unplug on 
+> >>>>all
+> >>>>physical disks. These unplug calls take the lock, find that the queue is
+> >>>>already unplugged, release the lock and exit.
+> >>>>
+> >>>>With the below patch, performance of the benchmark was increased by 18%
+> >>>>(the whole OLTP application, not just block layer microbenchmarks).
+> >>>>
+> >>>>So I'm submitting this patch for upstream. I think the patch is correct,
+> >>>>because when more threads call simultaneously plug and unplug, it is
+> >>>>unspecified, if the queue is or isn't plugged (so the patch can't make
+> >>>>this worse). And the caller that plugged the queue should unplug it
+> >>>>anyway. (if it doesn't, there's 3ms timeout).
+> >>>
+> >>>Where were these unplug calls coming from? The block layer will
+> >>>generally only unplug when it is already unplugged, so if you are seeing
+> >>>so many unplug calls that the patch redues overhead by as much
+> >>>described, perhaps the callsite is buggy?
+> >>
+> >>I do not have direct access the the benchmark setup, but here is the data
+> >>I have received.
+> >>
+> >>The oprofile data was showing ll_rw_blk::generic_unplug_device() as a top
+> >>routine at 13% of the samples. Annotation of the samples shows hits on
+> >>spin_lock_irq(q->queue_lock).
+> >>
+> >>Here are some sample call traces:
+> >>
+> >>Call trace #1
+> >>
+> >>kernel:  [<ffffffff80058c6c>] generic_unplug_device+0x5d/0xc6
+> >>kernel:  [<ffffffff8820ea3e>] :dm_mod:dm_table_unplug_all+0x33/0x41
+> >>kernel:  [<ffffffff8820cc85>] :dm_mod:dm_unplug_all+0x1d/0x28
+> >>kernel:  [<ffffffff8005a78a>] blk_backing_dev_unplug+0x56/0x5b
+> >>kernel:  [<ffffffff80014cdc>] sync_buffer+0x36/0x3f
+> >>kernel:  [<ffffffff800629a4>] __wait_on_bit+0x40/0x6f
+> >>kernel:  [<ffffffff80014ca6>] sync_buffer+0x0/0x3f
+> >>kernel:  [<ffffffff80062a3f>] out_of_line_wait_on_bit+0x6c/0x78
+> >>kernel:  [<ffffffff8009c474>] wake_bit_function+0x0/0x23
+> >>kernel:  [<ffffffff88034c85>] :jbd:journal_commit_transaction+0x91f/0x1086
+> >>kernel:  [<ffffffff8003d038>] lock_timer_base+0x1b/0x3c
+> >>kernel:  [<ffffffff8803840e>] :jbd:kjournald+0xc1/0x213
+> >>kernel:  [<ffffffff8009c446>] autoremove_wake_function+0x0/0x2e
+> >>kernel:  [<ffffffff8009c283>] keventd_create_kthread+0x0/0x61
+> >>kernel:  [<ffffffff8803834d>] :jbd:kjournald+0x0/0x213
+> >>kernel:  [<ffffffff8009c283>] keventd_create_kthread+0x0/0x61
+> >>kernel:  [<ffffffff800321d5>] kthread+0xfe/0x132
+> >>kernel:  [<ffffffff8005cfb1>] child_rip+0xa/0x11
+> >>kernel:  [<ffffffff8009c283>] keventd_create_kthread+0x0/0x61
+> >>kernel:  [<ffffffff800320d7>] kthread+0x0/0x132
+> >>kernel:  [<ffffffff8005cfa7>] child_rip+0x0/0x11
+> >>
+> >>Call trace #2
+> >>kernel:  [<ffffffff80058c6c>] generic_unplug_device+0x5d/0xc6
+> >>kernel:  [<ffffffff8820ea3e>] :dm_mod:dm_table_unplug_all+0x33/0x41
+> >>kernel:  [<ffffffff8820cc85>] :dm_mod:dm_unplug_all+0x1d/0x28
+> >>kernel:  [<ffffffff8005a78a>] blk_backing_dev_unplug+0x56/0x5b
+> >>kernel:  [<ffffffff800e8bfe>] __blockdev_direct_IO+0x889/0xaa2
+> >>kernel:  [<ffffffff88050800>] :ext3:ext3_direct_IO+0xf3/0x18b
+> >>kernel:  [<ffffffff8804ec84>] :ext3:ext3_get_block+0x0/0xe3
+> >>kernel:  [<ffffffff800be6bb>] generic_file_direct_IO+0xbd/0xfb
+> >>kernel:  [<ffffffff8001e637>] generic_file_direct_write+0x60/0xf2
+> >>kernel:  [<ffffffff80015cfd>] __generic_file_aio_write_nolock+0x2b7/0x3b8
+> >>kernel:  [<ffffffff8002134f>] generic_file_aio_write+0x65/0xc1
+> >>kernel:  [<ffffffff8804c192>] :ext3:ext3_file_write+0x16/0x91
+> >>kernel:  [<ffffffff80017944>] do_sync_write+0xc7/0x104
+> >>kernel:  [<ffffffff8009c446>] autoremove_wake_function+0x0/0x2e
+> >>kernel:  [<ffffffff80111400>] free_msg+0x22/0x3c
+> >>kernel:  [<ffffffff800161c4>] vfs_write+0xce/0x174
+> >>kernel:  [<ffffffff8004194c>] sys_pwrite64+0x50/0x70
+> >>kernel:  [<ffffffff8005cde9>] error_exit+0x0/0x84
+> >>kernel:  [<ffffffff8005c116>] system_call+0x7e/0x83
+> >
+> >So it's basically dm calling into blk_unplug() all the time, which
+> >doesn't check if the queue is plugged. The reason why I didn't like the
+> >initial patch is that ->unplug_fn() really should not be called unless
+> >the queue IS plugged. So how about this instead:
+> >
+> >http://git.kernel.dk/?p=linux-2.6-block.git;a=commit;h=c44993018887e82abd49023e92e8d8b6000e03ed
+> >
+> >That's a lot more appropriate, imho.
+> >
+> >-- 
+> >Jens Axboe
+> 
+> This doesn't seem correct to me. The difference between blk_unplug and 
+> generic_unplug_device is that blk_unplug is called on every type of device 
+> and generic_unplug_device (pointed to by q->unplug_fn) is a method that is 
+> called on low-level disk devices.
+> 
+> dm and md redefine q->unplug_fn to point to their own method. On dm and 
+> md, blk_unplug is called, but generic_unplug_device is not.
+> 
+> So if you have this setup
+> dm-linear(unplugged) -> disk(plugged)
+> 
+> then, with your patch, a call to blk_unplug(dm-linear) will not unplug the 
+> disk. With my patch, a call to blk_unplug(dm-linear) will unplug the disk 
+> --- it calls q->unplug_fn that points to dm_unplug_all, that calls 
+> blk_unplug again on the disk and that calls generic_unplug_device on disk 
+> queue.
 
-Still looking good?
+That is because the md/dm don't set the plugged flag which I think they
+should. So we fix that instead so that plugging works the same from the
+block core or from a driver instead of adding work-arounds in the block
+unplug handler. Adding a check for plugged in the plug handler is a
+hack, I don't see how you can argue against that.
 
 -- 
 Jens Axboe
