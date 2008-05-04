@@ -1,59 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754602AbYEDQI7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756833AbYEDQJX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754602AbYEDQI7 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 May 2008 12:08:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752035AbYEDQIu
+	id S1756833AbYEDQJX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 May 2008 12:09:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752324AbYEDQJI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 May 2008 12:08:50 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:44326 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752140AbYEDQIt (ORCPT
+	Sun, 4 May 2008 12:09:08 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:39757 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752035AbYEDQJH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 May 2008 12:08:49 -0400
-Date: Sun, 4 May 2008 16:56:25 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: "Bryan Wu" <cooloney@kernel.org>
-Cc: "Yang, Graf" <Graf.Yang@analog.com>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-Subject: Re: Blackfin Serial Driver: Enable IR function when user
- application (irattach /dev/ttyBFx -s) call TIOCSETD ioctl with line
- discipline N_IRDA
-Message-ID: <20080504165625.083d3d22@core>
-In-Reply-To: <386072610805040827w7a606ee2ld24e6752a6c745c7@mail.gmail.com>
-References: <200804241929.m3OJToSE021045@hera.kernel.org>
-	<20080424215004.34517136@the-village.bc.nu>
-	<0F1B54C89D5F954D8535DB252AF412FA0164BC7A@chinexm1.ad.analog.com>
-	<20080425105545.77b8c5e8@core>
-	<386072610805040827w7a606ee2ld24e6752a6c745c7@mail.gmail.com>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 4 May 2008 12:09:07 -0400
+Date: Sun, 4 May 2008 11:09:04 -0500
+From: Robin Holt <holt@sgi.com>
+To: Alistair John Strachan <alistair@devzero.co.uk>
+Cc: Robin Holt <holt@sgi.com>, Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Mauro Carvalho Chehab <mchehab@infradead.org>
+Subject: Re: Linux 2.6.26-rc1
+Message-ID: <20080504160904.GF19717@sgi.com>
+References: <alpine.LFD.1.10.0805031205330.2971@woody.linux-foundation.org> <200805032253.22765.alistair@devzero.co.uk> <20080504123008.GE19717@sgi.com> <200805041456.14415.alistair@devzero.co.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200805041456.14415.alistair@devzero.co.uk>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Oh, I got the compile failure now:
-> --
->   CC      drivers/serial/bfin_5xx.o
-> drivers/serial/bfin_5xx.c: In function 'bfin_serial_init':
-> drivers/serial/bfin_5xx.c:1281: error: 'struct tty_driver' has no
-> member named 'set_ldisc'
-> make[2]: *** [drivers/serial/bfin_5xx.o] Error 1
-> make[1]: *** [drivers/serial] Error 2
-> make: *** [drivers] Error 2
-> --
+On Sun, May 04, 2008 at 02:56:14PM +0100, Alistair John Strachan wrote:
+> On Sunday 04 May 2008 13:30:08 Robin Holt wrote:
+> > On Sat, May 03, 2008 at 10:53:22PM +0100, Alistair John Strachan wrote:
+> > > On Saturday 03 May 2008 22:47:38 Alistair John Strachan wrote:
+> > > > On Saturday 03 May 2008 20:38:20 Linus Torvalds wrote:
+> > > > > So go out and test it.
+> > >
+> > > [snip]
+> > >
+> > > > Why is this option acting like CONFIG_EMBEDDED and not like basically
+> > > > every other subsystem where I can turn ON support for hardware, but by
+> > > > default it's OFF? (Obviously in my hasty oldconfig run I just went with
+> > > > the default.)
+> > >
+> > > Amazingly, even if I say Y to this option and disable all tuners, it
+> > > still tries (and fails) to compile this file. What is pulling in this
+> > > tuner-core dependency?
+> >
+> > What if you change CONFIG_MEDIA_TUNER to a 'n'
 > 
-> Obviously, it is no way to change code like this for passing compiling:
+> This isn't a menu-visible option. Your hint does explain why it turns itself 
+> on, however:
+> 
+> config MEDIA_TUNER
+>         tristate
+>         default DVB_CORE || VIDEO_DEV
+>         depends on DVB_CORE || VIDEO_DEV
+> 
+> I have DVB_CORE=n and VIDEO_DEV=y. VIDEO_DEV is:
+> 
+> config VIDEO_DEV
+>         tristate "Video For Linux"
+> 
+> So if you enable Video For Linux, the tuner-core is automatically built, even 
+> if no tuners are selected? Surely that's wrong..
 
-I've added the uart set_ldisc operator to my tree. I thought Andrew had
-it as well, but if not I'll push it again Tuesday (Monday is a holiday
-here)
+That is probably correct.  Video For Linux is used for capturing video
+streams.  The fact that you can get this invalid config to fail to build
+should be reported to the v4l folks and let them fix it up.
 
-Alan
---
-	"Alan, I'm getting a bit worried about you."
-				-- Linus Torvalds
+VIDEO FOR LINUX
+P:      Mauro Carvalho Chehab
+M:      mchehab@infradead.org
+M:      v4l-dvb-maintainer@linuxtv.org
+L:      video4linux-list@redhat.com
+W:      http://linuxtv.org
+T:      git kernel.org:/pub/scm/linux/kernel/git/mchehab/v4l-dvb.git
+S:      Maintained
+
+
+Thanks,
+Robin
