@@ -1,106 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755551AbYEDI4q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756143AbYEDI51@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755551AbYEDI4q (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 May 2008 04:56:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753526AbYEDI4i
+	id S1756143AbYEDI51 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 May 2008 04:57:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753611AbYEDI5T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 May 2008 04:56:38 -0400
-Received: from rv-out-0506.google.com ([209.85.198.237]:43382 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753400AbYEDI4h (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 May 2008 04:56:37 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=kYfR/UlKWBUoQXEybS8qdzdLhhdy+doTBLLm19kCZaqagyPVwUFNUIs80v1RzdxEz63/lZouixeT7h4IxvPgWptLnDL0vkFDin5X/3hKvcgvD/kTd+jIKqx9rihbt8JUsgSVLAoM6SmazW+v1UuTed+0KiY7iytvAHUIRz7vLS0=
-Message-ID: <19f34abd0805040156i614db705xc642b301259a4d04@mail.gmail.com>
-Date: Sun, 4 May 2008 10:56:36 +0200
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: "Sam Ravnborg" <sam@ravnborg.org>
-Subject: Re: [PATCH] kconfig: warn about complex selects
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Roman Zippel" <zippel@linux-m68k.org>,
-       "Adrian Bunk" <bunk@kernel.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <20080504082147.GA17276@uranus.ravnborg.org>
+	Sun, 4 May 2008 04:57:19 -0400
+Received: from saeurebad.de ([85.214.36.134]:46147 "EHLO saeurebad.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753526AbYEDI5S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 May 2008 04:57:18 -0400
+From: Johannes Weiner <hannes@saeurebad.de>
+To: "Yinghai Lu" <yhlu.kernel@gmail.com>
+Cc: "Ingo Molnar" <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, "Andi Kleen" <andi@firstfloor.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>
+Subject: Re: [RFC 0/2] Rootmem: boot-time memory allocator
+References: <20080503152502.191599824@symbol.fehenstaub.lan>
+	<20080503175426.GB5292@elte.hu>
+	<86802c440805032106t4d020838v39aaf93309003cdb@mail.gmail.com>
+Date: Sun, 04 May 2008 10:57:11 +0200
+In-Reply-To: <86802c440805032106t4d020838v39aaf93309003cdb@mail.gmail.com>
+	(Yinghai Lu's message of "Sat, 3 May 2008 21:06:02 -0700")
+Message-ID: <87hcdev448.fsf@saeurebad.de>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080504054044.GA32030@damson>
-	 <20080504082147.GA17276@uranus.ravnborg.org>
+Content-Type: text/plain; charset=us-ascii
+X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, May 4, 2008 at 10:21 AM, Sam Ravnborg <sam@ravnborg.org> wrote:
->
-> On Sun, May 04, 2008 at 07:40:44AM +0200, Vegard Nossum wrote:
->  > Hi,
->  >
->  > Given recent discussion about kconfig and the "select" feature, I have made
->  > the following quick & dirty patch to detect what I call "complex selects".
->  >
->  > For v2.6.25, I get these warnings:
->  > sound/pci/Kconfig:512:error: found complex select: SND_FM801_TEA575X -> VIDEO_V4L1
->  > drivers/ide/Kconfig:890:error: found complex select: ETRAX_IDE -> BLK_DEV_IDEDMA
->  > drivers/acpi/Kconfig:185:error: found complex select: ACPI_HOTPLUG_CPU -> ACPI_CONTAINER
->  >
->  > While for v2.6.26-rc1, I get these:
->  > sound/pci/Kconfig:528:error: found complex select: SND_FM801_TEA575X -> VIDEO_V4L1
->  > drivers/media/video/em28xx/Kconfig:2:error: found complex select: VIDEO_EM28XX -> MEDIA_TUNER
->  > drivers/media/video/bt8xx/Kconfig:2:error: found complex select: VIDEO_BT848 -> MEDIA_TUNER
->  > drivers/media/video/saa7134/Kconfig:2:error: found complex select: VIDEO_SAA7134 -> MEDIA_TUNER
->  > drivers/media/video/cx88/Kconfig:2:error: found complex select: VIDEO_CX88 -> MEDIA_TUNER
->  > drivers/media/video/cx23885/Kconfig:2:error: found complex select: VIDEO_CX23885 -> MEDIA_TUNER
->  > drivers/media/video/ivtv/Kconfig:2:error: found complex select: VIDEO_IVTV -> MEDIA_TUNER
->  > drivers/media/video/cx18/Kconfig:2:error: found complex select: VIDEO_CX18 -> MEDIA_TUNER
->  > drivers/media/video/pvrusb2/Kconfig:2:error: found complex select: VIDEO_PVRUSB2 -> MEDIA_TUNER
->  > drivers/media/video/Kconfig:690:error: found complex select: VIDEO_MXB -> MEDIA_TUNER
->  > drivers/media/video/usbvision/Kconfig:2:error: found complex select: VIDEO_USBVISION -> MEDIA_TUNER
->  > drivers/acpi/Kconfig:188:error: found complex select: ACPI_HOTPLUG_CPU -> ACPI_CONTAINER
->  >
->  > (In other words, the number of these has increased significantly since the
->  > last release, and these will probably be hit as compile errors at one point
->  > or another.)
->  >
->  > I am not a kconfig expert, so I might have missed some things. Roman, is this
->  > even remotely good? I think it's probably a good start anyway.
->
->  I did a small test of this using following configuration:
->  config A
->         bool "a"
->
->  config B
->         bool "b"
->         depends on A
->         default AA || AAA
->
->  config BB
->         bool "bb"
->         depends on A
->
->  config C
->         bool "c"
->         select B
->
->  config CC
->         bool "cc"
->         select BB
->
->
->  I had expected a warning about complex select for
->  both C and CC. But only C triggered the warning
->  due to the complex default value of B.
->  So we need to work on this a bit more.
+Hi,
 
-Oops, yes. What I am checking is in fact only the "default" property,
-not the "depends on". Hm. How to get the list of dependencies? :-)
+"Yinghai Lu" <yhlu.kernel@gmail.com> writes:
 
+> On Sat, May 3, 2008 at 10:54 AM, Ingo Molnar <mingo@elte.hu> wrote:
+>>
+>>  * Johannes Weiner <hannes@saeurebad.de> wrote:
+>>
+>>  > I was spending some time and work on the bootmem allocator the last
+>>  > few weeks and came to the conclusion that its current design is not
+>>  > appropriate anymore.
+>>  >
+>>  > As Ingo said in another email, NUMA technologies will become weirder,
+>>  > nodes whose PFNs span other nodes for example and it makes bootmem
+>>  > code become an unreadable mess.
+>>  >
+>>  > So I sat down two days ago and rewrote the allocator, here is the
+>>  > result: rootmem!
+>>
+>>  hehe :-)
+>>
+>>
+>>  > The biggest difference to the old design is that there is only one
+>>  > bitmap for all PFNs of all nodes together, so the overlapping PFN
+>>  > problems simply dissolve and fun like allocations crossing node
+>>  > boundaries work implicitely.  The new API requires every node used by
+>>  > the allocator to be registered and after that the bitmap gets
+>>  > allocated and the allocator enabled.
+>>  >
+>>  > I chose to add a new allocator rather than replacing bootmem at once
+>>  > because that would have required all callsites to switch in one go,
+>>  > which would be a lot.  The new allocator can be adopted more slowly
+>>  > and I added a compatibility API for everything besides actually
+>>  > setting up the allocator.  When the last user dies, bootmem can be
+>>  > dropped completely (including pgdat->bdata, whee..)
+>>  >
+>>  > The main ideas from bootmem have been stolen^W preserved but the new
+>>  > design allowed me to shrink the code a lot and express things more
+>>  > simple and clear:
+>>  >
+>>  > $ sloc.awk < mm/bootmem.c
+>>  > 455 lines of code, 65 lines of comments (520 lines total)
+>>  >
+>>  > $ sloc.awk < mm/rootmem.c
+>>  > 243 lines of code, 96 lines of comments (339 lines total)
+>>
+>>  amazing!
+>>
+>>  i'd still suggest to keep it all named bootmem though :-/ How about
+>>  bootmem2.c and then renaming it back to bootmem.c, once the last user is
+>>  gone? That would save people from having to rename whole chapters in
+>>  entire books ;-)
+>
+> for spanning support node0:0-2g, 4-6g; node1: 2-4g, 6-8g, could have
+> some problem.
 
-Vegard
+Could you eleborate on that?
 
--- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
+> +/*
+> + * rootmem_register_node - register a node to rootmem
+> + * @nid: node id
+> + * @start: first pfn on the node
+> + * @end: first pfn after the node
+> + *
+> + * This function must not be called anymore if the allocator
+> + * is already up and running (rootmem_setup() has been called).
+> + */
+> +void __init rootmem_register_node(int nid, unsigned long start,
+> +                       unsigned long end)
+> +{
+> +       BUG_ON(rootmem_functional);
+> +
+> +       if (start < rootmem_min_pfn)
+> +               rootmem_min_pfn = start;
+> +       if (end > rootmem_max_pfn)
+> +               rootmem_max_pfn = end;
+> +
+> +       rootmem_node_pages[nid] = end - start;
+> +       rootmem_node_offsets[nid] = start;
+> +       rootmem_nr_nodes++;
+> +}
+>
+> could change rootmem_node_pages/offsets to be struct array with
+> offset, pages, and nid. and every node could several struct. and whole
+> array should be sorted with nid.
+
+The whole point is to be agnostic about weird NUMA configs.  Right now,
+I am pretty proud of the simple data structures and I would avoid
+blowing them up again unless there is a hard reason to do so.
+
+	Hannes
