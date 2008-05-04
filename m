@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757539AbYEDN7j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757443AbYEDOEc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757539AbYEDN7j (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 May 2008 09:59:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756130AbYEDN7a
+	id S1757443AbYEDOEc (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 May 2008 10:04:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753524AbYEDOEX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 May 2008 09:59:30 -0400
-Received: from 178-47-31-89.wifiinternet.cz ([89.31.47.178]:56173 "EHLO
+	Sun, 4 May 2008 10:04:23 -0400
+Received: from 178-47-31-89.wifiinternet.cz ([89.31.47.178]:36072 "EHLO
 	seznam.cz" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753041AbYEDN73 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 May 2008 09:59:29 -0400
+	id S1751441AbYEDOEW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 May 2008 10:04:22 -0400
 From: monstr@seznam.cz
 To: linux-kernel@vger.kernel.org
 Cc: arnd@arndb.de, linux-arch@vger.kernel.org, stephen.neuendorffer@xilinx.com,
@@ -16,11 +16,11 @@ Cc: arnd@arndb.de, linux-arch@vger.kernel.org, stephen.neuendorffer@xilinx.com,
        will.newton@gmail.com, drepper@redhat.com,
        microblaze-uclinux@itee.uq.edu.au, grant.likely@secretlab.ca,
        Michal Simek <monstr@monstr.eu>
-Subject: [PATCH 26/56] microblaze_v2: traps support
-Date: Sun,  4 May 2008 13:41:15 +0200
-Message-Id: <14acb31da2794d2d5916da3db3d75fe2285ac055.1209897266.git.monstr@monstr.eu>
+Subject: [PATCH 18/56] microblaze_v2: early_printk support
+Date: Sun,  4 May 2008 13:41:07 +0200
+Message-Id: <378157891bac535dbc55e658d5f03fdd332e85cf.1209897266.git.monstr@monstr.eu>
 X-Mailer: git-send-email 1.5.4.GIT
-In-Reply-To: <b41fcf3dd830f4ba82692a9bec2406ed0c290e7e.1209897266.git.monstr@monstr.eu>
+In-Reply-To: <b5067a1846075ddd1035966ea1edc908579e2e88.1209897266.git.monstr@monstr.eu>
 References: <1209901305-6404-1-git-send-email-monstr@seznam.cz>
  <a4a778e34c66d126f5c4bf1ca423cf32950ea5ab.1209897266.git.monstr@monstr.eu>
  <c805caeb1dd7f6d1349c4a463cb88a5342a170d2.1209897266.git.monstr@monstr.eu>
@@ -39,14 +39,6 @@ References: <1209901305-6404-1-git-send-email-monstr@seznam.cz>
  <d883a8d8da812d77fefd47730d28d0bdb7b504e0.1209897266.git.monstr@monstr.eu>
  <625ef466cf121d655539eedc919dd39166087e0c.1209897266.git.monstr@monstr.eu>
  <b5067a1846075ddd1035966ea1edc908579e2e88.1209897266.git.monstr@monstr.eu>
- <378157891bac535dbc55e658d5f03fdd332e85cf.1209897266.git.monstr@monstr.eu>
- <eadcc6f4754df78b69d6d54c404624d0390c8558.1209897266.git.monstr@monstr.eu>
- <4df4022e06b9056202cc2fdf0b99deb01563a0fa.1209897266.git.monstr@monstr.eu>
- <6b0c9864dc80776ae48d6488a6892e5d698751b7.1209897266.git.monstr@monstr.eu>
- <ea5cbbca49c38c506960fddba29cbd8cb24e1a8d.1209897266.git.monstr@monstr.eu>
- <4f4d6ed3fce9b21cdd6dcacb2d72fff7e9830628.1209897266.git.monstr@monstr.eu>
- <35e662a81eb86c7ffb2aaa6141ca38a07789f382.1209897266.git.monstr@monstr.eu>
- <b41fcf3dd830f4ba82692a9bec2406ed0c290e7e.1209897266.git.monstr@monstr.eu>
 In-Reply-To: <a4a778e34c66d126f5c4bf1ca423cf32950ea5ab.1209897266.git.monstr@monstr.eu>
 References: <a4a778e34c66d126f5c4bf1ca423cf32950ea5ab.1209897266.git.monstr@monstr.eu>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -58,104 +50,131 @@ From: Michal Simek <monstr@monstr.eu>
 
 Signed-off-by: Michal Simek <monstr@monstr.eu>
 ---
- arch/microblaze/kernel/traps.c |   88 ++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 88 insertions(+), 0 deletions(-)
- create mode 100644 arch/microblaze/kernel/traps.c
+ arch/microblaze/kernel/early_printk.c |  115 +++++++++++++++++++++++++++++++++
+ 1 files changed, 115 insertions(+), 0 deletions(-)
+ create mode 100644 arch/microblaze/kernel/early_printk.c
 
-diff --git a/arch/microblaze/kernel/traps.c b/arch/microblaze/kernel/traps.c
+diff --git a/arch/microblaze/kernel/early_printk.c b/arch/microblaze/kernel/early_printk.c
 new file mode 100644
-index 0000000..eb8202b
+index 0000000..0f533ff
 --- /dev/null
-+++ b/arch/microblaze/kernel/traps.c
-@@ -0,0 +1,88 @@
++++ b/arch/microblaze/kernel/early_printk.c
+@@ -0,0 +1,115 @@
 +/*
-+ * arch/microblaze/kernel/traps.c
++ * arch/microblaze/kernel/early_printk.c
 + *
-+ * This file is subject to the terms and conditions of the GNU General Public
-+ * License. See the file "COPYING" in the main directory of this archive
-+ * for more details.
++ * Copyright (C) 2007 Michal Simek <monstr@monstr.eu>
++ * Copyright (C) 2003-2006 Yasushi SHOJI <yashi@atmark-techno.com>
 + *
-+ * Copyright (C) 2006 Atmark Techno, Inc.
++ * Early printk support for Microblaze.
++ *
++ * Once we got some system without uart light, we need to refactor.
 + */
 +
++#include <linux/console.h>
 +#include <linux/kernel.h>
-+#include <linux/kallsyms.h>
-+#include <linux/module.h>
-+#include <linux/sched.h>
++#include <linux/init.h>
++#include <linux/string.h>
++#include <linux/tty.h>
++#include <asm/io.h>
++#include <asm/processor.h>
++#include <asm/fcntl.h>
++#include <asm/setup.h>
 +
-+#include <asm/exceptions.h>
-+#include <asm/system.h>
++#ifdef CONFIG_EARLY_PRINTK
++#define BASE_ADDR ((unsigned char *)CONFIG_EARLY_PRINTK_UARTLITE_ADDRESS)
 +
-+void trap_init(void)
++#define RX_FIFO	BASE_ADDR
++#define TX_FIFO	((unsigned long *)(BASE_ADDR + 4))
++#define STATUS	((unsigned long *)(BASE_ADDR + 8))
++#define CONTROL	((unsigned long *)(BASE_ADDR + 12))
++
++static void early_printk_putc(char c)
 +{
-+	initialize_exception_handlers();
-+	__enable_hw_exceptions();
++	while (ioread32(STATUS) & (1<<3));
++	iowrite32((c & 0xff), TX_FIFO);
 +}
 +
-+void __bad_xchg(volatile void *ptr, int size)
++static void early_printk_write(struct console *unused,
++					const char *s, unsigned n)
 +{
-+	printk(KERN_INFO "xchg: bad data size: pc 0x%p, ptr 0x%p, size %d\n",
-+		__builtin_return_address(0), ptr, size);
-+	BUG();
++	while (*s && n-- > 0) {
++		early_printk_putc(*s);
++		if (*s == '\n')
++			early_printk_putc('\r');
++		s++;
++	}
 +}
-+EXPORT_SYMBOL(__bad_xchg);
 +
-+static int kstack_depth_to_print = 24;
++static struct console early_serial_console = {
++	.name = "earlyser",
++	.write = early_printk_write,
++	.flags = CON_PRINTBUFFER,
++	.index = -1,
++};
 +
-+void show_trace(struct task_struct *task, unsigned long *stack)
++/* Direct interface for emergencies */
++static struct console *early_console = &early_serial_console;
++static int early_console_initialized;
++
++void early_printk(const char *fmt, ...)
 +{
-+	unsigned long addr;
++	char buf[512];
++	int n;
++	va_list ap;
 +
-+	if (!stack)
-+		stack = (unsigned long *)&stack;
++	if (early_console_initialized) {
++		va_start(ap, fmt);
++		n = vscnprintf(buf, 512, fmt, ap);
++		early_console->write(early_console, buf, n);
++		va_end(ap);
++	}
++}
 +
-+	printk(KERN_INFO "Call Trace: ");
-+#ifdef CONFIG_KALLSYMS
-+	printk(KERN_INFO "\n");
++static int __initdata keep_early;
++
++int __init setup_early_printk(char *opt)
++{
++	char *space;
++	char buf[256];
++
++	if (early_console_initialized)
++		return 1;
++
++	strlcpy(buf, opt, sizeof(buf));
++	space = strchr(buf, ' ');
++	if (space)
++		*space = 0;
++
++	if (strstr(buf, "keep"))
++		keep_early = 1;
++
++	early_console = &early_serial_console;
++	early_console_initialized = 1;
++	register_console(early_console);
++	return 0;
++}
++#if 0
++static void __init disable_early_printk(void)
++{
++	if (!early_console_initialized || !early_console)
++		return;
++	if (!keep_early) {
++		printk(KERN_INFO "disabling early console\n");
++		unregister_console(early_console);
++		early_console_initialized = 0;
++	} else
++		printk(KERN_INFO "keeping early console\n");
++}
 +#endif
-+	while (!kstack_end(stack)) {
-+		addr = *stack++;
-+		if (__kernel_text_address(addr)) {
-+			printk(KERN_INFO "[<%08lx>] ", addr);
-+			print_symbol("%s\n", addr);
-+		}
-+	}
-+	printk(KERN_INFO "\n");
-+}
 +
-+void show_stack(struct task_struct *task, unsigned long *sp)
++__setup("earlyprintk=", setup_early_printk);
++
++#else
++void early_printk(const char *fmt, ...)
 +{
-+	unsigned long *stack;
-+	int i;
-+
-+	if (sp == NULL) {
-+		if (task)
-+			sp = (unsigned long *) ((struct thread_info *)
-+						(task->stack))->cpu_context.sp;
-+		else
-+			sp = (unsigned long *)&sp;
-+	}
-+
-+	stack = sp;
-+
-+	printk(KERN_INFO "\nStack:\n  ");
-+
-+	for (i = 0; i < kstack_depth_to_print; i++) {
-+		if (kstack_end(sp))
-+			break;
-+		if (i && ((i % 8) == 0))
-+			printk("\n  ");
-+		printk("%08lx ", *sp++);
-+	}
-+	printk("\n");
-+	show_trace(task, stack);
 +}
-+
-+void dump_stack(void)
-+{
-+	show_stack(NULL, NULL);
-+}
-+EXPORT_SYMBOL(dump_stack);
++#endif
 -- 
 1.5.4.GIT
 
