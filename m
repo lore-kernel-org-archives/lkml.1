@@ -1,283 +1,291 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758564AbYEEMal@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758164AbYEEMbs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758564AbYEEMal (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 08:30:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754965AbYEEMaH
+	id S1758164AbYEEMbs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 08:31:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754444AbYEEMbi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 08:30:07 -0400
-Received: from charybdis-ext.suse.de ([195.135.221.2]:47840 "EHLO
-	emea5-mh.id5.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752374AbYEEMaE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 08:30:04 -0400
-Subject: Re: Software RAID partitions not detected at boot time with linux
-	2.6.25.1.
-From: Kay Sievers <kay.sievers@vrfy.org>
-To: Neil Brown <neilb@suse.de>
-Cc: Joao Luis Meloni Assirati <assirati@nonada.if.usp.br>,
-       Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       linux-raid@vger.kernel.org
-In-Reply-To: <18461.45667.588613.443564@notabene.brown>
-References: <200805032245.57084.assirati@nonada.if.usp.br>
-	 <18461.45667.588613.443564@notabene.brown>
-Content-Type: text/plain
-Date: Mon, 05 May 2008 14:29:30 +0200
-Message-Id: <1209990570.6975.5.camel@linux.site>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.0 
-Content-Transfer-Encoding: 7bit
+	Mon, 5 May 2008 08:31:38 -0400
+Received: from 178-47-31-89.wifiinternet.cz ([89.31.47.178]:54430 "EHLO
+	monstr.eu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752181AbYEEMbh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 May 2008 08:31:37 -0400
+From: monstr@seznam.cz
+To: linux-kernel@vger.kernel.org
+Cc: arnd@arndb.de, linux-arch@vger.kernel.org, stephen.neuendorffer@xilinx.com,
+       John.Linn@xilinx.com, john.williams@petalogix.com, matthew@wil.cx,
+       will.newton@gmail.com, drepper@redhat.com,
+       microblaze-uclinux@itee.uq.edu.au, grant.likely@secretlab.ca,
+       Michal Simek <monstr@monstr.eu>
+Subject: [PATCH 34/56] microblaze_v2: io.h IO operations
+Date: Sun,  4 May 2008 13:41:23 +0200
+Message-Id: <491f823fac6c03cc36834ec569a45d30a03a72cf.1209897266.git.monstr@monstr.eu>
+X-Mailer: git-send-email 1.5.4.GIT
+In-Reply-To: <c4000ff625bd217f9bb683e3bf8c7193a82bd744.1209897266.git.monstr@monstr.eu>
+References: <1209901305-6404-1-git-send-email-monstr@seznam.cz>
+ <a4a778e34c66d126f5c4bf1ca423cf32950ea5ab.1209897266.git.monstr@monstr.eu>
+ <c805caeb1dd7f6d1349c4a463cb88a5342a170d2.1209897266.git.monstr@monstr.eu>
+ <f120ababf2bade9aab7199bffb3014aa606e5a1c.1209897266.git.monstr@monstr.eu>
+ <684c36e5ad3f598e5079e88ec195545c4a7150c2.1209897266.git.monstr@monstr.eu>
+ <ed3695121faf485d491cecdd96d5d4dcc498411d.1209897266.git.monstr@monstr.eu>
+ <0674b1f7abb9a3d564b68c95bc28adc2c2fe9551.1209897266.git.monstr@monstr.eu>
+ <9a7c6646e5dd9724c1cf34767adec181481fa3ef.1209897266.git.monstr@monstr.eu>
+ <932956128c9c655a218a940eaf02017a5dd0bdf9.1209897266.git.monstr@monstr.eu>
+ <2f801c33caee22e112af51ae927c264ce99ead01.1209897266.git.monstr@monstr.eu>
+ <2391e49379fb6639f57d9d6e5811f3d49a4c6fda.1209897266.git.monstr@monstr.eu>
+ <0873f3a1f3b72591735c6461b51964693cac52e5.1209897266.git.monstr@monstr.eu>
+ <0ba1f259d3c17eba54e334622493577493f5065f.1209897266.git.monstr@monstr.eu>
+ <694451053534fea7b78fb9d618b53a2b5ebeb602.1209897266.git.monstr@monstr.eu>
+ <f0c837df4106a31c1a81917596603918f722ea7b.1209897266.git.monstr@monstr.eu>
+ <d883a8d8da812d77fefd47730d28d0bdb7b504e0.1209897266.git.monstr@monstr.eu>
+ <625ef466cf121d655539eedc919dd39166087e0c.1209897266.git.monstr@monstr.eu>
+ <b5067a1846075ddd1035966ea1edc908579e2e88.1209897266.git.monstr@monstr.eu>
+ <378157891bac535dbc55e658d5f03fdd332e85cf.1209897266.git.monstr@monstr.eu>
+ <eadcc6f4754df78b69d6d54c404624d0390c8558.1209897266.git.monstr@monstr.eu>
+ <4df4022e06b9056202cc2fdf0b99deb01563a0fa.1209897266.git.monstr@monstr.eu>
+ <6b0c9864dc80776ae48d6488a6892e5d698751b7.1209897266.git.monstr@monstr.eu>
+ <ea5cbbca49c38c506960fddba29cbd8cb24e1a8d.1209897266.git.monstr@monstr.eu>
+ <4f4d6ed3fce9b21cdd6dcacb2d72fff7e9830628.1209897266.git.monstr@monstr.eu>
+ <35e662a81eb86c7ffb2aaa6141ca38a07789f382.1209897266.git.monstr@monstr.eu>
+ <b41fcf3dd830f4ba82692a9bec2406ed0c290e7e.1209897266.git.monstr@monstr.eu>
+ <14acb31da2794d2d5916da3db3d75fe2285ac055.1209897266.git.monstr@monstr.eu>
+ <598221ce2159046614d7b158ea62d5af51907af3.1209897266.git.monstr@monstr.eu>
+ <41c1f410eaafd875246362d10ef9866d8cc2a934.1209897266.git.monstr@monstr.eu>
+ <09ce2baf0c8308d3fbca98e7eb36a6aab59112a7.1209897266.git.monstr@monstr.eu>
+ <c9418c683be99ae12abb89575c362d586c026bad.1209897266.git.monstr@monstr.eu>
+ <cfde3796e95bdd17c32e4fd7762d0aee55967707.1209897266.git.monstr@monstr.eu>
+ <8aba2d82c85cd1d5b56de328c1fd080ee51f0211.1209897266.git.monstr@monstr.eu>
+ <c4000ff625bd217f9bb683e3bf8c7193a82bd744.1209897266.git.monstr@monstr.eu>
+In-Reply-To: <a4a778e34c66d126f5c4bf1ca423cf32950ea5ab.1209897266.git.monstr@monstr.eu>
+References: <a4a778e34c66d126f5c4bf1ca423cf32950ea5ab.1209897266.git.monstr@monstr.eu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2008-05-04 at 22:56 +1000, Neil Brown wrote:
-> On Saturday May 3, assirati@nonada.if.usp.br wrote:
-> > Let's try again, this this time with a proper e-mail subject.
-
-> > The problem I reported in
-> > http://marc.info/?l=linux-kernel&m=120804001406787&w=2
-> > still persists at 2.6.25.1. (sorry for the repeated messages there; that was 
-> > my mail client's fault).
-> > 
-> > In my previous bug repor, I was using raid1; now, I am using raid5, as 
-> > follows.
-> > 
-> > I have three partitions /dev/sda2, /dev/sdb2 and /dev/sdc2 marked as raid 
-> > autodetect (FD). They are assembled as a partitionable raid 5 array, and my 
-> > root is in /dev/md_d0p1. With a 2.6.24.2 kernel with sata, ext3 and raid5 
-> > compiled in (I don't use initrd), the system boots fine. In fact, the raid 
-> > array and partitions are detected as show with dmesg:
-> > 
-> > md: Autodetecting RAID arrays.
-> > md: Scanned 3 and added 3 devices.
-> > md: autorun ...
-> > md: considering sdc2 ...
-> > md:  adding sdc2 ...
-> > md:  adding sdb2 ...
-> > md:  adding sda2 ...
-> > md: created md_d0
-> > md: bind<sda2>
-> > md: bind<sdb2>
-> > md: bind<sdc2>
-> > md: running: <sdc2><sdb2><sda2>
-> > raid5: device sdc2 operational as raid disk 2
-> > raid5: device sdb2 operational as raid disk 1
-> > raid5: device sda2 operational as raid disk 0
-> > raid5: allocated 3226kB for md_d0
-> > raid5: raid level 5 set md_d0 active with 3 out of 3 devices, algorithm 2
-> > RAID5 conf printout:
-> >  --- rd:3 wd:3
-> >  disk 0, o:1, dev:sda2
-> >  disk 1, o:1, dev:sdb2
-> >  disk 2, o:1, dev:sdc2
-> > md: ... autorun DONE.
-> >  md_d0: p1 p2 p3 p4 < p5 p6 p7 >
-> > 
-> > The last line shows my raid partitions are detected.
-> > 
-> > However, when I try kernel 2.6.25.1, again with sata, ext3 and raid5 compiled 
-> > in and no initrd, the kernel does not recognize the raid partitions at boot 
-> > time, nonetheless the array is dected. The output of dmesg is the same  until:
-> > 
-> > raid5: allocated 3224kB for md_d0
-> > raid5: raid level 5 set md_d0 active with 3 out of 3 devices, algorithm 2
-> > RAID5 conf printout:
-> >  --- rd:3 wd:3
-> >  disk 0, o:1, dev:sda2
-> >  disk 1, o:1, dev:sdb2
-> >  disk 2, o:1, dev:sdc2
-> > md: ... autorun DONE.
-> > VFS: Cannot open root device "md_d0p1" or unknown-block(0,0)
-> > Please append a coorect "root=" boot option; here are the available partitions:
-> > 0800  312571224 sda driver:sd
-> >   0801      96358 sda1
-> >   0802  312472282 sda2
-> > 0810  312571224 sdb driver:sd
-> >   0811      96358 sdb1
-> >   0812  312472282 sdb2
-> > 0820  312571224 sdc driver:sd
-> >   0821      96358 sdc1
-> >   0822  312472282 sdc2
-> > fe00  624944384 md_d0 (driver?)
-> > Kernel panic - not syncing: VFS: Unable to mount root fs on unknown-block(0,0)
-> > 
-> > Note the absence of the line
-> >  md_d0: p1 p2 p3 p4 < p5 p6 p7 >
-> > showing partition detection.
-> > 
-> 
-> It appears this regression was introduced by commit
->    edfaa7c36574f1bf09c65ad602412db9da5f96bf
->    Driver core: convert block from raw kobjects to core devices
-> 
-> Previously, the device name "md_d0p1" would be parsed out as "md_d0"
-> and partition 1.
-> md_d0 would be found and the device number of the first partition
-> could then be deduced even though the partition table hadn't been
-> processed at this point, so 'p1' wasn't actually known.
-> The kernel would attempt to open 'p1', this would trigger a read of
-> the partition table and the open would be successful.
-> 
-> The new code is 'simpler'.  It doesn't try to parse the device name at
-> all.  It just compares the device name against the names of all known
-> devices.  As the partitions are not known at this time, md_d0p1 is not
-> found.
-> 
-> There seem to be two ways this could be fixed:
-> 1/ restore the old behaviour of parsing out the partition information.
->    This would be least likely to leave other regressions waiting to be
->    found, but might be seen as somewhat ugly.
-> 
-> 2/ Get md_d0 to read it's partition table earlier.  I've tried this
->    before without much luck.
->    There are three times that the partition table can be parsed.
->    a/ When the device is opened if bd_invalidated is set.
->    b/ When the device is first registered.  register_disk calls
->       blkdev_get which effectively opens the device, thus triggering
->       'a' above.
->    c/ When the BLKRRPART ioctl is made on the device.
-> 
->    When an md device is first registered, there are no disks attached
->    to it, so no partition table can be read.  The way md devices get
->    set up, they are registered as empty devices, the component devices
->    are attached, then the array is 'started'.  Only at this point can
->    data, such as the partition table, be read.  But this it too late
->    for case 'b' above.  Case 'a' is the one that usually causes
->    partitions to be read.  'mdadm' explicitly opens devices after
->    creating them to trigger this.
-> 
->    We could conceivably put a BLKRRPART call in at the end of
->    autorun_array where the array has just been started, but that would
->    be rather ugly.  We would need to open the device, and doing that
->    inside the kernel is never clean.  The code in 'init/*.c' for that
->    sort of thing creates nodes in /dev in a temporary root filesystem.
->    We cannot do that for autorun_array as it can be call long after
->    boot time (but the RAID_AUTODETECT ioctl) so there may not be 
->    a temporary filesystem to play with.
-> 
-> So I currently think that restoring the old behaviour of not requiring
-> partitions to exist before trying to open them would be best.
-> 
-> Kay?
-
-Care to test/fix/improve the following. I just booted a normal disk,
-didn't test a partitioned md device.
-
-Thanks,
-Kay
+From: Michal Simek <monstr@monstr.eu>
 
 
-
-From: Kay Sievers <kay.sievers@vrfy.org>
-Subject: block: do_mounts - accept root=<non-existant partition>
-
-Some devices, like md, may create partitions only at first access,
-so allow root= to be set to a valid non-existant partition of an
-existing disk. This applies only to non-initramfs root mounting.
-
-Signed-off-by: Kay Sievers <kay.sievers@vrfy.org>
+Signed-off-by: Michal Simek <monstr@monstr.eu>
 ---
+ include/asm-microblaze/io.h |  210 +++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 210 insertions(+), 0 deletions(-)
+ create mode 100644 include/asm-microblaze/io.h
 
-diff --git a/block/genhd.c b/block/genhd.c
-index fda9c7a..129ad93 100644
---- a/block/genhd.c
-+++ b/block/genhd.c
-@@ -653,7 +653,7 @@ void genhd_media_change_notify(struct gendisk *disk)
- EXPORT_SYMBOL_GPL(genhd_media_change_notify);
- #endif  /*  0  */
- 
--dev_t blk_lookup_devt(const char *name)
-+dev_t blk_lookup_devt(const char *name, int part)
- {
- 	struct device *dev;
- 	dev_t devt = MKDEV(0, 0);
-@@ -661,7 +661,11 @@ dev_t blk_lookup_devt(const char *name)
- 	mutex_lock(&block_class_lock);
- 	list_for_each_entry(dev, &block_class.devices, node) {
- 		if (strcmp(dev->bus_id, name) == 0) {
--			devt = dev->devt;
-+			struct gendisk *disk = dev_to_disk(dev);
+diff --git a/include/asm-microblaze/io.h b/include/asm-microblaze/io.h
+new file mode 100644
+index 0000000..d2c492f
+--- /dev/null
++++ b/include/asm-microblaze/io.h
+@@ -0,0 +1,210 @@
++/*
++ * include/asm-microblaze/io.h
++ *
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License. See the file "COPYING" in the main directory of this archive
++ * for more details.
++ *
++ * Copyright (C) 2006 Atmark Techno, Inc.
++ */
 +
-+			if (part < disk->minors)
-+				devt = MKDEV(MAJOR(dev->devt),
-+					     MINOR(dev->devt) + part);
- 			break;
- 		}
- 	}
-@@ -669,7 +673,6 @@ dev_t blk_lookup_devt(const char *name)
- 
- 	return devt;
- }
--
- EXPORT_SYMBOL(blk_lookup_devt);
- 
- struct gendisk *alloc_disk(int minors)
-diff --git a/include/linux/genhd.h b/include/linux/genhd.h
-index ecd2bf6..612a790 100644
---- a/include/linux/genhd.h
-+++ b/include/linux/genhd.h
-@@ -524,7 +524,7 @@ struct unixware_disklabel {
- #define ADDPART_FLAG_RAID	1
- #define ADDPART_FLAG_WHOLEDISK	2
- 
--extern dev_t blk_lookup_devt(const char *name);
-+extern dev_t blk_lookup_devt(const char *name, int part);
- extern char *disk_name (struct gendisk *hd, int part, char *buf);
- 
- extern int rescan_partitions(struct gendisk *disk, struct block_device *bdev);
-@@ -552,7 +552,7 @@ static inline struct block_device *bdget_disk(struct gendisk *disk, int index)
- 
- static inline void printk_all_partitions(void) { }
- 
--static inline dev_t blk_lookup_devt(const char *name)
-+static inline dev_t blk_lookup_devt(const char *name, int part)
- {
- 	dev_t devt = MKDEV(0, 0);
- 	return devt;
-diff --git a/init/do_mounts.c b/init/do_mounts.c
-index 3885e70..660c1e5 100644
---- a/init/do_mounts.c
-+++ b/init/do_mounts.c
-@@ -76,6 +76,7 @@ dev_t name_to_dev_t(char *name)
- 	char s[32];
- 	char *p;
- 	dev_t res = 0;
-+	int part;
- 
- 	if (strncmp(name, "/dev/", 5) != 0) {
- 		unsigned maj, min;
-@@ -106,7 +107,31 @@ dev_t name_to_dev_t(char *name)
- 	for (p = s; *p; p++)
- 		if (*p == '/')
- 			*p = '!';
--	res = blk_lookup_devt(s);
-+	res = blk_lookup_devt(s, 0);
-+	if (res)
-+		goto done;
++#ifndef _ASM_MICROBLAZE_IO_H
++#define _ASM_MICROBLAZE_IO_H
 +
-+	/*
-+	 * try non-existant, but valid partition, which may only exist
-+	 * after revalidating the disk, like partitioned md devices
-+	 */
-+	while (p > s && isdigit(p[-1]))
-+		p--;
-+	if (p == s || !*p || *p == '0')
-+		goto fail;
++#include <asm/byteorder.h>
++#include <asm/page.h>
 +
-+	/* try disk name without <part number> */
-+	part = simple_strtoul(p, NULL, 10);
-+	*p = '\0';
-+	res = blk_lookup_devt(s, part);
-+	if (res)
-+		goto done;
++static inline unsigned char __raw_readb(const volatile void *addr)
++{
++	return *(volatile unsigned char __force *)addr;
++}
++static inline unsigned short __raw_readw(const volatile void *addr)
++{
++	return *(volatile unsigned short __force *)addr;
++}
++static inline unsigned int __raw_readl(const volatile void *addr)
++{
++	return *(volatile unsigned int __force *)addr;
++}
++static inline unsigned long __raw_readq(const volatile void *addr)
++{
++	return *(volatile unsigned long __force *)addr;
++}
++static inline void __raw_writeb(unsigned char v, volatile void *addr)
++{
++	*(volatile unsigned char __force *)addr = v;
++}
++static inline void __raw_writew(unsigned short v, volatile void *addr)
++{
++	*(volatile unsigned short __force *)addr = v;
++}
++static inline void __raw_writel(unsigned int v, volatile void *addr)
++{
++	*(volatile unsigned int __force *)addr = v;
++}
++static inline void __raw_writeq(unsigned long v, volatile void *addr)
++{
++	*(volatile unsigned long __force *)addr = v;
++}
 +
-+	/* try disk name without p<part number> */
-+	if (p < s + 2 || !isdigit(p[-2]) || p[-1] != 'p')
-+		goto fail;
-+	p[-1] = '\0';
-+	res = blk_lookup_devt(s, part);
- 	if (res)
- 		goto done;
- 
-
++/*
++ * read (readb, readw, readl, readq) and write (writeb, writew,
++ * writel, writeq) accessors are for PCI and thus littel endian.
++ * Linux 2.4 for Microblaze had this wrong.
++ */
++static inline unsigned char readb(const volatile void *addr)
++{
++	return *(volatile unsigned char __force *)addr;
++}
++static inline unsigned short readw(const volatile void *addr)
++{
++	return le16_to_cpu(*(volatile unsigned short __force *)addr);
++}
++static inline unsigned int readl(const volatile void *addr)
++{
++	return le32_to_cpu(*(volatile unsigned int __force *)addr);
++}
++static inline void writeb(unsigned char v, volatile void *addr)
++{
++	*(volatile unsigned char __force *)addr = v;
++}
++static inline void writew(unsigned short v, volatile void *addr)
++{
++	*(volatile unsigned short __force *)addr = cpu_to_le16(v);
++}
++static inline void writel(unsigned int v, volatile void __iomem *addr)
++{
++	*(volatile unsigned int __force *)addr = cpu_to_le32(v);
++}
++
++/* ioread and iowrite variants. thease are for now same as __raw_
++ * variants of accessors. we might check for endianess in the feature
++ */
++#define ioread8(addr)		__raw_readb((u8 *)(addr))
++#define ioread16(addr)		__raw_readw((u16 *)(addr))
++#define ioread32(addr)		__raw_readl((u32 *)(addr))
++#define iowrite8(v, addr)	__raw_writeb((u8)(v), (u8 *)(addr))
++#define iowrite16(v, addr)	__raw_writew((u16)(v), (u16 *)(addr))
++#define iowrite32(v, addr)	__raw_writel((u32)(v), (u32 *)(addr))
++
++/* These are the definitions for the x86 IO instructions
++ * inb/inw/inl/outb/outw/outl, the "string" versions
++ * insb/insw/insl/outsb/outsw/outsl, and the "pausing" versions
++ * inb_p/inw_p/...
++ * The macros don't do byte-swapping.
++ */
++#define inb(port)		readb((u8 *)((port)))
++#define outb(val, port)		writeb((val), (u8 *)((unsigned long)(port)))
++#define inw(port)		readw((u16 *)((port)))
++#define outw(val, port)		writew((val), (u16 *)((unsigned long)(port)))
++#define inl(port)		readl((u32 *)((port)))
++#define outl(val, port)		writel((val), (u32 *)((unsigned long)(port)))
++
++#define inb_p(port)		inb((port))
++#define outb_p(val, port)	outb((val), (port))
++#define inw_p(port)		inw((port))
++#define outw_p(val, port)	outw((val), (port))
++#define inl_p(port)		inl((port))
++#define outl_p(val, port)	outl((val), (port))
++
++#define memset_io(a, b, c)	memset((void *)(a), (b), (c))
++#define memcpy_fromio(a, b, c)	memcpy((a), (void *)(b), (c))
++#define memcpy_toio(a, b, c)	memcpy((void *)(a), (b), (c))
++
++/**
++ *	virt_to_phys	-	map virtual addresses to physical
++ *	@address: address to remap
++ *
++ *	The returned physical address is the physical (CPU) mapping for
++ *	the memory address given. It is only valid to use this function on
++ *	addresses directly mapped or allocated via kmalloc.
++ *
++ *	This function does not give bus mappings for DMA transfers. In
++ *	almost all conceivable cases a device driver should not be using
++ *	this function
++ */
++static inline unsigned long __iomem virt_to_phys(volatile void *address)
++{
++	return __pa((unsigned long)address);
++}
++
++#define virt_to_bus virt_to_phys
++
++/**
++ *	phys_to_virt	-	map physical address to virtual
++ *	@address: address to remap
++ *
++ *	The returned virtual address is a current CPU mapping for
++ *	the memory address given. It is only valid to use this function on
++ *	addresses that have a kernel mapping
++ *
++ *	This function does not handle bus mappings for DMA transfers. In
++ *	almost all conceivable cases a device driver should not be using
++ *	this function
++ */
++static inline void *phys_to_virt(unsigned long address)
++{
++	return (void *)__va(address);
++}
++
++#define bus_to_virt(a) phys_to_virt(a)
++
++static inline void *__ioremap(unsigned long address, unsigned long size,
++			unsigned long flags)
++{
++	return (void *)address;
++}
++
++
++#define IO_SPACE_LIMIT ~(0UL)
++
++#define ioremap(physaddr, size)	((void *)(unsigned long)(physaddr))
++#define iounmap(addr)		((void)0)
++#define ioremap_nocache(physaddr, size)	ioremap(physaddr, size)
++
++/*
++ * Convert a physical pointer to a virtual kernel pointer for /dev/mem
++ * access
++ */
++#define xlate_dev_mem_ptr(p)	__va(p)
++
++/*
++ * Convert a virtual cached pointer to an uncached pointer
++ */
++#define xlate_dev_kmem_ptr(p)	p
++
++/*
++ * Big Endian
++ */
++#define out_be32(a, v) __raw_writel((v), (a))
++#define out_be16(a, v) __raw_writew((v), (a))
++
++#define in_be32(a) __raw_readl(a)
++#define in_be16(a) __raw_readw(a)
++
++/*
++ * Little endian
++ */
++
++#define out_le32(a, v) __raw_writel(__cpu_to_le32(v), (a));
++#define out_le16(a, v) __raw_writew(__cpu_to_le16(v), (a))
++
++#define in_le32(a) __le32_to_cpu(__raw_readl(a))
++#define in_le16(a) __le16_to_cpu(__raw_readw(a))
++
++/* Byte ops */
++#define out_8(a, v) __raw_writeb((v), (a))
++#define in_8(a) __raw_readb(a)
++
++/* FIXME */
++static inline void __iomem *ioport_map(unsigned long port, unsigned int len)
++{
++	return (void __iomem *) (port);
++}
++
++static inline void ioport_unmap(void __iomem *addr)
++{
++	/* Nothing to do */
++}
++
++#endif /* _ASM_MICROBLAZE_IO_H */
+-- 
+1.5.4.GIT
 
