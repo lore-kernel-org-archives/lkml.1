@@ -1,169 +1,146 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753213AbYEDOwd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753311AbYEDOym@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753213AbYEDOwd (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 May 2008 10:52:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751117AbYEDOwZ
+	id S1753311AbYEDOym (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 May 2008 10:54:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750840AbYEDOye
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 May 2008 10:52:25 -0400
-Received: from 178-47-31-89.wifiinternet.cz ([89.31.47.178]:50173 "EHLO
-	seznam.cz" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751025AbYEDOwX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 May 2008 10:52:23 -0400
-From: monstr@seznam.cz
-To: linux-kernel@vger.kernel.org
-Cc: arnd@arndb.de, linux-arch@vger.kernel.org, stephen.neuendorffer@xilinx.com,
-       John.Linn@xilinx.com, john.williams@petalogix.com, matthew@wil.cx,
-       will.newton@gmail.com, drepper@redhat.com,
-       microblaze-uclinux@itee.uq.edu.au, grant.likely@secretlab.ca,
-       Michal Simek <monstr@monstr.eu>
-Subject: [PATCH 37/56] microblaze_v2: headers for irq
-Date: Sun,  4 May 2008 13:41:26 +0200
-Message-Id: <4e20213f5f296268a24955df8c951f7fba279816.1209897266.git.monstr@monstr.eu>
-X-Mailer: git-send-email 1.5.4.GIT
-In-Reply-To: <92cd3a27b393bb394d48902594152351a92c59bb.1209897266.git.monstr@monstr.eu>
-References: <1209901305-6404-1-git-send-email-monstr@seznam.cz>
- <a4a778e34c66d126f5c4bf1ca423cf32950ea5ab.1209897266.git.monstr@monstr.eu>
- <c805caeb1dd7f6d1349c4a463cb88a5342a170d2.1209897266.git.monstr@monstr.eu>
- <f120ababf2bade9aab7199bffb3014aa606e5a1c.1209897266.git.monstr@monstr.eu>
- <684c36e5ad3f598e5079e88ec195545c4a7150c2.1209897266.git.monstr@monstr.eu>
- <ed3695121faf485d491cecdd96d5d4dcc498411d.1209897266.git.monstr@monstr.eu>
- <0674b1f7abb9a3d564b68c95bc28adc2c2fe9551.1209897266.git.monstr@monstr.eu>
- <9a7c6646e5dd9724c1cf34767adec181481fa3ef.1209897266.git.monstr@monstr.eu>
- <932956128c9c655a218a940eaf02017a5dd0bdf9.1209897266.git.monstr@monstr.eu>
- <2f801c33caee22e112af51ae927c264ce99ead01.1209897266.git.monstr@monstr.eu>
- <2391e49379fb6639f57d9d6e5811f3d49a4c6fda.1209897266.git.monstr@monstr.eu>
- <0873f3a1f3b72591735c6461b51964693cac52e5.1209897266.git.monstr@monstr.eu>
- <0ba1f259d3c17eba54e334622493577493f5065f.1209897266.git.monstr@monstr.eu>
- <694451053534fea7b78fb9d618b53a2b5ebeb602.1209897266.git.monstr@monstr.eu>
- <f0c837df4106a31c1a81917596603918f722ea7b.1209897266.git.monstr@monstr.eu>
- <d883a8d8da812d77fefd47730d28d0bdb7b504e0.1209897266.git.monstr@monstr.eu>
- <625ef466cf121d655539eedc919dd39166087e0c.1209897266.git.monstr@monstr.eu>
- <b5067a1846075ddd1035966ea1edc908579e2e88.1209897266.git.monstr@monstr.eu>
- <378157891bac535dbc55e658d5f03fdd332e85cf.1209897266.git.monstr@monstr.eu>
- <eadcc6f4754df78b69d6d54c404624d0390c8558.1209897266.git.monstr@monstr.eu>
- <4df4022e06b9056202cc2fdf0b99deb01563a0fa.1209897266.git.monstr@monstr.eu>
- <6b0c9864dc80776ae48d6488a6892e5d698751b7.1209897266.git.monstr@monstr.eu>
- <ea5cbbca49c38c506960fddba29cbd8cb24e1a8d.1209897266.git.monstr@monstr.eu>
- <4f4d6ed3fce9b21cdd6dcacb2d72fff7e9830628.1209897266.git.monstr@monstr.eu>
- <35e662a81eb86c7ffb2aaa6141ca38a07789f382.1209897266.git.monstr@monstr.eu>
- <b41fcf3dd830f4ba82692a9bec2406ed0c290e7e.1209897266.git.monstr@monstr.eu>
- <14acb31da2794d2d5916da3db3d75fe2285ac055.1209897266.git.monstr@monstr.eu>
- <598221ce2159046614d7b158ea62d5af51907af3.1209897266.git.monstr@monstr.eu>
- <41c1f410eaafd875246362d10ef9866d8cc2a934.1209897266.git.monstr@monstr.eu>
- <09ce2baf0c8308d3fbca98e7eb36a6aab59112a7.1209897266.git.monstr@monstr.eu>
- <c9418c683be99ae12abb89575c362d586c026bad.1209897266.git.monstr@monstr.eu>
- <cfde3796e95bdd17c32e4fd7762d0aee55967707.1209897266.git.monstr@monstr.eu>
- <8aba2d82c85cd1d5b56de328c1fd080ee51f0211.1209897266.git.monstr@monstr.eu>
- <c4000ff625bd217f9bb683e3bf8c7193a82bd744.1209897266.git.monstr@monstr.eu>
- <491f823fac6c03cc36834ec569a45d30a03a72cf.1209897266.git.monstr@monstr.eu>
- <96f2004535c34a0c762bf2012c299cbf9f89ab32.1209897266.git.monstr@monstr.eu>
- <92cd3a27b393bb394d48902594152351a92c59bb.1209897266.git.monstr@monstr.eu>
-In-Reply-To: <a4a778e34c66d126f5c4bf1ca423cf32950ea5ab.1209897266.git.monstr@monstr.eu>
-References: <a4a778e34c66d126f5c4bf1ca423cf32950ea5ab.1209897266.git.monstr@monstr.eu>
+	Sun, 4 May 2008 10:54:34 -0400
+Received: from tomts36.bellnexxia.net ([209.226.175.93]:33731 "EHLO
+	tomts36-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750713AbYEDOyd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 May 2008 10:54:33 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: As8EAKtqHUhMROPA/2dsb2JhbACBU6gg
+Date: Sun, 4 May 2008 10:54:30 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Ingo Molnar <mingo@elte.hu>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, "Frank Ch. Eigler" <fche@redhat.com>
+Subject: Re: [patch 0/2] Immediate Values - jump patching update
+Message-ID: <20080504145430.GA23137@Krystal>
+References: <20080428202552.GG15840@elte.hu> <48163B84.90605@zytor.com> <20080428221122.GC16153@elte.hu> <48164EE6.8010506@zytor.com> <20080428224438.GA6974@elte.hu> <48165866.5060403@zytor.com> <20080429014623.GA6284@Krystal> <481682D6.5010207@zytor.com> <20080429121839.GA29912@Krystal> <4817405D.2020400@zytor.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <4817405D.2020400@zytor.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 10:20:59 up 65 days, 10:31,  3 users,  load average: 0.21, 0.29,
+	0.36
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Michal Simek <monstr@monstr.eu>
+* H. Peter Anvin (hpa@zytor.com) wrote:
+> Mathieu Desnoyers wrote:
+>> I would also like to point out that maintaining a _separated_ piece of
+>> code for each instrumentation site which would heavily depend on the
+>> inner kernel data structures seems like a maintenance nightmare.
+>
+> Obviously doing this by hand is insane.  That was not my thought.
+>
+
+Great :)
+
+>> I would be happy with a solution that doesn't depend on this gigantic
+>> DWARF information and can be included in the kernel build process. See,
+>> I think tracing is, primarily, a facility that the kernel should provide
+>> to users so they can tune and find problems in their own applications.
+>> From this POV, it would make sense to consider tracing as part of the
+>> kernel code itself, not as a separated, kernel debugging oriented piece
+>> of code. If you require per-site dynamic pieces of code, you are only
+>> adding to the complexity of such a tracer. Actually, an active tracer
+>> would trash the i-cache quite heavily due to these per-site pieces of
+>> code. Given that users want a tracer that disturbs as little as
+>> possible the normal system behavior, I don't think this "per-site"
+>> pieces of code approach is that good.
+>
+> That's funny, given that's exactly what you have now.
+>
+
+The per-site pieces of code are only there to do the stack setup. I
+really wonder if we could do this more efficiently from DWARF info.
+
+> DWARF information is the way you get this stuff out of the compiler. That 
+> is what it's *there for*.  If you don't want to keep it around you can 
+> distill out the information you need and then remove it.  However, as I 
+> have said about six times now:
+
+About DWARF : I agree with Ingo that we might not want to depend on this
+kind of information normally expected to be correct for debug uses in a
+part of infrastructure that is not limited to debugging situation.
+Continous performance monitoring is one of the use cases I have in mind.
+
+Moreover, depending on DWARF info requires us to do
+architecture-specific code from the beginning. The markers are designed
+in such a way that any given new architecture can use the "architecture
+agnostic" version of the markers, and then later implement the
+optimizations. With about 27 architectures supported by the Linux
+kernel, I think this approach makes sense. Looking at the number of
+years it took to port something as "simple" as kprobes to 8 out of 27
+architectures speaks for itself.
+
+>
+> THE RIGHT WAY TO DO THIS IS WITH COMPILER SUPPORT.
+>
+
+We totally agree on this about the jump-patching optimization. If the
+jump-patching approach I proposed is too far-fetched, and if reading a
+variable from memory at each tracing site is too expensive, I would
+propose to use the standard "immediate values" flavor until gcc gives us
+that kind support for patchable jump instructions.
+
+> All these problems is because you're trying to do something behind the back 
+> of the compiler, but not *completely* so.
+>
+
+Using the compiler for the markers (I am not talking about immediate
+values, which is an optimization) is what gives us the ability to do an
+architecture-agnostic version. The 19 architectures which still lacks
+kprobes support tell me that it isn't such a bad way to go.
+
+>> Instruction cache bloat inspection :
+>> If a code region is placed with cache cold instructions (unlikely
+>> branches), it should not increase the cache impact, since although we
+>> might use one more cache line, it won't be often loaded in cache because
+>> all the code that shares this cache line is unlikely.
+>
+> This is somewhat nice in theory; I've found that gcc tends to interlace 
+> them pretty heavily and so the cache interference even of gcc "out of line" 
+> code is sizable.
+
+Following your own suggestion, why don't we fix gcc and make it
+interleave unlikely blocks less heavily with hot blocks ?
+
+> Furthermore, modern CPUs often speculatively fetch *both* 
+> branches of a conditional.
+>
+> This is actually the biggest motivation for patching static branches.
+>
+
+Agreed. I'd like to find some info about which microarchitectures you
+have in mind. Intel Core 2 ?
 
 
-Signed-off-by: Michal Simek <monstr@monstr.eu>
----
- include/asm-microblaze/hardirq.h  |   31 +++++++++++++++++++++++++++++++
- include/asm-microblaze/hw_irq.h   |   19 +++++++++++++++++++
- include/asm-microblaze/irq_regs.h |   19 +++++++++++++++++++
- 3 files changed, 69 insertions(+), 0 deletions(-)
- create mode 100644 include/asm-microblaze/hardirq.h
- create mode 100644 include/asm-microblaze/hw_irq.h
- create mode 100644 include/asm-microblaze/irq_regs.h
+>> I therefore think that looking only at code size is misleading when
+>> considering the cache impact of markers, since they have been designed
+>> to put the bytes as far away as possible from cache-hot memory.
+>
+> Nice theory.  Doesn't work in practice as long as you rely on gcc 
+> unlikey().
+>
+> 	-hpa
 
-diff --git a/include/asm-microblaze/hardirq.h b/include/asm-microblaze/hardirq.h
-new file mode 100644
-index 0000000..8a143fa
---- /dev/null
-+++ b/include/asm-microblaze/hardirq.h
-@@ -0,0 +1,31 @@
-+/*
-+ * include/asm-microblaze/hardirq.h
-+ *
-+ * This file is subject to the terms and conditions of the GNU General Public
-+ * License. See the file "COPYING" in the main directory of this archive
-+ * for more details.
-+ *
-+ * Copyright (C) 2006 Atmark Techno, Inc.
-+ */
-+
-+#ifndef _ASM_MICROBLAZE_HARDIRQ_H
-+#define _ASM_MICROBLAZE_HARDIRQ_H
-+
-+#include <linux/cache.h>
-+#include <linux/irq.h>
-+#include <asm/irq.h>
-+#include <asm/current.h>
-+#include <asm/ptrace.h>
-+
-+/* should be defined in each interrupt controller driver */
-+extern unsigned int get_irq(struct pt_regs *regs);
-+
-+typedef struct {
-+	unsigned int __softirq_pending;
-+} ____cacheline_aligned irq_cpustat_t;
-+
-+void ack_bad_irq(unsigned int irq);
-+
-+#include <linux/irq_cpustat.h> /* Standard mappings for irq_cpustat_t above */
-+
-+#endif /* _ASM_MICROBLAZE_HARDIRQ_H */
-diff --git a/include/asm-microblaze/hw_irq.h b/include/asm-microblaze/hw_irq.h
-new file mode 100644
-index 0000000..467fa26
---- /dev/null
-+++ b/include/asm-microblaze/hw_irq.h
-@@ -0,0 +1,19 @@
-+/*
-+ * include/asm-microblaze/hw_irq.h
-+ *
-+ * This file is subject to the terms and conditions of the GNU General Public
-+ * License. See the file "COPYING" in the main directory of this archive
-+ * for more details.
-+ *
-+ * Copyright (C) 2006 Atmark Techno, Inc.
-+ */
-+
-+#ifndef _ASM_MICROBLAZE_HW_IRQ_H
-+#define _ASM_MICROBLAZE_HW_IRQ_H
-+
-+static inline void hw_resend_irq(struct hw_interrupt_type *h, unsigned int i)
-+{
-+	/* Nothing to do */
-+}
-+
-+#endif /* _ASM_MICROBLAZE_HW_IRQ_H */
-diff --git a/include/asm-microblaze/irq_regs.h b/include/asm-microblaze/irq_regs.h
-new file mode 100644
-index 0000000..0876847
---- /dev/null
-+++ b/include/asm-microblaze/irq_regs.h
-@@ -0,0 +1,19 @@
-+/*
-+ * include/asm-microblaze/irq_regs.h
-+ *
-+ * This file is subject to the terms and conditions of the GNU General Public
-+ * License. See the file "COPYING" in the main directory of this archive
-+ * for more details.
-+ *
-+ * Copyright (C) 2006 Atmark Techno, Inc.
-+ */
-+
-+#ifndef _ASM_MICROBLAZE_IRQ_REGS_H
-+#define _ASM_MICROBLAZE_IRQ_REGS_H
-+
-+#include <asm-generic/irq_regs.h>
-+
-+#endif /* _ASM_MICROBLAZE_IRQ_REGS_H */
-+
-+
-+
+Let's fix gcc ! ;)
+
+Cheers,
+
+Mathieu
+
 -- 
-1.5.4.GIT
-
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
