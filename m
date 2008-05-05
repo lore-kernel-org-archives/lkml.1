@@ -1,43 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761810AbYEEVFH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762546AbYEEVFg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761810AbYEEVFH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 17:05:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760962AbYEEVEv
+	id S1762546AbYEEVFg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 17:05:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762341AbYEEVFB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 17:04:51 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:57784
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1758161AbYEEVEu (ORCPT
+	Mon, 5 May 2008 17:05:01 -0400
+Received: from mailrelay007.isp.belgacom.be ([195.238.6.173]:4873 "EHLO
+	mailrelay007.isp.belgacom.be" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1761800AbYEEVE7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 17:04:50 -0400
-Date: Mon, 05 May 2008 14:04:50 -0700 (PDT)
-Message-Id: <20080505.140450.48875249.davem@davemloft.net>
-To: akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, linux-next@vger.kernel.org
-Subject: Re: + git-net-git-rejects.patch added to -mm tree
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20080505130911.52b22577.akpm@linux-foundation.org>
-References: <200805051905.m45J5eG7032280@imap1.linux-foundation.org>
-	<20080505.125118.101401893.davem@davemloft.net>
-	<20080505130911.52b22577.akpm@linux-foundation.org>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Mon, 5 May 2008 17:04:59 -0400
+X-Belgacom-Dynamic: yes
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApsEAB8TH0jZiDz0/2dsb2JhbACBU6on
+Date: Mon, 5 May 2008 23:04:53 +0200
+From: Wim Van Sebroeck <wim@iguana.be>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Gabriel C <nix.or.die@googlemail.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] iTCO_wdt: ICH9DO support
+Message-ID: <20080505210453.GA5987@infomag.infomag.iguana.be>
+References: <4818875E.7020703@googlemail.com> <20080430111508.2dc5b26c.akpm@linux-foundation.org> <4818B963.7000108@googlemail.com> <20080430124642.bcba1673.akpm@linux-foundation.org>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080430124642.bcba1673.akpm@linux-foundation.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Andrew Morton <akpm@linux-foundation.org>
-Date: Mon, 5 May 2008 13:09:11 -0700
+Hi Andrew, Gabriel,
 
-> I noticed that there were rather a lot of changes in
-> git+ssh://master.kernel.org/pub/scm/linux/kernel/git/davem/net-2.6.git
-> which are not in linux-next, perhaps due to time lag.
+> There's nothing to be sorry about - it's not your fault.  My email can be
+> summarised down to "Hey, Wim: remove that crap!".
 
-Andrew, I think you simply have to "let go" of one side or
-the other.
+Will work on watchdog related things later this week.
+And I'll work on removing that crap :-)
 
-If you're going to base on top of linux-next, then let it run
-it's course and don't try to suck in the GIT trees on top
-of that which linux-next takes already.
+Greetings,
+Wim.
+
