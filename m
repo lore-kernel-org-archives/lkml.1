@@ -1,135 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932322AbYEESva@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932397AbYEESvs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932322AbYEESva (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 14:51:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765057AbYEESrn
+	id S932397AbYEESvs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 14:51:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761840AbYEESs3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 14:47:43 -0400
-Received: from fmmailgate02.web.de ([217.72.192.227]:44260 "EHLO
-	fmmailgate02.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762406AbYEESrl (ORCPT
+	Mon, 5 May 2008 14:48:29 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:41916 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1765389AbYEESsZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 14:47:41 -0400
-Message-ID: <00db01c8aee0$78e7bea0$6400a8c0@bui.materna.com>
-From: "Roland" <devzero@web.de>
-To: <Linux-fbdev-devel@lists.sourceforge.net>, <linux-kernel@vger.kernel.org>
-Cc: "Andrew Morton" <akpm@linux-foundation.org>, <jsimmons@infradead.org>,
-       <adaplas@gmail.com>, "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
-       <matan@svgalib.org>, <edward@debian.org>,
-       "Soeren Sonnenburg" <kernel@nn7.de>
-Subject: Re: [PATCH] mdacon messing up default vc's, set default to vc13-16 again
-Date: Mon, 5 May 2008 20:47:29 +0200
+	Mon, 5 May 2008 14:48:25 -0400
+Date: Mon, 5 May 2008 11:48:23 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Ingo Molnar <mingo@elte.hu>
+cc: travis@sgi.com, linux-kernel@vger.kernel.org
+Subject: x86: Unify current.h
+Message-ID: <Pine.LNX.4.64.0805051146210.11469@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	format=flowed;
-	charset="iso-8859-1";
-	reply-type=original
-Content-Transfer-Encoding: 7bit
-X-Priority: 3
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook Express 6.00.2900.3138
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3198
-X-Provags-ID: V01U2FsdGVkX198LmF/fy0skXWwX7GaSAwqT05uFzD3lT/DxlnY
-	P7gZs456xVEyhzvQo4z4fmgHyjxL00H/xoWkLr0uv5yCfBTcmu
-	1nnEZRurU=
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> mdacon incorrectly detects MDA hardware on systems without such graphics 
-> card.
->
-> one may load this module by chance, for example when doing some 
-> systematical
-> module-testing, and if there is no Monochrome Display Adapter attached , 
-> module init
-> renders vc1-16 completely unusable.
->
-> me and others have run into this more than once. see [Bug 224522 - 
-> modprobe mdacon
-> freezes machine -> https://bugzilla.novell.com/show_bug.cgi?id=224522 ] 
-> for example
+There are just two definitions that are shared but the resulting combined 
+file is resonably small. Putting these two arch headers together shows 
+that further unifications requires a unification of the per cpu / pda 
+handling between both arches (zero based or some variation thereof).
 
+Signed-off-by: Christoph Lameter <clameter@sgi.com>
 
-or somebody may accidentally link it statically with the kernel.....and have 
-some fun then....
+---
+ include/asm-x86/current.h    |   40 ++++++++++++++++++++++++++++++++++++----
+ include/asm-x86/current_32.h |   17 -----------------
+ include/asm-x86/current_64.h |   27 ---------------------------
+ 3 files changed, 36 insertions(+), 48 deletions(-)
 
-http://marc.info/?l=linux-kernel&m=112550081223569&w=2
--> http://marc.info/?l=linux-kernel&m=112550983822140&w=2
-
-
-
-
-
-
->
-> apparently, proper MDA detection seems to be broken for a long time - 
-> seems to be
-> related to those #ifdef TEST_MDA_B statements added by Edward Betts.
->
-> this commit back in 2002 made things even worse :
-> http://git.kernel.org/?p=linux/kernel/git/tglx/history.git;a=commit;h=c72757b49c88914433244757fb4967fc63546685
->
-> it changed default vc allocation from 13-16 to 1-16  for no apparent 
-> reason (!?) , and
-> with that (and without X), mdacon grabs the vc you`re currently sitting on 
-> and locks you out.
->
-> this is from Kconfig :
-> >config MDA_CONSOLE
-> >        depends on !M68K && !PARISC && ISA
-> >        tristate "MDA text console (dual-headed) (EXPERIMENTAL)"
-> >        ---help---
-> >          Say Y here if you have an old MDA or monochrome Hercules 
-> > graphics
-> >          adapter in your system acting as a second head ( = video card). 
-> > You
-> >          will then be able to use two monitors with your Linux system. 
-> > Do not
-> >          say Y here if your MDA card is the primary card in your system; 
-> > the
-> >          normal VGA driver will handle it.
->
-> As we can see mdacon is just meant as an additional driver for dual-head 
-> setup,
-> and since kernel 2.4.36 still defaults to vc13-16 ,  setting the default 
-> back to that value
-> again shouldn`t  do any harm.
->
-> hereby i`m reverting that change, setting default back to to vc13-16 
-> again.
->
-> Besides the fact that mdacon may be rarely or never be used these days and 
-> could
-> perhaps put to trash anyway (pre-dinosaur hardware!), indeed this is not a 
-> real solution,
-> but at least it removes the unfortunate side-effect of messing up the vc 
-> you`re working on.
->
->
-> Signed-off-by: Roland Kletzing <devzero@web.de>
->
-> --- drivers/video/console/mdacon.c.orig 2008-05-03 15:47:20.000000000 
-> +0200
-> +++ drivers/video/console/mdacon.c      2008-05-03 15:55:27.000000000 
-> +0200
-> @@ -71,13 +71,15 @@
->
->  /* console information */
->
-> -static int     mda_first_vc = 1;
-> +static int     mda_first_vc = 13;
->  static int     mda_last_vc  = 16;
->
->  static struct vc_data  *mda_display_fg = NULL;
->
->  module_param(mda_first_vc, int, 0);
-> +MODULE_PARM_DESC(mda_first_vc, "First virtual console. Default: 13");
->  module_param(mda_last_vc, int, 0);
-> +MODULE_PARM_DESC(mda_last_vc, "Last virtual console. Default: 16");
->
->  /* MDA register values
->   */
->
-
-
+Index: linux-next/include/asm-x86/current.h
+===================================================================
+--- linux-next.orig/include/asm-x86/current.h	2008-05-04 22:33:42.299851061 -0700
++++ linux-next/include/asm-x86/current.h	2008-05-05 11:22:16.531407871 -0700
+@@ -1,5 +1,37 @@
++#ifndef _X86_CURRENT_H
++#define _X86_CURRENT_H
++
++struct task_struct;
++
+ #ifdef CONFIG_X86_32
+-# include "current_32.h"
+-#else
+-# include "current_64.h"
+-#endif
++#include <linux/compiler.h>
++#include <asm/percpu.h>
++
++DECLARE_PER_CPU(struct task_struct *, current_task);
++static __always_inline struct task_struct *get_current(void)
++{
++	return x86_read_percpu(current_task);
++}
++
++#else /* X86_32 */
++
++#ifndef __ASSEMBLY__
++#include <asm/pda.h>
++
++static __always_inline struct task_struct *get_current(void)
++{
++	return read_pda(pcurrent);
++}
++
++#else /* __ASSEMBLY__ */
++
++#include <asm/asm-offsets.h>
++#define GET_CURRENT(reg) movq %gs:(pda_pcurrent),reg
++
++#endif /* __ASSEMBLY__ */
++
++#endif /* X86_32 */
++
++#define current get_current()
++
++#endif /* X86_CURRENT_H */
+Index: linux-next/include/asm-x86/current_32.h
+===================================================================
+--- linux-next.orig/include/asm-x86/current_32.h	2008-05-04 22:48:44.689850207 -0700
++++ /dev/null	1970-01-01 00:00:00.000000000 +0000
+@@ -1,17 +0,0 @@
+-#ifndef _I386_CURRENT_H
+-#define _I386_CURRENT_H
+-
+-#include <linux/compiler.h>
+-#include <asm/percpu.h>
+-
+-struct task_struct;
+-
+-DECLARE_PER_CPU(struct task_struct *, current_task);
+-static __always_inline struct task_struct *get_current(void)
+-{
+-	return x86_read_percpu(current_task);
+-}
+-
+-#define current get_current()
+-
+-#endif /* !(_I386_CURRENT_H) */
+Index: linux-next/include/asm-x86/current_64.h
+===================================================================
+--- linux-next.orig/include/asm-x86/current_64.h	2008-05-04 22:48:44.709851154 -0700
++++ /dev/null	1970-01-01 00:00:00.000000000 +0000
+@@ -1,27 +0,0 @@
+-#ifndef _X86_64_CURRENT_H
+-#define _X86_64_CURRENT_H
+-
+-#if !defined(__ASSEMBLY__)
+-struct task_struct;
+-
+-#include <asm/pda.h>
+-
+-static inline struct task_struct *get_current(void)
+-{
+-	struct task_struct *t = read_pda(pcurrent);
+-	return t;
+-}
+-
+-#define current get_current()
+-
+-#else
+-
+-#ifndef ASM_OFFSET_H
+-#include <asm/asm-offsets.h>
+-#endif
+-
+-#define GET_CURRENT(reg) movq %gs:(pda_pcurrent),reg
+-
+-#endif
+-
+-#endif /* !(_X86_64_CURRENT_H) */
