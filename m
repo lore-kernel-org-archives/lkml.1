@@ -1,55 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756731AbYEENmp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758197AbYEENnR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756731AbYEENmp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 09:42:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752431AbYEENmg
+	id S1758197AbYEENnR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 09:43:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756863AbYEENm7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 09:42:36 -0400
-Received: from py-out-1112.google.com ([64.233.166.179]:26438 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752707AbYEENmf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 09:42:35 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=hjdytrls39XRQoem6hEWgdKnm3GCP4zF0LQccs62LGtangpFKaDdqiQeVsWaXMXGwrCWnSkmUD81Kzxj7lOLKQS/7/st/RD6pfZVDvUxvO7oTy+20Rg3PlFA4p1H7ebBDh5XM7uOtsCXJAuPduH9jLnbImPm7WQd4201ZbqVP5A=
-Message-ID: <84144f020805050642p1e0ca224r9c1a92e899fddfe3@mail.gmail.com>
-Date: Mon, 5 May 2008 16:42:24 +0300
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Andi Kleen" <andi@firstfloor.org>
-Subject: Re: [PATCH] i386: Execute stack overflow warning on interrupt stack II
-Cc: "Thomas Gleixner" <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
-       mingo@elte.hu, sandeen@sandeen.net
-In-Reply-To: <481F0BCD.8020306@firstfloor.org>
+	Mon, 5 May 2008 09:42:59 -0400
+Received: from sandeen.net ([209.173.210.139]:25226 "EHLO sandeen.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754107AbYEENm6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 May 2008 09:42:58 -0400
+Message-ID: <481F0EE1.1000506@sandeen.net>
+Date: Mon, 05 May 2008 08:42:57 -0500
+From: Eric Sandeen <sandeen@sandeen.net>
+User-Agent: Thunderbird 2.0.0.14 (Macintosh/20080421)
 MIME-Version: 1.0
+To: Andi Kleen <andi@firstfloor.org>
+CC: linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@linutronix.de
+Subject: Re: [PATCH] i386: Execute stack overflow warning on interrupt stack
+References: <20080502091806.GA26062@basil.nowhere.org>
+In-Reply-To: <20080502091806.GA26062@basil.nowhere.org>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080502091806.GA26062@basil.nowhere.org>
-	 <20080502094543.GA11114@basil.nowhere.org>
-	 <alpine.LFD.1.10.0805051135530.3318@apollo.tec.linutronix.de>
-	 <481EDEC5.10000@firstfloor.org>
-	 <alpine.LFD.1.10.0805051434200.3318@apollo.tec.linutronix.de>
-	 <481F0BCD.8020306@firstfloor.org>
-X-Google-Sender-Auth: 4478166ef056db86
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andi,
+Andi Kleen wrote:
+> i386: Execute stack overflow warning on interrupt stack
+> 
+> [Repost. This was posted deep in the 4K flame war some time ago. Probably
+> very few people read it completely, so the patch was missed.]
+> 
+> Previously the reporting printk would run on the process stack, which risks 
+> overflow an already low stack. Instead execute it on the interrupt stack.
+> This makes it more likely for the printk to make it actually out.
+> 
+> It adds one not taken test/branch more to the interrupt path when
+> stack overflow checking is enabled. We could avoid that by duplicating
+> more code, but that seemed not worth it.
+> 
+> Based on an observation by Eric Sandeen.
+> 
+> Signed-off-by: Andi Kleen <andi@firstfloor.org>
+> 
+> Index: linux/arch/x86/kernel/irq_32.c
+> ===================================================================
+> --- linux.orig/arch/x86/kernel/irq_32.c
+> +++ linux/arch/x86/kernel/irq_32.c
+> @@ -61,6 +61,26 @@ static union irq_ctx *hardirq_ctx[NR_CPU
+>  static union irq_ctx *softirq_ctx[NR_CPUS] __read_mostly;
+>  #endif
+>  
+> +static void stack_overflow(void)
+> +{
+> +	printk("low stack detected by irq handler\n");
 
-On Mon, May 5, 2008 at 4:29 PM, Andi Kleen <andi@firstfloor.org> wrote:
->  > Err, it checks the process stack when 4KSTACKS=n
->
->  Ok then please add the two changes if you feel strongly about that
->  (to the latest version I sent).
->
->  You always edit my patches anyways (usually driving me crazy when I have
->  dependent patches because nothing applies anymore when all the variables
->  got renamed like you often do) so I don't see any reason why you can't
->  do that here.
+We've lost the information about how close we are... that'd be nice to
+keep if possible....
 
-Heh, do you mean to say that all this time I should have just asked
-Andrew to fix all the patches I've submitted rather take the trouble
-to do that myself after the review? ;-)
+Can we keep the old printk string and pass the remaining stack in as an arg?
+
+-Eric
+
+> +	dump_stack();
+> +}
+> +
+> +static inline void call_on_stack2(void *func, unsigned long stack,
+> +			   unsigned long arg1, unsigned long arg2)
+> +{
+> +	unsigned long bx;
+> +	asm volatile(
+> +			"       xchgl  %%ebx,%%esp    \n"
+> +			"       call   *%%edi         \n"
+> +			"       movl   %%ebx,%%esp    \n"
+> +			: "=a" (arg1), "=d" (arg2), "=b" (bx)
+> +			:  "0" (arg1),   "1" (arg2),  "2" (stack),
+> +			   "D" (func)
+> +			: "memory", "cc", "ecx');
+> +}
+> +
+>  /*
+>   * do_IRQ handles all normal device IRQ's (the special
+>   * SMP cross-CPU interrupts have their own specific
+> @@ -76,6 +96,7 @@ unsigned int do_IRQ(struct pt_regs *regs
+>  	union irq_ctx *curctx, *irqctx;
+>  	u32 *isp;
+>  #endif
+> +	int overflow = 0;
+>  
+>  	if (unlikely((unsigned)irq >= NR_IRQS)) {
+>  		printk(KERN_EMERG "%s: cannot handle IRQ %d\n",
+> @@ -92,11 +113,8 @@ unsigned int do_IRQ(struct pt_regs *regs
+>  
+>  		__asm__ __volatile__("andl %%esp,%0" :
+>  					"=r" (sp) : "0" (THREAD_SIZE - 1));
+> -		if (unlikely(sp < (sizeof(struct thread_info) + STACK_WARN))) {
+> -			printk("do_IRQ: stack overflow: %ld\n",
+> -				sp - sizeof(struct thread_info));
+> -			dump_stack();
+> -		}
+> +		if (unlikely(sp < (sizeof(struct thread_info) + STACK_WARN)))
+> +			overflow = 1;
+>  	}
+>  #endif
+>  
+> @@ -112,8 +130,6 @@ unsigned int do_IRQ(struct pt_regs *regs
+>  	 * current stack (which is the irq stack already after all)
+>  	 */
+>  	if (curctx != irqctx) {
+> -		int arg1, arg2, bx;
+> -
+>  		/* build the stack frame on the IRQ stack */
+>  		isp = (u32*) ((char*)irqctx + sizeof(*irqctx));
+>  		irqctx->tinfo.task = curctx->tinfo.task;
+> @@ -127,18 +143,19 @@ unsigned int do_IRQ(struct pt_regs *regs
+>  			(irqctx->tinfo.preempt_count & ~SOFTIRQ_MASK) |
+>  			(curctx->tinfo.preempt_count & SOFTIRQ_MASK);
+>  
+> -		asm volatile(
+> -			"       xchgl  %%ebx,%%esp    \n"
+> -			"       call   *%%edi         \n"
+> -			"       movl   %%ebx,%%esp    \n"
+> -			: "=a" (arg1), "=d" (arg2), "=b" (bx)
+> -			:  "0" (irq),   "1" (desc),  "2" (isp),
+> -			   "D" (desc->handle_irq)
+> -			: "memory", "cc", "ecx"
+> -		);
+> +		/* Execute warning on interrupt stack */
+> +		if (unlikely(overflow))
+> +			call_on_stack2(stack_overflow, isp, 0, 0);
+> +
+> +		call_on_stack2(desc->handle_irq, isp, irq, desc);
+>  	} else
+>  #endif
+> -		desc->handle_irq(irq, desc);
+> +	{
+> +		/* AK: Slightly bogus here. Just return? */
+> +		if (overflow)
+> +			stack_overflow();
+> + 		desc->handle_irq(irq, desc);
+> +	}
+>  
+>  	irq_exit();
+>  	set_irq_regs(old_regs);
+> 
+
