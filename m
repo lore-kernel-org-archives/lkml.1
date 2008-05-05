@@ -1,52 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757464AbYEEQb3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759042AbYEEQdT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757464AbYEEQb3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 12:31:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754664AbYEEQbT
+	id S1759042AbYEEQdT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 12:33:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754973AbYEEQdE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 12:31:19 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:40726 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754344AbYEEQbS (ORCPT
+	Mon, 5 May 2008 12:33:04 -0400
+Received: from nf-out-0910.google.com ([64.233.182.189]:11052 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753973AbYEEQdB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 12:31:18 -0400
-Subject: Re: Preempt-RT patch for 2.6.25
-From: Daniel Walker <dwalker@mvista.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Sven-Thorsten Dietrich <sven@thebigcorporation.com>,
-       Remy Bohmer <linux@bohmer.net>, LKML <linux-kernel@vger.kernel.org>,
-       RT <linux-rt-users@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Jon Masters <jonathan@jonmasters.org>, Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <Pine.LNX.4.58.0805051220590.25250@gandalf.stny.rr.com>
-References: <3efb10970805021102n4d87f55eue723786281b06fcb@mail.gmail.com>
-	 <1209753250.25628.34.camel@dd.thebigcorporation.com>
-	 <Pine.LNX.4.58.0805021441340.10615@gandalf.stny.rr.com>
-	 <1210004250.17132.12.camel@localhost.localdomain>
-	 <Pine.LNX.4.58.0805051220590.25250@gandalf.stny.rr.com>
-Content-Type: text/plain
-Date: Mon, 05 May 2008 09:31:13 -0700
-Message-Id: <1210005073.17132.16.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-3.fc8) 
+	Mon, 5 May 2008 12:33:01 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=HlWLh3VOT0SwQ8NNwrdmWfQhp+OezJ4CvNM6/8Yh5D1FoqQAsIK6O0FPZsgqMW2SefrVa+REr69F1HG23zK+l5CQSmK6JGnEzoo7M/tWcYJShnjXV+ybOQ+Ff8PRBL08yuTlOjTp6PaWyxIAByVXN4CvmAwOj+NhYDi2FzJ61YU=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Subject: Re: [PATCH 2/3] ide: set REQ_NOMERGE request flag in ide_do_drive_cmd()
+Date: Mon, 5 May 2008 18:31:11 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+       petkovbb@gmail.com, jens.axboe@oracle.com
+References: <200805031514.24727.bzolnier@gmail.com> <20080505204334P.tomof@acm.org>
+In-Reply-To: <20080505204334P.tomof@acm.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200805051831.12574.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Mon, 2008-05-05 at 12:21 -0400, Steven Rostedt wrote:
-> On Mon, 5 May 2008, Daniel Walker wrote:
-> > You really want bisection first. The reason is that you don't want ever
-> > growing patches, you want smaller and smaller patches. For instance the
-> > rt-mutex-core.patch is way too large, you wouldn't want to fold my
-> > PICK_FUNCTION changes into that patch since that would just make
-> > rt-mutex-core larger ..
-> >
+On Monday 05 May 2008, FUJITA Tomonori wrote:
+> On Sat, 3 May 2008 15:14:24 +0200
+> Bartlomiej Zolnierkiewicz <bzolnier@gmail.com> wrote:
 > 
-> Yeah, I already did that ;-)
+> > This is a preparation for converting IDE to use blk_execute_rq().
+> > 
+> > There should be no functional changes caused by this patch.
+> > 
+> > Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+> > Cc: Borislav Petkov <petkovbb@gmail.com>
+> > Cc: Jens Axboe <jens.axboe@oracle.com>
+> > Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> > ---
+> >  drivers/ide/ide-io.c |    2 ++
+> >  1 file changed, 2 insertions(+)
+> 
+> I think that you can drop this since the block layer doesn't check
+> REQ_NOMERGE with the way ide_do_drive_cmd queues requests.
 
-You already folded my PICK_FUNCTION changes? That's why I mentioned it.
+Yeah, I see now that REQ_NOMERGE only matters for fs requests.
 
-Daniel
-
+Dropped.
