@@ -1,98 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758568AbYEEJzm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755995AbYEEJ4M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758568AbYEEJzm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 05:55:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754143AbYEEJzW
+	id S1755995AbYEEJ4M (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 05:56:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754332AbYEEJzX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 05:55:22 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:45946 "EHLO
+	Mon, 5 May 2008 05:55:23 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:45945 "EHLO
 	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753255AbYEEJzV (ORCPT
+	with ESMTP id S1753626AbYEEJzV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 5 May 2008 05:55:21 -0400
-Message-Id: <20080505095509.480855416@szeredi.hu>
+Message-Id: <20080505095511.217634550@szeredi.hu>
 References: <20080505095440.820370974@szeredi.hu>
 User-Agent: quilt/0.45-1
-Date: Mon, 05 May 2008 11:54:43 +0200
+Date: Mon, 05 May 2008 11:54:44 +0200
 From: Miklos Szeredi <miklos@szeredi.hu>
 To: akpm@linux-foundation.org
 Cc: hch@infradead.org, viro@ZenIV.linux.org.uk, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: [patch 02/15] nfsd: clean up mnt_want_write calls
-Content-Disposition: inline; filename=nfsd_create_cleanup.patch
+       linux-fsdevel@vger.kernel.org, Paul Menage <menage@google.com>
+Subject: [patch 03/15] cgroup: dont call vfs_mkdir
+Content-Disposition: inline; filename=cgroup_mkdir_cleanup.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Miklos Szeredi <mszeredi@suse.cz>
 
-Multiple mnt_want_write() calls in the switch statement looks really
-ugly.
+cgroup_clone() calls vfs_mkdir() to create a directory in the cgroup
+filesystem.  Replace with explicit call to cgroup_mkdir() and
+fsnotify_mkdir().
+
+This is equivalent, except that the following functions are not called
+before cgroup_mkdir():
+
+ - may_create()
+ - security_inode_mkdir()
+ - DQUOT_INIT()
+
+Permission to clone the cgroup has already been checked in
+copy_namespaces() (requiring CAP_SYS_ADMIN).  Additional file system
+related capability checks are inappropriate and confusing.
+
+The quota check is unnecessary, as quotas don't make any sense for
+this filesystem.
 
 Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
+CC: Paul Menage <menage@google.com>
 ---
- fs/nfsd/vfs.c |   25 +++++++++++--------------
- 1 file changed, 11 insertions(+), 14 deletions(-)
+ kernel/cgroup.c |    5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
-Index: linux-2.6/fs/nfsd/vfs.c
+Index: linux-2.6/kernel/cgroup.c
 ===================================================================
---- linux-2.6.orig/fs/nfsd/vfs.c	2008-05-05 11:29:21.000000000 +0200
-+++ linux-2.6/fs/nfsd/vfs.c	2008-05-05 11:29:24.000000000 +0200
-@@ -1248,36 +1248,34 @@ nfsd_create(struct svc_rqst *rqstp, stru
- 		iap->ia_mode = 0;
- 	iap->ia_mode = (iap->ia_mode & S_IALLUGO) | type;
- 
-+	err = nfserr_inval;
-+	if (!S_ISREG(type) && !S_ISDIR(type) && !special_file(type)) {
-+		printk(KERN_WARNING "nfsd: bad file type %o in nfsd_create\n",
-+		       type);
-+		goto out;
-+	}
-+
-+	host_err = mnt_want_write(fhp->fh_export->ex_path.mnt);
-+	if (host_err)
-+		goto out_nfserr;
-+
- 	/*
- 	 * Get the dir op function pointer.
- 	 */
- 	err = 0;
- 	switch (type) {
- 	case S_IFREG:
--		host_err = mnt_want_write(fhp->fh_export->ex_path.mnt);
--		if (host_err)
--			goto out_nfserr;
- 		host_err = vfs_create(dirp, dchild, iap->ia_mode, NULL);
- 		break;
- 	case S_IFDIR:
--		host_err = mnt_want_write(fhp->fh_export->ex_path.mnt);
--		if (host_err)
--			goto out_nfserr;
- 		host_err = vfs_mkdir(dirp, dchild, iap->ia_mode);
- 		break;
- 	case S_IFCHR:
- 	case S_IFBLK:
- 	case S_IFIFO:
- 	case S_IFSOCK:
--		host_err = mnt_want_write(fhp->fh_export->ex_path.mnt);
--		if (host_err)
--			goto out_nfserr;
- 		host_err = vfs_mknod(dirp, dchild, iap->ia_mode, rdev);
- 		break;
--	default:
--	        printk("nfsd: bad file type %o in nfsd_create\n", type);
--		host_err = -EINVAL;
--		goto out_nfserr;
- 	}
- 	if (host_err < 0) {
- 		mnt_drop_write(fhp->fh_export->ex_path.mnt);
-@@ -1289,7 +1287,6 @@ nfsd_create(struct svc_rqst *rqstp, stru
- 		write_inode_now(dchild->d_inode, 1);
+--- linux-2.6.orig/kernel/cgroup.c	2008-05-05 11:29:21.000000000 +0200
++++ linux-2.6/kernel/cgroup.c	2008-05-05 11:29:25.000000000 +0200
+@@ -25,6 +25,7 @@
+ #include <linux/cgroup.h>
+ #include <linux/errno.h>
+ #include <linux/fs.h>
++#include <linux/fsnotify.h>
+ #include <linux/kernel.h>
+ #include <linux/list.h>
+ #include <linux/mm.h>
+@@ -2928,7 +2929,9 @@ int cgroup_clone(struct task_struct *tsk
  	}
  
--
- 	err2 = nfsd_create_setattr(rqstp, resfhp, iap);
- 	if (err2)
- 		err = err2;
+ 	/* Create the cgroup directory, which also creates the cgroup */
+-	ret = vfs_mkdir(inode, dentry, S_IFDIR | 0755);
++	ret = cgroup_mkdir(inode, dentry, S_IFDIR);
++	if (!ret)
++		fsnotify_mkdir(inode, dentry);
+ 	child = __d_cgrp(dentry);
+ 	dput(dentry);
+ 	if (ret) {
 
 --
