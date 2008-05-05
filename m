@@ -1,50 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760035AbYEEUFs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760427AbYEEUGt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760035AbYEEUFs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 16:05:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753654AbYEEUFk
+	id S1760427AbYEEUGt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 16:06:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754773AbYEEUGk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 16:05:40 -0400
-Received: from wa-out-1112.google.com ([209.85.146.176]:14039 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751057AbYEEUFj (ORCPT
+	Mon, 5 May 2008 16:06:40 -0400
+Received: from smtp1.wifiinternet.cz ([89.31.47.1]:56880 "EHLO
+	bor.wifiinternet.cz" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753654AbYEEUGj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 16:05:39 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=KRDptwxnn8zjzCllhtz6dIMatt6b95rLqZNwxjVOLt0uin1oET5B8sa70nhbii7SJXDfSalu+IQMLt6SgWZbeJVv5EhHpT6MFwHtKw0KU19OTO4I3mPMZFaKO6OU24KUs0Ip6ti5G2iEked8ZorHHmY5y2pUd1T3HCKzcSIjUMY=
-Message-ID: <2f11576a0805051305q9a79558rf26eb80b73b5101c@mail.gmail.com>
-Date: Tue, 6 May 2008 05:05:39 +0900
-From: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>
-To: "Adrian Bunk" <bunk@kernel.org>
-Subject: Re: [2.6 patch] make mm/rmap.c:anon_vma_cachep static
-Cc: "Rik van Riel" <riel@redhat.com>, linux-kernel@vger.kernel.org,
-       "Andrew Morton" <akpm@linux-foundation.org>
-In-Reply-To: <20080505182712.GI17139@cs181133002.pp.htv.fi>
+	Mon, 5 May 2008 16:06:39 -0400
+Message-ID: <481F68FB.9070602@seznam.cz>
+Date: Mon, 05 May 2008 22:07:23 +0200
+From: Michal Simek <monstr@seznam.cz>
+Reply-To: monstr@seznam.cz
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
 MIME-Version: 1.0
+To: Grant Likely <grant.likely@secretlab.ca>
+CC: linux-kernel@vger.kernel.org, arnd@arndb.de, linux-arch@vger.kernel.org,
+       stephen.neuendorffer@xilinx.com, John.Linn@xilinx.com,
+       john.williams@petalogix.com, matthew@wil.cx, will.newton@gmail.com,
+       drepper@redhat.com, microblaze-uclinux@itee.uq.edu.au,
+       Michal Simek <monstr@monstr.eu>
+Subject: Re: [PATCH 10/56] microblaze_v2: Generic dts file for platforms
+References: <a4a778e34c66d126f5c4bf1ca423cf32950ea5ab.1209897266.git.monstr@monstr.eu>	 <2391e49379fb6639f57d9d6e5811f3d49a4c6fda.1209897266.git.monstr@monstr.eu> <fa686aa40805050731gc29e88hdc4917041a63e12f@mail.gmail.com>
+In-Reply-To: <fa686aa40805050731gc29e88hdc4917041a63e12f@mail.gmail.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080505182712.GI17139@cs181133002.pp.htv.fi>
-X-Google-Sender-Auth: ae0d9eb5a4cb503c
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> This patch makes the needlessly global anon_vma_cachep static.
->
->  Signed-off-by: Adrian Bunk <bunk@kernel.org>
->
->  ---
->
->  This patch has been sent on:
->  - 22 Apr 2008
->  - 14 Apr 2008
->  - 31 Mar 2008
->  - 25 Feb 2008
+Hi Grant,
+>> From: Michal Simek <monstr@monstr.eu>
+>>
+>>
+>>  Signed-off-by: Michal Simek <monstr@monstr.eu>
+>>  ---
+>>   arch/microblaze/platform/generic/system.dts |  137 +++++++++++++++++++++++++++
+> 
+> What is the purpose of the generic dts?  Will this work with custom
+> microblaze designs?  The header block should contain a comment about
+> what this file is for.
 
-definitely right change, I think.
-I wonder why this patch is needed 5 times posting.
+This file has only demonstration purpose. That's all.
+This kernel has no relation with any board or design. This could be introduce
+e.g. in petalogix distribution or in xilinx where you distribute this kernel
+with specific hw design. That's one more reason why I want to keep system.dts in
+platform specific folder too.
 
-       Reviewed-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+M
