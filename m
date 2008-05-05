@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762208AbYEESdF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762414AbYEESdo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762208AbYEESdF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 14:33:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760745AbYEES1X
+	id S1762414AbYEESdo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 14:33:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760875AbYEES1s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 14:27:23 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:32924 "EHLO smtp5.pp.htv.fi"
+	Mon, 5 May 2008 14:27:48 -0400
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:44815 "EHLO smtp6.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760738AbYEES1W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 14:27:22 -0400
-Date: Mon, 5 May 2008 21:26:15 +0300
+	id S1760864AbYEES1r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 May 2008 14:27:47 -0400
+Date: Mon, 5 May 2008 21:26:40 +0300
 From: Adrian Bunk <bunk@kernel.org>
-To: ysato@users.sourceforge.jp
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: [2.6 patch] remove include/asm-h8300/keyboard.h
-Message-ID: <20080505182615.GZ17139@cs181133002.pp.htv.fi>
+To: linux-kernel@vger.kernel.org
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Subject: [2.6 patch] proper spawn_ksoftirqd() prototype
+Message-ID: <20080505182640.GB17139@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -23,7 +23,8 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch removes the unused include/asm-h8300/keyboard.h
+This patch adds a proper prototype for spawn_ksoftirqd() in 
+include/linux/interrupt.h
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
@@ -33,38 +34,36 @@ This patch has been sent on:
 - 22 Apr 2008
 - 14 Apr 2008
 - 31 Mar 2008
+- 22 Feb 2008
 
- include/asm-h8300/keyboard.h |   24 ------------------------
- 1 file changed, 24 deletions(-)
+ include/linux/interrupt.h |    1 +
+ init/main.c               |    2 --
+ 2 files changed, 1 insertion(+), 2 deletions(-)
 
-372be646df287c70971a0a5a8a1e2ee5dbc5a47f diff --git a/include/asm-h8300/keyboard.h b/include/asm-h8300/keyboard.h
-deleted file mode 100644
-index 90efbd6..0000000
---- a/include/asm-h8300/keyboard.h
-+++ /dev/null
-@@ -1,24 +0,0 @@
--/*
-- *  linux/include/asm-h8300/keyboard.h
-- *  Created 04 Dec 2001 by Khaled Hassounah <khassounah@mediumware.net>
-- *  This file contains the Dragonball architecture specific keyboard definitions
-- */
+be4c4228059d0d56bf9d5a7c902a244625d1f94b diff --git a/include/linux/interrupt.h b/include/linux/interrupt.h
+index 8ccc912..1a5c3d1 100644
+--- a/include/linux/interrupt.h
++++ b/include/linux/interrupt.h
+@@ -276,6 +276,7 @@ extern void softirq_init(void);
+ #define __raise_softirq_irqoff(nr) do { or_softirq_pending(1UL << (nr)); } while (0)
+ extern void raise_softirq_irqoff(unsigned int nr);
+ extern void raise_softirq(unsigned int nr);
++extern int spawn_ksoftirqd(void);
+ 
+ 
+ /* Tasklets --- multithreaded analogue of BHs.
+diff --git a/init/main.c b/init/main.c
+index 8b19820..7dd9916 100644
+--- a/init/main.c
++++ b/init/main.c
+@@ -756,8 +756,6 @@ __setup("nosoftlockup", nosoftlockup_setup);
+ 
+ static void __init do_pre_smp_initcalls(void)
+ {
+-	extern int spawn_ksoftirqd(void);
 -
--#ifndef _H8300_KEYBOARD_H
--#define _H8300_KEYBOARD_H
--
--
--/* dummy i.e. no real keyboard */
--#define kbd_setkeycode(x...)	(-ENOSYS)
--#define kbd_getkeycode(x...)	(-ENOSYS)
--#define kbd_translate(x...)	(0)
--#define kbd_unexpected_up(x...)	(1)
--#define kbd_leds(x...)		do {;} while (0)
--#define kbd_init_hw(x...)	do {;} while (0)
--#define kbd_enable_irq(x...)	do {;} while (0)
--#define kbd_disable_irq(x...)	do {;} while (0)
--
--#endif  /* _H8300_KEYBOARD_H */
--
--
--
+ 	migration_init();
+ 	spawn_ksoftirqd();
+ 	if (!nosoftlockup)
+
 
