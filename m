@@ -1,109 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763639AbYEESpj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761329AbYEESq1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763639AbYEESpj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 14:45:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761988AbYEEScL
+	id S1761329AbYEESq1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 14:46:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762570AbYEESeL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 14:32:11 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:38540 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761979AbYEEScJ (ORCPT
+	Mon, 5 May 2008 14:34:11 -0400
+Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:44169
+	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762548AbYEESeI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 14:32:09 -0400
-Date: Mon, 5 May 2008 14:32:07 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Daniel Walker <dwalker@mvista.com>
-cc: Sven-Thorsten Dietrich <sven@thebigcorporation.com>,
-       Remy Bohmer <linux@bohmer.net>, LKML <linux-kernel@vger.kernel.org>,
-       RT <linux-rt-users@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Jon Masters <jonathan@jonmasters.org>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: Preempt-RT patch for 2.6.25
-In-Reply-To: <1210007084.17132.32.camel@localhost.localdomain>
-Message-ID: <Pine.LNX.4.58.0805051426010.25250@gandalf.stny.rr.com>
-References: <3efb10970805021102n4d87f55eue723786281b06fcb@mail.gmail.com> 
- <1209753250.25628.34.camel@dd.thebigcorporation.com> 
- <Pine.LNX.4.58.0805021441340.10615@gandalf.stny.rr.com> 
- <1209754467.25628.42.camel@dd.thebigcorporation.com> 
- <Pine.LNX.4.58.0805021502040.10615@gandalf.stny.rr.com> 
- <1210003265.17132.6.camel@localhost.localdomain> 
- <Pine.LNX.4.58.0805051210410.23084@gandalf.stny.rr.com> 
- <1210004376.17132.14.camel@localhost.localdomain> 
- <Pine.LNX.4.58.0805051240520.25250@gandalf.stny.rr.com>
- <1210007084.17132.32.camel@localhost.localdomain>
+	Mon, 5 May 2008 14:34:08 -0400
+Date: Mon, 5 May 2008 20:34:05 +0200
+From: Andrea Arcangeli <andrea@qumranet.com>
+To: Jack Steiner <steiner@sgi.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Lameter <clameter@sgi.com>, Robin Holt <holt@sgi.com>,
+       Nick Piggin <npiggin@suse.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       kvm-devel@lists.sourceforge.net, Kanoj Sarcar <kanojsarcar@yahoo.com>,
+       Roland Dreier <rdreier@cisco.com>,
+       Steve Wise <swise@opengridcomputing.com>, linux-kernel@vger.kernel.org,
+       Avi Kivity <avi@qumranet.com>, linux-mm@kvack.org,
+       general@lists.openfabrics.org, Hugh Dickins <hugh@veritas.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Anthony Liguori <aliguori@us.ibm.com>, Chris Wright <chrisw@redhat.com>,
+       Marcelo Tosatti <marcelo@kvack.org>, Eric Dumazet <dada1@cosmosbay.com>,
+       "Paul E. McKenney" <paulmck@us.ibm.com>
+Subject: Re: [PATCH 01 of 11] mmu-notifier-core
+Message-ID: <20080505183405.GI8470@duo.random>
+References: <patchbomb.1209740703@duo.random> <1489529e7b53d3f2dab8.1209740704@duo.random> <20080505162113.GA18761@sgi.com> <20080505171434.GF8470@duo.random> <20080505172506.GA9247@sgi.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080505172506.GA9247@sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, May 05, 2008 at 12:25:06PM -0500, Jack Steiner wrote:
+> Agree. My apologies... I should have caught it.
 
-On Mon, 5 May 2008, Daniel Walker wrote:
+No problem.
 
->
-> That's really the point, you should have started with my version. I
-> released my changes long before the 2.6.25 release.
+> __mmu_notifier_register/__mmu_notifier_unregister seems like a better way to
+> go, although either is ok.
 
-Sorry Daniel but you never proved to me that your version didn't break
-anything.  I'm not about to start with something that throws out all the
-archs, espically when Thomas has a port of another arch ready for me.
+If you also like __mmu_notifier_register more I'll go with it. The
+bitflags seems like a bit of overkill as I can't see the need of any
+other bitflag other than this one and they also can't be removed as
+easily in case you'll find a way to call it outside the lock later.
 
+> Let me finish my testing. At one time, I did not use ->release but
+> with all the locking & teardown changes, I need to do some reverification.
 
->
-> > >
-> > > Bisection is also required for mainline integration ..
-> >
-> > Bisection is required for each element, we don't need it for the entire
-> > tree (atm). If we waste our time making the entire tree fully bisectable,
-> > then it will be a lot of work to maintain that bisectability when we
-> > rewrite entire sections.
->
-> Bisection is required for everything, every patch. I am giving you a
-> bisect tree, there is no time wasted (only mine)..
+If you didn't implement it you shall apply this patch but you shall
+read carefully the comment I written that covers that usage case.
 
-But you still need to show that it didn't brake anything, which you have
-not.
-
->
-> I'm not following your logic Steven .. You want bisection , that means
-> you should want to maintain it, and write code in the future which also
-> bisects.
-
-I'll admit I would like a bisectable tree, and patches that are submitted
-are bisectable. But the patches are also moved around a bit to get
-the queue ready for mainline. That moving itself can break the
-bisectability of later patches.
-
->
-> If someone submits code which doesn't bisect you kick it the same way
-> it's kicked from mainline. That means future patches in -rt are ready
-> for mainline which helps further the goal of mainline integration.
-
-Patches that come in now are usually simple fixes. Major developments are
-bisectable.
-
->
-> > I am making it boot with certain parts intergrated. But my goal is not to
-> > have every single patch compile and boot. We'll worry about that when we
-> > need to push a part of the code in. But reality, what is there now, I can
-> > guarantee will not be the code that is pushed when it is ready.
->
-> What you guarantee to happen in the future is irrelevant .. We want
-> bisection _now_ , not months from now..
-
-Fine, produce your own tree, I'll produce mine.
-
->
-> Bisection has lots of benefits, it's not just that one stupid
-> requirement mainline has and no one really cares about.
-
-There is some benefits, but one thing you forget about the -rt patch, is
-that there's lots of variables.  A lot of bugs that I found in -rt is not
-about a bad patch, but usually because of the way rt works (preemptible
-spinlocks and interrupts as threads) that cause breakage, and a lot of
-that breakage is from a change in upstream, not the patch series. Having
-it bisectable doesn't always help.
-
--- Steve
-
+diff --git a/include/linux/mmu_notifier.h b/include/linux/mmu_notifier.h
+--- a/include/linux/mmu_notifier.h
++++ b/include/linux/mmu_notifier.h
+@@ -29,10 +29,25 @@ struct mmu_notifier_ops {
+ 	/*
+ 	 * Called either by mmu_notifier_unregister or when the mm is
+ 	 * being destroyed by exit_mmap, always before all pages are
+-	 * freed. It's mandatory to implement this method. This can
+-	 * run concurrently with other mmu notifier methods and it
++	 * freed. This can run concurrently with other mmu notifier
++	 * methods (the ones invoked outside the mm context) and it
+ 	 * should tear down all secondary mmu mappings and freeze the
+-	 * secondary mmu.
++	 * secondary mmu. If this method isn't implemented you've to
++	 * be sure that nothing could possibly write to the pages
++	 * through the secondary mmu by the time the last thread with
++	 * tsk->mm == mm exits.
++	 *
++	 * As side note: the pages freed after ->release returns could
++	 * be immediately reallocated by the gart at an alias physical
++	 * address with a different cache model, so if ->release isn't
++	 * implemented because all memory accesses through the
++	 * secondary mmu implicitly are terminated by the time the
++	 * last thread of this mm quits, you've also to be sure that
++	 * speculative hardware operations can't allocate dirty
++	 * cachelines in the cpu that could not be snooped and made
++	 * coherent with the other read and write operations happening
++	 * through the gart alias address, leading to memory
++	 * corruption.
+ 	 */
+ 	void (*release)(struct mmu_notifier *mn,
+ 			struct mm_struct *mm);
+diff --git a/mm/mmu_notifier.c b/mm/mmu_notifier.c
+--- a/mm/mmu_notifier.c
++++ b/mm/mmu_notifier.c
+@@ -59,7 +59,8 @@ void __mmu_notifier_release(struct mm_st
+ 		 * from establishing any more sptes before all the
+ 		 * pages in the mm are freed.
+ 		 */
+-		mn->ops->release(mn, mm);
++		if (mn->ops->release)
++			mn->ops->release(mn, mm);
+ 		srcu_read_unlock(&mm->mmu_notifier_mm->srcu, srcu);
+ 		spin_lock(&mm->mmu_notifier_mm->lock);
+ 	}
+@@ -251,7 +252,8 @@ void mmu_notifier_unregister(struct mmu_
+ 		 * guarantee ->release is called before freeing the
+ 		 * pages.
+ 		 */
+-		mn->ops->release(mn, mm);
++		if (mn->ops->release)
++			mn->ops->release(mn, mm);
+ 		srcu_read_unlock(&mm->mmu_notifier_mm->srcu, srcu);
+ 	} else
+ 		spin_unlock(&mm->mmu_notifier_mm->lock);
