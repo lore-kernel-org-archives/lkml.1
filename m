@@ -1,50 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757869AbYEETuu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759337AbYEETv1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757869AbYEETuu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 15:50:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752691AbYEETum
+	id S1759337AbYEETv1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 15:51:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753605AbYEETvT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 15:50:42 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:43537 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751773AbYEETul (ORCPT
+	Mon, 5 May 2008 15:51:19 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:56439
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752691AbYEETvS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 15:50:41 -0400
-Date: Mon, 5 May 2008 12:50:35 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: "Timur Alperovich" <timur.alperovich@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: exported version of page_is_ram?
-Message-ID: <20080505125035.719feaa5@infradead.org>
-In-Reply-To: <52950c3f0805051058t5d3447c2r3ae8e77cf0166b00@mail.gmail.com>
-References: <52950c3f0805051058t5d3447c2r3ae8e77cf0166b00@mail.gmail.com>
-Organization: Intel
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; i386-redhat-linux-gnu)
+	Mon, 5 May 2008 15:51:18 -0400
+Date: Mon, 05 May 2008 12:51:18 -0700 (PDT)
+Message-Id: <20080505.125118.101401893.davem@davemloft.net>
+To: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Cc: mm-commits@vger.kernel.org
+Subject: Re: + git-net-git-rejects.patch added to -mm tree
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <200805051905.m45J5eG7032280@imap1.linux-foundation.org>
+References: <200805051905.m45J5eG7032280@imap1.linux-foundation.org>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 5 May 2008 13:58:59 -0400
-"Timur Alperovich" <timur.alperovich@gmail.com> wrote:
+From: akpm@linux-foundation.org
+Date: Mon, 05 May 2008 12:05:40 -0700
 
-> Hi,
+> Subject: git-net-git-rejects
 > 
-> I need to check if a given page is in ram or not. It seems that
-> page_is_ram does the trick, but since it's not exported, I end up with
-> "unknown symbol" errors when I try to insert the module. I'm trying to
-> hash the contents of every page in physical memory, and iterating
-> through pages from 0 to num_physpages, while checking if they are
-> actually in ram seemed reasonable. Is there a better way to do it or
-> is there another function rather than page_is_ram that can do the
-> trick?
+> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
-sounds like the right way is to make a "for each ram page" function
-in the core, export_symbol_gpl that so that you can then use that...
-We could even make it scale and numa friendly in the core that way.
+What happened here?
 
-Do you have a url for your code?
+Did you apply Ingo's IRDA build fixup patches, like I did, and clean
+them up or change them in some way?
