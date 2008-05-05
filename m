@@ -1,49 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760112AbYEET4o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760187AbYEET5t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760112AbYEET4o (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 15:56:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754561AbYEET4f
+	id S1760187AbYEET5t (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 15:57:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753689AbYEET5k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 15:56:35 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:48958 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754630AbYEET4e (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 15:56:34 -0400
-Date: Mon, 5 May 2008 12:56:20 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Sam Ravnborg <sam@ravnborg.org>, Parag Warudkar <parag.warudkar@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "akpm@osdl.org" <akpm@osdl.org>, Peter Zijlstra <peterz@infradead.org>,
-       Dave Jones <davej@redhat.com>
-Subject: Re: [PATCH] default to n for GROUP_SCHED and FAIR_GROUP_SCHED
-Message-ID: <20080505125620.219c4bb6@infradead.org>
-In-Reply-To: <20080505184235.GD22332@elte.hu>
-References: <82e4877d0805031742o464dd581wd93173d79705ce0d@mail.gmail.com>
-	<20080504092417.GA3425@elte.hu>
-	<82e4877d0805050814j721ae522k84384df48c9f4336@mail.gmail.com>
-	<20080505171501.GA22332@elte.hu>
-	<20080505182427.GA2025@uranus.ravnborg.org>
-	<20080505184235.GD22332@elte.hu>
-Organization: Intel
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; i386-redhat-linux-gnu)
+	Mon, 5 May 2008 15:57:40 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:54142 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753568AbYEET5k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 May 2008 15:57:40 -0400
+Date: Mon, 5 May 2008 21:58:15 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Peter Oberparleiter <peter.oberparleiter@de.ibm.com>
+Cc: linux-kernel@vger.kernel.org, ltp-list@lists.sourceforge.net,
+       ltp-coverage@lists.sourceforge.net,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [RFC PATCH 3/6] kbuild: convert include and source paths
+Message-ID: <20080505195815.GD8868@uranus.ravnborg.org>
+References: <481F26AA.4050701@de.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <481F26AA.4050701@de.ibm.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 5 May 2008 20:42:35 +0200
-Ingo Molnar <mingo@elte.hu> wrote:
+On Mon, May 05, 2008 at 05:24:26PM +0200, Peter Oberparleiter wrote:
+> From: Peter Oberparleiter <peter.oberparleiter@de.ibm.com>
+> 
+> Modify kbuild to convert relative include and source paths to absolute
+> form. Also change the module versioning mechanism to alter object file
+> names only after compiling.
+> 
+> Required by the gcov profiling infrastructure: source paths are
+> referenced by the compiled object files. Using relative paths or
+> object file names which are different from the source name would
+> prevent the gcov tool from finding the corresponding source files.
 
-> In practice distro maintainers will pick the upstream default 99% of
-> the time, 
+For the relative path issue do you really fix this at the right place?
+I would say that teaching gcov tool from where to look would be better.
 
-actually.. not quite. They don't tend to look at "default" in Kconfig;
-they tend to say "m" if possible, and otherwise read the help text to
-see if it makes sense...
+> Also change the module versioning mechanism to alter object file
+> names only after compiling.
+Can I get this as a separate patch please.
+It may be general useful and makes sense to look at alone.
+
+	Sam
