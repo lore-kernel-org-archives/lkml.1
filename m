@@ -1,46 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754772AbYEERk7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755630AbYEERlV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754772AbYEERk7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 13:40:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751371AbYEERku
+	id S1755630AbYEERlV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 13:41:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752419AbYEERkz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 13:40:50 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:36089 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751057AbYEERku (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 13:40:50 -0400
-Date: Mon, 5 May 2008 18:40:48 +0100
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: weigelt@metux.de, linux-kernel@vger.kernel.org
-Subject: Re: VFS + path walktrough
-Message-ID: <20080505174048.GP5882@ZenIV.linux.org.uk>
-References: <20080505124041.GB32019@nibiru.local> <20080505130623.GC32019@nibiru.local> <20080505131307.GM5882@ZenIV.linux.org.uk> <20080505134315.GF32019@nibiru.local> <20080505153501.GN5882@ZenIV.linux.org.uk> <E1Jt3nB-0006ZP-6S@pomaz-ex.szeredi.hu> <20080505171425.GO5882@ZenIV.linux.org.uk> <E1Jt4Ye-0006hz-9i@pomaz-ex.szeredi.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <E1Jt4Ye-0006hz-9i@pomaz-ex.szeredi.hu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Mon, 5 May 2008 13:40:55 -0400
+Received: from gate.crashing.org ([63.228.1.57]:52304 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752064AbYEERky (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 May 2008 13:40:54 -0400
+Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Message-Id: <7F696AAE-069D-443A-9511-5CF92F4538EA@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+In-Reply-To: <alpine.LFD.1.10.0805051018550.32269@woody.linux-foundation.org>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Content-Transfer-Encoding: 7bit
+Mime-Version: 1.0 (Apple Message framework v919.2)
+Subject: Re: [git pull] Please pull powerpc.git powerpc-next branch
+Date: Mon, 5 May 2008 12:40:01 -0500
+References: <18463.1101.341437.600410@cargo.ozlabs.ibm.com> <alpine.LFD.1.10.0805051018550.32269@woody.linux-foundation.org>
+X-Mailer: Apple Mail (2.919.2)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 05, 2008 at 07:33:00PM +0200, Miklos Szeredi wrote:
 
-> > This is still wrong.  We not just pass the pathname to filesystem (note
-> > that you still need to deal with symlinks),
-> 
-> Symlinks are easy: filesystem just needs to *stop* the resolution the
-> moment it finds one.
+On May 5, 2008, at 12:19 PM, Linus Torvalds wrote:
 
-That assumes you see types of objects as you do multi-step walk...
+>
+>
+> On Mon, 5 May 2008, Paul Mackerras wrote:
+>>
+>> If you think these should wait until 2.6.27, just let me know.
+>
+> Well, since you didn't even mention the place to pull from, I guess  
+> it can
+> wait..
 
-> >  Take a look at 9P walk - it does *not* give
-> > you anything resembling stat, you just get qids of intermediates.
-> 
-> Which is exactly what's needed to populate the dentry tree, no?
+Paul's clearly starting to lose it.  First a pull request w/o him  
+pushing to his tree.  Now a pull request from the ether.
 
-No - you need inodes as well (i.e. as the absolute least you want
-mode and ownership).  Which is to say, you need to issue stat on
-each component in such situation anyway.  Not a win...
+- k
