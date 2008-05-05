@@ -1,140 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758870AbYEEDsf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758935AbYEEDsw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758870AbYEEDsf (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 May 2008 23:48:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756902AbYEEDno
+	id S1758935AbYEEDsw (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 May 2008 23:48:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757237AbYEEDnp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 May 2008 23:43:44 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:52522 "EHLO mx1.redhat.com"
+	Sun, 4 May 2008 23:43:45 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:52524 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756918AbYEEDnZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1756946AbYEEDnZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 4 May 2008 23:43:25 -0400
 Date: Sun, 4 May 2008 23:42:46 -0400
 From: Ulrich Drepper <drepper@redhat.com>
-Message-Id: <200805050342.m453gktV029823@devserv.devel.redhat.com>
+Message-Id: <200805050342.m453gkY4029814@devserv.devel.redhat.com>
 To: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: [PATCH 04/18] flag parameters: anon_inode_getfd extension
+Subject: [PATCH 01/18] flag parameters: helper function
 Cc: akpm@linux-foundation.org, davidel@xmailserver.org, mtk.manpages@gmail.com,
        torvalds@linux-foundation.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch just extends the anon_inode_getfd interface to take an additional
-parameter with a flag value.  The flag value is passed on to
-get_unused_fd_flags in anticipation for a use with the O_CLOEXEC flag.
+In the following patches we have to map one set of flags to another one
+in numerous locations.  This patch provides a generic implementation for
+this.  It is basically the code Davide Libenzi suggested on 4/27/08.
 
-No actual semantic changes here, the changed callers all pass 0 for now.
+I haven't checked whether this functionality can be applied to any existing
+code.
 
 
- fs/anon_inodes.c            |    9 +++++----
- fs/eventfd.c                |    2 +-
- fs/eventpoll.c              |    2 +-
- fs/signalfd.c               |    3 ++-
- fs/timerfd.c                |    2 +-
- include/linux/anon_inodes.h |    2 +-
- 6 files changed, 11 insertions(+), 9 deletions(-)
+ include/linux/flagsremap.h |   15 +++++++++++++++
+ lib/Makefile               |    2 +-
+ lib/flagsremap.c           |   17 +++++++++++++++++
+ 3 files changed, 33 insertions(+), 1 deletion(-)
 
 
 Signed-off-by: Ulrich Drepper <drepper@redhat.com>
 
-diff --git a/fs/anon_inodes.c b/fs/anon_inodes.c
-index 977ef20..3662dd4 100644
---- a/fs/anon_inodes.c
-+++ b/fs/anon_inodes.c
-@@ -58,8 +58,9 @@ static struct dentry_operations anon_inodefs_dentry_operations = {
-  *                    of the file
-  *
-  * @name:    [in]    name of the "class" of the new file
-- * @fops     [in]    file operations for the new file
-- * @priv     [in]    private data for the new file (will be file's private_data)
-+ * @fops:    [in]    file operations for the new file
-+ * @priv:    [in]    private data for the new file (will be file's private_data)
-+ * @flags:   [in]    flags
-  *
-  * Creates a new file by hooking it on a single inode. This is useful for files
-  * that do not need to have a full-fledged inode in order to operate correctly.
-@@ -68,7 +69,7 @@ static struct dentry_operations anon_inodefs_dentry_operations = {
-  * setup.  Returns new descriptor or -error.
-  */
- int anon_inode_getfd(const char *name, const struct file_operations *fops,
--		     void *priv)
-+		     void *priv, int flags)
- {
- 	struct qstr this;
- 	struct dentry *dentry;
-@@ -78,7 +79,7 @@ int anon_inode_getfd(const char *name, const struct file_operations *fops,
- 	if (IS_ERR(anon_inode_inode))
- 		return -ENODEV;
+diff --git a/include/linux/flagsremap.h b/include/linux/flagsremap.h
+new file mode 100644
+index 0000000..6ea0ee3
+--- /dev/null
++++ b/include/linux/flagsremap.h
+@@ -0,0 +1,15 @@
++/*
++ * Generic flag remapping functionality.
++ */
++#ifndef _LINUX_FLAPREMAP_H
++#define _LINUX_FLAGREMAP_H
++
++struct flags_rmap {
++	int f;
++	int of;
++};
++
++extern int flags_remap(const struct flags_rmap *m, int n,
++		       int f, int *rf);
++
++#endif /* _LINUX_FLAGREMAP_H */
+diff --git a/lib/Makefile b/lib/Makefile
+index 74b0cfb..ab861ad 100644
+--- a/lib/Makefile
++++ b/lib/Makefile
+@@ -6,7 +6,7 @@ lib-y := ctype.o string.o vsprintf.o cmdline.o \
+ 	 rbtree.o radix-tree.o dump_stack.o \
+ 	 idr.o int_sqrt.o extable.o prio_tree.o \
+ 	 sha1.o irq_regs.o reciprocal_div.o argv_split.o \
+-	 proportions.o prio_heap.o ratelimit.o
++	 proportions.o prio_heap.o ratelimit.o flagsremap.o
  
--	error = get_unused_fd();
-+	error = get_unused_fd_flags(flags);
- 	if (error < 0)
- 		return error;
- 	fd = error;
-diff --git a/fs/eventfd.c b/fs/eventfd.c
-index 343942d..ddb543d 100644
---- a/fs/eventfd.c
-+++ b/fs/eventfd.c
-@@ -214,7 +214,7 @@ asmlinkage long sys_eventfd(unsigned int count)
- 	 * When we call this, the initialization must be complete, since
- 	 * anon_inode_getfd() will install the fd.
- 	 */
--	fd = anon_inode_getfd("[eventfd]", &eventfd_fops, ctx);
-+	fd = anon_inode_getfd("[eventfd]", &eventfd_fops, ctx, 0);
- 	if (fd < 0)
- 		kfree(ctx);
- 	return fd;
-diff --git a/fs/eventpoll.c b/fs/eventpoll.c
-index 990c01d..7714e91 100644
---- a/fs/eventpoll.c
-+++ b/fs/eventpoll.c
-@@ -1068,7 +1068,7 @@ asmlinkage long sys_epoll_create(int size)
- 	 * Creates all the items needed to setup an eventpoll file. That is,
- 	 * a file structure and a free file descriptor.
- 	 */
--	fd = anon_inode_getfd("[eventpoll]", &eventpoll_fops, ep);
-+	fd = anon_inode_getfd("[eventpoll]", &eventpoll_fops, ep, 0);
- 	if (fd < 0)
- 		ep_free(ep);
- 
-diff --git a/fs/signalfd.c b/fs/signalfd.c
-index 6197256..a73333b 100644
---- a/fs/signalfd.c
-+++ b/fs/signalfd.c
-@@ -227,7 +227,8 @@ asmlinkage long sys_signalfd(int ufd, sigset_t __user *user_mask, size_t sizemas
- 		 * When we call this, the initialization must be complete, since
- 		 * anon_inode_getfd() will install the fd.
- 		 */
--		ufd = anon_inode_getfd("[signalfd]", &signalfd_fops, ctx);
-+		ufd = anon_inode_getfd("[signalfd]", &signalfd_fops, ctx,
-+				       0);
- 		if (ufd < 0)
- 			kfree(ctx);
- 	} else {
-diff --git a/fs/timerfd.c b/fs/timerfd.c
-index d87d354..f998991 100644
---- a/fs/timerfd.c
-+++ b/fs/timerfd.c
-@@ -198,7 +198,7 @@ asmlinkage long sys_timerfd_create(int clockid, int flags)
- 	ctx->clockid = clockid;
- 	hrtimer_init(&ctx->tmr, clockid, HRTIMER_MODE_ABS);
- 
--	ufd = anon_inode_getfd("[timerfd]", &timerfd_fops, ctx);
-+	ufd = anon_inode_getfd("[timerfd]", &timerfd_fops, ctx, 0);
- 	if (ufd < 0)
- 		kfree(ctx);
- 
-diff --git a/include/linux/anon_inodes.h b/include/linux/anon_inodes.h
-index 6129e58..e0a0cdc 100644
---- a/include/linux/anon_inodes.h
-+++ b/include/linux/anon_inodes.h
-@@ -9,7 +9,7 @@
- #define _LINUX_ANON_INODES_H
- 
- int anon_inode_getfd(const char *name, const struct file_operations *fops,
--		     void *priv);
-+		     void *priv, int flags);
- 
- #endif /* _LINUX_ANON_INODES_H */
- 
+ lib-$(CONFIG_MMU) += ioremap.o
+ lib-$(CONFIG_SMP) += cpumask.o
+diff --git a/lib/flagsremap.c b/lib/flagsremap.c
+new file mode 100644
+index 0000000..7dbe8f5
+--- /dev/null
++++ b/lib/flagsremap.c
+@@ -0,0 +1,17 @@
++/*
++ * Implement generic flag remapping.
++ */
++#include <linux/flagsremap.h>
++
++
++int flags_remap(const struct flags_rmap *m, int n,
++		int f, int *rf)
++{
++	int i;
++	for (i = 0, *rf = 0; f && i < n; i++, m++)
++		if (f & m->f) {
++			*rf |= m->of;
++			f &= ~m->f;
++		}
++	return f;
++}
