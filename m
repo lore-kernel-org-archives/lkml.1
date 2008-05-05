@@ -1,58 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756296AbYEEHYa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757557AbYEEHZA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756296AbYEEHYa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 03:24:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752595AbYEEHYT
+	id S1757557AbYEEHZA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 03:25:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754443AbYEEHYu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 03:24:19 -0400
-Received: from ug-out-1314.google.com ([66.249.92.168]:62874 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753217AbYEEHYS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 03:24:18 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=B8ufcxlIik0aUqfml1TINxtZvunz0hP2VJ2qr4RRtSAobzUeJueGEXhloj0yO3eTvJ97Yb0nu9o0it9FPhgGngPTJ7RtV06707DXJO5CPll6VcmmE4wt4zrbdcluriquYi0VwwedhyYQNY0nwtW9eV18wqPqxceTs5onKCdxW0c=
-Date: Mon, 5 May 2008 07:27:34 +0000
-From: Jarek Poplawski <jarkao2@gmail.com>
-To: Jay Cliburn <jacliburn@bellsouth.net>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       Chris Snook <csnook@redhat.com>
-Subject: Re: Need help debugging memory corruption
-Message-ID: <20080505072734.GA4069@ff.dom.local>
-References: <20080503130951.091392ba@osprey.hogchain.net> <481DC731.5090303@gmail.com> <481DCE4C.9070805@gmail.com> <20080504145529.2eac672e@osprey.hogchain.net>
+	Mon, 5 May 2008 03:24:50 -0400
+Received: from mail.suse.de ([195.135.220.2]:57353 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752207AbYEEHYs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 May 2008 03:24:48 -0400
+From: Neil Brown <neilb@suse.de>
+To: Jens Axboe <jens.axboe@oracle.com>
+Date: Mon, 5 May 2008 17:24:31 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080504145529.2eac672e@osprey.hogchain.net>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Transfer-Encoding: 7bit
+Message-ID: <18462.46639.578272.994939@notabene.brown>
+Cc: Jacek Luczak <difrost.kernel@gmail.com>,
+       Prakash Punnoor <prakash@punnoor.de>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       Dan Williams <dan.j.williams@intel.com>, linux-raid@vger.kernel.org
+Subject: Re: WARNING in 2.6.25-07422-gb66e1f1
+In-Reply-To: message from Jens Axboe on Sunday May 4
+References: <200805031151.44287.prakash@punnoor.de>
+	<481DB3F3.5080102@gmail.com>
+	<20080504183839.GN12774@kernel.dk>
+X-Mailer: VM 7.19 under Emacs 21.4.1
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, May 04, 2008 at 02:55:29PM -0500, Jay Cliburn wrote:
-> On Sun, 04 May 2008 16:55:08 +0200
-> Jarek Poplawski <jarkao2@gmail.com> wrote:
+On Sunday May 4, jens.axboe@oracle.com wrote:
+> On Sun, May 04 2008, Jacek Luczak wrote:
+> > Hi,
+> > 
+> > I've CC:-ed few guys which may help.
+> > 
+> > Prakash Punnoor pisze:
+> > > Hi, I got this on boot:
+> > >
+> > > usb 2-1.3: new full speed USB device using ehci_hcd and address 3
+> > > usb 2-1.3: configuration #1 chosen from 1 choice
+> > > Clocksource tsc unstable (delta = -117343945 ns)
+> > > ------------[ cut here ]------------
+> > > WARNING: at include/linux/blkdev.h:443 blk_remove_plug+0x7d/0x90()
+...
 > 
-> > Jarek Poplawski wrote, On 05/04/2008 04:24 PM:
-> > ...
-> > 
-> > > I'm definitely with less experience, so I wonder why it can't be
-> > > a simple race between atl1_clean_rx_ring() and something (maybe even
-> > > pending atl1_intr_rx()) on the other cpu writing skb while kfreeing?
-> > 
-> > 
-> > Hmm... atl1_intr_rx() looks impossible, so atl1_alloc_rx_buffers()?
+> Looks like it caught a real bug there - unfortunately we have to check
+> for ->queue_lock here as well, if this is another stacked devices and
+> not the bottom device. Does this make the warning go away for you?
 > 
-> I booted with nosmp and the bug is *much* harder to hit, but I still
-> hit it once out of about 10 tries.  Does the fact that I hit it once
-> using nosmp disprove the race theory?
+> diff --git a/drivers/md/raid5.c b/drivers/md/raid5.c
+> index 087eee0..958f26b 100644
+> --- a/drivers/md/raid5.c
+> +++ b/drivers/md/raid5.c
+> @@ -3264,6 +3264,8 @@ static void raid5_unplug_device(struct request_queue *q)
+>  	unsigned long flags;
+>  
+>  	spin_lock_irqsave(&conf->device_lock, flags);
+> +	if (q->queue_lock)
+> +		spin_lock(q->queue_lock);
+>  
+>  	if (blk_remove_plug(q)) {
+>  		conf->seq_flush++;
+> @@ -3271,6 +3273,8 @@ static void raid5_unplug_device(struct request_queue *q)
+>  	}
+>  	md_wakeup_thread(mddev->thread);
+>  
+> +	if (q->queue_lock)
+> +		spin_unlock(q->queue_lock);
+>  	spin_unlock_irqrestore(&conf->device_lock, flags);
+>  
+>  	unplug_slaves(mddev);
+> 
 
-Probably not: I don't know how about preemption model, but especially
-some maybe unkilled timers/watchdogs or workqueues could be considered.
-Of course this idea looks very unprobable (should happen with less
-than 4GB too), but should be quite easy to verify by adding some
-temporary spinlocks around these rx ring operations?
+I suspect that will just cause more problems, as the 'q' for an md
+device never gets ->queue_lock initialised.
+I suspect the correct thing to do is set
+	q->queue_lock = &conf->device_lock;
 
-Jarek P.
+at some stage, probably immediately after device_lock is initialised
+in 'run'.
+
+I was discussing this with Dan Williams starting
+  http://marc.info/?l=linux-raid&m=120951839903995&w=4
+though we don't have an agreed patch yet.
+
+I'm wondering why you mention the issues of stacked devices though.  I
+don't see how it applies.  Could you explain?
+
+Thanks,
+NeilBrown
