@@ -1,221 +1,153 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755455AbYEEEDW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752484AbYEEEPv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755455AbYEEEDW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 00:03:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752838AbYEEECs
+	id S1752484AbYEEEPv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 00:15:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750859AbYEEEPl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 00:02:48 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:37048 "EHLO smtps.tip.net.au"
+	Mon, 5 May 2008 00:15:41 -0400
+Received: from mx2.suse.de ([195.135.220.15]:52043 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752516AbYEEECq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 00:02:46 -0400
-Date: Mon, 5 May 2008 14:02:34 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Greg KH <greg@kroah.com>
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       Kay Sievers <kay.sievers@vrfy.org>, dougthompson@xmission.com,
-       Linus <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       bluesmoke-devel@lists.sourceforge.net, tony@bakeyournoodle.com,
-       michael@ellerman.id.au
-Subject: linux-next: upstream edac build failure
-Message-Id: <20080505140234.ac7b8a22.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.5.0beta3 (GTK+ 2.12.9; i486-pc-linux-gnu)
+	id S1750819AbYEEEPk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 May 2008 00:15:40 -0400
+Date: Mon, 5 May 2008 06:15:33 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, Jens Axboe <jens.axboe@oracle.com>,
+       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
+       jeremy@goop.org, mingo@elte.hu
+Subject: Re: [PATCH 1/10] Add generic helpers for arch IPI function calls
+Message-ID: <20080505041533.GA17640@wotan.suse.de>
+References: <20080430113456.GY12774@kernel.dk> <20080430121712.GR11126@linux.vnet.ibm.com> <20080430123717.GC12774@kernel.dk> <20080502020241.GA26088@linux.vnet.ibm.com> <20080502021233.GC11844@wotan.suse.de> <20080502122955.GB15522@linux.vnet.ibm.com> <20080502124205.GA23680@linux.vnet.ibm.com> <1209733169.13978.157.camel@twins> <20080503054930.GA19664@wotan.suse.de> <20080503181148.GA16159@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Mon__5_May_2008_14_02_34_+1000_b_HT8zrZLZyvea=."
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080503181148.GA16159@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Mon__5_May_2008_14_02_34_+1000_b_HT8zrZLZyvea=.
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Sat, May 03, 2008 at 11:11:48AM -0700, Paul E. McKenney wrote:
+> On Sat, May 03, 2008 at 07:49:30AM +0200, Nick Piggin wrote:
+> > > This is perfectly deadlock free when wait=0 and it just returns -ENOMEM
+> > > on allocation failure.
+> > 
+> > Yeah, I'm just talking about the wait=0 case. (btw. I'd rather the core
+> > API takes some data rather than allocates some itself, eg because you
+> > might want to have it on the stack).
+> 
+> But taking data on the stack is safe only in the wait=1 case, right?
 
-Hi Greg,
+Sure, but the API would be general enough to handle it.
 
-Today's linux-next build (powerpc allyesconfig) fails like this:
+ 
+> > For the wait=1 case, something very clever such as processing pending
+> > requests in a polling loop might be cool... however I'd rather not add
+> > such complexity until someone needs it (you could stick a comment in
+> > there outlining your algorithm). But I'd just rather not have peole rely
+> > on it yet.
+> 
+> In that case we may need to go back to the global lock with only one
+> request being processed at a time.  Otherwise, if two wait=1 requests
+> happen at the same time, they deadlock waiting for each other to process
+> their request.  (See Keith Owens: http://lkml.org/lkml/2008/5/2/183).
+> 
+> In other words, if you want to allow parallel calls to
+> smp_call_function(), the simplest way to do it seems to be to do the
+> polling loop.  The other ways I have come up with thus far are uglier
+> and less effective (see http://lkml.org/lkml/2008/4/30/164).
+> 
+> Now, what I -could- do would be to prohibit the wait=1 case from
+> irq-disable state from polling -- that would make sense, as the caller
+> probably had a reason to mask irqs, and might not take kindly to having
+> them faked behind the caller's back.  ;-)
 
-drivers/edac/cell_edac.c: In function 'cell_edac_count_ce':
-drivers/edac/cell_edac.c:38: error: 'struct device' has no member named 'de=
-v_name'
-drivers/edac/cell_edac.c: In function 'cell_edac_count_ue':
-drivers/edac/cell_edac.c:59: error: 'struct device' has no member named 'de=
-v_name'
-drivers/edac/cell_edac.c: In function 'cell_edac_init_csrows':
-drivers/edac/cell_edac.c:145: error: 'struct device' has no member named 'd=
-ev_name'
-drivers/edac/cell_edac.c: In function 'cell_edac_probe':
-drivers/edac/cell_edac.c:168: error: 'struct device' has no member named 'd=
-ev_name'
-drivers/edac/cell_edac.c:175: error: 'struct device' has no member named 'd=
-ev_name'
-drivers/edac/cell_edac.c:179: error: 'struct device' has no member named 'd=
-ev_name'
-drivers/edac/cell_edac.c:204: error: 'struct device' has no member named 'd=
-ev_name'
+I think we're talking past each other a little bit.
 
-Commit 06916639e2fed9ee475efef2747a1b7429f8fe76 ("driver-core: add
-dev_name() to help transition away from using bus_id") in Linus' tree
-added a static inline dev_name() and used it in dev_printk.
-Unfortunately, drivers/edac/edac_core.h defines a macro called dev_name().
+There is no irq-disabled calls as yet, therefore I don't think we should
+add a lot of complex code just to _allow_ for it; at least, not until a
+really compelling user comes up.
 
-I have applied the following patch (diagnosis by Tony Breeds and Michael
-Ellerman).
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
->From 58d998b394ddb1f4bff4fb79feccb8eb102e22c3 Mon Sep 17 00:00:00 2001
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-Date: Mon, 5 May 2008 13:54:19 +1000
-Subject: [PATCH] dev_name introduction fall out fix
-
-Commit 06916639e2fed9ee475efef2747a1b7429f8fe76 ("driver-core:
-add dev_name() to help transition away from using bus_id") added a
-static inline dev_name() and used it in dev_printk.  Unfortunately,
-drivers/edac/edac_core.h defines a macro called dev_name().  Rename the
-latter.
-
-Diagnosis by Tony Breeds and Michael Ellerman.
-
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- drivers/edac/edac_core.h   |    2 +-
- drivers/edac/edac_device.c |    6 +++---
- drivers/edac/edac_mc.c     |    6 +++---
- drivers/edac/edac_pci.c    |    6 +++---
- 4 files changed, 10 insertions(+), 10 deletions(-)
-
-diff --git a/drivers/edac/edac_core.h b/drivers/edac/edac_core.h
-index a9aa845..b27b13c 100644
---- a/drivers/edac/edac_core.h
-+++ b/drivers/edac/edac_core.h
-@@ -97,7 +97,7 @@ extern int edac_debug_level;
- #define PCI_VEND_DEV(vend, dev) PCI_VENDOR_ID_ ## vend, \
- 	PCI_DEVICE_ID_ ## vend ## _ ## dev
-=20
--#define dev_name(dev) (dev)->dev_name
-+#define edac_dev_name(dev) (dev)->dev_name
-=20
- /* memory devices */
- enum dev_type {
-diff --git a/drivers/edac/edac_device.c b/drivers/edac/edac_device.c
-index 63372fa..5fcd3d8 100644
---- a/drivers/edac/edac_device.c
-+++ b/drivers/edac/edac_device.c
-@@ -333,7 +333,7 @@ static int add_edac_dev_to_global_list(struct edac_devi=
-ce_ctl_info *edac_dev)
- fail0:
- 	edac_printk(KERN_WARNING, EDAC_MC,
- 			"%s (%s) %s %s already assigned %d\n",
--			rover->dev->bus_id, dev_name(rover),
-+			rover->dev->bus_id, edac_dev_name(rover),
- 			rover->mod_name, rover->ctl_name, rover->dev_idx);
- 	return 1;
-=20
-@@ -538,7 +538,7 @@ int edac_device_add_device(struct edac_device_ctl_info =
-*edac_dev)
- 				"'%s': DEV '%s' (%s)\n",
- 				edac_dev->mod_name,
- 				edac_dev->ctl_name,
--				dev_name(edac_dev),
-+				edac_dev_name(edac_dev),
- 				edac_op_state_to_string(edac_dev->op_state));
-=20
- 	mutex_unlock(&device_ctls_mutex);
-@@ -599,7 +599,7 @@ struct edac_device_ctl_info *edac_device_del_device(str=
-uct device *dev)
- 	edac_printk(KERN_INFO, EDAC_MC,
- 		"Removed device %d for %s %s: DEV %s\n",
- 		edac_dev->dev_idx,
--		edac_dev->mod_name, edac_dev->ctl_name, dev_name(edac_dev));
-+		edac_dev->mod_name, edac_dev->ctl_name, edac_dev_name(edac_dev));
-=20
- 	return edac_dev;
- }
-diff --git a/drivers/edac/edac_mc.c b/drivers/edac/edac_mc.c
-index a4cf164..d110392 100644
---- a/drivers/edac/edac_mc.c
-+++ b/drivers/edac/edac_mc.c
-@@ -402,7 +402,7 @@ static int add_mc_to_global_list(struct mem_ctl_info *m=
-ci)
- fail0:
- 	edac_printk(KERN_WARNING, EDAC_MC,
- 		"%s (%s) %s %s already assigned %d\n", p->dev->bus_id,
--		dev_name(mci), p->mod_name, p->ctl_name, p->mc_idx);
-+		edac_dev_name(mci), p->mod_name, p->ctl_name, p->mc_idx);
- 	return 1;
-=20
- fail1:
-@@ -517,7 +517,7 @@ int edac_mc_add_mc(struct mem_ctl_info *mci)
-=20
- 	/* Report action taken */
- 	edac_mc_printk(mci, KERN_INFO, "Giving out device to '%s' '%s':"
--		" DEV %s\n", mci->mod_name, mci->ctl_name, dev_name(mci));
-+		" DEV %s\n", mci->mod_name, mci->ctl_name, edac_dev_name(mci));
-=20
- 	mutex_unlock(&mem_ctls_mutex);
- 	return 0;
-@@ -565,7 +565,7 @@ struct mem_ctl_info *edac_mc_del_mc(struct device *dev)
-=20
- 	edac_printk(KERN_INFO, EDAC_MC,
- 		"Removed device %d for %s %s: DEV %s\n", mci->mc_idx,
--		mci->mod_name, mci->ctl_name, dev_name(mci));
-+		mci->mod_name, mci->ctl_name, edac_dev_name(mci));
-=20
- 	return mci;
- }
-diff --git a/drivers/edac/edac_pci.c b/drivers/edac/edac_pci.c
-index 9b24340..22ec9d5 100644
---- a/drivers/edac/edac_pci.c
-+++ b/drivers/edac/edac_pci.c
-@@ -150,7 +150,7 @@ static int add_edac_pci_to_global_list(struct edac_pci_=
-ctl_info *pci)
- fail0:
- 	edac_printk(KERN_WARNING, EDAC_PCI,
- 		"%s (%s) %s %s already assigned %d\n",
--		rover->dev->bus_id, dev_name(rover),
-+		rover->dev->bus_id, edac_dev_name(rover),
- 		rover->mod_name, rover->ctl_name, rover->pci_idx);
- 	return 1;
-=20
-@@ -360,7 +360,7 @@ int edac_pci_add_device(struct edac_pci_ctl_info *pci, =
-int edac_idx)
- 			" DEV '%s' (%s)\n",
- 			pci->mod_name,
- 			pci->ctl_name,
--			dev_name(pci), edac_op_state_to_string(pci->op_state));
-+			edac_dev_name(pci), edac_op_state_to_string(pci->op_state));
-=20
- 	mutex_unlock(&edac_pci_ctls_mutex);
- 	return 0;
-@@ -415,7 +415,7 @@ struct edac_pci_ctl_info *edac_pci_del_device(struct de=
-vice *dev)
-=20
- 	edac_printk(KERN_INFO, EDAC_PCI,
- 		"Removed device %d for %s %s: DEV %s\n",
--		pci->pci_idx, pci->mod_name, pci->ctl_name, dev_name(pci));
-+		pci->pci_idx, pci->mod_name, pci->ctl_name, edac_dev_name(pci));
-=20
- 	return pci;
- }
---=20
-1.5.5.1
+The main thing is to parallelise the code. The fact that we can trivially 
+support irq-disabled calls for nowait case (if the caller supplies the
+data or can handle failure) is just a bonus.
 
 
---Signature=_Mon__5_May_2008_14_02_34_+1000_b_HT8zrZLZyvea=.
-Content-Type: application/pgp-signature
+> > > It it doesn't return -ENOMEM I know its been queued and will be
+> > > processed at some point, if it does fail, I can deal with it in another
+> > > way.
+> > 
+> > At least with IPIs I think we can guarantee they will be processed on
+> > the target after we queue them.
+> 
+> OK, so let me make sure I understand what is needed.  One example might be
+> some code called from scheduler_tick(), which runs with irqs disabled.
+> Without the ability to call smp_call_function() directly, you have
+> to fire off a work queue or something.  Now, if smp_call_function()
+> can hand you an -ENOMEM or (maybe) an -EBUSY, then you still have to
+> fire off the work queue, but you probably only have to do it rarely,
+> minimizing the performance impact.
+> 
+> Another possibility is when it is -nice- to call smp_call_function(),
+> but can just try again on the next scheduler_tick() -- ignoring dynticks
+> idle for the moment.  In this case, you might still test the error return
+> to set a flag that you will check on the next scheduler_tick() call.
+> 
+> Is this where you guys are coming from?
+> 
+> And you are all OK with smp_call_function() called with irqs enabled
+> never being able to fail, right?  (Speaking of spaghetti code, why
+> foist unnecessary failure checks on the caller...)
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+Having the fallback is fine, yes. I'd say it shouldn't often get called.
 
-iD8DBQFIHobgTgG2atn1QN8RAgjUAJsE/rMXzpDnrzZxI0YboU4OaOUdQwCfRIgt
-mWUFcdaIz3R3wVCCQvko/oA=
-=vBNy
------END PGP SIGNATURE-----
+ 
+> > > I know I'd like to do that and I suspect Nick has a few use cases up his
+> > > sleeve as well.
+> > 
+> > It would be handy. The "quickly kick something off on another CPU" is
+> > pretty nice in mm/ when you have per-cpu queues or caches that might
+> > want to be flushed.
+> 
+> OK, I think I might be seeing what you guys are getting at.  Here is
+> what I believe you guys need:
+> 
+> 1.	No deadlocks, ever, not even theoretical "low probability"
+> 	deadlocks.
 
---Signature=_Mon__5_May_2008_14_02_34_+1000_b_HT8zrZLZyvea=.--
+Of course ;)
+
+ 
+> 2.	No failure returns when called with irqs enabled.  On the other
+> 	hand, when irqs are disabled, failure is possible.  Though hopefully
+> 	unlikely.
+
+I think I'd like to keep existing smp_call_function that disallows
+irq-disabled calls and can't fail. Introduce a new one for irq-disabled
+case.
+
+But sure, the existing smp_call_function implementation can't fail.
+
+
+> 3.	Parallel execution of multiple smp_call_function() requests
+> 	is required, even when called with irqs disabled.
+
+I think so. At least for the call_function_single case.
+
+
+> 4.	The wait=1 case with irqs disabled is prohibited.
+> 
+> 5.	If you call smp_call_function() with irqs disabled, then you
+> 	are guaranteed that no other CPU's smp_call_function() handler
+> 	will be invoked while smp_call_function() is executing.
+> 
+> Anything I am missing?
+
+For the last cases, I actually think your polling loop is pretty cool ;)
+So I don't completely object to it, I just don't think we should add it
+in until something wants it...
+
+Don't let me dictate the requirements though, the only real one I had
+was to make call_function_single scalable and faster, and call_function
+be as optimal as possible.
+
