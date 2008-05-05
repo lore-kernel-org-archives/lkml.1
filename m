@@ -1,66 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759273AbYEENVk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757612AbYEEN35@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759273AbYEENVk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 09:21:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756109AbYEENVQ
+	id S1757612AbYEEN35 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 09:29:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752386AbYEEN3q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 09:21:16 -0400
-Received: from s15216962.onlinehome-server.info ([217.160.22.205]:40226 "EHLO
-	s15216962.onlinehome-server.info" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755929AbYEENVP (ORCPT
+	Mon, 5 May 2008 09:29:46 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:52649 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751601AbYEEN3p (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 09:21:15 -0400
-Date: Mon, 5 May 2008 15:20:30 +0200
-From: Enrico Weigelt <weigelt@metux.de>
-To: linux kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: API for changing UIDs of other processes
-Message-ID: <20080505132030.GE32019@nibiru.local>
-Reply-To: weigelt@metux.de
-References: <20080502121641.GB7997@nibiru.local> <alpine.LNX.1.10.0805021602160.6463@fbirervta.pbzchgretzou.qr>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LNX.1.10.0805021602160.6463@fbirervta.pbzchgretzou.qr>
-User-Agent: Mutt/1.4.1i
-X-Terror: bin laden, kill bush, Briefbombe, Massenvernichtung, KZ, 
-X-Nazi: Weisse Rasse, Hitlers Wiederauferstehung, 42, 
-X-Antichrist: weg mit schaeuble, ausrotten, heiliger krieg, al quaida, 
-X-Killer: 23, endloesung, Weltuntergang, 
-X-Doof: wer das liest ist doof
+	Mon, 5 May 2008 09:29:45 -0400
+To: hch@infradead.org
+CC: miklos@szeredi.hu, hch@infradead.org, akpm@linux-foundation.org,
+       viro@ZenIV.linux.org.uk, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, menage@google.com
+In-reply-to: <20080505130804.GA1809@infradead.org> (message from Christoph
+	Hellwig on Mon, 5 May 2008 09:08:04 -0400)
+Subject: Re: [patch 03/15] cgroup: dont call vfs_mkdir
+References: <20080505095440.820370974@szeredi.hu> <20080505095511.217634550@szeredi.hu> <20080505110016.GC20910@infradead.org> <E1Jszri-0005uq-4x@pomaz-ex.szeredi.hu> <20080505130804.GA1809@infradead.org>
+Message-Id: <E1Jt0l8-00066L-NC@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Mon, 05 May 2008 15:29:38 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Jan Engelhardt <jengelh@medozas.de> wrote:
-
-> >Now I'd like to add an write capability to these files: 
-> >simply writing another number changes the (|s|fs)uid.
-> >
-> >But this doesnt seem that trivial. Perhaps someone could give
-> >me some advice ?
+> > > Looks correct but I don't think it's a good idea.  Spreading more logic
+> > > into filesystems without a good reason is rarely a good idea.
+> > 
+> > (Thanks for the review, Christoph)
+> > 
+> > Agreed completely, but vfs_* aren't for filesystems to call, rather
+> > for entities calling _into_ filesystems from the outside.  This is
+> > actually a very rare thing, so adding some extra logic for the sake of
+> > cleanliness should be OK.
+> > 
+> > Now it can be argued, that cgroup_clone() is calling into the
+> > filesystem from the outside.  But it's not really doing that, rather
+> > it's making an internal modification to a specific filesystem,
+> > triggered by some external action.
 > 
-> Not really hard, is it? Just look at something like oom_adj
+> I don't think that matters. We're not about overly strict layering, and
+> especialy this kind where you call into a higher layer to get back into
+> the lower one is not harmful at all.  For cgroup it's only a small
+> duplication, but e.g. I don't really like all the duplications in the
+> reiserfs case.
 
-Well, it's not that trivial than just an ro string file.
-But not that hard as I first suspected :)
+I think there's some good reasons, other than just to get rid of the
+vfs recursion.  I took this change from Jeff Mahoney's patchset.
 
-I've introduced a few new helpers for rw integers, which works
-quite similar to the ro string stuff, but with anouther handler type.
+>  Unless we have a very good reason why the useage of the
+> vfs_ function should go away from the filesystem code I don't think
+> we want this.
 
-I'll post a patch in the new testers list.
+We do have a good reason: r/o bind mounts and AppArmor.  And please
+don't tell me, you also think that moving the security hooks to
+callers is a good idea ;)  That would actually be a change with a much
+larger impact, both in terms of code duplication and of verifying
+correctness.
 
-The next step is actually changing the uid. Can I just write 
-new values to the uid field(s) in the task struct or is there
-something tricky about that ?
-
-
-cu
--- 
----------------------------------------------------------------------
- Enrico Weigelt    ==   metux IT service - http://www.metux.de/
----------------------------------------------------------------------
- Please visit the OpenSource QM Taskforce:
- 	http://wiki.metux.de/public/OpenSource_QM_Taskforce
- Patches / Fixes for a lot dozens of packages in dozens of versions:
-	http://patches.metux.de/
----------------------------------------------------------------------
+Miklos
