@@ -1,44 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758466AbYEEI2Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757818AbYEEIab@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758466AbYEEI2Y (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 04:28:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754643AbYEEI2Q
+	id S1757818AbYEEIab (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 04:30:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754203AbYEEIaX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 04:28:16 -0400
-Received: from ns2.suse.de ([195.135.220.15]:39545 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751260AbYEEI2P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 04:28:15 -0400
-Date: Mon, 5 May 2008 10:28:14 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Justin Mattock <justinmattock@gmail.com>
-Cc: Jiri Slaby <jirislaby@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: nopage mm.h
-Message-ID: <20080505082814.GA5018@wotan.suse.de>
-References: <dd18b0c30805031629x5f570b97q43f110b228054a28@mail.gmail.com> <481D68E0.1040608@gmail.com> <dd18b0c30805040912l2d12115bi3987d8a5ed0372bf@mail.gmail.com> <20080505032843.GA14947@wotan.suse.de> <dd18b0c30805042047h79f1e025s51037d05e09e7fdb@mail.gmail.com> <20080505041954.GB17640@wotan.suse.de> <dd18b0c30805042207j4df0d78dx1291555889894776@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 5 May 2008 04:30:23 -0400
+Received: from yw-out-2324.google.com ([74.125.46.29]:45086 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753014AbYEEIaV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 May 2008 04:30:21 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=BlZwLZDhJ5raNDFiSkTgDB/awo0JiLN32gBHWuJQe3aT3Y9IDI28CKeeb5iFJZ0+Qo0d82CJr1Jy55dYyWaBhYUlWppdyTfT/11R1T28fXMf/Pzb8hp6TTPbd+cljYrson/oULp/4V4fmo8n81+vA/Aay08Hg1bx44tYIJLGuH0=
+Message-ID: <5eeb9ad90805050130i39ae791dwe599c12fc08fb8ec@mail.gmail.com>
+Date: Mon, 5 May 2008 10:30:09 +0200
+From: DM <dm.n9107@gmail.com>
+To: "Ulrich Drepper" <drepper@redhat.com>
+Subject: Re: [PATCH v2] unify sys_pipe implementation
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       linux-mips@linux-mips.org, sparclinux@vger.kernel.org,
+       torvalds@linux-foundation.org
+In-Reply-To: <200805031801.m43I109q032242@devserv.devel.redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <dd18b0c30805042207j4df0d78dx1291555889894776@mail.gmail.com>
-User-Agent: Mutt/1.5.9i
+References: <200805031801.m43I109q032242@devserv.devel.redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 05, 2008 at 05:07:00AM +0000, Justin Mattock wrote:
-> On Mon, May 5, 2008 at 4:19 AM, Nick Piggin <npiggin@suse.de> wrote:
-> >  OK, not sure about that one... but if it is just your personal kernel,
-> >  and not for redistribution, then you are of course free to make any
-> >  changes you like. Including changing EXPORT_SYMBOL_GPL. Maybe it is
-> >  a reasonable temporary measure for you until you get some better
-> >  drivers.
-> >
-> >
-> 
-> Cool; yes this is just for personal use only, not redistribution.
-> Then in that case I'll have a look into seeing if I can get up and running again
-> with 2.6.26-rc1.
-> regards;
+On Sat, May 3, 2008 at 8:01 PM, Ulrich Drepper <drepper@redhat.com> wrote:
+[...]
+>   /*
+>  + * sys_pipe() is the normal C calling standard for creating
+>  + * a pipe. It's not the way Unix traditionally does this, though.
+>  + */
+>  +asmlinkage long sys_pipe(int __user *fildes)
+>  +{
+>  +       int fd[2];
+>  +       int error;
+>  +
+>  +       error = do_pipe(fd);
+>  +       if (!error) {
+>  +               if (copy_to_user(fildes, fd, sizeof(fd)))
+>  +                       error = -EFAULT;
+>  +       }
+>  +       return error;
+>  +}
+>  +
+[...]
 
-Great to see you are keen on testing the bleeding edge ;) Good luck!
+I realize this code is old, but wouldn't file descriptors leak if
+copy_to_user fails?
+
+BR,
+dm.n9107
