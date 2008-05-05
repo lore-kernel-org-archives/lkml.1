@@ -1,77 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759522AbYEEP0n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760009AbYEEP1b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759522AbYEEP0n (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 11:26:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760212AbYEEP0F
+	id S1760009AbYEEP1b (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 11:27:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756735AbYEEP1V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 11:26:05 -0400
-Received: from mtagate5.de.ibm.com ([195.212.29.154]:56551 "EHLO
-	mtagate5.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757295AbYEEP0D (ORCPT
+	Mon, 5 May 2008 11:27:21 -0400
+Received: from fg-out-1718.google.com ([72.14.220.156]:22606 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756465AbYEEP1U (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 11:26:03 -0400
-Message-ID: <481F26B5.7010708@de.ibm.com>
-Date: Mon, 05 May 2008 17:24:37 +0200
-From: Peter Oberparleiter <peter.oberparleiter@de.ibm.com>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070604)
+	Mon, 5 May 2008 11:27:20 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=ucsWpkNvpY3CHg5nAy+UbDk5pZKbh+1SjYlZoJTmmkFe84Uce2fsFOAShXoeNMtIMbgU6WdaCxC94PrJmKLsPfCas5loHikdLM86GYjrvUCJpo8+pAGzAHiCRW/MSlW0Dox1pXWpT8O1GbYw662TSr3VOpJBTTi2dtIMOAN2Miw=
+Message-ID: <517f3f820805050827w4e880f94pfb19593f21d331b9@mail.gmail.com>
+Date: Mon, 5 May 2008 17:27:18 +0200
+From: "Michael Kerrisk" <mtk.manpages@gmail.com>
+To: "Nick Piggin" <npiggin@suse.de>
+Subject: Re: MAP_POPULATE behavior change?
+Cc: "Michael Kerrisk" <mtk.manpages@googlemail.com>,
+       lkml <linux-kernel@vger.kernel.org>, mk <michael.kerrisk@gmail.com>
+In-Reply-To: <20080505125450.GB10312@wotan.suse.de>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: ltp-list@lists.sourceforge.net, ltp-coverage@lists.sourceforge.net,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Al Viro <viro@zeniv.linux.org.uk>
-Subject: [RFC PATCH 4/6] seq_file: add function to write binary data
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <4815BDF5.9070506@gmail.com> <20080505122316.GE5018@wotan.suse.de>
+	 <cfd18e0f0805050542w20bee7f5v8b6125c8b399e63b@mail.gmail.com>
+	 <20080505125450.GB10312@wotan.suse.de>
+X-Google-Sender-Auth: 642105f47be5e3cc
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Peter Oberparleiter <peter.oberparleiter@de.ibm.com>
+[...]
 
-seq_write() can be used to construct seq_files containing arbitrary
-data. Required by the gcov-profiling interface to synthesize binary
-profiling data files.
+>  > > > Also, can you summarize the status of MAP_NONBLOCK?  Is it now
+>  > > > a no-op?
+>  > >
+>  > > Yes, it is.
+>  >
+>  > Hmm -- going back and re-reading the code, there is:
+>  >
+>  >         if ((flags & MAP_POPULATE) && !(flags & MAP_NONBLOCK))
+>  >                 make_pages_present(addr, addr + len);
+>  >
+>  > That means that MAP_NONBLOCK makes *MAP_POPULATE* a no-op.
+> Was that intended?
+>
+>
+> Ah, my logic wasn't up to scratch there. Yes of course MAP_NONBLOCK is not
+>  a noop, but it makes MAP_POPULATE into a noop. So it still guarantees
+>  that the call will not block and that the kernel will make some kind of
+>  best effort to populate the mapping... for some values of "some kind of"
+>  (ie. "nothing" ;)).
+>
+>  It's done this way of course so it is still safe to call MAP_NONBLOCK if you
+>  don't want to block, and thus everything stays backwards and forward
+>  compatible.
 
-Signed-off-by: Peter Oberparleiter <peter.oberparleiter@de.ibm.com>
----
- fs/seq_file.c            |   12 ++++++++++++
- include/linux/seq_file.h |    1 +
- 2 files changed, 13 insertions(+)
+Thanks.
 
-Index: linux-2.6.26-rc1/fs/seq_file.c
-===================================================================
---- linux-2.6.26-rc1.orig/fs/seq_file.c
-+++ linux-2.6.26-rc1/fs/seq_file.c
-@@ -554,6 +554,18 @@ int seq_puts(struct seq_file *m, const c
- }
- EXPORT_SYMBOL(seq_puts);
- 
-+int seq_write(struct seq_file *m, const void *s, size_t len)
-+{
-+	if (m->count + len < m->size) {
-+		memcpy(m->buf + m->count, s, len);
-+		m->count += len;
-+		return 0;
-+	}
-+	m->count = m->size;
-+	return -1;
-+}
-+EXPORT_SYMBOL(seq_write);
-+
- struct list_head *seq_list_start(struct list_head *head, loff_t pos)
- {
- 	struct list_head *lh;
-Index: linux-2.6.26-rc1/include/linux/seq_file.h
-===================================================================
---- linux-2.6.26-rc1.orig/include/linux/seq_file.h
-+++ linux-2.6.26-rc1/include/linux/seq_file.h
-@@ -39,6 +39,7 @@ int seq_release(struct inode *, struct f
- int seq_escape(struct seq_file *, const char *, const char *);
- int seq_putc(struct seq_file *m, char c);
- int seq_puts(struct seq_file *m, const char *s);
-+int seq_write(struct seq_file *m, const void *s, size_t len);
- 
- int seq_printf(struct seq_file *, const char *, ...)
- 	__attribute__ ((format (printf,2,3)));
+Continuing on from there, what is the status of the flags argument for
+remap_file_pages() now.  the man page curently carries this text:
 
+    The flags argument has the same meaning as for mmap(2),
+    but all flags other than MAP_NONBLOCK are ignored.
 
+My question is: is it still true that flags other than MAP_NONBLOCK
+are ignored?  A quick glance at the code leads me to suspect not.
+(I'm not sure if you made the recent changes to that code or not?)
+
+Cheers,
+
+Michael
+
+-- 
+Michael Kerrisk
+Linux man-pages maintainer; http://www.kernel.org/doc/man-pages/
+Found a bug? http://www.kernel.org/doc/man-pages/reporting_bugs.html
