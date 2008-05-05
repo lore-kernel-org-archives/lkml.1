@@ -1,54 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758067AbYEESwU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760588AbYEESxo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758067AbYEESwU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 14:52:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765984AbYEESvR
+	id S1760588AbYEESxo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 14:53:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752240AbYEESxe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 14:51:17 -0400
-Received: from s15216962.onlinehome-server.info ([217.160.22.205]:39912 "EHLO
-	s15216962.onlinehome-server.info" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1765977AbYEESvQ (ORCPT
+	Mon, 5 May 2008 14:53:34 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:37776 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751884AbYEESxe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 14:51:16 -0400
-Date: Mon, 5 May 2008 20:50:13 +0200
-From: Enrico Weigelt <weigelt@metux.de>
-To: linux kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: VFS + path walktrough
-Message-ID: <20080505185013.GH32019@nibiru.local>
-Reply-To: weigelt@metux.de
-References: <20080505124041.GB32019@nibiru.local> <20080505130623.GC32019@nibiru.local> <20080505131307.GM5882@ZenIV.linux.org.uk> <20080505134315.GF32019@nibiru.local> <20080505153501.GN5882@ZenIV.linux.org.uk> <E1Jt3nB-0006ZP-6S@pomaz-ex.szeredi.hu> <20080505171425.GO5882@ZenIV.linux.org.uk> <E1Jt4Ye-0006hz-9i@pomaz-ex.szeredi.hu> <20080505174048.GP5882@ZenIV.linux.org.uk> <E1Jt526-0006le-04@pomaz-ex.szeredi.hu>
+	Mon, 5 May 2008 14:53:34 -0400
+Date: Mon, 5 May 2008 19:44:17 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Miloslav Trmac <mitr@redhat.com>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [2.6 patch] remove is_tty()
+Message-ID: <20080505194417.4ef0917d@core>
+In-Reply-To: <20080505182134.GC17139@cs181133002.pp.htv.fi>
+References: <20080505182134.GC17139@cs181133002.pp.htv.fi>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <E1Jt526-0006le-04@pomaz-ex.szeredi.hu>
-User-Agent: Mutt/1.4.1i
-X-Terror: bin laden, kill bush, Briefbombe, Massenvernichtung, KZ, 
-X-Nazi: Weisse Rasse, Hitlers Wiederauferstehung, 42, 
-X-Antichrist: weg mit schaeuble, ausrotten, heiliger krieg, al quaida, 
-X-Killer: 23, endloesung, Weltuntergang, 
-X-Doof: wer das liest ist doof
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Miklos Szeredi <miklos@szeredi.hu> wrote:
+On Mon, 5 May 2008 21:21:34 +0300
+Adrian Bunk <bunk@kernel.org> wrote:
 
-> You're right. It doesn't sound too good, although it all depends 
-> on the how permission checking is done.  If it's done in the server, 
-> then neither the mode nor the ownership is needed for lookup. 
+> This patch removes the no longer used is_tty().
+> 
+> Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
-It really should be done in the server. But this adds another
-issue (no idea if the current 9p driver already handles this):
-We need one link for each user accessing the filesystem.
-
-
-cu
--- 
----------------------------------------------------------------------
- Enrico Weigelt    ==   metux IT service - http://www.metux.de/
----------------------------------------------------------------------
- Please visit the OpenSource QM Taskforce:
- 	http://wiki.metux.de/public/OpenSource_QM_Taskforce
- Patches / Fixes for a lot dozens of packages in dozens of versions:
-	http://patches.metux.de/
----------------------------------------------------------------------
+Acked-by: Alan Cox <alan@redhat.com>
