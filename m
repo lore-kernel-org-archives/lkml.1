@@ -1,76 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757437AbYEEPw7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755021AbYEEPxf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757437AbYEEPw7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 11:52:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752467AbYEEPwu
+	id S1755021AbYEEPxf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 11:53:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754155AbYEEPxZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 11:52:50 -0400
-Received: from mx1.riseup.net ([204.13.164.18]:46823 "EHLO mx1.riseup.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751401AbYEEPwt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 11:52:49 -0400
-Date: Mon, 5 May 2008 17:52:39 +0200
-From: Matthias Kaehlcke <matthias@kaehlcke.net>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: Eric.Moore@lsi.com, support@lsi.com, DL-MPTFusionLinux@lsi.com,
-       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: Re: [PATCH] Fusion MPT: Convert inactive_list_mutex in a mutex
-Message-ID: <20080505155239.GE11462@traven>
-Mail-Followup-To: Matthias Kaehlcke <matthias@kaehlcke.net>,
-	James Bottomley <James.Bottomley@HansenPartnership.com>,
-	Eric.Moore@lsi.com, support@lsi.com, DL-MPTFusionLinux@lsi.com,
-	linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
-	akpm@linux-foundation.org
-References: <20080504180544.GN20036@traven> <1209997566.3163.10.camel@localhost.localdomain> <20080505152153.GD11462@traven> <1210001317.3163.15.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1210001317.3163.15.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Mon, 5 May 2008 11:53:25 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:51935 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752467AbYEEPxX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 May 2008 11:53:23 -0400
+Date: Mon, 5 May 2008 08:52:28 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Michael Kerrisk" <mtk.manpages@googlemail.com>
+Cc: "Andrew Morgan" <morgan@kernel.org>, "Chris Wright" <chrisw@sous-sol.org>,
+       "Serge E. Hallyn" <serue@us.ibm.com>,
+       lkml <linux-kernel@vger.kernel.org>,
+       linux-security-module@vger.kernel.org,
+       "Michael Kerrisk" <mtk.manpages@gmail.com>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>
+Subject: Re: [PATCH] capabilities: add bounding set to /proc/self/status
+Message-Id: <20080505085228.b223f7c5.akpm@linux-foundation.org>
+In-Reply-To: <cfd18e0f0805050122p19721635h209b952396cfe52a@mail.gmail.com>
+References: <20080501183559.GA21279@sergelap.austin.ibm.com>
+	<20080502003730.GA4018@sequoia.sous-sol.org>
+	<cfd18e0f0805050122p19721635h209b952396cfe52a@mail.gmail.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-El Mon, May 05, 2008 at 10:28:37AM -0500 James Bottomley ha dit:
+On Mon, 5 May 2008 10:22:06 +0200 "Michael Kerrisk" <mtk.manpages@googlemail.com> wrote:
 
-> On Mon, 2008-05-05 at 17:21 +0200, Matthias Kaehlcke wrote:
-> > El Mon, May 05, 2008 at 09:26:06AM -0500 James Bottomley ha dit:
-> > 
-> > > On Sun, 2008-05-04 at 20:05 +0200, Matthias Kaehlcke wrote:
-> > > > MPT Fusion: The semaphore inactive_list_mutex is used as a
-> > > > mutex. Convert it to the mutex API
-> > > > 
-> > > > Signed-off-by: Matthias Kaehlcke <matthias@kaehlcke.net>
-> > > 
-> > > Um, it would at least vaguely help if you checked the tree; even
-> > > actually trying to apply the patch would have told you.  I know the
-> > > email notifications from scsi misc can sometimes get lost.
-> > > 
-> > > commit ed5f606fef22e515331aab4c1f927775cf4af70e
-> > > Author: Matthias Kaehlcke <matthias@kaehlcke.net>
-> > > Date:   Sun Mar 9 12:16:27 2008 +0100
-> > > 
-> > >     [SCSI] mpt fusion: convert inactive_list_mutex to a mutex
-> > 
-> > apologizes for my ignorance, which tree exactly should i have checked
-> > for this patch? is it linux/kernel/git/jejb/scsi-misc-2.6.git? 
+> On Fri, May 2, 2008 at 2:38 AM, Chris Wright <chrisw@sous-sol.org> wrote:
+> > * Serge E. Hallyn (serue@us.ibm.com) wrote:
+> > > There is currently no way to query the bounding set of another
+> > > task.  As there appears to be no security reason not to, and
+> > > as Michael Kerrisk points out the following valid reasons to do
+> > > so exist:
+> > >
+> > > * consistency (I can see all of the other per-thread/process sets in
+> > > /proc/.../status)
+> > > * debugging -- I could imagine that it would make the job of debugging
+> > > an application that uses capabilities a little simpler.
+> > >
+> > > this patch adds the bounding set to /proc/self/status right after
+> > > the effective set.
+> > >
+> > > If at all possible (and if acked by Andrew Morgan) it would be nice to
+> > > get this into the 2.6.26 cycle.  But I realize it probably is too late
+> > > for that.
+> >
+> > I've no issue with this.
+> >
+> > > Signed-off-by: Serge E. Hallyn <serue@us.ibm.com>
+> > > Acked-by: Michael Kerrisk <mtk.manpages@gmail.com>
+> >
+> > Acked-by: Chris Wright <chrisw@sous-sol.org>
+> >
+> >
+> > > ---
+> > >  fs/proc/array.c |    1 +
+> > >  1 files changed, 1 insertions(+), 0 deletions(-)
+> > >
+> > > diff --git a/fs/proc/array.c b/fs/proc/array.c
+> > > index c135cbd..160dd4a 100644
+> > > --- a/fs/proc/array.c
+> > > +++ b/fs/proc/array.c
+> > > @@ -297,6 +297,7 @@ static inline void task_cap(struct seq_file *m, struct task_struct *p)
+> > >       render_cap_t(m, "CapInh:\t", &p->cap_inheritable);
+> > >       render_cap_t(m, "CapPrm:\t", &p->cap_permitted);
+> > >       render_cap_t(m, "CapEff:\t", &p->cap_effective);
+> > > +     render_cap_t(m, "CapBnd:\t", &p->cap_bset);
+> > >  }
+> > >
+> > >  static inline void task_context_switch_counts(struct seq_file *m,
+> >
+>
+
+[top-posting repaired]
+
+> Andrew (Morgan),
 > 
-> It's in the released kernel and has been there for the past two weeks.
+> It looks like this didn't make it into rc1, even though it was sent
+> within the merge window -- perhaps Linus or Andrew (Morton) needed to
+> be explicitly CCed?
+> 
 
-i actually missed the mail notification and worked with outdated copy
-of linus' tree ...
+Sorry, I'm horridly backlogged.  I seem to be able to process them at about
+105% of the arrival rate lately, so we'll get there.  It isn't lost.
 
-thanks for your patience and sorry for making you loose your time
-
--- 
-Matthias Kaehlcke
-Embedded Linux Engineer
-Barcelona
-
-     The assumption that what currently exists must necessarily
-      exist is the acid that corrodes all visionary thinking
-                                                                 .''`.
-    using free software / Debian GNU/Linux | http://debian.org  : :'  :
-                                                                `. `'`
-gpg --keyserver pgp.mit.edu --recv-keys 47D8E5D4                  `-
