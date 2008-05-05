@@ -1,114 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760893AbYEETBP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762797AbYEETB3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760893AbYEETBP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 15:01:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759447AbYEETA7
+	id S1762797AbYEETB3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 15:01:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762600AbYEETBL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 15:00:59 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:36850 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1759293AbYEETA6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 15:00:58 -0400
-Message-ID: <481F5965.6070305@sgi.com>
-Date: Mon, 05 May 2008 12:00:53 -0700
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
-MIME-Version: 1.0
-To: arges@linux.vnet.ibm.com
-CC: phil.el@wanadoo.fr, mpjohn@us.ibm.com,
-       Christoph Lameter <clameter@sgi.com>, Jack Steiner <steiner@sgi.com>,
-       Paul Jackson <pj@sgi.com>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Hotplug CPU support for Oprofile
-References: <1210012443.6374.23.camel@snuffleupagus>
-In-Reply-To: <1210012443.6374.23.camel@snuffleupagus>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
+	Mon, 5 May 2008 15:01:11 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:48458 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762428AbYEETBK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 May 2008 15:01:10 -0400
+Date: Mon, 5 May 2008 21:01:45 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Parag Warudkar <parag.warudkar@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "akpm@osdl.org" <akpm@osdl.org>, Peter Zijlstra <peterz@infradead.org>,
+       Arjan van de Ven <arjan@infradead.org>, Dave Jones <davej@redhat.com>
+Subject: Re: [PATCH] default to n for GROUP_SCHED and FAIR_GROUP_SCHED
+Message-ID: <20080505190145.GA4498@uranus.ravnborg.org>
+References: <82e4877d0805031742o464dd581wd93173d79705ce0d@mail.gmail.com> <20080504092417.GA3425@elte.hu> <82e4877d0805050814j721ae522k84384df48c9f4336@mail.gmail.com> <20080505171501.GA22332@elte.hu> <20080505182427.GA2025@uranus.ravnborg.org> <20080505184235.GD22332@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080505184235.GD22332@elte.hu>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[adding some possibly interested parties to the cc line.]
-
-Chris J Arges wrote:
-> Mike,
-> I was wondering what your rationale behind using per_cpu variables for
-> the cpu buffers in oprofile versus using percpu_alloc, percpu_free?
-> For instance:
+On Mon, May 05, 2008 at 08:42:35PM +0200, Ingo Molnar wrote:
 > 
->         DEFINE_PER_CPU_SHARED_ALIGNED(struct oprofile_cpu_buffer,
->         cpu_buffer);
+> * Sam Ravnborg <sam@ravnborg.org> wrote:
 > 
->         void free_cpu_buffers(void)
->         {
->                 int i;
->         
->                 for_each_online_cpu(i)
->                         vfree(per_cpu(cpu_buffer, i).buffer);
->         
->         }
+> > > This is a many years old kconfig bug that is frequently hacked 
+> > > around in distro kernel packages but which has been ignored upstream 
+> > > - i've attached Fedora's nonint_oldconfig patch from Dave Jones 
+> > > below. (maybe Arjan wrote it originally?)
+> > 
+> > In latest kbuild.git I've added a new feature.
+> > 
+> > 	make K=.config alldefconfig
+> > 
+> > would give you eaxtly what you request here. K= is used to say where 
+> > to locate the base-configuration.
 > 
-> Could it be possible to write it like this:
->         
->         ﻿struct oprofile_cpu_buffer *cpu_buffer;
->         
->         void free_cpu_buffers(void)
->         {
->         	percpu_free(cpu_buffer);
->         }
+> great, thanks Sam!
 > 
+> ( how hard would it be to fix the "make oldconfig < /dev/null" infinit 
+>   loop bug btw? I've got this method in a number of scripts of mine and 
+>   it's an intuitive thing to type anyway, i think users would like it if 
+>   it Just Worked. )
 
-        
-Hi Chris,
+Let me try (on my i386 box so I use x86_&4 so I know oldconfig will ask):
+$ make defconfig ARCH=x86_64
+#
+# configuration is based on '/home/sam/kernel/kbuild.git/arch/x86/configs/x86_64_defconfig'
+#
+# configuration written to .config
+#
+$ make oldconfig > /dev/null
+aborted!
 
-There was no particular reason for one or the other.  We did have a
-patch a few months ago that added CPU_ALLOC functionality that was
-much cleaner than percpu_alloc (and replaced it), but due to
-circumstances it didn't actually make it into the source base.
-The percpu approach was the fallback.
+Console input/output is redirected. Run 'make oldconfig' to update configuration.
 
-> 
-> Phillipe, Mike,
-> I am currently working on a patch for enabling hotplug cpu support for
-> oprofile as currently oprofile crashes whenever cpus are onlined of
-> offlined. So far my patch registers a callback function for hotplug
-> events, and checked if a cpu has been onlined/offlined and then
-> allocs/frees a cpu buffer accordingly. 
-> 
-> I am wondering if you have any further recommendations as to approaching
-> adding hotplug support. I am still fairly new to oprofile/linux kernel
-> but I would like to contribute, please forgive any newbie mistakes.
-> Thanks!
-> 
+make[1]: *** [oldconfig] Error 1
+make: *** [oldconfig] Error 2
 
-Other than insuring that any routines for bringing up/tearing down
-processors are in the __cpuinit/data sections and test as many
-different configs as you can.
 
-Also, increasing NR_CPUS to 4096 is one thing but I've been testing
-with "possible" cpus == 4096 and have hit some snags.  The biggest
-right now is the enormous amount of memory that the kernel tracing
-facility requires.  So trying out your code with a healthy amount of
-possible cpus will expose problems like this.
 
-Another thing that I've encountered is that you can add "additional_cpus"
-to the boot line, and the BIOS can signal that there are cpus present
-but currently disabled, but there's no way to bring these cpus online
-after bootup.
+And then with a config that does not need an update:
+$ make defconfig
+#
+# configuration is based on '/home/sam/kernel/kbuild.git/arch/x86/configs/i386_defconfig'
+#
+# configuration written to .config
+#
+$ make oldconfig > /dev/null
+$
 
-One thought would be to register the cpu but make it offline.  This
-has some advantages but it was felt that instead something more like:
+Seems like I already fixed it :-)
+That was a side-effect of touching some code in conf.c
 
-echo '32-63' > /sys/devices/system/cpu/online
+Note by the way the output of 'make oldconfig' - nada.
+I simply dropped the chatty mode as noone used it
+for anything sensible anymore.
 
-would startup and register cpus 32-63.  This is orthogonal to the
-showing of which cpu's are online:
-
-# cat /sys/devices/system/cpu/online
-0-31
-
-Any suggestions along this area are welcome!
-
-Thanks,
-Mike
+	Sam
