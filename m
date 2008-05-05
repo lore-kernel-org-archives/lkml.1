@@ -1,75 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755391AbYEEG0H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755862AbYEEG2T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755391AbYEEG0H (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 02:26:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753297AbYEEGZz
+	id S1755862AbYEEG2T (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 02:28:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753297AbYEEG2M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 02:25:55 -0400
-Received: from mga14.intel.com ([143.182.124.37]:22360 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752942AbYEEGZy convert rfc822-to-8bit (ORCPT
+	Mon, 5 May 2008 02:28:12 -0400
+Received: from mail.karo-electronics.de ([213.146.116.110]:35983 "EHLO
+	mail.karo-electronics.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753062AbYEEG2K (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 02:25:54 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.27,436,1204531200"; 
-   d="scan'208";a="241983604"
-Content-class: urn:content-classes:message
-Subject: RE: [patch] x86, ptrace: in-kernel BTS interface
-Date: Mon, 5 May 2008 07:25:53 +0100
-MIME-Version: 1.0
-Message-ID: <029E5BE7F699594398CA44E3DDF5544401D10FF3@swsmsx413.ger.corp.intel.com>
-In-Reply-To: <20080430160611.GD20451@one.firstfloor.org>
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [patch] x86, ptrace: in-kernel BTS interface
-thread-index: Aciq2z8mcU4vf10UQV+Xecprf4pO3ADnWYFQ
-References: <20080430135440.A359@sedona.ch.intel.com> <20080430130305.GC20451@one.firstfloor.org> <029E5BE7F699594398CA44E3DDF5544401CE236A@swsmsx413.ger.corp.intel.com> <20080430160611.GD20451@one.firstfloor.org>
-From: "Metzger, Markus T" <markus.t.metzger@intel.com>
-To: "Andi Kleen" <andi@firstfloor.org>
-Cc: <andi-suse@firstfloor.org>, <hpa@zytor.com>,
-       <linux-kernel@vger.kernel.org>, <mingo@elte.hu>, <tglx@linutronix.de>,
-       <markus.t.metzger@gmail.com>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>, <roland@redhat.com>,
-       <akpm@linux-foundation.org>, <mtk.manpages@gmail.com>,
-       <eranian@googlemail.com>, "Villacis, Juan" <juan.villacis@intel.com>
-X-OriginalArrivalTime: 05 May 2008 06:25:49.0163 (UTC) FILETIME=[DC1373B0:01C8AE78]
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Mon, 5 May 2008 02:28:10 -0400
+Message-ID: <18462.43245.728465.911831@ipc1.ka-ro>
+Date: Mon, 5 May 2008 08:27:57 +0200
+From: =?iso-8859-15?q?Lothar_Wa=DFmann?= <LW@KARO-electronics.de>
+To: Willy Tarreau <w@1wt.eu>
+Cc: NeilBrown <neilb@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: linux-2.6.25: 'mkdir -p' does not work with rootdir as mount point inside a read only filesystem
+In-Reply-To: <20080503063231.GA688@1wt.eu>
+References: <18456.34604.472989.35082@ipc1.ka-ro>
+	<20080501215231.297e0d9d.akpm@linux-foundation.org>
+	<53722.192.168.1.70.1209711343.squirrel@neil.brown.name>
+	<20080503063231.GA688@1wt.eu>
+X-Mailer: VM 7.19 under Emacs 21.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->-----Original Message-----
->From: Andi Kleen [mailto:andi@firstfloor.org] 
->Sent: Mittwoch, 30. April 2008 18:06
+Hi,
 
->> >I'm not quite sure on the kernel interface. How would a in kernel
->> >subsystem use it for tracing itself for example?
->> 
->> The task parameter would be current.
->> 
->> Apart from that, you would use it the same way it is used in
->> arch/x86/kernel/ptrace.c.
->
->Hmm, sounds a little too complicated. Surely that could be easier?
+Willy Tarreau writes:
+> > My guess is that you have an old/buggy version of mkdir.
+> > 
+> > What does
+> >     mkdir --version
+> > 
+> > say?
+> > Mine says:
+> > mkdir (GNU coreutils) 6.10
+> > Copyright (C) 2008 Free Software Foundation, Inc.
+> > etc...
+> 
+> I would bet this is the problem for the reporter.
+> 
+> I tried the same here, and cannot exhibit the problem. Just like the
+> reporter, my / is ro and /dev is rw :
+> 
+I'm using busybox 1.0 (on an embedded PXA320 system).
 
-Actually, it's just a bts_request() followed by a bts_configure() call.
+> stat64("/dev/a/b/c", 0xbf9175dc)        = -1 ENOENT (No such file or directory)
+> umask(0)                                = 022
+> open(".", O_RDONLY|O_LARGEFILE|O_DIRECTORY) = 3
+> chdir("/")                              = 0
+> mkdir("dev", 0755)                      = -1 EEXIST (File exists)
+> stat64("dev", {st_mode=S_IFDIR|0755, st_size=17080, ...}) = 0
+> chdir("dev")                            = 0
+> mkdir("a", 0755)                        = 0
+> chdir("a")                              = 0
+> mkdir("b", 0755)                        = 0
+> chdir("b")                              = 0
+> umask(022)                              = 0
+> mkdir("c", 0777)                        = 0
+> fchdir(3)                               = 0
+> close(3)                                = 0
+> 
+This is what strace shows in my case:
+mkdir("/", 0777)                        = -1 EEXIST (File exists)
+stat64("/", {st_mode=S_IFDIR|0755, st_size=0, ...}) = 0
+mkdir("/dev/", 0777)                    = -1 EROFS (Read-only file system)
+umask(022)                              = 022
+write(2, "mkdir: ", 7mkdir: )                  = 7
+write(2, "Cannot create directory `/dev/\'", 31Cannot create directory `/dev/') = 31
+write(2, ": Read-only file system\n", 24: Read-only file system
+) = 24
+io_submit(0x1, 0x1, 0xfbad2088 <unfinished ... exit status 1>
 
-regards,
-markus.
----------------------------------------------------------------------
-Intel GmbH
-Dornacher Strasse 1
-85622 Feldkirchen/Muenchen Germany
-Sitz der Gesellschaft: Feldkirchen bei Muenchen
-Geschaeftsfuehrer: Douglas Lusk, Peter Gleissner, Hannes Schwaderer
-Registergericht: Muenchen HRB 47456 Ust.-IdNr.
-VAT Registration No.: DE129385895
-Citibank Frankfurt (BLZ 502 109 00) 600119052
 
-This e-mail and any attachments may contain confidential material for
-the sole use of the intended recipient(s). Any review or distribution
-by others is strictly prohibited. If you are not the intended
-recipient, please contact the sender and delete all copies.
+Lothar Waßmann
+-- 
+___________________________________________________________
 
+Ka-Ro electronics GmbH | Pascalstraße 22 | D - 52076 Aachen
+Phone: +49 2408 1402-0 | Fax: +49 2408 1402-10
+Geschäftsführer: Matthias Kaussen
+Handelsregistereintrag: Amtsgericht Aachen, HRB 4996
+
+www.karo-electronics.de | info@karo-electronics.de
+___________________________________________________________
