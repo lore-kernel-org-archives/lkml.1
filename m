@@ -1,59 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759291AbYEETyU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760082AbYEETz1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759291AbYEETyU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 15:54:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754527AbYEETyL
+	id S1760082AbYEETz1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 15:55:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753654AbYEETzO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 15:54:11 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:53059 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754336AbYEETyK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 15:54:10 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <481F62BC.3050605@s5r6.in-berlin.de>
-Date: Mon, 05 May 2008 21:40:44 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.13) Gecko/20080419 SeaMonkey/1.1.9
-MIME-Version: 1.0
-To: Pekka J Enberg <penberg@cs.helsinki.fi>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-next@vger.kernel.org,
-       sfrench@us.ibm.com, swhiteho@redhat.com, jeff@garzik.org,
-       ralf@linux-mips.org, drzeus-list@drzeus.cx, jack@ucw.cz, cbou@mail.ru,
-       jens.axboe@oracle.com, ericvh@gmail.com, wim@iguana.be,
-       chris@zankel.net, nico@cam.org, clameter@sgi.com, ezk@cs.sunysb.edu,
-       linux-kernel@vger.kernel.org
-Subject: Re: git trees which are not yet in linux-next
-References: <20080502151206.b40f77ea.akpm@linux-foundation.org> <84144f020805051116mdbbea01q39f17bce95c95dbb@mail.gmail.com> <20080505113128.d68863a2.akpm@linux-foundation.org> <Pine.LNX.4.64.0805052136530.5570@sbz-30.cs.Helsinki.FI>
-In-Reply-To: <Pine.LNX.4.64.0805052136530.5570@sbz-30.cs.Helsinki.FI>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Mon, 5 May 2008 15:55:14 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:38936 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751789AbYEETzM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 May 2008 15:55:12 -0400
+Date: Mon, 5 May 2008 21:55:48 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Peter Oberparleiter <peter.oberparleiter@de.ibm.com>
+Cc: linux-kernel@vger.kernel.org, ltp-list@lists.sourceforge.net,
+       ltp-coverage@lists.sourceforge.net,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [RFC PATCH 2/6] kbuild: let addtree result in absolute paths only
+Message-ID: <20080505195548.GC8868@uranus.ravnborg.org>
+References: <481F26A0.5010402@de.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <481F26A0.5010402@de.ibm.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pekka J Enberg wrote:
-> Well, I only really have three kinds of patches: (1) testing, (2) 
-> for-linus asap (fixes in the middle of a release cycle) and (3) for-linus 
-> when the merge window opens. Up until now, I've put (1) in for-mm and 
-> after enough exposure (and no bug reports) they graduate into (2) or (3).
+On Mon, May 05, 2008 at 05:24:16PM +0200, Peter Oberparleiter wrote:
+> From: Peter Oberparleiter <peter.oberparleiter@de.ibm.com>
+> Signed-off-by: Peter Oberparleiter <peter.oberparleiter@de.ibm.com>
+> ---
+>  scripts/Kbuild.include |    2 +-
+>  1 files changed, 1 insertion(+), 1 deletion(-)
 > 
-> So the problem here is where I put the patches in category (1)?
+> Index: linux-2.6.26-rc1/scripts/Kbuild.include
+> ===================================================================
+> --- linux-2.6.26-rc1.orig/scripts/Kbuild.include
+> +++ linux-2.6.26-rc1/scripts/Kbuild.include
+> @@ -144,7 +144,7 @@ ld-option = $(call try-run,\
+>  build := -f $(if $(KBUILD_SRC),$(srctree)/)scripts/Makefile.build obj
+>  
+>  # Prefix -I with $(srctree) if it is not an absolute path.
+> -addtree = $(if $(filter-out -I/%,$(1)),$(patsubst -I%,-I$(srctree)/%,$(1))) $(1)
+> +addtree = $(if $(filter-out -I/%,$(1)),$(patsubst -I%,-I$(srctree)/%,$(1)),$(1))
+>  
+>  # Find all -I options and call addtree
+>  flags = $(foreach o,$($(1)),$(if $(filter -I%,$(o)),$(call addtree,$(o)),$(o)))
 
-(1) Testing = (1a) testing isolated changes, (1b) testing in integration 
-with other pending changes.  -next is for the latter kind of tests, 
-AFAIU with the primary goal of sorting out integration related issues. 
-For several reasons --- for example one reason which I saw mentioned was 
-to attract more testers than maybe -mm had lately --- we have been asked 
-to submit code to -next which has passed (1a)-type testing and had 
-appropriate review.
+We try to make all paths relative so less files get rebuild if you access the
+same source from two different paths (think nfs mounted src etc).
+So you really need to justify this change.
 
-Needless to say, many of us have difficulties to acquire resources 
-[time, hardware, test cases/ workloads] for (1) or (1a).  OTOH, 
-borrowing -next or -mm for too early test stages will not pay out for 
-any of us in the long run.
--- 
-Stefan Richter
--=====-==--- -=-= --=-=
-http://arcgraph.de/sr/
+	Sam
