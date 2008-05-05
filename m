@@ -1,76 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759348AbYEEOXm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759722AbYEEOYT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759348AbYEEOXm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 10:23:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756039AbYEEOXe
+	id S1759722AbYEEOYT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 10:24:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756800AbYEEOYH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 10:23:34 -0400
-Received: from smtp1.wifiinternet.cz ([89.31.47.1]:65308 "EHLO
-	bor.wifiinternet.cz" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753571AbYEEOXd (ORCPT
+	Mon, 5 May 2008 10:24:07 -0400
+Received: from mail.skyusermail.com ([77.240.11.49]:1351 "EHLO
+	mail.skyusermail.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756039AbYEEOYF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 10:23:33 -0400
-Message-ID: <481F1891.4000400@seznam.cz>
-Date: Mon, 05 May 2008 16:24:17 +0200
-From: Michal Simek <monstr@seznam.cz>
-Reply-To: monstr@seznam.cz
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
-MIME-Version: 1.0
-To: John Williams <john.williams@petalogix.com>
-CC: linux-kernel@vger.kernel.org, arnd@arndb.de, linux-arch@vger.kernel.org,
-       stephen.neuendorffer@xilinx.com, John.Linn@xilinx.com, matthew@wil.cx,
-       will.newton@gmail.com, drepper@redhat.com,
-       microblaze-uclinux@itee.uq.edu.au, grant.likely@secretlab.ca,
-       Michal Simek <monstr@monstr.eu>
-Subject: Re: [PATCH 50/56] microblaze_v2: setup.h string.h thread_info.h
-References: <1209901305-6404-1-git-send-email-monstr@seznam.cz>	 <27d6acda14c492aae35d8bb1343a122624560418.1209897266.git.monstr@monstr.eu>	 <64e6fc7378cd5c714fcceef7d4965c1fb3d1b288.1209897266.git.monstr@monstr.eu>	 <9cc0d54a98f25748dc3f16fc3250524d7cd00877.1209897266.git.monstr@monstr.eu>	 <5d240127ee05c28d5156bfbf305329f9540f6c14.1209897267.git.monstr@monstr.eu>	 <59b5238f7a259dcac4c9ca6513756a188625462e.1209897267.git.monstr@monstr.eu>	 <8e1d421649250f7a3f638cd552bc46e5f5845890.1209897267.git.monstr@monstr.eu>	 <5b1319d426b1f55e08402790b4bc16a33ec7c00c.1209897267.git.monstr@monstr.eu>	 <eff9f144fc70b87a9ff6767e9ab92d3d55eebbae.1209897267.git.monstr@monstr.eu>	 <643084ee3819dd169cad3c4e3565c5ff20dd3429.1209897267.git.monstr@monstr.eu>	 <231ae415bf52de25c69f727fd13c50d201f8ecd8.1209897267.git.monstr@monstr.eu>	 <53e5b22838d017b7cf7f44c4bafe5f7e253732ce.1209897267.git.monstr@monstr.eu> <1209955168.5798.85.camel@localhost>
-In-Reply-To: <1209955168.5798.85.camel@localhost>
-Content-Type: text/plain; charset=ISO-8859-2
-Content-Transfer-Encoding: 7bit
+	Mon, 5 May 2008 10:24:05 -0400
+X-Greylist: delayed 1816 seconds by postgrey-1.27 at vger.kernel.org; Mon, 05 May 2008 10:24:05 EDT
+Subject: Re: 2.6.26-rc1-git1 -- trying to get vblank count for disabled
+	pipe 0
+From: Steven J Newbury <steve@snewbury.org.uk>
+To: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@tungstengraphics.com>
+Cc: Miles Lane <miles.lane@gmail.com>, David Airlie <airlied@linux.ie>,
+       DRI for Linux <dri-devel@lists.sourceforge.net>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <1209975302.26326.263.camel@thor.sulgenrain.local>
+References: <481E5EE6.6090503@gmail.com>
+	 <1209975302.26326.263.camel@thor.sulgenrain.local>
+Content-Type: text/plain; charset=ISO-8859-1
+Date: Mon, 05 May 2008 13:51:56 +0100
+Message-Id: <1209991916.24777.8.camel@infinity>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-FIXED to r1.
-M
+On Mon, 2008-05-05 at 10:15 +0200, Michel Dänzer wrote:
+> On Sun, 2008-05-04 at 21:12 -0400, Miles Lane wrote:
+> > When I boot this kernel, everything seems okay, but after I leave the
+> > machine for 30 minutes or so, I come back and find the machine locked
+> > up.  
+> 
+> Define 'locked up'. Can you ping it? Can you log in via ssh? Is the X
+> server still alive? Where is it stuck? ...
+> 
+> 
+> > When I checked my log file after rebooting, I find the log filled with "trying to get vblank count for disabled pipe 0".
+> 
+> [...]
+> 
+> > May  4 14:40:44 whirligig kernel: [   47.544109] ALSA sound/pci/hda/hda_codec.c:716: hda_codec_setup_stream: NID=0x12, stream=0x5, channel=0, format=0x4011
+> > May  4 14:40:46 whirligig kernel: [   48.850489] trying to get vblank count for disabled pipe 0
+> > May  4 14:40:46 whirligig kernel: [   48.897990] trying to get vblank count for disabled pipe 0
+> > May  4 14:40:46 whirligig kernel: [   48.941691] trying to get vblank count for disabled pipe 0
+> > May  4 14:40:46 whirligig kernel: [   49.003556] trying to get vblank count for disabled pipe 0
+> > May  4 14:40:46 whirligig kernel: [   49.147880] trying to get vblank count for disabled pipe 0
+> > May  4 14:40:47 whirligig kernel: [   50.528654] trying to get vblank count for disabled pipe 0
+> > [...]
+> > May  4 15:36:23 whirligig kernel: [ 3404.847515] ALSA sound/pci/hda/hda_codec.c:728: hda_codec_cleanup_stream: NID=0xe
+> > May  4 16:06:53 whirligig kernel: [ 5241.488711] trying to get vblank count for disabled pipe 1
+> > May  4 16:06:53 whirligig kernel: [ 5241.488748] trying to get vblank count for disabled pipe 1
+> > May  4 16:06:53 whirligig kernel: [ 5241.496130] trying to get vblank count for disabled pipe 1
+> > May  4 16:06:53 whirligig kernel: [ 5241.516053] trying to get vblank
+> > count for disabled pipe 1
+> 
+> Note that some of these are for pipe 1 as well as pipe 0. Does the
+> problem only occur for one of them?
+Miles isn't alone, I also get 'trying to get vblank count for disabled
+pipe 0' (GM965).  vblank interrupts were previously not working for me,
+but they are now.  I'm not sure what's changed. 
+> 
+> Do you have any GL apps running when this happens?
+> 
+For me, this happens every time a GL app is run.
 
+I'm also getting occasional lockups.  Often it's the window manager
+(metacity) that locks up when attempting to move a window, restarting
+the window manager unlocks X but attempting to move a window again
+results in another lockup.  When it's locked up the pointer moves and vt
+switching works but nothing else.  Other times I've had a hard lockup
+that required a hard reboot, this happens less frequently.
 
->> +++ b/include/asm-microblaze/thread_info.h
->> @@ -0,0 +1,155 @@
->> +/*
->> + * include/asm-microblaze/thread_info.h
->> + *
->> + * This file is subject to the terms and conditions of the GNU General Public
->> + * License. See the file "COPYING" in the main directory of this archive
->> + * for more details.
->> + *
->> + * Copyright (C) 2006 Atmark Techno, Inc.
->> + */
->> +
->> +#ifndef _ASM_MICROBLAZE_THREAD_INFO_H
->> +#define _ASM_MICROBLAZE_THREAD_INFO_H
->> +
->> +#ifdef __KERNEL__
->> +
->> +/* we have 8k stack */
-> 
-> Is it worth trialling a 4K stack on MicroBlaze?
-> 
-> 
->> +struct cpu_context {
->> +	__u32	sp;
-> 
-> I'd be happier to see this called r1.  If mb-as doesn't accept "sp" as
-> an alias for "r1", nor should we.
-> 
-> ...
-> 
->> +	__u32	r30;
-> 
-> Is it worth a comment that r31 is absent because it's used as 'current'
-> pointer, and -ffixed-r31 etc?
-> 
-> 
-> 
-> 
-> 
