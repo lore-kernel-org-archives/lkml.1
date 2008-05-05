@@ -1,58 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759925AbYEERFw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759970AbYEERGu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759925AbYEERFw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 13:05:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752621AbYEERFo
+	id S1759970AbYEERGu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 13:06:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755990AbYEERGj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 13:05:44 -0400
-Received: from wf-out-1314.google.com ([209.85.200.170]:18829 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751437AbYEERFn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 13:05:43 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=ILZuN2Nu1oMLCYhDQEjbOSYEeLj7jiJSAk72VPPJZu1yUpvelQZUvXK879adip1NU+21IpsjhwmVMImnq4uGXrIUoN7h5wRO4lvE+glN+dTjPzqeuAiEo47ciuBSC4EnimsH/VW31cHanJ8nF/m053BwCUfm/TtRr8IOiOZ4CW0=
-From: Denis Cheng <crquan@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, Denis <cr_quan@163.com>
-Subject: [PATCH] mm/pdflush.c: merge the same code in two path
-Date: Tue,  6 May 2008 01:05:09 +0800
-Message-Id: <1210007109-15998-1-git-send-email-crquan@gmail.com>
-X-Mailer: git-send-email 1.5.5.1
+	Mon, 5 May 2008 13:06:39 -0400
+Received: from styx.suse.cz ([82.119.242.94]:34070 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753183AbYEERGi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 May 2008 13:06:38 -0400
+Date: Mon, 5 May 2008 19:06:36 +0200
+From: Jan Kara <jack@suse.cz>
+To: Badari Pulavarty <pbadari@us.ibm.com>
+Cc: Mingming Cao <cmm@us.ibm.com>, akpm@linux-foundation.org,
+       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] jbd_commit_transaction() races with
+	journal_try_to_drop_buffers() causing DIO failures
+Message-ID: <20080505170636.GK25722@duck.suse.cz>
+References: <20080306174209.GA14193@duck.suse.cz> <1209166706.6040.20.camel@localhost.localdomain> <20080428122626.GC17054@duck.suse.cz> <1209402694.23575.5.camel@badari-desktop> <20080428180932.GI17054@duck.suse.cz> <1209409764.11872.6.camel@localhost.localdomain> <20080429124321.GD1987@duck.suse.cz> <1209654981.27240.19.camel@badari-desktop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1209654981.27240.19.camel@badari-desktop>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Denis Cheng <crquan@gmail.com>
----
- mm/pdflush.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+On Thu 01-05-08 08:16:21, Badari Pulavarty wrote:
+> Hi Andrew & Jan,
+> 
+> I was able to reproduce the customer problem involving DIO
+> (invalidate_inode_pages2) problem by writing simple testcase
+> to keep writing to a file using buffered writes and DIO writes
+> forever in a loop. I see DIO writes fail with -EIO.
+> 
+> After a long debug, found 2 cases how this could happen.
+> These are race conditions with journal_try_to_free_buffers()
+> and journal_commit_transaction().
+> 
+> 1) journal_submit_data_buffers() tries to get bh_state lock. If
+> try lock fails, it drops the j_list_lock and sleeps for
+> bh_state lock, while holding a reference on the buffer.
+> In the meanwhile, journal_try_to_free_buffers() can clean up the
+> journal head could call try_to_free_buffers(). try_to_free_buffers()
+> would fail due to the reference held by journal_submit_data_buffers()
+> - which in turn causes failues for DIO (invalidate_inode_pages2()).
+> 
+> 2) When the buffer is on t_locked_list waiting for IO to finish,
+> we hold a reference and give up the cpu, if we can't get
+> bh_state lock. This causes try_to_free_buffers() to fail.
+> 
+> Fix is to drop the reference on the buffer if we can't get
+> bh_state lock, give up the cpu and re-try the whole operation -
+> instead of waiting for the vh_state lock.
+> 
+> Does this look like a resonable fix ?
+  As Mingming pointed out there are few other places where we could hold
+the bh reference. Note also that we accumulate references to buffers in the
+wbuf[] list and we need that for submit_bh() which consumes one bh
+reference. Generally, it seems to me as a too fragile and impractical
+rule "nobody can hold bh reference when not holding page lock" which is
+basically what it comes down to if you really want to be sure that
+journal_try_to_free_buffers() succeeds. And also note that in principle
+there are other places which hold references to buffers without holding the
+page lock - for example writepage() in ordered mode (although this one is
+in practice hardly triggerable). So how we could fix at least the races
+with commit code is to implement launder_page() callback for ext3/4 which
+would wait for the previous transaction commit in case the page has buffers
+that are part of that commit (I don't want this logic in
+journal_try_to_free_buffers() as that is called also on memory-reclaim
+path, but journal_launder_page() is fine with me). This would be correct
+but could considerably slow down O_DIRECT writes in cases they're mixed
+with buffered writes so I'm not sure if this is acceptable.
+  OTOH with the ordered mode rewrite patch, the problem with commit code
+also goes away since there we don't need extra references to data buffers
+(we use just filemap_fdatawrite).
 
-diff --git a/mm/pdflush.c b/mm/pdflush.c
-index 1c96cfc..9d834aa 100644
---- a/mm/pdflush.c
-+++ b/mm/pdflush.c
-@@ -207,7 +207,6 @@ int pdflush_operation(void (*fn)(unsigned long), unsigned long arg0)
- 
- 	spin_lock_irqsave(&pdflush_lock, flags);
- 	if (list_empty(&pdflush_list)) {
--		spin_unlock_irqrestore(&pdflush_lock, flags);
- 		ret = -1;
- 	} else {
- 		struct pdflush_work *pdf;
-@@ -219,8 +218,9 @@ int pdflush_operation(void (*fn)(unsigned long), unsigned long arg0)
- 		pdf->fn = fn;
- 		pdf->arg0 = arg0;
- 		wake_up_process(pdf->who);
--		spin_unlock_irqrestore(&pdflush_lock, flags);
- 	}
-+	spin_unlock_irqrestore(&pdflush_lock, flags);
-+
- 	return ret;
- }
- 
+> 1) journal_submit_data_buffers() tries to get bh_state lock. If
+> try lock fails, it drops the j_list_lock and sleeps for
+> bh_state lock, while holding a reference on the buffer head.
+> In the meanwhile, journal_try_to_free_buffers() can clean up the
+> journal head could call try_to_free_buffers(). try_to_free_buffers()
+> would fail due to the reference held by journal_submit_data_buffers()
+> - which inturn causes failues for DIO (invalidate_inode_pages2()).
+> 
+> 2) When the buffer is on t_locked_list waiting for IO to finish,
+> we hold a reference and give up the cpu, if we can't get 
+> bh_state lock. This causes try_to_free_buffers() to fail.
+> 
+> Fix is to drop the reference on the buffer, give up the cpu
+> and re-try the whole operation.
+> 
+> Signed-off-by: Badari Pulavarty <pbadari@us.ibm.com>
+> Reviewed-by: Mingming Cao <mcao@us.ibm.com>
+
+							Honza
 -- 
-1.5.5.1
-
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
