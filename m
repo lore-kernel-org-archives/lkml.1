@@ -1,35 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765449AbYEESsj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765572AbYEEStb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765449AbYEESsj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 14:48:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760981AbYEESkb
+	id S1765572AbYEEStb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 14:49:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761368AbYEESmw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 14:40:31 -0400
-Received: from www.tglx.de ([62.245.132.106]:41410 "EHLO www.tglx.de"
+	Mon, 5 May 2008 14:42:52 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:43575 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763162AbYEESk3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 14:40:29 -0400
-Message-ID: <481F5520.2050103@linutronix.de>
-Date: Mon, 05 May 2008 20:42:40 +0200
-From: Sebastian Siewior <bigeasy@linutronix.de>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
+	id S1761423AbYEESmv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 May 2008 14:42:51 -0400
+Date: Mon, 5 May 2008 20:42:35 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Parag Warudkar <parag.warudkar@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "akpm@osdl.org" <akpm@osdl.org>, Peter Zijlstra <peterz@infradead.org>,
+       Arjan van de Ven <arjan@infradead.org>, Dave Jones <davej@redhat.com>
+Subject: Re: [PATCH] default to n for GROUP_SCHED and FAIR_GROUP_SCHED
+Message-ID: <20080505184235.GD22332@elte.hu>
+References: <82e4877d0805031742o464dd581wd93173d79705ce0d@mail.gmail.com> <20080504092417.GA3425@elte.hu> <82e4877d0805050814j721ae522k84384df48c9f4336@mail.gmail.com> <20080505171501.GA22332@elte.hu> <20080505182427.GA2025@uranus.ravnborg.org>
 MIME-Version: 1.0
-To: Adrian Bunk <bunk@kernel.org>
-CC: Greg Kroah-Hartman <gregkh@suse.de>, linux-usb@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] usb/host/isp1760-hcd.c: make 2 functions static
-References: <20080505182533.GQ17139@cs181133002.pp.htv.fi>
-In-Reply-To: <20080505182533.GQ17139@cs181133002.pp.htv.fi>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080505182427.GA2025@uranus.ravnborg.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk wrote:
-> This patch makes the following needlessly global functions static:
-> - enqueue_an_ATL_packet()
-> - enqueue_an_INT_packet()
+
+* Sam Ravnborg <sam@ravnborg.org> wrote:
+
+> > This is a many years old kconfig bug that is frequently hacked 
+> > around in distro kernel packages but which has been ignored upstream 
+> > - i've attached Fedora's nonint_oldconfig patch from Dave Jones 
+> > below. (maybe Arjan wrote it originally?)
 > 
-> Signed-off-by: Adrian Bunk <bunk@kernel.org>
-Thank you Adrian.
+> In latest kbuild.git I've added a new feature.
+> 
+> 	make K=.config alldefconfig
+> 
+> would give you eaxtly what you request here. K= is used to say where 
+> to locate the base-configuration.
+
+great, thanks Sam!
+
+( how hard would it be to fix the "make oldconfig < /dev/null" infinit 
+  loop bug btw? I've got this method in a number of scripts of mine and 
+  it's an intuitive thing to type anyway, i think users would like it if 
+  it Just Worked. )
+
+> redhat has the added possibility to list new symbols.
+> This is not yet included in mainline.
+> Not that it is difficult - I just need to decide where/how to do it.
+
+the idea of that is this: distro maintainers dont just want to accept 
+new options blindly, they want to make a conscious decision on what 
+default to use. So the Fedora rpm builds will bail out with an error if 
+a config option has not been provided with a default by the pre-cooked 
+configs that are in the SRPM.
+
+In practice distro maintainers will pick the upstream default 99% of the 
+time, this is a mechanism to be 'aware' of what is happening upstream, 
+via a non-interactive build method. Would be cool to merge this feature 
+upstream too, in a clean way.
+
+	Ingo
