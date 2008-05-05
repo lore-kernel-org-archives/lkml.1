@@ -1,229 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758671AbYEEKAD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758441AbYEEKAd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758671AbYEEKAD (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 06:00:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758662AbYEEJzw
+	id S1758441AbYEEKAd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 06:00:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758686AbYEEJz6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 05:55:52 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:38374 "EHLO
+	Mon, 5 May 2008 05:55:58 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:38356 "EHLO
 	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758641AbYEEJzt (ORCPT
+	with ESMTP id S1755570AbYEEJzf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 05:55:49 -0400
-Message-Id: <20080505095528.826574311@szeredi.hu>
+	Mon, 5 May 2008 05:55:35 -0400
+Message-Id: <20080505095524.893316989@szeredi.hu>
 References: <20080505095440.820370974@szeredi.hu>
 User-Agent: quilt/0.45-1
-Date: Mon, 05 May 2008 11:54:54 +0200
+Date: Mon, 05 May 2008 11:54:52 +0200
 From: Miklos Szeredi <miklos@szeredi.hu>
 To: akpm@linux-foundation.org
 Cc: hch@infradead.org, viro@ZenIV.linux.org.uk, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, Ulrich Drepper <drepper@redhat.com>
-Subject: [patch 13/15] vfs: utimes cleanup
-Content-Disposition: inline; filename=utimes_cleanup.patch
+       linux-fsdevel@vger.kernel.org
+Subject: [patch 11/15] vfs: truncate: append-only checking cleanup
+Content-Disposition: inline; filename=truncate_append_cleanup.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Miklos Szeredi <mszeredi@suse.cz>
 
-Untange the mess that is do_utimes()
+Move the append-only checks from truncate to notify_change().  Checks
+for append-only files are always performed by the VFS and not by the
+filesystem so this belongs in notify_change(), and not in
+inode_change_ok().
 
 Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
-CC: Ulrich Drepper <drepper@redhat.com>
 ---
- fs/utimes.c |  163 +++++++++++++++++++++++++++++++++---------------------------
- 1 file changed, 91 insertions(+), 72 deletions(-)
+ fs/attr.c  |    6 ++++++
+ fs/namei.c |    2 --
+ fs/open.c  |    8 --------
+ 3 files changed, 6 insertions(+), 10 deletions(-)
 
-Index: linux-2.6/fs/utimes.c
+Index: linux-2.6/fs/open.c
 ===================================================================
---- linux-2.6.orig/fs/utimes.c	2008-05-05 11:29:26.000000000 +0200
-+++ linux-2.6/fs/utimes.c	2008-05-05 11:29:28.000000000 +0200
-@@ -53,54 +53,10 @@ static bool nsec_valid(long nsec)
- 	return nsec >= 0 && nsec <= 999999999;
- }
+--- linux-2.6.orig/fs/open.c	2008-05-05 11:29:27.000000000 +0200
++++ linux-2.6/fs/open.c	2008-05-05 11:29:27.000000000 +0200
+@@ -253,10 +253,6 @@ static long do_sys_truncate(const char _
+ 	if (error)
+ 		goto mnt_drop_write_and_out;
  
--/* If times==NULL, set access and modification to current time,
-- * must be owner or have write permission.
-- * Else, update from *times, must be owner or super user.
-- */
--long do_utimes(int dfd, char __user *filename, struct timespec *times, int flags)
-+static int utimes_common(struct path *path, struct timespec *times)
- {
- 	int error;
--	struct nameidata nd;
--	struct dentry *dentry;
--	struct inode *inode;
- 	struct iattr newattrs;
--	struct file *f = NULL;
--	struct vfsmount *mnt;
+-	error = -EPERM;
+-	if (IS_APPEND(inode))
+-		goto mnt_drop_write_and_out;
 -
--	error = -EINVAL;
--	if (times && (!nsec_valid(times[0].tv_nsec) ||
--		      !nsec_valid(times[1].tv_nsec))) {
--		goto out;
--	}
--
--	if (flags & ~AT_SYMLINK_NOFOLLOW)
--		goto out;
--
--	if (filename == NULL && dfd != AT_FDCWD) {
--		error = -EINVAL;
--		if (flags & AT_SYMLINK_NOFOLLOW)
--			goto out;
--
--		error = -EBADF;
--		f = fget(dfd);
--		if (!f)
--			goto out;
--		dentry = f->f_path.dentry;
--		mnt = f->f_path.mnt;
--	} else {
--		error = __user_walk_fd(dfd, filename, (flags & AT_SYMLINK_NOFOLLOW) ? 0 : LOOKUP_FOLLOW, &nd);
--		if (error)
--			goto out;
--
--		dentry = nd.path.dentry;
--		mnt = nd.path.mnt;
--	}
--
--	inode = dentry->d_inode;
--
--	error = mnt_want_write(mnt);
--	if (error)
--		goto dput_and_out;
+ 	error = get_write_access(inode);
+ 	if (error)
+ 		goto mnt_drop_write_and_out;
+@@ -321,10 +317,6 @@ static long do_sys_ftruncate(unsigned in
+ 	if (small && length > MAX_NON_LFS)
+ 		goto out_putf;
  
- 	/* Don't worry, the checks are done in inode_change_ok() */
- 	newattrs.ia_valid = ATTR_CTIME | ATTR_MTIME | ATTR_ATIME;
-@@ -121,40 +77,103 @@ long do_utimes(int dfd, char __user *fil
- 			newattrs.ia_valid |= ATTR_MTIME_SET;
- 		}
+-	error = -EPERM;
+-	if (IS_APPEND(inode))
+-		goto out_putf;
+-
+ 	error = locks_verify_truncate(inode, file, length);
+ 	if (!error)
+ 		error = do_truncate(dentry, length, ATTR_MTIME|ATTR_CTIME, file);
+Index: linux-2.6/fs/attr.c
+===================================================================
+--- linux-2.6.orig/fs/attr.c	2008-05-05 11:29:26.000000000 +0200
++++ linux-2.6/fs/attr.c	2008-05-05 11:29:27.000000000 +0200
+@@ -114,6 +114,12 @@ int notify_change(struct dentry * dentry
+ 			return -EPERM;
  	}
-+	mutex_lock(&path->dentry->d_inode->i_mutex);
-+	error = mnt_want_write(path->mnt);
-+	if (!error) {
-+		error = notify_change(path->dentry, &newattrs);
-+		mnt_drop_write(path->mnt);
-+	}
-+	mutex_unlock(&path->dentry->d_inode->i_mutex);
-+
-+	return error;
-+}
-+
-+/*
-+ * If times is NULL or both times are either UTIME_OMIT or UTIME_NOW, then
-+ * need to check permissions, because inode_change_ok() won't do it.
-+ */
-+static bool utimes_need_permission(struct timespec *times)
-+{
-+	return !times || (nsec_special(times[0].tv_nsec) &&
-+			  nsec_special(times[1].tv_nsec));
-+}
-+
-+static int do_fd_utimes(int fd, struct timespec *times)
-+{
-+	int error;
-+	struct file *file = fget(fd);
-+
-+	if (!file)
-+		return -EBADF;
-+
-+	if (utimes_need_permission(times)) {
-+		struct inode *inode = file->f_path.dentry->d_inode;
-+
-+		error = -EACCES;
-+		if (IS_IMMUTABLE(inode))
-+			goto out_fput;
-+
-+		if (!is_owner_or_cap(inode) && !(file->f_mode & FMODE_WRITE))
-+			goto out_fput;
-+	}
-+	error = utimes_common(&file->f_path, times);
-+
-+ out_fput:
-+	fput(file);
-+
-+	return error;
-+}
-+
-+/* If times==NULL, set access and modification to current time,
-+ * must be owner or have write permission.
-+ * Else, update from *times, must be owner or super user.
-+ */
-+long do_utimes(int dfd, char __user *filename, struct timespec *times,
-+	       int flags)
-+{
-+	int error;
-+	struct nameidata nd;
-+	int lookup_flags;
-+
-+	if (times && (!nsec_valid(times[0].tv_nsec) ||
-+		      !nsec_valid(times[1].tv_nsec))) {
-+		return -EINVAL;
-+	}
-+
-+	if (filename == NULL && dfd != AT_FDCWD) {
-+		if (flags)
-+			return -EINVAL;
-+
-+		return do_fd_utimes(dfd, times);
-+	}
-+
-+	if (flags & ~AT_SYMLINK_NOFOLLOW)
-+		return -EINVAL;
-+
-+	lookup_flags = (flags & AT_SYMLINK_NOFOLLOW) ? 0 : LOOKUP_FOLLOW;
-+	error = __user_walk_fd(dfd, filename, lookup_flags, &nd);
-+	if (error)
-+		return error;
-+
-+
-+	if (utimes_need_permission(times)) {
-+		struct inode *inode = nd.path.dentry->d_inode;
  
--	/*
--	 * If times is NULL or both times are either UTIME_OMIT or
--	 * UTIME_NOW, then need to check permissions, because
--	 * inode_change_ok() won't do it.
--	 */
--	if (!times || (nsec_special(times[0].tv_nsec) &&
--		       nsec_special(times[1].tv_nsec))) {
- 		error = -EACCES;
-                 if (IS_IMMUTABLE(inode))
--			goto mnt_drop_write_and_out;
-+			goto out_path_put;
++	/*
++	 * IS_IMMUTABLE() is checked by caller for truncation
++	 */
++	if ((ia_valid & ATTR_SIZE) && IS_APPEND(inode))
++		return -EPERM;
++
+ 	now = current_fs_time(inode->i_sb);
  
- 		if (!is_owner_or_cap(inode)) {
--			if (f) {
--				if (!(f->f_mode & FMODE_WRITE))
--					goto mnt_drop_write_and_out;
--			} else {
--				error = vfs_permission(&nd, MAY_WRITE);
--				if (error)
--					goto mnt_drop_write_and_out;
--			}
-+			error = vfs_permission(&nd, MAY_WRITE);
-+			if (error)
-+				goto out_path_put;
- 		}
+ 	attr->ia_ctime = now;
+Index: linux-2.6/fs/namei.c
+===================================================================
+--- linux-2.6.orig/fs/namei.c	2008-05-05 11:29:20.000000000 +0200
++++ linux-2.6/fs/namei.c	2008-05-05 11:29:27.000000000 +0200
+@@ -1639,8 +1639,6 @@ int may_open(struct nameidata *nd, int a
+ 	if (IS_APPEND(inode)) {
+ 		if  ((flag & FMODE_WRITE) && !(flag & O_APPEND))
+ 			return -EPERM;
+-		if (flag & O_TRUNC)
+-			return -EPERM;
  	}
--	mutex_lock(&inode->i_mutex);
--	error = notify_change(dentry, &newattrs);
--	mutex_unlock(&inode->i_mutex);
--mnt_drop_write_and_out:
--	mnt_drop_write(mnt);
--dput_and_out:
--	if (f)
--		fput(f);
--	else
--		path_put(&nd.path);
--out:
-+	error = utimes_common(&nd.path, times);
-+
-+ out_path_put:
-+	path_put(&nd.path);
-+
- 	return error;
- }
  
+ 	/* O_NOATIME can only be set by the owner or superuser */
 
 --
