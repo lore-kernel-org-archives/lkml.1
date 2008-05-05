@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762841AbYEESfg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762913AbYEESfy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762841AbYEESfg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 14:35:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760964AbYEES2J
+	id S1762913AbYEESfy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 14:35:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756268AbYEES2O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 14:28:09 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:32973 "EHLO smtp5.pp.htv.fi"
+	Mon, 5 May 2008 14:28:14 -0400
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:32978 "EHLO smtp5.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760956AbYEES2H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 14:28:07 -0400
-Date: Mon, 5 May 2008 21:27:00 +0300
+	id S1760981AbYEES2N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 May 2008 14:28:13 -0400
+Date: Mon, 5 May 2008 21:27:05 +0300
 From: Adrian Bunk <bunk@kernel.org>
 To: linux-kernel@vger.kernel.org
 Cc: Andrew Morton <akpm@linux-foundation.org>
-Subject: [2.6 patch] make mm/memory.c:print_bad_pte() static
-Message-ID: <20080505182700.GG17139@cs181133002.pp.htv.fi>
+Subject: [2.6 patch] mm/swapfile.c: make code static
+Message-ID: <20080505182705.GH17139@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -23,7 +23,10 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch makes the needlessly global print_bad_pte() static.
+This patch makes the following needlessly global code static:
+- swap_lock
+- nr_swapfiles
+- struct swap_list
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
@@ -35,36 +38,53 @@ This patch has been sent on:
 - 31 Mar 2008
 - 25 Feb 2008
 
- include/linux/mm.h |    1 -
- mm/memory.c        |    3 ++-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+ include/linux/swap.h |    3 ---
+ mm/swapfile.c        |    6 +++---
+ 2 files changed, 3 insertions(+), 6 deletions(-)
 
-cf47cf1dae0fe5b04b95ede85cac61c74f75c1c2 diff --git a/include/linux/mm.h b/include/linux/mm.h
-index 3b3e134..33d5ebe 100644
---- a/include/linux/mm.h
-+++ b/include/linux/mm.h
-@@ -777,7 +777,6 @@ extern int access_process_vm(struct task_struct *tsk, unsigned long addr, void *
+bb7f3cffcbe9023d345ff94dd983292613a8de6b diff --git a/include/linux/swap.h b/include/linux/swap.h
+index 878459a..9c9f4e5 100644
+--- a/include/linux/swap.h
++++ b/include/linux/swap.h
+@@ -237,7 +237,6 @@ extern struct page *swapin_readahead(swp_entry_t, gfp_t,
  
- int get_user_pages(struct task_struct *tsk, struct mm_struct *mm, unsigned long start,
- 		int len, int write, int force, struct page **pages, struct vm_area_struct **vmas);
--void print_bad_pte(struct vm_area_struct *, pte_t, unsigned long);
+ /* linux/mm/swapfile.c */
+ extern long total_swap_pages;
+-extern unsigned int nr_swapfiles;
+ extern void si_swapinfo(struct sysinfo *);
+ extern swp_entry_t get_swap_page(void);
+ extern swp_entry_t get_swap_page_of_type(int);
+@@ -254,8 +253,6 @@ extern int can_share_swap_page(struct page *);
+ extern int remove_exclusive_swap_page(struct page *);
+ struct backing_dev_info;
  
- extern int try_to_release_page(struct page * page, gfp_t gfp_mask);
- extern void do_invalidatepage(struct page *page, unsigned long offset);
-diff --git a/mm/memory.c b/mm/memory.c
-index ce3c9e4..fe624e4 100644
---- a/mm/memory.c
-+++ b/mm/memory.c
-@@ -355,7 +355,8 @@ static inline void add_mm_rss(struct mm_struct *mm, int file_rss, int anon_rss)
-  *
-  * The calling function must still handle the error.
-  */
--void print_bad_pte(struct vm_area_struct *vma, pte_t pte, unsigned long vaddr)
-+static void print_bad_pte(struct vm_area_struct *vma, pte_t pte,
-+			  unsigned long vaddr)
- {
- 	printk(KERN_ERR "Bad pte = %08llx, process = %s, "
- 			"vm_flags = %lx, vaddr = %lx\n",
-
-
+-extern spinlock_t swap_lock;
+-
+ /* linux/mm/thrash.c */
+ extern struct mm_struct * swap_token_mm;
+ extern void grab_swap_token(void);
+diff --git a/mm/swapfile.c b/mm/swapfile.c
+index 2da149c..0b20c79 100644
+--- a/mm/swapfile.c
++++ b/mm/swapfile.c
+@@ -33,8 +33,8 @@
+ #include <asm/tlbflush.h>
+ #include <linux/swapops.h>
+ 
+-DEFINE_SPINLOCK(swap_lock);
+-unsigned int nr_swapfiles;
++static DEFINE_SPINLOCK(swap_lock);
++static unsigned int nr_swapfiles;
+ long total_swap_pages;
+ static int swap_overflow;
+ 
+@@ -43,7 +43,7 @@ static const char Unused_file[] = "Unused swap file entry ";
+ static const char Bad_offset[] = "Bad swap offset entry ";
+ static const char Unused_offset[] = "Unused swap offset entry ";
+ 
+-struct swap_list_t swap_list = {-1, -1};
++static struct swap_list_t swap_list = {-1, -1};
+ 
+ static struct swap_info_struct swap_info[MAX_SWAPFILES];
+ 
 
