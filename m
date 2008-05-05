@@ -1,45 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759883AbYEEUnp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757723AbYEEUo0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759883AbYEEUnp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 16:43:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753516AbYEEUnf
+	id S1757723AbYEEUo0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 16:44:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753792AbYEEUoP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 16:43:35 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:47345 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753363AbYEEUnf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 16:43:35 -0400
-Date: Mon, 5 May 2008 13:42:52 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: bunk@kernel.org, a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org,
-       torvalds@linux-foundation.org, sam@ravnborg.org, viro@ftp.linux.org.uk,
-       hpa@zytor.com
-Subject: Re: [rfc] the kernel workflow & trivial "global -> static" patches
- (was: Re: [2.6 patch] make sched_feat_{names,open} static)
-Message-Id: <20080505134252.c82a64f6.akpm@linux-foundation.org>
-In-Reply-To: <20080505201906.GA900@elte.hu>
-References: <20080505182942.GA17139@cs181133002.pp.htv.fi>
-	<20080505201906.GA900@elte.hu>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Mon, 5 May 2008 16:44:15 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:57223 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753516AbYEEUoP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 May 2008 16:44:15 -0400
+Date: Mon, 5 May 2008 22:44:49 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Kumar Gala <galak@kernel.crashing.org>
+Cc: lkml List <linux-kernel@vger.kernel.org>,
+       "linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>
+Subject: Re: How to link a .o with all modules
+Message-ID: <20080505204449.GA9446@uranus.ravnborg.org>
+References: <6C8AB345-2DA0-460D-B7C8-262463247DDE@kernel.crashing.org> <20080504192434.GA23752@uranus.ravnborg.org> <D346E2E4-26C3-482E-ABBF-AF1EE97E91CD@kernel.crashing.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <D346E2E4-26C3-482E-ABBF-AF1EE97E91CD@kernel.crashing.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 5 May 2008 22:19:06 +0200
-Ingo Molnar <mingo@elte.hu> wrote:
+> >
+> >
+> >Let me know if this does address your question.
+> 
+> The problem is MODPOST complains about undefined symbols:
+> 
+>   MODPOST 24 modules
+> ERROR: "_restgpr_20_x" [net/key/af_key.ko] undefined!
+> ERROR: "_restgpr_25_x" [net/key/af_key.ko] undefined!
+> ERROR: "_restgpr_30_x" [net/key/af_key.ko] undefined!
 
-> Firstly, the practical problem: today "make namespacecheck" emits way 
-> too many false positives even on an allyesconfig build
+I need a bit more context to try to analyse this.
+Where did you expect _restgpr_20_x to be defined.
+If in vmlinux then were they present in the
+Module.symvers file?
 
-We don't actually care about what comes out of `make namespacecheck'.  We
-care about the _difference_ in its output when a patch is applied.
+If in the linked in .o file - could you
+see the symbols using objdump.
 
-So a script which reports on what changes a particular patch has upon
-namespacecheck output might be the way to go.  If it is fast enough then it
-can be run on a per-patch basis alongside checkpatch.
+etc.
 
+Sorry - not much help right away.
+
+PS. Travelling - do not expect responses until the
+weekend.
+
+	Sam
