@@ -1,60 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759588AbYEEQ5v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758789AbYEERDs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759588AbYEEQ5v (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 12:57:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755855AbYEEQ5n
+	id S1758789AbYEERDs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 13:03:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754916AbYEERDj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 12:57:43 -0400
-Received: from mga02.intel.com ([134.134.136.20]:6780 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754993AbYEEQ5m convert rfc822-to-8bit (ORCPT
+	Mon, 5 May 2008 13:03:39 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:49388 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754219AbYEERDi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 12:57:42 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.27,438,1204531200"; 
-   d="scan'208";a="278049165"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [git head] Should X86_PAT really default to yes?
-Date: Mon, 5 May 2008 10:00:15 -0700
-Message-ID: <924EFEDD5F540B4284297C4DC59F3DEEFB9204@orsmsx423.amr.corp.intel.com>
-In-Reply-To: <200805051855.05496.elendil@planet.nl>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [git head] Should X86_PAT really default to yes?
-Thread-Index: Aciu0MfzNVl+IjJESEKg9UNEuapW4wAAJW7g
-References: <200805022122.03576.elendil@planet.nl> <200805040910.57088.elendil@planet.nl> <86802c440805041323s1484a8ecx5dbe639d658d015b@mail.gmail.com> <200805051855.05496.elendil@planet.nl>
-From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-To: "Frans Pop" <elendil@planet.nl>, "Yinghai Lu" <yhlu.kernel@gmail.com>
-Cc: "Barnes, Jesse" <jesse.barnes@intel.com>, <linux-kernel@vger.kernel.org>,
-       "Ingo Molnar" <mingo@elte.hu>,
-       "Packard, Keith" <keith.packard@intel.com>
-X-OriginalArrivalTime: 05 May 2008 16:57:41.0800 (UTC) FILETIME=[21C4C280:01C8AED1]
+	Mon, 5 May 2008 13:03:38 -0400
+To: miklos@szeredi.hu
+CC: viro@ZenIV.linux.org.uk, weigelt@metux.de, linux-kernel@vger.kernel.org
+In-reply-to: <E1Jt3nB-0006ZP-6S@pomaz-ex.szeredi.hu> (message from Miklos
+	Szeredi on Mon, 05 May 2008 18:43:57 +0200)
+Subject: Re: VFS + path walktrough
+References: <20080505124041.GB32019@nibiru.local> <20080505130623.GC32019@nibiru.local> <20080505131307.GM5882@ZenIV.linux.org.uk> <20080505134315.GF32019@nibiru.local> <20080505153501.GN5882@ZenIV.linux.org.uk> <E1Jt3nB-0006ZP-6S@pomaz-ex.szeredi.hu>
+Message-Id: <E1Jt469-0006db-Ct@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Mon, 05 May 2008 19:03:33 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- 
+> > > * Al Viro <viro@ZenIV.linux.org.uk> wrote:
+> > > > That you have quite forgotten about mounts.  
+> > > 
+> > > hmm, I though this would be done before the link_path_walk() 
+> > > call happens ;-o
+> > 
+> > How on the earth...?  You don't know where will pathname resolution
+> > get you, so how could you possibly handle mountpoint transitions prior
+> > to it?
+> 
+> One way this could be done cleanly, is to pass the rest of the path
+> (as hint) to the filesystem in its lookup function.  Most filesystems
+> would just ignore it, but those which have the capabilities can use it
+> to do the lookup in one go, and internally
 
->-----Original Message-----
->From: Frans Pop [mailto:elendil@planet.nl] 
->Sent: Monday, May 05, 2008 9:55 AM
->To: Yinghai Lu
->Cc: Barnes, Jesse; Pallipadi, Venkatesh; 
->linux-kernel@vger.kernel.org; Ingo Molnar; Packard, Keith
->Subject: Re: [git head] Should X86_PAT really default to yes?
->
->On Sunday 04 May 2008, Yinghai Lu wrote:
->> can you boot with pat=off and send out /proc/mtrr?
->
->Hmmm. Is 'pat=off' supposed to do anything?
->
+Better, the filesystem can just populate the dcache with the result.
+The entry being looked up is locked, so noone can get at it, and so it
+should be quite safe to build a tree below.
 
-The option for this is actually "nopat".
-
-Thanks,
-Venki
+Miklos
