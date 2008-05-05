@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762070AbYEEU2v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760237AbYEEUcR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762070AbYEEU2v (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 16:28:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761659AbYEEU2i
+	id S1760237AbYEEUcR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 16:32:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752595AbYEEUcC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 16:28:38 -0400
-Received: from fg-out-1718.google.com ([72.14.220.154]:14308 "EHLO
+	Mon, 5 May 2008 16:32:02 -0400
+Received: from fg-out-1718.google.com ([72.14.220.157]:20431 "EHLO
 	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760116AbYEEU2h (ORCPT
+	with ESMTP id S1751668AbYEEUcB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 16:28:37 -0400
+	Mon, 5 May 2008 16:32:01 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=kfLUdf40XvveMvakVl/SXuyFmAom4/bR9tSD44HpKQrx8tRWSeoctaED4P9LHiGrXMtcsG09JLr5JJM4bP9QHX7LlreXyqUtGi/2VZ/UvbcRgJkPvmhFzaiaLrBV66//gYu3xJaS9dg3Lenk/+s97yOGMWFyxqikhKgYWfI9F3E=
-Message-ID: <30c6373b0805051328n30d32202g3744a233c7efb2dd@mail.gmail.com>
-Date: Mon, 5 May 2008 13:28:29 -0700
+        b=ajaEuix6cz+TgslKkDz4k2R14s+OMoZv7jE3yHlFSL1J3RSk6QpyKffXcWt8e0Ut22hj5szp6ISqO/YFhWz/kLlw7fV2t0b6jd5s63MIOVKY3JzSQmHV1LyEpUK0R8CNoxaBSGqD7FlMXBHQ99jEuJG3sRUy9rzT/wQpFRi2Z6I=
+Message-ID: <30c6373b0805051331l11a71eacv5cb9a5221f8f26f9@mail.gmail.com>
+Date: Mon, 5 May 2008 13:31:29 -0700
 From: "Kevin Burton" <burton@tailrank.com>
 To: "Andi Kleen" <andi@firstfloor.org>
 Subject: Re: Ability to limit or disable page caching?
 Cc: "FD Cami" <francois.cami@free.fr>, linux-kernel@vger.kernel.org
-In-Reply-To: <878wyocy0v.fsf@basil.nowhere.org>
+In-Reply-To: <30c6373b0805051328n30d32202g3744a233c7efb2dd@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
@@ -31,37 +31,24 @@ References: <30c6373b0805050012o505c0540i116a31bc1ab9ce9f@mail.gmail.com>
 	 <20080505212831.22371732@olorin>
 	 <30c6373b0805051242o2f38f0a3v62bd43f4fa01559e@mail.gmail.com>
 	 <878wyocy0v.fsf@basil.nowhere.org>
-X-Google-Sender-Auth: 9cd623946911b40e
+	 <30c6373b0805051328n30d32202g3744a233c7efb2dd@mail.gmail.com>
+X-Google-Sender-Auth: 11fb79d4b7f5237c
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We're actually running mlock which is native to MySQL.... of course I
-didn't think about whether our secondary process is paging not our
-MySQL process.
+Though mlockall isn't going to fix this problem because the OOM killer
+will still kill it if it runs out of memory.
 
-I'm going to have to look into that and figure out if it's possible to
-figure out what apps are being paged.
+I want to preserve the scenario where we go 10 bytes over memory and
+the kernel just swaps out those 10 bytes.
 
 Kevin
 
-On Mon, May 5, 2008 at 1:10 PM, Andi Kleen <andi@firstfloor.org> wrote:
-> "Kevin Burton" <burton@tailrank.com> writes:
->>
->> What I want to do is either disable the page cache entirely or just
->> tell the OS to cache at max 10% of the available memory.
->
-> FYI page cache includes the memory your program uses. No page
-> cache would mean no user space, 10% would mean user space uses only
-> 10%. One way that would fulfil your request literally is to boot with
-> mem=<10% of your ram>, but I guess you don't really want that.
->
-> If you don't want your application to be swapped at all you
-> should probably investigate mlock(2)/mlockall(2)
->
-> -Andi
->
-
+On Mon, May 5, 2008 at 1:28 PM, Kevin Burton <burton@tailrank.com> wrote:
+> We're actually running mlock which is native to MySQL.... of course I
+> didn't think about whether our secondary process is paging not our
+> MySQL process.
 
 
 -- 
