@@ -1,63 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761792AbYEEVIa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761503AbYEEVLe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761792AbYEEVIa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 17:08:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758247AbYEEVIV
+	id S1761503AbYEEVLe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 17:11:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758247AbYEEVLZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 17:08:21 -0400
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:36704 "EHLO smtp4.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755201AbYEEVIU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 17:08:20 -0400
-Date: Tue, 6 May 2008 00:07:12 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>, a.p.zijlstra@chello.nl,
-       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
-       sam@ravnborg.org, viro@ftp.linux.org.uk, hpa@zytor.com
-Subject: Re: [rfc] the kernel workflow & trivial "global -> static" patches
-	(was: Re: [2.6 patch] make sched_feat_{names,open} static)
-Message-ID: <20080505210712.GD1544@cs181133002.pp.htv.fi>
-References: <20080505182942.GA17139@cs181133002.pp.htv.fi> <20080505201906.GA900@elte.hu> <20080505134252.c82a64f6.akpm@linux-foundation.org>
+	Mon, 5 May 2008 17:11:25 -0400
+Received: from outbound-mail-127.bluehost.com ([67.222.38.27]:54263 "HELO
+	outbound-mail-127.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1756757AbYEEVLZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 May 2008 17:11:25 -0400
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Gabriel C <nix.or.die@googlemail.com>
+Subject: Re: intelfb and G33 / Q33 / Q35 chipsets support ?
+Date: Mon, 5 May 2008 14:11:02 -0700
+User-Agent: KMail/1.9.9
+Cc: Dave Airlie <airlied@linux.ie>, Gabriel C <crazy@frugalware.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fbdev-devel@lists.sourceforge.net,
+       "Antonino A. Daplas" <adaplas@gmail.com>,
+       Wang Zhenyu <zhenyu.z.wang@intel.com>
+References: <4815EEB4.2060509@frugalware.org> <200805050938.54453.jbarnes@virtuousgeek.org> <481F7533.6070503@googlemail.com>
+In-Reply-To: <481F7533.6070503@googlemail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080505134252.c82a64f6.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Message-Id: <200805051411.03047.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 05, 2008 at 01:42:52PM -0700, Andrew Morton wrote:
-> On Mon, 5 May 2008 22:19:06 +0200
-> Ingo Molnar <mingo@elte.hu> wrote:
-> 
-> > Firstly, the practical problem: today "make namespacecheck" emits way 
-> > too many false positives even on an allyesconfig build
-> 
-> We don't actually care about what comes out of `make namespacecheck'.  We
-> care about the _difference_ in its output when a patch is applied.
-> 
-> So a script which reports on what changes a particular patch has upon
-> namespacecheck output might be the way to go.  If it is fast enough then it
-> can be run on a per-patch basis alongside checkpatch.
+On Monday, May 05, 2008 1:59 pm Gabriel C wrote:
+> Jesse Barnes wrote:
+> > On Tuesday, April 29, 2008 7:16 pm Gabriel C wrote:
+> >>>> See the modesetting-101 branch of
+> >>>> git://git.freedesktop.org/git/mesa/drm. It's a bit rough in spots but
+> >>>> the i915 driver should be pretty close to feature parity with the
+> >>>> Intel X driver at this point.
+> >>>
+> >>> Thx , I will try out the tree.
+> >>
+> >> modesetting-101 does not compile on current git , NOPAGE_SIGBUS , nopage
+> >> and friends gone.
+> >
+> > Yeah the DRM tree doesn't have a full kernel included, so it'll
+> > occasionally be out-of-sync.  You could try a different kernel version
+> > (it almost always works with the last stable release of Linux) or merging
+> > DRM master into modesetting-101.  Assuming there are no conflicts that
+> > might also fix things. :)
+>
+> Hehe yes , I noticed :)
+>
+> I've fixed myself local but it died later with:
+>
+> WARNING: "i2c_bit_add_bus" [/work/git/drm/linux-core/i915.ko] undefined!
+>
+> I didn't got time to investigate this one.
 
-"make namespacecheck" works on the binary objects.
+That can happen if the i2c stuff isn't loaded before the DRM module.  Usually 
+depmod picks this up, but if you have multiple versions lying around it may 
+pick the wrong one.  You can still load i2c-core etc. by hand though, and 
+then 'insmod i915 modeset=1'.
 
-- touching header files can result in a complete rebuild
-- if a patch alters which objects get built you should start with
-  a clean object dir
-
-The question is therefore basically whether a complete rebuild of an
-all*config kernel is fast enough for you...
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+Jesse
 
