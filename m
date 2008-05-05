@@ -1,61 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760035AbYEERIn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752640AbYEEROg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760035AbYEERIn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 13:08:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755559AbYEERIf
+	id S1752640AbYEEROg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 13:14:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750906AbYEERO1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 13:08:35 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:55738 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756696AbYEERIe (ORCPT
+	Mon, 5 May 2008 13:14:27 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:50785 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750885AbYEERO1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 13:08:34 -0400
-Date: Mon, 5 May 2008 10:07:43 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Nadia Derbey <Nadia.Derbey@bull.net>
-Cc: manfred@colorfullife.com, paulmck@linux.vnet.ibm.com,
-       linux-kernel@vger.kernel.org, efault@gmx.de
-Subject: Re: [PATCH 00/10] Scalability requirements for sysv ipc - v2
-Message-Id: <20080505100743.cdc571d8.akpm@linux-foundation.org>
-In-Reply-To: <481F3B62.9020407@bull.net>
-References: <20080429143304.741001000@bull.net>
-	<20080429115424.41b82fcb.akpm@linux-foundation.org>
-	<481F3B62.9020407@bull.net>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 5 May 2008 13:14:27 -0400
+Date: Mon, 5 May 2008 18:14:25 +0100
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: weigelt@metux.de, linux-kernel@vger.kernel.org
+Subject: Re: VFS + path walktrough
+Message-ID: <20080505171425.GO5882@ZenIV.linux.org.uk>
+References: <20080505124041.GB32019@nibiru.local> <20080505130623.GC32019@nibiru.local> <20080505131307.GM5882@ZenIV.linux.org.uk> <20080505134315.GF32019@nibiru.local> <20080505153501.GN5882@ZenIV.linux.org.uk> <E1Jt3nB-0006ZP-6S@pomaz-ex.szeredi.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <E1Jt3nB-0006ZP-6S@pomaz-ex.szeredi.hu>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 05 May 2008 18:52:50 +0200 Nadia Derbey <Nadia.Derbey@bull.net> wrote:
+On Mon, May 05, 2008 at 06:43:57PM +0200, Miklos Szeredi wrote:
 
->                  2.6.25-mm1 (ref)   2.6.25-mm1(patched)
-> 
-> Total (1 cpu):   876000             985496
-> Total (2 cpus): 1549592            1740591
-> Total (3 cpus): 1694370            2327468
-> Total (4 cpus):  404553            2465787
-> Total (5 cpus):  391283            3215676
-> Total (6 cpus):  263249            3849121
-> Total (7 cpus):  191742            4209866
-> Total (8 cpus):  141722            4255585
-> 
+> One way this could be done cleanly, is to pass the rest of the path
+> (as hint) to the filesystem in its lookup function.  Most filesystems
+> would just ignore it, but those which have the capabilities can use it
+> to do the lookup in one go, and internally cache the result.  The VFS
+> doesn't need to know _anything_ about all this.  If there are
+> mountpoints, they are already cached, so ->lookup() wouldn't be called
+> at all, only ->d_revalidate(), which is a different issue.
 
-Looks encouraging.  A comparison with 2.6.22 (or whichever kernel it was
-before we broke it) would be interesting too, please.
+This is still wrong.  We not just pass the pathname to filesystem (note
+that you still need to deal with symlinks), but we make that filesystem
+to populate dentry tree.  Take a look at 9P walk - it does *not* give
+you anything resembling stat, you just get qids of intermediates.  Which
+is bloody useful when you want to do intelligent revalidation (do local
+cached walk, then issue a single protocol request that will both do
+bulk revalidate *and* tell you where in the path you've got the first
+invalid one - just compare qids with what you've got stored locally).
+However, it's just about useless for cutting corners in cold-cache
+lookup.
 
-> 
-> Full output files attached.
->
-> Will send the rest tomorrow.
+It _is_ a useful thing, no arguments about that.  However, to use it
+a sane way we need to massage the pathname resolution loop, taking
+the "simple pass without symlinks or mountpoints" part into a new
+helper, turning the current __link_path_walk() into a loop calling that
+one and then folding it into callers.  Would also allow to kill the
+last remnants of recursion in symlink handling for normal fs case...
 
-Nobody reads the raw data, sorry.  And it is inefficient to have everyone
-independently pore over the raw data extracting the (same) actual
-information.
+_Then_ we can do saner logics for revalidate, allowing it on such segments.
+Which, BTW, would deal with -ESTALE in a saner way, rather than "repeat
+full pathname resolution from the very beginning".  And that's where
+9P multi-step walk(5) would do very nicely, indeed.
 
-Please condense the result of your performance testing into a
-preferably-less-than-one-page summary and include (and maintain) that within
-the patch changelog.
-
+And fuck the "hints" of all kinds, pardon the rudeness.  We already have
+more than enough of that crap and it already makes cleaning the logics
+up bloody painful.
