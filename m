@@ -1,82 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753298AbYEERcz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754158AbYEERdY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753298AbYEERcz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 13:32:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751072AbYEERcp
+	id S1754158AbYEERdY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 13:33:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751453AbYEERdM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 13:32:45 -0400
-Received: from hpsmtp-eml15.kpnxchange.com ([213.75.38.115]:39463 "EHLO
-	hpsmtp-eml15.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751057AbYEERco (ORCPT
+	Mon, 5 May 2008 13:33:12 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:52259 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750906AbYEERdL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 13:32:44 -0400
-From: Frans Pop <elendil@planet.nl>
-To: Jesse Barnes <jesse.barnes@intel.com>
-Subject: Re: [git head] Should X86_PAT really default to yes?
-Date: Mon, 5 May 2008 19:32:40 +0200
-User-Agent: KMail/1.9.9
-Cc: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       linux-kernel@vger.kernel.org, "Ingo Molnar" <mingo@elte.hu>,
-       "Packard, Keith" <keith.packard@intel.com>,
-       "Yinghai Lu" <yhlu.kernel@gmail.com>
-References: <200805022122.03576.elendil@planet.nl> <200805040910.57088.elendil@planet.nl> <200805050857.57661.jesse.barnes@intel.com>
-In-Reply-To: <200805050857.57661.jesse.barnes@intel.com>
-MIME-Version: 1.0
-Content-Disposition: inline
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200805051932.41827.elendil@planet.nl>
-X-OriginalArrivalTime: 05 May 2008 17:32:42.0550 (UTC) FILETIME=[05E9C560:01C8AED6]
+	Mon, 5 May 2008 13:33:11 -0400
+To: viro@ZenIV.linux.org.uk
+CC: miklos@szeredi.hu, weigelt@metux.de, linux-kernel@vger.kernel.org
+In-reply-to: <20080505171425.GO5882@ZenIV.linux.org.uk> (message from Al Viro
+	on Mon, 5 May 2008 18:14:25 +0100)
+Subject: Re: VFS + path walktrough
+References: <20080505124041.GB32019@nibiru.local> <20080505130623.GC32019@nibiru.local> <20080505131307.GM5882@ZenIV.linux.org.uk> <20080505134315.GF32019@nibiru.local> <20080505153501.GN5882@ZenIV.linux.org.uk> <E1Jt3nB-0006ZP-6S@pomaz-ex.szeredi.hu> <20080505171425.GO5882@ZenIV.linux.org.uk>
+Message-Id: <E1Jt4Ye-0006hz-9i@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Mon, 05 May 2008 19:33:00 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sigh. This is going to get complex...
+> > One way this could be done cleanly, is to pass the rest of the path
+> > (as hint) to the filesystem in its lookup function.  Most filesystems
+> > would just ignore it, but those which have the capabilities can use it
+> > to do the lookup in one go, and internally cache the result.  The VFS
+> > doesn't need to know _anything_ about all this.  If there are
+> > mountpoints, they are already cached, so ->lookup() wouldn't be called
+> > at all, only ->d_revalidate(), which is a different issue.
+> 
+> This is still wrong.  We not just pass the pathname to filesystem (note
+> that you still need to deal with symlinks),
 
-On Monday 05 May 2008, Jesse Barnes wrote:
-> > > If so, it might not be a PAT issue but just a different memory layout
-> > > or something (and therefore it would really just be a cosmetic bug in
-> > > the X driver).
-> >
-> > The artifacts may not be a PAT issue directly, but it is a clear
-> > regression for me as I currently have a nice clean screen when X shuts
-> > down. I'm also 100% sure that it is caused by enabling PAT. A kernel
-> > with same config and only PAT disabled does not show the artifacts.
-> >
-> > Would you like me to file a bug against X for these artifacts?
-> > If so, against what component? The i810 driver or the server?
->
-> I suspect an i810 driver bug is being uncovered here, since we do have
-> transient VT switch corruption on some other platforms (we're just
-> exposing our chip reprogramming on the screen, rather than keeping it off
-> the whole time).  But there could also be something PAT specific going
-> on, I'll have to walk through those code paths...
+Symlinks are easy: filesystem just needs to *stop* the resolution the
+moment it finds one.
 
-I suspect it could be vesafb/fbcon related instead. Normally I boot my 
-system with 'quiet vga=791', i.e. with vesafb. I then see the artifacts.
+> but we make that filesystem to populate dentry tree.
 
-When I boot without 'vga=791', I hit another, unrelated regression (which 
-I'll report separately) [1].
+Doesn't sound hard: d_alloc() + d_instantiate().
 
-When I boot with 'video=vfb:off', I do _not_ get the artifacts when X exits.
+>  Take a look at 9P walk - it does *not* give
+> you anything resembling stat, you just get qids of intermediates.
 
-Note that the "expected mapping type" errors remain the same both with and 
-without framebuffer console.
+Which is exactly what's needed to populate the dentry tree, no?
 
+>  Which
+> is bloody useful when you want to do intelligent revalidation (do local
+> cached walk, then issue a single protocol request that will both do
+> bulk revalidate *and* tell you where in the path you've got the first
+> invalid one - just compare qids with what you've got stored locally).
+> However, it's just about useless for cutting corners in cold-cache
+> lookup.
 
-> Oh the messages should be removed or somehow minimized, I agree.  I'm
-> just not sure if the other bug is serious enough to block PAT by default
-> yet, but either way we should fix the bugs!
+Sure, it's useful for that as well.
 
-OK. Thanks. Guess you've also seen "Xorg crash with xf86MapVidMem error" 
-that turned out to be due to PAT: 
-http://www.gossamer-threads.com/lists/linux/kernel/915300 ?
+> It _is_ a useful thing, no arguments about that.  However, to use it
+> a sane way we need to massage the pathname resolution loop, taking
+> the "simple pass without symlinks or mountpoints" part into a new
+> helper, turning the current __link_path_walk() into a loop calling that
+> one and then folding it into callers.  Would also allow to kill the
+> last remnants of recursion in symlink handling for normal fs case...
+> 
+> _Then_ we can do saner logics for revalidate, allowing it on such segments.
+> Which, BTW, would deal with -ESTALE in a saner way, rather than "repeat
+> full pathname resolution from the very beginning".  And that's where
+> 9P multi-step walk(5) would do very nicely, indeed.
 
-Cheers,
-FJP
+Sounds wonderful.  Really.
 
-[1] Short version of this unrelated issue.
-If I boot without vga=791 the console stops being updated after PCI probes.
-At first I thought this was #9310, but this time it's unrelated to the 
-config option mentioned there. Symptoms are awfully similar though.
+> And fuck the "hints" of all kinds, pardon the rudeness.
+
+Don't mind at all.  In fact I usually enjoy it.
+
+>  We already have more than enough of that crap and it already makes
+> cleaning the logics up bloody painful.
+
+Separate i_op for it is fine by me as well.
+
+Not that I care very much.  I have plans for such a bulk lookup
+interface in fuse, but that's far in the future.
+
+Miklos
+
