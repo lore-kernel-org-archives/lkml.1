@@ -1,38 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763713AbYEEWoq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764066AbYEEWpP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763713AbYEEWoq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 18:44:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763316AbYEEWkq
+	id S1764066AbYEEWpP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 18:45:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763553AbYEEWlw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 18:40:46 -0400
-Received: from ozlabs.org ([203.10.76.45]:53391 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763325AbYEEWkm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 18:40:42 -0400
+	Mon, 5 May 2008 18:41:52 -0400
+Received: from ug-out-1314.google.com ([66.249.92.172]:51587 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763543AbYEEWlv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 May 2008 18:41:51 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:to:cc:subject:message-id:user-agent:mime-version:content-type:from;
+        b=lKunV2auVc06t28f9N37jBJS4Sju74VBeLCBUtTpvN2EAzd1ByMMbhnRlmlGRgJOyxUyaOXypszTtIhI+nV3xbWwQHzps5NMtc0HaNTNKOmUt0MvLkGYB8lZpUys5VE+Xdjqh64xhjsVP5WnCvrQlku9vbqE8lq8005cTHIt4ME=
+Date: Tue, 6 May 2008 00:41:48 +0200 (CEST)
+To: linux-kernel@vger.kernel.org
+cc: mingo@elte.hu, gcosta@redhat.com, jesper.juhl@gmail.com
+Subject: [PATCH] Use correct format when printing long unsigned int in
+ arch/x86/kernel/setup.c
+Message-ID: <alpine.LNX.1.00.0805060039100.27779@dragon.funnycrock.com>
+User-Agent: Alpine 1.00 (LNX 882 2007-12-20)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18463.35946.644765.644061@cargo.ozlabs.ibm.com>
-Date: Tue, 6 May 2008 08:38:34 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Kumar Gala <galak@kernel.crashing.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, linuxppc-dev@ozlabs.org,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [git pull] Please pull powerpc.git powerpc-next branch
-In-Reply-To: <7F696AAE-069D-443A-9511-5CF92F4538EA@kernel.crashing.org>
-References: <18463.1101.341437.600410@cargo.ozlabs.ibm.com>
-	<alpine.LFD.1.10.0805051018550.32269@woody.linux-foundation.org>
-	<7F696AAE-069D-443A-9511-5CF92F4538EA@kernel.crashing.org>
-X-Mailer: VM 7.19 under Emacs 22.1.1
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+From: Jesper Juhl <jesper.juhl@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kumar Gala writes:
+From: Jesper Juhl <jesper.juhl@gmail.com>
 
-> Paul's clearly starting to lose it.  First a pull request w/o him  
-> pushing to his tree.  Now a pull request from the ether.
 
-Show some respect, young man, or I'll hit you with my walking frame.
+Use correct format when printing long unsigned int in arch/x86/kernel/setup.c
 
-Paul.
+This patch gets rid of this compiler warning:
+  arch/x86/kernel/setup.c: In function 'setup_per_cpu_areas':
+  arch/x86/kernel/setup.c:99: warning: format '%zd' expects type 'signed size_t', but argument 2 has type 'long unsigned int'
+
+
+Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
+---
+
+ setup.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
+index cc6f5eb..c0c68c1 100644
+--- a/arch/x86/kernel/setup.c
++++ b/arch/x86/kernel/setup.c
+@@ -95,7 +95,7 @@ void __init setup_per_cpu_areas(void)
+ 
+ 	/* Copy section for each CPU (we discard the original) */
+ 	size = PERCPU_ENOUGH_ROOM;
+-	printk(KERN_INFO "PERCPU: Allocating %zd bytes of per cpu data\n",
++	printk(KERN_INFO "PERCPU: Allocating %lu bytes of per cpu data\n",
+ 			  size);
+ 
+ 	for_each_possible_cpu(i) {
+
+
