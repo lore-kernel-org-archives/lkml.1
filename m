@@ -1,115 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756353AbYEEATY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753874AbYEEAbs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756353AbYEEATY (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 May 2008 20:19:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753360AbYEEATK
+	id S1753874AbYEEAbs (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 May 2008 20:31:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750871AbYEEAbe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 May 2008 20:19:10 -0400
-Received: from ozlabs.org ([203.10.76.45]:59322 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753277AbYEEATJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 May 2008 20:19:09 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Adrian Bunk <bunk@kernel.org>
-Subject: Re: s390 kvm_virtio.c build error
-Date: Mon, 5 May 2008 10:19:01 +1000
-User-Agent: KMail/1.9.9
-Cc: Christian Borntraeger <borntraeger@de.ibm.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Carsten Otte <cotte@de.ibm.com>, Avi Kivity <avi@qumranet.com>,
-       kvm-devel@lists.sourceforge.net, linux-s390@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-References: <20080503174716.GM5838@cs181133002.pp.htv.fi>
-In-Reply-To: <20080503174716.GM5838@cs181133002.pp.htv.fi>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+	Sun, 4 May 2008 20:31:34 -0400
+Received: from fmailhost04.isp.att.net ([207.115.11.54]:35679 "EHLO
+	fmailhost01.isp.att.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750750AbYEEAbd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 May 2008 20:31:33 -0400
+X-Originating-IP: [74.251.4.130]
+Date: Sun, 4 May 2008 19:31:28 -0500
+From: Jay Cliburn <jacliburn@bellsouth.net>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: Luca Tettamanti <kronos.it@gmail.com>, Chris Snook <csnook@redhat.com>,
+       Jeff Garzik <jeff@garzik.org>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, Christoph Lameter <clameter@sgi.com>,
+       torvalds@osdl.org
+Subject: Re: atl1 64-bit => 32-bit DMA borkage (reproducible, bisected)
+Message-ID: <20080504193128.1ea61958@osprey.hogchain.net>
+In-Reply-To: <20080504211507.GC1040@martell.zuzino.mipt.ru>
+References: <20080419111719.GA6724@martell.zuzino.mipt.ru>
+	<20080419144535.GA4814@martell.zuzino.mipt.ru>
+	<20080419215444.2d4623f5@osprey.hogchain.net>
+	<20080420111453.GA4902@martell.zuzino.mipt.ru>
+	<20080420060607.2b1be48b@osprey.hogchain.net>
+	<20080420122631.GA4761@martell.zuzino.mipt.ru>
+	<20080420133704.63f5cc10@osprey.hogchain.net>
+	<20080420205500.GA4762@martell.zuzino.mipt.ru>
+	<20080421210821.28053a92@osprey.hogchain.net>
+	<20080425195743.2bfe66ee@osprey.hogchain.net>
+	<20080504211507.GC1040@martell.zuzino.mipt.ru>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200805051019.02289.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 04 May 2008 03:47:17 Adrian Bunk wrote:
-> Commit c45a6816c19dee67b8f725e6646d428901a6dc24
-> (virtio: explicit advertisement of driver features)
-> and commit e976a2b997fc4ad70ccc53acfe62811c4aaec851
-> (s390: KVM guest: virtio device support, and kvm hypercalls)
-> don't like each other:
+On Mon, 5 May 2008 01:15:07 +0400
+Alexey Dobriyan <adobriyan@gmail.com> wrote:
 
-Yep, I broke s390.  This was kind of expected, but I didn't want to try to
-fix it as I am unable to test.
+> Looking at how other netdevice drivers:
+> 
+> 8139too and others checks netif_running() in interrupt handler.
+> 
+> r8169 has scary "50k$" question comment re irqs disabled after
+> interacting with hardware.
+> 
+> But the r8169 case should be fixed by atlx_irq_disable()?
 
-It would look something like this:
+Agreed.
 
-virtio: Attempt to fix kvm_virtio after feature management changes
+> 
+> Writes to REG_IMR, REG_ISR are commented in atl1_reset_hw(), why?
 
-Very similar to lguest code: set and get feature are now separate callbacks.
+Came from the vendor that way.
 
-Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+> (I'll test that soon)
+> 
+> Do we have a theory why changing from 64-bit DMA mask to 32-bit mask
+> resurrects the bug? NIC here never showed any sort of corruption
+> described in commit which banned 64-bit DMA.
 
-diff -r 219d6c116996 drivers/s390/kvm/kvm_virtio.c
---- a/drivers/s390/kvm/kvm_virtio.c	Mon May 05 10:03:16 2008 +1000
-+++ b/drivers/s390/kvm/kvm_virtio.c	Mon May 05 10:17:25 2008 +1000
-@@ -78,27 +78,34 @@ static unsigned desc_size(const struct k
- 		+ desc->config_len;
- }
- 
--/*
-- * This tests (and acknowleges) a feature bit.
-- */
--static bool kvm_feature(struct virtio_device *vdev, unsigned fbit)
-+/* This gets the device's feature bits. */
-+static u32 kvm_get_features(struct virtio_device *vdev)
- {
-+	unsigned int i;
-+	u32 features = 0;
- 	struct kvm_device_desc *desc = to_kvmdev(vdev)->desc;
--	u8 *features;
-+	u8 *in_features = kvm_vq_features(desc);
- 
--	if (fbit / 8 > desc->feature_len)
--		return false;
-+	/* We do this the slow but generic way. */
-+	for (i = 0; i < min(desc->feature_len * 8, 32); i++)
-+		if (in_features[i / 8] & (1 << (i % 8)))
-+			features |= (1 << i);
- 
--	features = kvm_vq_features(desc);
--	if (!(features[fbit / 8] & (1 << (fbit % 8))))
--		return false;
-+	return features;
-+}
- 
--	/*
--	 * We set the matching bit in the other half of the bitmap to tell the
--	 * Host we want to use this feature.
--	 */
--	features[desc->feature_len + fbit / 8] |= (1 << (fbit % 8));
--	return true;
-+static void kvm_set_features(struct virtio_device *vdev, u32 features)
-+{
-+	unsigned int i;
-+	struct kvm_device_desc *desc = to_kvmdev(vdev)->desc;
-+	/* Second half of bitmap is features we accept. */
-+	u8 *out_features = kvm_vq_features(desc) + desc->feature_len;
-+
-+	memset(out_features, 0, desc->feature_len);
-+	for (i = 0; i < min(desc->feature_len * 8, 32); i++) {
-+		if (features & (1 << i))
-+			out_features[i / 8] |= (1 << (i % 8));
-+	}
- }
- 
- /*
-@@ -221,7 +228,8 @@ static void kvm_del_vq(struct virtqueue 
-  * The config ops structure as defined by virtio config
-  */
- static struct virtio_config_ops kvm_vq_configspace_ops = {
--	.feature = kvm_feature,
-+	.get_features = kvm_get_features,
-+	.set_features = kvm_set_features,
- 	.get = kvm_get,
- 	.set = kvm_set,
- 	.get_status = kvm_get_status,
+We had multiple reports of users who encountered repeated memory
+corruption when transferring large files while running with a 64-bit DMA
+mask.  Chris Snook noticed the upper 32 bits of the descriptor address
+register are shared among five other registers, each containing the low
+bits for one of five descriptors.  All the descriptors, therefore, have
+to live within the same 4GB address space.
+
+I'll keep poking at it as time permits through the week, but I probably
+won't be able to devote a whole lot of time to it until next weekend.
