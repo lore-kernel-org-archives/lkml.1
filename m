@@ -1,21 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758845AbYEES3l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761548AbYEESaH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758845AbYEES3l (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 14:29:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760587AbYEES0m
+	id S1761548AbYEESaH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 14:30:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760596AbYEES0q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 14:26:42 -0400
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:54969 "EHLO smtp4.pp.htv.fi"
+	Mon, 5 May 2008 14:26:46 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:54978 "EHLO smtp4.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760581AbYEES0l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 14:26:41 -0400
-Date: Mon, 5 May 2008 21:25:33 +0300
+	id S1752857AbYEES0p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 May 2008 14:26:45 -0400
+Date: Mon, 5 May 2008 21:25:37 +0300
 From: Adrian Bunk <bunk@kernel.org>
-To: Sebastian Siewior <bigeasy@linutronix.de>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Cc: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [2.6 patch] usb/host/isp1760-hcd.c: make 2 functions static
-Message-ID: <20080505182533.GQ17139@cs181133002.pp.htv.fi>
+To: Ben Dooks <ben@simtec.co.uk>, Vincent Sanders <vince@simtec.co.uk>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: [2.6 patch] mfd/sm501.c: #if 0 unused functions
+Message-ID: <20080505182537.GR17139@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -24,41 +23,96 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch makes the following needlessly global functions static:
-- enqueue_an_ATL_packet()
-- enqueue_an_INT_packet()
+This patch #if 0's the following unused functions:
+- sm501_find_clock()
+- sm501_gpio_get()
+- sm501_gpio_set()
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
 
- drivers/usb/host/isp1760-hcd.c |    8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+This patch has been sent on:
+- 13 Apr 2008
 
-2dfaa1d7b4c983c1cce00d65f983f6a5d2c09ae3 diff --git a/drivers/usb/host/isp1760-hcd.c b/drivers/usb/host/isp1760-hcd.c
-index 4ba96c1..bf02da7 100644
---- a/drivers/usb/host/isp1760-hcd.c
-+++ b/drivers/usb/host/isp1760-hcd.c
-@@ -782,8 +782,8 @@ static void enqueue_one_int_qtd(u32 int_regs, u32 payload,
- 	qtd->status |= slot << 16;
+ drivers/mfd/sm501.c   |    5 +++++
+ include/linux/sm501.h |   21 ---------------------
+ 2 files changed, 5 insertions(+), 21 deletions(-)
+
+24190c50efec1862c20bba55a31677879fae1de3 diff --git a/drivers/mfd/sm501.c b/drivers/mfd/sm501.c
+index 13bac53..54de0ff 100644
+--- a/drivers/mfd/sm501.c
++++ b/drivers/mfd/sm501.c
+@@ -275,6 +275,8 @@ unsigned long sm501_modify_reg(struct device *dev,
+ 
+ EXPORT_SYMBOL_GPL(sm501_modify_reg);
+ 
++#if 0
++
+ unsigned long sm501_gpio_get(struct device *dev,
+ 			     unsigned long gpio)
+ {
+@@ -326,6 +328,7 @@ void sm501_gpio_set(struct device *dev,
+ 
+ EXPORT_SYMBOL_GPL(sm501_gpio_set);
+ 
++#endif  /*  0  */
+ 
+ /* sm501_unit_power
+  *
+@@ -657,6 +660,7 @@ unsigned long sm501_set_clock(struct device *dev,
+ 
+ EXPORT_SYMBOL_GPL(sm501_set_clock);
+ 
++#if 0
+ /* sm501_find_clock
+  *
+  * finds the closest available frequency for a given clock
+@@ -699,6 +703,7 @@ unsigned long sm501_find_clock(struct device *dev,
  }
  
--void enqueue_an_ATL_packet(struct usb_hcd *hcd, struct isp1760_qh *qh,
--		struct isp1760_qtd *qtd)
-+static void enqueue_an_ATL_packet(struct usb_hcd *hcd, struct isp1760_qh *qh,
-+				  struct isp1760_qtd *qtd)
- {
- 	struct isp1760_hcd *priv = hcd_to_priv(hcd);
- 	u32 skip_map, or_map;
-@@ -816,8 +816,8 @@ void enqueue_an_ATL_packet(struct usb_hcd *hcd, struct isp1760_qh *qh,
- 	isp1760_writel(buffstatus, hcd->regs + HC_BUFFER_STATUS_REG);
- }
+ EXPORT_SYMBOL_GPL(sm501_find_clock);
++#endif  /*  0  */
  
--void enqueue_an_INT_packet(struct usb_hcd *hcd, struct isp1760_qh *qh,
--		struct isp1760_qtd *qtd)
-+static void enqueue_an_INT_packet(struct usb_hcd *hcd, struct isp1760_qh *qh,
-+				  struct isp1760_qtd *qtd)
+ static struct sm501_device *to_sm_device(struct platform_device *pdev)
  {
- 	struct isp1760_hcd *priv = hcd_to_priv(hcd);
- 	u32 skip_map, or_map;
+diff --git a/include/linux/sm501.h b/include/linux/sm501.h
+index bca1345..f416505 100644
+--- a/include/linux/sm501.h
++++ b/include/linux/sm501.h
+@@ -24,9 +24,6 @@ extern int sm501_unit_power(struct device *dev,
+ extern unsigned long sm501_set_clock(struct device *dev,
+ 				     int clksrc, unsigned long freq);
+ 
+-extern unsigned long sm501_find_clock(struct device *dev,
+-				      int clksrc, unsigned long req_freq);
+-
+ /* sm501_misc_control
+  *
+  * Modify the SM501's MISC_CONTROL register
+@@ -46,24 +43,6 @@ extern unsigned long sm501_modify_reg(struct device *dev,
+ 				      unsigned long set,
+ 				      unsigned long clear);
+ 
+-/* sm501_gpio_set
+- *
+- * set the state of the given GPIO line
+-*/
+-
+-extern void sm501_gpio_set(struct device *dev,
+-			   unsigned long gpio,
+-			   unsigned int to,
+-			   unsigned int dir);
+-
+-/* sm501_gpio_get
+- *
+- * get the state of the given GPIO line
+-*/
+-
+-extern unsigned long sm501_gpio_get(struct device *dev,
+-				    unsigned long gpio);
+-
+ 
+ /* Platform data definitions */
+ 
 
