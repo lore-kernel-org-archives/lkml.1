@@ -1,20 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759781AbYEES3V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758845AbYEES3l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759781AbYEES3V (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 14:29:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760557AbYEES0h
+	id S1758845AbYEES3l (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 14:29:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760587AbYEES0m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 14:26:37 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:32890 "EHLO smtp5.pp.htv.fi"
+	Mon, 5 May 2008 14:26:42 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:54969 "EHLO smtp4.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760552AbYEES0g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 14:26:36 -0400
-Date: Mon, 5 May 2008 21:25:29 +0300
+	id S1760581AbYEES0l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 May 2008 14:26:41 -0400
+Date: Mon, 5 May 2008 21:25:33 +0300
 From: Adrian Bunk <bunk@kernel.org>
-To: Bjorn Helgaas <bjorn.helgaas@hp.com>, Rene Herman <rene.herman@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: [2.6 patch] make pnp_add_card_id() static
-Message-ID: <20080505182529.GP17139@cs181133002.pp.htv.fi>
+To: Sebastian Siewior <bigeasy@linutronix.de>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Cc: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [2.6 patch] usb/host/isp1760-hcd.c: make 2 functions static
+Message-ID: <20080505182533.GQ17139@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -23,39 +24,41 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-pnp_add_card_id() can now become static.
+This patch makes the following needlessly global functions static:
+- enqueue_an_ATL_packet()
+- enqueue_an_INT_packet()
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
 
- drivers/pnp/base.h |    1 -
- drivers/pnp/card.c |    2 +-
- 2 files changed, 1 insertion(+), 2 deletions(-)
+ drivers/usb/host/isp1760-hcd.c |    8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-8a8949ff2a589ecf6eddf3dfd8f58edb7c46a657 diff --git a/drivers/pnp/base.h b/drivers/pnp/base.h
-index 4fe7c58..fd82496 100644
---- a/drivers/pnp/base.h
-+++ b/drivers/pnp/base.h
-@@ -14,7 +14,6 @@ struct pnp_id *pnp_add_id(struct pnp_dev *dev, char *id);
- int pnp_interface_attach_device(struct pnp_dev *dev);
+2dfaa1d7b4c983c1cce00d65f983f6a5d2c09ae3 diff --git a/drivers/usb/host/isp1760-hcd.c b/drivers/usb/host/isp1760-hcd.c
+index 4ba96c1..bf02da7 100644
+--- a/drivers/usb/host/isp1760-hcd.c
++++ b/drivers/usb/host/isp1760-hcd.c
+@@ -782,8 +782,8 @@ static void enqueue_one_int_qtd(u32 int_regs, u32 payload,
+ 	qtd->status |= slot << 16;
+ }
  
- int pnp_add_card(struct pnp_card *card);
--struct pnp_id *pnp_add_card_id(struct pnp_card *card, char *id);
- void pnp_remove_card(struct pnp_card *card);
- int pnp_add_card_device(struct pnp_card *card, struct pnp_dev *dev);
- void pnp_remove_card_device(struct pnp_dev *dev);
-diff --git a/drivers/pnp/card.c b/drivers/pnp/card.c
-index a762a41..8617766 100644
---- a/drivers/pnp/card.c
-+++ b/drivers/pnp/card.c
-@@ -101,7 +101,7 @@ static int card_probe(struct pnp_card *card, struct pnp_card_driver *drv)
-  * @id: pointer to a pnp_id structure
-  * @card: pointer to the desired card
-  */
--struct pnp_id *pnp_add_card_id(struct pnp_card *card, char *id)
-+static struct pnp_id *pnp_add_card_id(struct pnp_card *card, char *id)
+-void enqueue_an_ATL_packet(struct usb_hcd *hcd, struct isp1760_qh *qh,
+-		struct isp1760_qtd *qtd)
++static void enqueue_an_ATL_packet(struct usb_hcd *hcd, struct isp1760_qh *qh,
++				  struct isp1760_qtd *qtd)
  {
- 	struct pnp_id *dev_id, *ptr;
+ 	struct isp1760_hcd *priv = hcd_to_priv(hcd);
+ 	u32 skip_map, or_map;
+@@ -816,8 +816,8 @@ void enqueue_an_ATL_packet(struct usb_hcd *hcd, struct isp1760_qh *qh,
+ 	isp1760_writel(buffstatus, hcd->regs + HC_BUFFER_STATUS_REG);
+ }
  
+-void enqueue_an_INT_packet(struct usb_hcd *hcd, struct isp1760_qh *qh,
+-		struct isp1760_qtd *qtd)
++static void enqueue_an_INT_packet(struct usb_hcd *hcd, struct isp1760_qh *qh,
++				  struct isp1760_qtd *qtd)
+ {
+ 	struct isp1760_hcd *priv = hcd_to_priv(hcd);
+ 	u32 skip_map, or_map;
 
