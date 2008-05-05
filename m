@@ -1,64 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752640AbYEEROg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751747AbYEERPF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752640AbYEEROg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 13:14:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750906AbYEERO1
+	id S1751747AbYEERPF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 13:15:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752213AbYEEROt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 13:14:27 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:50785 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750885AbYEERO1 (ORCPT
+	Mon, 5 May 2008 13:14:49 -0400
+Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:45736
+	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752711AbYEEROh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 13:14:27 -0400
-Date: Mon, 5 May 2008 18:14:25 +0100
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: weigelt@metux.de, linux-kernel@vger.kernel.org
-Subject: Re: VFS + path walktrough
-Message-ID: <20080505171425.GO5882@ZenIV.linux.org.uk>
-References: <20080505124041.GB32019@nibiru.local> <20080505130623.GC32019@nibiru.local> <20080505131307.GM5882@ZenIV.linux.org.uk> <20080505134315.GF32019@nibiru.local> <20080505153501.GN5882@ZenIV.linux.org.uk> <E1Jt3nB-0006ZP-6S@pomaz-ex.szeredi.hu>
+	Mon, 5 May 2008 13:14:37 -0400
+Date: Mon, 5 May 2008 19:14:34 +0200
+From: Andrea Arcangeli <andrea@qumranet.com>
+To: Jack Steiner <steiner@sgi.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Lameter <clameter@sgi.com>, Robin Holt <holt@sgi.com>,
+       Nick Piggin <npiggin@suse.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       kvm-devel@lists.sourceforge.net, Kanoj Sarcar <kanojsarcar@yahoo.com>,
+       Roland Dreier <rdreier@cisco.com>,
+       Steve Wise <swise@opengridcomputing.com>, linux-kernel@vger.kernel.org,
+       Avi Kivity <avi@qumranet.com>, linux-mm@kvack.org,
+       general@lists.openfabrics.org, Hugh Dickins <hugh@veritas.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Anthony Liguori <aliguori@us.ibm.com>, Chris Wright <chrisw@redhat.com>,
+       Marcelo Tosatti <marcelo@kvack.org>, Eric Dumazet <dada1@cosmosbay.com>,
+       "Paul E. McKenney" <paulmck@us.ibm.com>
+Subject: Re: [PATCH 01 of 11] mmu-notifier-core
+Message-ID: <20080505171434.GF8470@duo.random>
+References: <patchbomb.1209740703@duo.random> <1489529e7b53d3f2dab8.1209740704@duo.random> <20080505162113.GA18761@sgi.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <E1Jt3nB-0006ZP-6S@pomaz-ex.szeredi.hu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <20080505162113.GA18761@sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 05, 2008 at 06:43:57PM +0200, Miklos Szeredi wrote:
+On Mon, May 05, 2008 at 11:21:13AM -0500, Jack Steiner wrote:
+> The GRU does the registration/deregistration of mmu notifiers from mmap/munmap.
+> At this point, the mmap_sem is already held writeable. I hit a deadlock
+> in mm_lock.
 
-> One way this could be done cleanly, is to pass the rest of the path
-> (as hint) to the filesystem in its lookup function.  Most filesystems
-> would just ignore it, but those which have the capabilities can use it
-> to do the lookup in one go, and internally cache the result.  The VFS
-> doesn't need to know _anything_ about all this.  If there are
-> mountpoints, they are already cached, so ->lookup() wouldn't be called
-> at all, only ->d_revalidate(), which is a different issue.
+It'd been better to know about this detail earlier, but frankly this
+is a minor problem, the important thing is we all agree together on
+the more difficult parts ;).
 
-This is still wrong.  We not just pass the pathname to filesystem (note
-that you still need to deal with symlinks), but we make that filesystem
-to populate dentry tree.  Take a look at 9P walk - it does *not* give
-you anything resembling stat, you just get qids of intermediates.  Which
-is bloody useful when you want to do intelligent revalidation (do local
-cached walk, then issue a single protocol request that will both do
-bulk revalidate *and* tell you where in the path you've got the first
-invalid one - just compare qids with what you've got stored locally).
-However, it's just about useless for cutting corners in cold-cache
-lookup.
+> A quick fix would be to do one of the following:
+> 
+> 	- move the mmap_sem locking to the caller of the [de]registration routines.
+> 	  Since the first/last thing done in mm_lock/mm_unlock is to
+> 	  acquire/release mmap_sem, this change does not cause major changes.
 
-It _is_ a useful thing, no arguments about that.  However, to use it
-a sane way we need to massage the pathname resolution loop, taking
-the "simple pass without symlinks or mountpoints" part into a new
-helper, turning the current __link_path_walk() into a loop calling that
-one and then folding it into callers.  Would also allow to kill the
-last remnants of recursion in symlink handling for normal fs case...
+I don't like this solution very much. Nor GRU nor KVM will call
+mmu_notifier_register inside the mmap_sem protected sections, so I
+think the default mmu_notifier_register should be smp safe by itself
+without requiring additional locks to be artificially taken externally
+(especially because the need for mmap_sem in write mode is a very
+mmu_notifier internal detail).
 
-_Then_ we can do saner logics for revalidate, allowing it on such segments.
-Which, BTW, would deal with -ESTALE in a saner way, rather than "repeat
-full pathname resolution from the very beginning".  And that's where
-9P multi-step walk(5) would do very nicely, indeed.
+> 	- add a flag to mmu_notifier_[un]register routines to indicate
+> 	  if mmap_sem is already locked.
 
-And fuck the "hints" of all kinds, pardon the rudeness.  We already have
-more than enough of that crap and it already makes cleaning the logics
-up bloody painful.
+The interface would change like this:
+
+#define MMU_NOTIFIER_REGISTER_MMAP_SEM (1<<0)
+void mmu_notifier_register(struct mmu_notifier *mn, struct mm_struct *mm,
+			   unsigned long mmu_notifier_flags);
+
+A third solution is to add:
+
+/*
+ * This must can be called instead of mmu_notifier_register after
+ * taking the mmap_sem in write mode (read mode isn't enough).
+ */
+void __mmu_notifier_register(struct mmu_notifier *mn, struct mm_struct *mm);
+
+Do you still prefer the bitflag or you prefer
+__mmu_notifier_register. It's ok either ways, except
+__mmu_notifier_reigster could be removed in a backwards compatible
+way, the bitflag can't.
+
+> I've temporarily deleted the mm_lock locking of mmap_sem and am continuing to
+> test. More later....
+
+Sure! In the meantime go ahead this way.
+
+Another very minor change I've been thinking about is to make
+->release not mandatory. It happens that with KVM ->release isn't
+strictly required because after mm_users reaches 0, no guest could
+possibly run anymore. So I'm using ->release only for debugging by
+placing -1UL in the root shadow pagetable, to be sure ;). So because
+at least one user won't strictly require ->release being consistent in
+having all method optional may be nicer. Alternatively we could make
+them all mandatory and if somebody doesn't need one of the methods it
+should implement it as a dummy function. Both ways have pros and cons,
+but they don't make any difference to us in practice. If I've to
+change the patch for the mmap_sem taken during registration I may as
+well cleanup this minor bit.
+
+Also note the rculist.h patch you sent earlier won't work against
+mainline so I can't incorporate it in my patchset, Andrew will have to
+apply it as mmu-notifier-core-mm after incorporating mmu-notifier-core
+into -mm.
+
+Until a new update is released, mmu-notifier-core v15 remains ok for
+merging, no known bugs, here we're talking about a new and simple
+feature and a tiny cleanup that nobody can notice anyway.
