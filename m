@@ -1,64 +1,175 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757565AbYEETrg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757351AbYEETtK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757565AbYEETrg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 15:47:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753272AbYEETr2
+	id S1757351AbYEETtK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 15:49:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753294AbYEETs4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 15:47:28 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:56428
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753183AbYEETr2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 15:47:28 -0400
-Date: Mon, 05 May 2008 12:47:22 -0700 (PDT)
-Message-Id: <20080505.124722.25907909.davem@davemloft.net>
-To: rusty@rustcorp.com.au
-Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       jonathan@jonmasters.org, sam@ravnborg.org
-Subject: Re: changeset: Make forced module loading optional
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <200805060442.12440.rusty@rustcorp.com.au>
-References: <200805051535.05370.rusty@rustcorp.com.au>
-	<alpine.LFD.1.10.0805050957590.32269@woody.linux-foundation.org>
-	<200805060442.12440.rusty@rustcorp.com.au>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Mon, 5 May 2008 15:48:56 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:38774 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752388AbYEETsz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 May 2008 15:48:55 -0400
+Date: Mon, 5 May 2008 21:49:29 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Sergio Luis <sergio@uece.br>, Parag Warudkar <parag.warudkar@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "akpm@osdl.org" <akpm@osdl.org>, Peter Zijlstra <peterz@infradead.org>,
+       Arjan van de Ven <arjan@infradead.org>, Dave Jones <davej@redhat.com>,
+       linux-kbuild <linux-kbuild@vger.kernel.org>
+Subject: [PATCH] kconfig: add support for stdin (make K=- ...)
+Message-ID: <20080505194929.GA8868@uranus.ravnborg.org>
+References: <82e4877d0805031742o464dd581wd93173d79705ce0d@mail.gmail.com> <20080504092417.GA3425@elte.hu> <82e4877d0805050814j721ae522k84384df48c9f4336@mail.gmail.com> <20080505171501.GA22332@elte.hu> <20080505182427.GA2025@uranus.ravnborg.org> <ce0170d90805051136w2f016c15p575623d33c220ddf@mail.gmail.com> <20080505184538.GE22332@elte.hu>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080505184538.GE22332@elte.hu>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Rusty Russell <rusty@rustcorp.com.au>
-Date: Tue, 6 May 2008 04:42:12 +1000
+On Mon, May 05, 2008 at 08:45:38PM +0200, Ingo Molnar wrote:
+> 
+> * Sergio Luis <sergio@uece.br> wrote:
+> 
+> > >  In latest kbuild.git I've added a new feature.
+> > >
+> > >         make K=.config alldefconfig
+> > >
+> > >  would give you eaxtly what you request here.
+> > >  K= is used to say where to locate the base-configuration.
+> 
+> > Can I specify /proc/config.gz (gzipped) in the K parameter?
+> > -sergio
+> 
+> i think the 'natural' script behavior would be for this to do the right 
+> thing:
+> 
+>    zcat /proc/config.gz | make K=- alldefconfig
+> 
+> or something like that - so that it can be scripted in a pipe.
 
-> BTW, I'm fascinated and a little nausiated that you ignore initrds.  We've 
-> moved half the kernel brains to userspace with udev, initrd and modules; it's 
-> really unfair that you're not sharing all that why-won't-my-machine-boot 
-> love.
+I like this ;-)
+So I implemented support for stdin - see attached.
+It is also in kbuild.git.
 
-It's pretty straightforward, if you ask me.  I avoid initrd's like
-the plague too.
+	Sam
 
-Building and compressing the initrd would increase my build+reboot
-cycle time by at least 40%.
+commit 95ee7b97051dcc4b61d1dbf626e9b32266cb402d
+Author: Sam Ravnborg <sam@ravnborg.org>
+Date:   Mon May 5 21:44:21 2008 +0200
 
-Add to that it's simply an enormous pain in the ass.
+    kconfig: add support for stdin (make K=- ...)
+    
+    With support for stdin we can now say:
+    
+       zcat /proc/config.gz | make K=- alldefconfig
+    
+    Which will give us a configuration based on the
+    running kernel with all new values set to default.
+    
+    Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
 
-And for what?  I know what freakin' drivers to build statically into
-my kernel.  I use raw partitions and don't use LVM, I know what
-the heck my root filesystem device is named, etc.
-
-The only thing I get "punished" for, where I am absolutely forced to
-use an initrd, is when I use qlogic SCSI for the root partition, for
-the firmware which we really should have kept in the tree :(
-
-And this is not even a "licensing" issue, like it or not in-kernel
-drivers are tied to specific firmware versions both from an API and
-from a testing perspective.  Externalizing this is really a nightmare.
-
-And I'm not avoiding udev by doing this.  udev works just fine if I
-raw boot a kernel with all the static devices I need to get root
-mounted.  All my networking etc. is modular and udev does the right
-thing.
-
+diff --git a/scripts/kconfig/aconf.c b/scripts/kconfig/aconf.c
+index cf05861..54ffd72 100644
+--- a/scripts/kconfig/aconf.c
++++ b/scripts/kconfig/aconf.c
+@@ -248,6 +248,7 @@ static void usage(void)
+ 
+ int main(int ac, char **av)
+ {
++	char *config_filename;
+ 	char *config_file = NULL;
+ 	char *kconfig_file = NULL;
+ 	struct stat tmpstat;
+@@ -287,19 +288,26 @@ int main(int ac, char **av)
+ 	}
+ 	conf_parse(kconfig_file);
+ 	/* debug: zconfdump(stdout); */
+-	if (config_file && stat(config_file, &tmpstat)) {
+-		fprintf(stderr, _("%s: failed to open %s\n"),
+-		        av[0], config_file);
+-		exit(1);
++	if (strcmp(config_file, "-")) {
++		if (config_file && stat(config_file, &tmpstat)) {
++			fprintf(stderr, _("%s: failed to open %s\n"),
++			        av[0], config_file);
++			exit(1);
++		}
++		config_filename = config_file;
++	} else {
++		config_filename = "stdin";
+ 	}
++
+ 	if (config_file && conf_read_simple(config_file, S_DEF_USER)) {
+ 		fprintf(stderr, _("%s: failed to read %s\n"),
+-		        av[0], config_file);
++		        av[0], config_filename);
+ 		exit(1);
+ 	}
+ 	if (config_file) {
+ 		printf("#\n");
+-		printf(_("# configuration is based on '%s'\n"), config_file);
++		printf(_("# configuration is based on '%s'\n"),
++		       config_filename);
+ 	}
+ 	/* generate the config */
+ 	do {
+diff --git a/scripts/kconfig/lex.zconf.c_shipped b/scripts/kconfig/lex.zconf.c_shipped
+index 6a61cee..7bd00d3 100644
+--- a/scripts/kconfig/lex.zconf.c_shipped
++++ b/scripts/kconfig/lex.zconf.c_shipped
+@@ -2268,13 +2268,17 @@ FILE *zconf_fopen(const char *name)
+ 	char *env, fullname[PATH_MAX+1];
+ 	FILE *f;
+ 
+-	f = fopen(name, "r");
+-	if (!f && name != NULL && name[0] != '/') {
+-		env = getenv(SRCTREE);
+-		if (env) {
+-			sprintf(fullname, "%s/%s", env, name);
+-			f = fopen(fullname, "r");
++	if (strcmp(name, "-")) {
++		f = fopen(name, "r");
++		if (!f && name != NULL && name[0] != '/') {
++			env = getenv(SRCTREE);
++			if (env) {
++				sprintf(fullname, "%s/%s", env, name);
++				f = fopen(fullname, "r");
++			}
+ 		}
++	} else {
++		f = stdin;
+ 	}
+ 	return f;
+ }
+diff --git a/scripts/kconfig/zconf.l b/scripts/kconfig/zconf.l
+index 4cea5c8..a268d88 100644
+--- a/scripts/kconfig/zconf.l
++++ b/scripts/kconfig/zconf.l
+@@ -269,13 +269,17 @@ FILE *zconf_fopen(const char *name)
+ 	char *env, fullname[PATH_MAX+1];
+ 	FILE *f;
+ 
+-	f = fopen(name, "r");
+-	if (!f && name != NULL && name[0] != '/') {
+-		env = getenv(SRCTREE);
+-		if (env) {
+-			sprintf(fullname, "%s/%s", env, name);
+-			f = fopen(fullname, "r");
++	if (strcmp(name, "-")) {
++		f = fopen(name, "r");
++		if (!f && name != NULL && name[0] != '/') {
++			env = getenv(SRCTREE);
++			if (env) {
++				sprintf(fullname, "%s/%s", env, name);
++				f = fopen(fullname, "r");
++			}
+ 		}
++	} else {
++		f = stdin;
+ 	}
+ 	return f;
+ }
