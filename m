@@ -1,186 +1,192 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760432AbYEES17@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761232AbYEES2m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760432AbYEES17 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 14:27:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760226AbYEESZo
+	id S1761232AbYEES2m (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 14:28:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760480AbYEES0b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 14:25:44 -0400
-Received: from nonada.if.usp.br ([143.107.131.169]:46830 "EHLO
-	nonada.if.usp.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760217AbYEESZj convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 14:25:39 -0400
-From: Joao Luis Meloni Assirati <assirati@nonada.if.usp.br>
-To: Kay Sievers <kay.sievers@vrfy.org>
-Subject: Re: Software RAID partitions not detected at boot time with linux 2.6.25.1.
-Date: Mon, 5 May 2008 15:22:02 -0300
-User-Agent: KMail/1.9.5
-Cc: Neil Brown <neilb@suse.de>, Greg Kroah-Hartman <gregkh@suse.de>,
-       linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org
-References: <200805032245.57084.assirati@nonada.if.usp.br> <18461.45667.588613.443564@notabene.brown> <1209990570.6975.5.camel@linux.site>
-In-Reply-To: <1209990570.6975.5.camel@linux.site>
+	Mon, 5 May 2008 14:26:31 -0400
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:32881 "EHLO smtp5.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759467AbYEES0a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 May 2008 14:26:30 -0400
+Date: Mon, 5 May 2008 21:25:22 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: mchehab@infradead.org
+Cc: v4l-dvb-maintainer@linuxtv.org, linux-kernel@vger.kernel.org
+Subject: [2.6 patch] media/video/cx18/: possible cleanups
+Message-ID: <20080505182522.GN17139@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Message-Id: <200805051522.03079.assirati@nonada.if.usp.br>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Em Segunda 05 Maio 2008 09:29, Kay Sievers escreveu:
-> Care to test/fix/improve the following. I just booted a normal disk,
-> didn't test a partitioned md device.
+This patch contains the following possible cleanups:
+- cx18-i2c.c should #include "cx18-i2c.h" for getting the prototypes of
+  it's global functions
+- make the following needlessly global functions static:
+  - cx18-fileops.c:cx18_claim_stream()
+  - cx18-fileops.c:cx18_release_stream()
+  - cx18-queue.c:cx18_queue_move()
+- remove the following unused functions:
+  - cx18-driver.c:cx18_waitq()
+  - cx18-queue.c:cx18_buf_copy_from_user()
 
-It works!:
+Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
-md: Autodetecting RAID arrays.
-md: Scanned 3 and added 3 devices.
-md: autorun ...
-md: considering sdc2 ...
-md:  adding sdc2 ...
-md:  adding sdb2 ...
-md:  adding sda2 ...
-md: created md_d0
-md: bind<sda2>
-md: bind<sdb2>
-md: bind<sdc2>
-md: running: <sdc2><sdb2><sda2>
-raid5: device sdc2 operational as raid disk 2
-raid5: device sdb2 operational as raid disk 1
-raid5: device sda2 operational as raid disk 0
-raid5: allocated 3224kB for md_d0
-raid5: raid level 5 set md_d0 active with 3 out of 3 devices, algorithm 2
-RAID5 conf printout:
- --- rd:3 wd:3
- disk 0, o:1, dev:sda2
- disk 1, o:1, dev:sdb2
- disk 2, o:1, dev:sdc2
-md: ... autorun DONE.
- md_d0: p1 p2 p3 p4 < p5 p6 p7 >
+---
 
-I will test it in another machine with raid1 later. If something
-goes wrong there, I will report.
+ drivers/media/video/cx18/cx18-driver.c  |   10 ----------
+ drivers/media/video/cx18/cx18-driver.h  |    3 ---
+ drivers/media/video/cx18/cx18-fileops.c |    4 ++--
+ drivers/media/video/cx18/cx18-fileops.h |    9 ---------
+ drivers/media/video/cx18/cx18-i2c.c     |    1 +
+ drivers/media/video/cx18/cx18-queue.c   |   16 +++-------------
+ drivers/media/video/cx18/cx18-queue.h   |    4 ----
+ 7 files changed, 6 insertions(+), 41 deletions(-)
 
-> Thanks,
-> Kay
+fb75860982d54ff1b4eb4744b75a58d0cc6556d2 diff --git a/drivers/media/video/cx18/cx18-driver.c b/drivers/media/video/cx18/cx18-driver.c
+index 8f5ed9b..e10df69 100644
+--- a/drivers/media/video/cx18/cx18-driver.c
++++ b/drivers/media/video/cx18/cx18-driver.c
+@@ -164,16 +164,6 @@ MODULE_LICENSE("GPL");
+ 
+ MODULE_VERSION(CX18_VERSION);
+ 
+-int cx18_waitq(wait_queue_head_t *waitq)
+-{
+-	DEFINE_WAIT(wait);
+-
+-	prepare_to_wait(waitq, &wait, TASK_INTERRUPTIBLE);
+-	schedule();
+-	finish_wait(waitq, &wait);
+-	return signal_pending(current) ? -EINTR : 0;
+-}
+-
+ /* Generic utility functions */
+ int cx18_msleep_timeout(unsigned int msecs, int intr)
+ {
+diff --git a/drivers/media/video/cx18/cx18-driver.h b/drivers/media/video/cx18/cx18-driver.h
+index 2ee9391..a2a6c58 100644
+--- a/drivers/media/video/cx18/cx18-driver.h
++++ b/drivers/media/video/cx18/cx18-driver.h
+@@ -444,9 +444,6 @@ extern spinlock_t cx18_cards_lock;
+ /* Return non-zero if a signal is pending */
+ int cx18_msleep_timeout(unsigned int msecs, int intr);
+ 
+-/* Wait on queue, returns -EINTR if interrupted */
+-int cx18_waitq(wait_queue_head_t *waitq);
+-
+ /* Read Hauppauge eeprom */
+ struct tveeprom; /* forward reference */
+ void cx18_read_eeprom(struct cx18 *cx, struct tveeprom *tv);
+diff --git a/drivers/media/video/cx18/cx18-fileops.c b/drivers/media/video/cx18/cx18-fileops.c
+index 6930306..91eff6e 100644
+--- a/drivers/media/video/cx18/cx18-fileops.c
++++ b/drivers/media/video/cx18/cx18-fileops.c
+@@ -39,7 +39,7 @@
+    associated VBI streams are also automatically claimed.
+    Possible error returns: -EBUSY if someone else has claimed
+    the stream or 0 on success. */
+-int cx18_claim_stream(struct cx18_open_id *id, int type)
++static int cx18_claim_stream(struct cx18_open_id *id, int type)
+ {
+ 	struct cx18 *cx = id->cx;
+ 	struct cx18_stream *s = &cx->streams[type];
+@@ -87,7 +87,7 @@ int cx18_claim_stream(struct cx18_open_id *id, int type)
+ 
+ /* This function releases a previously claimed stream. It will take into
+    account associated VBI streams. */
+-void cx18_release_stream(struct cx18_stream *s)
++static void cx18_release_stream(struct cx18_stream *s)
+ {
+ 	struct cx18 *cx = s->cx;
+ 	struct cx18_stream *s_vbi;
+diff --git a/drivers/media/video/cx18/cx18-fileops.h b/drivers/media/video/cx18/cx18-fileops.h
+index 16cdafb..46da028 100644
+--- a/drivers/media/video/cx18/cx18-fileops.h
++++ b/drivers/media/video/cx18/cx18-fileops.h
+@@ -34,12 +34,3 @@ void cx18_stop_capture(struct cx18_open_id *id, int gop_end);
+ void cx18_mute(struct cx18 *cx);
+ void cx18_unmute(struct cx18 *cx);
+ 
+-/* Utilities */
+-
+-/* Try to claim a stream for the filehandle. Return 0 on success,
+-   -EBUSY if stream already claimed. Once a stream is claimed, it
+-   remains claimed until the associated filehandle is closed. */
+-int cx18_claim_stream(struct cx18_open_id *id, int type);
+-
+-/* Release a previously claimed stream. */
+-void cx18_release_stream(struct cx18_stream *s);
+diff --git a/drivers/media/video/cx18/cx18-i2c.c b/drivers/media/video/cx18/cx18-i2c.c
+index 18c88d1..4f08a40 100644
+--- a/drivers/media/video/cx18/cx18-i2c.c
++++ b/drivers/media/video/cx18/cx18-i2c.c
+@@ -25,6 +25,7 @@
+ #include "cx18-cards.h"
+ #include "cx18-gpio.h"
+ #include "cx18-av-core.h"
++#include "cx18-i2c.h"
+ 
+ #include <media/ir-kbd-i2c.h>
+ 
+diff --git a/drivers/media/video/cx18/cx18-queue.c b/drivers/media/video/cx18/cx18-queue.c
+index 65af1bb..73f9550 100644
+--- a/drivers/media/video/cx18/cx18-queue.c
++++ b/drivers/media/video/cx18/cx18-queue.c
+@@ -26,17 +26,6 @@
+ #include "cx18-queue.h"
+ #include "cx18-scb.h"
+ 
+-int cx18_buf_copy_from_user(struct cx18_stream *s, struct cx18_buffer *buf,
+-		const char __user *src, int copybytes)
+-{
+-	if (s->buf_size - buf->bytesused < copybytes)
+-		copybytes = s->buf_size - buf->bytesused;
+-	if (copy_from_user(buf->buf + buf->bytesused, src, copybytes))
+-		return -EFAULT;
+-	buf->bytesused += copybytes;
+-	return copybytes;
+-}
+-
+ void cx18_buf_swap(struct cx18_buffer *buf)
+ {
+ 	int i;
+@@ -159,8 +148,9 @@ static void cx18_queue_move_buf(struct cx18_stream *s, struct cx18_queue *from,
+    -ENOMEM is returned if the buffers could not be obtained, 0 if all
+    buffers where obtained from the 'from' list and if non-zero then
+    the number of stolen buffers is returned. */
+-int cx18_queue_move(struct cx18_stream *s, struct cx18_queue *from,
+-	struct cx18_queue *steal, struct cx18_queue *to, int needed_bytes)
++static int cx18_queue_move(struct cx18_stream *s, struct cx18_queue *from,
++			   struct cx18_queue *steal, struct cx18_queue *to,
++			   int needed_bytes)
+ {
+ 	unsigned long flags;
+ 	int rc = 0;
+diff --git a/drivers/media/video/cx18/cx18-queue.h b/drivers/media/video/cx18/cx18-queue.h
+index f86c8a6..91423b9 100644
+--- a/drivers/media/video/cx18/cx18-queue.h
++++ b/drivers/media/video/cx18/cx18-queue.h
+@@ -39,8 +39,6 @@ static inline void cx18_buf_sync_for_device(struct cx18_stream *s,
+ 				s->buf_size, s->dma);
+ }
+ 
+-int cx18_buf_copy_from_user(struct cx18_stream *s, struct cx18_buffer *buf,
+-	const char __user *src, int copybytes);
+ void cx18_buf_swap(struct cx18_buffer *buf);
+ 
+ /* cx18_queue utility functions */
+@@ -48,8 +46,6 @@ void cx18_queue_init(struct cx18_queue *q);
+ void cx18_enqueue(struct cx18_stream *s, struct cx18_buffer *buf,
+ 	struct cx18_queue *q);
+ struct cx18_buffer *cx18_dequeue(struct cx18_stream *s, struct cx18_queue *q);
+-int cx18_queue_move(struct cx18_stream *s, struct cx18_queue *from,
+-       struct cx18_queue *steal, struct cx18_queue *to, int needed_bytes);
+ struct cx18_buffer *cx18_queue_find_buf(struct cx18_stream *s, u32 id,
+ 	u32 bytesused);
+ void cx18_flush_queues(struct cx18_stream *s);
 
-Thank you,
-João Luis.
-
-> 
-> From: Kay Sievers <kay.sievers@vrfy.org>
-> Subject: block: do_mounts - accept root=<non-existant partition>
-> 
-> Some devices, like md, may create partitions only at first access,
-> so allow root= to be set to a valid non-existant partition of an
-> existing disk. This applies only to non-initramfs root mounting.
-> 
-> Signed-off-by: Kay Sievers <kay.sievers@vrfy.org>
-> ---
-> 
-> diff --git a/block/genhd.c b/block/genhd.c
-> index fda9c7a..129ad93 100644
-> --- a/block/genhd.c
-> +++ b/block/genhd.c
-> @@ -653,7 +653,7 @@ void genhd_media_change_notify(struct gendisk *disk)
->  EXPORT_SYMBOL_GPL(genhd_media_change_notify);
->  #endif  /*  0  */
->  
-> -dev_t blk_lookup_devt(const char *name)
-> +dev_t blk_lookup_devt(const char *name, int part)
->  {
->  	struct device *dev;
->  	dev_t devt = MKDEV(0, 0);
-> @@ -661,7 +661,11 @@ dev_t blk_lookup_devt(const char *name)
->  	mutex_lock(&block_class_lock);
->  	list_for_each_entry(dev, &block_class.devices, node) {
->  		if (strcmp(dev->bus_id, name) == 0) {
-> -			devt = dev->devt;
-> +			struct gendisk *disk = dev_to_disk(dev);
-> +
-> +			if (part < disk->minors)
-> +				devt = MKDEV(MAJOR(dev->devt),
-> +					     MINOR(dev->devt) + part);
->  			break;
->  		}
->  	}
-> @@ -669,7 +673,6 @@ dev_t blk_lookup_devt(const char *name)
->  
->  	return devt;
->  }
-> -
->  EXPORT_SYMBOL(blk_lookup_devt);
->  
->  struct gendisk *alloc_disk(int minors)
-> diff --git a/include/linux/genhd.h b/include/linux/genhd.h
-> index ecd2bf6..612a790 100644
-> --- a/include/linux/genhd.h
-> +++ b/include/linux/genhd.h
-> @@ -524,7 +524,7 @@ struct unixware_disklabel {
->  #define ADDPART_FLAG_RAID	1
->  #define ADDPART_FLAG_WHOLEDISK	2
->  
-> -extern dev_t blk_lookup_devt(const char *name);
-> +extern dev_t blk_lookup_devt(const char *name, int part);
->  extern char *disk_name (struct gendisk *hd, int part, char *buf);
->  
->  extern int rescan_partitions(struct gendisk *disk, struct block_device *bdev);
-> @@ -552,7 +552,7 @@ static inline struct block_device *bdget_disk(struct gendisk *disk, int index)
->  
->  static inline void printk_all_partitions(void) { }
->  
-> -static inline dev_t blk_lookup_devt(const char *name)
-> +static inline dev_t blk_lookup_devt(const char *name, int part)
->  {
->  	dev_t devt = MKDEV(0, 0);
->  	return devt;
-> diff --git a/init/do_mounts.c b/init/do_mounts.c
-> index 3885e70..660c1e5 100644
-> --- a/init/do_mounts.c
-> +++ b/init/do_mounts.c
-> @@ -76,6 +76,7 @@ dev_t name_to_dev_t(char *name)
->  	char s[32];
->  	char *p;
->  	dev_t res = 0;
-> +	int part;
->  
->  	if (strncmp(name, "/dev/", 5) != 0) {
->  		unsigned maj, min;
-> @@ -106,7 +107,31 @@ dev_t name_to_dev_t(char *name)
->  	for (p = s; *p; p++)
->  		if (*p == '/')
->  			*p = '!';
-> -	res = blk_lookup_devt(s);
-> +	res = blk_lookup_devt(s, 0);
-> +	if (res)
-> +		goto done;
-> +
-> +	/*
-> +	 * try non-existant, but valid partition, which may only exist
-> +	 * after revalidating the disk, like partitioned md devices
-> +	 */
-> +	while (p > s && isdigit(p[-1]))
-> +		p--;
-> +	if (p == s || !*p || *p == '0')
-> +		goto fail;
-> +
-> +	/* try disk name without <part number> */
-> +	part = simple_strtoul(p, NULL, 10);
-> +	*p = '\0';
-> +	res = blk_lookup_devt(s, part);
-> +	if (res)
-> +		goto done;
-> +
-> +	/* try disk name without p<part number> */
-> +	if (p < s + 2 || !isdigit(p[-2]) || p[-1] != 'p')
-> +		goto fail;
-> +	p[-1] = '\0';
-> +	res = blk_lookup_devt(s, part);
->  	if (res)
->  		goto done;
->  
-> 
-> 
-> 
