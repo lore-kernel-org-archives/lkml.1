@@ -1,50 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757113AbYEEFFn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757339AbYEEFG3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757113AbYEEFFn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 01:05:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753231AbYEEFFd
+	id S1757339AbYEEFG3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 01:06:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753231AbYEEFGU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 01:05:33 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:37805 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752057AbYEEFFc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 01:05:32 -0400
-Message-ID: <481E94EE.2060800@redhat.com>
-Date: Sun, 04 May 2008 22:02:38 -0700
-From: Ulrich Drepper <drepper@redhat.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Mon, 5 May 2008 01:06:20 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:35086 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752819AbYEEFGT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 May 2008 01:06:19 -0400
+Date: Sun, 4 May 2008 22:05:51 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Rusty Russell <rusty@rustcorp.com.au>
+cc: linux-kernel@vger.kernel.org, Jon Masters <jonathan@jonmasters.org>,
+       Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: changeset: Make forced module loading optional
+In-Reply-To: <200805051455.02723.rusty@rustcorp.com.au>
+Message-ID: <alpine.LFD.1.10.0805042159230.32269@woody.linux-foundation.org>
+References: <200805051455.02723.rusty@rustcorp.com.au>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-To: Davide Libenzi <davidel@xmailserver.org>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       mtk.manpages@gmail.com, Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH 01/18] flag parameters: helper function
-References: <200805050342.m453gkY4029814@devserv.devel.redhat.com> <Pine.LNX.4.64.0805042144320.8307@alien.or.mcafeemobile.com>
-In-Reply-To: <Pine.LNX.4.64.0805042144320.8307@alien.or.mcafeemobile.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
 
-Davide Libenzi wrote:
-> I dunno if this deserves separate c/h files. Otherwise ...
 
-I used separate files because all of the users are in optional code.  I
-would have had to stuff the code in a completely unrelated file which I
-think isn't clean.
+On Mon, 5 May 2008, Rusty Russell wrote:
+> 
+>    I'm trying to figure out how you did this.  So fedora builds unversioned 
+> modules, and version (and vermagic) matched your kernel?  And you somehow 
+> mixed them up?
 
-- --
-➧ Ulrich Drepper ➧ Red Hat, Inc. ➧ 444 Castro St ➧ Mountain View, CA ❖
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-Comment: Using GnuPG with Fedora - http://enigmail.mozdev.org
+I don't use modules much, so many of my kernels tend to have modules off 
+entirely. However, the Intel wireless drivers used to not work when 
+built-in (fixed now, but I still had a legacy config), so my laptop had 
+modules enabled, and MODVERSIONS set.
 
-iEYEARECAAYFAkgelO4ACgkQ2ijCOnn/RHSVQgCffwvlbMeZTI5N19+J13VS8+ng
-8/0AoI8wwTtrAwbFIbuu9e4RrvEIzWGC
-=2gim
------END PGP SIGNATURE-----
+And I don't build initrd's etc crap, very much on purpose. I want to 
+replace the kernel, nothing else, so my /etc/grub.conf file just replaces 
+the distro kernel with my own, and keeps everything else untouched.
+
+>    I don't think relying on modversions is the complete answer here.  Perhaps 
+> we should make modules_install blow away old modules?
+
+Wouldn't help one whit, and is against my rules anyway. See above. I want 
+my own kernel, no other changes. That means that I run the distro initrd, 
+which has its modules for bringing stuff up with distro kernels.
+
+And quite frankly, when I finally figured out what was going on, I was 
+like *WHAT THE HELL*. That kernel/module.c code was absolute and utter 
+crap in accepting modules that neither matched the kernel version 
+signature (because it had CONFIG_MODVERSIONS) *nor* the actual versioned 
+symbols (because the distro modules had been built without 
+CONFIG_MODVERSIONS).
+
+So no, I'm not at all interested in blowing away old modules. I'm 
+interested in having a module loader that isn't complete and utter crap 
+and bypasses all the sanity checks that it has.
+
+Which is what that changeset basically does.
+
+People can still set CONFIG_MODULE_LOAD_FORCE, but quite frankly, I 
+suspect that anybody who does that is just insane and/or works with 
+proprietary and broken modules. So it's off by default, and hopefully no 
+distro will ever set it.
+
+			Linus
