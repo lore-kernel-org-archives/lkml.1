@@ -1,58 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757201AbYEEHGv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757543AbYEEHIT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757201AbYEEHGv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 03:06:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753101AbYEEHGn
+	id S1757543AbYEEHIT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 03:08:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754443AbYEEHIL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 03:06:43 -0400
-Received: from www.tglx.de ([62.245.132.106]:49267 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751989AbYEEHGm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 03:06:42 -0400
-Date: Mon, 5 May 2008 09:06:21 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: yhlu.kernel@gmail.com
-cc: Ingo Molnar <mingo@elte.hu>, Jeff Garzik <jeff@garzik.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: remove spew print out about bus to node mapping
-In-Reply-To: <200805041341.02375.yhlu.kernel@gmail.com>
-Message-ID: <alpine.LFD.1.10.0805050905050.3318@apollo.tec.linutronix.de>
-References: <200805041341.02375.yhlu.kernel@gmail.com>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 5 May 2008 03:08:11 -0400
+Received: from mail.karo-electronics.de ([213.146.116.110]:39950 "EHLO
+	mail.karo-electronics.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753301AbYEEHIK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 May 2008 03:08:10 -0400
+Message-ID: <18462.45648.60033.233887@ipc1.ka-ro>
+Date: Mon, 5 May 2008 09:08:00 +0200
+From: =?iso-8859-15?q?Lothar_Wa=DFmann?= <LW@KARO-electronics.de>
+To: Willy Tarreau <w@1wt.eu>
+Cc: NeilBrown <neilb@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: linux-2.6.25: 'mkdir -p' does not work with rootdir as mount point inside a read only filesystem
+In-Reply-To: <20080505070214.GA14635@1wt.eu>
+References: <18456.34604.472989.35082@ipc1.ka-ro>
+	<20080501215231.297e0d9d.akpm@linux-foundation.org>
+	<53722.192.168.1.70.1209711343.squirrel@neil.brown.name>
+	<20080503063231.GA688@1wt.eu>
+	<18462.43245.728465.911831@ipc1.ka-ro>
+	<20080505070214.GA14635@1wt.eu>
+X-Mailer: VM 7.19 under Emacs 21.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 4 May 2008, Yinghai Lu wrote:
-> Jeff Garzik pointed out that is not needed. looks like spam.
-> 
-> Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
-> 
-> diff --git a/arch/x86/pci/k8-bus_64.c b/arch/x86/pci/k8-bus_64.c
-> index ab6d4b1..5c2799c 100644
-> --- a/arch/x86/pci/k8-bus_64.c
-> +++ b/arch/x86/pci/k8-bus_64.c
-> @@ -504,14 +504,6 @@ static int __init early_fill_mp_bus_info(void)
->  		}
->  	}
->  
-> -#ifdef CONFIG_NUMA
-> -	for (i = 0; i < BUS_NR; i++) {
-> -		node = mp_bus_to_node[i];
-> -		if (node >= 0)
-> -			printk(KERN_DEBUG "bus: %02x to node: %02x\n", i, node);
-> -	}
-> -#endif
-> -
->  	for (i = 0; i < pci_root_num; i++) {
->  		int res_num;
->  		int busnum;
-> 
+Hi,
 
-What about this loop, looks noisy as well ?
+Willy Tarreau writes:
+> > > open(".", O_RDONLY|O_LARGEFILE|O_DIRECTORY) = 3
+> > > chdir("/")                              = 0
+> > > mkdir("dev", 0755)                      = -1 EEXIST (File exists)
+                                                   ^^^^^^
+[...]
+> > This is what strace shows in my case:
+> > mkdir("/", 0777)                        = -1 EEXIST (File exists)
+> > stat64("/", {st_mode=S_IFDIR|0755, st_size=0, ...}) = 0
+> > mkdir("/dev/", 0777)                    = -1 EROFS (Read-only file system)
+                                                 ^^^^^
+> What puzzles me is why you have this problem only with a new kernel.
+> I suspect that previous ones did report EEXIST and now we report
+> EROFS for an existing directory on an ro fs.
+> 
+Interestingly your strace output showed a return value of EEXIST where
+mine had EROFS.
 
-Thanks,
 
-	tglx
+Lothar Waßmann
+-- 
+___________________________________________________________
+
+Ka-Ro electronics GmbH | Pascalstraße 22 | D - 52076 Aachen
+Phone: +49 2408 1402-0 | Fax: +49 2408 1402-10
+Geschäftsführer: Matthias Kaussen
+Handelsregistereintrag: Amtsgericht Aachen, HRB 4996
+
+www.karo-electronics.de | info@karo-electronics.de
+___________________________________________________________
