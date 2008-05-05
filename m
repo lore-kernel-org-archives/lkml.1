@@ -1,53 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761026AbYEEW75@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761710AbYEEXA3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761026AbYEEW75 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 18:59:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760697AbYEEW6t
+	id S1761710AbYEEXA3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 19:00:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761201AbYEEW7I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 18:58:49 -0400
-Received: from py-out-1112.google.com ([64.233.166.183]:27765 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760638AbYEEW6r (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 18:58:47 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=reply-to:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id:from;
-        b=H699UZ58ZQQMY53AWDCKgEQmkY4n9OI0UK4Cn/2GssgqnLalE/En0wkdLgBJ8FfQVEHcJrdYyrhoNJjbPkshHKkq/EIMB0YVIJPC46mWE/SQlRmVwmDizYRucpGudL91QJXvV7dYaQ3ZqiaC90JqlfqAPwoSHV2UhODvfVFoFw4=
-Reply-To: yhlu.kernel@gmail.com
-To: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] x86: process fam 10h like k8 with fixed mtrr setting
-Date: Mon, 5 May 2008 15:57:38 -0700
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+	Mon, 5 May 2008 18:59:08 -0400
+Received: from xenotime.net ([66.160.160.81]:58030 "HELO xenotime.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1753367AbYEEW7H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 May 2008 18:59:07 -0400
+Date: Mon, 5 May 2008 15:58:59 -0700 (PDT)
+From: "Randy.Dunlap" <rdunlap@xenotime.net>
+X-X-Sender: rddunlap@shark.he.net
+To: Jesper Juhl <jesper.juhl@gmail.com>
+cc: linux-kernel@vger.kernel.org, mingo@elte.hu, gcosta@redhat.com
+Subject: Re: [PATCH] Use correct format when printing long unsigned int in
+ arch/x86/kernel/setup.c
+In-Reply-To: <alpine.LNX.1.00.0805060039100.27779@dragon.funnycrock.com>
+Message-ID: <Pine.LNX.4.64.0805051558001.25277@shark.he.net>
+References: <alpine.LNX.1.00.0805060039100.27779@dragon.funnycrock.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200805051557.38556.yhlu.kernel@gmail.com>
-From: Yinghai Lu <yhlu.kernel.send@gmail.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 6 May 2008, Jesper Juhl wrote:
 
-otherwise fixed MTRR for family 10h may not be changed
+> From: Jesper Juhl <jesper.juhl@gmail.com>
+> 
+> 
+> Use correct format when printing long unsigned int in arch/x86/kernel/setup.c
 
-Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+Ugh, thanks.  Looks like I mucked that one up somehow.
+I'll have to check my logs when I get back home.
 
-Index: linux-2.6/arch/x86/kernel/cpu/mtrr/generic.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/cpu/mtrr/generic.c
-+++ linux-2.6/arch/x86/kernel/cpu/mtrr/generic.c
-@@ -342,7 +342,7 @@ static void set_fixed_range(int msr, boo
- 
- 	if (lo != msrwords[0] || hi != msrwords[1]) {
- 		if (boot_cpu_data.x86_vendor == X86_VENDOR_AMD &&
--		    boot_cpu_data.x86 == 15 &&
-+		    (boot_cpu_data.x86 >= 0x0f && boot_cpu_data.x86 <= 0x11) &&
- 		    ((msrwords[0] | msrwords[1]) & K8_MTRR_RDMEM_WRMEM_MASK))
- 			k8_enable_fixed_iorrs();
- 		mtrr_wrmsr(msr, msrwords[0], msrwords[1]);
+> This patch gets rid of this compiler warning:
+>   arch/x86/kernel/setup.c: In function 'setup_per_cpu_areas':
+>   arch/x86/kernel/setup.c:99: warning: format '%zd' expects type 'signed size_t', but argument 2 has type 'long unsigned int'
+> 
+> 
+> Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
+> ---
+> 
+>  setup.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
+> index cc6f5eb..c0c68c1 100644
+> --- a/arch/x86/kernel/setup.c
+> +++ b/arch/x86/kernel/setup.c
+> @@ -95,7 +95,7 @@ void __init setup_per_cpu_areas(void)
+>  
+>  	/* Copy section for each CPU (we discard the original) */
+>  	size = PERCPU_ENOUGH_ROOM;
+> -	printk(KERN_INFO "PERCPU: Allocating %zd bytes of per cpu data\n",
+> +	printk(KERN_INFO "PERCPU: Allocating %lu bytes of per cpu data\n",
+>  			  size);
+>  
+>  	for_each_possible_cpu(i) {
+> 
+> 
+
+-- 
+~Randy
