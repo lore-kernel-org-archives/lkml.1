@@ -1,99 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757714AbYEEIWW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758186AbYEEIY3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757714AbYEEIWW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 04:22:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753331AbYEEIWJ
+	id S1758186AbYEEIY3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 04:24:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754946AbYEEIYW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 04:22:09 -0400
-Received: from rv-out-0506.google.com ([209.85.198.227]:52721 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754657AbYEEIWH (ORCPT
+	Mon, 5 May 2008 04:24:22 -0400
+Received: from wa-out-1112.google.com ([209.85.146.180]:32633 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754899AbYEEIYV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 04:22:07 -0400
+	Mon, 5 May 2008 04:24:21 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=j32TdGbgRhM2DchEhLtTBjn2kpeowXreEAvxX+iQtdCwvw+q6QpMeAFYWnUF31re7K0Fek7MYUxpnbDtxJLWgZz/+uaSqZBms1yEqtFqmfPpwZTgu6lRZ3JI8SiiEvNESI/mOWOzeFmUg+Q8ZaSXJIE5NTeGm8bodjaD8wloLXw=
-Message-ID: <cfd18e0f0805050122p19721635h209b952396cfe52a@mail.gmail.com>
-Date: Mon, 5 May 2008 10:22:06 +0200
-From: "Michael Kerrisk" <mtk.manpages@googlemail.com>
-To: "Andrew Morgan" <morgan@kernel.org>
-Subject: Re: [PATCH] capabilities: add bounding set to /proc/self/status
-Cc: "Chris Wright" <chrisw@sous-sol.org>, "Serge E. Hallyn" <serue@us.ibm.com>,
-       lkml <linux-kernel@vger.kernel.org>,
-       linux-security-module@vger.kernel.org,
-       "Michael Kerrisk" <mtk.manpages@gmail.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>
-In-Reply-To: <20080502003730.GA4018@sequoia.sous-sol.org>
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=q8jhubf+c8iVL4mwwDoiykeH6sLZSof3LFzDKCPREDyeUPt5NfEOY/L5tf//OMmtvSgChP5cvGoYraITiEJa5U+6uueDXng+zwldSoSu0JEnZOdj263ZR4tM1sJ1/139iP0iTkFRHKh6fOTpt2a8FQZcfDWz81uaiN3MU2umUc8=
+Message-ID: <2f11576a0805050124q5b91ff3dm70918f80017cb936@mail.gmail.com>
+Date: Mon, 5 May 2008 17:24:20 +0900
+From: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>
+To: "minchan Kim" <barrioskmc@gmail.com>
+Subject: Re: [-mm][PATCH 4/5] core of reclaim throttle
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>
+In-Reply-To: <44c63dc40805042221s4eb347acu6e7d86310696825f@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20080501183559.GA21279@sergelap.austin.ibm.com>
-	 <20080502003730.GA4018@sequoia.sous-sol.org>
+References: <20080504201343.8F52.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	 <20080504215819.8F5E.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	 <20080504221043.8F64.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	 <44c63dc40805042221s4eb347acu6e7d86310696825f@mail.gmail.com>
+X-Google-Sender-Auth: 25e8b504527e41b5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew (Morgan),
-
-It looks like this didn't make it into rc1, even though it was sent
-within the merge window -- perhaps Linus or Andrew (Morton) needed to
-be explicitly CCed?
-
-Cheers,
-
-Michael
-
-On Fri, May 2, 2008 at 2:38 AM, Chris Wright <chrisw@sous-sol.org> wrote:
-> * Serge E. Hallyn (serue@us.ibm.com) wrote:
-> > There is currently no way to query the bounding set of another
-> > task.  As there appears to be no security reason not to, and
-> > as Michael Kerrisk points out the following valid reasons to do
-> > so exist:
-> >
-> > * consistency (I can see all of the other per-thread/process sets in
-> > /proc/.../status)
-> > * debugging -- I could imagine that it would make the job of debugging
-> > an application that uses capabilities a little simpler.
-> >
-> > this patch adds the bounding set to /proc/self/status right after
-> > the effective set.
-> >
-> > If at all possible (and if acked by Andrew Morgan) it would be nice to
-> > get this into the 2.6.26 cycle.  But I realize it probably is too late
-> > for that.
+>  >  +       /* in some situation (e.g. hibernation), shrink processing shouldn't be
+>  >  +          cut off even though large memory freeded.  */
+>  >  +       if (!sc->may_cut_off)
+>  >  +               goto shrinking;
+>  >  +
 >
-> I've no issue with this.
->
-> > Signed-off-by: Serge E. Hallyn <serue@us.ibm.com>
-> > Acked-by: Michael Kerrisk <mtk.manpages@gmail.com>
->
-> Acked-by: Chris Wright <chrisw@sous-sol.org>
->
->
-> > ---
-> >  fs/proc/array.c |    1 +
-> >  1 files changed, 1 insertions(+), 0 deletions(-)
-> >
-> > diff --git a/fs/proc/array.c b/fs/proc/array.c
-> > index c135cbd..160dd4a 100644
-> > --- a/fs/proc/array.c
-> > +++ b/fs/proc/array.c
-> > @@ -297,6 +297,7 @@ static inline void task_cap(struct seq_file *m, struct task_struct *p)
-> >       render_cap_t(m, "CapInh:\t", &p->cap_inheritable);
-> >       render_cap_t(m, "CapPrm:\t", &p->cap_permitted);
-> >       render_cap_t(m, "CapEff:\t", &p->cap_effective);
-> > +     render_cap_t(m, "CapBnd:\t", &p->cap_bset);
-> >  }
-> >
-> >  static inline void task_context_switch_counts(struct seq_file *m,
->
+>  where do you initialize may_cut_off ?
+>  Current Implementation, may_cut_off is always "0" so always goto shrinking
 
-
-
--- 
-Michael Kerrisk
-Linux man-pages maintainer; http://www.kernel.org/doc/man-pages/
-Found a bug? http://www.kernel.org/doc/man-pages/reporting_bugs.html
+please see try_to_free_pages :)
