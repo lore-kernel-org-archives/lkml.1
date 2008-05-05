@@ -1,38 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760375AbYEESur@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765956AbYEESvJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760375AbYEESur (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 14:50:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761805AbYEESqO
+	id S1765956AbYEESvJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 14:51:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765005AbYEESqm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 14:46:14 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:57181 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762815AbYEESqN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 14:46:13 -0400
-Date: Mon, 5 May 2008 14:46:11 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [2.6 patch] mm/filemap.c should #include <linux/ramfs.h>
-Message-ID: <20080505184610.GA23910@infradead.org>
-References: <20080505182749.GJ17139@cs181133002.pp.htv.fi>
+	Mon, 5 May 2008 14:46:42 -0400
+Received: from sabe.cs.wisc.edu ([128.105.6.20]:33415 "EHLO sabe.cs.wisc.edu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755875AbYEESql (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 May 2008 14:46:41 -0400
+Message-ID: <481F55F8.1040606@cs.wisc.edu>
+Date: Mon, 05 May 2008 13:46:16 -0500
+From: Mike Christie <michaelc@cs.wisc.edu>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080505182749.GJ17139@cs181133002.pp.htv.fi>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+To: Harvey Harrison <harvey.harrison@gmail.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>
+Subject: Re: [PATCH 4/8] scsi: use get_unaligned_* helpers
+References: <1209700376.22362.19.camel@brick>
+In-Reply-To: <1209700376.22362.19.camel@brick>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 05, 2008 at 09:27:50PM +0300, Adrian Bunk wrote:
-> Every file should include the headers containing the externs for its 
-> global code (in this case for struct generic_file_vm_ops).
+Harvey Harrison wrote:
+> Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+> ---
+>  drivers/scsi/libiscsi.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/drivers/scsi/libiscsi.c b/drivers/scsi/libiscsi.c
+> index 010c1b9..7646e86 100644
+> --- a/drivers/scsi/libiscsi.c
+> +++ b/drivers/scsi/libiscsi.c
+> @@ -508,7 +508,7 @@ invalid_datalen:
+>  			goto out;
+>  		}
+>  
+> -		senselen = be16_to_cpu(get_unaligned((__be16 *) data));
+> +		senselen = get_unaligned_be16(data);
+>  		if (datalen < senselen)
+>  			goto invalid_datalen;
+>  
 
-Please move generic_file_vm_ops to fs.h instead please, it doesn't
-belong into a fle called ramfs.h, and neither should filemap.c include
-such a header.
+This looks ok. Thanks.
 
+Signed-off-by: Mike Christie <michaelc@cs.wisc.edu>
+
+If It does not get picked up by Andrew then I will send it with the 
+other iscsi updates when the next feature window opens.
