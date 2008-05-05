@@ -1,145 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756180AbYEERx5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757205AbYEERyc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756180AbYEERx5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 13:53:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751996AbYEERxs
+	id S1757205AbYEERyc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 13:54:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752364AbYEERyW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 13:53:48 -0400
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:52252 "EHLO e3.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751649AbYEERxr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 13:53:47 -0400
-Subject: Re: [PATCH] jbd_commit_transaction() races with
-	journal_try_to_drop_buffers() causing DIO failures
-From: Mingming Cao <cmm@us.ibm.com>
-Reply-To: cmm@us.ibm.com
-To: Jan Kara <jack@suse.cz>
-Cc: Badari Pulavarty <pbadari@us.ibm.com>, akpm@linux-foundation.org,
-       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20080505170636.GK25722@duck.suse.cz>
-References: <20080306174209.GA14193@duck.suse.cz>
-	 <1209166706.6040.20.camel@localhost.localdomain>
-	 <20080428122626.GC17054@duck.suse.cz>
-	 <1209402694.23575.5.camel@badari-desktop>
-	 <20080428180932.GI17054@duck.suse.cz>
-	 <1209409764.11872.6.camel@localhost.localdomain>
-	 <20080429124321.GD1987@duck.suse.cz>
-	 <1209654981.27240.19.camel@badari-desktop>
-	 <20080505170636.GK25722@duck.suse.cz>
-Content-Type: text/plain
-Organization: IBM Linux Technology Center
-Date: Mon, 05 May 2008 10:53:38 -0700
-Message-Id: <1210010018.9747.7.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.0 (2.8.0-33.el5) 
+	Mon, 5 May 2008 13:54:22 -0400
+Received: from 2605ds1-ynoe.1.fullrate.dk ([90.184.12.24]:57806 "EHLO
+	shrek.krogh.cc" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752095AbYEERyW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 May 2008 13:54:22 -0400
+Message-ID: <481F49C0.4080001@krogh.cc>
+Date: Mon, 05 May 2008 19:54:08 +0200
+From: Jesper Krogh <jesper@krogh.cc>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
+MIME-Version: 1.0
+To: "Randy.Dunlap" <rdunlap@xenotime.net>
+CC: Ray Lee <ray-lk@madrabbit.org>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Many open/close on same files yeilds "No such file or directory".
+References: <4819E316.7000607@krogh.cc>  <20080501223938.921f7cd2.akpm@linux-foundation.org>  <481ACEC4.2040205@krogh.cc> <481B3115.30705@krogh.cc> <2c0942db0805020847q2fdc0480m3eb892bf2bd0b3a@mail.gmail.com> <481B70F9.6000201@krogh.cc> <481F4728.9050100@krogh.cc> <Pine.LNX.4.64.0805051050350.27703@shark.he.net>
+In-Reply-To: <Pine.LNX.4.64.0805051050350.27703@shark.he.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-05-05 at 19:06 +0200, Jan Kara wrote:
-> On Thu 01-05-08 08:16:21, Badari Pulavarty wrote:
-> > Hi Andrew & Jan,
-> > 
-> > I was able to reproduce the customer problem involving DIO
-> > (invalidate_inode_pages2) problem by writing simple testcase
-> > to keep writing to a file using buffered writes and DIO writes
-> > forever in a loop. I see DIO writes fail with -EIO.
-> > 
-> > After a long debug, found 2 cases how this could happen.
-> > These are race conditions with journal_try_to_free_buffers()
-> > and journal_commit_transaction().
-> > 
-> > 1) journal_submit_data_buffers() tries to get bh_state lock. If
-> > try lock fails, it drops the j_list_lock and sleeps for
-> > bh_state lock, while holding a reference on the buffer.
-> > In the meanwhile, journal_try_to_free_buffers() can clean up the
-> > journal head could call try_to_free_buffers(). try_to_free_buffers()
-> > would fail due to the reference held by journal_submit_data_buffers()
-> > - which in turn causes failues for DIO (invalidate_inode_pages2()).
-> > 
-> > 2) When the buffer is on t_locked_list waiting for IO to finish,
-> > we hold a reference and give up the cpu, if we can't get
-> > bh_state lock. This causes try_to_free_buffers() to fail.
-> > 
-> > Fix is to drop the reference on the buffer if we can't get
-> > bh_state lock, give up the cpu and re-try the whole operation -
-> > instead of waiting for the vh_state lock.
-> > 
-> > Does this look like a resonable fix ?
->   As Mingming pointed out there are few other places where we could hold
-> the bh reference. 
-
-Actually there is one more place that journal_try_to_free_buffers
-(calling from DIO path) could race with journal_submit_data_buffers(),
-the DIO and buffered IO test still returns EIO with the fix which should
-fixed the first 3 race cases.
-
-I could not figure out how this could happen with Badari's fix to
-inverted_lock().
-
-This time the debug shows that the one who release put_bh() after the
-journal_try_to_free_buffers() failed is from this code path:
-
-journal_submit_data_buffers() {
-
-...
-
- } else if (!locked && buffer_locked(bh)) {
-                        __journal_file_buffer(jh, commit_transaction,
-                                                BJ_Locked);
-                        jbd_unlock_bh_state(bh);
-                        put_bh(bh);
-
-}
-
-But when we get here we should already making sure the bh is on the
-t_syncdata_list with badari's fix...
-
-> Note also that we accumulate references to buffers in the
-> wbuf[] list and we need that for submit_bh() which consumes one bh
-> reference. 
-
-It seems to me it's safe in this case. When
-journal_try_to_free_buffers() called from DIO path,
-filemap_fdatawrite_and_wait() already making sure that the IO submitted
-by kjournald is already finished by waiting for buffer unlocked.
-
-> Generally, it seems to me as a too fragile and impractical
-> rule "nobody can hold bh reference when not holding page lock" which is
-> basically what it comes down to if you really want to be sure that
-> journal_try_to_free_buffers() succeeds. And also note that in principle
-> there are other places which hold references to buffers without holding the
-> page lock - for example writepage() in ordered mode (although this one is
-> in practice hardly triggerable). So how we could fix at least the races
-> with commit code is to implement launder_page() callback for ext3/4 which
-> would wait for the previous transaction commit in case the page has buffers
-> that are part of that commit (I don't want this logic in
-> journal_try_to_free_buffers() as that is called also on memory-reclaim
-> path, but journal_launder_page() is fine with me). This would be correct
-> but could considerably slow down O_DIRECT writes in cases they're mixed
-> with buffered writes so I'm not sure if this is acceptable.
->   OTOH with the ordered mode rewrite patch, the problem with commit code
-> also goes away since there we don't need extra references to data buffers
-> (we use just filemap_fdatawrite).
+Randy.Dunlap wrote:
+> On Mon, 5 May 2008, Jesper Krogh wrote:
 > 
-> > 1) journal_submit_data_buffers() tries to get bh_state lock. If
-> > try lock fails, it drops the j_list_lock and sleeps for
-> > bh_state lock, while holding a reference on the buffer head.
-> > In the meanwhile, journal_try_to_free_buffers() can clean up the
-> > journal head could call try_to_free_buffers(). try_to_free_buffers()
-> > would fail due to the reference held by journal_submit_data_buffers()
-> > - which inturn causes failues for DIO (invalidate_inode_pages2()).
-> > 
-> > 2) When the buffer is on t_locked_list waiting for IO to finish,
-> > we hold a reference and give up the cpu, if we can't get 
-> > bh_state lock. This causes try_to_free_buffers() to fail.
-> > 
-> > Fix is to drop the reference on the buffer, give up the cpu
-> > and re-try the whole operation.
-> > 
-> > Signed-off-by: Badari Pulavarty <pbadari@us.ibm.com>
-> > Reviewed-by: Mingming Cao <mcao@us.ibm.com>
+>> Jesper Krogh wrote:
+>>> Ray Lee wrote:
+>>>> BTW, I may have missed this earlier, but does it happen *anywhere* on
+>>>> the troublesome filesystem (ie, in a newly created subdirectory)?
+>>> Yes. It is reproducible on a newly created subdirectory on the
+>>> filesystem.
+>> Now I've created a new filesystem. (resized the original LVM-volume to half
+>> and created a new ext3 one next to it). The problem persists on this new
+>> filesystem.
+>>
+>> Just guessing, can there be something timing related in clearing the FS-cache
+>> for the filesystem?
+>>
+>> Any other suggestions/pointers.
 > 
-> 							Honza
+> Hi,
+> 
+> Has anyone else been able to reproduce this problem?
 
+No, and out of my systems. I only have this external SCSI-IDE-raid 
+device I can reproduce it on. The internal system disks doesnt allow me 
+to reproduce it on the same installation.
+
+-- 
+Jesper Krogh
