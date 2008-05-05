@@ -1,42 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764051AbYEETLJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761581AbYEETNO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764051AbYEETLJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 15:11:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754810AbYEETKv
+	id S1761581AbYEETNO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 15:13:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751884AbYEETM6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 15:10:51 -0400
-Received: from outbound-mail-22.bluehost.com ([69.89.21.17]:52435 "HELO
-	outbound-mail-22.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753257AbYEETKu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 15:10:50 -0400
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Adrian Bunk <bunk@kernel.org>
-Subject: Re: [2.6 patch] make {pciehp,shpchp}_slot_with_bus static
-Date: Mon, 5 May 2008 12:10:45 -0700
-User-Agent: KMail/1.9.9
-Cc: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
-       Kristen Carlson Accardi <kristen.c.accardi@intel.com>,
-       linux-kernel@vger.kernel.org
-References: <20080505182151.GE17139@cs181133002.pp.htv.fi>
-In-Reply-To: <20080505182151.GE17139@cs181133002.pp.htv.fi>
+	Mon, 5 May 2008 15:12:58 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:55173 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750885AbYEETM4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 May 2008 15:12:56 -0400
+Date: Mon, 5 May 2008 12:12:56 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Mike Travis <travis@sgi.com>
+cc: arges@linux.vnet.ibm.com, phil.el@wanadoo.fr, mpjohn@us.ibm.com,
+       Jack Steiner <steiner@sgi.com>, Paul Jackson <pj@sgi.com>,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Hotplug CPU support for Oprofile
+In-Reply-To: <481F5965.6070305@sgi.com>
+Message-ID: <Pine.LNX.4.64.0805051211110.11469@schroedinger.engr.sgi.com>
+References: <1210012443.6374.23.camel@snuffleupagus> <481F5965.6070305@sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200805051210.45579.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, May 05, 2008 11:21 am Adrian Bunk wrote:
-> This patch makes the needlessly global {pciehp,shpchp}_slot_with_bus
-> static.
->
-> Signed-off-by: Adrian Bunk <bunk@kernel.org>
+The allocpercpu approach creates a pointer array and results in objects 
+distributed over all of memory. A cpu alloc approach would place 
+dynamically allocated per cpu objects together which is better for memory 
+consumption (no need to align) and performance (same TLB entry, neigboring 
+memory cells, possible shared cachelines).
 
-Applied to the linux-next branch of pci-2.6.  Thanks.
-
-Jesse
