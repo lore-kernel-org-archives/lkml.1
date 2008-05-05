@@ -1,67 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758622AbYEELAJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758733AbYEELAj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758622AbYEELAJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 07:00:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754772AbYEEK7g
+	id S1758733AbYEELAj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 07:00:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758131AbYEEK7n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 06:59:36 -0400
-Received: from saeurebad.de ([85.214.36.134]:59708 "EHLO saeurebad.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757360AbYEEK7f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 06:59:35 -0400
-X-Mailbox-Line: From hannes@symbol.fehenstaub.lan Mon May  5 12:08:46 2008
-Message-Id: <20080505100846.142962623@symbol.fehenstaub.lan>
-References: <20080505095938.326928514@symbol.fehenstaub.lan>
-User-Agent: quilt/0.46-1
-Date: Mon, 05 May 2008 11:59:39 +0200
-From: Johannes Weiner <hannes@saeurebad.de>
-To: linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Cc: Ingo Molnar <mingo@elte.hu>, Andi Kleen <andi@firstfloor.org>,
-       Yinghai Lu <yhlu.kernel@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Yasunori Goto <y-goto@jp.fujitsu.com>
-Subject: [rfc][patch 1/3] mm: Define NR_NODE_MEMBLKS unconditionally
-Content-Disposition: inline; filename=nr_node_memblks.patch
-X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
+	Mon, 5 May 2008 06:59:43 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:32815 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757426AbYEEK7l (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 May 2008 06:59:41 -0400
+Date: Mon, 5 May 2008 06:59:14 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: akpm@linux-foundation.org, hch@infradead.org, viro@ZenIV.linux.org.uk,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       Michael Halcrow <mhalcrow@us.ibm.com>
+Subject: Re: [patch 01/15] ecryptfs: clean up (un)lock_parent
+Message-ID: <20080505105914.GA20910@infradead.org>
+References: <20080505095440.820370974@szeredi.hu> <20080505095508.218321526@szeredi.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080505095508.218321526@szeredi.hu>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bootmem needs to work on contiguous memory block quantities rather
-than whole nodes, for the latter may overlap.  So make this maxium
-number and the resulting number of blocks per node available to
-generic code like bootmem.
+On Mon, May 05, 2008 at 11:54:42AM +0200, Miklos Szeredi wrote:
+> From: Miklos Szeredi <mszeredi@suse.cz>
+> 
+> dget(dentry->d_parent) --> dget_parent(dentry)
+> 
+> unlock_parent() is racy and unnecessary.  Replace single caller with
+> unlock_dir().
+> 
+> There are several other suspect uses of ->d_parent in ecryptfs...
 
-Signed-off-by: Johannes Weiner <hannes@saeurebad.de>
----
-
-Index: linux-2.6/include/linux/numa.h
-===================================================================
---- linux-2.6.orig/include/linux/numa.h
-+++ linux-2.6/include/linux/numa.h
-@@ -1,13 +1,17 @@
- #ifndef _LINUX_NUMA_H
- #define _LINUX_NUMA_H
- 
--
- #ifdef CONFIG_NODES_SHIFT
--#define NODES_SHIFT     CONFIG_NODES_SHIFT
-+#define NODES_SHIFT		CONFIG_NODES_SHIFT
- #else
--#define NODES_SHIFT     0
-+#define NODES_SHIFT		0
- #endif
- 
--#define MAX_NUMNODES    (1 << NODES_SHIFT)
-+#define MAX_NUMNODES		(1 << NODES_SHIFT)
-+
-+#ifndef NR_NODE_MEMBLKS
-+#define NR_NODE_MEMBLKS		MAX_NUMNODES
-+#endif
-+#define NR_MEMBLKS_PER_NODE	(NR_NODE_MEMBLKS / MAX_NUMNODES)
- 
- #endif /* _LINUX_NUMA_H */
-
--- 
+Looks good an the first hunk is an obvious fix.  Should probably go into
+.26
 
