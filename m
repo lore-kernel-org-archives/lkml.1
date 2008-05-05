@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761282AbYEETPj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762162AbYEETQJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761282AbYEETPj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 15:15:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752517AbYEETP0
+	id S1762162AbYEETQJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 15:16:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752859AbYEETPw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 15:15:26 -0400
-Received: from monty.telenet-ops.be ([195.130.132.56]:47725 "EHLO
-	monty.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752078AbYEETPZ (ORCPT
+	Mon, 5 May 2008 15:15:52 -0400
+Received: from harold.telenet-ops.be ([195.130.133.65]:38076 "EHLO
+	harold.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752517AbYEETPv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 15:15:25 -0400
-Date: Mon, 5 May 2008 21:15:19 +0200 (CEST)
+	Mon, 5 May 2008 15:15:51 -0400
+Date: Mon, 5 May 2008 21:15:48 +0200 (CEST)
 From: Geert Uytterhoeven <geert@linux-m68k.org>
 To: Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>
-cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, linux-ide@vger.kernel.org,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       Linux/m68k <linux-m68k@vger.kernel.org>
-Subject: [PATCH] m68k: Fix falconide `data_adr' typo
-Message-ID: <Pine.LNX.4.64.0805052114380.15634@anakin>
+cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Linux/m68k <linux-m68k@vger.kernel.org>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>
+Subject: [PATCH] m68k: serial167 missing return value in cy_put_char()
+Message-ID: <Pine.LNX.4.64.0805052115240.17727@anakin>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -27,31 +27,30 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Geert Uytterhoeven <geert@linux-m68k.org>
 
-    commit 9567b349f7e7dd7e2483db99ee8e4a6fe0caca38
-    Author: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-    Date:   Mon Apr 28 23:44:36 2008 +0200
+    commit a5b08c66194fba02a865b397579b7204688bcb1e
+    Author: Alan Cox <alan@lxorguk.ukuu.org.uk>
+    Date:   Wed Apr 30 00:54:05 2008 -0700
 
-    ide: merge ->atapi_*put_bytes and ->ata_*put_data methods
+    serial167: switch to int put_char method
 
-introduced a typo (`data_adr' instead of `data_addr'), leading to a compile
-failure.
+missed one case when adding return values.
 
 Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
 ---
- drivers/ide/legacy/falconide.c |    2 +-
+ drivers/char/serial167.c |    2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/drivers/ide/legacy/falconide.c
-+++ b/drivers/ide/legacy/falconide.c
-@@ -61,7 +61,7 @@ static void falconide_output_data(ide_dr
- 	unsigned long data_addr = drive->hwif->io_ports.data_addr;
+--- a/drivers/char/serial167.c
++++ b/drivers/char/serial167.c
+@@ -1073,7 +1073,7 @@ static int cy_put_char(struct tty_struct
+ 		return 0;
  
- 	if (drive->media == ide_disk && rq && rq->cmd_type == REQ_TYPE_FS)
--		return outsw(data_adr, buf, (len + 1) / 2);
-+		return outsw(data_addr, buf, (len + 1) / 2);
+ 	if (!info->xmit_buf)
+-		return;
++		return 0;
  
- 	outsw_swapw(data_addr, buf, (len + 1) / 2);
- }
+ 	local_irq_save(flags);
+ 	if (info->xmit_cnt >= PAGE_SIZE - 1) {
 
 Gr{oetje,eeting}s,
 
