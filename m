@@ -1,46 +1,239 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756757AbYEEKa4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756516AbYEEKdw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756757AbYEEKa4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 06:30:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752631AbYEEKaq
+	id S1756516AbYEEKdw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 06:33:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752838AbYEEKdn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 06:30:46 -0400
-Received: from ozlabs.org ([203.10.76.45]:49128 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752630AbYEEKap (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 06:30:45 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: [PATCH] modpost: i2c aliases need no trailing wildcard
-Date: Mon, 5 May 2008 20:30:32 +1000
-User-Agent: KMail/1.9.9
-Cc: Jean Delvare <khali@linux-fr.org>, LKML <linux-kernel@vger.kernel.org>,
-       Kay Sievers <kay.sievers@vrfy.org>, Linux I2C <i2c@lm-sensors.org>
-References: <20080502203721.70c5dc09@hyperion.delvare> <20080505104816.1f666613@hyperion.delvare> <20080505090929.GA29310@uranus.ravnborg.org>
-In-Reply-To: <20080505090929.GA29310@uranus.ravnborg.org>
+	Mon, 5 May 2008 06:33:43 -0400
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:41361 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751776AbYEEKdm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 May 2008 06:33:42 -0400
+Message-ID: <481EE265.1020405@bull.net>
+Date: Mon, 05 May 2008 12:33:09 +0200
+From: Nadia Derbey <Nadia.Derbey@bull.net>
+Organization: BULL/DT/OSwR&D/Linux
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.6) Gecko/20040115
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Tim Pepper <lnxninja@linux.vnet.ibm.com>
+Cc: manfred@colorfullife.com, paulmck@linux.vnet.ibm.com,
+       linux-kernel@vger.kernel.org, efault@gmx.de, akpm@linux-foundation.org
+Subject: Re: [PATCH 05/10] Introduce ridr_get_new_above()
+References: <20080429143304.741001000@bull.net> <20080429143730.096357000@bull.net> <20080501043204.GD30274@tpepper-t42p.dolavim.us>
+In-Reply-To: <20080501043204.GD30274@tpepper-t42p.dolavim.us>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200805052030.33084.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 05 May 2008 19:09:29 Sam Ravnborg wrote:
-> > > Still, there's nothing wrong with this patch, happy for you to send it.
-> > >
-> > > Acked-by: Rusty Russell <rusty@rustcorp.com.au>
-> >
-> > Thanks,
->
-> The patch is in -linus already so I cannot add the "Acked-by".
+Tim Pepper wrote:
+> On Tue 29 Apr at 16:33:09 +0200 Nadia.Derbey@bull.net said:
+> 
+>>[PATCH 05/10]
+>>
+>>This patch introduces the ridr_get_new_above() routine, and some common code
+>>between the idr an ridr API's.
+> 
+> 
+> The ridr_get_new_above() is the first place we see something really
+> different compared to idr (an RCU addition).  This is a lot of patching
+> so far for what would be a small incremental change otherwise.
+> 
+> 
+>>Index: linux-2.6.25-mm1/include/linux/idr.h
+>>===================================================================
+>>--- linux-2.6.25-mm1.orig/include/linux/idr.h	2008-04-29 13:08:00.000000000 +0200
+>>+++ linux-2.6.25-mm1/include/linux/idr.h	2008-04-29 14:08:47.000000000 +0200
+>>@@ -71,6 +71,27 @@ struct idr {
+>> }
+>> #define DEFINE_IDR(name)	struct idr name = IDR_INIT(name)
+>>
+>>+/* Actions to be taken after a call to _idr_sub_alloc */
+>>+#define IDR_DONE         -1
+>>+#define IDR_NEED_TO_GROW -2
+>>+#define IDR_NOMORE_SPACE -3
+>>+#define IDR_GO_TOP       -4
+>>+#define IDR_GO_UP        -5
+> 
+> 
+> This stuff is useful on its own in as much as it improves code
+> readability.  A lot of this patch (the "some common code between the
+> idr and ridr API's" part) could be a standalone patch distinct from the
+> ridr series and then be at the head of your stack.
+> 
+> 
+>>+			return action;
+>>+		case IDR_DONE:
+>>+			goto end_loop;
+>>+		case IDR_GO_UP:
+>>+			continue;
+>>+		case IDR_GO_TOP:
+>>+			goto restart;
+>>+		default:
+>>+			m = action;
+>> 			break;
+>>+		}
+>>+		BUG_ON(m < 0);
+> 
+> 
+> Why the added BUG_ON()?  These couple hunks are a bit muddled, so maybe I
+> missed something.  But I don't see anything different in how m or bm are
+> being manipulated such that m<0 is anymore likely after this patch.
+> 
+> 
+>>Index: linux-2.6.25-mm1/lib/ridr.c
+>>===================================================================
+>>--- linux-2.6.25-mm1.orig/lib/ridr.c	2008-04-29 13:23:17.000000000 +0200
+>>+++ linux-2.6.25-mm1/lib/ridr.c	2008-04-29 14:03:35.000000000 +0200
+>>@@ -11,6 +11,23 @@
+>> static struct kmem_cache *ridr_layer_cache;
+>>
+>>
+>>+static struct ridr_layer *get_from_free_list(struct ridr *idp)
+>>+{
+>>+	struct ridr_layer *q;
+>>+	struct idr_layer *p;
+>>+	unsigned long flags;
+>>+
+>>+	spin_lock_irqsave(&idp->lock, flags);
+>>+	if ((q = idp->id_free)) {
+>>+		p = ridr_to_idr(q);
+>>+		idp->id_free = p->ary[0];
+>>+		idp->id_free_cnt--;
+>>+		p->ary[0] = NULL;
+>>+	}
+>>+	spin_unlock_irqrestore(&idp->lock, flags);
+>>+	return(q);
+>>+}
+>>+
+> 
+> 
+> idr's alloc_layer() in disguise?
+> 
+> 
+>>+static int sub_alloc(struct ridr *idp, int *starting_id,
+>>+			struct ridr_layer **rpa, struct idr_layer **pa)
+> 
+> 
+> ...
+> More or less duplication
+> ...
+> 
+> 
+>>+		 * Create the layer below if it is missing.
+>>+		 */
+>>+		if (!p->ary[m]) {
+>>+			new = get_from_free_list(idp);
+>>+			if (!new)
+>>+				return -1;
+>>+			rcu_assign_pointer(p->ary[m], new);
+>>+			p->count++;
+>>+		}
+>>+		pa[l] = p;
+>>+		rpa[l--] = idr_to_ridr(p);
+>>+		p = p->ary[m];
+>>+	}
+>>+
+>>+end_loop:
+>>+	pa[l] = p;
+>>+	rpa[l] = idr_to_ridr(p);
+>>+	return id;
+>>+}
+> 
+> 
+> Oh but wait..there's some RCU-ness tucked in there.
+> 
+> 
+>>+
+>>+static int ridr_get_empty_slot(struct ridr *idp, int starting_id,
+>>+			      struct ridr_layer **rpa, struct idr_layer **pa)
+>>+{
+>>+	struct ridr_layer *p, *rnew;
+>>+	int layers, v, id;
+>>+	unsigned long flags;
+>>+
+>>+	id = starting_id;
+>>+build_up:
+>>+	p = idp->top;
+>>+	layers = idp->layers;
+>>+	if (unlikely(!p)) {
+>>+		p = get_from_free_list(idp);
+>>+		if (!p)
+>>+			return -1;
+>>+		layers = 1;
+>>+	}
+>>+	/*
+>>+	 * Add a new layer to the top of the tree if the requested
+>>+	 * id is larger than the currently allocated space.
+>>+	 */
+>>+	while (layers < MAX_LEVEL - 1 && id >= (1 << (layers * IDR_BITS))) {
+> 
+>                ^^                   ^^
+> Dropped some parens.  Otherwise more duplication...
+> 
+> 
+>>+				rnew->idr.ary[0] = NULL;
+>>+				rnew->idr.bitmap = rnew->idr.count = 0;
+>>+				__move_to_free_list(idp, rnew);
+>>+			}
+>>+			spin_unlock_irqrestore(&idp->lock, flags);
+>>+			return -1;
+>>+		}
+>>+		_idr_set_new_slot(ridr_to_idr(rnew), ridr_to_idr(p));
+>>+		p = rnew;
+>>+	}
+>>+	rcu_assign_pointer(idp->top, p);
+>>+	idp->layers = layers;
+>>+	v = sub_alloc(idp, &id, rpa, pa);
+>>+	if (v == IDR_NEED_TO_GROW)
+>>+		goto build_up;
+>>+	return(v);
+>>+}
+> 
+> 
+> Some more RCU.
+> 
+> 
+>>+static int ridr_get_new_above_int(struct ridr *idp, void *ptr, int starting_id)
+>>+{
+>>+	struct ridr_layer *rpa[MAX_LEVEL];
+>>+	struct idr_layer *pa[MAX_LEVEL];
+>>+	int id;
+>>+
+>>+	id = ridr_get_empty_slot(idp, starting_id, rpa, pa);
+>>+	if (id >= 0) {
+>>+		/*
+>>+		 * Successfully found an empty slot.  Install the user
+>>+		 * pointer and mark the slot full.
+>>+		 */
+>>+		rcu_assign_pointer(pa[0]->ary[id & IDR_MASK],
+>>+				(struct ridr_layer *)ptr);
+>>+		pa[0]->count++;
+>>+		_idr_mark_full(pa, id);
+>>+	}
+>>+
+>>+	return id;
+>>+}
+> 
+> 
+> And other line of RCU.
+> 
+> OK.  So at this point in patch 5/10 we've got 3 lines of new code and
+> hundreds of lines of duplicated code?
+> 
+> A while more looking through the rest of the patches for the rest of the
+> context and I might be able to actually think about the implications of
+> these three lines being where they are.
+> 
+> Locking changes are complicated enough without all this obfuscation!
+> I understand the desire to not break IDR, but...
+> 
 
-Since the purpose is to ease passage into Linus' tree, it seems academic?
+OK, you convinced me. I'll re-send a new patchset that is incremental on 
+top of idr. Sorry (and thanks a lot) for the painful review!
 
-Cheers,
-Rusty.
-
-
-
+Regards,
+Nadia
