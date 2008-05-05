@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756580AbYEECQ3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756491AbYEECUA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756580AbYEECQ3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 May 2008 22:16:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754132AbYEECQU
+	id S1756491AbYEECUA (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 May 2008 22:20:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754322AbYEECTv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 May 2008 22:16:20 -0400
-Received: from uki.us.mooball.net ([66.98.178.13]:49229 "EHLO
+	Sun, 4 May 2008 22:19:51 -0400
+Received: from uki.us.mooball.net ([66.98.178.13]:49324 "EHLO
 	uki.us.mooball.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751613AbYEECQT (ORCPT
+	with ESMTP id S1753975AbYEECTu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 May 2008 22:16:19 -0400
+	Sun, 4 May 2008 22:19:50 -0400
 X-ClientAddr: 220.233.82.121
-Subject: Re: [PATCH 21/56] microblaze_v2: setup.c - system setting
+Subject: Re: [PATCH 24/56] microblaze_v2: time support
 From: John Williams <john.williams@petalogix.com>
 To: monstr@seznam.cz
 Cc: linux-kernel@vger.kernel.org, arnd@arndb.de, linux-arch@vger.kernel.org,
@@ -19,7 +19,7 @@ Cc: linux-kernel@vger.kernel.org, arnd@arndb.de, linux-arch@vger.kernel.org,
        will.newton@gmail.com, drepper@redhat.com,
        microblaze-uclinux@itee.uq.edu.au, grant.likely@secretlab.ca,
        Michal Simek <monstr@monstr.eu>
-In-Reply-To: <6b0c9864dc80776ae48d6488a6892e5d698751b7.1209897266.git.monstr@monstr.eu>
+In-Reply-To: <35e662a81eb86c7ffb2aaa6141ca38a07789f382.1209897266.git.monstr@monstr.eu>
 References: <1209901305-6404-1-git-send-email-monstr@seznam.cz>
 	 <a4a778e34c66d126f5c4bf1ca423cf32950ea5ab.1209897266.git.monstr@monstr.eu>
 	 <c805caeb1dd7f6d1349c4a463cb88a5342a170d2.1209897266.git.monstr@monstr.eu>
@@ -42,10 +42,13 @@ References: <1209901305-6404-1-git-send-email-monstr@seznam.cz>
 	 <eadcc6f4754df78b69d6d54c404624d0390c8558.1209897266.git.monstr@monstr.eu>
 	 <4df4022e06b9056202cc2fdf0b99deb01563a0fa.1209897266.git.monstr@monstr.eu>
 	 <6b0c9864dc80776ae48d6488a6892e5d698751b7.1209897266.git.monstr@monstr.eu>
+	 <ea5cbbca49c38c506960fddba29cbd8cb24e1a8d.1209897266.git.monstr@monstr.eu>
+	 <4f4d6ed3fce9b21cdd6dcacb2d72fff7e9830628.1209897266.git.monstr@monstr.eu>
+	 <35e662a81eb86c7ffb2aaa6141ca38a07789f382.1209897266.git.monstr@monstr.eu>
 Content-Type: text/plain
 Organization: PetaLogix
-Date: Mon, 05 May 2008 12:15:38 +1000
-Message-Id: <1209953738.5798.63.camel@localhost>
+Date: Mon, 05 May 2008 12:19:09 +1000
+Message-Id: <1209953949.5798.66.camel@localhost>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.8.0 (2.8.0-40.el5_1.1) 
 Content-Transfer-Encoding: 7bit
@@ -57,15 +60,22 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-> +++ b/arch/microblaze/kernel/setup.c
+> +static inline void udelay(unsigned long usec)
+> +{
+> +	unsigned long long tmp = usec;
+> +	unsigned long loops = (tmp * 4295 * HZ * loops_per_jiffy) >> 32;
+> +	__delay(loops);
+> +}
 
-> +#ifdef CONFIG_HACK
-> +	printk(KERN_NOTICE "HACK function enable\n");
-> +#else
-> +	printk(KERN_NOTICE "HACK function disable\n");
-> +#endif
+Let's hope like hell the CPU has HW multipler and shifter for this
+one! :)
 
-%s/HACK/something sensible/g
+> +++ b/include/asm-microblaze/timex.h
+> @@ -0,0 +1,20 @@
+> +
+> +#define CLOCK_TICK_RATE 1000 /* Timer input freq. */
+
+What's this?  Is it used anywhere?
 
 
 
