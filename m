@@ -1,44 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759859AbYEEO10@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759112AbYEEOcG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759859AbYEEO10 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 10:27:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756143AbYEEO1K
+	id S1759112AbYEEOcG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 10:32:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756768AbYEEOby
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 10:27:10 -0400
-Received: from an-out-0708.google.com ([209.85.132.246]:30394 "EHLO
+	Mon, 5 May 2008 10:31:54 -0400
+Received: from an-out-0708.google.com ([209.85.132.248]:36589 "EHLO
 	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753140AbYEEO1J (ORCPT
+	with ESMTP id S1756613AbYEEObx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 10:27:09 -0400
-Message-ID: <fa686aa40805050727s4753f274k80159a9c07a48a3c@mail.gmail.com>
-Date: Mon, 5 May 2008 08:27:08 -0600
+	Mon, 5 May 2008 10:31:53 -0400
+Message-ID: <fa686aa40805050731gc29e88hdc4917041a63e12f@mail.gmail.com>
+Date: Mon, 5 May 2008 08:31:52 -0600
 From: "Grant Likely" <grant.likely@secretlab.ca>
 To: monstr@seznam.cz
-Subject: Re: [PATCH 1/1] DEBUGFS: Fixing name for debug fs
-Cc: "Arnd Bergmann" <arnd@arndb.de>, paulus@samba.org,
-       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
-In-Reply-To: <481D73B0.8020705@monstr.eu>
+Subject: Re: [PATCH 10/56] microblaze_v2: Generic dts file for platforms
+Cc: linux-kernel@vger.kernel.org, arnd@arndb.de, linux-arch@vger.kernel.org,
+       stephen.neuendorffer@xilinx.com, John.Linn@xilinx.com,
+       john.williams@petalogix.com, matthew@wil.cx, will.newton@gmail.com,
+       drepper@redhat.com, microblaze-uclinux@itee.uq.edu.au,
+       "Michal Simek" <monstr@monstr.eu>
+In-Reply-To: <2391e49379fb6639f57d9d6e5811f3d49a4c6fda.1209897266.git.monstr@monstr.eu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <monstr@seznam.cz>
-	 <1209825314-8048-1-git-send-email-monstr@seznam.cz>
-	 <c65b09261996cf3500b6faee201e2dd6c152973e.1209825194.git.monstr@monstr.eu>
-	 <200805032307.04352.arnd@arndb.de> <481D73B0.8020705@monstr.eu>
-X-Google-Sender-Auth: 90c074d0deab4419
+References: <a4a778e34c66d126f5c4bf1ca423cf32950ea5ab.1209897266.git.monstr@monstr.eu>
+	 <2391e49379fb6639f57d9d6e5811f3d49a4c6fda.1209897266.git.monstr@monstr.eu>
+X-Google-Sender-Auth: 1e814cfabf66a8e6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, May 4, 2008 at 2:28 AM, Michal Simek <monstr@monstr.eu> wrote:
-> Hi Arnd,
+On Sun, May 4, 2008 at 5:40 AM,  <monstr@seznam.cz> wrote:
+> From: Michal Simek <monstr@monstr.eu>
 >
->  This is question up to PowerPC guys not to me.
->  of_debugfs_root sounds good.
+>
+>  Signed-off-by: Michal Simek <monstr@monstr.eu>
+>  ---
+>   arch/microblaze/platform/generic/system.dts |  137 +++++++++++++++++++++++++++
 
-Make sure you cc: the linuxppc-dev@ozlabs.org mailing list on the next
-iteration of this patch.
+What is the purpose of the generic dts?  Will this work with custom
+microblaze designs?  The header block should contain a comment about
+what this file is for.
 
 Cheers,
 g.
