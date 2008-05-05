@@ -1,57 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761016AbYEETQe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759685AbYEETSj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761016AbYEETQe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 15:16:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756613AbYEETQR
+	id S1759685AbYEETSj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 15:18:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752024AbYEETS3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 15:16:17 -0400
-Received: from edna.telenet-ops.be ([195.130.132.58]:40501 "EHLO
-	edna.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762338AbYEETQP (ORCPT
+	Mon, 5 May 2008 15:18:29 -0400
+Received: from outbound-mail-145.bluehost.com ([67.222.38.35]:54188 "HELO
+	outbound-mail-145.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751725AbYEETS2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 15:16:15 -0400
-Date: Mon, 5 May 2008 21:16:13 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
+	Mon, 5 May 2008 15:18:28 -0400
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
 To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-cc: Matthew Wilcox <matthew@wil.cx>, Linux/m68k <linux-m68k@vger.kernel.org>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>
-Subject: [PATCH] m68k: drivers/input/serio/hp_sdc.c needs <linux/semaphore.h>
-Message-ID: <Pine.LNX.4.64.0805052115500.18749@anakin>
+       linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org
+Subject: [git pull] PCI updates
+Date: Mon, 5 May 2008 12:18:26 -0700
+User-Agent: KMail/1.9.9
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200805051218.26255.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Geert Uytterhoeven <geert@linux-m68k.org>
+Please pull the PCI fixes:
+git pull git://git.kernel.org/pub/scm/linux/kernel/git/jbarnes/pci-2.6.git for-linus
 
-drivers/input/serio/hp_sdc.c: In function 'hp_sdc_take':
-drivers/input/serio/hp_sdc.c:198: error: implicit declaration of function 'up'
+There are a few bug fixes in there and a patch moved over from the x86
+tree, which has a couple of cleanups and a small enhancement for the
+ISA alignment code (it's also now controllable through a kernel boot
+parameter).  I can push that over into the linux-next tree though if you're
+not comfortable with it.
 
-Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
----
- drivers/input/serio/hp_sdc.c |    1 +
- 1 file changed, 1 insertion(+)
+Thanks,
+Jesse
 
---- a/drivers/input/serio/hp_sdc.c
-+++ b/drivers/input/serio/hp_sdc.c
-@@ -69,6 +69,7 @@
- #include <linux/time.h>
- #include <linux/slab.h>
- #include <linux/hil.h>
-+#include <linux/semaphore.h>
- #include <asm/io.h>
- #include <asm/system.h>
- 
+Sam Ravnborg (1):
+      x86: fix section mismatch in pci_scan_bus
 
-Gr{oetje,eeting}s,
+Yinghai Lu (3):
+      x86/pci: remove flag in pci_cfg_space_size_ext
+      x86/pci: add pci=skip_isa_align command lines.
+      x86 PCI: call dmi_check_pciprobe()
 
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+ Documentation/kernel-parameters.txt |    2 +
+ arch/x86/pci/acpi.c                 |   41 -------------------------
+ arch/x86/pci/common.c               |   58 +++++++++++++++++++++++++++++++++---
+ arch/x86/pci/fixup.c                |    2 -
+ arch/x86/pci/init.c                 |    4 ++
+ arch/x86/pci/pci.h                  |    3 +
+ drivers/pci/probe.c                 |   33 ++++++++++----------
+ include/linux/pci.h                 |    5 +--
+ 8 files changed, 84 insertions(+), 64 deletions(-)
