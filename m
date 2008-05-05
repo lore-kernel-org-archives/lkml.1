@@ -1,118 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760618AbYEEXIa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759467AbYEEXMU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760618AbYEEXIa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 19:08:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752592AbYEEXIV
+	id S1759467AbYEEXMU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 19:12:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752569AbYEEXMJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 19:08:21 -0400
-Received: from smtp-out03.alice-dsl.net ([88.44.63.5]:22266 "EHLO
-	smtp-out03.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752547AbYEEXIU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 19:08:20 -0400
-Message-ID: <481F935D.1040603@googlemail.com>
-Date: Tue, 06 May 2008 01:08:13 +0200
-From: Gabriel C <nix.or.die@googlemail.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080502)
+	Mon, 5 May 2008 19:12:09 -0400
+Received: from outbound-wa4.frontbridge.com ([216.32.181.16]:39548 "EHLO
+	outbound5-wa4-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752240AbYEEXMH convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 May 2008 19:12:07 -0400
+X-BigFish: VP
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 149.199.60.83;Service: EHS
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-To: Prakash Punnoor <prakash@punnoor.de>
-CC: Jens Axboe <jens.axboe@oracle.com>,
-       Jacek Luczak <difrost.kernel@gmail.com>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>, neilb@suse.de
-Subject: Re: WARNING in 2.6.25-07422-gb66e1f1
-References: <200805031151.44287.prakash@punnoor.de> <481DB3F3.5080102@gmail.com> <20080504183839.GN12774@kernel.dk> <200805051931.14116.prakash@punnoor.de>
-In-Reply-To: <200805051931.14116.prakash@punnoor.de>
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 05 May 2008 23:01:21.0456 (UTC) FILETIME=[EF4C0B00:01C8AF03]
+Content-Type: text/plain;
+	charset="US-ASCII"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH] Microblaze: implement dma-coherent API and refactorcache flush code.
+Date: Mon, 5 May 2008 16:12:08 -0700
+In-reply-to: <1210028237.5798.121.camel@localhost>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH] Microblaze: implement dma-coherent API and refactorcache flush code.
+Thread-Index: AcivA4PGUWGHhnjGSS+qi/gjoKoJIwAADUTw
+References: <20080505223706.1236C1C8004E@mail131-sin.bigfish.com> <1210028237.5798.121.camel@localhost>
+From: "Stephen Neuendorffer" <stephen.neuendorffer@xilinx.com>
+To: "John Williams" <john.williams@petalogix.com>
+Cc: <arnd@arndb.de>, <linux-arch@vger.kernel.org>,
+       "John Linn" <linnj@xilinx.com>, <matthew@wil.cx>,
+       <will.newton@gmail.com>, <drepper@redhat.com>,
+       <microblaze-uclinux@itee.uq.edu.au>, <grant.likely@secretlab.ca>,
+       "Michal Simek" <monstr@monstr.eu>, <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 05 May 2008 23:12:06.0156 (UTC) FILETIME=[6F9174C0:01C8AF05]
+Message-Id: <20080505231206.922A61C780C0@mail19-wa4.bigfish.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Prakash Punnoor wrote:
-> On the day of Sunday 04 May 2008 Jens Axboe hast written:
->> On Sun, May 04 2008, Jacek Luczak wrote:
->>> Hi,
->>>
->>> I've CC:-ed few guys which may help.
->>>
->>> Prakash Punnoor pisze:
->>>> Hi, I got this on boot:
->>>>
->>>> usb 2-1.3: new full speed USB device using ehci_hcd and address 3
->>>> usb 2-1.3: configuration #1 chosen from 1 choice
->>>> Clocksource tsc unstable (delta = -117343945 ns)
->>>> ------------[ cut here ]------------
->>>> WARNING: at include/linux/blkdev.h:443 blk_remove_plug+0x7d/0x90()
->>>> Modules linked in: kvm_amd kvm powernow_k8 ehci_hcd ohci_hcd usbcore
->>>> forcedeth Pid: 1681, comm: fsck.ext3 Not tainted
->>>> 2.6.25-07422-gb66e1f1-dirty #74
->>>>
->>>> Call Trace:
->>>>  [<ffffffff80236354>] warn_on_slowpath+0x64/0xa0
->>>>  [<ffffffff803b6a04>] generic_make_request+0x194/0x250
->>>>  [<ffffffff803b82e7>] submit_bio+0x97/0x140
->>>>  [<ffffffff803b756d>] blk_remove_plug+0x7d/0x90
->>>>  [<ffffffff8049d4d4>] raid5_unplug_device+0x44/0x110
->>>>  [<ffffffff802666ce>] sync_page+0x2e/0x50
->>>>  [<ffffffff805a0985>] __wait_on_bit+0x65/0x90
->>>>  [<ffffffff802669c8>] wait_on_page_bit+0x78/0x80
->>>>  [<ffffffff8024bb70>] wake_bit_function+0x0/0x40
->>>>  [<ffffffff8026f1ba>] pagevec_lookup_tag+0x1a/0x30
->>>>  [<ffffffff80266fbd>] wait_on_page_writeback_range+0xbd/0x130
->>>>  [<ffffffff8026d5e0>] do_writepages+0x20/0x40
->>>>  [<ffffffff802670a2>] __filemap_fdatawrite_range+0x52/0x60
->>>>  [<ffffffff80267334>] filemap_write_and_wait+0x44/0x50
->>>>  [<ffffffff802bd968>] __blkdev_put+0x148/0x1b0
->>>>  [<ffffffff80293441>] __fput+0xb1/0x1c0
->>>>  [<ffffffff80290178>] filp_close+0x48/0x80
->>>>  [<ffffffff80291a1f>] sys_close+0x9f/0x110
->>>>  [<ffffffff8020c42b>] system_call_after_swapgs+0x7b/0x80
->>>>
->>>> ---[ end trace 94c0787a2e4d19eb ]---
+
+
+> -----Original Message-----
+> From: John Williams [mailto:john.williams@petalogix.com]
+> Sent: Monday, May 05, 2008 3:57 PM
+> To: Stephen Neuendorffer
+> Cc: arnd@arndb.de; linux-arch@vger.kernel.org; John Linn;
+matthew@wil.cx; will.newton@gmail.com;
+> drepper@redhat.com; microblaze-uclinux@itee.uq.edu.au;
+grant.likely@secretlab.ca; Michal Simek;
+> linux-kernel@vger.kernel.org
+> Subject: Re: [PATCH] Microblaze: implement dma-coherent API and
+refactorcache flush code.
 > 
-> [...]
->> Looks like it caught a real bug there - unfortunately we have to check
->> for ->queue_lock here as well, if this is another stacked devices and
->> not the bottom device. Does this make the warning go away for you?
+> Hi Steve,
 > 
-> Nope it does not. But I see some other comments have already been posted about 
-> this issue...
+> On Mon, 2008-05-05 at 15:37 -0700, Stephen Neuendorffer wrote:
+> 
+> > In particular, the dcache in the microblaze is write through, so the
+> > existing code is more easily thought of as 'invalidation' than
+> > 'flushing'.  In addition, some of the flush_* methods were old, and
+> > some shouldn't need to be implemented (since currently no mmu is
+> > supported).
+> 
+> I agree - this renaming is a long time coming.
+> 
+> [snip]
+> 
+> Does the DMA API insist upon the dma_cache_sync call to guarantee
+> sensible results?  If so, your implementation looks fine.  If not,
+then
+> the results will clearly be bogus as there's nothing magical about the
+> memory being allocated in dma_alloc.
 
-Hmm I get a similar warning with raid1 also.
+Yes, in fact this is one of the keys to getting the lltemac driver to
+work right.  see Documentation/DMA-API.txt
 
-[  415.851920] kjournald starting.  Commit interval 5 seconds
-[  416.282180] ------------[ cut here ]------------
-[  416.282184] WARNING: at include/linux/blkdev.h:443 blk_remove_plug+0x51/0x84()
-[  416.282186] Modules linked in: i915 drm fuse snd_seq_midi snd_rawmidi snd_seq_midi_event snd_seq snd_seq_device loop usbhid ff_memless firewire_ohci firewire_core thermal shpchp uhci_hcd sr_mod pci_hotplug pata_acpi i2c_i801 ehci_hcd crc_itu_t button serio_raw processor i2c_core evdev
-[  416.282241] Pid: 1118, comm: md0_raid1 Not tainted 2.6.26-rc1-00065-g5717922-dirty #824
-[  416.282243]
-[  416.282244] Call Trace:
-[  416.282250]  [<ffffffff8022f035>] warn_on_slowpath+0x51/0x8c
-[  416.282255]  [<ffffffff802299f5>] __wake_up+0x38/0x4f
-[  416.282260]  [<ffffffff80243237>] enqueue_hrtimer+0xdd/0xea
-[  416.282263]  [<ffffffff802fddc1>] blk_remove_plug+0x51/0x84
-[  416.282267]  [<ffffffff803e8204>] flush_pending_writes+0x3b/0x84
-[  416.282271]  [<ffffffff803e831d>] raid1d+0x4b/0xd97
-[  416.282274]  [<ffffffff802a3e44>] sync_buffer+0x0/0x3f
-[  416.282277]  [<ffffffff8022c01d>] hrtick_set+0x9d/0x106
-[  416.282282]  [<ffffffff804bc8c9>] thread_return+0x68/0xbb
-[  416.282288]  [<ffffffff804bcad6>] schedule_timeout+0x1e/0xc9
-[  416.282292]  [<ffffffff803fb4d1>] md_thread+0xe4/0x102
-[  416.282296]  [<ffffffff80240f6c>] autoremove_wake_function+0x0/0x2e
-[  416.282300]  [<ffffffff803fb3ed>] md_thread+0x0/0x102
-[  416.282303]  [<ffffffff80240c68>] kthread+0x47/0x73
-[  416.282306]  [<ffffffff8022c93d>] schedule_tail+0x27/0x5b
-[  416.282315]  [<ffffffff8020cd58>] child_rip+0xa/0x12
-[  416.282319]  [<ffffffff80240c21>] kthread+0x0/0x73
-[  416.282322]  [<ffffffff8020cd4e>] child_rip+0x0/0x12
-[  416.282325]
-[  416.282328] ---[ end trace 4873a8598d8bf786 ]---
-[  416.282463] EXT3 FS on md0, internal journal
+> To that end, can it just call kmalloc(), and similarly kfree() for
+> dma_free?
+
+My understanding is that on other architectures (x86, for instance)
+'dma' memory ensures other things, like it's accessible in PCI memory
+space.  On microblaze, there's nothing really special about dma memory,
+but you get the API as a chunk.
+ 
+> I'd still like to see the uncached shadow stuff make a return one day,
+> it is an effective way of solving the problem, we'll just need to find
+a
+> cleaner way to implement it.  A linear walk through the cache to
+> invalidate is so slow, it destroys any benefit gained from DMA in the
+> first place.
+
+I think it's definitely a simple way of solving the problem (in fact,
+the version of the code that's currently at git.xilinx.com includes it).
+Would it be better dealt with at the page level, rather than at the
+address level, then one of the architecture-reserved flags could be used
+for it?
+If it really does have value, then I want to make sure it goes in, along
+with bits in EDK that make it straightforward to use.  For me, the
+biggest barrier to using it is understanding exactly what assumptions it
+is making on the hardware, and making those assumptions bulletproof.
+
+Steve
 
 
-Is there any other patch to try out ?
-
-Regards,
-
-Gabriel C
