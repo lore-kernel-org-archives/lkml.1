@@ -1,73 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757922AbYEEMzD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758304AbYEEM6N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757922AbYEEMzD (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 08:55:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752739AbYEEMyw
+	id S1758304AbYEEM6N (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 08:58:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754155AbYEEM56
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 08:54:52 -0400
-Received: from ns1.suse.de ([195.135.220.2]:34448 "EHLO mx1.suse.de"
+	Mon, 5 May 2008 08:57:58 -0400
+Received: from ozlabs.org ([203.10.76.45]:60558 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752142AbYEEMyv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 08:54:51 -0400
-Date: Mon, 5 May 2008 14:54:50 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Michael Kerrisk <mtk.manpages@googlemail.com>
-Cc: lkml <linux-kernel@vger.kernel.org>, mk <michael.kerrisk@gmail.com>
-Subject: Re: MAP_POPULATE behavior change?
-Message-ID: <20080505125450.GB10312@wotan.suse.de>
-References: <4815BDF5.9070506@gmail.com> <20080505122316.GE5018@wotan.suse.de> <cfd18e0f0805050542w20bee7f5v8b6125c8b399e63b@mail.gmail.com>
-Mime-Version: 1.0
+	id S1752739AbYEEM56 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 May 2008 08:57:58 -0400
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <cfd18e0f0805050542w20bee7f5v8b6125c8b399e63b@mail.gmail.com>
-User-Agent: Mutt/1.5.9i
+Content-Transfer-Encoding: 7bit
+Message-ID: <18463.1101.341437.600410@cargo.ozlabs.ibm.com>
+Date: Mon, 5 May 2008 22:57:49 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: [git pull] Please pull powerpc.git powerpc-next branch
+X-Mailer: VM 7.19 under Emacs 22.1.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 05, 2008 at 02:42:44PM +0200, Michael Kerrisk wrote:
-> Hi Nick,
-> 
-> On Mon, May 5, 2008 at 2:23 PM, Nick Piggin <npiggin@suse.de> wrote:
-> > On Mon, Apr 28, 2008 at 02:07:17PM +0200, Michael Kerrisk wrote:
-> 
-> > > In 2.6.23, you had the commit below, which seems to have changed the
-> > > kernel-userland API.
-> > >
-> > > Am I right to understand that with this patch MAP_POPULATE now also works with
-> > > MAP_PRIVATE mappings?  (Formerly it only worked with MAP_SHARED mappings, but
-> > > some very quick testing suggests that MAP_POPULATE now also has an affect for
-> > > MAP_PRIVATE.)
-> >
-> > Yeah it should also set up anonymous mappings. Very observant :)
-> 
-> Umm -- did it not work for anonymous *shared* mappings before?  I
-> understood that it did.
+Linus,
 
-Oh... yeah it would have. anonymous shared mappings aren't really anonymous
-from the POV of most of mm/ :P
+This is a pull request where I think these commits can go in 2.6.26
+quite safely, but I don't mind if you prefer to leave them until
+2.6.27.  There are five commits here that Andrew Morton has sent on to
+me: three semaphore to mutex conversions, one that changes a
+proc_create call to proc_create_data, and one that adds a new
+devm_ioremap_prot function and makes devm_ioremap_release (in
+lib/devres.c) available to outside callers.
 
- 
-> > > Also, can you summarize the status of MAP_NONBLOCK?  Is it now a no-op?
-> >
-> > Yes, it is.
-> 
-> Hmm -- going back and re-reading the code, there is:
-> 
->         if ((flags & MAP_POPULATE) && !(flags & MAP_NONBLOCK))
->                 make_pages_present(addr, addr + len);
-> 
-> That means that MAP_NONBLOCK makes *MAP_POPULATE* a no-op.  Was that intended?
-
-Ah, my logic wasn't up to scratch there. Yes of course MAP_NONBLOCK is not
-a noop, but it makes MAP_POPULATE into a noop. So it still guarantees
-that the call will not block and that the kernel will make some kind of
-best effort to populate the mapping... for some values of "some kind of"
-(ie. "nothing" ;)).
-
-It's done this way of course so it is still safe to call MAP_NONBLOCK if you
-don't want to block, and thus everything stays backwards and forward
-compatible.
+If you think these should wait until 2.6.27, just let me know.
 
 Thanks,
-Nick
+Paul.
+
+ arch/powerpc/lib/Makefile                |    1 +
+ arch/powerpc/lib/devres.c                |   42 ++++++++++++++++++++++++++++++
+ arch/powerpc/platforms/pseries/scanlog.c |   19 +-------------
+ drivers/macintosh/adb.c                  |   30 +++++++++++----------
+ drivers/macintosh/therm_pm72.c           |   31 +++++++++++-----------
+ drivers/macintosh/windfarm_smu_sat.c     |   10 ++++---
+ include/asm-powerpc/io.h                 |    8 +++++-
+ include/linux/io.h                       |    1 +
+ lib/devres.c                             |    2 +
+ 9 files changed, 90 insertions(+), 54 deletions(-)
+ create mode 100644 arch/powerpc/lib/devres.c
+
+Daniel Walker (3):
+      [POWERPC] macintosh: therm_pm72: driver_lock semaphore to mutex
+      [POWERPC] macintosh: windfarm_smu_sat: semaphore to mutex
+      [POWERPC] macintosh: ADB driver: adb_handler_sem semaphore to mutex
+
+Denis V. Lunev (1):
+      [POWERPC] Assign PDE->data before gluing PDE into /proc tree
+
+Emil Medve (1):
+      [POWERPC] devres: Add devm_ioremap_prot()
+
