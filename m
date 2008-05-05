@@ -1,80 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756592AbYEEPLq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759232AbYEEPNS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756592AbYEEPLq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 11:11:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756205AbYEEPLi
+	id S1759232AbYEEPNS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 11:13:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756043AbYEEPNK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 11:11:38 -0400
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:57709 "EHLO e3.ny.us.ibm.com"
+	Mon, 5 May 2008 11:13:10 -0400
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:48510 "EHLO smtp5.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755640AbYEEPLh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 11:11:37 -0400
-From: Stefan Roscher <ossrosch@linux.vnet.ibm.com>
-To: Roland Dreier <rdreier@cisco.com>,
-       "LinuxPPC-Dev" <linuxppc-dev@ozlabs.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "OF-EWG" <ewg@lists.openfabrics.org>
-Subject: [PATCH] IB/ehca: Change function return types to correct type.
-Date: Mon, 5 May 2008 17:11:13 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: raisch@de.ibm.com, fenkes@de.ibm.com, hnguyen@de.ibm.com
+	id S1756032AbYEEPNJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 May 2008 11:13:09 -0400
+Date: Mon, 5 May 2008 18:12:02 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andres Salomon <dilinger@debian.org>
+Subject: Re: [git pull] x86 fixes
+Message-ID: <20080505151202.GA17139@cs181133002.pp.htv.fi>
+References: <20080504193113.GA24358@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Message-Id: <200805051711.15281.ossrosch@linux.vnet.ibm.com>
+In-Reply-To: <20080504193113.GA24358@elte.hu>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Also remove duplicate assignment of local_ca_ack_delay
-and change min_t check for local_ca_ack_delay to u8 instead of int.
+On Sun, May 04, 2008 at 09:35:42PM +0200, Ingo Molnar wrote:
+>...
+> Thomas Gleixner (2):
+>...
+>       x86: olpc build fix
+>...
+> --- a/arch/x86/Kconfig
+> +++ b/arch/x86/Kconfig
+> @@ -1661,6 +1661,7 @@ config GEODE_MFGPT_TIMER
+>  
+>  config OLPC
+>  	bool "One Laptop Per Child support"
+> +	depends on MGEODE_LX
+>  	default n
+>  	help
+>...
 
-Signed-off-by: Stefan Roscher <stefan.roscher at de.ibm.com>
----
- drivers/infiniband/hw/ehca/ehca_hca.c |    7 +++----
- 1 files changed, 3 insertions(+), 4 deletions(-)
+This patch not only excludes OLPC and code depending on it (currently 
+BATTERY_OLPC) from all{mod,yes}config builds (where it built fine) 
+but also makes it very hard for generic distribution kernels to
+support the OLPC.
 
-diff --git a/drivers/infiniband/hw/ehca/ehca_hca.c b/drivers/infiniband/hw/ehca/ehca_hca.c
-index 2515cbd..bc3b37d 100644
---- a/drivers/infiniband/hw/ehca/ehca_hca.c
-+++ b/drivers/infiniband/hw/ehca/ehca_hca.c
-@@ -101,7 +101,6 @@ int ehca_query_device(struct ib_device *ibdev, struct ib_device_attr *props)
- 	props->max_ee          = limit_uint(rblock->max_rd_ee_context);
- 	props->max_rdd         = limit_uint(rblock->max_rd_domain);
- 	props->max_fmr         = limit_uint(rblock->max_mr);
--	props->local_ca_ack_delay  = limit_uint(rblock->local_ca_ack_delay);
- 	props->max_qp_rd_atom  = limit_uint(rblock->max_rr_qp);
- 	props->max_ee_rd_atom  = limit_uint(rblock->max_rr_ee_context);
- 	props->max_res_rd_atom = limit_uint(rblock->max_rr_hca);
-@@ -115,7 +114,7 @@ int ehca_query_device(struct ib_device *ibdev, struct ib_device_attr *props)
- 	}
- 
- 	props->max_pkeys           = 16;
--	props->local_ca_ack_delay  = limit_uint(rblock->local_ca_ack_delay);
-+	props->local_ca_ack_delay  = min_t(u8, rblock->local_ca_ack_delay, 255);
- 	props->max_raw_ipv6_qp     = limit_uint(rblock->max_raw_ipv6_qp);
- 	props->max_raw_ethy_qp     = limit_uint(rblock->max_raw_ethy_qp);
- 	props->max_mcast_grp       = limit_uint(rblock->max_mcast_grp);
-@@ -136,7 +135,7 @@ query_device1:
- 	return ret;
- }
- 
--static int map_mtu(struct ehca_shca *shca, u32 fw_mtu)
-+static enum ib_mtu map_mtu(struct ehca_shca *shca, u32 fw_mtu)
- {
- 	switch (fw_mtu) {
- 	case 0x1:
-@@ -156,7 +155,7 @@ static int map_mtu(struct ehca_shca *shca, u32 fw_mtu)
- 	}
- }
- 
--static int map_number_of_vls(struct ehca_shca *shca, u32 vl_cap)
-+static u8 map_number_of_vls(struct ehca_shca *shca, u32 vl_cap)
- {
- 	switch (vl_cap) {
- 	case 0x1:
+The commit comment does not indicate what the actual problem was, and if 
+this patch was sent to linux-kernel I must have missed it.
+
+What exactly was the build problem?
+Can we fix it in a less invasive way?
+
+Thanks in advance
+Adrian
+
 -- 
-1.5.5
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
