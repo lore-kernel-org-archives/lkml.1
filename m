@@ -1,63 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754956AbYEERth@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750871AbYEERvd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754956AbYEERth (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 13:49:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751662AbYEERta
+	id S1750871AbYEERvd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 13:51:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751057AbYEERv0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 13:49:30 -0400
-Received: from yw-out-2324.google.com ([74.125.46.28]:33366 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751649AbYEERta (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 13:49:30 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=pP0nyjtdDA6Np3LmEpAWKZZG48L066mdN6vwiNsERDuDOy6mcLkuN9Hwo+FpOGhU2ndPTjbaoe+o93xq+49ch/LDP2Cb1lb+ouPni7WVpAQt02b+VbSTFcD85L5CujaPPVzVbX3Z+zYuuwCFc47luaB80pMHMERXOhfFFiIQzyg=
-Message-ID: <86802c440805051042g25e69205tbeb348a63fb1c51e@mail.gmail.com>
-Date: Mon, 5 May 2008 10:42:08 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Subject: Re: [git head] Should X86_PAT really default to yes?
-Cc: "Frans Pop" <elendil@planet.nl>, "Barnes, Jesse" <jesse.barnes@intel.com>,
-       linux-kernel@vger.kernel.org, "Ingo Molnar" <mingo@elte.hu>,
-       "Packard, Keith" <keith.packard@intel.com>
-In-Reply-To: <924EFEDD5F540B4284297C4DC59F3DEEFB9204@orsmsx423.amr.corp.intel.com>
+	Mon, 5 May 2008 13:51:26 -0400
+Received: from xenotime.net ([66.160.160.81]:39655 "HELO xenotime.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751125AbYEERvZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 May 2008 13:51:25 -0400
+Date: Mon, 5 May 2008 10:51:17 -0700 (PDT)
+From: "Randy.Dunlap" <rdunlap@xenotime.net>
+X-X-Sender: rddunlap@shark.he.net
+To: Jesper Krogh <jesper@krogh.cc>
+cc: Ray Lee <ray-lk@madrabbit.org>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Many open/close on same files yeilds "No such file or directory".
+In-Reply-To: <481F4728.9050100@krogh.cc>
+Message-ID: <Pine.LNX.4.64.0805051050350.27703@shark.he.net>
+References: <4819E316.7000607@krogh.cc>  <20080501223938.921f7cd2.akpm@linux-foundation.org>
+  <481ACEC4.2040205@krogh.cc> <481B3115.30705@krogh.cc>
+ <2c0942db0805020847q2fdc0480m3eb892bf2bd0b3a@mail.gmail.com>
+ <481B70F9.6000201@krogh.cc> <481F4728.9050100@krogh.cc>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200805022122.03576.elendil@planet.nl>
-	 <200805040910.57088.elendil@planet.nl>
-	 <86802c440805041323s1484a8ecx5dbe639d658d015b@mail.gmail.com>
-	 <200805051855.05496.elendil@planet.nl>
-	 <924EFEDD5F540B4284297C4DC59F3DEEFB9204@orsmsx423.amr.corp.intel.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 5, 2008 at 10:00 AM, Pallipadi, Venkatesh
-<venkatesh.pallipadi@intel.com> wrote:
->
->
->  >-----Original Message-----
->  >From: Frans Pop [mailto:elendil@planet.nl]
->
-> >Sent: Monday, May 05, 2008 9:55 AM
->  >To: Yinghai Lu
->  >Cc: Barnes, Jesse; Pallipadi, Venkatesh;
->  >linux-kernel@vger.kernel.org; Ingo Molnar; Packard, Keith
->  >Subject: Re: [git head] Should X86_PAT really default to yes?
->  >
->
-> >On Sunday 04 May 2008, Yinghai Lu wrote:
->  >> can you boot with pat=off and send out /proc/mtrr?
->  >
->  >Hmmm. Is 'pat=off' supposed to do anything?
->  >
->
->  The option for this is actually "nopat".
->
-or the PAT has something wrong with WB in MTRR?
+On Mon, 5 May 2008, Jesper Krogh wrote:
 
-YH
+> Jesper Krogh wrote:
+> > Ray Lee wrote:
+> > > BTW, I may have missed this earlier, but does it happen *anywhere* on
+> > > the troublesome filesystem (ie, in a newly created subdirectory)?
+> > 
+> > Yes. It is reproducible on a newly created subdirectory on the
+> > filesystem.
+> 
+> Now I've created a new filesystem. (resized the original LVM-volume to half
+> and created a new ext3 one next to it). The problem persists on this new
+> filesystem.
+> 
+> Just guessing, can there be something timing related in clearing the FS-cache
+> for the filesystem?
+> 
+> Any other suggestions/pointers.
+
+Hi,
+
+Has anyone else been able to reproduce this problem?
+
+I ran the test program overnight with no problem.
+
+-- 
+~Randy
