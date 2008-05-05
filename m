@@ -1,138 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932397AbYEESvs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758067AbYEESwU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932397AbYEESvs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 14:51:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761840AbYEESs3
+	id S1758067AbYEESwU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 14:52:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765984AbYEESvR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 14:48:29 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:41916 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1765389AbYEESsZ (ORCPT
+	Mon, 5 May 2008 14:51:17 -0400
+Received: from s15216962.onlinehome-server.info ([217.160.22.205]:39912 "EHLO
+	s15216962.onlinehome-server.info" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1765977AbYEESvQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 14:48:25 -0400
-Date: Mon, 5 May 2008 11:48:23 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Ingo Molnar <mingo@elte.hu>
-cc: travis@sgi.com, linux-kernel@vger.kernel.org
-Subject: x86: Unify current.h
-Message-ID: <Pine.LNX.4.64.0805051146210.11469@schroedinger.engr.sgi.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 5 May 2008 14:51:16 -0400
+Date: Mon, 5 May 2008 20:50:13 +0200
+From: Enrico Weigelt <weigelt@metux.de>
+To: linux kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: VFS + path walktrough
+Message-ID: <20080505185013.GH32019@nibiru.local>
+Reply-To: weigelt@metux.de
+References: <20080505124041.GB32019@nibiru.local> <20080505130623.GC32019@nibiru.local> <20080505131307.GM5882@ZenIV.linux.org.uk> <20080505134315.GF32019@nibiru.local> <20080505153501.GN5882@ZenIV.linux.org.uk> <E1Jt3nB-0006ZP-6S@pomaz-ex.szeredi.hu> <20080505171425.GO5882@ZenIV.linux.org.uk> <E1Jt4Ye-0006hz-9i@pomaz-ex.szeredi.hu> <20080505174048.GP5882@ZenIV.linux.org.uk> <E1Jt526-0006le-04@pomaz-ex.szeredi.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <E1Jt526-0006le-04@pomaz-ex.szeredi.hu>
+User-Agent: Mutt/1.4.1i
+X-Terror: bin laden, kill bush, Briefbombe, Massenvernichtung, KZ, 
+X-Nazi: Weisse Rasse, Hitlers Wiederauferstehung, 42, 
+X-Antichrist: weg mit schaeuble, ausrotten, heiliger krieg, al quaida, 
+X-Killer: 23, endloesung, Weltuntergang, 
+X-Doof: wer das liest ist doof
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There are just two definitions that are shared but the resulting combined 
-file is resonably small. Putting these two arch headers together shows 
-that further unifications requires a unification of the per cpu / pda 
-handling between both arches (zero based or some variation thereof).
+* Miklos Szeredi <miklos@szeredi.hu> wrote:
 
-Signed-off-by: Christoph Lameter <clameter@sgi.com>
+> You're right. It doesn't sound too good, although it all depends 
+> on the how permission checking is done.  If it's done in the server, 
+> then neither the mode nor the ownership is needed for lookup. 
 
----
- include/asm-x86/current.h    |   40 ++++++++++++++++++++++++++++++++++++----
- include/asm-x86/current_32.h |   17 -----------------
- include/asm-x86/current_64.h |   27 ---------------------------
- 3 files changed, 36 insertions(+), 48 deletions(-)
+It really should be done in the server. But this adds another
+issue (no idea if the current 9p driver already handles this):
+We need one link for each user accessing the filesystem.
 
-Index: linux-next/include/asm-x86/current.h
-===================================================================
---- linux-next.orig/include/asm-x86/current.h	2008-05-04 22:33:42.299851061 -0700
-+++ linux-next/include/asm-x86/current.h	2008-05-05 11:22:16.531407871 -0700
-@@ -1,5 +1,37 @@
-+#ifndef _X86_CURRENT_H
-+#define _X86_CURRENT_H
-+
-+struct task_struct;
-+
- #ifdef CONFIG_X86_32
--# include "current_32.h"
--#else
--# include "current_64.h"
--#endif
-+#include <linux/compiler.h>
-+#include <asm/percpu.h>
-+
-+DECLARE_PER_CPU(struct task_struct *, current_task);
-+static __always_inline struct task_struct *get_current(void)
-+{
-+	return x86_read_percpu(current_task);
-+}
-+
-+#else /* X86_32 */
-+
-+#ifndef __ASSEMBLY__
-+#include <asm/pda.h>
-+
-+static __always_inline struct task_struct *get_current(void)
-+{
-+	return read_pda(pcurrent);
-+}
-+
-+#else /* __ASSEMBLY__ */
-+
-+#include <asm/asm-offsets.h>
-+#define GET_CURRENT(reg) movq %gs:(pda_pcurrent),reg
-+
-+#endif /* __ASSEMBLY__ */
-+
-+#endif /* X86_32 */
-+
-+#define current get_current()
-+
-+#endif /* X86_CURRENT_H */
-Index: linux-next/include/asm-x86/current_32.h
-===================================================================
---- linux-next.orig/include/asm-x86/current_32.h	2008-05-04 22:48:44.689850207 -0700
-+++ /dev/null	1970-01-01 00:00:00.000000000 +0000
-@@ -1,17 +0,0 @@
--#ifndef _I386_CURRENT_H
--#define _I386_CURRENT_H
--
--#include <linux/compiler.h>
--#include <asm/percpu.h>
--
--struct task_struct;
--
--DECLARE_PER_CPU(struct task_struct *, current_task);
--static __always_inline struct task_struct *get_current(void)
--{
--	return x86_read_percpu(current_task);
--}
--
--#define current get_current()
--
--#endif /* !(_I386_CURRENT_H) */
-Index: linux-next/include/asm-x86/current_64.h
-===================================================================
---- linux-next.orig/include/asm-x86/current_64.h	2008-05-04 22:48:44.709851154 -0700
-+++ /dev/null	1970-01-01 00:00:00.000000000 +0000
-@@ -1,27 +0,0 @@
--#ifndef _X86_64_CURRENT_H
--#define _X86_64_CURRENT_H
--
--#if !defined(__ASSEMBLY__)
--struct task_struct;
--
--#include <asm/pda.h>
--
--static inline struct task_struct *get_current(void)
--{
--	struct task_struct *t = read_pda(pcurrent);
--	return t;
--}
--
--#define current get_current()
--
--#else
--
--#ifndef ASM_OFFSET_H
--#include <asm/asm-offsets.h>
--#endif
--
--#define GET_CURRENT(reg) movq %gs:(pda_pcurrent),reg
--
--#endif
--
--#endif /* !(_X86_64_CURRENT_H) */
+
+cu
+-- 
+---------------------------------------------------------------------
+ Enrico Weigelt    ==   metux IT service - http://www.metux.de/
+---------------------------------------------------------------------
+ Please visit the OpenSource QM Taskforce:
+ 	http://wiki.metux.de/public/OpenSource_QM_Taskforce
+ Patches / Fixes for a lot dozens of packages in dozens of versions:
+	http://patches.metux.de/
+---------------------------------------------------------------------
