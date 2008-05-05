@@ -1,68 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754290AbYEERZu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754666AbYEER03@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754290AbYEERZu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 13:25:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751056AbYEERZi
+	id S1754666AbYEER03 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 13:26:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751412AbYEER0V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 13:25:38 -0400
-Received: from outbound-wa4.frontbridge.com ([216.32.181.16]:32067 "EHLO
-	outbound6-wa4-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753495AbYEERZg convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 13:25:36 -0400
-X-BigFish: VP
-X-MS-Exchange-Organization-Antispam-Report: OrigIP: 149.199.60.83;Service: EHS
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH 10/56] microblaze_v2: Generic dts file for platforms
-Date: Mon, 5 May 2008 10:25:33 -0700
-In-reply-to: <2391e49379fb6639f57d9d6e5811f3d49a4c6fda.1209897266.git.monstr@monstr.eu>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH 10/56] microblaze_v2: Generic dts file for platforms
-Thread-Index: Acit8rAi6R8bI3OlTTCCa51JHFPCNQA4jVEw
-References: <a4a778e34c66d126f5c4bf1ca423cf32950ea5ab.1209897266.git.monstr@monstr.eu> <2391e49379fb6639f57d9d6e5811f3d49a4c6fda.1209897266.git.monstr@monstr.eu>
-From: "Stephen Neuendorffer" <stephen.neuendorffer@xilinx.com>
-To: <monstr@seznam.cz>, <linux-kernel@vger.kernel.org>
-Cc: <arnd@arndb.de>, <linux-arch@vger.kernel.org>,
-       "John Linn" <linnj@xilinx.com>, <john.williams@petalogix.com>,
-       <matthew@wil.cx>, <will.newton@gmail.com>, <drepper@redhat.com>,
-       <microblaze-uclinux@itee.uq.edu.au>, <grant.likely@secretlab.ca>,
-       "Michal Simek" <monstr@monstr.eu>
-X-OriginalArrivalTime: 05 May 2008 17:25:35.0208 (UTC) FILETIME=[07328E80:01C8AED5]
-Message-Id: <20080505172535.9710319B8086@mail101-wa4.bigfish.com>
+	Mon, 5 May 2008 13:26:21 -0400
+Received: from mga02.intel.com ([134.134.136.20]:32678 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751056AbYEER0U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 May 2008 13:26:20 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.27,438,1204531200"; 
+   d="scan'208";a="380190221"
+Date: Mon, 5 May 2008 10:26:19 -0700
+From: Suresh Siddha <suresh.b.siddha@intel.com>
+To: Rufus & Azrael <rufus-azrael@numericable.fr>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linux-kernel Mailing List <linux-kernel@vger.kernel.org>,
+       venkatesh.pallipadi@intel.com
+Subject: Re: [2.6.25-git18 => 2.6.26-rc1-git1] Xorg crash with	xf86MapVidMem error
+Message-ID: <20080505172619.GD28173@linux-os.sc.intel.com>
+References: <481D72A7.10901@numericable.fr> <20080504085204.GE21859@elte.hu> <481D7BF8.4080405@numericable.fr>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <481D7BF8.4080405@numericable.fr>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, May 04, 2008 at 11:03:52AM +0200, Rufus & Azrael wrote:
+> Ingo Molnar a écrit :
+> >* Rufus & Azrael <rufus-azrael@numericable.fr> wrote:
+> >>When upgrading to 2.6.25-git18 and above kernel this Xorg error occurs :
+> >>
+> >>xf86MapVidMem: Could not mmap framebuffer (0xf0000000,0x8000000) (Invalid 
+> >>argument)
+> >>
+> >>The latest working kernel was 25-git17 and perhaps is it related to 
+> >>http://lkml.org/lkml/2008/4/28/52
+> >>    
+> >
+> >does this X-does-not-start-up problem go away if you disable this 
+> >option:
+> >  
+> >>CONFIG_X86_PAT=y
+> >>    
+> >
+> >?
+> >  
+> Thanks for your help Ingo, all work fine when CONFIG_PAT=n :-)
 
-I think it would be nice if dts files were stored in boot/dts, as on
-powerpc, which would reduce confusion.
+hi, Can you please send us the "dmesg" output in the failing scenario
+with PAT enabled, after the X crash?
 
-Steve
-
-> -----Original Message-----
-> From: monstr@seznam.cz [mailto:monstr@seznam.cz]
-> Sent: Sunday, May 04, 2008 4:41 AM
-> To: linux-kernel@vger.kernel.org
-> Cc: arnd@arndb.de; linux-arch@vger.kernel.org; Stephen Neuendorffer;
-John Linn;
-> john.williams@petalogix.com; matthew@wil.cx; will.newton@gmail.com;
-drepper@redhat.com; microblaze-
-> uclinux@itee.uq.edu.au; grant.likely@secretlab.ca; Michal Simek
-> Subject: [PATCH 10/56] microblaze_v2: Generic dts file for platforms
-> 
-> From: Michal Simek <monstr@monstr.eu>
-> 
-> 
-> Signed-off-by: Michal Simek <monstr@monstr.eu>
-> ---
->  arch/microblaze/platform/generic/system.dts |  137
-+++++++++++++++++++++++++++
->  1 files changed, 137 insertions(+), 0 deletions(-)
->  create mode 100644 arch/microblaze/platform/generic/system.dts
-
+thanks,
+suresh
