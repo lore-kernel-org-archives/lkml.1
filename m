@@ -1,98 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758441AbYEEKAd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759048AbYEEKAt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758441AbYEEKAd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 06:00:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758686AbYEEJz6
+	id S1759048AbYEEKAt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 06:00:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758688AbYEEJz7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 05:55:58 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:38356 "EHLO
+	Mon, 5 May 2008 05:55:59 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:38325 "EHLO
 	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755570AbYEEJzf (ORCPT
+	with ESMTP id S1755087AbYEEJz0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 05:55:35 -0400
-Message-Id: <20080505095524.893316989@szeredi.hu>
+	Mon, 5 May 2008 05:55:26 -0400
+Message-Id: <20080505095508.218321526@szeredi.hu>
 References: <20080505095440.820370974@szeredi.hu>
 User-Agent: quilt/0.45-1
-Date: Mon, 05 May 2008 11:54:52 +0200
+Date: Mon, 05 May 2008 11:54:42 +0200
 From: Miklos Szeredi <miklos@szeredi.hu>
 To: akpm@linux-foundation.org
 Cc: hch@infradead.org, viro@ZenIV.linux.org.uk, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: [patch 11/15] vfs: truncate: append-only checking cleanup
-Content-Disposition: inline; filename=truncate_append_cleanup.patch
+       linux-fsdevel@vger.kernel.org, Michael Halcrow <mhalcrow@us.ibm.com>
+Subject: [patch 01/15] ecryptfs: clean up (un)lock_parent
+Content-Disposition: inline; filename=ecryptfs_cleanup.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Miklos Szeredi <mszeredi@suse.cz>
 
-Move the append-only checks from truncate to notify_change().  Checks
-for append-only files are always performed by the VFS and not by the
-filesystem so this belongs in notify_change(), and not in
-inode_change_ok().
+dget(dentry->d_parent) --> dget_parent(dentry)
+
+unlock_parent() is racy and unnecessary.  Replace single caller with
+unlock_dir().
+
+There are several other suspect uses of ->d_parent in ecryptfs...
 
 Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
+CC: Michael Halcrow <mhalcrow@us.ibm.com>
 ---
- fs/attr.c  |    6 ++++++
- fs/namei.c |    2 --
- fs/open.c  |    8 --------
- 3 files changed, 6 insertions(+), 10 deletions(-)
+ fs/ecryptfs/inode.c |   13 ++++---------
+ 1 file changed, 4 insertions(+), 9 deletions(-)
 
-Index: linux-2.6/fs/open.c
+Index: linux-2.6/fs/ecryptfs/inode.c
 ===================================================================
---- linux-2.6.orig/fs/open.c	2008-05-05 11:29:27.000000000 +0200
-+++ linux-2.6/fs/open.c	2008-05-05 11:29:27.000000000 +0200
-@@ -253,10 +253,6 @@ static long do_sys_truncate(const char _
- 	if (error)
- 		goto mnt_drop_write_and_out;
+--- linux-2.6.orig/fs/ecryptfs/inode.c	2008-05-05 11:29:21.000000000 +0200
++++ linux-2.6/fs/ecryptfs/inode.c	2008-05-05 11:29:24.000000000 +0200
+@@ -37,17 +37,11 @@ static struct dentry *lock_parent(struct
+ {
+ 	struct dentry *dir;
  
--	error = -EPERM;
--	if (IS_APPEND(inode))
--		goto mnt_drop_write_and_out;
+-	dir = dget(dentry->d_parent);
++	dir = dget_parent(dentry);
+ 	mutex_lock_nested(&(dir->d_inode->i_mutex), I_MUTEX_PARENT);
+ 	return dir;
+ }
+ 
+-static void unlock_parent(struct dentry *dentry)
+-{
+-	mutex_unlock(&(dentry->d_parent->d_inode->i_mutex));
+-	dput(dentry->d_parent);
+-}
 -
- 	error = get_write_access(inode);
- 	if (error)
- 		goto mnt_drop_write_and_out;
-@@ -321,10 +317,6 @@ static long do_sys_ftruncate(unsigned in
- 	if (small && length > MAX_NON_LFS)
- 		goto out_putf;
+ static void unlock_dir(struct dentry *dir)
+ {
+ 	mutex_unlock(&dir->d_inode->i_mutex);
+@@ -426,8 +420,9 @@ static int ecryptfs_unlink(struct inode 
+ 	int rc = 0;
+ 	struct dentry *lower_dentry = ecryptfs_dentry_to_lower(dentry);
+ 	struct inode *lower_dir_inode = ecryptfs_inode_to_lower(dir);
++	struct dentry *lower_dir_dentry;
  
--	error = -EPERM;
--	if (IS_APPEND(inode))
--		goto out_putf;
--
- 	error = locks_verify_truncate(inode, file, length);
- 	if (!error)
- 		error = do_truncate(dentry, length, ATTR_MTIME|ATTR_CTIME, file);
-Index: linux-2.6/fs/attr.c
-===================================================================
---- linux-2.6.orig/fs/attr.c	2008-05-05 11:29:26.000000000 +0200
-+++ linux-2.6/fs/attr.c	2008-05-05 11:29:27.000000000 +0200
-@@ -114,6 +114,12 @@ int notify_change(struct dentry * dentry
- 			return -EPERM;
- 	}
+-	lock_parent(lower_dentry);
++	lower_dir_dentry = lock_parent(lower_dentry);
+ 	rc = vfs_unlink(lower_dir_inode, lower_dentry);
+ 	if (rc) {
+ 		printk(KERN_ERR "Error in vfs_unlink; rc = [%d]\n", rc);
+@@ -439,7 +434,7 @@ static int ecryptfs_unlink(struct inode 
+ 	dentry->d_inode->i_ctime = dir->i_ctime;
+ 	d_drop(dentry);
+ out_unlock:
+-	unlock_parent(lower_dentry);
++	unlock_dir(lower_dir_dentry);
+ 	return rc;
+ }
  
-+	/*
-+	 * IS_IMMUTABLE() is checked by caller for truncation
-+	 */
-+	if ((ia_valid & ATTR_SIZE) && IS_APPEND(inode))
-+		return -EPERM;
-+
- 	now = current_fs_time(inode->i_sb);
- 
- 	attr->ia_ctime = now;
-Index: linux-2.6/fs/namei.c
-===================================================================
---- linux-2.6.orig/fs/namei.c	2008-05-05 11:29:20.000000000 +0200
-+++ linux-2.6/fs/namei.c	2008-05-05 11:29:27.000000000 +0200
-@@ -1639,8 +1639,6 @@ int may_open(struct nameidata *nd, int a
- 	if (IS_APPEND(inode)) {
- 		if  ((flag & FMODE_WRITE) && !(flag & O_APPEND))
- 			return -EPERM;
--		if (flag & O_TRUNC)
--			return -EPERM;
- 	}
- 
- 	/* O_NOATIME can only be set by the owner or superuser */
 
 --
