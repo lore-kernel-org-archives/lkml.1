@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755285AbYEEEoT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755292AbYEEEqH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755285AbYEEEoT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 00:44:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752029AbYEEEoA
+	id S1755292AbYEEEqH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 00:46:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752029AbYEEEpx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 00:44:00 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:46957 "EHLO
+	Mon, 5 May 2008 00:45:53 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:46964 "EHLO
 	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751759AbYEEEn7 (ORCPT
+	with ESMTP id S1752109AbYEEEpw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 00:43:59 -0400
+	Mon, 5 May 2008 00:45:52 -0400
 X-AuthUser: davidel@xmailserver.org
-Date: Sun, 4 May 2008 21:43:57 -0700 (PDT)
+Date: Sun, 4 May 2008 21:45:51 -0700 (PDT)
 From: Davide Libenzi <davidel@xmailserver.org>
 X-X-Sender: davide@alien.or.mcafeemobile.com
 To: Ulrich Drepper <drepper@redhat.com>
 cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        netdev@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
        mtk.manpages@gmail.com, Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH 05/18] flag parameters: signalfd
-In-Reply-To: <200805050342.m453gkRB029826@devserv.devel.redhat.com>
-Message-ID: <Pine.LNX.4.64.0805042143080.8307@alien.or.mcafeemobile.com>
-References: <200805050342.m453gkRB029826@devserv.devel.redhat.com>
+Subject: Re: [PATCH 01/18] flag parameters: helper function
+In-Reply-To: <200805050342.m453gkY4029814@devserv.devel.redhat.com>
+Message-ID: <Pine.LNX.4.64.0805042144320.8307@alien.or.mcafeemobile.com>
+References: <200805050342.m453gkY4029814@devserv.devel.redhat.com>
 X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
 X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
@@ -32,18 +32,23 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 On Sun, 4 May 2008, Ulrich Drepper wrote:
 
-> This patch adds the new signalfd4 syscall.  It extends the old signalfd
-> syscall by one parameter which is meant to hold a flag value.  In this
-> patch the only flag support is SFD_CLOEXEC which causes the close-on-exec
-> flag for the returned file descriptor to be set.
+> In the following patches we have to map one set of flags to another one
+> in numerous locations.  This patch provides a generic implementation for
+> this.  It is basically the code Davide Libenzi suggested on 4/27/08.
 > 
-> A new flag SFD_CLOEXEC is used instead of reusing O_CLOEXEC to prevent
-> exhaustion of the int bit field in case we need more flags.
+> I haven't checked whether this functionality can be applied to any existing
+> code.
 > 
-> The following test must be adjusted for architectures other than x86 and
-> x86-64 and in case the syscall numbers changed.
-
+> 
+>  include/linux/flagsremap.h |   15 +++++++++++++++
+>  lib/Makefile               |    2 +-
+>  lib/flagsremap.c           |   17 +++++++++++++++++
+>  3 files changed, 33 insertions(+), 1 deletion(-)
+> 
+> 
 > Signed-off-by: Ulrich Drepper <drepper@redhat.com>
+
+I dunno if this deserves separate c/h files. Otherwise ...
 
 Acked-by: Davide Libenzi <davidel@xmailserver.org>
 
