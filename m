@@ -1,121 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753265AbYEERZY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754290AbYEERZu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753265AbYEERZY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 13:25:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751056AbYEERZL
+	id S1754290AbYEERZu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 13:25:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751056AbYEERZi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 13:25:11 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:38550 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750871AbYEERZK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 13:25:10 -0400
-Date: Mon, 5 May 2008 12:25:06 -0500
-From: Jack Steiner <steiner@sgi.com>
-To: Andrea Arcangeli <andrea@qumranet.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Lameter <clameter@sgi.com>, Robin Holt <holt@sgi.com>,
-       Nick Piggin <npiggin@suse.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       kvm-devel@lists.sourceforge.net, Kanoj Sarcar <kanojsarcar@yahoo.com>,
-       Roland Dreier <rdreier@cisco.com>,
-       Steve Wise <swise@opengridcomputing.com>, linux-kernel@vger.kernel.org,
-       Avi Kivity <avi@qumranet.com>, linux-mm@kvack.org,
-       general@lists.openfabrics.org, Hugh Dickins <hugh@veritas.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Anthony Liguori <aliguori@us.ibm.com>, Chris Wright <chrisw@redhat.com>,
-       Marcelo Tosatti <marcelo@kvack.org>, Eric Dumazet <dada1@cosmosbay.com>,
-       "Paul E. McKenney" <paulmck@us.ibm.com>
-Subject: Re: [PATCH 01 of 11] mmu-notifier-core
-Message-ID: <20080505172506.GA9247@sgi.com>
-References: <patchbomb.1209740703@duo.random> <1489529e7b53d3f2dab8.1209740704@duo.random> <20080505162113.GA18761@sgi.com> <20080505171434.GF8470@duo.random>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080505171434.GF8470@duo.random>
-User-Agent: Mutt/1.5.9i
+	Mon, 5 May 2008 13:25:38 -0400
+Received: from outbound-wa4.frontbridge.com ([216.32.181.16]:32067 "EHLO
+	outbound6-wa4-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753495AbYEERZg convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 May 2008 13:25:36 -0400
+X-BigFish: VP
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 149.199.60.83;Service: EHS
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="US-ASCII"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH 10/56] microblaze_v2: Generic dts file for platforms
+Date: Mon, 5 May 2008 10:25:33 -0700
+In-reply-to: <2391e49379fb6639f57d9d6e5811f3d49a4c6fda.1209897266.git.monstr@monstr.eu>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH 10/56] microblaze_v2: Generic dts file for platforms
+Thread-Index: Acit8rAi6R8bI3OlTTCCa51JHFPCNQA4jVEw
+References: <a4a778e34c66d126f5c4bf1ca423cf32950ea5ab.1209897266.git.monstr@monstr.eu> <2391e49379fb6639f57d9d6e5811f3d49a4c6fda.1209897266.git.monstr@monstr.eu>
+From: "Stephen Neuendorffer" <stephen.neuendorffer@xilinx.com>
+To: <monstr@seznam.cz>, <linux-kernel@vger.kernel.org>
+Cc: <arnd@arndb.de>, <linux-arch@vger.kernel.org>,
+       "John Linn" <linnj@xilinx.com>, <john.williams@petalogix.com>,
+       <matthew@wil.cx>, <will.newton@gmail.com>, <drepper@redhat.com>,
+       <microblaze-uclinux@itee.uq.edu.au>, <grant.likely@secretlab.ca>,
+       "Michal Simek" <monstr@monstr.eu>
+X-OriginalArrivalTime: 05 May 2008 17:25:35.0208 (UTC) FILETIME=[07328E80:01C8AED5]
+Message-Id: <20080505172535.9710319B8086@mail101-wa4.bigfish.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 05, 2008 at 07:14:34PM +0200, Andrea Arcangeli wrote:
-> On Mon, May 05, 2008 at 11:21:13AM -0500, Jack Steiner wrote:
-> > The GRU does the registration/deregistration of mmu notifiers from mmap/munmap.
-> > At this point, the mmap_sem is already held writeable. I hit a deadlock
-> > in mm_lock.
-> 
-> It'd been better to know about this detail earlier,
 
-Agree. My apologies... I should have caught it.
+I think it would be nice if dts files were stored in boot/dts, as on
+powerpc, which would reduce confusion.
 
+Steve
 
-> but frankly this
-> is a minor problem, the important thing is we all agree together on
-> the more difficult parts ;).
+> -----Original Message-----
+> From: monstr@seznam.cz [mailto:monstr@seznam.cz]
+> Sent: Sunday, May 04, 2008 4:41 AM
+> To: linux-kernel@vger.kernel.org
+> Cc: arnd@arndb.de; linux-arch@vger.kernel.org; Stephen Neuendorffer;
+John Linn;
+> john.williams@petalogix.com; matthew@wil.cx; will.newton@gmail.com;
+drepper@redhat.com; microblaze-
+> uclinux@itee.uq.edu.au; grant.likely@secretlab.ca; Michal Simek
+> Subject: [PATCH 10/56] microblaze_v2: Generic dts file for platforms
 > 
-> > A quick fix would be to do one of the following:
-> > 
-> > 	- move the mmap_sem locking to the caller of the [de]registration routines.
-> > 	  Since the first/last thing done in mm_lock/mm_unlock is to
-> > 	  acquire/release mmap_sem, this change does not cause major changes.
+> From: Michal Simek <monstr@monstr.eu>
 > 
-> I don't like this solution very much. Nor GRU nor KVM will call
-> mmu_notifier_register inside the mmap_sem protected sections, so I
-> think the default mmu_notifier_register should be smp safe by itself
-> without requiring additional locks to be artificially taken externally
-> (especially because the need for mmap_sem in write mode is a very
-> mmu_notifier internal detail).
 > 
-> > 	- add a flag to mmu_notifier_[un]register routines to indicate
-> > 	  if mmap_sem is already locked.
-> 
-> The interface would change like this:
-> 
-> #define MMU_NOTIFIER_REGISTER_MMAP_SEM (1<<0)
-> void mmu_notifier_register(struct mmu_notifier *mn, struct mm_struct *mm,
-> 			   unsigned long mmu_notifier_flags);
+> Signed-off-by: Michal Simek <monstr@monstr.eu>
+> ---
+>  arch/microblaze/platform/generic/system.dts |  137
++++++++++++++++++++++++++++
+>  1 files changed, 137 insertions(+), 0 deletions(-)
+>  create mode 100644 arch/microblaze/platform/generic/system.dts
 
-That works...
-
-
-> 
-> A third solution is to add:
-> 
-> /*
->  * This must can be called instead of mmu_notifier_register after
->  * taking the mmap_sem in write mode (read mode isn't enough).
->  */
-> void __mmu_notifier_register(struct mmu_notifier *mn, struct mm_struct *mm);
-> 
-> Do you still prefer the bitflag or you prefer
-> __mmu_notifier_register. It's ok either ways, except
-> __mmu_notifier_reigster could be removed in a backwards compatible
-> way, the bitflag can't.
-> 
-> > I've temporarily deleted the mm_lock locking of mmap_sem and am continuing to
-> > test. More later....
-
-__mmu_notifier_register/__mmu_notifier_unregister seems like a better way to
-go, although either is ok.
-
-
-> 
-> Sure! In the meantime go ahead this way.
-> 
-> Another very minor change I've been thinking about is to make
-> ->release not mandatory. It happens that with KVM ->release isn't
-> strictly required because after mm_users reaches 0, no guest could
-> possibly run anymore. So I'm using ->release only for debugging by
-> placing -1UL in the root shadow pagetable, to be sure ;). So because
-> at least one user won't strictly require ->release being consistent in
-> having all method optional may be nicer. Alternatively we could make
-> them all mandatory and if somebody doesn't need one of the methods it
-> should implement it as a dummy function. Both ways have pros and cons,
-> but they don't make any difference to us in practice. If I've to
-> change the patch for the mmap_sem taken during registration I may as
-> well cleanup this minor bit.
- 
-Let me finish my testing. At one time, I did not use ->release but
-with all the locking & teardown changes, I need to do some reverification.
-
-
---- jack
