@@ -1,147 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758197AbYEENnR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758870AbYEENnn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758197AbYEENnR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 09:43:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756863AbYEENm7
+	id S1758870AbYEENnn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 09:43:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755286AbYEENnd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 09:42:59 -0400
-Received: from sandeen.net ([209.173.210.139]:25226 "EHLO sandeen.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754107AbYEENm6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 09:42:58 -0400
-Message-ID: <481F0EE1.1000506@sandeen.net>
-Date: Mon, 05 May 2008 08:42:57 -0500
-From: Eric Sandeen <sandeen@sandeen.net>
-User-Agent: Thunderbird 2.0.0.14 (Macintosh/20080421)
-MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@linutronix.de
-Subject: Re: [PATCH] i386: Execute stack overflow warning on interrupt stack
-References: <20080502091806.GA26062@basil.nowhere.org>
-In-Reply-To: <20080502091806.GA26062@basil.nowhere.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Mon, 5 May 2008 09:43:33 -0400
+Received: from s15216962.onlinehome-server.info ([217.160.22.205]:45632 "EHLO
+	s15216962.onlinehome-server.info" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754601AbYEENnc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 May 2008 09:43:32 -0400
+Date: Mon, 5 May 2008 15:43:15 +0200
+From: Enrico Weigelt <weigelt@metux.de>
+To: linux kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: VFS + path walktrough
+Message-ID: <20080505134315.GF32019@nibiru.local>
+Reply-To: weigelt@metux.de
+References: <20080505124041.GB32019@nibiru.local> <20080505130623.GC32019@nibiru.local> <20080505131307.GM5882@ZenIV.linux.org.uk>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080505131307.GM5882@ZenIV.linux.org.uk>
+User-Agent: Mutt/1.4.1i
+X-Terror: bin laden, kill bush, Briefbombe, Massenvernichtung, KZ, 
+X-Nazi: Weisse Rasse, Hitlers Wiederauferstehung, 42, 
+X-Antichrist: weg mit schaeuble, ausrotten, heiliger krieg, al quaida, 
+X-Killer: 23, endloesung, Weltuntergang, 
+X-Doof: wer das liest ist doof
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
-> i386: Execute stack overflow warning on interrupt stack
+* Al Viro <viro@ZenIV.linux.org.uk> wrote:
+> On Mon, May 05, 2008 at 03:06:23PM +0200, Enrico Weigelt wrote:
 > 
-> [Repost. This was posted deep in the 4K flame war some time ago. Probably
-> very few people read it completely, so the patch was missed.]
+> > We could just add another call vector to struct file_operations,
+> > as replacement for link_path_walk() - if it's zero, the original
+> > function is used. This way an filesystem can do the walktrough
+> > by it's own, but doesn't need to.
+> > 
+> > 
+> > What do you think about this ?
 > 
-> Previously the reporting printk would run on the process stack, which risks 
-> overflow an already low stack. Instead execute it on the interrupt stack.
-> This makes it more likely for the printk to make it actually out.
-> 
-> It adds one not taken test/branch more to the interrupt path when
-> stack overflow checking is enabled. We could avoid that by duplicating
-> more code, but that seemed not worth it.
-> 
-> Based on an observation by Eric Sandeen.
-> 
-> Signed-off-by: Andi Kleen <andi@firstfloor.org>
-> 
-> Index: linux/arch/x86/kernel/irq_32.c
-> ===================================================================
-> --- linux.orig/arch/x86/kernel/irq_32.c
-> +++ linux/arch/x86/kernel/irq_32.c
-> @@ -61,6 +61,26 @@ static union irq_ctx *hardirq_ctx[NR_CPU
->  static union irq_ctx *softirq_ctx[NR_CPUS] __read_mostly;
->  #endif
->  
-> +static void stack_overflow(void)
-> +{
-> +	printk("low stack detected by irq handler\n");
+> That you have quite forgotten about mounts.  
 
-We've lost the information about how close we are... that'd be nice to
-keep if possible....
+hmm, I though this would be done before the link_path_walk() 
+call happens ;-o
 
-Can we keep the old printk string and pass the remaining stack in as an arg?
+> And we *REALLY* don't want to shift the entire logics of 
+> link_path_walk() into filesystems - this is insane. 
 
--Eric
+Only for those filesystems who *really* want to do it by 
+themselves and set the appropriate call vector. All other 
+fs'es will just leave it blank (even don't have to be touched)
+and so the old way remains for them.
 
-> +	dump_stack();
-> +}
-> +
-> +static inline void call_on_stack2(void *func, unsigned long stack,
-> +			   unsigned long arg1, unsigned long arg2)
-> +{
-> +	unsigned long bx;
-> +	asm volatile(
-> +			"       xchgl  %%ebx,%%esp    \n"
-> +			"       call   *%%edi         \n"
-> +			"       movl   %%ebx,%%esp    \n"
-> +			: "=a" (arg1), "=d" (arg2), "=b" (bx)
-> +			:  "0" (arg1),   "1" (arg2),  "2" (stack),
-> +			   "D" (func)
-> +			: "memory", "cc", "ecx');
-> +}
-> +
->  /*
->   * do_IRQ handles all normal device IRQ's (the special
->   * SMP cross-CPU interrupts have their own specific
-> @@ -76,6 +96,7 @@ unsigned int do_IRQ(struct pt_regs *regs
->  	union irq_ctx *curctx, *irqctx;
->  	u32 *isp;
->  #endif
-> +	int overflow = 0;
->  
->  	if (unlikely((unsigned)irq >= NR_IRQS)) {
->  		printk(KERN_EMERG "%s: cannot handle IRQ %d\n",
-> @@ -92,11 +113,8 @@ unsigned int do_IRQ(struct pt_regs *regs
->  
->  		__asm__ __volatile__("andl %%esp,%0" :
->  					"=r" (sp) : "0" (THREAD_SIZE - 1));
-> -		if (unlikely(sp < (sizeof(struct thread_info) + STACK_WARN))) {
-> -			printk("do_IRQ: stack overflow: %ld\n",
-> -				sp - sizeof(struct thread_info));
-> -			dump_stack();
-> -		}
-> +		if (unlikely(sp < (sizeof(struct thread_info) + STACK_WARN)))
-> +			overflow = 1;
->  	}
->  #endif
->  
-> @@ -112,8 +130,6 @@ unsigned int do_IRQ(struct pt_regs *regs
->  	 * current stack (which is the irq stack already after all)
->  	 */
->  	if (curctx != irqctx) {
-> -		int arg1, arg2, bx;
-> -
->  		/* build the stack frame on the IRQ stack */
->  		isp = (u32*) ((char*)irqctx + sizeof(*irqctx));
->  		irqctx->tinfo.task = curctx->tinfo.task;
-> @@ -127,18 +143,19 @@ unsigned int do_IRQ(struct pt_regs *regs
->  			(irqctx->tinfo.preempt_count & ~SOFTIRQ_MASK) |
->  			(curctx->tinfo.preempt_count & SOFTIRQ_MASK);
->  
-> -		asm volatile(
-> -			"       xchgl  %%ebx,%%esp    \n"
-> -			"       call   *%%edi         \n"
-> -			"       movl   %%ebx,%%esp    \n"
-> -			: "=a" (arg1), "=d" (arg2), "=b" (bx)
-> -			:  "0" (irq),   "1" (desc),  "2" (isp),
-> -			   "D" (desc->handle_irq)
-> -			: "memory", "cc", "ecx"
-> -		);
-> +		/* Execute warning on interrupt stack */
-> +		if (unlikely(overflow))
-> +			call_on_stack2(stack_overflow, isp, 0, 0);
-> +
-> +		call_on_stack2(desc->handle_irq, isp, irq, desc);
->  	} else
->  #endif
-> -		desc->handle_irq(irq, desc);
-> +	{
-> +		/* AK: Slightly bogus here. Just return? */
-> +		if (overflow)
-> +			stack_overflow();
-> + 		desc->handle_irq(irq, desc);
-> +	}
->  
->  	irq_exit();
->  	set_irq_regs(old_regs);
-> 
+To get around mointpoint issues, we could at least do it only
+when an special mount option is given and add an big-fat warning
+that mountpoints within these mounts won't work. So these fast
+lookups will only happen when:
 
+#1: the fs explicitly supports it
+#2: mounted with an special option
+
+And if you use that option, you'll simply loose the ability
+of using mointpoints within this specific mount. This won't 
+affect any situation other than #1 && #2, IMHO this is better
+than no chance of fast lookups at all. Of course, an cleaner
+approach would be better, but it's IMHO not critical.
+
+BTW: there are (or have been) certain speed improvements for 
+specific situations w/ loosing other standard features, eg.
+fast bridging.
+
+
+cu
+-- 
+---------------------------------------------------------------------
+ Enrico Weigelt    ==   metux IT service - http://www.metux.de/
+---------------------------------------------------------------------
+ Please visit the OpenSource QM Taskforce:
+ 	http://wiki.metux.de/public/OpenSource_QM_Taskforce
+ Patches / Fixes for a lot dozens of packages in dozens of versions:
+	http://patches.metux.de/
+---------------------------------------------------------------------
