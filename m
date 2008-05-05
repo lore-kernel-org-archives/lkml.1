@@ -1,21 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753075AbYEEScI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762137AbYEESco@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753075AbYEEScI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 14:32:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758825AbYEES1N
+	id S1762137AbYEESco (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 14:32:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760727AbYEES1U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 14:27:13 -0400
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:44773 "EHLO smtp6.pp.htv.fi"
+	Mon, 5 May 2008 14:27:20 -0400
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:44784 "EHLO smtp6.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760700AbYEES1M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 14:27:12 -0400
-Date: Mon, 5 May 2008 21:26:04 +0300
+	id S1760720AbYEES1S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 May 2008 14:27:18 -0400
+Date: Mon, 5 May 2008 21:26:11 +0300
 From: Adrian Bunk <bunk@kernel.org>
-To: Eric.Moore@lsi.com
-Cc: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [2.6 patch] make struct mpt_proc_root_dir static
-Message-ID: <20080505182604.GW17139@cs181133002.pp.htv.fi>
+To: linux-kernel@vger.kernel.org
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Subject: [2.6 patch] parport/share.c: proper externs
+Message-ID: <20080505182611.GY17139@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -24,7 +23,8 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch makes the needlessly global struct mpt_proc_root_dir static.
+This patch adds proper externs for parport_default_timeslice and 
+parport_default_spintime in include/linux/parport.h
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
@@ -32,43 +32,37 @@ Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 This patch has been sent on:
 - 22 Apr 2008
-- 13 Apr 2008
+- 14 Apr 2008
 
- drivers/message/fusion/mptbase.c |    3 +--
- drivers/message/fusion/mptbase.h |    1 -
- 2 files changed, 1 insertion(+), 3 deletions(-)
+ drivers/parport/procfs.c |    3 ---
+ include/linux/parport.h  |    3 +++
+ 2 files changed, 3 insertions(+), 3 deletions(-)
 
-0206a6da1d1b4ca0e1eb7f6e34ced21c79d58c7b diff --git a/drivers/message/fusion/mptbase.c b/drivers/message/fusion/mptbase.c
-index c6be6eb..7e4e69e 100644
---- a/drivers/message/fusion/mptbase.c
-+++ b/drivers/message/fusion/mptbase.c
-@@ -103,7 +103,7 @@ static int mfcounter = 0;
-  *  Public data...
-  */
+4b9040d06db3fe544aa9971ba18184e2fb9b52ce diff --git a/drivers/parport/procfs.c b/drivers/parport/procfs.c
+index d950fc3..554e11f 100644
+--- a/drivers/parport/procfs.c
++++ b/drivers/parport/procfs.c
+@@ -429,9 +429,6 @@ struct parport_default_sysctl_table
+ 	ctl_table dev_dir[2];
+ };
  
--struct proc_dir_entry *mpt_proc_root_dir;
-+static struct proc_dir_entry *mpt_proc_root_dir;
+-extern unsigned long parport_default_timeslice;
+-extern int parport_default_spintime;
+-
+ static struct parport_default_sysctl_table
+ parport_default_sysctl_table = {
+ 	.sysctl_header	= NULL,
+diff --git a/include/linux/parport.h b/include/linux/parport.h
+index d1ad546..2794fcc 100644
+--- a/include/linux/parport.h
++++ b/include/linux/parport.h
+@@ -560,5 +560,8 @@ extern int parport_device_proc_unregister(struct pardevice *device);
  
- #define WHOINIT_UNKNOWN		0xAA
+ #endif /*  !CONFIG_PARPORT_NOT_PC  */
  
-@@ -7444,7 +7444,6 @@ EXPORT_SYMBOL(mpt_resume);
- EXPORT_SYMBOL(mpt_suspend);
- #endif
- EXPORT_SYMBOL(ioc_list);
--EXPORT_SYMBOL(mpt_proc_root_dir);
- EXPORT_SYMBOL(mpt_register);
- EXPORT_SYMBOL(mpt_deregister);
- EXPORT_SYMBOL(mpt_event_register);
-diff --git a/drivers/message/fusion/mptbase.h b/drivers/message/fusion/mptbase.h
-index caadc68..7630031 100644
---- a/drivers/message/fusion/mptbase.h
-+++ b/drivers/message/fusion/mptbase.h
-@@ -918,7 +918,6 @@ extern int	 mpt_raid_phys_disk_pg0(MPT_ADAPTER *ioc, u8 phys_disk_num, pRaidPhys
-  *  Public data decl's...
-  */
- extern struct list_head	  ioc_list;
--extern struct proc_dir_entry	*mpt_proc_root_dir;
- 
- /*=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=*/
- #endif		/* } __KERNEL__ */
++extern unsigned long parport_default_timeslice;
++extern int parport_default_spintime;
++
+ #endif /* __KERNEL__ */
+ #endif /* _PARPORT_H_ */
 
