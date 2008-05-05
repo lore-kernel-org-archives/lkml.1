@@ -1,54 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757784AbYEEKX5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756757AbYEEKa4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757784AbYEEKX5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 06:23:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753771AbYEEKXt
+	id S1756757AbYEEKa4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 06:30:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752631AbYEEKaq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 06:23:49 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:50082 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752229AbYEEKXs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 06:23:48 -0400
-Message-ID: <481EE031.3090303@firstfloor.org>
-Date: Mon, 05 May 2008 12:23:45 +0200
-From: Andi Kleen <andi@firstfloor.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
+	Mon, 5 May 2008 06:30:46 -0400
+Received: from ozlabs.org ([203.10.76.45]:49128 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752630AbYEEKap (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 May 2008 06:30:45 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: [PATCH] modpost: i2c aliases need no trailing wildcard
+Date: Mon, 5 May 2008 20:30:32 +1000
+User-Agent: KMail/1.9.9
+Cc: Jean Delvare <khali@linux-fr.org>, LKML <linux-kernel@vger.kernel.org>,
+       Kay Sievers <kay.sievers@vrfy.org>, Linux I2C <i2c@lm-sensors.org>
+References: <20080502203721.70c5dc09@hyperion.delvare> <20080505104816.1f666613@hyperion.delvare> <20080505090929.GA29310@uranus.ravnborg.org>
+In-Reply-To: <20080505090929.GA29310@uranus.ravnborg.org>
 MIME-Version: 1.0
-To: Thomas Gleixner <tglx@linutronix.de>
-CC: mingo@elte.hu, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH REPOST] CPA: Add statistics about state of direct mapping
- v4
-References: <20080502094649.GA11185@basil.nowhere.org> <alpine.LFD.1.10.0805051208240.3318@apollo.tec.linutronix.de>
-In-Reply-To: <alpine.LFD.1.10.0805051208240.3318@apollo.tec.linutronix.de>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200805052030.33084.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Monday 05 May 2008 19:09:29 Sam Ravnborg wrote:
+> > > Still, there's nothing wrong with this patch, happy for you to send it.
+> > >
+> > > Acked-by: Rusty Russell <rusty@rustcorp.com.au>
+> >
+> > Thanks,
+>
+> The patch is in -linus already so I cannot add the "Acked-by".
 
->> +static unsigned long direct_pages_count[PG_LEVEL_NUM];
->> +
->> +void __meminit update_page_count(int level, unsigned long pages)
-> 
-> Why __meminit ? This is used in split_large_page()
+Since the purpose is to ease passage into Linus' tree, it seems academic?
 
-True. Can you please just remove it? I think it came when this
-was still only used in early memory init.
+Cheers,
+Rusty.
 
-[insert standard rant about the work:code size benefit ratio of these
-fine grained section identifiers being far too high]
 
->> +{
->> +#ifdef CONFIG_PROC_FS
-> 
-> Why keep an empty function when PROC_FS is disabled ?
-
-So we don't have to add a ifdef in all the callers. Yes could probably
-have an empty inline in that case in some header, but frankly that would
-be a lot of code lines for saving only very minor code size in a very
-unlikely CONFIG case.
-
--Andi
 
