@@ -1,388 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756377AbYEEC1d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755789AbYEEC3d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756377AbYEEC1d (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 May 2008 22:27:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755052AbYEEC1W
+	id S1755789AbYEEC3d (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 May 2008 22:29:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755052AbYEEC3X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 May 2008 22:27:22 -0400
-Received: from ag-out-0708.google.com ([72.14.246.242]:33126 "EHLO
-	ag-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755155AbYEEC1T (ORCPT
+	Sun, 4 May 2008 22:29:23 -0400
+Received: from uki.us.mooball.net ([66.98.178.13]:49601 "EHLO
+	uki.us.mooball.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754697AbYEEC3V (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 May 2008 22:27:19 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=pAGAUMpSXuQt5n32EsjQ4n/r6tBY4uzhv5Xne/p9rtG2IB50rX4rdr0tTlhDlV5FWU4kCoGQD3mw6zgmP6PBS9IOGZzJ4COUO2DD8FauFuRYCqEru8WJhjkMn187wx+v7Y+VMv7obO0cwlLcHhmhOfVh011ThR9IgYV/CLAnOco=
-Message-ID: <a8e1da0805041927qb0635e2p506837cc73e2679c@mail.gmail.com>
-Date: Mon, 5 May 2008 10:27:16 +0800
-From: "Dave Young" <hidave.darkstar@gmail.com>
-To: "Joe Perches" <joe@perches.com>
-Subject: Re: [PATCH -mm] __ratelimit rewrite
-Cc: akpm@linux-foundation.org, paulmck@us.ibm.com, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <a8e1da0805041837q4a5264c6l7bc23dce1d3282fd@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Sun, 4 May 2008 22:29:21 -0400
+X-ClientAddr: 220.233.82.121
+Subject: Re: [PATCH 38/56] microblaze_v2: atomic.h bitops.h byteorder.h
+From: John Williams <john.williams@petalogix.com>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: monstr@seznam.cz, linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
+       stephen.neuendorffer@xilinx.com, John.Linn@xilinx.com, matthew@wil.cx,
+       will.newton@gmail.com, drepper@redhat.com,
+       microblaze-uclinux@itee.uq.edu.au, grant.likely@secretlab.ca,
+       Michal Simek <monstr@monstr.eu>
+In-Reply-To: <200805042358.15131.arnd@arndb.de>
+References: <1209901305-6404-1-git-send-email-monstr@seznam.cz>
+	 <4e20213f5f296268a24955df8c951f7fba279816.1209897266.git.monstr@monstr.eu>
+	 <49eccf3408b90a5ebb42635493bbeef3b584acb9.1209897266.git.monstr@monstr.eu>
+	 <200805042358.15131.arnd@arndb.de>
+Content-Type: text/plain
+Organization: PetaLogix
+Date: Mon, 05 May 2008 12:28:39 +1000
+Message-Id: <1209954519.5798.74.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.0 (2.8.0-40.el5_1.1) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080504070738.GA11832@darkstar.te-china.tietoenator.com>
-	 <1209912447.16966.42.camel@localhost>
-	 <a8e1da0805041837q4a5264c6l7bc23dce1d3282fd@mail.gmail.com>
+X-Mooball.com-MailScanner-Information: Please contact the ISP for more information
+X-Mooball.com-MailScanner: Not scanned: please contact your Internet E-Mail Service Provider for details
+X-MailScanner-From: john.williams@petalogix.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 5, 2008 at 9:37 AM, Dave Young <hidave.darkstar@gmail.com> wrote:
-> Hi,
->  Thanks for comment.
->
->
->  On Sun, May 4, 2008 at 10:47 PM, Joe Perches <joe@perches.com> wrote:
->  > On Sun, 2008-05-04 at 15:07 +0800, Dave Young wrote:
->  >  > diff -uprN linux/include/linux/kernel.h linux.new/include/linux/kernel.h
->  >  > --- linux/include/linux/kernel.h      2008-04-30 17:33:59.000000000 +0800
->  >  > +++ linux.new/include/linux/kernel.h  2008-04-30 17:33:52.000000000 +0800
->  >  > @@ -14,6 +14,7 @@
->  >  >  #include <linux/compiler.h>
->  >  >  #include <linux/bitops.h>
->  >  >  #include <linux/log2.h>
->  >  > +#include <linux/ratelimit.h>
->  >  >  #include <asm/byteorder.h>
->  >  >  #include <asm/bug.h>
->  >
->  >  Good idea.
->  >
->  >  I think #include <linux/printk.h>
->  >  and a reorganization of all the printk related
->  >  elements from kernel.h to printk.h would be better
->  >  and should be done first.
+On Sun, 2008-05-04 at 23:58 +0200, Arnd Bergmann wrote:
+> On Sunday 04 May 2008, monstr@seznam.cz wrote:
+> >  include/asm-microblaze/atomic.h    |  108 ++++++++++++++++++++++++++++++++++++
+> 
+> It would be cool if you could introduce this file as 
+> asm-generic/atomic-irqdisable.h or similar (can someone please
+> think of a better name?).
 
-If split printk.h from kernel.h, then kernel.h had better don't
-include printk.h.
-Instead every printk user include "printk.h". This seems too much changes.
+atomic-nonnative.h?
 
-Right?
+atomic-emulated.h?
 
->
->  Sounds good.
->
->
->  >
->  >  I think your changes should then be done in
->  >  printk.h not creating a new ratelimit.h.
->
->  IMO ratelimit is not just for printk use now, so a standalone head
->  file is necessary.
->
->
->
->  >
->  >  Signed-off-by: Joe Perches <joe@perches.com>
->  >  ---
->  >   include/linux/kernel.h |  113 +---------------------------------------
->  >   include/linux/printk.h |  137 ++++++++++++++++++++++++++++++++++++++++++++++++
->  >   2 files changed, 138 insertions(+), 112 deletions(-)
->  >
->  >  diff --git a/include/linux/kernel.h b/include/linux/kernel.h
->  >  index 4d46e29..51ae259 100644
->  >  --- a/include/linux/kernel.h
->  >  +++ b/include/linux/kernel.h
->  >
->  > @@ -14,6 +14,7 @@
->  >   #include <linux/compiler.h>
->  >   #include <linux/bitops.h>
->  >   #include <linux/log2.h>
->  >  +#include <linux/printk.h>
->  >
->  >  #include <asm/byteorder.h>
->  >   #include <asm/bug.h>
->  >
->  >  @@ -70,29 +71,6 @@ extern const char linux_proc_banner[];
->  >   */
->  >   #define upper_32_bits(n) ((u32)(((n) >> 16) >> 16))
->  >
->  >  -#define        KERN_EMERG      "<0>"   /* system is unusable                   */
->  >  -#define        KERN_ALERT      "<1>"   /* action must be taken immediately     */
->  >  -#define        KERN_CRIT       "<2>"   /* critical conditions                  */
->  >  -#define        KERN_ERR        "<3>"   /* error conditions                     */
->  >  -#define        KERN_WARNING    "<4>"   /* warning conditions                   */
->  >  -#define        KERN_NOTICE     "<5>"   /* normal but significant condition     */
->  >  -#define        KERN_INFO       "<6>"   /* informational                        */
->  >  -#define        KERN_DEBUG      "<7>"   /* debug-level messages                 */
->  >  -
->  >  -/*
->  >  - * Annotation for a "continued" line of log printout (only done after a
->  >  - * line that had no enclosing \n). Only to be used by core/arch code
->  >  - * during early bootup (a continued line is not SMP-safe otherwise).
->  >  - */
->  >  -#define        KERN_CONT       ""
->  >  -
->  >  -extern int console_printk[];
->  >  -
->  >  -#define console_loglevel (console_printk[0])
->  >  -#define default_message_loglevel (console_printk[1])
->  >  -#define minimum_console_loglevel (console_printk[2])
->  >  -#define default_console_loglevel (console_printk[3])
->  >  -
->  >   struct completion;
->  >   struct pt_regs;
->  >   struct user;
->  >  @@ -179,56 +157,8 @@ extern int kernel_text_address(unsigned long addr);
->  >   struct pid;
->  >   extern struct pid *session_of_pgrp(struct pid *pgrp);
->  >
->  >  -#ifdef CONFIG_PRINTK
->  >  -asmlinkage int vprintk(const char *fmt, va_list args)
->  >  -       __attribute__ ((format (printf, 1, 0)));
->  >  -asmlinkage int printk(const char * fmt, ...)
->  >  -       __attribute__ ((format (printf, 1, 2))) __cold;
->  >  -extern int log_buf_get_len(void);
->  >
->  > -extern int log_buf_read(int idx);
->  >  -extern int log_buf_copy(char *dest, int idx, int len);
->  >  -
->  >  -extern int printk_ratelimit_jiffies;
->  >  -extern int printk_ratelimit_burst;
->  >  -extern int printk_ratelimit(void);
->  >
->  > -extern int __ratelimit(int ratelimit_jiffies, int ratelimit_burst);
->  >  -extern int __printk_ratelimit(int ratelimit_jiffies, int ratelimit_burst);
->  >  -extern bool printk_timed_ratelimit(unsigned long *caller_jiffies,
->  >  -                                  unsigned int interval_msec);
->  >  -#else
->  >  -static inline int vprintk(const char *s, va_list args)
->  >  -       __attribute__ ((format (printf, 1, 0)));
->  >  -static inline int vprintk(const char *s, va_list args) { return 0; }
->  >  -static inline int printk(const char *s, ...)
->  >  -       __attribute__ ((format (printf, 1, 2)));
->  >  -static inline int __cold printk(const char *s, ...) { return 0; }
->  >  -static inline int log_buf_get_len(void) { return 0; }
->  >  -static inline int log_buf_read(int idx) { return 0; }
->  >
->  > -static inline int log_buf_copy(char *dest, int idx, int len) { return 0; }
->  >  -static inline int printk_ratelimit(void) { return 0; }
->  >  -static inline int __printk_ratelimit(int ratelimit_jiffies, \
->  >  -                                    int ratelimit_burst) { return 0; }
->  >  -static inline bool printk_timed_ratelimit(unsigned long *caller_jiffies, \
->  >  -                                         unsigned int interval_msec)   \
->  >  -               { return false; }
->  >  -#endif
->  >  -
->  >  -extern void __attribute__((format(printf, 1, 2)))
->  >  -       early_printk(const char *fmt, ...);
->  >  -
->  >   unsigned long int_sqrt(unsigned long);
->  >
->  >  -static inline void console_silent(void)
->  >  -{
->  >  -       console_loglevel = 0;
->  >  -}
->  >  -
->  >  -static inline void console_verbose(void)
->  >  -{
->  >  -       if (console_loglevel)
->  >  -               console_loglevel = 15;
->  >  -}
->  >  -
->  >   extern void bust_spinlocks(int yes);
->  >   extern void wake_up_klogd(void);
->  >   extern int oops_in_progress;           /* If set, an oops, panic(), BUG() or die() is in progress */
->  >  @@ -261,47 +191,6 @@ extern enum system_states {
->  >   #define TAINT_OVERRIDDEN_ACPI_TABLE    (1<<8)
->  >   #define TAINT_WARN                     (1<<9)
->  >
->  >  -extern void dump_stack(void) __cold;
->  >  -
->  >  -enum {
->  >  -       DUMP_PREFIX_NONE,
->  >  -       DUMP_PREFIX_ADDRESS,
->  >  -       DUMP_PREFIX_OFFSET
->  >  -};
->  >  -extern void hex_dump_to_buffer(const void *buf, size_t len,
->  >  -                               int rowsize, int groupsize,
->  >  -                               char *linebuf, size_t linebuflen, bool ascii);
->  >  -extern void print_hex_dump(const char *level, const char *prefix_str,
->  >  -                               int prefix_type, int rowsize, int groupsize,
->  >  -                               const void *buf, size_t len, bool ascii);
->  >  -extern void print_hex_dump_bytes(const char *prefix_str, int prefix_type,
->  >  -                       const void *buf, size_t len);
->  >  -#define hex_asc(x)     "0123456789abcdef"[x]
->  >  -
->  >  -#define pr_emerg(fmt, arg...) \
->  >  -       printk(KERN_EMERG fmt, ##arg)
->  >  -#define pr_alert(fmt, arg...) \
->  >  -       printk(KERN_ALERT fmt, ##arg)
->  >  -#define pr_crit(fmt, arg...) \
->  >  -       printk(KERN_CRIT fmt, ##arg)
->  >  -#define pr_err(fmt, arg...) \
->  >  -       printk(KERN_ERR fmt, ##arg)
->  >  -#define pr_warning(fmt, arg...) \
->  >  -       printk(KERN_WARNING fmt, ##arg)
->  >  -#define pr_notice(fmt, arg...) \
->  >  -       printk(KERN_NOTICE fmt, ##arg)
->  >  -#define pr_info(fmt, arg...) \
->  >  -       printk(KERN_INFO fmt, ##arg)
->  >  -
->  >  -#ifdef DEBUG
->  >  -/* If you are writing a driver, please use dev_dbg instead */
->  >  -#define pr_debug(fmt, arg...) \
->  >  -       printk(KERN_DEBUG fmt, ##arg)
->  >  -#else
->  >  -#define pr_debug(fmt, arg...) \
->  >  -       ({ if (0) printk(KERN_DEBUG fmt, ##arg); 0; })
->  >  -#endif
->  >  -
->  >   /*
->  >   *      Display an IP address in readable format.
->  >   */
->  >  diff --git a/include/linux/printk.h b/include/linux/printk.h
->  >  new file mode 100644
->  >  index 0000000..732ee9c
->  >  --- /dev/null
->  >  +++ b/include/linux/printk.h
->  >  @@ -0,0 +1,137 @@
->  >  +#ifndef _LINUX_PRINTK_H
->  >  +#define _LINUX_PRINTK_H
->  >  +
->  >  +#define        KERN_EMERG      "<0>"   /* system is unusable                   */
->  >  +#define        KERN_ALERT      "<1>"   /* action must be taken immediately     */
->  >  +#define        KERN_CRIT       "<2>"   /* critical conditions                  */
->  >  +#define        KERN_ERR        "<3>"   /* error conditions                     */
->  >  +#define        KERN_WARNING    "<4>"   /* warning conditions                   */
->  >  +#define        KERN_NOTICE     "<5>"   /* normal but significant condition     */
->  >  +#define        KERN_INFO       "<6>"   /* informational                        */
->  >  +#define        KERN_DEBUG      "<7>"   /* debug-level messages                 */
->  >  +
->  >  +/*
->  >  + * Annotation for a "continued" line of log printout (only done after a
->  >  + * line that had no enclosing \n). Only to be used by core/arch code
->  >  + * during early bootup (a continued line is not SMP-safe otherwise).
->  >  + */
->  >  +#define        KERN_CONT       ""
->  >  +
->  >  +extern int console_printk[];
->  >  +
->  >  +#define console_loglevel (console_printk[0])
->  >  +#define default_message_loglevel (console_printk[1])
->  >  +#define minimum_console_loglevel (console_printk[2])
->  >  +#define default_console_loglevel (console_printk[3])
->  >  +
->  >  +#ifdef CONFIG_PRINTK
->  >  +asmlinkage int vprintk(const char *fmt, va_list args)
->  >  +       __attribute__ ((format (printf, 1, 0)));
->  >  +asmlinkage int printk(const char *fmt, ...)
->  >  +       __attribute__ ((format (printf, 1, 2))) __cold;
->  >  +extern int log_buf_get_len(void);
->  >
->  > +extern int log_buf_read(int idx);
->  >  +extern int log_buf_copy(char *dest, int idx, int len);
->  >  +
->  >  +extern int printk_ratelimit_jiffies;
->  >  +extern int printk_ratelimit_burst;
->  >  +extern int printk_ratelimit(void);
->  >
->  > +extern int __ratelimit(int ratelimit_jiffies, int ratelimit_burst);
->  >  +extern int __printk_ratelimit(int ratelimit_jiffies, int ratelimit_burst);
->  >  +extern bool printk_timed_ratelimit(unsigned long *caller_jiffies,
->  >  +                                  unsigned int interval_msec);
->  >  +#else
->  >  +static inline int __attribute__ ((format (printf, 1, 0)))
->  >  +vprintk(const char *s, va_list args)
->  >  +{
->  >  +       return 0;
->  >  +}
->  >  +static inline int __attribute__ ((format (printf, 1, 2))) __cold
->  >  +printk(const char *s, ...)
->  >  +{
->  >  +       return 0;
->  >  +}
->  >  +static inline int log_buf_get_len(void)
->  >  +{
->  >  +       return 0;
->  >  +}
->  >  +static inline int log_buf_read(int idx)
->  >
->  > +{
->  >  +       return 0;
->  >  +}
->  >  +static inline int log_buf_copy(char *dest, int idx, int len)
->  >  +{
->  >  +       return 0;
->  >  +}
->  >  +static inline int printk_ratelimit(void)
->  >  +{
->  >  +       return 0;
->  >  +}
->  >  +static inline int __printk_ratelimit(int ratelimit_jiffies,
->  >  +                                    int ratelimit_burst)
->  >  +{
->  >  +       return 0;
->  >  +}
->  >  +static inline bool printk_timed_ratelimit(unsigned long *caller_jiffies,
->  >  +                                         unsigned int interval_msec)
->  >  +{
->  >  +       return false;
->  >  +}
->  >  +#endif
->  >  +
->  >  +extern void __attribute__((format(printf, 1, 2)))
->  >  +       early_printk(const char *fmt, ...);
->  >  +
->  >  +static inline void console_silent(void)
->  >  +{
->  >  +       console_loglevel = 0;
->  >  +}
->  >  +
->  >  +static inline void console_verbose(void)
->  >  +{
->  >  +       if (console_loglevel)
->  >  +               console_loglevel = 15;
->  >  +}
->  >  +
->  >  +extern void dump_stack(void) __cold;
->  >  +
->  >  +enum {
->  >  +       DUMP_PREFIX_NONE,
->  >  +       DUMP_PREFIX_ADDRESS,
->  >  +       DUMP_PREFIX_OFFSET
->  >  +};
->  >  +extern void hex_dump_to_buffer(const void *buf, size_t len,
->  >  +                              int rowsize, int groupsize,
->  >  +                              char *linebuf, size_t linebuflen, bool ascii);
->  >  +extern void print_hex_dump(const char *level, const char *prefix_str,
->  >  +                          int prefix_type, int rowsize, int groupsize,
->  >  +                          const void *buf, size_t len, bool ascii);
->  >  +extern void print_hex_dump_bytes(const char *prefix_str, int prefix_type,
->  >  +                                const void *buf, size_t len);
->  >  +#define hex_asc(x)     "0123456789abcdef"[x]
->  >  +
->  >  +#define pr_emerg(fmt, arg...) \
->  >  +       printk(KERN_EMERG fmt, ##arg)
->  >  +#define pr_alert(fmt, arg...) \
->  >  +       printk(KERN_ALERT fmt, ##arg)
->  >  +#define pr_crit(fmt, arg...) \
->  >  +       printk(KERN_CRIT fmt, ##arg)
->  >  +#define pr_err(fmt, arg...) \
->  >  +       printk(KERN_ERR fmt, ##arg)
->  >  +#define pr_warning(fmt, arg...) \
->  >  +       printk(KERN_WARNING fmt, ##arg)
->  >  +#define pr_notice(fmt, arg...) \
->  >  +       printk(KERN_NOTICE fmt, ##arg)
->  >  +#define pr_info(fmt, arg...) \
->  >  +       printk(KERN_INFO fmt, ##arg)
->  >  +
->  >  +#ifdef DEBUG
->  >  +/* If you are writing a driver, please use dev_dbg instead */
->  >  +#define pr_debug(fmt, arg...) \
->  >  +       printk(KERN_DEBUG fmt, ##arg)
->  >  +#else
->  >  +#define pr_debug(fmt, arg...) \
->  >  +       ({ if (0) printk(KERN_DEBUG fmt, ##arg); 0; })
->  >  +#endif
->  >  +
->  >  +#endif
->  >
->  >
->  >
->
+atomic-wish-we-had-it-native.h?
+
+
+
