@@ -1,50 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760888AbYEETJq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762161AbYEETKl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760888AbYEETJq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 15:09:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752380AbYEETJg
+	id S1762161AbYEETKl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 15:10:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753257AbYEETKc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 15:09:36 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:33574 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752050AbYEETJf (ORCPT
+	Mon, 5 May 2008 15:10:32 -0400
+Received: from outbound-mail-145.bluehost.com ([67.222.38.35]:41649 "HELO
+	outbound-mail-145.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752852AbYEETKc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 15:09:35 -0400
-Date: Mon, 5 May 2008 20:09:34 +0100
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Enrico Weigelt <weigelt@metux.de>
-Cc: linux kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: VFS + path walktrough
-Message-ID: <20080505190934.GR5882@ZenIV.linux.org.uk>
-References: <20080505131307.GM5882@ZenIV.linux.org.uk> <20080505134315.GF32019@nibiru.local> <20080505153501.GN5882@ZenIV.linux.org.uk> <E1Jt3nB-0006ZP-6S@pomaz-ex.szeredi.hu> <20080505171425.GO5882@ZenIV.linux.org.uk> <E1Jt4Ye-0006hz-9i@pomaz-ex.szeredi.hu> <20080505174048.GP5882@ZenIV.linux.org.uk> <20080505182308.GG32019@nibiru.local> <20080505183420.GQ5882@ZenIV.linux.org.uk> <20080505190243.GI32019@nibiru.local>
+	Mon, 5 May 2008 15:10:32 -0400
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Adrian Bunk <bunk@kernel.org>
+Subject: Re: [2.6 patch] drivers/pci/pci.c: add prototypes
+Date: Mon, 5 May 2008 12:10:28 -0700
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org
+References: <20080505182547.GT17139@cs181133002.pp.htv.fi>
+In-Reply-To: <20080505182547.GT17139@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080505190243.GI32019@nibiru.local>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Message-Id: <200805051210.28908.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 05, 2008 at 09:02:43PM +0200, Enrico Weigelt wrote:
-> * Al Viro <viro@ZenIV.linux.org.uk> wrote:
-> 
-> > How _can_ server resolve symlinks, when result of symlink 
-> > resolution depends on where the damn thing is mounted on client 
-> > and even how deeply the process trying to do lookup happens 
-> > to be chrooted?
-> 
-> In the same way as, eg. http servers, do. Of course this fails 
-> if the symlink isn't resolvable within server's fs.
+On Monday, May 05, 2008 11:25 am Adrian Bunk wrote:
+> This patch adds prototypes for pcibios_disable_device() and
+> pcibios_set_pcie_reset_state() in include/linux/pci.h
+>
+> While I was at it, I also removed the unneeded "extern" from the
+> prototype of pcibios_add_platform_entries().
+>
+> Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
-Umm...  You know, it might make more sense if you
-	* explained what are you really trying to do
-	* short of that, perhaps figured out what the hell symlinks and
-bindings _are_.
+Applied to my linux-next branch.  Thanks.
 
-Again, _no_ symlink is resolvable by server alone, simply because
-server can not know if target of that symlink is overmounted from
-the point of view of whoever is doing lookup.  Note that it *does*
-depend on who's doing that and where in the namespace we are seeing
-that sucker (the latter kills the "we want per-user connection"
-variants).
+Jesse
