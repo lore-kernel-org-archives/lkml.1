@@ -1,74 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758565AbYEEORW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758838AbYEEOSk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758565AbYEEORW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 10:17:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754720AbYEEORO
+	id S1758838AbYEEOSk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 10:18:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755964AbYEEOSb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 10:17:14 -0400
-Received: from mail.gmx.net ([213.165.64.20]:36501 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1753140AbYEEORO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 10:17:14 -0400
-X-Authenticated: #20450766
-X-Provags-ID: V01U2FsdGVkX1+bRBI+Mv2bKAom+46QLP6tsVwvp1on/Yzv/ZxZmj
-	eGlagPlKz4mGGr
-Date: Mon, 5 May 2008 16:17:28 +0200 (CEST)
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-To: Ingo Molnar <mingo@elte.hu>
-cc: linux-kernel@vger.kernel.org,
-       Mauro Carvalho Chehab <mchehab@infradead.org>,
-       Jean Delvare <khali@linux-fr.org>
-Subject: Re: [patch] video: build fix for drivers/media/video/mt9v022.c
-In-Reply-To: <20080503163058.GA15272@elte.hu>
-Message-ID: <Pine.LNX.4.64.0805051604080.5648@axis700.grange>
-References: <20080503163058.GA15272@elte.hu>
+	Mon, 5 May 2008 10:18:31 -0400
+Received: from smtp1.wifiinternet.cz ([89.31.47.1]:50240 "EHLO
+	bor.wifiinternet.cz" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755951AbYEEOSb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 May 2008 10:18:31 -0400
+Message-ID: <481F177A.4000300@seznam.cz>
+Date: Mon, 05 May 2008 16:19:38 +0200
+From: Michal Simek <monstr@seznam.cz>
+Reply-To: monstr@seznam.cz
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Y-GMX-Trusted: 0
+To: John Williams <john.williams@petalogix.com>
+CC: linux-kernel@vger.kernel.org, arnd@arndb.de, linux-arch@vger.kernel.org,
+       stephen.neuendorffer@xilinx.com, John.Linn@xilinx.com, matthew@wil.cx,
+       will.newton@gmail.com, drepper@redhat.com,
+       microblaze-uclinux@itee.uq.edu.au, grant.likely@secretlab.ca,
+       Michal Simek <monstr@monstr.eu>
+Subject: Re: [PATCH 03/56] microblaze_v2: Cpuinfo handling
+References: <1209901305-6404-1-git-send-email-monstr@seznam.cz>	 <a4a778e34c66d126f5c4bf1ca423cf32950ea5ab.1209897266.git.monstr@monstr.eu>	 <c805caeb1dd7f6d1349c4a463cb88a5342a170d2.1209897266.git.monstr@monstr.eu>	 <f120ababf2bade9aab7199bffb3014aa606e5a1c.1209897266.git.monstr@monstr.eu> <1209952342.5798.37.camel@localhost>
+In-Reply-To: <1209952342.5798.37.camel@localhost>
+Content-Type: text/plain; charset=ISO-8859-2
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 3 May 2008, Ingo Molnar wrote:
 
+>> --- /dev/null
+>> +++ b/arch/microblaze/kernel/cpu/cpuinfo-static.c
+>> @@ -0,0 +1,117 @@
 > 
-> x86.git testing found the following build bug on latest -git:
+>> +
+>> +	ci->cpu_clock_freq = fcpu(cpu, "timebase-frequency");
 > 
->   CC [M]  drivers/media/video/mt9v022.o
->   drivers/media/video/mt9v022.c: In function 'bus_switch_request':
->   drivers/media/video/mt9v022.c:199: error: implicit declaration of function 'gpio_is_valid'
->   drivers/media/video/mt9v022.c:201: error: implicit declaration of function 'gpio_request'
->   drivers/media/video/mt9v022.c:207: error: implicit declaration of function 'gpio_direction_output'
->   drivers/media/video/mt9v022.c:211: error: implicit declaration of function 'gpio_free'
->   drivers/media/video/mt9v022.c: In function 'bus_switch_act':
->   drivers/media/video/mt9v022.c:237: error: implicit declaration of function 'gpio_set_value_cansleep'
->   make[2]: *** [drivers/media/video] Error 2
->   make[1]: *** [drivers/media] Error 2
->   make[1]: *** Waiting for unfinished jobs....
->   make: *** [drivers] Error 2
-> 
-> with this config:
-> 
->    http://redhat.com/~mingo/misc/config-Sat_May__3_16_08_39_CEST_2008.bad
-> 
-> the bug was that the driver uses GPIO functionality but only includes 
-> the GPIO interface definitions for the CONFIG_MT9M001_PCA9536_SWITCH 
-> case, which was not set in this config.
-> 
-> The quick fix seems to be to include linux/gpio.h unconditionally. (this 
-> seems like a small cleanup as well as it removes and #ifdef is more 
-> robust than an inclusion of asm/gpio.h) Not tested too much yet, so 
-> please have another look in any case.
-> 
-> Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> Should this be added to cpuinfo-pvr.c?
 
-Mauro, please pull this fix, extended with a similar fix for mt9m001 from 
-another email from Ingo, along with a copy-paste error in a comment in 
-mt9v022, from
+I moved it. This was in cpuinfo.c because you can't load frequency from PVR regs.
+this value was loaded from DTS and I don't want to setup second parameter to pvr
+function.
 
-http://linuxtv.org/hg/~gliakhovetski/v4l-dvb
+>> --- /dev/null
+>> +++ b/include/asm-microblaze/cpuinfo.h
+> ...
+> 
+>> +	/* HW debug support */
+>> +	int hw_debug;
+>> +	int num_pc_brk;
+>> +	int num_rd_brk;
+>> +	int num_wr_brk;
+> 
+>   +       /* CPU and system timebase info */
+>> +	int cpu_clock_freq;
+>> +
+> 
+>> +void set_cpuinfo_pvr_partial(struct cpuinfo *ci);
+> 
+> pvr_partial never got written - it can be deleted.
 
-Thanks
-Guennadi
----
-Guennadi Liakhovetski
+I removed it and changed values
+M
