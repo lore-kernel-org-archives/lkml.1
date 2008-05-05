@@ -1,63 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757543AbYEEHIT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757209AbYEEHNN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757543AbYEEHIT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 03:08:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754443AbYEEHIL
+	id S1757209AbYEEHNN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 03:13:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753101AbYEEHM6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 03:08:11 -0400
-Received: from mail.karo-electronics.de ([213.146.116.110]:39950 "EHLO
-	mail.karo-electronics.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753301AbYEEHIK (ORCPT
+	Mon, 5 May 2008 03:12:58 -0400
+Received: from fg-out-1718.google.com ([72.14.220.156]:35328 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752343AbYEEHM5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 03:08:10 -0400
-Message-ID: <18462.45648.60033.233887@ipc1.ka-ro>
-Date: Mon, 5 May 2008 09:08:00 +0200
-From: =?iso-8859-15?q?Lothar_Wa=DFmann?= <LW@KARO-electronics.de>
-To: Willy Tarreau <w@1wt.eu>
-Cc: NeilBrown <neilb@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: linux-2.6.25: 'mkdir -p' does not work with rootdir as mount point inside a read only filesystem
-In-Reply-To: <20080505070214.GA14635@1wt.eu>
-References: <18456.34604.472989.35082@ipc1.ka-ro>
-	<20080501215231.297e0d9d.akpm@linux-foundation.org>
-	<53722.192.168.1.70.1209711343.squirrel@neil.brown.name>
-	<20080503063231.GA688@1wt.eu>
-	<18462.43245.728465.911831@ipc1.ka-ro>
-	<20080505070214.GA14635@1wt.eu>
-X-Mailer: VM 7.19 under Emacs 21.4.1
+	Mon, 5 May 2008 03:12:57 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition:x-google-sender-auth;
+        b=ezH3T39EcqAAjgJ4CFD3REExTinnXOCMif91uYXaj1kmjSkT+LLzCePx1s2wtyTKOWo9HOWQNHEDb6sNZSg0E7KuIRaLUcW11Fla0ByTjdrzVCmwBDA8HMdAY//LASfi3pxJh2BSF7xjiNyBpSEWaFxwbrMCO25+rjKdaV4VIfM=
+Message-ID: <30c6373b0805050012o505c0540i116a31bc1ab9ce9f@mail.gmail.com>
+Date: Mon, 5 May 2008 00:12:56 -0700
+From: "Kevin Burton" <burton@tailrank.com>
+To: linux-kernel@vger.kernel.org
+Subject: Ability to limit or disable page caching?
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+X-Google-Sender-Auth: dce06f858e47720f
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+I'm running into a VERY frustrating bug with page caching and swap.
 
-Willy Tarreau writes:
-> > > open(".", O_RDONLY|O_LARGEFILE|O_DIRECTORY) = 3
-> > > chdir("/")                              = 0
-> > > mkdir("dev", 0755)                      = -1 EEXIST (File exists)
-                                                   ^^^^^^
-[...]
-> > This is what strace shows in my case:
-> > mkdir("/", 0777)                        = -1 EEXIST (File exists)
-> > stat64("/", {st_mode=S_IFDIR|0755, st_size=0, ...}) = 0
-> > mkdir("/dev/", 0777)                    = -1 EROFS (Read-only file system)
-                                                 ^^^^^
-> What puzzles me is why you have this problem only with a new kernel.
-> I suspect that previous ones did report EEXIST and now we report
-> EROFS for an existing directory on an ro fs.
-> 
-Interestingly your strace output showed a return value of EEXIST where
-mine had EROFS.
+I'm going to write a long post on this and forward it to the list.
 
+In the mean time is it possible to disable the page cache or limit it
+to say 10% of system memory?
 
-Lothar Waßmann
+I haven't found any way to do this yet.
+
+You could do this with RHEL 4.x but I don't recall this ever making it
+into 2.6 :-/
+
+Feedback appreciated.
+
 -- 
-___________________________________________________________
-
-Ka-Ro electronics GmbH | Pascalstraße 22 | D - 52076 Aachen
-Phone: +49 2408 1402-0 | Fax: +49 2408 1402-10
-Geschäftsführer: Matthias Kaussen
-Handelsregistereintrag: Amtsgericht Aachen, HRB 4996
-
-www.karo-electronics.de | info@karo-electronics.de
-___________________________________________________________
+Founder/CEO Tailrank.com
+Location: San Francisco, CA
+AIM/YIM: sfburtonator
+Skype: burtonator
+Work: http://spinn3r.com and http://tailrank.com
+Blog: http://feedblog.org
+Cell: 415-637-8078
+Fax: 1-415-358-419 PIN: 0092
