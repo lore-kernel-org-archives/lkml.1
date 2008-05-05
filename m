@@ -1,118 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761548AbYEESaH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752707AbYEES2Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761548AbYEESaH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 14:30:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760596AbYEES0q
+	id S1752707AbYEES2Y (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 14:28:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760321AbYEES0D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 14:26:46 -0400
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:54978 "EHLO smtp4.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752857AbYEES0p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 14:26:45 -0400
-Date: Mon, 5 May 2008 21:25:37 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Ben Dooks <ben@simtec.co.uk>, Vincent Sanders <vince@simtec.co.uk>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: [2.6 patch] mfd/sm501.c: #if 0 unused functions
-Message-ID: <20080505182537.GR17139@cs181133002.pp.htv.fi>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Mon, 5 May 2008 14:26:03 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:60647 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1760306AbYEES0B (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 May 2008 14:26:01 -0400
+Date: Mon, 5 May 2008 11:25:24 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: galak@kernel.crashing.org, paulus@samba.org, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [git pull] Please pull powerpc.git powerpc-next branch
+Message-Id: <20080505112524.30fa3971.akpm@linux-foundation.org>
+In-Reply-To: <alpine.LFD.1.10.0805051100110.32269@woody.linux-foundation.org>
+References: <18463.1101.341437.600410@cargo.ozlabs.ibm.com>
+	<alpine.LFD.1.10.0805051018550.32269@woody.linux-foundation.org>
+	<7F696AAE-069D-443A-9511-5CF92F4538EA@kernel.crashing.org>
+	<alpine.LFD.1.10.0805051100110.32269@woody.linux-foundation.org>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch #if 0's the following unused functions:
-- sm501_find_clock()
-- sm501_gpio_get()
-- sm501_gpio_set()
+On Mon, 5 May 2008 11:03:14 -0700 (PDT)
+Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-Signed-off-by: Adrian Bunk <bunk@kernel.org>
+> 
+> 
+> On Mon, 5 May 2008, Kumar Gala wrote:
+> > 
+> > Paul's clearly starting to lose it.  First a pull request w/o him pushing to
+> > his tree.  Now a pull request from the ether.
+> 
+> Paul, the rumor is that high doses of vitamin B6 may delay the onset of 
+> Alzheimer, and there is some research into vitamin E helping after you've 
+> gotten it.
+> 
+> Maybe it's still not too late!
+> 
 
----
-
-This patch has been sent on:
-- 13 Apr 2008
-
- drivers/mfd/sm501.c   |    5 +++++
- include/linux/sm501.h |   21 ---------------------
- 2 files changed, 5 insertions(+), 21 deletions(-)
-
-24190c50efec1862c20bba55a31677879fae1de3 diff --git a/drivers/mfd/sm501.c b/drivers/mfd/sm501.c
-index 13bac53..54de0ff 100644
---- a/drivers/mfd/sm501.c
-+++ b/drivers/mfd/sm501.c
-@@ -275,6 +275,8 @@ unsigned long sm501_modify_reg(struct device *dev,
- 
- EXPORT_SYMBOL_GPL(sm501_modify_reg);
- 
-+#if 0
-+
- unsigned long sm501_gpio_get(struct device *dev,
- 			     unsigned long gpio)
- {
-@@ -326,6 +328,7 @@ void sm501_gpio_set(struct device *dev,
- 
- EXPORT_SYMBOL_GPL(sm501_gpio_set);
- 
-+#endif  /*  0  */
- 
- /* sm501_unit_power
-  *
-@@ -657,6 +660,7 @@ unsigned long sm501_set_clock(struct device *dev,
- 
- EXPORT_SYMBOL_GPL(sm501_set_clock);
- 
-+#if 0
- /* sm501_find_clock
-  *
-  * finds the closest available frequency for a given clock
-@@ -699,6 +703,7 @@ unsigned long sm501_find_clock(struct device *dev,
- }
- 
- EXPORT_SYMBOL_GPL(sm501_find_clock);
-+#endif  /*  0  */
- 
- static struct sm501_device *to_sm_device(struct platform_device *pdev)
- {
-diff --git a/include/linux/sm501.h b/include/linux/sm501.h
-index bca1345..f416505 100644
---- a/include/linux/sm501.h
-+++ b/include/linux/sm501.h
-@@ -24,9 +24,6 @@ extern int sm501_unit_power(struct device *dev,
- extern unsigned long sm501_set_clock(struct device *dev,
- 				     int clksrc, unsigned long freq);
- 
--extern unsigned long sm501_find_clock(struct device *dev,
--				      int clksrc, unsigned long req_freq);
--
- /* sm501_misc_control
-  *
-  * Modify the SM501's MISC_CONTROL register
-@@ -46,24 +43,6 @@ extern unsigned long sm501_modify_reg(struct device *dev,
- 				      unsigned long set,
- 				      unsigned long clear);
- 
--/* sm501_gpio_set
-- *
-- * set the state of the given GPIO line
--*/
--
--extern void sm501_gpio_set(struct device *dev,
--			   unsigned long gpio,
--			   unsigned int to,
--			   unsigned int dir);
--
--/* sm501_gpio_get
-- *
-- * get the state of the given GPIO line
--*/
--
--extern unsigned long sm501_gpio_get(struct device *dev,
--				    unsigned long gpio);
--
- 
- /* Platform data definitions */
- 
-
+Look, if you kids keep this up we'll just fork the kernel.  oldfartnix-0.0.1!
