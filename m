@@ -1,46 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760635AbYEEULU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761059AbYEEULe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760635AbYEEULU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 16:11:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756086AbYEEULE
+	id S1761059AbYEEULe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 16:11:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760201AbYEEULO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 16:11:04 -0400
-Received: from smtp-out01.alice-dsl.net ([88.44.60.11]:18718 "EHLO
-	smtp-out01.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756056AbYEEULD (ORCPT
+	Mon, 5 May 2008 16:11:14 -0400
+Received: from wa-out-1112.google.com ([209.85.146.179]:27423 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759628AbYEEULM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 16:11:03 -0400
-To: "Kevin Burton" <burton@tailrank.com>
-Cc: "FD Cami" <francois.cami@free.fr>, linux-kernel@vger.kernel.org
-Subject: Re: Ability to limit or disable page caching?
-From: Andi Kleen <andi@firstfloor.org>
-References: <30c6373b0805050012o505c0540i116a31bc1ab9ce9f@mail.gmail.com>
-	<20080505131607.5556b1f2@olorin>
-	<30c6373b0805051134m634efbbdn45167c1eae29df4a@mail.gmail.com>
-	<20080505212831.22371732@olorin>
-	<30c6373b0805051242o2f38f0a3v62bd43f4fa01559e@mail.gmail.com>
-Date: Mon, 05 May 2008 22:10:40 +0200
-In-Reply-To: <30c6373b0805051242o2f38f0a3v62bd43f4fa01559e@mail.gmail.com> (Kevin Burton's message of "Mon, 5 May 2008 12:42:31 -0700")
-Message-ID: <878wyocy0v.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
+	Mon, 5 May 2008 16:11:12 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=fIF5wPOTlqwpUDgOWfzZ+sawsg1QX9x+UEOYqmGTE2JXjszR6QAEidoqnj6tn3/+Bgobn2FOZrHcZ2tvOrTuZsUEeBXIeei3nACWLhkH5mqnSZD00fWyYRs+Htu3cdttUAqkwZP725awU4dBfPfttsIAtQ5JX7n8osJ7GnXkoAQ=
+Message-ID: <2f11576a0805051311m60c0dfb5k56c04d5f4ddc04e8@mail.gmail.com>
+Date: Tue, 6 May 2008 05:11:10 +0900
+From: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>
+To: "Adrian Bunk" <bunk@kernel.org>
+Subject: Re: [2.6 patch] mm/hugetlb.c: fix duplicate variable
+Cc: wli@holomorphy.com, linux-kernel@vger.kernel.org,
+       "Andrew Morton" <akpm@linux-foundation.org>
+In-Reply-To: <20080505182816.GN17139@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 05 May 2008 20:03:43.0845 (UTC) FILETIME=[1EDDA950:01C8AEEB]
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080505182816.GN17139@cs181133002.pp.htv.fi>
+X-Google-Sender-Auth: a8a310465c96fff4
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Kevin Burton" <burton@tailrank.com> writes:
+> It's confusing that set_max_huge_pages() contained two different
+>  variables named "ret", and although the code works correctly this should
+>  be fixed.
 >
-> What I want to do is either disable the page cache entirely or just
-> tell the OS to cache at max 10% of the available memory.
+>  The inner of the two variables can simply be removed.
+                            ^^^^
 
-FYI page cache includes the memory your program uses. No page 
-cache would mean no user space, 10% would mean user space uses only
-10%. One way that would fulfil your request literally is to boot with 
-mem=<10% of your ram>, but I guess you don't really want that.
+two?
+I think removal inner variable is 1, no?
+but, your change is perfectly right, IMHO.
 
-If you don't want your application to be swapped at all you
-should probably investigate mlock(2)/mlockall(2)
+           Reviewed-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
 
--Andi
+
+>         while (count > persistent_huge_pages) {
+>  -               int ret;
+>                 /*
+>                  * If this allocation races such that we no longer need the
+>                  * page, free_huge_page will handle it by freeing the page
+>                  * and reducing the surplus.
+>                  */
