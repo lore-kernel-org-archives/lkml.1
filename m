@@ -1,212 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762264AbYEEV3K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761800AbYEEVbf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762264AbYEEV3K (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 17:29:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757045AbYEEV24
+	id S1761800AbYEEVbf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 17:31:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755236AbYEEVb0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 17:28:56 -0400
-Received: from web50104.mail.re2.yahoo.com ([206.190.38.32]:29015 "HELO
-	web50104.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1756301AbYEEV2y (ORCPT
+	Mon, 5 May 2008 17:31:26 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:53325 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754473AbYEEVbZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 17:28:54 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=amVHFe5ywzMs2CAw8NpKb/1XqMs7SJvSGw1kXRg9Kfkj2dFO9AIMU3hbgsCzvQjllHVqOFNwRNJAAjeveLc8XM+Moq6u8In9+nfSKjWFM0l/CU66ylMmYUj9d3fI9nGPZJvO6xZoRj1mlXEnqei3PMSLAn05zSd8QLOd9RssAVU=;
-X-YMail-OSG: KdYgPiYVM1kx1ZHK9yDI9oFJ6WPhl9iAwnprzzzhoeK1DOHwPcZBpY7wo8mdC4PEZnfEq_E2kEVR0u3.p0.gsp6GcHECxc9u
-Date: Mon, 5 May 2008 14:22:11 -0700 (PDT)
-From: Doug Thompson <norsk5@yahoo.com>
-Subject: Re: linux-next: upstream edac build failure
-To: Stephen Rothwell <sfr@canb.auug.org.au>, Greg KH <greg@kroah.com>
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       Kay Sievers <kay.sievers@vrfy.org>, dougthompson@xmission.com,
-       Linus <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       bluesmoke-devel@lists.sourceforge.net, tony@bakeyournoodle.com,
-       michael@ellerman.id.au
-In-Reply-To: <20080505140234.ac7b8a22.sfr@canb.auug.org.au>
+	Mon, 5 May 2008 17:31:25 -0400
+Date: Mon, 5 May 2008 23:32:14 +0200
+From: Pavel Machek <pavel@suse.cz>
+To: Johannes Berg <johannes@sipsolutions.net>
+Cc: kernel list <linux-kernel@vger.kernel.org>, kaszak@gmail.com,
+       lcostantino@gmail.com, linux-wireless@vger.kernel.org
+Subject: Re: w35und: driver now down to 16Kloc, and actually works a bit
+Message-ID: <20080505213214.GC17657@elf.ucw.cz>
+References: <20080505210138.GE7273@elf.ucw.cz> <1210021369.4181.43.camel@johannes.berg>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <24124.33350.qm@web50104.mail.re2.yahoo.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1210021369.4181.43.camel@johannes.berg>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon 2008-05-05 23:02:49, Johannes Berg wrote:
+> On Mon, 2008-05-05 at 23:01 +0200, Pavel Machek wrote:
+> > Hi!
+> > 
+> > Ok, code is still extremely ugly, but at least it uses softmac (and
+> 
+> why not mac80211? softmac has been deleted
 
---- Stephen Rothwell <sfr@canb.auug.org.au> wrote:
-
-> Hi Greg,
-> 
-> Today's linux-next build (powerpc allyesconfig) fails like this:
-> 
-> drivers/edac/cell_edac.c: In function 'cell_edac_count_ce':
-> drivers/edac/cell_edac.c:38: error: 'struct device' has no member named 'dev_name'
-> drivers/edac/cell_edac.c: In function 'cell_edac_count_ue':
-> drivers/edac/cell_edac.c:59: error: 'struct device' has no member named 'dev_name'
-> drivers/edac/cell_edac.c: In function 'cell_edac_init_csrows':
-> drivers/edac/cell_edac.c:145: error: 'struct device' has no member named 'dev_name'
-> drivers/edac/cell_edac.c: In function 'cell_edac_probe':
-> drivers/edac/cell_edac.c:168: error: 'struct device' has no member named 'dev_name'
-> drivers/edac/cell_edac.c:175: error: 'struct device' has no member named 'dev_name'
-> drivers/edac/cell_edac.c:179: error: 'struct device' has no member named 'dev_name'
-> drivers/edac/cell_edac.c:204: error: 'struct device' has no member named 'dev_name'
-> 
-> Commit 06916639e2fed9ee475efef2747a1b7429f8fe76 ("driver-core: add
-> dev_name() to help transition away from using bus_id") in Linus' tree
-> added a static inline dev_name() and used it in dev_printk.
-> Unfortunately, drivers/edac/edac_core.h defines a macro called dev_name().
-> 
-> I have applied the following patch (diagnosis by Tony Breeds and Michael
-> Ellerman).
-
-Ouch.  Change of the EDAC dev_name() to edac_dev_name() looks good to me. 
-Thanks for the patch.
-
-doug t
-
-> 
-> -- 
-> Cheers,
-> Stephen Rothwell                    sfr@canb.auug.org.au
-> 
-> From 58d998b394ddb1f4bff4fb79feccb8eb102e22c3 Mon Sep 17 00:00:00 2001
-> From: Stephen Rothwell <sfr@canb.auug.org.au>
-> Date: Mon, 5 May 2008 13:54:19 +1000
-> Subject: [PATCH] dev_name introduction fall out fix
-> 
-> Commit 06916639e2fed9ee475efef2747a1b7429f8fe76 ("driver-core:
-> add dev_name() to help transition away from using bus_id") added a
-> static inline dev_name() and used it in dev_printk.  Unfortunately,
-> drivers/edac/edac_core.h defines a macro called dev_name().  Rename the
-> latter.
-> 
-> Diagnosis by Tony Breeds and Michael Ellerman.
-> 
-> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
-
-Ack:   Doug Thompson <dougthompson@xmission.com>
-
-
-> ---
->  drivers/edac/edac_core.h   |    2 +-
->  drivers/edac/edac_device.c |    6 +++---
->  drivers/edac/edac_mc.c     |    6 +++---
->  drivers/edac/edac_pci.c    |    6 +++---
->  4 files changed, 10 insertions(+), 10 deletions(-)
-> 
-> diff --git a/drivers/edac/edac_core.h b/drivers/edac/edac_core.h
-> index a9aa845..b27b13c 100644
-> --- a/drivers/edac/edac_core.h
-> +++ b/drivers/edac/edac_core.h
-> @@ -97,7 +97,7 @@ extern int edac_debug_level;
->  #define PCI_VEND_DEV(vend, dev) PCI_VENDOR_ID_ ## vend, \
->  	PCI_DEVICE_ID_ ## vend ## _ ## dev
->  
-> -#define dev_name(dev) (dev)->dev_name
-> +#define edac_dev_name(dev) (dev)->dev_name
->  
->  /* memory devices */
->  enum dev_type {
-> diff --git a/drivers/edac/edac_device.c b/drivers/edac/edac_device.c
-> index 63372fa..5fcd3d8 100644
-> --- a/drivers/edac/edac_device.c
-> +++ b/drivers/edac/edac_device.c
-> @@ -333,7 +333,7 @@ static int add_edac_dev_to_global_list(struct edac_device_ctl_info
-> *edac_dev)
->  fail0:
->  	edac_printk(KERN_WARNING, EDAC_MC,
->  			"%s (%s) %s %s already assigned %d\n",
-> -			rover->dev->bus_id, dev_name(rover),
-> +			rover->dev->bus_id, edac_dev_name(rover),
->  			rover->mod_name, rover->ctl_name, rover->dev_idx);
->  	return 1;
->  
-> @@ -538,7 +538,7 @@ int edac_device_add_device(struct edac_device_ctl_info *edac_dev)
->  				"'%s': DEV '%s' (%s)\n",
->  				edac_dev->mod_name,
->  				edac_dev->ctl_name,
-> -				dev_name(edac_dev),
-> +				edac_dev_name(edac_dev),
->  				edac_op_state_to_string(edac_dev->op_state));
->  
->  	mutex_unlock(&device_ctls_mutex);
-> @@ -599,7 +599,7 @@ struct edac_device_ctl_info *edac_device_del_device(struct device *dev)
->  	edac_printk(KERN_INFO, EDAC_MC,
->  		"Removed device %d for %s %s: DEV %s\n",
->  		edac_dev->dev_idx,
-> -		edac_dev->mod_name, edac_dev->ctl_name, dev_name(edac_dev));
-> +		edac_dev->mod_name, edac_dev->ctl_name, edac_dev_name(edac_dev));
->  
->  	return edac_dev;
->  }
-> diff --git a/drivers/edac/edac_mc.c b/drivers/edac/edac_mc.c
-> index a4cf164..d110392 100644
-> --- a/drivers/edac/edac_mc.c
-> +++ b/drivers/edac/edac_mc.c
-> @@ -402,7 +402,7 @@ static int add_mc_to_global_list(struct mem_ctl_info *mci)
->  fail0:
->  	edac_printk(KERN_WARNING, EDAC_MC,
->  		"%s (%s) %s %s already assigned %d\n", p->dev->bus_id,
-> -		dev_name(mci), p->mod_name, p->ctl_name, p->mc_idx);
-> +		edac_dev_name(mci), p->mod_name, p->ctl_name, p->mc_idx);
->  	return 1;
->  
->  fail1:
-> @@ -517,7 +517,7 @@ int edac_mc_add_mc(struct mem_ctl_info *mci)
->  
->  	/* Report action taken */
->  	edac_mc_printk(mci, KERN_INFO, "Giving out device to '%s' '%s':"
-> -		" DEV %s\n", mci->mod_name, mci->ctl_name, dev_name(mci));
-> +		" DEV %s\n", mci->mod_name, mci->ctl_name, edac_dev_name(mci));
->  
->  	mutex_unlock(&mem_ctls_mutex);
->  	return 0;
-> @@ -565,7 +565,7 @@ struct mem_ctl_info *edac_mc_del_mc(struct device *dev)
->  
->  	edac_printk(KERN_INFO, EDAC_MC,
->  		"Removed device %d for %s %s: DEV %s\n", mci->mc_idx,
-> -		mci->mod_name, mci->ctl_name, dev_name(mci));
-> +		mci->mod_name, mci->ctl_name, edac_dev_name(mci));
->  
->  	return mci;
->  }
-> diff --git a/drivers/edac/edac_pci.c b/drivers/edac/edac_pci.c
-> index 9b24340..22ec9d5 100644
-> --- a/drivers/edac/edac_pci.c
-> +++ b/drivers/edac/edac_pci.c
-> @@ -150,7 +150,7 @@ static int add_edac_pci_to_global_list(struct edac_pci_ctl_info *pci)
->  fail0:
->  	edac_printk(KERN_WARNING, EDAC_PCI,
->  		"%s (%s) %s %s already assigned %d\n",
-> -		rover->dev->bus_id, dev_name(rover),
-> +		rover->dev->bus_id, edac_dev_name(rover),
->  		rover->mod_name, rover->ctl_name, rover->pci_idx);
->  	return 1;
->  
-> @@ -360,7 +360,7 @@ int edac_pci_add_device(struct edac_pci_ctl_info *pci, int edac_idx)
->  			" DEV '%s' (%s)\n",
->  			pci->mod_name,
->  			pci->ctl_name,
-> -			dev_name(pci), edac_op_state_to_string(pci->op_state));
-> +			edac_dev_name(pci), edac_op_state_to_string(pci->op_state));
->  
->  	mutex_unlock(&edac_pci_ctls_mutex);
->  	return 0;
-> @@ -415,7 +415,7 @@ struct edac_pci_ctl_info *edac_pci_del_device(struct device *dev)
->  
->  	edac_printk(KERN_INFO, EDAC_PCI,
->  		"Removed device %d for %s %s: DEV %s\n",
-> -		pci->pci_idx, pci->mod_name, pci->ctl_name, dev_name(pci));
-> +		pci->pci_idx, pci->mod_name, pci->ctl_name, edac_dev_name(pci));
->  
->  	return pci;
->  }
-> -- 
-> 1.5.5.1
-> 
-> 
-
-
-W1DUG
+It uses mac80211, or whatever softmac stack is present in
+2.6.25. Sorry for confusion.
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
