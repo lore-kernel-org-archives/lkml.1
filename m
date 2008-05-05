@@ -1,99 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762083AbYEETVg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759621AbYEETZX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762083AbYEETVg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 15:21:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752731AbYEETVZ
+	id S1759621AbYEETZX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 15:25:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752704AbYEETZG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 15:21:25 -0400
-Received: from bipbip.grupopie.com ([195.23.16.24]:58061 "EHLO
-	bipbip.grupopie.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755916AbYEETVY (ORCPT
+	Mon, 5 May 2008 15:25:06 -0400
+Received: from winston.telenet-ops.be ([195.130.137.75]:33838 "EHLO
+	winston.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751996AbYEETZE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 15:21:24 -0400
-Message-ID: <481F5E2F.1030806@grupopie.com>
-Date: Mon, 05 May 2008 20:21:19 +0100
-From: Paulo Marques <pmarques@grupopie.com>
-Organization: Grupo PIE
-User-Agent: Thunderbird 1.5.0.14 (X11/20071210)
+	Mon, 5 May 2008 15:25:04 -0400
+Date: Mon, 5 May 2008 21:25:02 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+cc: Linux/m68k <linux-m68k@vger.kernel.org>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>
+Subject: [PATCH 0/3] m68k mac_esp prerequisites and updates
+Message-ID: <Pine.LNX.4.64.0805052118050.24098@anakin>
 MIME-Version: 1.0
-To: Sebastian Siewior <lkml@ml.breakpoint.cc>
-CC: Greg Ungerer <gerg@snapgear.com>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, gerg@uclinux.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] m68knommu: add pretty back strace
-References: <200805010216.m412GcUQ004101@goober> <481B6B3D.9060200@grupopie.com> <20080502211038.GB22631@Chamillionaire.breakpoint.cc>
-In-Reply-To: <20080502211038.GB22631@Chamillionaire.breakpoint.cc>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sebastian Siewior wrote:
-> * Paulo Marques | 2008-05-02 20:27:57 [+0100]:
-> 
->> Greg Ungerer wrote:
->>> From: Sebastian Siewior <bigeasy@linutronix.de>
->>> With this patch and
->>>  CONFIG_FRAME_POINTER=y
->>>  CONFIG_KALLSYMS=y
->>> The backtrace shows resolved function names and their numeric
->>> address.
->> This is really not my area, but this patch reminds me of all the dwarf2 
->> unwinder on x86 that caused so many problems in the beginning...
->>
->>> [...]
->>> +#ifdef CONFIG_FRAME_POINTER
->>> +	printk(KERN_EMERG "Call Trace:\n");
->>> +
->>> +	last_stack = stack - 1;
->>> +	while (stack <= endstack && stack > last_stack) {
->>> +
->>> +		addr = *(stack + 1);
->>> +		printk(KERN_EMERG " [%08lx] ", addr);
->>> +		print_symbol(KERN_CONT "%s\n", addr);
->>> +
->>> +		last_stack = stack;
->>> +		stack = (unsigned long *)*stack;
->>>  	}
->>>  	printk("\n");
->>> +#else
->>> +	printk(KERN_EMERG "CONFIG_FRAME_POINTER disabled, no symbolic call 
->>> trace\n");
->> You could probably fall back to the old method in this case, no?
-> The old method printed every value from stack which was in the text
-> range (you didn't get modules AFAIK). This might be the caller as well a
-> function pointer as argument as well something else. I tried to find to
-> find a pattern without frame pointers but I had no luck. I thing the
-> caller fixed the stack frame or something.
-> Greg did not complain about removing it. If you or others want the old
-> method in case of no frame pointers I can send a patch.
+	Hi Linus, Andrew
 
-Having output garbled with "false positive" addresses, but that have the 
-"true positives" in between is better than no output at all.
+The new mac_esp SCSI driver already went in through the linux-scsi tree in
 
->> Also, if the stack is slightly corrupted on the top, the new method might 
->> just bail out without giving any indication about the path that lead there, 
->> when instead it could also fall back to the old method.
-> You mean by slightly that the first caller ORed the address with
-> something? 
+    commit 6fe07aaffbf086a0ce9134ef27ce4a8921ff5947
+    Author: Finn Thain <fthain@telegraphics.com.au>
+    Date:   Fri Apr 25 10:06:05 2008 -0500
 
-Or more commonly, a buffer overflow... (or underflow, depending on how 
-the stack grows)
+    [SCSI] m68k: new mac_esp scsi driver
+	    
+    Replace the mac_esp driver with a new one based on the
+    esp_scsi core.
 
-> In that case we don't return safely. I don't know how I could
-> find out the right time for a fallback (in case of slightly corrupted
-> stack).
+Here are some more patches related to this driver:
+  [1] [PATCH] m68k: Handle 68040 bus faults
+  [2] [PATCH] m68k: remove old mac_esp cruft
+  [3] [PATCH] CONFIG_SCSI_MAC_ESP needs CONFIG_SCSI_SPI_ATTRS
 
-I was imagining you would get a page fault where you'd show a stack 
-trace, but that's on a MMU processor. With no MMU I guess you don't get 
-a chance to do that :(
+[1] is a prerequisite for the PDMA support in the mac_esp SCSI driver.
+[2] and [3] are cleanups.
 
-As I said before, this is really not my area. I just remember that a 
-very similar change in x86 was a real pain, and wanted to make sure that 
-everyone here was aware of that.
+Please apply. Thanks!
 
--- 
-Paulo Marques - www.grupopie.com
+Gr{oetje,eeting}s,
 
-"Who is general Failure and why is he reading my disk?"
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
