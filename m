@@ -1,239 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756516AbYEEKdw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757104AbYEEKhp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756516AbYEEKdw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 06:33:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752838AbYEEKdn
+	id S1757104AbYEEKhp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 06:37:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751348AbYEEKhh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 06:33:43 -0400
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:41361 "EHLO
-	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751776AbYEEKdm (ORCPT
+	Mon, 5 May 2008 06:37:37 -0400
+Received: from smtp-out01.alice-dsl.net ([88.44.60.11]:29995 "EHLO
+	smtp-out01.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750802AbYEEKhh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 06:33:42 -0400
-Message-ID: <481EE265.1020405@bull.net>
-Date: Mon, 05 May 2008 12:33:09 +0200
-From: Nadia Derbey <Nadia.Derbey@bull.net>
-Organization: BULL/DT/OSwR&D/Linux
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.6) Gecko/20040115
-X-Accept-Language: en-us, en
+	Mon, 5 May 2008 06:37:37 -0400
+Date: Mon, 5 May 2008 12:36:38 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: tglx@linutronix.de, linux-kernel@vger.kernel.org, mingo@elte.hu
+Subject: [PATCH] i386: Execute stack overflow warning on interrupt stack v2
+Message-ID: <20080505103637.GA16419@basil.nowhere.org>
 MIME-Version: 1.0
-To: Tim Pepper <lnxninja@linux.vnet.ibm.com>
-Cc: manfred@colorfullife.com, paulmck@linux.vnet.ibm.com,
-       linux-kernel@vger.kernel.org, efault@gmx.de, akpm@linux-foundation.org
-Subject: Re: [PATCH 05/10] Introduce ridr_get_new_above()
-References: <20080429143304.741001000@bull.net> <20080429143730.096357000@bull.net> <20080501043204.GD30274@tpepper-t42p.dolavim.us>
-In-Reply-To: <20080501043204.GD30274@tpepper-t42p.dolavim.us>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-OriginalArrivalTime: 05 May 2008 10:29:42.0476 (UTC) FILETIME=[EE35D0C0:01C8AE9A]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tim Pepper wrote:
-> On Tue 29 Apr at 16:33:09 +0200 Nadia.Derbey@bull.net said:
-> 
->>[PATCH 05/10]
->>
->>This patch introduces the ridr_get_new_above() routine, and some common code
->>between the idr an ridr API's.
-> 
-> 
-> The ridr_get_new_above() is the first place we see something really
-> different compared to idr (an RCU addition).  This is a lot of patching
-> so far for what would be a small incremental change otherwise.
-> 
-> 
->>Index: linux-2.6.25-mm1/include/linux/idr.h
->>===================================================================
->>--- linux-2.6.25-mm1.orig/include/linux/idr.h	2008-04-29 13:08:00.000000000 +0200
->>+++ linux-2.6.25-mm1/include/linux/idr.h	2008-04-29 14:08:47.000000000 +0200
->>@@ -71,6 +71,27 @@ struct idr {
->> }
->> #define DEFINE_IDR(name)	struct idr name = IDR_INIT(name)
->>
->>+/* Actions to be taken after a call to _idr_sub_alloc */
->>+#define IDR_DONE         -1
->>+#define IDR_NEED_TO_GROW -2
->>+#define IDR_NOMORE_SPACE -3
->>+#define IDR_GO_TOP       -4
->>+#define IDR_GO_UP        -5
-> 
-> 
-> This stuff is useful on its own in as much as it improves code
-> readability.  A lot of this patch (the "some common code between the
-> idr and ridr API's" part) could be a standalone patch distinct from the
-> ridr series and then be at the head of your stack.
-> 
-> 
->>+			return action;
->>+		case IDR_DONE:
->>+			goto end_loop;
->>+		case IDR_GO_UP:
->>+			continue;
->>+		case IDR_GO_TOP:
->>+			goto restart;
->>+		default:
->>+			m = action;
->> 			break;
->>+		}
->>+		BUG_ON(m < 0);
-> 
-> 
-> Why the added BUG_ON()?  These couple hunks are a bit muddled, so maybe I
-> missed something.  But I don't see anything different in how m or bm are
-> being manipulated such that m<0 is anymore likely after this patch.
-> 
-> 
->>Index: linux-2.6.25-mm1/lib/ridr.c
->>===================================================================
->>--- linux-2.6.25-mm1.orig/lib/ridr.c	2008-04-29 13:23:17.000000000 +0200
->>+++ linux-2.6.25-mm1/lib/ridr.c	2008-04-29 14:03:35.000000000 +0200
->>@@ -11,6 +11,23 @@
->> static struct kmem_cache *ridr_layer_cache;
->>
->>
->>+static struct ridr_layer *get_from_free_list(struct ridr *idp)
->>+{
->>+	struct ridr_layer *q;
->>+	struct idr_layer *p;
->>+	unsigned long flags;
->>+
->>+	spin_lock_irqsave(&idp->lock, flags);
->>+	if ((q = idp->id_free)) {
->>+		p = ridr_to_idr(q);
->>+		idp->id_free = p->ary[0];
->>+		idp->id_free_cnt--;
->>+		p->ary[0] = NULL;
->>+	}
->>+	spin_unlock_irqrestore(&idp->lock, flags);
->>+	return(q);
->>+}
->>+
-> 
-> 
-> idr's alloc_layer() in disguise?
-> 
-> 
->>+static int sub_alloc(struct ridr *idp, int *starting_id,
->>+			struct ridr_layer **rpa, struct idr_layer **pa)
-> 
-> 
-> ...
-> More or less duplication
-> ...
-> 
-> 
->>+		 * Create the layer below if it is missing.
->>+		 */
->>+		if (!p->ary[m]) {
->>+			new = get_from_free_list(idp);
->>+			if (!new)
->>+				return -1;
->>+			rcu_assign_pointer(p->ary[m], new);
->>+			p->count++;
->>+		}
->>+		pa[l] = p;
->>+		rpa[l--] = idr_to_ridr(p);
->>+		p = p->ary[m];
->>+	}
->>+
->>+end_loop:
->>+	pa[l] = p;
->>+	rpa[l] = idr_to_ridr(p);
->>+	return id;
->>+}
-> 
-> 
-> Oh but wait..there's some RCU-ness tucked in there.
-> 
-> 
->>+
->>+static int ridr_get_empty_slot(struct ridr *idp, int starting_id,
->>+			      struct ridr_layer **rpa, struct idr_layer **pa)
->>+{
->>+	struct ridr_layer *p, *rnew;
->>+	int layers, v, id;
->>+	unsigned long flags;
->>+
->>+	id = starting_id;
->>+build_up:
->>+	p = idp->top;
->>+	layers = idp->layers;
->>+	if (unlikely(!p)) {
->>+		p = get_from_free_list(idp);
->>+		if (!p)
->>+			return -1;
->>+		layers = 1;
->>+	}
->>+	/*
->>+	 * Add a new layer to the top of the tree if the requested
->>+	 * id is larger than the currently allocated space.
->>+	 */
->>+	while (layers < MAX_LEVEL - 1 && id >= (1 << (layers * IDR_BITS))) {
-> 
->                ^^                   ^^
-> Dropped some parens.  Otherwise more duplication...
-> 
-> 
->>+				rnew->idr.ary[0] = NULL;
->>+				rnew->idr.bitmap = rnew->idr.count = 0;
->>+				__move_to_free_list(idp, rnew);
->>+			}
->>+			spin_unlock_irqrestore(&idp->lock, flags);
->>+			return -1;
->>+		}
->>+		_idr_set_new_slot(ridr_to_idr(rnew), ridr_to_idr(p));
->>+		p = rnew;
->>+	}
->>+	rcu_assign_pointer(idp->top, p);
->>+	idp->layers = layers;
->>+	v = sub_alloc(idp, &id, rpa, pa);
->>+	if (v == IDR_NEED_TO_GROW)
->>+		goto build_up;
->>+	return(v);
->>+}
-> 
-> 
-> Some more RCU.
-> 
-> 
->>+static int ridr_get_new_above_int(struct ridr *idp, void *ptr, int starting_id)
->>+{
->>+	struct ridr_layer *rpa[MAX_LEVEL];
->>+	struct idr_layer *pa[MAX_LEVEL];
->>+	int id;
->>+
->>+	id = ridr_get_empty_slot(idp, starting_id, rpa, pa);
->>+	if (id >= 0) {
->>+		/*
->>+		 * Successfully found an empty slot.  Install the user
->>+		 * pointer and mark the slot full.
->>+		 */
->>+		rcu_assign_pointer(pa[0]->ary[id & IDR_MASK],
->>+				(struct ridr_layer *)ptr);
->>+		pa[0]->count++;
->>+		_idr_mark_full(pa, id);
->>+	}
->>+
->>+	return id;
->>+}
-> 
-> 
-> And other line of RCU.
-> 
-> OK.  So at this point in patch 5/10 we've got 3 lines of new code and
-> hundreds of lines of duplicated code?
-> 
-> A while more looking through the rest of the patches for the rest of the
-> context and I might be able to actually think about the implications of
-> these three lines being where they are.
-> 
-> Locking changes are complicated enough without all this obfuscation!
-> I understand the desire to not break IDR, but...
-> 
+i386: Execute stack overflow warning on interrupt stack v2
 
-OK, you convinced me. I'll re-send a new patchset that is incremental on 
-top of idr. Sorry (and thanks a lot) for the painful review!
+[Found the problem that caused the warnings on some configs now]
 
-Regards,
-Nadia
+Previously the reporting printk would run on the process stack, which risks 
+overflow an already low stack. Instead execute it on the interrupt stack.
+This makes it more likely for the printk to make it actually out.
+
+It adds one not taken test/branch more to the interrupt path when
+stack overflow checking is enabled. We could avoid that by duplicating
+more code, but that seemed not worth it.
+
+Based on an observation by Eric Sandeen.
+
+v2: Fix warnings in some configs
+
+Signed-off-by: Andi Kleen <andi@firstfloor.org>
+
+---
+ arch/x86/kernel/irq_32.c |   51 +++++++++++++++++++++++++++++++----------------
+ 1 file changed, 34 insertions(+), 17 deletions(-)
+
+Index: linux/arch/x86/kernel/irq_32.c
+===================================================================
+--- linux.orig/arch/x86/kernel/irq_32.c
++++ linux/arch/x86/kernel/irq_32.c
+@@ -61,6 +61,26 @@ static union irq_ctx *hardirq_ctx[NR_CPU
+ static union irq_ctx *softirq_ctx[NR_CPUS] __read_mostly;
+ #endif
+ 
++static void stack_overflow(void)
++{
++	printk("low stack detected by irq handler\n");
++	dump_stack();
++}
++
++static inline void call_on_stack2(void *func, void *stack,
++			   unsigned long arg1, unsigned long arg2)
++{
++	unsigned long bx;
++	asm volatile(
++			"	xchgl  %%ebx,%%esp    \n"
++			"	call   *%%edi	      \n"
++			"	movl   %%ebx,%%esp    \n"
++			: "=a" (arg1), "=d" (arg2), "=b" (bx)
++			:  "0" (arg1),	 "1" (arg2),  "2" (stack),
++			   "D" (func)
++			: "memory", "cc", "ecx");
++}
++
+ /*
+  * do_IRQ handles all normal device IRQ's (the special
+  * SMP cross-CPU interrupts have their own specific
+@@ -76,6 +96,7 @@ unsigned int do_IRQ(struct pt_regs *regs
+ 	union irq_ctx *curctx, *irqctx;
+ 	u32 *isp;
+ #endif
++	int overflow = 0;
+ 
+ 	if (unlikely((unsigned)irq >= NR_IRQS)) {
+ 		printk(KERN_EMERG "%s: cannot handle IRQ %d\n",
+@@ -92,11 +113,8 @@ unsigned int do_IRQ(struct pt_regs *regs
+ 
+ 		__asm__ __volatile__("andl %%esp,%0" :
+ 					"=r" (sp) : "0" (THREAD_SIZE - 1));
+-		if (unlikely(sp < (sizeof(struct thread_info) + STACK_WARN))) {
+-			printk("do_IRQ: stack overflow: %ld\n",
+-				sp - sizeof(struct thread_info));
+-			dump_stack();
+-		}
++		if (unlikely(sp < (sizeof(struct thread_info) + STACK_WARN)))
++			overflow = 1;
+ 	}
+ #endif
+ 
+@@ -112,8 +130,6 @@ unsigned int do_IRQ(struct pt_regs *regs
+ 	 * current stack (which is the irq stack already after all)
+ 	 */
+ 	if (curctx != irqctx) {
+-		int arg1, arg2, bx;
+-
+ 		/* build the stack frame on the IRQ stack */
+ 		isp = (u32*) ((char*)irqctx + sizeof(*irqctx));
+ 		irqctx->tinfo.task = curctx->tinfo.task;
+@@ -127,18 +143,19 @@ unsigned int do_IRQ(struct pt_regs *regs
+ 			(irqctx->tinfo.preempt_count & ~SOFTIRQ_MASK) |
+ 			(curctx->tinfo.preempt_count & SOFTIRQ_MASK);
+ 
+-		asm volatile(
+-			"       xchgl  %%ebx,%%esp    \n"
+-			"       call   *%%edi         \n"
+-			"       movl   %%ebx,%%esp    \n"
+-			: "=a" (arg1), "=d" (arg2), "=b" (bx)
+-			:  "0" (irq),   "1" (desc),  "2" (isp),
+-			   "D" (desc->handle_irq)
+-			: "memory", "cc", "ecx"
+-		);
++		/* Execute warning on interrupt stack */
++		if (unlikely(overflow))
++			call_on_stack2(stack_overflow, isp, 0, 0);
++
++		call_on_stack2(desc->handle_irq, isp, irq, (unsigned long)desc);
+ 	} else
+ #endif
++	{
++		/* AK: Slightly bogus here */
++		if (overflow)
++			stack_overflow();
+ 		desc->handle_irq(irq, desc);
++	}
+ 
+ 	irq_exit();
+ 	set_irq_regs(old_regs);
