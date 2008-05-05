@@ -1,82 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752691AbYEESZd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760285AbYEESZ4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752691AbYEESZd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 14:25:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759408AbYEESXz
+	id S1760285AbYEESZ4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 14:25:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759925AbYEESYZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 14:23:55 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:35136 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759285AbYEESXx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 14:23:53 -0400
-Date: Mon, 5 May 2008 20:24:28 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Parag Warudkar <parag.warudkar@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "akpm@osdl.org" <akpm@osdl.org>, Peter Zijlstra <peterz@infradead.org>,
-       Arjan van de Ven <arjan@infradead.org>, Dave Jones <davej@redhat.com>
-Subject: Re: [PATCH] default to n for GROUP_SCHED and FAIR_GROUP_SCHED
-Message-ID: <20080505182427.GA2025@uranus.ravnborg.org>
-References: <82e4877d0805031742o464dd581wd93173d79705ce0d@mail.gmail.com> <20080504092417.GA3425@elte.hu> <82e4877d0805050814j721ae522k84384df48c9f4336@mail.gmail.com> <20080505171501.GA22332@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 5 May 2008 14:24:25 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:17247 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759914AbYEESYY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 May 2008 14:24:24 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=vdmyxFrJdZQ0I9kEFjTZnLGXG1TGYYs0eFPFvWDndIMgyoJaQaVe34he295i3fmTH
+	Gbq53e3R5seZqelLR0DEw==
+Message-ID: <6599ad830805051124t6f0fce0bu510adb7718c42a20@mail.gmail.com>
+Date: Mon, 5 May 2008 11:24:11 -0700
+From: "Paul Menage" <menage@google.com>
+To: "Adrian Bunk" <bunk@kernel.org>
+Subject: Re: [2.6 patch] make cgroup_seqfile_release() static
+Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <20080505182154.GF17139@cs181133002.pp.htv.fi>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080505171501.GA22332@elte.hu>
-User-Agent: Mutt/1.4.2.1i
+References: <20080505182154.GF17139@cs181133002.pp.htv.fi>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 05, 2008 at 07:15:01PM +0200, Ingo Molnar wrote:
-> 
-> * Parag Warudkar <parag.warudkar@gmail.com> wrote:
-> 
-> > sched-devel does not boot on my machine - stops right after PCI: Not 
-> > using mmconfig.
-> > 
-> > Here is my config for sched-devel - I did a echo "n" | make oldconfig 
-> > after copying over the previous config file BTW. Should I try 
-> > disabling things in config? What's most likely to break boot? (Seems 
-> > likes there are a lot of significant changes in there.)
-> 
-> every config is supposed to work, but in general you should pick the 
-> defaults instead of saying 'n' to all questions. As long as every 
-> question can be answered with an 'enter', this should work:
-> 
->   make oldconfig < /dev/null
-> 
-> this non-interactive 'make oldconfig' will hang with the kconfig tool 
-> looping infinitely if there's any numeric question that cannot be 
-> answered via 'enter'.
-> 
-> This is a many years old kconfig bug that is frequently hacked around in 
-> distro kernel packages but which has been ignored upstream - i've 
-> attached Fedora's nonint_oldconfig patch from Dave Jones below. (maybe 
-> Arjan wrote it originally?)
+On Mon, May 5, 2008 at 11:21 AM, Adrian Bunk <bunk@kernel.org> wrote:
+> cgroup_seqfile_release() can become static.
+>
+>  Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
-In latest kbuild.git I've added a new feature.
+Acked-by: Paul Menage <menage@google.com>
 
-	make K=.config alldefconfig
+Thanks,
 
-would give you eaxtly what you request here.
-K= is used to say where to locate the base-configuration.
+Paul
 
-The above will give you a configuration based on your old configuration
-with all new options set to default values.
-
-That could maybe be more intuitive but when you consider it you
-could have your base config in many different places.
-Like /boot/config-xxx, /proc/config.gz etc.
-So allowing the user to specify the base config with K= seems
-like an acceptable solution.
-
-Current version in kbuild.git is broken with respect to make O=...
-builds but that will be fixed in an hour or so.
-
-redhat has the added possibility to list new symbols.
-This is not yet included in mainline.
-Not that it is difficult - I just need to decide where/how to do it.
-
-	Sam
+>
+>  ---
+>  f08ef145219300d3279c37d22f29a22fcbcdd138 diff --git a/kernel/cgroup.c b/kernel/cgroup.c
+>  index b9d467d..ea4b8f1 100644
+>  --- a/kernel/cgroup.c
+>  +++ b/kernel/cgroup.c
+>  @@ -1560,7 +1560,7 @@ static int cgroup_seqfile_show(struct seq_file *m, void *arg)
+>         return cft->read_seq_string(state->cgroup, cft, m);
+>   }
+>
+>  -int cgroup_seqfile_release(struct inode *inode, struct file *file)
+>  +static int cgroup_seqfile_release(struct inode *inode, struct file *file)
+>   {
+>         struct seq_file *seq = file->private_data;
+>         kfree(seq->private);
+>
+>
