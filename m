@@ -1,57 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757494AbYEEP5g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758942AbYEEP6Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757494AbYEEP5g (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 11:57:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751834AbYEEP51
+	id S1758942AbYEEP6Y (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 11:58:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752071AbYEEP6Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 11:57:27 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:18563 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750729AbYEEP51 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 11:57:27 -0400
-Date: Mon, 5 May 2008 08:56:09 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: "Ravinandan Arakali (rarakali)" <rarakali@cisco.com>
-Cc: "Linux Kernel" <linux-kernel@vger.kernel.org>
-Subject: Re: Patches for piping to core pattern ?
-Message-Id: <20080505085609.32482c03.randy.dunlap@oracle.com>
-In-Reply-To: <FA6FB5FA4DA6BF4386D129273B2E3EC3034CA104@xmb-sjc-214.amer.cisco.com>
-References: <FA6FB5FA4DA6BF4386D129273B2E3EC3034CA104@xmb-sjc-214.amer.cisco.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 5 May 2008 11:58:16 -0400
+Received: from mga02.intel.com ([134.134.136.20]:27542 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751443AbYEEP6Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 May 2008 11:58:16 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.27,438,1204531200"; 
+   d="scan'208";a="278026365"
+From: Jesse Barnes <jesse.barnes@intel.com>
+To: Frans Pop <elendil@planet.nl>
+Subject: Re: [git head] Should X86_PAT really default to yes?
+Date: Mon, 5 May 2008 08:57:57 -0700
+User-Agent: KMail/1.9.9
+Cc: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       linux-kernel@vger.kernel.org, "Ingo Molnar" <mingo@elte.hu>,
+       "Packard, Keith" <keith.packard@intel.com>
+References: <200805022122.03576.elendil@planet.nl> <200805021340.24987.jesse.barnes@intel.com> <200805040910.57088.elendil@planet.nl>
+In-Reply-To: <200805040910.57088.elendil@planet.nl>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Disposition: inline
+Message-Id: <200805050857.57661.jesse.barnes@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 4 May 2008 19:24:59 -0700 Ravinandan Arakali (rarakali) wrote:
+On Sunday, May 04, 2008 12:10 am Frans Pop wrote:
+> On Friday 02 May 2008, Jesse Barnes wrote:
+> > This is just a transient issue during VT switch or server exit though,
+> > right? X functionality isn't affected, and your VTs work fine?
+>
+> Transient only. I've just tested again and this time the band
+> was visible on top of the text on VT1 for about 2 seconds. Then it
+> disappeared.
+> The artifacts also appear when I log out from KDE (i.e. without exiting the
+> server), and I also get the messages when logging out and logging in again.
+>
+> I do not see any performance issues, but I've only used this kernel for a
+> very short time.
+>
+> > If so, it might not be a PAT issue but just a different memory layout or
+> > something (and therefore it would really just be a cosmetic bug in the X
+> > driver).
+>
+> The artifacts may not be a PAT issue directly, but it is a clear regression
+> for me as I currently have a nice clean screen when X shuts down. I'm also
+> 100% sure that it is caused by enabling PAT. A kernel with same config and
+> only PAT disabled does not show the artifacts.
+>
+> Would you like me to file a bug against X for these artifacts?
+> If so, against what component? The i810 driver or the server?
 
-> Hi,
-> I am trying to port the "piping cores to an executable" to
-> our kernel (2.6.10 based). I took Andi Kleen's patch (3/3)
-> available at http://lwn.net/Articles/195310/ and some of
-> the supporting functions from 2.6.19. But it's not working
-> for me.
-> 
-> Andi's patch mentions "Using the infrastructure created in 
-> previous patches implement support to pipe core dumps into 
-> programs."
-> 
-> Can somebody point me to these previous patches ?
+I suspect an i810 driver bug is being uncovered here, since we do have 
+transient VT switch corruption on some other platforms (we're just exposing 
+our chip reprogramming on the screen, rather than keeping it off the whole 
+time).  But there could also be something PAT specific going on, I'll have to 
+walk through those code paths...
 
-I don't know if these patches 1/3 and 2/3 represent the complete
-infrastructure that Andi referred to, but you can find them here:
+> Also attached a dmesg that shows the messages. As you can see there are
+> some repeats.
+> - first 22 "expected mapping type" when X is started
+> - second 22 "expected mapping type" when logging in
+> - 9 "freeing invalid memtype" when logging out
+> - 22 "expected mapping type" when logging in again
+> - 9 "freeing invalid memtype" when logging out again
+> - last series "expected mapping type" when restarting X server
+>
+> I must say that I'm fairly disappointed by your (plural) attitude to these
+> regressions, especially given that you both seem to feel it is important
+> that people will actually use PAT.
 
-http://www.uwsg.indiana.edu/hypermail/linux/kernel/0608.1/2339.html
-http://www.uwsg.indiana.edu/hypermail/linux/kernel/0608.1/2340.html
+Oh the messages should be removed or somehow minimized, I agree.  I'm just not 
+sure if the other bug is serious enough to block PAT by default yet, but 
+either way we should fix the bugs!
 
+> That said, I'll be happy to help trace and get these issues fixed.
 
----
-~Randy
+Thanks for your help so far...
+
+Jesse
