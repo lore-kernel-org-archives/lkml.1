@@ -1,53 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762713AbYEEVcz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762815AbYEEVdW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762713AbYEEVcz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 17:32:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758156AbYEEVcp
+	id S1762815AbYEEVdW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 17:33:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759976AbYEEVcr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Mon, 5 May 2008 17:32:47 -0400
+Received: from outbound-wa4.frontbridge.com ([216.32.181.16]:51777 "EHLO
+	outbound2-wa4-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758240AbYEEVcp convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 5 May 2008 17:32:45 -0400
-Received: from fg-out-1718.google.com ([72.14.220.157]:13337 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757455AbYEEVco (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 17:32:44 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=oy/R9Nc+83PfqH0Y4yRJe5f1ssAHW9Ix9T3rqMAd8YwWz29OPokN7VJmmG7CQktNZH46CZUaRomrqyi/Y0QKkslHLe4gCftnhcRvuI5dvzCVm9loyGhLFYlKjd0uN85YJG/+16vRpU/cteF5Ir18dKEbc9/wBSuEUZCnI0n0ni8=
-Message-ID: <30c6373b0805051432k2c5c3311vffb10fdf2a0ac1cd@mail.gmail.com>
-Date: Mon, 5 May 2008 14:32:41 -0700
-From: "Kevin Burton" <burton@tailrank.com>
-To: "Chris Friesen" <cfriesen@nortel.com>
-Subject: Re: Ability to limit or disable page caching?
-Cc: "Rik van Riel" <riel@redhat.com>, "FD Cami" <francois.cami@free.fr>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <481F7613.6040809@nortel.com>
+X-BigFish: VP
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 149.199.60.83;Service: EHS
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <30c6373b0805050012o505c0540i116a31bc1ab9ce9f@mail.gmail.com>
-	 <20080505131607.5556b1f2@olorin>
-	 <30c6373b0805051134m634efbbdn45167c1eae29df4a@mail.gmail.com>
-	 <20080505212831.22371732@olorin>
-	 <30c6373b0805051242o2f38f0a3v62bd43f4fa01559e@mail.gmail.com>
-	 <20080505164446.2ec9a543@cuia.bos.redhat.com>
-	 <481F7613.6040809@nortel.com>
-X-Google-Sender-Auth: 67b2d4d613d27a06
+Content-Type: text/plain;
+	charset="US-ASCII"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH 07/56] microblaze_v2: Signal support
+Date: Mon, 5 May 2008 14:32:45 -0700
+In-reply-to: <9a7c6646e5dd9724c1cf34767adec181481fa3ef.1209897266.git.monstr@monstr.eu>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH 07/56] microblaze_v2: Signal support
+Thread-Index: Aciujy71PhccAjECScS5EtNJWeeZogAaFfDw
+References: <a4a778e34c66d126f5c4bf1ca423cf32950ea5ab.1209897266.git.monstr@monstr.eu> <9a7c6646e5dd9724c1cf34767adec181481fa3ef.1209897266.git.monstr@monstr.eu>
+From: "Stephen Neuendorffer" <stephen.neuendorffer@xilinx.com>
+To: <monstr@seznam.cz>, <linux-kernel@vger.kernel.org>
+Cc: <arnd@arndb.de>, <linux-arch@vger.kernel.org>,
+       "John Linn" <linnj@xilinx.com>, <john.williams@petalogix.com>,
+       <matthew@wil.cx>, <will.newton@gmail.com>, <drepper@redhat.com>,
+       <microblaze-uclinux@itee.uq.edu.au>, <grant.likely@secretlab.ca>,
+       "Michal Simek" <monstr@monstr.eu>
+X-OriginalArrivalTime: 05 May 2008 21:32:44.0031 (UTC) FILETIME=[8DDD60F0:01C8AEF7]
+Message-Id: <20080505213244.8DC757A0084@mail70-wa4.bigfish.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'd like to be able to disable the cache altogether.....  It seems
-like an easy tunable to add and might help benefit future testing.
+
+(multiple places)  can this code (and flush_cache_sigtramp()) go away?
+
++#if 0
++		flush_cache_sigtramp((unsigned long)frame->tramp);
++#endif
 
 
--- 
-Founder/CEO Tailrank.com
-Location: San Francisco, CA
-AIM/YIM: sfburtonator
-Skype: burtonator
-Work: http://spinn3r.com and http://tailrank.com
-Blog: http://feedblog.org
-Cell: 415-637-8078
-Fax: 1-415-358-419 PIN: 0092
