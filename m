@@ -1,63 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758947AbYEEJ5V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759236AbYEEJ5u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758947AbYEEJ5V (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 05:57:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755884AbYEEJz2
+	id S1759236AbYEEJ5u (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 05:57:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758194AbYEEJze
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 05:55:28 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:38321 "EHLO
+	Mon, 5 May 2008 05:55:34 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:38339 "EHLO
 	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754915AbYEEJzZ (ORCPT
+	with ESMTP id S1758080AbYEEJzb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 05:55:25 -0400
-Message-Id: <20080505095517.214430823@szeredi.hu>
+	Mon, 5 May 2008 05:55:31 -0400
+Message-Id: <20080505095520.685137048@szeredi.hu>
 References: <20080505095440.820370974@szeredi.hu>
 User-Agent: quilt/0.45-1
-Date: Mon, 05 May 2008 11:54:48 +0200
+Date: Mon, 05 May 2008 11:54:50 +0200
 From: Miklos Szeredi <miklos@szeredi.hu>
 To: akpm@linux-foundation.org
 Cc: hch@infradead.org, viro@ZenIV.linux.org.uk, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org,
-       Mikulas Patocka <mikulas@artax.karlin.mff.cuni.cz>
-Subject: [patch 07/15] hpfs: dont call notify_change
-Content-Disposition: inline; filename=hpfs_notify_change_cleanup.patch
+       linux-fsdevel@vger.kernel.org
+Subject: [patch 09/15] vfs: immutable inode checking cleanup
+Content-Disposition: inline; filename=immutable_cleanup.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Miklos Szeredi <mszeredi@suse.cz>
 
-hpfs_unlink() calls notify_change() to truncate the file before
-deleting.  Replace with explicit call to hpfs_notify_change().
-
-This is equivalent, except that:
- - security_inode_setattr() is not called before hpfs_notify_change()
- - fsnotify_change() is not called after hpfs_notify_change()
-
-The truncation is just an implementation detail, so both the security
-check and the notification are unnecessary.
-
-Possibly even the ctime modification is wrong?
+Move the immutable and append-only checks from chmod, chown and utimes
+into notify_change().  Checks for immutable and append-only files are
+always performed by the VFS and not by the filesystem (see
+permission() and may_...() in namei.c), so these belong in
+notify_change(), and not in inode_change_ok().
 
 Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
-CC: Mikulas Patocka <mikulas@artax.karlin.mff.cuni.cz>
 ---
- fs/hpfs/namei.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ fs/attr.c   |    6 ++++++
+ fs/open.c   |   24 ++----------------------
+ fs/utimes.c |    4 ----
+ 3 files changed, 8 insertions(+), 26 deletions(-)
 
-Index: linux-2.6/fs/hpfs/namei.c
+Index: linux-2.6/fs/open.c
 ===================================================================
---- linux-2.6.orig/fs/hpfs/namei.c	2008-05-05 11:29:20.000000000 +0200
-+++ linux-2.6/fs/hpfs/namei.c	2008-05-05 11:29:26.000000000 +0200
-@@ -426,7 +426,8 @@ again:
- 			/*printk("HPFS: truncating file before delete.\n");*/
- 			newattrs.ia_size = 0;
- 			newattrs.ia_valid = ATTR_SIZE | ATTR_CTIME;
--			err = notify_change(dentry, &newattrs);
-+			newattrs.ia_ctime = current_fs_time(inode->i_sb);
-+			err = hpfs_notify_change(dentry, &newattrs);
- 			put_write_access(inode);
- 			if (!err)
- 				goto again;
+--- linux-2.6.orig/fs/open.c	2008-05-05 11:29:20.000000000 +0200
++++ linux-2.6/fs/open.c	2008-05-05 11:29:26.000000000 +0200
+@@ -582,9 +582,6 @@ asmlinkage long sys_fchmod(unsigned int 
+ 	err = mnt_want_write(file->f_path.mnt);
+ 	if (err)
+ 		goto out_putf;
+-	err = -EPERM;
+-	if (IS_IMMUTABLE(inode) || IS_APPEND(inode))
+-		goto out_drop_write;
+ 	mutex_lock(&inode->i_mutex);
+ 	if (mode == (mode_t) -1)
+ 		mode = inode->i_mode;
+@@ -592,8 +589,6 @@ asmlinkage long sys_fchmod(unsigned int 
+ 	newattrs.ia_valid = ATTR_MODE | ATTR_CTIME;
+ 	err = notify_change(dentry, &newattrs);
+ 	mutex_unlock(&inode->i_mutex);
+-
+-out_drop_write:
+ 	mnt_drop_write(file->f_path.mnt);
+ out_putf:
+ 	fput(file);
+@@ -617,11 +612,6 @@ asmlinkage long sys_fchmodat(int dfd, co
+ 	error = mnt_want_write(nd.path.mnt);
+ 	if (error)
+ 		goto dput_and_out;
+-
+-	error = -EPERM;
+-	if (IS_IMMUTABLE(inode) || IS_APPEND(inode))
+-		goto out_drop_write;
+-
+ 	mutex_lock(&inode->i_mutex);
+ 	if (mode == (mode_t) -1)
+ 		mode = inode->i_mode;
+@@ -629,8 +619,6 @@ asmlinkage long sys_fchmodat(int dfd, co
+ 	newattrs.ia_valid = ATTR_MODE | ATTR_CTIME;
+ 	error = notify_change(nd.path.dentry, &newattrs);
+ 	mutex_unlock(&inode->i_mutex);
+-
+-out_drop_write:
+ 	mnt_drop_write(nd.path.mnt);
+ dput_and_out:
+ 	path_put(&nd.path);
+@@ -645,18 +633,10 @@ asmlinkage long sys_chmod(const char __u
+ 
+ static int chown_common(struct dentry * dentry, uid_t user, gid_t group)
+ {
+-	struct inode * inode;
++	struct inode *inode = dentry->d_inode;
+ 	int error;
+ 	struct iattr newattrs;
+ 
+-	error = -ENOENT;
+-	if (!(inode = dentry->d_inode)) {
+-		printk(KERN_ERR "chown_common: NULL inode\n");
+-		goto out;
+-	}
+-	error = -EPERM;
+-	if (IS_IMMUTABLE(inode) || IS_APPEND(inode))
+-		goto out;
+ 	newattrs.ia_valid =  ATTR_CTIME;
+ 	if (user != (uid_t) -1) {
+ 		newattrs.ia_valid |= ATTR_UID;
+@@ -672,7 +652,7 @@ static int chown_common(struct dentry * 
+ 	mutex_lock(&inode->i_mutex);
+ 	error = notify_change(dentry, &newattrs);
+ 	mutex_unlock(&inode->i_mutex);
+-out:
++
+ 	return error;
+ }
+ 
+Index: linux-2.6/fs/attr.c
+===================================================================
+--- linux-2.6.orig/fs/attr.c	2008-05-05 11:29:20.000000000 +0200
++++ linux-2.6/fs/attr.c	2008-05-05 11:29:26.000000000 +0200
+@@ -108,6 +108,12 @@ int notify_change(struct dentry * dentry
+ 	struct timespec now;
+ 	unsigned int ia_valid = attr->ia_valid;
+ 
++	if (ia_valid & (ATTR_MODE | ATTR_UID | ATTR_GID |
++			ATTR_ATIME_SET | ATTR_MTIME_SET)) {
++		if (IS_IMMUTABLE(inode) || IS_APPEND(inode))
++			return -EPERM;
++	}
++
+ 	now = current_fs_time(inode->i_sb);
+ 
+ 	attr->ia_ctime = now;
+Index: linux-2.6/fs/utimes.c
+===================================================================
+--- linux-2.6.orig/fs/utimes.c	2008-05-05 11:29:20.000000000 +0200
++++ linux-2.6/fs/utimes.c	2008-05-05 11:29:26.000000000 +0200
+@@ -105,10 +105,6 @@ long do_utimes(int dfd, char __user *fil
+ 	/* Don't worry, the checks are done in inode_change_ok() */
+ 	newattrs.ia_valid = ATTR_CTIME | ATTR_MTIME | ATTR_ATIME;
+ 	if (times) {
+-		error = -EPERM;
+-                if (IS_APPEND(inode) || IS_IMMUTABLE(inode))
+-			goto mnt_drop_write_and_out;
+-
+ 		if (times[0].tv_nsec == UTIME_OMIT)
+ 			newattrs.ia_valid &= ~ATTR_ATIME;
+ 		else if (times[0].tv_nsec != UTIME_NOW) {
 
 --
