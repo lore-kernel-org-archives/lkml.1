@@ -1,130 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754073AbYEEK7a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756111AbYEEK7u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754073AbYEEK7a (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 06:59:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752229AbYEEK7T
+	id S1756111AbYEEK7u (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 06:59:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754593AbYEEK73
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 06:59:19 -0400
-Received: from tomts10.bellnexxia.net ([209.226.175.54]:35701 "EHLO
-	tomts10-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755998AbYEEK7S (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 06:59:18 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AjMFABaFHkhMROPA/2dsb2JhbACBU6g3
-Date: Mon, 5 May 2008 06:59:15 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, systemtap@sources.redhat.com,
-       "Frank Ch. Eigler" <fche@redhat.com>
-Subject: Re: System call instrumentation
-Message-ID: <20080505105915.GA26444@Krystal>
-References: <20080504134838.GA21487@Krystal> <20080505065559.GD3350@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <20080505065559.GD3350@elte.hu>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 06:46:19 up 66 days,  6:57,  4 users,  load average: 0.31, 0.56,
-	0.77
-User-Agent: Mutt/1.5.16 (2007-06-11)
+	Mon, 5 May 2008 06:59:29 -0400
+Received: from saeurebad.de ([85.214.36.134]:59700 "EHLO saeurebad.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755012AbYEEK72 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 May 2008 06:59:28 -0400
+X-Mailbox-Line: From hannes@symbol.fehenstaub.lan Mon May  5 12:08:46 2008
+Message-Id: <20080505095938.326928514@symbol.fehenstaub.lan>
+User-Agent: quilt/0.46-1
+Date: Mon, 05 May 2008 11:59:38 +0200
+From: Johannes Weiner <hannes@saeurebad.de>
+To: linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Cc: Ingo Molnar <mingo@elte.hu>, Andi Kleen <andi@firstfloor.org>,
+       Yinghai Lu <yhlu.kernel@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Yasunori Goto <y-goto@jp.fujitsu.com>
+Subject: [rfc][patch 0/3] bootmem2: a memory block-oriented boot time allocator
+X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Ingo Molnar (mingo@elte.hu) wrote:
-> 
-> * Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
-> 
-> > Hi Ingo,
-> > 
-> > I looked at the system call instrumentation present in LTTng lately. I 
-> > tried different solutions, e.g. hooking a kernel-wide syscall trace in 
-> > do_syscall_trace, but it appears that I ended up re-doing another 
-> > syscall table, which consists of specialized functions which extracts 
-> > the string and data structure parameters from user-space. Since code 
-> > duplication is not exactly wanted, I think that the original approach 
-> > taken in my patchset, which is to instrument the kernel code at the 
-> > sys_* level (e.g. sys_open), which is the earliest level where the 
-> > parameter information is made available to the kernel, is still the 
-> > best way to go.
-> 
-> hm, i'm not sure about this. I've implemented system call tracing in -rt 
-> [embedded in the latency tracer] and it only needed changes in entry.S, 
-> not in every system call site. Now, granted, that tracer was simpler 
-> than what LTTng tries to do, but do we _really_ need more complexity? A 
-> trace point that simply expresses:
-> 
->    sys_call_event(int sysno, long param1, long param2, long param3,
->                              long param4, long param5, long param6);
-> 
+Hi,
 
-That would work for all system calls that doesn't have parameters like
-"const char __user *filename".
+here is a bootmem allocator replacement that uses one bitmap for all
+available pages and works with a model of contiguous memory blocks
+that reside on nodes instead of nodes only as the current allocator
+does.
 
-> would be more than enough in 99% of the cases.
+The problem is that memory nodes are not anymore garuanteed to be
+linear on certain configurations, they may overlap each other and a
+node might span page ranges that are not physically residing on it.
 
-Hrm, not sure about that :
+Note that this is in no way theoretical only, bootmem suffers from
+this fact right now: A pfn range has to be operated on on every node
+that holds it (because a PFN is not unique anymore) and bootmem can
+not garuantee that the memory allocated from a specific node actually
+resides on that node.
 
-grep asmlinkage include/linux/syscalls.h|wc -l
-321
+For example:
 
-grep -e asmlinkage.*__user include/linux/syscalls.h | wc -l
-162
+	node 0: 0-2G, 4-6G
+	node 1: 2-4G, 6-8G
 
-So about 50% of system calls have to get pointers from userspace.
+Bootmem currently sees the 2-4G range twice (and has to operate on
+both node's bitmaps) and if memory is allocated on node 1, it may
+return memory that is between the 2-4G range and actually resides on
+node 0.
 
+Bootmem2 tries to fix these fundamental design issues by using one
+bitmap for all pfns and therefor garuantees that a PFN stays unique as
+it should.  Nodes are divided into contiguous memory blocks that are
+certain to reside on one node.  A node-specific allocation request
+must fit completely into one block of the the node to garuantee
+locality.
 
-> If you want to extract 
-> the strings from the system call table, to make the filtering of these 
-> syscall events easier, do it during build time (by for example modifying 
-> the __SYSCALL() macros in unistd.h), instead of a parallel syscall 
-> table.
-> 
+For example:
 
-The goal of my second syscall table was to call callbacks to extract the
-__user parameters, nothing else, really. I currently extract the system
-call function names by iterating on the real system call table and by
-using kallsyms (it could be turned into a built-time extraction since
-the system call table is static to the kernel core).
+	node 0: block 0: 0-2G, block 1: 4-6G
+	node 1: block 2: 2-4G, block 3: 6-8G
 
-> OTOH, as long as it's just one simple nonintrusive line per syscall, 
-> it's not a big deal - as long as it only traces the parameters as they 
-> come from the syscall ABI - we wont change them anyway. I.e. hide the 
-> ugly string portion, just turn them into a simple:
-> 
->   trace_sys_getpid();
->   trace_sys_time(tloc);
->   trace_sys_gettimeofday(tz, tv);
-> 
-> (although even such a solution would still need a general policy level 
-> buy-in i guess - we dont want half of the syscalls traced, the other 
-> half objected to by maintainers. So it's either all or nothing.)
-> 
+The global bitmap represents 0-8G and every pfn is still unique.  An
+allocation request on node 1 must fit into block 2 or block 3 and the
+memory is therefor garuanteed to be reside on that node.
 
-Yup. That's ok with me.
+The important change in arch-code is that on setups with multiple
+blocks per node, every block must be registered on its own to make
+bootmem2 aware of them.  And the allocator setup in general changes to
+a two-step process: register all blocks/nodes first, then enable it by
+providing memory that is big enough to hold the bitmap for all pfns in
+the system.
 
+The implementation is similar to bootmem but the code is shorter (and
+clearer, IMHO):
 
-> and the question also arises: why not do this on a debuginfo level? This 
-> information can be extracted from the debuginfo. We could change 
-> 'asmlinkage' to 'syscall_linkage' to make it clear which functions are 
-> syscalls.
+$ sloc.awk < mm/bootmem.c
+455 lines of code, 65 lines of comments (520 lines total)
 
-Given we already have the syscall table, I am not sure we would need any
-supplementary debuginfo support. Plus, the syscall table gives us the
-mapping between the syscall number and the symbol of the system call
-function, which is exactly what we need. The only thing I dislike in my
-current approach is that I depend on kallsyms; it would be good to have
-the system call symbols without depending on it.
+$ sloc.awk < mm/bootmem2.c
+325 lines of code, 120 lines of comments (445 lines total)
 
-Mathieu
+bootmem is meant to stay until all users are migrated to bootmem2, it
+can be dropped completely after that.
 
-> 
-> 	Ingo
+Note that this is in no way production code yet, but I would like to
+have some comments on it since the core is essentially ready and
+running on my machine (and I might be already caught in a deep forest
+without seeing the trees).
 
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Sparsemem hotplug is not supported, I have not yet looked deep enough
+into its bootmem interface.  Yasunori, any suggestions?
+
+Also, it would be a stupid idea if I'd migrate arch-code I can not
+test at all, right now only x86_32 has been migrated, sorry :/
+
+	Hannes
+
+ arch/x86/Kconfig           |    1
+ arch/x86/kernel/setup_32.c |    4
+ arch/x86/mm/init_32.c      |    2
+ include/linux/bootmem.h    |    6
+ include/linux/bootmem2.h   |  207 +++++++++++++++++
+ include/linux/numa.h       |   12 -
+ mm/Kconfig                 |    3
+ mm/Makefile                |    7
+ mm/bootmem2.c              |  534 +++++++++++++++++++++++++++++++++++++++++++++
+ mm/page_alloc.c            |    4
+ 10 files changed, 772 insertions(+), 8 deletions(-)
+
