@@ -1,245 +1,174 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757236AbYEEKSS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757193AbYEEKSc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757236AbYEEKSS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 06:18:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756427AbYEEKRK
+	id S1757193AbYEEKSc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 06:18:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753715AbYEEKRO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 06:17:10 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:43888 "EHLO
+	Mon, 5 May 2008 06:17:14 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:43891 "EHLO
 	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756184AbYEEKRF (ORCPT
+	with ESMTP id S1752229AbYEEKRG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 06:17:05 -0400
-Message-Id: <20080505101644.782458023@szeredi.hu>
+	Mon, 5 May 2008 06:17:06 -0400
+Message-Id: <20080505101641.767527756@szeredi.hu>
 References: <20080505101621.216789969@szeredi.hu>
 User-Agent: quilt/0.45-1
-Date: Mon, 05 May 2008 12:16:25 +0200
+Date: Mon, 05 May 2008 12:16:23 +0200
 From: Miklos Szeredi <miklos@szeredi.hu>
 To: akpm@linux-foundation.org
 Cc: hch@infradead.org, viro@zeniv.linux.org.uk, dave@linux.vnet.ibm.com,
        ezk@cs.sunysb.edu, mhalcrow@us.ibm.com, linux-fsdevel@vger.kernel.org,
        linux-kernel@vger.kernel.org
-Subject: [patch 04/10] vfs: add path_unlink()
-Content-Disposition: inline; filename=path_unlink.patch
+Subject: [patch 02/10] vfs: add path_mkdir()
+Content-Disposition: inline; filename=path_mkdir.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Miklos Szeredi <mszeredi@suse.cz>
 
-Introduce path_unlink().  Make vfs_unlink() static.
+Introduce path_mkdir().  Make vfs_mkdir() static.
 
 Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
 ---
- fs/ecryptfs/inode.c   |   12 ++++++------
- fs/namei.c            |   22 +++++++++++++++-------
- fs/nfsd/nfs4recover.c |    3 ++-
- fs/nfsd/vfs.c         |   12 ++----------
+ fs/ecryptfs/inode.c   |   15 ++++++++-------
+ fs/namei.c            |   23 +++++++++++++++--------
+ fs/nfsd/nfs4recover.c |    6 +-----
+ fs/nfsd/vfs.c         |    2 +-
  include/linux/fs.h    |    2 +-
- ipc/mqueue.c          |   10 +++++-----
- 6 files changed, 31 insertions(+), 30 deletions(-)
+ 5 files changed, 26 insertions(+), 22 deletions(-)
 
 Index: linux-2.6/fs/ecryptfs/inode.c
 ===================================================================
---- linux-2.6.orig/fs/ecryptfs/inode.c	2008-05-05 11:29:30.000000000 +0200
-+++ linux-2.6/fs/ecryptfs/inode.c	2008-05-05 11:29:31.000000000 +0200
-@@ -415,22 +415,22 @@ static int ecryptfs_unlink(struct inode 
+--- linux-2.6.orig/fs/ecryptfs/inode.c	2008-05-05 11:29:29.000000000 +0200
++++ linux-2.6/fs/ecryptfs/inode.c	2008-05-05 11:29:29.000000000 +0200
+@@ -478,21 +478,22 @@ static int ecryptfs_mkdir(struct inode *
  {
- 	int rc = 0;
- 	struct dentry *lower_dentry = ecryptfs_dentry_to_lower(dentry);
--	struct inode *lower_dir_inode = ecryptfs_inode_to_lower(dir);
+ 	int rc;
+ 	struct dentry *lower_dentry;
 -	struct dentry *lower_dir_dentry;
 +	struct path lower_dir;
  
+ 	lower_dentry = ecryptfs_dentry_to_lower(dentry);
 -	lower_dir_dentry = lock_parent(lower_dentry);
--	rc = vfs_unlink(lower_dir_inode, lower_dentry);
+-	rc = vfs_mkdir(lower_dir_dentry->d_inode, lower_dentry, mode);
 +	lower_dir.mnt = ecryptfs_dentry_to_lower_mnt(dentry);
 +	lower_dir.dentry = lock_parent(lower_dentry);
-+	rc = path_unlink(&lower_dir, lower_dentry);
- 	if (rc) {
- 		printk(KERN_ERR "Error in vfs_unlink; rc = [%d]\n", rc);
- 		goto out_unlock;
- 	}
--	fsstack_copy_attr_times(dir, lower_dir_inode);
++	rc = path_mkdir(&lower_dir, lower_dentry, mode);
+ 	if (rc || !lower_dentry->d_inode)
+ 		goto out;
+ 	rc = ecryptfs_interpose(lower_dentry, dentry, dir->i_sb, 0);
+ 	if (rc)
+ 		goto out;
+-	fsstack_copy_attr_times(dir, lower_dir_dentry->d_inode);
+-	fsstack_copy_inode_size(dir, lower_dir_dentry->d_inode);
+-	dir->i_nlink = lower_dir_dentry->d_inode->i_nlink;
 +	fsstack_copy_attr_times(dir, lower_dir.dentry->d_inode);
- 	dentry->d_inode->i_nlink =
- 		ecryptfs_inode_to_lower(dentry->d_inode)->i_nlink;
- 	dentry->d_inode->i_ctime = dir->i_ctime;
- 	d_drop(dentry);
- out_unlock:
++	fsstack_copy_inode_size(dir, lower_dir.dentry->d_inode);
++	dir->i_nlink = lower_dir.dentry->d_inode->i_nlink;
+ out:
 -	unlock_dir(lower_dir_dentry);
 +	unlock_dir(lower_dir.dentry);
+ 	if (!dentry->d_inode)
+ 		d_drop(dentry);
  	return rc;
- }
- 
 Index: linux-2.6/fs/namei.c
 ===================================================================
---- linux-2.6.orig/fs/namei.c	2008-05-05 11:29:30.000000000 +0200
-+++ linux-2.6/fs/namei.c	2008-05-05 11:29:31.000000000 +0200
-@@ -2321,7 +2321,7 @@ asmlinkage long sys_rmdir(const char __u
- 	return do_rmdir(AT_FDCWD, pathname);
+--- linux-2.6.orig/fs/namei.c	2008-05-05 11:29:29.000000000 +0200
++++ linux-2.6/fs/namei.c	2008-05-05 11:29:29.000000000 +0200
+@@ -2128,7 +2128,7 @@ asmlinkage long sys_mknod(const char __u
+ 	return sys_mknodat(AT_FDCWD, filename, mode, dev);
  }
  
--int vfs_unlink(struct inode *dir, struct dentry *dentry)
-+static int vfs_unlink(struct inode *dir, struct dentry *dentry)
+-int vfs_mkdir(struct inode *dir, struct dentry *dentry, int mode)
++static int vfs_mkdir(struct inode *dir, struct dentry *dentry, int mode)
  {
- 	int error = may_delete(dir, dentry, 0);
+ 	int error = may_create(dir, dentry, NULL);
  
-@@ -2352,6 +2352,19 @@ int vfs_unlink(struct inode *dir, struct
+@@ -2150,6 +2150,19 @@ int vfs_mkdir(struct inode *dir, struct 
  	return error;
  }
  
-+int path_unlink(struct path *dir_path, struct dentry *dentry)
++int path_mkdir(struct path *dir_path, struct dentry *dentry, int mode)
 +{
 +	int error = mnt_want_write(dir_path->mnt);
 +
 +	if (!error) {
-+		error = vfs_unlink(dir_path->dentry->d_inode, dentry);
++		error = vfs_mkdir(dir_path->dentry->d_inode, dentry, mode);
 +		mnt_drop_write(dir_path->mnt);
 +	}
 +
 +	return error;
 +}
-+EXPORT_SYMBOL(path_unlink);
++EXPORT_SYMBOL(path_mkdir);
 +
- /*
-  * Make sure that the actual truncation of the file will occur outside its
-  * directory's i_mutex.  Truncate can take a long time if there is a lot of
-@@ -2386,11 +2399,7 @@ static long do_unlinkat(int dfd, const c
- 		inode = dentry->d_inode;
- 		if (inode)
- 			atomic_inc(&inode->i_count);
--		error = mnt_want_write(nd.path.mnt);
--		if (error)
--			goto exit2;
--		error = vfs_unlink(nd.path.dentry->d_inode, dentry);
--		mnt_drop_write(nd.path.mnt);
-+		error = path_unlink(&nd.path, dentry);
- 	exit2:
- 		dput(dentry);
- 	}
-@@ -3001,6 +3010,5 @@ EXPORT_SYMBOL(generic_permission);
+ asmlinkage long sys_mkdirat(int dfd, const char __user *pathname, int mode)
+ {
+ 	int error = 0;
+@@ -2172,12 +2185,7 @@ asmlinkage long sys_mkdirat(int dfd, con
+ 
+ 	if (!IS_POSIXACL(nd.path.dentry->d_inode))
+ 		mode &= ~current->fs->umask;
+-	error = mnt_want_write(nd.path.mnt);
+-	if (error)
+-		goto out_dput;
+-	error = vfs_mkdir(nd.path.dentry->d_inode, dentry, mode);
+-	mnt_drop_write(nd.path.mnt);
+-out_dput:
++	error = path_mkdir(&nd.path, dentry, mode);
+ 	dput(dentry);
+ out_unlock:
+ 	mutex_unlock(&nd.path.dentry->d_inode->i_mutex);
+@@ -2981,7 +2989,6 @@ EXPORT_SYMBOL(file_permission);
+ EXPORT_SYMBOL(unlock_rename);
+ EXPORT_SYMBOL(vfs_follow_link);
+ EXPORT_SYMBOL(vfs_link);
+-EXPORT_SYMBOL(vfs_mkdir);
+ EXPORT_SYMBOL(generic_permission);
  EXPORT_SYMBOL(vfs_readlink);
  EXPORT_SYMBOL(vfs_rename);
- EXPORT_SYMBOL(vfs_symlink);
--EXPORT_SYMBOL(vfs_unlink);
- EXPORT_SYMBOL(dentry_unhash);
- EXPORT_SYMBOL(generic_readlink);
 Index: linux-2.6/fs/nfsd/nfs4recover.c
 ===================================================================
---- linux-2.6.orig/fs/nfsd/nfs4recover.c	2008-05-05 11:29:30.000000000 +0200
-+++ linux-2.6/fs/nfsd/nfs4recover.c	2008-05-05 11:29:31.000000000 +0200
-@@ -252,6 +252,7 @@ out:
- static int
- nfsd4_remove_clid_file(struct dentry *dir, struct dentry *dentry)
- {
-+	struct path dir_path = { .dentry = dir, .mnt = rec_dir.path.mnt };
- 	int status;
- 
- 	if (!S_ISREG(dir->d_inode->i_mode)) {
-@@ -259,7 +260,7 @@ nfsd4_remove_clid_file(struct dentry *di
- 		return -EINVAL;
+--- linux-2.6.orig/fs/nfsd/nfs4recover.c	2008-05-05 11:29:20.000000000 +0200
++++ linux-2.6/fs/nfsd/nfs4recover.c	2008-05-05 11:29:29.000000000 +0200
+@@ -155,11 +155,7 @@ nfsd4_create_clid_dir(struct nfs4_client
+ 		dprintk("NFSD: nfsd4_create_clid_dir: DIRECTORY EXISTS\n");
+ 		goto out_put;
  	}
- 	mutex_lock_nested(&dir->d_inode->i_mutex, I_MUTEX_PARENT);
--	status = vfs_unlink(dir->d_inode, dentry);
-+	status = path_unlink(&dir_path, dentry);
- 	mutex_unlock(&dir->d_inode->i_mutex);
- 	return status;
- }
+-	status = mnt_want_write(rec_dir.path.mnt);
+-	if (status)
+-		goto out_put;
+-	status = vfs_mkdir(rec_dir.path.dentry->d_inode, dentry, S_IRWXU);
+-	mnt_drop_write(rec_dir.path.mnt);
++	status = path_mkdir(&rec_dir.path, dentry, S_IRWXU);
+ out_put:
+ 	dput(dentry);
+ out_unlock:
 Index: linux-2.6/fs/nfsd/vfs.c
 ===================================================================
---- linux-2.6.orig/fs/nfsd/vfs.c	2008-05-05 11:29:30.000000000 +0200
-+++ linux-2.6/fs/nfsd/vfs.c	2008-05-05 11:29:31.000000000 +0200
-@@ -1766,7 +1766,6 @@ nfsd_unlink(struct svc_rqst *rqstp, stru
- {
- 	struct path 	dir_path;
- 	struct dentry	*dentry, *rdentry;
--	struct inode	*dirp;
- 	__be32		err;
- 	int		host_err;
- 
-@@ -1779,7 +1778,6 @@ nfsd_unlink(struct svc_rqst *rqstp, stru
- 
- 	fh_lock_nested(fhp, I_MUTEX_PARENT);
- 	dentry = fhp->fh_dentry;
--	dirp = dentry->d_inode;
- 
- 	rdentry = lookup_one_len(fname, dentry, flen);
- 	host_err = PTR_ERR(rdentry);
-@@ -1795,10 +1793,6 @@ nfsd_unlink(struct svc_rqst *rqstp, stru
- 	if (!type)
- 		type = rdentry->d_inode->i_mode & S_IFMT;
- 
--	host_err = mnt_want_write(fhp->fh_export->ex_path.mnt);
--	if (host_err)
--		goto out_nfserr;
--
- 	fh_to_path(fhp, &dir_path);
- 	if (type != S_IFDIR) { /* It's UNLINK */
- #ifdef MSNFS
-@@ -1807,7 +1801,7 @@ nfsd_unlink(struct svc_rqst *rqstp, stru
- 			host_err = -EPERM;
- 		} else
- #endif
--		host_err = vfs_unlink(dirp, rdentry);
-+		host_err = path_unlink(&dir_path, rdentry);
- 	} else { /* It's RMDIR */
- 		host_err = path_rmdir(&dir_path, rdentry);
- 	}
-@@ -1815,12 +1809,10 @@ nfsd_unlink(struct svc_rqst *rqstp, stru
- 	dput(rdentry);
- 
- 	if (host_err)
--		goto out_drop;
-+		goto out_nfserr;
- 	if (EX_ISSYNC(fhp->fh_export))
- 		host_err = nfsd_sync_dir(dentry);
- 
--out_drop:
--	mnt_drop_write(fhp->fh_export->ex_path.mnt);
- out_nfserr:
- 	err = nfserrno(host_err);
- out:
+--- linux-2.6.orig/fs/nfsd/vfs.c	2008-05-05 11:29:29.000000000 +0200
++++ linux-2.6/fs/nfsd/vfs.c	2008-05-05 11:29:29.000000000 +0200
+@@ -1273,7 +1273,7 @@ nfsd_create(struct svc_rqst *rqstp, stru
+ 		host_err = path_create(&dir_path, dchild, iap->ia_mode, NULL);
+ 		break;
+ 	case S_IFDIR:
+-		host_err = vfs_mkdir(dirp, dchild, iap->ia_mode);
++		host_err = path_mkdir(&dir_path, dchild, iap->ia_mode);
+ 		break;
+ 	case S_IFCHR:
+ 	case S_IFBLK:
 Index: linux-2.6/include/linux/fs.h
 ===================================================================
---- linux-2.6.orig/include/linux/fs.h	2008-05-05 11:29:30.000000000 +0200
-+++ linux-2.6/include/linux/fs.h	2008-05-05 11:29:31.000000000 +0200
-@@ -1130,7 +1130,7 @@ extern int path_mknod(struct path *, str
+--- linux-2.6.orig/include/linux/fs.h	2008-05-05 11:29:29.000000000 +0200
++++ linux-2.6/include/linux/fs.h	2008-05-05 11:29:29.000000000 +0200
+@@ -1125,7 +1125,7 @@ extern void unlock_super(struct super_bl
+  */
+ extern int vfs_permission(struct nameidata *, int);
+ extern int path_create(struct path *, struct dentry *, int, struct nameidata *);
+-extern int vfs_mkdir(struct inode *, struct dentry *, int);
++extern int path_mkdir(struct path *, struct dentry *, int);
+ extern int path_mknod(struct path *, struct dentry *, int, dev_t);
  extern int vfs_symlink(struct inode *, struct dentry *, const char *, int);
  extern int vfs_link(struct dentry *, struct inode *, struct dentry *);
- extern int path_rmdir(struct path *, struct dentry *);
--extern int vfs_unlink(struct inode *, struct dentry *);
-+extern int path_unlink(struct path *, struct dentry *);
- extern int vfs_rename(struct inode *, struct dentry *, struct inode *, struct dentry *);
- 
- /*
-Index: linux-2.6/ipc/mqueue.c
-===================================================================
---- linux-2.6.orig/ipc/mqueue.c	2008-05-05 11:29:29.000000000 +0200
-+++ linux-2.6/ipc/mqueue.c	2008-05-05 11:29:31.000000000 +0200
-@@ -736,6 +736,7 @@ asmlinkage long sys_mq_unlink(const char
- 	char *name;
- 	struct dentry *dentry;
- 	struct inode *inode = NULL;
-+	struct path dir_path;
- 
- 	name = getname(u_name);
- 	if (IS_ERR(name))
-@@ -757,11 +758,10 @@ asmlinkage long sys_mq_unlink(const char
- 	inode = dentry->d_inode;
- 	if (inode)
- 		atomic_inc(&inode->i_count);
--	err = mnt_want_write(mqueue_mnt);
--	if (err)
--		goto out_err;
--	err = vfs_unlink(dentry->d_parent->d_inode, dentry);
--	mnt_drop_write(mqueue_mnt);
-+
-+	dir_path.mnt = mqueue_mnt;
-+	dir_path.dentry = dentry->d_parent;
-+	err = path_unlink(&dir_path, dentry);
- out_err:
- 	dput(dentry);
- 
 
 --
