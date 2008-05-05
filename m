@@ -1,55 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760082AbYEETz1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760112AbYEET4o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760082AbYEETz1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 15:55:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753654AbYEETzO
+	id S1760112AbYEET4o (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 15:56:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754561AbYEET4f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 15:55:14 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:38936 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751789AbYEETzM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 15:55:12 -0400
-Date: Mon, 5 May 2008 21:55:48 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Peter Oberparleiter <peter.oberparleiter@de.ibm.com>
-Cc: linux-kernel@vger.kernel.org, ltp-list@lists.sourceforge.net,
-       ltp-coverage@lists.sourceforge.net,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [RFC PATCH 2/6] kbuild: let addtree result in absolute paths only
-Message-ID: <20080505195548.GC8868@uranus.ravnborg.org>
-References: <481F26A0.5010402@de.ibm.com>
+	Mon, 5 May 2008 15:56:35 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:48958 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754630AbYEET4e (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 May 2008 15:56:34 -0400
+Date: Mon, 5 May 2008 12:56:20 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Sam Ravnborg <sam@ravnborg.org>, Parag Warudkar <parag.warudkar@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "akpm@osdl.org" <akpm@osdl.org>, Peter Zijlstra <peterz@infradead.org>,
+       Dave Jones <davej@redhat.com>
+Subject: Re: [PATCH] default to n for GROUP_SCHED and FAIR_GROUP_SCHED
+Message-ID: <20080505125620.219c4bb6@infradead.org>
+In-Reply-To: <20080505184235.GD22332@elte.hu>
+References: <82e4877d0805031742o464dd581wd93173d79705ce0d@mail.gmail.com>
+	<20080504092417.GA3425@elte.hu>
+	<82e4877d0805050814j721ae522k84384df48c9f4336@mail.gmail.com>
+	<20080505171501.GA22332@elte.hu>
+	<20080505182427.GA2025@uranus.ravnborg.org>
+	<20080505184235.GD22332@elte.hu>
+Organization: Intel
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <481F26A0.5010402@de.ibm.com>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 05, 2008 at 05:24:16PM +0200, Peter Oberparleiter wrote:
-> From: Peter Oberparleiter <peter.oberparleiter@de.ibm.com>
-> Signed-off-by: Peter Oberparleiter <peter.oberparleiter@de.ibm.com>
-> ---
->  scripts/Kbuild.include |    2 +-
->  1 files changed, 1 insertion(+), 1 deletion(-)
-> 
-> Index: linux-2.6.26-rc1/scripts/Kbuild.include
-> ===================================================================
-> --- linux-2.6.26-rc1.orig/scripts/Kbuild.include
-> +++ linux-2.6.26-rc1/scripts/Kbuild.include
-> @@ -144,7 +144,7 @@ ld-option = $(call try-run,\
->  build := -f $(if $(KBUILD_SRC),$(srctree)/)scripts/Makefile.build obj
->  
->  # Prefix -I with $(srctree) if it is not an absolute path.
-> -addtree = $(if $(filter-out -I/%,$(1)),$(patsubst -I%,-I$(srctree)/%,$(1))) $(1)
-> +addtree = $(if $(filter-out -I/%,$(1)),$(patsubst -I%,-I$(srctree)/%,$(1)),$(1))
->  
->  # Find all -I options and call addtree
->  flags = $(foreach o,$($(1)),$(if $(filter -I%,$(o)),$(call addtree,$(o)),$(o)))
+On Mon, 5 May 2008 20:42:35 +0200
+Ingo Molnar <mingo@elte.hu> wrote:
 
-We try to make all paths relative so less files get rebuild if you access the
-same source from two different paths (think nfs mounted src etc).
-So you really need to justify this change.
+> In practice distro maintainers will pick the upstream default 99% of
+> the time, 
 
-	Sam
+actually.. not quite. They don't tend to look at "default" in Kconfig;
+they tend to say "m" if possible, and otherwise read the help text to
+see if it makes sense...
