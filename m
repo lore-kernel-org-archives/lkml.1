@@ -1,55 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756803AbYEELLL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758535AbYEELLj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756803AbYEELLL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 07:11:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754161AbYEELK5
+	id S1758535AbYEELLj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 07:11:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754348AbYEELL2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 07:10:57 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:54136 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753572AbYEELK4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 07:10:56 -0400
-Date: Mon, 5 May 2008 13:10:29 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: linux-kernel@vger.kernel.org, systemtap@sources.redhat.com,
-       "Frank Ch. Eigler" <fche@redhat.com>
-Subject: Re: System call instrumentation
-Message-ID: <20080505111029.GA9948@elte.hu>
-References: <20080504134838.GA21487@Krystal> <20080505065559.GD3350@elte.hu> <20080505105915.GA26444@Krystal>
+	Mon, 5 May 2008 07:11:28 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:52577 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754779AbYEELL0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 May 2008 07:11:26 -0400
+Date: Mon, 5 May 2008 07:11:23 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: akpm@linux-foundation.org, hch@infradead.org, viro@ZenIV.linux.org.uk,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: [patch 15/15] vfs: splice remove_suid() cleanup
+Message-ID: <20080505111123.GG20910@infradead.org>
+References: <20080505095440.820370974@szeredi.hu> <20080505095532.980827078@szeredi.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080505105915.GA26444@Krystal>
+In-Reply-To: <20080505095532.980827078@szeredi.hu>
 User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
-
-> > hm, i'm not sure about this. I've implemented system call tracing in 
-> > -rt [embedded in the latency tracer] and it only needed changes in 
-> > entry.S, not in every system call site. Now, granted, that tracer 
-> > was simpler than what LTTng tries to do, but do we _really_ need 
-> > more complexity? A trace point that simply expresses:
-> > 
-> >    sys_call_event(int sysno, long param1, long param2, long param3,
-> >                              long param4, long param5, long param6);
-> > 
+On Mon, May 05, 2008 at 11:54:56AM +0200, Miklos Szeredi wrote:
+> From: Miklos Szeredi <mszeredi@suse.cz>
 > 
-> That would work for all system calls that doesn't have parameters like 
-> "const char __user *filename".
+> generic_file_splice_write() duplicates remove_suid() just because it
+> doesn't hold i_mutex.  But it grabs i_mutex inside splice_from_pipe()
+> anyway, so this is rather pointless.
+> 
+> Move locking to generic_file_splice_write() and call remove_suid() and
+> __splice_from_pipe() instead.
 
-what's the problem with them? Do you want to follow those parameters?
+Looks good to me.  I wonder whether we should kill splice_from_pipe
+entirely and always leave the locking to the caller.
 
-	Ingo
