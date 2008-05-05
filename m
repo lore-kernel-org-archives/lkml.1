@@ -1,96 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757557AbYEEHZA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753217AbYEEH3S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757557AbYEEHZA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 03:25:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754443AbYEEHYu
+	id S1753217AbYEEH3S (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 03:29:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751855AbYEEH3H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 03:24:50 -0400
-Received: from mail.suse.de ([195.135.220.2]:57353 "EHLO mx1.suse.de"
+	Mon, 5 May 2008 03:29:07 -0400
+Received: from 1wt.eu ([62.212.114.60]:4112 "EHLO 1wt.eu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752207AbYEEHYs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 03:24:48 -0400
-From: Neil Brown <neilb@suse.de>
-To: Jens Axboe <jens.axboe@oracle.com>
-Date: Mon, 5 May 2008 17:24:31 +1000
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18462.46639.578272.994939@notabene.brown>
-Cc: Jacek Luczak <difrost.kernel@gmail.com>,
-       Prakash Punnoor <prakash@punnoor.de>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       Dan Williams <dan.j.williams@intel.com>, linux-raid@vger.kernel.org
-Subject: Re: WARNING in 2.6.25-07422-gb66e1f1
-In-Reply-To: message from Jens Axboe on Sunday May 4
-References: <200805031151.44287.prakash@punnoor.de>
-	<481DB3F3.5080102@gmail.com>
-	<20080504183839.GN12774@kernel.dk>
-X-Mailer: VM 7.19 under Emacs 21.4.1
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
+	id S1751242AbYEEH3F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 May 2008 03:29:05 -0400
+Date: Mon, 5 May 2008 09:28:24 +0200
+From: Willy Tarreau <w@1wt.eu>
+To: Lothar =?iso-8859-1?Q?Wa=DFmann?= <LW@KARO-electronics.de>
+Cc: NeilBrown <neilb@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: linux-2.6.25: 'mkdir -p' does not work with rootdir as mount point inside a read only filesystem
+Message-ID: <20080505072824.GE14635@1wt.eu>
+References: <18456.34604.472989.35082@ipc1.ka-ro> <20080501215231.297e0d9d.akpm@linux-foundation.org> <53722.192.168.1.70.1209711343.squirrel@neil.brown.name> <20080503063231.GA688@1wt.eu> <18462.43245.728465.911831@ipc1.ka-ro> <20080505070214.GA14635@1wt.eu> <18462.45648.60033.233887@ipc1.ka-ro>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <18462.45648.60033.233887@ipc1.ka-ro>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday May 4, jens.axboe@oracle.com wrote:
-> On Sun, May 04 2008, Jacek Luczak wrote:
-> > Hi,
+On Mon, May 05, 2008 at 09:08:00AM +0200, Lothar Waßmann wrote:
+> Hi,
+> 
+> Willy Tarreau writes:
+> > > > open(".", O_RDONLY|O_LARGEFILE|O_DIRECTORY) = 3
+> > > > chdir("/")                              = 0
+> > > > mkdir("dev", 0755)                      = -1 EEXIST (File exists)
+>                                                    ^^^^^^
+> [...]
+> > > This is what strace shows in my case:
+> > > mkdir("/", 0777)                        = -1 EEXIST (File exists)
+> > > stat64("/", {st_mode=S_IFDIR|0755, st_size=0, ...}) = 0
+> > > mkdir("/dev/", 0777)                    = -1 EROFS (Read-only file system)
+>                                                  ^^^^^
+> > What puzzles me is why you have this problem only with a new kernel.
+> > I suspect that previous ones did report EEXIST and now we report
+> > EROFS for an existing directory on an ro fs.
 > > 
-> > I've CC:-ed few guys which may help.
-> > 
-> > Prakash Punnoor pisze:
-> > > Hi, I got this on boot:
-> > >
-> > > usb 2-1.3: new full speed USB device using ehci_hcd and address 3
-> > > usb 2-1.3: configuration #1 chosen from 1 choice
-> > > Clocksource tsc unstable (delta = -117343945 ns)
-> > > ------------[ cut here ]------------
-> > > WARNING: at include/linux/blkdev.h:443 blk_remove_plug+0x7d/0x90()
-...
-> 
-> Looks like it caught a real bug there - unfortunately we have to check
-> for ->queue_lock here as well, if this is another stacked devices and
-> not the bottom device. Does this make the warning go away for you?
-> 
-> diff --git a/drivers/md/raid5.c b/drivers/md/raid5.c
-> index 087eee0..958f26b 100644
-> --- a/drivers/md/raid5.c
-> +++ b/drivers/md/raid5.c
-> @@ -3264,6 +3264,8 @@ static void raid5_unplug_device(struct request_queue *q)
->  	unsigned long flags;
->  
->  	spin_lock_irqsave(&conf->device_lock, flags);
-> +	if (q->queue_lock)
-> +		spin_lock(q->queue_lock);
->  
->  	if (blk_remove_plug(q)) {
->  		conf->seq_flush++;
-> @@ -3271,6 +3273,8 @@ static void raid5_unplug_device(struct request_queue *q)
->  	}
->  	md_wakeup_thread(mddev->thread);
->  
-> +	if (q->queue_lock)
-> +		spin_unlock(q->queue_lock);
->  	spin_unlock_irqrestore(&conf->device_lock, flags);
->  
->  	unplug_slaves(mddev);
-> 
+> Interestingly your strace output showed a return value of EEXIST where
+> mine had EROFS.
 
-I suspect that will just cause more problems, as the 'q' for an md
-device never gets ->queue_lock initialised.
-I suspect the correct thing to do is set
-	q->queue_lock = &conf->device_lock;
+Oh you're right! I did not notice. There's something odd here.
+And I can reproduce it right now (2.6.25.1). I really have
+EEXIST.
 
-at some stage, probably immediately after device_lock is initialised
-in 'run'.
+Willy
 
-I was discussing this with Dan Williams starting
-  http://marc.info/?l=linux-raid&m=120951839903995&w=4
-though we don't have an agreed patch yet.
-
-I'm wondering why you mention the issues of stacked devices though.  I
-don't see how it applies.  Could you explain?
-
-Thanks,
-NeilBrown
