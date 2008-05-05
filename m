@@ -1,61 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762153AbYEET1i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757553AbYEETde@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762153AbYEET1i (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 15:27:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756790AbYEET1Z
+	id S1757553AbYEETde (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 15:33:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751056AbYEETd0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 15:27:25 -0400
-Received: from harold.telenet-ops.be ([195.130.133.65]:51714 "EHLO
-	harold.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755296AbYEET1X (ORCPT
+	Mon, 5 May 2008 15:33:26 -0400
+Received: from fg-out-1718.google.com ([72.14.220.152]:27577 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752043AbYEETdZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 15:27:23 -0400
-Date: Mon, 5 May 2008 21:27:21 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Linux/m68k <linux-m68k@vger.kernel.org>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       linux-scsi@vger.kernel.org
-Subject: [PATCH 3/3] CONFIG_SCSI_MAC_ESP needs CONFIG_SCSI_SPI_ATTRS
-In-Reply-To: <Pine.LNX.4.64.0805052118050.24098@anakin>
-Message-ID: <Pine.LNX.4.64.0805052126200.28495@anakin>
-References: <Pine.LNX.4.64.0805052118050.24098@anakin>
+	Mon, 5 May 2008 15:33:25 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=NKHoWSNTozzN/fTH/1ctg6jJciUeLqY/9RyNRbYnVEVfBr7vic7Pd8mBePZxhDs2LtwggiVT2HXWZtIw/YtRopDlLlqKWyTM3aH4ovc0CBortzmHLXsCjW7fw1AgFONudJwGuoZRR3Arw5cKuFQ9pdwgTrkW06aW+2QoFZP2jhE=
+Message-ID: <30c6373b0805051233o25b45762w2eb6f72591fae3dd@mail.gmail.com>
+Date: Mon, 5 May 2008 12:33:23 -0700
+From: "Kevin Burton" <burton@tailrank.com>
+To: "FD Cami" <francois.cami@free.fr>
+Subject: Re: Ability to limit or disable page caching?
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <30c6373b0805051134m634efbbdn45167c1eae29df4a@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <30c6373b0805050012o505c0540i116a31bc1ab9ce9f@mail.gmail.com>
+	 <20080505131607.5556b1f2@olorin>
+	 <30c6373b0805051134m634efbbdn45167c1eae29df4a@mail.gmail.com>
+X-Google-Sender-Auth: 69434d7a437999b1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Geert Uytterhoeven <geert@linux-m68k.org>
+.
+>> /proc/sys/vm/vfs_cache_pressure and /proc/sys/vm/swappiness are probably
+>> what you are looking for.
+>
+> I haven't played with vfs_cache_pressure so I'll take a look at this.
+>
+> Unfortunately, swappiness doesn't work as intended.
 
-The new mac_esp scsi driver needs CONFIG_SCSI_SPI_ATTRS, just like all other
-drivers using the new esp_scsi core.
+OK....... I tried again and no such luck unfortunately.
 
-Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
----
- drivers/scsi/Kconfig |    1 +
- 1 file changed, 1 insertion(+)
+Set vfs_cache_pressure to 0 and 200 (default is zero) and no luck either way.
 
---- a/drivers/scsi/Kconfig
-+++ b/drivers/scsi/Kconfig
-@@ -1679,6 +1679,7 @@ config MAC_SCSI
- config SCSI_MAC_ESP
- 	tristate "Macintosh NCR53c9[46] SCSI"
- 	depends on MAC && SCSI
-+	select SCSI_SPI_ATTRS
- 	help
- 	  This is the NCR 53c9x SCSI controller found on most of the 68040
- 	  based Macintoshes.
+A value of 0 us used for swappiness ....
 
-Gr{oetje,eeting}s,
+Any other ideas...
 
-						Geert
+The box has enough memory to do this as I can run it without swap....
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+Kevin
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+-- 
+Founder/CEO Tailrank.com
+Location: San Francisco, CA
+AIM/YIM: sfburtonator
+Skype: burtonator
+Work: http://spinn3r.com and http://tailrank.com
+Blog: http://feedblog.org
+Cell: 415-637-8078
+Fax: 1-415-358-419 PIN: 0092
