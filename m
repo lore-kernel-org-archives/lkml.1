@@ -1,68 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759243AbYEEMsU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757922AbYEEMzD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759243AbYEEMsU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 08:48:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758803AbYEEMrw
+	id S1757922AbYEEMzD (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 08:55:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752739AbYEEMyw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 08:47:52 -0400
-Received: from 178-47-31-89.wifiinternet.cz ([89.31.47.178]:56206 "EHLO
-	monstr.eu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1758631AbYEEMrv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 08:47:51 -0400
-From: monstr@seznam.cz
-To: linux-kernel@vger.kernel.org
-Cc: arnd@arndb.de, linux-arch@vger.kernel.org, stephen.neuendorffer@xilinx.com,
-       John.Linn@xilinx.com, john.williams@petalogix.com, matthew@wil.cx,
-       will.newton@gmail.com, drepper@redhat.com,
-       microblaze-uclinux@itee.uq.edu.au, grant.likely@secretlab.ca,
-       Michal Simek <monstr@monstr.eu>
-Subject: [PATCH 05/56] microblaze_v2: Support for semaphores
-Date: Sun,  4 May 2008 13:40:54 +0200
-Message-Id: <ed3695121faf485d491cecdd96d5d4dcc498411d.1209897266.git.monstr@monstr.eu>
-X-Mailer: git-send-email 1.5.4.GIT
-In-Reply-To: <684c36e5ad3f598e5079e88ec195545c4a7150c2.1209897266.git.monstr@monstr.eu>
-References: <1209901305-6404-1-git-send-email-monstr@seznam.cz>
- <a4a778e34c66d126f5c4bf1ca423cf32950ea5ab.1209897266.git.monstr@monstr.eu>
- <c805caeb1dd7f6d1349c4a463cb88a5342a170d2.1209897266.git.monstr@monstr.eu>
- <f120ababf2bade9aab7199bffb3014aa606e5a1c.1209897266.git.monstr@monstr.eu>
- <684c36e5ad3f598e5079e88ec195545c4a7150c2.1209897266.git.monstr@monstr.eu>
-In-Reply-To: <a4a778e34c66d126f5c4bf1ca423cf32950ea5ab.1209897266.git.monstr@monstr.eu>
-References: <a4a778e34c66d126f5c4bf1ca423cf32950ea5ab.1209897266.git.monstr@monstr.eu>
+	Mon, 5 May 2008 08:54:52 -0400
+Received: from ns1.suse.de ([195.135.220.2]:34448 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752142AbYEEMyv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 May 2008 08:54:51 -0400
+Date: Mon, 5 May 2008 14:54:50 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Michael Kerrisk <mtk.manpages@googlemail.com>
+Cc: lkml <linux-kernel@vger.kernel.org>, mk <michael.kerrisk@gmail.com>
+Subject: Re: MAP_POPULATE behavior change?
+Message-ID: <20080505125450.GB10312@wotan.suse.de>
+References: <4815BDF5.9070506@gmail.com> <20080505122316.GE5018@wotan.suse.de> <cfd18e0f0805050542w20bee7f5v8b6125c8b399e63b@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <cfd18e0f0805050542w20bee7f5v8b6125c8b399e63b@mail.gmail.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Michal Simek <monstr@monstr.eu>
+On Mon, May 05, 2008 at 02:42:44PM +0200, Michael Kerrisk wrote:
+> Hi Nick,
+> 
+> On Mon, May 5, 2008 at 2:23 PM, Nick Piggin <npiggin@suse.de> wrote:
+> > On Mon, Apr 28, 2008 at 02:07:17PM +0200, Michael Kerrisk wrote:
+> 
+> > > In 2.6.23, you had the commit below, which seems to have changed the
+> > > kernel-userland API.
+> > >
+> > > Am I right to understand that with this patch MAP_POPULATE now also works with
+> > > MAP_PRIVATE mappings?  (Formerly it only worked with MAP_SHARED mappings, but
+> > > some very quick testing suggests that MAP_POPULATE now also has an affect for
+> > > MAP_PRIVATE.)
+> >
+> > Yeah it should also set up anonymous mappings. Very observant :)
+> 
+> Umm -- did it not work for anonymous *shared* mappings before?  I
+> understood that it did.
 
+Oh... yeah it would have. anonymous shared mappings aren't really anonymous
+from the POV of most of mm/ :P
 
-Signed-off-by: Michal Simek <monstr@monstr.eu>
----
- include/asm-microblaze/semaphore.h |   16 ++++++++++++++++
- 1 files changed, 16 insertions(+), 0 deletions(-)
- create mode 100644 include/asm-microblaze/semaphore.h
+ 
+> > > Also, can you summarize the status of MAP_NONBLOCK?  Is it now a no-op?
+> >
+> > Yes, it is.
+> 
+> Hmm -- going back and re-reading the code, there is:
+> 
+>         if ((flags & MAP_POPULATE) && !(flags & MAP_NONBLOCK))
+>                 make_pages_present(addr, addr + len);
+> 
+> That means that MAP_NONBLOCK makes *MAP_POPULATE* a no-op.  Was that intended?
 
-diff --git a/include/asm-microblaze/semaphore.h b/include/asm-microblaze/semaphore.h
-new file mode 100644
-index 0000000..cdb1e05
---- /dev/null
-+++ b/include/asm-microblaze/semaphore.h
-@@ -0,0 +1,16 @@
-+/*
-+ * include/asm-microblaze/semaphore.h
-+ *
-+ * This file is subject to the terms and conditions of the GNU General Public
-+ * License. See the file "COPYING" in the main directory of this archive
-+ * for more details.
-+ *
-+ * Copyright (C) 2007 Michal Simek <monstr@monstr.eu>
-+ */
-+
-+#ifndef _ASM_MICROBLAZE_SEMAPHORE_H
-+#define _ASM_MICROBLAZE_SEMAPHORE_H
-+
-+#include <linux/semaphore.h>
-+
-+#endif /* _ASM_MICROBLAZE_SEMAPHORE_H */
--- 
-1.5.4.GIT
+Ah, my logic wasn't up to scratch there. Yes of course MAP_NONBLOCK is not
+a noop, but it makes MAP_POPULATE into a noop. So it still guarantees
+that the call will not block and that the kernel will make some kind of
+best effort to populate the mapping... for some values of "some kind of"
+(ie. "nothing" ;)).
 
+It's done this way of course so it is still safe to call MAP_NONBLOCK if you
+don't want to block, and thus everything stays backwards and forward
+compatible.
+
+Thanks,
+Nick
