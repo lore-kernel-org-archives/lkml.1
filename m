@@ -1,60 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754666AbYEER03@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753298AbYEERcz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754666AbYEER03 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 13:26:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751412AbYEER0V
+	id S1753298AbYEERcz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 13:32:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751072AbYEERcp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 13:26:21 -0400
-Received: from mga02.intel.com ([134.134.136.20]:32678 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751056AbYEER0U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 13:26:20 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.27,438,1204531200"; 
-   d="scan'208";a="380190221"
-Date: Mon, 5 May 2008 10:26:19 -0700
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-To: Rufus & Azrael <rufus-azrael@numericable.fr>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linux-kernel Mailing List <linux-kernel@vger.kernel.org>,
-       venkatesh.pallipadi@intel.com
-Subject: Re: [2.6.25-git18 => 2.6.26-rc1-git1] Xorg crash with	xf86MapVidMem error
-Message-ID: <20080505172619.GD28173@linux-os.sc.intel.com>
-References: <481D72A7.10901@numericable.fr> <20080504085204.GE21859@elte.hu> <481D7BF8.4080405@numericable.fr>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+	Mon, 5 May 2008 13:32:45 -0400
+Received: from hpsmtp-eml15.kpnxchange.com ([213.75.38.115]:39463 "EHLO
+	hpsmtp-eml15.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751057AbYEERco (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 May 2008 13:32:44 -0400
+From: Frans Pop <elendil@planet.nl>
+To: Jesse Barnes <jesse.barnes@intel.com>
+Subject: Re: [git head] Should X86_PAT really default to yes?
+Date: Mon, 5 May 2008 19:32:40 +0200
+User-Agent: KMail/1.9.9
+Cc: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       linux-kernel@vger.kernel.org, "Ingo Molnar" <mingo@elte.hu>,
+       "Packard, Keith" <keith.packard@intel.com>,
+       "Yinghai Lu" <yhlu.kernel@gmail.com>
+References: <200805022122.03576.elendil@planet.nl> <200805040910.57088.elendil@planet.nl> <200805050857.57661.jesse.barnes@intel.com>
+In-Reply-To: <200805050857.57661.jesse.barnes@intel.com>
+MIME-Version: 1.0
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <481D7BF8.4080405@numericable.fr>
-User-Agent: Mutt/1.4.1i
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200805051932.41827.elendil@planet.nl>
+X-OriginalArrivalTime: 05 May 2008 17:32:42.0550 (UTC) FILETIME=[05E9C560:01C8AED6]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, May 04, 2008 at 11:03:52AM +0200, Rufus & Azrael wrote:
-> Ingo Molnar a écrit :
-> >* Rufus & Azrael <rufus-azrael@numericable.fr> wrote:
-> >>When upgrading to 2.6.25-git18 and above kernel this Xorg error occurs :
-> >>
-> >>xf86MapVidMem: Could not mmap framebuffer (0xf0000000,0x8000000) (Invalid 
-> >>argument)
-> >>
-> >>The latest working kernel was 25-git17 and perhaps is it related to 
-> >>http://lkml.org/lkml/2008/4/28/52
-> >>    
-> >
-> >does this X-does-not-start-up problem go away if you disable this 
-> >option:
-> >  
-> >>CONFIG_X86_PAT=y
-> >>    
-> >
-> >?
-> >  
-> Thanks for your help Ingo, all work fine when CONFIG_PAT=n :-)
+Sigh. This is going to get complex...
 
-hi, Can you please send us the "dmesg" output in the failing scenario
-with PAT enabled, after the X crash?
+On Monday 05 May 2008, Jesse Barnes wrote:
+> > > If so, it might not be a PAT issue but just a different memory layout
+> > > or something (and therefore it would really just be a cosmetic bug in
+> > > the X driver).
+> >
+> > The artifacts may not be a PAT issue directly, but it is a clear
+> > regression for me as I currently have a nice clean screen when X shuts
+> > down. I'm also 100% sure that it is caused by enabling PAT. A kernel
+> > with same config and only PAT disabled does not show the artifacts.
+> >
+> > Would you like me to file a bug against X for these artifacts?
+> > If so, against what component? The i810 driver or the server?
+>
+> I suspect an i810 driver bug is being uncovered here, since we do have
+> transient VT switch corruption on some other platforms (we're just
+> exposing our chip reprogramming on the screen, rather than keeping it off
+> the whole time).  But there could also be something PAT specific going
+> on, I'll have to walk through those code paths...
 
-thanks,
-suresh
+I suspect it could be vesafb/fbcon related instead. Normally I boot my 
+system with 'quiet vga=791', i.e. with vesafb. I then see the artifacts.
+
+When I boot without 'vga=791', I hit another, unrelated regression (which 
+I'll report separately) [1].
+
+When I boot with 'video=vfb:off', I do _not_ get the artifacts when X exits.
+
+Note that the "expected mapping type" errors remain the same both with and 
+without framebuffer console.
+
+
+> Oh the messages should be removed or somehow minimized, I agree.  I'm
+> just not sure if the other bug is serious enough to block PAT by default
+> yet, but either way we should fix the bugs!
+
+OK. Thanks. Guess you've also seen "Xorg crash with xf86MapVidMem error" 
+that turned out to be due to PAT: 
+http://www.gossamer-threads.com/lists/linux/kernel/915300 ?
+
+Cheers,
+FJP
+
+[1] Short version of this unrelated issue.
+If I boot without vga=791 the console stops being updated after PCI probes.
+At first I thought this was #9310, but this time it's unrelated to the 
+config option mentioned there. Symptoms are awfully similar though.
