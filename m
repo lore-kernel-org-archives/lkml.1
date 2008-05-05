@@ -1,68 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753641AbYEERW7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753265AbYEERZY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753641AbYEERW7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 13:22:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751318AbYEERWr
+	id S1753265AbYEERZY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 13:25:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751056AbYEERZL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 13:22:47 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:7163 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750913AbYEERWr (ORCPT
+	Mon, 5 May 2008 13:25:11 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:38550 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750871AbYEERZK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 13:22:47 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=AadL3LWr0xGgahPSkQd2bdRZYTue6UeqIftWWjLxTDELoBuHrD4nU5Rdc4fprn+PM
-	WVJ2G2RUNrn9zV3Oz06/w==
-Message-ID: <6599ad830805051022g24a07324g395b39b003751791@mail.gmail.com>
-Date: Mon, 5 May 2008 10:22:37 -0700
-From: "Paul Menage" <menage@google.com>
-To: "Miklos Szeredi" <miklos@szeredi.hu>
-Subject: Re: [patch 03/15] cgroup: dont call vfs_mkdir
-Cc: akpm@linux-foundation.org, hch@infradead.org, viro@zeniv.linux.org.uk,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-In-Reply-To: <20080505095511.217634550@szeredi.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Mon, 5 May 2008 13:25:10 -0400
+Date: Mon, 5 May 2008 12:25:06 -0500
+From: Jack Steiner <steiner@sgi.com>
+To: Andrea Arcangeli <andrea@qumranet.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Lameter <clameter@sgi.com>, Robin Holt <holt@sgi.com>,
+       Nick Piggin <npiggin@suse.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       kvm-devel@lists.sourceforge.net, Kanoj Sarcar <kanojsarcar@yahoo.com>,
+       Roland Dreier <rdreier@cisco.com>,
+       Steve Wise <swise@opengridcomputing.com>, linux-kernel@vger.kernel.org,
+       Avi Kivity <avi@qumranet.com>, linux-mm@kvack.org,
+       general@lists.openfabrics.org, Hugh Dickins <hugh@veritas.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Anthony Liguori <aliguori@us.ibm.com>, Chris Wright <chrisw@redhat.com>,
+       Marcelo Tosatti <marcelo@kvack.org>, Eric Dumazet <dada1@cosmosbay.com>,
+       "Paul E. McKenney" <paulmck@us.ibm.com>
+Subject: Re: [PATCH 01 of 11] mmu-notifier-core
+Message-ID: <20080505172506.GA9247@sgi.com>
+References: <patchbomb.1209740703@duo.random> <1489529e7b53d3f2dab8.1209740704@duo.random> <20080505162113.GA18761@sgi.com> <20080505171434.GF8470@duo.random>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20080505095440.820370974@szeredi.hu>
-	 <20080505095511.217634550@szeredi.hu>
+In-Reply-To: <20080505171434.GF8470@duo.random>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 5, 2008 at 2:54 AM, Miklos Szeredi <miklos@szeredi.hu> wrote:
-> From: Miklos Szeredi <mszeredi@suse.cz>
->
->  cgroup_clone() calls vfs_mkdir() to create a directory in the cgroup
->  filesystem.  Replace with explicit call to cgroup_mkdir() and
->  fsnotify_mkdir().
->
->  This is equivalent, except that the following functions are not called
->  before cgroup_mkdir():
->
->   - may_create()
->   - security_inode_mkdir()
->   - DQUOT_INIT()
->
->  Permission to clone the cgroup has already been checked in
->  copy_namespaces() (requiring CAP_SYS_ADMIN).  Additional file system
->  related capability checks are inappropriate and confusing.
->
->  The quota check is unnecessary, as quotas don't make any sense for
->  this filesystem.
->
->  Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
->  CC: Paul Menage <menage@google.com>
+On Mon, May 05, 2008 at 07:14:34PM +0200, Andrea Arcangeli wrote:
+> On Mon, May 05, 2008 at 11:21:13AM -0500, Jack Steiner wrote:
+> > The GRU does the registration/deregistration of mmu notifiers from mmap/munmap.
+> > At this point, the mmap_sem is already held writeable. I hit a deadlock
+> > in mm_lock.
+> 
+> It'd been better to know about this detail earlier,
 
-This looks like it behaves correctly, but I don't really have any view
-on whether the change is the right thing to do - I'll leave that to
-the VFS gurus. FWIW, I'd regard cgroup_clone() as being outside the
-filesystem rather than inside. It does have some knowledge of the
-cgroupfs internals, but it tries to leave as much as possible up to
-the real filesystem code.
+Agree. My apologies... I should have caught it.
 
-Paul
+
+> but frankly this
+> is a minor problem, the important thing is we all agree together on
+> the more difficult parts ;).
+> 
+> > A quick fix would be to do one of the following:
+> > 
+> > 	- move the mmap_sem locking to the caller of the [de]registration routines.
+> > 	  Since the first/last thing done in mm_lock/mm_unlock is to
+> > 	  acquire/release mmap_sem, this change does not cause major changes.
+> 
+> I don't like this solution very much. Nor GRU nor KVM will call
+> mmu_notifier_register inside the mmap_sem protected sections, so I
+> think the default mmu_notifier_register should be smp safe by itself
+> without requiring additional locks to be artificially taken externally
+> (especially because the need for mmap_sem in write mode is a very
+> mmu_notifier internal detail).
+> 
+> > 	- add a flag to mmu_notifier_[un]register routines to indicate
+> > 	  if mmap_sem is already locked.
+> 
+> The interface would change like this:
+> 
+> #define MMU_NOTIFIER_REGISTER_MMAP_SEM (1<<0)
+> void mmu_notifier_register(struct mmu_notifier *mn, struct mm_struct *mm,
+> 			   unsigned long mmu_notifier_flags);
+
+That works...
+
+
+> 
+> A third solution is to add:
+> 
+> /*
+>  * This must can be called instead of mmu_notifier_register after
+>  * taking the mmap_sem in write mode (read mode isn't enough).
+>  */
+> void __mmu_notifier_register(struct mmu_notifier *mn, struct mm_struct *mm);
+> 
+> Do you still prefer the bitflag or you prefer
+> __mmu_notifier_register. It's ok either ways, except
+> __mmu_notifier_reigster could be removed in a backwards compatible
+> way, the bitflag can't.
+> 
+> > I've temporarily deleted the mm_lock locking of mmap_sem and am continuing to
+> > test. More later....
+
+__mmu_notifier_register/__mmu_notifier_unregister seems like a better way to
+go, although either is ok.
+
+
+> 
+> Sure! In the meantime go ahead this way.
+> 
+> Another very minor change I've been thinking about is to make
+> ->release not mandatory. It happens that with KVM ->release isn't
+> strictly required because after mm_users reaches 0, no guest could
+> possibly run anymore. So I'm using ->release only for debugging by
+> placing -1UL in the root shadow pagetable, to be sure ;). So because
+> at least one user won't strictly require ->release being consistent in
+> having all method optional may be nicer. Alternatively we could make
+> them all mandatory and if somebody doesn't need one of the methods it
+> should implement it as a dummy function. Both ways have pros and cons,
+> but they don't make any difference to us in practice. If I've to
+> change the patch for the mmap_sem taken during registration I may as
+> well cleanup this minor bit.
+ 
+Let me finish my testing. At one time, I did not use ->release but
+with all the locking & teardown changes, I need to do some reverification.
+
+
+--- jack
