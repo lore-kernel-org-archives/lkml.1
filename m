@@ -1,48 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759284AbYEENn7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758672AbYEENpS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759284AbYEENn7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 09:43:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758979AbYEENnq
+	id S1758672AbYEENpS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 09:45:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755350AbYEENpA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 09:43:46 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:45573 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758921AbYEENno (ORCPT
+	Mon, 5 May 2008 09:45:00 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:60028 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755007AbYEENo7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 09:43:44 -0400
-To: hch@infradead.org
-CC: miklos@szeredi.hu, hch@infradead.org, akpm@linux-foundation.org,
-       viro@ZenIV.linux.org.uk, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, menage@google.com
-In-reply-to: <20080505133322.GA14370@infradead.org> (message from Christoph
-	Hellwig on Mon, 5 May 2008 09:33:22 -0400)
-Subject: Re: [patch 03/15] cgroup: dont call vfs_mkdir
-References: <20080505095440.820370974@szeredi.hu> <20080505095511.217634550@szeredi.hu> <20080505110016.GC20910@infradead.org> <E1Jszri-0005uq-4x@pomaz-ex.szeredi.hu> <20080505130804.GA1809@infradead.org> <E1Jt0l8-00066L-NC@pomaz-ex.szeredi.hu> <20080505133322.GA14370@infradead.org>
-Message-Id: <E1Jt0yf-00069Q-1M@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Mon, 05 May 2008 15:43:37 +0200
+	Mon, 5 May 2008 09:44:59 -0400
+Date: Mon, 5 May 2008 15:45:48 +0200
+From: Pavel Machek <pavel@suse.cz>
+To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Cc: Jean Delvare <khali@linux-fr.org>, Kasper Sandberg <lkml@metanurb.dk>,
+       Rudolf Marek <r.marek@assembler.cz>,
+       Maxim Levitsky <maximlevitsky@gmail.com>, trenn@suse.de,
+       Len Brown <lenb@kernel.org>, Matthew <jackdachef@gmail.com>,
+       linux-acpi@vger.kernel.org, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org, "Zhang, Rui" <rui.zhang@intel.com>
+Subject: Re: Linux 2.6.25 (coretemp reads high temperatures)
+Message-ID: <20080505134548.GB5351@elf.ucw.cz>
+References: <200804231143.10875.maximlevitsky@gmail.com> <1209406784.11608.15.camel@localhost> <1209474423.1784.837.camel@queen.suse.de> <20080429170824.09540206@hyperion.delvare> <48179DB4.8040701@assembler.cz> <1209514274.27499.12.camel@localhost> <20080430082005.4b76186f@hyperion.delvare> <20080430145110.GC3543@khazad-dum.debian.net> <20080502203615.GF3956@ucw.cz> <20080504174229.GA29118@khazad-dum.debian.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080504174229.GA29118@khazad-dum.debian.net>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > We do have a good reason: r/o bind mounts and AppArmor.  And please
-> > don't tell me, you also think that moving the security hooks to
-> > callers is a good idea ;)  That would actually be a change with a much
-> > larger impact, both in terms of code duplication and of verifying
-> > correctness.
+On Sun 2008-05-04 14:42:29, Henrique de Moraes Holschuh wrote:
+> On Fri, 02 May 2008, Pavel Machek wrote:
+> > > Actually, just libsensors would, and the local admin can adjust it at
+> > > will using the config file.
+> > > 
+> > > Nobody in userspace should be reading hwmon sysfs directly without the
+> > > use of libsensors.  If they are, it is their bug, and it is unsupported
+> > > AFAIK.
+> > 
+> > Hmm, that's an interesting ABI design. No, I do not think that's a
+> > good idea.
 > 
-> I think AppArmor is a horribly stupid idea to start with, and I'm not
-> willing up to mess up the kernel tree for it.
+> That's how it is.  The kernel drivers are to attempt to do their best to
+> give proper readings.  But if they don't, the library can apply
+> arbritary user-configurable adjustments.
+> 
+> I'd rather different attribute names like "raw_temp#" were used when the
+> adjustment thorugh libsensors is *required*, though.
 
-Well, I'd hardly call this whole patchset messing up the kernel, and
-you seemed to agree with most of the patches.
-
-It may come as a surprise, but all of it (as well as reviews of the
-r/o bind patches which found some pretty serious bugs) are because I'm
-trying to work on integrating AppArmor cleanly.
-
-You may consider it a stupid idea, and it may or may not be one.  But
-please try to be a bit more constructive on the issue.
-
-Thanks,
-Miklos
+Yes, that would be nice.
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
