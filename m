@@ -1,79 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760858AbYEEXkq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755761AbYEEXlJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760858AbYEEXkq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 19:40:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754230AbYEEXkg
+	id S1755761AbYEEXlJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 19:41:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754230AbYEEXkv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 19:40:36 -0400
-Received: from kirk.serum.com.pl ([213.77.9.205]:61087 "EHLO serum.com.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753778AbYEEXkf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 19:40:35 -0400
-Date: Tue, 6 May 2008 00:40:20 +0100 (BST)
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] SWARM IDE: Fix up following changes to ide_hwif_t
-Message-ID: <Pine.LNX.4.55.0805060031350.7061@cliff.in.clinika.pl>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 5 May 2008 19:40:51 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:54751 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761741AbYEEXku (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 May 2008 19:40:50 -0400
+Date: Mon, 5 May 2008 16:40:24 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: david@lang.hm
+Cc: "Randy.Dunlap" <rdunlap@xenotime.net>, Ingo Molnar <mingo@elte.hu>,
+       Adrian Bunk <bunk@kernel.org>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Sam Ravnborg <sam@ravnborg.org>, Alexander Viro <viro@ftp.linux.org.uk>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [rfc] the kernel workflow & trivial "global -> static" patches
+ (was: Re: [2.6 patch] make sched_feat_{names,open} static)
+Message-ID: <20080505164024.013a6e66@infradead.org>
+In-Reply-To: <alpine.DEB.1.10.0805051615080.14481@asgard>
+References: <20080505182942.GA17139@cs181133002.pp.htv.fi>
+	<20080505201906.GA900@elte.hu>
+	<Pine.LNX.4.64.0805051327530.27703@shark.he.net>
+	<20080505145132.58df7e70@infradead.org>
+	<alpine.DEB.1.10.0805051615080.14481@asgard>
+Organization: Intel
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- Following recent changes to ide_hwif_t update the SWARM IDE driver to use 
-hw_regs_t to initialize port mapping.  Plus minor layout adjustments along 
-the lines of other drivers.
+On Mon, 5 May 2008 16:19:13 -0700 (PDT)
+david@lang.hm wrote:
 
-Signed-off-by: Maciej W. Rozycki <macro@linux-mips.org>
----
- Fixes a build problem.  Tested succesfully at the run time.  No
-checkpatch.pl problems.  Please apply.
+> On Mon, 5 May 2008, Arjan van de Ven wrote:
+> 
+> > On Mon, 5 May 2008 13:40:53 -0700 (PDT)
+> > "Randy.Dunlap" <rdunlap@xenotime.net> wrote:
+> >
+> >> On Mon, 5 May 2008, Ingo Molnar wrote:
+> >>
+> >>> And unlike other kernel developers, my opinion is not that we
+> >>> should eliminate this disruption by not doing these trivial
+> >>> patches _at all_. My opinion is that we should make it easier for
+> >>> maintainers to _avoid introducing_ these problems.
+> >>>
+> >>> I.e. we need to fight the root of this problem (the steady
+> >>> introduction of needlessly global symbols), not its symptoms (the
+> >>> needlessly global symbols themselves).
+> >>
+> >> in some automated ways...
+> >>
+> >> We have Documentation/SubmitChecklist that we hope that patch
+> >> submitters will use, but we have little evidence that they (we) do
+> >> use it, and we have some evidence that they (we) do NOT use it.
+> >> (but this isn't automated)
+> >>
+> >> I see being related to DaveM's "Slow down, please" thread.
+> >> We have developers hurriedly writing new code but not paying enough
+> >> attention to code that they have already written.
+> >> (not directed at anyone in particular)
+> >>
+> >> E.g., you do maybe 200 randconfig builds per day.  I only do
+> >> 20 - 50, but we both find too many problems (IMHO).
+> >>
+> >>> Let me raise some thoughts about what we could do to achieve these
+> >>> goals.
+> >>
+> >> Good discussion material.
+> >>
+> >
+> >
+> > can we do a "make patchcheck" kernel build target that would
+> > * run checkpatch on teh patch
+> > * build the kernel without the patch (in various .configs, probably
+> > allyesconfig / allmodconfig is enough, but we can figure this out
+> > later)
+> > * apply the patch
+> > * build the kernel in the same configs
+> > * build a kernel for install that has the 'standard debug options'
+> > on (lockdep, slabpoison etc)
+> > then we can
+> > * compare if new gcc warnings got introduced
+> > * compare if major stack usage got introduced
+> > * compare if namespace_check and some of the others introduce new
+> > issues
+> > * compare if new sparse warnings got introduced
+> > and maybe even run a bloat-o-meter to show code growth/shrinkage
+> > [insert other useful checks here]
+> >
+> > if all of that is just one command away, I bet quite a few people
+> > would use it
+> > (and the more useful it gets the more people will use it)
+> >
+> > yes you can do the same thing by hand.
+> > but yes it's many steps that are cumbersome if not automated... so
+> > few people will do it.
+> >
+> > If it's all in one step...
+> >
+> 
+> keep listing the checks you want to have done. I'll bet that if you
+> can automate it enough you will have people setting up farms to do
+> the compiles (or, ideally, package it with a seti-at-home type of
+> thing and many people will donate spare cycles to grinding away at it)
+> 
+> how much value is lost if this is run on larger chunks? 
 
-  Maciej
+only some; if the output is a filename/linenumber (and some message) we
+can always do "git blame" on when it changed last.
+Heck we could then automate to run at that point again to see if that
+patch really caused it (similar to bisect but a lot more targeted).
 
-patch-2.6.26-rc1-20080505-swarm-ide-hw-0
-diff -up --recursive --new-file linux-2.6.26-rc1-20080505.macro/drivers/ide/mips/swarm.c linux-2.6.26-rc1-20080505/drivers/ide/mips/swarm.c
---- linux-2.6.26-rc1-20080505.macro/drivers/ide/mips/swarm.c	2008-05-05 02:55:26.000000000 +0000
-+++ linux-2.6.26-rc1-20080505/drivers/ide/mips/swarm.c	2008-05-05 23:02:04.000000000 +0000
-@@ -4,7 +4,7 @@
-  *	Author:	Manish Lachwani, mlachwani@mvista.com
-  * Copyright (C) 2004  MIPS Technologies, Inc.  All rights reserved.
-  *	Author: Maciej W. Rozycki <macro@mips.com>
-- * Copyright (c) 2006  Maciej W. Rozycki
-+ * Copyright (c) 2006, 2008  Maciej W. Rozycki
-  *
-  * This program is free software; you can redistribute it and/or
-  * modify it under the terms of the GNU General Public License
-@@ -70,8 +70,9 @@ static int __devinit swarm_ide_probe(str
- 	ide_hwif_t *hwif;
- 	u8 __iomem *base;
- 	phys_t offset, size;
-+	hw_regs_t hw;
- 	int i;
--	u8 idx[4] = { 0xff, 0xff, 0xff, 0xff };
-+	u8 idx[] = { 0xff, 0xff, 0xff, 0xff };
- 
- 	if (!SIBYTE_HAVE_IDE)
- 		return -ENODEV;
-@@ -112,14 +113,15 @@ static int __devinit swarm_ide_probe(str
- 	hwif->host_flags = IDE_HFLAG_MMIO;
- 	default_hwif_mmiops(hwif);
- 
--	hwif->chipset = ide_generic;
--
- 	for (i = 0; i <= 7; i++)
--		hwif->io_ports_array[i] =
-+		hw.io_ports_array[i] =
- 				(unsigned long)(base + ((0x1f0 + i) << 5));
--	hwif->io_ports.ctl_addr =
-+	hw.io_ports.ctl_addr =
- 				(unsigned long)(base + (0x3f6 << 5));
--	hwif->irq = K_INT_GB_IDE;
-+	hw.irq = K_INT_GB_IDE;
-+	hw.chipset = ide_generic;
-+
-+	ide_init_port_hw(hwif, &hw);
- 
- 	idx[0] = hwif->index;
- 
+This of course breaks if you do it once a year... but if you do it
+"small enough" it shouldn't be that bad... even during a merge window
+it'll be fine.
