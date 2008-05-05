@@ -1,49 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760076AbYEEXFH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763021AbYEEXFk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760076AbYEEXFH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 19:05:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760919AbYEEXE0
+	id S1763021AbYEEXFk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 19:05:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752424AbYEEXE1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 19:04:26 -0400
-Received: from e33.co.us.ibm.com ([32.97.110.151]:54798 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760915AbYEEXEX (ORCPT
+	Mon, 5 May 2008 19:04:27 -0400
+Received: from g5t0006.atlanta.hp.com ([15.192.0.43]:11103 "EHLO
+	g5t0006.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760832AbYEEXEZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 19:04:23 -0400
-Date: Mon, 5 May 2008 16:04:40 -0700
-From: "Darrick J. Wong" <djwong@us.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, lm-sensors@lm-sensors.org,
-       mhoffman@lightlink.com
-Subject: ibmaem driver status?
-Message-ID: <20080505230440.GE16404@tree.beaverton.ibm.com>
-Reply-To: djwong@us.ibm.com
-References: <20080503045558.GJ16078@tree.beaverton.ibm.com> <20080505135621.66809b0e.akpm@linux-foundation.org>
+	Mon, 5 May 2008 19:04:25 -0400
+From: Andrew Patterson <andrew.patterson@hp.com>
+Subject: [PATCH 2/2] Wrapper for lower-level revalidate_disk routines.
+To: linux-scsi@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, viro@zeniv.linux.org.uk, axboe@kernel.dk,
+       andmike@linux.vnet.ibm.com, Andrew Patterson <andrew.patterson@hp.com>
+Date: Mon, 05 May 2008 17:04:24 -0600
+Message-ID: <20080505230424.12905.53073.stgit@bluto.andrew>
+In-Reply-To: <20080505230414.12905.15331.stgit@bluto.andrew>
+References: <20080505230414.12905.15331.stgit@bluto.andrew>
+User-Agent: StGIT/0.12.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080505135621.66809b0e.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 05, 2008 at 01:56:21PM -0700, Andrew Morton wrote:
-> On Fri, 2 May 2008 21:55:59 -0700
-> "Darrick J. Wong" <djwong@us.ibm.com> wrote:
-> 
-> > Minor rework to support the Intel 5400 chipset.
-> 
-> Thanks, I added this to the for-git-hwmon part of the -mm queue.
-> 
-> I haven't heard from Mark for quite some time so soon I might declare him
-> absent and I'll go through my hwmon patches with a view to merging them into
-> 2.6.26 directly.
+Wrapper for lower-level revalidate_disk routines.
 
-Jean/Mark:
+This is a wrapper for the lower-level revalidate_disk call-backs such
+as sd_revalidate_disk(). It allows us to perform pre and post
+operations when calling them.
 
-Any thoughts on merging the ibmaem driver?  I haven't heard anything in
-a good week and a half; if it's in Mark's backlog that's not a problem.
-(Or at least not as big of one as "silently bitrotting" :))
+We will use this wrapper in a later patch to adjust block device sizes
+after an online resize (a _post_ operation).
 
---D
+Signed-off-by: Andrew Patterson <andrew.patterson@hp.com>
+---
+
+ fs/block_dev.c     |   21 +++++++++++++++++++++
+ include/linux/fs.h |    1 +
+ 2 files changed, 22 insertions(+), 0 deletions(-)
+
+diff --git a/fs/block_dev.c b/fs/block_dev.c
+index fcd0398..b510451 100644
+--- a/fs/block_dev.c
++++ b/fs/block_dev.c
+@@ -894,6 +894,27 @@ static void flush_disk(struct block_device *bdev)
+ 		bdev->bd_invalidated = 1;
+ }
+ 
++/**
++ * revalidate_disk - wrapper for lower-level driver's revalidate_disk
++ *                   call-back
++ *
++ * @disk: struct gendisk to be revalidated
++ *
++ * This routine is a wrapper for lower-level driver's revalidate_disk
++ * call-backs.  It is used to do common pre and post operations needed
++ * for all revalidate_disk operations.
++ */
++int revalidate_disk(struct gendisk *disk)
++{
++	int ret = 0;
++
++	if (disk->fops->revalidate_disk)
++		ret = disk->fops->revalidate_disk(disk);
++
++	return ret;
++}
++EXPORT_SYMBOL(revalidate_disk);
++
+ /*
+  * This routine checks whether a removable media has been changed,
+  * and invalidates all buffer-cache-entries in that case. This
+diff --git a/include/linux/fs.h b/include/linux/fs.h
+index b84b848..278172f 100644
+--- a/include/linux/fs.h
++++ b/include/linux/fs.h
+@@ -1665,6 +1665,7 @@ extern int fs_may_remount_ro(struct super_block *);
+  */
+ #define bio_data_dir(bio)	((bio)->bi_rw & 1)
+ 
++extern int revalidate_disk(struct gendisk *);
+ extern int check_disk_change(struct block_device *);
+ extern int __invalidate_device(struct block_device *);
+ extern int invalidate_partition(struct gendisk *, int);
+
