@@ -1,54 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756030AbYEEICa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754658AbYEEICz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756030AbYEEICa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 04:02:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752012AbYEEICK
+	id S1754658AbYEEICz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 04:02:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756825AbYEEICd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 04:02:10 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:45375
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753000AbYEEICG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 04:02:06 -0400
-Date: Mon, 05 May 2008 01:02:05 -0700 (PDT)
-Message-Id: <20080505.010205.136409582.davem@davemloft.net>
-To: mingo@elte.hu
-Cc: linux-kernel@vger.kernel.org, samuel@sortiz.org, dtor_core@ameritech.net
-Subject: Re: [patch] irda: fix !PNP support in drivers/net/irda/nsc-ircc.c
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20080505075823.GA9299@elte.hu>
-References: <20080503193222.GA23373@elte.hu>
-	<20080505.005003.69528106.davem@davemloft.net>
-	<20080505075823.GA9299@elte.hu>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Mon, 5 May 2008 04:02:33 -0400
+Received: from minas.ics.muni.cz ([147.251.4.40]:44412 "EHLO minas.ics.muni.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755427AbYEEICa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 May 2008 04:02:30 -0400
+Date: Mon, 5 May 2008 10:02:27 +0200
+From: Lukas Hejtmanek <xhejtman@ics.muni.cz>
+To: linux-kernel@vger.kernel.org
+Subject: 2.6.26-rc1 regression since 2.6.25
+Message-ID: <20080505080227.GA5499@ics.muni.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-2
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+X-echelon: NSA, CIA, CI5, MI5, FBI, KGB, BIS, Plutonium, Bin Laden, bomb
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-Muni-Spam-TestIP: 147.251.3.109
+X-Muni-Envelope-From: xhejtman@anubis.ics.muni.cz
+X-Muni-Virus-Test: Clean
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (minas.ics.muni.cz [147.251.4.35]); Mon, 05 May 2008 10:02:28 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Ingo Molnar <mingo@elte.hu>
-Date: Mon, 5 May 2008 09:58:23 +0200
+Hello,
 
-> i just used the existing precedent of doing the #ifdef: it's not _that_ 
-> bad as it surrounds a single function most of the time so it's rather 
-> apparent what is happening - and that is what is done in some other 
-> drivers as well.
-> 
-> btw., when i fixed this i almost implemented it the way that you 
-> suggested, but there's also a code size argument to when the suspend 
-> callbacks are not used: the extra dummy function takes up text space, 
-> and people turn off PNP when they build some specialized thing and try 
-> to reduce the size of the kernel.
-> 
-> but in any case, i have no strong feelings in either direction.
+as of some high versions of 2.6.25-gitXX and 2.6.26-rc1, USB devices pluged
+into a dock (minidock for Lenovo ThinkPad T61) are not discoverred until
+I reload ehci-hcd module with already plugged device.
 
-The existing practice is ugly :-)
+Also minor omnipresent bug, most of the time, I got garbage message instead of
+the message "machine restart" when restarting. I think, the message is OK if
+I boot up and then immediatelly restart. If I restart after some time, only
+garbage is displayed (ASCII chars with value above 127 mostly).
 
-But I see arguments for either side, just like you.
-
-Meanwhile let's fix this build error, I'll toss your patches
-into my net-2.6 tree.
-
-Thanks.
+-- 
+Luká¹ Hejtmánek
