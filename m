@@ -1,243 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756442AbYEEMTv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752142AbYEEMX0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756442AbYEEMTv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 08:19:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752314AbYEEMTl
+	id S1752142AbYEEMX0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 08:23:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751413AbYEEMXS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 08:19:41 -0400
-Received: from 178-47-31-89.wifiinternet.cz ([89.31.47.178]:55220 "EHLO
-	monstr.eu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752142AbYEEMTk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 08:19:40 -0400
-From: monstr@seznam.cz
-To: linux-kernel@vger.kernel.org
-Cc: arnd@arndb.de, linux-arch@vger.kernel.org, stephen.neuendorffer@xilinx.com,
-       John.Linn@xilinx.com, john.williams@petalogix.com, matthew@wil.cx,
-       will.newton@gmail.com, drepper@redhat.com,
-       microblaze-uclinux@itee.uq.edu.au, grant.likely@secretlab.ca,
-       Michal Simek <monstr@monstr.eu>
-Subject: [PATCH 19/56] microblaze_v2: uaccess files
-Date: Sun,  4 May 2008 13:41:08 +0200
-Message-Id: <eadcc6f4754df78b69d6d54c404624d0390c8558.1209897266.git.monstr@monstr.eu>
-X-Mailer: git-send-email 1.5.4.GIT
-In-Reply-To: <378157891bac535dbc55e658d5f03fdd332e85cf.1209897266.git.monstr@monstr.eu>
-References: <1209901305-6404-1-git-send-email-monstr@seznam.cz>
- <a4a778e34c66d126f5c4bf1ca423cf32950ea5ab.1209897266.git.monstr@monstr.eu>
- <c805caeb1dd7f6d1349c4a463cb88a5342a170d2.1209897266.git.monstr@monstr.eu>
- <f120ababf2bade9aab7199bffb3014aa606e5a1c.1209897266.git.monstr@monstr.eu>
- <684c36e5ad3f598e5079e88ec195545c4a7150c2.1209897266.git.monstr@monstr.eu>
- <ed3695121faf485d491cecdd96d5d4dcc498411d.1209897266.git.monstr@monstr.eu>
- <0674b1f7abb9a3d564b68c95bc28adc2c2fe9551.1209897266.git.monstr@monstr.eu>
- <9a7c6646e5dd9724c1cf34767adec181481fa3ef.1209897266.git.monstr@monstr.eu>
- <932956128c9c655a218a940eaf02017a5dd0bdf9.1209897266.git.monstr@monstr.eu>
- <2f801c33caee22e112af51ae927c264ce99ead01.1209897266.git.monstr@monstr.eu>
- <2391e49379fb6639f57d9d6e5811f3d49a4c6fda.1209897266.git.monstr@monstr.eu>
- <0873f3a1f3b72591735c6461b51964693cac52e5.1209897266.git.monstr@monstr.eu>
- <0ba1f259d3c17eba54e334622493577493f5065f.1209897266.git.monstr@monstr.eu>
- <694451053534fea7b78fb9d618b53a2b5ebeb602.1209897266.git.monstr@monstr.eu>
- <f0c837df4106a31c1a81917596603918f722ea7b.1209897266.git.monstr@monstr.eu>
- <d883a8d8da812d77fefd47730d28d0bdb7b504e0.1209897266.git.monstr@monstr.eu>
- <625ef466cf121d655539eedc919dd39166087e0c.1209897266.git.monstr@monstr.eu>
- <b5067a1846075ddd1035966ea1edc908579e2e88.1209897266.git.monstr@monstr.eu>
- <378157891bac535dbc55e658d5f03fdd332e85cf.1209897266.git.monstr@monstr.eu>
-In-Reply-To: <a4a778e34c66d126f5c4bf1ca423cf32950ea5ab.1209897266.git.monstr@monstr.eu>
-References: <a4a778e34c66d126f5c4bf1ca423cf32950ea5ab.1209897266.git.monstr@monstr.eu>
+	Mon, 5 May 2008 08:23:18 -0400
+Received: from mail.suse.de ([195.135.220.2]:57179 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751379AbYEEMXS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 May 2008 08:23:18 -0400
+Date: Mon, 5 May 2008 14:23:16 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Michael Kerrisk <mtk.manpages@googlemail.com>
+Cc: lkml <linux-kernel@vger.kernel.org>, mk <michael.kerrisk@gmail.com>
+Subject: Re: MAP_POPULATE behavior change?
+Message-ID: <20080505122316.GE5018@wotan.suse.de>
+References: <4815BDF5.9070506@gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4815BDF5.9070506@gmail.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Michal Simek <monstr@monstr.eu>
+On Mon, Apr 28, 2008 at 02:07:17PM +0200, Michael Kerrisk wrote:
+> Hey Nick,
+> 
+> Ping!
+> 
+> Cheers,
+> 
+> Michael
+> 
+> 
+> -------- Original Message --------
+> Subject: MAP_POPULATE behavior change?
+> Date: Tue, 22 Apr 2008 15:16:19 +0200
+> From: Michael Kerrisk <mtk.manpages@gmail.com>
+> To: Nick Piggin <npiggin@suse.de>
+> CC: lkml <linux-kernel@vger.kernel.org>, mk <michael.kerrisk@gmail.com>
+> 
+> Hi Nick,
+> 
+> In 2.6.23, you had the commit below, which seems to have changed the
+> kernel-userland API.
+> 
+> Am I right to understand that with this patch MAP_POPULATE now also works with
+> MAP_PRIVATE mappings?  (Formerly it only worked with MAP_SHARED mappings, but
+> some very quick testing suggests that MAP_POPULATE now also has an affect for
+> MAP_PRIVATE.)
 
+Yeah it should also set up anonymous mappings. Very observant :)
 
-Signed-off-by: Michal Simek <monstr@monstr.eu>
----
- arch/microblaze/lib/uaccess.c    |   43 +++++++++++++
- include/asm-microblaze/uaccess.h |  126 ++++++++++++++++++++++++++++++++++++++
- 2 files changed, 169 insertions(+), 0 deletions(-)
- create mode 100644 arch/microblaze/lib/uaccess.c
- create mode 100644 include/asm-microblaze/uaccess.h
+ 
+> Also, can you summarize the status of MAP_NONBLOCK?  Is it now a no-op?
 
-diff --git a/arch/microblaze/lib/uaccess.c b/arch/microblaze/lib/uaccess.c
-new file mode 100644
-index 0000000..9a36778
---- /dev/null
-+++ b/arch/microblaze/lib/uaccess.c
-@@ -0,0 +1,43 @@
-+/*
-+ * arch/microblaze/lib/uaccess.c
-+ *
-+ * This file is subject to the terms and conditions of the GNU General Public
-+ * License.  See the file "COPYING" in the main directory of this archive
-+ * for more details.
-+ *
-+ * Copyright (C) 2006 Atmark Techno, Inc.
-+ */
-+
-+#include <linux/string.h>
-+#include <asm/uaccess.h>
-+
-+#include <asm/bug.h>
-+
-+long strnlen_user(const char __user *s, long n)
-+{
-+	return strlen(s) + 1;
-+}
-+
-+#define __do_strncpy_from_user(dst, src, count, res)			\
-+	do {								\
-+		char *tmp;						\
-+		strncpy(dst, src, count);				\
-+		for (tmp = dst; *tmp && count > 0; tmp++, count--)	\
-+			;						\
-+		res = (tmp - dst);					\
-+	} while (0)
-+
-+long __strncpy_from_user(char *dst, const char __user *src, long count)
-+{
-+	long res;
-+	__do_strncpy_from_user(dst, src, count, res);
-+	return res;
-+}
-+
-+long strncpy_from_user(char *dst, const char *src, long count)
-+{
-+	long res = -EFAULT;
-+	if (access_ok(VERIFY_READ, src, 1))
-+		__do_strncpy_from_user(dst, src, count, res);
-+	return res;
-+}
-diff --git a/include/asm-microblaze/uaccess.h b/include/asm-microblaze/uaccess.h
-new file mode 100644
-index 0000000..e6adda3
---- /dev/null
-+++ b/include/asm-microblaze/uaccess.h
-@@ -0,0 +1,126 @@
-+/*
-+ * include/asm-microblaze/uaccess.h
-+ *
-+ * This file is subject to the terms and conditions of the GNU General Public
-+ * License. See the file "COPYING" in the main directory of this archive
-+ * for more details.
-+ *
-+ * Copyright (C) 2006 Atmark Techno, Inc.
-+ */
-+
-+#ifndef _ASM_MICROBLAZE_UACCESS_H
-+#define _ASM_MICROBLAZE_UACCESS_H
-+
-+#include <linux/kernel.h>
-+#include <linux/errno.h>
-+#include <asm/segment.h>
-+#include <asm/string.h>
-+
-+#include <linux/sched.h> /* RLIMIT_FSIZE */
-+/* #include <linux/errno.h> */
-+
-+#define VERIFY_READ	0
-+#define VERIFY_WRITE	1
-+
-+extern int ___range_ok(unsigned long addr, unsigned long size);
-+
-+#define __range_ok(addr, size) \
-+		___range_ok((unsigned long)(addr), (unsigned long)(size))
-+
-+#define access_ok(type, addr, size) (__range_ok((addr), (size)) == 0)
-+#define __access_ok(add, size) (__range_ok((addr), (size)) == 0)
-+
-+extern inline int bad_user_access_length(void)
-+{
-+	return 0;
-+}
-+
-+#define __get_user(var, ptr)						\
-+	({								\
-+		int __gu_err = 0;					\
-+		switch (sizeof(*(ptr))) {				\
-+		case 1:						\
-+		case 2:						\
-+		case 4:						\
-+			(var) = *(ptr);				\
-+			break;					\
-+		case 8:						\
-+			memcpy((void *) &(var), (ptr), 8);	\
-+			break;					\
-+		default:					\
-+			(var) = 0;				\
-+			__gu_err = __get_user_bad();		\
-+			break;					\
-+		}							\
-+		__gu_err;						\
-+	})
-+
-+#define __get_user_bad()	(bad_user_access_length(), (-EFAULT))
-+
-+#define __put_user(var, ptr)						\
-+	({								\
-+		int __pu_err = 0;					\
-+		switch (sizeof(*(ptr))) {				\
-+		case 1:						\
-+		case 2:						\
-+		case 4:						\
-+			*(ptr) = (var);				\
-+			break;					\
-+		case 8: {					\
-+			typeof(*(ptr)) __pu_val = var;		\
-+			memcpy(ptr, &__pu_val, sizeof(__pu_val));\
-+			}					\
-+			break;					\
-+		default:					\
-+			__pu_err = __put_user_bad();		\
-+			break;					\
-+		}							\
-+		__pu_err;						\
-+	})
-+
-+#define __put_user_bad()	(bad_user_access_length(), (-EFAULT))
-+
-+#define put_user(x, ptr)	__put_user(x, ptr)
-+#define get_user(x, ptr)	__get_user(x, ptr)
-+
-+#define copy_to_user(to, from, n)		(memcpy(to, from, n), 0)
-+#define copy_from_user(to, from, n)		(memcpy(to, from, n), 0)
-+
-+#define __copy_to_user(to, from, n)		(copy_to_user(to, from, n))
-+#define __copy_from_user(to, from, n)		(copy_from_user(to, from, n))
-+#define __copy_to_user_inatomic(to, from, n)	(__copy_to_user(to, from, n))
-+#define __copy_from_user_inatomic(to, from, n)	(__copy_from_user(to, from, n))
-+
-+#define __clear_user(addr, n)	(memset((void *)addr, 0, n), 0)
-+
-+/*
-+ * The exception table consists of pairs of addresses: the first is the
-+ * address of an instruction that is allowed to fault, and the second is
-+ * the address at which the program should continue. No registers are
-+ * modified, so it is entirely up to the continuation code to figure out
-+ * what to do.
-+ *
-+ * All the routines below use bits of fixup code that are out of line
-+ * with the main instruction path. This means when everything is well,
-+ * we don't even have to jump over them. Further, they do not intrude
-+ * on our cache or tlb entries.
-+ */
-+struct exception_table_entry {
-+	unsigned long insn, fixup;
-+};
-+
-+static inline unsigned long clear_user(void *addr, unsigned long size)
-+{
-+	if (access_ok(VERIFY_WRITE, addr, size))
-+		size = __clear_user(addr, size);
-+	return size;
-+}
-+
-+/* Returns 0 if exception not found and fixup otherwise. */
-+extern unsigned long search_exception_table(unsigned long);
-+
-+extern long strncpy_from_user(char *dst, const char *src, long count);
-+extern long strnlen_user(const char *src, long count);
-+extern long __strncpy_from_user(char *dst, const char *src, long count);
-+
-+#endif /* _ASM_MICROBLAZE_UACCESS_H */
--- 
-1.5.4.GIT
+Yes, it is. The problem is you need to walk the page tables, and it
+is fairly annoying to have to make a special case for that to be
+non blocking (after just getting rid of the ->populate special case).
 
+It is possible of course to implement. It might even be easier because
+you could pass in a NONBLOCK flag to ->fault from get_user_pages... but
+for now it is a noop.
+
+Thanks,
+Nick
+
+> 
+> Cheers,
+> 
+> Michael
+> 
+> ==
+> 
+> commit 54cb8821de07f2ffcd28c380ce9b93d5784b40d7
+> Author: Nick Piggin <npiggin@suse.de>
+> Date:   Thu Jul 19 01:46:59 2007 -0700
+> 
+>     mm: merge populate and nopage into fault (fixes nonlinear)
+> 
+>     Nonlinear mappings are (AFAIKS) simply a virtual memory concept that encodes
+>     the virtual address -> file offset differently from linear mappings.
+> 
+>     ->populate is a layering violation because the filesystem/pagecache code
+>     should need to know anything about the virtual memory mapping.  The hitch here
+>     is that the ->nopage handler didn't pass down enough information (ie.  pgoff).
+>      But it is more logical to pass pgoff rather than have the ->nopage function
+>     calculate it itself anyway (because that's a similar layering violation).
+> 
+>     Having the populate handler install the pte itself is likewise a nasty thing
+>     to be doing.
+> 
+>     This patch introduces a new fault handler that replaces ->nopage and
+>     ->populate and (later) ->nopfn.  Most of the old mechanism is still in place
+>     so there is a lot of duplication and nice cleanups that can be removed if
+>     everyone switches over.
+> 
+>     The rationale for doing this in the first place is that nonlinear mappings are
+>     subject to the pagefault vs invalidate/truncate race too, and it seemed stupid
+>     to duplicate the synchronisation logic rather than just consolidate the two.
+> 
+>     After this patch, MAP_NONBLOCK no longer sets up ptes for pages present in
+>     pagecache.  Seems like a fringe functionality anyway.
+> 
+>     NOPAGE_REFAULT is removed.  This should be implemented with ->fault, and no
+>     users have hit mainline yet.
+> 
+> 
+> 
+> 
+> -- 
+> Michael Kerrisk
+> Linux man-pages maintainer; http://www.kernel.org/doc/man-pages/
+> Found a bug? http://www.kernel.org/doc/man-pages/reporting_bugs.html
+> 
