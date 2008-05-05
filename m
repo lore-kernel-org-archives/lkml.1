@@ -1,41 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761319AbYEEUpn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760351AbYEEUtf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761319AbYEEUpn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 16:45:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753844AbYEEUpf
+	id S1760351AbYEEUtf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 16:49:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754115AbYEEUt0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 16:45:35 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:35628 "EHLO
+	Mon, 5 May 2008 16:49:26 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:32949 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753792AbYEEUpe (ORCPT
+	by vger.kernel.org with ESMTP id S1753990AbYEEUt0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 16:45:34 -0400
-Date: Mon, 5 May 2008 13:45:09 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>
-Cc: bunk@kernel.org, linux-kernel@vger.kernel.org, peterz@infradead.org
-Subject: Re: [2.6 patch] mm/page_alloc.c: cleanups
-Message-Id: <20080505134509.2c8a9b94.akpm@linux-foundation.org>
-In-Reply-To: <2f11576a0805051324r46d3ab03ybf14a289d9841cb6@mail.gmail.com>
-References: <20080505182542.GS17139@cs181133002.pp.htv.fi>
-	<2f11576a0805051324r46d3ab03ybf14a289d9841cb6@mail.gmail.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 5 May 2008 16:49:26 -0400
+Date: Mon, 5 May 2008 13:48:31 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+cc: Arjan van de Ven <arjan@infradead.org>, Sam Ravnborg <sam@ravnborg.org>,
+       Parag Warudkar <parag.warudkar@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "akpm@osdl.org" <akpm@linux-foundation.org>,
+       Peter Zijlstra <peterz@infradead.org>, Dave Jones <davej@redhat.com>
+Subject: Re: [PATCH] default to n for GROUP_SCHED and FAIR_GROUP_SCHED
+In-Reply-To: <20080505202729.GA1199@elte.hu>
+Message-ID: <alpine.LFD.1.10.0805051337530.32269@woody.linux-foundation.org>
+References: <82e4877d0805031742o464dd581wd93173d79705ce0d@mail.gmail.com> <20080504092417.GA3425@elte.hu> <82e4877d0805050814j721ae522k84384df48c9f4336@mail.gmail.com> <20080505171501.GA22332@elte.hu> <20080505182427.GA2025@uranus.ravnborg.org>
+ <20080505184235.GD22332@elte.hu> <20080505125620.219c4bb6@infradead.org> <20080505202729.GA1199@elte.hu>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 6 May 2008 05:24:07 +0900
-"KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com> wrote:
 
-> >  -void free_cold_page(struct page *page)
-> >  -{
-> >  -       free_hot_cold_page(page, 1);
-> >  -}
+
+On Mon, 5 May 2008, Ingo Molnar wrote:
 > 
-> Wow, I didn't know nobody use cold page :)
+> yeah, that's what i meant mostly - to new drivers we unfortunately 
+> default to 'n'. And most of the time (i hope!) our defaults for new core 
+> kernel and architectural features otherwise make sense.
 
-that's a bug, surely?  I bet there are plenty of places which should be
-using this hint.
+I doubt it.
+
+People are *way* too eager to mark things 'y', because it may make sense 
+as a default to the developer of the feature, never mind that the average 
+user should never *ever* enable it.
+
+There are even things that are clearly marked experimental (and depend on 
+the EXPERIMENTAL config option), and then have the gall to say "default 
+y".
+
+Another example of that kind of behaviour, for example, is just you 
+fighting turning off 'default y' from FAIR_GROUP_SCHED, considering that 
+it is known to cause latency problems and the reason isn't understood.
+
+Developers want their features to be enabled. Regardless of whether they 
+are features that make sense to normal people.
+
+I'd love to make "default y" be something you must never do (except for 
+question that don't get asked at all!), but that would just cause people 
+to create negative config options ("disable my cool feature?") which we 
+already have to some degree, and which is *really* irritating.
+
+			Linus
