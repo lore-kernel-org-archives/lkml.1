@@ -1,54 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761560AbYEEXew@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760858AbYEEXkq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761560AbYEEXew (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 19:34:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753643AbYEEXeo
+	id S1760858AbYEEXkq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 19:40:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754230AbYEEXkg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 19:34:44 -0400
-Received: from uki.us.mooball.net ([66.98.178.13]:50573 "EHLO
-	uki.us.mooball.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753289AbYEEXen (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 19:34:43 -0400
-X-ClientAddr: 220.233.82.121
-Subject: RE: [PATCH 07/56] microblaze_v2: Signal support
-From: John Williams <john.williams@petalogix.com>
-To: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
-Cc: monstr@seznam.cz, linux-kernel@vger.kernel.org, arnd@arndb.de,
-       linux-arch@vger.kernel.org, John Linn <linnj@xilinx.com>,
-       matthew@wil.cx, will.newton@gmail.com, drepper@redhat.com,
-       microblaze-uclinux@itee.uq.edu.au, grant.likely@secretlab.ca,
-       Michal Simek <monstr@monstr.eu>
-In-Reply-To: <20080505213244.8DC757A0084@mail70-wa4.bigfish.com>
-References: <a4a778e34c66d126f5c4bf1ca423cf32950ea5ab.1209897266.git.monstr@monstr.eu>
-	 <9a7c6646e5dd9724c1cf34767adec181481fa3ef.1209897266.git.monstr@monstr.eu>
-	 <20080505213244.8DC757A0084@mail70-wa4.bigfish.com>
-Content-Type: text/plain
-Organization: PetaLogix
-Date: Tue, 06 May 2008 09:33:56 +1000
-Message-Id: <1210030436.5798.148.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.0 (2.8.0-40.el5_1.1) 
-Content-Transfer-Encoding: 7bit
-X-Mooball.com-MailScanner-Information: Please contact the ISP for more information
-X-Mooball.com-MailScanner: Not scanned: please contact your Internet E-Mail Service Provider for details
-X-MailScanner-From: john.williams@petalogix.com
+	Mon, 5 May 2008 19:40:36 -0400
+Received: from kirk.serum.com.pl ([213.77.9.205]:61087 "EHLO serum.com.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753778AbYEEXkf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 May 2008 19:40:35 -0400
+Date: Tue, 6 May 2008 00:40:20 +0100 (BST)
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] SWARM IDE: Fix up following changes to ide_hwif_t
+Message-ID: <Pine.LNX.4.55.0805060031350.7061@cliff.in.clinika.pl>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-05-05 at 14:32 -0700, Stephen Neuendorffer wrote:
-> (multiple places)  can this code (and flush_cache_sigtramp()) go away?
-> 
-> +#if 0
-> +		flush_cache_sigtramp((unsigned long)frame->tramp);
-> +#endif
+ Following recent changes to ide_hwif_t update the SWARM IDE driver to use 
+hw_regs_t to initialize port mapping.  Plus minor layout adjustments along 
+the lines of other drivers.
 
-You have to icache_invalidate the sigtramp because you are writing into
-memory that will shortly be executed. 
+Signed-off-by: Maciej W. Rozycki <macro@linux-mips.org>
+---
+ Fixes a build problem.  Tested succesfully at the run time.  No
+checkpatch.pl problems.  Please apply.
 
-I'm not sure why this is #if'd away in the first place?
+  Maciej
 
-John
-
-
+patch-2.6.26-rc1-20080505-swarm-ide-hw-0
+diff -up --recursive --new-file linux-2.6.26-rc1-20080505.macro/drivers/ide/mips/swarm.c linux-2.6.26-rc1-20080505/drivers/ide/mips/swarm.c
+--- linux-2.6.26-rc1-20080505.macro/drivers/ide/mips/swarm.c	2008-05-05 02:55:26.000000000 +0000
++++ linux-2.6.26-rc1-20080505/drivers/ide/mips/swarm.c	2008-05-05 23:02:04.000000000 +0000
+@@ -4,7 +4,7 @@
+  *	Author:	Manish Lachwani, mlachwani@mvista.com
+  * Copyright (C) 2004  MIPS Technologies, Inc.  All rights reserved.
+  *	Author: Maciej W. Rozycki <macro@mips.com>
+- * Copyright (c) 2006  Maciej W. Rozycki
++ * Copyright (c) 2006, 2008  Maciej W. Rozycki
+  *
+  * This program is free software; you can redistribute it and/or
+  * modify it under the terms of the GNU General Public License
+@@ -70,8 +70,9 @@ static int __devinit swarm_ide_probe(str
+ 	ide_hwif_t *hwif;
+ 	u8 __iomem *base;
+ 	phys_t offset, size;
++	hw_regs_t hw;
+ 	int i;
+-	u8 idx[4] = { 0xff, 0xff, 0xff, 0xff };
++	u8 idx[] = { 0xff, 0xff, 0xff, 0xff };
+ 
+ 	if (!SIBYTE_HAVE_IDE)
+ 		return -ENODEV;
+@@ -112,14 +113,15 @@ static int __devinit swarm_ide_probe(str
+ 	hwif->host_flags = IDE_HFLAG_MMIO;
+ 	default_hwif_mmiops(hwif);
+ 
+-	hwif->chipset = ide_generic;
+-
+ 	for (i = 0; i <= 7; i++)
+-		hwif->io_ports_array[i] =
++		hw.io_ports_array[i] =
+ 				(unsigned long)(base + ((0x1f0 + i) << 5));
+-	hwif->io_ports.ctl_addr =
++	hw.io_ports.ctl_addr =
+ 				(unsigned long)(base + (0x3f6 << 5));
+-	hwif->irq = K_INT_GB_IDE;
++	hw.irq = K_INT_GB_IDE;
++	hw.chipset = ide_generic;
++
++	ide_init_port_hw(hwif, &hw);
+ 
+ 	idx[0] = hwif->index;
+ 
