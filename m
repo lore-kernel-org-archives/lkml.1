@@ -1,21 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761518AbYEESnM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764581AbYEESng@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761518AbYEESnM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 14:43:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761636AbYEESap
+	id S1764581AbYEESng (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 14:43:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761654AbYEESau
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 14:30:45 -0400
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:55307 "EHLO smtp4.pp.htv.fi"
+	Mon, 5 May 2008 14:30:50 -0400
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:33176 "EHLO smtp5.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761623AbYEESao (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 14:30:44 -0400
-Date: Mon, 5 May 2008 21:29:37 +0300
+	id S1760203AbYEESat (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 May 2008 14:30:49 -0400
+Date: Mon, 5 May 2008 21:29:42 +0300
 From: Adrian Bunk <bunk@kernel.org>
-To: linux-kernel@vger.kernel.org
-Cc: "David S. Miller" <davem@sunset.davemloft.net>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [2.6 patch] unexport uts_sem
-Message-ID: <20080505182937.GZ17139@cs181133002.pp.htv.fi>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: [2.6 patch] make sched_feat_{names,open} static
+Message-ID: <20080505182942.GA17139@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -24,29 +23,40 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-With the removal of the Solaris binary emulation the export of 
-uts_sem became unused.
+This patch makes the following needlessly global code in kernel/sched.c  
+static:
+- sched_feat_names[]
+- sched_feat_open()
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
-Acked-by: David S. Miller <davem@davemloft.net>
 
 ---
 
 This patch has been sent on:
 - 23 Apr 2008
 
-e15db7b262fd8c3d9000e7d5e7a2b1d720fba8de diff --git a/kernel/sys.c b/kernel/sys.c
-index 6a0cc71..773d4a5 100644
---- a/kernel/sys.c
-+++ b/kernel/sys.c
-@@ -1331,8 +1331,6 @@ EXPORT_SYMBOL(in_egroup_p);
- 
- DECLARE_RWSEM(uts_sem);
- 
--EXPORT_SYMBOL(uts_sem);
--
- asmlinkage long sys_newuname(struct new_utsname __user * name)
- {
- 	int errno = 0;
+ kernel/sched.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
+2a1e54c660bb9c574133bda95468b1ea28239e95 diff --git a/kernel/sched.c b/kernel/sched.c
+index 57ba7ea..19df986 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -757,14 +757,14 @@ const_debug unsigned int sysctl_sched_features =
+ #define SCHED_FEAT(name, enabled)	\
+ 	#name ,
+ 
+-__read_mostly char *sched_feat_names[] = {
++static __read_mostly char *sched_feat_names[] = {
+ #include "sched_features.h"
+ 	NULL
+ };
+ 
+ #undef SCHED_FEAT
+ 
+-int sched_feat_open(struct inode *inode, struct file *filp)
++static int sched_feat_open(struct inode *inode, struct file *filp)
+ {
+ 	filp->private_data = inode->i_private;
+ 	return 0;
 
