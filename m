@@ -1,56 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756040AbYEEGbl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756653AbYEEGcU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756040AbYEEGbl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 02:31:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753591AbYEEGbd
+	id S1756653AbYEEGcU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 02:32:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753858AbYEEGcK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 02:31:33 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:58914 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753297AbYEEGbd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 02:31:33 -0400
-Date: Mon, 5 May 2008 08:31:17 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: Ingo Molnar <mingo@redhat.com>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] stacktrace: don't crash on invalid stack trace structs
-Message-ID: <20080505063117.GA3350@elte.hu>
-References: <1209904761.4065.19.camel@johannes.berg>
+	Mon, 5 May 2008 02:32:10 -0400
+Received: from smtp1.wifiinternet.cz ([89.31.47.1]:56671 "EHLO
+	bor.wifiinternet.cz" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753775AbYEEGcI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 May 2008 02:32:08 -0400
+Message-ID: <481EAA2F.7060101@seznam.cz>
+Date: Mon, 05 May 2008 08:33:19 +0200
+From: Michal Simek <monstr@seznam.cz>
+Reply-To: monstr@seznam.cz
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1209904761.4065.19.camel@johannes.berg>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Arnd Bergmann <arnd@arndb.de>
+CC: paulus@samba.org, linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
+Subject: Re: [PATCH 1/2] OF: Fix coding style violation in of_device.c and
+ of_platform.c
+References: <monstr@seznam.cz> <200805032304.58709.arnd@arndb.de> <481D71D3.7060703@seznam.cz> <200805042142.45872.arnd@arndb.de>
+In-Reply-To: <200805042142.45872.arnd@arndb.de>
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Arnd,
 
-* Johannes Berg <johannes@sipsolutions.net> wrote:
-
-> This patch makes the stacktrace printout code warn when the entries
-> pointer is unset rather than crashing when trying to access it in an
-> attempt to make it a bit more robust.
+>> this is question to powerpc guys not to me. I haven't tried to compiled but I
+>> think dcr.h is important header for powerpc.
+>> I only fixed problem for Microblaze because we don't have these headers.
 > 
-> I was saving a stacktrace into an skb and forgot to copy it across skb 
-> copies... Not sure if you want this, I have since fixed the code, but 
-> it would have been easier had the kernel not crashed in an interrupt.
+> A google search on "microblaze DCR" shows a number of results, leading me to
+> the conclusion that microblaze actually does have DCR registers. In that
+> case, the best option should be to just implement a dcr.h based on 
+> asm-powerpc/dcr-native.h.
 
-applied, thanks Johannes.
+You are right. Google can find a lot of things. :-)
 
-I agree that such code needs to be more resilient, and resilience is 
-mainly driven by observing random incidents as they happen in the field. 
-So please keep sending such patches (even if they might seem dubious to 
-you at first sight), they do make a lot of sense - and even if a patch 
-does not end up getting applied your submission documents the incident.
+Microblaze doesn't have any DCR instruction. If you want to use DCR you will
+have to add bridge to design but I think 99,5% of designs don't have it. (Maybe
+older from EDK 6 had).
 
-	Ingo
+Michal
+
