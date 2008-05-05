@@ -1,61 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758245AbYEELO2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758214AbYEELQS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758245AbYEELO2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 07:14:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754437AbYEELOT
+	id S1758214AbYEELQS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 07:16:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754290AbYEELQJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 07:14:19 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:55570 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753864AbYEELOS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 07:14:18 -0400
-Date: Mon, 5 May 2008 07:14:14 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: akpm@linux-foundation.org, hch@infradead.org, viro@ZenIV.linux.org.uk,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       Ulrich Drepper <drepper@redhat.com>
-Subject: Re: [patch 14/15] vfs: utimes immutable fix
-Message-ID: <20080505111414.GI20910@infradead.org>
-References: <20080505095440.820370974@szeredi.hu> <20080505095530.431609833@szeredi.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080505095530.431609833@szeredi.hu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+	Mon, 5 May 2008 07:16:09 -0400
+Received: from smtp5-g19.free.fr ([212.27.42.35]:35595 "EHLO smtp5-g19.free.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753864AbYEELQJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 May 2008 07:16:09 -0400
+Date: Mon, 5 May 2008 13:16:07 +0200
+From: FD Cami <francois.cami@free.fr>
+To: "Kevin Burton" <burton@tailrank.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Ability to limit or disable page caching?
+Message-ID: <20080505131607.5556b1f2@olorin>
+In-Reply-To: <30c6373b0805050012o505c0540i116a31bc1ab9ce9f@mail.gmail.com>
+References: <30c6373b0805050012o505c0540i116a31bc1ab9ce9f@mail.gmail.com>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 05, 2008 at 11:54:55AM +0200, Miklos Szeredi wrote:
-> From: Miklos Szeredi <mszeredi@suse.cz>
-> 
-> If updating file times to the current time and using a file
-> descriptor, then don't check for immutable inode, only if the file is
-> opened for write.  In this case immutability has been checked at open
-> time.  This is the same as how write() and ftruncate() are handled.
-> 
-> Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
-> CC: Ulrich Drepper <drepper@redhat.com>
-> ---
->  fs/utimes.c |    3 ---
->  1 file changed, 3 deletions(-)
-> 
-> Index: linux-2.6/fs/utimes.c
-> ===================================================================
-> --- linux-2.6.orig/fs/utimes.c	2008-05-05 11:29:28.000000000 +0200
-> +++ linux-2.6/fs/utimes.c	2008-05-05 11:29:28.000000000 +0200
-> @@ -110,9 +110,6 @@ static int do_fd_utimes(int fd, struct t
->  		struct inode *inode = file->f_path.dentry->d_inode;
->  
->  		error = -EACCES;
-> -		if (IS_IMMUTABLE(inode))
-> -			goto out_fput;
-> -
 
-Looks good, but please re-order it before the cleanup so we can put it
-in for .26.
+Hi,
 
+On Mon, 5 May 2008 00:12:56 -0700
+"Kevin Burton" <burton@tailrank.com> wrote:
+
+> In the mean time is it possible to disable the page cache or limit it
+> to say 10% of system memory?
+
+You might want to look at /proc/sys/vm/ for tunables.
+/proc/sys/vm/vfs_cache_pressure and /proc/sys/vm/swappiness are probably
+what you are looking for.
+See this article for an explanation of swappiness :
+http://www.leap-cf.org/oldarchive/2004-May/038622.html
+
+> You could do this with RHEL 4.x but I don't recall this ever making it
+> into 2.6 :-/
+
+AFAIK RHEL 4.x runs 2.6.9.
+
+Cheers
+
+FDC
