@@ -1,49 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755326AbYEEKJg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755474AbYEEKOR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755326AbYEEKJg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 06:09:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752630AbYEEKJ0
+	id S1755474AbYEEKOR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 06:14:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752280AbYEEKOH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 06:09:26 -0400
-Received: from styx.suse.cz ([82.119.242.94]:43857 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752437AbYEEKJ0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 06:09:26 -0400
-Date: Mon, 5 May 2008 12:09:25 +0200
-From: Jan Kara <jack@suse.cz>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org
-Subject: Re: [PATCH] ext3: Fix typos in messages and comments (journalled
-	-> journaled)
-Message-ID: <20080505100924.GB25722@duck.suse.cz>
-References: <12095679813226-git-send-email-jack@suse.cz> <12095679812375-git-send-email-jack@suse.cz> <12095679812452-git-send-email-jack@suse.cz> <1209567981639-git-send-email-jack@suse.cz> <20080430104330.66c44d4f.akpm@linux-foundation.org>
+	Mon, 5 May 2008 06:14:07 -0400
+Received: from www.tglx.de ([62.245.132.106]:33952 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751776AbYEEKOG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 May 2008 06:14:06 -0400
+Date: Mon, 5 May 2008 12:13:51 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Andi Kleen <andi@firstfloor.org>
+cc: mingo@elte.hu, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH REPOST] CPA: Add statistics about state of direct mapping
+ v4
+In-Reply-To: <20080502094649.GA11185@basil.nowhere.org>
+Message-ID: <alpine.LFD.1.10.0805051208240.3318@apollo.tec.linutronix.de>
+References: <20080502094649.GA11185@basil.nowhere.org>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080430104330.66c44d4f.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed 30-04-08 10:43:30, Andrew Morton wrote:
-> On Wed, 30 Apr 2008 17:06:15 +0200
-> Jan Kara <jack@suse.cz> wrote:
+On Fri, 2 May 2008, Andi Kleen wrote:
 > 
-> > -					"EXT3-fs: Cannot change journalled "
-> > +					"EXT3-fs: Cannot change journaled "
-> 
-> hrm, who said?
-> 
-> Dictionary.com recognises neither.
-> 
-> google(journalled) = 520,000
-> google(journaled) = 652,000
-  google.cz gives like 250k vs 519k, interesting. Anyway, I'm happy to
-leave the decision on the proper spelling of the verb to people with better
-English skills ;).
+> Signed-off-by: Andi Kleen <ak@suse.de>
+> Signed-off-by: Andi Kleen <andi@firstfloor.org>
 
-									Honza
--- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+Interesting SOB chain :)
+
+> +static unsigned long direct_pages_count[PG_LEVEL_NUM];
+> +
+> +void __meminit update_page_count(int level, unsigned long pages)
+
+Why __meminit ? This is used in split_large_page()
+
+> +{
+> +#ifdef CONFIG_PROC_FS
+
+Why keep an empty function when PROC_FS is disabled ?
+
+Thanks,
+	tglx
