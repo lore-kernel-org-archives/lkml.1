@@ -1,77 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762180AbYEEVMH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762432AbYEEVM2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762180AbYEEVMH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 17:12:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761543AbYEEVLu
+	id S1762432AbYEEVM2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 17:12:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762157AbYEEVMA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 17:11:50 -0400
-Received: from monty.telenet-ops.be ([195.130.132.56]:54522 "EHLO
-	monty.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761542AbYEEVLt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 17:11:49 -0400
-Date: Mon, 5 May 2008 23:11:46 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: linux-ext4@vger.kernel.org
-cc: Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       Linux/m68k <linux-m68k@vger.kernel.org>
-Subject: Problem mounting ext2 using ext3?
-Message-ID: <Pine.LNX.4.64.0805052304280.3160@anakin>
+	Mon, 5 May 2008 17:12:00 -0400
+Received: from smtp.enter.net ([216.193.128.24]:2345 "EHLO smtp.enter.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762140AbYEEVL6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 May 2008 17:11:58 -0400
+From: Daniel Hazelton <dhazelton@enter.net>
+To: Pekka J Enberg <penberg@cs.helsinki.fi>
+Subject: Re: git trees which are not yet in linux-next
+Date: Mon, 5 May 2008 17:11:52 -0400
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-next@vger.kernel.org,
+       sfrench@us.ibm.com, swhiteho@redhat.com, stefanr@s5r6.in-berlin.de,
+       jeff@garzik.org, ralf@linux-mips.org, drzeus-list@drzeus.cx,
+       jack@ucw.cz, cbou@mail.ru, jens.axboe@oracle.com, ericvh@gmail.com,
+       wim@iguana.be, chris@zankel.net, nico@cam.org, clameter@sgi.com,
+       ezk@cs.sunysb.edu, linux-kernel@vger.kernel.org
+References: <20080502151206.b40f77ea.akpm@linux-foundation.org> <20080505113128.d68863a2.akpm@linux-foundation.org> <Pine.LNX.4.64.0805052136530.5570@sbz-30.cs.Helsinki.FI>
+In-Reply-To: <Pine.LNX.4.64.0805052136530.5570@sbz-30.cs.Helsinki.FI>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200805051711.55278.dhazelton@enter.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-	Hi,
+On Monday 05 May 2008 14:41:53 Pekka J Enberg wrote:
+> On Mon, 5 May 2008 21:16:12 +0300
+>
+> "Pekka Enberg" <penberg@cs.helsinki.fi> wrote:
+> > > I was looking at preparing a for-next branch for the SLAB tree but I'm
+> > > not sure I understand the above. For something like the slab
+> > > allocator, you want as much exposure as possible before asking Linus
+> > > to pull so I would like to continue to (ab)use -mm for testing as
+> > > well. But that doesn't seem to fit the linux-next rules at all...
+>
+> On Mon, 5 May 2008, Andrew Morton wrote:
+> > You have stuff in your tree which isn't intended for 2.6.27??
+>
+> Heh, no, but I did read somewhere that you're only supposed to put patches
+> in 'next' that you consider to be good enough for Linus to pull.
+>
+> On Mon, 5 May 2008 21:16:12 +0300
+>
+> "Pekka Enberg" <penberg@cs.helsinki.fi> wrote:
+> > > So what to do here? I don't have a problem with maintaining separate
+> > > branches for mm and next where the latter is not going to get much
+> > > action until very late in the release cycle when I'm preparing for the
+> > > next merge window.
+>
+> On Mon, 5 May 2008, Andrew Morton wrote:
+> > I don't mind, really - just do what you think is best for your subsystem
+> > and then tell me and Stephen about it.  We'll only notice if you break
+> > stuff ;)
+> >
+> > So I'd suggest that you have a #for-next which contains material for
+> > 2.6.26 and 2.6.27 and a #for-mm which contains material for 2.6.28+.
+> >
+> > Only problem is, I'd need to generate the #for-next -> #for-mm diff, and
+> > that particular git operation has been troublesome in the past.
+> >
+> > otoh, I think that staging for-2.6.26 and for-2.6.27 material in -mm
+> > really is reaching far enough into the future, and I'd question the value
+> > of staging for-2.6.28+ material as well.  I mean, that's half a year
+> > away.
+>
+> Well, I only really have three kinds of patches: (1) testing, (2)
+> for-linus asap (fixes in the middle of a release cycle) and (3) for-linus
+> when the merge window opens. Up until now, I've put (1) in for-mm and
+> after enough exposure (and no bug reports) they graduate into (2) or (3).
+>
+> So the problem here is where I put the patches in category (1)? If
+> they can go into for-next, then for-mm can disappear. Stephen?
+>
+> 		Pekka
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
-When trying today's kernel (f74d505b58d36ceeef10e459094f0eb760681165) on
-ARAnyM (emulated m68k Atari), I get
+I think (1) would be for-mm, (2) would be pushed to Linus ASAP and (3) would 
+be for-next. (unless I've gotten the intent of the various trees mixed up 
+somewhere while tracking this discussion)
 
-| Unable to handle kernel NULL pointer dereference at virtual address 000000b4
-| Oops: 00000000
-| Modules linked in:
-| PC: [<000aad9e>] ext3_sync_fs+0x16/0x4a
-| SR: 2304  SP: 00c09cc0  a2: 00c07a80
-| d0: 00000001    d1: 00002300    d2: 00000002    d3: 00677600
-| d4: 00677752    d5: 006776d2    a0: 00000000    a1: 00677600
-| Process swapper (pid: 1, task=00c07a80)
-| Frame format=7 eff addr=000000b4 ssw=0505 faddr=000000b4
-| wb 1 stat/addr/data: 0000 00000000 00000000
-| wb 2 stat/addr/data: 0000 00000000 00000000
-| wb 3 stat/addr/data: 0000 000000b4 00000000
-| push data: 00000000 00000000 00000000 00000000
-| Stack from 00c09d28:
-|         00c09d30 00677600 40000000 00c09df0 000909fe 00677600 00000001 00000001
-|         00a02cd0 00000040 00000000 00000000 00000000 00677600 0022671c 00677600
-|         00c09df0 00c09d7c 00677666 006776be 006776b2 00001000 00000000 00000000
-|         00000000 00000001 00000000 00000000 00065b7a 00677600 ffffffff 00000000
-|         00a02ce8 ffffffea 00065e5c 00677600 0067763a 0067b000 0067b000 0080de20
-|         0022671c 00c09ea4 68646131 000e38de 00241072 00c01f70 000000d0 00241072
-| Call Trace: [<000909fe>] vfs_quota_off+0xb4/0x562
-|  [<00001000>] kernel_pg_dir+0x0/0x1000
-|  [<00065b7a>] deactivate_super+0x44/0x72
-|  [<00065e5c>] get_sb_bdev+0x12a/0x138
-|  [<000e38de>] idr_pre_get+0x32/0x44
-|  [<000e37f8>] ida_get_new+0x10/0x16
-|  [<000a9930>] ext3_get_sb+0x1e/0x24
+DRH
 
-when mounting the root file system, which is ext2 (has_journal is not set).
-Apparently it crashes in ext3_sync_fs because EXT3_SB(sb)->s_journal is NULL.
-
-At first I thought it was an issue with the byteswapped IDE bus on Atari (a
-new and different solution to handle this just went into mainline), but if I
-disable CONFIG_EXT3 support, it boots up fine.
-
-Is this a known problem?
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+-- 
+Dialup is like pissing through a pipette. Slow and excruciatingly painful.
