@@ -1,72 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751406AbYEESN0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753907AbYEESQW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751406AbYEESN0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 14:13:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751432AbYEESNS
+	id S1753907AbYEESQW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 14:16:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751406AbYEESQO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 14:13:18 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:60303 "EHLO smtp5.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751318AbYEESNS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 14:13:18 -0400
-Date: Mon, 5 May 2008 21:12:10 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Cc: SL Baur <steve@xemacs.org>, linux-kernel@vger.kernel.org
-Subject: Re: How to reduce the number of open kernel bugs
-Message-ID: <20080505181210.GB17139@cs181133002.pp.htv.fi>
-References: <20080502124210.GB5838@cs181133002.pp.htv.fi> <ed10ee420805030313r457d8cdfjdbcb346ae928c125@mail.gmail.com> <20080503112118.GK5838@cs181133002.pp.htv.fi> <481C881D.4010708@s5r6.in-berlin.de>
+	Mon, 5 May 2008 14:16:14 -0400
+Received: from rv-out-0506.google.com ([209.85.198.224]:11490 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751120AbYEESQN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 May 2008 14:16:13 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=DoQq9p5rTHXgU8PfUeTYJRnAtrTiml/prYv7mznds9MC8ro7GLvaBt39kJBuCJGgsre8MSpEBouL16HQtbfOnQwfithogNgtr2kTtmFKore+yU7K+BjQXlZHuQ5zGjgipFMeZf6LaM/EWvlyzBWExO1j+Z/Fkzadf1JWnCgqQ9A=
+Message-ID: <84144f020805051116mdbbea01q39f17bce95c95dbb@mail.gmail.com>
+Date: Mon, 5 May 2008 21:16:12 +0300
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: git trees which are not yet in linux-next
+Cc: linux-next@vger.kernel.org, "Steven French" <sfrench@us.ibm.com>,
+       "Steven Whitehouse" <swhiteho@redhat.com>,
+       "Stefan Richter" <stefanr@s5r6.in-berlin.de>,
+       "Jeff Garzik" <jeff@garzik.org>, "Ralf Baechle" <ralf@linux-mips.org>,
+       "Pierre Ossman" <drzeus-list@drzeus.cx>, "Jan Kara" <jack@ucw.cz>,
+       "Anton Vorontsov" <cbou@mail.ru>, "Jens Axboe" <jens.axboe@oracle.com>,
+       "Eric Van Hensbergen" <ericvh@gmail.com>,
+       "Wim Van Sebroeck" <wim@iguana.be>,
+       "Christian Zankel" <chris@zankel.net>, "Nicolas Pitre" <nico@cam.org>,
+       "Christoph Lameter" <clameter@sgi.com>,
+       "Erez Zadok" <ezk@cs.sunysb.edu>, linux-kernel@vger.kernel.org
+In-Reply-To: <20080502151206.b40f77ea.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <481C881D.4010708@s5r6.in-berlin.de>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+References: <20080502151206.b40f77ea.akpm@linux-foundation.org>
+X-Google-Sender-Auth: df917cf2879bf0dd
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, May 03, 2008 at 05:43:25PM +0200, Stefan Richter wrote:
+Hi Andrew,
+
+On Sat, May 3, 2008 at 1:12 AM, Andrew Morton <akpm@linux-foundation.org> wrote:
+>  Guys, could you please prepare a tree for Stephen and send the details
+>  over to him?  Please Cc me also.
 >
-> Adrian, what is it that you criticize?  Was it an impolite tone in the  
-> maintainer's responses, or do you believe that the maintainer lied to  
-> the reporter?
-> 
-> Or did the maintainer miss to do something which he would be able to and  
-> had the resources to do?
->
-> Or did the maintainer refuse to fulfill an obligation?
-> 
-> If it is one of the latter points, is it that the maintainer failed,  
-> according to your observation, to explain in more detail why he closed  
-> the bug early, in a way that a person without deep technical insight  
-> into the problem domain can parse?  Or to ask for information which  
-> would bring the bug forward?  Or to analyze the problem deeper on his  
-> own?  Or use the bugzilla system in a more sophisticated way (reassign,  
-> set status, change title... instead of closing the bug and requiring the  
-> reporter to create a different bug entry)?
->...
+>  Once this has happened, there should be no need to run a separate for-mm
+>  branch.  I'll just switch over to using whatever branch linux-next is
+>  using.
 
-The only thing that was really bad was the tone.
+I was looking at preparing a for-next branch for the SLAB tree but I'm
+not sure I understand the above. For something like the slab
+allocator, you want as much exposure as possible before asking Linus
+to pull so I would like to continue to (ab)use -mm for testing as
+well. But that doesn't seem to fit the linux-next rules at all...
 
-When anyone says "he could anyway not done anything about the bug" 
-that's not true since he e.g. noted himself APIC errors in the report,
-and could have reassigned the bug accordingly. Or noted it in the 
-bug - when I touch a bug (as I did with this one before) I'm putting 
-myself to the Cc, and I read what happens later in the bug.
+So what to do here? I don't have a problem with maintaining separate
+branches for mm and next where the latter is not going to get much
+action until very late in the release cycle when I'm preparing for the
+next merge window.
 
-But that's not the problem. The problem was the (repeated) closing of a 
-bug in a way that expresses to a submitter that bug reports were 
-unwanted.
-
-> Stefan Richter
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+                        Pekka
