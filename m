@@ -1,57 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759042AbYEEQdT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758067AbYEEQjT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759042AbYEEQdT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 12:33:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754973AbYEEQdE
+	id S1758067AbYEEQjT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 12:39:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755194AbYEEQjI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 12:33:04 -0400
-Received: from nf-out-0910.google.com ([64.233.182.189]:11052 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753973AbYEEQdB (ORCPT
+	Mon, 5 May 2008 12:39:08 -0400
+Received: from outbound-mail-40.bluehost.com ([69.89.20.194]:43519 "HELO
+	outbound-mail-40.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1755180AbYEEQjH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 12:33:01 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=HlWLh3VOT0SwQ8NNwrdmWfQhp+OezJ4CvNM6/8Yh5D1FoqQAsIK6O0FPZsgqMW2SefrVa+REr69F1HG23zK+l5CQSmK6JGnEzoo7M/tWcYJShnjXV+ybOQ+Ff8PRBL08yuTlOjTp6PaWyxIAByVXN4CvmAwOj+NhYDi2FzJ61YU=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Subject: Re: [PATCH 2/3] ide: set REQ_NOMERGE request flag in ide_do_drive_cmd()
-Date: Mon, 5 May 2008 18:31:11 +0200
+	Mon, 5 May 2008 12:39:07 -0400
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Gabriel C <nix.or.die@googlemail.com>
+Subject: Re: intelfb and G33 / Q33 / Q35 chipsets support ?
+Date: Mon, 5 May 2008 09:38:54 -0700
 User-Agent: KMail/1.9.9
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
-       petkovbb@gmail.com, jens.axboe@oracle.com
-References: <200805031514.24727.bzolnier@gmail.com> <20080505204334P.tomof@acm.org>
-In-Reply-To: <20080505204334P.tomof@acm.org>
+Cc: Dave Airlie <airlied@linux.ie>, Gabriel C <crazy@frugalware.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fbdev-devel@lists.sourceforge.net,
+       "Antonino A. Daplas" <adaplas@gmail.com>,
+       Wang Zhenyu <zhenyu.z.wang@intel.com>
+References: <4815EEB4.2060509@frugalware.org> <4817A9D3.1030309@googlemail.com> <4817D687.8080201@googlemail.com>
+In-Reply-To: <4817D687.8080201@googlemail.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200805051831.12574.bzolnier@gmail.com>
+Message-Id: <200805050938.54453.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 05 May 2008, FUJITA Tomonori wrote:
-> On Sat, 3 May 2008 15:14:24 +0200
-> Bartlomiej Zolnierkiewicz <bzolnier@gmail.com> wrote:
-> 
-> > This is a preparation for converting IDE to use blk_execute_rq().
-> > 
-> > There should be no functional changes caused by this patch.
-> > 
-> > Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-> > Cc: Borislav Petkov <petkovbb@gmail.com>
-> > Cc: Jens Axboe <jens.axboe@oracle.com>
-> > Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> > ---
-> >  drivers/ide/ide-io.c |    2 ++
-> >  1 file changed, 2 insertions(+)
-> 
-> I think that you can drop this since the block layer doesn't check
-> REQ_NOMERGE with the way ide_do_drive_cmd queues requests.
+On Tuesday, April 29, 2008 7:16 pm Gabriel C wrote:
+> >> See the modesetting-101 branch of
+> >> git://git.freedesktop.org/git/mesa/drm. It's a bit rough in spots but
+> >> the i915 driver should be pretty close to feature parity with the Intel
+> >> X driver at this point.
+> >
+> > Thx , I will try out the tree.
+>
+> modesetting-101 does not compile on current git , NOPAGE_SIGBUS , nopage
+> and friends gone.
 
-Yeah, I see now that REQ_NOMERGE only matters for fs requests.
+Yeah the DRM tree doesn't have a full kernel included, so it'll occasionally 
+be out-of-sync.  You could try a different kernel version (it almost always 
+works with the last stable release of Linux) or merging DRM master into 
+modesetting-101.  Assuming there are no conflicts that might also fix 
+things. :)
 
-Dropped.
+Jesse
