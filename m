@@ -1,114 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762104AbYEEUgS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758587AbYEEUka@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762104AbYEEUgS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 16:36:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752046AbYEEUgA
+	id S1758587AbYEEUka (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 16:40:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752760AbYEEUkV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 16:36:00 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:44783 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754007AbYEEUf6 (ORCPT
+	Mon, 5 May 2008 16:40:21 -0400
+Received: from fg-out-1718.google.com ([72.14.220.157]:38132 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752745AbYEEUkU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 16:35:58 -0400
-To: trond.myklebust@fys.uio.no
-CC: miklos@szeredi.hu, viro@ZenIV.linux.org.uk, weigelt@metux.de,
-       linux-kernel@vger.kernel.org
-In-reply-to: <1210018599.7448.1.camel@localhost> (message from Trond Myklebust
-	on Mon, 05 May 2008 16:16:39 -0400)
-Subject: Re: VFS + path walktrough
-References: <20080505124041.GB32019@nibiru.local>
-	 <20080505130623.GC32019@nibiru.local>
-	 <20080505131307.GM5882@ZenIV.linux.org.uk>
-	 <20080505134315.GF32019@nibiru.local>
-	 <20080505153501.GN5882@ZenIV.linux.org.uk>
-	 <E1Jt3nB-0006ZP-6S@pomaz-ex.szeredi.hu>
-	 <20080505171425.GO5882@ZenIV.linux.org.uk>
-	 <E1Jt4Ye-0006hz-9i@pomaz-ex.szeredi.hu>
-	 <20080505174048.GP5882@ZenIV.linux.org.uk>
-	 <E1Jt526-0006le-04@pomaz-ex.szeredi.hu>
-	 <E1Jt5Td-0006rG-3E@pomaz-ex.szeredi.hu> <1210018599.7448.1.camel@localhost>
-Message-Id: <E1Jt7PY-0007IR-Uq@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Mon, 05 May 2008 22:35:48 +0200
+	Mon, 5 May 2008 16:40:20 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=DglrX4hhSntUELiFE50y8fcpZwy/wTRH1pm2lwKog8SZ7ge6z0tPPh8fm/1Yem2hY08gDG8L5lrksGO3LPWMaLEAfbmIS7nGg48b+Gbw6sx/Ppwp76Lu1hiM3V9NICqa0NSLgBjHnKJdWjMxAqoZk9Yg30LJoTAVXbxFzikHglM=
+Message-ID: <30c6373b0805051340h35034de2i378558ea8a9d6cd2@mail.gmail.com>
+Date: Mon, 5 May 2008 13:40:17 -0700
+From: "Kevin Burton" <burton@tailrank.com>
+To: "Andi Kleen" <andi@firstfloor.org>
+Subject: Re: Ability to limit or disable page caching?
+Cc: "FD Cami" <francois.cami@free.fr>, linux-kernel@vger.kernel.org
+In-Reply-To: <30c6373b0805051331l11a71eacv5cb9a5221f8f26f9@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <30c6373b0805050012o505c0540i116a31bc1ab9ce9f@mail.gmail.com>
+	 <20080505131607.5556b1f2@olorin>
+	 <30c6373b0805051134m634efbbdn45167c1eae29df4a@mail.gmail.com>
+	 <20080505212831.22371732@olorin>
+	 <30c6373b0805051242o2f38f0a3v62bd43f4fa01559e@mail.gmail.com>
+	 <878wyocy0v.fsf@basil.nowhere.org>
+	 <30c6373b0805051328n30d32202g3744a233c7efb2dd@mail.gmail.com>
+	 <30c6373b0805051331l11a71eacv5cb9a5221f8f26f9@mail.gmail.com>
+X-Google-Sender-Auth: b841a6d4fe72aff9
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Mon, 2008-05-05 at 20:31 +0200, Miklos Szeredi wrote:
-> > > > > >  Take a look at 9P walk - it does *not* give
-> > > > > > you anything resembling stat, you just get qids of intermediates.
-> > > > > 
-> > > > > Which is exactly what's needed to populate the dentry tree, no?
-> > > > 
-> > > > No - you need inodes as well (i.e. as the absolute least you want
-> > > > mode and ownership).  Which is to say, you need to issue stat on
-> > > > each component in such situation anyway.  Not a win...
-> > 
-> > And actually even that *could* be a win, if the network latency is
-> > large.  Because by doing the lookup first, the stats can be performed
-> > in parallel.  So a path with an arbitrary number of components could
-> > be resolved in just 2 RTTs.
-> 
-> ...and NFSv4 could do it in a single RPC call (assuming no symlinks or
-> submounts).
+... and here's another point I don't fully grok:
 
-And just to show how utterly trivially this could be done, here's a
-patch (totally untested).
+http://www.westnet.com/~gsmith/content/linux-pdflush.htm
 
-Hack?  Hell, yes.
+"By default, Linux will aggressively swap processes out of physical
+memory onto disk in order to keep the disk cache as large as possible.
+This means that pages that haven't been used recently will be pushed
+into swap long before the system even comes close to running out of
+memory, which is an unexpected behavior compared to some operating
+systems. The /proc/sys/vm/swappiness parameter controls how aggressive
+Linux is in this area. "
 
-Miklos
+...
 
----
- fs/namei.c         |   20 ++++++++++++--------
- include/linux/fs.h |    1 +
- 2 files changed, 13 insertions(+), 8 deletions(-)
+"A value of 0 will avoid ever swapping out just for caching space.
+Using 100 will always favor making the disk cache bigger. Most
+distributions set this value to be 60, tuned toward moderately
+aggressive swapping to increase disk cache. "
 
-Index: linux-2.6/fs/namei.c
-===================================================================
---- linux-2.6.orig/fs/namei.c	2008-05-05 12:03:24.000000000 +0200
-+++ linux-2.6/fs/namei.c	2008-05-05 22:25:52.000000000 +0200
-@@ -519,14 +519,18 @@ static struct dentry * real_lookup(struc
- 	 */
- 	result = d_lookup(parent, name);
- 	if (!result) {
--		struct dentry * dentry = d_alloc(parent, name);
--		result = ERR_PTR(-ENOMEM);
--		if (dentry) {
--			result = dir->i_op->lookup(dir, dentry, nd);
--			if (result)
--				dput(dentry);
--			else
--				result = dentry;
-+		if (dir->i_op->lookup_path) {
-+			result = dir->i_op->lookup_path(dir, name);
-+		} else  {
-+			struct dentry * dentry = d_alloc(parent, name);
-+			result = ERR_PTR(-ENOMEM);
-+			if (dentry) {
-+				result = dir->i_op->lookup(dir, dentry, nd);
-+				if (result)
-+					dput(dentry);
-+				else
-+					result = dentry;
-+			}
- 		}
- 		mutex_unlock(&dir->i_mutex);
- 		return result;
-Index: linux-2.6/include/linux/fs.h
-===================================================================
---- linux-2.6.orig/include/linux/fs.h	2008-05-05 12:03:24.000000000 +0200
-+++ linux-2.6/include/linux/fs.h	2008-05-05 22:26:59.000000000 +0200
-@@ -1251,6 +1251,7 @@ struct file_operations {
- struct inode_operations {
- 	int (*create) (struct inode *,struct dentry *,int, struct nameidata *);
- 	struct dentry * (*lookup) (struct inode *,struct dentry *, struct nameidata *);
-+	struct dentry * (*lookup_path) (struct inode *, struct qstr *);
- 	int (*link) (struct dentry *,struct inode *,struct dentry *);
- 	int (*unlink) (struct inode *,struct dentry *);
- 	int (*symlink) (struct inode *,struct dentry *,const char *);
+..... but we're running on zero and this machine still has 500MB of
+free memory.  Why is it swapping?
+
+Kevin
+
+On Mon, May 5, 2008 at 1:31 PM, Kevin Burton <burton@tailrank.com> wrote:
+> Though mlockall isn't going to fix this problem because the OOM killer
+> will still kill it if it runs out of memory.
+>
+> I want to preserve the scenario where we go 10 bytes over memory and
+> the kernel just swaps out those 10 bytes.
+>
+> Kevin
+>
+> On Mon, May 5, 2008 at 1:28 PM, Kevin Burton <burton@tailrank.com> wrote:
+>> We're actually running mlock which is native to MySQL.... of course I
+>> didn't think about whether our secondary process is paging not our
+>> MySQL process.
+>
+>
+> --
+> Founder/CEO Tailrank.com
+> Location: San Francisco, CA
+> AIM/YIM: sfburtonator
+> Skype: burtonator
+> Work: http://spinn3r.com and http://tailrank.com
+> Blog: http://feedblog.org
+> Cell: 415-637-8078
+> Fax: 1-415-358-419 PIN: 0092
+>
 
 
 
-
-
+-- 
+Founder/CEO Tailrank.com
+Location: San Francisco, CA
+AIM/YIM: sfburtonator
+Skype: burtonator
+Work: http://spinn3r.com and http://tailrank.com
+Blog: http://feedblog.org
+Cell: 415-637-8078
+Fax: 1-415-358-419 PIN: 0092
