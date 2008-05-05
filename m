@@ -1,78 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755658AbYEEAS4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756353AbYEEATY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755658AbYEEAS4 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 May 2008 20:18:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753277AbYEEASs
+	id S1756353AbYEEATY (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 May 2008 20:19:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753360AbYEEATK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 May 2008 20:18:48 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:33273 "EHLO smtps.tip.net.au"
+	Sun, 4 May 2008 20:19:10 -0400
+Received: from ozlabs.org ([203.10.76.45]:59322 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752970AbYEEASr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 May 2008 20:18:47 -0400
-Date: Mon, 5 May 2008 10:18:31 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Cc: Jeff Garzik <jeff@garzik.org>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-next@vger.kernel.org, sfrench@us.ibm.com, swhiteho@redhat.com,
-       ralf@linux-mips.org, drzeus-list@drzeus.cx, jack@ucw.cz, cbou@mail.ru,
-       jens.axboe@oracle.com, ericvh@gmail.com, wim@iguana.be,
-       chris@zankel.net, nico@cam.org, penberg@cs.helsinki.fi,
-       clameter@sgi.com, ezk@cs.sunysb.edu, linux-kernel@vger.kernel.org
-Subject: Re: git trees which are not yet in linux-next
-Message-Id: <20080505101831.af758942.sfr@canb.auug.org.au>
-In-Reply-To: <481C266F.9080003@s5r6.in-berlin.de>
-References: <20080502151206.b40f77ea.akpm@linux-foundation.org>
-	<20080502154200.a6d8c43a.akpm@linux-foundation.org>
-	<481BBD84.10904@s5r6.in-berlin.de>
-	<20080502183403.3d9f2d9f.akpm@linux-foundation.org>
-	<481BEF7A.1060300@garzik.org>
-	<481C266F.9080003@s5r6.in-berlin.de>
-X-Mailer: Sylpheed 2.5.0beta3 (GTK+ 2.12.9; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Mon__5_May_2008_10_18_31_+1000_Z7nsAznQ4FDjMX0O"
+	id S1753277AbYEEATJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 May 2008 20:19:09 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Adrian Bunk <bunk@kernel.org>
+Subject: Re: s390 kvm_virtio.c build error
+Date: Mon, 5 May 2008 10:19:01 +1000
+User-Agent: KMail/1.9.9
+Cc: Christian Borntraeger <borntraeger@de.ibm.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Carsten Otte <cotte@de.ibm.com>, Avi Kivity <avi@qumranet.com>,
+       kvm-devel@lists.sourceforge.net, linux-s390@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+References: <20080503174716.GM5838@cs181133002.pp.htv.fi>
+In-Reply-To: <20080503174716.GM5838@cs181133002.pp.htv.fi>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200805051019.02289.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Mon__5_May_2008_10_18_31_+1000_Z7nsAznQ4FDjMX0O
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Sunday 04 May 2008 03:47:17 Adrian Bunk wrote:
+> Commit c45a6816c19dee67b8f725e6646d428901a6dc24
+> (virtio: explicit advertisement of driver features)
+> and commit e976a2b997fc4ad70ccc53acfe62811c4aaec851
+> (s390: KVM guest: virtio device support, and kvm hypercalls)
+> don't like each other:
 
-On Sat, 03 May 2008 10:46:39 +0200 Stefan Richter <stefanr@s5r6.in-berlin.d=
-e> wrote:
->
-> Of course some committers have more than one tree in -next.  So if=20
-> Andrew wants to know the actual tree, the laziest method which I know of =
-is
-> $ gitk <commit_id>
->=20
-> Among else, gitk shows which branches contain the commit.  (How to do=20
-> this without X GUI?)
+Yep, I broke s390.  This was kind of expected, but I didn't want to try to
+fix it as I am unable to test.
 
-Unfortunately, this will not work either as I do not export to the public
-tree the heads of each of the branches that I merge.  It does work in my
-tree until I do the next update.
+It would look something like this:
 
-However, if you look at the closest following merge that is committed by
-me, that will tell you which branch the commit was on.
+virtio: Attempt to fix kvm_virtio after feature management changes
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+Very similar to lguest code: set and get feature are now separate callbacks.
 
---Signature=_Mon__5_May_2008_10_18_31_+1000_Z7nsAznQ4FDjMX0O
-Content-Type: application/pgp-signature
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFIHlJbTgG2atn1QN8RAo7YAJwIsnqT909BYWkq94062ZMV6B+pVQCfYk5e
-IHcXlcueXaw3f2e8r97pIy0=
-=mODf
------END PGP SIGNATURE-----
-
---Signature=_Mon__5_May_2008_10_18_31_+1000_Z7nsAznQ4FDjMX0O--
+diff -r 219d6c116996 drivers/s390/kvm/kvm_virtio.c
+--- a/drivers/s390/kvm/kvm_virtio.c	Mon May 05 10:03:16 2008 +1000
++++ b/drivers/s390/kvm/kvm_virtio.c	Mon May 05 10:17:25 2008 +1000
+@@ -78,27 +78,34 @@ static unsigned desc_size(const struct k
+ 		+ desc->config_len;
+ }
+ 
+-/*
+- * This tests (and acknowleges) a feature bit.
+- */
+-static bool kvm_feature(struct virtio_device *vdev, unsigned fbit)
++/* This gets the device's feature bits. */
++static u32 kvm_get_features(struct virtio_device *vdev)
+ {
++	unsigned int i;
++	u32 features = 0;
+ 	struct kvm_device_desc *desc = to_kvmdev(vdev)->desc;
+-	u8 *features;
++	u8 *in_features = kvm_vq_features(desc);
+ 
+-	if (fbit / 8 > desc->feature_len)
+-		return false;
++	/* We do this the slow but generic way. */
++	for (i = 0; i < min(desc->feature_len * 8, 32); i++)
++		if (in_features[i / 8] & (1 << (i % 8)))
++			features |= (1 << i);
+ 
+-	features = kvm_vq_features(desc);
+-	if (!(features[fbit / 8] & (1 << (fbit % 8))))
+-		return false;
++	return features;
++}
+ 
+-	/*
+-	 * We set the matching bit in the other half of the bitmap to tell the
+-	 * Host we want to use this feature.
+-	 */
+-	features[desc->feature_len + fbit / 8] |= (1 << (fbit % 8));
+-	return true;
++static void kvm_set_features(struct virtio_device *vdev, u32 features)
++{
++	unsigned int i;
++	struct kvm_device_desc *desc = to_kvmdev(vdev)->desc;
++	/* Second half of bitmap is features we accept. */
++	u8 *out_features = kvm_vq_features(desc) + desc->feature_len;
++
++	memset(out_features, 0, desc->feature_len);
++	for (i = 0; i < min(desc->feature_len * 8, 32); i++) {
++		if (features & (1 << i))
++			out_features[i / 8] |= (1 << (i % 8));
++	}
+ }
+ 
+ /*
+@@ -221,7 +228,8 @@ static void kvm_del_vq(struct virtqueue 
+  * The config ops structure as defined by virtio config
+  */
+ static struct virtio_config_ops kvm_vq_configspace_ops = {
+-	.feature = kvm_feature,
++	.get_features = kvm_get_features,
++	.set_features = kvm_set_features,
+ 	.get = kvm_get,
+ 	.set = kvm_set,
+ 	.get_status = kvm_get_status,
