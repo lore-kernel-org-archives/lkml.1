@@ -1,62 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760237AbYEEUcR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761548AbYEEUcb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760237AbYEEUcR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 16:32:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752595AbYEEUcC
+	id S1761548AbYEEUcb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 16:32:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753363AbYEEUcF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 16:32:02 -0400
-Received: from fg-out-1718.google.com ([72.14.220.157]:20431 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751668AbYEEUcB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 16:32:01 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=ajaEuix6cz+TgslKkDz4k2R14s+OMoZv7jE3yHlFSL1J3RSk6QpyKffXcWt8e0Ut22hj5szp6ISqO/YFhWz/kLlw7fV2t0b6jd5s63MIOVKY3JzSQmHV1LyEpUK0R8CNoxaBSGqD7FlMXBHQ99jEuJG3sRUy9rzT/wQpFRi2Z6I=
-Message-ID: <30c6373b0805051331l11a71eacv5cb9a5221f8f26f9@mail.gmail.com>
-Date: Mon, 5 May 2008 13:31:29 -0700
-From: "Kevin Burton" <burton@tailrank.com>
-To: "Andi Kleen" <andi@firstfloor.org>
-Subject: Re: Ability to limit or disable page caching?
-Cc: "FD Cami" <francois.cami@free.fr>, linux-kernel@vger.kernel.org
-In-Reply-To: <30c6373b0805051328n30d32202g3744a233c7efb2dd@mail.gmail.com>
+	Mon, 5 May 2008 16:32:05 -0400
+Received: from mx1.riseup.net ([204.13.164.18]:46514 "EHLO mx1.riseup.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751668AbYEEUcD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 May 2008 16:32:03 -0400
+Date: Mon, 5 May 2008 22:31:55 +0200
+From: Matthias Kaehlcke <matthias@kaehlcke.net>
+To: Tony Lindgren <tony@atomide.com>,
+       Russell King <rmk+kernel@arm.linux.org.uk>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: [PATCH] ARM: OMAP1: N770: Convert audio_pwr_sem in a mutex
+Message-ID: <20080505203154.GF11462@traven>
+Mail-Followup-To: Matthias Kaehlcke <matthias@kaehlcke.net>,
+	Tony Lindgren <tony@atomide.com>,
+	Russell King <rmk+kernel@arm.linux.org.uk>,
+	linux-kernel@vger.kernel.org, akpm@linux-foundation.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <30c6373b0805050012o505c0540i116a31bc1ab9ce9f@mail.gmail.com>
-	 <20080505131607.5556b1f2@olorin>
-	 <30c6373b0805051134m634efbbdn45167c1eae29df4a@mail.gmail.com>
-	 <20080505212831.22371732@olorin>
-	 <30c6373b0805051242o2f38f0a3v62bd43f4fa01559e@mail.gmail.com>
-	 <878wyocy0v.fsf@basil.nowhere.org>
-	 <30c6373b0805051328n30d32202g3744a233c7efb2dd@mail.gmail.com>
-X-Google-Sender-Auth: 11fb79d4b7f5237c
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Though mlockall isn't going to fix this problem because the OOM killer
-will still kill it if it runs out of memory.
+ARM: OMAP1: N770: The semaphore audio_pwr_sem is used as a
+mutex. Convert it to the mutex API
 
-I want to preserve the scenario where we go 10 bytes over memory and
-the kernel just swaps out those 10 bytes.
+Signed-off-by: Matthias Kaehlcke <matthias@kaehlcke.net>
 
-Kevin
+--
 
-On Mon, May 5, 2008 at 1:28 PM, Kevin Burton <burton@tailrank.com> wrote:
-> We're actually running mlock which is native to MySQL.... of course I
-> didn't think about whether our secondary process is paging not our
-> MySQL process.
-
-
+diff --git a/arch/arm/mach-omap1/board-nokia770.c b/arch/arm/mach-omap1/board-nokia770.c
+index bcb984f..db235ad 100644
+--- a/arch/arm/mach-omap1/board-nokia770.c
++++ b/arch/arm/mach-omap1/board-nokia770.c
+@@ -202,7 +202,7 @@ static struct omap_board_config_kernel nokia770_config[] __initdata = {
+ #define	AMPLIFIER_CTRL_GPIO	58
+ 
+ static struct clk *dspxor_ck;
+-static DECLARE_MUTEX(audio_pwr_sem);
++static DEFINE_MUTEX(audio_pwr_lock);
+ /*
+  * audio_pwr_state
+  * +--+-------------------------+---------------------------------------+
+@@ -218,7 +218,7 @@ static DECLARE_MUTEX(audio_pwr_sem);
+ static int audio_pwr_state = -1;
+ 
+ /*
+- * audio_pwr_up / down should be called under audio_pwr_sem
++ * audio_pwr_up / down should be called under audio_pwr_lock
+  */
+ static void nokia770_audio_pwr_up(void)
+ {
+@@ -237,11 +237,11 @@ static void nokia770_audio_pwr_up(void)
+ 
+ static void codec_delayed_power_down(struct work_struct *work)
+ {
+-	down(&audio_pwr_sem);
++	mutex_lock(&audio_pwr_lock);
+ 	if (audio_pwr_state == -1)
+ 		aic23_power_down();
+ 	clk_disable(dspxor_ck);
+-	up(&audio_pwr_sem);
++	mutex_unlock(&audio_pwr_lock);
+ }
+ 
+ static DECLARE_DELAYED_WORK(codec_power_down_work, codec_delayed_power_down);
+@@ -258,19 +258,19 @@ static void nokia770_audio_pwr_down(void)
+ static int
+ nokia770_audio_pwr_up_request(struct dsp_kfunc_device *kdev, int stage)
+ {
+-	down(&audio_pwr_sem);
++	mutex_lock(&audio_pwr_lock);
+ 	if (audio_pwr_state == -1)
+ 		nokia770_audio_pwr_up();
+ 	/* force audio_pwr_state = 0, even if it was 1. */
+ 	audio_pwr_state = 0;
+-	up(&audio_pwr_sem);
++	mutex_unlock(&audio_pwr_lock);
+ 	return 0;
+ }
+ 
+ static int
+ nokia770_audio_pwr_down_request(struct dsp_kfunc_device *kdev, int stage)
+ {
+-	down(&audio_pwr_sem);
++	mutex_lock(&audio_pwr_lock);
+ 	switch (stage) {
+ 	case 1:
+ 		if (audio_pwr_state == 0)
+@@ -283,7 +283,7 @@ nokia770_audio_pwr_down_request(struct dsp_kfunc_device *kdev, int stage)
+ 		}
+ 		break;
+ 	}
+-	up(&audio_pwr_sem);
++	mutex_unlock(&audio_pwr_lock);
+ 	return 0;
+ }
+ 
 -- 
-Founder/CEO Tailrank.com
-Location: San Francisco, CA
-AIM/YIM: sfburtonator
-Skype: burtonator
-Work: http://spinn3r.com and http://tailrank.com
-Blog: http://feedblog.org
-Cell: 415-637-8078
-Fax: 1-415-358-419 PIN: 0092
+Matthias Kaehlcke
+Embedded Linux Engineer
+Barcelona
+
+                If you don't know where you are going,
+               you will probably end up somewhere else
+                         (Laurence J. Peter)
+                                                                 .''`.
+    using free software / Debian GNU/Linux | http://debian.org  : :'  :
+                                                                `. `'`
+gpg --keyserver pgp.mit.edu --recv-keys 47D8E5D4                  `-
