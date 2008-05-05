@@ -1,173 +1,159 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756070AbYEEHTq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755583AbYEEHUd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756070AbYEEHTq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 03:19:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752931AbYEEHTf
+	id S1755583AbYEEHUd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 03:20:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754093AbYEEHUR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 03:19:35 -0400
-Received: from fg-out-1718.google.com ([72.14.220.153]:49381 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752267AbYEEHTe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 03:19:34 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding:from;
-        b=H7C1s0k3kywfCX7KtxKcQVUIk2de9GQKfu/8LFHazBzk8imQKklrU78Nq7Zo+4CQAt5tUhp9roDmhFpsYrUdYigoQFKBsROX2UUjlV3fGUcc7kHGpdD9u6YE4hQvjQAXTiyAS9I41bZRDC6Il0ZOkIbXNQQLgqDgVaiA0mfdRmU=
-Message-ID: <481EB4F4.8050901@gmail.com>
-Date: Mon, 05 May 2008 09:19:16 +0200
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Mon, 5 May 2008 03:20:17 -0400
+Received: from aksay.ru ([80.254.111.40]:57744 "EHLO aksay.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753737AbYEEHUP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 May 2008 03:20:15 -0400
+Date: Mon, 5 May 2008 11:13:00 +0400
+From: Andrey Panin <pazke@pazke.donpac.ru>
+To: Glauber Costa <gcosta@redhat.com>
+Cc: Hugh Dickins <hugh@veritas.com>, linux-visws-devel@lists.sourceforge.net,
+       "J.A. Magall??n" <jamagallon@ono.com>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: Problems with -git14
+Message-ID: <20080505071300.GA3456@pazke.donpac.ru>
+Mail-Followup-To: Glauber Costa <gcosta@redhat.com>,
+	Hugh Dickins <hugh@veritas.com>,
+	linux-visws-devel@lists.sourceforge.net,
+	"J.A. Magall??n" <jamagallon@ono.com>, Ingo Molnar <mingo@elte.hu>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	linux-kernel@vger.kernel.org
+References: <20080430015655.5a42f63d@werewolf.home> <Pine.LNX.4.64.0804301516580.30549@blonde.site> <4818962D.4040906@redhat.com>
 MIME-Version: 1.0
-To: Neil Horman <nhorman@tuxdriver.com>
-CC: Michael Kerrisk <mtk.manpages@googlemail.com>,
-       Andi Kleen <andi@firstfloor.org>, linux-man@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Petr Gajdos <pgajdos@suse.cz>, michael.kerrisk@gmail.com
-Subject: core_pattern pipe documentation - draft 2
-References: <cfd18e0f0804151411x62080f10y833493db7f1b8cfd@mail.gmail.com>	 <4808D1F4.7050705@gmail.com>	 <cfd18e0f0804230509g4e7456ecgd40c0bfee874a82c@mail.gmail.com>	 <20080423145933.GA26228@hmsendeavour.rdu.redhat.com>	 <cfd18e0f0804250618ic6dfd09gf68573256be3ff@mail.gmail.com>	 <20080425162225.GA9833@hmsreliant.think-freely.org>	 <cfd18e0f0804251113w4ef2dea3t6727009aa67e6e09@mail.gmail.com>	 <20080425185442.GC9833@hmsreliant.think-freely.org>	 <cfd18e0f0804251305u4edb2bb1k290553965291c4fa@mail.gmail.com>	 <20080425201800.GD9833@hmsreliant.think-freely.org> <cfd18e0f0804251339x2b19dd79o593d836986bf99ee@mail.gmail.com>
-In-Reply-To: <cfd18e0f0804251339x2b19dd79o593d836986bf99ee@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-From: Michael Kerrisk <mtk.manpages@googlemail.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="sdtB3X0nJg68CQEu"
+Content-Disposition: inline
+In-Reply-To: <4818962D.4040906@redhat.com>
+X-Uname: Linux 2.6.23-rc3 x86_64
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Neil,
 
-Below is a revised draft of the text for core_pattern.  Would you be willing
-check it over?
+--sdtB3X0nJg68CQEu
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Cheers,
+On 121, 04 30, 2008 at 12:54:21PM -0300, Glauber Costa wrote:
+> Hugh Dickins wrote:
+>> On Wed, 30 Apr 2008, J.A. Magall??n wrote:
+>>> I have a couple problems with latest git (-14):
+>>>
+>>> - It only recognises 2 processors out of 4 (dual Xeon HT)
+>>> - It oopses on the swapper process just on boot...
+>>>
+>>> Difference in dmesg is below. If full correct dmesg or config is
+>>> needed, please ask for them. The kernel was built copying old
+>>> 2.6.25 config to .config && make oldconfig. I filled the missing
+>>> gaps like PAT and others...
+>>>
+>>> -Brought up 4 CPUs
+>>> +native_cpu_up: bad cpu 2
+>>> +native_cpu_up: bad cpu 3
+>>> +Brought up 2 CPUs
+>>
+>> Yes, I've been getting this for some days too: only 2 processors on
+>> dual Xeon HT in 32-bit mode; whereas x86_64 finds all 4 just fine.
+>> Ran lots of testing on 2.6.25-mm1 before I noticed it there.
+>>
+>> I bisected for a while, but it got confusing (arrived at a bisect
+>> point which gave only 1 processor: smpboot code getting rearranged),
+>> so I was forced (quel horreur!) to investigate properly.  I've just
+>> now had success with the patch below, please give it a try:
+>> but it'll need an Ack from Glauber before it can go in.
+>>
+>>> +WARNING: at include/linux/blkdev.h:427 blk_queue_init_tags+0x110/0x11f=
+()
+>>
+>> I presume this warning and backtrace is what you report as an oops:
+>> I think you'll find Linus included a fix for this one overnight, and
+>> it should have gone away in 2.6.25-git15 (but I didn't see it myself).
+>>
+>> Hugh
+>>
+>> [PATCH] x86_32: fix HT cpu booting
+>>
+>> Since recent smpboot 32/64-bit merge, my dual Xeon with HT has been
+>> booting only 2 of its 4 cpus (when running an i386 kernel; but x86_64
+>> is okay).  J.A. Magall??n reports the same.
+>>
+>> native_cpu_up: bad cpu 2
+>> native_cpu_up: bad cpu 3
+>>
+>> The mach-default cpu_present_to_apicid() was just returning cpu number
+>> (2, 3) instead of apicid (6, 7): looks like we now need the x86_64 code
+>> even for the i386 case.
+>>
+>> Comparing with other versions of cpu_present_to_apicid(), it seems a
+>> good idea to include an NR_CPUS test too, since cpu_present() doesn't
+>> include that; but that wasn't a problem here, and may no problem at all.
+>>
+>> One point worth noting - is it a worry?  Prior to that smpboot merge,
+>> my Xeon booted the two HT siblings on one physical first, then the
+>> two siblings on the other physical after - when i386, but alternated
+>> them when x86_64.  Since the merge, the x86_64 sequence is unchanged,
+>> but the i386 sequence is now like x86_64.  I prefer this consistency,
+>> and I prefer the new sequence: booting with maxcpus=3D2 then uses the
+>> independent physicals without HT sharing; but surprises in store?
+>>
+>> Signed-off-by: Hugh Dickins <hugh@veritas.com>
+>>
+>> --- 2.6.25-git/include/asm-x86/mach-default/mach_apic.h	2008-04-23 07:24=
+:16.000000000 +0100
+>> +++ linux/include/asm-x86/mach-default/mach_apic.h	2008-04-30 14:55:14.0=
+00000000 +0100
+>> @@ -109,13 +109,8 @@ static inline int cpu_to_logical_apicid(
+>>   static inline int cpu_present_to_apicid(int mps_cpu)
+>>  {
+>> -#ifdef CONFIG_X86_64
+>> -	if (cpu_present(mps_cpu))
+>> +	if (mps_cpu < NR_CPUS && cpu_present(mps_cpu))
+>>  		return (int)per_cpu(x86_bios_cpu_apicid, mps_cpu);
+>> -#else
+>> -	if (mps_cpu < get_physical_broadcast())
+>> -		return  mps_cpu;
+>> -#endif
+>>  	else
+>>  		return BAD_APICID;
+>>  }
+>
+> Hugh, thanks for tracing this. The patch looks sane to me
+>
+> However, since this problem was raised, I'm still concerned that visws ma=
+y=20
+> have the same problem, since it uses the same logic that i386 mach_defaul=
+t=20
+> used to. (and I did not touched, since x86_64 code went int o=20
+> mach_default).
+>
+> Could anyone with access to such hardware give it a try ?
 
-Michael
+Unfortunately, no. Visws port is in non-bootable state currently, 2.6.25 ha=
+ngs
+in calibrate_delay_direct() and I still do not know why :(
 
-     Naming of core dump files
-       By   default,   a  core  dump  file  is  named  core,  but  the
-       /proc/sys/kernel/core_pattern file (since Linux 2.6 and 2.4.21)
-       can  be set to define a template that is used to name core dump
-       files.  The template can contain % specifiers which are substi-
-       tuted by the following values when a core file is created:
+--=20
+Andrey Panin		| Linux and UNIX system administrator
+pazke@donpac.ru		| PGP key: wwwkeys.pgp.net
 
-           %%  a single % character
-           %p  PID of dumped process
-           %u  (numeric) real UID of dumped process
-           %g  (numeric) real GID of dumped process
-           %s  number of signal causing dump
-           %t  time  of  dump,  expressed  as  seconds since the Epoch
-               (00:00h, 1 Jan 1970, UTC)
-           %h  hostname (same as 'nodename' returned by uname(2))
-           %e  executable filename (without path prefix)
-           %c  core file size soft resource limit of crashing  process
-               (since Linux 2.6.24)
+--sdtB3X0nJg68CQEu
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
 
-       A  single % at the end of the template is dropped from the core
-       filename, as is the combination of a % followed by any  charac-
-       ter other than those listed above.  All other characters in the
-       template become a literal part of the core filename.  The  tem-
-       plate  may  include  '/'  characters,  which are interpreted as
-       delimiters for  directory  names.   The  maximum  size  of  the
-       resulting  core  filename  is  128  bytes  (64 bytes in kernels
-       before 2.6.19).
-   [...]
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
 
-     Piping core dumps to a program
-       Since kernel 2.6.19, Linux supports an alternate syntax for the
-       /proc/sys/kernel/core_pattern  file.  If the first character of
-       this file is a pipe symbol (|), then the remainder of the  line
-       is  interpreted  as a program to be executed.  Instead of being
-       written to a disk file, the core  dump  is  given  as  standard
-       input to the program.  Note the following points:
+iD8DBQFIHrN8IWZCBzwS8mkRAp2/AJ9EBFoPUkZxypfIE4TlM6QogkSsvQCgs6wS
+0RaS6A8gQ+zO1c2q9Zf0+II=
+=wGNx
+-----END PGP SIGNATURE-----
 
-       *  The program must be specified using an absolute pathname (or
-          a pathname relative to the  root  directory,  /),  and  must
-          immediately follow the '|' character.
-
-       *  The  process  created  to  run  the program runs as user and
-          group root.
-
-       *  Command-line arguments can be supplied to the program (since
-          kernel 2.6.24), delimited by white space (up to a total line
-          length of 128 bytes).
-
-       *  The command-line arguments can include any of the  %  speci-
-          fiers  listed  above.   For  example, to pass the PID of the
-          process that is being dumped, specify %p in an argument.
-
-   [...]
-   EXAMPLE
-       The  program  below  can  be used to demonstrate the use of the
-       pipe syntax in  the  /proc/sys/kernel/core_pattern  file.   The
-       following  shell  session  demonstrates the use of this program
-       (compiled to create an executable named core_pattern_test):
-
-           $ cc -o core_pattern_test core_pattern_test.c
-           $ su
-           Password:
-           # echo "|$PWD/core_pattern_test %p UID=%u GID=%g sig=%s" > \
-               /proc/sys/kernel/core_pattern
-           # exit
-           $ sleep 100
-           type control-backslash
-           Quit (core dumped)
-           $ cat core.info
-           argc=5
-           argc[0]=</home/mtk/core_pattern_test>
-           argc[1]=<20575>
-           argc[2]=<UID=1000>
-           argc[3]=<GID=100>
-           argc[4]=<sig=3>
-           Total bytes in core dump: 282624
-
-       The source code of the program is as follows:
-
-       /* core_pattern_test.c */
-
-       #define _GNU_SOURCE
-       #include <sys/stat.h>
-       #include <fcntl.h>
-       #include <limits.h>
-       #include <stdio.h>
-       #include <stdlib.h>
-       #include <unistd.h>
-
-       #define BUF_SIZE 1024
-
-       int
-       main(int argc, char *argv[])
-       {
-           int tot, j;
-           ssize_t nread;
-           char buf[BUF_SIZE];
-           FILE *fp;
-           char cwd[PATH_MAX];
-
-           /* Change our current working directory to that of the
-              crashing process */
-
-           snprintf(cwd, PATH_MAX, "/proc/%s/cwd", argv[1]);
-           chdir(cwd);
-
-           /* Write output to file "core.info" in that directory */
-
-           fp = fopen("core.info", "w+");
-           if (fp == NULL)
-               exit(EXIT_FAILURE);
-
-           /* Display command-line arguments given to core_pattern
-              pipe program */
-
-           fprintf(fp, "argc=%d\n", argc);
-           for (j = 0; j < argc; j++)
-               fprintf(fp, "argc[%d]=<%s>\n", j, argv[j]);
-
-           /* Count bytes in standard input (the core dump) */
-
-           tot = 0;
-           while ((nread = read(STDIN_FILENO, buf, BUF_SIZE)) > 0)
-               tot += nread;
-           fprintf(fp, "Total bytes in core dump: %d\n", tot);
-
-           exit(EXIT_SUCCESS);
-       }
-
+--sdtB3X0nJg68CQEu--
