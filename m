@@ -1,165 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759123AbYEEOsS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759386AbYEEOtQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759123AbYEEOsS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 10:48:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756223AbYEEOsH
+	id S1759386AbYEEOtQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 10:49:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756566AbYEEOs7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 10:48:07 -0400
-Received: from e31.co.us.ibm.com ([32.97.110.149]:40506 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755700AbYEEOsE (ORCPT
+	Mon, 5 May 2008 10:48:59 -0400
+Received: from g4t0014.houston.hp.com ([15.201.24.17]:11744 "EHLO
+	g4t0014.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755950AbYEEOs6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 10:48:04 -0400
-Date: Mon, 5 May 2008 07:47:51 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Gautham R Shenoy <ego@in.ibm.com>
-Cc: linux-kernel@vger.kernel.org, mathieu.desnoyers@polymtl.ca, mingo@elte.hu,
-       akpm@linux-foundation.org, hch@infradead.org, mmlnx@us.ibm.com,
-       dipankar@in.ibm.com, dsmith@redhat.com, rostedt@goodmis.org,
-       adrian.bunk@movial.fi, a.p.zijlstra@chello.nl, niv@us.ibm.com,
-       dvhltc@us.ibm.com, rusty@au1.ibm.com, jkenisto@linux.vnet.ibm.com,
-       oleg@tv-sign.ru, jamesclhuang@yahoo.com
-Subject: Re: [PATCH 3/5] Add rcu_barrier_sched() and rcu_barrier_bh()
-Message-ID: <20080505144751.GF14809@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20080422004454.GA3517@linux.vnet.ibm.com> <20080422004743.GC3693@linux.vnet.ibm.com> <20080505092240.GB8371@in.ibm.com>
+	Mon, 5 May 2008 10:48:58 -0400
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: Rene Herman <rene.herman@keyaccess.nl>
+Subject: Re: [patch 00/37] PNP resource_table cleanups, v2
+Date: Mon, 5 May 2008 08:48:57 -0600
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: Rene Herman <rene.herman@gmail.com>, Len Brown <lenb@kernel.org>,
+       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Adam Belay <ambx1@neo.rr.com>, Li Shaohua <shaohua.li@intel.com>,
+       Matthieu Castet <castet.matthieu@free.fr>,
+       Thomas Renninger <trenn@suse.de>, Jaroslav Kysela <perex@perex.cz>,
+       Andrew Morton <akpm@linux-foundation.org>
+References: <20080401151634.730901933@ldl.fc.hp.com> <481DC4E2.7060803@keyaccess.nl> <481DC60A.7090307@keyaccess.nl>
+In-Reply-To: <481DC60A.7090307@keyaccess.nl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080505092240.GB8371@in.ibm.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200805050848.58436.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 05, 2008 at 02:52:40PM +0530, Gautham R Shenoy wrote:
-> On Mon, Apr 21, 2008 at 05:47:43PM -0700, Paul E. McKenney wrote:
-> > Add rcu_barrier_sched() and rcu_barrier_bh().  With these in place,
-> > rcutorture no longer gives the occasional oops when repeatedly starting
-> > and stopping torturing rcu_bh.  Also adds the API needed to flush out
-> > pre-existing call_rcu_sched() callbacks.
-
-Thank you again for looking it over!
-
-> > Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-> > Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-> > ---
-> > 
-> >  include/linux/rcupdate.h |    2 +
-> >  kernel/rcupdate.c        |   55 +++++++++++++++++++++++++++++++++++++++++------
-> >  2 files changed, 51 insertions(+), 6 deletions(-)
-> > 
-> > diff -urpNa -X dontdiff linux-2.6.25-C2-rcuclassic-fixes/include/linux/rcupdate.h linux-2.6.25-C3-rcu_barrier_sched/include/linux/rcupdate.h
-> > --- linux-2.6.25-C2-rcuclassic-fixes/include/linux/rcupdate.h	2008-04-17 08:10:33.000000000 -0700
-> > +++ linux-2.6.25-C3-rcu_barrier_sched/include/linux/rcupdate.h	2008-04-21 11:33:07.000000000 -0700
-> > @@ -260,6 +260,8 @@ extern void call_rcu_bh(struct rcu_head 
-> >  /* Exported common interfaces */
-> >  extern void synchronize_rcu(void);
-> >  extern void rcu_barrier(void);
-> > +extern void rcu_barrier_bh(void);
-> > +extern void rcu_barrier_sched(void);
-> >  extern long rcu_batches_completed(void);
-> >  extern long rcu_batches_completed_bh(void);
-> > 
-> > diff -urpNa -X dontdiff linux-2.6.25-C2-rcuclassic-fixes/kernel/rcupdate.c linux-2.6.25-C3-rcu_barrier_sched/kernel/rcupdate.c
-> > --- linux-2.6.25-C2-rcuclassic-fixes/kernel/rcupdate.c	2008-04-17 08:10:33.000000000 -0700
-> > +++ linux-2.6.25-C3-rcu_barrier_sched/kernel/rcupdate.c	2008-04-21 11:33:08.000000000 -0700
-> > @@ -45,6 +45,12 @@
-> >  #include <linux/mutex.h>
-> >  #include <linux/module.h>
-> > 
-> > +enum rcu_barrier {
-> > +	RCU_BARRIER_STD,
-> STD: Standard, I take it ?
-
-Yep.  Could say just "RCU_BARRIER", or perhaps "RCU_BARRIER_CLASSIC".
-Or comment each with the primitive they go with, perhaps better.
-
-> > +	RCU_BARRIER_BH,
-> > +	RCU_BARRIER_SCHED,
-> > +};
-> > +
-> >  static DEFINE_PER_CPU(struct rcu_head, rcu_barrier_head) = {NULL};
-> >  static atomic_t rcu_barrier_cpu_count;
-> >  static DEFINE_MUTEX(rcu_barrier_mutex);
-> > @@ -83,19 +89,30 @@ static void rcu_barrier_callback(struct 
-> >  /*
-> >   * Called with preemption disabled, and from cross-cpu IRQ context.
-> >   */
-> > -static void rcu_barrier_func(void *notused)
-> > +static void rcu_barrier_func(void *type)
-> >  {
-> >  	int cpu = smp_processor_id();
-> >  	struct rcu_head *head = &per_cpu(rcu_barrier_head, cpu);
-> > 
-> >  	atomic_inc(&rcu_barrier_cpu_count);
-> > -	call_rcu(head, rcu_barrier_callback);
-> > +	switch ((enum rcu_barrier)type) {
-> > +	case RCU_BARRIER_STD:
-> > +		call_rcu(head, rcu_barrier_callback);
-> > +		break;
-> > +	case RCU_BARRIER_BH:
-> > +		call_rcu_bh(head, rcu_barrier_callback);
-> > +		break;
-> > +	case RCU_BARRIER_SCHED:
-> > +		call_rcu_sched(head, rcu_barrier_callback);
-> > +		break;
-> > +	}
-> >  }
-> > 
-> > -/**
-> > - * rcu_barrier - Wait until all the in-flight RCUs are complete.
-> > +/*
-> > + * Orchestrate the specified type of RCU barrier, waiting for all
-> > + * RCU callbacks of the specified type to complete.
-> >   */
-> > -void rcu_barrier(void)
-> > +static void _rcu_barrier(enum rcu_barrier type)
-> >  {
-> >  	BUG_ON(in_interrupt());
-> >  	/* Take cpucontrol mutex to protect against CPU hotplug */
-> > @@ -111,13 +128,39 @@ void rcu_barrier(void)
-> >  	 * until all the callbacks are queued.
-> >  	 */
-> >  	rcu_read_lock();
-> > -	on_each_cpu(rcu_barrier_func, NULL, 0, 1);
-> > +	on_each_cpu(rcu_barrier_func, (void *)type, 0, 1);
-> >  	rcu_read_unlock();
-> >  	wait_for_completion(&rcu_barrier_completion);
-> >  	mutex_unlock(&rcu_barrier_mutex);
-> >  }
-> > +
-> > +/**
-> > + * rcu_barrier - Wait until all in-flight call_rcu() callbacks complete.
-> > + */
-> > +void rcu_barrier(void)
-> > +{
-> > +	_rcu_barrier(RCU_BARRIER_STD);
-> > +}
-> >  EXPORT_SYMBOL_GPL(rcu_barrier);
-> > 
-> > +/**
-> > + * rcu_barrier_bh - Wait until all in-flight call_rcu_bh() callbacks complete.
-> > + */
-> > +void rcu_barrier_bh(void)
-> > +{
-> > +	_rcu_barrier(RCU_BARRIER_BH);
-> > +}
-> > +EXPORT_SYMBOL_GPL(rcu_barrier_bh);
-> > +
-> > +/**
-> > + * rcu_barrier_sched - Wait for in-flight call_rcu_sched() callbacks.
-> > + */
-> > +void rcu_barrier_sched(void)
-> > +{
-> > +	_rcu_barrier(RCU_BARRIER_SCHED);
-> > +}
-> > +EXPORT_SYMBOL_GPL(rcu_barrier_sched);
-> > +
-> >  void __init rcu_init(void)
-> >  {
-> >  	__rcu_init();
+On Sunday 04 May 2008 08:19:54 am Rene Herman wrote:
+> On 04-05-08 16:14, Rene Herman wrote:
 > 
-> -- 
-> Thanks and Regards
-> gautham
+> > In trying to come up with problems I'm only finding a difference in an 
+> > added failure mode with respect to the static array if we run out of 
+> > memory at a bad time and this is quite unserious.
+> 
+> I mean, this would be an added mode when just releasing and rbuilding teh 
+> list as opposed to teh reusing, it's not a diffeerence with respect to the 
+> .index setup.
+> 
+> So, going to completely slash struct pnp_resource again? :) Would improve 
+> things...
+
+It would be nice to get rid of struct pnp_resource, but then I
+wouldn't have a place to keep the list pointer.  But I think
+it will disappear from most of the interfaces, e.g,. we can
+get rid of pnp_get_pnp_resource(), etc.
+
+Bjorn
