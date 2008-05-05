@@ -1,46 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759322AbYEEDve@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757743AbYEED5t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759322AbYEEDve (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 May 2008 23:51:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757533AbYEEDri
+	id S1757743AbYEED5t (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 May 2008 23:57:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753194AbYEED5k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 May 2008 23:47:38 -0400
-Received: from el-out-1112.google.com ([209.85.162.183]:18020 "EHLO
+	Sun, 4 May 2008 23:57:40 -0400
+Received: from el-out-1112.google.com ([209.85.162.176]:25766 "EHLO
 	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758695AbYEEDrg (ORCPT
+	with ESMTP id S1753079AbYEED5j (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 May 2008 23:47:36 -0400
+	Sun, 4 May 2008 23:57:39 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=TqVHcn289fCsQ6AFP340L63s0gVs7PZ6vzLmV1rZGZ/Up4aanSEWJ8Dp3OPFNkzGLzi7PdiiA3hjdz4AI6q0YuOsRg5uFJBfzMJEi3px0KkW2+b21KHvzLj86neteEbtcohzRw7vo/Zu15aYicgBkIrOt728iNQ9HaXjdOKllbc=
-From: Robert Kelly III <bluethegrappler@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Possible GPL violation in Linux-based IPTV set top box
-Date: Sun, 4 May 2008 23:47:24 -0400
-User-Agent: KMail/1.9.7
-Cc: legal@narasimha.gpl-violations.org
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=f3hSvxYDhTwtGcrmSSQ0yiTiYCuYhuD1qQ1I54ZyvR5FXo2AsHkN65/0GYynwQcS9K+sduyv85Em5C0+jF3ltHb895VwfLtk36LEefR2iiwozUvW7pi4xNl7qc59O4gZbaKOr+bH1dqaal181AwHAqbFlbEI+5N2AQp6bqE4FPg=
+Date: Sun, 4 May 2008 23:57:33 -0400
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Stas Sergeev <stsp@aknet.ru>
+Cc: Takashi Iwai <tiwai@suse.de>, Linux kernel <linux-kernel@vger.kernel.org>,
+       Vojtech Pavlik <vojtech@suse.cz>,
+       Michael Opdenacker <michael-lists@free-electrons.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [patch][resend] pcspkr: fix dependancies
+Message-ID: <20080505035733.GA11584@anvil.corenet.prv>
+References: <481D3A08.2040500@aknet.ru>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200805042347.26445.bluethegrappler@gmail.com>
+In-Reply-To: <481D3A08.2040500@aknet.ru>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The company I work for, SkyAngel, has recently swapped from satelite broadcast 
-to IPTV. The set top box we are using runs Linux according to NeuLion, our 
-partner company who supplies the STB. When we distribute the set top boxes, 
-however, there is no disclaimer of warranty, copy of the GPL, offer for 
-source code, or any mention of Linux as far as I can find. Isn't this a 
-violation of the GPL and your copyright? I have raised concerns about the 
-situation, but everyone here seems convinced it is somehow ok. 
+On Sun, May 04, 2008 at 08:22:32AM +0400, Stas Sergeev wrote:
+> Thomas Gleixner wrote:
+> > The input changes need to go via Dimitry, the x86 part can go in the
+> > same commit.
+> > Acked-by: Thomas Gleixner <tglx@linutronix.de>
+> Dmitry, would you mind applying this one?
+> If not, then I see no way to get either
+> fix applied...
+> 
 
-What should be done about this? I am not sure who would be responsible as it 
-seems NeuLion or some associate makes the STB and takes care of the software, 
-but we sell it to our customers. Is there any possible way I might have 
-missed that this could actually be permissible?
+Ok, but don't you need to also add the same dependancy for SND_PCSP?
 
-Robert A. Kelly III
+-- 
+Dmitry
