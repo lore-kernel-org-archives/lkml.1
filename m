@@ -1,47 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759801AbYEEU5R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760387AbYEEU7o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759801AbYEEU5R (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 16:57:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753301AbYEEU5F
+	id S1760387AbYEEU7o (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 16:59:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754123AbYEEU7g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 16:57:05 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:33048 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752949AbYEEU5D (ORCPT
+	Mon, 5 May 2008 16:59:36 -0400
+Received: from py-out-1112.google.com ([64.233.166.183]:32662 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754115AbYEEU7f (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 16:57:03 -0400
-Date: Mon, 5 May 2008 13:56:21 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: djwong@us.ibm.com
-Cc: linux-kernel@vger.kernel.org, lm-sensors@lm-sensors.org,
-       mhoffman@lightlink.com
-Subject: Re: [PATCH] i5k_amb: Support Intel 5400 chipset
-Message-Id: <20080505135621.66809b0e.akpm@linux-foundation.org>
-In-Reply-To: <20080503045558.GJ16078@tree.beaverton.ibm.com>
-References: <20080503045558.GJ16078@tree.beaverton.ibm.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 5 May 2008 16:59:35 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=OustEOf3uhddcQcI+ZRC2XwmsWaK6lvlFyHnGjT7WRZ7V/XXrpC2+GNw9TmPHQ3dgoh9+dHoebRJ0EBogf7DcYvAEFwHGbxTqiGYO7TvT/0Zcgp+ZuxPtdmvLFzLyqyoTszsUImoiCS8+g1LSdXYhis1cB/1fJwgYzFuuZvP8cA=
+Message-ID: <2f11576a0805051359g7614f5f1l9d184539c715fff4@mail.gmail.com>
+Date: Tue, 6 May 2008 05:59:31 +0900
+From: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: [2.6 patch] mm/page_alloc.c: cleanups
+Cc: bunk@kernel.org, linux-kernel@vger.kernel.org, peterz@infradead.org
+In-Reply-To: <20080505134509.2c8a9b94.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080505182542.GS17139@cs181133002.pp.htv.fi>
+	 <2f11576a0805051324r46d3ab03ybf14a289d9841cb6@mail.gmail.com>
+	 <20080505134509.2c8a9b94.akpm@linux-foundation.org>
+X-Google-Sender-Auth: c6defa57acfc1c73
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2 May 2008 21:55:59 -0700
-"Darrick J. Wong" <djwong@us.ibm.com> wrote:
+>  > >  -void free_cold_page(struct page *page)
+>  > >  -{
+>  > >  -       free_hot_cold_page(page, 1);
+>  > >  -}
+>  >
+>  > Wow, I didn't know nobody use cold page :)
+>
+>  that's a bug, surely?  I bet there are plenty of places which should be
+>  using this hint.
 
-> Minor rework to support the Intel 5400 chipset.
+Hm, as far as I investigate
 
-Thanks, I added this to the for-git-hwmon part of the -mm queue.
+1. nobody used free_cold_page() in kernel code tree.
+2. free_cold_page() doesn't exported.
 
-I haven't heard from Mark for quite some time so soon I might declare him
-absent and I'll go through my hwmon patches with a view to merging them into
-2.6.26 directly.
-
-That queue currently consists of:
-
-hdaps-invert-the-axes-for-hdaps-on-lenovo-r61i-thinkpads.patch
-adt746x-logical-bitwise-confusion-in-set_max_duty_at_crit.patch
-adt7473-minor-documentation-update.patch
-i5k_amb-support-intel-5400-chipset.patch
-
+I investigated to 2.6.25-mm1.
+I don't understand yet why you think plenty....
