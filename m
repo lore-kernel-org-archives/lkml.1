@@ -1,83 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761419AbYEEVk6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762637AbYEEVlU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761419AbYEEVk6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 17:40:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755767AbYEEVku
+	id S1762637AbYEEVlU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 17:41:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759996AbYEEVkw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 17:40:50 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:59442 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754730AbYEEVkt (ORCPT
+	Mon, 5 May 2008 17:40:52 -0400
+Received: from wr-out-0506.google.com ([64.233.184.234]:57431 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758250AbYEEVkv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 17:40:49 -0400
-Date: Mon, 5 May 2008 14:39:18 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jean Delvare <khali@linux-fr.org>
-Cc: djwong@us.ibm.com, mhoffman@lightlink.com, linux-kernel@vger.kernel.org,
-       lm-sensors@lm-sensors.org, Roel Kluin <12o3l@tiscali.nl>
-Subject: Re: [lm-sensors] [PATCH] i5k_amb: Support Intel 5400 chipset
-Message-Id: <20080505143918.dcd93b52.akpm@linux-foundation.org>
-In-Reply-To: <20080505232245.6003ac8a@hyperion.delvare>
-References: <20080503045558.GJ16078@tree.beaverton.ibm.com>
-	<20080505135621.66809b0e.akpm@linux-foundation.org>
-	<20080505232245.6003ac8a@hyperion.delvare>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 5 May 2008 17:40:51 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=PozXF2DLcKHPBon0rl1skXtWm/GjJn/EPjp2dgxdDx2a3I2pdbFiXPIOmqq147RH2PGreCqGptccRqrgaKUNl/n9XNKGFwDju9nCHqQ1Eo/g16puJqWUz51fWbcvt3WWnJid11410LvsL3dvQ/6hNUgkA7u+zAaecqzioVjdzcA=
+Message-ID: <82e4877d0805051440o273b6a6dge7f0af310c266fb7@mail.gmail.com>
+Date: Mon, 5 May 2008 17:40:49 -0400
+From: "Parag Warudkar" <parag.warudkar@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: [PATCH] default to n for GROUP_SCHED and FAIR_GROUP_SCHED
+Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Arjan van de Ven" <arjan@infradead.org>,
+       "Sam Ravnborg" <sam@ravnborg.org>, LKML <linux-kernel@vger.kernel.org>,
+       "akpm@osdl.org" <akpm@linux-foundation.org>,
+       "Peter Zijlstra" <peterz@infradead.org>,
+       "Dave Jones" <davej@redhat.com>
+In-Reply-To: <20080505210526.GA1702@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <82e4877d0805031742o464dd581wd93173d79705ce0d@mail.gmail.com>
+	 <20080504092417.GA3425@elte.hu>
+	 <82e4877d0805050814j721ae522k84384df48c9f4336@mail.gmail.com>
+	 <20080505171501.GA22332@elte.hu>
+	 <20080505182427.GA2025@uranus.ravnborg.org>
+	 <20080505184235.GD22332@elte.hu>
+	 <20080505125620.219c4bb6@infradead.org>
+	 <20080505202729.GA1199@elte.hu>
+	 <alpine.LFD.1.10.0805051337530.32269@woody.linux-foundation.org>
+	 <20080505210526.GA1702@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 5 May 2008 23:22:45 +0200
-Jean Delvare <khali@linux-fr.org> wrote:
+On Mon, May 5, 2008 at 5:05 PM, Ingo Molnar <mingo@elte.hu> wrote:
+>
 
-> Hi Andrew,
-> 
-> On Mon, 5 May 2008 13:56:21 -0700, Andrew Morton wrote:
-> > On Fri, 2 May 2008 21:55:59 -0700
-> > "Darrick J. Wong" <djwong@us.ibm.com> wrote:
-> > 
-> > > Minor rework to support the Intel 5400 chipset.
-> > 
-> > Thanks, I added this to the for-git-hwmon part of the -mm queue.
-> > 
-> > I haven't heard from Mark for quite some time so soon I might declare him
-> > absent and I'll go through my hwmon patches with a view to merging them into
-> > 2.6.26 directly.
-> 
-> For Mark's status see:
-> http://lists.lm-sensors.org/pipermail/lm-sensors/2008-May/023006.html
-> 
-> I guess he'll be happy if you merge a couple patches for him.
+>  This is now believed to be fixed in sched-devel.git, via the "single
+>  runqueue" and deadline-scheduling patches from Peter that flattens the
+>  hierarchy of the group scheduler.
+>
+>  Another latency source was the skew of sched_clock() running too slow -
+>  that way if the clock runs at 10% of its intended speed the scheduler
+>  will turn a 40msec intended latency target into a 400 msec latency
+>  target!
+>
+>  This bug too is now believed to be fixed via Peter's new sched_clock
+>  code in sched-devel.git.
 
-hm, OK.
+Ok, but the latency problems are not fixed with sched-devel as of
+today. I still get unusable audio if I enable GROUP_SCHED stuff on
+sched-devel and run make -j8 .
 
-> > 
-> > That queue currently consists of:
-> > 
-> > hdaps-invert-the-axes-for-hdaps-on-lenovo-r61i-thinkpads.patch
-> > adt746x-logical-bitwise-confusion-in-set_max_duty_at_crit.patch
-> 
-> The adt7473:set_max_duty_at_crit() code was originally confusing but
-> correct. After this patch the code is clear but broken. Is it
-> considered an improvement?
-
-I'll drop it.
-
-> (I would have told you before if that patch had been submitted to the
-> lm-sensors list as it should have, given that it modifies a hardware
-> monitoring driver... Not to mention that the patch file name doesn't
-> match the driver file name, just to add to the confusion.)
-
-Well, y'know, stuff happens.  Stuff like you forgetting to cc that
-patch's author on this email.
-
-> > adt7473-minor-documentation-update.patch
-> 
-> I reviewed and acked that one, it's ready to go.
-
-OK, thanks.
-
-> > i5k_amb-support-intel-5400-chipset.patch
-
+Parag
