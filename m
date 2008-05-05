@@ -1,53 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758067AbYEEQjT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758985AbYEEQoS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758067AbYEEQjT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 12:39:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755194AbYEEQjI
+	id S1758985AbYEEQoS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 12:44:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755232AbYEEQoE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 12:39:08 -0400
-Received: from outbound-mail-40.bluehost.com ([69.89.20.194]:43519 "HELO
-	outbound-mail-40.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1755180AbYEEQjH (ORCPT
+	Mon, 5 May 2008 12:44:04 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:43994 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755121AbYEEQoC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 12:39:07 -0400
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Gabriel C <nix.or.die@googlemail.com>
-Subject: Re: intelfb and G33 / Q33 / Q35 chipsets support ?
-Date: Mon, 5 May 2008 09:38:54 -0700
-User-Agent: KMail/1.9.9
-Cc: Dave Airlie <airlied@linux.ie>, Gabriel C <crazy@frugalware.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fbdev-devel@lists.sourceforge.net,
-       "Antonino A. Daplas" <adaplas@gmail.com>,
-       Wang Zhenyu <zhenyu.z.wang@intel.com>
-References: <4815EEB4.2060509@frugalware.org> <4817A9D3.1030309@googlemail.com> <4817D687.8080201@googlemail.com>
-In-Reply-To: <4817D687.8080201@googlemail.com>
+	Mon, 5 May 2008 12:44:02 -0400
+Date: Mon, 5 May 2008 12:44:01 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Daniel Walker <dwalker@mvista.com>
+cc: Sven-Thorsten Dietrich <sven@thebigcorporation.com>,
+       Remy Bohmer <linux@bohmer.net>, LKML <linux-kernel@vger.kernel.org>,
+       RT <linux-rt-users@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Jon Masters <jonathan@jonmasters.org>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: Preempt-RT patch for 2.6.25
+In-Reply-To: <1210004376.17132.14.camel@localhost.localdomain>
+Message-ID: <Pine.LNX.4.58.0805051240520.25250@gandalf.stny.rr.com>
+References: <3efb10970805021102n4d87f55eue723786281b06fcb@mail.gmail.com> 
+ <1209753250.25628.34.camel@dd.thebigcorporation.com> 
+ <Pine.LNX.4.58.0805021441340.10615@gandalf.stny.rr.com> 
+ <1209754467.25628.42.camel@dd.thebigcorporation.com> 
+ <Pine.LNX.4.58.0805021502040.10615@gandalf.stny.rr.com> 
+ <1210003265.17132.6.camel@localhost.localdomain> 
+ <Pine.LNX.4.58.0805051210410.23084@gandalf.stny.rr.com>
+ <1210004376.17132.14.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200805050938.54453.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, April 29, 2008 7:16 pm Gabriel C wrote:
-> >> See the modesetting-101 branch of
-> >> git://git.freedesktop.org/git/mesa/drm. It's a bit rough in spots but
-> >> the i915 driver should be pretty close to feature parity with the Intel
-> >> X driver at this point.
-> >
-> > Thx , I will try out the tree.
+
+On Mon, 5 May 2008, Daniel Walker wrote:
 >
-> modesetting-101 does not compile on current git , NOPAGE_SIGBUS , nopage
-> and friends gone.
+> You should review my tree, it is several steps closer to mainline that
+> the -rt version your working on. I did a lot of patch break-ups
+> (required for bisection, and makes for a cleaner tree) and re-arranging
+> patches.
 
-Yeah the DRM tree doesn't have a full kernel included, so it'll occasionally 
-be out-of-sync.  You could try a different kernel version (it almost always 
-works with the last stable release of Linux) or merging DRM master into 
-modesetting-101.  Assuming there are no conflicts that might also fix 
-things. :)
+I may take a look at your tree. But as for the rt version I'm working on,
+is not the same as the one you started with. I did a lot of merging, I
+also have the new ftrace code in there. I also moved patches around to
+what we will be pushing to mainline.
 
-Jesse
+>
+> Bisection is also required for mainline integration ..
+
+Bisection is required for each element, we don't need it for the entire
+tree (atm). If we waste our time making the entire tree fully bisectable,
+then it will be a lot of work to maintain that bisectability when we
+rewrite entire sections.
+
+I am making it boot with certain parts intergrated. But my goal is not to
+have every single patch compile and boot. We'll worry about that when we
+need to push a part of the code in. But reality, what is there now, I can
+guarantee will not be the code that is pushed when it is ready.
+
+-- Steve
+
