@@ -1,101 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759970AbYEERGu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760001AbYEERHl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759970AbYEERGu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 13:06:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755990AbYEERGj
+	id S1760001AbYEERHl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 13:07:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755990AbYEERHc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 13:06:39 -0400
-Received: from styx.suse.cz ([82.119.242.94]:34070 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753183AbYEERGi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 13:06:38 -0400
-Date: Mon, 5 May 2008 19:06:36 +0200
-From: Jan Kara <jack@suse.cz>
-To: Badari Pulavarty <pbadari@us.ibm.com>
-Cc: Mingming Cao <cmm@us.ibm.com>, akpm@linux-foundation.org,
-       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] jbd_commit_transaction() races with
-	journal_try_to_drop_buffers() causing DIO failures
-Message-ID: <20080505170636.GK25722@duck.suse.cz>
-References: <20080306174209.GA14193@duck.suse.cz> <1209166706.6040.20.camel@localhost.localdomain> <20080428122626.GC17054@duck.suse.cz> <1209402694.23575.5.camel@badari-desktop> <20080428180932.GI17054@duck.suse.cz> <1209409764.11872.6.camel@localhost.localdomain> <20080429124321.GD1987@duck.suse.cz> <1209654981.27240.19.camel@badari-desktop>
+	Mon, 5 May 2008 13:07:32 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:52505 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754219AbYEERHb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 May 2008 13:07:31 -0400
+Date: Mon, 5 May 2008 10:07:03 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Rusty Russell <rusty@rustcorp.com.au>
+cc: linux-kernel@vger.kernel.org, Jon Masters <jonathan@jonmasters.org>,
+       Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: changeset: Make forced module loading optional
+In-Reply-To: <200805051535.05370.rusty@rustcorp.com.au>
+Message-ID: <alpine.LFD.1.10.0805050957590.32269@woody.linux-foundation.org>
+References: <200805051455.02723.rusty@rustcorp.com.au> <alpine.LFD.1.10.0805042159230.32269@woody.linux-foundation.org> <200805051535.05370.rusty@rustcorp.com.au>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1209654981.27240.19.camel@badari-desktop>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu 01-05-08 08:16:21, Badari Pulavarty wrote:
-> Hi Andrew & Jan,
-> 
-> I was able to reproduce the customer problem involving DIO
-> (invalidate_inode_pages2) problem by writing simple testcase
-> to keep writing to a file using buffered writes and DIO writes
-> forever in a loop. I see DIO writes fail with -EIO.
-> 
-> After a long debug, found 2 cases how this could happen.
-> These are race conditions with journal_try_to_free_buffers()
-> and journal_commit_transaction().
-> 
-> 1) journal_submit_data_buffers() tries to get bh_state lock. If
-> try lock fails, it drops the j_list_lock and sleeps for
-> bh_state lock, while holding a reference on the buffer.
-> In the meanwhile, journal_try_to_free_buffers() can clean up the
-> journal head could call try_to_free_buffers(). try_to_free_buffers()
-> would fail due to the reference held by journal_submit_data_buffers()
-> - which in turn causes failues for DIO (invalidate_inode_pages2()).
-> 
-> 2) When the buffer is on t_locked_list waiting for IO to finish,
-> we hold a reference and give up the cpu, if we can't get
-> bh_state lock. This causes try_to_free_buffers() to fail.
-> 
-> Fix is to drop the reference on the buffer if we can't get
-> bh_state lock, give up the cpu and re-try the whole operation -
-> instead of waiting for the vh_state lock.
-> 
-> Does this look like a resonable fix ?
-  As Mingming pointed out there are few other places where we could hold
-the bh reference. Note also that we accumulate references to buffers in the
-wbuf[] list and we need that for submit_bh() which consumes one bh
-reference. Generally, it seems to me as a too fragile and impractical
-rule "nobody can hold bh reference when not holding page lock" which is
-basically what it comes down to if you really want to be sure that
-journal_try_to_free_buffers() succeeds. And also note that in principle
-there are other places which hold references to buffers without holding the
-page lock - for example writepage() in ordered mode (although this one is
-in practice hardly triggerable). So how we could fix at least the races
-with commit code is to implement launder_page() callback for ext3/4 which
-would wait for the previous transaction commit in case the page has buffers
-that are part of that commit (I don't want this logic in
-journal_try_to_free_buffers() as that is called also on memory-reclaim
-path, but journal_launder_page() is fine with me). This would be correct
-but could considerably slow down O_DIRECT writes in cases they're mixed
-with buffered writes so I'm not sure if this is acceptable.
-  OTOH with the ordered mode rewrite patch, the problem with commit code
-also goes away since there we don't need extra references to data buffers
-(we use just filemap_fdatawrite).
 
-> 1) journal_submit_data_buffers() tries to get bh_state lock. If
-> try lock fails, it drops the j_list_lock and sleeps for
-> bh_state lock, while holding a reference on the buffer head.
-> In the meanwhile, journal_try_to_free_buffers() can clean up the
-> journal head could call try_to_free_buffers(). try_to_free_buffers()
-> would fail due to the reference held by journal_submit_data_buffers()
-> - which inturn causes failues for DIO (invalidate_inode_pages2()).
-> 
-> 2) When the buffer is on t_locked_list waiting for IO to finish,
-> we hold a reference and give up the cpu, if we can't get 
-> bh_state lock. This causes try_to_free_buffers() to fail.
-> 
-> Fix is to drop the reference on the buffer, give up the cpu
-> and re-try the whole operation.
-> 
-> Signed-off-by: Badari Pulavarty <pbadari@us.ibm.com>
-> Reviewed-by: Mingming Cao <mcao@us.ibm.com>
 
-							Honza
--- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+On Mon, 5 May 2008, Rusty Russell wrote:
+> 
+> BTW, for the peanut gallery: I don't recommend modversions: it's not reliable
+> in detecting all differences, nor being stable when there are no real
+> differences.
+
+Umm. modversions is in general a whole lot *more* reliable than just 
+looking at the kernel version.
+
+The kernel version is pretty good if you use CONFIG_LOCALVERSION_AUTO and 
+have a git kernel tree, but if not, then modversions is much more likely 
+to stop modules across big infrastructure changes during (say) the merge 
+window.
+
+So I agree that modversions is not "reliable", but I think that the 
+alternative is often even *less* reliable, so I find the "don't recommend 
+modversions" comment to be pretty debatable.
+
+Since I personally try to avoid modules, and if I do use them I'd prefer 
+the checking to be as strict as possible, I'd really not mind a "strict"  
+mode that tests both MODVERSIONS _and_ the full kernel version string. 
+Along with not allowing forced module loads, of course.
+
+I also find it sad that apparently I'm one of the few ones that test with 
+modules turned off. It's both more secure and simpler, but it does cause 
+lots of noise at least during a Fedora boot, and it occasionally breaks 
+the /etc/rc.d scripts because they assume that they have to load modules, 
+and that it's an error if that fails. We had that happen with the iptables 
+scripts not that long ago (and note how that was unrelated to initrd: this 
+is past the point when things have switched to the normal root 
+filesystem).
+
+IOW, I wish distros did some testing with non-modular kernels too. Oh 
+well. At least I can generally fix the problems, and make error reports, 
+but I bet it means that most other kernel users simply turn on modules 
+whether they need them or not.
+
+			Linus
