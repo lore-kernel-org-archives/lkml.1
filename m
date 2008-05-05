@@ -1,55 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759386AbYEEOtQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759545AbYEEOtu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759386AbYEEOtQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 10:49:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756566AbYEEOs7
+	id S1759545AbYEEOtu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 10:49:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755539AbYEEOtl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 10:48:59 -0400
-Received: from g4t0014.houston.hp.com ([15.201.24.17]:11744 "EHLO
-	g4t0014.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755950AbYEEOs6 (ORCPT
+	Mon, 5 May 2008 10:49:41 -0400
+Received: from nds154-200.nds.lab.novell.com ([151.155.154.200]:56493 "EHLO
+	lsg.lab.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752032AbYEEOtl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 10:48:58 -0400
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: Rene Herman <rene.herman@keyaccess.nl>
-Subject: Re: [patch 00/37] PNP resource_table cleanups, v2
-Date: Mon, 5 May 2008 08:48:57 -0600
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: Rene Herman <rene.herman@gmail.com>, Len Brown <lenb@kernel.org>,
-       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Adam Belay <ambx1@neo.rr.com>, Li Shaohua <shaohua.li@intel.com>,
-       Matthieu Castet <castet.matthieu@free.fr>,
-       Thomas Renninger <trenn@suse.de>, Jaroslav Kysela <perex@perex.cz>,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <20080401151634.730901933@ldl.fc.hp.com> <481DC4E2.7060803@keyaccess.nl> <481DC60A.7090307@keyaccess.nl>
-In-Reply-To: <481DC60A.7090307@keyaccess.nl>
+	Mon, 5 May 2008 10:49:41 -0400
+X-Greylist: delayed 1097 seconds by postgrey-1.27 at vger.kernel.org; Mon, 05 May 2008 10:49:41 EDT
+From: Gregory Haskins <ghaskins@novell.com>
+Subject: [PATCH] sched: fix SCHED_OTHER balance iterator to include all tasks
+To: mingo@elte.hu, peterz@infradead.org
+Cc: linux-kernel@vger.kernel.org, Gregory Haskins <ghaskins@novell.com>,
+       David Bahi <dbahi@novell.com>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <peterz@infradead.org>
+Date: Mon, 05 May 2008 08:31:22 -0600
+Message-ID: <20080505142739.24888.31658.stgit@lsg>
+User-Agent: StGIT/0.13
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200805050848.58436.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 04 May 2008 08:19:54 am Rene Herman wrote:
-> On 04-05-08 16:14, Rene Herman wrote:
-> 
-> > In trying to come up with problems I'm only finding a difference in an 
-> > added failure mode with respect to the static array if we run out of 
-> > memory at a bad time and this is quite unserious.
-> 
-> I mean, this would be an added mode when just releasing and rbuilding teh 
-> list as opposed to teh reusing, it's not a diffeerence with respect to the 
-> .index setup.
-> 
-> So, going to completely slash struct pnp_resource again? :) Would improve 
-> things...
+Hi Ingo,
+ The follow patch applies to sched-devel.  I know the original function was
+ somehow trying to protect against dequeueing by pre-iterating.  I am not sure
+ if I captured the intent properly in that regard.  What I can say is that the
+ old algorithm would miss tasks, and that is now fixed.  It may need further
+ adjustment if I missed the pre-iterating operation.
 
-It would be nice to get rid of struct pnp_resource, but then I
-wouldn't have a place to keep the list pointer.  But I think
-it will disappear from most of the interfaces, e.g,. we can
-get rid of pnp_get_pnp_resource(), etc.
+Hi Peter,
+ I was wrong earlier when I mentioned there might be a problem with
+ entity_is_task().  I think this was the root cause of what I was seeing.
+ Sorry for the red-herring.
 
-Bjorn
+Regards,
+-Greg
+
+-----------------------
+sched: fix SCHED_OTHER balance iterator to include all tasks
+
+The currently logic inadvertently skips the last task on the run-queue,
+resulting in missed balance opportunities.
+
+Signed-off-by: Gregory Haskins <ghaskins@novell.com>
+Signed-off-by: David Bahi <dbahi@novell.com>
+CC: Ingo Molnar <mingo@elte.hu>
+CC: Peter Zijlstra <peterz@infradead.org>
+---
+
+ kernel/sched_fair.c |   19 +++++++------------
+ 1 files changed, 7 insertions(+), 12 deletions(-)
+
+diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
+index 87b7300..e8c289a 100644
+--- a/kernel/sched_fair.c
++++ b/kernel/sched_fair.c
+@@ -1700,23 +1700,18 @@ __load_balance_iterator(struct cfs_rq *cfs_rq, struct list_head *next)
+ 	struct task_struct *p = NULL;
+ 	struct sched_entity *se;
+ 
+-	if (next == &cfs_rq->tasks)
+-		return NULL;
+-
+-	/* Skip over entities that are not tasks */
+-	do {
++	while (next != &cfs_rq->tasks) {
+ 		se = list_entry(next, struct sched_entity, group_node);
+ 		next = next->next;
+-	} while (next != &cfs_rq->tasks && !entity_is_task(se));
+ 
+-	if (next == &cfs_rq->tasks)
+-		return NULL;
++		/* Skip over entities that are not tasks */
++		if (entity_is_task(se)) {
++			p = task_of(se);
++			break;
++		}
++	}
+ 
+ 	cfs_rq->balance_iterator = next;
+-
+-	if (entity_is_task(se))
+-		p = task_of(se);
+-
+ 	return p;
+ }
+ 
+
