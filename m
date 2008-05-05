@@ -1,101 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760698AbYEEUvE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761358AbYEEUvb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760698AbYEEUvE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 16:51:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754396AbYEEUux
+	id S1761358AbYEEUvb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 16:51:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756040AbYEEUvW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 16:50:53 -0400
-Received: from mx1.riseup.net ([204.13.164.18]:46749 "EHLO mx1.riseup.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752847AbYEEUux (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 16:50:53 -0400
-Date: Mon, 5 May 2008 22:50:42 +0200
-From: Matthias Kaehlcke <matthias@kaehlcke.net>
-To: Daniel Mack <daniel@caiaq.de>, Eric Miao <eric.miao@marvell.com>,
-       Russell King <rmk@arm.linux.org.uk>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       Antonino Daplas <adaplas@gmail.com>
-Subject: [PATCH] pxafb: Convert ctrlr_sem in a mutex
-Message-ID: <20080505205042.GG11462@traven>
-Mail-Followup-To: Matthias Kaehlcke <matthias@kaehlcke.net>,
-	Daniel Mack <daniel@caiaq.de>, Eric Miao <eric.miao@marvell.com>,
-	Russell King <rmk@arm.linux.org.uk>, linux-kernel@vger.kernel.org,
-	akpm@linux-foundation.org, Antonino Daplas <adaplas@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Mon, 5 May 2008 16:51:22 -0400
+Received: from mail.gmx.net ([213.165.64.20]:46576 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1755700AbYEEUvV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 May 2008 16:51:21 -0400
+X-Authenticated: #44953887
+X-Provags-ID: V01U2FsdGVkX18Wm3kKXRAWB6DCfsHrM7q9KbMJWe5nng6e5+02B1
+	uJ0dd6PgS8BGap
+Subject: Re: 2.6.26-rc1-git1 -- trying to get vblank count for disabled
+	pipe 0
+From: Mirco Tischler <mt-ml@gmx.de>
+To: Steven J Newbury <steve@snewbury.org.uk>
+Cc: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@tungstengraphics.com>,
+       Miles Lane <miles.lane@gmail.com>, David Airlie <airlied@linux.ie>,
+       DRI for Linux <dri-devel@lists.sourceforge.net>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <1209991916.24777.8.camel@infinity>
+References: <481E5EE6.6090503@gmail.com>
+	 <1209975302.26326.263.camel@thor.sulgenrain.local>
+	 <1209991916.24777.8.camel@infinity>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-7PGWimYQE6W7GeNYp2xU"
+Date: Mon, 05 May 2008 22:51:09 +0200
+Message-Id: <1210020669.21903.16.camel@mtlp.tischlernetz>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-pxafb: The semaphore ctrlr_sem is used as a mutex. Convert it to the
-mutex API.
 
-Signed-off-by: Matthias Kaehlcke <matthias@kaehlcke.net>
+--=-7PGWimYQE6W7GeNYp2xU
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
---
+On Mo, 2008-05-05 at 13:51 +0100, Steven J Newbury wrote:
+> Miles isn't alone, I also get 'trying to get vblank count for disabled
+> pipe 0' (GM965).  vblank interrupts were previously not working for me,
+> but they are now.  I'm not sure what's changed.=20
+> >=20
+> > Do you have any GL apps running when this happens?
+> >=20
+> For me, this happens every time a GL app is run.
+>=20
+> I'm also getting occasional lockups.  Often it's the window manager
+> (metacity) that locks up when attempting to move a window, restarting
+> the window manager unlocks X but attempting to move a window again
+> results in another lockup.  When it's locked up the pointer moves and vt
+> switching works but nothing else.  Other times I've had a hard lockup
+> that required a hard reboot, this happens less frequently.
+>=20
+As written in a mail before, I have similar issues. I had the vblank
+messages in 2.6.25-git17 or so, but they seem gone no. At that time, I
+also had lockups, mostly when switching back from a vt to X. I was still
+able to move the mouse, but the rest of the screen just didn't change
+anymore. SSH login was still possible, so I tried to restart the X
+server, but that did nothing. Although the X processes were finished, I
+still had the X surface on my display, what seems rather strange to me.
+By now situation has improved a bit, as the machine doesn't lockup
+anymore. But from time to time I still get windows where only the outer
+frame is shown, the contents of the window is transparent.
+I have the impression that suspend/hibernation worsens the problems (no
+proof though).
+My graphics is a gm965 and I'm using gnome with the new compositing-able
+metacity used in ubuntu 8.04.
 
-diff --git a/drivers/video/pxafb.c b/drivers/video/pxafb.c
-index 3ab6e3d..a63b77b 100644
---- a/drivers/video/pxafb.c
-+++ b/drivers/video/pxafb.c
-@@ -40,6 +40,7 @@
- #include <linux/clk.h>
- #include <linux/err.h>
- #include <linux/completion.h>
-+#include <linux/mutex.h>
- #include <linux/kthread.h>
- #include <linux/freezer.h>
- 
-@@ -1059,7 +1060,7 @@ static void set_ctrlr_state(struct pxafb_info *fbi, u_int state)
- {
- 	u_int old_state;
- 
--	down(&fbi->ctrlr_sem);
-+	mutex_lock(&fbi->ctrlr_lock);
- 
- 	old_state = fbi->state;
- 
-@@ -1147,7 +1148,7 @@ static void set_ctrlr_state(struct pxafb_info *fbi, u_int state)
- 		}
- 		break;
- 	}
--	up(&fbi->ctrlr_sem);
-+	mutex_unlock(&fbi->ctrlr_lock);
- }
- 
- /*
-@@ -1399,7 +1400,7 @@ static struct pxafb_info * __init pxafb_init_fbinfo(struct device *dev)
- 
- 	init_waitqueue_head(&fbi->ctrlr_wait);
- 	INIT_WORK(&fbi->task, pxafb_task);
--	init_MUTEX(&fbi->ctrlr_sem);
-+	mutex_init(&fbi->ctrlr_lock);
- 	init_completion(&fbi->disable_done);
- #ifdef CONFIG_FB_PXA_SMARTPANEL
- 	init_completion(&fbi->command_done);
-diff --git a/drivers/video/pxafb.h b/drivers/video/pxafb.h
-index 8238dc8..31541b8 100644
---- a/drivers/video/pxafb.h
-+++ b/drivers/video/pxafb.h
-@@ -106,7 +106,7 @@ struct pxafb_info {
- 
- 	volatile u_char		state;
- 	volatile u_char		task_state;
--	struct semaphore	ctrlr_sem;
-+	struct mutex		ctrlr_lock;
- 	wait_queue_head_t	ctrlr_wait;
- 	struct work_struct	task;
- 
--- 
-Matthias Kaehlcke
-Embedded Linux Engineer
-Barcelona
+--=-7PGWimYQE6W7GeNYp2xU
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
 
-     The assumption that what currently exists must necessarily
-      exist is the acid that corrodes all visionary thinking
-                                                                 .''`.
-    using free software / Debian GNU/Linux | http://debian.org  : :'  :
-                                                                `. `'`
-gpg --keyserver pgp.mit.edu --recv-keys 47D8E5D4                  `-
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBIH3M8z+diZ7c2xfgRAuVPAJ9ivf6bBAon2b94j659DGZTz7hLIgCeNLDr
+buomfiE1dBrftgWdvmY8pug=
+=m6Qt
+-----END PGP SIGNATURE-----
+
+--=-7PGWimYQE6W7GeNYp2xU--
+
