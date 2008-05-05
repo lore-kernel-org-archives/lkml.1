@@ -1,181 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758829AbYEEKUu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758568AbYEEKVO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758829AbYEEKUu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 06:20:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752935AbYEEKRc
+	id S1758568AbYEEKVO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 06:21:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757492AbYEEKRx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 06:17:32 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:43908 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756544AbYEEKRO (ORCPT
+	Mon, 5 May 2008 06:17:53 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:33985 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757458AbYEEKRw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 06:17:14 -0400
-Message-Id: <20080505101653.970771559@szeredi.hu>
-References: <20080505101621.216789969@szeredi.hu>
-User-Agent: quilt/0.45-1
-Date: Mon, 05 May 2008 12:16:31 +0200
-From: Miklos Szeredi <miklos@szeredi.hu>
-To: akpm@linux-foundation.org
-Cc: hch@infradead.org, viro@zeniv.linux.org.uk, dave@linux.vnet.ibm.com,
-       ezk@cs.sunysb.edu, mhalcrow@us.ibm.com, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [patch 10/10] vfs: add path_removexattr()
-Content-Disposition: inline; filename=path_removexattr.patch
+	Mon, 5 May 2008 06:17:52 -0400
+Message-ID: <481EDEC5.10000@firstfloor.org>
+Date: Mon, 05 May 2008 12:17:41 +0200
+From: Andi Kleen <andi@firstfloor.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
+MIME-Version: 1.0
+To: Thomas Gleixner <tglx@linutronix.de>
+CC: linux-kernel@vger.kernel.org, mingo@elte.hu, sandeen@sandeen.net
+Subject: Re: [PATCH] i386: Execute stack overflow warning on interrupt stack
+ II
+References: <20080502091806.GA26062@basil.nowhere.org> <20080502094543.GA11114@basil.nowhere.org> <alpine.LFD.1.10.0805051135530.3318@apollo.tec.linutronix.de>
+In-Reply-To: <alpine.LFD.1.10.0805051135530.3318@apollo.tec.linutronix.de>
+Content-Type: text/plain; charset=ISO-8859-7
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Miklos Szeredi <mszeredi@suse.cz>
+Thomas Gleixner wrote:
+> On Fri, 2 May 2008, Andi Kleen wrote:
+>> +static void stack_overflow(void)
+>> +{
+>> +	printk("low stack detected by irq handler\n");
+> 
+> Needs a KERN_ERR
 
-Introduce path_removexattr().  Make vfs_removexattr() static.
+Just moving code. If there is one added it should be in another patch.
+Besides if anything it's a KERN_WARN I guess.
 
-Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
----
- fs/nfsd/vfs.c         |    6 +-----
- fs/xattr.c            |   41 +++++++++++++++++++----------------------
- include/linux/xattr.h |    2 +-
- 3 files changed, 21 insertions(+), 28 deletions(-)
+> 
+>> +		/* Execute warning on interrupt stack */
+>> +		if (unlikely(overflow))
+>> +			call_on_stack2(stack_overflow, isp, 0, 0);
+>> +
+>> +		call_on_stack2(desc->handle_irq, isp, irq, desc);
+> 
+> arch/x86/kernel/irq_32.c:148: warning: passing argument 2 of ¡call_on_stack2¢ makes integer from pointer without a cast
+> arch/x86/kernel/irq_32.c:150: warning: passing argument 2 of ¡call_on_stack2¢ makes integer from pointer without a cast
+> arch/x86/kernel/irq_32.c:150: warning: passing argument 4 of ¡call_on_stack2¢ makes integer from pointer without a cast
 
-Index: linux-2.6/fs/nfsd/vfs.c
-===================================================================
---- linux-2.6.orig/fs/nfsd/vfs.c	2008-05-05 11:29:33.000000000 +0200
-+++ linux-2.6/fs/nfsd/vfs.c	2008-05-05 11:29:33.000000000 +0200
-@@ -2071,9 +2071,6 @@ nfsd_set_posix_acl(struct svc_fh *fhp, i
- 	} else
- 		size = 0;
- 
--	error = mnt_want_write(fhp->fh_export->ex_path.mnt);
--	if (error)
--		goto getout;
- 	fh_to_path(fhp, &path);
- 	if (size)
- 		error = path_setxattr(&path, name, value, size, 0);
-@@ -2081,12 +2078,11 @@ nfsd_set_posix_acl(struct svc_fh *fhp, i
- 		if (!S_ISDIR(inode->i_mode) && type == ACL_TYPE_DEFAULT)
- 			error = 0;
- 		else {
--			error = vfs_removexattr(fhp->fh_dentry, name);
-+			error = path_removexattr(&path, name);
- 			if (error == -ENODATA)
- 				error = 0;
- 		}
- 	}
--	mnt_drop_write(fhp->fh_export->ex_path.mnt);
- 
- getout:
- 	kfree(value);
-Index: linux-2.6/fs/xattr.c
-===================================================================
---- linux-2.6.orig/fs/xattr.c	2008-05-05 11:29:33.000000000 +0200
-+++ linux-2.6/fs/xattr.c	2008-05-05 11:29:33.000000000 +0200
-@@ -199,7 +199,7 @@ vfs_listxattr(struct dentry *d, char *li
- }
- EXPORT_SYMBOL_GPL(vfs_listxattr);
- 
--int
-+static int
- vfs_removexattr(struct dentry *dentry, const char *name)
- {
- 	struct inode *inode = dentry->d_inode;
-@@ -224,8 +224,19 @@ vfs_removexattr(struct dentry *dentry, c
- 		fsnotify_xattr(dentry);
- 	return error;
- }
--EXPORT_SYMBOL_GPL(vfs_removexattr);
- 
-+int path_removexattr(struct path *path, const char *name)
-+{
-+	int error = mnt_want_write(path->mnt);
-+
-+	if (!error) {
-+		error = vfs_removexattr(path->dentry, name);
-+		mnt_drop_write(path->mnt);
-+	}
-+
-+	return error;
-+}
-+EXPORT_SYMBOL(path_removexattr);
- 
- /*
-  * Extended attribute SET operations
-@@ -471,7 +482,7 @@ sys_flistxattr(int fd, char __user *list
-  * Extended attribute REMOVE operations
-  */
- static long
--removexattr(struct dentry *d, const char __user *name)
-+removexattr(struct path *path, const char __user *name)
- {
- 	int error;
- 	char kname[XATTR_NAME_MAX + 1];
-@@ -482,7 +493,7 @@ removexattr(struct dentry *d, const char
- 	if (error < 0)
- 		return error;
- 
--	return vfs_removexattr(d, kname);
-+	return path_removexattr(path, kname);
- }
- 
- asmlinkage long
-@@ -494,11 +505,7 @@ sys_removexattr(const char __user *path,
- 	error = user_path_walk(path, &nd);
- 	if (error)
- 		return error;
--	error = mnt_want_write(nd.path.mnt);
--	if (!error) {
--		error = removexattr(nd.path.dentry, name);
--		mnt_drop_write(nd.path.mnt);
--	}
-+	error = removexattr(&nd.path, name);
- 	path_put(&nd.path);
- 	return error;
- }
-@@ -512,11 +519,7 @@ sys_lremovexattr(const char __user *path
- 	error = user_path_walk_link(path, &nd);
- 	if (error)
- 		return error;
--	error = mnt_want_write(nd.path.mnt);
--	if (!error) {
--		error = removexattr(nd.path.dentry, name);
--		mnt_drop_write(nd.path.mnt);
--	}
-+	error = removexattr(&nd.path, name);
- 	path_put(&nd.path);
- 	return error;
- }
-@@ -525,19 +528,13 @@ asmlinkage long
- sys_fremovexattr(int fd, const char __user *name)
- {
- 	struct file *f;
--	struct dentry *dentry;
- 	int error = -EBADF;
- 
- 	f = fget(fd);
- 	if (!f)
- 		return error;
--	dentry = f->f_path.dentry;
--	audit_inode(NULL, dentry);
--	error = mnt_want_write(f->f_path.mnt);
--	if (!error) {
--		error = removexattr(dentry, name);
--		mnt_drop_write(f->f_path.mnt);
--	}
-+	audit_inode(NULL, f->f_path.dentry);
-+	error = removexattr(&f->f_path, name);
- 	fput(f);
- 	return error;
- }
-Index: linux-2.6/include/linux/xattr.h
-===================================================================
---- linux-2.6.orig/include/linux/xattr.h	2008-05-05 11:29:33.000000000 +0200
-+++ linux-2.6/include/linux/xattr.h	2008-05-05 11:29:33.000000000 +0200
-@@ -51,7 +51,7 @@ ssize_t xattr_getsecurity(struct inode *
- ssize_t vfs_getxattr(struct dentry *, const char *, void *, size_t);
- ssize_t vfs_listxattr(struct dentry *d, char *list, size_t size);
- int path_setxattr(struct path *, const char *, const void *, size_t, int);
--int vfs_removexattr(struct dentry *, const char *);
-+int path_removexattr(struct path *, const char *);
- 
- ssize_t generic_getxattr(struct dentry *dentry, const char *name, void *buffer, size_t size);
- ssize_t generic_listxattr(struct dentry *dentry, char *buffer, size_t buffer_size);
+Hmm, strange. I don't see that here
 
---
+
+  CC      arch/x86/kernel/irq_32.o
+  CC      arch/x86/kernel/time_32.o
+
+gcc version 4.1.2 20061115 (prerelease) (SUSE Linux)
+
+What compiler are you using? Or did you change anything? (I know you
+like to do that)
+
+
+>>  	} else
+>>  #endif
+>> -		desc->handle_irq(irq, desc);
+>> +	{
+>> +		/* AK: Slightly bogus here */
+> 
+> Bogus comment. This applies to both the !4KSTACKS and the overflow of
+> the irq stack in the 4KSTACKS case.
+
+The comment refers to that the check here doesn't check the process
+stack, but the interrupt stack. In fact if the interrupt stack is near
+overflow we should probably just reject the interrupt? Although that
+might cause hangs too. Or perhaps just enlarge it [that is now possible
+with i386 pda with some effort]. Anyways it is probably not an
+interesting case because nested interrupts are rare.
+
+>> +		if (overflow)
+> 
+> unlikely(overflow) ?
+
+Doesn't matter really. The whole branch is unlikely.
+
+-Andi
