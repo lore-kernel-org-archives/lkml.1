@@ -1,50 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762931AbYEEVxT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762722AbYEEV40@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762931AbYEEVxT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 17:53:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759929AbYEEVxH
+	id S1762722AbYEEV40 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 17:56:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758259AbYEEV4R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 17:53:07 -0400
-Received: from testure.choralone.org ([194.9.77.134]:60411 "EHLO
-	testure.choralone.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756495AbYEEVxG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 17:53:06 -0400
-Date: Mon, 5 May 2008 17:52:52 -0400
-From: Dave Jones <davej@codemonkey.org.uk>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: tglx@linutronix.de, Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: [X86] Add new cache descriptor.
-Message-ID: <20080505215252.GA31722@codemonkey.org.uk>
-Mail-Followup-To: Dave Jones <davej@codemonkey.org.uk>,
-	Ingo Molnar <mingo@elte.hu>, tglx@linutronix.de,
-	Linux Kernel <linux-kernel@vger.kernel.org>
+	Mon, 5 May 2008 17:56:17 -0400
+Received: from outbound-sin.frontbridge.com ([207.46.51.80]:14978 "EHLO
+	outbound9-sin-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752368AbYEEV4Q convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 May 2008 17:56:16 -0400
+X-BigFish: VP
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 149.199.60.83;Service: EHS
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: text/plain;
+	charset="US-ASCII"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH 04/56] microblaze_v2: Open firmware files
+Date: Mon, 5 May 2008 14:56:14 -0700
+In-reply-to: <684c36e5ad3f598e5079e88ec195545c4a7150c2.1209897266.git.monstr@monstr.eu>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH 04/56] microblaze_v2: Open firmware files
+Thread-Index: Acit6VsZSMqLRkJGSBykEOhqDGep6QBEUIWQ
+References: <a4a778e34c66d126f5c4bf1ca423cf32950ea5ab.1209897266.git.monstr@monstr.eu> <684c36e5ad3f598e5079e88ec195545c4a7150c2.1209897266.git.monstr@monstr.eu>
+From: "Stephen Neuendorffer" <stephen.neuendorffer@xilinx.com>
+To: <monstr@seznam.cz>, <linux-kernel@vger.kernel.org>
+Cc: <arnd@arndb.de>, <linux-arch@vger.kernel.org>,
+       "John Linn" <linnj@xilinx.com>, <john.williams@petalogix.com>,
+       <matthew@wil.cx>, <will.newton@gmail.com>, <drepper@redhat.com>,
+       <microblaze-uclinux@itee.uq.edu.au>, <grant.likely@secretlab.ca>,
+       "Michal Simek" <monstr@monstr.eu>
+X-OriginalArrivalTime: 05 May 2008 21:56:12.0734 (UTC) FILETIME=[D58465E0:01C8AEFA]
+Message-Id: <20080505215613.A5B3D18D004F@mail151-sin.bigfish.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The latest rev of Intel doc AP-485 details a new cache
-descriptor that we don't yet support.
-A 6MB 24-way assoc L2 cache.
+Michal,
 
-Signed-off-by: Dave Jones <davej@redhat.com>
+You're missing some of the stuff implemented in powerpc/prom_parse.c, in
+particular this:
 
-diff --git a/arch/x86/kernel/cpu/intel_cacheinfo.c b/arch/x86/kernel/cpu/intel_cacheinfo.c
-index 26d615d..2c8afaf 100644
---- a/arch/x86/kernel/cpu/intel_cacheinfo.c
-+++ b/arch/x86/kernel/cpu/intel_cacheinfo.c
-@@ -62,6 +62,7 @@ static struct _cache_table cache_table[] __cpuinitdata =
- 	{ 0x4b, LVL_3,      8192 },	/* 16-way set assoc, 64 byte line size */
- 	{ 0x4c, LVL_3,     12288 },	/* 12-way set assoc, 64 byte line size */
- 	{ 0x4d, LVL_3,     16384 },	/* 16-way set assoc, 64 byte line size */
-+	{ 0x4e, LVL_2,      6144 },	/* 24-way set assoc, 64 byte line size */
- 	{ 0x60, LVL_1_DATA, 16 },	/* 8-way set assoc, sectored cache, 64 byte line size */
- 	{ 0x66, LVL_1_DATA, 8 },	/* 4-way set assoc, sectored cache, 64 byte line size */
- 	{ 0x67, LVL_1_DATA, 16 },	/* 4-way set assoc, sectored cache, 64 byte line size */
+Steve
 
--- 
-http://www.codemonkey.org.uk
+> +/**
+> + * of_irq_map_one - Resolve an interrupt for a device
+> + * @device:	the device whose interrupt is to be resolved
+> + * @index:	index of the interrupt to resolve
+> + * @out_irq:	structure of_irq filled by this function
+> + *
+> + * This function resolves an interrupt, walking the tree, for a given
+> + * device-tree node. It's the high level pendant to of_irq_map_raw().
+> + * It also implements the workarounds for OldWolrd Macs.
+> + */
+> +extern int of_irq_map_one(struct device_node *device, int index,
+> +			struct of_irq *out_irq);
+> +
+
+
+
