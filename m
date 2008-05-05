@@ -1,82 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756455AbYEEGpu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756127AbYEEG4t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756455AbYEEGpu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 02:45:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753992AbYEEGpl
+	id S1756127AbYEEG4t (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 02:56:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752714AbYEEG4k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 02:45:41 -0400
-Received: from harold.telenet-ops.be ([195.130.133.65]:33574 "EHLO
-	harold.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753757AbYEEGpk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 02:45:40 -0400
-Date: Mon, 5 May 2008 08:45:35 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: John Williams <john.williams@petalogix.com>
-cc: monstr@seznam.cz, linux-kernel@vger.kernel.org, arnd@arndb.de,
-       linux-arch@vger.kernel.org, stephen.neuendorffer@xilinx.com,
-       John.Linn@xilinx.com, matthew@wil.cx, will.newton@gmail.com,
-       drepper@redhat.com, microblaze-uclinux@itee.uq.edu.au,
-       grant.likely@secretlab.ca, Michal Simek <monstr@monstr.eu>
-Subject: Re: [PATCH 36/56] microblaze_v2: dma support
-In-Reply-To: <1209954350.5798.71.camel@localhost>
-Message-ID: <Pine.LNX.4.64.0805050844560.2615@anakin>
-References: <1209901305-6404-1-git-send-email-monstr@seznam.cz>
- <14acb31da2794d2d5916da3db3d75fe2285ac055.1209897266.git.monstr@monstr.eu>
- <598221ce2159046614d7b158ea62d5af51907af3.1209897266.git.monstr@monstr.eu>
- <41c1f410eaafd875246362d10ef9866d8cc2a934.1209897266.git.monstr@monstr.eu>
- <09ce2baf0c8308d3fbca98e7eb36a6aab59112a7.1209897266.git.monstr@monstr.eu>
- <c9418c683be99ae12abb89575c362d586c026bad.1209897266.git.monstr@monstr.eu>
- <cfde3796e95bdd17c32e4fd7762d0aee55967707.1209897266.git.monstr@monstr.eu>
- <8aba2d82c85cd1d5b56de328c1fd080ee51f0211.1209897266.git.monstr@monstr.eu>
- <c4000ff625bd217f9bb683e3bf8c7193a82bd744.1209897266.git.monstr@monstr.eu>
- <491f823fac6c03cc36834ec569a45d30a03a72cf.1209897266.git.monstr@monstr.eu>
- <96f2004535c34a0c762bf2012c299cbf9f89ab32.1209897266.git.monstr@monstr.eu>
- <92cd3a27b393bb394d48902594152351a92c59bb.1209897266.git.monstr@monstr.eu>
- <1209954350.5798.71.camel@localhost>
+	Mon, 5 May 2008 02:56:40 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:36877 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751855AbYEEG4j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 May 2008 02:56:39 -0400
+Date: Mon, 5 May 2008 08:55:59 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: linux-kernel@vger.kernel.org, systemtap@sources.redhat.com,
+       "Frank Ch. Eigler" <fche@redhat.com>
+Subject: Re: System call instrumentation
+Message-ID: <20080505065559.GD3350@elte.hu>
+References: <20080504134838.GA21487@Krystal>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080504134838.GA21487@Krystal>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 5 May 2008, John Williams wrote:
-> > +++ b/include/asm-microblaze/scatterlist.h
-> > @@ -0,0 +1,21 @@
-> > +/*
-> > + * include/asm-microblaze/scatterlist.h
-> > + *
-> > + * This file is subject to the terms and conditions of the GNU General Public
-> > + * License. See the file "COPYING" in the main directory of this archive
-> > + * for more details.
-> > + *
-> > + * Copyright (C) 2006 Atmark Techno, Inc.
-> > + */
-> > +
-> > +#ifndef _ASM_MICROBLAZE_SCATTERLIST_H
-> > +#define _ASM_MICROBLAZE_SCATTERLIST_H
-> > +
-> > +struct scatterlist {
-> > +	unsigned long page_link;
-> > +	unsigned int	offset;
-> > +	dma_addr_t	dma_address;
-> > +	unsigned int	length;
-> > +};
-> > +
-> > +#endif /* _ASM_MICROBLAZE_SCATTERLIST_H */
+
+* Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
+
+> Hi Ingo,
 > 
-> Is this worthy of promotion to asm-generic/scatterlist.h?
+> I looked at the system call instrumentation present in LTTng lately. I 
+> tried different solutions, e.g. hooking a kernel-wide syscall trace in 
+> do_syscall_trace, but it appears that I ended up re-doing another 
+> syscall table, which consists of specialized functions which extracts 
+> the string and data structure parameters from user-space. Since code 
+> duplication is not exactly wanted, I think that the original approach 
+> taken in my patchset, which is to instrument the kernel code at the 
+> sys_* level (e.g. sys_open), which is the earliest level where the 
+> parameter information is made available to the kernel, is still the 
+> best way to go.
 
-after moving dma_address one position up in the structure, as dma_addr_t may be
-64-bit?
+hm, i'm not sure about this. I've implemented system call tracing in -rt 
+[embedded in the latency tracer] and it only needed changes in entry.S, 
+not in every system call site. Now, granted, that tracer was simpler 
+than what LTTng tries to do, but do we _really_ need more complexity? A 
+trace point that simply expresses:
 
-Gr{oetje,eeting}s,
+   sys_call_event(int sysno, long param1, long param2, long param3,
+                             long param4, long param5, long param6);
 
-						Geert
+would be more than enough in 99% of the cases. If you want to extract 
+the strings from the system call table, to make the filtering of these 
+syscall events easier, do it during build time (by for example modifying 
+the __SYSCALL() macros in unistd.h), instead of a parallel syscall 
+table.
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+OTOH, as long as it's just one simple nonintrusive line per syscall, 
+it's not a big deal - as long as it only traces the parameters as they 
+come from the syscall ABI - we wont change them anyway. I.e. hide the 
+ugly string portion, just turn them into a simple:
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+  trace_sys_getpid();
+  trace_sys_time(tloc);
+  trace_sys_gettimeofday(tz, tv);
+
+(although even such a solution would still need a general policy level 
+buy-in i guess - we dont want half of the syscalls traced, the other 
+half objected to by maintainers. So it's either all or nothing.)
+
+and the question also arises: why not do this on a debuginfo level? This 
+information can be extracted from the debuginfo. We could change 
+'asmlinkage' to 'syscall_linkage' to make it clear which functions are 
+syscalls.
+
+	Ingo
