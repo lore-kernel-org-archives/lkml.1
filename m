@@ -1,101 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758587AbYEEUka@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760198AbYEEUlU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758587AbYEEUka (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 16:40:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752760AbYEEUkV
+	id S1760198AbYEEUlU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 16:41:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753027AbYEEUlE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 16:40:21 -0400
-Received: from fg-out-1718.google.com ([72.14.220.157]:38132 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752745AbYEEUkU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 16:40:20 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=DglrX4hhSntUELiFE50y8fcpZwy/wTRH1pm2lwKog8SZ7ge6z0tPPh8fm/1Yem2hY08gDG8L5lrksGO3LPWMaLEAfbmIS7nGg48b+Gbw6sx/Ppwp76Lu1hiM3V9NICqa0NSLgBjHnKJdWjMxAqoZk9Yg30LJoTAVXbxFzikHglM=
-Message-ID: <30c6373b0805051340h35034de2i378558ea8a9d6cd2@mail.gmail.com>
-Date: Mon, 5 May 2008 13:40:17 -0700
-From: "Kevin Burton" <burton@tailrank.com>
-To: "Andi Kleen" <andi@firstfloor.org>
-Subject: Re: Ability to limit or disable page caching?
-Cc: "FD Cami" <francois.cami@free.fr>, linux-kernel@vger.kernel.org
-In-Reply-To: <30c6373b0805051331l11a71eacv5cb9a5221f8f26f9@mail.gmail.com>
+	Mon, 5 May 2008 16:41:04 -0400
+Received: from xenotime.net ([66.160.160.81]:36767 "HELO xenotime.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752760AbYEEUlC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 May 2008 16:41:02 -0400
+Date: Mon, 5 May 2008 13:40:53 -0700 (PDT)
+From: "Randy.Dunlap" <rdunlap@xenotime.net>
+X-X-Sender: rddunlap@shark.he.net
+To: Ingo Molnar <mingo@elte.hu>
+cc: Adrian Bunk <bunk@kernel.org>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Sam Ravnborg <sam@ravnborg.org>, Alexander Viro <viro@ftp.linux.org.uk>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [rfc] the kernel workflow & trivial "global -> static" patches
+ (was: Re: [2.6 patch] make sched_feat_{names,open} static)
+In-Reply-To: <20080505201906.GA900@elte.hu>
+Message-ID: <Pine.LNX.4.64.0805051327530.27703@shark.he.net>
+References: <20080505182942.GA17139@cs181133002.pp.htv.fi> <20080505201906.GA900@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <30c6373b0805050012o505c0540i116a31bc1ab9ce9f@mail.gmail.com>
-	 <20080505131607.5556b1f2@olorin>
-	 <30c6373b0805051134m634efbbdn45167c1eae29df4a@mail.gmail.com>
-	 <20080505212831.22371732@olorin>
-	 <30c6373b0805051242o2f38f0a3v62bd43f4fa01559e@mail.gmail.com>
-	 <878wyocy0v.fsf@basil.nowhere.org>
-	 <30c6373b0805051328n30d32202g3744a233c7efb2dd@mail.gmail.com>
-	 <30c6373b0805051331l11a71eacv5cb9a5221f8f26f9@mail.gmail.com>
-X-Google-Sender-Auth: b841a6d4fe72aff9
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-... and here's another point I don't fully grok:
+On Mon, 5 May 2008, Ingo Molnar wrote:
 
-http://www.westnet.com/~gsmith/content/linux-pdflush.htm
+> And unlike other kernel developers, my opinion is not that we should 
+> eliminate this disruption by not doing these trivial patches _at all_. 
+> My opinion is that we should make it easier for maintainers to _avoid 
+> introducing_ these problems.
+> 
+> I.e. we need to fight the root of this problem (the steady introduction 
+> of needlessly global symbols), not its symptoms (the needlessly global 
+> symbols themselves).
 
-"By default, Linux will aggressively swap processes out of physical
-memory onto disk in order to keep the disk cache as large as possible.
-This means that pages that haven't been used recently will be pushed
-into swap long before the system even comes close to running out of
-memory, which is an unexpected behavior compared to some operating
-systems. The /proc/sys/vm/swappiness parameter controls how aggressive
-Linux is in this area. "
+in some automated ways...
 
-...
+We have Documentation/SubmitChecklist that we hope that patch
+submitters will use, but we have little evidence that they (we) do
+use it, and we have some evidence that they (we) do NOT use it.
+(but this isn't automated)
 
-"A value of 0 will avoid ever swapping out just for caching space.
-Using 100 will always favor making the disk cache bigger. Most
-distributions set this value to be 60, tuned toward moderately
-aggressive swapping to increase disk cache. "
+I see being related to DaveM's "Slow down, please" thread.
+We have developers hurriedly writing new code but not paying enough
+attention to code that they have already written.
+(not directed at anyone in particular)
 
-..... but we're running on zero and this machine still has 500MB of
-free memory.  Why is it swapping?
+E.g., you do maybe 200 randconfig builds per day.  I only do
+20 - 50, but we both find too many problems (IMHO).
 
-Kevin
+> Let me raise some thoughts about what we could do to achieve these 
+> goals.
 
-On Mon, May 5, 2008 at 1:31 PM, Kevin Burton <burton@tailrank.com> wrote:
-> Though mlockall isn't going to fix this problem because the OOM killer
-> will still kill it if it runs out of memory.
->
-> I want to preserve the scenario where we go 10 bytes over memory and
-> the kernel just swaps out those 10 bytes.
->
-> Kevin
->
-> On Mon, May 5, 2008 at 1:28 PM, Kevin Burton <burton@tailrank.com> wrote:
->> We're actually running mlock which is native to MySQL.... of course I
->> didn't think about whether our secondary process is paging not our
->> MySQL process.
->
->
-> --
-> Founder/CEO Tailrank.com
-> Location: San Francisco, CA
-> AIM/YIM: sfburtonator
-> Skype: burtonator
-> Work: http://spinn3r.com and http://tailrank.com
-> Blog: http://feedblog.org
-> Cell: 415-637-8078
-> Fax: 1-415-358-419 PIN: 0092
->
+Good discussion material.
 
 
+I have a similar problem with trying to keep kernel documentation
+(kernel-doc & docbook) in sync with source code changes.
+I try to review all patches that contain Documentation/ changes
+(OK, I'm a few emails behind on that).  Anyway, it seems to be
+a never-ending battle.
 
 -- 
-Founder/CEO Tailrank.com
-Location: San Francisco, CA
-AIM/YIM: sfburtonator
-Skype: burtonator
-Work: http://spinn3r.com and http://tailrank.com
-Blog: http://feedblog.org
-Cell: 415-637-8078
-Fax: 1-415-358-419 PIN: 0092
+~Randy
