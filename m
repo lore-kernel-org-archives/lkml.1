@@ -1,122 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753832AbYEEEWS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753702AbYEEEYx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753832AbYEEEWS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 00:22:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751401AbYEEEWE
+	id S1753702AbYEEEYx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 00:24:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751379AbYEEEYm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 00:22:04 -0400
-Received: from E23SMTP03.au.ibm.com ([202.81.18.172]:58242 "EHLO
-	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751348AbYEEEWB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 00:22:01 -0400
-Message-ID: <481E8B3F.3050508@linux.vnet.ibm.com>
-Date: Mon, 05 May 2008 09:51:19 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Mon, 5 May 2008 00:24:42 -0400
+Received: from ozlabs.org ([203.10.76.45]:44982 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751161AbYEEEYl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 May 2008 00:24:41 -0400
 MIME-Version: 1.0
-To: kamezawa.hiroyu@jp.fujitsu.com
-CC: linux-mm@kvack.org, Sudhir Kumar <skumar@linux.vnet.ibm.com>,
-       YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
-       Paul Menage <menage@google.com>, lizf@cn.fujitsu.com,
-       linux-kernel@vger.kernel.org, David Rientjes <rientjes@google.com>,
-       Pavel Emelianov <xemul@openvz.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [-mm][PATCH 0/4] Add rlimit controller to cgroups (v3)
-References: <20080503213726.3140.68845.sendpatchset@localhost.localdomain> <23630056.1209914669637.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <23630056.1209914669637.kamezawa.hiroyu@jp.fujitsu.com>
-Content-Type: text/plain; charset=ISO-2022-JP
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <18462.35282.374180.770237@cargo.ozlabs.ibm.com>
+Date: Mon, 5 May 2008 14:15:14 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Jochen Friedrich <jochen@scram.de>
+Cc: Kumar Gala <galak@kernel.crashing.org>, Jean Delvare <khali@linux-fr.org>,
+       Scott Wood <scottwood@freescale.com>,
+       "Kernel, Linux" <linux-kernel@vger.kernel.org>,
+       linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+       Linux I2C <i2c@lm-sensors.org>, Jon Smirl <jonsmirl@gmail.com>,
+       Laurent Pinchart <laurentp@cse-semaphore.com>,
+       David Miller <davem@davemloft.net>,
+       Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: [PATCH] [POWERPC] Fix of_i2c include for module compilation
+In-Reply-To: <481C5DD0.5090503@scram.de>
+References: <481C5DD0.5090503@scram.de>
+X-Mailer: VM 7.19 under Emacs 22.1.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-kamezawa.hiroyu@jp.fujitsu.com wrote:
->>
->> This is the third version of the address space control patches. These
->> patches are against 2.6.25-mm1  and have been tested using KVM in SMP mode,
->> both with and without the config enabled.
->>
->> The first patch adds the user interface. The second patch fixes the
->> cgroup mm_owner_changed callback to pass the task struct, so that
->> accounting can be adjusted on owner changes. The thrid patch adds accounting
->> and control. The fourth patch updates documentation.
->>
->> An earlier post of the patchset can be found at
->> http://lwn.net/Articles/275143/
->>
->> This patch is built on top of the mm owner patches and utilizes that feature
->> to virtually group tasks by mm_struct.
->>
->> Reviews, Comments?
->>
-> 
-> I can't read the whole patch deeply now but this new concept "rlimit-controlle
-> r" seems make sense to me.
-> 
-> At quick glance, I have some thoughts.
-> 
-> 1. kerner/rlimit_cgroup.c is better for future expansion.
+Jochen Friedrich writes:
 
-I have no problem with that name, I can rename the files.
+> -#ifdef CONFIG_OF_I2C
+> +#if defined(CONFIG_OF_I2C) || defined(CONFIG_OF_I2C_MODULE)
+>  
+>  void of_register_i2c_devices(struct i2c_adapter *adap,
+>  			     struct device_node *adap_node);
 
-> 2. why 
->    "+This controller framework is designed to be extensible to control any
->    "+resource limit (memory related) with little effort."
->    memory only ? Ok, all you want to do is related to memory, but someone
->    may want to limit RLIMIT_CPU by group or RLIMIT_CORE by group or....
->    (I have no plan but they seems useful.;)
+Why do we have that ifdef there at all?  There's only that one
+external declaration within it, so the #ifdef and #endif could just be
+removed.  If the ifdef hadn't been there in the first place we
+wouldn't have had this problem.
 
-I currently mentioned memory, since we have the infrastructure to group using
-mm->owner infrastructure. For other purposes, we'll need to enhance the
-controller quite a bit. That is why I put memory related in brackets.
-
->    So, could you add design hint of rlimit contoller to the documentation ?
->    
-
-OK, I'll update the documentation
-
-> 3. Rleated to 2. Showing what kind of "rlimit" params are supported by
->    cgroup will be good.
-> 
-
-Do you mean in init/Kconfig or documentation?. I should probably rename
-limit_in_bytes and usage_in_bytes to add an as_ prefix, so that the UI clearly
-shows what is supported as well.
-
-> I don't think you have to implement all things at once. Staring from
-> "only RLIMIT_AS is supported now" is good. Someone will expand it if
-> he needs. But showing basic view of "gerenal purpose rlimit contoller" in _doc
-> ument_ or _comments_ or _codes_ is a good thing to do.
-> 
-
-I can add to the documentation
-
-> If you don't want to provide RLIMIT feature other than address space,
-> it's better to avoid using the name of RLIMIT. It's confusing.
-> 
-
-I used RLIMIT since I want to extend it later to control memory locked pages :)
-I open to other names as well.
-
-> Thanks,
-> -Kame
-> 
-> 
-> 
-> 
-> 
-> --
-> To unsubscribe, send a message with 'unsubscribe linux-mm' in
-> the body to majordomo@kvack.org.  For more info on Linux MM,
-> see: http://www.linux-mm.org/ .
-> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
-
-
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+Paul.
