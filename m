@@ -1,68 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764107AbYEETGv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760888AbYEETJq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764107AbYEETGv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 15:06:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763824AbYEETFJ
+	id S1760888AbYEETJq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 15:09:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752380AbYEETJg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 15:05:09 -0400
-Received: from nf-out-0910.google.com ([64.233.182.184]:14514 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763810AbYEETFG (ORCPT
+	Mon, 5 May 2008 15:09:36 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:33574 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752050AbYEETJf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 15:05:06 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=jkBPd8ZOyJTTwyUpGEBSBQI3fI/cg121GL5NrLlVkg9Z3GvK4rPqgLUunlu9LEAe8pSFGcEY3zEzt7oQCD2mOwGWBXpnHFgvNtCCXMaW6jII3s3UVsN/9JMlrXRCqFY8/GJ244sLgHfv20WI1Zvf3FeEYYUy1iQGRHfU4wArXoA=
-Message-ID: <481F5A90.5080109@henry.nestler.gmail.com>
-Date: Mon, 05 May 2008 21:05:52 +0200
-From: Henry Nestler <henry.nestler@gmail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Mon, 5 May 2008 15:09:35 -0400
+Date: Mon, 5 May 2008 20:09:34 +0100
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Enrico Weigelt <weigelt@metux.de>
+Cc: linux kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: VFS + path walktrough
+Message-ID: <20080505190934.GR5882@ZenIV.linux.org.uk>
+References: <20080505131307.GM5882@ZenIV.linux.org.uk> <20080505134315.GF32019@nibiru.local> <20080505153501.GN5882@ZenIV.linux.org.uk> <E1Jt3nB-0006ZP-6S@pomaz-ex.szeredi.hu> <20080505171425.GO5882@ZenIV.linux.org.uk> <E1Jt4Ye-0006hz-9i@pomaz-ex.szeredi.hu> <20080505174048.GP5882@ZenIV.linux.org.uk> <20080505182308.GG32019@nibiru.local> <20080505183420.GQ5882@ZenIV.linux.org.uk> <20080505190243.GI32019@nibiru.local>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: Jesper Krogh <jesper@krogh.cc>
-Subject: Re: Many open/close on same files yeilds "No such file or directory".
-References: <aoJcW-38V-37@gated-at.bofh.it> <aoWjI-1Br-5@gated-at.bofh.it> <aoYOH-6RO-13@gated-at.bofh.it> <ap5nc-3ZT-7@gated-at.bofh.it> <ap5Gx-4vu-43@gated-at.bofh.it> <ap9Ar-4Nn-21@gated-at.bofh.it> <aqcZe-7Fg-23@gated-at.bofh.it> <aqd98-7Vb-25@gated-at.bofh.it> <aqd99-7Vb-27@gated-at.bofh.it>
-In-Reply-To: <aqd99-7Vb-27@gated-at.bofh.it>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080505190243.GI32019@nibiru.local>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jesper Krogh wrote:
-> Randy.Dunlap wrote:
->> On Mon, 5 May 2008, Jesper Krogh wrote:
->>
->>> Jesper Krogh wrote:
->>>> Ray Lee wrote:
->>>>> BTW, I may have missed this earlier, but does it happen *anywhere* on
->>>>> the troublesome filesystem (ie, in a newly created subdirectory)?
->>>> Yes. It is reproducible on a newly created subdirectory on the
->>>> filesystem.
->>> Now I've created a new filesystem. (resized the original LVM-volume to half
->>> and created a new ext3 one next to it). The problem persists on this new
->>> filesystem.
->>>
->>> Just guessing, can there be something timing related in clearing the FS-cache
->>> for the filesystem?
->>>
->>> Any other suggestions/pointers.
->> Hi,
->>
->> Has anyone else been able to reproduce this problem?
+On Mon, May 05, 2008 at 09:02:43PM +0200, Enrico Weigelt wrote:
+> * Al Viro <viro@ZenIV.linux.org.uk> wrote:
 > 
-> No, and out of my systems. I only have this external SCSI-IDE-raid 
-> device I can reproduce it on. The internal system disks doesnt allow me 
-> to reproduce it on the same installation.
+> > How _can_ server resolve symlinks, when result of symlink 
+> > resolution depends on where the damn thing is mounted on client 
+> > and even how deeply the process trying to do lookup happens 
+> > to be chrooted?
 > 
+> In the same way as, eg. http servers, do. Of course this fails 
+> if the symlink isn't resolvable within server's fs.
 
-Can you create a set of empty files, made loop devices with 'losetup'
-and create the LVM from it? This array then you can check on the
-internal disk.
+Umm...  You know, it might make more sense if you
+	* explained what are you really trying to do
+	* short of that, perhaps figured out what the hell symlinks and
+bindings _are_.
 
-Second idea: What is, if you create an ext3 filesystem without LVM on
-the troublefs?
-
--- 
-Henry N.
+Again, _no_ symlink is resolvable by server alone, simply because
+server can not know if target of that symlink is overmounted from
+the point of view of whoever is doing lookup.  Note that it *does*
+depend on who's doing that and where in the namespace we are seeing
+that sucker (the latter kills the "we want per-user connection"
+variants).
