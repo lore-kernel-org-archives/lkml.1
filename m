@@ -1,131 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757236AbYEEJpm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757458AbYEEJvL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757236AbYEEJpm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 05:45:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751800AbYEEJpf
+	id S1757458AbYEEJvL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 05:51:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751235AbYEEJu7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 05:45:35 -0400
-Received: from E23SMTP04.au.ibm.com ([202.81.18.173]:60255 "EHLO
-	e23smtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751633AbYEEJpd (ORCPT
+	Mon, 5 May 2008 05:50:59 -0400
+Received: from moutng.kundenserver.de ([212.227.126.188]:52431 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750894AbYEEJu6 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 05:45:33 -0400
-Message-ID: <481ED722.1020804@linux.vnet.ibm.com>
-Date: Mon, 05 May 2008 15:15:06 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-User-Agent: Thunderbird 1.5.0.14ubu (X11/20080306)
+	Mon, 5 May 2008 05:50:58 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: monstr@seznam.cz
+Subject: Re: [PATCH 43/56] microblaze_v2: termbits.h termios.h
+Date: Mon, 5 May 2008 11:50:40 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
+       stephen.neuendorffer@xilinx.com, John.Linn@xilinx.com,
+       john.williams@petalogix.com, matthew@wil.cx, will.newton@gmail.com,
+       drepper@redhat.com, microblaze-uclinux@itee.uq.edu.au,
+       grant.likely@secretlab.ca, Michal Simek <monstr@monstr.eu>
+References: <1209901305-6404-1-git-send-email-monstr@seznam.cz> <9cc0d54a98f25748dc3f16fc3250524d7cd00877.1209897266.git.monstr@monstr.eu> <5d240127ee05c28d5156bfbf305329f9540f6c14.1209897267.git.monstr@monstr.eu>
+In-Reply-To: <5d240127ee05c28d5156bfbf305329f9540f6c14.1209897267.git.monstr@monstr.eu>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
 MIME-Version: 1.0
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-CC: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       Andy Whitcroft <apw@shadowen.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>
-Subject: [BUG] linux-next: Tree for May 5 kernel bug at arch/x86/kernel/io_apic_64.c:353!
-References: <20080505151538.23eb89c5.sfr@canb.auug.org.au>
-In-Reply-To: <20080505151538.23eb89c5.sfr@canb.auug.org.au>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200805051150.41642.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX196QGXFJGcykd9/XeXo+UN0+ovC6LNH3fZ0QdX
+ h2u0OSBJQUdSa209f4vCahyLCGXT175Qr8FJ8BsHshtT93BpfN
+ 7AhXLRaTvlcOHXOZEshCA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Stephen,
+On Sunday 04 May 2008, monstr@seznam.cz wrote:
+>  include/asm-microblaze/termbits.h |  203 +++++++++++++++++++++++++++++++++++++
+>  include/asm-microblaze/termios.h  |   86 ++++++++++++++++
 
-This BUG_ON() with next-20080505 kernel is hit on x86_64 machine with 32 cpus.
-Kernel boots up when, passing noapic as boot parameter.
+Both of these are candidates for asm-generic, but I haven't looked
+at them in detail yet.
 
-kernel BUG at arch/x86/kernel/io_apic_64.c:353!
-invalid opcode: 0000 [1] SMP 
-last sysfs file: 
-CPU 24 
-Modules linked in:
-Pid: 1, comm: swapper Not tainted 2.6.26-rc1-next-20080505-autotest #1
-RIP: 0010:[<ffffffff8021cfba>]  [<ffffffff8021cfba>] add_pin_to_irq+0x7a/0x90
-RSP: 0018:ffff81090e4cbb80  EFLAGS: 00010216
-RAX: 00000000000000f0 RBX: 00000000000000f0 RCX: 0000000000000001
-RDX: 0000000000000018 RSI: 0000000000000006 RDI: 00000000000000f0
-RBP: 0000000000000006 R08: 0000000000000018 R09: 0000000000000006
-R10: 0000000000000008 R11: ffffffff80394926 R12: 0000000000000001
-R13: 0000000000000001 R14: 0000000000000018 R15: ffff81090e4cbc24
-FS:  0000000000000000(0000) GS:ffff810bfe7cf540(0000) knlGS:0000000000000000
-CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
-CR2: 0000000000000000 CR3: 0000000000201000 CR4: 00000000000006e0
-DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-Process swapper (pid: 1, threadinfo ffff81090e4ca000, task ffff81061e4ca050)
-Stack:  0000000000000006 ffffffff8021d04e 00000000000000f0 0000000000000001
- 0000000000000000 0000000000000000 ffff81090e4cbc20 ffffffff8021b290
- 00000000000000f0 0000000000000000 0000000000000001 ffffffff80219e8a
-Call Trace:
- [<ffffffff8021d04e>] io_apic_set_pci_routing+0x7e/0xb0
- [<ffffffff8021b290>] mp_register_gsi+0xc0/0xe0
- [<ffffffff80219e8a>] acpi_register_gsi+0x6a/0x70
- [<ffffffff80394b50>] acpi_pci_irq_enable+0x14f/0x1f9
- [<ffffffff80394926>] acpi_pci_allocate_irq+0x0/0x4c
- [<ffffffff8036e70a>] do_pci_enable_device+0x4a/0x70
- [<ffffffff8036e781>] __pci_enable_device_flags+0x51/0x60
- [<ffffffff804dac78>] tg3_init_one+0x58/0x15e0
- [<ffffffff8022be40>] default_wake_function+0x0/0x10
- [<ffffffff80231a50>] set_cpus_allowed_ptr+0xd0/0x100
- [<ffffffff803703bf>] pci_device_probe+0xdf/0x130
- [<ffffffff803c3526>] driver_probe_device+0x96/0x1a0
- [<ffffffff803c36b9>] __driver_attach+0x89/0x90
- [<ffffffff803c3630>] __driver_attach+0x0/0x90
- [<ffffffff803c2b9d>] bus_for_each_dev+0x4d/0x80
- [<ffffffff80292288>] kmem_cache_alloc+0xc8/0xf0
- [<ffffffff803c308e>] bus_add_driver+0xae/0x220
- [<ffffffff803c3946>] driver_register+0x56/0x130
- [<ffffffff80370665>] __pci_register_driver+0x55/0xa0
- [<ffffffff806a8a44>] kernel_init+0x154/0x2e0
- [<ffffffff8020c3c8>] child_rip+0xa/0x12
- [<ffffffff806a88f0>] kernel_init+0x0/0x2e0
- [<ffffffff8020c3be>] child_rip+0x0/0x12
-
-
-Code: 89 05 07 86 41 00 7f 29 48 0f bf c1 48 8d 14 00 48 c1 e0 03 48 29 d0 48 8d 90 20 10 72 80 66 89 32 66 44 89 42 02 48 83 c4 08 c3 <0f> 0b eb fe 66 90 48 c7 c7 38 34 5c 80 31 c0 e8 d2 9f 01 00 66 
-RIP  [<ffffffff8021cfba>] add_pin_to_irq+0x7a/0x90
- RSP <ffff81090e4cbb80>
----[ end trace d31308394cb604eb ]---
-Kernel panic - not syncing: Attempted to kill init!
-Pid: 1, comm: swapper Tainted: G      D   2.6.26-rc1-next-20080505-autotest #1
-
-Call Trace:
- [<ffffffff80237026>] panic+0x86/0x170
- [<ffffffff80237d8e>] printk+0x4e/0x60
- [<ffffffff8023ad31>] do_exit+0x761/0x770
- [<ffffffff8020c871>] oops_end+0xc1/0xd0
- [<ffffffff8020ddf6>] do_invalid_op+0x86/0xa0
- [<ffffffff8021cfba>] add_pin_to_irq+0x7a/0x90
- [<ffffffff803ad724>] vt_console_print+0x224/0x2f0
- [<ffffffff80373f60>] dummycon_dummy+0x0/0x10
- [<ffffffff804ea179>] error_exit+0x0/0x51
- [<ffffffff80394926>] acpi_pci_allocate_irq+0x0/0x4c
- [<ffffffff8021cfba>] add_pin_to_irq+0x7a/0x90
- [<ffffffff8021d04e>] io_apic_set_pci_routing+0x7e/0xb0
- [<ffffffff8021b290>] mp_register_gsi+0xc0/0xe0
- [<ffffffff80219e8a>] acpi_register_gsi+0x6a/0x70
- [<ffffffff80394b50>] acpi_pci_irq_enable+0x14f/0x1f9
- [<ffffffff80394926>] acpi_pci_allocate_irq+0x0/0x4c
- [<ffffffff8036e70a>] do_pci_enable_device+0x4a/0x70
- [<ffffffff8036e781>] __pci_enable_device_flags+0x51/0x60
- [<ffffffff804dac78>] tg3_init_one+0x58/0x15e0
- [<ffffffff8022be40>] default_wake_function+0x0/0x10
- [<ffffffff80231a50>] set_cpus_allowed_ptr+0xd0/0x100
- [<ffffffff803703bf>] pci_device_probe+0xdf/0x130
- [<ffffffff803c3526>] driver_probe_device+0x96/0x1a0
- [<ffffffff803c36b9>] __driver_attach+0x89/0x90
- [<ffffffff803c3630>] __driver_attach+0x0/0x90
- [<ffffffff803c2b9d>] bus_for_each_dev+0x4d/0x80
- [<ffffffff80292288>] kmem_cache_alloc+0xc8/0xf0
- [<ffffffff803c308e>] bus_add_driver+0xae/0x220
- [<ffffffff803c3946>] driver_register+0x56/0x130
- [<ffffffff80370665>] __pci_register_driver+0x55/0xa0
- [<ffffffff806a8a44>] kernel_init+0x154/0x2e0
- [<ffffffff8020c3c8>] child_rip+0xa/0x12
- [<ffffffff806a88f0>] kernel_init+0x0/0x2e0
- [<ffffffff8020c3be>] child_rip+0x0/0x12
-
--- 
-Thanks & Regards,
-Kamalesh Babulal,
-Linux Technology Center,
-IBM, ISTL.
+	Arnd <><
