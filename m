@@ -1,53 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755955AbYEED2z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754850AbYEEDnW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755955AbYEED2z (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 May 2008 23:28:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751571AbYEED2p
+	id S1754850AbYEEDnW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 May 2008 23:43:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754322AbYEEDmy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 May 2008 23:28:45 -0400
-Received: from ns2.suse.de ([195.135.220.15]:45999 "EHLO mx2.suse.de"
+	Sun, 4 May 2008 23:42:54 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:52480 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751565AbYEED2o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 May 2008 23:28:44 -0400
-Date: Mon, 5 May 2008 05:28:43 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Justin Mattock <justinmattock@gmail.com>
-Cc: Jiri Slaby <jirislaby@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: nopage mm.h
-Message-ID: <20080505032843.GA14947@wotan.suse.de>
-References: <dd18b0c30805031629x5f570b97q43f110b228054a28@mail.gmail.com> <481D68E0.1040608@gmail.com> <dd18b0c30805040912l2d12115bi3987d8a5ed0372bf@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <dd18b0c30805040912l2d12115bi3987d8a5ed0372bf@mail.gmail.com>
-User-Agent: Mutt/1.5.9i
+	id S1754068AbYEEDmy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 May 2008 23:42:54 -0400
+Date: Sun, 4 May 2008 23:42:46 -0400
+From: Ulrich Drepper <drepper@redhat.com>
+Message-Id: <200805050342.m453gkv3029811@devserv.devel.redhat.com>
+To: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: [PATCH 00/18] flag parameters
+Cc: akpm@linux-foundation.org, davidel@xmailserver.org, mtk.manpages@gmail.com,
+       torvalds@linux-foundation.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, May 04, 2008 at 04:12:49PM +0000, Justin Mattock wrote:
-> On Sun, May 4, 2008 at 7:42 AM, Jiri Slaby <jirislaby@gmail.com> wrote:
-> > Justin Mattock napsal(a):
-> >
-> > > Hello; I have a question about the nopage function that was removed in
-> > > the kernel.
-> > > What would be the best way for me to build a module that has a nopage
-> > > funtion in it?
-> > >
-> >
-> >  use .fault instead
-> >
-> Hello thanks for the response, I'll have a look into that. The problem
-> I'm confronted with right now is the module is not going to
-> install due to it being a non-GPL module. After doing some reading I
-> was unawre that the kernel was going GPL-only in 2008, so with that in
-> mind I need to comply with the regulations. So the question I have now
-> is: Is there a module that is GPL approved that will give me 3D for
-> the macbook pro. And also recover from suspend?
+This series replaces the individual patches I sent out before.  They
+introduce changes for all the file descriptor-generating syscalls which
+do not have a flags parameter (or where it is not handled).
 
-Hopefully the driver vendor should provide an update soon. Otherwise,
-possibly you could patch back in the .nopage stuff? (It is just a
-single commit which does nothing but remove nopage, try reverting it).
+I think I addressed all the comments people made on the previous patches.
+New in this series is support for pipe and inotify_init.  These are
+straight-forward extensions like the rest.  Both require new userlevel
+interfaces, though.  We need new userlevel interfaces for:
 
+ - paccept
+ - epoll_create2
+ - dup3
+ - pipe2
+ - inotify_init1
 
+We do /not/ need new interfaces for
+
+ - signalfd4
+ - eventfd2
+ - timerfd_create
+ - socket
+ - socketpair
+
+These either have flags parameters in the interface exported by glibc
+or (in case of the socket functions) overload a parameter with a bitset.
+
+In addition to support for setting the close-on-exec flag I also added
+support to set the non-blocking mode.  This is how most modern, scalable
+code should work and adding the support comes almost for free.  Support
+to enable non-blocking is not added for dup3 (for obvious reasons)
+and epoll_create2.  For the latter I have not found any support in the
+kernel.  In case I missed something let me know and  I'll add the few
+lines of code.
+
+Each semantic change has a test program.  For archs other than x86 and
+x86-64 you'll have to add the appropriate syscall number.
+
+The patches all apply individually in sequence and the source tree
+remains compilable and runnable.
+
+Regarding the little mapping tables for the flags.  There are multiple
+copies with the same values (for now).  We could play tricks for mergable
+ELF sections to avoid this minimal duplication.
