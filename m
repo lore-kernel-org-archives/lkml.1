@@ -1,72 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761757AbYEESp4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763639AbYEESpj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761757AbYEESp4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 14:45:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762304AbYEESdd
+	id S1763639AbYEESpj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 14:45:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761988AbYEEScL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 14:33:33 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:42217 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1762300AbYEESdb (ORCPT
+	Mon, 5 May 2008 14:32:11 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:38540 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761979AbYEEScJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 14:33:31 -0400
-Date: Mon, 5 May 2008 11:31:28 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Pekka Enberg" <penberg@cs.helsinki.fi>
-Cc: linux-next@vger.kernel.org, sfrench@us.ibm.com, swhiteho@redhat.com,
-       stefanr@s5r6.in-berlin.de, jeff@garzik.org, ralf@linux-mips.org,
-       drzeus-list@drzeus.cx, jack@ucw.cz, cbou@mail.ru, jens.axboe@oracle.com,
-       ericvh@gmail.com, wim@iguana.be, chris@zankel.net, nico@cam.org,
-       clameter@sgi.com, ezk@cs.sunysb.edu, linux-kernel@vger.kernel.org
-Subject: Re: git trees which are not yet in linux-next
-Message-Id: <20080505113128.d68863a2.akpm@linux-foundation.org>
-In-Reply-To: <84144f020805051116mdbbea01q39f17bce95c95dbb@mail.gmail.com>
-References: <20080502151206.b40f77ea.akpm@linux-foundation.org>
-	<84144f020805051116mdbbea01q39f17bce95c95dbb@mail.gmail.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 5 May 2008 14:32:09 -0400
+Date: Mon, 5 May 2008 14:32:07 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Daniel Walker <dwalker@mvista.com>
+cc: Sven-Thorsten Dietrich <sven@thebigcorporation.com>,
+       Remy Bohmer <linux@bohmer.net>, LKML <linux-kernel@vger.kernel.org>,
+       RT <linux-rt-users@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Jon Masters <jonathan@jonmasters.org>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: Preempt-RT patch for 2.6.25
+In-Reply-To: <1210007084.17132.32.camel@localhost.localdomain>
+Message-ID: <Pine.LNX.4.58.0805051426010.25250@gandalf.stny.rr.com>
+References: <3efb10970805021102n4d87f55eue723786281b06fcb@mail.gmail.com> 
+ <1209753250.25628.34.camel@dd.thebigcorporation.com> 
+ <Pine.LNX.4.58.0805021441340.10615@gandalf.stny.rr.com> 
+ <1209754467.25628.42.camel@dd.thebigcorporation.com> 
+ <Pine.LNX.4.58.0805021502040.10615@gandalf.stny.rr.com> 
+ <1210003265.17132.6.camel@localhost.localdomain> 
+ <Pine.LNX.4.58.0805051210410.23084@gandalf.stny.rr.com> 
+ <1210004376.17132.14.camel@localhost.localdomain> 
+ <Pine.LNX.4.58.0805051240520.25250@gandalf.stny.rr.com>
+ <1210007084.17132.32.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 5 May 2008 21:16:12 +0300
-"Pekka Enberg" <penberg@cs.helsinki.fi> wrote:
 
-> Hi Andrew,
-> 
-> On Sat, May 3, 2008 at 1:12 AM, Andrew Morton <akpm@linux-foundation.org> wrote:
-> >  Guys, could you please prepare a tree for Stephen and send the details
-> >  over to him?  Please Cc me also.
+On Mon, 5 May 2008, Daniel Walker wrote:
+
+>
+> That's really the point, you should have started with my version. I
+> released my changes long before the 2.6.25 release.
+
+Sorry Daniel but you never proved to me that your version didn't break
+anything.  I'm not about to start with something that throws out all the
+archs, espically when Thomas has a port of another arch ready for me.
+
+
+>
+> > >
+> > > Bisection is also required for mainline integration ..
 > >
-> >  Once this has happened, there should be no need to run a separate for-mm
-> >  branch.  I'll just switch over to using whatever branch linux-next is
-> >  using.
-> 
-> I was looking at preparing a for-next branch for the SLAB tree but I'm
-> not sure I understand the above. For something like the slab
-> allocator, you want as much exposure as possible before asking Linus
-> to pull so I would like to continue to (ab)use -mm for testing as
-> well. But that doesn't seem to fit the linux-next rules at all...
+> > Bisection is required for each element, we don't need it for the entire
+> > tree (atm). If we waste our time making the entire tree fully bisectable,
+> > then it will be a lot of work to maintain that bisectability when we
+> > rewrite entire sections.
+>
+> Bisection is required for everything, every patch. I am giving you a
+> bisect tree, there is no time wasted (only mine)..
 
-You have stuff in your tree which isn't intended for 2.6.27??
+But you still need to show that it didn't brake anything, which you have
+not.
 
-> So what to do here? I don't have a problem with maintaining separate
-> branches for mm and next where the latter is not going to get much
-> action until very late in the release cycle when I'm preparing for the
-> next merge window.
+>
+> I'm not following your logic Steven .. You want bisection , that means
+> you should want to maintain it, and write code in the future which also
+> bisects.
 
-I don't mind, really - just do what you think is best for your subsystem
-and then tell me and Stephen about it.  We'll only notice if you break
-stuff ;)
+I'll admit I would like a bisectable tree, and patches that are submitted
+are bisectable. But the patches are also moved around a bit to get
+the queue ready for mainline. That moving itself can break the
+bisectability of later patches.
 
-So I'd suggest that you have a #for-next which contains material for 2.6.26
-and 2.6.27 and a #for-mm which contains material for 2.6.28+.
+>
+> If someone submits code which doesn't bisect you kick it the same way
+> it's kicked from mainline. That means future patches in -rt are ready
+> for mainline which helps further the goal of mainline integration.
 
-Only problem is, I'd need to generate the #for-next -> #for-mm diff, and
-that particular git operation has been troublesome in the past.
+Patches that come in now are usually simple fixes. Major developments are
+bisectable.
 
-otoh, I think that staging for-2.6.26 and for-2.6.27 material in -mm really
-is reaching far enough into the future, and I'd question the value of
-staging for-2.6.28+ material as well.  I mean, that's half a year away.
+>
+> > I am making it boot with certain parts intergrated. But my goal is not to
+> > have every single patch compile and boot. We'll worry about that when we
+> > need to push a part of the code in. But reality, what is there now, I can
+> > guarantee will not be the code that is pushed when it is ready.
+>
+> What you guarantee to happen in the future is irrelevant .. We want
+> bisection _now_ , not months from now..
+
+Fine, produce your own tree, I'll produce mine.
+
+>
+> Bisection has lots of benefits, it's not just that one stupid
+> requirement mainline has and no one really cares about.
+
+There is some benefits, but one thing you forget about the -rt patch, is
+that there's lots of variables.  A lot of bugs that I found in -rt is not
+about a bad patch, but usually because of the way rt works (preemptible
+spinlocks and interrupts as threads) that cause breakage, and a lot of
+that breakage is from a change in upstream, not the patch series. Having
+it bisectable doesn't always help.
+
+-- Steve
+
