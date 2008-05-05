@@ -1,34 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763549AbYEEXzq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763182AbYEEX6V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763549AbYEEXzq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 19:55:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763372AbYEEXzY
+	id S1763182AbYEEX6V (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 19:58:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753915AbYEEX6N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 19:55:24 -0400
-Received: from lucidpixels.com ([75.144.35.66]:53198 "EHLO lucidpixels.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763354AbYEEXzV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 19:55:21 -0400
-Date: Mon, 5 May 2008 19:55:19 -0400 (EDT)
-From: Justin Piszcz <jpiszcz@lucidpixels.com>
-To: linux-kernel@vger.kernel.org
-Subject: Linux -- Intel (HECI) interface for Linux/status?
-Message-ID: <alpine.DEB.1.10.0805051953270.10199@p34.internal.lan>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
+	Mon, 5 May 2008 19:58:13 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:31401 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753906AbYEEX6N (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 May 2008 19:58:13 -0400
+Subject: Re: x86: Clean up computation of HPET .mult variables
+From: Daniel Walker <dwalker@mvista.com>
+To: "Carlos R. Mafra" <crmafra2@gmail.com>
+Cc: linux-kernel@vger.kernel.org, tglx@linutronix.de,
+       venkatesh.pallipadi@intel.com
+In-Reply-To: <20080505231016.GA29072@beyonder.ift.unesp.br>
+References: <20080505231016.GA29072@beyonder.ift.unesp.br>
+Content-Type: text/plain
+Date: Mon, 05 May 2008 16:58:08 -0700
+Message-Id: <1210031888.17132.85.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-3.fc8) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-http://softwareblogs.intel.com/2007/04/13/intel-me-interface-heci-now-available/
 
-I have had a mobo with the 965 chipset for awhile now, I was curious if 
-there was any update of this patch getting into the kernel / whether it 
-will be ever possible to monitor the chipset temperature / fan speeds / 
-etc?
+On Mon, 2008-05-05 at 20:11 -0300, Carlos R. Mafra wrote:
 
-I know coretemp grabs the CPU temp which is great but it would be nice to 
-see the other sensors' statistics.
+> -	tmp = (u64)hpet_period << HPET_SHIFT;
+> -	do_div(tmp, FSEC_PER_NSEC);
+> -	clocksource_hpet.mult = (u32)tmp;
+> +	clocksource_hpet.mult = div_sc(hpet_period, FSEC_PER_NSEC, HPET_SHIFT);
+>  
 
-Justin.
+There's helper functions that should be used called clocksource_hz2mult
+and one called clocksource_khz2mult. I think they're more accurate than
+using div_sc.
+
+Daniel
+
