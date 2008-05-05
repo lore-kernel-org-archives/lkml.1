@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763518AbYEEWmi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763841AbYEEWm4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763518AbYEEWmi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 18:42:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763134AbYEEWkL
+	id S1763841AbYEEWm4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 18:42:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763197AbYEEWkN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 18:40:11 -0400
-Received: from g4t0015.houston.hp.com ([15.201.24.18]:19948 "EHLO
-	g4t0015.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760888AbYEEWkC (ORCPT
+	Mon, 5 May 2008 18:40:13 -0400
+Received: from g4t0016.houston.hp.com ([15.201.24.19]:45641 "EHLO
+	g4t0016.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760918AbYEEWkE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 18:40:02 -0400
-Message-Id: <20080505223959.789928242@ldl.fc.hp.com>
+	Mon, 5 May 2008 18:40:04 -0400
+Message-Id: <20080505224000.221859052@ldl.fc.hp.com>
 References: <20080505223630.682082986@ldl.fc.hp.com>
 User-Agent: quilt/0.46-1
-Date: Mon, 05 May 2008 16:36:35 -0600
+Date: Mon, 05 May 2008 16:36:37 -0600
 From: Bjorn Helgaas <bjorn.helgaas@hp.com>
 To: Len Brown <lenb@kernel.org>
 Cc: linux-acpi@vger.kernel.org
@@ -26,55 +26,99 @@ Cc: Thomas Renninger <trenn@suse.de>
 Cc: Rene Herman <rene.herman@keyaccess.nl>
 Cc: Jaroslav Kysela <perex@perex.cz>
 Cc: Andrew Morton <akpm@linux-foundation.org>
-Subject: [patch 5/8] PNP: add pnp_resource_type_name() helper function
-Content-Disposition: inline; filename=pnp-add-resource-type-name
+Subject: [patch 7/8] PNP: remove ratelimit on add resource failures
+Content-Disposition: inline; filename=pnp-remove-warning-ratelimit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds a "pnp_resource_type_name(struct resource *)" that
-returns the string resource type.  This will be used by the sysfs
-"show resources" function and the debug resource dump function.
+We used to have a fixed-size resource table.  If a device had
+twenty resources when the table only had space for ten, we didn't
+need ten warnings, so we added the ratelimit.
+
+Now that we can dynamically allocate new resources, we should
+only get failures if the allocation fails.  That should be
+rare enough that we don't need to ratelimit the messages.
 
 Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
 
-Index: work10/drivers/pnp/base.h
+Index: work10/drivers/pnp/resource.c
 ===================================================================
---- work10.orig/drivers/pnp/base.h	2008-05-02 14:28:40.000000000 -0600
-+++ work10/drivers/pnp/base.h	2008-05-05 09:38:56.000000000 -0600
-@@ -42,6 +42,7 @@ int pnp_check_mem(struct pnp_dev *dev, s
- int pnp_check_irq(struct pnp_dev *dev, struct resource *res);
- int pnp_check_dma(struct pnp_dev *dev, struct resource *res);
- 
-+char *pnp_resource_type_name(struct resource *res);
- void dbg_pnp_show_resources(struct pnp_dev *dev, char *desc);
- 
- void pnp_init_resource(struct resource *res);
-Index: work10/drivers/pnp/support.c
-===================================================================
---- work10.orig/drivers/pnp/support.c	2008-05-02 11:18:54.000000000 -0600
-+++ work10/drivers/pnp/support.c	2008-05-05 09:38:57.000000000 -0600
-@@ -52,6 +52,21 @@ void pnp_eisa_id_to_string(u32 id, char 
- 	str[7] = '\0';
- }
- 
-+char *pnp_resource_type_name(struct resource *res)
-+{
-+	switch (pnp_resource_type(res)) {
-+	case IORESOURCE_IO:
-+		return "io";
-+	case IORESOURCE_MEM:
-+		return "mem";
-+	case IORESOURCE_IRQ:
-+		return "irq";
-+	case IORESOURCE_DMA:
-+		return "dma";
-+	}
-+	return NULL;
-+}
-+
- void dbg_pnp_show_resources(struct pnp_dev *dev, char *desc)
+--- work10.orig/drivers/pnp/resource.c	2008-05-05 11:38:16.000000000 -0600
++++ work10/drivers/pnp/resource.c	2008-05-05 11:49:05.000000000 -0600
+@@ -537,15 +537,10 @@ struct pnp_resource *pnp_add_irq_resourc
  {
- #ifdef DEBUG
+ 	struct pnp_resource *pnp_res;
+ 	struct resource *res;
+-	static unsigned char warned;
+ 
+ 	pnp_res = pnp_new_resource(dev);
+ 	if (!pnp_res) {
+-		if (!warned) {
+-			dev_err(&dev->dev, "can't add resource for IRQ %d\n",
+-				irq);
+-			warned = 1;
+-		}
++		dev_err(&dev->dev, "can't add resource for IRQ %d\n", irq);
+ 		return NULL;
+ 	}
+ 
+@@ -563,15 +558,10 @@ struct pnp_resource *pnp_add_dma_resourc
+ {
+ 	struct pnp_resource *pnp_res;
+ 	struct resource *res;
+-	static unsigned char warned;
+ 
+ 	pnp_res = pnp_new_resource(dev);
+ 	if (!pnp_res) {
+-		if (!warned) {
+-			dev_err(&dev->dev, "can't add resource for DMA %d\n",
+-				dma);
+-			warned = 1;
+-		}
++		dev_err(&dev->dev, "can't add resource for DMA %d\n", dma);
+ 		return NULL;
+ 	}
+ 
+@@ -590,16 +580,12 @@ struct pnp_resource *pnp_add_io_resource
+ {
+ 	struct pnp_resource *pnp_res;
+ 	struct resource *res;
+-	static unsigned char warned;
+ 
+ 	pnp_res = pnp_new_resource(dev);
+ 	if (!pnp_res) {
+-		if (!warned) {
+-			dev_err(&dev->dev, "can't add resource for IO "
+-				"%#llx-%#llx\n",(unsigned long long) start,
+-				(unsigned long long) end);
+-			warned = 1;
+-		}
++		dev_err(&dev->dev, "can't add resource for IO %#llx-%#llx\n",
++			(unsigned long long) start,
++			(unsigned long long) end);
+ 		return NULL;
+ 	}
+ 
+@@ -619,16 +605,12 @@ struct pnp_resource *pnp_add_mem_resourc
+ {
+ 	struct pnp_resource *pnp_res;
+ 	struct resource *res;
+-	static unsigned char warned;
+ 
+ 	pnp_res = pnp_new_resource(dev);
+ 	if (!pnp_res) {
+-		if (!warned) {
+-			dev_err(&dev->dev, "can't add resource for MEM "
+-				"%#llx-%#llx\n",(unsigned long long) start,
+-				(unsigned long long) end);
+-			warned = 1;
+-		}
++		dev_err(&dev->dev, "can't add resource for MEM %#llx-%#llx\n",
++			(unsigned long long) start,
++			(unsigned long long) end);
+ 		return NULL;
+ 	}
+ 
 
 -- 
