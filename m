@@ -1,65 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756047AbYEEEm6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755285AbYEEEoT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756047AbYEEEm6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 00:42:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752613AbYEEEmt
+	id S1755285AbYEEEoT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 00:44:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752029AbYEEEoA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 00:42:49 -0400
-Received: from rv-out-0506.google.com ([209.85.198.233]:44278 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752489AbYEEEms (ORCPT
+	Mon, 5 May 2008 00:44:00 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:46957 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751759AbYEEEn7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 00:42:48 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=XQ+sZAYHBSGQftuqVGfug2Ge64cRFC8j7KJ9FOJLaz1vXDVbb5MrNipnVR3+8O9VXkDZRHYRUwQbm1oTwC+uiCg+KmEqTyMEuxjzRuIwEsNLrFhlFUarhRxkiuiIroLePRgvDaepBtR8AbHOmAJMiCy3EACNVd/defeRFg25qtI=
-Message-ID: <44c63dc40805042142k2e5bc366mffa9e0a22fbe94c9@mail.gmail.com>
-Date: Mon, 5 May 2008 13:42:47 +0900
-From: "minchan Kim" <barrioskmc@gmail.com>
-To: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>
-Subject: Re: [-mm][PATCH 3/5] change function prototype of shrink_zone()
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>
-In-Reply-To: <20080504215718.8F5B.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	Mon, 5 May 2008 00:43:59 -0400
+X-AuthUser: davidel@xmailserver.org
+Date: Sun, 4 May 2008 21:43:57 -0700 (PDT)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Ulrich Drepper <drepper@redhat.com>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       mtk.manpages@gmail.com, Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH 05/18] flag parameters: signalfd
+In-Reply-To: <200805050342.m453gkRB029826@devserv.devel.redhat.com>
+Message-ID: <Pine.LNX.4.64.0805042143080.8307@alien.or.mcafeemobile.com>
+References: <200805050342.m453gkRB029826@devserv.devel.redhat.com>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080504201343.8F52.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-	 <20080504215718.8F5B.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->  -static unsigned long shrink_zone(int priority, struct zone *zone,
->  -                               struct scan_control *sc)
->  +static int shrink_zone(int priority, struct zone *zone,
->  +                      struct scan_control *sc)
->   {
->         unsigned long nr_active;
->         unsigned long nr_inactive;
->  @@ -1236,8 +1239,9 @@ static unsigned long shrink_zone(int pri
->                 }
->         }
->
->  +       sc->nr_reclaimed += nr_reclaimed;
->         throttle_vm_writeout(sc->gfp_mask);
->  -       return nr_reclaimed;
->  +       return 0;
->   }
+On Sun, 4 May 2008, Ulrich Drepper wrote:
 
-I am not sure this is right.
-I might be wrong if this patch is depended on another patch.
+> This patch adds the new signalfd4 syscall.  It extends the old signalfd
+> syscall by one parameter which is meant to hold a flag value.  In this
+> patch the only flag support is SFD_CLOEXEC which causes the close-on-exec
+> flag for the returned file descriptor to be set.
+> 
+> A new flag SFD_CLOEXEC is used instead of reusing O_CLOEXEC to prevent
+> exhaustion of the int bit field in case we need more flags.
+> 
+> The following test must be adjusted for architectures other than x86 and
+> x86-64 and in case the syscall numbers changed.
 
-As I see, shrink_zone always return 0 in your patch.
+> Signed-off-by: Ulrich Drepper <drepper@redhat.com>
 
-If it is right, I think that return value is useless. It is better
-that we change function return type to "void"
-Also, we have to change functions that call shrink_zone properly. ex)
-balance_pgdat, __zone_reclaim
-That functions still use number of shrink_zone's reclaim page
+Acked-by: Davide Libenzi <davidel@xmailserver.org>
 
--- 
-Thanks,
-barrios
+
+
+- Davide
+
+
