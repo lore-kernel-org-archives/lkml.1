@@ -1,54 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756183AbYEEDTX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755955AbYEED2z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756183AbYEEDTX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 May 2008 23:19:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750895AbYEEDTK
+	id S1755955AbYEED2z (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 May 2008 23:28:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751571AbYEED2p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 May 2008 23:19:10 -0400
-Received: from 136-022.dsl.labridge.com ([206.117.136.22]:3142 "EHLO
-	mail.perches.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1750989AbYEEDTJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 May 2008 23:19:09 -0400
-Subject: Re: [PATCH -mm] __ratelimit rewrite
-From: Joe Perches <joe@perches.com>
-To: Dave Young <hidave.darkstar@gmail.com>
-Cc: akpm@linux-foundation.org, paulmck@us.ibm.com, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <a8e1da0805041958k30c03e20r6dd88f4135d6e5fe@mail.gmail.com>
-References: <20080504070738.GA11832@darkstar.te-china.tietoenator.com>
-	 <1209912447.16966.42.camel@localhost>
-	 <a8e1da0805041837q4a5264c6l7bc23dce1d3282fd@mail.gmail.com>
-	 <1209954305.13011.1.camel@localhost>
-	 <a8e1da0805041958k30c03e20r6dd88f4135d6e5fe@mail.gmail.com>
-Content-Type: text/plain
-Date: Sun, 04 May 2008 19:52:54 -0700
-Message-Id: <1209955974.13011.10.camel@localhost>
+	Sun, 4 May 2008 23:28:45 -0400
+Received: from ns2.suse.de ([195.135.220.15]:45999 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751565AbYEED2o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 May 2008 23:28:44 -0400
+Date: Mon, 5 May 2008 05:28:43 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Justin Mattock <justinmattock@gmail.com>
+Cc: Jiri Slaby <jirislaby@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: nopage mm.h
+Message-ID: <20080505032843.GA14947@wotan.suse.de>
+References: <dd18b0c30805031629x5f570b97q43f110b228054a28@mail.gmail.com> <481D68E0.1040608@gmail.com> <dd18b0c30805040912l2d12115bi3987d8a5ed0372bf@mail.gmail.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3-1.2mdv2008.0 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <dd18b0c30805040912l2d12115bi3987d8a5ed0372bf@mail.gmail.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-05-05 at 10:58 +0800, Dave Young wrote:
-> On Mon, May 5, 2008 at 10:25 AM, Joe Perches <joe@perches.com> wrote:
-> > On Mon, 2008-05-05 at 09:37 +0800, Dave Young wrote:
-> >  > >  I think your changes should then be done in
-> >  > >  printk.h not creating a new ratelimit.h.
-> >  > IMO ratelimit is not just for printk use now, so a standalone head
-> >  > file is necessary.
-> >  What other uses would ratelimit have?
-> ratelimit is a general function,  another user of it is
-> WARN_ON_RATELIMIT in this patch. It could have other usage in future.
+On Sun, May 04, 2008 at 04:12:49PM +0000, Justin Mattock wrote:
+> On Sun, May 4, 2008 at 7:42 AM, Jiri Slaby <jirislaby@gmail.com> wrote:
+> > Justin Mattock napsal(a):
+> >
+> > > Hello; I have a question about the nopage function that was removed in
+> > > the kernel.
+> > > What would be the best way for me to build a module that has a nopage
+> > > funtion in it?
+> > >
+> >
+> >  use .fault instead
+> >
+> Hello thanks for the response, I'll have a look into that. The problem
+> I'm confronted with right now is the module is not going to
+> install due to it being a non-GPL module. After doing some reading I
+> was unawre that the kernel was going GPL-only in 2008, so with that in
+> mind I need to comply with the regulations. So the question I have now
+> is: Is there a module that is GPL approved that will give me 3D for
+> the macbook pro. And also recover from suspend?
 
-You put WARN_ON_RATELIMIT in bug.h right?
-WARN_ON in bug.h is a printk
-
-printk.h should #include <asm/bug.h>
-kernel.h should not include that file.
-
-What non print related function could be served by ratelimit?
-
+Hopefully the driver vendor should provide an update soon. Otherwise,
+possibly you could patch back in the .nopage stuff? (It is just a
+single commit which does nothing but remove nopage, try reverting it).
 
 
