@@ -1,59 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760095AbYEEP2x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756180AbYEEPcz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760095AbYEEP2x (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 11:28:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756857AbYEEP2n
+	id S1756180AbYEEPcz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 11:32:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750940AbYEEPcq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 11:28:43 -0400
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:42141 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756069AbYEEP2m (ORCPT
+	Mon, 5 May 2008 11:32:46 -0400
+Received: from testure.choralone.org ([194.9.77.134]:38741 "EHLO
+	testure.choralone.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750729AbYEEPcq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 11:28:42 -0400
-Subject: Re: [PATCH] Fusion MPT: Convert inactive_list_mutex in a mutex
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Matthias Kaehlcke <matthias@kaehlcke.net>
-Cc: Eric.Moore@lsi.com, support@lsi.com, DL-MPTFusionLinux@lsi.com,
-       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-In-Reply-To: <20080505152153.GD11462@traven>
-References: <20080504180544.GN20036@traven>
-	 <1209997566.3163.10.camel@localhost.localdomain>
-	 <20080505152153.GD11462@traven>
-Content-Type: text/plain
-Date: Mon, 05 May 2008 10:28:37 -0500
-Message-Id: <1210001317.3163.15.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-4.fc8) 
-Content-Transfer-Encoding: 7bit
+	Mon, 5 May 2008 11:32:46 -0400
+Date: Mon, 5 May 2008 11:32:30 -0400
+From: Dave Jones <davej@codemonkey.org.uk>
+To: Jan Engelhardt <jengelh@medozas.de>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org,
+       Jon Masters <jonathan@jonmasters.org>, Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: changeset: Make forced module loading optional
+Message-ID: <20080505153230.GA25704@codemonkey.org.uk>
+Mail-Followup-To: Dave Jones <davej@codemonkey.org.uk>,
+	Jan Engelhardt <jengelh@medozas.de>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org,
+	Jon Masters <jonathan@jonmasters.org>,
+	Sam Ravnborg <sam@ravnborg.org>
+References: <200805051455.02723.rusty@rustcorp.com.au> <alpine.LFD.1.10.0805042159230.32269@woody.linux-foundation.org> <alpine.LNX.1.10.0805050835450.11757@fbirervta.pbzchgretzou.qr>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LNX.1.10.0805050835450.11757@fbirervta.pbzchgretzou.qr>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-05-05 at 17:21 +0200, Matthias Kaehlcke wrote:
-> El Mon, May 05, 2008 at 09:26:06AM -0500 James Bottomley ha dit:
-> 
-> > On Sun, 2008-05-04 at 20:05 +0200, Matthias Kaehlcke wrote:
-> > > MPT Fusion: The semaphore inactive_list_mutex is used as a
-> > > mutex. Convert it to the mutex API
-> > > 
-> > > Signed-off-by: Matthias Kaehlcke <matthias@kaehlcke.net>
-> > 
-> > Um, it would at least vaguely help if you checked the tree; even
-> > actually trying to apply the patch would have told you.  I know the
-> > email notifications from scsi misc can sometimes get lost.
-> > 
-> > commit ed5f606fef22e515331aab4c1f927775cf4af70e
-> > Author: Matthias Kaehlcke <matthias@kaehlcke.net>
-> > Date:   Sun Mar 9 12:16:27 2008 +0100
-> > 
-> >     [SCSI] mpt fusion: convert inactive_list_mutex to a mutex
-> 
-> apologizes for my ignorance, which tree exactly should i have checked
-> for this patch? is it linux/kernel/git/jejb/scsi-misc-2.6.git? 
+On Mon, May 05, 2008 at 08:43:06AM +0200, Jan Engelhardt wrote:
+ 
+ > So it's like:
+ > 	<hack hack hack>
+ > 	make modules_install
+ > 	cp arch/x86/boot/bzImage /boot/mykernel
+ > 	cp System.map /boot/System.map-2.6.26.1
+ > 	mkinitrd -i /boot/myinitrd -k /boot/mykernel # suse, fedora might slightly different
 
-It's in the released kernel and has been there for the past two weeks.
+For Fedora (and many other distros), you can replace the last three lines with 'make install'
+It'll do everything. Construct the initrd. Install it & the vmlinuz, point grub.conf at it. etc.
 
-James
+	Dave
 
-
+-- 
+http://www.codemonkey.org.uk
