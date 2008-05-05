@@ -1,129 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762723AbYEEWM3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762750AbYEEWQE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762723AbYEEWM3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 18:12:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755317AbYEEWMQ
+	id S1762750AbYEEWQE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 18:16:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753266AbYEEWPx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 18:12:16 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:28154 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754629AbYEEWMP (ORCPT
+	Mon, 5 May 2008 18:15:53 -0400
+Received: from fg-out-1718.google.com ([72.14.220.156]:37045 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752128AbYEEWPw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 18:12:15 -0400
-Subject: Re: Preempt-RT patch for 2.6.25
-From: Daniel Walker <dwalker@mvista.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Steven Rostedt <rostedt@goodmis.org>,
-       Sven-Thorsten Dietrich <sven@thebigcorporation.com>,
-       Remy Bohmer <linux@bohmer.net>, LKML <linux-kernel@vger.kernel.org>,
-       RT <linux-rt-users@vger.kernel.org>,
-       Jon Masters <jonathan@jonmasters.org>, Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <alpine.LFD.1.10.0805052107270.3318@apollo.tec.linutronix.de>
-References: <3efb10970805021102n4d87f55eue723786281b06fcb@mail.gmail.com>
-	 <1209753250.25628.34.camel@dd.thebigcorporation.com>
-	 <Pine.LNX.4.58.0805021441340.10615@gandalf.stny.rr.com>
-	 <1209754467.25628.42.camel@dd.thebigcorporation.com>
-	 <Pine.LNX.4.58.0805021502040.10615@gandalf.stny.rr.com>
-	 <1210003265.17132.6.camel@localhost.localdomain>
-	 <Pine.LNX.4.58.0805051210410.23084@gandalf.stny.rr.com>
-	 <1210004376.17132.14.camel@localhost.localdomain>
-	 <Pine.LNX.4.58.0805051240520.25250@gandalf.stny.rr.com>
-	 <1210007084.17132.32.camel@localhost.localdomain>
-	 <Pine.LNX.4.58.0805051426010.25250@gandalf.stny.rr.com>
-	 <1210013938.17132.55.camel@localhost.localdomain>
-	 <alpine.LFD.1.10.0805052107270.3318@apollo.tec.linutronix.de>
-Content-Type: text/plain
-Date: Mon, 05 May 2008 15:12:12 -0700
-Message-Id: <1210025532.17132.82.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-3.fc8) 
+	Mon, 5 May 2008 18:15:52 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=kbm+/XhbcpamNri4X19MGlxtX2yG6pDz19p/8iyhhgIERjb4Y1LuKtNFZK0d2y3wqfFksRyz6dFEudVifskdER0tjA3YsXjgs6EDdnunFQVvh8Uf9E+WSMLFI6ODmr8AhMctdjeIOAoKQ7FEbDSDSjqoQICmr6QCbHba7IsjmW8=
+Message-ID: <30c6373b0805051515t5ffe1b95s77a27588d9dd0e21@mail.gmail.com>
+Date: Mon, 5 May 2008 15:15:50 -0700
+From: "Kevin Burton" <burton@tailrank.com>
+To: "Rik van Riel" <riel@redhat.com>
+Subject: Re: Ability to limit or disable page caching?
+Cc: "FD Cami" <francois.cami@free.fr>, linux-kernel@vger.kernel.org
+In-Reply-To: <20080505180828.27acf471@cuia.bos.redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <30c6373b0805050012o505c0540i116a31bc1ab9ce9f@mail.gmail.com>
+	 <20080505131607.5556b1f2@olorin>
+	 <30c6373b0805051134m634efbbdn45167c1eae29df4a@mail.gmail.com>
+	 <20080505212831.22371732@olorin>
+	 <30c6373b0805051242o2f38f0a3v62bd43f4fa01559e@mail.gmail.com>
+	 <20080505164446.2ec9a543@cuia.bos.redhat.com>
+	 <30c6373b0805051400jebd4132ob23ec38bdf1ccb93@mail.gmail.com>
+	 <20080505180828.27acf471@cuia.bos.redhat.com>
+X-Google-Sender-Auth: c05f3b82c1e7c0ba
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Note that this is part of a larger thread:
 
-On Mon, 2008-05-05 at 23:01 +0200, Thomas Gleixner wrote:
-> Dan
-> Dropping architectures just for the sake of bisectability does more
-> harm than good.
-> 
-> We never dropped architecture support due to a rewrite in course of
-> the whole preempt-rt series. We never dropped architecture support
-> when we made parts of the code ready for upstream and made it
-> bisectable.
-> 
-> Keeping the architecture ports even in a maybe disfunctional state in
-> the queue is important as we move them along and make the obvious
-> changes to them so anyone interested to bring them up to date has not
-> to start from scratch again, which is a major PITA (we just did one
-> from scratch)
+http://blogs.smugmug.com/don/2008/05/01/mysql-and-the-linux-swap-problem/
 
-In open source code never dies. So I'm not sure where this "From
-scratch" stuff is coming from .. 
+...
 
-I've done ports from scratch and it's not that bad.. Not sure what your
-porting too.. It would also be a lot easier to do an arch port piece by
-piece under a bisectable tree.
+and my older post on the subject:
 
-I think dropping ports (temporarily) is perfectly reasonable. There is
-no reason to hamper forward development just to keep old architecture
-ports in the tree.
+http://feedblog.org/2007/09/29/using-o_direct-on-linux-and-innodb-to-fix-swap-insanity/
 
-> With half of the functionality dropped, renames along the line so it
-> can not be verified whether it ends up to be the same code as it was
-> before. If you really want to make it bisectable then apply the
-> necessary rename patches to the queue first, make sure that it does
-> not result in a code change and then refactor the whole thing.
+mlockall DOES help solve this problem but then MySQL is forced to stay
+in memory.
 
-I just review code and boot it in various ways. I don't think binary
-compatibility is needed for this. For most code that exists, and most
-cases in open source it's not needed either.
+If you have too many connections to the server and it mallocs more
+memory and the system can't page anything else it will OOM kill your
+mysqld process.
 
-> We have been there before. kernel development does not follow the "we
-> want _now_" principle at all. Have you ever tried to yell at Linus "we
-> want XYZ _now_" ? If you decide to try it, please keep me on CC - I
-> want to enjoy the show.
+It's MUCH better to have MySQL dip 100MB into swap first....
 
-Kernel development is "What is available now?" not what is avaiable in
-the future.
+Kevin
 
-If you want to reject code you better have a reason other than "We're
-going to make some new code for that (some time in the future) sorry."
+On Mon, May 5, 2008 at 3:08 PM, Rik van Riel <riel@redhat.com> wrote:
+> On Mon, 5 May 2008 14:00:51 -0700
+> "Kevin Burton" <burton@tailrank.com> wrote:
+>
+>> > I have no such tunable in my code (yet), because I would like the
+>> > kernel to do the right thing automatically.  I will post a 2.6.25 based
+>> > kernel RPM for Fedora 9 soon with the split LRU patch series applied.
+>>
+>> With the same patch you linked to above?  No new code..
+>
+> Same patch, rediffed against 2.6.25.
+>
+>> > If you feel like testing/breaking it, I would be interested to see if
+>> > it does indeed do the right thing for your workload or if it needs more
+>> > tuning.
+>>
+>> Well we'd be deploying it in product :).. what's the ETA into making
+>> it into the official kernel?
+>
+> The code seems to work right. What is left now is convincing Andrew Morton
+> and Linus Torvalds to merge it.
+>
+> Getting good test results with reasonable workloads where the vanilla
+> kernel does the wrong thing (eg. your workload) is probably the most
+> important factor for Andrew and Linus in deciding whether or not to
+> merge the code.
+>
+> --
+> All Rights Reversed
+>
 
-I'd like to hear Linus come out and say, "Sorry Thomas we can't include
-your HRT cause we're getting a newer HRT in three years, so sorry about
-that."
 
-I'm not the one that suffers if Steven doesn't include some sort of
-bisect change, the users suffer, development suffers.
 
-> Sure, we are happy to trade a queue which has major updates of code
-> close to mainline integration and has preserved the existing
-> architecture support for some bisectable artifact.
-> 
-> We went through this kind of discussion several times in the past and
-> you still seem to believe that you can impose your POV on project
-> maintainers.
-> 
-> Again, that's not the way it works. 
-
-Sure it is.. When a maintainer makes a mistake I better speak up, or
-they're gonna make a mess of things .. That's a huge chunk of the
-process.
-
-> Exactly, for the majority of problems with preempt-rt, reporting the
-> bug and waiting for the person who is able to decode it is the only
-> choice. The hard to decode problems like subtle races are not
-> decodable by bisection.
-> 
-> Bisectable problems are pretty rare, because most of the problems are
-> with PREEMPT_RT, which is a disruptive new feature that only gets
-> activated late in the queue.
-
-I don't agree with that .. We don't have bisection you can't even back
-up the claim .. Had bisection been an option I'm sure it would have been
-used.
-
-Daniel
-
+-- 
+Founder/CEO Tailrank.com
+Location: San Francisco, CA
+AIM/YIM: sfburtonator
+Skype: burtonator
+Work: http://spinn3r.com and http://tailrank.com
+Blog: http://feedblog.org
+Cell: 415-637-8078
+Fax: 1-415-358-419 PIN: 0092
