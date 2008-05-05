@@ -1,53 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757271AbYEEUBD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760035AbYEEUFs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757271AbYEEUBD (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 16:01:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753495AbYEEUAx
+	id S1760035AbYEEUFs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 16:05:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753654AbYEEUFk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 16:00:53 -0400
-Received: from mail.skyusermail.com ([77.240.11.49]:2961 "EHLO
-	mail.skyusermail.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752347AbYEEUAw (ORCPT
+	Mon, 5 May 2008 16:05:40 -0400
+Received: from wa-out-1112.google.com ([209.85.146.176]:14039 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751057AbYEEUFj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 16:00:52 -0400
-Subject: Re: 2.6.26-rc1-git1 -- trying to get vblank count for disabled
-	pipe 0
-From: Steven J Newbury <steve@snewbury.org.uk>
-To: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@tungstengraphics.com>
-Cc: David Airlie <airlied@linux.ie>,
-       DRI for Linux <dri-devel@lists.sourceforge.net>,
-       Miles Lane <miles.lane@gmail.com>, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <1210013470.3238.6.camel@infinity>
-References: <481E5EE6.6090503@gmail.com>
-	 <1209975302.26326.263.camel@thor.sulgenrain.local>
-	 <1209991916.24777.8.camel@infinity>  <1210013470.3238.6.camel@infinity>
+	Mon, 5 May 2008 16:05:39 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=KRDptwxnn8zjzCllhtz6dIMatt6b95rLqZNwxjVOLt0uin1oET5B8sa70nhbii7SJXDfSalu+IQMLt6SgWZbeJVv5EhHpT6MFwHtKw0KU19OTO4I3mPMZFaKO6OU24KUs0Ip6ti5G2iEked8ZorHHmY5y2pUd1T3HCKzcSIjUMY=
+Message-ID: <2f11576a0805051305q9a79558rf26eb80b73b5101c@mail.gmail.com>
+Date: Tue, 6 May 2008 05:05:39 +0900
+From: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>
+To: "Adrian Bunk" <bunk@kernel.org>
+Subject: Re: [2.6 patch] make mm/rmap.c:anon_vma_cachep static
+Cc: "Rik van Riel" <riel@redhat.com>, linux-kernel@vger.kernel.org,
+       "Andrew Morton" <akpm@linux-foundation.org>
+In-Reply-To: <20080505182712.GI17139@cs181133002.pp.htv.fi>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Date: Mon, 05 May 2008 19:59:50 +0100
-Message-Id: <1210013990.13180.2.camel@infinity>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1.1 
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080505182712.GI17139@cs181133002.pp.htv.fi>
+X-Google-Sender-Auth: ae0d9eb5a4cb503c
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-05-05 at 19:51 +0100, Steven J Newbury wrote:
-> On Mon, 2008-05-05 at 13:51 +0100, Steven J Newbury wrote:
-> > On Mon, 2008-05-05 at 10:15 +0200, Michel Dänzer wrote:
-> > > On Sun, 2008-05-04 at 21:12 -0400, Miles Lane wrote:
-> [snip]
-> > > Note that some of these are for pipe 1 as well as pipe 0. Does the
-> > > problem only occur for one of them?
-> > Miles isn't alone, I also get 'trying to get vblank count for disabled
-> > pipe 0' (GM965).  vblank interrupts were previously not working for me,
-> > but they are now.  I'm not sure what's changed. 
-> OK I know what changed.  The DRM in the kernel has working vblank but it
-> still produces the "disabled" warning in the kernel log.  git DRM
-> produces ~1 fps with sync to vblank enabled.  Seems the vblank interrupt
-> isn't getting enabled in the git DRM, but the warning message is
-> actually unrelated.
-Actually I had a patch from my previous attempt to fix this still
-applied to my git-drm.  Now reverted git-drm is behaving identically to
-the linux kernel DRM.  vsync is working but the disabled pipe warning is
-produced.
+> This patch makes the needlessly global anon_vma_cachep static.
+>
+>  Signed-off-by: Adrian Bunk <bunk@kernel.org>
+>
+>  ---
+>
+>  This patch has been sent on:
+>  - 22 Apr 2008
+>  - 14 Apr 2008
+>  - 31 Mar 2008
+>  - 25 Feb 2008
 
+definitely right change, I think.
+I wonder why this patch is needed 5 times posting.
+
+       Reviewed-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
