@@ -1,53 +1,173 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757209AbYEEHNN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756070AbYEEHTq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757209AbYEEHNN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 03:13:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753101AbYEEHM6
+	id S1756070AbYEEHTq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 03:19:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752931AbYEEHTf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 03:12:58 -0400
-Received: from fg-out-1718.google.com ([72.14.220.156]:35328 "EHLO
+	Mon, 5 May 2008 03:19:35 -0400
+Received: from fg-out-1718.google.com ([72.14.220.153]:49381 "EHLO
 	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752343AbYEEHM5 (ORCPT
+	with ESMTP id S1752267AbYEEHTe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 03:12:57 -0400
+	Mon, 5 May 2008 03:19:34 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition:x-google-sender-auth;
-        b=ezH3T39EcqAAjgJ4CFD3REExTinnXOCMif91uYXaj1kmjSkT+LLzCePx1s2wtyTKOWo9HOWQNHEDb6sNZSg0E7KuIRaLUcW11Fla0ByTjdrzVCmwBDA8HMdAY//LASfi3pxJh2BSF7xjiNyBpSEWaFxwbrMCO25+rjKdaV4VIfM=
-Message-ID: <30c6373b0805050012o505c0540i116a31bc1ab9ce9f@mail.gmail.com>
-Date: Mon, 5 May 2008 00:12:56 -0700
-From: "Kevin Burton" <burton@tailrank.com>
-To: linux-kernel@vger.kernel.org
-Subject: Ability to limit or disable page caching?
+        d=googlemail.com; s=gamma;
+        h=message-id:date:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding:from;
+        b=H7C1s0k3kywfCX7KtxKcQVUIk2de9GQKfu/8LFHazBzk8imQKklrU78Nq7Zo+4CQAt5tUhp9roDmhFpsYrUdYigoQFKBsROX2UUjlV3fGUcc7kHGpdD9u6YE4hQvjQAXTiyAS9I41bZRDC6Il0ZOkIbXNQQLgqDgVaiA0mfdRmU=
+Message-ID: <481EB4F4.8050901@gmail.com>
+Date: Mon, 05 May 2008 09:19:16 +0200
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
+To: Neil Horman <nhorman@tuxdriver.com>
+CC: Michael Kerrisk <mtk.manpages@googlemail.com>,
+       Andi Kleen <andi@firstfloor.org>, linux-man@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Petr Gajdos <pgajdos@suse.cz>, michael.kerrisk@gmail.com
+Subject: core_pattern pipe documentation - draft 2
+References: <cfd18e0f0804151411x62080f10y833493db7f1b8cfd@mail.gmail.com>	 <4808D1F4.7050705@gmail.com>	 <cfd18e0f0804230509g4e7456ecgd40c0bfee874a82c@mail.gmail.com>	 <20080423145933.GA26228@hmsendeavour.rdu.redhat.com>	 <cfd18e0f0804250618ic6dfd09gf68573256be3ff@mail.gmail.com>	 <20080425162225.GA9833@hmsreliant.think-freely.org>	 <cfd18e0f0804251113w4ef2dea3t6727009aa67e6e09@mail.gmail.com>	 <20080425185442.GC9833@hmsreliant.think-freely.org>	 <cfd18e0f0804251305u4edb2bb1k290553965291c4fa@mail.gmail.com>	 <20080425201800.GD9833@hmsreliant.think-freely.org> <cfd18e0f0804251339x2b19dd79o593d836986bf99ee@mail.gmail.com>
+In-Reply-To: <cfd18e0f0804251339x2b19dd79o593d836986bf99ee@mail.gmail.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-X-Google-Sender-Auth: dce06f858e47720f
+From: Michael Kerrisk <mtk.manpages@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'm running into a VERY frustrating bug with page caching and swap.
+Hi Neil,
 
-I'm going to write a long post on this and forward it to the list.
+Below is a revised draft of the text for core_pattern.  Would you be willing
+check it over?
 
-In the mean time is it possible to disable the page cache or limit it
-to say 10% of system memory?
+Cheers,
 
-I haven't found any way to do this yet.
+Michael
 
-You could do this with RHEL 4.x but I don't recall this ever making it
-into 2.6 :-/
+     Naming of core dump files
+       By   default,   a  core  dump  file  is  named  core,  but  the
+       /proc/sys/kernel/core_pattern file (since Linux 2.6 and 2.4.21)
+       can  be set to define a template that is used to name core dump
+       files.  The template can contain % specifiers which are substi-
+       tuted by the following values when a core file is created:
 
-Feedback appreciated.
+           %%  a single % character
+           %p  PID of dumped process
+           %u  (numeric) real UID of dumped process
+           %g  (numeric) real GID of dumped process
+           %s  number of signal causing dump
+           %t  time  of  dump,  expressed  as  seconds since the Epoch
+               (00:00h, 1 Jan 1970, UTC)
+           %h  hostname (same as 'nodename' returned by uname(2))
+           %e  executable filename (without path prefix)
+           %c  core file size soft resource limit of crashing  process
+               (since Linux 2.6.24)
 
--- 
-Founder/CEO Tailrank.com
-Location: San Francisco, CA
-AIM/YIM: sfburtonator
-Skype: burtonator
-Work: http://spinn3r.com and http://tailrank.com
-Blog: http://feedblog.org
-Cell: 415-637-8078
-Fax: 1-415-358-419 PIN: 0092
+       A  single % at the end of the template is dropped from the core
+       filename, as is the combination of a % followed by any  charac-
+       ter other than those listed above.  All other characters in the
+       template become a literal part of the core filename.  The  tem-
+       plate  may  include  '/'  characters,  which are interpreted as
+       delimiters for  directory  names.   The  maximum  size  of  the
+       resulting  core  filename  is  128  bytes  (64 bytes in kernels
+       before 2.6.19).
+   [...]
+
+     Piping core dumps to a program
+       Since kernel 2.6.19, Linux supports an alternate syntax for the
+       /proc/sys/kernel/core_pattern  file.  If the first character of
+       this file is a pipe symbol (|), then the remainder of the  line
+       is  interpreted  as a program to be executed.  Instead of being
+       written to a disk file, the core  dump  is  given  as  standard
+       input to the program.  Note the following points:
+
+       *  The program must be specified using an absolute pathname (or
+          a pathname relative to the  root  directory,  /),  and  must
+          immediately follow the '|' character.
+
+       *  The  process  created  to  run  the program runs as user and
+          group root.
+
+       *  Command-line arguments can be supplied to the program (since
+          kernel 2.6.24), delimited by white space (up to a total line
+          length of 128 bytes).
+
+       *  The command-line arguments can include any of the  %  speci-
+          fiers  listed  above.   For  example, to pass the PID of the
+          process that is being dumped, specify %p in an argument.
+
+   [...]
+   EXAMPLE
+       The  program  below  can  be used to demonstrate the use of the
+       pipe syntax in  the  /proc/sys/kernel/core_pattern  file.   The
+       following  shell  session  demonstrates the use of this program
+       (compiled to create an executable named core_pattern_test):
+
+           $ cc -o core_pattern_test core_pattern_test.c
+           $ su
+           Password:
+           # echo "|$PWD/core_pattern_test %p UID=%u GID=%g sig=%s" > \
+               /proc/sys/kernel/core_pattern
+           # exit
+           $ sleep 100
+           type control-backslash
+           Quit (core dumped)
+           $ cat core.info
+           argc=5
+           argc[0]=</home/mtk/core_pattern_test>
+           argc[1]=<20575>
+           argc[2]=<UID=1000>
+           argc[3]=<GID=100>
+           argc[4]=<sig=3>
+           Total bytes in core dump: 282624
+
+       The source code of the program is as follows:
+
+       /* core_pattern_test.c */
+
+       #define _GNU_SOURCE
+       #include <sys/stat.h>
+       #include <fcntl.h>
+       #include <limits.h>
+       #include <stdio.h>
+       #include <stdlib.h>
+       #include <unistd.h>
+
+       #define BUF_SIZE 1024
+
+       int
+       main(int argc, char *argv[])
+       {
+           int tot, j;
+           ssize_t nread;
+           char buf[BUF_SIZE];
+           FILE *fp;
+           char cwd[PATH_MAX];
+
+           /* Change our current working directory to that of the
+              crashing process */
+
+           snprintf(cwd, PATH_MAX, "/proc/%s/cwd", argv[1]);
+           chdir(cwd);
+
+           /* Write output to file "core.info" in that directory */
+
+           fp = fopen("core.info", "w+");
+           if (fp == NULL)
+               exit(EXIT_FAILURE);
+
+           /* Display command-line arguments given to core_pattern
+              pipe program */
+
+           fprintf(fp, "argc=%d\n", argc);
+           for (j = 0; j < argc; j++)
+               fprintf(fp, "argc[%d]=<%s>\n", j, argv[j]);
+
+           /* Count bytes in standard input (the core dump) */
+
+           tot = 0;
+           while ((nread = read(STDIN_FILENO, buf, BUF_SIZE)) > 0)
+               tot += nread;
+           fprintf(fp, "Total bytes in core dump: %d\n", tot);
+
+           exit(EXIT_SUCCESS);
+       }
+
