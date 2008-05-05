@@ -1,123 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758608AbYEEJ4i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758734AbYEEJ4y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758608AbYEEJ4i (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 05:56:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755286AbYEEJz1
+	id S1758734AbYEEJ4y (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 05:56:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755391AbYEEJz2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 05:55:27 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:38313 "EHLO
+	Mon, 5 May 2008 05:55:28 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:38314 "EHLO
 	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753837AbYEEJzW (ORCPT
+	with ESMTP id S1754107AbYEEJzW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 5 May 2008 05:55:22 -0400
-Message-Id: <20080505095512.522499039@szeredi.hu>
+Message-Id: <20080505095513.946296412@szeredi.hu>
 References: <20080505095440.820370974@szeredi.hu>
 User-Agent: quilt/0.45-1
-Date: Mon, 05 May 2008 11:54:45 +0200
+Date: Mon, 05 May 2008 11:54:46 +0200
 From: Miklos Szeredi <miklos@szeredi.hu>
 To: akpm@linux-foundation.org
 Cc: hch@infradead.org, viro@ZenIV.linux.org.uk, linux-kernel@vger.kernel.org,
        linux-fsdevel@vger.kernel.org, Jeff Mahoney <jeffm@suse.de>
-Subject: [patch 04/15] reiserfs: dont call vfs_rmdir
-Content-Disposition: inline; filename=reiserfs_rmdir_cleanup.patch
+Subject: [patch 05/15] reiserfs: dont call notify_change
+Content-Disposition: inline; filename=reiserfs_notify_change_cleanup.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Miklos Szeredi <mszeredi@suse.cz>
 
-reiserfs_delete_xattrs() calls vfs_rmdir() to remove the private
-directory associated with the extended attributes for an inode.
-Replace with explicit call to reiserfs_rmdir().
+Reiserfs calls notify_change() on it's private extended attribute
+files to resize and change ownership of these files.  Replace with
+reiserfs_setattr().
 
-The extended attribute files reside in a private directory, completely
-inaccessible from userspace.  This means, that checking against mounts
-on the dentry is not necessary.
+This is equivalent, except that:
 
-The calls to may_delete() and security_inode_rmdir(), as performed by
-vfs_rmdir() are also unecessary for this case.
+ - i_alloc_sem locking is not performed around reiserfs_setattr() when
+   the size is changed
+ - security_inode_setattr() is not called before reiserfs_setattr()
+ - fsnotify_change() is not called after reiserfs_setattr()
+
+None of the above is necessary, since the files are private to
+reiserfs and inaccessible from userspace.
+
+Also remove setting of ctime on the xattr files.
 
 Based on patch by Jeff Mahoney.
 
 Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
 Acked-by: Jeff Mahoney <jeffm@suse.de>
 ---
- fs/reiserfs/namei.c         |    2 +-
- fs/reiserfs/xattr.c         |   22 +++++++++++++++++++++-
- include/linux/reiserfs_fs.h |    1 +
- 3 files changed, 23 insertions(+), 2 deletions(-)
+ fs/reiserfs/xattr.c |   10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
 
 Index: linux-2.6/fs/reiserfs/xattr.c
 ===================================================================
---- linux-2.6.orig/fs/reiserfs/xattr.c	2008-05-05 11:29:21.000000000 +0200
+--- linux-2.6.orig/fs/reiserfs/xattr.c	2008-05-05 11:29:25.000000000 +0200
 +++ linux-2.6/fs/reiserfs/xattr.c	2008-05-05 11:29:25.000000000 +0200
-@@ -35,6 +35,7 @@
- #include <linux/namei.h>
- #include <linux/errno.h>
- #include <linux/fs.h>
-+#include <linux/quotaops.h>
- #include <linux/file.h>
- #include <linux/pagemap.h>
- #include <linux/xattr.h>
-@@ -712,6 +713,25 @@ reiserfs_delete_xattrs_filler(void *buf,
+@@ -458,9 +458,9 @@ reiserfs_xattr_set(struct inode *inode, 
  
- }
+ 	/* Resize it so we're ok to write there */
+ 	newattrs.ia_size = buffer_size;
+-	newattrs.ia_valid = ATTR_SIZE | ATTR_CTIME;
++	newattrs.ia_valid = ATTR_SIZE;
+ 	mutex_lock_nested(&xinode->i_mutex, I_MUTEX_XATTR);
+-	err = notify_change(dentry, &newattrs);
++	err = reiserfs_setattr(dentry, &newattrs);
+ 	if (err)
+ 		goto out_filp;
  
-+static int xattr_rmdir(struct inode *dir, struct dentry *dentry)
-+{
-+	int error;
-+
-+	DQUOT_INIT(dir);
-+
-+	mutex_lock_nested(&dentry->d_inode->i_mutex, I_MUTEX_CHILD);
-+	dentry_unhash(dentry);
-+	error = reiserfs_rmdir(dir, dentry);
-+	if (!error)
-+		dentry->d_inode->i_flags |= S_DEAD;
-+	mutex_unlock(&dentry->d_inode->i_mutex);
-+	if (!error)
-+		d_delete(dentry);
-+	dput(dentry);
-+
-+	return error;
-+}
-+
- /* This is called w/ inode->i_mutex downed */
- int reiserfs_delete_xattrs(struct inode *inode)
- {
-@@ -746,7 +766,7 @@ int reiserfs_delete_xattrs(struct inode 
- 	if (dir->d_inode->i_nlink <= 2) {
- 		root = get_xa_root(inode->i_sb, XATTR_REPLACE);
- 		reiserfs_write_lock_xattrs(inode->i_sb);
--		err = vfs_rmdir(root->d_inode, dir);
-+		err = xattr_rmdir(root->d_inode, dir);
- 		reiserfs_write_unlock_xattrs(inode->i_sb);
- 		dput(root);
- 	} else {
-Index: linux-2.6/fs/reiserfs/namei.c
-===================================================================
---- linux-2.6.orig/fs/reiserfs/namei.c	2008-05-05 11:29:21.000000000 +0200
-+++ linux-2.6/fs/reiserfs/namei.c	2008-05-05 11:29:25.000000000 +0200
-@@ -850,7 +850,7 @@ static inline int reiserfs_empty_dir(str
- 	return 1;
- }
+@@ -810,7 +810,7 @@ reiserfs_chown_xattrs_filler(void *buf, 
+ 	}
  
--static int reiserfs_rmdir(struct inode *dir, struct dentry *dentry)
-+int reiserfs_rmdir(struct inode *dir, struct dentry *dentry)
- {
- 	int retval, err;
- 	struct inode *inode;
-Index: linux-2.6/include/linux/reiserfs_fs.h
-===================================================================
---- linux-2.6.orig/include/linux/reiserfs_fs.h	2008-05-05 11:29:21.000000000 +0200
-+++ linux-2.6/include/linux/reiserfs_fs.h	2008-05-05 11:29:25.000000000 +0200
-@@ -1911,6 +1911,7 @@ static inline void reiserfs_update_sd(st
- void sd_attrs_to_i_attrs(__u16 sd_attrs, struct inode *inode);
- void i_attrs_to_sd_attrs(struct inode *inode, __u16 * sd_attrs);
- int reiserfs_setattr(struct dentry *dentry, struct iattr *attr);
-+int reiserfs_rmdir(struct inode *dir, struct dentry *dentry);
+ 	if (!S_ISDIR(xafile->d_inode->i_mode))
+-		err = notify_change(xafile, attrs);
++		err = reiserfs_setattr(xafile, attrs);
+ 	dput(xafile);
  
- /* namei.c */
- void set_de_name_and_namelen(struct reiserfs_dir_entry *de);
+ 	return err;
+@@ -843,7 +843,7 @@ int reiserfs_chown_xattrs(struct inode *
+ 
+ 	lock_kernel();
+ 
+-	attrs->ia_valid &= (ATTR_UID | ATTR_GID | ATTR_CTIME);
++	attrs->ia_valid &= (ATTR_UID | ATTR_GID);
+ 	buf.xadir = dir;
+ 	buf.attrs = attrs;
+ 	buf.inode = inode;
+@@ -854,7 +854,7 @@ int reiserfs_chown_xattrs(struct inode *
+ 		goto out_dir;
+ 	}
+ 
+-	err = notify_change(dir, attrs);
++	err = reiserfs_setattr(dir, attrs);
+ 	unlock_kernel();
+ 
+       out_dir:
 
 --
