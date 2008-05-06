@@ -1,76 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758543AbYEFICs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758681AbYEFIFl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758543AbYEFICs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 04:02:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752874AbYEFICa
+	id S1758681AbYEFIFl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 04:05:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753500AbYEFIF0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 04:02:30 -0400
-Received: from smtp1.betherenow.co.uk ([87.194.0.68]:33940 "HELO
-	smtp1.betherenow.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752716AbYEFIC3 (ORCPT
+	Tue, 6 May 2008 04:05:26 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:43285
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752716AbYEFIFX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 04:02:29 -0400
-From: Alistair John Strachan <alistair@devzero.co.uk>
-To: Mauro Carvalho Chehab <mchehab@infradead.org>
-Subject: Re: Linux 2.6.26-rc1
-Date: Tue, 6 May 2008 09:02:25 +0100
-User-Agent: KMail/1.9.9
-Cc: Robin Holt <holt@sgi.com>, Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <alpine.LFD.1.10.0805031205330.2971@woody.linux-foundation.org> <20080504160904.GF19717@sgi.com> <Pine.LNX.4.64.0805051656180.3218@bombadil.infradead.org>
-In-Reply-To: <Pine.LNX.4.64.0805051656180.3218@bombadil.infradead.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Tue, 6 May 2008 04:05:23 -0400
+Date: Tue, 06 May 2008 01:05:23 -0700 (PDT)
+Message-Id: <20080506.010523.113767579.davem@davemloft.net>
+To: mikpe@it.uu.se
+Cc: sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [BUG] 2.6.26-rc1 hangs during boot on UltraSPARC 5
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <18464.3741.133714.308327@harpo.it.uu.se>
+References: <18464.3741.133714.308327@harpo.it.uu.se>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200805060902.25835.alistair@devzero.co.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 05 May 2008 22:04:17 Mauro Carvalho Chehab wrote:
-> Alistair,
->
-> Sorry for not answering earlier, I got some days off (I still didn't read
-> all messages from you - I'm flooded of messages here).
->
-> >> I have DVB_CORE=n and VIDEO_DEV=y. VIDEO_DEV is:
-> >>
-> >> config VIDEO_DEV
-> >>         tristate "Video For Linux"
-> >>
-> >> So if you enable Video For Linux, the tuner-core is automatically built,
-> >> even if no tuners are selected? Surely that's wrong..
-> >
-> > That is probably correct.  Video For Linux is used for capturing video
-> > streams.  The fact that you can get this invalid config to fail to build
-> > should be reported to the v4l folks and let them fix it up.
->
-> Yes, this is correct, if you select a board that supports tuner (for
-> example, bttv, or cx88).
->
-> The error is that most tuners are dependent of I2C. The right fix seems to
-> do this:
->
->
-> config MEDIA_TUNER
->          tristate
->          default (DVB_CORE || VIDEO_DEV) && I2C
->          depends on (DVB_CORE || VIDEO_DEV) && I2C
+From: Mikael Pettersson <mikpe@it.uu.se>
+Date: Tue, 6 May 2008 09:54:05 +0200
 
-This still seems imperfect -- if I have I2C=y and VIDEO_DEV=y, but DVB_CORE=n 
-(and no board types selected), it'll still build at least some of the tuner 
-code into the V4L core.
+> OF stdout device is: /pci@1f,0/pci@1,1/SUNW,m64B@2
+> PROM: Built device tree with 46848 bytes of memory.
+> On node 0 totalpages: 32298
+>   Normal zone: 335 pages used for memmap
+>   Normal zone: 0 pages reserved
+>   Normal zone: 31963 pages, LIFO batch:7
+>   Movable zone: 0 pages used for memmap
+> Booting Linux...
+> Built 1 zonelists in Zone order, mobility grouping on.  Total pages: 31963
+> Kernel command line: ro root=/dev/sda5
+> PID hash table entries: 1024 (order: 10, 8192 bytes)
+> clocksource: mult[28000] shift[16]
+> clockevent: mult[66666666] shift[32]
+> Console: colour dummy device 80x25
+> console handover: boot [earlyprom0] -> real [tty0]
+> 
+> *** 2.6.26-rc1 gets as far as the line above, then hangs
 
-This is still true even if I set MEDIA_TUNER_CUSTOMIZE=y and set all of the 
-tuners to 'n'. I'd assumed that this was an artefact of the complex Kconfig 
-logic here, and was not intentional.
+It's possible your machine does boot up all the way.
+The video driver simply isn't registerring for whatever
+reason.
 
-Thanks for fixing the compile issue though, I've confirmed that it works.
+Can you ping the box if you wait a minute or two after the
+messages stop?
 
--- 
-Cheers,
-Alistair.
+The only patch to the aty driver since 2.6.25 is the
+following, below, which you can try reverting.
 
-137/1 Warrender Park Road, Edinburgh, UK.
+Another thing you can do is edit arch/sparc64/kernel/setup.c
+and in the prom_early_console struct initializer, remove the
+"CON_BOOT" bit from the .flags setting.  That will keep the
+PROM console enabled even when another console wants to
+register.  We'll get more messages that way.
+
+commit 21b4d1db84a70175251d86078123cc27e46ff69d
+Author: Roel Kluin <12o3l@tiscali.nl>
+Date:   Mon Apr 28 02:15:04 2008 -0700
+
+    video/aty/atyfb_base.c: free when fb can't be registered
+    
+    Free buffer when the framebuffer can't be registered
+    
+    Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
+    Cc: "Antonino A. Daplas" <adaplas@pol.net>
+    Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+    Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+
+diff --git a/drivers/video/aty/atyfb_base.c b/drivers/video/aty/atyfb_base.c
+index 62f9c6e..e4bcf53 100644
+--- a/drivers/video/aty/atyfb_base.c
++++ b/drivers/video/aty/atyfb_base.c
+@@ -2621,10 +2621,13 @@ static int __devinit aty_init(struct fb_info *info)
+ #endif /* CONFIG_FB_ATY_CT */
+ 	info->var = var;
+ 
+-	fb_alloc_cmap(&info->cmap, 256, 0);
++	if (fb_alloc_cmap(&info->cmap, 256, 0) < 0)
++		goto aty_init_exit;
+ 
+-	if (register_framebuffer(info) < 0)
++	if (register_framebuffer(info) < 0) {
++		fb_dealloc_cmap(&info->cmap);
+ 		goto aty_init_exit;
++	}
+ 
+ 	fb_list = info;
+ 
