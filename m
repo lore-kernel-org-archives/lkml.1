@@ -1,72 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932320AbYEFRum@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932612AbYEFRvY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932320AbYEFRum (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 13:50:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756137AbYEFRuM
+	id S932612AbYEFRvY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 13:51:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753341AbYEFRvM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 13:50:12 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:43377 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753857AbYEFRuJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 13:50:09 -0400
-Date: Tue, 6 May 2008 19:49:54 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "J. Bruce Fields" <bfields@citi.umich.edu>,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
+	Tue, 6 May 2008 13:51:12 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:50427 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756137AbYEFRvL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 May 2008 13:51:11 -0400
+Date: Tue, 6 May 2008 10:51:10 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Li Zefan <lizf@cn.fujitsu.com>
+cc: Andrew Morton <akpm@linux-foundation.org>,
        LKML <linux-kernel@vger.kernel.org>,
-       Alexander Viro <viro@ftp.linux.org.uk>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: AIM7 40% regression with 2.6.26-rc1
-Message-ID: <20080506174954.GB9014@elte.hu>
-References: <1210052904.3453.30.camel@ymzhang> <20080506114449.GC32591@elte.hu> <20080506120934.GH19219@parisc-linux.org> <20080506162332.GI19219@parisc-linux.org> <20080506102153.5484c6ac.akpm@linux-foundation.org> <20080506173128.GM19219@parisc-linux.org>
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: Re: [PATCH] mm/page_alloc.c: fix a typo
+In-Reply-To: <482029E7.6070308@cn.fujitsu.com>
+Message-ID: <Pine.LNX.4.64.0805061050110.23336@schroedinger.engr.sgi.com>
+References: <4820272C.4060009@cn.fujitsu.com> <482027E4.6030300@cn.fujitsu.com>
+ <482029E7.6070308@cn.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080506173128.GM19219@parisc-linux.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 6 May 2008, Li Zefan wrote:
 
-* Matthew Wilcox <matthew@wil.cx> wrote:
+> Sorry for the noise, but the signed-off was eaten. :(
+> Maybe I should leave a blank line before the signed-off.
 
-> > down(), down_interruptible() and down_try() should use 
-> > spin_lock_irq(), not irqsave.
-> 
-> We talked about this ... the BKL actually requires that you be able to 
-> acquire it with interrupts disabled. [...]
+I think the | there was some developers attempt to avoid gcc generating 
+too many branches. I am fine either way.
 
-hm, where does it require it, besides the early bootup code? (which 
-should just be fixed)
-
-down_trylock() is OK as irqsave/irqrestore for legacy reasons, but that 
-is fundamentally atomic anyway.
-
-> > up() seems to be doing wake-one, FIFO which is nice.  Did the 
-> > implementation which we just removed also do that?  Was it perhaps 
-> > accidentally doing LIFO or something like that?
-> 
-> That's a question for someone who knows x86 assembler, I think.
-
-the assembly is mostly just for the fastpath - and a 40% regression 
-cannot be about fastpath differences. In the old code the scheduling 
-happens in lib/semaphore-sleeper.c, and from the looks of it it appears 
-to be a proper FIFO as well. (plus this small wakeup weirdness it has)
-
-i reviewed the new code in kernel/semaphore.c as well and can see 
-nothing bad in it - it does proper wake-up, FIFO queueing, like the 
-mutex code.
-
-	Ingo
