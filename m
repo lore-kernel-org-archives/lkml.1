@@ -1,47 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763934AbYEFNRe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762500AbYEFNTm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763934AbYEFNRe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 09:17:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756469AbYEFNRZ
+	id S1762500AbYEFNTm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 09:19:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751023AbYEFNTc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 09:17:25 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:45494 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753358AbYEFNRY (ORCPT
+	Tue, 6 May 2008 09:19:32 -0400
+Received: from smtp1.wifiinternet.cz ([89.31.47.1]:50136 "EHLO
+	bor.wifiinternet.cz" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750992AbYEFNTb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 09:17:24 -0400
-Date: Tue, 6 May 2008 14:08:25 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Martin =?UTF-8?B?TU9LUkVKxaA=?= <mmokrejs@ribosome.natur.cuni.cz>
-Cc: Robert Hancock <hancockr@shaw.ca>, Jan Engelhardt <jengelh@medozas.de>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.23.17 & 2.6.24.5 and maybe earlier: pata_marvell: need to
- disable DMA to get rid of '(ATA bus error)', 'ata7.00: status: { DRDY ERR
- }', 'ata7.00: error: { ICRC ABRT }'
-Message-ID: <20080506140825.759db8f2@core>
-In-Reply-To: <4820529D.2040609@ribosome.natur.cuni.cz>
-References: <fa.+9Q+WQnyiYTlpbXVIzn6aT2/gS0@ifi.uio.no>
-	<fa.fKUfeQYS9BFD60fOMormQ25ard4@ifi.uio.no>
-	<fa.QYXSW2xjSxf6xnmd0rQGJhHLnrc@ifi.uio.no>
-	<fa.qfeYSQtlsXzGvFvBQEdF9TFFpNg@ifi.uio.no>
-	<481BD12D.1030406@shaw.ca>
-	<4820529D.2040609@ribosome.natur.cuni.cz>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 6 May 2008 09:19:31 -0400
+Message-ID: <48205B0D.70202@seznam.cz>
+Date: Tue, 06 May 2008 15:20:13 +0200
+From: Michal Simek <monstr@seznam.cz>
+Reply-To: monstr@seznam.cz
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+MIME-Version: 1.0
+To: Arnd Bergmann <arnd@arndb.de>
+CC: Geert Uytterhoeven <geert@linux-m68k.org>, Michal Simek <monstr@seznam.cz>,
+       John Williams <john.williams@petalogix.com>,
+       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
+       stephen.neuendorffer@xilinx.com, John.Linn@xilinx.com, matthew@wil.cx,
+       will.newton@gmail.com, drepper@redhat.com,
+       microblaze-uclinux@itee.uq.edu.au, grant.likely@secretlab.ca
+Subject: Re: [PATCH 36/56] microblaze_v2: dma support
+References: <1209901305-6404-1-git-send-email-monstr@seznam.cz> <48202AB6.4010201@seznam.cz> <Pine.LNX.4.64.0805061317120.10091@anakin> <200805061324.06282.arnd@arndb.de>
+In-Reply-To: <200805061324.06282.arnd@arndb.de>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> ata7.00: ATA-0: Delock 54111 512MB, Ver1.27, max UDMA/33
-> ata7.00: 1006992 sectors, multi 0: LBA 
+Hi all,
 
-For some reason your CF card seems to think it is an ATA device not a CFA
-device. What does the identify data for it look like (hdparm -I)
+here is proposed struct.
+
+struct scatterlist {
+      dma_addr_t      	dma_address;
+      unsigned long	page_link;
+#ifdef CONFIG_DEBUG_SG
+      unsigned long	sg_magic;
+#endif
+      unsigned int    	length;
+      unsigned int    	offset;
+};
+
+Is it OK now?
+
+Michal
 
 
-Alan
+>>> struct scatterlist {
+>>>       unsigned long page_link;
+>>>       unsigned int    offset;
+>>>       unsigned int    length;
+>>>       dma_addr_t      dma_address;
+>>> };
+>> If unsigned long is 32-bit but dma_addr_t is 64-bit, there may be a gap
+>> between length and dma_address.
+>>
+> 
+> But moving dma_address to the front only has the effect to create implicit
+> padding at the end of struct scatterlist, so you don't gain anything
+> either way.
+> 
+> It's only an internal definition that can be changed at any time without
+> breaking applications, so I wouldn't worry about it, and better leave
+> it identical to the other architectures.
+> 
+> The one thing that should indeed be changed is the addition of
+> 'unsigned long sg_magic' that is needed for CONFIG_DEBUG_SG.
+> 
+> 	Arnd <><
+
