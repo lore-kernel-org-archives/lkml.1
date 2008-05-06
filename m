@@ -1,136 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932941AbYEFXgW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934145AbYEFXgv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932941AbYEFXgW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 19:36:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757093AbYEFXgI
+	id S934145AbYEFXgv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 19:36:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757358AbYEFXg1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 19:36:08 -0400
-Received: from simmts8.bellnexxia.net ([206.47.199.166]:54518 "EHLO
-	simmts8-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755922AbYEFXgG (ORCPT
+	Tue, 6 May 2008 19:36:27 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:57411 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933186AbYEFXgY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 19:36:06 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AhsBAMeHIEicIp8z/2dsb2JhbAAIim6iQw
-Message-ID: <4820EB5C.2010102@gmail.com>
-Date: Tue, 06 May 2008 20:35:56 -0300
-From: Kevin Winchester <kjwinchester@gmail.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
+	Tue, 6 May 2008 19:36:24 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <4820EB69.9090907@s5r6.in-berlin.de>
+Date: Wed, 07 May 2008 01:36:09 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.13) Gecko/20080419 SeaMonkey/1.1.9
 MIME-Version: 1.0
-To: Arjan van de Ven <arjan@linux.intel.com>
-CC: David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       mingo@elte.hu
-Subject: Re: linux-next: WARNING: at kernel/panic.c:375 __stack_chk_test+0x50/0x54()
-References: <20080501043313.02205bbd@linux.intel.com>	<481CF3B1.2020307@gmail.com>	<4820B64D.4000805@linux.intel.com> <20080506.133416.241365936.davem@davemloft.net> <4820E529.2030801@gmail.com> <4820EA7B.4050406@linux.intel.com>
-In-Reply-To: <4820EA7B.4050406@linux.intel.com>
+To: Mauro Carvalho Chehab <mchehab@infradead.org>
+CC: Alistair John Strachan <alistair@devzero.co.uk>, Robin Holt <holt@sgi.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.26-rc1
+References: <alpine.LFD.1.10.0805031205330.2971@woody.linux-foundation.org>	<20080504160904.GF19717@sgi.com>	<Pine.LNX.4.64.0805051656180.3218@bombadil.infradead.org>	<200805060902.25835.alistair@devzero.co.uk>	<20080506073134.424780a3@gaivota>	<48206C73.80509@s5r6.in-berlin.de>	<20080506161346.183f367c@gaivota>	<4820B524.5080100@s5r6.in-berlin.de>	<20080506170623.53732e78@gaivota>	<4820C3D8.6040403@s5r6.in-berlin.de> <20080506193928.5acfc84d@gaivota>
+In-Reply-To: <20080506193928.5acfc84d@gaivota>
+X-Enigmail-Version: 0.95.6
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arjan van de Ven wrote:
-> Kevin Winchester wrote:
->> David Miller wrote:
->>> From: Arjan van de Ven <arjan@linux.intel.com>
->>> Date: Tue, 06 May 2008 12:49:33 -0700
->>>
->>>> this is weird; something is adding ANOTHER -fstack-protector to the 
->>>> (effective) gcc
->>>> flags.. which might be overriding the -fstack-protector-all setting.
->>>>
->>>> I wonder if this is a distro special ;(
->>> Ubuntu adds -fstack-protector to the GCC command line.
->>>
->>> But I've been able to override it trivially when, for example, doing
->>> GCC builds, by simply adding -fno-stack-protector.
->> I assume adding -fno-stack-protector would not really be an option in 
->> this case (since if I understand correctly it would be appended to the 
->> end of the flags which would turn the option off).
+Mauro Carvalho Chehab wrote:
+> On Tue, 06 May 2008 22:47:20 +0200
+> Stefan Richter <stefanr@s5r6.in-berlin.de> wrote:
+>> Or another idea:
 >>
->> I guess I'll be figuring out how to build my own gcc...
+>> Copy _all_ dependencies of drivers which can be selected by "...if 
+    ^^^^
+>> VIDEO_HELPER_CHIPS_AUTO" to VIDEO_HELPER_CHIPS_AUTO.
 > 
-> one question (since I don't have an ubuntu system on my desk right now)
-> 
-> if you do
-> 
-> make V=1 kernel/panic.o
-> 
-> (after deleting that file if needed), can you check that -fstack-protector-all is the last
-> stack protector option we explicitly give to gcc ?
-> (anything else is distro special which we unfortunately cannot fix.. but maybe we can detect)
-> 
-> 
+> I actually did this for tuners, on this changeset (still not at mainstream):
+> http://git.kernel.org/?p=linux/kernel/git/mchehab/v4l-dvb.git;a=commitdiff;h=d10b3c6817fb3fed8e6cd6d64d47c187a615c952
 
-kevin@alekhine:~/linux/linux-2.6$ make V=1 kernel/panic.o
-rm -f include/config/kernel.release
-echo 2.6.25-next-20080430 > include/config/kernel.release
-set -e; :; mkdir -p include/linux/;     (echo \#define 
-LINUX_VERSION_CODE 132633; echo '#define KERNEL_VERSION(a,b,c) (((a) << 
-16) + ((b) << 8) + (c))';) < /home/kevin/linux/linux-2.6/Makefile > 
-include/linux/version.h.tmp; if [ -r include/linux/version.h ] && cmp -s 
-include/linux/version.h include/linux/version.h.tmp; then rm -f 
-include/linux/version.h.tmp; else :; mv -f include/linux/version.h.tmp 
-include/linux/version.h; fi
-set -e; :; mkdir -p include/linux/;     if [ `echo -n 
-"2.6.25-next-20080430" | wc -c ` -gt 64 ]; then echo 
-'"2.6.25-next-20080430" exceeds 64 characters' >&2; exit 1; fi; (echo 
-\#define UTS_RELEASE \"2.6.25-next-20080430\";) < 
-include/config/kernel.release > include/linux/utsrelease.h.tmp; if [ -r 
-include/linux/utsrelease.h ] && cmp -s include/linux/utsrelease.h 
-include/linux/utsrelease.h.tmp; then rm -f 
-include/linux/utsrelease.h.tmp; else :; mv -f 
-include/linux/utsrelease.h.tmp include/linux/utsrelease.h; fi
-set -e; asmlink=`readlink include/asm | cut -d '-' -f 2`;   \
-         if [ -L include/asm ]; then                                     \
-                 if [ "$asmlink" != "x86" ]; then                \
-                         echo "ERROR: the symlink include/asm points to 
-asm-$asmlink but asm-x86 was expected"; \
-                         echo "       set ARCH or save .config and run 
-'make mrproper' to fix it";             \
-                         exit 1;                                         \
-                 fi;                                                     \
-         else                                                            \
-                 echo '  SYMLINK include/asm -> include/asm-x86';          \
-                 if [ ! -d include ]; then                               \
-                         mkdir -p include;                               \
-                 fi;                                                     \
-                 ln -fsn asm-x86 include/asm;                              \
-         fi
-mkdir -p .tmp_versions
-make -f scripts/Makefile.build obj=scripts/basic
-make -f scripts/Makefile.build obj=.
-mkdir -p kernel/
-mkdir -p arch/x86/kernel/
-make -f scripts/Makefile.build obj=. missing-syscalls
-   /bin/bash scripts/checksyscalls.sh gcc -Wp,-MD,./.missing-syscalls.d 
-  -nostdinc -isystem /usr/lib/gcc/x86_64-linux-gnu/4.2.3/include 
--D__KERNEL__ -Iinclude  -include include/linux/autoconf.h -Wall -Wundef 
--Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common 
--Werror-implicit-function-declaration -Os   -fno-stack-protector -m64 
--march=k8 -mno-red-zone -mcmodel=kernel -funit-at-a-time 
--maccumulate-outgoing-args -fstack-protector -DGCC_HAS_SP 
--fstack-protector-all   -pipe -Wno-sign-compare 
--fno-asynchronous-unwind-tables -mno-sse -mno-mmx -mno-sse2 -mno-3dnow 
--Iinclude/asm-x86/mach-default -fno-omit-frame-pointer 
--fno-optimize-sibling-calls -g -pg -Wdeclaration-after-statement 
--Wno-pointer-sign     -D"KBUILD_STR(s)=#s" 
--D"KBUILD_BASENAME=KBUILD_STR(missing_syscalls)" 
--D"KBUILD_MODNAME=KBUILD_STR(missing_syscalls)"
-make -f scripts/Makefile.build obj=scripts
-make -f scripts/Makefile.build obj=scripts/mod
-make -f scripts/Makefile.build obj=kernel kernel/panic.o
-   gcc -Wp,-MD,kernel/.panic.o.d  -nostdinc -isystem 
-/usr/lib/gcc/x86_64-linux-gnu/4.2.3/include -D__KERNEL__ -Iinclude 
--include include/linux/autoconf.h  -Wall -Wundef -Wstrict-prototypes 
--Wno-trigraphs -fno-strict-aliasing -fno-common 
--Werror-implicit-function-declaration -Os   -fno-stack-protector -m64 
--march=k8 -mno-red-zone -mcmodel=kernel -funit-at-a-time 
--maccumulate-outgoing-args -fstack-protector -DGCC_HAS_SP 
--fstack-protector-all   -pipe -Wno-sign-compare 
--fno-asynchronous-unwind-tables -mno-sse -mno-mmx -mno-sse2 -mno-3dnow 
--Iinclude/asm-x86/mach-default -fno-omit-frame-pointer 
--fno-optimize-sibling-calls -g -pg -Wdeclaration-after-statement 
--Wno-pointer-sign     -D"KBUILD_STR(s)=#s" 
--D"KBUILD_BASENAME=KBUILD_STR(panic)" 
--D"KBUILD_MODNAME=KBUILD_STR(panic)" -c -o kernel/panic.o kernel/panic.c
+Yes...  Except that it is very dangerous to /move/ dependencies, as you 
+are apparently doing in that patch.  When you use "select" somewhere, 
+you should generally /copy/ dependencies.
+
+Although something like
+
+config VIRTUAL_META_OPTION
+	depends on REAL_DEPENDENCY
+
+config THE_REAL_THING
+	depends on VIRTUAL_META_OPTION
+
+does work if THE_REAL_THING actually depends on REAL_DEPENDENCY, it is 
+safer if this dependency stays there, i.e.
+
+config THE_REAL_THING
+	depends on REAL_DEPENDECY
+
+or
+
+config THE_REAL_THING
+	depends on REAL_DEPENDENCY && VIRTUAL_META_OPTION
+
+or whatever, or equivalent constructs involving "if"..."endif".
+
+(I presume that for example MEDIA_TUNER_TDA827X does indeed have a build 
+dependency on DVB_CORE && I2C.)
+
+Or in other words:
+
+Since MEDIA_TUNER selects a bunch of options which itself have build 
+dependencies, you /must/ duplicate all of their dependencies to 
+MEDIA_TUNER.  Well, actually you don't use plain "select", you use 
+"select ... if !MEDIA_TUNER_CUSTOMIZE".  So if you can ensure by other 
+means that those 2nd level dependencies are guaranteed to be fulfilled 
+whenever MEDIA_TUNER_CUSTOMIZE=n, then you don't need to duplicate the 
+2nd level dependencies into MEDIA_TUNER.
+
+That's the same what I meant in my comment on VIDEO_HELPER_CHIPS_AUTO:
+
+Those options which "select" video decoders generally /must/ contain 
+duplicates of the dependency statements of the decoders which they 
+select.  Except, since you don't use plain "select" there but actually 
+"select ... if VIDEO_HELPER_CHIPS_AUTO", you can alternatively put the 
+duplicates of the dependency statements to VIDEO_HELPER_CHIPS_AUTO.
+-- 
+Stefan Richter
+-=====-==--- -=-= --===
+http://arcgraph.de/sr/
