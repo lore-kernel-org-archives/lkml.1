@@ -1,58 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933665AbYEFWh5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933355AbYEFWik@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933665AbYEFWh5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 18:37:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932872AbYEFWh0
+	id S933355AbYEFWik (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 18:38:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933629AbYEFWhx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 18:37:26 -0400
-Received: from colobus.isomerica.net ([216.93.242.10]:53884 "EHLO
-	colobus.isomerica.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932234AbYEFWhW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 18:37:22 -0400
-Message-ID: <4820DDA0.1030100@isomerica.net>
-Date: Tue, 06 May 2008 18:37:20 -0400
-From: =?ISO-8859-1?Q?Dan_No=E9?= <dpn@isomerica.net>
-Reply-To: dpn@isomerica.net
-Organization: isomerica.net
-User-Agent: Thunderbird 2.0.0.14 (Macintosh/20080421)
+	Tue, 6 May 2008 18:37:53 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:56744 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933626AbYEFWhv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 May 2008 18:37:51 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Russell King <rmk+lkml@arm.linux.org.uk>
+Subject: Re: drivers/mfd/htc-pasic3.c:22:31: error: asm/arch/pxa-regs.h: No such file or directory
+Date: Wed, 7 May 2008 00:37:58 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Philipp Zabel <philipp.zabel@gmail.com>
+References: <20080422074124.GA12187@elte.hu> <20080422083722.GA3609@flint.arm.linux.org.uk>
+In-Reply-To: <20080422083722.GA3609@flint.arm.linux.org.uk>
 MIME-Version: 1.0
-To: Adrian Sud <pigsflew2008@gmail.com>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Parsing Structures postmortem from memory dump
-References: <4820ABA5.3020705@gmail.com>
-In-Reply-To: <4820ABA5.3020705@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200805070037.59263.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Sud wrote:
-> I've looked at /include/linux/sched.h and tried to understand the 
-> task_struct structure, but it appears to be variable-length, determined 
-> at compile time, and I can't tell exactly how these are stored 
-> throughout memory--In a list? a tree?
+On Tuesday, 22 of April 2008, Russell King wrote:
+> On Tue, Apr 22, 2008 at 09:41:24AM +0200, Ingo Molnar wrote:
+> > 
+> > make allyesconfig (on 64-bit x86) build fails on latest -git with the 
+> > following message:
+> > 
+> > drivers/mfd/htc-pasic3.c:22:31: error: asm/arch/pxa-regs.h: No such file or directory
+> > 
+> > i suspect this driver was not supposed to be buildable on non-ARM-PXA? 
+> > The patch below should fix this.
+> 
+> Known issue.  Thanks.
 
-The task_struct structures are stored on one or more lists.  Note the 
-list_head types within the structure - each of this is a list that the 
-structure is (potentially) a member of.
+Has it been fixed in the mainline?
 
-This is a good explanation of how the kernel's lists work:
-
-http://kernelnewbies.org/FAQ/LinkedLists
-
-I don't know if a generalized printer/parser exists for the kernel 
-linked list, but this might be a good way to start exploring your 
-project.  There are macros to traverse the lists easily, so it shouldn't 
-be too difficult.
-
-Hope that helps.
-
-Cheers,
-Dan
-
--- 
-                     /--------------- - -  -  -   -   -
-                     |  Dan Noé
-                     |  http://isomerica.net/~dpn/
+Rafael
