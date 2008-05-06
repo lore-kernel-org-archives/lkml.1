@@ -1,85 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933079AbYEFUsO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932735AbYEFUsk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933079AbYEFUsO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 16:48:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760745AbYEFUr4
+	id S932735AbYEFUsk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 16:48:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933083AbYEFUsO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 16:47:56 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:57385 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758495AbYEFUry (ORCPT
+	Tue, 6 May 2008 16:48:14 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:55205 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933059AbYEFUsM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 16:47:54 -0400
-Date: Tue, 6 May 2008 13:46:55 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jeff Dike <jdike@addtoit.com>
-Cc: nix@esperi.org.uk, linux-kernel@vger.kernel.org,
-       user-mode-linux-devel@lists.sourceforge.net
-Subject: Re: [PATCH 11/19] UML - Track and make up lost ticks
-Message-Id: <20080506134655.4cac1014.akpm@linux-foundation.org>
-In-Reply-To: <20080429202924.GA13602@c2.user-mode-linux.org>
-References: <20080425175613.GA11192@c2.user-mode-linux.org>
-	<877iegcx11.fsf@hades.wkstn.nix>
-	<20080429202924.GA13602@c2.user-mode-linux.org>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+	Tue, 6 May 2008 16:48:12 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <4820C3D8.6040403@s5r6.in-berlin.de>
+Date: Tue, 06 May 2008 22:47:20 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.13) Gecko/20080419 SeaMonkey/1.1.9
+MIME-Version: 1.0
+To: Mauro Carvalho Chehab <mchehab@infradead.org>
+CC: Alistair John Strachan <alistair@devzero.co.uk>, Robin Holt <holt@sgi.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.26-rc1
+References: <alpine.LFD.1.10.0805031205330.2971@woody.linux-foundation.org>	<20080504160904.GF19717@sgi.com>	<Pine.LNX.4.64.0805051656180.3218@bombadil.infradead.org>	<200805060902.25835.alistair@devzero.co.uk>	<20080506073134.424780a3@gaivota>	<48206C73.80509@s5r6.in-berlin.de>	<20080506161346.183f367c@gaivota>	<4820B524.5080100@s5r6.in-berlin.de> <20080506170623.53732e78@gaivota>
+In-Reply-To: <20080506170623.53732e78@gaivota>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 29 Apr 2008 16:29:25 -0400
-Jeff Dike <jdike@addtoit.com> wrote:
-
-> On Tue, Apr 29, 2008 at 07:54:02PM +0100, Nix wrote:
-> > On 25 Apr 2008, Jeff Dike stated, in part:
-> > > Index: linux-2.6-git/arch/um/os-Linux/time.c
-> > > ===================================================================
-> > > --- linux-2.6-git.orig/arch/um/os-Linux/time.c	2008-04-25 10:42:12.000000000 -0400
-> > > +++ linux-2.6-git/arch/um/os-Linux/time.c	2008-04-25 11:19:26.000000000 -0400
-> > > +	alarm_handler(SIGVTALRM, NULL);
-> > > +		alarm_handler(SIGVTALRM, NULL);
-> > > -extern void alarm_handler(int sig, struct sigcontext *sc);
-> > > -		alarm_handler(SIGVTALRM, NULL);
-> > 
-> > Yet, in arch/um/include/process.h, we see, unchanged since the year dot, the
-> > obviously wrong prototype:
-> > 
-> > extern void alarm_handler(int sig, struct sigcontext sc);
-> > 
-> > Hence:
-> > 
-> >   CC      arch/um/os-Linux/time.o
-> > arch/um/os-Linux/time.c: In function ‘deliver_alarm’:
-> > arch/um/os-Linux/time.c:119: error: incompatible type for argument 2 of ‘alarm_handler’
-> > make[1]: *** [arch/um/os-Linux/time.o] Error 1
-> > make: *** [arch/um/os-Linux] Error 2
-> > 
-> > Fix trivial:
-> > 
-> > Signed-off-by: Nick Alcock <nix@esperi.org.uk>
-> > -- 
-> > Index: linux/arch/um/include/process.h
-> > ===================================================================
-> > --- linux.orig/arch/um/include/process.h	2006-07-09 14:19:52.000000000 +0100
-> > +++ linux/arch/um/include/process.h	2008-04-29 19:49:49.000000000 +0100
-> > @@ -8,8 +8,8 @@
-> >  
-> >  #include <signal.h>
-> >  
-> > -extern void sig_handler(int sig, struct sigcontext sc);
-> > -extern void alarm_handler(int sig, struct sigcontext sc);
-> > +extern void sig_handler(int sig, struct sigcontext *sc);
-> > +extern void alarm_handler(int sig, struct sigcontext *sc);
-> >  
-> >  #endif
+Mauro Carvalho Chehab wrote:
+> For example, if you have a em28xx device with msp3400 and tvp5150 and another
+> em28xx device with saa7113.
 > 
-> Crap, I fixed that, but forgot to quilt add it, I guess.
+> If you remove the select's for MSP3400, TVP5150 and SAA7113, at, em28xx, the
+> module will compile without problems.
 > 
-> ACK.
+> The only issue is that you won't be able to see any images (due to the lack of
+> tvp5150 or saa7113 analog TV demoduler) or listen to the audio, if the device
+> needs msp3400 to decode audio.
+[...]
+> It is much better for the user to just select EM28XX and let the Kconfig do the
+> hard work of selecting what low-level driver applies for em28xx-based devices.
 > 
+> This causes lots of select, being very hard to maintain. The better would be to
+> have a select-like clause that could check the dependencies automatically.
+> 
+> Another alternative would be some sort of script (checkpatch.pl?) that would
+> check if all selected dependencies are ok.
 
-This fix was already present in your "[PATCH 4/19] UML - Random driver fixes".
+Ah, now I understand.  You use "select" to enable options which aren't 
+actually a build requirement for the selecting option.
 
-Perhaps we broke bisection?
+Another example where "select" is used to fill a gap left by limitations 
+regarding what can be presented in the "make ...config" UIs.  If you use 
+"select" this way, well, then you have to cope with the implications.
+
+
+Another workaround for this UI limitation:
+
+config VIDEO_EM28XX
+	tristate "Empia EM2800/2820/2840 USB video capture support"
+	depends on WHATEVER_BUILD_REQUIREMENT_IS_LEFT
+	select MAYBE_ANOTHER_BUILD_REQUIREMENT
+	help
+	  ...
+
+comment "Empia EM28xx devices may require Philips SAA7113/4/5 video 
+decoders"
+	depends on VIDEO_EM28XX && VIDEO_SAA711X=n
+
+comment "Empia EM28xx devices may require Texas Instruments TVP5150 
+video decoder"
+	depends on VIDEO_EM28XX && VIDEO_TVP5150=n
+
+Still awkward, but now you don't have to copy VIDEO_SAA711X's and 
+VIDEO_TVP5150's dependencies to VIDEO_EM28XX anymore.
+
+
+Or another idea:
+
+Copy _all_ dependencies of drivers which can be selected by "...if 
+VIDEO_HELPER_CHIPS_AUTO" to VIDEO_HELPER_CHIPS_AUTO.
+
+Of course all these issues go away as soon as somebody has implemented 
+"select" with recursive dependency check.
+-- 
+Stefan Richter
+-=====-==--- -=-= --==-
+http://arcgraph.de/sr/
