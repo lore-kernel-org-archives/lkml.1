@@ -1,70 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758818AbYEFOUK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759548AbYEFO2h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758818AbYEFOUK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 10:20:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754648AbYEFOT5
+	id S1759548AbYEFO2h (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 10:28:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754937AbYEFO2X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 10:19:57 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:47696 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754620AbYEFOT5 (ORCPT
+	Tue, 6 May 2008 10:28:23 -0400
+Received: from ag-out-0708.google.com ([72.14.246.241]:17748 "EHLO
+	ag-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753014AbYEFO2W (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 10:19:57 -0400
-Date: Tue, 6 May 2008 07:19:43 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: clameter@sgi.com, LKML <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       Christoph Lameter <clameter@sgi.com>
-Subject: Re: [PATCH] mm/page_alloc.c: fix a typo
-Message-Id: <20080506071943.46641c26.akpm@linux-foundation.org>
-In-Reply-To: <482029E7.6070308@cn.fujitsu.com>
-References: <4820272C.4060009@cn.fujitsu.com>
-	<482027E4.6030300@cn.fujitsu.com>
-	<482029E7.6070308@cn.fujitsu.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 6 May 2008 10:28:22 -0400
+Message-ID: <fa686aa40805060728x2cb680e3y7338bacaa400ed1a@mail.gmail.com>
+Date: Tue, 6 May 2008 08:28:20 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+To: "Arnd Bergmann" <arnd@arndb.de>
+Subject: Re: [PATCH 24/56] microblaze_v2: time support
+Cc: monstr@seznam.cz, "John Williams" <john.williams@petalogix.com>,
+       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
+       stephen.neuendorffer@xilinx.com, John.Linn@xilinx.com, matthew@wil.cx,
+       will.newton@gmail.com, drepper@redhat.com,
+       microblaze-uclinux@itee.uq.edu.au
+In-Reply-To: <200805061338.24870.arnd@arndb.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1209901305-6404-1-git-send-email-monstr@seznam.cz>
+	 <1210033811.5798.188.camel@localhost> <48202C9E.7070800@seznam.cz>
+	 <200805061338.24870.arnd@arndb.de>
+X-Google-Sender-Auth: 2638364207d9af24
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 06 May 2008 17:50:31 +0800 Li Zefan <lizf@cn.fujitsu.com> wrote:
+On Tue, May 6, 2008 at 5:38 AM, Arnd Bergmann <arnd@arndb.de> wrote:
+> On Tuesday 06 May 2008, Michal Simek wrote:
+>  > I saw a lot of comments about files but I have never seen any comments that
+>  > any file is OK.
+>  > Does it mean everything is broken??? I don't think so.
+>
+<snip>
+>
+>  I think you're doing a great job on this. Any patch set of this size that
+>  has been maintained for a long time outside of the kernel goes through this
+>  phase where everyone tells you what to improve, based on their experience,
+>  while everything you do right about the patches is just taken for granted.
+>
+>  Don't let yourself get discouraged by the negative comments, we're really
+>  all just trying to help you do the right thing!
 
-> Li Zefan wrote:
-> > ---
-> 
-> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
-> ---
-> 
-> Sorry for the noise, but the signed-off was eaten. :(
-> Maybe I should leave a blank line before the signed-off.
-> 
-> ---
-> 
->  mm/page_alloc.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-> index bdd5c43..d0ba10d 100644
-> --- a/mm/page_alloc.c
-> +++ b/mm/page_alloc.c
-> @@ -303,7 +303,7 @@ static void destroy_compound_page(struct page *page, unsigned long order)
->  	for (i = 1; i < nr_pages; i++) {
->  		struct page *p = page + i;
->  
-> -		if (unlikely(!PageTail(p) |
-> +		if (unlikely(!PageTail(p) ||
->  				(p->first_page != page)))
->  			bad_page(page);
->  		__ClearPageTail(p);
+Let me add my voice to Arnd's.  This is a *big* task and you're
+handling it very well.
 
-I have a vague memory that the "|" was deliberate.  Most of the time,
-"!PageTail" will be false so most of the time we won't take the first
-branch so it's probably worth omitting it and always doing the pointer
-comparison.
+Cheers,
+g.
 
-It's a somewhat dopey trick and shouldn't have been done without a comment.
-
-otoh maybe it was a typo.
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
