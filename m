@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932629AbYEFRmA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932681AbYEFRme@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932629AbYEFRmA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 13:42:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764490AbYEFRhu
+	id S932681AbYEFRme (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 13:42:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764885AbYEFRh7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 13:37:50 -0400
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:50253 "EHLO
+	Tue, 6 May 2008 13:37:59 -0400
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:50268 "EHLO
 	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764372AbYEFRhr (ORCPT
+	with ESMTP id S1764804AbYEFRh5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 13:37:47 -0400
-Message-Id: <20080506173335.629534151@theryb.frec.bull.fr>
+	Tue, 6 May 2008 13:37:57 -0400
+Message-Id: <20080506173335.775444855@theryb.frec.bull.fr>
 References: <20080506173030.653828076@theryb.frec.bull.fr>
 User-Agent: quilt/0.46-1
-Date: Tue, 06 May 2008 19:31:50 +0200
+Date: Tue, 06 May 2008 19:32:00 +0200
 From: Benjamin Thery <benjamin.thery@bull.net>
 To: linux-kernel@vger.kernel.org
 Cc: "Eric W. Biederman" <ebiederm@xmission.com>, Tejun Heo <htejun@gmail.com>,
@@ -22,169 +22,196 @@ Cc: "Eric W. Biederman" <ebiederm@xmission.com>, Tejun Heo <htejun@gmail.com>,
        "Serge E. Hallyn" <serue@us.ibm.com>,
        Pavel Emelyanov <xemul@openvz.org>, netdev@vger.kernel.org,
        Benjamin Thery <benjamin.thery@bull.net>
-Subject: [PATCH 08/11] driver core: Implement tagged directory support for
- device classes.
+Subject: [PATCH 09/11] netns: Enable tagging for net_class directories in
+ sysfs
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-driver core: Implement tagged directory support for device classes.
+net: Enable tagging for net_class directories in sysfs
 
-This patch enables tagging on every class directory if struct class
-has tag_ops.
+The problem.  Network devices show up in sysfs and with the network
+namespace active multiple devices with the same name can show up in
+the same directory, ouch!
 
-In addition device_del and device_rename were modified to use
-sysfs_delete_link and sysfs_rename_link respectively to ensure
-when these operations happen on devices whose classes have
-tag_ops that they work properly.
+To avoid that problem and allow existing applications in network namespaces
+to see the same interface that is currently presented in sysfs, this
+patch enables the tagging directory support in sysfs.
+
+By using the network namespace pointers as tags to separate out the
+the sysfs directory entries we ensure that we don't have conflicts
+in the directories and applications only see a limited set of
+the network devices.
 
 Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
 Acked-by: Benjamin Thery <benjamin.thery@bull.net>
 ---
- drivers/base/class.c   |   30 ++++++++++++++++++++++++++----
- drivers/base/core.c    |   41 ++++++++++++++++++++++-------------------
- include/linux/device.h |    2 ++
- 3 files changed, 50 insertions(+), 23 deletions(-)
+ fs/sysfs/mount.c      |   36 ++++++++++++++++++++++++++++++++++++
+ include/linux/sysfs.h |    2 ++
+ net/Kconfig           |    2 +-
+ net/core/net-sysfs.c  |   20 ++++++++++++++++++++
+ 4 files changed, 59 insertions(+), 1 deletion(-)
 
-Index: linux-vanilla/drivers/base/class.c
+Index: linux-vanilla/fs/sysfs/mount.c
 ===================================================================
---- linux-vanilla.orig/drivers/base/class.c
-+++ linux-vanilla/drivers/base/class.c
-@@ -134,6 +134,17 @@ static void remove_class_attrs(struct cl
- 	}
+--- linux-vanilla.orig/fs/sysfs/mount.c
++++ linux-vanilla/fs/sysfs/mount.c
+@@ -16,6 +16,8 @@
+ #include <linux/mount.h>
+ #include <linux/pagemap.h>
+ #include <linux/init.h>
++#include <linux/nsproxy.h>
++#include <net/net_namespace.h>
+ 
+ #include "sysfs.h"
+ 
+@@ -78,6 +80,7 @@ static int sysfs_fill_super(struct super
+ 	root->d_sb = sb;
+ 	sb->s_root = root;
+ 	sb->s_fs_info = info;
++	info->tag.net_ns = hold_net(current->nsproxy->net_ns);
+ 	return 0;
+ 
+ out_err:
+@@ -95,6 +98,9 @@ static int sysfs_test_super(struct super
+ 	struct sysfs_super_info *info = sysfs_info(sb);
+ 	int found = 1;
+ 
++	if (task->nsproxy->net_ns != info->tag.net_ns)
++		found = 0;
++
+ 	return found;
  }
  
-+static int class_setup_tagging(struct class *cls)
+@@ -131,6 +137,8 @@ static void sysfs_kill_sb(struct super_b
+ 	struct sysfs_super_info *info = sysfs_info(sb);
+ 
+ 	kill_anon_super(sb);
++	if (info->tag.net_ns)
++		release_net(info->tag.net_ns);
+ 	kfree(info);
+ }
+ 
+@@ -181,6 +189,31 @@ restart:
+ 	spin_unlock(&sb_lock);
+ }
+ 
++#ifdef CONFIG_NET
++static void sysfs_net_exit(struct net *net)
 +{
-+	const struct sysfs_tagged_dir_operations *tag_ops;
-+
-+	tag_ops = cls->tag_ops;
-+	if (!tag_ops)
-+		return 0;
-+
-+	return sysfs_enable_tagging(&cls->subsys.kobj, tag_ops);
++	/* Allow the net namespace to go away while sysfs is still mounted. */
++	struct super_block *sb;
++	mutex_lock(&sysfs_rename_mutex);
++	sysfs_grab_supers();
++	mutex_lock(&sysfs_mutex);
++	list_for_each_entry(sb, &sysfs_fs_type.fs_supers, s_instances) {
++		struct sysfs_super_info *info = sysfs_info(sb);
++		if (info->tag.net_ns != net)
++			continue;
++		release_net(info->tag.net_ns);
++		info->tag.net_ns = NULL;
++	}
++	mutex_unlock(&sysfs_mutex);
++	sysfs_release_supers();
++	mutex_unlock(&sysfs_rename_mutex);
 +}
 +
- int class_register(struct class *cls)
- {
- 	int error;
-@@ -159,11 +170,22 @@ int class_register(struct class *cls)
- 	cls->subsys.kobj.ktype = &class_ktype;
- 
- 	error = kset_register(&cls->subsys);
--	if (!error) {
--		error = add_class_attrs(class_get(cls));
--		class_put(cls);
--	}
-+	if (error)
-+		goto out;
-+
-+	error = class_setup_tagging(cls);
-+	if (error)
-+		goto out_unregister;
-+
-+	error = add_class_attrs(cls);
-+	if (error)
-+		goto out_unregister;
-+
-+out:
- 	return error;
-+out_unregister:
-+	kset_unregister(&cls->subsys);
-+	goto out;
- }
- 
- void class_unregister(struct class *cls)
-Index: linux-vanilla/drivers/base/core.c
-===================================================================
---- linux-vanilla.orig/drivers/base/core.c
-+++ linux-vanilla/drivers/base/core.c
-@@ -614,6 +614,10 @@ static struct kobject *get_device_parent
- 			kobject_put(k);
- 			return NULL;
- 		}
-+		/* If we created a new class-directory setup tagging */
-+		if (dev->class->tag_ops)
-+			sysfs_enable_tagging(k, dev->class->tag_ops);
-+
- 		/* do not emit an uevent for this simple "glue" directory */
- 		return k;
- 	}
-@@ -748,12 +752,13 @@ static void device_remove_class_symlinks
- 
- 	if (dev->kobj.parent != &dev->class->subsys.kobj &&
- 	    device_is_not_partition(dev))
--		sysfs_remove_link(&dev->class->subsys.kobj, dev->bus_id);
-+		sysfs_delete_link(&dev->class->subsys.kobj, &dev->kobj,
-+				  dev->bus_id);
- #else
- 	if (dev->parent && device_is_not_partition(dev))
- 		sysfs_remove_link(&dev->kobj, "device");
- 
--	sysfs_remove_link(&dev->class->subsys.kobj, dev->bus_id);
-+	sysfs_delete_link(&dev->class->subsys.kobj, &dev->kobj, dev->bus_id);
- #endif
- 
- 	sysfs_remove_link(&dev->kobj, "subsystem");
-@@ -1199,6 +1204,15 @@ int device_rename(struct device *dev, ch
- 	strlcpy(old_device_name, dev->bus_id, BUS_ID_SIZE);
- 	strlcpy(dev->bus_id, new_name, BUS_ID_SIZE);
- 
-+#ifndef CONFIG_SYSFS_DEPRECATED
-+	if (dev->class && (dev->kobj.parent != &dev->class->subsys.kobj)) {
-+		error = sysfs_rename_link(&dev->class->subsys.kobj,
-+			&dev->kobj, old_device_name, new_name);
-+		if (error)
-+			goto out;
-+	}
++static struct pernet_operations sysfs_net_ops = {
++	.exit = sysfs_net_exit,
++};
 +#endif
 +
- 	error = kobject_rename(&dev->kobj, new_name);
- 	if (error) {
- 		strlcpy(dev->bus_id, old_device_name, BUS_ID_SIZE);
-@@ -1207,24 +1221,13 @@ int device_rename(struct device *dev, ch
- 
- #ifdef CONFIG_SYSFS_DEPRECATED
- 	if (old_class_name) {
-+		error = -ENOMEM;
- 		new_class_name = make_class_name(dev->class->name, &dev->kobj);
--		if (new_class_name) {
--			error = sysfs_create_link(&dev->parent->kobj,
--						  &dev->kobj, new_class_name);
--			if (error)
--				goto out;
--			sysfs_remove_link(&dev->parent->kobj, old_class_name);
--		}
--	}
--#else
--	if (dev->class) {
--		sysfs_remove_link(&dev->class->subsys.kobj, old_device_name);
--		error = sysfs_create_link(&dev->class->subsys.kobj, &dev->kobj,
--					  dev->bus_id);
--		if (error) {
--			dev_err(dev, "%s: sysfs_create_symlink failed (%d)\n",
--				__func__, error);
--		}
-+		if (new_class_name)
-+			error = sysfs_rename_link(&dev->parent->kobj,
-+						  &dev->kobj,
-+						  old_class_name,
-+						  new_class_name);
- 	}
- #endif
- 
-Index: linux-vanilla/include/linux/device.h
+ int __init sysfs_init(void)
+ {
+ 	int err = -ENOMEM;
+@@ -205,6 +238,9 @@ int __init sysfs_init(void)
+ 			unregister_filesystem(&sysfs_fs_type);
+ 			goto out_err;
+ 		}
++#ifdef CONFIG_NET
++		register_pernet_subsys(&sysfs_net_ops);
++#endif
+ 	} else
+ 		goto out_err;
+ out:
+Index: linux-vanilla/include/linux/sysfs.h
 ===================================================================
---- linux-vanilla.orig/include/linux/device.h
-+++ linux-vanilla/include/linux/device.h
-@@ -198,6 +198,8 @@ struct class {
+--- linux-vanilla.orig/include/linux/sysfs.h
++++ linux-vanilla/include/linux/sysfs.h
+@@ -19,6 +19,7 @@
  
- 	int (*suspend)(struct device *dev, pm_message_t state);
- 	int (*resume)(struct device *dev);
-+
-+	const struct sysfs_tagged_dir_operations *tag_ops;
+ struct kobject;
+ struct module;
++struct net;
+ 
+ /* FIXME
+  * The *owner field is no longer used, but leave around
+@@ -79,6 +80,7 @@ struct sysfs_ops {
  };
  
- extern int __must_check class_register(struct class *class);
+ struct sysfs_tag_info {
++	struct net *net_ns;
+ };
+ 
+ struct sysfs_tagged_dir_operations {
+Index: linux-vanilla/net/Kconfig
+===================================================================
+--- linux-vanilla.orig/net/Kconfig
++++ linux-vanilla/net/Kconfig
+@@ -30,7 +30,7 @@ menu "Networking options"
+ config NET_NS
+ 	bool "Network namespace support"
+ 	default n
+-	depends on EXPERIMENTAL && !SYSFS && NAMESPACES
++	depends on EXPERIMENTAL && NAMESPACES
+ 	help
+ 	  Allow user space to create what appear to be multiple instances
+ 	  of the network stack.
+Index: linux-vanilla/net/core/net-sysfs.c
+===================================================================
+--- linux-vanilla.orig/net/core/net-sysfs.c
++++ linux-vanilla/net/core/net-sysfs.c
+@@ -13,7 +13,9 @@
+ #include <linux/kernel.h>
+ #include <linux/netdevice.h>
+ #include <linux/if_arp.h>
++#include <linux/nsproxy.h>
+ #include <net/sock.h>
++#include <net/net_namespace.h>
+ #include <linux/rtnetlink.h>
+ #include <linux/wireless.h>
+ #include <net/iw_handler.h>
+@@ -421,6 +423,23 @@ static void netdev_release(struct device
+ 	kfree((char *)dev - dev->padded);
+ }
+ 
++static const void *net_sb_tag(struct sysfs_tag_info *info)
++{
++	return info->net_ns;
++}
++
++static const void *net_kobject_tag(struct kobject *kobj)
++{
++	struct net_device *dev;
++	dev = container_of(kobj, struct net_device, dev.kobj);
++	return dev_net(dev);
++}
++
++static const struct sysfs_tagged_dir_operations net_tagged_dir_operations = {
++	.sb_tag = net_sb_tag,
++	.kobject_tag = net_kobject_tag,
++};
++
+ static struct class net_class = {
+ 	.name = "net",
+ 	.dev_release = netdev_release,
+@@ -430,6 +449,7 @@ static struct class net_class = {
+ #ifdef CONFIG_HOTPLUG
+ 	.dev_uevent = netdev_uevent,
+ #endif
++	.tag_ops = &net_tagged_dir_operations,
+ };
+ 
+ /* Delete sysfs entries but hold kobject reference until after all
 
 -- 
