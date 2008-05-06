@@ -1,23 +1,33 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761660AbYEFAI7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762000AbYEFALA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761660AbYEFAI7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 20:08:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754659AbYEFAIv
+	id S1762000AbYEFALA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 20:11:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753007AbYEFAKu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 20:08:51 -0400
-Received: from gate.crashing.org ([63.228.1.57]:36968 "EHLO gate.crashing.org"
+	Mon, 5 May 2008 20:10:50 -0400
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:57630 "EHLO e6.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754569AbYEFAIu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 20:08:50 -0400
-Subject: ALSA vs. non coherent DMA
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Takashi Iwai <tiwai@suse.de>
-Cc: alsa-devel@alsa-project.org, linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>
+	id S1754962AbYEFAKt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 May 2008 20:10:49 -0400
+Subject: Re: [PATCH] jbd_commit_transaction() races with
+	journal_try_to_drop_buffers() causing DIO failures
+From: Badari Pulavarty <pbadari@us.ibm.com>
+To: Jan Kara <jack@suse.cz>
+Cc: Mingming Cao <cmm@us.ibm.com>, akpm@linux-foundation.org,
+       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20080505170636.GK25722@duck.suse.cz>
+References: <20080306174209.GA14193@duck.suse.cz>
+	 <1209166706.6040.20.camel@localhost.localdomain>
+	 <20080428122626.GC17054@duck.suse.cz>
+	 <1209402694.23575.5.camel@badari-desktop>
+	 <20080428180932.GI17054@duck.suse.cz>
+	 <1209409764.11872.6.camel@localhost.localdomain>
+	 <20080429124321.GD1987@duck.suse.cz>
+	 <1209654981.27240.19.camel@badari-desktop>
+	 <20080505170636.GK25722@duck.suse.cz>
 Content-Type: text/plain
-Date: Tue, 06 May 2008 10:08:28 +1000
-Message-Id: <1210032508.21644.129.camel@pasglop>
+Date: Mon, 05 May 2008 17:10:59 -0700
+Message-Id: <1210032659.16169.64.camel@badari-desktop>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
@@ -25,56 +35,68 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Takashi !
 
-I'm bringing up an old thread as I'm just discovering that the problem
-still hasn't been fixed.
+On Mon, 2008-05-05 at 19:06 +0200, Jan Kara wrote:
+> On Thu 01-05-08 08:16:21, Badari Pulavarty wrote:
+> > Hi Andrew & Jan,
+> > 
+> > I was able to reproduce the customer problem involving DIO
+> > (invalidate_inode_pages2) problem by writing simple testcase
+> > to keep writing to a file using buffered writes and DIO writes
+> > forever in a loop. I see DIO writes fail with -EIO.
+> > 
+> > After a long debug, found 2 cases how this could happen.
+> > These are race conditions with journal_try_to_free_buffers()
+> > and journal_commit_transaction().
+> > 
+> > 1) journal_submit_data_buffers() tries to get bh_state lock. If
+> > try lock fails, it drops the j_list_lock and sleeps for
+> > bh_state lock, while holding a reference on the buffer.
+> > In the meanwhile, journal_try_to_free_buffers() can clean up the
+> > journal head could call try_to_free_buffers(). try_to_free_buffers()
+> > would fail due to the reference held by journal_submit_data_buffers()
+> > - which in turn causes failues for DIO (invalidate_inode_pages2()).
+> > 
+> > 2) When the buffer is on t_locked_list waiting for IO to finish,
+> > we hold a reference and give up the cpu, if we can't get
+> > bh_state lock. This causes try_to_free_buffers() to fail.
+> > 
+> > Fix is to drop the reference on the buffer if we can't get
+> > bh_state lock, give up the cpu and re-try the whole operation -
+> > instead of waiting for the vh_state lock.
+> > 
+> > Does this look like a resonable fix ?
+>   As Mingming pointed out there are few other places where we could hold
+> the bh reference. Note also that we accumulate references to buffers in the
+> wbuf[] list and we need that for submit_bh() which consumes one bh
+> reference. Generally, it seems to me as a too fragile and impractical
+> rule "nobody can hold bh reference when not holding page lock" which is
+> basically what it comes down to if you really want to be sure that
+> journal_try_to_free_buffers() succeeds. And also note that in principle
+> there are other places which hold references to buffers without holding the
+> page lock - for example writepage() in ordered mode (although this one is
+> in practice hardly triggerable). So how we could fix at least the races
+> with commit code is to implement launder_page() callback for ext3/4 which
+> would wait for the previous transaction commit in case the page has buffers
+> that are part of that commit (I don't want this logic in
+> journal_try_to_free_buffers() as that is called also on memory-reclaim
+> path, but journal_launder_page() is fine with me). This would be correct
+> but could considerably slow down O_DIRECT writes in cases they're mixed
+> with buffered writes so I'm not sure if this is acceptable.
 
-There seem to be a few issues with ALSA current usage of mmap vs. non
-cache coherent architecture, such as embedded PowerPC's.
+Yes. I have been discussing all of these with Mingming. I agree with you
+that it looks silly to update all the places to not hold a ref on the
+buffer while waiting for spinlocks. 
 
-I can see at least two with a quick look to pcm-native.c, one I don't
-understand and one I think I do:
+Adding a launder_page() seems to be the right approach. I wouldn't worry
+about making O_DIRECT slower. Currently, its failing with -EIO in this
+case anyway. 
 
- - The control/status mapping. Can you elaborate a bit on what this is
-actually doing and why it shouldn't be done on "non coherent"
-architectures ? Currently this -is- done on all powerpc's, whether they
-are coherent or not and I want to understand what the underlying issue
-is.
+Unfortunately, this happens at a customer site and I can't effort to
+give them a complete re-write type patch - I need to get this into 
+older distro release :( Thats why I am trying to fix the cases.
+I am finding more and more of these ..
 
- - The mmap of DMA pages. Here, the problem appears two fold:
-
-	* Use of virt_to_page() on virtual addresses returned by
-dma_alloc_coherent().
-
-	* No using the appropriate page protection for a DMA coherent mapping
-to userspace.
-
-It seems like you have solved that in part with implementing a generic
-dma_mmap_coherent() in the past that for some reason you never merged
-upstream (I can track that to about 2 years ago). Is there a reason ?
-
-I think we need to at least apply a band-aid today as it's becoming a
-nasty issue for several non-coherent powerpc platforms. It could be in
-the form of implementing dma_mmap_coherent() and changing Alsa to use it
-with the appropriate ifdef, or just adding an ifdef CONFIG_PPC with the
-right code in there for now until a better solution is found.
-
-It should be trivial though. Getting the PFN from the DMA address is
-easy if we have the dma handle and the virtual address, though that -is-
-definitely platform specific. I can implement a function for that if you
-need. As for the pgprot, we can come up with something like
-pgprot_mmap_dma(). Either that or I can fold it all in a powerpc wide
-implementation of a dma_mmap_coherent() like we envisioned initially.
-
-Let me know what approach is preferred here and I'll come up with
-patches ASAP. As far as I'm concerned, this is a bug and thus must be
-fixed now for .26 and possibly backported to stable even if we can come
-up with a non invasive solution). I'm annoyed because it represents a
-trivial amount of code, this problem should have been fixed a long time
-ago.
-
-Cheers,
-Ben.
-
+Thanks,
+Badari
 
