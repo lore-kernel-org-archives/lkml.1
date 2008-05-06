@@ -1,73 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764296AbYEFP13@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763485AbYEFPcG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764296AbYEFP13 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 11:27:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758350AbYEFP1T
+	id S1763485AbYEFPcG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 11:32:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757957AbYEFPbx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 11:27:19 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:36617 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754741AbYEFP1R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 11:27:17 -0400
-Date: Tue, 6 May 2008 16:27:14 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Christoph Lameter <clameter@sgi.com>,
-       Lee Schermerhorn <lee.schermerhorn@hp.com>, kyle@parisc-linux.org,
-       matthew@wil.cx, grundler@parisc-linux.org, linux-parisc@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: parisc DISCONTIGMEM compile breakage
-Message-ID: <20080506152713.GA5034@csn.ul.ie>
-References: <20080506134648.GA30082@cs181133002.pp.htv.fi>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <20080506134648.GA30082@cs181133002.pp.htv.fi>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Tue, 6 May 2008 11:31:53 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:38246 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756239AbYEFPbx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 May 2008 11:31:53 -0400
+Date: Tue, 6 May 2008 16:20:49 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Cc: Shaohua Li <shaohua.li@intel.com>, Holger Macht <hmacht@suse.de>,
+       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       "Accardi, Kristen C" <kristen.c.accardi@intel.com>
+Subject: Re: [PATCH] bay: Exit if notify handler cannot be installed
+Message-ID: <20080506162049.237af49c@core>
+In-Reply-To: <20080506151846.GA22828@khazad-dum.debian.net>
+References: <20080505202508.GA3690@homac>
+	<20080506091522.GA4378@homac>
+	<1210065811.12668.1.camel@sli10-desk.sh.intel.com>
+	<20080506151846.GA22828@khazad-dum.debian.net>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (06/05/08 16:46), Adrian Bunk didst pronounce:
-> Commit 54a6eb5c4765aa573a030ceeba2c14e3d2ea5706
-> (mm: use two zonelist that are filtered by GFP mask)
-> causes the following build error with CONFIG_DISCONTIGMEM=y
-> on parisc:
+On Tue, 6 May 2008 12:18:46 -0300
+Henrique de Moraes Holschuh <hmh@hmh.eng.br> wrote:
+
+> On Tue, 06 May 2008, Shaohua Li wrote:
+> > The bay driver is duplicated with libata, I thought we should delete it.
+> > See bug http://bugzilla.kernel.org/show_bug.cgi?id=9526
 > 
+> The bay driver is currently useless, BUT it should handle a lot of stuff
+> libata won't, such as bay batteries, bay floppies, and anything else in
+> a bay that is not a hard disk.
 
-Thanks Adrian. I don't have a pa-risc cross-compiler and there isn't one
-at the usual source http://userweb.kernel.org/~akpm/cross-compilers but the
-patch below should fix it. Note that this debugging code should be deleted if
-the mm-initialisation-and-debugging framework in -mm is merged to mainline
-as it knows how to print all the zonelists where as the pa-risc equivilant
-misses the GFP_THISNODE lists.
-
-=====
-Subject: [PATCH] Fix pa-risc DISCONTIGMEM compile breakage
-    
-PA-RISC to aid debugging prints out the zonelists setup by the system. A
-bad call to node_zonelist() breaks at compile-time. This patch fixes it.
-
-Signed-off-by: Mel Gorman <mel@csn.ul.ie>
----
- arch/parisc/mm/init.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/arch/parisc/mm/init.c b/arch/parisc/mm/init.c
-index 1f01284..b0ed709 100644
---- a/arch/parisc/mm/init.c
-+++ b/arch/parisc/mm/init.c
-@@ -606,7 +606,7 @@ void show_mem(void)
- 		int i, j;
- 
- 		for (i = 0; i < npmem_ranges; i++) {
--			zl = node_zonelist(i);
-+			zl = node_zonelist(i, 0);
- 			for (j = 0; j < MAX_NR_ZONES; j++) {
- 				struct zoneref *z;
- 				struct zone *zone;
-
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+The bay driver needs to become a service that hands out bay events to
+all the other drivers for that to happen.
