@@ -1,57 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932329AbYEFQvt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765977AbYEFQxA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932329AbYEFQvt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 12:51:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765834AbYEFQvd
+	id S1765977AbYEFQxA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 12:53:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761163AbYEFQwo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 12:51:33 -0400
-Received: from mail.AKNET.ru ([77.246.241.226]:61735 "EHLO mail.aknet.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765756AbYEFQvb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 12:51:31 -0400
-Message-ID: <48208C85.30606@aknet.ru>
-Date: Tue, 06 May 2008 20:51:17 +0400
-From: Stas Sergeev <stsp@aknet.ru>
+	Tue, 6 May 2008 12:52:44 -0400
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:45838 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760626AbYEFQwm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 May 2008 12:52:42 -0400
+Message-ID: <48208CEC.2090200@bull.net>
+Date: Tue, 06 May 2008 18:53:00 +0200
+From: Benjamin Thery <benjamin.thery@bull.net>
 User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-To: Takashi Iwai <tiwai@suse.de>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.25-mm1 (snd-pcsp doesn't like DEBUG_PAGEALLOC)
-References: <20080418014757.52fb4a4f.akpm@linux-foundation.org>	<20080419021343.GA3503@nineveh.local>	<20080418200237.b5a9e805.akpm@linux-foundation.org>	<20080419041429.GA8508@anvil.corenet.prv>	<20080418212934.bbe84ee2.akpm@linux-foundation.org>	<s5h8wz7cng7.wl%tiwai@suse.de>	<480CD50F.20706@aknet.ru>	<s5hbq42b3j7.wl%tiwai@suse.de>	<480E2EE5.5040208@aknet.ru>	<s5hiqy9dkhv.wl%tiwai@suse.de>	<480F95BE.60109@aknet.ru>	<s5h3apbd1zx.wl%tiwai@suse.de>	<4811555E.3040509@aknet.ru>	<s5hfxta4fem.wl%tiwai@suse.de>	<48120ABF.1050802@aknet.ru>	<s5hve25j2tj.wl%tiwai@suse.de>	<s5habj8odtq.wl%tiwai@suse.de>	<481B47DC.1010605@aknet.ru> <s5hr6cfd99m.wl%tiwai@suse.de>
-In-Reply-To: <s5hr6cfd99m.wl%tiwai@suse.de>
-X-Enigmail-Version: 0.95.2
-Content-Type: text/plain; charset=ISO-8859-1
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+Cc: Daniel Lezcano <dlezcano@fr.ibm.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>, Greg KH <gregkh@suse.de>,
+       linux-kernel@vger.kernel.org, Al Viro <viro@ftp.linux.org.uk>,
+       Tejun Heo <htejun@gmail.com>, Pavel Emelyanov <xemul@openvz.org>,
+       netdev@vger.kernel.org
+Subject: Re: [PATCH 00/10] sysfs tagged directories
+References: <20080429180445.GA18110@sergelap.austin.ibm.com> <20080429184151.GA19794@suse.de> <20080429193417.GA19282@sergelap.austin.ibm.com> <20080501031341.GD4911@suse.de> <20080501151051.GB16038@sergelap.austin.ibm.com> <m11w4lho08.fsf@frodo.ebiederm.org> <20080501210550.GA22534@sergelap.austin.ibm.com> <m1prs5fzzd.fsf@frodo.ebiederm.org> <20080502174222.GA16493@sergelap.austin.ibm.com> <481E4312.9060909@fr.ibm.com> <20080505161800.GC8485@sergelap.austin.ibm.com>
+In-Reply-To: <20080505161800.GC8485@sergelap.austin.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+Serge E. Hallyn wrote:
+> Quoting Daniel Lezcano (dlezcano@fr.ibm.com):
+>> Serge E. Hallyn wrote:
+>>> Quoting Eric W. Biederman (ebiederm@xmission.com):
+>>>> "Serge E. Hallyn" <serue@us.ibm.com> writes:
+>>>>
+>>>>> Quoting Eric W. Biederman (ebiederm@xmission.com):
+>>>>> Ok as it turns out Benjamin Thery does in fact have a patch to fix this.
+>>>>> Benjamin, please send your renaming patch out tomorrow if you can?
+>>>>>
+>>>>> I guess this is why I didn't really see the problem Benjamin said there
+>>>>> was - it just works with SYSFS_DEPRECATED  :)
+>>>> It will be nice to see that patch.  I'm curious what the problem was.
+>>>>
+>>>> Eric
+>>> Here is the patch he had privately sent.  As the comments indicate he's
+>>> still refining it so yell at me not him...   but this on top of the
+>>> tagged dir patchset makes everything work for me.
+>>> (I'd *really* like to see network namespaces be generally usable sometime
+>>> in 2.6.26.)
+>> Serge,
+>>
+>> I posted a fix to Dave Miller which was included in net-2.6 and merged in 
+>> 2.6.26-rc1.
+> 
+> Cool, I see it in gitweb, thanks.
+> 
+>> http://marc.info/?l=linux-netdev&m=120959135229360&w=2
+>>
+>> This one should fix your problem for sysfs.
+>>
+>> There is another fix to do in order to avoid name conflicts with network 
+>> interfaces belonging to different namespaces, eg. allows to rename veth1234 
+>> to eth0 without conflicting with the network device belonging in init_net, 
+>> I send this patch to container@ first to have it merged with the sysfs 
+>> patchset.
+> 
+> Ok.
+> 
+> Benjamin, what are you doing with Eric's sysfs patchset then?  Are you
+> going to re-post it asap on top of whatever tree has these two patches,
+> or are you planning to wait longer?
 
-Takashi Iwai wrote:
-> The case (c) was my proposal.  But in this case, the driver will
-> become likely self consistent; it allocates its own device at init.
-> In anyway, there is no sexy way to auto-load snd-pcsp (partly because
-> it's the purpose -- avoid loading the sound subsystem unless really
-> necessary).  That's why I called it hackish.
-I thought all (or most) alsa drivers
-are allocating device on init, even
-though this is explicitly discouraged
-in the docs. So I was considering this
-as a possible solution with the minimal
-drawback.
-But... as long as the autoloading by
-default is not needed, and both drivers
-can be at least built together, and not
-too much distros have pcspkr built-in,
-I thought the current solution - having
-pcspkr as the default but to let the user
-to choose snd-pcsp, is not all that bad
-too. I guess it costs only adding a single
-alias into modprobe.conf to choose snd-pcsp.
-And I also think _most_ distros do not
-mind having the sound subsystem loaded
-by default, but some certainly do. For
-those that do, the user will have to add
-an alias. For others - he may get snd-pcsp
-right away. IMHO this is rather acceptable.
+I will resend the patchset on top of 2.6.26-rc1,
+with Daniel's last patch merged.
+
+(If anyone prefer to have it merged on top of net-2.6, say so)
+
+-benjamin
+
+> 
+> thanks,
+> -serge
+> 
+> 
+
+
+-- 
+B e n j a m i n   T h e r y  - BULL/DT/Open Software R&D
+
+    http://www.bull.com
