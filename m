@@ -1,83 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764959AbYEFQB1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764813AbYEFQCn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764959AbYEFQB1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 12:01:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764319AbYEFQBI
+	id S1764813AbYEFQCn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 12:02:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759842AbYEFQCa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 12:01:08 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:59410 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756384AbYEFQBG (ORCPT
+	Tue, 6 May 2008 12:02:30 -0400
+Received: from fmailhost05.isp.att.net ([207.115.11.55]:47376 "EHLO
+	fmailhost01.isp.att.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1759544AbYEFQC3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 12:01:06 -0400
-Subject: Re: Preempt-RT patch for 2.6.25
-From: Daniel Walker <dwalker@mvista.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Steven Rostedt <rostedt@goodmis.org>,
-       Sven-Thorsten Dietrich <sven@thebigcorporation.com>,
-       Remy Bohmer <linux@bohmer.net>, LKML <linux-kernel@vger.kernel.org>,
-       RT <linux-rt-users@vger.kernel.org>,
-       Jon Masters <jonathan@jonmasters.org>
-In-Reply-To: <20080506084338.GA19151@elte.hu>
-References: <Pine.LNX.4.58.0805051210410.23084@gandalf.stny.rr.com>
-	 <1210004376.17132.14.camel@localhost.localdomain>
-	 <Pine.LNX.4.58.0805051240520.25250@gandalf.stny.rr.com>
-	 <1210007084.17132.32.camel@localhost.localdomain>
-	 <Pine.LNX.4.58.0805051426010.25250@gandalf.stny.rr.com>
-	 <1210013938.17132.55.camel@localhost.localdomain>
-	 <alpine.LFD.1.10.0805052107270.3318@apollo.tec.linutronix.de>
-	 <1210025532.17132.82.camel@localhost.localdomain>
-	 <20080505234743.GA11433@elte.hu>
-	 <1210032701.17132.98.camel@localhost.localdomain>
-	 <20080506084338.GA19151@elte.hu>
-Content-Type: text/plain
-Date: Tue, 06 May 2008 09:01:03 -0700
-Message-Id: <1210089663.17132.128.camel@localhost.localdomain>
+	Tue, 6 May 2008 12:02:29 -0400
+X-Originating-IP: [74.251.4.130]
+Date: Tue, 6 May 2008 11:02:25 -0500
+From: Jay Cliburn <jacliburn@bellsouth.net>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: Luca Tettamanti <kronos.it@gmail.com>, Chris Snook <csnook@redhat.com>,
+       Jeff Garzik <jeff@garzik.org>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, Christoph Lameter <clameter@sgi.com>,
+       torvalds@osdl.org
+Subject: Re: atl1 64-bit => 32-bit DMA borkage (reproducible, bisected)
+Message-ID: <20080506110225.31fd61a4@osprey.hogchain.net>
+In-Reply-To: <20080504211507.GC1040@martell.zuzino.mipt.ru>
+References: <20080419111719.GA6724@martell.zuzino.mipt.ru>
+	<20080419144535.GA4814@martell.zuzino.mipt.ru>
+	<20080419215444.2d4623f5@osprey.hogchain.net>
+	<20080420111453.GA4902@martell.zuzino.mipt.ru>
+	<20080420060607.2b1be48b@osprey.hogchain.net>
+	<20080420122631.GA4761@martell.zuzino.mipt.ru>
+	<20080420133704.63f5cc10@osprey.hogchain.net>
+	<20080420205500.GA4762@martell.zuzino.mipt.ru>
+	<20080421210821.28053a92@osprey.hogchain.net>
+	<20080425195743.2bfe66ee@osprey.hogchain.net>
+	<20080504211507.GC1040@martell.zuzino.mipt.ru>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-3.fc8) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 5 May 2008 01:15:07 +0400
+Alexey Dobriyan <adobriyan@gmail.com> wrote:
 
-On Tue, 2008-05-06 at 10:43 +0200, Ingo Molnar wrote:
-> * Daniel Walker <dwalker@mvista.com> wrote:
+> Looking at how other netdevice drivers:
 > 
-> > > Since it's code that you regard stale it shouldnt be all that hard 
-> > > to fix it up - in general it's much easier to fix a bug than to talk 
-> > > it out of existence, even if you disagree with a maintainer about 
-> > > how significant a bug is.
-> > 
-> > It shouldn't be hard, but it's too much to do all in one go. [...]
+> 8139too and others checks netif_running() in interrupt handler.
 > 
-> this sort of "it was too hard for me but I expect the maintainers to 
-> clean up the mess" stance, combined with an aggressive, uncompromising, 
-> demanding tone towards the maintainers of a project wont get you very 
-> far in contributing to any open-source project. You are not their boss, 
-> you have to learn to work with them instead of trying to force your 
-> opinion on them. They clearly try to work with you and gave a 
-> straightforward technical description of how your contribution would be 
-> acceptable to the project. All the rest is just a waste of everyone's 
-> time that could be better spent on improving the project. JFYI.
+> r8169 has scary "50k$" question comment re irqs disabled after
+> interacting with hardware.
+> 
+> But the r8169 case should be fixed by atlx_irq_disable()?
+> 
+> Writes to REG_IMR, REG_ISR are commented in atl1_reset_hw(), why?
+> (I'll test that soon)
 
-It's not "too hard for me" it's a matter of correctness. As if I would
-ever say that Ingo ..
+I've tried all the stuff you mentioned above, and more, to prevent the
+memory corruption, all to no avail.
 
-I'm not forcing my opinion on anyone. I'm assuming cleanup are
-acceptable, especially bisect cleanup (when your code isn't bisectable).
-My position is based on that.
+I booted with mem=4000M and didn't hit the bug.  I diffed dmesg between
+booting with mem=4000M and booting without it, and found that iommu
+was being disabled when booting with full memory:
 
-You release a dirty -rt tree and expect no one will clean it up, and
-further more if they do clean up your code you just toss the work aside
-like it's pointless. I take it you don't want clean ups. From my
-perspective you should be thanking me.
+--- dmesg-4000.txt      2008-05-06 10:14:07.000000000 -0500
++++ dmesg-4096.txt      2008-05-06 10:09:19.000000000 -0500
+@@ -1,5 +1,5 @@
+ Linux version 2.6.26-rc1 (jcliburn@finch.hogchain.net) (gcc version 4.1.2 20070
+925 (Red Hat 4.1.2-27)) #4 SMP Mon May 5 18:03:48 CDT 2008
+-Command line: ro root=LABEL=/1 console=ttyS0,38400 console=tty0 slub_debug=FZPU mem=4000M
++Command line: ro root=LABEL=/1 console=ttyS0,38400 console=tty0 slub_debug=FZPU
+[...]
++Looks like a VIA chipset. Disabling IOMMU. Override with iommu=allowed
+[...]
 
-Had Steven simple said "Please include all the architecture" a month ago
-when I released my code, I may have actually done that.
+So I then booted with iommu=allowed.  No errors.  Can't hit the bug to
+save my life.
 
-This thread is in no way a plea to get my code included. My code never
-had a chance to be included anyway ..
+Why would disabling iommu cause the atl1 driver to write over poisoned
+memory?
 
-Daniel
+Alexey, can you please try booting with iommu=allowed and see if you
+avoid the problem?
 
+Thanks,
+Jay
