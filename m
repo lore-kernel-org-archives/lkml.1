@@ -1,367 +1,212 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933793AbYEFV2T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933824AbYEFV2t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933793AbYEFV2T (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 17:28:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762101AbYEFVTa
+	id S933824AbYEFV2t (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 17:28:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933060AbYEFVTx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 17:19:30 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:48590 "EHLO mx1.redhat.com"
+	Tue, 6 May 2008 17:19:53 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:48583 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933079AbYEFVSx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 17:18:53 -0400
+	id S933141AbYEFVSu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 May 2008 17:18:50 -0400
 Date: Tue, 6 May 2008 17:18:07 -0400
 From: Ulrich Drepper <drepper@redhat.com>
-Message-Id: <200805062118.m46LI7im004072@devserv.devel.redhat.com>
+Message-Id: <200805062118.m46LI7fK004056@devserv.devel.redhat.com>
 To: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: [PATCH 12/18] flag parameters: NONBLOCK in socket and socketpair
+Subject: [PATCH 07/18] flag parameters: epoll_create
 Cc: akpm@linux-foundation.org, davidel@xmailserver.org, mtk.manpages@gmail.com,
        torvalds@linux-foundation.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch introduces support for the SOCK_NONBLOCK flag in socket,
-socketpair, and  paccept.  To do this the internal function sock_attach_fd
-gets an additional parameter which it uses to set the appropriate flag for
-the file descriptor.
+This patch adds the new epoll_create2 syscall.  It extends the old epoll_create
+syscall by one parameter which is meant to hold a flag value.  In this
+patch the only flag support is EPOLL_CLOEXEC which causes the close-on-exec
+flag for the returned file descriptor to be set.
 
-Given that in modern, scalable programs almost all socket connections are
-non-blocking and the minimal additional cost for the new functionality
-I see no reason not to add this code.
+A new name EPOLL_CLOEXEC is introduced which in this implementation must
+have the same value as O_CLOEXEC.
 
 The following test must be adjusted for architectures other than x86 and
 x86-64 and in case the syscall numbers changed.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #include <fcntl.h>
-#include <pthread.h>
 #include <stdio.h>
+#include <time.h>
 #include <unistd.h>
-#include <netinet/in.h>
-#include <sys/socket.h>
 #include <sys/syscall.h>
 
-#ifndef __NR_paccept
+#ifndef __NR_epoll_create2
 # ifdef __x86_64__
-#  define __NR_paccept 288
+#  define __NR_epoll_create2 291
 # elif defined __i386__
-#  define SYS_PACCEPT 18
-#  define USE_SOCKETCALL 1
+#  define __NR_epoll_create2 329
 # else
-#  error "need __NR_paccept"
+#  error "need __NR_epoll_create2"
 # endif
 #endif
 
-#ifdef USE_SOCKETCALL
-# define paccept(fd, addr, addrlen, mask, flags) \
-  ({ long args[6] = { \
-       (long) fd, (long) addr, (long) addrlen, (long) mask, 8, (long) flags }; \
-     syscall (__NR_socketcall, SYS_PACCEPT, args); })
-#else
-# define paccept(fd, addr, addrlen, mask, flags) \
-  syscall (__NR_paccept, fd, addr, addrlen, mask, 8, flags)
-#endif
-
-#define PORT 57392
-
-#define SOCK_NONBLOCK O_NONBLOCK
-
-static pthread_barrier_t b;
-
-static void *
-tf (void *arg)
-{
-  pthread_barrier_wait (&b);
-  int s = socket (AF_INET, SOCK_STREAM, 0);
-  struct sockaddr_in sin;
-  sin.sin_family = AF_INET;
-  sin.sin_addr.s_addr = htonl (INADDR_LOOPBACK);
-  sin.sin_port = htons (PORT);
-  connect (s, (const struct sockaddr *) &sin, sizeof (sin));
-  close (s);
-  pthread_barrier_wait (&b);
-
-  pthread_barrier_wait (&b);
-  s = socket (AF_INET, SOCK_STREAM, 0);
-  sin.sin_port = htons (PORT);
-  connect (s, (const struct sockaddr *) &sin, sizeof (sin));
-  close (s);
-  pthread_barrier_wait (&b);
-
-  return NULL;
-}
+#define EPOLL_CLOEXEC O_CLOEXEC
 
 int
 main (void)
 {
-  int fd;
-  fd = socket (PF_INET, SOCK_STREAM, 0);
+  int fd = syscall (__NR_epoll_create2, 1, 0);
   if (fd == -1)
     {
-      puts ("socket(0) failed");
+      puts ("epoll_create2(0) failed");
       return 1;
     }
-  int fl = fcntl (fd, F_GETFL);
-  if (fl == -1)
+  int coe = fcntl (fd, F_GETFD);
+  if (coe == -1)
     {
       puts ("fcntl failed");
       return 1;
     }
-  if (fl & O_NONBLOCK)
+  if (coe & FD_CLOEXEC)
     {
-      puts ("socket(0) set non-blocking mode");
+      puts ("epoll_create2(0) set close-on-exec flag");
       return 1;
     }
   close (fd);
 
-  fd = socket (PF_INET, SOCK_STREAM|SOCK_NONBLOCK, 0);
+  fd = syscall (__NR_epoll_create2, 1, EPOLL_CLOEXEC);
   if (fd == -1)
     {
-      puts ("socket(SOCK_NONBLOCK) failed");
+      puts ("epoll_create2(EPOLL_CLOEXEC) failed");
       return 1;
     }
-  fl = fcntl (fd, F_GETFL);
-  if (fl == -1)
+  coe = fcntl (fd, F_GETFD);
+  if (coe == -1)
     {
       puts ("fcntl failed");
       return 1;
     }
-  if ((fl & O_NONBLOCK) == 0)
+  if ((coe & FD_CLOEXEC) == 0)
     {
-      puts ("socket(SOCK_NONBLOCK) does not set non-blocking mode");
+      puts ("epoll_create2(EPOLL_CLOEXEC) set close-on-exec flag");
       return 1;
     }
   close (fd);
 
-  int fds[2];
-  if (socketpair (PF_UNIX, SOCK_STREAM, 0, fds) == -1)
-    {
-      puts ("socketpair(0) failed");
-      return 1;
-    }
-  for (int i = 0; i < 2; ++i)
-    {
-      fl = fcntl (fds[i], F_GETFL);
-      if (fl == -1)
-        {
-          puts ("fcntl failed");
-          return 1;
-        }
-      if (fl & O_NONBLOCK)
-        {
-          printf ("socketpair(0) set non-blocking mode for fds[%d]\n", i);
-          return 1;
-        }
-      close (fds[i]);
-    }
-
-  if (socketpair (PF_UNIX, SOCK_STREAM|SOCK_NONBLOCK, 0, fds) == -1)
-    {
-      puts ("socketpair(SOCK_NONBLOCK) failed");
-      return 1;
-    }
-  for (int i = 0; i < 2; ++i)
-    {
-      fl = fcntl (fds[i], F_GETFL);
-      if (fl == -1)
-        {
-          puts ("fcntl failed");
-          return 1;
-        }
-      if ((fl & O_NONBLOCK) == 0)
-        {
-          printf ("socketpair(SOCK_NONBLOCK) does not set non-blocking mode for fds[%d]\n", i);
-          return 1;
-        }
-      close (fds[i]);
-    }
-
-  pthread_barrier_init (&b, NULL, 2);
-
-  struct sockaddr_in sin;
-  pthread_t th;
-  if (pthread_create (&th, NULL, tf, NULL) != 0)
-    {
-      puts ("pthread_create failed");
-      return 1;
-    }
-
-  int s = socket (AF_INET, SOCK_STREAM, 0);
-  int reuse = 1;
-  setsockopt (s, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof (reuse));
-  sin.sin_family = AF_INET;
-  sin.sin_addr.s_addr = htonl (INADDR_LOOPBACK);
-  sin.sin_port = htons (PORT);
-  bind (s, (struct sockaddr *) &sin, sizeof (sin));
-  listen (s, SOMAXCONN);
-
-  pthread_barrier_wait (&b);
-
-  int s2 = paccept (s, NULL, 0, NULL, 0);
-  if (s2 < 0)
-    {
-      puts ("paccept(0) failed");
-      return 1;
-    }
-
-  fl = fcntl (s2, F_GETFL);
-  if (fl & O_NONBLOCK)
-    {
-      puts ("paccept(0) set non-blocking mode");
-      return 1;
-    }
-  close (s2);
-  close (s);
-
-  pthread_barrier_wait (&b);
-
-  s = socket (AF_INET, SOCK_STREAM, 0);
-  sin.sin_port = htons (PORT);
-  setsockopt (s, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof (reuse));
-  bind (s, (struct sockaddr *) &sin, sizeof (sin));
-  listen (s, SOMAXCONN);
-
-  pthread_barrier_wait (&b);
-
-  s2 = paccept (s, NULL, 0, NULL, SOCK_NONBLOCK);
-  if (s2 < 0)
-    {
-      puts ("paccept(SOCK_NONBLOCK) failed");
-      return 1;
-    }
-
-  fl = fcntl (s2, F_GETFL);
-  if ((fl & O_NONBLOCK) == 0)
-    {
-      puts ("paccept(SOCK_NONBLOCK) does not set non-blocking mode");
-      return 1;
-    }
-  close (s2);
-  close (s);
-
-  pthread_barrier_wait (&b);
   puts ("OK");
 
   return 0;
 }
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
- include/linux/net.h |    3 ++-
- net/socket.c        |   20 ++++++++++----------
- 2 files changed, 12 insertions(+), 11 deletions(-)
+ arch/x86/ia32/ia32entry.S          |    1 +
+ arch/x86/kernel/syscall_table_32.S |    1 +
+ fs/eventpoll.c                     |   13 +++++++++++--
+ include/asm-x86/unistd_32.h        |    1 +
+ include/asm-x86/unistd_64.h        |    2 ++
+ include/linux/eventpoll.h          |    4 ++++
+ include/linux/syscalls.h           |    1 +
+ 7 files changed, 21 insertions(+), 2 deletions(-)
 
 
 Signed-off-by: Ulrich Drepper <drepper@redhat.com>
 
-diff --git a/include/linux/net.h b/include/linux/net.h
-index b4ad432..1b35fd5 100644
---- a/include/linux/net.h
-+++ b/include/linux/net.h
-@@ -20,7 +20,7 @@
+--- a/arch/x86/ia32/ia32entry.S
++++ b/arch/x86/ia32/ia32entry.S
+@@ -733,4 +733,5 @@ ia32_sys_call_table:
+ 	.quad compat_sys_timerfd_gettime
+ 	.quad compat_sys_signalfd4
+ 	.quad sys_eventfd2
++	.quad sys_epoll_create2
+ ia32_syscall_end:
+--- a/arch/x86/kernel/syscall_table_32.S
++++ b/arch/x86/kernel/syscall_table_32.S
+@@ -328,3 +328,4 @@ ENTRY(sys_call_table)
+ 	.long sys_timerfd_gettime
+ 	.long sys_signalfd4
+ 	.long sys_eventfd2
++	.long sys_epoll_create2
+--- a/fs/eventpoll.c
++++ b/fs/eventpoll.c
+@@ -1046,11 +1046,14 @@ retry:
+  * RB tree. With the current implementation, the "size" parameter is ignored
+  * (besides sanity checks).
+  */
+-asmlinkage long sys_epoll_create(int size)
++asmlinkage long sys_epoll_create2(int size, int flags)
+ {
+ 	int error, fd = -1;
+ 	struct eventpoll *ep;
  
- #include <linux/wait.h>
- #include <linux/socket.h>
--#include <linux/fcntl.h>	/* For O_CLOEXEC */
-+#include <linux/fcntl.h>	/* For O_CLOEXEC and O_NONBLOCK */
- #include <asm/socket.h>
++	if (flags & ~EPOLL_CLOEXEC)
++		return -EINVAL;
++
+ 	DNPRINTK(3, (KERN_INFO "[%p] eventpoll: sys_epoll_create(%d)\n",
+ 		     current, size));
  
- struct poll_table_struct;
-@@ -102,6 +102,7 @@ enum sock_type {
+@@ -1068,7 +1071,8 @@ asmlinkage long sys_epoll_create(int size)
+ 	 * Creates all the items needed to setup an eventpoll file. That is,
+ 	 * a file structure and a free file descriptor.
+ 	 */
+-	fd = anon_inode_getfd("[eventpoll]", &eventpoll_fops, ep, 0);
++	fd = anon_inode_getfd("[eventpoll]", &eventpoll_fops, ep,
++			      flags & O_CLOEXEC);
+ 	if (fd < 0)
+ 		ep_free(ep);
  
- /* Flags for socket, socketpair, paccept */
- #define SOCK_CLOEXEC	O_CLOEXEC
-+#define SOCK_NONBLOCK	O_NONBLOCK
- 
- #endif /* ARCH_HAS_SOCKET_TYPES */
- 
-diff --git a/net/socket.c b/net/socket.c
-index 634ad83..7cb0a5e 100644
---- a/net/socket.c
-+++ b/net/socket.c
-@@ -366,7 +366,7 @@ static int sock_alloc_fd(struct file **filep, int flags)
+@@ -1079,6 +1083,11 @@ error_return:
  	return fd;
  }
  
--static int sock_attach_fd(struct socket *sock, struct file *file)
-+static int sock_attach_fd(struct socket *sock, struct file *file, int flags)
- {
- 	struct dentry *dentry;
- 	struct qstr name = { .name = "" };
-@@ -388,7 +388,7 @@ static int sock_attach_fd(struct socket *sock, struct file *file)
- 	init_file(file, sock_mnt, dentry, FMODE_READ | FMODE_WRITE,
- 		  &socket_file_ops);
- 	SOCK_INODE(sock)->i_fop = &socket_file_ops;
--	file->f_flags = O_RDWR;
-+	file->f_flags = O_RDWR | (flags & O_NONBLOCK);
- 	file->f_pos = 0;
- 	file->private_data = sock;
++asmlinkage long sys_epoll_create(int size)
++{
++	return sys_epoll_create2(size, 0);
++}
++
+ /*
+  * The following function implements the controller interface for
+  * the eventpoll file that enables the insertion/removal/change of
+--- a/include/asm-x86/unistd_32.h
++++ b/include/asm-x86/unistd_32.h
+@@ -334,6 +334,7 @@
+ #define __NR_timerfd_gettime	326
+ #define __NR_signalfd4		327
+ #define __NR_eventfd2		328
++#define __NR_epoll_create2	329
  
-@@ -401,7 +401,7 @@ int sock_map_fd(struct socket *sock, int flags)
- 	int fd = sock_alloc_fd(&newfile, flags);
+ #ifdef __KERNEL__
  
- 	if (likely(fd >= 0)) {
--		int err = sock_attach_fd(sock, newfile);
-+		int err = sock_attach_fd(sock, newfile, flags);
+--- a/include/asm-x86/unistd_64.h
++++ b/include/asm-x86/unistd_64.h
+@@ -645,6 +645,8 @@ __SYSCALL(__NR_paccept, sys_paccept)
+ __SYSCALL(__NR_signalfd4, sys_signalfd4)
+ #define __NR_eventfd2				290
+ __SYSCALL(__NR_eventfd2, sys_eventfd2)
++#define __NR_epoll_create2			291
++__SYSCALL(__NR_epoll_create2, sys_epoll_create2)
  
- 		if (unlikely(err < 0)) {
- 			put_filp(newfile);
-@@ -1220,7 +1220,7 @@ asmlinkage long sys_socket(int family, int type, int protocol)
- 	int flags;
  
- 	flags = type & ~SOCK_TYPE_MASK;
--	if (flags & ~SOCK_CLOEXEC)
-+	if (flags & ~(SOCK_CLOEXEC | SOCK_NONBLOCK))
- 		return -EINVAL;
- 	type &= SOCK_TYPE_MASK;
+ #ifndef __NO_STUBS
+--- a/include/linux/eventpoll.h
++++ b/include/linux/eventpoll.h
+@@ -14,8 +14,12 @@
+ #ifndef _LINUX_EVENTPOLL_H
+ #define _LINUX_EVENTPOLL_H
  
-@@ -1228,7 +1228,7 @@ asmlinkage long sys_socket(int family, int type, int protocol)
- 	if (retval < 0)
- 		goto out;
++/* For O_CLOEXEC */
++#include <linux/fcntl.h>
+ #include <linux/types.h>
  
--	retval = sock_map_fd(sock, flags & O_CLOEXEC);
-+	retval = sock_map_fd(sock, flags & (O_CLOEXEC | O_NONBLOCK));
- 	if (retval < 0)
- 		goto out_release;
++/* Flags for epoll_create2.  */
++#define EPOLL_CLOEXEC O_CLOEXEC
  
-@@ -1254,7 +1254,7 @@ asmlinkage long sys_socketpair(int family, int type, int protocol,
- 	int flags;
- 
- 	flags = type & ~SOCK_TYPE_MASK;
--	if (flags & ~SOCK_CLOEXEC)
-+	if (flags & ~(SOCK_CLOEXEC | SOCK_NONBLOCK))
- 		return -EINVAL;
- 	type &= SOCK_TYPE_MASK;
- 
-@@ -1289,12 +1289,12 @@ asmlinkage long sys_socketpair(int family, int type, int protocol,
- 		goto out_release_both;
- 	}
- 
--	err = sock_attach_fd(sock1, newfile1);
-+	err = sock_attach_fd(sock1, newfile1, flags & O_NONBLOCK);
- 	if (unlikely(err < 0)) {
- 		goto out_fd2;
- 	}
- 
--	err = sock_attach_fd(sock2, newfile2);
-+	err = sock_attach_fd(sock2, newfile2, flags & O_NONBLOCK);
- 	if (unlikely(err < 0)) {
- 		fput(newfile1);
- 		goto out_fd1;
-@@ -1420,7 +1420,7 @@ long do_accept(int fd, struct sockaddr __user *upeer_sockaddr,
- 	int err, len, newfd, fput_needed;
- 	char address[MAX_SOCK_ADDR];
- 
--	if (flags & ~SOCK_CLOEXEC)
-+	if (flags & ~(SOCK_CLOEXEC | SOCK_NONBLOCK))
- 		return -EINVAL;
- 
- 	sock = sockfd_lookup_light(fd, &err, &fput_needed);
-@@ -1447,7 +1447,7 @@ long do_accept(int fd, struct sockaddr __user *upeer_sockaddr,
- 		goto out_put;
- 	}
- 
--	err = sock_attach_fd(newsock, newfile);
-+	err = sock_attach_fd(newsock, newfile, flags & O_NONBLOCK);
- 	if (err < 0)
- 		goto out_fd_simple;
- 
+ /* Valid opcodes to issue to sys_epoll_ctl() */
+ #define EPOLL_CTL_ADD 1
+--- a/include/linux/syscalls.h
++++ b/include/linux/syscalls.h
+@@ -430,6 +430,7 @@ asmlinkage long sys_poll(struct pollfd __user *ufds, unsigned int nfds,
+ asmlinkage long sys_select(int n, fd_set __user *inp, fd_set __user *outp,
+ 			fd_set __user *exp, struct timeval __user *tvp);
+ asmlinkage long sys_epoll_create(int size);
++asmlinkage long sys_epoll_create2(int size, int flags);
+ asmlinkage long sys_epoll_ctl(int epfd, int op, int fd,
+ 				struct epoll_event __user *event);
+ asmlinkage long sys_epoll_wait(int epfd, struct epoll_event __user *events,
