@@ -1,53 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932821AbYEFTuo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932901AbYEFTvN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932821AbYEFTuo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 15:50:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762330AbYEFTu3
+	id S932901AbYEFTvN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 15:51:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763435AbYEFTub
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 15:50:29 -0400
-Received: from 1wt.eu ([62.212.114.60]:4157 "EHLO 1wt.eu"
+	Tue, 6 May 2008 15:50:31 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:50345 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762066AbYEFTu1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 15:50:27 -0400
-Date: Tue, 6 May 2008 21:50:15 +0200
-From: Willy Tarreau <w@1wt.eu>
-To: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-Cc: Jan Engelhardt <jengelh@medozas.de>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: bad pmd ffff810000207808(9090909090909090).
-Message-ID: <20080506195014.GS8474@1wt.eu>
-References: <874p9biqwj.fsf@duaron.myhome.or.jp> <alpine.LNX.1.10.0805061424090.16731@fbirervta.pbzchgretzou.qr> <87zlr3zj9x.fsf@duaron.myhome.or.jp>
+	id S1762778AbYEFTu3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 May 2008 15:50:29 -0400
+Date: Tue, 6 May 2008 15:47:58 -0400
+From: Rik van Riel <riel@redhat.com>
+To: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Cc: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>
+Subject: Re: [patch 8/8] guest page hinting light
+Message-ID: <20080506154758.498b25b2@cuia.bos.redhat.com>
+In-Reply-To: <20080506155112.820321745@de.ibm.com>
+References: <20080506155027.974409738@de.ibm.com>
+	<20080506155112.820321745@de.ibm.com>
+Organization: Red Hat, Inc
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <87zlr3zj9x.fsf@duaron.myhome.or.jp>
-User-Agent: Mutt/1.5.11
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 06, 2008 at 09:52:58PM +0900, OGAWA Hirofumi wrote:
-> Jan Engelhardt <jengelh@medozas.de> writes:
+On Tue, 06 May 2008 17:50:35 +0200
+Martin Schwidefsky <schwidefsky@de.ibm.com> wrote:
+
+> From: Martin Schwidefsky <schwidefsky@de.ibm.com>
 > 
-> > On Tuesday 2008-05-06 14:00, OGAWA Hirofumi wrote:
-> >
-> >>I've found today the following error in syslog. It seems have a strange
-> >>pattern. And it also happened at a month ago.
-> >>
-> >>Any idea for debuging this?
-> >>
-> >
-> > 90 is NOP on x86, perhaps something got rooted?
+> Use the existing arch_alloc_page/arch_free_page callbacks to do
+> the guest page state transitions between stable and unused.
 > 
-> I see. I'm not sure, but I didn't notice this soon, maybe it worked as
-> almost usual.
+> Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
 
-I got immediate same feeling as Jan here. It looks very much like someone
-has tried to inject code into your system. The problem is that you don't
-know if this finally succeeded. Maybe some backdoor is now installed in
-your kernel. If I were you, I would isolate the machine, reboot it on CD
-and check MD5s (particularly the ones of the kernel and modules) before
-rebooting it.
+Acked-by: Rik van Riel <riel@redhat.com>
 
-Willy
-
+-- 
+All Rights Reversed
