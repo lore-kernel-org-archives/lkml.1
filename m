@@ -1,79 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764267AbYEFOyo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763427AbYEFO4U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764267AbYEFOyo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 10:54:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763024AbYEFOya
+	id S1763427AbYEFO4U (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 10:56:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754724AbYEFO4M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 10:54:30 -0400
-Received: from ribosome.natur.cuni.cz ([195.113.57.20]:49947 "EHLO
-	ribosome.natur.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763003AbYEFOy1 (ORCPT
+	Tue, 6 May 2008 10:56:12 -0400
+Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:50631 "EHLO
+	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753203AbYEFO4M (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 10:54:27 -0400
-Message-ID: <4820711C.1010902@ribosome.natur.cuni.cz>
-Date: Tue, 06 May 2008 16:54:20 +0200
-From: =?UTF-8?B?TWFydGluIE1PS1JFSsWg?= <mmokrejs@ribosome.natur.cuni.cz>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.13) Gecko/20080328 SeaMonkey/1.1.9
+	Tue, 6 May 2008 10:56:12 -0400
+Message-ID: <48207142.6060702@s5r6.in-berlin.de>
+Date: Tue, 06 May 2008 16:54:58 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.13) Gecko/20080313 SeaMonkey/1.1.9
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: Robert Hancock <hancockr@shaw.ca>, Jan Engelhardt <jengelh@medozas.de>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.23.17 & 2.6.24.5 and maybe earlier: pata_marvell: need to
- disable DMA to get rid of '(ATA bus error)', 'ata7.00: status: { DRDY ERR
- }', 'ata7.00: error: { ICRC ABRT }'
-References: <fa.+9Q+WQnyiYTlpbXVIzn6aT2/gS0@ifi.uio.no>	<fa.fKUfeQYS9BFD60fOMormQ25ard4@ifi.uio.no>	<fa.QYXSW2xjSxf6xnmd0rQGJhHLnrc@ifi.uio.no>	<fa.qfeYSQtlsXzGvFvBQEdF9TFFpNg@ifi.uio.no>	<481BD12D.1030406@shaw.ca>	<4820529D.2040609@ribosome.natur.cuni.cz> <20080506140825.759db8f2@core>
-In-Reply-To: <20080506140825.759db8f2@core>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Mauro Carvalho Chehab <mchehab@infradead.org>
+CC: Alistair John Strachan <alistair@devzero.co.uk>, Robin Holt <holt@sgi.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.26-rc1
+References: <alpine.LFD.1.10.0805031205330.2971@woody.linux-foundation.org>	<20080504160904.GF19717@sgi.com>	<Pine.LNX.4.64.0805051656180.3218@bombadil.infradead.org>	<200805060902.25835.alistair@devzero.co.uk> <20080506073134.424780a3@gaivota> <48206C73.80509@s5r6.in-berlin.de>
+In-Reply-To: <48206C73.80509@s5r6.in-berlin.de>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-Alan Cox wrote:
->> ata7.00: ATA-0: Delock 54111 512MB, Ver1.27, max UDMA/33
->> ata7.00: 1006992 sectors, multi 0: LBA 
+I wrote:
+> If A selects B, you have to copy all of B's
+> dependencies to A or select these dependencies by A.
 > 
-> For some reason your CF card seems to think it is an ATA device not a CFA
-> device. What does the identify data for it look like (hdparm -I)
+> So it's totally simple to do it right.  The only nuisance is that you
+> always have to update B's dependencies and selections whenever A's
+> dependencies are changed.
 
-# hdparm -I /dev/sde
-
-/dev/sde:
-
-ATA device, with non-removable media
-        Model Number:       Delock 54111 512MB                      
-        Serial Number:      
-        Firmware Revision:  Ver1.27 
-Standards:
-        Likely used: 4
-Configuration:
-        Logical         max     current
-        cylinders       999     999
-        heads           16      16
-        sectors/track   63      63
-        --
-        bytes/track: 32256      bytes/sector: 512
-        CHS current addressable sectors:    1006992
-        LBA    user addressable sectors:    1006992
-        device size with M = 1024*1024:         491 MBytes
-        device size with M = 1000*1000:         515 MBytes 
-Capabilities:
-        LBA, IORDY(may be)(cannot be disabled)
-        Buffer size: 1.0kB      bytes avail on r/w long: 4
-        Standby timer values: spec'd by Vendor
-        R/W multiple sector transfer: Max = 1   Current = 0
-        DMA: mdma0 mdma1 mdma2 udma0 *udma1 udma2 
-             Cycle time: min=120ns recommended=120ns
-        PIO: pio0 pio1 pio2 pio3 pio4 
-             Cycle time: no flow control=120ns  IORDY flow control=120ns
-Security: 
-                supported
-        not     enabled
-        not     locked
-        not     frozen
-        not     expired: security count
-                supported: enhanced erase
-#
+Switch A and B in the last sentence. :-)
+-- 
+Stefan Richter
+-=====-==--- -=-= --==-
+http://arcgraph.de/sr/
