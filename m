@@ -1,87 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764215AbYEFAe2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764257AbYEFAez@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764215AbYEFAe2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 20:34:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764090AbYEFAdp
+	id S1764257AbYEFAez (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 20:34:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764069AbYEFAeF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 20:33:45 -0400
-Received: from outbound-va3.frontbridge.com ([216.32.180.16]:22389 "EHLO
-	outbound3-va3-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1764079AbYEFAdn convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 20:33:43 -0400
-X-BigFish: VP
-X-MS-Exchange-Organization-Antispam-Report: OrigIP: 149.199.60.83;Service: EHS
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Mon, 5 May 2008 20:34:05 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:39922 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761633AbYEFAeD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 May 2008 20:34:03 -0400
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH 07/56] microblaze_v2: Signal support
-Date: Mon, 5 May 2008 17:33:45 -0700
-In-reply-to: <1210033550.5798.185.camel@localhost>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH 07/56] microblaze_v2: Signal support
-Thread-Index: AcivD9iqJRppDB5kSWac8NrCpYHf3QAANYFg
-References: <a4a778e34c66d126f5c4bf1ca423cf32950ea5ab.1209897266.git.monstr@monstr.eu> <9a7c6646e5dd9724c1cf34767adec181481fa3ef.1209897266.git.monstr@monstr.eu> <20080505213244.8DC757A0084@mail70-wa4.bigfish.com> <1210030436.5798.148.camel@localhost> <20080506001339.619971A58057@mail55-wa4.bigfish.com> <1210033550.5798.185.camel@localhost>
-From: "Stephen Neuendorffer" <stephen.neuendorffer@xilinx.com>
-To: "John Williams" <john.williams@petalogix.com>
-Cc: <monstr@seznam.cz>, <linux-kernel@vger.kernel.org>, <arnd@arndb.de>,
-       <linux-arch@vger.kernel.org>, "John Linn" <linnj@xilinx.com>,
-       <matthew@wil.cx>, <will.newton@gmail.com>, <drepper@redhat.com>,
-       <microblaze-uclinux@itee.uq.edu.au>, <grant.likely@secretlab.ca>,
-       "Michal Simek" <monstr@monstr.eu>
-X-OriginalArrivalTime: 06 May 2008 00:33:41.0442 (UTC) FILETIME=[D562D220:01C8AF10]
-Message-Id: <20080506003341.AFA5911E804F@mail138-va3.bigfish.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: linux-kernel@vger.kernel.org
+X-Fcc: ~/Mail/linus
+Subject: [PATCH 3/4] do_wait: return security_task_wait() error code in place of -ECHILD
+In-Reply-To: Roland McGrath's message of  Monday, 5 May 2008 17:32:39 -0700 <20080506003239.43FF026FA20@magilla.localdomain>
+References: <20080506003239.43FF026FA20@magilla.localdomain>
+Emacs: don't try this at home, kids!
+Message-Id: <20080506003358.664BB26FA20@magilla.localdomain>
+Date: Mon,  5 May 2008 17:33:58 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This reverts the effect of commit f2cc3eb133baa2e9dc8efd40f417106b2ee520f3
+"do_wait: fix security checks".  That change reverted the effect of commit
+73243284463a761e04d69d22c7516b2be7de096c.  The rationale for the original
+commit still stands.  The inconsistent treatment of children hidden by
+ptrace was an unintended omission in the original change and in no way
+invalidates its purpose.
 
-You're right.  (I think I've been staring at this too much today... :)
+This makes do_wait return the error returned by security_task_wait()
+(usually -EACCES) in place of -ECHILD when there are some children the
+caller would be able to wait for if not for the permission failure.  A
+permission error will give the user a clue to look for security policy
+problems, rather than for mysterious wait bugs.
 
-Steve
+Signed-off-by: Roland McGrath <roland@redhat.com>
+---
+ kernel/exit.c |   30 ++++++++++++++++++++----------
+ 1 files changed, 20 insertions(+), 10 deletions(-)
 
-> -----Original Message-----
-> From: John Williams [mailto:john.williams@petalogix.com]
-> Sent: Monday, May 05, 2008 5:26 PM
-> To: Stephen Neuendorffer
-> Cc: monstr@seznam.cz; linux-kernel@vger.kernel.org; arnd@arndb.de;
-linux-arch@vger.kernel.org; John
-> Linn; matthew@wil.cx; will.newton@gmail.com; drepper@redhat.com;
-microblaze-uclinux@itee.uq.edu.au;
-> grant.likely@secretlab.ca; Michal Simek
-> Subject: RE: [PATCH 07/56] microblaze_v2: Signal support
-> 
-> On Mon, 2008-05-05 at 17:13 -0700, Stephen Neuendorffer wrote:
-> > I'm somewhat ignorant about what this code is attempting to do, but
-with
-> > some quick poking around (m68knommu, blackfin) seems to suggest that
-> > other architectures don't do this, while others (v850) have almost
-> > exactly the same code (although they are somewhat smarter and are
-> > careful not to flush the whole cache).
-> >
-> > At the very least, it seems like there is some work in this area
-needed.
-> 
-> flush_cache_sigtramp should just invalidate 8 bytes up from the base
-> address of the trampoline.  This is just the region on the process
-stack
-> where we insert a kind of call-back back.  Writing the opcodes goes
-via
-> the dcache, and so there's a vanishingly small possibility that the
-CPU
-> will get a false hit on on an icache fetch when the code is executed.
-> 
-> That was what Michal's patch had when I scanned it yesterday.  It
-> certainly won't/shouldn't be invalidating the entire cache.
-> 
-> Cheers,
-> 
-> John
-> 
-> 
-
-
+diff --git a/kernel/exit.c b/kernel/exit.c
+index c95765f..42980e2 100644
+--- a/kernel/exit.c
++++ b/kernel/exit.c
+@@ -1193,14 +1193,10 @@ static int eligible_child(enum pid_type type, struct pid *pid, int options,
+ 		return 0;
+ 
+ 	err = security_task_wait(p);
+-	if (likely(!err))
+-		return 1;
++	if (err)
++		return err;
+ 
+-	if (type != PIDTYPE_PID)
+-		return 0;
+-	/* This child was explicitly requested, abort */
+-	read_unlock(&tasklist_lock);
+-	return err;
++	return 1;
+ }
+ 
+ static int wait_noreap_copyout(struct task_struct *p, pid_t pid, uid_t uid,
+@@ -1530,7 +1526,8 @@ static int wait_task_continued(struct task_struct *p, int options,
+  * -ECHILD should be in *@retval before the first call.
+  * Returns nonzero for a final return, when we have unlocked tasklist_lock.
+  * Returns zero if the search for a child should continue; then *@retval is
+- * 0 if @p is an eligible child, or still -ECHILD.
++ * 0 if @p is an eligible child, or another error from security_task_wait(),
++ * or still -ECHILD.
+  */
+ static int wait_consider_task(struct task_struct *parent, int ptrace,
+ 			      struct task_struct *p, int *retval,
+@@ -1539,9 +1536,21 @@ static int wait_consider_task(struct task_struct *parent, int ptrace,
+ 			      int __user *stat_addr, struct rusage __user *ru)
+ {
+ 	int ret = eligible_child(type, pid, options, p);
+-	if (ret <= 0)
++	if (!ret)
+ 		return ret;
+ 
++	if (unlikely(ret < 0)) {
++		/*
++		 * If we have not yet seen any eligible child,
++		 * then let this error code replace -ECHILD.
++		 * A permission error will give the user a clue
++		 * to look for security policy problems, rather
++		 * than for mysterious wait bugs.
++		 */
++		if (*retval)
++			*retval = ret;
++	}
++
+ 	if (likely(!ptrace) && unlikely(p->ptrace)) {
+ 		/*
+ 		 * This child is hidden by ptrace.
+@@ -1579,7 +1588,8 @@ static int wait_consider_task(struct task_struct *parent, int ptrace,
+  * -ECHILD should be in *@retval before the first call.
+  * Returns nonzero for a final return, when we have unlocked tasklist_lock.
+  * Returns zero if the search for a child should continue; then *@retval is
+- * 0 if there were any eligible children, or still -ECHILD.
++ * 0 if there were any eligible children, or another error from
++ * security_task_wait(), or still -ECHILD.
+  */
+ static int do_wait_thread(struct task_struct *tsk, int *retval,
+ 			  enum pid_type type, struct pid *pid, int options,
