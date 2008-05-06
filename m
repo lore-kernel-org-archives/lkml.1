@@ -1,78 +1,179 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761532AbYEFFg1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760226AbYEFFiI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761532AbYEFFg1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 01:36:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753659AbYEFFgM
+	id S1760226AbYEFFiI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 01:38:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753756AbYEFFhx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 01:36:12 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:43934 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759721AbYEFFgA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 01:36:00 -0400
-Date: Tue, 6 May 2008 15:35:52 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: David Miller <davem@davemloft.net>
-Cc: mingo@elte.hu, andi@lisas.de, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       mchehab@infradead.org
-Subject: Re: Linux 2.6.26-rc1
-Message-Id: <20080506153552.805240f3.sfr@canb.auug.org.au>
-In-Reply-To: <20080505.165501.62584352.davem@davemloft.net>
-References: <20080505053935.GA15734@rhlx01.hs-esslingen.de>
-	<20080505073030.GI3350@elte.hu>
-	<20080506095122.860796f6.sfr@canb.auug.org.au>
-	<20080505.165501.62584352.davem@davemloft.net>
-X-Mailer: Sylpheed 2.5.0beta3 (GTK+ 2.12.9; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Tue__6_May_2008_15_35_52_+1000_YtD0wdulMCwj/RhJ"
+	Tue, 6 May 2008 01:37:53 -0400
+Received: from e34.co.us.ibm.com ([32.97.110.152]:37962 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753659AbYEFFhw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 May 2008 01:37:52 -0400
+Date: Mon, 5 May 2008 22:37:48 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Gautham R Shenoy <ego@in.ibm.com>
+Cc: linux-kernel@vger.kernel.org, mathieu.desnoyers@polymtl.ca, mingo@elte.hu,
+       akpm@linux-foundation.org, hch@infradead.org, mmlnx@us.ibm.com,
+       dipankar@in.ibm.com, dsmith@redhat.com, rostedt@goodmis.org,
+       adrian.bunk@movial.fi, a.p.zijlstra@chello.nl, niv@us.ibm.com,
+       dvhltc@us.ibm.com, rusty@au1.ibm.com, jkenisto@linux.vnet.ibm.com,
+       oleg@tv-sign.ru, jamesclhuang@yahoo.com
+Subject: Re: [PATCH 3/5] Add rcu_barrier_sched() and rcu_barrier_bh()
+Message-ID: <20080506053748.GC9443@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20080422004454.GA3517@linux.vnet.ibm.com> <20080422004743.GC3693@linux.vnet.ibm.com> <20080505092240.GB8371@in.ibm.com> <20080505144751.GF14809@linux.vnet.ibm.com> <20080505174211.GA8419@in.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080505174211.GA8419@in.ibm.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Tue__6_May_2008_15_35_52_+1000_YtD0wdulMCwj/RhJ
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Mon, May 05, 2008 at 11:12:11PM +0530, Gautham R Shenoy wrote:
+> On Mon, May 05, 2008 at 07:47:51AM -0700, Paul E. McKenney wrote:
+> > On Mon, May 05, 2008 at 02:52:40PM +0530, Gautham R Shenoy wrote:
+> > > On Mon, Apr 21, 2008 at 05:47:43PM -0700, Paul E. McKenney wrote:
+> > > > Add rcu_barrier_sched() and rcu_barrier_bh().  With these in place,
+> > > > rcutorture no longer gives the occasional oops when repeatedly starting
+> > > > and stopping torturing rcu_bh.  Also adds the API needed to flush out
+> > > > pre-existing call_rcu_sched() callbacks.
+> > 
+> > Thank you again for looking it over!
+> > 
+> > > > Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+> > > > Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+> > > > ---
+> > > > 
+> > > >  include/linux/rcupdate.h |    2 +
+> > > >  kernel/rcupdate.c        |   55 +++++++++++++++++++++++++++++++++++++++++------
+> > > >  2 files changed, 51 insertions(+), 6 deletions(-)
+> > > > 
+> > > > diff -urpNa -X dontdiff linux-2.6.25-C2-rcuclassic-fixes/include/linux/rcupdate.h linux-2.6.25-C3-rcu_barrier_sched/include/linux/rcupdate.h
+> > > > --- linux-2.6.25-C2-rcuclassic-fixes/include/linux/rcupdate.h	2008-04-17 08:10:33.000000000 -0700
+> > > > +++ linux-2.6.25-C3-rcu_barrier_sched/include/linux/rcupdate.h	2008-04-21 11:33:07.000000000 -0700
+> > > > @@ -260,6 +260,8 @@ extern void call_rcu_bh(struct rcu_head 
+> > > >  /* Exported common interfaces */
+> > > >  extern void synchronize_rcu(void);
+> > > >  extern void rcu_barrier(void);
+> > > > +extern void rcu_barrier_bh(void);
+> > > > +extern void rcu_barrier_sched(void);
+> > > >  extern long rcu_batches_completed(void);
+> > > >  extern long rcu_batches_completed_bh(void);
+> > > > 
+> > > > diff -urpNa -X dontdiff linux-2.6.25-C2-rcuclassic-fixes/kernel/rcupdate.c linux-2.6.25-C3-rcu_barrier_sched/kernel/rcupdate.c
+> > > > --- linux-2.6.25-C2-rcuclassic-fixes/kernel/rcupdate.c	2008-04-17 08:10:33.000000000 -0700
+> > > > +++ linux-2.6.25-C3-rcu_barrier_sched/kernel/rcupdate.c	2008-04-21 11:33:08.000000000 -0700
+> > > > @@ -45,6 +45,12 @@
+> > > >  #include <linux/mutex.h>
+> > > >  #include <linux/module.h>
+> > > > 
+> > > > +enum rcu_barrier {
+> > > > +	RCU_BARRIER_STD,
+> > > STD: Standard, I take it ?
+> > 
+> > Yep.  Could say just "RCU_BARRIER", or perhaps "RCU_BARRIER_CLASSIC".
+> > Or comment each with the primitive they go with, perhaps better.
+> 
+> A simple RCU_BARRIER should do I guess, since the corresponding
+> API is rcu_barrier(). With comments, that'll be even better :-)
 
-Hi Dave,
+Fair enough!  ;-)
 
-On Mon, 05 May 2008 16:55:01 -0700 (PDT) David Miller <davem@davemloft.net>=
- wrote:
->
-> From: Stephen Rothwell <sfr@canb.auug.org.au>
-> Date: Tue, 6 May 2008 09:51:22 +1000
->=20
-> > I (and I assume Andrew) have been carrying them since then but noone to=
-ok
-> > them up.  I guess (as Andrew pointed out to me) I should have pushed th=
-em.
->=20
-> So what should I do now?
->=20
-> I have Ingo's IRDA PNP fixes in my net-2.6 tree and that's already
-> publicly visible, so I'd need to add revert changesets if people want
-> me to remove it.
+						Thanx, Paul
 
-Do nothing.  I was just making a point about patches getting lost/ignored.
-I have dropped my copies from linux-next today.
-
-At least the fixes are now in a tree headed for Linus, soon.
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Tue__6_May_2008_15_35_52_+1000_YtD0wdulMCwj/RhJ
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFIH+48TgG2atn1QN8RAsvuAJ4pxBtUJoqzQSpZHXoBjLi8TfpQoQCbB4Jv
-M+enUV6OrOPcolUTO2CPz+I=
-=N4jD
------END PGP SIGNATURE-----
-
---Signature=_Tue__6_May_2008_15_35_52_+1000_YtD0wdulMCwj/RhJ--
+> -- 
+> Thanks and Regards
+> gautham.
+> 
+> > 
+> > > > +	RCU_BARRIER_BH,
+> > > > +	RCU_BARRIER_SCHED,
+> > > > +};
+> > > > +
+> > > >  static DEFINE_PER_CPU(struct rcu_head, rcu_barrier_head) = {NULL};
+> > > >  static atomic_t rcu_barrier_cpu_count;
+> > > >  static DEFINE_MUTEX(rcu_barrier_mutex);
+> > > > @@ -83,19 +89,30 @@ static void rcu_barrier_callback(struct 
+> > > >  /*
+> > > >   * Called with preemption disabled, and from cross-cpu IRQ context.
+> > > >   */
+> > > > -static void rcu_barrier_func(void *notused)
+> > > > +static void rcu_barrier_func(void *type)
+> > > >  {
+> > > >  	int cpu = smp_processor_id();
+> > > >  	struct rcu_head *head = &per_cpu(rcu_barrier_head, cpu);
+> > > > 
+> > > >  	atomic_inc(&rcu_barrier_cpu_count);
+> > > > -	call_rcu(head, rcu_barrier_callback);
+> > > > +	switch ((enum rcu_barrier)type) {
+> > > > +	case RCU_BARRIER_STD:
+> > > > +		call_rcu(head, rcu_barrier_callback);
+> > > > +		break;
+> > > > +	case RCU_BARRIER_BH:
+> > > > +		call_rcu_bh(head, rcu_barrier_callback);
+> > > > +		break;
+> > > > +	case RCU_BARRIER_SCHED:
+> > > > +		call_rcu_sched(head, rcu_barrier_callback);
+> > > > +		break;
+> > > > +	}
+> > > >  }
+> > > > 
+> > > > -/**
+> > > > - * rcu_barrier - Wait until all the in-flight RCUs are complete.
+> > > > +/*
+> > > > + * Orchestrate the specified type of RCU barrier, waiting for all
+> > > > + * RCU callbacks of the specified type to complete.
+> > > >   */
+> > > > -void rcu_barrier(void)
+> > > > +static void _rcu_barrier(enum rcu_barrier type)
+> > > >  {
+> > > >  	BUG_ON(in_interrupt());
+> > > >  	/* Take cpucontrol mutex to protect against CPU hotplug */
+> > > > @@ -111,13 +128,39 @@ void rcu_barrier(void)
+> > > >  	 * until all the callbacks are queued.
+> > > >  	 */
+> > > >  	rcu_read_lock();
+> > > > -	on_each_cpu(rcu_barrier_func, NULL, 0, 1);
+> > > > +	on_each_cpu(rcu_barrier_func, (void *)type, 0, 1);
+> > > >  	rcu_read_unlock();
+> > > >  	wait_for_completion(&rcu_barrier_completion);
+> > > >  	mutex_unlock(&rcu_barrier_mutex);
+> > > >  }
+> > > > +
+> > > > +/**
+> > > > + * rcu_barrier - Wait until all in-flight call_rcu() callbacks complete.
+> > > > + */
+> > > > +void rcu_barrier(void)
+> > > > +{
+> > > > +	_rcu_barrier(RCU_BARRIER_STD);
+> > > > +}
+> > > >  EXPORT_SYMBOL_GPL(rcu_barrier);
+> > > > 
+> > > > +/**
+> > > > + * rcu_barrier_bh - Wait until all in-flight call_rcu_bh() callbacks complete.
+> > > > + */
+> > > > +void rcu_barrier_bh(void)
+> > > > +{
+> > > > +	_rcu_barrier(RCU_BARRIER_BH);
+> > > > +}
+> > > > +EXPORT_SYMBOL_GPL(rcu_barrier_bh);
+> > > > +
+> > > > +/**
+> > > > + * rcu_barrier_sched - Wait for in-flight call_rcu_sched() callbacks.
+> > > > + */
+> > > > +void rcu_barrier_sched(void)
+> > > > +{
+> > > > +	_rcu_barrier(RCU_BARRIER_SCHED);
+> > > > +}
+> > > > +EXPORT_SYMBOL_GPL(rcu_barrier_sched);
+> > > > +
+> > > >  void __init rcu_init(void)
+> > > >  {
+> > > >  	__rcu_init();
+> > > 
+> > > -- 
+> > > Thanks and Regards
+> > > gautham
