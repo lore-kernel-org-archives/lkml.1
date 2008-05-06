@@ -1,72 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760034AbYEFNZY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759398AbYEFNoq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760034AbYEFNZY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 09:25:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753221AbYEFNZI
+	id S1759398AbYEFNoq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 09:44:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756188AbYEFNog
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 09:25:08 -0400
-Received: from smtp1.wifiinternet.cz ([89.31.47.1]:59188 "EHLO
-	bor.wifiinternet.cz" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751190AbYEFNZH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 09:25:07 -0400
-Message-ID: <48205C71.1000401@seznam.cz>
-Date: Tue, 06 May 2008 15:26:09 +0200
-From: Michal Simek <monstr@seznam.cz>
-Reply-To: monstr@seznam.cz
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
-MIME-Version: 1.0
-To: Arnd Bergmann <arnd@arndb.de>
-CC: John Williams <john.williams@petalogix.com>, linux-kernel@vger.kernel.org,
-       linux-arch@vger.kernel.org, stephen.neuendorffer@xilinx.com,
-       John.Linn@xilinx.com, matthew@wil.cx, will.newton@gmail.com,
-       drepper@redhat.com, microblaze-uclinux@itee.uq.edu.au,
-       grant.likely@secretlab.ca
-Subject: Re: [PATCH 24/56] microblaze_v2: time support
-References: <1209901305-6404-1-git-send-email-monstr@seznam.cz> <1210033811.5798.188.camel@localhost> <48202C9E.7070800@seznam.cz> <200805061338.24870.arnd@arndb.de>
-In-Reply-To: <200805061338.24870.arnd@arndb.de>
-Content-Type: text/plain; charset=ISO-8859-2
+	Tue, 6 May 2008 09:44:36 -0400
+Received: from mx2.suse.de ([195.135.220.15]:34020 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755210AbYEFNof (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 May 2008 09:44:35 -0400
+Subject: Re: acpi_cpu_freq_init warning...
+From: Thomas Renninger <trenn@suse.de>
+Reply-To: trenn@suse.de
+To: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+Cc: Yinghai Lu <yhlu.kernel@gmail.com>, Greg KH <gregkh@suse.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Len Brown <lenb@kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       linux-acpi <linux-acpi@vger.kernel.org>, Jiri Kosina <jkosina@suse.cz>,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+In-Reply-To: <87k5i8hrmk.fsf@duaron.myhome.or.jp>
+References: <86802c440805051951u153ebc21p15f0d73904496217@mail.gmail.com>
+	 <87k5i8hrmk.fsf@duaron.myhome.or.jp>
+Content-Type: text/plain
+Date: Tue, 06 May 2008 17:44:22 +0200
+Message-Id: <1210088662.4802.69.camel@linux-2bdv.site>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.21.90 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Arnd,
 
-I am not discouraged from negative comments. I got school from Wolfgang Denk on
-U-BOOT project. (Thanks Wolfgang :-))
+On Tue, 2008-05-06 at 15:29 +0900, OGAWA Hirofumi wrote:
+> > calling  acpi_cpufreq_init+0x0/0x68()
+> > sysdev: class cpu: driver (ffffffff80da0110) has already been
+> > registered to a class, something is wrong, but will forge on!
+> > ------------[ cut here ]------------
+> > WARNING: at drivers/base/sys.c:183 sysdev_driver_register+0x82/0x150()
+> > Modules linked in:
+> > Pid: 1, comm: swapper Not tainted
+> > 2.6.26-rc1-sched-devel.git-x86-latest.git-00485-g253148c-dirty #333
+> 
+> I've seen this too. The following patch seems to work for me.
 
-I only want to direct this to right way. That's all. And positive ACK to some
-files give me better view what's wrong. :-)
+Venkatesh Greg, should this patch also go into 2.6.25 stable kernel?
+Not 100% sure, but IIRC Jiri reported the same problem on a 2.6.25
+kernel.
 
-Have a good day,
-Michal
+OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
 
 
->> I saw a lot of comments about files but I have never seen any comments that
->> any file is OK.
->> Does it mean everything is broken??? I don't think so.
-> 
-> I've commented mostly on the header files defining the ABI. Since my aim
-> is to have the ABI definition entirely in asm-generic/*.h, every exported
-> file that has more than one line in it should be changed.
-> 
-> The files that implement the architecture support itself all look good
-> to me, but since I'm not familiar with the architecture, I'm not trying
-> to comment on them.
-> 
-> I think you're doing a great job on this. Any patch set of this size that
-> has been maintained for a long time outside of the kernel goes through this
-> phase where everyone tells you what to improve, based on their experience,
-> while everything you do right about the patches is just taken for granted.
-> 
-> Don't let yourself get discouraged by the negative comments, we're really
-> all just trying to help you do the right thing!
-> 
->> I'll integrate reported bugs and send microblaze_v3 version.
-> 
-> Ok, thanks!
-> 
-> 	Arnd <><
-> 
-> 
+[PATCH] Fix bogus warning in sysdev_driver_register()
+
+        if ((drv->entry.next != drv->entry.prev) ||
+            (drv->entry.next != NULL)) {
+
+warns list_empty(&drv->entry).
+
+Signed-off-by: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+---
+
+ drivers/base/sys.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff -puN drivers/base/sys.c~fix-sys-bogus-warning drivers/base/sys.c
+--- linux-2.6/drivers/base/sys.c~fix-sys-bogus-warning  2008-05-06 14:30:42.000000000 +0900
++++ linux-2.6-hirofumi/drivers/base/sys.c       2008-05-06 14:30:45.000000000 +0900
+@@ -175,7 +175,7 @@ int sysdev_driver_register(struct sysdev
+        }
+ 
+        /* Check whether this driver has already been added to a class. */
+-       if ((drv->entry.next != drv->entry.prev) ||
++       if ((drv->entry.next != drv->entry.prev) &&
+            (drv->entry.next != NULL)) {
+                printk(KERN_WARNING "sysdev: class %s: driver (%p) has already"
+                        " been registered to a class, something is wrong, but "
+_
+--
+To unsubscribe from this list: send the line "unsubscribe linux-acpi" in
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
+
+
