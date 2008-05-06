@@ -1,169 +1,150 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761816AbYEFFi1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760379AbYEFFkz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761816AbYEFFi1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 01:38:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756743AbYEFFh6
+	id S1760379AbYEFFkz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 01:40:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753239AbYEFFkr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 01:37:58 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:43976 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754978AbYEFFh5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 01:37:57 -0400
-Date: Tue, 6 May 2008 15:37:46 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Daniel Hazelton <dhazelton@enter.net>
-Cc: linux-kernel@vger.kernel.org, linux-next@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: linux-next 5/5 does not boot
-Message-Id: <20080506153746.0a33d9aa.sfr@canb.auug.org.au>
-In-Reply-To: <200805052004.33804.dhazelton@enter.net>
-References: <200805052004.33804.dhazelton@enter.net>
-X-Mailer: Sylpheed 2.5.0beta3 (GTK+ 2.12.9; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Tue__6_May_2008_15_37_46_+1000__m.YuACLodRfNiC1"
+	Tue, 6 May 2008 01:40:47 -0400
+Received: from e28smtp03.in.ibm.com ([59.145.155.3]:35298 "EHLO
+	e28smtp03.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752347AbYEFFkq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 May 2008 01:40:46 -0400
+Message-ID: <481FEF28.1000502@linux.vnet.ibm.com>
+Date: Tue, 06 May 2008 11:09:52 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-mm@kvack.org, skumar@linux.vnet.ibm.com, yamamoto@valinux.co.jp,
+       menage@google.com, lizf@cn.fujitsu.com, linux-kernel@vger.kernel.org,
+       rientjes@google.com, xemul@openvz.org, kamezawa.hiroyu@jp.fujitsu.com
+Subject: Re: [-mm][PATCH 4/4] Add rlimit controller documentation
+References: <20080503213726.3140.68845.sendpatchset@localhost.localdomain> <20080503213825.3140.4328.sendpatchset@localhost.localdomain> <20080505153509.da667caf.akpm@linux-foundation.org>
+In-Reply-To: <20080505153509.da667caf.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Tue__6_May_2008_15_37_46_+1000__m.YuACLodRfNiC1
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Andrew Morton wrote:
+> On Sun, 04 May 2008 03:08:25 +0530
+> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+> 
+>>
+>> This is the documentation patch. It describes the rlimit controller and how
+>> to build and use it.
+>>
+>> Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+>> ---
+>>
+>>  Documentation/controllers/rlimit.txt |   29 +++++++++++++++++++++++++++++
+>>  1 file changed, 29 insertions(+)
+>>
+>> diff -puN /dev/null Documentation/controllers/rlimit.txt
+>> --- /dev/null	2008-05-03 22:12:13.033285313 +0530
+>> +++ linux-2.6.25-balbir/Documentation/controllers/rlimit.txt	2008-05-04 03:06:06.000000000 +0530
+>> @@ -0,0 +1,29 @@
+>> +This controller is enabled by the CONFIG_CGROUP_RLIMIT_CTLR option. Prior
+>> +to reading this documentation please read Documentation/cgroups.txt and
+>> +Documentation/controllers/memory.txt. Several of the principles of this
+>> +controller are similar to the memory resource controller.
+>> +
+>> +This controller framework is designed to be extensible to control any
+>> +resource limit (memory related) with little effort.
+>> +
+>> +This new controller, controls the address space expansion of the tasks
+>> +belonging to a cgroup. Address space control is provided along the same lines as
+>> +RLIMIT_AS control, which is available via getrlimit(2)/setrlimit(2).
+>> +The interface for controlling address space is provided through
+>> +"rlimit.limit_in_bytes". The file is similar to "limit_in_bytes" w.r.t. the user
+>> +interface. Please see section 3 of the memory resource controller documentation
+>> +for more details on how to use the user interface to get and set values.
+>> +
+>> +The "rlimit.usage_in_bytes" file provides information about the total address
+>> +space usage of the tasks in the cgroup, in bytes.
+> 
+> Finally, with a bit of between-the-line reading, I begin to understand what
+> this stuff is actually supposed to do.
+> 
+> It puts an upper limit upon the _total_ address-space size of all the mms
+> which are contained within the resource group, yes?
+> 
 
-cc'ing Ingo ...
+Yesm true
 
-On Mon, 5 May 2008 20:04:33 -0400 Daniel Hazelton <dhazelton@enter.net> wro=
-te:
->
-> This may be related to one of the stack dumps I reported earlier as occur=
-ring=20
-> when booting the 4/30 linux-next tree...
->=20
-> During two attempted boots of the 5/5 tree using the same config as the 4=
-/30=20
-> tree the system locked solid at "testing tracer ftrace".
->=20
-> The 4/30 tree produced the following dump (the 5/5 tree locks solid as so=
-on as=20
-> the test is started):
-> [   10.238230] Testing tracer ftrace: <4>------------[ cut here ]--------=
-----
-> [   10.356558] WARNING: at kernel/lockdep.c:2712 check_flags+0xfb/0x180()
-> [   10.356726] Modules linked in:
-> [   10.356915] Pid: 1, comm: swapper Not tainted 2.6.25-next-20080430 #2
-> [   10.357718]
-> [   10.357722] Call Trace:
-> [   10.357939]  <IRQ>  [<ffffffff8023d5f4>] warn_on_slowpath+0x64/0x90
-> [   10.358174]  [<ffffffff8025f789>] ? tick_get_tick_sched+0x9/0x30
-> [   10.358337]  [<ffffffff8022f048>] ? __update_rq_clock+0x68/0x140
-> [   10.358501]  [<ffffffff8026173d>] ? trace_hardirqs_off+0xd/0x10
-> [   10.358665]  [<ffffffff8026173d>] ? trace_hardirqs_off+0xd/0x10
-> [   10.358827]  [<ffffffff802953ce>] ? function_trace_call+0x9e/0xa0
-> [   10.358992]  [<ffffffff8020c4b4>] ? ftrace_call+0x5/0x2b
-> [   10.359148]  [<ffffffff8023177a>] ? cpu_clock+0xda/0x190
-> [   10.359302]  [<ffffffff80262d7b>] check_flags+0xfb/0x180
-> [   10.359457]  [<ffffffff80265635>] lock_acquire+0x65/0xd0
-> [   10.359614]  [<ffffffff80231799>] cpu_clock+0xf9/0x190
-> [   10.359769]  [<ffffffff80293de9>] ftrace_now+0x9/0x10
-> [   10.359920]  [<ffffffff80295194>] trace_function+0xc4/0x260
-> [   10.360079]  [<ffffffff80243723>] ? _local_bh_enable+0x63/0xc0
-> [   10.360240]  [<ffffffff804aeec9>] ? sub_preempt_count+0x9/0x90
-> [   10.360400]  [<ffffffff80243723>] ? _local_bh_enable+0x63/0xc0
-> [   10.360561]  [<ffffffff804aeec9>] ? sub_preempt_count+0x9/0x90
-> [   10.360721]  [<ffffffff8029539c>] function_trace_call+0x6c/0xa0
-> [   10.360883]  [<ffffffff8020c4b4>] ftrace_call+0x5/0x2b
-> [   10.361038]  [<ffffffff804aeec9>] ? sub_preempt_count+0x9/0x90
-> [   10.361199]  [<ffffffff80243723>] _local_bh_enable+0x63/0xc0
-> [   10.361357]  [<ffffffff8024399e>] __do_softirq+0xfe/0x150
-> [   10.361514]  [<ffffffff8020d93c>] call_softirq+0x1c/0x30
-> [   10.361669]  [<ffffffff8020f76a>] do_softirq+0x6a/0xb0
-> [   10.361823]  [<ffffffff80244155>] irq_exit+0xa5/0xb0
-> [   10.361975]  [<ffffffff802204ee>] smp_apic_timer_interrupt+0x9e/0xf0
-> [   10.362143]  [<ffffffff8020d3fb>] apic_timer_interrupt+0x6b/0x70
-> [   10.362301]  <EOI>  [<ffffffff804ab808>] ?=20
-> _spin_unlock_irqrestore+0x68/0x80
-> [   10.362543]  [<ffffffff8023540b>] ? try_to_wake_up+0xab/0x270
-> [   10.362704]  [<ffffffff8020c4b4>] ? ftrace_call+0x5/0x2b
-> [   10.362860]  [<ffffffff80235625>] ? wake_up_process+0x15/0x20
-> [   10.362979]  [<ffffffff80255264>] ? kthread_create+0xa4/0x120
-> [   10.362979]  [<ffffffff8027a390>] ? do_stop+0x0/0x190
-> [   10.362979]  [<ffffffff80265a6e>] ? mark_held_locks+0x3e/0x80
-> [   10.362979]  [<ffffffff80265d4d>] ? trace_hardirqs_on+0xd/0x10
-> [   10.362979]  [<ffffffff80265c85>] ? trace_hardirqs_on_caller+0xf5/0x1b0
-> [   10.362979]  [<ffffffff80263f2b>] ? lockdep_init_map+0x4b/0x140
-> [   10.362979]  [<ffffffff8037d6f8>] ? __spin_lock_init+0x38/0x70
-> [   10.362979]  [<ffffffff80255714>] ? init_waitqueue_head+0x24/0x40
-> [   10.362979]  [<ffffffff8028ffc0>] ? __ftrace_modify_code+0x0/0xa0
-> [   10.362979]  [<ffffffff8027a185>] ? __stop_machine_run+0x85/0xf0
-> [   10.362979]  [<ffffffff8028ffc0>] ? __ftrace_modify_code+0x0/0xa0
-> [   10.362979]  [<ffffffff8028ffc0>] ? __ftrace_modify_code+0x0/0xa0
-> [   10.362979]  [<ffffffff8028ffc0>] ? __ftrace_modify_code+0x0/0xa0
-> [   10.362979]  [<ffffffff8027a223>] ? stop_machine_run+0x33/0x60
-> [   10.362979]  [<ffffffff8028f3a0>] ? ftrace_run_update_code+0x20/0x30
-> [   10.362979]  [<ffffffff8028f7ea>] ? unregister_ftrace_function+0x14a/0=
-x190
-> [   10.362979]  [<ffffffff80292e70>] ? tracing_stop_function_trace+0x10/0=
-x20
-> [   10.362979]  [<ffffffff80296759>] ? stop_function_trace+0x9/0x20
-> [   10.362979]  [<ffffffff80296787>] ? function_trace_ctrl_update+0x17/0x=
-20
-> [   10.362979]  [<ffffffff80292d5e>] ?=20
-> trace_selftest_startup_function+0xae/0x140
-> [   10.362979]  [<ffffffff8029220d>] ? register_tracer+0x11d/0x1f0
-> [   10.362979]  [<ffffffff80665d50>] ? init_function_trace+0x10/0x20
-> [   10.362979]  [<ffffffff8064eee4>] ? kernel_init+0x164/0x2f0
-> [   10.362979]  [<ffffffff804aeec9>] ? sub_preempt_count+0x9/0x90
-> [   10.362979]  [<ffffffff804ab77b>] ? _spin_unlock_irq+0x3b/0x60
-> [   10.362979]  [<ffffffff804aab1d>] ? trace_hardirqs_on_thunk+0x3a/0x3f
-> [   10.362979]  [<ffffffff80265c85>] ? trace_hardirqs_on_caller+0xf5/0x1b0
-> [   10.362979]  [<ffffffff8020d5d8>] ? child_rip+0xa/0x12
-> [   10.362979]  [<ffffffff8020cc63>] ? restore_args+0x0/0x30
-> [   10.362979]  [<ffffffff8064ed80>] ? kernel_init+0x0/0x2f0
-> [   10.362979]  [<ffffffff8020d5ce>] ? child_rip+0x0/0x12
-> [   10.362979]
-> [   10.362979] ---[ end trace 5a5d197966b56a2e ]---
-> [   10.362979] irq event stamp: 3391956
-> [   10.362979] hardirqs last  enabled at (3391954): [<ffffffff80265d4d>]=
-=20
-> trace_hardirqs_on+0xd/0x10
-> [   10.362979] hardirqs last disabled at (3391955): [<ffffffff8026173d>]=
-=20
-> trace_hardirqs_off+0xd/0x10
-> [   10.362979] softirqs last  enabled at (3391956): [<ffffffff8024399e>]=
-=20
-> __do_softirq+0xfe/0x150
-> [   10.362979] softirqs last disabled at (3391933): [<ffffffff8020d93c>]=
-=20
-> call_softirq+0x1c/0x30
-> [   10.376978] kstopmachine used greatest stack depth: 6000 bytes left
-> [   10.377650] PASSED
->=20
-> config for 5/5 tree will be provided on request. Dmesg from 4/30 tree is =
-also=20
-> available. System had not mounted the root drive before the ftrace crash,=
- so=20
-> I have no available logs or dmesg from the 5/5 tree. If asked, I will att=
-empt=20
-> to setup a netconsole and try to capture the logs there.
->=20
-> DRH
+> (can am mm be shared by two threads whcih are in different resource groups,
+> btw?)
+> 
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+Yes, that can happen, but all the charges go to mm->owner (the thread group leader).
 
---Signature=_Tue__6_May_2008_15_37_46_+1000__m.YuACLodRfNiC1
-Content-Type: application/pgp-signature
+>> +Advantages of providing this feature
+>> +
+>> +1. Control over virtual address space allows for a cgroup to fail gracefully
+>> +   i.e., via a malloc or mmap failure as compared to OOM kill when no
+>> +   pages can be reclaimed.
+>> +2. It provides better control over how many pages can be swapped out when
+>> +   the cgroup goes over its limit. A badly setup cgroup can cause excessive
+>> +   swapping. Providing control over the address space allocations ensures
+>> +   that the system administrator has control over the total swapping that
+>> +   can take place.
+> 
+> Here's another missing piece: what is the kernel's behaviour when such a
+> limit is increased?  Seems that the sole option is a failure return from
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+Do you mean limit is exceeded?
 
-iD8DBQFIH+6vTgG2atn1QN8RAgftAJ4/M6o2SPHexLkhkw8iM/t1eh490ACfTU4Q
-KCKXL+VGG3/qwtjkvgzVLUA=
-=slAK
------END PGP SIGNATURE-----
+> mmap/brk/sbrk/etc, yes?
+> 
 
---Signature=_Tue__6_May_2008_15_37_46_+1000__m.YuACLodRfNiC1--
+If so, Yes, true.
+
+> This should be spelled out in careful detail, please.  This is a
+> newly-proposed kernel<->userspace interface and we care about those very
+> much.
+> 
+
+Sure, I'll document that better.
+
+> Finally, I worry about overflows.  afacit the
+> sum-of-address-space-sizes-for-a-cgroup is accounted for in an unsigned
+> long?
+> 
+> If so, a 32-bit machine could easily overflow it.
+> 
+
+We use an unsigned long long on all architectures to avoid overflow.
+
+> And a 64-bit machine could possibly do so with a bit of effort, perhaps? 
+> That's assuming that the code doesn't attempt to avoid duplicate accounting
+> due to multiple-mms-mapping-the-same-pages, which afaict appears to be the
+> case.  (Then again, perhaps no machine will ever have the pagetable space
+> to get that far).
+> 
+> 
+
+True
+
+> 
+> Ho hum, I had to do rather a lot of guesswork here to try to understand
+> your proposed overall design for this feature.  I'd prefer to hear about
+> your design via more direct means.
+
+Do you have any suggestions on how to do that better. Would you like
+documentation to be the first patch in the series? I had sent out two RFC's
+earlier and got comments and feedback from several people.
+
+Having said that, I do agree that design is the most vital thing of any patchset
+and communicating that up front and better is critical. I am open to any
+suggestions to help make that process better.
+
+
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
