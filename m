@@ -1,49 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763308AbYEFSjB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765141AbYEFSj6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763308AbYEFSjB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 14:39:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755040AbYEFSiY
+	id S1765141AbYEFSj6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 14:39:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756370AbYEFSjq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 14:38:24 -0400
-Received: from mtagate4.de.ibm.com ([195.212.29.153]:14011 "EHLO
-	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756015AbYEFSiD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 14:38:03 -0400
-Message-ID: <4820A588.3080902@de.ibm.com>
-Date: Tue, 06 May 2008 20:38:00 +0200
-From: Peter Oberparleiter <peter.oberparleiter@de.ibm.com>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070604)
+	Tue, 6 May 2008 14:39:46 -0400
+Received: from mail0.scram.de ([78.47.204.202]:47516 "EHLO mail.scram.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755488AbYEFSjo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 May 2008 14:39:44 -0400
+X-Spam-Score: -4.082
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+ * -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
+ *      [score: 0.0000]
+ *  0.3 AWL AWL: From: address is in the auto white-list
+Message-ID: <4820A5E9.8030204@scram.de>
+Date: Tue, 06 May 2008 20:39:37 +0200
+From: Jochen Friedrich <jochen@scram.de>
+User-Agent: Mozilla-Thunderbird 2.0.0.12 (X11/20080420)
 MIME-Version: 1.0
-To: Jan Engelhardt <jengelh@medozas.de>
-CC: ltp-list@lists.sourceforge.net, Andrew Morton <akpm@linux-foundation.org>,
-       ltp-coverage@lists.sourceforge.net, sam@ravnborg.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC PATCH 2/6] kbuild: let addtree result in absolute paths
- only
-References: <481F26A0.5010402@de.ibm.com> <alpine.LNX.1.10.0805060936250.11757@fbirervta.pbzchgretzou.qr>
-In-Reply-To: <alpine.LNX.1.10.0805060936250.11757@fbirervta.pbzchgretzou.qr>
+To: Paul Mackerras <paulus@samba.org>
+CC: Kumar Gala <galak@kernel.crashing.org>, Jean Delvare <khali@linux-fr.org>,
+       Scott Wood <scottwood@freescale.com>,
+       "Kernel, Linux" <linux-kernel@vger.kernel.org>,
+       linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+       Linux I2C <i2c@lm-sensors.org>, Jon Smirl <jonsmirl@gmail.com>,
+       Laurent Pinchart <laurentp@cse-semaphore.com>,
+       David Miller <davem@davemloft.net>,
+       Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: [PATCH] [POWERPC] Fix of_i2c include for module compilation
+References: <481C5DD0.5090503@scram.de> <18462.35282.374180.770237@cargo.ozlabs.ibm.com>
+In-Reply-To: <18462.35282.374180.770237@cargo.ozlabs.ibm.com>
+X-Enigmail-Version: 0.95.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Engelhardt wrote:
-> On Monday 2008-05-05 17:24, Peter Oberparleiter wrote:
->>+++ linux-2.6.26-rc1/scripts/Kbuild.include
->>@@ -144,7 +144,7 @@ ld-option = $(call try-run,\
->> build := -f $(if $(KBUILD_SRC),$(srctree)/)scripts/Makefile.build obj
->> 
->> # Prefix -I with $(srctree) if it is not an absolute path.
->>-addtree = $(if $(filter-out -I/%,$(1)),$(patsubst -I%,-I$(srctree)/%,$(1))) $(1)
->>+addtree = $(if $(filter-out -I/%,$(1)),$(patsubst -I%,-I$(srctree)/%,$(1)),$(1))
+Hi Paul,
+
+>> -#ifdef CONFIG_OF_I2C
+>> +#if defined(CONFIG_OF_I2C) || defined(CONFIG_OF_I2C_MODULE)
+>>  
+>>  void of_register_i2c_devices(struct i2c_adapter *adap,
+>>  			     struct device_node *adap_node);
 > 
-> At least make it so that relative can be used whenever possible (e.g. on 
-> !CONFIG_GCOV)
+> Why do we have that ifdef there at all?  There's only that one
+> external declaration within it, so the #ifdef and #endif could just be
+> removed.  If the ifdef hadn't been there in the first place we
+> wouldn't have had this problem.
 
-Good idea - I'll consider it for the next patch version.
+You're right. I mainly copied from of_gpio.h without too much thinking :(.
+I'll resend.
 
-
-Regards,
-  Peter
+Thanks,
+Jochen
