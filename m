@@ -1,80 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933533AbYEFVio@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933665AbYEFVk2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933533AbYEFVio (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 17:38:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754546AbYEFVi3
+	id S933665AbYEFVk2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 17:40:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761218AbYEFVkP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 17:38:29 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:36009 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753995AbYEFVi1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 17:38:27 -0400
-Date: Tue, 6 May 2008 14:38:01 -0700
-From: Greg KH <gregkh@suse.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
-       Yinghai Lu <yhlu.kernel@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Len Brown <lenb@kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       linux-acpi <linux-acpi@vger.kernel.org>
-Subject: Re: acpi_cpu_freq_init warning...
-Message-ID: <20080506213801.GA26345@suse.de>
-References: <86802c440805051951u153ebc21p15f0d73904496217@mail.gmail.com> <87k5i8hrmk.fsf@duaron.myhome.or.jp> <alpine.LFD.1.10.0805060741290.32269@woody.linux-foundation.org> <87skwvcl2a.fsf@duaron.myhome.or.jp> <20080506202033.GA3114@suse.de> <alpine.LFD.1.10.0805061325270.32269@woody.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.10.0805061325270.32269@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Tue, 6 May 2008 17:40:15 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:41133 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754260AbYEFVkN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 May 2008 17:40:13 -0400
+Date: Tue, 6 May 2008 14:39:36 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: tony@bakeyournoodle.com (Tony Breeds)
+Cc: linux-kernel@vger.kernel.org, benh@kernel.crashing.org
+Subject: Re: [PATCH] Silence 'ignoring return value' warnings in
+ drivers/video/aty/radeon_base.c
+Message-Id: <20080506143936.6357e578.akpm@linux-foundation.org>
+In-Reply-To: <20080424043400.GS20457@bakeyournoodle.com>
+References: <20080424043400.GS20457@bakeyournoodle.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 06, 2008 at 01:27:37PM -0700, Linus Torvalds wrote:
-> 
-> 
-> On Tue, 6 May 2008, Greg KH wrote:
-> 
-> > On Wed, May 07, 2008 at 04:02:53AM +0900, OGAWA Hirofumi wrote:
-> > > Linus Torvalds <torvalds@linux-foundation.org> writes:
-> > > 
-> > > > On Tue, 6 May 2008, OGAWA Hirofumi wrote:
-> > > >> -	if ((drv->entry.next != drv->entry.prev) ||
-> > > >> +	if ((drv->entry.next != drv->entry.prev) &&
-> > > >>  	    (drv->entry.next != NULL)) {
-> > > >
-> > > > Umm. That code still makes no sense.
-> > > >
-> > > > The "drv->entry.next == drv->entry.prev" condition will trigger under 
-> > > > *three* different circumstances:
-> > > >
-> > > >  - next/prev == NULL (uninitialized). Checked for by the explicit check 
-> > > >    against NULL.
-> > > >
-> > > >  - list empty (both next/prev point back to itself), which I assume the 
-> > > >    check was *meant* for.
-> > > >
-> > > >  - list has only *one* entry, when next/prev both point to the list head.
-> > > >
-> > > > and I'm pretty damn sure that whoever wrote that code didn't mean that 
-> > > > last one, but who knows..
-> > > >
-> > > > The fact is, looking at next/prev this way is a sure way to have bugs.
-> > > >
-> > > > What is that PoS *trying* to test for? I assume it is meant to test for
-> > > >
-> > > > 	/* Is the list initialized and non-empty? */
-> > > > 	if (drv->entry.next && !list_empty(&drv->entry)) {
-> > > > 		...
-> > > >
-> > > > and dammit, just doing it that way is shorter and simpler.
-> > 
-> > But I don't think that will work as others have pointed out, this
-> > structure's list field isn't initialized yet.
-> 
-> Umm. And what do you think the test for drv->entry.next is there for?
+On Thu, 24 Apr 2008 14:34:01 +1000
+tony@bakeyournoodle.com (Tony Breeds) wrote:
 
-Doh, nevermind, I don't know what I was thinking, this should be fine.
+> Current kernel builds warn about:
+> drivers/video/aty/radeon_base.c: In function 'radeonfb_pci_register':
+> drivers/video/aty/radeon_base.c:2334: warning: ignoring return value of 'sysfs_create_bin_file', declared with attribute warn_unused_result
+> drivers/video/aty/radeon_base.c:2336: warning: ignoring return value of 'sysfs_create_bin_file', declared with attribute warn_unused_result
+> 
+> Do minimal checking of these functions and issue a warning if either
+> fails.  They don't seem to be critical..
 
-I think I need a nap...
+well OK, but I object to the patch title!
 
-greg k-h
+The point isn't to silence warnings.  It is to fix the problem which that
+warning is drawing our attention to.
+
+So I rewrote the title to "drivers/video/aty/radeon_base.c: notify user if
+sysfs_create_bin_file() failed".
+
+And your fix looks appropriate - if sysfs_create_bin_file() fails we will now get
+reports of this and we can find out what kernel bug caused this to happen.
+
