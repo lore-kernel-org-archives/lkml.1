@@ -1,98 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761392AbYEFOrO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763925AbYEFOr3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761392AbYEFOrO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 10:47:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754518AbYEFOq6
+	id S1763925AbYEFOr3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 10:47:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762062AbYEFOrS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 10:46:58 -0400
-Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:37110
-	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754742AbYEFOq5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 10:46:57 -0400
-Date: Tue, 6 May 2008 16:46:54 +0200
-From: Andrea Arcangeli <andrea@qumranet.com>
-To: Jack Steiner <steiner@sgi.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Lameter <clameter@sgi.com>, Robin Holt <holt@sgi.com>,
-       Nick Piggin <npiggin@suse.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       kvm-devel@lists.sourceforge.net, Kanoj Sarcar <kanojsarcar@yahoo.com>,
-       Roland Dreier <rdreier@cisco.com>,
-       Steve Wise <swise@opengridcomputing.com>, linux-kernel@vger.kernel.org,
-       Avi Kivity <avi@qumranet.com>, linux-mm@kvack.org,
-       general@lists.openfabrics.org, Hugh Dickins <hugh@veritas.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Anthony Liguori <aliguori@us.ibm.com>, Chris Wright <chrisw@redhat.com>,
-       Marcelo Tosatti <marcelo@kvack.org>, Eric Dumazet <dada1@cosmosbay.com>,
-       "Paul E. McKenney" <paulmck@us.ibm.com>
-Subject: Re: [PATCH 01 of 11] mmu-notifier-core
-Message-ID: <20080506144654.GD8471@duo.random>
-References: <patchbomb.1209740703@duo.random> <1489529e7b53d3f2dab8.1209740704@duo.random> <20080505162113.GA18761@sgi.com> <20080505171434.GF8470@duo.random> <20080505172506.GA9247@sgi.com> <20080505183405.GI8470@duo.random> <20080505194625.GA17734@sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080505194625.GA17734@sgi.com>
+	Tue, 6 May 2008 10:47:18 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:58743 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761938AbYEFOrQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 May 2008 10:47:16 -0400
+Date: Wed, 7 May 2008 00:47:02 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: John Williams <john.williams@petalogix.com>
+Cc: monstr@seznam.cz, linux-kernel@vger.kernel.org, arnd@arndb.de,
+       linux-arch@vger.kernel.org, stephen.neuendorffer@xilinx.com,
+       John.Linn@xilinx.com, matthew@wil.cx, will.newton@gmail.com,
+       drepper@redhat.com, microblaze-uclinux@itee.uq.edu.au,
+       grant.likely@secretlab.ca, Michal Simek <monstr@monstr.eu>
+Subject: Re: [PATCH 45/56] microblaze_v2: headers simple files - empty or
+ redirect to asm-generic
+Message-Id: <20080507004702.d516a727.sfr@canb.auug.org.au>
+In-Reply-To: <1209954849.5798.80.camel@localhost>
+References: <1209901305-6404-1-git-send-email-monstr@seznam.cz>
+	<96f2004535c34a0c762bf2012c299cbf9f89ab32.1209897266.git.monstr@monstr.eu>
+	<92cd3a27b393bb394d48902594152351a92c59bb.1209897266.git.monstr@monstr.eu>
+	<4e20213f5f296268a24955df8c951f7fba279816.1209897266.git.monstr@monstr.eu>
+	<49eccf3408b90a5ebb42635493bbeef3b584acb9.1209897266.git.monstr@monstr.eu>
+	<d1e4a572d2add458e1dc7c4f5a3039ae4faa2c04.1209897266.git.monstr@monstr.eu>
+	<27d6acda14c492aae35d8bb1343a122624560418.1209897266.git.monstr@monstr.eu>
+	<64e6fc7378cd5c714fcceef7d4965c1fb3d1b288.1209897266.git.monstr@monstr.eu>
+	<9cc0d54a98f25748dc3f16fc3250524d7cd00877.1209897266.git.monstr@monstr.eu>
+	<5d240127ee05c28d5156bfbf305329f9540f6c14.1209897267.git.monstr@monstr.eu>
+	<59b5238f7a259dcac4c9ca6513756a188625462e.1209897267.git.monstr@monstr.eu>
+	<8e1d421649250f7a3f638cd552bc46e5f5845890.1209897267.git.monstr@monstr.eu>
+	<1209954849.5798.80.camel@localhost>
+X-Mailer: Sylpheed 2.5.0beta3 (GTK+ 2.12.9; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Wed__7_May_2008_00_47_02_+1000_W3MIZLRLt5k93m4r"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 05, 2008 at 02:46:25PM -0500, Jack Steiner wrote:
-> If a task fails to unmap a GRU segment, they still exist at the start of
+--Signature=_Wed__7_May_2008_00_47_02_+1000_W3MIZLRLt5k93m4r
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Yes, this will also happen in case the well behaved task receives
-SIGKILL, so you can test it that way too.
+On Mon, 05 May 2008 12:34:09 +1000 John Williams <john.williams@petalogix.c=
+om> wrote:
+>
+>=20
+> >  include/asm-microblaze/auxvec.h            |   14 ++++++++++++++
+> >  include/asm-microblaze/cputime.h           |   16 ++++++++++++++++
+> >  include/asm-microblaze/div64.h             |   16 ++++++++++++++++
+> >  include/asm-microblaze/emergency-restart.h |   16 ++++++++++++++++
+> >  include/asm-microblaze/errno.h             |   16 ++++++++++++++++
+> >  include/asm-microblaze/futex.h             |   16 ++++++++++++++++
+> >  include/asm-microblaze/kdebug.h            |   19 +++++++++++++++++++
+> >  include/asm-microblaze/local.h             |   16 ++++++++++++++++
+> >  include/asm-microblaze/mutex.h             |   16 ++++++++++++++++
+> >  include/asm-microblaze/namei.h             |   24 ++++++++++++++++++++=
+++++
+> >  include/asm-microblaze/percpu.h            |   16 ++++++++++++++++
+> >  include/asm-microblaze/resource.h          |   16 ++++++++++++++++
+> >  include/asm-microblaze/user.h              |   18 ++++++++++++++++++
+>=20
+> These are all just includes of asm-generic/* (hooray!).
 
-> exit. On the ->release callout, I set a flag in the container of my
-> mmu_notifier that exit has started. As VMA are cleaned up, TLB flushes
-> are skipped because of the flag is set. When the GRU VMA is deleted, I free
+Absolutely, but is it really necessary to have 14-16 lines of comment
+(including a copyright notice) for a file whose single real line is just
+to include another file?  i.e. reduce all these to 1 line files.
 
-GRU TLB flushes aren't skipped because your flag is set but because
-__mmu_notifier_release already executed
-list_del_init_rcu(&grunotifier->hlist) before proceeding with
-unmap_vmas.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-> my structure containing the notifier.
+--Signature=_Wed__7_May_2008_00_47_02_+1000_W3MIZLRLt5k93m4r
+Content-Type: application/pgp-signature
 
-As long as nobody can write through the already established gru tlbs
-and nobody can establish new tlbs after exit_mmap run you don't
-strictly need ->release.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
 
-> I _think_ works. Do you see any problems?
+iD8DBQFIIG9sTgG2atn1QN8RAvaoAJ9rgHnCrY64JwOVw+xNVnq6FwHqogCfc7R/
+8R0oqWux3hVI/nx0/hWpXjM=
+=CXr7
+-----END PGP SIGNATURE-----
 
-You can remove the flag and ->release and ->clear_flush_young (if you
-keep clear_flush_young implemented it should return 0). The
-synchronize_rcu after mmu_notifier_register can also be dropped thanks
-to mm_lock(). gru_drop_mmu_notifier should be careful with current->mm
-if you're using an fd and if the fd can be passed to a different task
-through unix sockets (you should probably fail any operation if
-current->mm != gru->mm).
-
-The way I use ->release in KVM is to set the root hpa to -1UL
-(invalid) as a debug trap. That's only for debugging because even if
-tlb entries and sptes are still established on the secondary mmu they
-are only relevant when the cpu jumps to guest mode and that can never
-happen again after exit_mmap is started.
-
-> I should also mention that I have an open-coded function that possibly
-> belongs in mmu_notifier.c. A user is allowed to have multiple GRU segments.
-> Each GRU has a couple of data structures linked to the VMA. All, however,
-> need to share the same notifier. I currently open code a function that
-> scans the notifier list to determine if a GRU notifier already exists.
-> If it does, I update a refcnt & use it. Otherwise, I register a new
-> one. All of this is protected by the mmap_sem.
-> 
-> Just in case I mangled the above description, I'll attach a copy of the GRU mmuops
-> code.
-
-Well that function needs fixing w.r.t. srcu. Are you sure you want to
-search for mn->ops == gru_mmuops and not for mn == gmn?  And if you
-search for mn why can't you keep track of the mn being registered or
-unregistered outside of the mmu_notifier layer? Set a bitflag in the
-container after mmu_notifier_register returns and a clear it after
-_unregister returns. I doubt saving one bitflag is worth searching the
-list and your approach make it obvious that you've to protect the
-bitflag and the register/unregister under write-mmap_sem
-yourself. Otherwise the find function will return an object that can
-be freed at any time if somebody calls unregister and
-kfree. (synchronize_srcu in mmu_notifier_unregister won't wait for
-anything but some outstanding srcu_read_lock)
+--Signature=_Wed__7_May_2008_00_47_02_+1000_W3MIZLRLt5k93m4r--
