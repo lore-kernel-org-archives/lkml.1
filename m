@@ -1,71 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759924AbYEFGZw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757485AbYEFG1d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759924AbYEFGZw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 02:25:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754464AbYEFGZj
+	id S1757485AbYEFG1d (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 02:27:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751190AbYEFG1Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 02:25:39 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:51517 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758760AbYEFGZg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 02:25:36 -0400
-Date: Tue, 06 May 2008 15:18:35 +0900
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: balbir@linux.vnet.ibm.com
-Subject: Re: on CONFIG_MM_OWNER=y, kernel panic is possible.
-Cc: kosaki.motohiro@jp.fujitsu.com, Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20080506150213.AC63.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-References: <481FF115.8030503@linux.vnet.ibm.com> <20080506150213.AC63.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-Message-Id: <20080506151510.AC66.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	Tue, 6 May 2008 02:27:25 -0400
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:35868 "EHLO smtp5.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751154AbYEFG1Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 May 2008 02:27:24 -0400
+Date: Tue, 6 May 2008 09:26:14 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Roman Zippel <zippel@linux-m68k.org>
+Cc: Vegard Nossum <vegard.nossum@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Sam Ravnborg <sam@ravnborg.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] kconfig: warn about complex selects
+Message-ID: <20080506062614.GG1544@cs181133002.pp.htv.fi>
+References: <20080504054044.GA32030@damson> <Pine.LNX.4.64.0805060511220.30555@scrub.home>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0805060511220.30555@scrub.home>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > That is not possible. If you look at where mm_update_next_owner() is called
-> > from, we call it from
-> > 
-> > exit_mm() and exec_mmap()
-> > 
-> > In both cases, we ensure that the task's mm has changed (to NULL and the new mm
-> > respectively), before we call mm_update_next_owner(), hence c->mm can never be
-> > equal to p->mm.
-> 
-> if so, following patch is needed instead.
+On Tue, May 06, 2008 at 05:43:32AM +0200, Roman Zippel wrote:
+> Hi,
 
-and, one more.
+Hi Roman,
 
-comment of owner member of mm_struct is bogus.
-that is not guranteed point to thread-group-leader.
+>...
+> It's not an impossible problem, but it's not trivial either, so that I 
+> haven't spend any time on it and rather would like to spend the energy on 
+> fixing the problem properly instead of working around it. And the problem 
+> BTW isn't select itself, the problem is that all the Kconfig dependencies 
+> have grown and become more complex, so it's becoming increasingly more 
+> difficult to maintain and to use them - select was never meant to solve 
+> this problem...
 
+what do you consider the best solution?
 
-Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Can we get it solved in kconfig?
 
----
- include/linux/mm_types.h |    3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+Or should kconfig stay the same and use the pattern we already use
+with SSB_POSSIBLE?
 
-Index: b/include/linux/mm_types.h
-===================================================================
---- a/include/linux/mm_types.h  2008-05-04 22:56:52.000000000 +0900
-+++ b/include/linux/mm_types.h  2008-05-06 15:53:04.000000000 +0900
-@@ -231,8 +231,7 @@ struct mm_struct {
-        rwlock_t                ioctx_list_lock;        /* aio lock */
-        struct kioctx           *ioctx_list;
- #ifdef CONFIG_MM_OWNER
--       struct task_struct *owner;      /* The thread group leader that */
--                                       /* owns the mm_struct.          */
-+       struct task_struct *owner;      /* point to one of task that owns the mm_struct. */
- #endif
+Or is there some better solution?
 
- #ifdef CONFIG_PROC_FS
+> bye, Roman
 
+cu
+Adrian
 
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
