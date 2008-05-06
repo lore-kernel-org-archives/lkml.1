@@ -1,50 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761065AbYEFDau@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757266AbYEFDl5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761065AbYEFDau (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 23:30:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752002AbYEFDaj
+	id S1757266AbYEFDl5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 23:41:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752707AbYEFDlq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 23:30:39 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:47031 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752691AbYEFDah (ORCPT
+	Mon, 5 May 2008 23:41:46 -0400
+Received: from E23SMTP04.au.ibm.com ([202.81.18.173]:39276 "EHLO
+	e23smtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752324AbYEFDlq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 23:30:37 -0400
-Date: Tue, 06 May 2008 12:29:59 +0900
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [-mm][PATCH 1/5] fix overflow problem of do_try_to_free_page()
-Cc: kosaki.motohiro@jp.fujitsu.com, LKML <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>, Nishanth Aravamudan <nacc@us.ibm.com>
-In-Reply-To: <20080505081239.GB22105@us.ibm.com>
-References: <20080504215331.8F55.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20080505081239.GB22105@us.ibm.com>
-Message-Id: <20080506122626.AC58.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	Mon, 5 May 2008 23:41:46 -0400
+Message-ID: <481FD342.2040707@linux.vnet.ibm.com>
+Date: Tue, 06 May 2008 09:10:50 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-mm@kvack.org, skumar@linux.vnet.ibm.com, yamamoto@valinux.co.jp,
+       menage@google.com, lizf@cn.fujitsu.com, linux-kernel@vger.kernel.org,
+       rientjes@google.com, xemul@openvz.org, kamezawa.hiroyu@jp.fujitsu.com
+Subject: Re: [-mm][PATCH 1/4] Setup the rlimit controller
+References: <20080503213726.3140.68845.sendpatchset@localhost.localdomain> <20080503213736.3140.83278.sendpatchset@localhost.localdomain> <20080505151142.f52b9d9e.akpm@linux-foundation.org>
+In-Reply-To: <20080505151142.f52b9d9e.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andrew,
-
-I'll repost patch 2-5 after refrect reviewer comment.
-but I hope patch [1/5] merge into -mm soon.
-
-Nishanth-san already acked me.
-please.
-
-
-> > Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> > CC: Nishanth Aravamudan <nacc@us.ibm.com>
+Andrew Morton wrote:
+> On Sun, 04 May 2008 03:07:36 +0530
+> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
 > 
-> Eep, sorry -- my original version had used -EAGAIN to indicate a special
-> condition, but this was removed before the final patch. Thanks for the
-> catch.
+>> +	*tmp = ((*tmp + PAGE_SIZE) >> PAGE_SHIFT) << PAGE_SHIFT;
 > 
-> Acked-by: Nishanth Aravamudan <nacc@us.ibm.com>
+> Whatever this is doing, it should not be doing it this way ;)
 > 
-> Should go upstream, as well.
+> perhaps
+> 
+> 	*tmp = ALIGN(*tmp, PAGE_SIZE);
+> 
+> or even
+> 
+> 	*tmp = PAGE_ALIGN(*tmp);
+> 
+> ?
+> 
+
+Good point, thanks for catching this.
+
+> 
+> <looks at PAGE_ALIGN>
+> 
+> Each architecture implements its own version and they of course do it
+> differently.  It's crying out for a consolidated implementation but we have
+> no include/linux/page.h into which to consolidate it.
+
+May be we can move this to asm-generic/page.h?
 
 
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
