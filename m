@@ -1,119 +1,300 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765209AbYEFJTl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765281AbYEFJUL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765209AbYEFJTl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 05:19:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764260AbYEFJOj
+	id S1765281AbYEFJUL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 05:20:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764303AbYEFJOm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 05:14:39 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:59544 "EHLO
+	Tue, 6 May 2008 05:14:42 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:59541 "EHLO
 	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763711AbYEFJOh (ORCPT
+	with ESMTP id S1764151AbYEFJOh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 6 May 2008 05:14:37 -0400
-Message-Id: <20080506091424.412297465@szeredi.hu>
+Message-Id: <20080506091422.705393283@szeredi.hu>
 References: <20080506091327.259950960@szeredi.hu>
 User-Agent: quilt/0.45-1
-Date: Tue, 06 May 2008 11:13:41 +0200
+Date: Tue, 06 May 2008 11:13:40 +0200
 From: Miklos Szeredi <miklos@szeredi.hu>
 To: akpm@linux-foundation.org
 Cc: hch@infradead.org, viro@ZenIV.linux.org.uk, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>
-Subject: [patch 14/24] vfs: splice remove_suid() cleanup
-Content-Disposition: inline; filename=splice_remove_suid_cleanup.patch
+       linux-kernel@vger.kernel.org, Ulrich Drepper <drepper@redhat.com>
+Subject: [patch 13/24] vfs: utimes cleanup
+Content-Disposition: inline; filename=utimes_cleanup.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Miklos Szeredi <mszeredi@suse.cz>
 
-generic_file_splice_write() duplicates remove_suid() just because it
-doesn't hold i_mutex.  But it grabs i_mutex inside splice_from_pipe()
-anyway, so this is rather pointless.
-
-Move locking to generic_file_splice_write() and call remove_suid() and
-__splice_from_pipe() instead.
+Untange the mess that is do_utimes()
 
 Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
-CC: Jens Axboe <jens.axboe@oracle.com>
+CC: Ulrich Drepper <drepper@redhat.com>
 ---
- fs/splice.c        |   29 +++++++++++++----------------
- include/linux/fs.h |    1 -
- mm/filemap.c       |    2 +-
- 3 files changed, 14 insertions(+), 18 deletions(-)
+ fs/compat.c |    4 -
+ fs/utimes.c |  197 +++++++++++++++++++++++++++++++++++++-----------------------
+ 2 files changed, 124 insertions(+), 77 deletions(-)
 
-Index: linux-2.6/fs/splice.c
+Index: linux-2.6/fs/utimes.c
 ===================================================================
---- linux-2.6.orig/fs/splice.c	2008-05-06 11:04:28.000000000 +0200
-+++ linux-2.6/fs/splice.c	2008-05-06 11:04:37.000000000 +0200
-@@ -811,24 +811,19 @@ generic_file_splice_write(struct pipe_in
- {
- 	struct address_space *mapping = out->f_mapping;
- 	struct inode *inode = mapping->host;
--	int killsuid, killpriv;
-+	struct splice_desc sd = {
-+		.total_len = len,
-+		.flags = flags,
-+		.pos = *ppos,
-+		.u.file = out,
-+	};
- 	ssize_t ret;
--	int err = 0;
+--- linux-2.6.orig/fs/utimes.c	2008-05-06 11:04:36.000000000 +0200
++++ linux-2.6/fs/utimes.c	2008-05-06 11:04:37.000000000 +0200
+@@ -53,54 +53,10 @@ static bool nsec_valid(long nsec)
+ 	return nsec >= 0 && nsec <= 999999999;
+ }
  
--	killpriv = security_inode_need_killpriv(out->f_path.dentry);
--	killsuid = should_remove_suid(out->f_path.dentry);
--	if (unlikely(killsuid || killpriv)) {
--		mutex_lock(&inode->i_mutex);
--		if (killpriv)
--			err = security_inode_killpriv(out->f_path.dentry);
--		if (!err && killsuid)
--			err = __remove_suid(out->f_path.dentry, killsuid);
--		mutex_unlock(&inode->i_mutex);
--		if (err)
--			return err;
+-/* If times==NULL, set access and modification to current time,
+- * must be owner or have write permission.
+- * Else, update from *times, must be owner or super user.
+- */
+-long do_utimes(int dfd, char __user *filename, struct timespec *times, int flags)
++static int utimes_common(struct path *path, struct timespec *times)
+ {
+ 	int error;
+-	struct nameidata nd;
+-	struct dentry *dentry;
+-	struct inode *inode;
+ 	struct iattr newattrs;
+-	struct file *f = NULL;
+-	struct vfsmount *mnt;
+-
+-	error = -EINVAL;
+-	if (times && (!nsec_valid(times[0].tv_nsec) ||
+-		      !nsec_valid(times[1].tv_nsec))) {
+-		goto out;
 -	}
 -
--	ret = splice_from_pipe(pipe, out, ppos, len, flags, pipe_to_file);
-+	inode_double_lock(inode, pipe->inode);
-+	ret = remove_suid(out->f_path.dentry);
-+	if (likely(!ret))
-+		ret = __splice_from_pipe(pipe, &sd, pipe_to_file);
-+	inode_double_unlock(inode, pipe->inode);
- 	if (ret > 0) {
- 		unsigned long nr_pages;
+-	if (flags & ~AT_SYMLINK_NOFOLLOW)
+-		goto out;
+-
+-	if (filename == NULL && dfd != AT_FDCWD) {
+-		error = -EINVAL;
+-		if (flags & AT_SYMLINK_NOFOLLOW)
+-			goto out;
+-
+-		error = -EBADF;
+-		f = fget(dfd);
+-		if (!f)
+-			goto out;
+-		dentry = f->f_path.dentry;
+-		mnt = f->f_path.mnt;
+-	} else {
+-		error = __user_walk_fd(dfd, filename, (flags & AT_SYMLINK_NOFOLLOW) ? 0 : LOOKUP_FOLLOW, &nd);
+-		if (error)
+-			goto out;
+-
+-		dentry = nd.path.dentry;
+-		mnt = nd.path.mnt;
+-	}
+-
+-	inode = dentry->d_inode;
+-
+-	error = mnt_want_write(mnt);
+-	if (error)
+-		goto dput_and_out;
  
-@@ -840,6 +835,8 @@ generic_file_splice_write(struct pipe_in
- 		 * sync it.
- 		 */
- 		if (unlikely((out->f_flags & O_SYNC) || IS_SYNC(inode))) {
-+			int err;
+ 	/* Don't worry, the checks are done in inode_change_ok() */
+ 	newattrs.ia_valid = ATTR_CTIME | ATTR_MTIME | ATTR_ATIME;
+@@ -121,41 +77,132 @@ long do_utimes(int dfd, char __user *fil
+ 			newattrs.ia_valid |= ATTR_MTIME_SET;
+ 		}
+ 	}
++	mutex_lock(&path->dentry->d_inode->i_mutex);
++	error = mnt_want_write(path->mnt);
++	if (!error) {
++		error = notify_change(path->dentry, &newattrs);
++		mnt_drop_write(path->mnt);
++	}
++	mutex_unlock(&path->dentry->d_inode->i_mutex);
 +
- 			mutex_lock(&inode->i_mutex);
- 			err = generic_osync_inode(inode, mapping,
- 						  OSYNC_METADATA|OSYNC_DATA);
-Index: linux-2.6/include/linux/fs.h
-===================================================================
---- linux-2.6.orig/include/linux/fs.h	2008-05-06 11:04:36.000000000 +0200
-+++ linux-2.6/include/linux/fs.h	2008-05-06 11:04:37.000000000 +0200
-@@ -1823,7 +1823,6 @@ extern void iget_failed(struct inode *);
- extern void clear_inode(struct inode *);
- extern void destroy_inode(struct inode *);
- extern struct inode *new_inode(struct super_block *);
--extern int __remove_suid(struct dentry *, int);
- extern int should_remove_suid(struct dentry *);
- extern int remove_suid(struct dentry *);
++	return error;
++}
++
++/*
++ * If times is NULL or both times are either UTIME_OMIT or UTIME_NOW, then
++ * need to check permissions, because inode_change_ok() won't do it.
++ */
++static bool utimes_need_permission(struct timespec *times)
++{
++	return !times || (nsec_special(times[0].tv_nsec) &&
++			  nsec_special(times[1].tv_nsec));
++}
++
++static int do_futimes(int fd, struct timespec *times)
++{
++	int error;
++	struct file *file = fget(fd);
++
++	if (!file)
++		return -EBADF;
++
++	if (utimes_need_permission(times)) {
++		struct inode *inode = file->f_path.dentry->d_inode;
++
++		error = -EACCES;
++		if (!is_owner_or_cap(inode) && !(file->f_mode & FMODE_WRITE))
++			goto out_fput;
++	}
++	error = utimes_common(&file->f_path, times);
++
++ out_fput:
++	fput(file);
++
++	return error;
++}
++
++
++/*
++ * do_futimesat - change times on filename
++ * @dfd: open file descriptor, -1 or AT_FDCWD
++ * @filename: path name
++ * @times: new times or NULL
++ * @flags: zero or more flags (only AT_SYMLINK_NOFOLLOW for the moment)
++ *
++ * Caller must verify the values in times (if not NULL)
++ *
++ * If times==NULL, set access and modification to current time,
++ * must be owner or have write permission.
++ * Else, update from *times, must be owner or super user.
++ */
++int do_utimes(int dfd, char __user *filename, struct timespec *times, int flags)
++{
++	int error;
++	struct nameidata nd;
++	int lookup_flags;
++
++	if (flags & ~AT_SYMLINK_NOFOLLOW)
++		return -EINVAL;
++
++	lookup_flags = (flags & AT_SYMLINK_NOFOLLOW) ? 0 : LOOKUP_FOLLOW;
++	error = __user_walk_fd(dfd, filename, lookup_flags, &nd);
++	if (error)
++		return error;
++
++
++	if (utimes_need_permission(times)) {
++		struct inode *inode = nd.path.dentry->d_inode;
  
-Index: linux-2.6/mm/filemap.c
-===================================================================
---- linux-2.6.orig/mm/filemap.c	2008-05-06 11:04:28.000000000 +0200
-+++ linux-2.6/mm/filemap.c	2008-05-06 11:04:37.000000000 +0200
-@@ -1655,7 +1655,7 @@ int should_remove_suid(struct dentry *de
+-	/*
+-	 * If times is NULL or both times are either UTIME_OMIT or
+-	 * UTIME_NOW, then need to check permissions, because
+-	 * inode_change_ok() won't do it.
+-	 */
+-	if (!times || (nsec_special(times[0].tv_nsec) &&
+-		       nsec_special(times[1].tv_nsec))) {
+ 		error = -EACCES;
+-		if (!f && IS_IMMUTABLE(inode))
+-			goto mnt_drop_write_and_out;
++		if (IS_IMMUTABLE(inode))
++			goto out_path_put;
+ 
+ 		if (!is_owner_or_cap(inode)) {
+-			if (f) {
+-				if (!(f->f_mode & FMODE_WRITE))
+-					goto mnt_drop_write_and_out;
+-			} else {
+-				error = vfs_permission(&nd, MAY_WRITE);
+-				if (error)
+-					goto mnt_drop_write_and_out;
+-			}
++			error = vfs_permission(&nd, MAY_WRITE);
++			if (error)
++				goto out_path_put;
+ 		}
+ 	}
+-	mutex_lock(&inode->i_mutex);
+-	error = notify_change(dentry, &newattrs);
+-	mutex_unlock(&inode->i_mutex);
+-mnt_drop_write_and_out:
+-	mnt_drop_write(mnt);
+-dput_and_out:
+-	if (f)
+-		fput(f);
+-	else
+-		path_put(&nd.path);
+-out:
++	error = utimes_common(&nd.path, times);
++
++ out_path_put:
++	path_put(&nd.path);
++
+ 	return error;
++
++}
++
++/*
++ * do_futimesat - change times on filename or file descriptor
++ * @dfd: open file descriptor, -1 or AT_FDCWD
++ * @filename: path name or NULL
++ * @times: new times or NULL
++ * @flags: zero or more flags (only AT_SYMLINK_NOFOLLOW for the moment)
++ *
++ * If filename is NULL and dfd defers to an open file, then operate on
++ * the file.  Otherwise look up filename, possibly using dfd as a
++ * starting point.
++ *
++ * If times==NULL, set access and modification to current time,
++ * must be owner or have write permission.
++ * Else, update from *times, must be owner or super user.
++ */
++int do_futimesat(int dfd, char __user *filename, struct timespec *times,
++		 int flags)
++{
++	if (times && (!nsec_valid(times[0].tv_nsec) ||
++		      !nsec_valid(times[1].tv_nsec))) {
++		return -EINVAL;
++	}
++
++	if (filename == NULL && dfd != AT_FDCWD) {
++		if (flags)
++			return -EINVAL;
++
++		return do_futimes(dfd, times);
++	} else {
++		return do_utimes(dfd, filename, times, flags);
++	}
  }
- EXPORT_SYMBOL(should_remove_suid);
  
--int __remove_suid(struct dentry *dentry, int kill)
-+static int __remove_suid(struct dentry *dentry, int kill)
- {
- 	struct iattr newattrs;
+ asmlinkage long sys_utimensat(int dfd, char __user *filename, struct timespec __user *utimes, int flags)
+@@ -180,7 +227,7 @@ asmlinkage long sys_utimensat(int dfd, c
+ 			return 0;
+ 	}
  
+-	return do_utimes(dfd, filename, utimes ? tstimes : NULL, flags);
++	return do_futimesat(dfd, filename, utimes ? tstimes : NULL, flags);
+ }
+ 
+ asmlinkage long sys_futimesat(int dfd, char __user *filename, struct timeval __user *utimes)
+@@ -207,7 +254,7 @@ asmlinkage long sys_futimesat(int dfd, c
+ 		tstimes[1].tv_nsec = 1000 * times[1].tv_usec;
+ 	}
+ 
+-	return do_utimes(dfd, filename, utimes ? tstimes : NULL, 0);
++	return do_futimesat(dfd, filename, utimes ? tstimes : NULL, 0);
+ }
+ 
+ asmlinkage long sys_utimes(char __user *filename, struct timeval __user *utimes)
+Index: linux-2.6/fs/compat.c
+===================================================================
+--- linux-2.6.orig/fs/compat.c	2008-05-06 11:04:28.000000000 +0200
++++ linux-2.6/fs/compat.c	2008-05-06 11:04:37.000000000 +0200
+@@ -110,7 +110,7 @@ asmlinkage long compat_sys_utimensat(uns
+ 		if (tv[0].tv_nsec == UTIME_OMIT && tv[1].tv_nsec == UTIME_OMIT)
+ 			return 0;
+ 	}
+-	return do_utimes(dfd, filename, t ? tv : NULL, flags);
++	return do_futimesat(dfd, filename, t ? tv : NULL, flags);
+ }
+ 
+ asmlinkage long compat_sys_futimesat(unsigned int dfd, char __user *filename, struct compat_timeval __user *t)
+@@ -129,7 +129,7 @@ asmlinkage long compat_sys_futimesat(uns
+ 		tv[0].tv_nsec *= 1000;
+ 		tv[1].tv_nsec *= 1000;
+ 	}
+-	return do_utimes(dfd, filename, t ? tv : NULL, 0);
++	return do_futimesat(dfd, filename, t ? tv : NULL, 0);
+ }
+ 
+ asmlinkage long compat_sys_utimes(char __user *filename, struct compat_timeval __user *t)
 
 --
