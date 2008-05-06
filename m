@@ -1,161 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764703AbYEFU0F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932557AbYEFU1b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764703AbYEFU0F (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 16:26:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754545AbYEFUZw
+	id S932557AbYEFU1b (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 16:27:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754545AbYEFU1V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 16:25:52 -0400
-Received: from mx1.riseup.net ([204.13.164.18]:44483 "EHLO mx1.riseup.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754779AbYEFUZv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 16:25:51 -0400
-Date: Tue, 6 May 2008 22:16:11 +0200
-From: Matthias Kaehlcke <matthias@kaehlcke.net>
-To: zippel@linux-m68k.org
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: [PATCH] AFFS: Convert s_bmlock in a mutex
-Message-ID: <20080506201611.GA27656@traven>
-Mail-Followup-To: Matthias Kaehlcke <matthias@kaehlcke.net>,
-	zippel@linux-m68k.org, linux-kernel@vger.kernel.org,
-	akpm@linux-foundation.org
-MIME-Version: 1.0
+	Tue, 6 May 2008 16:27:21 -0400
+Received: from outbound-sin.frontbridge.com ([207.46.51.80]:19626 "EHLO
+	outbound2-sin-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755171AbYEFU1U (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 May 2008 16:27:20 -0400
+X-BigFish: VP
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 139.95.251.11;Service: EHS
+X-WSS-ID: 0K0GR8H-03-1GD-01
+Date: Tue, 6 May 2008 22:22:01 +0200
+From: Hans Rosenfeld <hans.rosenfeld@amd.com>
+To: Hugh Dickins <hugh@veritas.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Jeff Chua <jeff.chua.linux@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Gabriel C <nix.or.die@googlemail.com>,
+       Arjan van de Ven <arjan@linux.intel.com>,
+       Nishanth Aravamudan <nacc@us.ibm.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH] x86: fix PAE pmd_bad bootup warning
+Message-ID: <20080506202201.GB12654@escobedo.amd.com>
+References: <b6a2187b0805051806v25fa1272xb08e0b70b9c3408@mail.gmail.com> <20080506124946.GA2146@elte.hu> <Pine.LNX.4.64.0805061435510.32567@blonde.site> <alpine.LFD.1.10.0805061138580.32269@woody.linux-foundation.org> <Pine.LNX.4.64.0805062043580.11647@blonde.site>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <Pine.LNX.4.64.0805062043580.11647@blonde.site>
+User-Agent: Mutt/1.4.2.3i
+X-OriginalArrivalTime: 06 May 2008 20:21:59.0548 (UTC) FILETIME=[D65E6BC0:01C8AFB6]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-AFFS: The semaphore s_bmlock is used as a mutex. Convert it to the
-mutex API
+On Tue, May 06, 2008 at 08:49:23PM +0100, Hugh Dickins wrote:
+> So Hans' original hugepage leak remains unexplained and unfixed.
+> Hans, did you find that hugepage leak with a standard kernel, or were
+> you perhaps trying out some hugepage-using patch of your own, without
+> marking the vma VM_HUGETLB?  Or were you expecting the hugetlbfs file
+> to truncate itself once all mmappers had gone?  If the standard kernel
+> leaks hugepages, I'm surprised the hugetlb guys don't know about it.
 
-Signed-off-by: Matthias Kaehlcke <matthias@kaehlcke.net>
+I used a standard kernel (well, not quite, I had made some changes to
+the /proc/pid/pagemap code, but nothing that would affect the hugepage
+stuff) and some simple test program that would just mmap a hugepage.
 
---
+I expected that any hugepage that a process had mmapped would
+automatically be returned to the system when the process exits. That was
+not the case, the process exited and the hugepage was lost (unless I
+changed the program to explicitly munmap the hugepage before exiting).
+Removing the hugetlbfs file containing the hugepage also didn't free the
+page.
 
-diff --git a/fs/affs/affs.h b/fs/affs/affs.h
-index d5bd497..09c95b3 100644
---- a/fs/affs/affs.h
-+++ b/fs/affs/affs.h
-@@ -2,6 +2,7 @@
- #include <linux/fs.h>
- #include <linux/buffer_head.h>
- #include <linux/amigaffs.h>
-+#include <linux/mutex.h>
- 
- /* AmigaOS allows file names with up to 30 characters length.
-  * Names longer than that will be silently truncated. If you
-@@ -98,7 +99,7 @@ struct affs_sb_info {
- 	gid_t s_gid;			/* gid to override */
- 	umode_t s_mode;			/* mode to override */
- 	struct buffer_head *s_root_bh;	/* Cached root block. */
--	struct semaphore s_bmlock;	/* Protects bitmap access. */
-+	struct mutex s_bmlock;		/* Protects bitmap access. */
- 	struct affs_bm_info *s_bitmap;	/* Bitmap infos. */
- 	u32 s_bmap_count;		/* # of bitmap blocks. */
- 	u32 s_bmap_bits;		/* # of bits in one bitmap blocks */
-diff --git a/fs/affs/bitmap.c b/fs/affs/bitmap.c
-index c4a5ad0..dc5ef14 100644
---- a/fs/affs/bitmap.c
-+++ b/fs/affs/bitmap.c
-@@ -45,14 +45,14 @@ affs_count_free_blocks(struct super_block *sb)
- 	if (sb->s_flags & MS_RDONLY)
- 		return 0;
- 
--	down(&AFFS_SB(sb)->s_bmlock);
-+	mutex_lock(&AFFS_SB(sb)->s_bmlock);
- 
- 	bm = AFFS_SB(sb)->s_bitmap;
- 	free = 0;
- 	for (i = AFFS_SB(sb)->s_bmap_count; i > 0; bm++, i--)
- 		free += bm->bm_free;
- 
--	up(&AFFS_SB(sb)->s_bmlock);
-+	mutex_unlock(&AFFS_SB(sb)->s_bmlock);
- 
- 	return free;
- }
-@@ -76,7 +76,7 @@ affs_free_block(struct super_block *sb, u32 block)
- 	bit     = blk % sbi->s_bmap_bits;
- 	bm      = &sbi->s_bitmap[bmap];
- 
--	down(&sbi->s_bmlock);
-+	mutex_lock(&sbi->s_bmlock);
- 
- 	bh = sbi->s_bmap_bh;
- 	if (sbi->s_last_bmap != bmap) {
-@@ -105,19 +105,19 @@ affs_free_block(struct super_block *sb, u32 block)
- 	sb->s_dirt = 1;
- 	bm->bm_free++;
- 
--	up(&sbi->s_bmlock);
-+	mutex_unlock(&sbi->s_bmlock);
- 	return;
- 
- err_free:
- 	affs_warning(sb,"affs_free_block","Trying to free block %u which is already free", block);
--	up(&sbi->s_bmlock);
-+	mutex_unlock(&sbi->s_bmlock);
- 	return;
- 
- err_bh_read:
- 	affs_error(sb,"affs_free_block","Cannot read bitmap block %u", bm->bm_key);
- 	sbi->s_bmap_bh = NULL;
- 	sbi->s_last_bmap = ~0;
--	up(&sbi->s_bmlock);
-+	mutex_unlock(&sbi->s_bmlock);
- 	return;
- 
- err_range:
-@@ -168,7 +168,7 @@ affs_alloc_block(struct inode *inode, u32 goal)
- 	bmap = blk / sbi->s_bmap_bits;
- 	bm = &sbi->s_bitmap[bmap];
- 
--	down(&sbi->s_bmlock);
-+	mutex_lock(&sbi->s_bmlock);
- 
- 	if (bm->bm_free)
- 		goto find_bmap_bit;
-@@ -249,7 +249,7 @@ find_bit:
- 	mark_buffer_dirty(bh);
- 	sb->s_dirt = 1;
- 
--	up(&sbi->s_bmlock);
-+	mutex_unlock(&sbi->s_bmlock);
- 
- 	pr_debug("%d\n", blk);
- 	return blk;
-@@ -259,7 +259,7 @@ err_bh_read:
- 	sbi->s_bmap_bh = NULL;
- 	sbi->s_last_bmap = ~0;
- err_full:
--	up(&sbi->s_bmlock);
-+	mutex_unlock(&sbi->s_bmlock);
- 	pr_debug("failed\n");
- 	return 0;
- }
-diff --git a/fs/affs/super.c b/fs/affs/super.c
-index 01d25d5..ba63080 100644
---- a/fs/affs/super.c
-+++ b/fs/affs/super.c
-@@ -286,7 +286,7 @@ static int affs_fill_super(struct super_block *sb, void *data, int silent)
- 	if (!sbi)
- 		return -ENOMEM;
- 	sb->s_fs_info = sbi;
--	init_MUTEX(&sbi->s_bmlock);
-+	mutex_init(&sbi->s_bmlock);
- 
- 	if (!parse_options(data,&uid,&gid,&i,&reserved,&root_block,
- 				&blocksize,&sbi->s_prefix,
 
 -- 
-Matthias Kaehlcke
-Embedded Linux Engineer
-Barcelona
+%SYSTEM-F-ANARCHISM, The operating system has been overthrown
 
-     Nationalism is an infantile disease. It is the measles of mankind
-                         (Albert Einstein)
-                                                                 .''`.
-    using free software / Debian GNU/Linux | http://debian.org  : :'  :
-                                                                `. `'`
-gpg --keyserver pgp.mit.edu --recv-keys 47D8E5D4                  `-
