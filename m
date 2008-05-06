@@ -1,78 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752736AbYEFKka@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753220AbYEFKrL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752736AbYEFKka (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 06:40:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751089AbYEFKkR
+	id S1753220AbYEFKrL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 06:47:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751243AbYEFKq5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 06:40:17 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:58840 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750906AbYEFKkQ (ORCPT
+	Tue, 6 May 2008 06:46:57 -0400
+Received: from bay0-omc3-s15.bay0.hotmail.com ([65.54.246.215]:52842 "EHLO
+	bay0-omc3-s15.bay0.hotmail.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751215AbYEFKq4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 06:40:16 -0400
-Date: Tue, 6 May 2008 06:40:13 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Daniel Walker <dwalker@mvista.com>
-cc: Thomas Gleixner <tglx@linutronix.de>,
-       Sven-Thorsten Dietrich <sven@thebigcorporation.com>,
-       Remy Bohmer <linux@bohmer.net>, LKML <linux-kernel@vger.kernel.org>,
-       RT <linux-rt-users@vger.kernel.org>,
-       Jon Masters <jonathan@jonmasters.org>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: Preempt-RT patch for 2.6.25
-In-Reply-To: <1210025532.17132.82.camel@localhost.localdomain>
-Message-ID: <Pine.LNX.4.58.0805060634330.12081@gandalf.stny.rr.com>
-References: <3efb10970805021102n4d87f55eue723786281b06fcb@mail.gmail.com> 
- <1209753250.25628.34.camel@dd.thebigcorporation.com> 
- <Pine.LNX.4.58.0805021441340.10615@gandalf.stny.rr.com> 
- <1209754467.25628.42.camel@dd.thebigcorporation.com> 
- <Pine.LNX.4.58.0805021502040.10615@gandalf.stny.rr.com> 
- <1210003265.17132.6.camel@localhost.localdomain> 
- <Pine.LNX.4.58.0805051210410.23084@gandalf.stny.rr.com> 
- <1210004376.17132.14.camel@localhost.localdomain> 
- <Pine.LNX.4.58.0805051240520.25250@gandalf.stny.rr.com> 
- <1210007084.17132.32.camel@localhost.localdomain> 
- <Pine.LNX.4.58.0805051426010.25250@gandalf.stny.rr.com> 
- <1210013938.17132.55.camel@localhost.localdomain> 
- <alpine.LFD.1.10.0805052107270.3318@apollo.tec.linutronix.de>
- <1210025532.17132.82.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 6 May 2008 06:46:56 -0400
+Message-ID: <BAY103-DAV122A113843FE9574256A0AB2D60@phx.gbl>
+X-Originating-IP: [85.32.103.134]
+X-Originating-Email: [pupilla@hotmail.com]
+From: "Marco Berizzi" <pupilla@hotmail.com>
+To: "Herbert Xu" <herbert@gondor.apana.org.au>
+Cc: <linux-kernel@vger.kernel.org>, <netdev@vger.kernel.org>
+References: <E1Jrtxr-0004in-00@gondolin.me.apana.org.au> <BAY103-DAV594320AC93E33D7335927B2DA0@phx.gbl>
+Subject: Re: 2.6.25 crash: EIP: [<c02e2f14>] xfrm_output_resume+0x64/0x100 ss:esp 0068:c03a1e5c
+Date: Tue, 6 May 2008 12:44:33 +0200
+X-Priority: 3
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook Express 6.00.2800.1123
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2800.1123
+X-OriginalArrivalTime: 06 May 2008 10:46:55.0268 (UTC) FILETIME=[80371E40:01C8AF66]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Marco Berizziwrote:
 
-On Mon, 5 May 2008, Daniel Walker wrote:
-> On Mon, 2008-05-05 at 23:01 +0200, Thomas Gleixner wrote:
+
+> Herbert Xu wrote:
+>
+> > Marco Berizzi <pupilla@hotmail.com> wrote:
+> >> Just few minutes ago, another 2.6.25 crash
+> >> with this message:
+> >>
+> >> EIP: [<c028000a>] netif_rx+0x6a/0xd0 SS:ESP 0068:c039f868
+> >>
+> >> http://80.204.235.230/4.jpg
 > >
-> > Keeping the architecture ports even in a maybe disfunctional state in
-> > the queue is important as we move them along and make the obvious
-> > changes to them so anyone interested to bring them up to date has not
-> > to start from scratch again, which is a major PITA (we just did one
-> > from scratch)
+> > OK, the xfrm_output_resume trail revealed nothing.  Combined
+> > with this crash however, it would appear that you've got a problem
+> > with live skbs being freed.  Unfortunately such problems are
+> > difficult to track down.
+> >
+> > Perhaps you could enable SLAB debugging to see if we can get
+> > closer to the culprit?
 >
-> In open source code never dies. So I'm not sure where this "From
-> scratch" stuff is coming from ..
-
-Dropping someones work from the official tree is an insult to the
-developer that did that work. The *only* reason to drop code is if it
-happens to break something else that already existed or it has been warned
-for at least one year that if no one maintains this code it will be
-dropped. Dropping it for the sake of making "my work easier" is not an
-excuse.
-
-Don't say "well it's only temporary" because it's not. You even expected
-the ones that did the work to "re-port" it to your new tree. Sorry Daniel,
-that's not the way things happen in Open Source.
-
+> Yes indeed, I will try next monday.
 >
-> I've done ports from scratch and it's not that bad.. Not sure what your
-> porting too.. It would also be a lot easier to do an arch port piece by
-> piece under a bisectable tree.
+> > Alternatively you could try a git bisection.
+>
+> Yes, but it could take forever... :-((
+> As I said, I have removed the sfq and htb modules,
+> and I would like to wait one week to see if these
+> boxes will crash. I have 8 linux boxes running 2.6.25
+> with the same .config and only the two with htb/sfq
+> qdisc are crashing. Just few minutes ago I have seen
+> this message forwarded to netdev by David Miller:
+>
+> Re: PROBLEM: kernel lockup while changing TC rules
+>
+> it is talking about htb/sfq. Maybe it is related.
+>
+> > Unless we have a way of reproducing this there isn't a lot more
+> > that we can do I'm afraid.
+>
+> thanks anyway Herbert.
 
-Refresh my memory, which ports have you submitted?  I don't recall seeing
-a port from scratch that was from you.
+ok, I can confirm after one week uptime: this problem
+is not happening after removing sch_htb/sch_sfq and
+cls_fw modules.
+What should I do to help track down this problem?
 
--- Steve
 
