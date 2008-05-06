@@ -1,65 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933408AbYEFVXZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765776AbYEFVYJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933408AbYEFVXZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 17:23:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932673AbYEFVSv
+	id S1765776AbYEFVYJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 17:24:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933172AbYEFVSy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 17:18:51 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:48568 "EHLO mx1.redhat.com"
+	Tue, 6 May 2008 17:18:54 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:48572 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933079AbYEFVSo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S932773AbYEFVSo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 6 May 2008 17:18:44 -0400
 Date: Tue, 6 May 2008 17:18:07 -0400
 From: Ulrich Drepper <drepper@redhat.com>
-Message-Id: <200805062118.m46LI7hn004047@devserv.devel.redhat.com>
+Message-Id: <200805062118.m46LI7ZP004038@devserv.devel.redhat.com>
 To: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: [PATCH 04/18] flag parameters: signalfd
+Subject: [PATCH 01/18] flag parameters: socket and socketpair
 Cc: akpm@linux-foundation.org, davidel@xmailserver.org, mtk.manpages@gmail.com,
        torvalds@linux-foundation.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds the new signalfd4 syscall.  It extends the old signalfd
-syscall by one parameter which is meant to hold a flag value.  In this
-patch the only flag support is SFD_CLOEXEC which causes the close-on-exec
-flag for the returned file descriptor to be set.
+This patch adds support for flag values which are ORed to the type passwd
+to socket and socketpair.  The additional code is minimal.  The flag
+values in this implementation can and must match the O_* flags.  This
+avoids overhead in the conversion.
 
-A new name SFD_CLOEXEC is introduced which in this implementation must
-have the same value as O_CLOEXEC.
-
-The following test must be adjusted for architectures other than x86 and
-x86-64 and in case the syscall numbers changed.
+The internal functions sock_alloc_fd and sock_map_fd get a new parameters
+and all callers are changed.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #include <fcntl.h>
-#include <signal.h>
 #include <stdio.h>
 #include <unistd.h>
-#include <sys/syscall.h>
+#include <netinet/in.h>
+#include <sys/socket.h>
 
-#ifndef __NR_signalfd4
-# ifdef __x86_64__
-#  define __NR_signalfd4 289
-# elif defined __i386__
-#  define __NR_signalfd4 327
-# else
-#  error "need __NR_signalfd4"
-# endif
-#endif
+#define PORT 57392
 
-#define SFD_CLOEXEC O_CLOEXEC
+/* For Linux these must be the same.  */
+#define SOCK_CLOEXEC O_CLOEXEC
 
 int
 main (void)
 {
-  sigset_t ss;
-  sigemptyset (&ss);
-  sigaddset (&ss, SIGUSR1);
-  int fd = syscall (__NR_signalfd4, -1, &ss, 8, 0);
+  int fd;
+  fd = socket (PF_INET, SOCK_STREAM, 0);
   if (fd == -1)
     {
-      puts ("signalfd4(0) failed");
+      puts ("socket(0) failed");
       return 1;
     }
   int coe = fcntl (fd, F_GETFD);
@@ -70,15 +58,15 @@ main (void)
     }
   if (coe & FD_CLOEXEC)
     {
-      puts ("signalfd4(0) set close-on-exec flag");
+      puts ("socket(0) set close-on-exec flag");
       return 1;
     }
   close (fd);
 
-  fd = syscall (__NR_signalfd4, -1, &ss, 8, SFD_CLOEXEC);
+  fd = socket (PF_INET, SOCK_STREAM|SOCK_CLOEXEC, 0);
   if (fd == -1)
     {
-      puts ("signalfd4(SFD_CLOEXEC) failed");
+      puts ("socket(SOCK_CLOEXEC) failed");
       return 1;
     }
   coe = fcntl (fd, F_GETFD);
@@ -89,10 +77,53 @@ main (void)
     }
   if ((coe & FD_CLOEXEC) == 0)
     {
-      puts ("signalfd4(SFD_CLOEXEC) does not set close-on-exec flag");
+      puts ("socket(SOCK_CLOEXEC) does not set close-on-exec flag");
       return 1;
     }
   close (fd);
+
+  int fds[2];
+  if (socketpair (PF_UNIX, SOCK_STREAM, 0, fds) == -1)
+    {
+      puts ("socketpair(0) failed");
+      return 1;
+    }
+  for (int i = 0; i < 2; ++i)
+    {
+      coe = fcntl (fds[i], F_GETFD);
+      if (coe == -1)
+        {
+          puts ("fcntl failed");
+          return 1;
+        }
+      if (coe & FD_CLOEXEC)
+        {
+          printf ("socketpair(0) set close-on-exec flag for fds[%d]\n", i);
+          return 1;
+        }
+      close (fds[i]);
+    }
+
+  if (socketpair (PF_UNIX, SOCK_STREAM|SOCK_CLOEXEC, 0, fds) == -1)
+    {
+      puts ("socketpair(SOCK_CLOEXEC) failed");
+      return 1;
+    }
+  for (int i = 0; i < 2; ++i)
+    {
+      coe = fcntl (fds[i], F_GETFD);
+      if (coe == -1)
+        {
+          puts ("fcntl failed");
+          return 1;
+        }
+      if ((coe & FD_CLOEXEC) == 0)
+        {
+          printf ("socketpair(SOCK_CLOEXEC) does not set close-on-exec flag for fds[%d]\n", i);
+          return 1;
+        }
+      close (fds[i]);
+    }
 
   puts ("OK");
 
@@ -100,162 +131,161 @@ main (void)
 }
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
- arch/x86/ia32/ia32entry.S          |    1 +
- arch/x86/kernel/syscall_table_32.S |    1 +
- fs/compat.c                        |   14 ++++++++++----
- fs/signalfd.c                      |   14 ++++++++++++--
- include/asm-x86/unistd_32.h        |    1 +
- include/asm-x86/unistd_64.h        |    2 ++
- include/linux/signalfd.h           |    5 +++++
- include/linux/syscalls.h           |    1 +
- 8 files changed, 33 insertions(+), 6 deletions(-)
+ include/linux/net.h |    9 ++++++++-
+ net/9p/trans_fd.c   |    2 +-
+ net/sctp/socket.c   |    2 +-
+ net/socket.c        |   28 ++++++++++++++++++++--------
+ 4 files changed, 30 insertions(+), 11 deletions(-)
 
 
 Signed-off-by: Ulrich Drepper <drepper@redhat.com>
 
-diff --git a/arch/x86/ia32/ia32entry.S b/arch/x86/ia32/ia32entry.S
-index b5e329d..f556678 100644
---- a/arch/x86/ia32/ia32entry.S
-+++ b/arch/x86/ia32/ia32entry.S
-@@ -731,4 +731,5 @@ ia32_sys_call_table:
- 	.quad sys32_fallocate
- 	.quad compat_sys_timerfd_settime	/* 325 */
- 	.quad compat_sys_timerfd_gettime
-+	.quad compat_sys_signalfd4
- ia32_syscall_end:
-diff --git a/arch/x86/kernel/syscall_table_32.S b/arch/x86/kernel/syscall_table_32.S
-index adff556..c12a36c 100644
---- a/arch/x86/kernel/syscall_table_32.S
-+++ b/arch/x86/kernel/syscall_table_32.S
-@@ -326,3 +326,4 @@ ENTRY(sys_call_table)
- 	.long sys_fallocate
- 	.long sys_timerfd_settime	/* 325 */
- 	.long sys_timerfd_gettime
-+	.long sys_signalfd4
-diff --git a/fs/compat.c b/fs/compat.c
-index 332a869..2ab01c5 100644
---- a/fs/compat.c
-+++ b/fs/compat.c
-@@ -2131,9 +2131,9 @@ asmlinkage long compat_sys_epoll_pwait(int epfd,
+diff --git a/include/linux/net.h b/include/linux/net.h
+index 71f7dd5..0c1ad01 100644
+--- a/include/linux/net.h
++++ b/include/linux/net.h
+@@ -20,6 +20,7 @@
  
- #ifdef CONFIG_SIGNALFD
+ #include <linux/wait.h>
+ #include <linux/socket.h>
++#include <linux/fcntl.h>	/* For O_CLOEXEC */
+ #include <asm/socket.h>
  
--asmlinkage long compat_sys_signalfd(int ufd,
--				    const compat_sigset_t __user *sigmask,
--				    compat_size_t sigsetsize)
-+asmlinkage long compat_sys_signalfd4(int ufd,
-+				     const compat_sigset_t __user *sigmask,
-+				     compat_size_t sigsetsize, int flags)
- {
- 	compat_sigset_t ss32;
- 	sigset_t tmp;
-@@ -2148,9 +2148,15 @@ asmlinkage long compat_sys_signalfd(int ufd,
- 	if (copy_to_user(ksigmask, &tmp, sizeof(sigset_t)))
- 		return -EFAULT;
- 
--	return sys_signalfd(ufd, ksigmask, sizeof(sigset_t));
-+	return sys_signalfd4(ufd, ksigmask, sizeof(sigset_t), flags);
- }
- 
-+asmlinkage long compat_sys_signalfd(int ufd,
-+				    const compat_sigset_t __user *sigmask,
-+				    compat_size_t sigsetsize)
-+{
-+	return compat_sys_signalfd4(ufd, sigmask, sigsetsize, 0);
-+}
- #endif /* CONFIG_SIGNALFD */
- 
- #ifdef CONFIG_TIMERFD
-diff --git a/fs/signalfd.c b/fs/signalfd.c
-index ddb328b..29d12f8 100644
---- a/fs/signalfd.c
-+++ b/fs/signalfd.c
-@@ -205,11 +205,15 @@ static const struct file_operations signalfd_fops = {
- 	.read		= signalfd_read,
+ struct poll_table_struct;
+@@ -94,6 +95,12 @@ enum sock_type {
  };
  
--asmlinkage long sys_signalfd(int ufd, sigset_t __user *user_mask, size_t sizemask)
-+asmlinkage long sys_signalfd4(int ufd, sigset_t __user *user_mask,
-+			      size_t sizemask, int flags)
+ #define SOCK_MAX (SOCK_PACKET + 1)
++/* Mask which covers at least up to SOCK_MASK-1.  The
++ * remaining bits are used as flags. */
++#define SOCK_TYPE_MASK 0xf
++
++/* Flags for socket, socketpair, paccept */
++#define SOCK_CLOEXEC	O_CLOEXEC
+ 
+ #endif /* ARCH_HAS_SOCKET_TYPES */
+ 
+@@ -208,7 +215,7 @@ extern int   	     sock_sendmsg(struct socket *sock, struct msghdr *msg,
+ 				  size_t len);
+ extern int	     sock_recvmsg(struct socket *sock, struct msghdr *msg,
+ 				  size_t size, int flags);
+-extern int 	     sock_map_fd(struct socket *sock);
++extern int 	     sock_map_fd(struct socket *sock, int flags);
+ extern struct socket *sockfd_lookup(int fd, int *err);
+ #define		     sockfd_put(sock) fput(sock->file)
+ extern int	     net_ratelimit(void);
+diff --git a/net/9p/trans_fd.c b/net/9p/trans_fd.c
+index f624dff..25931c0 100644
+--- a/net/9p/trans_fd.c
++++ b/net/9p/trans_fd.c
+@@ -1173,7 +1173,7 @@ static int p9_socket_open(struct p9_trans *trans, struct socket *csocket)
+ 	int fd, ret;
+ 
+ 	csocket->sk->sk_allocation = GFP_NOIO;
+-	fd = sock_map_fd(csocket);
++	fd = sock_map_fd(csocket, 0);
+ 	if (fd < 0) {
+ 		P9_EPRINTK(KERN_ERR, "p9_socket_open: failed to map fd\n");
+ 		return fd;
+diff --git a/net/sctp/socket.c b/net/sctp/socket.c
+index e7e3baf..5034b1d 100644
+--- a/net/sctp/socket.c
++++ b/net/sctp/socket.c
+@@ -3812,7 +3812,7 @@ static int sctp_getsockopt_peeloff(struct sock *sk, int len, char __user *optval
+ 		goto out;
+ 
+ 	/* Map the socket to an unused fd that can be returned to the user.  */
+-	retval = sock_map_fd(newsock);
++	retval = sock_map_fd(newsock, 0);
+ 	if (retval < 0) {
+ 		sock_release(newsock);
+ 		goto out;
+diff --git a/net/socket.c b/net/socket.c
+index 66c4a8c..6d6f406 100644
+--- a/net/socket.c
++++ b/net/socket.c
+@@ -348,11 +348,11 @@ static struct dentry_operations sockfs_dentry_operations = {
+  *	but we take care of internal coherence yet.
+  */
+ 
+-static int sock_alloc_fd(struct file **filep)
++static int sock_alloc_fd(struct file **filep, int flags)
  {
- 	sigset_t sigmask;
- 	struct signalfd_ctx *ctx;
+ 	int fd;
  
-+	if (flags & ~SFD_CLOEXEC)
-+		return -EINVAL;
-+
- 	if (sizemask != sizeof(sigset_t) ||
- 	    copy_from_user(&sigmask, user_mask, sizeof(sigmask)))
- 		return -EINVAL;
-@@ -228,7 +232,7 @@ asmlinkage long sys_signalfd(int ufd, sigset_t __user *user_mask, size_t sizemas
- 		 * anon_inode_getfd() will install the fd.
- 		 */
- 		ufd = anon_inode_getfd("[signalfd]", &signalfd_fops, ctx,
--				       0);
-+				       flags & O_CLOEXEC);
- 		if (ufd < 0)
- 			kfree(ctx);
- 	} else {
-@@ -250,3 +254,9 @@ asmlinkage long sys_signalfd(int ufd, sigset_t __user *user_mask, size_t sizemas
+-	fd = get_unused_fd();
++	fd = get_unused_fd_flags(flags);
+ 	if (likely(fd >= 0)) {
+ 		struct file *file = get_empty_filp();
  
- 	return ufd;
+@@ -395,10 +395,10 @@ static int sock_attach_fd(struct socket *sock, struct file *file)
+ 	return 0;
  }
+ 
+-int sock_map_fd(struct socket *sock)
++int sock_map_fd(struct socket *sock, int flags)
+ {
+ 	struct file *newfile;
+-	int fd = sock_alloc_fd(&newfile);
++	int fd = sock_alloc_fd(&newfile, flags);
+ 
+ 	if (likely(fd >= 0)) {
+ 		int err = sock_attach_fd(sock, newfile);
+@@ -1217,12 +1217,18 @@ asmlinkage long sys_socket(int family, int type, int protocol)
+ {
+ 	int retval;
+ 	struct socket *sock;
++	int flags;
 +
-+asmlinkage long sys_signalfd(int ufd, sigset_t __user *user_mask,
-+			     size_t sizemask)
-+{
-+	return sys_signalfd4(ufd, user_mask, sizemask, 0);
-+}
-diff --git a/include/asm-x86/unistd_32.h b/include/asm-x86/unistd_32.h
-index 8317d94..c310371 100644
---- a/include/asm-x86/unistd_32.h
-+++ b/include/asm-x86/unistd_32.h
-@@ -332,6 +332,7 @@
- #define __NR_fallocate		324
- #define __NR_timerfd_settime	325
- #define __NR_timerfd_gettime	326
-+#define __NR_signalfd4		327
++	flags = type & ~SOCK_TYPE_MASK;
++	if (flags & ~SOCK_CLOEXEC)
++		return -EINVAL;
++	type &= SOCK_TYPE_MASK;
  
- #ifdef __KERNEL__
+ 	retval = sock_create(family, type, protocol, &sock);
+ 	if (retval < 0)
+ 		goto out;
  
-diff --git a/include/asm-x86/unistd_64.h b/include/asm-x86/unistd_64.h
-index d751135..69795bf 100644
---- a/include/asm-x86/unistd_64.h
-+++ b/include/asm-x86/unistd_64.h
-@@ -641,6 +641,8 @@ __SYSCALL(__NR_timerfd_settime, sys_timerfd_settime)
- __SYSCALL(__NR_timerfd_gettime, sys_timerfd_gettime)
- #define __NR_paccept				288
- __SYSCALL(__NR_paccept, sys_paccept)
-+#define __NR_signalfd4				289
-+__SYSCALL(__NR_signalfd4, sys_signalfd4)
+-	retval = sock_map_fd(sock);
++	retval = sock_map_fd(sock, flags & O_CLOEXEC);
+ 	if (retval < 0)
+ 		goto out_release;
  
- 
- #ifndef __NO_STUBS
-diff --git a/include/linux/signalfd.h b/include/linux/signalfd.h
-index ea037f2..8b3f7b7 100644
---- a/include/linux/signalfd.h
-+++ b/include/linux/signalfd.h
-@@ -8,6 +8,11 @@
- #ifndef _LINUX_SIGNALFD_H
- #define _LINUX_SIGNALFD_H
- 
-+/* For O_CLOEXEC */
-+#include <linux/fcntl.h>
+@@ -1245,6 +1251,12 @@ asmlinkage long sys_socketpair(int family, int type, int protocol,
+ 	struct socket *sock1, *sock2;
+ 	int fd1, fd2, err;
+ 	struct file *newfile1, *newfile2;
++	int flags;
 +
-+/* Flags for signalfd4.  */
-+#define SFD_CLOEXEC O_CLOEXEC
++	flags = type & ~SOCK_TYPE_MASK;
++	if (flags & ~SOCK_CLOEXEC)
++		return -EINVAL;
++	type &= SOCK_TYPE_MASK;
  
- struct signalfd_siginfo {
- 	__u32 ssi_signo;
-diff --git a/include/linux/syscalls.h b/include/linux/syscalls.h
-index e022405..da99ae4 100644
---- a/include/linux/syscalls.h
-+++ b/include/linux/syscalls.h
-@@ -610,6 +610,7 @@ asmlinkage long sys_set_robust_list(struct robust_list_head __user *head,
- 				    size_t len);
- asmlinkage long sys_getcpu(unsigned __user *cpu, unsigned __user *node, struct getcpu_cache __user *cache);
- asmlinkage long sys_signalfd(int ufd, sigset_t __user *user_mask, size_t sizemask);
-+asmlinkage long sys_signalfd4(int ufd, sigset_t __user *user_mask, size_t sizemask, int flags);
- asmlinkage long sys_timerfd_create(int clockid, int flags);
- asmlinkage long sys_timerfd_settime(int ufd, int flags,
- 				    const struct itimerspec __user *utmr,
+ 	/*
+ 	 * Obtain the first socket and check if the underlying protocol
+@@ -1263,13 +1275,13 @@ asmlinkage long sys_socketpair(int family, int type, int protocol,
+ 	if (err < 0)
+ 		goto out_release_both;
+ 
+-	fd1 = sock_alloc_fd(&newfile1);
++	fd1 = sock_alloc_fd(&newfile1, flags & O_CLOEXEC);
+ 	if (unlikely(fd1 < 0)) {
+ 		err = fd1;
+ 		goto out_release_both;
+ 	}
+ 
+-	fd2 = sock_alloc_fd(&newfile2);
++	fd2 = sock_alloc_fd(&newfile2, flags & O_CLOEXEC);
+ 	if (unlikely(fd2 < 0)) {
+ 		err = fd2;
+ 		put_filp(newfile1);
+@@ -1425,7 +1437,7 @@ asmlinkage long sys_accept(int fd, struct sockaddr __user *upeer_sockaddr,
+ 	 */
+ 	__module_get(newsock->ops->owner);
+ 
+-	newfd = sock_alloc_fd(&newfile);
++	newfd = sock_alloc_fd(&newfile, 0);
+ 	if (unlikely(newfd < 0)) {
+ 		err = newfd;
+ 		sock_release(newsock);
