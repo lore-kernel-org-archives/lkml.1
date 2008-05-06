@@ -1,93 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932743AbYEFVU1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933063AbYEFVVH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932743AbYEFVU1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 17:20:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933029AbYEFVSV
+	id S933063AbYEFVVH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 17:21:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932437AbYEFVSe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 17:18:21 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:48537 "EHLO mx1.redhat.com"
+	Tue, 6 May 2008 17:18:34 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:48543 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932946AbYEFVSQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 17:18:16 -0400
+	id S933020AbYEFVSU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 May 2008 17:18:20 -0400
 Date: Tue, 6 May 2008 17:18:07 -0400
 From: Ulrich Drepper <drepper@redhat.com>
-Message-Id: <200805062118.m46LI7er004075@devserv.devel.redhat.com>
+Message-Id: <200805062118.m46LI7P2004089@devserv.devel.redhat.com>
 To: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: [PATCH 13/18] flag parameters: NONBLOCK in signalfd
+Subject: [PATCH 16/18] flag parameters: NONBLOCK in pipe
 Cc: akpm@linux-foundation.org, davidel@xmailserver.org, mtk.manpages@gmail.com,
        torvalds@linux-foundation.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds support for the SFD_NONBLOCK flag to signalfd4.  The
-additional changes needed are minimal.
+This patch adds O_NONBLOCK support to pipe2.  It is minimally more involved
+than the patches for eventfd et.al but still trivial.  The interfaces of the
+create_write_pipe and create_read_pipe helper functions were changed and the
+one other caller as well.
 
 The following test must be adjusted for architectures other than x86 and
 x86-64 and in case the syscall numbers changed.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #include <fcntl.h>
-#include <signal.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <sys/syscall.h>
 
-#ifndef __NR_signalfd4
+#ifndef __NR_pipe2
 # ifdef __x86_64__
-#  define __NR_signalfd4 289
+#  define __NR_pipe2 293
 # elif defined __i386__
-#  define __NR_signalfd4 327
+#  define __NR_pipe2 331
 # else
-#  error "need __NR_signalfd4"
+#  error "need __NR_pipe2"
 # endif
 #endif
-
-#define SFD_NONBLOCK O_NONBLOCK
 
 int
 main (void)
 {
-  sigset_t ss;
-  sigemptyset (&ss);
-  sigaddset (&ss, SIGUSR1);
-  int fd = syscall (__NR_signalfd4, -1, &ss, 8, 0);
-  if (fd == -1)
+  int fds[2];
+  if (syscall (__NR_pipe2, fds, 0) == -1)
     {
-      puts ("signalfd4(0) failed");
+      puts ("pipe2(0) failed");
       return 1;
     }
-  int fl = fcntl (fd, F_GETFL);
-  if (fl == -1)
+  for (int i = 0; i < 2; ++i)
     {
-      puts ("fcntl failed");
-      return 1;
+      int fl = fcntl (fds[i], F_GETFL);
+      if (fl == -1)
+        {
+          puts ("fcntl failed");
+          return 1;
+        }
+      if (fl & O_NONBLOCK)
+        {
+          printf ("pipe2(0) set non-blocking mode for fds[%d]\n", i);
+          return 1;
+        }
+      close (fds[i]);
     }
-  if (fl & O_NONBLOCK)
-    {
-      puts ("signalfd4(0) set non-blocking mode");
-      return 1;
-    }
-  close (fd);
 
-  fd = syscall (__NR_signalfd4, -1, &ss, 8, SFD_NONBLOCK);
-  if (fd == -1)
+  if (syscall (__NR_pipe2, fds, O_NONBLOCK) == -1)
     {
-      puts ("signalfd4(SFD_NONBLOCK) failed");
+      puts ("pipe2(O_NONBLOCK) failed");
       return 1;
     }
-  fl = fcntl (fd, F_GETFL);
-  if (fl == -1)
+  for (int i = 0; i < 2; ++i)
     {
-      puts ("fcntl failed");
-      return 1;
+      int fl = fcntl (fds[i], F_GETFL);
+      if (fl == -1)
+        {
+          puts ("fcntl failed");
+          return 1;
+        }
+      if ((fl & O_NONBLOCK) == 0)
+        {
+          printf ("pipe2(O_NONBLOCK) does not set non-blocking mode for fds[%d]\n", i);
+          return 1;
+        }
+      close (fds[i]);
     }
-  if ((fl & O_NONBLOCK) == 0)
-    {
-      puts ("signalfd4(SFD_NONBLOCK) does not set non-blocking mode");
-      return 1;
-    }
-  close (fd);
 
   puts ("OK");
 
@@ -95,50 +96,102 @@ main (void)
 }
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
- fs/signalfd.c            |    4 ++--
- include/linux/signalfd.h |    3 ++-
- 2 files changed, 4 insertions(+), 3 deletions(-)
+ fs/pipe.c          |   14 +++++++-------
+ include/linux/fs.h |    4 ++--
+ kernel/kmod.c      |    4 ++--
+ 3 files changed, 11 insertions(+), 11 deletions(-)
 
 
 Signed-off-by: Ulrich Drepper <drepper@redhat.com>
 
-diff --git a/fs/signalfd.c b/fs/signalfd.c
-index c8609fa..5441a4b 100644
---- a/fs/signalfd.c
-+++ b/fs/signalfd.c
-@@ -211,7 +211,7 @@ asmlinkage long sys_signalfd4(int ufd, sigset_t __user *user_mask,
- 	sigset_t sigmask;
- 	struct signalfd_ctx *ctx;
+diff --git a/fs/pipe.c b/fs/pipe.c
+index 059411e..796c0a0 100644
+--- a/fs/pipe.c
++++ b/fs/pipe.c
+@@ -949,7 +949,7 @@ fail_inode:
+ 	return NULL;
+ }
  
--	if (flags & ~SFD_CLOEXEC)
-+	if (flags & ~(SFD_CLOEXEC | SFD_NONBLOCK))
+-struct file *create_write_pipe(void)
++struct file *create_write_pipe(int flags)
+ {
+ 	int err;
+ 	struct inode *inode;
+@@ -982,7 +982,7 @@ struct file *create_write_pipe(void)
+ 		goto err_dentry;
+ 	f->f_mapping = inode->i_mapping;
+ 
+-	f->f_flags = O_WRONLY;
++	f->f_flags = O_WRONLY | (flags & O_NONBLOCK);
+ 	f->f_version = 0;
+ 
+ 	return f;
+@@ -1007,7 +1007,7 @@ void free_write_pipe(struct file *f)
+ 	put_filp(f);
+ }
+ 
+-struct file *create_read_pipe(struct file *wrf)
++struct file *create_read_pipe(struct file *wrf, int flags)
+ {
+ 	struct file *f = get_empty_filp();
+ 	if (!f)
+@@ -1019,7 +1019,7 @@ struct file *create_read_pipe(struct file *wrf)
+ 	f->f_mapping = wrf->f_path.dentry->d_inode->i_mapping;
+ 
+ 	f->f_pos = 0;
+-	f->f_flags = O_RDONLY;
++	f->f_flags = O_RDONLY | (flags & O_NONBLOCK);
+ 	f->f_op = &read_pipe_fops;
+ 	f->f_mode = FMODE_READ;
+ 	f->f_version = 0;
+@@ -1033,13 +1033,13 @@ int do_pipe_flags(int *fd, int flags)
+ 	int error;
+ 	int fdw, fdr;
+ 
+-	if (flags & ~O_CLOEXEC)
++	if (flags & ~(O_CLOEXEC | O_NONBLOCK))
  		return -EINVAL;
  
- 	if (sizemask != sizeof(sigset_t) ||
-@@ -232,7 +232,7 @@ asmlinkage long sys_signalfd4(int ufd, sigset_t __user *user_mask,
- 		 * anon_inode_getfd() will install the fd.
- 		 */
- 		ufd = anon_inode_getfd("[signalfd]", &signalfd_fops, ctx,
--				       flags & O_CLOEXEC);
-+				       flags & (O_CLOEXEC | O_NONBLOCK));
- 		if (ufd < 0)
- 			kfree(ctx);
- 	} else {
-diff --git a/include/linux/signalfd.h b/include/linux/signalfd.h
-index 8b3f7b7..bef0c46 100644
---- a/include/linux/signalfd.h
-+++ b/include/linux/signalfd.h
-@@ -8,11 +8,12 @@
- #ifndef _LINUX_SIGNALFD_H
- #define _LINUX_SIGNALFD_H
+-	fw = create_write_pipe();
++	fw = create_write_pipe(flags);
+ 	if (IS_ERR(fw))
+ 		return PTR_ERR(fw);
+-	fr = create_read_pipe(fw);
++	fr = create_read_pipe(fw, flags);
+ 	error = PTR_ERR(fr);
+ 	if (IS_ERR(fr))
+ 		goto err_write_pipe;
+diff --git a/include/linux/fs.h b/include/linux/fs.h
+index 134d2d5..3694eeb 100644
+--- a/include/linux/fs.h
++++ b/include/linux/fs.h
+@@ -1776,8 +1776,8 @@ static inline void allow_write_access(struct file *file)
+ }
+ extern int do_pipe(int *);
+ extern int do_pipe_flags(int *, int);
+-extern struct file *create_read_pipe(struct file *f);
+-extern struct file *create_write_pipe(void);
++extern struct file *create_read_pipe(struct file *f, int flags);
++extern struct file *create_write_pipe(int flags);
+ extern void free_write_pipe(struct file *);
  
--/* For O_CLOEXEC */
-+/* For O_CLOEXEC and O_NONBLOCK */
- #include <linux/fcntl.h>
+ extern struct file *do_filp_open(int dfd, const char *pathname,
+diff --git a/kernel/kmod.c b/kernel/kmod.c
+index 8df97d3..7356146 100644
+--- a/kernel/kmod.c
++++ b/kernel/kmod.c
+@@ -417,12 +417,12 @@ int call_usermodehelper_stdinpipe(struct subprocess_info *sub_info,
+ {
+ 	struct file *f;
  
- /* Flags for signalfd4.  */
- #define SFD_CLOEXEC O_CLOEXEC
-+#define SFD_NONBLOCK O_NONBLOCK
+-	f = create_write_pipe();
++	f = create_write_pipe(0);
+ 	if (IS_ERR(f))
+ 		return PTR_ERR(f);
+ 	*filp = f;
  
- struct signalfd_siginfo {
- 	__u32 ssi_signo;
+-	f = create_read_pipe(f);
++	f = create_read_pipe(f, 0);
+ 	if (IS_ERR(f)) {
+ 		free_write_pipe(*filp);
+ 		return PTR_ERR(f);
