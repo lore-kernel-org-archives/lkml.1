@@ -1,57 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762853AbYEFPHn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760938AbYEFPLD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762853AbYEFPHn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 11:07:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757338AbYEFPHf
+	id S1760938AbYEFPLD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 11:11:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754672AbYEFPKy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 11:07:35 -0400
-Received: from mail.gmx.net ([213.165.64.20]:54021 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1754512AbYEFPHe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 11:07:34 -0400
-X-Authenticated: #704063
-X-Provags-ID: V01U2FsdGVkX1+w7B9Xo4CwOGVq5H3oPj5bKlqKQMAR1x58tKixEv
-	H8GFx8JdUGPCim
-Date: Tue, 6 May 2008 17:07:30 +0200
-From: Eric Sesterhenn <snakebyte@gmx.de>
+	Tue, 6 May 2008 11:10:54 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:55195 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751288AbYEFPKx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 May 2008 11:10:53 -0400
+Date: Tue, 6 May 2008 08:09:35 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
 To: Ingo Molnar <mingo@elte.hu>
-Cc: Frederik Deweerdt <deweerdt@free.fr>, linux-kernel@vger.kernel.org,
-       suresh.b.siddha@intel.com, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: Oops with strace_test
-Message-ID: <20080506150730.GA6388@alice>
-References: <20080430121202.GD18314@alice> <20080505100008.GA2354@alice> <20080505180053.GB5576@slug> <20080506121005.GJ32591@elte.hu>
+cc: Hugh Dickins <hugh@veritas.com>, Jeff Chua <jeff.chua.linux@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Gabriel C <nix.or.die@googlemail.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: Linux 2.6.26-rc1 - pgtable_32.c:178 pmd_bad
+In-Reply-To: <20080506150432.GA31075@elte.hu>
+Message-ID: <alpine.LFD.1.10.0805060807520.32269@woody.linux-foundation.org>
+References: <b6a2187b0805051806v25fa1272xb08e0b70b9c3408@mail.gmail.com> <20080506124946.GA2146@elte.hu> <Pine.LNX.4.64.0805061435510.32567@blonde.site> <20080506150432.GA31075@elte.hu>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20080506121005.GJ32591@elte.hu>
-X-Editor: Vim http://www.vim.org/
-X-Info: http://www.snake-basket.de
-X-Operating-System: Linux/2.6.25 (x86_64)
-X-Uptime: 17:07:00 up 1 day,  2:01,  2 users,  load average: 0.00, 0.05,
-	0.07
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-Y-GMX-Trusted: 0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Ingo Molnar (mingo@elte.hu) wrote:
-> 
-> * Frederik Deweerdt <deweerdt@free.fr> wrote:
-> 
-> > Hi Eric,
-> > 
-> > This appears to be caused by init_fpu() missing from the 
-> > restore_sigcontext->restore_i387->restore_fpu_checking code path.
-> > 
-> > I believe that moving the init_fpu() call from math_state_restore to 
-> > restore_fpu_checking should fix the problem?
-> 
-> thanks Eric and Frederik for tracking this down. Eric, does Frederik's 
-> patch fix the problem for you?
 
-didnt have a chance to test this yet, I'll be back home tomorrow and
-test Frederiks patch.
 
-Greetings, Eric
+On Tue, 6 May 2008, Ingo Molnar wrote:
+> 
+> hm, the main objection was about whether to turn PAGE_SIZE from unsigned 
+> into signed though - and that we didnt do.
+
+No it wasn't.
+
+The main objection was that you SHOULD NOT USE PAGE_SIZE_MASK AT ALL!
+
+You should have used a pagetable-specific macro, becuse PAGE_MASK is 
+simply fundamentally WRONG, and has absolutely nothing to do with the PFN 
+bits, whether sign-extended or not!
+
+The fact is, the page frane number bits are *not* ~PAGE_MASK or anything 
+like that. They share only the low bits - not the high bits.
+
+			Linus
