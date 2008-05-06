@@ -1,43 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762526AbYEFQ3M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765177AbYEFQb2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762526AbYEFQ3M (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 12:29:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762271AbYEFQ2v
+	id S1765177AbYEFQb2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 12:31:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759227AbYEFQbT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 12:28:51 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:49408 "EHLO mx1.redhat.com"
+	Tue, 6 May 2008 12:31:19 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:58184 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755251AbYEFQ2t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 12:28:49 -0400
-Date: Tue, 6 May 2008 12:20:00 -0400
-From: Alan Cox <alan@redhat.com>
-To: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Cc: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
-       Alan Cox <alan@redhat.com>,
-       Peter Oberparleiter <peter.oberparleiter@de.ibm.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>
-Subject: Re: [patch 7/8] tty3270: fix put_char fail/success conversion.
-Message-ID: <20080506162000.GA25382@devserv.devel.redhat.com>
-References: <20080506155027.974409738@de.ibm.com> <20080506155112.537584495@de.ibm.com>
-Mime-Version: 1.0
+	id S1758883AbYEFQbT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 May 2008 12:31:19 -0400
+Date: Tue, 6 May 2008 18:30:58 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Hugh Dickins <hugh@veritas.com>, Jeff Chua <jeff.chua.linux@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Gabriel C <nix.or.die@googlemail.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: Linux 2.6.26-rc1 - pgtable_32.c:178 pmd_bad
+Message-ID: <20080506163058.GA6561@elte.hu>
+References: <b6a2187b0805051806v25fa1272xb08e0b70b9c3408@mail.gmail.com> <20080506124946.GA2146@elte.hu> <Pine.LNX.4.64.0805061435510.32567@blonde.site> <20080506150432.GA31075@elte.hu> <alpine.LFD.1.10.0805060807520.32269@woody.linux-foundation.org> <20080506151529.GA6321@elte.hu> <alpine.LFD.1.10.0805060916130.32269@woody.linux-foundation.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080506155112.537584495@de.ibm.com>
-User-Agent: Mutt/1.4.1i
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street, Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a Lloegr o'r rhif cofrestru 3798903
+In-Reply-To: <alpine.LFD.1.10.0805060916130.32269@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 06, 2008 at 05:50:34PM +0200, Martin Schwidefsky wrote:
-> From: Heiko Carstens <heiko.carstens@de.ibm.com>
->  The wrong function got coverted ;)
 
-Hehe.. 
+* Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-> Cc: Alan Cox <alan@redhat.com>
-> Cc: Peter Oberparleiter <peter.oberparleiter@de.ibm.com>
-> Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
-> Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
+> On Tue, 6 May 2008, Ingo Molnar wrote:
+> > 
+> > yeah, indeed, sorry about that. Will sort this type mixing out 
+> > today.
+> 
+> Just take Hugh's patch. It's correct. Your code wasn't. Just admit it, 
+> and let others fix things.
 
-Acked-by: Alan Cox <alan@redhat.com>
+yes - Hugh's patch is correct and fixes my hackery, and it works as well 
+- it just passed 40 build/boot iterations here. Thanks Hugh!
+
+Tested-by: Ingo Molnar <mingo@elte.hu>
+
+	Ingo
