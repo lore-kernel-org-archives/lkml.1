@@ -1,59 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751770AbYEFFtc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763363AbYEFFtu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751770AbYEFFtc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 01:49:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762829AbYEFFtB
+	id S1763363AbYEFFtu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 01:49:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757947AbYEFFtN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 01:49:01 -0400
-Received: from E23SMTP03.au.ibm.com ([202.81.18.172]:38173 "EHLO
-	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756880AbYEFFtA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 01:49:00 -0400
-Message-ID: <481FF115.8030503@linux.vnet.ibm.com>
-Date: Tue, 06 May 2008 11:18:05 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
-MIME-Version: 1.0
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-CC: Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: on CONFIG_MM_OWNER=y, kernel panic is possible.
-References: <20080506142255.AC5D.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-In-Reply-To: <20080506142255.AC5D.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Tue, 6 May 2008 01:49:13 -0400
+Received: from mga09.intel.com ([134.134.136.24]:12399 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762879AbYEFFtK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 May 2008 01:49:10 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.27,441,1204531200"; 
+   d="scan'208";a="324904430"
+Subject: AIM7 40% regression with 2.6.26-rc1
+From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+To: Matthew Wilcox <matthew@wil.cx>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Date: Tue, 06 May 2008 13:48:24 +0800
+Message-Id: <1210052904.3453.30.camel@ymzhang>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.21.5 (2.21.5-2.fc9) 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-KOSAKI Motohiro wrote:
-> on CONFIG_MM_OWNER=y (that is automatically turned on by mem-cgroup),
-> kernel panic is possible by following scenario in mm_update_next_owner().
-> 
-> 1. mm_update_next_owner() is called.
-> 2. found caller task in do_each_thread() loop.
-> 3. thus, BUG_ON(c == p) is true, it become kernel panic.
-> 
-> end up, We should left out current task.
-> 
-> 
+Comparing with kernel 2.6.25, ﻿AIM7 (use tmpfs) has ﻿more than 40% with 2.6.26-rc1
+on my 8-core stoakley, 16-core tigerton, and Itanium Montecito. Bisect located
+below patch.
 
-That is not possible. If you look at where mm_update_next_owner() is called
-from, we call it from
+64ac24e738823161693bf791f87adc802cf529ff is first bad commit
+commit 64ac24e738823161693bf791f87adc802cf529ff
+Author: Matthew Wilcox <matthew@wil.cx>
+Date:   Fri Mar 7 21:55:58 2008 -0500
 
-exit_mm() and exec_mmap()
+    Generic semaphore implementation
 
-In both cases, we ensure that the task's mm has changed (to NULL and the new mm
-respectively), before we call mm_update_next_owner(), hence c->mm can never be
-equal to p->mm.
 
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+After I manually reverted the patch against 2.6.26-rc1 while fixing lots of
+conflictions/errors, aim7 regression became less than 2%.
+
+-yanmin
+
+
