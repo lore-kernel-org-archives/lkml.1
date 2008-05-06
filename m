@@ -1,52 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764072AbYEFI6m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763657AbYEFI7I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764072AbYEFI6m (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 04:58:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758000AbYEFIvE
+	id S1763657AbYEFI7I (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 04:59:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759221AbYEFIvH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 04:51:04 -0400
-Received: from smtp.nokia.com ([192.100.105.134]:43145 "EHLO
+	Tue, 6 May 2008 04:51:07 -0400
+Received: from smtp.nokia.com ([192.100.105.134]:43148 "EHLO
 	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760720AbYEFIuW (ORCPT
+	with ESMTP id S1760734AbYEFIuX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 04:50:22 -0400
+	Tue, 6 May 2008 04:50:23 -0400
 From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Adrian Hunter <ext-adrian.hunter@nokia.com>,
        Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
-Subject: [PATCH take 2 20/28] UBIFS: add LEB find subsystem
-Date: Tue,  6 May 2008 13:35:51 +0300
-Message-Id: <1210070159-22794-21-git-send-email-Artem.Bityutskiy@nokia.com>
+Subject: [PATCH take 2 25/28] UBIFS: add orphans handling sub-system
+Date: Tue,  6 May 2008 13:35:56 +0300
+Message-Id: <1210070159-22794-26-git-send-email-Artem.Bityutskiy@nokia.com>
 X-Mailer: git-send-email 1.5.4.1
 In-Reply-To: <1210070159-22794-1-git-send-email-Artem.Bityutskiy@nokia.com>
 References: <1210070159-22794-1-git-send-email-Artem.Bityutskiy@nokia.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=unknown-8bit
-Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 06 May 2008 08:50:14.0683 (UTC) FILETIME=[338A9EB0:01C8AF56]
+X-OriginalArrivalTime: 06 May 2008 08:50:18.0511 (UTC) FILETIME=[35D2B9F0:01C8AF56]
 X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The LEB find sub-system is responsible for maintaining lists of
-eraseblocks with free and dirty space. For example, when UBIFS has
-to do garbage collection, in needs to find the dirtiest eraseblock,
-because it is faster to garbage-collect it, and it asks the
-LEB find sub-system to do this, which usually has immediate answer.
+This sub-system keeps track of orphans - the files which were deleted
+but are still kept open. These files should be deleted only when the
+last reference goes. But if an unclean reboot happens, UBIFS has to
+also delete the orphans. This is why the orphans sub-system exists -
+it records information about all orphans to the on-flash orphan area.
 
 Signed-off-by: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
 Signed-off-by: Adrian Hunter <ext-adrian.hunter@nokia.com>
 ---
- fs/ubifs/find.c |  957 +++++++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 957 insertions(+), 0 deletions(-)
+ fs/ubifs/orphan.c |  955 +++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 955 insertions(+), 0 deletions(-)
 
-diff --git a/fs/ubifs/find.c b/fs/ubifs/find.c
+diff --git a/fs/ubifs/orphan.c b/fs/ubifs/orphan.c
 new file mode 100644
-index 0000000..43ee366
+index 0000000..aa7993c
 --- /dev/null
-+++ b/fs/ubifs/find.c
-@@ -0,0 +1,957 @@
++++ b/fs/ubifs/orphan.c
+@@ -0,0 +1,955 @@
 +/*
 + * This file is part of UBIFS.
 + *
@@ -65,945 +62,943 @@ index 0000000..43ee366
 + * this program; if not, write to the Free Software Foundation, Inc., 51
 + * Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 + *
-+ * Authors: Artem Bityutskiy (Битюцкий Артём)
-+ *          Adrian Hunter
++ * Author: Adrian Hunter
 + */
 +
-+/*
-+ * This file contains functions for finding LEBs for various purposes e.g.
-+ * garbage collection. In general, lprops category heaps and lists are used
-+ * for fast access, falling back on scanning the LPT as a last resort.
-+ */
-+
-+#include <linux/sort.h>
 +#include "ubifs.h"
 +
-+/**
-+ * struct scan_data - data provided to scan callback functions
-+ * @min_space: minimum number of bytes for which to scan
-+ * @pick_free: whether it is OK to scan for empty LEBs
-+ * @lnum: LEB number found is returned here
-+ * @exclude_index: whether to exclude index LEBs
-+ */
-+struct scan_data {
-+	int min_space;
-+	int pick_free;
-+	int lnum;
-+	int exclude_index;
-+};
-+
-+/**
-+ * valuable - determine whether LEB properties are valuable.
-+ * @c: the UBIFS file-system description object
-+ * @lprops: LEB properties
++/*
++ * An orphan is an inode number whose inode node has been committed to the index
++ * with a link count of zero. That happens when an open file is deleted
++ * (unlinked) and then a commit is run. In the normal course of events the inode
++ * would be deleted when the file is closed. However in the case of an unclean
++ * unmount, orphans need to be accounted for. After an unclean unmount, the
++ * orphans' inodes must be deleted which means either scanning the entire index
++ * looking for them, or keeping a list on flash somewhere. This unit implements
++ * the latter approach.
 + *
-+ * This function return %1 if the LEB properties should be added to the LEB
-+ * properties tree in memory. Otherwise %0 is returned.
++ * The orphan area is a fixed number of LEBs situated between the LPT area and
++ * the main area. The number of orphan area LEBs is specified when the file
++ * system is created. The minimum number is 1. The size of the orphan area
++ * should be so that it can hold the maximum number of orphans that are expected
++ * to ever exist at one time.
++ *
++ * The number of orphans that can fit in a LEB is:
++ *
++ *         (c->leb_size - UBIFS_ORPH_NODE_SZ) / sizeof(__le64)
++ *
++ * For example: a 15872 byte LEB can fit 1980 orphans so 1 LEB may be enough.
++ *
++ * Orphans are accumulated in a rb-tree. When an inode's link count drops to
++ * zero, the inode number is added to the rb-tree. It is removed from the tree
++ * when the inode is deleted.  Any new orphans that are in the orphan tree when
++ * the commit is run, are written to the orphan area in 1 or more orph nodes.
++ * If the orphan area is full, it is consolidated to make space.  There is
++ * always enough space because validation prevents the user from creating more
++ * than the maximum number of orphans allowed.
 + */
-+static int valuable(struct ubifs_info *c, const struct ubifs_lprops *lprops)
-+{
-+	int n, cat = lprops->flags & LPROPS_CAT_MASK;
-+	struct ubifs_lpt_heap *heap;
 +
-+	switch (cat) {
-+	case LPROPS_DIRTY:
-+	case LPROPS_DIRTY_IDX:
-+	case LPROPS_FREE:
-+		heap = &c->lpt_heap[cat - 1];
-+		if (heap->cnt < heap->max_cnt)
-+			return 1;
-+		if (lprops->free + lprops->dirty >= c->dark_wm)
-+			return 1;
-+		return 0;
-+	case LPROPS_EMPTY:
-+		n = c->lst.empty_lebs + c->freeable_cnt -
-+		    c->lst.taken_empty_lebs;
-+		if (n < c->lsave_cnt)
-+			return 1;
-+		return 0;
-+	case LPROPS_FREEABLE:
-+		return 1;
-+	case LPROPS_FRDI_IDX:
-+		return 1;
++#ifdef CONFIG_UBIFS_FS_DEBUG
++static int dbg_check_orphans(struct ubifs_info *c);
++#else
++#define dbg_check_orphans(c) 0
++#endif
++
++/**
++ * ubifs_add_orphan - add an orphan.
++ * @c: UBIFS file-system description object
++ * @inum: orphan inode number
++ *
++ * Add an orphan. This function is called when an inodes link count drops to
++ * zero.
++ */
++int ubifs_add_orphan(struct ubifs_info *c, ino_t inum)
++{
++	struct ubifs_orphan *orphan, *o;
++	struct rb_node **p, *parent = NULL;
++
++	orphan = kzalloc(sizeof(struct ubifs_orphan), GFP_NOFS);
++	if (!orphan)
++		return -ENOMEM;
++	orphan->inum = inum;
++	orphan->new = 1;
++
++	spin_lock(&c->orphan_lock);
++	if (c->tot_orphans >= c->max_orphans) {
++		spin_unlock(&c->orphan_lock);
++		kfree(orphan);
++		return -ENFILE;
++	}
++	p = &c->orph_tree.rb_node;
++	while (*p) {
++		parent = *p;
++		o = rb_entry(parent, struct ubifs_orphan, rb);
++		if (inum < o->inum)
++			p = &(*p)->rb_left;
++		else if (inum > o->inum)
++			p = &(*p)->rb_right;
++		else {
++			dbg_err("orphaned twice");
++			spin_unlock(&c->orphan_lock);
++			kfree(orphan);
++			return 0;
++		}
++	}
++	c->tot_orphans += 1;
++	c->new_orphans += 1;
++	rb_link_node(&orphan->rb, parent, p);
++	rb_insert_color(&orphan->rb, &c->orph_tree);
++	list_add_tail(&orphan->list, &c->orph_list);
++	list_add_tail(&orphan->new_list, &c->orph_new);
++	spin_unlock(&c->orphan_lock);
++	dbg_gen("ino %lu", inum);
++	return 0;
++}
++
++/**
++ * ubifs_delete_orphan - delete an orphan.
++ * @c: UBIFS file-system description object
++ * @inum: orphan inode number
++ *
++ * Delete an orphan. This function is called when an inode is deleted.
++ */
++void ubifs_delete_orphan(struct ubifs_info *c, ino_t inum)
++{
++	struct ubifs_orphan *o;
++	struct rb_node *p;
++
++	spin_lock(&c->orphan_lock);
++	p = c->orph_tree.rb_node;
++	while (p) {
++		o = rb_entry(p, struct ubifs_orphan, rb);
++		if (inum < o->inum)
++			p = p->rb_left;
++		else if (inum > o->inum)
++			p = p->rb_right;
++		else {
++			if (o->dnext) {
++				spin_unlock(&c->orphan_lock);
++				dbg_gen("deleted twice ino %lu", inum);
++				return;
++			}
++			if (o->cnext) {
++				o->dnext = c->orph_dnext;
++				c->orph_dnext = o;
++				spin_unlock(&c->orphan_lock);
++				dbg_gen("delete later ino %lu", inum);
++				return;
++			}
++			rb_erase(p, &c->orph_tree);
++			list_del(&o->list);
++			c->tot_orphans -= 1;
++			if (o->new) {
++				list_del(&o->new_list);
++				c->new_orphans -= 1;
++			}
++			spin_unlock(&c->orphan_lock);
++			kfree(o);
++			dbg_gen("inum %lu", inum);
++			return;
++		}
++	}
++	spin_unlock(&c->orphan_lock);
++	dbg_err("missing orphan ino %lu", inum);
++	dbg_dump_stack();
++}
++
++/**
++ * ubifs_orphan_start_commit - start commit of orphans.
++ * @c: UBIFS file-system description object
++ *
++ * Start commit of orphans.
++ */
++int ubifs_orphan_start_commit(struct ubifs_info *c)
++{
++	struct ubifs_orphan *orphan, **last;
++
++	spin_lock(&c->orphan_lock);
++	last = &c->orph_cnext;
++	list_for_each_entry(orphan, &c->orph_new, new_list) {
++		ubifs_assert(orphan->new);
++		orphan->new = 0;
++		*last = orphan;
++		last = &orphan->cnext;
++	}
++	*last = orphan->cnext;
++	c->cmt_orphans = c->new_orphans;
++	c->new_orphans = 0;
++	dbg_cmt("%d orphans to commit", c->cmt_orphans);
++	INIT_LIST_HEAD(&c->orph_new);
++	if (c->tot_orphans == 0)
++		c->no_orphs = 1;
++	else
++		c->no_orphs = 0;
++	spin_unlock(&c->orphan_lock);
++	return 0;
++}
++
++/**
++ * avail_orphs - calculate available space.
++ * @c: UBIFS file-system description object
++ *
++ * This function returns the number of orphans that can be written in the
++ * available space.
++ */
++static int avail_orphs(struct ubifs_info *c)
++{
++	int avail_lebs, avail, gap;
++
++	avail_lebs = c->orph_lebs - (c->ohead_lnum - c->orph_first) - 1;
++	avail = avail_lebs *
++	       ((c->leb_size - UBIFS_ORPH_NODE_SZ) / sizeof(__le64));
++	gap = c->leb_size - c->ohead_offs;
++	if (gap >= UBIFS_ORPH_NODE_SZ + sizeof(__le64))
++		avail += (gap - UBIFS_ORPH_NODE_SZ) / sizeof(__le64);
++	return avail;
++}
++
++/**
++ * tot_avail_orphs - calculate total space.
++ * @c: UBIFS file-system description object
++ *
++ * This function returns the number of orphans that can be written in half
++ * the total space. That leaves half the space for adding new orphans.
++ */
++static int tot_avail_orphs(struct ubifs_info *c)
++{
++	int avail_lebs, avail;
++
++	avail_lebs = c->orph_lebs;
++	avail = avail_lebs *
++	       ((c->leb_size - UBIFS_ORPH_NODE_SZ) / sizeof(__le64));
++	return avail / 2;
++}
++
++/**
++ * do_write_orph_node - write a node
++ * @c: UBIFS file-system description object
++ * @len: length of node
++ * @atomic: write atomically
++ *
++ * This function writes a node to the orphan head from the orphan buffer. If
++ * %atomic is not zero, then the write is done atomically. On success, %0 is
++ * returned, otherwise a negative error code is returned.
++ */
++static int do_write_orph_node(struct ubifs_info *c, int len, int atomic)
++{
++	int err = 0;
++
++	if (atomic) {
++		ubifs_assert(c->ohead_offs == 0);
++		ubifs_prepare_node(c, c->orph_buf, len, 1);
++		len = ALIGN(len, c->min_io_size);
++		err = ubi_leb_change(c->ubi, c->ohead_lnum, c->orph_buf, len,
++				     UBI_SHORTTERM);
++	} else {
++		if (c->ohead_offs == 0) {
++			/* Ensure LEB has been unmapped */
++			err = ubifs_leb_unmap(c, c->ohead_lnum);
++			if (err)
++				return err;
++		}
++		err = ubifs_write_node(c, c->orph_buf, len, c->ohead_lnum,
++				       c->ohead_offs, UBI_SHORTTERM);
++	}
++	return err;
++}
++
++/**
++ * write_orph_node - write an orph node
++ * @c: UBIFS file-system description object
++ * @atomic: write atomically
++ *
++ * This function builds an orph node from the cnext list and writes it to the
++ * orphan head. On success, %0 is returned, otherwise a negative error code
++ * is returned.
++ */
++static int write_orph_node(struct ubifs_info *c, int atomic)
++{
++	struct ubifs_orphan *orphan, *cnext;
++	struct ubifs_orph_node *orph;
++	int gap, err, len, cnt, i;
++
++	ubifs_assert(c->cmt_orphans > 0);
++	gap = c->leb_size - c->ohead_offs;
++	if (gap < UBIFS_ORPH_NODE_SZ + sizeof(__le64)) {
++		c->ohead_lnum += 1;
++		c->ohead_offs = 0;
++		gap = c->leb_size;
++		if (c->ohead_lnum > c->orph_last) {
++			/*
++			 * We limit the number of orphans so that this should
++			 * never happen.
++			 */
++			ubifs_err("out of space in orphan area");
++			return -EINVAL;
++		}
++	}
++	cnt = (gap - UBIFS_ORPH_NODE_SZ) / sizeof(__le64);
++	if (cnt > c->cmt_orphans)
++		cnt = c->cmt_orphans;
++	len = UBIFS_ORPH_NODE_SZ + cnt * sizeof(__le64);
++	ubifs_assert(c->orph_buf != NULL);
++	orph = c->orph_buf;
++	orph->ch.node_type = UBIFS_ORPH_NODE;
++	spin_lock(&c->orphan_lock);
++	cnext = c->orph_cnext;
++	for (i = 0; i < cnt; i++) {
++		orphan = cnext;
++		orph->inos[i] = cpu_to_le64(orphan->inum);
++		cnext = orphan->cnext;
++		orphan->cnext = NULL;
++	}
++	c->orph_cnext = cnext;
++	c->cmt_orphans -= cnt;
++	spin_unlock(&c->orphan_lock);
++	if (c->cmt_orphans)
++		orph->cmt_no = cpu_to_le64(c->cmt_no + 1);
++	else
++		/* Mark the last node of the commit */
++		orph->cmt_no = cpu_to_le64((c->cmt_no + 1) | (1ULL << 63));
++	ubifs_assert(c->ohead_offs + len <= c->leb_size);
++	ubifs_assert(c->ohead_lnum >= c->orph_first);
++	ubifs_assert(c->ohead_lnum <= c->orph_last);
++	err = do_write_orph_node(c, len, atomic);
++	c->ohead_offs += ALIGN(len, c->min_io_size);
++	c->ohead_offs = ALIGN(c->ohead_offs, 8);
++	return err;
++}
++
++/**
++ * write_orph_nodes - write orph nodes until there are no more to commit
++ * @c: UBIFS file-system description object
++ * @atomic: write atomically
++ *
++ * This function writes orph nodes for all the orphans to commit. On success,
++ * %0 is returned, otherwise a negative error code is returned.
++ */
++static int write_orph_nodes(struct ubifs_info *c, int atomic)
++{
++	int err;
++
++	while (c->cmt_orphans > 0) {
++		err = write_orph_node(c, atomic);
++		if (err)
++			return err;
++	}
++	if (atomic) {
++		int lnum;
++
++		/* Unmap any unused LEBs after consolidation */
++		lnum = c->ohead_lnum + 1;
++		for (lnum = c->ohead_lnum + 1; lnum <= c->orph_last; lnum++) {
++			err = ubifs_leb_unmap(c, lnum);
++			if (err)
++				return err;
++		}
 +	}
 +	return 0;
 +}
 +
 +/**
-+ * scan_for_dirty_cb - dirty space scan callback.
-+ * @c: the UBIFS file-system description object
-+ * @lprops: LEB properties to scan
-+ * @in_tree: whether the LEB properties are in main memory
-+ * @data: information passed to and from the caller of the scan
++ * consolidate - consolidate the orphan area.
++ * @c: UBIFS file-system description object
 + *
-+ * This function returns a code that indicates whether the scan should continue
-+ * (%LPT_SCAN_CONTINUE), whether the LEB properties should be added to the tree
-+ * in main memory (%LPT_SCAN_ADD), or whether the scan should stop
-+ * (%LPT_SCAN_STOP).
++ * This function enables consolidation by putting all the orphans into the list
++ * to commit. The list is in the order that the orphans were added, and the
++ * LEBs are written atomically in order, so at no time can orphans be lost by
++ * an unclean unmount.
++ *
++ * This function returns %0 on success and a negative error code on failure.
 + */
-+static int scan_for_dirty_cb(struct ubifs_info *c,
-+			     const struct ubifs_lprops *lprops, int in_tree,
-+			     struct scan_data *data)
++static int consolidate(struct ubifs_info *c)
 +{
-+	int ret = LPT_SCAN_CONTINUE;
++	int tot_avail = tot_avail_orphs(c), err = 0;
 +
-+	/* Exclude LEBs that are currently in use */
-+	if (lprops->flags & LPROPS_TAKEN)
-+		return LPT_SCAN_CONTINUE;
-+	/* Determine whether to add these LEB properties to the tree */
-+	if (!in_tree && valuable(c, lprops))
-+		ret |= LPT_SCAN_ADD;
-+	/* Exclude LEBs with too little space */
-+	if (lprops->free + lprops->dirty < data->min_space)
-+		return ret;
-+	/* If specified, exclude index LEBs */
-+	if (data->exclude_index && lprops->flags & LPROPS_INDEX)
-+		return ret;
-+	/* If specified, exclude empty or freeable LEBs */
-+	if (!data->pick_free && lprops->free + lprops->dirty == c->leb_size)
-+		return ret;
-+	/* Exclude LEBs with too little dirty space (unless it is empty) */
-+	if (lprops->dirty < c->dead_wm && lprops->free != c->leb_size)
-+		return ret;
-+	/* Finally we found space */
-+	data->lnum = lprops->lnum;
-+	return LPT_SCAN_ADD | LPT_SCAN_STOP;
-+}
++	spin_lock(&c->orphan_lock);
++	dbg_cmt("there is space for %d orphans and there are %d",
++		tot_avail, c->tot_orphans);
++	if (c->tot_orphans - c->new_orphans <= tot_avail) {
++		struct ubifs_orphan *orphan, **last;
++		int cnt = 0;
 +
-+/**
-+ * scan_for_dirty - find a data LEB with free space.
-+ * @c: the UBIFS file-system description object
-+ * @min_space: minimum amount free plus dirty space the returned LEB has to
-+ *             have
-+ * @pick_free: if it is ok to return a free or freeable LEB
-+ * @exclude_index: whether to exclude index LEBs
-+ *
-+ * This function returns a pointer to the LEB properties found or a negative
-+ * error code.
-+ */
-+static const struct ubifs_lprops *scan_for_dirty(struct ubifs_info *c,
-+						 int min_space, int pick_free,
-+						 int exclude_index)
-+{
-+	const struct ubifs_lprops *lprops;
-+	struct ubifs_lpt_heap *heap;
-+	struct scan_data data;
-+	int err, i;
-+
-+	/* There may be an LEB with enough dirty space on the free heap */
-+	heap = &c->lpt_heap[LPROPS_FREE - 1];
-+	for (i = 0; i < heap->cnt; i++) {
-+		lprops = heap->arr[i];
-+		if (lprops->free + lprops->dirty < min_space)
-+			continue;
-+		if (lprops->dirty < c->dead_wm)
-+			continue;
-+		return lprops;
-+	}
-+	/*
-+	 * A LEB may have fallen off of the bottom of the dirty heap, and ended
-+	 * up as uncategorized even though it has enough dirty space for us now,
-+	 * so check the uncategorized list. N.B. neither empty nor freeable LEBs
-+	 * can end up as uncategorized because they are kept on lists not
-+	 * finite-sized heaps.
-+	 */
-+	list_for_each_entry(lprops, &c->uncat_list, list) {
-+		if (lprops->flags & LPROPS_TAKEN)
-+			continue;
-+		if (lprops->free + lprops->dirty < min_space)
-+			continue;
-+		if (exclude_index && (lprops->flags & LPROPS_INDEX))
-+			continue;
-+		if (lprops->dirty < c->dead_wm)
-+			continue;
-+		return lprops;
-+	}
-+	/* We have looked everywhere in main memory, now scan the flash */
-+	if (c->pnodes_have >= c->pnode_cnt)
-+		/* All pnodes are in memory, so skip scan */
-+		return ERR_PTR(-ENOSPC);
-+	data.min_space = min_space;
-+	data.pick_free = pick_free;
-+	data.lnum = -1;
-+	data.exclude_index = exclude_index;
-+	err = ubifs_lpt_scan_nolock(c, -1, c->lscan_lnum,
-+				    (ubifs_lpt_scan_callback)scan_for_dirty_cb,
-+				    &data);
-+	if (err)
-+		return ERR_PTR(err);
-+	ubifs_assert(data.lnum >= c->main_first && data.lnum < c->leb_cnt);
-+	c->lscan_lnum = data.lnum;
-+	lprops = ubifs_lpt_lookup_dirty(c, data.lnum);
-+	if (IS_ERR(lprops))
-+		return lprops;
-+	ubifs_assert(lprops->lnum == data.lnum);
-+	ubifs_assert(lprops->free + lprops->dirty >= min_space);
-+	ubifs_assert(lprops->dirty >= c->dead_wm);
-+	ubifs_assert(!(lprops->flags & LPROPS_TAKEN));
-+	ubifs_assert(!(lprops->flags & LPROPS_INDEX));
-+	return lprops;
-+}
-+
-+/**
-+ * ubifs_find_dirty_leb - find a dirty LEB for the Garbage Collector.
-+ * @c: the UBIFS file-system description object
-+ * @ret_lp: LEB properties are returned here on exit
-+ * @min_space: minimum amount free plus dirty space the returned LEB has to
-+ *             have
-+ * @pick_free: if it is ok to return a free or freeable LEB;
-+ *
-+ * This function tries to find a dirty logical eraseblock which has at least
-+ * @min_space free and dirty space. It prefers to take an LEB from the dirty or
-+ * dirty index heap, and it falls-back to LPT scanning if the heaps are empty
-+ * or do not have an LEB which satisfies the @min_space criteria.
-+ *
-+ * Note:
-+ *   o LEBs which have less than dead watermark of dirty space are never picked
-+ *   by this function;
-+ *
-+ * Returns zero and the LEB properties of
-+ * found dirty LEB in case of success, %-ENOSPC if no dirty LEB was found and a
-+ * negative error code in case of other failures. The returned LEB is marked as
-+ * "taken".
-+ *
-+ * The additional @pick_free argument controls if this function has to return a
-+ * free or freeable LEB if one is present. E.g., is convenient for GC to set it
-+ * to %1, when GC is called from the journal space reservation function - it
-+ * has to produce find an LEB as soon as possible. Which means, if a free or
-+ * freeable LEB come in the middle of garbage collection, it has to be erased
-+ * and used.
-+ *
-+ * In opposite, if the Garbage Collector is called from the budgeting, it
-+ * should just make free space, not retuning LEBs which are already free (or
-+ * freeable, which is basically the same, but freeable will become available
-+ * only after the commit).
-+ */
-+int ubifs_find_dirty_leb(struct ubifs_info *c, struct ubifs_lprops *ret_lp,
-+			 int min_space, int pick_free)
-+{
-+	int err = 0, sum, exclude_index = 0;
-+	const struct ubifs_lprops *lp = NULL, *idx_lp = NULL;
-+	struct ubifs_lpt_heap *heap, *idx_heap;
-+
-+	ubifs_get_lprops(c);
-+
-+	if (pick_free) {
-+		int lebs, rsvd_idx_lebs = 0;
-+
-+		spin_lock(&c->space_lock);
-+		lebs = c->lst.empty_lebs;
-+		lebs += c->freeable_cnt - c->lst.taken_empty_lebs;
-+
-+		/*
-+		 * Note, the index may consume more LEBs than it has been
-+		 * reserved for it. It is OK because it might be consolidated
-+		 * by this "in-the-gaps" index commit method if needed. But if
-+		 * the index takes fewer LEBs than it is reserved for it, this
-+		 * function should anyway avoid picking those reserved LEBs.
-+		 */
-+		if (c->min_idx_lebs >= c->lst.idx_lebs) {
-+			rsvd_idx_lebs = c->min_idx_lebs -  c->lst.idx_lebs;
-+			exclude_index = 1;
++		/* Change the cnext list to include all non-new orphans */
++		last = &c->orph_cnext;
++		list_for_each_entry(orphan, &c->orph_list, list) {
++			if (orphan->new)
++				continue;
++			*last = orphan;
++			last = &orphan->cnext;
++			cnt += 1;
 +		}
-+		spin_unlock(&c->space_lock);
-+
-+		/* Check if there are enough free LEBs for the index */
-+		if (rsvd_idx_lebs < lebs) {
-+			/* OK, try to find an empty LEB */
-+			lp = ubifs_fast_find_empty(c);
-+			if (lp)
-+				goto found;
-+
-+			/* Or a freeable LEB */
-+			lp = ubifs_fast_find_freeable(c);
-+			if (lp)
-+				goto found;
-+		} else
-+			/*
-+			 * We cannot pick free/freeable LEBs in the below code.
-+			 */
-+			pick_free = 0;
++		*last = orphan->cnext;
++		ubifs_assert(cnt == c->tot_orphans - c->new_orphans);
++		c->cmt_orphans = cnt;
++		c->ohead_lnum = c->orph_first;
++		c->ohead_offs = 0;
 +	} else {
-+		spin_lock(&c->space_lock);
-+		exclude_index = (c->min_idx_lebs >= c->lst.idx_lebs);
-+		spin_unlock(&c->space_lock);
-+	}
-+
-+	/* Look on the dirty and dirty index heaps */
-+	heap = &c->lpt_heap[LPROPS_DIRTY - 1];
-+	idx_heap = &c->lpt_heap[LPROPS_DIRTY_IDX - 1];
-+
-+	if (idx_heap->cnt && !exclude_index) {
-+		idx_lp = idx_heap->arr[0];
-+		sum = idx_lp->free + idx_lp->dirty;
 +		/*
-+		 * Since we reserve twice as more space for the index than it
-+		 * actually takes, it does not make sense to pick indexing LEBs
-+		 * with less than half LEB of dirty space.
++		 * We limit the number of orphans so that this should
++		 * never happen.
 +		 */
-+		if (sum < min_space || sum < c->half_leb_size)
-+			idx_lp = NULL;
++		ubifs_err("out of space in orphan area");
++		err = -EINVAL;
 +	}
-+
-+	if (heap->cnt) {
-+		lp = heap->arr[0];
-+		if (lp->dirty + lp->free < min_space)
-+			lp = NULL;
-+	}
-+
-+	/* Pick the LEB with most space */
-+	if (idx_lp && lp) {
-+		if (idx_lp->free + idx_lp->dirty >= lp->free + lp->dirty)
-+			lp = idx_lp;
-+	} else if (idx_lp && !lp)
-+		lp = idx_lp;
-+
-+	if (lp) {
-+		ubifs_assert(lp->dirty >= c->dead_wm);
-+		goto found;
-+	}
-+
-+	/* Did not find a dirty LEB on the dirty heaps, have to scan */
-+	dbg_find("scanning LPT for a dirty LEB");
-+	lp = scan_for_dirty(c, min_space, pick_free, exclude_index);
-+	if (IS_ERR(lp)) {
-+		err = PTR_ERR(lp);
-+		goto out;
-+	}
-+	ubifs_assert(lp->dirty >= c->dead_wm);
-+
-+found:
-+	dbg_find("found LEB %d, free %d, dirty %d, flags %#x",
-+		 lp->lnum, lp->free, lp->dirty, lp->flags);
-+
-+	lp = ubifs_change_lp(c, lp, -1, -1, lp->flags | LPROPS_TAKEN, 0);
-+	if (IS_ERR(lp)) {
-+		err = PTR_ERR(lp);
-+		goto out;
-+	}
-+
-+	memcpy(ret_lp, lp, sizeof(struct ubifs_lprops));
-+
-+out:
-+	ubifs_release_lprops(c);
++	spin_unlock(&c->orphan_lock);
 +	return err;
 +}
 +
 +/**
-+ * scan_for_free_cb - free space scan callback.
-+ * @c: the UBIFS file-system description object
-+ * @lprops: LEB properties to scan
-+ * @in_tree: whether the LEB properties are in main memory
-+ * @data: information passed to and from the caller of the scan
++ * commit_orphans - commit orphans.
++ * @c: UBIFS file-system description object
 + *
-+ * This function returns a code that indicates whether the scan should continue
-+ * (%LPT_SCAN_CONTINUE), whether the LEB properties should be added to the tree
-+ * in main memory (%LPT_SCAN_ADD), or whether the scan should stop
-+ * (%LPT_SCAN_STOP).
++ * This function commits orphans to flash. On success, %0 is returned,
++ * otherwise a negative error code is returned.
 + */
-+static int scan_for_free_cb(struct ubifs_info *c,
-+			    const struct ubifs_lprops *lprops, int in_tree,
-+			    struct scan_data *data)
++static int commit_orphans(struct ubifs_info *c)
 +{
-+	int ret = LPT_SCAN_CONTINUE;
++	int avail, atomic = 0, err;
 +
-+	/* Exclude LEBs that are currently in use */
-+	if (lprops->flags & LPROPS_TAKEN)
-+		return LPT_SCAN_CONTINUE;
-+	/* Determine whether to add these LEB properties to the tree */
-+	if (!in_tree && valuable(c, lprops))
-+		ret |= LPT_SCAN_ADD;
-+	/* Exclude index LEBs */
-+	if (lprops->flags & LPROPS_INDEX)
-+		return ret;
-+	/* Exclude LEBs with too little space */
-+	if (lprops->free < data->min_space)
-+		return ret;
-+	/* If specified, exclude empty LEBs */
-+	if (!data->pick_free && lprops->free == c->leb_size)
-+		return ret;
-+	/*
-+	 * LEBs that have only free and dirty space must not be allocated
-+	 * because they may have been unmapped already or they may have data
-+	 * that is obsolete only because of nodes that are still sitting in a
-+	 * wbuf.
-+	 */
-+	if (lprops->free + lprops->dirty == c->leb_size && lprops->dirty > 0)
-+		return ret;
-+	/* Finally we found space */
-+	data->lnum = lprops->lnum;
-+	return LPT_SCAN_ADD | LPT_SCAN_STOP;
++	ubifs_assert(c->cmt_orphans > 0);
++	avail = avail_orphs(c);
++	if (avail < c->cmt_orphans) {
++		/* Not enough space to write new orphans, so consolidate */
++		err = consolidate(c);
++		if (err)
++			return err;
++		atomic = 1;
++	}
++	err = write_orph_nodes(c, atomic);
++	return err;
 +}
 +
 +/**
-+ * do_find_free_space - find a data LEB with free space.
-+ * @c: the UBIFS file-system description object
-+ * @min_space: minimum amount of free space required
-+ * @pick_free: whether it is OK to scan for empty LEBs
-+ * @squeeze: whether to try to find space in a non-empty LEB first
++ * erase_deleted - erase the orphans marked for deletion.
++ * @c: UBIFS file-system description object
 + *
-+ * This function returns a pointer to the LEB properties found or a negative
-+ * error code.
++ * During commit, the orphans being committed cannot be deleted, so they are
++ * marked for deletion and deleted by this function. Also, the recovery
++ * adds killed orphans to the deletion list, and therefore they are deleted
++ * here too.
 + */
-+static
-+const struct ubifs_lprops *do_find_free_space(struct ubifs_info *c,
-+					      int min_space, int pick_free,
-+					      int squeeze)
++static void erase_deleted(struct ubifs_info *c)
 +{
-+	const struct ubifs_lprops *lprops;
-+	struct ubifs_lpt_heap *heap;
-+	struct scan_data data;
-+	int err, i;
++	struct ubifs_orphan *orphan, *dnext;
 +
-+	if (squeeze) {
-+		lprops = ubifs_fast_find_free(c);
-+		if (lprops && lprops->free >= min_space)
-+			return lprops;
++	spin_lock(&c->orphan_lock);
++	dnext = c->orph_dnext;
++	while (dnext) {
++		orphan = dnext;
++		dnext = orphan->dnext;
++		ubifs_assert(!orphan->new);
++		rb_erase(&orphan->rb, &c->orph_tree);
++		list_del(&orphan->list);
++		c->tot_orphans -= 1;
++		dbg_gen("deleting orphan ino %lu", orphan->inum);
++		kfree(orphan);
 +	}
-+	if (pick_free) {
-+		lprops = ubifs_fast_find_empty(c);
-+		if (lprops)
-+			return lprops;
-+	}
-+	if (!squeeze) {
-+		lprops = ubifs_fast_find_free(c);
-+		if (lprops && lprops->free >= min_space)
-+			return lprops;
-+	}
-+	/* There may be an LEB with enough free space on the dirty heap */
-+	heap = &c->lpt_heap[LPROPS_DIRTY - 1];
-+	for (i = 0; i < heap->cnt; i++) {
-+		lprops = heap->arr[i];
-+		if (lprops->free >= min_space)
-+			return lprops;
-+	}
-+	/*
-+	 * A LEB may have fallen off of the bottom of the free heap, and ended
-+	 * up as uncategorized even though it has enough free space for us now,
-+	 * so check the uncategorized list. N.B. neither empty nor freeable LEBs
-+	 * can end up as uncategorized because they are kept on lists not
-+	 * finite-sized heaps.
-+	 */
-+	list_for_each_entry(lprops, &c->uncat_list, list) {
-+		if (lprops->flags & LPROPS_TAKEN)
-+			continue;
-+		if (lprops->flags & LPROPS_INDEX)
-+			continue;
-+		if (lprops->free >= min_space)
-+			return lprops;
-+	}
-+	/* We have looked everywhere in main memory, now scan the flash */
-+	if (c->pnodes_have >= c->pnode_cnt)
-+		/* All pnodes are in memory, so skip scan */
-+		return ERR_PTR(-ENOSPC);
-+	data.min_space = min_space;
-+	data.pick_free = pick_free;
-+	data.lnum = -1;
-+	err = ubifs_lpt_scan_nolock(c, -1, c->lscan_lnum,
-+				    (ubifs_lpt_scan_callback)scan_for_free_cb,
-+				    &data);
-+	if (err)
-+		return ERR_PTR(err);
-+	ubifs_assert(data.lnum >= c->main_first && data.lnum < c->leb_cnt);
-+	c->lscan_lnum = data.lnum;
-+	lprops = ubifs_lpt_lookup_dirty(c, data.lnum);
-+	if (IS_ERR(lprops))
-+		return lprops;
-+	ubifs_assert(lprops->lnum == data.lnum);
-+	ubifs_assert(lprops->free >= min_space);
-+	ubifs_assert(!(lprops->flags & LPROPS_TAKEN));
-+	ubifs_assert(!(lprops->flags & LPROPS_INDEX));
-+	return lprops;
++	c->orph_dnext = NULL;
++	spin_unlock(&c->orphan_lock);
 +}
 +
 +/**
-+ * ubifs_find_free_space - find a data LEB with free space.
-+ * @c: the UBIFS file-system description object
-+ * @min_space: minimum amount of required free space
-+ * @free: contains amount of free space in the LEB on exit
-+ * @squeeze: whether to try to find space in a non-empty LEB first
++ * ubifs_orphan_end_commit - end commit of orphans.
++ * @c: UBIFS file-system description object
 + *
-+ * This function looks for an LEB with at least @min_space bytes of free space.
-+ * It tries to find an empty LEB if possible. If no empty LEBs are available,
-+ * this function searches for a non-empty data LEB. The returned LEB is marked
-+ * as "taken".
-+ *
-+ * This function returns found LEB number in case of success, %-ENOSPC if it
-+ * failed to find a LEB with @min_space bytes of free space and other a negative
-+ * error codes in case of failure.
++ * End commit of orphans.
 + */
-+int ubifs_find_free_space(struct ubifs_info *c, int min_space, int *free,
-+			  int squeeze)
++int ubifs_orphan_end_commit(struct ubifs_info *c)
 +{
-+	const struct ubifs_lprops *lprops;
-+	int lebs, rsvd_idx_lebs, pick_free = 0, err, lnum, flags;
++	int err;
 +
-+	dbg_find("min_space %d", min_space);
-+	ubifs_assert(min_space > 0 && min_space <= c->dark_wm);
-+
-+	ubifs_get_lprops(c);
-+
-+	/* Check if there are enough empty LEBs for commit */
-+	spin_lock(&c->space_lock);
-+	if (c->min_idx_lebs > c->lst.idx_lebs)
-+		rsvd_idx_lebs = c->min_idx_lebs -  c->lst.idx_lebs;
-+	else
-+		rsvd_idx_lebs = 0;
-+	lebs = c->lst.empty_lebs + c->freeable_cnt + c->idx_gc_cnt -
-+	       c->lst.taken_empty_lebs;
-+	if (rsvd_idx_lebs < lebs)
-+		/*
-+		 * OK to allocate an empty LEB, but we still don't want to go
-+		 * looking for one if there aren't any.
-+		 */
-+		if (c->lst.empty_lebs - c->lst.taken_empty_lebs > 0) {
-+			pick_free = 1;
-+			/*
-+			 * Because we release the space lock, we must account
-+			 * for this allocation here. After the LEB properties
-+			 * flags have been updated, we subtract one.
-+			 */
-+			c->lst.taken_empty_lebs += 1;
-+		}
-+	spin_unlock(&c->space_lock);
-+
-+	lprops = do_find_free_space(c, min_space, pick_free, squeeze);
-+	if (IS_ERR(lprops)) {
-+		err = PTR_ERR(lprops);
-+		goto out;
++	if (c->cmt_orphans != 0) {
++		err = commit_orphans(c);
++		if (err)
++			return err;
 +	}
++	erase_deleted(c);
++	err = dbg_check_orphans(c);
++	return err;
++}
 +
-+	lnum = lprops->lnum;
-+	flags = lprops->flags | LPROPS_TAKEN;
++/**
++ * clear_orphans - erase all LEBs used for orphans.
++ * @c: UBIFS file-system description object
++ *
++ * If recovery is not required, then the orphans from the previous session
++ * are not needed. This function locates the LEBs used to record
++ * orphans, and un-maps them.
++ */
++static int clear_orphans(struct ubifs_info *c)
++{
++	int lnum, err;
 +
-+	lprops = ubifs_change_lp(c, lprops, -1, -1, flags, 0);
-+	if (IS_ERR(lprops)) {
-+		err = PTR_ERR(lprops);
-+		goto out;
-+	}
-+
-+	if (pick_free) {
-+		spin_lock(&c->space_lock);
-+		c->lst.taken_empty_lebs -= 1;
-+		spin_unlock(&c->space_lock);
-+	}
-+
-+	*free = lprops->free;
-+	ubifs_release_lprops(c);
-+
-+	if (*free == c->leb_size) {
-+		/*
-+		 * Ensure that empty LEBs have been unmapped. They may not have
-+		 * been, for example, because of an unclean unmount.  Also
-+		 * LEBs that were freeable LEBs (free + dirty == leb_size) will
-+		 * not have been unmapped.
-+		 */
++	for (lnum = c->orph_first; lnum <= c->orph_last; lnum++) {
 +		err = ubifs_leb_unmap(c, lnum);
 +		if (err)
 +			return err;
 +	}
-+
-+	dbg_find("found LEB %d, free %d", lnum, *free);
-+	ubifs_assert(*free >= min_space);
-+	return lnum;
-+
-+out:
-+	if (pick_free) {
-+		spin_lock(&c->space_lock);
-+		c->lst.taken_empty_lebs -= 1;
-+		spin_unlock(&c->space_lock);
-+	}
-+	ubifs_release_lprops(c);
-+	return err;
-+}
-+
-+/**
-+ * scan_for_idx_cb - callback used by the scan for a free LEB for the index.
-+ * @c: the UBIFS file-system description object
-+ * @lprops: LEB properties to scan
-+ * @in_tree: whether the LEB properties are in main memory
-+ * @data: information passed to and from the caller of the scan
-+ *
-+ * This function returns a code that indicates whether the scan should continue
-+ * (%LPT_SCAN_CONTINUE), whether the LEB properties should be added to the tree
-+ * in main memory (%LPT_SCAN_ADD), or whether the scan should stop
-+ * (%LPT_SCAN_STOP).
-+ */
-+static int scan_for_idx_cb(struct ubifs_info *c,
-+			   const struct ubifs_lprops *lprops, int in_tree,
-+			   struct scan_data *data)
-+{
-+	int ret = LPT_SCAN_CONTINUE;
-+
-+	/* Exclude LEBs that are currently in use */
-+	if (lprops->flags & LPROPS_TAKEN)
-+		return LPT_SCAN_CONTINUE;
-+	/* Determine whether to add these LEB properties to the tree */
-+	if (!in_tree && valuable(c, lprops))
-+		ret |= LPT_SCAN_ADD;
-+	/* Exclude index LEBS */
-+	if (lprops->flags & LPROPS_INDEX)
-+		return ret;
-+	/* Exclude LEBs that cannot be made empty */
-+	if (lprops->free + lprops->dirty != c->leb_size)
-+		return ret;
-+	/*
-+	 * We are allocating for the index so it is safe to allocate LEBs with
-+	 * only free and dirty space, because write buffers are sync'd at commit
-+	 * start.
-+	 */
-+	data->lnum = lprops->lnum;
-+	return LPT_SCAN_ADD | LPT_SCAN_STOP;
-+}
-+
-+/**
-+ * scan_for_leb_for_idx - scan for a free LEB for the index.
-+ * @c: the UBIFS file-system description object
-+ */
-+static const struct ubifs_lprops *scan_for_leb_for_idx(struct ubifs_info *c)
-+{
-+	struct ubifs_lprops *lprops;
-+	struct scan_data data;
-+	int err;
-+
-+	data.lnum = -1;
-+	err = ubifs_lpt_scan_nolock(c, -1, c->lscan_lnum,
-+				    (ubifs_lpt_scan_callback)scan_for_idx_cb,
-+				    &data);
-+	if (err)
-+		return ERR_PTR(err);
-+	ubifs_assert(data.lnum >= c->main_first && data.lnum < c->leb_cnt);
-+	c->lscan_lnum = data.lnum;
-+	lprops = ubifs_lpt_lookup_dirty(c, data.lnum);
-+	if (IS_ERR(lprops))
-+		return lprops;
-+	ubifs_assert(lprops->lnum == data.lnum);
-+	ubifs_assert(lprops->free + lprops->dirty == c->leb_size);
-+	ubifs_assert(!(lprops->flags & LPROPS_TAKEN));
-+	ubifs_assert(!(lprops->flags & LPROPS_INDEX));
-+	return lprops;
-+}
-+
-+/**
-+ * ubifs_find_free_leb_for_idx - find a free LEB for the index.
-+ * @c: the UBIFS file-system description object
-+ *
-+ * This function looks for a free LEB and returns that LEB number. The returned
-+ * LEB is marked as "taken", "index".
-+ *
-+ * Only empty LEBs are allocated. This is for two reasons. First, the commit
-+ * calculates the number of LEBs to allocate based on the assumption that they
-+ * will be empty. Secondly, free space at the end of an index LEB is not
-+ * guaranteed to be empty because it may have been used by the in-the-gaps
-+ * method prior to an unclean unmount.
-+ *
-+ * If no LEB is found %-ENOSPC is returned. For other failures another negative
-+ * error code is returned.
-+ */
-+int ubifs_find_free_leb_for_idx(struct ubifs_info *c)
-+{
-+	const struct ubifs_lprops *lprops;
-+	int lnum = -1, err, flags;
-+
-+	ubifs_get_lprops(c);
-+
-+	lprops = ubifs_fast_find_empty(c);
-+	if (!lprops) {
-+		lprops = ubifs_fast_find_freeable(c);
-+		if (!lprops) {
-+			ubifs_assert(c->freeable_cnt == 0);
-+			if (c->lst.empty_lebs - c->lst.taken_empty_lebs > 0) {
-+				lprops = scan_for_leb_for_idx(c);
-+				if (IS_ERR(lprops)) {
-+					err = PTR_ERR(lprops);
-+					goto out;
-+				}
-+			}
-+		}
-+	}
-+
-+	if (!lprops) {
-+		err = -ENOSPC;
-+		goto out;
-+	}
-+
-+	lnum = lprops->lnum;
-+
-+	dbg_find("found LEB %d, free %d, dirty %d, flags %#x",
-+		 lnum, lprops->free, lprops->dirty, lprops->flags);
-+
-+	flags = lprops->flags | LPROPS_TAKEN | LPROPS_INDEX;
-+	lprops = ubifs_change_lp(c, lprops, c->leb_size, 0, flags, 0);
-+	if (IS_ERR(lprops)) {
-+		err = PTR_ERR(lprops);
-+		goto out;
-+	}
-+
-+	ubifs_release_lprops(c);
-+
-+	/*
-+	 * Ensure that empty LEBs have been unmapped. They may not have been,
-+	 * for example, because of an unclean unmount. Also LEBs that were
-+	 * freeable LEBs (free + dirty == leb_size) will not have been unmapped.
-+	 */
-+	err = ubifs_leb_unmap(c, lnum);
-+	if (err) {
-+		ubifs_change_one_lp(c, lnum, -1, -1, 0,
-+				    LPROPS_TAKEN | LPROPS_INDEX, 0);
-+		return err;
-+	}
-+
-+	return lnum;
-+
-+out:
-+	ubifs_release_lprops(c);
-+	return err;
-+}
-+
-+static int cmp_dirty_idx(const struct ubifs_lprops **a,
-+			 const struct ubifs_lprops **b)
-+{
-+	const struct ubifs_lprops *lpa = *a;
-+	const struct ubifs_lprops *lpb = *b;
-+
-+	return lpa->dirty + lpa->free - lpb->dirty - lpb->free;
-+}
-+
-+static void swap_dirty_idx(struct ubifs_lprops **a, struct ubifs_lprops **b,
-+			   int size)
-+{
-+	struct ubifs_lprops *t = *a;
-+
-+	*a = *b;
-+	*b = t;
-+}
-+
-+/**
-+ * ubifs_save_dirty_idx_lnums - save an array of the most dirty index LEB nos.
-+ * @c: the UBIFS file-system description object
-+ *
-+ * This function is called each commit to create an array of LEB numbers of
-+ * dirty index LEBs sorted in order of dirty and free space.  This is used by
-+ * the in-the-gaps method of TNC commit.
-+ */
-+int ubifs_save_dirty_idx_lnums(struct ubifs_info *c)
-+{
-+	int i;
-+
-+	ubifs_get_lprops(c);
-+	/* Copy the LPROPS_DIRTY_IDX heap */
-+	c->dirty_idx.cnt = c->lpt_heap[LPROPS_DIRTY_IDX - 1].cnt;
-+	memcpy(c->dirty_idx.arr, c->lpt_heap[LPROPS_DIRTY_IDX - 1].arr,
-+	       sizeof(void *) * c->dirty_idx.cnt);
-+	/* Sort it so that the dirtiest is now at the end */
-+	sort(c->dirty_idx.arr, c->dirty_idx.cnt, sizeof(void *),
-+	     (int (*)(const void *, const void *))cmp_dirty_idx,
-+	     (void (*)(void *, void *, int))swap_dirty_idx);
-+	dbg_find("found %d dirty index LEBs", c->dirty_idx.cnt);
-+	if (c->dirty_idx.cnt)
-+		dbg_find("dirtiest index LEB is %d with dirty %d and free %d",
-+			 c->dirty_idx.arr[c->dirty_idx.cnt - 1]->lnum,
-+			 c->dirty_idx.arr[c->dirty_idx.cnt - 1]->dirty,
-+			 c->dirty_idx.arr[c->dirty_idx.cnt - 1]->free);
-+	/* Replace the lprops pointers with LEB numbers */
-+	for (i = 0; i < c->dirty_idx.cnt; i++)
-+		c->dirty_idx.arr[i] = (void *)(size_t)c->dirty_idx.arr[i]->lnum;
-+	ubifs_release_lprops(c);
++	c->ohead_lnum = c->orph_first;
++	c->ohead_offs = 0;
 +	return 0;
 +}
 +
 +/**
-+ * scan_dirty_idx_cb - callback used by the scan for a dirty index LEB.
-+ * @c: the UBIFS file-system description object
-+ * @lprops: LEB properties to scan
-+ * @in_tree: whether the LEB properties are in main memory
-+ * @data: information passed to and from the caller of the scan
++ * insert_dead_orphan - insert an orphan.
++ * @c: UBIFS file-system description object
++ * @inum: orphan inode number
 + *
-+ * This function returns a code that indicates whether the scan should continue
-+ * (%LPT_SCAN_CONTINUE), whether the LEB properties should be added to the tree
-+ * in main memory (%LPT_SCAN_ADD), or whether the scan should stop
-+ * (%LPT_SCAN_STOP).
++ * This function is a helper to the 'do_kill_orphans()' function. The orphan
++ * must be kept until the next commit, so it is added to the rb-tree and the
++ * deletion list.
 + */
-+static int scan_dirty_idx_cb(struct ubifs_info *c,
-+			   const struct ubifs_lprops *lprops, int in_tree,
-+			   struct scan_data *data)
++static int insert_dead_orphan(struct ubifs_info *c, ino_t inum)
 +{
-+	int ret = LPT_SCAN_CONTINUE;
++	struct ubifs_orphan *orphan, *o;
++	struct rb_node **p, *parent = NULL;
 +
-+	/* Exclude LEBs that are currently in use */
-+	if (lprops->flags & LPROPS_TAKEN)
-+		return LPT_SCAN_CONTINUE;
-+	/* Determine whether to add these LEB properties to the tree */
-+	if (!in_tree && valuable(c, lprops))
-+		ret |= LPT_SCAN_ADD;
-+	/* Exclude non-index LEBs */
-+	if (!(lprops->flags & LPROPS_INDEX))
-+		return ret;
-+	/* Exclude LEBs with too little space */
-+	if (lprops->free + lprops->dirty < c->min_idx_node_sz)
-+		return ret;
-+	/* Finally we found space */
-+	data->lnum = lprops->lnum;
-+	return LPT_SCAN_ADD | LPT_SCAN_STOP;
++	orphan = kzalloc(sizeof(struct ubifs_orphan), GFP_KERNEL);
++	if (!orphan)
++		return -ENOMEM;
++	orphan->inum = inum;
++
++	p = &c->orph_tree.rb_node;
++	while (*p) {
++		parent = *p;
++		o = rb_entry(parent, struct ubifs_orphan, rb);
++		if (inum < o->inum)
++			p = &(*p)->rb_left;
++		else if (inum > o->inum)
++			p = &(*p)->rb_right;
++		else {
++			/* Already added - no problem */
++			kfree(orphan);
++			return 0;
++		}
++	}
++	c->tot_orphans += 1;
++	rb_link_node(&orphan->rb, parent, p);
++	rb_insert_color(&orphan->rb, &c->orph_tree);
++	list_add_tail(&orphan->list, &c->orph_list);
++	orphan->dnext = c->orph_dnext;
++	c->orph_dnext = orphan;
++	dbg_mnt("ino %lu, new %d, tot %d",
++		inum, c->new_orphans, c->tot_orphans);
++	return 0;
 +}
 +
 +/**
-+ * find_dirty_idx_leb - find a dirty index LEB.
-+ * @c: the UBIFS file-system description object
++ * do_kill_orphans - remove orphan inodes from the index.
++ * @c: UBIFS file-system description object
++ * @sleb: scanned LEB
++ * @last_cmt_no: cmt_no of last orph node read is passed and returned here
++ * @outofdate: whether the LEB is out of date is returned here
++ * @last_flagged: whether the end orph node is encountered
 + *
-+ * This function returns LEB number upon success and a negative error code upon
-+ * failure.  In particular, -ENOSPC is returned if a dirty index LEB is not
-+ * found.
-+ *
-+ * Note that this function scans the entire LPT but it is called very rarely.
++ * This function is a helper to the 'kill_orphans()' function. It goes through
++ * every orphan node in a LEB and for every inode number recorded, removes
++ * all keys for that inode from the TNC.
 + */
-+static int find_dirty_idx_leb(struct ubifs_info *c)
++static int do_kill_orphans(struct ubifs_info *c, struct ubifs_scan_leb *sleb,
++			   unsigned long long *last_cmt_no, int *outofdate,
++			   int *last_flagged)
 +{
-+	const struct ubifs_lprops *lprops;
-+	struct ubifs_lpt_heap *heap;
-+	struct scan_data data;
-+	int err, i, ret;
++	struct ubifs_scan_node *snod;
++	struct ubifs_orph_node *orph;
++	unsigned long long cmt_no;
++	ino_t inum;
++	int i, n, err, first = 1;
 +
-+	/* Check all structures in memory first */
-+	data.lnum = -1;
-+	heap = &c->lpt_heap[LPROPS_DIRTY_IDX - 1];
-+	for (i = 0; i < heap->cnt; i++) {
-+		lprops = heap->arr[i];
-+		ret = scan_dirty_idx_cb(c, lprops, 1, &data);
-+		if (ret & LPT_SCAN_STOP)
-+			goto found;
++	list_for_each_entry(snod, &sleb->nodes, list) {
++		if (snod->type != UBIFS_ORPH_NODE) {
++			ubifs_err("invalid node type %d in orphan area at "
++				  "%d:%d", snod->type, sleb->lnum, snod->offs);
++			dbg_dump_node(c, snod->node);
++			return -EINVAL;
++		}
++
++		orph = snod->node;
++
++		/* Check commit number */
++		cmt_no = le64_to_cpu(orph->cmt_no) & LLONG_MAX;
++		/*
++		 * The commit number on the master node may be less, because
++		 * of a failed commit. If there are several failed commits in a
++		 * row, the commit number written on orph nodes will continue to
++		 * increase (because the commit number is adjusted here) even
++		 * though the commit number on the master node stays the same
++		 * because the master node has not been re-written.
++		 */
++		if (cmt_no > c->cmt_no)
++			c->cmt_no = cmt_no;
++		if (cmt_no < *last_cmt_no && *last_flagged) {
++			/*
++			 * The last orph node had a higher commit number and was
++			 * flagged as the last written for that commit number.
++			 * That makes this orph node, out of date.
++			 */
++			if (!first) {
++				ubifs_err("out of order commit number %llu in "
++					  "orphan node at %d:%d",
++					  cmt_no, sleb->lnum, snod->offs);
++				dbg_dump_node(c, snod->node);
++				return -EINVAL;
++			}
++			dbg_rcvry("out of date LEB %d", sleb->lnum);
++			*outofdate = 1;
++			return 0;
++		}
++
++		if (first)
++			first = 0;
++
++		n = (le32_to_cpu(orph->ch.len) - UBIFS_ORPH_NODE_SZ) >> 3;
++		for (i = 0; i < n; i++) {
++			inum = le64_to_cpu(orph->inos[i]);
++			dbg_rcvry("deleting orphaned inode %lu", inum);
++			err = ubifs_tnc_remove_ino(c, inum);
++			if (err)
++				return err;
++			err = insert_dead_orphan(c, inum);
++			if (err)
++				return err;
++		}
++
++		*last_cmt_no = cmt_no;
++		if (le64_to_cpu(orph->cmt_no) & (1ULL << 63)) {
++			dbg_rcvry("last orph node for commit %llu at %d:%d",
++				  cmt_no, sleb->lnum, snod->offs);
++			*last_flagged = 1;
++		} else
++			*last_flagged = 0;
 +	}
-+	list_for_each_entry(lprops, &c->frdi_idx_list, list) {
-+		ret = scan_dirty_idx_cb(c, lprops, 1, &data);
-+		if (ret & LPT_SCAN_STOP)
-+			goto found;
-+	}
-+	list_for_each_entry(lprops, &c->uncat_list, list) {
-+		ret = scan_dirty_idx_cb(c, lprops, 1, &data);
-+		if (ret & LPT_SCAN_STOP)
-+			goto found;
-+	}
-+	if (c->pnodes_have >= c->pnode_cnt)
-+		/* All pnodes are in memory, so skip scan */
-+		return -ENOSPC;
-+	err = ubifs_lpt_scan_nolock(c, -1, c->lscan_lnum,
-+				    (ubifs_lpt_scan_callback)scan_dirty_idx_cb,
-+				    &data);
-+	if (err)
-+		return err;
-+found:
-+	ubifs_assert(data.lnum >= c->main_first && data.lnum < c->leb_cnt);
-+	c->lscan_lnum = data.lnum;
-+	lprops = ubifs_lpt_lookup_dirty(c, data.lnum);
-+	if (IS_ERR(lprops))
-+		return PTR_ERR(lprops);
-+	ubifs_assert(lprops->lnum == data.lnum);
-+	ubifs_assert(lprops->free + lprops->dirty >= c->min_idx_node_sz);
-+	ubifs_assert(!(lprops->flags & LPROPS_TAKEN));
-+	ubifs_assert((lprops->flags & LPROPS_INDEX));
 +
-+	dbg_find("found dirty LEB %d, free %d, dirty %d, flags %#x",
-+		 lprops->lnum, lprops->free, lprops->dirty, lprops->flags);
-+
-+	lprops = ubifs_change_lp(c, lprops, -1, -1,
-+				 lprops->flags | LPROPS_TAKEN, 0);
-+	if (IS_ERR(lprops))
-+		return PTR_ERR(lprops);
-+
-+	return lprops->lnum;
++	return 0;
 +}
 +
 +/**
-+ * get_idx_gc_leb - try to get a LEB number from trivial GC.
-+ * @c: the UBIFS file-system description object
++ * kill_orphans - remove all orphan inodes from the index.
++ * @c: UBIFS file-system description object
++ *
++ * If recovery is required, then orphan inodes recorded during the previous
++ * session (which ended with an unclean unmount) must be deleted from the index.
++ * This is done by updating the TNC, but since the index is not updated until
++ * the next commit, the LEBs where the orphan information is recorded are not
++ * erased until the next commit.
 + */
-+static int get_idx_gc_leb(struct ubifs_info *c)
++static int kill_orphans(struct ubifs_info *c)
 +{
-+	const struct ubifs_lprops *lp;
-+	int err, lnum;
++	unsigned long long last_cmt_no = 0;
++	int lnum, err = 0, outofdate = 0, last_flagged = 0;
 +
-+	err = ubifs_get_idx_gc_leb(c);
-+	if (err < 0)
-+		return err;
-+	lnum = err;
++	c->ohead_lnum = c->orph_first;
++	c->ohead_offs = 0;
++	/* Check no-orphans flag and skip this if no orphans */
++	if (c->no_orphs) {
++		dbg_rcvry("no orphans");
++		return 0;
++	}
 +	/*
-+	 * The LEB was due to be unmapped after the commit but
-+	 * it is needed now for this commit.
++	 * Orph nodes always start at c->orph_first and are written to each
++	 * successive LEB in turn. Generally unused LEBs will have been unmapped
++	 * but may contain out of date orph nodes if the unmap didn't go
++	 * through. In addition, the last orph node written for each commit is
++	 * marked (top bit of orph->cmt_no is set to 1). It is possible that
++	 * there are orph nodes from the next commit (i.e. the commit did not
++	 * complete successfully). In that case, no orphans will have been lost
++	 * due to the way that orphans are written, and any orphans added will
++	 * be valid orphans anyway and so can be deleted.
 +	 */
-+	lp = ubifs_lpt_lookup_dirty(c, lnum);
-+	if (unlikely(IS_ERR(lp)))
-+		return PTR_ERR(lp);
-+	lp = ubifs_change_lp(c, lp, -1, -1, lp->flags | LPROPS_INDEX, -1);
-+	if (unlikely(IS_ERR(lp)))
-+		return PTR_ERR(lp);
-+	dbg_find("LEB %d, dirty %d and free %d flags %#x",
-+		 lp->lnum, lp->dirty, lp->free, lp->flags);
-+	return lnum;
-+}
++	for (lnum = c->orph_first; lnum <= c->orph_last; lnum++) {
++		struct ubifs_scan_leb *sleb;
 +
-+/**
-+ * find_dirtiest_idx_leb - find dirtiest index LEB from dirtiest array.
-+ * @c: the UBIFS file-system description object
-+ */
-+static int find_dirtiest_idx_leb(struct ubifs_info *c)
-+{
-+	const struct ubifs_lprops *lp;
-+	int lnum;
-+
-+	while (1) {
-+		if (!c->dirty_idx.cnt)
-+			return -ENOSPC;
-+		/* The lprops pointers were replaced by LEB numbers */
-+		lnum = (size_t)c->dirty_idx.arr[--c->dirty_idx.cnt];
-+		lp = ubifs_lpt_lookup(c, lnum);
-+		if (IS_ERR(lp))
-+			return PTR_ERR(lp);
-+		if ((lp->flags & LPROPS_TAKEN) || !(lp->flags & LPROPS_INDEX))
-+			continue;
-+		lp = ubifs_change_lp(c, lp, -1, -1,
-+				     lp->flags | LPROPS_TAKEN, 0);
-+		if (IS_ERR(lp))
-+			return PTR_ERR(lp);
-+		break;
++		dbg_rcvry("LEB %d", lnum);
++		sleb = ubifs_scan(c, lnum, 0, c->sbuf);
++		if (IS_ERR(sleb)) {
++			sleb = ubifs_recover_leb(c, lnum, 0, c->sbuf, 0);
++			if (IS_ERR(sleb)) {
++				err = PTR_ERR(sleb);
++				break;
++			}
++		}
++		err = do_kill_orphans(c, sleb, &last_cmt_no, &outofdate,
++				      &last_flagged);
++		if (err || outofdate) {
++			ubifs_scan_destroy(sleb);
++			break;
++		}
++		if (sleb->endpt) {
++			c->ohead_lnum = lnum;
++			c->ohead_offs = sleb->endpt;
++		}
++		ubifs_scan_destroy(sleb);
 +	}
-+	dbg_find("LEB %d, dirty %d and free %d flags %#x", lp->lnum, lp->dirty,
-+		 lp->free, lp->flags);
-+	ubifs_assert(lp->flags | LPROPS_TAKEN);
-+	ubifs_assert(lp->flags | LPROPS_INDEX);
-+	return lnum;
-+}
-+
-+/**
-+ * ubifs_find_dirty_idx_leb - try to find dirtiest index LEB as at last commit.
-+ * @c: the UBIFS file-system description object
-+ *
-+ * This function attempts to find an untaken index LEB with the most free and
-+ * dirty space that can be used without overwriting index nodes that were in the
-+ * last index committed.
-+ */
-+int ubifs_find_dirty_idx_leb(struct ubifs_info *c)
-+{
-+	int err;
-+
-+	ubifs_get_lprops(c);
-+
-+	/*
-+	 * We made an array of the dirtiest index LEB numbers as at the start of
-+	 * last commit.  Try that array first.
-+	 */
-+	err = find_dirtiest_idx_leb(c);
-+
-+	/* Next try scanning the entire LPT */
-+	if (err == -ENOSPC)
-+		err = find_dirty_idx_leb(c);
-+
-+	/* Finally take any index LEBs awaiting trivial GC */
-+	if (err == -ENOSPC)
-+		err = get_idx_gc_leb(c);
-+
-+	ubifs_release_lprops(c);
 +	return err;
 +}
++
++/**
++ * ubifs_mount_orphans - delete orphan inodes and erase LEBs that recorded them.
++ * @c: UBIFS file-system description object
++ * @unclean: %1 => recover from unclean unmount
++ *
++ * This function is called when mounting to erase orphans from the previous
++ * session. If UBIFS was not unmounted cleanly, then the inodes recorded as
++ * orphans are deleted.
++ */
++int ubifs_mount_orphans(struct ubifs_info *c, int unclean)
++{
++	int err = 0;
++
++	c->max_orphans = tot_avail_orphs(c);
++
++	c->orph_buf = vmalloc(c->leb_size);
++	if (!c->orph_buf)
++		return -ENOMEM;
++
++	if (unclean)
++		err = kill_orphans(c);
++	else
++		err = clear_orphans(c);
++
++	return err;
++}
++
++#ifdef CONFIG_UBIFS_FS_DEBUG
++
++struct check_orphan {
++	struct rb_node rb;
++	ino_t inum;
++};
++
++struct check_info {
++	unsigned long last_ino;
++	unsigned long tot_inos;
++	unsigned long missing;
++	unsigned long long leaf_cnt;
++	struct ubifs_ino_node *node;
++	struct rb_root root;
++};
++
++static int dbg_find_orphan(struct ubifs_info *c, ino_t inum)
++{
++	struct ubifs_orphan *o;
++	struct rb_node *p;
++
++	spin_lock(&c->orphan_lock);
++	p = c->orph_tree.rb_node;
++	while (p) {
++		o = rb_entry(p, struct ubifs_orphan, rb);
++		if (inum < o->inum)
++			p = p->rb_left;
++		else if (inum > o->inum)
++			p = p->rb_right;
++		else {
++			spin_unlock(&c->orphan_lock);
++			return 1;
++		}
++	}
++	spin_unlock(&c->orphan_lock);
++	return 0;
++}
++
++static int dbg_ins_check_orphan(struct rb_root *root, ino_t inum)
++{
++	struct check_orphan *orphan, *o;
++	struct rb_node **p, *parent = NULL;
++
++	orphan = kzalloc(sizeof(struct check_orphan), GFP_NOFS);
++	if (!orphan)
++		return -ENOMEM;
++	orphan->inum = inum;
++
++	p = &root->rb_node;
++	while (*p) {
++		parent = *p;
++		o = rb_entry(parent, struct check_orphan, rb);
++		if (inum < o->inum)
++			p = &(*p)->rb_left;
++		else if (inum > o->inum)
++			p = &(*p)->rb_right;
++		else {
++			kfree(orphan);
++			return 0;
++		}
++	}
++	rb_link_node(&orphan->rb, parent, p);
++	rb_insert_color(&orphan->rb, root);
++	return 0;
++}
++
++static int dbg_find_check_orphan(struct rb_root *root, ino_t inum)
++{
++	struct check_orphan *o;
++	struct rb_node *p;
++
++	p = root->rb_node;
++	while (p) {
++		o = rb_entry(p, struct check_orphan, rb);
++		if (inum < o->inum)
++			p = p->rb_left;
++		else if (inum > o->inum)
++			p = p->rb_right;
++		else
++			return 1;
++	}
++	return 0;
++}
++
++static void dbg_free_check_tree(struct rb_root *root)
++{
++	struct rb_node *this = root->rb_node;
++	struct check_orphan *o;
++
++	while (this) {
++		if (this->rb_left) {
++			this = this->rb_left;
++			continue;
++		} else if (this->rb_right) {
++			this = this->rb_right;
++			continue;
++		}
++		o = rb_entry(this, struct check_orphan, rb);
++		this = rb_parent(this);
++		if (this) {
++			if (this->rb_left == &o->rb)
++				this->rb_left = NULL;
++			else
++				this->rb_right = NULL;
++		}
++		kfree(o);
++	}
++}
++
++static int dbg_orphan_check(struct ubifs_info *c, struct ubifs_zbranch *zbr,
++			    void *priv)
++{
++	struct check_info *ci = priv;
++	ino_t inum;
++	int err;
++
++	inum = key_ino(c, &zbr->key);
++	if (inum != ci->last_ino) {
++		/* Lowest node type is the inode node, so it comes first */
++		if (key_type(c, &zbr->key) != UBIFS_INO_KEY)
++			ubifs_err("found orphan node ino %lu, type %d", inum,
++				  key_type(c, &zbr->key));
++		ci->last_ino = inum;
++		ci->tot_inos += 1;
++		err = dbg_read_leaf_nolock(c, zbr, ci->node);
++		if (err) {
++			ubifs_err("node read failed, error %d", err);
++			return err;
++		}
++		if (ci->node->nlink == 0)
++			/* Must be recorded as an orphan */
++			if (!dbg_find_check_orphan(&ci->root, inum) &&
++			    !dbg_find_orphan(c, inum)) {
++				ubifs_err("missing orphan, ino %lu", inum);
++				ci->missing += 1;
++			}
++	}
++	ci->leaf_cnt += 1;
++	return 0;
++}
++
++static int dbg_read_orphans(struct check_info *ci, struct ubifs_scan_leb *sleb)
++{
++	struct ubifs_scan_node *snod;
++	struct ubifs_orph_node *orph;
++	ino_t inum;
++	int i, n, err;
++
++	list_for_each_entry(snod, &sleb->nodes, list) {
++		cond_resched();
++		if (snod->type != UBIFS_ORPH_NODE)
++			continue;
++		orph = snod->node;
++		n = (le32_to_cpu(orph->ch.len) - UBIFS_ORPH_NODE_SZ) >> 3;
++		for (i = 0; i < n; i++) {
++			inum = le64_to_cpu(orph->inos[i]);
++			err = dbg_ins_check_orphan(&ci->root, inum);
++			if (err)
++				return err;
++		}
++	}
++	return 0;
++}
++
++static int dbg_scan_orphans(struct ubifs_info *c, struct check_info *ci)
++{
++	int lnum, err = 0;
++
++	/* Check no-orphans flag and skip this if no orphans */
++	if (c->no_orphs)
++		return 0;
++
++	for (lnum = c->orph_first; lnum <= c->orph_last; lnum++) {
++		struct ubifs_scan_leb *sleb;
++
++		sleb = ubifs_scan(c, lnum, 0, c->dbg_buf);
++		if (IS_ERR(sleb)) {
++			err = PTR_ERR(sleb);
++			break;
++		}
++
++		err = dbg_read_orphans(ci, sleb);
++		ubifs_scan_destroy(sleb);
++		if (err)
++			break;
++	}
++
++	return err;
++}
++
++static int dbg_check_orphans(struct ubifs_info *c)
++{
++	struct check_info ci;
++	int err;
++
++	if (!(ubifs_chk_flags & UBIFS_CHK_ORPH))
++		return 0;
++
++	ci.last_ino = 0;
++	ci.tot_inos = 0;
++	ci.missing  = 0;
++	ci.leaf_cnt = 0;
++	ci.root = RB_ROOT;
++	ci.node = kmalloc(UBIFS_MAX_INO_NODE_SZ, GFP_NOFS);
++	if (!ci.node) {
++		ubifs_err("out of memory");
++		return -ENOMEM;
++	}
++
++	err = dbg_scan_orphans(c, &ci);
++	if (err)
++		goto out;
++
++	err = dbg_walk_index(c, &dbg_orphan_check, NULL, &ci);
++	if (err) {
++		ubifs_err("cannot scan TNC, error %d", err);
++		goto out;
++	}
++
++	if (ci.missing) {
++		ubifs_err("%lu missing orphan(s)", ci.missing);
++		err = -EINVAL;
++		goto out;
++	}
++
++	dbg_cmt("last inode number is %lu", ci.last_ino);
++	dbg_cmt("total number of inodes is %lu", ci.tot_inos);
++	dbg_cmt("total number of leaf nodes is %llu", ci.leaf_cnt);
++
++out:
++	dbg_free_check_tree(&ci.root);
++	kfree(ci.node);
++	return err;
++}
++
++#endif /* CONFIG_UBIFS_FS_DEBUG */
 -- 
 1.5.4.1
 
