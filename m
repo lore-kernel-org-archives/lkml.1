@@ -1,61 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932379AbYEFQcl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765159AbYEFQes@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932379AbYEFQcl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 12:32:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932256AbYEFQcU
+	id S1765159AbYEFQes (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 12:34:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755279AbYEFQek
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 12:32:20 -0400
-Received: from fg-out-1718.google.com ([72.14.220.154]:13708 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932169AbYEFQcT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 12:32:19 -0400
-Date: Tue, 6 May 2008 18:32:06 +0200
-From: Domenico Andreoli <cavokz@gmail.com>
-To: Kyle McMartin <kyle@mcmartin.ca>
-Cc: Grant Grundler <grundler@parisc-linux.org>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-parisc@vger.kernel.org
-Subject: Re: [REGRESSION] 2.6.25 on parisc - CPU 1 is stuck
-Message-ID: <20080506163206.GA2211@ska.dandreoli.com>
-Mail-Followup-To: Kyle McMartin <kyle@mcmartin.ca>,
-	Grant Grundler <grundler@parisc-linux.org>,
-	James Bottomley <James.Bottomley@HansenPartnership.com>,
-	Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	linux-parisc@vger.kernel.org
-References: <20080420231818.GA2162@ska.dandreoli.com> <1208789018.3640.6.camel@localhost.localdomain> <20080423004440.GB21544@colo.lackof.org> <20080423005438.GK19802@phobos.i.cabal.ca>
+	Tue, 6 May 2008 12:34:40 -0400
+Received: from mail.atmel.fr ([81.80.104.162]:41988 "EHLO atmel-es2.atmel.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754560AbYEFQej (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 May 2008 12:34:39 -0400
+Message-ID: <48209708.3020807@atmel.com>
+Date: Tue, 06 May 2008 19:36:08 +0200
+From: Nicolas Ferre <nicolas.ferre@atmel.com>
+Organization: atmel
+User-Agent: Icedove 1.5.0.14pre (X11/20080208)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080423005438.GK19802@phobos.i.cabal.ca>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: linux-fbdev-devel@lists.sourceforge.net, adaplas@gmail.com
+CC: Per Hedblom <per.hedblom@abem.se>, Roel Kluin <12o3l@tiscali.nl>,
+       Jan Weber <jw022609@uni-greifswald.de>,
+       Andrew Victor <linux@maxim.org.za>,
+       Haavard Skinnemoen <hskinnemoen@atmel.com>,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] atmel_lcdfb: fix pixclok divider calculation
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 22, 2008 at 08:54:38PM -0400, Kyle McMartin wrote:
-> On Tue, Apr 22, 2008 at 06:44:40PM -0600, Grant Grundler wrote:
-> > 
-> > *nod* I don't expect CPUs to show up in inventory if they are
-> > deconfigured in BCH. Maybe J-class firmware has this wrong? *shrug*
-> > Something worth checking I guess.
-> > 
-> 
-> i booted the kernel from my rp3440 on my j6000. i also get this cpu1 is
-> stuck message. putting a panic in the SMP C-code entrypoint is never
-> hit.
-> 
-> most oddly, putting a hpmc-causing insn sequence in the entry point
-> doesn't trigger either, so the cpu isn't coming out of the rendezvous.
-> 
-> even more oddly, the stwa insn in the bring up code looks fine.
+Fix divider calculation and allow CLKVAL = 0 (divisor 2)
 
-still nothing changed with 2.6.26-rc1-00110-ga153063
+It was not possible to get the clock value 0 (divisor 2) because 
+the test "<=0" force the BYPASS bit to be activated instead.
 
-cheers,
-Domenico
+Signed-off-by: Nicolas Ferre <nicolas.ferre@atmel.com>
+---
+Thanks a lot to Jan, Per, Roel and Haavard for sending me
+similar patches.
 
------[ Domenico Andreoli, aka cavok
- --[ http://www.dandreoli.com/gpgkey.asc
-   ---[ 3A0F 2F80 F79C 678A 8936  4FEE 0677 9033 A20E BC50
+ drivers/video/atmel_lcdfb.c |    7 +++----
+ 1 files changed, 3 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/video/atmel_lcdfb.c b/drivers/video/atmel_lcdfb.c
+--- a/drivers/video/atmel_lcdfb.c
++++ b/drivers/video/atmel_lcdfb.c
+@@ -441,13 +441,12 @@ static int atmel_lcdfb_set_par(struct fb_info *info)
+ 
+ 	value = DIV_ROUND_UP(clk_value_khz, PICOS2KHZ(info->var.pixclock));
+ 
+-	value = (value / 2) - 1;
+-	dev_dbg(info->device, "  * programming CLKVAL = 0x%08lx\n", value);
+-
+-	if (value <= 0) {
++	if (value < 2) {
+ 		dev_notice(info->device, "Bypassing pixel clock divider\n");
+ 		lcdc_writel(sinfo, ATMEL_LCDC_LCDCON1, ATMEL_LCDC_BYPASS);
+ 	} else {
++		value = (value / 2) - 1;
++		dev_dbg(info->device, "  * programming CLKVAL = 0x%08lx\n", value);
+ 		lcdc_writel(sinfo, ATMEL_LCDC_LCDCON1, value << ATMEL_LCDC_CLKVAL_OFFSET);
+ 		info->var.pixclock = KHZ2PICOS(clk_value_khz / (2 * (value + 1)));
+ 		dev_dbg(info->device, "  updated pixclk:     %lu KHz\n",
+
