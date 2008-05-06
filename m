@@ -1,84 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932207AbYEFJEW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764624AbYEFJD4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932207AbYEFJEW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 05:04:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762313AbYEFI4t
+	id S1764624AbYEFJD4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 05:03:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763030AbYEFI43
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 04:56:49 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:45384 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1763440AbYEFI4r (ORCPT
-	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 04:56:47 -0400
-Date: Tue, 6 May 2008 18:56:32 +1000
-From: David Chinner <dgc@sgi.com>
-To: Marco Berizzi <pupilla@hotmail.com>
-Cc: David Chinner <dgc@sgi.com>, linux-kernel@vger.kernel.org, xfs@oss.sgi.com
-Subject: Re: XFS shutdown in xfs_iunlink_remove() (was Re: 2.6.25: swapper: page allocation failure. order:3, mode:0x4020)
-Message-ID: <20080506085632.GT155679365@sgi.com>
-References: <BAY103-DAV7CF38DF784B82EC3F2CFAB2D70@phx.gbl> <20080505231754.GL155679365@sgi.com> <BAY103-DAV584F4B005A4F9B7B5E19CB2D60@phx.gbl>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <BAY103-DAV584F4B005A4F9B7B5E19CB2D60@phx.gbl>
-User-Agent: Mutt/1.4.2.1i
+	Tue, 6 May 2008 04:56:29 -0400
+Received: from smtp1.wifiinternet.cz ([89.31.47.1]:58456 "EHLO
+	bor.wifiinternet.cz" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1762928AbYEFI40 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 May 2008 04:56:26 -0400
+Message-ID: <48201D5F.7050707@seznam.cz>
+Date: Tue, 06 May 2008 10:57:03 +0200
+From: Michal Simek <monstr@seznam.cz>
+Reply-To: monstr@seznam.cz
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+MIME-Version: 1.0
+To: David Miller <davem@davemloft.net>
+CC: sfr@canb.auug.org.au, monstr@seznam.cz, paulus@samba.org, arnd@arndb.de,
+       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
+Subject: Re: [PATCH 1/2] OF: Fix coding style violation in of_device.c and
+ of_platform.c
+References: <1209824532-7939-1-git-send-email-monstr@seznam.cz>	<765c6c8053679c45eb370255a110f7bc680a8f25.1209824033.git.monstr@monstr.eu>	<20080505095649.fccb57bf.sfr@canb.auug.org.au> <20080504.170611.112259062.davem@davemloft.net>
+In-Reply-To: <20080504.170611.112259062.davem@davemloft.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 06, 2008 at 09:03:06AM +0200, Marco Berizzi wrote:
-> David Chinner wrote:
-> > > May  5 14:31:38 Pleiadi kernel: xfs_inactive:^Ixfs_ifree() returned
-> an
-> > > error = 22 on hda8
-> >
-> > Is it reproducable?
+
+Hi David and Stephen,
+
+> From: Stephen Rothwell <sfr@canb.auug.org.au>
+> Date: Mon, 5 May 2008 09:56:49 +1000
 > 
-> honestly, I don't know. As you may see from the
-> dmesg output this box has been started on 24 april
-> and the crash has happened yesterday.
-
-Yeah, I noticed that it happened after substantial uptime.
-
-> IMHO the crash happended because of this:
-> At 12:23 squid complain that there is no left space
-> on device, and it start to shrinking cache_dir, and
-> at 12:57 the kernel start logging...
-> This box is pretty slow (celeron) and the hda8 filesystem
-> is about 2786928 1k-blocks.
-
-Hmmmmm - interesting. Both the reports of this problem are from
-machines running as squid proxies. Are you using AUFS for the cache?
-
-Interesting the ENOSPC condition, but I'm not sure it is at all
-relevant - the other case seemed to be triggered by some cron job
-doing cache cleanup so I think it's just the removal files that is
-triggering this....
-
-> > What were you doing at the time the problem occurred?
+>> Any changes to the drivers of files should be cc'd to me (who did the
+>> initial splitup) and Dave Miller since you may impact the sparc code
+>> (which is the other user).
 > 
-> this box is running squid (http proxy): hda8 is where
-> squid cache and logs are stored.
-> I haven't rebooted this box since the problem happened.
-> If you need ssh access just email me.
-> This is the output from xfs_repair:
+> I tried to stitch these patches together and apply them to Linus's
+> tree for some sparc test builds the other day, but failed.
+> 
+> I can't figure out what this mess is against. :-/
 
-You've run repair, there's not much I can look at now.
+Microblaze use the same code(of_device.c and of_platform.c) as is in powerpc.
+I have only minor changes in prom.c.
 
-As a suggestion, when the cache gets close to full next time, can
-you take a metadump of the filesystem (obfuscates names and contains
-no data) and then trigger the cache cleanup function? If the
-filesystem falls over, I'd be very interested in getting a copy of
-hte metadump image and trying to reproduce the problem locally.
-(BTW, you'll need a newer xfsprogs to get xfs_metadump).
-
-Still, thank you for the information - the bit about squid proxies
-if definitely relevant, I think...
-
-Cheers,
-
-Dave.
--- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
+Michal
