@@ -1,74 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764058AbYEFCLS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759944AbYEFCN2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764058AbYEFCLS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 22:11:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757933AbYEFCK6
+	id S1759944AbYEFCN2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 22:13:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754142AbYEFCNR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 22:10:58 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:58181 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757557AbYEFCK5 (ORCPT
+	Mon, 5 May 2008 22:13:17 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:51539 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753096AbYEFCNQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 22:10:57 -0400
-Subject: Re: Preempt-RT patch for 2.6.25
-From: Daniel Walker <dwalker@mvista.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Steven Rostedt <rostedt@goodmis.org>,
-       Sven-Thorsten Dietrich <sven@thebigcorporation.com>,
-       Remy Bohmer <linux@bohmer.net>, LKML <linux-kernel@vger.kernel.org>,
-       RT <linux-rt-users@vger.kernel.org>,
-       Jon Masters <jonathan@jonmasters.org>, Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <alpine.LFD.1.10.0805060334220.3318@apollo.tec.linutronix.de>
-References: <3efb10970805021102n4d87f55eue723786281b06fcb@mail.gmail.com>
-	 <1209753250.25628.34.camel@dd.thebigcorporation.com>
-	 <Pine.LNX.4.58.0805021441340.10615@gandalf.stny.rr.com>
-	 <1209754467.25628.42.camel@dd.thebigcorporation.com>
-	 <Pine.LNX.4.58.0805021502040.10615@gandalf.stny.rr.com>
-	 <1210003265.17132.6.camel@localhost.localdomain>
-	 <Pine.LNX.4.58.0805051210410.23084@gandalf.stny.rr.com>
-	 <1210004376.17132.14.camel@localhost.localdomain>
-	 <Pine.LNX.4.58.0805051240520.25250@gandalf.stny.rr.com>
-	 <1210007084.17132.32.camel@localhost.localdomain>
-	 <Pine.LNX.4.58.0805051426010.25250@gandalf.stny.rr.com>
-	 <1210013938.17132.55.camel@localhost.localdomain>
-	 <alpine.LFD.1.10.0805052107270.3318@apollo.tec.linutronix.de>
-	 <1210025532.17132.82.camel@localhost.localdomain>
-	 <alpine.LFD.1.10.0805060334220.3318@apollo.tec.linutronix.de>
-Content-Type: text/plain
-Date: Mon, 05 May 2008 19:10:55 -0700
-Message-Id: <1210039855.17132.105.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-3.fc8) 
-Content-Transfer-Encoding: 7bit
+	Mon, 5 May 2008 22:13:16 -0400
+X-AuthUser: davidel@xmailserver.org
+Date: Mon, 5 May 2008 19:13:14 -0700 (PDT)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Ulrich Drepper <drepper@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org, mtk.manpages@gmail.com,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH 02/18] flag parameters: socket and socketpair
+In-Reply-To: <20080505185850.789d870a.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0805051910050.20837@alien.or.mcafeemobile.com>
+References: <200805050342.m453gktl029817@devserv.devel.redhat.com>
+ <20080505185850.789d870a.akpm@linux-foundation.org>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 5 May 2008, Andrew Morton wrote:
 
-On Tue, 2008-05-06 at 03:54 +0200, Thomas Gleixner wrote:
-> On Mon, 5 May 2008, Daniel Walker wrote:
-> > On Mon, 2008-05-05 at 23:01 +0200, Thomas Gleixner wrote:
-> > > We have been there before. kernel development does not follow the "we
-> > > want _now_" principle at all. Have you ever tried to yell at Linus "we
-> > > want XYZ _now_" ? If you decide to try it, please keep me on CC - I
-> > > want to enjoy the show.
-> > 
-> > Kernel development is "What is available now?" not what is avaiable in
-> > the future.
-> > 
-> > If you want to reject code you better have a reason other than "We're
-> > going to make some new code for that (some time in the future) sorry."
+> On Sun, 4 May 2008 23:42:46 -0400 Ulrich Drepper <drepper@redhat.com> wrote:
 > 
-> You miss the point. We reject code which breaks existing functionality.
+> > +static const struct flags_rmap sock_file_flags_remap[] = {
+> > +	{ SOCK_CLOEXEC, O_CLOEXEC },
+> > +};
+> > +
+> >  asmlinkage long sys_socket(int family, int type, int protocol)
+> >  {
+> >  	int retval;
+> >  	struct socket *sock;
+> > +	int fflags;
+> > +
+> > +	type = flags_remap(sock_file_flags_remap,
+> > +			   ARRAY_SIZE(sock_file_flags_remap),
+> > +			   type, &fflags);
+> 
+> oh, so that's what it does.
+> 
+> afaict we only ever remap one or two flags.  Would it not be more efficient
+> to do that inline?  Something along the lines of:
+> 
+> 	type = flag_remap(type, &fflags, SOCK_whatever, O_whatever);
+> 	type = flag_remap(type, &fflags, SOCK_whatever2, O_whatever2);
+> 
+> ?
 
-This point , to me, isn't valid. Even if you think it is, the point was
-brought up just recently, after Steven finish port to 2.6.25.
+I think it is better to keep it able to remap more than one flag, with a 
+single call, that is table driven.
 
-So assuming you think bisection is good, and you think the architectures
-should have been included then we should have discussed it a long time
-ago when my code was first release.
 
-It's not like -rt is overflowing with patches to evaluate.
 
-Daniel
+- Davide
+
 
