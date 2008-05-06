@@ -1,60 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760766AbYEFEyy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757420AbYEFFEL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760766AbYEFEyy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 00:54:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752513AbYEFEyo
+	id S1757420AbYEFFEL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 01:04:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751324AbYEFFD6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 00:54:44 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:41200 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752222AbYEFEyn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 00:54:43 -0400
-Date: Mon, 5 May 2008 21:48:46 -0700
-From: Greg KH <greg@kroah.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus <torvalds@linux-foundation.org>
-Subject: Re: linux-next: Requirements and process
-Message-ID: <20080506044846.GE4773@kroah.com>
-References: <20080503154542.18807e59.sfr@canb.auug.org.au>
+	Tue, 6 May 2008 01:03:58 -0400
+Received: from ozlabs.org ([203.10.76.45]:36701 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751190AbYEFFD6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 May 2008 01:03:58 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+Subject: Re: [PATCH 1/3] stop_machine: short exit path for if we cannot create enough threads
+Date: Tue, 6 May 2008 12:57:05 +1000
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, Kathy Staples <kathy.staples@au1.ibm.com>
+References: <481678F5.7080504@jp.fujitsu.com> <481679F1.7010108@jp.fujitsu.com>
+In-Reply-To: <481679F1.7010108@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080503154542.18807e59.sfr@canb.auug.org.au>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: text/plain;
+  charset="iso-2022-jp"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200805061257.05745.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, May 03, 2008 at 03:45:42PM +1000, Stephen Rothwell wrote:
-> I currently have 54 trees that (I assume) are of type 2 above:
-> 
-> driver-core	usb
+On Tuesday 29 April 2008 11:29:21 Hidetoshi Seto wrote:
+> stop_machine_run() invokes kthread 'kstopmachine' and the kthread
+> creates its children for every other cpus.
 
-Internally I have both of these trees split into "current" and "next"
-sections, so that I know what to merge when.
+Hi Hidetoshi,
 
-If it would make things easier for you, I'd be glad to split both of
-these trees up in such a manner to make it more visable.
+   I'm glad to see some work on stop_machine!  I'd really like to rewrite it: 
+it has some nasty properties at the moment and introduces latency it doesn't 
+have to.
 
-Perhaps:
-	driver-core-next
-	usb-next
-	driver-core
-	usb
+Among the properties we want in a new stop_machine are:
+1) timeout protection (as your patches),
+2) arbitrary cpumask for what cpus to run function on,
+3) ability to run something other than cpu_relax() on stopped cpus,
+4) much lower latency for the common case,
+5) simpler than the current code.
 
-would be sufficient for you?
+I expect to get to this in the next week or so, but please remind me if you 
+don't see anything.  I've applied your patches in the mean time (although #3 
+needed to be wrapped in #ifdef CONFIG_STOPMACHINE) in case I don't get that 
+work finished for 2.6.27.
 
-> And three trees that I am not sure about:
-> 
-> x86-latest	sched-latest	ldp
-
-ldp you have properly named as something that will probably go into
-next-next or most likely next-next-next, but does build and run properly
-today, yet has work to go in the "must clean up this crap" arena.
-
-thanks,
-
-greg k-h
+Thanks!
+Rusty.
