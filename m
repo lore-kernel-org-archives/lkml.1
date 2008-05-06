@@ -1,203 +1,193 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764954AbYEFJWO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765420AbYEFJWg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764954AbYEFJWO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 05:22:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759875AbYEFJO4
+	id S1765420AbYEFJWg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 05:22:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764741AbYEFJPA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 05:14:56 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:59573 "EHLO
+	Tue, 6 May 2008 05:15:00 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:59576 "EHLO
 	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764541AbYEFJOx (ORCPT
+	with ESMTP id S1764551AbYEFJO4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 05:14:53 -0400
-Message-Id: <20080506091435.042881692@szeredi.hu>
+	Tue, 6 May 2008 05:14:56 -0400
+Message-Id: <20080506091436.523467965@szeredi.hu>
 References: <20080506091327.259950960@szeredi.hu>
 User-Agent: quilt/0.45-1
-Date: Tue, 06 May 2008 11:13:46 +0200
+Date: Tue, 06 May 2008 11:13:47 +0200
 From: Miklos Szeredi <miklos@szeredi.hu>
 To: akpm@linux-foundation.org
 Cc: hch@infradead.org, viro@ZenIV.linux.org.uk, linux-fsdevel@vger.kernel.org,
        linux-kernel@vger.kernel.org
-Subject: [patch 19/24] vfs: add path_symlink()
-Content-Disposition: inline; filename=path_symlink.patch
+Subject: [patch 20/24] vfs: add path_link()
+Content-Disposition: inline; filename=path_link.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Miklos Szeredi <mszeredi@suse.cz>
 
-Introduce path_symlink().  Make vfs_symlink() static.
+Introduce path_link().  Make vfs_link() static.
 
 Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
 ---
- fs/ecryptfs/inode.c |   14 +++++++-------
+ fs/ecryptfs/inode.c |   10 +++++-----
  fs/namei.c          |   26 ++++++++++++++++++--------
- fs/nfsd/vfs.c       |   12 ++++--------
+ fs/nfsd/vfs.c       |   14 ++++----------
  include/linux/fs.h  |    2 +-
- 4 files changed, 30 insertions(+), 24 deletions(-)
+ 4 files changed, 28 insertions(+), 24 deletions(-)
 
 Index: linux-2.6/fs/ecryptfs/inode.c
 ===================================================================
---- linux-2.6.orig/fs/ecryptfs/inode.c	2008-05-06 11:04:39.000000000 +0200
+--- linux-2.6.orig/fs/ecryptfs/inode.c	2008-05-06 11:04:40.000000000 +0200
 +++ linux-2.6/fs/ecryptfs/inode.c	2008-05-06 11:04:40.000000000 +0200
-@@ -439,7 +439,7 @@ static int ecryptfs_symlink(struct inode
+@@ -379,7 +379,7 @@ static int ecryptfs_link(struct dentry *
  {
- 	int rc;
- 	struct dentry *lower_dentry;
+ 	struct dentry *lower_old_dentry;
+ 	struct dentry *lower_new_dentry;
 -	struct dentry *lower_dir_dentry;
 +	struct path lower_dir;
- 	umode_t mode;
- 	char *encoded_symname;
- 	int encoded_symlen;
-@@ -447,7 +447,8 @@ static int ecryptfs_symlink(struct inode
+ 	u64 file_size_save;
+ 	int rc;
  
- 	lower_dentry = ecryptfs_dentry_to_lower(dentry);
- 	dget(lower_dentry);
--	lower_dir_dentry = lock_parent(lower_dentry);
-+	lower_dir.mnt = ecryptfs_dentry_to_lower_mnt(dentry);
-+	lower_dir.dentry = lock_parent(lower_dentry);
- 	mode = S_IALLUGO;
- 	encoded_symlen = ecryptfs_encode_filename(crypt_stat, symname,
- 						  strlen(symname),
-@@ -456,18 +457,17 @@ static int ecryptfs_symlink(struct inode
- 		rc = encoded_symlen;
+@@ -388,9 +388,9 @@ static int ecryptfs_link(struct dentry *
+ 	lower_new_dentry = ecryptfs_dentry_to_lower(new_dentry);
+ 	dget(lower_old_dentry);
+ 	dget(lower_new_dentry);
+-	lower_dir_dentry = lock_parent(lower_new_dentry);
+-	rc = vfs_link(lower_old_dentry, lower_dir_dentry->d_inode,
+-		      lower_new_dentry);
++	lower_dir.mnt = ecryptfs_dentry_to_lower_mnt(new_dentry);
++	lower_dir.dentry = lock_parent(lower_new_dentry);
++	rc = path_link(lower_old_dentry, &lower_dir, lower_new_dentry);
+ 	if (rc || !lower_new_dentry->d_inode)
  		goto out_lock;
- 	}
--	rc = vfs_symlink(lower_dir_dentry->d_inode, lower_dentry,
--			 encoded_symname, mode);
-+	rc = path_symlink(&lower_dir, lower_dentry, encoded_symname, mode);
- 	kfree(encoded_symname);
- 	if (rc || !lower_dentry->d_inode)
- 		goto out_lock;
- 	rc = ecryptfs_interpose(lower_dentry, dentry, dir->i_sb, 0);
- 	if (rc)
- 		goto out_lock;
--	fsstack_copy_attr_times(dir, lower_dir_dentry->d_inode);
--	fsstack_copy_inode_size(dir, lower_dir_dentry->d_inode);
-+	fsstack_copy_attr_times(dir, lower_dir.dentry->d_inode);
-+	fsstack_copy_inode_size(dir, lower_dir.dentry->d_inode);
+ 	rc = ecryptfs_interpose(lower_new_dentry, new_dentry, dir->i_sb, 0);
+@@ -402,7 +402,7 @@ static int ecryptfs_link(struct dentry *
+ 		ecryptfs_inode_to_lower(old_dentry->d_inode)->i_nlink;
+ 	i_size_write(new_dentry->d_inode, file_size_save);
  out_lock:
 -	unlock_dir(lower_dir_dentry);
 +	unlock_dir(lower_dir.dentry);
- 	dput(lower_dentry);
- 	if (!dentry->d_inode)
- 		d_drop(dentry);
+ 	dput(lower_new_dentry);
+ 	dput(lower_old_dentry);
+ 	d_drop(lower_old_dentry);
 Index: linux-2.6/fs/namei.c
 ===================================================================
---- linux-2.6.orig/fs/namei.c	2008-05-06 11:04:39.000000000 +0200
+--- linux-2.6.orig/fs/namei.c	2008-05-06 11:04:40.000000000 +0200
 +++ linux-2.6/fs/namei.c	2008-05-06 11:04:40.000000000 +0200
-@@ -2435,7 +2435,7 @@ asmlinkage long sys_unlink(const char __
- 	return do_unlinkat(AT_FDCWD, pathname);
+@@ -2514,7 +2514,7 @@ asmlinkage long sys_symlink(const char _
+ 	return sys_symlinkat(oldname, AT_FDCWD, newname);
  }
  
--int vfs_symlink(struct inode *dir, struct dentry *dentry, const char *oldname, int mode)
-+static int vfs_symlink(struct inode *dir, struct dentry *dentry, const char *oldname, int mode)
+-int vfs_link(struct dentry *old_dentry, struct inode *dir, struct dentry *new_dentry)
++static int vfs_link(struct dentry *old_dentry, struct inode *dir, struct dentry *new_dentry)
  {
- 	int error = may_create(dir, dentry, NULL);
- 
-@@ -2456,6 +2456,22 @@ int vfs_symlink(struct inode *dir, struc
+ 	struct inode *inode = old_dentry->d_inode;
+ 	int error;
+@@ -2552,6 +2552,22 @@ int vfs_link(struct dentry *old_dentry, 
  	return error;
  }
  
-+int path_symlink(struct path *dir_path, struct dentry *dentry,
-+		 const char *oldname, int mode)
++int path_link(struct dentry *old_dentry, struct path *dir_path,
++	      struct dentry *new_dentry)
 +{
 +	int error = mnt_want_write(dir_path->mnt);
 +
 +	if (!error) {
 +		struct inode *dir = dir_path->dentry->d_inode;
 +
-+		error = vfs_symlink(dir, dentry, oldname, mode);
++		error = vfs_link(old_dentry, dir, new_dentry);
 +		mnt_drop_write(dir_path->mnt);
 +	}
 +
 +	return error;
 +}
-+EXPORT_SYMBOL(path_symlink);
++EXPORT_SYMBOL(path_link);
 +
- asmlinkage long sys_symlinkat(const char __user *oldname,
- 			      int newdfd, const char __user *newname)
- {
-@@ -2481,12 +2497,7 @@ asmlinkage long sys_symlinkat(const char
- 	if (IS_ERR(dentry))
+ /*
+  * Hardlinks are often used in delicate situations.  We avoid
+  * security-related surprises by not following symlinks on the
+@@ -2592,12 +2608,7 @@ asmlinkage long sys_linkat(int olddfd, c
+ 	error = PTR_ERR(new_dentry);
+ 	if (IS_ERR(new_dentry))
  		goto out_unlock;
- 
 -	error = mnt_want_write(nd.path.mnt);
 -	if (error)
 -		goto out_dput;
--	error = vfs_symlink(nd.path.dentry->d_inode, dentry, from, S_IALLUGO);
+-	error = vfs_link(old_nd.path.dentry, nd.path.dentry->d_inode, new_dentry);
 -	mnt_drop_write(nd.path.mnt);
 -out_dput:
-+	error = path_symlink(&nd.path, dentry, from, S_IALLUGO);
- 	dput(dentry);
++	error = path_link(old_nd.path.dentry, &nd.path, new_dentry);
+ 	dput(new_dentry);
  out_unlock:
  	mutex_unlock(&nd.path.dentry->d_inode->i_mutex);
-@@ -3010,6 +3021,5 @@ EXPORT_SYMBOL(vfs_link);
+@@ -3017,7 +3028,6 @@ EXPORT_SYMBOL(vfs_permission);
+ EXPORT_SYMBOL(file_permission);
+ EXPORT_SYMBOL(unlock_rename);
+ EXPORT_SYMBOL(vfs_follow_link);
+-EXPORT_SYMBOL(vfs_link);
  EXPORT_SYMBOL(generic_permission);
  EXPORT_SYMBOL(vfs_readlink);
  EXPORT_SYMBOL(vfs_rename);
--EXPORT_SYMBOL(vfs_symlink);
- EXPORT_SYMBOL(dentry_unhash);
- EXPORT_SYMBOL(generic_readlink);
 Index: linux-2.6/fs/nfsd/vfs.c
 ===================================================================
---- linux-2.6.orig/fs/nfsd/vfs.c	2008-05-06 11:04:39.000000000 +0200
+--- linux-2.6.orig/fs/nfsd/vfs.c	2008-05-06 11:04:40.000000000 +0200
 +++ linux-2.6/fs/nfsd/vfs.c	2008-05-06 11:04:40.000000000 +0200
-@@ -1518,6 +1518,7 @@ nfsd_symlink(struct svc_rqst *rqstp, str
- 				struct svc_fh *resfhp,
- 				struct iattr *iap)
+@@ -1586,8 +1586,9 @@ __be32
+ nfsd_link(struct svc_rqst *rqstp, struct svc_fh *ffhp,
+ 				char *name, int len, struct svc_fh *tfhp)
  {
 +	struct path 	dir_path;
- 	struct dentry	*dentry, *dnew;
- 	__be32		err, cerr;
+ 	struct dentry	*ddir, *dnew, *dold;
+-	struct inode	*dirp, *dest;
++	struct inode	*dest;
+ 	__be32		err;
  	int		host_err;
-@@ -1545,10 +1546,7 @@ nfsd_symlink(struct svc_rqst *rqstp, str
- 	if (iap && (iap->ia_valid & ATTR_MODE))
- 		mode = iap->ia_mode & S_IALLUGO;
  
--	host_err = mnt_want_write(fhp->fh_export->ex_path.mnt);
--	if (host_err)
--		goto out_nfserr;
--
-+	fh_to_path(fhp, &dir_path);
- 	if (unlikely(path[plen] != 0)) {
- 		char *path_alloced = kmalloc(plen+1, GFP_KERNEL);
- 		if (path_alloced == NULL)
-@@ -1556,11 +1554,11 @@ nfsd_symlink(struct svc_rqst *rqstp, str
- 		else {
- 			strncpy(path_alloced, path, plen);
- 			path_alloced[plen] = 0;
--			host_err = vfs_symlink(dentry->d_inode, dnew, path_alloced, mode);
-+			host_err = path_symlink(&dir_path, dnew, path_alloced, mode);
- 			kfree(path_alloced);
- 		}
- 	} else
--		host_err = vfs_symlink(dentry->d_inode, dnew, path, mode);
-+		host_err = path_symlink(&dir_path, dnew, path, mode);
+@@ -1607,7 +1608,6 @@ nfsd_link(struct svc_rqst *rqstp, struct
  
+ 	fh_lock_nested(ffhp, I_MUTEX_PARENT);
+ 	ddir = ffhp->fh_dentry;
+-	dirp = ddir->d_inode;
+ 
+ 	dnew = lookup_one_len(name, ddir, len);
+ 	host_err = PTR_ERR(dnew);
+@@ -1617,12 +1617,8 @@ nfsd_link(struct svc_rqst *rqstp, struct
+ 	dold = tfhp->fh_dentry;
+ 	dest = dold->d_inode;
+ 
+-	host_err = mnt_want_write(tfhp->fh_export->ex_path.mnt);
+-	if (host_err) {
+-		err = nfserrno(host_err);
+-		goto out_dput;
+-	}
+-	host_err = vfs_link(dold, dirp, dnew);
++	fh_to_path(ffhp, &dir_path);
++	host_err = path_link(dold, &dir_path, dnew);
  	if (!host_err) {
- 		if (EX_ISSYNC(fhp->fh_export))
-@@ -1569,8 +1567,6 @@ nfsd_symlink(struct svc_rqst *rqstp, str
- 	err = nfserrno(host_err);
- 	fh_unlock(fhp);
- 
--	mnt_drop_write(fhp->fh_export->ex_path.mnt);
--
- 	cerr = fh_compose(resfhp, fhp->fh_export, dnew, fhp);
+ 		if (EX_ISSYNC(ffhp->fh_export)) {
+ 			err = nfserrno(nfsd_sync_dir(ddir));
+@@ -1635,8 +1631,6 @@ nfsd_link(struct svc_rqst *rqstp, struct
+ 		else
+ 			err = nfserrno(host_err);
+ 	}
+-	mnt_drop_write(tfhp->fh_export->ex_path.mnt);
+-out_dput:
  	dput(dnew);
- 	if (err==0) err = cerr;
+ out_unlock:
+ 	fh_unlock(ffhp);
 Index: linux-2.6/include/linux/fs.h
 ===================================================================
---- linux-2.6.orig/include/linux/fs.h	2008-05-06 11:04:39.000000000 +0200
+--- linux-2.6.orig/include/linux/fs.h	2008-05-06 11:04:40.000000000 +0200
 +++ linux-2.6/include/linux/fs.h	2008-05-06 11:04:40.000000000 +0200
-@@ -1127,7 +1127,7 @@ extern int vfs_permission(struct nameida
- extern int path_create(struct path *, struct dentry *, int, struct nameidata *);
+@@ -1128,7 +1128,7 @@ extern int path_create(struct path *, st
  extern int path_mkdir(struct path *, struct dentry *, int);
  extern int path_mknod(struct path *, struct dentry *, int, dev_t);
--extern int vfs_symlink(struct inode *, struct dentry *, const char *, int);
-+extern int path_symlink(struct path *, struct dentry *, const char *, int);
- extern int vfs_link(struct dentry *, struct inode *, struct dentry *);
+ extern int path_symlink(struct path *, struct dentry *, const char *, int);
+-extern int vfs_link(struct dentry *, struct inode *, struct dentry *);
++extern int path_link(struct dentry *, struct path *, struct dentry *);
  extern int path_rmdir(struct path *, struct dentry *);
  extern int path_unlink(struct path *, struct dentry *);
+ extern int vfs_rename(struct inode *, struct dentry *, struct inode *, struct dentry *);
 
 --
