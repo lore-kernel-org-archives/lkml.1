@@ -1,68 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933142AbYEFXUY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933800AbYEFXV0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933142AbYEFXUY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 19:20:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754526AbYEFXUE
+	id S933800AbYEFXV0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 19:21:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759391AbYEFXVP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 19:20:04 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:54064 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755430AbYEFXUC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 19:20:02 -0400
-X-AuthUser: davidel@xmailserver.org
-Date: Tue, 6 May 2008 16:20:00 -0700 (PDT)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Michael Kerrisk <mtk.manpages@googlemail.com>
-cc: Matthew Helsley <matthltc@us.ibm.com>, Ulrich Drepper <drepper@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       mtk.manpages@gmail.com, Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH 08/18] flag parameters: epoll_create
-In-Reply-To: <cfd18e0f0805061610i48146b3fra3ac378643d51c9e@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0805061618460.25162@alien.or.mcafeemobile.com>
-References: <200805050342.m453gk49029835@devserv.devel.redhat.com> 
- <1210107990.7323.347.camel@localhost.localdomain> 
- <Pine.LNX.4.64.0805061540560.25162@alien.or.mcafeemobile.com>
- <cfd18e0f0805061610i48146b3fra3ac378643d51c9e@mail.gmail.com>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 6 May 2008 19:21:15 -0400
+Received: from 1wt.eu ([62.212.114.60]:4171 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757374AbYEFXVO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 May 2008 19:21:14 -0400
+Date: Wed, 7 May 2008 01:21:05 +0200
+From: Willy Tarreau <w@1wt.eu>
+To: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+Cc: Jan Engelhardt <jengelh@medozas.de>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: bad pmd ffff810000207808(9090909090909090).
+Message-ID: <20080506232105.GA22457@1wt.eu>
+References: <874p9biqwj.fsf@duaron.myhome.or.jp> <alpine.LNX.1.10.0805061424090.16731@fbirervta.pbzchgretzou.qr> <87zlr3zj9x.fsf@duaron.myhome.or.jp> <20080506195014.GS8474@1wt.eu> <87abj3nibc.fsf@duaron.myhome.or.jp>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <87abj3nibc.fsf@duaron.myhome.or.jp>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 7 May 2008, Michael Kerrisk wrote:
-
-> On Wed, May 7, 2008 at 12:41 AM, Davide Libenzi <davidel@xmailserver.org> wrote:
-> >
-> > On Tue, 6 May 2008, Matthew Helsley wrote:
-> >
-> > >
-> > > On Sun, 2008-05-04 at 23:42 -0400, Ulrich Drepper wrote:
-> > > > This patch adds the new epoll_create2 syscall.  It extends the old epoll_create
-> > > > syscall by one parameter which is meant to hold a flag value.  In this
-> > > > patch the only flag support is EPOLL_CLOEXEC which causes the close-on-exec
-> > > > flag for the returned file descriptor to be set.
-> > >
-> > > Davide, Ulrich,
-> > >
-> > >       A minor question: Why did you choose to pass the seemingly useless
-> > > "size" parameter into the new epoll_create2 system call? I did some
-> > > googling for previous threads with this series and couldn't find a
-> > > discussion on why you chose to keep it.
-> >
-> > The very first implementations were using an hash, and that was a size
-> > hint.
+On Wed, May 07, 2008 at 08:06:47AM +0900, OGAWA Hirofumi wrote:
+> Willy Tarreau <w@1wt.eu> writes:
 > 
-> So, why not simply remove this argument in the new API, since it is now useless?
+> >> I see. I'm not sure, but I didn't notice this soon, maybe it worked as
+> >> almost usual.
+> >
+> > I got immediate same feeling as Jan here. It looks very much like someone
+> > has tried to inject code into your system. The problem is that you don't
+> > know if this finally succeeded. Maybe some backdoor is now installed in
+> > your kernel. If I were you, I would isolate the machine, reboot it on CD
+> > and check MD5s (particularly the ones of the kernel and modules) before
+> > rebooting it.
+> 
+> Hm.. I've checked md5sum as far as I can do (/var/lib/dpkg/info/*.md5sums).
+> It seems to have no difference except data files.
+> 
+> And this machine is in back of firewall of other machine, and the kernel
+> is builded from source each every day or a hour or such.
+> 
+> So, it is unlikely...
 
-I'm more than OK with that.
+OK. At least it was worth checking!
 
-
-
-- Davide
-
+Regards,
+Willy
 
