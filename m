@@ -1,197 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933063AbYEFVVH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933342AbYEFVVm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933063AbYEFVVH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 17:21:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932437AbYEFVSe
+	id S933342AbYEFVVm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 17:21:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933086AbYEFVSo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 17:18:34 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:48543 "EHLO mx1.redhat.com"
+	Tue, 6 May 2008 17:18:44 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:48561 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933020AbYEFVSU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 17:18:20 -0400
+	id S933043AbYEFVSm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 May 2008 17:18:42 -0400
 Date: Tue, 6 May 2008 17:18:07 -0400
 From: Ulrich Drepper <drepper@redhat.com>
-Message-Id: <200805062118.m46LI7P2004089@devserv.devel.redhat.com>
+Message-Id: <200805062118.m46LI7AF004035@devserv.devel.redhat.com>
 To: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: [PATCH 16/18] flag parameters: NONBLOCK in pipe
+Subject: [PATCH 00/18] flag parameters
 Cc: akpm@linux-foundation.org, davidel@xmailserver.org, mtk.manpages@gmail.com,
        torvalds@linux-foundation.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds O_NONBLOCK support to pipe2.  It is minimally more involved
-than the patches for eventfd et.al but still trivial.  The interfaces of the
-create_write_pipe and create_read_pipe helper functions were changed and the
-one other caller as well.
+This is an update for the previous series which should address the
+comments Andrew had.  The controversial function Davide wrote is gone.
+There is no flag conversion anymore.  We still introduce new names for
+the constants but the values are the same as the O_* constants.
 
-The following test must be adjusted for architectures other than x86 and
-x86-64 and in case the syscall numbers changed.
+This leads to some strange-looking code where we in one moment check
+for, say, SOCK_CLOEXEC, and in the next for O_CLOEXEC.  But I added
+in a separate, new patch code which checks for the consistency of the
+constants.
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#include <fcntl.h>
-#include <stdio.h>
-#include <unistd.h>
-#include <sys/syscall.h>
+I modified the headers in <linux/*> to define the new values by
+include <linux/fcntl.h> and then simply define the new constants
+based on the O_* constants.  That's the safest a nd least troublesome
+way.  Otherwise we would have to create arch-specific headers.  None
+of the modified headers should be used by userlevel code.  Therefore
+the namespace pollution is no issue.
 
-#ifndef __NR_pipe2
-# ifdef __x86_64__
-#  define __NR_pipe2 293
-# elif defined __i386__
-#  define __NR_pipe2 331
-# else
-#  error "need __NR_pipe2"
-# endif
-#endif
+For those who just turn in, these patches add flags to various functions
+so that new file descriptors can be created with atomically setting the
+close-on-exec flag.  This is critical, in multi-threaded apps we otherwise
+can have file descriptor leakage or worse.  Since it is so either and
+often needed, I also added code to create new file descriptors with
+O_NONBLOCK set.
 
-int
-main (void)
-{
-  int fds[2];
-  if (syscall (__NR_pipe2, fds, 0) == -1)
-    {
-      puts ("pipe2(0) failed");
-      return 1;
-    }
-  for (int i = 0; i < 2; ++i)
-    {
-      int fl = fcntl (fds[i], F_GETFL);
-      if (fl == -1)
-        {
-          puts ("fcntl failed");
-          return 1;
-        }
-      if (fl & O_NONBLOCK)
-        {
-          printf ("pipe2(0) set non-blocking mode for fds[%d]\n", i);
-          return 1;
-        }
-      close (fds[i]);
-    }
+In future there will be other uses.  Like a O_* flag to enable the use
+of non-sequential descriptors.
 
-  if (syscall (__NR_pipe2, fds, O_NONBLOCK) == -1)
-    {
-      puts ("pipe2(O_NONBLOCK) failed");
-      return 1;
-    }
-  for (int i = 0; i < 2; ++i)
-    {
-      int fl = fcntl (fds[i], F_GETFL);
-      if (fl == -1)
-        {
-          puts ("fcntl failed");
-          return 1;
-        }
-      if ((fl & O_NONBLOCK) == 0)
-        {
-          printf ("pipe2(O_NONBLOCK) does not set non-blocking mode for fds[%d]\n", i);
-          return 1;
-        }
-      close (fds[i]);
-    }
+Some interfaces are not exported at userlevel with enough flexibility
+to allow extending them.  For those we need new userlevel interface.
+This is the case for:
 
-  puts ("OK");
+ - paccept
+ - epoll_create2
+ - dup3
+ - pipe2
+ - inotify_init1
 
-  return 0;
-}
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+We do /not/ need new interfaces for
 
- fs/pipe.c          |   14 +++++++-------
- include/linux/fs.h |    4 ++--
- kernel/kmod.c      |    4 ++--
- 3 files changed, 11 insertions(+), 11 deletions(-)
+ - signalfd4
+ - eventfd2
+ - timerfd_create
+ - socket
+ - socketpair
 
+These either have flags parameters in the interface exported by glibc
+or (in case of the socket functions) overload a parameter with a bitset.
 
-Signed-off-by: Ulrich Drepper <drepper@redhat.com>
+Each semantic change has a test program.  For archs other than x86 and
+x86-64 you'll have to add the appropriate syscall number.
 
-diff --git a/fs/pipe.c b/fs/pipe.c
-index 059411e..796c0a0 100644
---- a/fs/pipe.c
-+++ b/fs/pipe.c
-@@ -949,7 +949,7 @@ fail_inode:
- 	return NULL;
- }
- 
--struct file *create_write_pipe(void)
-+struct file *create_write_pipe(int flags)
- {
- 	int err;
- 	struct inode *inode;
-@@ -982,7 +982,7 @@ struct file *create_write_pipe(void)
- 		goto err_dentry;
- 	f->f_mapping = inode->i_mapping;
- 
--	f->f_flags = O_WRONLY;
-+	f->f_flags = O_WRONLY | (flags & O_NONBLOCK);
- 	f->f_version = 0;
- 
- 	return f;
-@@ -1007,7 +1007,7 @@ void free_write_pipe(struct file *f)
- 	put_filp(f);
- }
- 
--struct file *create_read_pipe(struct file *wrf)
-+struct file *create_read_pipe(struct file *wrf, int flags)
- {
- 	struct file *f = get_empty_filp();
- 	if (!f)
-@@ -1019,7 +1019,7 @@ struct file *create_read_pipe(struct file *wrf)
- 	f->f_mapping = wrf->f_path.dentry->d_inode->i_mapping;
- 
- 	f->f_pos = 0;
--	f->f_flags = O_RDONLY;
-+	f->f_flags = O_RDONLY | (flags & O_NONBLOCK);
- 	f->f_op = &read_pipe_fops;
- 	f->f_mode = FMODE_READ;
- 	f->f_version = 0;
-@@ -1033,13 +1033,13 @@ int do_pipe_flags(int *fd, int flags)
- 	int error;
- 	int fdw, fdr;
- 
--	if (flags & ~O_CLOEXEC)
-+	if (flags & ~(O_CLOEXEC | O_NONBLOCK))
- 		return -EINVAL;
- 
--	fw = create_write_pipe();
-+	fw = create_write_pipe(flags);
- 	if (IS_ERR(fw))
- 		return PTR_ERR(fw);
--	fr = create_read_pipe(fw);
-+	fr = create_read_pipe(fw, flags);
- 	error = PTR_ERR(fr);
- 	if (IS_ERR(fr))
- 		goto err_write_pipe;
-diff --git a/include/linux/fs.h b/include/linux/fs.h
-index 134d2d5..3694eeb 100644
---- a/include/linux/fs.h
-+++ b/include/linux/fs.h
-@@ -1776,8 +1776,8 @@ static inline void allow_write_access(struct file *file)
- }
- extern int do_pipe(int *);
- extern int do_pipe_flags(int *, int);
--extern struct file *create_read_pipe(struct file *f);
--extern struct file *create_write_pipe(void);
-+extern struct file *create_read_pipe(struct file *f, int flags);
-+extern struct file *create_write_pipe(int flags);
- extern void free_write_pipe(struct file *);
- 
- extern struct file *do_filp_open(int dfd, const char *pathname,
-diff --git a/kernel/kmod.c b/kernel/kmod.c
-index 8df97d3..7356146 100644
---- a/kernel/kmod.c
-+++ b/kernel/kmod.c
-@@ -417,12 +417,12 @@ int call_usermodehelper_stdinpipe(struct subprocess_info *sub_info,
- {
- 	struct file *f;
- 
--	f = create_write_pipe();
-+	f = create_write_pipe(0);
- 	if (IS_ERR(f))
- 		return PTR_ERR(f);
- 	*filp = f;
- 
--	f = create_read_pipe(f);
-+	f = create_read_pipe(f, 0);
- 	if (IS_ERR(f)) {
- 		free_write_pipe(*filp);
- 		return PTR_ERR(f);
+The patches all apply individually in sequence and the source tree
+remains compilable and runnable.
