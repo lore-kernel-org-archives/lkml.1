@@ -1,48 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756125AbYEFG5G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755804AbYEFHCc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756125AbYEFG5G (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 02:57:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752126AbYEFG4z
+	id S1755804AbYEFHCc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 03:02:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753143AbYEFHCX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 02:56:55 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:56767
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752736AbYEFG4y (ORCPT
+	Tue, 6 May 2008 03:02:23 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:52413 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752727AbYEFHCX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 02:56:54 -0400
-Date: Mon, 05 May 2008 23:56:54 -0700 (PDT)
-Message-Id: <20080505.235654.232530105.davem@davemloft.net>
-To: sfr@canb.auug.org.au
-Cc: mingo@elte.hu, andi@lisas.de, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       mchehab@infradead.org
-Subject: Re: Linux 2.6.26-rc1
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20080506153552.805240f3.sfr@canb.auug.org.au>
-References: <20080506095122.860796f6.sfr@canb.auug.org.au>
-	<20080505.165501.62584352.davem@davemloft.net>
-	<20080506153552.805240f3.sfr@canb.auug.org.au>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Tue, 6 May 2008 03:02:23 -0400
+Date: Tue, 06 May 2008 16:02:09 +0900
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Lameter <clameter@sgi.com>
+Subject: make vmstat cpu-unplug safe
+Cc: kosaki.motohiro@jp.fujitsu.com
+Message-Id: <20080506154938.AC6B.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.42 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-Date: Tue, 6 May 2008 15:35:52 +1000
 
-> On Mon, 05 May 2008 16:55:01 -0700 (PDT) David Miller <davem@davemloft.net> wrote:
-> > So what should I do now?
-> > 
-> > I have Ingo's IRDA PNP fixes in my net-2.6 tree and that's already
-> > publicly visible, so I'd need to add revert changesets if people want
-> > me to remove it.
-> 
-> Do nothing.  I was just making a point about patches getting lost/ignored.
-> I have dropped my copies from linux-next today.
-> 
-> At least the fixes are now in a tree headed for Linus, soon.
+btw: I think all_vm_event() author is Cristoph Lameter, right?
 
-Great, thanks.
+
+--------------------------------------------
+When access cpu_online_map, We should prevent that dynamically 
+change cpu_online_map by get_online_cpus().
+
+Unfortunately, all_vm_events() doesn't it.
+
+Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+CC: Christoph Lameter <clameter@sgi.com>
+
+---
+ mm/vmstat.c |    2 ++
+ 1 file changed, 2 insertions(+)
+
+Index: b/mm/vmstat.c
+===================================================================
+--- a/mm/vmstat.c       2008-05-04 23:00:52.000000000 +0900
++++ b/mm/vmstat.c       2008-05-06 16:13:32.000000000 +0900
+@@ -42,7 +42,9 @@ static void sum_vm_events(unsigned long
+ */
+ void all_vm_events(unsigned long *ret)
+ {
++       get_online_cpus();
+        sum_vm_events(ret, &cpu_online_map);
++       put_online_cpus();
+ }
+ EXPORT_SYMBOL_GPL(all_vm_events);
+
+
+
