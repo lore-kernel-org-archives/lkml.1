@@ -1,79 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758298AbYEFGTp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758147AbYEFGZ2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758298AbYEFGTp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 02:19:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755172AbYEFGTg
+	id S1758147AbYEFGZ2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 02:25:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754464AbYEFGZN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 02:19:36 -0400
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:48685 "EHLO smtp6.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754828AbYEFGTf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 02:19:35 -0400
-Date: Tue, 6 May 2008 09:18:25 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Sam Ravnborg <sam@ravnborg.org>, Alexander Viro <viro@ftp.linux.org.uk>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [rfc] the kernel workflow & trivial "global -> static" patches
-Message-ID: <20080506061825.GF1544@cs181133002.pp.htv.fi>
-References: <20080505182942.GA17139@cs181133002.pp.htv.fi> <20080505201906.GA900@elte.hu> <874p9ccmes.fsf@basil.nowhere.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <874p9ccmes.fsf@basil.nowhere.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Tue, 6 May 2008 02:25:13 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:56085 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754159AbYEFGZL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 May 2008 02:25:11 -0400
+To: viro@ZenIV.linux.org.uk
+CC: akpm@linux-foundation.org, miklos@szeredi.hu, hch@infradead.org,
+       dave@linux.vnet.ibm.com, ezk@cs.sunysb.edu, mhalcrow@us.ibm.com,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       haveblue@us.ibm.com
+In-reply-to: <20080506042426.GU5882@ZenIV.linux.org.uk> (message from Al Viro
+	on Tue, 6 May 2008 05:24:26 +0100)
+Subject: Re: [patch 01/10] vfs: add path_create() and path_mknod()
+References: <20080505101621.216789969@szeredi.hu> <20080505101640.143220902@szeredi.hu> <20080505211251.6c5dec8d.akpm@linux-foundation.org> <20080506042426.GU5882@ZenIV.linux.org.uk>
+Message-Id: <E1JtGbY-0008At-1O@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Tue, 06 May 2008 08:24:48 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 06, 2008 at 02:21:31AM +0200, Andi Kleen wrote:
+> > > R/O bind mounts require operations which modify the filesystem to be
+> > > wrapped in mnt_want_write()/mnt_drop_write().  Create helpers which do
+> > > this, so callers won't need to bother, and more importantly, cannot
+> > > forget!  Call these path_*, analogous to vfs_*.  Since there are no
+> > > callers of vfs_* left, make them static.
+> > 
+> > ooh, yum.  This appears to address my main complaint about the
+> > r-o-bind-mount stuff: fragility.
+> > 
+> > > Overall this patchset is just 23 lines in the red, but at the same
+> > > time it fixes several places in nfsd and the whole of ecryptfs, where
+> > > the mnt_want_write/drop_write() calls were missing.
+> > 
+> > Yeah, like that.
 > 
-> I don't think the code changes actually with current gcc for integer
-> code if you change something from global to static (unless it causes
-> gcc to inline the function, but then it might be well larger if you're
-> unlucky)
+> Except that it fixes nothing in nfsd, as we'd already figured out
 
-It's a common case that a function has only one caller. It should always 
-be an (at least tiny) space win to get them inlined.
+Oh, it does!  It fixes at least one race, where nfsd is checking for
+r/o mounts but is not keeping the mount from being marked r/o during
+the operation.
 
-> The only file size change you'll see will be from a smaller symbol
-> table in the vmlinux ELF file, but that is not even loaded at run time
-> or included into the bzImage (and the kallsyms table has statics too)
->...
+I also suspect it fixes more than that, that we all just missed when
+going over the callers of vfs_*().
 
-I'm not attaching size change information to these patches since 
-whatever change one sees anyway also depends on other factors like
-the exact kernel configuration, so it's non-trivial to get numbers
-that could be taken seriously.
+> and
+> "solution" for ecryptfs is more than slightly dubious.  Not that nfsd
+> one wasn't...
+> 
+> While we are at it, I call bullshit on "make vfs_...() static" and I suspect
+> that Miklos won't be happy with it once he cares to think through just how
+> little is going to be guaranteed about those vfsmounts.  As in "not promised
+> to be attached anywhere", for starters...
 
-There are many small aspects, e.g. both gcc with -Wmissing-prototypes 
-and sparse give warnings, and the problem might either be needlessly 
-global code or the fact that a function prototype is either not in a 
-header or the header not #include'd by the file. Although I've only
-2 or 3 times catched such bugs in the kernel that is a nasty to debug 
-class of bugs and gcc can find such problems at compile time.
+How does attachment figure into being marked r/o?  Or into anyting
+else, for that matter: no path looked up is ever guaranteed to be
+attached, and we've been getting along fine with that.
 
-> I could see some advantage from static in future compiler versions 
-> though from better optimization, but it's quite remote.
->...
+Al, I've thought this over very well, and it seems to me that you've
+just been trying to find excuses.  Which is OK, I guess: that's what
+review is about.  But at some point we shouold really just move on.
 
-The best case I've actually seen in practice was a variable I made 
-static, and with CONFIG_DEBUG_FOOBAR=n gcc was now able to prove that 
-the value never changed resulting in the variable plus quite a chunk
-of code no longer emitted.
-
-> -Andi
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+Miklos
