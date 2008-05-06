@@ -1,55 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762242AbYEFB7x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761439AbYEFCH2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762242AbYEFB7x (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 21:59:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757088AbYEFB7l
+	id S1761439AbYEFCH2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 22:07:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753146AbYEFCHP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 21:59:41 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:36299 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757000AbYEFB7k (ORCPT
+	Mon, 5 May 2008 22:07:15 -0400
+Received: from mga10.intel.com ([192.55.52.92]:8010 "EHLO
+	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752309AbYEFCHO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 21:59:40 -0400
-Date: Mon, 5 May 2008 18:58:50 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Ulrich Drepper <drepper@redhat.com>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       davidel@xmailserver.org, mtk.manpages@gmail.com,
-       torvalds@linux-foundation.org
-Subject: Re: [PATCH 02/18] flag parameters: socket and socketpair
-Message-Id: <20080505185850.789d870a.akpm@linux-foundation.org>
-In-Reply-To: <200805050342.m453gktl029817@devserv.devel.redhat.com>
-References: <200805050342.m453gktl029817@devserv.devel.redhat.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+	Mon, 5 May 2008 22:07:14 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.27,440,1204531200"; 
+   d="scan'208";a="324853254"
+Subject: volanoMark regression with kernel 2.6.26-rc1
+From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Date: Tue, 06 May 2008 10:06:30 +0800
+Message-Id: <1210039590.3453.18.camel@ymzhang>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.21.5 (2.21.5-2.fc9) 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 4 May 2008 23:42:46 -0400 Ulrich Drepper <drepper@redhat.com> wrote:
+Comparing with 2.6.25, volanoMark has big regression with kernel 2.6.26-rc1.
+It's about 50% on my 8-core stoakley, 16-core tigerton, and Itanium Montecito.
 
-> +static const struct flags_rmap sock_file_flags_remap[] = {
-> +	{ SOCK_CLOEXEC, O_CLOEXEC },
-> +};
-> +
->  asmlinkage long sys_socket(int family, int type, int protocol)
->  {
->  	int retval;
->  	struct socket *sock;
-> +	int fflags;
-> +
-> +	type = flags_remap(sock_file_flags_remap,
-> +			   ARRAY_SIZE(sock_file_flags_remap),
-> +			   type, &fflags);
+With bisect, I located below patch.
 
-oh, so that's what it does.
+18d95a2832c1392a2d63227a7a6d433cb9f2037e is first bad commit
+commit 18d95a2832c1392a2d63227a7a6d433cb9f2037e
+Author: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Date:   Sat Apr 19 19:45:00 2008 +0200
 
-afaict we only ever remap one or two flags.  Would it not be more efficient
-to do that inline?  Something along the lines of:
+    sched: fair-group: SMP-nice for group scheduling
+    
+    Implement SMP nice support for the full group hierarchy.
 
-	type = flag_remap(type, &fflags, SOCK_whatever, O_whatever);
-	type = flag_remap(type, &fflags, SOCK_whatever2, O_whatever2);
+If I reverse the patch with resolving some conflictions, volanoMark result could
+be restored completely.
 
-?
+﻿
+AIM7 (use tmpfs) also has ﻿more than 40% on my 8-core stoakley, 16-core tigerton,
+and Itanium Montecito, but I verified that aim7 regression isn't caused by above
+patch. I am doing new bisect to check aim7 now.
+
+-yanmin
+
+
