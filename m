@@ -1,50 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764722AbYEFJFt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764759AbYEFJGV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764722AbYEFJFt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 05:05:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764018AbYEFJBp
+	id S1764759AbYEFJGV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 05:06:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764407AbYEFJDU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 05:01:45 -0400
-Received: from mail.parknet.ad.jp ([210.171.162.6]:45538 "EHLO
-	mail.officemail.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764310AbYEFJBm (ORCPT
+	Tue, 6 May 2008 05:03:20 -0400
+Received: from moutng.kundenserver.de ([212.227.126.186]:58723 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763737AbYEFJDR convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 05:01:42 -0400
-From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] Fix vdso_enabled type on x86_64
-Date: Tue, 06 May 2008 18:01:35 +0900
-Message-ID: <871w4fst5c.fsf@duaron.myhome.or.jp>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+	Tue, 6 May 2008 05:03:17 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: "Grant Likely" <grant.likely@secretlab.ca>
+Subject: Re: [PATCH 45/56] microblaze_v2: headers simple files - empty or redirect to asm-generic
+Date: Tue, 6 May 2008 11:02:20 +0200
+User-Agent: KMail/1.9.9
+Cc: "John Williams" <john.williams@petalogix.com>, monstr@seznam.cz,
+       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
+       stephen.neuendorffer@xilinx.com, John.Linn@xilinx.com, matthew@wil.cx,
+       will.newton@gmail.com, drepper@redhat.com,
+       microblaze-uclinux@itee.uq.edu.au, "Michal Simek" <monstr@monstr.eu>
+References: <1209901305-6404-1-git-send-email-monstr@seznam.cz> <1209954849.5798.80.camel@localhost> <fa686aa40805050810w2a0ff71fv9daff4ba198cf978@mail.gmail.com>
+In-Reply-To: <fa686aa40805050810w2a0ff71fv9daff4ba198cf978@mail.gmail.com>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Anti-Virus: Kaspersky Anti-Virus for MailServers 5.5.10/RELEASE, bases: 24052007 #308098, status: clean
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200805061102.22528.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX19tKo/QjA/PJyOctXH2bx+skJ0LTpNE4CJ+iEi
+ YDKJf9ocpbpjQqwHXd+CTWsydg7Spu/yppmwp+hSIQsOmHTZh7
+ A590A/xaCQqeuX0g4Mjjg==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This fixes type of "vdso_enabled" on X86_64 to match extern in asm/elf.h.
+On Monday 05 May 2008, Grant Likely wrote:
+> >  These are all just includes of asm-generic/* (hooray!).
+> >
+> >  But, is it reasonable to to suggest adding asm-generic at the end of the
+> >  kernel include path, and save all this verbosity?
+> >
+> >  Principle of least surprise maybe?
+> 
+> Convention in the other archs is already established to explicitly
+> include asm-generic files one by one.  It is probably best to match
+> existing convention for commonality sake.
 
-Signed-off-by: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
----
+Right, I agree. We may eventually want to move to something more sophisticated,
+but we should not change the current way of doing this while we're in the process
+of adding a new architecture.
 
- arch/x86/vdso/vma.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff -puN arch/x86/vdso/vma.c~fix-vdso_enabled arch/x86/vdso/vma.c
---- linux-2.6/arch/x86/vdso/vma.c~fix-vdso_enabled	2008-05-06 16:47:14.000000000 +0900
-+++ linux-2.6-hirofumi/arch/x86/vdso/vma.c	2008-05-06 16:47:20.000000000 +0900
-@@ -16,7 +16,7 @@
- #include "vextern.h"		/* Just for VMAGIC.  */
- #undef VEXTERN
- 
--int vdso_enabled = 1;
-+unsigned int __read_mostly vdso_enabled = 1;
- 
- extern char vdso_start[], vdso_end[];
- extern unsigned short vdso_sync_cpuid;
-_
-
--- 
-OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+	Arnd <><
