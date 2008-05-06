@@ -1,127 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752508AbYEFEei@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758697AbYEFEhR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752508AbYEFEei (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 00:34:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757292AbYEFEeV
+	id S1758697AbYEFEhR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 00:37:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751341AbYEFEhD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 00:34:21 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:56987 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757255AbYEFEeT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 00:34:19 -0400
-Date: Mon, 5 May 2008 21:32:51 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Peter Oberparleiter <peter.oberparleiter@de.ibm.com>
-Cc: linux-kernel@vger.kernel.org, ltp-list@lists.sourceforge.net,
-       ltp-coverage@lists.sourceforge.net, sam@ravnborg.org
-Subject: Re: [RFC PATCH 3/6] kbuild: convert include and source paths
-Message-Id: <20080505213251.d2025dc8.akpm@linux-foundation.org>
-In-Reply-To: <481F26AA.4050701@de.ibm.com>
-References: <481F26AA.4050701@de.ibm.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+	Tue, 6 May 2008 00:37:03 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:37211 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750833AbYEFEhB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 May 2008 00:37:01 -0400
+Date: Tue, 6 May 2008 06:37:36 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Roman Zippel <zippel@linux-m68k.org>
+Cc: linux-kbuild <linux-kbuild@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 2/2] kconfig: make oldconfig less chatty and clean up conf.c
+Message-ID: <20080506043736.GB13366@uranus.ravnborg.org>
+References: <20080502204729.GA6534@uranus.ravnborg.org> <20080504185737.GA23063@uranus.ravnborg.org> <20080504185950.GC23063@uranus.ravnborg.org> <Pine.LNX.4.64.0805060455590.30555@scrub.home>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0805060455590.30555@scrub.home>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 05 May 2008 17:24:26 +0200 Peter Oberparleiter <peter.oberparleiter@de.ibm.com> wrote:
-
-> From: Peter Oberparleiter <peter.oberparleiter@de.ibm.com>
+On Tue, May 06, 2008 at 05:08:40AM +0200, Roman Zippel wrote:
+> Hi,
 > 
-> Modify kbuild to convert relative include and source paths to absolute
-> form. Also change the module versioning mechanism to alter object file
-> names only after compiling.
+> On Sun, 4 May 2008, Sam Ravnborg wrote:
 > 
-> Required by the gcov profiling infrastructure: source paths are
-> referenced by the compiled object files. Using relative paths or
-> object file names which are different from the source name would
-> prevent the gcov tool from finding the corresponding source files.
+> > We now check for valid stadin in both cases and this
+> > may break a script here and there.
 > 
-> Signed-off-by: Peter Oberparleiter <peter.oberparleiter@de.ibm.com>
-> ---
->  Makefile               |    6 +++---
->  scripts/Kbuild.include |    2 ++
->  scripts/Makefile.build |    7 +++++--
->  scripts/Makefile.lib   |    2 +-
->  4 files changed, 11 insertions(+), 6 deletions(-)
+> I strongly disagree with this, please preserve the old behaviour. It took 
+> a while to work out the current behaviour.
+> Only silentoldconfig checks for stdin because it's used as hook during 
+> kbuild to verify the config. For all other interactive targets the user 
+> has to know what he's doing, e.g. it's valid to do "yes '' | make 
+> oldconfig".
+I will test a bit more and may revert to the old behaviour.
+One good thing with the new behaviour is that
+make oldconfig > /dev/null
+does not hang if there is new symbols - and I would like to keep
+it so.
+
 > 
-> Index: linux-2.6.26-rc1/scripts/Makefile.build
-> ===================================================================
-> --- linux-2.6.26-rc1.orig/scripts/Makefile.build
-> +++ linux-2.6.26-rc1/scripts/Makefile.build
-> @@ -167,7 +167,8 @@ $(obj)/%.symtypes : $(src)/%.c FORCE
->  quiet_cmd_cc_o_c = CC $(quiet_modtag)  $@
->  
->  ifndef CONFIG_MODVERSIONS
-> -cmd_cc_o_c = $(CC) $(c_flags) -c -o $@ $<
-> +cmd_cc_o_c = $(CC) $(c_flags) -c -o $@ \
-> +	     $(if $(filter-out /%,$<),$(objtree)/$<,$<)
->  
->  else
->  # When module versioning is enabled the following steps are executed:
-> @@ -182,7 +183,9 @@ else
->  #   replace the unresolved symbols __crc_exported_symbol with
->  #   the actual value of the checksum generated by genksyms
->  
-> -cmd_cc_o_c = $(CC) $(c_flags) -c -o $(@D)/.tmp_$(@F) $<
-> +cmd_cc_o_c = $(CC) $(c_flags) -c -o $(@D)/$(@F) \
-> +	     $(if $(filter-out /%,$<),$(objtree)/$<,$<) ; \
-> +             mv -f $(@D)/$(@F) $(@D)/.tmp_$(@F)
->  cmd_modversions =							\
->  	if $(OBJDUMP) -h $(@D)/.tmp_$(@F) | grep -q __ksymtab; then	\
->  		$(CPP) -D__GENKSYMS__ $(c_flags) $<			\
-> Index: linux-2.6.26-rc1/scripts/Makefile.lib
-> ===================================================================
-> --- linux-2.6.26-rc1.orig/scripts/Makefile.lib
-> +++ linux-2.6.26-rc1/scripts/Makefile.lib
-> @@ -113,7 +113,7 @@ else
->  # $(call addtree,-I$(obj)) locates .h files in srctree, from generated .c files
->  #   and locates generated .h files
->  # FIXME: Replace both with specific CFLAGS* statements in the makefiles
-> -__c_flags	= $(call addtree,-I$(obj)) $(call flags,_c_flags)
-> +__c_flags	= $(call addtree,-I$(obj)) $(call addtree2,-I$(obj)) $(call flags,_c_flags)
->  __a_flags	=                          $(call flags,_a_flags)
->  __cpp_flags     =                          $(call flags,_cpp_flags)
->  endif
-> Index: linux-2.6.26-rc1/scripts/Kbuild.include
-> ===================================================================
-> --- linux-2.6.26-rc1.orig/scripts/Kbuild.include
-> +++ linux-2.6.26-rc1/scripts/Kbuild.include
-> @@ -145,6 +145,8 @@ build := -f $(if $(KBUILD_SRC),$(srctree
->  
->  # Prefix -I with $(srctree) if it is not an absolute path.
->  addtree = $(if $(filter-out -I/%,$(1)),$(patsubst -I%,-I$(srctree)/%,$(1)),$(1))
-> +# Prefix -I with $(objtree) if it is not an absolute path.
-> +addtree2 = $(if $(filter-out -I/%,$(1)),$(patsubst -I%,-I$(objtree)/%,$(1)),$(1))
->  
->  # Find all -I options and call addtree
->  flags = $(foreach o,$($(1)),$(if $(filter -I%,$(o)),$(call addtree,$(o)),$(o)))
-> Index: linux-2.6.26-rc1/Makefile
-> ===================================================================
-> --- linux-2.6.26-rc1.orig/Makefile
-> +++ linux-2.6.26-rc1/Makefile
-> @@ -324,9 +324,9 @@ AFLAGS_KERNEL	=
->  
->  # Use LINUXINCLUDE when you must reference the include/ directory.
->  # Needed to be compatible with the O= option
-> -LINUXINCLUDE    := -Iinclude \
-> -                   $(if $(KBUILD_SRC),-Iinclude2 -I$(srctree)/include) \
-> -		   -include include/linux/autoconf.h
-> +LINUXINCLUDE    := -I$(objtree)/include -I$(srctree) -I$(objtree) \
-> +                   $(if $(KBUILD_SRC),-I$(objtree)/include2 \
-> +		   -I$(srctree)/include) -include include/linux/autoconf.h
->  
->  KBUILD_CPPFLAGS := -D__KERNEL__ $(LINUXINCLUDE)
->  
+> > -		switch (input_mode) {
+> > -		case set_no:	 name = "allno.config"; break;
+> > -		case set_mod:	 name = "allmod.config"; break;
+> > -		case set_yes:	 name = "allyes.config"; break;
+> > -		case set_random: name = "allrandom.config"; break;
+> > -		default: break;
+> > -		}
+> > -		if (!stat(name, &tmpstat))
+> > -			conf_read_simple(name, S_DEF_USER);
+> > -		else if (!stat("all.config", &tmpstat))
+> > -			conf_read_simple("all.config", S_DEF_USER);
+> > -		break;
+> > -	default:
+> > -		break;
+> >  	}
+> 
+> This isn't yet in aconf.c.
+On purpose. It is very very seldom used and with K=file
+it is now much easier to specify a base configuration.
+So no need for all the special filenames.
 
-I hope Sam understands that line-noise ;)
-
-It doesn't appear to affect __FILE__ in any way (which is good).  But I'm
-unsure what it _does_ affect.  The changelog implies that it will convert
-"liunx/foo.h" into /usr/src/linux/include/foo.h, only it doesn't.
-
-ho hum.
-
+	Sam
