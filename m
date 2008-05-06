@@ -1,52 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762418AbYEFPOE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763463AbYEFPP7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762418AbYEFPOE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 11:14:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755412AbYEFPNy
+	id S1763463AbYEFPP7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 11:15:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755210AbYEFPPv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 11:13:54 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:36827 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755088AbYEFPNx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 11:13:53 -0400
-Date: Tue, 6 May 2008 16:04:52 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Martin =?UTF-8?B?TU9LUkVKxaA=?= <mmokrejs@ribosome.natur.cuni.cz>
-Cc: Robert Hancock <hancockr@shaw.ca>, Jan Engelhardt <jengelh@medozas.de>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.23.17 & 2.6.24.5 and maybe earlier: pata_marvell: need to
- disable DMA to get rid of '(ATA bus error)', 'ata7.00: status: { DRDY ERR
- }', 'ata7.00: error: { ICRC ABRT }'
-Message-ID: <20080506160452.61725e6c@core>
-In-Reply-To: <4820711C.1010902@ribosome.natur.cuni.cz>
-References: <fa.+9Q+WQnyiYTlpbXVIzn6aT2/gS0@ifi.uio.no>
-	<fa.fKUfeQYS9BFD60fOMormQ25ard4@ifi.uio.no>
-	<fa.QYXSW2xjSxf6xnmd0rQGJhHLnrc@ifi.uio.no>
-	<fa.qfeYSQtlsXzGvFvBQEdF9TFFpNg@ifi.uio.no>
-	<481BD12D.1030406@shaw.ca>
-	<4820529D.2040609@ribosome.natur.cuni.cz>
-	<20080506140825.759db8f2@core>
-	<4820711C.1010902@ribosome.natur.cuni.cz>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 6 May 2008 11:15:51 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:37569 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755170AbYEFPPv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 May 2008 11:15:51 -0400
+Date: Tue, 6 May 2008 17:15:29 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Hugh Dickins <hugh@veritas.com>, Jeff Chua <jeff.chua.linux@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Gabriel C <nix.or.die@googlemail.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: Linux 2.6.26-rc1 - pgtable_32.c:178 pmd_bad
+Message-ID: <20080506151529.GA6321@elte.hu>
+References: <b6a2187b0805051806v25fa1272xb08e0b70b9c3408@mail.gmail.com> <20080506124946.GA2146@elte.hu> <Pine.LNX.4.64.0805061435510.32567@blonde.site> <20080506150432.GA31075@elte.hu> <alpine.LFD.1.10.0805060807520.32269@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.1.10.0805060807520.32269@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-O> /dev/sde:
+
+* Linus Torvalds <torvalds@linux-foundation.org> wrote:
+
+> On Tue, 6 May 2008, Ingo Molnar wrote:
+> > 
+> > hm, the main objection was about whether to turn PAGE_SIZE from 
+> > unsigned into signed though - and that we didnt do.
 > 
-> ATA device, with non-removable media
->         Model Number:       Delock 54111 512MB                      
->         Serial Number:      
->         Firmware Revision:  Ver1.27 
+> No it wasn't.
+> 
+> The main objection was that you SHOULD NOT USE PAGE_SIZE_MASK AT ALL!
+>
+> You should have used a pagetable-specific macro, becuse PAGE_MASK is 
+> simply fundamentally WRONG, and has absolutely nothing to do with the 
+> PFN bits, whether sign-extended or not!
+> 
+> The fact is, the page frane number bits are *not* ~PAGE_MASK or 
+> anything like that. They share only the low bits - not the high bits.
 
-Does seem to think its ATA not CFA I guess you'll need to specify pio for
-that device specifically.
+yeah, indeed, sorry about that. Will sort this type mixing out today.
 
-Alan
+	Ingo
