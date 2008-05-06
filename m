@@ -1,114 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932427AbYEFQJl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765172AbYEFQNp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932427AbYEFQJl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 12:09:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764154AbYEFQJ0
+	id S1765172AbYEFQNp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 12:13:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759544AbYEFQNb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 12:09:26 -0400
-Received: from rv-out-0506.google.com ([209.85.198.228]:63798 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761661AbYEFQJY (ORCPT
+	Tue, 6 May 2008 12:13:31 -0400
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:58502 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757884AbYEFQN2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 12:09:24 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=RnXf0c3hrhp9SZHSSDMW4u3Afn45Qobm9fqE7mglYy/i1kthb5gn8PiZvfhyXTCIrWt1P6Hnv2lUiGaNYDlTwXYGYEAxJUZnL+by3LfNh72/18DYKxMRJ2WNkypZ/fTUj6kpcVXqAUJh4VA7UrHB2oHGHlJ4ZqoMcdchqxWT6No=
-Message-ID: <19f34abd0805060909q635d2d43j9414e5f179c9e22f@mail.gmail.com>
-Date: Tue, 6 May 2008 18:09:21 +0200
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: "Lin Ming" <ming.m.lin@intel.com>, "Bob Moore" <robert.moore@intel.com>,
-       "Alexey Starikovskiy" <astarikovskiy@suse.de>,
-       "Len Brown" <len.brown@intel.com>, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: ACPI: kmemcheck: Caught 16-bit read from freed memory (f7c12ec6)
-Cc: "Pekka Enberg" <penberg@cs.helsinki.fi>
+	Tue, 6 May 2008 12:13:28 -0400
+Date: Tue, 6 May 2008 17:12:31 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.site
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Jeff Chua <jeff.chua.linux@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Gabriel C <nix.or.die@googlemail.com>
+Subject: Re: Linux 2.6.26-rc1 - pgtable_32.c:178 pmd_bad
+In-Reply-To: <48207A13.7010205@goop.org>
+Message-ID: <Pine.LNX.4.64.0805061700390.13699@blonde.site>
+References: <b6a2187b0805051806v25fa1272xb08e0b70b9c3408@mail.gmail.com>
+ <20080506124946.GA2146@elte.hu> <Pine.LNX.4.64.0805061435510.32567@blonde.site>
+ <20080506150432.GA31075@elte.hu> <alpine.LFD.1.10.0805060807520.32269@woody.linux-foundation.org>
+ <48207A13.7010205@goop.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Tue, 6 May 2008, Jeremy Fitzhardinge wrote:
+> Linus Torvalds wrote:
+> > You should have used a pagetable-specific macro, becuse PAGE_MASK is simply
+> > fundamentally WRONG, and has absolutely nothing to do with the PFN bits,
+> > whether sign-extended or not!
+> >
+> > The fact is, the page frane number bits are *not* ~PAGE_MASK or anything
+> > like that. They share only the low bits - not the high bits.
+> 
+> Yes.  There's already a PTE_MASK for masking out the PFN vs the flags in a
+> pte, but it isn't used consistently (perhaps at all).
 
-Running kmemcheck on top of v2.6.26-rc1 gives the following (never
-before seen) warning:
+My patch sidesteps this issue by simply restoring most things to how
+they were in 2.6.25 (using PTE_MASK in x86_64 but PAGE_MASK in x86_32).
+We've contentedly used PAGE_MASK there for many many years.
 
-Linux Plug and Play Support v0.97 (c) Adam Belay
-pnp: PnP ACPI init
-ACPI: bus type pnp registered
-kmemcheck: Caught 16-bit read from freed memory (f7c12ec6)
+Seeing the PTE_MASK discussion I did briefly consider using PTE_MASK
+at the x86_32 end (it would have the nice effect of testing for lots
+of badly set bits it the upper PAE half?), but I wasn't sure it has
+the right type at present (there seems to be a "long" type in there
+which I'd have expected to need to be long long for PAE), and it was
+all even more of a maze than the last time I looked.
 
-Pid: 1, comm: swapper Not tainted (2.6.26-rc1-00010-g7966e04 #2)
-EIP: 0060:[<c027ecaa>] EFLAGS: 00010286 CPU: 0
-EIP is at acpi_ps_get_next_arg+0x1b8/0x262
-EAX: f7c12ec0 EBX: f7d20428 ECX: f7ca1b00 EDX: 00000001
-ESI: 00000049 EDI: f7d20400 EBP: f7c61e38 ESP: c06c9dc8
- DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
-CR0: 8005003b CR2: f7c46456 CR3: 006ba000 CR4: 000006c0
-DR0: 00000000 DR1: 00000000 DR2: 00000000 DR3: 00000000
-DR6: ffff4ff0 DR7: 00000400
- [<c0119192>] kmemcheck_read+0xe2/0x140
- [<c0119326>] kmemcheck_access+0x136/0x1a0
- [<c04bd286>] do_page_fault+0x5e6/0x690
- [<c04bb2da>] error_code+0x72/0x78
- [<c027f991>] acpi_ps_parse_loop+0x4dd/0x7f8
- [<c027ee36>] acpi_ps_parse_aml+0xb4/0x332
- [<c02802c0>] acpi_ps_execute_method+0x13d/0x20d
- [<c027c8a2>] acpi_ns_evaluate+0x10e/0x1b0
- [<c0283210>] acpi_ut_evaluate_object+0x51/0x18d
- [<c0283406>] acpi_ut_execute_STA+0x22/0x7b
- [<c027c18b>] acpi_ns_get_device_callback+0x5a/0x121
- [<c027e410>] acpi_ns_walk_namespace+0xf0/0x10c
- [<c027c0b5>] acpi_get_devices+0x47/0x5d
- [<c068db45>] pnpacpi_init+0x65/0xa0
- [<c06735c7>] kernel_init+0x127/0x290
- [<c0104cc7>] kernel_thread_helper+0x7/0x10
- [<ffffffff>] 0xffffffff
-pnp: PnP ACPI: found 17 devices
-ACPI: ACPI bus type pnp unregistered
+I decided it's safer to go back to what we had before to fix the
+current warning, together with the original point which got us
+into this, and leave any PTE_MASK-ification to some other patch.
 
+I've more to say on it when commenting the patch.
 
-This faulting instruction comes from
-
-$ addr2line -e vmlinux -i c027ecaa
-drivers/acpi/parser/psargs.c:694
-
-Which was changed/introduced in
-commit bc7a36ab74e09da7bb63e2477b0740ac992b290e
-Author: Lin Ming <ming.m.lin@intel.com>
-Date:   Thu Apr 10 19:06:42 2008 +0400
-
-    ACPICA: Fixes for Unload and DDBHandles
-
-    Implemented support for the use of DDBHandles as an Indexed
-    Reference, as per the ACPI spec.
-
-    http://www.acpica.org/bugzilla/show_bug.cgi?id=486.
-
-    Implemented support for UserTerm (Method invocation) for the Unload operator
-    as per the ACPI spec.
-
-    http://www.acpica.org/bugzilla/show_bug.cgi?id=580
-
-    Signed-off-by: Bob Moore <robert.moore@intel.com>
-    Signed-off-by: Alexey Starikovskiy <astarikovskiy@suse.de>
-    Signed-off-by: Len Brown <len.brown@intel.com>
-
-I've tried reverting this particular commit and the warning does indeed go away.
-
-Now, please keep in mind that kmemcheck is a work in progress and may
-produce false positives</disclaimer> :-)
-
-I think it might be worth looking at, though.
-
-
-Vegard
-
--- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
+Hugh
