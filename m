@@ -1,71 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759444AbYEFC6o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758574AbYEFDAQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759444AbYEFC6o (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 22:58:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752878AbYEFC6d
+	id S1758574AbYEFDAQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 23:00:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752955AbYEFDAB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 22:58:33 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:58576 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752562AbYEFC6c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 22:58:32 -0400
-Message-ID: <481FC94C.8090203@redhat.com>
-Date: Mon, 05 May 2008 19:58:20 -0700
-From: Ulrich Drepper <drepper@redhat.com>
-Organization: Red Hat, Inc.
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       davidel@xmailserver.org, mtk.manpages@gmail.com,
-       torvalds@linux-foundation.org
-Subject: Re: [PATCH 02/18] flag parameters: socket and socketpair
-References: <200805050342.m453gktl029817@devserv.devel.redhat.com>	<20080505185850.789d870a.akpm@linux-foundation.org>	<481FC38A.6070805@redhat.com> <20080505194221.4349418b.akpm@linux-foundation.org>
-In-Reply-To: <20080505194221.4349418b.akpm@linux-foundation.org>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+	Mon, 5 May 2008 23:00:01 -0400
+Received: from ausc60ps301.us.dell.com ([143.166.148.206]:50099 "EHLO
+	ausc60ps301.us.dell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752562AbYEFDAA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 May 2008 23:00:00 -0400
+X-IronPort-AV: E=Sophos;i="4.27,440,1204524000"; 
+   d="scan'208";a="591339604"
+Date: Mon, 5 May 2008 21:59:58 -0500
+From: Matt Domsch <Matt_Domsch@dell.com>
+To: stable@kernel.org
+Cc: Yinghai Lu <yhlu.kernel@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>, linux-kernel@vger.kernel.org,
+       Michal Schmidt <mschmidt@redhat.com>, davej@redhat.com,
+       Andy Gospodarek <andy@greyhouse.net>, john.cagle@hp.com,
+       Greg KH <greg@kroah.com>
+Subject: [PATCH stable] x86 PCI: call dmi_check_pciprobe()
+Message-ID: <20080506025958.GA26913@auslistsprd01.us.dell.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+This is a backport of the noted commit which is in 2.6.26-rc1
+now.  This is necessary to enable pci=bfsort automatically on a number
+of Dell and HP servers, as well as pci=assign-busses for a few other
+systems, which was broken between 2.6.22 and 2.6.23.
 
-Andrew Morton wrote:
-> Sorry to sound slow, but what do we gain from all this?  Your covering
-> description was heavy in references to some earlier discussion to which I
-> obviously paid little attention and now I'm lost.
+commit 0df18ff366853cdf31e5238764ec5c63e6b5a398
+Author: Yinghai Lu <yhlu.kernel@gmail.com>
+Date:   Mon Apr 14 15:40:37 2008 -0700
 
-What we gain is that the only change for a new flag is a new entry in
-the appropriate table.  The reference to non-sequential file descriptors
-refers to
+    x86 PCI: call dmi_check_pciprobe()
+    
+    this change:
+    
+    | commit 08f1c192c3c32797068bfe97738babb3295bbf42
+    | Author: Muli Ben-Yehuda <muli@il.ibm.com>
+    | Date:   Sun Jul 22 00:23:39 2007 +0300
+    |
+    |    x86-64: introduce struct pci_sysdata to facilitate sharing of ->sysdata
+    |
+    |    This patch introduces struct pci_sysdata to x86 and x86-64, and
+    |    converts the existing two users (NUMA, Calgary) to use it.
+    |
+    |    This lays the groundwork for having other users of sysdata, such as
+    |    the PCI domains work.
+    |
+    |    The Calgary bits are tested, the NUMA bits just look ok.
+    
+    replaces pcibios_scan_root with pci_scan_bus_parented...
+    
+    but in pcibios_scan_root we have a DMI check:
+    
+        dmi_check_system(pciprobe_dmi_table);
+    
+    when when have several peer root buses this could be called multiple
+    times (which is bad), so move that call to pci_access_init().
+    
+    Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+    Signed-off-by: Ingo Molnar <mingo@elte.hu>
+    Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+    Signed-off-by: Jesse Barnes <jbarnes@virtuousgeek.org>
 
-  http://lwn.net/Articles/236724/
 
-Not this specific incarnation of the functionality, but something like this.
+Signed-off-by: Matt Domsch <Matt_Domsch@dell.com>
 
-A few more points:
+-- 
+Matt Domsch
+Linux Technology Strategist, Dell Office of the CTO
+linux.dell.com & www.dell.com/linux
 
-- - for the socket functions we can share the table
-
-- - in most cases the loop isn't even entered since the flag value is
-  zero.  In any case, the loop is ended once all flags have been mapped
-
-- - in case this code is really called often, than the code is in the
-  cache and it is shorter than each of possible multiple copies of the
-  unrolled loop
-
-
-Anyway, we spent already far too much time on this.  If you want to see
-it changed tell me.  It's really not important.
-
-- --
-➧ Ulrich Drepper ➧ Red Hat, Inc. ➧ 444 Castro St ➧ Mountain View, CA ❖
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-
-iD8DBQFIH8lM2ijCOnn/RHQRAta6AKC39ty8FdiRYjRxxHDoG2T/N1hhywCeKPcZ
-L/iDtbf9DozMmEfoLY8nlbk=
-=B+YO
------END PGP SIGNATURE-----
+diff -urNp --exclude-from=/home/mdomsch/excludes --minimal linux-2.6.25.1.orig/arch/x86/pci/common.c linux-2.6.25.1/arch/x86/pci/common.c
+--- linux-2.6.25.1.orig/arch/x86/pci/common.c	2008-05-01 16:45:25.000000000 -0500
++++ linux-2.6.25.1/arch/x86/pci/common.c	2008-05-05 20:49:52.000000000 -0500
+@@ -372,13 +372,16 @@ static struct dmi_system_id __devinitdat
+ 	{}
+ };
+ 
++void __init dmi_check_pciprobe(void)
++{
++	dmi_check_system(pciprobe_dmi_table);
++}
++
+ struct pci_bus * __devinit pcibios_scan_root(int busnum)
+ {
+ 	struct pci_bus *bus = NULL;
+ 	struct pci_sysdata *sd;
+ 
+-	dmi_check_system(pciprobe_dmi_table);
+-
+ 	while ((bus = pci_find_next_bus(bus)) != NULL) {
+ 		if (bus->number == busnum) {
+ 			/* Already scanned */
+diff -urNp --exclude-from=/home/mdomsch/excludes --minimal linux-2.6.25.1.orig/arch/x86/pci/init.c linux-2.6.25.1/arch/x86/pci/init.c
+--- linux-2.6.25.1.orig/arch/x86/pci/init.c	2008-05-01 16:45:25.000000000 -0500
++++ linux-2.6.25.1/arch/x86/pci/init.c	2008-05-05 20:51:02.000000000 -0500
+@@ -32,6 +32,8 @@ static __init int pci_access_init(void)
+ 		printk(KERN_ERR
+ 		"PCI: Fatal: No config space access function found\n");
+ 
++ 	dmi_check_pciprobe();
++
+ 	return 0;
+ }
+ arch_initcall(pci_access_init);
+diff -urNp --exclude-from=/home/mdomsch/excludes --minimal linux-2.6.25.1.orig/arch/x86/pci/pci.h linux-2.6.25.1/arch/x86/pci/pci.h
+--- linux-2.6.25.1.orig/arch/x86/pci/pci.h	2008-05-01 16:45:25.000000000 -0500
++++ linux-2.6.25.1/arch/x86/pci/pci.h	2008-05-05 20:50:29.000000000 -0500
+@@ -39,6 +39,8 @@ enum pci_bf_sort_state {
+ 	pci_dmi_bf,
+ };
+ 
++extern void __init dmi_check_pciprobe(void);
++
+ /* pci-i386.c */
+ 
+ extern unsigned int pcibios_max_latency;
