@@ -1,50 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763626AbYEFPS7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764136AbYEFPUD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763626AbYEFPS7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 11:18:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754974AbYEFPSv
+	id S1764136AbYEFPUD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 11:20:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754974AbYEFPTx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 11:18:51 -0400
-Received: from out2.smtp.messagingengine.com ([66.111.4.26]:37191 "EHLO
-	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754884AbYEFPSu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 11:18:50 -0400
-X-Sasl-enc: jzGbMm2+3aBp+VyB5YGgyvhXRdfAG2zD3nzgIUOds/CE 1210087128
-Date: Tue, 6 May 2008 12:18:46 -0300
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Shaohua Li <shaohua.li@intel.com>
-Cc: Holger Macht <hmacht@suse.de>, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org,
-       "Accardi, Kristen C" <kristen.c.accardi@intel.com>
-Subject: Re: [PATCH] bay: Exit if notify handler cannot be installed
-Message-ID: <20080506151846.GA22828@khazad-dum.debian.net>
-References: <20080505202508.GA3690@homac> <20080506091522.GA4378@homac> <1210065811.12668.1.camel@sli10-desk.sh.intel.com>
+	Tue, 6 May 2008 11:19:53 -0400
+Received: from mail0.scram.de ([78.47.204.202]:48194 "EHLO mail.scram.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754884AbYEFPTw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 May 2008 11:19:52 -0400
+X-Spam-Score: -4.194
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+ * -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
+ *      [score: 0.0000]
+ *  0.2 AWL AWL: From: address is in the auto white-list
+Message-ID: <4820770B.1010002@scram.de>
+Date: Tue, 06 May 2008 17:19:39 +0200
+From: Jochen Friedrich <jochen@scram.de>
+User-Agent: Mozilla-Thunderbird 2.0.0.9 (X11/20080110)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1210065811.12668.1.camel@sli10-desk.sh.intel.com>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
-	1CDB 0FE3
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: Wolfram Sang <w.sang@pengutronix.de>
+CC: Kumar Gala <galak@kernel.crashing.org>,
+       linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+       "Kernel, Linux" <linux-kernel@vger.kernel.org>,
+       Scott Wood <scottwood@freescale.com>, Linux I2C <i2c@lm-sensors.org>
+Subject: Re: [i2c] [PATCH6/7] i2c: adds support for i2c bus on Freescale	CPM1/CPM2
+ controllers
+References: <47FF71A9.4010907@scram.de> <20080506135113.GA4265@pengutronix.de>
+In-Reply-To: <20080506135113.GA4265@pengutronix.de>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 06 May 2008, Shaohua Li wrote:
-> The bay driver is duplicated with libata, I thought we should delete it.
-> See bug http://bugzilla.kernel.org/show_bug.cgi?id=9526
+Hi Wolfram,
 
-The bay driver is currently useless, BUT it should handle a lot of stuff
-libata won't, such as bay batteries, bay floppies, and anything else in
-a bay that is not a hard disk.
+>> +	/* Begin transmission */
+>> +	setbits8(&i2c_reg->i2com, 0x80);
+> Hardcoded value. (I also wonder if 0x81 might be more suitable, as it
+> keeps the "be-a-master"-bit set. Still, both values work with my setup.)
 
-The fact that the driver currently looks only after disks is just a bug.
-It should, in fact, bind to any ejectable device not already handled by
-a different driver.
+>> +#ifdef I2C_CHIP_ERRATA
+>> +	/*
+>> +	 * Chip errata, clear enable. This is not needed on rev D4 CPUs.
+>> +	 * Disabling I2C too early may cause too short stop condition
+>> +	 */
+>> +	udelay(4);
+>> +	clrbits8(&i2c_reg->i2mod, 1);
+> I was unable to find the corresponding errata document, still I wonder
+> if it is a 0 which should have been written? The text says "clear" and
+> according to the reference manual, this means the bit should be 0.
 
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+setbits8() and clrbits8() use a bitmask as second argument.
+
+setbits8(&i2c_reg->i2com, 0x80) will set bit 7 on the i2com register but 
+leave bit 0 untouched. Likewise, clrbits8(&i2c_reg->i2mod, 1) will clear bit 0.
+
+Thanks,
+Jochen
