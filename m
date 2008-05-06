@@ -1,150 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760379AbYEFFkz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761336AbYEFFmg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760379AbYEFFkz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 01:40:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753239AbYEFFkr
+	id S1761336AbYEFFmg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 01:42:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753468AbYEFFm1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 01:40:47 -0400
-Received: from e28smtp03.in.ibm.com ([59.145.155.3]:35298 "EHLO
-	e28smtp03.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752347AbYEFFkq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 01:40:46 -0400
-Message-ID: <481FEF28.1000502@linux.vnet.ibm.com>
-Date: Tue, 06 May 2008 11:09:52 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-mm@kvack.org, skumar@linux.vnet.ibm.com, yamamoto@valinux.co.jp,
-       menage@google.com, lizf@cn.fujitsu.com, linux-kernel@vger.kernel.org,
-       rientjes@google.com, xemul@openvz.org, kamezawa.hiroyu@jp.fujitsu.com
-Subject: Re: [-mm][PATCH 4/4] Add rlimit controller documentation
-References: <20080503213726.3140.68845.sendpatchset@localhost.localdomain> <20080503213825.3140.4328.sendpatchset@localhost.localdomain> <20080505153509.da667caf.akpm@linux-foundation.org>
-In-Reply-To: <20080505153509.da667caf.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Tue, 6 May 2008 01:42:27 -0400
+Received: from mga09.intel.com ([134.134.136.24]:11997 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753239AbYEFFm1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 May 2008 01:42:27 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.27,441,1204531200"; 
+   d="scan'208";a="380398586"
+Subject: Re: volanoMark regression with kernel 2.6.26-rc1
+From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <1210039590.3453.18.camel@ymzhang>
+References: <1210039590.3453.18.camel@ymzhang>
+Content-Type: text/plain; charset=UTF-8
+Date: Tue, 06 May 2008 13:41:40 +0800
+Message-Id: <1210052500.3453.21.camel@ymzhang>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.21.5 (2.21.5-2.fc9) 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Sun, 04 May 2008 03:08:25 +0530
-> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> 
->>
->> This is the documentation patch. It describes the rlimit controller and how
->> to build and use it.
->>
->> Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
->> ---
->>
->>  Documentation/controllers/rlimit.txt |   29 +++++++++++++++++++++++++++++
->>  1 file changed, 29 insertions(+)
->>
->> diff -puN /dev/null Documentation/controllers/rlimit.txt
->> --- /dev/null	2008-05-03 22:12:13.033285313 +0530
->> +++ linux-2.6.25-balbir/Documentation/controllers/rlimit.txt	2008-05-04 03:06:06.000000000 +0530
->> @@ -0,0 +1,29 @@
->> +This controller is enabled by the CONFIG_CGROUP_RLIMIT_CTLR option. Prior
->> +to reading this documentation please read Documentation/cgroups.txt and
->> +Documentation/controllers/memory.txt. Several of the principles of this
->> +controller are similar to the memory resource controller.
->> +
->> +This controller framework is designed to be extensible to control any
->> +resource limit (memory related) with little effort.
->> +
->> +This new controller, controls the address space expansion of the tasks
->> +belonging to a cgroup. Address space control is provided along the same lines as
->> +RLIMIT_AS control, which is available via getrlimit(2)/setrlimit(2).
->> +The interface for controlling address space is provided through
->> +"rlimit.limit_in_bytes". The file is similar to "limit_in_bytes" w.r.t. the user
->> +interface. Please see section 3 of the memory resource controller documentation
->> +for more details on how to use the user interface to get and set values.
->> +
->> +The "rlimit.usage_in_bytes" file provides information about the total address
->> +space usage of the tasks in the cgroup, in bytes.
-> 
-> Finally, with a bit of between-the-line reading, I begin to understand what
-> this stuff is actually supposed to do.
-> 
-> It puts an upper limit upon the _total_ address-space size of all the mms
-> which are contained within the resource group, yes?
-> 
+On Tue, 2008-05-06 at 10:06 +0800, Zhang, Yanmin wrote:
 
-Yesm true
+> ﻿
+> AIM7 (use tmpfs) also has ﻿more than 40% on my 8-core stoakley, 16-core tigerton,
+> and Itanium Montecito, but I verified that aim7 regression isn't caused by above
+> patch. I am doing new bisect to check aim7 now.
+AIM7 regression is caused by another patch of semaphore restructure. I will send
+emails on aim7 in another thread.
 
-> (can am mm be shared by two threads whcih are in different resource groups,
-> btw?)
-> 
-
-Yes, that can happen, but all the charges go to mm->owner (the thread group leader).
-
->> +Advantages of providing this feature
->> +
->> +1. Control over virtual address space allows for a cgroup to fail gracefully
->> +   i.e., via a malloc or mmap failure as compared to OOM kill when no
->> +   pages can be reclaimed.
->> +2. It provides better control over how many pages can be swapped out when
->> +   the cgroup goes over its limit. A badly setup cgroup can cause excessive
->> +   swapping. Providing control over the address space allocations ensures
->> +   that the system administrator has control over the total swapping that
->> +   can take place.
-> 
-> Here's another missing piece: what is the kernel's behaviour when such a
-> limit is increased?  Seems that the sole option is a failure return from
-
-Do you mean limit is exceeded?
-
-> mmap/brk/sbrk/etc, yes?
-> 
-
-If so, Yes, true.
-
-> This should be spelled out in careful detail, please.  This is a
-> newly-proposed kernel<->userspace interface and we care about those very
-> much.
-> 
-
-Sure, I'll document that better.
-
-> Finally, I worry about overflows.  afacit the
-> sum-of-address-space-sizes-for-a-cgroup is accounted for in an unsigned
-> long?
-> 
-> If so, a 32-bit machine could easily overflow it.
-> 
-
-We use an unsigned long long on all architectures to avoid overflow.
-
-> And a 64-bit machine could possibly do so with a bit of effort, perhaps? 
-> That's assuming that the code doesn't attempt to avoid duplicate accounting
-> due to multiple-mms-mapping-the-same-pages, which afaict appears to be the
-> case.  (Then again, perhaps no machine will ever have the pagetable space
-> to get that far).
-> 
-> 
-
-True
-
-> 
-> Ho hum, I had to do rather a lot of guesswork here to try to understand
-> your proposed overall design for this feature.  I'd prefer to hear about
-> your design via more direct means.
-
-Do you have any suggestions on how to do that better. Would you like
-documentation to be the first patch in the series? I had sent out two RFC's
-earlier and got comments and feedback from several people.
-
-Having said that, I do agree that design is the most vital thing of any patchset
-and communicating that up front and better is critical. I am open to any
-suggestions to help make that process better.
+-yanmin
 
 
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+
