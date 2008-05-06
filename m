@@ -1,51 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763635AbYEFAPb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763822AbYEFAP4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763635AbYEFAPb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 20:15:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755817AbYEFAPL
+	id S1763822AbYEFAP4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 20:15:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756470AbYEFAPn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 20:15:11 -0400
-Received: from www.tglx.de ([62.245.132.106]:43976 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755629AbYEFAPK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 20:15:10 -0400
-Date: Tue, 6 May 2008 02:13:47 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Daniel Walker <dwalker@mvista.com>
-cc: Steven Rostedt <rostedt@goodmis.org>,
-       Sven-Thorsten Dietrich <sven@thebigcorporation.com>,
-       Remy Bohmer <linux@bohmer.net>, LKML <linux-kernel@vger.kernel.org>,
-       RT <linux-rt-users@vger.kernel.org>,
-       Jon Masters <jonathan@jonmasters.org>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: Preempt-RT patch for 2.6.25
-In-Reply-To: <1210025532.17132.82.camel@localhost.localdomain>
-Message-ID: <alpine.LFD.1.10.0805060106460.3318@apollo.tec.linutronix.de>
-References: <3efb10970805021102n4d87f55eue723786281b06fcb@mail.gmail.com>  <1209753250.25628.34.camel@dd.thebigcorporation.com>  <Pine.LNX.4.58.0805021441340.10615@gandalf.stny.rr.com>  <1209754467.25628.42.camel@dd.thebigcorporation.com> 
- <Pine.LNX.4.58.0805021502040.10615@gandalf.stny.rr.com>  <1210003265.17132.6.camel@localhost.localdomain>  <Pine.LNX.4.58.0805051210410.23084@gandalf.stny.rr.com>  <1210004376.17132.14.camel@localhost.localdomain>  <Pine.LNX.4.58.0805051240520.25250@gandalf.stny.rr.com>
-  <1210007084.17132.32.camel@localhost.localdomain>  <Pine.LNX.4.58.0805051426010.25250@gandalf.stny.rr.com>  <1210013938.17132.55.camel@localhost.localdomain>  <alpine.LFD.1.10.0805052107270.3318@apollo.tec.linutronix.de>
- <1210025532.17132.82.camel@localhost.localdomain>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Mon, 5 May 2008 20:15:43 -0400
+Received: from outbound-wa4.frontbridge.com ([216.32.181.16]:63638 "EHLO
+	outbound3-wa4-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755966AbYEFAPm convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 May 2008 20:15:42 -0400
+X-BigFish: VP
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 149.199.60.83;Service: EHS
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+	charset="US-ASCII"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH 07/56] microblaze_v2: Signal support
+Date: Mon, 5 May 2008 17:13:42 -0700
+In-reply-to: <1210030436.5798.148.camel@localhost>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH 07/56] microblaze_v2: Signal support
+Thread-Index: AcivCJqTKE6gxX62RWSG6U3S60zxwwAACyqw
+References: <a4a778e34c66d126f5c4bf1ca423cf32950ea5ab.1209897266.git.monstr@monstr.eu> <9a7c6646e5dd9724c1cf34767adec181481fa3ef.1209897266.git.monstr@monstr.eu> <20080505213244.8DC757A0084@mail70-wa4.bigfish.com> <1210030436.5798.148.camel@localhost>
+From: "Stephen Neuendorffer" <stephen.neuendorffer@xilinx.com>
+To: "John Williams" <john.williams@petalogix.com>
+Cc: <monstr@seznam.cz>, <linux-kernel@vger.kernel.org>, <arnd@arndb.de>,
+       <linux-arch@vger.kernel.org>, "John Linn" <linnj@xilinx.com>,
+       <matthew@wil.cx>, <will.newton@gmail.com>, <drepper@redhat.com>,
+       <microblaze-uclinux@itee.uq.edu.au>, <grant.likely@secretlab.ca>,
+       "Michal Simek" <monstr@monstr.eu>
+X-OriginalArrivalTime: 06 May 2008 00:13:39.0191 (UTC) FILETIME=[08C9E070:01C8AF0E]
+Message-Id: <20080506001339.619971A58057@mail55-wa4.bigfish.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 5 May 2008, Daniel Walker wrote:
-> On Mon, 2008-05-05 at 23:01 +0200, Thomas Gleixner wrote:
-> > We have been there before. kernel development does not follow the "we
-> > want _now_" principle at all. Have you ever tried to yell at Linus "we
-> > want XYZ _now_" ? If you decide to try it, please keep me on CC - I
-> > want to enjoy the show.
+
+I'm somewhat ignorant about what this code is attempting to do, but with
+some quick poking around (m68knommu, blackfin) seems to suggest that
+other architectures don't do this, while others (v850) have almost
+exactly the same code (although they are somewhat smarter and are
+careful not to flush the whole cache).
+
+At the very least, it seems like there is some work in this area needed.
+
+Steve
+
+> -----Original Message-----
+> From: John Williams [mailto:john.williams@petalogix.com]
+> Sent: Monday, May 05, 2008 4:34 PM
+> To: Stephen Neuendorffer
+> Cc: monstr@seznam.cz; linux-kernel@vger.kernel.org; arnd@arndb.de;
+linux-arch@vger.kernel.org; John
+> Linn; matthew@wil.cx; will.newton@gmail.com; drepper@redhat.com;
+microblaze-uclinux@itee.uq.edu.au;
+> grant.likely@secretlab.ca; Michal Simek
+> Subject: RE: [PATCH 07/56] microblaze_v2: Signal support
 > 
-> Kernel development is "What is available now?" not what is avaiable in
-> the future.
+> On Mon, 2008-05-05 at 14:32 -0700, Stephen Neuendorffer wrote:
+> > (multiple places)  can this code (and flush_cache_sigtramp()) go
+away?
+> >
+> > +#if 0
+> > +		flush_cache_sigtramp((unsigned long)frame->tramp);
+> > +#endif
+> 
+> You have to icache_invalidate the sigtramp because you are writing
+into
+> memory that will shortly be executed.
+> 
+> I'm not sure why this is #if'd away in the first place?
+> 
+> John
+> 
+> 
 
-Interesting. I guess your universe is different from ours. According
-to a well accredited dictionary:
 
-development: the act or process of developing; growth; progress
-
-Thanks,
-
-	tglx
