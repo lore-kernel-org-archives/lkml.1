@@ -1,64 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765159AbYEFQes@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765237AbYEFQhQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765159AbYEFQes (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 12:34:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755279AbYEFQek
+	id S1765237AbYEFQhQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 12:37:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752626AbYEFQhB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 12:34:40 -0400
-Received: from mail.atmel.fr ([81.80.104.162]:41988 "EHLO atmel-es2.atmel.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754560AbYEFQej (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 12:34:39 -0400
-Message-ID: <48209708.3020807@atmel.com>
-Date: Tue, 06 May 2008 19:36:08 +0200
-From: Nicolas Ferre <nicolas.ferre@atmel.com>
-Organization: atmel
-User-Agent: Icedove 1.5.0.14pre (X11/20080208)
+	Tue, 6 May 2008 12:37:01 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:57800 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752247AbYEFQhA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 May 2008 12:37:00 -0400
+Date: Tue, 6 May 2008 09:36:06 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Matthew Wilcox <matthew@wil.cx>
+cc: Ingo Molnar <mingo@elte.hu>, "J. Bruce Fields" <bfields@citi.umich.edu>,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Alexander Viro <viro@ftp.linux.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: AIM7 40% regression with 2.6.26-rc1
+In-Reply-To: <20080506162332.GI19219@parisc-linux.org>
+Message-ID: <alpine.LFD.1.10.0805060931450.32269@woody.linux-foundation.org>
+References: <1210052904.3453.30.camel@ymzhang> <20080506114449.GC32591@elte.hu> <20080506120934.GH19219@parisc-linux.org> <20080506162332.GI19219@parisc-linux.org>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-To: linux-fbdev-devel@lists.sourceforge.net, adaplas@gmail.com
-CC: Per Hedblom <per.hedblom@abem.se>, Roel Kluin <12o3l@tiscali.nl>,
-       Jan Weber <jw022609@uni-greifswald.de>,
-       Andrew Victor <linux@maxim.org.za>,
-       Haavard Skinnemoen <hskinnemoen@atmel.com>,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] atmel_lcdfb: fix pixclok divider calculation
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix divider calculation and allow CLKVAL = 0 (divisor 2)
 
-It was not possible to get the clock value 0 (divisor 2) because 
-the test "<=0" force the BYPASS bit to be activated instead.
 
-Signed-off-by: Nicolas Ferre <nicolas.ferre@atmel.com>
----
-Thanks a lot to Jan, Per, Roel and Haavard for sending me
-similar patches.
+On Tue, 6 May 2008, Matthew Wilcox wrote:
+> 
+> I've wanted to fix file locks for a while.  Here's a first attempt.
+> It was done quickly, so I concede that it may well have bugs in it.
+> I found (and fixed) one with LTP.
 
- drivers/video/atmel_lcdfb.c |    7 +++----
- 1 files changed, 3 insertions(+), 4 deletions(-)
+Hmm. Wouldn't it be nicer to make the lock be a per-inode thing? Or is 
+there some user that doesn't have the inode info, or does anything that 
+might cross inode boundaries?
 
-diff --git a/drivers/video/atmel_lcdfb.c b/drivers/video/atmel_lcdfb.c
---- a/drivers/video/atmel_lcdfb.c
-+++ b/drivers/video/atmel_lcdfb.c
-@@ -441,13 +441,12 @@ static int atmel_lcdfb_set_par(struct fb_info *info)
- 
- 	value = DIV_ROUND_UP(clk_value_khz, PICOS2KHZ(info->var.pixclock));
- 
--	value = (value / 2) - 1;
--	dev_dbg(info->device, "  * programming CLKVAL = 0x%08lx\n", value);
--
--	if (value <= 0) {
-+	if (value < 2) {
- 		dev_notice(info->device, "Bypassing pixel clock divider\n");
- 		lcdc_writel(sinfo, ATMEL_LCDC_LCDCON1, ATMEL_LCDC_BYPASS);
- 	} else {
-+		value = (value / 2) - 1;
-+		dev_dbg(info->device, "  * programming CLKVAL = 0x%08lx\n", value);
- 		lcdc_writel(sinfo, ATMEL_LCDC_LCDCON1, value << ATMEL_LCDC_CLKVAL_OFFSET);
- 		info->var.pixclock = KHZ2PICOS(clk_value_khz / (2 * (value + 1)));
- 		dev_dbg(info->device, "  updated pixclk:     %lu KHz\n",
+This does seem to drop all locking around the "setlease()" calls down to 
+the filesystem, which worries me. That said, we clearly do need to do 
+this. Probably should have done it a long time ago.
 
+Also, why do people do this:
+
+> -find_conflict:
+> + find_conflict:
+
+Hmm?
+
+		Linus
