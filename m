@@ -1,71 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761651AbYEFPjC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764875AbYEFPj2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761651AbYEFPjC (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 11:39:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760196AbYEFPiv
+	id S1764875AbYEFPj2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 11:39:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764920AbYEFPjG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 11:38:51 -0400
-Received: from clem.clem-digital.net ([68.16.168.10]:33938 "EHLO
-	clem.clem-digital.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761021AbYEFPiu (ORCPT
+	Tue, 6 May 2008 11:39:06 -0400
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:43195 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1764888AbYEFPjE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 11:38:50 -0400
-From: Pete Clements <clem@clem.clem-digital.net>
-Message-Id: <200805061538.m46FcgZ3002921@clem.clem-digital.net>
-Subject: Re: Lost Sound from 2.6.24 to 2.6.25 -- CS4236 ISA
-To: tiwai@suse.de (Takashi Iwai)
-Date: Tue, 6 May 2008 11:38:42 -0400 (EDT)
-Cc: clem@clem.clem-digital.net (Pete Clements),
-       linux-kernel@vger.kernel.org (linux-kernel),
-       rene.herman@keyaccess.nl (Rene Herman)
-In-Reply-To: <s5hfxsvd31h.wl%tiwai@suse.de>
-X-Mailer: ELM [version 2.5 PL7]
+	Tue, 6 May 2008 11:39:04 -0400
+X-Sasl-enc: WK+HMbZpdiTbHHOLPwTdZoBLd9x8KonfMshElk9Fg+qK 1210088343
+Date: Tue, 6 May 2008 12:39:01 -0300
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Shaohua Li <shaohua.li@intel.com>, Holger Macht <hmacht@suse.de>,
+       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       "Accardi, Kristen C" <kristen.c.accardi@intel.com>
+Subject: Re: [PATCH] bay: Exit if notify handler cannot be installed
+Message-ID: <20080506153901.GC22828@khazad-dum.debian.net>
+References: <20080505202508.GA3690@homac> <20080506091522.GA4378@homac> <1210065811.12668.1.camel@sli10-desk.sh.intel.com> <20080506151846.GA22828@khazad-dum.debian.net> <20080506162049.237af49c@core>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20080506162049.237af49c@core>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
+	1CDB 0FE3
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Takashi Iwai
-  > At Mon, 5 May 2008 10:06:51 -0400 (EDT),
-  > Pete Clements wrote:
-  > > 
-  > > Looks like sound card stops functioning between
-  > > 2.6.24 and 2.6.25.
-  > 
-  > Could you elaborate what do you mean exactly "stop"?  Fail to load or
-  > initialize the driver, or silent output, DMA error...?
-  > 
-  > >  Sorry but don't know at what
-  > > point.  Card is an isa CS4236. Glad to provide
-  > > any other info/testing.
-  > 
-  > Any relevant kernel messages are welcome.  Also, if you passed any
-  > (module) options for the sound driver, show it, too.
-  > 
-  > The biggest change in ISA sound driver codes between 2.6.24 and 2.6.25
-  > is that we dropped the PnP resource re-configuration via module
-  > options of sound drivers.  They have to be adjusted via sysfs now 
-  > (if really needed).
-  > 
-  > Otherwise, if it really worked on 2.6.24, we have a good chance to
-  > identify the affecting changeset via bisect.  There are only a few
-  > changes for sound/isa.
-  > 
-  > 
-  > thanks,
-  > 
-  > Takashi
-  > --
-All I get is a cyclic noise burst (about 500ms frequency). 
-No options to module load, prior to 25 manually loaded modules
-with 'modprobe snd-cs4236',  with 25+ modules auto load at boot.
+On Tue, 06 May 2008, Alan Cox wrote:
+> On Tue, 6 May 2008 12:18:46 -0300
+> Henrique de Moraes Holschuh <hmh@hmh.eng.br> wrote:
+> > On Tue, 06 May 2008, Shaohua Li wrote:
+> > > The bay driver is duplicated with libata, I thought we should delete it.
+> > > See bug http://bugzilla.kernel.org/show_bug.cgi?id=9526
+> > 
+> > The bay driver is currently useless, BUT it should handle a lot of stuff
+> > libata won't, such as bay batteries, bay floppies, and anything else in
+> > a bay that is not a hard disk.
+> 
+> The bay driver needs to become a service that hands out bay events to
+> all the other drivers for that to happen.
 
-By removing "CONFIG_PNPBIOS" get total silence. So would assume the
-PNP change the source.
+Seems sensible.  Any pointers?  I wouldn't know how to do it (and
+actually, right now I am busy working on rfkill for some stuff
+thinkpad-acpi needs), but I could try to tack bay after rfkill, if
+nobody beats me to it (hint!)
 
-Currently running 26-rc1-git4.
+BTW: dock handling might share these issues as well.
 
-- 
-Pete Clements 
+The problem has a bit of a hard edge, though: if nobody binds to an ACPI
+node that has an EJ0 subnode, bay needs to do it.  But if someone wants
+to, bay should give the node up, and somehow help that someone handle
+the ejection stuff.
+
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
