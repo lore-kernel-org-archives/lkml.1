@@ -1,50 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764624AbYEFJD4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764530AbYEFJDf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764624AbYEFJD4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 05:03:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763030AbYEFI43
+	id S1764530AbYEFJDf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 05:03:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761500AbYEFIvd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 04:56:29 -0400
-Received: from smtp1.wifiinternet.cz ([89.31.47.1]:58456 "EHLO
+	Tue, 6 May 2008 04:51:33 -0400
+Received: from smtp1.wifiinternet.cz ([89.31.47.1]:51612 "EHLO
 	bor.wifiinternet.cz" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1762928AbYEFI40 (ORCPT
+	with ESMTP id S1756489AbYEFIuu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 04:56:26 -0400
-Message-ID: <48201D5F.7050707@seznam.cz>
-Date: Tue, 06 May 2008 10:57:03 +0200
+	Tue, 6 May 2008 04:50:50 -0400
+Message-ID: <48201C23.1040609@seznam.cz>
+Date: Tue, 06 May 2008 10:51:47 +0200
 From: Michal Simek <monstr@seznam.cz>
 Reply-To: monstr@seznam.cz
 User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
 MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: sfr@canb.auug.org.au, monstr@seznam.cz, paulus@samba.org, arnd@arndb.de,
-       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
-Subject: Re: [PATCH 1/2] OF: Fix coding style violation in of_device.c and
- of_platform.c
-References: <1209824532-7939-1-git-send-email-monstr@seznam.cz>	<765c6c8053679c45eb370255a110f7bc680a8f25.1209824033.git.monstr@monstr.eu>	<20080505095649.fccb57bf.sfr@canb.auug.org.au> <20080504.170611.112259062.davem@davemloft.net>
-In-Reply-To: <20080504.170611.112259062.davem@davemloft.net>
-Content-Type: text/plain; charset=ISO-8859-1
+To: John Williams <john.williams@petalogix.com>
+CC: linux-kernel@vger.kernel.org, arnd@arndb.de, linux-arch@vger.kernel.org,
+       stephen.neuendorffer@xilinx.com, John.Linn@xilinx.com, matthew@wil.cx,
+       will.newton@gmail.com, drepper@redhat.com,
+       microblaze-uclinux@itee.uq.edu.au, grant.likely@secretlab.ca,
+       Michal Simek <monstr@monstr.eu>
+Subject: Re: [PATCH 02/56] microblaze_v2: Makefiles for Microblaze cpu
+References: <1209901305-6404-1-git-send-email-monstr@seznam.cz>	 <a4a778e34c66d126f5c4bf1ca423cf32950ea5ab.1209897266.git.monstr@monstr.eu>	 <c805caeb1dd7f6d1349c4a463cb88a5342a170d2.1209897266.git.monstr@monstr.eu> <1209952030.5798.32.camel@localhost>
+In-Reply-To: <1209952030.5798.32.camel@localhost>
+Content-Type: text/plain; charset=ISO-8859-2
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi John,
 
-Hi David and Stephen,
-
-> From: Stephen Rothwell <sfr@canb.auug.org.au>
-> Date: Mon, 5 May 2008 09:56:49 +1000
+>> --- /dev/null
+>> +++ b/arch/microblaze/Makefile
+>> @@ -0,0 +1,63 @@
+>> +UTS_SYSNAME = -DUTS_SYSNAME=\"uClinux\"
+>> +
+>> +# What CPU vesion are we building for, and crack it open
+>> +# as major.minor.rev
+>> +CPU_VER=$(subst ",,$(CONFIG_XILINX_MICROBLAZE0_HW_VER) )
+>> +CPU_MAJOR=$(shell echo $(CPU_VER) | cut -d '.' -f 1)
+>> +CPU_MINOR=$(shell echo $(CPU_VER) | cut -d '.' -f 2)
+>> +CPU_REV=$(shell echo $(CPU_VER) | cut -d '.' -f 3)
 > 
->> Any changes to the drivers of files should be cc'd to me (who did the
->> initial splitup) and Dave Miller since you may impact the sparc code
->> (which is the other user).
-> 
-> I tried to stitch these patches together and apply them to Linus's
-> tree for some sparc test builds the other day, but failed.
-> 
-> I can't figure out what this mess is against. :-/
+> No doubt there's some cleaner shell-fu to do this but I'm not
+> complaining as I'm responsible for the original yucky version!
 
-Microblaze use the same code(of_device.c and of_platform.c) as is in powerpc.
-I have only minor changes in prom.c.
+I think you told me that toolchain can use this flags. This is not pain for now.
+I'll add to my future plans.
 
-Michal
+>> --- /dev/null
+>> +++ b/arch/microblaze/platform/Makefile
+>> @@ -0,0 +1,3 @@
+>> +#
+>> +# Makefile for arch/microblaze/platform directory
+>> +#
+> 
+> How about a single 
+> 
+> obj-$(CONFIG_PLATFORM_GENERIC) += generic/
+> 
+> to show how platform-specific setup code can be added (even though
+> there's none in the default generic target)?
+
+We'll add this to Microblaze readme file. Chapter: how to add platform specific
+files.
+
+M
+
