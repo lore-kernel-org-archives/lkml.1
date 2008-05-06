@@ -1,225 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933664AbYEFVZ5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933700AbYEFV0c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933664AbYEFVZ5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 17:25:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933234AbYEFVTB
+	id S933700AbYEFV0c (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 17:26:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933203AbYEFVTE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 17:19:01 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:48586 "EHLO mx1.redhat.com"
+	Tue, 6 May 2008 17:19:04 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:48591 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933107AbYEFVSw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 17:18:52 -0400
+	id S933166AbYEFVSx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 May 2008 17:18:53 -0400
 Date: Tue, 6 May 2008 17:18:07 -0400
 From: Ulrich Drepper <drepper@redhat.com>
-Message-Id: <200805062118.m46LI7EM004065@devserv.devel.redhat.com>
+Message-Id: <200805062118.m46LI74j004096@devserv.devel.redhat.com>
 To: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: [PATCH 10/18] flag parameters: inotify_init
+Subject: [PATCH 18/18] flag parameters: check magic constants
 Cc: akpm@linux-foundation.org, davidel@xmailserver.org, mtk.manpages@gmail.com,
        torvalds@linux-foundation.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch introduces the new syscall inotify_init1 (note: the 1 stands
-for the one parameter the syscall takes, as opposed to no parameter before).
-The values excepted for this parameter are function-specific and defined
-in the inotify.h header.  Here the values must match the O_* flags, though.
-In this patch CLOEXEC support is introduced.
+This patch adds test that ensure the boundary conditions for the various
+constants introduced in the previous patches is met.  No code is generated.
 
-The following test must be adjusted for architectures other than x86 and
-x86-64 and in case the syscall numbers changed.
-
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#include <fcntl.h>
-#include <stdio.h>
-#include <unistd.h>
-#include <sys/syscall.h>
-
-#ifndef __NR_inotify_init1
-# ifdef __x86_64__
-#  define __NR_inotify_init1 294
-# elif defined __i386__
-#  define __NR_inotify_init1 332
-# else
-#  error "need __NR_inotify_init1"
-# endif
-#endif
-
-#define IN_CLOEXEC O_CLOEXEC
-
-int
-main (void)
-{
-  int fd;
-  fd = syscall (__NR_inotify_init1, 0);
-  if (fd == -1)
-    {
-      puts ("inotify_init1(0) failed");
-      return 1;
-    }
-  int coe = fcntl (fd, F_GETFD);
-  if (coe == -1)
-    {
-      puts ("fcntl failed");
-      return 1;
-    }
-  if (coe & FD_CLOEXEC)
-    {
-      puts ("inotify_init1(0) set close-on-exit");
-      return 1;
-    }
-  close (fd);
-
-  fd = syscall (__NR_inotify_init1, IN_CLOEXEC);
-  if (fd == -1)
-    {
-      puts ("inotify_init1(IN_CLOEXEC) failed");
-      return 1;
-    }
-  coe = fcntl (fd, F_GETFD);
-  if (coe == -1)
-    {
-      puts ("fcntl failed");
-      return 1;
-    }
-  if ((coe & FD_CLOEXEC) == 0)
-    {
-      puts ("inotify_init1(O_CLOEXEC) does not set close-on-exit");
-      return 1;
-    }
-  close (fd);
-
-  puts ("OK");
-
-  return 0;
-}
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
- arch/x86/ia32/ia32entry.S          |    1 +
- arch/x86/kernel/syscall_table_32.S |    1 +
- fs/inotify_user.c                  |   12 ++++++++++--
- include/asm-x86/unistd_32.h        |    1 +
- include/asm-x86/unistd_64.h        |    2 ++
- include/linux/inotify.h            |    5 +++++
- include/linux/syscalls.h           |    1 +
- 7 files changed, 21 insertions(+), 2 deletions(-)
+ fs/eventfd.c      |    4 ++++
+ fs/eventpoll.c    |    3 +++
+ fs/inotify_user.c |    4 ++++
+ fs/signalfd.c     |    4 ++++
+ fs/timerfd.c      |    4 ++++
+ net/socket.c      |    7 +++++++
+ 6 files changed, 26 insertions(+)
 
 
 Signed-off-by: Ulrich Drepper <drepper@redhat.com>
 
-diff --git a/arch/x86/ia32/ia32entry.S b/arch/x86/ia32/ia32entry.S
-index 34071a2..37e4992 100644
---- a/arch/x86/ia32/ia32entry.S
-+++ b/arch/x86/ia32/ia32entry.S
-@@ -736,4 +736,5 @@ ia32_sys_call_table:
- 	.quad sys_epoll_create2
- 	.quad sys_dup3			/* 330 */
- 	.quad sys_pipe2
-+	.quad sys_inotify_init1
- ia32_syscall_end:
-diff --git a/arch/x86/kernel/syscall_table_32.S b/arch/x86/kernel/syscall_table_32.S
-index 6615476..f59aba5 100644
---- a/arch/x86/kernel/syscall_table_32.S
-+++ b/arch/x86/kernel/syscall_table_32.S
-@@ -331,3 +331,4 @@ ENTRY(sys_call_table)
- 	.long sys_epoll_create2
- 	.long sys_dup3			/* 330 */
- 	.long sys_pipe2
-+	.long sys_inotify_init1
+diff --git a/fs/eventfd.c b/fs/eventfd.c
+index 3ed4466..08bf558 100644
+--- a/fs/eventfd.c
++++ b/fs/eventfd.c
+@@ -203,6 +203,10 @@ asmlinkage long sys_eventfd2(unsigned int count, int flags)
+ 	int fd;
+ 	struct eventfd_ctx *ctx;
+ 
++	/* Check the EFD_* constants for consistency.  */
++	BUILD_BUG_ON(EFD_CLOEXEC != O_CLOEXEC);
++	BUILD_BUG_ON(EFD_NONBLOCK != O_NONBLOCK);
++
+ 	if (flags & ~(EFD_CLOEXEC | EFD_NONBLOCK))
+ 		return -EINVAL;
+ 
+diff --git a/fs/eventpoll.c b/fs/eventpoll.c
+index 3fd4014..2fdad42 100644
+--- a/fs/eventpoll.c
++++ b/fs/eventpoll.c
+@@ -1051,6 +1051,9 @@ asmlinkage long sys_epoll_create2(int size, int flags)
+ 	int error, fd = -1;
+ 	struct eventpoll *ep;
+ 
++	/* Check the EPOLL_* constant for consistency.  */
++	BUILD_BUG_ON(EPOLL_CLOEXEC != O_CLOEXEC);
++
+ 	if (flags & ~EPOLL_CLOEXEC)
+ 		return -EINVAL;
+ 
 diff --git a/fs/inotify_user.c b/fs/inotify_user.c
-index 6676c06..93ab4a6 100644
+index dc7e1f6..fe79c25 100644
 --- a/fs/inotify_user.c
 +++ b/fs/inotify_user.c
-@@ -566,7 +566,7 @@ static const struct inotify_operations inotify_user_ops = {
- 	.destroy_watch	= free_inotify_user_watch,
- };
- 
--asmlinkage long sys_inotify_init(void)
-+asmlinkage long sys_inotify_init1(int flags)
- {
- 	struct inotify_device *dev;
- 	struct inotify_handle *ih;
-@@ -574,7 +574,10 @@ asmlinkage long sys_inotify_init(void)
+@@ -574,6 +574,10 @@ asmlinkage long sys_inotify_init1(int flags)
  	struct file *filp;
  	int fd, ret;
  
--	fd = get_unused_fd();
-+	if (flags & ~IN_CLOEXEC)
-+		return -EINVAL;
++	/* Check the IN_* constants for consistency.  */
++	BUILD_BUG_ON(IN_CLOEXEC != O_CLOEXEC);
++	BUILD_BUG_ON(IN_NONBLOCK != O_NONBLOCK);
 +
-+	fd = get_unused_fd_flags(flags & O_CLOEXEC);
- 	if (fd < 0)
- 		return fd;
+ 	if (flags & ~(IN_CLOEXEC | IN_NONBLOCK))
+ 		return -EINVAL;
  
-@@ -638,6 +641,11 @@ out_put_fd:
- 	return ret;
- }
+diff --git a/fs/signalfd.c b/fs/signalfd.c
+index 5441a4b..9c39bc7 100644
+--- a/fs/signalfd.c
++++ b/fs/signalfd.c
+@@ -211,6 +211,10 @@ asmlinkage long sys_signalfd4(int ufd, sigset_t __user *user_mask,
+ 	sigset_t sigmask;
+ 	struct signalfd_ctx *ctx;
  
-+asmlinkage long sys_inotify_init(void)
-+{
-+	return sys_inotify_init1(0);
-+}
++	/* Check the SFD_* constants for consistency.  */
++	BUILD_BUG_ON(SFD_CLOEXEC != O_CLOEXEC);
++	BUILD_BUG_ON(SFD_NONBLOCK != O_NONBLOCK);
 +
- asmlinkage long sys_inotify_add_watch(int fd, const char __user *path, u32 mask)
- {
- 	struct inode *inode;
-diff --git a/include/asm-x86/unistd_32.h b/include/asm-x86/unistd_32.h
-index 748a05c..b3daf50 100644
---- a/include/asm-x86/unistd_32.h
-+++ b/include/asm-x86/unistd_32.h
-@@ -337,6 +337,7 @@
- #define __NR_epoll_create2	329
- #define __NR_dup3		330
- #define __NR_pipe2		331
-+#define __NR_inotify_init1	332
+ 	if (flags & ~(SFD_CLOEXEC | SFD_NONBLOCK))
+ 		return -EINVAL;
  
- #ifdef __KERNEL__
+diff --git a/fs/timerfd.c b/fs/timerfd.c
+index 75d44ef..c502c60 100644
+--- a/fs/timerfd.c
++++ b/fs/timerfd.c
+@@ -184,6 +184,10 @@ asmlinkage long sys_timerfd_create(int clockid, int flags)
+ 	int ufd;
+ 	struct timerfd_ctx *ctx;
  
-diff --git a/include/asm-x86/unistd_64.h b/include/asm-x86/unistd_64.h
-index 6aa423d..5ef6778 100644
---- a/include/asm-x86/unistd_64.h
-+++ b/include/asm-x86/unistd_64.h
-@@ -651,6 +651,8 @@ __SYSCALL(__NR_epoll_create2, sys_epoll_create2)
- __SYSCALL(__NR_dup3, sys_dup3)
- #define __NR_pipe2				293
- __SYSCALL(__NR_pipe2, sys_pipe2)
-+#define __NR_inotify_init1			294
-+__SYSCALL(__NR_inotify_init1, sys_inotify_init1)
- 
- 
- #ifndef __NO_STUBS
-diff --git a/include/linux/inotify.h b/include/linux/inotify.h
-index 742b917..72ef821 100644
---- a/include/linux/inotify.h
-+++ b/include/linux/inotify.h
-@@ -7,6 +7,8 @@
- #ifndef _LINUX_INOTIFY_H
- #define _LINUX_INOTIFY_H
- 
-+/* For O_CLOEXEC */
-+#include <linux/fcntl.h>
- #include <linux/types.h>
- 
- /*
-@@ -63,6 +65,9 @@ struct inotify_event {
- 			 IN_MOVED_TO | IN_DELETE | IN_CREATE | IN_DELETE_SELF | \
- 			 IN_MOVE_SELF)
- 
-+/* Flags for sys_inotify_init1.  */
-+#define IN_CLOEXEC O_CLOEXEC
++	/* Check the TFD_* constants for consistency.  */
++	BUILD_BUG_ON(TFD_CLOEXEC != O_CLOEXEC);
++	BUILD_BUG_ON(TFD_NONBLOCK != O_NONBLOCK);
 +
- #ifdef __KERNEL__
+ 	if (flags & ~(TFD_CLOEXEC | TFD_NONBLOCK))
+ 		return -EINVAL;
+ 	if (clockid != CLOCK_MONOTONIC &&
+diff --git a/net/socket.c b/net/socket.c
+index 7cb0a5e..962bf07 100644
+--- a/net/socket.c
++++ b/net/socket.c
+@@ -1219,6 +1219,13 @@ asmlinkage long sys_socket(int family, int type, int protocol)
+ 	struct socket *sock;
+ 	int flags;
  
- #include <linux/dcache.h>
-diff --git a/include/linux/syscalls.h b/include/linux/syscalls.h
-index 143d5ee..aeb2df8 100644
---- a/include/linux/syscalls.h
-+++ b/include/linux/syscalls.h
-@@ -547,6 +547,7 @@ asmlinkage long sys_get_mempolicy(int __user *policy,
- 				unsigned long addr, unsigned long flags);
- 
- asmlinkage long sys_inotify_init(void);
-+asmlinkage long sys_inotify_init1(int flags);
- asmlinkage long sys_inotify_add_watch(int fd, const char __user *path,
- 					u32 mask);
- asmlinkage long sys_inotify_rm_watch(int fd, u32 wd);
++	/* Check the SOCK_* constants for consistency.  */
++	BUILD_BUG_ON(SOCK_CLOEXEC != O_CLOEXEC);
++	BUILD_BUG_ON(SOCK_NONBLOCK != O_NONBLOCK);
++	BUILD_BUG_ON((SOCK_MAX | SOCK_TYPE_MASK) != SOCK_TYPE_MASK);
++	BUILD_BUG_ON(SOCK_CLOEXEC & SOCK_TYPE_MASK);
++	BUILD_BUG_ON(SOCK_NONBLOCK & SOCK_TYPE_MASK);
++
+ 	flags = type & ~SOCK_TYPE_MASK;
+ 	if (flags & ~(SOCK_CLOEXEC | SOCK_NONBLOCK))
+ 		return -EINVAL;
