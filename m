@@ -1,54 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758052AbYEFMaP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756938AbYEFMcR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758052AbYEFMaP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 08:30:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755257AbYEFM34
+	id S1756938AbYEFMcR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 08:32:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752547AbYEFMcB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 08:29:56 -0400
-Received: from ns1.suse.de ([195.135.220.2]:42206 "EHLO mx1.suse.de"
+	Tue, 6 May 2008 08:32:01 -0400
+Received: from www.tglx.de ([62.245.132.106]:35333 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752071AbYEFM3z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 08:29:55 -0400
-Subject: Re: PNP: set IRQ index in sysfs "set irq" interface
-From: Thomas Renninger <trenn@suse.de>
-Reply-To: trenn@suse.de
-To: Bjorn Helgaas <bjorn.helgaas@hp.com>
-Cc: Rene Herman <rene.herman@keyaccess.nl>, Len Brown <lenb@kernel.org>,
-       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Adam Belay <ambx1@neo.rr.com>, Adam M Belay <abelay@mit.edu>,
-       Li Shaohua <shaohua.li@intel.com>,
-       Matthieu Castet <castet.matthieu@free.fr>,
-       Jaroslav Kysela <perex@perex.cz>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <200805050900.46521.bjorn.helgaas@hp.com>
-References: <200805011539.58705.bjorn.helgaas@hp.com>
-	 <481DBE81.8000608@keyaccess.nl>  <200805050900.46521.bjorn.helgaas@hp.com>
-Content-Type: text/plain
-Date: Tue, 06 May 2008 16:29:43 +0200
-Message-Id: <1210084183.4802.29.camel@linux-2bdv.site>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.21.90 
-Content-Transfer-Encoding: 7bit
+	id S1752532AbYEFMcA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 May 2008 08:32:00 -0400
+Date: Tue, 6 May 2008 14:31:41 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Andi Kleen <andi@firstfloor.org>
+cc: mingo@elte.hu, linux-kernel@vger.kernel.org, jkosina@suse.cz,
+       zdenek.kabelac@gmail.com
+Subject: Re: [PATCH REPOST^3] Run IST traps from user mode preemptive on
+ process stack
+In-Reply-To: <20080502091948.GA26099@basil.nowhere.org>
+Message-ID: <alpine.LFD.1.10.0805061305460.3318@apollo.tec.linutronix.de>
+References: <20080502091948.GA26099@basil.nowhere.org>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 2 May 2008, Andi Kleen wrote:
+> [Fixes a bug originally introduced in 2.6.23 I think. Reposted many times
+> so far, but still not applied. Please apply.]
 
-On Mon, 2008-05-05 at 09:00 -0600, Bjorn Helgaas wrote:
-> On Sunday 04 May 2008 07:47:45 am Rene Herman wrote:
-> > But what I wanted to ask -- judging from my .gitconfig (as opposed to my 
-> > memory) I haven't done anything special to get the -p (--show-c-function) 
-> > functionality from git-diff. Do you do anything special to not get it? It 
-> > really helps when looking at patches.
+The print_vma_addr() bug was introduced by commit 03252919 (by you) in
+the 2.6.25 merge window and we fixed it before 25-rc2 via commit e8bff74a.
+
+Do you know about any other breakage in that code? If not, why do you
+claim that we ignored a bug fix?
+ 
+> Run IST traps from user mode preemptive on process stack
 > 
-> I agree, "--show-c-function" is often handy.  I use quilt, and it
-> looks like it doesn't add that option by default.  I added a ~/.quiltrc
-> containing 'QUILT_DIFF_OPTS="-p"', and it looks like that will do the
-> trick.  Thanks for the tip.
+> x86-64 has a few exceptions which run on special architecture 
+> supported IST exception stacks: these are nmi, double fault, stack fault,
+> int 3, debug.
 
-QUILT_REFRESH_ARGS="--diffstat"
-in .quiltrc
-is also nice if you have huger patches.
++ MCE
+ 
+> Previously they would check for a scheduling event on returning
+> if the original CPU state was user mode and then switch to a 
+> process stack to schedule.
+>
+> But the actual trap handler would still run on the IST stack
+> with preemption disabled.
+> 
+> This patch changes these traps instead to always switch 
+> to the process stack when the trap originated from user mode.
+> For kernel traps it keeps running non preemptive on the IST stack
+> because that is much safer (e.g. to still get nmi watchdog events
+> out even when the process stack is corrupted) 
+> 
+> Then the actual trap handlers can run with preemption enabled
+> or schedule as needed (e.g. to take locks) 
+> 
+> This fixes a regression I added earlier with print_vma_addr()
+> executing down() in these trap handlers from user space.
 
-    Thomas
+Aside of the fact, that it has been fixed long time ago in a simple
+and non dangerous way already, your "fix" adds a far more serious
+regression:
 
+> --- linux.orig/arch/x86/kernel/entry_64.S
+> +++ linux/arch/x86/kernel/entry_64.S
+> @@ -771,12 +771,18 @@ END(spurious_interrupt)
+>  	.if \ist
+>  	movq	%gs:pda_data_offset, %rbp
+>  	.endif
+> -	movq %rsp,%rdi
+>  	movq ORIG_RAX(%rsp),%rsi
+>  	movq $-1,ORIG_RAX(%rsp)
+>  	.if \ist
+>  	subq	$EXCEPTION_STKSZ, per_cpu__init_tss + TSS_ist + (\ist - 1) * 8(%rbp)
+>  	.endif
+> +	testl $3,CS(%rsp)
+> +	jz 2f					/* in kernel? stay on exception stack for now */
+> +	movq %rsp,%rdi
+> +	call sync_regs				/* Move all state over to process stack */
+> +	movq %rax,%rsp				/* switch stack to process stack */
+> +2:
+> +	movq %rsp,%rdi
+>  	call \sym
+>  	.if \ist
+>  	addq	$EXCEPTION_STKSZ, per_cpu__init_tss + TSS_ist + (\ist - 1) * 8(%rbp)
+
+This introduces two security bugs in one go:
+
+1.) The IST stack pointer is elevated unconditionaly and with your
+change we can now schedule away in the handler. Then another task on
+this same CPU triggers the same trap and elevates it again. This can
+nest multiple times and there is no protection against an IST stack
+overflow at all!
+
+This is probably a nice fat user-triggerable root hole in fact!
+Exploitable because user-space has control over the pt_regs data,
+so by nesting enough such overflows a critical kernel data structure
+can probably be written with near-arbitrary content.
+
+At minimum you've introuduced a nasty DoS hole that would almost never
+trigger during normal loads - it would probably result in extremely hard
+to debug memory corruption in data structures that are near the IST stacks.
+
+2.) The IST stack pointer is unbalanced in the other direction as well:
+it is incremented on CPUn then the handler is scheduled away and migrated
+to CPUm. After return from the handler the IST stacks of both CPUs are
+corrupted. Exploitable by unprivileged user-space code as well.
+
+Thanks,
+
+	tglx
