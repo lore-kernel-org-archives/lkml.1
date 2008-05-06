@@ -1,89 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764090AbYEFV5d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765699AbYEFWAU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764090AbYEFV5d (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 17:57:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759588AbYEFV4z
+	id S1765699AbYEFWAU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 18:00:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753526AbYEFV7s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 17:56:55 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:33553 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758857AbYEFV4x (ORCPT
+	Tue, 6 May 2008 17:59:48 -0400
+Received: from cdptpa-omtalb.mail.rr.com ([75.180.132.121]:57796 "EHLO
+	cdptpa-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753765AbYEFV7p (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 17:56:53 -0400
-Date: Tue, 6 May 2008 14:56:08 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: David Miller <davem@davemloft.net>
-Cc: tony@bakeyournoodle.com, linux-kernel@vger.kernel.org,
-       benh@kernel.crashing.org
-Subject: Re: [PATCH] Silence 'ignoring return value' warnings in
- drivers/video/aty/radeon_base.c
-Message-Id: <20080506145608.565b61bf.akpm@linux-foundation.org>
-In-Reply-To: <20080506.144301.233784820.davem@davemloft.net>
-References: <20080424043400.GS20457@bakeyournoodle.com>
-	<20080506143936.6357e578.akpm@linux-foundation.org>
-	<20080506.144301.233784820.davem@davemloft.net>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 6 May 2008 17:59:45 -0400
+Message-ID: <005b01c8afc4$77f4ec90$6401a8c0@techwriter>
+From: "Yigal Sadgat" <YSadgat1@gcte.com>
+To: <linux-kernel@vger.kernel.org>, <linux-ide@vger.kernel.org>
+Cc: <jwboyer@linux.vnet.ibm.com>, <joern@logfs.org>
+Subject: Compact Flash Question
+Date: Tue, 6 May 2008 14:59:33 -0700
+MIME-Version: 1.0
+Content-Type: text/plain;
+	format=flowed;
+	charset="iso-8859-1";
+	reply-type=original
 Content-Transfer-Encoding: 7bit
+X-Priority: 3
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook Express 6.00.2900.3138
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3198
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 06 May 2008 14:43:01 -0700 (PDT)
-David Miller <davem@davemloft.net> wrote:
+We wrote the Kernel to support CF drives (in IDE mode) several years ago but
+now there are strange things coming back from the field that compel us to go
+back and re-evaluate many design decisions.
 
-> From: Andrew Morton <akpm@linux-foundation.org>
-> Date: Tue, 6 May 2008 14:39:36 -0700
-> 
-> > On Thu, 24 Apr 2008 14:34:01 +1000
-> > tony@bakeyournoodle.com (Tony Breeds) wrote:
-> > 
-> > > Current kernel builds warn about:
-> > > drivers/video/aty/radeon_base.c: In function 'radeonfb_pci_register':
-> > > drivers/video/aty/radeon_base.c:2334: warning: ignoring return value of 'sysfs_create_bin_file', declared with attribute warn_unused_result
-> > > drivers/video/aty/radeon_base.c:2336: warning: ignoring return value of 'sysfs_create_bin_file', declared with attribute warn_unused_result
-> > > 
-> > > Do minimal checking of these functions and issue a warning if either
-> > > fails.  They don't seem to be critical..
-> > 
-> > well OK, but I object to the patch title!
-> > 
-> > The point isn't to silence warnings.  It is to fix the problem which that
-> > warning is drawing our attention to.
-> > 
-> > So I rewrote the title to "drivers/video/aty/radeon_base.c: notify user if
-> > sysfs_create_bin_file() failed".
-> > 
-> > And your fix looks appropriate - if sysfs_create_bin_file() fails we will now get
-> > reports of this and we can find out what kernel bug caused this to happen.
-> 
-> The last time someone "fixed" this warning in the radeon driver,
-> people lost their consoles.
-> 
-> Just giving a heads up...
+For instance,
+(1) Can you really ignore bit(2) (CORR) in the Status register offset 7 that 
+tells
+you that the CF has detected and corrected a soft error?, etc.
+(2) An engineer at SanDisk Engineering told me NOT to do wear leveling.
+The file allocation table is written very frequently back into the flash. So
+is it really safe to assume that I don't need wear leveling???
+(3) Re. the BUSY bit in the status register (offset 7, bit D7), anybody 
+experienced
+time outs?
+(4) Re Error register (offset 1) bit D7 (BBK), again, I was told that it 
+cannot (???)
+happen since the CF performs read-after-write and it automatically switches 
+good blocks
+for bad ones... Is this correct?
 
-heh, thanks.
+We get many "soft" errors and I cannot wait to put my hand on a system to 
+test but
+thought I would draw on your collective experience before we dive into these 
+issues again.
 
-This one just emits a warning:
+Any comments would be greatly appreciated.
 
-@@ -2340,9 +2341,12 @@ static int __devinit radeonfb_pci_regist
- 
- 	/* Register some sysfs stuff (should be done better) */
- 	if (rinfo->mon1_EDID)
--		sysfs_create_bin_file(&rinfo->pdev->dev.kobj, &edid1_attr);
-+		err |= sysfs_create_bin_file(&rinfo->pdev->dev.kobj, &edid1_attr);
- 	if (rinfo->mon2_EDID)
--		sysfs_create_bin_file(&rinfo->pdev->dev.kobj, &edid2_attr);
-+		err |= sysfs_create_bin_file(&rinfo->pdev->dev.kobj, &edid2_attr);
-+	if (err)
-+		pr_warning("%s() Creating sysfs files failed, continuing\n",
-+		           __func__);
- 
- 	/* save current mode regs before we switch into the new one
- 	 * so we can restore this upon __exit
-_
+Yigal Sadgat
+General Computer Technology (GCT)
+YSadgat1@gcte.com
 
 
-So from what you say, it sounds like we will be seeing that warning.  I
-wonder why.
+
