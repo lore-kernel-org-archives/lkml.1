@@ -1,68 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760035AbYEFSUN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758026AbYEFSYW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760035AbYEFSUN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 14:20:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753012AbYEFST5
+	id S1758026AbYEFSYW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 14:24:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752200AbYEFSYN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 14:19:57 -0400
-Received: from sec.bit-consulting.com.ar ([200.69.255.76]:45875 "EHLO
-	sec.bit-consulting.com.ar" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752624AbYEFSTz (ORCPT
+	Tue, 6 May 2008 14:24:13 -0400
+Received: from rv-out-0506.google.com ([209.85.198.233]:26130 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752624AbYEFSYL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 14:19:55 -0400
-X-Greylist: delayed 1451 seconds by postgrey-1.27 at vger.kernel.org; Tue, 06 May 2008 14:19:55 EDT
-Message-ID: <50723.157.92.44.74.1210096537.squirrel@sec.bit-consulting.com.ar>
-Date: Tue, 6 May 2008 14:55:37 -0300 (ART)
-Subject: Promise FT SX8300 support?
-From: "Diego M. Vadell" <dvadell@linuxclusters.com.ar>
-To: linux-kernel@vger.kernel.org
-User-Agent: SquirrelMail/1.4.9a
+	Tue, 6 May 2008 14:24:11 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=AGrd/AYIEA04ENh4tjsmjaOYBgc3aoYiQlQnF4qP4/qNl/Aro5Y5n1gBLsTNu5dMzLJ/IFfFulwiBjLgLFSQQGTkX/PmYWGZ47L/qcGyAFZwZEjl+PCz/4Yj9zN1DXu6ITnWoNpd3Fj2Mq+fR10AnzfXa+5eir9Ry14Uh0yIyQY=
+Message-ID: <86802c440805061124w630bc987k71c3c290fdfde773@mail.gmail.com>
+Date: Tue, 6 May 2008 11:24:11 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH] x86: fixed mtrr change WP to WB
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Thomas Gleixner" <tglx@linutronix.de>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <482099E6.5060208@zytor.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200805041823.57198.yhlu.kernel@gmail.com>
+	 <200805061038.58023.yhlu.kernel@gmail.com>
+	 <200805061041.40047.yhlu.kernel@gmail.com>
+	 <482099E6.5060208@zytor.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello everybody,
+On Tue, May 6, 2008 at 10:48 AM, H. Peter Anvin <hpa@zytor.com> wrote:
+> Yinghai Lu wrote:
+>
+> > [PATCH] x86: fixed mtrr change WP to WB
+> >
+> > so we modify mptable near below 1M
+> >
+> > Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+> >
+>
+>  Again:
+>
+>  This does not work on even the majority of all systems.
+>
+>  If the mptable should be modified, it should be copied to kernel memory and
+> modified there.  Modifying it in-place is both unsafe and, in general,
+> simply will not work.
 
-   Is the RAID card "Promise FT SX8300" supported?
+but
 
-   I was installing Fedora Core 8 (kernel 2.6.23.1-42.fc8) a server with a
-Promise FT SX8300 RAID card, but the installation program didn't see
-it. I tried to find what module makes that card works, and found ( in
-http://linux-ata.org/driver-status.html#sx8 ) that Promise SX cards
-work with the sx8 module (though I'm not really sure this is a SX8).
+         * 1) Scan the bottom 1K for a signature
+         * 2) Scan the top 1K of base RAM
+         * 3) Scan the 64K of bios
+         */
+        if (smp_scan_config(0x0, 0x400, reserve) ||
+            smp_scan_config(639 * 0x400, 0x400, reserve) ||
+            smp_scan_config(0xF0000, 0x10000, reserve))
+                return;
 
-   So I used mknod to make the /dev/sx8/* devices , used insmod to load
-the sx8 module (and checked that they were there with lsmod). But
-nothing appears in dmesg, and I can't partition it with fdisk (and of
-course, the installation program does not recognize the disk).
+and all these areas are reserved already.
 
-   I tried to blindly insmod sata_promise, without luck.
+wonder if we could only modify mpf->mpf_physptr to point to another
+mpc and reuse mpf?
 
-   I found a post here, "SX8 docs (was: The SX4 challenge)" (
-http://marc.info/?l=linux-kernel&m=120058515625262&w=2 ) where James
-Andrewartha said:
-
-"Hi Jeff,
-
-What are the chances of the SX8 docs being opened? The vendor GPL driver
-has bitrotted and the kernel driver offers poor performance or data
-corruption. IIRC it's not part of libata but its own block device,
-although you were considering porting it to get ATAPI support?"
-
-    But the thread seems to finish there. Promise's web page has a module
-for the card, marked "Partial" ("FastTrak SX4300/SX8300 Partial Linux
-source code") (
-http://www.promise.com/support/download/download2_eng.asp?productID=148&category=all&os=100
-) . Or maybe it is it's name? I downloaded the "partial" source code
-and compiled elsewhere. It compiled a module called "napa". Does that
-ring any bell to anyone?
-
-Thanks in advance for any hint here. I'm lost.
-
- -- Diego.
-
+YH
