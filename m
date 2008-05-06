@@ -1,26 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751975AbYEFENb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752407AbYEFEVR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751975AbYEFENb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 00:13:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750744AbYEFENT
+	id S1752407AbYEFEVR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 00:21:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750744AbYEFEVF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 00:13:19 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:40705 "EHLO
+	Tue, 6 May 2008 00:21:05 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:59715 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750707AbYEFENS (ORCPT
+	by vger.kernel.org with ESMTP id S1750782AbYEFEVD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 00:13:18 -0400
-Date: Mon, 5 May 2008 21:12:51 -0700
+	Tue, 6 May 2008 00:21:03 -0400
+Date: Mon, 5 May 2008 21:20:19 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: hch@infradead.org, viro@zeniv.linux.org.uk, dave@linux.vnet.ibm.com,
-       ezk@cs.sunysb.edu, mhalcrow@us.ibm.com, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Dave Hansen <haveblue@us.ibm.com>
-Subject: Re: [patch 01/10] vfs: add path_create() and path_mknod()
-Message-Id: <20080505211251.6c5dec8d.akpm@linux-foundation.org>
-In-Reply-To: <20080505101640.143220902@szeredi.hu>
-References: <20080505101621.216789969@szeredi.hu>
-	<20080505101640.143220902@szeredi.hu>
+To: Peter Oberparleiter <peter.oberparleiter@de.ibm.com>
+Cc: linux-kernel@vger.kernel.org, ltp-list@lists.sourceforge.net,
+       ltp-coverage@lists.sourceforge.net, sam@ravnborg.org
+Subject: Re: [RFC PATCH 2/6] kbuild: let addtree result in absolute paths
+ only
+Message-Id: <20080505212019.f4540931.akpm@linux-foundation.org>
+In-Reply-To: <481F26A0.5010402@de.ibm.com>
+References: <481F26A0.5010402@de.ibm.com>
 X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -29,19 +28,27 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 05 May 2008 12:16:22 +0200 Miklos Szeredi <miklos@szeredi.hu> wrote:
+On Mon, 05 May 2008 17:24:16 +0200 Peter Oberparleiter <peter.oberparleiter@de.ibm.com> wrote:
 
-> R/O bind mounts require operations which modify the filesystem to be
-> wrapped in mnt_want_write()/mnt_drop_write().  Create helpers which do
-> this, so callers won't need to bother, and more importantly, cannot
-> forget!  Call these path_*, analogous to vfs_*.  Since there are no
-> callers of vfs_* left, make them static.
+> From: Peter Oberparleiter <peter.oberparleiter@de.ibm.com>
+> Signed-off-by: Peter Oberparleiter <peter.oberparleiter@de.ibm.com>
+> ---
+>  scripts/Kbuild.include |    2 +-
+>  1 files changed, 1 insertion(+), 1 deletion(-)
+> 
+> Index: linux-2.6.26-rc1/scripts/Kbuild.include
+> ===================================================================
+> --- linux-2.6.26-rc1.orig/scripts/Kbuild.include
+> +++ linux-2.6.26-rc1/scripts/Kbuild.include
+> @@ -144,7 +144,7 @@ ld-option = $(call try-run,\
+>  build := -f $(if $(KBUILD_SRC),$(srctree)/)scripts/Makefile.build obj
+>  
+>  # Prefix -I with $(srctree) if it is not an absolute path.
+> -addtree = $(if $(filter-out -I/%,$(1)),$(patsubst -I%,-I$(srctree)/%,$(1))) $(1)
+> +addtree = $(if $(filter-out -I/%,$(1)),$(patsubst -I%,-I$(srctree)/%,$(1)),$(1))
+>  
+>  # Find all -I options and call addtree
+>  flags = $(foreach o,$($(1)),$(if $(filter -I%,$(o)),$(call addtree,$(o)),$(o)))
+> 
 
-ooh, yum.  This appears to address my main complaint about the r-o-bind-mount
-stuff: fragility.
-
-> Overall this patchset is just 23 lines in the red, but at the same
-> time it fixes several places in nfsd and the whole of ecryptfs, where
-> the mnt_want_write/drop_write() calls were missing.
-
-Yeah, like that.
+-ENOCHANGLEOG.  What is the reason for this change?
