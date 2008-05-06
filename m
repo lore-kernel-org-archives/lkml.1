@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762530AbYEFJ4A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760230AbYEFKBl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762530AbYEFJ4A (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 05:56:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753615AbYEFJzu
+	id S1760230AbYEFKBl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 06:01:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751401AbYEFKBb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 05:55:50 -0400
-Received: from smtp1.wifiinternet.cz ([89.31.47.1]:58016 "EHLO
+	Tue, 6 May 2008 06:01:31 -0400
+Received: from smtp1.wifiinternet.cz ([89.31.47.1]:59462 "EHLO
 	bor.wifiinternet.cz" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753197AbYEFJzt (ORCPT
+	with ESMTP id S1750869AbYEFKBa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 05:55:49 -0400
-Message-ID: <48202B63.2050101@seznam.cz>
-Date: Tue, 06 May 2008 11:56:51 +0200
+	Tue, 6 May 2008 06:01:30 -0400
+Message-ID: <48202C9E.7070800@seznam.cz>
+Date: Tue, 06 May 2008 12:02:06 +0200
 From: Michal Simek <monstr@seznam.cz>
 Reply-To: monstr@seznam.cz
 User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
@@ -31,65 +31,13 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi John,
+Hi All,
 
-> Hi Michal,
-> 
-> On Mon, 2008-05-05 at 16:22 +0200, Michal Simek wrote:
->> Hi John,
->>
->> you wrote me you have smarter implementation that xilinx did. Can you find it
->> and send me it?
-> 
-> It's not much (any?) better?  One less multiply I think?  Attached
-> anyway - feel free to discard for now.
-> 
-> We could do a nice asm implementation with the optional mulhi
-> instruction, but that can wait.
-> 
-> Cheers,
-> 
-> John
+I saw a lot of comments about files but I have never seen any comments that
+any file is OK.
+Does it mean everything is broken??? I don't think so.
 
-+extern __inline__ void __udelay(unsigned int x)
- {
--	unsigned long long tmp = usec;
--	unsigned long loops = (tmp * 4295 * HZ * loops_per_jiffy) >> 32;
-+	unsigned long long tmp=(unsigned long long)x*(unsigned long
-long)loops_per_jiffy*226LL;
-+	unsigned loops=tmp>>32;
-+
- 	__delay(loops);
- }
+I'll integrate reported bugs and send microblaze_v3 version.
 
--#endif /* _ASM_MICROBLAZE_DELAY_H */
-+extern __inline__ void __ndelay(unsigned int x)
-+{
-+	unsigned long long tmp=(unsigned long long)x*(unsigned long
-long)loops_per_jiffy*226LL;
-+	unsigned loops=tmp>>32;
-+
-+	__delay(loops);
-+}
-
-Why is __ndelay implementation the same with __udelay? This is weird for me.
-
-+
-+extern void __bad_udelay(void);		/* deliberately undefined */
-+extern void __bad_ndelay(void);		/* deliberately undefined */
-
-Are these function used anywhere?
-
-+#define udelay(n) (__builtin_constant_p(n)? \
-+	((n) > __MAX_UDELAY? __bad_udelay(): __udelay((n) * (19 * HZ))) : \
-+	__udelay((n) * (19 * HZ)))
-+
-+#define ndelay(n) (__builtin_constant_p(n)? \
-+	((n) > __MAX_NDELAY? __bad_ndelay(): __ndelay((n) * HZ)) : \
-+	__ndelay((n) * HZ))
-
-+#define muldiv(a, b, c)    (((a)*(b))/(c))
-
-muldiv: Where is this use?
-
+Thanks,
 Michal
