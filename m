@@ -1,53 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757420AbYEFFEL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759268AbYEFFFd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757420AbYEFFEL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 01:04:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751324AbYEFFD6
+	id S1759268AbYEFFFd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 01:05:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750853AbYEFFFZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 01:03:58 -0400
-Received: from ozlabs.org ([203.10.76.45]:36701 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751190AbYEFFD6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 01:03:58 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-Subject: Re: [PATCH 1/3] stop_machine: short exit path for if we cannot create enough threads
-Date: Tue, 6 May 2008 12:57:05 +1000
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, Kathy Staples <kathy.staples@au1.ibm.com>
-References: <481678F5.7080504@jp.fujitsu.com> <481679F1.7010108@jp.fujitsu.com>
-In-Reply-To: <481679F1.7010108@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Disposition: inline
-Content-Type: text/plain;
-  charset="iso-2022-jp"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200805061257.05745.rusty@rustcorp.com.au>
+	Tue, 6 May 2008 01:05:25 -0400
+Received: from rex.securecomputing.com ([203.24.151.4]:57461 "EHLO
+	snapgear.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751324AbYEFFFZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 May 2008 01:05:25 -0400
+Date: Tue, 6 May 2008 15:04:36 +1000
+From: Greg Ungerer <gerg@snapgear.com>
+Message-Id: <200805060504.m4654as1004242@goober>
+To: torvalds@linux-foundation.org
+Subject: [PATCH] m68knommu: ColdFire add support for kernel preemption (missing chunk)
+Cc: akpm@linux-foundation.org, bigeasy@linutronix.de, gerg@uclinux.org,
+       linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 29 April 2008 11:29:21 Hidetoshi Seto wrote:
-> stop_machine_run() invokes kthread 'kstopmachine' and the kthread
-> creates its children for every other cpus.
+From: Sebastian Siewior <bigeasy@linutronix.de>
 
-Hi Hidetoshi,
+As the subject says this patch adds the support for kernel preemption
+on m68knommu Coldfire. I thing the same changes could be applied to
+68360 & 68328 but since I don't have the HW, I don't touch it. Kconfig
+enables the preemption item only on coldfire.
 
-   I'm glad to see some work on stop_machine!  I'd really like to rewrite it: 
-it has some nasty properties at the moment and introduces latency it doesn't 
-have to.
+[This is a missing chunk from Sebastian's original patch that I lost from
+the first submission. It rebased so it applies to 2.6.26-rc1 -- gerg]
 
-Among the properties we want in a new stop_machine are:
-1) timeout protection (as your patches),
-2) arbitrary cpumask for what cpus to run function on,
-3) ability to run something other than cpu_relax() on stopped cpus,
-4) much lower latency for the common case,
-5) simpler than the current code.
+Signed-off-by: Sebastian Siewior <bigeasy@linutronix.de>
+Signed-off-by: Greg Ungerer <gerg@uclinux.org>
 
-I expect to get to this in the next week or so, but please remind me if you 
-don't see anything.  I've applied your patches in the mean time (although #3 
-needed to be wrapped in #ifdef CONFIG_STOPMACHINE) in case I don't get that 
-work finished for 2.6.27.
 
-Thanks!
-Rusty.
+--- linux-2.6.25/arch/m68knommu/Kconfig	2008-04-17 12:49:44.000000000 +1000
++++ linux-2.6.25-uc0/arch/m68knommu/Kconfig	2008-05-02 18:32:22.000000000 +1000
+@@ -671,6 +671,9 @@ config ROMKERNEL
+ 
+ endchoice
+ 
++if COLDFIRE
++source "kernel/Kconfig.preempt"
++endif
+ source "mm/Kconfig"
+ 
+ endmenu
