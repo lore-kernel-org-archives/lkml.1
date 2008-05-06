@@ -1,76 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759444AbYEFElo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752941AbYEFEmA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759444AbYEFElo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 00:41:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751576AbYEFElf
+	id S1752941AbYEFEmA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 00:42:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755675AbYEFEll
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 00:41:35 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:59897 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751440AbYEFEle (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 00:41:34 -0400
-Date: Tue, 6 May 2008 14:41:11 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Pekka J Enberg <penberg@cs.helsinki.fi>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-next@vger.kernel.org,
-       sfrench@us.ibm.com, swhiteho@redhat.com, stefanr@s5r6.in-berlin.de,
-       jeff@garzik.org, ralf@linux-mips.org, drzeus-list@drzeus.cx,
-       jack@ucw.cz, cbou@mail.ru, jens.axboe@oracle.com, ericvh@gmail.com,
-       wim@iguana.be, chris@zankel.net, nico@cam.org, clameter@sgi.com,
-       ezk@cs.sunysb.edu, linux-kernel@vger.kernel.org
-Subject: Re: git trees which are not yet in linux-next
-Message-Id: <20080506144111.43736d63.sfr@canb.auug.org.au>
-In-Reply-To: <Pine.LNX.4.64.0805052136530.5570@sbz-30.cs.Helsinki.FI>
-References: <20080502151206.b40f77ea.akpm@linux-foundation.org>
-	<84144f020805051116mdbbea01q39f17bce95c95dbb@mail.gmail.com>
-	<20080505113128.d68863a2.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0805052136530.5570@sbz-30.cs.Helsinki.FI>
-X-Mailer: Sylpheed 2.5.0beta3 (GTK+ 2.12.9; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Tue__6_May_2008_14_41_11_+1000_56L45qrB8aHu=eFW"
+	Tue, 6 May 2008 00:41:41 -0400
+Received: from wf-out-1314.google.com ([209.85.200.171]:23016 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754524AbYEFElk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 May 2008 00:41:40 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
+        b=jMpIL+8Kb+4N5Rn4b+xphprgwqdEvVvdszx43R4aXsolbSNkDde+IbWUgaWbQSIYdMbfi+i0EkDRDbaJHlnt1Bvk8QefTgyIi7rEe9q62xRzXZYSWeecKmZcRV/3O/2ac+fYejuPz6l3lPrF3nLeykFLN/SA1PQLdaWP5bQ28SM=
+Date: Tue, 6 May 2008 12:45:35 +0800
+From: WANG Cong <xiyou.wangcong@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Andrew Morton <akpm@osdl.org>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       Alexander Viro <viro@zeniv.linux.org.uk>
+Subject: [Resend Patch] fs/binfmt_elf.c: fix a wrong free
+Message-ID: <20080506044535.GH2893@hack>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Tue__6_May_2008_14_41_11_+1000_56L45qrB8aHu=eFW
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-Hi Pekka,
+In kmalloc failing path, we shouldn't free pointers in 'info',
+because the struct 'info' is uninitilized when kmalloc is called.
 
-On Mon, 5 May 2008 21:41:53 +0300 (EEST) Pekka J Enberg <penberg@cs.helsink=
-i.fi> wrote:
->
-> Well, I only really have three kinds of patches: (1) testing, (2)=20
-> for-linus asap (fixes in the middle of a release cycle) and (3) for-linus=
-=20
-> when the merge window opens. Up until now, I've put (1) in for-mm and=20
-> after enough exposure (and no bug reports) they graduate into (2) or (3).
->=20
-> So the problem here is where I put the patches in category (1)? If=20
-> they can go into for-next, then for-mm can disappear. Stephen?
+And when kmalloc returns NULL, it's needless to kfree it.
 
-Stefan Richter is right: if they have passed your review and testing in
-isolation, then they are allowed into -next for testing against other
-subsystems. So (2), (3), and (1b) ... :-)
+Signed-off-by: WANG Cong <wangcong@zeuux.org>
+Cc: Alexander Viro <viro@zeniv.linux.org.uk>
+Reviewed-by: Pekka Enberg <penberg@cs.helsinki.fi>
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Tue__6_May_2008_14_41_11_+1000_56L45qrB8aHu=eFW
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFIH+FwTgG2atn1QN8RArC+AJ0WkPw6xLKyt/N2xAcfuxZeHTznGQCgg6tG
-DLeEjgOiJRbirJd1TMSE0Bs=
-=XO82
------END PGP SIGNATURE-----
-
---Signature=_Tue__6_May_2008_14_41_11_+1000_56L45qrB8aHu=eFW--
+--
+diff --git a/fs/binfmt_elf.c b/fs/binfmt_elf.c
+index f6d5a9d..357b503 100644
+--- a/fs/binfmt_elf.c
++++ b/fs/binfmt_elf.c
+@@ -1900,7 +1900,7 @@ static int elf_core_dump(long signr, struct pt_regs *regs, struct file *file, un
+ 	/* alloc memory for large data structures: too large to be on stack */
+ 	elf = kmalloc(sizeof(*elf), GFP_KERNEL);
+ 	if (!elf)
+-		goto cleanup;
++		goto out;
+ 	
+ 	segs = current->mm->map_count;
+ #ifdef ELF_CORE_EXTRA_PHDRS
+@@ -2034,8 +2034,9 @@ end_coredump:
+ 	set_fs(fs);
+ 
+ cleanup:
+-	kfree(elf);
+ 	free_note_info(&info);
++	kfree(elf);
++out:
+ 	return has_dumped;
+ }
+ 
