@@ -1,86 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762612AbYEFFtG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751770AbYEFFtc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762612AbYEFFtG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 01:49:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762611AbYEFFss
+	id S1751770AbYEFFtc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 01:49:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762829AbYEFFtB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 01:48:48 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:36097 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762592AbYEFFsq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 01:48:46 -0400
-Date: Tue, 6 May 2008 15:48:30 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Andreas Mohr <andi@lisas.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Mauro Carvalho Chehab <mchehab@infradead.org>
-Subject: Re: Linux 2.6.26-rc1
-Message-Id: <20080506154830.aa7e1b2d.sfr@canb.auug.org.au>
-In-Reply-To: <20080506001751.GA22499@elte.hu>
-References: <8287f540805041818g534c4e02qaadb0e749c5f3439@mail.gmail.com>
-	<20080505053935.GA15734@rhlx01.hs-esslingen.de>
-	<20080505073030.GI3350@elte.hu>
-	<20080506095122.860796f6.sfr@canb.auug.org.au>
-	<20080506001751.GA22499@elte.hu>
-X-Mailer: Sylpheed 2.5.0beta3 (GTK+ 2.12.9; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Tue__6_May_2008_15_48_30_+1000_nEr/skdXXMzJ1AHz"
+	Tue, 6 May 2008 01:49:01 -0400
+Received: from E23SMTP03.au.ibm.com ([202.81.18.172]:38173 "EHLO
+	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756880AbYEFFtA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 May 2008 01:49:00 -0400
+Message-ID: <481FF115.8030503@linux.vnet.ibm.com>
+Date: Tue, 06 May 2008 11:18:05 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+MIME-Version: 1.0
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+CC: Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: on CONFIG_MM_OWNER=y, kernel panic is possible.
+References: <20080506142255.AC5D.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+In-Reply-To: <20080506142255.AC5D.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Tue__6_May_2008_15_48_30_+1000_nEr/skdXXMzJ1AHz
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+KOSAKI Motohiro wrote:
+> on CONFIG_MM_OWNER=y (that is automatically turned on by mem-cgroup),
+> kernel panic is possible by following scenario in mm_update_next_owner().
+> 
+> 1. mm_update_next_owner() is called.
+> 2. found caller task in do_each_thread() loop.
+> 3. thus, BUG_ON(c == p) is true, it become kernel panic.
+> 
+> end up, We should left out current task.
+> 
+> 
 
-Hi Ingo,
+That is not possible. If you look at where mm_update_next_owner() is called
+from, we call it from
 
-On Tue, 6 May 2008 02:17:52 +0200 Ingo Molnar <mingo@elte.hu> wrote:
->
-> * Stephen Rothwell <sfr@canb.auug.org.au> wrote:
->=20
-> > This was discovered in linux-next and a patch posted on March 28 ...
->=20
-> hm, i do searches on lkml before posting patches but i cannot do=20
-> searches on _every_ mailing list where patches might show up. There's=20
-> just 30 hours in a day ;-)
+exit_mm() and exec_mmap()
 
-They were both posted on lkml ... and I do appreciate your efforts.
+In both cases, we ensure that the task's mm has changed (to NULL and the new mm
+respectively), before we call mm_update_next_owner(), hence c->mm can never be
+equal to p->mm.
 
-> perhaps linux-next should propagate all add-on fix patches it is=20
-> carrying against subsystem trees if they are still relevant to -git,=20
-> once the subsystem tree goes to -git, and re-post them to lkml in that=20
-> case, to avoid duplicative work? Once it's on lkml i think most=20
-> subsystem maintainers will find any missing patches.
-
-See above and what you quoted below.
-
-> > I (and I assume Andrew) have been carrying them since then but noone=20
-> > took them up.  I guess (as Andrew pointed out to me) I should have=20
-> > pushed them.
->=20
-> yeah.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Tue__6_May_2008_15_48_30_+1000_nEr/skdXXMzJ1AHz
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFIH/E6TgG2atn1QN8RAj/pAJ4u3zXPqFEN5M/bQhl4FGpB0tw+swCeIdiC
-B7+F9+2ddKiB5Fv9y8EqFHw=
-=mG8l
------END PGP SIGNATURE-----
-
---Signature=_Tue__6_May_2008_15_48_30_+1000_nEr/skdXXMzJ1AHz--
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
