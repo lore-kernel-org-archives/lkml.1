@@ -1,84 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765805AbYEFWgU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933223AbYEFWhd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765805AbYEFWgU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 18:36:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754632AbYEFWgI
+	id S933223AbYEFWhd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 18:37:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754632AbYEFWhI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 18:36:08 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:56729 "EHLO ogre.sisk.pl"
+	Tue, 6 May 2008 18:37:08 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:56737 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754579AbYEFWgF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 18:36:05 -0400
+	id S1753525AbYEFWhG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 May 2008 18:37:06 -0400
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Patrick McHardy <kaber@trash.net>
-Subject: Re: libata regression in current -git
-Date: Wed, 7 May 2008 00:35:58 +0200
+To: "Justin Mattock" <justinmattock@gmail.com>
+Subject: Re: BIOS bug, APIC version if 0 for CPU#0
+Date: Wed, 7 May 2008 00:37:12 +0200
 User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Tejun Heo <htejun@gmail.com>,
-       Linux Kernel Mailinglist <linux-kernel@vger.kernel.org>
-References: <480D6A25.2040206@trash.net>
-In-Reply-To: <480D6A25.2040206@trash.net>
+Cc: "Kasper Sandberg" <lkml@metanurb.dk>,
+       "Jacek Luczak" <difrost.kernel@gmail.com>,
+       "Linux Kernel" <linux-kernel@vger.kernel.org>
+References: <dd18b0c30804212213x74716d5fx4bf91cbb99a01286@mail.gmail.com> <1208872145.14146.103.camel@localhost> <dd18b0c30804220736n5fac017fv2d058595692bb377@mail.gmail.com>
+In-Reply-To: <dd18b0c30804220736n5fac017fv2d058595692bb377@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-15"
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200805070035.59272.rjw@sisk.pl>
+Message-Id: <200805070037.12796.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, 22 of April 2008, Patrick McHardy wrote:
-> I bisected a boot-failure with sata-sis back to this libata-change:
+On Tuesday, 22 of April 2008, Justin Mattock wrote:
+> On Tue, Apr 22, 2008 at 1:49 PM, Kasper Sandberg <lkml@metanurb.dk> wrote:
+> > On Tue, 2008-04-22 at 06:10 +0000, Justin Mattock wrote:
+> >  > On Tue, Apr 22, 2008 at 5:21 AM, Jacek Luczak <difrost.kernel@gmail.com> wrote:
+> >  > > Hi,
+> >  > >
+> >  > >
+> >  > >  > Hello;
+> >  > >  > with the latest git on a macbook the system can barely boot without
+> >  > >  > freezing, a work around for me at leat is either disable smp, or once
+> >  > >  > booted  turn on glxgears,or compiling the kernel i.g. when using the
+> >  > >  > processors I'm not receiving a freeze, only when everything starts
+> >  > >  > lowering down. in dmesg I'm noticing BIOS bug, APIC version is 0 for
+> >  > >  > CPU#0! fixing up to 0x10. (tell you're hw vendor) could this be the
+> >  > >  > reason for the system freezes?,
+> >  > >
+> >  > >  I don't think so. On my machine there's no freezes with latest git and:
+> >  > >  ACPI: LAPIC (acpi_id[0x00] lapic_id[0x00] enabled)
+> >  > >  BIOS bug, APIC version is 0 for CPU#0! fixing up to 0x10. (tell your hw vendor)
+> >  > >  ACPI: LAPIC (acpi_id[0x01] lapic_id[0x01] enabled)
+> >  > >  BIOS bug, APIC version is 0 for CPU#0! fixing up to 0x10. (tell your hw vendor)
+> >  > >
+> >  > >  I've got exactly the same messages.
+> >  >
+> >  > Are you using a macbook aswell?
+> >  >
+> >  > >
+> >  > >
+> >  > >  > also I didnt have a camera handy on me
+> >  > >  > but the screen spit out = Bug spinlock lockup on CPU#0
+> >  > >  > swapper/0. c17fa7c0 PID 0, comm: swapper not tainted.
+> >  > >
+> >  > >  Can you try to write down more of those bug messages?
+> >  >
+> >  > Yeah,
+> >  >
+> >  > >
+> >  > >
+> >  > >  > I dont have a problem disabling smp, except when I cat /proc/cpuinfo I
+> >  > >  > don't see anything about my cores.
+> >  > >
+> >  > >  What exactly you expect to see in /proc/cpuinfp while smp is disabled?
+> >  >
+> >  > under smp I see cpu cores. disabling smp I dont see cpu cores, under
+> >  > cat /proc/cpuinfo.
+> >
+> >  well.. SMP is kindof support for multiple processors, be it in one
+> >  socket, or multiple sockets.. without SMP you will only be able to use 1
+> >  of your X cores.
+> 
+> Yeah disabling smp is not a good idea on a macbook pro, performace is horrible.
+> 
+> >  >
+> >  >
+> >  > >
+> >  > >
+> >  > >  > I know this is a stupid question
+> >  > >  > but will it hurt the system if smp is disabled
+> >  > >  > for the macbook pro ati chipset.?
+> >  > >
+> >  > >  No it won't.
+> >  > >
+> >  > >  -Jacek
+> >  > >
+> >  >
+> >  > Cool as long as the system Is o.k. disabling smp.
+> >  It is.. but with the limitations outlined above.
+> >  >   What about x86: PAT
+> >  > support is disabled. how do I enable this option?
+> >  > regards;
+> >  >
+> >
+> >
+> Thanks for the feedback, well I guess this would be either a
+> regression or a bug. I think the best would be to have somebody else
+> with a macbook pro 15' ati chipset confirm this freezeing as well,
+> before going out and jumping the gun, and filing a bug report.
+> regards;
 
-Has the problem been fixed in 2.6.26-rc1 or in the current -git?
+What's the current status of this issue?
 
-> ---
-> libata: clear SError after link resume
-> 
-> SError used to be cleared in ->postreset.  This has small hotplug race
-> condition.  If a device is plugged in after reset is complete but
-> postreset hasn't run yet, its hotplug event gets lost when SError is
-> cleared.  This patch makes sata_link_resume() clear SError.  This
-> kills the race condition and makes a lot of sense as some PMP and host
-> PHYs don't work properly without SError cleared.
-> 
-> This change makes sata_pmp_std_{pre|post}_reset()'s unnecessary as
-> they become identical to ata_std counterparts.  It also simplifies
-> sata_pmp_hardreset() and ahci_vt8251_hardreset().
-> ---
-> 
-> Whats happening is that sata_scr_read() in sata_link_resume()
-> returns -1 and the reset never completes. Ignoring the return
-> value as before this patch makes it work for me again.
-> 
-> This is lspci-output of the controller, dmesg of a working and
-> non-working boot and .config are attached.
-> 
-> If you need further information or want me to test something,
-> please let me know.
-> 
-> 
-> 00:05.0 RAID bus controller: Silicon Integrated Systems [SiS] RAID bus 
-> controller 180 SATA/PATA  [SiS] (rev 01) (prog-if 85)
->          Subsystem: ASUSTeK Computer Inc. Unknown device 810e
->          Control: I/O+ Mem- BusMaster+ SpecCycle- MemWINV- VGASnoop- 
-> ParErr- Stepping- SERR- FastB2B- DisINTx-
->          Status: Cap- 66MHz+ UDF- FastB2B- ParErr- DEVSEL=medium 
->  >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
->          Latency: 128
->          Interrupt: pin A routed to IRQ 17
->          Region 0: I/O ports at eff0 [size=8]
->          Region 1: I/O ports at efe4 [size=4]
->          Region 2: I/O ports at efa8 [size=8]
->          Region 3: I/O ports at efe0 [size=4]
->          Region 4: I/O ports at ef90 [size=16]
->          Region 5: I/O ports at <unassigned>
->          Kernel driver in use: sata_sis
-> 
-> 
-
-
-
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
+Rafael
