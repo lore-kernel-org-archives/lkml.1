@@ -1,50 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932528AbYEFWCU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932992AbYEFWD2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932528AbYEFWCU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 18:02:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756277AbYEFWBw
+	id S932992AbYEFWD2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 18:03:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754528AbYEFWDT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 18:01:52 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:58144 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753605AbYEFWBv (ORCPT
+	Tue, 6 May 2008 18:03:19 -0400
+Received: from mga03.intel.com ([143.182.124.21]:43651 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752054AbYEFWDR convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 18:01:51 -0400
-Date: Tue, 6 May 2008 15:01:26 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jeff Dike <jdike@addtoit.com>
-Cc: nix@esperi.org.uk, linux-kernel@vger.kernel.org,
-       user-mode-linux-devel@lists.sourceforge.net
-Subject: Re: [uml-devel] [PATCH 11/19] UML - Track and make up lost ticks
-Message-Id: <20080506150126.c849afa0.akpm@linux-foundation.org>
-In-Reply-To: <20080506214435.GA12998@c2.user-mode-linux.org>
-References: <20080425175613.GA11192@c2.user-mode-linux.org>
-	<877iegcx11.fsf@hades.wkstn.nix>
-	<20080429202924.GA13602@c2.user-mode-linux.org>
-	<20080506134655.4cac1014.akpm@linux-foundation.org>
-	<20080506214435.GA12998@c2.user-mode-linux.org>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 6 May 2008 18:03:17 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.27,445,1204531200"; 
+   d="scan'208";a="242944941"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [2.6.25-git18 => 2.6.26-rc1-git1] Xorg crash with	xf86MapVidMem error
+Date: Tue, 6 May 2008 15:05:52 -0700
+Message-ID: <924EFEDD5F540B4284297C4DC59F3DEE010050B6@orsmsx423.amr.corp.intel.com>
+In-Reply-To: <4820D415.5090900@numericable.fr>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [2.6.25-git18 => 2.6.26-rc1-git1] Xorg crash with	xf86MapVidMem error
+Thread-Index: AcivxBJ3Qi0LWQHIQWej/rnqBZf1NAAAObQg
+References: <481D72A7.10901@numericable.fr> <20080504085204.GE21859@elte.hu> <481D7BF8.4080405@numericable.fr> <20080505172619.GD28173@linux-os.sc.intel.com> <481F87F2.70005@numericable.fr> <20080505232536.GA28026@linux-os.sc.intel.com> <20080505234938.GB11433@elte.hu> <20080506020910.GA24041@linux-os.sc.intel.com> <20080506115524.GE32591@elte.hu> <4820962B.6050702@numericable.fr> <924EFEDD5F540B4284297C4DC59F3DEE01004FC1@orsmsx423.amr.corp.intel.com> <4820D415.5090900@numericable.fr>
+From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+To: "Rufus & Azrael" <rufus-azrael@numericable.fr>
+Cc: "Ingo Molnar" <mingo@elte.hu>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       "Linux-kernel Mailing List" <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 06 May 2008 22:03:16.0529 (UTC) FILETIME=[FC882210:01C8AFC4]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 6 May 2008 17:44:35 -0400
-Jeff Dike <jdike@addtoit.com> wrote:
+ 
 
-> On Tue, May 06, 2008 at 01:46:55PM -0700, Andrew Morton wrote:
-> > This fix was already present in your "[PATCH 4/19] UML - Random driver fixes".
-> 
-> Ah, so that's where it ended up.
+>-----Original Message-----
+>From: Rufus & Azrael [mailto:rufus-azrael@numericable.fr] 
+>Sent: Tuesday, May 06, 2008 2:57 PM
+>To: Pallipadi, Venkatesh
+>Cc: Ingo Molnar; Siddha, Suresh B; Linux-kernel Mailing List
+>Subject: Re: [2.6.25-git18 => 2.6.26-rc1-git1] Xorg crash with 
+>xf86MapVidMem error
+>
+>Pallipadi, Venkatesh a écrit :
+>>  
+>>
+>>   
+>>> -----Original Message-----
+>>> From: Rufus & Azrael [mailto:rufus-azrael@numericable.fr] 
+>>> Sent: Tuesday, May 06, 2008 10:32 AM
+>>> To: Ingo Molnar
+>>> Cc: Pallipadi, Venkatesh; Siddha, Suresh B; Linux-kernel 
+>Mailing List
+>>> Subject: Re: [2.6.25-git18 => 2.6.26-rc1-git1] Xorg crash with 
+>>> xf86MapVidMem error
+>>>
+>>> Ingo Molnar a écrit :
+>>>     
+>>>> * Venki Pallipadi <venkatesh.pallipadi@intel.com> wrote:
+>>>>
+>>>>   
+>>>>       
+>>>>> Below is the patch to enable debug messages by a boot option 
+>>>>> "debugpat".
+>>>>>     
+>>>>>         
+>>> Hi all,
+>>>
+>>> I have applied the patch from Ingo and I put my
+>>> dmesg/syslog/messages/Xorg.log files in attached to help you 
+>>> to identify
+>>> the problem (two mails).
+>>>
+>>> Hope it can help you.
+>>>
+>>>     
+>>
+>> Did you use "debugpat" kernel boot option after applying 
+>Ingo's patch?
+>> With Ingo's patch, that option is needed to print more info 
+>(Not needed with one line change I sent you yday).
+>>
+>> Also, 'dmesg -s 256000' will not truncate the msg at 32K and 
+>will give bigger dmesg output.
+>>
+>> Thanks,
+>> Venki
+>>
+>>   
+>Hi,
+>
+>Here is my dmesg.log file with CONFIG_X86_PAT=y and debugpat 
+>kernel boot 
+>option.
+>
+>Is it helpfull ? :-).
+>
 
-Strange that the bug has always been there.  Some other change made it
-apparent?
+Yes. This has some debug information in there. Did you see xf86MapVidMem error (I mean did you try to start X) before you captured this dmesg?
 
-
-> > Perhaps we broke bisection?
-> 
-> No doubt.  Drop those two and I'll send fixed ones.
-
-OK.  uml-random-driver-style-fixes.patch needed to go also.
+Thanks,
+Venki
