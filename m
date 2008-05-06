@@ -1,72 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757294AbYEFMFF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758586AbYEFMGV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757294AbYEFMFF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 08:05:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752889AbYEFMEz
+	id S1758586AbYEFMGV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 08:06:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753111AbYEFMGF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 08:04:55 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:52841 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752317AbYEFMEy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 08:04:54 -0400
-Date: Tue, 6 May 2008 14:04:36 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Linux Kernel <linux-kernel@vger.kernel.org>, tglx@linutronix.de,
-       Mike Travis <travis@sgi.com>, Arjan van de Ven <arjan@infradead.org>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Subject: Re: [BUG] sysfs cpu?/topology is empty in 2.6.25 (32-bit Intel
-	system)
-Message-ID: <20080506120436.GH32591@elte.hu>
-References: <20080505135215.GD5420@dirshya.in.ibm.com>
+	Tue, 6 May 2008 08:06:05 -0400
+Received: from www.church-of-our-saviour.ORG ([69.25.196.31]:52040 "EHLO
+	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751123AbYEFMGD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 May 2008 08:06:03 -0400
+Date: Tue, 6 May 2008 08:05:44 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Vegard Nossum <vegard.nossum@gmail.com>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, linux-ext4@vger.kernel.org,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       Linux/m68k <linux-m68k@vger.kernel.org>, Jan Kara <jack@suse.cz>
+Subject: Re: Problem mounting ext2 using ext3?
+Message-ID: <20080506120544.GB6918@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Vegard Nossum <vegard.nossum@gmail.com>,
+	Geert Uytterhoeven <geert@linux-m68k.org>,
+	linux-ext4@vger.kernel.org,
+	Linux Kernel Development <linux-kernel@vger.kernel.org>,
+	Linux/m68k <linux-m68k@vger.kernel.org>, Jan Kara <jack@suse.cz>
+References: <Pine.LNX.4.64.0805052304280.3160@anakin> <20080505222623.GA8357@mit.edu> <19f34abd0805060026m138bf3dfo87dbf303362d69ca@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080505135215.GD5420@dirshya.in.ibm.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <19f34abd0805060026m138bf3dfo87dbf303362d69ca@mail.gmail.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, May 06, 2008 at 09:26:30AM +0200, Vegard Nossum wrote:
+> 
+> I posted a very similar problem a couple of days ago:
+> http://www.nabble.com/BUG-in-ext3_sync_fs-td16999997.html
+> 
+> to which I got zero replies. Can I close this in my internal bugzilla
+> as dup/"not my fault"? The stacktrace looks very similar. This was
+> also ext2 fs mounted (apparently) by ext3 code.
 
-* Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com> wrote:
+Yeah, sorry, I didn't have network access when I looked at your
+e-mail, and so I didn't see the stack trace until you pointed at the
+mail message again.  Because you mentioned a USB stick, I assumed it
+was the problem with a USB stick getting pulled or being loose causing
+an I/O error leading to an oops problem, and I missed the hint of the
+problem occurring in the ext3 code when you were using an ext2
+formattem.  Fortunately when Geert reported the bug a second time, I
+was less dense at the time, and figured it out quickly.  :-)
 
-> System topology on intel based system needs to be exported for 
-> non-numa case as well.
-> 
-> All parts of asm-i386/topology.h has come under 
-> #ifdef CONFIG_NUMA after the merge to asm-x86/topology.h
-> 
-> /sys/devices/system/cpu/cpu?/topology/* is populated based on 
-> ENABLE_TOPO_DEFINES
-> 
-> The sysfs cpu topology is not being populated on my dual socket
-> dual core xeon 5160 processor based (x86 32 bit) system.
-> 
-> CONFIG_NUMA is not set in my case yet the topology is relevant
-> and useful.
-> 
-> irqbalance daemon application depends on topology to build the cpus 
-> and package list and it fails on Fedora9 beta since the sysfs topology 
-> was not being populated in the 2.6.25 kernel.
-> 
-> I am not sure if it was intentional to not define ENABLE_TOPO_DEFINES 
-> for non-numa systems.
-> 
-> This fix has been tested on the above mentioned dual core, dual socket
-> system.
-
-applied, thanks Vaidyanathan.
-
-This was certainly not intentional - i suspect nobody noticed that 
-irqbalanced was working without proper topology information?
-
-	Ingo
+							- Ted
