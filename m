@@ -1,58 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932102AbYEFAiY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763421AbYEFAoM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932102AbYEFAiY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 20:38:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756803AbYEFAiR
+	id S1763421AbYEFAoM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 20:44:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757691AbYEFAn5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 20:38:17 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:56692 "EHLO mx3.mail.elte.hu"
+	Mon, 5 May 2008 20:43:57 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:54693 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756531AbYEFAiQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 20:38:16 -0400
-Date: Tue, 6 May 2008 02:38:03 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Parag Warudkar <parag.warudkar@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "akpm@osdl.org" <akpm@osdl.org>, Peter Zijlstra <peterz@infradead.org>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Yinghai Lu <yhlu.kernel@gmail.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: [PATCH] default to n for GROUP_SCHED and FAIR_GROUP_SCHED
-Message-ID: <20080506003803.GA1512@elte.hu>
-References: <82e4877d0805031742o464dd581wd93173d79705ce0d@mail.gmail.com> <20080504092417.GA3425@elte.hu> <82e4877d0805050814j721ae522k84384df48c9f4336@mail.gmail.com> <20080505172146.GB22332@elte.hu> <82e4877d0805051436u377bf943m3beef5e9be5cbe23@mail.gmail.com> <20080505214904.GA8204@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080505214904.GA8204@elte.hu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1756997AbYEFAn5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 May 2008 20:43:57 -0400
+Date: Mon, 5 May 2008 20:43:18 -0400
+From: Rik van Riel <riel@redhat.com>
+To: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: [-mm][PATCH 4/5] core of reclaim throttle
+Message-ID: <20080505204318.3f95c83c@bree.surriel.com>
+In-Reply-To: <2f11576a0805051523h730fce0foa51f1fdbf9c46cbe@mail.gmail.com>
+References: <20080504201343.8F52.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	<20080504215819.8F5E.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	<20080504221043.8F64.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	<20080505175142.7de3f27b@cuia.bos.redhat.com>
+	<2f11576a0805051523h730fce0foa51f1fdbf9c46cbe@mail.gmail.com>
+Organization: Red Hat, Inc.
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 6 May 2008 07:23:18 +0900
+"KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com> wrote:
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+> hmmm, AFAIK,
+> on current kernel, sometimes __GFP_IO task wait for non __GFP_IO task
+> by lock_page().
+> Is this wrong?
 
-> > Hmm - It's the IO_DELAY stuff - I will test more but it looks like 
-> > with CONFIG_IO_DELAY_TYPE_NONE -git boots fine on my machine but 
-> > with the same option sched-devel does not. Setting 
-> > CONFIG_IO_DELAY_TYPE=0 (0x80) makes sched-devel boots again.
-> 
-> hm, that's really interesting. I've added a patch that makes 
-> IO_DELAY_TYPE_NONE depend on CONFIG_BROKEN, because your machine is 
-> reasonably new but apparently needs delays during bootup. But why 
-> sched-devel triggered this is still weird.
+This is fine.
 
-note that i've added this to sched-devel/latest so if you try the latest 
-bits you should get this fix automatically.
+The problem is adding a code path that causes non __GFP_IO tasks to
+wait on __GFP_IO tasks.  Then you can have a deadlock.
+ 
+> therefore my patch care only recursive reclaim situation.
+> I don't object to your opinion. but I hope understand exactly your opinion.
 
-	Ingo
+I believe not all non __GFP_IO or non __GFP_FS calls are recursive
+reclaim, but there are some other code paths too.  For example from
+fs/buffer.c
+
+-- 
+All rights reversed.
