@@ -1,53 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754593AbYEFGo4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755454AbYEFGs7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754593AbYEFGo4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 02:44:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751195AbYEFGor
+	id S1755454AbYEFGs7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 02:48:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752243AbYEFGss
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 02:44:47 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:38013 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751123AbYEFGoq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 02:44:46 -0400
-Date: Tue, 06 May 2008 15:43:39 +0900
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: balbir@linux.vnet.ibm.com
-Subject: Re: on CONFIG_MM_OWNER=y, kernel panic is possible.
-Cc: kosaki.motohiro@jp.fujitsu.com, Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <481FFAAB.3030008@linux.vnet.ibm.com>
-References: <20080506151510.AC66.KOSAKI.MOTOHIRO@jp.fujitsu.com> <481FFAAB.3030008@linux.vnet.ibm.com>
-Message-Id: <20080506153943.AC69.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	Tue, 6 May 2008 02:48:48 -0400
+Received: from mx2.suse.de ([195.135.220.15]:40907 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751876AbYEFGsr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 May 2008 02:48:47 -0400
+Date: Mon, 5 May 2008 23:47:41 -0700
+From: Greg KH <gregkh@suse.de>
+To: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+Cc: Yinghai Lu <yhlu.kernel@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Len Brown <lenb@kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       linux-acpi <linux-acpi@vger.kernel.org>
+Subject: Re: acpi_cpu_freq_init warning...
+Message-ID: <20080506064741.GA6062@suse.de>
+References: <86802c440805051951u153ebc21p15f0d73904496217@mail.gmail.com> <87k5i8hrmk.fsf@duaron.myhome.or.jp>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <87k5i8hrmk.fsf@duaron.myhome.or.jp>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> >  #ifdef CONFIG_MM_OWNER
-> > -       struct task_struct *owner;      /* The thread group leader that */
-> > -                                       /* owns the mm_struct.          */
-> > +       struct task_struct *owner;      /* point to one of task that owns the mm_struct. */
-> >  #endif
-> > 
-> >  #ifdef CONFIG_PROC_FS
+On Tue, May 06, 2008 at 03:29:55PM +0900, OGAWA Hirofumi wrote:
+> > calling  acpi_cpufreq_init+0x0/0x68()
+> > sysdev: class cpu: driver (ffffffff80da0110) has already been
+> > registered to a class, something is wrong, but will forge on!
+> > ------------[ cut here ]------------
+> > WARNING: at drivers/base/sys.c:183 sysdev_driver_register+0x82/0x150()
+> > Modules linked in:
+> > Pid: 1, comm: swapper Not tainted
+> > 2.6.26-rc1-sched-devel.git-x86-latest.git-00485-g253148c-dirty #333
 > 
-> How about just, the task that owns the mm_struct? One of, implies multiple owners.
+> I've seen this too. The following patch seems to work for me.
+> -- 
+> OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+> 
+> 
+> [PATCH] Fix bogus warning in sysdev_driver_register()
+> 
+> 	if ((drv->entry.next != drv->entry.prev) ||
+> 	    (drv->entry.next != NULL)) {
+> 
+> warns list_empty(&drv->entry).
 
-Ah, below is better?
+should we just call list_empty() here to make sure it is correct?
 
-/* point to any one of task that related the mm_struct. */
+thanks,
 
-
-my intention is only remove "thread group leader" word.
-other things, I obey your favor. 
-
-Cheers!
-
-
-
+greg k-h
