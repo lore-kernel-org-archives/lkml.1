@@ -1,57 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755454AbYEFGs7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757685AbYEFGtX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755454AbYEFGs7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 02:48:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752243AbYEFGss
+	id S1757685AbYEFGtX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 02:49:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753111AbYEFGsv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 02:48:48 -0400
-Received: from mx2.suse.de ([195.135.220.15]:40907 "EHLO mx2.suse.de"
+	Tue, 6 May 2008 02:48:51 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:40923 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751876AbYEFGsr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 02:48:47 -0400
-Date: Mon, 5 May 2008 23:47:41 -0700
+	id S1752933AbYEFGsu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 May 2008 02:48:50 -0400
+Date: Mon, 5 May 2008 23:48:17 -0700
 From: Greg KH <gregkh@suse.de>
-To: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-Cc: Yinghai Lu <yhlu.kernel@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Len Brown <lenb@kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       linux-acpi <linux-acpi@vger.kernel.org>
-Subject: Re: acpi_cpu_freq_init warning...
-Message-ID: <20080506064741.GA6062@suse.de>
-References: <86802c440805051951u153ebc21p15f0d73904496217@mail.gmail.com> <87k5i8hrmk.fsf@duaron.myhome.or.jp>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: akpm@linux-foundation.org, hch@infradead.org, viro@ZenIV.linux.org.uk,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [patch 06/15] sysfs: dont call notify_change
+Message-ID: <20080506064817.GB6062@suse.de>
+References: <20080505095440.820370974@szeredi.hu> <20080505095516.130659599@szeredi.hu> <20080506041555.GA4655@suse.de> <E1JtGfH-0008Bv-MI@pomaz-ex.szeredi.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <87k5i8hrmk.fsf@duaron.myhome.or.jp>
+In-Reply-To: <E1JtGfH-0008Bv-MI@pomaz-ex.szeredi.hu>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 06, 2008 at 03:29:55PM +0900, OGAWA Hirofumi wrote:
-> > calling  acpi_cpufreq_init+0x0/0x68()
-> > sysdev: class cpu: driver (ffffffff80da0110) has already been
-> > registered to a class, something is wrong, but will forge on!
-> > ------------[ cut here ]------------
-> > WARNING: at drivers/base/sys.c:183 sysdev_driver_register+0x82/0x150()
-> > Modules linked in:
-> > Pid: 1, comm: swapper Not tainted
-> > 2.6.26-rc1-sched-devel.git-x86-latest.git-00485-g253148c-dirty #333
+On Tue, May 06, 2008 at 08:28:39AM +0200, Miklos Szeredi wrote:
+> > > sysfs_chmod_file() calls notify_change() to change the permission bits
+> > > on a sysfs file.  Replace with explicit call to sysfs_setattr() and
+> > > fsnotify_change().
+> > > 
+> > > This is equivalent, except that security_inode_setattr() is not
+> > > called.  This function is called by drivers, so the security checks do
+> > > not make any sense.
+> > 
+> > Are you sure?  As a user, you can chmod the sysfs file and it will
+> > stick,
 > 
-> I've seen this too. The following patch seems to work for me.
-> -- 
-> OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+> Right, but that's not sysfs_chmod_file() but sys_chmod(), which calls
+> notify_change(), which calls security_inode_setattr().
 > 
-> 
-> [PATCH] Fix bogus warning in sysdev_driver_register()
-> 
-> 	if ((drv->entry.next != drv->entry.prev) ||
-> 	    (drv->entry.next != NULL)) {
-> 
-> warns list_empty(&drv->entry).
+> sysfs_chmod_file() is just called by a couple of drivers to change the
+> file mode during operation, it's never called by user action directly.
 
-should we just call list_empty() here to make sure it is correct?
+Ah, sorry, you are correct, no objection from me for this patch:
+	Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 thanks,
 
