@@ -1,269 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1771519AbYEFTgL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932480AbYEFTio@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1771519AbYEFTgL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 15:36:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761741AbYEFTeK
+	id S932480AbYEFTio (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 15:38:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758777AbYEFTif
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 15:34:10 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:50648 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757236AbYEFTeE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 15:34:04 -0400
-Message-Id: <20080506193402.332601060@sgi.com>
-References: <20080506193352.225379637@sgi.com>
-User-Agent: quilt/0.46-1
-Date: Tue, 06 May 2008 12:33:53 -0700
-From: Christoph Lameter <clameter@sgi.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: travis@sgi.com, linux-kernel@vger.kernel.org
-Cc: Adrian Bunk <bunk@kernel.org>
-Subject: [patch 1/4] x86: e820.h unification
-Content-Disposition: inline; filename=e820_unify
+	Tue, 6 May 2008 15:38:35 -0400
+Received: from aun.it.uu.se ([130.238.12.36]:37636 "EHLO aun.it.uu.se"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754241AbYEFTid convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 May 2008 15:38:33 -0400
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
+Message-ID: <18464.46000.226753.230481@alkaid.it.uu.se>
+Date: Tue, 6 May 2008 21:38:24 +0200
+From: Mikael Pettersson <mikpe@it.uu.se>
+To: David Miller <davem@davemloft.net>
+Cc: mikpe@it.uu.se, sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [BUG] 2.6.26-rc1 hangs during boot on UltraSPARC 5
+In-Reply-To: <20080506.010523.113767579.davem@davemloft.net>
+References: <18464.3741.133714.308327@harpo.it.uu.se>
+	<20080506.010523.113767579.davem@davemloft.net>
+X-Mailer: VM 7.17 under Emacs 20.7.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The first patch simply puts both 32 and 64 bit headers into one header file.
-The #ifdef sequence at the top is shared.
+David Miller writes:
+ > From: Mikael Pettersson <mikpe@it.uu.se>
+ > Date: Tue, 6 May 2008 09:54:05 +0200
+ > 
+ > > OF stdout device is: /pci@1f,0/pci@1,1/SUNW,m64B@2
+ > > PROM: Built device tree with 46848 bytes of memory.
+ > > On node 0 totalpages: 32298
+ > >   Normal zone: 335 pages used for memmap
+ > >   Normal zone: 0 pages reserved
+ > >   Normal zone: 31963 pages, LIFO batch:7
+ > >   Movable zone: 0 pages used for memmap
+ > > Booting Linux...
+ > > Built 1 zonelists in Zone order, mobility grouping on.  Total pages: 31963
+ > > Kernel command line: ro root=/dev/sda5
+ > > PID hash table entries: 1024 (order: 10, 8192 bytes)
+ > > clocksource: mult[28000] shift[16]
+ > > clockevent: mult[66666666] shift[32]
+ > > Console: colour dummy device 80x25
+ > > console handover: boot [earlyprom0] -> real [tty0]
+ > > 
+ > > *** 2.6.26-rc1 gets as far as the line above, then hangs
+ > 
+ > It's possible your machine does boot up all the way.
+ > The video driver simply isn't registerring for whatever
+ > reason.
+ > 
+ > Can you ping the box if you wait a minute or two after the
+ > messages stop?
 
-Signed-off-by: Christoph Lameter <clameter@sgi.com>
+No joy, it's dead.
 
----
- include/asm-x86/e820.h    |  103 +++++++++++++++++++++++++++++++++++++++++++++-
- include/asm-x86/e820_32.h |   50 ----------------------
- include/asm-x86/e820_64.h |   56 -------------------------
- 3 files changed, 101 insertions(+), 108 deletions(-)
+ > The only patch to the aty driver since 2.6.25 is the
+ > following, below, which you can try reverting.
+ > 
+ > Another thing you can do is edit arch/sparc64/kernel/setup.c
+ > and in the prom_early_console struct initializer, remove the
+ > "CON_BOOT" bit from the .flags setting.  That will keep the
+ > PROM console enabled even when another console wants to
+ > register.  We'll get more messages that way.
 
-Index: linux-2.6/include/asm-x86/e820.h
-===================================================================
---- linux-2.6.orig/include/asm-x86/e820.h	2008-05-06 11:44:15.000000000 -0700
-+++ linux-2.6/include/asm-x86/e820.h	2008-05-06 11:46:45.000000000 -0700
-@@ -30,9 +30,108 @@ struct e820map {
- 
- #ifdef __KERNEL__
- #ifdef CONFIG_X86_32
--# include "e820_32.h"
-+/*
-+ * structures and definitions for the int 15, ax=e820 memory map
-+ * scheme.
-+ *
-+ * In a nutshell, arch/i386/boot/setup.S populates a scratch table
-+ * in the empty_zero_block that contains a list of usable address/size
-+ * duples.   In arch/i386/kernel/setup.c, this information is
-+ * transferred into the e820map, and in arch/i386/mm/init.c, that
-+ * new information is used to mark pages reserved or not.
-+ *
-+ */
-+#include <linux/ioport.h>
-+
-+#define HIGH_MEMORY	(1024*1024)
-+
-+#ifndef __ASSEMBLY__
-+
-+extern void setup_memory_map(void);
-+extern void finish_e820_parsing(void);
-+
-+extern struct e820map e820;
-+extern void update_e820(void);
-+
-+extern int e820_all_mapped(unsigned long start, unsigned long end,
-+			   unsigned type);
-+extern int e820_any_mapped(u64 start, u64 end, unsigned type);
-+extern void propagate_e820_map(void);
-+extern void register_bootmem_low_pages(unsigned long max_low_pfn);
-+extern void add_memory_region(unsigned long long start,
-+			      unsigned long long size, int type);
-+extern u64 update_memory_range(u64 start, u64 size, unsigned old_type,
-+				unsigned new_type);
-+extern void e820_register_memory(void);
-+extern void limit_regions(unsigned long long size);
-+extern void print_memory_map(char *who);
-+extern void init_iomem_resources(struct resource *code_resource,
-+				 struct resource *data_resource,
-+				 struct resource *bss_resource);
-+
-+#if defined(CONFIG_PM) && defined(CONFIG_HIBERNATION)
-+extern void e820_mark_nosave_regions(void);
- #else
--# include "e820_64.h"
-+static inline void e820_mark_nosave_regions(void)
-+{
-+}
-+#endif
-+
-+
-+#endif/*!__ASSEMBLY__*/
-+#else /* X86_32 */
-+/*
-+ * structures and definitions for the int 15, ax=e820 memory map
-+ * scheme.
-+ *
-+ * In a nutshell, setup.S populates a scratch table in the
-+ * empty_zero_block that contains a list of usable address/size
-+ * duples.  setup.c, this information is transferred into the e820map,
-+ * and in init.c/numa.c, that new information is used to mark pages
-+ * reserved or not.
-+ */
-+#include <linux/ioport.h>
-+
-+#ifndef __ASSEMBLY__
-+extern unsigned long find_e820_area(unsigned long start, unsigned long end,
-+				    unsigned long size, unsigned long align);
-+extern unsigned long find_e820_area_size(unsigned long start,
-+					 unsigned long *sizep,
-+					 unsigned long align);
-+extern void add_memory_region(unsigned long start, unsigned long size,
-+			      int type);
-+extern u64 update_memory_range(u64 start, u64 size, unsigned old_type,
-+				unsigned new_type);
-+extern void setup_memory_region(void);
-+extern void contig_e820_setup(void);
-+extern unsigned long e820_end_of_ram(void);
-+extern void e820_reserve_resources(void);
-+extern void e820_mark_nosave_regions(void);
-+extern int e820_any_mapped(unsigned long start, unsigned long end,
-+			   unsigned type);
-+extern int e820_all_mapped(unsigned long start, unsigned long end,
-+			   unsigned type);
-+extern int e820_any_non_reserved(unsigned long start, unsigned long end);
-+extern int is_memory_any_valid(unsigned long start, unsigned long end);
-+extern int e820_all_non_reserved(unsigned long start, unsigned long end);
-+extern int is_memory_all_valid(unsigned long start, unsigned long end);
-+extern unsigned long e820_hole_size(unsigned long start, unsigned long end);
-+
-+extern void e820_setup_gap(void);
-+extern void e820_register_active_regions(int nid, unsigned long start_pfn,
-+					 unsigned long end_pfn);
-+
-+extern void finish_e820_parsing(void);
-+
-+extern struct e820map e820;
-+extern void update_e820(void);
-+
-+extern void reserve_early(unsigned long start, unsigned long end, char *name);
-+extern void free_early(unsigned long start, unsigned long end);
-+extern void early_res_to_bootmem(unsigned long start, unsigned long end);
-+
-+#endif/*!__ASSEMBLY__*/
-+
- #endif
- #endif /* __KERNEL__ */
- 
-Index: linux-2.6/include/asm-x86/e820_32.h
-===================================================================
---- linux-2.6.orig/include/asm-x86/e820_32.h	2008-05-06 11:44:15.000000000 -0700
-+++ /dev/null	1970-01-01 00:00:00.000000000 +0000
-@@ -1,50 +0,0 @@
--/*
-- * structures and definitions for the int 15, ax=e820 memory map
-- * scheme.
-- *
-- * In a nutshell, arch/i386/boot/setup.S populates a scratch table
-- * in the empty_zero_block that contains a list of usable address/size
-- * duples.   In arch/i386/kernel/setup.c, this information is
-- * transferred into the e820map, and in arch/i386/mm/init.c, that
-- * new information is used to mark pages reserved or not.
-- *
-- */
--#ifndef __E820_HEADER
--#define __E820_HEADER
--
--#include <linux/ioport.h>
--
--#define HIGH_MEMORY	(1024*1024)
--
--#ifndef __ASSEMBLY__
--
--extern struct e820map e820;
--extern void update_e820(void);
--
--extern int e820_all_mapped(unsigned long start, unsigned long end,
--			   unsigned type);
--extern int e820_any_mapped(u64 start, u64 end, unsigned type);
--extern void propagate_e820_map(void);
--extern void register_bootmem_low_pages(unsigned long max_low_pfn);
--extern void add_memory_region(unsigned long long start,
--			      unsigned long long size, int type);
--extern void update_memory_range(u64 start, u64 size, unsigned old_type,
--				unsigned new_type);
--extern void e820_register_memory(void);
--extern void limit_regions(unsigned long long size);
--extern void print_memory_map(char *who);
--extern void init_iomem_resources(struct resource *code_resource,
--				 struct resource *data_resource,
--				 struct resource *bss_resource);
--
--#if defined(CONFIG_PM) && defined(CONFIG_HIBERNATION)
--extern void e820_mark_nosave_regions(void);
--#else
--static inline void e820_mark_nosave_regions(void)
--{
--}
--#endif
--
--
--#endif/*!__ASSEMBLY__*/
--#endif/*__E820_HEADER*/
-Index: linux-2.6/include/asm-x86/e820_64.h
-===================================================================
---- linux-2.6.orig/include/asm-x86/e820_64.h	2008-05-06 11:44:15.000000000 -0700
-+++ /dev/null	1970-01-01 00:00:00.000000000 +0000
-@@ -1,56 +0,0 @@
--/*
-- * structures and definitions for the int 15, ax=e820 memory map
-- * scheme.
-- *
-- * In a nutshell, setup.S populates a scratch table in the
-- * empty_zero_block that contains a list of usable address/size
-- * duples.  setup.c, this information is transferred into the e820map,
-- * and in init.c/numa.c, that new information is used to mark pages
-- * reserved or not.
-- */
--#ifndef __E820_HEADER
--#define __E820_HEADER
--
--#include <linux/ioport.h>
--
--#ifndef __ASSEMBLY__
--extern unsigned long find_e820_area(unsigned long start, unsigned long end,
--				    unsigned long size, unsigned long align);
--extern unsigned long find_e820_area_size(unsigned long start,
--					 unsigned long *sizep,
--					 unsigned long align);
--extern void add_memory_region(unsigned long start, unsigned long size,
--			      int type);
--extern void update_memory_range(u64 start, u64 size, unsigned old_type,
--				unsigned new_type);
--extern void setup_memory_region(void);
--extern void contig_e820_setup(void);
--extern unsigned long e820_end_of_ram(void);
--extern void e820_reserve_resources(void);
--extern void e820_mark_nosave_regions(void);
--extern int e820_any_mapped(unsigned long start, unsigned long end,
--			   unsigned type);
--extern int e820_all_mapped(unsigned long start, unsigned long end,
--			   unsigned type);
--extern int e820_any_non_reserved(unsigned long start, unsigned long end);
--extern int is_memory_any_valid(unsigned long start, unsigned long end);
--extern int e820_all_non_reserved(unsigned long start, unsigned long end);
--extern int is_memory_all_valid(unsigned long start, unsigned long end);
--extern unsigned long e820_hole_size(unsigned long start, unsigned long end);
--
--extern void e820_setup_gap(void);
--extern void e820_register_active_regions(int nid, unsigned long start_pfn,
--					 unsigned long end_pfn);
--
--extern void finish_e820_parsing(void);
--
--extern struct e820map e820;
--extern void update_e820(void);
--
--extern void reserve_early(unsigned long start, unsigned long end, char *name);
--extern void free_early(unsigned long start, unsigned long end);
--extern void early_res_to_bootmem(unsigned long start, unsigned long end);
--
--#endif/*!__ASSEMBLY__*/
--
--#endif/*__E820_HEADER*/
+I removed "| CON_BOOT" and got what looks like the same oops
+Raúl Porcel reported earlier today (which he for some reason
+sent only to the lists, not to you or me); his oops was:
 
--- 
+[    0.760209] NET: Registered protocol family 1
+[    0.808403] Unpacking initramfs...<1>Unable to handle kernel paging 
+request at virtual address 00
+[    0.928065] tsk->{mm,active_mm}->context = 0000000000000000
+[    0.996069] tsk->{mm,active_mm}->pgd = fffff8003f4217d4
+[    1.060074]               \|/ ____ \|/
+[    1.060079]               "@'/ .. \`@"
+[    1.060082]               /_| \__/ |_\
+[    1.060086]                  \__U_/
+[    1.236087] swapper(1): Oops [#1]
+[    1.276091] TSTATE: 0000000080001606 TPC: 00000000007fad00 TNPC: 
+00000000007fad04 Y: 00000041   W
+[    1.400109] TPC: <unpack_to_rootfs+0xac/0xa28>
+[    1.452097] g0: 0000000000000001 g1: 0000000000000001 g2: 
+0000000000000001 g3: 0000000000000000
+[    1.556104] g4: fffff8003e02d860 g5: 0000000000000000 g6: 
+fffff8003e03c000 g7: 0000000000000000
+[    1.660111] o0: fffff8003e160000 o1: 00000000000000d0 o2: 
+0000000000000001 o3: 0000000000000001
+[    1.764117] o4: 0000000000000000 o5: 00000000bde9fd0b sp: 
+fffff8003e03f431 ret_pc: 00000000007fac
+[    1.876125] RPC: <unpack_to_rootfs+0x58/0xa28>
+[    1.928127] l0: 00000000007c2800 l1: 0000000000814400 l2: 
+0000000000814400 l3: 0000000000000000
+[    2.032134] l4: 0000000000000001 l5: 00000000007e4350 l6: 
+fffff8003e11a420 l7: 000000000076b360
+[    2.136141] i0: 000000003f800000 i1: 00000000000b864f i2: 
+0000000000814400 i3: fffff8003e1becc0
+[    2.240147] i4: 00000000000003f7 i5: 00000000007ed400 i6: 
+fffff8003e03f4f1 i7: 00000000007fb6e0
+[    2.344155] I7: <populate_rootfs+0x64/0xac>
+[    2.396155] Caller[00000000007fb6e0]: populate_rootfs+0x64/0xac
+[    2.466224] Caller[00000000007f819c]: kernel_init+0xac/0x208
+[    2.534229] Caller[0000000000426cf8]: kernel_thread+0x38/0x48
+[    2.602233] Caller[00000000006d1d34]: rest_init+0x18/0x60
+[    2.666238] Instruction DUMP: 03002050  10680243  c07063a0 <c24e0000> 
+05002051  80a06030  124800
+[    2.796183] Kernel panic - not syncing: Attempted to kill init!
+[    2.864187] Press Stop-A (L1-A) to return to the boot prom
+
+I got the oops in the same location (unpack_to_rootfs) with the
+same call stack, only the code addresses differ.
+Also, the data address my kernel oopsed on was 0000000010800000,
+which was the physical address of the initrd.
+
+/Mikael
