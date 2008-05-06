@@ -1,60 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763402AbYEFMqo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761024AbYEFMuU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763402AbYEFMqo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 08:46:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755902AbYEFMqg
+	id S1761024AbYEFMuU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 08:50:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753782AbYEFMuF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 08:46:36 -0400
-Received: from smtpq1.tilbu1.nb.home.nl ([213.51.146.200]:35207 "EHLO
-	smtpq1.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754107AbYEFMqf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 08:46:35 -0400
-Message-ID: <48205360.7000508@keyaccess.nl>
-Date: Tue, 06 May 2008 14:47:28 +0200
-From: Rene Herman <rene.herman@keyaccess.nl>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
+	Tue, 6 May 2008 08:50:05 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:53665 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752631AbYEFMuD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 May 2008 08:50:03 -0400
+Date: Tue, 6 May 2008 14:49:46 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Jeff Chua <jeff.chua.linux@gmail.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: Linux 2.6.26-rc1 - pgtable_32.c:178 pmd_bad
+Message-ID: <20080506124946.GA2146@elte.hu>
+References: <b6a2187b0805051806v25fa1272xb08e0b70b9c3408@mail.gmail.com>
 MIME-Version: 1.0
-To: Takashi Iwai <tiwai@suse.de>
-CC: Pete Clements <clem@clem.clem-digital.net>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Lost Sound from 2.6.24 to 2.6.25 -- CS4236 ISA
-References: <200805051406.m45E6pta001929@clem.clem-digital.net> <s5hfxsvd31h.wl%tiwai@suse.de>
-In-Reply-To: <s5hfxsvd31h.wl%tiwai@suse.de>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -1.0 (-)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <b6a2187b0805051806v25fa1272xb08e0b70b9c3408@mail.gmail.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 06-05-08 14:34, Takashi Iwai wrote:
 
-> At Mon, 5 May 2008 10:06:51 -0400 (EDT),
-> Pete Clements wrote:
->> Looks like sound card stops functioning between
->> 2.6.24 and 2.6.25.
-> 
-> Could you elaborate what do you mean exactly "stop"?  Fail to load or
-> initialize the driver, or silent output, DMA error...?
-> 
->>  Sorry but don't know at what
->> point.  Card is an isa CS4236. Glad to provide
->> any other info/testing.
-> 
-> Any relevant kernel messages are welcome.  Also, if you passed any
-> (module) options for the sound driver, show it, too.
-> 
-> The biggest change in ISA sound driver codes between 2.6.24 and 2.6.25
-> is that we dropped the PnP resource re-configuration via module
-> options of sound drivers.  They have to be adjusted via sysfs now 
-> (if really needed).
-> 
-> Otherwise, if it really worked on 2.6.24, we have a good chance to
-> identify the affecting changeset via bisect.  There are only a few
-> changes for sound/isa.
+* Jeff Chua <jeff.chua.linux@gmail.com> wrote:
 
-For what it's worth and as a preliminary comment, snd-cs4236 is my main test 
-driver and works fine for me.
+> On Sun, May 4, 2008 at 3:38 AM, Linus Torvalds
+> <torvalds@linux-foundation.org> wrote:
+> >
+> >  So this merge window was somewhat rocky in the sense that there was a lot
+> >  of arguments about it, but at the same time I at least personally think
+> >  that from a technical angle, we had somewhat less scary stuff going on
+> >  than has been almost the rule lately.
+> 
+> I'm seeing this on a Dell 2950 (quad-core) during boot up, but not on
+> my IBM X60s (dual-core). This is using the lastest git 2.6.26-rc1.
+> 
+> Just checking to see if this is a known bug before doing the bisect -- 
+> more painful on the 2950 to reboot.
 
-Rene.
+> ------------[ cut here ]------------
+> WARNING: at arch/x86/mm/pgtable_32.c:178 pmd_bad+0xa3/0xe3()
+> Modules linked in:
+> Pid: 1226, comm: khelper Not tainted 2.6.26-rc1 #4
+>  [<c0121614>] warn_on_slowpath+0x40/0x65
+>  [<c011823e>] kmap_atomic+0x11/0x14
+>  [<c01183b7>] kunmap_atomic+0x4f/0x78
+>  [<c014a0db>] get_page_from_freelist+0x33a/0x3da
+>  [<c014a225>] __alloc_pages_internal+0x98/0x356
+>  [<c01181f8>] kmap_atomic_prot+0x102/0x137
+>  [<c01183b7>] kunmap_atomic+0x4f/0x78
+>  [<c0154dd0>] handle_mm_fault+0xb70/0xbba
+>  [<c011770c>] pmd_bad+0xa3/0xe3
+>  [<c0151cad>] follow_page+0x109/0x30a
+>  [<c015516b>] get_user_pages+0x351/0x3c0
+>  [<c016aec4>] get_arg_page+0x2b/0x7b
+>  [<c016afe1>] copy_strings+0xcd/0x173
+>  [<c016b0a0>] copy_strings_kernel+0x19/0x27
+>  [<c016c28a>] do_execve+0xd9/0x18f
+>  [<c010136a>] sys_execve+0x2a/0x4f
+>  [<c0102d22>] syscall_call+0x7/0xb
+>  [<c038007b>] i8042_probe+0x29f/0x508
+>  [<c0106034>] kernel_execve+0x14/0x18
+>  [<c012dcfc>] ____call_usermodehelper+0x0/0x105
+>  [<c012ddf7>] ____call_usermodehelper+0xfb/0x105
+>  [<c012dcfc>] ____call_usermodehelper+0x0/0x105
+>  [<c0103917>] kernel_thread_helper+0x7/0x10
+
+no, i have not seen this reported yet.
+
+we have an strace/ptrace fix pending in x86.git - but that should not 
+affect khelper.
+
+	Ingo
