@@ -1,43 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765542AbYEFQZK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764959AbYEFQ20@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765542AbYEFQZK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 12:25:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752619AbYEFQYt
+	id S1764959AbYEFQ20 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 12:28:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753730AbYEFQ2Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 12:24:49 -0400
-Received: from ribosome.natur.cuni.cz ([195.113.57.20]:52366 "EHLO
-	ribosome.natur.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753169AbYEFQYs (ORCPT
+	Tue, 6 May 2008 12:28:16 -0400
+Received: from mail.candelatech.com ([66.165.47.212]:36237 "EHLO
+	ns3.lanforge.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752619AbYEFQ2P (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 12:24:48 -0400
-Message-ID: <48208647.3090500@ribosome.natur.cuni.cz>
-Date: Tue, 06 May 2008 18:24:39 +0200
-From: =?UTF-8?B?TWFydGluIE1PS1JFSsWg?= <mmokrejs@ribosome.natur.cuni.cz>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.13) Gecko/20080328 SeaMonkey/1.1.9
+	Tue, 6 May 2008 12:28:15 -0400
+X-Greylist: delayed 1485 seconds by postgrey-1.27 at vger.kernel.org; Tue, 06 May 2008 12:28:15 EDT
+Message-ID: <4820813D.6050608@candelatech.com>
+Date: Tue, 06 May 2008 09:03:09 -0700
+From: Ben Greear <greearb@candelatech.com>
+Organization: Candela Technologies
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
 To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: Robert Hancock <hancockr@shaw.ca>, Jan Engelhardt <jengelh@medozas.de>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.23.17 & 2.6.24.5 and maybe earlier: pata_marvell: need to
- disable DMA to get rid of '(ATA bus error)', 'ata7.00: status: { DRDY ERR
- }', 'ata7.00: error: { ICRC ABRT }'
-References: <fa.+9Q+WQnyiYTlpbXVIzn6aT2/gS0@ifi.uio.no>	<fa.fKUfeQYS9BFD60fOMormQ25ard4@ifi.uio.no>	<fa.QYXSW2xjSxf6xnmd0rQGJhHLnrc@ifi.uio.no>	<fa.qfeYSQtlsXzGvFvBQEdF9TFFpNg@ifi.uio.no>	<481BD12D.1030406@shaw.ca>	<4820529D.2040609@ribosome.natur.cuni.cz>	<20080506140825.759db8f2@core>	<4820711C.1010902@ribosome.natur.cuni.cz> <20080506160452.61725e6c@core>
-In-Reply-To: <20080506160452.61725e6c@core>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8; format=flowed
+CC: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>, rmk@arm.linux.org.uk,
+       linux-serial@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [BUG] NULL pointer dereference in uart_write_room().
+References: <261636618@web.de>	<200805022300.GIB30385.FJOVHQSMFtOOFL@I-love.SAKURA.ne.jp>	<200805041716.DDG43279.JOSMHVFOFFQLOt@I-love.SAKURA.ne.jp> <20080505113055.5284052e@core>
+In-Reply-To: <20080505113055.5284052e@core>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Alan Cox wrote:
-> O> /dev/sde:
->> ATA device, with non-removable media
->>         Model Number:       Delock 54111 512MB                      
->>         Serial Number:      
->>         Firmware Revision:  Ver1.27 
-> 
-> Does seem to think its ATA not CFA I guess you'll need to specify pio for
-> that device specifically.
+>> (5) uart_remove_one_port() is called by serial8250_register_port()
+>>     since ttyS0 is already in use but it is requested to be once removed.
+>>     
+>
+> That means 8250_pnp is taking over and then trying to delete the console,
+> so its breakage in the serial layer glue. Perhaps Russell has some ideas
+> as its hard to tell what he intended to happen originally.
+>   
+For what it's worth, I've been seeing this problem since about 2.6.23 on 
+several
+different systems, and will be happy to test patches.  The work-around 
+of changing
+the .config file will be fine in the meantime, it seems.
 
-Sorry for my ignorance ... How?
+Thanks,
+Ben
+
+> Alan
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>   
+
+
+-- 
+Ben Greear <greearb@candelatech.com> 
+Candela Technologies Inc  http://www.candelatech.com
+
+
