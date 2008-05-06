@@ -1,43 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934343AbYEFXne@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934180AbYEFXsd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934343AbYEFXne (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 19:43:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762154AbYEFXnX
+	id S934180AbYEFXsd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 19:48:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757448AbYEFXsX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 19:43:23 -0400
-Received: from mjg.x.mythic-beasts.com ([93.93.128.6]:41292 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1760018AbYEFXnW (ORCPT
+	Tue, 6 May 2008 19:48:23 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:57720 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755338AbYEFXsW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 19:43:22 -0400
-Date: Wed, 7 May 2008 00:43:07 +0100
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Dag Bakke <dag@bakke.com>, linux-input@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Jiri Kosina <jkosina@suse.cz>,
-       "Diego 'Flameeyes' Petteno" <flameeyes@gmail.com>
-Message-ID: <20080506234307.GA27714@srcf.ucam.org>
-References: <4814612F.5030606@bakke.com> <20080506125406.dc047710.akpm@linux-foundation.org>
+	Tue, 6 May 2008 19:48:22 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <4820EE36.7010102@s5r6.in-berlin.de>
+Date: Wed, 07 May 2008 01:48:06 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.13) Gecko/20080419 SeaMonkey/1.1.9
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080506125406.dc047710.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-Subject: Re: [PATCH] fix apple alu keyboard with numpad
-X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
-X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
+To: Mauro Carvalho Chehab <mchehab@infradead.org>
+CC: Alistair John Strachan <alistair@devzero.co.uk>, Robin Holt <holt@sgi.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.26-rc1
+References: <alpine.LFD.1.10.0805031205330.2971@woody.linux-foundation.org>	<20080504160904.GF19717@sgi.com>	<Pine.LNX.4.64.0805051656180.3218@bombadil.infradead.org>	<200805060902.25835.alistair@devzero.co.uk>	<20080506073134.424780a3@gaivota>	<48206C73.80509@s5r6.in-berlin.de>	<20080506161346.183f367c@gaivota>	<4820B524.5080100@s5r6.in-berlin.de> <20080506170623.53732e78@gaivota> <4820C3D8.6040403@s5r6.in-berlin.de>
+In-Reply-To: <4820C3D8.6040403@s5r6.in-berlin.de>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 06, 2008 at 12:54:06PM -0700, Andrew Morton wrote:
+I wrote:
+> Mauro Carvalho Chehab wrote:
+>> If you remove the select's for MSP3400, TVP5150 and SAA7113, at, 
+>> em28xx, the module will compile without problems.
+>>
+>> The only issue is that you won't be able to see any images (due to the 
+>> lack of tvp5150 or saa7113 analog TV demoduler) or listen to the audio,
+>> if the device needs msp3400 to decode audio.
+> [...]
+> Ah, now I understand.  You use "select" to enable options which aren't 
+> actually a build requirement for the selecting option.
 
-> > -static int hid_apple_fnmode = 1;
-> > +static int hid_apple_fnmode = 2;
-
-Regardless of anything else, we don't want this hunk.
-
+PS:
+I believe the canonical way to express _runtime_ dependencies in Kconfig 
+(in contrast to build dependencies) is not "select", but "help".
 -- 
-Matthew Garrett | mjg59@srcf.ucam.org
+Stefan Richter
+-=====-==--- -=-= --===
+http://arcgraph.de/sr/
