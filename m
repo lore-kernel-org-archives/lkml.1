@@ -1,113 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934051AbYEFWmR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934112AbYEFWml@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934051AbYEFWmR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 18:42:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762338AbYEFWlw
+	id S934112AbYEFWml (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 18:42:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933452AbYEFWl4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 18:41:52 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:56787 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764403AbYEFWlu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 18:41:50 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: "Zdenek Kabelac" <zdenek.kabelac@gmail.com>
-Subject: Re: WARNING: at arch/x86/kernel/genapic_64.c:86
-Date: Wed, 7 May 2008 00:41:55 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: lkml <linux-kernel@vger.kernel.org>
-References: <c4e36d110804220204h3043e526xee3966876355cde0@mail.gmail.com>
-In-Reply-To: <c4e36d110804220204h3043e526xee3966876355cde0@mail.gmail.com>
+	Tue, 6 May 2008 18:41:56 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:38032 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932846AbYEFWly (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 May 2008 18:41:54 -0400
+X-AuthUser: davidel@xmailserver.org
+Date: Tue, 6 May 2008 15:41:51 -0700 (PDT)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Matthew Helsley <matthltc@us.ibm.com>
+cc: Ulrich Drepper <drepper@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       mtk.manpages@gmail.com, Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH 08/18] flag parameters: epoll_create
+In-Reply-To: <1210107990.7323.347.camel@localhost.localdomain>
+Message-ID: <Pine.LNX.4.64.0805061540560.25162@alien.or.mcafeemobile.com>
+References: <200805050342.m453gk49029835@devserv.devel.redhat.com>
+ <1210107990.7323.347.camel@localhost.localdomain>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200805070041.55369.rjw@sisk.pl>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, 22 of April 2008, Zdenek Kabelac wrote:
-> Hello
-> 
-> I've update to the current commit 2.6.25
-> 8a81f2738f10ca817c975cec893aa58497e873b2
+On Tue, 6 May 2008, Matthew Helsley wrote:
 
-Does it still happen with the current -git?
+> 
+> On Sun, 2008-05-04 at 23:42 -0400, Ulrich Drepper wrote:
+> > This patch adds the new epoll_create2 syscall.  It extends the old epoll_create
+> > syscall by one parameter which is meant to hold a flag value.  In this
+> > patch the only flag support is EPOLL_CLOEXEC which causes the close-on-exec
+> > flag for the returned file descriptor to be set.
+> 
+> Davide, Ulrich,
+> 
+> 	A minor question: Why did you choose to pass the seemingly useless
+> "size" parameter into the new epoll_create2 system call? I did some
+> googling for previous threads with this series and couldn't find a
+> discussion on why you chose to keep it.
 
-> I get this boot WARNING:
-> 
->  tbxface-0598 [00] tb_load_namespace     : ACPI Tables successfully acquired
-> evxfevnt-0091 [00] enable                : Transition to ACPI mode successful
-> ------------[ cut here ]------------
-> WARNING: at arch/x86/kernel/genapic_64.c:86 read_apic_id+0x81/0x90()
-> Modules linked in:
-> Pid: 1, comm: swapper Not tainted 2.6.25 #57
-> 
-> Call Trace:
->  [<ffffffff8103d64f>] warn_on_slowpath+0x5f/0x90
->  [<ffffffff81062afa>] ? get_lock_stats+0x2a/0x70
->  [<ffffffff81062b4e>] ? put_lock_stats+0xe/0x30
->  [<ffffffff81038b56>] ? set_cpus_allowed_ptr+0x86/0x120
->  [<ffffffff812ee295>] ? _spin_unlock_irqrestore+0x65/0x90
->  [<ffffffff810649e1>] ? trace_hardirqs_on+0x131/0x190
->  [<ffffffff812ee275>] ? _spin_unlock_irqrestore+0x45/0x90
->  [<ffffffff810233f1>] read_apic_id+0x81/0x90
->  [<ffffffff814bdcde>] verify_local_APIC+0xc4/0x186
->  [<ffffffff814bcaaf>] native_smp_prepare_cpus+0x16e/0x38f
->  [<ffffffff814b139b>] kernel_init+0x5a/0x31b
->  [<ffffffff810649e1>] ? trace_hardirqs_on+0x131/0x190
->  [<ffffffff812ee1ed>] ? _spin_unlock_irq+0x3d/0x80
->  [<ffffffff812edbd9>] ? trace_hardirqs_on_thunk+0x35/0x3a
->  [<ffffffff810649e1>] ? trace_hardirqs_on+0x131/0x190
->  [<ffffffff8100d548>] child_rip+0xa/0x12
->  [<ffffffff8100cc33>] ? restore_args+0x0/0x30
->  [<ffffffff814b1341>] ? kernel_init+0x0/0x31b
->  [<ffffffff8100d53e>] ? child_rip+0x0/0x12
-> 
-> ---[ end trace ca143223eefdc828 ]---
-> ------------[ cut here ]------------
-> WARNING: at arch/x86/kernel/genapic_64.c:86 read_apic_id+0x81/0x90()
-> Modules linked in:
-> Pid: 1, comm: swapper Not tainted 2.6.25 #57
-> 
-> Call Trace:
->  [<ffffffff8103d64f>] warn_on_slowpath+0x5f/0x90
->  [<ffffffff81062afa>] ? get_lock_stats+0x2a/0x70
->  [<ffffffff81062b4e>] ? put_lock_stats+0xe/0x30
->  [<ffffffff81038b56>] ? set_cpus_allowed_ptr+0x86/0x120
->  [<ffffffff812ee295>] ? _spin_unlock_irqrestore+0x65/0x90
->  [<ffffffff810649e1>] ? trace_hardirqs_on+0x131/0x190
->  [<ffffffff812ee275>] ? _spin_unlock_irqrestore+0x45/0x90
->  [<ffffffff810233f1>] read_apic_id+0x81/0x90
->  [<ffffffff814bdd00>] verify_local_APIC+0xe6/0x186
->  [<ffffffff814bcaaf>] native_smp_prepare_cpus+0x16e/0x38f
->  [<ffffffff814b139b>] kernel_init+0x5a/0x31b
->  [<ffffffff810649e1>] ? trace_hardirqs_on+0x131/0x190
->  [<ffffffff812ee1ed>] ? _spin_unlock_irq+0x3d/0x80
->  [<ffffffff812edbd9>] ? trace_hardirqs_on_thunk+0x35/0x3a
->  [<ffffffff810649e1>] ? trace_hardirqs_on+0x131/0x190
->  [<ffffffff8100d548>] child_rip+0xa/0x12
->  [<ffffffff8100cc33>] ? restore_args+0x0/0x30
->  [<ffffffff814b1341>] ? kernel_init+0x0/0x31b
->  [<ffffffff8100d53e>] ? child_rip+0x0/0x12
-> 
-> ---[ end trace ca143223eefdc828 ]---
-> CPU0: Intel(R) Core(TM)2 Duo CPU     T7500  @ 2.20GHz stepping 0a
-> Using local APIC timer interrupts.
-> 
-> 
-> 
-> Zdenek
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
-> 
+The very first implementations were using an hash, and that was a size 
+hint.
 
 
 
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
+- Davide
+
+
