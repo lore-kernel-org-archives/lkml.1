@@ -1,69 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932898AbYEFVeP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933533AbYEFVio@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932898AbYEFVeP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 17:34:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764158AbYEFVaq
+	id S933533AbYEFVio (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 17:38:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754546AbYEFVi3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 17:30:46 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:59643 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933665AbYEFVan (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 17:30:43 -0400
-Subject: Re: [PATCH] clocksource: shift helper
-From: Daniel Walker <dwalker@mvista.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: akpm@linux-foundation.org, johnstul@us.ibm.com, ralf@linux-mips.org,
-       anemo@mba.ocn.ne.jp, linux-kernel@vger.kernel.org
-In-Reply-To: <alpine.LFD.1.10.0805062303060.3318@apollo.tec.linutronix.de>
-References: <20080501173123.444094226@mvista.com>
-	 <alpine.LFD.1.10.0805060250410.3318@apollo.tec.linutronix.de>
-	 <1210091954.17132.142.camel@localhost.localdomain>
-	 <alpine.LFD.1.10.0805061854310.3318@apollo.tec.linutronix.de>
-	 <1210106014.17132.172.camel@localhost.localdomain>
-	 <alpine.LFD.1.10.0805062242020.3318@apollo.tec.linutronix.de>
-	 <1210107675.17132.181.camel@localhost.localdomain>
-	 <alpine.LFD.1.10.0805062303060.3318@apollo.tec.linutronix.de>
-Content-Type: text/plain
-Date: Tue, 06 May 2008 14:30:41 -0700
-Message-Id: <1210109441.17132.193.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-3.fc8) 
-Content-Transfer-Encoding: 7bit
+	Tue, 6 May 2008 17:38:29 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:36009 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753995AbYEFVi1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 May 2008 17:38:27 -0400
+Date: Tue, 6 May 2008 14:38:01 -0700
+From: Greg KH <gregkh@suse.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
+       Yinghai Lu <yhlu.kernel@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Len Brown <lenb@kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       linux-acpi <linux-acpi@vger.kernel.org>
+Subject: Re: acpi_cpu_freq_init warning...
+Message-ID: <20080506213801.GA26345@suse.de>
+References: <86802c440805051951u153ebc21p15f0d73904496217@mail.gmail.com> <87k5i8hrmk.fsf@duaron.myhome.or.jp> <alpine.LFD.1.10.0805060741290.32269@woody.linux-foundation.org> <87skwvcl2a.fsf@duaron.myhome.or.jp> <20080506202033.GA3114@suse.de> <alpine.LFD.1.10.0805061325270.32269@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.1.10.0805061325270.32269@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Tue, 2008-05-06 at 23:19 +0200, Thomas Gleixner wrote:
-
-> You - the patch submitter - have to provide useful information to
-> those who review the patches and not the reviewers are supposed to
-> decode your sloppy commit log.
+On Tue, May 06, 2008 at 01:27:37PM -0700, Linus Torvalds wrote:
 > 
-> "... which I pulled from the MIPS tree"
 > 
-> Why should I assume that this is from mainline ?
-
-I'm not going to get into a long argument over this..
-
-> > > I'm fine with the change itself, but it needs to move the code out of
-> > > MIPS in the first place and not just duplicating code for no good
-> > > reason.
+> On Tue, 6 May 2008, Greg KH wrote:
+> 
+> > On Wed, May 07, 2008 at 04:02:53AM +0900, OGAWA Hirofumi wrote:
+> > > Linus Torvalds <torvalds@linux-foundation.org> writes:
+> > > 
+> > > > On Tue, 6 May 2008, OGAWA Hirofumi wrote:
+> > > >> -	if ((drv->entry.next != drv->entry.prev) ||
+> > > >> +	if ((drv->entry.next != drv->entry.prev) &&
+> > > >>  	    (drv->entry.next != NULL)) {
+> > > >
+> > > > Umm. That code still makes no sense.
+> > > >
+> > > > The "drv->entry.next == drv->entry.prev" condition will trigger under 
+> > > > *three* different circumstances:
+> > > >
+> > > >  - next/prev == NULL (uninitialized). Checked for by the explicit check 
+> > > >    against NULL.
+> > > >
+> > > >  - list empty (both next/prev point back to itself), which I assume the 
+> > > >    check was *meant* for.
+> > > >
+> > > >  - list has only *one* entry, when next/prev both point to the list head.
+> > > >
+> > > > and I'm pretty damn sure that whoever wrote that code didn't mean that 
+> > > > last one, but who knows..
+> > > >
+> > > > The fact is, looking at next/prev this way is a sure way to have bugs.
+> > > >
+> > > > What is that PoS *trying* to test for? I assume it is meant to test for
+> > > >
+> > > > 	/* Is the list initialized and non-empty? */
+> > > > 	if (drv->entry.next && !list_empty(&drv->entry)) {
+> > > > 		...
+> > > >
+> > > > and dammit, just doing it that way is shorter and simpler.
 > > 
-> > I can work with Atsushi, but I still think the generic version should be
-> > merged. We at least would need it in order to modify the mips code.
+> > But I don't think that will work as others have pointed out, this
+> > structure's list field isn't initialized yet.
 > 
-> You can think what you want, it's not the way it works.
-> 
-> You duplicate code, so the first thing to do is to replace the code
-> which you copied and make sure it is still fully functional. Then you
-> can add a second user to make the point that the generic code move is
-> actually useful. btw, pmtimer is the worst example for a good use case
-> as everything there is constant so we can do it at compile time.
+> Umm. And what do you think the test for drv->entry.next is there for?
 
-I can provide a patch that replaces the mips code instead of acpi_pm ..
-Is that what your asking for?
+Doh, nevermind, I don't know what I was thinking, this should be fine.
 
-Daniel
+I think I need a nap...
 
+greg k-h
