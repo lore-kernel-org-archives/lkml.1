@@ -1,61 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763463AbYEFPP7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763626AbYEFPS7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763463AbYEFPP7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 11:15:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755210AbYEFPPv
+	id S1763626AbYEFPS7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 11:18:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754974AbYEFPSv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 11:15:51 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:37569 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755170AbYEFPPv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 11:15:51 -0400
-Date: Tue, 6 May 2008 17:15:29 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Hugh Dickins <hugh@veritas.com>, Jeff Chua <jeff.chua.linux@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Gabriel C <nix.or.die@googlemail.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: Linux 2.6.26-rc1 - pgtable_32.c:178 pmd_bad
-Message-ID: <20080506151529.GA6321@elte.hu>
-References: <b6a2187b0805051806v25fa1272xb08e0b70b9c3408@mail.gmail.com> <20080506124946.GA2146@elte.hu> <Pine.LNX.4.64.0805061435510.32567@blonde.site> <20080506150432.GA31075@elte.hu> <alpine.LFD.1.10.0805060807520.32269@woody.linux-foundation.org>
+	Tue, 6 May 2008 11:18:51 -0400
+Received: from out2.smtp.messagingengine.com ([66.111.4.26]:37191 "EHLO
+	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754884AbYEFPSu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 May 2008 11:18:50 -0400
+X-Sasl-enc: jzGbMm2+3aBp+VyB5YGgyvhXRdfAG2zD3nzgIUOds/CE 1210087128
+Date: Tue, 6 May 2008 12:18:46 -0300
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Shaohua Li <shaohua.li@intel.com>
+Cc: Holger Macht <hmacht@suse.de>, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org,
+       "Accardi, Kristen C" <kristen.c.accardi@intel.com>
+Subject: Re: [PATCH] bay: Exit if notify handler cannot be installed
+Message-ID: <20080506151846.GA22828@khazad-dum.debian.net>
+References: <20080505202508.GA3690@homac> <20080506091522.GA4378@homac> <1210065811.12668.1.camel@sli10-desk.sh.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.10.0805060807520.32269@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <1210065811.12668.1.camel@sli10-desk.sh.intel.com>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
+	1CDB 0FE3
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 06 May 2008, Shaohua Li wrote:
+> The bay driver is duplicated with libata, I thought we should delete it.
+> See bug http://bugzilla.kernel.org/show_bug.cgi?id=9526
 
-* Linus Torvalds <torvalds@linux-foundation.org> wrote:
+The bay driver is currently useless, BUT it should handle a lot of stuff
+libata won't, such as bay batteries, bay floppies, and anything else in
+a bay that is not a hard disk.
 
-> On Tue, 6 May 2008, Ingo Molnar wrote:
-> > 
-> > hm, the main objection was about whether to turn PAGE_SIZE from 
-> > unsigned into signed though - and that we didnt do.
-> 
-> No it wasn't.
-> 
-> The main objection was that you SHOULD NOT USE PAGE_SIZE_MASK AT ALL!
->
-> You should have used a pagetable-specific macro, becuse PAGE_MASK is 
-> simply fundamentally WRONG, and has absolutely nothing to do with the 
-> PFN bits, whether sign-extended or not!
-> 
-> The fact is, the page frane number bits are *not* ~PAGE_MASK or 
-> anything like that. They share only the low bits - not the high bits.
+The fact that the driver currently looks only after disks is just a bug.
+It should, in fact, bind to any ejectable device not already handled by
+a different driver.
 
-yeah, indeed, sorry about that. Will sort this type mixing out today.
-
-	Ingo
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
