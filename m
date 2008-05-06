@@ -1,70 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760196AbYEFMjE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762747AbYEFMjY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760196AbYEFMjE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 08:39:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754292AbYEFMiv
+	id S1762747AbYEFMjY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 08:39:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761882AbYEFMjF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 08:38:51 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:55910 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754141AbYEFMiu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 08:38:50 -0400
-Date: Tue, 6 May 2008 14:39:36 +0200
-From: Pavel Machek <pavel@suse.cz>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: kernel list <linux-kernel@vger.kernel.org>, kaszak@gmail.com,
-       lcostantino@gmail.com, linux-wireless@vger.kernel.org
-Subject: Re: w35und: fixed nasty stack overflow, I can actually ssh over
-	this
-Message-ID: <20080506123936.GA4777@elf.ucw.cz>
-References: <20080505205617.GD7273@elf.ucw.cz> <20080506123536.GM32591@elte.hu>
+	Tue, 6 May 2008 08:39:05 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:40883 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761755AbYEFMjD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 May 2008 08:39:03 -0400
+Date: Tue, 6 May 2008 14:38:47 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Jesper Juhl <jesper.juhl@gmail.com>
+Cc: linux-kernel@vger.kernel.org, gcosta@redhat.com,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH] Use correct format when printing long unsigned int in
+	arch/x86/kernel/setup.c
+Message-ID: <20080506123847.GP32591@elte.hu>
+References: <alpine.LNX.1.00.0805060039100.27779@dragon.funnycrock.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080506123536.GM32591@elte.hu>
-X-Warning: Reading this can be dangerous to your mental health.
+In-Reply-To: <alpine.LNX.1.00.0805060039100.27779@dragon.funnycrock.com>
 User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -0.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-0.5 required=5.9 tests=BAYES_20 autolearn=no SpamAssassin version=3.2.3
+	-0.5 BAYES_20               BODY: Bayesian spam probability is 5 to 20%
+	[score: 0.0540]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
-> > Removed nasty stack overflow, and got transmit of big packets to work. 
-> > I can now actually do ssh over softmac-based driver.
-> > 
-> > Unindent code to make it more readable.
+
+* Jesper Juhl <jesper.juhl@gmail.com> wrote:
+
+> From: Jesper Juhl <jesper.juhl@gmail.com>
 > 
-> > --- a/arch/x86/kernel/traps_32.c
-> > +++ b/arch/x86/kernel/traps_32.c
-> > @@ -146,11 +146,16 @@ static inline unsigned long print_contex
-> >  				unsigned long *stack, unsigned long bp,
-> >  				const struct stacktrace_ops *ops, void *data)
-> >  {
-> > +	int max = 5;
-> >  	struct stack_frame *frame = (struct stack_frame *)bp;
-> >  
-> >  	while (valid_stack_ptr(tinfo, stack, sizeof(*stack))) {
-> >  		unsigned long addr;
-> >  
-> > +		if (!max)
-> > +			return;
-> > +		max--;
-> > +
-> 
-> hm, you got into an infinite loop here, right? Could you please send 
-> this bit as a separate patch - and i guess it should use 
-> kstack_depth_to_print instead of '5'?
+> Use correct format when printing long unsigned int in arch/x86/kernel/setup.c
 
-No, sorry, this should not have been in this patch. (And no, this is
-not the overflow I was talking about).
+applied, thanks Jesper.
 
-What happened to me is that current oops is too long even for vga=1,
-and I was trying to see where it dies.
-
-I was trying to only print first few lines of the backtrace, but then
-I fix the nasty bug...
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+	Ingo
