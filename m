@@ -1,62 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764939AbYEFPtl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765031AbYEFPu7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764939AbYEFPtl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 11:49:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764532AbYEFPt1
+	id S1765031AbYEFPu7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 11:50:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759252AbYEFPuw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 11:49:27 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:45417 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764527AbYEFPt0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 11:49:26 -0400
-Date: Tue, 6 May 2008 16:49:23 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: Kyle McMartin <kyle@mcmartin.ca>
-Cc: Adrian Bunk <bunk@kernel.org>, Christoph Lameter <clameter@sgi.com>,
-       Lee Schermerhorn <lee.schermerhorn@hp.com>, kyle@parisc-linux.org,
-       matthew@wil.cx, grundler@parisc-linux.org, linux-parisc@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: parisc DISCONTIGMEM compile breakage
-Message-ID: <20080506154922.GB5034@csn.ul.ie>
-References: <20080506134648.GA30082@cs181133002.pp.htv.fi> <20080506152457.GA13070@phobos.i.cabal.ca>
+	Tue, 6 May 2008 11:50:52 -0400
+Received: from smtpq1.tilbu1.nb.home.nl ([213.51.146.200]:58060 "EHLO
+	smtpq1.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752431AbYEFPuv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 May 2008 11:50:51 -0400
+Message-ID: <48207E90.9000202@keyaccess.nl>
+Date: Tue, 06 May 2008 17:51:44 +0200
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <20080506152457.GA13070@phobos.i.cabal.ca>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Pete Clements <clem@clem.clem-digital.net>
+CC: Takashi Iwai <tiwai@suse.de>, linux-kernel <linux-kernel@vger.kernel.org>,
+       Bjorn Helgaas <bjorn.helgaas@hp.com>
+Subject: Re: Lost Sound from 2.6.24 to 2.6.25 -- CS4236 ISA
+References: <200805061538.m46FcgZ3002921@clem.clem-digital.net>
+In-Reply-To: <200805061538.m46FcgZ3002921@clem.clem-digital.net>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -1.0 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (06/05/08 11:24), Kyle McMartin didst pronounce:
-> On Tue, May 06, 2008 at 04:46:48PM +0300, Adrian Bunk wrote:
-> > Commit 54a6eb5c4765aa573a030ceeba2c14e3d2ea5706
-> > (mm: use two zonelist that are filtered by GFP mask)
-> > causes the following build error with CONFIG_DISCONTIGMEM=y
-> > on parisc:
-> > 
-> > <--  snip  -->
-> > 
-> > ...
-> >   CC      arch/parisc/mm/init.o
-> > /home/bunk/linux/kernel-2.6/git/linux-2.6/arch/parisc/mm/init.c: In function 'show_mem':
-> > /home/bunk/linux/kernel-2.6/git/linux-2.6/arch/parisc/mm/init.c:609: error: too few arguments to function 'node_zonelist'
-> > make[2]: *** [arch/parisc/mm/init.o] Error 1
-> > 
-> 
-> yes. the obvious fix works and boots, but I haven't quite determined why
-> they decided to add this yet, so no patch committed plz.
-> 
+On 06-05-08 17:38, Pete Clements wrote:
 
-I'm not sure what you are referring to as "this" here. If you mean the
-zonelist changes, they were done to reduce the number of zonelists that
-exist, to clear up an anomoly with MPOL_BIND and to remove a hack called
-alloc_should_filter_zonelist() in the page allocator. The pa-risc code that
-walks zonelists (presumably for debugging) has been around for a while and
-was updated at the same time as the zonelist patches were done, just not as
-well as it should have been.
+> Quoting Takashi Iwai
+>   > At Mon, 5 May 2008 10:06:51 -0400 (EDT),
+>   > Pete Clements wrote:
+>   > > 
+>   > > Looks like sound card stops functioning between
+>   > > 2.6.24 and 2.6.25.
+>   > 
+>   > Could you elaborate what do you mean exactly "stop"?  Fail to load or
+>   > initialize the driver, or silent output, DMA error...?
+>   > 
+>   > >  Sorry but don't know at what
+>   > > point.  Card is an isa CS4236. Glad to provide
+>   > > any other info/testing.
+>   > 
+>   > Any relevant kernel messages are welcome.  Also, if you passed any
+>   > (module) options for the sound driver, show it, too.
+>   > 
+>   > The biggest change in ISA sound driver codes between 2.6.24 and 2.6.25
+>   > is that we dropped the PnP resource re-configuration via module
+>   > options of sound drivers.  They have to be adjusted via sysfs now 
+>   > (if really needed).
+>   > 
+>   > Otherwise, if it really worked on 2.6.24, we have a good chance to
+>   > identify the affecting changeset via bisect.  There are only a few
+>   > changes for sound/isa.
 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+> All I get is a cyclic noise burst (about 500ms frequency). 
+> No options to module load, prior to 25 manually loaded modules
+> with 'modprobe snd-cs4236',  with 25+ modules auto load at boot.
+> 
+> By removing "CONFIG_PNPBIOS" get total silence. So would assume the
+> PNP change the source.
+> 
+> Currently running 26-rc1-git4.
+
+There have been quite a few post .25 changes to PnP. Is there a difference 
+between .24 and .25 or between .24/.25 on the one hand and .26-rc1-git4 on 
+the other?
+
+Also, does using PNPACPI instead of PNPBIOS change anything?
+
+Rene.
