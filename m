@@ -1,62 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764136AbYEFPUD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763495AbYEFPVT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764136AbYEFPUD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 11:20:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754974AbYEFPTx
+	id S1763495AbYEFPVT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 11:21:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757330AbYEFPVI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 11:19:53 -0400
-Received: from mail0.scram.de ([78.47.204.202]:48194 "EHLO mail.scram.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754884AbYEFPTw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 11:19:52 -0400
-X-Spam-Score: -4.194
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
- * -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
- *      [score: 0.0000]
- *  0.2 AWL AWL: From: address is in the auto white-list
-Message-ID: <4820770B.1010002@scram.de>
-Date: Tue, 06 May 2008 17:19:39 +0200
-From: Jochen Friedrich <jochen@scram.de>
-User-Agent: Mozilla-Thunderbird 2.0.0.9 (X11/20080110)
+	Tue, 6 May 2008 11:21:08 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:46473 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754974AbYEFPVH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 May 2008 11:21:07 -0400
+Message-ID: <4820767D.8040202@zytor.com>
+Date: Tue, 06 May 2008 08:17:17 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-To: Wolfram Sang <w.sang@pengutronix.de>
-CC: Kumar Gala <galak@kernel.crashing.org>,
-       linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-       "Kernel, Linux" <linux-kernel@vger.kernel.org>,
-       Scott Wood <scottwood@freescale.com>, Linux I2C <i2c@lm-sensors.org>
-Subject: Re: [i2c] [PATCH6/7] i2c: adds support for i2c bus on Freescale	CPM1/CPM2
- controllers
-References: <47FF71A9.4010907@scram.de> <20080506135113.GA4265@pengutronix.de>
-In-Reply-To: <20080506135113.GA4265@pengutronix.de>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-15
+To: Ingo Molnar <mingo@elte.hu>
+CC: Mikael Pettersson <mikpe@it.uu.se>, tglx@linutronix.de, mingo@redhat.com,
+       venkatesh.pallipadi@intel.com, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.26-rc1 lies about PAT not being available
+References: <18464.5177.649312.999486@harpo.it.uu.se> <20080506114839.GD32591@elte.hu>
+In-Reply-To: <20080506114839.GD32591@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Wolfram,
+Ingo Molnar wrote:
+>> I know about Intel's PAT erratum (only 4 PAT entries work) and 
+>> understand that the kernel might not want to use a half-broken PAT 
+>> implementation, but the statement above is blatantly false: the kernel 
+>> IS built with PAT support and the CPU DOES have (half-broken) PAT HW 
+>> support as /proc/cpuinfo from earlier kernels confirms.
+> 
+> well the code is just being overly conservative, and the message is 
+> right: the kernel does not support PAT on that hw. Yet.
+> 
+> Please send us a patch and test whether it's working on your box? That's 
+> how the PAT code evolved: it initially was only enabled on a very small 
+> subset of CPUs. We can enable it on more CPUs if people test it.
+> 
+> To be conservative, please make the code emit a printk that this is PAT 
+> on not fully-working hw platform (only 4 PAT entries work). If there 
+> _is_ some erratum on that CPU affecting PAT reliability down the line, 
+> we at least want to have some clue in the syslog.
+> 
 
->> +	/* Begin transmission */
->> +	setbits8(&i2c_reg->i2com, 0x80);
-> Hardcoded value. (I also wonder if 0x81 might be more suitable, as it
-> keeps the "be-a-master"-bit set. Still, both values work with my setup.)
+For what it's worth, we only use four PAT entries, so it doesn't matter 
+that only four work.
 
->> +#ifdef I2C_CHIP_ERRATA
->> +	/*
->> +	 * Chip errata, clear enable. This is not needed on rev D4 CPUs.
->> +	 * Disabling I2C too early may cause too short stop condition
->> +	 */
->> +	udelay(4);
->> +	clrbits8(&i2c_reg->i2mod, 1);
-> I was unable to find the corresponding errata document, still I wonder
-> if it is a 0 which should have been written? The text says "clear" and
-> according to the reference manual, this means the bit should be 0.
+	-hpa
 
-setbits8() and clrbits8() use a bitmask as second argument.
-
-setbits8(&i2c_reg->i2com, 0x80) will set bit 7 on the i2com register but 
-leave bit 0 untouched. Likewise, clrbits8(&i2c_reg->i2mod, 1) will clear bit 0.
-
-Thanks,
-Jochen
