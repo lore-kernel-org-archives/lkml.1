@@ -1,52 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932833AbYEFUH5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764351AbYEFUQk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932833AbYEFUH5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 16:07:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764391AbYEFUH1
+	id S1764351AbYEFUQk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 16:16:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753905AbYEFUQ3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 16:07:27 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:36055 "EHLO
+	Tue, 6 May 2008 16:16:29 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:55633 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1763656AbYEFUH0 (ORCPT
+	by vger.kernel.org with ESMTP id S1752202AbYEFUQ1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 16:07:26 -0400
-Date: Tue, 6 May 2008 13:06:20 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Hugh Dickins <hugh@veritas.com>
-cc: Ingo Molnar <mingo@elte.hu>, Jeff Chua <jeff.chua.linux@gmail.com>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Gabriel C <nix.or.die@googlemail.com>,
-       Hans Rosenfeld <hans.rosenfeld@amd.com>,
-       Arjan van de Ven <arjan@linux.intel.com>,
-       Nishanth Aravamudan <nacc@us.ibm.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [PATCH] x86: fix PAE pmd_bad bootup warning
-In-Reply-To: <Pine.LNX.4.64.0805062043580.11647@blonde.site>
-Message-ID: <alpine.LFD.1.10.0805061302080.32269@woody.linux-foundation.org>
-References: <b6a2187b0805051806v25fa1272xb08e0b70b9c3408@mail.gmail.com> <20080506124946.GA2146@elte.hu> <Pine.LNX.4.64.0805061435510.32567@blonde.site> <alpine.LFD.1.10.0805061138580.32269@woody.linux-foundation.org>
- <Pine.LNX.4.64.0805062043580.11647@blonde.site>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 6 May 2008 16:16:27 -0400
+Date: Tue, 6 May 2008 13:15:54 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Gabriel C <nix.or.die@googlemail.com>
+Cc: mgross@linux.intel.com, linux-kernel@vger.kernel.org, ashok.raj@intel.com,
+       shaohua.li@intel.com, anil.s.keshavamurthy@intel.com,
+       jbarnes@virtuousgeek.org, linux-pci@atrey.karlin.mff.cuni.cz
+Subject: Re: intel-iommu: CONFIG_DMAR*=y kills my box
+Message-Id: <20080506131554.4adb3f9c.akpm@linux-foundation.org>
+In-Reply-To: <4817A98D.8080007@googlemail.com>
+References: <48133A64.7020702@googlemail.com>
+	<4813660E.8080609@googlemail.com>
+	<20080429002901.GC31157@linux.intel.com>
+	<481677D3.5070800@googlemail.com>
+	<20080429225348.GA1672@linux.intel.com>
+	<4817A98D.8080007@googlemail.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Tue, 6 May 2008, Hugh Dickins wrote:
+On Wed, 30 Apr 2008 01:04:45 +0200
+Gabriel C <nix.or.die@googlemail.com> wrote:
 >
-> Fix Hans' good observation that follow_page() will never find pmd_huge()
-> because that would have already failed the pmd_bad test: test pmd_huge in
-> between the pmd_none and pmd_bad tests.  Tighten x86's pmd_huge() check?
-> No, once it's a hugepage entry, it can get quite far from a good pmd: for
-> example, PROT_NONE leaves it with only ACCESSED of the KERN_PGTABLE bits.
 
-I'd much rather have pdm_bad() etc fixed up instead, so that they do a 
-more proper test (not thinking that a PSE page is bad, since it clearly 
-isn't). And then, make them dependent on DEBUG_VM, because doing the 
-proper test will be more expensive.
+Guys, it's really painful having to scroll through thousand-line emails to
+find a few lines of information.  Please trim stuff.
 
-Hmm?
+> 
+> > 
+> > I do find it quite odd that a DMA code path specific to PCIE is somehow
+> > in the loop for a parallel port device.  Should this be possible?
+> 
+> I have no idea =) ( PCI folks added to CC )
+> 
+> > 
+> > I could easily be wrong so feel free to correct me but;
+> > I think your bios is goofy / unprepared to support IOMMU / VT-d and
+> > doing strange things with enumerated a parallel port on a PCIE bus with
+> > VTD is turned on...
+> 
+> I will contact ASUS peoples about the BIOS but it has for sure VT-d support and it is enabled.
 
-		Linus
+So..  what happened here?  It seems like a pretty fatal problem, and
+personally I don't think that contacting vendors about BIOS upgrades is a
+suitable general solution.  It would be much better to find a kernel-based
+fix or workaround?
+
+
