@@ -1,45 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932702AbYEFWAz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932528AbYEFWCU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932702AbYEFWAz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 18:00:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765704AbYEFWAU
+	id S932528AbYEFWCU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 18:02:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756277AbYEFWBw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 18:00:20 -0400
-Received: from smtpq2.tilbu1.nb.home.nl ([213.51.146.201]:47450 "EHLO
-	smtpq2.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760402AbYEFWAR (ORCPT
+	Tue, 6 May 2008 18:01:52 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:58144 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753605AbYEFWBv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 18:00:17 -0400
-Message-ID: <4820D522.50104@keyaccess.nl>
-Date: Wed, 07 May 2008 00:01:06 +0200
-From: Rene Herman <rene.herman@keyaccess.nl>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
-MIME-Version: 1.0
-To: Bjorn Helgaas <bjorn.helgaas@hp.com>
-CC: Uwe Bugla <uwe.bugla@gmx.de>, Takashi Iwai <tiwai@suse.de>,
-       Len Brown <len.brown@intel.com>, Andrew Morton <akpm@osdl.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 3/3] PNP: add AD1815 and AD1816 quirks
-References: <481FAC37.6090703@keyaccess.nl> <200805061308.14673.bjorn.helgaas@hp.com> <4820C846.2040205@keyaccess.nl> <200805061527.21134.bjorn.helgaas@hp.com>
-In-Reply-To: <200805061527.21134.bjorn.helgaas@hp.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+	Tue, 6 May 2008 18:01:51 -0400
+Date: Tue, 6 May 2008 15:01:26 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jeff Dike <jdike@addtoit.com>
+Cc: nix@esperi.org.uk, linux-kernel@vger.kernel.org,
+       user-mode-linux-devel@lists.sourceforge.net
+Subject: Re: [uml-devel] [PATCH 11/19] UML - Track and make up lost ticks
+Message-Id: <20080506150126.c849afa0.akpm@linux-foundation.org>
+In-Reply-To: <20080506214435.GA12998@c2.user-mode-linux.org>
+References: <20080425175613.GA11192@c2.user-mode-linux.org>
+	<877iegcx11.fsf@hades.wkstn.nix>
+	<20080429202924.GA13602@c2.user-mode-linux.org>
+	<20080506134655.4cac1014.akpm@linux-foundation.org>
+	<20080506214435.GA12998@c2.user-mode-linux.org>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -1.0 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 06-05-08 23:27, Bjorn Helgaas wrote:
+On Tue, 6 May 2008 17:44:35 -0400
+Jeff Dike <jdike@addtoit.com> wrote:
 
-> This part is just my general unhappiness about options like
-> "acpi_irq_nobalance" and "acpi_irq_isa=".  I was just wondering
-> what Windows does when it can't assign PNP IRQs.  Does it assign
-> them all before PCI, so they know they have enough?  Do it
-> dynamically move PCI interrupts?  Do it require explicit boot
-> flags like Linux does?  Or maybe nobody even needs those flags
-> on Linux, and the flags are effectively unused.
+> On Tue, May 06, 2008 at 01:46:55PM -0700, Andrew Morton wrote:
+> > This fix was already present in your "[PATCH 4/19] UML - Random driver fixes".
+> 
+> Ah, so that's where it ended up.
 
-That's for Len. I haven't used Windows in eight or nine years now and am 
-consequently progressively ignorant of it.
+Strange that the bug has always been there.  Some other change made it
+apparent?
 
-Rene.
+
+> > Perhaps we broke bisection?
+> 
+> No doubt.  Drop those two and I'll send fixed ones.
+
+OK.  uml-random-driver-style-fixes.patch needed to go also.
