@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932533AbYEFRk5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932572AbYEFRld@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932533AbYEFRk5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 13:40:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760906AbYEFRho
+	id S932572AbYEFRld (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 13:41:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761413AbYEFRhe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 13:37:44 -0400
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:50240 "EHLO
+	Tue, 6 May 2008 13:37:34 -0400
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:50136 "EHLO
 	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761788AbYEFRhh (ORCPT
+	with ESMTP id S1760367AbYEFRg4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 13:37:37 -0400
-Message-Id: <20080506173335.460883711@theryb.frec.bull.fr>
+	Tue, 6 May 2008 13:36:56 -0400
+Message-Id: <20080506173334.874538157@theryb.frec.bull.fr>
 References: <20080506173030.653828076@theryb.frec.bull.fr>
 User-Agent: quilt/0.46-1
-Date: Tue, 06 May 2008 19:31:40 +0200
+Date: Tue, 06 May 2008 19:31:00 +0200
 From: Benjamin Thery <benjamin.thery@bull.net>
 To: linux-kernel@vger.kernel.org
 Cc: "Eric W. Biederman" <ebiederm@xmission.com>, Tejun Heo <htejun@gmail.com>,
@@ -22,120 +22,71 @@ Cc: "Eric W. Biederman" <ebiederm@xmission.com>, Tejun Heo <htejun@gmail.com>,
        "Serge E. Hallyn" <serue@us.ibm.com>,
        Pavel Emelyanov <xemul@openvz.org>, netdev@vger.kernel.org,
        Benjamin Thery <benjamin.thery@bull.net>
-Subject: [PATCH 07/11] sysfs: Implement sysfs_delete_link and
- sysfs_rename_link
+Subject: [PATCH 03/11] sysfs: Implement __sysfs_get_dentry
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-sysfs: Implement sysfs_delete_link and sysfs_rename_link
+sysfs: Implement __sysfs_get_dentry
 
-When removing a symlink sysfs_remove_link does not provide
-enough information to figure out which tagged directory the symlink
-falls in.  So I need sysfs_delete_link which is passed the target
-of the symlink to delete.
-
-Further half the time when we are removing a symlink the code is
-actually renaming the symlink but not doing so explicitly because
-we don't have a symlink rename method. So I have added sysfs_rename_link
-as well.
-
-Both of these functions now have enough information to find a symlink
-in a tagged directory.  The only restriction is that they must be called
-before the target kobject is renamed or deleted.  If they are called
-later I loose track of which tag the target kobject was marked with
-and can no longer find the old symlink to remove it.
+This function is similar but much simpler to sysfs_get_dentry
+returns a sysfs dentry if one curently exists.
 
 Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
 Acked-by: Benjamin Thery <benjamin.thery@bull.net>
 ---
- fs/sysfs/symlink.c    |   31 +++++++++++++++++++++++++++++++
- include/linux/sysfs.h |   17 +++++++++++++++++
- 2 files changed, 48 insertions(+)
+ fs/sysfs/dir.c |   39 +++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 39 insertions(+)
 
-Index: linux-vanilla/fs/sysfs/symlink.c
+Index: linux-vanilla/fs/sysfs/dir.c
 ===================================================================
---- linux-vanilla.orig/fs/sysfs/symlink.c
-+++ linux-vanilla/fs/sysfs/symlink.c
-@@ -80,6 +80,21 @@ int sysfs_create_link(struct kobject * k
- }
- 
- /**
-+ *	sysfs_delete_link - remove symlink in object's directory.
-+ *	@kobj:	object we're acting for.
-+ *	@targ:	object we're pointing to.
-+ *	@name:	name of the symlink to remove.
-+ *
-+ *	Unlike sysfs_remove_link sysfs_delete_link has enough information
-+ *	to successfully delete symlinks in tagged directories.
-+ */
-+void sysfs_delete_link(struct kobject *kobj, struct kobject *targ,
-+			const char *name)
-+{
-+	sysfs_hash_and_remove(targ, kobj->sd, name);
-+}
-+
-+/**
-  *	sysfs_remove_link - remove symlink in object's directory.
-  *	@kobj:	object we're acting for.
-  *	@name:	name of the symlink to remove.
-@@ -97,6 +112,22 @@ void sysfs_remove_link(struct kobject * 
- 	sysfs_hash_and_remove(kobj, parent_sd, name);
+--- linux-vanilla.orig/fs/sysfs/dir.c
++++ linux-vanilla/fs/sysfs/dir.c
+@@ -768,6 +768,45 @@ void sysfs_remove_dir(struct kobject * k
+ 	__sysfs_remove_dir(sd);
  }
  
 +/**
-+ *	sysfs_rename_link - rename symlink in object's directory.
-+ *	@kobj:	object we're acting for.
-+ *	@targ:	object we're pointing to.
-+ *	@old:	previous name of the symlink.
-+ *	@new:	new name of the symlink.
++ *	__sysfs_get_dentry - get dentry for the given sysfs_dirent
++ *	@sb: superblock of the dentry to return
++ *	@sd: sysfs_dirent of interest
 + *
-+ *	A helper function for the common rename symlink idiom.
++ *	Get dentry for @sd.  Only return a dentry if one currently
++ *	exists.
++ *
++ *	LOCKING:
++ *	Kernel thread context (may sleep)
++ *
++ *	RETURNS:
++ *	Pointer to found dentry on success, NULL on failure.
 + */
-+int sysfs_rename_link(struct kobject *kobj, struct kobject *targ,
-+			const char *old, const char *new)
++static struct dentry *__sysfs_get_dentry(struct super_block *sb,
++					 struct sysfs_dirent *sd)
 +{
-+	sysfs_delete_link(kobj, targ, old);
-+	return sysfs_create_link(kobj, targ, new);
++	struct inode *inode;
++	struct dentry *dentry = NULL;
++
++	inode = ilookup5_nowait(sysfs_sb, sd->s_ino, sysfs_ilookup_test, sd);
++	if (inode && !(inode->i_state & I_NEW)) {
++		struct dentry *alias;
++		spin_lock(&dcache_lock);
++		list_for_each_entry(alias, &inode->i_dentry, d_alias) {
++			if (!IS_ROOT(alias) && d_unhashed(alias))
++				continue;
++			if (alias->d_sb != sb)
++				continue;
++			dentry = alias;
++			dget_locked(dentry);
++			break;
++		}
++		spin_unlock(&dcache_lock);
++	}
++	iput(inode);
++	return dentry;
 +}
 +
- static int sysfs_get_target_path(struct sysfs_dirent *parent_sd,
- 				 struct sysfs_dirent *target_sd, char *path)
+ int sysfs_rename_dir(struct kobject * kobj, const char *new_name)
  {
-Index: linux-vanilla/include/linux/sysfs.h
-===================================================================
---- linux-vanilla.orig/include/linux/sysfs.h
-+++ linux-vanilla/include/linux/sysfs.h
-@@ -111,6 +111,12 @@ int __must_check sysfs_create_link(struc
- 				   const char *name);
- void sysfs_remove_link(struct kobject *kobj, const char *name);
- 
-+int sysfs_rename_link(struct kobject *kobj, struct kobject *target,
-+			const char *old_name, const char *new_name);
-+
-+void sysfs_delete_link(struct kobject *dir, struct kobject *targ,
-+			const char *name);
-+
- int __must_check sysfs_create_group(struct kobject *kobj,
- 				    const struct attribute_group *grp);
- int sysfs_update_group(struct kobject *kobj,
-@@ -195,6 +201,17 @@ static inline void sysfs_remove_link(str
- {
- }
- 
-+static inline int sysfs_rename_link(struct kobject *k, struct kobject *t,
-+				    const char *old_name, const char *new_name)
-+{
-+	return 0;
-+}
-+
-+static inline void sysfs_delete_link(struct kobject *k, struct kobject *t,
-+				     const char *name)
-+{
-+}
-+
- static inline int sysfs_create_group(struct kobject *kobj,
- 				     const struct attribute_group *grp)
- {
+ 	struct sysfs_dirent *sd = kobj->sd;
 
 -- 
