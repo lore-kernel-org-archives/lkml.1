@@ -1,54 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760918AbYEFIz7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763472AbYEFIy7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760918AbYEFIz7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 04:55:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761072AbYEFIuv
+	id S1763472AbYEFIy7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 04:54:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757193AbYEFIus
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 04:50:51 -0400
-Received: from smtp.nokia.com ([192.100.105.134]:43128 "EHLO
-	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760642AbYEFIuQ (ORCPT
+	Tue, 6 May 2008 04:50:48 -0400
+Received: from smtp.nokia.com ([192.100.122.230]:45163 "EHLO
+	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760607AbYEFIuQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 6 May 2008 04:50:16 -0400
 From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Adrian Hunter <ext-adrian.hunter@nokia.com>,
        Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
-Subject: [PATCH take 2 05/28] UBIFS: add flash scanning
-Date: Tue,  6 May 2008 13:35:36 +0300
-Message-Id: <1210070159-22794-6-git-send-email-Artem.Bityutskiy@nokia.com>
+Subject: [PATCH take 2 16/28] UBIFS: add TNC shrinker
+Date: Tue,  6 May 2008 13:35:47 +0300
+Message-Id: <1210070159-22794-17-git-send-email-Artem.Bityutskiy@nokia.com>
 X-Mailer: git-send-email 1.5.4.1
 In-Reply-To: <1210070159-22794-1-git-send-email-Artem.Bityutskiy@nokia.com>
 References: <1210070159-22794-1-git-send-email-Artem.Bityutskiy@nokia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=unknown-8bit
 Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 06 May 2008 08:49:50.0527 (UTC) FILETIME=[2524B4F0:01C8AF56]
+X-OriginalArrivalTime: 06 May 2008 08:50:11.0355 (UTC) FILETIME=[318ECEB0:01C8AF56]
 X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a small sub-system which is doing eraseblock scanning. For
-example, this is needed during journal replay, recovery, or garbage
-collection.
+The TNC cache grows with time, because UBIFS caches the indexing nodes
+when the indexing B-tree is looked-up. But if the the file-system is
+large enough, the TNC may consume a lot of memory, in which UBIFS prunes
+it. Namely, it register memory shrinker for these purposes.
 
 Signed-off-by: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
 Signed-off-by: Adrian Hunter <ext-adrian.hunter@nokia.com>
 ---
- fs/ubifs/scan.c |  362 +++++++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 362 insertions(+), 0 deletions(-)
+ fs/ubifs/shrinker.c |  322 +++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 322 insertions(+), 0 deletions(-)
 
-diff --git a/fs/ubifs/scan.c b/fs/ubifs/scan.c
+diff --git a/fs/ubifs/shrinker.c b/fs/ubifs/shrinker.c
 new file mode 100644
-index 0000000..acf5c5f
+index 0000000..b100ed9
 --- /dev/null
-+++ b/fs/ubifs/scan.c
-@@ -0,0 +1,362 @@
++++ b/fs/ubifs/shrinker.c
+@@ -0,0 +1,322 @@
 +/*
 + * This file is part of UBIFS.
 + *
-+ * Copyright (C) 2006-2008 Nokia Corporation
++ * Copyright (C) 2006-2008 Nokia Corporation.
 + *
 + * This program is free software; you can redistribute it and/or modify it
 + * under the terms of the GNU General Public License version 2 as published by
@@ -63,349 +64,309 @@ index 0000000..acf5c5f
 + * this program; if not, write to the Free Software Foundation, Inc., 51
 + * Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 + *
-+ * Authors: Adrian Hunter
-+ *          Artem Bityutskiy (Битюцкий Артём)
++ * Authors: Artem Bityutskiy (Битюцкий Артём)
++ *          Adrian Hunter
 + */
 +
 +/*
-+ * This file implements the scan which is a general-purpose function for
-+ * determining what nodes are in an eraseblock. The scan is used to replay the
-+ * journal, to do garbage collection. for the TNC in-the-gaps method, and by
-+ * debugging functions.
++ * This file implements UBIFS shrinker which evicts clean znodes from the TNC
++ * tree when Linux VM needs more RAM.
++ *
++ * We do not implement any LRU lists to find oldest znodes to free because it
++ * would add additional overhead to the file system fast paths. So the shrinker
++ * just walks the TNC tree when searching for znodes to free.
++ *
++ * If the root of a TNC sub-tree is clean and old enough, then the children are
++ * also clean and old enough. So the shrinker walks the TNC in level order and
++ * dumps entire sub-trees.
++ *
++ * The age of znodes is just the time-stamp when they were last looked at.
++ * The current shrinker first tries to evict old znodes, then young ones.
++ *
++ * Since the shrinker is global, it has to protect against races with FS
++ * un-mounts, which is done by the 'ubifs_infos_lock' and 'c->umount_mutex'.
 + */
 +
 +#include "ubifs.h"
 +
-+/**
-+ * scan_padding_bytes - scan for padding bytes.
-+ * @buf: buffer to scan
-+ * @len: length of buffer
-+ *
-+ * This function returns the number of padding bytes on success and
-+ * %SCANNED_GARBAGE on failure.
++/* List of all UBIFS file-system instances */
++LIST_HEAD(ubifs_infos);
++
++/*
++ * We number each shrinker run and record the number on the ubifs_info structure
++ * so that we can easily work out which ubifs_info structures have already been
++ * done by the current run.
 + */
-+static int scan_padding_bytes(void *buf, int len)
-+{
-+	int pad_len = 0, max_pad_len = min_t(int, UBIFS_PAD_NODE_SZ, len);
-+	uint8_t *p = buf;
++static unsigned int shrinker_run_no;
 +
-+	dbg_scan("not a node");
++/* Protects 'ubifs_infos' list */
++DEFINE_SPINLOCK(ubifs_infos_lock);
 +
-+	while (pad_len < max_pad_len && *p++ == UBIFS_PADDING_BYTE)
-+		pad_len += 1;
-+
-+	if (!pad_len || (pad_len & 7))
-+		return SCANNED_GARBAGE;
-+
-+	dbg_scan("%d padding bytes", pad_len);
-+
-+	return pad_len;
-+}
++/* Global clean znode counter (for all mounted UBIFS instances) */
++atomic_long_t ubifs_clean_zn_cnt;
 +
 +/**
-+ * ubifs_scan_a_node - scan for a node or padding.
++ * shrink_tnc - shrink TNC tree.
 + * @c: UBIFS file-system description object
-+ * @buf: buffer to scan
-+ * @len: length of buffer
-+ * @lnum: logical eraseblock number
-+ * @offs: offset within the logical eraseblock
-+ * @quiet: print no messages
++ * @nr: number of znodes to free
++ * @age: the age of znodes to free
++ * @contention: if any contention, this is set to %1
 + *
-+ * This function returns a scanning code to indicate what was scanned.
++ * This function traverses TNC tree and frees clean znodes. It does not free
++ * clean znodes which younger then @age. Returns number of freed znodes.
 + */
-+int ubifs_scan_a_node(const struct ubifs_info *c, void *buf, int len, int lnum,
-+		      int offs, int quiet)
++static int shrink_tnc(struct ubifs_info *c, int nr, int age, int *contention)
 +{
-+	struct ubifs_ch *ch = buf;
-+	uint32_t magic;
++	int total_freed = 0;
++	struct ubifs_znode *znode, *zprev;
++	int time = get_seconds();
 +
-+	magic = le32_to_cpu(ch->magic);
++	ubifs_assert(mutex_is_locked(&c->umount_mutex));
++	ubifs_assert(mutex_is_locked(&c->tnc_mutex));
 +
-+	if (magic == 0xFFFFFFFF) {
-+		dbg_scan("hit empty space");
-+		return SCANNED_EMPTY_SPACE;
-+	}
++	if (!c->zroot.znode || atomic_long_read(&c->clean_zn_cnt) == 0)
++		return 0;
 +
-+	if (magic != UBIFS_NODE_MAGIC)
-+		return scan_padding_bytes(buf, len);
++	/*
++	 * Traverse the TNC tree in levelorder manner, so that it is possible
++	 * to destroy large sub-trees. Indeed, if a znode is old, then all its
++	 * children are older or of the same age.
++	 *
++	 * Note, we are holding 'c->tnc_mutex', so we do not have to lock the
++	 * 'c->space_lock' when _reading_ 'c->clean_zn_cnt', because it is
++	 * changed only when the 'c->tnc_mutex' is held.
++	 */
++	zprev = NULL;
++	znode = ubifs_tnc_levelorder_next(c->zroot.znode, NULL);
++	while (znode && total_freed < nr &&
++	       atomic_long_read(&c->clean_zn_cnt) > 0) {
++		int freed;
 +
-+	if (len < UBIFS_CH_SZ)
-+		return SCANNED_GARBAGE;
-+
-+	dbg_scan("scanning %s", dbg_ntype(ch->node_type));
-+
-+	if (ubifs_check_node(c, buf, lnum, offs, quiet))
-+		return SCANNED_A_CORRUPT_NODE;
-+
-+	if (ch->node_type == UBIFS_PAD_NODE) {
-+		struct ubifs_pad_node *pad = buf;
-+		int pad_len = le32_to_cpu(pad->pad_len);
-+		int node_len = le32_to_cpu(ch->len);
-+
-+		/* Validate the padding node */
-+		if (pad_len < 0 ||
-+		    offs + node_len + pad_len > c->leb_size) {
-+			if (!quiet) {
-+				ubifs_err("bad pad node at LEB %d:%d",
-+					  lnum, offs);
-+				dbg_dump_node(c, pad);
-+			}
-+			return SCANNED_A_BAD_PAD_NODE;
-+		}
-+
-+		/* Make the node pads to 8-byte boundary */
-+		if ((node_len + pad_len) & 7) {
-+			if (!quiet) {
-+				dbg_err("bad padding length %d - %d",
-+					offs, offs + node_len + pad_len);
-+			}
-+			return SCANNED_A_BAD_PAD_NODE;
-+		}
-+
-+		dbg_scan("%d bytes padded, offset now %d",
-+			 pad_len, ALIGN(offs + node_len + pad_len, 8));
-+
-+		return node_len + pad_len;
-+	}
-+
-+	return SCANNED_A_NODE;
-+}
-+
-+/**
-+ * ubifs_start_scan - create LEB scanning information at start of scan.
-+ * @c: UBIFS file-system description object
-+ * @lnum: logical eraseblock number
-+ * @offs: offset to start at (usually zero)
-+ * @sbuf: scan buffer (must be c->leb_size)
-+ *
-+ * This function returns %0 on success and a negative error code on failure.
-+ */
-+struct ubifs_scan_leb *ubifs_start_scan(const struct ubifs_info *c, int lnum,
-+					int offs, void *sbuf)
-+{
-+	struct ubifs_scan_leb *sleb;
-+	int err;
-+
-+	dbg_scan("scan LEB %d:%d", lnum, offs);
-+
-+	sleb = kzalloc(sizeof(struct ubifs_scan_leb), GFP_NOFS);
-+	if (!sleb)
-+		return ERR_PTR(-ENOMEM);
-+
-+	sleb->lnum = lnum;
-+	INIT_LIST_HEAD(&sleb->nodes);
-+	sleb->buf = sbuf;
-+
-+	err = ubi_read(c->ubi, lnum, sbuf + offs, offs, c->leb_size - offs);
-+	if (err && err != -EBADMSG) {
-+		ubifs_err("cannot read %d bytes from LEB %d:%d,"
-+			  " error %d", c->leb_size - offs, lnum, offs, err);
-+		kfree(sleb);
-+		return ERR_PTR(err);
-+	}
-+
-+	if (err == -EBADMSG)
-+		sleb->ecc = 1;
-+
-+	return sleb;
-+}
-+
-+/**
-+ * ubifs_end_scan - update LEB scanning information at end of scan.
-+ * @c: UBIFS file-system description object
-+ * @sleb: scanning information
-+ * @lnum: logical eraseblock number
-+ * @offs: offset to start at (usually zero)
-+ *
-+ * This function returns %0 on success and a negative error code on failure.
-+ */
-+void ubifs_end_scan(const struct ubifs_info *c, struct ubifs_scan_leb *sleb,
-+		    int lnum, int offs)
-+{
-+	lnum = lnum;
-+	dbg_scan("stop scanning LEB %d at offset %d", lnum, offs);
-+	ubifs_assert(offs % c->min_io_size == 0);
-+
-+	sleb->endpt = ALIGN(offs, c->min_io_size);
-+}
-+
-+/**
-+ * ubifs_add_snod - add a scanned node to LEB scanning information.
-+ * @c: UBIFS file-system description object
-+ * @sleb: scanning information
-+ * @buf: buffer containing node
-+ * @offs: offset of node on flash
-+ *
-+ * This function returns %0 on success and a negative error code on failure.
-+ */
-+int ubifs_add_snod(const struct ubifs_info *c, struct ubifs_scan_leb *sleb,
-+		   void *buf, int offs)
-+{
-+	struct ubifs_ch *ch = buf;
-+	struct ubifs_ino_node *ino = buf;
-+	struct ubifs_scan_node *snod;
-+
-+	snod = kzalloc(sizeof(struct ubifs_scan_node), GFP_NOFS);
-+	if (!snod)
-+		return -ENOMEM;
-+
-+	snod->sqnum = le64_to_cpu(ch->sqnum);
-+	snod->type = ch->node_type;
-+	snod->offs = offs;
-+	snod->len = le32_to_cpu(ch->len);
-+	snod->node = buf;
-+
-+	switch (ch->node_type) {
-+	case UBIFS_INO_NODE:
-+	case UBIFS_DENT_NODE:
-+	case UBIFS_XENT_NODE:
-+	case UBIFS_DATA_NODE:
-+	case UBIFS_TRUN_NODE:
 +		/*
-+		 * The key is in the same place in all keyed
-+		 * nodes.
++		 * If the znode is clean, but it is in the 'c->cnext' list, this
++		 * means that this znode has just been written to flash as a
++		 * part of commit and was marked clean. They will be removed
++		 * from the list at end commit. We cannot change the list,
++		 * because it is not protected by any mutex (design decision to
++		 * make commit really independent and parallel to main I/O). So
++		 * we just skip these znodes.
++		 *
++		 * Note, the 'clean_zn_cnt' counters are not updated until
++		 * after the commit, so the UBIFS shrinker does not report
++		 * the znodes which are in the 'c->cnext' list as freeable.
++		 *
++		 * Also note, if the root of a sub-tree is not in 'c->cnext',
++		 * then the whole sub-tree is not in 'c->cnext' as well, so it
++		 * is safe to dump whole sub-tree.
 +		 */
-+		key_read(c, &ino->key, &snod->key);
-+		break;
++
++		if (znode->cnext) {
++			/*
++			 * Very soon these znodes will be removed from the list
++			 * and become freeable.
++			 */
++			*contention = 1;
++		} else if (!ubifs_zn_dirty(znode) &&
++			   abs(time - znode->time) >= age) {
++			if (znode->parent)
++				znode->parent->zbranch[znode->iip].znode = NULL;
++			else
++				c->zroot.znode = NULL;
++
++			freed = ubifs_destroy_tnc_subtree(znode);
++			atomic_long_sub(freed, &ubifs_clean_zn_cnt);
++			atomic_long_sub(freed, &c->clean_zn_cnt);
++			ubifs_assert(atomic_long_read(&c->clean_zn_cnt) >= 0);
++			total_freed += freed;
++			znode = zprev;
++		}
++
++		if (unlikely(!c->zroot.znode))
++			break;
++
++		zprev = znode;
++		znode = ubifs_tnc_levelorder_next(c->zroot.znode, znode);
++		cond_resched();
 +	}
-+	list_add_tail(&snod->list, &sleb->nodes);
-+	sleb->nodes_cnt += 1;
++
++	return total_freed;
++}
++
++/**
++ * shrink_tnc_trees - shrink UBIFS TNC trees.
++ * @nr: number of znodes to free
++ * @age: the age of znodes to free
++ * @contention: if any contention, this is set to %1
++ *
++ * This function walks the list of mounted UBIFS file-systems and frees clean
++ * znodes which are older then @age, until at least @nr znodes are freed.
++ * Returns the number of freed znodes.
++ */
++static int shrink_tnc_trees(int nr, int age, int *contention)
++{
++	struct ubifs_info *c;
++	struct list_head *p;
++	unsigned int run_no;
++	int freed = 0;
++
++	spin_lock(&ubifs_infos_lock);
++	do
++		run_no = ++shrinker_run_no;
++	while (run_no == 0);
++	/* Iterate over all mounted UBIFS file-systems and try to shrink them */
++	p = ubifs_infos.next;
++	while (p != &ubifs_infos) {
++		c = list_entry(p, struct ubifs_info, infos_list);
++		/*
++		 * We move the ones we do to the end of the list, so we stop
++		 * when we see one we have already done.
++		 */
++		if (c->shrinker_run_no == run_no)
++			break;
++		if (!mutex_trylock(&c->umount_mutex)) {
++			/* Some un-mount is in progress, try next FS */
++			*contention = 1;
++			p = p->next;
++			continue;
++		}
++		/*
++		 * We're holding 'c->umount_mutex', so the file-system won't go
++		 * away.
++		 */
++		if (!mutex_trylock(&c->tnc_mutex)) {
++			mutex_unlock(&c->umount_mutex);
++			*contention = 1;
++			p = p->next;
++			continue;
++		}
++		spin_unlock(&ubifs_infos_lock);
++		/*
++		 * OK, now we have TNC locked, the file-system cannot go away -
++		 * it is safe to reap the cache.
++		 */
++		c->shrinker_run_no = run_no;
++		freed += shrink_tnc(c, nr, age, contention);
++		mutex_unlock(&c->tnc_mutex);
++		spin_lock(&ubifs_infos_lock);
++		/* Get the next list element before we move this one */
++		p = p->next;
++		/*
++		 * Move this one to the end of the list to provide some
++		 * fairness.
++		 */
++		list_del(&c->infos_list);
++		list_add_tail(&c->infos_list, &ubifs_infos);
++		mutex_unlock(&c->umount_mutex);
++		if (freed >= nr)
++			break;
++	}
++	spin_unlock(&ubifs_infos_lock);
++	return freed;
++}
++
++/**
++ * kick_a_thread - kick a background thread to start commit.
++ *
++ * This function kicks a background thread to start background commit. Returns
++ * %-1 if a thread was kicked or there is another reason to assume the memory
++ * will soon be freed or become freeable. If there are no dirty znodes, returns
++ * %0.
++ */
++static int kick_a_thread(void)
++{
++	int i;
++	struct ubifs_info *c;
++
++	/*
++	 * Iterate over all mounted UBIFS file-systems and find out if there is
++	 * already an ongoing commit operation there. If no, then iterate for
++	 * the second time and initiate background commit.
++	 */
++	spin_lock(&ubifs_infos_lock);
++	for (i = 0; i < 2; i++) {
++		list_for_each_entry(c, &ubifs_infos, infos_list) {
++			long dirty_zn_cnt;
++
++			if (!mutex_trylock(&c->umount_mutex)) {
++				/*
++				 * Some un-mount is in progress, it will
++				 * certainly free memory, so just return.
++				 */
++				spin_unlock(&ubifs_infos_lock);
++				return -1;
++			}
++
++			dirty_zn_cnt = atomic_long_read(&c->dirty_zn_cnt);
++
++			if (!dirty_zn_cnt || c->cmt_state == COMMIT_BROKEN ||
++			    c->ro_media) {
++				mutex_unlock(&c->umount_mutex);
++				continue;
++			}
++
++			if (c->cmt_state != COMMIT_RESTING) {
++				spin_unlock(&ubifs_infos_lock);
++				mutex_unlock(&c->umount_mutex);
++				return -1;
++			}
++
++			if (i == 1) {
++				list_del(&c->infos_list);
++				list_add_tail(&c->infos_list, &ubifs_infos);
++				spin_unlock(&ubifs_infos_lock);
++
++				ubifs_request_bg_commit(c);
++				mutex_unlock(&c->umount_mutex);
++				return -1;
++			}
++			mutex_unlock(&c->umount_mutex);
++		}
++	}
++	spin_unlock(&ubifs_infos_lock);
++
 +	return 0;
 +}
 +
-+/**
-+ * ubifs_scanned_corruption - print information after UBIFS scanned corruption.
-+ * @c: UBIFS file-system description object
-+ * @lnum: LEB number of corruption
-+ * @offs: offset of corruption
-+ * @buf: buffer containing corruption
-+ */
-+void ubifs_scanned_corruption(const struct ubifs_info *c, int lnum, int offs,
-+			      void *buf)
++int ubifs_shrinker(int nr, gfp_t gfp_mask)
 +{
-+	int len;
++	int freed, contention = 0;
++	long clean_zn_cnt = atomic_long_read(&ubifs_clean_zn_cnt);
 +
-+	ubifs_err("corrupted data at LEB %d:%d", lnum, offs);
-+	if (dbg_failure_mode)
-+		return;
-+	len = c->leb_size - offs;
-+	if (len > 4096)
-+		len = 4096;
-+	dbg_err("first %d bytes from LEB %d:%d", len, lnum, offs);
-+	print_hex_dump(KERN_DEBUG, "", DUMP_PREFIX_OFFSET, 32, 4, buf, len, 1);
-+}
++	if (nr == 0)
++		return clean_zn_cnt;
 +
-+/**
-+ * ubifs_scan - scan a logical eraseblock.
-+ * @c: UBIFS file-system description object
-+ * @lnum: logical eraseblock number
-+ * @offs: offset to start at (usually zero)
-+ * @sbuf: scan buffer (must be c->leb_size)
-+ *
-+ * This function scans LEB number @lnum and returns complete information about
-+ * its contents. Returns an error code in case of failure.
-+ */
-+struct ubifs_scan_leb *ubifs_scan(const struct ubifs_info *c, int lnum,
-+				  int offs, void *sbuf)
-+{
-+	void *buf = sbuf + offs;
-+	int err, len = c->leb_size - offs;
-+	struct ubifs_scan_leb *sleb;
-+
-+	sleb = ubifs_start_scan(c, lnum, offs, sbuf);
-+	if (IS_ERR(sleb))
-+		return sleb;
-+
-+	while (len >= 8) {
-+		struct ubifs_ch *ch = buf;
-+		int node_len, ret;
-+
-+		dbg_scan("look at LEB %d:%d (%d bytes left)",
-+			 lnum, offs, len);
-+
-+		cond_resched();
-+
-+		ret = ubifs_scan_a_node(c, buf, len, lnum, offs, 0);
-+
-+		if (ret > 0) {
-+			/* Padding bytes or a valid padding node */
-+			offs += ret;
-+			buf += ret;
-+			len -= ret;
-+			continue;
-+		}
-+
-+		if (ret == SCANNED_EMPTY_SPACE)
-+			/* Empty space is checked later */
-+			break;
-+
-+		switch (ret) {
-+		case SCANNED_GARBAGE:
-+			dbg_err("garbage");
-+			goto corrupted;
-+		case SCANNED_A_NODE:
-+			break;
-+		case SCANNED_A_CORRUPT_NODE:
-+		case SCANNED_A_BAD_PAD_NODE:
-+			dbg_err("bad node");
-+			goto corrupted;
-+		default:
-+			dbg_err("unknown");
-+			goto corrupted;
-+		}
-+
-+		err = ubifs_add_snod(c, sleb, buf, offs);
-+		if (err)
-+			goto error;
-+
-+		node_len = ALIGN(le32_to_cpu(ch->len), 8);
-+		offs += node_len;
-+		buf += node_len;
-+		len -= node_len;
++	if (!clean_zn_cnt) {
++		/*
++		 * No clean znodes, nothing to reap. All we can do in this case
++		 * is to kick background threads to start commit, which will
++		 * probably make clean znodes which, in turn, will be freeable.
++		 * And we return -1 which means will make VM call us again
++		 * later.
++		 */
++		dbg_tnc("no clean znodes, kick a thread");
++		return kick_a_thread();
 +	}
 +
-+	if (offs % c->min_io_size)
-+		goto corrupted;
++	freed = shrink_tnc_trees(nr, OLD_ZNODE_AGE, &contention);
++	if (freed >= nr)
++		goto out;
 +
-+	ubifs_end_scan(c, sleb, lnum, offs);
++	dbg_tnc("not enough old znodes, try to free young ones");
++	freed += shrink_tnc_trees(nr - freed, YOUNG_ZNODE_AGE, &contention);
++	if (freed >= nr)
++		goto out;
 +
-+	for (; len > 4; offs += 4, buf = buf + 4, len -= 4)
-+		if (*(uint32_t *)buf != 0xffffffff)
-+			break;
-+	for (; len; offs++, buf++, len--)
-+		if (*(uint8_t *)buf != 0xff) {
-+			ubifs_err("corrupt empty space at LEB %d:%d",
-+				  lnum, offs);
-+			goto corrupted;
-+		}
++	dbg_tnc("not enough young znodes, free all");
++	freed += shrink_tnc_trees(nr - freed, 0, &contention);
 +
-+	return sleb;
-+
-+corrupted:
-+	ubifs_scanned_corruption(c, lnum, offs, buf);
-+	err = -EUCLEAN;
-+error:
-+	ubifs_err("LEB %d scanning failed", lnum);
-+	ubifs_scan_destroy(sleb);
-+	return ERR_PTR(err);
-+}
-+
-+/**
-+ * ubifs_scan_destroy - destroy LEB scanning information.
-+ * @sleb: scanning information to free
-+ */
-+void ubifs_scan_destroy(struct ubifs_scan_leb *sleb)
-+{
-+	struct ubifs_scan_node *node;
-+	struct list_head *head;
-+
-+	head = &sleb->nodes;
-+	while (!list_empty(head)) {
-+		node = list_entry(head->next, struct ubifs_scan_node, list);
-+		list_del(&node->list);
-+		kfree(node);
++	if (!freed && contention) {
++		dbg_tnc("freed nothing, but contention");
++		return -1;
 +	}
-+	kfree(sleb);
++
++out:
++	dbg_tnc("%d znodes were freed, requested %d", freed, nr);
++	return freed;
 +}
 -- 
 1.5.4.1
