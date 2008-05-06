@@ -1,66 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752941AbYEFEmA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760294AbYEFEnq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752941AbYEFEmA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 00:42:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755675AbYEFEll
+	id S1760294AbYEFEnq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 00:43:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752056AbYEFEnh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 00:41:41 -0400
-Received: from wf-out-1314.google.com ([209.85.200.171]:23016 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754524AbYEFElk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 00:41:40 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
-        b=jMpIL+8Kb+4N5Rn4b+xphprgwqdEvVvdszx43R4aXsolbSNkDde+IbWUgaWbQSIYdMbfi+i0EkDRDbaJHlnt1Bvk8QefTgyIi7rEe9q62xRzXZYSWeecKmZcRV/3O/2ac+fYejuPz6l3lPrF3nLeykFLN/SA1PQLdaWP5bQ28SM=
-Date: Tue, 6 May 2008 12:45:35 +0800
-From: WANG Cong <xiyou.wangcong@gmail.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Andrew Morton <akpm@osdl.org>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       Alexander Viro <viro@zeniv.linux.org.uk>
-Subject: [Resend Patch] fs/binfmt_elf.c: fix a wrong free
-Message-ID: <20080506044535.GH2893@hack>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Tue, 6 May 2008 00:43:37 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:51923 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751052AbYEFEnh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 May 2008 00:43:37 -0400
+Date: Tue, 6 May 2008 14:43:18 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: "Pekka Enberg" <penberg@cs.helsinki.fi>, linux-next@vger.kernel.org,
+       sfrench@us.ibm.com, swhiteho@redhat.com, stefanr@s5r6.in-berlin.de,
+       jeff@garzik.org, ralf@linux-mips.org, drzeus-list@drzeus.cx,
+       jack@ucw.cz, cbou@mail.ru, jens.axboe@oracle.com, ericvh@gmail.com,
+       wim@iguana.be, chris@zankel.net, nico@cam.org, clameter@sgi.com,
+       ezk@cs.sunysb.edu, linux-kernel@vger.kernel.org
+Subject: Re: git trees which are not yet in linux-next
+Message-Id: <20080506144318.5432cdcc.sfr@canb.auug.org.au>
+In-Reply-To: <20080505113128.d68863a2.akpm@linux-foundation.org>
+References: <20080502151206.b40f77ea.akpm@linux-foundation.org>
+	<84144f020805051116mdbbea01q39f17bce95c95dbb@mail.gmail.com>
+	<20080505113128.d68863a2.akpm@linux-foundation.org>
+X-Mailer: Sylpheed 2.5.0beta3 (GTK+ 2.12.9; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Tue__6_May_2008_14_43_18_+1000_yS6qlieqTAw2LtLV"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--Signature=_Tue__6_May_2008_14_43_18_+1000_yS6qlieqTAw2LtLV
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-In kmalloc failing path, we shouldn't free pointers in 'info',
-because the struct 'info' is uninitilized when kmalloc is called.
+On Mon, 5 May 2008 11:31:28 -0700 Andrew Morton <akpm@linux-foundation.org>=
+ wrote:
+>
+> So I'd suggest that you have a #for-next which contains material for 2.6.=
+26
+> and 2.6.27 and a #for-mm which contains material for 2.6.28+.
+>=20
+> Only problem is, I'd need to generate the #for-next -> #for-mm diff, and
+> that particular git operation has been troublesome in the past.
 
-And when kmalloc returns NULL, it's needless to kfree it.
+Yeah, it is fine if one is a subset of the other but otherwise fraught
+with danger.
 
-Signed-off-by: WANG Cong <wangcong@zeuux.org>
-Cc: Alexander Viro <viro@zeniv.linux.org.uk>
-Reviewed-by: Pekka Enberg <penberg@cs.helsinki.fi>
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
---
-diff --git a/fs/binfmt_elf.c b/fs/binfmt_elf.c
-index f6d5a9d..357b503 100644
---- a/fs/binfmt_elf.c
-+++ b/fs/binfmt_elf.c
-@@ -1900,7 +1900,7 @@ static int elf_core_dump(long signr, struct pt_regs *regs, struct file *file, un
- 	/* alloc memory for large data structures: too large to be on stack */
- 	elf = kmalloc(sizeof(*elf), GFP_KERNEL);
- 	if (!elf)
--		goto cleanup;
-+		goto out;
- 	
- 	segs = current->mm->map_count;
- #ifdef ELF_CORE_EXTRA_PHDRS
-@@ -2034,8 +2034,9 @@ end_coredump:
- 	set_fs(fs);
- 
- cleanup:
--	kfree(elf);
- 	free_note_info(&info);
-+	kfree(elf);
-+out:
- 	return has_dumped;
- }
- 
+--Signature=_Tue__6_May_2008_14_43_18_+1000_yS6qlieqTAw2LtLV
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFIH+H1TgG2atn1QN8RAtopAJ9s6CVvLcN56/yMlkPxM5ztOyAk3wCeOiBP
+GFjfJAKh4g1jIX36IDKqvpo=
+=dWus
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__6_May_2008_14_43_18_+1000_yS6qlieqTAw2LtLV--
