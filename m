@@ -1,63 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762356AbYEFFpq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762236AbYEFFsA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762356AbYEFFpq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 01:45:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754146AbYEFFpR
+	id S1762236AbYEFFsA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 01:48:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751699AbYEFFru
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 01:45:17 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:50567 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751521AbYEFFpM (ORCPT
+	Tue, 6 May 2008 01:47:50 -0400
+Received: from vsmtp02.dti.ne.jp ([202.216.231.137]:51806 "EHLO
+	vsmtp02.dti.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751521AbYEFFrt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 01:45:12 -0400
-Date: Tue, 06 May 2008 14:40:39 +0900
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: on CONFIG_MM_OWNER=y, kernel panic is possible.
-Cc: kosaki.motohiro@jp.fujitsu.com
-Message-Id: <20080506142255.AC5D.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
+	Tue, 6 May 2008 01:47:49 -0400
+From: hooanon05@yahoo.co.jp
+Subject: Re: [RFC PATCH 1/2] Union Mount: glibc readdir support 
+To: bharata@linux.vnet.ibm.com
+Cc: Ulrich Drepper <drepper@redhat.com>, bsn.0007@gmail.com,
+       libc-alpha@sourceware.org, Jan Blunck <jblunck@suse.de>,
+       Erez Zadok <ezk@cs.sunysb.edu>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, viro@zeniv.linux.org.uk,
+       Christoph Hellwig <hch@lst.de>, Mingming Cao <cmm@us.ibm.com>,
+       Dave Hansen <haveblue@us.ibm.com>,
+       Trond Myklebust <trond.myklebust@fys.uio.no>,
+       David Woodhouse <dwmw2@infradead.org>
+In-Reply-To: <20080506042117.GA29298@in.ibm.com>
+References: <20080429133201.GA9938@localhost.localdomain> <20080429133346.GB9938@localhost.localdomain> <48195E69.3030701@redhat.com> <20080506042117.GA29298@in.ibm.com>
+Date: Tue, 06 May 2008 14:46:14 +0900
+Message-ID: <6773.1210052774@jrobl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-on CONFIG_MM_OWNER=y (that is automatically turned on by mem-cgroup),
-kernel panic is possible by following scenario in mm_update_next_owner().
 
-1. mm_update_next_owner() is called.
-2. found caller task in do_each_thread() loop.
-3. thus, BUG_ON(c == p) is true, it become kernel panic.
+Bharata B Rao:
+> At the server side, I can't see how NFS server could export a union.
+> I don't see how this could be sanely done with Union Mount. Erez, how
+> does Unionfs handle this ?
+> 
+> Is dis-allowing NFS-exporting of unions an option ?
 
-end up, We should left out current task.
-
-
-Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-CC: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-CC: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-CC: Balbir Singh <balbir@linux.vnet.ibm.com>
-
----
- kernel/exit.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-Index: b/kernel/exit.c
-===================================================================
---- a/kernel/exit.c     2008-05-04 22:57:23.000000000 +0900
-+++ b/kernel/exit.c     2008-05-06 15:01:26.000000000 +0900
-@@ -627,7 +627,7 @@ retry:
-         * here often
-         */
-        do_each_thread(g, c) {
--               if (c->mm == mm)
-+               if ((c != p) && (c->mm == mm))
-                        goto assign_new_owner;
-        } while_each_thread(g, c);
+As a note, there were many requests for aufs to support NFS-exporting.
+And it was already implemented. The encode/decode_fh functions in aufs
+behave like sub-nfsd.
 
 
+Junjiro Okajima
