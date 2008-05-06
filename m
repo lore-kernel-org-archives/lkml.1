@@ -1,1519 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764190AbYEFJCi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764347AbYEFJDE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764190AbYEFJCi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 05:02:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757324AbYEFIva
+	id S1764347AbYEFJDE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 05:03:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761481AbYEFIvc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 04:51:30 -0400
-Received: from smtp.nokia.com ([192.100.122.233]:44764 "EHLO
+	Tue, 6 May 2008 04:51:32 -0400
+Received: from smtp.nokia.com ([192.100.122.233]:44779 "EHLO
 	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760887AbYEFIuf (ORCPT
+	with ESMTP id S1759277AbYEFIup (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 04:50:35 -0400
+	Tue, 6 May 2008 04:50:45 -0400
 From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Adrian Hunter <ext-adrian.hunter@nokia.com>,
        Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
-Subject: [PATCH take 2 27/28] UBIFS: add debugging stuff
-Date: Tue,  6 May 2008 13:35:58 +0300
-Message-Id: <1210070159-22794-28-git-send-email-Artem.Bityutskiy@nokia.com>
+Subject: [PATCH take 2 21/28] UBIFS: add Garbage Collector
+Date: Tue,  6 May 2008 13:35:52 +0300
+Message-Id: <1210070159-22794-22-git-send-email-Artem.Bityutskiy@nokia.com>
 X-Mailer: git-send-email 1.5.4.1
 In-Reply-To: <1210070159-22794-1-git-send-email-Artem.Bityutskiy@nokia.com>
 References: <1210070159-22794-1-git-send-email-Artem.Bityutskiy@nokia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=unknown-8bit
 Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 06 May 2008 08:50:25.0714 (UTC) FILETIME=[3A1DD120:01C8AF56]
+X-OriginalArrivalTime: 06 May 2008 08:50:37.0307 (UTC) FILETIME=[4106C4B0:01C8AF56]
 X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The UBIFS code is large, and we have a plenty of debugging stuff
-in there which helps to catch bugs.
+This is one of the most important parts of UBIFS. Since all updates
+are out-of-place, we need to do garbage collection from time to time,
+which is implemented in this file. The UBIFS GC does not do much -
+it just move clean data to the journal and erases the cleaned-up
+eraseblock. The main trick is done in TNC commit which guarantees
+that the commit operation is always possible, even if there is no
+clean space, in which case it may use in-place updates provided
+by UBI.
 
 Signed-off-by: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
 Signed-off-by: Adrian Hunter <ext-adrian.hunter@nokia.com>
 ---
- fs/ubifs/debug.c | 1463 ++++++++++++++++++++++++++++++++++++++++++++++++++++++
- fs/ubifs/debug.h |  392 +++++++++++++++
- 2 files changed, 1855 insertions(+), 0 deletions(-)
+ fs/ubifs/gc.c |  773 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 773 insertions(+), 0 deletions(-)
 
-diff --git a/fs/ubifs/debug.c b/fs/ubifs/debug.c
+diff --git a/fs/ubifs/gc.c b/fs/ubifs/gc.c
 new file mode 100644
-index 0000000..6af0e66
+index 0000000..7b43655
 --- /dev/null
-+++ b/fs/ubifs/debug.c
-@@ -0,0 +1,1463 @@
-+/*
-+ * This file is part of UBIFS.
-+ *
-+ * Copyright (C) 2006-2008 Nokia Corporation
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License version 2 as published by
-+ * the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful, but WITHOUT
-+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-+ * more details.
-+ *
-+ * You should have received a copy of the GNU General Public License along with
-+ * this program; if not, write to the Free Software Foundation, Inc., 51
-+ * Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
-+ *
-+ * Authors: Artem Bityutskiy (Битюцкий Артём)
-+ *          Adrian Hunter
-+ */
-+
-+/*
-+ * This file implements most of the debugging stuff which is compiled in only
-+ * when it is enabled. But some debugging check functions are implemented in
-+ * corresponding subsystem, just because they are closely related and utilize
-+ * various local functions of those subsystems.
-+ */
-+
-+#define UBIFS_DBG_PRESERVE_UBI
-+
-+#include "ubifs.h"
-+#include <linux/module.h>
-+#include <linux/moduleparam.h>
-+
-+#ifdef CONFIG_UBIFS_FS_DEBUG
-+
-+DEFINE_SPINLOCK(dbg_lock);
-+
-+static char dbg_key_buf0[128];
-+static char dbg_key_buf1[128];
-+
-+unsigned int ubifs_msg_flags = UBIFS_MSG_FLAGS_DEFAULT;
-+unsigned int ubifs_chk_flags = UBIFS_CHK_FLAGS_DEFAULT;
-+unsigned int ubifs_tst_flags;
-+
-+module_param_named(debug_msgs, ubifs_msg_flags, uint, S_IRUGO | S_IWUSR);
-+module_param_named(debug_chks, ubifs_chk_flags, uint, S_IRUGO | S_IWUSR);
-+module_param_named(debug_tsts, ubifs_tst_flags, uint, S_IRUGO | S_IWUSR);
-+
-+MODULE_PARM_DESC(debug_msgs, "Debug message type flags");
-+MODULE_PARM_DESC(debug_chks, "Debug check flags");
-+MODULE_PARM_DESC(debug_tsts, "Debug special test flags");
-+
-+static const char *get_key_fmt(int fmt)
-+{
-+	switch (fmt) {
-+	case UBIFS_SIMPLE_KEY_FMT:
-+		return "simple";
-+	default:
-+		return "unknown/invalid format";
-+	}
-+}
-+
-+static const char *get_key_hash(int hash)
-+{
-+	switch (hash) {
-+	case UBIFS_KEY_HASH_R5:
-+		return "R5";
-+	case UBIFS_KEY_HASH_TEST:
-+		return "test";
-+	default:
-+		return "unknown/invalid name hash";
-+	}
-+}
-+
-+static const char *get_key_type(int type)
-+{
-+	switch (type) {
-+	case UBIFS_INO_KEY:
-+		return "inode";
-+	case UBIFS_DENT_KEY:
-+		return "direntry";
-+	case UBIFS_XENT_KEY:
-+		return "xentry";
-+	case UBIFS_DATA_KEY:
-+		return "data";
-+	case UBIFS_TRUN_KEY:
-+		return "truncate";
-+	default:
-+		return "unknown/invalid key";
-+	}
-+}
-+
-+static void sprintf_key(const struct ubifs_info *c, const union ubifs_key *key,
-+			char *buffer)
-+{
-+	char *p = buffer;
-+	int type = key_type(c, key);
-+
-+	if (c->key_fmt == UBIFS_SIMPLE_KEY_FMT) {
-+		switch (type) {
-+		case UBIFS_INO_KEY:
-+			sprintf(p, "(%lu, %s)", key_ino(c, key),
-+			       get_key_type(type));
-+			break;
-+		case UBIFS_DENT_KEY:
-+		case UBIFS_XENT_KEY:
-+			sprintf(p, "(%lu, %s, %#08x)", key_ino(c, key),
-+				get_key_type(type), key_hash(c, key));
-+			break;
-+		case UBIFS_DATA_KEY:
-+			sprintf(p, "(%lu, %s, %u)", key_ino(c, key),
-+				get_key_type(type), key_block(c, key));
-+			break;
-+		case UBIFS_TRUN_KEY:
-+			sprintf(p, "(%lu, %s)",
-+				key_ino(c, key), get_key_type(type));
-+			break;
-+		default:
-+			sprintf(p, "(bad key type: %#08x, %#08x)",
-+				key->u32[0], key->u32[1]);
-+		}
-+	} else
-+		sprintf(p, "bad key format %d", c->key_fmt);
-+}
-+
-+const char *dbg_key_str0(const struct ubifs_info *c, const union ubifs_key *key)
-+{
-+	/* dbg_lock must be held */
-+	sprintf_key(c, key, dbg_key_buf0);
-+	return dbg_key_buf0;
-+}
-+
-+const char *dbg_key_str1(const struct ubifs_info *c, const union ubifs_key *key)
-+{
-+	/* dbg_lock must be held */
-+	sprintf_key(c, key, dbg_key_buf1);
-+	return dbg_key_buf1;
-+}
-+
-+const char *dbg_ntype(int type)
-+{
-+	switch (type) {
-+	case UBIFS_PAD_NODE:
-+		return "padding node";
-+	case UBIFS_SB_NODE:
-+		return "superblock node";
-+	case UBIFS_MST_NODE:
-+		return "master node";
-+	case UBIFS_REF_NODE:
-+		return "reference node";
-+	case UBIFS_INO_NODE:
-+		return "inode node";
-+	case UBIFS_DENT_NODE:
-+		return "direntry node";
-+	case UBIFS_XENT_NODE:
-+		return "xentry node";
-+	case UBIFS_DATA_NODE:
-+		return "data node";
-+	case UBIFS_TRUN_NODE:
-+		return "truncate node";
-+	case UBIFS_IDX_NODE:
-+		return "indexing node";
-+	case UBIFS_CS_NODE:
-+		return "commit start node";
-+	case UBIFS_ORPH_NODE:
-+		return "orphan node";
-+	default:
-+		return "unknown node";
-+	}
-+}
-+
-+static const char *dbg_gtype(int type)
-+{
-+	switch (type) {
-+	case UBIFS_NO_NODE_GROUP:
-+		return "no node group";
-+	case UBIFS_IN_NODE_GROUP:
-+		return "in node group";
-+	case UBIFS_LAST_OF_NODE_GROUP:
-+		return "last of node group";
-+	default:
-+		return "unknown";
-+	}
-+}
-+
-+const char *dbg_cstate(int cmt_state)
-+{
-+	switch (cmt_state) {
-+	case COMMIT_RESTING:
-+		return "commit resting";
-+	case COMMIT_BACKGROUND:
-+		return "background commit requested";
-+	case COMMIT_REQUIRED:
-+		return "commit required";
-+	case COMMIT_RUNNING_BACKGROUND:
-+		return "BACKGROUND commit running";
-+	case COMMIT_RUNNING_REQUIRED:
-+		return "commit running and required";
-+	case COMMIT_BROKEN:
-+		return "broken commit";
-+	default:
-+		return "unknown commit state";
-+	}
-+}
-+
-+static void dump_ch(const struct ubifs_ch *ch)
-+{
-+	printk(KERN_DEBUG "\tmagic          %#x\n", le32_to_cpu(ch->magic));
-+	printk(KERN_DEBUG "\tcrc            %#x\n", le32_to_cpu(ch->crc));
-+	printk(KERN_DEBUG "\tnode_type      %d (%s)\n", ch->node_type,
-+	       dbg_ntype(ch->node_type));
-+	printk(KERN_DEBUG "\tgroup_type     %d (%s)\n", ch->group_type,
-+	       dbg_gtype(ch->group_type));
-+	printk(KERN_DEBUG "\tsqnum          %llu\n", le64_to_cpu(ch->sqnum));
-+	printk(KERN_DEBUG "\tlen            %u\n", le32_to_cpu(ch->len));
-+}
-+
-+void dbg_dump_inode(const struct ubifs_info *c, const struct inode *inode)
-+{
-+	const struct ubifs_inode *ui = ubifs_inode(inode);
-+
-+	printk(KERN_DEBUG "inode      %lu\n", inode->i_ino);
-+	printk(KERN_DEBUG "size       %llu\n", i_size_read(inode));
-+	printk(KERN_DEBUG "nlink      %u\n", inode->i_nlink);
-+	printk(KERN_DEBUG "uid        %u\n", (unsigned int)inode->i_uid);
-+	printk(KERN_DEBUG "gid        %u\n", (unsigned int)inode->i_gid);
-+	printk(KERN_DEBUG "atime      %u.%u\n",
-+	       (unsigned int)inode->i_atime.tv_sec,
-+	       (unsigned int)inode->i_atime.tv_nsec);
-+	printk(KERN_DEBUG "mtime      %u.%u\n",
-+	       (unsigned int)inode->i_mtime.tv_sec,
-+	       (unsigned int)inode->i_mtime.tv_nsec);
-+	printk(KERN_DEBUG "ctime       %u.%u\n",
-+	       (unsigned int)inode->i_ctime.tv_sec,
-+	       (unsigned int)inode->i_ctime.tv_nsec);
-+	printk(KERN_DEBUG "creat_sqnum %llu\n", ui->creat_sqnum);
-+	printk(KERN_DEBUG "xattr_size  %lld\n", ui->xattr_size);
-+	printk(KERN_DEBUG "xattr_cnt   %d\n", ui->xattr_cnt);
-+	printk(KERN_DEBUG "xattr_names %d\n", ui->xattr_names);
-+	printk(KERN_DEBUG "dirty       %u\n", ui->dirty);
-+	printk(KERN_DEBUG "xattr       %u\n", ui->xattr);
-+	printk(KERN_DEBUG "flags       %d\n", ui->flags);
-+	printk(KERN_DEBUG "compr_type  %d\n", ui->compr_type);
-+	printk(KERN_DEBUG "data_len    %d\n", ui->data_len);
-+}
-+
-+void dbg_dump_node(const struct ubifs_info *c, const void *node)
-+{
-+	int i, n;
-+	union ubifs_key key;
-+	const struct ubifs_ch *ch = node;
-+
-+	if (dbg_failure_mode)
-+		return;
-+
-+	/* If the magic is incorrect, just hexdump the first bytes */
-+	if (le32_to_cpu(ch->magic) != UBIFS_NODE_MAGIC) {
-+		printk(KERN_DEBUG "Not a node, first %zu bytes:", UBIFS_CH_SZ);
-+		print_hex_dump(KERN_DEBUG, "", DUMP_PREFIX_OFFSET, 32, 1,
-+			       (void *)node, UBIFS_CH_SZ, 1);
-+		return;
-+	}
-+
-+	spin_lock(&dbg_lock);
-+	dump_ch(node);
-+
-+	switch (ch->node_type) {
-+	case UBIFS_PAD_NODE:
-+	{
-+		const struct ubifs_pad_node *pad = node;
-+
-+		printk(KERN_DEBUG "\tpad_len        %u\n",
-+		       le32_to_cpu(pad->pad_len));
-+		break;
-+	}
-+	case UBIFS_SB_NODE:
-+	{
-+		const struct ubifs_sb_node *sup = node;
-+		unsigned int sup_flags = le32_to_cpu(sup->flags);
-+
-+		printk(KERN_DEBUG "\tkey_hash       %d (%s)\n",
-+		       (int)sup->key_hash, get_key_hash(sup->key_hash));
-+		printk(KERN_DEBUG "\tkey_fmt        %d (%s)\n",
-+		       (int)sup->key_fmt, get_key_fmt(sup->key_fmt));
-+		printk(KERN_DEBUG "\tflags          %#x\n", sup_flags);
-+		printk(KERN_DEBUG "\t  big_lpt      %u\n",
-+		       !!(sup_flags & UBIFS_FLG_BIGLPT));
-+		printk(KERN_DEBUG "\tmin_io_size    %u\n",
-+		       le32_to_cpu(sup->min_io_size));
-+		printk(KERN_DEBUG "\tleb_size       %u\n",
-+		       le32_to_cpu(sup->leb_size));
-+		printk(KERN_DEBUG "\tleb_cnt        %u\n",
-+		       le32_to_cpu(sup->leb_cnt));
-+		printk(KERN_DEBUG "\tmax_leb_cnt    %u\n",
-+		       le32_to_cpu(sup->max_leb_cnt));
-+		printk(KERN_DEBUG "\tmax_bud_bytes  %llu\n",
-+		       le64_to_cpu(sup->max_bud_bytes));
-+		printk(KERN_DEBUG "\tlog_lebs       %u\n",
-+		       le32_to_cpu(sup->log_lebs));
-+		printk(KERN_DEBUG "\tlpt_lebs       %u\n",
-+		       le32_to_cpu(sup->lpt_lebs));
-+		printk(KERN_DEBUG "\torph_lebs      %u\n",
-+		       le32_to_cpu(sup->orph_lebs));
-+		printk(KERN_DEBUG "\tjhead_cnt      %u\n",
-+		       le32_to_cpu(sup->jhead_cnt));
-+		printk(KERN_DEBUG "\tfanout         %u\n",
-+		       le32_to_cpu(sup->fanout));
-+		printk(KERN_DEBUG "\tlsave_cnt      %u\n",
-+		       le32_to_cpu(sup->lsave_cnt));
-+		printk(KERN_DEBUG "\tdefault_compr  %u\n",
-+		       (int)le16_to_cpu(sup->default_compr));
-+		printk(KERN_DEBUG "\trp_size        %llu\n",
-+		       le64_to_cpu(sup->rp_size));
-+		printk(KERN_DEBUG "\trp_uid         %u\n",
-+		       le32_to_cpu(sup->rp_uid));
-+		printk(KERN_DEBUG "\trp_gid         %u\n",
-+		       le32_to_cpu(sup->rp_gid));
-+		printk(KERN_DEBUG "\tfmt_vers       %u\n",
-+		       le32_to_cpu(sup->fmt_vers));
-+		printk(KERN_DEBUG "\ttime_gran      %u\n",
-+		       le32_to_cpu(sup->time_gran));
-+		break;
-+	}
-+	case UBIFS_MST_NODE:
-+	{
-+		const struct ubifs_mst_node *mst = node;
-+
-+		printk(KERN_DEBUG "\thighest_inum   %llu\n",
-+		       le64_to_cpu(mst->highest_inum));
-+		printk(KERN_DEBUG "\tcommit number  %llu\n",
-+		       le64_to_cpu(mst->cmt_no));
-+		printk(KERN_DEBUG "\tflags          %#x\n",
-+		       le32_to_cpu(mst->flags));
-+		printk(KERN_DEBUG "\tlog_lnum       %u\n",
-+		       le32_to_cpu(mst->log_lnum));
-+		printk(KERN_DEBUG "\troot_lnum      %u\n",
-+		       le32_to_cpu(mst->root_lnum));
-+		printk(KERN_DEBUG "\troot_offs      %u\n",
-+		       le32_to_cpu(mst->root_offs));
-+		printk(KERN_DEBUG "\troot_len       %u\n",
-+		       le32_to_cpu(mst->root_len));
-+		printk(KERN_DEBUG "\tgc_lnum        %u\n",
-+		       le32_to_cpu(mst->gc_lnum));
-+		printk(KERN_DEBUG "\tihead_lnum     %u\n",
-+		       le32_to_cpu(mst->ihead_lnum));
-+		printk(KERN_DEBUG "\tihead_offs     %u\n",
-+		       le32_to_cpu(mst->ihead_offs));
-+		printk(KERN_DEBUG "\tindex_size     %u\n",
-+		       le32_to_cpu(mst->index_size));
-+		printk(KERN_DEBUG "\tlpt_lnum       %u\n",
-+		       le32_to_cpu(mst->lpt_lnum));
-+		printk(KERN_DEBUG "\tlpt_offs       %u\n",
-+		       le32_to_cpu(mst->lpt_offs));
-+		printk(KERN_DEBUG "\tnhead_lnum     %u\n",
-+		       le32_to_cpu(mst->nhead_lnum));
-+		printk(KERN_DEBUG "\tnhead_offs     %u\n",
-+		       le32_to_cpu(mst->nhead_offs));
-+		printk(KERN_DEBUG "\tltab_lnum      %u\n",
-+		       le32_to_cpu(mst->ltab_lnum));
-+		printk(KERN_DEBUG "\tltab_offs      %u\n",
-+		       le32_to_cpu(mst->ltab_offs));
-+		printk(KERN_DEBUG "\tlsave_lnum     %u\n",
-+		       le32_to_cpu(mst->lsave_lnum));
-+		printk(KERN_DEBUG "\tlsave_offs     %u\n",
-+		       le32_to_cpu(mst->lsave_offs));
-+		printk(KERN_DEBUG "\tlscan_lnum     %u\n",
-+		       le32_to_cpu(mst->lscan_lnum));
-+		printk(KERN_DEBUG "\tleb_cnt        %u\n",
-+		       le32_to_cpu(mst->leb_cnt));
-+		printk(KERN_DEBUG "\tempty_lebs     %u\n",
-+		       le32_to_cpu(mst->empty_lebs));
-+		printk(KERN_DEBUG "\tidx_lebs       %u\n",
-+		       le32_to_cpu(mst->idx_lebs));
-+		printk(KERN_DEBUG "\ttotal_free     %llu\n",
-+		       le64_to_cpu(mst->total_free));
-+		printk(KERN_DEBUG "\ttotal_dirty    %llu\n",
-+		       le64_to_cpu(mst->total_dirty));
-+		printk(KERN_DEBUG "\ttotal_used     %llu\n",
-+		       le64_to_cpu(mst->total_used));
-+		printk(KERN_DEBUG "\ttotal_dead     %llu\n",
-+		       le64_to_cpu(mst->total_dead));
-+		printk(KERN_DEBUG "\ttotal_dark     %llu\n",
-+		       le64_to_cpu(mst->total_dark));
-+		break;
-+	}
-+	case UBIFS_REF_NODE:
-+	{
-+		const struct ubifs_ref_node *ref = node;
-+
-+		printk(KERN_DEBUG "\tlnum           %u\n",
-+		       le32_to_cpu(ref->lnum));
-+		printk(KERN_DEBUG "\toffs           %u\n",
-+		       le32_to_cpu(ref->offs));
-+		printk(KERN_DEBUG "\tjhead          %u\n",
-+		       le32_to_cpu(ref->jhead));
-+		break;
-+	}
-+	case UBIFS_INO_NODE:
-+	{
-+		const struct ubifs_ino_node *ino = node;
-+
-+		key_read(c, &ino->key, &key);
-+		printk(KERN_DEBUG "\tkey            %s\n", DBGKEY(&key));
-+		printk(KERN_DEBUG "\tsize           %llu\n",
-+		       le64_to_cpu(ino->size));
-+		printk(KERN_DEBUG "\tnlink          %u\n",
-+		       le32_to_cpu(ino->nlink));
-+		printk(KERN_DEBUG "\tatime          %lld.%u\n",
-+		       (long long)le64_to_cpu(ino->atime_sec),
-+		       le32_to_cpu(ino->atime_nsec));
-+		printk(KERN_DEBUG "\tmtime          %lld.%u\n",
-+		       (long long)le64_to_cpu(ino->mtime_sec),
-+		       le32_to_cpu(ino->mtime_nsec));
-+		printk(KERN_DEBUG "\tctime          %lld.%u\n",
-+		       (long long)le64_to_cpu(ino->ctime_sec),
-+		       le32_to_cpu(ino->ctime_nsec));
-+		printk(KERN_DEBUG "\tuid            %u\n",
-+		       le32_to_cpu(ino->uid));
-+		printk(KERN_DEBUG "\tgid            %u\n",
-+		       le32_to_cpu(ino->gid));
-+		printk(KERN_DEBUG "\tmode           %u\n",
-+		       le32_to_cpu(ino->mode));
-+		printk(KERN_DEBUG "\tflags          %#x\n",
-+		       le32_to_cpu(ino->flags));
-+		printk(KERN_DEBUG "\txattr_cnt      %u\n",
-+		       le32_to_cpu(ino->xattr_cnt));
-+		printk(KERN_DEBUG "\txattr_size     %llu\n",
-+		       le64_to_cpu(ino->xattr_size));
-+		printk(KERN_DEBUG "\txattr_names    %u\n",
-+		       le32_to_cpu(ino->xattr_names));
-+		printk(KERN_DEBUG "\tcompr_type     %#x\n",
-+		       (int)le16_to_cpu(ino->compr_type));
-+		printk(KERN_DEBUG "\tdata len       %u\n",
-+		       le32_to_cpu(ino->data_len));
-+		break;
-+	}
-+	case UBIFS_DENT_NODE:
-+	case UBIFS_XENT_NODE:
-+	{
-+		const struct ubifs_dent_node *dent = node;
-+		int nlen = le16_to_cpu(dent->nlen);
-+
-+		key_read(c, &dent->key, &key);
-+		printk(KERN_DEBUG "\tkey            %s\n", DBGKEY(&key));
-+		printk(KERN_DEBUG "\tinum           %llu\n",
-+		       le64_to_cpu(dent->inum));
-+		printk(KERN_DEBUG "\ttype           %d\n", (int)dent->type);
-+		printk(KERN_DEBUG "\tnlen           %d\n", nlen);
-+		printk(KERN_DEBUG "\tname           ");
-+
-+		if (nlen > UBIFS_MAX_NLEN) {
-+			nlen = UBIFS_MAX_NLEN;
-+			printk(KERN_DEBUG "\tWarning! Node is corrupted\n");
-+		}
-+
-+		for (i = 0; i < nlen && dent->name[i]; i++)
-+			printk("%c", dent->name[i]);
-+		printk("\n");
-+
-+		break;
-+	}
-+	case UBIFS_DATA_NODE:
-+	{
-+		const struct ubifs_data_node *dn = node;
-+		int dlen = le32_to_cpu(ch->len) - UBIFS_DATA_NODE_SZ;
-+
-+		key_read(c, &dn->key, &key);
-+		printk(KERN_DEBUG "\tkey            %s\n", DBGKEY(&key));
-+		printk(KERN_DEBUG "\tsize           %u\n",
-+		       le32_to_cpu(dn->size));
-+		printk(KERN_DEBUG "\tcompr_typ      %d\n",
-+		       (int)le16_to_cpu(dn->compr_type));
-+		printk(KERN_DEBUG "\tdata size      %d\n",
-+		       dlen);
-+		printk(KERN_DEBUG "\tdata:\n");
-+		print_hex_dump(KERN_DEBUG, "\t", DUMP_PREFIX_OFFSET, 32, 1,
-+			       (void *)&dn->data, dlen, 0);
-+		break;
-+	}
-+	case UBIFS_TRUN_NODE:
-+	{
-+		const struct ubifs_trun_node *trun = node;
-+
-+		key_read(c, &trun->key, &key);
-+		printk(KERN_DEBUG "\tkey            %s\n", DBGKEY(&key));
-+		printk(KERN_DEBUG "\told_size       %llu\n",
-+		       le64_to_cpu(trun->old_size));
-+		printk(KERN_DEBUG "\tnew_size       %llu\n",
-+		       le64_to_cpu(trun->new_size));
-+		break;
-+	}
-+	case UBIFS_IDX_NODE:
-+	{
-+		const struct ubifs_idx_node *idx = node;
-+
-+		n = le16_to_cpu(idx->child_cnt);
-+		printk(KERN_DEBUG "\tchild_cnt      %d\n", n);
-+		printk(KERN_DEBUG "\tlevel          %d\n",
-+		       (int)le16_to_cpu(idx->level));
-+		printk(KERN_DEBUG "\tBranches:\n");
-+
-+		for (i = 0; i < n && i < c->fanout - 1; i++) {
-+			const struct ubifs_branch *br;
-+
-+			br = ubifs_idx_branch(c, idx, i);
-+			key_read(c, &br->key, &key);
-+			printk(KERN_DEBUG "\t%d: LEB %d:%d len %d key %s\n",
-+			       i, le32_to_cpu(br->lnum), le32_to_cpu(br->offs),
-+			       le32_to_cpu(br->len), DBGKEY(&key));
-+		}
-+		break;
-+	}
-+	case UBIFS_CS_NODE:
-+		break;
-+	case UBIFS_ORPH_NODE:
-+	{
-+		const struct ubifs_orph_node *orph = node;
-+
-+		printk(KERN_DEBUG "\tcommit number  %llu\n",
-+		       le64_to_cpu(orph->cmt_no) & LLONG_MAX);
-+		printk(KERN_DEBUG "\tlast node flag %llu\n",
-+		       le64_to_cpu(orph->cmt_no) >> 63);
-+		n = (le32_to_cpu(ch->len) - UBIFS_ORPH_NODE_SZ) >> 3;
-+		printk(KERN_DEBUG "\t%d orphan inode numbers:\n", n);
-+		for (i = 0; i < n; i++)
-+			printk(KERN_DEBUG "\t  ino %llu\n",
-+			       le64_to_cpu(orph->inos[i]));
-+		break;
-+	}
-+	default:
-+		printk(KERN_DEBUG "node type %d was not recognized\n",
-+		       (int)ch->node_type);
-+	}
-+	spin_unlock(&dbg_lock);
-+}
-+
-+void dbg_dump_budget_req(const struct ubifs_budget_req *req)
-+{
-+	spin_lock(&dbg_lock);
-+	printk(KERN_DEBUG "Budgeting request: new_ino %d, dirtied_ino %d\n",
-+	       req->new_ino, req->dirtied_ino);
-+	printk(KERN_DEBUG "\tnew_ino_d   %d, dirtied_ino_d %d\n",
-+	       req->new_ino_d, req->dirtied_ino_d);
-+	printk(KERN_DEBUG "\tnew_page    %d, dirtied_page %d\n",
-+	       req->new_page, req->dirtied_page);
-+	printk(KERN_DEBUG "\tnew_dent    %d, mod_dent     %d\n",
-+	       req->new_dent, req->mod_dent);
-+	printk(KERN_DEBUG "\tidx_growth  %d\n", req->idx_growth);
-+	printk(KERN_DEBUG "\tdata_growth %d dd_growth     %d\n",
-+	       req->data_growth, req->dd_growth);
-+	spin_unlock(&dbg_lock);
-+}
-+
-+void dbg_dump_lstats(const struct ubifs_lp_stats *lst)
-+{
-+	spin_lock(&dbg_lock);
-+	printk(KERN_DEBUG "Lprops statistics: empty_lebs %d, idx_lebs  %d\n",
-+	       lst->empty_lebs, lst->idx_lebs);
-+	printk(KERN_DEBUG "\ttaken_empty_lebs %d, total_free %lld, "
-+	       "total_dirty %lld\n", lst->taken_empty_lebs, lst->total_free,
-+	       lst->total_dirty);
-+	printk(KERN_DEBUG "\ttotal_used %lld, total_dark %lld, "
-+	       "total_dead %lld\n", lst->total_used, lst->total_dark,
-+	       lst->total_dead);
-+	spin_unlock(&dbg_lock);
-+}
-+
-+void dbg_dump_budg(struct ubifs_info *c)
-+{
-+	int i;
-+	struct rb_node *rb;
-+	struct ubifs_bud *bud;
-+	struct ubifs_gced_idx_leb *idx_gc;
-+
-+	spin_lock(&dbg_lock);
-+	printk(KERN_DEBUG "Budgeting info: budg_data_growth %lld, "
-+	       "budg_dd_growth %lld, budg_idx_growth %lld\n",
-+	       c->budg_data_growth, c->budg_dd_growth, c->budg_idx_growth);
-+	printk(KERN_DEBUG "\tdata budget sum %lld, total budget sum %lld, "
-+	       "freeable_cnt %d\n", c->budg_data_growth + c->budg_dd_growth,
-+	       c->budg_data_growth + c->budg_dd_growth + c->budg_idx_growth,
-+	       c->freeable_cnt);
-+	printk(KERN_DEBUG "\tmin_idx_lebs %d, old_idx_sz %lld, "
-+	       "calc_idx_sz %lld, idx_gc_cnt %d\n", c->min_idx_lebs,
-+	       c->old_idx_sz, c->calc_idx_sz, c->idx_gc_cnt);
-+	printk(KERN_DEBUG "\tdirty_pg_cnt %ld, dirty_ino_cnt %ld, "
-+	       "dirty_zn_cnt %ld, clean_zn_cnt %ld\n",
-+	       atomic_long_read(&c->dirty_pg_cnt),
-+	       atomic_long_read(&c->dirty_ino_cnt),
-+	       atomic_long_read(&c->dirty_zn_cnt),
-+	       atomic_long_read(&c->clean_zn_cnt));
-+	printk(KERN_DEBUG "\tdark_wm %d, dead_wm %d, max_idx_node_sz %d\n",
-+	       c->dark_wm, c->dead_wm, c->max_idx_node_sz);
-+	printk(KERN_DEBUG "\tgc_lnum %d, ihead_lnum %d\n",
-+	       c->gc_lnum, c->ihead_lnum);
-+	for (i = 0; i < c->jhead_cnt; i++)
-+		printk(KERN_DEBUG "\tjhead %d\t LEB %d\n",
-+		       c->jheads[i].wbuf.jhead, c->jheads[i].wbuf.lnum);
-+	for (rb = rb_first(&c->buds); rb; rb = rb_next(rb)) {
-+		bud = rb_entry(rb, struct ubifs_bud, rb);
-+		printk(KERN_DEBUG "\tbud LEB %d\n", bud->lnum);
-+	}
-+	list_for_each_entry(bud, &c->old_buds, list)
-+		printk(KERN_DEBUG "\told bud LEB %d\n", bud->lnum);
-+	list_for_each_entry(idx_gc, &c->idx_gc, list)
-+		printk(KERN_DEBUG "\tGC'ed idx LEB %d unmap %d\n",
-+		       idx_gc->lnum, idx_gc->unmap);
-+	printk(KERN_DEBUG "\tcommit state %d\n", c->cmt_state);
-+	spin_unlock(&dbg_lock);
-+}
-+
-+void dbg_dump_lprop(const struct ubifs_info *c, const struct ubifs_lprops *lp)
-+{
-+	printk(KERN_DEBUG "LEB %d lprops: free %d, dirty %d (used %d), "
-+	       "flags %#x\n", lp->lnum, lp->free, lp->dirty,
-+	       c->leb_size - lp->free - lp->dirty, lp->flags);
-+}
-+
-+void dbg_dump_lprops(struct ubifs_info *c)
-+{
-+	int lnum, err;
-+	struct ubifs_lprops lp;
-+	struct ubifs_lp_stats lst;
-+
-+	printk(KERN_DEBUG "Dumping LEB properties\n");
-+	ubifs_get_lp_stats(c, &lst);
-+	dbg_dump_lstats(&lst);
-+
-+	for (lnum = c->main_first; lnum < c->leb_cnt; lnum++) {
-+		err = ubifs_read_one_lp(c, lnum, &lp);
-+		if (err)
-+			ubifs_err("cannot read lprops for LEB %d", lnum);
-+
-+		dbg_dump_lprop(c, &lp);
-+	}
-+}
-+
-+void dbg_dump_leb(const struct ubifs_info *c, int lnum)
-+{
-+	struct ubifs_scan_leb *sleb;
-+	struct ubifs_scan_node *snod;
-+
-+	if (dbg_failure_mode)
-+		return;
-+
-+	printk(KERN_DEBUG "Dumping LEB %d\n", lnum);
-+
-+	sleb = ubifs_scan(c, lnum, 0, c->dbg_buf);
-+	if (IS_ERR(sleb)) {
-+		ubifs_err("scan error %d", (int)PTR_ERR(sleb));
-+		return;
-+	}
-+
-+	printk(KERN_DEBUG "LEB %d has %d nodes ending at %d\n", lnum,
-+	       sleb->nodes_cnt, sleb->endpt);
-+
-+	list_for_each_entry(snod, &sleb->nodes, list) {
-+		cond_resched();
-+		printk(KERN_DEBUG "Dumping node at LEB %d:%d len %d\n", lnum,
-+		       snod->offs, snod->len);
-+		dbg_dump_node(c, snod->node);
-+	}
-+
-+	ubifs_scan_destroy(sleb);
-+	return;
-+}
-+
-+void dbg_dump_znode(const struct ubifs_info *c,
-+		    const struct ubifs_znode *znode)
-+{
-+	int n;
-+	const struct ubifs_zbranch *zbr;
-+
-+	spin_lock(&dbg_lock);
-+	if (znode->parent)
-+		zbr = &znode->parent->zbranch[znode->iip];
-+	else
-+		zbr = &c->zroot;
-+
-+	printk(KERN_DEBUG "znode %p, LEB %d:%d len %d parent %p iip %d level %d"
-+	       " child_cnt %d flags %lx\n", znode, zbr->lnum, zbr->offs,
-+	       zbr->len, znode->parent, znode->iip, znode->level,
-+	       znode->child_cnt, znode->flags);
-+
-+	if (znode->child_cnt <= 0 || znode->child_cnt > c->fanout) {
-+		spin_unlock(&dbg_lock);
-+		return;
-+	}
-+
-+	printk(KERN_DEBUG "zbranches:\n");
-+	for (n = 0; n < znode->child_cnt; n++) {
-+		cond_resched();
-+
-+		zbr = &znode->zbranch[n];
-+		if (znode->level > 0)
-+			printk(KERN_DEBUG "\t%d: znode %p LEB %d:%d len %d key "
-+					  "%s\n", n, zbr->znode, zbr->lnum,
-+					  zbr->offs, zbr->len,
-+					  DBGKEY(&zbr->key));
-+		else
-+			printk(KERN_DEBUG "\t%d: LNC %p LEB %d:%d len %d key "
-+					  "%s\n", n, zbr->znode, zbr->lnum,
-+					  zbr->offs, zbr->len,
-+					  DBGKEY(&zbr->key));
-+	}
-+	spin_unlock(&dbg_lock);
-+}
-+
-+void dbg_dump_heap(struct ubifs_info *c, struct ubifs_lpt_heap *heap, int cat)
-+{
-+	int i;
-+
-+	printk(KERN_DEBUG "Dumping heap cat %d (%d elements)\n",
-+	       cat, heap->cnt);
-+	for (i = 0; i < heap->cnt; i++) {
-+		struct ubifs_lprops *lprops = heap->arr[i];
-+
-+		printk(KERN_DEBUG "\t%d. LEB %d hpos %d free %d dirty %d "
-+		       "flags %d\n", i, lprops->lnum, lprops->hpos,
-+		       lprops->free, lprops->dirty, lprops->flags);
-+	}
-+}
-+
-+void dbg_dump_pnode(struct ubifs_info *c, struct ubifs_pnode *pnode,
-+		    struct ubifs_nnode *parent, int iip)
-+{
-+	int i;
-+
-+	printk(KERN_DEBUG "Dumping pnode:\n");
-+	printk(KERN_DEBUG "\taddress %zx parent %zx cnext %zx\n",
-+	       (size_t)pnode, (size_t)parent, (size_t)pnode->cnext);
-+	printk(KERN_DEBUG "\tflags %lu iip %d level %d num %d\n",
-+	       pnode->flags, iip, pnode->level, pnode->num);
-+	for (i = 0; i < UBIFS_LPT_FANOUT; i++) {
-+		struct ubifs_lprops *lp = &pnode->lprops[i];
-+
-+		printk(KERN_DEBUG "\t%d: free %d dirty %d flags %d lnum %d\n",
-+		       i, lp->free, lp->dirty, lp->flags, lp->lnum);
-+	}
-+}
-+
-+void dbg_dump_tnc(struct ubifs_info *c)
-+{
-+	struct ubifs_znode *znode;
-+	int level;
-+
-+	printk(KERN_DEBUG "\n");
-+	printk(KERN_DEBUG "Dumping the TNC tree\n");
-+	znode = ubifs_tnc_levelorder_next(c->zroot.znode, NULL);
-+	level = znode->level;
-+	printk(KERN_DEBUG "== Level %d ==\n", level);
-+	while (znode) {
-+		if (level != znode->level) {
-+			level = znode->level;
-+			printk(KERN_DEBUG "== Level %d ==\n", level);
-+		}
-+		dbg_dump_znode(c, znode);
-+		znode = ubifs_tnc_levelorder_next(c->zroot.znode, znode);
-+	}
-+
-+	printk(KERN_DEBUG "\n");
-+}
-+
-+/*
-+ * dbg_check_dir - check directory inode size.
-+ * @c: UBIFS file-system description object
-+ * @dir: the directory to calculate size for
-+ * @size: the result is returned here
-+ *
-+ * This function makes sure that directory size is correct. Returns zero
-+ * in case of success and a negative error code in case of failure.
-+ *
-+ * Note, it is good idea to make sure the @dir->i_mutex is locked before
-+ * calling this function.
-+ */
-+int dbg_check_dir_size(struct ubifs_info *c, const struct inode *dir)
-+{
-+	union ubifs_key key;
-+	struct ubifs_dent_node *dent, *pdent = NULL;
-+	struct qstr nm = { .name = NULL };
-+	loff_t size = UBIFS_INO_NODE_SZ;
-+
-+	if (!(ubifs_chk_flags & UBIFS_CHK_GEN))
-+		return 0;
-+
-+	if (!S_ISDIR(dir->i_mode))
-+		return 0;
-+
-+	lowest_dent_key(c, &key, dir->i_ino);
-+	while (1) {
-+		int err;
-+
-+		dent = ubifs_tnc_next_ent(c, &key, &nm);
-+		if (IS_ERR(dent)) {
-+			err = PTR_ERR(dent);
-+			if (err == -ENOENT)
-+				break;
-+			return err;
-+		}
-+
-+		nm.name = dent->name;
-+		nm.len = le16_to_cpu(dent->nlen);
-+		size += CALC_DENT_SIZE(nm.len);
-+		kfree(pdent);
-+		pdent = dent;
-+		key_read(c, &dent->key, &key);
-+	}
-+
-+	kfree(pdent);
-+
-+	if (i_size_read(dir) != size) {
-+		ubifs_err("bad directory dir %lu size %llu, "
-+			  "calculated %llu", dir->i_ino,
-+			  i_size_read(dir), size);
-+		dump_stack();
-+		return -EINVAL;
-+	}
-+
-+	return 0;
-+}
-+
-+/**
-+ * dbg_check_key_order - make sure that colliding keys are properly ordered.
-+ * @c: UBIFS file-system description object
-+ * @zbr1: first zbranch
-+ * @zbr1: following zbranch
-+ *
-+ * In UBIFS indexing B-tree colliding keys has to be sorted in binary order of
-+ * names of the direntries/xentries which are referred by the keys. This
-+ * function reads direntries/xentries referred by @zbr1 and @zbr2 and makes
-+ * sure the name of direntry/xentry referred by @zbr1 is less than
-+ * direntry/xentry referred by @zbr2. Returns zero if this is true, %1 if not,
-+ * and a negative error code in case of failure.
-+ */
-+static int dbg_check_key_order(struct ubifs_info *c, struct ubifs_zbranch *zbr1,
-+			       struct ubifs_zbranch *zbr2)
-+{
-+	int err, nlen1, nlen2, cmp;
-+	struct ubifs_dent_node *dent1, *dent2;
-+	union ubifs_key key;
-+
-+	ubifs_assert(!keys_cmp(c, &zbr1->key, &zbr2->key));
-+	dent1 = kmalloc(UBIFS_MAX_DENT_NODE_SZ, GFP_NOFS);
-+	if (!dent1)
-+		return -ENOMEM;
-+	dent2 = kmalloc(UBIFS_MAX_DENT_NODE_SZ, GFP_NOFS);
-+	if (!dent2) {
-+		err = -ENOMEM;
-+		goto out_free;
-+	}
-+
-+	err = dbg_read_leaf_nolock(c, zbr1, dent1);
-+	if (err)
-+		goto out_free;
-+	err = ubifs_validate_entry(c, dent1);
-+	if (err)
-+		goto out_free;
-+
-+	err = dbg_read_leaf_nolock(c, zbr2, dent2);
-+	if (err)
-+		goto out_free;
-+	err = ubifs_validate_entry(c, dent2);
-+	if (err)
-+		goto out_free;
-+
-+	/* Make sure node keys are the same as in zbranch */
-+	err = 1;
-+	key_read(c, &dent1->key, &key);
-+	if (keys_cmp(c, &zbr1->key, &key)) {
-+		dbg_err("1st entry at %d:%d has key %s", zbr1->lnum,
-+			zbr1->offs, DBGKEY(&key));
-+		dbg_err("but it should have key %s according to tnc",
-+			DBGKEY(&zbr1->key));
-+			dbg_dump_node(c, dent1);
-+			goto out_free;
-+	}
-+
-+	key_read(c, &dent2->key, &key);
-+	if (keys_cmp(c, &zbr2->key, &key)) {
-+		dbg_err("2nd entry at %d:%d has key %s", zbr1->lnum,
-+			zbr1->offs, DBGKEY(&key));
-+		dbg_err("but it should have key %s according to tnc",
-+			DBGKEY(&zbr2->key));
-+			dbg_dump_node(c, dent2);
-+			goto out_free;
-+	}
-+
-+	nlen1 = le16_to_cpu(dent1->nlen);
-+	nlen2 = le16_to_cpu(dent2->nlen);
-+
-+	cmp = memcmp(dent1->name, dent2->name, min_t(int, nlen1, nlen2));
-+	if (cmp < 0 || (cmp == 0 && nlen1 < nlen2)) {
-+		err = 0;
-+		goto out_free;
-+	}
-+	if (cmp == 0 && nlen1 == nlen2)
-+		dbg_err("2 xent/dent nodes with the same name");
-+	else
-+		dbg_err("bad order of colliding key %s",
-+			DBGKEY(&key));
-+
-+	dbg_msg("first node at %d:%d\n", zbr1->lnum, zbr1->offs);
-+	dbg_dump_node(c, dent1);
-+	dbg_msg("second node at %d:%d\n", zbr2->lnum, zbr2->offs);
-+	dbg_dump_node(c, dent2);
-+
-+out_free:
-+	kfree(dent2);
-+	kfree(dent1);
-+	return err;
-+}
-+
-+/**
-+ * dbg_check_znode - check if znode is all right.
-+ * @c: UBIFS file-system description object
-+ * @zbr: zbranch which points to this znode
-+ *
-+ * This function makes sure that znode referred to by @zbr is all right.
-+ * Returns zero if it is, and %-EINVAL if it is not.
-+ */
-+static int dbg_check_znode(struct ubifs_info *c, struct ubifs_zbranch *zbr)
-+{
-+	struct ubifs_znode *znode = zbr->znode;
-+	struct ubifs_znode *zp = znode->parent;
-+	int n, err, cmp;
-+
-+	if (znode->child_cnt <= 0 || znode->child_cnt > c->fanout) {
-+		err = 1;
-+		goto out;
-+	}
-+	if (znode->level < 0) {
-+		err = 2;
-+		goto out;
-+	}
-+	if (znode->iip < 0 || znode->iip >= c->fanout) {
-+		err = 3;
-+		goto out;
-+	}
-+
-+	if (zbr->len == 0)
-+		/* Only dirty zbranch may have no on-flash nodes */
-+		if (!ubifs_zn_dirty(znode)) {
-+			err = 4;
-+			goto out;
-+		}
-+
-+	if (ubifs_zn_dirty(znode))
-+		/* If znode is dirty, its parent has to be dirty as well */
-+		if (zp && !ubifs_zn_dirty(zp))
-+			/*
-+			 * The dirty flag is atomic and is cleared outside the
-+			 * TNC mutex, so znode's dirty flag may now have
-+			 * been cleared. The child is always cleared before the
-+			 * parent, so we just need to check again.
-+			 */
-+			if (ubifs_zn_dirty(znode)) {
-+				err = 5;
-+				goto out;
-+			}
-+
-+	if (zp) {
-+		const union ubifs_key *min, *max;
-+
-+		if (znode->level != zp->level - 1) {
-+			err = 6;
-+			goto out;
-+		}
-+
-+		/* Make sure the 'parent' pointer in our znode is correct */
-+		err = ubifs_search_zbranch(c, zp, &zbr->key, &n);
-+		if (!err) {
-+			/* This zbranch does not exist in the parent */
-+			err = 7;
-+			goto out;
-+		}
-+
-+		if (znode->iip >= zp->child_cnt) {
-+			err = 8;
-+			goto out;
-+		}
-+
-+		if (znode->iip != n) {
-+			/* This may happen only in case of collisions */
-+			if (keys_cmp(c, &zp->zbranch[n].key,
-+				     &zp->zbranch[znode->iip].key)) {
-+				err = 9;
-+				goto out;
-+			}
-+			n = znode->iip;
-+		}
-+
-+		/*
-+		 * Make sure that the first key in our znode is greater than or
-+		 * equal to the key in the pointing zbranch.
-+		 */
-+		min = &zbr->key;
-+		cmp = keys_cmp(c, min, &znode->zbranch[0].key);
-+		if (cmp == 1) {
-+			err = 10;
-+			goto out;
-+		}
-+
-+		if (n + 1 < zp->child_cnt) {
-+			max = &zp->zbranch[n + 1].key;
-+
-+			/*
-+			 * Make sure the last key in our znode is less or
-+			 * equivalent than the the key in zbranch which goes
-+			 * after our pointing zbranch.
-+			 */
-+			cmp = keys_cmp(c, max,
-+				&znode->zbranch[znode->child_cnt - 1].key);
-+			if (cmp == -1) {
-+				err = 11;
-+				goto out;
-+			}
-+		}
-+	} else {
-+		/* This may only be root znode */
-+		if (zbr != &c->zroot) {
-+			err = 12;
-+			goto out;
-+		}
-+	}
-+
-+	/*
-+	 * Make sure that next key is greater or equivalent then the previous
-+	 * one.
-+	 */
-+	for (n = 1; n < znode->child_cnt; n++) {
-+		cmp = keys_cmp(c, &znode->zbranch[n - 1].key,
-+			       &znode->zbranch[n].key);
-+		if (cmp > 0) {
-+			err = 13;
-+			goto out;
-+		}
-+		if (cmp == 0) {
-+			/* This can only be keys with colliding hash */
-+			if (!is_hash_key(c, &znode->zbranch[n].key)) {
-+				err = 14;
-+				goto out;
-+			}
-+
-+			if (znode->level != 0 || c->replaying)
-+				continue;
-+
-+			/*
-+			 * Colliding keys should follow binary order of
-+			 * corresponding xentry/dentry names.
-+			 */
-+			err = dbg_check_key_order(c, &znode->zbranch[n - 1],
-+						  &znode->zbranch[n]);
-+			if (err < 0)
-+				return err;
-+			if (err) {
-+				err = 15;
-+				goto out;
-+			}
-+		}
-+	}
-+
-+	for (n = 0; n < znode->child_cnt; n++) {
-+		if (znode->zbranch[n].znode == NULL &&
-+		    (znode->zbranch[n].lnum == 0 ||
-+		     znode->zbranch[n].len == 0)) {
-+			err = 16;
-+			goto out;
-+		}
-+
-+		if (znode->zbranch[n].lnum != 0 &&
-+		    znode->zbranch[n].len == 0) {
-+			err = 17;
-+			goto out;
-+		}
-+
-+		if (znode->zbranch[n].lnum == 0 &&
-+		    znode->zbranch[n].len != 0) {
-+			err = 18;
-+			goto out;
-+		}
-+
-+		if (znode->zbranch[n].lnum == 0 &&
-+		    znode->zbranch[n].offs != 0) {
-+			err = 19;
-+			goto out;
-+		}
-+
-+		if (znode->level != 0 && znode->zbranch[n].znode)
-+			if (znode->zbranch[n].znode->parent != znode) {
-+				err = 20;
-+				goto out;
-+			}
-+	}
-+
-+	return 0;
-+
-+out:
-+	ubifs_err("failed, error %d", err);
-+	ubifs_msg("dump of the znode");
-+	dbg_dump_znode(c, znode);
-+	if (zp) {
-+		ubifs_msg("dump of the parent znode");
-+		dbg_dump_znode(c, zp);
-+	}
-+	dump_stack();
-+	return -EINVAL;
-+}
-+
-+/**
-+ * dbg_check_tnc - check TNC tree.
-+ * @c: UBIFS file-system description object
-+ * @extra: do extra checks that are possible at start commit
-+ *
-+ * This function traverses whole TNC tree and checks every znode. Returns zero
-+ * if everything is all right and %-EINVAL if something is wrong with TNC.
-+ */
-+int dbg_check_tnc(struct ubifs_info *c, int extra)
-+{
-+	struct ubifs_znode *znode;
-+	long clean_cnt = 0, dirty_cnt = 0;
-+	int err, last;
-+
-+	if (!(ubifs_chk_flags & UBIFS_CHK_TNC))
-+		return 0;
-+
-+	ubifs_assert(mutex_is_locked(&c->tnc_mutex));
-+	if (!c->zroot.znode)
-+		return 0;
-+
-+	znode = ubifs_tnc_postorder_first(c->zroot.znode);
-+	while (1) {
-+		struct ubifs_znode *prev;
-+		struct ubifs_zbranch *zbr;
-+
-+		if (!znode->parent)
-+			zbr = &c->zroot;
-+		else
-+			zbr = &znode->parent->zbranch[znode->iip];
-+
-+		err = dbg_check_znode(c, zbr);
-+		if (err)
-+			return err;
-+
-+		if (extra) {
-+			if (ubifs_zn_dirty(znode))
-+				dirty_cnt += 1;
-+			else
-+				clean_cnt += 1;
-+		}
-+
-+		prev = znode;
-+		znode = ubifs_tnc_postorder_next(znode);
-+		if (!znode)
-+			break;
-+
-+		/*
-+		 * If the last key of this znode is equivalent to the first key
-+		 * of the next znode (collision), then check order of the keys.
-+		 */
-+		last = prev->child_cnt - 1;
-+		if (prev->level == 0 && znode->level == 0 &&
-+		    !keys_cmp(c, &prev->zbranch[last].key,
-+			      &znode->zbranch[0].key))
-+		{
-+			err = dbg_check_key_order(c, &prev->zbranch[last],
-+						  &znode->zbranch[0]);
-+			if (err < 0)
-+				return err;
-+			if (err) {
-+				ubifs_msg("first znode");
-+				dbg_dump_znode(c, prev);
-+				ubifs_msg("second znode");
-+				dbg_dump_znode(c, znode);
-+				return -EINVAL;
-+			}
-+		}
-+	}
-+
-+	if (extra) {
-+		if (clean_cnt != atomic_long_read(&c->clean_zn_cnt)) {
-+			ubifs_err("incorrect clean_zn_cnt %ld, calculated %ld",
-+				  atomic_long_read(&c->clean_zn_cnt),
-+				  clean_cnt);
-+			return -EINVAL;
-+		}
-+		if (dirty_cnt != atomic_long_read(&c->dirty_zn_cnt)) {
-+			ubifs_err("incorrect dirty_zn_cnt %ld, calculated %ld",
-+				  atomic_long_read(&c->dirty_zn_cnt),
-+				  dirty_cnt);
-+			return -EINVAL;
-+		}
-+	}
-+
-+	return 0;
-+}
-+
-+static int dbg_add_size(struct ubifs_info *c, struct ubifs_znode *znode,
-+			void *priv)
-+{
-+	long long *idx_size = priv;
-+	int add;
-+
-+	add = ubifs_idx_node_sz(c, znode->child_cnt);
-+	add = ALIGN(add, 8);
-+	*idx_size += add;
-+	return 0;
-+}
-+
-+int dbg_check_idx_size(struct ubifs_info *c, long long idx_size)
-+{
-+	int err;
-+	long long calc = 0;
-+
-+	if (!(ubifs_chk_flags & UBIFS_CHK_IDX_SZ))
-+		return 0;
-+
-+	err = dbg_walk_index(c, NULL, dbg_add_size, &calc);
-+	if (err) {
-+		ubifs_err("error %d while walking the index", err);
-+		return err;
-+	}
-+
-+	if (calc != idx_size) {
-+		ubifs_err("index size check failed");
-+		ubifs_err("calculated size is %lld, should be %lld",
-+			  calc, idx_size);
-+		dump_stack();
-+		return -EINVAL;
-+	}
-+
-+	return 0;
-+}
-+
-+static int invocation_cnt;
-+
-+int dbg_force_in_the_gaps(void)
-+{
-+	if (!dbg_force_in_the_gaps_enabled)
-+		return 0;
-+	/* Force in-the-gaps every 8th commit */
-+	return !((invocation_cnt ++) & 0x7);
-+}
-+
-+/* Failure mode for recovery testing */
-+
-+#define chance(n, d) (simple_rand() <= (n) * 32768LL / (d))
-+
-+struct failure_mode_info {
-+	struct list_head list;
-+	struct ubifs_info *c;
-+};
-+
-+static LIST_HEAD(fmi_list);
-+static DEFINE_SPINLOCK(fmi_lock);
-+
-+static unsigned int next;
-+
-+static int simple_rand(void)
-+{
-+	if (next == 0)
-+		next = current->pid;
-+	next = next * 1103515245 + 12345;
-+	return (next >> 16) & 32767;
-+}
-+
-+void dbg_failure_mode_registration(struct ubifs_info *c)
-+{
-+	struct failure_mode_info *fmi;
-+
-+	fmi = kmalloc(sizeof(struct failure_mode_info), GFP_NOFS);
-+	if (!fmi) {
-+		dbg_err("Failed to register failure mode - no memory");
-+		return;
-+	}
-+	fmi->c = c;
-+	spin_lock(&fmi_lock);
-+	list_add_tail(&fmi->list, &fmi_list);
-+	spin_unlock(&fmi_lock);
-+}
-+
-+void dbg_failure_mode_deregistration(struct ubifs_info *c)
-+{
-+	struct failure_mode_info *fmi, *tmp;
-+
-+	spin_lock(&fmi_lock);
-+	list_for_each_entry_safe(fmi, tmp, &fmi_list, list)
-+		if (fmi->c == c) {
-+			list_del(&fmi->list);
-+			kfree(fmi);
-+		}
-+	spin_unlock(&fmi_lock);
-+}
-+
-+static struct ubifs_info *dbg_find_info(struct ubi_volume_desc *desc)
-+{
-+	struct failure_mode_info *fmi;
-+
-+	spin_lock(&fmi_lock);
-+	list_for_each_entry(fmi, &fmi_list, list)
-+		if (fmi->c->ubi == desc) {
-+			struct ubifs_info *c = fmi->c;
-+
-+			spin_unlock(&fmi_lock);
-+			return c;
-+		}
-+	spin_unlock(&fmi_lock);
-+	return NULL;
-+}
-+
-+static int in_failure_mode(struct ubi_volume_desc *desc)
-+{
-+	struct ubifs_info *c = dbg_find_info(desc);
-+
-+	if (c)
-+		return c->failure_mode;
-+	return 0;
-+}
-+
-+static int do_fail(struct ubi_volume_desc *desc, int lnum, int write)
-+{
-+	struct ubifs_info *c = dbg_find_info(desc);
-+
-+	if (!c || !dbg_failure_mode)
-+		return 0;
-+	if (c->failure_mode)
-+		return 1;
-+	if (lnum == UBIFS_SB_LNUM)
-+		return 0;
-+	else if (lnum == UBIFS_MST_LNUM || lnum == UBIFS_MST_LNUM + 1) {
-+		if (chance(19, 20))
-+			return 0;
-+		dbg_rcvry("failing in master LEB %d", lnum);
-+	} else if (lnum >= UBIFS_LOG_LNUM && lnum <= c->log_last) {
-+		if (write && chance(99, 100))
-+			return 0;
-+		else if (chance(399, 400))
-+			return 0;
-+		dbg_rcvry("failing in log LEB %d", lnum);
-+	} else if (lnum >= c->lpt_first && lnum <= c->lpt_last) {
-+		if (write && chance(99, 100))
-+			return 0;
-+		else if (chance(399, 400))
-+			return 0;
-+		dbg_rcvry("failing in LPT LEB %d", lnum);
-+	} else if (lnum >= c->orph_first && lnum <= c->orph_last) {
-+		if (write && chance(9, 10))
-+			return 0;
-+		else if (chance(39, 40))
-+			return 0;
-+		dbg_rcvry("failing in orphan LEB %d", lnum);
-+	} else if (lnum == c->ihead_lnum) {
-+		if (chance(99, 100))
-+			return 0;
-+		dbg_rcvry("failing in index head LEB %d", lnum);
-+	} else if (write && !RB_EMPTY_ROOT(&c->buds) &&
-+		   ubifs_search_bud(c, lnum) == NULL) {
-+		if (chance(19, 20))
-+			return 0;
-+		dbg_rcvry("failing in non-bud LEB %d", lnum);
-+	} else if (c->cmt_state == COMMIT_RUNNING_BACKGROUND ||
-+		   c->cmt_state == COMMIT_RUNNING_REQUIRED) {
-+		if (chance(999, 1000))
-+			return 0;
-+		dbg_rcvry("failing in bud LEB %d commit running", lnum);
-+	} else {
-+		if (chance(9999, 10000))
-+			return 0;
-+		dbg_rcvry("failing in bud LEB %d commit not running", lnum);
-+	}
-+	ubifs_err("*** SETTING FAILURE MODE ON ***");
-+	c->failure_mode = 1;
-+	dump_stack();
-+	return 1;
-+}
-+
-+static void cut_data(const void *buf, int len)
-+{
-+	int flen, i;
-+	unsigned char *p = (void *)buf;
-+
-+	flen = (len * (long long)simple_rand()) >> 15;
-+	for (i = flen; i < len; i++)
-+		p[i] = 0xff;
-+}
-+
-+int dbg_leb_read(struct ubi_volume_desc *desc, int lnum, char *buf, int offset,
-+		 int len, int check)
-+{
-+	if (in_failure_mode(desc))
-+		return -EIO;
-+	return ubi_leb_read(desc, lnum, buf, offset, len, check);
-+}
-+
-+int dbg_leb_write(struct ubi_volume_desc *desc, int lnum, const void *buf,
-+		  int offset, int len, int dtype)
-+{
-+	int err;
-+
-+	if (in_failure_mode(desc))
-+		return -EIO;
-+	if (do_fail(desc, lnum, 1))
-+		cut_data(buf, len);
-+	err = ubi_leb_write(desc, lnum, buf, offset, len, dtype);
-+	if (err)
-+		return err;
-+	if (in_failure_mode(desc))
-+		return -EIO;
-+	return 0;
-+}
-+
-+int dbg_leb_change(struct ubi_volume_desc *desc, int lnum, const void *buf,
-+		   int len, int dtype)
-+{
-+	int err;
-+
-+	if (do_fail(desc, lnum, 1))
-+		return -EIO;
-+	err = ubi_leb_change(desc, lnum, buf, len, dtype);
-+	if (err)
-+		return err;
-+	if (do_fail(desc, lnum, 1))
-+		return -EIO;
-+	return 0;
-+}
-+
-+int dbg_leb_erase(struct ubi_volume_desc *desc, int lnum)
-+{
-+	int err;
-+
-+	if (do_fail(desc, lnum, 0))
-+		return -EIO;
-+	err = ubi_leb_erase(desc, lnum);
-+	if (err)
-+		return err;
-+	if (do_fail(desc, lnum, 0))
-+		return -EIO;
-+	return 0;
-+}
-+
-+int dbg_leb_unmap(struct ubi_volume_desc *desc, int lnum)
-+{
-+	int err;
-+
-+	if (do_fail(desc, lnum, 0))
-+		return -EIO;
-+	err = ubi_leb_unmap(desc, lnum);
-+	if (err)
-+		return err;
-+	if (do_fail(desc, lnum, 0))
-+		return -EIO;
-+	return 0;
-+}
-+
-+int dbg_is_mapped(struct ubi_volume_desc *desc, int lnum)
-+{
-+	if (in_failure_mode(desc))
-+		return -EIO;
-+	return ubi_is_mapped(desc, lnum);
-+}
-+
-+#endif /* CONFIG_UBIFS_FS_DEBUG */
-diff --git a/fs/ubifs/debug.h b/fs/ubifs/debug.h
-new file mode 100644
-index 0000000..49b43a6
---- /dev/null
-+++ b/fs/ubifs/debug.h
-@@ -0,0 +1,392 @@
++++ b/fs/ubifs/gc.c
+@@ -0,0 +1,773 @@
 +/*
 + * This file is part of UBIFS.
 + *
@@ -1532,380 +68,761 @@ index 0000000..49b43a6
 + * this program; if not, write to the Free Software Foundation, Inc., 51
 + * Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 + *
-+ * Authors: Artem Bityutskiy (Битюцкий Артём)
-+ *          Adrian Hunter
++ * Authors: Adrian Hunter
++ *          Artem Bityutskiy (Битюцкий Артём)
 + */
 +
-+#ifndef __UBIFS_DEBUG_H__
-+#define __UBIFS_DEBUG_H__
-+
-+#ifdef CONFIG_UBIFS_FS_DEBUG
-+
-+#define UBIFS_DBG(op) op
-+
-+#define ubifs_assert(expr)  do {                                               \
-+	if (unlikely(!(expr))) {                                               \
-+		printk(KERN_CRIT "UBIFS assert failed in %s at %u (pid %d)\n", \
-+		       __func__, __LINE__, current->pid);                      \
-+		dump_stack();                                                  \
-+	}                                                                      \
-+} while (0)
-+
-+#define ubifs_assert_cmt_locked(c) do {                                        \
-+	if (unlikely(down_write_trylock(&(c)->commit_sem))) {                  \
-+		up_write(&(c)->commit_sem);                                    \
-+		printk(KERN_CRIT "commit lock is not locked!\n");              \
-+		ubifs_assert(0);                                               \
-+	}                                                                      \
-+} while (0)
-+
-+#define dbg_dump_stack() do {                                                  \
-+	if (!dbg_failure_mode)                                                 \
-+		dump_stack();                                                  \
-+} while (0)
-+
-+/* Generic debugging messages */
-+#define dbg_msg(fmt, ...) do {                                                 \
-+	spin_lock(&dbg_lock);                                                  \
-+	printk(KERN_DEBUG "UBIFS DBG (pid %d): %s: " fmt "\n", current->pid,   \
-+	       __func__, ##__VA_ARGS__);                                       \
-+	spin_unlock(&dbg_lock);                                                \
-+} while (0)
-+
-+#define dbg_do_msg(typ, fmt, ...) do {                                         \
-+	if (ubifs_msg_flags & typ)                                             \
-+		dbg_msg(fmt, ##__VA_ARGS__);                                   \
-+} while (0)
-+
-+#define dbg_err(fmt, ...) do {                                                 \
-+	spin_lock(&dbg_lock);                                                  \
-+	ubifs_err(fmt, ##__VA_ARGS__);                                         \
-+	spin_unlock(&dbg_lock);                                                \
-+} while (0)
-+
-+const char *dbg_key_str0(const struct ubifs_info *c,
-+			 const union ubifs_key *key);
-+const char *dbg_key_str1(const struct ubifs_info *c,
-+			 const union ubifs_key *key);
-+
 +/*
-+ * DBGKEY macros require dbg_lock to be held, which it is in the dbg message
-+ * macros.
++ * This file implements garbage collection. The procedure for garbage collection
++ * is different depending on whether a LEB as an index LEB (contains index
++ * nodes) or not. For non-index LEBs, garbage collection finds a LEB which
++ * contains a lot of dirty space (obsolete nodes), and copies the non-obsolete
++ * nodes to the journal, at which point the garbage-collected LEB is free to be
++ * reused. For index LEBs, garbage collection marks the non-obsolete index nodes
++ * dirty in the TNC, and after the next commit, the garbage-collected LEB is
++ * to be reused. Garbage collection will cause the number of dirty index nodes
++ * to grow, however sufficient space is reserved for the index to ensure the
++ * commit will never run out of space.
 + */
-+#define DBGKEY(key) dbg_key_str0(c, (key))
-+#define DBGKEY1(key) dbg_key_str1(c, (key))
 +
-+/* General messages */
-+#define dbg_gen(fmt, ...)        dbg_do_msg(UBIFS_MSG_GEN, fmt, ##__VA_ARGS__)
-+
-+/* Additional journal messages */
-+#define dbg_jrn(fmt, ...)        dbg_do_msg(UBIFS_MSG_JRN, fmt, ##__VA_ARGS__)
-+
-+/* Additional TNC messages */
-+#define dbg_tnc(fmt, ...)        dbg_do_msg(UBIFS_MSG_TNC, fmt, ##__VA_ARGS__)
-+
-+/* Additional lprops messages */
-+#define dbg_lp(fmt, ...)         dbg_do_msg(UBIFS_MSG_LP, fmt, ##__VA_ARGS__)
-+
-+/* Additional LEB find messages */
-+#define dbg_find(fmt, ...)       dbg_do_msg(UBIFS_MSG_FIND, fmt, ##__VA_ARGS__)
-+
-+/* Additional mount messages */
-+#define dbg_mnt(fmt, ...)        dbg_do_msg(UBIFS_MSG_MNT, fmt, ##__VA_ARGS__)
-+
-+/* Additional I/O messages */
-+#define dbg_io(fmt, ...)         dbg_do_msg(UBIFS_MSG_IO, fmt, ##__VA_ARGS__)
-+
-+/* Additional commit messages */
-+#define dbg_cmt(fmt, ...)        dbg_do_msg(UBIFS_MSG_CMT, fmt, ##__VA_ARGS__)
-+
-+/* Additional budgeting messages */
-+#define dbg_budg(fmt, ...)       dbg_do_msg(UBIFS_MSG_BUDG, fmt, ##__VA_ARGS__)
-+
-+/* Additional log messages */
-+#define dbg_log(fmt, ...)        dbg_do_msg(UBIFS_MSG_LOG, fmt, ##__VA_ARGS__)
-+
-+/* Additional gc messages */
-+#define dbg_gc(fmt, ...)         dbg_do_msg(UBIFS_MSG_GC, fmt, ##__VA_ARGS__)
-+
-+/* Additional scan messages */
-+#define dbg_scan(fmt, ...)       dbg_do_msg(UBIFS_MSG_SCAN, fmt, ##__VA_ARGS__)
-+
-+/* Additional recovery messages */
-+#define dbg_rcvry(fmt, ...)      dbg_do_msg(UBIFS_MSG_RCVRY, fmt, ##__VA_ARGS__)
++#include <linux/pagemap.h>
++#include "ubifs.h"
 +
 +/*
-+ * Debugging message type flags (must match msg_type_names in debug.c).
-+ *
-+ * UBIFS_MSG_GEN: general messages
-+ * UBIFS_MSG_JRN: journal messages
-+ * UBIFS_MSG_MNT: mount messages
-+ * UBIFS_MSG_CMT: commit messages
-+ * UBIFS_MSG_FIND: LEB find messages
-+ * UBIFS_MSG_BUDG: budgeting messages
-+ * UBIFS_MSG_GC: garbage collection messages
-+ * UBIFS_MSG_TNC: TNC messages
-+ * UBIFS_MSG_LP: lprops messages
-+ * UBIFS_MSG_IO: I/O messages
-+ * UBIFS_MSG_LOG: log messages
-+ * UBIFS_MSG_SCAN: scan messages
-+ * UBIFS_MSG_RCVRY: recovery messages
++ * GC tries to optimize the way it fit nodes to available space, and it sorts
++ * nodes a little. The below constants are watermarks which define "large",
++ * "medium", and "small" nodes.
++ */
++#define MEDIUM_NODE_WM (UBIFS_BLOCK_SIZE / 4)
++#define SMALL_NODE_WM  UBIFS_MAX_DENT_NODE_SZ
++
++/*
++ * GC may need to move more then one LEB to make progress. The below constants
++ * define "soft" and "hard" limits on the number of LEBs the garbage collector
++ * may move.
++ */
++#define SOFT_LEBS_LIMIT 4
++#define HARD_LEBS_LIMIT 32
++
++/*
++ * Return codes used by the garbage collector.
++ * @LEB_FREED: the logical eraseblock was freed and is ready to use
++ * @LEB_FREED_IDX: indexing LEB was freed and can be used only after the commit
++ * @LEB_RETAINED: the logical eraseblock was freed and retained for GC purposes
 + */
 +enum {
-+	UBIFS_MSG_GEN   = 0x1,
-+	UBIFS_MSG_JRN   = 0x2,
-+	UBIFS_MSG_MNT   = 0x4,
-+	UBIFS_MSG_CMT   = 0x8,
-+	UBIFS_MSG_FIND  = 0x10,
-+	UBIFS_MSG_BUDG  = 0x20,
-+	UBIFS_MSG_GC    = 0x40,
-+	UBIFS_MSG_TNC   = 0x80,
-+	UBIFS_MSG_LP    = 0x100,
-+	UBIFS_MSG_IO    = 0x200,
-+	UBIFS_MSG_LOG   = 0x400,
-+	UBIFS_MSG_SCAN  = 0x800,
-+	UBIFS_MSG_RCVRY = 0x1000,
++	LEB_FREED,
++	LEB_FREED_IDX,
++	LEB_RETAINED,
 +};
 +
-+/* Debugging message type flags for each default debug message level */
-+#define UBIFS_MSG_LVL_0 0
-+#define UBIFS_MSG_LVL_1 0x1
-+#define UBIFS_MSG_LVL_2 0x7f
-+#define UBIFS_MSG_LVL_3 0xffff
-+
-+/*
-+ * Debugging check flags (must match chk_names in debug.c).
++/**
++ * switch_gc_head - switch the garbage collection journal head.
++ * @c: UBIFS file-system description object
++ * @buf: buffer to write
++ * @len: length of the buffer to write
++ * @lnum: LEB number written is returned here
++ * @offs: offset written is returned here
 + *
-+ * UBIFS_CHK_GEN: general checks
-+ * UBIFS_CHK_TNC: check TNC
-+ * UBIFS_CHK_IDX_SZ: check index size
-+ * UBIFS_CHK_ORPH: check orphans
-+ * UBIFS_CHK_OLD_IDX: check the old index
-+ * UBIFS_CHK_LPROPS: check lprops
++ * This function switch the GC head to the next LEB which is reserved in
++ * @c->gc_lnum. Returns %0 in case of success, %-EAGAIN if commit is required,
++ * and other negative error code in case of failures.
 + */
-+enum {
-+	UBIFS_CHK_GEN     = 0x1,
-+	UBIFS_CHK_TNC     = 0x2,
-+	UBIFS_CHK_IDX_SZ  = 0x4,
-+	UBIFS_CHK_ORPH    = 0x8,
-+	UBIFS_CHK_OLD_IDX = 0x10,
-+	UBIFS_CHK_LPROPS  = 0x20,
-+};
++static int switch_gc_head(struct ubifs_info *c)
++{
++	int err, gc_lnum = c->gc_lnum;
++	struct ubifs_wbuf *wbuf = &c->jheads[GCHD].wbuf;
 +
-+/*
-+ * Special testing flags (must match tst_names in debug.c).
++	ubifs_assert(gc_lnum != -1);
++	dbg_gc("switch GC head from LEB %d:%d to LEB %d (waste %d bytes)",
++	       wbuf->lnum, wbuf->offs + wbuf->used, gc_lnum,
++	       c->leb_size - wbuf->offs - wbuf->used);
++
++	err = ubifs_wbuf_sync_nolock(wbuf);
++	if (err)
++		return err;
++
++	/*
++	 * The GC write-buffer was synchronized, we may safely unmap
++	 * 'c->gc_lnum'.
++	 */
++	err = ubifs_leb_unmap(c, gc_lnum);
++	if (err)
++		return err;
++
++	err = ubifs_add_bud_to_log(c, GCHD, gc_lnum, 0);
++	if (err)
++		return err;
++
++	c->gc_lnum = -1;
++	err = ubifs_wbuf_seek_nolock(wbuf, gc_lnum, 0, UBI_LONGTERM);
++	return err;
++}
++
++/**
++ * move_nodes - move nodes.
++ * @c: UBIFS file-system description object
++ * @sleb: describes nodes to move
 + *
-+ * UBIFS_TST_FORCE_IN_THE_GAPS: force the use of in-the-gaps method
-+ * UBIFS_TST_RCVRY: failure mode for recovery testing
++ * This function moves valid nodes from data LEB described by @sleb to the GC
++ * journal head. The obsolete nodes are dropped.
++ *
++ * When moving nodes we have to deal with classical bin-packing problem: the
++ * space in the current GC journal head LEB and in @c->gc_lnum are the "bins",
++ * where the nodes in the @sleb->nodes list are the elements which should be
++ * fit optimally to the bins. This function uses the "first fit decreasing"
++ * strategy, although it does not really sort the nodes but just split them on
++ * 3 classes - large, medium, and small, so they are roughly sorted.
++ *
++ * This function returns zero in case of success, %-EAGAIN if commit is
++ * required, and other negative error codes in case of other failures.
 + */
-+enum {
-+	UBIFS_TST_FORCE_IN_THE_GAPS = 0x2,
-+	UBIFS_TST_RCVRY             = 0x4,
-+};
-+
-+#if CONFIG_UBIFS_FS_DEBUG_MSG_LVL == 1
-+#define UBIFS_MSG_FLAGS_DEFAULT UBIFS_MSG_LVL_1
-+#elif CONFIG_UBIFS_FS_DEBUG_MSG_LVL == 2
-+#define UBIFS_MSG_FLAGS_DEFAULT UBIFS_MSG_LVL_2
-+#elif CONFIG_UBIFS_FS_DEBUG_MSG_LVL == 3
-+#define UBIFS_MSG_FLAGS_DEFAULT UBIFS_MSG_LVL_3
-+#else
-+#define UBIFS_MSG_FLAGS_DEFAULT UBIFS_MSG_LVL_0
-+#endif
-+
-+#if CONFIG_UBIFS_FS_DEBUG_CHKS
-+#define UBIFS_CHK_FLAGS_DEFAULT 0xffffffff
-+#else
-+#define UBIFS_CHK_FLAGS_DEFAULT 0
-+#endif
-+
-+extern spinlock_t dbg_lock;
-+
-+extern unsigned int ubifs_msg_flags;
-+extern unsigned int ubifs_chk_flags;
-+extern unsigned int ubifs_tst_flags;
-+
-+/* Dump functions */
-+
-+const char *dbg_ntype(int type);
-+const char *dbg_cstate(int cmt_state);
-+const char *dbg_get_key_dump(const struct ubifs_info *c,
-+			     const union ubifs_key *key);
-+void dbg_dump_inode(const struct ubifs_info *c, const struct inode *inode);
-+void dbg_dump_node(const struct ubifs_info *c, const void *node);
-+void dbg_dump_budget_req(const struct ubifs_budget_req *req);
-+void dbg_dump_lstats(const struct ubifs_lp_stats *lst);
-+void dbg_dump_budg(struct ubifs_info *c);
-+void dbg_dump_lprop(const struct ubifs_info *c, const struct ubifs_lprops *lp);
-+void dbg_dump_lprops(struct ubifs_info *c);
-+void dbg_dump_leb(const struct ubifs_info *c, int lnum);
-+void dbg_dump_znode(const struct ubifs_info *c,
-+		    const struct ubifs_znode *znode);
-+void dbg_dump_heap(struct ubifs_info *c, struct ubifs_lpt_heap *heap, int cat);
-+void dbg_dump_pnode(struct ubifs_info *c, struct ubifs_pnode *pnode,
-+		    struct ubifs_nnode *parent, int iip);
-+void dbg_dump_tnc(struct ubifs_info *c);
-+
-+/* Checking helper functions */
-+
-+typedef int (*dbg_leaf_callback)(struct ubifs_info *c,
-+				 struct ubifs_zbranch *zbr, void *priv);
-+typedef int (*dbg_znode_callback)(struct ubifs_info *c,
-+				  struct ubifs_znode *znode, void *priv);
-+
-+int dbg_walk_index(struct ubifs_info *c, dbg_leaf_callback leaf_cb,
-+		   dbg_znode_callback znode_cb, void *priv);
-+int dbg_read_leaf_nolock(struct ubifs_info *c, struct ubifs_zbranch *zbr,
-+			 void *node);
-+
-+/* Checking functions */
-+
-+int dbg_check_lprops(struct ubifs_info *c);
-+
-+int dbg_old_index_check_init(struct ubifs_info *c, struct ubifs_zbranch *zroot);
-+int dbg_check_old_index(struct ubifs_info *c, struct ubifs_zbranch *zroot);
-+
-+int dbg_check_cats(struct ubifs_info *c);
-+
-+int dbg_check_ltab(struct ubifs_info *c);
-+
-+int dbg_check_dir_size(struct ubifs_info *c, const struct inode *dir);
-+
-+int dbg_check_tnc(struct ubifs_info *c, int extra);
-+
-+int dbg_check_idx_size(struct ubifs_info *c, long long idx_size);
-+
-+void dbg_check_heap(struct ubifs_info *c, struct ubifs_lpt_heap *heap, int cat,
-+		    int add_pos);
-+
-+int dbg_check_lprops(struct ubifs_info *c);
-+int dbg_check_lpt_nodes(struct ubifs_info *c, struct ubifs_cnode *cnode,
-+			int row, int col);
-+
-+/* Force the use of in-the-gaps method for testing */
-+
-+#define dbg_force_in_the_gaps_enabled \
-+	(ubifs_tst_flags & UBIFS_TST_FORCE_IN_THE_GAPS)
-+
-+int dbg_force_in_the_gaps(void);
-+
-+/* Failure mode for recovery testing */
-+
-+#define dbg_failure_mode (ubifs_tst_flags & UBIFS_TST_RCVRY)
-+
-+void dbg_failure_mode_registration(struct ubifs_info *c);
-+void dbg_failure_mode_deregistration(struct ubifs_info *c);
-+
-+#ifndef UBIFS_DBG_PRESERVE_UBI
-+
-+#define ubi_leb_read   dbg_leb_read
-+#define ubi_leb_write  dbg_leb_write
-+#define ubi_leb_change dbg_leb_change
-+#define ubi_leb_erase  dbg_leb_erase
-+#define ubi_leb_unmap  dbg_leb_unmap
-+#define ubi_is_mapped  dbg_is_mapped
-+
-+#endif
-+
-+int dbg_leb_read(struct ubi_volume_desc *desc, int lnum, char *buf, int offset,
-+		 int len, int check);
-+int dbg_leb_write(struct ubi_volume_desc *desc, int lnum, const void *buf,
-+		  int offset, int len, int dtype);
-+int dbg_leb_change(struct ubi_volume_desc *desc, int lnum, const void *buf,
-+		   int len, int dtype);
-+int dbg_leb_erase(struct ubi_volume_desc *desc, int lnum);
-+int dbg_leb_unmap(struct ubi_volume_desc *desc, int lnum);
-+int dbg_is_mapped(struct ubi_volume_desc *desc, int lnum);
-+
-+static inline int dbg_read(struct ubi_volume_desc *desc, int lnum, char *buf,
-+			   int offset, int len)
++static int move_nodes(struct ubifs_info *c, struct ubifs_scan_leb *sleb)
 +{
-+	return dbg_leb_read(desc, lnum, buf, offset, len, 0);
++	struct ubifs_scan_node *snod, *tmp;
++	struct list_head large, medium, small;
++	struct ubifs_wbuf *wbuf = &c->jheads[GCHD].wbuf;
++	int avail, err, min = INT_MAX;
++
++	INIT_LIST_HEAD(&large);
++	INIT_LIST_HEAD(&medium);
++	INIT_LIST_HEAD(&small);
++
++	list_for_each_entry_safe(snod, tmp, &sleb->nodes, list) {
++		struct list_head *lst;
++
++		ubifs_assert(snod->type != UBIFS_IDX_NODE);
++		ubifs_assert(snod->type != UBIFS_REF_NODE);
++		ubifs_assert(snod->type != UBIFS_CS_NODE);
++
++		err = ubifs_tnc_has_node(c, &snod->key, 0, sleb->lnum,
++					 snod->offs, 0);
++		if (err < 0)
++			goto out;
++
++		lst = &snod->list;
++		list_del(lst);
++		if (!err) {
++			/* The node is obsolete, remove it from the list */
++			kfree(snod);
++			continue;
++		}
++
++		/*
++		 * Sort the list of nodes so that large nodes go first, and
++		 * small nodes go last.
++		 */
++		if (snod->len > MEDIUM_NODE_WM)
++			list_add(lst, &large);
++		else if (snod->len > SMALL_NODE_WM)
++			list_add(lst, &medium);
++		else
++			list_add(lst, &small);
++
++		/* And find the smallest node */
++		if (snod->len < min)
++			min = snod->len;
++	}
++
++	/*
++	 * Join the tree lists so that we'd have one roughly sorted list
++	 * ('large' will be the head of the joined list).
++	 */
++	list_splice(&medium, large.prev);
++	list_splice(&small, large.prev);
++
++	if (wbuf->lnum == -1) {
++		/*
++		 * The GC journal head is not set, because it is the first GC
++		 * invocation since mount.
++		 */
++		err = switch_gc_head(c);
++		if (err)
++			goto out;
++	}
++
++	/* Write nodes to their new location. Use the first-fit strategy */
++	while (1) {
++		avail = c->leb_size - wbuf->offs - wbuf->used;
++		list_for_each_entry_safe(snod, tmp, &large, list) {
++			int new_lnum, new_offs;
++
++			if (avail < min)
++				break;
++
++			if (snod->len > avail)
++				/* This node does not fit */
++				continue;
++
++			cond_resched();
++
++			new_lnum = wbuf->lnum;
++			new_offs = wbuf->offs + wbuf->used;
++				err = ubifs_wbuf_write_nolock(wbuf, snod->node,
++						      snod->len);
++
++			err = ubifs_tnc_replace(c, &snod->key, sleb->lnum,
++						snod->offs, new_lnum, new_offs,
++						snod->len);
++			if (err)
++				goto out;
++
++			avail = c->leb_size - wbuf->offs - wbuf->used;
++			list_del(&snod->list);
++			kfree(snod);
++		}
++
++		if (list_empty(&large))
++			break;
++
++		/*
++		 * Waste the rest of the space in the LEB and switch to the
++		 * next LEB.
++		 */
++		err = switch_gc_head(c);
++		if (err)
++			goto out;
++	}
++
++	return 0;
++
++out:
++	list_for_each_entry_safe(snod, tmp, &large, list) {
++		list_del(&snod->list);
++		kfree(snod);
++	}
++	return err;
 +}
 +
-+static inline int dbg_write(struct ubi_volume_desc *desc, int lnum,
-+			    const void *buf, int offset, int len)
++/**
++ * gc_sync_wbufs - sync write-buffers for GC.
++ * @c: UBIFS file-system description object
++ *
++ * We must guarantee that obsoleting nodes are on flash. Unfortunately they may
++ * be in a write-buffer instead. That is, a node could be written to a
++ * write-buffer, obsoleting another node in a LEB that is GC'd. If that LEB is
++ * erased before the write-buffer is sync'd and then there is an unclean
++ * unmount, then an existing node is lost. To avoid this, we sync all
++ * write-buffers.
++ *
++ * This function returns %0 on success or a negative error code on failure.
++ */
++static int gc_sync_wbufs(struct ubifs_info *c)
 +{
-+	return dbg_leb_write(desc, lnum, buf, offset, len, UBI_UNKNOWN);
++	int err, i;
++
++	for (i = 0; i < c->jhead_cnt; i++) {
++		if (i == GCHD)
++			continue;
++		err = ubifs_wbuf_sync(&c->jheads[i].wbuf);
++		if (err)
++			return err;
++	}
++	return 0;
 +}
 +
-+static inline int dbg_change(struct ubi_volume_desc *desc, int lnum,
-+				    const void *buf, int len)
++/**
++ * garbage_collect_leb - garbage-collect a logical eraseblock.
++ * @c: UBIFS file-system description object
++ * @lp: describes the LEB to garbage collect
++ *
++ * This function garbage-collects an LEB and returns one of the @LEB_FREED,
++ * @LEB_RETAINED, etc positive codes in case of success, %-EAGAIN if commit is
++ * required, and other negative error codes in case of failures.
++ */
++static int garbage_collect_leb(struct ubifs_info *c, struct ubifs_lprops *lp)
 +{
-+	return dbg_leb_change(desc, lnum, buf, len, UBI_UNKNOWN);
++	struct ubifs_scan_leb *sleb;
++	struct ubifs_scan_node *snod;
++	struct ubifs_wbuf *wbuf = &c->jheads[GCHD].wbuf;
++	int err = 0, lnum = lp->lnum;
++
++	ubifs_assert(c->gc_lnum != -1 || wbuf->offs + wbuf->used == 0);
++	ubifs_assert(c->gc_lnum != lnum);
++	ubifs_assert(wbuf->lnum != lnum);
++
++	/*
++	 * We scan the entire LEB even though we only really need to scan up to
++	 * (c->leb_size - lp->free).
++	 */
++	sleb = ubifs_scan(c, lnum, 0, c->sbuf);
++	if (IS_ERR(sleb))
++		return PTR_ERR(sleb);
++
++	ubifs_assert(!list_empty(&sleb->nodes));
++	snod = list_entry(sleb->nodes.next, struct ubifs_scan_node, list);
++
++	if (snod->type == UBIFS_IDX_NODE) {
++		struct ubifs_gced_idx_leb *idx_gc;
++
++		dbg_gc("indexing LEB %d (free %d, dirty %d)",
++		       lnum, lp->free, lp->dirty);
++		list_for_each_entry(snod, &sleb->nodes, list) {
++			struct ubifs_idx_node *idx = snod->node;
++			int level = le16_to_cpu(idx->level);
++
++			ubifs_assert(snod->type == UBIFS_IDX_NODE);
++			key_read(c, ubifs_idx_key(c, idx), &snod->key);
++			err = ubifs_dirty_idx_node(c, &snod->key, level, lnum,
++						   snod->offs);
++			if (err)
++				goto out;
++		}
++
++		idx_gc = kmalloc(sizeof(struct ubifs_gced_idx_leb), GFP_NOFS);
++		if (!idx_gc) {
++			err = -ENOMEM;
++			goto out;
++		}
++
++		idx_gc->lnum = lnum;
++		idx_gc->unmap = 0;
++		list_add(&idx_gc->list, &c->idx_gc);
++
++		/*
++		 * Don't release the LEB until after the next commit, because
++		 * it may contain date which is needed for recovery. So
++		 * although we freed this LEB, it will become usable only after
++		 * the commit.
++		 */
++		err = ubifs_change_one_lp(c, lnum, c->leb_size, 0, 0,
++					  LPROPS_INDEX, 1);
++		if (err)
++			goto out;
++		err = LEB_FREED_IDX;
++	} else {
++		dbg_gc("data LEB %d (free %d, dirty %d)",
++		       lnum, lp->free, lp->dirty);
++
++		err = move_nodes(c, sleb);
++		if (err)
++			goto out;
++
++		err = gc_sync_wbufs(c);
++		if (err)
++			goto out;
++
++		err = ubifs_change_one_lp(c, lnum, c->leb_size, 0, 0, 0, 0);
++		if (err)
++			goto out;
++
++		if (c->gc_lnum == -1) {
++			c->gc_lnum = lnum;
++			err = LEB_RETAINED;
++		} else {
++			err = ubifs_wbuf_sync_nolock(wbuf);
++			if (err)
++				goto out;
++
++			err = ubifs_leb_unmap(c, lnum);
++			if (err)
++				goto out;
++
++			err = LEB_FREED;
++		}
++	}
++
++out:
++	ubifs_scan_destroy(sleb);
++	return err;
 +}
 +
-+#else /* !CONFIG_UBIFS_FS_DEBUG */
++/**
++ * ubifs_garbage_collect - UBIFS garbage collector.
++ * @c: UBIFS file-system description object
++ * @anyway: do GC even if there are free LEBs
++ *
++ * This function does out-of-place garbage collection. The return codes are:
++ *   o positive LEB number if the LEB has been freed and may be used;
++ *   o %-EAGAIN if the caller has to run commit;
++ *   o %-ENOSPC if GC failed to make any progress;
++ *   o other negative error codes in case of other errors.
++ *
++ * Garbage collector writes data to the journal when GC'ing data LEBs, and just
++ * marking indexing nodes dirty when GC'ing indexing LEBs. Thus, at some point
++ * commit may be required. But commit cannot be run from inside GC, because the
++ * caller might be holding the commit lock, so %-EAGAIN is returned instead;
++ * And this error code means that the caller has to run commit, and re-run GC
++ * if there is still no free space.
++ *
++ * There are many reasons why this function may return %-EAGAIN:
++ * o the log is full and there is no space to write an LEB reference for
++ *   @c->gc_lnum;
++ * o the journal is too large and exceeds size limitations;
++ * o GC moved indexing LEBs, but they can be used only after the commit;
++ * o the shrinker fails to find clean znodes to free and requests the commit;
++ * o etc.
++ *
++ * Note, if the file-system is close to be full, this function may return
++ * %-EAGAIN infinitely, so the caller has to limit amount of re-invocations of
++ * the function. E.g., this happens if the limits on the journal size are too
++ * tough and GC writes too much to the journal before an LEB is freed. This
++ * might also mean that the journal is too large, and the TNC becomes to big,
++ * so that the shrinker is constantly called, finds not clean znodes to free,
++ * and requests commit. Well, this may also happen if the journal is all right,
++ * but another kernel process consumes too much memory. Anyway, infinite
++ * %-EAGAIN may happen, but in some extreme/misconfiguration cases.
++ */
++int ubifs_garbage_collect(struct ubifs_info *c, int anyway)
++{
++	int i, err, ret, min_space = c->dead_wm;
++	struct ubifs_lprops lp;
++	struct ubifs_wbuf *wbuf = &c->jheads[GCHD].wbuf;
 +
-+#define UBIFS_DBG(op)
-+#define ubifs_assert(expr)                         ({})
-+#define ubifs_assert_cmt_locked(c)
-+#define dbg_dump_stack()
-+#define dbg_err(fmt, ...)                          ({})
-+#define dbg_msg(fmt, ...)                          ({})
-+#define dbg_key(c, key, fmt, ...)                  ({})
++	ubifs_assert_cmt_locked(c);
 +
-+#define dbg_gen(fmt, ...)                          ({})
-+#define dbg_jrn(fmt, ...)                          ({})
-+#define dbg_tnc(fmt, ...)                          ({})
-+#define dbg_lp(fmt, ...)                           ({})
-+#define dbg_find(fmt, ...)                         ({})
-+#define dbg_mnt(fmt, ...)                          ({})
-+#define dbg_io(fmt, ...)                           ({})
-+#define dbg_cmt(fmt, ...)                          ({})
-+#define dbg_budg(fmt, ...)                         ({})
-+#define dbg_log(fmt, ...)                          ({})
-+#define dbg_gc(fmt, ...)                           ({})
-+#define dbg_scan(fmt, ...)                         ({})
-+#define dbg_rcvry(fmt, ...)                        ({})
++	if (ubifs_gc_should_commit(c))
++		return -EAGAIN;
 +
-+#define dbg_ntype(type)                            ""
-+#define dbg_cstate(cmt_state)                      ""
-+#define dbg_get_key_dump(c, key)                   ({})
-+#define dbg_dump_inode(c, inode)                   ({})
-+#define dbg_dump_node(c, node)                     ({})
-+#define dbg_dump_budget_req(req)                   ({})
-+#define dbg_dump_lstats(lst)                       ({})
-+#define dbg_dump_budg(c)                           ({})
-+#define dbg_dump_lprop(c, lp)                      ({})
-+#define dbg_dump_lprops(c)                         ({})
-+#define dbg_dump_leb(c, lnum)                      ({})
-+#define dbg_dump_znode(c, znode)                   ({})
-+#define dbg_dump_heap(c, heap, cat)                ({})
-+#define dbg_dump_pnode(c, pnode, parent, iip)      ({})
-+#define dbg_dump_tnc(c)                            ({})
++	mutex_lock_nested(&wbuf->io_mutex, wbuf->jhead);
++	/* We expect the write-buffer to be empty on entry */
++	ubifs_assert(!wbuf->used);
 +
-+#define dbg_walk_index(c, leaf_cb, znode_cb, priv) 0
-+#define dbg_read_leaf_nolock(c, zbr, node)         0
++	for (i = 0; ; i++) {
++		int space_before = c->leb_size - wbuf->offs - wbuf->used;
++		int space_after;
 +
-+#define dbg_old_index_check_init(c, zroot)         0
-+#define dbg_check_old_index(c, zroot)              0
++		cond_resched();
 +
-+#define dbg_check_cats(c)                          0
++		/* Give the commit an opportunity to run */
++		if (ubifs_gc_should_commit(c)) {
++			ret = -EAGAIN;
++			break;
++		}
 +
-+#define dbg_check_ltab(c)                          0
++		if (i > SOFT_LEBS_LIMIT && !list_empty(&c->idx_gc)) {
++			/*
++			 * We've done enough iterations. Indexing LEBs were
++			 * moved and will be available after the commit.
++			 */
++			dbg_gc("soft limit, some index LEBs GC'ed, -EAGAIN");
++			ubifs_commit_required(c);
++			ret = -EAGAIN;
++			break;
++		}
 +
-+#define dbg_check_dir_size(c, dir)                 0
++		if (i > HARD_LEBS_LIMIT) {
++			/*
++			 * We've moved too many LEBs and have not made
++			 * progress, give up.
++			 */
++			dbg_gc("hard limit, -ENOSPC");
++			ret = -ENOSPC;
++			break;
++		}
 +
-+#define dbg_check_tnc(c, x)                        0
++		/*
++		 * Empty and freeable LEBs can turn up while we waited for
++		 * the wbuf lock, or while we have been running GC. In that
++		 * case, we should just return one of those instead of
++		 * continuing to GC dirty LEBs. Hence we request
++		 * 'ubifs_find_dirty_leb()' to return an empty LEB if it can.
++		 */
++		ret = ubifs_find_dirty_leb(c, &lp, min_space, !anyway);
++		if (ret) {
++			if (ret == -ENOSPC)
++				dbg_gc("no more dirty LEBs");
++			break;
++		}
 +
-+#define dbg_check_idx_size(c, idx_size)            0
++		dbg_gc("found LEB %d: free %d, dirty %d, sum %d "
++		       "(min. space %d)", lp.lnum, lp.free, lp.dirty,
++		       lp.free + lp.dirty, min_space);
 +
-+#define dbg_check_heap(c, heap, cat, add_pos)      ({})
++		if (lp.free + lp.dirty == c->leb_size) {
++			/* An empty LEB was returned */
++			dbg_gc("LEB %d is free, return it", lp.lnum);
++			/*
++			 * ubifs_find_dirty_leb() doesn't return freeable index
++			 * LEBs.
++			 */
++			ubifs_assert(!(lp.flags & LPROPS_INDEX));
++			if (lp.free != c->leb_size) {
++				/*
++				 * Write buffers must be sync'd before
++				 * unmapping freeable LEBs, because one of them
++				 * may contain data which obsoletes something
++				 * in 'lp.pnum'.
++				 */
++				ret = gc_sync_wbufs(c);
++				if (ret)
++					goto out;
++				ret = ubifs_change_one_lp(c, lp.lnum,
++							  c->leb_size, 0, 0, 0,
++							  0);
++				if (ret)
++					goto out;
++			}
++			ret = ubifs_leb_unmap(c, lp.lnum);
++			if (ret)
++				goto out;
++			ret = lp.lnum;
++			break;
++		}
 +
-+#define dbg_check_lprops(c)                        0
-+#define dbg_check_lpt_nodes(c, cnode, row, col)    0
++		space_before = c->leb_size - wbuf->offs - wbuf->used;
++		if (wbuf->lnum == -1)
++			space_before = 0;
 +
-+#define dbg_force_in_the_gaps_enabled              0
-+#define dbg_force_in_the_gaps()                    0
++		ret = garbage_collect_leb(c, &lp);
++		if (ret < 0) {
++			if (ret == -EAGAIN || ret == -ENOSPC) {
++				/*
++				 * These codes are not errors, so we have to
++				 * return the LEB to lprops. But if the
++				 * 'ubifs_return_leb()' function fails, its
++				 * failure code is propagated to the caller
++				 * instead of the original '-EAGAIN' or
++				 * '-ENOSPC'.
++				 */
++				err = ubifs_return_leb(c, lp.lnum);
++				if (err)
++					ret = err;
++				break;
++			}
++			goto out;
++		}
 +
-+#define dbg_failure_mode                           0
-+#define dbg_failure_mode_registration(c)           ({})
-+#define dbg_failure_mode_deregistration(c)         ({})
++		if (ret == LEB_FREED) {
++			/* An LEB has been freed and is ready for use */
++			dbg_gc("LEB %d freed, return", lp.lnum);
++			ret = lp.lnum;
++			break;
++		}
 +
-+#endif /* !CONFIG_UBIFS_FS_DEBUG */
++		if (ret == LEB_FREED_IDX) {
++			/*
++			 * This was an indexing LEB and it cannot be
++			 * immediately used. And instead of requesting the
++			 * commit straight away, we try to garbage collect some
++			 * more.
++			 */
++			dbg_gc("indexing LEB %d freed, continue", lp.lnum);
++			continue;
++		}
 +
-+#endif /* !__UBIFS_DEBUG_H__ */
++		ubifs_assert(ret == LEB_RETAINED);
++		space_after = c->leb_size - wbuf->offs - wbuf->used;
++		dbg_gc("LEB %d retained, freed %d bytes", lp.lnum,
++		       space_after - space_before);
++
++		if (space_after > space_before) {
++			/* GC makes progress, keep working */
++			min_space >>= 1;
++			if (min_space < c->dead_wm)
++				min_space = c->dead_wm;
++			continue;
++		}
++
++		dbg_gc("did not make progress");
++
++		/*
++		 * GC moved an LEB bud have not done any progress. This means
++		 * that the previous GC head LEB contained too few free space
++		 * and the LEB which was GC'ed contained only large nodes which
++		 * did not fit that space.
++		 *
++		 * We can do 2 things:
++		 * 1. pick another LEB in a hope it'll contain a small node
++		 *    which will fit the space we have at the end of current GC
++		 *    head LEB, but there is no guarantee, so we try this out
++		 *    unless we have already been working for too long;
++		 * 2. request an LEB with more dirty space, which will force
++		 *    'ubifs_find_dirty_leb()' to start scanning the lprops
++		 *    table, instead of just picking one from the heap
++		 *    (previously it already picked the dirtiest LEB).
++		 */
++		if (i < SOFT_LEBS_LIMIT) {
++			dbg_gc("try again");
++			continue;
++		}
++
++		min_space <<= 1;
++		if (min_space > c->dark_wm)
++			min_space = c->dark_wm;
++		dbg_gc("set min. space to %d", min_space);
++	}
++
++	if (ret == -ENOSPC && !list_empty(&c->idx_gc)) {
++		dbg_gc("no space, some index LEBs GC'ed, -EAGAIN");
++		ubifs_commit_required(c);
++		ret = -EAGAIN;
++	}
++
++	err = ubifs_wbuf_sync_nolock(wbuf);
++	if (!err)
++		err = ubifs_leb_unmap(c, c->gc_lnum);
++	if (err)
++		ret = err;
++	mutex_unlock(&wbuf->io_mutex);
++	return ret;
++
++out:
++	ubifs_assert(ret < 0);
++	ubifs_assert(ret != -ENOSPC && ret != -EAGAIN);
++	ubifs_wbuf_sync_nolock(wbuf);
++	mutex_unlock(&wbuf->io_mutex);
++	ubifs_return_leb(c, lp.lnum);
++	return ret;
++}
++
++/**
++ * ubifs_gc_start_commit - garbage collection at start of commit.
++ * @c: UBIFS file-system description object
++ *
++ * If a LEB has only dirty and free space, then we may safely unmap it and make
++ * it free.  Note, we cannot do this with indexing LEBs because dirty space may
++ * correspond index nodes that are required for recovery.  In that case, the
++ * LEB cannot be unmapped until after the next commit.
++ *
++ * This function returns %0 upon success and a negative error code upon failure.
++ */
++int ubifs_gc_start_commit(struct ubifs_info *c)
++{
++	struct ubifs_gced_idx_leb *idx_gc;
++	const struct ubifs_lprops *lp;
++	int err = 0, flags;
++
++	ubifs_get_lprops(c);
++
++	/*
++	 * Unmap (non-index) freeable LEBs. Note that recovery requires that all
++	 * wbufs are sync'd before this, which is done in 'do_commit()'.
++	 */
++	while (1) {
++		lp = ubifs_fast_find_freeable(c);
++		if (unlikely(IS_ERR(lp))) {
++			err = PTR_ERR(lp);
++			goto out;
++		}
++		if (!lp)
++			break;
++		ubifs_assert(!(lp->flags & LPROPS_TAKEN));
++		ubifs_assert(!(lp->flags & LPROPS_INDEX));
++		err = ubifs_leb_unmap(c, lp->lnum);
++		if (err)
++			goto out;
++		lp = ubifs_change_lp(c, lp, c->leb_size, 0, lp->flags, 0);
++		if (unlikely(IS_ERR(lp))) {
++			err = PTR_ERR(lp);
++			goto out;
++		}
++		ubifs_assert(!(lp->flags & LPROPS_TAKEN));
++		ubifs_assert(!(lp->flags & LPROPS_INDEX));
++	}
++
++	/* Mark GC'd index LEBs OK to unmap after this commit finishes */
++	list_for_each_entry(idx_gc, &c->idx_gc, list)
++		idx_gc->unmap = 1;
++
++	/* Record index freeable LEBs for unmapping after commit */
++	while (1) {
++		lp = ubifs_fast_find_frdi_idx(c);
++		if (unlikely(IS_ERR(lp))) {
++			err = PTR_ERR(lp);
++			goto out;
++		}
++		if (!lp)
++			break;
++		idx_gc = kmalloc(sizeof(struct ubifs_gced_idx_leb), GFP_NOFS);
++		if (!idx_gc) {
++			err = -ENOMEM;
++			goto out;
++		}
++		ubifs_assert(!(lp->flags & LPROPS_TAKEN));
++		ubifs_assert(lp->flags & LPROPS_INDEX);
++		/* Don't release the LEB until after the next commit */
++		flags = (lp->flags | LPROPS_TAKEN) ^ LPROPS_INDEX;
++		lp = ubifs_change_lp(c, lp, c->leb_size, 0, flags, 1);
++		if (unlikely(IS_ERR(lp))) {
++			err = PTR_ERR(lp);
++			kfree(idx_gc);
++			goto out;
++		}
++		ubifs_assert(lp->flags & LPROPS_TAKEN);
++		ubifs_assert(!(lp->flags & LPROPS_INDEX));
++		idx_gc->lnum = lp->lnum;
++		idx_gc->unmap = 1;
++		list_add(&idx_gc->list, &c->idx_gc);
++	}
++out:
++	ubifs_release_lprops(c);
++	return err;
++}
++
++/**
++ * ubifs_gc_end_commit - garbage collection at end of commit.
++ * @c: UBIFS file-system description object
++ *
++ * This function completes out-of-place garbage collection of index LEBs.
++ */
++int ubifs_gc_end_commit(struct ubifs_info *c)
++{
++	struct ubifs_gced_idx_leb *idx_gc, *tmp;
++	struct ubifs_wbuf *wbuf;
++	int err = 0;
++
++	wbuf = &c->jheads[GCHD].wbuf;
++	mutex_lock_nested(&wbuf->io_mutex, wbuf->jhead);
++	list_for_each_entry_safe(idx_gc, tmp, &c->idx_gc, list)
++		if (idx_gc->unmap) {
++			dbg_gc("LEB %d", idx_gc->lnum);
++			err = ubifs_leb_unmap(c, idx_gc->lnum);
++			if (err)
++				goto out;
++			err = ubifs_change_one_lp(c, idx_gc->lnum, -1, -1, 0,
++					LPROPS_TAKEN, -1);
++			if (err)
++				goto out;
++			list_del(&idx_gc->list);
++			kfree(idx_gc);
++		}
++out:
++	mutex_unlock(&wbuf->io_mutex);
++	return err;
++}
++
++/**
++ * ubifs_destroy_idx_gc - destroy idx_gc list.
++ * @c: UBIFS file-system description object
++ *
++ * This function destroys the idx_gc list. It is called when unmounting or
++ * remounting read-only so locks are not needed.
++ */
++void ubifs_destroy_idx_gc(struct ubifs_info *c)
++{
++	while (!list_empty(&c->idx_gc)) {
++		struct ubifs_gced_idx_leb *idx_gc;
++
++		idx_gc = list_entry(c->idx_gc.next, struct ubifs_gced_idx_leb,
++				    list);
++		c->idx_gc_cnt -= 1;
++		list_del(&idx_gc->list);
++		kfree(idx_gc);
++	}
++
++}
++
++/**
++ * ubifs_get_idx_gc_leb - get a LEB from GC'd index LEB list.
++ * @c: UBIFS file-system description object
++ *
++ * Called during start commit so locks are not needed.
++ */
++int ubifs_get_idx_gc_leb(struct ubifs_info *c)
++{
++	struct ubifs_gced_idx_leb *idx_gc;
++	int lnum;
++
++	if (list_empty(&c->idx_gc))
++		return -ENOSPC;
++	idx_gc = list_entry(c->idx_gc.next, struct ubifs_gced_idx_leb, list);
++	lnum = idx_gc->lnum;
++	/* c->idx_gc_cnt is updated by the caller when lprops are updated */
++	list_del(&idx_gc->list);
++	kfree(idx_gc);
++	return lnum;
++}
 -- 
 1.5.4.1
 
