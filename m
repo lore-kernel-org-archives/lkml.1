@@ -1,110 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932130AbYEFUHe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932833AbYEFUH5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932130AbYEFUHe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 16:07:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753893AbYEFUHU
+	id S932833AbYEFUH5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 16:07:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764391AbYEFUH1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 16:07:20 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:51076 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757215AbYEFUHR (ORCPT
+	Tue, 6 May 2008 16:07:27 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:36055 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1763656AbYEFUH0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 16:07:17 -0400
-Date: Tue, 6 May 2008 17:06:23 -0300
-From: Mauro Carvalho Chehab <mchehab@infradead.org>
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Cc: Alistair John Strachan <alistair@devzero.co.uk>, Robin Holt <holt@sgi.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.26-rc1
-Message-ID: <20080506170623.53732e78@gaivota>
-In-Reply-To: <4820B524.5080100@s5r6.in-berlin.de>
-References: <alpine.LFD.1.10.0805031205330.2971@woody.linux-foundation.org>
-	<20080504160904.GF19717@sgi.com>
-	<Pine.LNX.4.64.0805051656180.3218@bombadil.infradead.org>
-	<200805060902.25835.alistair@devzero.co.uk>
-	<20080506073134.424780a3@gaivota>
-	<48206C73.80509@s5r6.in-berlin.de>
-	<20080506161346.183f367c@gaivota>
-	<4820B524.5080100@s5r6.in-berlin.de>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.9; x86_64-mandriva-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+	Tue, 6 May 2008 16:07:26 -0400
+Date: Tue, 6 May 2008 13:06:20 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Hugh Dickins <hugh@veritas.com>
+cc: Ingo Molnar <mingo@elte.hu>, Jeff Chua <jeff.chua.linux@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Gabriel C <nix.or.die@googlemail.com>,
+       Hans Rosenfeld <hans.rosenfeld@amd.com>,
+       Arjan van de Ven <arjan@linux.intel.com>,
+       Nishanth Aravamudan <nacc@us.ibm.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH] x86: fix PAE pmd_bad bootup warning
+In-Reply-To: <Pine.LNX.4.64.0805062043580.11647@blonde.site>
+Message-ID: <alpine.LFD.1.10.0805061302080.32269@woody.linux-foundation.org>
+References: <b6a2187b0805051806v25fa1272xb08e0b70b9c3408@mail.gmail.com> <20080506124946.GA2146@elte.hu> <Pine.LNX.4.64.0805061435510.32567@blonde.site> <alpine.LFD.1.10.0805061138580.32269@woody.linux-foundation.org>
+ <Pine.LNX.4.64.0805062043580.11647@blonde.site>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 06 May 2008 21:44:36 +0200
-Stefan Richter <stefanr@s5r6.in-berlin.de> wrote:
 
-> Mauro Carvalho Chehab wrote:
-> > On Tue, 06 May 2008 16:34:27 +0200
-> > Stefan Richter <stefanr@s5r6.in-berlin.de> wrote:
-> >> But it is /trivial/ to fix.  If A selects B, you have to copy all of B's
-> >> dependencies to A or select these dependencies by A.
-> >>
-> >> So it's totally simple to do it right.  The only nuisance is that you
-> >> always have to update B's dependencies and selections whenever A's
-> >> dependencies are changed.
-> > 
-> > This is easy to maintain, if you have just a few selects, but this is not the
-> > case of V4L drivers. Look some examples:
-> > 
-> > IVTV driver:
-> [...]
-> > You may argue to not use select, but it is really hard to avoid, since each of
-> > those main drivers (cx88, ivtv, bttv, etc) supports a large number of different
-> > devices, that needs different chips. Most V4L/DVB devices has an internal I2C
-> > bus that gives the flexibility for the board manufacturers to add/replace the
-> > internal components at the i2c bus. So, the Kernel uses abstraction layers that
-> > allows that the same driver to use different internal components.
-> 
-> Shouldn't layers actually untangle dependencies, i.e. concentrate 
-> dependencies?  A "high-level driver" does not depend on "low-level 
-> drivers" and the low-level drivers' dependencies anymore.  It only 
-> depends on a "core driver" and on foreign subsystem APIs.
 
-> And yes, the core driver may very well provide some functionality which 
-> not all of the high-level drivers need, or not all of the low-level 
-> drivers are able to support.
-> 
-> (All theoretical since I have no idea of what kinds of modules of 
-> functionality you have/need and whether it really can be simpler organized.)
+On Tue, 6 May 2008, Hugh Dickins wrote:
+>
+> Fix Hans' good observation that follow_page() will never find pmd_huge()
+> because that would have already failed the pmd_bad test: test pmd_huge in
+> between the pmd_none and pmd_bad tests.  Tighten x86's pmd_huge() check?
+> No, once it's a hugepage entry, it can get quite far from a good pmd: for
+> example, PROT_NONE leaves it with only ACCESSED of the KERN_PGTABLE bits.
 
-This is the way it is designed.
+I'd much rather have pdm_bad() etc fixed up instead, so that they do a 
+more proper test (not thinking that a PSE page is bad, since it clearly 
+isn't). And then, make them dependent on DEBUG_VM, because doing the 
+proper test will be more expensive.
 
-For example, if you have a em28xx device with msp3400 and tvp5150 and another
-em28xx device with saa7113.
+Hmm?
 
-If you remove the select's for MSP3400, TVP5150 and SAA7113, at, em28xx, the
-module will compile without problems.
-
-The only issue is that you won't be able to see any images (due to the lack of
-tvp5150 or saa7113 analog TV demoduler) or listen to the audio, if the device
-needs msp3400 to decode audio.
-
-So, you'll just spend kernelspace for a completely useless driver ;)
-
-Ok, let's consider a scenario where there are 3 options, for each of the above.
-
-Now, the user will need to open the USB stick, without breaking anything,
-to identify what chips it have inside the internal i2c bus, before compiling the kernel.
-
-Also, since V4L/DVB has more than 230 drivers (most of them are those I2C
-helper drivers), the number of items for the user to understand and select will
-be huge.
-
-It is much better for the user to just select EM28XX and let the Kconfig do the
-hard work of selecting what low-level driver applies for em28xx-based devices.
-
-This causes lots of select, being very hard to maintain. The better would be to
-have a select-like clause that could check the dependencies automatically.
-
-Another alternative would be some sort of script (checkpatch.pl?) that would
-check if all selected dependencies are ok.
-
-Cheers,
-Mauro
+		Linus
