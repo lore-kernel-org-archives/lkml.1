@@ -1,75 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933342AbYEFVVm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933497AbYEFVWX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933342AbYEFVVm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 17:21:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933086AbYEFVSo
+	id S933497AbYEFVWX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 17:22:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933094AbYEFVSq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 17:18:44 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:48561 "EHLO mx1.redhat.com"
+	Tue, 6 May 2008 17:18:46 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:48564 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933043AbYEFVSm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S933060AbYEFVSm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 6 May 2008 17:18:42 -0400
 Date: Tue, 6 May 2008 17:18:07 -0400
 From: Ulrich Drepper <drepper@redhat.com>
-Message-Id: <200805062118.m46LI7AF004035@devserv.devel.redhat.com>
+Message-Id: <200805062118.m46LI7E0004043@devserv.devel.redhat.com>
 To: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: [PATCH 00/18] flag parameters
+Subject: [PATCH 03/18] flag parameters: anon_inode_getfd extension
 Cc: akpm@linux-foundation.org, davidel@xmailserver.org, mtk.manpages@gmail.com,
        torvalds@linux-foundation.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an update for the previous series which should address the
-comments Andrew had.  The controversial function Davide wrote is gone.
-There is no flag conversion anymore.  We still introduce new names for
-the constants but the values are the same as the O_* constants.
+This patch just extends the anon_inode_getfd interface to take an additional
+parameter with a flag value.  The flag value is passed on to
+get_unused_fd_flags in anticipation for a use with the O_CLOEXEC flag.
 
-This leads to some strange-looking code where we in one moment check
-for, say, SOCK_CLOEXEC, and in the next for O_CLOEXEC.  But I added
-in a separate, new patch code which checks for the consistency of the
-constants.
+No actual semantic changes here, the changed callers all pass 0 for now.
 
-I modified the headers in <linux/*> to define the new values by
-include <linux/fcntl.h> and then simply define the new constants
-based on the O_* constants.  That's the safest a nd least troublesome
-way.  Otherwise we would have to create arch-specific headers.  None
-of the modified headers should be used by userlevel code.  Therefore
-the namespace pollution is no issue.
+ fs/anon_inodes.c            |    9 +++++----
+ fs/eventfd.c                |    2 +-
+ fs/eventpoll.c              |    2 +-
+ fs/signalfd.c               |    3 ++-
+ fs/timerfd.c                |    2 +-
+ include/linux/anon_inodes.h |    2 +-
+ 6 files changed, 11 insertions(+), 9 deletions(-)
 
-For those who just turn in, these patches add flags to various functions
-so that new file descriptors can be created with atomically setting the
-close-on-exec flag.  This is critical, in multi-threaded apps we otherwise
-can have file descriptor leakage or worse.  Since it is so either and
-often needed, I also added code to create new file descriptors with
-O_NONBLOCK set.
 
-In future there will be other uses.  Like a O_* flag to enable the use
-of non-sequential descriptors.
+Signed-off-by: Ulrich Drepper <drepper@redhat.com>
 
-Some interfaces are not exported at userlevel with enough flexibility
-to allow extending them.  For those we need new userlevel interface.
-This is the case for:
-
- - paccept
- - epoll_create2
- - dup3
- - pipe2
- - inotify_init1
-
-We do /not/ need new interfaces for
-
- - signalfd4
- - eventfd2
- - timerfd_create
- - socket
- - socketpair
-
-These either have flags parameters in the interface exported by glibc
-or (in case of the socket functions) overload a parameter with a bitset.
-
-Each semantic change has a test program.  For archs other than x86 and
-x86-64 you'll have to add the appropriate syscall number.
-
-The patches all apply individually in sequence and the source tree
-remains compilable and runnable.
+diff --git a/fs/anon_inodes.c b/fs/anon_inodes.c
+index 977ef20..3662dd4 100644
+--- a/fs/anon_inodes.c
++++ b/fs/anon_inodes.c
+@@ -58,8 +58,9 @@ static struct dentry_operations anon_inodefs_dentry_operations = {
+  *                    of the file
+  *
+  * @name:    [in]    name of the "class" of the new file
+- * @fops     [in]    file operations for the new file
+- * @priv     [in]    private data for the new file (will be file's private_data)
++ * @fops:    [in]    file operations for the new file
++ * @priv:    [in]    private data for the new file (will be file's private_data)
++ * @flags:   [in]    flags
+  *
+  * Creates a new file by hooking it on a single inode. This is useful for files
+  * that do not need to have a full-fledged inode in order to operate correctly.
+@@ -68,7 +69,7 @@ static struct dentry_operations anon_inodefs_dentry_operations = {
+  * setup.  Returns new descriptor or -error.
+  */
+ int anon_inode_getfd(const char *name, const struct file_operations *fops,
+-		     void *priv)
++		     void *priv, int flags)
+ {
+ 	struct qstr this;
+ 	struct dentry *dentry;
+@@ -78,7 +79,7 @@ int anon_inode_getfd(const char *name, const struct file_operations *fops,
+ 	if (IS_ERR(anon_inode_inode))
+ 		return -ENODEV;
+ 
+-	error = get_unused_fd();
++	error = get_unused_fd_flags(flags);
+ 	if (error < 0)
+ 		return error;
+ 	fd = error;
+diff --git a/fs/eventfd.c b/fs/eventfd.c
+index 343942d..ddb543d 100644
+--- a/fs/eventfd.c
++++ b/fs/eventfd.c
+@@ -214,7 +214,7 @@ asmlinkage long sys_eventfd(unsigned int count)
+ 	 * When we call this, the initialization must be complete, since
+ 	 * anon_inode_getfd() will install the fd.
+ 	 */
+-	fd = anon_inode_getfd("[eventfd]", &eventfd_fops, ctx);
++	fd = anon_inode_getfd("[eventfd]", &eventfd_fops, ctx, 0);
+ 	if (fd < 0)
+ 		kfree(ctx);
+ 	return fd;
+diff --git a/fs/eventpoll.c b/fs/eventpoll.c
+index 990c01d..7714e91 100644
+--- a/fs/eventpoll.c
++++ b/fs/eventpoll.c
+@@ -1068,7 +1068,7 @@ asmlinkage long sys_epoll_create(int size)
+ 	 * Creates all the items needed to setup an eventpoll file. That is,
+ 	 * a file structure and a free file descriptor.
+ 	 */
+-	fd = anon_inode_getfd("[eventpoll]", &eventpoll_fops, ep);
++	fd = anon_inode_getfd("[eventpoll]", &eventpoll_fops, ep, 0);
+ 	if (fd < 0)
+ 		ep_free(ep);
+ 
+diff --git a/fs/signalfd.c b/fs/signalfd.c
+index 6197256..a73333b 100644
+--- a/fs/signalfd.c
++++ b/fs/signalfd.c
+@@ -227,7 +227,8 @@ asmlinkage long sys_signalfd(int ufd, sigset_t __user *user_mask, size_t sizemas
+ 		 * When we call this, the initialization must be complete, since
+ 		 * anon_inode_getfd() will install the fd.
+ 		 */
+-		ufd = anon_inode_getfd("[signalfd]", &signalfd_fops, ctx);
++		ufd = anon_inode_getfd("[signalfd]", &signalfd_fops, ctx,
++				       0);
+ 		if (ufd < 0)
+ 			kfree(ctx);
+ 	} else {
+diff --git a/fs/timerfd.c b/fs/timerfd.c
+index d87d354..f998991 100644
+--- a/fs/timerfd.c
++++ b/fs/timerfd.c
+@@ -198,7 +198,7 @@ asmlinkage long sys_timerfd_create(int clockid, int flags)
+ 	ctx->clockid = clockid;
+ 	hrtimer_init(&ctx->tmr, clockid, HRTIMER_MODE_ABS);
+ 
+-	ufd = anon_inode_getfd("[timerfd]", &timerfd_fops, ctx);
++	ufd = anon_inode_getfd("[timerfd]", &timerfd_fops, ctx, 0);
+ 	if (ufd < 0)
+ 		kfree(ctx);
+ 
+diff --git a/include/linux/anon_inodes.h b/include/linux/anon_inodes.h
+index 6129e58..e0a0cdc 100644
+--- a/include/linux/anon_inodes.h
++++ b/include/linux/anon_inodes.h
+@@ -9,7 +9,7 @@
+ #define _LINUX_ANON_INODES_H
+ 
+ int anon_inode_getfd(const char *name, const struct file_operations *fops,
+-		     void *priv);
++		     void *priv, int flags);
+ 
+ #endif /* _LINUX_ANON_INODES_H */
+ 
