@@ -1,45 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758749AbYEFIam@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759623AbYEFIcV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758749AbYEFIam (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 04:30:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753653AbYEFIa3
+	id S1759623AbYEFIcV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 04:32:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754637AbYEFIcF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 04:30:29 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:59044 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752779AbYEFIa2 (ORCPT
+	Tue, 6 May 2008 04:32:05 -0400
+Received: from smtp1.wifiinternet.cz ([89.31.47.1]:64095 "EHLO
+	bor.wifiinternet.cz" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753653AbYEFIcB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 04:30:28 -0400
-Date: Tue, 6 May 2008 10:30:27 +0200 (CEST)
-From: Jan Engelhardt <jengelh@medozas.de>
-To: Pau Aliagas <linuxnow@newtral.org>
-cc: lkml <linux-kernel@vger.kernel.org>
-Subject: Re: can I receive UDP broadcasts in aliases interfaces?
-In-Reply-To: <alpine.LFD.1.00.0804290021170.11820@tux.dis.ct>
-Message-ID: <alpine.LNX.1.10.0805061029190.16731@fbirervta.pbzchgretzou.qr>
-References: <alpine.LFD.1.00.0804290021170.11820@tux.dis.ct>
-User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
+	Tue, 6 May 2008 04:32:01 -0400
+Message-ID: <482017C3.2070508@seznam.cz>
+Date: Tue, 06 May 2008 10:33:07 +0200
+From: Michal Simek <monstr@seznam.cz>
+Reply-To: monstr@seznam.cz
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: Arnd Bergmann <arnd@arndb.de>, microblaze-uclinux@itee.uq.edu.au,
+       Matthew Wilcox <matthew@wil.cx>, Will Newton <will.newton@gmail.com>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       linux-arch@vger.kernel.org, git@xilinx.com,
+       John Williams <john.williams@petalogix.com>,
+       Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>,
+       John Linn <John.Linn@xilinx.com>
+Subject: Re: microblaze syscall list
+References: <87a5b0800804220513t75690ceao938a288596b5ad0c@mail.gmail.com> <4813DF3E.6080800@itee.uq.edu.au> <4814A153.3040600@seznam.cz> <200805032357.41043.arnd@arndb.de> <481D7DF7.3000909@seznam.cz> <481E3433.2030408@zytor.com>
+In-Reply-To: <481E3433.2030408@zytor.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi hpa,
+>>
+>> /* kernel/sys_ni.c */
+>>     .long sys_ni_syscall /*  :-)  */
+>>
+> 
+> There is a school of thought that it's useful to reserve a system call
+> number (usually zero) as a system call that is *guaranteed* to have no
+> effect.
 
-On Tuesday 2008-04-29 00:27, Pau Aliagas wrote:
->
-> I'm trying to use aliased interfaces to run multiple instances of a
-> process that receives UDP broadcasts; I want to test all in a
-> single computer when I have no access to the network.
->
-> My problem is that I can bind to the virtual interface ip to send
-> and receive packets, but I don't receive udp broadcasts. I have no
-> firewall rules that block it and udp bcasts are generated from the
-> same computer too.
->
-> Is there any sysctl param I need to change? I'm usre this can be
-> done but I haven't found how.
+I like your opinion. I'll add it like zero syscall.
 
-Hm, set a proper broadcast address on the address? E.g.
+Thanks,
+M
 
-	ip addr add 192.168.0.137/24 brd + dev eth0
+
