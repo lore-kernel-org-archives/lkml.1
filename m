@@ -1,42 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932298AbYEFJ2C@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765698AbYEFJ22@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932298AbYEFJ2C (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 05:28:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764738AbYEFJQj
+	id S1765698AbYEFJ22 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 05:28:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765169AbYEFJTs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 05:16:39 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:55263 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755529AbYEFJQg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 05:16:36 -0400
-Date: Tue, 6 May 2008 05:16:32 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: akpm@linux-foundation.org, hch@infradead.org, viro@ZenIV.linux.org.uk,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [patch 00/24] vfs: fixes and cleanups + add helpers to check
-	r/o bind mounts
-Message-ID: <20080506091632.GA28032@infradead.org>
-References: <20080506091327.259950960@szeredi.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080506091327.259950960@szeredi.hu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+	Tue, 6 May 2008 05:19:48 -0400
+Received: from mga02.intel.com ([134.134.136.20]:48034 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1765229AbYEFJTp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 May 2008 05:19:45 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.27,443,1204531200"; 
+   d="scan'208";a="380457602"
+Subject: Re: [PATCH] bay: Exit if notify handler cannot be installed
+From: Shaohua Li <shaohua.li@intel.com>
+To: Holger Macht <hmacht@suse.de>
+Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       "Accardi, Kristen C" <kristen.c.accardi@intel.com>
+In-Reply-To: <20080506091522.GA4378@homac>
+References: <20080505202508.GA3690@homac>  <20080506091522.GA4378@homac>
+Content-Type: text/plain
+Date: Tue, 06 May 2008 17:23:31 +0800
+Message-Id: <1210065811.12668.1.camel@sli10-desk.sh.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 06, 2008 at 11:13:27AM +0200, Miklos Szeredi wrote:
-> Here it is again as a single series (without the ecryptfs one already
-> merged).
+On Tue, 2008-05-06 at 17:15 +0800, Holger Macht wrote:
+> On Mo 05. Mai - 22:25:08, Holger Macht wrote:
+> > If acpi_install_notify_handler() for a bay device fails, the bay
+> driver is
+> > superfluous. Most likely, another driver (like libata) is already
+> caring
+> > about this device anyway. Furthermore,
+> > register_hotplug_dock_device(acpi_handle) from the dock driver must
+> not be
+> > called twice with the same handler. So clean up and exit.
 > 
-> I've addressed Christoph's comments.
+> The patch needs some more work. I'll send an updated one as soon as
+> ready.
+The bay driver is duplicated with libata, I thought we should delete it.
+See bug http://bugzilla.kernel.org/show_bug.cgi?id=9526
 
-And totally ignored Al's while merging the second rejected series into
-the first one.   I also still want to go over the various
-setattr-related changes, pleawse give me some time for those.
+Thanks,
+Shaohua
 
