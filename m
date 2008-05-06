@@ -1,56 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765953AbYEFJaq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765199AbYEFJb1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765953AbYEFJaq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 05:30:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932073AbYEFJ1s
+	id S1765199AbYEFJb1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 05:31:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756291AbYEFJbK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 05:27:48 -0400
-Received: from bay0-omc1-s27.bay0.hotmail.com ([65.54.246.99]:48750 "EHLO
-	bay0-omc1-s27.bay0.hotmail.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1765689AbYEFJ1q (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 05:27:46 -0400
-Message-ID: <BAY103-DAV78BE1E59193F0C8852503B2D60@phx.gbl>
-X-Originating-IP: [85.32.103.134]
-X-Originating-Email: [pupilla@hotmail.com]
-From: "Marco Berizzi" <pupilla@hotmail.com>
-To: "David Chinner" <dgc@sgi.com>
-Cc: "David Chinner" <dgc@sgi.com>, <linux-kernel@vger.kernel.org>,
-       <xfs@oss.sgi.com>
-References: <BAY103-DAV7CF38DF784B82EC3F2CFAB2D70@phx.gbl> <20080505231754.GL155679365@sgi.com> <BAY103-DAV584F4B005A4F9B7B5E19CB2D60@phx.gbl> <20080506085632.GT155679365@sgi.com>
-Subject: Re: XFS shutdown in xfs_iunlink_remove() (was Re: 2.6.25: swapper: page allocation failure. order:3, mode:0x4020)
-Date: Tue, 6 May 2008 11:25:21 +0200
-X-Priority: 3
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook Express 6.00.2800.1123
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2800.1123
-X-OriginalArrivalTime: 06 May 2008 09:27:46.0132 (UTC) FILETIME=[71827940:01C8AF5B]
+	Tue, 6 May 2008 05:31:10 -0400
+Received: from mx1.suse.de ([195.135.220.2]:37661 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755618AbYEFJbI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 May 2008 05:31:08 -0400
+Date: Tue, 6 May 2008 11:33:16 +0200
+From: Holger Macht <hmacht@suse.de>
+To: Shaohua Li <shaohua.li@intel.com>
+Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       "Accardi, Kristen C" <kristen.c.accardi@intel.com>
+Subject: Re: [PATCH] bay: Exit if notify handler cannot be installed
+Message-ID: <20080506093315.GD4378@homac>
+Mail-Followup-To: Shaohua Li <shaohua.li@intel.com>,
+	linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
+	"Accardi, Kristen C" <kristen.c.accardi@intel.com>
+References: <20080505202508.GA3690@homac> <20080506091522.GA4378@homac> <1210065811.12668.1.camel@sli10-desk.sh.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1210065811.12668.1.camel@sli10-desk.sh.intel.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Chinner wrote:
+On Di 06. Mai - 17:23:31, Shaohua Li wrote:
+> On Tue, 2008-05-06 at 17:15 +0800, Holger Macht wrote:
+> > On Mo 05. Mai - 22:25:08, Holger Macht wrote:
+> > > If acpi_install_notify_handler() for a bay device fails, the bay
+> > driver is
+> > > superfluous. Most likely, another driver (like libata) is already
+> > caring
+> > > about this device anyway. Furthermore,
+> > > register_hotplug_dock_device(acpi_handle) from the dock driver must
+> > not be
+> > > called twice with the same handler. So clean up and exit.
+> > 
+> > The patch needs some more work. I'll send an updated one as soon as
+> > ready.
+> The bay driver is duplicated with libata, I thought we should delete it.
+> See bug http://bugzilla.kernel.org/show_bug.cgi?id=9526
 
-> Hmmmmm - interesting. Both the reports of this problem are from
-> machines running as squid proxies. Are you using AUFS for the cache?
+Yes, I know, but couldn't it be helpful on systems not using libata?
 
-no, I'm using cache_dir ufs with cache_replacement_policy heap LFUDA
-
-> You've run repair, there's not much I can look at now.
->
-> As a suggestion, when the cache gets close to full next time, can
-> you take a metadump of the filesystem (obfuscates names and contains
-> no data) and then trigger the cache cleanup function? If the
-> filesystem falls over, I'd be very interested in getting a copy of
-> hte metadump image and trying to reproduce the problem locally.
-> (BTW, you'll need a newer xfsprogs to get xfs_metadump).
-
-could you please tell me the exact command to run
-when this happen again?
-
-> Still, thank you for the information
-
-no problem: 2.6.25 is a bit unlucky for me :-((
-
-
+Regards,
+	Holger
 
