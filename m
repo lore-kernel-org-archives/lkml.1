@@ -1,93 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760066AbYEFJtI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761256AbYEFJum@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760066AbYEFJtI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 05:49:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753268AbYEFJsz
+	id S1761256AbYEFJum (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 05:50:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753268AbYEFJu3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 05:48:55 -0400
-Received: from monty.telenet-ops.be ([195.130.132.56]:36866 "EHLO
-	monty.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752330AbYEFJsy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 05:48:54 -0400
-Date: Tue, 6 May 2008 11:48:47 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Michal Simek <monstr@seznam.cz>
-cc: John Williams <john.williams@petalogix.com>, linux-kernel@vger.kernel.org,
-       arnd@arndb.de, linux-arch@vger.kernel.org,
-       stephen.neuendorffer@xilinx.com, John.Linn@xilinx.com, matthew@wil.cx,
-       will.newton@gmail.com, drepper@redhat.com,
-       microblaze-uclinux@itee.uq.edu.au, grant.likely@secretlab.ca,
-       Michal Simek <monstr@monstr.eu>
-Subject: Re: [PATCH 36/56] microblaze_v2: dma support
-In-Reply-To: <482021E1.70902@seznam.cz>
-Message-ID: <Pine.LNX.4.64.0805061142230.10091@anakin>
-References: <1209901305-6404-1-git-send-email-monstr@seznam.cz>
- <598221ce2159046614d7b158ea62d5af51907af3.1209897266.git.monstr@monstr.eu>
- <41c1f410eaafd875246362d10ef9866d8cc2a934.1209897266.git.monstr@monstr.eu>
- <09ce2baf0c8308d3fbca98e7eb36a6aab59112a7.1209897266.git.monstr@monstr.eu>
- <c9418c683be99ae12abb89575c362d586c026bad.1209897266.git.monstr@monstr.eu>
- <cfde3796e95bdd17c32e4fd7762d0aee55967707.1209897266.git.monstr@monstr.eu>
- <8aba2d82c85cd1d5b56de328c1fd080ee51f0211.1209897266.git.monstr@monstr.eu>
- <c4000ff625bd217f9bb683e3bf8c7193a82bd744.1209897266.git.monstr@monstr.eu>
- <491f823fac6c03cc36834ec569a45d30a03a72cf.1209897266.git.monstr@monstr.eu>
- <96f2004535c34a0c762bf2012c299cbf9f89ab32.1209897266.git.monstr@monstr.eu>
- <92cd3a27b393bb394d48902594152351a92c59bb.1209897266.git.monstr@monstr.eu>
- <1209954350.5798.71.camel@localhost> <Pine.LNX.4.64.0805050844560.2615@anakin>
- <482021E1.70902@seznam.cz>
+	Tue, 6 May 2008 05:50:29 -0400
+Received: from styx.suse.cz ([82.119.242.94]:36709 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752834AbYEFJu2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 May 2008 05:50:28 -0400
+Date: Tue, 6 May 2008 11:50:26 +0200
+From: Jan Kara <jack@suse.cz>
+To: Vegard Nossum <vegard.nossum@gmail.com>
+Cc: Theodore Tso <tytso@mit.edu>, Geert Uytterhoeven <geert@linux-m68k.org>,
+       linux-ext4@vger.kernel.org,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       Linux/m68k <linux-m68k@vger.kernel.org>
+Subject: Re: Problem mounting ext2 using ext3?
+Message-ID: <20080506095026.GA1409@duck.suse.cz>
+References: <Pine.LNX.4.64.0805052304280.3160@anakin> <20080505222623.GA8357@mit.edu> <19f34abd0805060026m138bf3dfo87dbf303362d69ca@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <19f34abd0805060026m138bf3dfo87dbf303362d69ca@mail.gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 6 May 2008, Michal Simek wrote:
-> > On Mon, 5 May 2008, John Williams wrote:
-> >>> +++ b/include/asm-microblaze/scatterlist.h
-> >>> @@ -0,0 +1,21 @@
-> >>> +/*
-> >>> + * include/asm-microblaze/scatterlist.h
-> >>> + *
-> >>> + * This file is subject to the terms and conditions of the GNU General Public
-> >>> + * License. See the file "COPYING" in the main directory of this archive
-> >>> + * for more details.
-> >>> + *
-> >>> + * Copyright (C) 2006 Atmark Techno, Inc.
-> >>> + */
-> >>> +
-> >>> +#ifndef _ASM_MICROBLAZE_SCATTERLIST_H
-> >>> +#define _ASM_MICROBLAZE_SCATTERLIST_H
-> >>> +
-> >>> +struct scatterlist {
-> >>> +	unsigned long page_link;
-> >>> +	unsigned int	offset;
-> >>> +	dma_addr_t	dma_address;
-> >>> +	unsigned int	length;
-> >>> +};
-> >>> +
-> >>> +#endif /* _ASM_MICROBLAZE_SCATTERLIST_H */
-> >> Is this worthy of promotion to asm-generic/scatterlist.h?
-> > 
-> > after moving dma_address one position up in the structure, as dma_addr_t may be
-> > 64-bit?
+On Tue 06-05-08 09:26:30, Vegard Nossum wrote:
+> Hi,
 > 
-> dma_addr_t is defined in types.h. If your arch want to use 64bit addr, you can
-> define it in types.h.
+> On Tue, May 6, 2008 at 12:26 AM, Theodore Tso <tytso@mit.edu> wrote:
+> > On Mon, May 05, 2008 at 11:11:46PM +0200, Geert Uytterhoeven wrote:
+> >  > when mounting the root file system, which is ext2 (has_journal is not set).
+> >  > Apparently it crashes in ext3_sync_fs because EXT3_SB(sb)->s_journal is NULL.
+> >  >
+> >  > At first I thought it was an issue with the byteswapped IDE bus on Atari (a
+> >  > new and different solution to handle this just went into mainline), but if I
+> >  > disable CONFIG_EXT3 support, it boots up fine.
+> >  >
+> >  > Is this a known problem?
+> >
+> >  I can confirm this as a regression.  You don't even need to mount it
+> >  as a root filesystem, or do this on an 68k system.  On my x86 system,
+> >  using a kernel based off of git commit: afa26be8 (6 commits after
+> >  2.6.26-rc1), mounting an ext3 filesystem, you can cause an oops by
+> >  taking an ext2 filesystem and forcing a mount as ext3, "mount -t ext3
+> >  /dev/closure/textext2fs /mnt").  (see below for my oops).  This does
+> >  not occur with a kernel based off of 2.6.25, so it's a definite
+> >  regression.
+> 
+> Hi,
+> 
+> I posted a very similar problem a couple of days ago:
+> http://www.nabble.com/BUG-in-ext3_sync_fs-td16999997.html
+> 
+> to which I got zero replies. Can I close this in my internal bugzilla
+> as dup/"not my fault"? The stacktrace looks very similar. This was
+> also ext2 fs mounted (apparently) by ext3 code.
+  Yes, this looks like the same problem. I'll take care of that.
 
-Sorry for not making myself clear: If unsigned long and dma_addr_t are 64-bit,
-there may be a hole in between offset and dma_address, due to alignment
-restrictions. So it's better to move dma_address up.
-
-As dma_addr_t may be 64-bit even on 32-bit architectures, it may be best
-to move it even to the start of the structure.
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+								Honza
+-- 
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
