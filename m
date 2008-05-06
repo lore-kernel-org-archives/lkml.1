@@ -1,94 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760186AbYEFITb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760207AbYEFIV3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760186AbYEFITb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 04:19:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755216AbYEFITR
+	id S1760207AbYEFIV3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 04:21:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755391AbYEFIVM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 04:19:17 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:50375 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754203AbYEFITO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 04:19:14 -0400
-Date: Tue, 6 May 2008 10:19:13 +0200 (CEST)
-From: Jan Engelhardt <jengelh@medozas.de>
-To: Sam Ravnborg <sam@ravnborg.org>
-cc: Roman Zippel <zippel@linux-m68k.org>,
-       linux-kbuild <linux-kbuild@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: kconfig - a suggestion how to fix the select issue
-In-Reply-To: <20080504071041.GA15315@uranus.ravnborg.org>
-Message-ID: <alpine.LNX.1.10.0805042004310.11757@fbirervta.pbzchgretzou.qr>
-References: <20080504071041.GA15315@uranus.ravnborg.org>
-User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
+	Tue, 6 May 2008 04:21:12 -0400
+Received: from www.tglx.de ([62.245.132.106]:50262 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754230AbYEFIVJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 May 2008 04:21:09 -0400
+Date: Tue, 6 May 2008 10:19:22 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Daniel Walker <dwalker@mvista.com>
+cc: Steven Rostedt <rostedt@goodmis.org>,
+       Sven-Thorsten Dietrich <sven@thebigcorporation.com>,
+       Remy Bohmer <linux@bohmer.net>, LKML <linux-kernel@vger.kernel.org>,
+       RT <linux-rt-users@vger.kernel.org>,
+       Jon Masters <jonathan@jonmasters.org>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: Preempt-RT patch for 2.6.25
+In-Reply-To: <1210039855.17132.105.camel@localhost.localdomain>
+Message-ID: <alpine.LFD.1.10.0805060908050.3318@apollo.tec.linutronix.de>
+References: <3efb10970805021102n4d87f55eue723786281b06fcb@mail.gmail.com>  <1209753250.25628.34.camel@dd.thebigcorporation.com>  <Pine.LNX.4.58.0805021441340.10615@gandalf.stny.rr.com>  <1209754467.25628.42.camel@dd.thebigcorporation.com> 
+ <Pine.LNX.4.58.0805021502040.10615@gandalf.stny.rr.com>  <1210003265.17132.6.camel@localhost.localdomain>  <Pine.LNX.4.58.0805051210410.23084@gandalf.stny.rr.com>  <1210004376.17132.14.camel@localhost.localdomain>  <Pine.LNX.4.58.0805051240520.25250@gandalf.stny.rr.com>
+  <1210007084.17132.32.camel@localhost.localdomain>  <Pine.LNX.4.58.0805051426010.25250@gandalf.stny.rr.com>  <1210013938.17132.55.camel@localhost.localdomain>  <alpine.LFD.1.10.0805052107270.3318@apollo.tec.linutronix.de>  <1210025532.17132.82.camel@localhost.localdomain>
+  <alpine.LFD.1.10.0805060334220.3318@apollo.tec.linutronix.de> <1210039855.17132.105.camel@localhost.localdomain>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 2008-05-04 09:10, Sam Ravnborg wrote:
+On Mon, 5 May 2008, Daniel Walker wrote:
+> On Tue, 2008-05-06 at 03:54 +0200, Thomas Gleixner wrote:
+> > On Mon, 5 May 2008, Daniel Walker wrote:
+> > > On Mon, 2008-05-05 at 23:01 +0200, Thomas Gleixner wrote:
+> > > > We have been there before. kernel development does not follow the "we
+> > > > want _now_" principle at all. Have you ever tried to yell at Linus "we
+> > > > want XYZ _now_" ? If you decide to try it, please keep me on CC - I
+> > > > want to enjoy the show.
+> > > 
+> > > Kernel development is "What is available now?" not what is avaiable in
+> > > the future.
+> > > 
+> > > If you want to reject code you better have a reason other than "We're
+> > > going to make some new code for that (some time in the future) sorry."
+> > 
+> > You miss the point. We reject code which breaks existing functionality.
+> 
+> This point , to me, isn't valid. Even if you think it is, the point was
+> brought up just recently, after Steven finish port to 2.6.25.
 
->Today we have two ways to express/solve dependencies.
->
->Top-down we have "depends on"
->and bottom up we have "select".
->
->The "depends on" dependencies at the same time impact the visibility of 
->a symbol. A symbol with "depends on" not satisfied are not visible and 
->thus not shown in menuconfig.
->
->The "select" method is a way to forcefully set the selected symbol to 
->the same value as the one where the select are stated.
->
->But this has shortcoming in relation to the interface we like to 
->present to the user.
-[...]
+Even if you don't care to put me on CC I pretty much follow the
+mailing list. All I can see is your priggish "release" message, but no
+sign of prior discussion on how to approach that problem.
 
-Suggestion:
+> So assuming you think bisection is good, and you think the architectures
+> should have been included then we should have discussed it a long time
+> ago when my code was first release.
 
-Make kconfig work like an interactive package manager. All objects are 
-visible and the user can select any of them.
+You have "released" code and trees before which were ignored. All for
+the same reason: your unwillingness to cooperate.
 
-depends and selects are resolved upon request only, i.e. when the user 
-hits Exit or manually initiates a resolve request. Kconfig then checks 
-to see if all dependencies are satisfied, and if it cannot automatically 
-solve it — because it encounters an alternation expression (a || foo) — 
-it asks the user to select one.
+You create some "works for me" artifact, "release" it pompously and
+expect that it is picked up and the work you were not willing to do is
+finished by others. If that's not happening then you waste everyones
+valuable time with your brashly impertinent and stubborn requests to
+enforce your POV on those who have developed and maintained preempt-rt
+for years.
 
-If user input is not available, exit with error (much like `make 
-oldconfig </dev/null` already does on new options.)
+If that is your idea of cooperation then please look for a community
+and maintainers who are willing to accept that mode of operation.
 
-Drawback:
+Thanks,
 
-Most likely a lot of work.
-
-
-Consider/Suggested syntax:
-
-	menuconfig V4L2
-		tristate "video and all that"
-	
-	if V4L2
-	
-	config MY_CAMERA
-		tristate "nice cam"
-		requires USB || FIREWIRE
-	
-	endif
-
-leading to a new screen on dependency resolution (when USB=n && 
-FIREWIRE=n), showing a modified "choice" prompt where you can 
-either
-1) change the state of CONFIG_MY_CAMERA to y/m/n.
-2) select one of the required dependencies.
-
-	CONFIG_MY_CAMERA has unsatisfied dependencies.
-
-	<M> nice cam
-	    ( ) USB
-	    ( ) FireWire
-
-Of course a bit of thinking on how to display things is needed for more 
-complex requires.
+	tglx
