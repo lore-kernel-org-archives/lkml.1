@@ -1,93 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765977AbYEFQxA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765707AbYEFQzY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765977AbYEFQxA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 12:53:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761163AbYEFQwo
+	id S1765707AbYEFQzY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 12:55:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762055AbYEFQzI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 12:52:44 -0400
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:45838 "EHLO
-	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760626AbYEFQwm (ORCPT
+	Tue, 6 May 2008 12:55:08 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:53573 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755582AbYEFQzF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 12:52:42 -0400
-Message-ID: <48208CEC.2090200@bull.net>
-Date: Tue, 06 May 2008 18:53:00 +0200
-From: Benjamin Thery <benjamin.thery@bull.net>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
-MIME-Version: 1.0
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-Cc: Daniel Lezcano <dlezcano@fr.ibm.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>, Greg KH <gregkh@suse.de>,
-       linux-kernel@vger.kernel.org, Al Viro <viro@ftp.linux.org.uk>,
-       Tejun Heo <htejun@gmail.com>, Pavel Emelyanov <xemul@openvz.org>,
-       netdev@vger.kernel.org
-Subject: Re: [PATCH 00/10] sysfs tagged directories
-References: <20080429180445.GA18110@sergelap.austin.ibm.com> <20080429184151.GA19794@suse.de> <20080429193417.GA19282@sergelap.austin.ibm.com> <20080501031341.GD4911@suse.de> <20080501151051.GB16038@sergelap.austin.ibm.com> <m11w4lho08.fsf@frodo.ebiederm.org> <20080501210550.GA22534@sergelap.austin.ibm.com> <m1prs5fzzd.fsf@frodo.ebiederm.org> <20080502174222.GA16493@sergelap.austin.ibm.com> <481E4312.9060909@fr.ibm.com> <20080505161800.GC8485@sergelap.austin.ibm.com>
-In-Reply-To: <20080505161800.GC8485@sergelap.austin.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 6 May 2008 12:55:05 -0400
+Date: Tue, 6 May 2008 17:45:21 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Matthew Wilcox <matthew@wil.cx>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, "J. Bruce Fields" <bfields@citi.umich.edu>,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Alexander Viro <viro@ftp.linux.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: AIM7 40% regression with 2.6.26-rc1
+Message-ID: <20080506174521.19becefd@core>
+In-Reply-To: <20080506165112.GL19219@parisc-linux.org>
+References: <1210052904.3453.30.camel@ymzhang>
+	<20080506114449.GC32591@elte.hu>
+	<20080506120934.GH19219@parisc-linux.org>
+	<20080506162332.GI19219@parisc-linux.org>
+	<alpine.LFD.1.10.0805060931450.32269@woody.linux-foundation.org>
+	<20080506164231.GK19219@parisc-linux.org>
+	<20080506173948.6aed7475@core>
+	<20080506165112.GL19219@parisc-linux.org>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Serge E. Hallyn wrote:
-> Quoting Daniel Lezcano (dlezcano@fr.ibm.com):
->> Serge E. Hallyn wrote:
->>> Quoting Eric W. Biederman (ebiederm@xmission.com):
->>>> "Serge E. Hallyn" <serue@us.ibm.com> writes:
->>>>
->>>>> Quoting Eric W. Biederman (ebiederm@xmission.com):
->>>>> Ok as it turns out Benjamin Thery does in fact have a patch to fix this.
->>>>> Benjamin, please send your renaming patch out tomorrow if you can?
->>>>>
->>>>> I guess this is why I didn't really see the problem Benjamin said there
->>>>> was - it just works with SYSFS_DEPRECATED  :)
->>>> It will be nice to see that patch.  I'm curious what the problem was.
->>>>
->>>> Eric
->>> Here is the patch he had privately sent.  As the comments indicate he's
->>> still refining it so yell at me not him...   but this on top of the
->>> tagged dir patchset makes everything work for me.
->>> (I'd *really* like to see network namespaces be generally usable sometime
->>> in 2.6.26.)
->> Serge,
->>
->> I posted a fix to Dave Miller which was included in net-2.6 and merged in 
->> 2.6.26-rc1.
-> 
-> Cool, I see it in gitweb, thanks.
-> 
->> http://marc.info/?l=linux-netdev&m=120959135229360&w=2
->>
->> This one should fix your problem for sysfs.
->>
->> There is another fix to do in order to avoid name conflicts with network 
->> interfaces belonging to different namespaces, eg. allows to rename veth1234 
->> to eth0 without conflicting with the network device belonging in init_net, 
->> I send this patch to container@ first to have it merged with the sysfs 
->> patchset.
-> 
-> Ok.
-> 
-> Benjamin, what are you doing with Eric's sysfs patchset then?  Are you
-> going to re-post it asap on top of whatever tree has these two patches,
-> or are you planning to wait longer?
+On Tue, 6 May 2008 10:51:12 -0600
+Matthew Wilcox <matthew@wil.cx> wrote:
 
-I will resend the patchset on top of 2.6.26-rc1,
-with Daniel's last patch merged.
-
-(If anyone prefer to have it merged on top of net-2.6, say so)
-
--benjamin
-
+> On Tue, May 06, 2008 at 05:39:48PM +0100, Alan Cox wrote:
+> > > > Hmm?
+> > > 
+> > > So that find_conflict doesn't end up in the first column, which causes
+> > > diff to treat it as a function name for the purposes of the @@ lines.
+> > 
+> > Please can we just fix the tools not mangle the kernel to work around
+> > silly bugs ?
 > 
-> thanks,
-> -serge
-> 
-> 
+> The people who control the tools refuse to fix them.
 
-
--- 
-B e n j a m i n   T h e r y  - BULL/DT/Open Software R&D
-
-    http://www.bull.com
+That would be their problem. We should refuse to mash the kernel up
+because they aren't doing their job. If need be someone can fork a
+private git-patch.
