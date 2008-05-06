@@ -1,121 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759952AbYEFBvk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760856AbYEFBzr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759952AbYEFBvk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 21:51:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754831AbYEFBv0
+	id S1760856AbYEFBzr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 21:55:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756029AbYEFBzj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 21:51:26 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:59353 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754331AbYEFBvZ (ORCPT
+	Mon, 5 May 2008 21:55:39 -0400
+Received: from sj-iport-3.cisco.com ([171.71.176.72]:45384 "EHLO
+	sj-iport-3.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756022AbYEFBzi convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 21:51:25 -0400
-Date: Mon, 5 May 2008 18:51:03 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Ulrich Drepper <drepper@redhat.com>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       davidel@xmailserver.org, mtk.manpages@gmail.com,
-       torvalds@linux-foundation.org
-Subject: Re: [PATCH 01/18] flag parameters: helper function
-Message-Id: <20080505185103.b9299541.akpm@linux-foundation.org>
-In-Reply-To: <200805050342.m453gkY4029814@devserv.devel.redhat.com>
-References: <200805050342.m453gkY4029814@devserv.devel.redhat.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 5 May 2008 21:55:38 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: Patches for piping to core pattern ?
+Date: Mon, 5 May 2008 18:54:30 -0700
+Message-ID: <FA6FB5FA4DA6BF4386D129273B2E3EC3034CA10C@xmb-sjc-214.amer.cisco.com>
+In-Reply-To: <20080505085609.32482c03.randy.dunlap@oracle.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: Patches for piping to core pattern ?
+Thread-Index: AciuyMQXyBD1ccF5SGaLdEeQiRytmgAUPtdQ
+References: <FA6FB5FA4DA6BF4386D129273B2E3EC3034CA104@xmb-sjc-214.amer.cisco.com> <20080505085609.32482c03.randy.dunlap@oracle.com>
+From: "Ravinandan Arakali (rarakali)" <rarakali@cisco.com>
+To: "Randy Dunlap" <randy.dunlap@oracle.com>
+Cc: "Linux Kernel" <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 06 May 2008 01:54:30.0996 (UTC) FILETIME=[1FF20940:01C8AF1C]
+Authentication-Results: sj-dkim-4; header.From=rarakali@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim4002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 4 May 2008 23:42:46 -0400 Ulrich Drepper <drepper@redhat.com> wrote:
+Randy,
+Thanks for the pointers to the patches. 
+I am now able to see the core getting streamed to
+a program (such as gzip). 
 
-> In the following patches we have to map one set of flags to another one
-> in numerous locations.  This patch provides a generic implementation for
-> this.  It is basically the code Davide Libenzi suggested on 4/27/08.
-> 
-> I haven't checked whether this functionality can be applied to any existing
-> code.
-> 
-> 
->  include/linux/flagsremap.h |   15 +++++++++++++++
->  lib/Makefile               |    2 +-
->  lib/flagsremap.c           |   17 +++++++++++++++++
->  3 files changed, 33 insertions(+), 1 deletion(-)
-> 
-> 
-> Signed-off-by: Ulrich Drepper <drepper@redhat.com>
-> 
-> diff --git a/include/linux/flagsremap.h b/include/linux/flagsremap.h
-> new file mode 100644
-> index 0000000..6ea0ee3
-> --- /dev/null
-> +++ b/include/linux/flagsremap.h
-> @@ -0,0 +1,15 @@
-> +/*
-> + * Generic flag remapping functionality.
-> + */
-> +#ifndef _LINUX_FLAPREMAP_H
-> +#define _LINUX_FLAGREMAP_H
-> +
-> +struct flags_rmap {
-> +	int f;
-> +	int of;
-> +};
+But I see that the core itself is quite small (truncated). 
+I see this behavior even when using the normal core_pattern 
+(without the "|" ). Wonder if it has something to do with the
+changes to binfmt_elf.c ? I'm not sure why these
+changes are required for pipe support.
 
-In kernel world, the abbreviation "rmap" means "reverse mapping".  I think
-"flags_remapping" would be a better identifier here.
+Thanks,
+Ravi
+ 
 
-> +extern int flags_remap(const struct flags_rmap *m, int n,
-> +		       int f, int *rf);
-> +
-> +#endif /* _LINUX_FLAGREMAP_H */
-> diff --git a/lib/Makefile b/lib/Makefile
-> index 74b0cfb..ab861ad 100644
-> --- a/lib/Makefile
-> +++ b/lib/Makefile
-> @@ -6,7 +6,7 @@ lib-y := ctype.o string.o vsprintf.o cmdline.o \
->  	 rbtree.o radix-tree.o dump_stack.o \
->  	 idr.o int_sqrt.o extable.o prio_tree.o \
->  	 sha1.o irq_regs.o reciprocal_div.o argv_split.o \
-> -	 proportions.o prio_heap.o ratelimit.o
-> +	 proportions.o prio_heap.o ratelimit.o flagsremap.o
->  
->  lib-$(CONFIG_MMU) += ioremap.o
->  lib-$(CONFIG_SMP) += cpumask.o
-> diff --git a/lib/flagsremap.c b/lib/flagsremap.c
-> new file mode 100644
-> index 0000000..7dbe8f5
-> --- /dev/null
-> +++ b/lib/flagsremap.c
-> @@ -0,0 +1,17 @@
-> +/*
-> + * Implement generic flag remapping.
-> + */
-> +#include <linux/flagsremap.h>
-> +
-> +
-> +int flags_remap(const struct flags_rmap *m, int n,
-> +		int f, int *rf)
-> +{
-> +	int i;
-> +	for (i = 0, *rf = 0; f && i < n; i++, m++)
-> +		if (f & m->f) {
-> +			*rf |= m->of;
-> +			f &= ~m->f;
-> +		}
-> +	return f;
-> +}
+-----Original Message-----
+From: Randy Dunlap [mailto:randy.dunlap@oracle.com] 
+Sent: Monday, May 05, 2008 8:56 AM
+To: Ravinandan Arakali (rarakali)
+Cc: Linux Kernel
+Subject: Re: Patches for piping to core pattern ?
 
-hm, that looks expensive.  The compiler will need to generate a deref of m
-and rf multiple times around the loop.  Copying them into locals does
-improve that a lot.
+On Sun, 4 May 2008 19:24:59 -0700 Ravinandan Arakali (rarakali) wrote:
 
-I'm only on [1/18] so I don't know how often this code gets executed.  If
-it's "on each open" then ouch, perhaps it might even be worth investigating a
-table-based implementation.
+> Hi,
+> I am trying to port the "piping cores to an executable" to our kernel 
+> (2.6.10 based). I took Andi Kleen's patch (3/3) available at 
+> http://lwn.net/Articles/195310/ and some of the supporting functions 
+> from 2.6.19. But it's not working for me.
+> 
+> Andi's patch mentions "Using the infrastructure created in previous 
+> patches implement support to pipe core dumps into programs."
+> 
+> Can somebody point me to these previous patches ?
 
-Also: sorry, but ugh-at-the-naming.  We don't *gain* anything from having
-idenitifers called f, of, m, n and rf.  And we lose quite a lot in
-readability and understandability.  It would be much nicer to invest a
-little bit more typing-time here, IMO.
+I don't know if these patches 1/3 and 2/3 represent the complete
+infrastructure that Andi referred to, but you can find them here:
+
+http://www.uwsg.indiana.edu/hypermail/linux/kernel/0608.1/2339.html
+http://www.uwsg.indiana.edu/hypermail/linux/kernel/0608.1/2340.html
+
+
+---
+~Randy
