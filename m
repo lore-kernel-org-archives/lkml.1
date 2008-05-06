@@ -1,63 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760673AbYEFBBi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761482AbYEFBGz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760673AbYEFBBi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 21:01:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752084AbYEFBB1
+	id S1761482AbYEFBGz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 21:06:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755425AbYEFBGo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 21:01:27 -0400
-Received: from wa-out-1112.google.com ([209.85.146.180]:61158 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752019AbYEFBB0 (ORCPT
+	Mon, 5 May 2008 21:06:44 -0400
+Received: from rv-out-0506.google.com ([209.85.198.224]:27980 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755310AbYEFBGn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 21:01:26 -0400
+	Mon, 5 May 2008 21:06:43 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=GSZPMvOBUNkMnyFcfDWhjiRG6Fgj2G+YMQuKOIztsmLAe2YSXkfm4ino5iZrBxu3hkXph9pZLBYmdtQVH7pE+4GQW0b/cC+M/f8tH4tE4yXrNPGHTVG8tkomSEXv7BU8Vn8O4MxWj8pBQQkKsPfWP5jatwuVgyZMDAxH1ZXb3aw=
-Message-ID: <2f11576a0805051801xf144478pb7b04799f148db29@mail.gmail.com>
-Date: Tue, 6 May 2008 10:01:26 +0900
-From: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>
-To: "Rik van Riel" <riel@redhat.com>
-Subject: Re: [-mm][PATCH 4/5] core of reclaim throttle
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>
-In-Reply-To: <20080505204318.3f95c83c@bree.surriel.com>
+        h=message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=pNzGZChtYA2B1pxJXcGydP/dbeo9sg4hIj8VoVjr81oyhjXjf28tEdaOIgdDIjmxucfg17ZtEkrCqD2i2LyJEVs6JAs2naZ5d7pbxxJvHs06B8L3s6JO5wlmNc9LlrDyqYrgf/CniEQb9vyh+1/bM1r/f5oOoogTNJEy/uyWmm4=
+Message-ID: <b6a2187b0805051806v25fa1272xb08e0b70b9c3408@mail.gmail.com>
+Date: Tue, 6 May 2008 09:06:40 +0800
+From: "Jeff Chua" <jeff.chua.linux@gmail.com>
+To: "Linus Torvalds" <torvalds@linux-foundation.org>
+Subject: Re: Linux 2.6.26-rc1 - pgtable_32.c:178 pmd_bad
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20080504201343.8F52.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-	 <20080504215819.8F5E.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-	 <20080504221043.8F64.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-	 <20080505175142.7de3f27b@cuia.bos.redhat.com>
-	 <2f11576a0805051523h730fce0foa51f1fdbf9c46cbe@mail.gmail.com>
-	 <20080505204318.3f95c83c@bree.surriel.com>
-X-Google-Sender-Auth: 2ed07dcfd9b28f1c
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > hmmm, AFAIK,
->  > on current kernel, sometimes __GFP_IO task wait for non __GFP_IO task
->  > by lock_page().
->  > Is this wrong?
+On Sun, May 4, 2008 at 3:38 AM, Linus Torvalds
+<torvalds@linux-foundation.org> wrote:
 >
->  This is fine.
->
->  The problem is adding a code path that causes non __GFP_IO tasks to
->  wait on __GFP_IO tasks.  Then you can have a deadlock.
+>  So this merge window was somewhat rocky in the sense that there was a lot
+>  of arguments about it, but at the same time I at least personally think
+>  that from a technical angle, we had somewhat less scary stuff going on
+>  than has been almost the rule lately.
 
-Ah, OK.
-I'll add __GFP_FS and __GFP_IO check at next post.
+I'm seeing this on a Dell 2950 (quad-core) during boot up, but not on
+my IBM X60s (dual-core). This is using the lastest git 2.6.26-rc1.
 
-Thanks!
+Just checking to see if this is a known bug before doing the bisect --
+more painful on the 2950 to reboot.
+
+Thanks,
+Jeff.
 
 
->  > therefore my patch care only recursive reclaim situation.
->  > I don't object to your opinion. but I hope understand exactly your opinion.
->
->  I believe not all non __GFP_IO or non __GFP_FS calls are recursive
->  reclaim, but there are some other code paths too.  For example from
->  fs/buffer.c
-
-absolutely.
+Freeing unused kernel memory: 252k freed
+------------[ cut here ]------------
+WARNING: at arch/x86/mm/pgtable_32.c:178 pmd_bad+0xa3/0xe3()
+Modules linked in:
+Pid: 1226, comm: khelper Not tainted 2.6.26-rc1 #4
+ [<c0121614>] warn_on_slowpath+0x40/0x65
+ [<c011823e>] kmap_atomic+0x11/0x14
+ [<c01183b7>] kunmap_atomic+0x4f/0x78
+ [<c014a0db>] get_page_from_freelist+0x33a/0x3da
+ [<c014a225>] __alloc_pages_internal+0x98/0x356
+ [<c01181f8>] kmap_atomic_prot+0x102/0x137
+ [<c01183b7>] kunmap_atomic+0x4f/0x78
+ [<c0154dd0>] handle_mm_fault+0xb70/0xbba
+ [<c011770c>] pmd_bad+0xa3/0xe3
+ [<c0151cad>] follow_page+0x109/0x30a
+ [<c015516b>] get_user_pages+0x351/0x3c0
+ [<c016aec4>] get_arg_page+0x2b/0x7b
+ [<c016afe1>] copy_strings+0xcd/0x173
+ [<c016b0a0>] copy_strings_kernel+0x19/0x27
+ [<c016c28a>] do_execve+0xd9/0x18f
+ [<c010136a>] sys_execve+0x2a/0x4f
+ [<c0102d22>] syscall_call+0x7/0xb
+ [<c038007b>] i8042_probe+0x29f/0x508
+ [<c0106034>] kernel_execve+0x14/0x18
+ [<c012dcfc>] ____call_usermodehelper+0x0/0x105
+ [<c012ddf7>] ____call_usermodehelper+0xfb/0x105
+ [<c012dcfc>] ____call_usermodehelper+0x0/0x105
+ [<c0103917>] kernel_thread_helper+0x7/0x10
+ =======================
+---[ end trace 6aae36751415b63a ]---
+Adding 27350652k swap on /dev/sda3.  Priority:-1 extents:1 across:27350652k
