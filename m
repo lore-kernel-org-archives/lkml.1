@@ -1,60 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764215AbYEFWcc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765805AbYEFWgU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764215AbYEFWcc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 18:32:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752184AbYEFWcV
+	id S1765805AbYEFWgU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 18:36:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754632AbYEFWgI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 18:32:21 -0400
-Received: from kirk.serum.com.pl ([213.77.9.205]:61816 "EHLO serum.com.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751589AbYEFWcU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 18:32:20 -0400
-Date: Tue, 6 May 2008 23:31:30 +0100 (BST)
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
-To: Alessandro Zummo <a.zummo@towertech.it>,
-       Andrew Morton <akpm@linux-foundation.org>
-cc: rtc-linux@googlegroups.com, linux-kernel@vger.kernel.org
-Subject: [PATCH] RTC: rtc_time_to_tm: use unsigned arithmetic
-Message-ID: <Pine.LNX.4.55.0805062315530.16173@cliff.in.clinika.pl>
+	Tue, 6 May 2008 18:36:08 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:56729 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754579AbYEFWgF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 May 2008 18:36:05 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Patrick McHardy <kaber@trash.net>
+Subject: Re: libata regression in current -git
+Date: Wed, 7 May 2008 00:35:58 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Tejun Heo <htejun@gmail.com>,
+       Linux Kernel Mailinglist <linux-kernel@vger.kernel.org>
+References: <480D6A25.2040206@trash.net>
+In-Reply-To: <480D6A25.2040206@trash.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200805070035.59272.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- The input argument to rtc_time_to_tm() is unsigned as well as are members
-of the output structure.  However signed arithmetic is used within for
-calculations leading to incorrect results for input values outside the
-signed positive range.  If this happens the time of day returned is out of
-range.
+On Tuesday, 22 of April 2008, Patrick McHardy wrote:
+> I bisected a boot-failure with sata-sis back to this libata-change:
 
- Found the problem when fiddling with the RTC and the driver where year
-was set to an unexpectedly large value like 2070, e.g.:
+Has the problem been fixed in 2.6.26-rc1 or in the current -git?
 
-rtc0: setting system clock to 2070-01-01 1193046:71582832:26 UTC (3155760954)
+> ---
+> libata: clear SError after link resume
+> 
+> SError used to be cleared in ->postreset.  This has small hotplug race
+> condition.  If a device is plugged in after reset is complete but
+> postreset hasn't run yet, its hotplug event gets lost when SError is
+> cleared.  This patch makes sata_link_resume() clear SError.  This
+> kills the race condition and makes a lot of sense as some PMP and host
+> PHYs don't work properly without SError cleared.
+> 
+> This change makes sata_pmp_std_{pre|post}_reset()'s unnecessary as
+> they become identical to ata_std counterparts.  It also simplifies
+> sata_pmp_hardreset() and ahci_vt8251_hardreset().
+> ---
+> 
+> Whats happening is that sata_scr_read() in sata_link_resume()
+> returns -1 and the reset never completes. Ignoring the return
+> value as before this patch makes it work for me again.
+> 
+> This is lspci-output of the controller, dmesg of a working and
+> non-working boot and .config are attached.
+> 
+> If you need further information or want me to test something,
+> please let me know.
+> 
+> 
+> 00:05.0 RAID bus controller: Silicon Integrated Systems [SiS] RAID bus 
+> controller 180 SATA/PATA  [SiS] (rev 01) (prog-if 85)
+>          Subsystem: ASUSTeK Computer Inc. Unknown device 810e
+>          Control: I/O+ Mem- BusMaster+ SpecCycle- MemWINV- VGASnoop- 
+> ParErr- Stepping- SERR- FastB2B- DisINTx-
+>          Status: Cap- 66MHz+ UDF- FastB2B- ParErr- DEVSEL=medium 
+>  >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+>          Latency: 128
+>          Interrupt: pin A routed to IRQ 17
+>          Region 0: I/O ports at eff0 [size=8]
+>          Region 1: I/O ports at efe4 [size=4]
+>          Region 2: I/O ports at efa8 [size=8]
+>          Region 3: I/O ports at efe0 [size=4]
+>          Region 4: I/O ports at ef90 [size=16]
+>          Region 5: I/O ports at <unassigned>
+>          Kernel driver in use: sata_sis
+> 
+> 
 
-while it should be:
 
-rtc0: setting system clock to 2070-01-01 00:15:54 UTC (3155760954)
 
-Changing types to unsigned fixes the problem.
-
-Signed-off-by: Maciej W. Rozycki <macro@linux-mips.org>
----
- Tested on 64-bit MIPS.  Please apply.
-
-  Maciej
-
-patch-2.6.26-rc1-20080505-rtc-time-unsigned-11
-diff -up --recursive --new-file linux-2.6.26-rc1-20080505.macro/drivers/rtc/rtc-lib.c linux-2.6.26-rc1-20080505/drivers/rtc/rtc-lib.c
---- linux-2.6.26-rc1-20080505.macro/drivers/rtc/rtc-lib.c	2007-07-10 04:56:26.000000000 +0000
-+++ linux-2.6.26-rc1-20080505/drivers/rtc/rtc-lib.c	2008-05-05 02:37:38.000000000 +0000
-@@ -51,7 +51,7 @@ EXPORT_SYMBOL(rtc_year_days);
-  */
- void rtc_time_to_tm(unsigned long time, struct rtc_time *tm)
- {
--	register int days, month, year;
-+	register unsigned int days, month, year;
- 
- 	days = time / 86400;
- 	time -= days * 86400;
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
