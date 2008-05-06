@@ -1,96 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763443AbYEFAL0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763615AbYEFAL6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763443AbYEFAL0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 20:11:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759737AbYEFAK5
+	id S1763615AbYEFAL6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 20:11:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755656AbYEFALp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 20:10:57 -0400
-Received: from uki.us.mooball.net ([66.98.178.13]:51327 "EHLO
-	uki.us.mooball.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758516AbYEFAK4 (ORCPT
+	Mon, 5 May 2008 20:11:45 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:14653 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755648AbYEFALo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 20:10:56 -0400
-X-ClientAddr: 220.233.82.121
-Subject: RE: [PATCH 10/56] microblaze_v2: Generic dts file for platforms
-From: John Williams <john.williams@petalogix.com>
-To: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
-Cc: monstr@seznam.cz, linux-kernel@vger.kernel.org, arnd@arndb.de,
-       linux-arch@vger.kernel.org, John Linn <linnj@xilinx.com>,
-       matthew@wil.cx, will.newton@gmail.com, drepper@redhat.com,
-       microblaze-uclinux@itee.uq.edu.au, grant.likely@secretlab.ca,
-       Michal Simek <monstr@monstr.eu>
-In-Reply-To: <20080505233234.59C381488046@mail76-wa4.bigfish.com>
-References: <a4a778e34c66d126f5c4bf1ca423cf32950ea5ab.1209897266.git.monstr@monstr.eu>
-	 <2391e49379fb6639f57d9d6e5811f3d49a4c6fda.1209897266.git.monstr@monstr.eu>
-	 <20080505172535.9710319B8086@mail101-wa4.bigfish.com>
-	 <1210029394.5798.140.camel@localhost>
-	 <20080505233234.59C381488046@mail76-wa4.bigfish.com>
+	Mon, 5 May 2008 20:11:44 -0400
+Subject: Re: Preempt-RT patch for 2.6.25
+From: Daniel Walker <dwalker@mvista.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Steven Rostedt <rostedt@goodmis.org>,
+       Sven-Thorsten Dietrich <sven@thebigcorporation.com>,
+       Remy Bohmer <linux@bohmer.net>, LKML <linux-kernel@vger.kernel.org>,
+       RT <linux-rt-users@vger.kernel.org>,
+       Jon Masters <jonathan@jonmasters.org>
+In-Reply-To: <20080505234743.GA11433@elte.hu>
+References: <Pine.LNX.4.58.0805021502040.10615@gandalf.stny.rr.com>
+	 <1210003265.17132.6.camel@localhost.localdomain>
+	 <Pine.LNX.4.58.0805051210410.23084@gandalf.stny.rr.com>
+	 <1210004376.17132.14.camel@localhost.localdomain>
+	 <Pine.LNX.4.58.0805051240520.25250@gandalf.stny.rr.com>
+	 <1210007084.17132.32.camel@localhost.localdomain>
+	 <Pine.LNX.4.58.0805051426010.25250@gandalf.stny.rr.com>
+	 <1210013938.17132.55.camel@localhost.localdomain>
+	 <alpine.LFD.1.10.0805052107270.3318@apollo.tec.linutronix.de>
+	 <1210025532.17132.82.camel@localhost.localdomain>
+	 <20080505234743.GA11433@elte.hu>
 Content-Type: text/plain
-Organization: PetaLogix
-Date: Tue, 06 May 2008 10:10:15 +1000
-Message-Id: <1210032615.5798.174.camel@localhost>
+Date: Mon, 05 May 2008 17:11:41 -0700
+Message-Id: <1210032701.17132.98.camel@localhost.localdomain>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.0 (2.8.0-40.el5_1.1) 
+X-Mailer: Evolution 2.12.3 (2.12.3-3.fc8) 
 Content-Transfer-Encoding: 7bit
-X-Mooball.com-MailScanner-Information: Please contact the ISP for more information
-X-Mooball.com-MailScanner: Not scanned: please contact your Internet E-Mail Service Provider for details
-X-MailScanner-From: john.williams@petalogix.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Mon, 2008-05-05 at 16:32 -0700, Stephen Neuendorffer wrote:
-> The .dts is not board specific, it's design specific.  
+On Tue, 2008-05-06 at 01:47 +0200, Ingo Molnar wrote:
+> * Daniel Walker <dwalker@mvista.com> wrote:
+> 
+> > I think dropping ports (temporarily) is perfectly reasonable. There is 
+> > no reason to hamper forward development just to keep old architecture 
+> > ports in the tree.
+> 
+> You are missing the point: a lot of people (those who wrote the brunt of 
+> the -rt tree and who maintained it over the years and who maintain it 
+> today) think it's not reasonable and have stated it very clearly to you 
+> that it's a bug. Keeping things alive is not preventing forward 
+> development.
 
-Sure.  I'm not sure how that changes where the .DTS files should be
-stored.
+That has always been my intention. I've never said the arch code would
+be permanently gone. 
 
-I find it extremely helpful from a configuration management point of
-view to cluster together all of the platform-specific code and data.  I
-also think it simplifies things for users, and that makes my life easier
-in answering questions on the MicroBlaze list.
+> Since it's code that you regard stale it shouldnt be all that hard to 
+> fix it up - in general it's much easier to fix a bug than to talk it out 
+> of existence, even if you disagree with a maintainer about how 
+> significant a bug is.
 
-> In my opinion,
-> this is not something that 'a vendor might maintain multiple versions
-> of': instead it is in most cases simply fundamental to the FPGA design
-> flow.
+It shouldn't be hard, but it's too much to do all in one go. It's better
+from my perspective to do it in parts, given that there is significant
+refactoring to do per arch, if we solidify x86 then we can better
+refactor the other architectures. Better to do the split up once vs.
+many times.
 
-Sure it is.  Here's an ML505 design using the DVI video out.  Here's one
-using the LL_TEMAC in SGMII mode.  Multiple designs, same board, all
-will use the same board init but different DTS files.
+Not to mention this has not been discussed until now. My bisect tree was
+all but ignored until just recently.
 
-These could be thrown down in /boot along with every other tree, but
-why?  They have nothing in common with the other files down there, and
-everything in common with the board/design-specific code.
+> This issue is clearly not central to your refactoring (it cannot be, 
+> it's all about stale code), so by inflexibly insisting on your opinion 
+> against the (well-explained) opinion of the maintainers you'll just 
+> waste their time and make it more difficult for them to work with you, 
+> for no good reason.
 
-Am I missing something?
+I'm simply making sure their argument is widely known and potentially
+discussed on list instead of in a back room..
 
->   In fact, in most cases, I'd like to make the .dts file part of
-> the bitstream and not compiled into the kernel.
-
-Well, I've just run out of BRAM on a V5LX50T design so please don't ask
-for more of it to store a DTC! :)  Or do you mean to piggyback on the
-tail of the configuration stream and read with some kind of JTAG user
-code?
-
-> Although powerpc has a bit more boot-time complexity than the microblaze
-> does currently, I think it makes alot of sense to have some consistency
-> here, and there is already a pattern to follow here which nicely
-> orthogonalizes multiple .dts files for the same platform code.
-
-arch/powerpc/boot is building a bootloader, so maybe that's why .dts
-files belong there.  The bootloader is really the only thing that cares
-about them as objects.  Once the kernel starts, it's just dereferencing
-a pointer that happens to point to a datastructure it understands (or
-copying it as a blob before doing same).
-
-In fact, you could mount an argument that .dts files don't belong
-anywhere near the MicroBlaze kernel, since our build process never
-actually touches them.  
-
-cheers,
-
-John
-
+Daniel
 
