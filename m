@@ -1,100 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757271AbYEFEeT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752508AbYEFEei@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757271AbYEFEeT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 00:34:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751227AbYEFEeH
+	id S1752508AbYEFEei (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 00:34:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757292AbYEFEeV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 00:34:07 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:44135 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750835AbYEFEeG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 00:34:06 -0400
-Date: Tue, 6 May 2008 06:34:39 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Roman Zippel <zippel@linux-m68k.org>
-Cc: linux-kbuild <linux-kbuild@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/2] kconfig: introduce K= support
-Message-ID: <20080506043439.GA13366@uranus.ravnborg.org>
-References: <20080502204729.GA6534@uranus.ravnborg.org> <20080504185737.GA23063@uranus.ravnborg.org> <20080504185918.GB23063@uranus.ravnborg.org> <Pine.LNX.4.64.0805060438220.30555@scrub.home>
+	Tue, 6 May 2008 00:34:21 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:56987 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757255AbYEFEeT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 May 2008 00:34:19 -0400
+Date: Mon, 5 May 2008 21:32:51 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Peter Oberparleiter <peter.oberparleiter@de.ibm.com>
+Cc: linux-kernel@vger.kernel.org, ltp-list@lists.sourceforge.net,
+       ltp-coverage@lists.sourceforge.net, sam@ravnborg.org
+Subject: Re: [RFC PATCH 3/6] kbuild: convert include and source paths
+Message-Id: <20080505213251.d2025dc8.akpm@linux-foundation.org>
+In-Reply-To: <481F26AA.4050701@de.ibm.com>
+References: <481F26AA.4050701@de.ibm.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0805060438220.30555@scrub.home>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 06, 2008 at 04:55:55AM +0200, Roman Zippel wrote:
-> Hi,
+On Mon, 05 May 2008 17:24:26 +0200 Peter Oberparleiter <peter.oberparleiter@de.ibm.com> wrote:
+
+> From: Peter Oberparleiter <peter.oberparleiter@de.ibm.com>
 > 
-> On Sun, 4 May 2008, Sam Ravnborg wrote:
+> Modify kbuild to convert relative include and source paths to absolute
+> form. Also change the module versioning mechanism to alter object file
+> names only after compiling.
 > 
-> Below is patch which adds a library function to set the default values in 
-> a much simpler way.
-> The behaviour is slightly different, now it's closer to generating a 
-> .config with all possible symbols set to some value and using that to 
-> generate the final config. It has the advantage of not being as dependend 
-> on the order of the symbols, e.g. with allmodconfig this sets a few more 
-> symbols to 'm'.
-
-Thanks. I will rework the patch to use this function.
-
+> Required by the gcov profiling infrastructure: source paths are
+> referenced by the compiled object files. Using relative paths or
+> object file names which are different from the source name would
+> prevent the gcov tool from finding the corresponding source files.
 > 
-> > +# An arch may use KBUILD_DEFCONFIG to specify defconfig file
-> > +# fallback to arch/$ARCH/defconfig
-> > +defconfig-file := $(if $(KBUILD_DEFCONFIG),            \
-> > +        arch/$(SRCARCH)/configs/$(KBUILD_DEFCONFIG),   \
-> > +        arch/$(SRCARCH)/defconfig)
-> > +defconfig-file := $(strip $(defconfig-file))
+> Signed-off-by: Peter Oberparleiter <peter.oberparleiter@de.ibm.com>
+> ---
+>  Makefile               |    6 +++---
+>  scripts/Kbuild.include |    2 ++
+>  scripts/Makefile.build |    7 +++++--
+>  scripts/Makefile.lib   |    2 +-
+>  4 files changed, 11 insertions(+), 6 deletions(-)
 > 
-> init/Kconfig has a DEFCONFIG_LIST which is intended to be used for this.
+> Index: linux-2.6.26-rc1/scripts/Makefile.build
+> ===================================================================
+> --- linux-2.6.26-rc1.orig/scripts/Makefile.build
+> +++ linux-2.6.26-rc1/scripts/Makefile.build
+> @@ -167,7 +167,8 @@ $(obj)/%.symtypes : $(src)/%.c FORCE
+>  quiet_cmd_cc_o_c = CC $(quiet_modtag)  $@
+>  
+>  ifndef CONFIG_MODVERSIONS
+> -cmd_cc_o_c = $(CC) $(c_flags) -c -o $@ $<
+> +cmd_cc_o_c = $(CC) $(c_flags) -c -o $@ \
+> +	     $(if $(filter-out /%,$<),$(objtree)/$<,$<)
+>  
+>  else
+>  # When module versioning is enabled the following steps are executed:
+> @@ -182,7 +183,9 @@ else
+>  #   replace the unresolved symbols __crc_exported_symbol with
+>  #   the actual value of the checksum generated by genksyms
+>  
+> -cmd_cc_o_c = $(CC) $(c_flags) -c -o $(@D)/.tmp_$(@F) $<
+> +cmd_cc_o_c = $(CC) $(c_flags) -c -o $(@D)/$(@F) \
+> +	     $(if $(filter-out /%,$<),$(objtree)/$<,$<) ; \
+> +             mv -f $(@D)/$(@F) $(@D)/.tmp_$(@F)
+>  cmd_modversions =							\
+>  	if $(OBJDUMP) -h $(@D)/.tmp_$(@F) | grep -q __ksymtab; then	\
+>  		$(CPP) -D__GENKSYMS__ $(c_flags) $<			\
+> Index: linux-2.6.26-rc1/scripts/Makefile.lib
+> ===================================================================
+> --- linux-2.6.26-rc1.orig/scripts/Makefile.lib
+> +++ linux-2.6.26-rc1/scripts/Makefile.lib
+> @@ -113,7 +113,7 @@ else
+>  # $(call addtree,-I$(obj)) locates .h files in srctree, from generated .c files
+>  #   and locates generated .h files
+>  # FIXME: Replace both with specific CFLAGS* statements in the makefiles
+> -__c_flags	= $(call addtree,-I$(obj)) $(call flags,_c_flags)
+> +__c_flags	= $(call addtree,-I$(obj)) $(call addtree2,-I$(obj)) $(call flags,_c_flags)
+>  __a_flags	=                          $(call flags,_a_flags)
+>  __cpp_flags     =                          $(call flags,_cpp_flags)
+>  endif
+> Index: linux-2.6.26-rc1/scripts/Kbuild.include
+> ===================================================================
+> --- linux-2.6.26-rc1.orig/scripts/Kbuild.include
+> +++ linux-2.6.26-rc1/scripts/Kbuild.include
+> @@ -145,6 +145,8 @@ build := -f $(if $(KBUILD_SRC),$(srctree
+>  
+>  # Prefix -I with $(srctree) if it is not an absolute path.
+>  addtree = $(if $(filter-out -I/%,$(1)),$(patsubst -I%,-I$(srctree)/%,$(1)),$(1))
+> +# Prefix -I with $(objtree) if it is not an absolute path.
+> +addtree2 = $(if $(filter-out -I/%,$(1)),$(patsubst -I%,-I$(objtree)/%,$(1)),$(1))
+>  
+>  # Find all -I options and call addtree
+>  flags = $(foreach o,$($(1)),$(if $(filter -I%,$(o)),$(call addtree,$(o)),$(o)))
+> Index: linux-2.6.26-rc1/Makefile
+> ===================================================================
+> --- linux-2.6.26-rc1.orig/Makefile
+> +++ linux-2.6.26-rc1/Makefile
+> @@ -324,9 +324,9 @@ AFLAGS_KERNEL	=
+>  
+>  # Use LINUXINCLUDE when you must reference the include/ directory.
+>  # Needed to be compatible with the O= option
+> -LINUXINCLUDE    := -Iinclude \
+> -                   $(if $(KBUILD_SRC),-Iinclude2 -I$(srctree)/include) \
+> -		   -include include/linux/autoconf.h
+> +LINUXINCLUDE    := -I$(objtree)/include -I$(srctree) -I$(objtree) \
+> +                   $(if $(KBUILD_SRC),-I$(objtree)/include2 \
+> +		   -I$(srctree)/include) -include include/linux/autoconf.h
+>  
+>  KBUILD_CPPFLAGS := -D__KERNEL__ $(LINUXINCLUDE)
+>  
 
-The plan is to drop arch/$(SRCARCH)/defconfig and solely rely
-on KBUILD_DEFCONFIG.
-And I see KBUILD_DEFCONFIG thus for a "make defconfig" the
-DEFCONFIG_LIST becomes unused.
+I hope Sam understands that line-noise ;)
 
-But I guess your point is that we should dropt KBUILD_DEFCONFIG
-entirely and rely on DEFCONFIG_LIST instead.
+It doesn't appear to affect __FILE__ in any way (which is good).  But I'm
+unsure what it _does_ affect.  The changelog implies that it will convert
+"liunx/foo.h" into /usr/src/linux/include/foo.h, only it doesn't.
 
-I will try it out.
+ho hum.
 
-> 
-> > +	if (ac < 2) {
-> > +		usage();
-> > +		exit(1);
-> > +	}
-> > +	if (strcmp(av[1], "allnoconfig") == 0)
-> > +		default_value = set_no;
-> > +	else if (strcmp(av[1], "allyesconfig") == 0)
-> > +		default_value = set_yes;
-> > +	else if (strcmp(av[1], "allmodconfig") == 0)
-> > +		default_value = set_mod;
-> > +	else if (strcmp(av[1], "alldefconfig") == 0)
-> > +		default_value = set_default;
-> > +	else if (strcmp(av[1], "randconfig") == 0) {
-> > +		default_value = set_random;
-> > +		srand(time(NULL));
-> > +	} else {
-> > +		usage();
-> > +		exit(1);
-> > +	}
-> > +	if (strcmp(av[2], "-b") == 0) {
-> > +		config_file = av[3];
-> > +		kconfig_file = av[4];
-> > +	} else {
-> > +		kconfig_file = av[2];
-> > +	}
-> 
-> Even if it has only a single option, please keep using getopt().
-
-OK.
-
-Thanks for your feedback.
-PS. I will post the updated patches in the weekend. Not that they
-are difficult but I'm on the way out of the door for a few days
-travelling.
-
-	Sam
