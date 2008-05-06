@@ -1,55 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763421AbYEFAoM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761405AbYEFAzb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763421AbYEFAoM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 20:44:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757691AbYEFAn5
+	id S1761405AbYEFAzb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 20:55:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755542AbYEFAzV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 20:43:57 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:54693 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756997AbYEFAn5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 20:43:57 -0400
-Date: Mon, 5 May 2008 20:43:18 -0400
-From: Rik van Riel <riel@redhat.com>
-To: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: [-mm][PATCH 4/5] core of reclaim throttle
-Message-ID: <20080505204318.3f95c83c@bree.surriel.com>
-In-Reply-To: <2f11576a0805051523h730fce0foa51f1fdbf9c46cbe@mail.gmail.com>
-References: <20080504201343.8F52.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-	<20080504215819.8F5E.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-	<20080504221043.8F64.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-	<20080505175142.7de3f27b@cuia.bos.redhat.com>
-	<2f11576a0805051523h730fce0foa51f1fdbf9c46cbe@mail.gmail.com>
-Organization: Red Hat, Inc.
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 5 May 2008 20:55:21 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:44018 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755475AbYEFAzV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 May 2008 20:55:21 -0400
+Date: Mon, 5 May 2008 17:54:49 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Roland McGrath <roland@redhat.com>
+cc: Andrew Morton <akpm@linux-foundation.org>, Oleg Nesterov <oleg@tv-sign.ru>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/4] do_wait reorganization
+In-Reply-To: <20080506003239.43FF026FA20@magilla.localdomain>
+Message-ID: <alpine.LFD.1.10.0805051742370.32269@woody.linux-foundation.org>
+References: <20080506003239.43FF026FA20@magilla.localdomain>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 6 May 2008 07:23:18 +0900
-"KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com> wrote:
 
-> hmmm, AFAIK,
-> on current kernel, sometimes __GFP_IO task wait for non __GFP_IO task
-> by lock_page().
-> Is this wrong?
 
-This is fine.
+On Mon, 5 May 2008, Roland McGrath wrote:
+>
+> This breaks out the guts of do_wait into three subfunctions.
+> The control flow is less nonobvious without so much goto.
 
-The problem is adding a code path that causes non __GFP_IO tasks to
-wait on __GFP_IO tasks.  Then you can have a deadlock.
- 
-> therefore my patch care only recursive reclaim situation.
-> I don't object to your opinion. but I hope understand exactly your opinion.
+I dunno.
 
-I believe not all non __GFP_IO or non __GFP_FS calls are recursive
-reclaim, but there are some other code paths too.  For example from
-fs/buffer.c
+I absolutely detest your propensity for multiple return values. You have 
+"int ret" for the return value, and then you *also* have a "int *retval" 
+for the return value.
 
--- 
-All rights reversed.
+Which is what, and why?
+
+I really don't think this helps in the "nonobvious" department. 
+
+Yes, I can see the comments, so I know what it's supposed to be about, but 
+it still disturbs me.
+
+I'm pretty sure it should be possible to return a positive value for 
+"eligible but not available" and make do with just one return value, but 
+if that is just not possible or too complicated, at least don't call it 
+"retval" and have totally different semantics from the return value we 
+return?
+
+So for example, maybe it could just be count of eligible children, and we 
+call could it "int *eligible", and then rather than initialize to -ECHILD, 
+initialize to zero, and make the logic be
+
+	if (!eligible)
+		return -ECHILD;
+	.. otherwise see if we can wait, return -EINTR or whatever it we 
+	can't ..
+
+which then looks like a fairly sane thing to do in all contexts (both the 
+caller and the callee).
+
+			Linus
