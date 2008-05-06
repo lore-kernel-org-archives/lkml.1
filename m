@@ -1,58 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759322AbYEFIRA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756838AbYEFISm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759322AbYEFIRA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 04:17:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753668AbYEFIQm
+	id S1756838AbYEFISm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 04:18:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754203AbYEFIS0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 04:16:42 -0400
-Received: from E23SMTP03.au.ibm.com ([202.81.18.172]:36560 "EHLO
-	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752126AbYEFIQl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 04:16:41 -0400
-Message-ID: <482013B0.5040405@linux.vnet.ibm.com>
-Date: Tue, 06 May 2008 13:45:44 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Tue, 6 May 2008 04:18:26 -0400
+Received: from aun.it.uu.se ([130.238.12.36]:60610 "EHLO aun.it.uu.se"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753715AbYEFISY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 May 2008 04:18:24 -0400
 MIME-Version: 1.0
-To: Li Zefan <lizf@cn.fujitsu.com>
-CC: linux-mm@kvack.org, Sudhir Kumar <skumar@linux.vnet.ibm.com>,
-       YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
-       Paul Menage <menage@google.com>, linux-kernel@vger.kernel.org,
-       David Rientjes <rientjes@google.com>,
-       Pavel Emelianov <xemul@openvz.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: [-mm][PATCH 1/4] Setup the rlimit controller
-References: <20080503213726.3140.68845.sendpatchset@localhost.localdomain> <20080503213736.3140.83278.sendpatchset@localhost.localdomain> <481FB50D.1070308@cn.fujitsu.com>
-In-Reply-To: <481FB50D.1070308@cn.fujitsu.com>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <18464.5177.649312.999486@harpo.it.uu.se>
+Date: Tue, 6 May 2008 10:18:01 +0200
+From: Mikael Pettersson <mikpe@it.uu.se>
+To: tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com,
+       venkatesh.pallipadi@intel.com
+Cc: linux-kernel@vger.kernel.org
+Subject: 2.6.26-rc1 lies about PAT not being available
+X-Mailer: VM 7.17 under Emacs 20.7.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Li Zefan wrote:
-> Balbir Singh wrote:
->> +struct cgroup_subsys rlimit_cgroup_subsys;
->> +
->> +struct rlimit_cgroup {
->> +	struct cgroup_subsys_state css;
->> +	struct res_counter as_res;	/* address space counter */
->> +};
->> +
->> +static struct rlimit_cgroup init_rlimit_cgroup;
->> +
->> +struct rlimit_cgroup *rlimit_cgroup_from_cgrp(struct cgroup *cgrp)
-> 
-> It can be static if I don't miss anything.
+Booting 2.6.26-rc1 on an old Coppermine PIII, I'm greeted with:
 
-Yes, it can be. Thanks!
+>Linux version 2.6.26-rc1 (mikpe@dryhop) (gcc version 4.2.3) #1 Mon May 5 21:49:49 CEST 2008
+>BIOS-provided physical RAM map:
+> BIOS-e820: 0000000000000000 - 000000000009c000 (usable)
+> BIOS-e820: 000000000009c000 - 00000000000a0000 (reserved)
+> BIOS-e820: 00000000000f0000 - 0000000000100000 (reserved)
+> BIOS-e820: 0000000000100000 - 000000002ffec000 (usable)
+> BIOS-e820: 000000002ffec000 - 000000002ffef000 (ACPI data)
+> BIOS-e820: 000000002ffef000 - 000000002ffff000 (reserved)
+> BIOS-e820: 000000002ffff000 - 0000000030000000 (ACPI NVS)
+> BIOS-e820: 00000000ffff0000 - 0000000100000000 (reserved)
+>CPU and/or kernel does not support PAT.
 
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+I know about Intel's PAT erratum (only 4 PAT entries work) and
+understand that the kernel might not want to use a half-broken
+PAT implementation, but the statement above is blatantly false:
+the kernel IS built with PAT support and the CPU DOES have
+(half-broken) PAT HW support as /proc/cpuinfo from earlier kernels
+confirms.
+
+arch/x86/kernel/cpu/common.c unconditionally disables PAT and
+then reenables it for certain vendor/family/model combinations.(*)
+Then mm/pat.c comes along, finds !cpu_has_pat, and prints the
+bogus message above.
+
+IMO, it would be a lot nicer if common.c printed a warning when
+it disables PAT due to the erratum, then the printk() in pat.c
+could be something like "PAT support absent or disabled".
+
+(*) common.c enables PAT for all Intel family 15 CPUs. Is that
+correct? I don't have the spec updates in front of me, but I
+seem to recall the PAT erratum existed also in early P4s.
+
+/Mikael
