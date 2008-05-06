@@ -1,237 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934205AbYEFXhi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934250AbYEFXiL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934205AbYEFXhi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 19:37:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934027AbYEFXgn
+	id S934250AbYEFXiL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 19:38:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764120AbYEFXg6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 19:36:43 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:49492 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933986AbYEFXgj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 19:36:39 -0400
-Date: Tue, 6 May 2008 19:36:33 -0400
-From: Ulrich Drepper <drepper@redhat.com>
-Message-Id: <200805062336.m46NaXvw008006@devserv.devel.redhat.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] flag parameters add-on: remove epoll_create size param
-Cc: akpm@linux-foundation.org, davidel@xmailserver.org,
-       torvalds@linux-foundation.org
+	Tue, 6 May 2008 19:36:58 -0400
+Received: from mho-01-bos.mailhop.org ([63.208.196.178]:59435 "EHLO
+	mho-01-bos.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934099AbYEFXgu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 May 2008 19:36:50 -0400
+X-Mail-Handler: MailHop Outbound by DynDNS
+X-Originating-IP: 69.181.40.92
+X-Report-Abuse-To: abuse@dyndns.com (see http://www.mailhop.org/outbound/abuse.html for abuse reporting information)
+X-MHO-User: U2FsdGVkX1+gEozlFC9cDbq+h8CifIpB
+Date: Tue, 6 May 2008 16:36:47 -0700
+From: Tony Lindgren <tony@atomide.com>
+To: Pierre Ossman <drzeus-list@drzeus.cx>
+Cc: linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org,
+       Paul Walmsley <paul@pwsan.com>,
+       Carlos Aguiar <carlos.aguiar@indt.org.br>,
+       Anderson Briglia <anderson.briglia@indt.org.br>,
+       Syed Khasim <sm.khasim@gmail.com>
+Subject: [PATCH] MMC: Fix omap compile by replacing dev_name with
+	dma_dev_name
+Message-ID: <20080506233647.GL18682@atomide.com>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="ikeVEW9yuYc//A+q"
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch is to be applied on top of the series which adds the flag
-parameters.  It removes the size parameter from the new epoll_create
-syscall and renames the syscall itself.  The updated test program
-follows.
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#include <fcntl.h>
-#include <stdio.h>
-#include <time.h>
-#include <unistd.h>
-#include <sys/syscall.h>
+--ikeVEW9yuYc//A+q
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-#ifndef __NR_epoll_create2
-# ifdef __x86_64__
-#  define __NR_epoll_create2 291
-# elif defined __i386__
-#  define __NR_epoll_create2 329
-# else
-#  error "need __NR_epoll_create2"
-# endif
-#endif
+Hi Pierre,
 
-#define EPOLL_CLOEXEC O_CLOEXEC
+Here's a fix to make omap.c compile again because of a name conflict
+introduced by 3efcdd76c4906236f9043c8b34837818177b291d.
 
-int
-main (void)
-{
-  int fd = syscall (__NR_epoll_create2, 0);
-  if (fd == -1)
-    {
-      puts ("epoll_create2(0) failed");
-      return 1;
-    }
-  int coe = fcntl (fd, F_GETFD);
-  if (coe == -1)
-    {
-      puts ("fcntl failed");
-      return 1;
-    }
-  if (coe & FD_CLOEXEC)
-    {
-      puts ("epoll_create2(0) set close-on-exec flag");
-      return 1;
-    }
-  close (fd);
+Regards,
 
-  fd = syscall (__NR_epoll_create2, EPOLL_CLOEXEC);
-  if (fd == -1)
-    {
-      puts ("epoll_create2(EPOLL_CLOEXEC) failed");
-      return 1;
-    }
-  coe = fcntl (fd, F_GETFD);
-  if (coe == -1)
-    {
-      puts ("fcntl failed");
-      return 1;
-    }
-  if ((coe & FD_CLOEXEC) == 0)
-    {
-      puts ("epoll_create2(EPOLL_CLOEXEC) set close-on-exec flag");
-      return 1;
-    }
-  close (fd);
+Tony
 
-  puts ("OK");
+--ikeVEW9yuYc//A+q
+Content-Type: text/x-diff; charset=us-ascii
+Content-Disposition: inline; filename="mmc-omap-fix-compile.patch"
 
-  return 0;
-}
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+>From 3efcdd76c4906236f9043c8b34837818177b291d Mon Sep 17 00:00:00 2001
+From: Tony Lindgren <tony@atomide.com>
+Date: Tue, 6 May 2008 16:06:06 -0700
+Subject: [PATCH] MMC: Fix omap compile by replacing dev_name with dma_dev_name
 
- arch/x86/ia32/ia32entry.S          |    2 +-
- arch/x86/kernel/syscall_table_32.S |    2 +-
- fs/eventpoll.c                     |   18 ++++++++++--------
- include/asm-x86/unistd_32.h        |    2 +-
- include/asm-x86/unistd_64.h        |    4 ++--
- include/linux/eventpoll.h          |    2 +-
- include/linux/syscalls.h           |    2 +-
- 7 files changed, 17 insertions(+), 15 deletions(-)
+This patch fixes error:
 
+drivers/mmc/host/omap.c: In function 'mmc_omap_get_dma_channel':
+drivers/mmc/host/omap.c:1038: error: called object 'dev_name' is not a function
 
-Signed-off-by: Ulrich Drepper <drepper@redhat.com>
+Commit 06916639e2fed9ee475efef2747a1b7429f8fe76 adds a function
+called dev_name. This will cause a name conflict as dev_dbg calls
+dev_name(((host->mmc)->parent)).
 
-diff --git a/arch/x86/ia32/ia32entry.S b/arch/x86/ia32/ia32entry.S
-index 37e4992..8fab3b5 100644
---- a/arch/x86/ia32/ia32entry.S
-+++ b/arch/x86/ia32/ia32entry.S
-@@ -733,7 +733,7 @@ ia32_sys_call_table:
- 	.quad compat_sys_timerfd_gettime
- 	.quad compat_sys_signalfd4
- 	.quad sys_eventfd2
--	.quad sys_epoll_create2
-+	.quad sys_epoll_create1
- 	.quad sys_dup3			/* 330 */
- 	.quad sys_pipe2
- 	.quad sys_inotify_init1
-diff --git a/arch/x86/kernel/syscall_table_32.S b/arch/x86/kernel/syscall_table_32.S
-index f59aba5..d44395f 100644
---- a/arch/x86/kernel/syscall_table_32.S
-+++ b/arch/x86/kernel/syscall_table_32.S
-@@ -328,7 +328,7 @@ ENTRY(sys_call_table)
- 	.long sys_timerfd_gettime
- 	.long sys_signalfd4
- 	.long sys_eventfd2
--	.long sys_epoll_create2
-+	.long sys_epoll_create1
- 	.long sys_dup3			/* 330 */
- 	.long sys_pipe2
- 	.long sys_inotify_init1
-diff --git a/fs/eventpoll.c b/fs/eventpoll.c
-index 2fdad42..0c87474 100644
---- a/fs/eventpoll.c
-+++ b/fs/eventpoll.c
-@@ -1046,7 +1046,7 @@ retry:
-  * RB tree. With the current implementation, the "size" parameter is ignored
-  * (besides sanity checks).
-  */
--asmlinkage long sys_epoll_create2(int size, int flags)
-+asmlinkage long sys_epoll_create1(int flags)
+This same issue should not affect other drivers as they don't seem
+to use dev_name with dev_dbg.
+
+Thanks to Paul Walmsley <paul@pwsan.com> for figuring this one out.
+
+Cc: Paul Walmsley <paul@pwsan.com>
+Signed-off-by: Tony Lindgren <tony@atomide.com>
+
+diff --git a/drivers/mmc/host/omap.c b/drivers/mmc/host/omap.c
+index 14759e9..549517c 100644
+--- a/drivers/mmc/host/omap.c
++++ b/drivers/mmc/host/omap.c
+@@ -1003,7 +1003,7 @@ static void mmc_omap_dma_cb(int lch, u16 ch_status, void *data)
+ 
+ static int mmc_omap_get_dma_channel(struct mmc_omap_host *host, struct mmc_data *data)
  {
- 	int error, fd = -1;
- 	struct eventpoll *ep;
-@@ -1058,14 +1058,13 @@ asmlinkage long sys_epoll_create2(int size, int flags)
- 		return -EINVAL;
+-	const char *dev_name;
++	const char *dma_dev_name;
+ 	int sync_dev, dma_ch, is_read, r;
  
- 	DNPRINTK(3, (KERN_INFO "[%p] eventpoll: sys_epoll_create(%d)\n",
--		     current, size));
-+		     current, flags));
- 
- 	/*
--	 * Sanity check on the size parameter, and create the internal data
--	 * structure ( "struct eventpoll" ).
-+	 * Create the internal data structure ( "struct eventpoll" ).
- 	 */
--	error = -EINVAL;
--	if (size <= 0 || (error = ep_alloc(&ep)) < 0) {
-+	error = ep_alloc(&ep);
-+	if (error < 0) {
- 		fd = error;
- 		goto error_return;
+ 	is_read = !(data->flags & MMC_DATA_WRITE);
+@@ -1018,21 +1018,21 @@ static int mmc_omap_get_dma_channel(struct mmc_omap_host *host, struct mmc_data
+ 	if (is_read) {
+ 		if (host->id == 1) {
+ 			sync_dev = OMAP_DMA_MMC_RX;
+-			dev_name = "MMC1 read";
++			dma_dev_name = "MMC1 read";
+ 		} else {
+ 			sync_dev = OMAP_DMA_MMC2_RX;
+-			dev_name = "MMC2 read";
++			dma_dev_name = "MMC2 read";
+ 		}
+ 	} else {
+ 		if (host->id == 1) {
+ 			sync_dev = OMAP_DMA_MMC_TX;
+-			dev_name = "MMC1 write";
++			dma_dev_name = "MMC1 write";
+ 		} else {
+ 			sync_dev = OMAP_DMA_MMC2_TX;
+-			dev_name = "MMC2 write";
++			dma_dev_name = "MMC2 write";
+ 		}
  	}
-@@ -1081,14 +1080,17 @@ asmlinkage long sys_epoll_create2(int size, int flags)
- 
- error_return:
- 	DNPRINTK(3, (KERN_INFO "[%p] eventpoll: sys_epoll_create(%d) = %d\n",
--		     current, size, fd));
-+		     current, flags, fd));
- 
- 	return fd;
- }
- 
- asmlinkage long sys_epoll_create(int size)
- {
--	return sys_epoll_create2(size, 0);
-+	if (size < 0)
-+		return -EINVAL;
-+
-+	return sys_epoll_create1(0);
- }
- 
- /*
-diff --git a/include/asm-x86/unistd_32.h b/include/asm-x86/unistd_32.h
-index b3daf50..d739467 100644
---- a/include/asm-x86/unistd_32.h
-+++ b/include/asm-x86/unistd_32.h
-@@ -334,7 +334,7 @@
- #define __NR_timerfd_gettime	326
- #define __NR_signalfd4		327
- #define __NR_eventfd2		328
--#define __NR_epoll_create2	329
-+#define __NR_epoll_create1	329
- #define __NR_dup3		330
- #define __NR_pipe2		331
- #define __NR_inotify_init1	332
-diff --git a/include/asm-x86/unistd_64.h b/include/asm-x86/unistd_64.h
-index 5ef6778..4b88511 100644
---- a/include/asm-x86/unistd_64.h
-+++ b/include/asm-x86/unistd_64.h
-@@ -645,8 +645,8 @@ __SYSCALL(__NR_paccept, sys_paccept)
- __SYSCALL(__NR_signalfd4, sys_signalfd4)
- #define __NR_eventfd2				290
- __SYSCALL(__NR_eventfd2, sys_eventfd2)
--#define __NR_epoll_create2			291
--__SYSCALL(__NR_epoll_create2, sys_epoll_create2)
-+#define __NR_epoll_create1			291
-+__SYSCALL(__NR_epoll_create1, sys_epoll_create1)
- #define __NR_dup3				292
- __SYSCALL(__NR_dup3, sys_dup3)
- #define __NR_pipe2				293
-diff --git a/include/linux/eventpoll.h b/include/linux/eventpoll.h
-index 1cfaa40..f1e1d3c 100644
---- a/include/linux/eventpoll.h
-+++ b/include/linux/eventpoll.h
-@@ -18,7 +18,7 @@
- #include <linux/fcntl.h>
- #include <linux/types.h>
- 
--/* Flags for epoll_create2.  */
-+/* Flags for epoll_create1.  */
- #define EPOLL_CLOEXEC O_CLOEXEC
- 
- /* Valid opcodes to issue to sys_epoll_ctl() */
-diff --git a/include/linux/syscalls.h b/include/linux/syscalls.h
-index aeb2df8..9d86572 100644
---- a/include/linux/syscalls.h
-+++ b/include/linux/syscalls.h
-@@ -431,7 +431,7 @@ asmlinkage long sys_poll(struct pollfd __user *ufds, unsigned int nfds,
- asmlinkage long sys_select(int n, fd_set __user *inp, fd_set __user *outp,
- 			fd_set __user *exp, struct timeval __user *tvp);
- asmlinkage long sys_epoll_create(int size);
--asmlinkage long sys_epoll_create2(int size, int flags);
-+asmlinkage long sys_epoll_create1(int flags);
- asmlinkage long sys_epoll_ctl(int epfd, int op, int fd,
- 				struct epoll_event __user *event);
- asmlinkage long sys_epoll_wait(int epfd, struct epoll_event __user *events,
+-	r = omap_request_dma(sync_dev, dev_name, mmc_omap_dma_cb,
++	r = omap_request_dma(sync_dev, dma_dev_name, mmc_omap_dma_cb,
+ 			     host, &dma_ch);
+ 	if (r != 0) {
+ 		dev_dbg(mmc_dev(host->mmc), "omap_request_dma() failed with %d\n", r);
+
+--ikeVEW9yuYc//A+q--
