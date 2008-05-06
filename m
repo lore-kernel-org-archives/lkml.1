@@ -1,67 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756177AbYEFLZQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756605AbYEFL00@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756177AbYEFLZQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 07:25:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752665AbYEFLZB
+	id S1756605AbYEFL00 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 07:26:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752345AbYEFL0R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 07:25:01 -0400
-Received: from moutng.kundenserver.de ([212.227.126.186]:60464 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752631AbYEFLZA convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 07:25:00 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH 36/56] microblaze_v2: dma support
-Date: Tue, 6 May 2008 13:24:04 +0200
-User-Agent: KMail/1.9.9
-Cc: Michal Simek <monstr@seznam.cz>,
-       John Williams <john.williams@petalogix.com>,
-       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-       stephen.neuendorffer@xilinx.com, John.Linn@xilinx.com, matthew@wil.cx,
-       will.newton@gmail.com, drepper@redhat.com,
-       microblaze-uclinux@itee.uq.edu.au, grant.likely@secretlab.ca,
-       Michal Simek <monstr@monstr.eu>
-References: <1209901305-6404-1-git-send-email-monstr@seznam.cz> <48202AB6.4010201@seznam.cz> <Pine.LNX.4.64.0805061317120.10091@anakin>
-In-Reply-To: <Pine.LNX.4.64.0805061317120.10091@anakin>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Tue, 6 May 2008 07:26:17 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:54469 "EHLO smtp4.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752224AbYEFL0Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 May 2008 07:26:16 -0400
+Date: Tue, 6 May 2008 14:25:05 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Sam Ravnborg <sam@ravnborg.org>, Alexander Viro <viro@ftp.linux.org.uk>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [rfc] the kernel workflow & trivial "global -> static" patches
+Message-ID: <20080506112505.GA2359@cs181133002.pp.htv.fi>
+References: <20080505182942.GA17139@cs181133002.pp.htv.fi> <20080505201906.GA900@elte.hu> <874p9ccmes.fsf@basil.nowhere.org> <20080506061825.GF1544@cs181133002.pp.htv.fi> <48203D3D.6000103@firstfloor.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Message-Id: <200805061324.06282.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX18tzWCDd5YOJl5xL4xeTy/5tozU5891dpt7pI8
- FSUiiQaF/3Q3RnUZPX1oXsNj1iCCP92KsDPKy6zixHUUg/somN
- z/U/dCZhkMVKk3e62oMwQ==
+In-Reply-To: <48203D3D.6000103@firstfloor.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 06 May 2008, Geert Uytterhoeven wrote:
-> > struct scatterlist {
-> >       unsigned long page_link;
-> >       unsigned int    offset;
-> >       unsigned int    length;
-> >       dma_addr_t      dma_address;
-> > };
+On Tue, May 06, 2008 at 01:13:01PM +0200, Andi Kleen wrote:
+> Adrian Bunk wrote:
+> > On Tue, May 06, 2008 at 02:21:31AM +0200, Andi Kleen wrote:
+>...
+> >> I could see some advantage from static in future compiler versions 
+> >> though from better optimization, but it's quite remote.
+> >> ...
+> > 
+> > The best case I've actually seen in practice was a variable I made 
+> > static, and with CONFIG_DEBUG_FOOBAR=n gcc was now able to prove that 
+> > the value never changed resulting in the variable plus quite a chunk
+> > of code no longer emitted.
 > 
-> If unsigned long is 32-bit but dma_addr_t is 64-bit, there may be a gap
-> between length and dma_address.
-> 
+> Sounds like the variable should just have been removed then in the source?
 
-But moving dma_address to the front only has the effect to create implicit
-padding at the end of struct scatterlist, so you don't gain anything
-either way.
+No, an #ifdef CONFIG_DEBUG_FOOBAR guarded some sysctl that allows users 
+to change the value.
 
-It's only an internal definition that can be changed at any time without
-breaking applications, so I wouldn't worry about it, and better leave
-it identical to the other architectures.
+(I'm not claiming this was a common case.)
 
-The one thing that should indeed be changed is the addition of
-'unsigned long sg_magic' that is needed for CONFIG_DEBUG_SG.
+> -Andi
 
-	Arnd <><
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
