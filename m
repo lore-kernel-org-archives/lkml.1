@@ -1,51 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934180AbYEFXsd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933478AbYEFXtO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934180AbYEFXsd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 19:48:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757448AbYEFXsX
+	id S933478AbYEFXtO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 19:49:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756989AbYEFXst
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 19:48:23 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:57720 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755338AbYEFXsW (ORCPT
+	Tue, 6 May 2008 19:48:49 -0400
+Received: from wf-out-1314.google.com ([209.85.200.171]:58379 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934261AbYEFXsj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 19:48:22 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <4820EE36.7010102@s5r6.in-berlin.de>
-Date: Wed, 07 May 2008 01:48:06 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.13) Gecko/20080419 SeaMonkey/1.1.9
+	Tue, 6 May 2008 19:48:39 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=eWQFJy2tnerl6uelj/Ww4KTM/DZ0NbIE4sBFkQdRlXnrhKJhrb3irUdu2pt+3CwEzzlZCVKgwhPEplsvSpy2uVEPEwoQElqio63kCaY5tnprdSMyjC1mF23bm52U7tf9cqmDkLHt/paIb9d9CrFv/u4FZSX3sssolzgTZE7ls6U=
+Message-ID: <9c9fda240805061648s75080531rd25db46d65022bf1@mail.gmail.com>
+Date: Wed, 7 May 2008 08:48:39 +0900
+From: "Kyungmin Park" <kmpark@infradead.org>
+To: "Artem Bityutskiy" <Artem.Bityutskiy@nokia.com>
+Subject: Re: [PATCH take 2 08/28] UBIFS: add superblock and master node
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       "Adrian Hunter" <ext-adrian.hunter@nokia.com>
+In-Reply-To: <1210070159-22794-9-git-send-email-Artem.Bityutskiy@nokia.com>
 MIME-Version: 1.0
-To: Mauro Carvalho Chehab <mchehab@infradead.org>
-CC: Alistair John Strachan <alistair@devzero.co.uk>, Robin Holt <holt@sgi.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.26-rc1
-References: <alpine.LFD.1.10.0805031205330.2971@woody.linux-foundation.org>	<20080504160904.GF19717@sgi.com>	<Pine.LNX.4.64.0805051656180.3218@bombadil.infradead.org>	<200805060902.25835.alistair@devzero.co.uk>	<20080506073134.424780a3@gaivota>	<48206C73.80509@s5r6.in-berlin.de>	<20080506161346.183f367c@gaivota>	<4820B524.5080100@s5r6.in-berlin.de> <20080506170623.53732e78@gaivota> <4820C3D8.6040403@s5r6.in-berlin.de>
-In-Reply-To: <4820C3D8.6040403@s5r6.in-berlin.de>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1210070159-22794-1-git-send-email-Artem.Bityutskiy@nokia.com>
+	 <1210070159-22794-9-git-send-email-Artem.Bityutskiy@nokia.com>
+X-Google-Sender-Auth: 3b823bc8de56e06e
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I wrote:
-> Mauro Carvalho Chehab wrote:
->> If you remove the select's for MSP3400, TVP5150 and SAA7113, at, 
->> em28xx, the module will compile without problems.
->>
->> The only issue is that you won't be able to see any images (due to the 
->> lack of tvp5150 or saa7113 analog TV demoduler) or listen to the audio,
->> if the device needs msp3400 to decode audio.
-> [...]
-> Ah, now I understand.  You use "select" to enable options which aren't 
-> actually a build requirement for the selecting option.
+Hi Artem,
 
-PS:
-I believe the canonical way to express _runtime_ dependencies in Kconfig 
-(in contrast to build dependencies) is not "select", but "help".
--- 
-Stefan Richter
--=====-==--- -=-= --===
-http://arcgraph.de/sr/
+Here's one proposal. Please add the  no compressed mode support.
+In my simple test. it's working with  no compress mode.
+Yes I know, it makes the performance poor. but we can measure the
+metadata operation overhead compare to the previous flash filesystems.
+
+How do you think?
+
+Thank you,
+Kyungmin Park
+
+
+>  diff --git a/fs/ubifs/sb.c b/fs/ubifs/sb.c
+>  new file mode 100644
+>  index 0000000..2fe4c7c
+>  --- /dev/null
+>  +++ b/fs/ubifs/sb.c
+
+>  +/* The default maximum size of reserved pool in bytes */
+>  +#define DEFAULT_MAX_RP_SIZE (5*1024*1024)
+>  +
+>  +/* Default UBIFS compressor */
+>  +#define DEFAULT_COMPRESSOR UBIFS_COMPR_LZO
+>  +
+
+#ifdef CONFIG_UBIFS_FS_NO_COMPR
+#define DEFAULT_COMPRESSOR UBIFS_COMPR_NONE
+#else
+#define DEFAULT_COMPRESSOR UBIFS_COMPR_LZO
+#endif
+
+
+>  +       ino->mtime_nsec  = 0;
+>  +       ino->mode = cpu_to_le32(S_IFDIR | S_IRUGO | S_IWUSR | S_IXUGO);
+>  +       ino->size = cpu_to_le64(UBIFS_INO_NODE_SZ);
+>  +
+>  +       /* Set compression enabled by default */
+>  +       ino->flags = cpu_to_le32(UBIFS_COMPR_FL);
+>  +
+>  +       err = ubifs_write_node(c, ino, UBIFS_INO_NODE_SZ,
+>  +                              main_first + DEFAULT_DATA_LEB, 0,
+>  +                              UBI_UNKNOWN);
+
+#ifdef CONFIG_UBIFS_FS_NO_COMPR
+       /* Don't use the compression */
+       ino->flags = 0;
+#else
+       /* Set compression enabled by default */
+       ino->flags = cpu_to_le32(UBIFS_COMPR_FL);
+#endif
+
+Of course it also adds the UBIFS_FS_NO_COMPR to fs/ubifs/Kconfig properly.
