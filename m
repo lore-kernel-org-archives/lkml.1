@@ -1,63 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764351AbYEFUQk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765139AbYEFUT7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764351AbYEFUQk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 16:16:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753905AbYEFUQ3
+	id S1765139AbYEFUT7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 16:19:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753784AbYEFUTs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 16:16:29 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:55633 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752202AbYEFUQ1 (ORCPT
+	Tue, 6 May 2008 16:19:48 -0400
+Received: from qb-out-0506.google.com ([72.14.204.239]:29573 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753905AbYEFUTr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 16:16:27 -0400
-Date: Tue, 6 May 2008 13:15:54 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Gabriel C <nix.or.die@googlemail.com>
-Cc: mgross@linux.intel.com, linux-kernel@vger.kernel.org, ashok.raj@intel.com,
-       shaohua.li@intel.com, anil.s.keshavamurthy@intel.com,
-       jbarnes@virtuousgeek.org, linux-pci@atrey.karlin.mff.cuni.cz
-Subject: Re: intel-iommu: CONFIG_DMAR*=y kills my box
-Message-Id: <20080506131554.4adb3f9c.akpm@linux-foundation.org>
-In-Reply-To: <4817A98D.8080007@googlemail.com>
-References: <48133A64.7020702@googlemail.com>
-	<4813660E.8080609@googlemail.com>
-	<20080429002901.GC31157@linux.intel.com>
-	<481677D3.5070800@googlemail.com>
-	<20080429225348.GA1672@linux.intel.com>
-	<4817A98D.8080007@googlemail.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 6 May 2008 16:19:47 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=M5uFWC7ArP3wOU5F3FsSXGsWza0Ye3BjdoX04SOcdWNBbxoyJqaSUIwrkO4zPGo4HtsIDvgOwLI/tQidsaaUuSTSGkTAVIVzBro9ZwCO+RJnvLpK03pIIP4mEp0S3lTr6/v1ghIzxiWmd/9WsfdlXSHLnwBPAxpAV+6lT5P9yps=
+Message-ID: <2f11576a0805061319w581f69d4ye593416db6a9e80a@mail.gmail.com>
+Date: Wed, 7 May 2008 05:19:45 +0900
+From: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>
+To: "Andi Kleen" <andi@firstfloor.org>
+Subject: Re: [PATCH] mm/cgroup.c add error check
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       "Paul Menage" <menage@google.com>, "Li Zefan" <lizf@cn.fujitsu.com>
+In-Reply-To: <4820A431.3000600@firstfloor.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080506195216.4A6D.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	 <87wsm7bo1n.fsf@basil.nowhere.org>
+	 <2f11576a0805060602gf4cf0f9t85391939146efccf@mail.gmail.com>
+	 <4820A431.3000600@firstfloor.org>
+X-Google-Sender-Auth: 4836f782e94d78fb
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 30 Apr 2008 01:04:45 +0200
-Gabriel C <nix.or.die@googlemail.com> wrote:
+>  > but if GFP_KERNEL is used, We still need error check, IMHO.
 >
+>  Yes, but no retry (or if you're sure you cannot fail use __GFP_NOFAIL
+>  too, but that is nasty because it has some risk of deadlock under severe
+>  oom conditions)
 
-Guys, it's really painful having to scroll through thousand-line emails to
-find a few lines of information.  Please trim stuff.
+in general coding style, you are right.
 
-> 
-> > 
-> > I do find it quite odd that a DMA code path specific to PCIE is somehow
-> > in the loop for a parallel port device.  Should this be possible?
-> 
-> I have no idea =) ( PCI folks added to CC )
-> 
-> > 
-> > I could easily be wrong so feel free to correct me but;
-> > I think your bios is goofy / unprepared to support IOMMU / VT-d and
-> > doing strange things with enumerated a parallel port on a PCIE bus with
-> > VTD is turned on...
-> 
-> I will contact ASUS peoples about the BIOS but it has for sure VT-d support and it is enabled.
+but not down-to-earth idea in that case.
+call_usermodehelper() is just wrapper of fork-exec.
 
-So..  what happened here?  It seems like a pretty fatal problem, and
-personally I don't think that contacting vendors about BIOS upgrades is a
-suitable general solution.  It would be much better to find a kernel-based
-fix or workaround?
-
-
+I don't hope change largely exec() code patch.
