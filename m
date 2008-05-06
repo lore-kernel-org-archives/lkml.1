@@ -1,60 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764303AbYEFPXQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763069AbYEFPYY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764303AbYEFPXQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 11:23:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758000AbYEFPXA
+	id S1763069AbYEFPYY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 11:24:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758099AbYEFPYP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 11:23:00 -0400
-Received: from smtp1.wifiinternet.cz ([89.31.47.1]:56165 "EHLO
-	bor.wifiinternet.cz" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756706AbYEFPW7 (ORCPT
+	Tue, 6 May 2008 11:24:15 -0400
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:33867 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758000AbYEFPYO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 11:22:59 -0400
-Message-ID: <482077FE.7080201@seznam.cz>
-Date: Tue, 06 May 2008 17:23:42 +0200
-From: Michal Simek <monstr@seznam.cz>
-Reply-To: monstr@seznam.cz
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+	Tue, 6 May 2008 11:24:14 -0400
+X-Sasl-enc: GrYqWbNylTNvZkRO7lI6v7tcdUBRIrnVl5dMRRmosOmP 1210087453
+Date: Tue, 6 May 2008 12:24:11 -0300
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Shaohua Li <shaohua.li@intel.com>, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org,
+       "Accardi, Kristen C" <kristen.c.accardi@intel.com>
+Subject: Re: [PATCH] bay: Exit if notify handler cannot be installed
+Message-ID: <20080506152411.GB22828@khazad-dum.debian.net>
+References: <20080505202508.GA3690@homac> <20080506091522.GA4378@homac> <1210065811.12668.1.camel@sli10-desk.sh.intel.com> <20080506093315.GD4378@homac> <20080506093516.GE4378@homac>
 MIME-Version: 1.0
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-CC: John Williams <john.williams@petalogix.com>, monstr@seznam.cz,
-       linux-kernel@vger.kernel.org, arnd@arndb.de, linux-arch@vger.kernel.org,
-       stephen.neuendorffer@xilinx.com, John.Linn@xilinx.com, matthew@wil.cx,
-       will.newton@gmail.com, drepper@redhat.com,
-       microblaze-uclinux@itee.uq.edu.au, grant.likely@secretlab.ca
-Subject: Re: [PATCH 45/56] microblaze_v2: headers simple files - empty or
- redirect to asm-generic
-References: <1209901305-6404-1-git-send-email-monstr@seznam.cz>	<96f2004535c34a0c762bf2012c299cbf9f89ab32.1209897266.git.monstr@monstr.eu>	<92cd3a27b393bb394d48902594152351a92c59bb.1209897266.git.monstr@monstr.eu>	<4e20213f5f296268a24955df8c951f7fba279816.1209897266.git.monstr@monstr.eu>	<49eccf3408b90a5ebb42635493bbeef3b584acb9.1209897266.git.monstr@monstr.eu>	<d1e4a572d2add458e1dc7c4f5a3039ae4faa2c04.1209897266.git.monstr@monstr.eu>	<27d6acda14c492aae35d8bb1343a122624560418.1209897266.git.monstr@monstr.eu>	<64e6fc7378cd5c714fcceef7d4965c1fb3d1b288.1209897266.git.monstr@monstr.eu>	<9cc0d54a98f25748dc3f16fc3250524d7cd00877.1209897266.git.monstr@monstr.eu>	<5d240127ee05c28d5156bfbf305329f9540f6c14.1209897267.git.monstr@monstr.eu>	<59b5238f7a259dcac4c9ca6513756a188625462e.1209897267.git.monstr@monstr.eu>	<8e1d421649250f7a3f638cd552bc46e5f5845890.1209897267.git.monstr@monstr.eu>	<1209954849.5798.80.camel@localhost> <20080507004702.d516a727.sfr@canb.auug.org.au>
-In-Reply-To: <20080507004702.d516a727.sfr@canb.auug.org.au>
-Content-Type: text/plain; charset=ISO-8859-2
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080506093516.GE4378@homac>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
+	1CDB 0FE3
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-> On Mon, 05 May 2008 12:34:09 +1000 John Williams <john.williams@petalogix.com> wrote:
->>
->>>  include/asm-microblaze/auxvec.h            |   14 ++++++++++++++
->>>  include/asm-microblaze/cputime.h           |   16 ++++++++++++++++
->>>  include/asm-microblaze/div64.h             |   16 ++++++++++++++++
->>>  include/asm-microblaze/emergency-restart.h |   16 ++++++++++++++++
->>>  include/asm-microblaze/errno.h             |   16 ++++++++++++++++
->>>  include/asm-microblaze/futex.h             |   16 ++++++++++++++++
->>>  include/asm-microblaze/kdebug.h            |   19 +++++++++++++++++++
->>>  include/asm-microblaze/local.h             |   16 ++++++++++++++++
->>>  include/asm-microblaze/mutex.h             |   16 ++++++++++++++++
->>>  include/asm-microblaze/namei.h             |   24 ++++++++++++++++++++++++
->>>  include/asm-microblaze/percpu.h            |   16 ++++++++++++++++
->>>  include/asm-microblaze/resource.h          |   16 ++++++++++++++++
->>>  include/asm-microblaze/user.h              |   18 ++++++++++++++++++
->> These are all just includes of asm-generic/* (hooray!).
+On Tue, 06 May 2008, Holger Macht wrote:
+> On Di 06. Mai - 11:33:16, Holger Macht wrote:
+> > On Di 06. Mai - 17:23:31, Shaohua Li wrote:
+> > > On Tue, 2008-05-06 at 17:15 +0800, Holger Macht wrote:
+> > > > On Mo 05. Mai - 22:25:08, Holger Macht wrote:
+> > > > > If acpi_install_notify_handler() for a bay device fails, the bay
+> > > > driver is
+> > > > > superfluous. Most likely, another driver (like libata) is already
+> > > > caring
+> > > > > about this device anyway. Furthermore,
+> > > > > register_hotplug_dock_device(acpi_handle) from the dock driver must
+> > > > not be
+> > > > > called twice with the same handler. So clean up and exit.
+> > > > 
+> > > > The patch needs some more work. I'll send an updated one as soon as
+> > > > ready.
+> > > The bay driver is duplicated with libata, I thought we should delete it.
+> > > See bug http://bugzilla.kernel.org/show_bug.cgi?id=9526
+> > 
+> > Yes, I know, but couldn't it be helpful on systems not using libata?
 > 
-> Absolutely, but is it really necessary to have 14-16 lines of comment
-> (including a copyright notice) for a file whose single real line is just
-> to include another file?  i.e. reduce all these to 1 line files.
+> Also, libata has to be patched to execute ACPI _EJ0 (not a huge issue, I
+> know) or calling bay's eject_removable drive method.
 
-Can I do it? I think every file need license.
+It *is* a huge issue.  I think that currently, bay handling on thinkpads
+is broken because of it, and users that expect it to just work could
+well fry their hardware if they're the sort of people who don't LOOK at
+the bay light before they yank stuff from it :-)
 
-M
+This is not a bug report, but a head's up.  I am at 2.6.23, so I didn't
+test for the bug yet.
+
+Anyway, when you bind to an ACPI node, you forbid anything else from
+doing it.  This means it is now your problem to handle **ALL**
+capabilities of that node.  This means libata MUST handle ejection, or
+it MUST NOT bind to an ACPI node.
+
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
