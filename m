@@ -1,87 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933000AbYEFWGZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933132AbYEFWGw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933000AbYEFWGZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 18:06:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754194AbYEFWGP
+	id S933132AbYEFWGw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 18:06:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754194AbYEFWGd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 18:06:15 -0400
-Received: from nf-out-0910.google.com ([64.233.182.189]:58124 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753032AbYEFWGN (ORCPT
+	Tue, 6 May 2008 18:06:33 -0400
+Received: from ug-out-1314.google.com ([66.249.92.173]:51360 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933164AbYEFWGb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 18:06:13 -0400
+	Tue, 6 May 2008 18:06:31 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=Zuj9hFCKGOS2A6J96YGNPy+pQAvk/gv2372ODMPHQ3GK2lamVj6auSIn89G2sMETi8IrfGSe4ViSM4OLCtsHyZD9CelFRze3xpLOWVLNfy17hRc+XUdCkD2JqJF7rqwmYyZDV48+mF96MyqLz78qFzOvdqFPIutzNNtVnsHsT1I=
-Date: Wed, 7 May 2008 00:05:36 +0200
-From: Marcin Slusarz <marcin.slusarz@gmail.com>
-To: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Adrian Hunter <ext-adrian.hunter@nokia.com>
-Subject: Re: [PATCH take 2 06/28] UBIFS: add journal replay
-Message-ID: <20080506220315.GA6464@joi>
-References: <1210070159-22794-1-git-send-email-Artem.Bityutskiy@nokia.com> <1210070159-22794-7-git-send-email-Artem.Bityutskiy@nokia.com>
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Hjq4jNiVmwNVYQHrhhSC8Y9QPGTnoumD5gcEclTqQARmyxaFLNlRoX7c88g/UgIIV7SB49TduUtvbPkdzzFPIC+f4ZKBURrqtc/lFFeYCK1TU5OBEhaJFn/B/eGfxdHjCbMT8iLX2GqIIT85BxoMl9LEcATHQ+G5bJaQzJDeVfU=
+Message-ID: <524f69650805061506g55bdf6b0w7d5b936b7ec8bad4@mail.gmail.com>
+Date: Tue, 6 May 2008 17:06:26 -0500
+From: "Steve French" <smfrench@gmail.com>
+To: "Cyrill Gorcunov" <gorcunov@gmail.com>
+Subject: Re: [patch 1/2] cifs - find_unc cleanup
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <4819e79f.0c58560a.0f2c.ffff9899@mx.google.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1210070159-22794-7-git-send-email-Artem.Bityutskiy@nokia.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+References: <20080501154830.235254575@gmail.com>
+	 <4819e79f.0c58560a.0f2c.ffff9899@mx.google.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 06, 2008 at 01:35:37PM +0300, Artem Bityutskiy wrote:
-> +/**
-> + * insert_ref_node - insert a ref node to the replay tree.
-> + * @c: UBIFS file-system description object
-> + * @lnum: node logical eraseblock number
-> + * @offs: node offset
-> + * @sqnum: sequence number
-> + * @free: amount of free space in bud
-> + * @dirty: amount of dirty space from padding and deletion nodes
-> + */
-> +static int insert_ref_node(struct ubifs_info *c, int lnum, int offs,
-> +			   unsigned long long sqnum, int free, int dirty)
-> +{
-> +	struct rb_node **p = &c->replay_tree.rb_node, *parent = NULL;
-> +	struct replay_entry *r;
-> +	union ubifs_key key;
-> +	int cmp;
-> +
-> +	dbg_mnt("add ref LEB %d:%d", lnum, offs);
-> +	highest_ino_key(c, &key, -1);
-> +	while (*p) {
-> +		parent = *p;
-> +		r = rb_entry(parent, struct replay_entry, rb);
-> +		cmp = keys_cmp(c, &key, &r->key);
+merged
 
-return value of keys_cmp is never used in this function
+On Thu, May 1, 2008 at 10:48 AM, Cyrill Gorcunov <gorcunov@gmail.com> wrote:
+> This patch is to remove too indented code in find_unc
+>
+>  Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
+>  ---
+>
+>  Index: linux-2.6.git/fs/cifs/connect.c
+>  ===================================================================
+>  --- linux-2.6.git.orig/fs/cifs/connect.c        2008-05-01 18:21:38.000000000 +0400
+>  +++ linux-2.6.git/fs/cifs/connect.c     2008-05-01 19:02:51.000000000 +0400
+>  @@ -1362,45 +1362,43 @@ find_unc(__be32 new_target_ip_addr, char
+>   {
+>         struct list_head *tmp;
+>         struct cifsTconInfo *tcon;
+>  +       __be32 old_ip;
+>
+>         read_lock(&GlobalSMBSeslock);
+>  +
+>         list_for_each(tmp, &GlobalTreeConnectionList) {
+>                 cFYI(1, ("Next tcon"));
+>                 tcon = list_entry(tmp, struct cifsTconInfo, cifsConnectionList);
+>  -               if (tcon->ses) {
+>  -                       if (tcon->ses->server) {
+>  -                               cFYI(1,
+>  -                                    ("old ip addr: %x == new ip %x ?",
+>  -                                     tcon->ses->server->addr.sockAddr.sin_addr.
+>  -                                     s_addr, new_target_ip_addr));
+>  -                               if (tcon->ses->server->addr.sockAddr.sin_addr.
+>  -                                   s_addr == new_target_ip_addr) {
+>  -       /* BB lock tcon, server and tcp session and increment use count here? */
+>  -                                       /* found a match on the TCP session */
+>  -                                       /* BB check if reconnection needed */
+>  -                                       cFYI(1,
+>  -                                             ("IP match, old UNC: %s new: %s",
+>  -                                             tcon->treeName, uncName));
+>  -                                       if (strncmp
+>  -                                           (tcon->treeName, uncName,
+>  -                                            MAX_TREE_SIZE) == 0) {
+>  -                                               cFYI(1,
+>  -                                                    ("and old usr: %s new: %s",
+>  -                                                     tcon->treeName, uncName));
+>  -                                               if (strncmp
+>  -                                                   (tcon->ses->userName,
+>  -                                                    userName,
+>  -                                                    MAX_USERNAME_SIZE) == 0) {
+>  -                                                       read_unlock(&GlobalSMBSeslock);
+>  -                                                       /* matched smb session
+>  -                                                       (user name */
+>  -                                                       return tcon;
+>  -                                               }
+>  -                                       }
+>  -                               }
+>  -                       }
+>  -               }
+>  +               if (!tcon->ses || !tcon->ses->server)
+>  +                       continue;
+>  +
+>  +               old_ip = tcon->ses->server->addr.sockAddr.sin_addr.s_addr;
+>  +               cFYI(1, ("old ip addr: %x == new ip %x ?",
+>  +                       old_ip, new_target_ip_addr));
+>  +
+>  +               if (old_ip != new_target_ip_addr)
+>  +                       continue;
+>  +
+>  +               /* BB lock tcon, server and tcp session and increment use count here? */
+>  +               /* found a match on the TCP session */
+>  +               /* BB check if reconnection needed */
+>  +               cFYI(1, ("IP match, old UNC: %s new: %s",
+>  +                       tcon->treeName, uncName));
+>  +
+>  +               if (strncmp(tcon->treeName, uncName, MAX_TREE_SIZE))
+>  +                       continue;
+>  +
+>  +               cFYI(1, ("and old usr: %s new: %s",
+>  +                       tcon->treeName, uncName));
+>  +
+>  +               if (strncmp(tcon->ses->userName, userName, MAX_USERNAME_SIZE))
+>  +                       continue;
+>  +
+>  +               /* matched smb session (user name) */
+>  +               read_unlock(&GlobalSMBSeslock);
+>  +               return tcon;
+>         }
+>  +
+>         read_unlock(&GlobalSMBSeslock);
+>         return NULL;
+>   }
+>
+>  --
+>
 
-> +		if (sqnum < r->sqnum) {
-> +			p = &(*p)->rb_left;
-> +			continue;
-> +		} else if (sqnum > r->sqnum) {
-> +			p = &(*p)->rb_right;
-> +			continue;
-> +		}
-> +		ubifs_err("duplicate sqnum in r");
-> +		return -EINVAL;
-> +	}
-> +
-> +	r = kzalloc(sizeof(struct replay_entry), GFP_KERNEL);
-> +	if (!r)
-> +		return -ENOMEM;
-> +
-> +	r->lnum = lnum;
-> +	r->offs = offs;
-> +	r->sqnum = sqnum;
-> +	r->flags = REPLAY_REF;
-> +	r->free = free;
-> +	r->dirty = dirty;
-> +	key_copy(c, &key, &r->key);
-> +
-> +	rb_link_node(&r->rb, parent, p);
-> +	rb_insert_color(&r->rb, &c->replay_tree);
-> +	return 0;
-> +}
+
+
+-- 
+Thanks,
+
+Steve
