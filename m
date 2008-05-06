@@ -1,212 +1,313 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765504AbYEFJWz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765524AbYEFJX2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765504AbYEFJWz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 05:22:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764709AbYEFJPE
+	id S1765524AbYEFJX2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 05:23:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764224AbYEFJPI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 05:15:04 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:59579 "EHLO
+	Tue, 6 May 2008 05:15:08 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:59581 "EHLO
 	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764735AbYEFJO7 (ORCPT
+	with ESMTP id S1760513AbYEFJPF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 05:14:59 -0400
-Message-Id: <20080506091440.391186713@szeredi.hu>
+	Tue, 6 May 2008 05:15:05 -0400
+Message-Id: <20080506091442.426952297@szeredi.hu>
 References: <20080506091327.259950960@szeredi.hu>
 User-Agent: quilt/0.45-1
-Date: Tue, 06 May 2008 11:13:48 +0200
+Date: Tue, 06 May 2008 11:13:49 +0200
 From: Miklos Szeredi <miklos@szeredi.hu>
 To: akpm@linux-foundation.org
 Cc: hch@infradead.org, viro@ZenIV.linux.org.uk, linux-fsdevel@vger.kernel.org,
        linux-kernel@vger.kernel.org
-Subject: [patch 21/24] vfs: add path_rename()
-Content-Disposition: inline; filename=path_rename.patch
+Subject: [patch 22/24] vfs: add path_setattr()
+Content-Disposition: inline; filename=path_setattr.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Miklos Szeredi <mszeredi@suse.cz>
 
-Introduce path_rename().  Make vfs_rename() static.
+Introduce path_setattr().  Stop exporting notify_change() to modules.
 
 Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
 ---
- fs/ecryptfs/inode.c |   22 ++++++++++++----------
- fs/namei.c          |   33 ++++++++++++++++++++++++---------
- fs/nfsd/vfs.c       |   19 +++++--------------
- include/linux/fs.h  |    3 ++-
- 4 files changed, 43 insertions(+), 34 deletions(-)
+ fs/attr.c           |   14 +++++++++++++-
+ fs/ecryptfs/inode.c |   11 ++++++-----
+ fs/nfsd/vfs.c       |   17 +++++++++++------
+ fs/open.c           |   52 ++++++++++------------------------------------------
+ fs/utimes.c         |    6 +-----
+ include/linux/fs.h  |    1 +
+ 6 files changed, 42 insertions(+), 59 deletions(-)
 
-Index: linux-2.6/fs/ecryptfs/inode.c
+Index: linux-2.6/fs/open.c
 ===================================================================
---- linux-2.6.orig/fs/ecryptfs/inode.c	2008-05-06 11:04:40.000000000 +0200
-+++ linux-2.6/fs/ecryptfs/inode.c	2008-05-06 11:04:41.000000000 +0200
-@@ -555,25 +555,27 @@ ecryptfs_rename(struct inode *old_dir, s
- 	int rc;
- 	struct dentry *lower_old_dentry;
- 	struct dentry *lower_new_dentry;
--	struct dentry *lower_old_dir_dentry;
--	struct dentry *lower_new_dir_dentry;
-+	struct path lower_old_dir;
-+	struct path lower_new_dir;
+--- linux-2.6.orig/fs/open.c	2008-05-06 11:04:36.000000000 +0200
++++ linux-2.6/fs/open.c	2008-05-06 11:04:41.000000000 +0200
+@@ -587,18 +587,13 @@ asmlinkage long sys_fchmod(unsigned int 
  
- 	lower_old_dentry = ecryptfs_dentry_to_lower(old_dentry);
- 	lower_new_dentry = ecryptfs_dentry_to_lower(new_dentry);
- 	dget(lower_old_dentry);
- 	dget(lower_new_dentry);
--	lower_old_dir_dentry = dget_parent(lower_old_dentry);
--	lower_new_dir_dentry = dget_parent(lower_new_dentry);
--	lock_rename(lower_old_dir_dentry, lower_new_dir_dentry);
--	rc = vfs_rename(lower_old_dir_dentry->d_inode, lower_old_dentry,
--			lower_new_dir_dentry->d_inode, lower_new_dentry);
-+	lower_old_dir.mnt = ecryptfs_dentry_to_lower_mnt(old_dentry);
-+	lower_old_dir.dentry = dget_parent(lower_old_dentry);
-+	lower_new_dir.mnt = ecryptfs_dentry_to_lower_mnt(new_dentry);
-+	lower_new_dir.dentry = dget_parent(lower_new_dentry);
-+	lock_rename(lower_old_dir.dentry, lower_new_dir.dentry);
-+	rc = path_rename(&lower_old_dir, lower_old_dentry,
-+			 &lower_new_dir, lower_new_dentry);
- 	if (rc)
- 		goto out_lock;
--	fsstack_copy_attr_all(new_dir, lower_new_dir_dentry->d_inode, NULL);
-+	fsstack_copy_attr_all(new_dir, lower_new_dir.dentry->d_inode, NULL);
- 	if (new_dir != old_dir)
--		fsstack_copy_attr_all(old_dir, lower_old_dir_dentry->d_inode, NULL);
-+		fsstack_copy_attr_all(old_dir, lower_old_dir.dentry->d_inode, NULL);
- out_lock:
--	unlock_rename(lower_old_dir_dentry, lower_new_dir_dentry);
-+	unlock_rename(lower_old_dir.dentry, lower_new_dir.dentry);
- 	dput(lower_new_dentry->d_parent);
- 	dput(lower_old_dentry->d_parent);
- 	dput(lower_new_dentry);
-Index: linux-2.6/fs/namei.c
-===================================================================
---- linux-2.6.orig/fs/namei.c	2008-05-06 11:04:40.000000000 +0200
-+++ linux-2.6/fs/namei.c	2008-05-06 11:04:41.000000000 +0200
-@@ -2730,8 +2730,8 @@ static int vfs_rename_other(struct inode
+ 	audit_inode(NULL, dentry);
+ 
+-	err = mnt_want_write(file->f_path.mnt);
+-	if (err)
+-		goto out_putf;
+ 	mutex_lock(&inode->i_mutex);
+ 	if (mode == (mode_t) -1)
+ 		mode = inode->i_mode;
+ 	newattrs.ia_mode = (mode & S_IALLUGO) | (inode->i_mode & ~S_IALLUGO);
+ 	newattrs.ia_valid = ATTR_MODE | ATTR_CTIME;
+-	err = notify_change(dentry, &newattrs);
++	err = path_setattr(&file->f_path, &newattrs);
+ 	mutex_unlock(&inode->i_mutex);
+-	mnt_drop_write(file->f_path.mnt);
+-out_putf:
+ 	fput(file);
+ out:
+ 	return err;
+@@ -617,18 +612,13 @@ asmlinkage long sys_fchmodat(int dfd, co
+ 		goto out;
+ 	inode = nd.path.dentry->d_inode;
+ 
+-	error = mnt_want_write(nd.path.mnt);
+-	if (error)
+-		goto dput_and_out;
+ 	mutex_lock(&inode->i_mutex);
+ 	if (mode == (mode_t) -1)
+ 		mode = inode->i_mode;
+ 	newattrs.ia_mode = (mode & S_IALLUGO) | (inode->i_mode & ~S_IALLUGO);
+ 	newattrs.ia_valid = ATTR_MODE | ATTR_CTIME;
+-	error = notify_change(nd.path.dentry, &newattrs);
++	error = path_setattr(&nd.path, &newattrs);
+ 	mutex_unlock(&inode->i_mutex);
+-	mnt_drop_write(nd.path.mnt);
+-dput_and_out:
+ 	path_put(&nd.path);
+ out:
  	return error;
+@@ -639,9 +629,9 @@ asmlinkage long sys_chmod(const char __u
+ 	return sys_fchmodat(AT_FDCWD, filename, mode);
  }
  
--int vfs_rename(struct inode *old_dir, struct dentry *old_dentry,
--	       struct inode *new_dir, struct dentry *new_dentry)
-+static int vfs_rename(struct inode *old_dir, struct dentry *old_dentry,
-+		      struct inode *new_dir, struct dentry *new_dentry)
+-static int chown_common(struct dentry * dentry, uid_t user, gid_t group)
++static int chown_common(struct path *path, uid_t user, gid_t group)
  {
+-	struct inode *inode = dentry->d_inode;
++	struct inode *inode = path->dentry->d_inode;
  	int error;
- 	int is_dir = S_ISDIR(old_dentry->d_inode->i_mode);
-@@ -2773,6 +2773,27 @@ int vfs_rename(struct inode *old_dir, st
+ 	struct iattr newattrs;
+ 
+@@ -658,7 +648,7 @@ static int chown_common(struct dentry * 
+ 		newattrs.ia_valid |=
+ 			ATTR_KILL_SUID | ATTR_KILL_SGID | ATTR_KILL_PRIV;
+ 	mutex_lock(&inode->i_mutex);
+-	error = notify_change(dentry, &newattrs);
++	error = path_setattr(path, &newattrs);
+ 	mutex_unlock(&inode->i_mutex);
+ 
+ 	return error;
+@@ -672,12 +662,7 @@ asmlinkage long sys_chown(const char __u
+ 	error = user_path_walk(filename, &nd);
+ 	if (error)
+ 		goto out;
+-	error = mnt_want_write(nd.path.mnt);
+-	if (error)
+-		goto out_release;
+-	error = chown_common(nd.path.dentry, user, group);
+-	mnt_drop_write(nd.path.mnt);
+-out_release:
++	error = chown_common(&nd.path, user, group);
+ 	path_put(&nd.path);
+ out:
+ 	return error;
+@@ -697,12 +682,7 @@ asmlinkage long sys_fchownat(int dfd, co
+ 	error = __user_walk_fd(dfd, filename, follow, &nd);
+ 	if (error)
+ 		goto out;
+-	error = mnt_want_write(nd.path.mnt);
+-	if (error)
+-		goto out_release;
+-	error = chown_common(nd.path.dentry, user, group);
+-	mnt_drop_write(nd.path.mnt);
+-out_release:
++	error = chown_common(&nd.path, user, group);
+ 	path_put(&nd.path);
+ out:
+ 	return error;
+@@ -716,12 +696,7 @@ asmlinkage long sys_lchown(const char __
+ 	error = user_path_walk_link(filename, &nd);
+ 	if (error)
+ 		goto out;
+-	error = mnt_want_write(nd.path.mnt);
+-	if (error)
+-		goto out_release;
+-	error = chown_common(nd.path.dentry, user, group);
+-	mnt_drop_write(nd.path.mnt);
+-out_release:
++	error = chown_common(&nd.path, user, group);
+ 	path_put(&nd.path);
+ out:
+ 	return error;
+@@ -732,20 +707,13 @@ asmlinkage long sys_fchown(unsigned int 
+ {
+ 	struct file * file;
+ 	int error = -EBADF;
+-	struct dentry * dentry;
+ 
+ 	file = fget(fd);
+ 	if (!file)
+ 		goto out;
+ 
+-	error = mnt_want_write(file->f_path.mnt);
+-	if (error)
+-		goto out_fput;
+-	dentry = file->f_path.dentry;
+-	audit_inode(NULL, dentry);
+-	error = chown_common(dentry, user, group);
+-	mnt_drop_write(file->f_path.mnt);
+-out_fput:
++	audit_inode(NULL, file->f_path.dentry);
++	error = chown_common(&file->f_path, user, group);
+ 	fput(file);
+ out:
+ 	return error;
+Index: linux-2.6/fs/attr.c
+===================================================================
+--- linux-2.6.orig/fs/attr.c	2008-05-06 11:04:36.000000000 +0200
++++ linux-2.6/fs/attr.c	2008-05-06 11:04:41.000000000 +0200
+@@ -14,6 +14,7 @@
+ #include <linux/fcntl.h>
+ #include <linux/quotaops.h>
+ #include <linux/security.h>
++#include <linux/mount.h>
+ 
+ /* Taken over from the old code... */
+ 
+@@ -195,4 +196,15 @@ int notify_change(struct dentry * dentry
  	return error;
  }
  
-+int path_rename(struct path *old_dir_path, struct dentry *old_dentry,
-+		struct path *new_dir_path, struct dentry *new_dentry)
+-EXPORT_SYMBOL(notify_change);
++int path_setattr(struct path *path, struct iattr *attr)
 +{
-+	int error;
-+	struct vfsmount *mnt = old_dir_path->mnt;
++	int error = mnt_want_write(path->mnt);
 +
-+	BUG_ON(mnt != new_dir_path->mnt);
-+
-+	error = mnt_want_write(mnt);
 +	if (!error) {
-+		struct inode *old_dir = old_dir_path->dentry->d_inode;
-+		struct inode *new_dir = new_dir_path->dentry->d_inode;
-+
-+		error = vfs_rename(old_dir, old_dentry, new_dir, new_dentry);
-+		mnt_drop_write(mnt);
++		error = notify_change(path->dentry, attr);
++		mnt_drop_write(path->mnt);
 +	}
 +
 +	return error;
 +}
-+EXPORT_SYMBOL(path_rename);
-+
- static int do_rename(int olddfd, const char *oldname,
- 			int newdfd, const char *newname)
- {
-@@ -2834,12 +2855,7 @@ static int do_rename(int olddfd, const c
- 	if (new_dentry == trap)
- 		goto exit5;
- 
--	error = mnt_want_write(oldnd.path.mnt);
--	if (error)
--		goto exit5;
--	error = vfs_rename(old_dir->d_inode, old_dentry,
--				   new_dir->d_inode, new_dentry);
--	mnt_drop_write(oldnd.path.mnt);
-+	error = path_rename(&oldnd.path, old_dentry, &newnd.path, new_dentry);
- exit5:
- 	dput(new_dentry);
- exit4:
-@@ -3030,6 +3046,5 @@ EXPORT_SYMBOL(unlock_rename);
- EXPORT_SYMBOL(vfs_follow_link);
- EXPORT_SYMBOL(generic_permission);
- EXPORT_SYMBOL(vfs_readlink);
--EXPORT_SYMBOL(vfs_rename);
- EXPORT_SYMBOL(dentry_unhash);
- EXPORT_SYMBOL(generic_readlink);
++EXPORT_SYMBOL(path_setattr);
 Index: linux-2.6/fs/nfsd/vfs.c
 ===================================================================
---- linux-2.6.orig/fs/nfsd/vfs.c	2008-05-06 11:04:40.000000000 +0200
+--- linux-2.6.orig/fs/nfsd/vfs.c	2008-05-06 11:04:41.000000000 +0200
 +++ linux-2.6/fs/nfsd/vfs.c	2008-05-06 11:04:41.000000000 +0200
-@@ -1650,8 +1650,9 @@ __be32
- nfsd_rename(struct svc_rqst *rqstp, struct svc_fh *ffhp, char *fname, int flen,
- 			    struct svc_fh *tfhp, char *tname, int tlen)
+@@ -392,8 +392,11 @@ nfsd_setattr(struct svc_rqst *rqstp, str
+ 
+ 	err = nfserr_notsync;
+ 	if (!check_guard || guardtime == inode->i_ctime.tv_sec) {
++		struct path path;
++
+ 		fh_lock(fhp);
+-		host_err = notify_change(dentry, iap);
++		fh_to_path(fhp, &path);
++		host_err = path_setattr(&path, iap);
+ 		err = nfserrno(host_err);
+ 		fh_unlock(fhp);
+ 	}
+@@ -949,14 +952,16 @@ out:
+ 	return err;
+ }
+ 
+-static void kill_suid(struct dentry *dentry)
++static void kill_suid(struct svc_fh *fhp)
  {
-+	struct path 	old_dir_path;
-+	struct path	new_dir_path;
- 	struct dentry	*fdentry, *tdentry, *odentry, *ndentry, *trap;
--	struct inode	*fdir, *tdir;
- 	__be32		err;
- 	int		host_err;
++	struct path	path;
+ 	struct iattr	ia;
+ 	ia.ia_valid = ATTR_KILL_SUID | ATTR_KILL_SGID | ATTR_KILL_PRIV;
  
-@@ -1663,10 +1664,7 @@ nfsd_rename(struct svc_rqst *rqstp, stru
- 		goto out;
+-	mutex_lock(&dentry->d_inode->i_mutex);
+-	notify_change(dentry, &ia);
+-	mutex_unlock(&dentry->d_inode->i_mutex);
++	mutex_lock(&path.dentry->d_inode->i_mutex);
++	fh_to_path(fhp, &path);
++	path_setattr(&path, &ia);
++	mutex_unlock(&path.dentry->d_inode->i_mutex);
+ }
  
- 	fdentry = ffhp->fh_dentry;
--	fdir = fdentry->d_inode;
--
- 	tdentry = tfhp->fh_dentry;
--	tdir = tdentry->d_inode;
+ static __be32
+@@ -1014,7 +1019,7 @@ nfsd_vfs_write(struct svc_rqst *rqstp, s
  
- 	err = (rqstp->rq_vers == 2) ? nfserr_acces : nfserr_xdev;
- 	if (ffhp->fh_export != tfhp->fh_export)
-@@ -1710,22 +1708,15 @@ nfsd_rename(struct svc_rqst *rqstp, stru
- 			goto out_dput_new;
- 	}
+ 	/* clear setuid/setgid flag after write */
+ 	if (host_err >= 0 && (inode->i_mode & (S_ISUID | S_ISGID)))
+-		kill_suid(dentry);
++		kill_suid(fhp);
  
--	host_err = -EXDEV;
--	if (ffhp->fh_export->ex_path.mnt != tfhp->fh_export->ex_path.mnt)
--		goto out_dput_new;
--	host_err = mnt_want_write(ffhp->fh_export->ex_path.mnt);
--	if (host_err)
--		goto out_dput_new;
--
--	host_err = vfs_rename(fdir, odentry, tdir, ndentry);
-+	fh_to_path(ffhp, &old_dir_path);
-+	fh_to_path(tfhp, &new_dir_path);
-+	host_err = path_rename(&old_dir_path, odentry, &new_dir_path, ndentry);
- 	if (!host_err && EX_ISSYNC(tfhp->fh_export)) {
- 		host_err = nfsd_sync_dir(tdentry);
- 		if (!host_err)
- 			host_err = nfsd_sync_dir(fdentry);
- 	}
- 
--	mnt_drop_write(ffhp->fh_export->ex_path.mnt);
--
-  out_dput_new:
- 	dput(ndentry);
-  out_dput_old:
+ 	if (host_err >= 0 && stable) {
+ 		static ino_t	last_ino;
 Index: linux-2.6/include/linux/fs.h
 ===================================================================
---- linux-2.6.orig/include/linux/fs.h	2008-05-06 11:04:40.000000000 +0200
+--- linux-2.6.orig/include/linux/fs.h	2008-05-06 11:04:41.000000000 +0200
 +++ linux-2.6/include/linux/fs.h	2008-05-06 11:04:41.000000000 +0200
-@@ -1131,7 +1131,8 @@ extern int path_symlink(struct path *, s
- extern int path_link(struct dentry *, struct path *, struct dentry *);
- extern int path_rmdir(struct path *, struct dentry *);
- extern int path_unlink(struct path *, struct dentry *);
--extern int vfs_rename(struct inode *, struct dentry *, struct inode *, struct dentry *);
-+extern int path_rename(struct path *, struct dentry *,
-+		       struct path *, struct dentry *);
+@@ -1762,6 +1762,7 @@ extern int do_remount_sb(struct super_bl
+ extern sector_t bmap(struct inode *, sector_t);
+ #endif
+ extern int notify_change(struct dentry *, struct iattr *);
++extern int path_setattr(struct path *, struct iattr *);
+ extern int permission(struct inode *, int, struct nameidata *);
+ extern int generic_permission(struct inode *, int,
+ 		int (*check_acl)(struct inode *, int));
+Index: linux-2.6/fs/ecryptfs/inode.c
+===================================================================
+--- linux-2.6.orig/fs/ecryptfs/inode.c	2008-05-06 11:04:41.000000000 +0200
++++ linux-2.6/fs/ecryptfs/inode.c	2008-05-06 11:04:41.000000000 +0200
+@@ -843,7 +843,7 @@ ecryptfs_permission(struct inode *inode,
+ static int ecryptfs_setattr(struct dentry *dentry, struct iattr *ia)
+ {
+ 	int rc = 0;
+-	struct dentry *lower_dentry;
++	struct path lower_path;
+ 	struct inode *inode;
+ 	struct inode *lower_inode;
+ 	struct ecryptfs_crypt_stat *crypt_stat;
+@@ -853,7 +853,8 @@ static int ecryptfs_setattr(struct dentr
+ 		ecryptfs_init_crypt_stat(crypt_stat);
+ 	inode = dentry->d_inode;
+ 	lower_inode = ecryptfs_inode_to_lower(inode);
+-	lower_dentry = ecryptfs_dentry_to_lower(dentry);
++	lower_path.mnt = ecryptfs_dentry_to_lower_mnt(dentry);
++	lower_path.dentry = ecryptfs_dentry_to_lower(dentry);
+ 	mutex_lock(&crypt_stat->cs_mutex);
+ 	if (S_ISDIR(dentry->d_inode->i_mode))
+ 		crypt_stat->flags &= ~(ECRYPTFS_ENCRYPTED);
+@@ -904,9 +905,9 @@ static int ecryptfs_setattr(struct dentr
+ 	if (ia->ia_valid & (ATTR_KILL_SUID | ATTR_KILL_SGID))
+ 		ia->ia_valid &= ~ATTR_MODE;
  
- /*
-  * VFS dentry helper functions.
+-	mutex_lock(&lower_dentry->d_inode->i_mutex);
+-	rc = notify_change(lower_dentry, ia);
+-	mutex_unlock(&lower_dentry->d_inode->i_mutex);
++	mutex_lock(&lower_path.dentry->d_inode->i_mutex);
++	rc = path_setattr(&lower_path, ia);
++	mutex_unlock(&lower_path.dentry->d_inode->i_mutex);
+ out:
+ 	fsstack_copy_attr_all(inode, lower_inode, NULL);
+ 	return rc;
+Index: linux-2.6/fs/utimes.c
+===================================================================
+--- linux-2.6.orig/fs/utimes.c	2008-05-06 11:04:37.000000000 +0200
++++ linux-2.6/fs/utimes.c	2008-05-06 11:04:41.000000000 +0200
+@@ -78,11 +78,7 @@ static int utimes_common(struct path *pa
+ 		}
+ 	}
+ 	mutex_lock(&path->dentry->d_inode->i_mutex);
+-	error = mnt_want_write(path->mnt);
+-	if (!error) {
+-		error = notify_change(path->dentry, &newattrs);
+-		mnt_drop_write(path->mnt);
+-	}
++	error = path_setattr(path, &newattrs);
+ 	mutex_unlock(&path->dentry->d_inode->i_mutex);
+ 
+ 	return error;
 
 --
