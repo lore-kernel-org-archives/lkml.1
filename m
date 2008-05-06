@@ -1,61 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756838AbYEFISm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760186AbYEFITb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756838AbYEFISm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 04:18:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754203AbYEFIS0
+	id S1760186AbYEFITb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 04:19:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755216AbYEFITR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 04:18:26 -0400
-Received: from aun.it.uu.se ([130.238.12.36]:60610 "EHLO aun.it.uu.se"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753715AbYEFISY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 04:18:24 -0400
+	Tue, 6 May 2008 04:19:17 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:50375 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754203AbYEFITO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 May 2008 04:19:14 -0400
+Date: Tue, 6 May 2008 10:19:13 +0200 (CEST)
+From: Jan Engelhardt <jengelh@medozas.de>
+To: Sam Ravnborg <sam@ravnborg.org>
+cc: Roman Zippel <zippel@linux-m68k.org>,
+       linux-kbuild <linux-kbuild@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: kconfig - a suggestion how to fix the select issue
+In-Reply-To: <20080504071041.GA15315@uranus.ravnborg.org>
+Message-ID: <alpine.LNX.1.10.0805042004310.11757@fbirervta.pbzchgretzou.qr>
+References: <20080504071041.GA15315@uranus.ravnborg.org>
+User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18464.5177.649312.999486@harpo.it.uu.se>
-Date: Tue, 6 May 2008 10:18:01 +0200
-From: Mikael Pettersson <mikpe@it.uu.se>
-To: tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com,
-       venkatesh.pallipadi@intel.com
-Cc: linux-kernel@vger.kernel.org
-Subject: 2.6.26-rc1 lies about PAT not being available
-X-Mailer: VM 7.17 under Emacs 20.7.1
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Booting 2.6.26-rc1 on an old Coppermine PIII, I'm greeted with:
+On Sunday 2008-05-04 09:10, Sam Ravnborg wrote:
 
->Linux version 2.6.26-rc1 (mikpe@dryhop) (gcc version 4.2.3) #1 Mon May 5 21:49:49 CEST 2008
->BIOS-provided physical RAM map:
-> BIOS-e820: 0000000000000000 - 000000000009c000 (usable)
-> BIOS-e820: 000000000009c000 - 00000000000a0000 (reserved)
-> BIOS-e820: 00000000000f0000 - 0000000000100000 (reserved)
-> BIOS-e820: 0000000000100000 - 000000002ffec000 (usable)
-> BIOS-e820: 000000002ffec000 - 000000002ffef000 (ACPI data)
-> BIOS-e820: 000000002ffef000 - 000000002ffff000 (reserved)
-> BIOS-e820: 000000002ffff000 - 0000000030000000 (ACPI NVS)
-> BIOS-e820: 00000000ffff0000 - 0000000100000000 (reserved)
->CPU and/or kernel does not support PAT.
+>Today we have two ways to express/solve dependencies.
+>
+>Top-down we have "depends on"
+>and bottom up we have "select".
+>
+>The "depends on" dependencies at the same time impact the visibility of 
+>a symbol. A symbol with "depends on" not satisfied are not visible and 
+>thus not shown in menuconfig.
+>
+>The "select" method is a way to forcefully set the selected symbol to 
+>the same value as the one where the select are stated.
+>
+>But this has shortcoming in relation to the interface we like to 
+>present to the user.
+[...]
 
-I know about Intel's PAT erratum (only 4 PAT entries work) and
-understand that the kernel might not want to use a half-broken
-PAT implementation, but the statement above is blatantly false:
-the kernel IS built with PAT support and the CPU DOES have
-(half-broken) PAT HW support as /proc/cpuinfo from earlier kernels
-confirms.
+Suggestion:
 
-arch/x86/kernel/cpu/common.c unconditionally disables PAT and
-then reenables it for certain vendor/family/model combinations.(*)
-Then mm/pat.c comes along, finds !cpu_has_pat, and prints the
-bogus message above.
+Make kconfig work like an interactive package manager. All objects are 
+visible and the user can select any of them.
 
-IMO, it would be a lot nicer if common.c printed a warning when
-it disables PAT due to the erratum, then the printk() in pat.c
-could be something like "PAT support absent or disabled".
+depends and selects are resolved upon request only, i.e. when the user 
+hits Exit or manually initiates a resolve request. Kconfig then checks 
+to see if all dependencies are satisfied, and if it cannot automatically 
+solve it — because it encounters an alternation expression (a || foo) — 
+it asks the user to select one.
 
-(*) common.c enables PAT for all Intel family 15 CPUs. Is that
-correct? I don't have the spec updates in front of me, but I
-seem to recall the PAT erratum existed also in early P4s.
+If user input is not available, exit with error (much like `make 
+oldconfig </dev/null` already does on new options.)
 
-/Mikael
+Drawback:
+
+Most likely a lot of work.
+
+
+Consider/Suggested syntax:
+
+	menuconfig V4L2
+		tristate "video and all that"
+	
+	if V4L2
+	
+	config MY_CAMERA
+		tristate "nice cam"
+		requires USB || FIREWIRE
+	
+	endif
+
+leading to a new screen on dependency resolution (when USB=n && 
+FIREWIRE=n), showing a modified "choice" prompt where you can 
+either
+1) change the state of CONFIG_MY_CAMERA to y/m/n.
+2) select one of the required dependencies.
+
+	CONFIG_MY_CAMERA has unsatisfied dependencies.
+
+	<M> nice cam
+	    ( ) USB
+	    ( ) FireWire
+
+Of course a bit of thinking on how to display things is needed for more 
+complex requires.
