@@ -1,72 +1,235 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764968AbYEFPnR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764841AbYEFPor@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764968AbYEFPnR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 11:43:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760697AbYEFPnB
+	id S1764841AbYEFPor (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 11:44:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760478AbYEFPoh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 11:43:01 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:33539 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755029AbYEFPnA (ORCPT
+	Tue, 6 May 2008 11:44:37 -0400
+Received: from mtagate7.de.ibm.com ([195.212.29.156]:46734 "EHLO
+	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755664AbYEFPog (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 11:43:00 -0400
-Date: Tue, 6 May 2008 12:42:23 -0300
-From: Mauro Carvalho Chehab <mchehab@infradead.org>
-To: "Michael Krufky" <mkrufky@linuxtv.org>
-Cc: "v4l-dvb maintainer list" <v4l-dvb-maintainer@linuxtv.org>,
-       linuxtv-commits@linuxtv.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [linuxtv-commits] [hg:v4l-dvb] Fix FW_LOADER depencency at
- v4l/dvb
-Message-ID: <20080506124223.653c37f2@gaivota>
-In-Reply-To: <37219a840805060754j3c65d812l527d1837a5d95266@mail.gmail.com>
-References: <E1JtNrl-0006mQ-MG@www.linuxtv.org>
-	<37219a840805060754j3c65d812l527d1837a5d95266@mail.gmail.com>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.9; x86_64-mandriva-linux-gnu)
+	Tue, 6 May 2008 11:44:36 -0400
+Subject: Re: [patch 0/6] Guest page hinting version 6.
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Reply-To: schwidefsky@de.ibm.com
+To: Hugh Dickins <hugh@veritas.com>
+Cc: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
+       virtualization@lists.osdl.org, akpm@linux-foundation.org,
+       nickpiggin@yahoo.com.au, zach@vmware.com, frankeh@watson.ibm.com,
+       rusty@rustcorp.com.au, jeremy@goop.org, andrea@qumranet.com,
+       clameter@sgi.com, a.p.zijlstra@chello.nl
+In-Reply-To: <Pine.LNX.4.64.0803131627450.17244@blonde.site>
+References: <20080312132132.520833247@de.ibm.com>
+	 <Pine.LNX.4.64.0803131627450.17244@blonde.site>
+Content-Type: text/plain
+Organization: IBM Corporation
+Date: Tue, 06 May 2008 17:33:02 +0200
+Message-Id: <1210087982.31803.32.camel@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.22.1 
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 6 May 2008 10:54:02 -0400
-"Michael Krufky" <mkrufky@linuxtv.org> wrote:
-
-> Mauro,
+On Thu, 2008-03-13 at 16:57 +0000, Hugh Dickins wrote:
+> It's very encouraging to see Jeremy and Rusty weighing in.  I hope
+> Zach will too, and I've added Andrea: their support would count a lot.
+> You have Nick on the list, good, I've added Christoph and Peter
+> (if you do resend, linux-mm might prove more useful than linux-kernel).
 > 
-> I disagree with this change.
+> With support from rival virtualizers,
+> I do think you've a good chance of getting in.
 
-So, propose another way to fix. Without this patch, if HOTPLUG = 'n', several
-drivers will break.
+Traffic on the guest page hinting patches died down again. Until another
+user shows up I guess that's it for the full version. In the meantime I
+push the patch below which is the poor mans version that can be done
+without common code change. It uses the arch_alloc_page/arch_free_page
+hooks to do the stable/unused state transitions. Better than nothing ..
 
-Sorry, but I can't see any other solution (in fact, I tested "select HOTPLUG",
-but this caused circular dependencies loops). 
+-- 
+blue skies,
+  Martin.
 
-The way "select" works is simple: You need to manually add all "depends on"
-from the original symbol into the one that adds "select". I don't like this way
-(and I'm currently questioning this at LKML), but while people don't decide to
-implement "select" on another way (or to write a different tag for this, as
-proposed by Sam), the proper fix is the one I've proposed.
+"Reality continues to ruin my life." - Calvin.
 
-If you have a better proposal, please, feel free to send it. If you have a
-better fix, I'll revert this one.
+---
+Subject: [PATCH] guest page hinting light
 
-> It looks like you are attempting to workaround a Kbuild bug
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
 
-It is not a Kbuild bug, but the way Kbuild were implemented. This is what is
-written at kbuild/kconfig-language.txt:
+Use the existing arch_alloc_page/arch_free_page callbacks to do
+the guest page state transitions between stable and unused.
 
-"       select should be used with care. select will force
-        a symbol to a value without visiting the dependencies.
-        By abusing select you are able to select a symbol FOO even
-        if FOO depends on BAR that is not set.
-        In general use select only for non-visible symbols
-        (no prompts anywhere) and for symbols with no dependencies.
-        That will limit the usefulness but on the other hand avoid
-        the illegal configurations all over.
-        kconfig should one day warn about such things." 
+Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
+---
 
-Cheers,
-Mauro
+ arch/s390/Kconfig          |    7 +++
+ arch/s390/mm/Makefile      |    1 
+ arch/s390/mm/init.c        |    3 +
+ arch/s390/mm/page-states.c |   79 +++++++++++++++++++++++++++++++++++++++++++++
+ include/asm-s390/page.h    |   11 ++++++
+ include/asm-s390/system.h  |    6 +++
+ 6 files changed, 107 insertions(+)
+
+diff -urpN linux-2.6/arch/s390/Kconfig linux-2.6-patched/arch/s390/Kconfig
+--- linux-2.6/arch/s390/Kconfig	2008-05-06 17:38:14.000000000 +0200
++++ linux-2.6-patched/arch/s390/Kconfig	2008-05-06 17:38:28.000000000 +0200
+@@ -430,6 +430,13 @@ config CMM_IUCV
+ 	  Select this option to enable the special message interface to
+ 	  the cooperative memory management.
+ 
++config PAGE_STATES
++	bool "Unused page notification"
++	help
++	  This enables the notification of unused pages to the
++	  hypervisor. The ESSA instruction is used to do the states
++	  changes between a page that has content and the unused state.
++
+ config VIRT_TIMER
+ 	bool "Virtual CPU timer support"
+ 	help
+diff -urpN linux-2.6/arch/s390/mm/init.c linux-2.6-patched/arch/s390/mm/init.c
+--- linux-2.6/arch/s390/mm/init.c	2008-05-06 17:38:14.000000000 +0200
++++ linux-2.6-patched/arch/s390/mm/init.c	2008-05-06 17:38:28.000000000 +0200
+@@ -126,6 +126,9 @@ void __init mem_init(void)
+         /* clear the zero-page */
+         memset(empty_zero_page, 0, PAGE_SIZE);
+ 
++	/* Setup guest page hinting */
++	cmma_init();
++
+ 	/* this will put all low memory onto the freelists */
+ 	totalram_pages += free_all_bootmem();
+ 
+diff -urpN linux-2.6/arch/s390/mm/Makefile linux-2.6-patched/arch/s390/mm/Makefile
+--- linux-2.6/arch/s390/mm/Makefile	2008-05-06 17:38:14.000000000 +0200
++++ linux-2.6-patched/arch/s390/mm/Makefile	2008-05-06 17:38:28.000000000 +0200
+@@ -5,3 +5,4 @@
+ obj-y	 := init.o fault.o extmem.o mmap.o vmem.o pgtable.o
+ obj-$(CONFIG_CMM) += cmm.o
+ obj-$(CONFIG_HUGETLB_PAGE) += hugetlbpage.o
++obj-$(CONFIG_PAGE_STATES) += page-states.o
+diff -urpN linux-2.6/arch/s390/mm/page-states.c linux-2.6-patched/arch/s390/mm/page-states.c
+--- linux-2.6/arch/s390/mm/page-states.c	1970-01-01 01:00:00.000000000 +0100
++++ linux-2.6-patched/arch/s390/mm/page-states.c	2008-05-06 17:38:28.000000000 +0200
+@@ -0,0 +1,79 @@
++/*
++ * arch/s390/mm/page-states.c
++ *
++ * (C) Copyright IBM Corp. 2008
++ *
++ * Guest page hinting for unused pages.
++ *
++ * Author(s): Martin Schwidefsky <schwidefsky@de.ibm.com>
++ */
++
++#include <linux/kernel.h>
++#include <linux/errno.h>
++#include <linux/types.h>
++#include <linux/mm.h>
++#include <linux/init.h>
++
++#define ESSA_SET_STABLE		1
++#define ESSA_SET_UNUSED		2
++
++int cmma_flag;
++
++static int __init cmma(char *str)
++{
++	char *parm;
++	parm = strstrip(str);
++	if (strcmp(parm, "yes") == 0 || strcmp(parm, "on") == 0) {
++		cmma_flag = 1;
++		return 1;
++	}
++	cmma_flag = 0;
++	if (strcmp(parm, "no") == 0 || strcmp(parm, "off") == 0)
++		return 1;
++	return 0;
++}
++
++__setup("cmma=", cmma);
++
++void __init cmma_init(void)
++{
++	register unsigned long tmp asm("0") = 0;
++	register int rc asm("1") = -ENOSYS;
++
++	if (!cmma_flag)
++		return;
++	asm volatile(
++		"       .insn rrf,0xb9ab0000,%1,%1,0,0\n"
++		"0:     la      %0,0\n"
++		"1:\n"
++		EX_TABLE(0b,1b)
++		: "+&d" (rc), "+&d" (tmp));
++	if (rc)
++		cmma_flag = 0;
++}
++
++void arch_free_page(struct page *page, int order)
++{
++	int i, rc;
++
++	if (!cmma_flag)
++		return;
++	for (i = 0; i < (1 << order); i++)
++		asm volatile(".insn rrf,0xb9ab0000,%0,%1,%2,0"
++			     : "=&d" (rc)
++			     : "a" ((page_to_pfn(page) + i) << PAGE_SHIFT),
++			       "i" (ESSA_SET_UNUSED));
++}
++
++void arch_alloc_page(struct page *page, int order)
++{
++	int i, rc;
++
++	if (!cmma_flag)
++		return;
++	for (i = 0; i < (1 << order); i++)
++		asm volatile(".insn rrf,0xb9ab0000,%0,%1,%2,0"
++			     : "=&d" (rc)
++			     : "a" ((page_to_pfn(page) + i) << PAGE_SHIFT),
++			       "i" (ESSA_SET_STABLE));
++}
+diff -urpN linux-2.6/include/asm-s390/page.h linux-2.6-patched/include/asm-s390/page.h
+--- linux-2.6/include/asm-s390/page.h	2008-05-06 17:38:17.000000000 +0200
++++ linux-2.6-patched/include/asm-s390/page.h	2008-05-06 17:38:28.000000000 +0200
+@@ -125,6 +125,17 @@ page_get_storage_key(unsigned long addr)
+ 	return skey;
+ }
+ 
++#ifdef CONFIG_PAGE_STATES
++
++struct page;
++void arch_free_page(struct page *page, int order);
++void arch_alloc_page(struct page *page, int order);
++
++#define HAVE_ARCH_FREE_PAGE
++#define HAVE_ARCH_ALLOC_PAGE
++
++#endif
++
+ #endif /* !__ASSEMBLY__ */
+ 
+ /* to align the pointer to the (next) page boundary */
+diff -urpN linux-2.6/include/asm-s390/system.h linux-2.6-patched/include/asm-s390/system.h
+--- linux-2.6/include/asm-s390/system.h	2008-05-06 17:38:17.000000000 +0200
++++ linux-2.6-patched/include/asm-s390/system.h	2008-05-06 17:38:28.000000000 +0200
+@@ -116,6 +116,12 @@ extern void pfault_fini(void);
+ #define pfault_fini()		do { } while (0)
+ #endif /* CONFIG_PFAULT */
+ 
++#ifdef CONFIG_PAGE_STATES
++extern void cmma_init(void);
++#else
++#define cmma_init()		do { } while (0)
++#endif
++
+ #define finish_arch_switch(prev) do {					     \
+ 	set_fs(current->thread.mm_segment);				     \
+ 	account_vtime(prev);						     \
+
+
