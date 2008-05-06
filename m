@@ -1,64 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932702AbYEFWTl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933260AbYEFWVA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932702AbYEFWTl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 18:19:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752532AbYEFWTa
+	id S933260AbYEFWVA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 18:21:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755354AbYEFWUs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 18:19:30 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:56117 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751379AbYEFWT3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 18:19:29 -0400
-Date: Tue, 6 May 2008 23:09:54 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: "Yigal Sadgat" <YSadgat1@gcte.com>
-Cc: <linux-kernel@vger.kernel.org>, <linux-ide@vger.kernel.org>,
-       <jwboyer@linux.vnet.ibm.com>, <joern@logfs.org>
-Subject: Re: Compact Flash Question
-Message-ID: <20080506230954.6e034cba@core>
-In-Reply-To: <005b01c8afc4$77f4ec90$6401a8c0@techwriter>
-References: <005b01c8afc4$77f4ec90$6401a8c0@techwriter>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Tue, 6 May 2008 18:20:48 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:37494
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752532AbYEFWUr convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 May 2008 18:20:47 -0400
+Date: Tue, 06 May 2008 15:20:42 -0700 (PDT)
+Message-Id: <20080506.152042.91330094.davem@davemloft.net>
+To: mikpe@it.uu.se
+Cc: sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org,
+       armin76@gentoo.org
+Subject: Re: [BUG] 2.6.26-rc1 hangs during boot on UltraSPARC 5
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <18464.46000.226753.230481@alkaid.it.uu.se>
+References: <18464.3741.133714.308327@harpo.it.uu.se>
+	<20080506.010523.113767579.davem@davemloft.net>
+	<18464.46000.226753.230481@alkaid.it.uu.se>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: Text/Plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> (1) Can you really ignore bit(2) (CORR) in the Status register offset 7 that 
-> tells
-> you that the CF has detected and corrected a soft error?, etc.
+From: Mikael Pettersson <mikpe@it.uu.se>
+Date: Tue, 6 May 2008 21:38:24 +0200
 
-I guess it might be interesting to log the error rate but we don't
-currently do that. A corrected error is just that however - corrected by
-the card itself.
+> I removed "| CON_BOOT" and got what looks like the same oops
+> Raúl Porcel reported earlier today (which he for some reason
+> sent only to the lists, not to you or me); his oops was:
 
-> (2) An engineer at SanDisk Engineering told me NOT to do wear leveling.
-> The file allocation table is written very frequently back into the flash. So
-> is it really safe to assume that I don't need wear leveling???
+I can reproduce this problem here in my t1000.
 
-Depends on your hardware vendor. Wear management is done within the CF
-card and only the hardware vendor can tell you what they do. 
+It looks like some kind of initrd regression.
 
-> (3) Re. the BUSY bit in the status register (offset 7, bit D7), anybody 
-> experienced
-> time outs?
+Looking at the crashes, the kernel seems to be trying
+to dereference a physical address when peeking at the
+initrd instead of using a virtual one.  That's a big
+clue.
 
-Yes - both from failing CF cards and also other random events (bad
-connections, people removing live cards etc)
+This patch should fix it:
 
-> (4) Re Error register (offset 1) bit D7 (BBK), again, I was told that it 
-> cannot (???)
-> happen since the CF performs read-after-write and it automatically switches 
-> good blocks
-> for bad ones... Is this correct?
+commit d45100f7b69e3d9cd0cd5e956b6ac2c78d460d07
+Author: David S. Miller <davem@davemloft.net>
+Date:   Tue May 6 15:19:54 2008 -0700
 
-Depends on your hardware vendor. It certainly *can* occur with some CF
-cards perhaps when they run out of spare blocks.
+    sparc64: Fix initrd regression.
+    
+    We die because we forget to convert initrd_start and
+    initrd_end to virtual addresses.
+    
+    Reported by Mikael Pettersson
+    
+    Signed-off-by: David S. Miller <davem@davemloft.net>
 
-Alan
+diff --git a/arch/sparc64/mm/init.c b/arch/sparc64/mm/init.c
+index db8e7fb..ec3e2c7 100644
+--- a/arch/sparc64/mm/init.c
++++ b/arch/sparc64/mm/init.c
+@@ -771,6 +771,9 @@ static void __init find_ramdisk(unsigned long phys_base)
+ 		initrd_end = ramdisk_image + sparc_ramdisk_size;
+ 
+ 		lmb_reserve(initrd_start, initrd_end);
++
++		initrd_start += PAGE_OFFSET;
++		initrd_end += PAGE_OFFSET;
+ 	}
+ #endif
+ }
+
