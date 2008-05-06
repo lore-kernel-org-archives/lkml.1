@@ -1,133 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933227AbYEFWH4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765287AbYEFWIq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933227AbYEFWH4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 18:07:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758025AbYEFWHr
+	id S1765287AbYEFWIq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 18:08:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761500AbYEFWI2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 18:07:47 -0400
-Received: from nf-out-0910.google.com ([64.233.182.190]:61366 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752095AbYEFWHq (ORCPT
+	Tue, 6 May 2008 18:08:28 -0400
+Received: from avexch1.qlogic.com ([198.70.193.115]:40656 "EHLO
+	avexch1.qlogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758025AbYEFWI1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 18:07:46 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=kbYr+rO+4zjNMwkUVIGJ7yqnIDky8MDS3BdY70RM02yQrpMm4K88pCxPbOciAEF43tjaOU/RqPLQvkbWxL8w/ozj1wL2/CYEvRf32WIMcC26KWNvwc3nuHMRTDLp+0w/iunl5Wk/i4Doa1irtGZA89ppSodfK009Ip95T5EYzH4=
-Message-ID: <524f69650805061507h5dab8731odeadb7602e0f38e4@mail.gmail.com>
-Date: Tue, 6 May 2008 17:07:44 -0500
-From: "Steve French" <smfrench@gmail.com>
-To: "Cyrill Gorcunov" <gorcunov@gmail.com>
-Subject: Re: [patch 2/2] cifs - cifs_find_tcp_session cleanup
-Cc: "Steve French" <sfrench@samba.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <4819e79f.0c07560a.5b13.ffff8e6c@mx.google.com>
+	Tue, 6 May 2008 18:08:27 -0400
+Date: Tue, 6 May 2008 15:08:26 -0700
+From: Andrew Vasquez <andrew.vasquez@qlogic.com>
+To: Gerhard Mack <gmack@innerfire.net>
+Cc: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [2.6.25.1] qla2xxx can't see more than 4 drives
+Message-ID: <20080506220826.GI57975@plap4.qlogic.org>
+References: <alpine.DEB.1.10.0805031458050.2330@mtl.rackplans.net> <20080506135118.GA46493@plap4.qlogic.org> <alpine.DEB.1.10.0805061022120.5741@mtl.rackplans.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20080501154830.235254575@gmail.com>
-	 <4819e79f.0c07560a.5b13.ffff8e6c@mx.google.com>
+In-Reply-To: <alpine.DEB.1.10.0805061022120.5741@mtl.rackplans.net>
+Organization: QLogic Corporation
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-OriginalArrivalTime: 06 May 2008 22:08:25.0098 (UTC) FILETIME=[B47406A0:01C8AFC5]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This looks like it would fail in the ipv6 case - because
-target_ip_addr (the ipv4 address) would be null and it would exit
-before checking.
+On Tue, 06 May 2008, Gerhard Mack wrote:
+
+> On Tue, 6 May 2008, Andrew Vasquez wrote:
+> > Could you load the driver with the ql2xextended_error_logging module
+> > parameter set to 1 and send the resultant driver logs?  Also, it would
+> > could you also send the output of the following after the driver is
+> > loaded:
+> > 
+> > $ cat /sys/class/fc_host/host<host_no>
+> > $ cat /sys/class/scsi_host/host<host_no>/*
+> > $ cat /sys/class/fc_remote_ports/*
+> > 
+> > where host_no corresponds to the SCSI host-number assigned to the HBA.
+> > 
+> Of course.. 
+> 
+> QLogic Fibre Channel HBA Driver
+> qla2xxx 0000:02:0a.0: Found an ISP2312, irq 24, iobase 0xf88cc000
+> qla2xxx 0000:02:0a.0: Configuring PCI space...
+> qla2xxx 0000:02:0a.0: Configure NVRAM parameters...
+> qla2xxx 0000:02:0a.0: Verifying loaded RISC code...
+> scsi(4): **** Load RISC code ****
+...
+> cat /sys/class/fc_host/host4/* :
+> 0x200000e08b127d20
+> 0
+> 0x200000e08b127d20
+> 0
+> 0x000001
+> 0x210000e08b127d20
+> Online
+> LPort (private loop)
+
+Hmm, qla2xxx has a 'split' port-discovery model based on topology.
+Switched fabric (P2P) discovery and logins are managed by the driver.
+FC_AL topology discovery and logins are managed by firmware.  The
+driver (qla2xxx) simply asks the firmware for a list of recognized
+ports, as you've noted the driver (and indirectly, firmware), only
+recognized 4 ports during LIPA/LIHA/LISA address negotiation:
+
+> cat /sys/class/fc_remote_ports/rport-4\:0-0/*  :
+> 0x2200000c507ce546
+...
+> cat /sys/class/fc_remote_ports/rport-4\:0-1/*
+> 0x22000004cf69c688
+...
+> cat /sys/class/fc_remote_ports/rport-4\:0-2/* | log
+> 0x2200000c507ce809
+...
+> cat /sys/class/fc_remote_ports/rport-4\:0-3/* :
+> 0x22000004cf69b98f
+...
 
 
+You mentioned that the 'BIOS' configuration program recognizes 6
+devices, have there been any changes made via the BIOS utility to
 
-On Thu, May 1, 2008 at 10:48 AM, Cyrill Gorcunov <gorcunov@gmail.com> wrote:
-> This patch is to remove too indented code in cifs_find_tcp_session.
->  Also memcmp was used wrongly - we would have found the session
->  which IP6 addresses didn't match.
->
->  Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
->  ---
->
->  Index: linux-2.6.git/fs/cifs/connect.c
->  ===================================================================
->  --- linux-2.6.git.orig/fs/cifs/connect.c        2008-05-01 19:02:51.000000000 +0400
->  +++ linux-2.6.git/fs/cifs/connect.c     2008-05-01 19:36:54.000000000 +0400
->  @@ -1318,42 +1318,44 @@ cifs_parse_mount_options(char *options,
->
->   static struct cifsSesInfo *
->   cifs_find_tcp_session(struct in_addr *target_ip_addr,
->  -               struct in6_addr *target_ip6_addr,
->  -                char *userName, struct TCP_Server_Info **psrvTcp)
->  +                     struct in6_addr *target_ip6_addr,
->  +                     char *userName, struct TCP_Server_Info **psrvTcp)
->   {
->         struct list_head *tmp;
->         struct cifsSesInfo *ses;
->  +
->         *psrvTcp = NULL;
->  -       read_lock(&GlobalSMBSeslock);
->
->  +       if (!target_ip_addr)
->  +               return NULL;
->  +
->  +       read_lock(&GlobalSMBSeslock);
->         list_for_each(tmp, &GlobalSMBSessionList) {
->                 ses = list_entry(tmp, struct cifsSesInfo, cifsSessionList);
->  -               if (ses->server) {
->  -                       if ((target_ip_addr &&
->  -                               (ses->server->addr.sockAddr.sin_addr.s_addr
->  -                                 == target_ip_addr->s_addr)) || (target_ip6_addr
->  -                               && memcmp(&ses->server->addr.sockAddr6.sin6_addr,
->  -                                       target_ip6_addr, sizeof(*target_ip6_addr)))) {
->  -                               /* BB lock server and tcp session and increment
->  -                                     use count here?? */
->  -
->  -                               /* found a match on the TCP session */
->  -                               *psrvTcp = ses->server;
->  -
->  -                               /* BB check if reconnection needed */
->  -                               if (strncmp
->  -                                   (ses->userName, userName,
->  -                                    MAX_USERNAME_SIZE) == 0){
->  -                                       read_unlock(&GlobalSMBSeslock);
->  -                                       /* Found exact match on both TCP and
->  -                                          SMB sessions */
->  -                                       return ses;
->  -                               }
->  -                       }
->  -               }
->  -               /* else tcp and smb sessions need reconnection */
->  +               if (!ses->server)
->  +                       continue;
->  +
->  +               if (ses->server->addr.sockAddr.sin_addr.s_addr != target_ip_addr->s_addr ||
->  +                   memcmp(&ses->server->addr.sockAddr6.sin6_addr,
->  +                          target_ip6_addr, sizeof(*target_ip6_addr)))
->  +                       continue;
->  +
->  +               /* BB lock server and tcp session and increment
->  +                  use count here?? */
->  +
->  +               /* found a match on the TCP session */
->  +               *psrvTcp = ses->server;
->  +
->  +               /* BB check if reconnection needed */
->  +               if (strncmp(ses->userName, userName, MAX_USERNAME_SIZE))
->  +                       continue;
->  +
->  +               /* Found exact match on both TCP and SMB sessions */
->  +               read_unlock(&GlobalSMBSeslock);
->  +               return ses;
->         }
->         read_unlock(&GlobalSMBSeslock);
->  +
->         return NULL;
->   }
->
->
->  --
->
+* assign a hard-loop id?
+* acquire a loop-id during LIPA?
 
+or any changes above and beyond 'default' settings?  If so, could you
+'retrore' default settings within BIOS utility?
 
-
--- 
-Thanks,
-
-Steve
+--
+Andrew Vasquez
