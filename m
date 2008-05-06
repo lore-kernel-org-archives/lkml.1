@@ -1,114 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933906AbYEFWkd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934012AbYEFWlV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933906AbYEFWkd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 18:40:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757252AbYEFWkT
+	id S934012AbYEFWlV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 18:41:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759411AbYEFWk7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 18:40:19 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:58862 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753973AbYEFWkR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 18:40:17 -0400
-Date: Tue, 6 May 2008 19:39:28 -0300
-From: Mauro Carvalho Chehab <mchehab@infradead.org>
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Cc: Alistair John Strachan <alistair@devzero.co.uk>, Robin Holt <holt@sgi.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.26-rc1
-Message-ID: <20080506193928.5acfc84d@gaivota>
-In-Reply-To: <4820C3D8.6040403@s5r6.in-berlin.de>
-References: <alpine.LFD.1.10.0805031205330.2971@woody.linux-foundation.org>
-	<20080504160904.GF19717@sgi.com>
-	<Pine.LNX.4.64.0805051656180.3218@bombadil.infradead.org>
-	<200805060902.25835.alistair@devzero.co.uk>
-	<20080506073134.424780a3@gaivota>
-	<48206C73.80509@s5r6.in-berlin.de>
-	<20080506161346.183f367c@gaivota>
-	<4820B524.5080100@s5r6.in-berlin.de>
-	<20080506170623.53732e78@gaivota>
-	<4820C3D8.6040403@s5r6.in-berlin.de>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.9; x86_64-mandriva-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 6 May 2008 18:40:59 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:56776 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757252AbYEFWk5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 May 2008 18:40:57 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: Soft lockup regression from today's sched.git merge.
+Date: Wed, 7 May 2008 00:41:01 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: David Miller <davem@davemloft.net>, mingo@elte.hu,
+       linux-kernel@vger.kernel.org, tglx@linutronix.de
+References: <20080422.015931.70144614.davem@davemloft.net> <20080422.030519.259068348.davem@davemloft.net> <1208868304.7115.251.camel@twins>
+In-Reply-To: <1208868304.7115.251.camel@twins>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Disposition: inline
+Message-Id: <200805070041.02618.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 06 May 2008 22:47:20 +0200
-Stefan Richter <stefanr@s5r6.in-berlin.de> wrote:
-
-> Mauro Carvalho Chehab wrote:
-> > For example, if you have a em28xx device with msp3400 and tvp5150 and another
-> > em28xx device with saa7113.
+On Tuesday, 22 of April 2008, Peter Zijlstra wrote:
+> On Tue, 2008-04-22 at 03:05 -0700, David Miller wrote:
+> 
+> > BTW, I'm also getting cpu's wedged in the group aggregate code:
 > > 
-> > If you remove the select's for MSP3400, TVP5150 and SAA7113, at, em28xx, the
-> > module will compile without problems.
+> > [  121.338742] TSTATE: 0000009980001602 TPC: 000000000054ea20 TNPC: 0000000000456828 Y: 00000000    Not tainted
+> > [  121.338778] TPC: <__first_cpu+0x4/0x28>
+> > [  121.338791] g0: 0000000000000000 g1: 0000000000000002 g2: 0000000000000000 g3: 0000000000000002
+> > [  121.338809] g4: fffff803fe9b24c0 g5: fffff8001587c000 g6: fffff803fe9d0000 g7: 00000000007b7260
+> > [  121.338827] o0: 0000000000000002 o1: 00000000007b7258 o2: 0000000000000000 o3: 00000000007b7800
+> > [  121.338845] o4: 0000000000845000 o5: 0000000000000400 sp: fffff803fe9d2ed1 ret_pc: 0000000000456820
+> > [  121.338879] RPC: <aggregate_group_shares+0x10c/0x16c>
+> > [  121.338893] l0: 0000000000000400 l1: 000000000000000d l2: 00000000000003ff l3: 0000000000000000
+> > [  121.338911] l4: 0000000000000000 l5: 0000000000000000 l6: fffff803fe9d0000 l7: 0000000080009002
+> > [  121.338928] i0: 0000000000801c20 i1: fffff800161ca508 i2: 00000000000001d8 i3: 0000000000000001
+> > [  121.338946] i4: fffff800161d9c00 i5: 0000000000000001 i6: fffff803fe9d2f91 i7: 0000000000456904
+> > [  121.338968] I7: <aggregate_get_down+0x84/0x13c>
 > > 
-> > The only issue is that you won't be able to see any images (due to the lack of
-> > tvp5150 or saa7113 analog TV demoduler) or listen to the audio, if the device
-> > needs msp3400 to decode audio.
-> [...]
-> > It is much better for the user to just select EM28XX and let the Kconfig do the
-> > hard work of selecting what low-level driver applies for em28xx-based devices.
+> > I'm suspecting the deluge of cpumask changes that also went in today.
 > > 
-> > This causes lots of select, being very hard to maintain. The better would be to
-> > have a select-like clause that could check the dependencies automatically.
-> > 
-> > Another alternative would be some sort of script (checkpatch.pl?) that would
-> > check if all selected dependencies are ok.
+> > I guess I'll be bisecting all day tomorrow too :-/
 > 
-> Ah, now I understand.  You use "select" to enable options which aren't 
-> actually a build requirement for the selecting option.
+> Sadly both the cpumask changes and the group load-balancer came in the
+> same batch - so its all new code. Also, it looks like the cpumask
+> changes are before the load balance changes - so bisecting this will be
+> 'fun'.
 
-Yes. That's why there are so many selects. Just a few of them are really to
-select "real" build requirements.
+Can you please tell me what the current status of this is?
 
-> Another workaround for this UI limitation:
-> 
-> config VIDEO_EM28XX
-> 	tristate "Empia EM2800/2820/2840 USB video capture support"
-> 	depends on WHATEVER_BUILD_REQUIREMENT_IS_LEFT
-> 	select MAYBE_ANOTHER_BUILD_REQUIREMENT
-> 	help
-> 	  ...
-> 
-> comment "Empia EM28xx devices may require Philips SAA7113/4/5 video 
-> decoders"
-> 	depends on VIDEO_EM28XX && VIDEO_SAA711X=n
-> 
-> comment "Empia EM28xx devices may require Texas Instruments TVP5150 
-> video decoder"
-> 	depends on VIDEO_EM28XX && VIDEO_TVP5150=n
-> 
-> Still awkward, but now you don't have to copy VIDEO_SAA711X's and 
-> VIDEO_TVP5150's dependencies to VIDEO_EM28XX anymore.
-
-This seems Interesting, but probably not very effective, since it would produce
-a large amount of "warnings". However, we may use something like this:
-
-comment "WARNING: Empia EM28xx devices require a video decoder"
- 	depends on VIDEO_EM28XX && (VIDEO_TVP5150=n && VIDEO_SAA711X = n)
-
-> 
-> 
-> Or another idea:
-> 
-> Copy _all_ dependencies of drivers which can be selected by "...if 
-> VIDEO_HELPER_CHIPS_AUTO" to VIDEO_HELPER_CHIPS_AUTO.
-
-I actually did this for tuners, on this changeset (still not at mainstream):
-http://git.kernel.org/?p=linux/kernel/git/mchehab/v4l-dvb.git;a=commitdiff;h=d10b3c6817fb3fed8e6cd6d64d47c187a615c952
-
-> 
-> Of course all these issues go away as soon as somebody has implemented 
-> "select" with recursive dependency check.
-
-Yes.
-
-Cheers,
-Mauro
+Rafael
