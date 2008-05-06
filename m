@@ -1,300 +1,173 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765281AbYEFJUL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765306AbYEFJUo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765281AbYEFJUL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 05:20:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764303AbYEFJOm
+	id S1765306AbYEFJUo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 05:20:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761384AbYEFJOu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 05:14:42 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:59541 "EHLO
+	Tue, 6 May 2008 05:14:50 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:59553 "EHLO
 	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764151AbYEFJOh (ORCPT
+	with ESMTP id S1761361AbYEFJOq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 05:14:37 -0400
-Message-Id: <20080506091422.705393283@szeredi.hu>
+	Tue, 6 May 2008 05:14:46 -0400
+Message-Id: <20080506091431.089239587@szeredi.hu>
 References: <20080506091327.259950960@szeredi.hu>
 User-Agent: quilt/0.45-1
-Date: Tue, 06 May 2008 11:13:40 +0200
+Date: Tue, 06 May 2008 11:13:43 +0200
 From: Miklos Szeredi <miklos@szeredi.hu>
 To: akpm@linux-foundation.org
 Cc: hch@infradead.org, viro@ZenIV.linux.org.uk, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Ulrich Drepper <drepper@redhat.com>
-Subject: [patch 13/24] vfs: utimes cleanup
-Content-Disposition: inline; filename=utimes_cleanup.patch
+       linux-kernel@vger.kernel.org
+Subject: [patch 16/24] vfs: add path_mkdir()
+Content-Disposition: inline; filename=path_mkdir.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Miklos Szeredi <mszeredi@suse.cz>
 
-Untange the mess that is do_utimes()
+Introduce path_mkdir().  Make vfs_mkdir() static.
 
 Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
-CC: Ulrich Drepper <drepper@redhat.com>
 ---
- fs/compat.c |    4 -
- fs/utimes.c |  197 +++++++++++++++++++++++++++++++++++++-----------------------
- 2 files changed, 124 insertions(+), 77 deletions(-)
+ fs/ecryptfs/inode.c   |   15 ++++++++-------
+ fs/namei.c            |   23 +++++++++++++++--------
+ fs/nfsd/nfs4recover.c |    6 +-----
+ fs/nfsd/vfs.c         |    2 +-
+ include/linux/fs.h    |    2 +-
+ 5 files changed, 26 insertions(+), 22 deletions(-)
 
-Index: linux-2.6/fs/utimes.c
+Index: linux-2.6/fs/ecryptfs/inode.c
 ===================================================================
---- linux-2.6.orig/fs/utimes.c	2008-05-06 11:04:36.000000000 +0200
-+++ linux-2.6/fs/utimes.c	2008-05-06 11:04:37.000000000 +0200
-@@ -53,54 +53,10 @@ static bool nsec_valid(long nsec)
- 	return nsec >= 0 && nsec <= 999999999;
- }
- 
--/* If times==NULL, set access and modification to current time,
-- * must be owner or have write permission.
-- * Else, update from *times, must be owner or super user.
-- */
--long do_utimes(int dfd, char __user *filename, struct timespec *times, int flags)
-+static int utimes_common(struct path *path, struct timespec *times)
+--- linux-2.6.orig/fs/ecryptfs/inode.c	2008-05-06 11:04:38.000000000 +0200
++++ linux-2.6/fs/ecryptfs/inode.c	2008-05-06 11:04:38.000000000 +0200
+@@ -478,21 +478,22 @@ static int ecryptfs_mkdir(struct inode *
  {
- 	int error;
--	struct nameidata nd;
--	struct dentry *dentry;
--	struct inode *inode;
- 	struct iattr newattrs;
--	struct file *f = NULL;
--	struct vfsmount *mnt;
--
--	error = -EINVAL;
--	if (times && (!nsec_valid(times[0].tv_nsec) ||
--		      !nsec_valid(times[1].tv_nsec))) {
--		goto out;
--	}
--
--	if (flags & ~AT_SYMLINK_NOFOLLOW)
--		goto out;
--
--	if (filename == NULL && dfd != AT_FDCWD) {
--		error = -EINVAL;
--		if (flags & AT_SYMLINK_NOFOLLOW)
--			goto out;
--
--		error = -EBADF;
--		f = fget(dfd);
--		if (!f)
--			goto out;
--		dentry = f->f_path.dentry;
--		mnt = f->f_path.mnt;
--	} else {
--		error = __user_walk_fd(dfd, filename, (flags & AT_SYMLINK_NOFOLLOW) ? 0 : LOOKUP_FOLLOW, &nd);
--		if (error)
--			goto out;
--
--		dentry = nd.path.dentry;
--		mnt = nd.path.mnt;
--	}
--
--	inode = dentry->d_inode;
--
--	error = mnt_want_write(mnt);
--	if (error)
--		goto dput_and_out;
+ 	int rc;
+ 	struct dentry *lower_dentry;
+-	struct dentry *lower_dir_dentry;
++	struct path lower_dir;
  
- 	/* Don't worry, the checks are done in inode_change_ok() */
- 	newattrs.ia_valid = ATTR_CTIME | ATTR_MTIME | ATTR_ATIME;
-@@ -121,41 +77,132 @@ long do_utimes(int dfd, char __user *fil
- 			newattrs.ia_valid |= ATTR_MTIME_SET;
- 		}
- 	}
-+	mutex_lock(&path->dentry->d_inode->i_mutex);
-+	error = mnt_want_write(path->mnt);
-+	if (!error) {
-+		error = notify_change(path->dentry, &newattrs);
-+		mnt_drop_write(path->mnt);
-+	}
-+	mutex_unlock(&path->dentry->d_inode->i_mutex);
-+
-+	return error;
-+}
-+
-+/*
-+ * If times is NULL or both times are either UTIME_OMIT or UTIME_NOW, then
-+ * need to check permissions, because inode_change_ok() won't do it.
-+ */
-+static bool utimes_need_permission(struct timespec *times)
-+{
-+	return !times || (nsec_special(times[0].tv_nsec) &&
-+			  nsec_special(times[1].tv_nsec));
-+}
-+
-+static int do_futimes(int fd, struct timespec *times)
-+{
-+	int error;
-+	struct file *file = fget(fd);
-+
-+	if (!file)
-+		return -EBADF;
-+
-+	if (utimes_need_permission(times)) {
-+		struct inode *inode = file->f_path.dentry->d_inode;
-+
-+		error = -EACCES;
-+		if (!is_owner_or_cap(inode) && !(file->f_mode & FMODE_WRITE))
-+			goto out_fput;
-+	}
-+	error = utimes_common(&file->f_path, times);
-+
-+ out_fput:
-+	fput(file);
-+
-+	return error;
-+}
-+
-+
-+/*
-+ * do_futimesat - change times on filename
-+ * @dfd: open file descriptor, -1 or AT_FDCWD
-+ * @filename: path name
-+ * @times: new times or NULL
-+ * @flags: zero or more flags (only AT_SYMLINK_NOFOLLOW for the moment)
-+ *
-+ * Caller must verify the values in times (if not NULL)
-+ *
-+ * If times==NULL, set access and modification to current time,
-+ * must be owner or have write permission.
-+ * Else, update from *times, must be owner or super user.
-+ */
-+int do_utimes(int dfd, char __user *filename, struct timespec *times, int flags)
-+{
-+	int error;
-+	struct nameidata nd;
-+	int lookup_flags;
-+
-+	if (flags & ~AT_SYMLINK_NOFOLLOW)
-+		return -EINVAL;
-+
-+	lookup_flags = (flags & AT_SYMLINK_NOFOLLOW) ? 0 : LOOKUP_FOLLOW;
-+	error = __user_walk_fd(dfd, filename, lookup_flags, &nd);
-+	if (error)
-+		return error;
-+
-+
-+	if (utimes_need_permission(times)) {
-+		struct inode *inode = nd.path.dentry->d_inode;
- 
--	/*
--	 * If times is NULL or both times are either UTIME_OMIT or
--	 * UTIME_NOW, then need to check permissions, because
--	 * inode_change_ok() won't do it.
--	 */
--	if (!times || (nsec_special(times[0].tv_nsec) &&
--		       nsec_special(times[1].tv_nsec))) {
- 		error = -EACCES;
--		if (!f && IS_IMMUTABLE(inode))
--			goto mnt_drop_write_and_out;
-+		if (IS_IMMUTABLE(inode))
-+			goto out_path_put;
- 
- 		if (!is_owner_or_cap(inode)) {
--			if (f) {
--				if (!(f->f_mode & FMODE_WRITE))
--					goto mnt_drop_write_and_out;
--			} else {
--				error = vfs_permission(&nd, MAY_WRITE);
--				if (error)
--					goto mnt_drop_write_and_out;
--			}
-+			error = vfs_permission(&nd, MAY_WRITE);
-+			if (error)
-+				goto out_path_put;
- 		}
- 	}
--	mutex_lock(&inode->i_mutex);
--	error = notify_change(dentry, &newattrs);
--	mutex_unlock(&inode->i_mutex);
--mnt_drop_write_and_out:
--	mnt_drop_write(mnt);
--dput_and_out:
--	if (f)
--		fput(f);
--	else
--		path_put(&nd.path);
--out:
-+	error = utimes_common(&nd.path, times);
-+
-+ out_path_put:
-+	path_put(&nd.path);
-+
- 	return error;
-+
-+}
-+
-+/*
-+ * do_futimesat - change times on filename or file descriptor
-+ * @dfd: open file descriptor, -1 or AT_FDCWD
-+ * @filename: path name or NULL
-+ * @times: new times or NULL
-+ * @flags: zero or more flags (only AT_SYMLINK_NOFOLLOW for the moment)
-+ *
-+ * If filename is NULL and dfd defers to an open file, then operate on
-+ * the file.  Otherwise look up filename, possibly using dfd as a
-+ * starting point.
-+ *
-+ * If times==NULL, set access and modification to current time,
-+ * must be owner or have write permission.
-+ * Else, update from *times, must be owner or super user.
-+ */
-+int do_futimesat(int dfd, char __user *filename, struct timespec *times,
-+		 int flags)
-+{
-+	if (times && (!nsec_valid(times[0].tv_nsec) ||
-+		      !nsec_valid(times[1].tv_nsec))) {
-+		return -EINVAL;
-+	}
-+
-+	if (filename == NULL && dfd != AT_FDCWD) {
-+		if (flags)
-+			return -EINVAL;
-+
-+		return do_futimes(dfd, times);
-+	} else {
-+		return do_utimes(dfd, filename, times, flags);
-+	}
- }
- 
- asmlinkage long sys_utimensat(int dfd, char __user *filename, struct timespec __user *utimes, int flags)
-@@ -180,7 +227,7 @@ asmlinkage long sys_utimensat(int dfd, c
- 			return 0;
- 	}
- 
--	return do_utimes(dfd, filename, utimes ? tstimes : NULL, flags);
-+	return do_futimesat(dfd, filename, utimes ? tstimes : NULL, flags);
- }
- 
- asmlinkage long sys_futimesat(int dfd, char __user *filename, struct timeval __user *utimes)
-@@ -207,7 +254,7 @@ asmlinkage long sys_futimesat(int dfd, c
- 		tstimes[1].tv_nsec = 1000 * times[1].tv_usec;
- 	}
- 
--	return do_utimes(dfd, filename, utimes ? tstimes : NULL, 0);
-+	return do_futimesat(dfd, filename, utimes ? tstimes : NULL, 0);
- }
- 
- asmlinkage long sys_utimes(char __user *filename, struct timeval __user *utimes)
-Index: linux-2.6/fs/compat.c
+ 	lower_dentry = ecryptfs_dentry_to_lower(dentry);
+-	lower_dir_dentry = lock_parent(lower_dentry);
+-	rc = vfs_mkdir(lower_dir_dentry->d_inode, lower_dentry, mode);
++	lower_dir.mnt = ecryptfs_dentry_to_lower_mnt(dentry);
++	lower_dir.dentry = lock_parent(lower_dentry);
++	rc = path_mkdir(&lower_dir, lower_dentry, mode);
+ 	if (rc || !lower_dentry->d_inode)
+ 		goto out;
+ 	rc = ecryptfs_interpose(lower_dentry, dentry, dir->i_sb, 0);
+ 	if (rc)
+ 		goto out;
+-	fsstack_copy_attr_times(dir, lower_dir_dentry->d_inode);
+-	fsstack_copy_inode_size(dir, lower_dir_dentry->d_inode);
+-	dir->i_nlink = lower_dir_dentry->d_inode->i_nlink;
++	fsstack_copy_attr_times(dir, lower_dir.dentry->d_inode);
++	fsstack_copy_inode_size(dir, lower_dir.dentry->d_inode);
++	dir->i_nlink = lower_dir.dentry->d_inode->i_nlink;
+ out:
+-	unlock_dir(lower_dir_dentry);
++	unlock_dir(lower_dir.dentry);
+ 	if (!dentry->d_inode)
+ 		d_drop(dentry);
+ 	return rc;
+Index: linux-2.6/fs/namei.c
 ===================================================================
---- linux-2.6.orig/fs/compat.c	2008-05-06 11:04:28.000000000 +0200
-+++ linux-2.6/fs/compat.c	2008-05-06 11:04:37.000000000 +0200
-@@ -110,7 +110,7 @@ asmlinkage long compat_sys_utimensat(uns
- 		if (tv[0].tv_nsec == UTIME_OMIT && tv[1].tv_nsec == UTIME_OMIT)
- 			return 0;
- 	}
--	return do_utimes(dfd, filename, t ? tv : NULL, flags);
-+	return do_futimesat(dfd, filename, t ? tv : NULL, flags);
+--- linux-2.6.orig/fs/namei.c	2008-05-06 11:04:38.000000000 +0200
++++ linux-2.6/fs/namei.c	2008-05-06 11:04:38.000000000 +0200
+@@ -2129,7 +2129,7 @@ asmlinkage long sys_mknod(const char __u
+ 	return sys_mknodat(AT_FDCWD, filename, mode, dev);
  }
  
- asmlinkage long compat_sys_futimesat(unsigned int dfd, char __user *filename, struct compat_timeval __user *t)
-@@ -129,7 +129,7 @@ asmlinkage long compat_sys_futimesat(uns
- 		tv[0].tv_nsec *= 1000;
- 		tv[1].tv_nsec *= 1000;
- 	}
--	return do_utimes(dfd, filename, t ? tv : NULL, 0);
-+	return do_futimesat(dfd, filename, t ? tv : NULL, 0);
+-int vfs_mkdir(struct inode *dir, struct dentry *dentry, int mode)
++static int vfs_mkdir(struct inode *dir, struct dentry *dentry, int mode)
+ {
+ 	int error = may_create(dir, dentry, NULL);
+ 
+@@ -2151,6 +2151,19 @@ int vfs_mkdir(struct inode *dir, struct 
+ 	return error;
  }
  
- asmlinkage long compat_sys_utimes(char __user *filename, struct compat_timeval __user *t)
++int path_mkdir(struct path *dir_path, struct dentry *dentry, int mode)
++{
++	int error = mnt_want_write(dir_path->mnt);
++
++	if (!error) {
++		error = vfs_mkdir(dir_path->dentry->d_inode, dentry, mode);
++		mnt_drop_write(dir_path->mnt);
++	}
++
++	return error;
++}
++EXPORT_SYMBOL(path_mkdir);
++
+ asmlinkage long sys_mkdirat(int dfd, const char __user *pathname, int mode)
+ {
+ 	int error = 0;
+@@ -2173,12 +2186,7 @@ asmlinkage long sys_mkdirat(int dfd, con
+ 
+ 	if (!IS_POSIXACL(nd.path.dentry->d_inode))
+ 		mode &= ~current->fs->umask;
+-	error = mnt_want_write(nd.path.mnt);
+-	if (error)
+-		goto out_dput;
+-	error = vfs_mkdir(nd.path.dentry->d_inode, dentry, mode);
+-	mnt_drop_write(nd.path.mnt);
+-out_dput:
++	error = path_mkdir(&nd.path, dentry, mode);
+ 	dput(dentry);
+ out_unlock:
+ 	mutex_unlock(&nd.path.dentry->d_inode->i_mutex);
+@@ -2982,7 +2990,6 @@ EXPORT_SYMBOL(file_permission);
+ EXPORT_SYMBOL(unlock_rename);
+ EXPORT_SYMBOL(vfs_follow_link);
+ EXPORT_SYMBOL(vfs_link);
+-EXPORT_SYMBOL(vfs_mkdir);
+ EXPORT_SYMBOL(generic_permission);
+ EXPORT_SYMBOL(vfs_readlink);
+ EXPORT_SYMBOL(vfs_rename);
+Index: linux-2.6/fs/nfsd/nfs4recover.c
+===================================================================
+--- linux-2.6.orig/fs/nfsd/nfs4recover.c	2008-05-06 11:04:28.000000000 +0200
++++ linux-2.6/fs/nfsd/nfs4recover.c	2008-05-06 11:04:38.000000000 +0200
+@@ -155,11 +155,7 @@ nfsd4_create_clid_dir(struct nfs4_client
+ 		dprintk("NFSD: nfsd4_create_clid_dir: DIRECTORY EXISTS\n");
+ 		goto out_put;
+ 	}
+-	status = mnt_want_write(rec_dir.path.mnt);
+-	if (status)
+-		goto out_put;
+-	status = vfs_mkdir(rec_dir.path.dentry->d_inode, dentry, S_IRWXU);
+-	mnt_drop_write(rec_dir.path.mnt);
++	status = path_mkdir(&rec_dir.path, dentry, S_IRWXU);
+ out_put:
+ 	dput(dentry);
+ out_unlock:
+Index: linux-2.6/fs/nfsd/vfs.c
+===================================================================
+--- linux-2.6.orig/fs/nfsd/vfs.c	2008-05-06 11:04:38.000000000 +0200
++++ linux-2.6/fs/nfsd/vfs.c	2008-05-06 11:04:38.000000000 +0200
+@@ -1273,7 +1273,7 @@ nfsd_create(struct svc_rqst *rqstp, stru
+ 		host_err = path_create(&dir_path, dchild, iap->ia_mode, NULL);
+ 		break;
+ 	case S_IFDIR:
+-		host_err = vfs_mkdir(dirp, dchild, iap->ia_mode);
++		host_err = path_mkdir(&dir_path, dchild, iap->ia_mode);
+ 		break;
+ 	case S_IFCHR:
+ 	case S_IFBLK:
+Index: linux-2.6/include/linux/fs.h
+===================================================================
+--- linux-2.6.orig/include/linux/fs.h	2008-05-06 11:04:38.000000000 +0200
++++ linux-2.6/include/linux/fs.h	2008-05-06 11:04:38.000000000 +0200
+@@ -1125,7 +1125,7 @@ extern void unlock_super(struct super_bl
+  */
+ extern int vfs_permission(struct nameidata *, int);
+ extern int path_create(struct path *, struct dentry *, int, struct nameidata *);
+-extern int vfs_mkdir(struct inode *, struct dentry *, int);
++extern int path_mkdir(struct path *, struct dentry *, int);
+ extern int path_mknod(struct path *, struct dentry *, int, dev_t);
+ extern int vfs_symlink(struct inode *, struct dentry *, const char *, int);
+ extern int vfs_link(struct dentry *, struct inode *, struct dentry *);
 
 --
