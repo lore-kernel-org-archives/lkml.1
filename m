@@ -1,52 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754952AbYEFL5u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753998AbYEFL6Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754952AbYEFL5u (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 07:57:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752302AbYEFL5l
+	id S1753998AbYEFL6Z (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 07:58:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752656AbYEFL6N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 07:57:41 -0400
-Received: from mtagate5.de.ibm.com ([195.212.29.154]:31387 "EHLO
-	mtagate5.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751521AbYEFL5k (ORCPT
+	Tue, 6 May 2008 07:58:13 -0400
+Received: from py-out-1112.google.com ([64.233.166.178]:12056 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752317AbYEFL6L (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 07:57:40 -0400
-Message-ID: <48204766.7020506@de.ibm.com>
-Date: Tue, 06 May 2008 13:56:22 +0200
-From: Peter Oberparleiter <peter.oberparleiter@de.ibm.com>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070604)
+	Tue, 6 May 2008 07:58:11 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=LMZ8qzekQsUSekT3dtAyD8OIj4NUt179y2Cvg/i2NBi1lcp3ictuki3jymsjrLVU5atgScF8XPJ70nvgJvifED6mOQCbvuzrt0g2wQs3blorIFvmwoZ5D4IBIFgKvyrW75Z5y0X85FlkGjdCGSqVqohkb4bL2rN68F4mQtLj1XA=
+Message-ID: <170fa0d20805060458i43c9a4a7r1e30147bdcd40f20@mail.gmail.com>
+Date: Tue, 6 May 2008 07:58:10 -0400
+From: "Mike Snitzer" <snitzer@gmail.com>
+To: "Neil Brown" <neilb@suse.de>
+Subject: Re: [RFC][PATCH] md: avoid fullsync if a faulty member missed a dirty transition
+Cc: linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org,
+       paul.clements@steeleye.com
+In-Reply-To: <18464.134.236488.251879@notabene.brown>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: ltp-list@lists.sourceforge.net, Rusty Russell <rusty@rustcorp.com.au>,
-       ltp-coverage@lists.sourceforge.net, sam@ravnborg.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC PATCH 1/6] kernel: call constructors
-References: <481F2694.5090601@de.ibm.com> <20080505211942.3945d01c.akpm@linux-foundation.org>
-In-Reply-To: <20080505211942.3945d01c.akpm@linux-foundation.org>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1207174155-20090-1-git-send-email-snitzer@gmail.com>
+	 <18464.134.236488.251879@notabene.brown>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Mon, 05 May 2008 17:24:04 +0200 Peter Oberparleiter <peter.oberparleiter@de.ibm.com> wrote:
-> 
->> From: Peter Oberparleiter <peter.oberparleiter@de.ibm.com>
->> --- linux-2.6.26-rc1.orig/arch/powerpc/kernel/vmlinux.lds.S
->> +++ linux-2.6.26-rc1/arch/powerpc/kernel/vmlinux.lds.S
->> @@ -193,6 +193,9 @@ SECTIONS
->>  		*(.toc)
->>  	}
->>  #endif
->> +	.data.gcov : {
->> +		CONSTRUCTORS
->> +	}
-> 
-> Why did powerpc (and only powerpc) need this touchup?  It already includes
-> asm-generic/vmlinux.lds.h?
+On Tue, May 6, 2008 at 2:53 AM, Neil Brown <neilb@suse.de> wrote:
+> On Wednesday April 2, snitzer@gmail.com wrote:
+>  > resync via bitmap if faulty's events+1 == bitmap's events_cleared
+>  >
+>  > For more background please see:
+>  > http://marc.info/?l=linux-raid&m=120703208715865&w=2
+>  >
+>  > Without this change validate_super() will prevent the previously faulty
+>  > member from recovering via bitmap, e.g.:
+>
+>  I can't help thinking that you are misinterpreting something.  I don't
+>  think there is a clean->dirty transition happening here.
+>  You could confirm this by using --examine on both devices after the
+>  messy shutdown and before re-assembling the array.
+>
+>  Even allowing for that possible confusion, I cannot quite see what is
+>  going on.
+>  It is fairly clear from the event counts that the NBD device is marked
+>  clean, but if this is happening at array-shutdown time, I cannot see
+>  why md would try to write to the NBD device and thereby detect an
+>  error...
+>
+>  Do you have an internal bitmap or a bitmap in an external file?
+>
+>  In general, I would not like to make decisions based on the
+>  oddness/evenness of the event counter.  I consider that to be an
+>  internal implementation detail.  I am happy to make decisions based on
+>  a difference-of-1.  I need to understand the big picture first though.
 
-asm-generic/vmlinux.lds.h defines CONSTRUCTORS but it needs to be
-referenced in the actual linker script to become active. For some reason
-unknown to me, CONSTRUCTORS shows up in all arch/*/vmlinux.lds.S scripts
-except for powerpc (see also my other reply about the CONSTRUCTORS
-section).
+Hi Neil,
+
+I definitely could be misinterpreting something.  However, I did
+determine that if the write-mostly NBD member of the raid1 becomes
+degraded while writing to the raid1 it frequently has an 'events' that
+is one less than the 'events_cleared' (of the local raid1 member that
+the array gets reassembled with first).  The events indicate the NBD
+member is clean and the local member is dirty.
+
+I'm using internal bitmaps.  I've focused on the even->odd
+(clean->dirty) transition to rationalize the safety of allowing the
+NBD member to be off by one _and_ clean.  That could easily be
+superficial but it seems significant.
+
+It looks like bitmap_update_sb()'s incrementing of events_cleared (on
+behalf of the local member) could be racing with the fact that the NBD
+member becomes faulty (whereby making the array degraded).  This
+allows the events_cleared to reflect a clean->dirty transition last
+occurred before the array became degraded.  My reasoning is: If it was
+a clean->dirty transition the bitmap still has the associated dirty
+bit set in the local member's bitmap, so using the bitmap to resync is
+valid.
+
+thanks,
+Mike
