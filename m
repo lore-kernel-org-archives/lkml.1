@@ -1,50 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759902AbYEFCeV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761825AbYEFCeh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759902AbYEFCeV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 May 2008 22:34:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752086AbYEFCeC
+	id S1761825AbYEFCeh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 May 2008 22:34:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758332AbYEFCeS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 May 2008 22:34:02 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:36460 "EHLO mx1.redhat.com"
+	Mon, 5 May 2008 22:34:18 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:36505 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751453AbYEFCeB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 May 2008 22:34:01 -0400
-Message-ID: <481FC38A.6070805@redhat.com>
-Date: Mon, 05 May 2008 19:33:46 -0700
-From: Ulrich Drepper <drepper@redhat.com>
-Organization: Red Hat, Inc.
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	id S1758198AbYEFCeR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 May 2008 22:34:17 -0400
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       davidel@xmailserver.org, mtk.manpages@gmail.com,
-       torvalds@linux-foundation.org
-Subject: Re: [PATCH 02/18] flag parameters: socket and socketpair
-References: <200805050342.m453gktl029817@devserv.devel.redhat.com> <20080505185850.789d870a.akpm@linux-foundation.org>
-In-Reply-To: <20080505185850.789d870a.akpm@linux-foundation.org>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+X-Fcc: ~/Mail/linus
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Austin Clements <amdragon+kernelbugzilla@mit.edu>,
+       Ingo Molnar <mingo@elte.hu>, john stultz <johnstul@us.ibm.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Michael Kerrisk <mtk.manpages@googlemail.com>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/4] posix timers: timer_delete: remove the bogus "->it_process != NULL" check
+In-Reply-To: Oleg Nesterov's message of  Saturday, 3 May 2008 21:35:53 +0400 <20080503173553.GA8109@tv-sign.ru>
+References: <20080503173553.GA8109@tv-sign.ru>
+X-Antipastobozoticataclysm: Bariumenemanilow
+Message-Id: <20080506023342.4076F26FA20@magilla.localdomain>
+Date: Mon,  5 May 2008 19:33:42 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
-
-Andrew Morton wrote:
-> afaict we only ever remap one or two flags.
-
-So far.  I have plans for at least one more flag: the one we'll
-hopefully have sometime soon to request non-sequential file descriptors.
- There is no reason why there shouldn't be even more in future.
-
-- --
-➧ Ulrich Drepper ➧ Red Hat, Inc. ➧ 444 Castro St ➧ Mountain View, CA ❖
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-
-iD8DBQFIH8OK2ijCOnn/RHQRAgd/AJ47rSUE8UZotXuce4mp6SMWn08OQACdH8tS
-kcd8c40jXlDlE1LySSdf5mQ=
-=7KVe
------END PGP SIGNATURE-----
+Signed-off-by: Roland McGrath <roland@redhat.com>
