@@ -1,97 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764847AbYEFJQy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764847AbYEFJRb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764847AbYEFJQy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 05:16:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760887AbYEFJOU
+	id S1764847AbYEFJRb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 05:17:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762236AbYEFJO0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 05:14:20 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:59491 "EHLO
+	Tue, 6 May 2008 05:14:26 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:59505 "EHLO
 	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759583AbYEFJOS (ORCPT
+	with ESMTP id S1761215AbYEFJOV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 05:14:18 -0400
-Message-Id: <20080506091410.380189145@szeredi.hu>
+	Tue, 6 May 2008 05:14:21 -0400
+Message-Id: <20080506091408.217759921@szeredi.hu>
 References: <20080506091327.259950960@szeredi.hu>
 User-Agent: quilt/0.45-1
-Date: Tue, 06 May 2008 11:13:31 +0200
+Date: Tue, 06 May 2008 11:13:29 +0200
 From: Miklos Szeredi <miklos@szeredi.hu>
 To: akpm@linux-foundation.org
 Cc: hch@infradead.org, viro@ZenIV.linux.org.uk, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Jeff Mahoney <jeffm@suse.de>
-Subject: [patch 04/24] reiserfs: dont call notify_change
-Content-Disposition: inline; filename=reiserfs_notify_change_cleanup.patch
+       linux-kernel@vger.kernel.org, Paul Menage <menage@google.com>
+Subject: [patch 02/24] cgroup: dont call vfs_mkdir
+Content-Disposition: inline; filename=cgroup_mkdir_cleanup.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Miklos Szeredi <mszeredi@suse.cz>
 
-Reiserfs calls notify_change() on it's private extended attribute
-files to resize and change ownership of these files.  Replace with
-reiserfs_setattr().
+cgroup_clone() calls vfs_mkdir() to create a directory in the cgroup
+filesystem.  Replace with explicit call to cgroup_mkdir() and
+fsnotify_mkdir().
 
-This is equivalent, except that:
+This is equivalent, except that the following functions are not called
+before cgroup_mkdir():
 
- - i_alloc_sem locking is not performed around reiserfs_setattr() when
-   the size is changed
- - security_inode_setattr() is not called before reiserfs_setattr()
- - fsnotify_change() is not called after reiserfs_setattr()
+ - may_create()
+ - security_inode_mkdir()
+ - DQUOT_INIT()
 
-None of the above is necessary, since the files are private to
-reiserfs and inaccessible from userspace.
+Permission to clone the cgroup has already been checked in
+copy_namespaces() (requiring CAP_SYS_ADMIN).  Additional file system
+related capability checks are inappropriate and confusing.
 
-Also remove setting of ctime on the xattr files.
-
-Based on patch by Jeff Mahoney.
+The quota check is unnecessary, as quotas don't make any sense for
+this filesystem.
 
 Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
-Acked-by: Jeff Mahoney <jeffm@suse.de>
+CC: Paul Menage <menage@google.com>
 ---
- fs/reiserfs/xattr.c |   10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
+ kernel/cgroup.c |    5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
-Index: linux-2.6/fs/reiserfs/xattr.c
+Index: linux-2.6/kernel/cgroup.c
 ===================================================================
---- linux-2.6.orig/fs/reiserfs/xattr.c	2008-05-06 11:04:33.000000000 +0200
-+++ linux-2.6/fs/reiserfs/xattr.c	2008-05-06 11:04:33.000000000 +0200
-@@ -458,9 +458,9 @@ reiserfs_xattr_set(struct inode *inode, 
- 
- 	/* Resize it so we're ok to write there */
- 	newattrs.ia_size = buffer_size;
--	newattrs.ia_valid = ATTR_SIZE | ATTR_CTIME;
-+	newattrs.ia_valid = ATTR_SIZE;
- 	mutex_lock_nested(&xinode->i_mutex, I_MUTEX_XATTR);
--	err = notify_change(dentry, &newattrs);
-+	err = reiserfs_setattr(dentry, &newattrs);
- 	if (err)
- 		goto out_filp;
- 
-@@ -810,7 +810,7 @@ reiserfs_chown_xattrs_filler(void *buf, 
+--- linux-2.6.orig/kernel/cgroup.c	2008-05-06 11:04:29.000000000 +0200
++++ linux-2.6/kernel/cgroup.c	2008-05-06 11:04:32.000000000 +0200
+@@ -25,6 +25,7 @@
+ #include <linux/cgroup.h>
+ #include <linux/errno.h>
+ #include <linux/fs.h>
++#include <linux/fsnotify.h>
+ #include <linux/kernel.h>
+ #include <linux/list.h>
+ #include <linux/mm.h>
+@@ -2928,7 +2929,9 @@ int cgroup_clone(struct task_struct *tsk
  	}
  
- 	if (!S_ISDIR(xafile->d_inode->i_mode))
--		err = notify_change(xafile, attrs);
-+		err = reiserfs_setattr(xafile, attrs);
- 	dput(xafile);
- 
- 	return err;
-@@ -843,7 +843,7 @@ int reiserfs_chown_xattrs(struct inode *
- 
- 	lock_kernel();
- 
--	attrs->ia_valid &= (ATTR_UID | ATTR_GID | ATTR_CTIME);
-+	attrs->ia_valid &= (ATTR_UID | ATTR_GID);
- 	buf.xadir = dir;
- 	buf.attrs = attrs;
- 	buf.inode = inode;
-@@ -854,7 +854,7 @@ int reiserfs_chown_xattrs(struct inode *
- 		goto out_dir;
- 	}
- 
--	err = notify_change(dir, attrs);
-+	err = reiserfs_setattr(dir, attrs);
- 	unlock_kernel();
- 
-       out_dir:
+ 	/* Create the cgroup directory, which also creates the cgroup */
+-	ret = vfs_mkdir(inode, dentry, S_IFDIR | 0755);
++	ret = cgroup_mkdir(inode, dentry, S_IFDIR);
++	if (!ret)
++		fsnotify_mkdir(inode, dentry);
+ 	child = __d_cgrp(dentry);
+ 	dput(dentry);
+ 	if (ret) {
 
 --
