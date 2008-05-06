@@ -1,60 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934012AbYEFWlV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934051AbYEFWmR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934012AbYEFWlV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 18:41:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759411AbYEFWk7
+	id S934051AbYEFWmR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 18:42:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762338AbYEFWlw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 18:40:59 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:56776 "EHLO ogre.sisk.pl"
+	Tue, 6 May 2008 18:41:52 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:56787 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757252AbYEFWk5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 18:40:57 -0400
+	id S1764403AbYEFWlu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 May 2008 18:41:50 -0400
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: Soft lockup regression from today's sched.git merge.
-Date: Wed, 7 May 2008 00:41:01 +0200
+To: "Zdenek Kabelac" <zdenek.kabelac@gmail.com>
+Subject: Re: WARNING: at arch/x86/kernel/genapic_64.c:86
+Date: Wed, 7 May 2008 00:41:55 +0200
 User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: David Miller <davem@davemloft.net>, mingo@elte.hu,
-       linux-kernel@vger.kernel.org, tglx@linutronix.de
-References: <20080422.015931.70144614.davem@davemloft.net> <20080422.030519.259068348.davem@davemloft.net> <1208868304.7115.251.camel@twins>
-In-Reply-To: <1208868304.7115.251.camel@twins>
+Cc: lkml <linux-kernel@vger.kernel.org>
+References: <c4e36d110804220204h3043e526xee3966876355cde0@mail.gmail.com>
+In-Reply-To: <c4e36d110804220204h3043e526xee3966876355cde0@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-15"
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200805070041.02618.rjw@sisk.pl>
+Message-Id: <200805070041.55369.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, 22 of April 2008, Peter Zijlstra wrote:
-> On Tue, 2008-04-22 at 03:05 -0700, David Miller wrote:
+On Tuesday, 22 of April 2008, Zdenek Kabelac wrote:
+> Hello
 > 
-> > BTW, I'm also getting cpu's wedged in the group aggregate code:
-> > 
-> > [  121.338742] TSTATE: 0000009980001602 TPC: 000000000054ea20 TNPC: 0000000000456828 Y: 00000000    Not tainted
-> > [  121.338778] TPC: <__first_cpu+0x4/0x28>
-> > [  121.338791] g0: 0000000000000000 g1: 0000000000000002 g2: 0000000000000000 g3: 0000000000000002
-> > [  121.338809] g4: fffff803fe9b24c0 g5: fffff8001587c000 g6: fffff803fe9d0000 g7: 00000000007b7260
-> > [  121.338827] o0: 0000000000000002 o1: 00000000007b7258 o2: 0000000000000000 o3: 00000000007b7800
-> > [  121.338845] o4: 0000000000845000 o5: 0000000000000400 sp: fffff803fe9d2ed1 ret_pc: 0000000000456820
-> > [  121.338879] RPC: <aggregate_group_shares+0x10c/0x16c>
-> > [  121.338893] l0: 0000000000000400 l1: 000000000000000d l2: 00000000000003ff l3: 0000000000000000
-> > [  121.338911] l4: 0000000000000000 l5: 0000000000000000 l6: fffff803fe9d0000 l7: 0000000080009002
-> > [  121.338928] i0: 0000000000801c20 i1: fffff800161ca508 i2: 00000000000001d8 i3: 0000000000000001
-> > [  121.338946] i4: fffff800161d9c00 i5: 0000000000000001 i6: fffff803fe9d2f91 i7: 0000000000456904
-> > [  121.338968] I7: <aggregate_get_down+0x84/0x13c>
-> > 
-> > I'm suspecting the deluge of cpumask changes that also went in today.
-> > 
-> > I guess I'll be bisecting all day tomorrow too :-/
+> I've update to the current commit 2.6.25
+> 8a81f2738f10ca817c975cec893aa58497e873b2
+
+Does it still happen with the current -git?
+
+> I get this boot WARNING:
 > 
-> Sadly both the cpumask changes and the group load-balancer came in the
-> same batch - so its all new code. Also, it looks like the cpumask
-> changes are before the load balance changes - so bisecting this will be
-> 'fun'.
+>  tbxface-0598 [00] tb_load_namespace     : ACPI Tables successfully acquired
+> evxfevnt-0091 [00] enable                : Transition to ACPI mode successful
+> ------------[ cut here ]------------
+> WARNING: at arch/x86/kernel/genapic_64.c:86 read_apic_id+0x81/0x90()
+> Modules linked in:
+> Pid: 1, comm: swapper Not tainted 2.6.25 #57
+> 
+> Call Trace:
+>  [<ffffffff8103d64f>] warn_on_slowpath+0x5f/0x90
+>  [<ffffffff81062afa>] ? get_lock_stats+0x2a/0x70
+>  [<ffffffff81062b4e>] ? put_lock_stats+0xe/0x30
+>  [<ffffffff81038b56>] ? set_cpus_allowed_ptr+0x86/0x120
+>  [<ffffffff812ee295>] ? _spin_unlock_irqrestore+0x65/0x90
+>  [<ffffffff810649e1>] ? trace_hardirqs_on+0x131/0x190
+>  [<ffffffff812ee275>] ? _spin_unlock_irqrestore+0x45/0x90
+>  [<ffffffff810233f1>] read_apic_id+0x81/0x90
+>  [<ffffffff814bdcde>] verify_local_APIC+0xc4/0x186
+>  [<ffffffff814bcaaf>] native_smp_prepare_cpus+0x16e/0x38f
+>  [<ffffffff814b139b>] kernel_init+0x5a/0x31b
+>  [<ffffffff810649e1>] ? trace_hardirqs_on+0x131/0x190
+>  [<ffffffff812ee1ed>] ? _spin_unlock_irq+0x3d/0x80
+>  [<ffffffff812edbd9>] ? trace_hardirqs_on_thunk+0x35/0x3a
+>  [<ffffffff810649e1>] ? trace_hardirqs_on+0x131/0x190
+>  [<ffffffff8100d548>] child_rip+0xa/0x12
+>  [<ffffffff8100cc33>] ? restore_args+0x0/0x30
+>  [<ffffffff814b1341>] ? kernel_init+0x0/0x31b
+>  [<ffffffff8100d53e>] ? child_rip+0x0/0x12
+> 
+> ---[ end trace ca143223eefdc828 ]---
+> ------------[ cut here ]------------
+> WARNING: at arch/x86/kernel/genapic_64.c:86 read_apic_id+0x81/0x90()
+> Modules linked in:
+> Pid: 1, comm: swapper Not tainted 2.6.25 #57
+> 
+> Call Trace:
+>  [<ffffffff8103d64f>] warn_on_slowpath+0x5f/0x90
+>  [<ffffffff81062afa>] ? get_lock_stats+0x2a/0x70
+>  [<ffffffff81062b4e>] ? put_lock_stats+0xe/0x30
+>  [<ffffffff81038b56>] ? set_cpus_allowed_ptr+0x86/0x120
+>  [<ffffffff812ee295>] ? _spin_unlock_irqrestore+0x65/0x90
+>  [<ffffffff810649e1>] ? trace_hardirqs_on+0x131/0x190
+>  [<ffffffff812ee275>] ? _spin_unlock_irqrestore+0x45/0x90
+>  [<ffffffff810233f1>] read_apic_id+0x81/0x90
+>  [<ffffffff814bdd00>] verify_local_APIC+0xe6/0x186
+>  [<ffffffff814bcaaf>] native_smp_prepare_cpus+0x16e/0x38f
+>  [<ffffffff814b139b>] kernel_init+0x5a/0x31b
+>  [<ffffffff810649e1>] ? trace_hardirqs_on+0x131/0x190
+>  [<ffffffff812ee1ed>] ? _spin_unlock_irq+0x3d/0x80
+>  [<ffffffff812edbd9>] ? trace_hardirqs_on_thunk+0x35/0x3a
+>  [<ffffffff810649e1>] ? trace_hardirqs_on+0x131/0x190
+>  [<ffffffff8100d548>] child_rip+0xa/0x12
+>  [<ffffffff8100cc33>] ? restore_args+0x0/0x30
+>  [<ffffffff814b1341>] ? kernel_init+0x0/0x31b
+>  [<ffffffff8100d53e>] ? child_rip+0x0/0x12
+> 
+> ---[ end trace ca143223eefdc828 ]---
+> CPU0: Intel(R) Core(TM)2 Duo CPU     T7500  @ 2.20GHz stepping 0a
+> Using local APIC timer interrupts.
+> 
+> 
+> 
+> Zdenek
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
+> 
 
-Can you please tell me what the current status of this is?
 
-Rafael
+
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
