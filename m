@@ -1,75 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755600AbYEFLCv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754208AbYEFLNe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755600AbYEFLCv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 07:02:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751709AbYEFLCl
+	id S1754208AbYEFLNe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 07:13:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751571AbYEFLNU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 07:02:41 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:45340 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751682AbYEFLCk (ORCPT
+	Tue, 6 May 2008 07:13:20 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:60798 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751190AbYEFLNI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 07:02:40 -0400
-Date: Tue, 06 May 2008 20:02:44 +0900
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Paul Menage <menage@google.com>, Li Zefan <lizf@cn.fujitsu.com>
-Subject: [PATCH] mm/cgroup.c add error check
-Cc: kosaki.motohiro@jp.fujitsu.com
-Message-Id: <20080506195216.4A6D.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	Tue, 6 May 2008 07:13:08 -0400
+Message-ID: <48203D3D.6000103@firstfloor.org>
+Date: Tue, 06 May 2008 13:13:01 +0200
+From: Andi Kleen <andi@firstfloor.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+To: Adrian Bunk <bunk@kernel.org>
+CC: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Sam Ravnborg <sam@ravnborg.org>, Alexander Viro <viro@ftp.linux.org.uk>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [rfc] the kernel workflow & trivial "global -> static" patches
+References: <20080505182942.GA17139@cs181133002.pp.htv.fi> <20080505201906.GA900@elte.hu> <874p9ccmes.fsf@basil.nowhere.org> <20080506061825.GF1544@cs181133002.pp.htv.fi>
+In-Reply-To: <20080506061825.GF1544@cs181133002.pp.htv.fi>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Adrian Bunk wrote:
+> On Tue, May 06, 2008 at 02:21:31AM +0200, Andi Kleen wrote:
+>> I don't think the code changes actually with current gcc for integer
+>> code if you change something from global to static (unless it causes
+>> gcc to inline the function, but then it might be well larger if you're
+>> unlucky)
+> 
+> It's a common case that a function has only one caller. It should always 
+> be an (at least tiny) space win to get them inlined.
 
-on heavy workload, call_usermodehelper() may failure
-because it use kzmalloc(GFP_ATOMIC).
+At least for the scheduler patch that started this thread this was not
+the case. One was a global variable and the other was a callback from
+proc. Both cannot be inlined.
 
-but userland want receive release notificcation even heavy workload.
+> There are many small aspects, e.g. both gcc with -Wmissing-prototypes 
+> and sparse give warnings, and the problem might either be needlessly 
+> global code or the fact that a function prototype is either not in a 
+> header or the header not #include'd by the file. Although I've only
+> 2 or 3 times catched such bugs in the kernel that is a nasty to debug 
+> class of bugs and gcc can find such problems at compile time.
 
-thus, We should retry if -ENOMEM happend.
+Yes it's good to catch those. However I suspect there are better tools
+for that that do it less work intensive. Traditionally in the Unix
+world "lint" has been used to track this kind of bugs (dating back from
+before prototypes were added to C). Now running any lint over the kernel
+source would result in a incredibly number of warnings I'm sure, but
+perhaps one can be configured to only output warnings related to
+inconsistent prototypes over files. There are a couple of free lints
+like the one in NetBSD or splint.	
 
+>> I could see some advantage from static in future compiler versions 
+>> though from better optimization, but it's quite remote.
+>> ...
+> 
+> The best case I've actually seen in practice was a variable I made 
+> static, and with CONFIG_DEBUG_FOOBAR=n gcc was now able to prove that 
+> the value never changed resulting in the variable plus quite a chunk
+> of code no longer emitted.
 
-Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-CC: "Paul Menage" <menage@google.com>
-CC: Li Zefan <lizf@cn.fujitsu.com>
+Sounds like the variable should just have been removed then in the source?
 
----
- kernel/cgroup.c |   10 +++++++++-
- 1 file changed, 9 insertions(+), 1 deletion(-)
-
-Index: b/kernel/cgroup.c
-===================================================================
---- a/kernel/cgroup.c   2008-04-29 18:00:53.000000000 +0900
-+++ b/kernel/cgroup.c   2008-05-06 20:28:23.000000000 +0900
-@@ -3072,6 +3072,8 @@ void __css_put(struct cgroup_subsys_stat
-  */
- static void cgroup_release_agent(struct work_struct *work)
- {
-+       int err;
-+
-        BUG_ON(work != &release_agent_work);
-        mutex_lock(&cgroup_mutex);
-        spin_lock(&release_list_lock);
-@@ -3111,7 +3113,13 @@ static void cgroup_release_agent(struct
-                 * since the exec could involve hitting disk and hence
-                 * be a slow process */
-                mutex_unlock(&cgroup_mutex);
--               call_usermodehelper(argv[0], argv, envp, UMH_WAIT_EXEC);
-+
-+retry:
-+               err = call_usermodehelper(argv[0], argv, envp, UMH_WAIT_EXEC);
-+               if (err == -ENOMEM) {
-+                       schedule();
-+                       goto retry;
-+               }
-                kfree(pathbuf);
-                mutex_lock(&cgroup_mutex);
-                spin_lock(&release_list_lock);
-
-
-
+-Andi
