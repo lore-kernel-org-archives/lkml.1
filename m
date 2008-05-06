@@ -1,55 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765629AbYEFQpd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932132AbYEFQpw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765629AbYEFQpd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 12:45:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760291AbYEFQpW
+	id S932132AbYEFQpw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 12:45:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760781AbYEFQpW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Tue, 6 May 2008 12:45:22 -0400
-Received: from an-out-0708.google.com ([209.85.132.240]:40188 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754391AbYEFQpU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 12:45:20 -0400
-Message-ID: <fa686aa40805060945i31433e3bg3fb4fce825b30072@mail.gmail.com>
-Date: Tue, 6 May 2008 10:45:19 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-To: "Greg KH" <greg@kroah.com>, stable@kernel.org
-Subject: Re: Fwd: [PATCH] [POWERPC] mpc5200: Fix unterminated of_device_id table
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080506154408.GA32680@kroah.com>
+Received: from mail.fieldses.org ([66.93.2.214]:56304 "EHLO fieldses.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755477AbYEFQpV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 May 2008 12:45:21 -0400
+Date: Tue, 6 May 2008 12:44:59 -0400
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Matthew Wilcox <matthew@wil.cx>, Ingo Molnar <mingo@elte.hu>,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Alexander Viro <viro@ftp.linux.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-fsdevel@vger.kernel.org, richterd@citi.umich.edu
+Subject: Re: AIM7 40% regression with 2.6.26-rc1
+Message-ID: <20080506164459.GG592@fieldses.org>
+References: <1210052904.3453.30.camel@ymzhang> <20080506114449.GC32591@elte.hu> <20080506120934.GH19219@parisc-linux.org> <20080506162332.GI19219@parisc-linux.org> <alpine.LFD.1.10.0805060931450.32269@woody.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20080429124343.24177.15349.stgit@trillian.secretlab.ca>
-	 <fa686aa40805060741vd4befa4i1ea5ab6df4d54d9b@mail.gmail.com>
-	 <20080506154408.GA32680@kroah.com>
-X-Google-Sender-Auth: 1950ab2b7c3aff42
+In-Reply-To: <alpine.LFD.1.10.0805060931450.32269@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 6, 2008 at 9:44 AM, Greg KH <greg@kroah.com> wrote:
-> On Tue, May 06, 2008 at 08:41:44AM -0600, Grant Likely wrote:
->  > Greg,
->  >
->  > This patch is already in mainline; but it needs to be backported to
->  > the stable tree.  Can you please pick it up?
->
->  In the future, please email the stable@kernel.org alias for things you
->  want to go into the stable tree, otherwise there is a very good chance
->  it will be missed.
->
->  Also, please mention the git id for the commit in Linus's tree so we
->  don't have to go digging for it.
+On Tue, May 06, 2008 at 09:36:06AM -0700, Linus Torvalds wrote:
+> 
+> 
+> On Tue, 6 May 2008, Matthew Wilcox wrote:
+> > 
+> > I've wanted to fix file locks for a while.  Here's a first attempt.
+> > It was done quickly, so I concede that it may well have bugs in it.
+> > I found (and fixed) one with LTP.
+> 
+> Hmm. Wouldn't it be nicer to make the lock be a per-inode thing? Or is 
+> there some user that doesn't have the inode info, or does anything that 
+> might cross inode boundaries?
 
-Will do, Thanks Greg.
+The deadlock detection crosses inode boundaries.
 
-The git id is: bc775eac63c16dbcfabc4c6e949c0228edf3e11f
-
-Cheers,
-g.
-
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+--b.
