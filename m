@@ -1,74 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754208AbYEFLNe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755005AbYEFLSS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754208AbYEFLNe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 07:13:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751571AbYEFLNU
+	id S1755005AbYEFLSS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 07:18:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752098AbYEFLSF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 07:13:20 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:60798 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751190AbYEFLNI (ORCPT
+	Tue, 6 May 2008 07:18:05 -0400
+Received: from winston.telenet-ops.be ([195.130.137.75]:40556 "EHLO
+	winston.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752086AbYEFLSE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 07:13:08 -0400
-Message-ID: <48203D3D.6000103@firstfloor.org>
-Date: Tue, 06 May 2008 13:13:01 +0200
-From: Andi Kleen <andi@firstfloor.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
+	Tue, 6 May 2008 07:18:04 -0400
+Date: Tue, 6 May 2008 13:17:59 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Michal Simek <monstr@seznam.cz>
+cc: John Williams <john.williams@petalogix.com>, linux-kernel@vger.kernel.org,
+       arnd@arndb.de, linux-arch@vger.kernel.org,
+       stephen.neuendorffer@xilinx.com, John.Linn@xilinx.com, matthew@wil.cx,
+       will.newton@gmail.com, drepper@redhat.com,
+       microblaze-uclinux@itee.uq.edu.au, grant.likely@secretlab.ca,
+       Michal Simek <monstr@monstr.eu>
+Subject: Re: [PATCH 36/56] microblaze_v2: dma support
+In-Reply-To: <48202AB6.4010201@seznam.cz>
+Message-ID: <Pine.LNX.4.64.0805061317120.10091@anakin>
+References: <1209901305-6404-1-git-send-email-monstr@seznam.cz>
+ <41c1f410eaafd875246362d10ef9866d8cc2a934.1209897266.git.monstr@monstr.eu>
+ <09ce2baf0c8308d3fbca98e7eb36a6aab59112a7.1209897266.git.monstr@monstr.eu>
+ <c9418c683be99ae12abb89575c362d586c026bad.1209897266.git.monstr@monstr.eu>
+ <cfde3796e95bdd17c32e4fd7762d0aee55967707.1209897266.git.monstr@monstr.eu>
+ <8aba2d82c85cd1d5b56de328c1fd080ee51f0211.1209897266.git.monstr@monstr.eu>
+ <c4000ff625bd217f9bb683e3bf8c7193a82bd744.1209897266.git.monstr@monstr.eu>
+ <491f823fac6c03cc36834ec569a45d30a03a72cf.1209897266.git.monstr@monstr.eu>
+ <96f2004535c34a0c762bf2012c299cbf9f89ab32.1209897266.git.monstr@monstr.eu>
+ <92cd3a27b393bb394d48902594152351a92c59bb.1209897266.git.monstr@monstr.eu>
+ <1209954350.5798.71.camel@localhost> <Pine.LNX.4.64.0805050844560.2615@anakin>
+ <482021E1.70902@seznam.cz> <Pine.LNX.4.64.0805061142230.10091@anakin>
+ <48202AB6.4010201@seznam.cz>
 MIME-Version: 1.0
-To: Adrian Bunk <bunk@kernel.org>
-CC: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Sam Ravnborg <sam@ravnborg.org>, Alexander Viro <viro@ftp.linux.org.uk>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [rfc] the kernel workflow & trivial "global -> static" patches
-References: <20080505182942.GA17139@cs181133002.pp.htv.fi> <20080505201906.GA900@elte.hu> <874p9ccmes.fsf@basil.nowhere.org> <20080506061825.GF1544@cs181133002.pp.htv.fi>
-In-Reply-To: <20080506061825.GF1544@cs181133002.pp.htv.fi>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk wrote:
-> On Tue, May 06, 2008 at 02:21:31AM +0200, Andi Kleen wrote:
->> I don't think the code changes actually with current gcc for integer
->> code if you change something from global to static (unless it causes
->> gcc to inline the function, but then it might be well larger if you're
->> unlucky)
+On Tue, 6 May 2008, Michal Simek wrote:
+> > On Tue, 6 May 2008, Michal Simek wrote:
+> >>> On Mon, 5 May 2008, John Williams wrote:
+> >>>>> +++ b/include/asm-microblaze/scatterlist.h
+> >>>>> @@ -0,0 +1,21 @@
+> >>>>> +/*
+> >>>>> + * include/asm-microblaze/scatterlist.h
+> >>>>> + *
+> >>>>> + * This file is subject to the terms and conditions of the GNU General Public
+> >>>>> + * License. See the file "COPYING" in the main directory of this archive
+> >>>>> + * for more details.
+> >>>>> + *
+> >>>>> + * Copyright (C) 2006 Atmark Techno, Inc.
+> >>>>> + */
+> >>>>> +
+> >>>>> +#ifndef _ASM_MICROBLAZE_SCATTERLIST_H
+> >>>>> +#define _ASM_MICROBLAZE_SCATTERLIST_H
+> >>>>> +
+> >>>>> +struct scatterlist {
+> >>>>> +	unsigned long page_link;
+> >>>>> +	unsigned int	offset;
+> >>>>> +	dma_addr_t	dma_address;
+> >>>>> +	unsigned int	length;
+> >>>>> +};
+> >>>>> +
+> >>>>> +#endif /* _ASM_MICROBLAZE_SCATTERLIST_H */
+> >>>> Is this worthy of promotion to asm-generic/scatterlist.h?
+> >>> after moving dma_address one position up in the structure, as dma_addr_t may be
+> >>> 64-bit?
+> >> dma_addr_t is defined in types.h. If your arch want to use 64bit addr, you can
+> >> define it in types.h.
+> > 
+> > Sorry for not making myself clear: If unsigned long and dma_addr_t are 64-bit,
+> > there may be a hole in between offset and dma_address, due to alignment
+> > restrictions. So it's better to move dma_address up.
+> > 
+> > As dma_addr_t may be 64-bit even on 32-bit architectures, it may be best
+> > to move it even to the start of the structure.
 > 
-> It's a common case that a function has only one caller. It should always 
-> be an (at least tiny) space win to get them inlined.
+> yes, only move length is enough.
 
-At least for the scheduler patch that started this thread this was not
-the case. One was a global variable and the other was a callback from
-proc. Both cannot be inlined.
+No it's not.
 
-> There are many small aspects, e.g. both gcc with -Wmissing-prototypes 
-> and sparse give warnings, and the problem might either be needlessly 
-> global code or the fact that a function prototype is either not in a 
-> header or the header not #include'd by the file. Although I've only
-> 2 or 3 times catched such bugs in the kernel that is a nasty to debug 
-> class of bugs and gcc can find such problems at compile time.
+> struct scatterlist {
+> 	unsigned long page_link;
+> 	unsigned int	offset;
+> 	unsigned int	length;
+> 	dma_addr_t	dma_address;
+> };
 
-Yes it's good to catch those. However I suspect there are better tools
-for that that do it less work intensive. Traditionally in the Unix
-world "lint" has been used to track this kind of bugs (dating back from
-before prototypes were added to C). Now running any lint over the kernel
-source would result in a incredibly number of warnings I'm sure, but
-perhaps one can be configured to only output warnings related to
-inconsistent prototypes over files. There are a couple of free lints
-like the one in NetBSD or splint.	
+If unsigned long is 32-bit but dma_addr_t is 64-bit, there may be a gap
+between length and dma_address.
 
->> I could see some advantage from static in future compiler versions 
->> though from better optimization, but it's quite remote.
->> ...
-> 
-> The best case I've actually seen in practice was a variable I made 
-> static, and with CONFIG_DEBUG_FOOBAR=n gcc was now able to prove that 
-> the value never changed resulting in the variable plus quite a chunk
-> of code no longer emitted.
+Gr{oetje,eeting}s,
 
-Sounds like the variable should just have been removed then in the source?
+						Geert
 
--Andi
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
