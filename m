@@ -1,149 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764129AbYEFSxY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763136AbYEFTDT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764129AbYEFSxY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 14:53:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753345AbYEFSxH
+	id S1763136AbYEFTDT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 15:03:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755771AbYEFTDF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 14:53:07 -0400
-Received: from mail.ift.unesp.br ([200.145.46.3]:40856 "EHLO mail.ift.unesp.br"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751023AbYEFSxD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 14:53:03 -0400
-Date: Tue, 6 May 2008 15:51:25 -0300
-From: "Carlos R. Mafra" <crmafra2@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: rtc-cmos.c: Build fix
-Message-ID: <20080506185125.GA12844@beyonder.ift.unesp.br>
-Mail-Followup-To: Ingo Molnar <mingo@elte.hu>, akpm@linux-foundation.org,
-	linux-kernel@vger.kernel.org
-References: <20080505231016.GA29072@beyonder.ift.unesp.br> <20080506124348.GR32591@elte.hu>
+	Tue, 6 May 2008 15:03:05 -0400
+Received: from mail.parknet.ad.jp ([210.171.162.6]:40795 "EHLO
+	mail.officemail.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752532AbYEFTDB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 May 2008 15:03:01 -0400
+From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Yinghai Lu <yhlu.kernel@gmail.com>, Greg KH <gregkh@suse.de>,
+       Ingo Molnar <mingo@elte.hu>, Len Brown <lenb@kernel.org>,
+       "linux-kernel\@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       linux-acpi <linux-acpi@vger.kernel.org>
+Subject: Re: acpi_cpu_freq_init warning...
+References: <86802c440805051951u153ebc21p15f0d73904496217@mail.gmail.com>
+	<87k5i8hrmk.fsf@duaron.myhome.or.jp>
+	<alpine.LFD.1.10.0805060741290.32269@woody.linux-foundation.org>
+Date: Wed, 07 May 2008 04:02:53 +0900
+In-Reply-To: <alpine.LFD.1.10.0805060741290.32269@woody.linux-foundation.org>
+	(Linus Torvalds's message of "Tue, 6 May 2008 07:47:18 -0700 (PDT)")
+Message-ID: <87skwvcl2a.fsf@duaron.myhome.or.jp>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080506124348.GR32591@elte.hu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+X-Anti-Virus: Kaspersky Anti-Virus for MailServers 5.5.10/RELEASE, bases: 24052007 #308098, status: clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> since you seem to be interested in HPET topics, what do you think about 
-> the patch below from akpm? It had a build failure with this config:
-> 
->   http://redhat.com/~mingo/misc/config-Sun_May__4_09_41_21_CEST_2008.bad
+Linus Torvalds <torvalds@linux-foundation.org> writes:
 
-I think I've found the problem. After fixing the rtc-cmos.o build your
-.config produced yet another failure later on:
+> On Tue, 6 May 2008, OGAWA Hirofumi wrote:
+>> -	if ((drv->entry.next != drv->entry.prev) ||
+>> +	if ((drv->entry.next != drv->entry.prev) &&
+>>  	    (drv->entry.next != NULL)) {
+>
+> Umm. That code still makes no sense.
+>
+> The "drv->entry.next == drv->entry.prev" condition will trigger under 
+> *three* different circumstances:
+>
+>  - next/prev == NULL (uninitialized). Checked for by the explicit check 
+>    against NULL.
+>
+>  - list empty (both next/prev point back to itself), which I assume the 
+>    check was *meant* for.
+>
+>  - list has only *one* entry, when next/prev both point to the list head.
+>
+> and I'm pretty damn sure that whoever wrote that code didn't mean that 
+> last one, but who knows..
+>
+> The fact is, looking at next/prev this way is a sure way to have bugs.
+>
+> What is that PoS *trying* to test for? I assume it is meant to test for
+>
+> 	/* Is the list initialized and non-empty? */
+> 	if (drv->entry.next && !list_empty(&drv->entry)) {
+> 		...
+>
+> and dammit, just doing it that way is shorter and simpler.
 
-  LD      .tmp_vmlinux1
-drivers/built-in.o: In function `v4l2_i2c_drv_attach_legacy':
-tuner-core.c:(.text+0xc5a31): undefined reference to `v4l2_i2c_attach'
-drivers/built-in.o: In function `tuner_command':
-tuner-core.c:(.text+0xc6dc2): undefined reference to `v4l_printk_ioctl'
-make: *** [.tmp_vmlinux1] Error 1
+Whoops, sorry. You are right.
 
-But this one I left untouched for the moment.
-
-> ------------->
-> From: Andrew Morton <akpm@linux-foundation.org>
-> 
-> Should already be available via the hpet.h inclusion.
-
-With the inclusion of hpet.h we don't have the "do-nothing stubs" for
-the case !HPET_EMULATE_RTC as they are defined inside rtc.c
-and rtc-cmos.c. However hpet_rtc_interrupt() is missing in those
-stubs because it was removed with akpm's patch. So I added it.
-
-My explanation for the build failure is as follows.
-
-Your .config did not have HPET_EMULATE_RTC enabled but the code
-in rtc-cmos.c wanted to use hpet_rtc_interrupt() anyways. But
-looking in arch/x86/kernel/hpet.c this function is inside a
-
-#ifdef CONFIG_HPET_EMULATE_RTC <-- line 465
-hpet_rtc_interrupt() <--- line 679
-#endif <--- line 716
-
-so it should be used if and only if HPET_EMULATE_RTC is defined.
-
-And the code in question which makes the build fail is inside a 
-  if(is_hpet_enabled()) {
-  ...
-  rtc_cmos_int_handler = hpet_rtc_interrupt;
-  ...
-  }
-and this would never be executed because with !HPET_EMULATE_RTC (as
-in your .config) is_hpet_enabled() is defined to return 0.
-
-So I think Andrew's patch should be the one below (I've folded
-my correction into his patch, so I am Cc:ing him also), where my
-modification is the adition inside the #ifndef CONFIG_HPET_EMULATE_RTC
-(which I took from rtc.c)
-
-> Could go further, by defining the do-nothing stub in hpet.h as well, perhaps.
-
-I think one could do that too as a cleanup (to remove the do-nothing stubs
-from rtc.c and rtc-cmos.c), but I am afraid to make a mistake which would
-cause other build failures afterwards. So now I just wanted to understand
-and fix the issue you suggested to me (for which I thank you).
-
-Furthermore, the modification in rtc.c is ok because it was used only
-if CONFIG_HPET_EMULATE_RTC is defined, but that can only happen if
-CONFIG_HPET_TIMER is also defined (due to 'depends on HPET_TIMER' in 
-the Kconfig), in which case the inclusion of hpet.h is effective.
-
-I hope this is ok for now.
-
-
->From a9852384bcf423493ecdf8be83c3fc72d4b9959d Mon Sep 17 00:00:00 2001
-From: Carlos R. Mafra <crmafra@ift.unesp.br>
-Date: Tue, 6 May 2008 13:58:04 -0300
-Subject: [PATCH] rtc-cmos.c: Build fix
-
-The function hpet_rtc_interrupt(..) is to be used only if CONFIG_HPET_EMULATE_RTC
-is defined (see arch/x86/kernel/hpet.c), so we define it to return 0 when
-!CONFIG_HPET_EMULATE_RTC to avoid build failures. 
-
-This function will never be used anyways when !CONFIG_HPET_EMULATE_RTC because 
-it is inside a if(is_hpet_enabled()) which is never true when
-!CONFIG_HPET_EMULATE_RTC.
-
-Signed-off-by: Carlos R. Mafra <crmafra@ift.unesp.br>
----
- drivers/char/rtc.c     |    2 --
- drivers/rtc/rtc-cmos.c |    5 ++++-
- 2 files changed, 4 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/char/rtc.c b/drivers/char/rtc.c
-index 5f80a9d..31d09ea 100644
---- a/drivers/char/rtc.c
-+++ b/drivers/char/rtc.c
-@@ -119,8 +119,6 @@ static irqreturn_t hpet_rtc_interrupt(int irq, void *dev_id)
- 	return 0;
- }
- #endif
--#else
--extern irqreturn_t hpet_rtc_interrupt(int irq, void *dev_id);
- #endif
+diff -puN drivers/base/sys.c~fix-sys-bogus-warning drivers/base/sys.c
+--- linux-2.6/drivers/base/sys.c~fix-sys-bogus-warning	2008-05-07 03:51:00.000000000 +0900
++++ linux-2.6-hirofumi/drivers/base/sys.c	2008-05-07 04:01:14.000000000 +0900
+@@ -175,8 +175,7 @@ int sysdev_driver_register(struct sysdev
+ 	}
  
- /*
-diff --git a/drivers/rtc/rtc-cmos.c b/drivers/rtc/rtc-cmos.c
-index d060a06..12046bb 100644
---- a/drivers/rtc/rtc-cmos.c
-+++ b/drivers/rtc/rtc-cmos.c
-@@ -52,7 +52,10 @@
- #define hpet_rtc_timer_init() 			do { } while (0)
- #define hpet_register_irq_handler(h) 		0
- #define hpet_unregister_irq_handler(h)		do { } while (0)
--extern irqreturn_t hpet_rtc_interrupt(int irq, void *dev_id);
-+static irqreturn_t hpet_rtc_interrupt(int irq, void *dev_id)
-+{
-+	return 0;
-+}
- #endif
- 
- struct cmos_rtc {
+ 	/* Check whether this driver has already been added to a class. */
+-	if ((drv->entry.next != drv->entry.prev) ||
+-	    (drv->entry.next != NULL)) {
++	if (drv->entry.next && !list_empty(&drv->entry)) {
+ 		printk(KERN_WARNING "sysdev: class %s: driver (%p) has already"
+ 			" been registered to a class, something is wrong, but "
+ 			"will forge on!\n", cls->name, drv);
+_
 -- 
-1.5.4.3
-
-
+OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
