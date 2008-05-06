@@ -1,64 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754690AbYEFLCM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755600AbYEFLCv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754690AbYEFLCM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 07:02:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751531AbYEFLB4
+	id S1755600AbYEFLCv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 07:02:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751709AbYEFLCl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 07:01:56 -0400
-Received: from rudy.mif.pg.gda.pl ([153.19.42.16]:32522 "EHLO
-	rudy.mif.pg.gda.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751227AbYEFLBz (ORCPT
+	Tue, 6 May 2008 07:02:41 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:45340 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751682AbYEFLCk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 07:01:55 -0400
-Date: Tue, 6 May 2008 13:02:55 +0200 (CEST)
-From: =?ISO-8859-2?Q?Tomasz_K=B3oczko?= <kloczek@rudy.mif.pg.gda.pl>
-To: FD Cami <francois.cami@free.fr>
-cc: Kevin Burton <burtonator@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: Ability to limit or disable page caching?
-In-Reply-To: <20080505212831.22371732@olorin>
-Message-ID: <Pine.BSO.4.63.0805061302080.3770@rudy.mif.pg.gda.pl>
-References: <30c6373b0805050012o505c0540i116a31bc1ab9ce9f@mail.gmail.com>
- <20080505131607.5556b1f2@olorin> <30c6373b0805051134m634efbbdn45167c1eae29df4a@mail.gmail.com>
- <20080505212831.22371732@olorin>
+	Tue, 6 May 2008 07:02:40 -0400
+Date: Tue, 06 May 2008 20:02:44 +0900
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       Paul Menage <menage@google.com>, Li Zefan <lizf@cn.fujitsu.com>
+Subject: [PATCH] mm/cgroup.c add error check
+Cc: kosaki.motohiro@jp.fujitsu.com
+Message-Id: <20080506195216.4A6D.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="0-171882422-1210071775=:3770"
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.42 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
 
---0-171882422-1210071775=:3770
-Content-Type: TEXT/PLAIN; charset=ISO-8859-2; format=flowed
-Content-Transfer-Encoding: 8BIT
+on heavy workload, call_usermodehelper() may failure
+because it use kzmalloc(GFP_ATOMIC).
 
-On Mon, 5 May 2008, FD Cami wrote:
+but userland want receive release notificcation even heavy workload.
 
-> On Mon, 5 May 2008 11:34:24 -0700
-> "Kevin Burton" <burtonator@gmail.com> wrote:
->
->>>> In the mean time is it possible to disable the page cache or limit it
->>>> to say 10% of system memory?
->>>
->>> You might want to look at /proc/sys/vm/ for tunables.
->>> /proc/sys/vm/vfs_cache_pressure and /proc/sys/vm/swappiness are probably
->>> what you are looking for.
->>
->> I haven't played with vfs_cache_pressure so I'll take a look at this.
->>
->> Unfortunately, swappiness doesn't work as intended.
->
-> Could you explain the original problem ? That way we might help you better.
+thus, We should retry if -ENOMEM happend.
 
-Probably it is something like this:
 
-http://blogs.smugmug.com/don/2008/05/01/mysql-and-the-linux-swap-problem/
+Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+CC: "Paul Menage" <menage@google.com>
+CC: Li Zefan <lizf@cn.fujitsu.com>
 
-kloczek
--- 
------------------------------------------------------------
-*Ludzie nie maj± problemów, tylko sobie sami je stwarzaj±*
------------------------------------------------------------
-Tomasz K³oczko | *e-mail: kloczek@rudy.mif.pg.gda.pl*
---0-171882422-1210071775=:3770--
+---
+ kernel/cgroup.c |   10 +++++++++-
+ 1 file changed, 9 insertions(+), 1 deletion(-)
+
+Index: b/kernel/cgroup.c
+===================================================================
+--- a/kernel/cgroup.c   2008-04-29 18:00:53.000000000 +0900
++++ b/kernel/cgroup.c   2008-05-06 20:28:23.000000000 +0900
+@@ -3072,6 +3072,8 @@ void __css_put(struct cgroup_subsys_stat
+  */
+ static void cgroup_release_agent(struct work_struct *work)
+ {
++       int err;
++
+        BUG_ON(work != &release_agent_work);
+        mutex_lock(&cgroup_mutex);
+        spin_lock(&release_list_lock);
+@@ -3111,7 +3113,13 @@ static void cgroup_release_agent(struct
+                 * since the exec could involve hitting disk and hence
+                 * be a slow process */
+                mutex_unlock(&cgroup_mutex);
+-               call_usermodehelper(argv[0], argv, envp, UMH_WAIT_EXEC);
++
++retry:
++               err = call_usermodehelper(argv[0], argv, envp, UMH_WAIT_EXEC);
++               if (err == -ENOMEM) {
++                       schedule();
++                       goto retry;
++               }
+                kfree(pathbuf);
+                mutex_lock(&cgroup_mutex);
+                spin_lock(&release_list_lock);
+
+
+
