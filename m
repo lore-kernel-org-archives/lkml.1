@@ -1,46 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933841AbYEFWNf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932702AbYEFWTl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933841AbYEFWNf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 18:13:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761172AbYEFWMl
+	id S932702AbYEFWTl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 18:19:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752532AbYEFWTa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 18:12:41 -0400
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:35103 "EHLO e1.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933616AbYEFWMf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 18:12:35 -0400
-Subject: Re: [PATCH 08/18] flag parameters: epoll_create
-From: Matthew Helsley <matthltc@us.ibm.com>
-To: Ulrich Drepper <drepper@redhat.com>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       akpm@linux-foundation.org, davidel@xmailserver.org,
-       mtk.manpages@gmail.com, torvalds@linux-foundation.org
-In-Reply-To: <200805050342.m453gk49029835@devserv.devel.redhat.com>
-References: <200805050342.m453gk49029835@devserv.devel.redhat.com>
-Content-Type: text/plain
-Date: Tue, 06 May 2008 14:06:29 -0700
-Message-Id: <1210107990.7323.347.camel@localhost.localdomain>
+	Tue, 6 May 2008 18:19:30 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:56117 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751379AbYEFWT3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 May 2008 18:19:29 -0400
+Date: Tue, 6 May 2008 23:09:54 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: "Yigal Sadgat" <YSadgat1@gcte.com>
+Cc: <linux-kernel@vger.kernel.org>, <linux-ide@vger.kernel.org>,
+       <jwboyer@linux.vnet.ibm.com>, <joern@logfs.org>
+Subject: Re: Compact Flash Question
+Message-ID: <20080506230954.6e034cba@core>
+In-Reply-To: <005b01c8afc4$77f4ec90$6401a8c0@techwriter>
+References: <005b01c8afc4$77f4ec90$6401a8c0@techwriter>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.2 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> (1) Can you really ignore bit(2) (CORR) in the Status register offset 7 that 
+> tells
+> you that the CF has detected and corrected a soft error?, etc.
 
-On Sun, 2008-05-04 at 23:42 -0400, Ulrich Drepper wrote:
-> This patch adds the new epoll_create2 syscall.  It extends the old epoll_create
-> syscall by one parameter which is meant to hold a flag value.  In this
-> patch the only flag support is EPOLL_CLOEXEC which causes the close-on-exec
-> flag for the returned file descriptor to be set.
+I guess it might be interesting to log the error rate but we don't
+currently do that. A corrected error is just that however - corrected by
+the card itself.
 
-Davide, Ulrich,
+> (2) An engineer at SanDisk Engineering told me NOT to do wear leveling.
+> The file allocation table is written very frequently back into the flash. So
+> is it really safe to assume that I don't need wear leveling???
 
-	A minor question: Why did you choose to pass the seemingly useless
-"size" parameter into the new epoll_create2 system call? I did some
-googling for previous threads with this series and couldn't find a
-discussion on why you chose to keep it.
+Depends on your hardware vendor. Wear management is done within the CF
+card and only the hardware vendor can tell you what they do. 
 
-Cheers,
-	-Matt Helsley
+> (3) Re. the BUSY bit in the status register (offset 7, bit D7), anybody 
+> experienced
+> time outs?
 
+Yes - both from failing CF cards and also other random events (bad
+connections, people removing live cards etc)
+
+> (4) Re Error register (offset 1) bit D7 (BBK), again, I was told that it 
+> cannot (???)
+> happen since the CF performs read-after-write and it automatically switches 
+> good blocks
+> for bad ones... Is this correct?
+
+Depends on your hardware vendor. It certainly *can* occur with some CF
+cards perhaps when they run out of spare blocks.
+
+Alan
