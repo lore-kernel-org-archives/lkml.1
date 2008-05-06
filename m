@@ -1,63 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758321AbYEFGGw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755797AbYEFGHh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758321AbYEFGGw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 02:06:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753797AbYEFGGl
+	id S1755797AbYEFGHh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 02:07:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758527AbYEFGHU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 02:06:41 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:37013 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753791AbYEFGGk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 02:06:40 -0400
-Date: Tue, 06 May 2008 15:03:52 +0900
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: balbir@linux.vnet.ibm.com
-Subject: Re: on CONFIG_MM_OWNER=y, kernel panic is possible.
-Cc: kosaki.motohiro@jp.fujitsu.com, Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <481FF115.8030503@linux.vnet.ibm.com>
-References: <20080506142255.AC5D.KOSAKI.MOTOHIRO@jp.fujitsu.com> <481FF115.8030503@linux.vnet.ibm.com>
-Message-Id: <20080506150213.AC63.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+	Tue, 6 May 2008 02:07:20 -0400
+Received: from smtp.ono.com ([62.42.230.12]:44168 "EHLO resmaa02.ono.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1758940AbYEFGHQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 May 2008 02:07:16 -0400
+Date: Tue, 6 May 2008 08:07:12 +0200
+From: "J.A. =?UTF-8?B?TWFnYWxsw7Nu?=" <jamagallon@ono.com>
+To: Linux-Kernel <linux-kernel@vger.kernel.org>
+Subject: Scheduling problems ? [ Was: Linux 2.6.26-rc1 ]
+Message-ID: <20080506080712.5aab6d97@werewolf.home>
+In-Reply-To: <alpine.LFD.1.10.0805031205330.2971@woody.linux-foundation.org>
+References: <alpine.LFD.1.10.0805031205330.2971@woody.linux-foundation.org>
+X-Mailer: Claws Mail 3.4.0cvs16 (GTK+ 2.12.9; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> That is not possible. If you look at where mm_update_next_owner() is called
-> from, we call it from
-> 
-> exit_mm() and exec_mmap()
-> 
-> In both cases, we ensure that the task's mm has changed (to NULL and the new mm
-> respectively), before we call mm_update_next_owner(), hence c->mm can never be
-> equal to p->mm.
+Hi...
 
-if so, following patch is needed instead.
+I have installed this kernel, and it behaves a bit strange.
 
+If I launch a movie under totem, it plays nicely (no HD, just 512x384).
+If then I start deluge with some torrents downloading, the video begins to
+loose frames and jump, like loosing 1 or 2 frames per second.
+There is not much bandwidth used, just 15-20 Kb.
 
+I have tried the same copying a kernel source tree and the video plays fine.
+So can it be something network related, os network+io to disk ?
 
----
- fs/exec.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+No group scheduling, 1000Hz, fully preemptive kernel.
+If you smell something and need my .config I will post it.
 
-Index: b/fs/exec.c
-===================================================================
---- a/fs/exec.c 2008-05-04 22:57:09.000000000 +0900
-+++ b/fs/exec.c 2008-05-06 15:40:35.000000000 +0900
-@@ -735,7 +735,7 @@ static int exec_mmap(struct mm_struct *m
-        tsk->active_mm = mm;
-        activate_mm(active_mm, mm);
-        task_unlock(tsk);
--       mm_update_next_owner(mm);
-+       mm_update_next_owner(old_mm);
-        arch_pick_mmap_layout(mm);
-        if (old_mm) {
-                up_read(&old_mm->mmap_sem);
+TIA
 
-
+-- 
+J.A. Magallon <jamagallon()ono!com>     \               Software is like sex:
+                                         \         It's better when it's free
+Mandriva Linux release 2008.1 (Cooker) for i586
+Linux 2.6.23-jam05 (gcc 4.2.2 20071128 (4.2.2-2mdv2008.1)) SMP PREEMPT
