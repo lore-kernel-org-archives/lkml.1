@@ -1,60 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755260AbYEFGyV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756125AbYEFG5G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755260AbYEFGyV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 02:54:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752819AbYEFGyJ
+	id S1756125AbYEFG5G (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 02:57:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752126AbYEFG4z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 02:54:09 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:41608 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752759AbYEFGyI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 02:54:08 -0400
-From: Neil Brown <neilb@suse.de>
-To: Mike Snitzer <snitzer@gmail.com>
-Date: Tue, 6 May 2008 16:53:58 +1000
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 6 May 2008 02:56:55 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:56767
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752736AbYEFG4y (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 May 2008 02:56:54 -0400
+Date: Mon, 05 May 2008 23:56:54 -0700 (PDT)
+Message-Id: <20080505.235654.232530105.davem@davemloft.net>
+To: sfr@canb.auug.org.au
+Cc: mingo@elte.hu, andi@lisas.de, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       mchehab@infradead.org
+Subject: Re: Linux 2.6.26-rc1
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20080506153552.805240f3.sfr@canb.auug.org.au>
+References: <20080506095122.860796f6.sfr@canb.auug.org.au>
+	<20080505.165501.62584352.davem@davemloft.net>
+	<20080506153552.805240f3.sfr@canb.auug.org.au>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Message-ID: <18464.134.236488.251879@notabene.brown>
-Cc: linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org,
-       paul.clements@steeleye.com
-Subject: Re: [RFC][PATCH] md: avoid fullsync if a faulty member missed a dirty transition
-In-Reply-To: message from Mike Snitzer on Wednesday April 2
-References: <1207174155-20090-1-git-send-email-snitzer@gmail.com>
-X-Mailer: VM 7.19 under Emacs 21.4.1
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday April 2, snitzer@gmail.com wrote:
-> resync via bitmap if faulty's events+1 == bitmap's events_cleared
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+Date: Tue, 6 May 2008 15:35:52 +1000
+
+> On Mon, 05 May 2008 16:55:01 -0700 (PDT) David Miller <davem@davemloft.net> wrote:
+> > So what should I do now?
+> > 
+> > I have Ingo's IRDA PNP fixes in my net-2.6 tree and that's already
+> > publicly visible, so I'd need to add revert changesets if people want
+> > me to remove it.
 > 
-> For more background please see:
-> http://marc.info/?l=linux-raid&m=120703208715865&w=2
+> Do nothing.  I was just making a point about patches getting lost/ignored.
+> I have dropped my copies from linux-next today.
 > 
-> Without this change validate_super() will prevent the previously faulty
-> member from recovering via bitmap, e.g.:
+> At least the fixes are now in a tree headed for Linus, soon.
 
-I can't help thinking that you are misinterpreting something.  I don't
-think there is a clean->dirty transition happening here.
-You could confirm this by using --examine on both devices after the
-messy shutdown and before re-assembling the array.
-
-Even allowing for that possible confusion, I cannot quite see what is
-going on.
-It is fairly clear from the event counts that the NBD device is marked
-clean, but if this is happening at array-shutdown time, I cannot see
-why md would try to write to the NBD device and thereby detect an
-error...
-
-Do you have an internal bitmap or a bitmap in an external file?
-
-In general, I would not like to make decisions based on the
-oddness/evenness of the event counter.  I consider that to be an
-internal implementation detail.  I am happy to make decisions based on
-a difference-of-1.  I need to understand the big picture first though.
-
-NeilBrown
+Great, thanks.
