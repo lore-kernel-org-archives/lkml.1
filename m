@@ -1,119 +1,286 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933565AbYEFWJh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933227AbYEFWLm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933565AbYEFWJh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 18:09:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756165AbYEFWJV
+	id S933227AbYEFWLm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 18:11:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756165AbYEFWLa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 18:09:21 -0400
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:55224 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752773AbYEFWJS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 18:09:18 -0400
-Subject: Re: parisc DISCONTIGMEM compile breakage
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Mel Gorman <mel@csn.ul.ie>
-Cc: Adrian Bunk <bunk@kernel.org>, Christoph Lameter <clameter@sgi.com>,
-       Lee Schermerhorn <lee.schermerhorn@hp.com>, kyle@parisc-linux.org,
-       matthew@wil.cx, grundler@parisc-linux.org, linux-parisc@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20080506211750.GA13214@csn.ul.ie>
-References: <20080506134648.GA30082@cs181133002.pp.htv.fi>
-	 <20080506152713.GA5034@csn.ul.ie>
-	 <1210103927.3057.19.camel@localhost.localdomain>
-	 <20080506211750.GA13214@csn.ul.ie>
-Content-Type: text/plain
-Date: Tue, 06 May 2008 17:09:10 -0500
-Message-Id: <1210111750.3057.23.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-4.fc8) 
+	Tue, 6 May 2008 18:11:30 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:56601 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752140AbYEFWL2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 May 2008 18:11:28 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: pm list <linux-pm@lists.linux-foundation.org>
+Subject: [RFC][PATCH 1/2] Freezer: Introduce PF_FREEZER_NOSIG
+Date: Wed, 7 May 2008 00:05:19 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Ingo Molnar <mingo@elte.hu>, Len Brown <lenb@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
+       Matt Helsley <matthltc@us.ibm.com>, Cedric Le Goater <clg@fr.ibm.com>,
+       Paul Menage <menage@google.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Alan Stern <stern@rowland.harvard.edu>
+References: <200805070003.56387.rjw@sisk.pl>
+In-Reply-To: <200805070003.56387.rjw@sisk.pl>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-2"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200805070005.20403.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-05-06 at 22:17 +0100, Mel Gorman wrote:
-> On (06/05/08 14:58), James Bottomley didst pronounce:
-> > On Tue, 2008-05-06 at 16:27 +0100, Mel Gorman wrote:
-> > > On (06/05/08 16:46), Adrian Bunk didst pronounce:
-> > > > Commit 54a6eb5c4765aa573a030ceeba2c14e3d2ea5706
-> > > > (mm: use two zonelist that are filtered by GFP mask)
-> > > > causes the following build error with CONFIG_DISCONTIGMEM=y
-> > > > on parisc:
-> > > > 
-> > > 
-> > > Thanks Adrian. I don't have a pa-risc cross-compiler and there isn't one
-> > > at the usual source http://userweb.kernel.org/~akpm/cross-compilers but the
-> > > patch below should fix it. Note that this debugging code should be deleted if
-> > > the mm-initialisation-and-debugging framework in -mm is merged to mainline
-> > > as it knows how to print all the zonelists where as the pa-risc equivilant
-> > > misses the GFP_THISNODE lists.
-> > > 
-> > > =====
-> > > Subject: [PATCH] Fix pa-risc DISCONTIGMEM compile breakage
-> > >     
-> > > PA-RISC to aid debugging prints out the zonelists setup by the system. A
-> > > bad call to node_zonelist() breaks at compile-time. This patch fixes it.
-> > > 
-> > > Signed-off-by: Mel Gorman <mel@csn.ul.ie>
-> > > ---
-> > >  arch/parisc/mm/init.c |    2 +-
-> > >  1 file changed, 1 insertion(+), 1 deletion(-)
-> > > 
-> > > diff --git a/arch/parisc/mm/init.c b/arch/parisc/mm/init.c
-> > > index 1f01284..b0ed709 100644
-> > > --- a/arch/parisc/mm/init.c
-> > > +++ b/arch/parisc/mm/init.c
-> > > @@ -606,7 +606,7 @@ void show_mem(void)
-> > >  		int i, j;
-> > >  
-> > >  		for (i = 0; i < npmem_ranges; i++) {
-> > > -			zl = node_zonelist(i);
-> > > +			zl = node_zonelist(i, 0);
-> > >  			for (j = 0; j < MAX_NR_ZONES; j++) {
-> > 
-> > This rather doesn't look right.  The intent is for i to iterate over the
-> > ranges (as nodes) and j to iterate over the zones to get the zonelist.
-> 
-> Yes, that appears to be the original intention.
-> 
-> > The original variable k was going over the mappings, which you replaced
-> > with for_each_zone_zonelist.  If you use node_zonelist(i, 0) you don't
-> > really look at the actual zones in the map.
-> > 
-> 
-> No, but you filter the one list based on the highest zone that can be
-> accesssed.
-> 
-> > Therefore it seems what will give the original functionality back is
-> > actually this:
-> > 
-> 
-> To be fair, a few weeks ago you would have been right. Since then zonelists
-> have changed though so that there are only two zonelists per node in
-> git-latest. One which is for general allocations and one for GFP_THISNODE. The
-> zonelist is filtered based on the GFP flags, hence the iterator. I copied the
-> parisc code with the compile-fix into mm/page_alloc.c and called it just to
-> be sure and with qemu, I see
-> 
-> [    0.628960] Zone list for zone 0 on node 0: [0/DMA] 
-> [    0.628960] Zone list for zone 1 on node 0: [0/Normal] [0/DMA] 
-> [    0.628960] Zone list for zone 2 on node 0: [0/HighMem] [0/Normal] [0/DMA] 
-> [    0.628960] Zone list for zone 3 on node 0: [0/Movable] [0/HighMem] [0/Normal] [0/DMA]
-> 
-> which looks right (movablecore was specified hence the existance of the
-> movable zone).
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Thanks ... I confirmed that your fix does actually work.  Mysteriously,
-this is what it produces as output:
+The freezer currently attempts to distinguish kernel threads from
+user space tasks by checking if their mm pointer is unset and it
+does not send fake signals to kernel threads.  However, there are
+kernel threads, mostly related to networking, that behave like
+user space tasks and may want to be sent a fake signal to be frozen.
 
-Zone list for zone 0 on node 0: [0/Normal] [0/Normal] 
-Zone list for zone 1 on node 0: [0/Normal] [0/Normal] 
-Zone list for zone 0 on node 1: [0/Normal] [0/Normal] 
-Zone list for zone 1 on node 1: [0/Normal] [0/Normal] 
+Introduce the new process flag PF_FREEZER_NOSIG that will be set
+by default for all kernel threads and make the freezer only send
+fake signals to the tasks having PF_FREEZER_NOSIG unset.  Provide
+the set_freezable_with_signal() function to be called by the kernel
+threads that want to be sent a fake signal for freezing.
 
-Which is correct
+This patch should not change the freezer's observable behavior.
 
-James
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ include/linux/freezer.h |   10 ++++
+ include/linux/sched.h   |    1 
+ kernel/kthread.c        |    2 
+ kernel/power/process.c  |   97 ++++++++++++++++++++----------------------------
+ 4 files changed, 54 insertions(+), 56 deletions(-)
 
-
+Index: linux-2.6/include/linux/freezer.h
+===================================================================
+--- linux-2.6.orig/include/linux/freezer.h
++++ linux-2.6/include/linux/freezer.h
+@@ -128,6 +128,15 @@ static inline void set_freezable(void)
+ }
+ 
+ /*
++ * Tell the freezer that the current task should be frozen by it and that it
++ * should send a fake signal to the task to freeze it.
++ */
++static inline void set_freezable_with_signal(void)
++{
++	current->flags &= ~(PF_NOFREEZE | PF_FREEZER_NOSIG);
++}
++
++/*
+  * Freezer-friendly wrappers around wait_event_interruptible() and
+  * wait_event_interruptible_timeout(), originally defined in <linux/wait.h>
+  */
+@@ -174,6 +183,7 @@ static inline void freezer_do_not_count(
+ static inline void freezer_count(void) {}
+ static inline int freezer_should_skip(struct task_struct *p) { return 0; }
+ static inline void set_freezable(void) {}
++static inline void set_freezable_with_signal(void) {}
+ 
+ #define wait_event_freezable(wq, condition)				\
+ 		wait_event_interruptible(wq, condition)
+Index: linux-2.6/include/linux/sched.h
+===================================================================
+--- linux-2.6.orig/include/linux/sched.h
++++ linux-2.6/include/linux/sched.h
+@@ -1508,6 +1508,7 @@ static inline void put_task_struct(struc
+ #define PF_MEMPOLICY	0x10000000	/* Non-default NUMA mempolicy */
+ #define PF_MUTEX_TESTER	0x20000000	/* Thread belongs to the rt mutex tester */
+ #define PF_FREEZER_SKIP	0x40000000	/* Freezer should not count it as freezeable */
++#define PF_FREEZER_NOSIG 0x80000000	/* Freezer won't send signals to it */
+ 
+ /*
+  * Only the _current_ task can read/write to tsk->flags, but other
+Index: linux-2.6/kernel/power/process.c
+===================================================================
+--- linux-2.6.orig/kernel/power/process.c
++++ linux-2.6/kernel/power/process.c
+@@ -19,9 +19,6 @@
+  */
+ #define TIMEOUT	(20 * HZ)
+ 
+-#define FREEZER_KERNEL_THREADS 0
+-#define FREEZER_USER_SPACE 1
+-
+ static inline int freezeable(struct task_struct * p)
+ {
+ 	if ((p == current) ||
+@@ -84,63 +81,53 @@ static void fake_signal_wake_up(struct t
+ 	spin_unlock_irqrestore(&p->sighand->siglock, flags);
+ }
+ 
+-static int has_mm(struct task_struct *p)
++static inline bool should_send_signal(struct task_struct *p)
+ {
+-	return (p->mm && !(p->flags & PF_BORROWED_MM));
++	return !(current->flags & PF_FREEZER_NOSIG);
+ }
+ 
+ /**
+  *	freeze_task - send a freeze request to given task
+  *	@p: task to send the request to
+- *	@with_mm_only: if set, the request will only be sent if the task has its
+- *		own mm
+- *	Return value: 0, if @with_mm_only is set and the task has no mm of its
+- *		own or the task is frozen, 1, otherwise
++ *	@sig_only: if set, the request will only be sent if the task has the
++ *		PF_FREEZER_NOSIG flag unset
++ *	Return value: 'false', if @sig_only is set and the task has
++ *		PF_FREEZER_NOSIG set or the task is frozen, 'true', otherwise
+  *
+- *	The freeze request is sent by seting the tasks's TIF_FREEZE flag and
++ *	The freeze request is sent by setting the tasks's TIF_FREEZE flag and
+  *	either sending a fake signal to it or waking it up, depending on whether
+- *	or not it has its own mm (ie. it is a user land task).  If @with_mm_only
+- *	is set and the task has no mm of its own (ie. it is a kernel thread),
+- *	its TIF_FREEZE flag should not be set.
+- *
+- *	The task_lock() is necessary to prevent races with exit_mm() or
+- *	use_mm()/unuse_mm() from occuring.
++ *	or not it has PF_FREEZER_NOSIG set.  If @sig_only is set and the task
++ *	has PF_FREEZER_NOSIG set (ie. it is a typical kernel thread), its
++ *	TIF_FREEZE flag will not be set.
+  */
+-static int freeze_task(struct task_struct *p, int with_mm_only)
++static bool freeze_task(struct task_struct *p, bool sig_only)
+ {
+-	int ret = 1;
++	/*
++	 * We first check if the task is freezing and next if it has already
++	 * been frozen to avoid the race with frozen_process() which first marks
++	 * the task as frozen and next clears its TIF_FREEZE.
++	 */
++	if (!freezing(p)) {
++		rmb();
++		if (frozen(p))
++			return false;
+ 
+-	task_lock(p);
+-	if (freezing(p)) {
+-		if (has_mm(p)) {
+-			if (!signal_pending(p))
+-				fake_signal_wake_up(p);
+-		} else {
+-			if (with_mm_only)
+-				ret = 0;
+-			else
+-				wake_up_state(p, TASK_INTERRUPTIBLE);
+-		}
++		if (!sig_only || should_send_signal(p))
++			set_freeze_flag(p);
++		else
++			return false;
++	}
++
++	if (should_send_signal(p)) {
++		if (!signal_pending(p))
++			fake_signal_wake_up(p);
++	} else if (sig_only) {
++		return false;
+ 	} else {
+-		rmb();
+-		if (frozen(p)) {
+-			ret = 0;
+-		} else {
+-			if (has_mm(p)) {
+-				set_freeze_flag(p);
+-				fake_signal_wake_up(p);
+-			} else {
+-				if (with_mm_only) {
+-					ret = 0;
+-				} else {
+-					set_freeze_flag(p);
+-					wake_up_state(p, TASK_INTERRUPTIBLE);
+-				}
+-			}
+-		}
++		wake_up_state(p, TASK_INTERRUPTIBLE);
+ 	}
+-	task_unlock(p);
+-	return ret;
++
++	return true;
+ }
+ 
+ static void cancel_freezing(struct task_struct *p)
+@@ -156,7 +143,7 @@ static void cancel_freezing(struct task_
+ 	}
+ }
+ 
+-static int try_to_freeze_tasks(int freeze_user_space)
++static int try_to_freeze_tasks(bool sig_only)
+ {
+ 	struct task_struct *g, *p;
+ 	unsigned long end_time;
+@@ -175,7 +162,7 @@ static int try_to_freeze_tasks(int freez
+ 			if (frozen(p) || !freezeable(p))
+ 				continue;
+ 
+-			if (!freeze_task(p, freeze_user_space))
++			if (!freeze_task(p, sig_only))
+ 				continue;
+ 
+ 			/*
+@@ -235,13 +222,13 @@ int freeze_processes(void)
+ 	int error;
+ 
+ 	printk("Freezing user space processes ... ");
+-	error = try_to_freeze_tasks(FREEZER_USER_SPACE);
++	error = try_to_freeze_tasks(true);
+ 	if (error)
+ 		goto Exit;
+ 	printk("done.\n");
+ 
+ 	printk("Freezing remaining freezable tasks ... ");
+-	error = try_to_freeze_tasks(FREEZER_KERNEL_THREADS);
++	error = try_to_freeze_tasks(false);
+ 	if (error)
+ 		goto Exit;
+ 	printk("done.");
+@@ -251,7 +238,7 @@ int freeze_processes(void)
+ 	return error;
+ }
+ 
+-static void thaw_tasks(int thaw_user_space)
++static void thaw_tasks(bool sig_only)
+ {
+ 	struct task_struct *g, *p;
+ 
+@@ -260,7 +247,7 @@ static void thaw_tasks(int thaw_user_spa
+ 		if (!freezeable(p))
+ 			continue;
+ 
+-		if (!p->mm == thaw_user_space)
++		if (sig_only && !should_send_signal(p))
+ 			continue;
+ 
+ 		thaw_process(p);
+@@ -271,8 +258,8 @@ static void thaw_tasks(int thaw_user_spa
+ void thaw_processes(void)
+ {
+ 	printk("Restarting tasks ... ");
+-	thaw_tasks(FREEZER_KERNEL_THREADS);
+-	thaw_tasks(FREEZER_USER_SPACE);
++	thaw_tasks(true);
++	thaw_tasks(false);
+ 	schedule();
+ 	printk("done.\n");
+ }
+Index: linux-2.6/kernel/kthread.c
+===================================================================
+--- linux-2.6.orig/kernel/kthread.c
++++ linux-2.6/kernel/kthread.c
+@@ -234,7 +234,7 @@ int kthreadd(void *unused)
+ 	set_user_nice(tsk, KTHREAD_NICE_LEVEL);
+ 	set_cpus_allowed(tsk, CPU_MASK_ALL);
+ 
+-	current->flags |= PF_NOFREEZE;
++	current->flags |= PF_NOFREEZE | PF_FREEZER_NOSIG;
+ 
+ 	for (;;) {
+ 		set_current_state(TASK_INTERRUPTIBLE);
