@@ -1,62 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932936AbYEFUc4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932991AbYEFUdr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932936AbYEFUc4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 16:32:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757555AbYEFUco
+	id S932991AbYEFUdr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 16:33:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759590AbYEFUdc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 16:32:44 -0400
-Received: from extu-mxob-2.symantec.com ([216.10.194.135]:49259 "EHLO
-	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756605AbYEFUcm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 16:32:42 -0400
-Date: Tue, 6 May 2008 21:30:44 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.site
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Ingo Molnar <mingo@elte.hu>, Jeff Chua <jeff.chua.linux@gmail.com>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Gabriel C <nix.or.die@googlemail.com>,
-       Hans Rosenfeld <hans.rosenfeld@amd.com>,
-       Arjan van de Ven <arjan@linux.intel.com>,
-       Nishanth Aravamudan <nacc@us.ibm.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [PATCH] x86: fix PAE pmd_bad bootup warning
-In-Reply-To: <alpine.LFD.1.10.0805061302080.32269@woody.linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0805062120120.16053@blonde.site>
-References: <b6a2187b0805051806v25fa1272xb08e0b70b9c3408@mail.gmail.com>
- <20080506124946.GA2146@elte.hu> <Pine.LNX.4.64.0805061435510.32567@blonde.site>
- <alpine.LFD.1.10.0805061138580.32269@woody.linux-foundation.org>
- <Pine.LNX.4.64.0805062043580.11647@blonde.site>
- <alpine.LFD.1.10.0805061302080.32269@woody.linux-foundation.org>
+	Tue, 6 May 2008 16:33:32 -0400
+Received: from www.tglx.de ([62.245.132.106]:43291 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758339AbYEFUdb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 May 2008 16:33:31 -0400
+Date: Tue, 6 May 2008 22:25:47 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Daniel Walker <dwalker@mvista.com>
+cc: akpm@linux-foundation.org, johnstul@us.ibm.com, ralf@linux-mips.org,
+       anemo@mba.ocn.ne.jp, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] clocksource: shift helper
+In-Reply-To: <1210091954.17132.142.camel@localhost.localdomain>
+Message-ID: <alpine.LFD.1.10.0805061854310.3318@apollo.tec.linutronix.de>
+References: <20080501173123.444094226@mvista.com>  <alpine.LFD.1.10.0805060250410.3318@apollo.tec.linutronix.de> <1210091954.17132.142.camel@localhost.localdomain>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 6 May 2008, Linus Torvalds wrote:
-> On Tue, 6 May 2008, Hugh Dickins wrote:
-> >
-> > Fix Hans' good observation that follow_page() will never find pmd_huge()
-> > because that would have already failed the pmd_bad test: test pmd_huge in
-> > between the pmd_none and pmd_bad tests.  Tighten x86's pmd_huge() check?
-> > No, once it's a hugepage entry, it can get quite far from a good pmd: for
-> > example, PROT_NONE leaves it with only ACCESSED of the KERN_PGTABLE bits.
+On Tue, 6 May 2008, Daniel Walker wrote:
+> On Tue, 2008-05-06 at 02:52 +0200, Thomas Gleixner wrote:
+> > On Thu, 1 May 2008, Daniel Walker wrote:
+> > 
+> > > This is a little helper I pulled from the mips tree.
+> > ... 
+> > > Signed-off-by: Daniel Walker <dwalker@mvista.com>
+> > 
+> > And who is the original author of this little helper in the MIPS tree?
 > 
-> I'd much rather have pdm_bad() etc fixed up instead, so that they do a 
-> more proper test (not thinking that a PSE page is bad, since it clearly 
-> isn't). And then, make them dependent on DEBUG_VM, because doing the 
-> proper test will be more expensive.
+> commit 16b7b2ac0148e839da86af8747b6fa4aad43a9b7
+> Author: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
 
-But everywhere we use pmd_bad() etc (most are hidden inside
-pmd_none_or_clear_bad() etc) we are expecting never to encounter
-a pmd_huge, unless there's corruption.  follow_page() is the one
-exception, and even in its case I can't find a current user that
-actually could meet a hugepage.  I'd rather tighten up pmd_bad
-(in the PAE and x86_64 cases), than weaken it so far as to let
-hugepages slip through.  Not that pmd_bad often catches anything:
-just coincidentally that 90909090 one today.
+Wouldn't it be appropriate to assign the authorship in the usual form
+i.e.:
 
-Hugh
+From: Atsushi Nemoto <anemo@mba.ocn.ne.jp> 
+
+on top of the patch and keep the original changelog message intact
+including the Signed-off-by of the author and Ralf ?
+
+Aside of the broken S-O-B chain this is a blatant usurpation of
+somebody else's work.
+
+You answered my question about the real author without hesitation, so
+I guess it was not your intention to claim authorship of someone
+else's work, but this is on the verge of plagiarism and might bring
+you into serious trouble.
+
+You should know the proper procedures by now and this is exactly the
+kind of sloppiness that you constantly show and what makes it almost
+impossible to do any cooperative work with you.
+
+Thanks,
+
+	tglx
