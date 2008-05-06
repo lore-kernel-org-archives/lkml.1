@@ -1,57 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932316AbYEFTt2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932710AbYEFTt4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932316AbYEFTt2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 15:49:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756907AbYEFTtS
+	id S932710AbYEFTt4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 15:49:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756907AbYEFTtn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 15:49:18 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:50273 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754193AbYEFTtQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 15:49:16 -0400
-Date: Tue, 6 May 2008 15:46:12 -0400
-From: Rik van Riel <riel@redhat.com>
-To: schwidefsky@de.ibm.com
-Cc: Hugh Dickins <hugh@veritas.com>, linux-kernel@vger.kernel.org,
-       linux-s390@vger.kernel.org, virtualization@lists.osdl.org,
-       akpm@linux-foundation.org, nickpiggin@yahoo.com.au, zach@vmware.com,
-       frankeh@watson.ibm.com, rusty@rustcorp.com.au, jeremy@goop.org,
-       andrea@qumranet.com, clameter@sgi.com, a.p.zijlstra@chello.nl
-Subject: Re: [patch 0/6] Guest page hinting version 6.
-Message-ID: <20080506154612.58cc3070@cuia.bos.redhat.com>
-In-Reply-To: <1210087982.31803.32.camel@localhost>
-References: <20080312132132.520833247@de.ibm.com>
-	<Pine.LNX.4.64.0803131627450.17244@blonde.site>
-	<1210087982.31803.32.camel@localhost>
-Organization: Red Hat, Inc
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 6 May 2008 15:49:43 -0400
+Received: from mga06.intel.com ([134.134.136.21]:21234 "EHLO
+	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S932123AbYEFTtl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 May 2008 15:49:41 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.27,445,1204531200"; 
+   d="scan'208";a="278512446"
+Message-ID: <4820B64D.4000805@linux.intel.com>
+Date: Tue, 06 May 2008 12:49:33 -0700
+From: Arjan van de Ven <arjan@linux.intel.com>
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+MIME-Version: 1.0
+To: Kevin Winchester <kjwinchester@gmail.com>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: linux-next: WARNING: at kernel/panic.c:375 __stack_chk_test+0x50/0x54()
+References: <4819078C.9080405@gmail.com>	<48190844.5080804@linux.intel.com>	<48190DBB.9020102@gmail.com>	<20080430002727.00db8e63@linux.intel.com>	<481A4636.8050209@gmail.com> <20080501043313.02205bbd@linux.intel.com> <481CF3B1.2020307@gmail.com>
+In-Reply-To: <481CF3B1.2020307@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 06 May 2008 17:33:02 +0200
-Martin Schwidefsky <schwidefsky@de.ibm.com> wrote:
-> On Thu, 2008-03-13 at 16:57 +0000, Hugh Dickins wrote:
-> > It's very encouraging to see Jeremy and Rusty weighing in.  I hope
-> > Zach will too, and I've added Andrea: their support would count a lot.
-> > You have Nick on the list, good, I've added Christoph and Peter
-> > (if you do resend, linux-mm might prove more useful than linux-kernel).
-> > 
-> > With support from rival virtualizers,
-> > I do think you've a good chance of getting in.
+Kevin Winchester wrote:
+> Arjan van de Ven wrote:
+>> \
+>>> Does that help?
+>>
+>> somewhat. If you still have your source tree, can you do
+>>
+>> make kernel/panic.s and send that file to me as well?
+>> (offlist is fine)
+>>
 > 
-> Traffic on the guest page hinting patches died down again. Until another
-> user shows up I guess that's it for the full version. 
+> I didn't have the source tree around, but I created the tree+config, and 
+> here is what I get (I believe it is not too big for the list):
+> 
 
-I suspect one of the problems is that there are too many state transitions
-to have it implemented with a low overhead on anything but S390, and even
-there you need milicoded instructions to handle things.
+interesting; somehow gcc does NOT put stack-protector in place despite it being
+told so with -fstack-protector-all.
 
-If the number of transitions can be reduced, page hinting could be useful
-for KVM, too.
+# -fno-common -funit-at-a-time -fstack-protector -fstack-protector-all
+# -fno-asynchronous-unwind-tables -fno-omit-frame-pointer
+# -fno-optimize-sibling-calls -fverbose-asm -fstack-protector
+# -fstack-protector
 
--- 
-All Rights Reversed
+
+this is weird; something is adding ANOTHER -fstack-protector to the (effective) gcc
+flags.. which might be overriding the -fstack-protector-all setting.
+
+I wonder if this is a distro special ;(
