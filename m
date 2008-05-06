@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932572AbYEFRld@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932629AbYEFRmA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932572AbYEFRld (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 13:41:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761413AbYEFRhe
+	id S932629AbYEFRmA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 13:42:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764490AbYEFRhu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 13:37:34 -0400
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:50136 "EHLO
+	Tue, 6 May 2008 13:37:50 -0400
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:50253 "EHLO
 	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760367AbYEFRg4 (ORCPT
+	with ESMTP id S1764372AbYEFRhr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 13:36:56 -0400
-Message-Id: <20080506173334.874538157@theryb.frec.bull.fr>
+	Tue, 6 May 2008 13:37:47 -0400
+Message-Id: <20080506173335.629534151@theryb.frec.bull.fr>
 References: <20080506173030.653828076@theryb.frec.bull.fr>
 User-Agent: quilt/0.46-1
-Date: Tue, 06 May 2008 19:31:00 +0200
+Date: Tue, 06 May 2008 19:31:50 +0200
 From: Benjamin Thery <benjamin.thery@bull.net>
 To: linux-kernel@vger.kernel.org
 Cc: "Eric W. Biederman" <ebiederm@xmission.com>, Tejun Heo <htejun@gmail.com>,
@@ -22,71 +22,169 @@ Cc: "Eric W. Biederman" <ebiederm@xmission.com>, Tejun Heo <htejun@gmail.com>,
        "Serge E. Hallyn" <serue@us.ibm.com>,
        Pavel Emelyanov <xemul@openvz.org>, netdev@vger.kernel.org,
        Benjamin Thery <benjamin.thery@bull.net>
-Subject: [PATCH 03/11] sysfs: Implement __sysfs_get_dentry
+Subject: [PATCH 08/11] driver core: Implement tagged directory support for
+ device classes.
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-sysfs: Implement __sysfs_get_dentry
+driver core: Implement tagged directory support for device classes.
 
-This function is similar but much simpler to sysfs_get_dentry
-returns a sysfs dentry if one curently exists.
+This patch enables tagging on every class directory if struct class
+has tag_ops.
+
+In addition device_del and device_rename were modified to use
+sysfs_delete_link and sysfs_rename_link respectively to ensure
+when these operations happen on devices whose classes have
+tag_ops that they work properly.
 
 Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
 Acked-by: Benjamin Thery <benjamin.thery@bull.net>
 ---
- fs/sysfs/dir.c |   39 +++++++++++++++++++++++++++++++++++++++
- 1 file changed, 39 insertions(+)
+ drivers/base/class.c   |   30 ++++++++++++++++++++++++++----
+ drivers/base/core.c    |   41 ++++++++++++++++++++++-------------------
+ include/linux/device.h |    2 ++
+ 3 files changed, 50 insertions(+), 23 deletions(-)
 
-Index: linux-vanilla/fs/sysfs/dir.c
+Index: linux-vanilla/drivers/base/class.c
 ===================================================================
---- linux-vanilla.orig/fs/sysfs/dir.c
-+++ linux-vanilla/fs/sysfs/dir.c
-@@ -768,6 +768,45 @@ void sysfs_remove_dir(struct kobject * k
- 	__sysfs_remove_dir(sd);
+--- linux-vanilla.orig/drivers/base/class.c
++++ linux-vanilla/drivers/base/class.c
+@@ -134,6 +134,17 @@ static void remove_class_attrs(struct cl
+ 	}
  }
  
-+/**
-+ *	__sysfs_get_dentry - get dentry for the given sysfs_dirent
-+ *	@sb: superblock of the dentry to return
-+ *	@sd: sysfs_dirent of interest
-+ *
-+ *	Get dentry for @sd.  Only return a dentry if one currently
-+ *	exists.
-+ *
-+ *	LOCKING:
-+ *	Kernel thread context (may sleep)
-+ *
-+ *	RETURNS:
-+ *	Pointer to found dentry on success, NULL on failure.
-+ */
-+static struct dentry *__sysfs_get_dentry(struct super_block *sb,
-+					 struct sysfs_dirent *sd)
++static int class_setup_tagging(struct class *cls)
 +{
-+	struct inode *inode;
-+	struct dentry *dentry = NULL;
++	const struct sysfs_tagged_dir_operations *tag_ops;
 +
-+	inode = ilookup5_nowait(sysfs_sb, sd->s_ino, sysfs_ilookup_test, sd);
-+	if (inode && !(inode->i_state & I_NEW)) {
-+		struct dentry *alias;
-+		spin_lock(&dcache_lock);
-+		list_for_each_entry(alias, &inode->i_dentry, d_alias) {
-+			if (!IS_ROOT(alias) && d_unhashed(alias))
-+				continue;
-+			if (alias->d_sb != sb)
-+				continue;
-+			dentry = alias;
-+			dget_locked(dentry);
-+			break;
-+		}
-+		spin_unlock(&dcache_lock);
-+	}
-+	iput(inode);
-+	return dentry;
++	tag_ops = cls->tag_ops;
++	if (!tag_ops)
++		return 0;
++
++	return sysfs_enable_tagging(&cls->subsys.kobj, tag_ops);
 +}
 +
- int sysfs_rename_dir(struct kobject * kobj, const char *new_name)
+ int class_register(struct class *cls)
  {
- 	struct sysfs_dirent *sd = kobj->sd;
+ 	int error;
+@@ -159,11 +170,22 @@ int class_register(struct class *cls)
+ 	cls->subsys.kobj.ktype = &class_ktype;
+ 
+ 	error = kset_register(&cls->subsys);
+-	if (!error) {
+-		error = add_class_attrs(class_get(cls));
+-		class_put(cls);
+-	}
++	if (error)
++		goto out;
++
++	error = class_setup_tagging(cls);
++	if (error)
++		goto out_unregister;
++
++	error = add_class_attrs(cls);
++	if (error)
++		goto out_unregister;
++
++out:
+ 	return error;
++out_unregister:
++	kset_unregister(&cls->subsys);
++	goto out;
+ }
+ 
+ void class_unregister(struct class *cls)
+Index: linux-vanilla/drivers/base/core.c
+===================================================================
+--- linux-vanilla.orig/drivers/base/core.c
++++ linux-vanilla/drivers/base/core.c
+@@ -614,6 +614,10 @@ static struct kobject *get_device_parent
+ 			kobject_put(k);
+ 			return NULL;
+ 		}
++		/* If we created a new class-directory setup tagging */
++		if (dev->class->tag_ops)
++			sysfs_enable_tagging(k, dev->class->tag_ops);
++
+ 		/* do not emit an uevent for this simple "glue" directory */
+ 		return k;
+ 	}
+@@ -748,12 +752,13 @@ static void device_remove_class_symlinks
+ 
+ 	if (dev->kobj.parent != &dev->class->subsys.kobj &&
+ 	    device_is_not_partition(dev))
+-		sysfs_remove_link(&dev->class->subsys.kobj, dev->bus_id);
++		sysfs_delete_link(&dev->class->subsys.kobj, &dev->kobj,
++				  dev->bus_id);
+ #else
+ 	if (dev->parent && device_is_not_partition(dev))
+ 		sysfs_remove_link(&dev->kobj, "device");
+ 
+-	sysfs_remove_link(&dev->class->subsys.kobj, dev->bus_id);
++	sysfs_delete_link(&dev->class->subsys.kobj, &dev->kobj, dev->bus_id);
+ #endif
+ 
+ 	sysfs_remove_link(&dev->kobj, "subsystem");
+@@ -1199,6 +1204,15 @@ int device_rename(struct device *dev, ch
+ 	strlcpy(old_device_name, dev->bus_id, BUS_ID_SIZE);
+ 	strlcpy(dev->bus_id, new_name, BUS_ID_SIZE);
+ 
++#ifndef CONFIG_SYSFS_DEPRECATED
++	if (dev->class && (dev->kobj.parent != &dev->class->subsys.kobj)) {
++		error = sysfs_rename_link(&dev->class->subsys.kobj,
++			&dev->kobj, old_device_name, new_name);
++		if (error)
++			goto out;
++	}
++#endif
++
+ 	error = kobject_rename(&dev->kobj, new_name);
+ 	if (error) {
+ 		strlcpy(dev->bus_id, old_device_name, BUS_ID_SIZE);
+@@ -1207,24 +1221,13 @@ int device_rename(struct device *dev, ch
+ 
+ #ifdef CONFIG_SYSFS_DEPRECATED
+ 	if (old_class_name) {
++		error = -ENOMEM;
+ 		new_class_name = make_class_name(dev->class->name, &dev->kobj);
+-		if (new_class_name) {
+-			error = sysfs_create_link(&dev->parent->kobj,
+-						  &dev->kobj, new_class_name);
+-			if (error)
+-				goto out;
+-			sysfs_remove_link(&dev->parent->kobj, old_class_name);
+-		}
+-	}
+-#else
+-	if (dev->class) {
+-		sysfs_remove_link(&dev->class->subsys.kobj, old_device_name);
+-		error = sysfs_create_link(&dev->class->subsys.kobj, &dev->kobj,
+-					  dev->bus_id);
+-		if (error) {
+-			dev_err(dev, "%s: sysfs_create_symlink failed (%d)\n",
+-				__func__, error);
+-		}
++		if (new_class_name)
++			error = sysfs_rename_link(&dev->parent->kobj,
++						  &dev->kobj,
++						  old_class_name,
++						  new_class_name);
+ 	}
+ #endif
+ 
+Index: linux-vanilla/include/linux/device.h
+===================================================================
+--- linux-vanilla.orig/include/linux/device.h
++++ linux-vanilla/include/linux/device.h
+@@ -198,6 +198,8 @@ struct class {
+ 
+ 	int (*suspend)(struct device *dev, pm_message_t state);
+ 	int (*resume)(struct device *dev);
++
++	const struct sysfs_tagged_dir_operations *tag_ops;
+ };
+ 
+ extern int __must_check class_register(struct class *class);
 
 -- 
