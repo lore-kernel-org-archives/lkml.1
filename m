@@ -1,58 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761024AbYEFMnx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763037AbYEFMoW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761024AbYEFMnx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 08:43:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753850AbYEFMnq
+	id S1763037AbYEFMoW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 08:44:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761974AbYEFMoA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 08:43:46 -0400
-Received: from gv-out-0910.google.com ([216.239.58.184]:58023 "EHLO
-	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754089AbYEFMnp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 08:43:45 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=fpRaQMONt7qtUscujjmQlnoK9w1fTBXWJBoZY7MJY5kWhGVS8Ir53NqUXT2c/ymTw4UmKzHRAvKmznv2HTBGXVSghsL52QEGSeR4YRLwObY51JzwcSlpK+uiEAUXYipfsh/SO3x5cPmZT13dey0lJkbyQw7VUeUEFDPmKaxd/M8=
-Message-ID: <d2b9ea600805060543w6e73d9a8p85fac7543c19a05f@mail.gmail.com>
-Date: Tue, 6 May 2008 14:43:43 +0200
-From: "Esben Haabendal" <esbenhaabendal@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: IRQ_NOAUTOEN in __set_irq_handler
+	Tue, 6 May 2008 08:44:00 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:55789 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761882AbYEFMn7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 May 2008 08:43:59 -0400
+Date: Tue, 6 May 2008 14:43:48 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: linux-kernel@vger.kernel.org, tglx@linutronix.de,
+       venkatesh.pallipadi@intel.com
+Subject: Re: x86: Clean up computation of HPET .mult variables
+Message-ID: <20080506124348.GR32591@elte.hu>
+References: <20080505231016.GA29072@beyonder.ift.unesp.br>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20080505231016.GA29072@beyonder.ift.unesp.br>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Would it be possible to have support for IRQ_NOAUTOEN in
-__set_irq_handler and thus set_irq_chained_handler?
 
-Something like:
+* Carlos R. Mafra <crmafra2@gmail.com> wrote:
 
-@@ -582,14 +582,19 @@ __set_irq_handler(unsigned int irq,
-irq_flow_handler_t handle, int is_chained,
- 	}
- 	desc->handle_irq = handle;
- 	desc->name = name;
+> While reading through the HPET code I realized that the computation of 
+> .mult variables could be done with less lines of code, resulting in a 
+> 1.6% text size saving for hpet.o
+> 
+> So I propose the following patch, which applies against today's Linus 
+> -git tree.
 
- 	if (handle != handle_bad_irq && is_chained) {
--		desc->status &= ~IRQ_DISABLED;
- 		desc->status |= IRQ_NOREQUEST | IRQ_NOPROBE;
--		desc->depth = 0;
--		desc->chip->unmask(irq);
-+		if (!(desc->status & IRQ_NOAUTOEN)) {
-+			desc->depth = 0;
-+			desc->status &= ~IRQ_DISABLED;
-+			desc->chip->unmask(irq);
-+		} else {
-+			/* Undo nested disables: */
-+			desc->depth = 1;
-+		}
- 	}
- 	spin_unlock_irqrestore(&desc->lock, flags);
+applied to x86.git for more testing, thanks Carlos.
+
+since you seem to be interested in HPET topics, what do you think about 
+the patch below from akpm? It had a build failure with this config:
+
+  http://redhat.com/~mingo/misc/config-Sun_May__4_09_41_21_CEST_2008.bad
+
+but the general cleanliness point Andrew raises is valid i think.
+
+	Ingo
+
+------------->
+From: Andrew Morton <akpm@linux-foundation.org>
+
+Should already be available via the hpet.h inclusion.
+
+Could go further, by defining the do-nothing stub in hpet.h as well, perhaps.
+
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ drivers/char/rtc.c     |    2 --
+ drivers/rtc/rtc-cmos.c |    1 -
+ 2 files changed, 3 deletions(-)
+
+diff -puN drivers/char/rtc.c~rtc-remove-unneeded-declarations-of-hpet_rtc_interrupt drivers/char/rtc.c
+--- a/drivers/char/rtc.c~rtc-remove-unneeded-declarations-of-hpet_rtc_interrupt
++++ a/drivers/char/rtc.c
+@@ -119,8 +119,6 @@ static irqreturn_t hpet_rtc_interrupt(in
+ 	return 0;
  }
-
- void
+ #endif
+-#else
+-extern irqreturn_t hpet_rtc_interrupt(int irq, void *dev_id);
+ #endif
+ 
+ /*
+diff -puN drivers/rtc/rtc-cmos.c~rtc-remove-unneeded-declarations-of-hpet_rtc_interrupt drivers/rtc/rtc-cmos.c
+--- a/drivers/rtc/rtc-cmos.c~rtc-remove-unneeded-declarations-of-hpet_rtc_interrupt
++++ a/drivers/rtc/rtc-cmos.c
+@@ -52,7 +52,6 @@
+ #define hpet_rtc_timer_init() 			do { } while (0)
+ #define hpet_register_irq_handler(h) 		0
+ #define hpet_unregister_irq_handler(h)		do { } while (0)
+-extern irqreturn_t hpet_rtc_interrupt(int irq, void *dev_id);
+ #endif
+ 
+ struct cmos_rtc {
+_
