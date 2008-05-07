@@ -1,43 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756645AbYEGMCp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757561AbYEGMFf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756645AbYEGMCp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 08:02:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752153AbYEGMCe
+	id S1757561AbYEGMFf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 08:05:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753635AbYEGMFV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 08:02:34 -0400
-Received: from smtp.nokia.com ([192.100.122.233]:49868 "EHLO
-	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751145AbYEGMCd (ORCPT
+	Wed, 7 May 2008 08:05:21 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:40166 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752153AbYEGMFS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 08:02:33 -0400
-Message-ID: <48219A2F.7090503@yandex.ru>
-Date: Wed, 07 May 2008 15:01:51 +0300
-From: Artem Bityutskiy <dedekind@yandex.ru>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: LKML <linux-kernel@vger.kernel.org>,
-       Adrian Hunter <ext-adrian.hunter@nokia.com>,
-       Edward Shishkin <edward.shishkin@gmail.com>,
-       Christoph Hellwig <hch@infradead.org>
-Subject: Re: [PATCH take 2 01/28] VFS: introduce writeback_inodes_sb()
-References: <1210070159-22794-1-git-send-email-Artem.Bityutskiy@nokia.com>      <1210070159-22794-2-git-send-email-Artem.Bityutskiy@nokia.com> <20080507002345.831bc379.akpm@linux-foundation.org> <48218F21.4090304@yandex.ru>
-In-Reply-To: <48218F21.4090304@yandex.ru>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 07 May 2008 12:02:02.0441 (UTC) FILETIME=[291CE390:01C8B03A]
-X-Nokia-AV: Clean
+	Wed, 7 May 2008 08:05:18 -0400
+To: akpm@linux-foundation.org
+CC: hch@infradead.org, viro@ZenIV.linux.org.uk, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: unprivileged mounts git tree
+Message-Id: <E1JtiOX-0004Qg-1z@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Wed, 07 May 2008 14:05:13 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Artem Bityutskiy wrote:
-> As Christoph suggested, I've attached a patch which just moves the
-> spinlock. Could you please consider sending it to Linus or taking into 
-> your tree?
+Here's a git tree of the unprivileged mounts patchset:
 
-Note, I have tested this patch and it works fine.
+  git://git.kernel.org/pub/scm/linux/kernel/git/mszeredi/vfs.git unprivileged-mounts
 
--- 
-Best Regards,
-Artem Bityutskiy (Артём Битюцкий)
+Could this be added to -mm (and dropped if it's in the way of
+something) for some testing and added visibility until it's reviewed
+by Christoph/Al?
+
+I'm not reposting the whole patchset, since it's essentially the same
+as the last submission, only updated to the latest git.  But if
+somebody wants it I can post them.
+
+Thanks,
+Miklos
+
+
+ Documentation/filesystems/fuse.txt |   88 ++++++++-
+ Documentation/filesystems/proc.txt |   40 ++++
+ fs/filesystems.c                   |   60 ++++++
+ fs/fuse/inode.c                    |   21 ++
+ fs/internal.h                      |    3 +-
+ fs/namespace.c                     |  366 +++++++++++++++++++++++++++---------
+ fs/pnode.c                         |   22 ++-
+ fs/pnode.h                         |    2 +
+ fs/super.c                         |   26 ---
+ include/linux/fs.h                 |    7 +
+ include/linux/mount.h              |    4 +
+ kernel/sysctl.c                    |   16 ++
+ 12 files changed, 527 insertions(+), 128 deletions(-)
+
+Miklos Szeredi (10):
+      unprivileged mounts: add user mounts to the kernel
+      unprivileged mounts: allow unprivileged umount
+      unprivileged mounts: propagate error values from clone_mnt
+      unprivileged mounts: account user mounts
+      unprivileged mounts: allow unprivileged bind mounts
+      unprivileged mounts: allow unprivileged mounts
+      unprivileged mounts: add sysctl tunable for "safe" property
+      unprivileged mounts: make fuse safe
+      unprivileged mounts: propagation: inherit owner from parent
+      unprivileged mounts: add "no submounts" flag
+
