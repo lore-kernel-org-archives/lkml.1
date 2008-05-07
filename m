@@ -1,125 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756934AbYEGMhh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758090AbYEGMjc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756934AbYEGMhh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 08:37:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754357AbYEGMhX
+	id S1758090AbYEGMjc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 08:39:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753207AbYEGMjM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 08:37:23 -0400
-Received: from out2.smtp.messagingengine.com ([66.111.4.26]:56999 "EHLO
-	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753854AbYEGMhT (ORCPT
+	Wed, 7 May 2008 08:39:12 -0400
+Received: from mtagate2.de.ibm.com ([195.212.29.151]:47269 "EHLO
+	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751242AbYEGMjI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 08:37:19 -0400
-X-Greylist: delayed 76708 seconds by postgrey-1.27 at vger.kernel.org; Wed, 07 May 2008 08:37:19 EDT
-X-Sasl-enc: RxCXw0klbHmKCs2J/wcWlX3JTGBKT8D4dIv0TVMrsivF 1210163837
-Date: Wed, 7 May 2008 09:37:15 -0300
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Shaohua Li <shaohua.li@intel.com>
-Cc: Holger Macht <hmacht@suse.de>, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org,
-       "Accardi, Kristen C" <kristen.c.accardi@intel.com>
-Subject: Re: [PATCH] bay: Exit if notify handler cannot be installed
-Message-ID: <20080507123715.GA19475@khazad-dum.debian.net>
-References: <20080505202508.GA3690@homac> <20080506091522.GA4378@homac> <1210065811.12668.1.camel@sli10-desk.sh.intel.com> <20080506151846.GA22828@khazad-dum.debian.net> <1210122279.27316.2.camel@sli10-desk.sh.intel.com> <20080507011354.GA8163@khazad-dum.debian.net> <1210123658.30944.6.camel@sli10-desk.sh.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 7 May 2008 08:39:08 -0400
+Subject: [PATCH 0/3] [2.6.26] ehea: Add DLPAR memory remove support
 Content-Disposition: inline
-In-Reply-To: <1210123658.30944.6.camel@sli10-desk.sh.intel.com>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
-	1CDB 0FE3
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+From: Hannes Hering <hannes.hering@linux.vnet.ibm.com>
+Date: Wed, 7 May 2008 14:39:06 +0200
+MIME-Version: 1.0
+Organization: IBM
+To: jeff@garzik.org
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       netdev@vger.kernel.org, ossrosch@linux.vnet.ibm.com,
+       ossthema@de.ibm.com, raisch@de.ibm.com, themann@de.ibm.com,
+       tklein@de.ibm.com
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200805071439.06460.hannes.hering@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 07 May 2008, Shaohua Li wrote:
-> On Tue, 2008-05-06 at 22:13 -0300, Henrique de Moraes Holschuh wrote:
-> > On Wed, 07 May 2008, Shaohua Li wrote:
-> > > On Tue, 2008-05-06 at 12:18 -0300, Henrique de Moraes Holschuh wrote:
-> > > > On Tue, 06 May 2008, Shaohua Li wrote:
-> > > > > The bay driver is duplicated with libata, I thought we should delete it.
-> > > > > See bug http://bugzilla.kernel.org/show_bug.cgi?id=9526
-> > > > 
-> > > > The bay driver is currently useless, BUT it should handle a lot of stuff
-> > > > libata won't, such as bay batteries, bay floppies, and anything else in
-> > > > a bay that is not a hard disk.
-> > > > 
-> > > > The fact that the driver currently looks only after disks is just a bug.
-> > > > It should, in fact, bind to any ejectable device not already handled by
-> > > > a different driver.
-> > > Isn't this the job of acpi dock driver?
-> > 
-> > No, but I actually fail to see why do we even care about the difference
-> > from a dock to a bay.  Dock *could* be made to handle both.
-> It appears some systems haven't a dock but a bay. In a thinkpad, you
-> could hotplug cdrom/battery/harddisk in the slot of cdrom, but it's not
-> a dock. libata should handle it well (but it doesn't handle _EJ0
-> currently, I have a patch in above bugzilla).
-> 
-> But you are right, acpi dock driver should be extended to support bay.
-> I'll give it a try.
+Hi,
 
-Thanks.  Here's what I know about bays (and docks).  I expect you know
-most, if not all of what I'll write, but what the heck, it is good to
-have these things in the clear :-)
+this patchset adds memory remove hotplug support for the ehea driver. 
 
+These patches apply against kernel 2.6.26-rc1.
 
-1. Bay and dock notifications are NOT standard.  You need to feed them
-to a notification chain AND generate uevents, and expect a reply before
-you can actually do something.
+Regards
 
-There are two big classes of machines here:
-
-  1a) those which notify you that the bay/dock is BEING ejected
-  1b) those which notify you the user wants to eject, and wait for
-      a command to power down the bay/dock and let the user know
-      she can remove the device.
-
-Thinkpads are on the 1b class.  See (4) below.
-
-2. Even if a bay can take different types of devices, the same bay may
-appear as a number of different EJ0 handlers.  In that case, the
-firmware is to know which handler to use based on which type of device
-is inside the bay.  Thinkpads do this.
-
-3. IMO, "eject" really should be a device property, and not something
-tied to a bay.  For docks, this is a lot more difficult to do right,
-since a dock has multiple devices (and usually at least one BUS, and
-often more than one. Thinkpads have PCI, PCIe and USB buses through the
-dock) behind it, so it is probably best to have dock ejects as a
-property of a "dock" platform device, and bay ejects as a property of
-whatever device is inside the bay.  This should be an userspace AND
-kernel API.
-
-4. bay ejection notifications can take two forms (see (1) above):
-
-  4a) device removal (we already have this)
-  4b) device removal REQUEST
-
-Thinkpads should do 4b, then IF AND ONLY IF the user or a kernel
-platform driver uses (3) to command the ejection, they do 4a.
-
-Some laptops will just do 4a, doing (3) before the user yanks the device
-requires the user to not be an yahoo (i.e. just like USB pen-drives).
-
-And for laptops that do 4b for docks, one should probably replicate the
-"request undock" notification for every device inside the dock, and not
-just for the dock device.
-
-What value you get from an ACPI NOTIFY for 4a or 4b is NOT standard,
-you will need a platform device OR userspace to interpret it for you.
-
-5. bay and dock notifications (at least on thinkpads) are issued to the
-ACPI node of the real device, not to the APCI EJ0 node.  This is what is
-causing issues between bay and libata (both want to register a notify
-hook to the same node, and ACPICA allows only one driver per node).
-
-I am not really sure the "ACPI driver model" is the right way to tie bay
-functionality to the system.  A hook and notifier system inside ACPICA
-to implement it as a service of the ACPI sybsystem might work better.
-
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+Hannes
