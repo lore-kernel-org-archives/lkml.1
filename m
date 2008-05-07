@@ -1,134 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763549AbYEGSRp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764998AbYEGSS7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763549AbYEGSRp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 14:17:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753865AbYEGSRe
+	id S1764998AbYEGSS7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 14:18:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754997AbYEGSSp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 14:17:34 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:59785 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753495AbYEGSRb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 14:17:31 -0400
-Date: Wed, 7 May 2008 20:17:14 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Matthew Wilcox <matthew@wil.cx>, Andrew Morton <akpm@linux-foundation.org>,
-       "J. Bruce Fields" <bfields@citi.umich.edu>,
+	Wed, 7 May 2008 14:18:45 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:56154 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754826AbYEGSSn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 May 2008 14:18:43 -0400
+Date: Wed, 7 May 2008 11:17:50 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Matthew Wilcox <matthew@wil.cx>
+cc: Ingo Molnar <mingo@elte.hu>, Andi Kleen <andi@firstfloor.org>,
        "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
        LKML <linux-kernel@vger.kernel.org>,
-       Alexander Viro <viro@ftp.linux.org.uk>, linux-fsdevel@vger.kernel.org
+       Alexander Viro <viro@ftp.linux.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>
 Subject: Re: AIM7 40% regression with 2.6.26-rc1
-Message-ID: <20080507181714.GA14980@elte.hu>
-References: <20080506120934.GH19219@parisc-linux.org> <20080506162332.GI19219@parisc-linux.org> <20080506102153.5484c6ac.akpm@linux-foundation.org> <20080507163811.GY19219@parisc-linux.org> <alpine.LFD.1.10.0805070948250.3024@woody.linux-foundation.org> <alpine.LFD.1.10.0805070956060.3024@woody.linux-foundation.org> <20080507172246.GA13262@elte.hu> <alpine.LFD.1.10.0805071028400.3024@woody.linux-foundation.org> <20080507174900.GB13591@elte.hu> <alpine.LFD.1.10.0805071057280.3024@woody.linux-foundation.org>
+In-Reply-To: <20080507175959.GZ19219@parisc-linux.org>
+Message-ID: <alpine.LFD.1.10.0805071104290.3024@woody.linux-foundation.org>
+References: <87lk2mbcqp.fsf@basil.nowhere.org> <20080507114643.GR19219@parisc-linux.org> <87hcdab8zp.fsf@basil.nowhere.org> <alpine.LFD.1.10.0805070728280.32269@woody.linux-foundation.org> <20080507162012.GA10096@elte.hu> <alpine.LFD.1.10.0805070929310.3024@woody.linux-foundation.org>
+ <20080507170528.GA11511@elte.hu> <alpine.LFD.1.10.0805071017130.3024@woody.linux-foundation.org> <20080507173612.GA13591@elte.hu> <alpine.LFD.1.10.0805071049180.3024@woody.linux-foundation.org> <20080507175959.GZ19219@parisc-linux.org>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.10.0805071057280.3024@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-> On Wed, 7 May 2008, Ingo Molnar wrote:
+On Wed, 7 May 2008, Matthew Wilcox wrote:
 > > 
-> > another idea: my trial-baloon patch should test your theory too, 
-> > because the generic down_trylock() is still the 'fat' version, it 
-> > does:
+> > So it doesn't look buggy, but it looks like it might cause longer 
+> > latencies than strictly necessary. And if somebody depends on 
+> > cond_resched() to avoid some bad livelock situation, that would obviously 
+> > not work (but that sounds like a fundamental bug anyway, I really hope 
+> > nobody has ever written their code that way).
 > 
-> I agree that your trial-balloon should likely get rid of the big 
-> regression, since it avoids the scheduler.
-> 
-> So with your patch, lock_kernel() ends up being just a rather 
-> expensive spinlock. And yes, I'd expect that it should get rid of the 
-> 40% cost, because while it makes lock_kernel() more expensive than a 
-> spinlock and you might end up having a few more cacheline bounces on 
-> the lock due to that, that's still the "small" expense compared to 
-> going through the whole scheduler on conflicts.
-> 
-> So I'd expect that realistically the performance difference between 
-> your version and just plain spinlocks shouldn't be *that* big. I'd 
-> expect it to be visible, but in the (low) single-digit percentage 
-> range rather than in any 40% range. That's just a guess.
+> Funny you should mention it; locks.c uses cond_resched() assuming that
+> it ignores the BKL.  Not through needing to avoid livelock, but it does
+> presume that other higher priority tasks contending for the lock will
+> get a chance to take it.  You'll notice the patch I posted yesterday
+> drops the file_lock_lock around the call to cond_resched().
 
-third attempt - the patch below ontop of v2.6.25 should be quite similar 
-fastpath atomic overhead to what generic semaphores do? So if Yanmin 
-tests this patch ontop of v2.6.25, we should see the direct fastpath 
-overhead - without any changes to the semaphore wakeup/scheduling logic 
-otherwise.
+Well, this would only be noticeable with CONFIG_PREEMPT.
 
-[ this patch should in fact be a bit worse, because there's two more 
-  atomics in the fastpath - the fastpath atomics of the old semaphore 
-  code. ]
+If you don't have preempt enabled, it looks like everything should work 
+ok: the kernel lock wouldn't increase the preempt count, and 
+_cond_resched() works fine.
 
-	Ingo
+If you're PREEMPT, then the kernel lock would increase the preempt count, 
+and _cond_resched() would refuse to re-schedule it, *but* with PREEMPT 
+you'd never see it *anyway*, because PREEMPT will disable cond_resched() 
+entirely (because preemption takes care of normal scheduling latencies 
+without it).
 
------------------->
-Subject: v2.6.25 BKL: add atomic overhead
-From: Ingo Molnar <mingo@elte.hu>
-Date: Wed May 07 20:09:13 CEST 2008
+And I'm also sure that this all worked fine at some point, and it's 
+largely a result just of the multiple different variations of BKL 
+preemption coupled with some of them getting removed entirely, so the code 
+that used to handle it just got corrupt over time. See commit 02b67cc3b, 
+for example. 
 
----
- lib/kernel_lock.c |   13 ++++++++++++-
- 1 file changed, 12 insertions(+), 1 deletion(-)
+.. Hmm ... Time passes. Linus looks at git history.
 
-Index: linux-2.6.25/lib/kernel_lock.c
-===================================================================
---- linux-2.6.25.orig/lib/kernel_lock.c
-+++ linux-2.6.25/lib/kernel_lock.c
-@@ -24,6 +24,7 @@
-  * Don't use in new code.
-  */
- static DECLARE_MUTEX(kernel_sem);
-+static DEFINE_SPINLOCK(global_lock);
- 
- /*
-  * Re-acquire the kernel semaphore.
-@@ -47,6 +48,9 @@ int __lockfunc __reacquire_kernel_lock(v
- 
- 	down(&kernel_sem);
- 
-+	spin_lock(&global_lock);
-+	spin_unlock(&global_lock);
-+
- 	preempt_disable();
- 	task->lock_depth = saved_lock_depth;
- 
-@@ -55,6 +59,9 @@ int __lockfunc __reacquire_kernel_lock(v
- 
- void __lockfunc __release_kernel_lock(void)
- {
-+	spin_lock(&global_lock);
-+	spin_unlock(&global_lock);
-+
- 	up(&kernel_sem);
- }
- 
-@@ -66,12 +73,16 @@ void __lockfunc lock_kernel(void)
- 	struct task_struct *task = current;
- 	int depth = task->lock_depth + 1;
- 
--	if (likely(!depth))
-+	if (likely(!depth)) {
- 		/*
- 		 * No recursion worries - we set up lock_depth _after_
- 		 */
- 		down(&kernel_sem);
- 
-+		spin_lock(&global_lock);
-+		spin_unlock(&global_lock);
-+	}
-+
- 	task->lock_depth = depth;
- }
- 
+It does look like "cond_resched()" has not worked with the BKL since 2005, 
+and hasn't taken the BKL into account. Commit 5bbcfd9000:
+
+    [PATCH] cond_resched(): fix bogus might_sleep() warning
+
++       if (unlikely(preempt_count()))
++               return;
+
+which talks about the BKS, ie it only took the *semaphore* implementation 
+into account. Never the spinlock-with-preemption-count one.
+
+Or am I blind?
+
+		Linus
