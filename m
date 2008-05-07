@@ -1,52 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759953AbYEGOcZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759778AbYEGOeT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759953AbYEGOcZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 10:32:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756418AbYEGOcF
+	id S1759778AbYEGOeT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 10:34:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756053AbYEGOd7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 10:32:05 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:42417 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756292AbYEGOcC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 10:32:02 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-Subject: [PATCH] MN10300: Make cpu_relax() invoke barrier()
-To: torvalds@osdl.org, akpm@linux-foundation.org, bhutchings@solarflare.com
-Cc: linux-am33-list@redhat.com, linux-kernel@vger.kernel.org
-Date: Wed, 07 May 2008 15:31:54 +0100
-Message-ID: <20080507143154.16216.80041.stgit@warthog.procyon.org.uk>
-User-Agent: StGIT/0.14.1
+	Wed, 7 May 2008 10:33:59 -0400
+Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:55179
+	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756015AbYEGOd5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 May 2008 10:33:57 -0400
+Date: Wed, 7 May 2008 16:33:55 +0200
+From: Andrea Arcangeli <andrea@qumranet.com>
+To: Zdenek Kabelac <zdenek.kabelac@gmail.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Suspend to memory is freezing my machine
+Message-ID: <20080507143355.GE8362@duo.random>
+References: <c4e36d110805040037u1b98c027x46dc17bf6be5da5b@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <c4e36d110805040037u1b98c027x46dc17bf6be5da5b@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Make cpu_relax() invoke barrier() to be the same as other arches.
+On Sun, May 04, 2008 at 09:37:54AM +0200, Zdenek Kabelac wrote:
+> Hello
+> 
+> With recent 2.6.25 & 2.6.26-rc1 git (around 1 week) I get occasionally
+> complete freeze of my T61 during suspend. (dual core, 2GB).
+> 
+> I'm running kernel with no_console_suspend - but all I can see is
+> blinking cursor on an empty screen - thus even when I run kernel with
+> most debug options turned on, I can't pass more details so far.  I run
+> suspend with with SD card in - so maybe some update in the MMC driver
+> might be responsible for this ?
+> 
+> Also - I think that option no_console_suspend doens't work correctly -
+> as many times with suspend I do not see any log message on my console
+> screen. However sometimes the log is shown.
 
-Signed-off-by: David Howells <dhowells@redhat.com>
----
+Same here. Suspend to ram crashes on resume starting in 2.6.25 (didn't
+test 2.6.25-rc in my production system).
 
- include/asm-mn10300/processor.h |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-
-diff --git a/include/asm-mn10300/processor.h b/include/asm-mn10300/processor.h
-index f1b081f..7323927 100644
---- a/include/asm-mn10300/processor.h
-+++ b/include/asm-mn10300/processor.h
-@@ -58,7 +58,7 @@ extern struct mn10300_cpuinfo boot_cpu_data;
- extern void identify_cpu(struct mn10300_cpuinfo *);
- extern void print_cpu_info(struct mn10300_cpuinfo *);
- extern void dodgy_tsc(void);
--#define cpu_relax() do {} while (0)
-+#define cpu_relax() barrier()
- 
- /*
-  * User space process size: 1.75GB (default).
-
+Because this isn't 100% reproducible bisecting may return false
+negatives.
