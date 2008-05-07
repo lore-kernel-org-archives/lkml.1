@@ -1,82 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759767AbYEGB2y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758580AbYEGBcU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759767AbYEGB2y (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 21:28:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751662AbYEGB2m
+	id S1758580AbYEGBcU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 21:32:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754080AbYEGBcJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 21:28:42 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:51988 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1752012AbYEGB2k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 21:28:40 -0400
-Message-ID: <4821057F.8090706@cn.fujitsu.com>
-Date: Wed, 07 May 2008 09:27:27 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: clameter@sgi.com, LKML <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [PATCH] mm/page_alloc.c: fix a typo
-References: <4820272C.4060009@cn.fujitsu.com>	<482027E4.6030300@cn.fujitsu.com>	<482029E7.6070308@cn.fujitsu.com> <20080506071943.46641c26.akpm@linux-foundation.org>
-In-Reply-To: <20080506071943.46641c26.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 6 May 2008 21:32:09 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:42293 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752246AbYEGBcI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 May 2008 21:32:08 -0400
+Date: Tue, 6 May 2008 18:31:38 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Paul Menage <menage@google.com>
+Cc: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>, Paul Jackson <pj@sgi.com>,
+       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Fix cpuset sched_relax_domain_level control file
+Message-Id: <20080506183138.546f42d9.akpm@linux-foundation.org>
+In-Reply-To: <48210101.1070205@google.com>
+References: <48210101.1070205@google.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Tue, 06 May 2008 17:50:31 +0800 Li Zefan <lizf@cn.fujitsu.com> wrote:
-> 
->> Li Zefan wrote:
->>> ---
->> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
->> ---
->>
->> Sorry for the noise, but the signed-off was eaten. :(
->> Maybe I should leave a blank line before the signed-off.
->>
->> ---
->>
->>  mm/page_alloc.c |    2 +-
->>  1 files changed, 1 insertions(+), 1 deletions(-)
->>
->> diff --git a/mm/page_alloc.c b/mm/page_alloc.c
->> index bdd5c43..d0ba10d 100644
->> --- a/mm/page_alloc.c
->> +++ b/mm/page_alloc.c
->> @@ -303,7 +303,7 @@ static void destroy_compound_page(struct page *page, unsigned long order)
->>  	for (i = 1; i < nr_pages; i++) {
->>  		struct page *p = page + i;
->>  
->> -		if (unlikely(!PageTail(p) |
->> +		if (unlikely(!PageTail(p) ||
->>  				(p->first_page != page)))
->>  			bad_page(page);
->>  		__ClearPageTail(p);
-> 
-> I have a vague memory that the "|" was deliberate.  Most of the time,
-> "!PageTail" will be false so most of the time we won't take the first
+On Tue, 06 May 2008 18:08:17 -0700 Paul Menage <menage@google.com> wrote:
 
-!PageTail will be true if nothing bad happened, corrected me if I'm wrong:
+> Fix cpuset sched_relax_domain_level control file
+> 
+> Due to a merge conflict, the sched_relax_domain_level control file was
+> marked as being handled by cpuset_read/write_u64, but the code to handle it
+> was actually in cpuset_common_file_read/write.
+> 
+> Since the value being written/read is in fact a signed integer, it
+> should be treated as such; this patch adds cpuset_read/write_s64
+> functions, and uses them to handle the sched_relax_domain_level file.
+> 
+> With this patch, the sched_relax_domain_level can be read and written,
+> and the correct contents seen/updated.
+> 
 
-static void prep_compound_page(struct page *page, unsigned long order)
-{
-	...
-	for (i = 1; i < nr_pages; i++) {
-		struct page *p = page + i;
+OK, here we go again.
 
-		__SetPageTail(p);
-		p->first_page = page;
-	}
-}
+There is a patch in linux-next called "cpuset: system sets" which will
+conflict with your change.
 
-> branch so it's probably worth omitting it and always doing the pointer
-> comparison.
-> 
-> It's a somewhat dopey trick and shouldn't have been done without a comment.
-> 
-> otoh maybe it was a typo.
-> 
-> 
+A bit of archeology indicates that this patch was sent out on Feb 27 and
+received a bit of review feedback, including some serious-looking qualms
+from Paul.  There was no response to that reviewer feedback and volia, the
+damn code goes into linux-next without, afaict, any alteration.
+
+Ingo, for the entyenth time: kernel/cpuset.c is not part of the CPU
+scheduler.
+
+argh.  Now what to do?  If I merge this patch then I need to drop
+linux-next and if I drop linux-next I drop half my tree.
+
+So I guess I need to merge this patch and then somehow smash linux-next on
+top of it.  Thanks a lot.
+
