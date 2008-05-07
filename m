@@ -1,69 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757144AbYEGLto@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757351AbYEGL55@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757144AbYEGLto (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 07:49:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754217AbYEGLte
+	id S1757351AbYEGL55 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 07:57:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754363AbYEGL5i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 07:49:34 -0400
-Received: from mx0.towertech.it ([213.215.222.73]:49778 "HELO mx0.towertech.it"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1754054AbYEGLtd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 07:49:33 -0400
-Date: Wed, 7 May 2008 13:49:30 +0200
-From: Alessandro Zummo <alessandro.zummo@towertech.it>
-To: rtc-linux@googlegroups.com
-Cc: dwmw2@infradead.org, Ralf Baechle <ralf@linux-mips.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-mips@linux-mips.org,
+	Wed, 7 May 2008 07:57:38 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:34265 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752759AbYEGL5g (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 May 2008 07:57:36 -0400
+To: akpm@linux-foundation.org
+CC: hch@infradead.org, viro@ZenIV.linux.org.uk, linux-fsdevel@vger.kernel.org,
        linux-kernel@vger.kernel.org
-Subject: Re: [rtc-linux] Re: [RFC][PATCH 1/4] RTC: Class device support for
- persistent clock
-Message-ID: <20080507134930.47d5ed6d@i1501.lan.towertech.it>
-In-Reply-To: <1210148655.25560.825.camel@pmac.infradead.org>
-References: <Pine.LNX.4.55.0805070015360.16173@cliff.in.clinika.pl>
-	<1210148655.25560.825.camel@pmac.infradead.org>
-Organization: Tower Technologies
-X-Mailer: Sylpheed
-X-This-Is-A-Real-Message: Yes
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+In-reply-to: <20080506091327.259950960@szeredi.hu> (message from Miklos
+	Szeredi on Tue, 06 May 2008 11:13:27 +0200)
+Subject: Re: [patch 00/24] vfs: fixes and cleanups + add helpers to check r/o bind mounts
+References: <20080506091327.259950960@szeredi.hu>
+Message-Id: <E1JtiGr-0004Ot-Dc@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Wed, 07 May 2008 13:57:17 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 07 May 2008 09:24:15 +0100
-David Woodhouse <dwmw2@infradead.org> wrote:
+> Here it is again as a single series (without the ecryptfs one already
+> merged).
+> 
+> I've addressed Christoph's comments.
+
+And here is the same (well, with some cosmetic fixes) as a git tree,
+in case it's more convenient for somebody to review/test.
+
+git://git.kernel.org/pub/scm/linux/kernel/git/mszeredi/vfs.git vfs-cleanups
 
 
-> Ooh, shiny -- you saved me the trouble of doing this (and hopefully also
-> the trouble of looking through it to check whether all the callers of
-> read_persistent_clock() can sleep, etc.?)
+ fs/attr.c                   |   26 +++++-
+ fs/compat.c                 |    4 +-
+ fs/ecryptfs/inode.c         |  137 +++++++++++++-------------
+ fs/exec.c                   |    2 +-
+ fs/fat/file.c               |    5 +-
+ fs/hpfs/namei.c             |    3 +-
+ fs/namei.c                  |  230 +++++++++++++++++++++++++++----------------
+ fs/nfsd/nfs4recover.c       |   12 +--
+ fs/nfsd/vfs.c               |  148 ++++++++++++----------------
+ fs/open.c                   |  106 ++++++--------------
+ fs/reiserfs/namei.c         |    2 +-
+ fs/reiserfs/xattr.c         |   32 +++++-
+ fs/splice.c                 |   29 +++---
+ fs/sysfs/file.c             |    5 +-
+ fs/utimes.c                 |  197 ++++++++++++++++++++++---------------
+ fs/xattr.c                  |   85 ++++++++--------
+ include/linux/fs.h          |   21 +++--
+ include/linux/reiserfs_fs.h |    1 +
+ include/linux/time.h        |    5 +-
+ include/linux/xattr.h       |    5 +-
+ ipc/mqueue.c                |   16 ++-
+ kernel/cgroup.c             |    5 +-
+ mm/filemap.c                |    2 +-
+ mm/tiny-shmem.c             |    2 +-
+ net/unix/af_unix.c          |    6 +-
+ 25 files changed, 587 insertions(+), 499 deletions(-)
 
- I knew you would have liked that patch :)
- 
-> One thing I was going to do in rtc_update_persistent_clock() was make it
-> use mutex_trylock() for grabbing rtc->lock. We go to great lengths to
-> make sure we're updating the clock at the correct time -- we don't want
-> to be doing things which delay the update. So we should probably just
-> use mutex_trylock() and abort the update (this time) if it fails.
-
- agreable. 
- 
-> I was also thinking of holding the RTC_HCTOSYS device open all the time,
-> too. If it's a problem that you then couldn't unload the module, perhaps
-> a sysfs interface to set/change/clear which device is used for this?
-
- mm.. let's keep it easy. the chances the rtc is in use
- are usually real low.
- 
-
--- 
-
- Best regards,
-
- Alessandro Zummo,
-  Tower Technologies - Torino, Italy
-
-  http://www.towertech.it
+Miklos Szeredi (25):
+      ecryptfs: clean up (un)lock_parent
+      nfsd: clean up mnt_want_write calls
+      cgroup: don't call vfs_mkdir
+      reiserfs: don't call vfs_rmdir
+      reiserfs: don't call notify_change
+      sysfs: don't call notify_change
+      hpfs: don't call notify_change
+      fat: don't call notify_change
+      vfs: immutable inode checking cleanup
+      vfs: truncate: don't check immutable twice
+      vfs: truncate: append-only checking cleanup
+      vfs: create file_truncate() helper
+      vfs: utimes immutable fix
+      vfs: utimes cleanup
+      vfs: splice remove_suid() cleanup
+      vfs: add path_create() and path_mknod()
+      vfs: add path_mkdir()
+      vfs: add path_rmdir()
+      vfs: add path_unlink()
+      vfs: add path_symlink()
+      vfs: add path_link()
+      vfs: add path_rename()
+      vfs: add path_setattr()
+      vfs: add path_setxattr()
+      vfs: add path_removexattr()
 
