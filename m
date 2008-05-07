@@ -1,59 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765489AbYEGSl0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765879AbYEGSm1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765489AbYEGSl0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 14:41:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755822AbYEGSlP
+	id S1765879AbYEGSm1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 14:42:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757178AbYEGSmN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 14:41:15 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:33953 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758189AbYEGSlN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 14:41:13 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Matthew Wilcox <matthew@wil.cx>
-Subject: Re: [RFC][PATCH 2/2] Freezer: Try to handle killable tasks
-Date: Wed, 7 May 2008 20:41:19 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: pm list <linux-pm@lists.linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Len Brown <lenb@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
-       Pavel Machek <pavel@ucw.cz>, Matt Helsley <matthltc@us.ibm.com>,
-       Cedric Le Goater <clg@fr.ibm.com>, Paul Menage <menage@google.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Liam Howlett <howlett@gmail.com>
-References: <200805070003.56387.rjw@sisk.pl> <200805070007.56998.rjw@sisk.pl> <20080507135333.GS19219@parisc-linux.org>
-In-Reply-To: <20080507135333.GS19219@parisc-linux.org>
+	Wed, 7 May 2008 14:42:13 -0400
+Received: from smtp1.wifiinternet.cz ([89.31.47.1]:52606 "EHLO
+	bor.wifiinternet.cz" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755822AbYEGSmL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 May 2008 14:42:11 -0400
+Message-ID: <4821F83C.8080608@seznam.cz>
+Date: Wed, 07 May 2008 20:43:08 +0200
+From: Michal Simek <monstr@seznam.cz>
+Reply-To: monstr@seznam.cz
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Arnd Bergmann <arnd@arndb.de>
+CC: Geert Uytterhoeven <geert@linux-m68k.org>,
+       John Williams <john.williams@petalogix.com>,
+       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
+       stephen.neuendorffer@xilinx.com, John.Linn@xilinx.com, matthew@wil.cx,
+       will.newton@gmail.com, drepper@redhat.com,
+       microblaze-uclinux@itee.uq.edu.au, grant.likely@secretlab.ca
+Subject: Re: [PATCH 36/56] microblaze_v2: dma support
+References: <1209901305-6404-1-git-send-email-monstr@seznam.cz> <48214B36.9060307@seznam.cz> <Pine.LNX.4.64.0805070917111.6341@anakin> <200805071121.43006.arnd@arndb.de>
+In-Reply-To: <200805071121.43006.arnd@arndb.de>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200805072041.20210.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, 7 of May 2008, Matthew Wilcox wrote:
-> On Wed, May 07, 2008 at 12:07:55AM +0200, Rafael J. Wysocki wrote:
-> > The introduction of TASK_KILLABLE allows the freezer to work in some situation
-> > that it could not handle before.
-> > 
-> > Make the freezer handle killable tasks and add try_to_freeze() in some places
-> > where it is safe to freeze a (killable) task.  Introduce the
-> > wait_event_killable_freezable() macro to be used wherever the freezing of
-> > a waiting killable task is desirable.
+Hi Arnd and Geert,
+
+I think scatterlist.h can be moved to asm-generic.
+
+M
+
+
+> On Wednesday 07 May 2008, Geert Uytterhoeven wrote:
+>> On Wed, 7 May 2008, Michal Simek wrote:
+>>> Is it OK now? This will moved to asm-generic too.
+>> Ack.
 > 
-> Why do you say that TASK_KILLABLE allows the freezer to work in some
-> situations where it couldn't before?  If something's using one of the
-> killable functions, it means that it knows how to clean up and unwind
-> gracefully if the task receives a fatal signal.  I don't understand what
-> connection there is to the freezer.
-
-The reason why we don't freeze uninterruptible tasks is that we don't know
-why they are in that state.  If one of tasks is uninterruptible for a
-relatively long time, that may indicate a non-recoverable error making it
-dangerous to put the system into a sleep state.  If the task is killable,
-though, the situation is recoverable.
-
-Thanks,
-Rafael
+> looks good to me as well.
+> 
+> 	Arnd <><
+> 
