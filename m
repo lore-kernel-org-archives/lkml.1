@@ -1,49 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765363AbYEGSCz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765493AbYEGSDo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765363AbYEGSCz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 14:02:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755757AbYEGSCn
+	id S1765493AbYEGSDo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 14:03:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755757AbYEGSD3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 14:02:43 -0400
-Received: from sj-iport-3.cisco.com ([171.71.176.72]:36694 "EHLO
-	sj-iport-3.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752081AbYEGSCl (ORCPT
+	Wed, 7 May 2008 14:03:29 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:48256 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755886AbYEGSD0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 14:02:41 -0400
-From: Roland Dreier <rdreier@cisco.com>
-To: Stefan Roscher <ossrosch@linux.vnet.ibm.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       "LinuxPPC-Dev" <linuxppc-dev@ozlabs.org>,
-       "OF-EWG" <ewg@lists.openfabrics.org>, fenkes@de.ibm.com,
-       raisch@de.ibm.com
-Subject: Re: [ewg] [PATCH] IB/ehca: Protect QP against destroying until all async events for it are handled.
-References: <200805071319.37164.ossrosch@linux.vnet.ibm.com>
-	<adahcdaw2oc.fsf@cisco.com>
-	<200805071800.15595.ossrosch@linux.vnet.ibm.com>
-X-Message-Flag: Warning: May contain useful information
-Date: Wed, 07 May 2008 11:02:40 -0700
-In-Reply-To: <200805071800.15595.ossrosch@linux.vnet.ibm.com> (Stefan
-	Roscher's message of "Wed, 7 May 2008 18:00:14 +0200")
-Message-ID: <adar6ceuh4v.fsf@cisco.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+	Wed, 7 May 2008 14:03:26 -0400
+Date: Wed, 7 May 2008 11:02:30 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+cc: Matthew Wilcox <matthew@wil.cx>, Andrew Morton <akpm@linux-foundation.org>,
+       "J. Bruce Fields" <bfields@citi.umich.edu>,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Alexander Viro <viro@ftp.linux.org.uk>, linux-fsdevel@vger.kernel.org
+Subject: Re: AIM7 40% regression with 2.6.26-rc1
+In-Reply-To: <20080507174900.GB13591@elte.hu>
+Message-ID: <alpine.LFD.1.10.0805071057280.3024@woody.linux-foundation.org>
+References: <1210052904.3453.30.camel@ymzhang> <20080506114449.GC32591@elte.hu> <20080506120934.GH19219@parisc-linux.org> <20080506162332.GI19219@parisc-linux.org> <20080506102153.5484c6ac.akpm@linux-foundation.org> <20080507163811.GY19219@parisc-linux.org>
+ <alpine.LFD.1.10.0805070948250.3024@woody.linux-foundation.org> <alpine.LFD.1.10.0805070956060.3024@woody.linux-foundation.org> <20080507172246.GA13262@elte.hu> <alpine.LFD.1.10.0805071028400.3024@woody.linux-foundation.org>
+ <20080507174900.GB13591@elte.hu>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 07 May 2008 18:02:40.0423 (UTC) FILETIME=[8A5AEB70:01C8B06C]
-Authentication-Results: sj-dkim-1; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim1004 verified; ); 
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > I agree, that's why I posted the driver fix first.
 
-Glad we agree :)
 
-I thought about it a little more and really convinced myself that there
-is no good way for generic code to handle this race.
+On Wed, 7 May 2008, Ingo Molnar wrote:
+> 
+> another idea: my trial-baloon patch should test your theory too, because 
+> the generic down_trylock() is still the 'fat' version, it does:
 
- > So, will you apply it next?
+I agree that your trial-balloon should likely get rid of the big 
+regression, since it avoids the scheduler.
 
-Yes, will apply it shortly.
+So with your patch, lock_kernel() ends up being just a rather expensive 
+spinlock. And yes, I'd expect that it should get rid of the 40% cost, 
+because while it makes lock_kernel() more expensive than a spinlock and 
+you might end up having a few more cacheline bounces on the lock due to 
+that, that's still the "small" expense compared to going through the whole 
+scheduler on conflicts.
 
- - R.
+So I'd expect that realistically the performance difference between your 
+version and just plain spinlocks shouldn't be *that* big. I'd expect it to 
+be visible, but in the (low) single-digit percentage range rather than in 
+any 40% range. That's just a guess.
+
+		Linus
