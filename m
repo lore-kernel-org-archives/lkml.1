@@ -1,71 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760667AbYEGDpw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761086AbYEGDsd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760667AbYEGDpw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 23:45:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754370AbYEGDpo
+	id S1761086AbYEGDsd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 23:48:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756282AbYEGDsY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 23:45:44 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:59574 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754515AbYEGDpm (ORCPT
+	Tue, 6 May 2008 23:48:24 -0400
+Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:35447 "EHLO
+	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755738AbYEGDsW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 23:45:42 -0400
-Date: Tue, 6 May 2008 20:44:44 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Paul Jackson <pj@sgi.com>
-Cc: menage@google.com, seto.hidetoshi@jp.fujitsu.com, mingo@elte.hu,
-       linux-kernel@vger.kernel.org, Max Krasnyanskiy <maxk@qualcomm.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Thomas Gleixner <tglx@linutronix.de>, Oleg Nesterov <oleg@tv-sign.ru>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       David Rientjes <rientjes@google.com>
-Subject: Re: Reverting per-cpuset "system" (IRQ affinity) patch (was: Fix
- cpuset sched_relax_domain_level control file)
-Message-Id: <20080506204444.f4c38d0a.akpm@linux-foundation.org>
-In-Reply-To: <20080506223859.0b4fa876.pj@sgi.com>
-References: <48210101.1070205@google.com>
-	<20080506183138.546f42d9.akpm@linux-foundation.org>
-	<20080506204054.564fff32.pj@sgi.com>
-	<20080506223859.0b4fa876.pj@sgi.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+	Tue, 6 May 2008 23:48:22 -0400
+Subject: Re: [patch 0/6] Guest page hinting version 6.
+From: Zachary Amsden <zach@vmware.com>
+To: Rik van Riel <riel@redhat.com>
+Cc: schwidefsky@de.ibm.com, Hugh Dickins <hugh@veritas.com>,
+       linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
+       virtualization@lists.osdl.org, akpm@linux-foundation.org,
+       nickpiggin@yahoo.com.au, frankeh@watson.ibm.com, rusty@rustcorp.com.au,
+       jeremy@goop.org, andrea@qumranet.com, clameter@sgi.com,
+       a.p.zijlstra@chello.nl
+In-Reply-To: <20080506154612.58cc3070@cuia.bos.redhat.com>
+References: <20080312132132.520833247@de.ibm.com>
+	 <Pine.LNX.4.64.0803131627450.17244@blonde.site>
+	 <1210087982.31803.32.camel@localhost>
+	 <20080506154612.58cc3070@cuia.bos.redhat.com>
+Content-Type: text/plain
+Date: Tue, 06 May 2008 20:49:47 -0700
+Message-Id: <1210132187.17107.40.camel@bodhitayantram.eng.vmware.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.12.2 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 6 May 2008 22:38:59 -0500 Paul Jackson <pj@sgi.com> wrote:
 
-> pj wrote:
-> > What's the easiest way to get from where we are now, to a world
-> > without that patch?
+On Tue, 2008-05-06 at 15:46 -0400, Rik van Riel wrote:
+> On Tue, 06 May 2008 17:33:02 +0200
+> Martin Schwidefsky <schwidefsky@de.ibm.com> wrote:
+> > On Thu, 2008-03-13 at 16:57 +0000, Hugh Dickins wrote:
+> > > It's very encouraging to see Jeremy and Rusty weighing in.  I hope
+> > > Zach will too, and I've added Andrea: their support would count a lot.
+> > > You have Nick on the list, good, I've added Christoph and Peter
+> > > (if you do resend, linux-mm might prove more useful than linux-kernel).
+> > > 
+> > > With support from rival virtualizers,
+> > > I do think you've a good chance of getting in.
+> > 
+> > Traffic on the guest page hinting patches died down again. Until another
+> > user shows up I guess that's it for the full version. 
 > 
-> Would it help, Andrew, if I proposed a patch that went into your latest
-> mmtom stack, right after the three patches:
+> I suspect one of the problems is that there are too many state transitions
+> to have it implemented with a low overhead on anything but S390, and even
+> there you need milicoded instructions to handle things.
 > 
->   origin.patch
->   linux-next.patch
->   Paul Menage's latest "Fix cpuset sched_relax_domain_level control file"
-> 
-> that reverted the cpuset "system" patch (this being a patch that added
-> a per-cpuset file called "system", which could be used to do things
-> such as help manage the assignment of IRQs to CPUs.)
-> 
-> I suspect that some of Ingo, Max Krasnyanskiy, or Peter Zijlstra will
-> not be happy with my doing this, but I'm pretty sure that the "system"
-> patch needs more work before we have agreement on the API.  I really
-> don't want to add the API of that current patch "as is" to the kernel.
-> 
-> I've added several of the people who were part of the preceding threads
-> on this discussion to the CC list.
-> 
-> I'm cooking up such a patch now -- I've gotten to the point that it
-> applies and builds; now I am about to see how badly it breaks the
-> remaining 426 patches in the mmtom stack.
+> If the number of transitions can be reduced, page hinting could be useful
+> for KVM, too.
 
-Don't worry about it.  I sorted out things locally and I expect that
-Stephen will be able to as well.  Hopefully Ingo will toss the whole patch
-series so we can take another look at it all.
+Spot on Rik, if every transition becomes a hypercall (and a synchronous
+one at that), it isn't workable for us.  If, on the other hand, you
+share the state bits between the guest and hypervisor, you need a giant
+(standalone) bit array for per-page state, which is neither convenient
+for Linux nor the hypervisor.  I believe s390 has an 'instruction' to
+migrate the state bits into the hypervisor per-physical-page data
+without requiring a hypercall.
 
+Zach
 
