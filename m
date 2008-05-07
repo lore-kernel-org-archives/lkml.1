@@ -1,1346 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760248AbYEGLJw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757326AbYEGLKd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760248AbYEGLJw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 07:09:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754370AbYEGLJf
+	id S1757326AbYEGLKd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 07:10:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756342AbYEGLJm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 07:09:35 -0400
-Received: from mailtp.via.com.tw ([61.66.243.2]:1326 "EHLO mailtp.via.com.tw"
+	Wed, 7 May 2008 07:09:42 -0400
+Received: from mailtp.via.com.tw ([61.66.243.2]:1331 "EHLO mailtp.via.com.tw"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753929AbYEGLJc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 07:09:32 -0400
+	id S1754447AbYEGLJh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 May 2008 07:09:37 -0400
 X-MimeOLE: Produced By Microsoft Exchange V6.5
 Content-class: urn:content-classes:message
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="utf-8"
-Subject: [Linux-fbdev-devel] [PATCH 2/9] viafb: VIA Frame Buffer Device Driver
-Date: Wed, 7 May 2008 19:09:28 +0800
-Message-ID: <C80EF34A3D2E494DBAF9AC29C7AE4EB806F67753@exchtp03.taipei.via.com.tw>
+Subject: [Linux-fbdev-devel] [PATCH 3/9] viafb: VIA Frame Buffer Device Driver
+Date: Wed, 7 May 2008 19:09:33 +0800
+Message-ID: <C80EF34A3D2E494DBAF9AC29C7AE4EB806F67754@exchtp03.taipei.via.com.tw>
 X-MS-Has-Attach: 
 X-MS-TNEF-Correlator: 
-Thread-Topic: [Linux-fbdev-devel] [PATCH 2/9] viafb: VIA Frame Buffer Device Driver
-Thread-Index: AciwMtF5zSbYplL7T6eU8PbdHPIqxA==
+Thread-Topic: [Linux-fbdev-devel] [PATCH 3/9] viafb: VIA Frame Buffer Device Driver
+Thread-Index: AcivqWbF3qyu30s5RguMHG+BNihXBgAhNGrAAAA1T2AAABOmsAAAH3Fw
 From: <JosephChan@via.com.tw>
 To: <JosephChan@via.com.tw>, <akpm@linux-foundation.org>,
        <geert@linux-m68k.org>
 Cc: <linux-fbdev-devel@lists.sourceforge.net>, <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 07 May 2008 11:09:30.0178 (UTC) FILETIME=[D237BA20:01C8B032]
+X-OriginalArrivalTime: 07 May 2008 11:09:34.0662 (UTC) FILETIME=[D4E3EE60:01C8B032]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id m47B9vEB002088
+X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id m47BAoEB002101
 
 Signed-off-by: Joseph Chan <josephchan@via.com.tw>
 
-diff -Nur a/drivers/video/via/dvi.h b/drivers/video/via/dvi.h
---- a/drivers/video/via/dvi.h	1969-12-31 19:00:00.000000000 -0500
-+++ b/drivers/video/via/dvi.h	2008-04-29 02:51:16.000000000 -0400
-@@ -0,0 +1,69 @@
-+/*
-+ * Copyright 1998-2008 VIA Technologies, Inc. All Rights Reserved.
-+ * Copyright 2001-2008 S3 Graphics, Inc. All Rights Reserved.
-+
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under  the terms of the GNU General Public License as published
-+ * by the Free Software Foundation; either version 2, or (at your option)
-+ * any later version.
-+
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTIES OR REPRESENTATIONS; without even
-+ * the implied warranty of MERCHANTABILITY or FITNESS FOR
-+ * A PARTICULAR PURPOSE.See the GNU General Public License
-+ * for more details.
-+
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc.,
-+ * 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-+ */
-+
-+#ifndef __DVI_H__
-+#define __DVI_H__
-+
-+/*Definition TMDS Device ID register*/
-+#define     VT1632_DEVICE_ID_REG        0x02
-+#define     VT1632_DEVICE_ID            0x92
-+
-+#define     GET_DVI_SIZE_BY_SYSTEM_BIOS     0x01
-+#define     GET_DVI_SIZE_BY_VGA_BIOS        0x02
-+#define     GET_DVI_SZIE_BY_HW_STRAPPING    0x03
-+
-+/* Definition DVI Panel ID*/
-+/* Resolution: 640x480,   Channel: single, Dithering: Enable */
-+#define     DVI_PANEL_ID0_640X480       0x00
-+/* Resolution: 800x600,   Channel: single, Dithering: Enable */
-+#define     DVI_PANEL_ID1_800x600       0x01
-+/* Resolution: 1024x768,  Channel: single, Dithering: Enable */
-+#define     DVI_PANEL_ID1_1024x768      0x02
-+/* Resolution: 1280x768,  Channel: single, Dithering: Enable */
-+#define     DVI_PANEL_ID1_1280x768      0x03
-+/* Resolution: 1280x1024, Channel: dual,   Dithering: Enable */
-+#define     DVI_PANEL_ID1_1280x1024     0x04
-+/* Resolution: 1400x1050, Channel: dual,   Dithering: Enable */
-+#define     DVI_PANEL_ID1_1400x1050     0x05
-+/* Resolution: 1600x1200, Channel: dual,   Dithering: Enable */
-+#define     DVI_PANEL_ID1_1600x1200     0x06
-+
-+/* Define the version of EDID*/
-+#define     EDID_VERSION_1      1
-+#define     EDID_VERSION_2      2
-+
-+#define     DEV_CONNECT_DVI     0x01
-+#define     DEV_CONNECT_HDMI    0x02
-+
-+int check_hdmi_connected_device(void);
-+struct VideoModeTable *get_cea_mode_tbl_pointer(int Index);
-+int tmds_register_read(int index);
-+void tmds_register_write(int index, u8 data);
-+int dvi_sense(void);
-+int dvi_query_EDID(void);
-+unsigned char dvi_get_panel_info(void);
-+void dvi_disable(void);
-+void dvi_enable(void);
-+int tmds_trasmitter_identify(void);
-+void init_dvi_size(void);
-+void dvi_set_mode(int video_index, int mode_bpp, int set_iga);
-+
-+#endif /* __DVI_H__ */
-diff -Nur a/drivers/video/via/global.c b/drivers/video/via/global.c
---- a/drivers/video/via/global.c	1969-12-31 19:00:00.000000000 -0500
-+++ b/drivers/video/via/global.c	2008-04-30 01:38:49.000000000 -0400
-@@ -0,0 +1,170 @@
-+/*
-+ * Copyright 1998-2008 VIA Technologies, Inc. All Rights Reserved.
-+ * Copyright 2001-2008 S3 Graphics, Inc. All Rights Reserved.
-+
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under  the terms of the GNU General Public License as published
-+ * by the Free Software Foundation; either version 2, or (at your option)
-+ * any later version.
-+
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTIES OR REPRESENTATIONS; without even
-+ * the implied warranty of MERCHANTABILITY or FITNESS FOR
-+ * A PARTICULAR PURPOSE.See the GNU General Public License
-+ * for more details.
-+
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc.,
-+ * 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-+ */
-+#include "global.h"
-+int platform_epia_dvi = STATE_OFF;
-+int device_lcd_dualedge = STATE_OFF;
-+int via_bus_width = 12;
-+int display_hardware_layout = HW_LAYOUT_LCD_DVI;
-+int via_fb_memsize;
-+int DeviceStatus = CRT_Device;
-+int via_fb_hotplug;
-+int refresh = 60;
-+int lcd_dsp_method = LCD_EXPANDSION;
-+int lcd_mode = LCD_OPENLDI;
-+int via_fb_bpp = 32;
-+int via_fb_bpp1 = 32;
-+int via_fb_accel;
-+int CRT_ON = 1;
-+int DVI_ON ;
-+int LCD_ON ;
-+int LCD2_ON;
-+int SAMM_ON;
-+int dual_fb;
-+int via_fb_hotplug_Xres = 640;
-+int via_fb_hotplug_Yres = 480;
-+int via_fb_hotplug_bpp = 32;
-+int via_fb_hotplug_refresh = 60;
-+unsigned int second_offset;
-+int second_size;
-+int primary_dev = None_Device;
-+void __iomem *FB_MM;
-+unsigned int second_xres = 640;
-+unsigned int second_yres = 480;
-+unsigned int second_virtual_xres;
-+unsigned int second_virtual_yres;
-+int lcd_panel_id = LCD_PANEL_ID_MAXIMUM + 1;
-+struct fb_cursor viacursor;
-+struct fb_info viafbinfo1;
-+struct tmds_setting_information tmds_setting_info;
-+struct crt_setting_information crt_setting_info;
-+struct lvds_setting_information lvds_setting_info;
-+struct lvds_setting_information lvds_setting_info2;
-+struct chip_information chip_info;
-+struct viafb_par parinfo;
-+struct viafb_par parinfo1;
-+struct fb_info viafbinfo;
-+u16 red256[] = {
-+	0x0, 0x0, 0x0, 0x0, 0xa800, 0xa800, 0xa800, 0xa800, 0x5400, 0x5400,
-+	0x5400, 0x5400, 0xfc00, 0xfc00, 0xfc00, 0xfc00,
-+	0x0, 0x1400, 0x2000, 0x2c00, 0x3800, 0x4400, 0x5000, 0x6000,
-+	0x7000, 0x8000, 0x9000, 0xa000, 0xb400, 0xc800, 0xe000,
-+	0xfc00, 0x0, 0x4000, 0x7c00, 0xbc00, 0xfc00, 0xfc00, 0xfc00,
-+	0xfc00, 0xfc00, 0xfc00, 0xfc00, 0xfc00, 0xfc00, 0xbc00,
-+	0x7c00, 0x4000, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
-+	0x7c00, 0x9c00, 0xbc00, 0xdc00, 0xfc00, 0xfc00, 0xfc00,
-+	0xfc00, 0xfc00, 0xfc00, 0xfc00, 0xfc00, 0xfc00, 0xdc00,
-+	0xbc00, 0x9c00, 0x7c00, 0x7c00, 0x7c00, 0x7c00, 0x7c00,
-+	0x7c00, 0x7c00, 0x7c00, 0xb400, 0xc400, 0xd800, 0xe800,
-+	0xfc00, 0xfc00, 0xfc00, 0xfc00, 0xfc00, 0xfc00, 0xfc00,
-+	0xfc00, 0xfc00, 0xe800, 0xd800, 0xc400, 0xb400, 0xb400,
-+	0xb400, 0xb400, 0xb400, 0xb400, 0xb400, 0xb400, 0x0, 0x1c00,
-+	0x3800, 0x5400, 0x7000, 0x7000, 0x7000, 0x7000, 0x7000,
-+	0x7000, 0x7000, 0x7000, 0x7000, 0x5400, 0x3800, 0x1c00, 0x0,
-+	0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x3800, 0x4400, 0x5400,
-+	0x6000, 0x7000, 0x7000, 0x7000, 0x7000, 0x7000, 0x7000,
-+	0x7000, 0x7000, 0x7000, 0x6000, 0x5400, 0x4400, 0x3800,
-+	0x3800, 0x3800, 0x3800, 0x3800, 0x3800, 0x3800, 0x3800,
-+	0x5000, 0x5800, 0x6000, 0x6800, 0x7000, 0x7000, 0x7000,
-+	0x7000, 0x7000, 0x7000, 0x7000, 0x7000, 0x7000, 0x6800,
-+	0x6000, 0x5800, 0x5000, 0x5000, 0x5000, 0x5000, 0x5000,
-+	0x5000, 0x5000, 0x5000, 0x0, 0x1000, 0x2000, 0x3000, 0x4000,
-+	0x4000, 0x4000, 0x4000, 0x4000, 0x4000, 0x4000, 0x4000,
-+	0x4000, 0x3000, 0x2000, 0x1000, 0x0, 0x0, 0x0, 0x0, 0x0,
-+	0x0, 0x0, 0x0, 0x2000, 0x2800, 0x3000, 0x3800, 0x4000,
-+	0x4000, 0x4000, 0x4000, 0x4000, 0x4000, 0x4000, 0x4000,
-+	0x4000, 0x3800, 0x3000, 0x2800, 0x2000, 0x2000, 0x2000,
-+	0x2000, 0x2000, 0x2000, 0x2000, 0x2000, 0x2c00, 0x3000,
-+	0x3400, 0x3c00, 0x4000, 0x4000, 0x4000, 0x4000, 0x4000,
-+	0x4000, 0x4000, 0x4000, 0x4000, 0x3c00, 0x3400, 0x3000,
-+	0x2c00, 0x2c00, 0x2c00, 0x2c00, 0x2c00, 0x2c00, 0x2c00,
-+	0x2c00, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0
-+};
-+u16 green256[] =
-+    { 0x0, 0x0, 0xa800, 0xa800, 0x0, 0x0, 0x5400, 0xa800, 0x5400, 0x5400,
-+	0xfc00, 0xfc00, 0x5400, 0x5400, 0xfc00, 0xfc00,
-+	0x0, 0x1400, 0x2000, 0x2c00, 0x3800, 0x4400, 0x5000, 0x6000,
-+	0x7000, 0x8000, 0x9000, 0xa000, 0xb400, 0xc800, 0xe000, 0xfc00,
-+	0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x7c00, 0xbc00,
-+	0xfc00, 0xfc00, 0xfc00, 0xfc00,
-+	0xfc00, 0xfc00, 0xfc00, 0xfc00, 0xfc00, 0xbc00, 0x7c00, 0x4000,
-+	0x7c00, 0x7c00, 0x7c00, 0x7c00, 0x7c00, 0x7c00, 0x7c00, 0x7c00,
-+	0x7c00, 0x9c00, 0xbc00, 0xdc00, 0xfc00, 0xfc00, 0xfc00, 0xfc00,
-+	0xfc00, 0xfc00, 0xfc00, 0xfc00, 0xfc00, 0xdc00, 0xbc00, 0x9c00,
-+	0xb400, 0xb400, 0xb400, 0xb400, 0xb400, 0xb400, 0xb400, 0xb400,
-+	0xb400, 0xc400, 0xd800, 0xe800, 0xfc00, 0xfc00, 0xfc00, 0xfc00,
-+	0xfc00, 0xfc00, 0xfc00, 0xfc00, 0xfc00, 0xe800, 0xd800, 0xc400,
-+	0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
-+	0x0, 0x1c00, 0x3800, 0x5400, 0x7000, 0x7000, 0x7000, 0x7000,
-+	0x7000, 0x7000, 0x7000, 0x7000, 0x7000, 0x5400, 0x3800, 0x1c00,
-+	0x3800, 0x3800, 0x3800, 0x3800, 0x3800, 0x3800, 0x3800, 0x3800,
-+	0x3800, 0x4400, 0x5400, 0x6000, 0x7000, 0x7000, 0x7000, 0x7000,
-+	0x7000, 0x7000, 0x7000, 0x7000, 0x7000, 0x6000, 0x5400, 0x4400,
-+	0x5000, 0x5000, 0x5000, 0x5000, 0x5000, 0x5000, 0x5000, 0x5000,
-+	0x5000, 0x5800, 0x6000, 0x6800, 0x7000, 0x7000, 0x7000, 0x7000,
-+	0x7000, 0x7000, 0x7000, 0x7000, 0x7000, 0x6800, 0x6000, 0x5800,
-+	0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x1000, 0x2000,
-+	0x3000, 0x4000, 0x4000, 0x4000, 0x4000,
-+	0x4000, 0x4000, 0x4000, 0x4000, 0x4000, 0x3000, 0x2000, 0x1000,
-+	0x2000, 0x2000, 0x2000, 0x2000, 0x2000, 0x2000, 0x2000, 0x2000,
-+	0x2000, 0x2800, 0x3000, 0x3800, 0x4000, 0x4000, 0x4000, 0x4000,
-+	0x4000, 0x4000, 0x4000, 0x4000, 0x4000, 0x3800, 0x3000, 0x2800,
-+	0x2c00, 0x2c00, 0x2c00, 0x2c00, 0x2c00, 0x2c00, 0x2c00, 0x2c00,
-+	0x2c00, 0x3000, 0x3400, 0x3c00, 0x4000, 0x4000, 0x4000, 0x4000,
-+	0x4000, 0x4000, 0x4000, 0x4000, 0x4000, 0x3c00, 0x3400, 0x3000,
-+	0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0
-+};
-+u16 blue256[] =
-+    { 0x0, 0xa800, 0x0, 0xa800, 0x0, 0xa800, 0x0, 0xa800, 0x5400, 0xfc00,
-+	0x5400, 0xfc00, 0x5400, 0xfc00, 0x5400, 0xfc00,
-+	0x0, 0x1400, 0x2000, 0x2c00, 0x3800, 0x4400, 0x5000, 0x6000,
-+	0x7000, 0x8000, 0x9000, 0xa000, 0xb400, 0xc800, 0xe000, 0xfc00,
-+	0xfc00, 0xfc00, 0xfc00, 0xfc00, 0xfc00, 0xbc00, 0x7c00, 0x4000,
-+	0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
-+	0x0, 0x4000, 0x7c00, 0xbc00, 0xfc00, 0xfc00, 0xfc00, 0xfc00,
-+	0xfc00, 0xfc00, 0xfc00, 0xfc00, 0xfc00, 0xdc00, 0xbc00, 0x9c00,
-+	0x7c00, 0x7c00, 0x7c00, 0x7c00, 0x7c00, 0x7c00, 0x7c00, 0x7c00,
-+	0x7c00, 0x9c00, 0xbc00, 0xdc00, 0xfc00, 0xfc00, 0xfc00, 0xfc00,
-+	0xfc00, 0xfc00, 0xfc00, 0xfc00, 0xfc00, 0xe800, 0xd800, 0xc400,
-+	0xb400, 0xb400, 0xb400, 0xb400, 0xb400, 0xb400, 0xb400, 0xb400,
-+	0xb400, 0xc400, 0xd800, 0xe800, 0xfc00, 0xfc00, 0xfc00, 0xfc00,
-+	0x7000, 0x7000, 0x7000, 0x7000, 0x7000, 0x5400, 0x3800, 0x1c00,
-+	0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x1c00, 0x3800,
-+	0x5400, 0x7000, 0x7000, 0x7000, 0x7000,
-+	0x7000, 0x7000, 0x7000, 0x7000, 0x7000, 0x6000, 0x5400, 0x4400,
-+	0x3800, 0x3800, 0x3800, 0x3800, 0x3800, 0x3800, 0x3800, 0x3800,
-+	0x3800, 0x4400, 0x5400, 0x6000, 0x7000, 0x7000, 0x7000, 0x7000,
-+	0x7000, 0x7000, 0x7000, 0x7000, 0x7000, 0x6800, 0x6000, 0x5800,
-+	0x5000, 0x5000, 0x5000, 0x5000, 0x5000, 0x5000, 0x5000, 0x5000,
-+	0x5000, 0x5800, 0x6000, 0x6800, 0x7000, 0x7000, 0x7000, 0x7000,
-+	0x4000, 0x4000, 0x4000, 0x4000, 0x4000, 0x3000, 0x2000, 0x1000,
-+	0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
-+	0x0, 0x1000, 0x2000, 0x3000, 0x4000, 0x4000, 0x4000, 0x4000,
-+	0x4000, 0x4000, 0x4000, 0x4000, 0x4000, 0x3800, 0x3000, 0x2800,
-+	0x2000, 0x2000, 0x2000, 0x2000, 0x2000, 0x2000, 0x2000, 0x2000,
-+	0x2000, 0x2800, 0x3000, 0x3800, 0x4000, 0x4000, 0x4000, 0x4000,
-+	0x4000, 0x4000, 0x4000, 0x4000, 0x4000, 0x3c00, 0x3400, 0x3000,
-+	0x2c00, 0x2c00, 0x2c00, 0x2c00, 0x2c00, 0x2c00, 0x2c00, 0x2c00,
-+	0x2c00, 0x3000, 0x3400, 0x3c00, 0x4000, 0x4000, 0x4000, 0x4000,
-+	0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0
-+};
-+
-+struct fb_cmap viafb_256_colors = { 0, 256, red256, green256, blue256, NULL
-+};
-diff -Nur a/drivers/video/via/global.h b/drivers/video/via/global.h
---- a/drivers/video/via/global.h	1969-12-31 19:00:00.000000000 -0500
-+++ b/drivers/video/via/global.h	2008-05-04 07:06:30.000000000 -0400
-@@ -0,0 +1,98 @@
-+/*
-+ * Copyright 1998-2008 VIA Technologies, Inc. All Rights Reserved.
-+ * Copyright 2001-2008 S3 Graphics, Inc. All Rights Reserved.
-+
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under  the terms of the GNU General Public License as published
-+ * by the Free Software Foundation; either version 2, or (at your option)
-+ * any later version.
-+
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTIES OR REPRESENTATIONS; without even
-+ * the implied warranty of MERCHANTABILITY or FITNESS FOR
-+ * A PARTICULAR PURPOSE.See the GNU General Public License
-+ * for more details.
-+
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc.,
-+ * 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-+ */
-+
-+#ifndef __GLOBAL_H__
-+#define __GLOBAL_H__
-+
-+#include <linux/fb.h>
-+#include <linux/delay.h>
-+#include <linux/ioport.h>
-+#include <linux/pci.h>
-+#include <linux/io.h>
-+#include <linux/uaccess.h>
-+#include <linux/init.h>
-+#include <linux/proc_fs.h>
-+#include <linux/console.h>
-+#include <linux/timer.h>
-+
-+#include "debug.h"
-+
-+#include "iface.h"
-+#include "viafbdev.h"
-+#include "chip.h"
-+#include "debug.h"
-+#include "accel.h"
-+#include "share.h"
-+#include "dvi.h"
-+#include "viamode.h"
-+#include "via_i2c.h"
-+#include "hw.h"
-+
-+#include "lcd.h"
-+#include "ioctl.h"
-+#include "viamode.h"
-+#include "via_utility.h"
-+#include "vt1636.h"
-+#include "tblDPASetting.h"
-+#include "tbl1636.h"
-+#include "viafbdev.h"
-+
-+/* External struct*/
-+#define     PORT_ON_AMR       1
-+#define     PORT_ON_AGP       2
-+
-+extern int platform_epia_dvi;
-+extern int device_lcd_dualedge;
-+extern int via_bus_width;
-+extern int display_hardware_layout;
-+extern struct tmds_setting_information tmds_setting_info;
-+extern struct crt_setting_information crt_setting_info;
-+extern struct lvds_setting_information lvds_setting_info;
-+extern struct lvds_setting_information lvds_setting_info2;
-+extern struct offset offset_reg;
-+extern struct chip_information chip_info;
-+extern struct viafb_par parinfo;
-+extern struct viafb_par parinfo1;
-+extern struct fb_info viafbinfo;
-+extern int DeviceStatus;
-+extern int refresh;
-+extern int lcd_dsp_method;
-+extern int lcd_mode;
-+extern int via_fb_bpp;
-+extern int via_fb_bpp1;
-+
-+extern int CRT_ON;
-+extern int via_fb_hotplug_Xres;
-+extern int via_fb_hotplug_Yres;
-+extern int via_fb_hotplug_bpp;
-+extern int via_fb_hotplug_refresh;
-+extern int primary_dev;
-+extern void __iomem *FB_MM;
-+extern struct fb_cursor viacursor;
-+
-+extern struct fb_cmap viafb_256_colors;
-+extern struct fb_info viafbinfo1;
-+
-+extern unsigned int second_xres;
-+extern unsigned int second_yres;
-+extern int lcd_panel_id;
-+
-+#endif /* __GLOBAL_H__ */
-diff -Nur a/drivers/video/via/hw.h b/drivers/video/via/hw.h
---- a/drivers/video/via/hw.h	1969-12-31 19:00:00.000000000 -0500
-+++ b/drivers/video/via/hw.h	2008-04-29 02:51:18.000000000 -0400
-@@ -0,0 +1,950 @@
-+/*
-+ * Copyright 1998-2008 VIA Technologies, Inc. All Rights Reserved.
-+ * Copyright 2001-2008 S3 Graphics, Inc. All Rights Reserved.
-+
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under  the terms of the GNU General Public License as published
-+ * by the Free Software Foundation; either version 2, or (at your option)
-+ * any later version.
-+
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTIES OR REPRESENTATIONS; without even
-+ * the implied warranty of MERCHANTABILITY or FITNESS FOR
-+ * A PARTICULAR PURPOSE.See the GNU General Public License
-+ * for more details.
-+
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc.,
-+ * 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-+ */
-+
-+#ifndef __HW_H__
-+#define __HW_H__
-+
-+#include "global.h"
-+
-+/***************************************************
-+* Definition IGA1 Design Method of CRTC Registers *
-+****************************************************/
-+#define IGA1_HOR_TOTAL_FORMULA(x)           ((x)/8)-5
-+#define IGA1_HOR_ADDR_FORMULA(x)            ((x)/8)-1
-+#define IGA1_HOR_BLANK_START_FORMULA(x)     ((x)/8)-1
-+#define IGA1_HOR_BLANK_END_FORMULA(x, y)     ((x+y)/8)-1
-+#define IGA1_HOR_SYNC_START_FORMULA(x)      ((x)/8)
-+#define IGA1_HOR_SYNC_END_FORMULA(x, y)      ((x+y)/8)
-+
-+#define IGA1_VER_TOTAL_FORMULA(x)           (x)-2
-+#define IGA1_VER_ADDR_FORMULA(x)            (x)-1
-+#define IGA1_VER_BLANK_START_FORMULA(x)     (x)-1
-+#define IGA1_VER_BLANK_END_FORMULA(x, y)     (x+y)-1
-+#define IGA1_VER_SYNC_START_FORMULA(x)      (x)-1
-+#define IGA1_VER_SYNC_END_FORMULA(x, y)      (x+y)-1
-+
-+/***************************************************
-+** Definition IGA2 Design Method of CRTC Registers *
-+****************************************************/
-+#define IGA2_HOR_TOTAL_FORMULA(x)           (x)-1
-+#define IGA2_HOR_ADDR_FORMULA(x)            (x)-1
-+#define IGA2_HOR_BLANK_START_FORMULA(x)     (x)-1
-+#define IGA2_HOR_BLANK_END_FORMULA(x, y)     (x+y)-1
-+#define IGA2_HOR_SYNC_START_FORMULA(x)      (x)-1
-+#define IGA2_HOR_SYNC_END_FORMULA(x, y)      (x+y)-1
-+
-+#define IGA2_VER_TOTAL_FORMULA(x)           (x)-1
-+#define IGA2_VER_ADDR_FORMULA(x)            (x)-1
-+#define IGA2_VER_BLANK_START_FORMULA(x)     (x)-1
-+#define IGA2_VER_BLANK_END_FORMULA(x, y)     (x+y)-1
-+#define IGA2_VER_SYNC_START_FORMULA(x)      (x)-1
-+#define IGA2_VER_SYNC_END_FORMULA(x, y)      (x+y)-1
-+
-+/**********************************************************/
-+/* Definition IGA2 Design Method of CRTC Shadow Registers */
-+/**********************************************************/
-+#define IGA2_HOR_TOTAL_SHADOW_FORMULA(x)           (x/8)-5
-+#define IGA2_HOR_BLANK_END_SHADOW_FORMULA(x, y)     ((x+y)/8)-1
-+#define IGA2_VER_TOTAL_SHADOW_FORMULA(x)           (x)-2
-+#define IGA2_VER_ADDR_SHADOW_FORMULA(x)            (x)-1
-+#define IGA2_VER_BLANK_START_SHADOW_FORMULA(x)     (x)-1
-+#define IGA2_VER_BLANK_END_SHADOW_FORMULA(x, y)     (x+y)-1
-+#define IGA2_VER_SYNC_START_SHADOW_FORMULA(x)      (x)
-+#define IGA2_VER_SYNC_END_SHADOW_FORMULA(x, y)      (x+y)
-+
-+/* Define Register Number for IGA1 CRTC Timing */
-+
-+/* location: {CR00,0,7},{CR36,3,3} */
-+#define IGA1_HOR_TOTAL_REG_NUM		2
-+/* location: {CR01,0,7} */
-+#define IGA1_HOR_ADDR_REG_NUM		1
-+/* location: {CR02,0,7} */
-+#define IGA1_HOR_BLANK_START_REG_NUM    1
-+/* location: {CR03,0,4},{CR05,7,7},{CR33,5,5} */
-+#define IGA1_HOR_BLANK_END_REG_NUM	3
-+/* location: {CR04,0,7},{CR33,4,4} */
-+#define IGA1_HOR_SYNC_START_REG_NUM	2
-+/* location: {CR05,0,4} */
-+#define IGA1_HOR_SYNC_END_REG_NUM       1
-+/* location: {CR06,0,7},{CR07,0,0},{CR07,5,5},{CR35,0,0} */
-+#define IGA1_VER_TOTAL_REG_NUM          4
-+/* location: {CR12,0,7},{CR07,1,1},{CR07,6,6},{CR35,2,2} */
-+#define IGA1_VER_ADDR_REG_NUM           4
-+/* location: {CR15,0,7},{CR07,3,3},{CR09,5,5},{CR35,3,3} */
-+#define IGA1_VER_BLANK_START_REG_NUM    4
-+/* location: {CR16,0,7} */
-+#define IGA1_VER_BLANK_END_REG_NUM      1
-+/* location: {CR10,0,7},{CR07,2,2},{CR07,7,7},{CR35,1,1} */
-+#define IGA1_VER_SYNC_START_REG_NUM     4
-+/* location: {CR11,0,3} */
-+#define IGA1_VER_SYNC_END_REG_NUM       1
-+
-+/* Define Register Number for IGA2 Shadow CRTC Timing */
-+
-+/* location: {CR6D,0,7},{CR71,3,3} */
-+#define IGA2_SHADOW_HOR_TOTAL_REG_NUM       2
-+/* location: {CR6E,0,7} */
-+#define IGA2_SHADOW_HOR_BLANK_END_REG_NUM   1
-+/* location: {CR6F,0,7},{CR71,0,2} */
-+#define IGA2_SHADOW_VER_TOTAL_REG_NUM       2
-+/* location: {CR70,0,7},{CR71,4,6} */
-+#define IGA2_SHADOW_VER_ADDR_REG_NUM        2
-+/* location: {CR72,0,7},{CR74,4,6} */
-+#define IGA2_SHADOW_VER_BLANK_START_REG_NUM 2
-+/* location: {CR73,0,7},{CR74,0,2} */
-+#define IGA2_SHADOW_VER_BLANK_END_REG_NUM   2
-+/* location: {CR75,0,7},{CR76,4,6} */
-+#define IGA2_SHADOW_VER_SYNC_START_REG_NUM  2
-+/* location: {CR76,0,3} */
-+#define IGA2_SHADOW_VER_SYNC_END_REG_NUM    1
-+
-+/* Define Register Number for IGA2 CRTC Timing */
-+
-+/* location: {CR50,0,7},{CR55,0,3} */
-+#define IGA2_HOR_TOTAL_REG_NUM          2
-+/* location: {CR51,0,7},{CR55,4,6} */
-+#define IGA2_HOR_ADDR_REG_NUM           2
-+/* location: {CR52,0,7},{CR54,0,2} */
-+#define IGA2_HOR_BLANK_START_REG_NUM    2
-+/* location: CLE266: {CR53,0,7},{CR54,3,5} => CLE266's CR5D[6]
-+is reserved, so it may have problem to set 1600x1200 on IGA2. */
-+/*         	Others: {CR53,0,7},{CR54,3,5},{CR5D,6,6} */
-+#define IGA2_HOR_BLANK_END_REG_NUM      3
-+/* location: {CR56,0,7},{CR54,6,7},{CR5C,7,7} */
-+/* VT3314 and Later: {CR56,0,7},{CR54,6,7},{CR5C,7,7}, {CR5D,7,7} */
-+#define IGA2_HOR_SYNC_START_REG_NUM     4
-+
-+/* location: {CR57,0,7},{CR5C,6,6} */
-+#define IGA2_HOR_SYNC_END_REG_NUM       2
-+/* location: {CR58,0,7},{CR5D,0,2} */
-+#define IGA2_VER_TOTAL_REG_NUM          2
-+/* location: {CR59,0,7},{CR5D,3,5} */
-+#define IGA2_VER_ADDR_REG_NUM           2
-+/* location: {CR5A,0,7},{CR5C,0,2} */
-+#define IGA2_VER_BLANK_START_REG_NUM    2
-+/* location: {CR5E,0,7},{CR5C,3,5} */
-+#define IGA2_VER_BLANK_END_REG_NUM      2
-+/* location: {CR5E,0,7},{CR5F,5,7} */
-+#define IGA2_VER_SYNC_START_REG_NUM     2
-+/* location: {CR5F,0,4} */
-+#define IGA2_VER_SYNC_END_REG_NUM       1
-+
-+/* Define Offset and Fetch Count Register*/
-+
-+/* location: {CR13,0,7},{CR35,5,7} */
-+#define IGA1_OFFSET_REG_NUM             2
-+/* 8 bytes alignment. */
-+#define IGA1_OFFSER_ALIGN_BYTE          8
-+/* x: H resolution, y: color depth */
-+#define IGA1_OFFSET_FORMULA(x, y)        (x*y)/IGA1_OFFSER_ALIGN_BYTE
-+/* location: {SR1C,0,7},{SR1D,0,1} */
-+#define IGA1_FETCH_COUNT_REG_NUM        2
-+/* 16 bytes alignment. */
-+#define IGA1_FETCH_COUNT_ALIGN_BYTE     16
-+/* x: H resolution, y: color depth */
-+#define IGA1_FETCH_COUNT_PATCH_VALUE    4
-+#define IGA1_FETCH_COUNT_FORMULA(x, y)   \
-+	((x*y)/IGA1_FETCH_COUNT_ALIGN_BYTE) + IGA1_FETCH_COUNT_PATCH_VALUE
-+
-+/* location: {CR66,0,7},{CR67,0,1} */
-+#define IGA2_OFFSET_REG_NUM             2
-+#define IGA2_OFFSET_ALIGN_BYTE          8
-+/* x: H resolution, y: color depth */
-+#define IGA2_OFFSET_FORMULA(x, y)        (x*y)/IGA2_OFFSET_ALIGN_BYTE
-+/* location: {CR65,0,7},{CR67,2,3} */
-+#define IGA2_FETCH_COUNT_REG_NUM        2
-+#define IGA2_FETCH_COUNT_ALIGN_BYTE     16
-+#define IGA2_FETCH_COUNT_PATCH_VALUE    0
-+#define IGA2_FETCH_COUNT_FORMULA(x, y)   \
-+	((x*y)/IGA2_FETCH_COUNT_ALIGN_BYTE) + IGA2_FETCH_COUNT_PATCH_VALUE
-+
-+/* Staring Address*/
-+
-+/* location: {CR0C,0,7},{CR0D,0,7},{CR34,0,7},{CR48,0,1} */
-+#define IGA1_STARTING_ADDR_REG_NUM      4
-+/* location: {CR62,1,7},{CR63,0,7},{CR64,0,7} */
-+#define IGA2_STARTING_ADDR_REG_NUM      3
-+
-+/* Define Display OFFSET*/
-+/* These value are by HW suggested value*/
-+/* location: {SR17,0,7} */
-+#define K800_IGA1_FIFO_MAX_DEPTH                384
-+/* location: {SR16,0,5},{SR16,7,7} */
-+#define K800_IGA1_FIFO_THRESHOLD                328
-+/* location: {SR18,0,5},{SR18,7,7} */
-+#define K800_IGA1_FIFO_HIGH_THRESHOLD           296
-+/* location: {SR22,0,4}. (128/4) =64, K800 must be set zero, */
-+				/* because HW only 5 bits */
-+#define K800_IGA1_DISPLAY_QUEUE_EXPIRE_NUM      0
-+
-+/* location: {CR68,4,7},{CR94,7,7},{CR95,7,7} */
-+#define K800_IGA2_FIFO_MAX_DEPTH                384
-+/* location: {CR68,0,3},{CR95,4,6} */
-+#define K800_IGA2_FIFO_THRESHOLD                328
-+/* location: {CR92,0,3},{CR95,0,2} */
-+#define K800_IGA2_FIFO_HIGH_THRESHOLD           296
-+/* location: {CR94,0,6} */
-+#define K800_IGA2_DISPLAY_QUEUE_EXPIRE_NUM      128
-+
-+/* location: {SR17,0,7} */
-+#define P880_IGA1_FIFO_MAX_DEPTH                192
-+/* location: {SR16,0,5},{SR16,7,7} */
-+#define P880_IGA1_FIFO_THRESHOLD                128
-+/* location: {SR18,0,5},{SR18,7,7} */
-+#define P880_IGA1_FIFO_HIGH_THRESHOLD           64
-+/* location: {SR22,0,4}. (128/4) =64, K800 must be set zero, */
-+				/* because HW only 5 bits */
-+#define P880_IGA1_DISPLAY_QUEUE_EXPIRE_NUM      0
-+
-+/* location: {CR68,4,7},{CR94,7,7},{CR95,7,7} */
-+#define P880_IGA2_FIFO_MAX_DEPTH                96
-+/* location: {CR68,0,3},{CR95,4,6} */
-+#define P880_IGA2_FIFO_THRESHOLD                64
-+/* location: {CR92,0,3},{CR95,0,2} */
-+#define P880_IGA2_FIFO_HIGH_THRESHOLD           32
-+/* location: {CR94,0,6} */
-+#define P880_IGA2_DISPLAY_QUEUE_EXPIRE_NUM      128
-+
-+/* VT3314 chipset*/
-+
-+/* location: {SR17,0,7} */
-+#define CN700_IGA1_FIFO_MAX_DEPTH               96
-+/* location: {SR16,0,5},{SR16,7,7} */
-+#define CN700_IGA1_FIFO_THRESHOLD               80
-+/* location: {SR18,0,5},{SR18,7,7} */
-+#define CN700_IGA1_FIFO_HIGH_THRESHOLD          64
-+/* location: {SR22,0,4}. (128/4) =64, P800 must be set zero,
-+				because HW only 5 bits */
-+#define CN700_IGA1_DISPLAY_QUEUE_EXPIRE_NUM     0
-+/* location: {CR68,4,7},{CR94,7,7},{CR95,7,7} */
-+#define CN700_IGA2_FIFO_MAX_DEPTH               96
-+/* location: {CR68,0,3},{CR95,4,6} */
-+#define CN700_IGA2_FIFO_THRESHOLD               80
-+/* location: {CR92,0,3},{CR95,0,2} */
-+#define CN700_IGA2_FIFO_HIGH_THRESHOLD          32
-+/* location: {CR94,0,6} */
-+#define CN700_IGA2_DISPLAY_QUEUE_EXPIRE_NUM     128
-+
-+/* For VT3324, these values are suggested by HW */
-+/* location: {SR17,0,7} */
-+#define CX700_IGA1_FIFO_MAX_DEPTH               192
-+/* location: {SR16,0,5},{SR16,7,7} */
-+#define CX700_IGA1_FIFO_THRESHOLD               128
-+/* location: {SR18,0,5},{SR18,7,7} */
-+#define CX700_IGA1_FIFO_HIGH_THRESHOLD          128
-+/* location: {SR22,0,4} */
-+#define CX700_IGA1_DISPLAY_QUEUE_EXPIRE_NUM     124
-+
-+/* location: {CR68,4,7},{CR94,7,7},{CR95,7,7} */
-+#define CX700_IGA2_FIFO_MAX_DEPTH               96
-+/* location: {CR68,0,3},{CR95,4,6} */
-+#define CX700_IGA2_FIFO_THRESHOLD               64
-+/* location: {CR92,0,3},{CR95,0,2} */
-+#define CX700_IGA2_FIFO_HIGH_THRESHOLD          32
-+/* location: {CR94,0,6} */
-+#define CX700_IGA2_DISPLAY_QUEUE_EXPIRE_NUM     128
-+
-+/* VT3336 chipset*/
-+/* location: {SR17,0,7} */
-+#define K8M890_IGA1_FIFO_MAX_DEPTH               360
-+/* location: {SR16,0,5},{SR16,7,7} */
-+#define K8M890_IGA1_FIFO_THRESHOLD               328
-+/* location: {SR18,0,5},{SR18,7,7} */
-+#define K8M890_IGA1_FIFO_HIGH_THRESHOLD          296
-+/* location: {SR22,0,4}. */
-+#define K8M890_IGA1_DISPLAY_QUEUE_EXPIRE_NUM     124
-+
-+/* location: {CR68,4,7},{CR94,7,7},{CR95,7,7} */
-+#define K8M890_IGA2_FIFO_MAX_DEPTH               360
-+/* location: {CR68,0,3},{CR95,4,6} */
-+#define K8M890_IGA2_FIFO_THRESHOLD               328
-+/* location: {CR92,0,3},{CR95,0,2} */
-+#define K8M890_IGA2_FIFO_HIGH_THRESHOLD          296
-+/* location: {CR94,0,6} */
-+#define K8M890_IGA2_DISPLAY_QUEUE_EXPIRE_NUM     124
-+
-+/* VT3327 chipset*/
-+/* location: {SR17,0,7} */
-+#define P4M890_IGA1_FIFO_MAX_DEPTH               96
-+/* location: {SR16,0,5},{SR16,7,7} */
-+#define P4M890_IGA1_FIFO_THRESHOLD               76
-+/* location: {SR18,0,5},{SR18,7,7} */
-+#define P4M890_IGA1_FIFO_HIGH_THRESHOLD          64
-+/* location: {SR22,0,4}. (32/4) =8 */
-+#define P4M890_IGA1_DISPLAY_QUEUE_EXPIRE_NUM     32
-+/* location: {CR68,4,7},{CR94,7,7},{CR95,7,7} */
-+#define P4M890_IGA2_FIFO_MAX_DEPTH               96
-+/* location: {CR68,0,3},{CR95,4,6} */
-+#define P4M890_IGA2_FIFO_THRESHOLD               76
-+/* location: {CR92,0,3},{CR95,0,2} */
-+#define P4M890_IGA2_FIFO_HIGH_THRESHOLD          64
-+/* location: {CR94,0,6} */
-+#define P4M890_IGA2_DISPLAY_QUEUE_EXPIRE_NUM     32
-+
-+/* VT3364 chipset*/
-+/* location: {SR17,0,7} */
-+#define P4M900_IGA1_FIFO_MAX_DEPTH               96
-+/* location: {SR16,0,5},{SR16,7,7} */
-+#define P4M900_IGA1_FIFO_THRESHOLD               76
-+/* location: {SR18,0,5},{SR18,7,7} */
-+#define P4M900_IGA1_FIFO_HIGH_THRESHOLD          76
-+/* location: {SR22,0,4}. */
-+#define P4M900_IGA1_DISPLAY_QUEUE_EXPIRE_NUM     32
-+/* location: {CR68,4,7},{CR94,7,7},{CR95,7,7} */
-+#define P4M900_IGA2_FIFO_MAX_DEPTH               96
-+/* location: {CR68,0,3},{CR95,4,6} */
-+#define P4M900_IGA2_FIFO_THRESHOLD               76
-+/* location: {CR92,0,3},{CR95,0,2} */
-+#define P4M900_IGA2_FIFO_HIGH_THRESHOLD          76
-+/* location: {CR94,0,6} */
-+#define P4M900_IGA2_DISPLAY_QUEUE_EXPIRE_NUM     32
-+
-+/* For VT3353, these values are suggested by HW */
-+/* location: {SR17,0,7} */
-+#define VX800_IGA1_FIFO_MAX_DEPTH               192
-+/* location: {SR16,0,5},{SR16,7,7} */
-+#define VX800_IGA1_FIFO_THRESHOLD               152
-+/* location: {SR18,0,5},{SR18,7,7} */
-+#define VX800_IGA1_FIFO_HIGH_THRESHOLD          152
-+/* location: {SR22,0,4} */
-+#define VX800_IGA1_DISPLAY_QUEUE_EXPIRE_NUM      64
-+/* location: {CR68,4,7},{CR94,7,7},{CR95,7,7} */
-+#define VX800_IGA2_FIFO_MAX_DEPTH               96
-+/* location: {CR68,0,3},{CR95,4,6} */
-+#define VX800_IGA2_FIFO_THRESHOLD               64
-+/* location: {CR92,0,3},{CR95,0,2} */
-+#define VX800_IGA2_FIFO_HIGH_THRESHOLD          32
-+/* location: {CR94,0,6} */
-+#define VX800_IGA2_DISPLAY_QUEUE_EXPIRE_NUM     128
-+
-+#define IGA1_FIFO_DEPTH_SELECT_REG_NUM          1
-+#define IGA1_FIFO_THRESHOLD_REG_NUM             2
-+#define IGA1_FIFO_HIGH_THRESHOLD_REG_NUM        2
-+#define IGA1_DISPLAY_QUEUE_EXPIRE_NUM_REG_NUM   1
-+
-+#define IGA2_FIFO_DEPTH_SELECT_REG_NUM          3
-+#define IGA2_FIFO_THRESHOLD_REG_NUM             2
-+#define IGA2_FIFO_HIGH_THRESHOLD_REG_NUM        2
-+#define IGA2_DISPLAY_QUEUE_EXPIRE_NUM_REG_NUM   1
-+
-+#define IGA1_FIFO_DEPTH_SELECT_FORMULA(x)                   (x/2)-1
-+#define IGA1_FIFO_THRESHOLD_FORMULA(x)                      (x/4)
-+#define IGA1_DISPLAY_QUEUE_EXPIRE_NUM_FORMULA(x)            (x/4)
-+#define IGA1_FIFO_HIGH_THRESHOLD_FORMULA(x)                 (x/4)
-+#define IGA2_FIFO_DEPTH_SELECT_FORMULA(x)                   ((x/2)/4)-1
-+#define IGA2_FIFO_THRESHOLD_FORMULA(x)                      (x/4)
-+#define IGA2_DISPLAY_QUEUE_EXPIRE_NUM_FORMULA(x)            (x/4)
-+#define IGA2_FIFO_HIGH_THRESHOLD_FORMULA(x)                 (x/4)
-+
-+/************************************************************************/
-+/*  LCD Timing                                                          */
-+/************************************************************************/
-+
-+/* 500 ms = 500000 us */
-+#define LCD_POWER_SEQ_TD0               500000
-+/* 50 ms = 50000 us */
-+#define LCD_POWER_SEQ_TD1               50000
-+/* 0 us */
-+#define LCD_POWER_SEQ_TD2               0
-+/* 210 ms = 210000 us */
-+#define LCD_POWER_SEQ_TD3               210000
-+/* 2^10 * (1/14.31818M) = 71.475 us (K400.revA) */
-+#define CLE266_POWER_SEQ_UNIT           71
-+/* 2^11 * (1/14.31818M) = 142.95 us (K400.revB) */
-+#define K800_POWER_SEQ_UNIT             142
-+/* 2^13 * (1/14.31818M) = 572.1 us */
-+#define P880_POWER_SEQ_UNIT             572
-+
-+#define CLE266_POWER_SEQ_FORMULA(x)     (x)/CLE266_POWER_SEQ_UNIT
-+#define K800_POWER_SEQ_FORMULA(x)       (x)/K800_POWER_SEQ_UNIT
-+#define P880_POWER_SEQ_FORMULA(x)       (x)/P880_POWER_SEQ_UNIT
-+
-+/* location: {CR8B,0,7},{CR8F,0,3} */
-+#define LCD_POWER_SEQ_TD0_REG_NUM       2
-+/* location: {CR8C,0,7},{CR8F,4,7} */
-+#define LCD_POWER_SEQ_TD1_REG_NUM       2
-+/* location: {CR8D,0,7},{CR90,0,3} */
-+#define LCD_POWER_SEQ_TD2_REG_NUM       2
-+/* location: {CR8E,0,7},{CR90,4,7} */
-+#define LCD_POWER_SEQ_TD3_REG_NUM       2
-+
-+/* LCD Scaling factor*/
-+/* x: indicate setting horizontal size*/
-+/* y: indicate panel horizontal size*/
-+
-+/* Horizontal scaling factor 10 bits (2^10) */
-+#define CLE266_LCD_HOR_SCF_FORMULA(x, y)   (((x-1)*1024)/(y-1))
-+/* Vertical scaling factor 10 bits (2^10) */
-+#define CLE266_LCD_VER_SCF_FORMULA(x, y)   (((x-1)*1024)/(y-1))
-+/* Horizontal scaling factor 10 bits (2^12) */
-+#define K800_LCD_HOR_SCF_FORMULA(x, y)     (((x-1)*4096)/(y-1))
-+/* Vertical scaling factor 10 bits (2^11) */
-+#define K800_LCD_VER_SCF_FORMULA(x, y)     (((x-1)*2048)/(y-1))
-+
-+/* location: {CR9F,0,1},{CR77,0,7},{CR79,4,5} */
-+#define LCD_HOR_SCALING_FACTOR_REG_NUM  3
-+/* location: {CR79,3,3},{CR78,0,7},{CR79,6,7} */
-+#define LCD_VER_SCALING_FACTOR_REG_NUM  3
-+/* location: {CR77,0,7},{CR79,4,5} */
-+#define LCD_HOR_SCALING_FACTOR_REG_NUM_CLE  2
-+/* location: {CR78,0,7},{CR79,6,7} */
-+#define LCD_VER_SCALING_FACTOR_REG_NUM_CLE  2
-+
-+/************************************************
-+ *****     Define IGA1 Display Timing       *****
-+ ************************************************/
-+struct io_register {
-+	u8 io_addr;
-+	u8 start_bit;
-+	u8 end_bit;
-+};
-+
-+/* IGA1 Horizontal Total */
-+struct iga1_hor_total {
-+	int reg_num;
-+	struct io_register reg[IGA1_HOR_TOTAL_REG_NUM];
-+};
-+
-+/* IGA1 Horizontal Addressable Video */
-+struct iga1_hor_addr {
-+	int reg_num;
-+	struct io_register reg[IGA1_HOR_ADDR_REG_NUM];
-+};
-+
-+/* IGA1 Horizontal Blank Start */
-+struct iga1_hor_blank_start {
-+	int reg_num;
-+	struct io_register reg[IGA1_HOR_BLANK_START_REG_NUM];
-+};
-+
-+/* IGA1 Horizontal Blank End */
-+struct iga1_hor_blank_end {
-+	int reg_num;
-+	struct io_register reg[IGA1_HOR_BLANK_END_REG_NUM];
-+};
-+
-+/* IGA1 Horizontal Sync Start */
-+struct iga1_hor_sync_start {
-+	int reg_num;
-+	struct io_register reg[IGA1_HOR_SYNC_START_REG_NUM];
-+};
-+
-+/* IGA1 Horizontal Sync End */
-+struct iga1_hor_sync_end {
-+	int reg_num;
-+	struct io_register reg[IGA1_HOR_SYNC_END_REG_NUM];
-+};
-+
-+/* IGA1 Vertical Total */
-+struct iga1_ver_total {
-+	int reg_num;
-+	struct io_register reg[IGA1_VER_TOTAL_REG_NUM];
-+};
-+
-+/* IGA1 Vertical Addressable Video */
-+struct iga1_ver_addr {
-+	int reg_num;
-+	struct io_register reg[IGA1_VER_ADDR_REG_NUM];
-+};
-+
-+/* IGA1 Vertical Blank Start */
-+struct iga1_ver_blank_start {
-+	int reg_num;
-+	struct io_register reg[IGA1_VER_BLANK_START_REG_NUM];
-+};
-+
-+/* IGA1 Vertical Blank End */
-+struct iga1_ver_blank_end {
-+	int reg_num;
-+	struct io_register reg[IGA1_VER_BLANK_END_REG_NUM];
-+};
-+
-+/* IGA1 Vertical Sync Start */
-+struct iga1_ver_sync_start {
-+	int reg_num;
-+	struct io_register reg[IGA1_VER_SYNC_START_REG_NUM];
-+};
-+
-+/* IGA1 Vertical Sync End */
-+struct iga1_ver_sync_end {
-+	int reg_num;
-+	struct io_register reg[IGA1_VER_SYNC_END_REG_NUM];
-+};
-+
-+/*****************************************************
-+**      Define IGA2 Shadow Display Timing         ****
-+*****************************************************/
-+
-+/* IGA2 Shadow Horizontal Total */
-+struct iga2_shadow_hor_total {
-+	int reg_num;
-+	struct io_register reg[IGA2_SHADOW_HOR_TOTAL_REG_NUM];
-+};
-+
-+/* IGA2 Shadow Horizontal Blank End */
-+struct iga2_shadow_hor_blank_end {
-+	int reg_num;
-+	struct io_register reg[IGA2_SHADOW_HOR_BLANK_END_REG_NUM];
-+};
-+
-+/* IGA2 Shadow Vertical Total */
-+struct iga2_shadow_ver_total {
-+	int reg_num;
-+	struct io_register reg[IGA2_SHADOW_VER_TOTAL_REG_NUM];
-+};
-+
-+/* IGA2 Shadow Vertical Addressable Video */
-+struct iga2_shadow_ver_addr {
-+	int reg_num;
-+	struct io_register reg[IGA2_SHADOW_VER_ADDR_REG_NUM];
-+};
-+
-+/* IGA2 Shadow Vertical Blank Start */
-+struct iga2_shadow_ver_blank_start {
-+	int reg_num;
-+	struct io_register reg[IGA2_SHADOW_VER_BLANK_START_REG_NUM];
-+};
-+
-+/* IGA2 Shadow Vertical Blank End */
-+struct iga2_shadow_ver_blank_end {
-+	int reg_num;
-+	struct io_register reg[IGA2_SHADOW_VER_BLANK_END_REG_NUM];
-+};
-+
-+/* IGA2 Shadow Vertical Sync Start */
-+struct iga2_shadow_ver_sync_start {
-+	int reg_num;
-+	struct io_register reg[IGA2_SHADOW_VER_SYNC_START_REG_NUM];
-+};
-+
-+/* IGA2 Shadow Vertical Sync End */
-+struct iga2_shadow_ver_sync_end {
-+	int reg_num;
-+	struct io_register reg[IGA2_SHADOW_VER_SYNC_END_REG_NUM];
-+};
-+
-+/*****************************************************
-+**      Define IGA2 Display Timing                ****
-+******************************************************/
-+
-+/* IGA2 Horizontal Total */
-+struct iga2_hor_total {
-+	int reg_num;
-+	struct io_register reg[IGA2_HOR_TOTAL_REG_NUM];
-+};
-+
-+/* IGA2 Horizontal Addressable Video */
-+struct iga2_hor_addr {
-+	int reg_num;
-+	struct io_register reg[IGA2_HOR_ADDR_REG_NUM];
-+};
-+
-+/* IGA2 Horizontal Blank Start */
-+struct iga2_hor_blank_start {
-+	int reg_num;
-+	struct io_register reg[IGA2_HOR_BLANK_START_REG_NUM];
-+};
-+
-+/* IGA2 Horizontal Blank End */
-+struct iga2_hor_blank_end {
-+	int reg_num;
-+	struct io_register reg[IGA2_HOR_BLANK_END_REG_NUM];
-+};
-+
-+/* IGA2 Horizontal Sync Start */
-+struct iga2_hor_sync_start {
-+	int reg_num;
-+	struct io_register reg[IGA2_HOR_SYNC_START_REG_NUM];
-+};
-+
-+/* IGA2 Horizontal Sync End */
-+struct iga2_hor_sync_end {
-+	int reg_num;
-+	struct io_register reg[IGA2_HOR_SYNC_END_REG_NUM];
-+};
-+
-+/* IGA2 Vertical Total */
-+struct iga2_ver_total {
-+	int reg_num;
-+	struct io_register reg[IGA2_VER_TOTAL_REG_NUM];
-+};
-+
-+/* IGA2 Vertical Addressable Video */
-+struct iga2_ver_addr {
-+	int reg_num;
-+	struct io_register reg[IGA2_VER_ADDR_REG_NUM];
-+};
-+
-+/* IGA2 Vertical Blank Start */
-+struct iga2_ver_blank_start {
-+	int reg_num;
-+	struct io_register reg[IGA2_VER_BLANK_START_REG_NUM];
-+};
-+
-+/* IGA2 Vertical Blank End */
-+struct iga2_ver_blank_end {
-+	int reg_num;
-+	struct io_register reg[IGA2_VER_BLANK_END_REG_NUM];
-+};
-+
-+/* IGA2 Vertical Sync Start */
-+struct iga2_ver_sync_start {
-+	int reg_num;
-+	struct io_register reg[IGA2_VER_SYNC_START_REG_NUM];
-+};
-+
-+/* IGA2 Vertical Sync End */
-+struct iga2_ver_sync_end {
-+	int reg_num;
-+	struct io_register reg[IGA2_VER_SYNC_END_REG_NUM];
-+};
-+
-+/* IGA1 Offset Register */
-+struct iga1_offset {
-+	int reg_num;
-+	struct io_register reg[IGA1_OFFSET_REG_NUM];
-+};
-+
-+/* IGA2 Offset Register */
-+struct iga2_offset {
-+	int reg_num;
-+	struct io_register reg[IGA2_OFFSET_REG_NUM];
-+};
-+
-+struct offset {
-+	struct iga1_offset iga1_offset_reg;
-+	struct iga2_offset iga2_offset_reg;
-+};
-+
-+/* IGA1 Fetch Count Register */
-+struct iga1_fetch_count {
-+	int reg_num;
-+	struct io_register reg[IGA1_FETCH_COUNT_REG_NUM];
-+};
-+
-+/* IGA2 Fetch Count Register */
-+struct iga2_fetch_count {
-+	int reg_num;
-+	struct io_register reg[IGA2_FETCH_COUNT_REG_NUM];
-+};
-+
-+struct fetch_count {
-+	struct iga1_fetch_count iga1_fetch_count_reg;
-+	struct iga2_fetch_count iga2_fetch_count_reg;
-+};
-+
-+/* Starting Address Register */
-+struct iga1_starting_addr {
-+	int reg_num;
-+	struct io_register reg[IGA1_STARTING_ADDR_REG_NUM];
-+};
-+
-+struct iga2_starting_addr {
-+	int reg_num;
-+	struct io_register reg[IGA2_STARTING_ADDR_REG_NUM];
-+};
-+
-+struct starting_addr {
-+	struct iga1_starting_addr iga1_starting_addr_reg;
-+	struct iga2_starting_addr iga2_starting_addr_reg;
-+};
-+
-+/* LCD Power Sequence Timer */
-+struct lcd_pwd_seq_td0 {
-+	int reg_num;
-+	struct io_register reg[LCD_POWER_SEQ_TD0_REG_NUM];
-+};
-+
-+struct lcd_pwd_seq_td1 {
-+	int reg_num;
-+	struct io_register reg[LCD_POWER_SEQ_TD1_REG_NUM];
-+};
-+
-+struct lcd_pwd_seq_td2 {
-+	int reg_num;
-+	struct io_register reg[LCD_POWER_SEQ_TD2_REG_NUM];
-+};
-+
-+struct lcd_pwd_seq_td3 {
-+	int reg_num;
-+	struct io_register reg[LCD_POWER_SEQ_TD3_REG_NUM];
-+};
-+
-+struct _lcd_pwd_seq_timer {
-+	struct lcd_pwd_seq_td0 td0;
-+	struct lcd_pwd_seq_td1 td1;
-+	struct lcd_pwd_seq_td2 td2;
-+	struct lcd_pwd_seq_td3 td3;
-+};
-+
-+/* LCD Scaling Factor */
-+struct _lcd_hor_scaling_factor {
-+	int reg_num;
-+	struct io_register reg[LCD_HOR_SCALING_FACTOR_REG_NUM];
-+};
-+
-+struct _lcd_ver_scaling_factor {
-+	int reg_num;
-+	struct io_register reg[LCD_VER_SCALING_FACTOR_REG_NUM];
-+};
-+
-+struct _lcd_scaling_factor {
-+	struct _lcd_hor_scaling_factor lcd_hor_scaling_factor;
-+	struct _lcd_ver_scaling_factor lcd_ver_scaling_factor;
-+};
-+
-+struct pll_map {
-+	u32 clk;
-+	u32 cle266_pll;
-+	u32 k800_pll;
-+	u32 cx700_pll;
-+};
-+
-+struct rgbLUT {
-+	u8 red;
-+	u8 green;
-+	u8 blue;
-+};
-+
-+struct lcd_pwd_seq_timer {
-+	u16 td0;
-+	u16 td1;
-+	u16 td2;
-+	u16 td3;
-+};
-+
-+/* Display FIFO Relation Registers*/
-+struct iga1_fifo_depth_select {
-+	int reg_num;
-+	struct io_register reg[IGA1_FIFO_DEPTH_SELECT_REG_NUM];
-+};
-+
-+struct iga1_fifo_threshold_select {
-+	int reg_num;
-+	struct io_register reg[IGA1_FIFO_THRESHOLD_REG_NUM];
-+};
-+
-+struct iga1_fifo_high_threshold_select {
-+	int reg_num;
-+	struct io_register reg[IGA1_FIFO_HIGH_THRESHOLD_REG_NUM];
-+};
-+
-+struct iga1_display_queue_expire_num {
-+	int reg_num;
-+	struct io_register reg[IGA1_DISPLAY_QUEUE_EXPIRE_NUM_REG_NUM];
-+};
-+
-+struct iga2_fifo_depth_select {
-+	int reg_num;
-+	struct io_register reg[IGA2_FIFO_DEPTH_SELECT_REG_NUM];
-+};
-+
-+struct iga2_fifo_threshold_select {
-+	int reg_num;
-+	struct io_register reg[IGA2_FIFO_THRESHOLD_REG_NUM];
-+};
-+
-+struct iga2_fifo_high_threshold_select {
-+	int reg_num;
-+	struct io_register reg[IGA2_FIFO_HIGH_THRESHOLD_REG_NUM];
-+};
-+
-+struct iga2_display_queue_expire_num {
-+	int reg_num;
-+	struct io_register reg[IGA2_DISPLAY_QUEUE_EXPIRE_NUM_REG_NUM];
-+};
-+
-+struct fifo_depth_select {
-+	struct iga1_fifo_depth_select iga1_fifo_depth_select_reg;
-+	struct iga2_fifo_depth_select iga2_fifo_depth_select_reg;
-+};
-+
-+struct fifo_threshold_select {
-+	struct iga1_fifo_threshold_select iga1_fifo_threshold_select_reg;
-+	struct iga2_fifo_threshold_select iga2_fifo_threshold_select_reg;
-+};
-+
-+struct fifo_high_threshold_select {
-+	struct iga1_fifo_high_threshold_select
-+	 iga1_fifo_high_threshold_select_reg;
-+	struct iga2_fifo_high_threshold_select
-+	 iga2_fifo_high_threshold_select_reg;
-+};
-+
-+struct display_queue_expire_num {
-+	struct iga1_display_queue_expire_num
-+	 iga1_display_queue_expire_num_reg;
-+	struct iga2_display_queue_expire_num
-+	 iga2_display_queue_expire_num_reg;
-+};
-+
-+struct iga1_crtc_timing {
-+	struct iga1_hor_total hor_total;
-+	struct iga1_hor_addr hor_addr;
-+	struct iga1_hor_blank_start hor_blank_start;
-+	struct iga1_hor_blank_end hor_blank_end;
-+	struct iga1_hor_sync_start hor_sync_start;
-+	struct iga1_hor_sync_end hor_sync_end;
-+	struct iga1_ver_total ver_total;
-+	struct iga1_ver_addr ver_addr;
-+	struct iga1_ver_blank_start ver_blank_start;
-+	struct iga1_ver_blank_end ver_blank_end;
-+	struct iga1_ver_sync_start ver_sync_start;
-+	struct iga1_ver_sync_end ver_sync_end;
-+};
-+
-+struct iga2_shadow_crtc_timing {
-+	struct iga2_shadow_hor_total hor_total_shadow;
-+	struct iga2_shadow_hor_blank_end hor_blank_end_shadow;
-+	struct iga2_shadow_ver_total ver_total_shadow;
-+	struct iga2_shadow_ver_addr ver_addr_shadow;
-+	struct iga2_shadow_ver_blank_start ver_blank_start_shadow;
-+	struct iga2_shadow_ver_blank_end ver_blank_end_shadow;
-+	struct iga2_shadow_ver_sync_start ver_sync_start_shadow;
-+	struct iga2_shadow_ver_sync_end ver_sync_end_shadow;
-+};
-+
-+struct iga2_crtc_timing {
-+	struct iga2_hor_total hor_total;
-+	struct iga2_hor_addr hor_addr;
-+	struct iga2_hor_blank_start hor_blank_start;
-+	struct iga2_hor_blank_end hor_blank_end;
-+	struct iga2_hor_sync_start hor_sync_start;
-+	struct iga2_hor_sync_end hor_sync_end;
-+	struct iga2_ver_total ver_total;
-+	struct iga2_ver_addr ver_addr;
-+	struct iga2_ver_blank_start ver_blank_start;
-+	struct iga2_ver_blank_end ver_blank_end;
-+	struct iga2_ver_sync_start ver_sync_start;
-+	struct iga2_ver_sync_end ver_sync_end;
-+};
-+
-+/* device ID */
-+#define CLE266              0x3123
-+#define KM400               0x3205
-+#define CN400_FUNCTION2     0x2259
-+#define CN400_FUNCTION3     0x3259
-+/* support VT3314 chipset */
-+#define CN700_FUNCTION2     0x2314
-+#define CN700_FUNCTION3     0x3208
-+/* VT3324 chipset */
-+#define CX700_FUNCTION2     0x2324
-+#define CX700_FUNCTION3     0x3324
-+/* VT3204 chipset*/
-+#define KM800_FUNCTION3      0x3204
-+/* VT3336 chipset*/
-+#define KM890_FUNCTION3      0x3336
-+/* VT3327 chipset*/
-+#define P4M890_FUNCTION3     0x3327
-+/* VT3293 chipset*/
-+#define CN750_FUNCTION3     0x3208
-+/* VT3364 chipset*/
-+#define P4M900_FUNCTION3    0x3364
-+/* VT3353 chipset*/
-+#define VX800_FUNCTION3     0x3353
-+
-+#define NUM_TOTAL_PLL_TABLE ARRAY_SIZE(pll_value)
-+
-+struct IODATA {
-+	u8 Index;
-+	u8 Mask;
-+	u8 Data;
-+};
-+extern unsigned int second_virtual_xres;
-+extern unsigned int second_offset;
-+extern int second_size;
-+extern int SAMM_ON;
-+extern int dual_fb;
-+extern int LCD2_ON;
-+extern int LCD_ON;
-+extern int DVI_ON;
-+extern int via_fb_accel;
-+extern int via_fb_hotplug;
-+
-+extern struct pll_map pll_value[68];
-+extern struct fifo_depth_select display_fifo_depth_reg;
-+extern struct fifo_threshold_select fifo_threshold_select_reg;
-+extern struct fifo_high_threshold_select fifo_high_threshold_select_reg;
-+extern struct display_queue_expire_num display_queue_expire_num_reg;
-+extern struct fetch_count fetch_count_reg;
-+extern struct iga1_crtc_timing iga1_crtc_reg;
-+extern struct iga2_crtc_timing iga2_crtc_reg;
-+
-+void write_reg_mask(u8 index, int io_port, u8 data, u8 mask);
-+void set_output_path(int device, int set_iga, int output_interface);
-+void fill_crtc_timing(struct crt_mode_table *crt_table,
-+		      int mode_index, int bpp_byte, int set_iga);
-+
-+void set_crt_output_path(int set_iga);
-+void set_dvi_output_path(int set_iga, int output_interface);
-+void set_lcd_output_path(int set_iga, int output_interface);
-+void set_vclock(u32 CLK, int set_iga);
-+void init_gfx_chip_info(void);
-+void init_tmds_chip_info(void);
-+void init_lvds_chip_info(void);
-+void load_reg(int timing_value, int load_reg_num, struct io_register *reg,
-+	      int io_type);
-+void device_off(void);
-+void device_on(void);
-+void crt_disable(void);
-+void crt_enable(void);
-+void enable_second_display_channel(void);
-+void disable_second_display_channel(void);
-+void lcd_patch_skew(struct lvds_setting_information *plvds_setting_info,
-+		    struct lvds_chip_information *plvds_chip_info);
-+int get_fb_size_from_pci(void);
-+void init_ad9389(void);
-+int tmds_register_read(int index);
-+void enable_second_display_channel(void);
-+/* Access I/O Function */
-+void write_reg(u8 index, u16 io_port, u8 data);
-+u8 read_reg(int io_port, u8 index);
-+void lock_crt(void);
-+void unlock_crt(void);
-+struct display_timing get_timing_value(struct crt_mode_table
-+				       *crt_table, int mode_index);
-+void load_offset_reg(int h_addr, int bpp_byte, int set_iga);
-+void load_fetch_count_reg(int h_addr, int bpp_byte, int set_iga);
-+void write_regx(struct io_reg RegTable[], int ItemNum);
-+struct VideoModeTable *get_modetbl_pointer(int Index);
-+int search_mode_setting(int ModeInfoIndex);
-+u32 get_clk_value(int clk);
-+void load_FIFO_reg(int set_iga, int hor_active, int ver_active);
-+void set_color_depth(int bpp_byte, int set_iga);
-+void set_dpa_gfx(int output_interface, struct GFX_DPA_SETTING\
-+					*p_gfx_dpa_setting);
-+
-+int setmode(int vmode_index, int hor_res, int ver_res,
-+	    int video_bpp, int vmode_index1, int hor_res1,
-+	    int ver_res1, int video_bpp1);
-+void init_chip_info(void);
-+void init_dac(int set_iga);
-+int get_pixclock(int hres, int vres, int vmode_refresh);
-+int get_refresh(int hres, int vres, int pixclock);
-+void update_device_setting(int hres, int vres, int bpp,
-+			   int vmode_refresh, int flag);
-+void get_mmio_info(unsigned long *mmio_base, unsigned long *mmio_len);
-+
-+void set_iga_path(void);
-+void set_start_addr(void);
-+void get_fb_info(unsigned int *fb_base, unsigned int *fb_len);
-+
-+#endif /* __HW_H__ */
-diff -Nur a/drivers/video/via/iface.c b/drivers/video/via/iface.c
---- a/drivers/video/via/iface.c	1969-12-31 19:00:00.000000000 -0500
-+++ b/drivers/video/via/iface.c	2008-04-29 02:51:18.000000000 -0400
-@@ -0,0 +1,78 @@
+diff -Nur a/drivers/video/via/hw.c b/drivers/video/via/hw.c
+--- a/drivers/video/via/hw.c	1969-12-31 19:00:00.000000000 -0500
++++ b/drivers/video/via/hw.c	2008-05-04 07:29:24.000000000 -0400
+@@ -0,0 +1,2923 @@
 +/*
 + * Copyright 1998-2008 VIA Technologies, Inc. All Rights Reserved.
 + * Copyright 2001-2008 S3 Graphics, Inc. All Rights Reserved.
@@ -1364,216 +61,2904 @@ diff -Nur a/drivers/video/via/iface.c b/drivers/video/via/iface.c
 +
 +#include "global.h"
 +
-+/* Get frame buffer size from VGA BIOS */
++struct offset offset_reg = {
++	/* IGA1 Offset Register */
++	{IGA1_OFFSET_REG_NUM, {{CR13, 0, 7}, {CR35, 5, 7} } },
++	/* IGA2 Offset Register */
++	{IGA2_OFFSET_REG_NUM, {{CR66, 0, 7}, {CR67, 0, 1} } }
++};
 +
-+unsigned int get_memsize(void)
++struct pll_map pll_value[] = {
++	{CLK_25_175M, CLE266_PLL_25_175M, K800_PLL_25_175M, CX700_25_175M},
++	{CLK_29_581M, CLE266_PLL_29_581M, K800_PLL_29_581M, CX700_29_581M},
++	{CLK_26_880M, CLE266_PLL_26_880M, K800_PLL_26_880M, CX700_26_880M},
++	{CLK_31_490M, CLE266_PLL_31_490M, K800_PLL_31_490M, CX700_31_490M},
++	{CLK_31_500M, CLE266_PLL_31_500M, K800_PLL_31_500M, CX700_31_500M},
++	{CLK_31_728M, CLE266_PLL_31_728M, K800_PLL_31_728M, CX700_31_728M},
++	{CLK_32_668M, CLE266_PLL_32_668M, K800_PLL_32_668M, CX700_32_668M},
++	{CLK_36_000M, CLE266_PLL_36_000M, K800_PLL_36_000M, CX700_36_000M},
++	{CLK_40_000M, CLE266_PLL_40_000M, K800_PLL_40_000M, CX700_40_000M},
++	{CLK_41_291M, CLE266_PLL_41_291M, K800_PLL_41_291M, CX700_41_291M},
++	{CLK_43_163M, CLE266_PLL_43_163M, K800_PLL_43_163M, CX700_43_163M},
++	{CLK_45_250M, CLE266_PLL_45_250M, K800_PLL_45_250M, CX700_45_250M},
++	{CLK_46_000M, CLE266_PLL_46_000M, K800_PLL_46_000M, CX700_46_000M},
++	{CLK_46_996M, CLE266_PLL_46_996M, K800_PLL_46_996M, CX700_46_996M},
++	{CLK_48_000M, CLE266_PLL_48_000M, K800_PLL_48_000M, CX700_48_000M},
++	{CLK_48_875M, CLE266_PLL_48_875M, K800_PLL_48_875M, CX700_48_875M},
++	{CLK_49_500M, CLE266_PLL_49_500M, K800_PLL_49_500M, CX700_49_500M},
++	{CLK_52_406M, CLE266_PLL_52_406M, K800_PLL_52_406M, CX700_52_406M},
++	{CLK_52_977M, CLE266_PLL_52_977M, K800_PLL_52_977M, CX700_52_977M},
++	{CLK_56_250M, CLE266_PLL_56_250M, K800_PLL_56_250M, CX700_56_250M},
++	{CLK_60_466M, CLE266_PLL_60_466M, K800_PLL_60_466M, CX700_60_466M},
++	{CLK_61_500M, CLE266_PLL_61_500M, K800_PLL_61_500M, CX700_61_500M},
++	{CLK_65_000M, CLE266_PLL_65_000M, K800_PLL_65_000M, CX700_65_000M},
++	{CLK_65_178M, CLE266_PLL_65_178M, K800_PLL_65_178M, CX700_65_178M},
++	{CLK_66_750M, CLE266_PLL_66_750M, K800_PLL_66_750M, CX700_66_750M},
++	{CLK_68_179M, CLE266_PLL_68_179M, K800_PLL_68_179M, CX700_68_179M},
++	{CLK_69_924M, CLE266_PLL_69_924M, K800_PLL_69_924M, CX700_69_924M},
++	{CLK_70_159M, CLE266_PLL_70_159M, K800_PLL_70_159M, CX700_70_159M},
++	{CLK_72_000M, CLE266_PLL_72_000M, K800_PLL_72_000M, CX700_72_000M},
++	{CLK_78_750M, CLE266_PLL_78_750M, K800_PLL_78_750M, CX700_78_750M},
++	{CLK_80_136M, CLE266_PLL_80_136M, K800_PLL_80_136M, CX700_80_136M},
++	{CLK_83_375M, CLE266_PLL_83_375M, K800_PLL_83_375M, CX700_83_375M},
++	{CLK_83_950M, CLE266_PLL_83_950M, K800_PLL_83_950M, CX700_83_950M},
++	{CLK_84_750M, CLE266_PLL_84_750M, K800_PLL_84_750M, CX700_84_750M},
++	{CLK_85_860M, CLE266_PLL_85_860M, K800_PLL_85_860M, CX700_85_860M},
++	{CLK_88_750M, CLE266_PLL_88_750M, K800_PLL_88_750M, CX700_88_750M},
++	{CLK_94_500M, CLE266_PLL_94_500M, K800_PLL_94_500M, CX700_94_500M},
++	{CLK_97_750M, CLE266_PLL_97_750M, K800_PLL_97_750M, CX700_97_750M},
++	{CLK_101_000M, CLE266_PLL_101_000M, K800_PLL_101_000M,
++	 CX700_101_000M},
++	{CLK_106_500M, CLE266_PLL_106_500M, K800_PLL_106_500M,
++	 CX700_106_500M},
++	{CLK_108_000M, CLE266_PLL_108_000M, K800_PLL_108_000M,
++	 CX700_108_000M},
++	{CLK_113_309M, CLE266_PLL_113_309M, K800_PLL_113_309M,
++	 CX700_113_309M},
++	{CLK_118_840M, CLE266_PLL_118_840M, K800_PLL_118_840M,
++	 CX700_118_840M},
++	{CLK_119_000M, CLE266_PLL_119_000M, K800_PLL_119_000M,
++	 CX700_119_000M},
++	{CLK_121_750M, CLE266_PLL_121_750M, K800_PLL_121_750M,
++	 CX700_121_750M},
++	{CLK_125_104M, CLE266_PLL_125_104M, K800_PLL_125_104M,
++	 CX700_125_104M},
++	{CLK_133_308M, CLE266_PLL_133_308M, K800_PLL_133_308M,
++	 CX700_133_308M},
++	{CLK_135_000M, CLE266_PLL_135_000M, K800_PLL_135_000M,
++	 CX700_135_000M},
++	{CLK_136_700M, CLE266_PLL_136_700M, K800_PLL_136_700M,
++	 CX700_136_700M},
++	{CLK_138_400M, CLE266_PLL_138_400M, K800_PLL_138_400M,
++	 CX700_138_400M},
++	{CLK_146_760M, CLE266_PLL_146_760M, K800_PLL_146_760M,
++	 CX700_146_760M},
++	{CLK_153_920M, CLE266_PLL_153_920M, K800_PLL_153_920M,
++	 CX700_153_920M},
++	{CLK_156_000M, CLE266_PLL_156_000M, K800_PLL_156_000M,
++	 CX700_156_000M},
++	{CLK_157_500M, CLE266_PLL_157_500M, K800_PLL_157_500M,
++	 CX700_157_500M},
++	{CLK_162_000M, CLE266_PLL_162_000M, K800_PLL_162_000M,
++	 CX700_162_000M},
++	{CLK_187_000M, CLE266_PLL_187_000M, K800_PLL_187_000M,
++	 CX700_187_000M},
++	{CLK_193_295M, CLE266_PLL_193_295M, K800_PLL_193_295M,
++	 CX700_193_295M},
++	{CLK_202_500M, CLE266_PLL_202_500M, K800_PLL_202_500M,
++	 CX700_202_500M},
++	{CLK_204_000M, CLE266_PLL_204_000M, K800_PLL_204_000M,
++	 CX700_204_000M},
++	{CLK_218_500M, CLE266_PLL_218_500M, K800_PLL_218_500M,
++	 CX700_218_500M},
++	{CLK_234_000M, CLE266_PLL_234_000M, K800_PLL_234_000M,
++	 CX700_234_000M},
++	{CLK_267_250M, CLE266_PLL_267_250M, K800_PLL_267_250M,
++	 CX700_267_250M},
++	{CLK_297_500M, CLE266_PLL_297_500M, K800_PLL_297_500M,
++	 CX700_297_500M},
++	{CLK_74_481M, CLE266_PLL_74_481M, K800_PLL_74_481M, CX700_74_481M},
++	{CLK_172_798M, CLE266_PLL_172_798M, K800_PLL_172_798M,
++	 CX700_172_798M},
++	{CLK_122_614M, CLE266_PLL_122_614M, K800_PLL_122_614M,
++	 CX700_122_614M},
++	{CLK_74_270M, CLE266_PLL_74_270M, K800_PLL_74_270M, CX700_74_270M},
++	{CLK_148_500M, CLE266_PLL_148_500M, K800_PLL_148_500M,
++	 CX700_148_500M}
++};
++
++struct fifo_depth_select display_fifo_depth_reg = {
++	/* IGA1 FIFO Depth_Select */
++	{IGA1_FIFO_DEPTH_SELECT_REG_NUM, {{SR17, 0, 7} } },
++	/* IGA2 FIFO Depth_Select */
++	{IGA2_FIFO_DEPTH_SELECT_REG_NUM,
++	 {{CR68, 4, 7}, {CR94, 7, 7}, {CR95, 7, 7} } }
++};
++
++struct fifo_threshold_select fifo_threshold_select_reg = {
++	/* IGA1 FIFO Threshold Select */
++	{IGA1_FIFO_THRESHOLD_REG_NUM, {{SR16, 0, 5}, {SR16, 7, 7} } },
++	/* IGA2 FIFO Threshold Select */
++	{IGA2_FIFO_THRESHOLD_REG_NUM, {{CR68, 0, 3}, {CR95, 4, 6} } }
++};
++
++struct fifo_high_threshold_select fifo_high_threshold_select_reg = {
++	/* IGA1 FIFO High Threshold Select */
++	{IGA1_FIFO_HIGH_THRESHOLD_REG_NUM, {{SR18, 0, 5}, {SR18, 7, 7} } },
++	/* IGA2 FIFO High Threshold Select */
++	{IGA2_FIFO_HIGH_THRESHOLD_REG_NUM, {{CR92, 0, 3}, {CR95, 0, 2} } }
++};
++
++struct display_queue_expire_num display_queue_expire_num_reg = {
++	/* IGA1 Display Queue Expire Num */
++	{IGA1_DISPLAY_QUEUE_EXPIRE_NUM_REG_NUM, {{SR22, 0, 4} } },
++	/* IGA2 Display Queue Expire Num */
++	{IGA2_DISPLAY_QUEUE_EXPIRE_NUM_REG_NUM, {{CR94, 0, 6} } }
++};
++
++/* Definition Fetch Count Registers*/
++struct fetch_count fetch_count_reg = {
++	/* IGA1 Fetch Count Register */
++	{IGA1_FETCH_COUNT_REG_NUM, {{SR1C, 0, 7}, {SR1D, 0, 1} } },
++	/* IGA2 Fetch Count Register */
++	{IGA2_FETCH_COUNT_REG_NUM, {{CR65, 0, 7}, {CR67, 2, 3} } }
++};
++
++struct iga1_crtc_timing iga1_crtc_reg = {
++	/* IGA1 Horizontal Total */
++	{IGA1_HOR_TOTAL_REG_NUM, {{CR00, 0, 7}, {CR36, 3, 3} } },
++	/* IGA1 Horizontal Addressable Video */
++	{IGA1_HOR_ADDR_REG_NUM, {{CR01, 0, 7} } },
++	/* IGA1 Horizontal Blank Start */
++	{IGA1_HOR_BLANK_START_REG_NUM, {{CR02, 0, 7} } },
++	/* IGA1 Horizontal Blank End */
++	{IGA1_HOR_BLANK_END_REG_NUM,
++	 {{CR03, 0, 4}, {CR05, 7, 7}, {CR33, 5, 5} } },
++	/* IGA1 Horizontal Sync Start */
++	{IGA1_HOR_SYNC_START_REG_NUM, {{CR04, 0, 7}, {CR33, 4, 4} } },
++	/* IGA1 Horizontal Sync End */
++	{IGA1_HOR_SYNC_END_REG_NUM, {{CR05, 0, 4} } },
++	/* IGA1 Vertical Total */
++	{IGA1_VER_TOTAL_REG_NUM,
++	 {{CR06, 0, 7}, {CR07, 0, 0}, {CR07, 5, 5}, {CR35, 0, 0} } },
++	/* IGA1 Vertical Addressable Video */
++	{IGA1_VER_ADDR_REG_NUM,
++	 {{CR12, 0, 7}, {CR07, 1, 1}, {CR07, 6, 6}, {CR35, 2, 2} } },
++	/* IGA1 Vertical Blank Start */
++	{IGA1_VER_BLANK_START_REG_NUM,
++	 {{CR15, 0, 7}, {CR07, 3, 3}, {CR09, 5, 5}, {CR35, 3, 3} } },
++	/* IGA1 Vertical Blank End */
++	{IGA1_VER_BLANK_END_REG_NUM, {{CR16, 0, 7} } },
++	/* IGA1 Vertical Sync Start */
++	{IGA1_VER_SYNC_START_REG_NUM,
++	 {{CR10, 0, 7}, {CR07, 2, 2}, {CR07, 7, 7}, {CR35, 1, 1} } },
++	/* IGA1 Vertical Sync End */
++	{IGA1_VER_SYNC_END_REG_NUM, {{CR11, 0, 3} } }
++};
++
++struct iga2_crtc_timing iga2_crtc_reg = {
++	/* IGA2 Horizontal Total */
++	{IGA2_HOR_TOTAL_REG_NUM, {{CR50, 0, 7}, {CR55, 0, 3} } },
++	/* IGA2 Horizontal Addressable Video */
++	{IGA2_HOR_ADDR_REG_NUM, {{CR51, 0, 7}, {CR55, 4, 6} } },
++	/* IGA2 Horizontal Blank Start */
++	{IGA2_HOR_BLANK_START_REG_NUM, {{CR52, 0, 7}, {CR54, 0, 2} } },
++	/* IGA2 Horizontal Blank End */
++	{IGA2_HOR_BLANK_END_REG_NUM,
++	 {{CR53, 0, 7}, {CR54, 3, 5}, {CR5D, 6, 6} } },
++	/* IGA2 Horizontal Sync Start */
++	{IGA2_HOR_SYNC_START_REG_NUM,
++	 {{CR56, 0, 7}, {CR54, 6, 7}, {CR5C, 7, 7}, {CR5D, 7, 7} } },
++	/* IGA2 Horizontal Sync End */
++	{IGA2_HOR_SYNC_END_REG_NUM, {{CR57, 0, 7}, {CR5C, 6, 6} } },
++	/* IGA2 Vertical Total */
++	{IGA2_VER_TOTAL_REG_NUM, {{CR58, 0, 7}, {CR5D, 0, 2} } },
++	/* IGA2 Vertical Addressable Video */
++	{IGA2_VER_ADDR_REG_NUM, {{CR59, 0, 7}, {CR5D, 3, 5} } },
++	/* IGA2 Vertical Blank Start */
++	{IGA2_VER_BLANK_START_REG_NUM, {{CR5A, 0, 7}, {CR5C, 0, 2} } },
++	/* IGA2 Vertical Blank End */
++	{IGA2_VER_BLANK_END_REG_NUM, {{CR5B, 0, 7}, {CR5C, 3, 5} } },
++	/* IGA2 Vertical Sync Start */
++	{IGA2_VER_SYNC_START_REG_NUM, {{CR5E, 0, 7}, {CR5F, 5, 7} } },
++	/* IGA2 Vertical Sync End */
++	{IGA2_VER_SYNC_END_REG_NUM, {{CR5F, 0, 4} } }
++};
++
++struct rgbLUT palLUT_table[] = {
++	/* {R,G,B} */
++	/* Index 0x00~0x03 */
++	{0x00, 0x00, 0x00}, {0x00, 0x00, 0x2A}, {0x00, 0x2A, 0x00}, {0x00,
++								     0x2A,
++								     0x2A},
++	/* Index 0x04~0x07 */
++	{0x2A, 0x00, 0x00}, {0x2A, 0x00, 0x2A}, {0x2A, 0x15, 0x00}, {0x2A,
++								     0x2A,
++								     0x2A},
++	/* Index 0x08~0x0B */
++	{0x15, 0x15, 0x15}, {0x15, 0x15, 0x3F}, {0x15, 0x3F, 0x15}, {0x15,
++								     0x3F,
++								     0x3F},
++	/* Index 0x0C~0x0F */
++	{0x3F, 0x15, 0x15}, {0x3F, 0x15, 0x3F}, {0x3F, 0x3F, 0x15}, {0x3F,
++								     0x3F,
++								     0x3F},
++	/* Index 0x10~0x13 */
++	{0x00, 0x00, 0x00}, {0x05, 0x05, 0x05}, {0x08, 0x08, 0x08}, {0x0B,
++								     0x0B,
++								     0x0B},
++	/* Index 0x14~0x17 */
++	{0x0E, 0x0E, 0x0E}, {0x11, 0x11, 0x11}, {0x14, 0x14, 0x14}, {0x18,
++								     0x18,
++								     0x18},
++	/* Index 0x18~0x1B */
++	{0x1C, 0x1C, 0x1C}, {0x20, 0x20, 0x20}, {0x24, 0x24, 0x24}, {0x28,
++								     0x28,
++								     0x28},
++	/* Index 0x1C~0x1F */
++	{0x2D, 0x2D, 0x2D}, {0x32, 0x32, 0x32}, {0x38, 0x38, 0x38}, {0x3F,
++								     0x3F,
++								     0x3F},
++	/* Index 0x20~0x23 */
++	{0x00, 0x00, 0x3F}, {0x10, 0x00, 0x3F}, {0x1F, 0x00, 0x3F}, {0x2F,
++								     0x00,
++								     0x3F},
++	/* Index 0x24~0x27 */
++	{0x3F, 0x00, 0x3F}, {0x3F, 0x00, 0x2F}, {0x3F, 0x00, 0x1F}, {0x3F,
++								     0x00,
++								     0x10},
++	/* Index 0x28~0x2B */
++	{0x3F, 0x00, 0x00}, {0x3F, 0x10, 0x00}, {0x3F, 0x1F, 0x00}, {0x3F,
++								     0x2F,
++								     0x00},
++	/* Index 0x2C~0x2F */
++	{0x3F, 0x3F, 0x00}, {0x2F, 0x3F, 0x00}, {0x1F, 0x3F, 0x00}, {0x10,
++								     0x3F,
++								     0x00},
++	/* Index 0x30~0x33 */
++	{0x00, 0x3F, 0x00}, {0x00, 0x3F, 0x10}, {0x00, 0x3F, 0x1F}, {0x00,
++								     0x3F,
++								     0x2F},
++	/* Index 0x34~0x37 */
++	{0x00, 0x3F, 0x3F}, {0x00, 0x2F, 0x3F}, {0x00, 0x1F, 0x3F}, {0x00,
++								     0x10,
++								     0x3F},
++	/* Index 0x38~0x3B */
++	{0x1F, 0x1F, 0x3F}, {0x27, 0x1F, 0x3F}, {0x2F, 0x1F, 0x3F}, {0x37,
++								     0x1F,
++								     0x3F},
++	/* Index 0x3C~0x3F */
++	{0x3F, 0x1F, 0x3F}, {0x3F, 0x1F, 0x37}, {0x3F, 0x1F, 0x2F}, {0x3F,
++								     0x1F,
++								     0x27},
++	/* Index 0x40~0x43 */
++	{0x3F, 0x1F, 0x1F}, {0x3F, 0x27, 0x1F}, {0x3F, 0x2F, 0x1F}, {0x3F,
++								     0x3F,
++								     0x1F},
++	/* Index 0x44~0x47 */
++	{0x3F, 0x3F, 0x1F}, {0x37, 0x3F, 0x1F}, {0x2F, 0x3F, 0x1F}, {0x27,
++								     0x3F,
++								     0x1F},
++	/* Index 0x48~0x4B */
++	{0x1F, 0x3F, 0x1F}, {0x1F, 0x3F, 0x27}, {0x1F, 0x3F, 0x2F}, {0x1F,
++								     0x3F,
++								     0x37},
++	/* Index 0x4C~0x4F */
++	{0x1F, 0x3F, 0x3F}, {0x1F, 0x37, 0x3F}, {0x1F, 0x2F, 0x3F}, {0x1F,
++								     0x27,
++								     0x3F},
++	/* Index 0x50~0x53 */
++	{0x2D, 0x2D, 0x3F}, {0x31, 0x2D, 0x3F}, {0x36, 0x2D, 0x3F}, {0x3A,
++								     0x2D,
++								     0x3F},
++	/* Index 0x54~0x57 */
++	{0x3F, 0x2D, 0x3F}, {0x3F, 0x2D, 0x3A}, {0x3F, 0x2D, 0x36}, {0x3F,
++								     0x2D,
++								     0x31},
++	/* Index 0x58~0x5B */
++	{0x3F, 0x2D, 0x2D}, {0x3F, 0x31, 0x2D}, {0x3F, 0x36, 0x2D}, {0x3F,
++								     0x3A,
++								     0x2D},
++	/* Index 0x5C~0x5F */
++	{0x3F, 0x3F, 0x2D}, {0x3A, 0x3F, 0x2D}, {0x36, 0x3F, 0x2D}, {0x31,
++								     0x3F,
++								     0x2D},
++	/* Index 0x60~0x63 */
++	{0x2D, 0x3F, 0x2D}, {0x2D, 0x3F, 0x31}, {0x2D, 0x3F, 0x36}, {0x2D,
++								     0x3F,
++								     0x3A},
++	/* Index 0x64~0x67 */
++	{0x2D, 0x3F, 0x3F}, {0x2D, 0x3A, 0x3F}, {0x2D, 0x36, 0x3F}, {0x2D,
++								     0x31,
++								     0x3F},
++	/* Index 0x68~0x6B */
++	{0x00, 0x00, 0x1C}, {0x07, 0x00, 0x1C}, {0x0E, 0x00, 0x1C}, {0x15,
++								     0x00,
++								     0x1C},
++	/* Index 0x6C~0x6F */
++	{0x1C, 0x00, 0x1C}, {0x1C, 0x00, 0x15}, {0x1C, 0x00, 0x0E}, {0x1C,
++								     0x00,
++								     0x07},
++	/* Index 0x70~0x73 */
++	{0x1C, 0x00, 0x00}, {0x1C, 0x07, 0x00}, {0x1C, 0x0E, 0x00}, {0x1C,
++								     0x15,
++								     0x00},
++	/* Index 0x74~0x77 */
++	{0x1C, 0x1C, 0x00}, {0x15, 0x1C, 0x00}, {0x0E, 0x1C, 0x00}, {0x07,
++								     0x1C,
++								     0x00},
++	/* Index 0x78~0x7B */
++	{0x00, 0x1C, 0x00}, {0x00, 0x1C, 0x07}, {0x00, 0x1C, 0x0E}, {0x00,
++								     0x1C,
++								     0x15},
++	/* Index 0x7C~0x7F */
++	{0x00, 0x1C, 0x1C}, {0x00, 0x15, 0x1C}, {0x00, 0x0E, 0x1C}, {0x00,
++								     0x07,
++								     0x1C},
++	/* Index 0x80~0x83 */
++	{0x0E, 0x0E, 0x1C}, {0x11, 0x0E, 0x1C}, {0x15, 0x0E, 0x1C}, {0x18,
++								     0x0E,
++								     0x1C},
++	/* Index 0x84~0x87 */
++	{0x1C, 0x0E, 0x1C}, {0x1C, 0x0E, 0x18}, {0x1C, 0x0E, 0x15}, {0x1C,
++								     0x0E,
++								     0x11},
++	/* Index 0x88~0x8B */
++	{0x1C, 0x0E, 0x0E}, {0x1C, 0x11, 0x0E}, {0x1C, 0x15, 0x0E}, {0x1C,
++								     0x18,
++								     0x0E},
++	/* Index 0x8C~0x8F */
++	{0x1C, 0x1C, 0x0E}, {0x18, 0x1C, 0x0E}, {0x15, 0x1C, 0x0E}, {0x11,
++								     0x1C,
++								     0x0E},
++	/* Index 0x90~0x93 */
++	{0x0E, 0x1C, 0x0E}, {0x0E, 0x1C, 0x11}, {0x0E, 0x1C, 0x15}, {0x0E,
++								     0x1C,
++								     0x18},
++	/* Index 0x94~0x97 */
++	{0x0E, 0x1C, 0x1C}, {0x0E, 0x18, 0x1C}, {0x0E, 0x15, 0x1C}, {0x0E,
++								     0x11,
++								     0x1C},
++	/* Index 0x98~0x9B */
++	{0x14, 0x14, 0x1C}, {0x16, 0x14, 0x1C}, {0x18, 0x14, 0x1C}, {0x1A,
++								     0x14,
++								     0x1C},
++	/* Index 0x9C~0x9F */
++	{0x1C, 0x14, 0x1C}, {0x1C, 0x14, 0x1A}, {0x1C, 0x14, 0x18}, {0x1C,
++								     0x14,
++								     0x16},
++	/* Index 0xA0~0xA3 */
++	{0x1C, 0x14, 0x14}, {0x1C, 0x16, 0x14}, {0x1C, 0x18, 0x14}, {0x1C,
++								     0x1A,
++								     0x14},
++	/* Index 0xA4~0xA7 */
++	{0x1C, 0x1C, 0x14}, {0x1A, 0x1C, 0x14}, {0x18, 0x1C, 0x14}, {0x16,
++								     0x1C,
++								     0x14},
++	/* Index 0xA8~0xAB */
++	{0x14, 0x1C, 0x14}, {0x14, 0x1C, 0x16}, {0x14, 0x1C, 0x18}, {0x14,
++								     0x1C,
++								     0x1A},
++	/* Index 0xAC~0xAF */
++	{0x14, 0x1C, 0x1C}, {0x14, 0x1A, 0x1C}, {0x14, 0x18, 0x1C}, {0x14,
++								     0x16,
++								     0x1C},
++	/* Index 0xB0~0xB3 */
++	{0x00, 0x00, 0x10}, {0x04, 0x00, 0x10}, {0x08, 0x00, 0x10}, {0x0C,
++								     0x00,
++								     0x10},
++	/* Index 0xB4~0xB7 */
++	{0x10, 0x00, 0x10}, {0x10, 0x00, 0x0C}, {0x10, 0x00, 0x08}, {0x10,
++								     0x00,
++								     0x04},
++	/* Index 0xB8~0xBB */
++	{0x10, 0x00, 0x00}, {0x10, 0x04, 0x00}, {0x10, 0x08, 0x00}, {0x10,
++								     0x0C,
++								     0x00},
++	/* Index 0xBC~0xBF */
++	{0x10, 0x10, 0x00}, {0x0C, 0x10, 0x00}, {0x08, 0x10, 0x00}, {0x04,
++								     0x10,
++								     0x00},
++	/* Index 0xC0~0xC3 */
++	{0x00, 0x10, 0x00}, {0x00, 0x10, 0x04}, {0x00, 0x10, 0x08}, {0x00,
++								     0x10,
++								     0x0C},
++	/* Index 0xC4~0xC7 */
++	{0x00, 0x10, 0x10}, {0x00, 0x0C, 0x10}, {0x00, 0x08, 0x10}, {0x00,
++								     0x04,
++								     0x10},
++	/* Index 0xC8~0xCB */
++	{0x08, 0x08, 0x10}, {0x0A, 0x08, 0x10}, {0x0C, 0x08, 0x10}, {0x0E,
++								     0x08,
++								     0x10},
++	/* Index 0xCC~0xCF */
++	{0x10, 0x08, 0x10}, {0x10, 0x08, 0x0E}, {0x10, 0x08, 0x0C}, {0x10,
++								     0x08,
++								     0x0A},
++	/* Index 0xD0~0xD3 */
++	{0x10, 0x08, 0x08}, {0x10, 0x0A, 0x08}, {0x10, 0x0C, 0x08}, {0x10,
++								     0x0E,
++								     0x08},
++	/* Index 0xD4~0xD7 */
++	{0x10, 0x10, 0x08}, {0x0E, 0x10, 0x08}, {0x0C, 0x10, 0x08}, {0x0A,
++								     0x10,
++								     0x08},
++	/* Index 0xD8~0xDB */
++	{0x08, 0x10, 0x08}, {0x08, 0x10, 0x0A}, {0x08, 0x10, 0x0C}, {0x08,
++								     0x10,
++								     0x0E},
++	/* Index 0xDC~0xDF */
++	{0x08, 0x10, 0x10}, {0x08, 0x0E, 0x10}, {0x08, 0x0C, 0x10}, {0x08,
++								     0x0A,
++								     0x10},
++	/* Index 0xE0~0xE3 */
++	{0x0B, 0x0B, 0x10}, {0x0C, 0x0B, 0x10}, {0x0D, 0x0B, 0x10}, {0x0F,
++								     0x0B,
++								     0x10},
++	/* Index 0xE4~0xE7 */
++	{0x10, 0x0B, 0x10}, {0x10, 0x0B, 0x0F}, {0x10, 0x0B, 0x0D}, {0x10,
++								     0x0B,
++								     0x0C},
++	/* Index 0xE8~0xEB */
++	{0x10, 0x0B, 0x0B}, {0x10, 0x0C, 0x0B}, {0x10, 0x0D, 0x0B}, {0x10,
++								     0x0F,
++								     0x0B},
++	/* Index 0xEC~0xEF */
++	{0x10, 0x10, 0x0B}, {0x0F, 0x10, 0x0B}, {0x0D, 0x10, 0x0B}, {0x0C,
++								     0x10,
++								     0x0B},
++	/* Index 0xF0~0xF3 */
++	{0x0B, 0x10, 0x0B}, {0x0B, 0x10, 0x0C}, {0x0B, 0x10, 0x0D}, {0x0B,
++								     0x10,
++								     0x0F},
++	/* Index 0xF4~0xF7 */
++	{0x0B, 0x10, 0x10}, {0x0B, 0x0F, 0x10}, {0x0B, 0x0D, 0x10}, {0x0B,
++								     0x0C,
++								     0x10},
++	/* Index 0xF8~0xFB */
++	{0x00, 0x00, 0x00}, {0x00, 0x00, 0x00}, {0x00, 0x00, 0x00}, {0x00,
++								     0x00,
++								     0x00},
++	/* Index 0xFC~0xFF */
++	{0x00, 0x00, 0x00}, {0x00, 0x00, 0x00}, {0x00, 0x00, 0x00}, {0x00,
++								     0x00,
++								     0x00}
++};
++
++void write_reg(u8 index, u16 io_port, u8 data)
 +{
-+	unsigned int m;
-+
-+	/* If memory size provided by user */
-+	if (via_fb_memsize)
-+		m = via_fb_memsize * Mb;
-+	else {
-+		m = (unsigned int)read_reg(VIASR, SR39);
-+		m = m * (4 * Mb);
-+
-+		if ((m < (16 * Mb)) || (m > (64 * Mb)))
-+			m = 16 * Mb;
-+	}
-+	DEBUG_MSG(KERN_INFO "framebuffer size = %d Mb\n", m / Mb);
-+	return m;
++	outb(index, io_port);
++	outb(data, io_port + 1);
++	/*DEBUG_MSG(KERN_INFO "\nIndex=%2d Value=%2d", index, data); */
++}
++u8 read_reg(int io_port, u8 index)
++{
++	outb(index, io_port);
++	return (inb(io_port + 1));
 +}
 +
-+/* Get Video Buffer Starting Physical Address(back door)*/
-+
-+unsigned long get_videobuf_addr(void)
++void lock_crt(void)
 +{
-+	struct pci_dev *pdev = NULL;
-+	unsigned char sys_mem;
-+	unsigned char video_mem;
-+	unsigned long sys_mem_size;
-+	unsigned long video_mem_size;
-+	/*system memory = 256 MB, video memory 64 MB */
-+	unsigned long vmem_starting_adr = 0x0C000000;
++	write_reg_mask(CR11, VIACR, BIT7, BIT7);
++}
 +
-+	pdev =
-+	    (struct pci_dev *)pci_get_device(VIA_K800_BRIDGE_VID,
-+					     VIA_K800_BRIDGE_DID, NULL);
-+	if (pdev != NULL) {
-+		pci_read_config_byte(pdev, VIA_K800_SYSTEM_MEMORY_REG,
-+				     &sys_mem);
-+		pci_read_config_byte(pdev, VIA_K800_VIDEO_MEMORY_REG,
-+				     &video_mem);
-+		video_mem = (video_mem & 0x70) >> 4;
-+		sys_mem_size = ((unsigned long)sys_mem) << 24;
-+		if (video_mem != 0)
-+			video_mem_size = (1 << (video_mem)) * 1024 * 1024;
-+		else
-+			video_mem_size = 0;
++void unlock_crt(void)
++{
++	write_reg_mask(CR11, VIACR, 0, BIT7);
++	write_reg_mask(CR47, VIACR, 0, BIT0);
++}
 +
-+		vmem_starting_adr = sys_mem_size - video_mem_size;
++void write_reg_mask(u8 index, int io_port, u8 data, u8 mask)
++{
++	u8 tmp;
 +
++	outb(index, io_port);
++	tmp = inb(io_port + 1);
++	outb((data & mask) | (tmp & (~mask)), io_port + 1);
++	/*DEBUG_MSG(KERN_INFO "\nIndex=%2d Value=%2d", index, tmp); */
++}
++
++void write_dac_reg(u8 index, u8 r, u8 g, u8 b)
++{
++	outb(index, LUT_INDEX_WRITE);
++	outb(r, LUT_DATA);
++	outb(g, LUT_DATA);
++	outb(b, LUT_DATA);
++}
++
++/*Set IGA path for each device*/
++void set_iga_path(void)
++{
++
++	if (SAMM_ON == 1) {
++		if (CRT_ON) {
++			if (primary_dev == CRT_Device)
++				crt_setting_info.iga_path = IGA1;
++			else
++				crt_setting_info.iga_path = IGA2;
++		}
++
++		if (DVI_ON) {
++			if (primary_dev == DVI_Device)
++				tmds_setting_info.iga_path = IGA1;
++			else
++				tmds_setting_info.iga_path = IGA2;
++		}
++
++		if (LCD_ON) {
++			if (primary_dev == LCD_Device) {
++				if (dual_fb
++				    && (chip_info.gfx_chip_name ==
++					UNICHROME_CLE266)) {
++					lvds_setting_info.iga_path = IGA2;
++					crt_setting_info.iga_path = IGA1;
++					tmds_setting_info.iga_path = IGA1;
++				} else
++					lvds_setting_info.iga_path = IGA1;
++			} else {
++				lvds_setting_info.iga_path = IGA2;
++			}
++		}
++		if (LCD2_ON) {
++			if (LCD2_Device == primary_dev)
++				lvds_setting_info2.iga_path = IGA1;
++			else
++				lvds_setting_info2.iga_path = IGA2;
++		}
++	} else {
++		SAMM_ON = 0;
++
++		if (CRT_ON && LCD_ON) {
++			crt_setting_info.iga_path = IGA1;
++			lvds_setting_info.iga_path = IGA2;
++		} else if (CRT_ON && DVI_ON) {
++			crt_setting_info.iga_path = IGA1;
++			tmds_setting_info.iga_path = IGA2;
++		} else if (LCD_ON && DVI_ON) {
++			tmds_setting_info.iga_path = IGA1;
++			lvds_setting_info.iga_path = IGA2;
++		} else if (LCD_ON && LCD2_ON) {
++			lvds_setting_info.iga_path = IGA2;
++			lvds_setting_info2.iga_path = IGA2;
++		} else if (CRT_ON) {
++			crt_setting_info.iga_path = IGA1;
++		} else if (LCD_ON) {
++			lvds_setting_info.iga_path = IGA2;
++		} else if (DVI_ON) {
++			tmds_setting_info.iga_path = IGA1;
++		}
++	}
++}
++
++void set_start_addr(void)
++{
++	unsigned long offset = 0, tmp = 0, size = 0;
++	unsigned long length;
++
++	DEBUG_MSG(KERN_INFO "set_start_addr!\n");
++	unlock_crt();
++	/* update starting address of IGA1 */
++	write_reg(CR0C, VIACR, 0x00);	/*initial starting address */
++	write_reg(CR0D, VIACR, 0x00);
++	write_reg(CR34, VIACR, 0x00);
++	write_reg_mask(CR48, VIACR, 0x00, 0x1F);
++
++	if (dual_fb) {
++		parinfo.iga_path = IGA1;
++		parinfo1.iga_path = IGA2;
 +	}
 +
-+	DEBUG_MSG(KERN_INFO "Video Memory Starting Address = %lx \n",
-+		  vmem_starting_adr);
-+	return vmem_starting_adr;
++	if (SAMM_ON == 1) {
++		if (!dual_fb) {
++			if (second_size)
++				size = second_size * 1024 * 1024;
++			else
++				size = 8 * 1024 * 1024;
++		} else {
++			size = parinfo1.memsize;
++		}
++		offset = second_offset;
++		DEBUG_MSG(KERN_INFO
++			  "second_size=%x, second start_adddress=%lx\n",
++			  size, offset);
++	}
++	if (SAMM_ON == 1) {
++		offset = offset >> 3;
++
++		tmp = read_reg(VIACR, 0x62) & 0x01;
++		tmp |= (offset & 0x7F) << 1;
++		write_reg(CR62, VIACR, tmp);
++		write_reg(CR63, VIACR, ((offset & 0x7F80) >> 7));
++		write_reg(CR64, VIACR, ((offset & 0x7F8000) >> 15));
++		write_reg(CRA3, VIACR, ((offset & 0x3800000) >> 23));
++	} else {
++		/* update starting address */
++		write_reg(CR62, VIACR, 0x00);
++		write_reg(CR63, VIACR, 0x00);
++		write_reg(CR64, VIACR, 0x00);
++		write_reg(CRA3, VIACR, 0x00);
++	}
++
++	if (SAMM_ON == 1) {
++		if (via_fb_accel) {
++			if (!dual_fb)
++				length = size - parinfo.fbmem_used;
++			else
++				length = size - parinfo1.fbmem_used;
++		} else
++			length = size;
++		offset = (unsigned long)(void *)FB_MM + second_offset;
++		memset_io((void *)offset, 0, length);
++	}
++
++	lock_crt();
 +}
-diff -Nur a/drivers/video/via/iface.h b/drivers/video/via/iface.h
---- a/drivers/video/via/iface.h	1969-12-31 19:00:00.000000000 -0500
-+++ b/drivers/video/via/iface.h	2008-04-29 02:51:18.000000000 -0400
-@@ -0,0 +1,38 @@
-+/*
-+ * Copyright 1998-2008 VIA Technologies, Inc. All Rights Reserved.
-+ * Copyright 2001-2008 S3 Graphics, Inc. All Rights Reserved.
 +
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under  the terms of the GNU General Public License as published
-+ * by the Free Software Foundation; either version 2, or (at your option)
-+ * any later version.
-+
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTIES OR REPRESENTATIONS; without even
-+ * the implied warranty of MERCHANTABILITY or FITNESS FOR
-+ * A PARTICULAR PURPOSE.See the GNU General Public License
-+ * for more details.
-+
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc.,
-+ * 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-+ */
-+
-+#ifndef __IFACE_H__
-+#define __IFACE_H__
-+
-+#define Kb  (1024)
-+#define Mb  (Kb*Kb)
-+
-+#define VIA_K800_BRIDGE_VID         0x1106
-+#define VIA_K800_BRIDGE_DID         0x3204
-+
-+#define VIA_K800_SYSTEM_MEMORY_REG  0x47
-+#define VIA_K800_VIDEO_MEMORY_REG   0xA1
-+
-+extern int via_fb_memsize;
-+unsigned int get_memsize(void);
-+unsigned long get_videobuf_addr(void);
-+
-+#endif /* __IFACE_H__ */
-diff -Nur a/drivers/video/via/ioctl.c b/drivers/video/via/ioctl.c
---- a/drivers/video/via/ioctl.c	1969-12-31 19:00:00.000000000 -0500
-+++ b/drivers/video/via/ioctl.c	2008-04-29 02:51:18.000000000 -0400
-@@ -0,0 +1,111 @@
-+/*
-+ * Copyright 1998-2008 VIA Technologies, Inc. All Rights Reserved.
-+ * Copyright 2001-2008 S3 Graphics, Inc. All Rights Reserved.
-+
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under  the terms of the GNU General Public License as published
-+ * by the Free Software Foundation; either version 2, or (at your option)
-+ * any later version.
-+
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTIES OR REPRESENTATIONS; without even
-+ * the implied warranty of MERCHANTABILITY or FITNESS FOR
-+ * A PARTICULAR PURPOSE.See the GNU General Public License
-+ * for more details.
-+
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc.,
-+ * 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-+ */
-+
-+#include "global.h"
-+
-+int ioctl_get_viafb_info(u_long arg)
++void set_output_path(int device, int set_iga, int output_interface)
 +{
-+	struct viafb_ioctl_info viainfo;
++	switch (device) {
++	case DEVICE_CRT:
++		set_crt_output_path(set_iga);
++		break;
++	case DEVICE_DVI:
++		set_dvi_output_path(set_iga, output_interface);
++		break;
++	case DEVICE_LCD:
++		set_lcd_output_path(set_iga, output_interface);
++		break;
++	}
++}
 +
-+	viainfo.viafb_id = VIAID;
-+	viainfo.vendor_id = PCI_VIA_VENDOR_ID;
++void set_crt_output_path(int set_iga)
++{
++	write_reg_mask(CR36, VIACR, 0x00, BIT4 + BIT5);
++
++	switch (set_iga) {
++	case IGA1:
++		write_reg_mask(SR16, VIASR, 0x00, BIT6);
++		break;
++	case IGA2:
++	case IGA1_IGA2:
++		write_reg_mask(CR6A, VIACR, 0xC0, BIT6 + BIT7);
++		write_reg_mask(SR16, VIASR, 0x40, BIT6);
++		if (set_iga == IGA1_IGA2)
++			write_reg_mask(CR6B, VIACR, 0x08, BIT3);
++		break;
++	}
++}
++
++void dvi_patch_skew_dvp0(void)
++{
++	/* Reset data driving first: */
++	write_reg_mask(SR1B, VIASR, 0, BIT1);
++	write_reg_mask(SR2A, VIASR, 0, BIT4);
 +
 +	switch (chip_info.gfx_chip_name) {
++	case UNICHROME_P4M890:
++		{
++			if ((tmds_setting_info.h_active == 1600)
++			    && (tmds_setting_info.v_active == 1200))
++				write_reg_mask(CR96, VIACR, 0x03,
++					       BIT0 + BIT1 + BIT2);
++			else
++				write_reg_mask(CR96, VIACR, 0x07,
++					       BIT0 + BIT1 + BIT2);
++			break;
++		}
++
++	case UNICHROME_P4M900:
++		{
++			write_reg_mask(CR96, VIACR, 0x07,
++				       BIT0 + BIT1 + BIT2 + BIT3);
++			write_reg_mask(SR1B, VIASR, 0x02, BIT1);
++			write_reg_mask(SR2A, VIASR, 0x10, BIT4);
++			break;
++		}
++
++	default:
++		{
++			break;
++		}
++	}
++}
++
++void dvi_patch_skew_dvp1(void)
++{
++	switch (chip_info.gfx_chip_name) {
++	case UNICHROME_CX700:
++		{
++			break;
++		}
++
++	default:
++		{
++			break;
++		}
++	}
++}
++
++void dvi_patch_skew_dvp_low(void)
++{
++	switch (chip_info.gfx_chip_name) {
++	case UNICHROME_K8M890:
++		{
++			write_reg_mask(CR99, VIACR, 0x03, BIT0 + BIT1);
++			break;
++		}
++
++	case UNICHROME_P4M900:
++		{
++			write_reg_mask(CR99, VIACR, 0x08,
++				       BIT0 + BIT1 + BIT2 + BIT3);
++			break;
++		}
++
++	case UNICHROME_P4M890:
++		{
++			write_reg_mask(CR99, VIACR, 0x0F,
++				       BIT0 + BIT1 + BIT2 + BIT3);
++			break;
++		}
++
++	default:
++		{
++			break;
++		}
++	}
++}
++
++void set_dvi_output_path(int set_iga, int output_interface)
++{
++	switch (output_interface) {
++	case INTERFACE_DVP0:
++		write_reg_mask(CR6B, VIACR, 0x01, BIT0);
++
++		if (set_iga == IGA1) {
++			write_reg_mask(CR96, VIACR, 0x00, BIT4);
++			write_reg_mask(CR6C, VIACR, 0x21, BIT0 + BIT5 + BIT7);
++		} else {
++			write_reg_mask(CR96, VIACR, 0x10, BIT4);
++			write_reg_mask(CR6C, VIACR, 0xA1, BIT0 + BIT5 + BIT7);
++		}
++
++		write_reg_mask(SR1E, VIASR, 0xC0, BIT7 + BIT6);
++
++		dvi_patch_skew_dvp0();
++		break;
++
++	case INTERFACE_DVP1:
++		if (chip_info.gfx_chip_name == UNICHROME_CLE266) {
++			if (set_iga == IGA1)
++				write_reg_mask(CR93, VIACR, 0x21,
++					       BIT0 + BIT5 + BIT7);
++			else
++				write_reg_mask(CR93, VIACR, 0xA1,
++					       BIT0 + BIT5 + BIT7);
++		} else {
++			if (set_iga == IGA1)
++				write_reg_mask(CR9B, VIACR, 0x00, BIT4);
++			else
++				write_reg_mask(CR9B, VIACR, 0x10, BIT4);
++		}
++
++		write_reg_mask(SR1E, VIASR, 0x30, BIT4 + BIT5);
++		dvi_patch_skew_dvp1();
++		break;
++	case INTERFACE_DFP_HIGH:
++		if (chip_info.gfx_chip_name != UNICHROME_CLE266) {
++			if (set_iga == IGA1) {
++				write_reg_mask(CR96, VIACR, 0x00, BIT4);
++				write_reg_mask(CR97, VIACR, 0x03,
++					       BIT0 + BIT1 + BIT4);
++			} else {
++				write_reg_mask(CR96, VIACR, 0x10, BIT4);
++				write_reg_mask(CR97, VIACR, 0x13,
++					       BIT0 + BIT1 + BIT4);
++			}
++		}
++		write_reg_mask(SR2A, VIASR, 0x0C, BIT2 + BIT3);
++		break;
++
++	case INTERFACE_DFP_LOW:
++		if (chip_info.gfx_chip_name == UNICHROME_CLE266)
++			break;
++
++		if (set_iga == IGA1) {
++			write_reg_mask(CR99, VIACR, 0x00, BIT4);
++			write_reg_mask(CR9B, VIACR, 0x00, BIT4);
++		} else {
++			write_reg_mask(CR99, VIACR, 0x10, BIT4);
++			write_reg_mask(CR9B, VIACR, 0x10, BIT4);
++		}
++
++		write_reg_mask(SR2A, VIASR, 0x03, BIT0 + BIT1);
++		dvi_patch_skew_dvp_low();
++		break;
++
++	case INTERFACE_TMDS:
++		if (set_iga == IGA1)
++			write_reg_mask(CR99, VIACR, 0x00, BIT4);
++		else
++			write_reg_mask(CR99, VIACR, 0x10, BIT4);
++		break;
++	}
++
++	if (set_iga == IGA2) {
++		enable_second_display_channel();
++		/* Disable LCD Scaling */
++		write_reg_mask(CR79, VIACR, 0x00, BIT0);
++	}
++}
++
++void set_lcd_output_path(int set_iga, int output_interface)
++{
++	DEBUG_MSG(KERN_INFO
++		  "set_lcd_output_path, iga:%d,out_interface:%d\n",
++		  set_iga, output_interface);
++	switch (set_iga) {
++	case IGA1:
++		write_reg_mask(CR6B, VIACR, 0x00, BIT3);
++		write_reg_mask(CR6A, VIACR, 0x08, BIT3);
++
++		disable_second_display_channel();
++		break;
++
++	case IGA2:
++		write_reg_mask(CR6B, VIACR, 0x00, BIT3);
++		write_reg_mask(CR6A, VIACR, 0x08, BIT3);
++
++		enable_second_display_channel();
++		break;
++
++	case IGA1_IGA2:
++		write_reg_mask(CR6B, VIACR, 0x08, BIT3);
++		write_reg_mask(CR6A, VIACR, 0x08, BIT3);
++
++		disable_second_display_channel();
++		break;
++	}
++
++	switch (output_interface) {
++	case INTERFACE_DVP0:
++		if (set_iga == IGA1) {
++			write_reg_mask(CR96, VIACR, 0x00, BIT4);
++		} else {
++			write_reg(CR91, VIACR, 0x00);
++			write_reg_mask(CR96, VIACR, 0x10, BIT4);
++		}
++		break;
++
++	case INTERFACE_DVP1:
++		if (set_iga == IGA1)
++			write_reg_mask(CR9B, VIACR, 0x00, BIT4);
++		else {
++			write_reg(CR91, VIACR, 0x00);
++			write_reg_mask(CR9B, VIACR, 0x10, BIT4);
++		}
++		break;
++
++	case INTERFACE_DFP_HIGH:
++		if (set_iga == IGA1)
++			write_reg_mask(CR97, VIACR, 0x00, BIT4);
++		else {
++			write_reg(CR91, VIACR, 0x00);
++			write_reg_mask(CR97, VIACR, 0x10, BIT4);
++			write_reg_mask(CR96, VIACR, 0x10, BIT4);
++		}
++		break;
++
++	case INTERFACE_DFP_LOW:
++		if (set_iga == IGA1)
++			write_reg_mask(CR99, VIACR, 0x00, BIT4);
++		else {
++			write_reg(CR91, VIACR, 0x00);
++			write_reg_mask(CR99, VIACR, 0x10, BIT4);
++			write_reg_mask(CR9B, VIACR, 0x10, BIT4);
++		}
++
++		break;
++
++	case INTERFACE_DFP:
++		if ((UNICHROME_K8M890 == chip_info.gfx_chip_name)
++		    || (UNICHROME_P4M890 == chip_info.gfx_chip_name))
++			write_reg_mask(CR97, VIACR, 0x84,
++				       BIT7 + BIT2 + BIT1 + BIT0);
++		if (set_iga == IGA1) {
++			write_reg_mask(CR97, VIACR, 0x00, BIT4);
++			write_reg_mask(CR99, VIACR, 0x00, BIT4);
++		} else {
++			write_reg(CR91, VIACR, 0x00);
++			write_reg_mask(CR97, VIACR, 0x10, BIT4);
++			write_reg_mask(CR99, VIACR, 0x10, BIT4);
++		}
++		break;
++
++	case INTERFACE_LVDS0:
++	case INTERFACE_LVDS0LVDS1:
++		if (set_iga == IGA1)
++			write_reg_mask(CR99, VIACR, 0x00, BIT4);
++		else
++			write_reg_mask(CR99, VIACR, 0x10, BIT4);
++
++		break;
++
++	case INTERFACE_LVDS1:
++		if (set_iga == IGA1)
++			write_reg_mask(CR97, VIACR, 0x00, BIT4);
++		else
++			write_reg_mask(CR97, VIACR, 0x10, BIT4);
++
++		break;
++	}
++}
++
++/* Search Mode Index */
++int search_mode_setting(int ModeInfoIndex)
++{
++	int i = 0;
++
++	while ((i < NUM_TOTAL_MODETABLE)
++	       && (ModeInfoIndex != CLE266Modes[i].ModeIndex)) i++;
++	if ((i >= NUM_TOTAL_MODETABLE))
++		i = 0;
++	return i;
++
++}
++
++struct VideoModeTable *get_modetbl_pointer(int Index)
++{
++	struct VideoModeTable *TmpTbl = NULL;
++	TmpTbl = &CLE266Modes[search_mode_setting(Index)];
++	return (TmpTbl);
++}
++
++struct VideoModeTable *get_cea_mode_tbl_pointer(int Index)
++{
++	struct VideoModeTable *TmpTbl = NULL;
++	int i = 0;
++	while ((i < NUM_TOTAL_CEA_MODES)
++	       && (Index != CEA_HDMI_Modes[i].ModeIndex)) i++;
++	if ((i < NUM_TOTAL_CEA_MODES))
++		TmpTbl = &CEA_HDMI_Modes[i];
++	 else {
++		/*Still use general timing if don't find CEA timing */
++		i = 0;
++		while ((i < NUM_TOTAL_MODETABLE)
++		       && (Index != CLE266Modes[i].ModeIndex))
++		       i++;
++		if ((i >= NUM_TOTAL_MODETABLE))
++			i = 0;
++		TmpTbl = &CLE266Modes[i];
++	}
++	return TmpTbl;
++}
++
++void load_fix_bit_crtc_reg(void)
++{
++	/* always set to 1 */
++	write_reg_mask(CR03, VIACR, 0x80, BIT7);
++	/* line compare should set all bits = 1 (extend modes) */
++	write_reg(CR18, VIACR, 0xff);
++	/* line compare should set all bits = 1 (extend modes) */
++	write_reg_mask(CR07, VIACR, 0x10, BIT4);
++	/* line compare should set all bits = 1 (extend modes) */
++	write_reg_mask(CR09, VIACR, 0x40, BIT6);
++	/* line compare should set all bits = 1 (extend modes) */
++	write_reg_mask(CR35, VIACR, 0x10, BIT4);
++	/* line compare should set all bits = 1 (extend modes) */
++	write_reg_mask(CR33, VIACR, 0x06, BIT0 + BIT1 + BIT2);
++	/*write_reg_mask(CR32, VIACR, 0x01, BIT0); */
++	write_reg(CR17, VIACR, 0xe3);	/* extend mode always set to e3h */
++	write_reg(CR08, VIACR, 0x00);	/* extend mode always set to 0h */
++	write_reg(CR14, VIACR, 0x00);	/* extend mode always set to 0h */
++
++	/* If K8M800, enable Prefetch Mode. */
++	if ((chip_info.gfx_chip_name == UNICHROME_K800)
++		|| (chip_info.gfx_chip_name == UNICHROME_K8M890))
++		write_reg_mask(CR33, VIACR, 0x08, BIT3);
++	if ((chip_info.gfx_chip_name == UNICHROME_CLE266)
++	    && (chip_info.gfx_chip_revision == CLE266_REVISION_AX))
++		write_reg_mask(SR1A, VIASR, 0x02, BIT1);
++
++}
++
++void load_reg(int timing_value, int load_reg_num, struct io_register *reg,
++	      int io_type)
++{
++	int reg_mask;
++	int bit_num = 0;
++	int data;
++	int i, j;
++	int shift_next_reg;
++	int start_index, end_index, cr_index;
++	u16 get_bit;
++
++	for (i = 0; i < load_reg_num; i++) {
++		reg_mask = 0;
++		data = 0;
++		start_index = reg[i].start_bit;
++		end_index = reg[i].end_bit;
++		cr_index = reg[i].io_addr;
++
++		shift_next_reg = bit_num;
++		for (j = start_index; j <= end_index; j++) {
++			/*if (bit_num==8) timing_value = timing_value >>8; */
++			reg_mask = reg_mask | (BIT0 << j);
++			get_bit = (timing_value & (BIT0 << bit_num));
++			data =
++			    data | ((get_bit >> shift_next_reg) << start_index);
++			bit_num++;
++		}
++		if (io_type == VIACR)
++			write_reg_mask(cr_index, VIACR, data, reg_mask);
++		else
++			write_reg_mask(cr_index, VIASR, data, reg_mask);
++
++	}
++
++}
++
++/* Write Registers */
++void write_regx(struct io_reg RegTable[], int ItemNum)
++{
++	int i;
++	unsigned char RegTemp;
++
++	/*DEBUG_MSG(KERN_INFO "Table Size : %x!!\n",ItemNum ); */
++
++	for (i = 0; i < ItemNum; i++) {
++		outb(RegTable[i].index, RegTable[i].port);
++		RegTemp = inb(RegTable[i].port + 1);
++		RegTemp = (RegTemp & (~RegTable[i].mask)) | RegTable[i].value;
++		outb(RegTemp, RegTable[i].port + 1);
++	}
++}
++
++void load_offset_reg(int h_addr, int bpp_byte, int set_iga)
++{
++	int reg_value;
++	int load_reg_num;
++	struct io_register *reg;
++
++	switch (set_iga) {
++	case IGA1_IGA2:
++	case IGA1:
++		reg_value = IGA1_OFFSET_FORMULA(h_addr, bpp_byte);
++		load_reg_num = offset_reg.iga1_offset_reg.reg_num;
++		reg = offset_reg.iga1_offset_reg.reg;
++		load_reg(reg_value, load_reg_num, reg, VIACR);
++		if (set_iga == IGA1)
++			break;
++	case IGA2:
++		reg_value = IGA2_OFFSET_FORMULA(h_addr, bpp_byte);
++		load_reg_num = offset_reg.iga2_offset_reg.reg_num;
++		reg = offset_reg.iga2_offset_reg.reg;
++		load_reg(reg_value, load_reg_num, reg, VIACR);
++		break;
++	}
++}
++
++void load_fetch_count_reg(int h_addr, int bpp_byte, int set_iga)
++{
++	int reg_value;
++	int load_reg_num;
++	struct io_register *reg = NULL;
++
++	switch (set_iga) {
++	case IGA1_IGA2:
++	case IGA1:
++		reg_value = IGA1_FETCH_COUNT_FORMULA(h_addr, bpp_byte);
++		load_reg_num = fetch_count_reg.iga1_fetch_count_reg.reg_num;
++		reg = fetch_count_reg.iga1_fetch_count_reg.reg;
++		load_reg(reg_value, load_reg_num, reg, VIASR);
++		if (set_iga == IGA1)
++			break;
++	case IGA2:
++		reg_value = IGA2_FETCH_COUNT_FORMULA(h_addr, bpp_byte);
++		load_reg_num = fetch_count_reg.iga2_fetch_count_reg.reg_num;
++		reg = fetch_count_reg.iga2_fetch_count_reg.reg;
++		load_reg(reg_value, load_reg_num, reg, VIACR);
++		break;
++	}
++
++}
++
++void load_FIFO_reg(int set_iga, int hor_active, int ver_active)
++{
++	int reg_value;
++	int load_reg_num;
++	struct io_register *reg = NULL;
++	int iga1_fifo_max_depth = 0, iga1_fifo_threshold =
++	    0, iga1_fifo_high_threshold = 0, iga1_display_queue_expire_num = 0;
++	int iga2_fifo_max_depth = 0, iga2_fifo_threshold =
++	    0, iga2_fifo_high_threshold = 0, iga2_display_queue_expire_num = 0;
++
++	if (set_iga == IGA1) {
++		if (chip_info.gfx_chip_name == UNICHROME_K800) {
++			iga1_fifo_max_depth = K800_IGA1_FIFO_MAX_DEPTH;
++			iga1_fifo_threshold = K800_IGA1_FIFO_THRESHOLD;
++			iga1_fifo_high_threshold =
++			    K800_IGA1_FIFO_HIGH_THRESHOLD;
++			/* If resolution > 1280x1024, expire length = 64, else
++			   expire length = 128 */
++			if ((hor_active > 1280) && (ver_active > 1024))
++				iga1_display_queue_expire_num = 16;
++			else
++				iga1_display_queue_expire_num =
++				    K800_IGA1_DISPLAY_QUEUE_EXPIRE_NUM;
++
++		}
++
++		if (chip_info.gfx_chip_name == UNICHROME_PM800) {
++			iga1_fifo_max_depth = P880_IGA1_FIFO_MAX_DEPTH;
++			iga1_fifo_threshold = P880_IGA1_FIFO_THRESHOLD;
++			iga1_fifo_high_threshold =
++			    P880_IGA1_FIFO_HIGH_THRESHOLD;
++			iga1_display_queue_expire_num =
++			    P880_IGA1_DISPLAY_QUEUE_EXPIRE_NUM;
++
++			/* If resolution > 1280x1024, expire length = 64, else
++			   expire length = 128 */
++			if ((hor_active > 1280) && (ver_active > 1024))
++				iga1_display_queue_expire_num = 16;
++			else
++				iga1_display_queue_expire_num =
++				    P880_IGA1_DISPLAY_QUEUE_EXPIRE_NUM;
++		}
++
++		if (chip_info.gfx_chip_name == UNICHROME_CN700) {
++			iga1_fifo_max_depth = CN700_IGA1_FIFO_MAX_DEPTH;
++			iga1_fifo_threshold = CN700_IGA1_FIFO_THRESHOLD;
++			iga1_fifo_high_threshold =
++			    CN700_IGA1_FIFO_HIGH_THRESHOLD;
++
++			/* If resolution > 1280x1024, expire length = 64,
++			   else expire length = 128 */
++			if ((hor_active > 1280) && (ver_active > 1024))
++				iga1_display_queue_expire_num = 16;
++			else
++				iga1_display_queue_expire_num =
++				    CN700_IGA1_DISPLAY_QUEUE_EXPIRE_NUM;
++		}
++
++		if (chip_info.gfx_chip_name == UNICHROME_CX700) {
++			iga1_fifo_max_depth = CX700_IGA1_FIFO_MAX_DEPTH;
++			iga1_fifo_threshold = CX700_IGA1_FIFO_THRESHOLD;
++			iga1_fifo_high_threshold =
++			    CX700_IGA1_FIFO_HIGH_THRESHOLD;
++			iga1_display_queue_expire_num =
++			    CX700_IGA1_DISPLAY_QUEUE_EXPIRE_NUM;
++		}
++
++		if (chip_info.gfx_chip_name == UNICHROME_K8M890) {
++			iga1_fifo_max_depth = K8M890_IGA1_FIFO_MAX_DEPTH;
++			iga1_fifo_threshold = K8M890_IGA1_FIFO_THRESHOLD;
++			iga1_fifo_high_threshold =
++			    K8M890_IGA1_FIFO_HIGH_THRESHOLD;
++			iga1_display_queue_expire_num =
++			    K8M890_IGA1_DISPLAY_QUEUE_EXPIRE_NUM;
++		}
++
++		if (chip_info.gfx_chip_name == UNICHROME_P4M890) {
++			iga1_fifo_max_depth = P4M890_IGA1_FIFO_MAX_DEPTH;
++			iga1_fifo_threshold = P4M890_IGA1_FIFO_THRESHOLD;
++			iga1_fifo_high_threshold =
++			    P4M890_IGA1_FIFO_HIGH_THRESHOLD;
++			iga1_display_queue_expire_num =
++			    P4M890_IGA1_DISPLAY_QUEUE_EXPIRE_NUM;
++		}
++
++		if (chip_info.gfx_chip_name == UNICHROME_P4M900) {
++			iga1_fifo_max_depth = P4M900_IGA1_FIFO_MAX_DEPTH;
++			iga1_fifo_threshold = P4M900_IGA1_FIFO_THRESHOLD;
++			iga1_fifo_high_threshold =
++			    P4M900_IGA1_FIFO_HIGH_THRESHOLD;
++			iga1_display_queue_expire_num =
++			    P4M900_IGA1_DISPLAY_QUEUE_EXPIRE_NUM;
++		}
++
++		if (chip_info.gfx_chip_name == UNICHROME_VX800) {
++			iga1_fifo_max_depth = VX800_IGA1_FIFO_MAX_DEPTH;
++			iga1_fifo_threshold = VX800_IGA1_FIFO_THRESHOLD;
++			iga1_fifo_high_threshold =
++			    VX800_IGA1_FIFO_HIGH_THRESHOLD;
++			iga1_display_queue_expire_num =
++			    VX800_IGA1_DISPLAY_QUEUE_EXPIRE_NUM;
++		}
++
++		/* Set Display FIFO Depath Select */
++		reg_value = IGA1_FIFO_DEPTH_SELECT_FORMULA(iga1_fifo_max_depth);
++		load_reg_num =
++		    display_fifo_depth_reg.iga1_fifo_depth_select_reg.reg_num;
++		reg = display_fifo_depth_reg.iga1_fifo_depth_select_reg.reg;
++		load_reg(reg_value, load_reg_num, reg, VIASR);
++
++		/* Set Display FIFO Threshold Select */
++		reg_value = IGA1_FIFO_THRESHOLD_FORMULA(iga1_fifo_threshold);
++		load_reg_num =
++		    fifo_threshold_select_reg.
++		    iga1_fifo_threshold_select_reg.reg_num;
++		reg =
++		    fifo_threshold_select_reg.
++		    iga1_fifo_threshold_select_reg.reg;
++		load_reg(reg_value, load_reg_num, reg, VIASR);
++
++		/* Set FIFO High Threshold Select */
++		reg_value =
++		    IGA1_FIFO_HIGH_THRESHOLD_FORMULA(iga1_fifo_high_threshold);
++		load_reg_num =
++		    fifo_high_threshold_select_reg.
++		    iga1_fifo_high_threshold_select_reg.reg_num;
++		reg =
++		    fifo_high_threshold_select_reg.
++		    iga1_fifo_high_threshold_select_reg.reg;
++		load_reg(reg_value, load_reg_num, reg, VIASR);
++
++		/* Set Display Queue Expire Num */
++		reg_value =
++		    IGA1_DISPLAY_QUEUE_EXPIRE_NUM_FORMULA
++		    (iga1_display_queue_expire_num);
++		load_reg_num =
++		    display_queue_expire_num_reg.
++		    iga1_display_queue_expire_num_reg.reg_num;
++		reg =
++		    display_queue_expire_num_reg.
++		    iga1_display_queue_expire_num_reg.reg;
++		load_reg(reg_value, load_reg_num, reg, VIASR);
++
++	} else {
++		if (chip_info.gfx_chip_name == UNICHROME_K800) {
++			iga2_fifo_max_depth = K800_IGA2_FIFO_MAX_DEPTH;
++			iga2_fifo_threshold = K800_IGA2_FIFO_THRESHOLD;
++			iga2_fifo_high_threshold =
++			    K800_IGA2_FIFO_HIGH_THRESHOLD;
++
++			/* If resolution > 1280x1024, expire length = 64,
++			   else  expire length = 128 */
++			if ((hor_active > 1280) && (ver_active > 1024))
++				iga2_display_queue_expire_num = 16;
++			else
++				iga2_display_queue_expire_num =
++				    K800_IGA2_DISPLAY_QUEUE_EXPIRE_NUM;
++		}
++
++		if (chip_info.gfx_chip_name == UNICHROME_PM800) {
++			iga2_fifo_max_depth = P880_IGA2_FIFO_MAX_DEPTH;
++			iga2_fifo_threshold = P880_IGA2_FIFO_THRESHOLD;
++			iga2_fifo_high_threshold =
++			    P880_IGA2_FIFO_HIGH_THRESHOLD;
++
++			/* If resolution > 1280x1024, expire length = 64,
++			   else  expire length = 128 */
++			if ((hor_active > 1280) && (ver_active > 1024))
++				iga2_display_queue_expire_num = 16;
++			else
++				iga2_display_queue_expire_num =
++				    P880_IGA2_DISPLAY_QUEUE_EXPIRE_NUM;
++		}
++
++		if (chip_info.gfx_chip_name == UNICHROME_CN700) {
++			iga2_fifo_max_depth = CN700_IGA2_FIFO_MAX_DEPTH;
++			iga2_fifo_threshold = CN700_IGA2_FIFO_THRESHOLD;
++			iga2_fifo_high_threshold =
++			    CN700_IGA2_FIFO_HIGH_THRESHOLD;
++
++			/* If resolution > 1280x1024, expire length = 64,
++			   else expire length = 128 */
++			if ((hor_active > 1280) && (ver_active > 1024))
++				iga2_display_queue_expire_num = 16;
++			else
++				iga2_display_queue_expire_num =
++				    CN700_IGA2_DISPLAY_QUEUE_EXPIRE_NUM;
++		}
++
++		if (chip_info.gfx_chip_name == UNICHROME_CX700) {
++			iga2_fifo_max_depth = CX700_IGA2_FIFO_MAX_DEPTH;
++			iga2_fifo_threshold = CX700_IGA2_FIFO_THRESHOLD;
++			iga2_fifo_high_threshold =
++			    CX700_IGA2_FIFO_HIGH_THRESHOLD;
++			iga2_display_queue_expire_num =
++			    CX700_IGA2_DISPLAY_QUEUE_EXPIRE_NUM;
++		}
++
++		if (chip_info.gfx_chip_name == UNICHROME_K8M890) {
++			iga2_fifo_max_depth = K8M890_IGA2_FIFO_MAX_DEPTH;
++			iga2_fifo_threshold = K8M890_IGA2_FIFO_THRESHOLD;
++			iga2_fifo_high_threshold =
++			    K8M890_IGA2_FIFO_HIGH_THRESHOLD;
++			iga2_display_queue_expire_num =
++			    K8M890_IGA2_DISPLAY_QUEUE_EXPIRE_NUM;
++		}
++
++		if (chip_info.gfx_chip_name == UNICHROME_P4M890) {
++			iga2_fifo_max_depth = P4M890_IGA2_FIFO_MAX_DEPTH;
++			iga2_fifo_threshold = P4M890_IGA2_FIFO_THRESHOLD;
++			iga2_fifo_high_threshold =
++			    P4M890_IGA2_FIFO_HIGH_THRESHOLD;
++			iga2_display_queue_expire_num =
++			    P4M890_IGA2_DISPLAY_QUEUE_EXPIRE_NUM;
++		}
++
++		if (chip_info.gfx_chip_name == UNICHROME_P4M900) {
++			iga2_fifo_max_depth = P4M900_IGA2_FIFO_MAX_DEPTH;
++			iga2_fifo_threshold = P4M900_IGA2_FIFO_THRESHOLD;
++			iga2_fifo_high_threshold =
++			    P4M900_IGA2_FIFO_HIGH_THRESHOLD;
++			iga2_display_queue_expire_num =
++			    P4M900_IGA2_DISPLAY_QUEUE_EXPIRE_NUM;
++		}
++
++		if (chip_info.gfx_chip_name == UNICHROME_VX800) {
++			iga2_fifo_max_depth = VX800_IGA2_FIFO_MAX_DEPTH;
++			iga2_fifo_threshold = VX800_IGA2_FIFO_THRESHOLD;
++			iga2_fifo_high_threshold =
++			    VX800_IGA2_FIFO_HIGH_THRESHOLD;
++			iga2_display_queue_expire_num =
++			    VX800_IGA2_DISPLAY_QUEUE_EXPIRE_NUM;
++		}
++
++		if (chip_info.gfx_chip_name == UNICHROME_K800) {
++			/* Set Display FIFO Depath Select */
++			reg_value =
++			    IGA2_FIFO_DEPTH_SELECT_FORMULA(iga2_fifo_max_depth)
++			    - 1;
++			/* Patch LCD in IGA2 case */
++			load_reg_num =
++			    display_fifo_depth_reg.
++			    iga2_fifo_depth_select_reg.reg_num;
++			reg =
++			    display_fifo_depth_reg.
++			    iga2_fifo_depth_select_reg.reg;
++			load_reg(reg_value, load_reg_num, reg, VIACR);
++		} else {
++
++			/* Set Display FIFO Depath Select */
++			reg_value =
++			    IGA2_FIFO_DEPTH_SELECT_FORMULA(iga2_fifo_max_depth);
++			load_reg_num =
++			    display_fifo_depth_reg.
++			    iga2_fifo_depth_select_reg.reg_num;
++			reg =
++			    display_fifo_depth_reg.
++			    iga2_fifo_depth_select_reg.reg;
++			load_reg(reg_value, load_reg_num, reg, VIACR);
++		}
++
++		/* Set Display FIFO Threshold Select */
++		reg_value = IGA2_FIFO_THRESHOLD_FORMULA(iga2_fifo_threshold);
++		load_reg_num =
++		    fifo_threshold_select_reg.
++		    iga2_fifo_threshold_select_reg.reg_num;
++		reg =
++		    fifo_threshold_select_reg.
++		    iga2_fifo_threshold_select_reg.reg;
++		load_reg(reg_value, load_reg_num, reg, VIACR);
++
++		/* Set FIFO High Threshold Select */
++		reg_value =
++		    IGA2_FIFO_HIGH_THRESHOLD_FORMULA(iga2_fifo_high_threshold);
++		load_reg_num =
++		    fifo_high_threshold_select_reg.
++		    iga2_fifo_high_threshold_select_reg.reg_num;
++		reg =
++		    fifo_high_threshold_select_reg.
++		    iga2_fifo_high_threshold_select_reg.reg;
++		load_reg(reg_value, load_reg_num, reg, VIACR);
++
++		/* Set Display Queue Expire Num */
++		reg_value =
++		    IGA2_DISPLAY_QUEUE_EXPIRE_NUM_FORMULA
++		    (iga2_display_queue_expire_num);
++		load_reg_num =
++		    display_queue_expire_num_reg.
++		    iga2_display_queue_expire_num_reg.reg_num;
++		reg =
++		    display_queue_expire_num_reg.
++		    iga2_display_queue_expire_num_reg.reg;
++		load_reg(reg_value, load_reg_num, reg, VIACR);
++
++	}
++
++}
++
++u32 get_clk_value(int clk)
++{
++	int i;
++
++	for (i = 0; i < NUM_TOTAL_PLL_TABLE; i++) {
++		if (clk == pll_value[i].clk) {
++			switch (chip_info.gfx_chip_name) {
++			case UNICHROME_CLE266:
++			case UNICHROME_K400:
++				return (pll_value[i].cle266_pll);
++
++			case UNICHROME_K800:
++			case UNICHROME_PM800:
++			case UNICHROME_CN700:
++				return (pll_value[i].k800_pll);
++
++			case UNICHROME_CX700:
++			case UNICHROME_K8M890:
++			case UNICHROME_P4M890:
++			case UNICHROME_P4M900:
++			case UNICHROME_VX800:
++				return (pll_value[i].cx700_pll);
++			}
++		}
++	}
++
++	DEBUG_MSG(KERN_INFO "Can't find match PLL value\n\n");
++	return (0);
++}
++
++/* Set VCLK*/
++void set_vclock(u32 CLK, int set_iga)
++{
++	unsigned char RegTemp;
++
++	/* H.W. Reset : ON */
++	write_reg_mask(CR17, VIACR, 0x00, BIT7);
++
++	if ((set_iga == IGA1) || (set_iga == IGA1_IGA2)) {
++		/* Change D,N FOR VCLK */
++		switch (chip_info.gfx_chip_name) {
++		case UNICHROME_CLE266:
++		case UNICHROME_K400:
++			write_reg(SR46, VIASR, CLK / 0x100);
++			write_reg(SR47, VIASR, CLK % 0x100);
++			break;
++
++		case UNICHROME_K800:
++		case UNICHROME_PM800:
++		case UNICHROME_CN700:
++		case UNICHROME_CX700:
++		case UNICHROME_K8M890:
++		case UNICHROME_P4M890:
++		case UNICHROME_P4M900:
++		case UNICHROME_VX800:
++			write_reg(SR44, VIASR, CLK / 0x10000);
++			DEBUG_MSG(KERN_INFO "\nSR44=%x", CLK / 0x10000);
++			write_reg(SR45, VIASR, (CLK & 0xFFFF) / 0x100);
++			DEBUG_MSG(KERN_INFO "\nSR45=%x",
++				  (CLK & 0xFFFF) / 0x100);
++			write_reg(SR46, VIASR, CLK % 0x100);
++			DEBUG_MSG(KERN_INFO "\nSR46=%x", CLK % 0x100);
++			break;
++		}
++	}
++
++	if ((set_iga == IGA2) || (set_iga == IGA1_IGA2)) {
++		/* Change D,N FOR LCK */
++		switch (chip_info.gfx_chip_name) {
++		case UNICHROME_CLE266:
++		case UNICHROME_K400:
++			write_reg(SR44, VIASR, CLK / 0x100);
++			write_reg(SR45, VIASR, CLK % 0x100);
++			break;
++
++		case UNICHROME_K800:
++		case UNICHROME_PM800:
++		case UNICHROME_CN700:
++		case UNICHROME_CX700:
++		case UNICHROME_K8M890:
++		case UNICHROME_P4M890:
++		case UNICHROME_P4M900:
++		case UNICHROME_VX800:
++			write_reg(SR4A, VIASR, CLK / 0x10000);
++			write_reg(SR4B, VIASR, (CLK & 0xFFFF) / 0x100);
++			write_reg(SR4C, VIASR, CLK % 0x100);
++			break;
++		}
++	}
++
++	/* H.W. Reset : OFF */
++	write_reg_mask(CR17, VIACR, 0x80, BIT7);
++
++	/* Reset PLL */
++	if ((set_iga == IGA1) || (set_iga == IGA1_IGA2)) {
++		write_reg_mask(SR40, VIASR, 0x02, BIT1);
++		write_reg_mask(SR40, VIASR, 0x00, BIT1);
++	}
++
++	if ((set_iga == IGA2) || (set_iga == IGA1_IGA2)) {
++		write_reg_mask(SR40, VIASR, 0x01, BIT0);
++		write_reg_mask(SR40, VIASR, 0x00, BIT0);
++	}
++
++	/* Fire! */
++	RegTemp = inb(VIARMisc);
++	outb(RegTemp | (BIT2 + BIT3), VIAWMisc);
++}
++
++void load_crtc_timing(struct display_timing device_timing, int set_iga)
++{
++	int i;
++	int load_reg_num = 0;
++	int reg_value = 0;
++	struct io_register *reg = NULL;
++
++	unlock_crt();
++
++	for (i = 0; i < 12; i++) {
++		if (set_iga == IGA1) {
++			switch (i) {
++			case H_TOTAL_INDEX:
++				reg_value =
++				    IGA1_HOR_TOTAL_FORMULA(device_timing.
++							   hor_total);
++				load_reg_num = iga1_crtc_reg.hor_total.reg_num;
++				reg = iga1_crtc_reg.hor_total.reg;
++				break;
++			case H_ADDR_INDEX:
++				reg_value =
++				    IGA1_HOR_ADDR_FORMULA(device_timing.
++							  hor_addr);
++				load_reg_num = iga1_crtc_reg.hor_addr.reg_num;
++				reg = iga1_crtc_reg.hor_addr.reg;
++				break;
++			case H_BLANK_START_INDEX:
++				reg_value =
++				    IGA1_HOR_BLANK_START_FORMULA
++				    (device_timing.hor_blank_start);
++				load_reg_num =
++				    iga1_crtc_reg.hor_blank_start.reg_num;
++				reg = iga1_crtc_reg.hor_blank_start.reg;
++				break;
++			case H_BLANK_END_INDEX:
++				reg_value =
++				    IGA1_HOR_BLANK_END_FORMULA
++				    (device_timing.hor_blank_start,
++				     device_timing.hor_blank_end);
++				load_reg_num =
++				    iga1_crtc_reg.hor_blank_end.reg_num;
++				reg = iga1_crtc_reg.hor_blank_end.reg;
++				break;
++			case H_SYNC_START_INDEX:
++				reg_value =
++				    IGA1_HOR_SYNC_START_FORMULA
++				    (device_timing.hor_sync_start);
++				load_reg_num =
++				    iga1_crtc_reg.hor_sync_start.reg_num;
++				reg = iga1_crtc_reg.hor_sync_start.reg;
++				break;
++			case H_SYNC_END_INDEX:
++				reg_value =
++				    IGA1_HOR_SYNC_END_FORMULA
++				    (device_timing.hor_sync_start,
++				     device_timing.hor_sync_end);
++				load_reg_num =
++				    iga1_crtc_reg.hor_sync_end.reg_num;
++				reg = iga1_crtc_reg.hor_sync_end.reg;
++				break;
++			case V_TOTAL_INDEX:
++				reg_value =
++				    IGA1_VER_TOTAL_FORMULA(device_timing.
++							   ver_total);
++				load_reg_num = iga1_crtc_reg.ver_total.reg_num;
++				reg = iga1_crtc_reg.ver_total.reg;
++				break;
++			case V_ADDR_INDEX:
++				reg_value =
++				    IGA1_VER_ADDR_FORMULA(device_timing.
++							  ver_addr);
++				load_reg_num = iga1_crtc_reg.ver_addr.reg_num;
++				reg = iga1_crtc_reg.ver_addr.reg;
++				break;
++			case V_BLANK_START_INDEX:
++				reg_value =
++				    IGA1_VER_BLANK_START_FORMULA
++				    (device_timing.ver_blank_start);
++				load_reg_num =
++				    iga1_crtc_reg.ver_blank_start.reg_num;
++				reg = iga1_crtc_reg.ver_blank_start.reg;
++				break;
++			case V_BLANK_END_INDEX:
++				reg_value =
++				    IGA1_VER_BLANK_END_FORMULA
++				    (device_timing.ver_blank_start,
++				     device_timing.ver_blank_end);
++				load_reg_num =
++				    iga1_crtc_reg.ver_blank_end.reg_num;
++				reg = iga1_crtc_reg.ver_blank_end.reg;
++				break;
++			case V_SYNC_START_INDEX:
++				reg_value =
++				    IGA1_VER_SYNC_START_FORMULA
++				    (device_timing.ver_sync_start);
++				load_reg_num =
++				    iga1_crtc_reg.ver_sync_start.reg_num;
++				reg = iga1_crtc_reg.ver_sync_start.reg;
++				break;
++			case V_SYNC_END_INDEX:
++				reg_value =
++				    IGA1_VER_SYNC_END_FORMULA
++				    (device_timing.ver_sync_start,
++				     device_timing.ver_sync_end);
++				load_reg_num =
++				    iga1_crtc_reg.ver_sync_end.reg_num;
++				reg = iga1_crtc_reg.ver_sync_end.reg;
++				break;
++
++			}
++		}
++
++		if (set_iga == IGA2) {
++			switch (i) {
++			case H_TOTAL_INDEX:
++				reg_value =
++				    IGA2_HOR_TOTAL_FORMULA(device_timing.
++							   hor_total);
++				load_reg_num = iga2_crtc_reg.hor_total.reg_num;
++				reg = iga2_crtc_reg.hor_total.reg;
++				break;
++			case H_ADDR_INDEX:
++				reg_value =
++				    IGA2_HOR_ADDR_FORMULA(device_timing.
++							  hor_addr);
++				load_reg_num = iga2_crtc_reg.hor_addr.reg_num;
++				reg = iga2_crtc_reg.hor_addr.reg;
++				break;
++			case H_BLANK_START_INDEX:
++				reg_value =
++				    IGA2_HOR_BLANK_START_FORMULA
++				    (device_timing.hor_blank_start);
++				load_reg_num =
++				    iga2_crtc_reg.hor_blank_start.reg_num;
++				reg = iga2_crtc_reg.hor_blank_start.reg;
++				break;
++			case H_BLANK_END_INDEX:
++				reg_value =
++				    IGA2_HOR_BLANK_END_FORMULA
++				    (device_timing.hor_blank_start,
++				     device_timing.hor_blank_end);
++				load_reg_num =
++				    iga2_crtc_reg.hor_blank_end.reg_num;
++				reg = iga2_crtc_reg.hor_blank_end.reg;
++				break;
++			case H_SYNC_START_INDEX:
++				reg_value =
++				    IGA2_HOR_SYNC_START_FORMULA
++				    (device_timing.hor_sync_start);
++				if (UNICHROME_CN700 <= chip_info.gfx_chip_name)
++					load_reg_num =
++					    iga2_crtc_reg.hor_sync_start.
++					    reg_num;
++				else
++					load_reg_num = 3;
++				reg = iga2_crtc_reg.hor_sync_start.reg;
++				break;
++			case H_SYNC_END_INDEX:
++				reg_value =
++				    IGA2_HOR_SYNC_END_FORMULA
++				    (device_timing.hor_sync_start,
++				     device_timing.hor_sync_end);
++				load_reg_num =
++				    iga2_crtc_reg.hor_sync_end.reg_num;
++				reg = iga2_crtc_reg.hor_sync_end.reg;
++				break;
++			case V_TOTAL_INDEX:
++				reg_value =
++				    IGA2_VER_TOTAL_FORMULA(device_timing.
++							   ver_total);
++				load_reg_num = iga2_crtc_reg.ver_total.reg_num;
++				reg = iga2_crtc_reg.ver_total.reg;
++				break;
++			case V_ADDR_INDEX:
++				reg_value =
++				    IGA2_VER_ADDR_FORMULA(device_timing.
++							  ver_addr);
++				load_reg_num = iga2_crtc_reg.ver_addr.reg_num;
++				reg = iga2_crtc_reg.ver_addr.reg;
++				break;
++			case V_BLANK_START_INDEX:
++				reg_value =
++				    IGA2_VER_BLANK_START_FORMULA
++				    (device_timing.ver_blank_start);
++				load_reg_num =
++				    iga2_crtc_reg.ver_blank_start.reg_num;
++				reg = iga2_crtc_reg.ver_blank_start.reg;
++				break;
++			case V_BLANK_END_INDEX:
++				reg_value =
++				    IGA2_VER_BLANK_END_FORMULA
++				    (device_timing.ver_blank_start,
++				     device_timing.ver_blank_end);
++				load_reg_num =
++				    iga2_crtc_reg.ver_blank_end.reg_num;
++				reg = iga2_crtc_reg.ver_blank_end.reg;
++				break;
++			case V_SYNC_START_INDEX:
++				reg_value =
++				    IGA2_VER_SYNC_START_FORMULA
++				    (device_timing.ver_sync_start);
++				load_reg_num =
++				    iga2_crtc_reg.ver_sync_start.reg_num;
++				reg = iga2_crtc_reg.ver_sync_start.reg;
++				break;
++			case V_SYNC_END_INDEX:
++				reg_value =
++				    IGA2_VER_SYNC_END_FORMULA
++				    (device_timing.ver_sync_start,
++				     device_timing.ver_sync_end);
++				load_reg_num =
++				    iga2_crtc_reg.ver_sync_end.reg_num;
++				reg = iga2_crtc_reg.ver_sync_end.reg;
++				break;
++
++			}
++		}
++		load_reg(reg_value, load_reg_num, reg, VIACR);
++	}
++
++	lock_crt();
++}
++
++void set_color_depth(int bpp_byte, int set_iga)
++{
++	if (set_iga == IGA1) {
++		switch (bpp_byte) {
++		case MODE_8BPP:
++			write_reg_mask(SR15, VIASR, 0x22, 0x7E);
++			break;
++		case MODE_16BPP:
++			write_reg_mask(SR15, VIASR, 0xB6, 0xFE);
++			break;
++		case MODE_32BPP:
++			write_reg_mask(SR15, VIASR, 0xAE, 0xFE);
++			break;
++		}
++	} else {
++		switch (bpp_byte) {
++		case MODE_8BPP:
++			write_reg_mask(CR67, VIACR, 0x00, BIT6 + BIT7);
++			break;
++		case MODE_16BPP:
++			write_reg_mask(CR67, VIACR, 0x40, BIT6 + BIT7);
++			break;
++		case MODE_32BPP:
++			write_reg_mask(CR67, VIACR, 0xC0, BIT6 + BIT7);
++			break;
++		}
++	}
++}
++
++void fill_crtc_timing(struct crt_mode_table *crt_table, int mode_index,
++		      int bpp_byte, int set_iga)
++{
++	struct VideoModeTable *video_mode;
++	struct display_timing crt_reg;
++	int i;
++	int index = 0;
++	int h_addr, v_addr;
++	u32 pll_D_N;
++
++	video_mode = &CLE266Modes[search_mode_setting(mode_index)];
++
++	for (i = 0; i < video_mode->mode_array; i++) {
++		index = i;
++
++		if (crt_table[i].refresh_rate == crt_setting_info.refresh_rate)
++			break;
++	}
++
++	crt_reg = crt_table[index].crtc;
++
++	/* Mode 640x480 has border, but LCD/DFP didn't have border. */
++	/* So we would delete border. */
++	if ((LCD_ON | DVI_ON) && (mode_index == VIA_RES_640X480)
++	    && (crt_setting_info.refresh_rate == 60)) {
++		/* The border is 8 pixels. */
++		crt_reg.hor_blank_start = crt_reg.hor_blank_start - 8;
++
++		/* Blanking time should add left and right borders. */
++		crt_reg.hor_blank_end = crt_reg.hor_blank_end + 16;
++	}
++
++	h_addr = crt_reg.hor_addr;
++	v_addr = crt_reg.ver_addr;
++
++	/* update polarity for CRT timing */
++	if (crt_table[index].h_sync_polarity == NEGATIVE) {
++		if (crt_table[index].v_sync_polarity == NEGATIVE)
++			outb((inb(VIARMisc) & (~(BIT6 + BIT7))) |
++			     (BIT6 + BIT7), VIAWMisc);
++		else
++			outb((inb(VIARMisc) & (~(BIT6 + BIT7))) | (BIT6),
++			     VIAWMisc);
++	} else {
++		if (crt_table[index].v_sync_polarity == NEGATIVE)
++			outb((inb(VIARMisc) & (~(BIT6 + BIT7))) | (BIT7),
++			     VIAWMisc);
++		else
++			outb((inb(VIARMisc) & (~(BIT6 + BIT7))), VIAWMisc);
++	}
++
++	if (set_iga == IGA1) {
++		unlock_crt();
++		write_reg(CR09, VIACR, 0x00);	/*initial CR09=0 */
++		write_reg_mask(CR11, VIACR, 0x00, BIT4 + BIT5 + BIT6);
++		write_reg_mask(CR17, VIACR, 0x00, BIT7);
++	}
++
++	switch (set_iga) {
++	case IGA1:
++		load_crtc_timing(crt_reg, IGA1);
++		break;
++	case IGA2:
++		load_crtc_timing(crt_reg, IGA2);
++		break;
++	}
++
++	load_fix_bit_crtc_reg();
++	lock_crt();
++	write_reg_mask(CR17, VIACR, 0x80, BIT7);
++	load_offset_reg(h_addr, bpp_byte, set_iga);
++	load_fetch_count_reg(h_addr, bpp_byte, set_iga);
++
++	/* load FIFO */
++	if ((chip_info.gfx_chip_name != UNICHROME_CLE266)
++	    && (chip_info.gfx_chip_name != UNICHROME_K400))
++		load_FIFO_reg(set_iga, h_addr, v_addr);
++
++	/* load SR Register About Memory and Color part */
++	set_color_depth(bpp_byte, set_iga);
++
++	pll_D_N = get_clk_value(crt_table[index].clk);
++	DEBUG_MSG(KERN_INFO "PLL=%x", pll_D_N);
++	set_vclock(pll_D_N, set_iga);
++
++}
++
++struct display_timing get_timing_value(struct crt_mode_table *crt_table,
++				       int mode_index)
++{
++	struct VideoModeTable *video_mode;
++	struct display_timing crt_reg;
++	int i;
++	int index = 0;
++
++	video_mode = &CLE266Modes[search_mode_setting(mode_index)];
++
++	for (i = 0; i < video_mode->mode_array; i++) {
++		index = i;
++
++		if (crt_table[i].refresh_rate == crt_setting_info.refresh_rate)
++			break;
++	}
++
++	crt_reg = crt_table[index].crtc;
++	return (crt_reg);
++}
++
++void init_chip_info(void)
++{
++	init_gfx_chip_info();
++	init_tmds_chip_info();
++	init_lvds_chip_info();
++
++	crt_setting_info.iga_path = IGA1;
++	crt_setting_info.refresh_rate = refresh;
++
++	/*Set IGA path for each device */
++	set_iga_path();
++
++	lvds_setting_info.display_method = lcd_dsp_method;
++	lvds_setting_info.get_lcd_size_method = GET_LCD_SIZE_BY_USER_SETTING;
++	lvds_setting_info.lcd_mode = lcd_mode;
++	lvds_setting_info2.display_method = lvds_setting_info.display_method;
++	lvds_setting_info2.lcd_mode = lvds_setting_info.lcd_mode;
++}
++
++void update_device_setting(int hres, int vres, int bpp, int vmode_refresh,
++			   int flag)
++{
++	if (flag == 0) {
++		crt_setting_info.h_active = hres;
++		crt_setting_info.v_active = vres;
++		crt_setting_info.bpp = bpp;
++		crt_setting_info.refresh_rate = vmode_refresh;
++
++		tmds_setting_info.h_active = hres;
++		tmds_setting_info.v_active = vres;
++		tmds_setting_info.bpp = bpp;
++		tmds_setting_info.refresh_rate = vmode_refresh;
++
++		lvds_setting_info.h_active = hres;
++		lvds_setting_info.v_active = vres;
++		lvds_setting_info.bpp = bpp;
++		lvds_setting_info.refresh_rate = vmode_refresh;
++		lvds_setting_info2.h_active = hres;
++		lvds_setting_info2.v_active = vres;
++		lvds_setting_info2.bpp = bpp;
++		lvds_setting_info2.refresh_rate = vmode_refresh;
++	} else {
++
++		if (tmds_setting_info.iga_path == IGA2) {
++			tmds_setting_info.h_active = hres;
++			tmds_setting_info.v_active = vres;
++			tmds_setting_info.bpp = bpp;
++			tmds_setting_info.refresh_rate = vmode_refresh;
++		}
++
++		if (lvds_setting_info.iga_path == IGA2) {
++			lvds_setting_info.h_active = hres;
++			lvds_setting_info.v_active = vres;
++			lvds_setting_info.bpp = bpp;
++			lvds_setting_info.refresh_rate = vmode_refresh;
++		}
++		if (IGA2 == lvds_setting_info2.iga_path) {
++			lvds_setting_info2.h_active = hres;
++			lvds_setting_info2.v_active = vres;
++			lvds_setting_info2.bpp = bpp;
++			lvds_setting_info2.refresh_rate = vmode_refresh;
++		}
++	}
++}
++
++void init_gfx_chip_info(void)
++{
++	struct pci_dev *pdev = NULL;
++	u8 tmp;
++
++	/* Indentify GFX Chip Name */
++	pdev =
++	    (struct pci_dev *)pci_get_device(PCI_VIA_VENDOR_ID,
++					     UNICHROME_CLE266_DID, NULL);
++	if (pdev != NULL)
++		chip_info.gfx_chip_name = UNICHROME_CLE266;
++
++	pdev =
++	    (struct pci_dev *)pci_get_device(PCI_VIA_VENDOR_ID,
++					     UNICHROME_K400_DID, NULL);
++	if (pdev != NULL)
++		chip_info.gfx_chip_name = UNICHROME_K400;
++
++	pdev =
++	    (struct pci_dev *)pci_get_device(PCI_VIA_VENDOR_ID,
++					     UNICHROME_K800_DID, NULL);
++	if (pdev != NULL)
++		chip_info.gfx_chip_name = UNICHROME_K800;
++
++	pdev =
++	    (struct pci_dev *)pci_get_device(PCI_VIA_VENDOR_ID,
++					     UNICHROME_PM800_DID, NULL);
++	if (pdev != NULL)
++		chip_info.gfx_chip_name = UNICHROME_PM800;
++
++	pdev =
++	    (struct pci_dev *)pci_get_device(PCI_VIA_VENDOR_ID,
++					     UNICHROME_CN700_DID, NULL);
++	if (pdev != NULL)
++		chip_info.gfx_chip_name = UNICHROME_CN700;
++
++	pdev =
++	    (struct pci_dev *)pci_get_device(PCI_VIA_VENDOR_ID,
++					     UNICHROME_CX700_DID, NULL);
++	if (pdev != NULL)
++		chip_info.gfx_chip_name = UNICHROME_CX700;
++	pdev =
++	    (struct pci_dev *)pci_get_device(PCI_VIA_VENDOR_ID,
++					     UNICHROME_K8M890_DID, NULL);
++	if (pdev != NULL)
++		chip_info.gfx_chip_name = UNICHROME_K8M890;
++
++	pdev =
++	    (struct pci_dev *)pci_get_device(PCI_VIA_VENDOR_ID,
++					     UNICHROME_P4M890_DID, NULL);
++	if (pdev != NULL)
++		chip_info.gfx_chip_name = UNICHROME_P4M890;
++
++	pdev =
++	    (struct pci_dev *)pci_get_device(PCI_VIA_VENDOR_ID,
++					     UNICHROME_P4M900_DID, NULL);
++	if (pdev != NULL)
++		chip_info.gfx_chip_name = UNICHROME_P4M900;
++
++	pdev =
++	    (struct pci_dev *)pci_get_device(PCI_VIA_VENDOR_ID,
++					     UNICHROME_VX800_DID, NULL);
++	if (pdev != NULL)
++		chip_info.gfx_chip_name = UNICHROME_VX800;
++	/* Check revision of CLE266 Chip */
++	if (chip_info.gfx_chip_name == UNICHROME_CLE266) {
++		/* CR4F only define in CLE266.CX chip */
++		tmp = read_reg(VIACR, CR4F);
++		write_reg(CR4F, VIACR, 0x55);
++		if (read_reg(VIACR, CR4F) != 0x55)
++			chip_info.gfx_chip_revision = CLE266_REVISION_AX;
++		else
++			chip_info.gfx_chip_revision = CLE266_REVISION_CX;
++
++		write_reg(CR4F, VIACR, tmp);	/* restore orignal CR4F value */
++	}
++
++	if (UNICHROME_CX700 == chip_info.gfx_chip_name) {
++		tmp = read_reg(VIASR, SR43);
++		DEBUG_MSG(KERN_INFO "SR43:%X\n", tmp);
++		if (tmp & 0x02)
++			chip_info.gfx_chip_revision = CX700_REVISION_700M2;
++		else if (tmp & 0x40)
++			chip_info.gfx_chip_revision = CX700_REVISION_700M;
++		else
++			chip_info.gfx_chip_revision = CX700_REVISION_700;
++	}
++}
++
++void init_tmds_chip_info(void)
++{
++	tmds_trasmitter_identify();
++
++	if (INTERFACE_NONE == chip_info.tmds_chip_info.output_interface) {
++		switch (chip_info.gfx_chip_name) {
++		case UNICHROME_CX700:
++			{
++				/* we should check support by hardware layout.*/
++				if ((display_hardware_layout ==
++				     HW_LAYOUT_DVI_ONLY)
++				    || (display_hardware_layout ==
++					HW_LAYOUT_LCD_DVI)) {
++					chip_info.tmds_chip_info.
++					    output_interface = INTERFACE_TMDS;
++				} else {
++					chip_info.tmds_chip_info.
++					    output_interface = INTERFACE_NONE;
++				}
++				break;
++			}
++		case UNICHROME_K8M890:
++		case UNICHROME_P4M900:
++		case UNICHROME_P4M890:
++			/* TMDS on PCIE, we set DFPLOW as default. */
++			chip_info.tmds_chip_info.output_interface =
++			    INTERFACE_DFP_LOW;
++			break;
++		default:
++			{
++				/* set DVP1 default for DVI */
++				chip_info.tmds_chip_info.output_interface =
++				    INTERFACE_DVP1;
++			}
++		}
++	}
++
++	DEBUG_MSG(KERN_INFO "TMDS Chip = %d\n",
++		  chip_info.tmds_chip_info.tmds_chip_name);
++	tmds_setting_info.get_dvi_size_method = GET_DVI_SIZE_BY_VGA_BIOS;
++	init_dvi_size();
++}
++
++void init_lvds_chip_info(void)
++{
++	if (lcd_panel_id > LCD_PANEL_ID_MAXIMUM)
++		lvds_setting_info.get_lcd_size_method =
++		    GET_LCD_SIZE_BY_VGA_BIOS;
++	else
++		lvds_setting_info.get_lcd_size_method =
++		    GET_LCD_SIZE_BY_USER_SETTING;
++
++	lvds_trasmitter_identify();
++	init_lcd_size();
++	init_lvds_output_interface(&chip_info.lvds_chip_info,
++				   &lvds_setting_info);
++	if (chip_info.lvds_chip_info2.lvds_chip_name) {
++		init_lvds_output_interface(&chip_info.lvds_chip_info2,
++					   &lvds_setting_info2);
++	}
++	/*If CX700,two singel LCD, we need to reassign
++	   LCD interface to different LVDS port */
++	if ((UNICHROME_CX700 == chip_info.gfx_chip_name)
++	    && (HW_LAYOUT_LCD1_LCD2 == display_hardware_layout)) {
++		if ((INTEGRATED_LVDS == chip_info.lvds_chip_info.lvds_chip_name)
++		    && (INTEGRATED_LVDS ==
++			chip_info.lvds_chip_info2.lvds_chip_name)) {
++			chip_info.lvds_chip_info.output_interface =
++			    INTERFACE_LVDS0;
++			chip_info.lvds_chip_info2.output_interface =
++			    INTERFACE_LVDS1;
++		}
++	}
++
++	DEBUG_MSG(KERN_INFO "LVDS Chip = %d\n",
++		  chip_info.lvds_chip_info.lvds_chip_name);
++	DEBUG_MSG(KERN_INFO "LVDS1 output_interface = %d\n",
++		  chip_info.lvds_chip_info.output_interface);
++	DEBUG_MSG(KERN_INFO "LVDS2 output_interface = %d\n",
++		  chip_info.lvds_chip_info2.output_interface);
++}
++
++void init_dac(int set_iga)
++{
++	int i;
++	u8 tmp;
++
++	if (set_iga == IGA1) {
++		/* access Primary Display's LUT */
++		write_reg_mask(SR1A, VIASR, 0x00, BIT0);
++		/* turn off LCK */
++		write_reg_mask(SR1B, VIASR, 0x00, BIT7 + BIT6);
++		for (i = 0; i < 256; i++) {
++			write_dac_reg(i, palLUT_table[i].red,
++				      palLUT_table[i].green,
++				      palLUT_table[i].blue);
++		}
++		/* turn on LCK */
++		write_reg_mask(SR1B, VIASR, 0xC0, BIT7 + BIT6);
++	} else {
++		tmp = read_reg(VIACR, CR6A);
++		/* access Secondary Display's LUT */
++		write_reg_mask(CR6A, VIACR, 0x40, BIT6);
++		write_reg_mask(SR1A, VIASR, 0x01, BIT0);
++		for (i = 0; i < 256; i++) {
++			write_dac_reg(i, palLUT_table[i].red,
++				      palLUT_table[i].green,
++				      palLUT_table[i].blue);
++		}
++		/* set IGA1 DAC for default */
++		write_reg_mask(SR1A, VIASR, 0x00, BIT0);
++		write_reg(CR6A, VIACR, tmp);
++	}
++}
++
++void device_screen_off(void)
++{
++	/* turn off CRT screen (IGA1) */
++	write_reg_mask(SR01, VIASR, 0x20, BIT5);
++}
++
++void device_screen_on(void)
++{
++	/* turn on CRT screen (IGA1) */
++	write_reg_mask(SR01, VIASR, 0x00, BIT5);
++}
++
++void set_display_channel(void)
++{
++	/*If LCD2_ON, on cx700, internal lvds's information
++	is keeped on lvds_setting_info2 */
++	if (LCD2_ON && lvds_setting_info2.device_lcd_dualedge) {
++		/* For dual channel LCD: */
++		/* Set to Dual LVDS channel. */
++		write_reg_mask(CRD2, VIACR, 0x20, BIT4 + BIT5);
++	} else if (LCD_ON && DVI_ON) {
++		/* For LCD+DFP: */
++		/* Set to LVDS1 + TMDS channel. */
++		write_reg_mask(CRD2, VIACR, 0x10, BIT4 + BIT5);
++	} else if (DVI_ON) {
++		/* Set to single TMDS channel. */
++		write_reg_mask(CRD2, VIACR, 0x30, BIT4 + BIT5);
++	} else if (LCD_ON) {
++		if (lvds_setting_info.device_lcd_dualedge) {
++			/* For dual channel LCD: */
++			/* Set to Dual LVDS channel. */
++			write_reg_mask(CRD2, VIACR, 0x20, BIT4 + BIT5);
++		} else {
++			/* Set to LVDS0 + LVDS1 channel. */
++			write_reg_mask(CRD2, VIACR, 0x00, BIT4 + BIT5);
++		}
++	}
++}
++
++int setmode(int vmode_index, int hor_res, int ver_res, int video_bpp,
++	    int vmode_index1, int hor_res1, int ver_res1, int video_bpp1)
++{
++	int i, j;
++	int port;
++	u8 value, index, mask;
++	struct VideoModeTable *vmode_tbl;
++	struct crt_mode_table *crt_timing;
++	struct VideoModeTable *vmode_tbl1 = NULL;
++	struct crt_mode_table *crt_timing1 = NULL;
++
++	DEBUG_MSG(KERN_INFO "Set Mode!!\n");
++	DEBUG_MSG(KERN_INFO
++		  "vmode_index=%d hor_res=%d ver_res=%d video_bpp=%d\n",
++		  vmode_index, hor_res, ver_res, video_bpp);
++
++	device_screen_off();
++	vmode_tbl = &CLE266Modes[search_mode_setting(vmode_index)];
++	crt_timing = vmode_tbl->crtc;
++
++	if (SAMM_ON == 1) {
++		vmode_tbl1 = &CLE266Modes[search_mode_setting(vmode_index1)];
++		crt_timing1 = vmode_tbl1->crtc;
++	}
++
++	inb(VIAStatus);
++	outb(0x00, VIAAR);
++
++	/* Write Common Setting for Video Mode */
++	switch (chip_info.gfx_chip_name) {
 +	case UNICHROME_CLE266:
-+		viainfo.device_id = UNICHROME_CLE266_DID;
++		write_regx(CLE266_ModeXregs, NUM_TOTAL_CLE266_ModeXregs);
 +		break;
 +
 +	case UNICHROME_K400:
-+		viainfo.device_id = UNICHROME_K400_DID;
++		write_regx(KM400_ModeXregs, NUM_TOTAL_KM400_ModeXregs);
 +		break;
 +
 +	case UNICHROME_K800:
-+		viainfo.device_id = UNICHROME_K800_DID;
-+		break;
-+
 +	case UNICHROME_PM800:
-+		viainfo.device_id = UNICHROME_PM800_DID;
++		write_regx(CN400_ModeXregs, NUM_TOTAL_CN400_ModeXregs);
 +		break;
 +
 +	case UNICHROME_CN700:
-+		viainfo.device_id = UNICHROME_CN700_DID;
++	case UNICHROME_K8M890:
++	case UNICHROME_P4M890:
++	case UNICHROME_P4M900:
++		write_regx(CN700_ModeXregs, NUM_TOTAL_CN700_ModeXregs);
 +		break;
 +
 +	case UNICHROME_CX700:
-+		viainfo.device_id = UNICHROME_CX700_DID;
++		write_regx(CX700_ModeXregs, NUM_TOTAL_CX700_ModeXregs);
++
++	case UNICHROME_VX800:
++		write_regx(VX800_ModeXregs, NUM_TOTAL_VX800_ModeXregs);
++
++		break;
++	}
++
++	device_off();
++
++	/* Fill VPIT Parameters */
++	/* Write Misc Register */
++	outb(VPIT.Misc, VIAWMisc);
++
++	/* Write Sequencer */
++	for (i = 1; i <= StdSR; i++) {
++		outb(i, VIASR);
++		outb(VPIT.SR[i - 1], VIASR + 1);
++	}
++
++	set_start_addr();
++	set_iga_path();
++
++	/* Write CRTC */
++	fill_crtc_timing(crt_timing, vmode_index, video_bpp / 8, IGA1);
++
++	/* Write Graphic Controller */
++	for (i = 0; i < StdGR; i++) {
++		outb(i, VIAGR);
++		outb(VPIT.GR[i], VIAGR + 1);
++	}
++
++	/* Write Attribute Controller */
++	for (i = 0; i < StdAR; i++) {
++		inb(VIAStatus);
++		outb(i, VIAAR);
++		outb(VPIT.AR[i], VIAAR);
++	}
++
++	inb(VIAStatus);
++	outb(0x20, VIAAR);
++
++	/* Update Patch Register */
++
++	if ((chip_info.gfx_chip_name == UNICHROME_CLE266)
++	    || (chip_info.gfx_chip_name == UNICHROME_K400)) {
++		for (i = 0; i < NUM_TOTAL_PATCH_MODE; i++) {
++			if (res_patch_table[i].mode_index == vmode_index) {
++				for (j = 0;
++				     j < res_patch_table[i].table_length; j++) {
++					index =
++					    res_patch_table[i].
++					    io_reg_table[j].index;
++					port =
++					    res_patch_table[i].
++					    io_reg_table[j].port;
++					value =
++					    res_patch_table[i].
++					    io_reg_table[j].value;
++					mask =
++					    res_patch_table[i].
++					    io_reg_table[j].mask;
++					write_reg_mask(index, port, value,
++						       mask);
++				}
++			}
++		}
++	}
++
++	if (SAMM_ON == 1) {
++		if ((chip_info.gfx_chip_name == UNICHROME_CLE266)
++		    || (chip_info.gfx_chip_name == UNICHROME_K400)) {
++			for (i = 0; i < NUM_TOTAL_PATCH_MODE; i++) {
++				if (res_patch_table[i].mode_index ==
++				    vmode_index1) {
++					for (j = 0;
++					     j <
++					     res_patch_table[i].
++					     table_length; j++) {
++						index =
++						    res_patch_table[i].
++						    io_reg_table[j].index;
++						port =
++						    res_patch_table[i].
++						    io_reg_table[j].port;
++						value =
++						    res_patch_table[i].
++						    io_reg_table[j].value;
++						mask =
++						    res_patch_table[i].
++						    io_reg_table[j].mask;
++						write_reg_mask(index, port,
++							       value, mask);
++					}
++				}
++			}
++		}
++	}
++
++	/* Update Refresh Rate Setting */
++
++	/* Clear On Screen */
++
++	/* CRT set mode */
++	if (CRT_ON) {
++		if (SAMM_ON && (crt_setting_info.iga_path == IGA2)) {
++			fill_crtc_timing(crt_timing1, vmode_index1,
++					 video_bpp1 / 8,
++					 crt_setting_info.iga_path);
++		} else {
++			fill_crtc_timing(crt_timing, vmode_index,
++					 video_bpp / 8,
++					 crt_setting_info.iga_path);
++		}
++
++		set_crt_output_path(crt_setting_info.iga_path);
++
++		/* Patch if set_hres is not 8 alignment (1366) to setmode
++		to 8 alignment (1368),there is several pixels (2 pixels)
++		on right side of screen. */
++		if (hor_res % 8) {
++			unlock_crt();
++			write_reg(CR02, VIACR, read_reg(VIACR, CR02) - 1);
++			lock_crt();
++		}
++	}
++
++	if (DVI_ON) {
++		if (SAMM_ON && (tmds_setting_info.iga_path == IGA2)) {
++			dvi_set_mode(get_mode_index
++				     (tmds_setting_info.h_active,
++				      tmds_setting_info.v_active, 1),
++				     video_bpp1, tmds_setting_info.iga_path);
++		} else {
++			dvi_set_mode(get_mode_index
++				     (tmds_setting_info.h_active,
++				      tmds_setting_info.v_active, 0),
++				     video_bpp, tmds_setting_info.iga_path);
++		}
++	}
++
++	if (LCD_ON) {
++		if (SAMM_ON && (lvds_setting_info.iga_path == IGA2)) {
++			lvds_setting_info.bpp = video_bpp1;
++			lcd_set_mode(crt_timing1, &lvds_setting_info,
++				     &chip_info.lvds_chip_info);
++		} else {
++			/* IGA1 doesn't have LCD scaling, so set it center. */
++			if (lvds_setting_info.iga_path == IGA1) {
++				lvds_setting_info.display_method =
++				    LCD_CENTERING;
++			}
++			lvds_setting_info.bpp = video_bpp;
++			lcd_set_mode(crt_timing, &lvds_setting_info,
++				     &chip_info.lvds_chip_info);
++		}
++	}
++	if (LCD2_ON) {
++		if (SAMM_ON && (lvds_setting_info2.iga_path == IGA2)) {
++			lvds_setting_info2.bpp = video_bpp1;
++			lcd_set_mode(crt_timing1, &lvds_setting_info2,
++				     &chip_info.lvds_chip_info2);
++		} else {
++			/* IGA1 doesn't have LCD scaling, so set it center. */
++			if (lvds_setting_info2.iga_path == IGA1) {
++				lvds_setting_info2.display_method =
++				    LCD_CENTERING;
++			}
++			lvds_setting_info2.bpp = video_bpp;
++			lcd_set_mode(crt_timing, &lvds_setting_info2,
++				     &chip_info.lvds_chip_info2);
++		}
++	}
++
++	if ((chip_info.gfx_chip_name == UNICHROME_CX700)
++	    && (LCD_ON || DVI_ON))
++		set_display_channel();
++
++	/* If set mode normally, save resolution information for hot-plug . */
++	if (!via_fb_hotplug) {
++		via_fb_hotplug_Xres = hor_res;
++		via_fb_hotplug_Yres = ver_res;
++		via_fb_hotplug_bpp = video_bpp;
++		via_fb_hotplug_refresh = refresh;
++
++		if (DVI_ON)
++			DeviceStatus = DVI_Device;
++		else
++			DeviceStatus = CRT_Device;
++	}
++
++	device_on();
++
++	if (SAMM_ON == 1)
++		write_reg_mask(CR6A, VIACR, 0xC0, BIT6 + BIT7);
++
++	device_screen_on();
++
++	return 1;
++}
++
++int get_pixclock(int hres, int vres, int vmode_refresh)
++{
++	int i;
++
++	for (i = 0; i < NUM_TOTAL_RES_MAP_REFRESH; i++) {
++		if ((hres == res_map_refresh_tbl[i].hres)
++		    && (vres == res_map_refresh_tbl[i].vres)
++		    && (vmode_refresh == res_map_refresh_tbl[i].vmode_refresh))
++			return (res_map_refresh_tbl[i].pixclock);
++	}
++	return (RES_640X480_60HZ_PIXCLOCK);
++
++}
++
++int get_refresh(int hres, int vres, int pixclock)
++{
++	int i;
++	for (i = 0; i < NUM_TOTAL_RES_MAP_REFRESH; i++) {
++		if ((hres == res_map_refresh_tbl[i].hres)
++		    && (vres == res_map_refresh_tbl[i].vres)
++		    && (pixclock == res_map_refresh_tbl[i].pixclock))
++			return (res_map_refresh_tbl[i].vmode_refresh);
++	}
++	return (60);
++}
++
++void device_off(void)
++{
++	crt_disable();
++	dvi_disable();
++	lcd_disable();
++}
++
++void device_on(void)
++{
++	if (CRT_ON == 1)
++		crt_enable();
++	if (DVI_ON == 1)
++		dvi_enable();
++	if (LCD_ON == 1)
++		lcd_enable();
++}
++
++void crt_disable(void)
++{
++	write_reg_mask(CR36, VIACR, BIT5 + BIT4, BIT5 + BIT4);
++}
++
++void crt_enable(void)
++{
++	write_reg_mask(CR36, VIACR, 0x0, BIT5 + BIT4);
++}
++
++void get_mmio_info(unsigned long *mmio_base, unsigned long *mmio_len)
++{
++	struct pci_dev *pdev = NULL;
++
++	switch (chip_info.gfx_chip_name) {
++	case UNICHROME_CLE266:
++		pdev =
++		    (struct pci_dev *)pci_get_device(PCI_VIA_VENDOR_ID,
++						     UNICHROME_CLE266_DID,
++						     NULL);
++		break;
++
++	case UNICHROME_K400:
++		pdev =
++		    (struct pci_dev *)pci_get_device(PCI_VIA_VENDOR_ID,
++						     UNICHROME_K400_DID, NULL);
++		break;
++
++	case UNICHROME_K800:
++		pdev =
++		    (struct pci_dev *)pci_get_device(PCI_VIA_VENDOR_ID,
++						     UNICHROME_K800_DID, NULL);
++		break;
++
++	case UNICHROME_PM800:
++		pdev =
++		    (struct pci_dev *)pci_get_device(PCI_VIA_VENDOR_ID,
++						     UNICHROME_PM800_DID, NULL);
++		break;
++
++	case UNICHROME_CN700:
++		pdev =
++		    (struct pci_dev *)pci_get_device(PCI_VIA_VENDOR_ID,
++						     UNICHROME_CN700_DID, NULL);
++		break;
++
++	case UNICHROME_CX700:
++		pdev =
++		    (struct pci_dev *)pci_get_device(PCI_VIA_VENDOR_ID,
++						     UNICHROME_CX700_DID, NULL);
 +		break;
 +
 +	case UNICHROME_K8M890:
-+		viainfo.device_id = UNICHROME_K8M890_DID;
++		pdev =
++		    (struct pci_dev *)pci_get_device(PCI_VIA_VENDOR_ID,
++						     UNICHROME_K8M890_DID,
++						     NULL);
 +		break;
 +
 +	case UNICHROME_P4M890:
-+		viainfo.device_id = UNICHROME_P4M890_DID;
++		pdev =
++		    (struct pci_dev *)pci_get_device(PCI_VIA_VENDOR_ID,
++						     UNICHROME_P4M890_DID,
++						     NULL);
 +		break;
 +
 +	case UNICHROME_P4M900:
-+		viainfo.device_id = UNICHROME_P4M900_DID;
++		pdev =
++		    (struct pci_dev *)pci_get_device(PCI_VIA_VENDOR_ID,
++						     UNICHROME_P4M900_DID,
++						     NULL);
++		break;
++
++	case UNICHROME_VX800:
++		pdev =
++		    (struct pci_dev *)pci_get_device(PCI_VIA_VENDOR_ID,
++						     UNICHROME_VX800_DID, NULL);
 +		break;
 +	}
 +
-+	viainfo.version = VERSION_MAJOR;
-+	viainfo.revision = VERSION_MINOR;
++	if (pdev != NULL) {
++		*mmio_base = pci_resource_start(pdev, 1);
++		*mmio_len = pci_resource_len(pdev, 1);
++	} else {
++		*mmio_base = 0;
++		*mmio_len = 0;
++	}
 +
-+	if (copy_to_user((void __user *)arg, &viainfo, sizeof(viainfo)))
-+		return -EFAULT;
-+
-+	return 0;
 +}
 +
-+/* Hot-Plug Priority: DVI > CRT*/
-+int ioctl_hotplug(int hres, int vres, int bpp)
++void enable_second_display_channel(void)
 +{
-+	int DVIsense, status = 0;
-+	DEBUG_MSG(KERN_INFO "ioctl_hotplug!!\n");
++	/* to enable second display channel. */
++	write_reg_mask(CR6A, VIACR, 0x00, BIT6);
++	write_reg_mask(CR6A, VIACR, BIT7, BIT7);
++	write_reg_mask(CR6A, VIACR, BIT6, BIT6);
++}
 +
-+	if (chip_info.tmds_chip_info.tmds_chip_name != NON_TMDS_TRANSMITTER) {
-+		DVIsense = dvi_sense();
++void disable_second_display_channel(void)
++{
++	/* to disable second display channel. */
++	write_reg_mask(CR6A, VIACR, 0x00, BIT6);
++	write_reg_mask(CR6A, VIACR, 0x00, BIT7);
++	write_reg_mask(CR6A, VIACR, BIT6, BIT6);
++}
 +
-+		if (DVIsense) {
-+			DEBUG_MSG(KERN_INFO "DVI Attached...\n");
-+			if (DeviceStatus != DVI_Device) {
-+				DVI_ON = 1;
-+				CRT_ON = 0;
-+				LCD_ON = 0;
-+				DeviceStatus = DVI_Device;
-+				return DeviceStatus;
-+			}
-+			status = 1;
-+		} else
-+			DEBUG_MSG(KERN_INFO "DVI De-attached...\n");
++void plus_vck_to_iga1_timing(unsigned long h_total)
++{
++	/* Clear first. */
++	write_reg_mask(CR47, VIACR, 0x00, BIT7 + BIT6 + BIT3);
++
++	switch (h_total % 8) {
++	case 2:
++		{
++			write_reg_mask(CR47, VIACR, BIT7, BIT7);
++			break;
++		}
++
++	case 4:
++		{
++			write_reg_mask(CR47, VIACR, BIT6, BIT6);
++			break;
++		}
++
++	case 6:
++		{
++			write_reg_mask(CR47, VIACR, BIT3, BIT3);
++			break;
++		}
++
++	default:
++		{
++			break;
++		}
++	}
++}
++
++void get_fb_info(unsigned int *fb_base, unsigned int *fb_len)
++{
++	struct pci_dev *pdev = NULL;
++
++	switch (chip_info.gfx_chip_name) {
++	case UNICHROME_CLE266:
++		pdev =
++		    (struct pci_dev *)pci_get_device(PCI_VIA_VENDOR_ID,
++						     UNICHROME_CLE266_DID,
++						     NULL);
++		break;
++
++	case UNICHROME_K400:
++		pdev =
++		    (struct pci_dev *)pci_get_device(PCI_VIA_VENDOR_ID,
++						     UNICHROME_K400_DID, NULL);
++		break;
++
++	case UNICHROME_K800:
++		pdev =
++		    (struct pci_dev *)pci_get_device(PCI_VIA_VENDOR_ID,
++						     UNICHROME_K800_DID, NULL);
++		break;
++
++	case UNICHROME_PM800:
++		pdev =
++		    (struct pci_dev *)pci_get_device(PCI_VIA_VENDOR_ID,
++						     UNICHROME_PM800_DID, NULL);
++		break;
++
++	case UNICHROME_CN700:
++		pdev =
++		    (struct pci_dev *)pci_get_device(PCI_VIA_VENDOR_ID,
++						     UNICHROME_CN700_DID, NULL);
++		break;
++
++	case UNICHROME_CX700:
++		pdev =
++		    (struct pci_dev *)pci_get_device(PCI_VIA_VENDOR_ID,
++						     UNICHROME_CX700_DID, NULL);
++		break;
++
++	case UNICHROME_K8M890:
++		pdev =
++		    (struct pci_dev *)pci_get_device(PCI_VIA_VENDOR_ID,
++						     UNICHROME_K8M890_DID,
++						     NULL);
++		break;
++
++	case UNICHROME_P4M890:
++		pdev =
++		    (struct pci_dev *)pci_get_device(PCI_VIA_VENDOR_ID,
++						     UNICHROME_P4M890_DID,
++						     NULL);
++		break;
++
++	case UNICHROME_P4M900:
++		pdev =
++		    (struct pci_dev *)pci_get_device(PCI_VIA_VENDOR_ID,
++						     UNICHROME_P4M900_DID,
++						     NULL);
++		break;
++
++	case UNICHROME_VX800:
++		pdev =
++		    (struct pci_dev *)pci_get_device(PCI_VIA_VENDOR_ID,
++						     UNICHROME_VX800_DID, NULL);
++		break;
++
++	default:
++		DEBUG_MSG(KERN_INFO "Can not detect chipset\n");
++		break;
 +	}
 +
-+	if ((DeviceStatus != CRT_Device) && (status == 0)) {
-+		CRT_ON = 1;
-+		DVI_ON = 0;
-+		LCD_ON = 0;
++	if (pdev != NULL) {
++		*fb_base = (unsigned int)pci_resource_start(pdev, 0);
++		*fb_len = get_fb_size_from_pci();
++		DEBUG_MSG(KERN_INFO "Get FB info from PCI system!\n");
++		DEBUG_MSG(KERN_INFO "fb_base = %08x\n", *fb_base);
++		DEBUG_MSG(KERN_INFO "fb_len = %08x\n", *fb_len);
++	} else {
++		*fb_base = read_reg(VIASR, SR30) << 24;
++		*fb_len = get_memsize();
++		DEBUG_MSG(KERN_INFO "Get FB info from SR30!\n");
++		DEBUG_MSG(KERN_INFO "fb_base = %08x\n", *fb_base);
++		DEBUG_MSG(KERN_INFO "fb_len = %08x\n", *fb_len);
++	}
++}
 +
-+		DeviceStatus = CRT_Device;
-+		return DeviceStatus;
++int get_fb_size_from_pci()
++{
++	unsigned long configid, deviceid, FBSize = 0;
++	int VideoMemSize;
++	int DeviceFound = FALSE;
++
++	for (configid = 0x80000000; configid < 0x80010800; configid += 0x100) {
++		outl(configid, (unsigned long)0xCF8);
++		deviceid = (inl((unsigned long)0xCFC) >> 16) & 0xffff;
++
++		switch (deviceid) {
++		case CLE266:
++		case KM400:
++			outl(configid + 0xE0, (unsigned long)0xCF8);
++			FBSize = inl((unsigned long)0xCFC);
++			DeviceFound = TRUE;	/* Found device id */
++			break;
++
++		case CN400_FUNCTION3:
++		case CN700_FUNCTION3:
++		case CX700_FUNCTION3:
++		case KM800_FUNCTION3:
++		case KM890_FUNCTION3:
++		case P4M890_FUNCTION3:
++		case P4M900_FUNCTION3:
++		case VX800_FUNCTION3:
++			/*case CN750_FUNCTION3: */
++			outl(configid + 0xA0, (unsigned long)0xCF8);
++			FBSize = inl((unsigned long)0xCFC);
++			DeviceFound = TRUE;	/* Found device id */
++			break;
++
++		default:
++			break;
++		}
++
++		if (DeviceFound)
++			break;
 +	}
 +
-+	return 0;
++	DEBUG_MSG(KERN_INFO "Device ID = %lx\n", deviceid);
++
++	FBSize = FBSize & 0x00007000;
++	DEBUG_MSG(KERN_INFO "FB Size = %x\n", FBSize);
++
++	if (chip_info.gfx_chip_name < UNICHROME_CX700) {
++		switch (FBSize) {
++		case 0x00004000:
++			VideoMemSize = (16 << 20);	/*16M */
++			break;
++
++		case 0x00005000:
++			VideoMemSize = (32 << 20);	/*32M */
++			break;
++
++		case 0x00006000:
++			VideoMemSize = (64 << 20);	/*64M */
++			break;
++
++		default:
++			VideoMemSize = (32 << 20);	/*32M */
++			break;
++		}
++	} else {
++		switch (FBSize) {
++		case 0x00001000:
++			VideoMemSize = (8 << 20);	/*8M */
++			break;
++
++		case 0x00002000:
++			VideoMemSize = (16 << 20);	/*16M */
++			break;
++
++		case 0x00003000:
++			VideoMemSize = (32 << 20);	/*32M */
++			break;
++
++		case 0x00004000:
++			VideoMemSize = (64 << 20);	/*64M */
++			break;
++
++		case 0x00005000:
++			VideoMemSize = (128 << 20);	/*128M */
++			break;
++
++		case 0x00006000:
++			VideoMemSize = (256 << 20);	/*256M */
++			break;
++
++		default:
++			VideoMemSize = (32 << 20);	/*32M */
++			break;
++		}
++	}
++
++	return VideoMemSize;
++}
++
++void set_dpa_gfx(int output_interface, struct GFX_DPA_SETTING\
++					*p_gfx_dpa_setting)
++{
++	switch (output_interface) {
++	case INTERFACE_DVP0:
++		{
++			/* DVP0 Clock Polarity and Adjust: */
++			write_reg_mask(CR96, VIACR,
++				       p_gfx_dpa_setting->DVP0, 0x0F);
++
++			/* DVP0 Clock and Data Pads Driving: */
++			write_reg_mask(SR1E, VIASR,
++				       p_gfx_dpa_setting->DVP0ClockDri_S, BIT2);
++			write_reg_mask(SR2A, VIASR,
++				       p_gfx_dpa_setting->DVP0ClockDri_S1,
++				       BIT4);
++			write_reg_mask(SR1B, VIASR,
++				       p_gfx_dpa_setting->DVP0DataDri_S, BIT1);
++			write_reg_mask(SR2A, VIASR,
++				       p_gfx_dpa_setting->DVP0DataDri_S1, BIT5);
++			break;
++		}
++
++	case INTERFACE_DVP1:
++		{
++			/* DVP1 Clock Polarity and Adjust: */
++			write_reg_mask(CR9B, VIACR,
++				       p_gfx_dpa_setting->DVP1, 0x0F);
++
++			/* DVP1 Clock and Data Pads Driving: */
++			write_reg_mask(SR65, VIASR,
++				       p_gfx_dpa_setting->DVP1Driving, 0x0F);
++			break;
++		}
++
++	case INTERFACE_DFP_HIGH:
++		{
++			write_reg_mask(CR97, VIACR,
++				       p_gfx_dpa_setting->DFPHigh, 0x0F);
++			break;
++		}
++
++	case INTERFACE_DFP_LOW:
++		{
++			write_reg_mask(CR99, VIACR,
++				       p_gfx_dpa_setting->DFPLow, 0x0F);
++			break;
++		}
++
++	case INTERFACE_DFP:
++		{
++			write_reg_mask(CR97, VIACR,
++				       p_gfx_dpa_setting->DFPHigh, 0x0F);
++			write_reg_mask(CR99, VIACR,
++				       p_gfx_dpa_setting->DFPLow, 0x0F);
++			break;
++		}
++	}
++}
++
++void memory_pitch_patch(struct fb_info *info)
++{
++	if (info->var.xres != info->var.xres_virtual) {
++		load_offset_reg(info->var.xres_virtual,
++				info->var.bits_per_pixel >> 3, IGA1);
++
++		if (SAMM_ON) {
++			load_offset_reg(second_virtual_xres, via_fb_bpp1 >> 3,
++					IGA2);
++		} else {
++			load_offset_reg(info->var.xres_virtual,
++					info->var.bits_per_pixel >> 3, IGA2);
++		}
++
++	}
++}
++
++/*According var's xres, yres fill var's other timing information*/
++void fill_var_timing_info(struct fb_var_screeninfo *var, int refresh,
++			  int mode_index)
++{
++	struct VideoModeTable *vmode_tbl = NULL;
++	struct crt_mode_table *crt_timing = NULL;
++	struct display_timing crt_reg;
++	int i = 0, index = 0;
++	vmode_tbl = &CLE266Modes[search_mode_setting(mode_index)];
++	crt_timing = vmode_tbl->crtc;
++	for (i = 0; i < vmode_tbl->mode_array; i++) {
++		index = i;
++
++		if (crt_timing[i].refresh_rate == refresh)
++			break;
++	}
++	crt_reg = crt_timing[index].crtc;
++	var->left_margin =
++	    crt_reg.hor_total - (crt_reg.hor_sync_start + crt_reg.hor_sync_end);
++	var->right_margin = crt_reg.hor_sync_start - crt_reg.hor_addr;
++	var->hsync_len = crt_reg.hor_sync_end;
++	var->upper_margin =
++	    crt_reg.ver_total - (crt_reg.ver_sync_start + crt_reg.ver_sync_end);
++	var->lower_margin = crt_reg.ver_sync_start - crt_reg.ver_addr;
++	var->vsync_len = crt_reg.ver_sync_end;
++	var->pixclock = get_pixclock(var->xres, var->yres, refresh);
 +}
 ˇÙË∫{.n«+â∑üÆâ≠Ü+%äÀˇ±È›∂•äwˇ∫{.n«+â∑•ä{±˛G´ùÈˇä{ay∫ á⁄ôÎ,j≠¢f£¢∑höèÔÅÍˇëÍÁz_ËÆ(≠Èöéä›¢j"ù˙∂mßˇˇæ´˛G´ùÈˇ¢∏?ô®Ë≠⁄&£¯ß~è·∂iOïÊ¨z∑övÿ^∂mßˇˇ√ˇ∂Ïˇ¢∏?ñI•
