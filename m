@@ -1,122 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763525AbYEGUOq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764349AbYEGUQy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763525AbYEGUOq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 16:14:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752257AbYEGUOe
+	id S1764349AbYEGUQy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 16:16:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753035AbYEGUQo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 16:14:34 -0400
-Received: from outbound-dub.frontbridge.com ([213.199.154.16]:36651 "EHLO
-	outbound3-dub-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751878AbYEGUOb convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 16:14:31 -0400
-X-BigFish: VP
-X-MS-Exchange-Organization-Antispam-Report: OrigIP: 149.199.60.83;Service: EHS
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Wed, 7 May 2008 16:16:44 -0400
+Received: from rv-out-0506.google.com ([209.85.198.238]:22538 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752257AbYEGUQm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 May 2008 16:16:42 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=vLK87wlpRWHyh1huuVd4IsF4UufMFluvGf8Mwdp8Q6GVgdFR2TXIHLE1iruvI6ZQdGLA+Mk3dAo2xpUsqIZ7OKZXx/WhJGuYTFXa4K/faQmEqKQwgSizg9UvA/6fGPonEBmxKxpZV+xw+g4PAxOqzYuqPYP59nuhJBrXONMznsA=
+Message-ID: <86802c440805071316p39b7f370u46fa4f36c420bce7@mail.gmail.com>
+Date: Wed, 7 May 2008 13:16:41 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Rene Herman" <rene.herman@keyaccess.nl>
+Subject: Re: 2.6.26, PAT and AMD family 6
+Cc: "Daniel Hazelton" <dhazelton@enter.net>, "Ingo Molnar" <mingo@elte.hu>,
+       "Linux Kernel" <linux-kernel@vger.kernel.org>, hpa@zytor.com
+In-Reply-To: <48220BC1.2050701@keyaccess.nl>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [microblaze-uclinux] [PATCH 04/56] microblaze_v2: Open firmware files
-Date: Wed, 7 May 2008 13:14:45 -0700
-In-reply-to: <4821FF0A.7090508@seznam.cz>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [microblaze-uclinux] [PATCH 04/56] microblaze_v2: Open firmware files
-Thread-Index: AciwfUPd7vOwRAPUR2+jKwFh6zzvmQAAUSWA
-References: <a4a778e34c66d126f5c4bf1ca423cf32950ea5ab.1209897266.git.monstr@monstr.eu>	 <684c36e5ad3f598e5079e88ec195545c4a7150c2.1209897266.git.monstr@monstr.eu>	 <20080507160432.93FC11750046@mail35-dub.bigfish.com>	 <4821F794.10003@seznam.cz> <fa686aa40805071159ta7076c3va07e63ffd582ada4@mail.gmail.com> <4821FF0A.7090508@seznam.cz>
-From: "Stephen Neuendorffer" <stephen.neuendorffer@xilinx.com>
-To: <microblaze-uclinux@itee.uq.edu.au>,
-       "Grant Likely" <grant.likely@secretlab.ca>
-Cc: <linux-kernel@vger.kernel.org>, <arnd@arndb.de>,
-       <linux-arch@vger.kernel.org>, "John Linn" <linnj@xilinx.com>,
-       <john.williams@petalogix.com>, <matthew@wil.cx>,
-       <will.newton@gmail.com>, <drepper@redhat.com>,
-       "Paul Mackerras" <paulus@samba.org>,
-       "Stephen Rothwell" <sfr@canb.auug.org.au>,
-       "David Miller" <davem@davemloft.net>
-X-OriginalArrivalTime: 07 May 2008 20:14:25.0863 (UTC) FILETIME=[F25D5570:01C8B07E]
-Message-Id: <20080507201426.A2B9099005D@mail79-dub.bigfish.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <48210A71.1060409@keyaccess.nl>
+	 <86802c440805061939q39ff5500h3c9e229ecbc6b2e6@mail.gmail.com>
+	 <4821A7E2.6080101@keyaccess.nl>
+	 <200805071539.32594.dhazelton@enter.net>
+	 <48220BC1.2050701@keyaccess.nl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'm don't think all of this code should move.
-
-In particular, parts of prom_parse.c dealing with irqs handle virtual
-irqs in a powerpc specific way.
-I also think ifdef PPC_PSERIES and PPC_64 and PPC_32 in prom.c are
-indicative of the fact that alot of this is dealing with
-architecture-specific issues.
-
-Probably some parts of these files, but it's going to take some tweezing
-to figure out what parts.
-
-Steve
-
-> -----Original Message-----
-> From: owner-microblaze-uclinux@itee.uq.edu.au
-[mailto:owner-microblaze-uclinux@itee.uq.edu.au] On
-> Behalf Of Michal Simek
-> Sent: Wednesday, May 07, 2008 12:12 PM
-> To: Grant Likely
-> Cc: monstr@seznam.cz; microblaze-uclinux@itee.uq.edu.au;
-linux-kernel@vger.kernel.org; arnd@arndb.de;
-> linux-arch@vger.kernel.org; John Linn; john.williams@petalogix.com;
-matthew@wil.cx;
-> will.newton@gmail.com; drepper@redhat.com; Paul Mackerras; Stephen
-Rothwell; David Miller
-> Subject: Re: [microblaze-uclinux] [PATCH 04/56] microblaze_v2: Open
-firmware files
-> 
-> Hi Grant,
-> 
-> you understand I use of_device, of_platform and prom_parse. If you do
-diff
-> between them they will almost the same. One small difference is in
-prom.c file.
-> 
-> I hope we will move these files to drivers/of.
-> This is not only question to me.
-> 
-> Paul, Steve and David: Can I moved these three files to drivers/of?
-> 
-> Michal
-> 
-> >> Hi Steve,
-> >>
-> >>  you are right. Microblaze don't need CONFIG_PPC_something but
-> >>  I keep this in files because it will be easier to move this to
-better place.
-> >>  I wanted to sort what Microblaze don't use.
-> >>
-> >>  I need to talk with people from sparc and powerpc what we can move
-and where.
-> >>  I see the best way to push these files to microblaze/kernel/ and
-then sychronize
-> >>  them with one patch - all archs together.
+On Wed, May 7, 2008 at 1:06 PM, Rene Herman <rene.herman@keyaccess.nl> wrote:
+> On 07-05-08 21:39, Daniel Hazelton wrote:
+>
+>
+> > HPA asked about why they used a whitelist instead of a blacklist in [1].
+> The answer (in [2]) was that those are the CPU's that are guaranteed to
+> properly support PAT (no known or potential errata). However in [3] Dean
+> Gaudet complained about the AMD detection code having a limit that the Intel
+> detection code did not.
 > >
-> > I would disagree.  I think its better to push (and get merged)
-patches
-> > to move the files first; then add microblaze on top of that.  You
-can
-> > start getting stuff merged piecemeal that way instead of relying on
-> > getting your entire patch series merged at once.
+>
+>  And in that thread both HPA and Ingo Molnar -- two of the three x86 arch
+>  maintainers -- agreed that a whitelist is the wrong approach, with HPA
+>  commenting that it lead to vendor lockin. And here I am talkng to an
+>  Intel employee about why my entire AMD CPU family was excluded.
+>
+>  So why is this thing now in mainline with Ingo's sign-off and not a line
+>  of changelog to explain it?
+>
+>
+>
+> >                     ^^^^^---- Here in Rene's patch...
 > >
-> > However, that's just my opinion, others may look at it differently.
-> >
-> > Cheers,
-> > g.
-> >
-> 
-> ___________________________
-> microblaze-uclinux mailing list
-> microblaze-uclinux@itee.uq.edu.au
-> Project Home Page :
-http://www.itee.uq.edu.au/~jwilliams/mblaze-uclinux
-> Mailing List Archive :
-http://www.itee.uq.edu.au/~listarch/microblaze-uclinux/
-> 
+>
+>  Yinghai's.
+>
+>
+>
+> > Wouldn't this be better if written the same as the Intel side, ie:
+> > if (c->x86 >= 0xF && (c->x86 == 6 && c->x86_model == 7))
+> > (or even with c->x86_model >= 7  ?)
 
+i only can access opteron Rev E, Rev F, and Quad core. So i enabled that.
 
+now, enable other one by one...
+
+YH
