@@ -1,69 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765146AbYEGVSY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764446AbYEGVTp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765146AbYEGVSY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 17:18:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755391AbYEGVSG
+	id S1764446AbYEGVTp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 17:19:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755004AbYEGVTc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 17:18:06 -0400
-Received: from hs-out-0708.google.com ([64.233.178.246]:28679 "EHLO
-	hs-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755105AbYEGVSC (ORCPT
+	Wed, 7 May 2008 17:19:32 -0400
+Received: from nf-out-0910.google.com ([64.233.182.186]:38262 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755391AbYEGVTa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 17:18:02 -0400
+	Wed, 7 May 2008 17:19:30 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=ttJn/Jx5mARiaEaz6swkHzKI/iD15Bf53CCBNt6wOARWvvaL2ThvMS4ra1OAGI44S6oLNwjclwT8WT8rzFDlDj5xNxmUQCDDCUg4KDCF3kl47JTZuRf0NoE9sUHEmAoyd6fMe68elmitdU05Y6bUghKk29esmUf1FdhirEy8cfQ=
-Message-ID: <1f1b08da0805071418q365680bexafb1996dcc77ebb0@mail.gmail.com>
-Date: Wed, 7 May 2008 14:18:01 -0700
-From: "john stultz" <johnstul@us.ibm.com>
-To: "Maciej W. Rozycki" <macro@linux-mips.org>
-Subject: Re: [RFC][PATCH 1/4] RTC: Class device support for persistent clock
-Cc: "Alessandro Zummo" <a.zummo@towertech.it>,
-       "Jean Delvare" <khali@linux-fr.org>,
-       "Ralf Baechle" <ralf@linux-mips.org>,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       "Andrew Morton" <akpm@linux-foundation.org>, rtc-linux@googlegroups.com,
-       i2c@lm-sensors.org, linux-mips@linux-mips.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <Pine.LNX.4.55.0805070015360.16173@cliff.in.clinika.pl>
+        h=date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
+        b=p2E5ggPj8OJrk9qv/9s1UWh6X/OOmR1UuETGq27juT14+ZK3etpibah/j6wgcn/M/LiB3EVc69hG/SSAowIW9f94fYDhTCiNQm4K1vN1nwrYJ94czdEuvpsT+TSct33lfkMKHWbBD9MBn9iYo8V6ktlLISdp8gNhH5thwuaNxKM=
+Date: Thu, 8 May 2008 02:14:50 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: akpm@osdl.org
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH 1/5] Fix cpumask_scnprintf_len() misdesign
+Message-ID: <20080507221450.GA14375@martell.zuzino.mipt.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <Pine.LNX.4.55.0805070015360.16173@cliff.in.clinika.pl>
-X-Google-Sender-Auth: 590bf975fa113a09
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 6, 2008 at 5:40 PM, Maciej W. Rozycki <macro@linux-mips.org> wrote:
->  This is a generic implementation of rtc_read_persistent_clock() and
->  rtc_update_persistent_clock() suitable for platforms to be used for
->  read_persistent_clock() and update_persistent_clock() calls.  An RTC
->  device selected by the user with the RTC_HCTOSYS_DEVICE option is used.
->
->   As rtc_read_persistent_clock() is not available at the time
->  timekeeping_init() is called, it will now be disabled if the class device
->  is to be used as a reference.  In this case rtc_hctosys(), already
->  present, will be used to set up the system time at the late initcall time.
->  This call has now been rewritten to make use of
->  rtc_read_persistent_clock().
+cpumask_scnprintf_len() takes "len" as an argument which is surprising,
+If one follows call chain down it isn't length but number of bits. But
+there is natural number of bits when talking about CPU masks -- NR_CPUS.
+So use that.
 
-Hrmm. So how is this going to work with suspend and resume?
+Remove 1:1 wrapper macro while I'm at it.
 
-Ideally, on resume we want to update the clock before interrupts are
-reenabled so we don't get stale time values post-resume.  For systems
-that sleep on reading the persistent clock, I'm open to having them
-fix it up as best they can later (partly why the code can handle
-read_persistent_clock() not returning anything), but unless I'm
-misreading this, it seems you're proposing to make systems that do
-have a safe persistent clock have to have the window where code may
-see the pre-suspend time after resume.
+Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
+---
 
-Am I missing something here?
+ include/linux/cpumask.h |    6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
 
-thanks
--john
+--- a/include/linux/cpumask.h
++++ b/include/linux/cpumask.h
+@@ -289,11 +289,9 @@ static inline int __cpumask_scnprintf(char *buf, int len,
+ 	return bitmap_scnprintf(buf, len, srcp->bits, nbits);
+ }
+ 
+-#define cpumask_scnprintf_len(len) \
+-			__cpumask_scnprintf_len((len))
+-static inline int __cpumask_scnprintf_len(int len)
++static inline int cpumask_scnprintf_len(void)
+ {
+-	return bitmap_scnprintf_len(len);
++	return bitmap_scnprintf_len(NR_CPUS);
+ }
+ 
+ #define cpumask_parse_user(ubuf, ulen, dst) \
 
-Maciej: Sorry for the dup, I forgot to reply to all on my first mail.
