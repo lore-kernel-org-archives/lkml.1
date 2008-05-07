@@ -1,101 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763950AbYEGXoc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762858AbYEGXpi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763950AbYEGXoc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 19:44:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755568AbYEGXoJ
+	id S1762858AbYEGXpi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 19:45:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755568AbYEGXp0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 19:44:09 -0400
-Received: from mho-02-bos.mailhop.org ([63.208.196.179]:63617 "EHLO
-	mho-02-bos.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754454AbYEGXoF (ORCPT
+	Wed, 7 May 2008 19:45:26 -0400
+Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:51354
+	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753113AbYEGXpX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 19:44:05 -0400
-X-Mail-Handler: MailHop Outbound by DynDNS
-X-Originating-IP: 69.181.40.92
-X-Report-Abuse-To: abuse@dyndns.com (see http://www.mailhop.org/outbound/abuse.html for abuse reporting information)
-X-MHO-User: U2FsdGVkX18BHwNOkwF/kfCbv4IrsST+
-Date: Wed, 7 May 2008 16:44:01 -0700
-From: Tony Lindgren <tony@atomide.com>
-To: Kyungmin Park <kmpark@infradead.org>
-Cc: linux-omap@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       paul@pwsan.com
-Subject: Re: vanilla kernel is broken on omap board
-Message-ID: <20080507234401.GU18682@atomide.com>
-References: <9c9fda240805061748n3287cb24v530f779b6b622d53@mail.gmail.com> <20080507011914.GM18682@atomide.com>
+	Wed, 7 May 2008 19:45:23 -0400
+Date: Thu, 8 May 2008 01:45:21 +0200
+From: Andrea Arcangeli <andrea@qumranet.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, clameter@sgi.com,
+       steiner@sgi.com, holt@sgi.com, npiggin@suse.de, a.p.zijlstra@chello.nl,
+       kvm-devel@lists.sourceforge.net, kanojsarcar@yahoo.com,
+       rdreier@cisco.com, swise@opengridcomputing.com,
+       linux-kernel@vger.kernel.org, avi@qumranet.com, linux-mm@kvack.org,
+       general@lists.openfabrics.org, hugh@veritas.com, rusty@rustcorp.com.au,
+       aliguori@us.ibm.com, chrisw@redhat.com, marcelo@kvack.org,
+       dada1@cosmosbay.com, paulmck@us.ibm.com
+Subject: Re: [PATCH 08 of 11] anon-vma-rwsem
+Message-ID: <20080507234521.GN8276@duo.random>
+References: <6b384bb988786aa78ef0.1210170958@duo.random> <alpine.LFD.1.10.0805071349200.3024@woody.linux-foundation.org> <20080507212650.GA8276@duo.random> <alpine.LFD.1.10.0805071429170.3024@woody.linux-foundation.org> <20080507222205.GC8276@duo.random> <20080507153103.237ea5b6.akpm@linux-foundation.org> <20080507224406.GI8276@duo.random> <1210202918.1421.20.camel@pasglop>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080507011914.GM18682@atomide.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <1210202918.1421.20.camel@pasglop>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Tony Lindgren <tony@atomide.com> [080506 18:19]:
-> Hi,
+On Thu, May 08, 2008 at 09:28:38AM +1000, Benjamin Herrenschmidt wrote:
 > 
-> * Kyungmin Park <kmpark@infradead.org> [080506 17:48]:
-> > Hi Tony,
+> On Thu, 2008-05-08 at 00:44 +0200, Andrea Arcangeli wrote:
 > > 
-> > Current vanilla kernel is broken on omap2 boards.
-> > In the previous time you committed some omap2 patches, but some
-> > patches are not missing.
-> > Such as Runtime constants series. [1]
-> > 
-> > Now "some parts" are already included.
-> > So you just commit the remain parts too such as in [2]
-> > In most cases the board files don't set the their own global variables.
+> > Please note, we can't allow a thread to be in the middle of
+> > zap_page_range while mmu_notifier_register runs.
 > 
-> Well at least we're getting closer to making omap2 really usable with
-> mainline kernel :)
-> 
-> Thanks for fixing that, will add this to omap-fixes queue and send it
-> upstream with bunch of other fixes.
+> You said yourself that mmu_notifier_register can be as slow as you
+> want ... what about you use stop_machine for it ? I'm not even joking
+> here :-)
 
-Kyungmin, can you reply with your Signed-off-by for this patch?
+We can put a cap of time + a cap of vmas. It's not important if it
+fails, the only useful case we know it, and it won't be slow at
+all. The failure can happen because the cap of time or the cap of vmas
+or the cap vmas triggers or there's a vmalloc shortage. We handle the
+failure in userland of course. There are zillon of allocations needed
+anyway, any one of them can fail, so this isn't a new fail path, is
+the same fail path that always existed before mmu_notifiers existed.
 
-> 
-> Regards,
-> 
-> Tony
-> 
-> 
-> > Thank you,
-> > Kyungmin Park
-> > 
-> > 1. Runtime constants: introduce omap2_set_globals_*()
-> > http://source.mvista.com/git/gitweb.cgi?p=linux-omap-2.6.git;a=commit;h=2b256e28e8e70592f0c38a862cc4ba0498c9db7b
-> > Runtime constants: use runtime-computed SDRC base
-> > http://source.mvista.com/git/gitweb.cgi?p=linux-omap-2.6.git;a=commitdiff;h=7b5f8cdb222052a7aa02ed38c59e0af1946b1e06
-> > Runtime constants: use runtime-computed SMS base
-> > http://source.mvista.com/git/gitweb.cgi?p=linux-omap-2.6.git;a=commitdiff;h=80ccf4b99eb3892809bbebf7673bdd1a359d56ff
-> > 
-> > 2.
-> > diff --git a/arch/arm/mach-omap2/board-apollon.c b/arch/arm/mach-omap2/board-apo
-> > index a1e1e67..620fa0f 100644
-> > --- a/arch/arm/mach-omap2/board-apollon.c
-> > +++ b/arch/arm/mach-omap2/board-apollon.c
-> > @@ -394,6 +394,7 @@ static void __init omap_apollon_init(void)
-> > 
-> >  static void __init omap_apollon_map_io(void)
-> >  {
-> > +       omap2_set_globals_242x();
-> >         omap2_map_common_io();
-> >  }
-> > diff --git a/include/asm-arm/arch-omap/common.h b/include/asm-arm/arch-omap/comm
-> > index 224e009..36a3b62 100644
-> > --- a/include/asm-arm/arch-omap/common.h
-> > +++ b/include/asm-arm/arch-omap/common.h
-> > @@ -47,4 +47,8 @@ static inline int omap_register_i2c_bus(int bus_id, u32 clkrat
-> >  }
-> >  #endif
-> > 
-> > +void omap2_set_globals_242x(void);
-> > +void omap2_set_globals_243x(void);
-> > +void omap2_set_globals_343x(void);
-> > +
-> >  #endif /* __ARCH_ARM_MACH_OMAP_COMMON_H */
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-omap" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+I can't possibly see how adding a new global wide lock that forces all
+truncate to be serialized against each other, practically eliminating
+the need of the i_mmap_lock, could be superior to an approach that
+doesn't cause the overhead to the VM at all, and only require kvm to
+pay for an additional cost when it startup.
+
+Furthermore the only reason I had to implement mm_lock was to fix the
+invalidate_range_start/end model, if we go with only invalidate_page
+and invalidate_pages called inside the PT lock and we use the PT lock
+to serialize, we don't need a mm_lock anymore and no new lock from the
+VM either. I tried to push for that, but everyone else wanted
+invalidate_range_start/end. I only did the only possible thing to do:
+to make invalidate_range_start safe to make everyone happy without
+slowing down the VM.
