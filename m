@@ -1,57 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762994AbYEGW3D@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933906AbYEGW3g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762994AbYEGW3D (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 18:29:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763715AbYEGW2F
+	id S933906AbYEGW3g (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 18:29:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933475AbYEGW2S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 18:28:05 -0400
-Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:48899
-	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763440AbYEGW2A (ORCPT
+	Wed, 7 May 2008 18:28:18 -0400
+Received: from smtp-out03.alice-dsl.net ([88.44.63.5]:20600 "EHLO
+	smtp-out03.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933253AbYEGW2M (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 18:28:00 -0400
-Date: Thu, 8 May 2008 00:27:58 +0200
-From: Andrea Arcangeli <andrea@qumranet.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, clameter@sgi.com,
-       steiner@sgi.com, holt@sgi.com, npiggin@suse.de, a.p.zijlstra@chello.nl,
-       kvm-devel@lists.sourceforge.net, kanojsarcar@yahoo.com,
-       rdreier@cisco.com, swise@opengridcomputing.com,
-       linux-kernel@vger.kernel.org, avi@qumranet.com, linux-mm@kvack.org,
-       general@lists.openfabrics.org, hugh@veritas.com, rusty@rustcorp.com.au,
-       aliguori@us.ibm.com, chrisw@redhat.com, marcelo@kvack.org,
-       dada1@cosmosbay.com, paulmck@us.ibm.com
-Subject: Re: [PATCH 01 of 11] mmu-notifier-core
-Message-ID: <20080507222758.GD8276@duo.random>
-References: <patchbomb.1210170950@duo.random> <e20917dcc8284b6a07cf.1210170951@duo.random> <20080507130528.adfd154c.akpm@linux-foundation.org> <alpine.LFD.1.10.0805071324570.3024@woody.linux-foundation.org> <20080507215840.GB8276@duo.random> <alpine.LFD.1.10.0805071509270.3024@woody.linux-foundation.org>
+	Wed, 7 May 2008 18:28:12 -0400
+Message-ID: <48222C7C.2050807@googlemail.com>
+Date: Thu, 08 May 2008 00:26:04 +0200
+From: Gabriel C <nix.or.die@googlemail.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080502)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.10.0805071509270.3024@woody.linux-foundation.org>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+CC: Andrew Morton <akpm@linux-foundation.org>
+Subject: CONFIG_PRINTK_TIME broken on git HEAD ?
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 07 May 2008 22:19:12.0823 (UTC) FILETIME=[60F0C470:01C8B090]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 07, 2008 at 03:11:10PM -0700, Linus Torvalds wrote:
-> 
-> 
-> On Wed, 7 May 2008, Andrea Arcangeli wrote:
-> 
-> > > As far as I can tell, authorship has been destroyed by at least two of the 
-> > > patches (ie Christoph seems to be the author, but Andrea seems to have 
-> > > dropped that fact).
-> > 
-> > I can't follow this, please be more specific.
-> 
-> The patches were sent to lkml without *any* indication that you weren't 
-> actually the author.
-> 
-> So if Andrew had merged them, they would have been merged as yours.
+Hi all,
 
-I rechecked and I guarantee that the patches where Christoph isn't
-listed are developed by myself and he didn't write a single line on
-them. In any case I expect Christoph to review (he's CCed) and to
-point me to any attribution error. The only mistake I did once in that
-area was to give too _few_ attribution to myself and he asked me to
-add myself in the signed-off so I added myself by Christoph own
-request, but be sure I didn't remove him!
+I've updated today to 2.6.26-rc1-00166-gc0a1811 , running an 64bit kernel at the moment.
+
+dmesg shows here :
+
+...
+
+
+[    0.000000] Allocating PCI resources starting at d0000000 (gap: cf600000:2f800000)
+[    0.000000] SMP: Allowing 4 CPUs, 0 hotplug CPUs
+[    0.000000] PERCPU: Allocating 42756 bytes of per cpu data
+[    0.000000] NR_CPUS: 8, nr_cpu_ids: 4
+[4294014.506571] Built 1 zonelists in Zone order, mobility grouping on.  Total pages: 1010753
+[4294014.506571] Kernel command line: root=/dev/sdb1 ro debug vga=0x317
+[4294014.506571] Initializing CPU#0
+[4294014.506571] Preemptible RCU implementation.
+[4294014.506571] PID hash table entries: 4096 (order: 12, 32768 bytes) 
+
+...                                                                                     
+
+
+Is this a known issue ?
+
+
+Regards,
+
+Gabriel
+ 
