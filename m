@@ -1,53 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757925AbYEGMcG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758645AbYEGMck@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757925AbYEGMcG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 08:32:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751330AbYEGMbs
+	id S1758645AbYEGMck (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 08:32:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755035AbYEGMcV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 08:31:48 -0400
-Received: from embla.aitel.hist.no ([158.38.50.22]:60536 "EHLO
-	embla.aitel.hist.no" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754146AbYEGMbq (ORCPT
+	Wed, 7 May 2008 08:32:21 -0400
+Received: from hosted02.westnet.com.au ([203.10.1.213]:40434 "EHLO
+	hosted02.westnet.com.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751330AbYEGMcT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 08:31:46 -0400
-Message-ID: <4821A12F.2020800@aitel.hist.no>
-Date: Wed, 07 May 2008 14:31:43 +0200
-From: Helge Hafting <helge.hafting@aitel.hist.no>
-User-Agent: Mozilla-Thunderbird 2.0.0.12 (X11/20080420)
+	Wed, 7 May 2008 08:32:19 -0400
+Message-ID: <4821A146.9090605@snapgear.com>
+Date: Wed, 07 May 2008 22:32:06 +1000
+From: Greg Ungerer <gerg@snapgear.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-To: Tomasz Chmielewski <mangoo@wpkg.org>
-CC: Bart Van Assche <bart.vanassche@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>, YSadgat1@gcte.com,
-       linux-os@analogic.com, Alan <alan@lxorguk.ukuu.org.uk>,
-       Linux IDE <linux-ide@vger.kernel.org>
-Subject: Re: Compact Flash Question
-References: <48215673.3060201@wpkg.org> <e2e108260805070044v42f596bbj39c5b52b6f0a096@mail.gmail.com> <48216039.3070001@wpkg.org>
-In-Reply-To: <48216039.3070001@wpkg.org>
+To: Adrian Bunk <bunk@kernel.org>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 6/6] m68knommu: remove example defconfig
+References: <200805070125.m471PwNj023237@goober> <20080507063201.GB30082@cs181133002.pp.htv.fi>
+In-Reply-To: <20080507063201.GB30082@cs181133002.pp.htv.fi>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
+X-PMX-Branch: TNG-Outgoing
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tomasz Chmielewski wrote:
->
-> How does it work, then?
-> How can it do wear levelling over the whole CF if some (or most) area 
-> of CF is already used by our precious data/metadata?
-> It would have to know the areas where no data is stored, but it 
-> contradicts the CF <-> filesystem separation.
-It don't necessarily need to know. It can swap two used blocks, one 
-often-used and one
-rarely-used.  That way the rarely-used block is rewriten over the 
-previously busy
-block, and the busy block is moved to the rarely used area that isn't worn.
-This implies an extra write whenever a busy block is moved.  Don't know if
-anybody do this, but the technique is simple enough.
+Adrian Bunk wrote:
+> On Wed, May 07, 2008 at 11:25:58AM +1000, Greg Ungerer wrote:
+> 
+>> Remove the old example m68knommu defconfig.
+>> ...
+> 
+> Please use KBUILD_DEFCONFIG to define a default defconfig after this.
+> 
+> Simply add to arch/m68knommu/Makefile
+>   KBUILD_DEFCONFIG := m5208evb_defconfig
+> (replace m5208evb_defconfig with whichever you prefer).
 
-CF-filesystem separation is necessary, for they can't know in advance what
-filesystem or partitioning scheme will be used.  (I have ext3 on CF, for 
-example...)
+Yep, I'll fix that up.
 
-Helge Hafting
+Thanks
+Greg
 
 
+------------------------------------------------------------------------
+Greg Ungerer  --  Chief Software Dude       EMAIL:     gerg@snapgear.com
+SnapGear -- a Secure Computing Company      PHONE:       +61 7 3435 2888
+825 Stanley St,                             FAX:         +61 7 3891 3630
+Woolloongabba, QLD, 4102, Australia         WEB: http://www.SnapGear.com
