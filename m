@@ -1,85 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754643AbYEGNNc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753458AbYEGNRc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754643AbYEGNNc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 09:13:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751459AbYEGNNT
+	id S1753458AbYEGNRc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 09:17:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750898AbYEGNRV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 09:13:19 -0400
-Received: from smtpq1.tilbu1.nb.home.nl ([213.51.146.200]:47449 "EHLO
-	smtpq1.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751183AbYEGNNQ (ORCPT
+	Wed, 7 May 2008 09:17:21 -0400
+Received: from e36.co.us.ibm.com ([32.97.110.154]:36292 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750753AbYEGNRT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 09:13:16 -0400
-Message-ID: <4821AB1F.8090101@keyaccess.nl>
-Date: Wed, 07 May 2008 15:14:07 +0200
-From: Rene Herman <rene.herman@keyaccess.nl>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
+	Wed, 7 May 2008 09:17:19 -0400
+Date: Wed, 7 May 2008 08:17:12 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Nadia Derbey <Nadia.Derbey@bull.net>
+Cc: "Serge E. Hallyn" <serue@us.ibm.com>, "Luck, Tony" <tony.luck@intel.com>,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, cmm@us.ibm.com, akpm@linux-foundation.org
+Subject: Re: [PATCH 1/8] Scaling msgmni to the amount of lowmem
+Message-ID: <20080507131712.GA8580@sergelap.austin.ibm.com>
+References: <20080211141646.948191000@bull.net> <20080211141813.354484000@bull.net> <12c511ca0804291328v2f0b87csd0f2cf3accc6ad00@mail.gmail.com> <481EC917.6070808@bull.net> <1FE6DD409037234FAB833C420AA843EC014392F9@orsmsx424.amr.corp.intel.com> <20080506180527.GA8315@sergelap.austin.ibm.com> <48214007.7050800@bull.net>
 MIME-Version: 1.0
-To: Adrian Bunk <bunk@kernel.org>
-CC: Yinghai Lu <yhlu.kernel@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, tglx@linutronix.de,
-       hpa@zytor.com, torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       Pavel Machek <pavel@suse.cz>
-Subject: Re: Undocumented and duplicated code
-References: <48210A71.1060409@keyaccess.nl> <86802c440805061939q39ff5500h3c9e229ecbc6b2e6@mail.gmail.com> <20080507124650.GD29935@cs181133002.pp.htv.fi>
-In-Reply-To: <20080507124650.GD29935@cs181133002.pp.htv.fi>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -1.0 (-)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48214007.7050800@bull.net>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 07-05-08 14:46, Adrian Bunk wrote:
+Quoting Nadia Derbey (Nadia.Derbey@bull.net):
+> Serge E. Hallyn wrote:
+>> Quoting Luck, Tony (tony.luck@intel.com):
+>>>> Well, this printk had been suggested by somebody (sorry I don't remember 
+>>>> who) when I first submitted the patch. Actually I think it might be 
+>>>> useful for a sysadmin to be aware of a change in the msgmni value: we 
+>>>> have the message not only at boot time, but also each time msgmni is 
+>>>> recomputed because of a change in the amount of memory.
+>>>
+>>> If the message is directed at the system administrator, then it would
+>>> be nice if there were some more meaningful way to show the namespace
+>>> that is affected than just printing the hex address of the kernel 
+>>> structure.
+>>>
+>>> As the sysadmin for my test systems, printing the hex address is mildly
+>>> annoying ... I now have to add a new case to my scripts that look at
+>>> dmesg output for unusual activity.
+>>>
+>>> Is there some better "name for a namespace" than the address? Perhaps
+>>> the process id of the process that instantiated the namespace???
+>> I agree with Tony here.  Aside from the nuisance it is to see that
+>> message on console every time I unshare a namespace, a printk doesn't
+>> seem like the right way to output the info.
+>
+> But you agree that this is happening only because you're doing tests 
+> related to namespaces, right?
 
->> others like to to whitebox methods, ..., please try attach patch to
->> see if duron support PAT.
-> 
-> 
-> There surely is documentation available covering this?
-> 
-> And why do we need this clear_cpu_cap(c, X86_FEATURE_PAT) and then 
-> manual setting of X86_FEATURE_PAT at all?
-> 
-> There's no indication in the code, and as Rene already says there's even
-> no description at all in commit 9307cacad0dfe3749f00303125c6f7f0523e5616
-> 
-> Such code really needs a comment explaining why we have to do this at all.
-> 
-> There must be some CPUs with the "pat" flag set but not being usable?
-> Which?
-> 
-> According to the linux-kernel discussions there might not be any broken 
-> CPU at all - but in this case the whitelist will not fill itself, and 
-> expecting people to note that their flags changed and complaining is not 
-> really a good approach.
+Yup :)
 
-I'd say it's an insane approach unless there's actually some indication of
-buggy CPUs. Which there might be, I don't know, but this then definitely
-wants a comment and changelog.
+> I don't think that in a "standard" configuration this will happen very 
+> frequently, but may be I'm wrong.
+>
+>>  At most I'd say an audit
+>> message.
+>
+> That's a good idea. Thanks, Serge. I'll do that.
 
-Just now sent out another reply as well saying much the same:
+It'll probably still end up a printk for me, but it'll be my own fault
+for not setting up audit.
 
-http://marc.info/?l=linux-kernel&m=121016531804511&w=2
+> Regards,
+> Nadia
 
-but I see you tracked the people involved and added them to CC on this
-thread-leaf...
-
-> And that your commit added the same clear/set code in three different 
-> places doesn't look good - this really deserved from the beginning being 
-> factored out into an own function to avoid future problems when CPUs get 
-> added (like what happens with your patch here - it touches only one 
-> place, and since the same context is present in two places in the same 
-> file "patch" might even choose freely where it gets applied...).
-> 
-> Pavel even made a similar comment on linux-kernel before the patch 
-> got merged into Linus' tree. [1]
-> 
-> Guys, even if it compiles in all randconfig configurations and works on 
-> all test machines this is exactly the kind of stuff that causes 
-> headaches in the future.
-> 
-> And this patch (by the author of the code himself) is the first time 
-> where it breaks.
-
-Rene.
+thanks,
+-serge
