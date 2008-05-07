@@ -1,68 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932794AbYEGTIA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933001AbYEGTIh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932794AbYEGTIA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 15:08:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761554AbYEGTHW
+	id S933001AbYEGTIh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 15:08:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765614AbYEGTHc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 15:07:22 -0400
-Received: from www.tglx.de ([62.245.132.106]:39598 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759340AbYEGTHT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 15:07:19 -0400
-Date: Wed, 7 May 2008 21:06:57 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Mirco Tischler <mt-ml@gmx.de>
-cc: Andi Kleen <ak@suse.de>, Ingo Molnar <mingo@redhat.com>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [BUG]:WARNING: at arch/x86/kernel/rtc.c:122 in 2.6.26-rc1
-In-Reply-To: <1210183536.28099.10.camel@mtlp.tischlernetz>
-Message-ID: <alpine.LFD.1.10.0805072102010.3318@apollo.tec.linutronix.de>
-References: <1210183536.28099.10.camel@mtlp.tischlernetz>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Wed, 7 May 2008 15:07:32 -0400
+Received: from smtpq2.groni1.gr.home.nl ([213.51.130.201]:34302 "EHLO
+	smtpq2.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1765254AbYEGTH3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 May 2008 15:07:29 -0400
+Message-ID: <4821FE2E.9030606@keyaccess.nl>
+Date: Wed, 07 May 2008 21:08:30 +0200
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Arjan van de Ven <arjan@infradead.org>
+CC: Yinghai Lu <yhlu.kernel@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.26, PAT and AMD family 6
+References: <48210A71.1060409@keyaccess.nl>	<86802c440805061939q39ff5500h3c9e229ecbc6b2e6@mail.gmail.com>	<4821A7E2.6080101@keyaccess.nl>	<20080507064259.36deb978@infradead.org>	<4821B801.5030508@keyaccess.nl> <20080507072431.30abefae@infradead.org>
+In-Reply-To: <20080507072431.30abefae@infradead.org>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -1.0 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 7 May 2008, Mirco Tischler wrote:
-> Hello
-> I've triggered this warning in 2.6.26-rc1-git from 6th of may:
-> ...
-> [11677.490019] CPU1 is down
-> [11677.490149] Extended CMOS year: 2000
-> [11677.490149] x86 PAT enabled: cpu 0, old 0x7040600070406, new
-> 0x7010600070106
-> [11677.490747] Back to C!
-> [11677.490952] microcode: CPU0 updated from revision 0x92 to 0x92, date
-> = 03132007 
-> [11677.491065] ------------[ cut here ]------------
-> [11677.491065] WARNING: at arch/x86/kernel/rtc.c:122 mach_get_cmos_time
-> +0x9e/0x14e()
+On 07-05-08 16:24, Arjan van de Ven wrote:
 
-> [11677.491065]  [<ffffffff80211cdb>] mach_get_cmos_time+0x9e/0x14e
-> [11677.491065]  [<ffffffff80211da6>] read_persistent_clock+0x1b/0x35
-> [11677.491065]  [<ffffffff8024c101>] timekeeping_resume+0xb/0x120
+> On Wed, 07 May 2008 16:09:05 +0200
+> Rene Herman <rene.herman@keyaccess.nl> wrote:
 
-Interesting. That's in the resume path.
+> [as for which cpus]
+> 
+> The errata docs have these errata, at least for Intel I know they're
+> there. We can add back older cpus over time, but again.. think of it as
+> a risk/reward thing ;( Right now, breaking all kinds of well working
+> older systems without benefits on the upside.....
 
-> I wasn't able to reproduce the warning yet, but because the commit
-> message introducing the WARN_ON says:
+What/who do you break, when they are not selecting CONFIG_X86_PAT? The
+help text can be suitably alarming. I feel this is no argument at all.
 
-This is a WARN_ON_ONCE so you only see it once per boot. Resume does
-not count :) You might change that WARN_ON_ONCE to WARN_ON to check
-whether it happens more than once.
+> that's not very popular on lkml. Once PAT is rock solid I hope we can
+> relax this check greatly...
 
-> > [ tglx@linutronix.de: changed to WARN_ON - we want to know that!
-> >       If no one reports it we can remove the complete if (RTC_ALWAYS_BCD)
-> >       magic, which has RTC_ALWAYS_BCD defined to 1 since Linux 1.0 ... ]
-> I'm reporting it anyway now.
+A blacklist would seem to be really much preferred. All of AMD family 6
+has been excluded in one fell swoop now for example, while I sort of
+expect not any of them should be.
 
-Thanks. That's why I put the WARN_ON there. The backtrace attracts
-attention and it's also an interesting info that this did not happen
-on boot, where we read out the RTC as well.
+>> A blacklist would be a better idea I feel, but in ANY case I think
+>> it's really bad form to clear the feature flag. They are provided by
+>> hardware; if arch/x86/mm/pat.c won't risk running except on a select
+>> few tested models, whatever, but my /proc/cpuinfo shouldn't be lying
+>> to me.
+> 
+> we filter those for all kinds of things already, sorry.
+> What good is showing "pat" if "pat" isn't deemed usable (yet)????
+> Now *that* is deception :)
 
-Can you please provide some details about the system ?
+The trouble is -- if you hide that the CPU _should_ have PAT, how many
+people do you expect are going to look further and test? I knew that I
+should have PAT so I distrusted my CPU feature flag display but you've
+now limited your testers to people who've read the CPU datasheet.
+That's really no good.
 
-Thanks,
-	tglx
+If Linux messes around with those flags already, it's doing things
+wrong already. /proc/cpuinfo is not a display of software features
+but of hardware features -- anything else is outright wrong. Being
+wrong for PAT also doesn't improve things.
+
+Rene.
