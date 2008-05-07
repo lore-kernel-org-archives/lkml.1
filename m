@@ -1,33 +1,33 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759272AbYEGB0m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759499AbYEGB1I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759272AbYEGB0m (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 21:26:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757288AbYEGBZ5
+	id S1759499AbYEGB1I (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 21:27:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758561AbYEGB0I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 21:25:57 -0400
-Received: from rex.securecomputing.com ([203.24.151.4]:57916 "EHLO
+	Tue, 6 May 2008 21:26:08 -0400
+Received: from rex.securecomputing.com ([203.24.151.4]:57920 "EHLO
 	snapgear.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756057AbYEGBZ4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 21:25:56 -0400
-Date: Wed, 7 May 2008 11:25:35 +1000
+	id S1758493AbYEGB0G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 May 2008 21:26:06 -0400
+Date: Wed, 7 May 2008 11:25:46 +1000
 From: Greg Ungerer <gerg@snapgear.com>
-Message-Id: <200805070125.m471PZ28023221@goober>
+Message-Id: <200805070125.m471Pk6N023225@goober>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 3/6] m68knommu: defconfig for M5275EVB board
+Subject: [PATCH 4/6] m68knommu: defconfig for M5307C3 board
 Cc: gerg@uclinux.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add a defconfig for the Freescale M5275EVB board.
+Add a defconfig for the Freescale M5307C3 board.
 
 Signed-off-by: Greg Ungerer <gerg@uclinux.org>
 ---
 
-diff -Naurp linux-2.6.25-rc1/arch/m68knommu/configs/m5275evb_defconfig linux-2.6.25-rc1-uc0/arch/m68knommu/configs/m5275evb_defconfig
---- linux-2.6.25-rc1/arch/m68knommu/configs/m5275evb_defconfig	1970-01-01 10:00:00.000000000 +1000
-+++ linux-2.6.25-rc1-uc0/arch/m68knommu/configs/m5275evb_defconfig	2008-05-07 11:01:22.000000000 +1000
-@@ -0,0 +1,627 @@
+diff -Naurp linux-2.6.25-rc1/arch/m68knommu/configs/m5307c3_defconfig linux-2.6.25-rc1-uc0/arch/m68knommu/configs/m5307c3_defconfig
+--- linux-2.6.25-rc1/arch/m68knommu/configs/m5307c3_defconfig	1970-01-01 10:00:00.000000000 +1000
++++ linux-2.6.25-rc1-uc0/arch/m68knommu/configs/m5307c3_defconfig	2008-05-07 11:01:22.000000000 +1000
+@@ -0,0 +1,580 @@
 +#
 +# Automatically generated make config: don't edit
 +# Linux kernel version: 2.6.26-rc1
@@ -141,21 +141,26 @@ diff -Naurp linux-2.6.25-rc1/arch/m68knommu/configs/m5275evb_defconfig linux-2.6
 +# CONFIG_M5249 is not set
 +# CONFIG_M5271 is not set
 +# CONFIG_M5272 is not set
-+CONFIG_M5275=y
++# CONFIG_M5275 is not set
 +# CONFIG_M528x is not set
-+# CONFIG_M5307 is not set
++CONFIG_M5307=y
 +# CONFIG_M532x is not set
 +# CONFIG_M5407 is not set
-+CONFIG_M527x=y
 +CONFIG_COLDFIRE=y
 +CONFIG_CLOCK_SET=y
-+CONFIG_CLOCK_FREQ=150000000
++CONFIG_CLOCK_FREQ=90000000
 +CONFIG_CLOCK_DIV=2
++# CONFIG_OLDMASK is not set
 +
 +#
 +# Platform
 +#
-+CONFIG_M5275EVB=y
++# CONFIG_ARN5307 is not set
++CONFIG_M5307C3=y
++# CONFIG_eLIA is not set
++# CONFIG_SECUREEDGEMP3 is not set
++# CONFIG_CLEOPATRA is not set
++# CONFIG_NETtel is not set
 +CONFIG_FREESCALE=y
 +# CONFIG_4KSTACKS is not set
 +CONFIG_HZ=100
@@ -164,7 +169,7 @@ diff -Naurp linux-2.6.25-rc1/arch/m68knommu/configs/m5275evb_defconfig linux-2.6
 +# RAM configuration
 +#
 +CONFIG_RAMBASE=0x00000000
-+CONFIG_RAMSIZE=0x00000000
++CONFIG_RAMSIZE=0x00800000
 +CONFIG_VECTORBASE=0x00000000
 +CONFIG_KERNELBASE=0x00020000
 +CONFIG_RAMAUTOBIT=y
@@ -197,6 +202,7 @@ diff -Naurp linux-2.6.25-rc1/arch/m68knommu/configs/m5275evb_defconfig linux-2.6
 +# Bus options (PCI, PCMCIA, EISA, MCA, ISA)
 +#
 +# CONFIG_PCI is not set
++# CONFIG_COMEMPCI is not set
 +# CONFIG_ARCH_SUPPORTS_MSI is not set
 +
 +#
@@ -298,74 +304,7 @@ diff -Naurp linux-2.6.25-rc1/arch/m68knommu/configs/m5275evb_defconfig linux-2.6
 +CONFIG_PREVENT_FIRMWARE_BUILD=y
 +# CONFIG_SYS_HYPERVISOR is not set
 +# CONFIG_CONNECTOR is not set
-+CONFIG_MTD=y
-+# CONFIG_MTD_DEBUG is not set
-+# CONFIG_MTD_CONCAT is not set
-+CONFIG_MTD_PARTITIONS=y
-+# CONFIG_MTD_REDBOOT_PARTS is not set
-+# CONFIG_MTD_CMDLINE_PARTS is not set
-+# CONFIG_MTD_AR7_PARTS is not set
-+
-+#
-+# User Modules And Translation Layers
-+#
-+CONFIG_MTD_CHAR=y
-+CONFIG_MTD_BLKDEVS=y
-+CONFIG_MTD_BLOCK=y
-+# CONFIG_FTL is not set
-+# CONFIG_NFTL is not set
-+# CONFIG_INFTL is not set
-+# CONFIG_RFD_FTL is not set
-+# CONFIG_SSFDC is not set
-+# CONFIG_MTD_OOPS is not set
-+
-+#
-+# RAM/ROM/Flash chip drivers
-+#
-+# CONFIG_MTD_CFI is not set
-+# CONFIG_MTD_JEDECPROBE is not set
-+CONFIG_MTD_MAP_BANK_WIDTH_1=y
-+CONFIG_MTD_MAP_BANK_WIDTH_2=y
-+CONFIG_MTD_MAP_BANK_WIDTH_4=y
-+# CONFIG_MTD_MAP_BANK_WIDTH_8 is not set
-+# CONFIG_MTD_MAP_BANK_WIDTH_16 is not set
-+# CONFIG_MTD_MAP_BANK_WIDTH_32 is not set
-+CONFIG_MTD_CFI_I1=y
-+CONFIG_MTD_CFI_I2=y
-+# CONFIG_MTD_CFI_I4 is not set
-+# CONFIG_MTD_CFI_I8 is not set
-+CONFIG_MTD_RAM=y
-+# CONFIG_MTD_ROM is not set
-+# CONFIG_MTD_ABSENT is not set
-+
-+#
-+# Mapping drivers for chip access
-+#
-+# CONFIG_MTD_COMPLEX_MAPPINGS is not set
-+CONFIG_MTD_UCLINUX=y
-+# CONFIG_MTD_PLATRAM is not set
-+
-+#
-+# Self-contained MTD device drivers
-+#
-+# CONFIG_MTD_SLRAM is not set
-+# CONFIG_MTD_PHRAM is not set
-+# CONFIG_MTD_MTDRAM is not set
-+# CONFIG_MTD_BLOCK2MTD is not set
-+
-+#
-+# Disk-On-Chip Device Drivers
-+#
-+# CONFIG_MTD_DOC2000 is not set
-+# CONFIG_MTD_DOC2001 is not set
-+# CONFIG_MTD_DOC2001PLUS is not set
-+# CONFIG_MTD_NAND is not set
-+# CONFIG_MTD_ONENAND is not set
-+
-+#
-+# UBI - Unsorted block images
-+#
-+# CONFIG_MTD_UBI is not set
++# CONFIG_MTD is not set
 +# CONFIG_PARPORT is not set
 +CONFIG_BLK_DEV=y
 +# CONFIG_BLK_DEV_COW_COMMON is not set
@@ -405,8 +344,6 @@ diff -Naurp linux-2.6.25-rc1/arch/m68knommu/configs/m5275evb_defconfig linux-2.6
 +# CONFIG_IBM_NEW_EMAC_TAH is not set
 +# CONFIG_IBM_NEW_EMAC_EMAC4 is not set
 +# CONFIG_B44 is not set
-+CONFIG_FEC=y
-+CONFIG_FEC2=y
 +# CONFIG_NETDEV_1000 is not set
 +# CONFIG_NETDEV_10000 is not set
 +
@@ -428,8 +365,11 @@ diff -Naurp linux-2.6.25-rc1/arch/m68knommu/configs/m5275evb_defconfig linux-2.6
 +# CONFIG_PPP_MPPE is not set
 +# CONFIG_PPPOE is not set
 +# CONFIG_PPPOL2TP is not set
-+# CONFIG_SLIP is not set
++CONFIG_SLIP=y
++CONFIG_SLIP_COMPRESSED=y
 +CONFIG_SLHC=y
++# CONFIG_SLIP_SMART is not set
++# CONFIG_SLIP_MODE_SLIP6 is not set
 +# CONFIG_NETCONSOLE is not set
 +# CONFIG_NETPOLL is not set
 +# CONFIG_NET_POLL_CONTROLLER is not set
@@ -439,7 +379,27 @@ diff -Naurp linux-2.6.25-rc1/arch/m68knommu/configs/m5275evb_defconfig linux-2.6
 +#
 +# Input device support
 +#
-+# CONFIG_INPUT is not set
++CONFIG_INPUT=y
++# CONFIG_INPUT_FF_MEMLESS is not set
++# CONFIG_INPUT_POLLDEV is not set
++
++#
++# Userland interfaces
++#
++# CONFIG_INPUT_MOUSEDEV is not set
++# CONFIG_INPUT_JOYDEV is not set
++# CONFIG_INPUT_EVDEV is not set
++# CONFIG_INPUT_EVBUG is not set
++
++#
++# Input Device Drivers
++#
++# CONFIG_INPUT_KEYBOARD is not set
++# CONFIG_INPUT_MOUSE is not set
++# CONFIG_INPUT_JOYSTICK is not set
++# CONFIG_INPUT_TABLET is not set
++# CONFIG_INPUT_TOUCHSCREEN is not set
++# CONFIG_INPUT_MISC is not set
 +
 +#
 +# Hardware I/O ports
@@ -468,7 +428,7 @@ diff -Naurp linux-2.6.25-rc1/arch/m68knommu/configs/m5275evb_defconfig linux-2.6
 +CONFIG_SERIAL_MCF=y
 +CONFIG_SERIAL_MCF_BAUDRATE=19200
 +CONFIG_SERIAL_MCF_CONSOLE=y
-+# CONFIG_UNIX98_PTYS is not set
++CONFIG_UNIX98_PTYS=y
 +CONFIG_LEGACY_PTYS=y
 +CONFIG_LEGACY_PTY_COUNT=256
 +# CONFIG_IPMI_HANDLER is not set
@@ -529,6 +489,7 @@ diff -Naurp linux-2.6.25-rc1/arch/m68knommu/configs/m5275evb_defconfig linux-2.6
 +# Sound
 +#
 +# CONFIG_SOUND is not set
++# CONFIG_HID_SUPPORT is not set
 +# CONFIG_USB_SUPPORT is not set
 +# CONFIG_MMC is not set
 +# CONFIG_MEMSTICK is not set
@@ -589,7 +550,6 @@ diff -Naurp linux-2.6.25-rc1/arch/m68knommu/configs/m5275evb_defconfig linux-2.6
 +# CONFIG_BEFS_FS is not set
 +# CONFIG_BFS_FS is not set
 +# CONFIG_EFS_FS is not set
-+# CONFIG_JFFS2_FS is not set
 +# CONFIG_CRAMFS is not set
 +# CONFIG_VXFS_FS is not set
 +# CONFIG_MINIX_FS is not set
@@ -598,14 +558,7 @@ diff -Naurp linux-2.6.25-rc1/arch/m68knommu/configs/m5275evb_defconfig linux-2.6
 +CONFIG_ROMFS_FS=y
 +# CONFIG_SYSV_FS is not set
 +# CONFIG_UFS_FS is not set
-+CONFIG_NETWORK_FILESYSTEMS=y
-+# CONFIG_NFS_FS is not set
-+# CONFIG_NFSD is not set
-+# CONFIG_SMB_FS is not set
-+# CONFIG_CIFS is not set
-+# CONFIG_NCP_FS is not set
-+# CONFIG_CODA_FS is not set
-+# CONFIG_AFS_FS is not set
++# CONFIG_NETWORK_FILESYSTEMS is not set
 +
 +#
 +# Partition Types
@@ -629,7 +582,7 @@ diff -Naurp linux-2.6.25-rc1/arch/m68knommu/configs/m5275evb_defconfig linux-2.6
 +# CONFIG_DEBUG_KERNEL is not set
 +# CONFIG_DEBUG_BUGVERBOSE is not set
 +# CONFIG_SAMPLES is not set
-+# CONFIG_FULLDEBUG is not set
++CONFIG_FULLDEBUG=y
 +# CONFIG_HIGHPROFILE is not set
 +# CONFIG_BOOTPARAM is not set
 +# CONFIG_NO_KERNEL_MSG is not set
