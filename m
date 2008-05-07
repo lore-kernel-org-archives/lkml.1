@@ -1,65 +1,527 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758346AbYEGBYI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758208AbYEGBZ7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758346AbYEGBYI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 21:24:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754571AbYEGBXv
+	id S1758208AbYEGBZ7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 21:25:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755146AbYEGBZu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 21:23:51 -0400
-Received: from mga11.intel.com ([192.55.52.93]:19052 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753252AbYEGBXu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 21:23:50 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.27,445,1204531200"; 
-   d="scan'208";a="561638508"
-Subject: Re: [PATCH] bay: Exit if notify handler cannot be installed
-From: Shaohua Li <shaohua.li@intel.com>
-To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Cc: Holger Macht <hmacht@suse.de>, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org,
-       "Accardi, Kristen C" <kristen.c.accardi@intel.com>
-In-Reply-To: <20080507011354.GA8163@khazad-dum.debian.net>
-References: <20080505202508.GA3690@homac> <20080506091522.GA4378@homac>
-	 <1210065811.12668.1.camel@sli10-desk.sh.intel.com>
-	 <20080506151846.GA22828@khazad-dum.debian.net>
-	 <1210122279.27316.2.camel@sli10-desk.sh.intel.com>
-	 <20080507011354.GA8163@khazad-dum.debian.net>
-Content-Type: text/plain
-Date: Wed, 07 May 2008 09:27:38 +0800
-Message-Id: <1210123658.30944.6.camel@sli10-desk.sh.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 6 May 2008 21:25:50 -0400
+Received: from rex.securecomputing.com ([203.24.151.4]:57914 "EHLO
+	snapgear.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753970AbYEGBZr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 May 2008 21:25:47 -0400
+Date: Wed, 7 May 2008 11:25:32 +1000
+From: Greg Ungerer <gerg@snapgear.com>
+Message-Id: <200805070125.m471PWDY023219@goober>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH 2/6] m68knommu: defconfig for M5249EVB board
+Cc: gerg@uclinux.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-05-06 at 22:13 -0300, Henrique de Moraes Holschuh wrote:
-> On Wed, 07 May 2008, Shaohua Li wrote:
-> > On Tue, 2008-05-06 at 12:18 -0300, Henrique de Moraes Holschuh wrote:
-> > > On Tue, 06 May 2008, Shaohua Li wrote:
-> > > > The bay driver is duplicated with libata, I thought we should delete it.
-> > > > See bug http://bugzilla.kernel.org/show_bug.cgi?id=9526
-> > > 
-> > > The bay driver is currently useless, BUT it should handle a lot of stuff
-> > > libata won't, such as bay batteries, bay floppies, and anything else in
-> > > a bay that is not a hard disk.
-> > > 
-> > > The fact that the driver currently looks only after disks is just a bug.
-> > > It should, in fact, bind to any ejectable device not already handled by
-> > > a different driver.
-> > Isn't this the job of acpi dock driver?
-> 
-> No, but I actually fail to see why do we even care about the difference
-> from a dock to a bay.  Dock *could* be made to handle both.
-It appears some systems haven't a dock but a bay. In a thinkpad, you
-could hotplug cdrom/battery/harddisk in the slot of cdrom, but it's not
-a dock. libata should handle it well (but it doesn't handle _EJ0
-currently, I have a patch in above bugzilla).
+Add a defconfig for the Freescale M5249EVB board.
 
-But you are right, acpi dock driver should be extended to support bay.
-I'll give it a try.
+Signed-off-by: Greg Ungerer <gerg@uclinux.org>
+---
 
-Thanks,
-Shaohua
-
+diff -Naurp linux-2.6.25-rc1/arch/m68knommu/configs/m5249evb_defconfig linux-2.6.25-rc1-uc0/arch/m68knommu/configs/m5249evb_defconfig
+--- linux-2.6.25-rc1/arch/m68knommu/configs/m5249evb_defconfig	1970-01-01 10:00:00.000000000 +1000
++++ linux-2.6.25-rc1-uc0/arch/m68knommu/configs/m5249evb_defconfig	2008-05-07 11:01:22.000000000 +1000
+@@ -0,0 +1,497 @@
++#
++# Automatically generated make config: don't edit
++# Linux kernel version: 2.6.26-rc1
++#
++CONFIG_M68K=y
++# CONFIG_MMU is not set
++# CONFIG_FPU is not set
++CONFIG_ZONE_DMA=y
++CONFIG_RWSEM_GENERIC_SPINLOCK=y
++# CONFIG_RWSEM_XCHGADD_ALGORITHM is not set
++# CONFIG_ARCH_HAS_ILOG2_U32 is not set
++# CONFIG_ARCH_HAS_ILOG2_U64 is not set
++CONFIG_GENERIC_FIND_NEXT_BIT=y
++CONFIG_GENERIC_HWEIGHT=y
++CONFIG_GENERIC_HARDIRQS=y
++CONFIG_GENERIC_CALIBRATE_DELAY=y
++CONFIG_GENERIC_TIME=y
++CONFIG_TIME_LOW_RES=y
++CONFIG_NO_IOPORT=y
++CONFIG_ARCH_SUPPORTS_AOUT=y
++CONFIG_DEFCONFIG_LIST="/lib/modules/$UNAME_RELEASE/.config"
++
++#
++# General setup
++#
++CONFIG_EXPERIMENTAL=y
++CONFIG_BROKEN_ON_SMP=y
++CONFIG_INIT_ENV_ARG_LIMIT=32
++CONFIG_LOCALVERSION=""
++CONFIG_LOCALVERSION_AUTO=y
++# CONFIG_SYSVIPC is not set
++# CONFIG_BSD_PROCESS_ACCT is not set
++# CONFIG_IKCONFIG is not set
++CONFIG_LOG_BUF_SHIFT=14
++# CONFIG_CGROUPS is not set
++# CONFIG_GROUP_SCHED is not set
++# CONFIG_SYSFS_DEPRECATED_V2 is not set
++# CONFIG_RELAY is not set
++# CONFIG_NAMESPACES is not set
++# CONFIG_BLK_DEV_INITRD is not set
++# CONFIG_CC_OPTIMIZE_FOR_SIZE is not set
++CONFIG_SYSCTL=y
++CONFIG_EMBEDDED=y
++# CONFIG_UID16 is not set
++# CONFIG_SYSCTL_SYSCALL is not set
++# CONFIG_KALLSYMS is not set
++# CONFIG_HOTPLUG is not set
++CONFIG_PRINTK=y
++CONFIG_BUG=y
++CONFIG_ELF_CORE=y
++# CONFIG_COMPAT_BRK is not set
++CONFIG_BASE_FULL=y
++# CONFIG_FUTEX is not set
++# CONFIG_EPOLL is not set
++# CONFIG_SIGNALFD is not set
++# CONFIG_TIMERFD is not set
++# CONFIG_EVENTFD is not set
++# CONFIG_VM_EVENT_COUNTERS is not set
++CONFIG_SLAB=y
++# CONFIG_SLUB is not set
++# CONFIG_SLOB is not set
++# CONFIG_PROFILING is not set
++# CONFIG_MARKERS is not set
++# CONFIG_HAVE_OPROFILE is not set
++# CONFIG_HAVE_KPROBES is not set
++# CONFIG_HAVE_KRETPROBES is not set
++# CONFIG_HAVE_DMA_ATTRS is not set
++CONFIG_SLABINFO=y
++CONFIG_TINY_SHMEM=y
++CONFIG_BASE_SMALL=0
++CONFIG_MODULES=y
++CONFIG_MODULE_UNLOAD=y
++# CONFIG_MODULE_FORCE_UNLOAD is not set
++# CONFIG_MODVERSIONS is not set
++# CONFIG_MODULE_SRCVERSION_ALL is not set
++# CONFIG_KMOD is not set
++CONFIG_BLOCK=y
++# CONFIG_LBD is not set
++# CONFIG_BLK_DEV_IO_TRACE is not set
++# CONFIG_LSF is not set
++# CONFIG_BLK_DEV_BSG is not set
++
++#
++# IO Schedulers
++#
++CONFIG_IOSCHED_NOOP=y
++# CONFIG_IOSCHED_AS is not set
++# CONFIG_IOSCHED_DEADLINE is not set
++# CONFIG_IOSCHED_CFQ is not set
++# CONFIG_DEFAULT_AS is not set
++# CONFIG_DEFAULT_DEADLINE is not set
++# CONFIG_DEFAULT_CFQ is not set
++CONFIG_DEFAULT_NOOP=y
++CONFIG_DEFAULT_IOSCHED="noop"
++CONFIG_CLASSIC_RCU=y
++
++#
++# Processor type and features
++#
++# CONFIG_M68328 is not set
++# CONFIG_M68EZ328 is not set
++# CONFIG_M68VZ328 is not set
++# CONFIG_M68360 is not set
++# CONFIG_M5206 is not set
++# CONFIG_M5206e is not set
++# CONFIG_M520x is not set
++# CONFIG_M523x is not set
++CONFIG_M5249=y
++# CONFIG_M5271 is not set
++# CONFIG_M5272 is not set
++# CONFIG_M5275 is not set
++# CONFIG_M528x is not set
++# CONFIG_M5307 is not set
++# CONFIG_M532x is not set
++# CONFIG_M5407 is not set
++CONFIG_COLDFIRE=y
++CONFIG_CLOCK_SET=y
++CONFIG_CLOCK_FREQ=140000000
++CONFIG_CLOCK_DIV=2
++
++#
++# Platform
++#
++CONFIG_M5249C3=y
++CONFIG_FREESCALE=y
++CONFIG_4KSTACKS=y
++CONFIG_HZ=100
++
++#
++# RAM configuration
++#
++CONFIG_RAMBASE=0x00000000
++CONFIG_RAMSIZE=0x00800000
++CONFIG_VECTORBASE=0x00000000
++CONFIG_KERNELBASE=0x00020000
++CONFIG_RAMAUTOBIT=y
++# CONFIG_RAM8BIT is not set
++# CONFIG_RAM16BIT is not set
++# CONFIG_RAM32BIT is not set
++
++#
++# ROM configuration
++#
++# CONFIG_ROM is not set
++CONFIG_RAMKERNEL=y
++# CONFIG_ROMKERNEL is not set
++CONFIG_SELECT_MEMORY_MODEL=y
++CONFIG_FLATMEM_MANUAL=y
++# CONFIG_DISCONTIGMEM_MANUAL is not set
++# CONFIG_SPARSEMEM_MANUAL is not set
++CONFIG_FLATMEM=y
++CONFIG_FLAT_NODE_MEM_MAP=y
++# CONFIG_SPARSEMEM_STATIC is not set
++# CONFIG_SPARSEMEM_VMEMMAP_ENABLE is not set
++CONFIG_PAGEFLAGS_EXTENDED=y
++CONFIG_SPLIT_PTLOCK_CPUS=4
++# CONFIG_RESOURCES_64BIT is not set
++CONFIG_ZONE_DMA_FLAG=1
++CONFIG_VIRT_TO_BUS=y
++CONFIG_ISA_DMA_API=y
++
++#
++# Bus options (PCI, PCMCIA, EISA, MCA, ISA)
++#
++# CONFIG_PCI is not set
++# CONFIG_ARCH_SUPPORTS_MSI is not set
++
++#
++# Executable file formats
++#
++CONFIG_BINFMT_FLAT=y
++# CONFIG_BINFMT_ZFLAT is not set
++# CONFIG_BINFMT_SHARED_FLAT is not set
++# CONFIG_BINFMT_AOUT is not set
++# CONFIG_BINFMT_MISC is not set
++
++#
++# Power management options
++#
++# CONFIG_PM is not set
++
++#
++# Networking
++#
++# CONFIG_NET is not set
++
++#
++# Device Drivers
++#
++
++#
++# Generic Driver Options
++#
++CONFIG_STANDALONE=y
++CONFIG_PREVENT_FIRMWARE_BUILD=y
++# CONFIG_SYS_HYPERVISOR is not set
++CONFIG_MTD=y
++# CONFIG_MTD_DEBUG is not set
++# CONFIG_MTD_CONCAT is not set
++CONFIG_MTD_PARTITIONS=y
++# CONFIG_MTD_REDBOOT_PARTS is not set
++# CONFIG_MTD_CMDLINE_PARTS is not set
++# CONFIG_MTD_AR7_PARTS is not set
++
++#
++# User Modules And Translation Layers
++#
++CONFIG_MTD_CHAR=y
++CONFIG_MTD_BLKDEVS=y
++CONFIG_MTD_BLOCK=y
++# CONFIG_FTL is not set
++# CONFIG_NFTL is not set
++# CONFIG_INFTL is not set
++# CONFIG_RFD_FTL is not set
++# CONFIG_SSFDC is not set
++# CONFIG_MTD_OOPS is not set
++
++#
++# RAM/ROM/Flash chip drivers
++#
++# CONFIG_MTD_CFI is not set
++# CONFIG_MTD_JEDECPROBE is not set
++CONFIG_MTD_MAP_BANK_WIDTH_1=y
++CONFIG_MTD_MAP_BANK_WIDTH_2=y
++CONFIG_MTD_MAP_BANK_WIDTH_4=y
++# CONFIG_MTD_MAP_BANK_WIDTH_8 is not set
++# CONFIG_MTD_MAP_BANK_WIDTH_16 is not set
++# CONFIG_MTD_MAP_BANK_WIDTH_32 is not set
++CONFIG_MTD_CFI_I1=y
++CONFIG_MTD_CFI_I2=y
++# CONFIG_MTD_CFI_I4 is not set
++# CONFIG_MTD_CFI_I8 is not set
++CONFIG_MTD_RAM=y
++# CONFIG_MTD_ROM is not set
++# CONFIG_MTD_ABSENT is not set
++
++#
++# Mapping drivers for chip access
++#
++# CONFIG_MTD_COMPLEX_MAPPINGS is not set
++CONFIG_MTD_UCLINUX=y
++# CONFIG_MTD_PLATRAM is not set
++
++#
++# Self-contained MTD device drivers
++#
++# CONFIG_MTD_SLRAM is not set
++# CONFIG_MTD_PHRAM is not set
++# CONFIG_MTD_MTDRAM is not set
++# CONFIG_MTD_BLOCK2MTD is not set
++
++#
++# Disk-On-Chip Device Drivers
++#
++# CONFIG_MTD_DOC2000 is not set
++# CONFIG_MTD_DOC2001 is not set
++# CONFIG_MTD_DOC2001PLUS is not set
++# CONFIG_MTD_NAND is not set
++# CONFIG_MTD_ONENAND is not set
++
++#
++# UBI - Unsorted block images
++#
++# CONFIG_MTD_UBI is not set
++# CONFIG_PARPORT is not set
++CONFIG_BLK_DEV=y
++# CONFIG_BLK_DEV_COW_COMMON is not set
++# CONFIG_BLK_DEV_LOOP is not set
++CONFIG_BLK_DEV_RAM=y
++CONFIG_BLK_DEV_RAM_COUNT=16
++CONFIG_BLK_DEV_RAM_SIZE=4096
++# CONFIG_BLK_DEV_XIP is not set
++# CONFIG_CDROM_PKTCDVD is not set
++CONFIG_MISC_DEVICES=y
++# CONFIG_EEPROM_93CX6 is not set
++# CONFIG_ENCLOSURE_SERVICES is not set
++CONFIG_HAVE_IDE=y
++# CONFIG_IDE is not set
++
++#
++# SCSI device support
++#
++# CONFIG_RAID_ATTRS is not set
++# CONFIG_SCSI is not set
++# CONFIG_SCSI_DMA is not set
++# CONFIG_SCSI_NETLINK is not set
++# CONFIG_MD is not set
++# CONFIG_PHONE is not set
++
++#
++# Input device support
++#
++# CONFIG_INPUT is not set
++
++#
++# Hardware I/O ports
++#
++# CONFIG_SERIO is not set
++# CONFIG_GAMEPORT is not set
++
++#
++# Character devices
++#
++# CONFIG_VT is not set
++# CONFIG_DEVKMEM is not set
++# CONFIG_SERIAL_NONSTANDARD is not set
++
++#
++# Serial drivers
++#
++# CONFIG_SERIAL_8250 is not set
++
++#
++# Non-8250 serial port support
++#
++CONFIG_SERIAL_CORE=y
++CONFIG_SERIAL_CORE_CONSOLE=y
++# CONFIG_SERIAL_COLDFIRE is not set
++CONFIG_SERIAL_MCF=y
++CONFIG_SERIAL_MCF_BAUDRATE=19200
++CONFIG_SERIAL_MCF_CONSOLE=y
++# CONFIG_UNIX98_PTYS is not set
++CONFIG_LEGACY_PTYS=y
++CONFIG_LEGACY_PTY_COUNT=256
++# CONFIG_IPMI_HANDLER is not set
++# CONFIG_HW_RANDOM is not set
++# CONFIG_GEN_RTC is not set
++# CONFIG_R3964 is not set
++# CONFIG_RAW_DRIVER is not set
++# CONFIG_TCG_TPM is not set
++# CONFIG_I2C is not set
++# CONFIG_SPI is not set
++# CONFIG_W1 is not set
++# CONFIG_POWER_SUPPLY is not set
++# CONFIG_HWMON is not set
++# CONFIG_THERMAL is not set
++# CONFIG_WATCHDOG is not set
++
++#
++# Sonics Silicon Backplane
++#
++CONFIG_SSB_POSSIBLE=y
++# CONFIG_SSB is not set
++
++#
++# Multifunction device drivers
++#
++# CONFIG_MFD_SM501 is not set
++# CONFIG_HTC_PASIC3 is not set
++
++#
++# Multimedia devices
++#
++
++#
++# Multimedia core support
++#
++# CONFIG_VIDEO_DEV is not set
++
++#
++# Multimedia drivers
++#
++# CONFIG_DAB is not set
++
++#
++# Graphics support
++#
++# CONFIG_VGASTATE is not set
++# CONFIG_VIDEO_OUTPUT_CONTROL is not set
++# CONFIG_FB is not set
++# CONFIG_BACKLIGHT_LCD_SUPPORT is not set
++
++#
++# Display device support
++#
++# CONFIG_DISPLAY_SUPPORT is not set
++
++#
++# Sound
++#
++# CONFIG_SOUND is not set
++# CONFIG_USB_SUPPORT is not set
++# CONFIG_MMC is not set
++# CONFIG_MEMSTICK is not set
++# CONFIG_NEW_LEDS is not set
++# CONFIG_ACCESSIBILITY is not set
++# CONFIG_RTC_CLASS is not set
++# CONFIG_UIO is not set
++
++#
++# File systems
++#
++CONFIG_EXT2_FS=y
++# CONFIG_EXT2_FS_XATTR is not set
++# CONFIG_EXT3_FS is not set
++# CONFIG_EXT4DEV_FS is not set
++# CONFIG_REISERFS_FS is not set
++# CONFIG_JFS_FS is not set
++# CONFIG_FS_POSIX_ACL is not set
++# CONFIG_XFS_FS is not set
++# CONFIG_DNOTIFY is not set
++# CONFIG_INOTIFY is not set
++# CONFIG_QUOTA is not set
++# CONFIG_AUTOFS_FS is not set
++# CONFIG_AUTOFS4_FS is not set
++# CONFIG_FUSE_FS is not set
++
++#
++# CD-ROM/DVD Filesystems
++#
++# CONFIG_ISO9660_FS is not set
++# CONFIG_UDF_FS is not set
++
++#
++# DOS/FAT/NT Filesystems
++#
++# CONFIG_MSDOS_FS is not set
++# CONFIG_VFAT_FS is not set
++# CONFIG_NTFS_FS is not set
++
++#
++# Pseudo filesystems
++#
++CONFIG_PROC_FS=y
++CONFIG_PROC_SYSCTL=y
++CONFIG_SYSFS=y
++# CONFIG_TMPFS is not set
++# CONFIG_HUGETLB_PAGE is not set
++# CONFIG_CONFIGFS_FS is not set
++
++#
++# Miscellaneous filesystems
++#
++# CONFIG_ADFS_FS is not set
++# CONFIG_AFFS_FS is not set
++# CONFIG_HFS_FS is not set
++# CONFIG_HFSPLUS_FS is not set
++# CONFIG_BEFS_FS is not set
++# CONFIG_BFS_FS is not set
++# CONFIG_EFS_FS is not set
++# CONFIG_JFFS2_FS is not set
++# CONFIG_CRAMFS is not set
++# CONFIG_VXFS_FS is not set
++# CONFIG_MINIX_FS is not set
++# CONFIG_HPFS_FS is not set
++# CONFIG_QNX4FS_FS is not set
++CONFIG_ROMFS_FS=y
++# CONFIG_SYSV_FS is not set
++# CONFIG_UFS_FS is not set
++
++#
++# Partition Types
++#
++# CONFIG_PARTITION_ADVANCED is not set
++CONFIG_MSDOS_PARTITION=y
++# CONFIG_NLS is not set
++
++#
++# Kernel hacking
++#
++# CONFIG_PRINTK_TIME is not set
++CONFIG_ENABLE_WARN_DEPRECATED=y
++CONFIG_ENABLE_MUST_CHECK=y
++CONFIG_FRAME_WARN=1024
++# CONFIG_MAGIC_SYSRQ is not set
++# CONFIG_UNUSED_SYMBOLS is not set
++# CONFIG_DEBUG_FS is not set
++# CONFIG_HEADERS_CHECK is not set
++# CONFIG_DEBUG_KERNEL is not set
++# CONFIG_DEBUG_BUGVERBOSE is not set
++# CONFIG_SAMPLES is not set
++# CONFIG_FULLDEBUG is not set
++# CONFIG_HIGHPROFILE is not set
++# CONFIG_BOOTPARAM is not set
++# CONFIG_NO_KERNEL_MSG is not set
++# CONFIG_BDM_DISABLE is not set
++
++#
++# Security options
++#
++# CONFIG_KEYS is not set
++# CONFIG_SECURITY is not set
++# CONFIG_SECURITY_FILE_CAPABILITIES is not set
++# CONFIG_CRYPTO is not set
++
++#
++# Library routines
++#
++# CONFIG_GENERIC_FIND_FIRST_BIT is not set
++# CONFIG_CRC_CCITT is not set
++# CONFIG_CRC16 is not set
++# CONFIG_CRC_ITU_T is not set
++# CONFIG_CRC32 is not set
++# CONFIG_CRC7 is not set
++# CONFIG_LIBCRC32C is not set
++CONFIG_HAS_IOMEM=y
++CONFIG_HAS_DMA=y
