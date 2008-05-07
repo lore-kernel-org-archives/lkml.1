@@ -1,85 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757948AbYEGMQx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756900AbYEGMVf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757948AbYEGMQx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 08:16:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754237AbYEGMQo
+	id S1756900AbYEGMVf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 08:21:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752216AbYEGMVX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 08:16:44 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:60184 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753990AbYEGMQn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 08:16:43 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Pavel Machek <pavel@suse.cz>
-Subject: Re: [RFC][PATCH 1/2] Freezer: Introduce PF_FREEZER_NOSIG
-Date: Wed, 7 May 2008 14:16:47 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: pm list <linux-pm@lists.linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Len Brown <lenb@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
-       Matt Helsley <matthltc@us.ibm.com>, Cedric Le Goater <clg@fr.ibm.com>,
-       Paul Menage <menage@google.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Alan Stern <stern@rowland.harvard.edu>
-References: <200805070003.56387.rjw@sisk.pl> <200805070005.20403.rjw@sisk.pl> <20080507093621.GF13858@elf.ucw.cz>
-In-Reply-To: <20080507093621.GF13858@elf.ucw.cz>
+	Wed, 7 May 2008 08:21:23 -0400
+Received: from smtp-out01.alice-dsl.net ([88.44.60.11]:20526 "EHLO
+	smtp-out01.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750915AbYEGMVW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 May 2008 08:21:22 -0400
+To: Matthew Wilcox <matthew@wil.cx>
+Cc: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
+       Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Alexander Viro <viro@ftp.linux.org.uk>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: AIM7 40% regression with 2.6.26-rc1
+From: Andi Kleen <andi@firstfloor.org>
+References: <1210052904.3453.30.camel@ymzhang>
+	<20080506114449.GC32591@elte.hu> <1210126286.3453.37.camel@ymzhang>
+	<1210131712.3453.43.camel@ymzhang> <87lk2mbcqp.fsf@basil.nowhere.org>
+	<20080507114643.GR19219@parisc-linux.org>
+Date: Wed, 07 May 2008 14:21:14 +0200
+In-Reply-To: <20080507114643.GR19219@parisc-linux.org> (Matthew Wilcox's message of "Wed, 7 May 2008 05:46:44 -0600")
+Message-ID: <87hcdab8zp.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200805071416.48180.rjw@sisk.pl>
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 07 May 2008 12:14:21.0933 (UTC) FILETIME=[E1E269D0:01C8B03B]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, 7 of May 2008, Pavel Machek wrote:
-> Hi!
+Matthew Wilcox <matthew@wil.cx> writes:
 
-Hi,
+> On Wed, May 07, 2008 at 01:00:14PM +0200, Andi Kleen wrote:
+>> "Zhang, Yanmin" <yanmin_zhang@linux.intel.com> writes:
+>> > 3) Caller of lcok_kernel are sys_fcntl/vfs_ioctl/tty_release/chrdev_open.
+>> 
+>> I have an older patchkit that introduced unlocked_fnctl for some cases. It was 
+>> briefly in mm but then dropped. Sounds like it is worth resurrecting?
+>
+> Not sure what you're talking about here, Andi.  The only lock_kernel in
+> fcntl.c is around the call to ->fasync.  And Yanmin's traces don't show
+> fasync as being a culprit, just the paths in locks.c
 
-> > From: Rafael J. Wysocki <rjw@sisk.pl>
-> > 
-> > The freezer currently attempts to distinguish kernel threads from
-> > user space tasks by checking if their mm pointer is unset and it
-> > does not send fake signals to kernel threads.  However, there are
-> > kernel threads, mostly related to networking, that behave like
-> > user space tasks and may want to be sent a fake signal to be frozen.
-> > 
-> > Introduce the new process flag PF_FREEZER_NOSIG that will be set
-> > by default for all kernel threads and make the freezer only send
-> > fake signals to the tasks having PF_FREEZER_NOSIG unset.  Provide
-> > the set_freezable_with_signal() function to be called by the kernel
-> > threads that want to be sent a fake signal for freezing.
-> > 
-> > This patch should not change the freezer's observable behavior.
-> > 
-> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> 
-> ACK.
+I was talking about fasync.
 
-Thanks!
+>> -Andi (who BTW never quite understood why BKL is a semaphore now and not
+>> a spinlock?)
+>
+> See git commit 6478d8800b75253b2a934ddcb734e13ade023ad0
 
-> > -static int has_mm(struct task_struct *p)
-> > +static inline bool should_send_signal(struct task_struct *p)
-> >  {
-> > -	return (p->mm && !(p->flags & PF_BORROWED_MM));
-> > +	return !(current->flags & PF_FREEZER_NOSIG);
-> >  }
-> >
-> 
-> Note that we used to tell kernel threads by ->mm, and now you assume
-> that anything created by ktrheadd is kernel thread, ->mm or not.
-> 
-> I'm not sure if those can differ (->mm = NULL somewhere? Or ->mm =
-> something somewhere else?).
+I am aware of that commit, thank you, but the comment was refering to that it 
+came with about zero justification why it was done. For the left over BKL 
+regions which are relatively short surely a spinlock would be better than a 
+semaphore? So PREEMPT_BKL should have been removed, not !PREEMPT_BKL.
 
-It's done in analogy with PF_NOFREEZE, ie. everything that has
-set PF_NOFREEZE by default also has PF_FREEZER_NOSIG set by default, so I
-really don't expect any problems here.
+If that was done all these regressions would disappear I bet. That said
+of course it is still better to actually fix the lock_kernel()s, but shorter
+time just fixing lock_kernel again would be easier.
 
-> I guess this should go to -mm for a long test...
+-Andi
 
-Yes, it should.
-
-Thanks,
-Rafael
