@@ -1,85 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762164AbYEGGQl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762404AbYEGGR1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762164AbYEGGQl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 02:16:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755056AbYEGGQ1
+	id S1762404AbYEGGR1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 02:17:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755354AbYEGGRB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 02:16:27 -0400
-Received: from mail.gmx.net ([213.165.64.20]:46352 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1754689AbYEGGQZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 02:16:25 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX18scFkgwk8sWDtZZo4WC8vWvtSVpwy9SkQn9NHYzR
-	ItKAT9XujE4kb7
-Subject: Re: WARNING: at drivers/base/sys.c:183 sysdev_driver_register+0x7a
-From: Mike Galbraith <efault@gmx.de>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Ingo Molnar <mingo@elte.hu>, Len Brown <lenb@kernel.org>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <200805070039.20120.rjw@sisk.pl>
-References: <20080422075357.GA15651@elte.hu>
-	 <1208855066.4695.17.camel@marge.simson.net>
-	 <200805070039.20120.rjw@sisk.pl>
-Content-Type: text/plain
-Date: Wed, 07 May 2008 08:16:23 +0200
-Message-Id: <1210140983.5376.2.camel@marge.simson.net>
+	Wed, 7 May 2008 02:17:01 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:39525 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756099AbYEGGQ6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 May 2008 02:16:58 -0400
+Date: Tue, 6 May 2008 23:11:14 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jean Delvare <khali@linux-fr.org>
+Cc: djwong@us.ibm.com, mhoffman@lightlink.com, linux-kernel@vger.kernel.org,
+       lm-sensors@lm-sensors.org
+Subject: Re: [resend] [PATCH v2] ibmaem: New driver for  power/energy meters
+ in IBM System X hardware
+Message-Id: <20080506231114.d5a0b6e7.akpm@linux-foundation.org>
+In-Reply-To: <20080507080105.5484c58a@hyperion.delvare>
+References: <20080503045558.GJ16078@tree.beaverton.ibm.com>
+	<20080505135621.66809b0e.akpm@linux-foundation.org>
+	<20080505230440.GE16404@tree.beaverton.ibm.com>
+	<20080506140433.0fa6e68e.akpm@linux-foundation.org>
+	<20080506223812.GF16404@tree.beaverton.ibm.com>
+	<20080506173607.71eb7257.akpm@linux-foundation.org>
+	<20080507080105.5484c58a@hyperion.delvare>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Wed, 2008-05-07 at 00:39 +0200, Rafael J. Wysocki wrote:
-> On Tuesday, 22 of April 2008, Mike Galbraith wrote:
+On Wed, 7 May 2008 08:01:05 +0200 Jean Delvare <khali@linux-fr.org> wrote:
+
+> On Tue, 6 May 2008 17:36:07 -0700, Andrew Morton wrote:
+> > A checkpatch version which you might not have says
 > > 
-> > On Tue, 2008-04-22 at 09:53 +0200, Ingo Molnar wrote:
-> > > hi Len,
-> > > 
-> > > randconfig boot testing found this new debug warning message in the 
-> > > syslog:
+> > WARNING: consider using strict_strtol in preference to simple_strtol
+> > #1015: FILE: drivers/hwmon/ibmaem.c:918:
+> > +       int temp = simple_strtol(buf, NULL, 10); \
 > > 
-> > Ditto with Q6600 and v2.6.25-3410-g8075014.
+> > total: 0 errors, 1 warnings, 1221 lines checked
+> > 
+> > because the code as you have it will accept input of the form "12foo". 
+> > strict_strtol() will error on that.
 > 
-> Does it still happen with the current -git?
+> As a side note, I really wonder why this new function wasn't named just
+> strtol(), especially if the general idea is to get rid of the "simple"
+> variant after some time.
 
-No, it was fixed by:
+didn't think of doing that.
 
-commit db176c6ed8974fae94328ad5ac9e70b094ff22fd
-Author: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-Date:   Wed May 7 04:02:53 2008 +0900
+But:
 
-    Fix bogus warning in sysdev_driver_register()
-    
-            if ((drv->entry.next != drv->entry.prev) ||
-                (drv->entry.next != NULL)) {
-    
-    warns list_empty(&drv->entry).
-    
-    Signed-off-by: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-    Cc: Greg KH <gregkh@suse.de>
-    Cc: Len Brown <lenb@kernel.org>
-    [ Version 2 totally redone based on suggestions from Linus & Greg ]
-    Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+y:/home/akpm> cat t.c
+#include <stdlib.h>
+#include <stdio.h>
 
-diff --git a/drivers/base/sys.c b/drivers/base/sys.c
-index 4fbb56b..358bb0b 100644
---- a/drivers/base/sys.c
-+++ b/drivers/base/sys.c
-@@ -175,8 +175,7 @@ int sysdev_driver_register(struct sysdev_class *cls, struct sysdev_driver *drv)
- 	}
- 
- 	/* Check whether this driver has already been added to a class. */
--	if ((drv->entry.next != drv->entry.prev) ||
--	    (drv->entry.next != NULL)) {
-+	if (drv->entry.next && !list_empty(&drv->entry)) {
- 		printk(KERN_WARNING "sysdev: class %s: driver (%p) has already"
- 			" been registered to a class, something is wrong, but "
- 			"will forge on!\n", cls->name, drv);
+main()
+{
+        unsigned long u = strtoul("12foo", 0, 10);
+        printf("%lu\n", u);
+}
+y:/home/akpm> gcc t.c
+y:/home/akpm> ./a.out
+12
 
 
-
-
+strtoul() has different behaviour.
