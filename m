@@ -1,47 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759321AbYEGCLd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759955AbYEGCMd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759321AbYEGCLd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 22:11:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754040AbYEGCLX
+	id S1759955AbYEGCMd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 22:12:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752711AbYEGCMZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 22:11:23 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:36233 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754036AbYEGCLW (ORCPT
+	Tue, 6 May 2008 22:12:25 -0400
+Received: from mga10.intel.com ([192.55.52.92]:20637 "EHLO
+	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752440AbYEGCMY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 22:11:22 -0400
-Date: Tue, 6 May 2008 21:11:21 -0500
-From: Paul Jackson <pj@sgi.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: menage@google.com, lizf@cn.fujitsu.com, seto.hidetoshi@jp.fujitsu.com,
-       mingo@elte.hu, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Fix cpuset sched_relax_domain_level control file
-Message-Id: <20080506211121.e82bb51a.pj@sgi.com>
-In-Reply-To: <20080506190809.df1b9398.akpm@linux-foundation.org>
-References: <48210101.1070205@google.com>
-	<20080506183841.e1771032.akpm@linux-foundation.org>
-	<482109E5.5050204@cn.fujitsu.com>
-	<20080506204946.7754302d.pj@sgi.com>
-	<6599ad830805061851n767ff7a1qc8cb850ec98ad60d@mail.gmail.com>
-	<20080506205852.8adaa0a2.pj@sgi.com>
-	<20080506190809.df1b9398.akpm@linux-foundation.org>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
+	Tue, 6 May 2008 22:12:24 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.27,445,1204531200"; 
+   d="scan'208";a="325262154"
+Subject: Re: AIM7 40% regression with 2.6.26-rc1
+From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Matthew Wilcox <matthew@wil.cx>, LKML <linux-kernel@vger.kernel.org>,
+       Alexander Viro <viro@ftp.linux.org.uk>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20080506114449.GC32591@elte.hu>
+References: <1210052904.3453.30.camel@ymzhang>
+	 <20080506114449.GC32591@elte.hu>
+Content-Type: text/plain; charset=UTF-8
+Date: Wed, 07 May 2008 10:11:26 +0800
+Message-Id: <1210126286.3453.37.camel@ymzhang>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.21.5 (2.21.5-2.fc9) 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew wrote:
-> Paul should drop sched-devel. 
 
-I hope that refers to Paul M.
+On Tue, 2008-05-06 at 13:44 +0200, Ingo Molnar wrote:
+> * Zhang, Yanmin <yanmin_zhang@linux.intel.com> wrote:
+> 
+> > Comparing with kernel 2.6.25, ﻿AIM7 (use tmpfs) has ﻿more than 40% with 
+> > 2.6.26-rc1 on my 8-core stoakley, 16-core tigerton, and Itanium 
+> > Montecito. Bisect located below patch.
+> > 
+> > 64ac24e738823161693bf791f87adc802cf529ff is first bad commit
+> > commit 64ac24e738823161693bf791f87adc802cf529ff
+> > Author: Matthew Wilcox <matthew@wil.cx>
+> > Date:   Fri Mar 7 21:55:58 2008 -0500
+> > 
+> >     Generic semaphore implementation
+> > 
+> > After I manually reverted the patch against 2.6.26-rc1 while fixing 
+> > lots of conflictions/errors, aim7 regression became less than 2%.
+> 
+> hm, which exact semaphore would that be due to?
+> 
+> My first blind guess would be the BKL - there's not much other semaphore 
+> use left in the core kernel otherwise that would affect AIM7 normally. 
+> The VFS still makes frequent use of the BKL and AIM7 is very VFS 
+> intense. Getting rid of that BKL use from the VFS might be useful to 
+> performance anyway.
+> 
+> Could you try to check that it's indeed the BKL?
+> 
+> Easiest way to check it would be to run AIM7 it on 
+> sched-devel.git/latest and do scheduler tracing via:
+> 
+>    http://people.redhat.com/mingo/sched-devel.git/readme-tracer.txt
+Thank you guys for the quick response. I ran into many regressions with 2.6.26-rc1, but
+just reported 2 of them because I located the patches. My machine is locating the root cause
+of 30% regression of sysbench+mysql(oltp readonly) now. Bisect is not so qucik because either
+kernel hang with testing or compilation fails.
 
-If it refers to Paul J, he's missing a clue.
+Another specjbb2005 on Montvale is also under investigation.
 
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.940.382.4214
+Let me figure out how to clone your tree quickly as the network speed is very slow.
+
+One clear weird behavior of aim7 is cpu idle is 0% with 2.6.25, but is more than 50% with
+2.6.26-rc1. I have a patch to collect schedule info.
+
+> 
+> by doing:
+> 
+>    echo stacktrace > /debug/tracing/iter_ctl
+> 
+> you could get exact backtraces of all scheduling points in the trace. If 
+> the BKL's down() shows up in those traces then it's definitely the BKL 
+> that causes this. The backtraces will also tell us exactly which BKL use 
+> is the most frequent one.
+> 
+> To keep tracing overhead low on SMP i'd also suggest to only trace a 
+> single CPU, via:
+> 
+>   echo 1 > /debug/tracing/tracing_cpumask
+> 
+> 	Ingo
+
