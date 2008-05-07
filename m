@@ -1,60 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765175AbYEGSYY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760049AbYEGSYr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765175AbYEGSYY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 14:24:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755815AbYEGSYH
+	id S1760049AbYEGSYr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 14:24:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760053AbYEGSYO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 14:24:07 -0400
-Received: from 2605ds1-ynoe.1.fullrate.dk ([90.184.12.24]:36434 "EHLO
-	shrek.krogh.cc" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755161AbYEGSYF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 14:24:05 -0400
-Message-ID: <4821F3B7.2090702@krogh.cc>
-Date: Wed, 07 May 2008 20:23:51 +0200
-From: Jesper Krogh <jesper@krogh.cc>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
+	Wed, 7 May 2008 14:24:14 -0400
+Received: from aun.it.uu.se ([130.238.12.36]:61985 "EHLO aun.it.uu.se"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758829AbYEGSYL convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 May 2008 14:24:11 -0400
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: NIU - Sun Neptune 10g - Transmit timed out reset (2.6.24)
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
+Message-ID: <18465.62390.662295.733626@alkaid.it.uu.se>
+Date: Wed, 7 May 2008 20:23:50 +0200
+From: Mikael Pettersson <mikpe@it.uu.se>
+To: David Miller <davem@davemloft.net>
+Cc: mikpe@it.uu.se, sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org,
+       armin76@gentoo.org
+Subject: Re: [BUG] 2.6.26-rc1 hangs during boot on UltraSPARC 5
+In-Reply-To: <20080506.152042.91330094.davem@davemloft.net>
+References: <18464.3741.133714.308327@harpo.it.uu.se>
+	<20080506.010523.113767579.davem@davemloft.net>
+	<18464.46000.226753.230481@alkaid.it.uu.se>
+	<20080506.152042.91330094.davem@davemloft.net>
+X-Mailer: VM 7.17 under Emacs 20.7.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
+David Miller writes:
+ > From: Mikael Pettersson <mikpe@it.uu.se>
+ > Date: Tue, 6 May 2008 21:38:24 +0200
+ > 
+ > > I removed "| CON_BOOT" and got what looks like the same oops
+ > > Raúl Porcel reported earlier today (which he for some reason
+ > > sent only to the lists, not to you or me); his oops was:
+ > 
+ > I can reproduce this problem here in my t1000.
+ > 
+ > It looks like some kind of initrd regression.
+ > 
+ > Looking at the crashes, the kernel seems to be trying
+ > to dereference a physical address when peeking at the
+ > initrd instead of using a virtual one.  That's a big
+ > clue.
+ > 
+ > This patch should fix it:
+ > 
+ > commit d45100f7b69e3d9cd0cd5e956b6ac2c78d460d07
+ > Author: David S. Miller <davem@davemloft.net>
+ > Date:   Tue May 6 15:19:54 2008 -0700
+ > 
+ >     sparc64: Fix initrd regression.
+ >     
+ >     We die because we forget to convert initrd_start and
+ >     initrd_end to virtual addresses.
+ >     
+ >     Reported by Mikael Pettersson
+ >     
+ >     Signed-off-by: David S. Miller <davem@davemloft.net>
+ > 
+ > diff --git a/arch/sparc64/mm/init.c b/arch/sparc64/mm/init.c
+ > index db8e7fb..ec3e2c7 100644
+ > --- a/arch/sparc64/mm/init.c
+ > +++ b/arch/sparc64/mm/init.c
+ > @@ -771,6 +771,9 @@ static void __init find_ramdisk(unsigned long phys_base)
+ >  		initrd_end = ramdisk_image + sparc_ramdisk_size;
+ >  
+ >  		lmb_reserve(initrd_start, initrd_end);
+ > +
+ > +		initrd_start += PAGE_OFFSET;
+ > +		initrd_end += PAGE_OFFSET;
+ >  	}
+ >  #endif
+ >  }
 
-I get errors like this after a few minutes of traffic on a Sun Neptune 
-10g ethernet card. (with nice 500MB/s throughput).
+This solved my boot problem. Thanks.
 
-Then the server seems too busy with something, so it doesn't even 
-respont to a serial terminal login.
-
-May  7 16:16:33 hest kernel: [  166.948958] niu: niu_get_parent: 
-platform_type[1] port[3]
-May  7 16:16:33 hest kernel: [  166.949366] niu: 
-niu_get_and_validate_port: port[3] num_ports[2]
-May  7 16:16:33 hest kernel: [  166.949886] niu: niu_put_parent: port[3]
-.. bootup ends here ..
-May  7 17:13:54 hest kernel: [ 3670.128178] niu 0000:84:00.0: niu: eth4: 
-Transmit timed out, resetting
-May  7 17:14:04 hest kernel: [ 3680.108614] niu 0000:84:00.0: niu: eth4: 
-Transmit timed out, resetting
-May  7 17:14:14 hest kernel: [ 3690.093089] niu 0000:84:00.0: niu: eth4: 
-Transmit timed out, resetting
-May  7 17:14:19 hest kernel: [ 3695.079254] niu 0000:84:00.0: niu: eth4: 
-Transmit timed out, resetting
-May  7 17:14:24 hest kernel: [ 3700.073525] niu 0000:84:00.0: niu: eth4: 
-Transmit timed out, resetting
-May  7 17:14:29 hest kernel: [ 3705.063744] niu 0000:84:00.0: niu: eth4: 
-Transmit timed out, resetting
-May  7 17:14:34 hest kernel: [ 3710.049918] niu 0000:84:00.0: niu: eth4: 
-Transmit timed out, resetting
-
-
-Any suggestions?
-
-The system is an Ubuntu Hardy (2.6.24-17-server) amd64.
-
--- 
-Jesper
+Tested-by: Mikael Pettersson <mikpe@it.uu.se>
