@@ -1,47 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764176AbYEGHaa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932158AbYEGHaw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764176AbYEGHaa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 03:30:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752409AbYEGHaN
+	id S932158AbYEGHaw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 03:30:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764256AbYEGHac
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 03:30:13 -0400
-Received: from www.tglx.de ([62.245.132.106]:54296 "EHLO www.tglx.de"
+	Wed, 7 May 2008 03:30:32 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:47157 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752464AbYEGHaL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 03:30:11 -0400
-Date: Wed, 7 May 2008 09:26:46 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: monstr@seznam.cz
-cc: linux-kernel@vger.kernel.org, arnd@arndb.de, linux-arch@vger.kernel.org,
-       stephen.neuendorffer@xilinx.com, John.Linn@xilinx.com,
-       john.williams@petalogix.com, matthew@wil.cx, will.newton@gmail.com,
-       drepper@redhat.com, microblaze-uclinux@itee.uq.edu.au,
-       grant.likely@secretlab.ca, Michal Simek <monstr@monstr.eu>
-Subject: Re: [PATCH 37/56] microblaze_v2: headers for irq
-In-Reply-To: <4e20213f5f296268a24955df8c951f7fba279816.1209897266.git.monstr@monstr.eu>
-Message-ID: <alpine.LFD.1.10.0805070925000.3318@apollo.tec.linutronix.de>
-References: <1209901305-6404-1-git-send-email-monstr@seznam.cz> <14acb31da2794d2d5916da3db3d75fe2285ac055.1209897266.git.monstr@monstr.eu> <598221ce2159046614d7b158ea62d5af51907af3.1209897266.git.monstr@monstr.eu> <41c1f410eaafd875246362d10ef9866d8cc2a934.1209897266.git.monstr@monstr.eu>
- <09ce2baf0c8308d3fbca98e7eb36a6aab59112a7.1209897266.git.monstr@monstr.eu> <c9418c683be99ae12abb89575c362d586c026bad.1209897266.git.monstr@monstr.eu> <cfde3796e95bdd17c32e4fd7762d0aee55967707.1209897266.git.monstr@monstr.eu>
- <8aba2d82c85cd1d5b56de328c1fd080ee51f0211.1209897266.git.monstr@monstr.eu> <c4000ff625bd217f9bb683e3bf8c7193a82bd744.1209897266.git.monstr@monstr.eu> <491f823fac6c03cc36834ec569a45d30a03a72cf.1209897266.git.monstr@monstr.eu>
- <96f2004535c34a0c762bf2012c299cbf9f89ab32.1209897266.git.monstr@monstr.eu> <92cd3a27b393bb394d48902594152351a92c59bb.1209897266.git.monstr@monstr.eu> <4e20213f5f296268a24955df8c951f7fba279816.1209897266.git.monstr@monstr.eu>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	id S1763598AbYEGHa3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 May 2008 03:30:29 -0400
+Date: Wed, 7 May 2008 09:30:17 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: Spinlocks waiting with interrupts disabled / preempt disabled.
+Message-ID: <20080507073017.GJ32195@elte.hu>
+References: <Pine.LNX.4.64.0805061220570.30604@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0805061220570.30604@schroedinger.engr.sgi.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 4 May 2008, monstr@seznam.cz wrote:
-> From: Michal Simek <monstr@monstr.eu>
-> +static inline void hw_resend_irq(struct hw_interrupt_type *h, unsigned int i)
-> +{
-> +	/* Nothing to do */
 
-And used nowhere
+* Christoph Lameter <clameter@sgi.com> wrote:
 
-> +}
-> +
+> @@ -132,10 +132,14 @@ unsigned long __lockfunc _write_lock_irq
+>  {
+>  	unsigned long flags;
+>  
+> +retry:
+>  	local_irq_save(flags);
+> -	preempt_disable();
+> -	_raw_write_lock(lock);
+> -	return flags;
+> +	if (_write_trylock(lock))
+> +		return flags;
+> +	local_irq_restore(flags);
+> +	while (!write_can_lock(lock))
+> +		cpu_relax();
+> +	goto retry;
+>  }
+>  EXPORT_SYMBOL(_write_lock_irqsave);
 
-Thanks,
-	tglx
+hm, this is done on a too high level and will turn off some debugging 
+code. I.e. if we dont just loop long but truly deadlock here we wont 
+call lib/spinlock_debug.c's _raw_write_lock() code that does some sanity 
+checks in the debug case.
 
+so how about doing this on a deeper level and adding a new 
+__raw_write_lock_flags() primitive that would look at the flags value 
+and could enable interrupts in the lowlevel code?
+
+	Ingo
