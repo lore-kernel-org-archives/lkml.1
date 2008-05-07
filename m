@@ -1,55 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765974AbYEGWIB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765943AbYEGWJg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765974AbYEGWIB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 18:08:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757140AbYEGWHu
+	id S1765943AbYEGWJg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 18:09:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757140AbYEGWJT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 18:07:50 -0400
-Received: from eagle.jhcloos.com ([207.210.242.212]:1745 "EHLO
-	eagle.jhcloos.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757003AbYEGWHq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 18:07:46 -0400
-From: James Cloos <cloos@jhcloos.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: "Justin Mattock" <justinmattock@gmail.com>,
-       "Yinghai Lu" <yhlu.kernel@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: Regression: starting X locks box with git master
-In-Reply-To: <200805072353.02085.rjw@sisk.pl> (Rafael J. Wysocki's message of
-	"Wed, 7 May 2008 23:53:01 +0200")
-References: <m3hcdrqb03.fsf@lugabout.jhcloos.org>
-	<86802c440804241352v2623222bt28129a2c501cff25@mail.gmail.com>
-	<m37iemq3qa.fsf@lugabout.jhcloos.org> <200805072353.02085.rjw@sisk.pl>
-User-Agent: Gnus/5.110009 (No Gnus v0.9) Emacs/23.0.60 (gnu/linux)
-Face: iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABHNCSVQICAgIfAhkiAAAAI1J
- REFUOE+lU9ESgCAIg64P1y+ngUdxhl5H8wFbbM0OmUiEhKkCYaZThXCo6KE5sCbA1DDX3genvO4d
- eBQgEMaM5qy6uWk4SfBYfdu9jvBN9nSVDOKRtwb+I3epboOsOX5pZbJNsBJFvmQQ05YMfieIBnYX
- FK2N6dOawd97r/e8RjkTLzmMsiVgrAoEugtviCM3v2WzjgAAAABJRU5ErkJggg==
-Copyright: Copyright 2007 James Cloos
-OpenPGP: ED7DAEA6; url=http://jhcloos.com/public_key/0xED7DAEA6.asc
-OpenPGP-Fingerprint: E9E9 F828 61A4 6EA9 0F2B  63E7 997A 9F17 ED7D AEA6
-Date: Wed, 07 May 2008 18:06:43 -0400
-Message-ID: <m3ej8dbwfp.fsf@lugabout.jhcloos.org>
+	Wed, 7 May 2008 18:09:19 -0400
+Received: from www.tglx.de ([62.245.132.106]:34496 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753273AbYEGWJP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 May 2008 18:09:15 -0400
+Date: Thu, 8 May 2008 00:08:23 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Adrian Bunk <bunk@kernel.org>
+cc: Rene Herman <rene.herman@keyaccess.nl>, Yinghai Lu <yhlu.kernel@gmail.com>,
+       Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel <linux-kernel@vger.kernel.org>, hpa@zytor.com,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       Pavel Machek <pavel@suse.cz>
+Subject: Re: 2.6.26, PAT and AMD family 6
+In-Reply-To: <20080507214646.GC14951@cs181133002.pp.htv.fi>
+Message-ID: <alpine.LFD.1.10.0805072354450.3318@apollo.tec.linutronix.de>
+References: <48210A71.1060409@keyaccess.nl> <86802c440805061939q39ff5500h3c9e229ecbc6b2e6@mail.gmail.com> <20080507124650.GD29935@cs181133002.pp.htv.fi> <alpine.LFD.1.10.0805072122270.3318@apollo.tec.linutronix.de> <48221AE3.6020602@keyaccess.nl>
+ <alpine.LFD.1.10.0805072315360.3318@apollo.tec.linutronix.de> <20080507214646.GC14951@cs181133002.pp.htv.fi>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Hashcash: 1:23:080507:rjw@sisk.pl::wGj7zxdd86NMi9da:000000mywT
-X-Hashcash: 1:23:080507:justinmattock@gmail.com::9BRBsqV+quzV58mM:00000000000000000000000000000000000000ZmDf
-X-Hashcash: 1:23:080507:yhlu.kernel@gmail.com::TiIynlkZ4+h4UH2F:0000000000000000000000000000000000000000YFKW
-X-Hashcash: 1:23:080507:linux-kernel@vger.kernel.org::WtRlXDC8PMJ+64DY:000000000000000000000000000000000CZHs
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>>>> "Rafael" == Rafael J Wysocki <rjw@sisk.pl> writes:
+On Thu, 8 May 2008, Adrian Bunk wrote:
+> > 
+> > Yinghai missed to add it to the other place and he is hardly to blame
+> > for that. This code is messy and thats not his fault. It will be
+> > cleaned up, but that's not an simple taks to do. If you think you can
+> > do it without breaking tons of systems, you're welcome.
+> 
+> It actually is completely his fault.
 
->> But the kernel which dies does generate this:
+No it is not. 
 
->> Apr 24 04:28:09 [kernel] [    0.000000] x86: PAT support disabled.
+1) this code is messy to begin with
 
-Rafael> Has the problem been fixed in 2.6.26-rc1 or in the current -git?
+2) we accepted the change as is
+ 
+> His commit ***added*** the three copies of the same code.
 
-I plan on giving current master a test tonight.
+And you are not able to ******look******* over the brim of your tea
+cup and accept that one of them is 64 bit and the others are a tribute
+to the not yet distangled shit. There would have been a cleaner and
+better way to solve this, but there is always a better and cleaner way
+to do things.
 
--JimC
--- 
-James Cloos <cloos@jhcloos.com>         OpenPGP: 1024D/ED7DAEA6
+Why dont you send a cleanup patch which fixes the three copies problem
+instead of spending your time with writing up ivory tower pieces of
+wisdom ?
+
+Thanks,
+
+	tglx
