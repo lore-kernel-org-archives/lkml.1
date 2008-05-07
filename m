@@ -1,73 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760888AbYEGQzN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762824AbYEGQ4H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760888AbYEGQzN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 12:55:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752751AbYEGQyx
+	id S1762824AbYEGQ4H (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 12:56:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751765AbYEGQzt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 12:54:53 -0400
-Received: from mtagate8.uk.ibm.com ([195.212.29.141]:30272 "EHLO
-	mtagate8.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752710AbYEGQyv (ORCPT
+	Wed, 7 May 2008 12:55:49 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:56706 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752751AbYEGQzr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 12:54:51 -0400
-Message-ID: <4821DEB0.7050308@linux.vnet.ibm.com>
-Date: Wed, 07 May 2008 18:54:08 +0200
-From: Jochen Roth <jroth@linux.vnet.ibm.com>
-Reply-To: jroth@linux.vnet.ibm.com
-User-Agent: Thunderbird 2.0.0.12 (X11/20080303)
+	Wed, 7 May 2008 12:55:47 -0400
+Date: Wed, 7 May 2008 09:55:18 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Matthew Wilcox <matthew@wil.cx>
+cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       "J. Bruce Fields" <bfields@citi.umich.edu>,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Alexander Viro <viro@ftp.linux.org.uk>, linux-fsdevel@vger.kernel.org
+Subject: Re: AIM7 40% regression with 2.6.26-rc1
+In-Reply-To: <20080507163811.GY19219@parisc-linux.org>
+Message-ID: <alpine.LFD.1.10.0805070948250.3024@woody.linux-foundation.org>
+References: <1210052904.3453.30.camel@ymzhang> <20080506114449.GC32591@elte.hu> <20080506120934.GH19219@parisc-linux.org> <20080506162332.GI19219@parisc-linux.org> <20080506102153.5484c6ac.akpm@linux-foundation.org>
+ <20080507163811.GY19219@parisc-linux.org>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-To: Carl Love <cel@us.ibm.com>
-CC: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Arnd Bergmann <arnd@arndb.de>,
-       oprofile-list <oprofile-list@lists.sourceforge.net>
-Subject: Re: [Cbe-oss-dev] [PATCH] Updated: Reworked Cell OProfile: SPU mutex
- lock fix
-References: <1209587712.7531.42.camel@carll-linux-desktop>
-In-Reply-To: <1209587712.7531.42.camel@carll-linux-desktop>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Carl,
 
-I applied your patch on Jeremy's latest kernel.org spufs tree.
 
- > +void oprofile_add_value(unsigned long value, int cpu) {
- > +	struct oprofile_cpu_buffer * cpu_buf = &cpu_buffer[cpu];
+On Wed, 7 May 2008, Matthew Wilcox wrote:
+> 
+> If heavily contended, it could do this.
 
-Shouldn't it be
-	struct oprofile_cpu_buffer *cpu_buf = &per_cpu(cpu_buffer, cpu);
+It doesn' have to be heavily contended - if it's just hot and a bit lucky, 
+it would potentially never schedule at all, because it would never take 
+the spinlock and serialize the callers.
 
-At least my compiler complained about that.
+It doesn't even need "unfairness" to work that way. The old semaphore 
+implementation was very much designed to be lock-free, and if you had one 
+CPU doing a lock while another did an unlock, the *common* situation was 
+that the unlock would succeed first, because the unlocker was also the 
+person who had the spinlock exclusively in its cache!
 
-I booted a kernel with your patches applied and the system locked up 
-anyway:
+The above may count as "lucky", but the hot-cache-line thing is a big 
+deal. It likely "lucky" into something that isn't a 50:50 chance, but 
+something that is quite possible to trigger consistently if you just have 
+mostly short holders of the lock.
 
-Unable to handle kernel paging request for data at address 
-0xd0000000004fe9a8
-Faulting instruction address: 0xd000000000330ad8
-cpu 0x0: Vector: 300 (Data Access) at [c00000003c337680]
-     pc: d000000000330ad8: .alloc_cpu_buffers+0x7c/0x12c [oprofile]
-     lr: d000000000330abc: .alloc_cpu_buffers+0x60/0x12c [oprofile]
-     sp: c00000003c337900
-    msr: 9000000000009032
-    dar: d0000000004fe9a8
-  dsisr: 42000000
-   current = 0xc00000003e128600
-   paca    = 0xc0000000005b3480
-     pid   = 2356, comm = oprofiled
-enter ? for help
-[c00000003c3379a0] d0000000003302ac .oprofile_setup+0x2c/0x134 [oprofile]
-[c00000003c337a30] d00000000033176c .event_buffer_open+0x7c/0xc8 [oprofile]
-[c00000003c337ac0] c0000000000d6ca8 .__dentry_open+0x190/0x308
-[c00000003c337b70] c0000000000e7a5c .do_filp_open+0x3c4/0x8e8
-[c00000003c337d00] c0000000000d6a1c .do_sys_open+0x80/0x14c
-[c00000003c337db0] c0000000001192f4 .compat_sys_open+0x24/0x38
-[c00000003c337e30] c0000000000076b4 syscall_exit+0x0/0x40
---- Exception: c01 (System Call) at 000000000ff006f8
-SP (ffc6f6a0) is in userspace
+Which, btw, is probably true. The BKL is normally held for short times, 
+and released (by that thread) for relatively much longer times. Which 
+is when spinlocks tend to work the best, even when they are fair (because 
+it's not so much a fairness issue, it's simply a cost-of-taking-the-lock 
+issue!)
 
+			Linus
