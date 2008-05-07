@@ -1,65 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765519AbYEGV2L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750834AbYEGVa4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765519AbYEGV2L (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 17:28:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756621AbYEGV1w
+	id S1750834AbYEGVa4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 17:30:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751437AbYEGVao
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 17:27:52 -0400
-Received: from kirk.serum.com.pl ([213.77.9.205]:64271 "EHLO serum.com.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755906AbYEGV1u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 17:27:50 -0400
-Date: Wed, 7 May 2008 22:25:08 +0100 (BST)
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
-To: Jean Delvare <khali@linux-fr.org>
-cc: Geert Uytterhoeven <geert@linux-m68k.org>,
-       Alessandro Zummo <a.zummo@towertech.it>,
-       Ralf Baechle <ralf@linux-mips.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>, rtc-linux@googlegroups.com,
-       i2c@lm-sensors.org, linux-mips@linux-mips.org,
-       linux-kernel@vger.kernel.org, David Brownell <david-b@pacbell.net>
-Subject: Re: [RFC][PATCH 2/4] RTC: SWARM I2C board initialization
-In-Reply-To: <20080507094343.25f279b9@hyperion.delvare>
-Message-ID: <Pine.LNX.4.55.0805072214090.25644@cliff.in.clinika.pl>
-References: <Pine.LNX.4.55.0805070031410.16173@cliff.in.clinika.pl>
- <20080507090514.3a86cf4b@hyperion.delvare> <Pine.LNX.4.64.0805070936060.6341@anakin>
- <20080507094343.25f279b9@hyperion.delvare>
+	Wed, 7 May 2008 17:30:44 -0400
+Received: from nf-out-0910.google.com ([64.233.182.184]:51388 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751064AbYEGVam (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 May 2008 17:30:42 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
+        b=JEZ5S2nQXC3CjcPw4iq8vQF/eDxm1VQov+XWNQujUKz1xtQxjPY5DdtBZszAHgpkIl4GhXhUVmrpssGcJNwAqpt8LhiT/oAVpSp7xV0vmSSHLHODssOaF006wDkyySWlUaKQp6MvJzyoH8bPwASeigDqJnnh0LjSFP9MDoDZt9Y=
+Date: Thu, 8 May 2008 02:26:01 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: akpm@osdl.org
+Cc: linux-kernel@vger.kernel.org, travis@sgi.com
+Subject: [PATCH 2/5] Fix bitmap_scnprintf_len()
+Message-ID: <20080507222601.GB14375@martell.zuzino.mipt.ru>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jean,
+bitmap_scnprintf_len() returns 36 (thirty six) for NR_CPUS=2 which is
+ridiculous. So, rewrite the whole thing. Fixed version allows correct
+seq_bitmap/seq_cpumask.
 
-> > > i2c-foo.c is consistently used for i2c bus driver themselves so far.
-> > > It's somewhat confusing to see you name platform code that way. It's
-> > > also redundant, given that the file lives in the swarm platform
-> > > directory. May I suggest naming this file just
-> > > arch/mips/sibyte/swarm/i2c.c? Other architectures (cris, arm) are doing
-> > > this already.
-> > 
-> > Is there any chance CONFIG_I2C_BOARDINFO could become tristate?
-> > If yes, it's problematic if you have multiple modules called i2c.ko.
-> 
-> No, CONFIG_I2C_BOARDINFO is boolean by nature, it will never become
-> tristate.
+Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
+---
 
- I can do that and I have considered it while preparing the change.  What
-convinced me not to use a name that is already present elsewhere in the
-tree is the confusion that it sometimes causes.  For example during a
-debugging session GDB only reports the file name and not the leading
-pathname (and some people do run GDB over the kernel).  Of course the
-actual file can still be chased with some `find' and `grep' scriptery, but
-why to create a problem in the first place?
+ include/linux/bitmap.h |    2 +-
+ lib/bitmap.c           |   12 ++++--------
+ 2 files changed, 5 insertions(+), 9 deletions(-)
 
- I consider repeated file names throughout a tree of a single program a 
-namespace pollution similar to one with repeated static symbol names.  
-While syntactically valid and working, it asks for unnecessary confusion.
+--- a/include/linux/bitmap.h
++++ b/include/linux/bitmap.h
+@@ -110,7 +110,7 @@ extern int __bitmap_weight(const unsigned long *bitmap, int bits);
+ 
+ extern int bitmap_scnprintf(char *buf, unsigned int len,
+ 			const unsigned long *src, int nbits);
+-extern int bitmap_scnprintf_len(unsigned int len);
++extern int bitmap_scnprintf_len(unsigned int nr_bits);
+ extern int __bitmap_parse(const char *buf, unsigned int buflen, int is_user,
+ 			unsigned long *dst, int nbits);
+ extern int bitmap_parse_user(const char __user *ubuf, unsigned int ulen,
+--- a/lib/bitmap.c
++++ b/lib/bitmap.c
+@@ -318,16 +318,12 @@ EXPORT_SYMBOL(bitmap_scnprintf);
+ /**
+  * bitmap_scnprintf_len - return buffer length needed to convert
+  * bitmap to an ASCII hex string.
+- * @len: number of bits to be converted
++ * @nr_bits: number of bits to be converted
+  */
+-int bitmap_scnprintf_len(unsigned int len)
++int bitmap_scnprintf_len(unsigned int nr_bits)
+ {
+-	/* we need 9 chars per word for 32 bit words (8 hexdigits + sep/null) */
+-	int bitslen = ALIGN(len, CHUNKSZ);
+-	int wordlen = CHUNKSZ / 4;
+-	int buflen = (bitslen / wordlen) * (wordlen + 1) * sizeof(char);
+-
+-	return buflen;
++	unsigned int nr_nibbles = ALIGN(nr_bits, 4) / 4;
++	return nr_nibbles + ALIGN(nr_nibbles, CHUNKSZ / 4) / (CHUNKSZ / 4) - 1;
+ }
+ EXPORT_SYMBOL(bitmap_scnprintf_len);
+ 
 
- This is my point of view, but I can see others may not necessarily follow
-it.  I am fine with changing the name to i2c.c as it is unlikely I will
-run GDB over it. ;-)
-
-  Maciej
