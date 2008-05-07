@@ -1,84 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758100AbYEGBOi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757294AbYEGBVE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758100AbYEGBOi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 21:14:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756798AbYEGBOO
+	id S1757294AbYEGBVE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 21:21:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753423AbYEGBUx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 21:14:14 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:36716
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1755849AbYEGBOL (ORCPT
+	Tue, 6 May 2008 21:20:53 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:37745 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753307AbYEGBUv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 21:14:11 -0400
-Date: Tue, 06 May 2008 18:14:06 -0700 (PDT)
-Message-Id: <20080506.181406.60757850.davem@davemloft.net>
-To: torvalds@linux-foundation.org
-CC: akpm@linux-foundation.org, sparclinux@vger.kernel.org,
+	Tue, 6 May 2008 21:20:51 -0400
+Date: Tue, 6 May 2008 18:20:06 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: benh@kernel.crashing.org
+Cc: David Miller <davem@davemloft.net>, tony@bakeyournoodle.com,
        linux-kernel@vger.kernel.org
-Subject: [GIT]: Sparc
-From: David Miller <davem@davemloft.net>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Subject: Re: [PATCH] Silence 'ignoring return value' warnings in
+ drivers/video/aty/radeon_base.c
+Message-Id: <20080506182006.4b4a3968.akpm@linux-foundation.org>
+In-Reply-To: <1210121683.21644.194.camel@pasglop>
+References: <20080424043400.GS20457@bakeyournoodle.com>
+	<20080506143936.6357e578.akpm@linux-foundation.org>
+	<20080506.144301.233784820.davem@davemloft.net>
+	<1210121683.21644.194.camel@pasglop>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 07 May 2008 10:54:43 +1000 Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 
-Sparc updates and fixes:
+> 
+> On Tue, 2008-05-06 at 14:43 -0700, David Miller wrote:
+> > > So I rewrote the title to "drivers/video/aty/radeon_base.c: notify
+> > user if
+> > > sysfs_create_bin_file() failed".
+> > > 
+> > > And your fix looks appropriate - if sysfs_create_bin_file() fails we
+> > will now get
+> > > reports of this and we can find out what kernel bug caused this to
+> > happen.
+> > 
+> > The last time someone "fixed" this warning in the radeon driver,
+> > people lost their consoles.
+> > 
+> > Just giving a heads up...
+> 
+> I asked Tony to only warn. I still don't like it tho. As I (and paulus)
+> have explained several times in the past, but I'm not going to veto the
+> patch because I'm tired of that argument.
+>  
+> We have something like 99% of users of sysfs_create_file not supposed to
+> fail right ?
+> 
+> So what we are effectively doing is adding -hundreds- of printk's all
+> over the place (bloat bloat bloat) while instead we could have warned
+> inside sysfs_create_file itself, and provided a __sysfs_create_file or
+> sysfs_create_file_nowarn, or whatever you want to call it for the
+> handful of users that actually want to explicitely deal with failures.
+> 
+> And it's the same for a whole bunch of those must check things. We are
+> just adding bloat often for nothing useful.
 
-1) initrd hosed unintentionally by my NUMA support changes
-   on sparc64
+You said "not useful".  But you're just wrong.
 
-2) SMP IPIs don't need to actually be surrounded by
-   irq_{enter,exit}(), revert
+Look at the history of this.  A couple of years ago we were seeing a huge
+number of mysterious crashes and warnings in and around sysfs and driver
+code and we just didn't have a clue what was causing it, because those
+crashes were happening long, long after the buggy code had done its work.
 
-3) online_page() is superfluous, delete, from Adrian Bunk
+So I went in there and found a tremendous amount of code in driver core,
+sysfs and in callers of both which was just ignoring error returns and
+blundering on.
 
-4) Christoph Hellwig noticed that we had a local copy of
-   compat_sys_times(), just use it directly.
+It was a comnplete undebuggable unmaintainable mess.  And the reason why it
+was undebuggable was because the code was failing to detect errors *when
+they occurred*.  So we (me, Cornelia, Greg, others) set about fixing all of
+that.  And to support that effort we marked all the things which should be
+checked with __must_check.
 
-5) USB_ISP1760_OF should not be built on sparc, ACK'd by
-   Ben H.
+Now you come along and cherrypick a few callsites where you'd rather not
+bother checking and assert that the entire effort was wrong-headed.  Well
+sorry, no, it wasn't.  Sure, there's a little bit of undesirable fallout
+but the whole thing had.  to.  be.  done.
 
-6) Sparc video driver tidies by Robert Reif.
+> In some case, even harmful
+> as we prevent entire modules from initializing due to what is often just
+> a minor failure.
 
-Please pull, thanks a lot!
+There is no such thing as a "minor failure".  Code either works as
+designed or it doesn't.  If it doesn't work as designed then we cannot
+state how serious the problem is until we've understood its causes.
 
-The following changes since commit afa26be86b65a7183ceac29bdf1f51d6fc6932f0:
-  Linus Torvalds (1):
-        Merge git://git.kernel.org/.../tglx/linux-2.6-hrt
-
-are available in the git repository at:
-
-  master.kernel.org:/pub/scm/linux/kernel/git/davem/sparc-2.6.git master
-
-Adrian Bunk (1):
-      sparc64: remove online_page()
-
-David S. Miller (5):
-      Revert "[SPARC64]: Wrap SMP IPIs with irq_enter()/irq_exit()."
-      sbus: Fix bpp driver build.
-      sparc64: use compat_sys_utimes instead of home-grown local copy.
-      usb: Sparc build fix, make USB_ISP1760_OF depend on PPC_OF
-      sparc64: Fix initrd regression.
-
-Robert Reif (2):
-      sparc: tcx.c remove unnecessary function
-      sparc video: make blank use proper constant
-
- arch/sparc64/kernel/smp.c         |   27 +++++----------------------
- arch/sparc64/kernel/sys_sparc32.c |   31 -------------------------------
- arch/sparc64/kernel/systbls.S     |    2 +-
- arch/sparc64/mm/init.c            |   16 +++-------------
- drivers/sbus/char/bpp.c           |    2 +-
- drivers/usb/host/Kconfig          |    2 +-
- drivers/video/bw2.c               |    2 +-
- drivers/video/cg3.c               |    2 +-
- drivers/video/cg6.c               |    2 +-
- drivers/video/ffb.c               |    2 +-
- drivers/video/leo.c               |    2 +-
- drivers/video/p9100.c             |    2 +-
- drivers/video/tcx.c               |   20 +++++++-------------
- 13 files changed, 24 insertions(+), 88 deletions(-)
+If you have sysfs files which aren't needed then remove the damn things. 
+If they _are_ needed then they should be available to all users of the
+driver.
