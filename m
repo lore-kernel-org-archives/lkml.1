@@ -1,39 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933669AbYEGW2a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762994AbYEGW3D@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933669AbYEGW2a (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 18:28:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759064AbYEGW1z
+	id S1762994AbYEGW3D (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 18:29:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763715AbYEGW2F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 18:27:55 -0400
-Received: from 2605ds1-ynoe.1.fullrate.dk ([90.184.12.24]:50876 "EHLO
-	shrek.krogh.cc" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761371AbYEGW1x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 18:27:53 -0400
-Message-ID: <48222CDE.60408@krogh.cc>
-Date: Thu, 08 May 2008 00:27:42 +0200
-From: Jesper Krogh <jesper@krogh.cc>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
+	Wed, 7 May 2008 18:28:05 -0400
+Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:48899
+	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763440AbYEGW2A (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 May 2008 18:28:00 -0400
+Date: Thu, 8 May 2008 00:27:58 +0200
+From: Andrea Arcangeli <andrea@qumranet.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, clameter@sgi.com,
+       steiner@sgi.com, holt@sgi.com, npiggin@suse.de, a.p.zijlstra@chello.nl,
+       kvm-devel@lists.sourceforge.net, kanojsarcar@yahoo.com,
+       rdreier@cisco.com, swise@opengridcomputing.com,
+       linux-kernel@vger.kernel.org, avi@qumranet.com, linux-mm@kvack.org,
+       general@lists.openfabrics.org, hugh@veritas.com, rusty@rustcorp.com.au,
+       aliguori@us.ibm.com, chrisw@redhat.com, marcelo@kvack.org,
+       dada1@cosmosbay.com, paulmck@us.ibm.com
+Subject: Re: [PATCH 01 of 11] mmu-notifier-core
+Message-ID: <20080507222758.GD8276@duo.random>
+References: <patchbomb.1210170950@duo.random> <e20917dcc8284b6a07cf.1210170951@duo.random> <20080507130528.adfd154c.akpm@linux-foundation.org> <alpine.LFD.1.10.0805071324570.3024@woody.linux-foundation.org> <20080507215840.GB8276@duo.random> <alpine.LFD.1.10.0805071509270.3024@woody.linux-foundation.org>
 MIME-Version: 1.0
-To: Ray Lee <ray-lk@madrabbit.org>
-CC: "Randy.Dunlap" <rdunlap@xenotime.net>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: Many open/close on same files yeilds "No such file or directory".
-References: <4819E316.7000607@krogh.cc> <481ACEC4.2040205@krogh.cc>	 <481B3115.30705@krogh.cc>	 <2c0942db0805020847q2fdc0480m3eb892bf2bd0b3a@mail.gmail.com>	 <481B70F9.6000201@krogh.cc> <481F4728.9050100@krogh.cc>	 <Pine.LNX.4.64.0805051050350.27703@shark.he.net>	 <481F49C0.4080001@krogh.cc>	 <2c0942db0805051121r47cc97d2jb71cc8ab9eaa7981@mail.gmail.com>	 <481F51F0.4000408@krogh.cc> <2c0942db0805051154q63a18bcfhce8a30d4a663ea3f@mail.gmail.com> <4822166F.50002@krogh.cc>
-In-Reply-To: <4822166F.50002@krogh.cc>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.1.10.0805071509270.3024@woody.linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jesper Krogh wrote:
-> Both servers are 16 cores. The problem wasn't there on a different 
-> server with only 2 cores. (or I didn't run into it).
+On Wed, May 07, 2008 at 03:11:10PM -0700, Linus Torvalds wrote:
 > 
-> The 3 setups above has both been tested with a 2.6.22-14-server and 
-> 2.6.24-17-server (towards the iscsi volume).
+> 
+> On Wed, 7 May 2008, Andrea Arcangeli wrote:
+> 
+> > > As far as I can tell, authorship has been destroyed by at least two of the 
+> > > patches (ie Christoph seems to be the author, but Andrea seems to have 
+> > > dropped that fact).
+> > 
+> > I can't follow this, please be more specific.
+> 
+> The patches were sent to lkml without *any* indication that you weren't 
+> actually the author.
+> 
+> So if Andrew had merged them, they would have been merged as yours.
 
-I can confirm that the problem persists on a 2.6.25.2 kernel.
-
--- 
-Jesper
+I rechecked and I guarantee that the patches where Christoph isn't
+listed are developed by myself and he didn't write a single line on
+them. In any case I expect Christoph to review (he's CCed) and to
+point me to any attribution error. The only mistake I did once in that
+area was to give too _few_ attribution to myself and he asked me to
+add myself in the signed-off so I added myself by Christoph own
+request, but be sure I didn't remove him!
