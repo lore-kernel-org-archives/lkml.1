@@ -1,35 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764247AbYEGICI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763049AbYEGIHp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764247AbYEGICI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 04:02:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753837AbYEGIBy
+	id S1763049AbYEGIHp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 04:07:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754713AbYEGIH1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 04:01:54 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:50636 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752935AbYEGIBx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 04:01:53 -0400
-Date: Wed, 7 May 2008 04:01:53 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Adrian Hunter <ext-adrian.hunter@nokia.com>
-Subject: Re: [PATCH take 2] UBIFS - new flash file system
-Message-ID: <20080507080153.GB23621@infradead.org>
-References: <1210070159-22794-1-git-send-email-Artem.Bityutskiy@nokia.com>
+	Wed, 7 May 2008 04:07:27 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:51387 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1754586AbYEGIHZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 May 2008 04:07:25 -0400
+Message-ID: <482162E5.7030606@cn.fujitsu.com>
+Date: Wed, 07 May 2008 16:05:57 +0800
+From: Shen Feng <shen@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1210070159-22794-1-git-send-email-Artem.Bityutskiy@nokia.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+To: hpa@zytor.com, linux-kernel@vger.kernel.org
+Subject: [PATCH] x86: remove printk compiling warning
+Content-Type: text/plain; charset=GB2312
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Do you have the filesystem as a single tarball or patch?  This cancer
-of split-up patches that's spreading quickly all over the linux world
-makes sensible reviews quite hard unfortunately.
+Since size is unsigned long, the format string is changed
+from zd to lu.
 
+Signed-off-by: Shen Feng <shen@cn.fujitsu.com>
+---
+ arch/x86/kernel/setup.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
+index cc6f5eb..c0c68c1 100644
+--- a/arch/x86/kernel/setup.c
++++ b/arch/x86/kernel/setup.c
+@@ -95,7 +95,7 @@ void __init setup_per_cpu_areas(void)
+
+ 	/* Copy section for each CPU (we discard the original) */
+ 	size = PERCPU_ENOUGH_ROOM;
+-	printk(KERN_INFO "PERCPU: Allocating %zd bytes of per cpu data\n",
++	printk(KERN_INFO "PERCPU: Allocating %lu bytes of per cpu data\n",
+ 			  size);
+
+ 	for_each_possible_cpu(i) {
+-- 
+1.5.4.1
