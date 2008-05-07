@@ -1,103 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932320AbYEGWEq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765974AbYEGWIB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932320AbYEGWEq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 18:04:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763014AbYEGWEN
+	id S1765974AbYEGWIB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 18:08:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757140AbYEGWHu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 18:04:13 -0400
-Received: from smtpq2.groni1.gr.home.nl ([213.51.130.201]:42039 "EHLO
-	smtpq2.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762063AbYEGWEI (ORCPT
+	Wed, 7 May 2008 18:07:50 -0400
+Received: from eagle.jhcloos.com ([207.210.242.212]:1745 "EHLO
+	eagle.jhcloos.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757003AbYEGWHq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 18:04:08 -0400
-Message-ID: <48222784.10506@keyaccess.nl>
-Date: Thu, 08 May 2008 00:04:52 +0200
-From: Rene Herman <rene.herman@keyaccess.nl>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
+	Wed, 7 May 2008 18:07:46 -0400
+From: James Cloos <cloos@jhcloos.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: "Justin Mattock" <justinmattock@gmail.com>,
+       "Yinghai Lu" <yhlu.kernel@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: Regression: starting X locks box with git master
+In-Reply-To: <200805072353.02085.rjw@sisk.pl> (Rafael J. Wysocki's message of
+	"Wed, 7 May 2008 23:53:01 +0200")
+References: <m3hcdrqb03.fsf@lugabout.jhcloos.org>
+	<86802c440804241352v2623222bt28129a2c501cff25@mail.gmail.com>
+	<m37iemq3qa.fsf@lugabout.jhcloos.org> <200805072353.02085.rjw@sisk.pl>
+User-Agent: Gnus/5.110009 (No Gnus v0.9) Emacs/23.0.60 (gnu/linux)
+Face: iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABHNCSVQICAgIfAhkiAAAAI1J
+ REFUOE+lU9ESgCAIg64P1y+ngUdxhl5H8wFbbM0OmUiEhKkCYaZThXCo6KE5sCbA1DDX3genvO4d
+ eBQgEMaM5qy6uWk4SfBYfdu9jvBN9nSVDOKRtwb+I3epboOsOX5pZbJNsBJFvmQQ05YMfieIBnYX
+ FK2N6dOawd97r/e8RjkTLzmMsiVgrAoEugtviCM3v2WzjgAAAABJRU5ErkJggg==
+Copyright: Copyright 2007 James Cloos
+OpenPGP: ED7DAEA6; url=http://jhcloos.com/public_key/0xED7DAEA6.asc
+OpenPGP-Fingerprint: E9E9 F828 61A4 6EA9 0F2B  63E7 997A 9F17 ED7D AEA6
+Date: Wed, 07 May 2008 18:06:43 -0400
+Message-ID: <m3ej8dbwfp.fsf@lugabout.jhcloos.org>
 MIME-Version: 1.0
-To: Thomas Gleixner <tglx@linutronix.de>
-CC: Adrian Bunk <bunk@kernel.org>, Yinghai Lu <yhlu.kernel@gmail.com>,
-       Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, hpa@zytor.com,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       Pavel Machek <pavel@suse.cz>
-Subject: Re: 2.6.26, PAT and AMD family 6
-References: <48210A71.1060409@keyaccess.nl> <86802c440805061939q39ff5500h3c9e229ecbc6b2e6@mail.gmail.com> <20080507124650.GD29935@cs181133002.pp.htv.fi> <alpine.LFD.1.10.0805072122270.3318@apollo.tec.linutronix.de> <48221AE3.6020602@keyaccess.nl> <alpine.LFD.1.10.0805072315360.3318@apollo.tec.linutronix.de>
-In-Reply-To: <alpine.LFD.1.10.0805072315360.3318@apollo.tec.linutronix.de>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -1.0 (-)
+Content-Type: text/plain; charset=us-ascii
+X-Hashcash: 1:23:080507:rjw@sisk.pl::wGj7zxdd86NMi9da:000000mywT
+X-Hashcash: 1:23:080507:justinmattock@gmail.com::9BRBsqV+quzV58mM:00000000000000000000000000000000000000ZmDf
+X-Hashcash: 1:23:080507:yhlu.kernel@gmail.com::TiIynlkZ4+h4UH2F:0000000000000000000000000000000000000000YFKW
+X-Hashcash: 1:23:080507:linux-kernel@vger.kernel.org::WtRlXDC8PMJ+64DY:000000000000000000000000000000000CZHs
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 07-05-08 23:41, Thomas Gleixner wrote:
+>>>>> "Rafael" == Rafael J Wysocki <rjw@sisk.pl> writes:
 
->>> Clearing it in the cpuinfo is just a cosmetic side effect which does
->>> no harm at all.
->> Oh yes, it does. It makes people unaware that their CPUs _should_ be
->> supporting PAT. The thing's not called /proc/kernelinfo for a reason.
-> 
-> it's named /proc/cpuinfo
+>> But the kernel which dies does generate this:
 
-Exactly.
+>> Apr 24 04:28:09 [kernel] [    0.000000] x86: PAT support disabled.
 
-> and this unawareness of the until now not utilized PAT feature is the
-> least of our worries vs. PAT
+Rafael> Has the problem been fixed in 2.6.26-rc1 or in the current -git?
 
-It's _my_ worry. I-the-user don't want my cpuinfo lying to me just
-because if fits your-the-developer's codeflow better. Sheer insanity.
+I plan on giving current master a test tonight.
 
-Getting philosophical tends to be a bad idea here but like always and
-in this case; if you hide the world from people you disallow them from
-improving it. It's that I _knew_ that my CPU should be supporting PAT
-so that I could complain about it, but I'm your average LKML dwelling
-datasheet collector.
-
-Your feature may be very important and groovy to you, but to me it's
-much more important that my cpuinfo doesn't lie to me. Please make it
-not lie to me.
-
->>>> And this patch (by the author of the code himself) is the first time where
->>>> it breaks.
->>> Very interesting analysis. What broke ? This CPU was never in the set
->>> of supported ones at all.
->> You misunderstood. Yinghai's patch only changed one of the code sites
->> and not the others, which (if I understood right) is the breakage
->> Adrian was reffering to.
-> 
-> I know exactly what he was referring to. So what's the problem ?
-> 
-> Yinghai missed to add it to the other place and he is hardly to blame
-> for that. This code is messy and thats not his fault.
-
-What on earth? Yes, it is. He added that code. The only thing that this complaint
-is about is that his fix-patch added the family 6, model 7 to only _one_ instance
-of that code that he himself added and not all three.
-
->> And would yelling at people how shuffle in code without (publicly at
->> least) addressing one of your fellow arch maintainers objections
-> 
-> 1) hpa asked a question http://lkml.org/lkml/2008/3/25/118
-> 2) his question was answered http://lkml.org/lkml/2008/3/25/292
-> 3) hpa did not object (no lkml ref, because there is none)
-> 
-> So what's your point ? Throwing factoids into a discussion is
-> not really helpful.
-
-And HPA (and Molnar) then said in response to that answer:
-
-http://lkml.org/lkml/2008/3/25/322
-
-It's right there in response to your own link. It seems you originally missed
-it, but how did you manage this time again?
- 
->> and Pavel's review comments about code duplication without a single
->> line of explanation/changelog do?
-> 
-> As I said before. The changelog is useless and Adrians point about
-> that is completely correct. 
-
-Pavel was full of it? 
-
-Rene.
+-JimC
+-- 
+James Cloos <cloos@jhcloos.com>         OpenPGP: 1024D/ED7DAEA6
