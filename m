@@ -1,57 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756987AbYEGLrV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757144AbYEGLto@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756987AbYEGLrV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 07:47:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752970AbYEGLrF
+	id S1757144AbYEGLto (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 07:49:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754217AbYEGLte
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 07:47:05 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:49466 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750919AbYEGLrC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 07:47:02 -0400
-Date: Wed, 7 May 2008 05:46:44 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
-       Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Alexander Viro <viro@ftp.linux.org.uk>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: AIM7 40% regression with 2.6.26-rc1
-Message-ID: <20080507114643.GR19219@parisc-linux.org>
-References: <1210052904.3453.30.camel@ymzhang> <20080506114449.GC32591@elte.hu> <1210126286.3453.37.camel@ymzhang> <1210131712.3453.43.camel@ymzhang> <87lk2mbcqp.fsf@basil.nowhere.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <87lk2mbcqp.fsf@basil.nowhere.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Wed, 7 May 2008 07:49:34 -0400
+Received: from mx0.towertech.it ([213.215.222.73]:49778 "HELO mx0.towertech.it"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1754054AbYEGLtd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 May 2008 07:49:33 -0400
+Date: Wed, 7 May 2008 13:49:30 +0200
+From: Alessandro Zummo <alessandro.zummo@towertech.it>
+To: rtc-linux@googlegroups.com
+Cc: dwmw2@infradead.org, Ralf Baechle <ralf@linux-mips.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-mips@linux-mips.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [rtc-linux] Re: [RFC][PATCH 1/4] RTC: Class device support for
+ persistent clock
+Message-ID: <20080507134930.47d5ed6d@i1501.lan.towertech.it>
+In-Reply-To: <1210148655.25560.825.camel@pmac.infradead.org>
+References: <Pine.LNX.4.55.0805070015360.16173@cliff.in.clinika.pl>
+	<1210148655.25560.825.camel@pmac.infradead.org>
+Organization: Tower Technologies
+X-Mailer: Sylpheed
+X-This-Is-A-Real-Message: Yes
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 07, 2008 at 01:00:14PM +0200, Andi Kleen wrote:
-> "Zhang, Yanmin" <yanmin_zhang@linux.intel.com> writes:
-> > 3) Caller of lcok_kernel are sys_fcntl/vfs_ioctl/tty_release/chrdev_open.
-> 
-> I have an older patchkit that introduced unlocked_fnctl for some cases. It was 
-> briefly in mm but then dropped. Sounds like it is worth resurrecting?
+On Wed, 07 May 2008 09:24:15 +0100
+David Woodhouse <dwmw2@infradead.org> wrote:
 
-Not sure what you're talking about here, Andi.  The only lock_kernel in
-fcntl.c is around the call to ->fasync.  And Yanmin's traces don't show
-fasync as being a culprit, just the paths in locks.c
 
-> tty_* is being taken care of by Alan.
-> 
-> chrdev_open is more work.
-> 
-> -Andi (who BTW never quite understood why BKL is a semaphore now and not
-> a spinlock?)
+> Ooh, shiny -- you saved me the trouble of doing this (and hopefully also
+> the trouble of looking through it to check whether all the callers of
+> read_persistent_clock() can sleep, etc.?)
 
-See git commit 6478d8800b75253b2a934ddcb734e13ade023ad0
+ I knew you would have liked that patch :)
+ 
+> One thing I was going to do in rtc_update_persistent_clock() was make it
+> use mutex_trylock() for grabbing rtc->lock. We go to great lengths to
+> make sure we're updating the clock at the correct time -- we don't want
+> to be doing things which delay the update. So we should probably just
+> use mutex_trylock() and abort the update (this time) if it fails.
+
+ agreable. 
+ 
+> I was also thinking of holding the RTC_HCTOSYS device open all the time,
+> too. If it's a problem that you then couldn't unload the module, perhaps
+> a sysfs interface to set/change/clear which device is used for this?
+
+ mm.. let's keep it easy. the chances the rtc is in use
+ are usually real low.
+ 
 
 -- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+
+ Best regards,
+
+ Alessandro Zummo,
+  Tower Technologies - Torino, Italy
+
+  http://www.towertech.it
+
