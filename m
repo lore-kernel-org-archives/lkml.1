@@ -1,48 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759778AbYEGOeT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759736AbYEGOha@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759778AbYEGOeT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 10:34:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756053AbYEGOd7
+	id S1759736AbYEGOha (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 10:37:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755709AbYEGOhQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 10:33:59 -0400
-Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:55179
-	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756015AbYEGOd5 (ORCPT
+	Wed, 7 May 2008 10:37:16 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:43180 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754761AbYEGOhN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 10:33:57 -0400
-Date: Wed, 7 May 2008 16:33:55 +0200
-From: Andrea Arcangeli <andrea@qumranet.com>
-To: Zdenek Kabelac <zdenek.kabelac@gmail.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Suspend to memory is freezing my machine
-Message-ID: <20080507143355.GE8362@duo.random>
-References: <c4e36d110805040037u1b98c027x46dc17bf6be5da5b@mail.gmail.com>
+	Wed, 7 May 2008 10:37:13 -0400
+Date: Wed, 7 May 2008 07:36:42 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Andi Kleen <andi@firstfloor.org>
+cc: Matthew Wilcox <matthew@wil.cx>,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
+       Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Alexander Viro <viro@ftp.linux.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: AIM7 40% regression with 2.6.26-rc1
+In-Reply-To: <87hcdab8zp.fsf@basil.nowhere.org>
+Message-ID: <alpine.LFD.1.10.0805070728280.32269@woody.linux-foundation.org>
+References: <1210052904.3453.30.camel@ymzhang> <20080506114449.GC32591@elte.hu> <1210126286.3453.37.camel@ymzhang> <1210131712.3453.43.camel@ymzhang> <87lk2mbcqp.fsf@basil.nowhere.org> <20080507114643.GR19219@parisc-linux.org>
+ <87hcdab8zp.fsf@basil.nowhere.org>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <c4e36d110805040037u1b98c027x46dc17bf6be5da5b@mail.gmail.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, May 04, 2008 at 09:37:54AM +0200, Zdenek Kabelac wrote:
-> Hello
-> 
-> With recent 2.6.25 & 2.6.26-rc1 git (around 1 week) I get occasionally
-> complete freeze of my T61 during suspend. (dual core, 2GB).
-> 
-> I'm running kernel with no_console_suspend - but all I can see is
-> blinking cursor on an empty screen - thus even when I run kernel with
-> most debug options turned on, I can't pass more details so far.  I run
-> suspend with with SD card in - so maybe some update in the MMC driver
-> might be responsible for this ?
-> 
-> Also - I think that option no_console_suspend doens't work correctly -
-> as many times with suspend I do not see any log message on my console
-> screen. However sometimes the log is shown.
 
-Same here. Suspend to ram crashes on resume starting in 2.6.25 (didn't
-test 2.6.25-rc in my production system).
 
-Because this isn't 100% reproducible bisecting may return false
-negatives.
+On Wed, 7 May 2008, Andi Kleen wrote:
+> 
+> I am aware of that commit, thank you, but the comment was refering to that it 
+> came with about zero justification why it was done. For the left over BKL 
+> regions which are relatively short surely a spinlock would be better than a 
+> semaphore? So PREEMPT_BKL should have been removed, not !PREEMPT_BKL.
+
+I do agree. 
+
+I think turning the BKL into a semaphore was fine per se, but that was 
+when semaphores were fast. 
+
+Considering the apparent AIM regressions, we really either need to revert 
+the semaphore consolidation, or we need to fix the kernel lock. And by 
+"fixing", I don't mean removing it - it will happen, but it almost 
+certainly won't happen for 2.6.26.
+
+The easiest approach would seem to just turn the BKL into a mutex instead, 
+which should hopefully be about as optimized as the old semaphores.
+
+But my preferred option would indeed be just turning it back into a 
+spinlock - and screw latency and BKL preemption - and having the RT people 
+who care deeply just work on removing the BKL in the long run.
+
+Is BKL preemption worth it? Sounds very dubious. Sounds even more dubious 
+when we now apparently have even more reason to aim for removing the BKL 
+rather than trying to mess around with it.
+
+			Linus
