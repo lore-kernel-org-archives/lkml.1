@@ -1,83 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758244AbYEGDai@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758669AbYEGDgc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758244AbYEGDai (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 23:30:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751504AbYEGDa3
+	id S1758669AbYEGDgc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 23:36:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753671AbYEGDgX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 23:30:29 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:9377 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751049AbYEGDa2 (ORCPT
+	Tue, 6 May 2008 23:36:23 -0400
+Received: from wx-out-0506.google.com ([66.249.82.233]:62516 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752091AbYEGDgV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 23:30:28 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=F2Mj1QIY0R571GMqDm09qZMwWuVUzJnZ8MEt/2WQIQvgpF0D/4aaa7359tmwTlRTg
-	Kb4SO9MshCxyF46V3IAsg==
-Message-ID: <6599ad830805062029m37b507dcue737e1affddeb120@mail.gmail.com>
-Date: Tue, 6 May 2008 20:29:49 -0700
-From: "Paul Menage" <menage@google.com>
-To: "Balbir Singh" <balbir@linux.vnet.ibm.com>
-Subject: Re: [-mm][PATCH 3/4] Add rlimit controller accounting and control
-Cc: linux-mm@kvack.org, "Sudhir Kumar" <skumar@linux.vnet.ibm.com>,
-       "YAMAMOTO Takashi" <yamamoto@valinux.co.jp>, lizf@cn.fujitsu.com,
-       linux-kernel@vger.kernel.org, "David Rientjes" <rientjes@google.com>,
-       "Pavel Emelianov" <xemul@openvz.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20080503213814.3140.66080.sendpatchset@localhost.localdomain>
+	Tue, 6 May 2008 23:36:21 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=SsYe2bCNs+8Dz82VTMKFIamPgx8X05/vm67j6GkeXvnkQiBUngQQgvzRT/nQn9L2x2PW8V6ArH7UdUsfGevHnlhRoIT4BSNtOxmtnEXSIUpXAL0JLm9frN3jTG5NY7q0pcwC5N0/rOvcT1gcVkvLL+wr3vJXNOxhowPj2tJHMvI=
+Date: Wed, 7 May 2008 00:39:33 -0300
+From: "Carlos R. Mafra" <crmafra2@gmail.com>
+To: Daniel Walker <dwalker@mvista.com>
+Cc: linux-kernel@vger.kernel.org, tglx@linutronix.de,
+       venkatesh.pallipadi@intel.com
+Subject: Re: x86: Clean up computation of HPET .mult variables
+Message-ID: <20080507033931.GA5378@Pilar.virtua.com.br>
+References: <20080505231016.GA29072@beyonder.ift.unesp.br> <1210031888.17132.85.camel@localhost.localdomain> <20080506021321.GA4928@Pilar.virtua.com.br> <1210044218.17132.109.camel@localhost.localdomain> <20080506125920.GA26295@beyonder.ift.unesp.br> <1210090880.17132.140.camel@localhost.localdomain> <20080506205003.GA3749@beyonder.ift.unesp.br> <1210126661.17132.223.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20080503213726.3140.68845.sendpatchset@localhost.localdomain>
-	 <20080503213814.3140.66080.sendpatchset@localhost.localdomain>
+In-Reply-To: <1210126661.17132.223.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, May 3, 2008 at 2:38 PM, Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
->
->
->  This patch adds support for accounting and control of virtual address space
->  limits. The accounting is done via the rlimit_cgroup_(un)charge_as functions.
->  The core of the accounting takes place during fork time in copy_process(),
->  may_expand_vm(), remove_vma_list() and exit_mmap(). There are some special
->  cases that are handled here as well (arch/ia64/kernel/perform.c,
->  arch/x86/kernel/ptrace.c, insert_special_mapping())
->
+On Tue  6.May'08 at 19:17:41 -0700, Daniel Walker wrote:
+> 
+> On Tue, 2008-05-06 at 17:50 -0300, Carlos R. Mafra wrote:
+> > so there is no difference at all at this precision level!
+> > 
+> > Out of curiosity I computed the "exact" value by hand and
+> > got 292935555.9 so we can't even talk about "error" because
+> > the difference is in the extra digit not considered with
+> > the precision I used to print the results.
+> > 
+> > And if you look at the patch to do computation using 
+> > clocksource_hz2mult() you will see that it is uglier
+> > than the simple call to div_sc(), as you have to
+> > consider an extra variable hpet_freq and do an extra
+> > do_div() together with an extra rounding.
+> > 
+> > So I think you will be ok with the patch now, right? :-)
+> 
+> Not yet ..
 
-The basic idea of the patches looks fine (apart from some
-synchronization issues) but Is calling this the "rlimit" controller a
-great idea? That implies that it handles all (or at least many) of the
-things that setrlimit()/getrlimit() handle.
+Ok.
 
-While some of the other rlimit things definitely do make sense as
-cgroup controllers, putting them all in the same controller doesn't
-really - paying for the address-space tracking overhead just to get,
-say, the equivalent of RLIMIT_NPROC (max tasks) isn't a great idea.
+> I used you patch with some formatting changes and I get,
+> 
+> clocksource_hpet.mult   walker = 292935555
+> clocksource_hpet.mult my patch = 292935555
+> 
+> Same as yours .. just checking ;)
 
-Can you instead give this a name that somehow refers to virtual
-address space limits, e.g. "va" or "as". That would still fit if you
-expanded it to deal with locked virtual address space limits too.
+Good!
 
-I think that an "rlimit" controller would probably be best for
-representing just those limits that don't really make sense when
-aggregated across different tasks, but apply separately to each task
-(e.g. RLIMIT_FSIZE, RLIMIT_CORE, RLIMIT_NICE, RLIMIT_NOFILE,
-RLIMIT_RTPRIO, RLIMIT_STACK, RLIMIT_SIGPENDING, and maybe RLIMIT_CPU),
-in order to provide an easy way to change these limits on a group of
-running tasks.
+> Now I modify the shift value from 22 to 25 and I get this,
+> 
+> clocksource_hpet.mult   walker = 2343484437
+> clocksource_hpet.mult my patch = 2343484446
+> 
+> I don't think this is due to rounding .. I'm not really sure why they're
+> different .. I would assume the clocksource_hz2mult is more correct, but
+> feel free to check into it if you want..
 
-On a separate note for the address-space tracking, ideally the
-subsystem would track whether or not it was bound to a hierarchy, and
-skip charging/uncharging if not. That way there's no (noticeable)
-overhead for compiling in the subsystem but not using it. At the point
-when the subsystem was bound to a hierarchy, it could at that point
-run through all mms and charge each one's existing address space to
-the appropriate cgroup. (Currently that would only be the root cgroup
-in the hierarchy).
+Heh, I trust those numbers because they imply that my patch is good :-)
 
-Paul
+Note that my hpet_period = 69841279 * 10^{-15} secs, then
+
+mult/2^shift = ns/cyc = 69.841279 <-- period in nanoseconds
+
+so, using Kcalc I get for shift 22 (the "exact" value, no rounding)
+
+mult = 2^22 * 69.841279 = 292,935,555.875
+
+while for shift = 25 I get 8 times that, or
+
+mult = 2,343,484,447
+
+So comparing with the numbers you quoted from your experiments
+you will realize that the value you got with my patch is actually
+10 times better, so your assumption about clocksource_hz2mult
+being more correct is not good.
+
+> The reason I'm messing with the shift is cause 22 is actually too low..
+> For your period it can be 25, which would give better accuracy.
+
+Is there some formula to decide which shift value is better to
+a given period? IOW, how did you arrive at 25? Note that I
+want to learn this, that's why I am asking.
+
+> If you want to check the shift calculation I used it looks like this,
+
+Hmm, it is more complicated than div_sc in my humble opinion.
+
+> static inline u32 clocksource_hz2shift(u32 bits, u32 hz)
+> {
+>        u64 temp;
+> 
+>        for (; bits > 0; bits--) {
+>                temp = (u64) NSEC_PER_SEC << bits;
+>                do_div(temp, hz);
+>                if ((temp >> 32) == 0)
+>                        break;
+>        }
+>        return bits;
+> }
+> 
+> Daniel
