@@ -1,64 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758580AbYEGBcU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758946AbYEGBdK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758580AbYEGBcU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 21:32:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754080AbYEGBcJ
+	id S1758946AbYEGBdK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 21:33:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754782AbYEGBc4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 21:32:09 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:42293 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752246AbYEGBcI (ORCPT
+	Tue, 6 May 2008 21:32:56 -0400
+Received: from [198.99.130.12] ([198.99.130.12]:43951 "EHLO
+	saraswathi.solana.com" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1754739AbYEGBcz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 21:32:08 -0400
-Date: Tue, 6 May 2008 18:31:38 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Paul Menage <menage@google.com>
-Cc: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>, Paul Jackson <pj@sgi.com>,
-       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Fix cpuset sched_relax_domain_level control file
-Message-Id: <20080506183138.546f42d9.akpm@linux-foundation.org>
-In-Reply-To: <48210101.1070205@google.com>
-References: <48210101.1070205@google.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 6 May 2008 21:32:55 -0400
+Date: Tue, 6 May 2008 21:31:35 -0400
+From: Jeff Dike <jdike@addtoit.com>
+To: Ulrich Drepper <drepper@redhat.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org,
+       user-mode-linux-devel@lists.sourceforge.net, akpm@linux-foundation.org,
+       mingo@elte.hu, tglx@linutronix.de
+Subject: Re: [PATCH] fix UML on x86-64
+Message-ID: <20080507013135.GA14251@c2.user-mode-linux.org>
+References: <200805062304.m46N4h6d007206@devserv.devel.redhat.com> <alpine.LFD.1.10.0805061625090.32269@woody.linux-foundation.org> <4820EC0E.1030603@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4820EC0E.1030603@redhat.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 06 May 2008 18:08:17 -0700 Paul Menage <menage@google.com> wrote:
-
-> Fix cpuset sched_relax_domain_level control file
+On Tue, May 06, 2008 at 04:38:54PM -0700, Ulrich Drepper wrote:
+> Linus Torvalds wrote:
+> > It breaks things how?
 > 
-> Due to a merge conflict, the sched_relax_domain_level control file was
-> marked as being handled by cpuset_read/write_u64, but the code to handle it
-> was actually in cpuset_common_file_read/write.
+> A crash on startup:
 > 
-> Since the value being written/read is in fact a signed integer, it
-> should be treated as such; this patch adds cpuset_read/write_s64
-> functions, and uses them to handle the sched_relax_domain_level file.
-> 
-> With this patch, the sched_relax_domain_level can be read and written,
-> and the correct contents seen/updated.
-> 
+> #12 0x0000000060021917 in wait_stub_done (pid=4384) at
+> arch/um/os-Linux/skas/process.c:94
+> #13 0x00000000600210a0 in do_syscall_stub (mm_idp=0x61f4fd28,
+> addr=0x61c1fd18) at arch/um/os-Linux/skas/mem.c:86
 
-OK, here we go again.
+Can you send me the binary?  Preferably with symbols?
 
-There is a patch in linux-next called "cpuset: system sets" which will
-conflict with your change.
+    	     	Jeff
 
-A bit of archeology indicates that this patch was sent out on Feb 27 and
-received a bit of review feedback, including some serious-looking qualms
-from Paul.  There was no response to that reviewer feedback and volia, the
-damn code goes into linux-next without, afaict, any alteration.
-
-Ingo, for the entyenth time: kernel/cpuset.c is not part of the CPU
-scheduler.
-
-argh.  Now what to do?  If I merge this patch then I need to drop
-linux-next and if I drop linux-next I drop half my tree.
-
-So I guess I need to merge this patch and then somehow smash linux-next on
-top of it.  Thanks a lot.
-
+-- 
+Work email - jdike at linux dot intel dot com
