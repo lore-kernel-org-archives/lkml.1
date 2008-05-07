@@ -1,54 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932519AbYEGHoF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763572AbYEGHog@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932519AbYEGHoF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 03:44:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753295AbYEGHnx
+	id S1763572AbYEGHog (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 03:44:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753295AbYEGHoN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 03:43:53 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:35195 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756078AbYEGHnv (ORCPT
+	Wed, 7 May 2008 03:44:13 -0400
+Received: from zone0.gcu-squad.org ([212.85.147.21]:27108 "EHLO
+	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932657AbYEGHoL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 03:43:51 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=LsAUuaMPuqb1Ol5TJmwk0fgy7yZWiM5R7wzVAIf7ab9sji/iGMOBmnG16JpQ7jENg
-	QYebCUK75ftLjKFCv7xuQ==
-Message-ID: <6599ad830805070043y4465a32h8e26c5e8890b1100@mail.gmail.com>
-Date: Wed, 7 May 2008 00:43:45 -0700
-From: "Paul Menage" <menage@google.com>
-To: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: [PATCH] mm/cgroup.c add error check
-Cc: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       "Li Zefan" <lizf@cn.fujitsu.com>
-In-Reply-To: <20080507164526.884208f9.kamezawa.hiroyu@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 7 May 2008 03:44:11 -0400
+Date: Wed, 7 May 2008 09:43:43 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: "Maciej W. Rozycki" <macro@linux-mips.org>,
+       Alessandro Zummo <a.zummo@towertech.it>,
+       Ralf Baechle <ralf@linux-mips.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>, rtc-linux@googlegroups.com,
+       i2c@lm-sensors.org, linux-mips@linux-mips.org,
+       linux-kernel@vger.kernel.org, David Brownell <david-b@pacbell.net>
+Subject: Re: [RFC][PATCH 2/4] RTC: SWARM I2C board initialization
+Message-ID: <20080507094343.25f279b9@hyperion.delvare>
+In-Reply-To: <Pine.LNX.4.64.0805070936060.6341@anakin>
+References: <Pine.LNX.4.55.0805070031410.16173@cliff.in.clinika.pl>
+	<20080507090514.3a86cf4b@hyperion.delvare>
+	<Pine.LNX.4.64.0805070936060.6341@anakin>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080506195216.4A6D.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-	 <6599ad830805062208if98157cwaca4bafa01b8d097@mail.gmail.com>
-	 <20080507164526.884208f9.kamezawa.hiroyu@jp.fujitsu.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 7, 2008 at 12:45 AM, KAMEZAWA Hiroyuki
-<kamezawa.hiroyu@jp.fujitsu.com> wrote:
->  Hmm, but It seems call_usermodehelper()'s fails in silent, no messages.
->  A notify which can be silently dropped is useless.
+Hi Geert,
 
-True, but if we're so short of memory that we can't fork, userspace
-probably won't be able to do much about the notification even if it
-gets it.
+On Wed, 7 May 2008 09:37:01 +0200 (CEST), Geert Uytterhoeven wrote:
+> On Wed, 7 May 2008, Jean Delvare wrote:
+> > Oh, BTW...
+> > 
+> > On Wed, 7 May 2008 01:40:27 +0100 (BST), Maciej W. Rozycki wrote:
+> > > (...)
+> > > 1. i2c-swarm.c -- SWARM I2C board setup, currently for the M41T80 chip on 
+> > >    the bus #1 only.
+> > > (...)
+> > > --- linux-2.6.26-rc1-20080505.macro/arch/mips/sibyte/swarm/Makefile	2004-01-29 04:57:05.000000000 +0000
+> > > +++ linux-2.6.26-rc1-20080505/arch/mips/sibyte/swarm/Makefile	2008-05-06 01:18:21.000000000 +0000
+> > > @@ -1,3 +1,4 @@
+> > > -lib-y				= setup.o rtc_xicor1241.o rtc_m41t81.o
+> > > +obj-y				:= setup.o rtc_xicor1241.o rtc_m41t81.o
+> > >  
+> > > -lib-$(CONFIG_KGDB)		+= dbg_io.o
+> > > +obj-$(CONFIG_I2C_BOARDINFO)	+= i2c-swarm.o
+> > > +obj-$(CONFIG_KGDB)		+= dbg_io.o
+> > > (...)
+> > > --- linux-2.6.26-rc1-20080505.macro/arch/mips/sibyte/swarm/i2c-swarm.c	1970-01-01 00:00:00.000000000 +0000
+> > > +++ linux-2.6.26-rc1-20080505/arch/mips/sibyte/swarm/i2c-swarm.c	2008-05-06 23:51:34.000000000 +0000
+> > 
+> > i2c-foo.c is consistently used for i2c bus driver themselves so far.
+> > It's somewhat confusing to see you name platform code that way. It's
+> > also redundant, given that the file lives in the swarm platform
+> > directory. May I suggest naming this file just
+> > arch/mips/sibyte/swarm/i2c.c? Other architectures (cris, arm) are doing
+> > this already.
+> 
+> Is there any chance CONFIG_I2C_BOARDINFO could become tristate?
+> If yes, it's problematic if you have multiple modules called i2c.ko.
 
->  Can we add 'printk("notify_on_release: ... is failed")' or some workaround ?
->
+No, CONFIG_I2C_BOARDINFO is boolean by nature, it will never become
+tristate.
 
-Sounds reasonable for debugging, but don't expect any automated
-middleware to notice it.
-
-Paul
+-- 
+Jean Delvare
