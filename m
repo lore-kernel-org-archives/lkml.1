@@ -1,41 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934231AbYEGXEo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765957AbYEGXFc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934231AbYEGXEo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 19:04:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753326AbYEGXET
+	id S1765957AbYEGXFc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 19:05:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756530AbYEGXEg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 19:04:19 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:37637 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765539AbYEGXER (ORCPT
+	Wed, 7 May 2008 19:04:36 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:42739 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1762435AbYEGXEa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 19:04:17 -0400
-Message-ID: <4822353D.8050308@zytor.com>
-Date: Wed, 07 May 2008 16:03:25 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Wed, 7 May 2008 19:04:30 -0400
+Date: Wed, 7 May 2008 16:03:00 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Andrea Arcangeli <andrea@qumranet.com>
+cc: Roland Dreier <rdreier@cisco.com>, npiggin@suse.de, chrisw@redhat.com,
+       rusty@rustcorp.com.au, a.p.zijlstra@chello.nl, marcelo@kvack.org,
+       kvm-devel@lists.sourceforge.net, kanojsarcar@yahoo.com, steiner@sgi.com,
+       linux-kernel@vger.kernel.org, avi@qumranet.com, aliguori@us.ibm.com,
+       paulmck@us.ibm.com, linux-mm@kvack.org, holt@sgi.com,
+       general@lists.openfabrics.org, hugh@veritas.com,
+       Andrew Morton <akpm@linux-foundation.org>, dada1@cosmosbay.com,
+       clameter@sgi.com
+Subject: Re: [ofa-general] Re: [PATCH 01 of 11] mmu-notifier-core
+In-Reply-To: <20080507223914.GG8276@duo.random>
+Message-ID: <alpine.LFD.1.10.0805071601090.3024@woody.linux-foundation.org>
+References: <patchbomb.1210170950@duo.random> <e20917dcc8284b6a07cf.1210170951@duo.random> <20080507130528.adfd154c.akpm@linux-foundation.org> <alpine.LFD.1.10.0805071324570.3024@woody.linux-foundation.org> <20080507215840.GB8276@duo.random>
+ <alpine.LFD.1.10.0805071509270.3024@woody.linux-foundation.org> <20080507222758.GD8276@duo.random> <adaej8du4pf.fsf@cisco.com> <20080507223914.GG8276@duo.random>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-To: Henry Nestler <henry.nestler@gmail.com>
-CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>
-Subject: Re: [PATCH] x86: endless page faults in mount_block_root for Linux
- 2.6 - v2
-References: <480E6BB4.5080902@henry.nestler.gmail.com> <20080428164455.GB18210@elte.hu> <48221695.7060507@henry.nestler.gmail.com>
-In-Reply-To: <48221695.7060507@henry.nestler.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Henry Nestler wrote:
-> Shure, the "out of range address" was from buggy driver development.
-> But not of adresses should kill the complete system.
 
-Actually, that's the normal thing to happen for kernel code poking at an 
-address it shouldn't.
 
-It should do it cleanly, via an oops, though.
+On Thu, 8 May 2008, Andrea Arcangeli wrote:
+> 
+> Ok so I see the problem Linus is referring to now (I received the hint
+> by PM too), I thought the order of the signed-off-by was relevant, it
+> clearly isn't or we're wasting space ;)
 
-	-hpa
+The order of the signed-offs are somewhat relevant, but no, sign-offs 
+don't mean authorship.
+
+See the rules for sign-off: you can sign off on another persons patches, 
+even if they didn't sign off on them themselves. That's clause (b) in 
+particular.
+
+So yes, quite often you'd _expect_ the first sign-off to match the author, 
+but that's a correlation, not a causal relationship.
+
+		Linus
