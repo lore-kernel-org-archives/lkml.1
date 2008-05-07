@@ -1,75 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763572AbYEGHog@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932751AbYEGHpF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763572AbYEGHog (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 03:44:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753295AbYEGHoN
+	id S932751AbYEGHpF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 03:45:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759314AbYEGHop
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 03:44:13 -0400
-Received: from zone0.gcu-squad.org ([212.85.147.21]:27108 "EHLO
-	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932657AbYEGHoL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 03:44:11 -0400
-Date: Wed, 7 May 2008 09:43:43 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: "Maciej W. Rozycki" <macro@linux-mips.org>,
-       Alessandro Zummo <a.zummo@towertech.it>,
-       Ralf Baechle <ralf@linux-mips.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>, rtc-linux@googlegroups.com,
-       i2c@lm-sensors.org, linux-mips@linux-mips.org,
-       linux-kernel@vger.kernel.org, David Brownell <david-b@pacbell.net>
-Subject: Re: [RFC][PATCH 2/4] RTC: SWARM I2C board initialization
-Message-ID: <20080507094343.25f279b9@hyperion.delvare>
-In-Reply-To: <Pine.LNX.4.64.0805070936060.6341@anakin>
-References: <Pine.LNX.4.55.0805070031410.16173@cliff.in.clinika.pl>
-	<20080507090514.3a86cf4b@hyperion.delvare>
-	<Pine.LNX.4.64.0805070936060.6341@anakin>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 7 May 2008 03:44:45 -0400
+Received: from www.tglx.de ([62.245.132.106]:50063 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753295AbYEGHon (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 May 2008 03:44:43 -0400
+Date: Wed, 7 May 2008 09:43:51 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Jan Beulich <jbeulich@novell.com>
+cc: odie@cs.aau.dk, Ingo Molnar <mingo@elte.hu>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Chuck Ebbert <cebbert@redhat.com>, linux-kernel@vger.kernel.org,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: Please revert 709f744 (x86: bitops asm constraint fixes)
+In-Reply-To: <482175EF.76E4.0078.0@novell.com>
+Message-ID: <alpine.LFD.1.10.0805070940060.3318@apollo.tec.linutronix.de>
+References: <1209995129.5172.19.camel@odie.local> <20080506120155.GG32591@elte.hu> <482175EF.76E4.0078.0@novell.com>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Geert,
-
-On Wed, 7 May 2008 09:37:01 +0200 (CEST), Geert Uytterhoeven wrote:
-> On Wed, 7 May 2008, Jean Delvare wrote:
-> > Oh, BTW...
-> > 
-> > On Wed, 7 May 2008 01:40:27 +0100 (BST), Maciej W. Rozycki wrote:
-> > > (...)
-> > > 1. i2c-swarm.c -- SWARM I2C board setup, currently for the M41T80 chip on 
-> > >    the bus #1 only.
-> > > (...)
-> > > --- linux-2.6.26-rc1-20080505.macro/arch/mips/sibyte/swarm/Makefile	2004-01-29 04:57:05.000000000 +0000
-> > > +++ linux-2.6.26-rc1-20080505/arch/mips/sibyte/swarm/Makefile	2008-05-06 01:18:21.000000000 +0000
-> > > @@ -1,3 +1,4 @@
-> > > -lib-y				= setup.o rtc_xicor1241.o rtc_m41t81.o
-> > > +obj-y				:= setup.o rtc_xicor1241.o rtc_m41t81.o
-> > >  
-> > > -lib-$(CONFIG_KGDB)		+= dbg_io.o
-> > > +obj-$(CONFIG_I2C_BOARDINFO)	+= i2c-swarm.o
-> > > +obj-$(CONFIG_KGDB)		+= dbg_io.o
-> > > (...)
-> > > --- linux-2.6.26-rc1-20080505.macro/arch/mips/sibyte/swarm/i2c-swarm.c	1970-01-01 00:00:00.000000000 +0000
-> > > +++ linux-2.6.26-rc1-20080505/arch/mips/sibyte/swarm/i2c-swarm.c	2008-05-06 23:51:34.000000000 +0000
-> > 
-> > i2c-foo.c is consistently used for i2c bus driver themselves so far.
-> > It's somewhat confusing to see you name platform code that way. It's
-> > also redundant, given that the file lives in the swarm platform
-> > directory. May I suggest naming this file just
-> > arch/mips/sibyte/swarm/i2c.c? Other architectures (cris, arm) are doing
-> > this already.
+On Wed, 7 May 2008, Jan Beulich wrote:
+> >>> Ingo Molnar <mingo@elte.hu> 06.05.08 14:01 >>>
+> >Jan, any ideas what's wrong with your commit?
 > 
-> Is there any chance CONFIG_I2C_BOARDINFO could become tristate?
-> If yes, it's problematic if you have multiple modules called i2c.ko.
+> No, I have no idea at all (apart from considering mis-compilation as you
+> did. The best path I could suggest is to try and nail this down to one
+> (or more, if that happens to be the case) function(s) having been
+> changed - this is mostly because part of the changes are really
+> tightening things (which therefore I would think ought to be kept),
+> while the change to __test_and_change_bit() really weakens things
+> (which I nevertheless continue to think is correct and consistent with
+> other functions, but which then would be the primary suspect). Of
+> course, since no-one else has seen this so far, this would need to be
+> done by Simon.
+> Once down to a single (hopefully) function, it might be possible to just
+> statically compare the two vmlinux-es to perhaps spot whether this
+> indeed is mis-compilation.
 
-No, CONFIG_I2C_BOARDINFO is boolean by nature, it will never become
-tristate.
+Jan,
 
--- 
-Jean Delvare
+can you please provide a step by step conversion of those constraints
+on top of the revert. I'm a bit wary about this whole business as such
+constraint problems might hit us elsewhere as well.
+
+Thanks,
+	tglx
