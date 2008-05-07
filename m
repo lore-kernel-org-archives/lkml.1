@@ -1,86 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934301AbYEGXCw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934334AbYEGXDZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934301AbYEGXCw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 19:02:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759389AbYEGXCK
+	id S934334AbYEGXDZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 19:03:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934145AbYEGXCq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 19:02:10 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:41441 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756536AbYEGXCH (ORCPT
+	Wed, 7 May 2008 19:02:46 -0400
+Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:48047
+	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758242AbYEGXCo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 19:02:07 -0400
-Date: Thu, 8 May 2008 01:02:54 +0200
-From: Pavel Machek <pavel@suse.cz>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Adrian Bunk <bunk@kernel.org>,
-       Rene Herman <rene.herman@keyaccess.nl>, Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, hpa@zytor.com,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org
-Subject: Re: 2.6.26, PAT and AMD family 6
-Message-ID: <20080507230254.GL18516@elf.ucw.cz>
-References: <48210A71.1060409@keyaccess.nl> <86802c440805061939q39ff5500h3c9e229ecbc6b2e6@mail.gmail.com> <20080507124650.GD29935@cs181133002.pp.htv.fi> <alpine.LFD.1.10.0805072122270.3318@apollo.tec.linutronix.de> <20080507212343.GB14951@cs181133002.pp.htv.fi> <alpine.LFD.1.10.0805072341210.3318@apollo.tec.linutronix.de> <20080507221435.GH18516@elf.ucw.cz> <86802c440805071522r424b2011v7c0d852db4c4abfd@mail.gmail.com> <20080507223705.GJ18516@elf.ucw.cz> <86802c440805071540i71f9d0c4y2eaf97e170ee538e@mail.gmail.com>
+	Wed, 7 May 2008 19:02:44 -0400
+Date: Thu, 8 May 2008 01:02:42 +0200
+From: Andrea Arcangeli <andrea@qumranet.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Lameter <clameter@sgi.com>, Jack Steiner <steiner@sgi.com>,
+       Robin Holt <holt@sgi.com>, Nick Piggin <npiggin@suse.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       kvm-devel@lists.sourceforge.net, Kanoj Sarcar <kanojsarcar@yahoo.com>,
+       Roland Dreier <rdreier@cisco.com>,
+       Steve Wise <swise@opengridcomputing.com>, linux-kernel@vger.kernel.org,
+       Avi Kivity <avi@qumranet.com>, linux-mm@kvack.org,
+       general@lists.openfabrics.org, Hugh Dickins <hugh@veritas.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Anthony Liguori <aliguori@us.ibm.com>, Chris Wright <chrisw@redhat.com>,
+       Marcelo Tosatti <marcelo@kvack.org>, Eric Dumazet <dada1@cosmosbay.com>,
+       "Paul E. McKenney" <paulmck@us.ibm.com>
+Subject: Re: [PATCH 08 of 11] anon-vma-rwsem
+Message-ID: <20080507230242.GL8276@duo.random>
+References: <6b384bb988786aa78ef0.1210170958@duo.random> <alpine.LFD.1.10.0805071349200.3024@woody.linux-foundation.org> <20080507212650.GA8276@duo.random> <alpine.LFD.1.10.0805071429170.3024@woody.linux-foundation.org> <20080507222205.GC8276@duo.random> <alpine.LFD.1.10.0805071540300.3024@woody.linux-foundation.org> <20080507225801.GK8276@duo.random>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <86802c440805071540i71f9d0c4y2eaf97e170ee538e@mail.gmail.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <20080507225801.GK8276@duo.random>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed 2008-05-07 15:40:38, Yinghai Lu wrote:
-> On Wed, May 7, 2008 at 3:37 PM, Pavel Machek <pavel@suse.cz> wrote:
-> > On Wed 2008-05-07 15:22:37, Yinghai Lu wrote:
-> >  > On Wed, May 7, 2008 at 3:14 PM, Pavel Machek <pavel@suse.cz> wrote:
-> >  > >  3) copy&paste code remained in the patch
-> >  >
-> >  > i thought to keep the stub so could add more other stuff in the switch
-> >  > like 64 bit
-> >
-> >  This is _not_ good enough reason to copy&paste. Just do it like this:
-> >
-> >
-> >  >         switch (c->x86_vendor) {
-> >  >         case X86_VENDOR_AMD:
-> >  >                 early_init_amd(c);
-> >
-> > >                 break;
-> >  >         case X86_VENDOR_INTEL:
-> >  >                 early_init_intel(c);
-> >
-> > >                 break;
-> >  >         case X86_VENDOR_CENTAUR:
-> >  >                 early_init_centaur(c);
-> >  >                 break;
-> >  >         }
-> >
-> >  #         clear_cpu_cap(c, X86_FEATURE_PAT);
-> >
-> > #
-> >  #         switch (c->x86_vendor) {
-> >  #         case X86_VENDOR_AMD:
-> >  #                if (c->x86 >= 0xf && c->x86 <= 0x11)
-> >
-> > #                         set_cpu_cap(c, X86_FEATURE_PAT);
-> >  #                 break;
-> >  #         case X86_VENDOR_INTEL:
-> >  #                 if (c->x86 == 0xF || (c->x86 == 6 && c->x86_model >= 15))
-> >
-> > #                         set_cpu_cap(c, X86_FEATURE_PAT);
-> >  #                 break;
-> >  #         }
-> >
-> >  And then, factor out code marked # into separate function, and call it
-> >  from all three places.
-> 
-> still need two copies or ifdef, otherwise you will check some 32bit
-> only cpu fam/model in 64bit node.
-
-So we'll check 32-bit only cpu in 64bit node. What is the problem?
-Being microsecond slower during startup?
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+To remove mm_lock without adding an horrible system-wide lock before
+every i_mmap_lock etc.. we've to remove
+invalidate_range_begin/end. Then we can return to an older approach of
+doing only invalidate_page and serializing it with the PT lock against
+get_user_pages. That works fine for KVM but GRU will have to flush the
+tlb once every time we drop the PT lock, that means once per each 512
+ptes on x86-64 etc... instead of a single time for the whole range
+regardless how large the range is.
