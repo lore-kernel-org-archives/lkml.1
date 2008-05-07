@@ -1,72 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933909AbYEGXLo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764521AbYEGXOs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933909AbYEGXLo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 19:11:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756536AbYEGXLa
+	id S1764521AbYEGXOs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 19:14:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755607AbYEGXOh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 19:11:30 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:53974 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754331AbYEGXL1 (ORCPT
+	Wed, 7 May 2008 19:14:37 -0400
+Received: from fg-out-1718.google.com ([72.14.220.156]:12520 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754382AbYEGXOf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 19:11:27 -0400
-Date: Wed, 7 May 2008 16:09:48 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Andrea Arcangeli <andrea@qumranet.com>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Lameter <clameter@sgi.com>, Jack Steiner <steiner@sgi.com>,
-       Robin Holt <holt@sgi.com>, Nick Piggin <npiggin@suse.de>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       kvm-devel@lists.sourceforge.net, Kanoj Sarcar <kanojsarcar@yahoo.com>,
-       Roland Dreier <rdreier@cisco.com>,
-       Steve Wise <swise@opengridcomputing.com>, linux-kernel@vger.kernel.org,
-       Avi Kivity <avi@qumranet.com>, linux-mm@kvack.org,
-       general@lists.openfabrics.org, Hugh Dickins <hugh@veritas.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Anthony Liguori <aliguori@us.ibm.com>, Chris Wright <chrisw@redhat.com>,
-       Marcelo Tosatti <marcelo@kvack.org>, Eric Dumazet <dada1@cosmosbay.com>,
-       "Paul E. McKenney" <paulmck@us.ibm.com>
-Subject: Re: [PATCH 08 of 11] anon-vma-rwsem
-In-Reply-To: <20080507225801.GK8276@duo.random>
-Message-ID: <alpine.LFD.1.10.0805071604480.3024@woody.linux-foundation.org>
-References: <6b384bb988786aa78ef0.1210170958@duo.random> <alpine.LFD.1.10.0805071349200.3024@woody.linux-foundation.org> <20080507212650.GA8276@duo.random> <alpine.LFD.1.10.0805071429170.3024@woody.linux-foundation.org> <20080507222205.GC8276@duo.random>
- <alpine.LFD.1.10.0805071540300.3024@woody.linux-foundation.org> <20080507225801.GK8276@duo.random>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Wed, 7 May 2008 19:14:35 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=xllm39tR64yLU05gDamttv6pvlTsynxDKwra80V/QGbMtSRDoL3N369IDeYFsdbF73M8e/hYM4UHVn3RA+hGvSCLifHBQs2+69HvGUqJp279Hkoz/u+h6l8Nin8/4X+DAe5SXIH7XRpZU0bI2UpD22svkBf08Jd0ZGzX/ss0gkY=
+Message-ID: <118833cc0805071614j49b10da6hfcbeb08cb3356afb@mail.gmail.com>
+Date: Wed, 7 May 2008 19:14:33 -0400
+From: "Morten Welinder" <mwelinder@gmail.com>
+To: "linux-os (Dick Johnson)" <linux-os@analogic.com>
+Subject: Re: Deleting large files
+Cc: linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.61.0805071820010.25395@chaos.analogic.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <118833cc0805071249w36145eb6g7ed5c18d9fdf6fce@mail.gmail.com>
+	 <Pine.LNX.4.61.0805071820010.25395@chaos.analogic.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+>  Suppose you had an N GB file that just filled up the disk. You now
+>  delete it, but get control back before it is really deleted. You
+>  now start to write a new file that will eventually just fill up
+>  the disk. [...]
 
+That argument ought to stop right there.  If you believe that deleting a
+file will necessarily and immediately give you back the space, then you
+are wrong in the current state of the affairs already.
 
-On Thu, 8 May 2008, Andrea Arcangeli wrote:
->
-> mmu_notifier_register only runs when windows or linux or macosx
-> boots. Who could ever care of the msec spent in mm_lock compared to
-> the time it takes to linux to boot?
+NFS does not do that -- in fact, I don't believe any file system does that
+unless you can guarantee at least that no other process or the kernel has
+that file open; AFS did not do that last I looked a decade ago; versioning
+file systems do not; journaling file systems might not.  File systems that
+support undelete do not do that.  In short: assuming such a thing is a
+bug in need of a fix today.
 
-Andrea, you're *this* close to going to my list of people who it is not 
-worth reading email from, and where it's better for everybody involved if 
-I just teach my spam-filter about it.
+Right now, unlink is a commonly used syscall with unbounded response
+time.  If your GUI program deletes a file, the GUI generally locks up until
+the kernel feels like returning -- that is certainly not how you get a smooth
+user experience.  Forking a process to do the deletion (a) is pathetic,
+(b) is not currently done, and (c) does not work: you cannot get a result
+right away, i.e., you lose error handling.
 
-That code was CRAP.
-
-That code was crap whether it's used once, or whether it's used a million 
-times. Stop making excuses for it just because it's not performance- 
-critical.
-
-So give it up already. I told you what the non-crap solution was. It's 
-simpler, faster, and is about two lines of code compared to the crappy 
-version (which was what - 200 lines of crap with a big comment on top of 
-it just to explain the idiocy?).
-
-So until you can understand the better solution, don't even bother 
-emailing me, ok? Because the next email I get from you that shows the 
-intelligence level of a gnat, I'll just give up and put you in a 
-spam-filter.
-
-Because my IQ goes down just from reading your mails. I can't afford to 
-continue.
-
-		Linus
+Morten
