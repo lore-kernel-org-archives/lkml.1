@@ -1,63 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759736AbYEGOha@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757194AbYEGOiC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759736AbYEGOha (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 10:37:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755709AbYEGOhQ
+	id S1757194AbYEGOiC (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 10:38:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757094AbYEGOhm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 10:37:16 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:43180 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754761AbYEGOhN (ORCPT
+	Wed, 7 May 2008 10:37:42 -0400
+Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:59645
+	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756788AbYEGOhk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 10:37:13 -0400
-Date: Wed, 7 May 2008 07:36:42 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Andi Kleen <andi@firstfloor.org>
-cc: Matthew Wilcox <matthew@wil.cx>,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
-       Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Alexander Viro <viro@ftp.linux.org.uk>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: AIM7 40% regression with 2.6.26-rc1
-In-Reply-To: <87hcdab8zp.fsf@basil.nowhere.org>
-Message-ID: <alpine.LFD.1.10.0805070728280.32269@woody.linux-foundation.org>
-References: <1210052904.3453.30.camel@ymzhang> <20080506114449.GC32591@elte.hu> <1210126286.3453.37.camel@ymzhang> <1210131712.3453.43.camel@ymzhang> <87lk2mbcqp.fsf@basil.nowhere.org> <20080507114643.GR19219@parisc-linux.org>
- <87hcdab8zp.fsf@basil.nowhere.org>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Wed, 7 May 2008 10:37:40 -0400
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+Subject: [PATCH 00 of 11] mmu notifier #v16
+Message-Id: <patchbomb.1210170950@duo.random>
+Date: Wed, 07 May 2008 16:35:50 +0200
+From: Andrea Arcangeli <andrea@qumranet.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Christoph Lameter <clameter@sgi.com>, Jack Steiner <steiner@sgi.com>,
+       Robin Holt <holt@sgi.com>, Nick Piggin <npiggin@suse.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       kvm-devel@lists.sourceforge.net, Kanoj Sarcar <kanojsarcar@yahoo.com>,
+       Roland Dreier <rdreier@cisco.com>,
+       Steve Wise <swise@opengridcomputing.com>, linux-kernel@vger.kernel.org,
+       Avi Kivity <avi@qumranet.com>, linux-mm@kvack.org,
+       general@lists.openfabrics.org, Hugh Dickins <hugh@veritas.com>,
+       akpm@linux-foundation.org, Rusty Russell <rusty@rustcorp.com.au>,
+       Anthony Liguori <aliguori@us.ibm.com>, Chris Wright <chrisw@redhat.com>,
+       Marcelo Tosatti <marcelo@kvack.org>, Eric Dumazet <dada1@cosmosbay.com>,
+       "Paul E. McKenney" <paulmck@us.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello,
 
+this is the last update of the mmu notifier patch.
 
-On Wed, 7 May 2008, Andi Kleen wrote:
-> 
-> I am aware of that commit, thank you, but the comment was refering to that it 
-> came with about zero justification why it was done. For the left over BKL 
-> regions which are relatively short surely a spinlock would be better than a 
-> semaphore? So PREEMPT_BKL should have been removed, not !PREEMPT_BKL.
+Jack asked a __mmu_notifier_register to call under mmap_sem in write mode.
 
-I do agree. 
+Here an update with that change plus allowing ->release not to be implemented
+(two liner change to mmu_notifier.c).
 
-I think turning the BKL into a semaphore was fine per se, but that was 
-when semaphores were fast. 
-
-Considering the apparent AIM regressions, we really either need to revert 
-the semaphore consolidation, or we need to fix the kernel lock. And by 
-"fixing", I don't mean removing it - it will happen, but it almost 
-certainly won't happen for 2.6.26.
-
-The easiest approach would seem to just turn the BKL into a mutex instead, 
-which should hopefully be about as optimized as the old semaphores.
-
-But my preferred option would indeed be just turning it back into a 
-spinlock - and screw latency and BKL preemption - and having the RT people 
-who care deeply just work on removing the BKL in the long run.
-
-Is BKL preemption worth it? Sounds very dubious. Sounds even more dubious 
-when we now apparently have even more reason to aim for removing the BKL 
-rather than trying to mess around with it.
-
-			Linus
+The entire diff between v15 and v16 mmu-notifier-core was posted in separate
+email.
