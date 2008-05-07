@@ -1,42 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755378AbYEGIK2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932353AbYEGILN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755378AbYEGIK2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 04:10:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754459AbYEGIKH
+	id S932353AbYEGILN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 04:11:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757292AbYEGIKu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 04:10:07 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:40291 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751943AbYEGIKC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 04:10:02 -0400
-Date: Wed, 7 May 2008 04:10:01 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
-Cc: Christoph Hellwig <hch@infradead.org>, LKML <linux-kernel@vger.kernel.org>,
-       Adrian Hunter <ext-adrian.hunter@nokia.com>
-Subject: Re: [PATCH take 2] UBIFS - new flash file system
-Message-ID: <20080507081001.GA14614@infradead.org>
-References: <1210070159-22794-1-git-send-email-Artem.Bityutskiy@nokia.com> <20080507080153.GB23621@infradead.org> <48216353.3020202@nokia.com>
+	Wed, 7 May 2008 04:10:50 -0400
+Received: from styx.suse.cz ([82.119.242.94]:53994 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1757012AbYEGIKr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 May 2008 04:10:47 -0400
+Date: Wed, 7 May 2008 10:10:46 +0200
+From: Jan Kara <jack@suse.cz>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: [GIT PATCH] UDF fixes
+Message-ID: <20080507081046.GB27903@duck.suse.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <48216353.3020202@nokia.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 07, 2008 at 11:07:47AM +0300, Artem Bityutskiy wrote:
-> Christoph Hellwig wrote:
->> Do you have the filesystem as a single tarball or patch?  This cancer
->> of split-up patches that's spreading quickly all over the linux world
->> makes sensible reviews quite hard unfortunately.
->
-> Will git tree work?
-> http://www.linux-mtd.infradead.org/doc/ubifs.html#L_source
+  Hi Linus,
 
-A git tree of just ubifs would be perfect, but the full tree does it
-aswell.  Not really conveniant, but much better than split patches :)
+  would you please pull from
+
+git://git.kernel.org/pub/scm/linux/kernel/git/jack/linux-udf-2.6.git for_linus
+
+  to get two bugfixes and one patch I've accidentally ommitted from the
+previous merge. Diffstat and shortlog is below. Thanks.
+
+									Honza
+
+ fs/udf/namei.c           |  145 +++++++++++++++++++++++++++++++++++++++++++++--
+ fs/udf/partition.c       |    4 -
+ fs/udf/super.c           |    1 
+ fs/udf/udfdecl.h         |    1 
+ include/linux/exportfs.h |   21 ++++++
+ 5 files changed, 166 insertions(+), 6 deletions(-)
+
+Adrian Bunk (1):
+      udf: fs/udf/partition.c:udf_get_pblock() mustn't be inline
+
+Jan Kara (1):
+      udf: Fix memory corruption when fs mounted with noadinicb option
+
+Rasmus Rohde (1):
+      udf: Make udf exportable
+
+-- 
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
