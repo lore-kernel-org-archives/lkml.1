@@ -1,87 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765889AbYEGW5i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933049AbYEGW6Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765889AbYEGW5i (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 18:57:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753790AbYEGW51
+	id S933049AbYEGW6Y (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 18:58:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754425AbYEGW6H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 18:57:27 -0400
-Received: from smtp-out01.alice-dsl.net ([88.44.60.11]:10019 "EHLO
-	smtp-out01.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753461AbYEGW5Z (ORCPT
+	Wed, 7 May 2008 18:58:07 -0400
+Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:56394
+	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754231AbYEGW6F (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 18:57:25 -0400
-Message-ID: <482233CD.70502@googlemail.com>
-Date: Thu, 08 May 2008 00:57:17 +0200
-From: Gabriel C <nix.or.die@googlemail.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080502)
+	Wed, 7 May 2008 18:58:05 -0400
+Date: Thu, 8 May 2008 00:58:01 +0200
+From: Andrea Arcangeli <andrea@qumranet.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Lameter <clameter@sgi.com>, Jack Steiner <steiner@sgi.com>,
+       Robin Holt <holt@sgi.com>, Nick Piggin <npiggin@suse.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       kvm-devel@lists.sourceforge.net, Kanoj Sarcar <kanojsarcar@yahoo.com>,
+       Roland Dreier <rdreier@cisco.com>,
+       Steve Wise <swise@opengridcomputing.com>, linux-kernel@vger.kernel.org,
+       Avi Kivity <avi@qumranet.com>, linux-mm@kvack.org,
+       general@lists.openfabrics.org, Hugh Dickins <hugh@veritas.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Anthony Liguori <aliguori@us.ibm.com>, Chris Wright <chrisw@redhat.com>,
+       Marcelo Tosatti <marcelo@kvack.org>, Eric Dumazet <dada1@cosmosbay.com>,
+       "Paul E. McKenney" <paulmck@us.ibm.com>
+Subject: Re: [PATCH 08 of 11] anon-vma-rwsem
+Message-ID: <20080507225801.GK8276@duo.random>
+References: <6b384bb988786aa78ef0.1210170958@duo.random> <alpine.LFD.1.10.0805071349200.3024@woody.linux-foundation.org> <20080507212650.GA8276@duo.random> <alpine.LFD.1.10.0805071429170.3024@woody.linux-foundation.org> <20080507222205.GC8276@duo.random> <alpine.LFD.1.10.0805071540300.3024@woody.linux-foundation.org>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: CONFIG_PRINTK_TIME broken on git HEAD ?
-References: <48222C7C.2050807@googlemail.com> <20080507154155.2b472bb1.akpm@linux-foundation.org>
-In-Reply-To: <20080507154155.2b472bb1.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 07 May 2008 22:50:25.0845 (UTC) FILETIME=[BD593E50:01C8B094]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.1.10.0805071540300.3024@woody.linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Thu, 08 May 2008 00:26:04 +0200
-> Gabriel C <nix.or.die@googlemail.com> wrote:
+On Wed, May 07, 2008 at 03:44:24PM -0700, Linus Torvalds wrote:
 > 
->> Hi all,
->>
->> I've updated today to 2.6.26-rc1-00166-gc0a1811 , running an 64bit kernel at the moment.
 > 
-> Which kernel were you runing previously?
-
-2.6.25* , tested 2.6.25-git* , 2.6.26-rc1 , and 2.6.26-rc1-00065-g5717922.
-
-
->From my log 2.6.26-rc1-00065-g5717922 was fine.
-
-...
- 
-May  6 00:13:14 thor kernel: [    0.000000] Allocating PCI resources starting at d0000000 (gap: cf600000:2f800000)
-May  6 00:13:14 thor kernel: [    0.000000] SMP: Allowing 4 CPUs, 0 hotplug CPUs
-May  6 00:13:14 thor kernel: [    0.000000] PERCPU: Allocating 41732 bytes of per cpu data
-May  6 00:13:14 thor kernel: [    0.000000] Kernel command line: root=/dev/sdb1 ro debug vga=0x317
-May  6 00:13:14 thor kernel: [    0.000000] Preemptible RCU implementation.
-May  6 00:13:14 thor kernel: [    0.000000] Extended CMOS year: 2000
-May  6 00:13:14 thor kernel: [    0.000000] TSC calibrated against PM_TIMER
-May  6 00:13:14 thor kernel: [    0.000014] time.c: Detected 2499.952 MHz processor.
-May  6 00:13:14 thor kernel: [    0.000032] console [tty0] enabled
-May  6 00:13:14 thor kernel: [    0.000999] Dentry cache hash table entries: 524288 (order: 10, 4194304 bytes)
-May  6 00:13:14 thor kernel: [    0.000999] Inode-cache hash table entries: 262144 (order: 9, 2097152 bytes)
-May  6 00:13:14 thor kernel: [    0.000999] Checking aperture...
-
-...
-
+> On Thu, 8 May 2008, Andrea Arcangeli wrote:
+> > 
+> > Unfortunately the lock you're talking about would be:
+> > 
+> > static spinlock_t global_lock = ...
+> > 
+> > There's no way to make it more granular.
 > 
->> dmesg shows here :
->>
->> ...
->>
->>
->> [    0.000000] Allocating PCI resources starting at d0000000 (gap: cf600000:2f800000)
->> [    0.000000] SMP: Allowing 4 CPUs, 0 hotplug CPUs
->> [    0.000000] PERCPU: Allocating 42756 bytes of per cpu data
->> [    0.000000] NR_CPUS: 8, nr_cpu_ids: 4
->> [4294014.506571] Built 1 zonelists in Zone order, mobility grouping on.  Total pages: 1010753
->> [4294014.506571] Kernel command line: root=/dev/sdb1 ro debug vga=0x317
->> [4294014.506571] Initializing CPU#0
->> [4294014.506571] Preemptible RCU implementation.
->> [4294014.506571] PID hash table entries: 4096 (order: 12, 32768 bytes) 
->>
->> ...                                                                                     
->>
->>
->> Is this a known issue ?
->>
+> Right. So what? 
 > 
-> Not to me.
-> 
+> It's still about a million times faster than what the code does now.
 
-Gabriel
+mmu_notifier_register only runs when windows or linux or macosx
+boots. Who could ever care of the msec spent in mm_lock compared to
+the time it takes to linux to boot?
+
+What you're proposing is to slowdown AIM and certain benchmarks 20% or
+more for all users, just so you save at most 1msec to start a VM.
+
+> Rewrite the code, or not. I don't care. I'll very happily not merge crap 
+> for the rest of my life.
+
+If you want the global lock I'll do it no problem, I just think it's
+obviously inferior solution for 99% of users out there (including kvm
+users that will also have to take that lock while kvm userland runs).
+
+In my view the most we should do in this area is to reduce further the
+max number of locks to take if max_map_count already isn't enough.
