@@ -1,53 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932224AbYEGS2x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765917AbYEGSag@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932224AbYEGS2x (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 14:28:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752166AbYEGS2d
+	id S1765917AbYEGSag (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 14:30:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752347AbYEGSaX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 14:28:33 -0400
-Received: from fg-out-1718.google.com ([72.14.220.154]:62714 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754399AbYEGS23 convert rfc822-to-8bit (ORCPT
+	Wed, 7 May 2008 14:30:23 -0400
+Received: from rv-out-0506.google.com ([209.85.198.238]:11566 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751591AbYEGSaU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 14:28:29 -0400
+	Wed, 7 May 2008 14:30:20 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=khmR2dbg5X97fXRtRTqZ9CWVeCQhLiPhUuvqUATmLI+mBSKQzK3HVEUg0X/XVEcos6//3DFPGyKcra+X87rSCwq3N0PfABw70SPRIhTLi0ceKf1LCSwfgBG0Ro3knYtEme5wc1UGTO1SWno7G8KpD/067YaXvsFuZh6+MamWvZQ=
-Message-ID: <c878e2290805071128s34603039y3463d0c99253bfcf@mail.gmail.com>
-Date: Wed, 7 May 2008 20:28:27 +0200
-From: "Kim Hansen" <kimhanse@gmail.com>
-To: "Alex Dubov" <oakad@yahoo.com>
-Subject: Re: tifm_7xx1: SD card is ignored
-Cc: linux-kernel@vger.kernel.org, drzeus@drzeus.cx
-In-Reply-To: <c878e2290805070950o260fbb77m27407a483af9dbc9@mail.gmail.com>
+        b=H/qLGbput9c1+F2eG20W5RCyxqKpHPxQP3vqrCs9SqW/+pGoAxzg+ORY29Vgzqkpeh7zBcEhSUM8rwmfvrR+BIJEznQqe398Xqhir50bAYFzlZhOK1IMfFCvo3LVtiyi1988uzTP9rYyFavem9iwphNEkUwl7w5rq7hnqFr86IU=
+Message-ID: <86802c440805071130m62c1f4edydb3316dac4a2aba2@mail.gmail.com>
+Date: Wed, 7 May 2008 11:30:18 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Jesper Krogh" <jesper@krogh.cc>
+Subject: Re: NIU - Sun Neptune 10g - Transmit timed out reset (2.6.24)
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <4821F3B7.2090702@krogh.cc>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <c878e2290805061056k4b97513boa924eae90d649391@mail.gmail.com>
-	 <202777.76958.qm@web36706.mail.mud.yahoo.com>
-	 <c878e2290805070950o260fbb77m27407a483af9dbc9@mail.gmail.com>
+References: <4821F3B7.2090702@krogh.cc>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 7, 2008 at 6:50 PM, Kim Hansen <kimhanse@gmail.com> wrote:
+On Wed, May 7, 2008 at 11:23 AM, Jesper Krogh <jesper@krogh.cc> wrote:
+> Hi.
 >
-> I have captured some logs now, there is logs of a successful insert
-> and remove, and of an unsuccessful.
+>  I get errors like this after a few minutes of traffic on a Sun Neptune 10g
+> ethernet card. (with nice 500MB/s throughput).
 >
-> Successful  insert: 16:18:50   remove:  16:20:26
-> Unsuccessful insert:  16:21:38  remove:  16:21:47
+>  Then the server seems too busy with something, so it doesn't even respont
+> to a serial terminal login.
 >
-> The log can be found at: http://i9.dk/~kim/mmc-log.txt.bz2
+>  May  7 16:16:33 hest kernel: [  166.948958] niu: niu_get_parent:
+> platform_type[1] port[3]
+>  May  7 16:16:33 hest kernel: [  166.949366] niu: niu_get_and_validate_port:
+> port[3] num_ports[2]
+>  May  7 16:16:33 hest kernel: [  166.949886] niu: niu_put_parent: port[3]
+>  .. bootup ends here ..
+>  May  7 17:13:54 hest kernel: [ 3670.128178] niu 0000:84:00.0: niu: eth4:
+> Transmit timed out, resetting
+>  May  7 17:14:04 hest kernel: [ 3680.108614] niu 0000:84:00.0: niu: eth4:
+> Transmit timed out, resetting
+>  May  7 17:14:14 hest kernel: [ 3690.093089] niu 0000:84:00.0: niu: eth4:
+> Transmit timed out, resetting
+>  May  7 17:14:19 hest kernel: [ 3695.079254] niu 0000:84:00.0: niu: eth4:
+> Transmit timed out, resetting
+>  May  7 17:14:24 hest kernel: [ 3700.073525] niu 0000:84:00.0: niu: eth4:
+> Transmit timed out, resetting
+>  May  7 17:14:29 hest kernel: [ 3705.063744] niu 0000:84:00.0: niu: eth4:
+> Transmit timed out, resetting
+>  May  7 17:14:34 hest kernel: [ 3710.049918] niu 0000:84:00.0: niu: eth4:
+> Transmit timed out, resetting
+>
+>
+>  Any suggestions?
+>
+>  The system is an Ubuntu Hardy (2.6.24-17-server) amd64.
 
-I just tested on 2.6.25, and the behaviour is the same as on 2.6.24.
-Sometimes the SD-card is accepted, other times is it rejected with the
-'low voltage range' error, the logging is also the same.
+can you try 2.6.25 or current git?
 
--- 
-Kim Hansen
-Vadgårdsvej 3, 2.tv
-2860 Søborg
-Fastnet: 3956 2437 -- Mobil: 3091 2437
+YH
