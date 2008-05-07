@@ -1,181 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755636AbYEGJlb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756905AbYEGJti@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755636AbYEGJlb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 05:41:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752554AbYEGJlU
+	id S1756905AbYEGJti (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 05:49:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751459AbYEGJt0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 05:41:20 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:36305 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752402AbYEGJlT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 05:41:19 -0400
-Date: Wed, 7 May 2008 11:41:50 +0200
-From: Pavel Machek <pavel@suse.cz>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: pm list <linux-pm@lists.linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Len Brown <lenb@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
-       Matt Helsley <matthltc@us.ibm.com>, Cedric Le Goater <clg@fr.ibm.com>,
-       Paul Menage <menage@google.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Liam Howlett <howlett@gmail.com>, Matthew Wilcox <matthew@wil.cx>
-Subject: Re: [RFC][PATCH 2/2] Freezer: Try to handle killable tasks
-Message-ID: <20080507094150.GG13858@elf.ucw.cz>
-References: <200805070003.56387.rjw@sisk.pl> <200805070007.56998.rjw@sisk.pl>
+	Wed, 7 May 2008 05:49:26 -0400
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:39877 "EHLO smtp6.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752635AbYEGJtZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 May 2008 05:49:25 -0400
+Date: Wed, 7 May 2008 12:48:09 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Paul Menage <menage@google.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
+       Paul Jackson <pj@sgi.com>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Fix cpuset sched_relax_domain_level control file
+Message-ID: <20080507094809.GB29935@cs181133002.pp.htv.fi>
+References: <48210101.1070205@google.com> <20080506183841.e1771032.akpm@linux-foundation.org> <6599ad830805061841n57232824s451c4e8788b7864d@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <200805070007.56998.rjw@sisk.pl>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <6599ad830805061841n57232824s451c4e8788b7864d@mail.gmail.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed 2008-05-07 00:07:55, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rjw@sisk.pl>
+On Tue, May 06, 2008 at 06:41:39PM -0700, Paul Menage wrote:
+> On Tue, May 6, 2008 at 6:38 PM, Andrew Morton <akpm@linux-foundation.org> wrote:
+> > On Tue, 06 May 2008 18:08:17 -0700 Paul Menage <menage@google.com> wrote:
+> >
+> >  > -static int update_relax_domain_level(struct cpuset *cs, char *buf)
+> >  > +static int update_relax_domain_level(struct cpuset *cs, s64 val)
+> >  >  {
+> >  > -     int val = simple_strtol(buf, NULL, 10);
+> >  > -
+> >  > -     if (val < 0)
+> >  > +     if ((int)val < 0)
+> >  >               val = -1;
+> >  >
+> >
+> >  Are you sure about the typecast here?  If `val' has a value of say
+> >  0x0000_ffff_ffff_ffff then I assume the casted value will be negative, only
+> >  it wasn't?
 > 
-> The introduction of TASK_KILLABLE allows the freezer to work in some situation
-> that it could not handle before.
-> 
-> Make the freezer handle killable tasks and add try_to_freeze() in some places
-> where it is safe to freeze a (killable) task.  Introduce the
-> wait_event_killable_freezable() macro to be used wherever the freezing of
-> a waiting killable task is desirable.
-> 
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> ---
->  fs/nfs/inode.c          |    2 ++
->  fs/nfs/nfs3proc.c       |    2 ++
->  fs/nfs/nfs4proc.c       |    4 ++++
->  fs/nfs/pagelist.c       |    8 ++++++--
->  fs/smbfs/request.c      |    2 ++
->  include/linux/freezer.h |   20 +++++++++++++++++---
->  kernel/mutex.c          |    3 +++
->  kernel/power/process.c  |    6 ++++--
->  kernel/sched.c          |    2 ++
->  net/sunrpc/sched.c      |    2 ++
->  10 files changed, 44 insertions(+), 7 deletions(-)
-> 
-> Index: linux-2.6/fs/nfs/nfs3proc.c
-> ===================================================================
-> --- linux-2.6.orig/fs/nfs/nfs3proc.c
-> +++ linux-2.6/fs/nfs/nfs3proc.c
-> @@ -17,6 +17,7 @@
->  #include <linux/nfs_page.h>
->  #include <linux/lockd/bind.h>
->  #include <linux/nfs_mount.h>
-> +#include <linux/freezer.h>
->  
->  #include "iostat.h"
->  #include "internal.h"
-> @@ -33,6 +34,7 @@ nfs3_rpc_wrapper(struct rpc_clnt *clnt, 
->  		if (res != -EJUKEBOX)
->  			break;
->  		schedule_timeout_killable(NFS_JUKEBOX_RETRY_TIME);
-> +		try_to_freeze();
->  		res = -ERESTARTSYS;
->  	} while (!fatal_signal_pending(current));
->  	return res;
-> Index: linux-2.6/fs/nfs/nfs4proc.c
-> ===================================================================
-> --- linux-2.6.orig/fs/nfs/nfs4proc.c
-> +++ linux-2.6/fs/nfs/nfs4proc.c
-> @@ -48,6 +48,7 @@
->  #include <linux/smp_lock.h>
->  #include <linux/namei.h>
->  #include <linux/mount.h>
-> +#include <linux/freezer.h>
->  
->  #include "nfs4_fs.h"
->  #include "delegation.h"
-> @@ -2788,6 +2789,7 @@ static int nfs4_wait_bit_killable(void *
->  	if (fatal_signal_pending(current))
->  		return -ERESTARTSYS;
->  	schedule();
-> +	try_to_freeze();
->  	return 0;
->  }
+> It seems like the simplest approach - if it's outside the range of a
+> positive int, set it to -1.
 
-I'd say try_to_freeze() belongs close to the other signal check,
-i.e. before schedule?
+That's very hard to understand for someone who looks at the code - and 
+being able to understand the code is much more important than the 
+number of characters in the source code.
 
-> @@ -180,10 +182,12 @@ static int nfs_wait_bit_killable(void *w
->  {
->  	int ret = 0;
->  
-> -	if (fatal_signal_pending(current))
-> +	if (fatal_signal_pending(current)) {
->  		ret = -ERESTARTSYS;
-> -	else
-> +	} else {
->  		schedule();
-> +		try_to_freeze();
-> +	}
+If you'd write something like
 
-Same here?
+  if ((val < 0) || (val > INT_MAX))
 
-> @@ -109,6 +110,7 @@ struct smb_request *smb_alloc_request(st
->  			return ERR_PTR(-ERESTARTSYS);
->  		current->policy = SCHED_YIELD;
->  		schedule();
-> +		try_to_freeze();
+instead it would be obvious for the reader what's happening here, and 
+that this was intended.
 
-And here?
+> Paul
 
-> @@ -182,6 +183,8 @@ __mutex_lock_common(struct mutex *lock, 
->  		/* didnt get the lock, go to sleep: */
->  		spin_unlock_mutex(&lock->wait_lock, flags);
->  		schedule();
-> +		if (state == TASK_KILLABLE)
-> +			try_to_freeze();
->  		spin_lock_mutex(&lock->wait_lock, flags);
->  	}
->  
+cu
+Adrian
 
-I'm not comfortable with this one. Can the task be killable, but still
-hold some _other_ mutex? (and then release it only if it actually gets
-the signal?)
+BTW: I have seen that even further restrictions are discussed in this 
+     case, my comment is more about the general readability of this
+     "simplest approach".
 
-
-> Index: linux-2.6/kernel/sched.c
-> ===================================================================
-> --- linux-2.6.orig/kernel/sched.c
-> +++ linux-2.6/kernel/sched.c
-> @@ -4769,6 +4769,8 @@ do_wait_for_common(struct completion *x,
->  			__set_current_state(state);
->  			spin_unlock_irq(&x->wait.lock);
->  			timeout = schedule_timeout(timeout);
-> +			if (state == TASK_KILLABLE)
-> +				try_to_freeze();
->  			spin_lock_irq(&x->wait.lock);
->  			if (!timeout) {
->  				__remove_wait_queue(&x->wait, &wait);
-
-Same here. I can't see why we could not be holding mutexes.
-
-> @@ -227,6 +228,7 @@ static int rpc_wait_bit_killable(void *w
->  	if (fatal_signal_pending(current))
->  		return -ERESTARTSYS;
->  	schedule();
-> +	try_to_freeze();
->  	return 0;
->  }
-
-Swap?
-
-> @@ -426,6 +427,7 @@ static int nfs_wait_schedule(void *word)
->  	if (signal_pending(current))
->  		return -ERESTARTSYS;
->  	schedule();
-> +	try_to_freeze();
->  	return 0;
->  }
->  
-
-Swap?
-									Pavel
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
