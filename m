@@ -1,70 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933049AbYEGW6Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932590AbYEGW7Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933049AbYEGW6Y (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 18:58:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754425AbYEGW6H
+	id S932590AbYEGW7Q (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 18:59:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753012AbYEGW6z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 18:58:07 -0400
-Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:56394
-	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754231AbYEGW6F (ORCPT
+	Wed, 7 May 2008 18:58:55 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:51404 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753790AbYEGW6x (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 18:58:05 -0400
-Date: Thu, 8 May 2008 00:58:01 +0200
-From: Andrea Arcangeli <andrea@qumranet.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Lameter <clameter@sgi.com>, Jack Steiner <steiner@sgi.com>,
-       Robin Holt <holt@sgi.com>, Nick Piggin <npiggin@suse.de>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       kvm-devel@lists.sourceforge.net, Kanoj Sarcar <kanojsarcar@yahoo.com>,
-       Roland Dreier <rdreier@cisco.com>,
-       Steve Wise <swise@opengridcomputing.com>, linux-kernel@vger.kernel.org,
-       Avi Kivity <avi@qumranet.com>, linux-mm@kvack.org,
-       general@lists.openfabrics.org, Hugh Dickins <hugh@veritas.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Anthony Liguori <aliguori@us.ibm.com>, Chris Wright <chrisw@redhat.com>,
-       Marcelo Tosatti <marcelo@kvack.org>, Eric Dumazet <dada1@cosmosbay.com>,
-       "Paul E. McKenney" <paulmck@us.ibm.com>
-Subject: Re: [PATCH 08 of 11] anon-vma-rwsem
-Message-ID: <20080507225801.GK8276@duo.random>
-References: <6b384bb988786aa78ef0.1210170958@duo.random> <alpine.LFD.1.10.0805071349200.3024@woody.linux-foundation.org> <20080507212650.GA8276@duo.random> <alpine.LFD.1.10.0805071429170.3024@woody.linux-foundation.org> <20080507222205.GC8276@duo.random> <alpine.LFD.1.10.0805071540300.3024@woody.linux-foundation.org>
+	Wed, 7 May 2008 18:58:53 -0400
+Message-ID: <482233F0.7040000@zytor.com>
+Date: Wed, 07 May 2008 15:57:52 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.10.0805071540300.3024@woody.linux-foundation.org>
+To: Rene Herman <rene.herman@keyaccess.nl>
+CC: Thomas Gleixner <tglx@linutronix.de>, Adrian Bunk <bunk@kernel.org>,
+       Yinghai Lu <yhlu.kernel@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       Pavel Machek <pavel@suse.cz>
+Subject: Re: 2.6.26, PAT and AMD family 6
+References: <48210A71.1060409@keyaccess.nl> <86802c440805061939q39ff5500h3c9e229ecbc6b2e6@mail.gmail.com> <20080507124650.GD29935@cs181133002.pp.htv.fi> <alpine.LFD.1.10.0805072122270.3318@apollo.tec.linutronix.de> <48221AE3.6020602@keyaccess.nl>
+In-Reply-To: <48221AE3.6020602@keyaccess.nl>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 07, 2008 at 03:44:24PM -0700, Linus Torvalds wrote:
+Rene Herman wrote:
+> On 07-05-08 22:52, Thomas Gleixner wrote:
 > 
+>>> And why do we need this clear_cpu_cap(c, X86_FEATURE_PAT) and then 
+>>> manual setting of X86_FEATURE_PAT at all?
+>>
+>> The reason is to make cpu_has_pat a useful check and to avoid checking
+>> cpu vendors, families and models inside of the PAT code. That's a good
+>> thing actually, because the PAT code only cares about that cpu_has_pat
+>> flag.
+>>
+>> Clearing it in the cpuinfo is just a cosmetic side effect which does
+>> no harm at all.
 > 
-> On Thu, 8 May 2008, Andrea Arcangeli wrote:
-> > 
-> > Unfortunately the lock you're talking about would be:
-> > 
-> > static spinlock_t global_lock = ...
-> > 
-> > There's no way to make it more granular.
+> Oh yes, it does. It makes people unaware that their CPUs _should_ be
+> supporting PAT. The thing's not called /proc/kernelinfo for a reason.
 > 
-> Right. So what? 
-> 
-> It's still about a million times faster than what the code does now.
 
-mmu_notifier_register only runs when windows or linux or macosx
-boots. Who could ever care of the msec spent in mm_lock compared to
-the time it takes to linux to boot?
+Okay, that is utter nonsense.  /proc/cpuinfo has always been, and will 
+always be, the CPU *AS THE KERNEL SEES IT*.  If you want something else, 
+use x86info(1).
 
-What you're proposing is to slowdown AIM and certain benchmarks 20% or
-more for all users, just so you save at most 1msec to start a VM.
+> And would yelling at people how shuffle in code without (publicly at
+> least) addressing one of your fellow arch maintainers objections and
+> Pavel's review comments about code duplication without a single line
+> of explanation/changelog do?
 
-> Rewrite the code, or not. I don't care. I'll very happily not merge crap 
-> for the rest of my life.
+We did discuss this (over IRC, I'm afraid), and came to the conclusion 
+that it's too risky to do the proper thing (blacklist) straight out the 
+gate.  Consider it a staged implementation.  The reason for this is that 
+some of the earlier chips have downright frightening errata w.r.t. PAT. 
+  *At this point*, we'd have no reasonable way to filter those bug 
+reports from the issues with the software itself.
 
-If you want the global lock I'll do it no problem, I just think it's
-obviously inferior solution for 99% of users out there (including kvm
-users that will also have to take that lock while kvm userland runs).
+So, one step at a time.  PAT is massively overdue in Linux, so it's no 
+wonder you're anxious about it, but we need a modicum of caution here.
 
-In my view the most we should do in this area is to reduce further the
-max number of locks to take if max_map_count already isn't enough.
+	-hpa
