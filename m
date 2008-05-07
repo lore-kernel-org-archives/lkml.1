@@ -1,52 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763464AbYEGR0b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757410AbYEGR1L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763464AbYEGR0b (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 13:26:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755391AbYEGR0D
+	id S1757410AbYEGR1L (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 13:27:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755595AbYEGR0p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 13:26:03 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:59454 "EHLO mx3.mail.elte.hu"
+	Wed, 7 May 2008 13:26:45 -0400
+Received: from www.tglx.de ([62.245.132.106]:34232 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754641AbYEGR0A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 13:26:00 -0400
-Date: Wed, 7 May 2008 19:25:42 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Matthew Wilcox <matthew@wil.cx>, Andrew Morton <akpm@linux-foundation.org>,
-       "J. Bruce Fields" <bfields@citi.umich.edu>,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Alexander Viro <viro@ftp.linux.org.uk>, linux-fsdevel@vger.kernel.org
-Subject: Re: AIM7 40% regression with 2.6.26-rc1
-Message-ID: <20080507172542.GA13389@elte.hu>
-References: <1210052904.3453.30.camel@ymzhang> <20080506114449.GC32591@elte.hu> <20080506120934.GH19219@parisc-linux.org> <20080506162332.GI19219@parisc-linux.org> <20080506102153.5484c6ac.akpm@linux-foundation.org> <20080507163811.GY19219@parisc-linux.org> <alpine.LFD.1.10.0805070948250.3024@woody.linux-foundation.org> <alpine.LFD.1.10.0805070956060.3024@woody.linux-foundation.org> <20080507172246.GA13262@elte.hu>
+	id S1755391AbYEGR0n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 May 2008 13:26:43 -0400
+Date: Wed, 7 May 2008 19:26:20 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Eric Sesterhenn <snakebyte@gmx.de>
+cc: Ingo Molnar <mingo@elte.hu>, Frederik Deweerdt <deweerdt@free.fr>,
+       linux-kernel@vger.kernel.org, suresh.b.siddha@intel.com,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: Oops with strace_test
+In-Reply-To: <20080507172032.GB3348@alice>
+Message-ID: <alpine.LFD.1.10.0805071924550.3318@apollo.tec.linutronix.de>
+References: <20080430121202.GD18314@alice> <20080505100008.GA2354@alice> <20080505180053.GB5576@slug> <20080506121005.GJ32591@elte.hu> <20080507103615.GC2340@alice> <alpine.LFD.1.10.0805071534580.3318@apollo.tec.linutronix.de> <20080507172032.GB3348@alice>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080507172246.GA13262@elte.hu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 7 May 2008, Eric Sesterhenn wrote:
+> * Thomas Gleixner (tglx@linutronix.de) wrote:
+> > On Wed, 7 May 2008, Eric Sesterhenn wrote:
+> > > * Ingo Molnar (mingo@elte.hu) wrote:
+> > > > 
+> > > > * Frederik Deweerdt <deweerdt@free.fr> wrote:
+> > > > 
+> > > > > Hi Eric,
+> > > > > 
+> > > > > This appears to be caused by init_fpu() missing from the 
+> > > > > restore_sigcontext->restore_i387->restore_fpu_checking code path.
+> > > > > 
+> > > > > I believe that moving the init_fpu() call from math_state_restore to 
+> > > > > restore_fpu_checking should fix the problem?
+> > > 
+> > > sadly the patch does not work for me :( I still get the oopses. I am
+> > > running this on a 32 Bit CPU, so arch/x86/kernel/traps_64.c doesnt get
+> > > compiled. I tried removing the same part from traps_32.c but then
+> > > the kernel oopses before netconsole is active.
+> > 
+> > I run that &$#@! intuitive test for an hour know with no effect. Can
+> > you please provide your .config file ?
+> 
+> sorry, ignored the CC, here it is.
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+Ok, we decoded the problem in meantime. Suresh will send a patch soon.
 
-> There's far more normal mutex fastpath use during an AIM7 run than any 
-> BKL use. So if it's due to any direct fastpath overhead and the 
-> resulting widening of the window for the real slowdown, we should see 
-> a severe slowdown on AIM7 with CONFIG_MUTEX_DEBUG=y. Agreed?
+Thanks,
 
-my own guesstimate about AIM7 performance impact resulting out of 
-CONFIG_MUTEX_DEBUG=y: performance overhead will not be measurable, or 
-will at most be in the sub-1% range. But i've been badly wrong before :)
-
-	Ingo
+	tglx
