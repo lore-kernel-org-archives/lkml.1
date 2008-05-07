@@ -1,130 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765619AbYEGVsK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765264AbYEGVsi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765619AbYEGVsK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 17:48:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755803AbYEGVrv
+	id S1765264AbYEGVsi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 17:48:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755803AbYEGVsU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 17:47:51 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:34795 "EHLO ogre.sisk.pl"
+	Wed, 7 May 2008 17:48:20 -0400
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:56796 "EHLO smtp6.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755660AbYEGVrt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 17:47:49 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Gabriel C <nix.or.die@googlemail.com>
-Subject: Re: BIOS bug, APIC version if 0 for CPU#0
-Date: Wed, 7 May 2008 23:47:43 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Justin Mattock <justinmattock@gmail.com>,
-       Kasper Sandberg <lkml@metanurb.dk>,
-       Jacek Luczak <difrost.kernel@gmail.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-References: <dd18b0c30804212213x74716d5fx4bf91cbb99a01286@mail.gmail.com> <200805070037.12796.rjw@sisk.pl> <4821089D.9080901@googlemail.com>
-In-Reply-To: <4821089D.9080901@googlemail.com>
+	id S1757902AbYEGVsR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 May 2008 17:48:17 -0400
+Date: Thu, 8 May 2008 00:46:46 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Rene Herman <rene.herman@keyaccess.nl>, Yinghai Lu <yhlu.kernel@gmail.com>,
+       Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel <linux-kernel@vger.kernel.org>, hpa@zytor.com,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       Pavel Machek <pavel@suse.cz>
+Subject: Re: 2.6.26, PAT and AMD family 6
+Message-ID: <20080507214646.GC14951@cs181133002.pp.htv.fi>
+References: <48210A71.1060409@keyaccess.nl> <86802c440805061939q39ff5500h3c9e229ecbc6b2e6@mail.gmail.com> <20080507124650.GD29935@cs181133002.pp.htv.fi> <alpine.LFD.1.10.0805072122270.3318@apollo.tec.linutronix.de> <48221AE3.6020602@keyaccess.nl> <alpine.LFD.1.10.0805072315360.3318@apollo.tec.linutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Message-Id: <200805072347.43805.rjw@sisk.pl>
+In-Reply-To: <alpine.LFD.1.10.0805072315360.3318@apollo.tec.linutronix.de>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, 7 of May 2008, Gabriel C wrote:
-> Rafael J. Wysocki wrote:
-> > On Tuesday, 22 of April 2008, Justin Mattock wrote:
-> >> On Tue, Apr 22, 2008 at 1:49 PM, Kasper Sandberg <lkml@metanurb.dk> wrote:
-> >>> On Tue, 2008-04-22 at 06:10 +0000, Justin Mattock wrote:
-> >>>  > On Tue, Apr 22, 2008 at 5:21 AM, Jacek Luczak <difrost.kernel@gmail.com> wrote:
-> >>>  > > Hi,
-> >>>  > >
-> >>>  > >
-> >>>  > >  > Hello;
-> >>>  > >  > with the latest git on a macbook the system can barely boot without
-> >>>  > >  > freezing, a work around for me at leat is either disable smp, or once
-> >>>  > >  > booted  turn on glxgears,or compiling the kernel i.g. when using the
-> >>>  > >  > processors I'm not receiving a freeze, only when everything starts
-> >>>  > >  > lowering down. in dmesg I'm noticing BIOS bug, APIC version is 0 for
-> >>>  > >  > CPU#0! fixing up to 0x10. (tell you're hw vendor) could this be the
-> >>>  > >  > reason for the system freezes?,
-> >>>  > >
-> >>>  > >  I don't think so. On my machine there's no freezes with latest git and:
-> >>>  > >  ACPI: LAPIC (acpi_id[0x00] lapic_id[0x00] enabled)
-> >>>  > >  BIOS bug, APIC version is 0 for CPU#0! fixing up to 0x10. (tell your hw vendor)
-> >>>  > >  ACPI: LAPIC (acpi_id[0x01] lapic_id[0x01] enabled)
-> >>>  > >  BIOS bug, APIC version is 0 for CPU#0! fixing up to 0x10. (tell your hw vendor)
-> >>>  > >
-> >>>  > >  I've got exactly the same messages.
-> >>>  >
-> >>>  > Are you using a macbook aswell?
-> >>>  >
-> >>>  > >
-> >>>  > >
-> >>>  > >  > also I didnt have a camera handy on me
-> >>>  > >  > but the screen spit out = Bug spinlock lockup on CPU#0
-> >>>  > >  > swapper/0. c17fa7c0 PID 0, comm: swapper not tainted.
-> >>>  > >
-> >>>  > >  Can you try to write down more of those bug messages?
-> >>>  >
-> >>>  > Yeah,
-> >>>  >
-> >>>  > >
-> >>>  > >
-> >>>  > >  > I dont have a problem disabling smp, except when I cat /proc/cpuinfo I
-> >>>  > >  > don't see anything about my cores.
-> >>>  > >
-> >>>  > >  What exactly you expect to see in /proc/cpuinfp while smp is disabled?
-> >>>  >
-> >>>  > under smp I see cpu cores. disabling smp I dont see cpu cores, under
-> >>>  > cat /proc/cpuinfo.
-> >>>
-> >>>  well.. SMP is kindof support for multiple processors, be it in one
-> >>>  socket, or multiple sockets.. without SMP you will only be able to use 1
-> >>>  of your X cores.
-> >> Yeah disabling smp is not a good idea on a macbook pro, performace is horrible.
-> >>
-> >>>  >
-> >>>  >
-> >>>  > >
-> >>>  > >
-> >>>  > >  > I know this is a stupid question
-> >>>  > >  > but will it hurt the system if smp is disabled
-> >>>  > >  > for the macbook pro ati chipset.?
-> >>>  > >
-> >>>  > >  No it won't.
-> >>>  > >
-> >>>  > >  -Jacek
-> >>>  > >
-> >>>  >
-> >>>  > Cool as long as the system Is o.k. disabling smp.
-> >>>  It is.. but with the limitations outlined above.
-> >>>  >   What about x86: PAT
-> >>>  > support is disabled. how do I enable this option?
-> >>>  > regards;
-> >>>  >
-> >>>
-> >>>
-> >> Thanks for the feedback, well I guess this would be either a
-> >> regression or a bug. I think the best would be to have somebody else
-> >> with a macbook pro 15' ati chipset confirm this freezeing as well,
-> >> before going out and jumping the gun, and filing a bug report.
-> >> regards;
+On Wed, May 07, 2008 at 11:41:04PM +0200, Thomas Gleixner wrote:
+> On Wed, 7 May 2008, Rene Herman wrote:
+> > On 07-05-08 22:52, Thomas Gleixner wrote:
+>...
+> > > > And this patch (by the author of the code himself) is the first time where
+> > > > it breaks.
+> > > 
+> > > Very interesting analysis. What broke ? This CPU was never in the set
+> > > of supported ones at all.
 > > 
-> > What's the current status of this issue?
+> > You misunderstood. Yinghai's patch only changed one of the code sites
+> > and not the others, which (if I understood right) is the breakage
+> > Adrian was reffering to.
 > 
-> I reported this issue too but got ignored .. No one of the x86 maintainer did answer my questions.
+> I know exactly what he was referring to. So what's the problem ?
 > 
-> http://www.ussg.iu.edu/hypermail/linux/kernel/0805.0/1258.html
-> 
-> However it does not do any bad on my boxes ( so far I can tell ) is just plain annoying and wrong some who since
-> is *only* occurs on 32bit kernels. HW is broken or even isn't.
-> 
-> It seems to me this issue is related to the move of generic_processor_info() and fiends to apic_32.c ( but I'm not really sure ) ,
-> all I'm sure about this message was not in 2.6.25 nor in 2.6.24.
+> Yinghai missed to add it to the other place and he is hardly to blame
+> for that. This code is messy and thats not his fault. It will be
+> cleaned up, but that's not an simple taks to do. If you think you can
+> do it without breaking tons of systems, you're welcome.
 
-It will be listed as http://bugzilla.kernel.org/show_bug.cgi?id=10613.
+It actually is completely his fault.
 
-Please add yourself to the Cc list in there.
+His commit ***added*** the three copies of the same code.
 
-Thanks,
-Rafael
+And Pavel did complain about it when it was sent to linux-kernel.
+
+>...
+> Thanks,
+> 
+> 	tglx
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
