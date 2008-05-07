@@ -1,54 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933721AbYEGTYC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933476AbYEGTZG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933721AbYEGTYC (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 15:24:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932689AbYEGTXj
+	id S933476AbYEGTZG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 15:25:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761197AbYEGTYh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 15:23:39 -0400
-Received: from nf-out-0910.google.com ([64.233.182.191]:22622 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765825AbYEGTXh (ORCPT
+	Wed, 7 May 2008 15:24:37 -0400
+Received: from yw-out-2324.google.com ([74.125.46.28]:31406 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760016AbYEGTYf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 15:23:37 -0400
+	Wed, 7 May 2008 15:24:35 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=DBAjCtfpi8glJkYwuIH4Lust53akYIaP12KaPp4uSc/kZIeiZ9Yzxh39EwWTPn4dVbznZJNGfnEFko3pQm8il5FKCvYIVFMVFK9orBlZJsMxP1zGUd7q7fFfki/tMXO27+TKrwcjKNWhBUkwJGIHVgHk1DhLCTpz+9Ymr0b+HMc=
-Message-ID: <482201A8.90906@gmail.com>
-Date: Wed, 07 May 2008 21:23:20 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
-MIME-Version: 1.0
-To: Justin Mattock <justinmattock@gmail.com>
-CC: Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: nopage to fault
-References: <dd18b0c30805071040i5e9c3d73uf60235b94dcce3c5@mail.gmail.com>	 <4821F3EE.1010309@gmail.com>	 <dd18b0c30805071207q1aaeb8daq7f63b02d3a58b5a@mail.gmail.com>	 <4821FFC0.5060907@gmail.com> <dd18b0c30805071220v7f486f79k6392d2c203b9326a@mail.gmail.com>
-In-Reply-To: <dd18b0c30805071220v7f486f79k6392d2c203b9326a@mail.gmail.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+        h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=sL1mxjMRJfpH9IHGLli2RFzyd2zCeFCwfabP75N2oF1nAPKTIQ89vWIASLa2yvR2go4oDbFTvMHYmpEzKvuN+SXODvx1cwRF7orKN66oseJe6gfJgieitcM6XOBYNZCerlzzy7Mrhh87VUiTnt8polCQ11XepvckfR/hDVULCDQ=
+Subject: Re: [PATCH 2/2] lib: vsprintf.c remove macros defining strict
+	string functions
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <1210188046.19279.42.camel@brick>
+References: <1210184729.19279.33.camel@brick>
+	 <20080507200909.GB5131@martell.zuzino.mipt.ru>
+	 <1210188046.19279.42.camel@brick>
+Content-Type: text/plain
+Date: Wed, 07 May 2008 12:24:17 -0700
+Message-Id: <1210188257.19279.43.camel@brick>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 05/07/2008 09:20 PM, Justin Mattock wrote:
-> On Wed, May 7, 2008 at 7:15 PM, Jiri Slaby <jirislaby@gmail.com> wrote:
->> On 05/07/2008 09:07 PM, Justin Mattock wrote:
->>
->>> On Wed, May 7, 2008 at 6:24 PM, Jiri Slaby <jirislaby@gmail.com> wrote:
->>>
->>>> On 05/07/2008 07:40 PM, Justin Mattock wrote:
->>>>
->>>>
->>>>> of the areas that I'm lost with is NOPAGE_SIGBUS for a return value.
->>>>> in mm.h The only options I see is VM_FAULT_SIGBUS, VM_FAULT_ERROR. If
->>>>>
->>>>>
->>>>  The former, next time, google little bit, please.
 
->>  The former constant you mentioned.
+On Wed, 2008-05-07 at 12:20 -0700, Harvey Harrison wrote:
+> On Thu, 2008-05-08 at 00:09 +0400, Alexey Dobriyan wrote:
+> > On Wed, May 07, 2008 at 11:25:29AM -0700, Harvey Harrison wrote:
+> > > Directly code the strict string conversion functions rather than using
+> > > defining macros.  Pull out a small helper to check the strict conditions
+> > > required at the end of a string (nul-terminated or newline).
+> > 
+> > > Add additional checks in strict_strtol and strict_strtoll for numeric
+> > > overflow of the signed types.
+> > 
+> > C interer ranges are asymmetric.
 > 
-> I think what I'm trying to figure out is what would you put in
-> NOPAGE_SIGBUS's place since it no longer is in the kernel
+> Yes, and LLONG_MAX = -LLONG_MIN + 1...so it will reject string values
+> of LLONG_MIN...easily fixed if we want it I guess.
 
-Well, the former from the 2 you mentioned in the very first post.
+
+Missed the braces above obviously....but the point stands.
+
+Harvey
+
