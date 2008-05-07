@@ -1,46 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758117AbYEGG4t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763148AbYEGG57@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758117AbYEGG4t (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 02:56:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761593AbYEGG4Z
+	id S1763148AbYEGG57 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 02:57:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757317AbYEGG5q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 02:56:25 -0400
-Received: from rv-out-0506.google.com ([209.85.198.233]:17855 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760393AbYEGG4X (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 02:56:23 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=TrIBqD7QIsU5dZEkxiCouB82trj5QnNUHQSJ7Z/6xIcheodtzebsOeL0yJJ7Io9Gsc3OPUqSzod9/Fq9a3HwTk68/7fmsSdeQ0cSDawgHhR9TPy534yyPM1nw7UVPab3U/Br3p0JdeYl8UnNzFHORB+hEBrIvg98tICd79neNgY=
-Message-ID: <8bd0f97a0805062356r637a87c0p5436ebf742631970@mail.gmail.com>
-Date: Wed, 7 May 2008 02:56:22 -0400
-From: "Mike Frysinger" <vapier.adi@gmail.com>
-To: monstr@seznam.cz
-Subject: Re: LTP for no MMU systems
-Cc: "Linux Kernel list" <linux-kernel@vger.kernel.org>,
-       linux-arch@vger.kernel.org, "Arnd Bergmann" <arnd@arndb.de>
-In-Reply-To: <48214CAA.3080008@seznam.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 7 May 2008 02:57:46 -0400
+Received: from mx0.towertech.it ([213.215.222.73]:54749 "HELO mx0.towertech.it"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1756261AbYEGG5n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 May 2008 02:57:43 -0400
+Date: Wed, 7 May 2008 08:57:39 +0200
+From: Alessandro Zummo <alessandro.zummo@towertech.it>
+To: rtc-linux@googlegroups.com
+Cc: macro@linux-mips.org, Jean Delvare <khali@linux-fr.org>,
+       Ralf Baechle <ralf@linux-mips.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>, i2c@lm-sensors.org,
+       linux-mips@linux-mips.org, linux-kernel@vger.kernel.org
+Subject: Re: [rtc-linux] [RFC][PATCH 0/4] RTC: Use class devices as a
+ persistent clock
+Message-ID: <20080507085739.4f538d2e@i1501.lan.towertech.it>
+In-Reply-To: <Pine.LNX.4.55.0805062333390.16173@cliff.in.clinika.pl>
+References: <Pine.LNX.4.55.0805062333390.16173@cliff.in.clinika.pl>
+Organization: Tower Technologies
+X-Mailer: Sylpheed
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <48206ECF.9090005@seznam.cz>
-	 <8bd0f97a0805060749j28cb6fe6wfbdf0d3948d2f417@mail.gmail.com>
-	 <48207888.3070107@seznam.cz>
-	 <8bd0f97a0805060837x530bc130vd5b15392d5549c3d@mail.gmail.com>
-	 <48214CAA.3080008@seznam.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 7, 2008 at 2:31 AM, Michal Simek <monstr@seznam.cz> wrote:
-> Thanks Mike.
+On Wed, 7 May 2008 01:39:59 +0100 (BST)
+"Maciej W. Rozycki" <macro@linux-mips.org> wrote:
 
-it would seem they dont have a page to track results exactly.  the
-scripts we have to run thins are here:
-http://blackfin.uclinux.org/gf/project/uclinux-dist/scmsvn/?action=browse&path=/trunk/testsuites/ltp/
+> 
+> Hello,
+> 
+>  While investigating why Linux on the MIPS64 Broadcom BCM91250A board (the
+> SWARM, based on the SiByte BCM1250A SOC) does not support an RTC device
+> anymore I discovered the "wiring" of code to access /dev/rtc to the RTC
+> device driver got removed with some changes that happened a while ago.  
+> The board uses the ST M41T81 I2C chip with a driver buried within the
+> architecture code.  There is a standard driver for this chip in our tree
+> already, which is called rtc-m41t80, and which as a part of the RTC driver
+> suite provides the necessary "wiring" to /dev/rtc.
 
-hope it helps
--mike
+ [...]
+
+
+ Hi Maciej,
+
+   you did a great work. you have my Acked-by on the rtc/ntp code, but
+ I think we'd need some reports from current users of the m41t81 driver
+ before pushing that one in.
+
+
+-- 
+
+ Best regards,
+
+ Alessandro Zummo,
+  Tower Technologies - Torino, Italy
+
+  http://www.towertech.it
+
