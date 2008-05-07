@@ -1,100 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765091AbYEGVAt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752727AbYEGVBS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765091AbYEGVAt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 17:00:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760863AbYEGVAL
+	id S1752727AbYEGVBS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 17:01:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760687AbYEGVAw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 17:00:11 -0400
-Received: from out01.mta.xmission.com ([166.70.13.231]:54117 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762148AbYEGVAA (ORCPT
+	Wed, 7 May 2008 17:00:52 -0400
+Received: from mga12.intel.com ([143.182.124.36]:4964 "EHLO
+	azsmga102.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1765066AbYEGVAs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 17:00:00 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Greg KH <gregkh@suse.de>
-Cc: Benjamin Thery <benjamin.thery@bull.net>, linux-kernel@vger.kernel.org,
-       Tejun Heo <htejun@gmail.com>, Al Viro <viro@ftp.linux.org.uk>,
-       Daniel Lezcano <dlezcano@fr.ibm.com>,
-       "Serge E. Hallyn" <serue@us.ibm.com>,
-       Pavel Emelyanov <xemul@openvz.org>, netdev@vger.kernel.org
-References: <20080506173030.653828076@theryb.frec.bull.fr>
-	<20080506173335.922289888@theryb.frec.bull.fr>
-	<m13aoueyq8.fsf@frodo.ebiederm.org> <20080507190838.GA4467@suse.de>
-Date: Wed, 07 May 2008 13:54:27 -0700
-In-Reply-To: <20080507190838.GA4467@suse.de> (Greg KH's message of "Wed, 7 May
-	2008 12:08:38 -0700")
-Message-ID: <m1hcd9esxo.fsf@frodo.ebiederm.org>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Wed, 7 May 2008 17:00:48 -0400
+X-Greylist: delayed 573 seconds by postgrey-1.27 at vger.kernel.org; Wed, 07 May 2008 17:00:48 EDT
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.27,450,1204531200"; 
+   d="scan'208";a="243481757"
+Date: Wed, 7 May 2008 13:58:18 -0700
+From: mark gross <mgross@linux.intel.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Gabriel C <nix.or.die@googlemail.com>, linux-kernel@vger.kernel.org,
+       ashok.raj@intel.com, shaohua.li@intel.com,
+       anil.s.keshavamurthy@intel.com, jbarnes@virtuousgeek.org,
+       linux-pci@atrey.karlin.mff.cuni.cz
+Subject: Re: intel-iommu: CONFIG_DMAR*=y kills my box
+Message-ID: <20080507205818.GA15746@linux.intel.com>
+Reply-To: mgross@linux.intel.com
+References: <48133A64.7020702@googlemail.com> <4813660E.8080609@googlemail.com> <20080429002901.GC31157@linux.intel.com> <481677D3.5070800@googlemail.com> <20080429225348.GA1672@linux.intel.com> <4817A98D.8080007@googlemail.com> <20080506131554.4adb3f9c.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-SA-Exim-Connect-IP: 24.130.11.59
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa04 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
-	*      [score: 0.0095]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa04 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-Subject: Re: [PATCH 10/11] avoid kobject name conflict with different namespaces
-X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
-X-SA-Exim-Scanned: Yes (on mgr1.xmission.com)
+Content-Disposition: inline
+In-Reply-To: <20080506131554.4adb3f9c.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH <gregkh@suse.de> writes:
+On Tue, May 06, 2008 at 01:15:54PM -0700, Andrew Morton wrote:
+> On Wed, 30 Apr 2008 01:04:45 +0200
+> Gabriel C <nix.or.die@googlemail.com> wrote:
+> >
+> 
+> Guys, it's really painful having to scroll through thousand-line emails to
+> find a few lines of information.  Please trim stuff.
 
-> On Wed, May 07, 2008 at 11:49:19AM -0700, Eric W. Biederman wrote:
->> Unless there is another path I think placing an additional pointer in
->> kobj_type so we can find it through ktype is the simplest solution.
->> Although using the kset is also sane.
->
-> Ick, ick, ick :)
+sorry.  I will next time.
+ 
+> > 
+> > > 
+> > > I do find it quite odd that a DMA code path specific to PCIE is somehow
+> > > in the loop for a parallel port device.  Should this be possible?
+> > 
+> > I have no idea =) ( PCI folks added to CC )
+> > 
+> > > 
+> > > I could easily be wrong so feel free to correct me but;
+> > > I think your bios is goofy / unprepared to support IOMMU / VT-d and
+> > > doing strange things with enumerated a parallel port on a PCIE bus with
+> > > VTD is turned on...
+> > 
+> > I will contact ASUS peoples about the BIOS but it has for sure VT-d support and it is enabled.
+> 
+> So..  what happened here?  It seems like a pretty fatal problem, and
+> personally I don't think that contacting vendors about BIOS upgrades is a
+> suitable general solution.  It would be much better to find a kernel-based
+> fix or workaround?
+> 
 
-Well yes we are dealing with a pile of seemingly unnecessary layers,
-that are attempting to add uniformity where no uniformity existed.
-That is an easy recipe for ick.
+We don't have a stable work around yet.  Unwrapping the IOMMU startup
+code is proving tricky.  The only thing I can think of is to change the
+polarity of the intel-iommu command line to default to off, and if your
+bios doesn't suck you can enable it if you want to use it.
 
->> The easiest and most trivially correct thing to do would be to simply
->> remove the unnecessary check from kobject_rename.  We perform the
->> check at the upper levels in the network anyway.  And kobject_rename
->> is only used by the network stack.
->
-> Wireless uses it also for some things, and it requires that it fail if a
-> duplicate is found.
+I don't like this option much, since all the issues have been bios
+based.  But, I don't know what else to do at this time.
 
-Looks like it, that use is brand new, and at first glance I thought
-it was another instance of the device_rename case that kobject uses.
-Apparently not.
+--mgross
 
-It looks like getting the wireless devices into the network namespace
-is going to be interesting.  Since this phy name is user controllable
-and shows up in rtnetlink messages it definitely appears to belong in
-the network namespace. 
-
-Virtual/logical devices are such a pain.
-
-....
-
-Given that kobject_rename is growing users we definitely need to
-fix it so a noop rename does not return -EINVAL.
-
-i.e. if (temp_kobj && (temp_kobj != kobj)) return -EINVAL.
-instead of just if (temp_kobj) return -EINVAL;
-
-> I thought that s390 also used it, but I don't see
-> that usage in the tree anymore, perhaps they switched to something else.
-
-That is the device_move -> kobject_move case.  Very similar (and nice
-if we can figure out how to combine them).
-
-> good luck,
-
-Thanks.  It looks like we are just about there.
-
-Hopefully we can get this merged soon so there won't be many more sets
-of shifting requirements to chase.
-
-Eric
