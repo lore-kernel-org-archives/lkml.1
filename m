@@ -1,54 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753602AbYEGRWX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762569AbYEGRX2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753602AbYEGRWX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 13:22:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753522AbYEGRWC
+	id S1762569AbYEGRX2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 13:23:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754287AbYEGRXI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 13:22:02 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:57445 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752402AbYEGRWA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 13:22:00 -0400
-Date: Wed, 7 May 2008 10:21:59 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: =?ISO-8859-1?Q?St=E9phane_ANCELOT?= <sancelot@free.fr>
-cc: Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org
-Subject: Re: detecting kernel mem leak
-In-Reply-To: <4821C526.8030901@free.fr>
-Message-ID: <Pine.LNX.4.64.0805071020210.3173@schroedinger.engr.sgi.com>
-References: <1209462094.4816ed4e93977@imp.free.fr>
- <84144f020804290546h666983aci77fbb08eb507e777@mail.gmail.com>
- <Pine.LNX.4.64.0804290956360.10847@schroedinger.engr.sgi.com>
- <4821C526.8030901@free.fr>
+	Wed, 7 May 2008 13:23:08 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:33716 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751572AbYEGRXE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 May 2008 13:23:04 -0400
+Date: Wed, 7 May 2008 19:22:46 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Matthew Wilcox <matthew@wil.cx>, Andrew Morton <akpm@linux-foundation.org>,
+       "J. Bruce Fields" <bfields@citi.umich.edu>,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Alexander Viro <viro@ftp.linux.org.uk>, linux-fsdevel@vger.kernel.org
+Subject: Re: AIM7 40% regression with 2.6.26-rc1
+Message-ID: <20080507172246.GA13262@elte.hu>
+References: <1210052904.3453.30.camel@ymzhang> <20080506114449.GC32591@elte.hu> <20080506120934.GH19219@parisc-linux.org> <20080506162332.GI19219@parisc-linux.org> <20080506102153.5484c6ac.akpm@linux-foundation.org> <20080507163811.GY19219@parisc-linux.org> <alpine.LFD.1.10.0805070948250.3024@woody.linux-foundation.org> <alpine.LFD.1.10.0805070956060.3024@woody.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-1700579579-647866999-1210180919=:3173"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.1.10.0805070956060.3024@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
 
----1700579579-647866999-1210180919=:3173
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+* Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-On Wed, 7 May 2008, St=E9phane ANCELOT wrote:
+> Which is why I'm 100% convinced it's not even worth saving the old 
+> code. It needs to use mutexes, or spinlocks. I bet it has *nothing* to 
+> do with "slow path" other than the fact that it gets to that slow path 
+> much more these days.
 
-> however, since there are always cache filled,=A0 is there a way to flush=
-=20
-> all cashes and then consult slabinfo with caches empty ???
+i think your theory should be easy to test: Yanmin, could you turn on 
+CONFIG_MUTEX_DEBUG=y and check by how much AIM7 regresses?
 
-Not sure what this is about. per cpu cached objects?
+Because in the CONFIG_MUTEX_DEBUG=y case the mutex debug code does 
+exactly that: it doesnt use the single-instruction fastpath [it uses 
+asm-generic/mutex-null.h] but always drops into the slowpath (to be able 
+to access debug state). That debug code is about as expensive as the 
+generic semaphore code's current fastpath. (perhaps even more 
+expensive.)
 
-slabinfo -s
+There's far more normal mutex fastpath use during an AIM7 run than any 
+BKL use. So if it's due to any direct fastpath overhead and the 
+resulting widening of the window for the real slowdown, we should see a 
+severe slowdown on AIM7 with CONFIG_MUTEX_DEBUG=y. Agreed?
 
-will shrink all caches and throw all cpu slabs away. The system will touch=
-=20
-some essential caches immediately though. So some processor will=20
-immediately reallocate cpu slabs.
-
-
----1700579579-647866999-1210180919=:3173--
+	Ingo
