@@ -1,79 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763100AbYEGP21@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761349AbYEGPbI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763100AbYEGP21 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 11:28:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760089AbYEGP2G
+	id S1761349AbYEGPbI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 11:31:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758214AbYEGPax
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 11:28:06 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:49368 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759981AbYEGP2E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 11:28:04 -0400
-Date: Thu, 8 May 2008 01:27:56 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Niels de Vos <niels.devos@wincor-nixdorf.com>
-Cc: linux-laptop@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] apm: make apm=power-off configurable like
- apm=realmode-power-off
-Message-Id: <20080508012756.9b9bbe5c.sfr@canb.auug.org.au>
-In-Reply-To: <4821C581.8050409@wincor-nixdorf.com>
-References: <4821B4BD.9010402@wincor-nixdorf.com>
-	<20080508004605.cc2e1531.sfr@canb.auug.org.au>
-	<4821C581.8050409@wincor-nixdorf.com>
-X-Mailer: Sylpheed 2.5.0beta3 (GTK+ 2.12.9; i486-pc-linux-gnu)
+	Wed, 7 May 2008 11:30:53 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:47026 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757846AbYEGPaw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 May 2008 11:30:52 -0400
+Date: Wed, 7 May 2008 16:21:18 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: <JosephChan@via.com.tw>
+Cc: <JosephChan@via.com.tw>, <akpm@linux-foundation.org>,
+       <geert@linux-m68k.org>, <linux-fbdev-devel@lists.sourceforge.net>,
+       <linux-kernel@vger.kernel.org>
+Subject: Re: [Linux-fbdev-devel] [PATCH 6/9] viafb: VIA Frame Buffer Device
+ Driver
+Message-ID: <20080507162118.45ba52bb@core>
+In-Reply-To: <C80EF34A3D2E494DBAF9AC29C7AE4EB806F67759@exchtp03.taipei.via.com.tw>
+References: <C80EF34A3D2E494DBAF9AC29C7AE4EB806F67759@exchtp03.taipei.via.com.tw>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Thu__8_May_2008_01_27_56_+1000_Z9QMJ2Gp03o5vITa"
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Thu__8_May_2008_01_27_56_+1000_Z9QMJ2Gp03o5vITa
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> +void delays(int count);
+> +void i2cWriteSdaScl(u8 sda, u8 scl);
+> +void i2cWriteScl(u8 scl);
+> +void i2cReadSdaScl(u8 *pSda, u8 *pScl);
 
-On Wed, 07 May 2008 17:06:41 +0200 Niels de Vos <niels.devos@wincor-nixdorf=
-.com> wrote:
+Style is good, code looks clean
+
+One big thing that needs fixing here is the function names. If the driver
+gets linked into the kernel then the symbols become global - and names
+like enableGPIO are asking for clashes. The viafb code is fine as it uses
+viafb_ as the function names. Possibly the helper functions should doo
+something similar.
+
+We also have a generic i2c layer that might be usable but that is
+something that could be addressed in the future and isn't really an
+important detail.
+
 >
-> Stephen Rothwell wrote:
-> > Hi Neils,
-> >=20
-> > On Wed, 07 May 2008 15:55:09 +0200 Niels de Vos <niels.devos@wincor-nix=
-dorf.com> wrote:
-> >> On some systems (with broken BIOSes?) apm=3Dpower-off should be append=
-ed
-> >> as kernel parameter. apm=3Drealmode-power-off is configurable during=20
-> >> compile-time. apm=3Dpower-off should be configurable likewise.
-> >>
-> >> On non-SMP systems apm=3Dpower-off is the default. For kernels with SMP
-> >> support it is not.
-> >=20
-> > We had a similar compile time option that we removed in 2.3.26pre1 in
-> > favour of the kernel parameter ...
->=20
-> Okay, but why not have both options like apm=3Drealmode-power-off?
-
-It was a long time ago ... and APM must be almost dead my now, surely? :-)
-
-Maybe I just never got around to removing the compile time config of real
-mode power off.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Thu__8_May_2008_01_27_56_+1000_Z9QMJ2Gp03o5vITa
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFIIcqCTgG2atn1QN8RAoeeAJ944FBOjKE1kuNWWZol0R/unUeOYwCdH7FF
-6roU8hRkU9fte2hvZBPzzZs=
-=d2CL
------END PGP SIGNATURE-----
-
---Signature=_Thu__8_May_2008_01_27_56_+1000_Z9QMJ2Gp03o5vITa--
