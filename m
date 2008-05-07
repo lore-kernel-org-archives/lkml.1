@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756887AbYEGAnr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756586AbYEGAoR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756887AbYEGAnr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 20:43:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753944AbYEGAm4
+	id S1756586AbYEGAoR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 20:44:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756001AbYEGAnE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 20:42:56 -0400
-Received: from kirk.serum.com.pl ([213.77.9.205]:62963 "EHLO serum.com.pl"
+	Tue, 6 May 2008 20:43:04 -0400
+Received: from kirk.serum.com.pl ([213.77.9.205]:62965 "EHLO serum.com.pl"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753418AbYEGAmx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 20:42:53 -0400
-Date: Wed, 7 May 2008 01:40:22 +0100 (BST)
+	id S1755190AbYEGAnA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 May 2008 20:43:00 -0400
+Date: Wed, 7 May 2008 01:40:35 +0100 (BST)
 From: "Maciej W. Rozycki" <macro@linux-mips.org>
 To: Alessandro Zummo <a.zummo@towertech.it>, Jean Delvare <khali@linux-fr.org>,
        Ralf Baechle <ralf@linux-mips.org>,
@@ -17,281 +17,382 @@ To: Alessandro Zummo <a.zummo@towertech.it>, Jean Delvare <khali@linux-fr.org>,
        Andrew Morton <akpm@linux-foundation.org>
 cc: rtc-linux@googlegroups.com, i2c@lm-sensors.org, linux-mips@linux-mips.org,
        linux-kernel@vger.kernel.org
-Subject: [RFC][PATCH 1/4] RTC: Class device support for persistent clock
-Message-ID: <Pine.LNX.4.55.0805070015360.16173@cliff.in.clinika.pl>
+Subject: [RFC][PATCH 3/4] RTC: SWARM class device persistent clock support
+Message-ID: <Pine.LNX.4.55.0805070054440.16173@cliff.in.clinika.pl>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- This is a generic implementation of rtc_read_persistent_clock() and
-rtc_update_persistent_clock() suitable for platforms to be used for
-read_persistent_clock() and update_persistent_clock() calls.  An RTC
-device selected by the user with the RTC_HCTOSYS_DEVICE option is used.  
-
- As rtc_read_persistent_clock() is not available at the time
-timekeeping_init() is called, it will now be disabled if the class device
-is to be used as a reference.  In this case rtc_hctosys(), already
-present, will be used to set up the system time at the late initcall time.  
-This call has now been rewritten to make use of
-rtc_read_persistent_clock().
-
- As rtc_set_mmss() used by rtc_update_persistent_clock() may sleep for 
-some hardware, the call is now made from a work queue scheduled by the 
-timer originally used for the entire function.
+ This is a set of changes removing the SWARM platform driver for the
+M41T81 and "wiring" the class RTC driver for the persistent clock instead.  
+The Xicor clock is unaffected as we have no class driver for this device.
+Weak variations of the rtc_read_persistent_clock() and 
+rtc_update_persistent_clock() calls are provided as the default -- to be 
+overridden by the RTC driver.
 
 Signed-off-by: Maciej W. Rozycki <macro@linux-mips.org>
 ---
-patch-2.6.26-rc1-20080505-rtc-persistent-clock-11
-diff -up --recursive --new-file linux-2.6.26-rc1-20080505.macro/drivers/rtc/Kconfig linux-2.6.26-rc1-20080505/drivers/rtc/Kconfig
---- linux-2.6.26-rc1-20080505.macro/drivers/rtc/Kconfig	2008-05-05 02:55:40.000000000 +0000
-+++ linux-2.6.26-rc1-20080505/drivers/rtc/Kconfig	2008-05-05 21:41:34.000000000 +0000
-@@ -21,24 +21,30 @@ menuconfig RTC_CLASS
- if RTC_CLASS
+ If there is interest and a volunteer to test changes is found, then I can
+write a driver for the Xicor clock to complement this change and tidy up.  
+It would however require substantial changes to the I2C core as it uses
+16-bit commands and an extended SMBus mode of operation of the BCM1250A
+controller would have to be used.
+
+ Please note this patch trivially depends on
+patch-2.6.26-rc1-20080505-swarm-i2c-15 -- 2/4 of this set.
+
+  Maciej
+
+patch-2.6.26-rc1-20080505-swarm-m41t80-11
+diff -up --recursive --new-file linux-2.6.26-rc1-20080505.macro/arch/mips/kernel/time.c linux-2.6.26-rc1-20080505/arch/mips/kernel/time.c
+--- linux-2.6.26-rc1-20080505.macro/arch/mips/kernel/time.c	2008-05-05 02:55:23.000000000 +0000
++++ linux-2.6.26-rc1-20080505/arch/mips/kernel/time.c	2008-05-05 21:10:50.000000000 +0000
+@@ -44,7 +44,7 @@ int __weak rtc_mips_set_mmss(unsigned lo
+ 	return rtc_mips_set_time(nowtime);
+ }
  
- config RTC_HCTOSYS
--	bool "Set system time from RTC on startup and resume"
-+	bool "Use time from RTC as a reference for the system time"
- 	depends on RTC_CLASS = y
- 	default y
- 	help
--	  If you say yes here, the system time (wall clock) will be set using
--	  the value read from a specified RTC device. This is useful to avoid
--	  unnecessary fsck runs at boot time, and to network better.
-+	  If you say yes here, the specified RTC device will be used
-+	  as a reference to the system time (wall clock).  The device
-+	  will be used to set the system time as required during
-+	  startup, suspend and, for platforms that support such usage,
-+	  for NTP timekeeping.
-+
-+	  This is useful to avoid unnecessary fsck runs at boot time,
-+	  and to network better.
+-int update_persistent_clock(struct timespec now)
++int __weak update_persistent_clock(struct timespec now)
+ {
+ 	return rtc_mips_set_mmss(now.tv_sec);
+ }
+diff -up --recursive --new-file linux-2.6.26-rc1-20080505.macro/arch/mips/sibyte/swarm/Makefile linux-2.6.26-rc1-20080505/arch/mips/sibyte/swarm/Makefile
+--- linux-2.6.26-rc1-20080505.macro/arch/mips/sibyte/swarm/Makefile	2008-05-06 01:18:21.000000000 +0000
++++ linux-2.6.26-rc1-20080505/arch/mips/sibyte/swarm/Makefile	2008-05-06 01:25:40.000000000 +0000
+@@ -1,4 +1,4 @@
+-obj-y				:= setup.o rtc_xicor1241.o rtc_m41t81.o
++obj-y				:= setup.o rtc_xicor1241.o
  
- config RTC_HCTOSYS_DEVICE
--	string "RTC used to set the system time"
-+	string "RTC used as a reference for the system time"
- 	depends on RTC_HCTOSYS = y
- 	default "rtc0"
- 	help
--	  The RTC device that will be used to (re)initialize the system
-+	  The RTC device that will be used as a reference for the system
- 	  clock, usually rtc0.  Initialization is done when the system
--	  starts up, and when it resumes from a low power state.  This
--	  device should record time in UTC, since the kernel won't do
--	  timezone correction.
-+	  starts up, and when it resumes from a low power state.  Also,
-+	  if supported by the platform, NTP timekeeping uses this device
-+	  to record the system time periodically.  This device should
-+	  record time in UTC, since the kernel won't do timezone correction.
- 
- 	  The driver for this RTC device must be loaded before late_initcall
- 	  functions run, so it must usually be statically linked.
-diff -up --recursive --new-file linux-2.6.26-rc1-20080505.macro/drivers/rtc/hctosys.c linux-2.6.26-rc1-20080505/drivers/rtc/hctosys.c
---- linux-2.6.26-rc1-20080505.macro/drivers/rtc/hctosys.c	2008-05-05 02:55:40.000000000 +0000
-+++ linux-2.6.26-rc1-20080505/drivers/rtc/hctosys.c	2008-05-05 21:10:50.000000000 +0000
-@@ -1,8 +1,9 @@
+ obj-$(CONFIG_I2C_BOARDINFO)	+= i2c-swarm.o
+ obj-$(CONFIG_KGDB)		+= dbg_io.o
+diff -up --recursive --new-file linux-2.6.26-rc1-20080505.macro/arch/mips/sibyte/swarm/rtc_m41t81.c linux-2.6.26-rc1-20080505/arch/mips/sibyte/swarm/rtc_m41t81.c
+--- linux-2.6.26-rc1-20080505.macro/arch/mips/sibyte/swarm/rtc_m41t81.c	2007-10-11 04:56:52.000000000 +0000
++++ linux-2.6.26-rc1-20080505/arch/mips/sibyte/swarm/rtc_m41t81.c	1970-01-01 00:00:00.000000000 +0000
+@@ -1,233 +0,0 @@
+-/*
+- * Copyright (C) 2000, 2001 Broadcom Corporation
+- *
+- * Copyright (C) 2002 MontaVista Software Inc.
+- * Author: jsun@mvista.com or jsun@junsun.net
+- *
+- * This program is free software; you can redistribute	it and/or modify it
+- * under  the terms of	the GNU General	 Public License as published by the
+- * Free Software Foundation;  either version 2 of the  License, or (at your
+- * option) any later version.
+- *
+- */
+-#include <linux/bcd.h>
+-#include <linux/types.h>
+-#include <linux/time.h>
+-
+-#include <asm/time.h>
+-#include <asm/addrspace.h>
+-#include <asm/io.h>
+-
+-#include <asm/sibyte/sb1250.h>
+-#include <asm/sibyte/sb1250_regs.h>
+-#include <asm/sibyte/sb1250_smbus.h>
+-
+-
+-/* M41T81 definitions */
+-
+-/*
+- * Register bits
+- */
+-
+-#define M41T81REG_SC_ST		0x80		/* stop bit */
+-#define M41T81REG_HR_CB		0x40		/* century bit */
+-#define M41T81REG_HR_CEB	0x80		/* century enable bit */
+-#define M41T81REG_CTL_S		0x20		/* sign bit */
+-#define M41T81REG_CTL_FT	0x40		/* frequency test bit */
+-#define M41T81REG_CTL_OUT	0x80		/* output level */
+-#define M41T81REG_WD_RB0	0x01		/* watchdog resolution bit 0 */
+-#define M41T81REG_WD_RB1	0x02		/* watchdog resolution bit 1 */
+-#define M41T81REG_WD_BMB0	0x04		/* watchdog multiplier bit 0 */
+-#define M41T81REG_WD_BMB1	0x08		/* watchdog multiplier bit 1 */
+-#define M41T81REG_WD_BMB2	0x10		/* watchdog multiplier bit 2 */
+-#define M41T81REG_WD_BMB3	0x20		/* watchdog multiplier bit 3 */
+-#define M41T81REG_WD_BMB4	0x40		/* watchdog multiplier bit 4 */
+-#define M41T81REG_AMO_ABE	0x20		/* alarm in "battery back-up mode" enable bit */
+-#define M41T81REG_AMO_SQWE	0x40		/* square wave enable */
+-#define M41T81REG_AMO_AFE	0x80		/* alarm flag enable flag */
+-#define M41T81REG_ADT_RPT5	0x40		/* alarm repeat mode bit 5 */
+-#define M41T81REG_ADT_RPT4	0x80		/* alarm repeat mode bit 4 */
+-#define M41T81REG_AHR_RPT3	0x80		/* alarm repeat mode bit 3 */
+-#define M41T81REG_AHR_HT	0x40		/* halt update bit */
+-#define M41T81REG_AMN_RPT2	0x80		/* alarm repeat mode bit 2 */
+-#define M41T81REG_ASC_RPT1	0x80		/* alarm repeat mode bit 1 */
+-#define M41T81REG_FLG_AF	0x40		/* alarm flag (read only) */
+-#define M41T81REG_FLG_WDF	0x80		/* watchdog flag (read only) */
+-#define M41T81REG_SQW_RS0	0x10		/* sqw frequency bit 0 */
+-#define M41T81REG_SQW_RS1	0x20		/* sqw frequency bit 1 */
+-#define M41T81REG_SQW_RS2	0x40		/* sqw frequency bit 2 */
+-#define M41T81REG_SQW_RS3	0x80		/* sqw frequency bit 3 */
+-
+-
+-/*
+- * Register numbers
+- */
+-
+-#define M41T81REG_TSC	0x00		/* tenths/hundredths of second */
+-#define M41T81REG_SC	0x01		/* seconds */
+-#define M41T81REG_MN	0x02		/* minute */
+-#define M41T81REG_HR	0x03		/* hour/century */
+-#define M41T81REG_DY	0x04		/* day of week */
+-#define M41T81REG_DT	0x05		/* date of month */
+-#define M41T81REG_MO	0x06		/* month */
+-#define M41T81REG_YR	0x07		/* year */
+-#define M41T81REG_CTL	0x08		/* control */
+-#define M41T81REG_WD	0x09		/* watchdog */
+-#define M41T81REG_AMO	0x0A		/* alarm: month */
+-#define M41T81REG_ADT	0x0B		/* alarm: date */
+-#define M41T81REG_AHR	0x0C		/* alarm: hour */
+-#define M41T81REG_AMN	0x0D		/* alarm: minute */
+-#define M41T81REG_ASC	0x0E		/* alarm: second */
+-#define M41T81REG_FLG	0x0F		/* flags */
+-#define M41T81REG_SQW	0x13		/* square wave register */
+-
+-#define M41T81_CCR_ADDRESS	0x68
+-
+-#define SMB_CSR(reg)	IOADDR(A_SMB_REGISTER(1, reg))
+-
+-static int m41t81_read(uint8_t addr)
+-{
+-	while (__raw_readq(SMB_CSR(R_SMB_STATUS)) & M_SMB_BUSY)
+-		;
+-
+-	__raw_writeq(addr & 0xff, SMB_CSR(R_SMB_CMD));
+-	__raw_writeq(V_SMB_ADDR(M41T81_CCR_ADDRESS) | V_SMB_TT_WR1BYTE,
+-		     SMB_CSR(R_SMB_START));
+-
+-	while (__raw_readq(SMB_CSR(R_SMB_STATUS)) & M_SMB_BUSY)
+-		;
+-
+-	__raw_writeq(V_SMB_ADDR(M41T81_CCR_ADDRESS) | V_SMB_TT_RD1BYTE,
+-		     SMB_CSR(R_SMB_START));
+-
+-	while (__raw_readq(SMB_CSR(R_SMB_STATUS)) & M_SMB_BUSY)
+-		;
+-
+-	if (__raw_readq(SMB_CSR(R_SMB_STATUS)) & M_SMB_ERROR) {
+-		/* Clear error bit by writing a 1 */
+-		__raw_writeq(M_SMB_ERROR, SMB_CSR(R_SMB_STATUS));
+-		return -1;
+-	}
+-
+-	return (__raw_readq(SMB_CSR(R_SMB_DATA)) & 0xff);
+-}
+-
+-static int m41t81_write(uint8_t addr, int b)
+-{
+-	while (__raw_readq(SMB_CSR(R_SMB_STATUS)) & M_SMB_BUSY)
+-		;
+-
+-	__raw_writeq(addr & 0xff, SMB_CSR(R_SMB_CMD));
+-	__raw_writeq(b & 0xff, SMB_CSR(R_SMB_DATA));
+-	__raw_writeq(V_SMB_ADDR(M41T81_CCR_ADDRESS) | V_SMB_TT_WR2BYTE,
+-		     SMB_CSR(R_SMB_START));
+-
+-	while (__raw_readq(SMB_CSR(R_SMB_STATUS)) & M_SMB_BUSY)
+-		;
+-
+-	if (__raw_readq(SMB_CSR(R_SMB_STATUS)) & M_SMB_ERROR) {
+-		/* Clear error bit by writing a 1 */
+-		__raw_writeq(M_SMB_ERROR, SMB_CSR(R_SMB_STATUS));
+-		return -1;
+-	}
+-
+-	/* read the same byte again to make sure it is written */
+-	__raw_writeq(V_SMB_ADDR(M41T81_CCR_ADDRESS) | V_SMB_TT_RD1BYTE,
+-		     SMB_CSR(R_SMB_START));
+-
+-	while (__raw_readq(SMB_CSR(R_SMB_STATUS)) & M_SMB_BUSY)
+-		;
+-
+-	return 0;
+-}
+-
+-int m41t81_set_time(unsigned long t)
+-{
+-	struct rtc_time tm;
+-	unsigned long flags;
+-
+-	/* Note we don't care about the century */
+-	rtc_time_to_tm(t, &tm);
+-
+-	/*
+-	 * Note the write order matters as it ensures the correctness.
+-	 * When we write sec, 10th sec is clear.  It is reasonable to
+-	 * believe we should finish writing min within a second.
+-	 */
+-
+-	spin_lock_irqsave(&rtc_lock, flags);
+-	tm.tm_sec = BIN2BCD(tm.tm_sec);
+-	m41t81_write(M41T81REG_SC, tm.tm_sec);
+-
+-	tm.tm_min = BIN2BCD(tm.tm_min);
+-	m41t81_write(M41T81REG_MN, tm.tm_min);
+-
+-	tm.tm_hour = BIN2BCD(tm.tm_hour);
+-	tm.tm_hour = (tm.tm_hour & 0x3f) | (m41t81_read(M41T81REG_HR) & 0xc0);
+-	m41t81_write(M41T81REG_HR, tm.tm_hour);
+-
+-	/* tm_wday starts from 0 to 6 */
+-	if (tm.tm_wday == 0) tm.tm_wday = 7;
+-	tm.tm_wday = BIN2BCD(tm.tm_wday);
+-	m41t81_write(M41T81REG_DY, tm.tm_wday);
+-
+-	tm.tm_mday = BIN2BCD(tm.tm_mday);
+-	m41t81_write(M41T81REG_DT, tm.tm_mday);
+-
+-	/* tm_mon starts from 0, *ick* */
+-	tm.tm_mon ++;
+-	tm.tm_mon = BIN2BCD(tm.tm_mon);
+-	m41t81_write(M41T81REG_MO, tm.tm_mon);
+-
+-	/* we don't do century, everything is beyond 2000 */
+-	tm.tm_year %= 100;
+-	tm.tm_year = BIN2BCD(tm.tm_year);
+-	m41t81_write(M41T81REG_YR, tm.tm_year);
+-	spin_unlock_irqrestore(&rtc_lock, flags);
+-
+-	return 0;
+-}
+-
+-unsigned long m41t81_get_time(void)
+-{
+-	unsigned int year, mon, day, hour, min, sec;
+-	unsigned long flags;
+-
+-	/*
+-	 * min is valid if two reads of sec are the same.
+-	 */
+-	for (;;) {
+-		spin_lock_irqsave(&rtc_lock, flags);
+-		sec = m41t81_read(M41T81REG_SC);
+-		min = m41t81_read(M41T81REG_MN);
+-		if (sec == m41t81_read(M41T81REG_SC)) break;
+-		spin_unlock_irqrestore(&rtc_lock, flags);
+-	}
+-	hour = m41t81_read(M41T81REG_HR) & 0x3f;
+-	day = m41t81_read(M41T81REG_DT);
+-	mon = m41t81_read(M41T81REG_MO);
+-	year = m41t81_read(M41T81REG_YR);
+-	spin_unlock_irqrestore(&rtc_lock, flags);
+-
+-	sec = BCD2BIN(sec);
+-	min = BCD2BIN(min);
+-	hour = BCD2BIN(hour);
+-	day = BCD2BIN(day);
+-	mon = BCD2BIN(mon);
+-	year = BCD2BIN(year);
+-
+-	year += 2000;
+-
+-	return mktime(year, mon, day, hour, min, sec);
+-}
+-
+-int m41t81_probe(void)
+-{
+-	unsigned int tmp;
+-
+-	/* enable chip if it is not enabled yet */
+-	tmp = m41t81_read(M41T81REG_SC);
+-	m41t81_write(M41T81REG_SC, tmp & 0x7f);
+-
+-	return (m41t81_read(M41T81REG_SC) != -1);
+-}
+diff -up --recursive --new-file linux-2.6.26-rc1-20080505.macro/arch/mips/sibyte/swarm/setup.c linux-2.6.26-rc1-20080505/arch/mips/sibyte/swarm/setup.c
+--- linux-2.6.26-rc1-20080505.macro/arch/mips/sibyte/swarm/setup.c	2007-10-23 02:55:20.000000000 +0000
++++ linux-2.6.26-rc1-20080505/arch/mips/sibyte/swarm/setup.c	2008-05-05 21:10:50.000000000 +0000
+@@ -1,6 +1,7 @@
  /*
-- * RTC subsystem, initialize system time on startup
-+ * RTC subsystem, persistent clock and startup initialization support
-  *
-  * Copyright (C) 2005 Tower Technologies
-  * Author: Alessandro Zummo <a.zummo@towertech.it>
+  * Copyright (C) 2000, 2001, 2002, 2003, 2004 Broadcom Corporation
+  * Copyright (C) 2004 by Ralf Baechle (ralf@linux-mips.org)
 + * Copyright (C) 2008  Maciej W. Rozycki
   *
-  * This program is free software; you can redistribute it and/or modify
-  * it under the terms of the GNU General Public License version 2 as
-@@ -22,46 +23,85 @@
-  * the best guess is to add 0.5s.
-  */
+  * This program is free software; you can redistribute it and/or
+  * modify it under the terms of the GNU General Public License
+@@ -29,6 +30,7 @@
+ #include <linux/kernel.h>
+ #include <linux/screen_info.h>
+ #include <linux/initrd.h>
++#include <linux/rtc.h>
  
--static int __init rtc_hctosys(void)
-+/*
-+ * Note the unusual API:
-+ * zero returned means a failure, anything else is seconds from epoch.
-+ */
-+unsigned long rtc_read_persistent_clock(void)
+ #include <asm/irq.h>
+ #include <asm/io.h>
+@@ -60,10 +62,6 @@ extern int xicor_probe(void);
+ extern int xicor_set_time(unsigned long);
+ extern unsigned long xicor_get_time(void);
+ 
+-extern int m41t81_probe(void);
+-extern int m41t81_set_time(unsigned long);
+-extern unsigned long m41t81_get_time(void);
+-
+ const char *get_system_type(void)
  {
--	int err;
--	struct rtc_time tm;
- 	struct rtc_device *rtc = rtc_class_open(CONFIG_RTC_HCTOSYS_DEVICE);
-+	struct rtc_time tm;
-+	unsigned long time = 0;
+ 	return "SiByte " SIBYTE_BOARD_NAME;
+@@ -82,38 +80,41 @@ int swarm_be_handler(struct pt_regs *reg
+ enum swarm_rtc_type {
+ 	RTC_NONE,
+ 	RTC_XICOR,
+-	RTC_M4LT81
+ };
  
- 	if (rtc == NULL) {
--		printk("%s: unable to open rtc device (%s)\n",
--			__FILE__, CONFIG_RTC_HCTOSYS_DEVICE);
--		return -ENODEV;
-+		printk(KERN_ERR "hctosys: unable to open rtc device (%s)\n",
-+		       CONFIG_RTC_HCTOSYS_DEVICE);
-+		goto out;
-+	}
-+	if (rtc_read_time(rtc, &tm) < 0) {
-+		dev_err(rtc->dev.parent,
-+			"hctosys: unable to read the hardware clock\n");
-+		goto out_close;
- 	}
-+	if (rtc_valid_tm(&tm) < 0) {
-+		dev_err(rtc->dev.parent, "hctosys: invalid date/time\n");
-+		goto out_close;
-+	}
-+
-+	rtc_tm_to_time(&tm, &time);
+ enum swarm_rtc_type swarm_rtc_type;
  
--	err = rtc_read_time(rtc, &tm);
--	if (err == 0) {
--		err = rtc_valid_tm(&tm);
--		if (err == 0) {
--			struct timespec tv;
--
--			tv.tv_nsec = NSEC_PER_SEC >> 1;
--
--			rtc_tm_to_time(&tm, &tv.tv_sec);
--
--			do_settimeofday(&tv);
--
--			dev_info(rtc->dev.parent,
--				"setting system clock to "
--				"%d-%02d-%02d %02d:%02d:%02d UTC (%u)\n",
--				tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday,
--				tm.tm_hour, tm.tm_min, tm.tm_sec,
--				(unsigned int) tv.tv_sec);
--		}
--		else
--			dev_err(rtc->dev.parent,
--				"hctosys: invalid date/time\n");
-+out_close:
-+	rtc_class_close(rtc);
-+out:
-+	return time;
++unsigned long __weak rtc_read_persistent_clock(void)
++{
++	return mktime(2000, 1, 1, 0, 0, 0);
 +}
 +
-+int rtc_update_persistent_clock(struct timespec now)
++int __weak rtc_update_persistent_clock(struct timespec now)
 +{
-+	struct rtc_device *rtc = rtc_class_open(CONFIG_RTC_HCTOSYS_DEVICE);
-+	int err;
-+
-+	if (rtc == NULL) {
-+		printk(KERN_ERR "hctosys: unable to open rtc device (%s)\n",
-+		       CONFIG_RTC_HCTOSYS_DEVICE);
-+		err = -ENXIO;
-+		goto out;
- 	}
--	else
-+	err = rtc_set_mmss(rtc, now.tv_sec);
-+	if (err < 0) {
- 		dev_err(rtc->dev.parent,
--			"hctosys: unable to read the hardware clock\n");
-+			"hctosys: unable to set the hardware clock\n");
-+		goto out_close;
-+	}
- 
-+	err = 0;
-+
-+out_close:
- 	rtc_class_close(rtc);
-+out:
-+	return err;
++	return 0;
 +}
 +
-+static int __init rtc_hctosys(void)
-+{
-+	struct rtc_time tm;
-+	struct timespec tv;
-+	unsigned long time;
-+
-+	time = rtc_read_persistent_clock();
-+	if (!time)
-+		return -ENODEV;
-+
-+	tv.tv_nsec = NSEC_PER_SEC >> 1;
-+	tv.tv_sec = time;
-+	do_settimeofday(&tv);
-+
-+	rtc_time_to_tm(time, &tm);
-+	pr_info("%s: setting system clock to "
-+		"%d-%02d-%02d %02d:%02d:%02d UTC (%lu)\n",
-+		CONFIG_RTC_HCTOSYS_DEVICE,
-+		tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday,
-+		tm.tm_hour, tm.tm_min, tm.tm_sec, (unsigned long)tv.tv_sec);
- 
- 	return 0;
- }
-diff -up --recursive --new-file linux-2.6.26-rc1-20080505.macro/include/linux/rtc.h linux-2.6.26-rc1-20080505/include/linux/rtc.h
---- linux-2.6.26-rc1-20080505.macro/include/linux/rtc.h	2008-05-05 02:55:59.000000000 +0000
-+++ linux-2.6.26-rc1-20080505/include/linux/rtc.h	2008-05-05 21:10:50.000000000 +0000
-@@ -200,6 +200,9 @@ extern int rtc_irq_set_state(struct rtc_
- extern int rtc_irq_set_freq(struct rtc_device *rtc,
- 				struct rtc_task *task, int freq);
- 
-+extern unsigned long rtc_read_persistent_clock(void);
-+extern int rtc_update_persistent_clock(struct timespec now);
-+
- typedef struct rtc_task {
- 	void (*func)(void *private_data);
- 	void *private_data;
-diff -up --recursive --new-file linux-2.6.26-rc1-20080505.macro/kernel/time/ntp.c linux-2.6.26-rc1-20080505/kernel/time/ntp.c
---- linux-2.6.26-rc1-20080505.macro/kernel/time/ntp.c	2008-05-05 02:56:03.000000000 +0000
-+++ linux-2.6.26-rc1-20080505/kernel/time/ntp.c	2008-05-05 21:10:50.000000000 +0000
-@@ -3,6 +3,8 @@
-  *
-  * NTP state machine interfaces and logic.
-  *
-+ * Copyright (c) 2008  Maciej W. Rozycki
-+ *
-  * This code was mainly moved from kernel/timer.c and kernel/time.c
-  * Please see those files for relevant copyright info and historical
-  * changelogs.
-@@ -17,6 +19,7 @@
- #include <linux/capability.h>
- #include <linux/math64.h>
- #include <linux/clocksource.h>
-+#include <linux/workqueue.h>
- #include <asm/timex.h>
- 
- /*
-@@ -218,11 +221,13 @@ void second_overflow(void)
- /* Disable the cmos update - used by virtualization and embedded */
- int no_sync_cmos_clock  __read_mostly;
- 
--static void sync_cmos_clock(unsigned long dummy);
-+static void sync_cmos_clock(unsigned long data);
-+static void do_sync_cmos_clock(struct work_struct *work);
- 
- static DEFINE_TIMER(sync_cmos_timer, sync_cmos_clock, 0, 0);
-+static DECLARE_WORK(sync_cmos_work, do_sync_cmos_clock);
- 
--static void sync_cmos_clock(unsigned long dummy)
-+static void do_sync_cmos_clock(struct work_struct *work)
+ unsigned long read_persistent_clock(void)
  {
- 	struct timespec now, next;
- 	int fail = 1;
-@@ -261,6 +266,12 @@ static void sync_cmos_clock(unsigned lon
- 	mod_timer(&sync_cmos_timer, jiffies + timespec_to_jiffies(&next));
+ 	switch (swarm_rtc_type) {
+ 	case RTC_XICOR:
+ 		return xicor_get_time();
+ 
+-	case RTC_M4LT81:
+-		return m41t81_get_time();
+-
+ 	case RTC_NONE:
+ 	default:
+-		return mktime(2000, 1, 1, 0, 0, 0);
++		return rtc_read_persistent_clock();
+ 	}
  }
  
-+static void sync_cmos_clock(unsigned long data)
-+{
-+	/* Some implementations of update_persistent_clock() may sleep.  */
-+	schedule_work(&sync_cmos_work);
-+}
-+
- static void notify_cmos_timer(void)
+-int rtc_mips_set_time(unsigned long sec)
++int update_persistent_clock(struct timespec now)
  {
- 	if (!no_sync_cmos_clock)
-diff -up --recursive --new-file linux-2.6.26-rc1-20080505.macro/kernel/time/timekeeping.c linux-2.6.26-rc1-20080505/kernel/time/timekeeping.c
---- linux-2.6.26-rc1-20080505.macro/kernel/time/timekeeping.c	2008-05-05 02:56:03.000000000 +0000
-+++ linux-2.6.26-rc1-20080505/kernel/time/timekeeping.c	2008-05-05 21:10:50.000000000 +0000
-@@ -242,7 +242,11 @@ unsigned long __attribute__((weak)) read
- void __init timekeeping_init(void)
- {
- 	unsigned long flags;
--	unsigned long sec = read_persistent_clock();
-+	unsigned long sec = 0;
-+
-+#ifndef CONFIG_RTC_HCTOSYS
-+	sec = read_persistent_clock();
-+#endif
+ 	switch (swarm_rtc_type) {
+ 	case RTC_XICOR:
+-		return xicor_set_time(sec);
+-
+-	case RTC_M4LT81:
+-		return m41t81_set_time(sec);
++		return xicor_set_time(now.tv_sec);
  
- 	write_seqlock_irqsave(&xtime_lock, flags);
+ 	case RTC_NONE:
+ 	default:
+-		return -1;
++		return rtc_update_persistent_clock(now);
+ 	}
+ }
  
+@@ -133,8 +134,6 @@ void __init plat_mem_setup(void)
+ 
+ 	if (xicor_probe())
+ 		swarm_rtc_type = RTC_XICOR;
+-	if (m41t81_probe())
+-		swarm_rtc_type = RTC_M4LT81;
+ 
+ 	printk("This kernel optimized for "
+ #ifdef CONFIG_SIMULATION
