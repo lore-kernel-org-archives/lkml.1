@@ -1,94 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758005AbYEGCGt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758624AbYEGCJ1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758005AbYEGCGt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 22:06:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753459AbYEGCGj
+	id S1758624AbYEGCJ1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 22:09:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754239AbYEGCJS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 22:06:39 -0400
-Received: from mho-02-bos.mailhop.org ([63.208.196.179]:59460 "EHLO
-	mho-02-bos.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752064AbYEGCGi (ORCPT
+	Tue, 6 May 2008 22:09:18 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:52468 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750885AbYEGCJR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 22:06:38 -0400
-X-Greylist: delayed 2841 seconds by postgrey-1.27 at vger.kernel.org; Tue, 06 May 2008 22:06:38 EDT
-X-Mail-Handler: MailHop Outbound by DynDNS
-X-Originating-IP: 69.181.40.92
-X-Report-Abuse-To: abuse@dyndns.com (see http://www.mailhop.org/outbound/abuse.html for abuse reporting information)
-X-MHO-User: U2FsdGVkX18FlU2aWvlhM/QBwJi9zToY
-Date: Tue, 6 May 2008 18:19:15 -0700
-From: Tony Lindgren <tony@atomide.com>
-To: Kyungmin Park <kmpark@infradead.org>
-Cc: linux-omap@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       paul@pwsan.com
-Subject: Re: vanilla kernel is broken on omap board
-Message-ID: <20080507011914.GM18682@atomide.com>
-References: <9c9fda240805061748n3287cb24v530f779b6b622d53@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <9c9fda240805061748n3287cb24v530f779b6b622d53@mail.gmail.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Tue, 6 May 2008 22:09:17 -0400
+Date: Tue, 6 May 2008 19:08:09 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Paul Jackson <pj@sgi.com>
+Cc: "Paul Menage" <menage@google.com>, lizf@cn.fujitsu.com,
+       seto.hidetoshi@jp.fujitsu.com, mingo@elte.hu,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Fix cpuset sched_relax_domain_level control file
+Message-Id: <20080506190809.df1b9398.akpm@linux-foundation.org>
+In-Reply-To: <20080506205852.8adaa0a2.pj@sgi.com>
+References: <48210101.1070205@google.com>
+	<20080506183841.e1771032.akpm@linux-foundation.org>
+	<482109E5.5050204@cn.fujitsu.com>
+	<20080506204946.7754302d.pj@sgi.com>
+	<6599ad830805061851n767ff7a1qc8cb850ec98ad60d@mail.gmail.com>
+	<20080506205852.8adaa0a2.pj@sgi.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Tue, 6 May 2008 20:58:52 -0500 Paul Jackson <pj@sgi.com> wrote:
 
-* Kyungmin Park <kmpark@infradead.org> [080506 17:48]:
-> Hi Tony,
+> Paul M wrote:
+> > I was just trying to get close to the original behaviour.
 > 
-> Current vanilla kernel is broken on omap2 boards.
-> In the previous time you committed some omap2 patches, but some
-> patches are not missing.
-> Such as Runtime constants series. [1]
+> An honorable goal.
 > 
-> Now "some parts" are already included.
-> So you just commit the remain parts too such as in [2]
-> In most cases the board files don't set the their own global variables.
+> Li Zefan - would you be interested in generating a patch
+> that fails -EINVAL for inputs outside the range of [-1 ... N]
+> for whatever small positive N the kernel recognizes?
 
-Well at least we're getting closer to making omap2 really usable with
-mainline kernel :)
+I'd like to get Paul's patch into mainline this evening, to give us a
+chance to get the subsequent mess sorted out in time for next
+linux-next[*].  So there's no rush on this update.
 
-Thanks for fixing that, will add this to omap-fixes queue and send it
-upstream with bunch of other fixes.
+[*] Judging by this:
 
-Regards,
+kernel/cpuset.c: In function 'cpuset_common_file_write':
+kernel/cpuset.c:1374: warning: passing argument 3 of 'update_flag' makes integer from pointer without a cast
+kernel/cpuset.c: In function 'cpuset_destroy':
+kernel/cpuset.c:1793: warning: passing argument 3 of 'update_flag' makes integer from pointer without a cast
 
-Tony
+Paul should drop sched-devel.  I'm suspecting it contains stale old stuff
+which wasn't supposed to be there.
 
-
-> Thank you,
-> Kyungmin Park
-> 
-> 1. Runtime constants: introduce omap2_set_globals_*()
-> http://source.mvista.com/git/gitweb.cgi?p=linux-omap-2.6.git;a=commit;h=2b256e28e8e70592f0c38a862cc4ba0498c9db7b
-> Runtime constants: use runtime-computed SDRC base
-> http://source.mvista.com/git/gitweb.cgi?p=linux-omap-2.6.git;a=commitdiff;h=7b5f8cdb222052a7aa02ed38c59e0af1946b1e06
-> Runtime constants: use runtime-computed SMS base
-> http://source.mvista.com/git/gitweb.cgi?p=linux-omap-2.6.git;a=commitdiff;h=80ccf4b99eb3892809bbebf7673bdd1a359d56ff
-> 
-> 2.
-> diff --git a/arch/arm/mach-omap2/board-apollon.c b/arch/arm/mach-omap2/board-apo
-> index a1e1e67..620fa0f 100644
-> --- a/arch/arm/mach-omap2/board-apollon.c
-> +++ b/arch/arm/mach-omap2/board-apollon.c
-> @@ -394,6 +394,7 @@ static void __init omap_apollon_init(void)
-> 
->  static void __init omap_apollon_map_io(void)
->  {
-> +       omap2_set_globals_242x();
->         omap2_map_common_io();
->  }
-> diff --git a/include/asm-arm/arch-omap/common.h b/include/asm-arm/arch-omap/comm
-> index 224e009..36a3b62 100644
-> --- a/include/asm-arm/arch-omap/common.h
-> +++ b/include/asm-arm/arch-omap/common.h
-> @@ -47,4 +47,8 @@ static inline int omap_register_i2c_bus(int bus_id, u32 clkrat
->  }
->  #endif
-> 
-> +void omap2_set_globals_242x(void);
-> +void omap2_set_globals_243x(void);
-> +void omap2_set_globals_343x(void);
-> +
->  #endif /* __ARCH_ARM_MACH_OMAP_COMMON_H */
