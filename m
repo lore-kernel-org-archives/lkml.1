@@ -1,53 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762394AbYEGEiL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762049AbYEGEk6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762394AbYEGEiL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 00:38:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761677AbYEGEht
+	id S1762049AbYEGEk6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 00:40:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753479AbYEGEkt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 00:37:49 -0400
-Received: from gate.crashing.org ([63.228.1.57]:40115 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755295AbYEGEhs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 00:37:48 -0400
-Subject: Re: [PATCH] Silence 'ignoring return value' warnings in
-	drivers/video/aty/radeon_base.c
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, tony@bakeyournoodle.com,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20080506212022.3d2eddeb@infradead.org>
-References: <20080424043400.GS20457@bakeyournoodle.com>
-	 <20080506143936.6357e578.akpm@linux-foundation.org>
-	 <20080506.144301.233784820.davem@davemloft.net>
-	 <20080506145608.565b61bf.akpm@linux-foundation.org>
-	 <20080506210055.75e2f881@infradead.org>
-	 <20080506211233.f050fd41.akpm@linux-foundation.org>
-	 <20080506211552.6af7cecc@infradead.org>
-	 <20080506212022.3d2eddeb@infradead.org>
-Content-Type: text/plain
-Date: Wed, 07 May 2008 14:37:25 +1000
-Message-Id: <1210135045.21644.204.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+	Wed, 7 May 2008 00:40:49 -0400
+Received: from wa-out-1112.google.com ([209.85.146.182]:20467 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753471AbYEGEks (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 May 2008 00:40:48 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=CNp5CWxzJoxOkmQJhtGst99uF5BjZtrTYJQklh/ZP6Qt7JCga1c5/IcL5XIRrDiC8xHpAj+Uw1/QJanQnfObYixJRtRsZGigTexJCjwWhr7vDnqaUT7yMUoa/mKnbOD7o7Ta7C1KglIICy0mdqzHhBuO+ozTyAT7aST4jH0eS7E=
+Message-ID: <b6a2187b0805062140i2546a1a8pc3fa65227a9873ab@mail.gmail.com>
+Date: Wed, 7 May 2008 12:40:44 +0800
+From: "Jeff Chua" <jeff.chua.linux@gmail.com>
+To: "Hugh Dickins" <hugh@veritas.com>
+Subject: Re: [PATCH] x86: fix PAE pmd_bad bootup warning
+Cc: "Hans Rosenfeld" <hans.rosenfeld@amd.com>, "Ingo Molnar" <mingo@elte.hu>,
+       "Thomas Gleixner" <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       "Gabriel C" <nix.or.die@googlemail.com>,
+       "Arjan van de Ven" <arjan@linux.intel.com>,
+       "Nishanth Aravamudan" <nacc@us.ibm.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+In-Reply-To: <Pine.LNX.4.64.0805062043580.11647@blonde.site>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <b6a2187b0805051806v25fa1272xb08e0b70b9c3408@mail.gmail.com>
+	 <20080506124946.GA2146@elte.hu>
+	 <Pine.LNX.4.64.0805061435510.32567@blonde.site>
+	 <alpine.LFD.1.10.0805061138580.32269@woody.linux-foundation.org>
+	 <Pine.LNX.4.64.0805062043580.11647@blonde.site>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, May 7, 2008 at 3:49 AM, Hugh Dickins <hugh@veritas.com> wrote:
 
-On Tue, 2008-05-06 at 21:20 -0700, Arjan van de Ven wrote:
-> > 
-> > > Which should be called WARN, but of course 12,000,000 drivers have
-> > > gone and screwed that up with indiscriminate namespace poaching.
-> > 
-> 
-> seems to be only 5 of them; we can move those aside I suppose
+>  Signed-off-by: Hugh Dickins <hugh@veritas.com>
 
-In the case of radeonfb, don't bother. Those EDID files aren't used
-by anything afaik.
+Hugh,
 
-Ben.
+Thanks for the patch. It's in Linus's git now and I just booted 2 Dell
+2950 and both are no showing the errors.
 
 
+Thanks,
+Jeff.
