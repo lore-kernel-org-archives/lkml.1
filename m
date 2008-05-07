@@ -1,56 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763698AbYEGHEw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763476AbYEGHFz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763698AbYEGHEw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 03:04:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763516AbYEGHEi
+	id S1763476AbYEGHFz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 03:05:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757605AbYEGHFm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 03:04:38 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:53130 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756718AbYEGHEf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 03:04:35 -0400
-Date: Wed, 07 May 2008 16:04:31 +0900 (JST)
-Message-Id: <20080507.160431.251452611.yamato@redhat.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] kbuild: escape meta characters in regular expression in
- make TAGS
-From: Masatake YAMATO <yamato@redhat.com>
-Organization: Red Hat Japan, Inc.
-X-Mailer: Mew version 5.2.52 on Emacs 22.0.51 / Mule 5.0 (SAKAKI)
+	Wed, 7 May 2008 03:05:42 -0400
+Received: from zone0.gcu-squad.org ([212.85.147.21]:12138 "EHLO
+	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757583AbYEGHFl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 May 2008 03:05:41 -0400
+Date: Wed, 7 May 2008 09:05:14 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: "Maciej W. Rozycki" <macro@linux-mips.org>
+Cc: Alessandro Zummo <a.zummo@towertech.it>,
+       Ralf Baechle <ralf@linux-mips.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>, rtc-linux@googlegroups.com,
+       i2c@lm-sensors.org, linux-mips@linux-mips.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCH 2/4] RTC: SWARM I2C board initialization
+Message-ID: <20080507090514.3a86cf4b@hyperion.delvare>
+In-Reply-To: <Pine.LNX.4.55.0805070031410.16173@cliff.in.clinika.pl>
+References: <Pine.LNX.4.55.0805070031410.16173@cliff.in.clinika.pl>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Oh, BTW...
 
+On Wed, 7 May 2008 01:40:27 +0100 (BST), Maciej W. Rozycki wrote:
+> (...)
+> 1. i2c-swarm.c -- SWARM I2C board setup, currently for the M41T80 chip on 
+>    the bus #1 only.
+> (...)
+> --- linux-2.6.26-rc1-20080505.macro/arch/mips/sibyte/swarm/Makefile	2004-01-29 04:57:05.000000000 +0000
+> +++ linux-2.6.26-rc1-20080505/arch/mips/sibyte/swarm/Makefile	2008-05-06 01:18:21.000000000 +0000
+> @@ -1,3 +1,4 @@
+> -lib-y				= setup.o rtc_xicor1241.o rtc_m41t81.o
+> +obj-y				:= setup.o rtc_xicor1241.o rtc_m41t81.o
+>  
+> -lib-$(CONFIG_KGDB)		+= dbg_io.o
+> +obj-$(CONFIG_I2C_BOARDINFO)	+= i2c-swarm.o
+> +obj-$(CONFIG_KGDB)		+= dbg_io.o
+> (...)
+> --- linux-2.6.26-rc1-20080505.macro/arch/mips/sibyte/swarm/i2c-swarm.c	1970-01-01 00:00:00.000000000 +0000
+> +++ linux-2.6.26-rc1-20080505/arch/mips/sibyte/swarm/i2c-swarm.c	2008-05-06 23:51:34.000000000 +0000
 
-Alexey Dobriyan <adobriyan@gmail.com> introduced a code adds
-menuconfig SOMETHING in Kconfig to tags output when you did "make tags".
+i2c-foo.c is consistently used for i2c bus driver themselves so far.
+It's somewhat confusing to see you name platform code that way. It's
+also redundant, given that the file lives in the swarm platform
+directory. May I suggest naming this file just
+arch/mips/sibyte/swarm/i2c.c? Other architectures (cris, arm) are doing
+this already.
 
-See http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=80ff26241623875636674a31c0540a78c0fb5433
-
-"make tags" may work fine with his code. However make TAGS doesn't work well
-because etags command requires backslashes to escape meta characters like 
-`(', `)' and `|'.
-
-Here is a patch.
-
-Signed-off-by: Masatake YAMATO <yamato@redhat.com>
-
-	
-diff --git a/Makefile b/Makefile
-index 4492984..d4aa437 100644
---- a/Makefile
-+++ b/Makefile
-@@ -1431,7 +1431,7 @@ define xtags
- 	elif $1 --version 2>&1 | grep -iq emacs; then \
- 	    $(all-sources) | xargs $1 -a; \
- 	    $(all-kconfigs) | xargs $1 -a \
--		--regex='/^[ \t]*(menu|)config[ \t]+\([a-zA-Z0-9_]+\)/\2/'; \
-+		--regex='/^[ \t]*\(\(menu\)*config\)[ \t]+\([a-zA-Z0-9_]+\)/\3/'; \
- 	    $(all-defconfigs) | xargs -r $1 -a \
- 		--regex='/^#?[ \t]?\(CONFIG_[a-zA-Z0-9_]+\)/\1/'; \
- 	else \
+-- 
+Jean Delvare
