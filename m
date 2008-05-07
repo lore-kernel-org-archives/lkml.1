@@ -1,47 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762569AbYEGW1h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933669AbYEGW2a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762569AbYEGW1h (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 18:27:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933051AbYEGW06
+	id S933669AbYEGW2a (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 18:28:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759064AbYEGW1z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 18:26:58 -0400
-Received: from rv-out-0506.google.com ([209.85.198.238]:49010 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933570AbYEGW04 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 18:26:56 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=ttdjgUYvQSAKk+o/85My9B0QdUqkT4SXockBtDN0cvqn6Urqhhj4+FoiwlxNp1hiKgiKMDuxayE23ckwKKFuBAD69sLv2JfHJBJA1GkTDp/IUkUROInMgY7e+tTr/wn3ddzI9hwG0Cz5zE0n58ErqsvysustSvcpa7a+DqDQlxI=
-Message-ID: <86802c440805071526s53c4542co6d08704d0364147@mail.gmail.com>
-Date: Wed, 7 May 2008 15:26:55 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Pavel Machek" <pavel@suse.cz>
-Subject: Re: 2.6.26, PAT and AMD family 6
-Cc: "Thomas Gleixner" <tglx@linutronix.de>, "Adrian Bunk" <bunk@kernel.org>,
-       "Rene Herman" <rene.herman@keyaccess.nl>, "Ingo Molnar" <mingo@elte.hu>,
-       "Linux Kernel" <linux-kernel@vger.kernel.org>, hpa@zytor.com,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org
-In-Reply-To: <20080507221435.GH18516@elf.ucw.cz>
+	Wed, 7 May 2008 18:27:55 -0400
+Received: from 2605ds1-ynoe.1.fullrate.dk ([90.184.12.24]:50876 "EHLO
+	shrek.krogh.cc" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761371AbYEGW1x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 May 2008 18:27:53 -0400
+Message-ID: <48222CDE.60408@krogh.cc>
+Date: Thu, 08 May 2008 00:27:42 +0200
+From: Jesper Krogh <jesper@krogh.cc>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Ray Lee <ray-lk@madrabbit.org>
+CC: "Randy.Dunlap" <rdunlap@xenotime.net>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: Many open/close on same files yeilds "No such file or directory".
+References: <4819E316.7000607@krogh.cc> <481ACEC4.2040205@krogh.cc>	 <481B3115.30705@krogh.cc>	 <2c0942db0805020847q2fdc0480m3eb892bf2bd0b3a@mail.gmail.com>	 <481B70F9.6000201@krogh.cc> <481F4728.9050100@krogh.cc>	 <Pine.LNX.4.64.0805051050350.27703@shark.he.net>	 <481F49C0.4080001@krogh.cc>	 <2c0942db0805051121r47cc97d2jb71cc8ab9eaa7981@mail.gmail.com>	 <481F51F0.4000408@krogh.cc> <2c0942db0805051154q63a18bcfhce8a30d4a663ea3f@mail.gmail.com> <4822166F.50002@krogh.cc>
+In-Reply-To: <4822166F.50002@krogh.cc>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <48210A71.1060409@keyaccess.nl>
-	 <86802c440805061939q39ff5500h3c9e229ecbc6b2e6@mail.gmail.com>
-	 <20080507124650.GD29935@cs181133002.pp.htv.fi>
-	 <alpine.LFD.1.10.0805072122270.3318@apollo.tec.linutronix.de>
-	 <20080507212343.GB14951@cs181133002.pp.htv.fi>
-	 <alpine.LFD.1.10.0805072341210.3318@apollo.tec.linutronix.de>
-	 <20080507221435.GH18516@elf.ucw.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->  1) it has empty changelog (come on, "review" a patch and not notice
->  that changelog is empty?!)
+Jesper Krogh wrote:
+> Both servers are 16 cores. The problem wasn't there on a different 
+> server with only 2 cores. (or I didn't run into it).
+> 
+> The 3 setups above has both been tested with a 2.6.22-14-server and 
+> 2.6.24-17-server (towards the iscsi volume).
 
-the title is good enough
+I can confirm that the problem persists on a 2.6.25.2 kernel.
 
-YH
+-- 
+Jesper
