@@ -1,46 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756815AbYEGEUm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759626AbYEGEVp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756815AbYEGEUm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 00:20:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750807AbYEGEUd
+	id S1759626AbYEGEVp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 00:21:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752025AbYEGEVh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 00:20:33 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:37401 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750722AbYEGEUc (ORCPT
+	Wed, 7 May 2008 00:21:37 -0400
+Received: from homer.mvista.com ([63.81.120.158]:10085 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1751992AbYEGEVg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 00:20:32 -0400
-Date: Tue, 6 May 2008 21:20:22 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, tony@bakeyournoodle.com,
-       linux-kernel@vger.kernel.org, benh@kernel.crashing.org
-Subject: Re: [PATCH] Silence 'ignoring return value' warnings in
- drivers/video/aty/radeon_base.c
-Message-ID: <20080506212022.3d2eddeb@infradead.org>
-In-Reply-To: <20080506211552.6af7cecc@infradead.org>
-References: <20080424043400.GS20457@bakeyournoodle.com>
-	<20080506143936.6357e578.akpm@linux-foundation.org>
-	<20080506.144301.233784820.davem@davemloft.net>
-	<20080506145608.565b61bf.akpm@linux-foundation.org>
-	<20080506210055.75e2f881@infradead.org>
-	<20080506211233.f050fd41.akpm@linux-foundation.org>
-	<20080506211552.6af7cecc@infradead.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; i386-redhat-linux-gnu)
+	Wed, 7 May 2008 00:21:36 -0400
+Subject: Re: x86: Clean up computation of HPET .mult variables
+From: Daniel Walker <dwalker@mvista.com>
+To: "Carlos R. Mafra" <crmafra2@gmail.com>
+Cc: linux-kernel@vger.kernel.org, tglx@linutronix.de,
+       venkatesh.pallipadi@intel.com
+In-Reply-To: <20080507033931.GA5378@Pilar.virtua.com.br>
+References: <20080505231016.GA29072@beyonder.ift.unesp.br>
+	 <1210031888.17132.85.camel@localhost.localdomain>
+	 <20080506021321.GA4928@Pilar.virtua.com.br>
+	 <1210044218.17132.109.camel@localhost.localdomain>
+	 <20080506125920.GA26295@beyonder.ift.unesp.br>
+	 <1210090880.17132.140.camel@localhost.localdomain>
+	 <20080506205003.GA3749@beyonder.ift.unesp.br>
+	 <1210126661.17132.223.camel@localhost.localdomain>
+	 <20080507033931.GA5378@Pilar.virtua.com.br>
+Content-Type: text/plain
+Date: Tue, 06 May 2008 21:21:34 -0700
+Message-Id: <1210134094.17132.228.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.12.3 (2.12.3-3.fc8) 
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> 
-> > Which should be called WARN, but of course 12,000,000 drivers have
-> > gone and screwed that up with indiscriminate namespace poaching.
-> 
 
-seems to be only 5 of them; we can move those aside I suppose
+On Wed, 2008-05-07 at 00:39 -0300, Carlos R. Mafra wrote:
+> So comparing with the numbers you quoted from your experiments
+> you will realize that the value you got with my patch is actually
+> 10 times better, so your assumption about clocksource_hz2mult
+> being more correct is not good.
+
+If that's the case then we really need to correct
+clocksource_hz2mult() .. Since that function is what we use to calculate
+the mult in most cases.
+
+Daniel
+
