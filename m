@@ -1,68 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932658AbYEGWOJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932456AbYEGWSZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932658AbYEGWOJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 18:14:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755653AbYEGWNt
+	id S932456AbYEGWSZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 18:18:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756291AbYEGWSF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 18:13:49 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:55150 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755640AbYEGWNr (ORCPT
+	Wed, 7 May 2008 18:18:05 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:60121 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755653AbYEGWSB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 18:13:47 -0400
-Date: Thu, 8 May 2008 00:14:35 +0200
-From: Pavel Machek <pavel@suse.cz>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Adrian Bunk <bunk@kernel.org>, Yinghai Lu <yhlu.kernel@gmail.com>,
-       Rene Herman <rene.herman@keyaccess.nl>, Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, hpa@zytor.com,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org
-Subject: Re: 2.6.26, PAT and AMD family 6
-Message-ID: <20080507221435.GH18516@elf.ucw.cz>
-References: <48210A71.1060409@keyaccess.nl> <86802c440805061939q39ff5500h3c9e229ecbc6b2e6@mail.gmail.com> <20080507124650.GD29935@cs181133002.pp.htv.fi> <alpine.LFD.1.10.0805072122270.3318@apollo.tec.linutronix.de> <20080507212343.GB14951@cs181133002.pp.htv.fi> <alpine.LFD.1.10.0805072341210.3318@apollo.tec.linutronix.de>
+	Wed, 7 May 2008 18:18:01 -0400
+Date: Wed, 7 May 2008 15:11:10 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Andrea Arcangeli <andrea@qumranet.com>
+cc: Andrew Morton <akpm@linux-foundation.org>, clameter@sgi.com,
+       steiner@sgi.com, holt@sgi.com, npiggin@suse.de, a.p.zijlstra@chello.nl,
+       kvm-devel@lists.sourceforge.net, kanojsarcar@yahoo.com,
+       rdreier@cisco.com, swise@opengridcomputing.com,
+       linux-kernel@vger.kernel.org, avi@qumranet.com, linux-mm@kvack.org,
+       general@lists.openfabrics.org, hugh@veritas.com, rusty@rustcorp.com.au,
+       aliguori@us.ibm.com, chrisw@redhat.com, marcelo@kvack.org,
+       dada1@cosmosbay.com, paulmck@us.ibm.com
+Subject: Re: [PATCH 01 of 11] mmu-notifier-core
+In-Reply-To: <20080507215840.GB8276@duo.random>
+Message-ID: <alpine.LFD.1.10.0805071509270.3024@woody.linux-foundation.org>
+References: <patchbomb.1210170950@duo.random> <e20917dcc8284b6a07cf.1210170951@duo.random> <20080507130528.adfd154c.akpm@linux-foundation.org> <alpine.LFD.1.10.0805071324570.3024@woody.linux-foundation.org> <20080507215840.GB8276@duo.random>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.10.0805072341210.3318@apollo.tec.linutronix.de>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
 
-> > > This feature and detection code is hard to clean up and definitely out
-> > > of the scope of this patch.
-> > 
-> > Did you even look at the commit we are discussing?
-> > 
-> > It ***adds*** exactly the same code at three different places.
+
+On Wed, 7 May 2008, Andrea Arcangeli wrote:
+
+> > As far as I can tell, authorship has been destroyed by at least two of the 
+> > patches (ie Christoph seems to be the author, but Andrea seems to have 
+> > dropped that fact).
 > 
-> Yes, I did. And it adds it for a fscking good reason. 
+> I can't follow this, please be more specific.
+
+The patches were sent to lkml without *any* indication that you weren't 
+actually the author.
+
+So if Andrew had merged them, they would have been merged as yours.
+
+> > That "locking" code is also too ugly to live, at least without some 
+> > serious arguments for why it has to be done that way. Sorting the locks? 
+> > In a vmalloc'ed area?  And calling this something innocuous like 
+> > "mm_lock()"? Hell no. 
 > 
-> 1) two times in common.c due to the existing detection logic mess
-> 2) once in the 64 bit version
+> That's only invoked in mmu_notifier_register, mm_lock is explicitly
+> documented as heavyweight function.
 
-WTF? The code can happily live in a function. No need to add two
-copies to single file. If you need to share function between 32 and 64
-bit, just put it to separate .c file.
+Is that an excuse for UTTER AND TOTAL CRAP?
 
-> > fall into his own trap by patching only one copy of his duplicated code.
-> 
-> That's not a real good reason to yell at him.
-
-Actually no, that's not a good reason to yell at _him_. But it is
-_perfectly valid_ reason to yell at whoever commited that to x86 tree,
-given that:
-
-1) it has empty changelog (come on, "review" a patch and not notice
-that changelog is empty?!) 
-
-2) HPA said it was bad idea
-
-3) copy&paste code remained in the patch 
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+		Linus
