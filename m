@@ -1,174 +1,184 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759242AbYEGLks@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756894AbYEGLlN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759242AbYEGLks (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 07:40:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756680AbYEGLiQ
+	id S1756894AbYEGLlN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 07:41:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756058AbYEGLiR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 07:38:16 -0400
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:56410 "EHLO
+	Wed, 7 May 2008 07:38:17 -0400
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:56467 "EHLO
 	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755694AbYEGLhs (ORCPT
+	with ESMTP id S1756361AbYEGLhx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 07:37:48 -0400
-Message-Id: <20080507113737.562143000@bull.net>
+	Wed, 7 May 2008 07:37:53 -0400
+Message-Id: <20080507113738.379341000@bull.net>
 References: <20080507113553.395937000@bull.net>
 User-Agent: quilt/0.45-1
-Date: Wed, 07 May 2008 13:36:00 +0200
+Date: Wed, 07 May 2008 13:36:02 +0200
 From: Nadia.Derbey@bull.net
 To: manfred@colorfullife.com, paulmck@linux.vnet.ibm.com,
        lnxninja@linux.vnet.ibm.com
 Cc: linux-kernel@vger.kernel.org, efault@gmx.de, akpm@linux-foundation.org,
        Nadia Derbey <Nadia.Derbey@bull.net>
-Subject: [PATCH 7/9] Make idr_remove rcu-safe
-Content-Disposition: inline; filename=idr_remove_rcu_safe.patch
+Subject: [PATCH 9/9] Get rid of ipc_lock_down()
+Content-Disposition: inline; filename=remove_ipc_lock_down.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[PATCH 07/09]
+[PATCH 09/09]
 
-This patch introduces the free_layer() routine: it is the one that actually
-frees memory after a grace period has elapsed.
+This patch removes the ipc_lock_down() routines: they used to call idr_find()
+locklessly (given that the ipc ids lock was already held), so they are not
+needed anymore.
 
 Signed-off-by: Nadia Derbey <Nadia.Derbey@bull.net>
 
 ---
- lib/idr.c |   59 ++++++++++++++++++++++++++++++++++++++++++++---------------
- 1 file changed, 44 insertions(+), 15 deletions(-)
+ ipc/shm.c  |   21 +++------------------
+ ipc/util.c |   52 +---------------------------------------------------
+ ipc/util.h |    6 ------
+ 3 files changed, 4 insertions(+), 75 deletions(-)
 
-Index: linux-2.6.25-mm1/lib/idr.c
+Index: linux-2.6.25-mm1/ipc/util.c
 ===================================================================
---- linux-2.6.25-mm1.orig/lib/idr.c	2008-05-06 18:06:43.000000000 +0200
-+++ linux-2.6.25-mm1/lib/idr.c	2008-05-07 09:07:31.000000000 +0200
-@@ -52,6 +52,19 @@ static struct idr_layer *get_from_free_l
- 	return(p);
+--- linux-2.6.25-mm1.orig/ipc/util.c	2008-05-07 09:56:20.000000000 +0200
++++ linux-2.6.25-mm1/ipc/util.c	2008-05-07 09:58:32.000000000 +0200
+@@ -716,56 +716,6 @@ struct kern_ipc_perm *ipc_lock(struct ip
+ 	return out;
  }
  
-+static void idr_layer_rcu_free(struct rcu_head *head)
-+{
-+	struct idr_layer *layer;
-+
-+	layer = container_of(head, struct idr_layer, rcu_head);
-+	kmem_cache_free(idr_layer_cache, layer);
-+}
-+
-+static inline void free_layer(struct idr_layer *p)
-+{
-+	call_rcu(&p->rcu_head, idr_layer_rcu_free);
-+}
-+
- /* only called when idp->lock is held */
- static void __move_to_free_list(struct idr *idp, struct idr_layer *p)
- {
-@@ -334,6 +347,7 @@ static void sub_remove(struct idr *idp, 
- 	struct idr_layer *p = idp->top;
- 	struct idr_layer **pa[MAX_LEVEL];
- 	struct idr_layer ***paa = &pa[0];
-+	struct idr_layer *to_free;
- 	int n;
- 
- 	*paa = NULL;
-@@ -349,13 +363,18 @@ static void sub_remove(struct idr *idp, 
- 	n = id & IDR_MASK;
- 	if (likely(p != NULL && test_bit(n, &p->bitmap))){
- 		__clear_bit(n, &p->bitmap);
--		p->ary[n] = NULL;
-+		rcu_assign_pointer(p->ary[n], NULL);
-+		to_free = NULL;
- 		while(*paa && ! --((**paa)->count)){
--			move_to_free_list(idp, **paa);
-+			if (to_free)
-+				free_layer(to_free);
-+			to_free = **paa;
- 			**paa-- = NULL;
- 		}
- 		if (!*paa)
- 			idp->layers = 0;
-+		if (to_free)
-+			free_layer(to_free);
- 	} else
- 		idr_remove_warning(id);
- }
-@@ -368,25 +387,37 @@ static void sub_remove(struct idr *idp, 
- void idr_remove(struct idr *idp, int id)
- {
- 	struct idr_layer *p;
-+	struct idr_layer *to_free;
- 
- 	/* Mask off upper bits we don't use for the search. */
- 	id &= MAX_ID_MASK;
- 
- 	sub_remove(idp, (idp->layers - 1) * IDR_BITS, id);
- 	if (idp->top && idp->top->count == 1 && (idp->layers > 1) &&
--	    idp->top->ary[0]) {  // We can drop a layer
+-/**
+- * ipc_lock_down - Lock an ipc structure with rw_sem held
+- * @ids: IPC identifier set
+- * @id: ipc id to look for
+- *
+- * Look for an id in the ipc ids idr and lock the associated ipc object.
+- *
+- * The ipc object is locked on exit.
+- *
+- * This is the routine that should be called when the rw_mutex is already
+- * held, i.e. idr tree protected.
+- */
 -
-+	    idp->top->ary[0]) {
-+		/*
-+		 * Single child at leftmost slot: we can shrink the tree.
-+		 * This level is not needed anymore since when layers are
-+		 * inserted, they are inserted at the top of the existing
-+		 * tree.
-+		 */
-+		to_free = idp->top;
- 		p = idp->top->ary[0];
--		idp->top->bitmap = idp->top->count = 0;
--		move_to_free_list(idp, idp->top);
--		idp->top = p;
-+		rcu_assign_pointer(idp->top, p);
- 		--idp->layers;
-+		to_free->bitmap = to_free->count = 0;
-+		free_layer(to_free);
- 	}
- 	while (idp->id_free_cnt >= IDR_FREE_MAX) {
- 		p = get_from_free_list(idp);
-+		/*
-+		 * Note: we don't call the rcu callback here, since the only
-+		 * layers that fall into the freelist are those that have been
-+		 * preallocated.
-+		 */
- 		kmem_cache_free(idr_layer_cache, p);
--		return;
- 	}
-+	return;
- }
- EXPORT_SYMBOL(idr_remove);
- 
-@@ -424,15 +455,13 @@ void idr_remove_all(struct idr *idp)
- 
- 		id += 1 << n;
- 		while (n < fls(id)) {
--			if (p) {
--				memset(p, 0, sizeof *p);
--				move_to_free_list(idp, p);
--			}
-+			if (p)
-+				free_layer(p);
- 			n += IDR_BITS;
- 			p = *--paa;
- 		}
- 	}
--	idp->top = NULL;
-+	rcu_assign_pointer(idp->top, NULL);
- 	idp->layers = 0;
- }
- EXPORT_SYMBOL(idr_remove_all);
-@@ -549,7 +578,7 @@ EXPORT_SYMBOL(idr_for_each);
-  * A -ENOENT return indicates that @id was not found.
-  * A -EINVAL return indicates that @id was not within valid constraints.
-  *
-- * The caller must serialize vs idr_find(), idr_get_new(), and idr_remove().
-+ * The caller must serialize with writers.
-  */
- void *idr_replace(struct idr *idp, void *ptr, int id)
+-struct kern_ipc_perm *ipc_lock_down(struct ipc_ids *ids, int id)
+-{
+-	struct kern_ipc_perm *out;
+-	int lid = ipcid_to_idx(id);
+-
+-	rcu_read_lock();
+-	out = idr_find(&ids->ipcs_idr, lid);
+-	if (out == NULL) {
+-		rcu_read_unlock();
+-		return ERR_PTR(-EINVAL);
+-	}
+-
+-	spin_lock(&out->lock);
+-
+-	/*
+-	 * No need to verify that the structure is still valid since the
+-	 * rw_mutex is held.
+-	 */
+-	return out;
+-}
+-
+-struct kern_ipc_perm *ipc_lock_check_down(struct ipc_ids *ids, int id)
+-{
+-	struct kern_ipc_perm *out;
+-
+-	out = ipc_lock_down(ids, id);
+-	if (IS_ERR(out))
+-		return out;
+-
+-	if (ipc_checkid(out, id)) {
+-		ipc_unlock(out);
+-		return ERR_PTR(-EIDRM);
+-	}
+-
+-	return out;
+-}
+-
+ struct kern_ipc_perm *ipc_lock_check(struct ipc_ids *ids, int id)
  {
-@@ -575,7 +604,7 @@ void *idr_replace(struct idr *idp, void 
- 		return ERR_PTR(-ENOENT);
+ 	struct kern_ipc_perm *out;
+@@ -837,7 +787,7 @@ struct kern_ipc_perm *ipcctl_pre_down(st
+ 	int err;
  
- 	old_p = p->ary[n];
--	p->ary[n] = ptr;
-+	rcu_assign_pointer(p->ary[n], ptr);
+ 	down_write(&ids->rw_mutex);
+-	ipcp = ipc_lock_check_down(ids, id);
++	ipcp = ipc_lock_check(ids, id);
+ 	if (IS_ERR(ipcp)) {
+ 		err = PTR_ERR(ipcp);
+ 		goto out_up;
+Index: linux-2.6.25-mm1/ipc/util.h
+===================================================================
+--- linux-2.6.25-mm1.orig/ipc/util.h	2008-05-06 17:15:10.000000000 +0200
++++ linux-2.6.25-mm1/ipc/util.h	2008-05-07 09:59:31.000000000 +0200
+@@ -102,11 +102,6 @@ void* ipc_rcu_alloc(int size);
+ void ipc_rcu_getref(void *ptr);
+ void ipc_rcu_putref(void *ptr);
  
- 	return old_p;
+-/*
+- * ipc_lock_down: called with rw_mutex held
+- * ipc_lock: called without that lock held
+- */
+-struct kern_ipc_perm *ipc_lock_down(struct ipc_ids *, int);
+ struct kern_ipc_perm *ipc_lock(struct ipc_ids *, int);
+ 
+ void kernel_to_ipc64_perm(struct kern_ipc_perm *in, struct ipc64_perm *out);
+@@ -155,7 +150,6 @@ static inline void ipc_unlock(struct ker
+ 	rcu_read_unlock();
  }
+ 
+-struct kern_ipc_perm *ipc_lock_check_down(struct ipc_ids *ids, int id);
+ struct kern_ipc_perm *ipc_lock_check(struct ipc_ids *ids, int id);
+ int ipcget(struct ipc_namespace *ns, struct ipc_ids *ids,
+ 			struct ipc_ops *ops, struct ipc_params *params);
+Index: linux-2.6.25-mm1/ipc/shm.c
+===================================================================
+--- linux-2.6.25-mm1.orig/ipc/shm.c	2008-05-06 17:15:10.000000000 +0200
++++ linux-2.6.25-mm1/ipc/shm.c	2008-05-07 10:01:05.000000000 +0200
+@@ -112,23 +112,8 @@ void __init shm_init (void)
+ }
+ 
+ /*
+- * shm_lock_(check_)down routines are called in the paths where the rw_mutex
+- * is held to protect access to the idr tree.
+- */
+-static inline struct shmid_kernel *shm_lock_down(struct ipc_namespace *ns,
+-						int id)
+-{
+-	struct kern_ipc_perm *ipcp = ipc_lock_down(&shm_ids(ns), id);
+-
+-	if (IS_ERR(ipcp))
+-		return (struct shmid_kernel *)ipcp;
+-
+-	return container_of(ipcp, struct shmid_kernel, shm_perm);
+-}
+-
+-/*
+  * shm_lock_(check_) routines are called in the paths where the rw_mutex
+- * is not held.
++ * is not necessarily held.
+  */
+ static inline struct shmid_kernel *shm_lock(struct ipc_namespace *ns, int id)
+ {
+@@ -211,7 +196,7 @@ static void shm_close(struct vm_area_str
+ 
+ 	down_write(&shm_ids(ns).rw_mutex);
+ 	/* remove from the list of attaches of the shm segment */
+-	shp = shm_lock_down(ns, sfd->id);
++	shp = shm_lock(ns, sfd->id);
+ 	BUG_ON(IS_ERR(shp));
+ 	shp->shm_lprid = task_tgid_vnr(current);
+ 	shp->shm_dtim = get_seconds();
+@@ -933,7 +918,7 @@ invalid:
+ 
+ out_nattch:
+ 	down_write(&shm_ids(ns).rw_mutex);
+-	shp = shm_lock_down(ns, shmid);
++	shp = shm_lock(ns, shmid);
+ 	BUG_ON(IS_ERR(shp));
+ 	shp->shm_nattch--;
+ 	if(shp->shm_nattch == 0 &&
 
 --
