@@ -1,57 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755927AbYEGVHp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760543AbYEGVKc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755927AbYEGVHp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 17:07:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752370AbYEGVHd
+	id S1760543AbYEGVKc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 17:10:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753951AbYEGVKL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 17:07:33 -0400
-Received: from mail-in-07.arcor-online.net ([151.189.21.47]:60667 "EHLO
-	mail-in-07.arcor-online.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751142AbYEGVHb (ORCPT
+	Wed, 7 May 2008 17:10:11 -0400
+Received: from smtpq1.groni1.gr.home.nl ([213.51.130.200]:36989 "EHLO
+	smtpq1.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753596AbYEGVKH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 17:07:31 -0400
-Message-ID: <48221A45.8060602@henry.ne.arcor.de>
-Date: Wed, 07 May 2008 23:08:21 +0200
-From: Henry Nestler <Henry.Ne@Arcor.de>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Wed, 7 May 2008 17:10:07 -0400
+Message-ID: <48221AE3.6020602@keyaccess.nl>
+Date: Wed, 07 May 2008 23:10:59 +0200
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
 MIME-Version: 1.0
-To: Henry Nestler <henry.nestler@gmail.com>
-CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH] x86: endless page faults in mount_block_root for Linux
- 2.6 - v2
-References: <480E6BB4.5080902@henry.nestler.gmail.com> <20080428164455.GB18210@elte.hu> <48221695.7060507@henry.nestler.gmail.com>
-In-Reply-To: <48221695.7060507@henry.nestler.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Thomas Gleixner <tglx@linutronix.de>
+CC: Adrian Bunk <bunk@kernel.org>, Yinghai Lu <yhlu.kernel@gmail.com>,
+       Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel <linux-kernel@vger.kernel.org>, hpa@zytor.com,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       Pavel Machek <pavel@suse.cz>
+Subject: Re: 2.6.26, PAT and AMD family 6
+References: <48210A71.1060409@keyaccess.nl> <86802c440805061939q39ff5500h3c9e229ecbc6b2e6@mail.gmail.com> <20080507124650.GD29935@cs181133002.pp.htv.fi> <alpine.LFD.1.10.0805072122270.3318@apollo.tec.linutronix.de>
+In-Reply-To: <alpine.LFD.1.10.0805072122270.3318@apollo.tec.linutronix.de>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -1.0 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Henry Nestler wrote:
-> [...]
-> checking if image is initramfs...it isn't (no cpio magic); looks like an
-> initrd
-> BUG: unable to handle kernel paging request at c0000e68
-> IP: [<c010cb84>] __change_page_attr_set_clr+0x104/0x590
-> *pde = 00000063 BUG: unable to handle kernel paging request at c0000000
-> IP: [<c010c5c9>] do_page_fault+0x639/0x730
-> *pde = 00000063 BUG: unable to handle kernel paging request at c0000000
-> IP: [<c010c5c9>] do_page_fault+0x639/0x730
-> *pde = 00000063 BUG: unable to handle kernel paging request at c0000000
-> IP: [<c010c5c9>] do_page_fault+0x639/0x730
-> ===== ... this never ends or with a stack overflow ... ===
-> 
-> Shure, the "out of range address" was from buggy driver development.
-> But not of adresses should kill the complete system.
-> 
-> "__change_page_attr_set_clr" is some of the macros inside spurious_fault.
+On 07-05-08 22:52, Thomas Gleixner wrote:
 
-Sorry. Copy&paste error. I wand to say:
-"do_page_fault+0x639/0x730" is one of the macros or inline functions
-"pgd_present(*pgd)" or "pte_write(*pte)", what I can not see as label.
+>> And why do we need this clear_cpu_cap(c, X86_FEATURE_PAT) and then 
+>> manual setting of X86_FEATURE_PAT at all?
+> 
+> The reason is to make cpu_has_pat a useful check and to avoid checking
+> cpu vendors, families and models inside of the PAT code. That's a good
+> thing actually, because the PAT code only cares about that cpu_has_pat
+> flag.
+> 
+> Clearing it in the cpuinfo is just a cosmetic side effect which does
+> no harm at all.
 
--- 
-Henry N.
+Oh yes, it does. It makes people unaware that their CPUs _should_ be
+supporting PAT. The thing's not called /proc/kernelinfo for a reason.
+
+>> And this patch (by the author of the code himself) is the first time 
+>> where it breaks.
+> 
+> Very interesting analysis. What broke ? This CPU was never in the set
+> of supported ones at all.
+
+You misunderstood. Yinghai's patch only changed one of the code sites
+and not the others, which (if I understood right) is the breakage
+Adrian was reffering to.
+
+> Anyway, you are welcome to review x86 code - it can definitely use 
+> more eyeballs, but please try to inform yourself about the topic or 
+> ask polite questions before yelling at people who contribute in a 
+> very valuable way.
+
+And would yelling at people how shuffle in code without (publicly at
+least) addressing one of your fellow arch maintainers objections and
+Pavel's review comments about code duplication without a single line
+of explanation/changelog do?
+
+Rene.
