@@ -1,48 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756061AbYEGAjo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756049AbYEGAkp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756061AbYEGAjo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 20:39:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753337AbYEGAjd
+	id S1756049AbYEGAkp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 20:40:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753337AbYEGAkh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 20:39:33 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:36748 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752934AbYEGAjc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 20:39:32 -0400
-Date: Tue, 6 May 2008 19:39:31 -0500
-From: Paul Jackson <pj@sgi.com>
-To: "Paul Menage" <menage@google.com>
-Cc: akpm@linux-foundation.org, torvalds@linux-foundation.org,
-       lizf@cn.fujitsu.com, seto.hidetoshi@jp.fujitsu.com,
-       kamezawa.hiroyu@jp.fujitsu.com, sivanich@sgi.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 125/311] Cpuset hardwall flag: switch cpusets to use the
- bulk cgroup_add_files() API
-Message-Id: <20080506193931.3e009405.pj@sgi.com>
-In-Reply-To: <6599ad830805061726n33f69552k756e8754387e4b8c@mail.gmail.com>
-References: <200804290800.m3T80QFs009131@imap1.linux-foundation.org>
-	<6599ad830804290329heea3c5fu7395b1ef71a87881@mail.gmail.com>
-	<20080429053804.6d083a7f.akpm@linux-foundation.org>
-	<20080506192018.26c1e3b7.pj@sgi.com>
-	<6599ad830805061726n33f69552k756e8754387e4b8c@mail.gmail.com>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 6 May 2008 20:40:37 -0400
+Received: from ozlabs.org ([203.10.76.45]:45641 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752698AbYEGAkg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 May 2008 20:40:36 -0400
+To: <clameter@sgi.com>
+CC: <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Wed, 07 May 2008 10:38:55 +1000
+Subject: [PATCH] slub: Fix atomic usage in any_slab_objects()
+Message-Id: <20080507004035.58041DDE03@ozlabs.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul M wrote:
-> But I can send one against 2.6.26-rc1 directly if that helps.
+any_slab_objects() does an atomic_read on an atomic_long_t, this
+fixes it to use atomic_long_read instead.
 
-At this point, whatever resolves this with the least amount of
-additional effort and confusion on the parts of Linus, Andrew,
-Seto-san and yourself seems best.  A few days one way or the
-other don't matter, so far as I know.
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
 
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.940.382.4214
+ mm/slub.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- linux-work.orig/mm/slub.c	2008-05-07 10:37:04.000000000 +1000
++++ linux-work/mm/slub.c	2008-05-07 10:37:05.000000000 +1000
+@@ -3762,7 +3762,7 @@ static int any_slab_objects(struct kmem_
+ 		if (!n)
+ 			continue;
+ 
+-		if (atomic_read(&n->total_objects))
++		if (atomic_long_read(&n->total_objects))
+ 			return 1;
+ 	}
+ 	return 0;
