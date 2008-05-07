@@ -1,71 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765325AbYEGSAf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765407AbYEGSBO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765325AbYEGSAf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 14:00:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759101AbYEGSAG
+	id S1765407AbYEGSBO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 14:01:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759568AbYEGSAL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 14:00:06 -0400
-Received: from eazy.amigager.de ([213.239.192.238]:43198 "EHLO
-	eazy.amigager.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757569AbYEGSAA (ORCPT
+	Wed, 7 May 2008 14:00:11 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:41241 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757342AbYEGSAB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 14:00:00 -0400
-Date: Wed, 7 May 2008 20:00:42 +0200
-From: Tino Keitel <tino.keitel@gmx.de>
-To: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-Subject: Re: Hack to fix not working spindown over Firewire
-Message-ID: <20080507180042.GA32629@dose.home.local>
-Mail-Followup-To: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-References: <20080429232606.GA14261@dose.home.local> <481874BD.5010807@s5r6.in-berlin.de>
+	Wed, 7 May 2008 14:00:01 -0400
+Date: Wed, 7 May 2008 11:59:59 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Andi Kleen <andi@firstfloor.org>,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Alexander Viro <viro@ftp.linux.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: AIM7 40% regression with 2.6.26-rc1
+Message-ID: <20080507175959.GZ19219@parisc-linux.org>
+References: <87lk2mbcqp.fsf@basil.nowhere.org> <20080507114643.GR19219@parisc-linux.org> <87hcdab8zp.fsf@basil.nowhere.org> <alpine.LFD.1.10.0805070728280.32269@woody.linux-foundation.org> <20080507162012.GA10096@elte.hu> <alpine.LFD.1.10.0805070929310.3024@woody.linux-foundation.org> <20080507170528.GA11511@elte.hu> <alpine.LFD.1.10.0805071017130.3024@woody.linux-foundation.org> <20080507173612.GA13591@elte.hu> <alpine.LFD.1.10.0805071049180.3024@woody.linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <481874BD.5010807@s5r6.in-berlin.de>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <alpine.LFD.1.10.0805071049180.3024@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 30, 2008 at 15:31:41 +0200, Stefan Richter wrote:
-
-[...]
-
-> Tino, to find the firmware marker you can for example:
-> # echo 0x1000 > /sys/module/sbp2/parameters/workarounds
-> Then plug in the disk and
-> # dmesg | grep sbp2
-
-I used firewire_sbp2. I hope that's ok.
-
-firewire_sbp2: Please notify linux1394-devel@lists.sourceforge.net if
-you need the workarounds parameter for fw1.0
-firewire_sbp2: Workarounds for fw1.0: 0x100 (firmware_revision
-0x012804, model_id 0x000001)
-firewire_sbp2: fw1.0: logged in to LUN 0000 (0 retries)
-
-[...]
-
-> uninteresting for our purposes.  According to the description of Active,
-> Idle, Standby, Sleep in RBC, we do most certainly want code 1 on resume,
-> and rather 3 than 2 on suspend. 5 instead of 3 or 2 might even be better
-
-FYI, sg_start --pc=3 also spins down the drive here.
-
-> from the POV of energy consumption but a "device reset may be required
-> before access to the device is allowed" which I'd rather not deal with.
+On Wed, May 07, 2008 at 10:55:26AM -0700, Linus Torvalds wrote:
+> Hmm. I do agree that _cond_resched() looks a bit iffy, although in a safe 
+> way. It uses just
 > 
-> Tino, does the scsi stack log the device as "Direct-Access-RBC" after it
-> was plugged in?
-
-Yes:
-
-scsi 7:0:0:0: Direct-Access-RBC WDC WD32 00JB-00KFA0           PQ: 0 ANSI: 4
-
+> 	!(preempt_count() & PREEMPT_ACTIVE)
 > 
-> Note to self:  Test sg_start --pc={1,3} with all the various SBP-2
-> bridges I have access to...
+> to see whether it can schedule, and it should probably use in_atomic() 
+> which ignores the kernel lock.
+> 
+> But right now, that whole thing is disabled if PREEMPT is on anyway, so in 
+> effect (with my test patch, at least) cond_preempt() would just be a no-op 
+> if PREEMPT is on, even if BKL isn't preemptable.
+> 
+> So it doesn't look buggy, but it looks like it might cause longer 
+> latencies than strictly necessary. And if somebody depends on 
+> cond_resched() to avoid some bad livelock situation, that would obviously 
+> not work (but that sounds like a fundamental bug anyway, I really hope 
+> nobody has ever written their code that way).
 
-Thanks for your effort.
+Funny you should mention it; locks.c uses cond_resched() assuming that
+it ignores the BKL.  Not through needing to avoid livelock, but it does
+presume that other higher priority tasks contending for the lock will
+get a chance to take it.  You'll notice the patch I posted yesterday
+drops the file_lock_lock around the call to cond_resched().
 
-Regards,
-Tino
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
