@@ -1,56 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757560AbYEGBOS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758100AbYEGBOi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757560AbYEGBOS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 21:14:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754742AbYEGBN6
+	id S1758100AbYEGBOi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 21:14:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756798AbYEGBOO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 21:13:58 -0400
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:39550 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753649AbYEGBN5 (ORCPT
+	Tue, 6 May 2008 21:14:14 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:36716
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1755849AbYEGBOL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 21:13:57 -0400
-X-Sasl-enc: BS9c2V5whay59rUVQi3DYR331lwzTffnBDJqPJj1sS9c 1210122836
-Date: Tue, 6 May 2008 22:13:54 -0300
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Shaohua Li <shaohua.li@intel.com>
-Cc: Holger Macht <hmacht@suse.de>, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org,
-       "Accardi, Kristen C" <kristen.c.accardi@intel.com>
-Subject: Re: [PATCH] bay: Exit if notify handler cannot be installed
-Message-ID: <20080507011354.GA8163@khazad-dum.debian.net>
-References: <20080505202508.GA3690@homac> <20080506091522.GA4378@homac> <1210065811.12668.1.camel@sli10-desk.sh.intel.com> <20080506151846.GA22828@khazad-dum.debian.net> <1210122279.27316.2.camel@sli10-desk.sh.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1210122279.27316.2.camel@sli10-desk.sh.intel.com>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
-	1CDB 0FE3
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Tue, 6 May 2008 21:14:11 -0400
+Date: Tue, 06 May 2008 18:14:06 -0700 (PDT)
+Message-Id: <20080506.181406.60757850.davem@davemloft.net>
+To: torvalds@linux-foundation.org
+CC: akpm@linux-foundation.org, sparclinux@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [GIT]: Sparc
+From: David Miller <davem@davemloft.net>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 07 May 2008, Shaohua Li wrote:
-> On Tue, 2008-05-06 at 12:18 -0300, Henrique de Moraes Holschuh wrote:
-> > On Tue, 06 May 2008, Shaohua Li wrote:
-> > > The bay driver is duplicated with libata, I thought we should delete it.
-> > > See bug http://bugzilla.kernel.org/show_bug.cgi?id=9526
-> > 
-> > The bay driver is currently useless, BUT it should handle a lot of stuff
-> > libata won't, such as bay batteries, bay floppies, and anything else in
-> > a bay that is not a hard disk.
-> > 
-> > The fact that the driver currently looks only after disks is just a bug.
-> > It should, in fact, bind to any ejectable device not already handled by
-> > a different driver.
-> Isn't this the job of acpi dock driver?
 
-No, but I actually fail to see why do we even care about the difference
-from a dock to a bay.  Dock *could* be made to handle both.
+Sparc updates and fixes:
 
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+1) initrd hosed unintentionally by my NUMA support changes
+   on sparc64
+
+2) SMP IPIs don't need to actually be surrounded by
+   irq_{enter,exit}(), revert
+
+3) online_page() is superfluous, delete, from Adrian Bunk
+
+4) Christoph Hellwig noticed that we had a local copy of
+   compat_sys_times(), just use it directly.
+
+5) USB_ISP1760_OF should not be built on sparc, ACK'd by
+   Ben H.
+
+6) Sparc video driver tidies by Robert Reif.
+
+Please pull, thanks a lot!
+
+The following changes since commit afa26be86b65a7183ceac29bdf1f51d6fc6932f0:
+  Linus Torvalds (1):
+        Merge git://git.kernel.org/.../tglx/linux-2.6-hrt
+
+are available in the git repository at:
+
+  master.kernel.org:/pub/scm/linux/kernel/git/davem/sparc-2.6.git master
+
+Adrian Bunk (1):
+      sparc64: remove online_page()
+
+David S. Miller (5):
+      Revert "[SPARC64]: Wrap SMP IPIs with irq_enter()/irq_exit()."
+      sbus: Fix bpp driver build.
+      sparc64: use compat_sys_utimes instead of home-grown local copy.
+      usb: Sparc build fix, make USB_ISP1760_OF depend on PPC_OF
+      sparc64: Fix initrd regression.
+
+Robert Reif (2):
+      sparc: tcx.c remove unnecessary function
+      sparc video: make blank use proper constant
+
+ arch/sparc64/kernel/smp.c         |   27 +++++----------------------
+ arch/sparc64/kernel/sys_sparc32.c |   31 -------------------------------
+ arch/sparc64/kernel/systbls.S     |    2 +-
+ arch/sparc64/mm/init.c            |   16 +++-------------
+ drivers/sbus/char/bpp.c           |    2 +-
+ drivers/usb/host/Kconfig          |    2 +-
+ drivers/video/bw2.c               |    2 +-
+ drivers/video/cg3.c               |    2 +-
+ drivers/video/cg6.c               |    2 +-
+ drivers/video/ffb.c               |    2 +-
+ drivers/video/leo.c               |    2 +-
+ drivers/video/p9100.c             |    2 +-
+ drivers/video/tcx.c               |   20 +++++++-------------
+ 13 files changed, 24 insertions(+), 88 deletions(-)
