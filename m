@@ -1,190 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763776AbYEGVkm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762503AbYEGVlv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763776AbYEGVkm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 17:40:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752200AbYEGVka
+	id S1762503AbYEGVlv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 17:41:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752183AbYEGVlk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 17:40:30 -0400
-Received: from nf-out-0910.google.com ([64.233.182.185]:64693 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751989AbYEGVk2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 17:40:28 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
-        b=siZCZHaxLRdhfgVuYsFLZ1DHXWEww8BlN8WQ2gNFXRKWOwvCkh1Bd9bf6SzLOl1/4yJeJaEAH3Bueg42Ffpz9mgXwnlpvonEzZqmpmLUOOLF/f/ZkzPAJZwfkvSlkEfRyYChjFa/yDQSQ3BUc2k+bKuLh+gGW2clovsvDhFZuxo=
-Date: Thu, 8 May 2008 02:35:48 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: akpm@osdl.org
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 5/5] proc: convert /proc/irq/*/{smp_affinity,spurious} to
-	seq_files
-Message-ID: <20080507223548.GE14375@martell.zuzino.mipt.ru>
+	Wed, 7 May 2008 17:41:40 -0400
+Received: from www.tglx.de ([62.245.132.106]:51695 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751623AbYEGVlh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 May 2008 17:41:37 -0400
+Date: Wed, 7 May 2008 23:41:04 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Rene Herman <rene.herman@keyaccess.nl>
+cc: Adrian Bunk <bunk@kernel.org>, Yinghai Lu <yhlu.kernel@gmail.com>,
+       Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel <linux-kernel@vger.kernel.org>, hpa@zytor.com,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       Pavel Machek <pavel@suse.cz>
+Subject: Re: 2.6.26, PAT and AMD family 6
+In-Reply-To: <48221AE3.6020602@keyaccess.nl>
+Message-ID: <alpine.LFD.1.10.0805072315360.3318@apollo.tec.linutronix.de>
+References: <48210A71.1060409@keyaccess.nl> <86802c440805061939q39ff5500h3c9e229ecbc6b2e6@mail.gmail.com> <20080507124650.GD29935@cs181133002.pp.htv.fi> <alpine.LFD.1.10.0805072122270.3318@apollo.tec.linutronix.de> <48221AE3.6020602@keyaccess.nl>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
----
+On Wed, 7 May 2008, Rene Herman wrote:
+> On 07-05-08 22:52, Thomas Gleixner wrote:
+> 
+> > > And why do we need this clear_cpu_cap(c, X86_FEATURE_PAT) and then manual
+> > > setting of X86_FEATURE_PAT at all?
+> > 
+> > The reason is to make cpu_has_pat a useful check and to avoid checking
+> > cpu vendors, families and models inside of the PAT code. That's a good
+> > thing actually, because the PAT code only cares about that cpu_has_pat
+> > flag.
+> > 
+> > Clearing it in the cpuinfo is just a cosmetic side effect which does
+> > no harm at all.
+> 
+> Oh yes, it does. It makes people unaware that their CPUs _should_ be
+> supporting PAT. The thing's not called /proc/kernelinfo for a reason.
 
-	Don't even think applying this before fixed
-	bitmask_scnprintf_len()!
+it's named /proc/cpuinfo and this unawareness of the until now not
+utilized PAT feature is the least of our worries vs. PAT
 
- kernel/irq/proc.c |   78 ++++++++++++++++++++++++++++++------------------------
- 1 file changed, 44 insertions(+), 34 deletions(-)
+> > > And this patch (by the author of the code himself) is the first time where
+> > > it breaks.
+> > 
+> > Very interesting analysis. What broke ? This CPU was never in the set
+> > of supported ones at all.
+> 
+> You misunderstood. Yinghai's patch only changed one of the code sites
+> and not the others, which (if I understood right) is the breakage
+> Adrian was reffering to.
 
---- a/kernel/irq/proc.c
-+++ b/kernel/irq/proc.c
-@@ -8,6 +8,7 @@
- 
- #include <linux/irq.h>
- #include <linux/proc_fs.h>
-+#include <linux/seq_file.h>
- #include <linux/interrupt.h>
- 
- #include "internals.h"
-@@ -16,23 +17,23 @@ static struct proc_dir_entry *root_irq_dir;
- 
- #ifdef CONFIG_SMP
- 
--static int irq_affinity_read_proc(char *page, char **start, off_t off,
--				  int count, int *eof, void *data)
-+static int irq_affinity_proc_show(struct seq_file *m, void *v)
- {
--	struct irq_desc *desc = irq_desc + (long)data;
-+	struct irq_desc *desc = irq_desc + (long)v;
- 	cpumask_t *mask = &desc->affinity;
--	int len;
- 
- #ifdef CONFIG_GENERIC_PENDING_IRQ
- 	if (desc->status & IRQ_MOVE_PENDING)
- 		mask = &desc->pending_mask;
- #endif
--	len = cpumask_scnprintf(page, count, *mask);
-+	seq_cpumask(m, mask);
-+	seq_putc(m, '\n');
-+	return 0;
-+}
- 
--	if (count - len < 2)
--		return -EINVAL;
--	len += sprintf(page + len, "\n");
--	return len;
-+static int irq_affinity_proc_open(struct inode *inode, struct file *file)
-+{
-+	return single_open(file, irq_affinity_proc_show, PDE(inode)->data);
- }
- 
- #ifndef is_affinity_mask_valid
-@@ -40,11 +41,12 @@ static int irq_affinity_read_proc(char *page, char **start, off_t off,
- #endif
- 
- int no_irq_affinity;
--static int irq_affinity_write_proc(struct file *file, const char __user *buffer,
--				   unsigned long count, void *data)
-+static ssize_t irq_affinity_proc_write(struct file *file,
-+		const char __user *buffer, size_t count, loff_t *ppos)
- {
--	unsigned int irq = (int)(long)data, full_count = count, err;
-+	unsigned int irq = (int)(long)PDE(file->f_path.dentry->d_inode)->data;
- 	cpumask_t new_value, tmp;
-+	int err;
- 
- 	if (!irq_desc[irq].chip->set_affinity || no_irq_affinity ||
- 	    irq_balancing_disabled(irq))
-@@ -66,27 +68,46 @@ static int irq_affinity_write_proc(struct file *file, const char __user *buffer,
- 	if (cpus_empty(tmp))
- 		/* Special case for empty set - allow the architecture
- 		   code to set default SMP affinity. */
--		return select_smp_affinity(irq) ? -EINVAL : full_count;
-+		return select_smp_affinity(irq) ? -EINVAL : count;
- 
- 	irq_set_affinity(irq, new_value);
- 
--	return full_count;
-+	return count;
- }
- 
-+static const struct file_operations irq_affinity_proc_fops = {
-+	.open		= irq_affinity_proc_open,
-+	.read		= seq_read,
-+	.llseek		= seq_lseek,
-+	.release	= single_release,
-+	.write		= irq_affinity_proc_write,
-+};
- #endif
- 
--static int irq_spurious_read(char *page, char **start, off_t off,
--				  int count, int *eof, void *data)
-+static int irq_spurious_proc_show(struct seq_file *m, void *v)
- {
--	struct irq_desc *d = &irq_desc[(long) data];
--	return sprintf(page, "count %u\n"
-+	struct irq_desc *d = &irq_desc[(long) m->private];
-+	seq_printf(m, "count %u\n"
- 			     "unhandled %u\n"
- 			     "last_unhandled %u ms\n",
- 			d->irq_count,
- 			d->irqs_unhandled,
- 			jiffies_to_msecs(d->last_unhandled));
-+	return 0;
-+}
-+
-+static int irq_spurious_proc_open(struct inode *inode, struct file *file)
-+{
-+	return single_open(file, irq_spurious_proc_show, PDE(inode)->data);
- }
- 
-+static const struct file_operations irq_spurious_proc_fops = {
-+	.open		= irq_spurious_proc_open,
-+	.read		= seq_read,
-+	.llseek		= seq_lseek,
-+	.release	= single_release,
-+};
-+
- #define MAX_NAMELEN 128
- 
- static int name_unique(unsigned int irq, struct irqaction *new_action)
-@@ -130,7 +151,6 @@ void register_handler_proc(unsigned int irq, struct irqaction *action)
- void register_irq_proc(unsigned int irq)
- {
- 	char name [MAX_NAMELEN];
--	struct proc_dir_entry *entry;
- 
- 	if (!root_irq_dir ||
- 		(irq_desc[irq].chip == &no_irq_chip) ||
-@@ -144,23 +164,13 @@ void register_irq_proc(unsigned int irq)
- 	irq_desc[irq].dir = proc_mkdir(name, root_irq_dir);
- 
- #ifdef CONFIG_SMP
--	{
--		/* create /proc/irq/<irq>/smp_affinity */
--		entry = create_proc_entry("smp_affinity", 0600, irq_desc[irq].dir);
--
--		if (entry) {
--			entry->data = (void *)(long)irq;
--			entry->read_proc = irq_affinity_read_proc;
--			entry->write_proc = irq_affinity_write_proc;
--		}
--	}
-+	/* create /proc/irq/<irq>/smp_affinity */
-+	proc_create_data("smp_affinity", 0600, irq_desc[irq].dir,
-+			 &irq_affinity_proc_fops, (void *)(long)irq);
- #endif
- 
--	entry = create_proc_entry("spurious", 0444, irq_desc[irq].dir);
--	if (entry) {
--		entry->data = (void *)(long)irq;
--		entry->read_proc = irq_spurious_read;
--	}
-+	proc_create_data("spurious", 0444, irq_desc[irq].dir,
-+			 &irq_spurious_proc_fops, (void *)(long)irq);
- }
- 
- #undef MAX_NAMELEN
+I know exactly what he was referring to. So what's the problem ?
 
+Yinghai missed to add it to the other place and he is hardly to blame
+for that. This code is messy and thats not his fault. It will be
+cleaned up, but that's not an simple taks to do. If you think you can
+do it without breaking tons of systems, you're welcome.
+ 
+> > Anyway, you are welcome to review x86 code - it can definitely use more
+> > eyeballs, but please try to inform yourself about the topic or ask polite
+> > questions before yelling at people who contribute in a very valuable way.
+> 
+> And would yelling at people how shuffle in code without (publicly at
+> least) addressing one of your fellow arch maintainers objections
+
+1) hpa asked a question http://lkml.org/lkml/2008/3/25/118
+2) his question was answered http://lkml.org/lkml/2008/3/25/292
+3) hpa did not object (no lkml ref, because there is none)
+
+So what's your point ? Throwing factoids into a discussion is
+not really helpful.
+
+> and Pavel's review comments about code duplication without a single
+> line of explanation/changelog do?
+
+As I said before. The changelog is useless and Adrians point about
+that is completely correct. 
+
+Thanks,
+
+	tglx
