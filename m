@@ -1,448 +1,142 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764494AbYEGLNp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764357AbYEGLPz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764494AbYEGLNp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 07:13:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761406AbYEGLKK
+	id S1764357AbYEGLPz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 07:15:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754783AbYEGLPo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 07:10:10 -0400
-Received: from mailtp.via.com.tw ([61.66.243.2]:1331 "EHLO mailtp.via.com.tw"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761312AbYEGLJ6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 07:09:58 -0400
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Wed, 7 May 2008 07:15:44 -0400
+Received: from smtp.nokia.com ([192.100.122.230]:28289 "EHLO
+	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755184AbYEGLPm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 May 2008 07:15:42 -0400
+Message-ID: <48218F21.4090304@yandex.ru>
+Date: Wed, 07 May 2008 14:14:41 +0300
+From: Artem Bityutskiy <dedekind@yandex.ru>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="utf-8"
-Subject: [Linux-fbdev-devel] [PATCH 9/9] viafb: VIA Frame Buffer Device Driver
-Date: Wed, 7 May 2008 19:09:52 +0800
-Message-ID: <C80EF34A3D2E494DBAF9AC29C7AE4EB806F6775C@exchtp03.taipei.via.com.tw>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [Linux-fbdev-devel] [PATCH 9/9] viafb: VIA Frame Buffer Device Driver
-Thread-Index: AcivqWbF3qyu30s5RguMHG+BNihXBgAhNGrAAAA1T2AAABOmsAAARPQw
-From: <JosephChan@via.com.tw>
-To: <JosephChan@via.com.tw>, <akpm@linux-foundation.org>,
-       <geert@linux-m68k.org>
-Cc: <linux-fbdev-devel@lists.sourceforge.net>, <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 07 May 2008 11:09:55.0131 (UTC) FILETIME=[E11740B0:01C8B032]
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Adrian Hunter <ext-adrian.hunter@nokia.com>,
+       Edward Shishkin <edward.shishkin@gmail.com>,
+       Christoph Hellwig <hch@infradead.org>
+Subject: Re: [PATCH take 2 01/28] VFS: introduce writeback_inodes_sb()
+References: <1210070159-22794-1-git-send-email-Artem.Bityutskiy@nokia.com>	<1210070159-22794-2-git-send-email-Artem.Bityutskiy@nokia.com> <20080507002345.831bc379.akpm@linux-foundation.org>
+In-Reply-To: <20080507002345.831bc379.akpm@linux-foundation.org>
+Content-Type: multipart/mixed;
+ boundary="------------030300030705010500000706"
+X-OriginalArrivalTime: 07 May 2008 11:14:51.0383 (UTC) FILETIME=[91ABB870:01C8B033]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+
+This is a multi-part message in MIME format.
+--------------030300030705010500000706
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id m47BDsEB002170
 
-Signed-off-by: Joseph Chan <josephchan@via.com.tw>
+Hi Andrew,
 
-diff -Nur a/drivers/video/via/via_utility.h b/drivers/video/via/via_utility.h
---- a/drivers/video/via/via_utility.h	1969-12-31 19:00:00.000000000 -0500
-+++ b/drivers/video/via/via_utility.h	2008-04-29 02:51:32.000000000 -0400
-@@ -0,0 +1,35 @@
-+/*
-+ * Copyright 1998-2008 VIA Technologies, Inc. All Rights Reserved.
-+ * Copyright 2001-2008 S3 Graphics, Inc. All Rights Reserved.
-+
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under  the terms of the GNU General Public License as published
-+ * by the Free Software Foundation; either version 2, or (at your option)
-+ * any later version.
-+
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTIES OR REPRESENTATIONS; without even
-+ * the implied warranty of MERCHANTABILITY or FITNESS FOR
-+ * A PARTICULAR PURPOSE.See the GNU General Public License
-+ * for more details.
-+
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc.,
-+ * 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-+ */
-+#ifndef __VIAUTILITY_H__
-+#define __VIAUTILITY_H__
-+
-+/* These functions are used to get infomation about device's state */
-+void get_device_support_state(u32 *support_state);
-+void get_device_connect_state(u32 *connect_state);
-+bool lcd_get_support_expand_state(u32 xres, u32 yres);
-+
-+/* These function are used to access gamma table */
-+void set_gamma_table(int bpp, unsigned int *gamma_table);
-+void get_gamma_table(unsigned int *gamma_table);
-+void get_gamma_support_state(int bpp, unsigned int *support_state);
-+int input_parameter_converter(int parameter_value);
-+
-+#endif /* __VIAUTILITY_H__ */
-diff -Nur a/drivers/video/via/vt1636.c b/drivers/video/via/vt1636.c
---- a/drivers/video/via/vt1636.c	1969-12-31 19:00:00.000000000 -0500
-+++ b/drivers/video/via/vt1636.c	2008-05-04 07:20:00.000000000 -0400
-@@ -0,0 +1,317 @@
-+/*
-+ * Copyright 1998-2008 VIA Technologies, Inc. All Rights Reserved.
-+ * Copyright 2001-2008 S3 Graphics, Inc. All Rights Reserved.
-+
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under  the terms of the GNU General Public License as published
-+ * by the Free Software Foundation; either version 2, or (at your option)
-+ * any later version.
-+
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTIES OR REPRESENTATIONS; without even
-+ * the implied warranty of MERCHANTABILITY or FITNESS FOR
-+ * A PARTICULAR PURPOSE.See the GNU General Public License
-+ * for more details.
-+
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc.,
-+ * 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-+ */
-+
-+#include "global.h"
-+
-+u8 gpio_i2c_read_lvds(struct lvds_setting_information *plvds_setting_info,
-+		      struct lvds_chip_information *plvds_chip_info, u8 index)
-+{
-+	u8 data;
-+	int tmp;
-+	tmp = chip_info.chip_on_slot;
-+	switch (plvds_chip_info->i2c_port) {
-+	case I2CPORTINDEX:
-+		chip_info.chip_on_slot = PORT_ON_AMR;
-+		break;
-+	case GPIOPORTINDEX:
-+	default:
-+		chip_info.chip_on_slot = PORT_ON_AGP;
-+		break;
-+	}
-+	i2cReadByte(plvds_chip_info->lvds_chip_slave_addr, index, &data);
-+	chip_info.chip_on_slot = tmp;
-+	return data;
-+}
-+
-+void gpio_i2c_write_mask_lvds(struct lvds_setting_information
-+			      *plvds_setting_info, struct lvds_chip_information
-+			      *plvds_chip_info, struct IODATA io_data)
-+{
-+	int index, data, tmp;
-+	tmp = chip_info.chip_on_slot;
-+	switch (plvds_chip_info->i2c_port) {
-+	case I2CPORTINDEX:
-+		chip_info.chip_on_slot = PORT_ON_AMR;
-+		break;
-+	case GPIOPORTINDEX:
-+	default:
-+		chip_info.chip_on_slot = PORT_ON_AGP;
-+		break;
-+	}
-+
-+	index = io_data.Index;
-+	data = gpio_i2c_read_lvds(plvds_setting_info, plvds_chip_info, index);
-+	data = (data & (~io_data.Mask)) | io_data.Data;
-+
-+	i2cWriteByte(plvds_chip_info->lvds_chip_slave_addr, index, data);
-+	chip_info.chip_on_slot = tmp;
-+}
-+
-+void init_lvds_vt1636(struct lvds_setting_information *plvds_setting_info,
-+		      struct lvds_chip_information *plvds_chip_info)
-+{
-+	int reg_num, i;
-+
-+	/* Common settings: */
-+	reg_num = ARRAY_SIZE(COMMON_INIT_TBL_VT1636);
-+
-+	for (i = 0; i < reg_num; i++) {
-+		gpio_i2c_write_mask_lvds(plvds_setting_info,
-+					 plvds_chip_info,
-+					 COMMON_INIT_TBL_VT1636[i]);
-+	}
-+
-+	/* Input Data Mode Select */
-+	if (plvds_setting_info->device_lcd_dualedge) {
-+		gpio_i2c_write_mask_lvds(plvds_setting_info,
-+					 plvds_chip_info,
-+					 DUAL_CHANNEL_ENABLE_TBL_VT1636[0]);
-+	} else {
-+		gpio_i2c_write_mask_lvds(plvds_setting_info,
-+					 plvds_chip_info,
-+					 SINGLE_CHANNEL_ENABLE_TBL_VT1636[0]);
-+	}
-+
-+	if (plvds_setting_info->LCDDithering) {
-+		gpio_i2c_write_mask_lvds(plvds_setting_info,
-+					 plvds_chip_info,
-+					 DITHERING_ENABLE_TBL_VT1636[0]);
-+	} else {
-+		gpio_i2c_write_mask_lvds(plvds_setting_info,
-+					 plvds_chip_info,
-+					 DITHERING_DISABLE_TBL_VT1636[0]);
-+	}
-+}
-+
-+void enable_lvds_vt1636(struct lvds_setting_information
-+			*plvds_setting_info,
-+			struct lvds_chip_information *plvds_chip_info)
-+{
-+
-+	gpio_i2c_write_mask_lvds(plvds_setting_info, plvds_chip_info,
-+				 VDD_ON_TBL_VT1636[0]);
-+
-+	/* Pad on: */
-+	switch (plvds_chip_info->output_interface) {
-+	case INTERFACE_DVP0:
-+		{
-+			write_reg_mask(SR1E, VIASR, 0xC0, 0xC0);
-+			break;
-+		}
-+
-+	case INTERFACE_DVP1:
-+		{
-+			write_reg_mask(SR1E, VIASR, 0x30, 0x30);
-+			break;
-+		}
-+
-+	case INTERFACE_DFP_LOW:
-+		{
-+			write_reg_mask(SR2A, VIASR, 0x03, 0x03);
-+			break;
-+		}
-+
-+	case INTERFACE_DFP_HIGH:
-+		{
-+			write_reg_mask(SR2A, VIASR, 0x03, 0x0C);
-+			break;
-+		}
-+
-+	}
-+}
-+
-+void disable_lvds_vt1636(struct lvds_setting_information
-+			 *plvds_setting_info,
-+			 struct lvds_chip_information *plvds_chip_info)
-+{
-+
-+	gpio_i2c_write_mask_lvds(plvds_setting_info, plvds_chip_info,
-+				 VDD_OFF_TBL_VT1636[0]);
-+
-+	/* Pad off: */
-+	switch (plvds_chip_info->output_interface) {
-+	case INTERFACE_DVP0:
-+		{
-+			write_reg_mask(SR1E, VIASR, 0x00, 0xC0);
-+			break;
-+		}
-+
-+	case INTERFACE_DVP1:
-+		{
-+			write_reg_mask(SR1E, VIASR, 0x00, 0x30);
-+			break;
-+		}
-+
-+	case INTERFACE_DFP_LOW:
-+		{
-+			write_reg_mask(SR2A, VIASR, 0x00, 0x03);
-+			break;
-+		}
-+
-+	case INTERFACE_DFP_HIGH:
-+		{
-+			write_reg_mask(SR2A, VIASR, 0x00, 0x0C);
-+			break;
-+		}
-+
-+	}
-+}
-+
-+bool lvds_identify_vt1636(void)
-+{
-+	u8 Buffer[2];
-+
-+	DEBUG_MSG(KERN_INFO "lvds_identify_vt1636.\n");
-+
-+	/* Sense VT1636 LVDS Transmiter */
-+	chip_info.lvds_chip_info.lvds_chip_slave_addr = VT1636_LVDS_I2C_ADDR;
-+
-+	/* Check vendor ID first: */
-+	i2cReadByte((u8) chip_info.lvds_chip_info.lvds_chip_slave_addr,
-+		    0x00, &Buffer[0]);
-+	i2cReadByte((u8) chip_info.lvds_chip_info.lvds_chip_slave_addr,
-+		    0x01, &Buffer[1]);
-+
-+	if (!((Buffer[0] == 0x06) && (Buffer[1] == 0x11)))
-+		return FALSE;
-+
-+	/* Check Chip ID: */
-+	i2cReadByte((u8) chip_info.lvds_chip_info.lvds_chip_slave_addr,
-+		    0x02, &Buffer[0]);
-+	i2cReadByte((u8) chip_info.lvds_chip_info.lvds_chip_slave_addr,
-+		    0x03, &Buffer[1]);
-+	if ((Buffer[0] == 0x45) && (Buffer[1] == 0x33)) {
-+		chip_info.lvds_chip_info.lvds_chip_name = VT1636_LVDS;
-+		return TRUE;
-+	}
-+
-+	return FALSE;
-+}
-+
-+int get_clk_range_index(u32 Clk)
-+{
-+	if (Clk < DPA_CLK_30M)
-+		return DPA_CLK_RANGE_30M;
-+	else if ((DPA_CLK_30M < Clk) && (Clk < DPA_CLK_50M))
-+		return DPA_CLK_RANGE_30_50M;
-+	else if ((DPA_CLK_50M < Clk) && (Clk < DPA_CLK_70M))
-+		return DPA_CLK_RANGE_50_70M;
-+	else if ((DPA_CLK_70M < Clk) && (Clk < DPA_CLK_100M))
-+		return DPA_CLK_RANGE_70_100M;
-+	else if ((DPA_CLK_100M < Clk) && (Clk < DPA_CLK_150M))
-+		return DPA_CLK_RANGE_100_150M;
-+	else
-+		return DPA_CLK_RANGE_150M;
-+}
-+
-+int get_lvds_dpa_setting_index(int panel_size_id,
-+			     struct VT1636_DPA_SETTING *p_vt1636_dpasetting_tbl,
-+			       int tbl_size)
-+{
-+	int i;
-+
-+	for (i = 0; i < tbl_size; i++) {
-+		if (panel_size_id == p_vt1636_dpasetting_tbl->PanelSizeID)
-+			return i;
-+
-+		p_vt1636_dpasetting_tbl++;
-+	}
-+
-+	return 0;
-+}
-+
-+void set_dpa_vt1636(struct lvds_setting_information *plvds_setting_info,
-+		    struct lvds_chip_information *plvds_chip_info,
-+		    struct VT1636_DPA_SETTING *p_vt1636_dpa_setting)
-+{
-+	struct IODATA io_data;
-+
-+	io_data.Index = 0x09;
-+	io_data.Mask = 0x1F;
-+	io_data.Data = p_vt1636_dpa_setting->CLK_SEL_ST1;
-+	gpio_i2c_write_mask_lvds(plvds_setting_info, plvds_chip_info, io_data);
-+
-+	io_data.Index = 0x08;
-+	io_data.Mask = 0x0F;
-+	io_data.Data = p_vt1636_dpa_setting->CLK_SEL_ST2;
-+	gpio_i2c_write_mask_lvds(plvds_setting_info, plvds_chip_info, io_data);
-+}
-+
-+void vt1636_patch_skew_on_vt3324(struct lvds_setting_information
-+				 *plvds_setting_info,
-+				 struct lvds_chip_information
-+				 *plvds_chip_info)
-+{
-+	int index, size;
-+
-+	DEBUG_MSG(KERN_INFO "vt1636_patch_skew_on_vt3324.\n");
-+
-+	/* Graphics DPA settings: */
-+	index = get_clk_range_index(plvds_setting_info->vclk);
-+	set_dpa_gfx(plvds_chip_info->output_interface,
-+		    &GFX_DPA_SETTING_TBL_VT3324[index]);
-+
-+	/* LVDS Transmitter DPA settings: */
-+	size = ARRAY_SIZE(VT1636_DPA_SETTING_TBL_VT3324);
-+	index =
-+	    get_lvds_dpa_setting_index(plvds_setting_info->lcd_panel_id,
-+				       VT1636_DPA_SETTING_TBL_VT3324, size);
-+	set_dpa_vt1636(plvds_setting_info, plvds_chip_info,
-+		       &VT1636_DPA_SETTING_TBL_VT3324[index]);
-+}
-+
-+void vt1636_patch_skew_on_vt3327(struct lvds_setting_information
-+				 *plvds_setting_info,
-+				 struct lvds_chip_information
-+				 *plvds_chip_info)
-+{
-+	int index, size;
-+
-+	DEBUG_MSG(KERN_INFO "vt1636_patch_skew_on_vt3327.\n");
-+
-+	/* Graphics DPA settings: */
-+	index = get_clk_range_index(plvds_setting_info->vclk);
-+	set_dpa_gfx(plvds_chip_info->output_interface,
-+		    &GFX_DPA_SETTING_TBL_VT3327[index]);
-+
-+	/* LVDS Transmitter DPA settings: */
-+	size = ARRAY_SIZE(VT1636_DPA_SETTING_TBL_VT3327);
-+	index =
-+	    get_lvds_dpa_setting_index(plvds_setting_info->lcd_panel_id,
-+				       VT1636_DPA_SETTING_TBL_VT3327, size);
-+	set_dpa_vt1636(plvds_setting_info, plvds_chip_info,
-+		       &VT1636_DPA_SETTING_TBL_VT3327[index]);
-+}
-+
-+void vt1636_patch_skew_on_vt3364(struct lvds_setting_information
-+				 *plvds_setting_info,
-+				 struct lvds_chip_information
-+				 *plvds_chip_info)
-+{
-+	int index;
-+
-+	DEBUG_MSG(KERN_INFO "vt1636_patch_skew_on_vt3364.\n");
-+
-+	/* Graphics DPA settings: */
-+	index = get_clk_range_index(plvds_setting_info->vclk);
-+	set_dpa_gfx(plvds_chip_info->output_interface,
-+		    &GFX_DPA_SETTING_TBL_VT3364[index]);
-+}
-diff -Nur a/drivers/video/via/vt1636.h b/drivers/video/via/vt1636.h
---- a/drivers/video/via/vt1636.h	1969-12-31 19:00:00.000000000 -0500
-+++ b/drivers/video/via/vt1636.h	2008-04-29 02:51:33.000000000 -0400
-@@ -0,0 +1,47 @@
-+/*
-+ * Copyright 1998-2008 VIA Technologies, Inc. All Rights Reserved.
-+ * Copyright 2001-2008 S3 Graphics, Inc. All Rights Reserved.
-+
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under  the terms of the GNU General Public License as published
-+ * by the Free Software Foundation; either version 2, or (at your option)
-+ * any later version.
-+
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTIES OR REPRESENTATIONS; without even
-+ * the implied warranty of MERCHANTABILITY or FITNESS FOR
-+ * A PARTICULAR PURPOSE.See the GNU General Public License
-+ * for more details.
-+
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc.,
-+ * 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-+ */
-+
-+#ifndef _VT1636_H_
-+#define _VT1636_H_
-+#include "chip.h"
-+bool lvds_identify_vt1636(void);
-+void init_lvds_vt1636(struct lvds_setting_information *plvds_setting_info,
-+		      struct lvds_chip_information *plvds_chip_info);
-+void enable_lvds_vt1636(struct lvds_setting_information
-+			*plvds_setting_info,
-+			struct lvds_chip_information *plvds_chip_info);
-+void disable_lvds_vt1636(struct lvds_setting_information
-+			 *plvds_setting_info,
-+			 struct lvds_chip_information *plvds_chip_info);
-+void vt1636_patch_skew_on_vt3324(struct lvds_setting_information
-+				 *plvds_setting_info,
-+				 struct lvds_chip_information
-+				 *plvds_chip_info);
-+void vt1636_patch_skew_on_vt3327(struct lvds_setting_information
-+				 *plvds_setting_info,
-+				 struct lvds_chip_information
-+				 *plvds_chip_info);
-+void vt1636_patch_skew_on_vt3364(struct lvds_setting_information
-+				 *plvds_setting_info,
-+				 struct lvds_chip_information
-+				 *plvds_chip_info);
-+
-+#endif
-ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éÝ¶¥Šwÿº{.nÇ+‰·¥Š{±þG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŽŠÝ¢j"ú¶m§ÿÿ¾«þG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
+Andrew Morton wrote:
+> This looks rather similar to
+> http://userweb.kernel.org/~akpm/mmotm/broken-out/reiser4-sb_sync_inodes.patch
+> 
+> Which is best?
+
+Well, this reiser4 patch is basically doing 3 things at once:
+1. Introduce ->sync_inodes()
+2. Move spin_lock(&inode_lock);
+3. Export generic_sync_sb_inodes()
+
+As Christoph suggested, I've attached a patch which just moves the
+spinlock. Could you please consider sending it to Linus or taking into your tree?
+Should I amend the reiser4 patch correspondingly for you?
+
+Also, what do you think about taking UBIFS into your tree?
+
+-- 
+Best Regards,
+Artem Bityutskiy (ÐÑ€Ñ‚Ñ‘Ð¼ Ð‘Ð¸Ñ‚ÑŽÑ†ÐºÐ¸Ð¹)
+
+--------------030300030705010500000706
+Content-Type: text/x-patch;
+ name="0001-VFS-move-inode_lock-into-sync_sb_inodes.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="0001-VFS-move-inode_lock-into-sync_sb_inodes.patch"
+
+>From d6caf6c109cc21e88bbe165f144574c736e85c2b Mon Sep 17 00:00:00 2001
+From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
+Date: Wed, 7 May 2008 15:48:57 +0300
+Subject: [PATCH] VFS: move inode_lock into sync_sb_inodes
+
+This patch makes 'sync_sb_inodes()' lock 'inode_lock', rather
+than expect that the caller will do this.
+
+This change was previously done by Hans Reiser <reiser@namesys.com>
+and sat in the -mm tree.
+
+Signed-off-by: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
+---
+ fs/fs-writeback.c |   11 +++--------
+ 1 files changed, 3 insertions(+), 8 deletions(-)
+
+diff --git a/fs/fs-writeback.c b/fs/fs-writeback.c
+index ae45f77..16519fe 100644
+--- a/fs/fs-writeback.c
++++ b/fs/fs-writeback.c
+@@ -424,8 +424,6 @@ __writeback_single_inode(struct inode *inode, struct writeback_control *wbc)
+  * WB_SYNC_HOLD is a hack for sys_sync(): reattach the inode to sb->s_dirty so
+  * that it can be located for waiting on in __writeback_single_inode().
+  *
+- * Called under inode_lock.
+- *
+  * If `bdi' is non-zero then we're being asked to writeback a specific queue.
+  * This function assumes that the blockdev superblock's inodes are backed by
+  * a variety of queues, so all inodes are searched.  For other superblocks,
+@@ -446,6 +444,7 @@ sync_sb_inodes(struct super_block *sb, struct writeback_control *wbc)
+ {
+ 	const unsigned long start = jiffies;	/* livelock avoidance */
+ 
++	spin_lock(&inode_lock);
+ 	if (!wbc->for_kupdate || list_empty(&sb->s_io))
+ 		queue_io(sb, wbc->older_than_this);
+ 
+@@ -524,6 +523,7 @@ sync_sb_inodes(struct super_block *sb, struct writeback_control *wbc)
+ 		if (!list_empty(&sb->s_more_io))
+ 			wbc->more_io = 1;
+ 	}
++	spin_unlock(&inode_lock);
+ 	return;		/* Leave any unwritten inodes on s_io */
+ }
+ 
+@@ -565,11 +565,8 @@ restart:
+ 			 * be unmounted by the time it is released.
+ 			 */
+ 			if (down_read_trylock(&sb->s_umount)) {
+-				if (sb->s_root) {
+-					spin_lock(&inode_lock);
++				if (sb->s_root)
+ 					sync_sb_inodes(sb, wbc);
+-					spin_unlock(&inode_lock);
+-				}
+ 				up_read(&sb->s_umount);
+ 			}
+ 			spin_lock(&sb_lock);
+@@ -607,9 +604,7 @@ void sync_inodes_sb(struct super_block *sb, int wait)
+ 			(inodes_stat.nr_inodes - inodes_stat.nr_unused) +
+ 			nr_dirty + nr_unstable;
+ 	wbc.nr_to_write += wbc.nr_to_write / 2;		/* Bit more for luck */
+-	spin_lock(&inode_lock);
+ 	sync_sb_inodes(sb, &wbc);
+-	spin_unlock(&inode_lock);
+ }
+ 
+ /*
+-- 
+1.5.4.1
+
+
+--------------030300030705010500000706--
