@@ -1,55 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757968AbYEGOJe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757883AbYEGONt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757968AbYEGOJe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 10:09:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753693AbYEGOJY
+	id S1757883AbYEGONt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 10:13:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754564AbYEGONX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 10:09:24 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:52512 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753581AbYEGOJW (ORCPT
+	Wed, 7 May 2008 10:13:23 -0400
+Received: from gv-out-0910.google.com ([216.239.58.191]:14517 "EHLO
+	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754321AbYEGOND (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 10:09:22 -0400
-Date: Wed, 7 May 2008 14:59:49 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
-       Ingo Molnar <mingo@elte.hu>, Matthew Wilcox <matthew@wil.cx>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Alexander Viro <viro@ftp.linux.org.uk>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: AIM7 40% regression with 2.6.26-rc1
-Message-ID: <20080507145949.4db3b26e@core>
-In-Reply-To: <87lk2mbcqp.fsf@basil.nowhere.org>
-References: <1210052904.3453.30.camel@ymzhang>
-	<20080506114449.GC32591@elte.hu>
-	<1210126286.3453.37.camel@ymzhang>
-	<1210131712.3453.43.camel@ymzhang>
-	<87lk2mbcqp.fsf@basil.nowhere.org>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 7 May 2008 10:13:03 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
+        b=Z+Q28mvUYUdkz7oL1+uRJEuRW/FiwqTE3ZStAPiB3XjGSLYZ+VewzrXELTrRFxGdsSH11noScUhMjqi5QQts/XI619SxWxvWVjFeuzI0RUD4NL/fEiho4uUBu5A1tgfH2tvRDyYdpW5TEvSFsgJSd5TmTYGI1UyULPhMnqNQ1cI=
+Date: Wed, 7 May 2008 18:12:55 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] init - dont loose initcall code returned v2
+Message-ID: <20080507141255.GA6859@cvg>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 07 May 2008 13:00:14 +0200
-Andi Kleen <andi@firstfloor.org> wrote:
+There is an ability to loose initcall returned code if it happened
+with irq disabled or imbalanced preemption (and if we debug initcall)
 
-> "Zhang, Yanmin" <yanmin_zhang@linux.intel.com> writes:
-> > 3) Caller of lcok_kernel are sys_fcntl/vfs_ioctl/tty_release/chrdev_open.
-> 
-> I have an older patchkit that introduced unlocked_fnctl for some cases. It was 
-> briefly in mm but then dropped. Sounds like it is worth resurrecting?
-> 
-> tty_* is being taken care of by Alan.
+Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
+---
 
-The tty open/close paths are probably a few months away from dropping the
-BKL.
+Andrew, it's an updated version
 
-Alan
+
+Index: linux-2.6.git/init/main.c
+===================================================================
+--- linux-2.6.git.orig/init/main.c	2008-05-06 17:51:27.000000000 +0400
++++ linux-2.6.git/init/main.c	2008-05-07 18:10:22.000000000 +0400
+@@ -702,7 +702,6 @@ static void __init do_initcalls(void)
+ 
+ 	for (call = __initcall_start; call < __initcall_end; call++) {
+ 		ktime_t t0, t1, delta;
+-		char *msg = NULL;
+ 		char msgbuf[40];
+ 		int result;
+ 
+@@ -724,22 +723,23 @@ static void __init do_initcalls(void)
+ 				(unsigned long long) delta.tv64 >> 20);
+ 		}
+ 
+-		if (result && result != -ENODEV && initcall_debug) {
+-			sprintf(msgbuf, "error code %d", result);
+-			msg = msgbuf;
+-		}
++		msgbuf[0] = 0;
++
++		if (result && result != -ENODEV && initcall_debug)
++			sprintf(msgbuf, "error code %d ", result);
++
+ 		if (preempt_count() != count) {
+-			msg = "preemption imbalance";
++			strncat(msgbuf, "preemption imbalance ", sizeof(msgbuf));
+ 			preempt_count() = count;
+ 		}
+ 		if (irqs_disabled()) {
+-			msg = "disabled interrupts";
++			strncat(msgbuf, "disabled interrupts ", sizeof(msgbuf));
+ 			local_irq_enable();
+ 		}
+-		if (msg) {
++		if (msgbuf[0]) {
+ 			print_fn_descriptor_symbol(KERN_WARNING "initcall %s()",
+ 					(unsigned long) *call);
+-			printk(" returned with %s\n", msg);
++			printk(" returned with %s\n", msgbuf);
+ 		}
+ 	}
+ 
