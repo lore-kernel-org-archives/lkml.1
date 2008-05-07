@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756594AbYEGAn3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756887AbYEGAnr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756594AbYEGAn3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 20:43:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753857AbYEGAmy
+	id S1756887AbYEGAnr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 20:43:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753944AbYEGAm4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 20:42:54 -0400
-Received: from kirk.serum.com.pl ([213.77.9.205]:62962 "EHLO serum.com.pl"
+	Tue, 6 May 2008 20:42:56 -0400
+Received: from kirk.serum.com.pl ([213.77.9.205]:62963 "EHLO serum.com.pl"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753307AbYEGAmw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 20:42:52 -0400
-Date: Wed, 7 May 2008 01:39:59 +0100 (BST)
+	id S1753418AbYEGAmx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 May 2008 20:42:53 -0400
+Date: Wed, 7 May 2008 01:40:22 +0100 (BST)
 From: "Maciej W. Rozycki" <macro@linux-mips.org>
 To: Alessandro Zummo <a.zummo@towertech.it>, Jean Delvare <khali@linux-fr.org>,
        Ralf Baechle <ralf@linux-mips.org>,
@@ -17,67 +17,281 @@ To: Alessandro Zummo <a.zummo@towertech.it>, Jean Delvare <khali@linux-fr.org>,
        Andrew Morton <akpm@linux-foundation.org>
 cc: rtc-linux@googlegroups.com, i2c@lm-sensors.org, linux-mips@linux-mips.org,
        linux-kernel@vger.kernel.org
-Subject: [RFC][PATCH 0/4] RTC: Use class devices as a persistent clock
-Message-ID: <Pine.LNX.4.55.0805062333390.16173@cliff.in.clinika.pl>
+Subject: [RFC][PATCH 1/4] RTC: Class device support for persistent clock
+Message-ID: <Pine.LNX.4.55.0805070015360.16173@cliff.in.clinika.pl>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+ This is a generic implementation of rtc_read_persistent_clock() and
+rtc_update_persistent_clock() suitable for platforms to be used for
+read_persistent_clock() and update_persistent_clock() calls.  An RTC
+device selected by the user with the RTC_HCTOSYS_DEVICE option is used.  
 
- While investigating why Linux on the MIPS64 Broadcom BCM91250A board (the
-SWARM, based on the SiByte BCM1250A SOC) does not support an RTC device
-anymore I discovered the "wiring" of code to access /dev/rtc to the RTC
-device driver got removed with some changes that happened a while ago.  
-The board uses the ST M41T81 I2C chip with a driver buried within the
-architecture code.  There is a standard driver for this chip in our tree
-already, which is called rtc-m41t80, and which as a part of the RTC driver
-suite provides the necessary "wiring" to /dev/rtc.
+ As rtc_read_persistent_clock() is not available at the time
+timekeeping_init() is called, it will now be disabled if the class device
+is to be used as a reference.  In this case rtc_hctosys(), already
+present, will be used to set up the system time at the late initcall time.  
+This call has now been rewritten to make use of
+rtc_read_persistent_clock().
 
- I decided to remove the platform driver as redundant and unportable -- it
-groups together knowledge about the M41T81 and the BCM1250A onchip I2C
-controller.  This revealed a couple of problems which this patch set
-addresses.  I'd like to skip the discussion of hardware-specific bits
-here, which I think are rather obvious and which I will cover with the
-individual patches.
+ As rtc_set_mmss() used by rtc_update_persistent_clock() may sleep for 
+some hardware, the call is now made from a work queue scheduled by the 
+timer originally used for the entire function.
 
- My point here is whether we want to switch over to the RTC suite in
-preference to legacy RTC drivers (like drivers/char/rtc.c) and perhaps
-more importantly platform RTC drivers which are often buried in a mixture
-of header files and arch C code for the purpose of timekeeping.  The API
-in question are the read_persistent_clock() and update_persistent_clock()  
-functions used mostly by the NTP support code.
-
- The notable gain is the removal of the additional burden from platform
-code -- all that has be implemented is support for the RTC chip the
-platform has.  I have added the rtc_read_persistent_clock() and
-rtc_update_persistent_clock() functions to the RTC suite that can serve as
-the implementation of the API and work the same (hardware implementation
-permitting) regardless of the exact RTC chip used.  There is even support
-for the ubiquitous derivatives of the MC146818 available as a class device
-already.  Additionally, if there is more than one RTC chip in a given
-system, the user can select which of the chips to use.
-
- The drawback is some implementations behind these functions may sleep,
-for example because hardware is slow to access.  The current calling
-context of update_persistent_clock() (which is the softirq) does not
-permit the function to sleep.  To rectify I have moved the call into the
-process context, but it now means the latency between getnstimeofday() and
-the writeback into the RTC will be yet less predictable and potentially
-higher.  This should not matter in practice, because the RTC generally
-cannot guarantee suitable precision to be a reliable sub-second resolution
-device for providing time while the NTP daemon is not running and one who
-cares about timekeeping will run NTP during normal system operation anyway
-which will correct any inaccuracy gathered from the RTC.  I am mentioning
-it though as I think it should be noted.
-
- Individual patches follow, feedback is welcome.  All have been
-successfully tested at the run time with a big-endian 64-bit MIPS
-configuration, using the usual SMP vs non-SMP and PREEMPT vs non-PREEMPT
-configurations, with spinlock, etc. debugging on; no checkpatch.pl nor
-sparse problems either.  They have been successfully built for a 32-bit
-x86 and Alpha configuration as well.
-
-  Maciej
+Signed-off-by: Maciej W. Rozycki <macro@linux-mips.org>
+---
+patch-2.6.26-rc1-20080505-rtc-persistent-clock-11
+diff -up --recursive --new-file linux-2.6.26-rc1-20080505.macro/drivers/rtc/Kconfig linux-2.6.26-rc1-20080505/drivers/rtc/Kconfig
+--- linux-2.6.26-rc1-20080505.macro/drivers/rtc/Kconfig	2008-05-05 02:55:40.000000000 +0000
++++ linux-2.6.26-rc1-20080505/drivers/rtc/Kconfig	2008-05-05 21:41:34.000000000 +0000
+@@ -21,24 +21,30 @@ menuconfig RTC_CLASS
+ if RTC_CLASS
+ 
+ config RTC_HCTOSYS
+-	bool "Set system time from RTC on startup and resume"
++	bool "Use time from RTC as a reference for the system time"
+ 	depends on RTC_CLASS = y
+ 	default y
+ 	help
+-	  If you say yes here, the system time (wall clock) will be set using
+-	  the value read from a specified RTC device. This is useful to avoid
+-	  unnecessary fsck runs at boot time, and to network better.
++	  If you say yes here, the specified RTC device will be used
++	  as a reference to the system time (wall clock).  The device
++	  will be used to set the system time as required during
++	  startup, suspend and, for platforms that support such usage,
++	  for NTP timekeeping.
++
++	  This is useful to avoid unnecessary fsck runs at boot time,
++	  and to network better.
+ 
+ config RTC_HCTOSYS_DEVICE
+-	string "RTC used to set the system time"
++	string "RTC used as a reference for the system time"
+ 	depends on RTC_HCTOSYS = y
+ 	default "rtc0"
+ 	help
+-	  The RTC device that will be used to (re)initialize the system
++	  The RTC device that will be used as a reference for the system
+ 	  clock, usually rtc0.  Initialization is done when the system
+-	  starts up, and when it resumes from a low power state.  This
+-	  device should record time in UTC, since the kernel won't do
+-	  timezone correction.
++	  starts up, and when it resumes from a low power state.  Also,
++	  if supported by the platform, NTP timekeeping uses this device
++	  to record the system time periodically.  This device should
++	  record time in UTC, since the kernel won't do timezone correction.
+ 
+ 	  The driver for this RTC device must be loaded before late_initcall
+ 	  functions run, so it must usually be statically linked.
+diff -up --recursive --new-file linux-2.6.26-rc1-20080505.macro/drivers/rtc/hctosys.c linux-2.6.26-rc1-20080505/drivers/rtc/hctosys.c
+--- linux-2.6.26-rc1-20080505.macro/drivers/rtc/hctosys.c	2008-05-05 02:55:40.000000000 +0000
++++ linux-2.6.26-rc1-20080505/drivers/rtc/hctosys.c	2008-05-05 21:10:50.000000000 +0000
+@@ -1,8 +1,9 @@
+ /*
+- * RTC subsystem, initialize system time on startup
++ * RTC subsystem, persistent clock and startup initialization support
+  *
+  * Copyright (C) 2005 Tower Technologies
+  * Author: Alessandro Zummo <a.zummo@towertech.it>
++ * Copyright (C) 2008  Maciej W. Rozycki
+  *
+  * This program is free software; you can redistribute it and/or modify
+  * it under the terms of the GNU General Public License version 2 as
+@@ -22,46 +23,85 @@
+  * the best guess is to add 0.5s.
+  */
+ 
+-static int __init rtc_hctosys(void)
++/*
++ * Note the unusual API:
++ * zero returned means a failure, anything else is seconds from epoch.
++ */
++unsigned long rtc_read_persistent_clock(void)
+ {
+-	int err;
+-	struct rtc_time tm;
+ 	struct rtc_device *rtc = rtc_class_open(CONFIG_RTC_HCTOSYS_DEVICE);
++	struct rtc_time tm;
++	unsigned long time = 0;
+ 
+ 	if (rtc == NULL) {
+-		printk("%s: unable to open rtc device (%s)\n",
+-			__FILE__, CONFIG_RTC_HCTOSYS_DEVICE);
+-		return -ENODEV;
++		printk(KERN_ERR "hctosys: unable to open rtc device (%s)\n",
++		       CONFIG_RTC_HCTOSYS_DEVICE);
++		goto out;
++	}
++	if (rtc_read_time(rtc, &tm) < 0) {
++		dev_err(rtc->dev.parent,
++			"hctosys: unable to read the hardware clock\n");
++		goto out_close;
+ 	}
++	if (rtc_valid_tm(&tm) < 0) {
++		dev_err(rtc->dev.parent, "hctosys: invalid date/time\n");
++		goto out_close;
++	}
++
++	rtc_tm_to_time(&tm, &time);
+ 
+-	err = rtc_read_time(rtc, &tm);
+-	if (err == 0) {
+-		err = rtc_valid_tm(&tm);
+-		if (err == 0) {
+-			struct timespec tv;
+-
+-			tv.tv_nsec = NSEC_PER_SEC >> 1;
+-
+-			rtc_tm_to_time(&tm, &tv.tv_sec);
+-
+-			do_settimeofday(&tv);
+-
+-			dev_info(rtc->dev.parent,
+-				"setting system clock to "
+-				"%d-%02d-%02d %02d:%02d:%02d UTC (%u)\n",
+-				tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday,
+-				tm.tm_hour, tm.tm_min, tm.tm_sec,
+-				(unsigned int) tv.tv_sec);
+-		}
+-		else
+-			dev_err(rtc->dev.parent,
+-				"hctosys: invalid date/time\n");
++out_close:
++	rtc_class_close(rtc);
++out:
++	return time;
++}
++
++int rtc_update_persistent_clock(struct timespec now)
++{
++	struct rtc_device *rtc = rtc_class_open(CONFIG_RTC_HCTOSYS_DEVICE);
++	int err;
++
++	if (rtc == NULL) {
++		printk(KERN_ERR "hctosys: unable to open rtc device (%s)\n",
++		       CONFIG_RTC_HCTOSYS_DEVICE);
++		err = -ENXIO;
++		goto out;
+ 	}
+-	else
++	err = rtc_set_mmss(rtc, now.tv_sec);
++	if (err < 0) {
+ 		dev_err(rtc->dev.parent,
+-			"hctosys: unable to read the hardware clock\n");
++			"hctosys: unable to set the hardware clock\n");
++		goto out_close;
++	}
+ 
++	err = 0;
++
++out_close:
+ 	rtc_class_close(rtc);
++out:
++	return err;
++}
++
++static int __init rtc_hctosys(void)
++{
++	struct rtc_time tm;
++	struct timespec tv;
++	unsigned long time;
++
++	time = rtc_read_persistent_clock();
++	if (!time)
++		return -ENODEV;
++
++	tv.tv_nsec = NSEC_PER_SEC >> 1;
++	tv.tv_sec = time;
++	do_settimeofday(&tv);
++
++	rtc_time_to_tm(time, &tm);
++	pr_info("%s: setting system clock to "
++		"%d-%02d-%02d %02d:%02d:%02d UTC (%lu)\n",
++		CONFIG_RTC_HCTOSYS_DEVICE,
++		tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday,
++		tm.tm_hour, tm.tm_min, tm.tm_sec, (unsigned long)tv.tv_sec);
+ 
+ 	return 0;
+ }
+diff -up --recursive --new-file linux-2.6.26-rc1-20080505.macro/include/linux/rtc.h linux-2.6.26-rc1-20080505/include/linux/rtc.h
+--- linux-2.6.26-rc1-20080505.macro/include/linux/rtc.h	2008-05-05 02:55:59.000000000 +0000
++++ linux-2.6.26-rc1-20080505/include/linux/rtc.h	2008-05-05 21:10:50.000000000 +0000
+@@ -200,6 +200,9 @@ extern int rtc_irq_set_state(struct rtc_
+ extern int rtc_irq_set_freq(struct rtc_device *rtc,
+ 				struct rtc_task *task, int freq);
+ 
++extern unsigned long rtc_read_persistent_clock(void);
++extern int rtc_update_persistent_clock(struct timespec now);
++
+ typedef struct rtc_task {
+ 	void (*func)(void *private_data);
+ 	void *private_data;
+diff -up --recursive --new-file linux-2.6.26-rc1-20080505.macro/kernel/time/ntp.c linux-2.6.26-rc1-20080505/kernel/time/ntp.c
+--- linux-2.6.26-rc1-20080505.macro/kernel/time/ntp.c	2008-05-05 02:56:03.000000000 +0000
++++ linux-2.6.26-rc1-20080505/kernel/time/ntp.c	2008-05-05 21:10:50.000000000 +0000
+@@ -3,6 +3,8 @@
+  *
+  * NTP state machine interfaces and logic.
+  *
++ * Copyright (c) 2008  Maciej W. Rozycki
++ *
+  * This code was mainly moved from kernel/timer.c and kernel/time.c
+  * Please see those files for relevant copyright info and historical
+  * changelogs.
+@@ -17,6 +19,7 @@
+ #include <linux/capability.h>
+ #include <linux/math64.h>
+ #include <linux/clocksource.h>
++#include <linux/workqueue.h>
+ #include <asm/timex.h>
+ 
+ /*
+@@ -218,11 +221,13 @@ void second_overflow(void)
+ /* Disable the cmos update - used by virtualization and embedded */
+ int no_sync_cmos_clock  __read_mostly;
+ 
+-static void sync_cmos_clock(unsigned long dummy);
++static void sync_cmos_clock(unsigned long data);
++static void do_sync_cmos_clock(struct work_struct *work);
+ 
+ static DEFINE_TIMER(sync_cmos_timer, sync_cmos_clock, 0, 0);
++static DECLARE_WORK(sync_cmos_work, do_sync_cmos_clock);
+ 
+-static void sync_cmos_clock(unsigned long dummy)
++static void do_sync_cmos_clock(struct work_struct *work)
+ {
+ 	struct timespec now, next;
+ 	int fail = 1;
+@@ -261,6 +266,12 @@ static void sync_cmos_clock(unsigned lon
+ 	mod_timer(&sync_cmos_timer, jiffies + timespec_to_jiffies(&next));
+ }
+ 
++static void sync_cmos_clock(unsigned long data)
++{
++	/* Some implementations of update_persistent_clock() may sleep.  */
++	schedule_work(&sync_cmos_work);
++}
++
+ static void notify_cmos_timer(void)
+ {
+ 	if (!no_sync_cmos_clock)
+diff -up --recursive --new-file linux-2.6.26-rc1-20080505.macro/kernel/time/timekeeping.c linux-2.6.26-rc1-20080505/kernel/time/timekeeping.c
+--- linux-2.6.26-rc1-20080505.macro/kernel/time/timekeeping.c	2008-05-05 02:56:03.000000000 +0000
++++ linux-2.6.26-rc1-20080505/kernel/time/timekeeping.c	2008-05-05 21:10:50.000000000 +0000
+@@ -242,7 +242,11 @@ unsigned long __attribute__((weak)) read
+ void __init timekeeping_init(void)
+ {
+ 	unsigned long flags;
+-	unsigned long sec = read_persistent_clock();
++	unsigned long sec = 0;
++
++#ifndef CONFIG_RTC_HCTOSYS
++	sec = read_persistent_clock();
++#endif
+ 
+ 	write_seqlock_irqsave(&xtime_lock, flags);
+ 
