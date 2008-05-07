@@ -1,47 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765015AbYEGRc6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765043AbYEGRdg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765015AbYEGRc6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 13:32:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763669AbYEGRa4
+	id S1765043AbYEGRdg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 13:33:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765011AbYEGRc4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 13:30:56 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:57763 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1764695AbYEGRax (ORCPT
+	Wed, 7 May 2008 13:32:56 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:37831 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1763120AbYEGRcx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 13:30:53 -0400
-Date: Wed, 7 May 2008 10:30:44 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Jiri Slaby <jirislaby@gmail.com>
-cc: linux-mm@kvack.org, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       pageexec@freemail.hu, Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       herbert@gondor.apana.org.au, penberg@cs.helsinki.fi,
-       akpm@linux-foundation.org, linux-ext4@vger.kernel.org,
-       paulmck@linux.vnet.ibm.com, rjw@sisk.pl, zdenek.kabelac@gmail.com,
-       David Miller <davem@davemloft.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Andi Kleen <andi@firstfloor.org>
-Subject: Re: [RFC 1/1] mm: add virt to phys debug
-In-Reply-To: <4820D39E.3090109@gmail.com>
-Message-ID: <Pine.LNX.4.64.0805071030180.3173@schroedinger.engr.sgi.com>
-References: <Pine.LNX.4.64.0804281322510.31163@schroedinger.engr.sgi.com>
- <1209669740-10493-1-git-send-email-jirislaby@gmail.com>
- <Pine.LNX.4.64.0805011310390.9288@schroedinger.engr.sgi.com>
- <4820D39E.3090109@gmail.com>
+	Wed, 7 May 2008 13:32:53 -0400
+Date: Wed, 7 May 2008 10:31:59 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+cc: Matthew Wilcox <matthew@wil.cx>, Andrew Morton <akpm@linux-foundation.org>,
+       "J. Bruce Fields" <bfields@citi.umich.edu>,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Alexander Viro <viro@ftp.linux.org.uk>, linux-fsdevel@vger.kernel.org
+Subject: Re: AIM7 40% regression with 2.6.26-rc1
+In-Reply-To: <20080507172246.GA13262@elte.hu>
+Message-ID: <alpine.LFD.1.10.0805071028400.3024@woody.linux-foundation.org>
+References: <1210052904.3453.30.camel@ymzhang> <20080506114449.GC32591@elte.hu> <20080506120934.GH19219@parisc-linux.org> <20080506162332.GI19219@parisc-linux.org> <20080506102153.5484c6ac.akpm@linux-foundation.org> <20080507163811.GY19219@parisc-linux.org>
+ <alpine.LFD.1.10.0805070948250.3024@woody.linux-foundation.org> <alpine.LFD.1.10.0805070956060.3024@woody.linux-foundation.org> <20080507172246.GA13262@elte.hu>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 6 May 2008, Jiri Slaby wrote:
 
-> I like the idea, I'll get back with a patch in few days (sorry, too busy).
-> Anyway bounds.h should be include/asm/ thing though.
 
-For arch specific stuff use asm-offsets.h. It would have to be included in 
-page_xx.h.
+On Wed, 7 May 2008, Ingo Molnar wrote:
+> 
+> There's far more normal mutex fastpath use during an AIM7 run than any 
+> BKL use. So if it's due to any direct fastpath overhead and the 
+> resulting widening of the window for the real slowdown, we should see a 
+> severe slowdown on AIM7 with CONFIG_MUTEX_DEBUG=y. Agreed?
 
- 
+Not agreed.
+
+The BKL is special because it is a *single* lock.
+
+All the "normal" mutex code use fine-grained locking, so even if you slow 
+down the fast path, that won't cause the same kind of fastpath->slowpath 
+increase.
+
+In order to see the fastpath->slowpath thing, you do need to have many 
+threads hitting the same lock: ie the slowdown has to result in real 
+contention. 
+
+Almost no mutexes have any potential for contention what-so-ever, except 
+for things that very consciously try to hit it (multiple threads doing 
+readdir and/or file creation on the *same* directory etc).
+
+The BKL really is special. 
+
+		Linus
