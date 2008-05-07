@@ -1,57 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761595AbYEGDwn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762324AbYEGDxI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761595AbYEGDwn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 23:52:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752787AbYEGDwd
+	id S1762324AbYEGDxI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 23:53:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756991AbYEGDwi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 23:52:33 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:49679 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752465AbYEGDwc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 23:52:32 -0400
-Date: Tue, 6 May 2008 22:52:28 -0500
-From: Paul Jackson <pj@sgi.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: menage@google.com, seto.hidetoshi@jp.fujitsu.com, mingo@elte.hu,
-       linux-kernel@vger.kernel.org, maxk@qualcomm.com, a.p.zijlstra@chello.nl,
-       tglx@linutronix.de, oleg@tv-sign.ru, rostedt@goodmis.org,
-       rientjes@google.com
-Subject: Re: Reverting per-cpuset "system" (IRQ affinity) patch (was: Fix
- cpuset sched_relax_domain_level control file)
-Message-Id: <20080506225228.d42630cf.pj@sgi.com>
-In-Reply-To: <20080506204444.f4c38d0a.akpm@linux-foundation.org>
-References: <48210101.1070205@google.com>
-	<20080506183138.546f42d9.akpm@linux-foundation.org>
-	<20080506204054.564fff32.pj@sgi.com>
-	<20080506223859.0b4fa876.pj@sgi.com>
-	<20080506204444.f4c38d0a.akpm@linux-foundation.org>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 6 May 2008 23:52:38 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:58202 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756613AbYEGDwg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 May 2008 23:52:36 -0400
+Date: Wed, 7 May 2008 04:47:43 +0100 (IST)
+From: Dave Airlie <airlied@linux.ie>
+X-X-Sender: airlied@skynet.skynet.ie
+To: torvalds@linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>
+cc: dri-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: [git pull] drm-patches for 2.6.26-rc2
+Message-ID: <alpine.DEB.0.82.0805070445580.30516@skynet.skynet.ie>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew wrote:
-> Don't worry about it.  I sorted out things locally and I expect that
-> Stephen will be able to as well.
 
-Ok ...
+Hi Linus,
 
-I hesitate more than I should some times to NAQ patches,
-but the more I think about this one, the less willing I
-am to have a per-cpuset file called "system".
+Please pull the 'drm-patches' branch from
+ssh://master.kernel.org/pub/scm/linux/kernel/git/airlied/drm-2.6.git drm-patches
 
-I'm not sure what "sorted out" means ... I'll wait and see.
+I've reverted the vblank changeset for now, it looks like it needs more 
+baking, the rest is a better fix to previous locking changes and some more 
+i915 register saving/restoring.
 
-Thanks, Andrew.
+Dave.
 
-Sorry, Max, Peter and Ingo ... we really had not arrived at
-agreement on this one.
+ drivers/char/drm/drm.h        |   17 --
+ drivers/char/drm/drmP.h       |   91 ++-----
+ drivers/char/drm/drm_fops.c   |    7 +-
+ drivers/char/drm/drm_irq.c    |  381 ++++----------------------
+ drivers/char/drm/drm_lock.c   |   35 +--
+ drivers/char/drm/i915_dma.c   |  160 +++--------
+ drivers/char/drm/i915_drm.h   |   45 +---
+ drivers/char/drm/i915_drv.c   |   23 +-
+ drivers/char/drm/i915_drv.h   |  115 ++-------
+ drivers/char/drm/i915_irq.c   |  597 +++++++++++------------------------------
+ drivers/char/drm/mga_drv.c    |    7 +-
+ drivers/char/drm/mga_drv.h    |    6 +-
+ drivers/char/drm/mga_irq.c    |   69 ++----
+ drivers/char/drm/r128_drv.c   |    7 +-
+ drivers/char/drm/r128_drv.h   |    9 +-
+ drivers/char/drm/r128_irq.c   |   55 ++---
+ drivers/char/drm/radeon_drv.c |    8 +-
+ drivers/char/drm/radeon_drv.h |   19 +-
+ drivers/char/drm/radeon_irq.c |  171 ++++++------
+ drivers/char/drm/via_drv.c    |    6 +-
+ drivers/char/drm/via_drv.h    |    7 +-
+ drivers/char/drm/via_irq.c    |   81 +++----
+ 22 files changed, 513 insertions(+), 1403 deletions(-)
 
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.940.382.4214
+commit e948e99400b28af152414f15f8c8023ff2430b79
+Author: Keith Packard <keithp@keithp.com>
+Date:   Wed May 7 12:27:53 2008 +1000
+
+    drm/i915: save and restore dsparb and d_state registers.
+    
+    Signed-off-by: Dave Airlie <airlied@redhat.com>
+
+commit a59e122a67b88925944d3bbf33d15229cf0fc3de
+Author: Jesse Barnes <jbarnes@virtuousgeek.org>
+Date:   Wed May 7 12:25:46 2008 +1000
+
+    drm/i915: fix off by one in VGA save/restore of AR & CR regs.
+    
+    turns out it's important to save/restore AR14 in particular.
+    
+    Signed-off-by: Dave Airlie <airlied@redhat.com>
+
+commit f116cc561eae0a426b8fa6b3e22e80ba0bcf7aee
+Author: Thomas Hellstrom <thomas-at-tungstengraphics-dot-com>
+Date:   Wed May 7 12:22:39 2008 +1000
+
+    drm: disable tasklets not IRQs when taking the drm lock spinlock
+    
+    Signed-off-by: Dave Airlie <airlied@redhat.com>
+
+commit af6061af0d9f84a4665f88186dc1ff9e4fb78330
+Author: Dave Airlie <airlied@linux.ie>
+Date:   Wed May 7 12:15:39 2008 +1000
+
+    Revert "drm/vbl rework: rework how the drm deals with vblank."
+    
+    This reverts commit ac741ab71bb39e6977694ac0cc26678d8673cda4.
+    
+    Okay this looks like wasn't as fully baked as I'd led myself to believe.
+    
+    Revert for now for further baking.
+    
+    Signed-off-by: Dave Airlie <airlied@redhat.com>
