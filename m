@@ -1,43 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762549AbYEGPX0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761605AbYEGPZs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762549AbYEGPX0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 11:23:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757883AbYEGPXM
+	id S1761605AbYEGPZs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 11:25:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754811AbYEGPZh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 11:23:12 -0400
-Received: from wine.ocn.ne.jp ([122.1.235.145]:62677 "EHLO smtp.wine.ocn.ne.jp"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757664AbYEGPXK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 11:23:10 -0400
-To: rmk+lkml@arm.linux.org.uk
-Cc: alan@lxorguk.ukuu.org.uk, linux-serial@vger.kernel.org,
+	Wed, 7 May 2008 11:25:37 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:52816 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754970AbYEGPZf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 May 2008 11:25:35 -0400
+Date: Wed, 7 May 2008 09:25:33 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Ray Lee <ray-lk@madrabbit.org>
+Cc: rae l <crquan@gmail.com>, linux-fsdevel@vger.kernel.org,
        linux-kernel@vger.kernel.org
-Subject: Re: [BUG] NULL pointer dereference in uart_write_room().
-From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-References: <261636618@web.de>
-	<200805022300.GIB30385.FJOVHQSMFtOOFL@I-love.SAKURA.ne.jp>
-	<200805041716.DDG43279.JOSMHVFOFFQLOt@I-love.SAKURA.ne.jp>
-	<20080505113055.5284052e@core>
-	<20080506212328.GA17929@flint.arm.linux.org.uk>
-In-Reply-To: <20080506212328.GA17929@flint.arm.linux.org.uk>
-Message-Id: <200805080023.IHH34204.tQMOFJFVFHOLOS@I-love.SAKURA.ne.jp>
-X-Mailer: Winbiff [Version 2.50 PL2]
-X-Accept-Language: ja,en
-Date: Thu, 8 May 2008 00:23:07 +0900
-Mime-Version: 1.0
+Subject: Re: It's time to hack on dentry_stat?
+Message-ID: <20080507152533.GW19219@parisc-linux.org>
+References: <91b13c310805070726k7eb1384ex7d557b5dca4b567@mail.gmail.com> <20080507145116.GV19219@parisc-linux.org> <2c0942db0805070808t663eafffic5e78c9d1ba8bc68@mail.gmail.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <2c0942db0805070808t663eafffic5e78c9d1ba8bc68@mail.gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, May 07, 2008 at 08:08:09AM -0700, Ray Lee wrote:
+> One could hardcode the output of the last three (four?) fields, yes?
+> Slightly grotty, but if it comes with a decent memory savings...
 
-Russell King wrote:
-> Is the rest of the report available somewhere?
+How can it be a 'decent memory saving'?  There is exactly _one_ struct
+dentry_stat_t in the entire kernel.  So you're talking about saving 4
+ints, or 16 bytes.  Bet you it'd be more bytes to hardcode printing zero.
 
-Yes.
-
-First report:  http://lkml.org/lkml/2008/4/22/42
-Second report: http://lkml.org/lkml/2008/5/2/22
-Third report:  http://lkml.org/lkml/2008/5/4/34
-
-Regards.
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
