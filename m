@@ -1,125 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933895AbYEGTks@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932957AbYEGTol@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933895AbYEGTks (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 15:40:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933154AbYEGTkW
+	id S932957AbYEGTol (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 15:44:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752851AbYEGToa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 15:40:22 -0400
-Received: from smtp.enter.net ([216.193.128.24]:2126 "EHLO smtp.enter.net"
+	Wed, 7 May 2008 15:44:30 -0400
+Received: from mail.queued.net ([207.210.101.209]:4674 "EHLO mail.queued.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765246AbYEGTkO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 15:40:14 -0400
-From: Daniel Hazelton <dhazelton@enter.net>
-To: Rene Herman <rene.herman@keyaccess.nl>
-Subject: Re: 2.6.26, PAT and AMD family 6
-Date: Wed, 7 May 2008 15:39:30 -0400
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: Yinghai Lu <yhlu.kernel@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-References: <48210A71.1060409@keyaccess.nl> <86802c440805061939q39ff5500h3c9e229ecbc6b2e6@mail.gmail.com> <4821A7E2.6080101@keyaccess.nl>
-In-Reply-To: <4821A7E2.6080101@keyaccess.nl>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+	id S1752280AbYEGTo3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 May 2008 15:44:29 -0400
+Date: Wed, 7 May 2008 15:48:18 -0400
+From: Andres Salomon <dilinger@queued.net>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Adrian Bunk <bunk@kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [git pull] x86 fixes
+Message-ID: <20080507154818.5f22f8e0@ephemeral>
+In-Reply-To: <alpine.LFD.1.10.0805072107200.3318@apollo.tec.linutronix.de>
+References: <20080504193113.GA24358@elte.hu>
+	<20080505151202.GA17139@cs181133002.pp.htv.fi>
+	<20080505112917.7d4548fb@ephemeral>
+	<alpine.LFD.1.10.0805061437430.3318@apollo.tec.linutronix.de>
+	<20080507114137.357aca34@ephemeral>
+	<alpine.LFD.1.10.0805072107200.3318@apollo.tec.linutronix.de>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.9; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200805071539.32594.dhazelton@enter.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 07 May 2008 09:00:18 Rene Herman wrote:
-> On 07-05-08 04:39, Yinghai Lu wrote:
-> > On Tue, May 6, 2008 at 6:48 PM, Rene Herman <rene.herman@keyaccess.nl> 
-wrote:
-> >>  On 2.6.25 and below, my /proc/cpuinfo looks like:
-> >>
-> >>  processor       : 0
-> >>  vendor_id       : AuthenticAMD
-> >>  cpu family      : 6
-> >>  model           : 7
-> >>  model name      : AMD Duron(tm) Processor
->
-> [ ... ]
->
-> >>  flags           : fpu vme de pse tsc msr pae mce cx8 sep mtrr pge mca
-> >> cmov pat pse36 mmx fxsr sse syscall mmxext 3dnowext 3dnow ts
-> >>
-> >>  while on current mainline PAT and TS (Temperature Sensor) drop from the
-> >> feature flags:
-> >>
-> >>  flags           : fpu vme de pse tsc msr pae mce cx8 sep mtrr pge mca
-> >> cmov pse36 mmx fxsr sse syscall mmxext 3dnowext 3dnow
-> >>
-> >>  With respect to PAT, I guess it's
-> >> 9307cacad0dfe3749f00303125c6f7f0523e5616, "x86: pat cpu feature bit
-> >> setting for known cpus" but what's this about?
-> >>
-> >> Did my cpuinfo lie upto this point or shouldn't the flag be cleared? The
-> >> commit message for that change is completely and totally unhelpful.
-> >
-> > others like to to whitebox methods, ..., please try attach patch to
-> > see if duron support PAT.
-> >
-> > diff --git a/arch/x86/kernel/cpu/common.c b/arch/x86/kernel/cpu/common.c
-> > index a428ffc..81483ec 100644
-> > --- a/arch/x86/kernel/cpu/common.c
-> > +++ b/arch/x86/kernel/cpu/common.c
-> > @@ -314,6 +314,8 @@ static void __cpuinit early_get_cap(struct
-> > cpuinfo_x86 *c) case X86_VENDOR_AMD:
-> >  		if (c->x86 >= 0xf && c->x86 <= 0x11)
-> >  			set_cpu_cap(c, X86_FEATURE_PAT);
-> > +		if (c->x86 == 6 && c->x86_modes == 7)
-> > +			set_cpu_cap(c, X86_FEATURE_PAT);
-> >  		break;
-> >  	case X86_VENDOR_INTEL:
-> >  		if (c->x86 == 0xF || (c->x86 == 6 && c->x86_model >= 15))
->
-> s/modes/model/ but, as far as I'm aware, works fine other than that. When I
-> boot with CONFIG_X86_PAT after applying that, I see:
->
-> 	x86 PAT enabled: cpu 0, old 0x7040600070406, new 0x7010600070106
->
-> and PAT is retained in the feature flags. However, this I do not consider
-> very surprising. Why is this code doing what it is doing in the first
-> place?
->
-> These feature flags are read from hardware in the CPUID instruction. Why is
-> this code then going "ah, this CPU may _claim_ PAT but we won't actually
-> believe it unless it's model foo, bar or baz". Is that feature flag buggy?
+On Wed, 7 May 2008 21:08:40 +0200 (CEST)
+Thomas Gleixner <tglx@linutronix.de> wrote:
 
-HPA asked about why they used a whitelist instead of a blacklist in [1]. The 
-answer (in [2]) was that those are the CPU's that are guaranteed to properly 
-support PAT (no known or potential errata). However in [3] Dean Gaudet 
-complained about the AMD detection code having a limit that the Intel 
-detection code did not. Perhaps changing the 'c->x86 <= 0x11' test in the 
-X86_VENDOR_AMD block to not exist?
+> On Wed, 7 May 2008, Andres Salomon wrote:
+> > > Sorry, this should not have gone mainline. We had your patch
+> > > queued (via Andrew) and it had testing failures, which we sent to
+> > > you. One workaround was that build patch. When we dropped your
+> > > patch we forgot to remove the workaround as well.
+> > > 
+> > 
+> > Will it be removed, then?  I haven't seen any explanation of its
+> > benefits, and Adrian's point about not catching build failures in
+> > olpc_battery is valid.
+> 
+> Yes, it's scheduled for the next pull request. What's the state of the
+> build failures of your original patch ?
+> 
+> Thanks,
+> 	tglx
 
-> diff --git a/arch/x86/kernel/cpu/common.c b/arch/x86/kernel/cpu/common.c
-> index a428ffc..81483ec 100644
-> --- a/arch/x86/kernel/cpu/common.c
-> +++ b/arch/x86/kernel/cpu/common.c
-> @@ -314,6 +314,8 @@ static void __cpuinit early_get_cap(struct cpuinfo_x86 
-*c)
->       case X86_VENDOR_AMD:
->               if (c->x86 >= 0xf && c->x86 <= 0x11)
->                       set_cpu_cap(c, X86_FEATURE_PAT);
-> +             if (c->x86 == 6 && c->x86_modes == 7)
-> +                     set_cpu_cap(c, X86_FEATURE_PAT);
-                     ^^^^^---- Here in Rene's patch...
-Wouldn't this be better if written the same as the Intel side, ie:
-if (c->x86 >= 0xF && (c->x86 == 6 && c->x86_model == 7))
-(or even with c->x86_model >= 7  ?)
 
->               break;
->       case X86_VENDOR_INTEL:
->               if (c->x86 == 0xF || (c->x86 == 6 && c->x86_model >= 15))
+They're queued up in Andrew's tree, I believe.  You were also CC'd;
+Message-ID: <20080504104756.3d7b6842@ephemeral>.  It wasn't CC'd to
+lkml, unfortunately.
 
-DRH
-
-[1] http://lkml.org/lkml/2008/3/25/118
-[2] http://lkml.org/lkml/2008/3/25/292
-[3] http://lkml.org/lkml/2008/3/30/37
-
--- 
-Dialup is like pissing through a pipette. Slow and excruciatingly painful.
