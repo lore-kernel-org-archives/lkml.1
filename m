@@ -1,45 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760987AbYEGCOU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761326AbYEGCPr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760987AbYEGCOU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 22:14:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754315AbYEGCOL
+	id S1761326AbYEGCPr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 22:15:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755163AbYEGCPg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 22:14:11 -0400
-Received: from smtpq1.tilbu1.nb.home.nl ([213.51.146.200]:58754 "EHLO
-	smtpq1.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753864AbYEGCOJ (ORCPT
+	Tue, 6 May 2008 22:15:36 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:2678 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754315AbYEGCPf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 22:14:09 -0400
-Message-ID: <48211089.7000406@keyaccess.nl>
-Date: Wed, 07 May 2008 04:14:33 +0200
-From: Rene Herman <rene.herman@keyaccess.nl>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
+	Tue, 6 May 2008 22:15:35 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=hIr8rJ4gb1sY8djLQMv7oMesVzT0yfcWWqisSqRj9VfjzAvCUfKFzo3iWxsqHplT2
+	aVkhoq3XBt4/4VcNJUJXw==
+Message-ID: <6599ad830805061915s2525e48fw369e7c1aff167a76@mail.gmail.com>
+Date: Tue, 6 May 2008 19:15:27 -0700
+From: "Paul Menage" <menage@google.com>
+To: "Paul Jackson" <pj@sgi.com>
+Subject: Re: [PATCH] Fix cpuset sched_relax_domain_level control file
+Cc: "Andrew Morton" <akpm@linux-foundation.org>, lizf@cn.fujitsu.com,
+       seto.hidetoshi@jp.fujitsu.com, mingo@elte.hu,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20080506211121.e82bb51a.pj@sgi.com>
 MIME-Version: 1.0
-To: Bjorn Helgaas <bjorn.helgaas@hp.com>
-CC: Uwe Bugla <uwe.bugla@gmx.de>, Takashi Iwai <tiwai@suse.de>,
-       Len Brown <len.brown@intel.com>, Andrew Morton <akpm@osdl.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 3/3] PNP: add AD1815 and AD1816 quirks
-References: <481FAC37.6090703@keyaccess.nl> <481FAD12.3030409@keyaccess.nl> <481FAF83.5090305@keyaccess.nl> <200805061308.14673.bjorn.helgaas@hp.com> <4820C846.2040205@keyaccess.nl>
-In-Reply-To: <4820C846.2040205@keyaccess.nl>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -1.0 (-)
+Content-Disposition: inline
+References: <48210101.1070205@google.com>
+	 <20080506183841.e1771032.akpm@linux-foundation.org>
+	 <482109E5.5050204@cn.fujitsu.com> <20080506204946.7754302d.pj@sgi.com>
+	 <6599ad830805061851n767ff7a1qc8cb850ec98ad60d@mail.gmail.com>
+	 <20080506205852.8adaa0a2.pj@sgi.com>
+	 <20080506190809.df1b9398.akpm@linux-foundation.org>
+	 <20080506211121.e82bb51a.pj@sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 06-05-08 23:06, Rene Herman wrote:
+On Tue, May 6, 2008 at 7:11 PM, Paul Jackson <pj@sgi.com> wrote:
+> Andrew wrote:
+>  > Paul should drop sched-devel.
+>
+>  I hope that refers to Paul M.
 
-> Yes. Will regenerate against current mainline. My ISA test machine is 
-> chugging away on things at the moment. Will repost when it's done.
+I'm building against 2.6.26-rc1, and don't see those warnings (or any
+useful code at those lines). It's probably more fallout from the
+cpuset files changes?
 
-Ofcourse, on .26-rc1 nothing actually works anymore. One of its 1643 other 
-regressions is getting in the way I presume. It's quite impossible to test 
--rc1 kernels on something that actually takes some time to do so...
-
-And especially .26-rc1. Anyways, will need some time. Can also not test your 
-dynamic resource code on that machine until then.
-
-Rene.
-
+Paul
