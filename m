@@ -1,99 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762324AbYEGDxI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760667AbYEGEAA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762324AbYEGDxI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 23:53:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756991AbYEGDwi
+	id S1760667AbYEGEAA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 00:00:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756309AbYEGD7u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 23:52:38 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:58202 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756613AbYEGDwg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 23:52:36 -0400
-Date: Wed, 7 May 2008 04:47:43 +0100 (IST)
-From: Dave Airlie <airlied@linux.ie>
-X-X-Sender: airlied@skynet.skynet.ie
-To: torvalds@linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>
-cc: dri-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: [git pull] drm-patches for 2.6.26-rc2
-Message-ID: <alpine.DEB.0.82.0805070445580.30516@skynet.skynet.ie>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 6 May 2008 23:59:50 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:46678 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756263AbYEGD7t (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 May 2008 23:59:49 -0400
+Date: Tue, 6 May 2008 20:59:30 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Matthew Wilcox <matthew@wil.cx>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Alexander Viro <viro@ftp.linux.org.uk>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: AIM7 40% regression with 2.6.26-rc1
+Message-Id: <20080506205930.91ec78b6.akpm@linux-foundation.org>
+In-Reply-To: <1210131712.3453.43.camel@ymzhang>
+References: <1210052904.3453.30.camel@ymzhang>
+	<20080506114449.GC32591@elte.hu>
+	<1210126286.3453.37.camel@ymzhang>
+	<1210131712.3453.43.camel@ymzhang>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 07 May 2008 11:41:52 +0800 "Zhang, Yanmin" <yanmin_zhang@linux.intel.com> wrote:
 
-Hi Linus,
+> As system idle is more than 50%, so the schedule/schedule_timeout caller is important
+> information.
+> 1) lock_kernel causes most schedule/schedule_timeout;
+> 2) When lock_kernel calls down, then __down, __down calls ___schedule_timeout for
+> lots of times in a loop;
 
-Please pull the 'drm-patches' branch from
-ssh://master.kernel.org/pub/scm/linux/kernel/git/airlied/drm-2.6.git drm-patches
+Really?  Are you sure?  That would imply that we keep on waking up tasks
+which then fail to acquire the lock.  But the code pretty plainly doesn't
+do that.
 
-I've reverted the vblank changeset for now, it looks like it needs more 
-baking, the rest is a better fix to previous locking changes and some more 
-i915 register saving/restoring.
+Odd.
 
-Dave.
+> 3) Caller of lcok_kernel are sys_fcntl/vfs_ioctl/tty_release/chrdev_open.
 
- drivers/char/drm/drm.h        |   17 --
- drivers/char/drm/drmP.h       |   91 ++-----
- drivers/char/drm/drm_fops.c   |    7 +-
- drivers/char/drm/drm_irq.c    |  381 ++++----------------------
- drivers/char/drm/drm_lock.c   |   35 +--
- drivers/char/drm/i915_dma.c   |  160 +++--------
- drivers/char/drm/i915_drm.h   |   45 +---
- drivers/char/drm/i915_drv.c   |   23 +-
- drivers/char/drm/i915_drv.h   |  115 ++-------
- drivers/char/drm/i915_irq.c   |  597 +++++++++++------------------------------
- drivers/char/drm/mga_drv.c    |    7 +-
- drivers/char/drm/mga_drv.h    |    6 +-
- drivers/char/drm/mga_irq.c    |   69 ++----
- drivers/char/drm/r128_drv.c   |    7 +-
- drivers/char/drm/r128_drv.h   |    9 +-
- drivers/char/drm/r128_irq.c   |   55 ++---
- drivers/char/drm/radeon_drv.c |    8 +-
- drivers/char/drm/radeon_drv.h |   19 +-
- drivers/char/drm/radeon_irq.c |  171 ++++++------
- drivers/char/drm/via_drv.c    |    6 +-
- drivers/char/drm/via_drv.h    |    7 +-
- drivers/char/drm/via_irq.c    |   81 +++----
- 22 files changed, 513 insertions(+), 1403 deletions(-)
-
-commit e948e99400b28af152414f15f8c8023ff2430b79
-Author: Keith Packard <keithp@keithp.com>
-Date:   Wed May 7 12:27:53 2008 +1000
-
-    drm/i915: save and restore dsparb and d_state registers.
-    
-    Signed-off-by: Dave Airlie <airlied@redhat.com>
-
-commit a59e122a67b88925944d3bbf33d15229cf0fc3de
-Author: Jesse Barnes <jbarnes@virtuousgeek.org>
-Date:   Wed May 7 12:25:46 2008 +1000
-
-    drm/i915: fix off by one in VGA save/restore of AR & CR regs.
-    
-    turns out it's important to save/restore AR14 in particular.
-    
-    Signed-off-by: Dave Airlie <airlied@redhat.com>
-
-commit f116cc561eae0a426b8fa6b3e22e80ba0bcf7aee
-Author: Thomas Hellstrom <thomas-at-tungstengraphics-dot-com>
-Date:   Wed May 7 12:22:39 2008 +1000
-
-    drm: disable tasklets not IRQs when taking the drm lock spinlock
-    
-    Signed-off-by: Dave Airlie <airlied@redhat.com>
-
-commit af6061af0d9f84a4665f88186dc1ff9e4fb78330
-Author: Dave Airlie <airlied@linux.ie>
-Date:   Wed May 7 12:15:39 2008 +1000
-
-    Revert "drm/vbl rework: rework how the drm deals with vblank."
-    
-    This reverts commit ac741ab71bb39e6977694ac0cc26678d8673cda4.
-    
-    Okay this looks like wasn't as fully baked as I'd led myself to believe.
-    
-    Revert for now for further baking.
-    
-    Signed-off-by: Dave Airlie <airlied@redhat.com>
+Still :(
