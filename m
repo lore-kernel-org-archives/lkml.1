@@ -1,95 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762326AbYEGRGK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761339AbYEGRIG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762326AbYEGRGK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 13:06:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754007AbYEGRFx
+	id S1761339AbYEGRIG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 13:08:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753032AbYEGRHx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 13:05:53 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:55087 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753994AbYEGRFv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 13:05:51 -0400
-Date: Wed, 7 May 2008 19:05:28 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andi Kleen <andi@firstfloor.org>, Matthew Wilcox <matthew@wil.cx>,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Alexander Viro <viro@ftp.linux.org.uk>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: AIM7 40% regression with 2.6.26-rc1
-Message-ID: <20080507170528.GA11511@elte.hu>
-References: <1210052904.3453.30.camel@ymzhang> <20080506114449.GC32591@elte.hu> <1210126286.3453.37.camel@ymzhang> <1210131712.3453.43.camel@ymzhang> <87lk2mbcqp.fsf@basil.nowhere.org> <20080507114643.GR19219@parisc-linux.org> <87hcdab8zp.fsf@basil.nowhere.org> <alpine.LFD.1.10.0805070728280.32269@woody.linux-foundation.org> <20080507162012.GA10096@elte.hu> <alpine.LFD.1.10.0805070929310.3024@woody.linux-foundation.org>
+	Wed, 7 May 2008 13:07:53 -0400
+Received: from wx-out-0506.google.com ([66.249.82.228]:41317 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752713AbYEGRHu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 May 2008 13:07:50 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=e60KzzHDO+MCBPmb93fWTTAVPRu1Uret19k7EKn38fge4Q96dvsd3IOx3ckk3JLz5Sjv2+yHcT8rhpPd5qYlW2bHf0p9roU9Vadf67+nxEkJiv/GxRZ1RqAFT/JNoMT6l4Fq5Gh9i3Gm8xfGzWmtPVjbs4xlgEsITe9ZQZbbenE=
+Message-ID: <1f1b08da0805071007t37d7db7fn40daaf2d17fba0f1@mail.gmail.com>
+Date: Wed, 7 May 2008 10:07:49 -0700
+From: "john stultz" <johnstul@us.ibm.com>
+To: "Martin Knoblauch" <spamtrap@knobisoft.de>
+Subject: Re: 2.6.25.2 - Jiffies/Time jumping back and forth (Regereesion from 2.6.24)
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <177578.8968.qm@web32608.mail.mud.yahoo.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.10.0805070929310.3024@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+References: <177578.8968.qm@web32608.mail.mud.yahoo.com>
+X-Google-Sender-Auth: c48677243d3adf05
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, May 7, 2008 at 5:42 AM, Martin Knoblauch <spamtrap@knobisoft.de> wrote:
+> Hi,
+>
+>   any news on the one below? I upgraded to 2.6.25.2 and the problem still persists. Would adding a bugzilla actually help ? :-)
+>
+>
+>  http://www.ussg.iu.edu/hypermail/linux/kernel/0804.2/1144.html
 
-* Linus Torvalds <torvalds@linux-foundation.org> wrote:
+With this issue you're seeing is only the printk timestamps jumping
+back, correct?
 
-> > I think it is far more likely that it's due to the different 
-> > scheduling and wakeup behavior of the new kernel/semaphore.c code. 
-> > So the fix would be to restore the old scheduling behavior - that's 
-> > what Yanmin's manual revert did and that's what got him back the 
-> > previous AIM7 performance.
-> 
-> Yes, Yanmin's manual revert got rid of the new semaphores entirely. 
-> Which was what, 7500 lines of code removed that got reverted.
+For example, you're not seeing the output from gettimeofday() or the
+actual jiffies value (as seen from maybe a driver) jump backward? Is
+that right?
 
-i wouldnt advocate a 7500 revert instead of a 160 lines change.
+The printk timestamps may jump around a bit at bootup,  especially if
+you have unsynced TSCs, so that is a known issue. However its not
+known to have any actual negative effect other then maybe causing the
+dmesg log to be a bit confusing.
 
-my suggestion was that the scheduling behavior of the new 
-kernel/semaphore.c code is causing the problem - i.e. making it match 
-the old semaphore code's behavior would give us back performance.
-
-> And the *WHOLE* and *ONLY* excuse for dropping the spinlock 
-> lock_kernel was this (and I quote your message):
-> 
->     remove the !PREEMPT_BKL code.
->     
->     this removes 160 lines of legacy code.
-> 
-> in other words, your only stated valid reason for getting rid of the 
-> spinlock was 160 lines, and the comment didn't even match what it did 
-> (it removed the spinlocks entirely, not just the preemptible version).
-
-it was removed by me in the course of this discussion:
-
-   http://lkml.org/lkml/2008/1/2/58
-
-the whole discussion started IIRC because !CONFIG_PREEMPT_BKL [the 
-spinlock version] was broken for a longer period of time (it crashed 
-trivially), because nobody apparently used it. People (Nick) asked why 
-it was still there and i agreed and removed it. CONFIG_PREEMPT_BKL=y was 
-the default, that was what all distros used. I.e. the spinlock code was 
-in essence dead code at that point in time.
-
-the spinlock code might in fact perform _better_, but nobody came up 
-with such a workload before.
-
-> In contrast, the revert adds 7500 lines. If you go by the only 
-> documented reason for the crap that is the current BKL, then I know 
-> which one I'll take. I'll take the spinlock back, and I'd rather put 
-> preemption back than ever take those semaphores.
-> 
-> And even that's ignoring another issue: did anybody ever even do that 
-> AIM7 benchmark comparing spinlocks to the semaphore-BKL? It's quite 
-> possible that the semaphores (even the well-behaved ones) behaved 
-> worse than the spinlocks.
-
-that's a good question...
-
-	Ingo
+thanks
+-john
