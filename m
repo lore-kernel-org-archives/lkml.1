@@ -1,31 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758624AbYEGCJ1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756850AbYEGCKA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758624AbYEGCJ1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 22:09:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754239AbYEGCJS
+	id S1756850AbYEGCKA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 22:10:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754281AbYEGCJr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 22:09:18 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:52468 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750885AbYEGCJR (ORCPT
+	Tue, 6 May 2008 22:09:47 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:38707 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754239AbYEGCJq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 22:09:17 -0400
-Date: Tue, 6 May 2008 19:08:09 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Paul Jackson <pj@sgi.com>
-Cc: "Paul Menage" <menage@google.com>, lizf@cn.fujitsu.com,
-       seto.hidetoshi@jp.fujitsu.com, mingo@elte.hu,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Fix cpuset sched_relax_domain_level control file
-Message-Id: <20080506190809.df1b9398.akpm@linux-foundation.org>
-In-Reply-To: <20080506205852.8adaa0a2.pj@sgi.com>
-References: <48210101.1070205@google.com>
-	<20080506183841.e1771032.akpm@linux-foundation.org>
-	<482109E5.5050204@cn.fujitsu.com>
-	<20080506204946.7754302d.pj@sgi.com>
-	<6599ad830805061851n767ff7a1qc8cb850ec98ad60d@mail.gmail.com>
-	<20080506205852.8adaa0a2.pj@sgi.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+	Tue, 6 May 2008 22:09:46 -0400
+Date: Wed, 7 May 2008 11:14:04 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Mika =?UTF-8?B?UGVudHRpbMOk?= <mika.penttila@kolumbus.fi>,
+       Tony Battersby <tonyb@cybernetics.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] more ZERO_PAGE handling ( was 2.6.24 regression:
+ deadlock on coredump of big process)
+Message-Id: <20080507111404.871b8990.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20080430061125.GF27652@wotan.suse.de>
+References: <4815E932.1040903@cybernetics.com>
+	<20080429100048.3e78b1ba.kamezawa.hiroyu@jp.fujitsu.com>
+	<48172C72.1000501@cybernetics.com>
+	<20080430132516.28f1ee0c.kamezawa.hiroyu@jp.fujitsu.com>
+	<4817FDA5.1040702@kolumbus.fi>
+	<20080430141738.e6b80d4b.kamezawa.hiroyu@jp.fujitsu.com>
+	<20080430051932.GD27652@wotan.suse.de>
+	<20080430143542.2dcf745a.kamezawa.hiroyu@jp.fujitsu.com>
+	<20080430061125.GF27652@wotan.suse.de>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -33,28 +38,36 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 6 May 2008 20:58:52 -0500 Paul Jackson <pj@sgi.com> wrote:
-
-> Paul M wrote:
-> > I was just trying to get close to the original behaviour.
+On Wed, 30 Apr 2008 08:11:25 +0200
+Nick Piggin <npiggin@suse.de> wrote:
+  
+> >  	pte = *ptep;
+> > -	if (!pte_present(pte))
+> > +	if (!pte_present(pte)) {
+> > +		if (!(flags & FOLL_WRITE) && pte_none(pte)) {
+> > +			pte_unmap_unlock(ptep, ptl);
+> > +			goto null_or_zeropage;
+> > +		}
+> >  		goto unlock;
+> > +	}
 > 
-> An honorable goal.
+> Just a small nitpick: I guess you don't need this FOLL_WRITE test because
+> null_or_zeropage will test FOLL_ANON which implies !FOLL_WRITE. It should give
+> slightly smaller code.
 > 
-> Li Zefan - would you be interested in generating a patch
-> that fails -EINVAL for inputs outside the range of [-1 ... N]
-> for whatever small positive N the kernel recognizes?
+> Otherwise, looks good to me:
+> 
+Hmm, but 
 
-I'd like to get Paul's patch into mainline this evening, to give us a
-chance to get the subsequent mess sorted out in time for next
-linux-next[*].  So there's no rush on this update.
+do_execve()
+  -> copy_strings()
+       -> get_arg_page()
+            -> get_user_pages()
 
-[*] Judging by this:
+can do write-page-fault in ANON (and it's a valid ops.)
 
-kernel/cpuset.c: In function 'cpuset_common_file_write':
-kernel/cpuset.c:1374: warning: passing argument 3 of 'update_flag' makes integer from pointer without a cast
-kernel/cpuset.c: In function 'cpuset_destroy':
-kernel/cpuset.c:1793: warning: passing argument 3 of 'update_flag' makes integer from pointer without a cast
+So, I think it's safe not to remove FOLL_WRITE check here.
 
-Paul should drop sched-devel.  I'm suspecting it contains stale old stuff
-which wasn't supposed to be there.
+Thanks,
+-Kame
 
