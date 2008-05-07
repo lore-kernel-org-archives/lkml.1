@@ -1,54 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757564AbYEGBoT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757539AbYEGBrm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757564AbYEGBoT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 21:44:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751725AbYEGBoJ
+	id S1757539AbYEGBrm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 21:47:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751626AbYEGBrc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 21:44:09 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:43240 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751065AbYEGBoI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 21:44:08 -0400
-Date: Tue, 6 May 2008 20:44:07 -0500
-From: Paul Jackson <pj@sgi.com>
+	Tue, 6 May 2008 21:47:32 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:61216 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751353AbYEGBrb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 May 2008 21:47:31 -0400
+Message-ID: <482109E5.5050204@cn.fujitsu.com>
+Date: Wed, 07 May 2008 09:46:13 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: menage@google.com, torvalds@linux-foundation.org, lizf@cn.fujitsu.com,
-       seto.hidetoshi@jp.fujitsu.com, kamezawa.hiroyu@jp.fujitsu.com,
-       sivanich@sgi.com, linux-kernel@vger.kernel.org
-Subject: Re: [patch 125/311] Cpuset hardwall flag: switch cpusets to use the
- bulk cgroup_add_files() API
-Message-Id: <20080506204407.96862779.pj@sgi.com>
-In-Reply-To: <20080506180006.107b2dcd.akpm@linux-foundation.org>
-References: <200804290800.m3T80QFs009131@imap1.linux-foundation.org>
-	<6599ad830804290329heea3c5fu7395b1ef71a87881@mail.gmail.com>
-	<20080429053804.6d083a7f.akpm@linux-foundation.org>
-	<20080506192018.26c1e3b7.pj@sgi.com>
-	<20080506180006.107b2dcd.akpm@linux-foundation.org>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+CC: Paul Menage <menage@google.com>,
+       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
+       Paul Jackson <pj@sgi.com>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Fix cpuset sched_relax_domain_level control file
+References: <48210101.1070205@google.com> <20080506183841.e1771032.akpm@linux-foundation.org>
+In-Reply-To: <20080506183841.e1771032.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > 	==> akpm - what does todays 2.6.25-rc1-mm1-mmotm
-> > 	    apply to?
+Andrew Morton wrote:
+> On Tue, 06 May 2008 18:08:17 -0700 Paul Menage <menage@google.com> wrote:
 > 
-> 2.6.25-rc1.
+>> -static int update_relax_domain_level(struct cpuset *cs, char *buf)
+>> +static int update_relax_domain_level(struct cpuset *cs, s64 val)
+>>  {
+>> -	int val = simple_strtol(buf, NULL, 10);
+>> -
+>> -	if (val < 0)
+>> +	if ((int)val < 0)
+>>  		val = -1;
+>>  
 > 
-> <resyncs>
+> Are you sure about the typecast here?  If `val' has a value of say
+> 0x0000_ffff_ffff_ffff then I assume the casted value will be negative, only
+> it wasn't?
 > 
-> It _should_ be OK.  Please check?
 
-mmotm works fine now ... probably would have worked fine
-before, except for the brain damaged keyboard operator
-who is sitting behind my computer monitor - curse him ;).
+I saw this, but I think it's ok.
 
-Thanks.
+  -1  : no request. use system default or follow request of others.
+   0  : no search.
+  ...
+ ( 5~ : search system wide [on NUMA system])
 
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.940.382.4214
+Or maybe we can restrict the value from -1 to 5 ?
