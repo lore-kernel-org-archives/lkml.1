@@ -1,54 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765957AbYEGXFc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934300AbYEGXGK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765957AbYEGXFc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 19:05:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756530AbYEGXEg
+	id S934300AbYEGXGK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 19:06:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757371AbYEGXFm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 19:04:36 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:42739 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1762435AbYEGXEa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 19:04:30 -0400
-Date: Wed, 7 May 2008 16:03:00 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Andrea Arcangeli <andrea@qumranet.com>
-cc: Roland Dreier <rdreier@cisco.com>, npiggin@suse.de, chrisw@redhat.com,
-       rusty@rustcorp.com.au, a.p.zijlstra@chello.nl, marcelo@kvack.org,
-       kvm-devel@lists.sourceforge.net, kanojsarcar@yahoo.com, steiner@sgi.com,
-       linux-kernel@vger.kernel.org, avi@qumranet.com, aliguori@us.ibm.com,
-       paulmck@us.ibm.com, linux-mm@kvack.org, holt@sgi.com,
-       general@lists.openfabrics.org, hugh@veritas.com,
-       Andrew Morton <akpm@linux-foundation.org>, dada1@cosmosbay.com,
-       clameter@sgi.com
-Subject: Re: [ofa-general] Re: [PATCH 01 of 11] mmu-notifier-core
-In-Reply-To: <20080507223914.GG8276@duo.random>
-Message-ID: <alpine.LFD.1.10.0805071601090.3024@woody.linux-foundation.org>
-References: <patchbomb.1210170950@duo.random> <e20917dcc8284b6a07cf.1210170951@duo.random> <20080507130528.adfd154c.akpm@linux-foundation.org> <alpine.LFD.1.10.0805071324570.3024@woody.linux-foundation.org> <20080507215840.GB8276@duo.random>
- <alpine.LFD.1.10.0805071509270.3024@woody.linux-foundation.org> <20080507222758.GD8276@duo.random> <adaej8du4pf.fsf@cisco.com> <20080507223914.GG8276@duo.random>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 7 May 2008 19:05:42 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:46440 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1765699AbYEGXFg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 May 2008 19:05:36 -0400
+From: Paul Jackson <pj@sgi.com>
+To: akpm@linux-foundation.org
+Cc: "WANG Cong" <xiyou.wangcong@gmail.com>, "Mike Travis" <travis@sgi.com>,
+       "Alexey Dobriyan" <adobriyan@gmail.com>,
+       "Bert Wesarg" <bert.wesarg@googlemail.com>,
+       linux-kernel@vger.kernel.org, Paul Jackson <pj@sgi.com>
+Date: Wed, 07 May 2008 16:05:34 -0700
+Message-Id: <20080507230534.2458.93668.sendpatchset@jackhammer.engr.sgi.com>
+Subject: [PATCH] cpusets: remove bitmap_scnprintf_len and cpumask_scnprintf_len
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Paul Jackson <pj@sgi.com>
 
+Remove bitmap_scnprintf_len and cpumask_scnprintf_len.
 
-On Thu, 8 May 2008, Andrea Arcangeli wrote:
-> 
-> Ok so I see the problem Linus is referring to now (I received the hint
-> by PM too), I thought the order of the signed-off-by was relevant, it
-> clearly isn't or we're wasting space ;)
+They aren't used.  They were briefly used as part of some
+other patches to provide an alternative format for displaying
+some /proc and /sys cpumasks.  They probably should have been
+removed when those other patches were dropped, in favor of a
+different solution.
 
-The order of the signed-offs are somewhat relevant, but no, sign-offs 
-don't mean authorship.
+Signed-off-by: Paul Jackson <pj@sgi.com>
+Cc: "Mike Travis" <travis@sgi.com>
+Cc: "Bert Wesarg" <bert.wesarg@googlemail.com>
+Cc: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: WANG Cong <xiyou.wangcong@gmail.com>
 
-See the rules for sign-off: you can sign off on another persons patches, 
-even if they didn't sign off on them themselves. That's clause (b) in 
-particular.
+---
+ include/linux/bitmap.h  |    1 -
+ include/linux/cpumask.h |    7 -------
+ lib/bitmap.c            |   16 ----------------
+ 3 files changed, 24 deletions(-)
 
-So yes, quite often you'd _expect_ the first sign-off to match the author, 
-but that's a correlation, not a causal relationship.
+--- 2.6.26-rc1-mmotm.orig/include/linux/bitmap.h	2008-05-06 20:54:24.000000000 -0700
++++ 2.6.26-rc1-mmotm/include/linux/bitmap.h	2008-05-07 15:26:06.740970436 -0700
+@@ -110,7 +110,6 @@ extern int __bitmap_weight(const unsigne
+ 
+ extern int bitmap_scnprintf(char *buf, unsigned int len,
+ 			const unsigned long *src, int nbits);
+-extern int bitmap_scnprintf_len(unsigned int len);
+ extern int __bitmap_parse(const char *buf, unsigned int buflen, int is_user,
+ 			unsigned long *dst, int nbits);
+ extern int bitmap_parse_user(const char __user *ubuf, unsigned int ulen,
+--- 2.6.26-rc1-mmotm.orig/include/linux/cpumask.h	2008-05-06 21:01:11.000000000 -0700
++++ 2.6.26-rc1-mmotm/include/linux/cpumask.h	2008-05-07 15:26:38.049493817 -0700
+@@ -297,13 +297,6 @@ static inline int __cpumask_scnprintf(ch
+ 	return bitmap_scnprintf(buf, len, srcp->bits, nbits);
+ }
+ 
+-#define cpumask_scnprintf_len(len) \
+-			__cpumask_scnprintf_len((len))
+-static inline int __cpumask_scnprintf_len(int len)
+-{
+-	return bitmap_scnprintf_len(len);
+-}
+-
+ #define cpumask_parse_user(ubuf, ulen, dst) \
+ 			__cpumask_parse_user((ubuf), (ulen), &(dst), NR_CPUS)
+ static inline int __cpumask_parse_user(const char __user *buf, int len,
+--- 2.6.26-rc1-mmotm.orig/lib/bitmap.c	2008-05-06 20:54:27.000000000 -0700
++++ 2.6.26-rc1-mmotm/lib/bitmap.c	2008-05-07 15:27:01.161880188 -0700
+@@ -316,22 +316,6 @@ int bitmap_scnprintf(char *buf, unsigned
+ EXPORT_SYMBOL(bitmap_scnprintf);
+ 
+ /**
+- * bitmap_scnprintf_len - return buffer length needed to convert
+- * bitmap to an ASCII hex string.
+- * @len: number of bits to be converted
+- */
+-int bitmap_scnprintf_len(unsigned int len)
+-{
+-	/* we need 9 chars per word for 32 bit words (8 hexdigits + sep/null) */
+-	int bitslen = ALIGN(len, CHUNKSZ);
+-	int wordlen = CHUNKSZ / 4;
+-	int buflen = (bitslen / wordlen) * (wordlen + 1) * sizeof(char);
+-
+-	return buflen;
+-}
+-EXPORT_SYMBOL(bitmap_scnprintf_len);
+-
+-/**
+  * __bitmap_parse - convert an ASCII hex string into a bitmap.
+  * @buf: pointer to buffer containing string.
+  * @buflen: buffer size in bytes.  If string is smaller than this
 
-		Linus
+-- 
+                          I won't rest till it's the best ...
+                          Programmer, Linux Scalability
+                          Paul Jackson <pj@sgi.com> 1.650.933.1373
