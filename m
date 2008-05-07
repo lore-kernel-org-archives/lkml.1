@@ -1,63 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763552AbYEGHSX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763451AbYEGHUy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763552AbYEGHSX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 03:18:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757048AbYEGHSG
+	id S1763451AbYEGHUy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 03:20:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754664AbYEGHUn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 03:18:06 -0400
-Received: from wilson.telenet-ops.be ([195.130.132.42]:44767 "EHLO
-	wilson.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757001AbYEGHSE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 03:18:04 -0400
-Date: Wed, 7 May 2008 09:17:56 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Michal Simek <monstr@seznam.cz>
-cc: Arnd Bergmann <arnd@arndb.de>, John Williams <john.williams@petalogix.com>,
-       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-       stephen.neuendorffer@xilinx.com, John.Linn@xilinx.com, matthew@wil.cx,
-       will.newton@gmail.com, drepper@redhat.com,
-       microblaze-uclinux@itee.uq.edu.au, grant.likely@secretlab.ca
-Subject: Re: [PATCH 36/56] microblaze_v2: dma support
-In-Reply-To: <48214B36.9060307@seznam.cz>
-Message-ID: <Pine.LNX.4.64.0805070917111.6341@anakin>
-References: <1209901305-6404-1-git-send-email-monstr@seznam.cz>
- <200805061324.06282.arnd@arndb.de> <48205B0D.70202@seznam.cz>
- <200805061736.18180.arnd@arndb.de> <48214B36.9060307@seznam.cz>
+	Wed, 7 May 2008 03:20:43 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:11477 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751046AbYEGHUm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 May 2008 03:20:42 -0400
+Date: Wed, 7 May 2008 09:20:39 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: akpm@linux-foundation.org, hch@infradead.org, viro@ZenIV.linux.org.uk,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [patch 15/15] vfs: splice remove_suid() cleanup
+Message-ID: <20080507072038.GO329@kernel.dk>
+References: <20080505095440.820370974@szeredi.hu> <20080505095532.980827078@szeredi.hu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080505095532.980827078@szeredi.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 7 May 2008, Michal Simek wrote:
-> struct scatterlist {
-> #ifdef CONFIG_DEBUG_SG
->        unsigned long     sg_magic; /* 32 bit */
-> #endif
->        unsigned long     page_link; /* 32 bit */
-
-On 64-bit platforms, `unsigned long' is 64-bit, too.
-
->        dma_addr_t        dma_address; /* 32/64 bit */
->        unsigned int      length;  /* 32 bit */
->        unsigned int      offset; /* 32 bit */
-> };
+On Mon, May 05 2008, Miklos Szeredi wrote:
+> From: Miklos Szeredi <mszeredi@suse.cz>
 > 
-> #define sg_dma_address(sg)      ((sg)->dma_address)
-> #define sg_dma_len(sg)          ((sg)->length)
+> generic_file_splice_write() duplicates remove_suid() just because it
+> doesn't hold i_mutex.  But it grabs i_mutex inside splice_from_pipe()
+> anyway, so this is rather pointless.
 > 
-> Is it OK now? This will moved to asm-generic too.
+> Move locking to generic_file_splice_write() and call remove_suid() and
+> __splice_from_pipe() instead.
+> 
+> Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
+> CC: Jens Axboe <jens.axboe@oracle.com>
 
-Ack.
+Looks good to me, applied.
 
-Gr{oetje,eeting}s,
+-- 
+Jens Axboe
 
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
