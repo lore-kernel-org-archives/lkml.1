@@ -1,64 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762915AbYEGOoV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757295AbYEGOpr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762915AbYEGOoV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 10:44:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761382AbYEGOn6
+	id S1757295AbYEGOpr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 10:45:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757048AbYEGOpd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 10:43:58 -0400
-Received: from po-out-1718.google.com ([72.14.252.152]:43449 "EHLO
-	po-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761966AbYEGOnk (ORCPT
+	Wed, 7 May 2008 10:45:33 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:37760 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756602AbYEGOpb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 10:43:40 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=ax2Jpjn/3jac1UJviNxWYbESgMhCFR3CqAotPNEHV5g6wQVTPPVbtqz+Uw1P7T6W9PXBxoaIzmHh+Us4x02+Wg/nzDOhizTQs3AnacuELCRm0oI4hg146mkpY0B7PXdeNyewfKN4z0p1Lgy5n7yZx4NLtqRs/EQDyRHhQwfmrLE=
-Message-ID: <c4e36d110805070743m6f47e83al19ec37648dc8043d@mail.gmail.com>
-Date: Wed, 7 May 2008 16:43:39 +0200
-From: "Zdenek Kabelac" <zdenek.kabelac@gmail.com>
-To: "Andrea Arcangeli" <andrea@qumranet.com>
-Subject: Re: Suspend to memory is freezing my machine
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080507143355.GE8362@duo.random>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 7 May 2008 10:45:31 -0400
+Date: Wed, 7 May 2008 15:35:38 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andi Kleen <andi@firstfloor.org>, Matthew Wilcox <matthew@wil.cx>,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
+       Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Alexander Viro <viro@ftp.linux.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: AIM7 40% regression with 2.6.26-rc1
+Message-ID: <20080507153538.446693af@core>
+In-Reply-To: <alpine.LFD.1.10.0805070728280.32269@woody.linux-foundation.org>
+References: <1210052904.3453.30.camel@ymzhang>
+	<20080506114449.GC32591@elte.hu>
+	<1210126286.3453.37.camel@ymzhang>
+	<1210131712.3453.43.camel@ymzhang>
+	<87lk2mbcqp.fsf@basil.nowhere.org>
+	<20080507114643.GR19219@parisc-linux.org>
+	<87hcdab8zp.fsf@basil.nowhere.org>
+	<alpine.LFD.1.10.0805070728280.32269@woody.linux-foundation.org>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <c4e36d110805040037u1b98c027x46dc17bf6be5da5b@mail.gmail.com>
-	 <20080507143355.GE8362@duo.random>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/5/7 Andrea Arcangeli <andrea@qumranet.com>:
->
-> On Sun, May 04, 2008 at 09:37:54AM +0200, Zdenek Kabelac wrote:
->  > Hello
->  >
->  > With recent 2.6.25 & 2.6.26-rc1 git (around 1 week) I get occasionally
->  > complete freeze of my T61 during suspend. (dual core, 2GB).
->  >
->  > I'm running kernel with no_console_suspend - but all I can see is
->  > blinking cursor on an empty screen - thus even when I run kernel with
->  > most debug options turned on, I can't pass more details so far.  I run
->  > suspend with with SD card in - so maybe some update in the MMC driver
->  > might be responsible for this ?
->  >
->  > Also - I think that option no_console_suspend doens't work correctly -
->  > as many times with suspend I do not see any log message on my console
->  > screen. However sometimes the log is shown.
->
->  Same here. Suspend to ram crashes on resume starting in 2.6.25 (didn't
->  test 2.6.25-rc in my production system).
->
->  Because this isn't 100% reproducible bisecting may return false
->  negatives.
+> But my preferred option would indeed be just turning it back into a 
+> spinlock - and screw latency and BKL preemption - and having the RT people 
+> who care deeply just work on removing the BKL in the long run.
 
+It isn't as if the RT build can't use a different lock type to the
+default build.
 
-Of course I've planned to bisect for the lost console logging - maybe tomorrow.
+> Is BKL preemption worth it? Sounds very dubious. Sounds even more dubious 
+> when we now apparently have even more reason to aim for removing the BKL 
+> rather than trying to mess around with it.
 
-The crash in suspend is pretty random - I've never got the lock at my
-will - usually it happens when I completely do not expect it ;)
+We have some horrible long lasting BKL users left unfortunately.
 
-Zdenek
+Alan
