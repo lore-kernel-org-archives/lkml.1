@@ -1,38 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760854AbYEGVNs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762902AbYEGVPo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760854AbYEGVNs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 17:13:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751154AbYEGVNf
+	id S1762902AbYEGVPo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 17:15:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754415AbYEGVP3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 17:13:35 -0400
-Received: from mga09.intel.com ([134.134.136.24]:56846 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751885AbYEGVNd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 17:13:33 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.27,450,1204531200"; 
-   d="scan'208";a="278958315"
-Subject: [regression?] distcc says: (dcc_pump_sendfile) ERROR: sendfile
-	returned 0? can't cope (bisected)
-From: Dan Williams <dan.j.williams@intel.com>
-To: Tom Zanussi <zanussi@comcast.net>, Jens Axboe <jens.axboe@oracle.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Wed, 07 May 2008 14:13:31 -0700
-Message-Id: <1210194811.16427.6.camel@dwillia2-linux.ch.intel.com>
+	Wed, 7 May 2008 17:15:29 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:42662
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751154AbYEGVP1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 May 2008 17:15:27 -0400
+Date: Wed, 07 May 2008 14:15:21 -0700 (PDT)
+Message-Id: <20080507.141521.193714938.davem@davemloft.net>
+To: yhlu.kernel@gmail.com
+Cc: jesper@krogh.cc, linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: NIU - Sun Neptune 10g - Transmit timed out reset (2.6.24)
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <86802c440805071130m62c1f4edydb3316dac4a2aba2@mail.gmail.com>
+References: <4821F3B7.2090702@krogh.cc>
+	<86802c440805071130m62c1f4edydb3316dac4a2aba2@mail.gmail.com>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-4.fc8) 
-X-OriginalArrivalTime: 07 May 2008 21:13:32.0808 (UTC) FILETIME=[34823080:01C8B087]
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Tom, Jens,
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+Date: Wed, 7 May 2008 11:30:18 -0700
 
-My build system started reporting these error messages recently.
-Reverting commit c3270e577c18b3d0e984c3371493205a4807db9d on top of
-2.6.26-rc1 gets things working for me again.
+> On Wed, May 7, 2008 at 11:23 AM, Jesper Krogh <jesper@krogh.cc> wrote:
+> > Hi.
+> >
+> >  I get errors like this after a few minutes of traffic on a Sun Neptune 10g
+> > ethernet card. (with nice 500MB/s throughput).
+> >
+> >  Then the server seems too busy with something, so it doesn't even respont
+> > to a serial terminal login.
+> >
+> >  May  7 16:16:33 hest kernel: [  166.948958] niu: niu_get_parent:
+> > platform_type[1] port[3]
+> >  May  7 16:16:33 hest kernel: [  166.949366] niu: niu_get_and_validate_port:
+> > port[3] num_ports[2]
+> >  May  7 16:16:33 hest kernel: [  166.949886] niu: niu_put_parent: port[3]
+> >  .. bootup ends here ..
+> >  May  7 17:13:54 hest kernel: [ 3670.128178] niu 0000:84:00.0: niu: eth4:
+> > Transmit timed out, resetting
+> >  May  7 17:14:04 hest kernel: [ 3680.108614] niu 0000:84:00.0: niu: eth4:
+> > Transmit timed out, resetting
+> >  May  7 17:14:14 hest kernel: [ 3690.093089] niu 0000:84:00.0: niu: eth4:
+> > Transmit timed out, resetting
+> >  May  7 17:14:19 hest kernel: [ 3695.079254] niu 0000:84:00.0: niu: eth4:
+> > Transmit timed out, resetting
+> >  May  7 17:14:24 hest kernel: [ 3700.073525] niu 0000:84:00.0: niu: eth4:
+> > Transmit timed out, resetting
+> >  May  7 17:14:29 hest kernel: [ 3705.063744] niu 0000:84:00.0: niu: eth4:
+> > Transmit timed out, resetting
+> >  May  7 17:14:34 hest kernel: [ 3710.049918] niu 0000:84:00.0: niu: eth4:
+> > Transmit timed out, resetting
+> >
+> >
+> >  Any suggestions?
+> >
+> >  The system is an Ubuntu Hardy (2.6.24-17-server) amd64.
+> 
+> can you try 2.6.25 or current git?
 
---
-Dan
+Also, please always CC: netdev@vger.kernel.org on networking reports.
+
+Thank you.
