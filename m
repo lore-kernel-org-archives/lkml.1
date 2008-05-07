@@ -1,124 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762243AbYEGXue@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760965AbYEGX5K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762243AbYEGXue (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 19:50:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755452AbYEGXuP
+	id S1760965AbYEGX5K (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 19:57:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753976AbYEGX44
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 19:50:15 -0400
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:56216 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753675AbYEGXuL (ORCPT
+	Wed, 7 May 2008 19:56:56 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:55857 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753048AbYEGX4y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 19:50:11 -0400
-Subject: Re: [PATCH] mptsas: add mptsas_shutdown to call pci_disable_msi
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Yinghai Lu <yhlu.kernel@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org, sathya.prakash@lsi.com, Eric.Moore@lsi.com,
-       ebiederm@xmission.com
-In-Reply-To: <20080507163155.1217515f.akpm@linux-foundation.org>
-References: <200804221947.33524.yhlu.kernel@gmail.com>
-	 <86802c440804222012w1536b0a7y14a5c2f9dc333624@mail.gmail.com>
-	 <20080507163155.1217515f.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Wed, 07 May 2008 18:50:06 -0500
-Message-Id: <1210204207.3067.30.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-4.fc8) 
+	Wed, 7 May 2008 19:56:54 -0400
+Date: Thu, 08 May 2008 08:55:45 +0900
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: "Paul Menage" <menage@google.com>, balbir@linux.vnet.ibm.com,
+       "Andrew Morton" <akpm@linux-foundation.org>
+Subject: [PATCH] on CONFIG_MM_OWNER=y, kernel panic is possible. take2
+Cc: kosaki.motohiro@jp.fujitsu.com,
+       "Lee Schermerhorn" <Lee.Schermerhorn@hp.com>,
+       "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>,
+       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>
+In-Reply-To: <6599ad830805062037n221ef8e2n9ee7ac33417ab499@mail.gmail.com>
+References: <20080506153943.AC69.KOSAKI.MOTOHIRO@jp.fujitsu.com> <6599ad830805062037n221ef8e2n9ee7ac33417ab499@mail.gmail.com>
+Message-Id: <20080508083808.4A78.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.42 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-05-07 at 16:31 -0700, Andrew Morton wrote:
-> On Tue, 22 Apr 2008 20:12:08 -0700
-> "Yinghai Lu" <yhlu.kernel@gmail.com> wrote:
+> I'd word it as
 > 
-> > On Tue, Apr 22, 2008 at 7:47 PM, Yinghai Lu <yhlu.kernel.send@gmail.com> wrote:
-> > >
-> > >
-> > >  this change
-> > >
-> > >  | commit 23a274c8a5adafc74a66f16988776fc7dd6f6e51
-> > >  | Author: Prakash, Sathya <sathya.prakash@lsi.com>
-> > >  | Date:   Fri Mar 7 15:53:21 2008 +0530
-> > >  |
-> > >  |     [SCSI] mpt fusion: Enable MSI by default for SAS controllers
-> > >  |
-> > >  |     This patch modifies the driver to enable MSI by default for all SAS chips.
-> > >  |
-> > >  cause kexec RHEL 5.1 kernel fail.
-> > >
-> > >  root casue: the rhel 5.1 kernel still use INTx emulation.
-> > >  and mptscsih_shutdown doesn't call pci_disable_msi to reenable INTx on kexec path
-> > >
-> > >  so try to call mptsas_remove in mptsas_shutdown.
-> > >  then pci_disable_msi will be called via mptsas_remove==>mptscih_remove==>
-> > >  mpt_detach.
-> > >
-> > >  Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
-> > >  CC: Prakash, Sathya <sathya.prakash@lsi.com>
-> > >  CC: "Moore, Eric" <Eric.Moore@lsi.com>
-> > >
-> > >  Index: linux-2.6/drivers/message/fusion/mptsas.c
-> > >  ===================================================================
-> > >  --- linux-2.6.orig/drivers/message/fusion/mptsas.c
-> > >  +++ linux-2.6/drivers/message/fusion/mptsas.c
-> > >  @@ -3327,6 +3327,11 @@ static void __devexit mptsas_remove(stru
-> > >         mptscsih_remove(pdev);
-> > >   }
-> > >
-> > >  +static void mptsas_shutdown(struct pci_dev *pdev)
-> > >  +{
-> > >  +       mptsas_remove(pdev);
-> > >  +}
-> > >  +
-> > >   static struct pci_device_id mptsas_pci_table[] = {
-> > >         { PCI_VENDOR_ID_LSI_LOGIC, MPI_MANUFACTPAGE_DEVID_SAS1064,
-> > >                 PCI_ANY_ID, PCI_ANY_ID },
-> > >  @@ -3348,7 +3353,7 @@ static struct pci_driver mptsas_driver =
-> > >         .id_table       = mptsas_pci_table,
-> > >         .probe          = mptsas_probe,
-> > >         .remove         = __devexit_p(mptsas_remove),
-> > >  -       .shutdown       = mptscsih_shutdown,
-> > >  +       .shutdown       = mptsas_shutdown,
-> > >   #ifdef CONFIG_PM
-> > >         .suspend        = mptscsih_suspend,
-> > >         .resume         = mptscsih_resume,
-> > >  --
-> > 
-> > fail on one system with big sas expander...
-> > 
-> > LBSuse:~ # mkdir /xx
-> > LBSuse:~ # mount /dev/sdl1 /xx
-> > LBSuse:~ # cd /xx
-> > LBSuse:/xx # sh kk_rh_5.1
-> > LBSuse:/xx # ./kexec -e
-> > BUG: unable to handle kernel NULL pointer dereference at 0000000000000028
-> > IP: [<ffffffff80337af4>] sysfs_find_dirent+0x1f/0x5f
-> > PGD 41f137067 PUD 424482067 PMD 0
-> > Oops: 0000 [1] SMP
-> > CPU 7
-> > Modules linked in:
-> > Pid: 7534, comm: kexec Not tainted
-> 
-> I don't understand your email.
-> 
-> Are you saying that this oops is the thing which your patch fixes?
-> 
-> Or are you saying that this oops occurs even after your patch is applied? 
-> That we have a second regression?
+> /*
+>  * "owner" points to a task that is regarded as the canonical
+>  * user/owner of this mm. All of the following must be true in
+>  * order for it to be changed:
+>  *
+>  * current == mm->owner
+>  * current->mm != mm
+>  * new_owner->mm == mm
+>  * new_owner->alloc_lock is held
+>  */
 
-The regression is actually PCI generic, not mpt specific.  It was fixed
-by this commit:
+Wow, Thank you a lot!
+new version attached.
 
-commit d52877c7b1afb8c37ebe17e2005040b79cb618b0
-Author: Yinghai Lu <yhlu.kernel.send@gmail.com>
-Date:   Wed Apr 23 14:58:09 2008 -0700
-
-    pci/irq: let pci_device_shutdown to call pci_msi_shutdown v2
+Cheers!
 
 
-James
+-----------------------------------------------------------
+When mm destruct happend, We should pass mm_update_next_owner() 
+old mm.
+but unfortunately new mm is passed in exec_mmap().
+
+thus, kernel panic is possible when multi thread process use exec().
+
+
+and, owner member comment description is wrong.
+mm->owner don't not necessarily point to thread group leader.
+
+
+Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+CC: Balbir Singh <balbir@linux.vnet.ibm.com>
+CC: "Paul Menage" <menage@google.com>
+CC: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
+
+---
+ fs/exec.c                |    2 +-
+ include/linux/mm_types.h |   13 +++++++++++--
+ 2 files changed, 12 insertions(+), 3 deletions(-)
+
+Index: b/fs/exec.c
+===================================================================
+--- a/fs/exec.c	2008-05-04 22:57:09.000000000 +0900
++++ b/fs/exec.c	2008-05-06 15:40:35.000000000 +0900
+@@ -735,7 +735,7 @@ static int exec_mmap(struct mm_struct *m
+ 	tsk->active_mm = mm;
+ 	activate_mm(active_mm, mm);
+ 	task_unlock(tsk);
+-	mm_update_next_owner(mm);
++	mm_update_next_owner(old_mm);
+ 	arch_pick_mmap_layout(mm);
+ 	if (old_mm) {
+ 		up_read(&old_mm->mmap_sem);
+Index: b/include/linux/mm_types.h
+===================================================================
+--- a/include/linux/mm_types.h	2008-05-08 09:20:13.000000000 +0900
++++ b/include/linux/mm_types.h	2008-05-08 09:22:13.000000000 +0900
+@@ -231,8 +231,17 @@ struct mm_struct {
+ 	rwlock_t		ioctx_list_lock;	/* aio lock */
+ 	struct kioctx		*ioctx_list;
+ #ifdef CONFIG_MM_OWNER
+-	struct task_struct *owner;	/* The thread group leader that */
+-					/* owns the mm_struct.		*/
++        /*
++         * "owner" points to a task that is regarded as the canonical
++         * user/owner of this mm. All of the following must be true in
++         * order for it to be changed:
++         *
++         * current == mm->owner
++         * current->mm != mm
++         * new_owner->mm == mm
++         * new_owner->alloc_lock is held
++         */
++	struct task_struct *owner;
+ #endif
+ 
+ #ifdef CONFIG_PROC_FS
+
+
 
 
