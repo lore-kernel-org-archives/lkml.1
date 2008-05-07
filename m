@@ -1,74 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759897AbYEGFUq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756718AbYEGFgE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759897AbYEGFUq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 01:20:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753931AbYEGFUd
+	id S1756718AbYEGFgE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 01:36:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751406AbYEGFfs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 01:20:33 -0400
-Received: from mga02.intel.com ([134.134.136.20]:6386 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753705AbYEGFUb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 01:20:31 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.27,446,1204531200"; 
-   d="scan'208";a="380821819"
-Subject: Re: [PATCH -mm crypto] AES: x86_64 asm implementation optimization
-From: "Huang, Ying" <ying.huang@intel.com>
-To: Sebastian Siewior <linux-crypto@ml.breakpoint.cc>
-Cc: Herbert Xu <herbert@gondor.apana.org.au>,
-       "Adam J. Richter" <adam@yggdrasil.com>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-crypto@vger.kernel.org,
-       mingo@elte.hu, tglx@linutronix.de
-In-Reply-To: <20080429221225.GA5280@Chamillionaire.breakpoint.cc>
-References: <1207723262.18313.37.camel@caritas-dev.intel.com>
-	 <20080416073108.GA13494@Chamillionaire.breakpoint.cc>
-	 <1208333949.4322.5.camel@caritas-dev.intel.com>
-	 <20080416184016.GA21365@Chamillionaire.breakpoint.cc>
-	 <1208403403.4322.27.camel@caritas-dev.intel.com>
-	 <20080423223221.GB16683@Chamillionaire.breakpoint.cc>
-	 <1209093077.20936.24.camel@caritas-dev.intel.com>
-	 <20080429221225.GA5280@Chamillionaire.breakpoint.cc>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Wed, 07 May 2008 13:26:13 +0800
-Message-Id: <1210137973.4676.15.camel@caritas-dev.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 
-X-OriginalArrivalTime: 07 May 2008 05:20:27.0483 (UTC) FILETIME=[0F6612B0:01C8B002]
+	Wed, 7 May 2008 01:35:48 -0400
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:43001 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750992AbYEGFfq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 May 2008 01:35:46 -0400
+Date: Wed, 7 May 2008 06:30:05 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.site
+To: Jeff Chua <jeff.chua.linux@gmail.com>
+cc: Hans Rosenfeld <hans.rosenfeld@amd.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Gabriel C <nix.or.die@googlemail.com>,
+       Arjan van de Ven <arjan@linux.intel.com>,
+       Nishanth Aravamudan <nacc@us.ibm.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH] x86: fix PAE pmd_bad bootup warning
+In-Reply-To: <b6a2187b0805062140i2546a1a8pc3fa65227a9873ab@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0805070625200.3983@blonde.site>
+References: <b6a2187b0805051806v25fa1272xb08e0b70b9c3408@mail.gmail.com> 
+ <20080506124946.GA2146@elte.hu>  <Pine.LNX.4.64.0805061435510.32567@blonde.site>
+  <alpine.LFD.1.10.0805061138580.32269@woody.linux-foundation.org> 
+ <Pine.LNX.4.64.0805062043580.11647@blonde.site>
+ <b6a2187b0805062140i2546a1a8pc3fa65227a9873ab@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, Sebastian,
-
-On Wed, 2008-04-30 at 00:12 +0200, Sebastian Siewior wrote:
-> * Huang, Ying | 2008-04-25 11:11:17 [+0800]:
+On Wed, 7 May 2008, Jeff Chua wrote:
 > 
-> >Hi, Sebastian,
-> Hi Huang,
-> 
-> sorry for the delay.
-> 
-> >I changed the patches to group the read or write together instead of
-> >interleaving. Can you help me to test these new patches? The new patches
-> >is attached with the mail.
-> The new results are attached.
+> Thanks for the patch. It's in Linus's git now and I just booted 2 Dell
 
-It seems that the performance degradation between step4 to step5 is
-decreased. But the overall performance degradation between step0 to
-step7 is still about 5%.
+Thanks for reporting and reporting back: from your contentment ...
 
-I also test the patches on Pentium 4 CPUs, and the performance decreased
-too. So I think this optimization is CPU micro-architecture dependent.
+> 2950 and both are no showing the errors.
+                      ^ 
+... I'll assume the missing letter is "t" rather than "w" ;)
 
-While the dependency between instructions are reduced, more registers
-(at most 3) are saved/restored before/after encryption/decryption. If
-the CPU has no extra execution unit for newly independent instructions
-but more registers are saved/restored, the performance will decrease.
-
-We maybe should select different implementation based on
-micro-architecture.
-
-Best Regards,
-Huang Ying
-
+Hugh
