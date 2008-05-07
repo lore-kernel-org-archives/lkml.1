@@ -1,78 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756905AbYEGJti@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757683AbYEGJ4t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756905AbYEGJti (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 05:49:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751459AbYEGJt0
+	id S1757683AbYEGJ4t (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 05:56:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752919AbYEGJ4g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 05:49:26 -0400
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:39877 "EHLO smtp6.pp.htv.fi"
+	Wed, 7 May 2008 05:56:36 -0400
+Received: from mail.atmel.fr ([81.80.104.162]:38673 "EHLO atmel-es2.atmel.fr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752635AbYEGJtZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 05:49:25 -0400
-Date: Wed, 7 May 2008 12:48:09 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Paul Menage <menage@google.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
-       Paul Jackson <pj@sgi.com>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Fix cpuset sched_relax_domain_level control file
-Message-ID: <20080507094809.GB29935@cs181133002.pp.htv.fi>
-References: <48210101.1070205@google.com> <20080506183841.e1771032.akpm@linux-foundation.org> <6599ad830805061841n57232824s451c4e8788b7864d@mail.gmail.com>
+	id S1752838AbYEGJ4e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 May 2008 05:56:34 -0400
+Message-ID: <48218B3F.5030705@atmel.com>
+Date: Wed, 07 May 2008 12:58:07 +0200
+From: Nicolas Ferre <nicolas.ferre@atmel.com>
+Organization: atmel
+User-Agent: Icedove 1.5.0.14pre (X11/20080208)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <6599ad830805061841n57232824s451c4e8788b7864d@mail.gmail.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: linux-arm-kernel@lists.arm.linux.org.uk,
+       Andrew Victor <linux@maxim.org.za>
+CC: Haavard Skinnemoen <hskinnemoen@atmel.com>, linux-kernel@vger.kernel.org
+Subject: [PATCH] atmel_lcdfb: fix initialization of a pre-allocated framebuffer
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 06, 2008 at 06:41:39PM -0700, Paul Menage wrote:
-> On Tue, May 6, 2008 at 6:38 PM, Andrew Morton <akpm@linux-foundation.org> wrote:
-> > On Tue, 06 May 2008 18:08:17 -0700 Paul Menage <menage@google.com> wrote:
-> >
-> >  > -static int update_relax_domain_level(struct cpuset *cs, char *buf)
-> >  > +static int update_relax_domain_level(struct cpuset *cs, s64 val)
-> >  >  {
-> >  > -     int val = simple_strtol(buf, NULL, 10);
-> >  > -
-> >  > -     if (val < 0)
-> >  > +     if ((int)val < 0)
-> >  >               val = -1;
-> >  >
-> >
-> >  Are you sure about the typecast here?  If `val' has a value of say
-> >  0x0000_ffff_ffff_ffff then I assume the casted value will be negative, only
-> >  it wasn't?
-> 
-> It seems like the simplest approach - if it's outside the range of a
-> positive int, set it to -1.
+Fix initialization of framebuffer not calling ioremap_writecombine() function 
+and not using internal SRAM for at91sam9rl.
 
-That's very hard to understand for someone who looks at the code - and 
-being able to understand the code is much more important than the 
-number of characters in the source code.
+This is a little rework of the
+"Don't initialize a pre-allocated framebuffer" patch that corrects the
+call to ioremap_writecombine() function.
 
-If you'd write something like
+It also cuts the use of internal SRAM for at91sam9rl : it is a bit small
+for a framebuffer.
 
-  if ((val < 0) || (val > INT_MAX))
+Signed-off-by: Nicolas Ferre <nicolas.ferre@atmel.com>
+---
+ arch/arm/mach-at91/at91sam9261_devices.c |    4 ++--
+ arch/arm/mach-at91/at91sam9rl_devices.c  |   21 ---------------------
+ 2 files changed, 2 insertions(+), 23 deletions(-)
 
-instead it would be obvious for the reader what's happening here, and 
-that this was intended.
-
-> Paul
-
-cu
-Adrian
-
-BTW: I have seen that even further restrictions are discussed in this 
-     case, my comment is more about the general readability of this
-     "simplest approach".
-
+diff --git a/arch/arm/mach-at91/at91sam9261_devices.c b/arch/arm/mach-at91/at91sam9261_devices.c
+index 728bb8f..0babb64 100644
+--- a/arch/arm/mach-at91/at91sam9261_devices.c
++++ b/arch/arm/mach-at91/at91sam9261_devices.c
+@@ -544,10 +544,10 @@ void __init at91_add_device_lcdc(struct atmel_lcdfb_info *data)
+ 		struct resource *fb_res = &lcdc_resources[2];
+ 		size_t fb_len = fb_res->end - fb_res->start + 1;
+ 
+-		fb = ioremap_writecombine(fb_res->start, fb_len);
++		fb = ioremap(fb_res->start, fb_len);
+ 		if (fb) {
+ 			memset(fb, 0, fb_len);
+-			iounmap(fb, fb_len);
++			iounmap(fb);
+ 		}
+ 	}
+ 	lcdc_data = *data;
+diff --git a/arch/arm/mach-at91/at91sam9rl_devices.c b/arch/arm/mach-at91/at91sam9rl_devices.c
+index 0546898..450db30 100644
+--- a/arch/arm/mach-at91/at91sam9rl_devices.c
++++ b/arch/arm/mach-at91/at91sam9rl_devices.c
+@@ -332,13 +332,6 @@ static struct resource lcdc_resources[] = {
+ 		.end	= AT91SAM9RL_ID_LCDC,
+ 		.flags	= IORESOURCE_IRQ,
+ 	},
+-#if defined(CONFIG_FB_INTSRAM)
+-	[2] = {
+-		.start	= AT91SAM9RL_SRAM_BASE,
+-		.end	= AT91SAM9RL_SRAM_BASE + AT91SAM9RL_SRAM_SIZE - 1,
+-		.flags	= IORESOURCE_MEM,
+-	},
+-#endif
+ };
+ 
+ static struct platform_device at91_lcdc_device = {
+@@ -381,20 +374,6 @@ void __init at91_add_device_lcdc(struct atmel_lcdfb_info *data)
+ 	at91_set_B_periph(AT91_PIN_PC24, 0);	/* LCDD22 */
+ 	at91_set_B_periph(AT91_PIN_PC25, 0);	/* LCDD23 */
+ 
+-#ifdef CONFIG_FB_INTSRAM
+-	{
+-		void __iomem *fb;
+-		struct resource *fb_res = &lcdc_resources[2];
+-		size_t fb_len = fb_res->end - fb_res->start + 1;
+-
+-		fb = ioremap_writecombine(fb_res->start, fb_len);
+-		if (fb) {
+-			memset(fb, 0, fb_len);
+-			iounmap(fb, fb_len);
+-		}
+-	}
+-#endif
+-
+ 	lcdc_data = *data;
+ 	platform_device_register(&at91_lcdc_device);
+ }
 -- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+1.5.3.7
 
