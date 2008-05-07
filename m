@@ -1,61 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765943AbYEGWJg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932552AbYEGWKV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765943AbYEGWJg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 18:09:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757140AbYEGWJT
+	id S932552AbYEGWKV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 18:10:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753273AbYEGWJq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 18:09:19 -0400
-Received: from www.tglx.de ([62.245.132.106]:34496 "EHLO www.tglx.de"
+	Wed, 7 May 2008 18:09:46 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:34935 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753273AbYEGWJP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 18:09:15 -0400
-Date: Thu, 8 May 2008 00:08:23 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Adrian Bunk <bunk@kernel.org>
-cc: Rene Herman <rene.herman@keyaccess.nl>, Yinghai Lu <yhlu.kernel@gmail.com>,
-       Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, hpa@zytor.com,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       Pavel Machek <pavel@suse.cz>
-Subject: Re: 2.6.26, PAT and AMD family 6
-In-Reply-To: <20080507214646.GC14951@cs181133002.pp.htv.fi>
-Message-ID: <alpine.LFD.1.10.0805072354450.3318@apollo.tec.linutronix.de>
-References: <48210A71.1060409@keyaccess.nl> <86802c440805061939q39ff5500h3c9e229ecbc6b2e6@mail.gmail.com> <20080507124650.GD29935@cs181133002.pp.htv.fi> <alpine.LFD.1.10.0805072122270.3318@apollo.tec.linutronix.de> <48221AE3.6020602@keyaccess.nl>
- <alpine.LFD.1.10.0805072315360.3318@apollo.tec.linutronix.de> <20080507214646.GC14951@cs181133002.pp.htv.fi>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	id S1762504AbYEGWJm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 May 2008 18:09:42 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: sparc64 bootup regression...
+Date: Thu, 8 May 2008 00:09:45 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
+       y-goto@jp.fujitsu.com
+References: <20080429.231241.221824292.davem@davemloft.net> <20080429233832.168fb6ee.akpm@linux-foundation.org>
+In-Reply-To: <20080429233832.168fb6ee.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200805080009.46012.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 8 May 2008, Adrian Bunk wrote:
-> > 
-> > Yinghai missed to add it to the other place and he is hardly to blame
-> > for that. This code is messy and thats not his fault. It will be
-> > cleaned up, but that's not an simple taks to do. If you think you can
-> > do it without breaking tons of systems, you're welcome.
+On Wednesday, 30 of April 2008, Andrew Morton wrote:
+> On Tue, 29 Apr 2008 23:12:41 -0700 (PDT) David Miller <davem@davemloft.net> wrote:
 > 
-> It actually is completely his fault.
+> > 
+> > This commit causes bootup failures on sparc64:
+> > 
+> > commit 86f6dae1377523689bd8468fed2f2dd180fc0560
+> > Author: Yasunori Goto <y-goto@jp.fujitsu.com>
+> > Date:   Mon Apr 28 02:13:33 2008 -0700
+> > 
+> >     memory hotplug: allocate usemap on the section with pgdat
+> >     
+> >     Usemaps are allocated on the section which has pgdat by this.
+> >     
+> >     Because usemap size is very small, many other sections usemaps are allocated
+> >     on only one page.  If a section has usemap, it can't be removed until removing
+> >     other sections.  This dependency is not desirable for memory removing.
+> >     
+> >     Pgdat has similar feature.  When a section has pgdat area, it must be the last
+> >     section for removing on the node.  So, if section A has pgdat and section B
+> >     has usemap for section A, Both sections can't be removed due to dependency
+> >     each other.
+> >     
+> >     To solve this issue, this patch collects usemap on same section with pgdat.
+> >     If other sections doesn't have any dependency, this section will be able to be
+> >     removed finally.
+> 
+> Thanks.  Does a straightforward revert fix it?  If so, we could do that while heads
+> are being scratched.
 
-No it is not. 
-
-1) this code is messy to begin with
-
-2) we accepted the change as is
- 
-> His commit ***added*** the three copies of the same code.
-
-And you are not able to ******look******* over the brim of your tea
-cup and accept that one of them is 64 bit and the others are a tribute
-to the not yet distangled shit. There would have been a cleaner and
-better way to solve this, but there is always a better and cleaner way
-to do things.
-
-Why dont you send a cleanup patch which fixes the three copies problem
-instead of spending your time with writing up ivory tower pieces of
-wisdom ?
-
-Thanks,
-
-	tglx
+Has that been reverted already?
