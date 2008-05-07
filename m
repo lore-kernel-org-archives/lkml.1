@@ -1,91 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757351AbYEGL55@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756645AbYEGMCp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757351AbYEGL55 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 07:57:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754363AbYEGL5i
+	id S1756645AbYEGMCp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 08:02:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752153AbYEGMCe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 07:57:38 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:34265 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752759AbYEGL5g (ORCPT
+	Wed, 7 May 2008 08:02:34 -0400
+Received: from smtp.nokia.com ([192.100.122.233]:49868 "EHLO
+	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751145AbYEGMCd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 07:57:36 -0400
-To: akpm@linux-foundation.org
-CC: hch@infradead.org, viro@ZenIV.linux.org.uk, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-reply-to: <20080506091327.259950960@szeredi.hu> (message from Miklos
-	Szeredi on Tue, 06 May 2008 11:13:27 +0200)
-Subject: Re: [patch 00/24] vfs: fixes and cleanups + add helpers to check r/o bind mounts
-References: <20080506091327.259950960@szeredi.hu>
-Message-Id: <E1JtiGr-0004Ot-Dc@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Wed, 07 May 2008 13:57:17 +0200
+	Wed, 7 May 2008 08:02:33 -0400
+Message-ID: <48219A2F.7090503@yandex.ru>
+Date: Wed, 07 May 2008 15:01:51 +0300
+From: Artem Bityutskiy <dedekind@yandex.ru>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: LKML <linux-kernel@vger.kernel.org>,
+       Adrian Hunter <ext-adrian.hunter@nokia.com>,
+       Edward Shishkin <edward.shishkin@gmail.com>,
+       Christoph Hellwig <hch@infradead.org>
+Subject: Re: [PATCH take 2 01/28] VFS: introduce writeback_inodes_sb()
+References: <1210070159-22794-1-git-send-email-Artem.Bityutskiy@nokia.com>      <1210070159-22794-2-git-send-email-Artem.Bityutskiy@nokia.com> <20080507002345.831bc379.akpm@linux-foundation.org> <48218F21.4090304@yandex.ru>
+In-Reply-To: <48218F21.4090304@yandex.ru>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 07 May 2008 12:02:02.0441 (UTC) FILETIME=[291CE390:01C8B03A]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Here it is again as a single series (without the ecryptfs one already
-> merged).
-> 
-> I've addressed Christoph's comments.
+Artem Bityutskiy wrote:
+> As Christoph suggested, I've attached a patch which just moves the
+> spinlock. Could you please consider sending it to Linus or taking into 
+> your tree?
 
-And here is the same (well, with some cosmetic fixes) as a git tree,
-in case it's more convenient for somebody to review/test.
+Note, I have tested this patch and it works fine.
 
-git://git.kernel.org/pub/scm/linux/kernel/git/mszeredi/vfs.git vfs-cleanups
-
-
- fs/attr.c                   |   26 +++++-
- fs/compat.c                 |    4 +-
- fs/ecryptfs/inode.c         |  137 +++++++++++++-------------
- fs/exec.c                   |    2 +-
- fs/fat/file.c               |    5 +-
- fs/hpfs/namei.c             |    3 +-
- fs/namei.c                  |  230 +++++++++++++++++++++++++++----------------
- fs/nfsd/nfs4recover.c       |   12 +--
- fs/nfsd/vfs.c               |  148 ++++++++++++----------------
- fs/open.c                   |  106 ++++++--------------
- fs/reiserfs/namei.c         |    2 +-
- fs/reiserfs/xattr.c         |   32 +++++-
- fs/splice.c                 |   29 +++---
- fs/sysfs/file.c             |    5 +-
- fs/utimes.c                 |  197 ++++++++++++++++++++++---------------
- fs/xattr.c                  |   85 ++++++++--------
- include/linux/fs.h          |   21 +++--
- include/linux/reiserfs_fs.h |    1 +
- include/linux/time.h        |    5 +-
- include/linux/xattr.h       |    5 +-
- ipc/mqueue.c                |   16 ++-
- kernel/cgroup.c             |    5 +-
- mm/filemap.c                |    2 +-
- mm/tiny-shmem.c             |    2 +-
- net/unix/af_unix.c          |    6 +-
- 25 files changed, 587 insertions(+), 499 deletions(-)
-
-Miklos Szeredi (25):
-      ecryptfs: clean up (un)lock_parent
-      nfsd: clean up mnt_want_write calls
-      cgroup: don't call vfs_mkdir
-      reiserfs: don't call vfs_rmdir
-      reiserfs: don't call notify_change
-      sysfs: don't call notify_change
-      hpfs: don't call notify_change
-      fat: don't call notify_change
-      vfs: immutable inode checking cleanup
-      vfs: truncate: don't check immutable twice
-      vfs: truncate: append-only checking cleanup
-      vfs: create file_truncate() helper
-      vfs: utimes immutable fix
-      vfs: utimes cleanup
-      vfs: splice remove_suid() cleanup
-      vfs: add path_create() and path_mknod()
-      vfs: add path_mkdir()
-      vfs: add path_rmdir()
-      vfs: add path_unlink()
-      vfs: add path_symlink()
-      vfs: add path_link()
-      vfs: add path_rename()
-      vfs: add path_setattr()
-      vfs: add path_setxattr()
-      vfs: add path_removexattr()
-
+-- 
+Best Regards,
+Artem Bityutskiy (Артём Битюцкий)
