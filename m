@@ -1,300 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752882AbYEGRKM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757410AbYEGRMQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752882AbYEGRKM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 13:10:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753822AbYEGRJx
+	id S1757410AbYEGRMQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 13:12:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751453AbYEGRL5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 13:09:53 -0400
-Received: from smtp239.poczta.interia.pl ([217.74.64.239]:6490 "EHLO
-	smtp239.poczta.interia.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754133AbYEGRJu (ORCPT
+	Wed, 7 May 2008 13:11:57 -0400
+Received: from e34.co.us.ibm.com ([32.97.110.152]:41051 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751123AbYEGRLz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 13:09:50 -0400
-Date: Wed, 7 May 2008 18:43:33 +0200
-From: Krzysztof Helt <krzysztof.h1@poczta.fm>
-To: <JosephChan@via.com.tw>
-Cc: <akpm@linux-foundation.org>, <geert@linux-m68k.org>,
-       linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: [Linux-fbdev-devel] [PATCH 1/9] viafb: VIA Frame Buffer Device
- Driver - Resend
-Message-Id: <20080507184333.7d0f1bf4.krzysztof.h1@poczta.fm>
-In-Reply-To: <C80EF34A3D2E494DBAF9AC29C7AE4EB806F67745@exchtp03.taipei.via.com.tw>
-References: <C80EF34A3D2E494DBAF9AC29C7AE4EB806F67745@exchtp03.taipei.via.com.tw>
-X-Mailer: Sylpheed 2.4.3 (GTK+ 2.11.0; i686-pc-linux-gnu)
+	Wed, 7 May 2008 13:11:55 -0400
+Subject: Re: [Cbe-oss-dev] [PATCH] Updated: Reworked Cell OProfile: SPU
+	mutex lock fix
+From: Carl Love <cel@us.ibm.com>
+To: jroth@linux.vnet.ibm.com
+Cc: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Arnd Bergmann <arnd@arndb.de>,
+       oprofile-list <oprofile-list@lists.sourceforge.net>
+In-Reply-To: <4821DEB0.7050308@linux.vnet.ibm.com>
+References: <1209587712.7531.42.camel@carll-linux-desktop>
+	 <4821DEB0.7050308@linux.vnet.ibm.com>
+Content-Type: text/plain
+Date: Wed, 07 May 2008 10:09:26 -0700
+Message-Id: <1210180166.7726.19.camel@carll-linux-desktop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
-X-EMID: 24e2b138
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Joseph,
 
-You have sent tremendous amount of work. 
+On Wed, 2008-05-07 at 18:54 +0200, Jochen Roth wrote:
+> Carl,
+> 
+> I applied your patch on Jeremy's latest kernel.org spufs tree.
+> 
+>  > +void oprofile_add_value(unsigned long value, int cpu) {
+>  > +	struct oprofile_cpu_buffer * cpu_buf = &cpu_buffer[cpu];
+> 
+> Shouldn't it be
+> 	struct oprofile_cpu_buffer *cpu_buf = &per_cpu(cpu_buffer, cpu);
 
-I am trying to point some mistakes or improvements, but I won't cover the whole code at the moment. Look at them and check if the rest of the code can be improved as well.
+No, I don't think so.  Take a look at the other functions in
+drivers/oprofile/cpu_buffer.c.  For example oprofile_add_trace().  You
+will see that the cpu_buffer is not accessed using the per_cpu
+construct.  Not sure why the compiler would complain about the
+oprofile_add_value() function but not one of the other functions like
+oprofile_add_trace().
 
-A general comment is that you use to many global variables. You should move some of them into the viafb_par structure.
-Does any of supported devices support multi-head? If so you may prefer to have allocated fb_info and viafb_par structure
-to hold data required for each display separated (e.g. for different types of displays connected to both heads).
+What was the compiler error that you saw?
 
-See below for problems I have spotted (in quick look over).
-
-Regards,
-Krzysztof
-
-PS. I assume that your driver will replace the existing vt8623fb (CLE266?) driver when ready. Am I right?
-
-On Wed, 7 May 2008 19:06:48 +0800
-<JosephChan@via.com.tw> wrote:
-
-(...)
-> diff -Nur a/drivers/video/via/accel.c b/drivers/video/via/accel.c
-> --- a/drivers/video/via/accel.c	1969-12-31 19:00:00.000000000 -0500
-> +++ b/drivers/video/via/accel.c	2008-04-29 02:51:13.000000000 -0400
-> @@ -0,0 +1,245 @@
-> +/*
-> + * Copyright 1998-2008 VIA Technologies, Inc. All Rights Reserved.
-> + * Copyright 2001-2008 S3 Graphics, Inc. All Rights Reserved.
-> +
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under  the terms of the GNU General Public License as published
-> + * by the Free Software Foundation; either version 2, or (at your
-> + option)
-
-Somehow this line got wrapped against your intention, I suppose.
-
-> +#include "global.h"
-> +
-> +void init_accel(void)
-> +{
-> +	parinfo.cursor_start = parinfo.fbmem_free - CURSOR_SIZE;
-> +	parinfo.fbmem_free -= CURSOR_SIZE;
-
-You can swap these two lines to get shorter code:
-parinfo.fbmem_free -= CURSOR_SIZE;
-parinfo.cursor_start = parinfo.fbmem_free;
-
-> +
-> +	/* Reverse 8*1024 memory space for cursor image of the XServer */
-> +	parinfo.VQ_start = parinfo.fbmem_free - CURSOR_SIZE - VQ_SIZE;
-> +	parinfo.VQ_end = parinfo.VQ_start + VQ_SIZE - 1;
-> +	parinfo.fbmem_free -= (CURSOR_SIZE + VQ_SIZE);
-> +	parinfo.fbmem_used += (CURSOR_SIZE + VQ_SIZE); }
-> +
-
-Again, swap the third and the first line.
-
-> +	if (parinfo.VQ_start != 0) {
-> +		/* Enable VQ */
-> +		dwVQStartAddr = parinfo.VQ_start;
-> +		dwVQEndAddr = parinfo.VQ_end;
-> +		switch (chip_info.gfx_chip_name) {
-> +		case UNICHROME_K8M890:
-> +		case UNICHROME_P4M900:
-> +			dwVQStartL = 0x70000000 | (dwVQStartAddr & 0xFFFFFF);
-> +			dwVQEndL = 0x71000000 | (dwVQEndAddr & 0xFFFFFF);
-> +			dwVQStartEndH =
-> +			    0x72000000 | ((dwVQStartAddr & 0xFF000000) >>
-> +					  24) | ((dwVQEndAddr & 0xFF000000)
-> +						 >> 16);
-> +			dwVQLen = 0x73000000 | (VQ_SIZE >> 3);
-> +			break;
-> +		default:
-> +			dwVQStartL = 0x50000000 | (dwVQStartAddr & 0xFFFFFF);
-> +			dwVQEndL = 0x51000000 | (dwVQEndAddr & 0xFFFFFF);
-> +			dwVQStartEndH =
-> +			    0x52000000 | ((dwVQStartAddr & 0xFF000000) >>
-> +					  24) | ((dwVQEndAddr & 0xFF000000)
-> +						 >> 16);
-> +			dwVQLen = 0x53000000 | (VQ_SIZE >> 3);
-
-You can move the default case before switch the only or the 0x20000000 bit 
-in case of the K8M890 or P4M900 chipsets. It will show that you set
-actually the same values (except one bit) for both.
-
-> +
-> +int wait_engine_idle(void)
-> +{
-> +	int loop = 0;
-> +
-> +	while (!(MMIO_IN32(VIA_REG_STATUS) & VIA_VR_QUEUE_BUSY)
-> +	       && (loop++ < MAXLOOP)) ;
-> +
-> +	while ((MMIO_IN32(VIA_REG_STATUS) &
-> +		(VIA_CMD_RGTR_BUSY | VIA_2D_ENG_BUSY | VIA_3D_ENG_BUSY)) &&
-> +	       (loop++ < MAXLOOP)) ;
-> +
-
-You can add cpu_relax() call into these waiting loops.
-
-> diff -Nur a/drivers/video/via/accel.h b/drivers/video/via/accel.h
-> --- a/drivers/video/via/accel.h	1969-12-31 19:00:00.000000000 -0500
-> +++ b/drivers/video/via/accel.h	2008-04-29 02:51:14.000000000 -0400
-> @@ -0,0 +1,190 @@
-> +/*
-> + * Copyright 1998-2008 VIA Technologies, Inc. All Rights Reserved.
-> + * Copyright 2001-2008 S3 Graphics, Inc. All Rights Reserved.
-> +
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under  the terms of the GNU General Public License as published
-> + * by the Free Software Foundation; either version 2, or (at your
-> + option)
-
-Again, wrapped.
-
-> + * any later version.
-> +
-> + * This program is distributed in the hope that it will be useful,
-> + * but WITHOUT ANY WARRANTIES OR REPRESENTATIONS; without even
-> + * the implied warranty of MERCHANTABILITY or FITNESS FOR
-> + * A PARTICULAR PURPOSE.See the GNU General Public License
-> + * for more details.
-> +
-> + * You should have received a copy of the GNU General Public License
-> + * along with this program; if not, write to the Free Software
-> + * Foundation, Inc.,
-> + * 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-> + */
-> +
-> +#ifndef __ACCEL_H__
-> +#define __ACCEL_H__
-> +
-> +#ifndef FB_ACCEL_VIA_UNICHROME
-> +#define FB_ACCEL_VIA_UNICHROME  50
-> +#endif
-
-This is the only place you define FB_ACCEL_VIA_UNICHROME. If so
-you don't need to do #ifndef.
-
-> +
-> +#ifndef VIA_MMIO
-> +#define VIA_MMIO 1
-> +#endif
-> +
-
-The same as the above.
-
-> +#if VIA_MMIO
-> +#define MMIO_OUT8(reg, val)  writeb(val, parinfo.io_virt + reg) #define 
-> +MMIO_OUT16(reg, val) writew(val, parinfo.io_virt + reg) #define 
-> +MMIO_OUT32(reg, val) writel(val, parinfo.io_virt + reg)
-
-These lines get wrapped badly.
-
-> +#define MMIO_IN8(reg)       readb(parinfo.io_virt + reg)
-> +#define MMIO_IN16(reg)      readw(parinfo.io_virt + reg)
-> +#define MMIO_IN32(reg)      readl(parinfo.io_virt + reg)
-> +
-> +#else
-> +#define MMIO_OUT8(reg, val)  outb(val, reg) #define MMIO_OUT16(reg,
-> +val) outw(val, reg) #define MMIO_OUT32(reg, val) outl(val, reg)
-> +#define MMIO_IN8(reg)       inb(reg)
-> +#define MMIO_IN16(reg)      inw(reg)
-> +#define MMIO_IN32(reg)      inl(reg)
-> +#endif
-> +
-
-Your devices seem to be 32-bit only because 8 and 16-bit accesses are never used. You can remove these macros.
-
-> diff -Nur a/drivers/video/via/chip.h b/drivers/video/via/chip.h
-> --- a/drivers/video/via/chip.h	1969-12-31 19:00:00.000000000 -0500
-> +++ b/drivers/video/via/chip.h	2008-04-29 02:51:15.000000000 -0400
-> @@ -0,0 +1,189 @@
-> +/*
-> + * Copyright 1998-2008 VIA Technologies, Inc. All Rights Reserved.
-> + * Copyright 2001-2008 S3 Graphics, Inc. All Rights Reserved.
-> +
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under  the terms of the GNU General Public License as published
-> + * by the Free Software Foundation; either version 2, or (at your
-> + option)
-
-Wrapped. Check all other files for this.
-
-> diff -Nur a/drivers/video/via/dvi.c b/drivers/video/via/dvi.c
-> --- a/drivers/video/via/dvi.c	1969-12-31 19:00:00.000000000 -0500
-> +++ b/drivers/video/via/dvi.c	2008-05-04 07:28:49.000000000 -0400
-> @@ -0,0 +1,721 @@
-(...)
-> +
-> +/* Sense DVI Connector */
-> +int dvi_sense(void)
-> +{
-> +	u8 RegSR1E = 0, RegSR3E = 0, RegCR6B = 0, RegCR91 = 0, RegCR93 =
-> +	    0, RegCR9B = 0, data;
-
-There is no need to initialize these variables. They are set before use (and if not a compiler will generate warning).
-
-(...)
-> +	/* Restore status */
-> +	if (chip_info.gfx_chip_name == UNICHROME_CLE266) {
-> +		write_reg(SR1E, VIASR, RegSR1E);
-> +		write_reg(CR6B, VIACR, RegCR6B);
-> +		write_reg(CR91, VIACR, RegCR91);
-> +		write_reg(CR93, VIACR, RegCR93);
-> +	} else {
-> +		write_reg(SR1E, VIASR, RegSR1E);
-> +		write_reg(SR3E, VIASR, RegSR3E);
-> +		write_reg(CR91, VIACR, RegCR91);
-> +		write_reg(CR9B, VIACR, RegCR9B);
-> +	}
-> +
-
-You can  put at least the first line before the if. Make common code just single instance (the third line can be moved if sequence is not important).
-
-> +int dvi_get_panel_size_from_DDCv1(void)
-> +{
-> +	int i, max_h = 0, max_v = 0, tmp, restore;
-> +	unsigned char rData;
-> +	unsigned char EDID_DATA[18];
-> +
-> +	DEBUG_MSG(KERN_INFO "\n dvi_get_panel_size_from_DDCv1 \n");
-> +
-> +	restore = chip_info.tmds_chip_info.tmds_chip_slave_addr;
-> +	chip_info.tmds_chip_info.tmds_chip_slave_addr = 0xA0;
-> +
-> +	for (i = 0x23; i < 0x6D; i++) {
-> +		switch (i) {
-> +		case 0x23:
-> +			rData = tmds_register_read(0x23);
-> +			if (rData & 0x3C)
-> +				max_h = 640;
-> +			if (rData & 0xC0)
-> +				max_h = 720;
-> +			if (rData & 0x03)
-> +				max_h = 800;
-> +			break;
-> +		case 0x24:
-> +			rData = tmds_register_read(0x24);
-> +			if (rData & 0xC0)
-> +				max_h = 800;
-> +			if (rData & 0x1E)
-> +				max_h = 1024;
-> +			if (rData & 0x01)
-> +				max_h = 1280;
-> +			break;
-
-You can move these two cases before the loop and change loop's range.
-
-(...)
-> +			if (via_bus_width == 24) {
-> +				if (device_lcd_dualedge == 1)
-> +					i2cWriteByte(chip_info.
-> +						     tmds_chip_info.
-> +						     tmds_chip_slave_addr,
-> +						     0x08, 0x3F);
-> +				else
-> +					i2cWriteByte(chip_info.
-> +						     tmds_chip_info.
-> +						     tmds_chip_slave_addr,
-> +						     0x08, 0x37);
-
-These to branches differs only by the set value. It is shorter to set value inside if-else the call i2cWriteByte after.
+I will try getting Jeremy's kernel and applying the patch there to see
+if it works.
 
 
-----------------------------------------------------------------------
-Sprawdz, czy jestes prawdziwym internauta!
-Kliknij http://link.interia.pl/f1d6e
+> 
+> At least my compiler complained about that.
+> 
+> I booted a kernel with your patches applied and the system locked up 
+> anyway:
+> 
+> Unable to handle kernel paging request for data at address 
+> 0xd0000000004fe9a8
+> Faulting instruction address: 0xd000000000330ad8
+> cpu 0x0: Vector: 300 (Data Access) at [c00000003c337680]
+>      pc: d000000000330ad8: .alloc_cpu_buffers+0x7c/0x12c [oprofile]
+>      lr: d000000000330abc: .alloc_cpu_buffers+0x60/0x12c [oprofile]
+>      sp: c00000003c337900
+>     msr: 9000000000009032
+>     dar: d0000000004fe9a8
+>   dsisr: 42000000
+>    current = 0xc00000003e128600
+>    paca    = 0xc0000000005b3480
+>      pid   = 2356, comm = oprofiled
+> enter ? for help
+> [c00000003c3379a0] d0000000003302ac .oprofile_setup+0x2c/0x134 [oprofile]
+> [c00000003c337a30] d00000000033176c .event_buffer_open+0x7c/0xc8 [oprofile]
+> [c00000003c337ac0] c0000000000d6ca8 .__dentry_open+0x190/0x308
+> [c00000003c337b70] c0000000000e7a5c .do_filp_open+0x3c4/0x8e8
+> [c00000003c337d00] c0000000000d6a1c .do_sys_open+0x80/0x14c
+> [c00000003c337db0] c0000000001192f4 .compat_sys_open+0x24/0x38
+> [c00000003c337e30] c0000000000076b4 syscall_exit+0x0/0x40
+> --- Exception: c01 (System Call) at 000000000ff006f8
+> SP (ffc6f6a0) is in userspace
+> 
 
