@@ -1,114 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760965AbYEGX5K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759795AbYEGX7G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760965AbYEGX5K (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 19:57:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753976AbYEGX44
+	id S1759795AbYEGX7G (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 19:59:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755332AbYEGX6w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 19:56:56 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:55857 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753048AbYEGX4y (ORCPT
+	Wed, 7 May 2008 19:58:52 -0400
+Received: from mho-02-bos.mailhop.org ([63.208.196.179]:54783 "EHLO
+	mho-02-bos.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753785AbYEGX6u (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 19:56:54 -0400
-Date: Thu, 08 May 2008 08:55:45 +0900
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: "Paul Menage" <menage@google.com>, balbir@linux.vnet.ibm.com,
-       "Andrew Morton" <akpm@linux-foundation.org>
-Subject: [PATCH] on CONFIG_MM_OWNER=y, kernel panic is possible. take2
-Cc: kosaki.motohiro@jp.fujitsu.com,
-       "Lee Schermerhorn" <Lee.Schermerhorn@hp.com>,
-       "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>
-In-Reply-To: <6599ad830805062037n221ef8e2n9ee7ac33417ab499@mail.gmail.com>
-References: <20080506153943.AC69.KOSAKI.MOTOHIRO@jp.fujitsu.com> <6599ad830805062037n221ef8e2n9ee7ac33417ab499@mail.gmail.com>
-Message-Id: <20080508083808.4A78.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	Wed, 7 May 2008 19:58:50 -0400
+X-Mail-Handler: MailHop Outbound by DynDNS
+X-Originating-IP: 69.181.40.92
+X-Report-Abuse-To: abuse@dyndns.com (see http://www.mailhop.org/outbound/abuse.html for abuse reporting information)
+X-MHO-User: U2FsdGVkX1+Zug1VXhRAWJENvxQNcexs
+Date: Wed, 7 May 2008 16:58:47 -0700
+From: Tony Lindgren <tony@atomide.com>
+To: Kyungmin Park <kmpark@infradead.org>
+Cc: linux-omap@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       paul@pwsan.com
+Subject: Re: vanilla kernel is broken on omap board
+Message-ID: <20080507235847.GV18682@atomide.com>
+References: <9c9fda240805061748n3287cb24v530f779b6b622d53@mail.gmail.com> <20080507011914.GM18682@atomide.com> <20080507234401.GU18682@atomide.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080507234401.GU18682@atomide.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I'd word it as
+* Tony Lindgren <tony@atomide.com> [080507 16:47]:
+> * Tony Lindgren <tony@atomide.com> [080506 18:19]:
+> > Hi,
+> > 
+> > * Kyungmin Park <kmpark@infradead.org> [080506 17:48]:
+> > > Hi Tony,
+> > > 
+> > > Current vanilla kernel is broken on omap2 boards.
+> > > In the previous time you committed some omap2 patches, but some
+> > > patches are not missing.
+> > > Such as Runtime constants series. [1]
+> > > 
+> > > Now "some parts" are already included.
+> > > So you just commit the remain parts too such as in [2]
+> > > In most cases the board files don't set the their own global variables.
+> > 
+> > Well at least we're getting closer to making omap2 really usable with
+> > mainline kernel :)
+> > 
+> > Thanks for fixing that, will add this to omap-fixes queue and send it
+> > upstream with bunch of other fixes.
 > 
-> /*
->  * "owner" points to a task that is regarded as the canonical
->  * user/owner of this mm. All of the following must be true in
->  * order for it to be changed:
->  *
->  * current == mm->owner
->  * current->mm != mm
->  * new_owner->mm == mm
->  * new_owner->alloc_lock is held
->  */
+> Kyungmin, can you reply with your Signed-off-by for this patch?
 
-Wow, Thank you a lot!
-new version attached.
+Actually, I'll use Paul's patch 2b256e28e8e70592f0c38a862cc4ba0498c9db7b
+from linux-omap tree like you suggested so we already have s-o-b.
 
-Cheers!
+Tony
 
-
------------------------------------------------------------
-When mm destruct happend, We should pass mm_update_next_owner() 
-old mm.
-but unfortunately new mm is passed in exec_mmap().
-
-thus, kernel panic is possible when multi thread process use exec().
-
-
-and, owner member comment description is wrong.
-mm->owner don't not necessarily point to thread group leader.
-
-
-Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-CC: Balbir Singh <balbir@linux.vnet.ibm.com>
-CC: "Paul Menage" <menage@google.com>
-CC: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
-
----
- fs/exec.c                |    2 +-
- include/linux/mm_types.h |   13 +++++++++++--
- 2 files changed, 12 insertions(+), 3 deletions(-)
-
-Index: b/fs/exec.c
-===================================================================
---- a/fs/exec.c	2008-05-04 22:57:09.000000000 +0900
-+++ b/fs/exec.c	2008-05-06 15:40:35.000000000 +0900
-@@ -735,7 +735,7 @@ static int exec_mmap(struct mm_struct *m
- 	tsk->active_mm = mm;
- 	activate_mm(active_mm, mm);
- 	task_unlock(tsk);
--	mm_update_next_owner(mm);
-+	mm_update_next_owner(old_mm);
- 	arch_pick_mmap_layout(mm);
- 	if (old_mm) {
- 		up_read(&old_mm->mmap_sem);
-Index: b/include/linux/mm_types.h
-===================================================================
---- a/include/linux/mm_types.h	2008-05-08 09:20:13.000000000 +0900
-+++ b/include/linux/mm_types.h	2008-05-08 09:22:13.000000000 +0900
-@@ -231,8 +231,17 @@ struct mm_struct {
- 	rwlock_t		ioctx_list_lock;	/* aio lock */
- 	struct kioctx		*ioctx_list;
- #ifdef CONFIG_MM_OWNER
--	struct task_struct *owner;	/* The thread group leader that */
--					/* owns the mm_struct.		*/
-+        /*
-+         * "owner" points to a task that is regarded as the canonical
-+         * user/owner of this mm. All of the following must be true in
-+         * order for it to be changed:
-+         *
-+         * current == mm->owner
-+         * current->mm != mm
-+         * new_owner->mm == mm
-+         * new_owner->alloc_lock is held
-+         */
-+	struct task_struct *owner;
- #endif
- 
- #ifdef CONFIG_PROC_FS
-
-
-
-
+> 
+> > 
+> > Regards,
+> > 
+> > Tony
+> > 
+> > 
+> > > Thank you,
+> > > Kyungmin Park
+> > > 
+> > > 1. Runtime constants: introduce omap2_set_globals_*()
+> > > http://source.mvista.com/git/gitweb.cgi?p=linux-omap-2.6.git;a=commit;h=2b256e28e8e70592f0c38a862cc4ba0498c9db7b
+> > > Runtime constants: use runtime-computed SDRC base
+> > > http://source.mvista.com/git/gitweb.cgi?p=linux-omap-2.6.git;a=commitdiff;h=7b5f8cdb222052a7aa02ed38c59e0af1946b1e06
+> > > Runtime constants: use runtime-computed SMS base
+> > > http://source.mvista.com/git/gitweb.cgi?p=linux-omap-2.6.git;a=commitdiff;h=80ccf4b99eb3892809bbebf7673bdd1a359d56ff
+> > > 
+> > > 2.
+> > > diff --git a/arch/arm/mach-omap2/board-apollon.c b/arch/arm/mach-omap2/board-apo
+> > > index a1e1e67..620fa0f 100644
+> > > --- a/arch/arm/mach-omap2/board-apollon.c
+> > > +++ b/arch/arm/mach-omap2/board-apollon.c
+> > > @@ -394,6 +394,7 @@ static void __init omap_apollon_init(void)
+> > > 
+> > >  static void __init omap_apollon_map_io(void)
+> > >  {
+> > > +       omap2_set_globals_242x();
+> > >         omap2_map_common_io();
+> > >  }
+> > > diff --git a/include/asm-arm/arch-omap/common.h b/include/asm-arm/arch-omap/comm
+> > > index 224e009..36a3b62 100644
+> > > --- a/include/asm-arm/arch-omap/common.h
+> > > +++ b/include/asm-arm/arch-omap/common.h
+> > > @@ -47,4 +47,8 @@ static inline int omap_register_i2c_bus(int bus_id, u32 clkrat
+> > >  }
+> > >  #endif
+> > > 
+> > > +void omap2_set_globals_242x(void);
+> > > +void omap2_set_globals_243x(void);
+> > > +void omap2_set_globals_343x(void);
+> > > +
+> > >  #endif /* __ARCH_ARM_MACH_OMAP_COMMON_H */
+> > --
+> > To unsubscribe from this list: send the line "unsubscribe linux-omap" in
+> > the body of a message to majordomo@vger.kernel.org
+> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-omap" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
