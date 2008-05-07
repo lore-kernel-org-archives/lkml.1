@@ -1,60 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764446AbYEGVTp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754776AbYEGVXT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764446AbYEGVTp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 17:19:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755004AbYEGVTc
+	id S1754776AbYEGVXT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 17:23:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752074AbYEGVXB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 17:19:32 -0400
-Received: from nf-out-0910.google.com ([64.233.182.186]:38262 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755391AbYEGVTa (ORCPT
+	Wed, 7 May 2008 17:23:01 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:1936 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752030AbYEGVXA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 17:19:30 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
-        b=p2E5ggPj8OJrk9qv/9s1UWh6X/OOmR1UuETGq27juT14+ZK3etpibah/j6wgcn/M/LiB3EVc69hG/SSAowIW9f94fYDhTCiNQm4K1vN1nwrYJ94czdEuvpsT+TSct33lfkMKHWbBD9MBn9iYo8V6ktlLISdp8gNhH5thwuaNxKM=
-Date: Thu, 8 May 2008 02:14:50 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: akpm@osdl.org
+	Wed, 7 May 2008 17:23:00 -0400
+Subject: futex: priority wakeup miss ordering
+From: Daniel Walker <dwalker@mvista.com>
+To: Pierre Peiffer <pierre.peiffer@bull.net>
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 1/5] Fix cpumask_scnprintf_len() misdesign
-Message-ID: <20080507221450.GA14375@martell.zuzino.mipt.ru>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: text/plain
+Date: Wed, 07 May 2008 14:22:58 -0700
+Message-Id: <1210195378.17132.237.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-3.fc8) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-cpumask_scnprintf_len() takes "len" as an argument which is surprising,
-If one follows call chain down it isn't length but number of bits. But
-there is natural number of bits when talking about CPU masks -- NR_CPUS.
-So use that.
 
-Remove 1:1 wrapper macro while I'm at it.
 
-Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
----
+from commit ec92d08292d3e9b0823eba138a4564d2d39f25c7
 
- include/linux/cpumask.h |    6 ++----
- 1 file changed, 2 insertions(+), 4 deletions(-)
+The wakeup ordering should be in priority order. However if the priority
+of a task is modified while it's waiting on the futex you will get an
+out of order wakeup.
 
---- a/include/linux/cpumask.h
-+++ b/include/linux/cpumask.h
-@@ -289,11 +289,9 @@ static inline int __cpumask_scnprintf(char *buf, int len,
- 	return bitmap_scnprintf(buf, len, srcp->bits, nbits);
- }
- 
--#define cpumask_scnprintf_len(len) \
--			__cpumask_scnprintf_len((len))
--static inline int __cpumask_scnprintf_len(int len)
-+static inline int cpumask_scnprintf_len(void)
- {
--	return bitmap_scnprintf_len(len);
-+	return bitmap_scnprintf_len(NR_CPUS);
- }
- 
- #define cpumask_parse_user(ubuf, ulen, dst) \
+If you use a priority inheriting mutex this is correct. It's because the
+rtmutex hooks into sched_setscheduler to catch any priority changes,
+then re-queues with the new priority.. But the futex doesn't have this
+hook.
+
+Was this intentionally left out of this priority wake up patch? I
+thought I would let you know in case you had a specific reason for not
+handling this.. 
+
+Daniel
 
