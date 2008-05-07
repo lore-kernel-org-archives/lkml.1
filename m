@@ -1,57 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759823AbYEGO6S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760988AbYEGPAh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759823AbYEGO6S (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 10:58:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758862AbYEGO56
+	id S1760988AbYEGPAh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 11:00:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755090AbYEGPAV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 10:57:58 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:57788 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754757AbYEGO54 (ORCPT
+	Wed, 7 May 2008 11:00:21 -0400
+Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:43134
+	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754930AbYEGPAR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 10:57:56 -0400
-Message-ID: <4821C370.1030801@firstfloor.org>
-Date: Wed, 07 May 2008 16:57:52 +0200
-From: Andi Kleen <andi@firstfloor.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
+	Wed, 7 May 2008 11:00:17 -0400
+Date: Wed, 7 May 2008 17:00:15 +0200
+From: Andrea Arcangeli <andrea@qumranet.com>
+To: Robin Holt <holt@sgi.com>
+Cc: Christoph Lameter <clameter@sgi.com>, Jack Steiner <steiner@sgi.com>,
+       Nick Piggin <npiggin@suse.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       kvm-devel@lists.sourceforge.net, Kanoj Sarcar <kanojsarcar@yahoo.com>,
+       Roland Dreier <rdreier@cisco.com>,
+       Steve Wise <swise@opengridcomputing.com>, linux-kernel@vger.kernel.org,
+       Avi Kivity <avi@qumranet.com>, linux-mm@kvack.org,
+       general@lists.openfabrics.org, Hugh Dickins <hugh@veritas.com>,
+       akpm@linux-foundation.org, Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [PATCH 01 of 12] Core of mmu notifiers
+Message-ID: <20080507150014.GI8362@duo.random>
+References: <20080424153943.GJ24536@duo.random> <20080424174145.GM24536@duo.random> <20080426131734.GB19717@sgi.com> <20080427122727.GO9514@duo.random> <Pine.LNX.4.64.0804281332030.31163@schroedinger.engr.sgi.com> <20080429001052.GA8315@duo.random> <Pine.LNX.4.64.0804281819020.2502@schroedinger.engr.sgi.com> <20080429153052.GE8315@duo.random> <20080429155030.GB28944@sgi.com> <20080429160340.GG8315@duo.random>
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Matthew Wilcox <matthew@wil.cx>,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
-       Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Alexander Viro <viro@ftp.linux.org.uk>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: AIM7 40% regression with 2.6.26-rc1
-References: <1210052904.3453.30.camel@ymzhang> <20080506114449.GC32591@elte.hu> <1210126286.3453.37.camel@ymzhang> <1210131712.3453.43.camel@ymzhang> <87lk2mbcqp.fsf@basil.nowhere.org> <20080507114643.GR19219@parisc-linux.org> <87hcdab8zp.fsf@basil.nowhere.org> <alpine.LFD.1.10.0805070728280.32269@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.1.10.0805070728280.32269@woody.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080429160340.GG8315@duo.random>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Apr 29, 2008 at 06:03:40PM +0200, Andrea Arcangeli wrote:
+> Christoph if you've interest in evolving anon-vma-sem and i_mmap_sem
+> yourself in this direction, you're very welcome to go ahead while I
 
-> I think turning the BKL into a semaphore was fine per se,
-
-Are there really that many long lived BKL holders? I have some doubts.
-Semaphore makes only sense when the critical region is at least
-many thousands of cycles to amortize the scheduling overhead.
-
-Ok perhaps this needs some numbers to decide.
-
- but that was
-> when semaphores were fast. 
-
-The semaphores should be still nearly as fast in theory, especially
-for the contended case.
-
-> Considering the apparent AIM regressions, we really either need to revert 
-> the semaphore consolidation,
-
-Or figure out what made the semaphore consolidation slower? As Ingo
-pointed out earlier 40% is unlikely to be a fast path problem, but some
-algorithmic problem. Surely that is fixable (even for .26)?
-
-Perhaps we were lucky it showed so easily, not in something tricky.
-
--Andi
+In case you didn't notice this already, for a further explanation of
+why semaphores runs slower for small critical sections and why the
+conversion from spinlock to rwsem should happen under a config option,
+see the "AIM7 40% regression with 2.6.26-rc1" thread.
