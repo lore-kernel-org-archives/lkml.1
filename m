@@ -1,24 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757410AbYEGR1L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763373AbYEGR2f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757410AbYEGR1L (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 13:27:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755595AbYEGR0p
+	id S1763373AbYEGR2f (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 13:28:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754119AbYEGR2X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 13:26:45 -0400
-Received: from www.tglx.de ([62.245.132.106]:34232 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755391AbYEGR0n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 13:26:43 -0400
-Date: Wed, 7 May 2008 19:26:20 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Eric Sesterhenn <snakebyte@gmx.de>
-cc: Ingo Molnar <mingo@elte.hu>, Frederik Deweerdt <deweerdt@free.fr>,
-       linux-kernel@vger.kernel.org, suresh.b.siddha@intel.com,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: Oops with strace_test
-In-Reply-To: <20080507172032.GB3348@alice>
-Message-ID: <alpine.LFD.1.10.0805071924550.3318@apollo.tec.linutronix.de>
-References: <20080430121202.GD18314@alice> <20080505100008.GA2354@alice> <20080505180053.GB5576@slug> <20080506121005.GJ32591@elte.hu> <20080507103615.GC2340@alice> <alpine.LFD.1.10.0805071534580.3318@apollo.tec.linutronix.de> <20080507172032.GB3348@alice>
+	Wed, 7 May 2008 13:28:23 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:38240 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753203AbYEGR2V (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 May 2008 13:28:21 -0400
+Date: Wed, 7 May 2008 10:27:59 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Matthew Wilcox <matthew@wil.cx>, Ingo Molnar <mingo@elte.hu>,
+       "J. Bruce Fields" <bfields@citi.umich.edu>,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Alexander Viro <viro@ftp.linux.org.uk>, linux-fsdevel@vger.kernel.org
+Subject: Re: AIM7 40% regression with 2.6.26-rc1
+In-Reply-To: <20080507101624.5524d3c1.akpm@linux-foundation.org>
+Message-ID: <alpine.LFD.1.10.0805071025310.3024@woody.linux-foundation.org>
+References: <1210052904.3453.30.camel@ymzhang> <20080506114449.GC32591@elte.hu> <20080506120934.GH19219@parisc-linux.org> <20080506162332.GI19219@parisc-linux.org> <20080506102153.5484c6ac.akpm@linux-foundation.org> <20080507163811.GY19219@parisc-linux.org>
+ <alpine.LFD.1.10.0805070948250.3024@woody.linux-foundation.org> <alpine.LFD.1.10.0805070956060.3024@woody.linux-foundation.org> <20080507101624.5524d3c1.akpm@linux-foundation.org>
 User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
@@ -26,33 +30,25 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 7 May 2008, Eric Sesterhenn wrote:
-> * Thomas Gleixner (tglx@linutronix.de) wrote:
-> > On Wed, 7 May 2008, Eric Sesterhenn wrote:
-> > > * Ingo Molnar (mingo@elte.hu) wrote:
-> > > > 
-> > > > * Frederik Deweerdt <deweerdt@free.fr> wrote:
-> > > > 
-> > > > > Hi Eric,
-> > > > > 
-> > > > > This appears to be caused by init_fpu() missing from the 
-> > > > > restore_sigcontext->restore_i387->restore_fpu_checking code path.
-> > > > > 
-> > > > > I believe that moving the init_fpu() call from math_state_restore to 
-> > > > > restore_fpu_checking should fix the problem?
-> > > 
-> > > sadly the patch does not work for me :( I still get the oopses. I am
-> > > running this on a 32 Bit CPU, so arch/x86/kernel/traps_64.c doesnt get
-> > > compiled. I tried removing the same part from traps_32.c but then
-> > > the kernel oopses before netconsole is active.
-> > 
-> > I run that &$#@! intuitive test for an hour know with no effect. Can
-> > you please provide your .config file ?
+
+
+On Wed, 7 May 2008, Andrew Morton wrote:
+
+> On Wed, 7 May 2008 10:08:18 -0700 (PDT) Linus Torvalds <torvalds@linux-foundation.org> wrote:
 > 
-> sorry, ignored the CC, here it is.
+> > Which is why I'm 100% convinced it's not even worth saving the old code. 
+> > It needs to use mutexes, or spinlocks. I bet it has *nothing* to do with 
+> > "slow path" other than the fact that it gets to that slow path much more 
+> > these days.
+> 
+> Stupid question: why doesn't lock_kernel() use a mutex?
 
-Ok, we decoded the problem in meantime. Suresh will send a patch soon.
+Not stupid.
 
-Thanks,
+The only reason some code didn't get turned over to mutexes was literally 
+that they didn't want the debugging because they were doing intentionally 
+bad things. 
 
-	tglx
+I think the BKL is one of them (the console semaphore was another, iirc). 
+
+			Linus
