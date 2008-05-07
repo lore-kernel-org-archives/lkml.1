@@ -1,47 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757789AbYEGBXY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758346AbYEGBYI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757789AbYEGBXY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 21:23:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753252AbYEGBXM
+	id S1758346AbYEGBYI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 21:24:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754571AbYEGBXv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 21:23:12 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:50249 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751747AbYEGBXL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 21:23:11 -0400
-Message-ID: <48210431.6020008@cn.fujitsu.com>
-Date: Wed, 07 May 2008 09:21:53 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Paul Menage <menage@google.com>
-CC: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>, Paul Jackson <pj@sgi.com>,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Fix cpuset sched_relax_domain_level control file
-References: <48210101.1070205@google.com>
-In-Reply-To: <48210101.1070205@google.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 6 May 2008 21:23:51 -0400
+Received: from mga11.intel.com ([192.55.52.93]:19052 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753252AbYEGBXu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 May 2008 21:23:50 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.27,445,1204531200"; 
+   d="scan'208";a="561638508"
+Subject: Re: [PATCH] bay: Exit if notify handler cannot be installed
+From: Shaohua Li <shaohua.li@intel.com>
+To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Cc: Holger Macht <hmacht@suse.de>, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org,
+       "Accardi, Kristen C" <kristen.c.accardi@intel.com>
+In-Reply-To: <20080507011354.GA8163@khazad-dum.debian.net>
+References: <20080505202508.GA3690@homac> <20080506091522.GA4378@homac>
+	 <1210065811.12668.1.camel@sli10-desk.sh.intel.com>
+	 <20080506151846.GA22828@khazad-dum.debian.net>
+	 <1210122279.27316.2.camel@sli10-desk.sh.intel.com>
+	 <20080507011354.GA8163@khazad-dum.debian.net>
+Content-Type: text/plain
+Date: Wed, 07 May 2008 09:27:38 +0800
+Message-Id: <1210123658.30944.6.camel@sli10-desk.sh.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul Menage wrote:
-> Fix cpuset sched_relax_domain_level control file
+On Tue, 2008-05-06 at 22:13 -0300, Henrique de Moraes Holschuh wrote:
+> On Wed, 07 May 2008, Shaohua Li wrote:
+> > On Tue, 2008-05-06 at 12:18 -0300, Henrique de Moraes Holschuh wrote:
+> > > On Tue, 06 May 2008, Shaohua Li wrote:
+> > > > The bay driver is duplicated with libata, I thought we should delete it.
+> > > > See bug http://bugzilla.kernel.org/show_bug.cgi?id=9526
+> > > 
+> > > The bay driver is currently useless, BUT it should handle a lot of stuff
+> > > libata won't, such as bay batteries, bay floppies, and anything else in
+> > > a bay that is not a hard disk.
+> > > 
+> > > The fact that the driver currently looks only after disks is just a bug.
+> > > It should, in fact, bind to any ejectable device not already handled by
+> > > a different driver.
+> > Isn't this the job of acpi dock driver?
 > 
-> Due to a merge conflict, the sched_relax_domain_level control file was
-> marked as being handled by cpuset_read/write_u64, but the code to handle it
-> was actually in cpuset_common_file_read/write.
-> 
-> Since the value being written/read is in fact a signed integer, it
-> should be treated as such; this patch adds cpuset_read/write_s64
-> functions, and uses them to handle the sched_relax_domain_level file.
-> 
-> With this patch, the sched_relax_domain_level can be read and written,
-> and the correct contents seen/updated.
-> 
-> Signed-off-by: Paul Menage <menage@google.com>
-> 
+> No, but I actually fail to see why do we even care about the difference
+> from a dock to a bay.  Dock *could* be made to handle both.
+It appears some systems haven't a dock but a bay. In a thinkpad, you
+could hotplug cdrom/battery/harddisk in the slot of cdrom, but it's not
+a dock. libata should handle it well (but it doesn't handle _EJ0
+currently, I have a patch in above bugzilla).
 
-Reviewed-by: Li Zefan <lizf@cn.fujitsu.com>
+But you are right, acpi dock driver should be extended to support bay.
+I'll give it a try.
+
+Thanks,
+Shaohua
+
