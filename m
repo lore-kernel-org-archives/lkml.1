@@ -1,305 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755146AbYEGAgS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755448AbYEGAhY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755146AbYEGAgS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 20:36:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752806AbYEGAgA
+	id S1755448AbYEGAhY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 20:37:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752879AbYEGAhG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 20:36:00 -0400
-Received: from e28smtp02.in.ibm.com ([59.145.155.2]:51200 "EHLO
-	e28smtp02.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752792AbYEGAf6 (ORCPT
+	Tue, 6 May 2008 20:37:06 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:58762 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752806AbYEGAhE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 20:35:58 -0400
-Date: Wed, 7 May 2008 06:08:29 +0530
-From: Gautham R Shenoy <ego@in.ibm.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: pm list <linux-pm@lists.linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Cedric Le Goater <clg@fr.ibm.com>,
-       Ingo Molnar <mingo@elte.hu>, Paul Menage <menage@google.com>
-Subject: Re: [linux-pm] [RFC][PATCH 1/2] Freezer: Introduce PF_FREEZER_NOSIG
-Message-ID: <20080507003829.GA13608@in.ibm.com>
-Reply-To: ego@in.ibm.com
-References: <200805070003.56387.rjw@sisk.pl> <200805070005.20403.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200805070005.20403.rjw@sisk.pl>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Tue, 6 May 2008 20:37:04 -0400
+Date: Tue, 6 May 2008 17:36:07 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: djwong@us.ibm.com
+Cc: linux-kernel@vger.kernel.org, lm-sensors@lm-sensors.org,
+       mhoffman@lightlink.com
+Subject: Re: [resend] [PATCH v2] ibmaem: New driver for power/energy meters
+ in IBM System X hardware
+Message-Id: <20080506173607.71eb7257.akpm@linux-foundation.org>
+In-Reply-To: <20080506223812.GF16404@tree.beaverton.ibm.com>
+References: <20080503045558.GJ16078@tree.beaverton.ibm.com>
+	<20080505135621.66809b0e.akpm@linux-foundation.org>
+	<20080505230440.GE16404@tree.beaverton.ibm.com>
+	<20080506140433.0fa6e68e.akpm@linux-foundation.org>
+	<20080506223812.GF16404@tree.beaverton.ibm.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Rafael,
+On Tue, 6 May 2008 15:38:13 -0700 "Darrick J. Wong" <djwong@us.ibm.com> wrote:
 
-On Wed, May 07, 2008 at 12:05:19AM +0200, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rjw@sisk.pl>
-> 
-> The freezer currently attempts to distinguish kernel threads from
-> user space tasks by checking if their mm pointer is unset and it
-> does not send fake signals to kernel threads.  However, there are
-> kernel threads, mostly related to networking, that behave like
-> user space tasks and may want to be sent a fake signal to be frozen.
-> 
-> Introduce the new process flag PF_FREEZER_NOSIG that will be set
-> by default for all kernel threads and make the freezer only send
-> fake signals to the tasks having PF_FREEZER_NOSIG unset.  Provide
-> the set_freezable_with_signal() function to be called by the kernel
-> threads that want to be sent a fake signal for freezing.
-> 
-> This patch should not change the freezer's observable behavior.
-> 
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> [resend due to truncation]
+> Refactor the registration function to shrink the macros.  Let me know if
+> more aggressive de-macroing is desirable.
 > ---
->  include/linux/freezer.h |   10 ++++
->  include/linux/sched.h   |    1 
->  kernel/kthread.c        |    2 
->  kernel/power/process.c  |   97 ++++++++++++++++++++----------------------------
->  4 files changed, 54 insertions(+), 56 deletions(-)
+> New driver for power meters in IBM System X hardware, with a few
+> cleanups suggested by Anthony Liguori.
 > 
-> Index: linux-2.6/include/linux/freezer.h
-> ===================================================================
-> --- linux-2.6.orig/include/linux/freezer.h
-> +++ linux-2.6/include/linux/freezer.h
-> @@ -128,6 +128,15 @@ static inline void set_freezable(void)
->  }
-> 
->  /*
-> + * Tell the freezer that the current task should be frozen by it and that it
-> + * should send a fake signal to the task to freeze it.
-> + */
-> +static inline void set_freezable_with_signal(void)
-> +{
-> +	current->flags &= ~(PF_NOFREEZE | PF_FREEZER_NOSIG);
-> +}
-> +
-> +/*
->   * Freezer-friendly wrappers around wait_event_interruptible() and
->   * wait_event_interruptible_timeout(), originally defined in <linux/wait.h>
->   */
-> @@ -174,6 +183,7 @@ static inline void freezer_do_not_count(
->  static inline void freezer_count(void) {}
->  static inline int freezer_should_skip(struct task_struct *p) { return 0; }
->  static inline void set_freezable(void) {}
-> +static inline void set_freezable_with_signal(void) {}
-> 
->  #define wait_event_freezable(wq, condition)				\
->  		wait_event_interruptible(wq, condition)
-> Index: linux-2.6/include/linux/sched.h
-> ===================================================================
-> --- linux-2.6.orig/include/linux/sched.h
-> +++ linux-2.6/include/linux/sched.h
-> @@ -1508,6 +1508,7 @@ static inline void put_task_struct(struc
->  #define PF_MEMPOLICY	0x10000000	/* Non-default NUMA mempolicy */
->  #define PF_MUTEX_TESTER	0x20000000	/* Thread belongs to the rt mutex tester */
->  #define PF_FREEZER_SKIP	0x40000000	/* Freezer should not count it as freezeable */
-> +#define PF_FREEZER_NOSIG 0x80000000	/* Freezer won't send signals to it */
-> 
->  /*
->   * Only the _current_ task can read/write to tsk->flags, but other
-> Index: linux-2.6/kernel/power/process.c
-> ===================================================================
-> --- linux-2.6.orig/kernel/power/process.c
-> +++ linux-2.6/kernel/power/process.c
-> @@ -19,9 +19,6 @@
->   */
->  #define TIMEOUT	(20 * HZ)
-> 
-> -#define FREEZER_KERNEL_THREADS 0
-> -#define FREEZER_USER_SPACE 1
-> -
->  static inline int freezeable(struct task_struct * p)
->  {
->  	if ((p == current) ||
-> @@ -84,63 +81,53 @@ static void fake_signal_wake_up(struct t
->  	spin_unlock_irqrestore(&p->sighand->siglock, flags);
->  }
-> 
-> -static int has_mm(struct task_struct *p)
-> +static inline bool should_send_signal(struct task_struct *p)
->  {
-> -	return (p->mm && !(p->flags & PF_BORROWED_MM));
-> +	return !(current->flags & PF_FREEZER_NOSIG);
-		^^^^^^^^^^^^^^
-		p->flags ?
+> ...
+>
+> +	int temp = simple_strtol(buf, NULL, 10); \
 
+A checkpatch version which you might not have says
 
->  }
-> 
->  /**
->   *	freeze_task - send a freeze request to given task
->   *	@p: task to send the request to
-> - *	@with_mm_only: if set, the request will only be sent if the task has its
-> - *		own mm
-> - *	Return value: 0, if @with_mm_only is set and the task has no mm of its
-> - *		own or the task is frozen, 1, otherwise
-> + *	@sig_only: if set, the request will only be sent if the task has the
-> + *		PF_FREEZER_NOSIG flag unset
-> + *	Return value: 'false', if @sig_only is set and the task has
-> + *		PF_FREEZER_NOSIG set or the task is frozen, 'true', otherwise
->   *
-> - *	The freeze request is sent by seting the tasks's TIF_FREEZE flag and
-> + *	The freeze request is sent by setting the tasks's TIF_FREEZE flag and
->   *	either sending a fake signal to it or waking it up, depending on whether
-> - *	or not it has its own mm (ie. it is a user land task).  If @with_mm_only
-> - *	is set and the task has no mm of its own (ie. it is a kernel thread),
-> - *	its TIF_FREEZE flag should not be set.
-> - *
-> - *	The task_lock() is necessary to prevent races with exit_mm() or
-> - *	use_mm()/unuse_mm() from occuring.
-> + *	or not it has PF_FREEZER_NOSIG set.  If @sig_only is set and the task
-> + *	has PF_FREEZER_NOSIG set (ie. it is a typical kernel thread), its
-> + *	TIF_FREEZE flag will not be set.
->   */
-> -static int freeze_task(struct task_struct *p, int with_mm_only)
-> +static bool freeze_task(struct task_struct *p, bool sig_only)
->  {
-> -	int ret = 1;
-> +	/*
-> +	 * We first check if the task is freezing and next if it has already
-> +	 * been frozen to avoid the race with frozen_process() which first marks
-> +	 * the task as frozen and next clears its TIF_FREEZE.
-> +	 */
-> +	if (!freezing(p)) {
-> +		rmb();
-> +		if (frozen(p))
-> +			return false;
-> 
-> -	task_lock(p);
-> -	if (freezing(p)) {
-> -		if (has_mm(p)) {
-> -			if (!signal_pending(p))
-> -				fake_signal_wake_up(p);
-> -		} else {
-> -			if (with_mm_only)
-> -				ret = 0;
-> -			else
-> -				wake_up_state(p, TASK_INTERRUPTIBLE);
-> -		}
-> +		if (!sig_only || should_send_signal(p))
-> +			set_freeze_flag(p);
-> +		else
-> +			return false;
-> +	}
-> +
-> +	if (should_send_signal(p)) {
-> +		if (!signal_pending(p))
-> +			fake_signal_wake_up(p);
-> +	} else if (sig_only) {
-> +		return false;
->  	} else {
-> -		rmb();
-> -		if (frozen(p)) {
-> -			ret = 0;
-> -		} else {
-> -			if (has_mm(p)) {
-> -				set_freeze_flag(p);
-> -				fake_signal_wake_up(p);
-> -			} else {
-> -				if (with_mm_only) {
-> -					ret = 0;
-> -				} else {
-> -					set_freeze_flag(p);
-> -					wake_up_state(p, TASK_INTERRUPTIBLE);
-> -				}
-> -			}
-> -		}
-> +		wake_up_state(p, TASK_INTERRUPTIBLE);
->  	}
-> -	task_unlock(p);
-> -	return ret;
-> +
-> +	return true;
->  }
-> 
->  static void cancel_freezing(struct task_struct *p)
-> @@ -156,7 +143,7 @@ static void cancel_freezing(struct task_
->  	}
->  }
-> 
-> -static int try_to_freeze_tasks(int freeze_user_space)
-> +static int try_to_freeze_tasks(bool sig_only)
->  {
->  	struct task_struct *g, *p;
->  	unsigned long end_time;
-> @@ -175,7 +162,7 @@ static int try_to_freeze_tasks(int freez
->  			if (frozen(p) || !freezeable(p))
->  				continue;
-> 
-> -			if (!freeze_task(p, freeze_user_space))
-> +			if (!freeze_task(p, sig_only))
->  				continue;
-> 
->  			/*
-> @@ -235,13 +222,13 @@ int freeze_processes(void)
->  	int error;
-> 
->  	printk("Freezing user space processes ... ");
-> -	error = try_to_freeze_tasks(FREEZER_USER_SPACE);
-> +	error = try_to_freeze_tasks(true);
->  	if (error)
->  		goto Exit;
->  	printk("done.\n");
-> 
->  	printk("Freezing remaining freezable tasks ... ");
-> -	error = try_to_freeze_tasks(FREEZER_KERNEL_THREADS);
-> +	error = try_to_freeze_tasks(false);
->  	if (error)
->  		goto Exit;
->  	printk("done.");
-> @@ -251,7 +238,7 @@ int freeze_processes(void)
->  	return error;
->  }
-> 
-> -static void thaw_tasks(int thaw_user_space)
-> +static void thaw_tasks(bool sig_only)
->  {
->  	struct task_struct *g, *p;
-> 
-> @@ -260,7 +247,7 @@ static void thaw_tasks(int thaw_user_spa
->  		if (!freezeable(p))
->  			continue;
-> 
-> -		if (!p->mm == thaw_user_space)
-> +		if (sig_only && !should_send_signal(p))
->  			continue;
-> 
->  		thaw_process(p);
-> @@ -271,8 +258,8 @@ static void thaw_tasks(int thaw_user_spa
->  void thaw_processes(void)
->  {
->  	printk("Restarting tasks ... ");
-> -	thaw_tasks(FREEZER_KERNEL_THREADS);
-> -	thaw_tasks(FREEZER_USER_SPACE);
-> +	thaw_tasks(true);
-> +	thaw_tasks(false);
+WARNING: consider using strict_strtol in preference to simple_strtol
+#1015: FILE: drivers/hwmon/ibmaem.c:918:
++       int temp = simple_strtol(buf, NULL, 10); \
 
-Shouldn't the order be 
-	thaw_tasks(false);
-	thaw_tasks(true);
+total: 0 errors, 1 warnings, 1221 lines checked
 
+because the code as you have it will accept input of the form "12foo". 
+strict_strtol() will error on that.
 
->  	schedule();
->  	printk("done.\n");
->  }
-> Index: linux-2.6/kernel/kthread.c
-> ===================================================================
-> --- linux-2.6.orig/kernel/kthread.c
-> +++ linux-2.6/kernel/kthread.c
-> @@ -234,7 +234,7 @@ int kthreadd(void *unused)
->  	set_user_nice(tsk, KTHREAD_NICE_LEVEL);
->  	set_cpus_allowed(tsk, CPU_MASK_ALL);
-> 
-> -	current->flags |= PF_NOFREEZE;
-> +	current->flags |= PF_NOFREEZE | PF_FREEZER_NOSIG;
-> 
->  	for (;;) {
->  		set_current_state(TASK_INTERRUPTIBLE);
-> _______________________________________________
-> linux-pm mailing list
-> linux-pm@lists.linux-foundation.org
-> https://lists.linux-foundation.org/mailman/listinfo/linux-pm
-
--- 
-Thanks and Regards
-gautham
+afacit the calling code would perhaps need a little changing to handle
+such errors appropriately.
