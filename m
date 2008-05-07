@@ -1,97 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759818AbYEGIZJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933067AbYEGI0v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759818AbYEGIZJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 04:25:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932594AbYEGIYh
+	id S933067AbYEGI0v (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 04:26:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754782AbYEGI0f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 04:24:37 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:53489 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762605AbYEGIY3 (ORCPT
+	Wed, 7 May 2008 04:26:35 -0400
+Received: from hpsmtp-eml18.kpnxchange.com ([213.75.38.118]:50993 "EHLO
+	hpsmtp-eml18.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754085AbYEGI0c (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 04:24:29 -0400
-Subject: Re: [rtc-linux] [RFC][PATCH 1/4] RTC: Class device support for
-	persistent clock
-From: David Woodhouse <dwmw2@infradead.org>
-To: rtc-linux@googlegroups.com
-Cc: Alessandro Zummo <a.zummo@towertech.it>, Jean Delvare <khali@linux-fr.org>,
-       Ralf Baechle <ralf@linux-mips.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>, i2c@lm-sensors.org,
-       linux-mips@linux-mips.org, linux-kernel@vger.kernel.org
-In-Reply-To: <Pine.LNX.4.55.0805070015360.16173@cliff.in.clinika.pl>
-References: <Pine.LNX.4.55.0805070015360.16173@cliff.in.clinika.pl>
-Content-Type: text/plain
-Date: Wed, 07 May 2008 09:24:15 +0100
-Message-Id: <1210148655.25560.825.camel@pmac.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-1.fc9) 
+	Wed, 7 May 2008 04:26:32 -0400
+From: Frans Pop <elendil@planet.nl>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: Horrendous Audio Stutter - current git
+Date: Wed, 7 May 2008 10:26:27 +0200
+User-Agent: KMail/1.9.9
+Cc: Parag Warudkar <parag.warudkar@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>, Mike Galbraith <efault@gmx.de>
+References: <82e4877d0805011714m35a47753q58cca706b7af6557@mail.gmail.com> <1209717278.13978.136.camel@twins>
+In-Reply-To: <1209717278.13978.136.camel@twins>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Disposition: inline
+Message-Id: <200805071026.29540.elendil@planet.nl>
+X-OriginalArrivalTime: 07 May 2008 08:26:30.0115 (UTC) FILETIME=[0CD88B30:01C8B01C]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-05-07 at 01:40 +0100, Maciej W. Rozycki wrote:
-> 
-> +int rtc_update_persistent_clock(struct timespec now)
-> +{
-> +       struct rtc_device *rtc =
-> rtc_class_open(CONFIG_RTC_HCTOSYS_DEVICE);
-> +       int err;
-> +
-> +       if (rtc == NULL) {
-> +               printk(KERN_ERR "hctosys: unable to open rtc device (%
-> s)\n",
-> +                      CONFIG_RTC_HCTOSYS_DEVICE);
-> +               err = -ENXIO;
-> +               goto out;
->         }
-> -       else
-> +       err = rtc_set_mmss(rtc, now.tv_sec);
-> +       if (err < 0) {
->                 dev_err(rtc->dev.parent,
-> -                       "hctosys: unable to read the hardware clock
-> \n");
-> +                       "hctosys: unable to set the hardware clock
-> \n");
-> +               goto out_close;
-> +       }
->  
-> +       err = 0;
-> +
-> +out_close:
->         rtc_class_close(rtc);
-> +out:
-> +       return err;
-> +}
+On Friday 02 May 2008, Peter Zijlstra wrote:
+> > Under kernel compilation load (make -j8) audio is very much unusable
+> > on current linux-2.6.git - The stutter is so bad I can hardly tell
+> > what song I am listening to :)
+> > Even with make -j4 it still skips but not that badly.
 
-Ooh, shiny -- you saved me the trouble of doing this (and hopefully also
-the trouble of looking through it to check whether all the callers of
-read_persistent_clock() can sleep, etc.?)
+What's the current status here?
+With mainline v2.6.26-rc1-110-ga153063 (which has latest sched patches), I 
+still get very bad audio skips with GROUP_SCHED enabled.
 
-One thing I was going to do in rtc_update_persistent_clock() was make it
-use mutex_trylock() for grabbing rtc->lock. We go to great lengths to
-make sure we're updating the clock at the correct time -- we don't want
-to be doing things which delay the update. So we should probably just
-use mutex_trylock() and abort the update (this time) if it fails.
-
-I was also thinking of holding the RTC_HCTOSYS device open all the time,
-too. If it's a problem that you then couldn't unload the module, perhaps
-a sysfs interface to set/change/clear which device is used for this?
-
-When we discussed it last week, Alessandro was concerned that the
-'update at precisely 500ms past the second' rule was not universal to
-all RTC devices, although I'm not entirely sure. It might be worth
-moving that logic into a 'default' NTP-sync routine provided by the RTC
-class, so that if any strange devices exist which require different
-treatment, they can override that.
-
-I wouldn't worry too much about leaving the old
-update_persistent_clock() and read_persistent_clock() -- I hope we can
-plan to remove those entirely in favour of the RTC class methods.
-
--- 
-dwmw2
-
+Cheers,
+FJP
