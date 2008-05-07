@@ -1,58 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932536AbYEGIYg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759818AbYEGIZJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932536AbYEGIYg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 04:24:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754179AbYEGIYU
+	id S1759818AbYEGIZJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 04:25:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932594AbYEGIYh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 04:24:20 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:33212 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751403AbYEGIYS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 04:24:18 -0400
-Date: Wed, 7 May 2008 10:24:05 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl
-Subject: Re: audio skipping on 2.6.26-rc1
-Message-ID: <20080507082405.GA22821@elte.hu>
-References: <E1JteVx-0003ro-2h@pomaz-ex.szeredi.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <E1JteVx-0003ro-2h@pomaz-ex.szeredi.hu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0012]
+	Wed, 7 May 2008 04:24:37 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:53489 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762605AbYEGIY3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 May 2008 04:24:29 -0400
+Subject: Re: [rtc-linux] [RFC][PATCH 1/4] RTC: Class device support for
+	persistent clock
+From: David Woodhouse <dwmw2@infradead.org>
+To: rtc-linux@googlegroups.com
+Cc: Alessandro Zummo <a.zummo@towertech.it>, Jean Delvare <khali@linux-fr.org>,
+       Ralf Baechle <ralf@linux-mips.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>, i2c@lm-sensors.org,
+       linux-mips@linux-mips.org, linux-kernel@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.55.0805070015360.16173@cliff.in.clinika.pl>
+References: <Pine.LNX.4.55.0805070015360.16173@cliff.in.clinika.pl>
+Content-Type: text/plain
+Date: Wed, 07 May 2008 09:24:15 +0100
+Message-Id: <1210148655.25560.825.camel@pmac.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Miklos Szeredi <miklos@szeredi.hu> wrote:
-
-> On a T60 I get occasional (but very annoying) audio skips while 
-> compiling kernels.  No kernels (as long as I remeber) prior to this 
-> had any similar problems.
+On Wed, 2008-05-07 at 01:40 +0100, Maciej W. Rozycki wrote:
 > 
-> It's reproducible, but takes some minutes to get reliably.  Please 
-> don't tell me to bisect it :)
+> +int rtc_update_persistent_clock(struct timespec now)
+> +{
+> +       struct rtc_device *rtc =
+> rtc_class_open(CONFIG_RTC_HCTOSYS_DEVICE);
+> +       int err;
+> +
+> +       if (rtc == NULL) {
+> +               printk(KERN_ERR "hctosys: unable to open rtc device (%
+> s)\n",
+> +                      CONFIG_RTC_HCTOSYS_DEVICE);
+> +               err = -ENXIO;
+> +               goto out;
+>         }
+> -       else
+> +       err = rtc_set_mmss(rtc, now.tv_sec);
+> +       if (err < 0) {
+>                 dev_err(rtc->dev.parent,
+> -                       "hctosys: unable to read the hardware clock
+> \n");
+> +                       "hctosys: unable to set the hardware clock
+> \n");
+> +               goto out_close;
+> +       }
+>  
+> +       err = 0;
+> +
+> +out_close:
+>         rtc_class_close(rtc);
+> +out:
+> +       return err;
+> +}
 
-please try latest -git [it has scheduler interactivity fixes], does it 
-work any better?
+Ooh, shiny -- you saved me the trouble of doing this (and hopefully also
+the trouble of looking through it to check whether all the callers of
+read_persistent_clock() can sleep, etc.?)
 
-and also turn off:
+One thing I was going to do in rtc_update_persistent_clock() was make it
+use mutex_trylock() for grabbing rtc->lock. We go to great lengths to
+make sure we're updating the clock at the correct time -- we don't want
+to be doing things which delay the update. So we should probably just
+use mutex_trylock() and abort the update (this time) if it fails.
 
-> # CONFIG_CGROUPS is not set
-> CONFIG_GROUP_SCHED=y
-> CONFIG_FAIR_GROUP_SCHED=y
+I was also thinking of holding the RTC_HCTOSYS device open all the time,
+too. If it's a problem that you then couldn't unload the module, perhaps
+a sysfs interface to set/change/clear which device is used for this?
 
-as it still causes more latencies than it should (even in 
-sched-devel/latest), and the reason is still not understood.
+When we discussed it last week, Alessandro was concerned that the
+'update at precisely 500ms past the second' rule was not universal to
+all RTC devices, although I'm not entirely sure. It might be worth
+moving that logic into a 'default' NTP-sync routine provided by the RTC
+class, so that if any strange devices exist which require different
+treatment, they can override that.
 
-	Ingo
+I wouldn't worry too much about leaving the old
+update_persistent_clock() and read_persistent_clock() -- I hope we can
+plan to remove those entirely in favour of the RTC class methods.
+
+-- 
+dwmw2
+
