@@ -1,89 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757410AbYEGRMQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758705AbYEGRPW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757410AbYEGRMQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 13:12:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751453AbYEGRL5
+	id S1758705AbYEGRPW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 13:15:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752483AbYEGRPB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 13:11:57 -0400
-Received: from e34.co.us.ibm.com ([32.97.110.152]:41051 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751123AbYEGRLz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 13:11:55 -0400
-Subject: Re: [Cbe-oss-dev] [PATCH] Updated: Reworked Cell OProfile: SPU
-	mutex lock fix
-From: Carl Love <cel@us.ibm.com>
-To: jroth@linux.vnet.ibm.com
-Cc: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Arnd Bergmann <arnd@arndb.de>,
-       oprofile-list <oprofile-list@lists.sourceforge.net>
-In-Reply-To: <4821DEB0.7050308@linux.vnet.ibm.com>
-References: <1209587712.7531.42.camel@carll-linux-desktop>
-	 <4821DEB0.7050308@linux.vnet.ibm.com>
-Content-Type: text/plain
-Date: Wed, 07 May 2008 10:09:26 -0700
-Message-Id: <1210180166.7726.19.camel@carll-linux-desktop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 7 May 2008 13:15:01 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:43438 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751435AbYEGRO7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 May 2008 13:14:59 -0400
+Date: Wed, 7 May 2008 19:14:43 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andi Kleen <andi@firstfloor.org>, Matthew Wilcox <matthew@wil.cx>,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Alexander Viro <viro@ftp.linux.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: AIM7 40% regression with 2.6.26-rc1
+Message-ID: <20080507171443.GA12072@elte.hu>
+References: <1210052904.3453.30.camel@ymzhang> <20080506114449.GC32591@elte.hu> <1210126286.3453.37.camel@ymzhang> <1210131712.3453.43.camel@ymzhang> <87lk2mbcqp.fsf@basil.nowhere.org> <20080507114643.GR19219@parisc-linux.org> <87hcdab8zp.fsf@basil.nowhere.org> <alpine.LFD.1.10.0805070728280.32269@woody.linux-foundation.org> <alpine.LFD.1.10.0805070817060.3024@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.1.10.0805070817060.3024@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Wed, 2008-05-07 at 18:54 +0200, Jochen Roth wrote:
-> Carl,
-> 
-> I applied your patch on Jeremy's latest kernel.org spufs tree.
-> 
->  > +void oprofile_add_value(unsigned long value, int cpu) {
->  > +	struct oprofile_cpu_buffer * cpu_buf = &cpu_buffer[cpu];
-> 
-> Shouldn't it be
-> 	struct oprofile_cpu_buffer *cpu_buf = &per_cpu(cpu_buffer, cpu);
+* Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-No, I don't think so.  Take a look at the other functions in
-drivers/oprofile/cpu_buffer.c.  For example oprofile_add_trace().  You
-will see that the cpu_buffer is not accessed using the per_cpu
-construct.  Not sure why the compiler would complain about the
-oprofile_add_value() function but not one of the other functions like
-oprofile_add_trace().
-
-What was the compiler error that you saw?
-
-I will try getting Jeremy's kernel and applying the patch there to see
-if it works.
-
-
+> > But my preferred option would indeed be just turning it back into a 
+> > spinlock - and screw latency and BKL preemption - and having the RT 
+> > people who care deeply just work on removing the BKL in the long 
+> > run.
 > 
-> At least my compiler complained about that.
-> 
-> I booted a kernel with your patches applied and the system locked up 
-> anyway:
-> 
-> Unable to handle kernel paging request for data at address 
-> 0xd0000000004fe9a8
-> Faulting instruction address: 0xd000000000330ad8
-> cpu 0x0: Vector: 300 (Data Access) at [c00000003c337680]
->      pc: d000000000330ad8: .alloc_cpu_buffers+0x7c/0x12c [oprofile]
->      lr: d000000000330abc: .alloc_cpu_buffers+0x60/0x12c [oprofile]
->      sp: c00000003c337900
->     msr: 9000000000009032
->     dar: d0000000004fe9a8
->   dsisr: 42000000
->    current = 0xc00000003e128600
->    paca    = 0xc0000000005b3480
->      pid   = 2356, comm = oprofiled
-> enter ? for help
-> [c00000003c3379a0] d0000000003302ac .oprofile_setup+0x2c/0x134 [oprofile]
-> [c00000003c337a30] d00000000033176c .event_buffer_open+0x7c/0xc8 [oprofile]
-> [c00000003c337ac0] c0000000000d6ca8 .__dentry_open+0x190/0x308
-> [c00000003c337b70] c0000000000e7a5c .do_filp_open+0x3c4/0x8e8
-> [c00000003c337d00] c0000000000d6a1c .do_sys_open+0x80/0x14c
-> [c00000003c337db0] c0000000001192f4 .compat_sys_open+0x24/0x38
-> [c00000003c337e30] c0000000000076b4 syscall_exit+0x0/0x40
-> --- Exception: c01 (System Call) at 000000000ff006f8
-> SP (ffc6f6a0) is in userspace
-> 
+> Here's a trial balloon patch to do that.
 
+here's a simpler trial baloon test-patch (well, hack) that is also 
+reasonably well tested. It turns the BKL into a "spin-semaphore". If 
+this resolves the performance problem then it's all due to the BKL's 
+scheduling/preemption properties.
+
+this approach is ugly (it's just a more expensive spinlock), but has an 
+advantage: the code logic is obviously correct, and it would also make 
+it much easier later on to turn the BKL back into a sleeping lock again 
+- once the TTY code's BKL use is fixed. (i think Alan said it might 
+happen in the next few months) The BKL is more expensive than a simple 
+spinlock anyway.
+
+	Ingo
+
+------------->
+Subject: BKL: spin on acquire
+From: Ingo Molnar <mingo@elte.hu>
+Date: Wed May 07 19:05:40 CEST 2008
+
+NOT-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ lib/kernel_lock.c |    9 ++++++---
+ 1 file changed, 6 insertions(+), 3 deletions(-)
+
+Index: linux/lib/kernel_lock.c
+===================================================================
+--- linux.orig/lib/kernel_lock.c
++++ linux/lib/kernel_lock.c
+@@ -46,7 +46,8 @@ int __lockfunc __reacquire_kernel_lock(v
+ 	task->lock_depth = -1;
+ 	preempt_enable_no_resched();
+ 
+-	down(&kernel_sem);
++	while (down_trylock(&kernel_sem))
++		cpu_relax();
+ 
+ 	preempt_disable();
+ 	task->lock_depth = saved_lock_depth;
+@@ -67,11 +68,13 @@ void __lockfunc lock_kernel(void)
+ 	struct task_struct *task = current;
+ 	int depth = task->lock_depth + 1;
+ 
+-	if (likely(!depth))
++	if (likely(!depth)) {
+ 		/*
+ 		 * No recursion worries - we set up lock_depth _after_
+ 		 */
+-		down(&kernel_sem);
++		while (down_trylock(&kernel_sem))
++			cpu_relax();
++	}
+ 
+ 	task->lock_depth = depth;
+ }
