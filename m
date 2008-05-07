@@ -1,67 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759982AbYEGDjX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760868AbYEGDjs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759982AbYEGDjX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 23:39:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753671AbYEGDjI
+	id S1760868AbYEGDjs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 23:39:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756608AbYEGDjb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 23:39:08 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:57442 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752640AbYEGDjG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 23:39:06 -0400
-Date: Tue, 6 May 2008 22:38:59 -0500
-From: Paul Jackson <pj@sgi.com>
-To: akpm@linux-foundation.org
-Cc: menage@google.com, seto.hidetoshi@jp.fujitsu.com, mingo@elte.hu,
-       linux-kernel@vger.kernel.org, Max Krasnyanskiy <maxk@qualcomm.com>,
-       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Thomas Gleixner <tglx@linutronix.de>, Oleg Nesterov <oleg@tv-sign.ru>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       David Rientjes <rientjes@google.com>
-Subject: Reverting per-cpuset "system" (IRQ affinity) patch (was: Fix cpuset
- sched_relax_domain_level control file)
-Message-Id: <20080506223859.0b4fa876.pj@sgi.com>
-In-Reply-To: <20080506204054.564fff32.pj@sgi.com>
-References: <48210101.1070205@google.com>
-	<20080506183138.546f42d9.akpm@linux-foundation.org>
-	<20080506204054.564fff32.pj@sgi.com>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 6 May 2008 23:39:31 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:50393 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753671AbYEGDja (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 May 2008 23:39:30 -0400
+Date: Tue, 6 May 2008 20:36:07 -0700
+From: Greg Kroah-Hartman <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       torvalds@linux-foundation.org, stable@kernel.org
+Subject: Linux 2.6.25.2
+Message-ID: <20080507033607.GA10503@kroah.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-pj wrote:
-> What's the easiest way to get from where we are now, to a world
-> without that patch?
+We (the -stable team) are announcing the release of the 2.6.25.2 kernel.
 
-Would it help, Andrew, if I proposed a patch that went into your latest
-mmtom stack, right after the three patches:
+It fixes one pretty nasty security bug.  All users of the 2.6.25 series
+are strongly encouraged to upgrade.
 
-  origin.patch
-  linux-next.patch
-  Paul Menage's latest "Fix cpuset sched_relax_domain_level control file"
+Many thanks to Al Viro for finding and fixing this problem.
 
-that reverted the cpuset "system" patch (this being a patch that added
-a per-cpuset file called "system", which could be used to do things
-such as help manage the assignment of IRQs to CPUs.)
+I'll also be replying to this message with a copy of the patch between
+2.6.25.1 and 2.6.25.2
 
-I suspect that some of Ingo, Max Krasnyanskiy, or Peter Zijlstra will
-not be happy with my doing this, but I'm pretty sure that the "system"
-patch needs more work before we have agreement on the API.  I really
-don't want to add the API of that current patch "as is" to the kernel.
+The updated 2.6.25.y git tree can be found at:
+        git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.25.y.git
+and can be browsed at the normal kernel.org git web browser:
+        http://git.kernel.org/?p=linux/kernel/git/stable/linux-2.6.25.y.git;a=summary
 
-I've added several of the people who were part of the preceding threads
-on this discussion to the CC list.
+thanks,
 
-I'm cooking up such a patch now -- I've gotten to the point that it
-applies and builds; now I am about to see how badly it breaks the
-remaining 426 patches in the mmtom stack.
+greg k-h
 
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.940.382.4214
+--------
+
+ Makefile   |    2 +-
+ fs/locks.c |   17 +++++++++++++++--
+ 2 files changed, 16 insertions(+), 3 deletions(-)
+
+
+Al Viro (1):
+      fix SMP ordering hole in fcntl_setlk() (CVE-2008-1669)
+
+Greg Kroah-Hartman (1):
+      Linux 2.6.25.2
+
