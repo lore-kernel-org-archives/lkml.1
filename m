@@ -1,110 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933093AbYEGTKn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933223AbYEGTLQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933093AbYEGTKn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 15:10:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765614AbYEGTJ4
+	id S933223AbYEGTLQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 15:11:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932658AbYEGTK0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 15:09:56 -0400
-Received: from mga09.intel.com ([134.134.136.24]:2595 "EHLO mga09.intel.com"
+	Wed, 7 May 2008 15:10:26 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:46023 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764722AbYEGTJx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 15:09:53 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.27,450,1204531200"; 
-   d="scan'208";a="325557468"
-Date: Wed, 7 May 2008 12:09:52 -0700
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Eric Sesterhenn <snakebyte@gmx.de>, Ingo Molnar <mingo@elte.hu>,
-       Frederik Deweerdt <deweerdt@free.fr>, linux-kernel@vger.kernel.org,
-       suresh.b.siddha@intel.com, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: Oops with strace_test
-Message-ID: <20080507190952.GA11931@linux-os.sc.intel.com>
-References: <20080430121202.GD18314@alice> <20080505100008.GA2354@alice> <20080505180053.GB5576@slug> <20080506121005.GJ32591@elte.hu> <20080507103615.GC2340@alice> <alpine.LFD.1.10.0805071534580.3318@apollo.tec.linutronix.de> <20080507172032.GB3348@alice> <alpine.LFD.1.10.0805071924550.3318@apollo.tec.linutronix.de>
-Mime-Version: 1.0
+	id S932850AbYEGTKU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 May 2008 15:10:20 -0400
+Date: Wed, 7 May 2008 21:09:56 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Matthew Wilcox <matthew@wil.cx>, Andrew Morton <akpm@linux-foundation.org>,
+       "J. Bruce Fields" <bfields@citi.umich.edu>,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Alexander Viro <viro@ftp.linux.org.uk>, linux-fsdevel@vger.kernel.org
+Subject: Re: AIM7 40% regression with 2.6.26-rc1
+Message-ID: <20080507190956.GA16412@elte.hu>
+References: <alpine.LFD.1.10.0805070948250.3024@woody.linux-foundation.org> <alpine.LFD.1.10.0805070956060.3024@woody.linux-foundation.org> <20080507172246.GA13262@elte.hu> <alpine.LFD.1.10.0805071028400.3024@woody.linux-foundation.org> <20080507174900.GB13591@elte.hu> <alpine.LFD.1.10.0805071057280.3024@woody.linux-foundation.org> <20080507181714.GA14980@elte.hu> <alpine.LFD.1.10.0805071125090.3024@woody.linux-foundation.org> <20080507184304.GA15554@elte.hu> <alpine.LFD.1.10.0805071150140.3024@woody.linux-foundation.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.10.0805071924550.3318@apollo.tec.linutronix.de>
-User-Agent: Mutt/1.4.1i
+In-Reply-To: <alpine.LFD.1.10.0805071150140.3024@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 07, 2008 at 07:26:20PM +0200, Thomas Gleixner wrote:
-> 
-> Ok, we decoded the problem in meantime. Suresh will send a patch soon.
 
-Appended patch should fix it. Eric, can you please check if it fixes the issue?
-I have to fix the math-emu aswell. But I will send a different patch for it.
+* Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-thanks,
-suresh
----
+> In contrast, these "try to emulate bad behavior with the old known-ok 
+> semaphores" don't show anything AT ALL. We already know it's related 
+> to semaphores. And your patches aren't even guaranteed to show the 
+> same issue.
 
-[patch] fix fpu restore during sig return
+yeah, i was just trying to come up with patches to probe which one of 
+the following two possibilities is actually the case:
 
-If the task never used fpu, initialize the fpu before restoring the FP state
-from the signal handler context. This will allocate the fpu state,
-if the task never needed it before.
+ - if the regression is due to the difference in scheduling behavior of 
+   new semaphores (different wakeup patterns, etc.), that's fixable in 
+   the new semaphore code => then the BKL code need not change.
 
-Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
----
+ - if the regression is due due to difference in the fastpath cost, then 
+   the new semaphores can probably not be improved (much of their appeal 
+   comes from them not being complex and not being in assembly) => then 
+   the BKL code needs to change to become cheaper [i.e. then we want 
+   your patch].
 
-diff --git a/arch/x86/kernel/i387.c b/arch/x86/kernel/i387.c
-index db6839b..45e19ee 100644
---- a/arch/x86/kernel/i387.c
-+++ b/arch/x86/kernel/i387.c
-@@ -450,7 +450,6 @@ static inline int restore_i387_fsave(struct _fpstate_ia32 __user *buf)
- {
- 	struct task_struct *tsk = current;
- 
--	clear_fpu(tsk);
- 	return __copy_from_user(&tsk->thread.xstate->fsave, buf,
- 				sizeof(struct i387_fsave_struct));
- }
-@@ -461,7 +460,6 @@ static int restore_i387_fxsave(struct _fpstate_ia32 __user *buf)
- 	struct user_i387_ia32_struct env;
- 	int err;
- 
--	clear_fpu(tsk);
- 	err = __copy_from_user(&tsk->thread.xstate->fxsave, &buf->_fxsr_env[0],
- 			       sizeof(struct i387_fxsave_struct));
- 	/* mxcsr reserved bits must be masked to zero for security reasons */
-@@ -478,6 +476,16 @@ int restore_i387_ia32(struct _fpstate_ia32 __user *buf)
- 	int err;
- 
- 	if (HAVE_HWFP) {
-+		struct task_struct *tsk = current;
-+		
-+		clear_fpu(tsk);
-+
-+		if (!used_math()) {
-+			err = init_fpu(tsk);
-+			if (err)
-+				return err;
-+		}
-+		
- 		if (cpu_has_fxsr)
- 			err = restore_i387_fxsave(buf);
- 		else
-diff --git a/include/asm-x86/i387.h b/include/asm-x86/i387.h
-index da2adb4..6b722d3 100644
---- a/include/asm-x86/i387.h
-+++ b/include/asm-x86/i387.h
-@@ -175,7 +175,15 @@ static inline int save_i387(struct _fpstate __user *buf)
-  */
- static inline int restore_i387(struct _fpstate __user *buf)
- {
--	set_used_math();
-+	struct task_struct *tsk = current;
-+	int err;
-+
-+	if (!used_math()) {
-+		err = init_fpu(tsk);
-+		if (err)
-+			return err;
-+	}
-+
- 	if (!(task_thread_info(current)->status & TS_USEDFPU)) {
- 		clts();
- 		task_thread_info(current)->status |= TS_USEDFPU;
+	Ingo
