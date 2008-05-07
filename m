@@ -1,106 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760134AbYEGQFm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763463AbYEGQHb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760134AbYEGQFm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 12:05:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761422AbYEGQFS
+	id S1763463AbYEGQHb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 12:07:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754815AbYEGQHK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 12:05:18 -0400
-Received: from mtl.rackplans.net ([69.90.0.18]:40992 "EHLO mtl.rackplans.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762550AbYEGQFL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 12:05:11 -0400
-Date: Wed, 7 May 2008 12:05:09 -0400 (EDT)
-From: Gerhard Mack <gmack@innerfire.net>
-X-X-Sender: gmack@mtl.rackplans.net
-To: Andrew Vasquez <andrew.vasquez@qlogic.com>
-cc: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [2.6.25.1] qla2xxx can't see more than 4 drives
-In-Reply-To: <20080506220826.GI57975@plap4.qlogic.org>
-Message-ID: <alpine.DEB.1.10.0805071204000.31448@mtl.rackplans.net>
-References: <alpine.DEB.1.10.0805031458050.2330@mtl.rackplans.net> <20080506135118.GA46493@plap4.qlogic.org> <alpine.DEB.1.10.0805061022120.5741@mtl.rackplans.net> <20080506220826.GI57975@plap4.qlogic.org>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Wed, 7 May 2008 12:07:10 -0400
+Received: from fnoeppeil48.netpark.at ([217.175.205.176]:59225 "EHLO
+	roarinelk.homelinux.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757043AbYEGQHH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 May 2008 12:07:07 -0400
+X-Greylist: delayed 310 seconds by postgrey-1.27 at vger.kernel.org; Wed, 07 May 2008 12:07:07 EDT
+Date: Wed, 7 May 2008 18:07:05 +0200
+From: Manuel Lauss <mano@roarinelk.homelinux.net>
+To: linux-mips@linux-mips.org, linux-kernel@vger.kernel.org
+Subject: [PATCH 5/7] au1xmmc: 4 bit transfer mode
+Message-ID: <20080507160705.GF17806@roarinelk.homelinux.net>
+References: <20080507160154.GA17806@roarinelk.homelinux.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080507160154.GA17806@roarinelk.homelinux.net>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 6 May 2008, Andrew Vasquez wrote:
-> On Tue, 06 May 2008, Gerhard Mack wrote:
-> 
-> > On Tue, 6 May 2008, Andrew Vasquez wrote:
-> > > Could you load the driver with the ql2xextended_error_logging module
-> > > parameter set to 1 and send the resultant driver logs?  Also, it would
-> > > could you also send the output of the following after the driver is
-> > > loaded:
-> > > 
-> > > $ cat /sys/class/fc_host/host<host_no>
-> > > $ cat /sys/class/scsi_host/host<host_no>/*
-> > > $ cat /sys/class/fc_remote_ports/*
-> > > 
-> > > where host_no corresponds to the SCSI host-number assigned to the HBA.
-> > > 
-> > Of course.. 
-> > 
-> > QLogic Fibre Channel HBA Driver
-> > qla2xxx 0000:02:0a.0: Found an ISP2312, irq 24, iobase 0xf88cc000
-> > qla2xxx 0000:02:0a.0: Configuring PCI space...
-> > qla2xxx 0000:02:0a.0: Configure NVRAM parameters...
-> > qla2xxx 0000:02:0a.0: Verifying loaded RISC code...
-> > scsi(4): **** Load RISC code ****
-> ...
-> > cat /sys/class/fc_host/host4/* :
-> > 0x200000e08b127d20
-> > 0
-> > 0x200000e08b127d20
-> > 0
-> > 0x000001
-> > 0x210000e08b127d20
-> > Online
-> > LPort (private loop)
-> 
-> Hmm, qla2xxx has a 'split' port-discovery model based on topology.
-> Switched fabric (P2P) discovery and logins are managed by the driver.
-> FC_AL topology discovery and logins are managed by firmware.  The
-> driver (qla2xxx) simply asks the firmware for a list of recognized
-> ports, as you've noted the driver (and indirectly, firmware), only
-> recognized 4 ports during LIPA/LIHA/LISA address negotiation:
-> 
-> > cat /sys/class/fc_remote_ports/rport-4\:0-0/*  :
-> > 0x2200000c507ce546
-> ...
-> > cat /sys/class/fc_remote_ports/rport-4\:0-1/*
-> > 0x22000004cf69c688
-> ...
-> > cat /sys/class/fc_remote_ports/rport-4\:0-2/* | log
-> > 0x2200000c507ce809
-> ...
-> > cat /sys/class/fc_remote_ports/rport-4\:0-3/* :
-> > 0x22000004cf69b98f
-> ...
-> 
-> 
-> You mentioned that the 'BIOS' configuration program recognizes 6
-> devices, have there been any changes made via the BIOS utility to
-> 
-> * assign a hard-loop id?
-> * acquire a loop-id during LIPA?
-> 
-> or any changes above and beyond 'default' settings?  If so, could you
-> 'retrore' default settings within BIOS utility?
+>From c3bf4d3ee34ecaa3d3ee13d843677ed25da8ca6e Mon Sep 17 00:00:00 2001
+From: Manuel Lauss <mlau@msc-ge.com>
+Date: Wed, 7 May 2008 15:04:51 +0200
+Subject: [PATCH] au1xmmc: 4 bit transfer mode
 
-Hmm your right.. it's only showing 4 drives in the BIOS utility.  Don't 
-know why I recall seeing more ealier.
+Add 4 Bit transfer mode support.
 
-It's back to default and only showing 4 drives.
+Signed-off-by: Manuel Lauss <mano@roarinelk.homelinux.net>
+---
+ drivers/mmc/host/au1xmmc.c |   21 +++++++++++++++++----
+ 1 files changed, 17 insertions(+), 4 deletions(-)
 
-	Gerhard
+diff --git a/drivers/mmc/host/au1xmmc.c b/drivers/mmc/host/au1xmmc.c
+index 17870cd..8ee7640 100644
+--- a/drivers/mmc/host/au1xmmc.c
++++ b/drivers/mmc/host/au1xmmc.c
+@@ -159,13 +159,13 @@ static inline void IRQ_OFF(struct au1xmmc_host *host, u32 mask)
+ static inline void SEND_STOP(struct au1xmmc_host *host)
+ {
+ 
+-	/* We know the value of CONFIG2, so avoid a read we don't need */
+-	u32 mask = SD_CONFIG2_EN;
++	u32 config2;
+ 
+ 	WARN_ON(host->status != HOST_S_DATA);
+ 	host->status = HOST_S_STOP;
+ 
+-	au_writel(mask | SD_CONFIG2_DF, HOST_CONFIG2(host));
++	config2 = au_readl(HOST_CONFIG2(host));
++	au_writel(config2 | SD_CONFIG2_DF, HOST_CONFIG2(host));
+ 	au_sync();
+ 
+ 	/* Send the stop commmand */
+@@ -760,6 +760,7 @@ static void au1xmmc_reset_controller(struct au1xmmc_host *host)
+ static void au1xmmc_set_ios(struct mmc_host* mmc, struct mmc_ios* ios)
+ {
+ 	struct au1xmmc_host *host = mmc_priv(mmc);
++	u32 config;
+ 
+ 	if (ios->power_mode == MMC_POWER_OFF)
+ 		au1xmmc_set_power(host, 0);
+@@ -771,6 +772,18 @@ static void au1xmmc_set_ios(struct mmc_host* mmc, struct mmc_ios* ios)
+ 		au1xmmc_set_clock(host, ios->clock);
+ 		host->clock = ios->clock;
+ 	}
++
++	config = au_readl(HOST_CONFIG2(host));
++	switch (ios->bus_width) {
++	case MMC_BUS_WIDTH_4:
++		config |= (1 << 8);
++		break;
++	case MMC_BUS_WIDTH_1:
++		config &= ~(1 << 8);
++		break;
++	}
++	au_writel(config, HOST_CONFIG2(host));
++	au_sync();
+ }
+ 
+ static void au1xmmc_dma_callback(int irq, void *dev_id)
+@@ -983,7 +996,7 @@ static int __devinit au1xmmc_probe(struct platform_device *pdev)
+ 	mmc->max_blk_count = 512;
+ 
+ 	mmc->ocr_avail = AU1XMMC_OCR;
+-	mmc->caps = 0;
++	mmc->caps = MMC_CAP_4_BIT_DATA;
+ 
+ 	host->id = pdev->id;
+ 	host->status = HOST_S_IDLE;
+-- 
+1.5.5.1
 
-
-
---
-Gerhard Mack
-
-gmack@innerfire.net
-
-<>< As a computer I find your faith in technology amusing.
