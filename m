@@ -1,122 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763498AbYEGQvx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760888AbYEGQzN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763498AbYEGQvx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 12:51:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762329AbYEGQvD
+	id S1760888AbYEGQzN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 12:55:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752751AbYEGQyx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 12:51:03 -0400
-Received: from fg-out-1718.google.com ([72.14.220.155]:21933 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762065AbYEGQu6 convert rfc822-to-8bit (ORCPT
+	Wed, 7 May 2008 12:54:53 -0400
+Received: from mtagate8.uk.ibm.com ([195.212.29.141]:30272 "EHLO
+	mtagate8.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752710AbYEGQyv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 12:50:58 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=H53qPuks4VusqC1Ow9cm5KNBhLLhXp87zj7UfXpFzvmn/bSUE1Xq3tOBOUHi5cUwBE2egnZdloRRQ1kynyl+ymd1PmD4kxHA1l6IMp8V9BYly2id58bo9DQblD3xnIqVDPtqU1FrNSIO52Ec7QatOePSkdz374j93g0FvKaV42w=
-Message-ID: <c878e2290805070950o260fbb77m27407a483af9dbc9@mail.gmail.com>
-Date: Wed, 7 May 2008 18:50:54 +0200
-From: "Kim Hansen" <kimhanse@gmail.com>
-To: "Alex Dubov" <oakad@yahoo.com>
-Subject: Re: tifm_7xx1: SD card is ignored
-Cc: linux-kernel@vger.kernel.org, drzeus@drzeus.cx
-In-Reply-To: <202777.76958.qm@web36706.mail.mud.yahoo.com>
+	Wed, 7 May 2008 12:54:51 -0400
+Message-ID: <4821DEB0.7050308@linux.vnet.ibm.com>
+Date: Wed, 07 May 2008 18:54:08 +0200
+From: Jochen Roth <jroth@linux.vnet.ibm.com>
+Reply-To: jroth@linux.vnet.ibm.com
+User-Agent: Thunderbird 2.0.0.12 (X11/20080303)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-References: <c878e2290805061056k4b97513boa924eae90d649391@mail.gmail.com>
-	 <202777.76958.qm@web36706.mail.mud.yahoo.com>
+To: Carl Love <cel@us.ibm.com>
+CC: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Arnd Bergmann <arnd@arndb.de>,
+       oprofile-list <oprofile-list@lists.sourceforge.net>
+Subject: Re: [Cbe-oss-dev] [PATCH] Updated: Reworked Cell OProfile: SPU mutex
+ lock fix
+References: <1209587712.7531.42.camel@carll-linux-desktop>
+In-Reply-To: <1209587712.7531.42.camel@carll-linux-desktop>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 7, 2008 at 3:21 PM, Alex Dubov <oakad@yahoo.com> wrote:
->> Unfortunately my machine crashes every hour or so when I run 2.6.25,
->> both with the home build kernel and with the Debian kernel, this makes
->> it impossible for me to do any real testing. The SD card works on the
->> home build kernel, but not on the Debian kernel, I will wait for
->> 2.6.25 to become stable for me and then find the difference between
->> the two build that prevents the SD card from working on one of them.
+Carl,
 
-Now it just looks like it sometimes work and other times don't, on
-some kernels it works on 80% inserts and on other it only works on 5%.
-This means that the problem most likely has not been fixed between
-2.6.24 and 2.6.25, it was just a coincidence that it worked on on and
-not the other the first few times I tested it.
+I applied your patch on Jeremy's latest kernel.org spufs tree.
 
->> I have also tried to compile 2.6.24 for myself now in order to see if
->> the SD would work there, it didn't, but I got a reaction in the dmesg
->> now:
->>   mmc0: card claims to support voltages below the defined range. These
->> will be ignored.
->>   mmc0: SDIO card claims to support the incompletely defined 'low
->> voltage range'. This will be ignored.
->>   mmc0: error -110 whilst initialising SDIO card
->>
->> This might explain what the problem is?
->>
->> Anyway, thanks for your time, I will just wait a little longer as it
->> almost works now,
->
->
-> First, where's debug log? There are plenty of debug messages in the MMC code -
-> just enable the debug printout and send it to me or Pierre.
->
-> Second, I'm not sure the problem is tifm specific, otherwise where's SDIO stuff
-> comes from?
+ > +void oprofile_add_value(unsigned long value, int cpu) {
+ > +	struct oprofile_cpu_buffer * cpu_buf = &cpu_buffer[cpu];
 
-I think you are right, it looks like this computer uses the sdhci interface.
+Shouldn't it be
+	struct oprofile_cpu_buffer *cpu_buf = &per_cpu(cpu_buffer, cpu);
 
-I have captured some logs now, there is logs of a successful insert
-and remove, and of an unsuccessful.
+At least my compiler complained about that.
 
-Successful  insert: 16:18:50   remove:  16:20:26
-Unsuccessful insert:  16:21:38  remove:  16:21:47
+I booted a kernel with your patches applied and the system locked up 
+anyway:
 
-The log can be found at: http://i9.dk/~kim/mmc-log.txt.bz2
+Unable to handle kernel paging request for data at address 
+0xd0000000004fe9a8
+Faulting instruction address: 0xd000000000330ad8
+cpu 0x0: Vector: 300 (Data Access) at [c00000003c337680]
+     pc: d000000000330ad8: .alloc_cpu_buffers+0x7c/0x12c [oprofile]
+     lr: d000000000330abc: .alloc_cpu_buffers+0x60/0x12c [oprofile]
+     sp: c00000003c337900
+    msr: 9000000000009032
+    dar: d0000000004fe9a8
+  dsisr: 42000000
+   current = 0xc00000003e128600
+   paca    = 0xc0000000005b3480
+     pid   = 2356, comm = oprofiled
+enter ? for help
+[c00000003c3379a0] d0000000003302ac .oprofile_setup+0x2c/0x134 [oprofile]
+[c00000003c337a30] d00000000033176c .event_buffer_open+0x7c/0xc8 [oprofile]
+[c00000003c337ac0] c0000000000d6ca8 .__dentry_open+0x190/0x308
+[c00000003c337b70] c0000000000e7a5c .do_filp_open+0x3c4/0x8e8
+[c00000003c337d00] c0000000000d6a1c .do_sys_open+0x80/0x14c
+[c00000003c337db0] c0000000001192f4 .compat_sys_open+0x24/0x38
+[c00000003c337e30] c0000000000076b4 syscall_exit+0x0/0x40
+--- Exception: c01 (System Call) at 000000000ff006f8
+SP (ffc6f6a0) is in userspace
 
-This is the part from the unsuccessful insert:
-sdhci [sdhci_irq()]: *** sdhci:slot0 got interrupt: 0x00000040
-mmc0: clock 0Hz busmode 1 powermode 1 cs 0 Vdd 21 width 0 timing 0
-mmc0: clock 187500Hz busmode 1 powermode 2 cs 0 Vdd 21 width 0 timing 0
-mmc0: clock 187500Hz busmode 1 powermode 2 cs 1 Vdd 21 width 0 timing 0
-mmc0: starting CMD0 arg 00000000 flags 000000c0
-sdhci [sdhci_irq()]: *** sdhci:slot0 got interrupt: 0x00000001
-mmc0: req done (CMD0): 0: 00000000 00000000 00000000 00000000
-mmc0: clock 187500Hz busmode 1 powermode 2 cs 0 Vdd 21 width 0 timing 0
-mmc0: starting CMD8 arg 000001aa flags 000002f5
-sdhci [sdhci_irq()]: *** sdhci:slot0 got interrupt: 0x00018000
-mmc0: req done (CMD8): -110: 00000000 00000000 00000000 00000000
-mmc0: starting CMD5 arg 00000000 flags 000002e1
-sdhci [sdhci_irq()]: *** sdhci:slot0 got interrupt: 0x00018000
-mmc0: req failed (CMD5): -110, retrying...
-sdhci [sdhci_irq()]: *** sdhci:slot0 got interrupt: 0x00018000
-mmc0: req failed (CMD5): -110, retrying...
-sdhci [sdhci_irq()]: *** sdhci:slot0 got interrupt: 0x00018000
-mmc0: req failed (CMD5): -110, retrying...
-sdhci [sdhci_irq()]: *** sdhci:slot0 got interrupt: 0x00000001
-mmc0: req done (CMD5): 0: ffffffff 00000000 00000000 00000000
-mmc0: card claims to support voltages below the defined range. These
-will be ignored.
-mmc0: SDIO card claims to support the incompletely defined 'low
-voltage range'. This will be ignored.
-mmc0: clock 187500Hz busmode 1 powermode 2 cs 0 Vdd 20 width 0 timing 0
-mmc0: starting CMD5 arg 00300000 flags 000002e1
-sdhci [sdhci_irq()]: *** sdhci:slot0 got interrupt: 0x00018000
-mmc0: req failed (CMD5): -110, retrying...
-sdhci [sdhci_irq()]: *** sdhci:slot0 got interrupt: 0x00018000
-mmc0: req failed (CMD5): -110, retrying...
-sdhci [sdhci_irq()]: *** sdhci:slot0 got interrupt: 0x00018000
-mmc0: req failed (CMD5): -110, retrying...
-sdhci [sdhci_irq()]: *** sdhci:slot0 got interrupt: 0x00018000
-mmc0: req done (CMD5): -110: 00000000 00000000 00000000 00000000
-mmc0: clock 0Hz busmode 1 powermode 0 cs 0 Vdd 0 width 0 timing 0
-mmc0: error -110 whilst initialising SDIO card
-mmc0: clock 0Hz busmode 1 powermode 0 cs 0 Vdd 0 width 0 timing 0
-
--- 
-Kim Hansen
-Vadgårdsvej 3, 2.tv
-2860 Søborg
-Fastnet: 3956 2437 -- Mobil: 3091 2437
