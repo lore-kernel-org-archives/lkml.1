@@ -1,31 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757109AbYEGPkK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763833AbYEGPkm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757109AbYEGPkK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 11:40:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763286AbYEGPjW
+	id S1763833AbYEGPkm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 11:40:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763531AbYEGPj5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 11:39:22 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:37214 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1763225AbYEGPjR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 11:39:17 -0400
-Date: Wed, 7 May 2008 08:38:35 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Artem Bityutskiy <dedekind@yandex.ru>
-Cc: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Adrian Hunter <ext-adrian.hunter@nokia.com>,
-       Edward Shishkin <edward.shishkin@gmail.com>,
-       Christoph Hellwig <hch@infradead.org>
-Subject: Re: [PATCH take 2 01/28] VFS: introduce writeback_inodes_sb()
-Message-Id: <20080507083835.6ba126e6.akpm@linux-foundation.org>
-In-Reply-To: <48218F21.4090304@yandex.ru>
-References: <1210070159-22794-1-git-send-email-Artem.Bityutskiy@nokia.com>
-	<1210070159-22794-2-git-send-email-Artem.Bityutskiy@nokia.com>
-	<20080507002345.831bc379.akpm@linux-foundation.org>
-	<48218F21.4090304@yandex.ru>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+	Wed, 7 May 2008 11:39:57 -0400
+Received: from xenotime.net ([66.160.160.81]:59380 "HELO xenotime.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1761182AbYEGPjy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 May 2008 11:39:54 -0400
+Date: Wed, 7 May 2008 08:39:46 -0700
+From: Randy Dunlap <rdunlap@xenotime.net>
+To: Li Zefan <lizf@cn.fujitsu.com>, akpm <akpm@linux-foundation.org>,
+       sfr@canb.auug.org.au
+Cc: Shen Feng <shen@cn.fujitsu.com>, hpa@zytor.com,
+       linux-kernel@vger.kernel.org, Randy Dunlap <rdunlap@xenotime.net>
+Subject: Re: [PATCH] x86: remove printk compiling warning
+Message-Id: <20080507083946.49a3b5ab.rdunlap@xenotime.net>
+In-Reply-To: <482167DF.4020200@cn.fujitsu.com>
+References: <482162E5.7030606@cn.fujitsu.com>
+	<482167DF.4020200@cn.fujitsu.com>
+Organization: YPO4
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -33,35 +29,50 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 07 May 2008 14:14:41 +0300 Artem Bityutskiy <dedekind@yandex.ru> wrote:
+On Wed, 07 May 2008 16:27:11 +0800 Li Zefan wrote:
 
-> Hi Andrew,
+> CC: Randy Dunlap <rdunlap@xenotime.net>
 > 
-> Andrew Morton wrote:
-> > This looks rather similar to
-> > http://userweb.kernel.org/~akpm/mmotm/broken-out/reiser4-sb_sync_inodes.patch
+> Shen Feng wrote:
+> > Since size is unsigned long, the format string is changed
+> > from zd to lu.
 > > 
-> > Which is best?
+> > Signed-off-by: Shen Feng <shen@cn.fujitsu.com>
+> > ---
+> >  arch/x86/kernel/setup.c |    2 +-
+> >  1 files changed, 1 insertions(+), 1 deletions(-)
+> > 
+> > diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
+> > index cc6f5eb..c0c68c1 100644
+> > --- a/arch/x86/kernel/setup.c
+> > +++ b/arch/x86/kernel/setup.c
+> > @@ -95,7 +95,7 @@ void __init setup_per_cpu_areas(void)
+> > 
+> >  	/* Copy section for each CPU (we discard the original) */
+> >  	size = PERCPU_ENOUGH_ROOM;
+> > -	printk(KERN_INFO "PERCPU: Allocating %zd bytes of per cpu data\n",
+> > +	printk(KERN_INFO "PERCPU: Allocating %lu bytes of per cpu data\n",
+> >  			  size);
+> > 
+> >  	for_each_possible_cpu(i) {
 > 
-> Well, this reiser4 patch is basically doing 3 things at once:
-> 1. Introduce ->sync_inodes()
-> 2. Move spin_lock(&inode_lock);
-> 3. Export generic_sync_sb_inodes()
+> Let me figure out this.
 > 
-> As Christoph suggested, I've attached a patch which just moves the
-> spinlock. Could you please consider sending it to Linus or taking into your tree?
+> Commit 0fc5035fc66d26776bebd45c508a9bce3611f388 in linux-next changed
+> 'size' from unsigned long to ssize_t, causing a compile warning, and
+> then Randy posted a patch to fix it:
+> 	http://marc.info/?l=linux-kernel&m=120958902125650&w=2
+> 
+> But this patch was wrongly merged into mainline, causing the compile warning
+> you described here.
+> 
+> So we should revert Randy's patch and re-apply it to linux-next ?
 
-I already added gti-ubifs.patch to the -mm lineup.  I haven't yet tried
-pulling, merging or compiling it.
+Hi,
+Thanks for the detective work.  I hadn't looked into this yet.
 
-I'd suggest that you just retain this patch in your tree.
+Yes, my patch was sent for linux-next.  How are we supposed to
+keep this straightened out?
 
-> Should I amend the reiser4 patch correspondingly for you?
-
-That would be nice, if you have time, thanks.
-
-> Also, what do you think about taking UBIFS into your tree?
-
-I take git trees pretty promiscuously, to get them a bit more exposure and
-merge/build testing.
-
+---
+~Randy
