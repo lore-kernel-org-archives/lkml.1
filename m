@@ -1,73 +1,155 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932982AbYEGW01@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764387AbYEGW04@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932982AbYEGW01 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 18:26:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756858AbYEGW0I
+	id S1764387AbYEGW04 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 18:26:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933120AbYEGW0a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 18:26:08 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:50049 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757417AbYEGW0G (ORCPT
+	Wed, 7 May 2008 18:26:30 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:62626 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932895AbYEGW0Z convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 18:26:06 -0400
-Date: Wed, 7 May 2008 15:25:28 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: davem@davemloft.net, linux-kernel@vger.kernel.org, y-goto@jp.fujitsu.com
-Subject: Re: sparc64 bootup regression...
-Message-Id: <20080507152528.8fa6a951.akpm@linux-foundation.org>
-In-Reply-To: <200805080009.46012.rjw@sisk.pl>
-References: <20080429.231241.221824292.davem@davemloft.net>
-	<20080429233832.168fb6ee.akpm@linux-foundation.org>
-	<200805080009.46012.rjw@sisk.pl>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Wed, 7 May 2008 18:26:25 -0400
+Date: Wed, 7 May 2008 15:26:14 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: =?ISO-8859-1?Q? "J.A._Magall=F3n" ?= <jamagallon@ono.com>
+Cc: Linux-Kernel <linux-kernel@vger.kernel.org>,
+       scsi <linux-scsi@vger.kernel.org>
+Subject: Re: A couple problems with -rc1-git5
+Message-Id: <20080507152614.f19fb485.randy.dunlap@oracle.com>
+In-Reply-To: <20080508001815.371ec9d3@werewolf.home>
+References: <20080508001815.371ec9d3@werewolf.home>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 8 May 2008 00:09:45 +0200
-"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+[cc: linux-scsi]
 
-> On Wednesday, 30 of April 2008, Andrew Morton wrote:
-> > On Tue, 29 Apr 2008 23:12:41 -0700 (PDT) David Miller <davem@davemloft.net> wrote:
-> > 
-> > > 
-> > > This commit causes bootup failures on sparc64:
-> > > 
-> > > commit 86f6dae1377523689bd8468fed2f2dd180fc0560
-> > > Author: Yasunori Goto <y-goto@jp.fujitsu.com>
-> > > Date:   Mon Apr 28 02:13:33 2008 -0700
-> > > 
-> > >     memory hotplug: allocate usemap on the section with pgdat
-> > >     
-> > >     Usemaps are allocated on the section which has pgdat by this.
-> > >     
-> > >     Because usemap size is very small, many other sections usemaps are allocated
-> > >     on only one page.  If a section has usemap, it can't be removed until removing
-> > >     other sections.  This dependency is not desirable for memory removing.
-> > >     
-> > >     Pgdat has similar feature.  When a section has pgdat area, it must be the last
-> > >     section for removing on the node.  So, if section A has pgdat and section B
-> > >     has usemap for section A, Both sections can't be removed due to dependency
-> > >     each other.
-> > >     
-> > >     To solve this issue, this patch collects usemap on same section with pgdat.
-> > >     If other sections doesn't have any dependency, this section will be able to be
-> > >     removed finally.
-> > 
-> > Thanks.  Does a straightforward revert fix it?  If so, we could do that while heads
-> > are being scratched.
+On Thu, 8 May 2008 00:18:15 +0200 J.A. Magallón wrote:
+
+> Hi...
 > 
-> Has that been reverted already?
+> I built 2.6.26-rc1-git5 and foud a couple problems.
+> 
+> First, I get this warning on boot:
+> 
+> ------------[ cut here ]------------
+> WARNING: at include/linux/blkdev.h:431 blk_queue_init_tags+0x100/0x112()
+> Modules linked in:
+> Pid: 1, comm: swapper Not tainted 2.6.25-jam05 #1
+>  [<c011e4f8>] warn_on_slowpath+0x4d/0x66
+>  [<c0132d78>] __atomic_notifier_call_chain+0x27/0x48
+>  [<c0132db0>] atomic_notifier_call_chain+0x17/0x1b
+>  [<c024b21c>] notify_update+0x1f/0x23
+>  [<c024b465>] vt_console_print+0x1dd/0x2a6
+>  [<c024b288>] vt_console_print+0x0/0x2a6
+>  [<c0132932>] up+0x9/0x2b
+>  [<c01f37f0>] init_tag_map+0x4e/0x95
+>  [<c01f3915>] __blk_queue_init_tags+0x27/0x4e
+>  [<c01f3aee>] blk_queue_init_tags+0x100/0x112
+>  [<c0284dd8>] ahd_platform_set_tags+0x179/0x1a8
+>  [<c02851c7>] ahd_linux_slave_configure+0xcd/0x131
+>  [<c025e90c>] scsi_probe_and_add_lun+0x706/0x966
+>  [<c025edcb>] __scsi_scan_target+0xd9/0x5d8
+>  [<c019d553>] sysfs_ilookup_test+0x0/0xd
+>  [<c019db0b>] sysfs_addrm_finish+0x14/0x1c6
+>  [<c019d85d>] sysfs_find_dirent+0x1e/0x27
+>  [<c019d8a1>] sysfs_add_one+0x3b/0x8b
+>  [<c019d2c9>] sysfs_add_file_mode+0x4d/0x76
+>  [<c019ec61>] internal_create_group+0xd7/0x196
+>  [<c032a382>] klist_next+0x53/0x90
+>  [<c025f342>] scsi_scan_channel+0x78/0x8d
+>  [<c025f3ff>] scsi_scan_host_selected+0xa8/0xd1
+>  [<c025f48f>] do_scsi_scan_host+0x67/0x69
+>  [<c0287363>] ahd_linux_register_host+0x266/0x2e3
+>  [<c0287c6f>] ahd_pci_map_int+0x2c/0x50
+>  [<c0280f5a>] ahd_pci_config+0x533/0x824
+>  [<c01fd606>] kobject_get+0xf/0x13
+>  [<c0252085>] get_device+0xe/0x14
+>  [<c02096ac>] pci_dev_get+0xf/0x13
+>  [<c0287efc>] ahd_linux_pci_dev_probe+0x139/0x17f
+>  [<c019db0b>] sysfs_addrm_finish+0x14/0x1c6
+>  [<c019d85d>] sysfs_find_dirent+0x1e/0x27
+>  [<c019d8a1>] sysfs_add_one+0x3b/0x8b
+>  [<c019e543>] sysfs_create_link+0x89/0x106
+>  [<c0209633>] pci_match_device+0x9c/0xad
+>  [<c0287dc3>] ahd_linux_pci_dev_probe+0x0/0x17f
+>  [<c02096f0>] pci_device_probe+0x40/0x5f
+>  [<c02545c3>] driver_probe_device+0x76/0x152
+>  [<c02546f5>] __driver_attach+0x56/0x58
+>  [<c0253de4>] bus_for_each_dev+0x3c/0x5a
+>  [<c0254486>] driver_attach+0x16/0x1a
+>  [<c025469f>] __driver_attach+0x0/0x58
+>  [<c025428d>] bus_add_driver+0x19c/0x21f
+>  [<c0209667>] pci_device_remove+0x0/0x36
+>  [<c025482e>] driver_register+0x4d/0x10f
+>  [<c02098dd>] __pci_register_driver+0x32/0x65
+>  [<c0418b9f>] ahd_linux_init+0x53/0x6f
+>  [<c04047a0>] kernel_init+0x11a/0x27f
+>  [<c011a438>] finish_task_switch+0x1f/0x6d
+>  [<c011a8c6>] schedule_tail+0x16/0x44
+>  [<c0102d32>] ret_from_fork+0x6/0x1c
+>  [<c0404686>] kernel_init+0x0/0x27f
+>  [<c0404686>] kernel_init+0x0/0x27f
+>  [<c0103a0f>] kernel_thread_helper+0x7/0x18
+>  =======================
+> ---[ end trace 20d7bdfa512ea60e ]---
+> 
+> Second, lsscsi gives strange output:
+> 
+> werewolf:~# lsscsi
+> sdev_scandir_sort: left parse failed
+> sdev_scandir_sort: right parse failed
+> sdev_scandir_sort: left parse failed
+> sdev_scandir_sort: left parse failed
+> sdev_scandir_sort: right parse failed
+> sdev_scandir_sort: right parse failed
+> sdev_scandir_sort: right parse failed
+> sdev_scandir_sort: left parse failed
+> sdev_scandir_sort: right parse failed
+> sdev_scandir_sort: left parse failed
+> sdev_scandir_sort: right parse failed
+> sdev_scandir_sort: left parse failed
+> sdev_scandir_sort: left parse failed
+> sdev_scandir_sort: left parse failed
+> sdev_scandir_sort: right parse failed
+> sdev_scandir_sort: right parse failed
+> [target1:0:0]type?   vendor?  model?           rev?  -
+> [target1:0:1]type?   vendor?  model?           rev?  -
+> [target2:0:0]type?   vendor?  model?           rev?  -
+> [target2:0:1]type?   vendor?  model?           rev?  -
+> [target4:0:0]type?   vendor?  model?           rev?  -
+> [1:0:0:0]    disk    SEAGATE  ST336807LW       0C01  -
+> [1:0:1:0]    disk    SEAGATE  ST336807LW       0C01  -
+> [2:0:0:0]    disk    ATA      ST3120022A       3.06  -
+> [2:0:1:0]    cd/dvd  HL-DT-ST DVDRAM GSA-H10N  JL12  -
+> [4:0:0:0]    disk    ATA      WDC WD3200AVJS-6 12.0  -
+> 
+> What does this mean ?
+> 
+> TIA
+> 
+> -- 
+> J.A. Magallon <jamagallon()ono!com>     \               Software is like sex:
+>                                          \         It's better when it's free
+> Mandriva Linux release 2008.1 (Cooker) for i586
+> Linux 2.6.23-jam05 (gcc 4.2.2 20071128 (4.2.2-2mdv2008.1)) SMP PREEMPT
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
 
-yes, it has.
 
-commit 5167464446e527b5a3b5618ba0baff93048bcbbe
-Author: Andrew Morton <akpm@linux-foundation.org>
-Date:   Wed Apr 30 00:55:17 2008 -0700
-
-    revert "memory hotplug: allocate usemap on the section with pgdat"
-
+---
+~Randy
