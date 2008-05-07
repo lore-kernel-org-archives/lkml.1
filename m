@@ -1,82 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765410AbYEGSMa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765199AbYEGSOk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765410AbYEGSMa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 14:12:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754335AbYEGSMR
+	id S1765199AbYEGSOk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 14:14:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754335AbYEGSOa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 14:12:17 -0400
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:40105 "EHLO e5.ny.us.ibm.com"
+	Wed, 7 May 2008 14:14:30 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:44150 "EHLO e4.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754041AbYEGSMN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 14:12:13 -0400
-Subject: Re: [PATCH 1/8] Scaling msgmni to the amount of lowmem
-From: Matt Helsley <matthltc@us.ibm.com>
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-Cc: Nadia Derbey <Nadia.Derbey@bull.net>,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, cmm@us.ibm.com, akpm@linux-foundation.org
-In-Reply-To: <20080507131712.GA8580@sergelap.austin.ibm.com>
-References: <20080211141646.948191000@bull.net>
-	 <20080211141813.354484000@bull.net>
-	 <12c511ca0804291328v2f0b87csd0f2cf3accc6ad00@mail.gmail.com>
-	 <481EC917.6070808@bull.net>
-	 <1FE6DD409037234FAB833C420AA843EC014392F9@orsmsx424.amr.corp.intel.com>
-	 <20080506180527.GA8315@sergelap.austin.ibm.com> <48214007.7050800@bull.net>
-	 <20080507131712.GA8580@sergelap.austin.ibm.com>
+	id S1754041AbYEGSO2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 May 2008 14:14:28 -0400
+Subject: [PATCH] Fix for OProfile callgraph for Power 64 bit user apps
+From: Carl Love <cel@us.ibm.com>
+To: inuxppc-dev <linuxppc-dev@ozlabs.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Maynard Johnson <maynardj@us.ibm.com>, cel@us.ibm.com
 Content-Type: text/plain
-Organization: IBM Linux Technology Center
-Date: Wed, 07 May 2008 11:12:07 -0700
-Message-Id: <1210183927.7323.402.camel@localhost.localdomain>
+Date: Wed, 07 May 2008 11:12:04 -0700
+Message-Id: <1210183924.7726.28.camel@carll-linux-desktop>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.2 
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Wed, 2008-05-07 at 08:17 -0500, Serge E. Hallyn wrote:
-> Quoting Nadia Derbey (Nadia.Derbey@bull.net):
-> > Serge E. Hallyn wrote:
-> >> Quoting Luck, Tony (tony.luck@intel.com):
-> >>>> Well, this printk had been suggested by somebody (sorry I don't remember 
-> >>>> who) when I first submitted the patch. Actually I think it might be 
-> >>>> useful for a sysadmin to be aware of a change in the msgmni value: we 
-> >>>> have the message not only at boot time, but also each time msgmni is 
-> >>>> recomputed because of a change in the amount of memory.
-> >>>
-> >>> If the message is directed at the system administrator, then it would
-> >>> be nice if there were some more meaningful way to show the namespace
-> >>> that is affected than just printing the hex address of the kernel 
-> >>> structure.
-> >>>
-> >>> As the sysadmin for my test systems, printing the hex address is mildly
-> >>> annoying ... I now have to add a new case to my scripts that look at
-> >>> dmesg output for unusual activity.
-> >>>
-> >>> Is there some better "name for a namespace" than the address? Perhaps
-> >>> the process id of the process that instantiated the namespace???
-> >> I agree with Tony here.  Aside from the nuisance it is to see that
-> >> message on console every time I unshare a namespace, a printk doesn't
-> >> seem like the right way to output the info.
-> >
-> > But you agree that this is happening only because you're doing tests 
-> > related to namespaces, right?
-> 
-> Yup :)
-> 
-> > I don't think that in a "standard" configuration this will happen very 
-> > frequently, but may be I'm wrong.
-> >
-> >>  At most I'd say an audit
-> >> message.
->
-> > That's a good idea. Thanks, Serge. I'll do that.
+The following patch fixes the 64 bit user code backtrace 
+which currently may hang the system.  
 
-	I'm not familiar with kernel policies regarding audit messages. Are
-audit messages treated anything like kernel interfaces when it comes to
-removing/changing them?
+Signed-off-by: Carl Love <carll@us.ibm.com>
 
-Cheers,
-	-Matt Helsley
+Index: linux-2.6.25.1/arch/powerpc/oprofile/backtrace.c
+===================================================================
+--- linux-2.6.25.1.orig/arch/powerpc/oprofile/backtrace.c	2008-05-01 16:45:25.000000000 -0500
++++ linux-2.6.25.1/arch/powerpc/oprofile/backtrace.c	2008-05-07 11:29:02.000000000 -0500
+@@ -53,19 +53,40 @@
+ #ifdef CONFIG_PPC64
+ static unsigned long user_getsp64(unsigned long sp, int is_first)
+ {
+-	unsigned long stack_frame[3];
++	unsigned long stk_frm_lr;
++	unsigned long stk_frm_sp;
++	unsigned long size;
++
++	/* Issue the __copy_from_user_inatomic() third argument currently
++	 * only takes sizes 1, 2, 4 or 8 bytes.  Don't read more then the 
++	 * first 48 bytes of the stack frame.  That is all that is 
++	 * guaranteed to exist.  Reading more may cause the system to hang.
++	 *
++	 * 64 bit stack frame layout:
++	 * 0-7   bytes is the pointer to previous stack 
++	 * 8-15  bytes condition register save area
++	 * 16-23 bytes link register save area
++	 */
++	size = sizeof(unsigned long);
++	if (!access_ok(VERIFY_READ, (void __user *)sp, size))
++		return 0;
+ 
+-	if (!access_ok(VERIFY_READ, (void __user *)sp, sizeof(stack_frame)))
++	if (__copy_from_user_inatomic(&stk_frm_sp, (void __user *)sp,
++					size))
+ 		return 0;
+ 
+-	if (__copy_from_user_inatomic(stack_frame, (void __user *)sp,
+-					sizeof(stack_frame)))
++	/* get the LR from the user stack */
++	if (!access_ok(VERIFY_READ, (void __user *)(sp+16), size))
++		return 0;
++
++	if (__copy_from_user_inatomic(&stk_frm_lr, (void __user *)(sp+16),
++					size))
+ 		return 0;
+ 
+ 	if (!is_first)
+-		oprofile_add_trace(STACK_LR64(stack_frame));
++		oprofile_add_trace(stk_frm_lr);
+ 
+-	return STACK_SP(stack_frame);
++	return stk_frm_sp;
+ }
+ #endif
+ 
+
 
