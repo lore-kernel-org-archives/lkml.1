@@ -1,59 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762120AbYEGPCh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762375AbYEGPDj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762120AbYEGPCh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 11:02:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757622AbYEGPC1
+	id S1762375AbYEGPDj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 11:03:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757307AbYEGPDZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 11:02:27 -0400
-Received: from web32606.mail.mud.yahoo.com ([68.142.207.233]:41003 "HELO
-	web32606.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1756933AbYEGPCY (ORCPT
+	Wed, 7 May 2008 11:03:25 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:52014 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753893AbYEGPDX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 11:02:24 -0400
-X-YMail-OSG: J.bUVZwVM1mYaU5bRdzL6YV1ZL9OqL2VMkqE_miq2bEHE7gQJ3eFq1Tjt4LQTQHZCA--
-X-Mailer: YahooMailRC/975.23 YahooMailWebService/0.7.185
+	Wed, 7 May 2008 11:03:23 -0400
 Date: Wed, 7 May 2008 08:02:23 -0700 (PDT)
-From: Martin Knoblauch <spamtrap@knobisoft.de>
-Subject: Re: 2.6.25.2 - Jiffies/Time jumping back and forth (Regereesion from 2.6.24)
-To: Bart Van Assche <bart.vanassche@gmail.com>
-Cc: linux-kernel@vger.kernel.org, hmh@hmh.eng.br
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+cc: Andi Kleen <andi@firstfloor.org>, Matthew Wilcox <matthew@wil.cx>,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
+       Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Alexander Viro <viro@ftp.linux.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: AIM7 40% regression with 2.6.26-rc1
+In-Reply-To: <alpine.LFD.1.10.0805070757170.32269@woody.linux-foundation.org>
+Message-ID: <alpine.LFD.1.10.0805070800120.32269@woody.linux-foundation.org>
+References: <1210052904.3453.30.camel@ymzhang> <20080506114449.GC32591@elte.hu> <1210126286.3453.37.camel@ymzhang> <1210131712.3453.43.camel@ymzhang> <87lk2mbcqp.fsf@basil.nowhere.org> <20080507114643.GR19219@parisc-linux.org> <87hcdab8zp.fsf@basil.nowhere.org>
+ <alpine.LFD.1.10.0805070728280.32269@woody.linux-foundation.org> <20080507153538.446693af@core> <alpine.LFD.1.10.0805070757170.32269@woody.linux-foundation.org>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <814762.71071.qm@web32606.mail.mud.yahoo.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------ Original Message ----
 
-> From: Bart Van Assche <bart.vanassche@gmail.com>
-> To: Martin Knoblauch <spamtrap@knobisoft.de>
-> Cc: linux-kernel@vger.kernel.org; hmh@hmh.eng.br
-> Sent: Wednesday, May 7, 2008 3:06:02 PM
-> Subject: Re: 2.6.25.2 - Jiffies/Time jumping back and forth (Regereesion from 2.6.24)
+
+On Wed, 7 May 2008, Linus Torvalds wrote:
 > 
-> On Wed, May 7, 2008 at 2:42 PM, Martin Knoblauch wrote:
-> >
-> >  any news on the one below? I upgraded to 2.6.25.2 and the problem still 
-> persists. Would adding a bugzilla actually help ? :-)
-> >
-> > http://www.ussg.iu.edu/hypermail/linux/kernel/0804.2/1144.html
-> 
-> I noticed a similar issue on 2.6.22 and 2.6.24 kernels: with ACPI
-> disabled Linux' clock jumps backward and forward early during boot.
-> See also the kernel messages from the attachment in comment #13 of
-> http://bugzilla.kernel.org/show_bug.cgi?id=9936.
-> 
-> Bart,
+> Quite frankly, maybe we _need_ to have a bad BKL for those to ever get 
+> fixed. As it was, people worked on trying to make the BKL behave better, 
+> and it was a failure. Rather than spend the effort on trying to make it 
+> work better (at a horrible cost), why not just say "Hell no - if you have 
+> issues with it, you need to work with people to get rid of the BKL 
+> rather than cluge around it".
 
-Hi Bart,
+Put another way: if we had introduced the BKL-as-semaphore with a known 
+40% performance drop in AIM7, I would simply never ever have accepted the 
+patch in the first place, regardless of _any_ excuses. 
 
- no this looks different. As soon as the timesource is detected, I see non-zero timestamps
-in dmesg, but they look smaller and jump in both directions. And I have never seen this before
-2.6.25.
+Performance is a feature too.
 
- It actually might be a good idea to get the dmesg output from 2.6.24.
+Now, just because the code is already merged should not be an excuse for 
+it then being shown to be bad. It's not a valid excuse to say "but we 
+already merged it, so we can't unmerge it". We sure as hell _can_ unmerge 
+it. 
 
-Cheers
-Martin
-
+			Linus
