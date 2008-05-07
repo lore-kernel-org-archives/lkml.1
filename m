@@ -1,56 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760773AbYEGQ72@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759313AbYEGREx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760773AbYEGQ72 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 12:59:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752456AbYEGQ7N
+	id S1759313AbYEGREx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 13:04:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753197AbYEGREm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 12:59:13 -0400
-Received: from avexch1.qlogic.com ([198.70.193.115]:39767 "EHLO
-	avexch1.qlogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751765AbYEGQ7K (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 12:59:10 -0400
-Date: Wed, 7 May 2008 09:59:03 -0700
-From: Andrew Vasquez <andrew.vasquez@qlogic.com>
-To: Gerhard Mack <gmack@innerfire.net>
-Cc: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [2.6.25.1] qla2xxx can't see more than 4 drives
-Message-ID: <20080507165903.GC69102@plap4.local>
-References: <alpine.DEB.1.10.0805031458050.2330@mtl.rackplans.net> <20080506135118.GA46493@plap4.qlogic.org> <alpine.DEB.1.10.0805061022120.5741@mtl.rackplans.net> <20080506220826.GI57975@plap4.qlogic.org> <alpine.DEB.1.10.0805071204000.31448@mtl.rackplans.net>
+	Wed, 7 May 2008 13:04:42 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:35150 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752587AbYEGREk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 May 2008 13:04:40 -0400
+Date: Wed, 7 May 2008 10:04:39 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Ingo Molnar <mingo@elte.hu>
+cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: Spinlocks waiting with interrupts disabled / preempt disabled.
+In-Reply-To: <20080507073017.GJ32195@elte.hu>
+Message-ID: <Pine.LNX.4.64.0805071002330.3110@schroedinger.engr.sgi.com>
+References: <Pine.LNX.4.64.0805061220570.30604@schroedinger.engr.sgi.com>
+ <20080507073017.GJ32195@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0805071204000.31448@mtl.rackplans.net>
-Organization: QLogic Corporation
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-OriginalArrivalTime: 07 May 2008 16:59:07.0538 (UTC) FILETIME=[A9B2D720:01C8B063]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 07 May 2008, Gerhard Mack wrote:
+On Wed, 7 May 2008, Ingo Molnar wrote:
 
-> > You mentioned that the 'BIOS' configuration program recognizes 6
-> > devices, have there been any changes made via the BIOS utility to
-> > 
-> > * assign a hard-loop id?
-> > * acquire a loop-id during LIPA?
-> > 
-> > or any changes above and beyond 'default' settings?  If so, could you
-> > 'retrore' default settings within BIOS utility?
+> > +		return flags;
+> > +	local_irq_restore(flags);
+> > +	while (!write_can_lock(lock))
+> > +		cpu_relax();
+> > +	goto retry;
+> >  }
+> >  EXPORT_SYMBOL(_write_lock_irqsave);
 > 
-> Hmm your right.. it's only showing 4 drives in the BIOS utility.  Don't 
-> know why I recall seeing more ealier.
-> 
-> It's back to default and only showing 4 drives.
+> hm, this is done on a too high level and will turn off some debugging 
+> code. I.e. if we dont just loop long but truly deadlock here we wont 
+> call lib/spinlock_debug.c's _raw_write_lock() code that does some sanity 
+> checks in the debug case.
 
-Ok, so at least the BIOS and driver views of the topology are
-consistent...  The firmware supports up to 126 devices in a FCAL
-topology, so there's no HBA limit that is being run into here.
+Right. I guessed that given the gazillion helper functions and wanted to 
+know how to address this in the right way.
 
-You mentioned that if you remove the originally visible drives, then
-the driver/BIOS can see the previously non-visible drives -- perhaps
-there is some limitation with the storage enclosure you are using...
+> so how about doing this on a deeper level and adding a new 
+> __raw_write_lock_flags() primitive that would look at the flags value 
+> and could enable interrupts in the lowlevel code?
 
-Regards,
-Andrew Vasquez
+Ok will look at that. Note that this is not unique to _write_lock_irqsave 
+but all other locks that disable interrupts seem to have the same issue. 
+
+We are likely going to duplicate a lot of functions.
+
+
