@@ -1,30 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761349AbYEGPbI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762881AbYEGPcJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761349AbYEGPbI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 11:31:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758214AbYEGPax
+	id S1762881AbYEGPcJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 11:32:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755343AbYEGPbx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 11:30:53 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:47026 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757846AbYEGPaw (ORCPT
+	Wed, 7 May 2008 11:31:53 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:46753 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755232AbYEGPbv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 11:30:52 -0400
-Date: Wed, 7 May 2008 16:21:18 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: <JosephChan@via.com.tw>
-Cc: <JosephChan@via.com.tw>, <akpm@linux-foundation.org>,
-       <geert@linux-m68k.org>, <linux-fbdev-devel@lists.sourceforge.net>,
-       <linux-kernel@vger.kernel.org>
-Subject: Re: [Linux-fbdev-devel] [PATCH 6/9] viafb: VIA Frame Buffer Device
- Driver
-Message-ID: <20080507162118.45ba52bb@core>
-In-Reply-To: <C80EF34A3D2E494DBAF9AC29C7AE4EB806F67759@exchtp03.taipei.via.com.tw>
-References: <C80EF34A3D2E494DBAF9AC29C7AE4EB806F67759@exchtp03.taipei.via.com.tw>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Wed, 7 May 2008 11:31:51 -0400
+Date: Wed, 7 May 2008 08:31:05 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Matthew Wilcox <matthew@wil.cx>,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
+       Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Alexander Viro <viro@ftp.linux.org.uk>
+Subject: Re: AIM7 40% regression with 2.6.26-rc1
+Message-Id: <20080507083105.b9874d78.akpm@linux-foundation.org>
+In-Reply-To: <4821C370.1030801@firstfloor.org>
+References: <1210052904.3453.30.camel@ymzhang>
+	<20080506114449.GC32591@elte.hu>
+	<1210126286.3453.37.camel@ymzhang>
+	<1210131712.3453.43.camel@ymzhang>
+	<87lk2mbcqp.fsf@basil.nowhere.org>
+	<20080507114643.GR19219@parisc-linux.org>
+	<87hcdab8zp.fsf@basil.nowhere.org>
+	<alpine.LFD.1.10.0805070728280.32269@woody.linux-foundation.org>
+	<4821C370.1030801@firstfloor.org>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -32,21 +38,12 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> +void delays(int count);
-> +void i2cWriteSdaScl(u8 sda, u8 scl);
-> +void i2cWriteScl(u8 scl);
-> +void i2cReadSdaScl(u8 *pSda, u8 *pScl);
+On Wed, 07 May 2008 16:57:52 +0200 Andi Kleen <andi@firstfloor.org> wrote:
 
-Style is good, code looks clean
+> Or figure out what made the semaphore consolidation slower? As Ingo
+> pointed out earlier 40% is unlikely to be a fast path problem, but some
+> algorithmic problem. Surely that is fixable (even for .26)?
 
-One big thing that needs fixing here is the function names. If the driver
-gets linked into the kernel then the symbols become global - and names
-like enableGPIO are asking for clashes. The viafb code is fine as it uses
-viafb_ as the function names. Possibly the helper functions should doo
-something similar.
+Absolutely.  Yanmin is apparently showing that each call to __down()
+results in 1,451 calls to schedule().  wtf?
 
-We also have a generic i2c layer that might be usable but that is
-something that could be addressed in the future and isn't really an
-important detail.
-
->
