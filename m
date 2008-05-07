@@ -1,207 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763642AbYEGXlo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763516AbYEGXmK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763642AbYEGXlo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 19:41:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761713AbYEGXkc
+	id S1763516AbYEGXmK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 19:42:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757274AbYEGXlE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 19:40:32 -0400
-Received: from rv-out-0506.google.com ([209.85.198.230]:35355 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760087AbYEGXkX (ORCPT
+	Wed, 7 May 2008 19:41:04 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:59488 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1761111AbYEGXlA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 19:40:23 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=uHAai5sFbfHkUdNf6rk4VajirD9ygR7JeTn2GH3ATd0psuKk9i91DNdXRhzQH/Gi0LOFptH9Ki74lmKUMSwUzoDH1C1hdc1IvsFjK7ccSaOu4beMndWvH4BOwotVTKZktR9G91rVp73uMFvHlHj9SNlV91TVLLXinytn+S7fX24=
-Message-ID: <86802c440805071640m46ceb05ex14f25d4b6bc58d7f@mail.gmail.com>
-Date: Wed, 7 May 2008 16:40:22 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: [PATCH] mptsas: add mptsas_shutdown to call pci_disable_msi
-Cc: James.Bottomley@hansenpartnership.com, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org, sathya.prakash@lsi.com, Eric.Moore@lsi.com,
-       ebiederm@xmission.com
-In-Reply-To: <20080507163155.1217515f.akpm@linux-foundation.org>
+	Wed, 7 May 2008 19:41:00 -0400
+Date: Wed, 7 May 2008 16:38:51 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Andrea Arcangeli <andrea@qumranet.com>
+cc: Andrew Morton <akpm@linux-foundation.org>, clameter@sgi.com,
+       steiner@sgi.com, holt@sgi.com, npiggin@suse.de, a.p.zijlstra@chello.nl,
+       kvm-devel@lists.sourceforge.net, kanojsarcar@yahoo.com,
+       rdreier@cisco.com, swise@opengridcomputing.com,
+       linux-kernel@vger.kernel.org, avi@qumranet.com, linux-mm@kvack.org,
+       general@lists.openfabrics.org, hugh@veritas.com, rusty@rustcorp.com.au,
+       aliguori@us.ibm.com, chrisw@redhat.com, marcelo@kvack.org,
+       dada1@cosmosbay.com, paulmck@us.ibm.com
+Subject: Re: [PATCH 01 of 11] mmu-notifier-core
+In-Reply-To: <20080507223738.GF8276@duo.random>
+Message-ID: <alpine.LFD.1.10.0805071633010.3024@woody.linux-foundation.org>
+References: <patchbomb.1210170950@duo.random> <e20917dcc8284b6a07cf.1210170951@duo.random> <20080507130528.adfd154c.akpm@linux-foundation.org> <alpine.LFD.1.10.0805071324570.3024@woody.linux-foundation.org> <20080507215840.GB8276@duo.random>
+ <alpine.LFD.1.10.0805071509270.3024@woody.linux-foundation.org> <20080507222758.GD8276@duo.random> <20080507223738.GF8276@duo.random>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200804221947.33524.yhlu.kernel@gmail.com>
-	 <86802c440804222012w1536b0a7y14a5c2f9dc333624@mail.gmail.com>
-	 <20080507163155.1217515f.akpm@linux-foundation.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 7, 2008 at 4:31 PM, Andrew Morton <akpm@linux-foundation.org> wrote:
->
-> On Tue, 22 Apr 2008 20:12:08 -0700
->  "Yinghai Lu" <yhlu.kernel@gmail.com> wrote:
->
->  > On Tue, Apr 22, 2008 at 7:47 PM, Yinghai Lu <yhlu.kernel.send@gmail.com> wrote:
->  > >
->  > >
->  > >  this change
->  > >
->  > >  | commit 23a274c8a5adafc74a66f16988776fc7dd6f6e51
->  > >  | Author: Prakash, Sathya <sathya.prakash@lsi.com>
->  > >  | Date:   Fri Mar 7 15:53:21 2008 +0530
->  > >  |
->  > >  |     [SCSI] mpt fusion: Enable MSI by default for SAS controllers
->  > >  |
->  > >  |     This patch modifies the driver to enable MSI by default for all SAS chips.
->  > >  |
->  > >  cause kexec RHEL 5.1 kernel fail.
->  > >
->  > >  root casue: the rhel 5.1 kernel still use INTx emulation.
->  > >  and mptscsih_shutdown doesn't call pci_disable_msi to reenable INTx on kexec path
->  > >
->  > >  so try to call mptsas_remove in mptsas_shutdown.
->  > >  then pci_disable_msi will be called via mptsas_remove==>mptscih_remove==>
->  > >  mpt_detach.
->  > >
->  > >  Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
->  > >  CC: Prakash, Sathya <sathya.prakash@lsi.com>
->  > >  CC: "Moore, Eric" <Eric.Moore@lsi.com>
->  > >
->  > >  Index: linux-2.6/drivers/message/fusion/mptsas.c
->  > >  ===================================================================
->  > >  --- linux-2.6.orig/drivers/message/fusion/mptsas.c
->  > >  +++ linux-2.6/drivers/message/fusion/mptsas.c
->  > >  @@ -3327,6 +3327,11 @@ static void __devexit mptsas_remove(stru
->  > >         mptscsih_remove(pdev);
->  > >   }
->  > >
->  > >  +static void mptsas_shutdown(struct pci_dev *pdev)
->  > >  +{
->  > >  +       mptsas_remove(pdev);
->  > >  +}
->  > >  +
->  > >   static struct pci_device_id mptsas_pci_table[] = {
->  > >         { PCI_VENDOR_ID_LSI_LOGIC, MPI_MANUFACTPAGE_DEVID_SAS1064,
->  > >                 PCI_ANY_ID, PCI_ANY_ID },
->  > >  @@ -3348,7 +3353,7 @@ static struct pci_driver mptsas_driver =
->  > >         .id_table       = mptsas_pci_table,
->  > >         .probe          = mptsas_probe,
->  > >         .remove         = __devexit_p(mptsas_remove),
->  > >  -       .shutdown       = mptscsih_shutdown,
->  > >  +       .shutdown       = mptsas_shutdown,
->  > >   #ifdef CONFIG_PM
->  > >         .suspend        = mptscsih_suspend,
->  > >         .resume         = mptscsih_resume,
->  > >  --
->  >
->  > fail on one system with big sas expander...
->  >
->  > LBSuse:~ # mkdir /xx
->  > LBSuse:~ # mount /dev/sdl1 /xx
->  > LBSuse:~ # cd /xx
->  > LBSuse:/xx # sh kk_rh_5.1
->  > LBSuse:/xx # ./kexec -e
->  > BUG: unable to handle kernel NULL pointer dereference at 0000000000000028
->  > IP: [<ffffffff80337af4>] sysfs_find_dirent+0x1f/0x5f
->  > PGD 41f137067 PUD 424482067 PMD 0
->  > Oops: 0000 [1] SMP
->  > CPU 7
->  > Modules linked in:
->  > Pid: 7534, comm: kexec Not tainted
->
->  I don't understand your email.
->
->  Are you saying that this oops is the thing which your patch fixes?
->
->  Or are you saying that this oops occurs even after your patch is applied?
->  That we have a second regression?
->
->
->
->  > 2.6.25-sched-devel.git-x86-latest.git-03823-g1508ed0-dirty #135
->  > RIP: 0010:[<ffffffff80337af4>]  [<ffffffff80337af4>] sysfs_find_dirent+0x1f/0x5f
->  > RSP: 0018:ffff8104238f7708  EFLAGS: 00010246
->  > RAX: 0000000000000000 RBX: ffffffff80cd36a5 RCX: 000000008c0f362e
->  > RDX: ffffffff80e20ab0 RSI: ffffffff80cd36a5 RDI: 0000000000000000
->  > RBP: ffff8104238f7728 R08: 0000000000000000 R09: 000000008c0f362e
->  > R10: ffff8104238f77f8 R11: 000000008c0f362e R12: 0000000000000000
->  > R13: ffff810223190358 R14: 0000000000000000 R15: 0000000000000000
->  > FS:  00007fde8859d6f0(0000) GS:ffff810427039f00(0000) knlGS:0000000000000000
->  > CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
->  > CR2: 0000000000000028 CR3: 00000004238b8000 CR4: 00000000000006e0
->  > DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
->  > DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
->  > Process kexec (pid: 7534, threadinfo ffff8104238f6000, task ffff8104238e0000)
->  > Stack:  0000000000000000 000000008c0f362e ffffffff80cd36a5 0000000000000000
->  >  ffff8104238f7758 ffffffff80337b70 000000008c0f362e 000000008c0f362e
->  >  ffff810223190268 ffffffff80e1fb20 ffff8104238f7798 ffffffff8033966e
->  > Call Trace:
->  >  [<ffffffff80337b70>] sysfs_get_dirent+0x3c/0x72
->  >  [<ffffffff8033966e>] sysfs_remove_group+0x38/0xb4
->  >  [<ffffffff80633007>] dpm_sysfs_remove+0x2f/0x45
->  >  [<ffffffff806336d3>] device_pm_remove+0x34/0x85
->  >  [<ffffffff8062b283>] device_del+0x30/0x1b0
->  >  [<ffffffff8062b428>] device_unregister+0x25/0x48
->  >  [<ffffffff80639e73>] enclosure_unregister+0x85/0xcb
->  >  [<ffffffff807dad42>] ses_intf_remove+0x8b/0xa8
->  >  [<ffffffff8062b2fb>] device_del+0xa8/0x1b0
->  >  [<ffffffff8062b428>] device_unregister+0x25/0x48
->  >  [<ffffffff80700bb4>] __scsi_remove_device+0x4c/0xaf
->  >  [<ffffffff80700c50>] scsi_remove_device+0x39/0x5c
->  >  [<ffffffff80700d15>] __scsi_remove_target+0xa2/0xf6
->  >  [<ffffffff80700de0>] ? __remove_child+0x0/0x4f
->  >  [<ffffffff80700e12>] __remove_child+0x32/0x4f
->  >  [<ffffffff8062ab27>] ? next_device+0x21/0x45
->  >  [<ffffffff8062ac23>] device_for_each_child+0x40/0x84
->  >  [<ffffffff80713d8e>] ? do_sas_phy_delete+0x0/0x66
->  >  [<ffffffff80700dbc>] scsi_remove_target+0x53/0x77
->  >  [<ffffffff807134b0>] sas_rphy_remove+0x42/0x81
->  >  [<ffffffff80713514>] sas_rphy_delete+0x25/0x48
->  >  [<ffffffff80713570>] sas_port_delete+0x39/0x147
->  >  [<ffffffff802259e0>] ? mcount_call+0x5/0x35
->  >  [<ffffffff80713d8e>] ? do_sas_phy_delete+0x0/0x66
->  >  [<ffffffff80713dc2>] do_sas_phy_delete+0x34/0x66
->  >  [<ffffffff8062ac23>] device_for_each_child+0x40/0x84
->  >  [<ffffffff80713d8e>] ? do_sas_phy_delete+0x0/0x66
->  >  [<ffffffff8071343f>] sas_remove_children+0x2e/0x5d
->  >  [<ffffffff807134b7>] sas_rphy_remove+0x49/0x81
->  >  [<ffffffff80713514>] sas_rphy_delete+0x25/0x48
->  >  [<ffffffff80713570>] sas_port_delete+0x39/0x147
->  >  [<ffffffff802259e0>] ? mcount_call+0x5/0x35
->  >  [<ffffffff80713d8e>] ? do_sas_phy_delete+0x0/0x66
->  >  [<ffffffff80713dc2>] do_sas_phy_delete+0x34/0x66
->  >  [<ffffffff8062ac23>] device_for_each_child+0x40/0x84
->  >  [<ffffffff8071343f>] sas_remove_children+0x2e/0x5d
->  >  [<ffffffff807136a6>] sas_remove_host+0x28/0x3e
->  >  [<ffffffff80ab22ab>] mptsas_remove+0x46/0x107
->  >  [<ffffffff802259e0>] ? mcount_call+0x5/0x35
->  >  [<ffffffff8080ef6d>] mptsas_shutdown+0x21/0x37
->  >  [<ffffffff805a6815>] pci_device_shutdown+0x37/0x4d
->  >  [<ffffffff8062a2ad>] device_shutdown+0x64/0xa0
->  >  [<ffffffff8027e57f>] ? blocking_notifier_call_chain+0x27/0x3d
->  >  [<ffffffff8027131e>] kernel_restart_prepare+0x3f/0x5a
->  >  [<ffffffff802716f7>] sys_reboot+0x172/0x1cb
->  >  [<ffffffff802e2ac0>] ? __fput+0x158/0x17b
->  >  [<ffffffff802efc4e>] ? vfs_ioctl+0x3e/0xa2
->  >  [<ffffffff802e2ef0>] ? fput+0x2c/0x42
->  >  [<ffffffff802df2d2>] ? filp_close+0x78/0x9a
->  >  [<ffffffff802df0b4>] ? __put_unused_fd+0x33/0x60
->  >  [<ffffffff802e0bed>] ? sys_close+0x8c/0xdf
->  >  [<ffffffff80225b9b>] system_call_after_swapgs+0x7b/0x80
->  >
->  >
->  > Code: e8 37 85 f2 ff 48 83 c4 18 5b c9 c3 55 48 89 e5 41 54 53 48 83
->  > ec 10 66 66 90 66 90 65 48 8b 04 25 28 00 00 00 48 89 45 e8 31 c0 <48>
->  > 8b 5f 28 49 89 f4 eb 14 48 8b 7b 18 4c 89 e6 e8 25 e8 25 00
->  > RIP  [<ffffffff80337af4>] sysfs_find_dirent+0x1f/0x5f
->  >  RSP <ffff8104238f7708>
->  > CR2: 0000000000000028
->  > ---[ end trace 4ca22418d73866ec ]---
->  >
->  > may need create mptsas that only call pci_disable_msi
->  >
->
->  It would be strange for an interrupt-disabling problem to cause sysfs to go
->  oops?
 
-andrew, updated version has been merged...
 
-YH
+On Thu, 8 May 2008, Andrea Arcangeli wrote:
+> 
+> At least for mmu-notifier-core given I obviously am the original
+> author of that code, I hope the From: of the email was enough even if
+> an additional From: andrea was missing in the body.
+
+Ok, this whole series of patches have just been such a disaster that I'm 
+(a) disgusted that _anybody_ sent an Acked-by: for any of it, and (b) that 
+I'm still looking at it at all, but I am.
+
+And quite frankly, the more I look, and the more answers from you I get, 
+the less I like it. And I didn't like it that much to start with, as you 
+may have noticed.
+
+You say that "At least for mmu-notifier-core given I obviously am the 
+original author of that code", but that is not at all obvious either. One 
+of the reasons I stated that authorship seems to have been thrown away is 
+very much exactly in that first mmu-notifier-core patch:
+
+	+ *  linux/mm/mmu_notifier.c
+	+ *
+	+ *  Copyright (C) 2008  Qumranet, Inc.
+	+ *  Copyright (C) 2008  SGI
+	+ *             Christoph Lameter <clameter@sgi.com>
+
+so I would very strongly dispute that it's "obvious" that you are the 
+original author of the code there.
+
+So there was a reason why I said that I thought authorship had been lost 
+somewhere along the way.
+
+		Linus
