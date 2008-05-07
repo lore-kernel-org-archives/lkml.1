@@ -1,56 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760726AbYEGFuZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760352AbYEGF6S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760726AbYEGFuZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 01:50:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753803AbYEGFuI
+	id S1760352AbYEGF6S (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 01:58:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752500AbYEGF6H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 01:50:08 -0400
-Received: from gate.crashing.org ([63.228.1.57]:42054 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753969AbYEGFuG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 01:50:06 -0400
-Subject: Re: [PATCH] Silence 'ignoring return value' warnings in
-	drivers/video/aty/radeon_base.c
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Paul Mackerras <paulus@samba.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       David Miller <davem@davemloft.net>, tony@bakeyournoodle.com,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <18465.16592.41821.225568@cargo.ozlabs.ibm.com>
-References: <20080424043400.GS20457@bakeyournoodle.com>
-	 <20080506143936.6357e578.akpm@linux-foundation.org>
-	 <20080506.144301.233784820.davem@davemloft.net>
-	 <20080506145608.565b61bf.akpm@linux-foundation.org>
-	 <20080506210055.75e2f881@infradead.org>
-	 <20080506211233.f050fd41.akpm@linux-foundation.org>
-	 <18465.16592.41821.225568@cargo.ozlabs.ibm.com>
-Content-Type: text/plain
-Date: Wed, 07 May 2008 15:49:07 +1000
-Message-Id: <1210139347.21644.239.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 7 May 2008 01:58:07 -0400
+Received: from smtp.nokia.com ([192.100.122.233]:47226 "EHLO
+	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753228AbYEGF6G (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 May 2008 01:58:06 -0400
+Message-ID: <482144DF.3010300@yandex.ru>
+Date: Wed, 07 May 2008 08:57:51 +0300
+From: Artem Bityutskiy <dedekind@yandex.ru>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+MIME-Version: 1.0
+To: Marcin Slusarz <marcin.slusarz@gmail.com>
+CC: LKML <linux-kernel@vger.kernel.org>,
+       Adrian Hunter <ext-adrian.hunter@nokia.com>
+Subject: Re: [PATCH take 2 06/28] UBIFS: add journal replay
+References: <1210070159-22794-1-git-send-email-Artem.Bityutskiy@nokia.com> <1210070159-22794-7-git-send-email-Artem.Bityutskiy@nokia.com> <20080506220315.GA6464@joi>
+In-Reply-To: <20080506220315.GA6464@joi>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 07 May 2008 05:57:58.0665 (UTC) FILETIME=[4D352F90:01C8B007]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Wed, 2008-05-07 at 15:40 +1000, Paul Mackerras wrote:
-> > > (rationale: users tend to not read their dmesg much, but
-> WARN_ON()'s do
-> > > get noticed)
-> > 
-> > OK by me, although if we're going to do much more of this it might
-> be time
-> > to add a WARN_ON which takes (fmt, args...).
+Marcin Slusarz wrote:
+>> +	highest_ino_key(c, &key, -1);
+>> +	while (*p) {
+>> +		parent = *p;
+>> +		r = rb_entry(parent, struct replay_entry, rb);
+>> +		cmp = keys_cmp(c, &key, &r->key);
 > 
-> It would make a lot more sense to put the printk and/or WARN_ON inside
-> sysfs_create_bin_file rather than in every single caller.
+> return value of keys_cmp is never used in this function
 
-Amen !
+Right, these are old left-overs. Thanks for noticing,
+will be fixed.
 
-Ben.
-
-
+-- 
+Best Regards,
+Artem Bityutskiy (Артём Битюцкий)
