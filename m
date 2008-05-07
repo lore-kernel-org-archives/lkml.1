@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761754AbYEGOmu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760594AbYEGOnX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761754AbYEGOmu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 10:42:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760458AbYEGOiH
+	id S1760594AbYEGOnX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 10:43:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760493AbYEGOiI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 10:38:07 -0400
-Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:59690
+	Wed, 7 May 2008 10:38:08 -0400
+Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:59811
 	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760042AbYEGOhz (ORCPT
+	with ESMTP id S1760277AbYEGOhy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 10:37:55 -0400
+	Wed, 7 May 2008 10:37:54 -0400
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Subject: [PATCH 11 of 11] mmap sems
-X-Mercurial-Node: eb924315351f6b056428e35c983ad28040420fea
-Message-Id: <eb924315351f6b056428.1210170961@duo.random>
+Subject: [PATCH 10 of 11] export zap_page_range for XPMEM
+X-Mercurial-Node: 5b2eb7d28a4517daf91b08b4dcfbb58fd2b42d0b
+Message-Id: <5b2eb7d28a4517daf91b.1210170960@duo.random>
 In-Reply-To: <patchbomb.1210170950@duo.random>
-Date: Wed, 07 May 2008 16:36:01 +0200
+Date: Wed, 07 May 2008 16:36:00 +0200
 From: Andrea Arcangeli <andrea@qumranet.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Christoph Lameter <clameter@sgi.com>, Jack Steiner <steiner@sgi.com>,
@@ -38,27 +38,28 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 # HG changeset patch
 # User Andrea Arcangeli <andrea@qumranet.com>
-# Date 1210115798 -7200
-# Node ID eb924315351f6b056428e35c983ad28040420fea
-# Parent  5b2eb7d28a4517daf91b08b4dcfbb58fd2b42d0b
-mmap sems
+# Date 1210115797 -7200
+# Node ID 5b2eb7d28a4517daf91b08b4dcfbb58fd2b42d0b
+# Parent  94eaa1515369e8ef183e2457f6f25a7f36473d70
+export zap_page_range for XPMEM
 
-This patch adds a lock ordering rule to avoid a potential deadlock when
-multiple mmap_sems need to be locked.
+XPMEM would have used sys_madvise() except that madvise_dontneed()
+returns an -EINVAL if VM_PFNMAP is set, which is always true for the pages
+XPMEM imports from other partitions and is also true for uncached pages
+allocated locally via the mspec allocator.  XPMEM needs zap_page_range()
+functionality for these types of pages as well as 'normal' pages.
 
 Signed-off-by: Dean Nelson <dcn@sgi.com>
 Signed-off-by: Andrea Arcangeli <andrea@qumranet.com>
 
-diff --git a/mm/filemap.c b/mm/filemap.c
---- a/mm/filemap.c
-+++ b/mm/filemap.c
-@@ -79,6 +79,9 @@ generic_file_direct_IO(int rw, struct ki
-  *
-  *  ->i_mutex			(generic_file_buffered_write)
-  *    ->mmap_sem		(fault_in_pages_readable->do_page_fault)
-+ *
-+ *    When taking multiple mmap_sems, one should lock the lowest-addressed
-+ *    one first proceeding on up to the highest-addressed one.
-  *
-  *  ->i_mutex
-  *    ->i_alloc_sem             (various)
+diff --git a/mm/memory.c b/mm/memory.c
+--- a/mm/memory.c
++++ b/mm/memory.c
+@@ -954,6 +954,7 @@ unsigned long zap_page_range(struct vm_a
+ 
+ 	return unmap_vmas(vma, address, end, &nr_accounted, details);
+ }
++EXPORT_SYMBOL_GPL(zap_page_range);
+ 
+ /*
+  * Do a quick page-table lookup for a single page.
