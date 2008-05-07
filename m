@@ -1,119 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760810AbYEGFHS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761362AbYEGFI3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760810AbYEGFHS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 01:07:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754215AbYEGFGy
+	id S1761362AbYEGFI3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 01:08:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754131AbYEGFIS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 01:06:54 -0400
-Received: from mga09.intel.com ([134.134.136.24]:34035 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753404AbYEGFGw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 01:06:52 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.27,446,1204531200"; 
-   d="scan'208";a="278663482"
-Subject: Re: [PATCH -mm crypto] AES: x86_64 asm implementation optimization
-From: "Huang, Ying" <ying.huang@intel.com>
-To: dean gaudet <dean@arctic.org>
-Cc: Sebastian Siewior <linux-crypto@ml.breakpoint.cc>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       "Adam J. Richter" <adam@yggdrasil.com>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-crypto@vger.kernel.org,
-       mingo@elte.hu, tglx@linutronix.de
-In-Reply-To: <alpine.DEB.1.10.0805032323580.27385@twinlark.arctic.org>
-References: <1207723262.18313.37.camel@caritas-dev.intel.com>
-	 <20080416073108.GA13494@Chamillionaire.breakpoint.cc>
-	 <1208333949.4322.5.camel@caritas-dev.intel.com>
-	 <20080416184016.GA21365@Chamillionaire.breakpoint.cc>
-	 <1208403403.4322.27.camel@caritas-dev.intel.com>
-	 <20080423223221.GB16683@Chamillionaire.breakpoint.cc>
-	 <1209093077.20936.24.camel@caritas-dev.intel.com>
-	 <20080429221225.GA5280@Chamillionaire.breakpoint.cc>
-	 <alpine.DEB.1.10.0805032323580.27385@twinlark.arctic.org>
-Content-Type: multipart/mixed; boundary="=-zZjmy8x8D3O2HdK7Mmca"
-Date: Wed, 07 May 2008 13:12:14 +0800
-Message-Id: <1210137134.4676.1.camel@caritas-dev.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 
-X-OriginalArrivalTime: 07 May 2008 05:06:48.0609 (UTC) FILETIME=[274FD110:01C8B000]
+	Wed, 7 May 2008 01:08:18 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:19596 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751592AbYEGFIQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 May 2008 01:08:16 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=VDSuMK2FIx5zgnIi7i6kdItTW7uNo8aPWNQGwTrow/Dys5aXVqbALyUszn6UAsiB4
+	zF9oKaDuBfYqxuiVNFfag==
+Message-ID: <6599ad830805062208if98157cwaca4bafa01b8d097@mail.gmail.com>
+Date: Tue, 6 May 2008 22:08:08 -0700
+From: "Paul Menage" <menage@google.com>
+To: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>
+Subject: Re: [PATCH] mm/cgroup.c add error check
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       "Li Zefan" <lizf@cn.fujitsu.com>
+In-Reply-To: <20080506195216.4A6D.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080506195216.4A6D.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, May 6, 2008 at 4:02 AM, KOSAKI Motohiro
+<kosaki.motohiro@jp.fujitsu.com> wrote:
+>
+>  on heavy workload, call_usermodehelper() may failure
+>  because it use kzmalloc(GFP_ATOMIC).
+>
+>  but userland want receive release notificcation even heavy workload.
+>
+>  thus, We should retry if -ENOMEM happend.
+>
+>
+>  Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+>  CC: "Paul Menage" <menage@google.com>
+>  CC: Li Zefan <lizf@cn.fujitsu.com>
+>
+>  ---
+>   kernel/cgroup.c |   10 +++++++++-
+>   1 file changed, 9 insertions(+), 1 deletion(-)
+>
+>  Index: b/kernel/cgroup.c
+>  ===================================================================
+>  --- a/kernel/cgroup.c   2008-04-29 18:00:53.000000000 +0900
+>  +++ b/kernel/cgroup.c   2008-05-06 20:28:23.000000000 +0900
+>  @@ -3072,6 +3072,8 @@ void __css_put(struct cgroup_subsys_stat
+>   */
+>   static void cgroup_release_agent(struct work_struct *work)
+>   {
+>  +       int err;
+>  +
+>         BUG_ON(work != &release_agent_work);
+>         mutex_lock(&cgroup_mutex);
+>         spin_lock(&release_list_lock);
+>  @@ -3111,7 +3113,13 @@ static void cgroup_release_agent(struct
+>                  * since the exec could involve hitting disk and hence
+>                  * be a slow process */
+>                 mutex_unlock(&cgroup_mutex);
+>  -               call_usermodehelper(argv[0], argv, envp, UMH_WAIT_EXEC);
+>  +
+>  +retry:
+>  +               err = call_usermodehelper(argv[0], argv, envp, UMH_WAIT_EXEC);
+>  +               if (err == -ENOMEM) {
+>  +                       schedule();
+>  +                       goto retry;
+>  +               }
 
---=-zZjmy8x8D3O2HdK7Mmca
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+I'm not sure that an infinite loop retry is a great idea. Assuming
+that call_usermodehelper() is changed to not use GFP_ATOMIC (which
+should be safe at least in the case when UMG_WAIT_EXEC is set, since
+we can clearly sleep in that case) then I'd be inclined not to check.
+If we're so low on memory that we can't fork/exec, then the helper
+binary itself could just as easily OOM as soon as we've launched it.
+So there's still no guarantee. Userspace should just have to check for
+empty cgroups occasionally even if they are using notify_on_release.
 
-Hi,
-
-On Sat, 2008-05-03 at 23:25 -0700, dean gaudet wrote:
-> one of the more important details in evaluating these changes would be the 
-> family/model/stepping of the processors being microbenchmarked... could 
-> you folks include /proc/cpuinfo with the results?
-
-The file attached is /proc/cpuinfo of my testing machine.
-
-Best Regards,
-Huang Ying
-
-> also -- please drop the #define for R16 to %rsp ... it obfuscates more 
-> than it helps anything.
-> 
-> thanks
-> -dean
-> 
-> On Wed, 30 Apr 2008, Sebastian Siewior wrote:
-> 
-> > * Huang, Ying | 2008-04-25 11:11:17 [+0800]:
-> > 
-> > >Hi, Sebastian,
-> > Hi Huang,
-> > 
-> > sorry for the delay.
-> > 
-> > >I changed the patches to group the read or write together instead of
-> > >interleaving. Can you help me to test these new patches? The new patches
-> > >is attached with the mail.
-> > The new results are attached.
-> > 
-> > >
-> > >Best Regards,
-> > >Huang Ying
-> > 
-> > Sebastian
-> > 
-
---=-zZjmy8x8D3O2HdK7Mmca
-Content-Disposition: attachment; filename=cpuinfo
-Content-Type: text/plain; name=cpuinfo; charset=utf-8
-Content-Transfer-Encoding: base64
-
-cHJvY2Vzc29yCTogMA0KdmVuZG9yX2lkCTogR2VudWluZUludGVsDQpjcHUgZmFtaWx5CTogNg0K
-bW9kZWwJCTogMTUNCm1vZGVsIG5hbWUJOiBJbnRlbChSKSBDb3JlKFRNKTIgQ1BVICAgICAgICAg
-IDY0MDAgIEAgMi4xM0dIeg0Kc3RlcHBpbmcJOiAyDQpjcHUgTUh6CQk6IDIxMjguMDA2DQpjYWNo
-ZSBzaXplCTogMjA0OCBLQg0KcGh5c2ljYWwgaWQJOiAwDQpzaWJsaW5ncwk6IDINCmNvcmUgaWQJ
-CTogMA0KY3B1IGNvcmVzCTogMg0KZnB1CQk6IHllcw0KZnB1X2V4Y2VwdGlvbgk6IHllcw0KY3B1
-aWQgbGV2ZWwJOiAxMA0Kd3AJCTogeWVzDQpmbGFncwkJOiBmcHUgdm1lIGRlIHBzZSB0c2MgbXNy
-IHBhZSBtY2UgY3g4IGFwaWMgc2VwIG10cnIgcGdlIG1jYSBjbW92IHBhdCBwc2UzNiBjbGZsdXNo
-IGR0cyBhY3BpIG1teCBmeHNyIHNzZSBzc2UyIHNzIGh0IHRtIHBiZSBzeXNjYWxsIG54IGxtIGNv
-bnN0YW50X3RzYyBhcmNoX3BlcmZtb24gcGVicyBidHMgcmVwX2dvb2QgcG5pIG1vbml0b3IgZHNf
-Y3BsIHZteCBlc3QgdG0yIHNzc2UzIGN4MTYgeHRwciBsYWhmX2xtDQpib2dvbWlwcwk6IDQyNTku
-MTUNCmNsZmx1c2ggc2l6ZQk6IDY0DQpjYWNoZV9hbGlnbm1lbnQJOiA2NA0KYWRkcmVzcyBzaXpl
-cwk6IDM2IGJpdHMgcGh5c2ljYWwsIDQ4IGJpdHMgdmlydHVhbA0KcG93ZXIgbWFuYWdlbWVudDoN
-Cg0KcHJvY2Vzc29yCTogMQ0KdmVuZG9yX2lkCTogR2VudWluZUludGVsDQpjcHUgZmFtaWx5CTog
-Ng0KbW9kZWwJCTogMTUNCm1vZGVsIG5hbWUJOiBJbnRlbChSKSBDb3JlKFRNKTIgQ1BVICAgICAg
-ICAgIDY0MDAgIEAgMi4xM0dIeg0Kc3RlcHBpbmcJOiAyDQpjcHUgTUh6CQk6IDIxMjguMDA2DQpj
-YWNoZSBzaXplCTogMjA0OCBLQg0KcGh5c2ljYWwgaWQJOiAwDQpzaWJsaW5ncwk6IDINCmNvcmUg
-aWQJCTogMQ0KY3B1IGNvcmVzCTogMg0KZnB1CQk6IHllcw0KZnB1X2V4Y2VwdGlvbgk6IHllcw0K
-Y3B1aWQgbGV2ZWwJOiAxMA0Kd3AJCTogeWVzDQpmbGFncwkJOiBmcHUgdm1lIGRlIHBzZSB0c2Mg
-bXNyIHBhZSBtY2UgY3g4IGFwaWMgc2VwIG10cnIgcGdlIG1jYSBjbW92IHBhdCBwc2UzNiBjbGZs
-dXNoIGR0cyBhY3BpIG1teCBmeHNyIHNzZSBzc2UyIHNzIGh0IHRtIHBiZSBzeXNjYWxsIG54IGxt
-IGNvbnN0YW50X3RzYyBhcmNoX3BlcmZtb24gcGVicyBidHMgcmVwX2dvb2QgcG5pIG1vbml0b3Ig
-ZHNfY3BsIHZteCBlc3QgdG0yIHNzc2UzIGN4MTYgeHRwciBsYWhmX2xtDQpib2dvbWlwcwk6IDQy
-NTYuMDgNCmNsZmx1c2ggc2l6ZQk6IDY0DQpjYWNoZV9hbGlnbm1lbnQJOiA2NA0KYWRkcmVzcyBz
-aXplcwk6IDM2IGJpdHMgcGh5c2ljYWwsIDQ4IGJpdHMgdmlydHVhbA0KcG93ZXIgbWFuYWdlbWVu
-dDoNCg0K
-
-
---=-zZjmy8x8D3O2HdK7Mmca--
+Paul
