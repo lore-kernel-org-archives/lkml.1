@@ -1,98 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763584AbYEGWkz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764328AbYEGWle@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763584AbYEGWkz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 18:40:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755269AbYEGWki
+	id S1764328AbYEGWle (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 18:41:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758836AbYEGWkm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 18:40:38 -0400
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:53801 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757314AbYEGWke (ORCPT
+	Wed, 7 May 2008 18:40:42 -0400
+Received: from rv-out-0506.google.com ([209.85.198.232]:58934 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753179AbYEGWkj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 18:40:34 -0400
-Subject: Re: scsi_scan: WARNING: at include/linux/blkdev.h:431
-	blk_queue_init_tags+0x107/0x120()
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: jesper.juhl@gmail.com, jens.axboe@oracle.com, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org
-In-Reply-To: <20080502111652T.tomof@acm.org>
-References: <alpine.LNX.1.00.0805020043130.1489@dragon.funnycrock.com>
-	 <20080502111652T.tomof@acm.org>
-Content-Type: text/plain
-Date: Wed, 07 May 2008 17:40:26 -0500
-Message-Id: <1210200026.3067.25.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-4.fc8) 
+	Wed, 7 May 2008 18:40:39 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=UhEXhj+WZGn6U6tD7bzalUR44RVQ6tkr6wc9Os1/aj2GV2mIB3WyQ9qBlHc/fhVBajs3yQ5pKkmoH9XfD3twEXide4YnT82TNlkp7gkAPeDrLbu3VN0+LSElk7njqwN56lg6Jqy5UpTFKBi/kPOa6bY3MSQ6RniWbFnnJBkfaEc=
+Message-ID: <86802c440805071540i71f9d0c4y2eaf97e170ee538e@mail.gmail.com>
+Date: Wed, 7 May 2008 15:40:38 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Pavel Machek" <pavel@suse.cz>
+Subject: Re: 2.6.26, PAT and AMD family 6
+Cc: "Thomas Gleixner" <tglx@linutronix.de>, "Adrian Bunk" <bunk@kernel.org>,
+       "Rene Herman" <rene.herman@keyaccess.nl>, "Ingo Molnar" <mingo@elte.hu>,
+       "Linux Kernel" <linux-kernel@vger.kernel.org>, hpa@zytor.com,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org
+In-Reply-To: <20080507223705.GJ18516@elf.ucw.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <48210A71.1060409@keyaccess.nl>
+	 <86802c440805061939q39ff5500h3c9e229ecbc6b2e6@mail.gmail.com>
+	 <20080507124650.GD29935@cs181133002.pp.htv.fi>
+	 <alpine.LFD.1.10.0805072122270.3318@apollo.tec.linutronix.de>
+	 <20080507212343.GB14951@cs181133002.pp.htv.fi>
+	 <alpine.LFD.1.10.0805072341210.3318@apollo.tec.linutronix.de>
+	 <20080507221435.GH18516@elf.ucw.cz>
+	 <86802c440805071522r424b2011v7c0d852db4c4abfd@mail.gmail.com>
+	 <20080507223705.GJ18516@elf.ucw.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-05-02 at 11:17 +0900, FUJITA Tomonori wrote:
-> On Fri, 2 May 2008 00:43:30 +0200 (CEST)
-> Jesper Juhl <jesper.juhl@gmail.com> wrote:
-> 
-> > Hi,
-> > 
-> > For your information;
-> > 
-> > I just build and booted the tip of Linus' git tree (HEAD at 
-> > 886c35fbcf6fb2eee15687efc2d64d99b6ad9a4a) and got this in dmesg during 
-> > bootup : 
-> > 
-> > ------------[ cut here ]------------
-> > WARNING: at include/linux/blkdev.h:431 blk_queue_init_tags+0x107/0x120()
-> > Modules linked in:
-> > Pid: 432, comm: scsi_scan_0 Not tainted 2.6.25-07351-g886c35f #1
-> >  [<c0129684>] warn_on_slowpath+0x54/0x70
-> >  [<c017a7c3>] ? check_object+0xe3/0x1f0
-> >  [<c0200ae9>] ? init_tag_map+0x59/0xb0
-> >  [<c014b1e7>] ? mark_held_locks+0x47/0x80
-> >  [<c017cbeb>] ? __kmalloc+0x6b/0x100
-> >  [<c014b379>] ? trace_hardirqs_on+0xb9/0x150
-> >  [<c0200ae9>] ? init_tag_map+0x59/0xb0
-> >  [<c0200ae9>] ? init_tag_map+0x59/0xb0
-> >  [<c0200ae9>] ? init_tag_map+0x59/0xb0
-> >  [<c0200c34>] ? __blk_queue_init_tags+0x24/0x70
-> >  [<c0200c45>] ? __blk_queue_init_tags+0x35/0x70
-> >  [<c0200e57>] blk_queue_init_tags+0x107/0x120
-> >  [<c02b5a91>] ahc_platform_set_tags+0x191/0x1d0
-> >  [<c02b5bd3>] ahc_linux_slave_configure+0x103/0x170
-> >  [<c02a1f65>] scsi_probe_and_add_lun+0x6e5/0x920
-> >  [<c02a2468>] __scsi_scan_target+0xe8/0x5d0
-> >  [<c0108e17>] ? native_sched_clock+0x87/0xd0
-> >  [<c0148c89>] ? get_lock_stats+0x29/0x50
-> >  [<c0148cbd>] ? put_lock_stats+0xd/0x30
-> >  [<c014b1e7>] ? mark_held_locks+0x47/0x80
-> >  [<c035e247>] ? mutex_lock_nested+0x1b7/0x2a0
-> >  [<c014b379>] ? trace_hardirqs_on+0xb9/0x150
-> >  [<c035e23a>] ? mutex_lock_nested+0x1aa/0x2a0
-> >  [<c02a2a1a>] ? scsi_scan_host_selected+0x3a/0xf0
-> >  [<c02a29c0>] scsi_scan_channel+0x70/0x90
-> >  [<c02a2a9d>] scsi_scan_host_selected+0xbd/0xf0
-> >  [<c02a2b50>] ? do_scan_async+0x0/0x140
-> >  [<c02a2b48>] do_scsi_scan_host+0x78/0x80
-> >  [<c02a2b64>] do_scan_async+0x14/0x140
-> >  [<c011f6e8>] ? complete+0x48/0x60
-> >  [<c02a2b50>] ? do_scan_async+0x0/0x140
-> >  [<c013c8d2>] kthread+0x42/0x70
-> >  [<c013c890>] ? kthread+0x0/0x70
-> >  [<c0103ceb>] kernel_thread_helper+0x7/0x1c
-> 
-> The problem is that the commit 75ad23b expects that we hold the queue
-> lock for __blk_queue_free_tags, blk_queue_free_tags and
-> blk_queue_init_tags but we haven't.
-> 
-> The simple fix is using queue_flag_set/clear_unlocked for them, then
-> it should work as before. However, it would be better to hold the
-> queue lock for blk_queue_free_tags and blk_queue_init_tags (we can
-> hold the queue lock in scsi_activate_tcq and scsi_deactivate_tcq).
+On Wed, May 7, 2008 at 3:37 PM, Pavel Machek <pavel@suse.cz> wrote:
+> On Wed 2008-05-07 15:22:37, Yinghai Lu wrote:
+>  > On Wed, May 7, 2008 at 3:14 PM, Pavel Machek <pavel@suse.cz> wrote:
+>  > >  3) copy&paste code remained in the patch
+>  >
+>  > i thought to keep the stub so could add more other stuff in the switch
+>  > like 64 bit
+>
+>  This is _not_ good enough reason to copy&paste. Just do it like this:
+>
+>
+>  >         switch (c->x86_vendor) {
+>  >         case X86_VENDOR_AMD:
+>  >                 early_init_amd(c);
+>
+> >                 break;
+>  >         case X86_VENDOR_INTEL:
+>  >                 early_init_intel(c);
+>
+> >                 break;
+>  >         case X86_VENDOR_CENTAUR:
+>  >                 early_init_centaur(c);
+>  >                 break;
+>  >         }
+>
+>  #         clear_cpu_cap(c, X86_FEATURE_PAT);
+>
+> #
+>  #         switch (c->x86_vendor) {
+>  #         case X86_VENDOR_AMD:
+>  #                if (c->x86 >= 0xf && c->x86 <= 0x11)
+>
+> #                         set_cpu_cap(c, X86_FEATURE_PAT);
+>  #                 break;
+>  #         case X86_VENDOR_INTEL:
+>  #                 if (c->x86 == 0xF || (c->x86 == 6 && c->x86_model >= 15))
+>
+> #                         set_cpu_cap(c, X86_FEATURE_PAT);
+>  #                 break;
+>  #         }
+>
+>  And then, factor out code marked # into separate function, and call it
+>  from all three places.
 
-So is this the fix that everyone agrees on?  And if so, whose tree is it
-going through (I tend to think block, since the original breakage came
-from the block tree).
+still need two copies or ifdef, otherwise you will check some 32bit
+only cpu fam/model in 64bit node.
 
-James
-
-
+YH
