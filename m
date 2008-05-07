@@ -1,66 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764120AbYEGHMs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764481AbYEGHN0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764120AbYEGHMs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 03:12:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757724AbYEGHMh
+	id S1764481AbYEGHN0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 03:13:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759858AbYEGHNF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 03:12:37 -0400
-Received: from mtagate7.de.ibm.com ([195.212.29.156]:8510 "EHLO
-	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750899AbYEGHMf (ORCPT
+	Wed, 7 May 2008 03:13:05 -0400
+Received: from mail.syneticon.net ([213.239.212.131]:37149 "EHLO
+	mail2.syneticon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750899AbYEGHNB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 03:12:35 -0400
-Subject: Re: [patch 0/6] Guest page hinting version 6.
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Reply-To: schwidefsky@de.ibm.com
-To: Zachary Amsden <zach@vmware.com>
-Cc: Rik van Riel <riel@redhat.com>, Hugh Dickins <hugh@veritas.com>,
-       linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
-       virtualization@lists.osdl.org, akpm@linux-foundation.org,
-       nickpiggin@yahoo.com.au, frankeh@watson.ibm.com, rusty@rustcorp.com.au,
-       jeremy@goop.org, andrea@qumranet.com, clameter@sgi.com,
-       a.p.zijlstra@chello.nl
-In-Reply-To: <1210132187.17107.40.camel@bodhitayantram.eng.vmware.com>
-References: <20080312132132.520833247@de.ibm.com>
-	 <Pine.LNX.4.64.0803131627450.17244@blonde.site>
-	 <1210087982.31803.32.camel@localhost>
-	 <20080506154612.58cc3070@cuia.bos.redhat.com>
-	 <1210132187.17107.40.camel@bodhitayantram.eng.vmware.com>
-Content-Type: text/plain
-Organization: IBM Corporation
-Date: Wed, 07 May 2008 09:00:14 +0200
-Message-Id: <1210143614.14130.3.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1.1 
+	Wed, 7 May 2008 03:13:01 -0400
+Message-ID: <48215673.3060201@wpkg.org>
+Date: Wed, 07 May 2008 09:12:51 +0200
+From: Tomasz Chmielewski <mangoo@wpkg.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080504)
+MIME-Version: 1.0
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Bart Van Assche <bart.vanassche@gmail.com>, YSadgat1@gcte.com,
+       linux-os@analogic.com, Alan <alan@lxorguk.ukuu.org.uk>
+Subject: Re: Compact Flash Question
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-05-06 at 20:49 -0700, Zachary Amsden wrote:
-> > I suspect one of the problems is that there are too many state transitions
-> > to have it implemented with a low overhead on anything but S390, and even
-> > there you need milicoded instructions to handle things.
-> > 
-> > If the number of transitions can be reduced, page hinting could be useful
-> > for KVM, too.
-> 
-> Spot on Rik, if every transition becomes a hypercall (and a synchronous
-> one at that), it isn't workable for us.  If, on the other hand, you
-> share the state bits between the guest and hypervisor, you need a giant
-> (standalone) bit array for per-page state, which is neither convenient
-> for Linux nor the hypervisor.  I believe s390 has an 'instruction' to
-> migrate the state bits into the hypervisor per-physical-page data
-> without requiring a hypercall.
+Bart Van Assche wrote:
 
-That is why we invented the millicoded ESSA instruction on s390. We had
-an emulation of the instruction to test things. It worked but was
-awfully slow.
+> For most Linux filesystems you really need wear leveling. E.g. ext3's
+> superblock is at a fixed location and gets overwritten frequently.
+> Without wear leveling you risk that the flash sector where the
+> superblock resides wears out early.
+
+Compact Flash (and other similar media) does wear levelling, so essentially, 
+even if we write to the same fixed location, in reality, it will mostly go to a 
+different area on flash each time.
+
+As Compact Flash and its wear levelling does not know about free space on the 
+filesystem, the wear levelling's effectiveness can be only limited - writes 
+won't spread on the whole free area of the flash.
+
+Does anyone know how wear levelling is done in these devices? Perhaps it will 
+differ from a manufacturer to manufacturer, but I guess they have a free area we 
+normally use to store data, and some reserved area used just for wear levelling 
+and bad block handling, but that's just my guess.
+
+
+> When using ext3 on a CompactFlash, you can limit the number of writes
+> to the CompactFlash significantly by mounting the medium with
+> parameters like noatime,nodiratime,commit=300.
+
+noatime implies nodiratime, so there is no need to add the latter.
+
 
 -- 
-blue skies,
-  Martin.
-
-"Reality continues to ruin my life." - Calvin.
-
+Tomasz Chmielewski
+http://wpkg.org
 
