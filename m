@@ -1,294 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932161AbYEGUY4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756185AbYEGUcB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932161AbYEGUY4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 16:24:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762814AbYEGUYd
+	id S1756185AbYEGUcB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 16:32:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751538AbYEGUbt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 16:24:33 -0400
-Received: from hellhawk.shadowen.org ([80.68.90.175]:4445 "EHLO
-	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755471AbYEGUYa (ORCPT
+	Wed, 7 May 2008 16:31:49 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:56973 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751316AbYEGUbq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 16:24:30 -0400
-From: Andy Whitcroft <apw@shadowen.org>
-To: linux-mm@kvack.org
-Cc: linux-kernel@vger.kernel.org, agl@us.ibm.com, wli@holomorphy.com,
-       kenchen@google.com, dwg@au1.ibm.com, andi@firstfloor.org,
-       Mel Gorman <mel@csn.ul.ie>, dean@arctic.org
-Subject: [PATCH 2/3] hugetlb-move-reservation-region-support-earlier
-References: <exportbomb.1210191800@pinky>
-InReply-To: <exportbomb.1210191800@pinky>
-Date: Wed, 7 May 2008 21:24:49 +0100
-Message-Id: <1210191889.0@pinky>
+	Wed, 7 May 2008 16:31:46 -0400
+Date: Wed, 7 May 2008 13:30:39 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Andrea Arcangeli <andrea@qumranet.com>, clameter@sgi.com, steiner@sgi.com,
+       holt@sgi.com, npiggin@suse.de, a.p.zijlstra@chello.nl,
+       kvm-devel@lists.sourceforge.net, kanojsarcar@yahoo.com,
+       rdreier@cisco.com, swise@opengridcomputing.com,
+       linux-kernel@vger.kernel.org, avi@qumranet.com, linux-mm@kvack.org,
+       general@lists.openfabrics.org, hugh@veritas.com, rusty@rustcorp.com.au,
+       aliguori@us.ibm.com, chrisw@redhat.com, marcelo@kvack.org,
+       dada1@cosmosbay.com, paulmck@us.ibm.com
+Subject: Re: [PATCH 01 of 11] mmu-notifier-core
+In-Reply-To: <20080507130528.adfd154c.akpm@linux-foundation.org>
+Message-ID: <alpine.LFD.1.10.0805071324570.3024@woody.linux-foundation.org>
+References: <patchbomb.1210170950@duo.random> <e20917dcc8284b6a07cf.1210170951@duo.random> <20080507130528.adfd154c.akpm@linux-foundation.org>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-The following patch will require use of the reservation regions support.
-Move this earlier in the file.  No changes have been made to this code.
 
-Signed-off-by: Andy Whitcroft <apw@shadowen.org>
----
- mm/hugetlb.c |  242 +++++++++++++++++++++++++++++-----------------------------
- 1 files changed, 121 insertions(+), 121 deletions(-)
-diff --git a/mm/hugetlb.c b/mm/hugetlb.c
-index 17c5069..81b13dc 100644
---- a/mm/hugetlb.c
-+++ b/mm/hugetlb.c
-@@ -556,6 +556,127 @@ static void return_unused_surplus_pages(unsigned long unused_resv_pages)
- 	}
- }
- 
-+struct file_region {
-+	struct list_head link;
-+	long from;
-+	long to;
-+};
-+
-+static long region_add(struct list_head *head, long f, long t)
-+{
-+	struct file_region *rg, *nrg, *trg;
-+
-+	/* Locate the region we are either in or before. */
-+	list_for_each_entry(rg, head, link)
-+		if (f <= rg->to)
-+			break;
-+
-+	/* Round our left edge to the current segment if it encloses us. */
-+	if (f > rg->from)
-+		f = rg->from;
-+
-+	/* Check for and consume any regions we now overlap with. */
-+	nrg = rg;
-+	list_for_each_entry_safe(rg, trg, rg->link.prev, link) {
-+		if (&rg->link == head)
-+			break;
-+		if (rg->from > t)
-+			break;
-+
-+		/* If this area reaches higher then extend our area to
-+		 * include it completely.  If this is not the first area
-+		 * which we intend to reuse, free it. */
-+		if (rg->to > t)
-+			t = rg->to;
-+		if (rg != nrg) {
-+			list_del(&rg->link);
-+			kfree(rg);
-+		}
-+	}
-+	nrg->from = f;
-+	nrg->to = t;
-+	return 0;
-+}
-+
-+static long region_chg(struct list_head *head, long f, long t)
-+{
-+	struct file_region *rg, *nrg;
-+	long chg = 0;
-+
-+	/* Locate the region we are before or in. */
-+	list_for_each_entry(rg, head, link)
-+		if (f <= rg->to)
-+			break;
-+
-+	/* If we are below the current region then a new region is required.
-+	 * Subtle, allocate a new region at the position but make it zero
-+	 * size such that we can guarantee to record the reservation. */
-+	if (&rg->link == head || t < rg->from) {
-+		nrg = kmalloc(sizeof(*nrg), GFP_KERNEL);
-+		if (!nrg)
-+			return -ENOMEM;
-+		nrg->from = f;
-+		nrg->to   = f;
-+		INIT_LIST_HEAD(&nrg->link);
-+		list_add(&nrg->link, rg->link.prev);
-+
-+		return t - f;
-+	}
-+
-+	/* Round our left edge to the current segment if it encloses us. */
-+	if (f > rg->from)
-+		f = rg->from;
-+	chg = t - f;
-+
-+	/* Check for and consume any regions we now overlap with. */
-+	list_for_each_entry(rg, rg->link.prev, link) {
-+		if (&rg->link == head)
-+			break;
-+		if (rg->from > t)
-+			return chg;
-+
-+		/* We overlap with this area, if it extends futher than
-+		 * us then we must extend ourselves.  Account for its
-+		 * existing reservation. */
-+		if (rg->to > t) {
-+			chg += rg->to - t;
-+			t = rg->to;
-+		}
-+		chg -= rg->to - rg->from;
-+	}
-+	return chg;
-+}
-+
-+static long region_truncate(struct list_head *head, long end)
-+{
-+	struct file_region *rg, *trg;
-+	long chg = 0;
-+
-+	/* Locate the region we are either in or before. */
-+	list_for_each_entry(rg, head, link)
-+		if (end <= rg->to)
-+			break;
-+	if (&rg->link == head)
-+		return 0;
-+
-+	/* If we are in the middle of a region then adjust it. */
-+	if (end > rg->from) {
-+		chg = rg->to - end;
-+		rg->to = end;
-+		rg = list_entry(rg->link.next, typeof(*rg), link);
-+	}
-+
-+	/* Drop any remaining regions. */
-+	list_for_each_entry_safe(rg, trg, rg->link.prev, link) {
-+		if (&rg->link == head)
-+			break;
-+		chg += rg->to - rg->from;
-+		list_del(&rg->link);
-+		kfree(rg);
-+	}
-+	return chg;
-+}
-+
- static struct page *alloc_huge_page(struct vm_area_struct *vma,
- 				    unsigned long addr, int avoid_reserve)
- {
-@@ -1367,127 +1488,6 @@ void hugetlb_change_protection(struct vm_area_struct *vma,
- 	flush_tlb_range(vma, start, end);
- }
- 
--struct file_region {
--	struct list_head link;
--	long from;
--	long to;
--};
--
--static long region_add(struct list_head *head, long f, long t)
--{
--	struct file_region *rg, *nrg, *trg;
--
--	/* Locate the region we are either in or before. */
--	list_for_each_entry(rg, head, link)
--		if (f <= rg->to)
--			break;
--
--	/* Round our left edge to the current segment if it encloses us. */
--	if (f > rg->from)
--		f = rg->from;
--
--	/* Check for and consume any regions we now overlap with. */
--	nrg = rg;
--	list_for_each_entry_safe(rg, trg, rg->link.prev, link) {
--		if (&rg->link == head)
--			break;
--		if (rg->from > t)
--			break;
--
--		/* If this area reaches higher then extend our area to
--		 * include it completely.  If this is not the first area
--		 * which we intend to reuse, free it. */
--		if (rg->to > t)
--			t = rg->to;
--		if (rg != nrg) {
--			list_del(&rg->link);
--			kfree(rg);
--		}
--	}
--	nrg->from = f;
--	nrg->to = t;
--	return 0;
--}
--
--static long region_chg(struct list_head *head, long f, long t)
--{
--	struct file_region *rg, *nrg;
--	long chg = 0;
--
--	/* Locate the region we are before or in. */
--	list_for_each_entry(rg, head, link)
--		if (f <= rg->to)
--			break;
--
--	/* If we are below the current region then a new region is required.
--	 * Subtle, allocate a new region at the position but make it zero
--	 * size such that we can guarantee to record the reservation. */
--	if (&rg->link == head || t < rg->from) {
--		nrg = kmalloc(sizeof(*nrg), GFP_KERNEL);
--		if (!nrg)
--			return -ENOMEM;
--		nrg->from = f;
--		nrg->to   = f;
--		INIT_LIST_HEAD(&nrg->link);
--		list_add(&nrg->link, rg->link.prev);
--
--		return t - f;
--	}
--
--	/* Round our left edge to the current segment if it encloses us. */
--	if (f > rg->from)
--		f = rg->from;
--	chg = t - f;
--
--	/* Check for and consume any regions we now overlap with. */
--	list_for_each_entry(rg, rg->link.prev, link) {
--		if (&rg->link == head)
--			break;
--		if (rg->from > t)
--			return chg;
--
--		/* We overlap with this area, if it extends futher than
--		 * us then we must extend ourselves.  Account for its
--		 * existing reservation. */
--		if (rg->to > t) {
--			chg += rg->to - t;
--			t = rg->to;
--		}
--		chg -= rg->to - rg->from;
--	}
--	return chg;
--}
--
--static long region_truncate(struct list_head *head, long end)
--{
--	struct file_region *rg, *trg;
--	long chg = 0;
--
--	/* Locate the region we are either in or before. */
--	list_for_each_entry(rg, head, link)
--		if (end <= rg->to)
--			break;
--	if (&rg->link == head)
--		return 0;
--
--	/* If we are in the middle of a region then adjust it. */
--	if (end > rg->from) {
--		chg = rg->to - end;
--		rg->to = end;
--		rg = list_entry(rg->link.next, typeof(*rg), link);
--	}
--
--	/* Drop any remaining regions. */
--	list_for_each_entry_safe(rg, trg, rg->link.prev, link) {
--		if (&rg->link == head)
--			break;
--		chg += rg->to - rg->from;
--		list_del(&rg->link);
--		kfree(rg);
--	}
--	return chg;
--}
--
- int hugetlb_reserve_pages(struct inode *inode,
- 					long from, long to,
- 					struct vm_area_struct *vma)
+On Wed, 7 May 2008, Andrew Morton wrote:
+> 
+> The patch looks OK to me.
+
+As far as I can tell, authorship has been destroyed by at least two of the 
+patches (ie Christoph seems to be the author, but Andrea seems to have 
+dropped that fact).
+
+> The proposal is that we sneak this into 2.6.26.  Are there any
+> sufficiently-serious objections to this?
+
+Yeah, too late and no upside.
+
+That "locking" code is also too ugly to live, at least without some 
+serious arguments for why it has to be done that way. Sorting the locks? 
+In a vmalloc'ed area?  And calling this something innocuous like 
+"mm_lock()"? Hell no. 
+
+That code needs some serious re-thinking.
+
+		Linus
