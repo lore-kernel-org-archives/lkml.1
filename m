@@ -1,74 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762378AbYEGVpw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764789AbYEGVqr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762378AbYEGVpw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 17:45:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754956AbYEGVpk
+	id S1764789AbYEGVqr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 17:46:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755030AbYEGVqd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 17:45:40 -0400
-Received: from gate.crashing.org ([63.228.1.57]:38172 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753742AbYEGVpj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 17:45:39 -0400
-Subject: Re: [PATCH] Silence 'ignoring return value' warnings in
-	drivers/video/aty/radeon_base.c
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Cornelia Huck <cornelia.huck@de.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, tony@bakeyournoodle.com,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20080507102310.57b4ccfb@gondolin.boeblingen.de.ibm.com>
-References: <20080424043400.GS20457@bakeyournoodle.com>
-	 <20080506143936.6357e578.akpm@linux-foundation.org>
-	 <20080506.144301.233784820.davem@davemloft.net>
-	 <1210121683.21644.194.camel@pasglop>
-	 <20080506182006.4b4a3968.akpm@linux-foundation.org>
-	 <1210134804.21644.202.camel@pasglop>
-	 <20080507102310.57b4ccfb@gondolin.boeblingen.de.ibm.com>
-Content-Type: text/plain
-Date: Thu, 08 May 2008 07:43:41 +1000
-Message-Id: <1210196621.1421.5.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 7 May 2008 17:46:33 -0400
+Received: from mail.gmx.net ([213.165.64.20]:36695 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1754865AbYEGVqb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 May 2008 17:46:31 -0400
+X-Authenticated: #704063
+X-Provags-ID: V01U2FsdGVkX1/iURJUWPjiacvCg8PA2J4KMNYGj8tQL28MlqyoeL
+	yjqmiVThfh2rM0
+Date: Wed, 7 May 2008 23:46:28 +0200
+From: Eric Sesterhenn <snakebyte@gmx.de>
+To: Suresh Siddha <suresh.b.siddha@intel.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       Frederik Deweerdt <deweerdt@free.fr>, linux-kernel@vger.kernel.org,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: Oops with strace_test
+Message-ID: <20080507214628.GA4156@alice>
+References: <20080430121202.GD18314@alice> <20080505100008.GA2354@alice> <20080505180053.GB5576@slug> <20080506121005.GJ32591@elte.hu> <20080507103615.GC2340@alice> <alpine.LFD.1.10.0805071534580.3318@apollo.tec.linutronix.de> <20080507172032.GB3348@alice> <alpine.LFD.1.10.0805071924550.3318@apollo.tec.linutronix.de> <20080507190952.GA11931@linux-os.sc.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20080507190952.GA11931@linux-os.sc.intel.com>
+X-Editor: Vim http://www.vim.org/
+X-Info: http://www.snake-basket.de
+X-Operating-System: Linux/2.6.25 (x86_64)
+X-Uptime: 23:44:50 up  9:59,  5 users,  load average: 0.12, 0.12, 0.09
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Wed, 2008-05-07 at 10:23 +0200, Cornelia Huck wrote:
+* Suresh Siddha (suresh.b.siddha@intel.com) wrote:
+> On Wed, May 07, 2008 at 07:26:20PM +0200, Thomas Gleixner wrote:
+> > 
+> > Ok, we decoded the problem in meantime. Suresh will send a patch soon.
 > 
-> But they are often an indication that we messed up earlier (e. g. try
-> to add something twice)...
->
-> > mostly only compromise the user ABI, 
-> 
-> Which is bad enough in itself. Most people will want to avoid a
-> crippled ABI.
+> Appended patch should fix it. Eric, can you please check if it fixes the issue?
+> I have to fix the math-emu aswell. But I will send a different patch for it.
 
-You prefer a crippled ABI or a machine that doesn't boot with no console
-at all to see what happened because the console driver refused to
-initialize due to such a sysfs file conflict ?
+running the test for 20 minutes now, no oops seen so far, seems to be
+the right fix. 
 
-Now, again, that's only part of what I'm talking about anyway.
-
-What I'm saying is basically that rather than have a test & printk in
-every bloody driver, we are better off having it once in the function
-itself (bloat ?)
-
-In addition, in most cases, failure of initializing the driver is -not-
-the right solution, so the driver should probably just warn, which can
-as well be done by ... having sysfs_create_file() itself do the warning.
-
-> The first one is the one we really want to yell about, since we've
-> messed up somewhere. The second one is not as likely, maybe we want to
-> warn about it when we activate debug options?
-> 
-> Which of the current __must_check functions do you think should have
-> the __must_check removed?
-
-sysfs_create_file is a good candidate imho :-)
-
-Ben.
-
-
+Thanks, Eric
