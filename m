@@ -1,103 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763278AbYEGGpn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762432AbYEGGvK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763278AbYEGGpn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 02:45:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757005AbYEGGpY
+	id S1762432AbYEGGvK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 02:51:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757317AbYEGGuu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 02:45:24 -0400
-Received: from zone0.gcu-squad.org ([212.85.147.21]:48930 "EHLO
-	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756345AbYEGGpV convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 02:45:21 -0400
-Date: Wed, 7 May 2008 08:45:07 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: tockar <tockar@o2.pl>, linux-kernel@vger.kernel.org,
-       lm-sensors@lm-sensors.org
-Subject: Re: [lm-sensors] Problem with sensors on linux 2.6.25
-Message-ID: <20080507084507.77764325@hyperion.delvare>
-In-Reply-To: <20080506231838.563c9dcd.akpm@linux-foundation.org>
-References: <200805042334.03574.tockar@o2.pl>
-	<20080506231838.563c9dcd.akpm@linux-foundation.org>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
+	Wed, 7 May 2008 02:50:50 -0400
+Received: from mga09.intel.com ([134.134.136.24]:11899 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757005AbYEGGum (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 May 2008 02:50:42 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.27,446,1204531200"; 
+   d="scan'208";a="325327061"
+Subject: Re: AIM7 40% regression with 2.6.26-rc1
+From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Matthew Wilcox <matthew@wil.cx>,
+       "J. Bruce Fields" <bfields@citi.umich.edu>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Alexander Viro <viro@ftp.linux.org.uk>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-fsdevel@vger.kernel.org
+In-Reply-To: <20080506173900.GA9014@elte.hu>
+References: <1210052904.3453.30.camel@ymzhang>
+	 <20080506114449.GC32591@elte.hu> <20080506120934.GH19219@parisc-linux.org>
+	 <20080506162332.GI19219@parisc-linux.org>
+	 <20080506102153.5484c6ac.akpm@linux-foundation.org>
+	 <20080506173900.GA9014@elte.hu>
+Content-Type: text/plain
+Date: Wed, 07 May 2008 14:49:29 +0800
+Message-Id: <1210142969.3453.69.camel@ymzhang>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+X-Mailer: Evolution 2.21.5 (2.21.5-2.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 6 May 2008 23:18:38 -0700, Andrew Morton wrote:
-> On Sun, 4 May 2008 23:34:03 +0200 tockar <tockar@o2.pl> wrote:
+
+On Tue, 2008-05-06 at 19:39 +0200, Ingo Molnar wrote:
+> * Andrew Morton <akpm@linux-foundation.org> wrote:
 > 
-> > Hello,
-> > I've strange problem with Linux 2.6.25 and later (I've compiled 2.6.26-rc1 and 
-> > I have same problem). In 'sensors' command result, I get ALARMs. 
-> > Here's 'sensors' result on Linux 2.6.24:
-> > 
-> > it87-isa-0290
-> > Adapter: ISA adapter
-> > VCore 1:     +1,71 V  (min =  +3,97 V, max =  +1,95 V)
-> > VCore 2:     +3,09 V  (min =  +3,82 V, max =  +1,01 V)
-> > +3.3V:       +3,07 V  (min =  +3,82 V, max =  +3,06 V)
-> > +5V:         +5,59 V  (min =  +4,27 V, max =  +5,11 V)
-> > +12V:       +13,31 V  (min = +15,62 V, max =  +7,74 V)
-> > -12V:        -2,69 V  (min =  -0,61 V, max =  +3,44 V)
-> > -5V:         -9,14 V  (min =  +3,82 V, max =  -2,62 V)
-> > Stdby:       +0,00 V  (min =  +6,37 V, max =  +5,03 V)
-> > VBat:        +3,25 V
-> > fan1:       5152 RPM  (min =    0 RPM, div = 2)
-> > fan2:          0 RPM  (min =    0 RPM, div = 2)
-> > M/B Temp:    +34,0__C  (low  =  -7,0°C, high = -11,0°C)  sensor = transistor
-> > CPU Temp:    +33,0__C  (low  = -66,0°C, high = +127,0°C)  sensor = transistor
-> > Temp3:       +31,0__C  (low  = -33,0°C, high = -101,0°C)  sensor = transistor
-> > 
-> > Two minutes later, on Linux 2.6.25:
-> > 
-> > it87-isa-0290
-> > Adapter: ISA adapter
-> > VCore 1:     +1,71 V  (min =  +3,97 V, max =  +1,95 V)   ALARM
-> > VCore 2:     +3,09 V  (min =  +3,82 V, max =  +1,01 V)   ALARM
-> > +3.3V:       +3,07 V  (min =  +3,82 V, max =  +3,06 V)   ALARM
-> > +5V:         +5,59 V  (min =  +4,27 V, max =  +5,11 V)   ALARM
-> > +12V:       +13,31 V  (min = +15,62 V, max =  +7,74 V)   ALARM
-> > -12V:        -2,69 V  (min =  -0,61 V, max =  +3,44 V)   ALARM
-> > -5V:         -9,14 V  (min =  +3,82 V, max =  -2,62 V)   ALARM
-> > Stdby:       +0,00 V  (min =  +6,37 V, max =  +5,03 V)   ALARM
-> > VBat:        +3,25 V
-> > fan1:       5152 RPM  (min =    0 RPM, div = 2)
-> > fan2:          0 RPM  (min =    0 RPM, div = 2)
-> > M/B Temp:    +35,0__C  (low  =  -7,0°C, high = -11,0°C)  sensor = transistor
-> > CPU Temp:    +33,0__C  (low  = -66,0°C, high = +127,0°C)  sensor = transistor
-> > Temp3:       +32,0__C  (low  = -33,0°C, high = -101,0°C)  sensor = transistor
-> > 
-> > Results are almost identical, but I get those ALARMs. I've Pentium4 1,4Ghz 
-> > processor, module for my mainboard is BLK_DEV_VIA82CXXX. Is that a bug? Can I 
-> > safely use Linux 2.6.25 or later?
+> > Finally: how come we regressed by swapping the semaphore 
+> > implementation anyway?  We went from one sleeping lock implementation 
+> > to another - I'd have expected performance to be pretty much the same.
+> i.e. we'll always keep yet another task in flight. This can mask wakeup 
+> latencies especially when it takes time.
+> 
+> The patch (hack) below tries to emulate this weirdness - it 'kicks' 
+> another task as well and keeps it busy. Most of the time this just 
+> causes extra scheduling, but if AIM7 is _just_ saturating the number of 
+> CPUs, it might make a difference. Yanmin, does the patch below make any 
+> difference to the AIM7 results?
+I tested it on my 8-core stoakley and the result is 12% worse than the one of
+pure 2.6.26-rc1.
 
-No, it's not a bug. Yes, 2.6.25 can be safely used, do not worry.
+-yanmin
 
-The it87 driver in kernel 2.6.24 did not implement the standard alarm
-reporting, so sensors 3.x (which I guess you are using) couldn't report
-the alarms. This was fixed in 2.6.25, so now you see the alarms, but in
-fact they were already there before.
+> 
+> ( it would be useful data to get a meaningful context switch trace from 
+>   the whole regressed workload, and compare it to a context switch trace 
+>   with the revert added. )
+> 
+> 	Ingo
+> 
+> ---
+>  kernel/semaphore.c |   10 ++++++++++
+>  1 file changed, 10 insertions(+)
+> 
+> Index: linux/kernel/semaphore.c
+> ===================================================================
+> --- linux.orig/kernel/semaphore.c
+> +++ linux/kernel/semaphore.c
+> @@ -261,4 +261,14 @@ static noinline void __sched __up(struct
+>  	list_del(&waiter->list);
+>  	waiter->up = 1;
+>  	wake_up_process(waiter->task);
+> +
+> +	if (likely(list_empty(&sem->wait_list)))
+> +		return;
+> +	/*
+> +	 * Opportunistically wake up another task as well but do not
+> +	 * remove it from the list:
+> +	 */
+> +	waiter = list_first_entry(&sem->wait_list,
+> +				  struct semaphore_waiter, list);
+> +	wake_up_process(waiter->task);
+>  }
 
-All these alarms really mean is that you didn't bother fine-tuning your
-sensors3.conf file, or you did but you forgot to run "sensors -s"
-afterwards, so the low and high limits for each sensor aren't set
-properly. So, if you care about the alarms, you have to edit the
-configuration file. If you are lucky, we might have one for your board
-already, check at http://www.lm-sensors.org/wiki/Configurations and
-http://khali.linux-fr.org/devel/lm-sensors/ . But more likely you'll
-have to do the work by yourself.
-
-Note: I see that you are using a locale where a comma is used to
-display decimal numbers. There's a bug in libsensors which causes some
-statements of the configuration file to be parsed improperly in this
-case. This is fixed in SVN already, but until 3.0.2 is released and you
-upgrade to it, you should force your locale to C when running "sensors"
-or "sensors -s".
-
--- 
-Jean Delvare
