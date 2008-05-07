@@ -1,17 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764683AbYEGR4o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765223AbYEGR5d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764683AbYEGR4o (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 13:56:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756814AbYEGR4a
+	id S1765223AbYEGR5d (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 13:57:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755702AbYEGR5N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 13:56:30 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:52399 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755111AbYEGR42 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 13:56:28 -0400
-Date: Wed, 7 May 2008 13:46:29 -0400
-From: Rik van Riel <riel@redhat.com>
-To: Andrea Arcangeli <andrea@qumranet.com>
+	Wed, 7 May 2008 13:57:13 -0400
+Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:47435
+	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755886AbYEGR5K (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 May 2008 13:57:10 -0400
+Date: Wed, 7 May 2008 19:57:05 +0200
+From: Andrea Arcangeli <andrea@qumranet.com>
+To: Rik van Riel <riel@redhat.com>
 Cc: Andrew Morton <akpm@linux-foundation.org>,
        Christoph Lameter <clameter@sgi.com>, Jack Steiner <steiner@sgi.com>,
        Robin Holt <holt@sgi.com>, Nick Piggin <npiggin@suse.de>,
@@ -25,27 +26,22 @@ Cc: Andrew Morton <akpm@linux-foundation.org>,
        Anthony Liguori <aliguori@us.ibm.com>, Chris Wright <chrisw@redhat.com>,
        Marcelo Tosatti <marcelo@kvack.org>, Eric Dumazet <dada1@cosmosbay.com>,
        "Paul E. McKenney" <paulmck@us.ibm.com>
-Subject: Re: [PATCH 05 of 11] unmap vmas tlb flushing
-Message-ID: <20080507134629.0dcfd4a1@bree.surriel.com>
-In-Reply-To: <20bc6a66a86ef6bd6091.1210170955@duo.random>
-References: <patchbomb.1210170950@duo.random>
-	<20bc6a66a86ef6bd6091.1210170955@duo.random>
-Organization: Red Hat, Inc.
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Subject: Re: [PATCH 03 of 11] invalidate_page outside PT lock
+Message-ID: <20080507175705.GE18260@duo.random>
+References: <patchbomb.1210170950@duo.random> <d60d200565abde6a8ed4.1210170953@duo.random> <20080507133943.3e76c899@bree.surriel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080507133943.3e76c899@bree.surriel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 07 May 2008 16:35:55 +0200
-Andrea Arcangeli <andrea@qumranet.com> wrote:
+On Wed, May 07, 2008 at 01:39:43PM -0400, Rik van Riel wrote:
+> Would it be an idea to merge them into one, so the first patch
+> introduces the right conventions directly?
 
-> Signed-off-by: Christoph Lameter <clameter@sgi.com>
-> Signed-off-by: Andrea Arcangeli <andrea@qumranet.com>
-
-Acked-by: Rik van Riel <riel@redhat.com>
-
--- 
-All rights reversed.
+The only reason this isn't merged into one, is that this requires
+non obvious (not difficult though) to the core VM code. I wanted to
+keep an obviously safe approach for 2.6.26. The other conventions are
+only needed by XPMEM and XPMEM can't work without all other patches anyway.
