@@ -1,131 +1,228 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932255AbYEGSug@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932491AbYEGSvB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932255AbYEGSug (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 14:50:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763634AbYEGStx
+	id S932491AbYEGSvB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 14:51:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932162AbYEGSuS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 14:49:53 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:40752 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1761936AbYEGStv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 14:49:51 -0400
-Date: Wed, 7 May 2008 11:49:49 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Ingo Molnar <mingo@elte.hu>
-cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Spinlocks: Factor our GENERIC_LOCKBREAK in order to avoid spin with
- irqs disable
-In-Reply-To: <Pine.LNX.4.64.0805071022230.3173@schroedinger.engr.sgi.com>
-Message-ID: <Pine.LNX.4.64.0805071148240.8441@schroedinger.engr.sgi.com>
-References: <Pine.LNX.4.64.0805061220570.30604@schroedinger.engr.sgi.com>
- <20080507073017.GJ32195@elte.hu> <Pine.LNX.4.64.0805071002330.3110@schroedinger.engr.sgi.com>
- <Pine.LNX.4.64.0805071022230.3173@schroedinger.engr.sgi.com>
+	Wed, 7 May 2008 14:50:18 -0400
+Received: from out01.mta.xmission.com ([166.70.13.231]:39669 "EHLO
+	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757278AbYEGSuG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 May 2008 14:50:06 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Benjamin Thery <benjamin.thery@bull.net>
+Cc: linux-kernel@vger.kernel.org, Tejun Heo <htejun@gmail.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>, Al Viro <viro@ftp.linux.org.uk>,
+       Daniel Lezcano <dlezcano@fr.ibm.com>,
+       "Serge E. Hallyn" <serue@us.ibm.com>,
+       Pavel Emelyanov <xemul@openvz.org>, netdev@vger.kernel.org
+References: <20080506173030.653828076@theryb.frec.bull.fr>
+	<20080506173335.922289888@theryb.frec.bull.fr>
+Date: Wed, 07 May 2008 11:49:19 -0700
+In-Reply-To: <20080506173335.922289888@theryb.frec.bull.fr> (Benjamin Thery's
+	message of "Tue, 06 May 2008 19:32:10 +0200")
+Message-ID: <m13aoueyq8.fsf@frodo.ebiederm.org>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+X-SA-Exim-Connect-IP: 24.130.11.59
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa03 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
+	*      [score: 0.0013]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa03 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+Subject: Re: [PATCH 10/11] avoid kobject name conflict with different namespaces
+X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
+X-SA-Exim-Scanned: Yes (on mgr1.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Subject: Spinlocks: Factor our GENERIC_LOCKBREAK in order to avoid spin with irqs disabled
+Benjamin Thery <benjamin.thery@bull.net> writes:
 
-The nice spinlock functions that enable interrupts while spinning are only
-usable if GENERIC_LOCKBREAK is set (and we do not debug locks but lock
-debugging would not be used for a production configuration).
+> The renaming of a kobject will fail if there is another kobject
+> with the same name belonging to another namespace.
+>
+> This patch makes the kobject lookup in kobject_rename to check if
+> the object exists _and_ belongs to the same namespace.
 
-Factor out the dependencies on the ->lock_break field from the nice functions
-into a set of BREAKLOCK macros (cannot be functions since the type of the lock
-variable varies).
+Ok so we are dealing with fallout from:
 
-The nice spinlock function can then also be used if !GENERIC_LOCKBREAK
+commit 34358c26a2c96b2a068dc44e0ac602106a466bce
+Author: Greg Kroah-Hartman <gregkh@suse.de>
+Date:   Wed Oct 24 16:52:31 2007 -0700
 
-Signed-off-by: Christoph Lameter <clameter@sgi.com>
+    kobject: check for duplicate names in kobject_rename
+    
+    This should catch any duplicate names before we try to tell sysfs to
+    rename the object.  This happens a lot with older versions of udev and
+    the network rename scripts.
+    
+    Cc: David Miller <davem@davemloft.net>
+    Cc: Kay Sievers <kay.sievers@vrfy.org>
+    Cc: Rafael J. Wysocki <rjw@sisk.pl>
+    Cc: Tejun Heo <htejun@gmail.com>
+    Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
----
- kernel/spinlock.c |   40 ++++++++++++++++++++++++++++++----------
- 1 file changed, 30 insertions(+), 10 deletions(-)
+Which added the check in kobject_rename to prevent problems, and
+seems to be causing a few.
 
-Index: linux-2.6/kernel/spinlock.c
-===================================================================
---- linux-2.6.orig/kernel/spinlock.c	2008-05-07 11:19:31.000000000 -0700
-+++ linux-2.6/kernel/spinlock.c	2008-05-07 11:40:56.000000000 -0700
-@@ -65,7 +65,7 @@ EXPORT_SYMBOL(_write_trylock);
-  * even on CONFIG_PREEMPT, because lockdep assumes that interrupts are
-  * not re-enabled during lock-acquire (which the preempt-spin-ops do):
-  */
--#if !defined(CONFIG_GENERIC_LOCKBREAK) || defined(CONFIG_DEBUG_LOCK_ALLOC)
-+#ifdef CONFIG_DEBUG_LOCK_ALLOC
- 
- void __lockfunc _read_lock(rwlock_t *lock)
- {
-@@ -192,7 +192,7 @@ void __lockfunc _write_lock(rwlock_t *lo
- 
- EXPORT_SYMBOL(_write_lock);
- 
--#else /* CONFIG_PREEMPT: */
-+#else /* CONFIG_DEBUG_LOCK_ALLOC: */
- 
- /*
-  * This could be a long-held lock. We both prepare to spin for a long
-@@ -201,6 +201,28 @@ EXPORT_SYMBOL(_write_lock);
-  *
-  * (We do this in a function because inlining it would be excessive.)
-  */
-+#ifdef CONFIG_GENERIC_LOCKBREAK
-+
-+#define BREAKLOCK(lock) (lock)->break_lock
-+
-+#define BREAKLOCK_ENABLE(lock)						\
-+do {									\
-+	if (!(lock)->break_lock)					\
-+		(lock)->break_lock = 1;					\
-+} while (0)
-+
-+#define BREAKLOCK_DISABLE(lock)						\
-+do {									\
-+	 (lock)->break_lock = 0;					\
-+} while (0)
-+
-+#else
-+
-+#define BREAKLOCK(lock)	0
-+#define BREAKLOCK_ENABLE(lock)	do { } while (0)
-+#define BREAKLOCK_DISABLE(lock) do { } while (0)
-+
-+#endif
- 
- #define BUILD_LOCK_OPS(op, locktype)					\
- void __lockfunc _##op##_lock(locktype##_t *lock)			\
-@@ -211,12 +233,11 @@ void __lockfunc _##op##_lock(locktype##_
- 			break;						\
- 		preempt_enable();					\
- 									\
--		if (!(lock)->break_lock)				\
--			(lock)->break_lock = 1;				\
--		while (!op##_can_lock(lock) && (lock)->break_lock)	\
-+		BREAKLOCK_ENABLE(lock);					\
-+		while (!op##_can_lock(lock) && BREAKLOCK(lock))		\
- 			_raw_##op##_relax(&lock->raw_lock);		\
- 	}								\
--	(lock)->break_lock = 0;						\
-+	BREAKLOCK_DISABLE(lock);					\
- }									\
- 									\
- EXPORT_SYMBOL(_##op##_lock);						\
-@@ -233,12 +254,11 @@ unsigned long __lockfunc _##op##_lock_ir
- 		local_irq_restore(flags);				\
- 		preempt_enable();					\
- 									\
--		if (!(lock)->break_lock)				\
--			(lock)->break_lock = 1;				\
--		while (!op##_can_lock(lock) && (lock)->break_lock)	\
-+		BREAKLOCK_ENABLE(lock);					\
-+		while (!op##_can_lock(lock) && BREAKLOCK(lock))		\
- 			_raw_##op##_relax(&lock->raw_lock);		\
- 	}								\
--	(lock)->break_lock = 0;						\
-+	BREAKLOCK_DISABLE(lock);					\
- 	return flags;							\
- }									\
- 									\
+I believe this earlier? patch addresses the problem:
 
+commit c8d90dca3211966ba5189e0f3d4bccd558d9ae08
+Author: Stephen Hemminger <shemminger@linux-foundation.org>
+Date:   Fri Oct 26 03:53:42 2007 -0700
+
+    [NET] dev_change_name: ignore changes to same name
+    
+    Prevent error/backtrace from dev_rename() when changing
+    name of network device to the same name. This is a common
+    situation with udev and other scripts that bind addr to device.
+    
+    Signed-off-by: Stephen Hemminger <shemminger@linux-foundation.org>
+    Signed-off-by: David S. Miller <davem@davemloft.net>
+
+
+And the challenge is that we are getting false positives in the check
+to see if renames will fail.
+
+	/* see if this name is already in use */
+	if (kobj->kset) {
+		struct kobject *temp_kobj;
+		temp_kobj = kset_find_obj(kobj->kset, new_name);
+		if (temp_kobj) {
+			printk(KERN_WARNING "kobject '%s' can not be renamed 
+				"to '%s' as '%s' is already in existance.\n",
+				kobject_name(kobj), new_name, new_name);
+			kobject_put(temp_kobj);
+			return -EINVAL;
+		}
+	}
+
+If the kobject layer wants to perform the test above how do we support
+it by giving it enough information to perform the test without false
+positives.
+
+Certainly we can go to the sysfs layer but that has the problem
+of being a layering violation and not working when sysfs is not
+compiled in.  Ouch!
+
+
+I believe what the sanity check should look like is:
+	/* see if this name is already in use */
+	if (kobj->kset) {
+		struct kobject *temp_kobj;
+*               void *tag;
+*               tag = kobject_tag(kobj);
+*		temp_kobj = kset_find_tagged_obj(kobj->kset, tag, new_name);
+*		if (temp_kobj && (temp_kobj != kobj)) {
+			printk(KERN_WARNING "kobject '%s' can not be renamed 
+				"to '%s' as '%s' is already in existance.\n",
+				kobject_name(kobj), new_name, new_name);
+			kobject_put(temp_kobj);
+			return -EINVAL;
+		}
+	}
+
+The tricky part is how do we get to kobject_tag (from the
+sysfs_tagged_dir_operations).
+
+Unless there is another path I think placing an additional pointer in
+kobj_type so we can find it through ktype is the simplest solution.
+Although using the kset is also sane.
+
+The easiest and most trivially correct thing to do would be to simply
+remove the unnecessary check from kobject_rename.  We perform the
+check at the upper levels in the network anyway.  And kobject_rename
+is only used by the network stack.
+
+....
+
+As for the actual patch itself I have two nits to pick.
+
+> Signed-off-by: Daniel Lezcano <dlezcano@fr.ibm.com>
+> Acked-by: Benjamin Thery <benjamin.thery@bull.net>
+> ---
+>  fs/sysfs/dir.c        |   10 ++++++++++
+>  include/linux/sysfs.h |    7 +++++++
+>  lib/kobject.c         |    2 +-
+>  3 files changed, 18 insertions(+), 1 deletion(-)
+>
+> Index: linux-vanilla/fs/sysfs/dir.c
+> ===================================================================
+> --- linux-vanilla.orig/fs/sysfs/dir.c
+> +++ linux-vanilla/fs/sysfs/dir.c
+> @@ -902,6 +902,16 @@ err_out:
+>  	return error;
+>  }
+>  
+> +int sysfs_tag_cmp(struct kobject *kobj1, struct kobject *kobj2)
+> +{
+> +	struct sysfs_dirent *sd1 = kobj1->sd;
+> +	struct sysfs_dirent *sd2 = kobj2->sd;
+> +	const void *tag1 = sysfs_dirent_tag(sd1);
+> +	const void *tag2 = sysfs_dirent_tag(sd2);
+
+The new name should be compared with sysfs_creation_tag in
+case we are dealing with the case of renaming across network
+namespaces.    We could use sysfs_creation_tag for both as
+the only time the dirent_tag and creation_tag should differ
+is during a rename operation.
+
+> +
+> +	return tag1 != tag2;
+> +}
+> +
+>  int sysfs_rename_dir(struct kobject * kobj, const char *new_name)
+>  {
+>  	struct sysfs_dirent *sd = kobj->sd;
+> Index: linux-vanilla/include/linux/sysfs.h
+> ===================================================================
+> --- linux-vanilla.orig/include/linux/sysfs.h
+> +++ linux-vanilla/include/linux/sysfs.h
+> @@ -95,6 +95,8 @@ int sysfs_schedule_callback(struct kobje
+>  
+>  int __must_check sysfs_create_dir(struct kobject *kobj);
+>  void sysfs_remove_dir(struct kobject *kobj);
+> +int sysfs_tag_cmp(struct kobject *kobj1, struct kobject *kobj2);
+> +
+>  int __must_check sysfs_rename_dir(struct kobject *kobj, const char *new_name);
+>  int __must_check sysfs_move_dir(struct kobject *kobj,
+>  				struct kobject *new_parent_kobj);
+> @@ -154,6 +156,11 @@ static inline void sysfs_remove_dir(stru
+>  {
+>  }
+>  
+> +static inline int sysfs_tag_cmp(struct kobject *kobj1, struct kobject *kobj2)
+> +{
+> +	return 0;
+> +}
+> +
+
+Either I am blind or this implementation breaks when we are using
+kobjects and sysfs support is not compiled in.  It might be that
+we don't do this work but still in principle this is a small bug.
+
+>  static inline int sysfs_rename_dir(struct kobject *kobj, const char *new_name)
+>  {
+>  	return 0;
+> Index: linux-vanilla/lib/kobject.c
+> ===================================================================
+> --- linux-vanilla.orig/lib/kobject.c
+> +++ linux-vanilla/lib/kobject.c
+> @@ -401,7 +401,7 @@ int kobject_rename(struct kobject *kobj,
+>  	if (kobj->kset) {
+>  		struct kobject *temp_kobj;
+>  		temp_kobj = kset_find_obj(kobj->kset, new_name);
+> -		if (temp_kobj) {
+> +		if (temp_kobj && !sysfs_tag_cmp(temp_kobj, kobj)) {
+>  			printk(KERN_WARNING "kobject '%s' cannot be renamed "
+>  			       "to '%s' as '%s' is already in existence.\n",
+>  			       kobject_name(kobj), new_name, new_name);
+>
+> -- 
