@@ -1,29 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760411AbYEGPiZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762256AbYEGPiv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760411AbYEGPiZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 11:38:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756902AbYEGPiI
+	id S1762256AbYEGPiv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 11:38:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756902AbYEGPid
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 11:38:08 -0400
-Received: from mail.queued.net ([207.210.101.209]:1855 "EHLO mail.queued.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755588AbYEGPiF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 11:38:05 -0400
-Date: Wed, 7 May 2008 11:41:37 -0400
-From: Andres Salomon <dilinger@queued.net>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Adrian Bunk <bunk@kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [git pull] x86 fixes
-Message-ID: <20080507114137.357aca34@ephemeral>
-In-Reply-To: <alpine.LFD.1.10.0805061437430.3318@apollo.tec.linutronix.de>
-References: <20080504193113.GA24358@elte.hu>
-	<20080505151202.GA17139@cs181133002.pp.htv.fi>
-	<20080505112917.7d4548fb@ephemeral>
-	<alpine.LFD.1.10.0805061437430.3318@apollo.tec.linutronix.de>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.9; i486-pc-linux-gnu)
+	Wed, 7 May 2008 11:38:33 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:57692 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1760714AbYEGPi3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 May 2008 11:38:29 -0400
+Date: Wed, 7 May 2008 16:28:20 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: <JosephChan@via.com.tw>
+Cc: <JosephChan@via.com.tw>, <akpm@linux-foundation.org>,
+       <geert@linux-m68k.org>, <linux-fbdev-devel@lists.sourceforge.net>,
+       <linux-kernel@vger.kernel.org>
+Subject: Re: [Linux-fbdev-devel] [PATCH 3/9] viafb: VIA Frame Buffer Device
+ Driver
+Message-ID: <20080507162820.4ecd1b55@core>
+In-Reply-To: <C80EF34A3D2E494DBAF9AC29C7AE4EB806F67754@exchtp03.taipei.via.com.tw>
+References: <C80EF34A3D2E494DBAF9AC29C7AE4EB806F67754@exchtp03.taipei.via.com.tw>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -31,50 +32,43 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 6 May 2008 14:49:07 +0200 (CEST)
-Thomas Gleixner <tglx@linutronix.de> wrote:
+> +	/* Indentify GFX Chip Name */
+> +	pdev =
+> +	    (struct pci_dev *)pci_get_device(PCI_VIA_VENDOR_ID,
+> +					     UNICHROME_CLE266_DID, NULL);
+> +	if (pdev != NULL)
+> +		chip_info.gfx_chip_name = UNICHROME_CLE266;
+> +
+> +	pdev =
+> +	    (struct pci_dev *)pci_get_device(PCI_VIA_VENDOR_ID,
+> +					     UNICHROME_K400_DID, NULL);
 
-> On Mon, 5 May 2008, Andres Salomon wrote:
-> > On Mon, 5 May 2008 18:12:02 +0300
-> > Adrian Bunk <bunk@kernel.org> wrote:
-> > 
-> > > On Sun, May 04, 2008 at 09:35:42PM +0200, Ingo Molnar wrote:
-> > > >...
-> > > > Thomas Gleixner (2):
-> > > >...
-> > > >       x86: olpc build fix
-> > > >...
-> > > > --- a/arch/x86/Kconfig
-> > > > +++ b/arch/x86/Kconfig
-> > > > @@ -1661,6 +1661,7 @@ config GEODE_MFGPT_TIMER
-> > > >  
-> > > >  config OLPC
-> > > >  	bool "One Laptop Per Child support"
-> > > > +	depends on MGEODE_LX
-> > > >  	default n
-> > > >  	help
-> > > >...
-> > > 
-> > > This patch not only excludes OLPC and code depending on it
-> > > (currently BATTERY_OLPC) from all{mod,yes}config builds (where it
-> > > built fine) but also makes it very hard for generic distribution
-> > > kernels to support the OLPC.
-> > > 
-> > > The commit comment does not indicate what the actual problem was,
-> > > and if this patch was sent to linux-kernel I must have missed it.
-> > > 
-> > > What exactly was the build problem?
-> > > Can we fix it in a less invasive way?
-> > 
-> > Also, it would've been nice to have been CC'd on this; I didn't see
-> > it until it was committed.
-> 
-> Sorry, this should not have gone mainline. We had your patch queued
-> (via Andrew) and it had testing failures, which we sent to you. One
-> workaround was that build patch. When we dropped your patch we forgot
-> to remove the workaround as well.
-> 
+pci_get_device takes a reference so you need to do a pci_dev_put() on the
+result if you have finished with it. Alternatively you could make use of
+pci_dev_present()
 
-Will it be removed, then?  I haven't seen any explanation of its
-benefits, and Adrian's point about not catching build failures in
-olpc_battery is valid.
+> +	case UNICHROME_CLE266:
+> +		pdev =
+> +		    (struct pci_dev *)pci_get_device(PCI_VIA_VENDOR_ID,
+> +						     UNICHROME_CLE266_DID,
+
+Similar issue here.
+
+
+> +void get_fb_info(unsigned int *fb_base, unsigned int *fb_len)
+> +{
+> +	struct pci_dev *pdev = NULL;
+> +
+> +	switch (chip_info.gfx_chip_name) {
+> +	case UNICHROME_CLE266:
+> +		pdev =
+> +		    (struct pci_dev *)pci_get_device(PCI_VIA_VENDOR_ID,
+> +						     UNICHROME_CLE266_DID,
+> +						     NULL);
+
+And here
+
+So it might be better to for example use an array of types and keep the
+array reference in the probe function pci_device_id field (which is how a
+lot of stuff like libata drivers avoid doing messy lookups)
+
