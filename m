@@ -1,152 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763087AbYEGUAN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762191AbYEGUBW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763087AbYEGUAN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 16:00:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753992AbYEGT7w
+	id S1762191AbYEGUBW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 16:01:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756722AbYEGUAz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 15:59:52 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:55207 "EHLO smtp5.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760766AbYEGT7t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 15:59:49 -0400
-Date: Wed, 7 May 2008 22:58:30 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
-       kernelnewbies@nl.linux.org, kernel-janitors@vger.kernel.org
-Subject: kernel-testers - finding regressions in the kernel
-Message-ID: <20080507195830.GC32750@cs181133002.pp.htv.fi>
+	Wed, 7 May 2008 16:00:55 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:36205 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753992AbYEGUAw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 May 2008 16:00:52 -0400
+Date: Wed, 7 May 2008 14:00:50 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       "J. Bruce Fields" <bfields@citi.umich.edu>,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Alexander Viro <viro@ftp.linux.org.uk>, linux-fsdevel@vger.kernel.org
+Subject: Oi.  NFS people.  Read this.
+Message-ID: <20080507200050.GE19219@parisc-linux.org>
+References: <20080507172246.GA13262@elte.hu> <alpine.LFD.1.10.0805071028400.3024@woody.linux-foundation.org> <20080507174900.GB13591@elte.hu> <alpine.LFD.1.10.0805071057280.3024@woody.linux-foundation.org> <20080507181714.GA14980@elte.hu> <alpine.LFD.1.10.0805071125090.3024@woody.linux-foundation.org> <20080507184304.GA15554@elte.hu> <alpine.LFD.1.10.0805071150140.3024@woody.linux-foundation.org> <20080507192425.GC19219@parisc-linux.org> <alpine.LFD.1.10.0805071243330.3024@woody.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <alpine.LFD.1.10.0805071243330.3024@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[ Please send further questions only on the kernel-testers list. ]
+On Wed, May 07, 2008 at 12:44:48PM -0700, Linus Torvalds wrote:
+> On Wed, 7 May 2008, Matthew Wilcox wrote:
+> > 
+> > One patch I'd still like Yanmin to test is my one from yesterday which
+> > removes the BKL from fs/locks.c.
+> 
+> And I'd personally rather have the network-fs people test and comment on 
+> that one ;)
+> 
+> I think that patch is worth looking at regardless, but the problems with 
+> that one aren't about performance, but about what the implications are for 
+> the filesystems (if any)...
 
-One big problem we face in kernel development are regressions - a kernel 
-that worked for the user and a more recent kernel no longer works for 
-the user.
+Oh, well, they don't seem interested.
 
-Another problem is for newbies to get into kernel development.
-There aren't many useful coding tasks for newbies available.
+I can comment on some of the problems though.
 
-Testing the kernel and learning how to debug problems both brings 
-immediate value to the kernel and can be a good way to get started
-with kernel development.
+fs/lockd/svcsubs.c, fs/nfs/delegation.c, fs/nfs/nfs4state.c,
+fs/nfsd/nfs4state.c all walk the i_flock list under the BKL.  That won't
+protect them against locks.c any more.  That's probably OK for fs/nfs/*
+since they'll be protected by their own data structures (Someone please
+check me on that?), but it's a bad idea for lockd/nfsd which are walking
+the lists for filesystems.
 
+Are we going to have to export the file_lock_lock?  I'd rather not.  But
+we need to keep nfsd/lockd from tripping over locks.c.
 
-Regressions are bad since they make it harder for users to upgrade the 
-kernel. They cause problems for people when upgrading the kernel and 
-result in many people running old kernels with known security holes.
+Maybe we could come up with a decent API that lockd could use?  It all
+seems a bit complex at the moment ... maybe lockd should be keeping
+track of the locks it owns anyway (since surely the posix deadlock
+detection code can't work properly if it's just passing all the locks
+through).
 
-There are easy to find regressions like compile errors, but the real 
-problems are things like for example:
-- system doesn't boot
-- system crashes with a specific workload
-- mp3 playback now stutters when copying files in the background
-- when doing this or that the system feels worse
-
-Automated tests can find some of these problems, but many of the 
-problems that affect only some specific hardware or the interactive 
-feeling of the computer can not be found automatically.
-
-And a helpful property of regressions is that for a reproducible 
-regression it's relatively easy to figure out what broke it through 
-bisection.
-
-There are usually two months between some kernel developer adding a new 
-regression to the kernel and the regression reaching a stable kernel, 
-and it's important to catch as many of them as early as possible.
-
-The next step will be to also test -next and -mm kernels for identifying 
-regressions even before they reach Linus' tree.
-
-
-
-Mailing list:
-http://vger.kernel.org/vger-lists.html#kernel-testers
-
-The list is primarily for people starting at testing kernels, but if 
-people with experiences in kernel testing and/or kernel debugging want 
-to join that's highly appreciated.
-
-
-Webpage:
-http://kernelnewbies.org/KernelTesters
-
-
-FAQ:
-
-
-Q:
-What will be discussed on the mailing list?
-
-A:
-- which kernels to test
-- how to test them
-- how to turn observed problems into proper bugreports
-
-
-Q:
-What are the prerequisites for participating?
-
-A:
-You should already know how to build and install your own kernel
-(http://www.kroah.com/lkn/ is a good introduction).
-
-And be willing to spend quite some time with debugging problems
-you discover.
-
-
-Q:
-How to start?
-
-A:
-Run 2.6.25 for a week.
-If you already did this, check what the latest snapshot listed at
-http://www.kernel.org/ is and try this kernel.
-
-
-Q:
-The snapshot worked just fine for some days.
-
-A:
-The kernel was less broken than expected. :-)
-(Well, this actually should be the normal case...)
-
-Try a more recent snapshot and follow the discussions on the mailing 
-list what to test next.
-
-
-Q:
-Is it dangerous to test such kernels?
-
-A:
-Most of the times there are no problems.
-
-But your system might crash, and in the worst case it might turn the 
-contents of your disks into garbage.
-
-But you anyway have a backup, don't you?
-
-If you need your system to work for reaching some deadline in real life 
-you obviously shouldn't test any kernels.
-
-
-Q:
-I found a regression!
-
-A:
-Great!
-
-Please tell the details on the mailing list.
-
-
-Q:
-What about bugs that are not regressions?
-
-A:
-Such bugs can also be discussed, but they are not the primary target.
-
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
