@@ -1,56 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757541AbYEGC5e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757541AbYEGDIw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757541AbYEGC5e (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 May 2008 22:57:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755407AbYEGC5Y
+	id S1757541AbYEGDIw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 May 2008 23:08:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752213AbYEGDIl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 May 2008 22:57:24 -0400
-Received: from clem.clem-digital.net ([68.16.168.10]:46666 "EHLO
-	clem.clem-digital.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755114AbYEGC5X (ORCPT
+	Tue, 6 May 2008 23:08:41 -0400
+Received: from an-out-0708.google.com ([209.85.132.250]:60731 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751985AbYEGDIi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 May 2008 22:57:23 -0400
-From: Pete Clements <clem@clem.clem-digital.net>
-Message-Id: <200805070257.m472v9vu004722@clem.clem-digital.net>
-Subject: Re: Lost Sound from 2.6.24 to 2.6.25 -- CS4236 ISA
-To: rene.herman@keyaccess.nl (Rene Herman)
-Date: Tue, 6 May 2008 22:57:09 -0400 (EDT)
-Cc: clem@clem.clem-digital.net (Pete Clements), tiwai@suse.de (Takashi Iwai),
-       linux-kernel@vger.kernel.org (linux-kernel),
-       bjorn.helgaas@hp.com (Bjorn Helgaas)
-In-Reply-To: <48207E90.9000202@keyaccess.nl>
-X-Mailer: ELM [version 2.5 PL7]
+	Tue, 6 May 2008 23:08:38 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=NbCOmjZPotnQZYVNAUuqeJePXT/skKLDMma/iY39IIrMkuT2q8Kn3F6QaN24oJnNpCuJlJ0cBtKCAGFQXCMlLklYAq6g3YqzFIPj6ifgxEXVrcyQJ/HqVofzIYkve04BDnVRFaFWqMBqdMnLz4P3EMS5vCreKboTs3fQ1WXceq4=
+Message-ID: <dd18b0c30805062008l15df094cv16cd790b64072056@mail.gmail.com>
+Date: Wed, 7 May 2008 03:08:37 +0000
+From: "Justin Mattock" <justinmattock@gmail.com>
+To: "Gabriel C" <nix.or.die@googlemail.com>
+Subject: Re: BIOS bug, APIC version if 0 for CPU#0
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, "Kasper Sandberg" <lkml@metanurb.dk>,
+       "Jacek Luczak" <difrost.kernel@gmail.com>,
+       "Linux Kernel" <linux-kernel@vger.kernel.org>
+In-Reply-To: <4821089D.9080901@googlemail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <dd18b0c30804212213x74716d5fx4bf91cbb99a01286@mail.gmail.com>
+	 <1208872145.14146.103.camel@localhost>
+	 <dd18b0c30804220736n5fac017fv2d058595692bb377@mail.gmail.com>
+	 <200805070037.12796.rjw@sisk.pl> <4821089D.9080901@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Rene Herman
-  > 
-  > There have been quite a few post .25 changes to PnP. Is there a difference 
-  > between .24 and .25 or between .24/.25 on the one hand and .26-rc1-git4 on 
-  > the other?
-  > 
-  > Also, does using PNPACPI instead of PNPBIOS change anything?
-  > 
-  > Rene.
-  > --
-  > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-  > the body of a message to majordomo@vger.kernel.org
-  > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-  > Please read the FAQ at  http://www.tux.org/lkml/
-  > 
-Had a cold reboot today, now 2.6.25 is working just like 2.6.24. Have rebooted
-in and out of 25 multi time and all is fine. Nothing changed to my knowledge so
-I can't explain, must have had something screwed up. 
+On Wed, May 7, 2008 at 1:40 AM, Gabriel C <nix.or.die@googlemail.com> wrote:
+> Rafael J. Wysocki wrote:
+>  > On Tuesday, 22 of April 2008, Justin Mattock wrote:
+>  >> On Tue, Apr 22, 2008 at 1:49 PM, Kasper Sandberg <lkml@metanurb.dk> wrote:
+>  >>> On Tue, 2008-04-22 at 06:10 +0000, Justin Mattock wrote:
+>  >>>  > On Tue, Apr 22, 2008 at 5:21 AM, Jacek Luczak <difrost.kernel@gmail.com> wrote:
+>  >>>  > > Hi,
+>  >>>  > >
+>  >>>  > >
+>  >>>  > >  > Hello;
+>  >>>  > >  > with the latest git on a macbook the system can barely boot without
+>  >>>  > >  > freezing, a work around for me at leat is either disable smp, or once
+>  >>>  > >  > booted  turn on glxgears,or compiling the kernel i.g. when using the
+>  >>>  > >  > processors I'm not receiving a freeze, only when everything starts
+>  >>>  > >  > lowering down. in dmesg I'm noticing BIOS bug, APIC version is 0 for
+>  >>>  > >  > CPU#0! fixing up to 0x10. (tell you're hw vendor) could this be the
+>  >>>  > >  > reason for the system freezes?,
+>  >>>  > >
+>  >>>  > >  I don't think so. On my machine there's no freezes with latest git and:
+>  >>>  > >  ACPI: LAPIC (acpi_id[0x00] lapic_id[0x00] enabled)
+>  >>>  > >  BIOS bug, APIC version is 0 for CPU#0! fixing up to 0x10. (tell your hw vendor)
+>  >>>  > >  ACPI: LAPIC (acpi_id[0x01] lapic_id[0x01] enabled)
+>  >>>  > >  BIOS bug, APIC version is 0 for CPU#0! fixing up to 0x10. (tell your hw vendor)
+>  >>>  > >
+>  >>>  > >  I've got exactly the same messages.
+>  >>>  >
+>  >>>  > Are you using a macbook aswell?
+>  >>>  >
+>  >>>  > >
+>  >>>  > >
+>  >>>  > >  > also I didnt have a camera handy on me
+>  >>>  > >  > but the screen spit out = Bug spinlock lockup on CPU#0
+>  >>>  > >  > swapper/0. c17fa7c0 PID 0, comm: swapper not tainted.
+>  >>>  > >
+>  >>>  > >  Can you try to write down more of those bug messages?
+>  >>>  >
+>  >>>  > Yeah,
+>  >>>  >
+>  >>>  > >
+>  >>>  > >
+>  >>>  > >  > I dont have a problem disabling smp, except when I cat /proc/cpuinfo I
+>  >>>  > >  > don't see anything about my cores.
+>  >>>  > >
+>  >>>  > >  What exactly you expect to see in /proc/cpuinfp while smp is disabled?
+>  >>>  >
+>  >>>  > under smp I see cpu cores. disabling smp I dont see cpu cores, under
+>  >>>  > cat /proc/cpuinfo.
+>  >>>
+>  >>>  well.. SMP is kindof support for multiple processors, be it in one
+>  >>>  socket, or multiple sockets.. without SMP you will only be able to use 1
+>  >>>  of your X cores.
+>  >> Yeah disabling smp is not a good idea on a macbook pro, performace is horrible.
+>  >>
+>  >>>  >
+>  >>>  >
+>  >>>  > >
+>  >>>  > >
+>  >>>  > >  > I know this is a stupid question
+>  >>>  > >  > but will it hurt the system if smp is disabled
+>  >>>  > >  > for the macbook pro ati chipset.?
+>  >>>  > >
+>  >>>  > >  No it won't.
+>  >>>  > >
+>  >>>  > >  -Jacek
+>  >>>  > >
+>  >>>  >
+>  >>>  > Cool as long as the system Is o.k. disabling smp.
+>  >>>  It is.. but with the limitations outlined above.
+>  >>>  >   What about x86: PAT
+>  >>>  > support is disabled. how do I enable this option?
+>  >>>  > regards;
+>  >>>  >
+>  >>>
+>  >>>
+>  >> Thanks for the feedback, well I guess this would be either a
+>  >> regression or a bug. I think the best would be to have somebody else
+>  >> with a macbook pro 15' ati chipset confirm this freezeing as well,
+>  >> before going out and jumping the gun, and filing a bug report.
+>  >> regards;
+>  >
+>  > What's the current status of this issue?
+>
+>  I reported this issue too but got ignored .. No one of the x86 maintainer did answer my questions.
+>
+>  http://www.ussg.iu.edu/hypermail/linux/kernel/0805.0/1258.html
+>
+>  However it does not do any bad on my boxes ( so far I can tell ) is just plain annoying and wrong some who since
+>  is *only* occurs on 32bit kernels. HW is broken or even isn't.
+>
+>  It seems to me this issue is related to the move of generic_processor_info() and fiends to apic_32.c ( but I'm not really sure ) ,
+>  all I'm sure about this message was not in 2.6.25 nor in 2.6.24.
+>
+>  >
+>  > Rafael
+>
+>  Regards,
+>
+>  Gabriel
+>
+>
 
-Problem does exist post 2.6.25, except just silence. Did manage to get the
-cyclic noise back after removing pnp, failing a module load, and adding pnp
-back with warm reboots. 
-
-System will not configure PNPACPI.
+Hello; well having something in dmesg give you a BUG signal is a bit
+worrysome but there is probably a good reason for that there.
+Probably with all of the other changes going on in the kernel, this
+would be a temporary solution, until other areas were attended too.
+who knows;
+regards;
 
 -- 
-Pete Clements 
+Justin P. Mattock
