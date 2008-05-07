@@ -1,139 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932354AbYEGWWa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933294AbYEGWW5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932354AbYEGWWa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 18:22:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756992AbYEGWWO
+	id S933294AbYEGWW5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 18:22:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756992AbYEGWWk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 18:22:14 -0400
-Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:45760
-	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756786AbYEGWWK (ORCPT
+	Wed, 7 May 2008 18:22:40 -0400
+Received: from rv-out-0506.google.com ([209.85.198.231]:45991 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756786AbYEGWWi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 18:22:10 -0400
-Date: Thu, 8 May 2008 00:22:05 +0200
-From: Andrea Arcangeli <andrea@qumranet.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Lameter <clameter@sgi.com>, Jack Steiner <steiner@sgi.com>,
-       Robin Holt <holt@sgi.com>, Nick Piggin <npiggin@suse.de>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       kvm-devel@lists.sourceforge.net, Kanoj Sarcar <kanojsarcar@yahoo.com>,
-       Roland Dreier <rdreier@cisco.com>,
-       Steve Wise <swise@opengridcomputing.com>, linux-kernel@vger.kernel.org,
-       Avi Kivity <avi@qumranet.com>, linux-mm@kvack.org,
-       general@lists.openfabrics.org, Hugh Dickins <hugh@veritas.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Anthony Liguori <aliguori@us.ibm.com>, Chris Wright <chrisw@redhat.com>,
-       Marcelo Tosatti <marcelo@kvack.org>, Eric Dumazet <dada1@cosmosbay.com>,
-       "Paul E. McKenney" <paulmck@us.ibm.com>
-Subject: Re: [PATCH 08 of 11] anon-vma-rwsem
-Message-ID: <20080507222205.GC8276@duo.random>
-References: <6b384bb988786aa78ef0.1210170958@duo.random> <alpine.LFD.1.10.0805071349200.3024@woody.linux-foundation.org> <20080507212650.GA8276@duo.random> <alpine.LFD.1.10.0805071429170.3024@woody.linux-foundation.org>
+	Wed, 7 May 2008 18:22:38 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Vy+xi9pqj+taiIt8Xht+q6PbIbDQ04bRO5KA0s6adQmAAYt4BkUYIHJpKEEyV8Uh2rmMnYOZv7j63W0wOLn7RWmuPRoMRumbfJitn11GY01h0/JlwhOopwghEtvInUBc5bst3UxrtSdARuxVVE/OJFFXrQgnb1o8u4oGOqYNOck=
+Message-ID: <86802c440805071522r424b2011v7c0d852db4c4abfd@mail.gmail.com>
+Date: Wed, 7 May 2008 15:22:37 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Pavel Machek" <pavel@suse.cz>
+Subject: Re: 2.6.26, PAT and AMD family 6
+Cc: "Thomas Gleixner" <tglx@linutronix.de>, "Adrian Bunk" <bunk@kernel.org>,
+       "Rene Herman" <rene.herman@keyaccess.nl>, "Ingo Molnar" <mingo@elte.hu>,
+       "Linux Kernel" <linux-kernel@vger.kernel.org>, hpa@zytor.com,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org
+In-Reply-To: <20080507221435.GH18516@elf.ucw.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.10.0805071429170.3024@woody.linux-foundation.org>
+References: <48210A71.1060409@keyaccess.nl>
+	 <86802c440805061939q39ff5500h3c9e229ecbc6b2e6@mail.gmail.com>
+	 <20080507124650.GD29935@cs181133002.pp.htv.fi>
+	 <alpine.LFD.1.10.0805072122270.3318@apollo.tec.linutronix.de>
+	 <20080507212343.GB14951@cs181133002.pp.htv.fi>
+	 <alpine.LFD.1.10.0805072341210.3318@apollo.tec.linutronix.de>
+	 <20080507221435.GH18516@elf.ucw.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 07, 2008 at 02:36:57PM -0700, Linus Torvalds wrote:
-> > had to do any blocking I/O during vmtruncate before, now we have to.
-> 
-> I really suspect we don't really have to, and that it would be better to 
-> just fix the code that does that.
+On Wed, May 7, 2008 at 3:14 PM, Pavel Machek <pavel@suse.cz> wrote:
+>  3) copy&paste code remained in the patch
 
-I'll let you discuss with Christoph and Robin about it. The moment I
-heard the schedule inside ->invalidate_page() requirement I reacted
-the same way you did. But I don't see any other real solution for XPMEM
-other than spin-looping for ages halting the scheduler for ages, while
-the ack is received from the network device.
+i thought to keep the stub so could add more other stuff in the switch
+like 64 bit
 
-But mm_lock is required even without XPMEM. And srcu is also required
-without XPMEM to allow ->release to schedule (however downgrading srcu
-to rcu will result in a very small patch, srcu and rcu are about the
-same with a kernel supporting preempt=y like 2.6.26).
+        clear_cpu_cap(c, X86_FEATURE_PAT);
 
-> I literally think that mm_lock() is an unbelievable piece of utter and 
-> horrible CRAP.
-> 
-> There's simply no excuse for code like that.
+        switch (c->x86_vendor) {
+        case X86_VENDOR_AMD:
+                early_init_amd(c);
+                if (c->x86 >= 0xf && c->x86 <= 0x11)
+                        set_cpu_cap(c, X86_FEATURE_PAT);
+                break;
+        case X86_VENDOR_INTEL:
+                early_init_intel(c);
+                if (c->x86 == 0xF || (c->x86 == 6 && c->x86_model >= 15))
+                        set_cpu_cap(c, X86_FEATURE_PAT);
+                break;
+        case X86_VENDOR_CENTAUR:
+                early_init_centaur(c);
+                break;
+        }
 
-I think it's a great smp scalability optimization over the global lock
-you're proposing below.
-
-> No, the simple solution is to just make up a whole new upper-level lock, 
-> and get that lock *first*. You can then take all the multiple locks at a 
-> lower level in any order you damn well please. 
-
-Unfortunately the lock you're talking about would be:
-
-static spinlock_t global_lock = ...
-
-There's no way to make it more granular.
-
-So every time before taking any ->i_mmap_lock _and_ any anon_vma->lock
-we'd need to take that extremely wide spinlock first (and even worse,
-later it would become a rwsem when XPMEM is selected making the VM
-even slower than it already becomes when XPMEM support is selected at
-compile time).
-
-> And yes, it's one more lock, and yes, it serializes stuff, but:
-> 
->  - that code had better not be critical anyway, because if it was, then 
->    the whole "vmalloc+sort+lock+vunmap" sh*t was wrong _anyway_
-
-mmu_notifier_register can take ages. No problem.
-
->  - parallelism is overrated: it doesn't matter one effing _whit_ if 
->    something is a hundred times more parallel, if it's also a hundred 
->    times *SLOWER*.
-
-mmu_notifier_register is fine to be hundred times slower (preempt-rt
-will turn all locks in spinlocks so no problem).
-
-> And here's an admission that I lied: it wasn't *all* clearly crap. I did 
-> like one part, namely list_del_init_rcu(), but that one should have been 
-> in a separate patch. I'll happily apply that one.
-
-Sure, I'll split it from the rest if the mmu-notifier-core isn't merged.
-
-My objective has been:
-
-1) add zero overhead to the VM before anybody starts a VM with kvm and
-   still zero overhead for all other tasks except the task where the
-   VM runs.  The only exception is the unlikely(!mm->mmu_notifier_mm)
-   check that is optimized away too when CONFIG_KVM=n. And even for
-   that check my invalidate_page reduces the number of branches to the
-   absolute minimum possible.
-
-2) avoid any new cacheline collision in the fast paths to allow numa
-   systems not to nearly-crash (mm->mmu_notifier_mm will be shared and
-   never written, except during the first mmu_notifier_register)
-
-3) avoid any risk to introduce regressions in 2.6.26 (the patch must
-   be obviously safe). Even if mm_lock would be a bad idea like you
-   say, it's order of magnitude safer even if entirely broken then
-   messing with the VM core locking in 2.6.26.
-
-mm_lock (or whatever name you like to give it, I admit mm_lock may not
-be worrysome enough for people to have an idea to call it in a fast
-path) is going to be the real deal for the long term to allow
-mmu_notifier_register to serialize against
-invalidate_page_start/end. If I fail in 2.6.26 I'll offer
-maintainership to Christoph as promised, and you'll find him pushing
-for mm_lock to be merged (as XPMEM/GRU aren't technologies running on
-cellphones where your global wide spinlocks is optimized away at
-compile time, and he also has to deal with XPMEM where such a spinlock
-would need to become a rwsem as the anon_vma->sem has to be taken
-after it), but let's assume you're right entirely right here that
-mm_lock is going to be dropped and there's a better way: it's still a
-fine solution for 2.6.26.
-
-And if you prefer I can move the whole mm_lock() from mmap.c/mm.h to
-mmu_notifier.[ch] so you don't get any pollution in the core VM, and
-mm_lock will be invisible to everything but anybody calling
-mmu_notifier_register() then and it will be trivial to remove later if
-you really want to add a global spinlock as there's no way to be more
-granular than a _global_ numa-wide spinlock taken before any
-i_mmap_lock/anon_vma->lock, without my mm_lock.
+YH
