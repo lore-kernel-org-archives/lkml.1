@@ -1,96 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756985AbYEGODs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757461AbYEGOIZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756985AbYEGODs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 10:03:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752959AbYEGODh
+	id S1757461AbYEGOIZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 10:08:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752806AbYEGOIK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 10:03:37 -0400
-Received: from po-out-1718.google.com ([72.14.252.158]:1165 "EHLO
-	po-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752619AbYEGODe (ORCPT
+	Wed, 7 May 2008 10:08:10 -0400
+Received: from smtpq1.tilbu1.nb.home.nl ([213.51.146.200]:51446 "EHLO
+	smtpq1.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752643AbYEGOIH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 10:03:34 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=T6la7HAOF4gejmEvPZz3WWxJQolueNbG0okOxNQ+mV2HD6qJQ+NcePIiAT6ImQfNEBTSdMjXylxJrzb654G+D8AFjZ+w5V3RhWTyKz7OgGbrGhF+0jb0IwA+w5sHPeaYs/hYRxgFgyi/mehj1utzONLK9PVNqy1/ZDgQYMx+gl4=
-Message-ID: <c4e36d110805070703s63c2426csd795d0e953a6e7bb@mail.gmail.com>
-Date: Wed, 7 May 2008 16:03:33 +0200
-From: "Zdenek Kabelac" <zdenek.kabelac@gmail.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Subject: general protection fault: 0000 [1] PREEMPT SMP DEBUG_PAGEALLOC
+	Wed, 7 May 2008 10:08:07 -0400
+Message-ID: <4821B801.5030508@keyaccess.nl>
+Date: Wed, 07 May 2008 16:09:05 +0200
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Arjan van de Ven <arjan@infradead.org>
+CC: Yinghai Lu <yhlu.kernel@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.26, PAT and AMD family 6
+References: <48210A71.1060409@keyaccess.nl>	<86802c440805061939q39ff5500h3c9e229ecbc6b2e6@mail.gmail.com>	<4821A7E2.6080101@keyaccess.nl> <20080507064259.36deb978@infradead.org>
+In-Reply-To: <20080507064259.36deb978@infradead.org>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+X-Spam-Score: -1.0 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello
+On 07-05-08 15:42, Arjan van de Ven wrote:
+> On Wed, 07 May 2008 15:00:18 +0200
+> Rene Herman <rene.herman@keyaccess.nl> wrote:
+> 
+>> On 07-05-08 04:39, Yinghai Lu wrote:
+>>
+>>> On Tue, May 6, 2008 at 6:48 PM, Rene Herman
+>>> <rene.herman@keyaccess.nl> wrote:
+>>>>  On 2.6.25 and below, my /proc/cpuinfo looks like:
+>>>>
+>>>>  processor       : 0
+>>>>  vendor_id       : AuthenticAMD
+>>>>  cpu family      : 6
+>>>>  model           : 7
+>>>>  model name      : AMD Duron(tm) Processor
+>> [ ... ]
+>>
+>>>>  flags           : fpu vme de pse tsc msr pae mce cx8 sep mtrr pge
+>>>> mca cmov pat pse36 mmx fxsr sse syscall mmxext 3dnowext 3dnow ts
+>>>>  while on current mainline PAT and TS (Temperature Sensor) drop
+>>>> from the feature flags:
+>>>>
+>>>>  flags           : fpu vme de pse tsc msr pae mce cx8 sep mtrr pge
+>>>> mca cmov pse36 mmx fxsr sse syscall mmxext 3dnowext 3dnow
+>>>>
+>>>>  With respect to PAT, I guess it's
+>>>> 9307cacad0dfe3749f00303125c6f7f0523e5616, "x86: pat cpu feature
+>>>> bit setting for known cpus" but what's this about?
+>>>>
+>>>> Did my cpuinfo lie upto this point or shouldn't the flag be
+>>>> cleared? The commit message for that change is completely and
+>>>> totally unhelpful.
+>>> others like to to whitebox methods, ..., please try attach patch to
+>>> see if duron support PAT.
+>>> diff --git a/arch/x86/kernel/cpu/common.c
+>>> b/arch/x86/kernel/cpu/common.c index a428ffc..81483ec 100644
+>>> --- a/arch/x86/kernel/cpu/common.c
+>>> +++ b/arch/x86/kernel/cpu/common.c
+>>> @@ -314,6 +314,8 @@ static void __cpuinit early_get_cap(struct
+>>> cpuinfo_x86 *c) case X86_VENDOR_AMD:
+>>>  		if (c->x86 >= 0xf && c->x86 <= 0x11)
+>>>  			set_cpu_cap(c, X86_FEATURE_PAT);
+>>> +		if (c->x86 == 6 && c->x86_modes == 7)
+>>> +			set_cpu_cap(c, X86_FEATURE_PAT);
+>>>  		break;
+>>>  	case X86_VENDOR_INTEL:
+>>>  		if (c->x86 == 0xF || (c->x86 == 6 && c->x86_model
+>>>> = 15))
+>> s/modes/model/ but, as far as I'm aware, works fine other than that.
+>> When I boot with CONFIG_X86_PAT after applying that, I see:
+>>
+>> 	x86 PAT enabled: cpu 0, old 0x7040600070406, new
+>> 0x7010600070106
+>>
+>> and PAT is retained in the feature flags. However, this I do not
+>> consider very surprising. Why is this code doing what it is doing in
+>> the first place?
+>>
+>> These feature flags are read from hardware in the CPUID instruction.
+>> Why is this code then going "ah, this CPU may _claim_ PAT but we
+>> won't actually believe it unless it's model foo, bar or baz". Is that
+>> feature flag buggy?
+>>
+> 
+> older cpus had various issues with PAT, some blatently obvious, some
+> more subtle.
 
-Unsure whether this is already fixed with latest git - I've got this ooops with
-commit 8a3415c4a692732de8278396bf3d3dda36ed4384
+And I suppose you have a list of these older CPUs or is this going to be
+one of these things where in 5 years time I say to yet another person "ah
+yes, I remember someone once telling me that old CPUs apparently had some
+issues, some blatantly obvious, some more subtle" and the saga continues
+on from there again?
 
-My machine 2GB T61 C2D
-And after this boot  audio was not working.
+> Since for old systems the mtrrs clearly work fine... the idea was to
+> not take the risk (since there's no reward) and just leave them as
+> is, in a working state.
 
-Next reboot seemed to go just ok.
+With CONFIG_X86_PAT, you now see "CPU and/or kernel does not support PAT."
+at the top of your dmesg which is going to make people wonder. I did a
+cat /proc/cpuinfo, saw no PAT flag and was just suspicious enough that I
+didn't trust it.
 
-Zdenek
+A blacklist would be a better idea I feel, but in ANY case I think it's
+really bad form to clear the feature flag. They are provided by hardware;
+if arch/x86/mm/pat.c won't risk running except on a select few tested
+models, whatever, but my /proc/cpuinfo shouldn't be lying to me.
 
-
-ACPI: PCI Interrupt 0000:00:1b.0[B] -> GSI 17 (level, low) -> IRQ 17
-hda_intel: probe_mask set to 0x1 for device 17aa:20ac
-general protection fault: 0000 [1] PREEMPT SMP DEBUG_PAGEALLOC
-CPU 0
-Modules linked in: kvm_intel kvm snd_hda_intel mmc_block arc4 ecb
-snd_seq_oss snd_seq_midi_event snd_seq crypto_blkcipher snd_seq_device
-snd_pcm_oss cryptomgr snd_mixer_oss snd_pcm rtc_cmos snd_timer sdhci
-evdev rtc_core crypto_algapi iwl3945 mac80211 thinkpad_acpi snd video
-mmc_core rtc_lib led_class psmouse i2c_i801 i2c_core sr_mod backlight
-nvram iTCO_wdt iTCO_vendor_support cdrom serio_raw cfg80211 e1000e
-soundcore output ac battery snd_page_alloc button intel_agp uhci_hcd
-ohci_hcd ehci_hcd usbcore
-Pid: 608, comm: udevd Not tainted 2.6.26-rc1 #4
-RIP: 0010:[kernel_map_pages+158/368]  [kernel_map_pages+158/368]
-kernel_map_pages+0x9e/0x170
-RSP: 0018:ffff81007db45c28  EFLAGS: 00010206
-RAX: 0000000000000660 RBX: 0000000000000001 RCX: ffff81007db45c28
-RDX: 00000000000006e0 RSI: ffff81007db45be4 RDI: ffffffff81000000
-RBP: ffff81007db45c78 R08: 000000007cb6b000 R09: ffff810000000000
-R10: 0000000000000001 R11: 0000000000000001 R12: ffffe20002e467c0
-R13: 0000000000000002 R14: ffff81007ca74920 R15: 0000000000000282
-FS:  00007f5eb4aef780(0000) GS:ffffffff81494000(0000) knlGS:0000000000000000
-CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
-CR2: 00007fffbcb28ef0 CR3: 000000007d88e000 CR4: 0000000000002660
-DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-Process udevd (pid: 608, threadinfo ffff81007db44000, task ffff81007ca74920)
-Stack:  ffff81007b66c000 0000000000000003 0000000000000000 0000000100000001
- 000000000007b66b 0000000000000000 ffff81007db45c78 0000000000000005
- ffffe20002e467c0 0000000000000000 ffff81007db45d38 ffffffff810923b9
-Call Trace:
- [get_page_from_freelist+1161/1632] get_page_from_freelist+0x489/0x660
- [__alloc_pages_internal+271/1408] __alloc_pages_internal+0x10f/0x580
- [kmem_cache_alloc+168/208] ? kmem_cache_alloc+0xa8/0xd0
- [__alloc_pages+11/16] __alloc_pages+0xb/0x10
- [__get_free_pages+28/96] __get_free_pages+0x1c/0x60
- [copy_process+187/5184] copy_process+0xbb/0x1440
- [put_lock_stats+14/48] ? put_lock_stats+0xe/0x30
- [do_fork+116/816] do_fork+0x74/0x330
- [trace_hardirqs_on+305/400] ? trace_hardirqs_on+0x131/0x190
- [_spin_unlock_irqrestore+69/144] ? _spin_unlock_irqrestore+0x45/0x90
- [__up_write+208/304] ? __up_write+0xd0/0x130
- [trace_hardirqs_on_thunk+53/58] ? trace_hardirqs_on_thunk+0x35/0x3a
- [system_call_after_swapgs+123/128] ? system_call_after_swapgs+0x7b/0x80
- [sys_clone+35/48] sys_clone+0x23/0x30
- [ptregscall_common+103/176] ptregscall_common+0x67/0xb0
-
-
-Code: 7d b0 48 0f af c2 48 ba 00 00 00 00 00 81 ff ff 48 c1 e0 0c 48
-01 d0 48 89 45 b0 e8 2d f6 ff ff 0f 20 e2 48 89 d0 24 7f 0f 22 e0 <0f>
-22 e2 31 ff e8 18 f5 ff ff 48 8b 5d e8 4c 8b 65 f0 4c 8b 6d
-RIP  [kernel_map_pages+158/368] kernel_map_pages+0x9e/0x170
- RSP <ffff81007db45c28>
----[ end trace cfd75e758edeef62 ]---
+Rene.
