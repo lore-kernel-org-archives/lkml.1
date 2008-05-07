@@ -1,54 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763373AbYEGR2f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764074AbYEGR3n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763373AbYEGR2f (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 13:28:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754119AbYEGR2X
+	id S1764074AbYEGR3n (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 13:29:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755950AbYEGR3J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 13:28:23 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:38240 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753203AbYEGR2V (ORCPT
+	Wed, 7 May 2008 13:29:09 -0400
+Received: from nf-out-0910.google.com ([64.233.182.184]:24579 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753833AbYEGR3F (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 13:28:21 -0400
-Date: Wed, 7 May 2008 10:27:59 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Matthew Wilcox <matthew@wil.cx>, Ingo Molnar <mingo@elte.hu>,
-       "J. Bruce Fields" <bfields@citi.umich.edu>,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Alexander Viro <viro@ftp.linux.org.uk>, linux-fsdevel@vger.kernel.org
-Subject: Re: AIM7 40% regression with 2.6.26-rc1
-In-Reply-To: <20080507101624.5524d3c1.akpm@linux-foundation.org>
-Message-ID: <alpine.LFD.1.10.0805071025310.3024@woody.linux-foundation.org>
-References: <1210052904.3453.30.camel@ymzhang> <20080506114449.GC32591@elte.hu> <20080506120934.GH19219@parisc-linux.org> <20080506162332.GI19219@parisc-linux.org> <20080506102153.5484c6ac.akpm@linux-foundation.org> <20080507163811.GY19219@parisc-linux.org>
- <alpine.LFD.1.10.0805070948250.3024@woody.linux-foundation.org> <alpine.LFD.1.10.0805070956060.3024@woody.linux-foundation.org> <20080507101624.5524d3c1.akpm@linux-foundation.org>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Wed, 7 May 2008 13:29:05 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=gv8/hIkUq+f4VNOzBXbGgVSVXuf8qNLQdvCFC7+j5PlMXUleX4o8m5oCWf+Hy4MqoLJWpKOI9VVnav0f1bSNHHGHyqTDPoNquvtFh6/Q5P9T0dK0PK7OoKBzosxnqAq3ZU0hJkQkUbviH9XXC/FY0G02Xs9qbQJkDTUev9q5xME=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: linux-ide@vger.kernel.org
+Subject: [PATCH 1/6] sgiioc4: use ->extra_base instead of ->dma_status for dma_handle
+Date: Wed, 7 May 2008 19:39:41 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, Jeremy Higdon <jeremy@sgi.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200805071939.41558.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is a preparation for removal of ->dma_status field from ide_hwif_t.
 
+There should be no functional changes caused by this patch.
 
-On Wed, 7 May 2008, Andrew Morton wrote:
+Cc: Jeremy Higdon <jeremy@sgi.com>
+Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+---
+ drivers/ide/pci/sgiioc4.c |    5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
 
-> On Wed, 7 May 2008 10:08:18 -0700 (PDT) Linus Torvalds <torvalds@linux-foundation.org> wrote:
-> 
-> > Which is why I'm 100% convinced it's not even worth saving the old code. 
-> > It needs to use mutexes, or spinlocks. I bet it has *nothing* to do with 
-> > "slow path" other than the fact that it gets to that slow path much more 
-> > these days.
-> 
-> Stupid question: why doesn't lock_kernel() use a mutex?
-
-Not stupid.
-
-The only reason some code didn't get turned over to mutexes was literally 
-that they didn't want the debugging because they were doing intentionally 
-bad things. 
-
-I think the BKL is one of them (the console semaphore was another, iirc). 
-
-			Linus
+Index: b/drivers/ide/pci/sgiioc4.c
+===================================================================
+--- a/drivers/ide/pci/sgiioc4.c
++++ b/drivers/ide/pci/sgiioc4.c
+@@ -369,8 +369,7 @@ ide_dma_sgiioc4(ide_hwif_t *hwif, const 
+ 	hwif->sg_max_nents = IOC4_PRD_ENTRIES;
+ 
+ 	pad = pci_alloc_consistent(dev, IOC4_IDE_CACHELINE_SIZE,
+-				   (dma_addr_t *) &(hwif->dma_status));
+-
++				   (dma_addr_t *)&hwif->extra_base);
+ 	if (pad) {
+ 		ide_set_hwifdata(hwif, pad);
+ 		return 0;
+@@ -439,7 +438,7 @@ sgiioc4_configure_for_dma(int dma_direct
+ 
+ 	/* Address of the Ending DMA */
+ 	memset(ide_get_hwifdata(hwif), 0, IOC4_IDE_CACHELINE_SIZE);
+-	ending_dma_addr = cpu_to_le32(hwif->dma_status);
++	ending_dma_addr = cpu_to_le32(hwif->extra_base);
+ 	writel(ending_dma_addr, (void __iomem *)(dma_base + IOC4_DMA_END_ADDR * 4));
+ 
+ 	writel(dma_direction, (void __iomem *)ioc4_dma_addr);
