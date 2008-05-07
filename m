@@ -1,50 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759626AbYEGEVp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758937AbYEGEXo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759626AbYEGEVp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 00:21:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752025AbYEGEVh
+	id S1758937AbYEGEXo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 00:23:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751904AbYEGEXe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 00:21:37 -0400
-Received: from homer.mvista.com ([63.81.120.158]:10085 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1751992AbYEGEVg (ORCPT
+	Wed, 7 May 2008 00:23:34 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:35573 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751805AbYEGEXd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 00:21:36 -0400
-Subject: Re: x86: Clean up computation of HPET .mult variables
-From: Daniel Walker <dwalker@mvista.com>
-To: "Carlos R. Mafra" <crmafra2@gmail.com>
-Cc: linux-kernel@vger.kernel.org, tglx@linutronix.de,
-       venkatesh.pallipadi@intel.com
-In-Reply-To: <20080507033931.GA5378@Pilar.virtua.com.br>
-References: <20080505231016.GA29072@beyonder.ift.unesp.br>
-	 <1210031888.17132.85.camel@localhost.localdomain>
-	 <20080506021321.GA4928@Pilar.virtua.com.br>
-	 <1210044218.17132.109.camel@localhost.localdomain>
-	 <20080506125920.GA26295@beyonder.ift.unesp.br>
-	 <1210090880.17132.140.camel@localhost.localdomain>
-	 <20080506205003.GA3749@beyonder.ift.unesp.br>
-	 <1210126661.17132.223.camel@localhost.localdomain>
-	 <20080507033931.GA5378@Pilar.virtua.com.br>
-Content-Type: text/plain
-Date: Tue, 06 May 2008 21:21:34 -0700
-Message-Id: <1210134094.17132.228.camel@localhost.localdomain>
+	Wed, 7 May 2008 00:23:33 -0400
+Date: Tue, 6 May 2008 21:23:14 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: David Miller <davem@davemloft.net>, tony@bakeyournoodle.com,
+       linux-kernel@vger.kernel.org, benh@kernel.crashing.org
+Subject: Re: [PATCH] Silence 'ignoring return value' warnings in
+ drivers/video/aty/radeon_base.c
+Message-Id: <20080506212314.695daf98.akpm@linux-foundation.org>
+In-Reply-To: <20080506211552.6af7cecc@infradead.org>
+References: <20080424043400.GS20457@bakeyournoodle.com>
+	<20080506143936.6357e578.akpm@linux-foundation.org>
+	<20080506.144301.233784820.davem@davemloft.net>
+	<20080506145608.565b61bf.akpm@linux-foundation.org>
+	<20080506210055.75e2f881@infradead.org>
+	<20080506211233.f050fd41.akpm@linux-foundation.org>
+	<20080506211552.6af7cecc@infradead.org>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-3.fc8) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 6 May 2008 21:15:52 -0700 Arjan van de Ven <arjan@infradead.org> wrote:
 
-On Wed, 2008-05-07 at 00:39 -0300, Carlos R. Mafra wrote:
-> So comparing with the numbers you quoted from your experiments
-> you will realize that the value you got with my patch is actually
-> 10 times better, so your assumption about clocksource_hz2mult
-> being more correct is not good.
+> On Tue, 6 May 2008 21:12:33 -0700
+> 
+> > > can we make it a WARN_ON() as well? that way we'll see it in various
+> > > kerneloops.org stats etc etc.. and we also get a nice backtrace for
+> > > free to go with it....
+> > > 
+> > > (rationale: users tend to not read their dmesg much, but
+> > > WARN_ON()'s do get noticed)
+> > 
+> > OK by me, although if we're going to do much more of this it might be
+> > time to add a WARN_ON which takes (fmt, args...).
+> 
+> totally; I was just talking to some others about doing just this.
 
-If that's the case then we really need to correct
-clocksource_hz2mult() .. Since that function is what we use to calculate
-the mult in most cases.
+The challenge will be to minimise the code footprint.
 
-Daniel
+otcompletelyoh, perhaps we could generate a backtrace from within printk()
+itself for when it sees messages which have KERN_ERR or some other
+suitably-chosen (and probably configurable) facility level.
 
+That'll generate false positives and will reveal dubious choices, but we
+can fix those up.
+
+> > 
+> > Which should be called WARN, but of course 12,000,000 drivers have
+> > gone and screwed that up with indiscriminate namespace poaching.
+> 
+> how about this deal: I implement it, you pick the name ? :=)
+
+AKPM()!
