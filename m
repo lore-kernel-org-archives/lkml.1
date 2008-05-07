@@ -1,54 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764304AbYEGHK7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764120AbYEGHMs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764304AbYEGHK7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 03:10:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758192AbYEGHKp
+	id S1764120AbYEGHMs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 03:12:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757724AbYEGHMh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 03:10:45 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:59021 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764012AbYEGHKn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 03:10:43 -0400
-Date: Wed, 7 May 2008 09:10:32 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       "Carlos R. Mafra" <crmafra2@gmail.com>
-Subject: Re: rtc-cmos.c: Build fix
-Message-ID: <20080507071032.GF32195@elte.hu>
-References: <20080505231016.GA29072@beyonder.ift.unesp.br> <20080506124348.GR32591@elte.hu> <20080506185125.GA12844@beyonder.ift.unesp.br>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080506185125.GA12844@beyonder.ift.unesp.br>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Wed, 7 May 2008 03:12:37 -0400
+Received: from mtagate7.de.ibm.com ([195.212.29.156]:8510 "EHLO
+	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750899AbYEGHMf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 May 2008 03:12:35 -0400
+Subject: Re: [patch 0/6] Guest page hinting version 6.
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Reply-To: schwidefsky@de.ibm.com
+To: Zachary Amsden <zach@vmware.com>
+Cc: Rik van Riel <riel@redhat.com>, Hugh Dickins <hugh@veritas.com>,
+       linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
+       virtualization@lists.osdl.org, akpm@linux-foundation.org,
+       nickpiggin@yahoo.com.au, frankeh@watson.ibm.com, rusty@rustcorp.com.au,
+       jeremy@goop.org, andrea@qumranet.com, clameter@sgi.com,
+       a.p.zijlstra@chello.nl
+In-Reply-To: <1210132187.17107.40.camel@bodhitayantram.eng.vmware.com>
+References: <20080312132132.520833247@de.ibm.com>
+	 <Pine.LNX.4.64.0803131627450.17244@blonde.site>
+	 <1210087982.31803.32.camel@localhost>
+	 <20080506154612.58cc3070@cuia.bos.redhat.com>
+	 <1210132187.17107.40.camel@bodhitayantram.eng.vmware.com>
+Content-Type: text/plain
+Organization: IBM Corporation
+Date: Wed, 07 May 2008 09:00:14 +0200
+Message-Id: <1210143614.14130.3.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Carlos R. Mafra <crmafra2@gmail.com> wrote:
-
-> > since you seem to be interested in HPET topics, what do you think about 
-> > the patch below from akpm? It had a build failure with this config:
+On Tue, 2008-05-06 at 20:49 -0700, Zachary Amsden wrote:
+> > I suspect one of the problems is that there are too many state transitions
+> > to have it implemented with a low overhead on anything but S390, and even
+> > there you need milicoded instructions to handle things.
 > > 
-> >   http://redhat.com/~mingo/misc/config-Sun_May__4_09_41_21_CEST_2008.bad
+> > If the number of transitions can be reduced, page hinting could be useful
+> > for KVM, too.
 > 
-> I think I've found the problem. [...]
+> Spot on Rik, if every transition becomes a hypercall (and a synchronous
+> one at that), it isn't workable for us.  If, on the other hand, you
+> share the state bits between the guest and hypervisor, you need a giant
+> (standalone) bit array for per-page state, which is neither convenient
+> for Linux nor the hypervisor.  I believe s390 has an 'instruction' to
+> migrate the state bits into the hypervisor per-physical-page data
+> without requiring a hypercall.
 
-thanks Carlos. I suspect Andrew will pick up your patch?
+That is why we invented the millicoded ESSA instruction on s390. We had
+an emulation of the instruction to test things. It worked but was
+awfully slow.
 
-> [...] After fixing the rtc-cmos.o build your .config produced yet 
-> another failure later on:
+-- 
+blue skies,
+  Martin.
 
-yeah, that's a different, known problem with Kconfig structure of the 
-media drivers.
+"Reality continues to ruin my life." - Calvin.
 
-	Ingo
+
