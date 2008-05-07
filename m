@@ -1,67 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762858AbYEGXpi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764101AbYEGXr0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762858AbYEGXpi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 19:45:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755568AbYEGXp0
+	id S1764101AbYEGXr0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 19:47:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757274AbYEGXrQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 19:45:26 -0400
-Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:51354
-	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753113AbYEGXpX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 19:45:23 -0400
-Date: Thu, 8 May 2008 01:45:21 +0200
-From: Andrea Arcangeli <andrea@qumranet.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, clameter@sgi.com,
-       steiner@sgi.com, holt@sgi.com, npiggin@suse.de, a.p.zijlstra@chello.nl,
-       kvm-devel@lists.sourceforge.net, kanojsarcar@yahoo.com,
-       rdreier@cisco.com, swise@opengridcomputing.com,
-       linux-kernel@vger.kernel.org, avi@qumranet.com, linux-mm@kvack.org,
-       general@lists.openfabrics.org, hugh@veritas.com, rusty@rustcorp.com.au,
-       aliguori@us.ibm.com, chrisw@redhat.com, marcelo@kvack.org,
-       dada1@cosmosbay.com, paulmck@us.ibm.com
-Subject: Re: [PATCH 08 of 11] anon-vma-rwsem
-Message-ID: <20080507234521.GN8276@duo.random>
-References: <6b384bb988786aa78ef0.1210170958@duo.random> <alpine.LFD.1.10.0805071349200.3024@woody.linux-foundation.org> <20080507212650.GA8276@duo.random> <alpine.LFD.1.10.0805071429170.3024@woody.linux-foundation.org> <20080507222205.GC8276@duo.random> <20080507153103.237ea5b6.akpm@linux-foundation.org> <20080507224406.GI8276@duo.random> <1210202918.1421.20.camel@pasglop>
+	Wed, 7 May 2008 19:47:16 -0400
+Received: from www.tglx.de ([62.245.132.106]:45468 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757204AbYEGXrO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 May 2008 19:47:14 -0400
+Date: Thu, 8 May 2008 01:46:18 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Pavel Machek <pavel@suse.cz>
+cc: Yinghai Lu <yhlu.kernel@gmail.com>, Adrian Bunk <bunk@kernel.org>,
+       Rene Herman <rene.herman@keyaccess.nl>, Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel <linux-kernel@vger.kernel.org>, hpa@zytor.com,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org
+Subject: Re: 2.6.26, PAT and AMD family 6
+In-Reply-To: <20080507231042.GN18516@elf.ucw.cz>
+Message-ID: <alpine.LFD.1.10.0805080112030.3318@apollo.tec.linutronix.de>
+References: <48210A71.1060409@keyaccess.nl> <86802c440805061939q39ff5500h3c9e229ecbc6b2e6@mail.gmail.com> <20080507124650.GD29935@cs181133002.pp.htv.fi> <alpine.LFD.1.10.0805072122270.3318@apollo.tec.linutronix.de> <20080507212343.GB14951@cs181133002.pp.htv.fi>
+ <alpine.LFD.1.10.0805072341210.3318@apollo.tec.linutronix.de> <20080507221435.GH18516@elf.ucw.cz> <86802c440805071522r424b2011v7c0d852db4c4abfd@mail.gmail.com> <20080507223705.GJ18516@elf.ucw.cz> <alpine.LFD.1.10.0805080059430.3318@apollo.tec.linutronix.de>
+ <20080507231042.GN18516@elf.ucw.cz>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1210202918.1421.20.camel@pasglop>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 08, 2008 at 09:28:38AM +1000, Benjamin Herrenschmidt wrote:
-> 
-> On Thu, 2008-05-08 at 00:44 +0200, Andrea Arcangeli wrote:
+On Thu, 8 May 2008, Pavel Machek wrote:
+> On Thu 2008-05-08 01:02:52, Thomas Gleixner wrote:
+> > On Thu, 8 May 2008, Pavel Machek wrote:
+> > > And then, factor out code marked # into separate function, and call it
+> > > from all three places.
 > > 
-> > Please note, we can't allow a thread to be in the middle of
-> > zap_page_range while mmu_notifier_register runs.
+> > And while you are at it, why don't you send a patch which makes this
+> > all go away instead of wasting time producing pseudo code?
 > 
-> You said yourself that mmu_notifier_register can be as slow as you
-> want ... what about you use stop_machine for it ? I'm not even joking
-> here :-)
+> Because I expect Ingo & Yinghai to do the work, and then test it, and
+> then add changelog, and then commit it. I expect Yinghai to learn how
+> to use functions in the process.
 
-We can put a cap of time + a cap of vmas. It's not important if it
-fails, the only useful case we know it, and it won't be slow at
-all. The failure can happen because the cap of time or the cap of vmas
-or the cap vmas triggers or there's a vmalloc shortage. We handle the
-failure in userland of course. There are zillon of allocations needed
-anyway, any one of them can fail, so this isn't a new fail path, is
-the same fail path that always existed before mmu_notifiers existed.
+Oh yes. He is the perfect kernel newbie who needs to be tought how to
+use functions.
 
-I can't possibly see how adding a new global wide lock that forces all
-truncate to be serialized against each other, practically eliminating
-the need of the i_mmap_lock, could be superior to an approach that
-doesn't cause the overhead to the VM at all, and only require kvm to
-pay for an additional cost when it startup.
+No, he is not. He provided a lot of valuable patches and he always was
+cooperative when his patches were reviewed.
 
-Furthermore the only reason I had to implement mm_lock was to fix the
-invalidate_range_start/end model, if we go with only invalidate_page
-and invalidate_pages called inside the PT lock and we use the PT lock
-to serialize, we don't need a mm_lock anymore and no new lock from the
-VM either. I tried to push for that, but everyone else wanted
-invalidate_range_start/end. I only did the only possible thing to do:
-to make invalidate_range_start safe to make everyone happy without
-slowing down the VM.
+You are completely missing the point. We, the x86 maintainers accepted
+and committed that functional correct but stylistically imperfect
+patch. It's mainline now. We can spend tons of time to discuss how it
+could have done better, but isn't it one of the virtues of Open Source
+that we can actually prove that it can be done better ? From such a
+patch others can learn at least as much as from ivory tower post
+factum analysis.
+
+We can all sit down and resort to "I expect that XYZ do the work". Is
+this making things any better?
+
+Thanks,
+
+	tglx
+
+P.S: we all wasted at least 10 times of the time to write that patch. :(
