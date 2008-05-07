@@ -1,83 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757883AbYEGONt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758510AbYEGOSD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757883AbYEGONt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 10:13:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754564AbYEGONX
+	id S1758510AbYEGOSD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 10:18:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755414AbYEGORr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 10:13:23 -0400
-Received: from gv-out-0910.google.com ([216.239.58.191]:14517 "EHLO
-	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754321AbYEGOND (ORCPT
+	Wed, 7 May 2008 10:17:47 -0400
+Received: from mjg.x.mythic-beasts.com ([93.93.128.6]:50277 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1753929AbYEGORo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 10:13:03 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
-        b=Z+Q28mvUYUdkz7oL1+uRJEuRW/FiwqTE3ZStAPiB3XjGSLYZ+VewzrXELTrRFxGdsSH11noScUhMjqi5QQts/XI619SxWxvWVjFeuzI0RUD4NL/fEiho4uUBu5A1tgfH2tvRDyYdpW5TEvSFsgJSd5TmTYGI1UyULPhMnqNQ1cI=
-Date: Wed, 7 May 2008 18:12:55 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] init - dont loose initcall code returned v2
-Message-ID: <20080507141255.GA6859@cvg>
+	Wed, 7 May 2008 10:17:44 -0400
+Date: Wed, 7 May 2008 15:17:26 +0100
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Cc: Shaohua Li <shaohua.li@intel.com>, Holger Macht <hmacht@suse.de>,
+       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       "Accardi, Kristen C" <kristen.c.accardi@intel.com>
+Message-ID: <20080507141726.GA11025@srcf.ucam.org>
+References: <20080505202508.GA3690@homac> <20080506091522.GA4378@homac> <1210065811.12668.1.camel@sli10-desk.sh.intel.com> <20080506151846.GA22828@khazad-dum.debian.net> <1210122279.27316.2.camel@sli10-desk.sh.intel.com> <20080507011354.GA8163@khazad-dum.debian.net> <1210123658.30944.6.camel@sli10-desk.sh.intel.com> <20080507123715.GA19475@khazad-dum.debian.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <20080507123715.GA19475@khazad-dum.debian.net>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+Subject: Re: [PATCH] bay: Exit if notify handler cannot be installed
+X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
+X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There is an ability to loose initcall returned code if it happened
-with irq disabled or imbalanced preemption (and if we debug initcall)
+On Wed, May 07, 2008 at 09:37:15AM -0300, Henrique de Moraes Holschuh wrote:
 
-Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
----
+>   1a) those which notify you that the bay/dock is BEING ejected
+>   1b) those which notify you the user wants to eject, and wait for
+>       a command to power down the bay/dock and let the user know
+>       she can remove the device.
 
-Andrew, it's an updated version
+I believe that docks are always in 1b, though bays may be in either. The 
+only docks I've seen without an eject request aren't ACPI docks at all, 
+so fall outside the scope of this.
 
-
-Index: linux-2.6.git/init/main.c
-===================================================================
---- linux-2.6.git.orig/init/main.c	2008-05-06 17:51:27.000000000 +0400
-+++ linux-2.6.git/init/main.c	2008-05-07 18:10:22.000000000 +0400
-@@ -702,7 +702,6 @@ static void __init do_initcalls(void)
- 
- 	for (call = __initcall_start; call < __initcall_end; call++) {
- 		ktime_t t0, t1, delta;
--		char *msg = NULL;
- 		char msgbuf[40];
- 		int result;
- 
-@@ -724,22 +723,23 @@ static void __init do_initcalls(void)
- 				(unsigned long long) delta.tv64 >> 20);
- 		}
- 
--		if (result && result != -ENODEV && initcall_debug) {
--			sprintf(msgbuf, "error code %d", result);
--			msg = msgbuf;
--		}
-+		msgbuf[0] = 0;
-+
-+		if (result && result != -ENODEV && initcall_debug)
-+			sprintf(msgbuf, "error code %d ", result);
-+
- 		if (preempt_count() != count) {
--			msg = "preemption imbalance";
-+			strncat(msgbuf, "preemption imbalance ", sizeof(msgbuf));
- 			preempt_count() = count;
- 		}
- 		if (irqs_disabled()) {
--			msg = "disabled interrupts";
-+			strncat(msgbuf, "disabled interrupts ", sizeof(msgbuf));
- 			local_irq_enable();
- 		}
--		if (msg) {
-+		if (msgbuf[0]) {
- 			print_fn_descriptor_symbol(KERN_WARNING "initcall %s()",
- 					(unsigned long) *call);
--			printk(" returned with %s\n", msg);
-+			printk(" returned with %s\n", msgbuf);
- 		}
- 	}
- 
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
