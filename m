@@ -1,82 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765298AbYEGSju@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765489AbYEGSl0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765298AbYEGSju (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 14:39:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756091AbYEGSjh
+	id S1765489AbYEGSl0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 14:41:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755822AbYEGSlP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 14:39:37 -0400
-Received: from smtp1.wifiinternet.cz ([89.31.47.1]:59855 "EHLO
-	bor.wifiinternet.cz" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755952AbYEGSjf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 14:39:35 -0400
-Message-ID: <4821F794.10003@seznam.cz>
-Date: Wed, 07 May 2008 20:40:20 +0200
-From: Michal Simek <monstr@seznam.cz>
-Reply-To: monstr@seznam.cz
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+	Wed, 7 May 2008 14:41:15 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:33953 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758189AbYEGSlN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 May 2008 14:41:13 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Matthew Wilcox <matthew@wil.cx>
+Subject: Re: [RFC][PATCH 2/2] Freezer: Try to handle killable tasks
+Date: Wed, 7 May 2008 20:41:19 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: pm list <linux-pm@lists.linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Len Brown <lenb@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
+       Pavel Machek <pavel@ucw.cz>, Matt Helsley <matthltc@us.ibm.com>,
+       Cedric Le Goater <clg@fr.ibm.com>, Paul Menage <menage@google.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Liam Howlett <howlett@gmail.com>
+References: <200805070003.56387.rjw@sisk.pl> <200805070007.56998.rjw@sisk.pl> <20080507135333.GS19219@parisc-linux.org>
+In-Reply-To: <20080507135333.GS19219@parisc-linux.org>
 MIME-Version: 1.0
-To: microblaze-uclinux@itee.uq.edu.au
-CC: linux-kernel@vger.kernel.org, arnd@arndb.de, linux-arch@vger.kernel.org,
-       John Linn <linnj@xilinx.com>, john.williams@petalogix.com,
-       matthew@wil.cx, will.newton@gmail.com, drepper@redhat.com,
-       grant.likely@secretlab.ca, Michal Simek <monstr@monstr.eu>
-Subject: Re: [microblaze-uclinux] [PATCH 04/56] microblaze_v2: Open firmware
- files
-References: <a4a778e34c66d126f5c4bf1ca423cf32950ea5ab.1209897266.git.monstr@monstr.eu> <684c36e5ad3f598e5079e88ec195545c4a7150c2.1209897266.git.monstr@monstr.eu> <20080507160432.93FC11750046@mail35-dub.bigfish.com>
-In-Reply-To: <20080507160432.93FC11750046@mail35-dub.bigfish.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200805072041.20210.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Steve,
+On Wednesday, 7 of May 2008, Matthew Wilcox wrote:
+> On Wed, May 07, 2008 at 12:07:55AM +0200, Rafael J. Wysocki wrote:
+> > The introduction of TASK_KILLABLE allows the freezer to work in some situation
+> > that it could not handle before.
+> > 
+> > Make the freezer handle killable tasks and add try_to_freeze() in some places
+> > where it is safe to freeze a (killable) task.  Introduce the
+> > wait_event_killable_freezable() macro to be used wherever the freezing of
+> > a waiting killable task is desirable.
+> 
+> Why do you say that TASK_KILLABLE allows the freezer to work in some
+> situations where it couldn't before?  If something's using one of the
+> killable functions, it means that it knows how to clean up and unwind
+> gracefully if the task receives a fatal signal.  I don't understand what
+> connection there is to the freezer.
 
-you are right. Microblaze don't need CONFIG_PPC_something but
-I keep this in files because it will be easier to move this to better place.
-I wanted to sort what Microblaze don't use.
+The reason why we don't freeze uninterruptible tasks is that we don't know
+why they are in that state.  If one of tasks is uninterruptible for a
+relatively long time, that may indicate a non-recoverable error making it
+dangerous to put the system into a sleep state.  If the task is killable,
+though, the situation is recoverable.
 
-I need to talk with people from sparc and powerpc what we can move and where.
-I see the best way to push these files to microblaze/kernel/ and then sychronize
-them with one patch - all archs together.
-
-M
-
->> +#ifdef CONFIG_PPC_PSERIES
->> +#include <asm/rtas.h>
->> +#include <asm/kdump.h>
->> +#include <asm/smp.h>
->> +#include <asm/iommu.h>
->> +#include <asm/btext.h>
->> +#include <asm/machdep.h>
->> +#include <asm/pSeries_reconfig.h>
->> +#include <asm/phyp_dump.h>
->> +#include <asm/kexec.h>
->> +#endif
-> 
-> I don't think we need CONFIG_PPC_PSERIES (multiple times)
-> 
->> +#ifdef CONFIG_PPC64
->> +int __initdata iommu_is_off;
->> +int __initdata iommu_force_on;
->> +unsigned long tce_alloc_start, tce_alloc_end;
->> +#endif
-> 
-> or PPC64 (multiple times
-> 
->> +#ifdef CONFIG_PPC32
-> 
-> or PPC32
-> 
-> Steve
-> 
-> 
-> 
-> ___________________________
-> microblaze-uclinux mailing list
-> microblaze-uclinux@itee.uq.edu.au
-> Project Home Page : http://www.itee.uq.edu.au/~jwilliams/mblaze-uclinux
-> Mailing List Archive : http://www.itee.uq.edu.au/~listarch/microblaze-uclinux/
-> 
-> 
+Thanks,
+Rafael
