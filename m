@@ -1,69 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764068AbYEGH7m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764074AbYEGIAo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764068AbYEGH7m (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 03:59:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753430AbYEGH71
+	id S1764074AbYEGIAo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 04:00:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753837AbYEGIAf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 03:59:27 -0400
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:36784 "EHLO smtp4.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752588AbYEGH7Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 03:59:25 -0400
-Date: Wed, 7 May 2008 10:58:09 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Toralf =?utf-8?Q?F=C3=B6rster?= <toralf.foerster@gmx.de>
-Cc: irda-users@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: build issue #493 for v2.6.26-rc1-110-ga153063 :undefined
-	reference to `pnp_get_resource'
-Message-ID: <20080507075809.GA29935@cs181133002.pp.htv.fi>
-References: <200805070947.35682.toralf.foerster@gmx.de>
+	Wed, 7 May 2008 04:00:35 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:50623 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753642AbYEGIAd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 May 2008 04:00:33 -0400
+Date: Wed, 7 May 2008 04:00:27 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Adrian Hunter <ext-adrian.hunter@nokia.com>,
+       Edward Shishkin <edward.shishkin@gmail.com>
+Subject: Re: [PATCH take 2 01/28] VFS: introduce writeback_inodes_sb()
+Message-ID: <20080507080027.GA23621@infradead.org>
+References: <1210070159-22794-1-git-send-email-Artem.Bityutskiy@nokia.com> <1210070159-22794-2-git-send-email-Artem.Bityutskiy@nokia.com> <20080507002345.831bc379.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200805070947.35682.toralf.foerster@gmx.de>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <20080507002345.831bc379.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 07, 2008 at 09:47:35AM +0200, Toralf Förster wrote:
+On Wed, May 07, 2008 at 12:23:45AM -0700, Andrew Morton wrote:
+> > --- a/fs/fs-writeback.c
+> > +++ b/fs/fs-writeback.c
+> > @@ -573,6 +573,14 @@ void sync_inodes_sb(struct super_block *sb, int wait)
+> >  	spin_unlock(&inode_lock);
+> >  }
+> >  
+> > +void writeback_inodes_sb(struct super_block *sb, struct writeback_control *wbc)
+> > +{
+> > +	spin_lock(&inode_lock);
+> > +	sync_sb_inodes(sb, wbc);
+> > +	spin_unlock(&inode_lock);
+> > +}
+> This looks rather similar to
+> http://userweb.kernel.org/~akpm/mmotm/broken-out/reiser4-sb_sync_inodes.patch
 > 
-> the build (.config attached) failed, make ends with :
-> ...
->   CHECK   include/video/sisfb.h
->   CHECK   include/video/edid.h
->   GEN     .version
->   CHK     include/linux/compile.h
->   UPD     include/linux/compile.h
->   CC      init/version.o
->   LD      init/built-in.o
->   LD      vmlinux
-> drivers/built-in.o: In function `smsc_ircc_pnp_probe':
-> smsc-ircc2.c:(.init.text+0x83fd): undefined reference to `pnp_get_resource'
-> smsc-ircc2.c:(.init.text+0x8431): undefined reference to `pnp_get_resource'
-> smsc-ircc2.c:(.init.text+0x8449): undefined reference to `pnp_get_resource'
-> smsc-ircc2.c:(.init.text+0x8461): undefined reference to `pnp_get_resource'
-> smsc-ircc2.c:(.init.text+0x8479): undefined reference to `pnp_get_resource'
-> drivers/built-in.o:smsc-ircc2.c:(.init.text+0x848c): more undefined references to `pnp_get_resource' follow
-> make: *** [vmlinux] Error 1
->...
+> Which is best?
 
-Thanks for the report.
+I think sync_sb_inodes should just lock/unlock the inode_lock itself as
+per the patch from the reiser4 queue.  But before we export it I'd like
+to review what ubifs actually does with it.
 
-It should be fixed by a commit that just entered Linus' tree.
-
-> MfG/Sincerely
-> 
-> Toralf Förster
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+Anyone care to submit a patch to just move the locking that we could
+put in ASAP?
