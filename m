@@ -1,99 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759020AbYEGXjh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757492AbYEGXkL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759020AbYEGXjh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 19:39:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756047AbYEGXjZ
+	id S1757492AbYEGXkL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 19:40:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756047AbYEGXjp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 19:39:25 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:58815
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1754779AbYEGXjX (ORCPT
+	Wed, 7 May 2008 19:39:45 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:41856 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1759532AbYEGXjk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 19:39:23 -0400
-Date: Wed, 07 May 2008 16:39:17 -0700 (PDT)
-Message-Id: <20080507.163917.104000894.davem@davemloft.net>
-To: torvalds@linux-foundation.org
-CC: akpm@linux-foundation.org, sparclinux@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [GIT]: Sparc
-From: David Miller <davem@davemloft.net>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Wed, 7 May 2008 19:39:40 -0400
+Date: Wed, 7 May 2008 16:39:39 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Andrea Arcangeli <andrea@qumranet.com>, steiner@sgi.com, holt@sgi.com,
+       npiggin@suse.de, a.p.zijlstra@chello.nl,
+       kvm-devel@lists.sourceforge.net, kanojsarcar@yahoo.com,
+       rdreier@cisco.com, swise@opengridcomputing.com,
+       linux-kernel@vger.kernel.org, avi@qumranet.com, linux-mm@kvack.org,
+       general@lists.openfabrics.org, hugh@veritas.com, rusty@rustcorp.com.au,
+       aliguori@us.ibm.com, chrisw@redhat.com, marcelo@kvack.org,
+       dada1@cosmosbay.com, paulmck@us.ibm.com
+Subject: Re: [PATCH 08 of 11] anon-vma-rwsem
+In-Reply-To: <alpine.LFD.1.10.0805071610490.3024@woody.linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0805071637360.14337@schroedinger.engr.sgi.com>
+References: <6b384bb988786aa78ef0.1210170958@duo.random>
+ <alpine.LFD.1.10.0805071349200.3024@woody.linux-foundation.org>
+ <20080507212650.GA8276@duo.random> <alpine.LFD.1.10.0805071429170.3024@woody.linux-foundation.org>
+ <20080507222205.GC8276@duo.random> <20080507153103.237ea5b6.akpm@linux-foundation.org>
+ <20080507224406.GI8276@duo.random> <20080507155914.d7790069.akpm@linux-foundation.org>
+ <alpine.LFD.1.10.0805071610490.3024@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 7 May 2008, Linus Torvalds wrote:
 
-Several bug fixes and minor cures:
+> The code that can take many locks, will have to get the global lock *and* 
+> order the types, but that's still trivial. It's something like
+> 
+> 	spin_lock(&global_lock);
+> 	for (vma = mm->mmap; vma; vma = vma->vm_next) {
+> 		if (vma->anon_vma)
+> 			spin_lock(&vma->anon_vma->lock);
+> 	}
+> 	for (vma = mm->mmap; vma; vma = vma->vm_next) {
+> 		if (!vma->anon_vma && vma->vm_file && vma->vm_file->f_mapping)
+> 			spin_lock(&vma->vm_file->f_mapping->i_mmap_lock);
+> 	}
+> 	spin_unlock(&global_lock);
 
-1) If fork/clone/etc. errors, argument register %o2 is clobbered
-   breaking syscall restart.
-
-2) mmap() VA ranges are not verified properly, MAP_FIXED should
-   not be taken into account because even in the not-MAP_FIXED
-   case arch_get_unaligned_area() isn't going to validate things.
-
-3) SBUS BPP driver got broken by the new dev_name() function added
-   to linux/device.h, rename static var to avoid namespace collision.
-
-4) initrd handling was broken by NUMA changes on sparc64, fix.
-
-5) Christoph Hellwig noticed that we had an exact duplicate private
-   copy of compat_sys_utimes(), kill.
-
-6) Don't build USB_ISP1760_OF on sparc, ACK'd by powerpc folks.
-
-7) Revert sparc64 change that added irq_{enter,exit}() to IPI handlers,
-   not necessary thanks to some of Ingo's changes.
-
-8) Eliminate magic constants and unused functions in sparc video
-   drivers, from Robert Reif.
-
-9) Adrian Bunk noticed an online_page() turd was left in sparc64.
-
-Please pull, thanks a lot.
-
-The following changes since commit afa26be86b65a7183ceac29bdf1f51d6fc6932f0:
-  Linus Torvalds (1):
-        Merge git://git.kernel.org/.../tglx/linux-2.6-hrt
-
-are available in the git repository at:
-
-  master.kernel.org:/pub/scm/linux/kernel/git/davem/sparc-2.6.git master
-
-Adrian Bunk (1):
-      sparc64: remove online_page()
-
-David S. Miller (7):
-      Revert "[SPARC64]: Wrap SMP IPIs with irq_enter()/irq_exit()."
-      sbus: Fix bpp driver build.
-      sparc64: use compat_sys_utimes instead of home-grown local copy.
-      usb: Sparc build fix, make USB_ISP1760_OF depend on PPC_OF
-      sparc64: Fix initrd regression.
-      sparc: Fix mmap VA span checking.
-      sparc: Fix fork/clone/vfork system call restart.
-
-Robert Reif (2):
-      sparc: tcx.c remove unnecessary function
-      sparc video: make blank use proper constant
-
- arch/sparc/kernel/process.c       |   20 ++++++++++++++++----
- arch/sparc/kernel/sys_sparc.c     |    3 +--
- arch/sparc64/kernel/process.c     |   18 +++++++++++++++---
- arch/sparc64/kernel/smp.c         |   27 +++++----------------------
- arch/sparc64/kernel/sys_sparc.c   |    4 ++--
- arch/sparc64/kernel/sys_sparc32.c |   31 -------------------------------
- arch/sparc64/kernel/systbls.S     |    2 +-
- arch/sparc64/mm/init.c            |   16 +++-------------
- drivers/sbus/char/bpp.c           |    2 +-
- drivers/usb/host/Kconfig          |    2 +-
- drivers/video/bw2.c               |    2 +-
- drivers/video/cg3.c               |    2 +-
- drivers/video/cg6.c               |    2 +-
- drivers/video/ffb.c               |    2 +-
- drivers/video/leo.c               |    2 +-
- drivers/video/p9100.c             |    2 +-
- drivers/video/tcx.c               |   20 +++++++-------------
- 17 files changed, 58 insertions(+), 99 deletions(-)
+Multiple vmas may share the same mapping or refer to the same anonymous 
+vma. The above code will deadlock since we may take some locks multiple 
+times.
