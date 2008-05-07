@@ -1,70 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934189AbYEGWpp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933050AbYEGWq1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934189AbYEGWpp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 18:45:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756931AbYEGWp2
+	id S933050AbYEGWq1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 18:46:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759144AbYEGWp7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 18:45:28 -0400
-Received: from rv-out-0506.google.com ([209.85.198.231]:62066 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758470AbYEGWpU (ORCPT
+	Wed, 7 May 2008 18:45:59 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:38944 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757167AbYEGWp4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 18:45:20 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=UIThVpxdudHmSlVD7nIINHgt1eN1VaX5bIsCUtTy8uUlyxtnbmIDkHauh45TDXCb6CzzQdA1r1ZGIc+3C2yRox9txFOuY+eTM80fkD+YOnHOQinqOGkxF85fysjtPPBXJbt8xSxn1ykokvY0bfifm0B1RohKyN4MjZUcrsek83o=
-Message-ID: <86802c440805071545v75c808a5qcc4a3388c8a0de4d@mail.gmail.com>
-Date: Wed, 7 May 2008 15:45:18 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Pavel Machek" <pavel@suse.cz>
-Subject: Re: 2.6.26, PAT and AMD family 6
-Cc: "kernel list" <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080507223918.GK18516@elf.ucw.cz>
+	Wed, 7 May 2008 18:45:56 -0400
+Date: Wed, 7 May 2008 15:44:24 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Andrea Arcangeli <andrea@qumranet.com>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Lameter <clameter@sgi.com>, Jack Steiner <steiner@sgi.com>,
+       Robin Holt <holt@sgi.com>, Nick Piggin <npiggin@suse.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       kvm-devel@lists.sourceforge.net, Kanoj Sarcar <kanojsarcar@yahoo.com>,
+       Roland Dreier <rdreier@cisco.com>,
+       Steve Wise <swise@opengridcomputing.com>, linux-kernel@vger.kernel.org,
+       Avi Kivity <avi@qumranet.com>, linux-mm@kvack.org,
+       general@lists.openfabrics.org, Hugh Dickins <hugh@veritas.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Anthony Liguori <aliguori@us.ibm.com>, Chris Wright <chrisw@redhat.com>,
+       Marcelo Tosatti <marcelo@kvack.org>, Eric Dumazet <dada1@cosmosbay.com>,
+       "Paul E. McKenney" <paulmck@us.ibm.com>
+Subject: Re: [PATCH 08 of 11] anon-vma-rwsem
+In-Reply-To: <20080507222205.GC8276@duo.random>
+Message-ID: <alpine.LFD.1.10.0805071540300.3024@woody.linux-foundation.org>
+References: <6b384bb988786aa78ef0.1210170958@duo.random> <alpine.LFD.1.10.0805071349200.3024@woody.linux-foundation.org> <20080507212650.GA8276@duo.random> <alpine.LFD.1.10.0805071429170.3024@woody.linux-foundation.org> <20080507222205.GC8276@duo.random>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <48210A71.1060409@keyaccess.nl>
-	 <86802c440805061939q39ff5500h3c9e229ecbc6b2e6@mail.gmail.com>
-	 <20080507124650.GD29935@cs181133002.pp.htv.fi>
-	 <alpine.LFD.1.10.0805072122270.3318@apollo.tec.linutronix.de>
-	 <20080507212343.GB14951@cs181133002.pp.htv.fi>
-	 <alpine.LFD.1.10.0805072341210.3318@apollo.tec.linutronix.de>
-	 <20080507221435.GH18516@elf.ucw.cz>
-	 <86802c440805071523u2d858727l2fc6d9edbd30cad8@mail.gmail.com>
-	 <20080507223918.GK18516@elf.ucw.cz>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 7, 2008 at 3:39 PM, Pavel Machek <pavel@suse.cz> wrote:
-> On Wed 2008-05-07 15:23:46, Yinghai Lu wrote:
->  > >  2) HPA said it was bad idea
->  >
->  > hpa said white list is not a good idea.
->
->  And guess what your patch is doing?
->
->
->  +       switch (c->x86_vendor) {
->  +       case X86_VENDOR_AMD:
->  +               if (c->x86 >= 0xf && c->x86 <= 0x11)
->  +                       set_cpu_cap(c, X86_FEATURE_PAT);
->  +               break;
->  +       case X86_VENDOR_INTEL:
->  +               if (c->x86 == 0xF || (c->x86 == 6 && c->x86_model >=
->  15))
->  +                       set_cpu_cap(c, X86_FEATURE_PAT);
->  +               break;
->  +       }
->
->  Seems like a whitelist to me. Will break with future CPUs.
 
-again, i only increased the whitelist a little bit to support AMD
-opteron Rev E, Rev F and Fam10h that I could access.
 
-the code handle future cpus should reach the kernel list before SW
-developer could get system....
+On Thu, 8 May 2008, Andrea Arcangeli wrote:
+> 
+> Unfortunately the lock you're talking about would be:
+> 
+> static spinlock_t global_lock = ...
+> 
+> There's no way to make it more granular.
 
-YH
+Right. So what? 
+
+It's still about a million times faster than what the code does now.
+
+You comment about "great smp scalability optimization" just shows that 
+you're a moron. It is no such thing. The fact is, it's a horrible 
+pessimization, since even SMP will be *SLOWER*. It will just be "less 
+slower" when you have a million CPU's and they all try to do this at the 
+same time (which probably never ever happens).
+
+In other words, "scalability" is totally meaningless. The only thing that 
+matters is *performance*. If the "scalable" version performs WORSE, then 
+it is simply worse. Not better. End of story.
+
+> mmu_notifier_register can take ages. No problem.
+
+So what you're saying is that performance doesn't matter?
+
+So why do you do the ugly crazy hundred-line implementation, when a simple 
+two-liner would do equally well?
+
+Your arguments are crap.
+
+Anyway, discussion over. This code doesn't get merged. It doesn't get 
+merged before 2.6.26, and it doesn't get merged _after_ either.
+
+Rewrite the code, or not. I don't care. I'll very happily not merge crap 
+for the rest of my life.
+
+		Linus
