@@ -1,60 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932187AbYEGTA6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932641AbYEGTCZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932187AbYEGTA6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 15:00:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932716AbYEGS7p
+	id S932641AbYEGTCZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 15:02:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758675AbYEGTB6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 14:59:45 -0400
-Received: from an-out-0708.google.com ([209.85.132.243]:50113 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932073AbYEGS7n (ORCPT
+	Wed, 7 May 2008 15:01:58 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:58865 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758010AbYEGTB4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 14:59:43 -0400
-Message-ID: <fa686aa40805071159ta7076c3va07e63ffd582ada4@mail.gmail.com>
-Date: Wed, 7 May 2008 12:59:42 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-To: monstr@seznam.cz
-Subject: Re: [microblaze-uclinux] [PATCH 04/56] microblaze_v2: Open firmware files
-Cc: microblaze-uclinux@itee.uq.edu.au, linux-kernel@vger.kernel.org,
-       arnd@arndb.de, linux-arch@vger.kernel.org,
-       "John Linn" <linnj@xilinx.com>, john.williams@petalogix.com,
-       matthew@wil.cx, will.newton@gmail.com, drepper@redhat.com,
-       "Michal Simek" <monstr@monstr.eu>
-In-Reply-To: <4821F794.10003@seznam.cz>
+	Wed, 7 May 2008 15:01:56 -0400
+Date: Wed, 7 May 2008 12:01:28 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+cc: Matthew Wilcox <matthew@wil.cx>, Andrew Morton <akpm@linux-foundation.org>,
+       "J. Bruce Fields" <bfields@citi.umich.edu>,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Alexander Viro <viro@ftp.linux.org.uk>, linux-fsdevel@vger.kernel.org
+Subject: Re: AIM7 40% regression with 2.6.26-rc1
+In-Reply-To: <20080507184304.GA15554@elte.hu>
+Message-ID: <alpine.LFD.1.10.0805071150140.3024@woody.linux-foundation.org>
+References: <20080506102153.5484c6ac.akpm@linux-foundation.org> <20080507163811.GY19219@parisc-linux.org> <alpine.LFD.1.10.0805070948250.3024@woody.linux-foundation.org> <alpine.LFD.1.10.0805070956060.3024@woody.linux-foundation.org> <20080507172246.GA13262@elte.hu>
+ <alpine.LFD.1.10.0805071028400.3024@woody.linux-foundation.org> <20080507174900.GB13591@elte.hu> <alpine.LFD.1.10.0805071057280.3024@woody.linux-foundation.org> <20080507181714.GA14980@elte.hu> <alpine.LFD.1.10.0805071125090.3024@woody.linux-foundation.org>
+ <20080507184304.GA15554@elte.hu>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <a4a778e34c66d126f5c4bf1ca423cf32950ea5ab.1209897266.git.monstr@monstr.eu>
-	 <684c36e5ad3f598e5079e88ec195545c4a7150c2.1209897266.git.monstr@monstr.eu>
-	 <20080507160432.93FC11750046@mail35-dub.bigfish.com>
-	 <4821F794.10003@seznam.cz>
-X-Google-Sender-Auth: 83457ef7d673c31f
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 7, 2008 at 12:40 PM, Michal Simek <monstr@seznam.cz> wrote:
-> Hi Steve,
->
->  you are right. Microblaze don't need CONFIG_PPC_something but
->  I keep this in files because it will be easier to move this to better place.
->  I wanted to sort what Microblaze don't use.
->
->  I need to talk with people from sparc and powerpc what we can move and where.
->  I see the best way to push these files to microblaze/kernel/ and then sychronize
->  them with one patch - all archs together.
 
-I would disagree.  I think its better to push (and get merged) patches
-to move the files first; then add microblaze on top of that.  You can
-start getting stuff merged piecemeal that way instead of relying on
-getting your entire patch series merged at once.
 
-However, that's just my opinion, others may look at it differently.
+On Wed, 7 May 2008, Ingo Molnar wrote:
+> 
+> ok, the one below does irq ops and the counter behavior
 
-Cheers,
-g.
+No it doesn't. The counter isn't used for any actual *testing*, so the 
+locking around it and the serialization of it has absolutely no impact on 
+the scheduling behaviour!
 
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+Since the big slowdown was clearly accompanied by sleeping behaviour (the 
+processes who didn't get the lock end up sleeping!), that is a *big* part 
+of the slowdown.
+
+Is it possible that your patch gets similar behaviour? Absolutely. But 
+you're missing the whole point here. Anybody can make code behave badly 
+and perform worse. But if you want to just verify that it's about the 
+sleeping behaviour and timings of the BKL, then you need to do exactly 
+that: emulate the sleeping behavior, not just the timings _outside_ of the 
+sleeping behavior.
+
+The thing is, we definitely are interested to see whether it's the BKL or 
+some other semaphore that is the problem. But the best way to test that is 
+to just try my patch that *guarantees* that the BKL doesn't have any 
+semaphore behaviour AT ALL.
+
+Could it be something else entirely? Yes. We know it's semaphore- related. 
+We don't know for a fact that it's the BKL itself. There could be other 
+semaphores that are that hot. It sounds unlikely, but quite frankly, 
+regardless, I don't really see the point of your patches.
+
+If Yanmin tries my patch, it is *guaranteed* to show something. It either 
+shows that it's about the BKL (and that we absolutely have to do the BKL 
+as something _else_ than a generic semaphore), or it shows that it's not 
+about the BKL (and that _all_ the patches in this discussion are likely 
+pointless).
+
+In contrast, these "try to emulate bad behavior with the old known-ok 
+semaphores" don't show anything AT ALL. We already know it's related to 
+semaphores. And your patches aren't even guaranteed to show the same 
+issue.
+
+		Linus
