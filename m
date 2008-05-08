@@ -1,93 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932459AbYEHURB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763981AbYEHUUh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932459AbYEHURB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 16:17:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764427AbYEHUQs
+	id S1763981AbYEHUUh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 16:20:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753045AbYEHUUY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 16:16:48 -0400
-Received: from cassiel.sirena.org.uk ([80.68.93.111]:2340 "EHLO
-	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764334AbYEHUQq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 16:16:46 -0400
-Date: Thu, 8 May 2008 21:16:43 +0100
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Harald Welte <laforge@gnumonks.org>
-Cc: Liam Girdwood <lg@opensource.wolfsonmicro.com>,
+	Thu, 8 May 2008 16:20:24 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:39785 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755964AbYEHUUV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 May 2008 16:20:21 -0400
+Date: Thu, 8 May 2008 22:19:56 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
+       Andi Kleen <andi@firstfloor.org>, Matthew Wilcox <matthew@wil.cx>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Alexander Viro <viro@ftp.linux.org.uk>,
        Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       arm kernel <linux-arm-kernel@lists.arm.linux.org.uk>
-Subject: Re: [PATCH 0/13] Updated V4  - Regulator Framework
-Message-ID: <20080508201641.GA16945@sirena.org.uk>
-Mail-Followup-To: Harald Welte <laforge@gnumonks.org>,
-	Liam Girdwood <lg@opensource.wolfsonmicro.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	arm kernel <linux-arm-kernel@lists.arm.linux.org.uk>
-References: <1209742841.12502.40.camel@odin> <20080508063538.GC6105@prithivi.gnumonks.org>
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [patch] speed up / fix the new generic semaphore code (fix
+	AIM7 40% regression with 2.6.26-rc1)
+Message-ID: <20080508201956.GA2547@elte.hu>
+References: <alpine.LFD.1.10.0805070728280.32269@woody.linux-foundation.org> <alpine.LFD.1.10.0805070817060.3024@woody.linux-foundation.org> <1210214696.3453.87.camel@ymzhang> <alpine.LFD.1.10.0805072014330.3024@woody.linux-foundation.org> <1210219729.3453.97.camel@ymzhang> <alpine.LFD.1.10.0805072115190.3024@woody.linux-foundation.org> <20080508120130.GA2860@elte.hu> <20080508122802.GA4880@elte.hu> <alpine.LFD.1.10.0805080859140.3024@woody.linux-foundation.org> <alpine.LFD.1.10.0805081128550.3024@woody.linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080508063538.GC6105@prithivi.gnumonks.org>
-X-Cookie: 98% lean.
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: broonie@sirena.org.uk
-X-SA-Exim-Scanned: No (on cassiel.sirena.org.uk); SAEximRunCond expanded to false
+In-Reply-To: <alpine.LFD.1.10.0805081128550.3024@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 08, 2008 at 08:35:38AM +0200, Harald Welte wrote:
 
-> The PCF506xx have a concept of global power management states,
-> particularly important are the ON and STANDBY states in this context.
-> Every regulator has a property whether it is enabled in none, one or
-> both of the global power management states.
+* Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-That's a problem we've encountered - at least the WM8350 and (to a
-lesser extent) the WM8400, both of which have had support implemented in
-terms of the regulator API, have similar states.
+> On Thu, 8 May 2008, Linus Torvalds wrote:
+> > 
+> > Why don't we just make it do the same thing that the x86 semaphores used 
+> > to do: make it signed, and decrement unconditionally. And callt eh 
+> > slow-path if it became negative.
+> > ... 
+> > and now we have an existing known-good implementation to look at?
+> 
+> Ok, after having thought that over, and looked at the code, I think I 
+> like your version after all. The old implementation was pretty complex 
+> due to the need to be so extra careful about the count that could 
+> change outside of the lock, so everything considered, a new 
+> implementation that is simpler is probably the better choice.
 
-> Do you think it would be worth to export something like this in the
-> generic API, too?  It's probably quite hard, since there are devices
-> that actually use the PCF506xx STANDBY state during suspend-to-ram, but
-> other devices leave the PCF506xx in the ON state and just disable the
-> individual regulators using I2C register writes.
+yeah. I thought about that too, the problem i found is this thing in the 
+old lib/semaphore-sleepers.c code's __down() path:
 
-Indeed - where a STANDBY-style state is used the likely implementation
-is going to be something like setting a GPIO at some point towards the
-very end of suspending to activate it (if it's done directly by software
-at all).
+        remove_wait_queue_locked(&sem->wait, &wait);
+        wake_up_locked(&sem->wait);
+        spin_unlock_irqrestore(&sem->wait.lock, flags);
+        tsk->state = TASK_RUNNING;
 
-> I think there's probably no clean way how to integrate this, since the
-> question remains: who makes the decision (and manages the contraints) of
-> when to transition into the STANDBY state.   Nevertheless a read-only
-> sysfs attribute might still be interesting.
+that mystery wakeup once i understood to be necessary for some weird 
+ordering reason, but it would probably be hard to justify in the new 
+code, because it's done unconditionally, regardless of whether there are 
+sleepers around.
 
-At present the regulator API pretty much works on the assumption that
-this will be very system specific and probably not amount to much in
-software terms since the CPU is likely to be suspended or off while
-these modes are active so the transitions can adequately be handled by
-machine specific code.
+And once we deviate from the old code, we might as well go for the 
+simplest approach - which also happens to be rather close to the mutex 
+code's current slowpath - just with counting property added, legacy 
+semantics and no lockdep coverage.
 
-What might be more readily generalisable would be configuration for what
-happens in the very low power states.  The WM8350 driver has a
-device-specific API which provides access for the soft configuration for
-this state since the chip allows the system to set the state of the
-regulator when it is suspended.  This gives a second set of settings
-that are activated when the system enters a low power state.  This
-caters for most cases (where this will be statically configured by the
-board setup code) but if it were generalised into the regulator core
-then it would allow use in conjunction with the device_*_wakeup() stuff,
-letting drivers say which of their supplies they need when suspended.  I
-don't know how much demand there would be for that, though, and it'd be
-an extension to the API.
+> Ergo, I will just pull your scheduler tree.
 
-This gets rather more interesting when the system has a secondary PMIC -
-with multiple PMICs it's much more likely that one of them could be
-placed into a low power state while the system is running.  Off the top
-of my head that may be adequately handled by having a master regulator
-driver in the tree supplying the secondary PMIC which puts it into a low
-power state when it is not needed.  It's probably best tackled when we
-have some experience with such systems.
+great! Meanwhile a 100 randconfigs booted fine with that tree so i'd say 
+the implementation is robust.
+
+i also did a quick re-test of AIM7 because the wakeup logic changed a 
+bit from what i tested initially (from round-robin to strict FIFO), and 
+as expected not much changed in the AIM7 results on the quad:
+
+  Tasks   Jobs/Min        JTI     Real    CPU     Jobs/sec/task
+  2000    55019.9         96      211.6   806.5   0.4585
+  2000    55116.2         90      211.2   804.7   0.4593
+  2000    55082.3         82      211.3   805.5   0.4590
+
+this is slightly lower but the test was not fully apples to apples 
+because this also had some tracing active and other small details. It's 
+still very close to the v2.6.25 numbers. I suspect some more performance 
+could be won in this particular workload by getting rid of the BKL 
+dependency altogether.
+
+	Ingo
