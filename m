@@ -1,69 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763751AbYEHO7d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764121AbYEHO7t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763751AbYEHO7d (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 10:59:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755143AbYEHO7J
+	id S1764121AbYEHO7t (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 10:59:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763558AbYEHO7X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 10:59:09 -0400
-Received: from www.tglx.de ([62.245.132.106]:43347 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760402AbYEHO7F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 10:59:05 -0400
-Date: Thu, 8 May 2008 16:53:13 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Rene Herman <rene.herman@keyaccess.nl>
-cc: "H. Peter Anvin" <hpa@zytor.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Adrian Bunk <bunk@kernel.org>, Yinghai Lu <yhlu.kernel@gmail.com>,
-       Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, akpm@linux-foundation.org,
-       Pavel Machek <pavel@suse.cz>
-Subject: Re: [PATCH] x86: introduce a new Linux defined feature flag for PAT
- support
-In-Reply-To: <482311C9.2010603@keyaccess.nl>
-Message-ID: <alpine.LFD.1.10.0805081650440.3318@apollo.tec.linutronix.de>
-References: <48210A71.1060409@keyaccess.nl> <86802c440805061939q39ff5500h3c9e229ecbc6b2e6@mail.gmail.com> <20080507124650.GD29935@cs181133002.pp.htv.fi> <alpine.LFD.1.10.0805072122270.3318@apollo.tec.linutronix.de> <48221AE3.6020602@keyaccess.nl>
- <482233F0.7040000@zytor.com> <48224318.8020209@keyaccess.nl> <48224361.5080102@zytor.com> <48224507.8010102@keyaccess.nl> <alpine.LFD.1.10.0805071716060.3024@woody.linux-foundation.org> <48224930.9030901@keyaccess.nl> <48225DEC.2030502@keyaccess.nl>
- <alpine.LFD.1.10.0805071857430.3024@woody.linux-foundation.org> <4822614B.6080706@zytor.com> <alpine.LFD.1.10.0805071923030.3024@woody.linux-foundation.org> <48226569.7010906@zytor.com> <alpine.LFD.1.10.0805081307520.3318@apollo.tec.linutronix.de>
- <482311C9.2010603@keyaccess.nl>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Thu, 8 May 2008 10:59:23 -0400
+Received: from wx-out-0506.google.com ([66.249.82.228]:14520 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763499AbYEHO7U (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 May 2008 10:59:20 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=CXDQXe4hxG4gzdWH6FvvL24M+txbNGV/I/l5j8o84Lc4k1sC7FFiL0fu1lVq5bTgNMpJ8WwsdbsH0wzVtNMblDct7UB37FLRVEWua3Wyh+H6fk1KUxjKCw4ZdrnOtjn4wMPLVESg9xspzs2qqa9tnOZnlkwZiV0FJn4B8GafMBU=
+Message-ID: <36ca99e90805080759p4ded1d6cn58ad059ed97d33e4@mail.gmail.com>
+Date: Thu, 8 May 2008 16:59:18 +0200
+From: "Bert Wesarg" <bert.wesarg@googlemail.com>
+To: "Alexey Dobriyan" <adobriyan@gmail.com>
+Subject: Re: [PATCH 2/5] Fix bitmap_scnprintf_len()
+Cc: akpm@osdl.org, linux-kernel@vger.kernel.org, travis@sgi.com
+In-Reply-To: <20080507222601.GB14375@martell.zuzino.mipt.ru>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080507222601.GB14375@martell.zuzino.mipt.ru>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 8 May 2008, Rene Herman wrote:
-> However, I'm not sure, but:
-> 
-> > +	/* Paranoia check. */
-> > +	if (!cpu_has_pat) {
-> > +		printk(KERN_ERR "PAT enabled, but CPU feature cleared\n");
-> > +		/*
-> > +		 * Panic if this happens on the secondary CPU, and we
-> > +		 * switched to PAT on the boot CPU. We have no way to
-> > +		 * undo PAT.
-> > +		*/
-> > +		BUG_ON(boot_pat_state);
-> > +	}
-> 
-> The 'if this happens on the secondary CPU' sounds a bit like this is
-> directly checking the secondary CPU flag but cpu_has_pat translates into
-> boot_cpu_has(X86_FEATURE_PAT), refers always to the boot cpu.
+On Thu, May 8, 2008 at 12:26 AM, Alexey Dobriyan <adobriyan@gmail.com> wrote:
+> bitmap_scnprintf_len() returns 36 (thirty six) for NR_CPUS=2 which is
+>  ridiculous. So, rewrite the whole thing. Fixed version allows correct
+>  seq_bitmap/seq_cpumask.
+Reported-here: http://thread.gmane.org/gmane.linux.kernel/671725
 
-Right and thats fine because of:
-
-        /*
-         * On SMP, boot_cpu_data holds the common feature set between
-         * all CPUs; so make sure that we indicate which features are
-         * common between the CPUs.  The first time this routine gets
-         * executed, c == &boot_cpu_data.
-         */
-        if (c != &boot_cpu_data) {
-                /* AND the already accumulated flags with these */
-                for (i = 0 ; i < NCAPINTS ; i++)
-                        boot_cpu_data.x86_capability[i] &= c->x86_capability[i];
-        }
-
-Thanks,
-	tglx
+>
+>  Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
+Acked-by: Bert Wesarg <bert.wesarg@googlemail.com>
