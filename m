@@ -1,119 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752746AbYEHXNb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761417AbYEHXOw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752746AbYEHXNb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 19:13:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753863AbYEHXMr
+	id S1761417AbYEHXOw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 19:14:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752851AbYEHXOp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 19:12:47 -0400
-Received: from kirk.serum.com.pl ([213.77.9.205]:64257 "EHLO serum.com.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752954AbYEHXMo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 19:12:44 -0400
-Date: Fri, 9 May 2008 00:10:47 +0100 (BST)
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
-To: Jean Delvare <khali@linux-fr.org>
-cc: Ralf Baechle <ralf@linux-mips.org>,
-       Alessandro Zummo <a.zummo@towertech.it>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>, rtc-linux@googlegroups.com,
-       i2c@lm-sensors.org, linux-mips@linux-mips.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC][PATCH 2/4] RTC: SWARM I2C board initialization
-In-Reply-To: <20080508105905.3209c659@hyperion.delvare>
-Message-ID: <Pine.LNX.4.55.0805082344040.5944@cliff.in.clinika.pl>
-References: <Pine.LNX.4.55.0805070031410.16173@cliff.in.clinika.pl>
- <20080507085953.2c08b854@hyperion.delvare> <Pine.LNX.4.55.0805072145040.25644@cliff.in.clinika.pl>
- <20080508105905.3209c659@hyperion.delvare>
+	Thu, 8 May 2008 19:14:45 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:45329 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752779AbYEHXOo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 May 2008 19:14:44 -0400
+Date: Thu, 8 May 2008 16:14:09 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+cc: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
+       Andi Kleen <andi@firstfloor.org>, Matthew Wilcox <matthew@wil.cx>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Alexander Viro <viro@ftp.linux.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [patch] speed up / fix the new generic semaphore code (fix AIM7
+ 40% regression with 2.6.26-rc1)
+In-Reply-To: <alpine.LFD.1.10.0805081604010.2940@woody.linux-foundation.org>
+Message-ID: <alpine.LFD.1.10.0805081610350.2940@woody.linux-foundation.org>
+References: <1210214696.3453.87.camel@ymzhang> <alpine.LFD.1.10.0805072014330.3024@woody.linux-foundation.org> <1210219729.3453.97.camel@ymzhang> <alpine.LFD.1.10.0805072115190.3024@woody.linux-foundation.org> <20080508120130.GA2860@elte.hu>
+ <20080508122802.GA4880@elte.hu> <alpine.LFD.1.10.0805080859140.3024@woody.linux-foundation.org> <alpine.LFD.1.10.0805081128550.3024@woody.linux-foundation.org> <20080508201956.GA2547@elte.hu> <alpine.LFD.1.10.0805081326130.2940@woody.linux-foundation.org>
+ <20080508214557.GA13311@elte.hu> <alpine.LFD.1.10.0805081535130.2940@woody.linux-foundation.org> <alpine.LFD.1.10.0805081604010.2940@woody.linux-foundation.org>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jean,
 
-> If you had to add a missing semicolon to a source file to get it to
-> build again, it would be an "essential" change (without it nothing
-> works) but still, you can't claim you added any intellectual value to
 
- Agreed about this example because the change is mechanical and can almost
-be done by an automaton.
+On Thu, 8 May 2008, Linus Torvalds wrote:
+> 
+> Btw, sparse will complain about those, because the source code *looks* 
+> really cheap.
 
-> the source file. So, no copyright. The copyright is about how much
-> value you add, not how important the change is in the big picture.
+Sometimes you can fix it.
 
- As I wrote, no big concern about it from my side and it looks I will be 
-changing more of the file anyway. ;-)
+For example, this change:
 
-> I'm not going to tell how bad I think the GNU coding standards are, the
-> point here is that we don't follow them at all, so whatever they say is
-> totally irrelevant. Read Documentation/CodingStyle, it describes what
+	-       if (pte_present(*pte) && page_to_pfn(page) == pte_pfn(*pte)) {
+	+       if (pte_present(*pte) && page == pfn_to_page(pte_pfn(*pte))) {
 
- Oh come on -- that's just common sense.  If something is good, there is
-no point in discarding it without thinking, just because it is a part of a
-bigger entity that we consider bad.  I consider it good not because it is
-a part of the GNU standard, but because I have concluded that it is and it
-is pure coincidence ;-) I have taken it from the said standard.  But as I
-said, this is a minor nit here and I can resist from adding extraneous
-spaces in pieces of code you are interested in as long as I am able to
-track which ones they actually are.
+can simplify things: instead of moving from a 'struct page' to a pfn, it 
+moves from a pfn to a 'struct page', and that is generally cheaper 
+(multiply rather than divide by size of struct page). It's not always the 
+same thing to do, but I think in this case we can. For me, the code 
+generation changes:
 
-> we do. Also make sure that you run your patches through
-> scripts/checkpatch.pl. The rest is up to you, but in general, when
-> modifying existing code, you want to stick to what the surrounding code
-> looks like.
+	-       movabsq $7905747460161236407, %rdx      #, tmp111
+	-       movabsq $32985348833280, %rax   #, tmp107
+	-       leaq    (%r12,%rax), %rax       #, tmp106
+	-       sarq    $3, %rax        #, tmp106
+	-       imulq   %rdx, %rax      # tmp111, tmp106
+	-       movabsq $70368744177663, %rdx   #, tmp113
+	-       andq    %rdx, %rcx      # tmp113, pte$pte
+	-       shrq    $12, %rcx       #, pte$pte
+	-       cmpq    %rcx, %rax      # pte$pte, tmp106
+	+       movabsq $70368744177663, %rax   #, tmp107
+	+       andq    %rax, %rdx      # tmp107, pte$pte
+	+       shrq    $12, %rdx       #, pte$pte
+	+       imulq   $56, %rdx, %rax #, pte$pte, tmp109
+	+       movabsq $-32985348833280, %rdx  #, tmp111
+	+       addq    %rdx, %rax      # tmp111, tmp110
+	+       cmpq    %rax, %r13      # tmp110, page
 
- I had no problems with writing code checkpatch.pl would swallow without a
-blink even before it existed.  It does not mean I should follow the
-surrounding mess if this is what the state of code is.
+which isn't a *huge* deal, but it certainly looks better. One less big 
+constant, and one less shift.
 
-> I do insist ;) Admittedly, double spaces at end of comments are used in
-> some places in the kernel tree (I had never seen that before), but they
-> are still outnumbered by single-space ending comments, 50 to 1. Do
-> what you want in the drivers your create or maintain, but please don't
-> change existing comments, especially not in the middle of functional
-> changes.
+It's not going to make a huge difference, though. That function is just 
+called too much, and it would still be entirely data-dependent all the way 
+through.
 
- Fine with me, no problem.
-
-> That's not a matter of being scared, and I was also _not_ asking you to
-> split the patch. That's a matter of synchronizing merges between me and
-> the architecture maintainer. If I take a patch in my i2c tree which
-> touches architecture-specific files, and I only push it to Linus in 2
-> months, then chances are that the architecture-specific files in
-> question will change several times meanwhile, resulting in conflicts in
-> -next and -mm. I am only trying to prevent this from happening. I
-> simply think that it is easier to synchronize patches if all
-> architecture-specific patches go through the relevant architecture tree.
-
- Your concern is valid and this is why I proposed the split.  My point
-being, unlike the rest of the MIPS arch tree these days the Broadcom bits
-are only touched from time to time by two or three people (myself
-included), so it is much easier to coordinate changes if they are limited 
-to this subarch.  Which means stripping out changes needed elsewhere from 
-the i2c patch itself can only improve things.
-
-> BTW, SWARM seems to be only one of the 4 SiByte platforms we support.
-
- I think nobody really knows for sure how many Broadcom/SiByte platforms 
-we support at the moment. ;-)  I am fairly sure there is some interest in 
-the BigSur, SWARM and Sentosa only.
-
-> What about the other ones? Your changes to the i2c-sibyte driver could
-> cause the i2c bus registration to fail, as the other platforms do not
-> declare I2C devices, the bus numbers 0 and 1 won't be reserved by
-> i2c-core. Care to comment on this?
-
- Well, arch/mips/sibyte/swarm/ is included for all the three above as well 
-as a couple of other I may not necessarily be sure what they are even.  So 
-this should be of no concern.
-
- BTW, do you mean i2c_add_numbered_adapter() will fail if no devices have
-been declared to exist on the given bus with i2c_register_board_info()?  
-That sounds strange...  Note in all cases there are EEPROMs (onboard ones
-as well as optionally SPD ones) on both buses on Broadcom/SiByte boards
-and they are handled by a legacy client driver.  The Broadcom SOC is
-actually capable to bootstrap from one of these EEPROMs (rather than form
-the usual system parallel Flash ROM).
-
-  Maciej
+			Linus
