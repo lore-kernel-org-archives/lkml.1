@@ -1,58 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757270AbYEHUCz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760163AbYEHUEV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757270AbYEHUCz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 16:02:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752243AbYEHUCn
+	id S1760163AbYEHUEV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 16:04:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753071AbYEHUEA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 16:02:43 -0400
-Received: from ra.tuxdriver.com ([70.61.120.52]:4488 "EHLO ra.tuxdriver.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751778AbYEHUCm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 16:02:42 -0400
-Date: Thu, 8 May 2008 15:38:03 -0400
-From: "John W. Linville" <linville@tuxdriver.com>
-To: Greg KH <gregkh@suse.de>
-Cc: linux-kernel@vger.kernel.org, stable@kernel.org,
-       Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       linux-wireless@vger.kernel.org, bcm43xx-dev@lists.berlios.de,
-       Michael Buesch <mb@bu3sch.de>
-Subject: Re: [patch 08/16] b43: Fix dual-PHY devices
-Message-ID: <20080508193803.GB9176@tuxdriver.com>
-References: <20080508173436.454278564@mini.kroah.org> <20080508174214.GI855@suse.de>
-MIME-Version: 1.0
+	Thu, 8 May 2008 16:04:00 -0400
+Received: from outbound-sin.frontbridge.com ([207.46.51.80]:38868 "EHLO
+	outbound10-sin-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753003AbYEHUD6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 May 2008 16:03:58 -0400
+X-BigFish: VP
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 139.95.251.11;Service: EHS
+X-WSS-ID: 0K0KFPU-03-DDF-01
+Date: Thu, 8 May 2008 22:02:39 +0200
+From: Hans Rosenfeld <hans.rosenfeld@amd.com>
+To: Hugh Dickins <hugh@veritas.com>
+Cc: Nishanth Aravamudan <nacc@us.ibm.com>,
+       Dave Hansen <dave@linux.vnet.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       Jeff Chua <jeff.chua.linux@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Gabriel C <nix.or.die@googlemail.com>,
+       Arjan van de Ven <arjan@linux.intel.com>,
+       Matt Mackall <mpm@selenic.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH] x86: fix PAE pmd_bad bootup warning
+Message-ID: <20080508200239.GJ12654@escobedo.amd.com>
+References: <1210106579.4747.51.camel@nimitz.home.sr71.net> <20080508143453.GE12654@escobedo.amd.com> <1210258350.7905.45.camel@nimitz.home.sr71.net> <20080508151145.GG12654@escobedo.amd.com> <1210261882.7905.49.camel@nimitz.home.sr71.net> <20080508161925
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080508174214.GI855@suse.de>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <Pine.LNX.4.64.0805081914210.16611@blonde.site>
+User-Agent: Mutt/1.4.2.3i
+X-OriginalArrivalTime: 08 May 2008 20:02:37.0218 (UTC) FILETIME=[76647020:01C8B146]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 08, 2008 at 10:42:14AM -0700, Greg KH wrote:
-> 2.6.25-stable review patch.  If anyone has any objections, please let us
-> know.
+On Thu, May 08, 2008 at 07:48:51PM +0100, Hugh Dickins wrote:
+> > Dunno, seems quite clear that the bug is in pagemap_read(), not any
+> > hugepage code, and that the simplest fix is to make pagemap_read() do
+> > what the other walker-callers do, and skip hugepage regions.
 > 
-> ------------------
-> From: Michael Buesch <mb@bu3sch.de>
+> Yes, I'm afraid it needs an is_vm_hugetlb_page(vma) in there somehow:
+> as you observe, that's what everything else uses to avoid huge issues.
 > 
-> commit 2e35af143a1380173ba292e48e9b4913ef16b4ee upstream
-> 
-> This fixes operation of dual-PHY (A/B/G) devices.
-> Do not anounce the A-PHY to mac80211, as that's not supported, yet.
-> 
-> Signed-off-by: Michael Buesch <mb@bu3sch.de>
-> Signed-off-by: John W. Linville <linville@tuxdriver.com>
-> Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+> A pmd_huge(*pmd) test is tempting, but it only ever says "yes" on x86:
+> we've carefully left it undefined what happens to the pgd/pud/pmd/pte
+> hierarchy in the general arch case, once you're amongst hugepages.
 
-ACK
+AFAIK the reason for this is that pmd_huge() and pud_huge() are
+completely x86-specific. When I looked at the huge page support for
+other archs in Linux the last time, all of them marked hugepages with
+some page size bits in the PTE, using several PTEs for a single huge
+page. So for anything but x86, the pgd/pud/pmd/pte hierarchy should work
+for hugepages, too.
+
+> Cc'ed Matt: he may have a view on what he wants his pagewalker
+> to do with hugepages: I fear it would differ from one usage to
+> another.  Skip over them has to be safest, though not ideal.
+
+Proper hugepage support in /proc/pid/pagemap would be very helpful for
+certain kinds of performance analysis, like TLB usage, where you need
+page size information when you have a TLB for each supported page size.
+That was the reason why I was working on supporting huge pages in
+/proc/pid/pagemap in the first place.
+
 
 -- 
-John W. Linville
-linville@tuxdriver.com
+%SYSTEM-F-ANARCHISM, The operating system has been overthrown
+
