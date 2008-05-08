@@ -1,54 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762223AbYEHKUs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762332AbYEHKWx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762223AbYEHKUs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 06:20:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757634AbYEHKUk
+	id S1762332AbYEHKWx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 06:22:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757342AbYEHKWq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 06:20:40 -0400
-Received: from smtp-out04.alice-dsl.net ([88.44.63.6]:39414 "EHLO
-	smtp-out04.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757226AbYEHKUi (ORCPT
+	Thu, 8 May 2008 06:22:46 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:32772
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1754790AbYEHKWp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 06:20:38 -0400
-To: Rene Herman <rene.herman@keyaccess.nl>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Adrian Bunk <bunk@kernel.org>, Yinghai Lu <yhlu.kernel@gmail.com>,
-       Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, akpm@linux-foundation.org,
-       Pavel Machek <pavel@suse.cz>
-Subject: Re: [PATCH] x86: introduce a new Linux defined feature flag for PAT support
-From: Andi Kleen <andi@firstfloor.org>
-References: <48210A71.1060409@keyaccess.nl>
-	<86802c440805061939q39ff5500h3c9e229ecbc6b2e6@mail.gmail.com>
-	<20080507124650.GD29935@cs181133002.pp.htv.fi>
-	<alpine.LFD.1.10.0805072122270.3318@apollo.tec.linutronix.de>
-	<48221AE3.6020602@keyaccess.nl> <482233F0.7040000@zytor.com>
-	<48224318.8020209@keyaccess.nl> <48224361.5080102@zytor.com>
-	<48224507.8010102@keyaccess.nl>
-	<alpine.LFD.1.10.0805071716060.3024@woody.linux-foundation.org>
-	<48224930.9030901@keyaccess.nl> <48225DEC.2030502@keyaccess.nl>
-Date: Thu, 08 May 2008 12:19:35 +0200
-In-Reply-To: <48225DEC.2030502@keyaccess.nl> (Rene Herman's message of "Thu, 08 May 2008 03:57:00 +0200")
-Message-ID: <878wylayiw.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 08 May 2008 10:12:38.0563 (UTC) FILETIME=[0B265730:01C8B0F4]
+	Thu, 8 May 2008 06:22:45 -0400
+Date: Thu, 08 May 2008 03:22:38 -0700 (PDT)
+Message-Id: <20080508.032238.23875845.davem@davemloft.net>
+To: benh@kernel.crashing.org
+CC: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: [PATCH]: radeon: Misc corrections.
+From: David Miller <davem@davemloft.net>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rene Herman <rene.herman@keyaccess.nl> writes:
->
-> Use a new Linux defined X86_FEATURE_PAT_GOOD feature flag to
 
-Better would be PAT_TESTED or PAT_RANDOMLY_APPROVED.
-Most of these CPUs without PAT_GOOD have actually perfectly good PAT, as 
-Windows proves every day.
+I have a new PCI-E radeon RV380 series card (PCI device ID 5b64) that
+hangs in my sparc64 boxes when the init scripts set the font.  The
+problem goes away if I disable acceleration.
 
-The main flaw in all of this of course is that there is no procedure to test
-CPUs which do not have the flag set yet.
+I haven't figured out that bug yet, but along the way
+I found some corrections to make based upon some auditing.
 
--Andi
+1) The RB2D_DC_FLUSH_ALL value used by the kernel fb driver
+   and the XORG video driver differ.  I've made the kernel
+   match what XORG is using.
 
+2) In radeonfb_engine_reset() we have top-level code structure
+   that roughly looks like:
+
+	if (family is 300, 350, or V350)
+		do this;
+	else
+		do that;
+	...
+	if (family is NOT 300, OR
+	    family is NOT 350, OR
+	    family is NOT V350)
+		do another thing;
+
+   this last conditional makes no sense, is always true,
+   and obviously was likely meant to be "family is NOT
+   300, 350, or V350".  So I've made the code match the
+   intent.
+
+Signed-off-by: David S. Miller <davem@davemloft.net>
+
+diff --git a/drivers/video/aty/radeon_accel.c b/drivers/video/aty/radeon_accel.c
+index 3ca27cb..4d13f68 100644
+--- a/drivers/video/aty/radeon_accel.c
++++ b/drivers/video/aty/radeon_accel.c
+@@ -241,8 +241,8 @@ void radeonfb_engine_reset(struct radeonfb_info *rinfo)
+ 	INREG(HOST_PATH_CNTL);
+ 	OUTREG(HOST_PATH_CNTL, host_path_cntl);
+ 
+-	if (rinfo->family != CHIP_FAMILY_R300 ||
+-	    rinfo->family != CHIP_FAMILY_R350 ||
++	if (rinfo->family != CHIP_FAMILY_R300 &&
++	    rinfo->family != CHIP_FAMILY_R350 &&
+ 	    rinfo->family != CHIP_FAMILY_RV350)
+ 		OUTREG(RBBM_SOFT_RESET, rbbm_soft_reset);
+ 
+diff --git a/include/video/radeon.h b/include/video/radeon.h
+index 83467e1..95a1f20 100644
+--- a/include/video/radeon.h
++++ b/include/video/radeon.h
+@@ -527,8 +527,9 @@
+ 
+ 
+ /* DSTCACHE_CTLSTAT bit constants */
+-#define RB2D_DC_FLUSH				   (3 << 0)
+-#define RB2D_DC_FLUSH_ALL			   0xf
++#define RB2D_DC_FLUSH_2D			   (1 << 0)
++#define RB2D_DC_FREE_2D				   (1 << 2)
++#define RB2D_DC_FLUSH_ALL			   (RB2D_DC_FLUSH_2D | RB2D_DC_FREE_2D)
+ #define RB2D_DC_BUSY				   (1 << 31)
+ 
+ 
