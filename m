@@ -1,48 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932509AbYEHUMj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762081AbYEHUQn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932509AbYEHUMj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 16:12:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756223AbYEHUL7
+	id S1762081AbYEHUQn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 16:16:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752704AbYEHUQd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 16:11:59 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:35687 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754824AbYEHUL4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 16:11:56 -0400
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 8 May 2008 16:16:33 -0400
+Received: from e33.co.us.ibm.com ([32.97.110.151]:42899 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752603AbYEHUQc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 May 2008 16:16:32 -0400
+Subject: Re: [PATCH] x86: fix PAE pmd_bad bootup warning
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: Hans Rosenfeld <hans.rosenfeld@amd.com>
+Cc: Hugh Dickins <hugh@veritas.com>, Nishanth Aravamudan <nacc@us.ibm.com>,
+       Ingo Molnar <mingo@elte.hu>, Jeff Chua <jeff.chua.linux@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Gabriel C <nix.or.die@googlemail.com>,
+       Arjan van de Ven <arjan@linux.intel.com>,
+       Matt Mackall <mpm@selenic.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+In-Reply-To: <20080508200239.GJ12654@escobedo.amd.com>
+References: <1210106579.4747.51.camel@nimitz.home.sr71.net>
+	 <20080508143453.GE12654@escobedo.amd.com>
+	 <1210258350.7905.45.camel@nimitz.home.sr71.net>
+	 <20080508151145.GG12654@escobedo.amd.com>
+	 <1210261882.7905.49.camel@nimitz.home.sr71.net>
+	 <20080508161925  <20080508200239.GJ12654@escobedo.amd.com>
+Content-Type: text/plain
+Date: Thu, 08 May 2008 13:16:27 -0700
+Message-Id: <1210277787.7905.81.camel@nimitz.home.sr71.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: wenji huang <wenji.huang@oracle.com>
-X-Fcc: ~/Mail/linus
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: possible regression of ptrace on 2.6.26-rc1
-In-Reply-To: wenji huang's message of  Wednesday, 7 May 2008 17:20:12 +0800 <4821744C.9070805@oracle.com>
-References: <481FCE51.7060604@oracle.com>
-	<20080506080159.0638E26FA20@magilla.localdomain>
-	<4821744C.9070805@oracle.com>
-Emacs: more boundary conditions than the Middle East.
-Message-Id: <20080508201150.AEEEE26FA85@magilla.localdomain>
-Date: Thu,  8 May 2008 13:11:50 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The test is racy.  I don't think the behavior that affects this has really
-changed between kernel versions, you're just seeing timing effects.
+On Thu, 2008-05-08 at 22:02 +0200, Hans Rosenfeld wrote:
+> > A pmd_huge(*pmd) test is tempting, but it only ever says "yes" on x86:
+> > we've carefully left it undefined what happens to the pgd/pud/pmd/pte
+> > hierarchy in the general arch case, once you're amongst hugepages.
+> 
+> AFAIK the reason for this is that pmd_huge() and pud_huge() are
+> completely x86-specific. When I looked at the huge page support for
+> other archs in Linux the last time, all of them marked hugepages with
+> some page size bits in the PTE, using several PTEs for a single huge
+> page. So for anything but x86, the pgd/pud/pmd/pte hierarchy should work
+> for hugepages, too.
 
-When you finish the loop, you've just done a PTRACE_SYSCALL to resume
-the child, but have not done a wait for it.  You then do PTRACE_CONT on
-it.  If the child has stopped at its next syscall report by the time
-that ptrace call checks the child, it works.  If not, it sees the child
-is not yet stopped and ptrace fails with ESRCH.  
+powerpc kinda puts them in pmds, although Adam calls them ptes in his
+diagram.  See Adam's very nice pictures here:
 
-Due to hysterical raisins, PTRACE_KILL skips the "child is stopped"
-check, so it will never return that error.  However, a PTRACE_KILL
-request made before the child has actually stopped will not reliably do
-anything (it will set child->exit_code = SIGKILL in a race with the
-child itself setting current->exit_code before it stops).
+	http://linux-mm.org/PageTableStructure
 
+In the arch code, they have a concept of "slices" for each mm that you
+can look up the page size for.  That's what they use when the mm/vmas
+aren't around.  Their pmd_ts really are just pointers.  I don't think
+they have any flags in them at all like _PAGE_PSE.
 
-Thanks,
-Roland
+They just do a special pagetable walk instead of looking *at* the
+pagetables.
+
+-- Dave
+
