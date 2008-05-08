@@ -1,21 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761738AbYEHJXp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762061AbYEHJYH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761738AbYEHJXp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 05:23:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755096AbYEHJXg
+	id S1762061AbYEHJYH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 05:24:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761793AbYEHJXq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 05:23:36 -0400
-Received: from mga09.intel.com ([134.134.136.24]:29725 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754811AbYEHJXf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 05:23:35 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.27,453,1204531200"; 
-   d="scan'208";a="279171066"
+	Thu, 8 May 2008 05:23:46 -0400
+Received: from viefep31-int.chello.at ([62.179.121.49]:51576 "EHLO
+	viefep31-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761465AbYEHJXo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 May 2008 05:23:44 -0400
 Subject: Re: sysbench+mysql(oltp, readonly) 30% regression with 2.6.26-rc1
-From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: Mike Galbraith <efault@gmx.de>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+Cc: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
        LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
 In-Reply-To: <1210238114.11887.3.camel@marge.simson.net>
 References: <1210136148.3453.59.camel@ymzhang>
@@ -24,16 +22,15 @@ References: <1210136148.3453.59.camel@ymzhang>
 	 <1210233617.4895.6.camel@marge.simson.net>
 	 <1210237267.3453.143.camel@ymzhang>
 	 <1210238114.11887.3.camel@marge.simson.net>
-Content-Type: text/plain; charset=UTF-8
-Date: Thu, 08 May 2008 17:22:18 +0800
-Message-Id: <1210238538.3453.146.camel@ymzhang>
+Content-Type: text/plain; charset=utf-8
+Date: Thu, 08 May 2008 11:23:42 +0200
+Message-Id: <1210238622.13978.193.camel@twins>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.21.5 (2.21.5-2.fc9) 
+X-Mailer: Evolution 2.22.0 
 Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-
 
 On Thu, 2008-05-08 at 11:15 +0200, Mike Galbraith wrote:
 > On Thu, 2008-05-08 at 17:01 +0800, Zhang, Yanmin wrote:
@@ -45,7 +42,39 @@ On Thu, 2008-05-08 at 11:15 +0200, Mike Galbraith wrote:
 > > How many cpu are in the Q6600?
 > 
 > 1.
-
+> 
+> > > 
+> > > In attached pdf, .bkl refers to Linus' BKL patch, .weight is the weight
+> > > fix, both are applied to git.today.  The script I used is also attached.
+> > With my 8-core stoakley (using mysql):
+> > 1) 2.6.25:
+> > Number of threads: 6
+> >     read/write requests:                 8025024 (66874.53 per sec.)
+> > Number of threads: 8
+> >     read/write requests:                 9132816 (76106.14 per sec.)
+> > Number of threads: 10
+> >     read/write requests:                 9244998 (77040.75 per sec.)
+> > Number of threads: 12
+> >     read/write requests:                 8994174 (74950.36 per sec.)
+> > Number of threads: 14
+> >     read/write requests:                 9051322 (75426.54 per sec.)
+> > Number of threads: 16
+> >     read/write requests:                 9015412 (75126.93 per sec.)
+> > 
+> > 2) 2.6.26-rc1:
+> > Number of threads: 6
+> >     read/write requests:                 5754056 (47949.87 per sec.)
+> > Number of threads: 8
+> >     read/write requests:                 6528480 (54403.29 per sec.)
+> > Number of threads: 10
+> >     read/write requests:                 6444690 (53705.16 per sec.)
+> > Number of threads: 12
+> >     read/write requests:                 6544258 (54534.23 per sec.)
+> > Number of threads: 14
+> >     read/write requests:                 6796650 (56637.65 per sec.)
+> > Number of threads: 16
+> >     read/write requests:                 6718110 (55983.18 per sec.)
+> > 
 > > 3) 2.6.26-rc1+weight
 > > ﻿Number of threads: 16
 > > 	read/write requests:                 3219076 (26824.22 per sec.)
@@ -53,9 +82,11 @@ On Thu, 2008-05-08 at 11:15 +0200, Mike Galbraith wrote:
 > > I'm not sure if more cpu could introduce more contention in this test.
 > 
 > -rc1.  Do you have the fix below applied?
-No. 
 
-> 
+Oooh - good catch, that seems to be a post -rc1 merge.
+
+Yes this is required.
+
 > commit a992241de614dd2b7c97a9ba64e28c0e563f19bf
 > Author: Peter Zijlstra <a.p.zijlstra@chello.nl>
 > Date:   Mon May 5 23:56:17 2008 +0200
