@@ -1,86 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933331AbYEHWfu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933504AbYEHWjf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933331AbYEHWfu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 18:35:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754692AbYEHWfi
+	id S933504AbYEHWjf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 18:39:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751048AbYEHWjY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 18:35:38 -0400
-Received: from smtpq2.tilbu1.nb.home.nl ([213.51.146.201]:47263 "EHLO
-	smtpq2.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754183AbYEHWfh (ORCPT
+	Thu, 8 May 2008 18:39:24 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:55455 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754869AbYEHWjW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 18:35:37 -0400
-Message-ID: <48238087.7000509@keyaccess.nl>
-Date: Fri, 09 May 2008 00:36:55 +0200
-From: Rene Herman <rene.herman@keyaccess.nl>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
-MIME-Version: 1.0
-To: Adrian Bunk <bunk@kernel.org>
-CC: Linux Kernel <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: GIT bisection range errors
-References: <48237CA0.4080001@keyaccess.nl> <20080508222545.GH22887@cs181133002.pp.htv.fi>
-In-Reply-To: <20080508222545.GH22887@cs181133002.pp.htv.fi>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+	Thu, 8 May 2008 18:39:22 -0400
+Date: Thu, 8 May 2008 15:38:22 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Ulrich Drepper <drepper@redhat.com>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       davidel@xmailserver.org, mtk.manpages@gmail.com,
+       torvalds@linux-foundation.org, Roland McGrath <roland@redhat.com>,
+       Oleg Nesterov <oleg@tv-sign.ru>
+Subject: Re: [PATCH 02/18] flag parameters: paccept
+Message-Id: <20080508153822.0c4dd6e9.akpm@linux-foundation.org>
+In-Reply-To: <200805062118.m46LI7SS004041@devserv.devel.redhat.com>
+References: <200805062118.m46LI7SS004041@devserv.devel.redhat.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -1.0 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09-05-08 00:25, Adrian Bunk wrote:
-> On Fri, May 09, 2008 at 12:20:16AM +0200, Rene Herman wrote:
->> Good day.
->>
->> I'm in a git bisect and am experiencing strangeness. I did a
->>
->> $ git checkout -b rc v2.6.26-rc1
->> $ git bisect start
->> $ git bisect bad
->> $ git bisect good v2.6.25
->>
->> Yet, during this I'm finding myself at 2.6.25-rc6 and 2.6.25-rc8
->> as the last two results (both good...).
->>
->> Here's the BISECT_LOG upto this point. Is there anyone available
->> who understands this well enough to be able to say from this that
->> my tree is fubar? It should be a straight Linus' clone, and it's
->> always pulling without trouble.
->>
->> git-bisect start
->> # bad: [2ddcca36c8bcfa251724fe342c8327451988be0d] Linux 2.6.26-rc1
->> git-bisect bad 2ddcca36c8bcfa251724fe342c8327451988be0d
->> # good: [4b119e21d0c66c22e8ca03df05d9de623d0eb50f] Linux 2.6.25
->> git-bisect good 4b119e21d0c66c22e8ca03df05d9de623d0eb50f
->> # bad: [7ae44cfa7ab29b277691327e8de790d7b880722f] [ALSA] snd-powermac: style awacs.s and awacs.h
->> git-bisect bad 7ae44cfa7ab29b277691327e8de790d7b880722f
->> # good: [7cea51be4e91edad05bd834f3235b45c57783f0d] security: fix up documentation for security_module_enable
->> git-bisect good 7cea51be4e91edad05bd834f3235b45c57783f0d
->> # bad: [8f19ca1341a6d89bd96e2e69e6e10f46d3258089] x86: unify gfp masks
->> git-bisect bad 8f19ca1341a6d89bd96e2e69e6e10f46d3258089
->> # good: [f49e1aa133c2c9b74b5dfddca8863609bbda9086] [NETFILTER]: nf_conntrack_sip: update copyright
->> git-bisect good f49e1aa133c2c9b74b5dfddca8863609bbda9086
->> # good: [0b18542b7f5379e052d2a3132be91185776e7ceb] [NET]: Sink IPv6 menuoptions into its own submenu
->> git-bisect good 0b18542b7f5379e052d2a3132be91185776e7ceb
-> 
-> Don't trust any dates you see in git.  ;-)
-> 
-> The last commit in your list was added to David's tree at around the 
-> time Linus released Linux 2.6.25-rc7.
-> 
-> But David's tree was merged into Linus' tree after 2.6.25.
-> 
-> So actually everything is fine.
+On Tue, 6 May 2008 17:18:07 -0400
+Ulrich Drepper <drepper@redhat.com> wrote:
 
-Well, thanks for the reply and I'm going forward for now, but the Makefile
-is actually calling this 2.6.25-rc8. My next "git bisect good" after the
-above landed me now after 2.6.25 according to the Makefile. It could just
-be a tags issue I guess, where my tree is confused about what tag belongs
-to v2.6.25?
+> This patch is by far the most complex in the series.  It adds a new syscall
+> paccept.  This syscall differs from accept in that it adds (at the userlevel)
+> two additional parameters:
+> 
+> - a signal mask
+> - a flags value
+> 
+> The flags parameter can be used to set flag like SOCK_CLOEXEC.  This is
+> imlpemented here as well.  Some people argued that this is a property
+> which should be inherited from the file desriptor for the server but
+> this is against POSIX.  Additionally, we really want the signal mask
+> parameter as well (similar to pselect, ppoll, etc).  So an interface
+> change in inevitable.
+> 
+> The flag value is the same as for socket and socketpair.  I think
+> diverging here will only create confusion.  Similar to the filesystem
+> interfaces where the use of the O_* constants differs, it is acceptable
+> here.
+> 
+> The signal mask is handled as for pselect etc.  The mask is temporarily
+> installed for the thread and removed before the call returns.  I modeled
+> the code after pselect.  If there is a problem it's likely also in
+> pselect.
+> 
+> For architectures which use socketcall I maintained this interface
+> instead of adding a system call.  The symmetry shouldn't be broken.
+> 
+> The following test must be adjusted for architectures other than x86 and
+> x86-64 and in case the syscall numbers changed.
+>
 
-(new two lines in the log)
+I have a bit of a mystery going on here.
+ 
+> ...
+>
+> +asmlinkage long sys_paccept(int fd, struct sockaddr __user *upeer_sockaddr,
+> +			    int __user *upeer_addrlen,
+> +			    const sigset_t __user *sigmask,
+> +			    size_t sigsetsize, int flags)
+> +{
+> +	sigset_t ksigmask, sigsaved;
+> +	int ret;
+> +
+> +	if (sigmask) {
+> +		/* XXX: Don't preclude handling different sized sigset_t's.  */
+> +		if (sigsetsize != sizeof(sigset_t))
+> +			return -EINVAL;
+> +		if (copy_from_user(&ksigmask, sigmask, sizeof(ksigmask)))
+> +			return -EFAULT;
+> +
+> +		sigdelsetmask(&ksigmask, sigmask(SIGKILL)|sigmask(SIGSTOP));
+> +		sigprocmask(SIG_SETMASK, &ksigmask, &sigsaved);
+> +        }
+> +
+> +	ret = do_accept(fd, upeer_sockaddr, upeer_addrlen, flags);
+> +
+> +	if (ret < 0 && signal_pending(current)) {
+> +		/*
+> +		 * Don't restore the signal mask yet. Let do_signal() deliver
+> +		 * the signal on the way back to userspace, before the signal
+> +		 * mask is restored.
+> +		 */
+> +		if (sigmask) {
+> +			memcpy(&current->saved_sigmask, &sigsaved,
+> +			       sizeof(sigsaved));
+> +			set_thread_flag(TIF_RESTORE_SIGMASK);
+> +		}
+> +	} else if (sigmask)
+> +		sigprocmask(SIG_SETMASK, &sigsaved, NULL);
+> +
+> +	return ret;
+> +}
 
-# good: [ba380013b681e91e059f95b51002f8d43024b371] b43: Add fastpath to b43_mac_suspend()
-git-bisect good ba380013b681e91e059f95b51002f8d43024b371
+Some architectures (including x86) do not implement TIF_RESTORE_SIGMASK.
 
-Rene.
+Ah, you must have prepared the patches against something prehistoric like
+2.6.25.  Please prefer to prepare 2.6.x patches against the 2.6.x tree, not
+the 2.6.x-1 tree?
+
+Whatever you're trying to do here, we'll need to find a non-arch-specific
+way of doing it.
+
