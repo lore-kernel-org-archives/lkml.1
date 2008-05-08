@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763465AbYEHRpy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765284AbYEHRqW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763465AbYEHRpy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 13:45:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752595AbYEHRnY
+	id S1765284AbYEHRqW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 13:46:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755582AbYEHRna
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 13:43:24 -0400
-Received: from mx2.suse.de ([195.135.220.15]:33466 "EHLO mx2.suse.de"
+	Thu, 8 May 2008 13:43:30 -0400
+Received: from cantor.suse.de ([195.135.220.2]:47720 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761202AbYEHRnV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 13:43:21 -0400
-Date: Thu, 8 May 2008 10:42:05 -0700
+	id S1761485AbYEHRnZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 May 2008 13:43:25 -0400
+Date: Thu, 8 May 2008 10:42:09 -0700
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -20,13 +20,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>
-Subject: [patch 05/16] sched: fix hrtick_start_fair and CPU-Hotplug
-Message-ID: <20080508174205.GF855@suse.de>
+       Jan Kara <jack@suse.cz>, Jeff Mahoney <jeffm@suse.com>,
+       Chris Mason <chris.mason@oracle.com>
+Subject: [patch 06/16] reiserfs: Unpack tails on quota files
+Message-ID: <20080508174209.GG855@suse.de>
 References: <20080508173436.454278564@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="sched-fix-hrtick_start_fair-and-cpu-hotplug.patch"
+Content-Disposition: inline; filename="reiserfs-unpack-tails-on-quota-files.patch"
 In-Reply-To: <20080508174122.GA855@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -37,139 +38,95 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 know.
 
 ------------------
-From: Peter Zijlstra <peterz@infradead.org>
+From: Jan Kara <jack@suse.cz>
 
-commit: b328ca182f01c2a04b85e0ee8a410720b104fbcc upstream
+commit d5dee5c395062a55236318ac4eec1f4ebb9de6db upstream
 
-Gautham R Shenoy reported:
+Quota files cannot have tails because quota_write and quota_read functions do
+not support them. So far when quota files did have tail, we just refused to
+turn quotas on it. Sadly this check has been wrong and so there are now plenty
+installations where quota files don't have NOTAIL flag set and so now after
+fixing the check, they suddently fail to turn quotas on. Since it's easy to
+unpack the tail from kernel, do this from reiserfs_quota_on() which solves the
+problem and is generally nicer to users anyway.
 
- > While running the usual CPU-Hotplug stress tests on linux-2.6.25,
- > I noticed the following in the console logs.
- >
- > This is a wee bit difficult to reproduce. In the past 10 runs I hit this
- > only once.
- >
- > ------------[ cut here ]------------
- >
- > WARNING: at kernel/sched.c:962 hrtick+0x2e/0x65()
- >
- > Just wondering if we are doing a good job at handling the cancellation
- > of any per-cpu scheduler timers during CPU-Hotplug.
-
-This looks like its indeed not cancelled at all and migrates the it to
-another cpu. Fix it via a proper hotplug notifier mechanism.
-
-Reported-by: Gautham R Shenoy <ego@in.ibm.com>
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Jan Kara <jack@suse.cz>
+Reported-by: <urhausen@urifabi.net>
+Cc: Jeff Mahoney <jeffm@suse.com>
+Cc: Chris Mason <chris.mason@oracle.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- kernel/sched.c |   66 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++-
- 1 file changed, 65 insertions(+), 1 deletion(-)
+ fs/reiserfs/ioctl.c         |    4 +---
+ fs/reiserfs/super.c         |   17 ++++++++++++-----
+ include/linux/reiserfs_fs.h |    1 +
+ 3 files changed, 14 insertions(+), 8 deletions(-)
 
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -876,6 +876,7 @@ static inline void resched_rq(struct rq 
- enum {
- 	HRTICK_SET,		/* re-programm hrtick_timer */
- 	HRTICK_RESET,		/* not a new slice */
-+	HRTICK_BLOCK,		/* stop hrtick operations */
- };
+--- a/fs/reiserfs/ioctl.c
++++ b/fs/reiserfs/ioctl.c
+@@ -11,8 +11,6 @@
+ #include <linux/smp_lock.h>
+ #include <linux/compat.h>
  
+-static int reiserfs_unpack(struct inode *inode, struct file *filp);
+-
  /*
-@@ -887,6 +888,8 @@ static inline int hrtick_enabled(struct 
+ ** reiserfs_ioctl - handler for ioctl for inode
+ ** supported commands:
+@@ -140,7 +138,7 @@ int reiserfs_prepare_write(struct file *
+ ** Function try to convert tail from direct item into indirect.
+ ** It set up nopack attribute in the REISERFS_I(inode)->nopack
+ */
+-static int reiserfs_unpack(struct inode *inode, struct file *filp)
++int reiserfs_unpack(struct inode *inode, struct file *filp)
  {
- 	if (!sched_feat(HRTICK))
- 		return 0;
-+	if (unlikely(test_bit(HRTICK_BLOCK, &rq->hrtick_flags)))
-+		return 0;
- 	return hrtimer_is_hres_active(&rq->hrtick_timer);
- }
- 
-@@ -969,7 +972,63 @@ static enum hrtimer_restart hrtick(struc
- 	return HRTIMER_NORESTART;
- }
- 
--static inline void init_rq_hrtick(struct rq *rq)
-+static void hotplug_hrtick_disable(int cpu)
-+{
-+	struct rq *rq = cpu_rq(cpu);
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&rq->lock, flags);
-+	rq->hrtick_flags = 0;
-+	__set_bit(HRTICK_BLOCK, &rq->hrtick_flags);
-+	spin_unlock_irqrestore(&rq->lock, flags);
-+
-+	hrtick_clear(rq);
-+}
-+
-+static void hotplug_hrtick_enable(int cpu)
-+{
-+	struct rq *rq = cpu_rq(cpu);
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&rq->lock, flags);
-+	__clear_bit(HRTICK_BLOCK, &rq->hrtick_flags);
-+	spin_unlock_irqrestore(&rq->lock, flags);
-+}
-+
-+static int
-+hotplug_hrtick(struct notifier_block *nfb, unsigned long action, void *hcpu)
-+{
-+	int cpu = (int)(long)hcpu;
-+
-+	switch (action) {
-+	case CPU_UP_CANCELED:
-+	case CPU_UP_CANCELED_FROZEN:
-+	case CPU_DOWN_PREPARE:
-+	case CPU_DOWN_PREPARE_FROZEN:
-+	case CPU_DEAD:
-+	case CPU_DEAD_FROZEN:
-+		hotplug_hrtick_disable(cpu);
-+		return NOTIFY_OK;
-+
-+	case CPU_UP_PREPARE:
-+	case CPU_UP_PREPARE_FROZEN:
-+	case CPU_DOWN_FAILED:
-+	case CPU_DOWN_FAILED_FROZEN:
-+	case CPU_ONLINE:
-+	case CPU_ONLINE_FROZEN:
-+		hotplug_hrtick_enable(cpu);
-+		return NOTIFY_OK;
-+	}
-+
-+	return NOTIFY_DONE;
-+}
-+
-+static void init_hrtick(void)
-+{
-+	hotcpu_notifier(hotplug_hrtick, 0);
-+}
-+
-+static void init_rq_hrtick(struct rq *rq)
+ 	int retval = 0;
+ 	int index;
+--- a/fs/reiserfs/super.c
++++ b/fs/reiserfs/super.c
+@@ -2019,6 +2019,7 @@ static int reiserfs_quota_on(struct supe
  {
- 	rq->hrtick_flags = 0;
- 	hrtimer_init(&rq->hrtick_timer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
-@@ -1006,6 +1065,10 @@ static inline void init_rq_hrtick(struct
- void hrtick_resched(void)
- {
- }
-+
-+static inline void init_hrtick(void)
-+{
-+}
- #endif
+ 	int err;
+ 	struct nameidata nd;
++	struct inode *inode;
  
- /*
-@@ -7094,6 +7157,7 @@ void __init sched_init_smp(void)
- 	put_online_cpus();
- 	/* XXX: Theoretical race here - CPU may be hotplugged now */
- 	hotcpu_notifier(update_sched_domains, 0);
-+	init_hrtick();
+ 	if (!(REISERFS_SB(sb)->s_mount_opt & (1 << REISERFS_QUOTA)))
+ 		return -EINVAL;
+@@ -2030,12 +2031,18 @@ static int reiserfs_quota_on(struct supe
+ 		path_put(&nd.path);
+ 		return -EXDEV;
+ 	}
++	inode = nd.path.dentry->d_inode;
+ 	/* We must not pack tails for quota files on reiserfs for quota IO to work */
+-	if (!(REISERFS_I(nd.path.dentry->d_inode)->i_flags & i_nopack_mask)) {
+-		reiserfs_warning(sb,
+-				 "reiserfs: Quota file must have tail packing disabled.");
+-		path_put(&nd.path);
+-		return -EINVAL;
++	if (!(REISERFS_I(inode)->i_flags & i_nopack_mask)) {
++		err = reiserfs_unpack(inode, NULL);
++		if (err) {
++			reiserfs_warning(sb,
++				"reiserfs: Unpacking tail of quota file failed"
++				" (%d). Cannot turn on quotas.", err);
++			path_put(&nd.path);
++			return -EINVAL;
++		}
++		mark_inode_dirty(inode);
+ 	}
+ 	/* Not journalling quota? No more tests needed... */
+ 	if (!REISERFS_SB(sb)->s_qf_names[USRQUOTA] &&
+--- a/include/linux/reiserfs_fs.h
++++ b/include/linux/reiserfs_fs.h
+@@ -2176,6 +2176,7 @@ int reiserfs_ioctl(struct inode *inode, 
+ 		   unsigned int cmd, unsigned long arg);
+ long reiserfs_compat_ioctl(struct file *filp,
+ 		   unsigned int cmd, unsigned long arg);
++int reiserfs_unpack(struct inode *inode, struct file *filp);
  
- 	/* Move init over to a non-isolated CPU */
- 	if (set_cpus_allowed(current, non_isolated_cpus) < 0)
+ /* ioctl's command */
+ #define REISERFS_IOC_UNPACK		_IOW(0xCD,1,long)
 
 -- 
