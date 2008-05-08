@@ -1,54 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765462AbYEHUbk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764597AbYEHUl0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765462AbYEHUbk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 16:31:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757353AbYEHUb2
+	id S1764597AbYEHUl0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 16:41:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759499AbYEHUlQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 16:31:28 -0400
-Received: from ra.tuxdriver.com ([70.61.120.52]:4973 "EHLO ra.tuxdriver.com"
+	Thu, 8 May 2008 16:41:16 -0400
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:60137 "EHLO smtp5.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754957AbYEHUbZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 16:31:25 -0400
-Date: Thu, 8 May 2008 16:04:34 -0400
-From: "John W. Linville" <linville@tuxdriver.com>
-To: Greg KH <gregkh@suse.de>
-Cc: linux-kernel@vger.kernel.org, stable@kernel.org,
-       Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       linux-wireless@vger.kernel.org, bcm43xx-dev@lists.berlios.de,
-       Michael Buesch <mb@bu3sch.de>
-Subject: Re: [patch 11/16] b43: Fix some TX/RX locking issues
-Message-ID: <20080508200434.GC9176@tuxdriver.com>
-References: <20080508173436.454278564@mini.kroah.org> <20080508174221.GL855@suse.de>
+	id S1757412AbYEHUlO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 May 2008 16:41:14 -0400
+Date: Thu, 8 May 2008 23:39:50 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Mike Travis <travis@sgi.com>, Ingo Molnar <mingo@elte.hu>,
+       lethal@linux-sh.org
+Cc: linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: sh migor_defconfig build breakage
+Message-ID: <20080508203949.GC22887@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20080508174221.GL855@suse.de>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 08, 2008 at 10:42:21AM -0700, Greg KH wrote:
-> 2.6.25-stable review patch.  If anyone has any objections, please let us
-> know.
-> 
-> ------------------
-> From: Michael Buesch <mb@bu3sch.de>
-> 
-> commit 21a75d7788f4e29b6c6d28e08f9f0310c4de828d upstream.
-> 
-> This fixes some TX/RX related locking issues.
-> With this patch applied, some of the PHY transmission errors are fixed.
+Commit aa6b54461cc5c0019b9d792adf3176b444c10763
+(asm-generic: add node_to_cpumask_ptr macro)
+causes the following build error with migor_defconfig:
 
-ACK
+<--  snip  -->
+
+...
+  CC      arch/sh/kernel/asm-offsets.s
+In file included from /home/bunk/linux/kernel-2.6/git/linux-2.6/include/linux/mm.h:8,
+                 from /home/bunk/linux/kernel-2.6/git/linux-2.6/arch/sh/kernel/asm-offsets.c:13:
+/home/bunk/linux/kernel-2.6/git/linux-2.6/include/linux/gfp.h: In function 'alloc_pages_node':
+/home/bunk/linux/kernel-2.6/git/linux-2.6/include/linux/gfp.h:190: 
+error: implicit declaration of function 'cpu_to_node'
+make[2]: *** [arch/sh/kernel/asm-offsets.s] Error 1
+
+<--  snip  -->
+
+cu
+Adrian
 
 -- 
-John W. Linville
-linville@tuxdriver.com
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
