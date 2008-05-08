@@ -1,122 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761345AbYEHJP2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761521AbYEHJQj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761345AbYEHJP2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 05:15:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754734AbYEHJPT
+	id S1761521AbYEHJQj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 05:16:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755096AbYEHJQb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 05:15:19 -0400
-Received: from mail.gmx.net ([213.165.64.20]:41432 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1754519AbYEHJPR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 05:15:17 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1+XO5Z8HuOXs383eqH07hfwa4kn4EtXCx5Xf4CcSQ
-	BLlLYES4X4OnNQ
-Subject: Re: sysbench+mysql(oltp, readonly) 30% regression with 2.6.26-rc1
-From: Mike Galbraith <efault@gmx.de>
-To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <1210237267.3453.143.camel@ymzhang>
-References: <1210136148.3453.59.camel@ymzhang>
-	 <1210177575.6525.4.camel@lappy.programming.kicks-ass.net>
-	 <1210228531.3453.124.camel@ymzhang>
-	 <1210233617.4895.6.camel@marge.simson.net>
-	 <1210237267.3453.143.camel@ymzhang>
-Content-Type: text/plain; charset=utf-8
-Date: Thu, 08 May 2008 11:15:14 +0200
-Message-Id: <1210238114.11887.3.camel@marge.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
-Content-Transfer-Encoding: 8bit
-X-Y-GMX-Trusted: 0
+	Thu, 8 May 2008 05:16:31 -0400
+Received: from sacred.ru ([62.205.161.221]:43103 "EHLO sacred.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754734AbYEHJQa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 May 2008 05:16:30 -0400
+Message-ID: <4822C268.7060501@openvz.org>
+Date: Thu, 08 May 2008 13:05:44 +0400
+From: Pavel Emelyanov <xemul@openvz.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Balbir Singh <balbir@linux.vnet.ibm.com>, Paul Menage <menage@google.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH] Mark res_counter_charge(_locked) with __must_check
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Thu, 08 May 2008 13:08:21 +0400 (MSD)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Ignoring theirs return value may result in counter underflow
+in the future - when the value charged will be uncharged (or in
+"leaks" - when the value is not uncharged).
 
-On Thu, 2008-05-08 at 17:01 +0800, Zhang, Yanmin wrote:
-> On Thu, 2008-05-08 at 10:00 +0200, Mike Galbraith wrote:
+This also prevents from using charging routines to decrement the
+counter value (i.e. uncharge it) ;)
 
-> > Hm.  I was doing some sysbench+postgress(oltp, ro) testing on my little
-> > Q6600 box this morning, and saw a different picture.
+(Current code works OK with res_counter, however :) )
 
-> How many cpu are in the Q6600?
+Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
 
-1.
+---
 
-> > 
-> > In attached pdf, .bkl refers to Linus' BKL patch, .weight is the weight
-> > fix, both are applied to git.today.  The script I used is also attached.
-> With my 8-core stoakley (using mysql):
-> 1) 2.6.25:
-> Number of threads: 6
->     read/write requests:                 8025024 (66874.53 per sec.)
-> Number of threads: 8
->     read/write requests:                 9132816 (76106.14 per sec.)
-> Number of threads: 10
->     read/write requests:                 9244998 (77040.75 per sec.)
-> Number of threads: 12
->     read/write requests:                 8994174 (74950.36 per sec.)
-> Number of threads: 14
->     read/write requests:                 9051322 (75426.54 per sec.)
-> Number of threads: 16
->     read/write requests:                 9015412 (75126.93 per sec.)
-> 
-> 2) 2.6.26-rc1:
-> Number of threads: 6
->     read/write requests:                 5754056 (47949.87 per sec.)
-> Number of threads: 8
->     read/write requests:                 6528480 (54403.29 per sec.)
-> Number of threads: 10
->     read/write requests:                 6444690 (53705.16 per sec.)
-> Number of threads: 12
->     read/write requests:                 6544258 (54534.23 per sec.)
-> Number of threads: 14
->     read/write requests:                 6796650 (56637.65 per sec.)
-> Number of threads: 16
->     read/write requests:                 6718110 (55983.18 per sec.)
-> 
-> 3) 2.6.26-rc1+weight
-> ﻿Number of threads: 16
-> 	read/write requests:                 3219076 (26824.22 per sec.)
-> 
-> I'm not sure if more cpu could introduce more contention in this test.
-
--rc1.  Do you have the fix below applied?
-
-commit a992241de614dd2b7c97a9ba64e28c0e563f19bf
-Author: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Date:   Mon May 5 23:56:17 2008 +0200
-
-    sched: fix normalized sleeper
-    
-    Normalized sleeper uses calc_delta*() which requires that the rq load is
-    already updated, so move account_entity_enqueue() before place_entity()
-    
-    Tested-by: Frans Pop <elendil@planet.nl>
-    Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-    Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
-index 89fa32b..1295ddc 100644
---- a/kernel/sched_fair.c
-+++ b/kernel/sched_fair.c
-@@ -682,6 +682,7 @@ enqueue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int wakeup)
- 	 * Update run-time statistics of the 'current'.
- 	 */
- 	update_curr(cfs_rq);
-+	account_entity_enqueue(cfs_rq, se);
+diff --git a/include/linux/res_counter.h b/include/linux/res_counter.h
+index 6d9e1fc..125660e 100644
+--- a/include/linux/res_counter.h
++++ b/include/linux/res_counter.h
+@@ -95,8 +95,10 @@ void res_counter_init(struct res_counter *counter);
+  * counter->limit _locked call expects the counter->lock to be taken
+  */
  
- 	if (wakeup) {
- 		place_entity(cfs_rq, se, 0);
-@@ -692,7 +693,6 @@ enqueue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int wakeup)
- 	check_spread(cfs_rq, se);
- 	if (se != cfs_rq->curr)
- 		__enqueue_entity(cfs_rq, se);
--	account_entity_enqueue(cfs_rq, se);
- }
+-int res_counter_charge_locked(struct res_counter *counter, unsigned long val);
+-int res_counter_charge(struct res_counter *counter, unsigned long val);
++int __must_check res_counter_charge_locked(struct res_counter *counter,
++		unsigned long val);
++int __must_check res_counter_charge(struct res_counter *counter,
++		unsigned long val);
  
- static void update_avg(u64 *avg, u64 sample)
-
-
+ /*
+  * uncharge - tell that some portion of the resource is released
