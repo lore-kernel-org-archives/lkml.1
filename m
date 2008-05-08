@@ -1,56 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763973AbYEHAKs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756296AbYEHAPE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763973AbYEHAKs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 20:10:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752153AbYEHAKi
+	id S1756296AbYEHAPE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 20:15:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750885AbYEHAOr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 20:10:38 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:40022 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751039AbYEHAKh (ORCPT
+	Wed, 7 May 2008 20:14:47 -0400
+Received: from wa-out-1112.google.com ([209.85.146.181]:54492 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750722AbYEHAOp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 20:10:37 -0400
-Date: Wed, 7 May 2008 17:03:30 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Christoph Lameter <clameter@sgi.com>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Andrea Arcangeli <andrea@qumranet.com>, steiner@sgi.com, holt@sgi.com,
-       npiggin@suse.de, a.p.zijlstra@chello.nl,
-       kvm-devel@lists.sourceforge.net, kanojsarcar@yahoo.com,
-       rdreier@cisco.com, swise@opengridcomputing.com,
-       linux-kernel@vger.kernel.org, avi@qumranet.com, linux-mm@kvack.org,
-       general@lists.openfabrics.org, hugh@veritas.com, rusty@rustcorp.com.au,
-       aliguori@us.ibm.com, chrisw@redhat.com, marcelo@kvack.org,
-       dada1@cosmosbay.com, paulmck@us.ibm.com
-Subject: Re: [PATCH 08 of 11] anon-vma-rwsem
-In-Reply-To: <Pine.LNX.4.64.0805071637360.14337@schroedinger.engr.sgi.com>
-Message-ID: <alpine.LFD.1.10.0805071655100.3024@woody.linux-foundation.org>
-References: <6b384bb988786aa78ef0.1210170958@duo.random> <alpine.LFD.1.10.0805071349200.3024@woody.linux-foundation.org> <20080507212650.GA8276@duo.random> <alpine.LFD.1.10.0805071429170.3024@woody.linux-foundation.org> <20080507222205.GC8276@duo.random>
- <20080507153103.237ea5b6.akpm@linux-foundation.org> <20080507224406.GI8276@duo.random> <20080507155914.d7790069.akpm@linux-foundation.org> <alpine.LFD.1.10.0805071610490.3024@woody.linux-foundation.org>
- <Pine.LNX.4.64.0805071637360.14337@schroedinger.engr.sgi.com>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Wed, 7 May 2008 20:14:45 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=phGy2jHxnvhwjaUoVXJ8WefVs/db1dBuH5WLKk8FPzMbf0uB2K+bB53pVpyf11w0HCQKjGCdmBt1VQLV3dAZKd84NniwVpefDHvYhN3bX6d7diMJZmthTcj3cZs0sWiCgnWNL9pUhMc9no3a6rHTnuynf+6QX1ggduozvt3ZThU=
+Message-ID: <9929d2390805071714t6497de7fwf177e0c82ee62772@mail.gmail.com>
+Date: Wed, 7 May 2008 17:14:42 -0700
+From: "Jeff Kirsher" <tarbal@gmail.com>
+To: "Auke Kok" <auke-jan.h.kok@intel.com>
+Subject: Re: [PATCH] [MAINTAINERS] New maintainer for Intel ethernet adapters
+Cc: jeff@garzik.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, torvalds@linux-foundation.org,
+       greg@kroah.com
+In-Reply-To: <20080507204233.12837.92852.stgit@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080507204233.12837.92852.stgit@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, May 7, 2008 at 1:42 PM, Auke Kok <auke-jan.h.kok@intel.com> wrote:
+> I'm handing over maintainership to Jeff Kirsher and moving on
+>  to other Linux/Open Source work within Intel. Good luck to Jeff ;)
+>
+>  Signed-off-by: Auke Kok <auke-jan.h.kok@intel.com>
 
+    Acked-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
 
-On Wed, 7 May 2008, Christoph Lameter wrote:
-> 
-> Multiple vmas may share the same mapping or refer to the same anonymous 
-> vma. The above code will deadlock since we may take some locks multiple 
-> times.
-
-Ok, so that actually _is_ a problem. It would be easy enough to also add 
-just a flag to the vma (VM_MULTILOCKED), which is still cleaner than doing 
-a vmalloc and a whole sort thing, but if this is really rare, maybe Ben's 
-suggestion of just using stop-machine is actually the right one just 
-because it's _so_ simple.
-
-(That said, we're not running out of vm flags yet, and if we were, we 
-could just add another word. We're already wasting that space right now on 
-64-bit by calling it "unsigned long").
-
-		Linus
+>  ---
+>
+>   MAINTAINERS |    6 ++----
+>   1 files changed, 2 insertions(+), 4 deletions(-)
+>
+>  diff --git a/MAINTAINERS b/MAINTAINERS
+>  index c3a533d..0cc47b9 100644
+>  --- a/MAINTAINERS
+>  +++ b/MAINTAINERS
+>  @@ -2104,12 +2104,10 @@ L:      netdev@vger.kernel.org
+>   S:     Maintained
+>
+>   INTEL ETHERNET DRIVERS (e100/e1000/e1000e/igb/ixgb/ixgbe)
+>  -P:     Auke Kok
+>  -M:     auke-jan.h.kok@intel.com
+>  -P:     Jesse Brandeburg
+>  -M:     jesse.brandeburg@intel.com
+>   P:     Jeff Kirsher
+>   M:     jeffrey.t.kirsher@intel.com
+>  +P:     Jesse Brandeburg
+>  +M:     jesse.brandeburg@intel.com
+>   P:     Bruce Allan
+>   M:     bruce.w.allan@intel.com
+>   P:     John Ronciak
