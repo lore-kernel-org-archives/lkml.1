@@ -1,23 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756336AbYEHI0J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757584AbYEHI1h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756336AbYEHI0J (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 04:26:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752801AbYEHIZ4
+	id S1757584AbYEHI1h (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 04:27:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752905AbYEHI1V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 04:25:56 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:50593 "EHLO
+	Thu, 8 May 2008 04:27:21 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:32943 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752774AbYEHIZz (ORCPT
+	by vger.kernel.org with ESMTP id S1751091AbYEHI1R (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 04:25:55 -0400
-Date: Thu, 8 May 2008 01:25:03 -0700
+	Thu, 8 May 2008 04:27:17 -0400
+Date: Thu, 8 May 2008 01:27:12 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Daniel Walker <dwalker@mvista.com>
-Cc: linux-kernel@vger.kernel.org, Pierre Peiffer <peifferp@gmail.com>
-Subject: Re: futex: priority wakeup miss ordering
-Message-Id: <20080508012503.0d023cdc.akpm@linux-foundation.org>
-In-Reply-To: <1210195378.17132.237.camel@localhost.localdomain>
-References: <1210195378.17132.237.camel@localhost.localdomain>
+To: "Bart Van Assche" <bart.vanassche@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       "Moore, Eric Dean" <Eric.Moore@lsi.com>, linux-scsi@vger.kernel.org
+Subject: Re: Strange mptbase / mptscsih kernel messages
+Message-Id: <20080508012712.2d714dcf.akpm@linux-foundation.org>
+In-Reply-To: <e2e108260805072336p6b29f11o287ac3c5cab9295a@mail.gmail.com>
+References: <e2e108260805072336p6b29f11o287ac3c5cab9295a@mail.gmail.com>
 X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -26,24 +27,36 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 07 May 2008 14:22:58 -0700 Daniel Walker <dwalker@mvista.com> wrote:
+On Thu, 8 May 2008 08:36:03 +0200 "Bart Van Assche" <bart.vanassche@gmail.com> wrote:
 
+> Hello,
 > 
+> I have made a setup with four servers, where each server is configured
+> as follows:
+> * Four Intel Xeon E5130 CPU cores.
+> * 8 GB RAM.
+> * SCSI storage controller: LSI Logic / Symbios Logic SAS1068E
+> PCI-Express Fusion-MPT SAS (rev 04),
+> * 16 disks in a RAID6 setup (md).
+> * Linux 2.6.24.6 kernel.
 > 
-> from commit ec92d08292d3e9b0823eba138a4564d2d39f25c7
+> There is a lot of data being written to the RAID6 array: about 50 MB/s
+> on each server. There are two kinds of messages that appear:
 > 
-> The wakeup ordering should be in priority order. However if the priority
-> of a task is modified while it's waiting on the futex you will get an
-> out of order wakeup.
+> (1)
+> [74887.117650] mptbase: ioc0: LogInfo(0x31120403): Originator={PL},
+> Code={Abort}, SubCode(0x0403)
 > 
-> If you use a priority inheriting mutex this is correct. It's because the
-> rtmutex hooks into sched_setscheduler to catch any priority changes,
-> then re-queues with the new priority.. But the futex doesn't have this
-> hook.
+> (2)
+> [74917.081454] mptscsih: ioc0: attempting task abort! (sc=ffff8100a18a7180)
+> [74917.081461] sd 0:0:15:0: [sdp] CDB: Write(10): 2a 00 1c fe 61 93 00 00 20 00
+> [74918.409801] mptbase: ioc0: LogInfo(0x31140000): Originator={PL},
+> Code={IO Executed}, SubCode(0x0000)
+> [74918.639801] mptscsih: ioc0: task abort: SUCCESS (sc=ffff8100a18a7180)
 > 
-> Was this intentionally left out of this priority wake up patch? I
-> thought I would let you know in case you had a specific reason for not
-> handling this.. 
+> These messages appear a few times per day. Anyone any idea what the
+> meaning is of these messages and what the cause of these messages is ?
 > 
 
-Pierre is no longer @bull.net.
+(suitable cc's added)
+
