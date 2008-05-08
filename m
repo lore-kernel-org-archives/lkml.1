@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933106AbYEHRso@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933236AbYEHRtP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933106AbYEHRso (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 13:48:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764361AbYEHRnr
+	id S933236AbYEHRtP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 13:49:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764710AbYEHRnv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 13:43:47 -0400
-Received: from mx2.suse.de ([195.135.220.15]:33524 "EHLO mx2.suse.de"
+	Thu, 8 May 2008 13:43:51 -0400
+Received: from mail.suse.de ([195.135.220.2]:47836 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751842AbYEHRnp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 13:43:45 -0400
-Date: Thu, 8 May 2008 10:42:21 -0700
+	id S1764489AbYEHRnt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 May 2008 13:43:49 -0400
+Date: Thu, 8 May 2008 10:42:24 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -20,15 +20,18 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       linux-wireless@vger.kernel.org, bcm43xx-dev@lists.berlios.de,
-       Michael Buesch <mb@bu3sch.de>,
-       "John W. Linville" <linville@tuxdriver.com>
-Subject: [patch 11/16] b43: Fix some TX/RX locking issues
-Message-ID: <20080508174221.GL855@suse.de>
+       Yinghai Lu <yhlu.kernel@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Michal Schmidt <mschmidt@redhat.com>,
+       Andy Gospodarek <andy@greyhouse.net>, john.cagle@hp.com,
+       Greg KH <greg@kroah.com>, Matt Domsch <Matt_Domsch@dell.com>
+Subject: [patch 12/16] x86 PCI: call dmi_check_pciprobe()
+Message-ID: <20080508174224.GM855@suse.de>
 References: <20080508173436.454278564@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="b43-fix-some-tx-rx-locking-issues.patch"
+Content-Disposition: inline; filename="x86-pci-call-dmi_check_pciprobe.patch"
 In-Reply-To: <20080508174122.GA855@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -39,120 +42,98 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 know.
 
 ------------------
-From: Michael Buesch <mb@bu3sch.de>
+From: Yinghai Lu <yhlu.kernel@gmail.com>
 
-commit 21a75d7788f4e29b6c6d28e08f9f0310c4de828d upstream.
+This is a backport of the noted commit which is in 2.6.26-rc1
+now.  This is necessary to enable pci=bfsort automatically on a number
+of Dell and HP servers, as well as pci=assign-busses for a few other
+systems, which was broken between 2.6.22 and 2.6.23.
 
-This fixes some TX/RX related locking issues.
-With this patch applied, some of the PHY transmission errors are fixed.
+commit 0df18ff366853cdf31e5238764ec5c63e6b5a398 upstream
 
-Signed-off-by: Michael Buesch <mb@bu3sch.de>
-Signed-off-by: John W. Linville <linville@tuxdriver.com>
+x86 PCI: call dmi_check_pciprobe()
+
+this change:
+
+| commit 08f1c192c3c32797068bfe97738babb3295bbf42
+| Author: Muli Ben-Yehuda <muli@il.ibm.com>
+| Date:   Sun Jul 22 00:23:39 2007 +0300
+|
+|    x86-64: introduce struct pci_sysdata to facilitate sharing of ->sysdata
+|
+|    This patch introduces struct pci_sysdata to x86 and x86-64, and
+|    converts the existing two users (NUMA, Calgary) to use it.
+|
+|    This lays the groundwork for having other users of sysdata, such as
+|    the PCI domains work.
+|
+|    The Calgary bits are tested, the NUMA bits just look ok.
+
+replaces pcibios_scan_root with pci_scan_bus_parented...
+
+but in pcibios_scan_root we have a DMI check:
+
+dmi_check_system(pciprobe_dmi_table);
+
+when when have several peer root buses this could be called multiple
+times (which is bad), so move that call to pci_access_init().
+
+Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Signed-off-by: Jesse Barnes <jbarnes@virtuousgeek.org>
+Signed-off-by: Matt Domsch <Matt_Domsch@dell.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
----
- drivers/net/wireless/b43/b43.h  |    4 ++++
- drivers/net/wireless/b43/main.c |   32 +++++++++++++++++++++++---------
- 2 files changed, 27 insertions(+), 9 deletions(-)
 
---- a/drivers/net/wireless/b43/b43.h
-+++ b/drivers/net/wireless/b43/b43.h
-@@ -628,6 +628,10 @@ struct b43_wl {
+---
+ arch/x86/pci/common.c |    7 +++++--
+ arch/x86/pci/init.c   |    2 ++
+ arch/x86/pci/pci.h    |    2 ++
+ 3 files changed, 9 insertions(+), 2 deletions(-)
+
+--- a/arch/x86/pci/common.c
++++ b/arch/x86/pci/common.c
+@@ -372,13 +372,16 @@ static struct dmi_system_id __devinitdat
+ 	{}
+ };
  
- 	struct mutex mutex;
- 	spinlock_t irq_lock;
-+	/* R/W lock for data transmission.
-+	 * Transmissions on 2+ queues can run concurrently, but somebody else
-+	 * might sync with TX by write_lock_irqsave()'ing. */
-+	rwlock_t tx_lock;
- 	/* Lock for LEDs access. */
- 	spinlock_t leds_lock;
- 	/* Lock for SHM access. */
---- a/drivers/net/wireless/b43/main.c
-+++ b/drivers/net/wireless/b43/main.c
-@@ -622,6 +622,7 @@ static void b43_synchronize_irq(struct b
-  */
- void b43_dummy_transmission(struct b43_wldev *dev)
++void __init dmi_check_pciprobe(void)
++{
++	dmi_check_system(pciprobe_dmi_table);
++}
++
+ struct pci_bus * __devinit pcibios_scan_root(int busnum)
  {
-+	struct b43_wl *wl = dev->wl;
- 	struct b43_phy *phy = &dev->phy;
- 	unsigned int i, max_loop;
- 	u16 value;
-@@ -648,6 +649,9 @@ void b43_dummy_transmission(struct b43_w
- 		return;
- 	}
+ 	struct pci_bus *bus = NULL;
+ 	struct pci_sysdata *sd;
  
-+	spin_lock_irq(&wl->irq_lock);
-+	write_lock(&wl->tx_lock);
-+
- 	for (i = 0; i < 5; i++)
- 		b43_ram_write(dev, i * 4, buffer[i]);
- 
-@@ -688,6 +692,9 @@ void b43_dummy_transmission(struct b43_w
- 	}
- 	if (phy->radio_ver == 0x2050 && phy->radio_rev <= 0x5)
- 		b43_radio_write16(dev, 0x0051, 0x0037);
-+
-+	write_unlock(&wl->tx_lock);
-+	spin_unlock_irq(&wl->irq_lock);
- }
- 
- static void key_write(struct b43_wldev *dev,
-@@ -2592,15 +2599,21 @@ static int b43_op_tx(struct ieee80211_hw
- {
- 	struct b43_wl *wl = hw_to_b43_wl(hw);
- 	struct b43_wldev *dev = wl->current_dev;
--	int err = -ENODEV;
-+	unsigned long flags;
-+	int err;
- 
- 	if (unlikely(!dev))
--		goto out;
--	if (unlikely(b43_status(dev) < B43_STAT_STARTED))
--		goto out;
--	/* DMA-TX is done without a global lock. */
--	err = b43_dma_tx(dev, skb, ctl);
--out:
-+		return NETDEV_TX_BUSY;
-+
-+	/* Transmissions on seperate queues can run concurrently. */
-+	read_lock_irqsave(&wl->tx_lock, flags);
-+
-+	err = -ENODEV;
-+	if (likely(b43_status(dev) >= B43_STAT_STARTED))
-+		err = b43_dma_tx(dev, skb, ctl);
-+
-+	read_unlock_irqrestore(&wl->tx_lock, flags);
-+
- 	if (unlikely(err))
- 		return NETDEV_TX_BUSY;
- 	return NETDEV_TX_OK;
-@@ -3109,7 +3122,9 @@ static void b43_wireless_core_stop(struc
- 	spin_unlock_irqrestore(&wl->irq_lock, flags);
- 	b43_synchronize_irq(dev);
- 
-+	write_lock_irqsave(&wl->tx_lock, flags);
- 	b43_set_status(dev, B43_STAT_INITIALIZED);
-+	write_unlock_irqrestore(&wl->tx_lock, flags);
- 
- 	mutex_unlock(&wl->mutex);
- 	/* Must unlock as it would otherwise deadlock. No races here.
-@@ -3117,8 +3132,6 @@ static void b43_wireless_core_stop(struc
- 	cancel_delayed_work_sync(&dev->periodic_work);
- 	mutex_lock(&wl->mutex);
- 
--	ieee80211_stop_queues(wl->hw);	//FIXME this could cause a deadlock, as mac80211 seems buggy.
+-	dmi_check_system(pciprobe_dmi_table);
 -
- 	b43_mac_suspend(dev);
- 	free_irq(dev->dev->irq, dev);
- 	b43dbg(wl, "Wireless interface stopped\n");
-@@ -4084,6 +4097,7 @@ static int b43_wireless_init(struct ssb_
- 	memset(wl, 0, sizeof(*wl));
- 	wl->hw = hw;
- 	spin_lock_init(&wl->irq_lock);
-+	rwlock_init(&wl->tx_lock);
- 	spin_lock_init(&wl->leds_lock);
- 	spin_lock_init(&wl->shm_lock);
- 	mutex_init(&wl->mutex);
+ 	while ((bus = pci_find_next_bus(bus)) != NULL) {
+ 		if (bus->number == busnum) {
+ 			/* Already scanned */
+--- a/arch/x86/pci/init.c
++++ b/arch/x86/pci/init.c
+@@ -32,6 +32,8 @@ static __init int pci_access_init(void)
+ 		printk(KERN_ERR
+ 		"PCI: Fatal: No config space access function found\n");
+ 
++ 	dmi_check_pciprobe();
++
+ 	return 0;
+ }
+ arch_initcall(pci_access_init);
+--- a/arch/x86/pci/pci.h
++++ b/arch/x86/pci/pci.h
+@@ -39,6 +39,8 @@ enum pci_bf_sort_state {
+ 	pci_dmi_bf,
+ };
+ 
++extern void __init dmi_check_pciprobe(void);
++
+ /* pci-i386.c */
+ 
+ extern unsigned int pcibios_max_latency;
 
 -- 
