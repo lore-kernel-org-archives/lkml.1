@@ -1,64 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764943AbYEHVb2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932713AbYEHVcV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764943AbYEHVb2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 17:31:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752726AbYEHVbN
+	id S932713AbYEHVcV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 17:32:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752726AbYEHVcA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 17:31:13 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:45362 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752317AbYEHVbM (ORCPT
+	Thu, 8 May 2008 17:32:00 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:38752 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752047AbYEHVb6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 17:31:12 -0400
-Message-ID: <4823711D.70401@sgi.com>
-Date: Thu, 08 May 2008 14:31:09 -0700
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Thu, 8 May 2008 17:31:58 -0400
+Message-ID: <4823705E.1040401@zytor.com>
+Date: Thu, 08 May 2008 14:27:58 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-To: Adrian Bunk <bunk@kernel.org>
-CC: Ingo Molnar <mingo@elte.hu>, lethal@linux-sh.org, linux-sh@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: sh migor_defconfig build breakage
-References: <20080508203949.GC22887@cs181133002.pp.htv.fi> <48236E59.8070400@sgi.com>
-In-Reply-To: <48236E59.8070400@sgi.com>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Venki Pallipadi <venkatesh.pallipadi@intel.com>
+CC: linux-kernel <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Suresh B Siddha <suresh.b.siddha@intel.com>, arjan@infradead.org,
+       Andi Kleen <andi@firstfloor.org>
+Subject: Re: [PATCH] x86: Remove 6 bank limitation in 64 bit MCE reporting
+ code
+References: <20080508211836.GA26353@linux-os.sc.intel.com>
+In-Reply-To: <20080508211836.GA26353@linux-os.sc.intel.com>
+Content-Type: text/plain; charset=ISO-8859-2; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mike Travis wrote:
-> Adrian Bunk wrote:
->> Commit aa6b54461cc5c0019b9d792adf3176b444c10763
->> (asm-generic: add node_to_cpumask_ptr macro)
->> causes the following build error with migor_defconfig:
->>
->> <--  snip  -->
->>
->> ...
->>   CC      arch/sh/kernel/asm-offsets.s
->> In file included from /home/bunk/linux/kernel-2.6/git/linux-2.6/include/linux/mm.h:8,
->>                  from /home/bunk/linux/kernel-2.6/git/linux-2.6/arch/sh/kernel/asm-offsets.c:13:
->> /home/bunk/linux/kernel-2.6/git/linux-2.6/include/linux/gfp.h: In function 'alloc_pages_node':
->> /home/bunk/linux/kernel-2.6/git/linux-2.6/include/linux/gfp.h:190: 
->> error: implicit declaration of function 'cpu_to_node'
->> make[2]: *** [arch/sh/kernel/asm-offsets.s] Error 1
->>
->> <--  snip  -->
->>
->> cu
->> Adrian
->>
+Venki Pallipadi wrote:
+> Eliminate the 6 bank restriction in 64 bit mce reporting code. This restriction
+> is artificial (due to static creation of sysfs files) and 32 bit code
+> does not have any such restriction.
 > 
-> Hi Adrian,
+> This change helps in reporting the details of machine checks on a machine check
+> exception with errors in bank 6 and above on CPUs that support those banks.
+> Without the patch, machine check errors in those banks are not reported.
 > 
-> Thanks for the feedback, I'll cross-compile test this config.
+> We still have 128 (MCE_EXTENDED_BANK) bank restriction instead of max 256
+> supported in hardware. That is not changed in the patch below as it will have
+> some user level mcelog utility dependency, with bank 128 being used for
+> thermal reporting currently.
 > 
-> Mike
+> The patch below does not create sysfs control (bankNctl) for banks higher
+> than 6 as well. That needs some pre-cleanup in /sysfs mce layout, removal of
+> per cpu /sysfs entries for bankctl as they are really global system level
+> control today. That change will follow. This basic change is critical to
+> report the detailed errors on banks higher than 6.
+> 
+> Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
 
+Any chance you could add unifying the 32 and 64-bit code to your list, 
+since you're already working on eliminating differences there?
 
-Ouch.  I just discovered I don't have a cross-compiler for 'sh'.  Can you point me
-towards one?
-
-Thanks,
-Mike
+	-hpa
