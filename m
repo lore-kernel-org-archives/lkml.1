@@ -1,291 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761755AbYEHXSi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757247AbYEHXTB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761755AbYEHXSi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 19:18:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753723AbYEHXSV
+	id S1757247AbYEHXTB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 19:19:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754283AbYEHXS1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 19:18:21 -0400
-Received: from mga14.intel.com ([143.182.124.37]:36903 "EHLO mga14.intel.com"
+	Thu, 8 May 2008 19:18:27 -0400
+Received: from mo11.iij4u.or.jp ([210.138.174.79]:53482 "EHLO mo11.iij4u.or.jp"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753608AbYEHXST (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 19:18:19 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.27,456,1204531200"; 
-   d="scan'208";a="244130429"
-Subject: Re: WARNING in 2.6.25-07422-gb66e1f1
-From: Dan Williams <dan.j.williams@intel.com>
-To: Neil Brown <neilb@suse.de>
-Cc: Jens Axboe <jens.axboe@oracle.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Jacek Luczak <difrost.kernel@gmail.com>,
-       Prakash Punnoor <prakash@punnoor.de>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       linux-raid@vger.kernel.org
-In-Reply-To: <1210272379.9697.3.camel@dwillia2-linux.ch.intel.com>
-References: <200805031151.44287.prakash@punnoor.de>
-	 <18462.46639.578272.994939@notabene.brown> <20080505190159.GA329@kernel.dk>
-	 <200805082039.01316.rjw@sisk.pl>
-	 <1210272379.9697.3.camel@dwillia2-linux.ch.intel.com>
-Content-Type: text/plain
-Date: Thu, 08 May 2008 16:18:10 -0700
-Message-Id: <1210288690.9697.14.camel@dwillia2-linux.ch.intel.com>
+	id S1753983AbYEHXSY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 May 2008 19:18:24 -0400
+Date: Fri, 9 May 2008 08:13:46 +0900
+To: alexisb@us.ibm.com
+Cc: linux-kernel@vger.kernel.org, muli@il.ibm.com
+Subject: Re: [RFC][PATCH] x86 calgary: add fallback dma_ops]]
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <1210282820.6114.209.camel@alexis>
+References: <1210282820.6114.209.camel@alexis>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-4.fc8) 
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-Id: <20080509081322J.tomof@acm.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-05-08 at 11:46 -0700, Dan Williams wrote:
-> On Thu, 2008-05-08 at 11:39 -0700, Rafael J. Wysocki wrote:
-> > I get a similar warning with RAID1 on one of my test boxes:
-> > 
-> > WARNING: at /home/rafael/src/linux-2.6/include/linux/blkdev.h:443 blk_remove_plug+0x85/0xa0()
-> > Modules linked in: raid456 async_xor async_memcpy async_tx xor raid0 ehci_hcd ohci_hcd sd_mod edd raid1 ext3 jbd fan sata_uli pata_ali thermal processor
-> > Pid: 2159, comm: md1_raid1 Not tainted 2.6.26-rc1 #158
-> > 
-> > Call Trace:
-> >  [<ffffffff80238bbf>] warn_on_slowpath+0x5f/0x80
-> >  [<ffffffff8025e8d8>] ? __lock_acquire+0x748/0x10d0
-> >  [<ffffffff80348f55>] blk_remove_plug+0x85/0xa0
-> >  [<ffffffffa004df64>] :raid1:flush_pending_writes+0x44/0xb0
-> >  [<ffffffffa004e649>] :raid1:raid1d+0x59/0xfe0
-> >  [<ffffffff8025e8d8>] ? __lock_acquire+0x748/0x10d0
-> >  [<ffffffff8025dc4f>] ? trace_hardirqs_on+0xbf/0x150
-> >  [<ffffffff8043ea8c>] md_thread+0x3c/0x110
-> >  [<ffffffff8024f6a0>] ? autoremove_wake_function+0x0/0x40
-> >  [<ffffffff8043ea50>] ? md_thread+0x0/0x110
-> >  [<ffffffff8024f23d>] kthread+0x4d/0x80
-> >  [<ffffffff8020c548>] child_rip+0xa/0x12
-> >  [<ffffffff8020bc5f>] ? restore_args+0x0/0x30
-> >  [<ffffffff8024f1f0>] ? kthread+0x0/0x80
-> >  [<ffffffff8020c53e>] ? child_rip+0x0/0x12
-> > 
-> > ---[ end trace 05d4e0844c61f45d ]---
-> > 
-> > This is the WARN_ON_ONCE(!queue_is_locked(q)) in queue_flag_clear(),
-> > apparently.
-> 
-> Yes, it triggers on all RAID levels.  The patch in this message:
-> 
-> http://marc.info/?l=linux-raid&m=121001065404056&w=2
-> > 
-> ...fixes the raid 0/1/10/5/6 cases, but I am still trying to isolate an
-> issue (potentially unrelated) with linear arrays.
-> 
+On Thu, 08 May 2008 14:40:20 -0700
+Alexis Bruemmer <alexisb@us.ibm.com> wrote:
 
-Gah, 'device_lock' can not come after 'disks[0]' in 'struct
-linear_private_data'.  Updated patch below.  Simple testing passes:
-'mdadm --create /dev/md0; mkfs.ext3 /dev/md0' for each raid level
-linear, 0, 1, 10, 5, and 6.
+> Currently the calgary code can give drivers addresses above 4GB which is
+> very bad for hardware that is only 32bit DMA addressable.  This patch
+> "teaches" calgary to fallback to the appropriate dma_ops when it
+> encounters a device/bus which is not behind the Calgary/CalIOC2.  I
+> believe there is a better way to do this and am open for ideas, but for
+> now this certainly fixes the badness.
 
----snip--->
-Subject: md: tell blk-core about device_lock for protecting the queue flags
-From: Dan Williams <dan.j.williams@intel.com>
+I'm not sure that I correctly understand what you want. You mean that
+the Calgary IOMMU code ignores device's dma_mask and gives addresses
+above 4GB or the Calgary IOMMU code wrongly handles devices that are
+not behind the Calgary?
 
-Now that queue flags are no longer atomic (commit:
-75ad23bc0fcb4f992a5d06982bf0857ab1738e9e) blk-core checks the queue is locked
-via ->queue_lock.  As noticed by Neil conf->device_lock already satisfies this
-requirement.
-
-Signed-off-by: Dan Williams <dan.j.williams@intel.com>
----
-
- drivers/md/linear.c         |    6 ++++++
- drivers/md/multipath.c      |    6 ++++++
- drivers/md/raid0.c          |    6 ++++++
- drivers/md/raid1.c          |    7 ++++++-
- drivers/md/raid10.c         |    7 ++++++-
- drivers/md/raid5.c          |    2 ++
- include/linux/raid/linear.h |    3 ++-
- include/linux/raid/raid0.h  |    1 +
- 8 files changed, 35 insertions(+), 3 deletions(-)
+If you refers to the former problem, other IOMMU implementations do
+something like this.
 
 
-diff --git a/drivers/md/linear.c b/drivers/md/linear.c
-index 0b85117..d026f08 100644
---- a/drivers/md/linear.c
-+++ b/drivers/md/linear.c
-@@ -122,6 +122,10 @@ static linear_conf_t *linear_conf(mddev_t *mddev, int raid_disks)
- 	cnt = 0;
- 	conf->array_size = 0;
+diff --git a/arch/x86/kernel/pci-calgary_64.c b/arch/x86/kernel/pci-calgary_64.c
+index e28ec49..2a977bc 100644
+--- a/arch/x86/kernel/pci-calgary_64.c
++++ b/arch/x86/kernel/pci-calgary_64.c
+@@ -268,21 +268,37 @@ static unsigned long iommu_range_alloc(struct device *dev,
+ {
+ 	unsigned long flags;
+ 	unsigned long offset;
++	unsigned long limit;
+ 	unsigned long boundary_size;
++	unsigned long start;
++	unsigned long mask;
  
-+	spin_lock_init(&conf->device_lock);
-+	/* blk-core uses queue_lock to verify protection of the queue flags */
-+	mddev->queue->queue_lock = &conf->device_lock;
+ 	boundary_size = ALIGN(dma_get_seg_boundary(dev) + 1,
+ 			      PAGE_SIZE) >> PAGE_SHIFT;
+ 
+ 	BUG_ON(npages == 0);
+ 
++	if (dev->dma_mask)
++		mask = *dev->dma_mask >> PAGE_SHIFT;
++	else
++		mask = 0xfffffffful >> PAGE_SHIFT;
 +
- 	rdev_for_each(rdev, tmp, mddev) {
- 		int j = rdev->raid_disk;
- 		dev_info_t *disk = conf->disks + j;
-@@ -133,8 +137,10 @@ static linear_conf_t *linear_conf(mddev_t *mddev, int raid_disks)
- 
- 		disk->rdev = rdev;
- 
-+		spin_lock(&conf->device_lock);
- 		blk_queue_stack_limits(mddev->queue,
- 				       rdev->bdev->bd_disk->queue);
-+		spin_unlock(&conf->device_lock);
- 		/* as we don't honour merge_bvec_fn, we must never risk
- 		 * violating it, so limit ->max_sector to one PAGE, as
- 		 * a one page request is never in violation.
-diff --git a/drivers/md/multipath.c b/drivers/md/multipath.c
-index 42ee1a2..ee7df38 100644
---- a/drivers/md/multipath.c
-+++ b/drivers/md/multipath.c
-@@ -436,6 +436,10 @@ static int multipath_run (mddev_t *mddev)
- 		goto out_free_conf;
- 	}
- 
-+	spin_lock_init(&conf->device_lock);
-+	/* blk-core uses queue_lock to verify protection of the queue flags */
-+	mddev->queue->queue_lock = &conf->device_lock;
++	limit = tbl->it_size;
++	start = tbl->it_hint;
 +
- 	conf->working_disks = 0;
- 	rdev_for_each(rdev, tmp, mddev) {
- 		disk_idx = rdev->raid_disk;
-@@ -446,8 +450,10 @@ static int multipath_run (mddev_t *mddev)
- 		disk = conf->multipaths + disk_idx;
- 		disk->rdev = rdev;
- 
-+		spin_lock(&conf->device_lock);
- 		blk_queue_stack_limits(mddev->queue,
- 				       rdev->bdev->bd_disk->queue);
-+		spin_unlock(&conf->device_lock);
- 		/* as we don't honour merge_bvec_fn, we must never risk
- 		 * violating it, not that we ever expect a device with
- 		 * a merge_bvec_fn to be involved in multipath */
-diff --git a/drivers/md/raid0.c b/drivers/md/raid0.c
-index 818b482..deb5609 100644
---- a/drivers/md/raid0.c
-+++ b/drivers/md/raid0.c
-@@ -117,6 +117,10 @@ static int create_strip_zones (mddev_t *mddev)
- 	if (!conf->devlist)
- 		return 1;
- 
-+	spin_lock_init(&conf->device_lock);
-+	/* blk-core uses queue_lock to verify protection of the queue flags */
-+	mddev->queue->queue_lock = &conf->device_lock;
++	if (limit > mask) {
++		limit = mask + 1;
++		start = tbl->it_hint & mask;
++	}
 +
- 	/* The first zone must contain all devices, so here we check that
- 	 * there is a proper alignment of slots to devices and find them all
- 	 */
-@@ -138,8 +142,10 @@ static int create_strip_zones (mddev_t *mddev)
- 		}
- 		zone->dev[j] = rdev1;
+ 	spin_lock_irqsave(&tbl->it_lock, flags);
  
-+		spin_lock(&conf->device_lock);
- 		blk_queue_stack_limits(mddev->queue,
- 				       rdev1->bdev->bd_disk->queue);
-+		spin_unlock(&conf->device_lock);
- 		/* as we don't honour merge_bvec_fn, we must never risk
- 		 * violating it, so limit ->max_sector to one PAGE, as
- 		 * a one page request is never in violation.
-diff --git a/drivers/md/raid1.c b/drivers/md/raid1.c
-index 6778b7c..a01fc7e 100644
---- a/drivers/md/raid1.c
-+++ b/drivers/md/raid1.c
-@@ -1935,6 +1935,10 @@ static int run(mddev_t *mddev)
- 	if (!conf->r1bio_pool)
- 		goto out_no_mem;
+-	offset = iommu_area_alloc(tbl->it_map, tbl->it_size, tbl->it_hint,
++	offset = iommu_area_alloc(tbl->it_map, limit, start,
+ 				  npages, 0, boundary_size, 0);
+ 	if (offset == ~0UL) {
+ 		tbl->chip_ops->tce_cache_blast(tbl);
  
-+	spin_lock_init(&conf->device_lock);
-+	/* blk-core uses queue_lock to verify protection of the queue flags */
-+	mddev->queue->queue_lock = &conf->device_lock;
-+
- 	rdev_for_each(rdev, tmp, mddev) {
- 		disk_idx = rdev->raid_disk;
- 		if (disk_idx >= mddev->raid_disks
-@@ -1944,8 +1948,10 @@ static int run(mddev_t *mddev)
- 
- 		disk->rdev = rdev;
- 
-+		spin_lock(&conf->device_lock);
- 		blk_queue_stack_limits(mddev->queue,
- 				       rdev->bdev->bd_disk->queue);
-+		spin_unlock(&conf->device_lock);
- 		/* as we don't honour merge_bvec_fn, we must never risk
- 		 * violating it, so limit ->max_sector to one PAGE, as
- 		 * a one page request is never in violation.
-@@ -1958,7 +1964,6 @@ static int run(mddev_t *mddev)
- 	}
- 	conf->raid_disks = mddev->raid_disks;
- 	conf->mddev = mddev;
--	spin_lock_init(&conf->device_lock);
- 	INIT_LIST_HEAD(&conf->retry_list);
- 
- 	spin_lock_init(&conf->resync_lock);
-diff --git a/drivers/md/raid10.c b/drivers/md/raid10.c
-index 5938fa9..c28af78 100644
---- a/drivers/md/raid10.c
-+++ b/drivers/md/raid10.c
-@@ -2082,6 +2082,10 @@ static int run(mddev_t *mddev)
- 		goto out_free_conf;
- 	}
- 
-+	spin_lock_init(&conf->device_lock);
-+	/* blk-core uses queue_lock to verify protection of the queue flags */
-+	mddev->queue->queue_lock = &conf->device_lock;
-+
- 	rdev_for_each(rdev, tmp, mddev) {
- 		disk_idx = rdev->raid_disk;
- 		if (disk_idx >= mddev->raid_disks
-@@ -2091,8 +2095,10 @@ static int run(mddev_t *mddev)
- 
- 		disk->rdev = rdev;
- 
-+		spin_lock(&conf->device_lock);
- 		blk_queue_stack_limits(mddev->queue,
- 				       rdev->bdev->bd_disk->queue);
-+		spin_unlock(&conf->device_lock);
- 		/* as we don't honour merge_bvec_fn, we must never risk
- 		 * violating it, so limit ->max_sector to one PAGE, as
- 		 * a one page request is never in violation.
-@@ -2103,7 +2109,6 @@ static int run(mddev_t *mddev)
- 
- 		disk->head_position = 0;
- 	}
--	spin_lock_init(&conf->device_lock);
- 	INIT_LIST_HEAD(&conf->retry_list);
- 
- 	spin_lock_init(&conf->resync_lock);
-diff --git a/drivers/md/raid5.c b/drivers/md/raid5.c
-index ee0ea91..59964a7 100644
---- a/drivers/md/raid5.c
-+++ b/drivers/md/raid5.c
-@@ -4257,6 +4257,8 @@ static int run(mddev_t *mddev)
- 			goto abort;
- 	}
- 	spin_lock_init(&conf->device_lock);
-+	/* blk-core uses queue_lock to verify protection of the queue flags */
-+	mddev->queue->queue_lock = &conf->device_lock;
- 	init_waitqueue_head(&conf->wait_for_stripe);
- 	init_waitqueue_head(&conf->wait_for_overlap);
- 	INIT_LIST_HEAD(&conf->handle_list);
-diff --git a/include/linux/raid/linear.h b/include/linux/raid/linear.h
-index ba15469..3c35e1e 100644
---- a/include/linux/raid/linear.h
-+++ b/include/linux/raid/linear.h
-@@ -18,7 +18,8 @@ struct linear_private_data
- 	sector_t		hash_spacing;
- 	sector_t		array_size;
- 	int			preshift; /* shift before dividing by hash_spacing */
--	dev_info_t		disks[0];
-+	spinlock_t		device_lock;
-+	dev_info_t		disks[0]; /* grows depending on 'raid_disks' */
- };
- 
- 
-diff --git a/include/linux/raid/raid0.h b/include/linux/raid/raid0.h
-index 1b2dda0..3d20d14 100644
---- a/include/linux/raid/raid0.h
-+++ b/include/linux/raid/raid0.h
-@@ -21,6 +21,7 @@ struct raid0_private_data
- 
- 	sector_t hash_spacing;
- 	int preshift;			/* shift this before divide by hash_spacing */
-+	spinlock_t device_lock;
- };
- 
- typedef struct raid0_private_data raid0_conf_t;
-
-
-
+-		offset = iommu_area_alloc(tbl->it_map, tbl->it_size, 0,
++		offset = iommu_area_alloc(tbl->it_map, limit, 0,
+ 					  npages, 0, boundary_size, 0);
+ 		if (offset == ~0UL) {
+ 			printk(KERN_WARNING "Calgary: IOMMU full.\n");
