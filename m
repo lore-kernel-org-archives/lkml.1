@@ -1,76 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765727AbYEHTUm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760065AbYEHTWW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765727AbYEHTUm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 15:20:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760853AbYEHTUF
+	id S1760065AbYEHTWW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 15:22:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751254AbYEHTVz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 15:20:05 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:41475 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1759337AbYEHTUB (ORCPT
+	Thu, 8 May 2008 15:21:55 -0400
+Received: from extu-mxob-1.symantec.com ([216.10.194.28]:58978 "EHLO
+	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750932AbYEHTVx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 15:20:01 -0400
-Message-ID: <4823525A.8080805@sgi.com>
-Date: Thu, 08 May 2008 12:19:54 -0700
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Thu, 8 May 2008 15:21:53 -0400
+Date: Thu, 8 May 2008 20:21:12 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.site
+To: Jeff Garzik <jeff@garzik.org>
+cc: Markus Trippelsdorf <markus@trippelsdorf.de>, Takashi Iwai <tiwai@suse.de>,
+       Jeff Garzik <jeff@garzik.org>, linux-ide@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, htejun@gmail.com,
+       marc.c.dionne@gmail.com, dl9pf@gmx.de, bug-track@fisher-privat.net,
+       sitsofe@yahoo.com
+Subject: Re: [PATCH] Re: [git patches] libata updates - (improve post-reset
+ device ready test) regression
+In-Reply-To: <20080508161805.GA3941@gentoox2.trippelsdorf.de>
+Message-ID: <Pine.LNX.4.64.0805082014570.22950@blonde.site>
+References: <20080506154847.GA15299@havoc.gtf.org> <20080507145616.GA2210@gentoox2.trippelsdorf.de>
+ <48231DAF.7070900@garzik.org> <s5hhcd83hor.wl%tiwai@suse.de>
+ <20080508161805.GA3941@gentoox2.trippelsdorf.de>
 MIME-Version: 1.0
-To: Thomas Meyer <thomas@m3y3r.de>
-CC: linux-kernel@vger.kernel.org, arges@linux.vnet.ibm.com,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: BUG: unable to handle kernel paging request at xxx
-References: <1210097735.3644.6.camel@dhcppc1>  <4820A482.8000104@sgi.com> <1210102011.3644.12.camel@dhcppc1>
-In-Reply-To: <1210102011.3644.12.camel@dhcppc1>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thomas Meyer wrote:
-> Am Dienstag, den 06.05.2008, 11:33 -0700 schrieb Mike Travis:
+On Thu, 8 May 2008, Markus Trippelsdorf wrote:
+> On Thu, May 08, 2008 at 06:05:08PM +0200, Takashi Iwai wrote:
+> > At Thu, 08 May 2008 11:35:11 -0400,
+> > Jeff Garzik wrote:
+> > > 
+> > > It basically reverts the patch, while still maintaining the 
+> > > consolidation.  It looks like that status evaluation is not as universal 
+> > > as believed.
+> > 
+> > Yes, the patch fixes the problem on my machine.
 > 
->> Would you also send your .config file as well
->> as a summary of the system configuration (cpu type, etc.)?
-...
-> $ opcontrol --version
-> opcontrol: oprofile 0.9.3 compiled on Oct  8 2007 10:36:39
-> 
-> $ yum list oprofile
-> Installed Packages
-> oprofile.i386                            0.9.3-6.fc8            installed   
-> 
+> Your patch fixes the problem for me, too...
 
-Hi Thomas,
-
-I've not been able to reproduce this failure on my (very similar) AMD
-box.  I've compiled and installed the oprofile package but that didn't
-seem to do it. 
-
-# opcontrol --version
-opcontrol: oprofile 0.9.3 compiled on May  8 2008 12:02:00
-
-One thing to note is that I'm using the very latest linux-next source,
-would this be the same as what you are using?
-
-Also I've noticed is that your system is loading SELinux while mine
-is not, though I doubt that has any effect on the panic.
-
-yours:
-[    0.753301] Security Framework initialized
-[    0.753301] SELinux:  Initializing.
-[    0.753301] SELinux:  Starting in permissive mode
-
-mine:
-Mount failed for selinuxfs on /selinux:  No such device                             
-
-(Unfortunately I'm not familiar with that package or I'd pop it in
-to try it out.)
-
-If you can come up with some more info (or try Andrew's "back out"
-patch to verify that the oprofile changes are the cause of the panic),
-would you let me know?
+And for me: I was preparing to report when I saw these go by.
+A Fujitsu-Siemens laptop and a Fujitsu-Siemens desktop were each taking
+70 seconds longer to boot than before.  (The status byte was 0x7f.)
 
 Thanks,
-Mike
-
+Hugh
