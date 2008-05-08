@@ -1,83 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755805AbYEHGFh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755909AbYEHGF5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755805AbYEHGFh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 02:05:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758227AbYEHGFK
+	id S1755909AbYEHGF5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 02:05:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758733AbYEHGFb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 02:05:10 -0400
-Received: from E23SMTP01.au.ibm.com ([202.81.18.162]:56490 "EHLO
-	e23smtp01.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756146AbYEHGFG (ORCPT
+	Thu, 8 May 2008 02:05:31 -0400
+Received: from rv-out-0506.google.com ([209.85.198.231]:45363 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758604AbYEHGF1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 02:05:06 -0400
-Date: Thu, 8 May 2008 11:34:40 +0530
-From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       Ingo Molnar <mingo@elte.hu>,
-       Aneesh Kumar KV <aneesh.kumar@linux.vnet.ibm.com>
-Subject: Re: volanoMark regression with kernel 2.6.26-rc1
-Message-ID: <20080508060440.GE32729@linux.vnet.ibm.com>
-Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-References: <1210039590.3453.18.camel@ymzhang> <20080506115207.GA24862@linux.vnet.ibm.com> <20080507173357.GA4424@linux.vnet.ibm.com> <1210223914.3453.102.camel@ymzhang> <20080508054047.GD32729@linux.vnet.ibm.com> <1210226013.3453.113.camel@ymzhang>
+	Thu, 8 May 2008 02:05:27 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=uUHgzTpPF4V2yLynEhIh7SwomgK+Nku87rjwlUZNxMYEZWDg0s2gt+37Ed/kKX/L2sEjvYdFxvju/8neZl6aGur2w6AwGLDg1HkrId6fpBxHeF++LCGkQWR4SjuoCpMVMzmNZu1dGBdp271HJRXuIbkJsVHhhIk6/rYN6ThuaP4=
+Message-ID: <19f34abd0805072305i19dc37bn3e13fbca4b6981e3@mail.gmail.com>
+Date: Thu, 8 May 2008 08:05:27 +0200
+From: "Vegard Nossum" <vegard.nossum@gmail.com>
+To: "Lin Ming" <ming.m.lin@intel.com>
+Subject: Re: ACPI: kmemcheck: Caught 16-bit read from freed memory (f7c12ec6)
+Cc: "Pekka Enberg" <penberg@cs.helsinki.fi>,
+       "Bob Moore" <robert.moore@intel.com>,
+       "Alexey Starikovskiy" <astarikovskiy@suse.de>,
+       "Len Brown" <len.brown@intel.com>, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <1210224923.22503.8.camel@minggr.sh.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1210226013.3453.113.camel@ymzhang>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+References: <19f34abd0805060909q635d2d43j9414e5f179c9e22f@mail.gmail.com>
+	 <84144f020805061338yd6e3declaf5ff9ca344c28ba@mail.gmail.com>
+	 <19f34abd0805061346q4af7e4f8kd65009f8d3021d0e@mail.gmail.com>
+	 <4820C56C.6070204@cs.helsinki.fi>
+	 <19f34abd0805071221o236c8629ib184a4720f178e7b@mail.gmail.com>
+	 <1210224923.22503.8.camel@minggr.sh.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 08, 2008 at 01:53:33PM +0800, Zhang, Yanmin wrote:
-> 
-> On Thu, 2008-05-08 at 11:10 +0530, Dhaval Giani wrote:
-> > On Thu, May 08, 2008 at 01:18:34PM +0800, Zhang, Yanmin wrote:
-> > > 
-> > > On Wed, 2008-05-07 at 23:03 +0530, Dhaval Giani wrote:
-> > > > On Tue, May 06, 2008 at 05:22:07PM +0530, Dhaval Giani wrote:
-> > > > > On Tue, May 06, 2008 at 10:06:30AM +0800, Zhang, Yanmin wrote:
-> > > > > > Comparing with 2.6.25, volanoMark has big regression with kernel 2.6.26-rc1.
-> > > > > > It's about 50% on my 8-core stoakley, 16-core tigerton, and Itanium Montecito.
-> > > > > > 
-> > > > > > With bisect, I located below patch.
-> > > > > > 
-> > > > > > 18d95a2832c1392a2d63227a7a6d433cb9f2037e is first bad commit
-> > > > > > commit 18d95a2832c1392a2d63227a7a6d433cb9f2037e
-> > > > > > Author: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> > > > > > Date:   Sat Apr 19 19:45:00 2008 +0200
-> > > > > > 
-> > > > > >     sched: fair-group: SMP-nice for group scheduling
-> > > > > >     
-> > > > > >     Implement SMP nice support for the full group hierarchy.
-> > > > > > 
-> > > > > > If I reverse the patch with resolving some conflictions, volanoMark result could
-> > > > > > be restored completely.
-> > > > > > 
-> > > > > 
-> > > > > ok, that's bad. Let's get vatsa and Ingo also involved.
-> > > > > 
-> > > > 
-> > > > Just to confirm, do you still have a performance regression with
-> > > > !group_sched?
-> > > I just tried it with CONFIG_GROUP_SCHED=n a moment ago. The regression becomes less than 3%.
-> > > 
-> > 
-> > One more thing if you can try out, please set the shares for other users
-> > to 2 except for the one which is running the benchmark. You can set it
-> > at /sys/kernel/uids/<uid>/cpu_share
-> I might try. There are only 2 users active in my system, root for background processes and mine
-> for the testing. In the other hand, I kill most backgroud services when starting testing. So
-> it might not have help.
-> 
+Hello,
 
-Even if one service is running as root, it is guaranteed 2/3 the CPU
-(since root's shares are double that of other users by default). It
-would cause issues for sure.
+On Thu, May 8, 2008 at 7:35 AM, Lin Ming <ming.m.lin@intel.com> wrote:
+> Here comes a simple patch that fixes the warning in my machine.
+>
+>  Vegard, would you please help to test it in your machine?
+>
 
-Thanks,
+Thanks for the try, but unfortunately this does not solve the problem.
+
+Please note that kmemcheck is an patch to the kernel; without it you
+will never see the warning. You can pull it from
+git://git.kernel.org/pub/scm/linux/kernel/git/vegard/kmemcheck.git current
+though it is unlikely that it will help you more than looking at the
+code (or the report) will do.
+
+>  Thanks,
+>  Lin Ming
+>
+>  Signed-off-by: Lin Ming <ming.m.lin@intel.com>
+>  ---
+>  diff --git a/drivers/acpi/parser/psargs.c b/drivers/acpi/parser/psargs.c
+>  index f1e8bf6..ef55d24 100644
+>  --- a/drivers/acpi/parser/psargs.c
+>  +++ b/drivers/acpi/parser/psargs.c
+>  @@ -268,7 +268,7 @@ acpi_ps_get_next_namepath(struct acpi_walk_state
+>  *walk_state,
+
+>          */
+>         if (ACPI_SUCCESS(status) &&
+>             possible_method_call && (node->type == ACPI_TYPE_METHOD)) {
+>  -               if (walk_state->op->common.aml_opcode == AML_UNLOAD_OP) {
+>  +               if (walk_state->op && walk_state->op->common.aml_opcode ==
+>  AML_UNLOAD_OP) {
+>                         /*
+>                          * acpi_ps_get_next_namestring has increased the AML pointer,
+>                          * so we need to restore the saved AML pointer for method call.
+
+Also, noticing your change, I can see why it makes no difference:
+Pekka already found that it is walk_state->op that has the value of
+0xf7c12ec6 (e.g. the pointer being dereferenced), so the test will
+still succeed.
+
+On the other hand, I have discovered what seems to be a deficiency in
+kmemcheck (i.e. it might be my fault entirely), so it is possible that
+the warning is bogus. Will send an update shortly.
+
+
+Vegard
+
 -- 
-regards,
-Dhaval
+"The animistic metaphor of the bug that maliciously sneaked in while
+the programmer was not looking is intellectually dishonest as it
+disguises that the error is the programmer's own creation."
+	-- E. W. Dijkstra, EWD1036
