@@ -1,23 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759981AbYEHGcW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760846AbYEHGcq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759981AbYEHGcW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 02:32:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758264AbYEHGbd
+	id S1760846AbYEHGcq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 02:32:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758997AbYEHGcG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 02:31:33 -0400
-Received: from g4t0016.houston.hp.com ([15.201.24.19]:11483 "EHLO
+	Thu, 8 May 2008 02:32:06 -0400
+Received: from g4t0016.houston.hp.com ([15.201.24.19]:11619 "EHLO
 	g4t0016.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756455AbYEHGbc (ORCPT
+	with ESMTP id S1760878AbYEHGcC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 02:31:32 -0400
+	Thu, 8 May 2008 02:32:02 -0400
 From: Andrew Patterson <andrew.patterson@hp.com>
-Subject: [PATCH 4/5] Added flush_disk to factor out common buffer cache
-	flushing code.
+Subject: [PATCH 5/5] Call flush_disk() after detecting an online resize.
 To: linux-scsi@vger.kernel.org
 Cc: andrew.patterson@hp.com, linux-kernel@vger.kernel.org,
        viro@zeniv.linux.org.uk, axboe@kernel.dk, andmike@linux.vnet.ibm.com
-Date: Thu, 08 May 2008 00:31:31 -0600
-Message-ID: <20080508063131.3818.96480.stgit@bluto.andrew>
+Date: Thu, 08 May 2008 00:32:01 -0600
+Message-ID: <20080508063201.3818.53226.stgit@bluto.andrew>
 In-Reply-To: <20080508062930.3818.31401.stgit@bluto.andrew>
 References: <20080508062930.3818.31401.stgit@bluto.andrew>
 User-Agent: StGIT/0.14.2
@@ -28,75 +27,61 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Added flush_disk to factor out common buffer cache flushing code.
+Call flush_disk() after detecting an online resize.
 
-We need to be able to flush the buffer cache for for more than
-just when a disk is changed, so we factor out common cache flush code
-in check_disk_change() to an internal flush_disk() routine.  This
-routine will then be used for both disk changes and disk resizes (in a
-later patch).
+We call flush_disk() to make sure the buffer cache for the disk is
+flushed after a disk resize. There are two resize cases, growing and
+shrinking. Given that users can shrink/then grow a disk before
+revalidate_disk() is called, we treat the grow case identically to
+shrinking. We need to flush the buffer cache after an online shrink
+because, as James Bottomley puts it,
 
-Include the disk name in the text indicating that there are busy
-inodes on the device and increase the KERN severity of the message.
+     The two use cases for shrinking I can see are
+
+     1. planned: the fs is already shrunk to within the new boundaries
+        and all data is relocated, so invalidate is fine (any dirty
+        buffers that might exist in the shrunk region are there only
+        because they were relocated but not yet written to their
+        original location).
+     2. unplanned:  In this case, the fs is probably toast, so whether
+        we invalidate or not isn't going to make a whole lot of
+        difference; it's still going to try to read or write from
+        sectors beyond the new size and get I/O errors.
+
+Immediately invalidating shrunk disks will cause errors for outstanding
+I/Os for reads/write beyond the new end of the disk to be generated
+earlier then if we waited for the normal buffer cache operation. It also
+removes a potential security hole where we might keep old data around
+from beyond the end of the shrunk disk if the disk was not invalidated.
 
 Signed-off-by: Andrew Patterson <andrew.patterson@hp.com>
 ---
 
- fs/block_dev.c |   33 ++++++++++++++++++++++++++++-----
- 1 files changed, 28 insertions(+), 5 deletions(-)
+ fs/block_dev.c |    5 +++--
+ 1 files changed, 3 insertions(+), 2 deletions(-)
 
 
 diff --git a/fs/block_dev.c b/fs/block_dev.c
-index 87014e6..eb2bc5c 100644
+index eb2bc5c..41ef08d 100644
 --- a/fs/block_dev.c
 +++ b/fs/block_dev.c
-@@ -867,6 +867,33 @@ struct block_device *open_by_devnum(dev_t dev, unsigned mode)
+@@ -884,8 +884,8 @@ static void flush_disk(struct block_device *bdev)
  
- EXPORT_SYMBOL(open_by_devnum);
+ 		if (bdev->bd_disk)
+ 			disk_name(bdev->bd_disk, 0, name);
+-		printk(KERN_WARNING "VFS: busy inodes on changed media %s\n",
+-		       name);
++		printk(KERN_WARNING "VFS: busy inodes on changed media or "
++		       "resized disk %s\n", name);
+ 	}
  
-+
-+/**
-+ * flush_disk - invalidates all buffer-cache entries on a disk
-+ *
-+ * @bdev:      struct block device to be flushed
-+ *
-+ * Invalidates all buffer-cache entries on a disk. It should be called
-+ * when a disk has been changed -- either by a media change or online
-+ * resize.
-+ */
-+static void flush_disk(struct block_device *bdev)
-+{
-+	if (__invalidate_device(bdev)) {
-+		char name[BDEVNAME_SIZE] = "";
-+
-+		if (bdev->bd_disk)
-+			disk_name(bdev->bd_disk, 0, name);
-+		printk(KERN_WARNING "VFS: busy inodes on changed media %s\n",
-+		       name);
-+	}
-+
-+	if (!bdev->bd_disk)
-+		return;
-+	if (bdev->bd_disk->minors > 1)
-+		bdev->bd_invalidated = 1;
-+}
-+
- /**
-  * revalidate_disk - wrapper for lower-level driver's revalidate_disk
-  *                   call-back
-@@ -928,13 +955,9 @@ int check_disk_change(struct block_device *bdev)
- 	if (!bdops->media_changed(bdev->bd_disk))
- 		return 0;
+ 	if (!bdev->bd_disk)
+@@ -928,6 +928,7 @@ int revalidate_disk(struct gendisk *disk)
+ 		       "%s: detected capacity change from %lld to %lld\n",
+ 		       name, bdev_size, disk_size);
+ 		i_size_write(bdev->bd_inode, disk_size);
++		flush_disk(bdev);
+ 	}
  
--	if (__invalidate_device(bdev))
--		printk("VFS: busy inodes on changed media.\n");
--
-+	flush_disk(bdev);
- 	if (bdops->revalidate_disk)
- 		bdops->revalidate_disk(bdev->bd_disk);
--	if (bdev->bd_disk->minors > 1)
--		bdev->bd_invalidated = 1;
- 	return 1;
- }
- 
+ 	mutex_unlock(&bdev->bd_mutex);
 
