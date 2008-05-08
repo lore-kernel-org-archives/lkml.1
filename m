@@ -1,87 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756612AbYEHHVk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758895AbYEHHY7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756612AbYEHHVk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 03:21:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757332AbYEHHVT
+	id S1758895AbYEHHY7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 03:24:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755423AbYEHHYu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 03:21:19 -0400
-Received: from qmta03.emeryville.ca.mail.comcast.net ([76.96.30.32]:51086 "EHLO
-	QMTA03.emeryville.ca.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756823AbYEHHVR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 03:21:17 -0400
-X-Authority-Analysis: v=1.0 c=1 a=frr7tnlS5JwA:10 a=j7aJu_usDzAA:10
- a=VBFbXJMgrT0YvSQdGlYA:9 a=Zt6QZf6DkIj_mKlrCKUA:7
- a=pEsWqu2TWwNTdcVmmIoeXptWIs8A:4 a=WuK_CZDBSqoA:10
-Subject: Re: [regression?] distcc says: (dcc_pump_sendfile) ERROR: sendfile
-	returned 0? can't cope (bisected)
-From: Tom Zanussi <zanussi@comcast.net>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Dan Williams <dan.j.williams@intel.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080507211641.GR16217@kernel.dk>
-References: <1210194811.16427.6.camel@dwillia2-linux.ch.intel.com>
-	 <20080507211641.GR16217@kernel.dk>
-Content-Type: text/plain
-Date: Thu, 08 May 2008 02:21:15 -0500
-Message-Id: <1210231275.7301.17.camel@charm-linux>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
+	Thu, 8 May 2008 03:24:50 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:57578 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1754982AbYEHHYt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 May 2008 03:24:49 -0400
+Message-ID: <4822AA6F.5040703@cn.fujitsu.com>
+Date: Thu, 08 May 2008 15:23:27 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+CC: Paul Menage <menage@google.com>,
+       Jeremy Fitzhardinge <jeremy@xensource.com>, Andi Kleen <ak@suse.de>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [PATCH] call_usermodehelper_setup() should use GFP_KERNEL
+References: <20080508153337.0EEE.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+In-Reply-To: <20080508153337.0EEE.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Wed, 2008-05-07 at 23:16 +0200, Jens Axboe wrote:
-> On Wed, May 07 2008, Dan Williams wrote:
-> > Hi Tom, Jens,
-> > 
-> > My build system started reporting these error messages recently.
-> > Reverting commit c3270e577c18b3d0e984c3371493205a4807db9d on top of
-> > 2.6.26-rc1 gets things working for me again.
-> 
-> Irk, that patch did scare me a bit (hence I asked Tom to double check as
-> wel :-). I'll take a look in the morning, all test boxes are off at this
-> point in time.
+KOSAKI Motohiro wrote:
+> Now, call_usermodehelper_setup() use GFP_ATOMIC.
+> but it is slighly odd.
+> because call_usermodehelper() is always called process context.
 > 
 
-I did, and it still looks ok to me, but obviously it's not, so I'll have
-to do some more digging.
+Are you sure? I found the following call chain:
 
-The only thing I can think of right now that might be a possible cause
-would be in splice_direct_to_actor(), if we had an incomplete transfer,
-the sd->pos returned and assigned would have the value set by the failed
-actor().  Maybe something like the following would take care of that
-case, but I haven't had a chance to test it yet - will do that tomorrow
-night...
+  static irqreturn_t power_handler(int irq, void *dev_id)
+  ->orderly_poweroff(true);
+    ->call_usermodehelper_setup()
 
-Tom
-
-diff --git a/fs/splice.c b/fs/splice.c
-index 633f58e..1bb3f34 100644
---- a/fs/splice.c
-+++ b/fs/splice.c
-@@ -986,7 +986,7 @@ ssize_t splice_direct_to_actor(struct file *in, struct splice_desc *sd,
- 
- 	while (len) {
- 		size_t read_len;
--		loff_t pos = sd->pos;
-+		loff_t pos = sd->pos, prev_pos = pos;
- 
- 		ret = do_splice_to(in, &pos, pipe, len, flags);
- 		if (unlikely(ret <= 0))
-@@ -1001,8 +1001,10 @@ ssize_t splice_direct_to_actor(struct file *in, struct splice_desc *sd,
- 		 * could get stuck data in the internal pipe:
- 		 */
- 		ret = actor(pipe, sd);
--		if (unlikely(ret <= 0))
-+		if (unlikely(ret <= 0)) {
-+			sd->pos = prev_pos;
- 			goto out_release;
-+		}
- 
- 		bytes += ret;
- 		len -= ret;
-
-
+> GFP_KERNEL is robust and better.
+> 
+> 
+> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> CC: "Paul Menage" <menage@google.com>
+> CC: Li Zefan <lizf@cn.fujitsu.com>
+> CC: Jeremy Fitzhardinge <jeremy@xensource.com>
+> CC: Andi Kleen <ak@suse.de>
+> CC: Rusty Russell <rusty@rustcorp.com.au> 
+> 
+> ---
+>  kernel/kmod.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> Index: b/kernel/kmod.c
+> ===================================================================
+> --- a/kernel/kmod.c	2008-04-29 17:37:41.000000000 +0900
+> +++ b/kernel/kmod.c	2008-05-06 20:20:02.000000000 +0900
+> @@ -360,7 +360,7 @@ struct subprocess_info *call_usermodehel
+>  						  char **argv, char **envp)
+>  {
+>  	struct subprocess_info *sub_info;
+> -	sub_info = kzalloc(sizeof(struct subprocess_info),  GFP_ATOMIC);
+> +	sub_info = kzalloc(sizeof(struct subprocess_info),  GFP_KERNEL);
+>  	if (!sub_info)
+>  		goto out;
+>  
+> 
+> 
+> 
+> 
