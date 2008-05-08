@@ -1,81 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758013AbYEHA6s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757037AbYEHBEk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758013AbYEHA6s (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 20:58:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752204AbYEHA6i
+	id S1757037AbYEHBEk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 21:04:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751285AbYEHBE2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 20:58:38 -0400
-Received: from mailtp.via.com.tw ([61.66.243.2]:64238 "EHLO mailtp.via.com.tw"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751367AbYEHA6g convert rfc822-to-8bit (ORCPT
+	Wed, 7 May 2008 21:04:28 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:39981 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751215AbYEHBE1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 20:58:36 -0400
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Wed, 7 May 2008 21:04:27 -0400
+Date: Wed, 7 May 2008 18:02:49 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Andrea Arcangeli <andrea@qumranet.com>
+cc: Andrew Morton <akpm@linux-foundation.org>, clameter@sgi.com,
+       steiner@sgi.com, holt@sgi.com, npiggin@suse.de, a.p.zijlstra@chello.nl,
+       kvm-devel@lists.sourceforge.net, kanojsarcar@yahoo.com,
+       rdreier@cisco.com, swise@opengridcomputing.com,
+       linux-kernel@vger.kernel.org, avi@qumranet.com, linux-mm@kvack.org,
+       general@lists.openfabrics.org, hugh@veritas.com, rusty@rustcorp.com.au,
+       aliguori@us.ibm.com, chrisw@redhat.com, marcelo@kvack.org,
+       dada1@cosmosbay.com, paulmck@us.ibm.com
+Subject: Re: [PATCH 08 of 11] anon-vma-rwsem
+In-Reply-To: <20080507233953.GM8276@duo.random>
+Message-ID: <alpine.LFD.1.10.0805071757520.3024@woody.linux-foundation.org>
+References: <6b384bb988786aa78ef0.1210170958@duo.random> <alpine.LFD.1.10.0805071349200.3024@woody.linux-foundation.org> <20080507212650.GA8276@duo.random> <alpine.LFD.1.10.0805071429170.3024@woody.linux-foundation.org> <20080507222205.GC8276@duo.random>
+ <20080507153103.237ea5b6.akpm@linux-foundation.org> <20080507224406.GI8276@duo.random> <20080507155914.d7790069.akpm@linux-foundation.org> <20080507233953.GM8276@duo.random>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="Big5"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [Linux-fbdev-devel] [PATCH 1/9] viafb: VIA Frame Buffer Device Driver - Resend
-Date: Thu, 8 May 2008 08:58:31 +0800
-Message-ID: <C80EF34A3D2E494DBAF9AC29C7AE4EB806F67855@exchtp03.taipei.via.com.tw>
-In-Reply-To: <20080507140357.9320dfcd.akpm@linux-foundation.org>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [Linux-fbdev-devel] [PATCH 1/9] viafb: VIA Frame Buffer Device Driver - Resend
-Thread-Index: AciwhfDHUgDHFgKGRfaPaBcxqtCbZAAIDCgA
-From: <JosephChan@via.com.tw>
-To: <akpm@linux-foundation.org>, <krzysztof.h1@poczta.fm>
-Cc: <geert@linux-m68k.org>, <linux-fbdev-devel@lists.sourceforge.net>,
-       <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 08 May 2008 00:58:34.0849 (UTC) FILETIME=[A45A2510:01C8B0A6]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andrew,
-
-Thanks a lot.
-I will check the the scripts/checkpatch.pl after the codes are modified. 
-
-About the subject, that's my carelessness and I will correct them by your recommendation next time.
-
-In addition, should I resend the patches after they are modified? Thanks.
-
-BRs,
-Joseph Chan 
-
------Original Message-----
-From: Andrew Morton [mailto:akpm@linux-foundation.org] 
-Sent: Thursday, May 08, 2008 5:04 AM
-To: Krzysztof Helt
-Cc: Joseph Chan; geert@linux-m68k.org; linux-fbdev-devel@lists.sourceforge.net; linux-kernel@vger.kernel.org
-Subject: Re: [Linux-fbdev-devel] [PATCH 1/9] viafb: VIA Frame Buffer Device Driver - Resend
-
-On Wed, 7 May 2008 18:43:33 +0200
-Krzysztof Helt <krzysztof.h1@poczta.fm> wrote:
-
-> A general comment is that you use to many global variables.
-
-yes, that was my first impression.  The _names_ of those variables is a real problem.  lcd_mode, DeviceStatus, second_size, primary_dev, etc.  The driver is attempting to reserve all those names for itself, kernel-wide.
-
-So at a minimum, going through and prepending viafb_ onto all those would be needed.
 
 
-There are a number of layout glitches in there.  Such as a strange combination of two styles:
+On Thu, 8 May 2008, Andrea Arcangeli wrote:
 
-void foo(void)
-{
+> Hi Andrew,
+> 
+> On Wed, May 07, 2008 at 03:59:14PM -0700, Andrew Morton wrote:
+> > 	CPU0:			CPU1:
+> > 
+> > 	spin_lock(global_lock)	
+> > 	spin_lock(a->lock);	spin_lock(b->lock);
+> 				================== mmu_notifier_register()
 
-versus
+If mmy_notifier_register() takes the global lock, it cannot happen here. 
+It will be blocked (by CPU0), so there's no way it can then cause an ABBA 
+deadlock. It will be released when CPU0 has taken *all* the locks it 
+needed to take.
 
-void foo(void ) {
+> What we can do is to replace the mm_lock with a
+> spin_lock(&global_lock) only if all places that takes i_mmap_lock
 
-Many of these things can be pinpointed by processing the diff with scripts/checkpatch.pl.
+NO!
 
+You replace mm_lock() with the sequence that Andrew gave you (and I 
+described):
 
-Administrative note: all nine patches had the same title "viafb: VIA Frame Buffer Device Driver".  Please choose unique and meaningful names for each patch, such as "viafb: add utility header file".
+	spin_lock(&global_lock)
+	.. get all locks UNORDERED ..
+	spin_unlock(&global_lock)
 
+and you're now done. You have your "mm_lock()" (which still needs to be 
+renamed - it should be a "mmu_notifier_lock()" or something like that), 
+but you don't need the insane sorting. At most you apparently need a way 
+to recognize duplicates (so that you don't deadlock on yourself), which 
+looks like a simple bit-per-vma.
 
-Apart from those fairly easily-fixed things, the driver looks pretty good from a quick scan, given how large it is, and given that it probably has been around for quite a long time..
+The global lock doesn't protect any data structures itself - it just 
+protects two of these mm_lock() functions from ABBA'ing on each other!
+
+			Linus
 
