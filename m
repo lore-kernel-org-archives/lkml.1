@@ -1,111 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764788AbYEHSa7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765715AbYEHSba@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764788AbYEHSa7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 14:30:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755045AbYEHSap
+	id S1765715AbYEHSba (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 14:31:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756359AbYEHSbR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 14:30:45 -0400
-Received: from ti-out-0910.google.com ([209.85.142.189]:56575 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753445AbYEHSan (ORCPT
+	Thu, 8 May 2008 14:31:17 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:58960 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755045AbYEHSbQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 14:30:43 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=mxjuLJ3It6dHCPXPEPpg62sFAhJx6fP5SFHGCvyTCGXFqfhFVXQrqKrX633pe944cpGiNxGwuF/AKw5HBwG19UYaGq6B03cDNU/bgwP0i1llRx1aGxSbO+qsQs148SJr8z+FWqjJd2kNxG2N6pnSWOZZ5XdWgeRvXrXKfyoBf30=
-Message-ID: <91b13c310805081130s389195c1h8970290a8a34009a@mail.gmail.com>
-Date: Fri, 9 May 2008 02:30:41 +0800
-From: "rae l" <crquan@gmail.com>
-To: "Steven Whitehouse" <swhiteho@redhat.com>
-Subject: Re: [PATCH 1/2] [fs-devel] the real needs of just_schedule
-Cc: "Al Viro" <viro@zeniv.linux.org.uk>, linux-fsdevel@vger.kernel.org,
-       cluster-devel@redhat.com, linux-kernel@vger.kernel.org
-In-Reply-To: <1210252312.3635.484.camel@quoit>
+	Thu, 8 May 2008 14:31:16 -0400
+Date: Thu, 8 May 2008 11:30:38 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+cc: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
+       Andi Kleen <andi@firstfloor.org>, Matthew Wilcox <matthew@wil.cx>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Alexander Viro <viro@ftp.linux.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [patch] speed up / fix the new generic semaphore code (fix AIM7
+ 40% regression with 2.6.26-rc1)
+In-Reply-To: <alpine.LFD.1.10.0805080859140.3024@woody.linux-foundation.org>
+Message-ID: <alpine.LFD.1.10.0805081128550.3024@woody.linux-foundation.org>
+References: <87lk2mbcqp.fsf@basil.nowhere.org> <20080507114643.GR19219@parisc-linux.org> <87hcdab8zp.fsf@basil.nowhere.org> <alpine.LFD.1.10.0805070728280.32269@woody.linux-foundation.org> <alpine.LFD.1.10.0805070817060.3024@woody.linux-foundation.org>
+ <1210214696.3453.87.camel@ymzhang> <alpine.LFD.1.10.0805072014330.3024@woody.linux-foundation.org> <1210219729.3453.97.camel@ymzhang> <alpine.LFD.1.10.0805072115190.3024@woody.linux-foundation.org> <20080508120130.GA2860@elte.hu> <20080508122802.GA4880@elte.hu>
+ <alpine.LFD.1.10.0805080859140.3024@woody.linux-foundation.org>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1210096264-27426-1-git-send-email-crquan@gmail.com>
-	 <1210252312.3635.484.camel@quoit>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 8, 2008 at 9:11 PM, Steven Whitehouse <swhiteho@redhat.com> wrote:
-> Hi,
->
->  On Wed, 2008-05-07 at 01:51 +0800, Denis Cheng wrote:
->  > there are some situations which really need a just schedule,
->  > with int return value;
->  > and this should be moved into lib/ in the future.
->  >
->  > Signed-off-by: Denis Cheng <crquan@gmail.com>
->  > ---
->  >  fs/inode.c                |    2 +-
->  >  include/linux/writeback.h |   16 ++++++++++++----
->  >  2 files changed, 13 insertions(+), 5 deletions(-)
->  >
->  > diff --git a/fs/inode.c b/fs/inode.c
->  > index bf64781..b355a44 100644
->  > --- a/fs/inode.c
->  > +++ b/fs/inode.c
->  > @@ -1291,7 +1291,7 @@ int inode_needs_sync(struct inode *inode)
->  >
->  >  EXPORT_SYMBOL(inode_needs_sync);
->  >
->  > -int inode_wait(void *word)
->  > +int just_schedule(void *word)
->  >  {
->  >       schedule();
->  >       return 0;
->  > diff --git a/include/linux/writeback.h b/include/linux/writeback.h
->  > index f462439..80ff5eb 100644
->  > --- a/include/linux/writeback.h
->  > +++ b/include/linux/writeback.h
->  > @@ -67,23 +67,31 @@ struct writeback_control {
->  >
->  >  /*
->  >   * fs/fs-writeback.c
->  > - */
->  > + */
->  >  void writeback_inodes(struct writeback_control *wbc);
->  > -int inode_wait(void *);
->  >  void sync_inodes_sb(struct super_block *, int wait);
->  >  void sync_inodes(int wait);
->  >
->  > +/*
->  > + * fs/inode.c
->  > + *
->  > + * there are some situations which really need a just schedule,
->  > + * with int return value;
->  > + * and this should be moved into lib/ in the future.
->  > + */
->  > +int just_schedule(void *);
->  > +
->  Why is now not a good time? :-)
->
->  The patches look ok to me otherwise, but I wonder whether I should put
->  them in my tree (since they affect core code) or whether they'd be
->  better in -mm and/or linux-next?
-The inode_wait in fs core code(fs/inode.c) is really just_schedule, so
-is the gdlm_ast_wait, and they are all fs related code;
 
-But inode_wait is not a better name for its work, instead just_schedule won.
 
-So I should ask for opinions from fs core crew,
+On Thu, 8 May 2008, Linus Torvalds wrote:
+> 
+> Why don't we just make it do the same thing that the x86 semaphores used 
+> to do: make it signed, and decrement unconditionally. And callt eh 
+> slow-path if it became negative.
+> ... 
+> and now we have an existing known-good implementation to look at?
 
-BTW, today I did a grep among the whole kernel tree and found that
-just_schedule is also useful to other code, such as:
+Ok, after having thought that over, and looked at the code, I think I like 
+your version after all. The old implementation was pretty complex due to 
+the need to be so extra careful about the count that could change outside 
+of the lock, so everything considered, a new implementation that is 
+simpler is probably the better choice.
 
-key_wait_bit(security/keys/request_key.c:25)
+Ergo, I will just pull your scheduler tree.
 
-It's also really a just_schedule.
-
-So just_schedule should go to lib/ ? Or we just append it into kernel/sched.c?
-
->
->  Steve.
-
--- 
-Denis Cheng
+			Linus
