@@ -1,81 +1,347 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761417AbYEHXOw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762225AbYEHXQC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761417AbYEHXOw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 19:14:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752851AbYEHXOp
+	id S1762225AbYEHXQC (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 19:16:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751352AbYEHXPw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 19:14:45 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:45329 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752779AbYEHXOo (ORCPT
+	Thu, 8 May 2008 19:15:52 -0400
+Received: from e35.co.us.ibm.com ([32.97.110.153]:58388 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752028AbYEHXPu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 19:14:44 -0400
-Date: Thu, 8 May 2008 16:14:09 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Ingo Molnar <mingo@elte.hu>
-cc: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
-       Andi Kleen <andi@firstfloor.org>, Matthew Wilcox <matthew@wil.cx>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Alexander Viro <viro@ftp.linux.org.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
+	Thu, 8 May 2008 19:15:50 -0400
+Subject: Re: [PATCH] x86: fix PAE pmd_bad bootup warning
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: Hans Rosenfeld <hans.rosenfeld@amd.com>
+Cc: Hugh Dickins <hugh@veritas.com>, Nishanth Aravamudan <nacc@us.ibm.com>,
+       Ingo Molnar <mingo@elte.hu>, Jeff Chua <jeff.chua.linux@gmail.com>,
        Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [patch] speed up / fix the new generic semaphore code (fix AIM7
- 40% regression with 2.6.26-rc1)
-In-Reply-To: <alpine.LFD.1.10.0805081604010.2940@woody.linux-foundation.org>
-Message-ID: <alpine.LFD.1.10.0805081610350.2940@woody.linux-foundation.org>
-References: <1210214696.3453.87.camel@ymzhang> <alpine.LFD.1.10.0805072014330.3024@woody.linux-foundation.org> <1210219729.3453.97.camel@ymzhang> <alpine.LFD.1.10.0805072115190.3024@woody.linux-foundation.org> <20080508120130.GA2860@elte.hu>
- <20080508122802.GA4880@elte.hu> <alpine.LFD.1.10.0805080859140.3024@woody.linux-foundation.org> <alpine.LFD.1.10.0805081128550.3024@woody.linux-foundation.org> <20080508201956.GA2547@elte.hu> <alpine.LFD.1.10.0805081326130.2940@woody.linux-foundation.org>
- <20080508214557.GA13311@elte.hu> <alpine.LFD.1.10.0805081535130.2940@woody.linux-foundation.org> <alpine.LFD.1.10.0805081604010.2940@woody.linux-foundation.org>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+       Gabriel C <nix.or.die@googlemail.com>,
+       Arjan van de Ven <arjan@linux.intel.com>,
+       Matt Mackall <mpm@selenic.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+In-Reply-To: <20080508200239.GJ12654@escobedo.amd.com>
+References: <1210106579.4747.51.camel@nimitz.home.sr71.net>
+	 <20080508143453.GE12654@escobedo.amd.com>
+	 <1210258350.7905.45.camel@nimitz.home.sr71.net>
+	 <20080508151145.GG12654@escobedo.amd.com>
+	 <1210261882.7905.49.camel@nimitz.home.sr71.net>
+	 <20080508161925  <20080508200239.GJ12654@escobedo.amd.com>
+Content-Type: text/plain
+Date: Thu, 08 May 2008 16:15:32 -0700
+Message-Id: <1210288532.7905.89.camel@nimitz.home.sr71.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Here's one quick stab at a solution.  I figured that we already pass
+that 'private' variable around.  This patch just sticks that variable
+*in* the mm_walk and also makes the caller fill in an 'mm' as well.
+Then, we just pass the actual mm_walk around.
+
+Maybe we should just stick the VMA in the mm_walk as well, and have the
+common code keep it up to date with the addresses currently being
+walked.
+
+Sadly, I didn't quite get enough time to flesh this idea out very far
+today, and I'll be offline for a couple of days now.  But, if someone
+wants to go this route, I thought this might be useful.  
+
+---
+
+ linux-2.6.git-dave/fs/proc/task_mmu.c |   45 +++++++++++++++++++---------------
+ linux-2.6.git-dave/include/linux/mm.h |   17 ++++++------
+ linux-2.6.git-dave/mm/pagewalk.c      |   41 +++++++++++++++---------------
+ 3 files changed, 56 insertions(+), 47 deletions(-)
+
+diff -puN mm/pagewalk.c~pass-mm-into-pagewalkers mm/pagewalk.c
+--- linux-2.6.git/mm/pagewalk.c~pass-mm-into-pagewalkers	2008-05-08 15:49:47.000000000 -0700
++++ linux-2.6.git-dave/mm/pagewalk.c	2008-05-08 15:49:54.000000000 -0700
+@@ -3,14 +3,14 @@
+ #include <linux/sched.h>
+ 
+ static int walk_pte_range(pmd_t *pmd, unsigned long addr, unsigned long end,
+-			  const struct mm_walk *walk, void *private)
++			  struct mm_walk *walk)
+ {
+ 	pte_t *pte;
+ 	int err = 0;
+ 
+ 	pte = pte_offset_map(pmd, addr);
+ 	for (;;) {
+-		err = walk->pte_entry(pte, addr, addr + PAGE_SIZE, private);
++		err = walk->pte_entry(pte, addr, addr + PAGE_SIZE, walk);
+ 		if (err)
+ 		       break;
+ 		addr += PAGE_SIZE;
+@@ -24,7 +24,7 @@ static int walk_pte_range(pmd_t *pmd, un
+ }
+ 
+ static int walk_pmd_range(pud_t *pud, unsigned long addr, unsigned long end,
+-			  const struct mm_walk *walk, void *private)
++			  struct mm_walk *walk)
+ {
+ 	pmd_t *pmd;
+ 	unsigned long next;
+@@ -35,15 +35,15 @@ static int walk_pmd_range(pud_t *pud, un
+ 		next = pmd_addr_end(addr, end);
+ 		if (pmd_none_or_clear_bad(pmd)) {
+ 			if (walk->pte_hole)
+-				err = walk->pte_hole(addr, next, private);
++				err = walk->pte_hole(addr, next, walk);
+ 			if (err)
+ 				break;
+ 			continue;
+ 		}
+ 		if (walk->pmd_entry)
+-			err = walk->pmd_entry(pmd, addr, next, private);
++			err = walk->pmd_entry(pmd, addr, next, walk);
+ 		if (!err && walk->pte_entry)
+-			err = walk_pte_range(pmd, addr, next, walk, private);
++			err = walk_pte_range(pmd, addr, next, walk);
+ 		if (err)
+ 			break;
+ 	} while (pmd++, addr = next, addr != end);
+@@ -52,7 +52,7 @@ static int walk_pmd_range(pud_t *pud, un
+ }
+ 
+ static int walk_pud_range(pgd_t *pgd, unsigned long addr, unsigned long end,
+-			  const struct mm_walk *walk, void *private)
++			  struct mm_walk *walk)
+ {
+ 	pud_t *pud;
+ 	unsigned long next;
+@@ -63,15 +63,15 @@ static int walk_pud_range(pgd_t *pgd, un
+ 		next = pud_addr_end(addr, end);
+ 		if (pud_none_or_clear_bad(pud)) {
+ 			if (walk->pte_hole)
+-				err = walk->pte_hole(addr, next, private);
++				err = walk->pte_hole(addr, next, walk);
+ 			if (err)
+ 				break;
+ 			continue;
+ 		}
+ 		if (walk->pud_entry)
+-			err = walk->pud_entry(pud, addr, next, private);
++			err = walk->pud_entry(pud, addr, next, walk);
+ 		if (!err && (walk->pmd_entry || walk->pte_entry))
+-			err = walk_pmd_range(pud, addr, next, walk, private);
++			err = walk_pmd_range(pud, addr, next, walk);
+ 		if (err)
+ 			break;
+ 	} while (pud++, addr = next, addr != end);
+@@ -85,15 +85,15 @@ static int walk_pud_range(pgd_t *pgd, un
+  * @addr: starting address
+  * @end: ending address
+  * @walk: set of callbacks to invoke for each level of the tree
+- * @private: private data passed to the callback function
+  *
+  * Recursively walk the page table for the memory area in a VMA,
+  * calling supplied callbacks. Callbacks are called in-order (first
+  * PGD, first PUD, first PMD, first PTE, second PTE... second PMD,
+  * etc.). If lower-level callbacks are omitted, walking depth is reduced.
+  *
+- * Each callback receives an entry pointer, the start and end of the
+- * associated range, and a caller-supplied private data pointer.
++ * Each callback receives an entry pointer and the start and end of the
++ * associated range, and a copy of the original mm_walk for access to
++ * the ->private or ->mm fields.
+  *
+  * No locks are taken, but the bottom level iterator will map PTE
+  * directories from highmem if necessary.
+@@ -101,9 +101,8 @@ static int walk_pud_range(pgd_t *pgd, un
+  * If any callback returns a non-zero value, the walk is aborted and
+  * the return value is propagated back to the caller. Otherwise 0 is returned.
+  */
+-int walk_page_range(const struct mm_struct *mm,
+-		    unsigned long addr, unsigned long end,
+-		    const struct mm_walk *walk, void *private)
++int walk_page_range(unsigned long addr, unsigned long end,
++		    struct mm_walk *walk)
+ {
+ 	pgd_t *pgd;
+ 	unsigned long next;
+@@ -112,21 +111,23 @@ int walk_page_range(const struct mm_stru
+ 	if (addr >= end)
+ 		return err;
+ 
+-	pgd = pgd_offset(mm, addr);
++	if (!walk->mm)
++		return -EINVAL;
++	pgd = pgd_offset(walk->mm, addr);
+ 	do {
+ 		next = pgd_addr_end(addr, end);
+ 		if (pgd_none_or_clear_bad(pgd)) {
+ 			if (walk->pte_hole)
+-				err = walk->pte_hole(addr, next, private);
++				err = walk->pte_hole(addr, next, walk);
+ 			if (err)
+ 				break;
+ 			continue;
+ 		}
+ 		if (walk->pgd_entry)
+-			err = walk->pgd_entry(pgd, addr, next, private);
++			err = walk->pgd_entry(pgd, addr, next, walk);
+ 		if (!err &&
+ 		    (walk->pud_entry || walk->pmd_entry || walk->pte_entry))
+-			err = walk_pud_range(pgd, addr, next, walk, private);
++			err = walk_pud_range(pgd, addr, next, walk);
+ 		if (err)
+ 			break;
+ 	} while (pgd++, addr = next, addr != end);
+diff -puN include/linux/mm.h~pass-mm-into-pagewalkers include/linux/mm.h
+--- linux-2.6.git/include/linux/mm.h~pass-mm-into-pagewalkers	2008-05-08 15:49:47.000000000 -0700
++++ linux-2.6.git-dave/include/linux/mm.h	2008-05-08 15:49:54.000000000 -0700
+@@ -760,16 +760,17 @@ unsigned long unmap_vmas(struct mmu_gath
+  * (see walk_page_range for more details)
+  */
+ struct mm_walk {
+-	int (*pgd_entry)(pgd_t *, unsigned long, unsigned long, void *);
+-	int (*pud_entry)(pud_t *, unsigned long, unsigned long, void *);
+-	int (*pmd_entry)(pmd_t *, unsigned long, unsigned long, void *);
+-	int (*pte_entry)(pte_t *, unsigned long, unsigned long, void *);
+-	int (*pte_hole)(unsigned long, unsigned long, void *);
++	int (*pgd_entry)(pgd_t *, unsigned long, unsigned long, struct mm_walk *);
++	int (*pud_entry)(pud_t *, unsigned long, unsigned long, struct mm_walk *);
++	int (*pmd_entry)(pmd_t *, unsigned long, unsigned long, struct mm_walk *);
++	int (*pte_entry)(pte_t *, unsigned long, unsigned long, struct mm_walk *);
++	int (*pte_hole)(unsigned long, unsigned long, struct mm_walk *);
++	struct mm_struct *mm;
++	void *private;
+ };
+ 
+-int walk_page_range(const struct mm_struct *, unsigned long addr,
+-		    unsigned long end, const struct mm_walk *walk,
+-		    void *private);
++int walk_page_range(unsigned long addr, unsigned long end,
++		struct mm_walk *walk);
+ void free_pgd_range(struct mmu_gather **tlb, unsigned long addr,
+ 		unsigned long end, unsigned long floor, unsigned long ceiling);
+ void free_pgtables(struct mmu_gather **tlb, struct vm_area_struct *start_vma,
+diff -puN fs/proc/task_mmu.c~pass-mm-into-pagewalkers fs/proc/task_mmu.c
+--- linux-2.6.git/fs/proc/task_mmu.c~pass-mm-into-pagewalkers	2008-05-08 15:49:47.000000000 -0700
++++ linux-2.6.git-dave/fs/proc/task_mmu.c	2008-05-08 15:49:59.000000000 -0700
+@@ -317,9 +317,9 @@ struct mem_size_stats {
+ };
+ 
+ static int smaps_pte_range(pmd_t *pmd, unsigned long addr, unsigned long end,
+-			   void *private)
++			   struct mm_walk *walk)
+ {
+-	struct mem_size_stats *mss = private;
++	struct mem_size_stats *mss = walk->private;
+ 	struct vm_area_struct *vma = mss->vma;
+ 	pte_t *pte, ptent;
+ 	spinlock_t *ptl;
+@@ -367,19 +367,22 @@ static int smaps_pte_range(pmd_t *pmd, u
+ 	return 0;
+ }
+ 
+-static struct mm_walk smaps_walk = { .pmd_entry = smaps_pte_range };
+-
+ static int show_smap(struct seq_file *m, void *v)
+ {
+ 	struct vm_area_struct *vma = v;
+ 	struct mem_size_stats mss;
+ 	int ret;
++	struct mm_walk smaps_walk = {
++		.pmd_entry = smaps_pte_range,
++		.mm = vma->vm_mm,
++		.private = &mss,
++	};
++
+ 
+ 	memset(&mss, 0, sizeof mss);
+ 	mss.vma = vma;
+ 	if (vma->vm_mm && !is_vm_hugetlb_page(vma))
+-		walk_page_range(vma->vm_mm, vma->vm_start, vma->vm_end,
+-				&smaps_walk, &mss);
++		walk_page_range(vma->vm_start, vma->vm_end, &smaps_walk);
+ 
+ 	ret = show_map(m, v);
+ 	if (ret)
+@@ -428,9 +431,9 @@ const struct file_operations proc_smaps_
+ };
+ 
+ static int clear_refs_pte_range(pmd_t *pmd, unsigned long addr,
+-				unsigned long end, void *private)
++				unsigned long end, struct mm_walk *walk)
+ {
+-	struct vm_area_struct *vma = private;
++	struct vm_area_struct *vma = walk->private;
+ 	pte_t *pte, ptent;
+ 	spinlock_t *ptl;
+ 	struct page *page;
+@@ -454,8 +457,6 @@ static int clear_refs_pte_range(pmd_t *p
+ 	return 0;
+ }
+ 
+-static struct mm_walk clear_refs_walk = { .pmd_entry = clear_refs_pte_range };
+-
+ static ssize_t clear_refs_write(struct file *file, const char __user *buf,
+ 				size_t count, loff_t *ppos)
+ {
+@@ -478,11 +479,17 @@ static ssize_t clear_refs_write(struct f
+ 		return -ESRCH;
+ 	mm = get_task_mm(task);
+ 	if (mm) {
++		static struct mm_walk clear_refs_walk;
++		memset(&clear_refs_walk, 0, sizeof(clear_refs_walk));
++		clear_refs_walk.pmd_entry = clear_refs_pte_range;
++		clear_refs_walk.mm = mm;
+ 		down_read(&mm->mmap_sem);
+-		for (vma = mm->mmap; vma; vma = vma->vm_next)
++		for (vma = mm->mmap; vma; vma = vma->vm_next) {
++			clear_refs_walk.private = vma;
+ 			if (!is_vm_hugetlb_page(vma))
+-				walk_page_range(mm, vma->vm_start, vma->vm_end,
+-						&clear_refs_walk, vma);
++				walk_page_range(vma->vm_start, vma->vm_end,
++						&clear_refs_walk);
++		}
+ 		flush_tlb_mm(mm);
+ 		up_read(&mm->mmap_sem);
+ 		mmput(mm);
+@@ -540,9 +547,9 @@ static int add_to_pagemap(unsigned long 
+ }
+ 
+ static int pagemap_pte_hole(unsigned long start, unsigned long end,
+-				void *private)
++				struct mm_walk *walk)
+ {
+-	struct pagemapread *pm = private;
++	struct pagemapread *pm = walk->private;
+ 	unsigned long addr;
+ 	int err = 0;
+ 	for (addr = start; addr < end; addr += PAGE_SIZE) {
+@@ -560,9 +567,9 @@ static u64 swap_pte_to_pagemap_entry(pte
+ }
+ 
+ static int pagemap_pte_range(pmd_t *pmd, unsigned long addr, unsigned long end,
+-			     void *private)
++			     struct mm_walk *walk)
+ {
+-	struct pagemapread *pm = private;
++	struct pagemapread *pm = walk->private;
+ 	pte_t *pte;
+ 	int err = 0;
+ 
+@@ -687,8 +694,8 @@ static ssize_t pagemap_read(struct file 
+ 		 * user buffer is tracked in "pm", and the walk
+ 		 * will stop when we hit the end of the buffer.
+ 		 */
+-		ret = walk_page_range(mm, start_vaddr, end_vaddr,
+-					&pagemap_walk, &pm);
++		ret = walk_page_range(start_vaddr, end_vaddr,
++					&pagemap_walk);
+ 		if (ret == PM_END_OF_BUFFER)
+ 			ret = 0;
+ 		/* don't need mmap_sem for these, but this looks cleaner */
+_
 
 
-On Thu, 8 May 2008, Linus Torvalds wrote:
-> 
-> Btw, sparse will complain about those, because the source code *looks* 
-> really cheap.
+-- Dave
 
-Sometimes you can fix it.
-
-For example, this change:
-
-	-       if (pte_present(*pte) && page_to_pfn(page) == pte_pfn(*pte)) {
-	+       if (pte_present(*pte) && page == pfn_to_page(pte_pfn(*pte))) {
-
-can simplify things: instead of moving from a 'struct page' to a pfn, it 
-moves from a pfn to a 'struct page', and that is generally cheaper 
-(multiply rather than divide by size of struct page). It's not always the 
-same thing to do, but I think in this case we can. For me, the code 
-generation changes:
-
-	-       movabsq $7905747460161236407, %rdx      #, tmp111
-	-       movabsq $32985348833280, %rax   #, tmp107
-	-       leaq    (%r12,%rax), %rax       #, tmp106
-	-       sarq    $3, %rax        #, tmp106
-	-       imulq   %rdx, %rax      # tmp111, tmp106
-	-       movabsq $70368744177663, %rdx   #, tmp113
-	-       andq    %rdx, %rcx      # tmp113, pte$pte
-	-       shrq    $12, %rcx       #, pte$pte
-	-       cmpq    %rcx, %rax      # pte$pte, tmp106
-	+       movabsq $70368744177663, %rax   #, tmp107
-	+       andq    %rax, %rdx      # tmp107, pte$pte
-	+       shrq    $12, %rdx       #, pte$pte
-	+       imulq   $56, %rdx, %rax #, pte$pte, tmp109
-	+       movabsq $-32985348833280, %rdx  #, tmp111
-	+       addq    %rdx, %rax      # tmp111, tmp110
-	+       cmpq    %rax, %r13      # tmp110, page
-
-which isn't a *huge* deal, but it certainly looks better. One less big 
-constant, and one less shift.
-
-It's not going to make a huge difference, though. That function is just 
-called too much, and it would still be entirely data-dependent all the way 
-through.
-
-			Linus
