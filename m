@@ -1,90 +1,197 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762652AbYEHLXZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760131AbYEHL2a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762652AbYEHLXZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 07:23:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753509AbYEHLXQ
+	id S1760131AbYEHL2a (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 07:28:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752570AbYEHL2W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 07:23:16 -0400
-Received: from laney.dpool.org ([78.47.134.123]:3864 "EHLO mail1.s.dpool.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752192AbYEHLXP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 07:23:15 -0400
-X-Greylist: delayed 1198 seconds by postgrey-1.27 at vger.kernel.org; Thu, 08 May 2008 07:23:15 EDT
-Message-ID: <4822DDF1.5010500@elsdoerfer.info>
-Date: Thu, 08 May 2008 13:03:13 +0200
-From: =?ISO-8859-1?Q?Michael_Elsd=F6rfer?= <michael@elsdoerfer.info>
-User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
-MIME-Version: 1.0
+	Thu, 8 May 2008 07:28:22 -0400
+Received: from pxy2nd.nifty.com ([202.248.175.14]:27335 "HELO pxy2nd.nifty.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751168AbYEHL2U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 May 2008 07:28:20 -0400
+X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Thu, 08 May 2008 07:28:19 EDT
+X-Nifty-SrcIP: [202.219.216.120]
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=pxy2nd-default; d=mbf.nifty.com;
+  b=T3/kzxzMlSnxLStT+/8Sa379gzel39CNZxTYJCAFchB+M6o94rcYJ6g/G5DzwSbCfXUiIl+qdMP4jm/1uwOfPg==  ;
+Date: Thu, 08 May 2008 16:58:14 +0900 (JST)
+Message-Id: <20080508.165814.197343623.takada@mbf.nifty.com>
 To: linux-kernel@vger.kernel.org
-Subject: Cannot boot any HIGHMEM kernel (kernel panic - not syncing)
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Subject: kernel 2.6.25 with ide driver cs5520 does not boot.
+From: TAKADA Yoshihito <takada@mbf.nifty.com>
+X-Mailer: Mew version 6.0.50 on Emacs 22.2 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Multipart/Mixed;
+ boundary="--Next_Part(Thu_May__8_16_58_14_2008_531)--"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an etch server machine with 3GB of RAM, and I seem unable to
-boot into any kernel (precompiled images from the Debian and OpenVZ 
-repositories, I have so far avoided to compile one myself) that has 
-HIGHMEM enabled, i.e.:
+----Next_Part(Thu_May__8_16_58_14_2008_531)--
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 
-zoidberg:/# dmesg | head
-Warning only 896MB will be used.
-Use a HIGHMEM enabled kernel.
-896MB LOWMEM available.
+HI, all.
+(please CC to me, I'm not on LKML)
 
-Specifically, the only kernel image that seems to work is
-linux-image-2.6.18-6-486 (or the OpenVZ version fzakernel-2.6.18-486)
+kernel 2.6.25 with ide driver cs5520 does not boot.
+Attached part of dmesgs as dmesgs.txt
 
-Everything else seems to fail with:
+kernel 2.6.23 with cs5520 is works correct. cs5520 scans ide0 and ide1.
+kernel 2.6.24 with cs5520 is works wrong, but it can boot. cs5520 scans ide0 only.
+kernel 2.6.25 with cs5520 is works wrong, it cannot boot. 
+kernel 2.6.25 with ide-generic(CONFIG_IDE_GENERIC=y) is works correct.
 
-Setting up standard PCI resources
-ACPI: Interpreter enabled
-ACPI: PCI Root Bridge [PCI0] (0000:00)
-CPU 0: Machine Check Exception: 0000000000000007
-Bank 3: b40000000000083b at 000000fdfc000cfc
-Kernel panic - not syncing: Unable to continue
+cs5520 of 2.6.24 recognize access mode for hda as DMA. In 2.6.25 as DMA and PIO.
+Summaries are:
 
-Specifically, I tried at least the following images from the Debian and
-OpenVZ repositories:
+                  DMA/PIO     ide1              boot
+    2.6.18          DMA       found              OK
+    2.6.19          pio       found              OK
+    2.6.20          pio       found              OK
+    2.6.21          pio       found              OK
+    2.6.22          pio       found              OK
+    2.6.23          pio       found              OK
+    2.6.24          DMA       conflict IO ports  OK
+    2.6.25      DMA and PIO   found              hang
+    2.6.25(ide)    (PIO?)     found              OK
 
-config-2.6.18-openvz-k7
-linux-image-2.6.18-6-686
-fzakernel-2.6.18-686
-fzakernel-2.6.18-686-bigmem
+Threre are 2 in timing to hang. When system hangs, The access LED of HDD turning on. 
+In addigion, I mind that an access mode is PIO, and it is DMA.
 
-Now, Machine Check Exception seems to point towards a hardware error,
-but not only does the 486 kernel appear to work flawlessly, the server
-was perfectly happy running a self-compiled sarge kernel (with HIGHMEM)
-just a couple of days ago.
+Timing to hangs are:
+1:
+hda: IC25N030ATCS04-0, ATA DISK drive
+ide0 at 0x1f0-0x1f7,0x3f6 on irq 14
+hda: max request size: 128KiB
+  (system hangs)
 
-Here's the processor info:
+2:
+hda: IC25N030ATCS04-0, ATA DISK drive
+ide0 at 0x1f0-0x1f7,0x3f6 on irq 14
+hda: max request size: 128KiB
+hda: 58605120 sectors (300005 MB) w/1768KiB Cache, CHS=58140/16/63
+hda: cache flushes not supported
+  (system hangs)
 
-zoidberg:/boot# cat /proc/cpuinfo
-processor       : 0
-vendor_id       : AuthenticAMD
-cpu family      : 15
-model           : 5
-model name      : AMD Opteron(tm) Processor 244
-stepping        : 10
-cpu MHz         : 1794.546
-cache size      : 1024 KB
-fdiv_bug        : no
-hlt_bug         : no
-f00f_bug        : no
-coma_bug        : no
-fpu             : yes
-fpu_exception   : yes
-cpuid level     : 1
-wp              : yes
-flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge
-mca cmov pat pse36 clflush mmx fxsr sse sse2 syscall nx mmxext lm
-3dnowext 3dnow ts fid vid ttp
-bogomips        : 3591.45
+The pattern 1, I invested with printk() and I guess that system hangs at
+  idedisk_setup()
+    init_idedisk_capacity()
+      idedisk_chech_hpa()
+        idedisk_read_native_max_address()
+          ide_no_data_taskfile()
+            ide_raw_taskfile()
+              ide_do_drive_cmd()  <-- did not return
 
-Does anybody know what the issue might be, e.g. what exactly in the 
-non-486 kernels might cause the error?
 
-Thanks,
+The pattern 2, I guess that
+  idedisk_setup()
+    write_cache()
+     update_ordered()
+       blk_queue_ordered()  <-- I confirm reached here
 
-Michael
+
+----Next_Part(Thu_May__8_16_58_14_2008_531)--
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline; filename="dmesgs.txt"
+
+  * in kernel 2.6.23 with cs5520
+Uniform Multi-Platform E-IDE driver Revision: 7.00alpha2
+ide: Assuming 33MHz system bus speed for PIO modes; override with idebus=xx
+Cyrix 5520: IDE controller at PCI slot 0000:00:12.0
+    ide0: BM-DMA at 0x5000-0x5007, BIOS settings: hda:pio, hdb:DMA
+    ide1: BM-DMA at 0x5008-0x500f, BIOS settings: hdc:pio, hdd:DMA
+Probing IDE interface ide0...
+Clocksource tsc unstable (delta = -214979047 ns)
+Time: pit clocksource has been installed.
+hda: IC25N030ATCS04-0, ATA DISK drive
+PIO clocking = 4
+ide0 at 0x1f0-0x1f7,0x3f6 on irq 14
+Probing IDE interface ide1...
+hda: max request size: 128KiB
+hda: 58605120 sectors (30005 MB) w/1768KiB Cache, CHS=58140/16/63
+hda: cache flushes not supported
+ hda: hda1 hda2 hda3
+
+  * in kernel 2.6.24 with cs5520
+Uniform Multi-Platform E-IDE driver Revision: 7.00alpha2
+ide: Assuming 33MHz system bus speed for PIO modes; override with idebus=xx
+Cyrix 5520: IDE controller (0x1078:0x0002 rev 0x00) at  PCI slot 0000:00:12.0
+PCI: Setting latency timer of device 0000:00:12.0 to 64
+    ide0: BM-DMA at 0x5000-0x5007, BIOS settings: hda:DMA, hdb:DMA
+    ide1: BM-DMA at 0x5000-0x5007 -- Error, ports in use.
+Probing IDE interface ide0...
+hda: IC25N030ATCS04-0, ATA DISK drive
+hda: host max PIO4 wanted PIO255(auto-tune) selected PIO4
+hda: host max PIO4 wanted PIO255(auto-tune) selected PIO4
+ide0 at 0x1f0-0x1f7,0x3f6 on irq 14
+Probing IDE interface ide1...
+hda: max request size: 128KiB
+hda: 58605120 sectors (30005 MB) w/1768KiB Cache, CHS=58140/16/63
+hda: cache flushes not supported
+ hda: hda1 hda2 hda3
+
+  * in kernel 2.6.25 with cs5520, 4 patterns
+Uniform Multi-Platform E-IDE driver
+ide: Assuming 33MHz system bus speed for PIO modes; override with idebus=xx
+Cyrix 5520: IDE controller (0x1078:0x0002 rev 0x00) at  PCI slot 0000:00:12.0
+    ide0: BM-DMA at 0x5000-0x5007, BIOS settings: hda:DMA, hdb:DMA
+    ide1: BM-DMA at 0x5008-0x500f, BIOS settings: hdd:DMA, hdd:DMA
+Clocksource tsc unstable (delta = -205934842 ns)
+hda: IC25N030ATCS04-0, ATA DISK drive
+ide0 at 0x1f0-0x1f7,0x3f6 on irq 14
+hda: max request size: 128KiB
+  (system hangs)
+
+Uniform Multi-Platform E-IDE driver
+ide: Assuming 33MHz system bus speed for PIO modes; override with idebus=xx
+Cyrix 5520: IDE controller (0x1078:0x0002 rev 0x00) at  PCI slot 0000:00:12.0
+    ide0: BM-DMA at 0x5000-0x5007, BIOS settings: hda:DMA, hdb:DMA
+    ide1: BM-DMA at 0x5008-0x500f, BIOS settings: hdd:DMA, hdd:DMA
+Clocksource tsc unstable (delta = -205934842 ns)
+hda: IC25N030ATCS04-0, ATA DISK drive
+ide0 at 0x1f0-0x1f7,0x3f6 on irq 14
+hda: max request size: 128KiB
+hda: 58605120 sectors (300005 MB) w/1768KiB Cache, CHS=58140/16/63
+hda: cache flushes not supported
+  (system hangs)
+
+Uniform Multi-Platform E-IDE driver
+ide: Assuming 33MHz system bus speed for PIO modes; override with idebus=xx
+Cyrix 5520: IDE controller (0x1078:0x0002 rev 0x00) at  PCI slot 0000:00:12.0
+    ide0: BM-DMA at 0x5000-0x5007, BIOS settings: hda:PIO, hdb:DMA
+    ide1: BM-DMA at 0x5008-0x500f, BIOS settings: hdd:PIO, hdd:DMA
+Clocksource tsc unstable (delta = -212338808 ns)
+hda: IC25N030ATCS04-0, ATA DISK drive
+ide0 at 0x1f0-0x1f7,0x3f6 on irq 14
+hda: max request size: 128KiB
+  (system hangs)
+
+Uniform Multi-Platform E-IDE driver
+ide: Assuming 33MHz system bus speed for PIO modes; override with idebus=xx
+Cyrix 5520: IDE controller (0x1078:0x0002 rev 0x00) at  PCI slot 0000:00:12.0
+    ide0: BM-DMA at 0x5000-0x5007, BIOS settings: hda:PIO, hdb:DMA
+    ide1: BM-DMA at 0x5008-0x500f, BIOS settings: hdd:PIO, hdd:DMA
+Clocksource tsc unstable (delta = -212338808 ns)
+hda: IC25N030ATCS04-0, ATA DISK drive
+ide0 at 0x1f0-0x1f7,0x3f6 on irq 14
+hda: max request size: 128KiB
+hda: 58605120 sectors (300005 MB) w/1768KiB Cache, CHS=58140/16/63
+hda: cache flushes not supported
+  (system hangs)
+
+  * in kernel 2.6.25 with IDE generic
+Uniform Multi-Platform E-IDE driver
+ide: Assuming 33MHz system bus speed for PIO modes; override with idebus=xx
+Probing IDE interface ide0...
+hda: IC25N030ATCS04-0, ATA DISK drive
+Probing IDE interface ide1...
+ide0 at 0x1f0-0x1f7,0x3f6 on irq 14
+hda: max request size: 128KiB
+hda: 58605120 sectors (30005 MB) w/1768KiB Cache, CHS=58140/16/63
+hda: cache flushes not supported
+ hda: hda1 hda2 hda3
+
+----Next_Part(Thu_May__8_16_58_14_2008_531)----
