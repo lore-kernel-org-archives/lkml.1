@@ -1,55 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755419AbYEHRmF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758238AbYEHRm2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755419AbYEHRmF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 13:42:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751378AbYEHRly
+	id S1758238AbYEHRm2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 13:42:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755209AbYEHRmD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 13:41:54 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:47917 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750858AbYEHRlx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 13:41:53 -0400
-Date: Thu, 8 May 2008 10:27:28 -0700
-From: Greg KH <greg@kroah.com>
-To: linux-kernel@vger.kernel.org, stable@kernel.org,
-       Darren Salt <linux@youmustbejoking.demon.co.uk>
-Subject: Re: [stable] [00/12] 2.6.24-stable review
-Message-ID: <20080508172728.GA29379@kroah.com>
-References: <481792A6.406@web.de> <4F9D5D6690%linux@youmustbejoking.demon.co.uk> <20080501033932.GC6339@kroah.com> <4F9EA73ECC%linux@youmustbejoking.demon.co.uk>
+	Thu, 8 May 2008 13:42:03 -0400
+Received: from cantor.suse.de ([195.135.220.2]:47473 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754722AbYEHRmA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 May 2008 13:42:00 -0400
+Date: Thu, 8 May 2008 10:41:22 -0700
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk
+Subject: [patch 00/16] Linux 2.6.25 -stable review
+Message-ID: <20080508174122.GA855@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4F9EA73ECC%linux@youmustbejoking.demon.co.uk>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 02, 2008 at 04:24:31PM +0100, Darren Salt wrote:
-> I demand that Greg KH may or may not have written...
-> 
-> > On Wed, Apr 30, 2008 at 04:21:44AM +0100, Darren Salt wrote:
-> >> I demand that J??rg-Volker Peetz may or may not have written...
-> >>> How about this one?
-> >>> http://lkml.org/lkml/2008/4/7/55
-> >> And this one? http://lkml.org/lkml/2008/3/13/232
-> >> (commit 03c086a747d0b242878eb881971ec61c1555869d)
-> 
-> > Did anyone send it to stable@kernel.org and ask for it to be included?
-> 
-> I sent it to stable@ when I originally submitted the patch. The message ID is
-> <4F84E87BA4%linux@youmustbejoking.demon.co.uk>.
+This is the start of the stable review cycle for the 2.6.25.2 release.
+There are 16 patches in this series, all will be posted as a response to
+this one.  If anyone has any issues with these being applied, please let
+us know.  If anyone is a maintainer of the proper subsystem, and wants
+to add a Signed-off-by: line to the patch, please respond with it.
 
-Ok, I see it now.
+These patches are sent out with a number of different people on the Cc:
+line.  If you wish to be a reviewer, please email stable@kernel.org to
+add your name to the list.  If you want to be off the reviewer list,
+also email us.
 
-In it you did not mention if this change was already in Linus's tree,
-and if so, what git id it was.  As you sent it primarily to lkml, I
-assumed that it was not upstream at this time, hence I did not apply it.
+Responses should be made by May 10, 17:00:00 UTC.  Anything received
+after that time might be too late.
 
-As 2.6.24 is pretty much not being maintained anymore, I don't think
-this is an issue anymore :)
+The whole patch series can be found in one patch at:
+	kernel.org/pub/linux/kernel/v2.6/stable-review/patch-2.6.25.2-rc1.gz
+and the diffstat can be found below.
+
 
 thanks,
 
-greg k-h
+the -stable release team
+
+---------------
+ Makefile                         |    2 -
+ arch/arm/kernel/kprobes-decode.c |    2 -
+ arch/arm/kernel/kprobes.c        |    2 -
+ arch/x86/pci/common.c            |    7 ++--
+ arch/x86/pci/init.c              |    2 +
+ arch/x86/pci/pci.h               |    2 +
+ crypto/authenc.c                 |    5 +-
+ crypto/cryptd.c                  |    4 +-
+ crypto/eseqiv.c                  |    3 +
+ drivers/acpi/processor_idle.c    |    4 ++
+ drivers/md/md.c                  |    2 -
+ drivers/net/wireless/b43/b43.h   |    4 ++
+ drivers/net/wireless/b43/main.c  |   40 ++++++++++++++++++-----
+ drivers/serial/mpc52xx_uart.c    |    2 -
+ fs/reiserfs/ioctl.c              |    4 --
+ fs/reiserfs/super.c              |   17 +++++++---
+ fs/utimes.c                      |   17 ++++++++--
+ include/crypto/scatterwalk.h     |    4 ++
+ include/linux/reiserfs_fs.h      |    1 
+ kernel/sched.c                   |   66 ++++++++++++++++++++++++++++++++++++++-
+ mm/page_alloc.c                  |   14 +++++++-
+ 21 files changed, 171 insertions(+), 33 deletions(-)
+
