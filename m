@@ -1,69 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933818AbYEHWNA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934062AbYEHWNg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933818AbYEHWNA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 18:13:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764233AbYEHWMn
+	id S934062AbYEHWNg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 18:13:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933418AbYEHWMv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 18:12:43 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:37497 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764216AbYEHWMl (ORCPT
+	Thu, 8 May 2008 18:12:51 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:46488 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S933291AbYEHWMu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 18:12:41 -0400
-Date: Thu, 8 May 2008 15:04:43 -0700
-From: Greg KH <greg@kroah.com>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       "John W. Linville" <linville@tuxdriver.com>,
-       Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: linux-next: the purge :-)
-Message-ID: <20080508220443.GE7705@kroah.com>
-References: <20080508112130.fd574b50.sfr@canb.auug.org.au> <20080508042753.GA6876@kroah.com> <20080508062715.GE14951@cs181133002.pp.htv.fi>
+	Thu, 8 May 2008 18:12:50 -0400
+Message-ID: <48237ADE.3090703@sgi.com>
+Date: Thu, 08 May 2008 15:12:46 -0700
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080508062715.GE14951@cs181133002.pp.htv.fi>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Adrian Bunk <bunk@kernel.org>
+CC: Ingo Molnar <mingo@elte.hu>, lethal@linux-sh.org, linux-sh@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: sh migor_defconfig build breakage
+References: <20080508203949.GC22887@cs181133002.pp.htv.fi> <48236E59.8070400@sgi.com> <4823711D.70401@sgi.com> <482376BC.2000404@sgi.com>
+In-Reply-To: <482376BC.2000404@sgi.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 08, 2008 at 09:27:15AM +0300, Adrian Bunk wrote:
-> On Wed, May 07, 2008 at 09:27:53PM -0700, Greg KH wrote:
-> > On Thu, May 08, 2008 at 11:21:30AM +1000, Stephen Rothwell wrote:
-> > > Greg, you might consider setting up a subset (currently probably
-> > > empty) of the ldp tree for drivers that are readier for integration.
-> > 
-> > Ok, fair enough, I totally understand.
-> > 
-> > I've now moved my trees around a bit, and would like it if you could
-> > include the following, in this order (the # NEXT_BASE variable is set in
-> > them to make sure things get ordered properly.)
-> > 	driver-core.next
-> > 	usb.next
-> > 	driver-core
-> > 	usb
-> > 	ldp.next
-> > 
-> > The ".next" trees are what is going to Linus before the next major
-> > release happens (bugfixes and new device ids at this point in time for
-> > example.)  The other trees are what is going to go to Linus after the
-> > next major kernel is out.
-> >...
+Mike Travis wrote:
+> Mike Travis wrote:
+>> Mike Travis wrote:
+>>> Adrian Bunk wrote:
+>>>> Commit aa6b54461cc5c0019b9d792adf3176b444c10763
+>>>> (asm-generic: add node_to_cpumask_ptr macro)
+>>>> causes the following build error with migor_defconfig:
+>>>>
+>>>> <--  snip  -->
+>>>>
+>>>> ...
+>>>>   CC      arch/sh/kernel/asm-offsets.s
+>>>> In file included from /home/bunk/linux/kernel-2.6/git/linux-2.6/include/linux/mm.h:8,
+>>>>                  from /home/bunk/linux/kernel-2.6/git/linux-2.6/arch/sh/kernel/asm-offsets.c:13:
+>>>> /home/bunk/linux/kernel-2.6/git/linux-2.6/include/linux/gfp.h: In function 'alloc_pages_node':
+>>>> /home/bunk/linux/kernel-2.6/git/linux-2.6/include/linux/gfp.h:190: 
+>>>> error: implicit declaration of function 'cpu_to_node'
+>>>> make[2]: *** [arch/sh/kernel/asm-offsets.s] Error 1
+>>>>
+>>>> <--  snip  -->
+>>>>
+>>>> cu
+>>>> Adrian
+...
 > 
-> So the "next" in your .next has the opposite meaning of the one in 
-> linux-next?
+> It looks like the migor_config has NUMA=y so is there not a cpu_to_node function?
+> (looking with cscope didn't find it.)
+> 
+> I believe this may be the source of the error:
+> 
+> include/linux/gfp.h:
+> 
+> static inline struct page *alloc_pages_node(int nid, gfp_t gfp_mask,
+>                                                 unsigned int order)
+> {
+> ...
+>         /* Unknown node is current node */
+>         if (nid < 0)
+>                 nid = numa_node_id();
+> 
+> 
+> include/linux/mmzone.h:
+> 
+> #include <linux/topology.h>
+> /* Returns the number of the current Node. */
+> #ifndef numa_node_id
+> #define numa_node_id()          (cpu_to_node(raw_smp_processor_id()))
+> #endif
+> 
+> 
+> I can't put into include/linux/topology.h the catchall default:
+> 
+> #ifndef cpu_to_node
+> #define cpu_to_node(cpu)	(0)
+> #endif
+> 
+> Because some arch's have it defined as an inline function.  Perhaps the
+> easiest would be to add to include/asm-sh/topology.h a simple define of
+> cpu_to_node()?
+> 
+> Thanks,
+> Mike
 
-It does?  I was following the convention that people used for their git
-tree branch names I thought.
 
-> Can you name it .fixes instead to make it clearer?
+Ahh, this is what caused the error.  In include/asm-generic/topology.h
+cpu_to_node is only defined now if NUMA is turned off.
 
-I can name it anything that Stephen wants me to, I'll defer to him as he
-is the only one that will ever really see this.
+#ifndef CONFIG_NUMA
 
-thanks,
+/* Other architectures wishing to use this simple topology API should fill
+   in the below functions as appropriate in their own <asm/topology.h> file. */
+#ifndef cpu_to_node
+#define cpu_to_node(cpu)        ((void)(cpu),0)
+#endif
+...
 
-greg k-h
+So before my change arch 'sh' used the default define whether NUMA was
+set or not.
+
+An alternative would be to change all the arch's that define cpu_to_node
+as an inline to:
+
+#define cpu_to_node(cpu)	_cpu_to_node(cpu)
+static inline int _cpu_to_node(int cpu)
+{
+	...
+}
+
+Then include/linux/topology could define cpu_to_node if it's not already
+defined.
+
+Andrew or Ingo - do you have any preferences?
+
+Thanks,
+Mike
+
