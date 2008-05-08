@@ -1,53 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761995AbYEHKAa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761844AbYEHKHX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761995AbYEHKAa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 06:00:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756690AbYEHKAU
+	id S1761844AbYEHKHX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 06:07:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757342AbYEHKHL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 06:00:20 -0400
-Received: from mail.gmx.net ([213.165.64.20]:59693 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1756816AbYEHKAR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 06:00:17 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX183ljwRz+Q3YgZBN+bejv71HJ9wiNT1hgRj4MljVL
-	x6cFOk5Hga3B9i
-Subject: Re: sysbench+mysql(oltp, readonly) 30% regression with 2.6.26-rc1
-From: Mike Galbraith <efault@gmx.de>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080508092547.GA32574@elte.hu>
-References: <1210136148.3453.59.camel@ymzhang>
-	 <1210177575.6525.4.camel@lappy.programming.kicks-ass.net>
-	 <1210228531.3453.124.camel@ymzhang>
-	 <1210233617.4895.6.camel@marge.simson.net> <20080508084607.GA31515@elte.hu>
-	 <20080508092547.GA32574@elte.hu>
-Content-Type: text/plain
-Date: Thu, 08 May 2008 12:00:14 +0200
-Message-Id: <1210240814.6933.0.camel@marge.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
+	Thu, 8 May 2008 06:07:11 -0400
+Received: from www.tglx.de ([62.245.132.106]:46685 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756992AbYEHKHJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 May 2008 06:07:09 -0400
+Date: Thu, 8 May 2008 12:06:18 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Daniel Walker <dwalker@mvista.com>
+cc: Pierre Peiffer <peifferp@gmail.com>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: futex: priority wakeup miss ordering
+In-Reply-To: <1210195378.17132.237.camel@localhost.localdomain>
+Message-ID: <alpine.LFD.1.10.0805081156450.3318@apollo.tec.linutronix.de>
+References: <1210195378.17132.237.camel@localhost.localdomain>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Thu, 2008-05-08 at 11:25 +0200, Ingo Molnar wrote:
-> * Ingo Molnar <mingo@elte.hu> wrote:
+On Wed, 7 May 2008, Daniel Walker wrote:
 > 
-> > -	down(&kernel_sem);
-> > +	if (panic_timeout) {
-> > +		while (down_trylock(&kernel_sem))
-> > +			cpu_relax();
+> from commit ec92d08292d3e9b0823eba138a4564d2d39f25c7
 > 
-> updated one below - this will work fine in the !panic_timeout case too 
-> ;-)
+> The wakeup ordering should be in priority order. However if the priority
+> of a task is modified while it's waiting on the futex you will get an
+> out of order wakeup.
+> 
+> If you use a priority inheriting mutex this is correct. It's because the
+> rtmutex hooks into sched_setscheduler to catch any priority changes,
+> then re-queues with the new priority.. But the futex doesn't have this
+> hook.
+> 
+> Was this intentionally left out of this priority wake up patch? I
+> thought I would let you know in case you had a specific reason for not
+> handling this.. 
 
-Same result.
+IIRC this has been discussed before. The priority ordering of the
+plain mutex waiters is an optimization without guarantees of
+correctness across a priority change. It's simply not worth the
+additional complexity and overhead for that corner case.
 
-	-Mike
+Thanks,
 
+	tglx
