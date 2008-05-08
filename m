@@ -1,86 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754085AbYEHRkv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755419AbYEHRmF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754085AbYEHRkv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 13:40:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751378AbYEHRkh
+	id S1755419AbYEHRmF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 13:42:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751378AbYEHRly
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 13:40:37 -0400
-Received: from mail.gmx.net ([213.165.64.20]:60455 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751213AbYEHRkg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 13:40:36 -0400
-X-Authenticated: #23875046
-X-Provags-ID: V01U2FsdGVkX18Y87ROmSMYXx0nSDirmgYRv3avT/3VOWSL6M13sQ
-	UA+Xwvej9tWKy8
-Subject: Re: [PATCH] Re: [git patches] libata updates - (improve post-reset
-	device ready test) regression
-From: Alexey Fisher <bug-track@fisher-privat.net>
-To: Markus Trippelsdorf <markus@trippelsdorf.de>
-Cc: Takashi Iwai <tiwai@suse.de>, Jeff Garzik <jeff@garzik.org>,
-       linux-ide@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, htejun@gmail.com,
-       marc.c.dionne@gmail.com, dl9pf@gmx.de, sitsofe@yahoo.com
-In-Reply-To: <20080508161805.GA3941@gentoox2.trippelsdorf.de>
-References: <20080506154847.GA15299@havoc.gtf.org>
-	 <20080507145616.GA2210@gentoox2.trippelsdorf.de>
-	 <48231DAF.7070900@garzik.org> <s5hhcd83hor.wl%tiwai@suse.de>
-	 <20080508161805.GA3941@gentoox2.trippelsdorf.de>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-zqqlaBvoMjTrTj3+GKeY"
-Date: Thu, 08 May 2008 19:40:32 +0200
-Message-Id: <1210268432.5061.0.camel@zwerg>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 
-X-Y-GMX-Trusted: 0
+	Thu, 8 May 2008 13:41:54 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:47917 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750858AbYEHRlx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 May 2008 13:41:53 -0400
+Date: Thu, 8 May 2008 10:27:28 -0700
+From: Greg KH <greg@kroah.com>
+To: linux-kernel@vger.kernel.org, stable@kernel.org,
+       Darren Salt <linux@youmustbejoking.demon.co.uk>
+Subject: Re: [stable] [00/12] 2.6.24-stable review
+Message-ID: <20080508172728.GA29379@kroah.com>
+References: <481792A6.406@web.de> <4F9D5D6690%linux@youmustbejoking.demon.co.uk> <20080501033932.GC6339@kroah.com> <4F9EA73ECC%linux@youmustbejoking.demon.co.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4F9EA73ECC%linux@youmustbejoking.demon.co.uk>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, May 02, 2008 at 04:24:31PM +0100, Darren Salt wrote:
+> I demand that Greg KH may or may not have written...
+> 
+> > On Wed, Apr 30, 2008 at 04:21:44AM +0100, Darren Salt wrote:
+> >> I demand that J??rg-Volker Peetz may or may not have written...
+> >>> How about this one?
+> >>> http://lkml.org/lkml/2008/4/7/55
+> >> And this one? http://lkml.org/lkml/2008/3/13/232
+> >> (commit 03c086a747d0b242878eb881971ec61c1555869d)
+> 
+> > Did anyone send it to stable@kernel.org and ask for it to be included?
+> 
+> I sent it to stable@ when I originally submitted the patch. The message ID is
+> <4F84E87BA4%linux@youmustbejoking.demon.co.uk>.
 
---=-zqqlaBvoMjTrTj3+GKeY
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Ok, I see it now.
 
-Am Donnerstag, den 08.05.2008, 18:18 +0200 schrieb Markus Trippelsdorf:
-> On Thu, May 08, 2008 at 06:05:08PM +0200, Takashi Iwai wrote:
-> > At Thu, 08 May 2008 11:35:11 -0400,
-> > Jeff Garzik wrote:
-> > >=20
-> > > Markus Trippelsdorf wrote:
-> > > >> Tejun Heo (12):
-> > > >>       libata: improve post-reset device ready test
-> > > >=20
-> > > > This commit (78ab88f04f44bed566d51dce0c7cbfeff6449a06) causes a lon=
-g
-> > > > boot delay with my onboard Promise controller. It seems like libata
-> > > > probes for a nonexisting PATA drive...
-> > > >=20
-> > >=20
-> > > Does the attached patch fix things?
-> > >=20
-> > > It basically reverts the patch, while still maintaining the=20
-> > > consolidation.  It looks like that status evaluation is not as univer=
-sal=20
-> > > as believed.
-> >=20
-> > Yes, the patch fixes the problem on my machine.
-> >=20
->=20
-> Your patch fixes the problem for me, too...
+In it you did not mention if this change was already in Linus's tree,
+and if so, what git id it was.  As you sent it primarily to lkml, I
+assumed that it was not upstream at this time, hence I did not apply it.
 
-me too :)
+As 2.6.24 is pretty much not being maintained anymore, I don't think
+this is an issue anymore :)
 
---=-zqqlaBvoMjTrTj3+GKeY
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: Dies ist ein digital signierter Nachrichtenteil
+thanks,
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBIIzsQVVCoNUmKuAcRAlvvAJ494nQ2vJyQdg3ab/+1U//U/YOPjACfaoNT
-FJa/sSeHV9bTU8nlR8gwCFY=
-=wwxw
------END PGP SIGNATURE-----
-
---=-zqqlaBvoMjTrTj3+GKeY--
-
+greg k-h
