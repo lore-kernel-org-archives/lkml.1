@@ -1,68 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762513AbYEHKRI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762223AbYEHKUs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762513AbYEHKRI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 06:17:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757342AbYEHKQz
+	id S1762223AbYEHKUs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 06:20:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757634AbYEHKUk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 06:16:55 -0400
-Received: from gw.goop.org ([64.81.55.164]:41151 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757020AbYEHKQy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 06:16:54 -0400
-Message-ID: <4822D30E.5010506@goop.org>
-Date: Thu, 08 May 2008 11:16:46 +0100
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Thu, 8 May 2008 06:20:40 -0400
+Received: from smtp-out04.alice-dsl.net ([88.44.63.6]:39414 "EHLO
+	smtp-out04.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757226AbYEHKUi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 May 2008 06:20:38 -0400
+To: Rene Herman <rene.herman@keyaccess.nl>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Adrian Bunk <bunk@kernel.org>, Yinghai Lu <yhlu.kernel@gmail.com>,
+       Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel <linux-kernel@vger.kernel.org>, akpm@linux-foundation.org,
+       Pavel Machek <pavel@suse.cz>
+Subject: Re: [PATCH] x86: introduce a new Linux defined feature flag for PAT support
+From: Andi Kleen <andi@firstfloor.org>
+References: <48210A71.1060409@keyaccess.nl>
+	<86802c440805061939q39ff5500h3c9e229ecbc6b2e6@mail.gmail.com>
+	<20080507124650.GD29935@cs181133002.pp.htv.fi>
+	<alpine.LFD.1.10.0805072122270.3318@apollo.tec.linutronix.de>
+	<48221AE3.6020602@keyaccess.nl> <482233F0.7040000@zytor.com>
+	<48224318.8020209@keyaccess.nl> <48224361.5080102@zytor.com>
+	<48224507.8010102@keyaccess.nl>
+	<alpine.LFD.1.10.0805071716060.3024@woody.linux-foundation.org>
+	<48224930.9030901@keyaccess.nl> <48225DEC.2030502@keyaccess.nl>
+Date: Thu, 08 May 2008 12:19:35 +0200
+In-Reply-To: <48225DEC.2030502@keyaccess.nl> (Rene Herman's message of "Thu, 08 May 2008 03:57:00 +0200")
+Message-ID: <878wylayiw.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Li Zefan <lizf@cn.fujitsu.com>, Paul Menage <menage@google.com>,
-       Jeremy Fitzhardinge <jeremy@xensource.com>, Andi Kleen <ak@suse.de>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [PATCH] call_usermodehelper_setup() should use GFP_KERNEL
-References: <20080508153337.0EEE.KOSAKI.MOTOHIRO@jp.fujitsu.com>	<4822AA6F.5040703@cn.fujitsu.com>	<20080508163039.0EF4.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20080508012957.c778c8e7.akpm@linux-foundation.org>
-In-Reply-To: <20080508012957.c778c8e7.akpm@linux-foundation.org>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 08 May 2008 10:12:38.0563 (UTC) FILETIME=[0B265730:01C8B0F4]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Thu, 08 May 2008 16:31:29 +0900 KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
+Rene Herman <rene.herman@keyaccess.nl> writes:
 >
->   
->>> KOSAKI Motohiro wrote:
->>>       
->>>> Now, call_usermodehelper_setup() use GFP_ATOMIC.
->>>> but it is slighly odd.
->>>> because call_usermodehelper() is always called process context.
->>>>
->>>>         
->>> Are you sure? I found the following call chain:
->>>
->>>   static irqreturn_t power_handler(int irq, void *dev_id)
->>>   ->orderly_poweroff(true);
->>>     ->call_usermodehelper_setup()
->>>       
->> sorry, you are right.
->> I'll make patch again.
->>     
->
-> How many times do we have to make this mistake :(
->
-> Only the caller knows what allocation mode the callee can use. 
-> call_usermodehelper_setup() should be extended to take a gfp_t argument.
->   
+> Use a new Linux defined X86_FEATURE_PAT_GOOD feature flag to
 
-Yeah, but making the caller need to know about the internal 
-implementation details of the callee (ie, whether it needs to allocate 
-memory or not) leads to pretty warty interfaces.  In this case, you 
-could push the gfp_t up to the call_usermodehelper_setup() level, but 
-pushing it any higher wouldn't make much sense.
+Better would be PAT_TESTED or PAT_RANDOMLY_APPROVED.
+Most of these CPUs without PAT_GOOD have actually perfectly good PAT, as 
+Windows proves every day.
 
-Not that I have a better answer.
+The main flaw in all of this of course is that there is no procedure to test
+CPUs which do not have the flag set yet.
 
-    J
+-Andi
+
