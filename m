@@ -1,54 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761019AbYEHIB1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761362AbYEHIBw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761019AbYEHIB1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 04:01:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759384AbYEHIAp
+	id S1761362AbYEHIBw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 04:01:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759627AbYEHIBf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 04:00:45 -0400
-Received: from fnoeppeil48.netpark.at ([217.175.205.176]:37961 "EHLO
+	Thu, 8 May 2008 04:01:35 -0400
+Received: from fnoeppeil48.netpark.at ([217.175.205.176]:53446 "EHLO
 	roarinelk.homelinux.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752713AbYEHIAn (ORCPT
+	with ESMTP id S1755071AbYEHIBd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 04:00:43 -0400
-Date: Thu, 8 May 2008 10:00:40 +0200
+	Thu, 8 May 2008 04:01:33 -0400
+Date: Thu, 8 May 2008 10:01:30 +0200
 From: Manuel Lauss <mano@roarinelk.homelinux.net>
 To: linux-mips@linux-mips.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 0/7] au1xmmc updates, #2
-Message-ID: <20080508080040.GA24383@roarinelk.homelinux.net>
+Subject: [PATCH 1/7] Alchemy: export get_au1x00_speed for modules
+Message-ID: <20080508080130.GB24383@roarinelk.homelinux.net>
+References: <20080508080040.GA24383@roarinelk.homelinux.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20080508080040.GA24383@roarinelk.homelinux.net>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+>From 9c59794676b21768624335cc21a7f455b4e69057 Mon Sep 17 00:00:00 2001
+From: Manuel Lauss <mlau@msc-ge.com>
+Date: Wed, 7 May 2008 13:42:55 +0200
+Subject: [PATCH] Alchemy: export get_au1x00_speed for modules
 
-The following set of patches remove demoboard-specific code from the
-au1xmmc.c driver and add new features.
+au1xmmc.c driver depends on it, so export it for modules.
 
-My main motivation was to let boards implement other carddetect schemes,
-since on one of my boards the driver-implemented poll timer doesn't work
-for some unknown reason.  But this board does have a dedicated carddetect
-IRQ and card-present/card-readonly indicators which are incompatible with
-the Db1200 implementation.  I also took the opportunity to clean up the
-drivers probe() and irq() handlers to make it a "proper" platform device
-(patches #3 and #4).
+Signed-off-by: Manuel Lauss <mano@roarinelk.homelinux.net>
+---
+ arch/mips/au1000/common/clocks.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Patch #1 is required to get the driver to build as a module.
-Patch #2 is required to be able to load/unload the driver > 16 times.
-Patches #5 and #6 implement new features.
-Patch #7 does a little codingstyle cleanup, no functional changes.
+diff --git a/arch/mips/au1000/common/clocks.c b/arch/mips/au1000/common/clocks.c
+index 3ce6cac..6dbc87a 100644
+--- a/arch/mips/au1000/common/clocks.c
++++ b/arch/mips/au1000/common/clocks.c
+@@ -46,7 +46,7 @@ unsigned int get_au1x00_speed(void)
+ {
+ 	return au1x00_clock;
+ }
+-
++EXPORT_SYMBOL(get_au1x00_speed);
+ 
+ 
+ /*
+-- 
+1.5.5.1
 
-Change since V1:
-- fix a bug in patch #6: SDIO irq should be checked for independently
-  from other irq events.
-- more trivial cleanups
-
-Db1200 users, please test!  I verified the poll timer works on one of
-older boards, however since I don't have Db1200 and Pb1200 boards I'm
-not sure whether the driver still works with both SD controllers enabled!
-
-Thanks!
-	Manuel Lauss
