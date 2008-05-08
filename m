@@ -1,89 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757247AbYEHXTB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765451AbYEHXUf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757247AbYEHXTB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 19:19:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754283AbYEHXS1
+	id S1765451AbYEHXUf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 19:20:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753192AbYEHXUP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 19:18:27 -0400
-Received: from mo11.iij4u.or.jp ([210.138.174.79]:53482 "EHLO mo11.iij4u.or.jp"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753983AbYEHXSY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 19:18:24 -0400
-Date: Fri, 9 May 2008 08:13:46 +0900
-To: alexisb@us.ibm.com
-Cc: linux-kernel@vger.kernel.org, muli@il.ibm.com
-Subject: Re: [RFC][PATCH] x86 calgary: add fallback dma_ops]]
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <1210282820.6114.209.camel@alexis>
-References: <1210282820.6114.209.camel@alexis>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20080509081322J.tomof@acm.org>
+	Thu, 8 May 2008 19:20:15 -0400
+Received: from e35.co.us.ibm.com ([32.97.110.153]:38235 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753895AbYEHXUN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 May 2008 19:20:13 -0400
+Date: Thu, 8 May 2008 16:19:52 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Dave Young <hidave.darkstar@gmail.com>, joe@perches.com,
+       davem@davemloft.net, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH -mm][v2] ratelimit rewrite
+Message-ID: <20080508231952.GC13851@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20080506022558.GA2904@darkstar.te-china.tietoenator.com> <20080508122514.63482a06.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080508122514.63482a06.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 08 May 2008 14:40:20 -0700
-Alexis Bruemmer <alexisb@us.ibm.com> wrote:
+On Thu, May 08, 2008 at 12:25:14PM -0700, Andrew Morton wrote:
+> On Tue, 6 May 2008 10:25:58 +0800
+> Dave Young <hidave.darkstar@gmail.com> wrote:
+> 
+> >  static inline void rcu_enter_nohz(void)
+> >  {
+> > +	static DEFINE_RATELIMIT_STATE(rs, 10 * HZ, 1);
+> >  	smp_mb(); /* CPUs seeing ++ must see prior RCU read-side crit sects */
+> >  	__get_cpu_var(rcu_dyntick_sched).dynticks++;
+> > -	WARN_ON_SECS(__get_cpu_var(rcu_dyntick_sched).dynticks & 0x1, 10);
+> > +	WARN_ON_RATELIMIT(__get_cpu_var(rcu_dyntick_sched).dynticks & 0x1, &rs);
+> >  }
+> >  
+> >  static inline void rcu_exit_nohz(void)
+> >  {
+> > +	static DEFINE_RATELIMIT_STATE(rs, 10 * HZ, 1);
+> >  	__get_cpu_var(rcu_dyntick_sched).dynticks++;
+> >  	smp_mb(); /* CPUs seeing ++ must see later RCU read-side crit sects */
+> > -	WARN_ON_SECS(!(__get_cpu_var(rcu_dyntick_sched).dynticks & 0x1), 10);
+> > +	WARN_ON_RATELIMIT(!(__get_cpu_var(rcu_dyntick_sched).dynticks & 0x1),
+> > +			&rs);
+> 
+> Why are we altering the RCU code in this patch, btw?  It seems fairly
+> random that we happened to choose these particular WARN_ONs.  Do they have
+> a history of triggering?
 
-> Currently the calgary code can give drivers addresses above 4GB which is
-> very bad for hardware that is only 32bit DMA addressable.  This patch
-> "teaches" calgary to fallback to the appropriate dma_ops when it
-> encounters a device/bus which is not behind the Calgary/CalIOC2.  I
-> believe there is a better way to do this and am open for ideas, but for
-> now this certainly fixes the badness.
+Yep -- there was a bug in this code a few months ago that was the
+motivation for Dave's WARN_ON_RATELIMIT().  The bug has since been fixed,
+so I would not expect this to trigger anymore, though.
 
-I'm not sure that I correctly understand what you want. You mean that
-the Calgary IOMMU code ignores device's dma_mask and gives addresses
-above 4GB or the Calgary IOMMU code wrongly handles devices that are
-not behind the Calgary?
-
-If you refers to the former problem, other IOMMU implementations do
-something like this.
-
-
-diff --git a/arch/x86/kernel/pci-calgary_64.c b/arch/x86/kernel/pci-calgary_64.c
-index e28ec49..2a977bc 100644
---- a/arch/x86/kernel/pci-calgary_64.c
-+++ b/arch/x86/kernel/pci-calgary_64.c
-@@ -268,21 +268,37 @@ static unsigned long iommu_range_alloc(struct device *dev,
- {
- 	unsigned long flags;
- 	unsigned long offset;
-+	unsigned long limit;
- 	unsigned long boundary_size;
-+	unsigned long start;
-+	unsigned long mask;
- 
- 	boundary_size = ALIGN(dma_get_seg_boundary(dev) + 1,
- 			      PAGE_SIZE) >> PAGE_SHIFT;
- 
- 	BUG_ON(npages == 0);
- 
-+	if (dev->dma_mask)
-+		mask = *dev->dma_mask >> PAGE_SHIFT;
-+	else
-+		mask = 0xfffffffful >> PAGE_SHIFT;
-+
-+	limit = tbl->it_size;
-+	start = tbl->it_hint;
-+
-+	if (limit > mask) {
-+		limit = mask + 1;
-+		start = tbl->it_hint & mask;
-+	}
-+
- 	spin_lock_irqsave(&tbl->it_lock, flags);
- 
--	offset = iommu_area_alloc(tbl->it_map, tbl->it_size, tbl->it_hint,
-+	offset = iommu_area_alloc(tbl->it_map, limit, start,
- 				  npages, 0, boundary_size, 0);
- 	if (offset == ~0UL) {
- 		tbl->chip_ops->tce_cache_blast(tbl);
- 
--		offset = iommu_area_alloc(tbl->it_map, tbl->it_size, 0,
-+		offset = iommu_area_alloc(tbl->it_map, limit, 0,
- 					  npages, 0, boundary_size, 0);
- 		if (offset == ~0UL) {
- 			printk(KERN_WARNING "Calgary: IOMMU full.\n");
+							Thanx, Paul
