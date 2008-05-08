@@ -1,58 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756699AbYEHRob@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765631AbYEHRo4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756699AbYEHRob (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 13:44:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756661AbYEHRnO
+	id S1765631AbYEHRo4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 13:44:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756206AbYEHRnP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 13:43:14 -0400
-Received: from mjg.x.mythic-beasts.com ([93.93.128.6]:56631 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1760427AbYEHRnM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 May 2008 13:43:15 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:33434 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760646AbYEHRnM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 8 May 2008 13:43:12 -0400
-Date: Thu, 8 May 2008 18:42:55 +0100
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Dag Bakke <dag@bakke.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-input@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Jiri Kosina <jkosina@suse.cz>,
-       "Diego 'Flameeyes' Petteno" <flameeyes@gmail.com>
-Message-ID: <20080508174255.GA8136@srcf.ucam.org>
-References: <4814612F.5030606@bakke.com> <20080506125406.dc047710.akpm@linux-foundation.org> <20080506234307.GA27714@srcf.ucam.org> <4823386A.6000501@bakke.com>
+Date: Thu, 8 May 2008 10:42:00 -0700
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
+Cc: Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       Dan Williams <dan.j.williams@intel.com>, Neil Brown <neilb@suse.de>
+Subject: [patch 03/16] md: fix use after free when removing rdev via sysfs
+Message-ID: <20080508174200.GD855@suse.de>
+References: <20080508173436.454278564@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4823386A.6000501@bakke.com>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-Subject: Re: [PATCH] fix apple alu keyboard with numpad
-X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
-X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
+Content-Disposition: inline; filename="md-fix-use-after-free-when-removing-rdev-via-sysfs.patch"
+In-Reply-To: <20080508174122.GA855@suse.de>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 08, 2008 at 07:29:14PM +0200, Dag Bakke wrote:
-> Matthew Garrett wrote, On 05/07/2008 01:43 AM:
-> >On Tue, May 06, 2008 at 12:54:06PM -0700, Andrew Morton wrote:
-> >
-> >>>-static int hid_apple_fnmode = 1;
-> >>>+static int hid_apple_fnmode = 2;
-> >
-> >Regardless of anything else, we don't want this hunk.
-> >
-> 
-> Was my reasoning for this change off ("F-keys used more often that 
-> multimediakeys, ergo make that the default"), or is your resistance to 
-> this change due to some kind of policy?
+2.6.25-stable review patch.  If anyone has any objections, please let us
+know.
 
-It's a change in behaviour of a wide range of keyboards, and it's in a 
-patch that is supposed to be fixing a single keyboard. Personally, I 
-suspect that the people who are going to want the F-keys by default are 
-the people who are easily able to change this behaviour and the ones who 
-aren't are the ones who are going to expect their keyboard to behave 
-like it did under MacOS. But that's a separate argument for a separate 
-patch :)
+------------------
+From: Dan Williams <dan.j.williams@intel.com>
+
+commit: 6a51830e14529063cb2685921e1177d9af50e49a upstream
+
+rdev->mddev is no longer valid upon return from entry->store() when the
+'remove' command is given.
+
+Signed-off-by: Dan Williams <dan.j.williams@intel.com>
+Signed-off-by: Neil Brown <neilb@suse.de>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
+---
+ drivers/md/md.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- a/drivers/md/md.c
++++ b/drivers/md/md.c
+@@ -2096,7 +2096,7 @@ rdev_attr_store(struct kobject *kobj, st
+ 			rv = -EBUSY;
+ 		else
+ 			rv = entry->store(rdev, page, length);
+-		mddev_unlock(rdev->mddev);
++		mddev_unlock(mddev);
+ 	}
+ 	return rv;
+ }
 
 -- 
-Matthew Garrett | mjg59@srcf.ucam.org
