@@ -1,37 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758285AbYEHI3S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758734AbYEHIa6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758285AbYEHI3S (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 04:29:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753367AbYEHI24
+	id S1758734AbYEHIa6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 04:30:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753368AbYEHIaj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 04:28:56 -0400
-Received: from mtagate2.uk.ibm.com ([195.212.29.135]:6522 "EHLO
-	mtagate2.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752991AbYEHI2y (ORCPT
+	Thu, 8 May 2008 04:30:39 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:36410 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753220AbYEHIah (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 04:28:54 -0400
-Date: Thu, 8 May 2008 10:28:44 +0200
-From: Cornelia Huck <cornelia.huck@de.ibm.com>
-To: ebiederm@xmission.com (Eric W. Biederman)
-Cc: Greg KH <gregkh@suse.de>, Benjamin Thery <benjamin.thery@bull.net>,
-       linux-kernel@vger.kernel.org, Tejun Heo <htejun@gmail.com>,
-       Al Viro <viro@ftp.linux.org.uk>, Daniel Lezcano <dlezcano@fr.ibm.com>,
-       "Serge E. Hallyn" <serue@us.ibm.com>,
-       Pavel Emelyanov <xemul@openvz.org>, netdev@vger.kernel.org
-Subject: Re: [PATCH 10/11] avoid kobject name conflict with different
- namespaces
-Message-ID: <20080508102844.25642ef7@gondolin.boeblingen.de.ibm.com>
-In-Reply-To: <m1hcd9esxo.fsf@frodo.ebiederm.org>
-References: <20080506173030.653828076@theryb.frec.bull.fr>
-	<20080506173335.922289888@theryb.frec.bull.fr>
-	<m13aoueyq8.fsf@frodo.ebiederm.org>
-	<20080507190838.GA4467@suse.de>
-	<m1hcd9esxo.fsf@frodo.ebiederm.org>
-Organization: IBM Deutschland Entwicklung GmbH Vorsitzender des
- Aufsichtsrats: Martin Jetter =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?=
- Herbert Kircher Sitz der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?=
- Registergericht: Amtsgericht Stuttgart, HRB 243294
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.9; i486-pc-linux-gnu)
+	Thu, 8 May 2008 04:30:37 -0400
+Date: Thu, 8 May 2008 01:29:57 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Li Zefan <lizf@cn.fujitsu.com>, Paul Menage <menage@google.com>,
+       Jeremy Fitzhardinge <jeremy@xensource.com>, Andi Kleen <ak@suse.de>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [PATCH] call_usermodehelper_setup() should use GFP_KERNEL
+Message-Id: <20080508012957.c778c8e7.akpm@linux-foundation.org>
+In-Reply-To: <20080508163039.0EF4.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+References: <20080508153337.0EEE.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	<4822AA6F.5040703@cn.fujitsu.com>
+	<20080508163039.0EF4.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -39,18 +31,25 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 07 May 2008 13:54:27 -0700,
-ebiederm@xmission.com (Eric W. Biederman) wrote:
+On Thu, 08 May 2008 16:31:29 +0900 KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
 
-> > I thought that s390 also used it, but I don't see
-> > that usage in the tree anymore, perhaps they switched to something else.
+> > KOSAKI Motohiro wrote:
+> > > Now, call_usermodehelper_setup() use GFP_ATOMIC.
+> > > but it is slighly odd.
+> > > because call_usermodehelper() is always called process context.
+> > > 
+> > 
+> > Are you sure? I found the following call chain:
+> > 
+> >   static irqreturn_t power_handler(int irq, void *dev_id)
+> >   ->orderly_poweroff(true);
+> >     ->call_usermodehelper_setup()
 > 
-> That is the device_move -> kobject_move case. 
+> sorry, you are right.
+> I'll make patch again.
 
-Yes. bluetooth also uses it, IIRC.
+How many times do we have to make this mistake :(
 
-> Very similar (and nice
-> if we can figure out how to combine them).
+Only the caller knows what allocation mode the callee can use. 
+call_usermodehelper_setup() should be extended to take a gfp_t argument.
 
-Sounds like a good idea. I can test the _move() stuff (after I've
-managed to find some time to try this patchset...)
