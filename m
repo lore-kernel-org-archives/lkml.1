@@ -1,77 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762958AbYEHKdv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762650AbYEHKjf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762958AbYEHKdv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 06:33:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762857AbYEHKdh
+	id S1762650AbYEHKjf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 06:39:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759315AbYEHKj0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 06:33:37 -0400
-Received: from smtp.gentoo.org ([140.211.166.183]:37502 "EHLO smtp.gentoo.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759666AbYEHKdf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 06:33:35 -0400
-Message-ID: <4822D6F9.8090202@gentoo.org>
-Date: Thu, 08 May 2008 12:33:29 +0200
-From: =?ISO-8859-1?Q?Ra=FAl_Porcel?= <armin76@gentoo.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
+	Thu, 8 May 2008 06:39:26 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:36811 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754418AbYEHKjY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 May 2008 06:39:24 -0400
+Date: Thu, 08 May 2008 19:38:17 +0900
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: [PATCH] call_usermodehelper_setup() should use GFP_KERNEL
+Cc: kosaki.motohiro@jp.fujitsu.com, Andrew Morton <akpm@linux-foundation.org>,
+       Li Zefan <lizf@cn.fujitsu.com>, Paul Menage <menage@google.com>,
+       Jeremy Fitzhardinge <jeremy@xensource.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Rusty Russell <rusty@rustcorp.com.au>
+In-Reply-To: <4822D30E.5010506@goop.org>
+References: <20080508012957.c778c8e7.akpm@linux-foundation.org> <4822D30E.5010506@goop.org>
+Message-Id: <20080508193224.0EFF.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: mikpe@it.uu.se, sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [BUG] 2.6.26-rc1 hangs during boot on UltraSPARC 5
-References: <18464.3741.133714.308327@harpo.it.uu.se>	<20080506.010523.113767579.davem@davemloft.net>	<18464.46000.226753.230481@alkaid.it.uu.se> <20080506.152042.91330094.davem@davemloft.net>
-In-Reply-To: <20080506.152042.91330094.davem@davemloft.net>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.42 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller wrote:
-> From: Mikael Pettersson <mikpe@it.uu.se>
-> Date: Tue, 6 May 2008 21:38:24 +0200
-> 
->> I removed "| CON_BOOT" and got what looks like the same oops
->> Raúl Porcel reported earlier today (which he for some reason
->> sent only to the lists, not to you or me); his oops was:
-> 
-> I can reproduce this problem here in my t1000.
-> 
-> It looks like some kind of initrd regression.
-> 
-> Looking at the crashes, the kernel seems to be trying
-> to dereference a physical address when peeking at the
-> initrd instead of using a virtual one.  That's a big
-> clue.
-> 
-> This patch should fix it:
-> 
-> commit d45100f7b69e3d9cd0cd5e956b6ac2c78d460d07
-> Author: David S. Miller <davem@davemloft.net>
-> Date:   Tue May 6 15:19:54 2008 -0700
-> 
->     sparc64: Fix initrd regression.
->     
->     We die because we forget to convert initrd_start and
->     initrd_end to virtual addresses.
->     
->     Reported by Mikael Pettersson
->     
->     Signed-off-by: David S. Miller <davem@davemloft.net>
-> 
-> diff --git a/arch/sparc64/mm/init.c b/arch/sparc64/mm/init.c
-> index db8e7fb..ec3e2c7 100644
-> --- a/arch/sparc64/mm/init.c
-> +++ b/arch/sparc64/mm/init.c
-> @@ -771,6 +771,9 @@ static void __init find_ramdisk(unsigned long phys_base)
->  		initrd_end = ramdisk_image + sparc_ramdisk_size;
->  
->  		lmb_reserve(initrd_start, initrd_end);
-> +
-> +		initrd_start += PAGE_OFFSET;
-> +		initrd_end += PAGE_OFFSET;
->  	}
->  #endif
->  }
-> 
+Hi
 
-That fixed it for me as well, thanks!
+Thanks good comment!
+
+> > How many times do we have to make this mistake :(
+> >
+> > Only the caller knows what allocation mode the callee can use. 
+> > call_usermodehelper_setup() should be extended to take a gfp_t argument.
+> 
+> Yeah, but making the caller need to know about the internal 
+> implementation details of the callee (ie, whether it needs to allocate 
+> memory or not) leads to pretty warty interfaces.  In this case, you 
+> could push the gfp_t up to the call_usermodehelper_setup() level, but 
+> pushing it any higher wouldn't make much sense.
+
+No problem :)
+almost caller doesn't call call_usermodehelper_setup() directly.
+
+thus, call_usermodehelper_setup() chage is hided in call_usermodehelper().
+
+
+----------------chunk of my current testing patch-----------------------------
+
+@@ -68,8 +69,9 @@ static inline int
+ call_usermodehelper(char *path, char **argv, char **envp, enum umh_wait wait)
+ {
+ 	struct subprocess_info *info;
++	gfp_t gfp_mask = (wait == UMH_NO_WAIT) ? GFP_ATOMIC : GFP_KERNEL;
+ 
+-	info = call_usermodehelper_setup(path, argv, envp);
++	info = call_usermodehelper_setup(path, argv, envp, gfp_mask);
+ 	if (info == NULL)
+ 		return -ENOMEM;
+ 	return call_usermodehelper_exec(info, wait);
+
+
+
