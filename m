@@ -1,72 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758111AbYEHG2u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759210AbYEHG3n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758111AbYEHG2u (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 02:28:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754527AbYEHG2i
+	id S1759210AbYEHG3n (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 02:29:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755155AbYEHG3d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 02:28:38 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:52733 "EHLO smtp5.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754449AbYEHG2g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 02:28:36 -0400
-Date: Thu, 8 May 2008 09:27:15 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Greg KH <greg@kroah.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       "John W. Linville" <linville@tuxdriver.com>,
-       Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: linux-next: the purge :-)
-Message-ID: <20080508062715.GE14951@cs181133002.pp.htv.fi>
-References: <20080508112130.fd574b50.sfr@canb.auug.org.au> <20080508042753.GA6876@kroah.com>
+	Thu, 8 May 2008 02:29:33 -0400
+Received: from g5t0007.atlanta.hp.com ([15.192.0.44]:22118 "EHLO
+	g5t0007.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754527AbYEHG3b (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 May 2008 02:29:31 -0400
+From: Andrew Patterson <andrew.patterson@hp.com>
+Subject: [PATCH 0/5] detect online disk resize
+To: linux-scsi@vger.kernel.org
+Cc: andrew.patterson@hp.com, linux-kernel@vger.kernel.org,
+       viro@zeniv.linux.org.uk, axboe@kernel.dk, andmike@linux.vnet.ibm.com
+Date: Thu, 08 May 2008 00:29:30 -0600
+Message-ID: <20080508062930.3818.31401.stgit@bluto.andrew>
+User-Agent: StGIT/0.14.2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20080508042753.GA6876@kroah.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 07, 2008 at 09:27:53PM -0700, Greg KH wrote:
-> On Thu, May 08, 2008 at 11:21:30AM +1000, Stephen Rothwell wrote:
-> > Greg, you might consider setting up a subset (currently probably
-> > empty) of the ldp tree for drivers that are readier for integration.
-> 
-> Ok, fair enough, I totally understand.
-> 
-> I've now moved my trees around a bit, and would like it if you could
-> include the following, in this order (the # NEXT_BASE variable is set in
-> them to make sure things get ordered properly.)
-> 	driver-core.next
-> 	usb.next
-> 	driver-core
-> 	usb
-> 	ldp.next
-> 
-> The ".next" trees are what is going to Linus before the next major
-> release happens (bugfixes and new device ids at this point in time for
-> example.)  The other trees are what is going to go to Linus after the
-> next major kernel is out.
->...
+This patch series handles online disk resizes that are currently not
+completely recognized by the kernel using the existing revalidate_disk
+routines.  An online resize can occur when growing or shrinking a
+Fibre Channel LUN or perhaps by adding a disk to an existing RAID
+volume.
 
-So the "next" in your .next has the opposite meaning of the one in 
-linux-next?
+The kernel currently recognizes a device size change when
+revalidate_disk() is called; however, the block layer does not use the
+new size while it has any current openers on the device. So, for
+example, if LVM has an volume open on the device, you will generally
+not see the size change until after a reboot. We fix this problem by
+creating a wrapper to be used with lower-level revalidate_disk
+routines.  This wrapper first calls the lower-level driver's
+revalidate_disk routine. It then compares the gendisk capacity to the
+block devices inode size. If there is a difference, we adjust the
+block device's size. If the size has changed, we then flush the disk
+for safety.
 
-Can you name it .fixes instead to make it clearer?
+This patch series only modifies the sd driver to use these changes as
+that is all that I currently have to test with. Device drivers like cciss
+and DAC960 should probably use it as well.
 
-> thanks,
-> 
-> greg k-h
+Diff stats:
 
-cu
-Adrian
+ drivers/scsi/sd.c  |    4 +--
+ fs/block_dev.c     |   76 +++++++++++++++++++++++++++++++++++++++++++++++++---
+ include/linux/fs.h |    1 +
+ 3 files changed, 74 insertions(+), 7 deletions(-)
+
+Commits:
+
+ - Wrapper for lower-level revalidate_disk routines.
+ - Adjust block device size after an online resize of a disk.
+ - SCSI sd driver calls revalidate_disk wrapper.
+ - Added flush_disk to factor out common buffer cache flushing code.
+ - Call flush_disk() after detecting an online resize.
 
 -- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+Andrew Patterson
 
