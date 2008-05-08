@@ -1,53 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758542AbYEHMwy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757282AbYEHM63@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758542AbYEHMwy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 08:52:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753217AbYEHMwq
+	id S1757282AbYEHM63 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 08:58:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752962AbYEHM6V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 08:52:46 -0400
-Received: from winston.telenet-ops.be ([195.130.137.75]:39345 "EHLO
-	winston.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753140AbYEHMwp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 08:52:45 -0400
-Date: Thu, 8 May 2008 14:52:34 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Ondrej Zajicek <santiago@crfreenet.org>
-cc: Krzysztof Helt <krzysztof.h1@poczta.fm>, JosephChan@via.com.tw,
-       akpm@linux-foundation.org, linux-fbdev-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-Subject: Re: [Linux-fbdev-devel] [PATCH 1/9] viafb: VIA Frame Buffer Device
- Driver - Resend
-In-Reply-To: <20080508081508.GD11121@localhost.localdomain>
-Message-ID: <Pine.LNX.4.64.0805081452120.8604@anakin>
-References: <C80EF34A3D2E494DBAF9AC29C7AE4EB806F67745@exchtp03.taipei.via.com.tw>
- <20080507184333.7d0f1bf4.krzysztof.h1@poczta.fm> <20080508081508.GD11121@localhost.localdomain>
+	Thu, 8 May 2008 08:58:21 -0400
+Received: from gw.goop.org ([64.81.55.164]:38295 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752939AbYEHM6V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 May 2008 08:58:21 -0400
+Message-ID: <4822F8E4.4040401@goop.org>
+Date: Thu, 08 May 2008 13:58:12 +0100
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+CC: Andrew Morton <akpm@linux-foundation.org>, Li Zefan <lizf@cn.fujitsu.com>,
+       Paul Menage <menage@google.com>,
+       Jeremy Fitzhardinge <jeremy@xensource.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [PATCH] call_usermodehelper_setup() should use GFP_KERNEL
+References: <20080508012957.c778c8e7.akpm@linux-foundation.org> <4822D30E.5010506@goop.org> <20080508193224.0EFF.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+In-Reply-To: <20080508193224.0EFF.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 8 May 2008, Ondrej Zajicek wrote:
-> On Wed, May 07, 2008 at 06:43:33PM +0200, Krzysztof Helt wrote:
-> > PS. I assume that your driver will replace the existing vt8623fb (CLE266?) driver when ready. Am I right?
-> 
-> These drivers are hardly comparable. vt8623fb supports CLE266 with VGA output only,
-> but allows arbitrary resolutions and pixclocks, high-res text mode and
-> (partially) suspend/resume. viafb implements fixed resolutions only and
-> have no text mode and no suspend/resume support (according to my quick
-> look on it).
+KOSAKI Motohiro wrote:
+> Hi
+>
+> Thanks good comment!
+>
+>   
+>>> How many times do we have to make this mistake :(
+>>>
+>>> Only the caller knows what allocation mode the callee can use. 
+>>> call_usermodehelper_setup() should be extended to take a gfp_t argument.
+>>>       
+>> Yeah, but making the caller need to know about the internal 
+>> implementation details of the callee (ie, whether it needs to allocate 
+>> memory or not) leads to pretty warty interfaces.  In this case, you 
+>> could push the gfp_t up to the call_usermodehelper_setup() level, but 
+>> pushing it any higher wouldn't make much sense.
+>>     
+>
+> No problem :)
+> almost caller doesn't call call_usermodehelper_setup() directly.
+>
+> thus, call_usermodehelper_setup() chage is hided in call_usermodehelper().
+>   
 
-It's a pity viafb implements fixed resolutions only. Is there any
-specific reason for that?
+Yep, seems reasonable.  Are there any UMH_NO_WAIT callers who could be 
+using GFP_KERNEL?
 
-Gr{oetje,eeting}s,
+> ----------------chunk of my current testing patch-----------------------------
+>
+> @@ -68,8 +69,9 @@ static inline int
+>  call_usermodehelper(char *path, char **argv, char **envp, enum umh_wait wait)
+>  {
+>  	struct subprocess_info *info;
+> +	gfp_t gfp_mask = (wait == UMH_NO_WAIT) ? GFP_ATOMIC : GFP_KERNEL;
+>  
+> -	info = call_usermodehelper_setup(path, argv, envp);
+> +	info = call_usermodehelper_setup(path, argv, envp, gfp_mask);
+>  	if (info == NULL)
+>  		return -ENOMEM;
+>  	return call_usermodehelper_exec(info, wait);
+>
+>   
 
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+    J
