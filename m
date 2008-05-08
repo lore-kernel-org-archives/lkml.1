@@ -1,63 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765020AbYEHQnK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764709AbYEHQpf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765020AbYEHQnK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 12:43:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764799AbYEHQmk
+	id S1764709AbYEHQpf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 12:45:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756048AbYEHQpZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 12:42:40 -0400
-Received: from rn-out-0910.google.com ([64.233.170.184]:4326 "EHLO
-	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764762AbYEHQmh (ORCPT
+	Thu, 8 May 2008 12:45:25 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:35788 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755808AbYEHQpX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 12:42:37 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=cAWZBk6pLwSdODgY5RSobd8enKRz6V+nGQGiyhiqAsDbtiSykFQISW+wVG5XNlzxl9hVNDoDBi9xgkvYec6KRqK9t7NPk8g8BSABk2AxY6LNj0ST8FQrzkSxa/2fV6FNCWTjsKhWJYQZcV481mlV9dGIigNm16/UvO3WyI8zQHs=
-Message-ID: <7c86c4470805080942v4b3c17a7jacf5e14eb21b1345@mail.gmail.com>
-Date: Thu, 8 May 2008 08:42:35 -0800
-From: "stephane eranian" <eranian@googlemail.com>
-To: "Andi Kleen" <andi@firstfloor.org>
-Subject: Re: [PATCH] perfmon: add context switch hooks for x86
-Cc: linux-kernel@vger.kernel.org, "Andrew Morton" <akpm@linux-foundation.org>,
-       "Ingo Molnar" <mingo@elte.hu>, tglx@linutronix.de
-In-Reply-To: <4821BD2A.3090000@firstfloor.org>
+	Thu, 8 May 2008 12:45:23 -0400
+Message-ID: <48232DFB.1030703@zytor.com>
+Date: Thu, 08 May 2008 09:44:43 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Ingo Molnar <mingo@elte.hu>
+CC: Thomas Gleixner <tglx@linutronix.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Rene Herman <rene.herman@keyaccess.nl>, Adrian Bunk <bunk@kernel.org>,
+       Yinghai Lu <yhlu.kernel@gmail.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>, akpm@linux-foundation.org,
+       Pavel Machek <pavel@suse.cz>
+Subject: Re: [PATCH] x86: introduce a new Linux defined feature flag for	PAT
+ support
+References: <48224361.5080102@zytor.com> <48224507.8010102@keyaccess.nl> <alpine.LFD.1.10.0805071716060.3024@woody.linux-foundation.org> <48224930.9030901@keyaccess.nl> <48225DEC.2030502@keyaccess.nl> <alpine.LFD.1.10.0805071857430.3024@woody.linux-foundation.org> <4822614B.6080706@zytor.com> <alpine.LFD.1.10.0805071923030.3024@woody.linux-foundation.org> <48226569.7010906@zytor.com> <alpine.LFD.1.10.0805081307520.3318@apollo.tec.linutronix.de> <20080508130838.GA13162@elte.hu>
+In-Reply-To: <20080508130838.GA13162@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <7c86c4470805070133q29515056s386c137f644b7f3b@mail.gmail.com>
-	 <4821BA06.9020704@firstfloor.org>
-	 <7c86c4470805070724v793fbdcamf18579308a183a9d@mail.gmail.com>
-	 <4821BD2A.3090000@firstfloor.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi,
+Ingo Molnar wrote:
+> * Thomas Gleixner <tglx@linutronix.de> wrote:
+> 
+>> Subject: x86: cleanup PAT cpu validation
+>> From: Thomas Gleixner <tglx@linutronix.de>
+>> Date: Thu, 08 May 2008 09:18:43 +0200
+>>
+>> Move the scattered checks for PAT support to a single function. Its 
+>> moved to addon_cpuid_features.c as this file is shared between 32 and 
+>> 64 bit.
+> 
+> thanks Thomas, i have applied your cleanup patch - looks good here too 
+> and it booted fine on a few boxes.
+> 
+> (i did a small cleanup: changed the define to static const int)
+> 
+> Peter, what are your plans for a more general cleanup and 32-bit/64-bit 
+> unification for the x86 CPU detection code - do you have any specific 
+> ideas already? I suspect we want it all to end up unified under 
+> arch/x86/kernel/cpu/, by moving the relevant bits of 
+> arch/x86/kernel/setup_64.c there, right? It is no small task for sure.
+> 
 
-It is not necessarily that easy. I will lok at this next week.
+Yes, that's the plan, and no, it's not a small task.
 
-On 5/7/08, Andi Kleen <andi@firstfloor.org> wrote:
-> stephane eranian wrote:
->  > Andi,
->  >
->  > It would be much bigger because it would pull in a bunch of generic
->  > and model-specific
->  > data structures and code.
->  >
->  > To context switch, you need to know what the registers are, thus you
->  > need the PMU
->  > mapping table, which is implemented by a kernel module, so it needs
->  > its registration
->  > framework....
->
->
-> Can you strip it down to be simpler?
->
->  Minimally generic x86 perfctr switching code just needs an array with
->  MSR numbers, doesn't it? And there are only a few variants.
->
->
->  -Andi
->
+	-hpa
