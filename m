@@ -1,52 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762534AbYEHKlO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762330AbYEHKq5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762534AbYEHKlO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 06:41:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756477AbYEHKk6
+	id S1762330AbYEHKq5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 06:46:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752788AbYEHKqq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 06:40:58 -0400
-Received: from mail.gmx.net ([213.165.64.20]:36229 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1756163AbYEHKk5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 06:40:57 -0400
-X-Authenticated: #34473864
-X-Provags-ID: V01U2FsdGVkX18oTIkWQsUokKMDFjMrKQsMESmn6e/WyjHXNroUTH
-	niUpyxwjP9hjDu
-Message-ID: <4822D8B6.4090008@gmx.de>
-Date: Thu, 08 May 2008 12:40:54 +0200
-From: Philipp Kohlbecher <xt28@gmx.de>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: Thomas Gleixner <tglx@linutronix.de>, John Stultz <johnstul@us.ibm.com>
-Subject: clocksources: order of preference
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
+	Thu, 8 May 2008 06:46:46 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:36066 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758081AbYEHKqp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 May 2008 06:46:45 -0400
+Date: Thu, 8 May 2008 20:46:35 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: linux-next@vger.kernel.org, "John W. Linville" <linville@tuxdriver.com>,
+       Ingo Molnar <mingo@elte.hu>, Greg KH <greg@kroah.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: linux-next: the purge :-)
+Message-Id: <20080508204635.4c505a7a.sfr@canb.auug.org.au>
+In-Reply-To: <alpine.LFD.1.10.0805081152310.3318@apollo.tec.linutronix.de>
+References: <20080508112130.fd574b50.sfr@canb.auug.org.au>
+	<alpine.LFD.1.10.0805081152310.3318@apollo.tec.linutronix.de>
+X-Mailer: Sylpheed 2.5.0beta3 (GTK+ 2.12.9; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Thu__8_May_2008_20_46_35_+1000_2wP/9hAbhnxWnaM="
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Why is the TSC preferred to the HPET as a clocksource for the x86 
-architecture?
+--Signature=_Thu__8_May_2008_20_46_35_+1000_2wP/9hAbhnxWnaM=
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-"Understanding the Linux Kernel" states that the HPET is preferable to 
-the TSC due to its richer architecture. Up to version 2.6.17.14, 
-arch/i386/kernel/timers/timer.c also contained a comment to that effect 
-and accordingly ranked the HPET before the TSC.
+Hi Thomas,
 
-This was changed when the new clocksource infrastructure was introduced 
-with version 2.6.18. (The HPET clocksource received a rating of 250; the 
-TSC, 300.)
+On Thu, 8 May 2008 11:55:14 +0200 (CEST) Thomas Gleixner <tglx@linutronix.d=
+e> wrote:
+>
+> We are working on refactoring our x86 work flow. We'll give you
+> notice, when the dust of the demolition has settled.
 
-Preferring the TSC leads to problems when it is unstable. While this can 
-be prevented by setting CONFIG_X86_TSC, certain distribution kernels 
-(striving for compatibility) don't, resulting in soft lockups.
+OK, I look forward to it.
 
-Are there better reasons to prefer the TSC or may I submit a patch that 
-swaps the respective ratings?
+Thanks
 
-Thanks for reading,
-- Philipp Kohlbecher
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-Please CC me, I am not on the list.
+--Signature=_Thu__8_May_2008_20_46_35_+1000_2wP/9hAbhnxWnaM=
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFIItoQTgG2atn1QN8RAqQEAKCPEry3fDPpCd92fVKs3+5p/N3tAQCbBvmg
+YrKctticMUBihZpYwo2M0qk=
+=8qfh
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__8_May_2008_20_46_35_+1000_2wP/9hAbhnxWnaM=--
