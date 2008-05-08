@@ -1,200 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933151AbYEHTbl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932446AbYEHTga@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933151AbYEHTbl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 15:31:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756163AbYEHTbL
+	id S932446AbYEHTga (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 15:36:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755266AbYEHTgT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 15:31:11 -0400
-Received: from homer.mvista.com ([63.81.120.155]:34886 "EHLO
-	imap.sh.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755766AbYEHTbA (ORCPT
+	Thu, 8 May 2008 15:36:19 -0400
+Received: from rtsoft2.corbina.net ([85.21.88.2]:45813 "HELO
+	mail.dev.rtsoft.ru" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
+	with SMTP id S1755464AbYEHTgR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 15:31:00 -0400
-Message-ID: <482354D0.9040304@ru.mvista.com>
-Date: Thu, 08 May 2008 23:30:24 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
+	Thu, 8 May 2008 15:36:17 -0400
+Date: Thu, 8 May 2008 23:36:14 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: "Richard A. Smith" <richard@laptop.org>
+Cc: Andres Salomon <dilinger@queued.net>,
+       Andrew Morton <akpm@linux-foundation.org>, cbou@mail.ru,
+       linux-kernel@vger.kernel.org, dwmw2@infradead.org
+Subject: Re: [PATCH] power_supply: support CHARGE_NOW in OLPC battery
+Message-ID: <20080508193614.GA31188@polina.dev.rtsoft.ru>
+Reply-To: avorontsov@ru.mvista.com
+References: <20080508003454.722ba511@ephemeral> <20080508105145.GA32017@polina.dev.rtsoft.ru> <20080508130102.3218f1e9@ephemeral> <20080508171320.GA8226@polina.dev.rtsoft.ru> <48234C25.4040807@laptop.org>
 MIME-Version: 1.0
-To: Manuel Lauss <mano@roarinelk.homelinux.net>
-Cc: linux-mips@linux-mips.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 4/7] Alchemy: db1200/pb1200: register mmc platform	device
- and board specific functions
-References: <20080507160154.GA17806@roarinelk.homelinux.net> <20080507160634.GE17806@roarinelk.homelinux.net> <4822F4FC.5040107@ru.mvista.com> <20080508130833.GA25971@roarinelk.homelinux.net>
-In-Reply-To: <20080508130833.GA25971@roarinelk.homelinux.net>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf8
+Content-Disposition: inline
+In-Reply-To: <48234C25.4040807@laptop.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Manuel Lauss wrote:
-
->>>diff --git a/arch/mips/au1000/common/platform.c 
->>>b/arch/mips/au1000/common/platform.c
->>>index 31d2a22..08a5900 100644
->>>--- a/arch/mips/au1000/common/platform.c
->>>+++ b/arch/mips/au1000/common/platform.c
->>>-
->>>-static struct platform_device au1xxx_mmc_device = {
->>>-	.name = "au1xxx-mmc",
->>>-	.id = 0,
->>>-	.dev = {
->>>-		.dma_mask               = &au1xxx_mmc_dmamask,
->>>-		.coherent_dma_mask      = 0xffffffff,
->>>-	},
->>>-	.num_resources  = ARRAY_SIZE(au1xxx_mmc_resources),
->>>-	.resource       = au1xxx_mmc_resources,
->>>-};
->>> #endif /* #ifdef CONFIG_SOC_AU1200 */
+On Thu, May 08, 2008 at 02:53:25PM -0400, Richard A. Smith wrote:
+> Anton Vorontsov wrote:
+>> On Thu, May 08, 2008 at 01:01:02PM -0400, Andres Salomon wrote:
+>>> Ok, CC'ing Richard as I should've done in the first place...
+>> [...]
+>>>>> +	case POWER_SUPPLY_PROP_CHARGE_NOW:
+>>>>> +		ret = olpc_ec_cmd(EC_BAT_ACR, NULL, 0, (void
+>>>>> *)&ec_word, 2);
+>>>>> +		if (ret)
+>>>>> +			return ret;
+>>>>> +
+>>>>> +		val->intval = be16_to_cpu(ec_word);
+>>>> But you didn't convert it to the uAh, I think you should.
+>>>
+>>> We have logic in userspace that converts ACR to a useful number; for
+>>> our purposes, we'd just like to read the raw ACR values.
 >>
->>   What board-specific was here?
+>> No. The purpose of power supply class is to report values in common
+>> units. Not some random value that userspace then should guess how to
+>> compute.
+>
+> I'm fine with that.  I'll have to make my scripts do some detection on  
+> what kernel is running and convert or not convert but thats not too hard.
+>
+> I remember Dave asking me if I wanted it converted and I told him not to  
+> bother and just to export the raw value.  I would deal with the units.  
+> At the time I was just trying to get some simple debugging info.  Turns  
+> out that ACR is really useful for debugging battery problems and it 
+> stuck.
+>
+> A single ACR reading itself does not tell you anything usefull.  Its a  
+> signed 16 bit free running coulomb counter that counts up and down based  
+> on how much juice goes into or out of the battery.  So to extract any  
+> meaningful info you need 2 readings separated by some instance in time.  
+> The difference between the 2 tells you the relative energy you have  
+> consumed or added.
 
-> Nothing in here per se, but a) I don't like this file, it registers
-> stuff some boards don't need/want,  b) this part is only interesting
-> for pb1200 board anyway.
+Cool, I believe this is exactly same thing as we have on DS2760. ACR
+counts up and down. For example, if there was a current of 10 uA for
+30 minutes, ACR will show 5 uAh. Additional 30 minutes with current
+-10 uA will result in 0 uAh in ACR... Right?
 
-    Sigh. Do you know that Au1100 also has the same MMC controllers? The 
-platform device is not registered in this case though and the driver (however 
-small it now actually uses the platform device per se) is therefore unable to 
-control it (well, I'm not sure it can do that since it seems to be Au1200 
-centered now (using DBDMA), however it was initially written for Au1100 as it 
-seems.
+> The units for the ACR register in the DS2765 are:
 
-> I moved it to the pb1200 platform.c because
-> of the function pointers for au1xmmc platdata.
+Do you have any specs for the ds2765? I'd like to see one, if
+it isn't restricted matter. google:ds2765 pdf wasn't helpful...
 
-    I'm sure that can be handled without moving the device itself...
+> 6.25 uVh / Rsense
+> OLPC Rsense = .015 Ohms
+>
+> The integer math conversion for ACR to mAh that I use in my scripts is:
+>
+> (ACR2 - ACR1) * 625 / 1500
 
->>>diff --git a/arch/mips/au1000/pb1200/platform.c 
->>>b/arch/mips/au1000/pb1200/platform.c
->>>index 5930110..bee2bf7 100644
->>>--- a/arch/mips/au1000/pb1200/platform.c
->>>+++ b/arch/mips/au1000/pb1200/platform.c
->>>@@ -20,8 +20,17 @@
->>>  #include <linux/init.h>
->>> #include <linux/platform_device.h>
->>>+#include <linux/mmc/host.h>
->>>  #include <asm/mach-au1x00/au1xxx.h>
->>>+#include <asm/mach-au1x00/au1xxx_dbdma.h>
->>>+#include <asm/mach-au1x00/au1100_mmc.h>
->>>+
->>>+#if defined(CONFIG_MIPS_PB1200)
->>>+#include <asm/mach-pb1x00/pb1200.h>
->>>+#elif defined(CONFIG_MIPS_DB1200)
->>>+#include <asm/mach-db1x00/db1200.h>
->>>+#endif
+Just curious.. What does the final value mean and how do you use it?
+ACR is the Ah counter. You're subtracting one from another, and that
+value will show you.. difference of Ah between T2 and T1..?
 
->>#include <asm/mach-au1x00/au1xxx.h> does all that already -- you don't need 
->>to include the board specific headers one more time.  Drop this part please.
+You'll get something useful (current) if you divide the value by T2-T1
+though... ;-) But I believe OLPC can report current by itself...
 
-> Done.  I originally put it in because of compile errors wrt. BCSR register.
+>>> Perhaps CHARGE_NOW is the wrong thing to be using, if we can't get
+>>> uAh and CHARGE_* requires that unit.
+>>
+>> I don't think that converting X * uAh or uAh / Y to uAh is impossible.
+>> I'd suggest you to convert the ACR value to uAh using fractions, see
+>> ds2760_battery.c. Even if the final value losing precision a bit, it is
+>> still useful to do CHARGE_NOW.
+>
+> Is CHARGE_NOW supposed to be an absolute indication of the level of  
+> charge in the battery?  If so then thats not ACR.
 
-    Hm, why would there be any if au1xxx.h resolves the right board #include?
+This depends. On DS2760 ACR is the only way to determine battery's
+"charge" at the given time (thus the capacity in percents, since ds2760
+can't report it).
 
->>>+	return (bcsr->sig_status & au1xmmc_card_table[host->id].bcsrstatus)
->>>+		? 1 : 0;
->>>+}
->>>+
->>>+static struct au1xmmc_platdata db1xmmcpd = {
->>>+	.set_power	= pb1200mmc_set_power,
->>>+	.card_inserted	= pb1200mmc_card_inserted,
->>>+	.card_readonly	= pb1200mmc_card_readonly,
->>>+	.cd_setup	= NULL,		/* use poll-timer in driver */
+It needs calibration though... ds2760_battery.c doing this: resetting the
+ACR to CHARGE_FULL value when battery is in charging state with current
+flow < 10 mA.
 
->>   Function ptrs in the platform data?  That's something new -- though why 
->> not? :-)
+Works quite good here.
 
-> Is this an accepted way of doing things in the kernel?  If not, I'm open to
-> suggestions!
+> That would be SOC% *  
+> battery capacity.  The EC uses the relative motion of the ACR to update  
+> the SOC%.
 
-    I really don't know -- never seen such trick before.
+Since you don't seem to use ACR as CHARGE_NOW, I think maybe we indeed
+should implement PROP_ACR or better PROP_CHARGE_COUNTER? With units of
+uAh... would that work?
 
-> (I prefer this to globally-visible methods called by the
-> driver.  I like it when related things are neatly grouped together).
-
-    Yes, this indeed looks better.
-
->>>+};
->>>+
->>>+static u64 au1xxx_mmc_dmamask =  ~(u32)0;
->>>+
->>>+struct resource au1200sd0_res[] = {
->>>+	[0] = {
->>>+		.start	= CPHYSADDR(SD0_BASE),
-
->>   Why not just use SD0_PHYS_ADDR?
-
->>>+		.end	= CPHYSADDR(SD0_BASE) + 0x40,
-
->>   You've missed "- 1" here. Though it's alos not clear why 0x40 and not 
->>0x3c (there's not register at 0x3c) or 0x80000 -- the range used according 
->>to the memory map...
-
-> I'll add the whole 0x80000 range ;-)
-
-    I've just posted a patch to fix this in the current code. Well, not that 
-it matters much but I'm kind of pedantic. :-)
-
->>>+	[3] = {
->>>+		.start	= DSCR_CMD0_SDMS_TX0,
->>>+		.flags	= IORESOURCE_DMA,
->>>+	},
->>>+	[4] = {
->>>+		.start	= DSCR_CMD0_SDMS_RX0,
->>>+		.flags	= IORESOURCE_DMA,
->>>+	},
->>>+};
-
->>   Humm. The other devices (like IDE) should also claim DMA resources...
-
-> It was a convenient way to pass DDMA IDs without having to use 
-> a lookup table in the driver ;-)
-
-    Humm, the DBDMA code seems to mean by "DMA channel" something different, 
-see au1xxx_dbdma_chan_alloc()...
-
->>>+static struct platform_device au1200_sd0_device = {
->>>+	.name = "au1xxx-mmc",
->>>+	.id = 0,	/* index into au1xmmc_card_table[] */
->>>+	.dev = {
->>>+		.dma_mask               = &au1xxx_mmc_dmamask,
->>>+		.coherent_dma_mask      = 0xffffffff,
->>>+		.platform_data		= &db1xmmcpd,
-
->>   Can't we leave the MMC platform device where it is but define the 
->>platform data structure per board with some starndard name? Since IMO it 
->>doesn't make sense to move the platform device itself.
-
-> I like my device setup data in one file (preferably living in the board
-> subdir), but for mainline inclusion I can move it back to its original
-> place if you and others prefer so.
-
-    I'd definitely prefer to leave the SOC device where they were...
-
->>>+	},
->>>+	.num_resources  = ARRAY_SIZE(au1200sd0_res),
->>>+	.resource       = au1200sd0_res,
->>>+};
->>>+
->>>+#ifndef CONFIG_MIPS_DB1200
-
->>   Wait, SD controller 1 is there regardless of the board, so should be 
->>registerred regardless. If however the board doesn't have the necessary 
->>resources to support the driver functionality, I think it can be indicated 
->>by the board-level platform data, so that the driver could decide whether 
->>it wants to support that controller or not.
-
-> Won't this cause problems if e.g. you are using PCMCIA (since SD1 pins are
-> muxed with pcmcia signals)? 
-
-    Good point.  I think that the code in arch/mips/au1000/common/platform.c 
-should check the sys_pinfunc register, and not blindly register all devices.
-
-> In any case, I just followed the original code, which also disabled the 2nd
-> controller for the db1200.
-
-    Indeed...
-
-WBR, Sergei
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
