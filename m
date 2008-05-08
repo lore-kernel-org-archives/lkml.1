@@ -1,101 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932135AbYEHSfY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764215AbYEHSju@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932135AbYEHSfY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 14:35:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755499AbYEHSfI
+	id S1764215AbYEHSju (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 14:39:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755499AbYEHSjf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 14:35:08 -0400
-Received: from 1wt.eu ([62.212.114.60]:4253 "EHLO 1wt.eu"
+	Thu, 8 May 2008 14:39:35 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:42909 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754714AbYEHSfG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 14:35:06 -0400
-Date: Thu, 8 May 2008 20:33:24 +0200
-From: Willy Tarreau <w@1wt.eu>
-To: Greg KH <gregkh@suse.de>
-Cc: linux-kernel@vger.kernel.org, stable@kernel.org,
-       Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Len Brown <len.brown@intel.com>
-Subject: Re: [patch 00/16] Linux 2.6.25 -stable review
-Message-ID: <20080508183324.GA1874@1wt.eu>
-References: <20080508174122.GA855@suse.de> <20080508181342.GA1594@1wt.eu> <20080508182233.GB2115@suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1754439AbYEHSjd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 May 2008 14:39:33 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: WARNING in 2.6.25-07422-gb66e1f1
+Date: Thu, 8 May 2008 20:39:00 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Neil Brown <neilb@suse.de>, Jacek Luczak <difrost.kernel@gmail.com>,
+       Prakash Punnoor <prakash@punnoor.de>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       Dan Williams <dan.j.williams@intel.com>, linux-raid@vger.kernel.org
+References: <200805031151.44287.prakash@punnoor.de> <18462.46639.578272.994939@notabene.brown> <20080505190159.GA329@kernel.dk>
+In-Reply-To: <20080505190159.GA329@kernel.dk>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080508182233.GB2115@suse.de>
-User-Agent: Mutt/1.5.11
+Message-Id: <200805082039.01316.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 08, 2008 at 11:22:33AM -0700, Greg KH wrote:
-> On Thu, May 08, 2008 at 08:13:42PM +0200, Willy Tarreau wrote:
-> > On Thu, May 08, 2008 at 10:41:22AM -0700, Greg KH wrote:
-> > > This is the start of the stable review cycle for the 2.6.25.2 release.
-> > > There are 16 patches in this series, all will be posted as a response to
-> > > this one.  If anyone has any issues with these being applied, please let
-> > > us know.  If anyone is a maintainer of the proper subsystem, and wants
-> > > to add a Signed-off-by: line to the patch, please respond with it.
+On Monday, 5 of May 2008, Jens Axboe wrote:
+> On Mon, May 05 2008, Neil Brown wrote:
+> > On Sunday May 4, jens.axboe@oracle.com wrote:
+> > > On Sun, May 04 2008, Jacek Luczak wrote:
+> > > > Hi,
+> > > > 
+> > > > I've CC:-ed few guys which may help.
+> > > > 
+> > > > Prakash Punnoor pisze:
+> > > > > Hi, I got this on boot:
+> > > > >
+> > > > > usb 2-1.3: new full speed USB device using ehci_hcd and address 3
+> > > > > usb 2-1.3: configuration #1 chosen from 1 choice
+> > > > > Clocksource tsc unstable (delta = -117343945 ns)
+> > > > > ------------[ cut here ]------------
+> > > > > WARNING: at include/linux/blkdev.h:443 blk_remove_plug+0x7d/0x90()
+> > ...
+> > > 
+> > > Looks like it caught a real bug there - unfortunately we have to check
+> > > for ->queue_lock here as well, if this is another stacked devices and
+> > > not the bottom device. Does this make the warning go away for you?
+> > > 
+> > > diff --git a/drivers/md/raid5.c b/drivers/md/raid5.c
+> > > index 087eee0..958f26b 100644
+> > > --- a/drivers/md/raid5.c
+> > > +++ b/drivers/md/raid5.c
+> > > @@ -3264,6 +3264,8 @@ static void raid5_unplug_device(struct request_queue *q)
+> > >  	unsigned long flags;
+> > >  
+> > >  	spin_lock_irqsave(&conf->device_lock, flags);
+> > > +	if (q->queue_lock)
+> > > +		spin_lock(q->queue_lock);
+> > >  
+> > >  	if (blk_remove_plug(q)) {
+> > >  		conf->seq_flush++;
+> > > @@ -3271,6 +3273,8 @@ static void raid5_unplug_device(struct request_queue *q)
+> > >  	}
+> > >  	md_wakeup_thread(mddev->thread);
+> > >  
+> > > +	if (q->queue_lock)
+> > > +		spin_unlock(q->queue_lock);
+> > >  	spin_unlock_irqrestore(&conf->device_lock, flags);
+> > >  
+> > >  	unplug_slaves(mddev);
+> > > 
 > > 
-> > Greg, shouldn't we also queue this one (may be in a later version) ? It's
-> > in mainline.
+> > I suspect that will just cause more problems, as the 'q' for an md
+> > device never gets ->queue_lock initialised.
+> > I suspect the correct thing to do is set
+> > 	q->queue_lock = &conf->device_lock;
+> > 
+> > at some stage, probably immediately after device_lock is initialised
+> > in 'run'.
+> > 
+> > I was discussing this with Dan Williams starting
+> >   http://marc.info/?l=linux-raid&m=120951839903995&w=4
+> > though we don't have an agreed patch yet.
 > 
-> What problem does it solve?
-
-from what I see in the code, currently acpi_power_get_state() will return
-0 when setting resource to NULL, and some callers (eg: acpi_power_on())
-will happily dereference resource if acpi_power_get_state() returns 0. So
-I guess there are circumstances where we can oops.
-
-> Does Len want it in -stable?
-
-I simply forgot to ask. I'm CCing him.
-
-Willy
-
-> thanks,
+> I agree with the usage of the device lock. I (mistakenly) thought that
+> raid5 used the bottom device queue for that unplug - I see that it does
+> not, so where does the warning come from? mddev->queue->queue_lock
+> should be NULL, since md never sets it and it's zeroed to begin with??
 > 
-> greg k-h
+> > I'm wondering why you mention the issues of stacked devices though.  I
+> > don't see how it applies.  Could you explain?
 > 
-> > >From a815ab8b5891f3d2515316655729272f68269e3b Mon Sep 17 00:00:00 2001
-> > From: Li Zefan <lizf@cn.fujitsu.com>
-> > Date: Fri, 18 Apr 2008 13:27:29 -0700
-> > Subject: ACPI: check a return value correctly in acpi_power_get_context()
-> > 
-> > We should check *resource != NULL rather than resource != NULL, which will be
-> > always true.
-> > 
-> > Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
-> > Acked-by: Zhao Yakui <yakui.zhao@intel.com>
-> > Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-> > Signed-off-by: Len Brown <len.brown@intel.com>
-> > ---
-> >  drivers/acpi/power.c |    2 +-
-> >  1 files changed, 1 insertions(+), 1 deletions(-)
-> > 
-> > diff --git a/drivers/acpi/power.c b/drivers/acpi/power.c
-> > index 76bf6d9..f2a76ac 100644
-> > --- a/drivers/acpi/power.c
-> > +++ b/drivers/acpi/power.c
-> > @@ -121,7 +121,7 @@ acpi_power_get_context(acpi_handle handle,
-> >  	}
-> >  
-> >  	*resource = acpi_driver_data(device);
-> > -	if (!resource)
-> > +	if (!*resource)
-> >  		return -ENODEV;
-> >  
-> >  	return 0;
-> > -- 
-> > 1.5.3.8
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> See above, if the queue had been the bottom queue, ->queue_lock may or
+> may not be NULL depending on whether this is the real device or
+> (another) stacked device.
+
+I get a similar warning with RAID1 on one of my test boxes:
+
+WARNING: at /home/rafael/src/linux-2.6/include/linux/blkdev.h:443 blk_remove_plug+0x85/0xa0()
+Modules linked in: raid456 async_xor async_memcpy async_tx xor raid0 ehci_hcd ohci_hcd sd_mod edd raid1 ext3 jbd fan sata_uli pata_ali thermal processor
+Pid: 2159, comm: md1_raid1 Not tainted 2.6.26-rc1 #158
+
+Call Trace:
+ [<ffffffff80238bbf>] warn_on_slowpath+0x5f/0x80
+ [<ffffffff8025e8d8>] ? __lock_acquire+0x748/0x10d0
+ [<ffffffff80348f55>] blk_remove_plug+0x85/0xa0
+ [<ffffffffa004df64>] :raid1:flush_pending_writes+0x44/0xb0
+ [<ffffffffa004e649>] :raid1:raid1d+0x59/0xfe0
+ [<ffffffff8025e8d8>] ? __lock_acquire+0x748/0x10d0
+ [<ffffffff8025dc4f>] ? trace_hardirqs_on+0xbf/0x150
+ [<ffffffff8043ea8c>] md_thread+0x3c/0x110
+ [<ffffffff8024f6a0>] ? autoremove_wake_function+0x0/0x40
+ [<ffffffff8043ea50>] ? md_thread+0x0/0x110
+ [<ffffffff8024f23d>] kthread+0x4d/0x80
+ [<ffffffff8020c548>] child_rip+0xa/0x12
+ [<ffffffff8020bc5f>] ? restore_args+0x0/0x30
+ [<ffffffff8024f1f0>] ? kthread+0x0/0x80
+ [<ffffffff8020c53e>] ? child_rip+0x0/0x12
+
+---[ end trace 05d4e0844c61f45d ]---
+
+This is the WARN_ON_ONCE(!queue_is_locked(q)) in queue_flag_clear(),
+apparently.
+
+Thanks,
+Rafael
