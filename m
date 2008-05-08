@@ -1,112 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759795AbYEGX7G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758611AbYEHAB4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759795AbYEGX7G (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 19:59:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755332AbYEGX6w
+	id S1758611AbYEHAB4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 20:01:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752838AbYEHABo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 19:58:52 -0400
-Received: from mho-02-bos.mailhop.org ([63.208.196.179]:54783 "EHLO
-	mho-02-bos.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753785AbYEGX6u (ORCPT
+	Wed, 7 May 2008 20:01:44 -0400
+Received: from smtpq1.groni1.gr.home.nl ([213.51.130.200]:54631 "EHLO
+	smtpq1.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751986AbYEHABm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 19:58:50 -0400
-X-Mail-Handler: MailHop Outbound by DynDNS
-X-Originating-IP: 69.181.40.92
-X-Report-Abuse-To: abuse@dyndns.com (see http://www.mailhop.org/outbound/abuse.html for abuse reporting information)
-X-MHO-User: U2FsdGVkX1+Zug1VXhRAWJENvxQNcexs
-Date: Wed, 7 May 2008 16:58:47 -0700
-From: Tony Lindgren <tony@atomide.com>
-To: Kyungmin Park <kmpark@infradead.org>
-Cc: linux-omap@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       paul@pwsan.com
-Subject: Re: vanilla kernel is broken on omap board
-Message-ID: <20080507235847.GV18682@atomide.com>
-References: <9c9fda240805061748n3287cb24v530f779b6b622d53@mail.gmail.com> <20080507011914.GM18682@atomide.com> <20080507234401.GU18682@atomide.com>
+	Wed, 7 May 2008 20:01:42 -0400
+Message-ID: <48224318.8020209@keyaccess.nl>
+Date: Thu, 08 May 2008 02:02:32 +0200
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080507234401.GU18682@atomide.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: Thomas Gleixner <tglx@linutronix.de>, Adrian Bunk <bunk@kernel.org>,
+       Yinghai Lu <yhlu.kernel@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       Pavel Machek <pavel@suse.cz>
+Subject: Re: 2.6.26, PAT and AMD family 6
+References: <48210A71.1060409@keyaccess.nl> <86802c440805061939q39ff5500h3c9e229ecbc6b2e6@mail.gmail.com> <20080507124650.GD29935@cs181133002.pp.htv.fi> <alpine.LFD.1.10.0805072122270.3318@apollo.tec.linutronix.de> <48221AE3.6020602@keyaccess.nl> <482233F0.7040000@zytor.com>
+In-Reply-To: <482233F0.7040000@zytor.com>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -1.0 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Tony Lindgren <tony@atomide.com> [080507 16:47]:
-> * Tony Lindgren <tony@atomide.com> [080506 18:19]:
-> > Hi,
-> > 
-> > * Kyungmin Park <kmpark@infradead.org> [080506 17:48]:
-> > > Hi Tony,
-> > > 
-> > > Current vanilla kernel is broken on omap2 boards.
-> > > In the previous time you committed some omap2 patches, but some
-> > > patches are not missing.
-> > > Such as Runtime constants series. [1]
-> > > 
-> > > Now "some parts" are already included.
-> > > So you just commit the remain parts too such as in [2]
-> > > In most cases the board files don't set the their own global variables.
-> > 
-> > Well at least we're getting closer to making omap2 really usable with
-> > mainline kernel :)
-> > 
-> > Thanks for fixing that, will add this to omap-fixes queue and send it
-> > upstream with bunch of other fixes.
+On 08-05-08 00:57, H. Peter Anvin wrote:
+
+>>> Clearing it in the cpuinfo is just a cosmetic side effect which does
+>>> no harm at all.
+>>
+>> Oh yes, it does. It makes people unaware that their CPUs _should_ be
+>> supporting PAT. The thing's not called /proc/kernelinfo for a reason.
+>>
 > 
-> Kyungmin, can you reply with your Signed-off-by for this patch?
+> Okay, that is utter nonsense.  /proc/cpuinfo has always been, and will 
+> always be, the CPU *AS THE KERNEL SEES IT*.  If you want something else, 
+> use x86info(1).
 
-Actually, I'll use Paul's patch 2b256e28e8e70592f0c38a862cc4ba0498c9db7b
-from linux-omap tree like you suggested so we already have s-o-b.
+What a lovely way of syncing reality with your definitions. The kernel
+_does_ see that my CPU features PAT, it just refuses to use it because
+it doesn't trust it enough. Vital difference. Maybe not to the kernel,
+but definitely to me, the user. /proc/cpuinfo is a user interface.
 
-Tony
+PAT is a CPU, hardware, flag documented in the arch manuals. If the
+kernel wants to keep software flags as well why not simply add those?
 
+>> And would yelling at people how shuffle in code without (publicly at
+>> least) addressing one of your fellow arch maintainers objections and
+>> Pavel's review comments about code duplication without a single line
+>> of explanation/changelog do?
 > 
-> > 
-> > Regards,
-> > 
-> > Tony
-> > 
-> > 
-> > > Thank you,
-> > > Kyungmin Park
-> > > 
-> > > 1. Runtime constants: introduce omap2_set_globals_*()
-> > > http://source.mvista.com/git/gitweb.cgi?p=linux-omap-2.6.git;a=commit;h=2b256e28e8e70592f0c38a862cc4ba0498c9db7b
-> > > Runtime constants: use runtime-computed SDRC base
-> > > http://source.mvista.com/git/gitweb.cgi?p=linux-omap-2.6.git;a=commitdiff;h=7b5f8cdb222052a7aa02ed38c59e0af1946b1e06
-> > > Runtime constants: use runtime-computed SMS base
-> > > http://source.mvista.com/git/gitweb.cgi?p=linux-omap-2.6.git;a=commitdiff;h=80ccf4b99eb3892809bbebf7673bdd1a359d56ff
-> > > 
-> > > 2.
-> > > diff --git a/arch/arm/mach-omap2/board-apollon.c b/arch/arm/mach-omap2/board-apo
-> > > index a1e1e67..620fa0f 100644
-> > > --- a/arch/arm/mach-omap2/board-apollon.c
-> > > +++ b/arch/arm/mach-omap2/board-apollon.c
-> > > @@ -394,6 +394,7 @@ static void __init omap_apollon_init(void)
-> > > 
-> > >  static void __init omap_apollon_map_io(void)
-> > >  {
-> > > +       omap2_set_globals_242x();
-> > >         omap2_map_common_io();
-> > >  }
-> > > diff --git a/include/asm-arm/arch-omap/common.h b/include/asm-arm/arch-omap/comm
-> > > index 224e009..36a3b62 100644
-> > > --- a/include/asm-arm/arch-omap/common.h
-> > > +++ b/include/asm-arm/arch-omap/common.h
-> > > @@ -47,4 +47,8 @@ static inline int omap_register_i2c_bus(int bus_id, u32 clkrat
-> > >  }
-> > >  #endif
-> > > 
-> > > +void omap2_set_globals_242x(void);
-> > > +void omap2_set_globals_243x(void);
-> > > +void omap2_set_globals_343x(void);
-> > > +
-> > >  #endif /* __ARCH_ARM_MACH_OMAP_COMMON_H */
-> > --
-> > To unsubscribe from this list: send the line "unsubscribe linux-omap" in
-> > the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-omap" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> We did discuss this (over IRC, I'm afraid), and came to the conclusion 
+> that it's too risky to do the proper thing (blacklist) straight out the 
+> gate.  Consider it a staged implementation.  The reason for this is that 
+> some of the earlier chips have downright frightening errata w.r.t. PAT. 
+>  *At this point*, we'd have no reasonable way to filter those bug 
+> reports from the issues with the software itself.
+> 
+> So, one step at a time.  PAT is massively overdue in Linux, so it's no 
+> wonder you're anxious about it, but we need a modicum of caution here.
+
+Really, I'm not so much anxious about PAT as I got anxious about seeing
+my entire CPU famility dropped without a single explanation. Had the one
+you provide above be in the commit message this thread had not happened
+(yes, although redefining X86_FEATURE_PAT is still crap).
+
+As it's merged, nothing said that it was specifically not using and/or
+disabling PAT just that it wasn't supported. Even if it had done _that_
+much this thread would've probably not happened.
+
+Rene.
