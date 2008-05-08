@@ -1,115 +1,169 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933241AbYEHVuX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765715AbYEHVuq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933241AbYEHVuX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 17:50:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757551AbYEHVt6
+	id S1765715AbYEHVuq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 17:50:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762376AbYEHVuA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 17:49:58 -0400
-Received: from extu-mxob-1.symantec.com ([216.10.194.28]:40106 "EHLO
-	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757376AbYEHVtz (ORCPT
+	Thu, 8 May 2008 17:50:00 -0400
+Received: from out02.mta.xmission.com ([166.70.13.232]:41108 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756048AbYEHVt4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 17:49:55 -0400
-Date: Thu, 8 May 2008 22:48:57 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.site
-To: "Theodore Ts'o" <tytso@mit.edu>
-cc: Glauber Costa <gcosta@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Possible regression?  2.6.26-rc1: T61s failure after suspend/resume
-In-Reply-To: <E1JuCBA-0002NZ-4E@closure.thunk.org>
-Message-ID: <Pine.LNX.4.64.0805082148060.3994@blonde.site>
-References: <E1JuCBA-0002NZ-4E@closure.thunk.org>
+	Thu, 8 May 2008 17:49:56 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Greg KH <gregkh@suse.de>, Andrew Morton <akpm@linux-foundation.org>
+Cc: Benjamin Thery <benjamin.thery@bull.net>, linux-kernel@vger.kernel.org,
+       Tejun Heo <htejun@gmail.com>, Al Viro <viro@ftp.linux.org.uk>,
+       Daniel Lezcano <dlezcano@fr.ibm.com>,
+       "Serge E. Hallyn" <serue@us.ibm.com>,
+       Pavel Emelyanov <xemul@openvz.org>, netdev@vger.kernel.org
+References: <20080506173030.653828076@theryb.frec.bull.fr>
+	<20080506173335.922289888@theryb.frec.bull.fr>
+	<m13aoueyq8.fsf@frodo.ebiederm.org> <20080507190838.GA4467@suse.de>
+Date: Thu, 08 May 2008 14:41:00 -0700
+In-Reply-To: <20080507190838.GA4467@suse.de> (Greg KH's message of "Wed, 7 May
+	2008 12:08:38 -0700")
+Message-ID: <m163tocw43.fsf_-_@frodo.ebiederm.org>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+X-SA-Exim-Connect-IP: 24.130.11.59
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa02 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
+	*      [score: 0.0006]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa02 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.5 XM_Body_Dirty_Words Contains a dirty word
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+Subject: [PATCH] Fix kobject_rename and !CONFIG_SYSFS
+X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
+X-SA-Exim-Scanned: Yes (on mgr1.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 8 May 2008, Theodore Ts'o wrote:
-> 
-> I'm running a kernel based off of commit afa26be8 (just six commits
-> after 2.6.26-rc1), and very shortly after I suspend/resume my X61s (with
-> the Intel video chipset), the X server will lock up.  I can ssh into
-> the machine remotely, and restart the X server, but the newly restarted
-> X server will shortly lock up again, and the only way to solve the
-> problem is to reboot.  If I drop back to a 2.6.25 based kernel, the
-> problem goes away.
-> 
-> I've tried bisecting it, but the bisection points picked by git don't
-> boot at all, and given that I'm travelling I havent had much time to try
-> doing more bisecting; since I know a number of kernel developers have
-> Lenovo X61 laptops, I thought before I wasted more time trying to get
-> the git bisection to work, I'd check to see if anyone has seen this
-> problem and if the fix is known.  I'll also try the latest bleeding edge
-> kernel and hope it's fixed there....
 
-I don't have a Lenovo X61, and I've no problem on my uniprocessor T43p.
-But I also have a Fujitsu Siemens Esprimo Mobile, Core2 Duo and Intel
-graphics like yours, and that's been behaving strangely after resume
-from RAM since somewhere between 2.6.25 and 2.6.26-rc1.
+When looking at kobject_rename I found two bugs with
+that exist when sysfs support is disabled in the kernel.
 
-Sounds like it might be the same problem, though I quickly moved away
-trying it with X, and have been trying to investigate just from the
-console for some days now.  Weird memory corruption after resume.
+kobject_rename does not change the name on the kobject when
+sysfs support is not compiled in.
 
-Like you, little success with bisection: probably-other bugs get in
-the way.  Some bisection points don't boot, some don't come back from
-resume at all, some hang before getting to test.  When, as a working
-hypothesis, I assumed that not coming back from resume might be the
-same problem manifesting in the return from resume itself, and shifted
-around bisection points a bit to avoid non-booting, then it arrived at
+kobject_rename without locking attempts to check the
+validity of a rename operation, which the kobject layer
+simply does not have the infrastructure to do so.
 
-commit 4fe29a85642544503cf81e9cf251ef0f4e65b162
-Author: Glauber de Oliveira Costa <gcosta@redhat.com>
-Date:   Wed Mar 19 14:25:23 2008 -0300
-    x86: use specialized routine for setup per-cpu area
+This patch documents the previously unstated requirement of
+kobject_rename that is the responsibility of the caller to
+provide mutual exclusion and to be certain that the new_name
+for the kobject is valid.
 
-as the suspect commit.  But I couldn't see anything obviously wrong
-with that; and it could well be no more guilty than shifting around
-the kernel address space somewhat.  I've rather given up on the
-bisection angle; and indeed, since found that how the problem
-manifests varies somewhat from one day's git to another,
-from one config to another.
+This patch modifies sysfs_rename_dir in !CONFIG_SYSFS case
+to call kobject_set_name to actually change the kobject_name.
 
-It does not happen with maxcpus=1.  Yesterday it occurred to me
-to try without CONFIG_PREEMPT=y; but reached no conclusion on that,
-it turns out preemption has been somehow essential to resume from
-RAM on this machine since before 2.6.25: clearly a separate issue.
-And resume from RAM running 64-bit on it is also long problematic.
+This patch removes the bogus and misleading check in kobject_rename
+that attempts to see if a rename is valid.  The check is bogus
+because we do not have the proper locking.  The check is misleading
+because it looks like we can and do perform useful checking at the
+kobject level that we don't.
 
-To reproduce the problem, I start off by building a kernel with
-make -j3 (from habit, perhaps with priming the pagecache in mind),
-then interrupt that around the time it gets to filemap.o, bootmem.o.
-I pm-suspend, close the lid, wait a few seconds, open the lid;
-make mrproper and start a make -j3 build again.  (Though the very
-first time I noticed the problem, it was a segfault in a git pull
-after resume.)
+The users in net/core/dev.c already have all of the necessary checks
+in place and don't care.  The other use in net/core/wireless.c 
+as originally implemented is incorrect because it performs no locking
+and a simple patch has been sent that adds the necessary locking
+and sanity checks there.  Ensuring this patch will not have an
+effect on users of kobject_rename or device_rename.
 
-How quickly it goes bad varies a lot: often hangs right at the
-start while sedding stuff before getting down to the build itself.
-Often gets well into the build before gcc reports Real-time signal
-(most commonly 14 but others seen) killed cc1.  But my favourite,
-the most distinctive failure, is segfault (usually in sh or make)
-at 20295564 ip .....2f2 error 6 in ld-2.6.1.so (openSUSE 10.3).
+Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
+---
+ Documentation/kobject.txt |    4 ++++
+ drivers/base/core.c       |    5 +++++
+ include/linux/sysfs.h     |    2 +-
+ lib/kobject.c             |   18 +++++-------------
+ 4 files changed, 15 insertions(+), 14 deletions(-)
 
-Always 20295564; and objdumping ld-2.6.1.so shows 0x14 of that is
-just the offset from %edi, so the crucial address is 0x20295550.
-Which is "PU) ", though I've not found that string anywhere in
-the running vmlinux (but of course it does appear in kernel source).
+diff --git a/Documentation/kobject.txt b/Documentation/kobject.txt
+index bf3256e..79184b4 100644
+--- a/Documentation/kobject.txt
++++ b/Documentation/kobject.txt
+@@ -118,6 +118,10 @@ the name of the kobject, call kobject_rename():
+ 
+     int kobject_rename(struct kobject *kobj, const char *new_name);
+ 
++Note kobject_rename does perform any locking or have a solid notion of
++what names are valid so the provide must provide their own sanity checking
++and serialization.
++
+ There is a function called kobject_set_name() but that is legacy cruft and
+ is being removed.  If your code needs to call this function, it is
+ incorrect and needs to be fixed.
+diff --git a/drivers/base/core.c b/drivers/base/core.c
+index be288b5..ad68f4c 100644
+--- a/drivers/base/core.c
++++ b/drivers/base/core.c
+@@ -1171,6 +1171,11 @@ EXPORT_SYMBOL_GPL(device_destroy);
+  * device_rename - renames a device
+  * @dev: the pointer to the struct device to be renamed
+  * @new_name: the new name of the device
++ *
++ * It is the responsibility of the caller to provide mutual
++ * exclusion between two different calls of device_rename
++ * on the same device to ensure that new_name is valid and
++ * won't conflict with other devices.
+  */
+ int device_rename(struct device *dev, char *new_name)
+ {
+diff --git a/include/linux/sysfs.h b/include/linux/sysfs.h
+index 7858eac..db66fa5 100644
+--- a/include/linux/sysfs.h
++++ b/include/linux/sysfs.h
+@@ -137,7 +137,7 @@ static inline void sysfs_remove_dir(struct kobject *kobj)
+ 
+ static inline int sysfs_rename_dir(struct kobject *kobj, const char *new_name)
+ {
+-	return 0;
++	return kobject_set_name(kobj, "%s", new_name);
+ }
+ 
+ static inline int sysfs_move_dir(struct kobject *kobj,
+diff --git a/lib/kobject.c b/lib/kobject.c
+index 718e510..c7fb092 100644
+--- a/lib/kobject.c
++++ b/lib/kobject.c
+@@ -383,6 +383,11 @@ EXPORT_SYMBOL_GPL(kobject_init_and_add);
+  * kobject_rename - change the name of an object
+  * @kobj: object in question.
+  * @new_name: object's new name
++ *
++ * It is the responsibility of the caller to provide mutual
++ * exclusion between two different calls of kobject_rename
++ * on the same kobject and to ensure that new_name is valid and
++ * won't conflict with other kobjects.
+  */
+ int kobject_rename(struct kobject *kobj, const char *new_name)
+ {
+@@ -397,19 +402,6 @@ int kobject_rename(struct kobject *kobj, const char *new_name)
+ 	if (!kobj->parent)
+ 		return -EINVAL;
+ 
+-	/* see if this name is already in use */
+-	if (kobj->kset) {
+-		struct kobject *temp_kobj;
+-		temp_kobj = kset_find_obj(kobj->kset, new_name);
+-		if (temp_kobj) {
+-			printk(KERN_WARNING "kobject '%s' cannot be renamed "
+-			       "to '%s' as '%s' is already in existence.\n",
+-			       kobject_name(kobj), new_name, new_name);
+-			kobject_put(temp_kobj);
+-			return -EINVAL;
+-		}
+-	}
+-
+ 	devpath = kobject_get_path(kobj, GFP_KERNEL);
+ 	if (!devpath) {
+ 		error = -ENOMEM;
+-- 
+1.5.3.rc6.17.g1911
 
-Yesterday morning's git looked promising: because of the libata
-70sec delay, I got diverted after the resume from RAM, left that
-laptop idle, and found hald-something-or-other had come in every
-few minutes and got that segfault at 20295564 (but with increasing
-ip addresses: some address-space randomization effect, I suppose).
-Well, I suppose it probably got run more often, but I'd only notice
-the segfaulting ones.  So it can happen when close to idle; but
-I've not been able to reproduce that since.
-
-It's such a good signature, but I've failed to make progress with it.
-Ted, please try doing the same (and check your logs for existing
-segfault messages): let's see if you get the same number ;)
-though I've no idea what it'd tell us.
-
-Hugh
