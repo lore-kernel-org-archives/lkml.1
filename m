@@ -1,62 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757344AbYEHQNq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758037AbYEHQT0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757344AbYEHQNq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 12:13:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750958AbYEHQNe
+	id S1758037AbYEHQT0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 12:19:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752125AbYEHQTN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 12:13:34 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:45184 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750872AbYEHQNc (ORCPT
+	Thu, 8 May 2008 12:19:13 -0400
+Received: from smtp-out-41.synserver.de ([217.119.50.41]:1141 "HELO
+	smtp-out-41.synserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751342AbYEHQTM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 12:13:32 -0400
-Date: Thu, 8 May 2008 09:11:33 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Andrea Arcangeli <andrea@qumranet.com>
-cc: Christoph Lameter <clameter@sgi.com>,
-       Andrew Morton <akpm@linux-foundation.org>, steiner@sgi.com,
-       holt@sgi.com, npiggin@suse.de, a.p.zijlstra@chello.nl,
-       kvm-devel@lists.sourceforge.net, kanojsarcar@yahoo.com,
-       rdreier@cisco.com, swise@opengridcomputing.com,
-       linux-kernel@vger.kernel.org, avi@qumranet.com, linux-mm@kvack.org,
-       general@lists.openfabrics.org, hugh@veritas.com, rusty@rustcorp.com.au,
-       aliguori@us.ibm.com, chrisw@redhat.com, marcelo@kvack.org,
-       dada1@cosmosbay.com, paulmck@us.ibm.com
-Subject: Re: [PATCH 08 of 11] anon-vma-rwsem
-In-Reply-To: <alpine.LFD.1.10.0805080759430.3024@woody.linux-foundation.org>
-Message-ID: <alpine.LFD.1.10.0805080907420.3024@woody.linux-foundation.org>
-References: <20080507153103.237ea5b6.akpm@linux-foundation.org> <20080507224406.GI8276@duo.random> <20080507155914.d7790069.akpm@linux-foundation.org> <20080507233953.GM8276@duo.random> <alpine.LFD.1.10.0805071757520.3024@woody.linux-foundation.org>
- <Pine.LNX.4.64.0805071809170.14935@schroedinger.engr.sgi.com> <20080508025652.GW8276@duo.random> <Pine.LNX.4.64.0805072009230.15543@schroedinger.engr.sgi.com> <20080508034133.GY8276@duo.random> <alpine.LFD.1.10.0805072109430.3024@woody.linux-foundation.org>
- <20080508052019.GA8276@duo.random> <alpine.LFD.1.10.0805080759430.3024@woody.linux-foundation.org>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Thu, 8 May 2008 12:19:12 -0400
+X-SynServer-TrustedSrc: 1
+X-SynServer-AuthUser: markus@trippelsdorf.de
+X-SynServer-PPID: 19922
+Date: Thu, 8 May 2008 18:18:05 +0200
+From: Markus Trippelsdorf <markus@trippelsdorf.de>
+To: Takashi Iwai <tiwai@suse.de>
+Cc: Jeff Garzik <jeff@garzik.org>, linux-ide@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, htejun@gmail.com,
+       marc.c.dionne@gmail.com, dl9pf@gmx.de, bug-track@fisher-privat.net,
+       sitsofe@yahoo.com
+Subject: Re: [PATCH] Re: [git patches] libata updates - (improve post-reset
+	device ready test) regression
+Message-ID: <20080508161805.GA3941@gentoox2.trippelsdorf.de>
+References: <20080506154847.GA15299@havoc.gtf.org> <20080507145616.GA2210@gentoox2.trippelsdorf.de> <48231DAF.7070900@garzik.org> <s5hhcd83hor.wl%tiwai@suse.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <s5hhcd83hor.wl%tiwai@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Thu, 8 May 2008, Linus Torvalds wrote:
+On Thu, May 08, 2008 at 06:05:08PM +0200, Takashi Iwai wrote:
+> At Thu, 08 May 2008 11:35:11 -0400,
+> Jeff Garzik wrote:
+> > 
+> > Markus Trippelsdorf wrote:
+> > >> Tejun Heo (12):
+> > >>       libata: improve post-reset device ready test
+> > > 
+> > > This commit (78ab88f04f44bed566d51dce0c7cbfeff6449a06) causes a long
+> > > boot delay with my onboard Promise controller. It seems like libata
+> > > probes for a nonexisting PATA drive...
+> > > 
+> > 
+> > Does the attached patch fix things?
+> > 
+> > It basically reverts the patch, while still maintaining the 
+> > consolidation.  It looks like that status evaluation is not as universal 
+> > as believed.
 > 
-> Also, we'd need to make it 
+> Yes, the patch fixes the problem on my machine.
 > 
-> 	unsigned short flag:1;
-> 
-> _and_ change spinlock_types.h to make the spinlock size actually match the 
-> required size (right now we make it an "unsigned int slock" even when we 
-> actually only use 16 bits).
 
-Btw, this is an issue only on 32-bit x86, because on 64-bit one we already 
-have the padding due to the alignment of the 64-bit pointers in the 
-list_head (so there's already empty space there).
+Your patch fixes the problem for me, too...
 
-On 32-bit, the alignment of list-head is obviously just 32 bits, so right 
-now the structure is "perfectly packed" and doesn't have any empty space. 
-But that's just because the spinlock is unnecessarily big.
-
-(Of course, if anybody really uses NR_CPUS >= 256 on 32-bit x86, then the 
-structure really will grow. That's a very odd configuration, though, and 
-not one I feel we really need to care about).
-
-			Linus
+-- 
+Markus
