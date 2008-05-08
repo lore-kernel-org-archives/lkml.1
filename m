@@ -1,99 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933071AbYEHSBX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933017AbYEHSDT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933071AbYEHSBX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 14:01:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759309AbYEHSBI
+	id S933017AbYEHSDT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 14:03:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752627AbYEHSDF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 14:01:08 -0400
-Received: from ganesha.gnumonks.org ([213.95.27.120]:58497 "EHLO
-	ganesha.gnumonks.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753045AbYEHSBG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 14:01:06 -0400
-X-Greylist: delayed 1855 seconds by postgrey-1.27 at vger.kernel.org; Thu, 08 May 2008 14:01:06 EDT
-Date: Thu, 8 May 2008 08:35:38 +0200
-From: Harald Welte <laforge@gnumonks.org>
-To: Liam Girdwood <lg@opensource.wolfsonmicro.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       arm kernel <linux-arm-kernel@lists.arm.linux.org.uk>
-Subject: Re: [PATCH 0/13] Updated V4  - Regulator Framework
-Message-ID: <20080508063538.GC6105@prithivi.gnumonks.org>
-References: <1209742841.12502.40.camel@odin>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="KFztAG8eRSV9hGtP"
-Content-Disposition: inline
-In-Reply-To: <1209742841.12502.40.camel@odin>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Thu, 8 May 2008 14:03:05 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:54763 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753471AbYEHSDC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 May 2008 14:03:02 -0400
+Date: Thu, 8 May 2008 14:02:19 -0400
+From: Rik van Riel <riel@redhat.com>
+To: Nadia.Derbey@bull.net
+Cc: manfred@colorfullife.com, paulmck@linux.vnet.ibm.com,
+       lnxninja@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
+       efault@gmx.de, akpm@linux-foundation.org,
+       Nadia Derbey <Nadia.Derbey@bull.net>
+Subject: Re: [PATCH 7/9] Make idr_remove rcu-safe
+Message-ID: <20080508140219.74c5d886@bree.surriel.com>
+In-Reply-To: <20080507113737.562143000@bull.net>
+References: <20080507113553.395937000@bull.net>
+	<20080507113737.562143000@bull.net>
+Organization: Red Hat, Inc.
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 07 May 2008 13:36:00 +0200
+Nadia.Derbey@bull.net wrote:
 
---KFztAG8eRSV9hGtP
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> [PATCH 07/09]
+> 
+> This patch introduces the free_layer() routine: it is the one that actually
+> frees memory after a grace period has elapsed.
+> 
+> Signed-off-by: Nadia Derbey <Nadia.Derbey@bull.net>
 
-On Fri, May 02, 2008 at 04:40:41PM +0100, Liam Girdwood wrote:
-> This is an updated version of the kernel voltage & current regulator
-> framework based on comments received from version 3 of the patch series.
->=20
-> The regulator framework is designed to provide a standard kernel
-> interface to control voltage and current regulators on SoC based
-> systems.
+Acked-by: Rik van Riel <riel@redhat.com>
 
-Dear Liam,
-
-I have reviewed your regulator framework from the point of view of the
-Openmoko GTA01 and GTA02 devices, based on members of the NXP PCF506xx
-PMU(PMIC) devices (for which I wrote the drivers).=20
-
-I believe it would fit quite nice onto this PMIC family from a different
-manufacturer.
-
-There is one aspects of the PCF506xx that I think the current regulator
-framework doesn't (yet) cover.  I'm not sure if it was worth to add
-support for this, but let me explain:
-
-The PCF506xx have a concept of global power management states,
-particularly important are the ON and STANDBY states in this context.
-Every regulator has a property whether it is enabled in none, one or
-both of the global power management states.
-
-Do you think it would be worth to export something like this in the
-generic API, too?  It's probably quite hard, since there are devices
-that actually use the PCF506xx STANDBY state during suspend-to-ram, but
-other devices leave the PCF506xx in the ON state and just disable the
-individual regulators using I2C register writes.
-
-I think there's probably no clean way how to integrate this, since the
-question remains: who makes the decision (and manages the contraints) of
-when to transition into the STANDBY state.   Nevertheless a read-only
-sysfs attribute might still be interesting.
-
-Cheers,
---=20
-- Harald Welte <laforge@gnumonks.org>           http://laforge.gnumonks.org/
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D
-"Privacy in residential applications is a desirable marketing option."
-                                                  (ETSI EN 300 175-7 Ch. A6)
-
---KFztAG8eRSV9hGtP
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFIIp86XaXGVTD0i/8RAuXXAJ9bt14Vhf6GYdcBj1Fy1CxEaupVawCgiJ25
-0Na2YrY2tX+sXU75GHdiRbs=
-=QS9S
------END PGP SIGNATURE-----
-
---KFztAG8eRSV9hGtP--
+-- 
+All rights reversed.
